@@ -10,8 +10,9 @@ vi.mock('@/app/lib/utils/logger', () => ({
 }));
 
 import {
-  rerankDocuments,
   isRerankingEnabled,
+  rerankDocuments,
+  rerankEndpoint,
 } from '../bedrock-cohere-reranker';
 import type { VectorStoreDocument } from '@/libs/vector-store/types';
 
@@ -236,5 +237,95 @@ describe('bedrock-cohere-reranker', () => {
       expect(result).toHaveLength(3);
       expect(result[0]).toBe(docs[0]);
     });
+  });
+
+  /**
+   * `RERANK_COHERE_BASE_URL` is what carries this variant past B6, which
+   * deletes `LITELLM_PROXY_URL`. The loss would have been silent: an
+   * unreachable reranker degrades to "no reranking" rather than erroring, so
+   * nothing would have said the quality drop was a configuration change.
+   */
+  describe('its own endpoint', () => {
+    it('prefers RERANK_COHERE_BASE_URL over the proxy URL', () => {
+      process.env.FEATURE_FLAG_RERANKING = '1';
+      delete process.env.LITELLM_PROXY_URL;
+      process.env.RERANK_COHERE_BASE_URL = 'https://api.cohere.ai';
+
+      expect(isRerankingEnabled()).toBe(true);
+    });
+
+    it('still accepts the proxy URL, so a running deployment needs no change', () => {
+      process.env.FEATURE_FLAG_RERANKING = '1';
+      delete process.env.RERANK_COHERE_BASE_URL;
+      process.env.LITELLM_PROXY_URL = 'http://localhost:4000';
+
+      expect(isRerankingEnabled()).toBe(true);
+    });
+
+    it('is off when neither is set, whatever the feature flag says', () => {
+      process.env.FEATURE_FLAG_RERANKING = '1';
+      delete process.env.RERANK_COHERE_BASE_URL;
+      delete process.env.LITELLM_PROXY_URL;
+
+      expect(isRerankingEnabled()).toBe(false);
+    });
+  });
+});
+
+describe('choosing the rerank endpoint', () => {
+  /**
+   * The regression: `${base}/rerank` was appended unconditionally, so the
+   * "Cohere directly" configuration the module advertises 404'd — Cohere's own
+   * API versions the path.
+   */
+  it('sends a direct Cohere host to the versioned path', () => {
+    expect(rerankEndpoint('https://api.cohere.ai')).toEqual({
+      url: 'https://api.cohere.ai/v2/rerank',
+      provider: 'cohere',
+    });
+  });
+
+  it('respects a version the operator already named', () => {
+    expect(rerankEndpoint('https://api.cohere.ai/v1')).toEqual({
+      url: 'https://api.cohere.ai/v1/rerank',
+      provider: 'cohere',
+    });
+  });
+
+  it('leaves the proxy path exactly as it was', () => {
+    expect(rerankEndpoint('http://localhost:4000')).toEqual({
+      url: 'http://localhost:4000/rerank',
+      provider: 'litellm',
+    });
+  });
+
+  it('treats another gateway as the proxy shape', () => {
+    expect(rerankEndpoint('https://gateway.example.com')).toEqual({
+      url: 'https://gateway.example.com/rerank',
+      provider: 'litellm',
+    });
+  });
+
+  it('strips a trailing slash', () => {
+    expect(rerankEndpoint('https://api.cohere.ai/').url).toBe(
+      'https://api.cohere.ai/v2/rerank',
+    );
+  });
+
+  it('falls back to the local proxy when nothing is configured', () => {
+    expect(rerankEndpoint(undefined)).toEqual({
+      url: 'http://localhost:4000/rerank',
+      provider: 'litellm',
+    });
+  });
+
+  it('does not match a lookalike host', () => {
+    expect(rerankEndpoint('https://cohere.ai.evil.test').provider).toBe(
+      'litellm',
+    );
+  });
+
+  it('does not throw on an unparseable base url', () => {
+    expect(rerankEndpoint('not a url').provider).toBe('litellm');
   });
 });

@@ -41,9 +41,14 @@ routes:
     model: eu.anthropic.claude-opus-5
 
   # --- Vertex -------------------------------------------------------------
+  # `location: global` is not a stylistic choice. Google serves preview models
+  # from the global endpoint only, so this model 404s in europe-central2 while
+  # gemini-2.5-flash below answers there. The proxy config encodes the same
+  # thing on the same entry (`vertex_location: global`).
   gemini-3-flash-preview:
     provider: vertex
     model: gemini-3-flash-preview
+    location: global
   # The rephrase and summary model. Do not upgrade it without approval — it
   # runs per document and per turn, and cost is the reason it was chosen.
   gemini-2.5-flash:

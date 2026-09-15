@@ -3,7 +3,6 @@ import { AiUsageModule } from '../ai-usage/ai-usage.module.js';
 import { ChainsModule } from '../chains/chains.module.js';
 import { OrganizationsModule } from '../organizations/organizations.module.js';
 import { DocumentsModule } from '../documents/documents.module.js';
-import { TeamsModule } from '../teams/teams.module.js';
 import { ApiLimitsModule } from '../api-limits/api-limits.module.js';
 import { ConnectorsModule } from '../connectors/connectors.module.js';
 import { ProjectsModule } from '../projects/projects.module.js';
@@ -21,7 +20,7 @@ import { McpModule } from '../mcp/mcp.module.js';
  * not NestJS providers — nothing to register here for them; future callers
  * import directly from those directories. AiUsageModule, ChainsModule (the
  * initializeBasicRag equivalent), OrganizationsModule, DocumentsModule,
- * TeamsModule, ApiLimitsModule, ConnectorsModule, ProjectsModule,
+ * ApiLimitsModule, ConnectorsModule, ProjectsModule,
  * SecurityModule, and McpModule (LoadMcpToolsService) are the real NestJS
  * pieces (DB-backed, DI-based), re-exported here so a later controller can
  * pull in just `RagEngineModule` once this actually gets wired up.
@@ -32,7 +31,6 @@ import { McpModule } from '../mcp/mcp.module.js';
     ChainsModule,
     OrganizationsModule,
     DocumentsModule,
-    TeamsModule,
     ApiLimitsModule,
     ConnectorsModule,
     ProjectsModule,
@@ -44,7 +42,6 @@ import { McpModule } from '../mcp/mcp.module.js';
     ChainsModule,
     OrganizationsModule,
     DocumentsModule,
-    TeamsModule,
     ApiLimitsModule,
     ConnectorsModule,
     ProjectsModule,

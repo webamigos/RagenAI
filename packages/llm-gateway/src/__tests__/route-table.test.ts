@@ -1,16 +1,21 @@
-import { mkdtempSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
 import {
+  DEFAULT_ROUTE_TABLE_PATH,
   InvalidRouteTableError,
+  defaultRouteTablePath,
   findRoute,
   loadRouteTable,
   readRouteTableFile,
   routeTableFromEnv,
 } from '../route-table';
+
+/** This package sits at <root>/packages/llm-gateway. */
+const repoRoot = resolve(__dirname, '..', '..', '..', '..');
 
 const valid = {
   version: 1 as const,
@@ -137,5 +142,47 @@ routes:
 
       expect(Object.keys(table)).toEqual(['gpt-5.4']);
     });
+  });
+});
+
+describe('finding the shipped route table', () => {
+  /**
+   * The bug this exists for: a bare relative path only resolves for a process
+   * started from the repository root, and no app in this monorepo is. The
+   * worker marked four documents FAILED before anything said "configuration".
+   */
+  it('finds the table from an app directory, not just from the root', () => {
+    const fromRoot = defaultRouteTablePath(repoRoot);
+    const fromApp = defaultRouteTablePath(join(repoRoot, 'apps', 'worker'));
+
+    expect(existsSync(fromRoot)).toBe(true);
+    expect(fromApp).toBe(fromRoot);
+  });
+
+  it('finds it from a nested directory too', () => {
+    expect(
+      defaultRouteTablePath(join(repoRoot, 'apps', 'web', 'src', 'libs')),
+    ).toBe(defaultRouteTablePath(repoRoot));
+  });
+
+  it('falls back to the bare relative path when there is no table above', () => {
+    expect(defaultRouteTablePath(tmpdir())).toBe(DEFAULT_ROUTE_TABLE_PATH);
+  });
+});
+
+describe('the default route table path', () => {
+  /**
+   * `parsePath('.').root` is '' and `dirname('.')` is '.', so an unresolved
+   * relative cwd never reaches the root — the walk spun forever rather than
+   * giving up. The default cwd is absolute, which is why nothing caught it.
+   */
+  it('terminates on a relative cwd instead of walking forever', () => {
+    expect(defaultRouteTablePath('.')).toBeTypeOf('string');
+  });
+
+  it('finds the same file from a relative and an absolute cwd', () => {
+    expect(defaultRouteTablePath('.')).toBe(
+      defaultRouteTablePath(process.cwd()),
+    );
   });
 });

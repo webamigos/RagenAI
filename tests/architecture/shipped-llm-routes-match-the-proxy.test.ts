@@ -44,6 +44,44 @@ describe('the shipped LLM route table', () => {
     expect(gatewayModels).toEqual(proxyModels);
   });
 
+  /**
+   * Model names agreeing is not the same as the two paths serving the same
+   * thing. The proxy pins `gemini-3-flash-preview` to `vertex_location: global`
+   * on that one entry, because Google serves preview models from the global
+   * endpoint only — and the route table, which had no per-route location at
+   * all, sent it to `VERTEX_LOCATION` and got a 404. The name check above
+   * passed throughout. Found by actually running the gateway arm of the B2
+   * measurement, which is the thing a guard is supposed to spare you.
+   */
+  it('pins the same Vertex location the proxy pins, per model', () => {
+    const yaml = readFileSync(join(root, 'infra/litellm/config.yaml'), 'utf8');
+
+    // Each live `- model_name:` block up to the next one, so a commented-out
+    // entry contributes nothing.
+    const blocks = [
+      ...yaml.matchAll(
+        /^ {2}- model_name:\s*(\S+)\n((?: {4}.*\n|\n(?= {4}))*)/gm,
+      ),
+    ];
+    expect(blocks.length).toBeGreaterThan(0);
+
+    const routes = loadRouteTable(routeFile);
+
+    for (const [, modelName, body] of blocks) {
+      const route = routes[modelName!];
+      if (route?.provider !== 'vertex') {
+        continue;
+      }
+
+      const location = body!.match(/vertex_location:\s*(\S+)/)?.[1];
+      // `os.environ/VERTEX_LOCATION` means "the deployment's default", which is
+      // exactly what a route with no location of its own resolves to.
+      const pinned = location?.startsWith('os.environ/') ? undefined : location;
+
+      expect(route.location, `${modelName} location`).toBe(pinned);
+    }
+  });
+
   it('names a connection for every openai-compatible route', () => {
     // The provider covers Scaleway, vLLM, Ollama, TGI and a LiteLLM proxy, so
     // "which upstream" is not inferable. The credential source refuses a route
@@ -74,6 +112,30 @@ describe('the shipped LLM route table', () => {
 
     expect(services.length).toBeGreaterThan(0);
     expect(mounts).toHaveLength(services.length);
+  });
+
+  /**
+   * The mount test above checks docker-compose. Railway builds the Dockerfiles
+   * and mounts nothing, and Railway is the only exposed environment there is
+   * — so "the route table is configuration, and it is present" was verified
+   * for the deployment shape that works and not for the one that ships.
+   *
+   * Under `LLM_GATEWAY=litellm` the absence is invisible, because nothing
+   * reads the file. The flip is what would have found it, in the environment
+   * where finding it is most expensive.
+   */
+  it('is copied into every runtime image', () => {
+    const dockerfiles = ['web', 'api', 'worker'].map((app) => ({
+      app,
+      source: readFileSync(join(root, 'apps', app, 'Dockerfile'), 'utf8'),
+    }));
+
+    for (const { app, source } of dockerfiles) {
+      expect(
+        /^COPY\b.*\binfra\/llm-gateway\b/m.test(source),
+        `apps/${app}/Dockerfile must COPY infra/llm-gateway — without it, LLM_GATEWAY=native cannot read its route table in a built image`,
+      ).toBe(true);
+    }
   });
 
   it('ships a JSON Schema that still matches the zod schema', () => {

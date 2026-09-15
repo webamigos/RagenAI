@@ -33,6 +33,10 @@
           "connection": {
             "type": "string",
             "minLength": 1
+          },
+          "location": {
+            "type": "string",
+            "minLength": 1
           }
         },
         "required": ["provider", "model"],

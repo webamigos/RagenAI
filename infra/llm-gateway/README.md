@@ -99,6 +99,17 @@ reads `LLM_OLLAMA_BASE_URL` and `LLM_OLLAMA_API_KEY`:
 
 The API key is optional, because a local Ollama has none. The base URL is not.
 
+`LLM_<NAME>_HEADERS` takes a JSON object of extra headers, applied after the
+bearer token. That is what lets a gateway that routes on headers be attached at
+all — Portkey selects its upstream with `x-portkey-provider` or a saved config
+with `x-portkey-config`, and a base URL plus a key cannot express either.
+Malformed content throws rather than being ignored, because a header that
+silently failed to apply would send traffic to the wrong upstream with nothing
+to read afterwards.
+
+Worked examples for Portkey, LiteLLM, vLLM and Ollama:
+[`docs/attaching-a-gateway.md`](../../docs/attaching-a-gateway.md).
+
 `scaleway` also accepts the proxy-era `SCW_API_BASE` / `SCW_API_KEY`, so the one
 connection that exists today keeps working with no change to any environment.
 
@@ -114,6 +125,39 @@ them.
 | `azure`   | `AZURE_API_KEY`, `AZURE_API_BASE`                               |
 | `bedrock` | `AWS_BEDROCK_REGION` (plus the default AWS credential chain)    |
 | `vertex`  | `VERTEX_PROJECT`, `VERTEX_LOCATION` (plus application defaults) |
+
+## Turning it on
+
+```text
+LLM_GATEWAY=native
+```
+
+`litellm` is the default and keeps the proxy. Anything else is refused at boot
+rather than treated as the default — a typo that fell back would run the proxy
+arm while reporting the gateway's, and the only evidence would be a comparison
+that found no difference, which is also what a clean cutover looks like.
+
+Switched: `apps/web`, `apps/api` and `apps/worker` — chat, embeddings, and the
+worker's PDF extraction. `apps/admin` has no model calls to switch.
+
+Two things to know before reading a result:
+
+- **A chat model resolves on its first call, not when it is built.** The
+  multimodal swap chooses between models based on what the turn contains, so the
+  decision cannot be made before the messages exist. One model instance can
+  therefore call two different upstreams across a conversation.
+- **`LITELLM_PROXY_URL` is still required**, under either value, until B4. The
+  gateway path never reads it; the env schema has not been relaxed yet, because
+  both arms are measured on one machine with the proxy running anyway.
+  `LITELLM_MASTER_KEY` is the exception — the worker stops demanding it under
+  `native`, because its boot check would otherwise refuse to start over a
+  credential nothing on that path uses.
+- **Three model ids the apps hard-code are served by neither path.**
+  `PDF_MODEL`'s default `claude-haiku-4-5`, and `gpt-5.4-mini` / `gpt-5.4-nano`
+  in the worker's image and PDF chains. They are commented out in the proxy
+  config and absent here, so those paths fail either way — the gateway just
+  says so earlier, with `UnknownModelError`. Only the worker's non-Docling
+  fallback reaches them.
 
 ## Later
 

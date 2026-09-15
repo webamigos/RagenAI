@@ -11,7 +11,6 @@ import { type ProjectId } from '../common/types/brand.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { ApiLimitsService } from '../api-limits/api-limits.service.js';
 import { OrganizationSettingsService } from '../organizations/organization-settings.service.js';
-import { ResolveLiteLLMKeyService } from '../teams/resolve-litellm-key.service.js';
 import { LoadMcpToolsService } from '../mcp/load-mcp-tools.service.js';
 import { InitializeBasicRagService } from '../chains/basic-rag/initialize-basic-rag.service.js';
 import { PersistApiThreadService } from '../threads/persist-api-thread.service.js';
@@ -30,6 +29,7 @@ import {
 } from '../common/utils/openai-format.js';
 import { type CreateChatCompletionDto } from './dto/create-chat-completion.dto.js';
 import { supportsReasoningEffort } from '../llm/model-registry.js';
+import { servingProvider } from '../llm/native-models.js';
 
 /**
  * Direct implementation of `POST /v1/chat/completions` — replaces the
@@ -59,7 +59,6 @@ export class ChatCompletionsService {
     private readonly prisma: PrismaService,
     private readonly apiLimits: ApiLimitsService,
     private readonly organizationSettings: OrganizationSettingsService,
-    private readonly resolveLiteLLMKey: ResolveLiteLLMKeyService,
     private readonly loadMcpTools: LoadMcpToolsService,
     private readonly initializeBasicRag: InitializeBasicRagService,
     private readonly persistApiThread: PersistApiThreadService,
@@ -112,21 +111,15 @@ export class ChatCompletionsService {
       );
     }
 
-    const [rawSettings, keyResolution] = await Promise.all([
-      this.organizationSettings.getAllSettings(context.orgId),
-      this.resolveLiteLLMKey.resolveForRequest({
-        orgId: context.orgId,
-        userId: context.userId,
-        routeTag: 'v1.chat.completions',
-      }),
-    ]);
+    const rawSettings = await this.organizationSettings.getAllSettings(
+      context.orgId,
+    );
 
     // Apply per-request overrides on top of the org defaults. Undefined
     // overrides leave the org value untouched.
     const settings = {
       ...rawSettings,
       apiKey: rawSettings.apiKey ?? '',
-      litellmApiKey: keyResolution.apiKey,
       ...(dto.model !== undefined ? { model: dto.model } : {}),
       ...(dto.temperature !== undefined
         ? { temperature: dto.temperature }
@@ -201,13 +194,18 @@ export class ChatCompletionsService {
           threadId,
           userId: context.userId,
           step: 'CHAT_COMPLETION',
-          // Every model routes through LiteLLM in this deployment.
+          // The pricing namespace, not the vendor — see `servingProvider`,
+          // which records who actually served the turn in metadata. Changing
+          // this column zeroes every cost.
           provider: 'litellm',
           model: effectiveModel,
           inputTokens: usage.inputTokens ?? 0,
           outputTokens: usage.outputTokens ?? 0,
           totalTokens: usage.totalTokens ?? 0,
-          metadata: { source: 'API' },
+          metadata: {
+            source: 'API',
+            servedBy: servingProvider(effectiveModel) ?? 'litellm',
+          },
         });
         return {
           prompt_tokens: usage.inputTokens ?? 0,

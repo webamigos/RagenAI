@@ -10,7 +10,15 @@ import { DEFAULT_EMBEDDINGS_MODEL } from '@ragenai/rag-core';
 
 export class TrackedEmbeddingsProvider implements EmbeddingsProvider {
   readonly model: string;
-  private embeddingModel: Parameters<typeof embed>[0]['model'];
+  /**
+   * Accepted as a promise as well as a value.
+   *
+   * The gateway resolves a model asynchronously — credentials come from a
+   * `CredentialSource` that will be the token vault — while every caller of
+   * `createEmbeddingsInstance` is synchronous. Awaiting here, where the work is
+   * already async, keeps all of them unchanged.
+   */
+  private embeddingModel: PromiseLike<Parameters<typeof embed>[0]['model']>;
   private organizationId?: string;
   private userId?: string;
   private projectId?: string;
@@ -20,7 +28,9 @@ export class TrackedEmbeddingsProvider implements EmbeddingsProvider {
   private trackAiUsage?: TrackAiUsage;
 
   constructor(
-    embeddingModel: Parameters<typeof embed>[0]['model'],
+    embeddingModel:
+      | Parameters<typeof embed>[0]['model']
+      | PromiseLike<Parameters<typeof embed>[0]['model']>,
     modelName: string,
     provider: string,
     organizationId?: string,
@@ -28,7 +38,7 @@ export class TrackedEmbeddingsProvider implements EmbeddingsProvider {
     projectId?: string,
     trackAiUsage?: TrackAiUsage,
   ) {
-    this.embeddingModel = embeddingModel;
+    this.embeddingModel = Promise.resolve(embeddingModel);
     this.model = modelName;
     this.provider = provider;
     this.organizationId = organizationId;
@@ -56,7 +66,7 @@ export class TrackedEmbeddingsProvider implements EmbeddingsProvider {
 
   async embedDocuments(texts: string[]): Promise<number[][]> {
     const { embeddings, usage } = await embedMany({
-      model: this.embeddingModel,
+      model: await this.embeddingModel,
       values: texts,
     });
 
@@ -69,7 +79,7 @@ export class TrackedEmbeddingsProvider implements EmbeddingsProvider {
 
   async embedQuery(text: string): Promise<number[]> {
     const { embedding, usage } = await embed({
-      model: this.embeddingModel,
+      model: await this.embeddingModel,
       value: text,
     });
 

@@ -629,7 +629,6 @@ describe('retrieveRelevantDocuments (multi-query)', () => {
       ['q1'],
       4,
       undefined,
-      undefined,
       true,
       tracking,
       trackAiUsage,
@@ -702,7 +701,7 @@ describe('retrieveRelevantDocuments (multi-query)', () => {
       ],
     ]);
 
-    await retrieveRelevantDocuments(vs, ['q1'], 3, undefined, undefined, false);
+    await retrieveRelevantDocuments(vs, ['q1'], 3, undefined, false);
 
     expect(mockRerankDocuments).not.toHaveBeenCalled();
     // Without reranking, per-query count = maxDocuments (no multiplier)
@@ -724,7 +723,7 @@ describe('retrieveRelevantDocuments (multi-query)', () => {
       ],
     ]);
 
-    await retrieveRelevantDocuments(vs, ['q1'], 3, undefined, undefined, true);
+    await retrieveRelevantDocuments(vs, ['q1'], 3, undefined, true);
 
     expect(mockRerankDocuments).toHaveBeenCalled();
   });

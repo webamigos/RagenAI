@@ -1,4 +1,4 @@
-import type { LanguageModelV4 } from '@ai-sdk/provider';
+import type { EmbeddingModelV4, LanguageModelV4 } from '@ai-sdk/provider';
 
 /** The provider families the gateway can route to. */
 export const PROVIDER_IDS = [
@@ -38,6 +38,18 @@ export type Route = {
    * not.
    */
   readonly connection?: string;
+  /**
+   * Where the model lives, for a provider whose endpoint is regional.
+   *
+   * Vertex only. Overrides `VERTEX_LOCATION` for this one route, because a
+   * deployment's default region is not where every model is: Google serves
+   * preview models from the `global` endpoint only, so `gemini-3-flash-preview`
+   * 404s in `europe-central2` while `gemini-2.5-flash` answers there. The proxy
+   * config has always encoded this per model — `vertex_location: global` sits
+   * on exactly that entry — and a route table without it cannot express the
+   * installation it replaces.
+   */
+  readonly location?: string;
 };
 
 export type RouteTable = Readonly<Record<string, Route>>;
@@ -50,6 +62,39 @@ export type ProviderCredentials = {
   readonly resourceName?: string;
   readonly project?: string;
   readonly location?: string;
+  /**
+   * A parsed Google service account, for Vertex.
+   *
+   * The proxy reads one from `VERTEX_CREDENTIALS` as a JSON blob, and matching
+   * its variable names is the whole reason a deployment needs no new secrets to
+   * try the gateway. Google's own libraries look for a *file path* in
+   * `GOOGLE_APPLICATION_CREDENTIALS` instead, so without this the two paths do
+   * not in fact read the same configuration — see `serviceAccountFromEnv`.
+   */
+  readonly serviceAccount?: Record<string, unknown>;
+  /**
+   * Extra request headers, for an OpenAI-compatible upstream that needs more
+   * than a bearer token to know what to do.
+   *
+   * This is what makes "attach any OpenAI-compatible gateway" true rather than
+   * nearly true. Portkey routes on `x-portkey-provider` or `x-portkey-config`;
+   * OpenRouter attributes traffic with `HTTP-Referer` and `X-Title`; several
+   * hosted gateways select a deployment the same way. A base URL and a key
+   * cannot express any of it, so without this the promise holds for LiteLLM and
+   * vLLM and quietly fails for the rest.
+   */
+  readonly headers?: Record<string, string>;
+  /**
+   * Azure's `api-version` query parameter.
+   *
+   * Azure OpenAI dates its API and refuses a request whose version predates the
+   * feature it uses, so the proxy has always passed `AZURE_API_VERSION`
+   * explicitly. Reading `AZURE_API_KEY` and `AZURE_API_BASE` while ignoring the
+   * third variable is the same mistake `VERTEX_CREDENTIALS` was — two thirds of
+   * a provider's configuration adopted, and the missing third only noticed on a
+   * real call.
+   */
+  readonly apiVersion?: string;
 };
 
 /**
@@ -84,3 +129,9 @@ export type ProviderFactory = (
   route: Route,
   credentials: ProviderCredentials,
 ) => LanguageModelV4;
+
+/** The same, for embeddings. */
+export type EmbeddingProviderFactory = (
+  route: Route,
+  credentials: ProviderCredentials,
+) => EmbeddingModelV4;

@@ -118,12 +118,103 @@ promising.
   it stops working silently, so the endpoint has to become configuration either
   way.
 
+  **Made concrete 2026-09-15.** [`docs/attaching-a-gateway.md`](../attaching-a-gateway.md)
+  documents Portkey, LiteLLM, vLLM and Ollama as worked examples, which is the
+  form this answer had to take to be true — Q6 was a decision, and until it was
+  written down as a procedure nobody could act on it.
+
+  Writing it exposed one gap: a connection could carry a base URL and a key and
+  nothing else, and **Portkey routes on headers** (`x-portkey-provider`, or
+  `x-portkey-config` for a saved routing config). So the promise held for
+  LiteLLM and vLLM and quietly failed for the gateway most worth attaching.
+  `LLM_<NAME>_HEADERS` closes it. This is also the answer to Q8: the reason not
+  to build a proxy of our own is that attaching a better one is two lines of
+  configuration.
+
   **Virtual keys are not part of the offer.** B5 drops `Team.litellmTeamId`,
   `Team.litellmKeyToken` and `OrganizationSettings.litellmApiKey` because the
   application takes over budgets. Anyone attaching their own LiteLLM gets a
   **router, not a control plane** — limits, allowlists and billing stay in
   Ragen. B7's ADR should say so outright, or the first self-hoster will set a
   budget in LiteLLM and be surprised that Ragen ignores it.
+
+## Open
+
+- **Q7 — should the gateway have an OpenRouter provider family?** Raised
+  2026-09-15 while B2c was running. The short answer is that the gateway is not
+  *missing* OpenRouter relative to the proxy, because **nothing routes to
+  OpenRouter today, on either path**:
+
+  | where | what is there | reachable? |
+  | --- | --- | --- |
+  | `infra/litellm/config.yaml` | no entry at all | no |
+  | `getModelProvider()` (apps/web `config.ts`) | returns `'litellm'` unconditionally | the `\|\| 'openrouter'` fallback in `assistant-stream.ts` is dead code |
+  | `OrganizationSettings.openrouterApiKey` | stored, encrypted, decrypted, returned | nothing consumes it for a model call |
+  | `docs/model-routing.md` | six `OPENROUTER_*` env vars | **appear in zero TypeScript files** |
+  | `ai-pricing.ts` | an `openrouter` price block | priced, never billed |
+
+  So adding it is **new capability, not parity** — which is a different
+  decision and worth taking deliberately.
+
+  If it is taken: OpenRouter is OpenAI-compatible, so it already works as
+  `provider: openai-compatible, connection: openrouter` with no package change
+  at all. What that *cannot* express is the part
+  [`docs/model-routing.md`](../model-routing.md) calls critical — the EU base
+  URL, `provider.order`, `data_collection: deny` and ZDR-only routing are
+  OpenRouter-specific fields in the request body, and a generic
+  OpenAI-compatible client will not send them. Silently not sending them is the
+  bad outcome: the deployment believes it has zero data retention and does not.
+  That is the same argument that made `openai` its own family rather than a
+  base URL — the quirks are the point.
+
+  Recommended shape: a fifth family whose `providerOptions` carry the routing
+  preferences, gated the way `reasoning_effort` is. Not part of Phase B; it
+  changes no existing behaviour, because there is none.
+
+  **There is a first-party AI SDK provider for it** — `@openrouter/ai-sdk-provider`,
+  v3.0.0, peer-depending on `ai: ^7.0.0`, which is the version this monorepo
+  runs since B0c. So the fifth family is an adapter of the same three lines as
+  the other four, not a hand-written client, and it lands in
+  `PROVIDER_FACTORIES` beside `createOpenAI` and `createVertex`. Not installed
+  here yet.
+
+  The one thing to verify while implementing rather than assume: that the
+  package exposes OpenRouter's `provider` routing preferences (order, ZDR,
+  `data_collection`) through `providerOptions`. If it does not, the family is
+  still worth having for the model catalogue, but the EU/ZDR guarantees remain
+  unenforced — which is the part that has to be true before
+  `docs/model-routing.md` can describe them as real.
+
+  **Independently of the answer, `docs/model-routing.md` documents behaviour
+  that does not exist** and should either be implemented or marked as not
+  implemented. A reader today would configure `OPENROUTER_ZDR=true` and get
+  nothing.
+
+- **Q8 — is an in-process gateway the right shape, or should Ragen ship its own
+  small proxy?** Raised 2026-09-15. The programme assumed "no separate service"
+  and this reopens it on purpose, because the argument for one is real:
+
+  - **One place for configuration and environment variables.** Today provider
+    credentials have to reach *three* processes — web, api and worker — which
+    is precisely the operational cost Q1 accepted when it allowed credentials
+    into the application processes ("credential rotation stops being one
+    container restart and becomes three").
+  - **One place for the route table.** B1 mounts
+    `infra/llm-gateway/routes.yaml` into four services to keep it
+    configuration-not-code, and a guard counts the mounts because one missing
+    mount makes that false again. A single owner would need no mount count.
+
+  Against: it is another service to build, deploy, monitor and keep available —
+  and a hop in front of every model call — which is most of what ADR-04 is
+  being retired for. It also reintroduces the thing B2c is currently measuring
+  away.
+
+  Not a decision for Phase B. Worth noting that the two advantages are both
+  about *where configuration lives*, not about the data plane, so they may be
+  obtainable without a service — the route table moving to the database (which
+  `loadRouteTable` already anticipates by taking parsed content) and
+  credentials moving to ragen-token-vault (which `CredentialSource`'s `scope`
+  already anticipates) would give one owner for both, with no new hop.
 
 ## Problem
 
@@ -763,14 +854,201 @@ resumes:
       floor, so a summary rate cannot tell a real difference from the same
       path measured twice. Run both arms in one sitting, on a project
       nothing else writes to.
-- [ ] **B3.** Move speech and transcription
+
+      - [x] **B2a — the seam, in apps/web.** The flag, embedding resolution in
+            the package, and `apps/web`'s chat and embeddings behind it.
+
+            Two things had to change shape, and both are worth knowing before
+            B2b repeats the exercise in `apps/api` and `apps/worker`.
+
+            **Resolution is deferred to the first call.** The multimodal swap
+            is model *selection* (B1), but the application's seam builds a
+            model from options and never sees a message — so selecting on
+            content was impossible at construction. `nativeChatModel` returns a
+            `LanguageModelV4` that resolves inside `doGenerate`/`doStream`,
+            where the prompt is. That also absorbs the async/sync mismatch —
+            `resolveModel` is async because credentials will come from the
+            vault — so **no call site changed**.
+
+            **Both `encoding_format` workarounds are gone.** apps/web deleted
+            the field (a LiteLLM/Bedrock-Cohere bug) and apps/worker forced it
+            to `float` (Scaleway's vLLM). They contradict each other, both were
+            the proxy's, and the AI SDK's OpenAI-compatible embedding model
+            sends `float` natively.
+
+            Not done here, on purpose: `LITELLM_PROXY_URL` is still required by
+            the env schema under either mode. Both arms are measured on one
+            machine with the proxy up, and relaxing it belongs with B4.
+
+      - [x] **B2b — the same seam in `apps/api` and `apps/worker`.**
+
+            `apps/api` is a mirror of `apps/web` and went across unchanged in
+            shape. `apps/worker` differed in three ways worth recording.
+
+            **Its getters were already `async`**, and it has no multimodal swap
+            and no reasoning effort — so no deferred `LanguageModelV4` was
+            needed there. The flag is a plain branch. (`getChatModel` and
+            `getEmbeddingModel`, the two master-key variants, became `async`;
+            they had no callers.)
+
+            **`generateTextWithPdf` needed a second implementation, not a
+            redirect.** It hand-builds a request carrying the PDF as an
+            `image_url` holding a `data:application/pdf;base64,…` — not
+            OpenAI's shape, and it only ever worked because LiteLLM recognised
+            it and emitted a Bedrock Converse document block. This is the one
+            call in the monorepo that depended on the proxy *rewriting* a
+            request rather than forwarding it. The native path passes a real
+            `file` content part to `generateText`, which `@ai-sdk/amazon-bedrock`
+            turns into the same Converse block — so the bytes still never leave
+            the configured AWS region.
+
+            **`LITELLM_MASTER_KEY` is no longer required under `native`.**
+            `isMasterKeyRequired` throws at import time, and a deployed worker
+            would otherwise refuse to boot over a credential nothing on that
+            path authenticates with — whose obvious workaround is to set a
+            dummy key, which is how a boot check stops being believed.
+
+            **Found on the way, not fixed here:** `PDF_MODEL`'s default
+            `claude-haiku-4-5` is served by neither the proxy (commented out in
+            `infra/litellm/config.yaml`) nor the route table, and the same is
+            true of `availableModels.mini`/`.nano` (`gpt-5.4-mini`,
+            `gpt-5.4-nano`). Those paths are already broken on the proxy today;
+            the gateway fails them slightly earlier and more legibly
+            (`UnknownModelError` rather than an upstream 400). Docling is the
+            default parser, so only the fallback path reaches them, which is
+            why it went unnoticed. Choosing replacements is a model decision
+            with cost and quality consequences, not a refactor.
+      - [x] **B2c — the gateway arm, per question.** Recorded in
+            [the comparison](../rag-gateway-comparison-2026-09-15.md). Three
+            runs per arm, one sitting, commit `269b13422`.
+
+            **No retrieval regression.** Sixteen of twenty-four questions give
+            the identical verdict in both arms across all six runs;
+            same-language is 16/16 in every run of both; the control floor is
+            0/23 throughout. Four questions flap *within* an arm — the noise
+            floor the baseline described.
+
+            **One question differs stably** — `xl-en2pl-refund-pct`, 0/3 native
+            against 3/3 proxy — and it is **not** a retrieval failure. Both arms
+            retrieve the right document, state the right figure and pass the
+            rubric; the native arm additionally volunteers the sibling
+            document's distractor figure, which trips `expectNone`. The change
+            is in generation, not retrieval: the chain sends no temperature, so
+            each path inherits its own client's defaults, and LiteLLM's
+            OpenAI-compatible translation to Vertex is not the same request as
+            `@ai-sdk/google-vertex` makes. Worth settling before B4.
+
+            Totals were 88% proxy against 79% native — **wider than one
+            question, narrower than this instrument's own spread**, which is why
+            the comparison is per question. Cross-lingual went 5/8 to 3/8, a
+            direction rather than a result on a corpus whose noise floor is four
+            questions.
+
+            Three real defects fell out of running it, all invisible to every
+            static check and all now fixed: the gateway ignored
+            `VERTEX_CREDENTIALS` (Google's libraries want a file path in
+            `GOOGLE_APPLICATION_CREDENTIALS`, so Vertex could not authenticate
+            at all); the route table had no per-route `location`, so
+            `gemini-3-flash-preview` 404'd outside the `global` endpoint the
+            proxy config pins it to; and the default route-table path resolved
+            against the process's cwd, which no app in this monorepo shares with
+            the repository root — the worker marked four documents FAILED rather
+            than saying anything about configuration.
+- [x] **B3.** Move speech and transcription
       ([openai-provider.ts](../../apps/web/src/libs/speech/openai-provider.ts))
-      off `LITELLM_PROXY_URL`.
-- [ ] **B4.** Flip the default to `native` in one environment (demo) for a
+      off `LITELLM_PROXY_URL`. Done 2026-09-15.
+
+      Not a cleanup — **a fix.** Both providers preferred `LITELLM_PROXY_URL`
+      over OpenAI's own endpoint, and `infra/litellm/config.yaml` registers no
+      `/v1/audio/*` route and never has. Since the proxy URL is *required* by
+      every app's env schema, the fallback to `api.openai.com` was unreachable
+      in exactly the deployments that needed it: `SPEECH_PROVIDER=openai` meant
+      a 404 per synthesis and per transcription, everywhere.
+
+      Replaced by `SPEECH_BASE_URL` (default `https://api.openai.com`) and
+      `SPEECH_API_KEY` (falling back to `OPENAI_API_KEY`), declared as
+      `SPEECH_SEAM` in `provider-seams.ts` alongside storage, encryption,
+      rerank and mail. That makes attaching a local vLLM — or a LiteLLM that
+      *has* been given audio routes — configuration rather than the one
+      hardcoded road, which is Q6's shape. Both values are read per call, not
+      in the constructor, because `index.ts` caches the provider for the life
+      of the process.
+
+      A missing key now throws naming both variables instead of sending
+      `Authorization: Bearer ` and letting the upstream return a 401 that reads
+      like a wrong key rather than an absent one.
+
+      Two stale documents fixed alongside: `.env.example` claimed speech
+      auto-detects OpenAI from `OPENAI_API_KEY` or `LITELLM_PROXY_URL` — it
+      never has, and deliberately still does not, because speech bills per
+      request and that key is there for chat; and `apps/docs/docs/open-models.md`
+      recommended the proxy path as the way to keep speech on-premise, which
+      was the broken one.
+- [~] **B4.** Flip the default to `native` in one environment (demo) for a
       week, then everywhere. The flag stays — but as a seam variant naming an
       endpoint, not as `litellm|native`, which B6 reduces to one value. Q6.
-- [ ] **B5.** Remove virtual keys: `resolveLiteLLMKeyQuery`, the remaining team
-      commands, the three columns.
+
+      **Repo side done 2026-09-15; the flip itself is a dashboard change**
+      (ADR-47) and has not been made. [The runbook](../runbooks/llm-gateway-cutover.md)
+      is the procedure, including rollback.
+
+      Preparing it found the blocker that would have taken demo down:
+      **no runtime image contained the route table.** All three Dockerfiles
+      copy `.next/standalone`, `dist` and `packages`, and none copied `infra/`.
+      `docker-compose.fullapp.yml` mounts the directory into all four services
+      — and the guard that exists to keep the "configuration, not code"
+      promise honest counted *those mounts*, so it was green while the only
+      exposed environment could not read the file at all. Under
+      `LLM_GATEWAY=litellm` nothing reads it, so the absence was invisible; the
+      flip is what would have found it, in the most expensive place. Each image
+      now copies it, and the guard checks both deployment shapes.
+
+      `npm run gateway:preflight -- --probe` resolves every model the
+      deployment is configured to use and makes one real call each. It encodes
+      the B2c lesson — presence is not usability — and it already reports the
+      known `PDF_MODEL` gap as advisory rather than blocking, since that model
+      is equally unserved on the proxy path.
+
+      Not done here, deliberately: `DEFAULT_GATEWAY_MODE` stays `litellm`.
+      Changing it flips local development and every fresh clone, which belongs
+      with "then everywhere" rather than with "one environment".
+- [x] **B5.** Remove virtual keys: `resolveLiteLLMKeyQuery`, the remaining team
+      commands, the three columns. Done 2026-09-15.
+
+      **It could not be done as written, and the guard is what said so.**
+      `only-rate-limits-reach-the-proxy.test.ts` held Q3's obligation: budgets
+      and allowlists had moved into the database, `tpm`/`rpm` had not, and the
+      proxy was the only thing enforcing them — so it failed if the forwarding
+      stopped while nothing had replaced it. Removing the virtual keys removes
+      the vehicle, so the guard fired exactly as designed. The answer was to
+      build the replacement, not to delete the guard:
+      `checkTeamRateLimitQuery`, a Redis token bucket over the same two fields,
+      called before every turn, with its own `chain-errors.rate-limit-exceeded`
+      in all fifteen locales. It fails **open** when Redis is absent, because
+      Redis is optional here and the hard stop is the monthly ceiling in
+      Postgres.
+
+      **Team attribution survived the removal.** `resolveLiteLLMKeyQuery`
+      decided two things at once — which key to charge and, as a side effect,
+      which team `AiUsage.teamId` recorded. Deleting it wholesale would have
+      made the teams UI silently report nothing, so its second half is now
+      `resolveUsageTeamQuery`: same precedence, same membership check (the
+      active team arrives in a cookie), no key.
+
+      Also gone: `apps/admin`'s `syncOrgMemberToLiteLLM`, whose whole purpose
+      was keeping proxy team membership in step with the database, and the
+      `litellmProvisioned` banner in team settings, which reported a state that
+      no longer exists.
+
+      The migration drops `organization_settings.litellm_api_key`,
+      `teams.litellm_team_id` and `teams.litellm_key_token`. Deploy ordering is
+      one-way: the application stops selecting them in the same release, so a
+      rollback to an older image would fail against the new schema. Roll the
+      migration back with it, or roll forward.
+
+      `Team.budgetUsdCents`, `budgetDuration`, `rpmLimit`, `tpmLimit` and
+      `allowedModels` are deliberately kept — those are Ragen's own settings,
+      read from the database, and now enforced from there.
 - [ ] **B6.** Remove the infrastructure: `infra/litellm/`, the compose service
       and its Postgres, the Helm values, the devcontainer wiring, the e2e mock
       proxy, the promptfoo configs' base URLs, `packages/litellm-client`,
@@ -778,10 +1056,29 @@ resumes:
       `RERANK_SEAM`'s `cohere` variant at its own base URL in the same PR —
       it routes through `LITELLM_PROXY_URL` today and fails silently without
       it. Q6.
-- [ ] **B7.** Write the ADR superseding ADR-04 and reducing ADR-34. Add an
+- [~] **B7.** Write the ADR superseding ADR-04 and reducing ADR-34. Add an
       architecture test asserting nothing imports a LiteLLM symbol. Add the
       lesson: _a query that computes a limit is not a limit until something
       calls it._
+
+      **ADR written 2026-09-15**:
+      [ADR-49](../adrs/49-the-application-calls-model-providers-itself.md).
+      ADR-04 is marked superseded, ADR-34 reduced. It records what this phase
+      decided *and* what it deliberately did not — the flip everywhere, an
+      OpenRouter family (Q7), and where the route table lives long-term.
+
+      **The lesson already existed** and said the exact sentence this line
+      asks for — `enforcement-moved-to-a-dependency-left-its-query-behind.md`,
+      written when Phase A found the five-month gap. Rather than duplicate it,
+      it gained the second half this phase supplied: **a guard that fails
+      because its subject moved is right, and the change is incomplete.** B5
+      removed the virtual keys that per-team rate limiting was enforced on,
+      `only-rate-limits-reach-the-proxy.test.ts` fired exactly as designed, and
+      the answer was to build the replacement rather than delete the guard.
+
+      **The architecture test waits for B6**, which is the change that makes it
+      true — asserting nothing imports a LiteLLM symbol cannot pass while the
+      proxy path is the default and `packages/litellm-client` still ships.
 
 ## Testing
 

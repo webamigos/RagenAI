@@ -192,7 +192,6 @@ describe('envelope encryption', () => {
     const apiKeyHashers = [
       join('apps', 'web', 'src', 'app', 'lib', 'utils', 'hashApiKey.ts'),
       join('apps', 'api', 'src', 'organizations', 'hash-api-key.ts'),
-      join('apps', 'web', 'src', 'scripts', 'backfill-teams-for-orgs.ts'),
     ];
 
     for (const path of apiKeyHashers) {

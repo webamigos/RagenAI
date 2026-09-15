@@ -121,11 +121,6 @@ export function TeamSettingsSection({ teamId, availableModels }: Props) {
         <p className="mt-1 text-xs text-muted-foreground">
           {t('settings-description')}
         </p>
-        {!settings.litellmProvisioned && (
-          <p className="mt-2 rounded border border-pending/40 bg-pending-tint p-2 text-xs text-pending dark:bg-pending/30">
-            {t('settings-provision-pending')}
-          </p>
-        )}
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">

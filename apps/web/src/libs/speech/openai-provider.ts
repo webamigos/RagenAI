@@ -2,31 +2,62 @@ import type { TtsProvider, SttProvider } from './types';
 
 const FETCH_TIMEOUT_MS = 60_000;
 
+/** OpenAI's own audio API, when nothing points somewhere else. */
+const DEFAULT_BASE_URL = 'https://api.openai.com';
+
 /**
- * OpenAI TTS provider.
+ * Where the `/v1/audio/*` calls go, and what authenticates them.
  *
- * Uses the OpenAI-compatible TTS endpoint. When LITELLM_PROXY_URL is set,
- * routes through LiteLLM proxy; otherwise uses OpenAI directly.
+ * Until B3 this read `LITELLM_PROXY_URL` and `LITELLM_MASTER_KEY`, preferring
+ * them over OpenAI's own endpoint. That was not merely indirect — it was
+ * broken: `infra/litellm/config.yaml` registers no audio route, and never has,
+ * so any deployment with a proxy URL set (which is all of them; the variable is
+ * required) and `SPEECH_PROVIDER=openai` sent every synthesis and every
+ * transcription to an endpoint that 404s. The fallback to `api.openai.com` was
+ * unreachable for exactly the deployments that needed it.
+ *
+ * `SPEECH_BASE_URL` replaces it as a real seam rather than a hardcoded
+ * indirection: OpenAI's audio API is spoken by vLLM, by a LiteLLM proxy that
+ * *has* been given audio routes, and by several hosted providers. Pointing at
+ * one is configuration now (Q6), and pointing at none means OpenAI.
+ *
+ * The key is read per call rather than in the constructor, because the provider
+ * is cached for the process's lifetime in `index.ts` and a constructor read
+ * would pin whatever the environment held at first use.
+ */
+function endpoint(path: string): string {
+  const base = process.env.SPEECH_BASE_URL || DEFAULT_BASE_URL;
+  return `${base.replace(/\/+$/, '')}${path}`;
+}
+
+function apiKey(): string {
+  const key = process.env.SPEECH_API_KEY || process.env.OPENAI_API_KEY;
+  if (!key) {
+    // Loudly, and naming both variables. The previous code defaulted to `''`
+    // and sent `Authorization: Bearer `, turning a configuration mistake into
+    // an upstream 401 that reads like a bad key rather than a missing one.
+    throw new Error(
+      'OpenAI speech provider needs a key: set SPEECH_API_KEY, or OPENAI_API_KEY to reuse the chat key.',
+    );
+  }
+  return key;
+}
+
+/**
+ * Text-to-speech over OpenAI's `/v1/audio/speech` API.
+ *
+ * "OpenAI" names the wire format, not the vendor — see `endpoint` above.
  */
 export class OpenAiTtsProvider implements TtsProvider {
-  private baseUrl: string;
-  private apiKey: string;
-
-  constructor() {
-    this.baseUrl = process.env.LITELLM_PROXY_URL || 'https://api.openai.com';
-    this.apiKey =
-      process.env.LITELLM_MASTER_KEY || process.env.OPENAI_API_KEY || '';
-  }
-
   async synthesize(text: string, voiceId: string): Promise<Buffer> {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
 
     try {
-      const response = await fetch(`${this.baseUrl}/v1/audio/speech`, {
+      const response = await fetch(endpoint('/v1/audio/speech'), {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${this.apiKey}`,
+          Authorization: `Bearer ${apiKey()}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
@@ -52,21 +83,11 @@ export class OpenAiTtsProvider implements TtsProvider {
 }
 
 /**
- * OpenAI Whisper STT provider.
+ * Speech-to-text over OpenAI's `/v1/audio/transcriptions` API.
  *
- * Uses the OpenAI-compatible transcription endpoint. When LITELLM_PROXY_URL
- * is set, routes through LiteLLM proxy; otherwise uses OpenAI directly.
+ * "OpenAI" names the wire format, not the vendor — see `endpoint` above.
  */
 export class OpenAiSttProvider implements SttProvider {
-  private baseUrl: string;
-  private apiKey: string;
-
-  constructor() {
-    this.baseUrl = process.env.LITELLM_PROXY_URL || 'https://api.openai.com';
-    this.apiKey =
-      process.env.LITELLM_MASTER_KEY || process.env.OPENAI_API_KEY || '';
-  }
-
   async transcribe(
     audioBuffer: Buffer,
     mimeType: string,
@@ -85,10 +106,10 @@ export class OpenAiSttProvider implements SttProvider {
     const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
 
     try {
-      const response = await fetch(`${this.baseUrl}/v1/audio/transcriptions`, {
+      const response = await fetch(endpoint('/v1/audio/transcriptions'), {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${this.apiKey}`,
+          Authorization: `Bearer ${apiKey()}`,
         },
         body: formData,
         signal: controller.signal,

@@ -3,6 +3,7 @@ import { type z } from 'zod';
 import { type FieldGroup } from './config-groups';
 import {
   ENCRYPTION_SEAM,
+  SPEECH_SEAM,
   STORAGE_SEAM,
   type ProviderSeam,
 } from './provider-seams';
@@ -70,6 +71,15 @@ export const storageRules = seamRule(STORAGE_SEAM);
  * this package, so that check stays in the consumer. apps/worker has it.
  */
 export const encryptionRules = seamRule(ENCRYPTION_SEAM);
+
+/**
+ * Speech needs one thing only when ElevenLabs is chosen — the key it cannot
+ * work without. The `openai` variant requires nothing, because
+ * `SPEECH_API_KEY` falls back to `OPENAI_API_KEY` and the base URL has a real
+ * default; the provider itself throws when neither key is present, which is
+ * the check that has to happen there rather than here.
+ */
+export const speechRules = seamRule(SPEECH_SEAM);
 
 /**
  * The refinement a flat group's `pairs` describe.

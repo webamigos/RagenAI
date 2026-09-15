@@ -31,6 +31,11 @@ export const SENSITIVE_FIELDS: ReadonlySet<string> = new Set([
   'openrouterApiKey',
   'fireworksApiKey',
   'azureOpenaiCredentials',
+  // Kept after B5 dropped the columns these named. A stale entry costs
+  // nothing — it redacts a key that never arrives — while a missing one is a
+  // silent leak that no test can catch, because there is nothing yet to pass.
+  // `litellmApiKey` is still a live, secret-bearing property on the chat
+  // options in both apps, and `litellm` is still the default path.
   'litellmApiKey',
   'litellmKeyToken',
 ]);

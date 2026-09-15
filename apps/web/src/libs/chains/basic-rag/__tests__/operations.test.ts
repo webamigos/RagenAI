@@ -635,15 +635,7 @@ describe('retrieveRelevantDocuments (multi-query)', () => {
       projectId: 'proj_3',
     };
 
-    await retrieveRelevantDocuments(
-      vs,
-      ['q1'],
-      4,
-      undefined,
-      undefined,
-      true,
-      tracking,
-    );
+    await retrieveRelevantDocuments(vs, ['q1'], 4, undefined, true, tracking);
 
     expect(mockRerankDocuments).toHaveBeenCalledWith(
       'q1',
@@ -712,7 +704,7 @@ describe('retrieveRelevantDocuments (multi-query)', () => {
       ],
     ]);
 
-    await retrieveRelevantDocuments(vs, ['q1'], 3, undefined, undefined, false);
+    await retrieveRelevantDocuments(vs, ['q1'], 3, undefined, false);
 
     expect(mockRerankDocuments).not.toHaveBeenCalled();
     // Without reranking, per-query count = maxDocuments (no multiplier)
@@ -734,7 +726,7 @@ describe('retrieveRelevantDocuments (multi-query)', () => {
       ],
     ]);
 
-    await retrieveRelevantDocuments(vs, ['q1'], 3, undefined, undefined, true);
+    await retrieveRelevantDocuments(vs, ['q1'], 3, undefined, true);
 
     expect(mockRerankDocuments).toHaveBeenCalled();
   });

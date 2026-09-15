@@ -14,8 +14,6 @@ export type RerankTrackingContext = {
 export type RerankOptions = {
   /** Number of top results to return (default: 5). */
   topN?: number;
-  /** LiteLLM virtual key — attributes spend to the org in LiteLLM. */
-  litellmApiKey?: string;
   /** Caller context — when present, the call is recorded in AiUsage. */
   tracking?: RerankTrackingContext;
 };
@@ -29,13 +27,68 @@ export interface RerankResult {
 }
 
 /**
- * Check if reranking is available (LiteLLM proxy configured).
+ * Whether the Cohere rerank path is available.
+ *
+ * `RERANK_COHERE_BASE_URL` is what makes this variant survive B6. It has always
+ * routed through `LITELLM_PROXY_URL`, which that phase deletes — and the
+ * failure would have been silent, because an unreachable reranker degrades to
+ * "no reranking" rather than erroring. Q6 calls this out by name: the endpoint
+ * has to become configuration either way.
+ *
+ * `LITELLM_PROXY_URL` is still accepted as a fallback so a deployment running
+ * the proxy today needs no change; it goes with the proxy itself.
  */
 export function isRerankingEnabled(): boolean {
-  return (
-    process.env.FEATURE_FLAG_RERANKING === '1' &&
-    !!process.env.LITELLM_PROXY_URL
-  );
+  return process.env.FEATURE_FLAG_RERANKING === '1' && !!cohereBaseUrl();
+}
+
+/**
+ * Where the `/rerank` call goes. Any endpoint speaking Cohere's rerank shape —
+ * a LiteLLM proxy that has it registered, Cohere directly, or a gateway in
+ * front of either.
+ */
+function cohereBaseUrl(): string | undefined {
+  return process.env.RERANK_COHERE_BASE_URL || process.env.LITELLM_PROXY_URL;
+}
+
+/**
+ * The rerank endpoint, and who is actually being billed for it.
+ *
+ * Cohere's own API versions its path — `/v2/rerank` — while a LiteLLM proxy and
+ * the gateways that sit in front of one expose a bare `/rerank`. Appending
+ * `/rerank` unconditionally 404s against "Cohere directly", which is one of the
+ * three targets the comment above advertises.
+ *
+ * The provider travels with the choice rather than being assumed, because
+ * `ai_usage.provider` is the column an operator reconciles an invoice against:
+ * a call Cohere billed, recorded as `litellm`, is wrong there in a way no error
+ * surfaces. Anything that is not Cohere's own host stays `litellm`, which is
+ * what those rows have always said and what the proxy path still is.
+ */
+export function rerankEndpoint(baseUrl: string | undefined): {
+  url: string;
+  provider: string;
+} {
+  const base = (baseUrl ?? 'http://localhost:4000').replace(/\/$/, '');
+
+  let host = '';
+  try {
+    host = new URL(base).hostname;
+  } catch {
+    // Not a parseable URL — treat it as the proxy-shaped path it used to be.
+    return { url: `${base}/rerank`, provider: 'litellm' };
+  }
+
+  if (!/(^|\.)cohere\.(ai|com)$/i.test(host)) {
+    return { url: `${base}/rerank`, provider: 'litellm' };
+  }
+
+  // An operator who already named a version in the URL means that version.
+  const versioned = /\/v\d+$/.test(base);
+  return {
+    url: versioned ? `${base}/rerank` : `${base}/v2/rerank`,
+    provider: 'cohere',
+  };
 }
 
 /**
@@ -54,7 +107,7 @@ export async function rerankDocuments(
   documents: VectorStoreDocument[],
   options: RerankOptions = {},
 ): Promise<VectorStoreDocument[]> {
-  const { topN = DEFAULT_RERANK_TOP_N, litellmApiKey, tracking } = options;
+  const { topN = DEFAULT_RERANK_TOP_N, tracking } = options;
   if (documents.length === 0) {
     return [];
   }
@@ -64,18 +117,21 @@ export async function rerankDocuments(
     return documents;
   }
 
-  const baseUrl = (
-    process.env.LITELLM_PROXY_URL || 'http://localhost:4000'
-  ).replace(/\/$/, '');
-  // Prefer the org's virtual LiteLLM key so usage is attributed to the org
-  // in LiteLLM (Team / Key Name). Fall back to master key only if missing.
+  const { url: rerankUrl, provider: rerankProvider } =
+    rerankEndpoint(cohereBaseUrl());
+  // Its own key, falling back to the proxy's while the proxy still exists.
+  // Per-org virtual keys carried LiteLLM's own budget, which Phase A moved
+  // into the database (B5) — nothing is left for a per-org key to do here, and
+  // `ai_usage` already attributes the call.
   const apiKey =
-    litellmApiKey || process.env.LITELLM_MASTER_KEY || 'sk-litellm';
+    process.env.RERANK_COHERE_API_KEY ||
+    process.env.LITELLM_MASTER_KEY ||
+    'sk-litellm';
 
   const texts = documents.map((doc) => doc.pageContent);
 
   try {
-    const response = await fetch(`${baseUrl}/rerank`, {
+    const response = await fetch(rerankUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -164,7 +220,7 @@ export async function rerankDocuments(
         userId: tracking.userId,
         projectId: tracking.projectId,
         step: AiUsageStep.RERANKING,
-        provider: 'litellm',
+        provider: rerankProvider,
         model: RERANK_MODEL,
         inputTokens: tokens,
         outputTokens: 0,

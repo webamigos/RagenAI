@@ -1,6 +1,7 @@
 export { routeFileJsonSchema } from './json-schema';
 export {
   DEFAULT_ROUTE_TABLE_PATH,
+  defaultRouteTablePath,
   ROUTE_FILE_SCHEMA,
   InvalidRouteTableError,
   findRoute,
@@ -20,6 +21,16 @@ export {
   type GatewayOptions,
 } from './resolve-model';
 export {
+  DEFAULT_GATEWAY_MODE,
+  GATEWAY_MODES,
+  InvalidGatewayModeError,
+  gatewayFromEnv,
+  gatewayModeFromEnv,
+  resetGatewayCache,
+  usingNativeGateway,
+  type GatewayMode,
+} from './gateway-mode';
+export {
   hasMultimodalContent,
   multimodalPolicyFromEnv,
   selectModelForContent,
@@ -30,11 +41,17 @@ export {
   type ReasoningEffortLevel,
   type ReasoningEffortOptions,
 } from './reasoning-effort';
+export {
+  nativeChatModel,
+  type NativeChatModelRequest,
+} from './native-chat-model';
 export { PROVIDER_FACTORIES } from './providers';
+export { EMBEDDING_PROVIDER_FACTORIES } from './embedding-providers';
 export {
   PROVIDER_IDS,
   type CredentialScope,
   type CredentialSource,
+  type EmbeddingProviderFactory,
   type ProviderCredentials,
   type ProviderFactory,
   type ProviderId,

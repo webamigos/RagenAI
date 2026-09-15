@@ -72,7 +72,8 @@ Before starting a nontrivial task, match it against this table and read the link
 | Adding or validating an environment variable | [`packages/env`](packages/env/src) and [ADR-37](docs/adrs/37-typed-env-contract-not-a-config-file.md) — compose a fragment, don't re-describe a shared var; a provider fragment is merged *with* its rule (`storageRules`, `encryptionRules`), or it validates nothing |
 | Extending Ragen without changing core — plugins | [ADR-38](docs/adrs/38-mcp-is-the-plugin-api-no-in-process-plugin-runtime.md) — MCP is the extension API; nothing loads in-process |
 | Monthly usage ceilings (cost, tokens, messages) | `assert-within-usage-limits.ts` on chat surfaces, `check-usage-ceilings.ts` on API paths. **The app enforces these, not the proxy** |
-| LiteLLM / model routing / adding a model | [`docs/litellm-proxy.md`](docs/litellm-proxy.md), `infra/litellm/config.yaml`, and [the spec retiring it](docs/specs/2026-09-14-replace-litellm-with-an-in-process-gateway.md) |
+| Model routing, adding a model, provider credentials | [ADR-49](docs/adrs/49-the-application-calls-model-providers-itself.md) — the app calls providers itself; routes are `infra/llm-gateway/routes.yaml`. `LLM_GATEWAY` picks the path while the proxy lasts |
+| Attaching Portkey/LiteLLM/vLLM, or cutting an env over | [`attaching-a-gateway.md`](docs/attaching-a-gateway.md), [the cutover runbook](docs/runbooks/llm-gateway-cutover.md) — `npm run gateway:preflight -- --probe` first |
 | OpenRouter routing, EU region, zero data retention | [`docs/model-routing.md`](docs/model-routing.md) |
 | Public API, opaque API keys | ADR [13](docs/adrs/13-opaque-api-keys.md), this file's "API" section |
 | Chatbot embed widget | [`docs/chatbot-integration-followups.md`](docs/chatbot-integration-followups.md) |

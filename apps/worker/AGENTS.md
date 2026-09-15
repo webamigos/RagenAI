@@ -79,7 +79,7 @@ Activities are the executable units within workflows. They are grouped by domain
 ### Services (`src/services/`)
 
 Core infrastructure layer:
-- **`llm/`** - Vercel AI SDK provider setup (`provider.ts`): `getChatModel()` and `getEmbeddingModel()` — all LLM calls routed through LiteLLM proxy (OpenAI-compatible API) which handles provider routing to Azure OpenAI, AWS Bedrock, and Google Vertex AI
+- **`llm/`** - Vercel AI SDK provider setup (`provider.ts`): `getChatModel()` and `getEmbeddingModel()`. Which path they take is `LLM_GATEWAY` — `litellm` (the default) routes through the proxy, `native` resolves the model through `@ragenai/llm-gateway` and calls Azure, Bedrock, Vertex or an OpenAI-compatible endpoint directly. `native-models.ts` is the binding. Two things to know: **every getter is `async`**, including the two master-key ones that used not to be, and **`generateTextWithPdf` has two genuinely different implementations** — the proxy one hand-builds a request whose PDF rides inside an `image_url`, which only ever worked because LiteLLM rewrote it into a Bedrock Converse document block; the native one passes a real `file` content part to `generateText`. See B2b in [the retirement spec](../../docs/specs/2026-09-14-replace-litellm-with-an-in-process-gateway.md).
 - **`chains/`** - LLM chains for document processing (e.g., `pdf-process-rag/` for PDF RAG pipeline, image description via vision LLM)
 - **`text-splitters/`** - Custom text splitting (RecursiveCharacterTextSplitter, MarkdownTextSplitter)
 - **`db/`** - PostgreSQL queries, all on Prisma since
@@ -143,7 +143,7 @@ OpenTelemetry instrumentation with OTLP exporters for traces, metrics, and logs.
 ## Tech Stack
 
 - **Temporal** v1.13.0 for workflow orchestration
-- **Vercel AI SDK** (`ai`, `@ai-sdk/openai`, `@ai-sdk/anthropic`) for LLM chat completions, embeddings, and Claude native PDF processing, all routed through **LiteLLM proxy** (shared with apps/web)
+- **Vercel AI SDK** (`ai`, `@ai-sdk/openai`, `@ai-sdk/anthropic`) for LLM chat completions, embeddings, and Claude native PDF processing, routed through **LiteLLM proxy** or, when `LLM_GATEWAY=native`, called directly via `packages/llm-gateway` (either way, shared with apps/web)
 - **SheetJS** (`xlsx`) for CSV/Excel file parsing
 - **Prisma** + PostgreSQL for persistence, generated from the root
   `prisma/schema.prisma` via its own `workerClient` generator
@@ -173,9 +173,11 @@ OpenTelemetry instrumentation with OTLP exporters for traces, metrics, and logs.
 
 Requires Node >= 24. Copy `.env.example` for local setup. Key env vars:
 - **Infrastructure**: `TEMPORAL_SERVER_ADDRESS`, `DATABASE_URL`, `REDIS_URL`, `QDRANT_URL`, `QDRANT_API_KEY`, `MEILISEARCH_URL` (legacy), `PUSHER_*`, `FIRECRAWL_API_KEY`
-- **LLM**: `LITELLM_PROXY_URL`, `LITELLM_MASTER_KEY` — all chat + embeddings go through the LiteLLM proxy (shared with apps/web, default `http://localhost:4000`)
+- **LLM**: `LLM_GATEWAY` (`litellm` default, or `native`) picks the path. On the proxy path, `LITELLM_PROXY_URL` and `LITELLM_MASTER_KEY` (shared with apps/web, default `http://localhost:4000`); the master key is required in deployed environments, **unless** `LLM_GATEWAY=native`, where nothing authenticates to a proxy. On the native path, the provider credentials in `infra/llm-gateway/README.md` and optionally `LLM_ROUTES_PATH`.
 - **Document parsing**: `DOCUMENT_PARSER` (`docling` default, or `legacy`), `DOCLING_URL`, `DOCLING_STRICT`. Docling parses locally, which is why it is the default — the legacy PDF loader sends the document to an external model. On a Docling failure the workflow falls back to the legacy loaders; `DOCLING_STRICT=1` makes it fail the ingest instead, which is what a confidential deployment wants, because the fallback would otherwise ship the document off-site exactly when local parsing is unavailable. SRT and EPUB always use their legacy loader; PPTX only works via Docling.
-- **PDF processing (legacy path only)**: `PDF_PROCESSOR` (`claude` default or `vision`), `PDF_MODEL` (defaults to `claude-haiku-4-5`) — uses LiteLLM Anthropic pass-through for usage tracking
+- **PDF processing (legacy path only)**: `PDF_PROCESSOR` (`claude` default or `vision`), `PDF_MODEL` (defaults to `claude-haiku-4-5`) — uses LiteLLM Anthropic pass-through for usage tracking.
+
+  > **`claude-haiku-4-5` is not served by anything.** It is commented out in `infra/litellm/config.yaml` and absent from `infra/llm-gateway/routes.yaml`, so this path fails on either value of `LLM_GATEWAY` unless a deployment sets `PDF_MODEL` to a live model. It only bites when Docling fails (or `DOCUMENT_PARSER=legacy`), which is why it has gone unnoticed. `availableModels.mini`/`.nano` in `services/chains/pdf-process-rag/config.ts` (`gpt-5.4-mini`, `gpt-5.4-nano`, used by `load-image.ts`) have the same problem. Found while doing B2b; picking replacements is a model decision, not a refactor, so it is deliberately not fixed there.
 - **Embeddings**: `EMBEDDINGS_MODEL` (default `bge-multilingual-gemma2`, 3584-dim) — must match apps/web's value and `VECTOR_SIZE`
 - **Summaries (ADR-16)**: `SUMMARY_MODEL` (default `gemini-2.5-flash` — faster than gpt-5.4-nano for the short-output summary task in practice, and strong Polish support; **do not upgrade to a larger model without explicit approval**, summaries run per-document and cost matters). `FEATURE_FLAG_DOC_SUMMARIES` (default on; set to `0` or `false` to disable summary generation entirely)
 - **Observability**: `OTEL_EXPORTER_OTLP_ENDPOINT`. Langfuse tracing is handled by the LiteLLM proxy — set `LANGFUSE_*` env vars on the LiteLLM container, not the worker

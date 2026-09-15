@@ -27,7 +27,7 @@ import { type ThreadDocumentUI } from '../types/thread-document.js';
 import { type BaseChatChainOutput } from '../types/common.js';
 
 type InitializeRagChainParams = {
-  settings: OrganizationSettings & { litellmApiKey?: string };
+  settings: OrganizationSettings;
   orgId: string;
   userId?: string | null;
   userTeamIds?: string[];
@@ -101,7 +101,6 @@ export class InitializeBasicRagService {
         temperature: answerTemperature,
         prompt: answerInstructions,
         maxDocumentsToRetrieve,
-        litellmApiKey,
       } = settings;
 
       const embeddingModel = createEmbeddingsInstance(
@@ -109,7 +108,6 @@ export class InitializeBasicRagService {
           organizationId: orgId,
           userId: userId ?? undefined,
           projectId: projectId ?? undefined,
-          litellmApiKey,
         },
         trackAiUsage,
       );
@@ -119,13 +117,11 @@ export class InitializeBasicRagService {
         apiKey,
         model: DEFAULT_REPHRASE_MODEL,
         temperature: DEFAULT_REPHRASE_TEMPERATURE,
-        litellmApiKey,
       });
       const answerGenerator = createChatCompletionInstance({
         apiKey,
         model: answerModel,
         temperature: answerTemperature,
-        litellmApiKey,
         reasoningEffort,
       });
 
@@ -156,7 +152,6 @@ export class InitializeBasicRagService {
           metadataFilter,
           maxDocumentsToRetrieve,
           maxTokens,
-          litellmApiKey,
           answerInstructions: answerInstructions || '',
           projectInstruction: projectInstruction || '',
           threadDocuments: threadDocuments || [],
@@ -190,7 +185,6 @@ export class InitializeBasicRagService {
    * search-only caller has no other reason to create one itself.
    */
   async buildRetrievalContext({
-    settings,
     orgId,
     userId,
     userTeamIds = [],
@@ -199,7 +193,6 @@ export class InitializeBasicRagService {
     metadataFilter,
     trackAiUsage,
   }: {
-    settings: OrganizationSettings & { litellmApiKey?: string };
     orgId: string;
     userId?: string | null;
     userTeamIds?: string[];
@@ -213,7 +206,6 @@ export class InitializeBasicRagService {
         organizationId: orgId,
         userId: userId ?? undefined,
         projectId: projectId ?? undefined,
-        litellmApiKey: settings.litellmApiKey,
       },
       trackAiUsage,
     );

@@ -54,29 +54,6 @@ describe('getUserFile', () => {
   });
 });
 
-describe('getOrgLiteLLMKeyEncrypted', () => {
-  it('reads only that column, for that org', async () => {
-    mockOrgSettingsFindUnique.mockResolvedValue({ litellmApiKey: 'enc-key' });
-
-    await expect(db.getOrgLiteLLMKeyEncrypted('org-1')).resolves.toBe(
-      'enc-key',
-    );
-    expect(mockOrgSettingsFindUnique).toHaveBeenCalledWith({
-      where: { organizationId: 'org-1' },
-      select: { litellmApiKey: true },
-    });
-  });
-
-  it.each([
-    ['no row', null],
-    ['a null column', { litellmApiKey: null }],
-  ])('returns null for %s', async (_label, row) => {
-    mockOrgSettingsFindUnique.mockResolvedValue(row);
-
-    await expect(db.getOrgLiteLLMKeyEncrypted('org-1')).resolves.toBeNull();
-  });
-});
-
 describe('getOptimizationJobSuggestions', () => {
   const call = () =>
     db.getOptimizationJobSuggestions({ documentId: 'doc-1', orgId: 'org-1' });

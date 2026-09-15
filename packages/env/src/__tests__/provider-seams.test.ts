@@ -9,6 +9,7 @@ import {
   MAIL_SEAM,
   RERANK_SEAM,
   PROVIDER_SEAMS,
+  SPEECH_SEAM,
   STORAGE_SEAM,
   type ProviderSeam,
   type RequiredVarsOf,
@@ -30,6 +31,7 @@ const FRAGMENT_FOR_SEAM: readonly {
   { seam: ENCRYPTION_SEAM, fragment: fragments.encryption, name: 'encryption' },
   { seam: RERANK_SEAM, fragment: fragments.reranker, name: 'reranker' },
   { seam: MAIL_SEAM, fragment: fragments.mail, name: 'mail' },
+  { seam: SPEECH_SEAM, fragment: fragments.speech, name: 'speech' },
 ];
 
 const varsNamedBy = (seam: ProviderSeam): string[] => [

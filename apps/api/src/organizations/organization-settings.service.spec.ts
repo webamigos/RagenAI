@@ -114,18 +114,6 @@ describe('OrganizationSettingsService', () => {
     });
   });
 
-  describe('getLiteLLMOrgApiKey', () => {
-    it('returns null when no key stored', async () => {
-      const { service } = makeService({ litellmApiKey: null });
-      expect(await service.getLiteLLMOrgApiKey('org-1')).toBeNull();
-    });
-
-    it('returns null when no settings row exists', async () => {
-      const { service } = makeService(null);
-      expect(await service.getLiteLLMOrgApiKey('org-1')).toBeNull();
-    });
-  });
-
   describe('getAllSettings', () => {
     it('returns hardcoded defaults when no settings row exists', async () => {
       const { service } = makeService(null);

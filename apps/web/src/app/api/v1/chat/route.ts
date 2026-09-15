@@ -18,10 +18,11 @@ import {
   verifyInternalSecret,
 } from '@/app/api/v1/utils';
 import { checkApiRequestLimit } from '@/app/api/v1/check-api-limit';
+import { refuseIfOverTeamRateLimit } from '@/app/api/v1/check-team-rate-limit';
 import { refuseIfOverUsageCeiling } from '@/app/api/v1/check-usage-ceilings';
 import { loadMcpToolsForApiRequest } from '@/app/api/v1/load-mcp-tools';
 import { createApiThread } from '@/app/api/v1/persist-api-thread';
-import { resolveLiteLLMKeyForRequest } from '@/app/api/v1/resolve-litellm-key';
+import { resolveUsageTeamQuery } from '@/features/teams/services/queries/resolve-usage-team-query';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -110,20 +111,28 @@ export async function POST(request: NextRequest) {
       return overCeiling;
     }
 
-    const [rawSettings, keyResolution] = await Promise.all([
+    const [rawSettings, usageTeamId] = await Promise.all([
       getAllSettings(organizationId),
-      resolveLiteLLMKeyForRequest({
+      // Attribution *and* the per-minute limit below. The `x-ragen-team-id`
+      // header is caller-supplied, so membership is still checked — see
+      // `resolveUsageTeamQuery`.
+      resolveUsageTeamQuery({
         orgId: organizationId,
         userId: context.userId,
-        teamId: context.teamId,
-        routeTag: 'v1.chat',
+        activeTeamId: context.teamId,
       }),
     ]);
+
+    // Before any retrieval or model turn: a limit charged after the work is
+    // done is an accounting entry, not a limit.
+    const overTeamLimit = await refuseIfOverTeamRateLimit(usageTeamId);
+    if (overTeamLimit) {
+      return overTeamLimit;
+    }
 
     const settings = {
       ...rawSettings,
       apiKey: rawSettings.apiKey ?? '',
-      litellmApiKey: keyResolution.apiKey,
     };
 
     const { mcpTools, mcpContext, closeMcpClients } =
@@ -188,7 +197,7 @@ export async function POST(request: NextRequest) {
           // spend lands in the organization total and is missing from the
           // team's, which is the number an administrator checks a budget
           // against.
-          teamId: keyResolution.teamId,
+          teamId: usageTeamId,
           projectId: resolvedProjectId,
           threadId,
           userId: context.userId,

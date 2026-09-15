@@ -1553,7 +1553,8 @@
     "api-key-error": "API-nøglekonfigurationen mangler - tjek dine indstillinger",
     "unknown-error": "Der opstod en uventet fejl under behandlingen af din anmodning - prøv igen",
     "llm-api-error": "Anmodningen til sprogmodellens API mislykkedes",
-    "usage-limit-exceeded": "Din organisation har nået sin månedlige forbrugsgrænse - den nulstilles i begyndelsen af næste måned. Bed en organisationsadministrator om at hæve den."
+    "usage-limit-exceeded": "Din organisation har nået sin månedlige forbrugsgrænse - den nulstilles i begyndelsen af næste måned. Bed en organisationsadministrator om at hæve den.",
+    "rate-limit-exceeded": "Dit team sender anmodninger hurtigere, end grænsen pr. minut tillader - vent et øjeblik, og prøv igen."
   },
   "onboarding": {
     "first-step": "Lad os starte med en hurtig guide, der hjælper dig med at bruge vores applikation effektivt. Den introducerer dig til de vigtigste funktioner, som gør dit arbejde lettere. Lad os komme i gang!",

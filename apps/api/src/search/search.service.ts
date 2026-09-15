@@ -12,7 +12,6 @@ import { type SearchDto } from './dto/search.dto.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { ApiLimitsService } from '../api-limits/api-limits.service.js';
 import { OrganizationSettingsService } from '../organizations/organization-settings.service.js';
-import { ResolveLiteLLMKeyService } from '../teams/resolve-litellm-key.service.js';
 import { InitializeBasicRagService } from '../chains/basic-rag/initialize-basic-rag.service.js';
 import { retrieveRelevantDocumentsWithIds } from '../chains/basic-rag/operations.js';
 import { AiUsageService } from '../ai-usage/ai-usage.service.js';
@@ -44,7 +43,6 @@ export class SearchService {
     private readonly prisma: PrismaService,
     private readonly apiLimits: ApiLimitsService,
     private readonly organizationSettings: OrganizationSettingsService,
-    private readonly resolveLiteLLMKey: ResolveLiteLLMKeyService,
     private readonly initializeBasicRag: InitializeBasicRagService,
     private readonly aiUsage: AiUsageService,
     private readonly folders: FoldersService,
@@ -90,26 +88,19 @@ export class SearchService {
       );
     }
 
-    const [rawSettings, ragPipelineSettings, keyResolution, membership] =
-      await Promise.all([
-        this.organizationSettings.getAllSettings(context.orgId),
-        this.organizationSettings.getRagPipelineSettings(context.orgId),
-        this.resolveLiteLLMKey.resolveForRequest({
-          orgId: context.orgId,
-          userId: context.userId,
-          routeTag: 'v1.search',
-        }),
-        // Without this, buildRetrievalContext defaults to scope 'member' and
-        // no team ids — buildMetadataFilter then omits `team:<id>` from
-        // accessible_by, so documents shared with the caller's team (rather
-        // than directly or org-wide) are silently missing from results.
-        this.folders.getMembershipContext(context.orgId, context.userId),
-      ]);
+    const [rawSettings, ragPipelineSettings, membership] = await Promise.all([
+      this.organizationSettings.getAllSettings(context.orgId),
+      this.organizationSettings.getRagPipelineSettings(context.orgId),
+      // Without this, buildRetrievalContext defaults to scope 'member' and
+      // no team ids — buildMetadataFilter then omits `team:<id>` from
+      // accessible_by, so documents shared with the caller's team (rather
+      // than directly or org-wide) are silently missing from results.
+      this.folders.getMembershipContext(context.orgId, context.userId),
+    ]);
 
     const settings = {
       ...rawSettings,
       apiKey: rawSettings.apiKey ?? '',
-      litellmApiKey: keyResolution.apiKey,
     };
 
     const trackAiUsage = (input: Parameters<AiUsageService['track']>[0]) =>
@@ -117,7 +108,6 @@ export class SearchService {
 
     const { vectorStore, metadataFilter } =
       await this.initializeBasicRag.buildRetrievalContext({
-        settings,
         orgId: context.orgId,
         userId: context.userId,
         projectId: resolvedProjectId,
@@ -134,7 +124,6 @@ export class SearchService {
         dto.query,
         maxResults,
         metadataFilter,
-        settings.litellmApiKey,
         ragPipelineSettings.rerankingEnabled,
         {
           organizationId: context.orgId,

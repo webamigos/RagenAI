@@ -20,6 +20,7 @@ export const PROVIDER_FACTORIES: Record<
     createAzure({
       apiKey: credentials.apiKey,
       baseURL: credentials.baseUrl,
+      ...(credentials.apiVersion ? { apiVersion: credentials.apiVersion } : {}),
     })(route.model),
 
   bedrock: (route, credentials) =>
@@ -34,9 +35,17 @@ export const PROVIDER_FACTORIES: Record<
   vertex: (route, credentials) =>
     createVertex({
       project: credentials.project,
-      location: credentials.location,
-      // Same reasoning as Bedrock: application default credentials, which is
-      // what VERTEX_CREDENTIALS already points at.
+      // The route wins: a regional default cannot serve a model that only
+      // exists on another endpoint. See `Route.location`.
+      location: route.location ?? credentials.location,
+      // `VERTEX_CREDENTIALS` holds the service account itself, which is the
+      // proxy's convention; Google's libraries would otherwise look for a file
+      // path in `GOOGLE_APPLICATION_CREDENTIALS` and find nothing. Omitted when
+      // unset, so application default credentials — a Cloud Run or GCE service
+      // identity — still work with no variable at all.
+      ...(credentials.serviceAccount
+        ? { googleAuthOptions: { credentials: credentials.serviceAccount } }
+        : {}),
     })(route.model),
 
   openai: (route, credentials) =>
@@ -55,5 +64,8 @@ export const PROVIDER_FACTORIES: Record<
       name: route.connection ?? 'openai-compatible',
       baseURL: credentials.baseUrl!,
       apiKey: credentials.apiKey,
+      // Applied after the bearer token, so a connection can add routing or
+      // attribution headers without displacing its own authentication.
+      headers: credentials.headers,
     })(route.model),
 };

@@ -24,6 +24,37 @@ describe('isMasterKeyRequired', () => {
     },
   );
 
+  /**
+   * Phase B's third hatch. Without it, a deployed worker running the gateway
+   * refuses to boot over a credential nothing on that path authenticates with
+   * — and the obvious workaround is to set a dummy master key, which is how a
+   * boot check stops being believed.
+   */
+  it('excuses a missing key when the gateway is native', () => {
+    expect(
+      isMasterKeyRequired(
+        env({ LLM_GATEWAY: 'native', TARGET_ENV: 'production' }),
+      ),
+    ).toBe(false);
+  });
+
+  it('still requires the key when the gateway is the proxy', () => {
+    expect(
+      isMasterKeyRequired(
+        env({ LLM_GATEWAY: 'litellm', TARGET_ENV: 'production' }),
+      ),
+    ).toBe(true);
+  });
+
+  /** A typo must not read as "native" and quietly drop the requirement. */
+  it('refuses an unrecognised gateway value rather than excusing the key', () => {
+    expect(() =>
+      isMasterKeyRequired(
+        env({ LLM_GATEWAY: 'nativ', TARGET_ENV: 'production' }),
+      ),
+    ).toThrow(/LLM_GATEWAY/);
+  });
+
   it.each(['local', 'test', 'e2e', 'ci'])(
     'excuses a missing key when TARGET_ENV is %s',
     (targetEnv) => {

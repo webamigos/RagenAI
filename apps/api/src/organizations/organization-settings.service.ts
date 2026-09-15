@@ -21,7 +21,7 @@ import {
  * connectors, templates, LiteLLM team provisioning, PII DEK management,
  * ...). This carries the read-only closure this and the MCP-tool-loading
  * slice actually need: getUsageLimits, getRagPipelineSettings,
- * getAllSettings, getLiteLLMOrgApiKey, getAllowedConnectors,
+ * getAllSettings, getAllowedConnectors,
  * getDefaultAllowedConnectors, getStorageLimits, and the private
  * getSettings() / getApiKeyFromPool() / resolveOrgModel() helpers they
  * depend on. See docs/adrs/21-monorepo-and-api-decoupling.md.
@@ -146,14 +146,6 @@ export class OrganizationSettingsService {
         settings?.rerankingEnabled ??
         defaultRagPipelineSettings.rerankingEnabled,
     };
-  }
-
-  async getLiteLLMOrgApiKey(orgId: string): Promise<string | null> {
-    const settings = await this.getSettings(orgId);
-    if (!settings?.litellmApiKey) {
-      return null;
-    }
-    return decryptApiKey(settings.litellmApiKey);
   }
 
   async getAllowedConnectors(orgId: string): Promise<string[]> {

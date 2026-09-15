@@ -21,7 +21,6 @@ describe('ChatService', () => {
     checkUsageCeilings: Mock;
   };
   let organizationSettings: { getAllSettings: Mock };
-  let resolveLiteLLMKey: { resolveForRequest: Mock };
   let loadMcpTools: { loadMcpToolsForApiRequest: Mock };
   let initializeBasicRag: { initializeRagChain: Mock };
   let persistApiThread: { createApiThread: Mock };
@@ -111,7 +110,6 @@ describe('ChatService', () => {
       },
     });
     organizationSettings = { getAllSettings: vi.fn() };
-    resolveLiteLLMKey = { resolveForRequest: vi.fn() };
     loadMcpTools = { loadMcpToolsForApiRequest: vi.fn() };
     initializeBasicRag = { initializeRagChain: vi.fn() };
     persistApiThread = { createApiThread: vi.fn() };
@@ -132,11 +130,6 @@ describe('ChatService', () => {
       prompt: '',
       maxDocumentsToRetrieve: 4,
     });
-    resolveLiteLLMKey.resolveForRequest.mockResolvedValue({
-      apiKey: 'sk-litellm',
-      teamId: null,
-      source: 'org',
-    });
     loadMcpTools.loadMcpToolsForApiRequest.mockResolvedValue({
       mcpTools: undefined,
       mcpContext: undefined,
@@ -148,7 +141,6 @@ describe('ChatService', () => {
       prisma as any,
       apiLimits as any,
       organizationSettings as any,
-      resolveLiteLLMKey as any,
       loadMcpTools as any,
       initializeBasicRag as any,
       persistApiThread as any,
@@ -275,7 +267,10 @@ describe('ChatService', () => {
         inputTokens: 10,
         outputTokens: 5,
         totalTokens: 15,
-        metadata: { source: 'API' },
+        // `servedBy` is the provider that actually served the turn. It is
+        // here and not in `provider` because that column is the pricing key —
+        // see `servingProvider`. Under the proxy path both read `litellm`.
+        metadata: { source: 'API', servedBy: 'litellm' },
       }),
     );
     expect(closeMcpClients).toHaveBeenCalledTimes(1);

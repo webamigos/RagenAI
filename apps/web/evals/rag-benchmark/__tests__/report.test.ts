@@ -192,6 +192,7 @@ describe('renderMarkdown', () => {
       rerankingEnabled: 'on',
       multiQueryVariants: '1',
       appUrl: 'http://localhost:3000',
+      llmGateway: 'litellm',
     },
     results: [
       result({ questionId: 'pl-1', lang: 'pl', docLang: 'pl' }),

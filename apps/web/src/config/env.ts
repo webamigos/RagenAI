@@ -5,6 +5,7 @@ import {
   parseEnv,
   TOKEN_VAULT_GROUP,
   requiredInDeployedEnvs,
+  speechRules,
   storageRules,
 } from '@ragenai/env';
 import { z } from 'zod';
@@ -62,6 +63,7 @@ export const webEnvSchema = fragments.targetEnv
   .merge(fragments.storage)
   .merge(fragments.tokenVault)
   .merge(fragments.encryption)
+  .merge(fragments.speech)
   .extend({
     /**
      * Optional here and required on a deployment by the refinement below.
@@ -154,6 +156,7 @@ export const webEnvSchema = fragments.targetEnv
     // refused to boot the worker.
     storageRules(env, ctx);
     encryptionRules(env, ctx);
+    speechRules(env, ctx);
 
     // Both pairs, from the table that also describes them to the written
     // config — so the two cannot disagree about half-configured (ADR-32).

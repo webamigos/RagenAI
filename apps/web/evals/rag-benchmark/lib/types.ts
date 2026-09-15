@@ -112,6 +112,12 @@ export interface StackFingerprint {
   rerankingEnabled: string;
   multiQueryVariants: string;
   appUrl: string;
+  /**
+   * Which path the **app** served this run through — `litellm` or `native`,
+   * asked of the app rather than read here. Without it the two arms of the
+   * Phase B comparison produce indistinguishable reports.
+   */
+  llmGateway: string;
 }
 
 export interface Report {

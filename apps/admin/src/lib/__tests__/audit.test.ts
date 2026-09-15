@@ -184,13 +184,13 @@ describe('redaction', () => {
       admin: ADMIN,
       action: ADMIN_ACTIONS.defaultModelsChanged,
       entityType: 'settings',
-      after: { litellmApiKey: 'sk-litellm-secret' },
+      after: { openaiApiKey: 'sk-openai-secret' },
       securityEvent: { eventType: 'ADMIN_SETTINGS_CHANGED' },
     });
 
     const { metadata } = securityEventCreate.mock.calls[0][0].data;
-    expect(metadata.after).toEqual({ litellmApiKey: '[REDACTED]' });
-    expect(JSON.stringify(metadata)).not.toContain('sk-litellm-secret');
+    expect(metadata.after).toEqual({ openaiApiKey: '[REDACTED]' });
+    expect(JSON.stringify(metadata)).not.toContain('sk-openai-secret');
   });
 });
 

@@ -7,12 +7,12 @@ import { type ChatDto } from './dto/chat.dto.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { ApiLimitsService } from '../api-limits/api-limits.service.js';
 import { OrganizationSettingsService } from '../organizations/organization-settings.service.js';
-import { ResolveLiteLLMKeyService } from '../teams/resolve-litellm-key.service.js';
 import { LoadMcpToolsService } from '../mcp/load-mcp-tools.service.js';
 import { InitializeBasicRagService } from '../chains/basic-rag/initialize-basic-rag.service.js';
 import { PersistApiThreadService } from '../threads/persist-api-thread.service.js';
 import { AiUsageService } from '../ai-usage/ai-usage.service.js';
 import { supportsReasoningEffort } from '../llm/model-registry.js';
+import { servingProvider } from '../llm/native-models.js';
 
 /**
  * Direct implementation of `POST /v1/chat` — replaces the previous
@@ -33,7 +33,6 @@ export class ChatService {
     private readonly prisma: PrismaService,
     private readonly apiLimits: ApiLimitsService,
     private readonly organizationSettings: OrganizationSettingsService,
-    private readonly resolveLiteLLMKey: ResolveLiteLLMKeyService,
     private readonly loadMcpTools: LoadMcpToolsService,
     private readonly initializeBasicRag: InitializeBasicRagService,
     private readonly persistApiThread: PersistApiThreadService,
@@ -81,19 +80,13 @@ export class ChatService {
       return;
     }
 
-    const [rawSettings, keyResolution] = await Promise.all([
-      this.organizationSettings.getAllSettings(context.orgId),
-      this.resolveLiteLLMKey.resolveForRequest({
-        orgId: context.orgId,
-        userId: context.userId,
-        routeTag: 'v1.chat',
-      }),
-    ]);
+    const rawSettings = await this.organizationSettings.getAllSettings(
+      context.orgId,
+    );
 
     const settings = {
       ...rawSettings,
       apiKey: rawSettings.apiKey ?? '',
-      litellmApiKey: keyResolution.apiKey,
     };
 
     const { mcpTools, mcpContext, closeMcpClients } =
@@ -161,14 +154,18 @@ export class ChatService {
           threadId,
           userId: context.userId,
           step: 'CHAT_COMPLETION',
-          // Every model routes through LiteLLM in this deployment — see
-          // apps/web's getModelProvider(), which always returns this too.
+          // The pricing namespace, not the vendor — see `servingProvider`,
+          // which records who actually served the turn in metadata. Changing
+          // this column zeroes every cost.
           provider: 'litellm',
           model: modelId,
           inputTokens: usage.inputTokens ?? 0,
           outputTokens: usage.outputTokens ?? 0,
           totalTokens: usage.totalTokens ?? 0,
-          metadata: { source: 'API' },
+          metadata: {
+            source: 'API',
+            servedBy: servingProvider(modelId) ?? 'litellm',
+          },
         });
       };
 

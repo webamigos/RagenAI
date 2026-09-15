@@ -151,10 +151,30 @@ export const database = z.object({
  * The LLM gateway every model call goes through (ADR-04). No app talks to a
  * model provider directly, so an unset proxy URL is not a degraded mode — it
  * is no LLM at all.
+ *
+ * `LLM_GATEWAY` is the Phase B seam: `native` routes through
+ * `@ragenai/llm-gateway` straight to the provider, `litellm` (the default)
+ * keeps the proxy. It is declared here rather than left as a loose string so a
+ * typo is a boot failure, not a run that silently measured the wrong arm.
+ *
+ * `LITELLM_PROXY_URL` stays required under both values for now, deliberately:
+ * the two arms are compared on one machine with the proxy up, and relaxing it
+ * belongs with B4's flip of the default rather than with the seam that makes
+ * the comparison possible.
  */
 export const litellm = z.object({
   LITELLM_PROXY_URL: httpUrl(),
   LITELLM_MASTER_KEY: z.string().optional(),
+  // The values are `@ragenai/llm-gateway`'s `GATEWAY_MODES`, restated rather
+  // than imported: this package is merged by every app at boot, and importing
+  // the gateway would drag five AI SDK provider packages into processes that
+  // never make a model call. `tests/architecture/gateway-modes-agree.test.ts`
+  // fails if the two lists drift.
+  LLM_GATEWAY: blankAsUndefined(
+    z.enum(['litellm', 'native']).default('litellm'),
+  ),
+  /** Points at a route table other than the shipped one. See Q6. */
+  LLM_ROUTES_PATH: z.string().optional(),
 });
 
 export const qdrant = z.object({
@@ -241,6 +261,43 @@ export const reranker = z.object({
   RERANK_MODEL: blankAsUndefined(z.string().optional()),
   SCW_API_BASE: blankAsUndefined(httpUrl().optional()),
   SCW_API_KEY: z.string().optional(),
+  /**
+   * The `cohere` variant's own endpoint. Optional because it falls back to
+   * `LITELLM_PROXY_URL` while that still exists — which is exactly why it had
+   * to be added before the proxy goes: an unreachable reranker degrades to "no
+   * reranking" rather than erroring, so the loss would have been silent.
+   */
+  RERANK_COHERE_BASE_URL: blankAsUndefined(httpUrl().optional()),
+  RERANK_COHERE_API_KEY: z.string().optional(),
+});
+
+/**
+ * Text-to-speech and speech-to-text.
+ *
+ * `SPEECH_PROVIDER` is optional, and unset means **off** rather than
+ * "detect something": `getTtsProvider()` returns `null` unless
+ * `ELEVENLABS_API_KEY` is set or the variable names a provider. Speech costs
+ * money per request and is not part of the core product loop, so turning it on
+ * because a key happened to be present is the wrong default — mail can detect,
+ * this should not.
+ *
+ * `SPEECH_BASE_URL` is what separates this from an OpenAI-only integration. The
+ * `openai` variant speaks OpenAI's `/v1/audio/*` API, which vLLM, a LiteLLM
+ * proxy and several hosted providers also speak; pointing the base URL
+ * elsewhere is the supported way to use one (Q6). It used to read
+ * `LITELLM_PROXY_URL`, which was worse than useless — the shipped proxy config
+ * registers no audio route at all, so every deployment that set the proxy URL
+ * and chose `openai` got a 404 per request.
+ */
+export const speech = z.object({
+  SPEECH_PROVIDER: blankAsUndefined(
+    z.enum(['elevenlabs', 'openai']).optional(),
+  ),
+  SPEECH_BASE_URL: blankAsUndefined(httpUrl().optional()),
+  SPEECH_API_KEY: z.string().optional(),
+  TTS_MODEL: blankAsUndefined(z.string().optional()),
+  STT_MODEL: blankAsUndefined(z.string().optional()),
+  ELEVENLABS_API_KEY: z.string().optional(),
 });
 
 /**

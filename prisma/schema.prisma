@@ -384,7 +384,6 @@ model OrganizationSettings {
   rerankingEnabled         Boolean? @map("reranking_enabled")
   piiIngestionMode         String?  @default("destructive") @map("pii_ingestion_mode")
   encryptedPiiDek          String?  @map("encrypted_pii_dek")
-  litellmApiKey            String?  @map("litellm_api_key")
   featureOverrides         Json?    @map("feature_overrides")
   createdAt                DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt                DateTime @updatedAt @map("updated_at") @db.Timestamptz
@@ -690,8 +689,6 @@ model Team {
   id                 String   @id
   name               String
   organizationId     String   @map("organization_id")
-  litellmTeamId      String?  @map("litellm_team_id")
-  litellmKeyToken    String?  @map("litellm_key_token")
   budgetUsdCents     Int      @default(1000) @map("budget_usd_cents")
   budgetDuration     String   @default("30d") @map("budget_duration")
   rpmLimit           Int?     @map("rpm_limit")

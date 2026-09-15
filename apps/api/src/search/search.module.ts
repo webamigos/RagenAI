@@ -5,7 +5,7 @@ import { RagEngineModule } from '../rag-engine/rag-engine.module.js';
 
 /**
  * `RagEngineModule` already re-exports everything this needs — ChainsModule
- * (InitializeBasicRagService), OrganizationsModule, TeamsModule
+ * (InitializeBasicRagService), OrganizationsModule
  * (ResolveLiteLLMKeyService), ApiLimitsModule, AiUsageModule — the same
  * pattern `ChatModule` uses. `PrismaService` needs no import: `PrismaModule`
  * is global.

@@ -4,7 +4,6 @@ import { requireAdmin } from '@/lib/auth-guard';
 import { ADMIN_ACTIONS, recordAdminAction } from '@/lib/audit';
 
 import { prisma } from '@/lib/db';
-import { syncOrgMemberToLiteLLM } from '@/lib/litellm';
 import { randomUUID } from 'node:crypto';
 import { revalidatePath } from 'next/cache';
 import {
@@ -94,10 +93,13 @@ export async function changeOrgSlugAction(orgId: string, slug: string) {
  * `MEMBER_NOT_FOUND` from all of them.
  *
  * Loading the plugin here would also be wrong for a second reason: it registers
- * `organizationHooks`, and apps/web hangs the LiteLLM provisioning off those.
- * The panel has none of that machinery, so mutations made through the plugin
- * here would change membership without provisioning anything. Hence the
- * explicit `syncOrgMemberToLiteLLM` calls below.
+ * `organizationHooks`, which apps/web uses for its own audit trail. The panel
+ * has none of that machinery and records its own admin actions instead.
+ *
+ * It used to hang a `syncOrgMemberToLiteLLM` call off these mutations, to keep
+ * the proxy's team membership in step with the database. B5 removed the virtual
+ * keys that membership existed to authorise, so there is nothing to keep in
+ * step any more.
  */
 
 /**
@@ -215,12 +217,6 @@ export async function addOrgMemberAction(
     return orgTeams;
   });
 
-  const sync = await syncOrgMemberToLiteLLM(
-    orgId,
-    { userId: user.id, userEmail: user.email },
-    'add',
-  );
-
   await recordAdminAction({
     admin,
     action: ADMIN_ACTIONS.memberAdded,
@@ -231,13 +227,12 @@ export async function addOrgMemberAction(
       email: user.email,
       role: orgRole,
       teamsJoined: teams.length,
-      litellmSync: sync,
     },
     securityEvent: { eventType: 'ADMIN_SETTINGS_CHANGED', severity: 'warn' },
   });
 
   revalidatePath(`/organizations/${orgId}`);
-  return sync;
+  return { ok: true as const };
 }
 
 export async function removeOrgMemberAction(orgId: string, userId: string) {
@@ -265,12 +260,6 @@ export async function removeOrgMemberAction(orgId: string, userId: string) {
     return count;
   });
 
-  const sync = await syncOrgMemberToLiteLLM(
-    orgId,
-    { userId, userEmail: member.user.email },
-    'remove',
-  );
-
   await recordAdminAction({
     admin,
     action: ADMIN_ACTIONS.memberRemoved,
@@ -278,12 +267,12 @@ export async function removeOrgMemberAction(orgId: string, userId: string) {
     entityId: userId,
     organizationId: orgId,
     before: { email: member.user.email, role: member.role },
-    after: { teamsLeft, litellmSync: sync },
+    after: { teamsLeft },
     securityEvent: { eventType: 'ADMIN_SETTINGS_CHANGED', severity: 'warn' },
   });
 
   revalidatePath(`/organizations/${orgId}`);
-  return sync;
+  return { ok: true as const };
 }
 
 export async function changeOrgMemberRoleAction(

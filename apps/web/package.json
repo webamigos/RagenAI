@@ -42,6 +42,7 @@
     "@ragenai/db": "*",
     "@ragenai/env": "*",
     "@ragenai/litellm-client": "*",
+    "@ragenai/llm-gateway": "*",
     "@ragenai/observability": "*",
     "@ragenai/platform-contracts": "*",
     "@ragenai/rag-core": "*",

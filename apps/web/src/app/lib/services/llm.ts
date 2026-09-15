@@ -7,8 +7,13 @@ import type { ChatCompletionOptions } from '@/libs/llm/types/chat-completion';
 import type { LiteLLMCredentials } from '@/libs/llm/types/credentials';
 import { isReasoningModel, normalizeModelId } from '../../components/config';
 import { logger } from '../utils/logger';
-import { getLiteLLMOrgApiKey } from '@/features/organizations/services/organization-settings';
 import { resolveEmbeddingsModel } from '@ragenai/rag-core';
+import {
+  nativeChatInstance,
+  nativeEmbeddingInstance,
+  usingNativeGateway,
+} from '@/libs/llm/native-models';
+import { TrackedEmbeddingsProvider } from '@/libs/llm/embeddings-factory';
 
 export const modelsSchema = z.object({
   provider: z.literal('litellm'),
@@ -84,6 +89,15 @@ export const createChatCompletionInstance = (
 
   const reasoning = selectedModel ? isReasoningModel(selectedModel) : false;
 
+  if (usingNativeGateway()) {
+    return nativeChatInstance({
+      model: selectedModel,
+      reasoningEffort: options.reasoningEffort,
+      // Normalized above: undefined for models that reject the parameter.
+      temperature,
+    });
+  }
+
   const credentials: LiteLLMCredentials = options.litellmApiKey
     ? { ...litellmCredentials(), apiKey: options.litellmApiKey }
     : litellmCredentials();
@@ -103,11 +117,21 @@ export const createChatCompletionInstanceWithOrg = async (
   orgId: string,
   streaming: boolean = true,
 ): Promise<LanguageModelV4> => {
-  const orgKey = await getLiteLLMOrgApiKey(orgId);
+  if (usingNativeGateway()) {
+    const rawModelId =
+      options.model || options.modelName || defaultModel() || undefined;
+    return nativeChatInstance({
+      model: rawModelId ? normalizeModelId(rawModelId) : undefined,
+      reasoningEffort: options.reasoningEffort,
+      organizationId: orgId,
+    });
+  }
 
-  const credentials: LiteLLMCredentials = orgKey
-    ? { ...litellmCredentials(), apiKey: orgKey }
-    : litellmCredentials();
+  // The master key. Per-org virtual keys carried LiteLLM's own budget, which
+  // the application has enforced since Phase A and B5 removed — so the org is
+  // now only a credential *scope*, which the gateway path above threads and
+  // the proxy path has no use for.
+  const credentials: LiteLLMCredentials = litellmCredentials();
 
   const rawModel =
     options.model || options.modelName || defaultModel() || undefined;
@@ -147,6 +171,22 @@ export const createEmbeddingsInstance = ({
   projectId?: string;
   litellmApiKey?: string;
 } = {}) => {
+  const embeddingsModel = resolveEmbeddingsModel();
+
+  if (usingNativeGateway()) {
+    // The provider string lands on every `ai_usage` row, so the two arms of
+    // the Phase B measurement are distinguishable after the fact rather than
+    // only by which run they came from.
+    return new TrackedEmbeddingsProvider(
+      nativeEmbeddingInstance(embeddingsModel, organizationId),
+      embeddingsModel,
+      'llm-gateway',
+      organizationId,
+      userId,
+      projectId,
+    );
+  }
+
   const credentials: LiteLLMCredentials = litellmApiKey
     ? { ...litellmCredentials(), apiKey: litellmApiKey }
     : litellmCredentials();
@@ -154,7 +194,7 @@ export const createEmbeddingsInstance = ({
   return EmbeddingsFactory.createInstance(
     credentials,
     {
-      model: resolveEmbeddingsModel(),
+      model: embeddingsModel,
     },
     organizationId,
     userId,
