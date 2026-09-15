@@ -10,7 +10,6 @@ const sidebars: SidebarsConfig = {
     'concepts',
     'admin-panel',
     'oauth-sign-in',
-    'configuration-reference',
     'roadmap',
     {
       type: 'category',
