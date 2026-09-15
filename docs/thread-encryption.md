@@ -30,6 +30,14 @@ Adding a KMS is one file in `packages/crypto/src/key-provider/`.
 
 With none of them set, encryption stays off and local development is plaintext.
 
+`kms` needs exactly two actions on the key — `kms:GenerateDataKey` and
+`kms:Decrypt` — which is the `KmsEnvelopeEncryption` statement in
+[`aws-iam-policy.json`](aws-iam-policy.json). Both, not one: a principal
+allowed to wrap but not unwrap writes messages nobody can ever read back, and
+that failure surfaces on the first *read* rather than at configuration time.
+`KmsKeyProvider` names the key on decrypt as well as on generate, so a policy
+scoped to a single key id is the boundary it appears to be.
+
 ## Production requires a key provider
 
 Local dev being plaintext used to also mean a deployed environment with a

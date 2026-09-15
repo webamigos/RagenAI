@@ -56,6 +56,26 @@ today.
    These are the proxy's own names, so they can be copied from the LiteLLM
    service rather than reissued.
 
+   **The IAM side of Bedrock is [`docs/aws-iam-policy.json`](../aws-iam-policy.json)**,
+   which the reranker documentation has always pointed at and this procedure
+   did not. It carries the four statements a Ragen installation needs on AWS —
+   Bedrock invoke, Bedrock rerank, the Marketplace subscription reads without
+   which the first Anthropic call can refuse, and envelope encryption if you
+   run AWS KMS.
+
+   Four values in it are placeholders, and two of them fail in a way that
+   looks like a missing permission rather than a wrong ARN:
+
+   | Placeholder | What it is |
+   | --- | --- |
+   | `<ACCOUNT_ID>` | **your** account. An inference-profile ARN is per-account, and the route table's `eu.anthropic.*` models are inference profiles — so leaving someone else's account here grants nothing and every Claude call answers `AccessDeniedException` while the policy reads as complete |
+   | `<BUCKET>` | the documents bucket, when `STORAGE_PROVIDER=s3` |
+   | `<REGION>`, `<KMS_KEY_ID>` | the KMS key behind `AWS_KMS_KEY_ID`, when `ENCRYPTION_PROVIDER=kms` |
+
+   Bedrock needs the permission on the inference profile **and** on the
+   foundation models it routes to, which is why both ARN shapes are listed
+   rather than one.
+
 2. **Confirm the image ships the route table.** Every runtime image `COPY`s
    `infra/llm-gateway`, and an architecture guard fails the build if one stops.
    Compose mounts it instead. If you are deploying some third way, the file has
