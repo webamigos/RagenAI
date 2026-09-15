@@ -68,8 +68,23 @@ export function temporalContext(): JobContext {
     // what lets the cancel command flip the UI immediately instead of at the
     // next checkpoint, and what makes a cancel arriving after the engine has
     // forgotten the run a no-op rather than a `WorkflowNotFoundError`.
-    checkCancelled: (subject: CancellationSubject): Promise<boolean> =>
-      isIngestCancelled(subject),
+    checkCancelled: async (subject: CancellationSubject): Promise<boolean> => {
+      try {
+        return await isIngestCancelled(subject);
+      } catch (error) {
+        // Both attempts failed. Answering "not cancelled" is the deliberate
+        // direction: the alternative is throwing out of a checkpoint, which
+        // the handler's catch blocks would record as a FAILED ingest — a
+        // database blip would then destroy work that was going fine. A
+        // cancellation that misses this checkpoint is caught by the next one,
+        // and the row it reads does not go away.
+        log.warn('cancellation checkpoint could not read the file status', {
+          ...subject,
+          error: String(error),
+        });
+        return false;
+      }
+    },
     // Temporal has no progress primitive a workflow can publish outside a
     // query, and the query went with the signal — nothing polled it. A log
     // line is what is left, and it is replay-aware because `log` is the
