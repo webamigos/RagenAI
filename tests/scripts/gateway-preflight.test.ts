@@ -1,6 +1,65 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
 import { describe, expect, it } from 'vitest';
 
+import * as gateway from '@ragenai/llm-gateway';
+
 import { configuredModels } from '../../scripts/gateway-preflight.mts';
+
+const SCRIPT = join(
+  import.meta.dirname,
+  '..',
+  '..',
+  'scripts',
+  'gateway-preflight.mts',
+);
+
+/**
+ * Every value the script imports from the gateway package still exists.
+ *
+ * This suite already imported the script and passed while the script could not
+ * be loaded by Node at all: it kept importing `gatewayModeFromEnv`, which B6
+ * deleted along with the flag it read. `npm run gateway:preflight` died with
+ * `SyntaxError: does not provide an export named 'gatewayModeFromEnv'` before
+ * printing a line.
+ *
+ * The reason the suite missed it is worth stating, because it applies to every
+ * test that imports a module without exercising it. The package resolves to a
+ * CommonJS `dist`, and Node's ESM loader link-checks named imports against it
+ * and throws; vite's interop does not — the missing name is simply `undefined`,
+ * and no test called the function. A green import proves less than it looks.
+ */
+describe('the script imports only names the gateway package exports', () => {
+  it('has no import that would fail to link under Node', () => {
+    const source = readFileSync(SCRIPT, 'utf8');
+    const block = /import\s*\{([^}]*)\}\s*from\s*'@ragenai\/llm-gateway'/.exec(
+      source,
+    );
+
+    expect(
+      block,
+      'the script no longer imports from the package',
+    ).not.toBeNull();
+
+    const imported = block![1]
+      .split(',')
+      .map((name) => name.trim())
+      .filter((name) => name.length > 0 && !name.startsWith('type '))
+      .map((name) => name.split(/\s+as\s+/)[0].trim());
+
+    expect(imported.length).toBeGreaterThan(0);
+
+    const missing = imported.filter(
+      (name) => !(name in (gateway as Record<string, unknown>)),
+    );
+
+    expect(
+      missing,
+      'the script imports a name @ragenai/llm-gateway does not export — Node refuses to load it, and this suite would otherwise stay green',
+    ).toEqual([]);
+  });
+});
 
 /**
  * The preflight is what stands between a cutover and a 5xx on the first model
