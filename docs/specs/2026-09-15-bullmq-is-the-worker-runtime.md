@@ -175,13 +175,24 @@ runtime" line were corrected alongside this rewrite rather than left for Phase
 E, because a reader of either of those specs would otherwise be told the
 opposite of the decision.
 
-One arithmetic correction worth making before anyone quotes the container count:
-this change takes `docker-compose.yml` from nine services to seven, and then
-promotes Redis from *present but optional* to *required*. For a Helm install,
-which ships `redis.enabled: false` today, that is **one net Deployment
-removed**, not two. The install-size case for this spec is the weakest of the
-four; the architectural case is the strong one, and Phase F is what makes the
-size claim honest.
+One arithmetic correction worth making before anyone quotes a container count,
+because the counts circulating in these specs mixed three different scopes.
+`docker compose config --services` is the arbiter, and today it answers:
+
+| Scope | Services | Which |
+| --- | --- | --- |
+| `docker compose up` (default) | **6** | postgres, redis, qdrant, docling, temporal, temporal-ui |
+| `--profile pii` adds | 2 | presidio-analyzer, presidio-anonymizer |
+| `--profile observability` adds | 2 | otel-collector, jaeger |
+
+So this spec takes the **default stack from six to four**, and the two profiles
+are unaffected — they should not appear in the total at all, which is where
+"nine to seven" came from. Redis is one of the four and moves from *present but
+optional* to *required*; for a Helm install, which ships `redis.enabled: false`
+today, that is **one net Deployment removed**, not two. A profile that also
+opts out of Qdrant and Docling reaches two, and one after Phase F. The
+install-size case for this spec is the weakest of the four; the architectural
+case is the strong one, and Phase F is what makes the size claim honest.
 
 Three ADR numbers were reserved so the phases would not collide: **44** the job
 runtime, **45** the vector store, **46** the document parser. They are reserved,
@@ -266,7 +277,20 @@ plumbing, not a per-organization capability.
 is a dependency of *nothing* in `apps/web` or `apps/api`. `getJobRuntime()`
 resolves `WORKER_RUNTIME=temporal` through a dynamic
 `import('@ragenai/jobs-temporal')` and fails at boot, naming the package to
-install, when it is absent. Two things follow, and both are the point:
+install, when it is absent.
+
+**The specifier cannot be a literal once the package leaves.** TypeScript
+resolves module specifiers in dynamic imports at compile time, whatever the
+runtime branch does — so after Phase G a clean default install would fail
+`tsc --build` with a module-resolution error instead of the intended boot-time
+message, and an `optionalDependencies` entry does not help. The seam therefore
+resolves the adapter through a specifier the compiler does not follow, with an
+ambient declaration of the adapter's exports as the type side, and Phase G
+adds a build of a default install with no adapter present as the check that
+this stays true. A runtime that is meant to be absent has to be absent in a way
+the compiler agrees with.
+
+Two things follow from the package split, and both are the point:
 
 - the architecture guard is one line — no `@temporalio/*` import outside
   `packages/jobs-temporal` — and it is what makes Phase E's extraction a
@@ -282,12 +306,26 @@ that shape:
 
 ```ts
 export async function runFileEmbeddings(payload: RunFileEmbeddingsPayload, ctx: JobContext) {
-  const { splitText, prepareMetadata, /* … */ } = ctx.steps<typeof activities>({
+  const { splitText, prepareMetadata, /* … */ } = ctx.steps<Activities>({
     retry: { initialInterval: '1 second', maximumInterval: '1 minute',
              backoffCoefficient: 2, maximumAttempts: 5 },
     startToCloseTimeout: '1 minute',
   });
 ```
+
+`Activities` is the part that decides whether the package boundary survives.
+Today the type is `typeof activities`, where `activities` is
+`apps/worker/src/activities/index.ts`. A handler in `packages/jobs` written
+that way makes the *package* resolve types from an *app* — a type-only import
+is still an import, it inverts the dependency the workspace graph declares, and
+`tsc --build` would need the app's declarations to build the package. So the
+signatures move first: `packages/jobs/contract.ts` declares an
+`Activities` interface, `ctx.steps<A extends Activities>` is parameterised by
+it, and `apps/worker/src/activities/index.ts` gains
+`satisfies Activities` so the implementation is checked against the contract
+rather than the contract being inferred from the implementation. This is a
+precondition for moving the handlers, not a cleanup afterwards — hence its own
+step (A3).
 
 - On Temporal, `ctx.steps` **is** `proxyActivities` — same durable retries, same
   timeouts, byte-for-byte the same behaviour.
@@ -376,10 +414,24 @@ that deletes threads"*. Idempotency makes boot-time registration technically
 possible; it does not make it correct.
 
 One gap: Temporal's `ScheduleOverlapPolicy.SKIP` has no BullMQ equivalent. The
-two nightly jobs go on a dedicated `ragen-maintenance` queue with
-`concurrency: 1`, and each scheduled run takes a deterministic `jobId`
-(`${scheduleId}:${YYYY-MM-DD}`) so a duplicate enqueue is dropped by BullMQ's
-own id uniqueness.
+two nightly jobs go on a dedicated `ragen-maintenance` queue, and each
+scheduled run takes a deterministic `jobId` — `${scheduleId}-${YYYY-MM-DD}`, a
+hyphen and **not** a colon, because
+[BullMQ forbids `:` in a custom job id](https://docs.bullmq.io/guide/jobs/job-ids)
+(it is Redis's own key separator) and rejects an id that is only digits. A
+duplicate enqueue is then dropped by BullMQ's id uniqueness.
+
+Worth checking once rather than assuming, since §5 reuses run ids as job ids:
+the ids we already generate are `doc-${nanoid()}`, `doc-${randomUUID()}` and
+`docgen-${orgId}-${nanoid()}`. No colons, never all-digits, so the "run ids are
+unchanged" claim survives the rule that just cost this spec a separator.
+
+`concurrency: 1` on the queue is **per `Worker` instance**, so it does not by
+itself stop two nightly runs overlapping once the chart runs more than one
+worker replica (`apps.worker.replicas` defaults to 1 and is not pinned). The
+queue therefore also sets BullMQ's global concurrency to 1, which is enforced
+across every consumer, and the per-day `jobId` remains the second line of
+defence.
 
 ### 7. The queue admin panel is not optional any more
 
@@ -576,7 +628,7 @@ orphaned — the new runtime has never heard of it, so its file sits in
 | Worker crashes mid-job | Job is redelivered and re-runs from the top. Safe only because of C3/C4 idempotency work |
 | Event loop blocked by CPU work (sharp, resvg, pdfium, xlsx) | The job lock is renewed on a timer; a blocked loop lets it expire, BullMQ calls the job stalled and **runs it a second time in parallel**. `lockDuration` raised to 5 min, `maxStalledCount: 1`, and CPU-bound activities are candidates for sandboxed processors |
 | A 10-minute Docling parse | Fine while it awaits I/O — the lock renews. Covered by the same `lockDuration` setting |
-| Two nightly runs overlap | `concurrency: 1` on `ragen-maintenance` + a per-day deterministic `jobId` |
+| Two nightly runs overlap | Global concurrency 1 on `ragen-maintenance` (per-worker `concurrency: 1` is not enough with more than one replica) + a per-day deterministic `jobId` |
 | Cancel arrives after the job finished | Conditional `updateMany` matches nothing; the command returns "already finished" instead of throwing `WorkflowNotFoundError` |
 | Cancel races a status write | The `notIn` guard means a late activity cannot overwrite CANCELLED |
 | Docgen result polled after retention expiry | `getRun` returns `unknown`; the route answers 404 exactly as it does today for an aged-out workflow |
@@ -601,11 +653,18 @@ Each phase leaves the application working.
       package. Add `jobs-seam-is-the-only-runtime-import.test.ts`: every job
       name has a handler, and no `@temporalio/*` import exists outside
       `packages/jobs-temporal`.
-- [ ] **A3.** Port the eight workflow bodies to `(payload, ctx)` handlers in
+- [ ] **A3.** Declare the `Activities` interface in
+      `packages/jobs/contract.ts` and make `apps/worker/src/activities/index.ts`
+      `satisfies` it. **Before** A4, because a handler typed
+      `ctx.steps<typeof activities>` would make `packages/jobs` resolve types
+      from `apps/worker` and invert the dependency the workspace graph declares
+      — see §2. The guard in A2 gains that direction: nothing in `packages/*`
+      imports from `apps/*`.
+- [ ] **A4.** Port the eight workflow bodies to `(payload, ctx)` handlers in
       `packages/jobs/handlers/`, using `ctx.steps` / `ctx.log` / `JobFailure`.
       Behaviour identical; the Temporal adapter registers them as Temporal
       workflows.
-- [ ] **A4.** Replace the nineteen producer call sites in `apps/web` and
+- [ ] **A5.** Replace the nineteen producer call sites in `apps/web` and
       `apps/api` with `getJobRuntime().start(...)`. `apps/api/src/temporal/`
       becomes `jobs/`; `apps/web/src/libs/temporal/` becomes a re-export shim.
 
@@ -716,7 +775,10 @@ one: durable execution is available to anyone who builds from source.
       from inside the base image — nothing is published to npm (see §8.5).
 - [ ] **G3.** Drop `@ragenai/jobs-temporal` from this repository's workspaces
       and from the architecture guard's allow-list, so a re-introduced
-      `@temporalio/*` import fails here.
+      `@temporalio/*` import fails here. The seam's dynamic specifier and its
+      ambient declaration are what keep `tsc --build` working with the package
+      gone (§1) — so this step ends with a build of a default install that has
+      no adapter installed, which is the only thing that proves it.
 - [ ] **G4.** Check that
       [`docs/open-core-boundary.md`](../open-core-boundary.md) still describes
       what that repository holds; it already records that `ragen-enterprise` is

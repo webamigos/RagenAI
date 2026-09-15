@@ -157,10 +157,13 @@ The container count is now partly a default and partly a **consequence
 available to an operator who selects every alternative**. `litellm` and
 `litellm-postgres` are already gone; `temporal` and `temporal-ui` go with the
 worker spec whether an operator chooses anything or not; `qdrant` and `docling`
-go only for a profile that opts out of them. Nine compose services become seven
-by default, four for that profile, and one once the BullMQ spec's Phase F puts
-queues on Postgres and Presidio stays optional — though that spec also promotes
-Redis from optional to required, so the arithmetic is smaller than it looks.
+go only for a profile that opts out of them. Counted the way
+`docker compose config --services` counts — the default stack, with the `pii`
+and `observability` profiles left out of the total rather than folded into it —
+that is **six services today, four after the worker spec, two for a profile
+that also drops Qdrant and Docling**, and one once that spec's Phase F puts
+queues on Postgres. It also promotes Redis from optional to required, so the
+arithmetic is smaller than an earlier draft of this paragraph claimed.
 **These two specs subtract no capability; each adds a choice**, and the
 elasticity is the deliverable.
 

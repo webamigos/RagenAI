@@ -308,10 +308,13 @@ proxy page.
   fragment and never reaches this control plane. If `packages/llm-gateway`
   later grows a provider passthrough, it is the right home for that key; until
   then this spec neither gains nor loses it.
-- **The other footprint specs.** Three sibling specs each remove a
-  different container — [BullMQ](2026-09-15-bullmq-is-the-worker-runtime.md)
-  (Temporal), [pgvector](2026-09-14-pgvector-as-a-second-vector-store.md)
-  (Qdrant) and the Mistral parser above (Docling). They are independent of this
+- **The other footprint specs.** Three sibling specs each take a container out
+  of the stack, and only one of them does it by default:
+  [BullMQ](2026-09-15-bullmq-is-the-worker-runtime.md) removes Temporal and its
+  UI from every install, while
+  [pgvector](2026-09-14-pgvector-as-a-second-vector-store.md) (Qdrant) and the
+  Mistral parser above (Docling) remove theirs only from an install that
+  selects the alternative — both incumbents stay the default. They are independent of this
   one, with a single point of contact: pgvector's Phase D3 provisions an
   embedding model in `infra/litellm/config.yaml`, the file Phase B here
   replaces. The model needs provisioning in whichever registry exists at the
