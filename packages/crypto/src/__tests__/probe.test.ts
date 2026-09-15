@@ -226,6 +226,57 @@ describe('probeEncryptionProvider', () => {
     expect(result.provider).toBe('kms');
   });
 
+  /**
+   * KMS answers a throttle with **HTTP 400** — the same status as a refusal —
+   * so classifying on the status alone turned a rate limit at boot into
+   * "misconfigured" and blocked a working deployment until someone restarted
+   * it.
+   */
+  it.each([
+    [
+      'the Smithy retryable trait',
+      Object.assign(new Error('slow down'), {
+        name: 'SomeFutureThrottle',
+        $retryable: { throttling: true },
+        $metadata: { httpStatusCode: 400 },
+      }),
+    ],
+    [
+      'ThrottlingException, which arrives as a 400',
+      Object.assign(new Error('rate exceeded'), {
+        name: 'ThrottlingException',
+        $metadata: { httpStatusCode: 400 },
+      }),
+    ],
+    [
+      'LimitExceededException, which is a request rate on KMS',
+      Object.assign(new Error('limit exceeded'), {
+        name: 'LimitExceededException',
+        $metadata: { httpStatusCode: 400 },
+      }),
+    ],
+  ])('treats AWS throttling as transient — %s', async (_label, error) => {
+    process.env.AWS_KMS_KEY_ID = 'arn:aws:kms:eu-central-1:1:key/abc';
+    send.mockRejectedValue(error);
+
+    const result = await probeEncryptionProvider();
+
+    expect(result.status).toBe('unavailable');
+    expect(encryptionProviderIsUnusable()).toBe(false);
+  });
+
+  it('still blocks on a 400 that is a refusal rather than a throttle', async () => {
+    process.env.AWS_KMS_KEY_ID = 'arn:aws:kms:eu-central-1:1:key/abc';
+    send.mockRejectedValue(
+      Object.assign(new Error('invalid key id'), {
+        name: 'NotFoundException',
+        $metadata: { httpStatusCode: 400 },
+      }),
+    );
+
+    expect((await probeEncryptionProvider()).status).toBe('misconfigured');
+  });
+
   it('reads an AWS 5xx as transient', async () => {
     process.env.AWS_KMS_KEY_ID = 'arn:aws:kms:eu-central-1:1:key/abc';
     send.mockRejectedValue(

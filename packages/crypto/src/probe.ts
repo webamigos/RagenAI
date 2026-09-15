@@ -146,6 +146,18 @@ function isPermanentFailure(error: unknown): boolean {
     return isPermanentStatus(error.status);
   }
 
+  /**
+   * Before the status, not after it. AWS marks a retryable throttle on the
+   * error itself — `$retryable.throttling`, a Smithy trait — and KMS then
+   * returns it as **HTTP 400**, the same status as a genuine refusal. Reading
+   * the status first made a rate limit at boot indistinguishable from a wrong
+   * key, which would block a working deployment behind the encryption screen
+   * until somebody restarted it.
+   */
+  if (isAwsThrottling(error)) {
+    return false;
+  }
+
   const status = awsHttpStatus(error);
   if (status !== null) {
     return isPermanentStatus(status);
@@ -169,6 +181,33 @@ function isPermanentStatus(status: number): boolean {
   }
   return status >= 400 && status < 500;
 }
+
+function isAwsThrottling(error: unknown): boolean {
+  if (typeof error !== 'object' || error === null) {
+    return false;
+  }
+  const retryable = (error as { $retryable?: { throttling?: boolean } })
+    .$retryable;
+  if (retryable?.throttling === true) {
+    return true;
+  }
+  const name = error instanceof Error ? error.name : '';
+  return AWS_THROTTLING_ERROR_NAMES.has(name);
+}
+
+/**
+ * For the errors that predate the trait or arrive without it.
+ * `LimitExceededException` is in here rather than with the permanent names on
+ * purpose: on KMS it means the *request rate* was exceeded, not that a quota
+ * is permanently spent.
+ */
+const AWS_THROTTLING_ERROR_NAMES = new Set([
+  'ThrottlingException',
+  'RequestThrottledException',
+  'TooManyRequestsException',
+  'LimitExceededException',
+  'ProvisionedThroughputExceededException',
+]);
 
 function awsHttpStatus(error: unknown): number | null {
   if (typeof error !== 'object' || error === null) {

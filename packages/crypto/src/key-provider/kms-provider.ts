@@ -6,6 +6,9 @@ import {
 
 import type { KeyProvider } from './types';
 
+/** Matches `ScalewayKMSService`'s `DEFAULT_REQUEST_TIMEOUT_MS`. */
+const KMS_TIMEOUT_MS = 10_000;
+
 /**
  * AWS KMS — the legacy provider, kept for hybrid setups.
  *
@@ -36,6 +39,28 @@ export class KmsKeyProvider implements KeyProvider {
     this.client = new KMSClient({
       endpoint: process.env.AWS_ENDPOINT_URL,
       region: process.env.AWS_DEFAULT_REGION,
+      /**
+       * Finite, because `probeEncryptionProvider()` calls this on the boot
+       * path and the SDK ships `DEFAULT_REQUEST_TIMEOUT = 0` — no timeout at
+       * all. A KMS endpoint that accepts a socket and never answers would
+       * hang `apps/api` before `NestFactory.create()` and `apps/web`'s
+       * `register()` indefinitely: not a failed deploy, which is
+       * recoverable, but a service that never finishes starting and reports
+       * nothing.
+       *
+       * `throwOnRequestTimeout` is not redundant. `requestTimeout` on its own
+       * only emits a warning — the SDK says so in its own types — and a
+       * warning does not unblock an awaited promise.
+       *
+       * Ten seconds mirrors `ScalewayKMSService`'s own deadline, so the two
+       * providers fail on the same budget rather than on whichever SDK
+       * happens to be underneath.
+       */
+      requestHandler: {
+        connectionTimeout: KMS_TIMEOUT_MS,
+        requestTimeout: KMS_TIMEOUT_MS,
+        throwOnRequestTimeout: true,
+      },
       ...(process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY
         ? {
             credentials: {
