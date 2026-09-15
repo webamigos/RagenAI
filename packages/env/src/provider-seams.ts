@@ -190,12 +190,15 @@ export const RERANK_SEAM = {
         'Scaleway /v1/rerank (qwen3-embedding-8b). The default. `SCW_API_KEY` is the same account key the Scaleway encryption provider uses — one key, two features.',
     },
     cohere: {
-      required: [],
-      optional: [
-        'RERANK_COHERE_BASE_URL',
-        'RERANK_COHERE_API_KEY',
-        'RERANK_MODEL',
-      ],
+      // Required *of this variant*, while the fragment keeps it optional: the
+      // variant itself is opt-in, so a deployment on the default Scaleway
+      // reranker declares none of this. There is no `rerankRules` calling
+      // `requiredForProvider`, so nothing rejects a boot without it — what
+      // this changes is the generated reference and the installer's typed
+      // config, which said "optional" about the one variable the variant
+      // cannot work without.
+      required: ['RERANK_COHERE_BASE_URL'],
+      optional: ['RERANK_COHERE_API_KEY', 'RERANK_MODEL'],
       fields: {
         RERANK_COHERE_BASE_URL: 'baseUrl',
         RERANK_COHERE_API_KEY: 'apiKey',
