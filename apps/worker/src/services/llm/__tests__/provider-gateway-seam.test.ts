@@ -67,53 +67,6 @@ afterEach(() => {
 
 const load = () => import('../provider.js');
 
-describe('LLM_GATEWAY=litellm', () => {
-  beforeEach(() => {
-    // Set, not deleted. This was the default until B4's "then everywhere"
-    // step; unsetting it now selects the *other* arm, which would leave this
-    // block asserting the proxy against the gateway's behaviour.
-    process.env.LLM_GATEWAY = 'litellm';
-  });
-
-  it('builds a chat model through the proxy provider', async () => {
-    const { getChatModelForOrg } = await load();
-
-    await getChatModelForOrg('org_1', 'gemini-2.5-flash');
-
-    expect(chat).toHaveBeenCalledWith('gemini-2.5-flash');
-    expect(resolveModel).not.toHaveBeenCalled();
-  });
-
-  it('builds an embedding model through the proxy provider', async () => {
-    const { getEmbeddingModelForOrg } = await load();
-
-    await getEmbeddingModelForOrg('org_1', 'qwen3-embedding-8b');
-
-    expect(textEmbeddingModel).toHaveBeenCalledWith('qwen3-embedding-8b');
-    expect(resolveEmbeddingModel).not.toHaveBeenCalled();
-  });
-
-  it('posts the PDF to the proxy by hand', async () => {
-    const fetchMock = vi.fn(async () => ({
-      ok: true,
-      json: async () => ({ choices: [{ message: { content: 'proxy text' } }] }),
-    }));
-    vi.stubGlobal('fetch', fetchMock);
-
-    const { generateTextWithPdf } = await load();
-    const text = await generateTextWithPdf({
-      model: 'claude-sonnet-5',
-      system: 'sys',
-      pdfBase64: 'JVBER',
-      prompt: 'extract',
-    });
-
-    expect(text).toBe('proxy text');
-    expect(fetchMock).toHaveBeenCalledOnce();
-    expect(generateText).not.toHaveBeenCalled();
-  });
-});
-
 describe('LLM_GATEWAY=native', () => {
   beforeEach(() => {
     process.env.LLM_GATEWAY = 'native';

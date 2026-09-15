@@ -5,7 +5,7 @@
 #   # or simply: npm run ragen:up:everything
 #
 # Why this exists: Ragen is self-hosted software, and until now `docker compose
-# up` gave you only the dependencies — Postgres, Qdrant, Temporal, LiteLLM,
+# up` gave you only the dependencies — Postgres, Qdrant, Temporal,
 # Docling, Redis — while web/api/worker/admin still had to be started by hand on
 # the host. Evaluating or deploying Ragen should not require a Node toolchain.
 #
@@ -25,7 +25,6 @@ services:
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-pass123}@postgres:5432/${POSTGRES_DB:-ragen}
       QDRANT_URL: http://qdrant:6333
       REDIS_URL: redis://redis:6379
-      LITELLM_PROXY_URL: http://litellm:4000
       TEMPORAL_SERVER_ADDRESS: temporal:7233
       RAGEN_API_INTERNAL_URL: http://api:3001
       NEXT_PUBLIC_APP_URL: http://localhost:${WEB_PORT:-3000}
@@ -51,7 +50,7 @@ services:
     volumes:
       - storage_data:/data/storage
       # The LLM route table, mounted rather than baked in — the same shape as
-      # infra/litellm/config.yaml uses. This is what makes the table
+      # the proxy's config file used to be. This is what makes the table
       # configuration: editing it and restarting the container is a change a
       # deployment can make, where a table compiled into the image would need
       # the source tree and a rebuild. Read-only; the app never writes it.
@@ -60,8 +59,6 @@ services:
       postgres:
         condition: service_healthy
       qdrant:
-        condition: service_started
-      litellm:
         condition: service_started
     networks:
       - ragen-network
@@ -78,7 +75,6 @@ services:
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-pass123}@postgres:5432/${POSTGRES_DB:-ragen}
       QDRANT_URL: http://qdrant:6333
       REDIS_URL: redis://redis:6379
-      LITELLM_PROXY_URL: http://litellm:4000
       RAGEN_APP_INTERNAL_URL: http://web:3000
       TARGET_ENV: ${TARGET_ENV:-local}
       # The same volume the worker writes to. Without this the app cannot read
@@ -88,7 +84,7 @@ services:
     volumes:
       - storage_data:/data/storage
       # The LLM route table, mounted rather than baked in — the same shape as
-      # infra/litellm/config.yaml uses. This is what makes the table
+      # the proxy's config file used to be. This is what makes the table
       # configuration: editing it and restarting the container is a change a
       # deployment can make, where a table compiled into the image would need
       # the source tree and a rebuild. Read-only; the app never writes it.
@@ -109,7 +105,6 @@ services:
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-pass123}@postgres:5432/${POSTGRES_DB:-ragen}
       QDRANT_URL: http://qdrant:6333
       REDIS_URL: redis://redis:6379
-      LITELLM_PROXY_URL: http://litellm:4000
       TEMPORAL_SERVER_ADDRESS: temporal:7233
       DOCLING_URL: http://docling:5001
       RAGEN_APP_URL: http://web:3000
@@ -134,7 +129,7 @@ services:
     volumes:
       - storage_data:/data/storage
       # The LLM route table, mounted rather than baked in — the same shape as
-      # infra/litellm/config.yaml uses. This is what makes the table
+      # the proxy's config file used to be. This is what makes the table
       # configuration: editing it and restarting the container is a change a
       # deployment can make, where a table compiled into the image would need
       # the source tree and a rebuild. Read-only; the app never writes it.

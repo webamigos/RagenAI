@@ -51,9 +51,9 @@ describe('bedrock-cohere-reranker', () => {
   });
 
   describe('isRerankingEnabled', () => {
-    it('should return true when feature flag and LITELLM_PROXY_URL are set', () => {
+    it('should return true when the feature flag and its own base URL are set', () => {
       process.env.FEATURE_FLAG_RERANKING = '1';
-      process.env.LITELLM_PROXY_URL = 'http://localhost:4000';
+      process.env.RERANK_COHERE_BASE_URL = 'https://api.cohere.ai';
       expect(isRerankingEnabled()).toBe(true);
     });
 
@@ -239,33 +239,10 @@ describe('bedrock-cohere-reranker', () => {
     });
   });
 
-  /**
-   * `RERANK_COHERE_BASE_URL` is what carries this variant past B6, which
-   * deletes `LITELLM_PROXY_URL`. The loss would have been silent: an
-   * unreachable reranker degrades to "no reranking" rather than erroring, so
-   * nothing would have said the quality drop was a configuration change.
-   */
   describe('its own endpoint', () => {
-    it('prefers RERANK_COHERE_BASE_URL over the proxy URL', () => {
-      process.env.FEATURE_FLAG_RERANKING = '1';
-      delete process.env.LITELLM_PROXY_URL;
-      process.env.RERANK_COHERE_BASE_URL = 'https://api.cohere.ai';
-
-      expect(isRerankingEnabled()).toBe(true);
-    });
-
-    it('still accepts the proxy URL, so a running deployment needs no change', () => {
+    it('is off when no base URL is set, whatever the feature flag says', () => {
       process.env.FEATURE_FLAG_RERANKING = '1';
       delete process.env.RERANK_COHERE_BASE_URL;
-      process.env.LITELLM_PROXY_URL = 'http://localhost:4000';
-
-      expect(isRerankingEnabled()).toBe(true);
-    });
-
-    it('is off when neither is set, whatever the feature flag says', () => {
-      process.env.FEATURE_FLAG_RERANKING = '1';
-      delete process.env.RERANK_COHERE_BASE_URL;
-      delete process.env.LITELLM_PROXY_URL;
 
       expect(isRerankingEnabled()).toBe(false);
     });

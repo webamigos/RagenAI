@@ -10,7 +10,7 @@
  * **Every workspace with an `eslint.config.*` belongs in this map.** Four were
  * missing after it was written, because a workspace added later only lands
  * here if whoever added it remembers this file: `packages/env`,
- * `packages/platform-contracts` and `packages/litellm-client` were linted by
+ * `packages/platform-contracts` was linted by
  * `turbo run lint` in CI but not on commit, and `packages/db`
  * had no ESLint config at all, so nothing linted them anywhere.
  *
@@ -28,7 +28,6 @@ const workspaces = {
   'packages/crypto': '@ragenai/crypto',
   'packages/db': '@ragenai/db',
   'packages/env': '@ragenai/env',
-  'packages/litellm-client': '@ragenai/litellm-client',
   'packages/llm-gateway': '@ragenai/llm-gateway',
   'packages/observability': '@ragenai/observability',
   'packages/platform-contracts': '@ragenai/platform-contracts',

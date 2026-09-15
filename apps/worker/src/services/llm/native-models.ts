@@ -1,5 +1,5 @@
 import type { EmbeddingModelV4, LanguageModelV4 } from '@ai-sdk/provider';
-import { gatewayFromEnv, usingNativeGateway } from '@ragenai/llm-gateway';
+import { gatewayFromEnv } from '@ragenai/llm-gateway';
 
 /**
  * This app's side of `LLM_GATEWAY`.
@@ -15,8 +15,6 @@ import { gatewayFromEnv, usingNativeGateway } from '@ragenai/llm-gateway';
  * (ADR-13/ADR-32), and the worker is the surface where that matters most,
  * because every ingest already knows its organization.
  */
-
-export { usingNativeGateway };
 
 export function nativeChatModel(
   modelId: string,

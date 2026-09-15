@@ -1,14 +1,9 @@
-export { ChatCompletionFactory } from './chat-completion-factory.js';
-export {
-  EmbeddingsFactory,
-  TrackedEmbeddingsProvider,
-} from './embeddings-factory.js';
+export { TrackedEmbeddingsProvider } from './embeddings-factory.js';
 export {
   type BaseCompletionConfig,
   type ChatCompletionOptions,
   type ModelConfig,
   type ModelProvider,
-  type LiteLLMCredentials,
   type ProviderCredentials,
   type BaseEmbeddingsConfig,
   type EmbeddingsProvider,

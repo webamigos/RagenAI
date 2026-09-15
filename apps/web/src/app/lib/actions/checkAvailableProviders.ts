@@ -6,8 +6,7 @@ import {
   type AvailableModel,
 } from '../../components/config';
 import { getAllowedModels } from '@/features/organizations/services/organization-settings';
-import { fetchLiteLLMModels } from '@/libs/litellm/client';
-import { gatewayFromEnv, usingNativeGateway } from '@ragenai/llm-gateway';
+import { gatewayFromEnv } from '@ragenai/llm-gateway';
 import { logger } from '@/app/lib/utils/logger';
 
 type ProviderStatus = {
@@ -19,10 +18,23 @@ type ProviderStatus = {
 export async function checkAvailableProviders(
   _orgId: string,
 ): Promise<ProviderStatus[]> {
+  // `litellm` names the pricing namespace, not a proxy — see `ai-pricing`.
+  // What "available" means is whether this deployment can serve anything at
+  // all, which is the route table plus the credentials behind it, so it is
+  // asked of the gateway rather than of a URL that no longer exists.
+  let available = false;
+  try {
+    available = gatewayFromEnv().availableModels().length > 0;
+  } catch {
+    // An unreadable or empty route table is "serves nothing", not a crash:
+    // this feeds a status list, and the per-model call still fails loudly.
+    available = false;
+  }
+
   return [
     {
       provider: 'litellm',
-      available: !!process.env.LITELLM_PROXY_URL,
+      available,
       source: 'environment',
     },
   ];
@@ -70,19 +82,10 @@ export async function getAvailableModelsForOrganization(
 ): Promise<AvailableModel[]> {
   const allowedModels = await getAllowedModels(orgId);
 
-  let models: AvailableModel[];
-  if (usingNativeGateway()) {
-    models = gatewayModels();
-  } else {
-    // Ask the proxy what it serves. Its answer is the right one *for the proxy
-    // path*, and only for it.
-    try {
-      const litellmModels = await fetchLiteLLMModels();
-      models = litellmModels.length > 0 ? litellmModels : [...availableModels];
-    } catch {
-      models = [...availableModels];
-    }
-  }
+  // From the route table, which is credential-aware: a provider this
+  // deployment holds no keys for contributes nothing, rather than appearing in
+  // the picker and failing on the first click.
+  let models: AvailableModel[] = gatewayModels();
 
   if (allowedModels.length > 0) {
     models = models.filter((model) => allowedModels.includes(model.value));

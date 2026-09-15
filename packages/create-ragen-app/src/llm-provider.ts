@@ -1,4 +1,3 @@
-import type { LiteLLMModelEntry } from './litellm-config';
 import type { RouteTableEntry } from './route-table';
 
 /**
@@ -11,7 +10,6 @@ export type LlmProviderChoice = 'openai' | 'anthropic';
 
 export interface LlmEmbeddingsConfig {
   modelName: string;
-  litellmModel: string;
   /** The upstream's own name, for the route table. */
   upstreamModel: string;
   /** Output dimensionality — must match `VECTOR_SIZE`, see rag-core's vector contract. */
@@ -22,7 +20,6 @@ export interface LlmProviderConfig {
   label: string;
   apiKeyEnvVar: string;
   modelName: string;
-  litellmModel: string;
   /**
    * The `@ragenai/llm-gateway` provider that serves this key directly, and the
    * upstream's own name for the model. Both providers the wizard offers have
@@ -47,12 +44,10 @@ export const LLM_PROVIDERS: Record<LlmProviderChoice, LlmProviderConfig> = {
     label: 'OpenAI',
     apiKeyEnvVar: 'OPENAI_API_KEY',
     modelName: 'gpt-4o-mini',
-    litellmModel: 'openai/gpt-4o-mini',
     gatewayProvider: 'openai',
     upstreamModel: 'gpt-4o-mini',
     embeddings: {
       modelName: 'text-embedding-3-small',
-      litellmModel: 'openai/text-embedding-3-small',
       upstreamModel: 'text-embedding-3-small',
       vectorSize: 1536,
     },
@@ -66,7 +61,6 @@ export const LLM_PROVIDERS: Record<LlmProviderChoice, LlmProviderConfig> = {
     // load-balanced pool in LiteLLM, silently mixing direct-Anthropic and
     // Bedrock traffic under Bedrock's catalog metadata.
     modelName: 'claude-haiku-4-5-direct',
-    litellmModel: 'anthropic/claude-haiku-4-5-20251001',
     gatewayProvider: 'anthropic',
     upstreamModel: 'claude-haiku-4-5-20251001',
     // Anthropic ships no embeddings endpoint, so there is nothing to point
@@ -79,7 +73,6 @@ export const LLM_PROVIDERS: Record<LlmProviderChoice, LlmProviderConfig> = {
 
 export interface LlmProviderChoiceResult {
   envUpdates: Record<string, string>;
-  liteLLMEntries: LiteLLMModelEntry[];
   /**
    * The route table this installation gets. Written over the one shipped in
    * the repository, which names providers a new install has no keys for.
@@ -98,11 +91,8 @@ export function resolveLlmProviderChoice(
   const envUpdates: Record<string, string> = {
     [config.apiKeyEnvVar]: apiKey,
     DEFAULT_MODEL: config.modelName,
-    // Overrides the manifest's `litellm`, which is the baseline for the one
-    // path that reaches neither branch here: "I'll configure LiteLLM myself".
-    LLM_GATEWAY: 'native',
-    // Not the gateway. This names the pricing namespace `AiUsage` writes
-    // against, where the whole catalogue lives under `litellm`; the provider
+    // The pricing namespace `AiUsage` writes against, where the whole
+    // catalogue lives under `litellm` — not a gateway any more. The provider
     // that actually served a turn is recorded separately as `servedBy`.
     DEFAULT_MODEL_PROVIDER: 'litellm',
     // .env.example ships gemini-2.5-flash here, which needs Vertex
@@ -111,14 +101,6 @@ export function resolveLlmProviderChoice(
     // model the user just configured is ever reached.
     REPHRASE_MODEL: config.modelName,
   };
-
-  const liteLLMEntries: LiteLLMModelEntry[] = [
-    {
-      modelName: config.modelName,
-      model: config.litellmModel,
-      apiKeyEnvVar: config.apiKeyEnvVar,
-    },
-  ];
 
   // Written as well as the route table, and deliberately: `docker compose up`
   // starts LiteLLM whatever `LLM_GATEWAY` says, so configuring both makes
@@ -137,11 +119,6 @@ export function resolveLlmProviderChoice(
     // upsert — rag-core's vector contract says so, and its default (3584)
     // belongs to the Scaleway model being replaced here.
     envUpdates.VECTOR_SIZE = String(config.embeddings.vectorSize);
-    liteLLMEntries.push({
-      modelName: config.embeddings.modelName,
-      model: config.embeddings.litellmModel,
-      apiKeyEnvVar: config.apiKeyEnvVar,
-    });
     routes.push({
       modelName: config.embeddings.modelName,
       provider: config.gatewayProvider,
@@ -151,7 +128,6 @@ export function resolveLlmProviderChoice(
 
   return {
     envUpdates,
-    liteLLMEntries,
     routes,
     embeddingsConfigured: Boolean(config.embeddings),
   };

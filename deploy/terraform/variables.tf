@@ -71,7 +71,7 @@ variable "secrets" {
 
     It must therefore be complete. At minimum: POSTGRES_PASSWORD,
     BETTER_AUTH_SECRET, SECRET_KEY, INTERNAL_API_SECRET, SESSION_AUTH_SECRET,
-    WORKER_SECRET_KEY, LITELLM_MASTER_KEY — plus whichever provider keys the
+    WORKER_SECRET_KEY — plus whichever provider keys the
     deployment uses (OPENAI_API_KEY, GOOGLE_*, SCW_API_KEY).
 
     One conditional key: if a values file sets `temporal.database.password`,

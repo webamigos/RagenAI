@@ -1,17 +1,13 @@
 import { z } from 'zod';
 import type { LanguageModelV4 } from '@ai-sdk/provider';
 import OpenAI from 'openai';
-import { ChatCompletionFactory } from '@/libs/llm';
-import { EmbeddingsFactory } from '@/libs/llm/embeddings-factory';
 import type { ChatCompletionOptions } from '@/libs/llm/types/chat-completion';
-import type { LiteLLMCredentials } from '@/libs/llm/types/credentials';
 import { isReasoningModel, normalizeModelId } from '../../components/config';
 import { logger } from '../utils/logger';
 import { resolveEmbeddingsModel } from '@ragenai/rag-core';
 import {
   nativeChatInstance,
   nativeEmbeddingInstance,
-  usingNativeGateway,
 } from '@/libs/llm/native-models';
 import { TrackedEmbeddingsProvider } from '@/libs/llm/embeddings-factory';
 
@@ -30,18 +26,6 @@ const supportsTemperature = (model: string): boolean => {
   return !modelsWithoutTemperature.some((m) => model.includes(m));
 };
 
-function getLiteLLMCredentials(): LiteLLMCredentials {
-  const baseUrl = process.env.LITELLM_PROXY_URL;
-  if (!baseUrl) {
-    throw new Error('LITELLM_PROXY_URL is required');
-  }
-  return {
-    provider: 'litellm',
-    baseUrl,
-    apiKey: process.env.LITELLM_MASTER_KEY,
-  };
-}
-
 function getDefaultModel(): string {
   const config = modelsSchema.parse({
     provider: process.env.DEFAULT_MODEL_PROVIDER,
@@ -50,16 +34,8 @@ function getDefaultModel(): string {
   return config.model;
 }
 
-// Lazy-initialized credentials and model (deferred to first use, not import time)
-let _litellmCredentials: LiteLLMCredentials | null = null;
+// Lazy-initialized (deferred to first use, not import time)
 let _defaultModel: string | null = null;
-
-function litellmCredentials(): LiteLLMCredentials {
-  if (!_litellmCredentials) {
-    _litellmCredentials = getLiteLLMCredentials();
-  }
-  return _litellmCredentials;
-}
 
 function defaultModel(): string {
   if (!_defaultModel) {
@@ -89,113 +65,54 @@ export const createChatCompletionInstance = (
 
   const reasoning = selectedModel ? isReasoningModel(selectedModel) : false;
 
-  if (usingNativeGateway()) {
-    return nativeChatInstance({
-      model: selectedModel,
-      reasoningEffort: options.reasoningEffort,
-      // Normalized above: undefined for models that reject the parameter.
-      temperature,
-    });
-  }
-
-  const credentials: LiteLLMCredentials = options.litellmApiKey
-    ? { ...litellmCredentials(), apiKey: options.litellmApiKey }
-    : litellmCredentials();
-
-  return ChatCompletionFactory.createInstance(credentials, {
+  return nativeChatInstance({
     model: selectedModel,
-    temperature,
-    streaming,
-    reasoning,
     reasoningEffort: options.reasoningEffort,
+    // Normalized above: undefined for models that reject the parameter.
+    temperature,
   });
 };
 
-// Organization-aware version — uses org's LiteLLM virtual key for per-team budget tracking
+/**
+ * Organization-scoped: the org is a credential *scope*, which is all it was
+ * left as. Per-org LiteLLM virtual keys carried the proxy's own budget, the
+ * application has enforced those ceilings since Phase A, and B5 removed the
+ * keys.
+ */
 export const createChatCompletionInstanceWithOrg = async (
   options: ChatCompletionOptions,
   orgId: string,
-  streaming: boolean = true,
 ): Promise<LanguageModelV4> => {
-  if (usingNativeGateway()) {
-    const rawModelId =
-      options.model || options.modelName || defaultModel() || undefined;
-    return nativeChatInstance({
-      model: rawModelId ? normalizeModelId(rawModelId) : undefined,
-      reasoningEffort: options.reasoningEffort,
-      organizationId: orgId,
-    });
-  }
-
-  // The master key. Per-org virtual keys carried LiteLLM's own budget, which
-  // the application has enforced since Phase A and B5 removed — so the org is
-  // now only a credential *scope*, which the gateway path above threads and
-  // the proxy path has no use for.
-  const credentials: LiteLLMCredentials = litellmCredentials();
-
-  const rawModel =
+  const rawModelId =
     options.model || options.modelName || defaultModel() || undefined;
-  const selectedModel = rawModel ? normalizeModelId(rawModel) : undefined;
-
-  let temperature = options.temperature;
-  if (selectedModel && !supportsTemperature(selectedModel)) {
-    if (temperature !== undefined) {
-      logger.info(
-        { model: selectedModel, temperature },
-        'Temperature parameter excluded for model that does not support it',
-      );
-    }
-    temperature = undefined;
-  }
-
-  const reasoning = selectedModel ? isReasoningModel(selectedModel) : false;
-
-  return ChatCompletionFactory.createInstance(credentials, {
-    model: selectedModel,
-    temperature,
-    streaming,
-    reasoning,
+  return nativeChatInstance({
+    model: rawModelId ? normalizeModelId(rawModelId) : undefined,
     reasoningEffort: options.reasoningEffort,
+    organizationId: orgId,
   });
 };
 
-// Embeddings via LiteLLM proxy (Cohere Embed v3 Multilingual on Bedrock)
 export const createEmbeddingsInstance = ({
   organizationId,
   userId,
   projectId,
-  litellmApiKey,
 }: {
   organizationId?: string;
   userId?: string;
   projectId?: string;
-  litellmApiKey?: string;
 } = {}) => {
   const embeddingsModel = resolveEmbeddingsModel();
 
-  if (usingNativeGateway()) {
-    // The provider string lands on every `ai_usage` row, so the two arms of
-    // the Phase B measurement are distinguishable after the fact rather than
-    // only by which run they came from.
-    return new TrackedEmbeddingsProvider(
-      nativeEmbeddingInstance(embeddingsModel, organizationId),
-      embeddingsModel,
-      'llm-gateway',
-      organizationId,
-      userId,
-      projectId,
-    );
-  }
-
-  const credentials: LiteLLMCredentials = litellmApiKey
-    ? { ...litellmCredentials(), apiKey: litellmApiKey }
-    : litellmCredentials();
-
-  return EmbeddingsFactory.createInstance(
-    credentials,
-    {
-      model: embeddingsModel,
-    },
+  // `litellm` is the pricing namespace `calculateCost` looks under, and it
+  // holds the whole catalogue — Scaleway, Vertex and Bedrock models alike.
+  // Writing the real upstream here finds no entry and records every embedding
+  // at **zero**, which the monthly cost ceiling is then computed from. The
+  // name outlived the proxy; moving it is B6b, and it moves with the pricing
+  // table or not at all.
+  return new TrackedEmbeddingsProvider(
+    nativeEmbeddingInstance(embeddingsModel, organizationId),
+    embeddingsModel,
+    'litellm',
     organizationId,
     userId,
     projectId,

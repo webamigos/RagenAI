@@ -1,7 +1,7 @@
 # Model routing and data retention
 
 Split out of `README.md` so the README can introduce the product rather than
-document it. How OpenRouter traffic is pinned to EU infrastructure and zero-retention endpoints by default. See also [`litellm-proxy.md`](litellm-proxy.md).
+document it. How OpenRouter traffic is pinned to EU infrastructure and zero-retention endpoints by default.
 
 OpenRouter requests can be routed through specific cloud providers (Vertex AI, Bedrock, Azure) with data collection controls via environment variables:
 

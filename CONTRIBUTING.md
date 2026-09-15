@@ -30,7 +30,7 @@ Node.js 24.x and Docker. Full instructions are in
 [AGENTS.md](AGENTS.md#local-development); the short version:
 
 ```bash
-npm run ragen:up:full      # Postgres, Qdrant, Temporal, LiteLLM, Docling, Redis
+npm run ragen:up:full      # Postgres, Qdrant, Temporal, Docling, Redis
 npm install
 npm run generate:types     # generate the Prisma client — required before anything builds
 npm run web:dev

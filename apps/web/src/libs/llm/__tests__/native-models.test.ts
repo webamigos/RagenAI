@@ -15,11 +15,7 @@ vi.mock('@ragenai/llm-gateway', async (importOriginal) => {
   return { ...actual, gatewayFromEnv, nativeChatModel };
 });
 
-import {
-  nativeChatInstance,
-  nativeEmbeddingInstance,
-  usingNativeGateway,
-} from '../native-models';
+import { nativeChatInstance, nativeEmbeddingInstance } from '../native-models';
 
 const originalGateway = process.env.LLM_GATEWAY;
 
@@ -33,23 +29,6 @@ afterEach(() => {
   } else {
     process.env.LLM_GATEWAY = originalGateway;
   }
-});
-
-describe('the application side of LLM_GATEWAY', () => {
-  it('calls providers directly unless asked otherwise', () => {
-    delete process.env.LLM_GATEWAY;
-    expect(usingNativeGateway()).toBe(true);
-  });
-
-  it('switches back when the flag says litellm', () => {
-    process.env.LLM_GATEWAY = 'litellm';
-    expect(usingNativeGateway()).toBe(false);
-  });
-
-  it('reads an explicit native the same as the default', () => {
-    process.env.LLM_GATEWAY = 'native';
-    expect(usingNativeGateway()).toBe(true);
-  });
 });
 
 describe('building a native chat model', () => {

@@ -11,13 +11,11 @@ import { parseAdminEnv } from '../env';
  */
 const base = {
   DATABASE_URL: 'postgresql://user:pass@localhost:5432/ragen',
-  LITELLM_PROXY_URL: 'http://localhost:4000',
 };
 
 const deployed = {
   ...base,
   TARGET_ENV: 'production',
-  LITELLM_MASTER_KEY: 'sk-x',
   INTERNAL_API_SECRET: 'shared',
 };
 
@@ -43,14 +41,6 @@ describe('the apps/admin environment contract', () => {
 
   it('accepts a fully configured deployment', () => {
     expect(parseAdminEnv(deployed).ok).toBe(true);
-  });
-
-  it('rejects a proxy endpoint with no scheme', () => {
-    // `z.string().url()` alone accepts `localhost:4000` — it reads
-    // `localhost:` as the scheme, so the likeliest typo would pass.
-    expect(
-      parseAdminEnv({ ...base, LITELLM_PROXY_URL: 'localhost:4000' }).ok,
-    ).toBe(false);
   });
 
   describe('Google sign-in, the defect #1115 fixed', () => {
@@ -112,29 +102,6 @@ describe('the apps/admin environment contract', () => {
         expect(issueNames(without(name))).toContain(name);
       },
     );
-
-    /**
-     * `LITELLM_MASTER_KEY` left this list when `LLM_GATEWAY` started
-     * defaulting to `native`: it is a proxy credential, and the admin proxy
-     * page has nothing to authenticate against when no proxy is in the
-     * picture. Required on the proxy path, and only there.
-     */
-    it('requires LITELLM_MASTER_KEY once the proxy is named', () => {
-      expect(
-        issueNames({
-          ...without('LITELLM_MASTER_KEY'),
-          LLM_GATEWAY: 'litellm',
-        }),
-      ).toContain('LITELLM_MASTER_KEY');
-    });
-
-    /**
-     * `.ok`, not "the issue list does not name it": the weaker form passes
-     * just as well when the parse failed for some unrelated reason.
-     */
-    it('accepts a deployment without it when no gateway is named', () => {
-      expect(parseAdminEnv(without('LITELLM_MASTER_KEY')).ok).toBe(true);
-    });
 
     it('requires neither on a local clone', () => {
       expect(parseAdminEnv({ ...base, TARGET_ENV: 'local' }).ok).toBe(true);
@@ -204,16 +171,11 @@ describe('the apps/admin environment contract', () => {
     // missing variable per restart turns a ten-minute setup into an afternoon.
     const names = issueNames({
       DATABASE_URL: 'not-a-url',
-      LITELLM_PROXY_URL: 'localhost:4000',
       GOOGLE_CLIENT_ID: 'id',
     });
 
     expect(names).toEqual(
-      expect.arrayContaining([
-        'DATABASE_URL',
-        'LITELLM_PROXY_URL',
-        'GOOGLE_CLIENT_ID',
-      ]),
+      expect.arrayContaining(['DATABASE_URL', 'GOOGLE_CLIENT_ID']),
     );
   });
 });

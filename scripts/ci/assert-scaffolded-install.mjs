@@ -5,10 +5,9 @@
  *
  * The installer's unit tests mock the filesystem, so they prove the logic and
  * not the result. Everything asserted here has been shipped broken at least
- * once: a chat model with no matching LiteLLM entry, a rephrase model still
- * pointing at credentials the install does not have, an embedding model it
- * cannot serve, a master key the app never sends, and a DATABASE_URL on the
- * port a native Postgres answers on.
+ * once: a chat model with no matching route, a rephrase model still pointing at
+ * credentials the install does not have, an embedding model it cannot serve,
+ * and a DATABASE_URL on the port a native Postgres answers on.
  */
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
@@ -33,7 +32,7 @@ function read(relativePath) {
 
 const rootEnv = read('.env.local');
 const adminEnv = read('apps/admin/.env.local');
-const liteLLM = read('infra/litellm/config.yaml');
+const routes = read('infra/llm-gateway/routes.yaml');
 
 function envValue(contents, key) {
   const match = new RegExp(`^${key}=(.*)$`, 'm').exec(contents);
@@ -106,16 +105,6 @@ for (const [contents, file] of [
   );
 }
 
-// The app sends no Authorization header without this, and the proxy answers
-// every call with a 401.
-expectEnv(
-  rootEnv,
-  '.env.local',
-  'LITELLM_MASTER_KEY',
-  nonEmpty,
-  'the value docker-compose starts the proxy with',
-);
-
 // --- The provider the run configured -------------------------------------
 const chatModel = envValue(rootEnv, 'DEFAULT_MODEL');
 const embeddingsModel = envValue(rootEnv, 'EMBEDDINGS_MODEL');
@@ -156,14 +145,22 @@ expectEnv(
   "text-embedding-3-small's dimensionality",
 );
 
-// Every model named in .env.local has to exist in the proxy's config, or the
-// call 404s at request time.
+// Every model named in .env.local has to have a route, or resolving it throws
+// UnknownModelError on the first question.
 for (const model of [chatModel, embeddingsModel]) {
-  if (model && !liteLLM.includes(`model_name: ${model}`)) {
+  if (model && !new RegExp(`^  ${model}:$`, 'm').test(routes)) {
     failures.push(
-      `infra/litellm/config.yaml has no model_list entry for ${model}, which .env.local selects`,
+      `infra/llm-gateway/routes.yaml has no route for ${model}, which .env.local selects`,
     );
   }
+}
+
+// The shipped table routes to Azure, Bedrock, Vertex and Scaleway. A scaffold
+// that left it in place would offer models this install has no keys for.
+if (routes.includes('provider: vertex')) {
+  failures.push(
+    'infra/llm-gateway/routes.yaml is still the shipped table — the scaffold should have replaced it',
+  );
 }
 
 // The wizard configured a provider, so the manual fallback should not be

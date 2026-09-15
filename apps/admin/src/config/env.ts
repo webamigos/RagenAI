@@ -6,7 +6,6 @@ import {
   httpUrl,
   parseEnv,
   TOKEN_VAULT_GROUP,
-  litellmRules,
   requiredInDeployedEnvs,
 } from '@ragenai/env';
 import { z } from 'zod';
@@ -37,7 +36,7 @@ import { z } from 'zod';
  */
 export const adminEnvSchema = fragments.targetEnv
   .merge(fragments.database)
-  .merge(fragments.litellm)
+  .merge(fragments.llmGateway)
   .merge(fragments.tokenVault)
   .extend({
     /**
@@ -99,12 +98,6 @@ export const adminEnvSchema = fragments.targetEnv
 
     // Only on the proxy path: with `LLM_GATEWAY=native` there is no proxy for
     // the page to manage and no model call authenticating against it. See
-    // `litellmRules`.
-    litellmRules(
-      env,
-      ctx,
-      'the proxy page authenticates against it, and every model call does',
-    );
 
     requiredInDeployedEnvs(
       env,

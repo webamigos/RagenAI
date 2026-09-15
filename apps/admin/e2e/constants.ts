@@ -49,7 +49,6 @@ export const ROUTES = {
   templateAccess: '/template-access',
   apiKeys: '/api-keys',
   defaults: '/defaults',
-  proxy: '/proxy',
   aiUsage: '/ai-usage',
   diskUsage: '/disk-usage',
   activityLog: '/activity-log',

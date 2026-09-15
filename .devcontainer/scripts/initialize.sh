@@ -6,7 +6,7 @@
 #
 #   1. regenerate the named-volume override;
 #   2. make sure a root .env.local exists, because docker-compose.yml's
-#      `litellm` service declares `env_file: .env.local` and Compose fails
+#      services declare `env_file: .env.local` and Compose fails
 #      outright when that file is absent — before any container, and so
 #      before post-create.sh could have created it.
 #
@@ -20,7 +20,7 @@ cd "$ROOT_DIR"
 bash .devcontainer/scripts/generate-compose-volumes.sh
 
 # A plain copy, with no rewriting of any kind. Everything that has to differ
-# inside the container (database host, Qdrant, LiteLLM, Temporal, Redis) is a
+# inside the container (database host, Qdrant, Temporal, Redis) is a
 # real environment variable set in docker-compose.devcontainer.yml, and real
 # environment variables already beat env files. Secrets are filled in later by
 # post-create.sh, which can reuse create-ragen-app's manifest once

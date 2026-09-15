@@ -269,26 +269,9 @@ describe('run', () => {
     expect(contents).toContain('OPENAI_API_KEY');
     expect(contents).toContain('EMBEDDINGS_MODEL=text-embedding-3-small');
     expect(contents).toContain('VECTOR_SIZE=1536');
-    expect(contents).toContain('model_list');
-    expect(contents).toContain('docker compose restart litellm');
+    expect(contents).toContain('routes:');
+    expect(contents).toContain('provider: openai');
     expect(clack.note).toHaveBeenCalled();
-  });
-
-  it('writes a chat model and an embedding model into the LiteLLM config', async () => {
-    vi.mocked(clack.select).mockResolvedValueOnce('openai' as never);
-    vi.mocked(clack.password).mockResolvedValueOnce('sk-test' as never);
-    vi.mocked(clack.confirm).mockResolvedValue(false as never);
-
-    await run(['/tmp/ragen-test']);
-
-    const config = vi
-      .mocked(writeFileSync)
-      .mock.calls.find(([path]) => String(path).endsWith('config.yaml'));
-
-    expect(String(config?.[1])).toContain('model_name: gpt-4o-mini');
-    // Without this one the knowledge base 404s on a model the install has no
-    // credentials for — the shipped default is Scaleway's.
-    expect(String(config?.[1])).toContain('model_name: text-embedding-3-small');
   });
 
   /**
@@ -324,35 +307,6 @@ describe('run', () => {
     expect(String(routes?.[1])).not.toContain('vertex');
   });
 
-  it('still writes the proxy config, so the rollback is a working one', async () => {
-    vi.mocked(clack.select).mockResolvedValueOnce('anthropic' as never);
-    vi.mocked(clack.password).mockResolvedValueOnce('sk-ant' as never);
-    vi.mocked(clack.confirm).mockResolvedValue(false as never);
-
-    await run(['/tmp/ragen-test']);
-
-    const written = vi.mocked(writeFileSync).mock.calls;
-
-    expect(
-      String(
-        written.find(([path]) =>
-          String(path).endsWith('infra/llm-gateway/routes.yaml'),
-        )?.[1],
-      ),
-    ).toContain('provider: anthropic');
-
-    // `docker compose up` starts LiteLLM whatever LLM_GATEWAY says, so a
-    // configured proxy is what makes `LLM_GATEWAY=litellm` a rollback rather
-    // than a second outage.
-    expect(
-      String(
-        written.find(([path]) =>
-          String(path).endsWith('infra/litellm/config.yaml'),
-        )?.[1],
-      ),
-    ).toContain('anthropic/claude-haiku-4-5-20251001');
-  });
-
   it('points the rephrase model at the provider that was just configured', async () => {
     vi.mocked(clack.select).mockResolvedValueOnce('openai' as never);
     vi.mocked(clack.password).mockResolvedValueOnce('sk-test' as never);
@@ -365,9 +319,6 @@ describe('run', () => {
       .mock.calls.find(([path]) => String(path).endsWith('/.env.local'));
 
     expect(String(rootEnv?.[1])).toContain('REPHRASE_MODEL=gpt-4o-mini');
-    expect(String(rootEnv?.[1])).toContain(
-      'LITELLM_MASTER_KEY=sk-litellm-dev-key',
-    );
   });
 
   it("warns before a second install silently shares the first one's data", async () => {

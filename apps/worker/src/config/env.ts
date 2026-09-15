@@ -3,7 +3,6 @@ import {
   encryptionRules,
   fragments,
   parseEnv,
-  litellmRules,
   requiredInDeployedEnvs,
   storageRules,
 } from '@ragenai/env';
@@ -26,7 +25,7 @@ import { parseMasterKey } from '@ragenai/crypto';
  */
 export const workerEnvSchema = fragments.targetEnvRequired
   .merge(fragments.database)
-  .merge(fragments.litellm)
+  .merge(fragments.llmGateway)
   .merge(fragments.qdrant)
   .merge(fragments.observability)
   .merge(fragments.storage)
@@ -139,9 +138,6 @@ export const workerEnvSchema = fragments.targetEnvRequired
       ['QDRANT_URL'],
       'Qdrant is the only supported vector store (ADR-31), and it falls back to localhost when unset',
     );
-
-    // Only on the proxy path. See `litellmRules`.
-    litellmRules(env, ctx);
 
     allOrNone(
       env,

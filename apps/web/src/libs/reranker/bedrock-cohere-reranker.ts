@@ -35,8 +35,10 @@ export interface RerankResult {
  * "no reranking" rather than erroring. Q6 calls this out by name: the endpoint
  * has to become configuration either way.
  *
- * `LITELLM_PROXY_URL` is still accepted as a fallback so a deployment running
- * the proxy today needs no change; it goes with the proxy itself.
+ * The `LITELLM_PROXY_URL` fallback went with the proxy in B6. A deployment
+ * that reranked through it must now name the endpoint: `RERANK_COHERE_BASE_URL`
+ * pointed at Cohere, at a gateway, or at a proxy it still runs of its own
+ * accord.
  */
 export function isRerankingEnabled(): boolean {
   return process.env.FEATURE_FLAG_RERANKING === '1' && !!cohereBaseUrl();
@@ -48,7 +50,7 @@ export function isRerankingEnabled(): boolean {
  * front of either.
  */
 function cohereBaseUrl(): string | undefined {
-  return process.env.RERANK_COHERE_BASE_URL || process.env.LITELLM_PROXY_URL;
+  return process.env.RERANK_COHERE_BASE_URL;
 }
 
 /**

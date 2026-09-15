@@ -107,15 +107,14 @@ describe('configToEnv writes the flat groups', () => {
     const env = configToEnv(
       defineConfig({
         database: { url: 'postgresql://localhost:55432/ragen' },
-        gateway: { url: 'http://localhost:4000', masterKey: 'sk-x' },
+        gateway: { routesPath: './my-routes.yaml' },
         storage: { provider: 'local' },
       }),
     );
 
     expect(env).toEqual({
       DATABASE_URL: 'postgresql://localhost:55432/ragen',
-      LITELLM_PROXY_URL: 'http://localhost:4000',
-      LITELLM_MASTER_KEY: 'sk-x',
+      LLM_ROUTES_PATH: './my-routes.yaml',
       STORAGE_PROVIDER: 'local',
     });
   });
@@ -127,14 +126,14 @@ describe('a flat config that typechecks satisfies its fragment', () => {
     // installer writes what the schema parses, from one description.
     const schema = fragments.targetEnv
       .merge(fragments.database)
-      .merge(fragments.litellm)
+      .merge(fragments.llmGateway)
       .merge(fragments.qdrant)
       .merge(fragments.models);
 
     const env = configToEnv(
       defineConfig({
         database: { url: 'postgresql://user:pass@localhost:55432/ragen' },
-        gateway: { url: 'http://localhost:4000' },
+        gateway: {},
         vectorStore: { url: 'http://localhost:6333' },
         models: { chat: 'gemini-3-flash-preview' },
       }),

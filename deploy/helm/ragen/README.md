@@ -40,7 +40,7 @@ helm install ragen deploy/helm/ragen \
 
 `existingSecret` makes that Secret the only one: the chart renders none of its
 own, so it must carry **every** key the pods read — `POSTGRES_PASSWORD` and the
-six shared secrets below included, since nothing generates them for you in this
+five shared secrets below included, since nothing generates them for you in this
 mode. Leave `existingSecret` unset to have the chart generate the shared ones
 and supply only the provider keys through a values file.
 
@@ -76,9 +76,8 @@ somewhere the nodes can pull from. Point `presidio.analyzer.image` at that.
 
 ## Secrets
 
-Six secrets have no external owner — `BETTER_AUTH_SECRET`, `SECRET_KEY`,
-`INTERNAL_API_SECRET`, `SESSION_AUTH_SECRET`, `WORKER_SECRET_KEY` and
-`LITELLM_MASTER_KEY`. The chart generates them on first install and reads them
+Five secrets have no external owner — `BETTER_AUTH_SECRET`, `SECRET_KEY`,
+`INTERNAL_API_SECRET`, `SESSION_AUTH_SECRET` and `WORKER_SECRET_KEY`. The chart generates them on first install and reads them
 back on every later render, so an upgrade does not mint a new
 `BETTER_AUTH_SECRET` and sign every session out. The Secret carries
 `helm.sh/resource-policy: keep`, which also means **`helm uninstall` leaves it

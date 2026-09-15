@@ -1,9 +1,5 @@
 import type { EmbeddingModelV4, LanguageModelV4 } from '@ai-sdk/provider';
-import {
-  gatewayFromEnv,
-  nativeChatModel,
-  usingNativeGateway,
-} from '@ragenai/llm-gateway';
+import { gatewayFromEnv, nativeChatModel } from '@ragenai/llm-gateway';
 
 import { supportsReasoningEffort } from '@/app/components/config';
 
@@ -24,7 +20,6 @@ import type { ReasoningEffortLevel } from './types';
  */
 
 /** Whether this process talks to providers directly. Re-exported for callers. */
-export { usingNativeGateway };
 
 export function nativeChatInstance(options: {
   model?: string;

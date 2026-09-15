@@ -1,0 +1,16 @@
+# The route table the e2e run uses.
+#
+# `mock-llm-server.ts` speaks OpenAI's API on port 4100, so it attaches the way
+# any other OpenAI-compatible upstream does — a route with a connection name,
+# whose credentials come from LLM_MOCK_BASE_URL and LLM_MOCK_API_KEY. It used
+# to be wired as LITELLM_PROXY_URL, which stopped existing with the proxy.
+#
+# The mock answers 200 to anything that is not /v1/chat/completions, so one
+# entry covers the embedding path too.
+version: 1
+
+routes:
+  mock-model:
+    provider: openai-compatible
+    connection: mock
+    model: mock-model

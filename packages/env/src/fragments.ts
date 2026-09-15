@@ -148,35 +148,16 @@ export const database = z.object({
 });
 
 /**
- * The LLM gateway every model call goes through (ADR-04). No app talks to a
- * model provider directly, so an unset proxy URL is not a degraded mode — it
- * is no LLM at all.
+ * Where the route table lives, when it is not the shipped one.
  *
- * `LLM_GATEWAY` is the Phase B seam: `native` (the default) routes through
- * `@ragenai/llm-gateway` straight to the provider, `litellm` keeps the proxy.
- * It is declared here rather than left as a loose string so a typo is a boot
- * failure, not a run that silently measured the wrong arm.
- *
- * `LITELLM_PROXY_URL` stays required under both values, which outlived the
- * reason first given for it (comparing both arms on one machine). Relaxing it
- * is B6's business rather than this flip's, because one fallback still
- * resolves to it: the opt-in Cohere reranker reads
- * `RERANK_COHERE_BASE_URL || LITELLM_PROXY_URL`
- * (`bedrock-cohere-reranker.ts`). Speech does **not** — `SPEECH_BASE_URL`
- * falls back to the provider's own base URL, not to the proxy — so it is one
- * opt-in feature at stake here, not two.
+ * This fragment used to carry `LITELLM_PROXY_URL`, `LITELLM_MASTER_KEY` and
+ * `LLM_GATEWAY`. B6 removed the proxy and with it the choice of path, so what
+ * is left is the one variable that was always about the gateway rather than
+ * about LiteLLM. Renamed with it: a fragment called `litellm` holding no
+ * LiteLLM variable is the kind of name that outlives its subject and misleads
+ * the next reader.
  */
-export const litellm = z.object({
-  LITELLM_PROXY_URL: httpUrl(),
-  LITELLM_MASTER_KEY: z.string().optional(),
-  // The values are `@ragenai/llm-gateway`'s `GATEWAY_MODES`, restated rather
-  // than imported: this package is merged by every app at boot, and importing
-  // the gateway would drag five AI SDK provider packages into processes that
-  // never make a model call. `tests/architecture/gateway-modes-agree.test.ts`
-  // fails if the two lists drift.
-  LLM_GATEWAY: blankAsUndefined(
-    z.enum(['litellm', 'native']).default('native'),
-  ),
+export const llmGateway = z.object({
   /** Points at a route table other than the shipped one. See Q6. */
   LLM_ROUTES_PATH: z.string().optional(),
 });
@@ -266,10 +247,14 @@ export const reranker = z.object({
   SCW_API_BASE: blankAsUndefined(httpUrl().optional()),
   SCW_API_KEY: z.string().optional(),
   /**
-   * The `cohere` variant's own endpoint. Optional because it falls back to
-   * `LITELLM_PROXY_URL` while that still exists — which is exactly why it had
-   * to be added before the proxy goes: an unreachable reranker degrades to "no
-   * reranking" rather than erroring, so the loss would have been silent.
+   * The `cohere` variant's own endpoint, and **required** when that variant is
+   * selected — the `LITELLM_PROXY_URL` fallback went with the proxy in B6.
+   *
+   * Optional in the schema because the variant itself is opt-in, and a
+   * deployment on the default Scaleway reranker needs neither. The cost of
+   * getting that wrong is quiet: an unreachable reranker degrades to "no
+   * reranking" rather than erroring, which is why this variable was added
+   * before the proxy was removed rather than with it.
    */
   RERANK_COHERE_BASE_URL: blankAsUndefined(httpUrl().optional()),
   RERANK_COHERE_API_KEY: z.string().optional(),

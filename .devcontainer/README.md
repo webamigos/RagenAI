@@ -20,7 +20,7 @@ npm run web:dev     # http://localhost:3000, auto-forwarded
 ```
 
 The machine type matters: `devcontainer.json` asks for **4 cores / 16 GB**.
-The 2-core tier does not fit Postgres, Qdrant, LiteLLM, Temporal and a
+The 2-core tier does not fit Postgres, Qdrant, Temporal and a
 Turbopack dev server at once — it swaps, and every symptom then looks like a
 slow app instead of a small machine.
 
@@ -44,14 +44,14 @@ None of this applies in a Codespace, where nothing else is running.
 
 ## What starts, and what doesn't
 
-`runServices` in `devcontainer.json` starts Postgres, Qdrant, LiteLLM (plus its
-own Postgres), Redis and Temporal. Left out on purpose: Docling (~700 MB,
+`runServices` in `devcontainer.json` starts Postgres, Qdrant, Redis and
+Temporal. Left out on purpose: Docling (~700 MB,
 needed only when `DOCUMENT_PARSER=docling`), Presidio (~1 GB, PII masking),
 the Temporal UI and the observability profile.
 
 To add one, put it in `runServices` and rebuild the container. The Docker
-socket is mounted, so `docker ps`, `docker logs ragen-litellm` and
-`docker restart ragen-litellm` work from inside the container — but
+socket is mounted, so `docker ps`, `docker logs ragen-qdrant` and
+`docker restart ragen-qdrant` work from inside the container — but
 `docker compose up` does not: Compose would hand the outer daemon container
 paths (`/workspace/infra/...`) that do not exist on the host, and the bind
 mounts would come up empty.
@@ -61,7 +61,7 @@ mounts would come up empty.
 Two layers, and the split is the point:
 
 1. **Container networking** — `DATABASE_URL`, `QDRANT_URL`,
-   `LITELLM_PROXY_URL`, `TEMPORAL_SERVER_ADDRESS`, `REDIS_URL` — are real
+   `TEMPORAL_SERVER_ADDRESS`, `REDIS_URL` — are real
    environment variables set in `docker-compose.devcontainer.yml`. Real
    environment variables beat every env file (see
    `scripts/load-root-env.mjs`), so nothing has to be rewritten.
@@ -74,12 +74,10 @@ Two layers, and the split is the point:
 set** — after the first run it only fills keys that are still empty. Editing
 `.env.local` is safe; it is yours.
 
-Before the first question actually works you need an LLM provider key. Paste it
-into `.env.local`, then:
-
-```bash
-docker restart ragen-litellm    # the proxy reads .env.local at startup
-```
+Before the first question actually works you need an LLM provider key and a
+route for the model you select. Paste the key into `.env.local`, add the route
+to `infra/llm-gateway/routes.yaml`, and restart the dev server — the app reads
+both at startup, and there is no separate service to restart.
 
 In a Codespace, `BETTER_AUTH_URL` and `NEXT_PUBLIC_APP_URL` are pointed at the
 forwarded `https://…app.github.dev` host. With the `localhost` defaults sign-in
@@ -93,7 +91,7 @@ fails in a way that looks like broken auth rather than a wrong origin.
 | `docker-compose.devcontainer.yml`     | the workspace service, and nothing else                                                                                                                                                                                    |
 | `docker-compose.volumes.yml`          | **generated**, gitignored                                                                                                                                                                                                  |
 | `devcontainer-lock.json`              | pins the `docker-outside-of-docker` feature to a version and digest, for the same reason `docker-compose.yml` pins every image. Regenerate by running the container; a test fails if a declared feature is missing from it |
-| `scripts/initialize.sh`               | host-side, before the container: regenerates the override, makes sure `.env.local` exists (Compose fails without it — `litellm` declares `env_file`)                                                                       |
+| `scripts/initialize.sh`               | host-side, before the container: regenerates the override, makes sure `.env.local` exists (Compose fails without it — services declare `env_file`)                                                                       |
 | `scripts/generate-compose-volumes.sh` | one named volume per workspace build output, derived from the filesystem so a new package needs no edit here                                                                                                               |
 | `scripts/post-create.sh`              | once: chown volumes, `npm ci`, secrets, `prisma migrate deploy`                                                                                                                                                            |
 | `scripts/post-start.sh`               | every start: `npm ci` only if the lockfile moved, then migrations                                                                                                                                                          |
@@ -111,9 +109,9 @@ or when a new workspace's build output has no volume.
 status` says which; the container stays usable either way.
 - **A service is unhealthy** — `docker logs ragen-postgres` (names are pinned
   in `docker-compose.yml`, not Compose-prefixed).
-- **The model picker is empty right after startup** — LiteLLM takes about 90
-  seconds to accept connections and has no healthcheck, so nothing waits for
-  it. `docker logs ragen-litellm` shows when it is up.
+- **The model picker is empty** — the picker offers only models that are both
+  routed and have credentials present, so an empty one usually means neither.
+  `npm run gateway:preflight -- --probe` says which of the two it is.
 - **You want a clean database** — stop the container, then
   `docker volume rm ragen-postgres-data ragen-qdrant-data`, then rebuild.
   Those volumes are shared with a host-side `npm run ragen:up:full` stack: the

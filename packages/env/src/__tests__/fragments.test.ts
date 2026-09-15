@@ -81,8 +81,11 @@ describe('shared fragments', () => {
     expect(fragments.storage.parse({}).STORAGE_PROVIDER).toBe('local');
   });
 
-  it('requires LITELLM_PROXY_URL, since no app talks to a provider directly (ADR-04)', () => {
-    expect(fragments.litellm.safeParse({}).success).toBe(false);
+  it('needs nothing: the shipped route table is the default (ADR-49)', () => {
+    // The opposite of what this asserted while ADR-04 held, and the change is
+    // the point: no app talks to a proxy any more, so an empty environment is
+    // a working one.
+    expect(fragments.llmGateway.safeParse({}).success).toBe(true);
   });
 });
 

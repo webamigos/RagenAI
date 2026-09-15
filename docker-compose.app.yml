@@ -13,7 +13,7 @@ version: "3"
 # postgres and qdrant volumes with the first one.
 #
 # Published ports bind to loopback, not to every interface. Compose's default
-# is 0.0.0.0, which put the LiteLLM proxy — holding the installation's provider
+# is 0.0.0.0, which put every service — including ones holding provider
 # key, behind a master key whose local default is a constant anyone can read in
 # this repository — on the LAN, with a Postgres defaulting to `pass123` beside
 # it. Nothing in the stack needs the wider bind: services reach each other by
@@ -65,59 +65,11 @@ services:
     networks:
       - ragen-network
 
-  litellm-postgres:
-    # Pinned to match the app's Postgres above. Untagged, this resolved to
-    # `latest` — so a fresh machine or a `docker compose pull` would fetch a
-    # newer major, and Postgres refuses to start on a data directory written by
-    # a different one ("database files are incompatible with server"). The
-    # failure looks like a broken LiteLLM, not a version change.
-    image: postgres:16
-    container_name: ${RAGEN_STACK_NAME:-ragen}-litellm-postgres
-    restart: unless-stopped
-    environment:
-      POSTGRES_USER: ${LITELLM_DB_USER:-litellm}
-      POSTGRES_PASSWORD: ${LITELLM_DB_PASSWORD:-litellm123}
-      POSTGRES_DB: ${LITELLM_DB_NAME:-litellm}
-    ports:
-      - "${RAGEN_BIND_ADDR:-127.0.0.1}:${LITELLM_DB_PORT:-55433}:5432"
-    volumes:
-      - litellm_postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${LITELLM_DB_USER:-litellm}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - ragen-network
-
-  litellm:
-    image: ghcr.io/berriai/litellm:v1.99.1
-    container_name: ${RAGEN_STACK_NAME:-ragen}-litellm
-    restart: unless-stopped
-    depends_on:
-      litellm-postgres:
-        condition: service_healthy
-    env_file:
-      - .env.local
-    environment:
-      LITELLM_DATABASE_URL: "postgresql://${LITELLM_DB_USER:-litellm}:${LITELLM_DB_PASSWORD:-litellm123}@litellm-postgres:5432/${LITELLM_DB_NAME:-litellm}"
-      LITELLM_MASTER_KEY: ${LITELLM_MASTER_KEY:-sk-litellm-dev-key}
-    ports:
-      - "${RAGEN_BIND_ADDR:-127.0.0.1}:${LITELLM_PORT:-4000}:4000"
-    volumes:
-      - ./infra/litellm/config.yaml:/app/config.yaml
-    command: ["--config", "/app/config.yaml", "--port", "4000"]
-    networks:
-      - ragen-network
-
 volumes:
   postgres_data:
     name: ${RAGEN_STACK_NAME:-ragen}-postgres-data
   qdrant_data:
     name: ${RAGEN_STACK_NAME:-ragen}-qdrant-data
-  litellm_postgres_data:
-    name: ${RAGEN_STACK_NAME:-ragen}-litellm-postgres-data
-
 networks:
   ragen-network:
     name: ${RAGEN_STACK_NAME:-ragen}-network

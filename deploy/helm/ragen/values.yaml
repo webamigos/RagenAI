@@ -100,31 +100,6 @@ apps:
 # ---------------------------------------------------------------------------
 # Supporting services (stateless)
 # ---------------------------------------------------------------------------
-litellm:
-  enabled: true
-  image: ghcr.io/berriai/litellm:v1.99.1
-  # Verified by running the image with these restrictions applied.
-  securityContext:
-    allowPrivilegeEscalation: false
-    capabilities:
-      drop: ['ALL']
-    seccompProfile:
-      type: RuntimeDefault
-  port: 4000
-  replicas: 1
-  # The proxy reads its model list from a file. Provide it here and the chart
-  # mounts it as a ConfigMap; leave empty to mount nothing and let the image
-  # use its own default.
-  config: ''
-  # The proxy's own database, for keys and spend — separate from the
-  # application's. With the bundled Postgres it gets a `litellm` database
-  # automatically; set this when running against a managed one. Left empty
-  # with no bundled Postgres, the proxy still routes but persists nothing.
-  databaseUrl: ''
-  resources:
-    requests: { cpu: 100m, memory: 512Mi }
-    limits: { memory: 1Gi }
-
 docling:
   enabled: true
   # Pinned to a release rather than :latest — with pullPolicy IfNotPresent a
@@ -326,7 +301,6 @@ config:
   DATABASE_URL: ''
   QDRANT_URL: ''
   REDIS_URL: ''
-  LITELLM_PROXY_URL: ''
   DOCLING_URL: ''
   PRESIDIO_ANALYZER_URL: ''
   PRESIDIO_ANONYMIZER_URL: ''
@@ -342,7 +316,6 @@ config:
 secrets:
   BETTER_AUTH_SECRET: ''
   SECRET_KEY: ''
-  LITELLM_MASTER_KEY: ''
   INTERNAL_API_SECRET: ''
   SESSION_AUTH_SECRET: ''
   WORKER_SECRET_KEY: ''

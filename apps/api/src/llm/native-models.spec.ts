@@ -16,12 +16,8 @@ vi.mock('@ragenai/llm-gateway', async (importOriginal) => {
   return { ...actual, gatewayFromEnv, nativeChatModel };
 });
 
-const {
-  nativeChatInstance,
-  nativeEmbeddingInstance,
-  servingProvider,
-  usingNativeGateway,
-} = await import('./native-models.js');
+const { nativeChatInstance, nativeEmbeddingInstance, servingProvider } =
+  await import('./native-models.js');
 
 const originalGateway = process.env.LLM_GATEWAY;
 
@@ -35,23 +31,6 @@ afterEach(() => {
   } else {
     process.env.LLM_GATEWAY = originalGateway;
   }
-});
-
-describe('the api side of LLM_GATEWAY', () => {
-  it('calls providers directly unless asked otherwise', () => {
-    delete process.env.LLM_GATEWAY;
-    expect(usingNativeGateway()).toBe(true);
-  });
-
-  it('switches back when the flag says litellm', () => {
-    process.env.LLM_GATEWAY = 'litellm';
-    expect(usingNativeGateway()).toBe(false);
-  });
-
-  it('reads an explicit native the same as the default', () => {
-    process.env.LLM_GATEWAY = 'native';
-    expect(usingNativeGateway()).toBe(true);
-  });
 });
 
 describe('building a native chat model', () => {
@@ -121,12 +100,6 @@ describe('the provider that actually served a turn', () => {
    * and the `litellm` namespace there holds the whole catalogue — so writing a
    * real provider into it would find no price and record every turn at zero.
    */
-  it('is nothing on the proxy path, so the caller keeps its own default', () => {
-    process.env.LLM_GATEWAY = 'litellm';
-
-    expect(servingProvider('gpt-5.4')).toBeUndefined();
-    expect(routeFor).not.toHaveBeenCalled();
-  });
 
   it('is the route provider when the gateway serves the turn', () => {
     process.env.LLM_GATEWAY = 'native';

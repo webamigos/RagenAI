@@ -9,7 +9,6 @@ const VALID: Record<string, string> = {
   TEMPORAL_SERVER_ADDRESS: 'localhost:7233',
   REDIS_URL: 'redis://localhost:56379',
   SECRET_KEY: 'secret',
-  LITELLM_PROXY_URL: 'http://localhost:4000',
   SCW_API_BASE: 'https://api.scaleway.ai/v1',
   SCW_API_KEY: 'scw-key',
   EMBEDDINGS_MODEL: 'bge-multilingual-gemma2',
@@ -167,21 +166,6 @@ describe('parseWorkerEnv', () => {
   });
 
   describe('deployed environments', () => {
-    it('requires LITELLM_MASTER_KEY in production on the proxy path', () => {
-      const result = withEnv({
-        TARGET_ENV: 'production',
-        QDRANT_URL: 'http://qdrant:6333',
-        LLM_GATEWAY: 'litellm',
-      });
-
-      expect(result.ok).toBe(false);
-      if (!result.ok) {
-        expect(result.issues.map((i) => i.name)).toContain(
-          'LITELLM_MASTER_KEY',
-        );
-      }
-    });
-
     /**
      * `native` is the default, and nothing on that path authenticates against
      * a proxy — this is the same rule `isMasterKeyRequired` already applied to
@@ -192,19 +176,10 @@ describe('parseWorkerEnv', () => {
      * when the parse failed for an unrelated reason, or when the rule never
      * ran at all.
      */
-    it('accepts a deployed environment with no master key when no gateway is named', () => {
-      const result = withEnv({
-        TARGET_ENV: 'production',
-        QDRANT_URL: 'http://qdrant:6333',
-      });
-
-      expect(result.ok).toBe(true);
-    });
 
     it('requires a vector store in production', () => {
       const result = withEnv({
         TARGET_ENV: 'production',
-        LITELLM_MASTER_KEY: 'sk-x',
       });
 
       expect(result.ok).toBe(false);
@@ -220,7 +195,6 @@ describe('parseWorkerEnv', () => {
       // container and reported success.
       const result = withEnv({
         TARGET_ENV: 'production',
-        LITELLM_MASTER_KEY: 'sk-x',
         MEILISEARCH_API_KEY: 'meili-key',
       });
 
@@ -234,7 +208,6 @@ describe('parseWorkerEnv', () => {
       expect(
         withEnv({
           TARGET_ENV: 'production',
-          LITELLM_MASTER_KEY: 'sk-x',
           QDRANT_URL: 'http://qdrant.railway.internal:6333',
         }).ok,
       ).toBe(true);
@@ -265,11 +238,6 @@ describe('parseWorkerEnv', () => {
         expect(result.issues[0]?.message).toContain('PUSHER_SECRET');
       }
     });
-  });
-
-  it('rejects a scheme-less LITELLM_PROXY_URL, which z.string().url() accepted', () => {
-    // `new URL('localhost:4000')` parses: `localhost:` becomes the scheme.
-    expect(withEnv({ LITELLM_PROXY_URL: 'localhost:4000' }).ok).toBe(false);
   });
 
   it('reports every problem at once rather than one per restart', () => {

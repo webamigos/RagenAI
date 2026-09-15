@@ -78,8 +78,11 @@ env:
   FEATURE_FLAG_MODEL_SELECT: 1
   DEFAULT_MODEL_PROVIDER: 'litellm'
   DEFAULT_MODEL: 'mock-model'
-  LITELLM_PROXY_URL: 'http://localhost:4100'
-  LITELLM_MASTER_KEY: 'sk-mock-e2e'
+  # The mock speaks OpenAI's API, so it attaches as an `openai-compatible`
+  # connection rather than as a proxy. See apps/web/e2e/routes.e2e.yaml.
+  LLM_ROUTES_PATH: 'apps/web/e2e/routes.e2e.yaml'
+  LLM_MOCK_BASE_URL: 'http://localhost:4100/v1'
+  LLM_MOCK_API_KEY: 'sk-mock-e2e'
   GOOGLE_API_KEY: 'dummy'
   OPENAI_API_KEY: 'dummy'
   PUSHER_APP_ID: 'dummy'

@@ -16,7 +16,7 @@ content. Edit this file, never the pointer.
 ## Commands
 
 ```bash
-docker compose up        # Postgres, Redis, Qdrant, Temporal, LiteLLM
+docker compose up        # Postgres, Redis, Qdrant, Temporal
 npm run web:dev          # Next.js dev server (apps/web)
 npm run web:build        # Production build
 npm run verify           # THE gate: generate types, then lint + typecheck + test + build
@@ -70,8 +70,8 @@ Before starting a nontrivial task, match it against this table and read the link
 | Adding or validating an environment variable | [`packages/env`](packages/env/src) and [ADR-37](docs/adrs/37-typed-env-contract-not-a-config-file.md) — compose a fragment, don't re-describe a shared var; a provider fragment is merged *with* its rule (`storageRules`, `encryptionRules`), or it validates nothing |
 | Extending Ragen without changing core — plugins | [ADR-38](docs/adrs/38-mcp-is-the-plugin-api-no-in-process-plugin-runtime.md) — MCP is the extension API; nothing loads in-process |
 | Monthly usage ceilings (cost, tokens, messages) | `assert-within-usage-limits.ts` on chat surfaces, `check-usage-ceilings.ts` on API paths. **The app enforces these, not the proxy** |
-| Model routing, adding a model, provider credentials | [ADR-49](docs/adrs/49-the-application-calls-model-providers-itself.md) — the app calls providers itself; routes are `infra/llm-gateway/routes.yaml`. `LLM_GATEWAY` picks the path and defaults to `native`; `litellm` is the rollback, until B6 |
-| Attaching Portkey/LiteLLM/vLLM, or cutting an env over | [`attaching-a-gateway.md`](docs/attaching-a-gateway.md), [the cutover runbook](docs/runbooks/llm-gateway-cutover.md) — `npm run gateway:preflight -- --probe` first |
+| Model routing, adding a model, provider credentials | [ADR-49](docs/adrs/49-the-application-calls-model-providers-itself.md) — the app calls providers itself; routes are `infra/llm-gateway/routes.yaml`. There is no proxy path and no flag: B6 removed both |
+| Attaching Portkey, vLLM or Ollama | [`attaching-a-gateway.md`](docs/attaching-a-gateway.md) — an `openai-compatible` route, not a mode. `npm run gateway:preflight -- --probe` first |
 | OpenRouter routing, EU region, zero data retention | [`docs/model-routing.md`](docs/model-routing.md) |
 | Public API, opaque API keys | ADR [13](docs/adrs/13-opaque-api-keys.md), this file's "API" section |
 | Chatbot embed widget | [`docs/chatbot-integration-followups.md`](docs/chatbot-integration-followups.md) |
@@ -92,7 +92,6 @@ Before starting a nontrivial task, match it against this table and read the link
 | Unit/component tests | this file's "Testing Requirements" section |
 | E2E tests, regression sweep before a release | this file's "E2E Tests" section, [`docs/regression-checklist.md`](docs/regression-checklist.md) |
 | Security incidents, PII alerting | [`docs/security-monitoring.md`](docs/security-monitoring.md) |
-| LiteLLM version upgrades | [`docs/runbooks/litellm-upgrade.md`](docs/runbooks/litellm-upgrade.md) |
 | Docling version upgrades | [`docs/runbooks/docling-upgrade.md`](docs/runbooks/docling-upgrade.md) |
 | Presidio version upgrades, PII test scenarios | [`docs/runbooks/presidio-upgrade.md`](docs/runbooks/presidio-upgrade.md) |
 | Upgrading any dependency, or clearing an npm audit advisory | [`.claude/skills/ragen-upgrade-dependency/SKILL.md`](.claude/skills/ragen-upgrade-dependency/SKILL.md) — read it before a bump that touches a library owning DB tables |
@@ -116,13 +115,12 @@ checks all of them at once.
 | `packages/crypto` | web, api, worker | package tests, plus `tests/architecture/encryption-lives-in-one-package.test.ts` |
 | `packages/storage`, `observability`, `vault-client` | web, api, worker | as above |
 | `packages/platform-contracts` | web, api, admin | package tests, plus `tests/architecture/shared-contracts-are-not-recopied.test.ts` |
-| `packages/litellm-client` | web, api, admin | package tests, plus each consumer's build |
 | `packages/env` | every app | package tests, `tests/architecture/provider-fragments-carry-their-rules.test.ts`, plus each app's own env schema tests |
 | `packages/create-ragen-app` | every new self-hosted install | its own tests + `tests/architecture/create-ragen-app-manifest-is-current.test.ts` |
 | `src/lib/auth-guards.ts`, `auth-access-control.ts` | every authenticated route and Server Action | `apps/admin`'s `server-actions-are-guarded` test |
 | `src/libs/db/tenant-scope-guard.ts` | ~20 tenant-scoped models | warns at runtime; it does **not** block |
 | Better Auth tables (`users`, `sessions`, `accounts`, `members`, …) | the library's own queries | `tests/architecture/` |
-| `infra/litellm/config.yaml` | every model call | nothing automated — see the runbook |
+| `infra/llm-gateway/routes.yaml` | every model call | `npm run gateway:preflight -- --probe` |
 
 Three rules that come from things that actually broke here:
 
@@ -150,11 +148,8 @@ app: real env vars beat an app's own `.env` files, which beat the root's — see
 DATABASE_URL="postgresql://postgres:pass123@localhost:55432/ragen"
 REDIS_URL=redis://localhost:56379
 QDRANT_URL=http://localhost:6333
-LITELLM_PROXY_URL=http://localhost:4000
-LITELLM_MASTER_KEY=sk-litellm-dev-key
 DEFAULT_MODEL_PROVIDER=litellm
-LLM_GATEWAY=litellm   # native is the default; a clone has no provider creds
-DEFAULT_MODEL=gemini-3-flash-preview
+DEFAULT_MODEL=gpt-4o-mini   # plus OPENAI_API_KEY and a route for it
 ```
 
 App dev ports: **web 3000**, **admin 3200**, **docs 3400** — 3100 is ragen-token-vault and 3001 is apps/api. `next dev` and `docusaurus start` both default to 3000, so every app but web pins `--port`.
@@ -368,16 +363,12 @@ Moved to [`docs/settings-pages.md`](docs/settings-pages.md) — see the Task Rou
 - Observability: OTel traces/metrics/logs via `src/instrumentation.ts` + `instrumentation-client.ts`; auto-instrumentation covers HTTP, Postgres, Prisma and outgoing `fetch`. **A no-op in apps/web unless `OTEL_EXPORTER_OTLP_ENDPOINT` is set**; the worker also traces on `LANGFUSE_SECRET_KEY` alone. LLM tracing is LiteLLM → Langfuse *and* app-level — see [ADR-22](docs/adrs/22-observability-opentelemetry.md).
 - Pre-commit: lint-staged runs `eslint --fix` + `prettier --write`, dispatching each file to its own workspace in `lint-staged.config.mjs` — add an entry there when you add a workspace. Conventional commits, enforced by commitlint.
 
-## LiteLLM Proxy
-
-Moved to [`docs/litellm-proxy.md`](docs/litellm-proxy.md) — see the Task Router.
-
 ## Model Defaults
 
 - **Chat**: env `DEFAULT_MODEL`, falling back to `gemini-3-flash-preview` (`defaultOrganizationSettings.model`). `gpt-5.4` is provisioned but not the default.
 - **Rephrase / multi-query expansion**: `gemini-2.5-flash` — do not upgrade without explicit approval
 - **Summary** (worker, ADR-16): `gemini-2.5-flash` — faster than `gpt-5.4-nano` for short outputs, strong Polish. Set via `SUMMARY_MODEL` in `apps/worker/src/consts.ts`.
-- Always verify against `infra/litellm/config.yaml` (older docs mentioned `gpt-4o`/`gpt-4.1-nano` which are no longer provisioned).
+- Always verify against `infra/llm-gateway/routes.yaml`, and that the credentials exist: `npm run gateway:preflight -- --probe` makes one real call per configured model.
 
 ## Per-Org Model Management
 

@@ -59,32 +59,6 @@ afterEach(() => {
 
 const load = () => import('./model-instances.js');
 
-describe('LLM_GATEWAY=litellm', () => {
-  beforeEach(() => {
-    // Named, not unset: `native` is the default now, so leaving this out
-    // selects the arm this block is not about.
-    process.env.LLM_GATEWAY = 'litellm';
-  });
-
-  it('builds chat through the proxy factory', async () => {
-    const { createChatCompletionInstance } = await load();
-
-    createChatCompletionInstance({ model: 'gpt-oss-120b' });
-
-    expect(createInstance).toHaveBeenCalledOnce();
-    expect(nativeChatInstance).not.toHaveBeenCalled();
-  });
-
-  it('builds embeddings through the proxy factory', async () => {
-    const { createEmbeddingsInstance } = await load();
-
-    createEmbeddingsInstance({ organizationId: 'org_1' });
-
-    expect(embeddingsCreateInstance).toHaveBeenCalledOnce();
-    expect(nativeEmbeddingInstance).not.toHaveBeenCalled();
-  });
-});
-
 describe('LLM_GATEWAY=native', () => {
   beforeEach(() => {
     process.env.LLM_GATEWAY = 'native';
@@ -113,7 +87,7 @@ describe('LLM_GATEWAY=native', () => {
     expect(embeddingsCreateInstance).not.toHaveBeenCalled();
   });
 
-  it('records embeddings usage against the gateway, not the proxy', async () => {
+  it('prices embeddings under the namespace the cost table actually has', async () => {
     const { createEmbeddingsInstance } = await load();
     const trackAiUsage = vi.fn();
 
@@ -122,7 +96,7 @@ describe('LLM_GATEWAY=native', () => {
     expect(TrackedEmbeddingsProvider).toHaveBeenCalledWith(
       expect.anything(),
       'qwen3-embedding-8b',
-      'llm-gateway',
+      'litellm',
       'org_1',
       undefined,
       undefined,

@@ -1,9 +1,8 @@
 # Attaching an external AI gateway
 
-Ragen calls model providers itself (`packages/llm-gateway`), which is what
-`LLM_GATEWAY=native` selects and what a deployment gets by default; `litellm`
-puts a proxy back in front, and switching either way takes that variable plus a
-redeploy. It is **not** the only option: any endpoint
+Ragen calls model providers itself (`packages/llm-gateway`), and that is now the
+only path — B6 removed the proxy mode and the flag that chose it. Attaching a
+gateway is therefore a *routing* decision rather than a mode: any endpoint
 that speaks OpenAI's
 `/v1/chat/completions` and `/v1/embeddings` can serve some or all of the
 models, chosen per model, with no change to any code.
@@ -90,7 +89,8 @@ contract.
 
 ## LiteLLM
 
-Ragen ran on a LiteLLM proxy until 2026-09
+Ragen ran on a LiteLLM proxy until 2026-09, and one can still sit in front —
+as a connection like any other, not as a mode
 ([ADR-04](adrs/04-litellm-unified-llm-gateway.md), superseded), so attaching one
 is well-trodden. It needs no headers:
 
@@ -107,9 +107,10 @@ LLM_LITELLM_BASE_URL=http://litellm:4000/v1
 LLM_LITELLM_API_KEY=<LITELLM_MASTER_KEY, or a virtual key>
 ```
 
-`infra/litellm/` still contains a working proxy configuration if you want a
-starting point. Note that `model:` here is LiteLLM's `model_name`, not the
-upstream's — LiteLLM does that mapping itself, which is most of what it is for.
+Note that `model:` here is LiteLLM's `model_name`, not the upstream's — LiteLLM
+does that mapping itself, which is most of what it is for. The proxy
+configuration this repository used to ship was removed with the proxy; start
+from LiteLLM's own documentation.
 
 ## vLLM, Ollama, TGI
 
@@ -151,7 +152,7 @@ routes:
 ## Checking it worked
 
 ```bash
-LLM_GATEWAY=native npm run gateway:preflight -- --probe
+npm run gateway:preflight -- --probe
 ```
 
 Resolves every model the deployment is configured to use and makes one real

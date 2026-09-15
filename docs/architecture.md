@@ -29,7 +29,6 @@ This is an npm-workspaces monorepo (`apps/*` + `packages/*`):
 │   │                             #   metadata, tenant-scope map (ADR-33)
 │   ├── storage/                  # File storage: local filesystem by default,
 │   │                             #   any S3-compatible store opt-in (ADR-27)
-│   ├── litellm-client/           # Proxy admin client (ADR-34)
 │   ├── vault-client/             # HMAC-signed token-vault client (ADR-32)
 │   ├── crypto/                   # Envelope encryption: the KeyProvider
 │   │                             #   interface, its Scaleway/AWS/local
@@ -44,12 +43,13 @@ This is an npm-workspaces monorepo (`apps/*` + `packages/*`):
 `packages/rag-core` exists because the worker writes the vectors the app queries.
 If the two sides disagree on the tokenizer, the hash, or the dimensionality,
 
-Supporting services — LiteLLM, Docling, Presidio and the OTel collector — live
-in `infra/`; see [`../infra/README.md`](../infra/README.md). Their Railway
-settings, including which Dockerfile each service builds, are dashboard
-settings rather than files in this repository
+Supporting services — Docling, Presidio and the OTel collector — live
+in `infra/`; see [`../infra/README.md`](../infra/README.md). Docling and
+Presidio each have a Railway service; the OTel collector is local only. For the
+two that are deployed, the Railway settings — including which Dockerfile each
+builds — are dashboard settings rather than files in this repository
 ([ADR-47](adrs/47-railway-configuration-lives-in-the-dashboard.md)), so moving
-one of these directories means editing that service in the Railway dashboard.
+either directory means editing that service in the dashboard.
 
 ## Inside `apps/web/src`
 
@@ -105,8 +105,7 @@ apps/web/src/
 
 The tree above is the map; this is what the modules actually do.
 
-- `llm/` — chat completion + embeddings factories through LiteLLM (`@ai-sdk/openai` `.chat()`)
-- `litellm/` — proxy client: dynamic model fetching, health checks
+- `llm/` — model instances through `@ragenai/llm-gateway`, and usage tracking
 - `chains/` — RAG chains (see `basic-rag/`)
 - `vector-store/` — Qdrant (the only supported backend), plus Meilisearch and Supabase clients implementing `VectorStoreClient` that are **not connected at the write end** — ingest writes to Qdrant unconditionally, so selecting either returns nothing. See [ADR-31](adrs/31-only-qdrant-is-a-supported-vector-store.md).
 - `reranker/` — Scaleway `/v1/rerank` (default) or Bedrock Cohere Rerank v3.5, selected by `RERANK_PROVIDER`

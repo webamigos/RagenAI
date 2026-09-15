@@ -69,19 +69,13 @@ export const DATABASE_GROUP = {
 export const GATEWAY_GROUP = {
   group: 'gateway',
   label: 'Model gateway',
-  required: ['LITELLM_PROXY_URL'],
-  // `LLM_GATEWAY` and `LLM_ROUTES_PATH` were in the schema but absent from this
-  // list, so the generated reference documented only half the contract — the
-  // half that is on its way out. They are the first thing a reader needs.
-  optional: ['LLM_GATEWAY', 'LLM_ROUTES_PATH', 'LITELLM_MASTER_KEY'],
+  required: [],
+  optional: ['LLM_ROUTES_PATH'],
   fields: {
-    LITELLM_PROXY_URL: 'url',
-    LITELLM_MASTER_KEY: 'masterKey',
-    LLM_GATEWAY: 'gateway',
     LLM_ROUTES_PATH: 'routesPath',
   },
   summary:
-    '`LLM_GATEWAY` decides how model calls are made: `native` (the default) has Ragen call providers itself through `@ragenai/llm-gateway` (ADR-49), `litellm` sends them to a proxy you run. Under `native` the route table names the upstream per model and credentials come per provider — the route table is `infra/llm-gateway/routes.yaml`, or `LLM_ROUTES_PATH` if you name your own, and those credentials have to be present in the web, api and worker processes rather than only in a proxy container. `LITELLM_PROXY_URL` is still required under both values, because the opt-in Cohere reranker falls back to it when `RERANK_COHERE_BASE_URL` is unset; under the proxy path an unset URL is not a degraded mode, it is no LLM at all.',
+    'Ragen calls model providers itself through `@ragenai/llm-gateway` (ADR-49). A route table names the upstream for each model id and credentials come per provider, so those credentials have to be present in the web, api and worker processes. The table is `infra/llm-gateway/routes.yaml`; `LLM_ROUTES_PATH` points at your own instead. There is no proxy path and no flag choosing between the two: B6 removed both, and an external gateway — Portkey, vLLM, Ollama, or a LiteLLM you run yourself — attaches as an `openai-compatible` route rather than as a mode.',
 } as const satisfies FieldGroup;
 
 export const VECTOR_STORE_GROUP = {

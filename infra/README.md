@@ -6,12 +6,11 @@ maintain around them — and not `packages/`, because nothing imports them.
 
 | Directory | What it is | Deployed as |
 |---|---|---|
-| `litellm/` | LiteLLM proxy: `config.yaml` is the **source of truth for every model name** the platform can use, plus a Dockerfile and entrypoint | its own Railway service |
 | `docling/` | IBM Docling parser used by the ingest worker (`DOCUMENT_PARSER=docling`, the default) | its own Railway service |
 | `presidio/analyzer/` | Presidio analyzer with Polish recognizers, for optional PII masking (ADR-24) | its own Railway service |
 | `otel/` | OpenTelemetry Collector config for the optional local observability stack | local only |
 
-The first three each have their own Railway service. **If you move a directory
+The first two each have their own Railway service. **If you move a directory
 here, the matching service's Dockerfile path has to change with it** — and that
 setting lives in the Railway dashboard, not in this repository. There is nothing
 in the tree to edit alongside the move, which is exactly why it is easy to
@@ -36,7 +35,7 @@ it working without installing Node.
 
 Compose fills `${VAR}` from your shell or the project's `.env`. The full-app
 stack wires services to each other by container name (`postgres:5432`,
-`http://litellm:4000`), so nothing there points at `localhost`.
+`http://qdrant:6333`), so nothing there points at `localhost`.
 
 `STORAGE_PROVIDER=local` is passed to web, api and worker together with a
 **shared `storage_data` volume**. They must agree: the worker writes documents

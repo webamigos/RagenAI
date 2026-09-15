@@ -64,30 +64,6 @@ afterEach(() => {
 
 const load = () => import('../llm');
 
-describe('LLM_GATEWAY=litellm', () => {
-  beforeEach(() => {
-    process.env.LLM_GATEWAY = 'litellm';
-  });
-
-  it('builds chat through the proxy factory', async () => {
-    const { createChatCompletionInstance } = await load();
-
-    createChatCompletionInstance({ model: 'gpt-oss-120b' });
-
-    expect(createInstance).toHaveBeenCalledOnce();
-    expect(nativeChatInstance).not.toHaveBeenCalled();
-  });
-
-  it('builds embeddings through the proxy factory', async () => {
-    const { createEmbeddingsInstance } = await load();
-
-    createEmbeddingsInstance({ organizationId: 'org_1' });
-
-    expect(embeddingsCreateInstance).toHaveBeenCalledOnce();
-    expect(nativeEmbeddingInstance).not.toHaveBeenCalled();
-  });
-});
-
 describe('LLM_GATEWAY=native', () => {
   beforeEach(() => {
     process.env.LLM_GATEWAY = 'native';
@@ -117,10 +93,13 @@ describe('LLM_GATEWAY=native', () => {
   });
 
   /**
-   * So a run's `ai_usage` rows say which arm produced them, rather than the
-   * arms being told apart only by when they were run.
+   * `litellm` is the pricing namespace, not a gateway. It held `llm-gateway`
+   * while the two arms were being told apart, and `calculateCost` has no such
+   * namespace — so every embedding row was priced at zero, which is what the
+   * monthly cost ceiling is computed from. The name moves when the pricing
+   * table does, in B6b, and not before.
    */
-  it('records embeddings usage against the gateway, not the proxy', async () => {
+  it('prices embeddings under the namespace the cost table actually has', async () => {
     const { createEmbeddingsInstance } = await load();
 
     createEmbeddingsInstance({ organizationId: 'org_1' });
@@ -128,7 +107,7 @@ describe('LLM_GATEWAY=native', () => {
     expect(TrackedEmbeddingsProvider).toHaveBeenCalledWith(
       expect.anything(),
       'qwen3-embedding-8b',
-      'llm-gateway',
+      'litellm',
       'org_1',
       undefined,
       undefined,
