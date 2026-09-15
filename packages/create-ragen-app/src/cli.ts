@@ -593,6 +593,8 @@ function providerFromEnvironment(
 
   // Same rule as the key: an explicit `--provider` that cannot be configured
   // stops the install rather than scaffolding a half-wired one.
+  // `.trim()` for the same reason the prompt does it: an exported variable
+  // carries whatever the shell had, and whitespace is not a base URL.
   const baseUrl = config.baseUrl
     ? process.env[config.baseUrl.envVar]?.trim()
     : undefined;
@@ -653,10 +655,14 @@ async function promptLlmProvider(): Promise<LlmProviderPromptResult> {
     if (clack.isCancel(answer)) {
       return { cancelled: true };
     }
-    if (!answer) {
+    // Trimmed before it is judged, not after. A pasted URL routinely carries a
+    // trailing newline or space, and a string of only whitespace is truthy —
+    // so `!answer` alone would accept "   " and write it as `SCW_API_BASE`,
+    // which is the half-wired install this prompt exists to prevent.
+    baseUrl = answer.trim();
+    if (!baseUrl) {
       return { cancelled: false, choice: undefined };
     }
-    baseUrl = answer;
   }
 
   return {

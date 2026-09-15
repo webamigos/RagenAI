@@ -145,3 +145,27 @@ describe('resolveLlmProviderChoice — one key, a working install', () => {
     expect(result.envUpdates.SCW_API_BASE).toBeUndefined();
   });
 });
+
+/**
+ * The value reaching `resolveLlmProviderChoice` is already trimmed by both
+ * callers, so this asserts what it does with what it is given rather than
+ * re-testing the prompt: a base URL is written verbatim, and nothing is
+ * written for a provider that has no second value.
+ */
+describe('resolveLlmProviderChoice — the second value', () => {
+  it('writes the base URL exactly as given', () => {
+    const result = resolveLlmProviderChoice(
+      'scaleway',
+      'k',
+      'https://api.scaleway.ai/p/v1',
+    );
+
+    expect(result.envUpdates.SCW_API_BASE).toBe('https://api.scaleway.ai/p/v1');
+  });
+
+  it('writes no base URL when the provider declares none, even if one is passed', () => {
+    const result = resolveLlmProviderChoice('openai', 'k', 'https://ignored');
+
+    expect(Object.keys(result.envUpdates)).not.toContain('SCW_API_BASE');
+  });
+});

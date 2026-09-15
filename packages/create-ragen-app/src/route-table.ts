@@ -14,8 +14,11 @@ export interface RouteTableEntry {
   /**
    * Which credentials an `openai-compatible` route uses, and therefore which
    * `LLM_<NAME>_*` variables it reads. Omitted for providers with one upstream.
-   * Without it a Scaleway route resolves to the generic connection, finds no
-   * base URL, and fails at the first call rather than at install time.
+   * An `openai-compatible` route is not optional about it: resolving one with
+   * no connection throws `MissingCredentialsError` naming "a `connection` on
+   * the route", before any `LLM_*` variable is read. So omitting it scaffolds
+   * an install that refuses to serve the model at all, rather than one that
+   * reaches the wrong upstream.
    */
   connection?: string;
 }
