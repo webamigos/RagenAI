@@ -1,0 +1,100 @@
+# Changelog notes
+
+Raw material for the Friday blog post
+([EN](https://ragen.ai/en/blog), [PL](https://ragen.ai/pl/blog)), collected while
+the work is fresh instead of reconstructed from `git log` on Friday morning.
+
+The post itself opens by explaining why this file has to exist: *"Ragen gets a
+new version on every merge to main, so the number on its own says very little."*
+A commit list is not a changelog. The translation from "what we merged" to "what
+someone notices" is easy in the hour you merged it and expensive a week later —
+that translation is the only thing this file is for.
+
+## What belongs here
+
+One test: **would a user, an admin or a self-hoster notice?** If the answer is
+no, it does not go here, however hard the work was.
+
+Write the **effect**, not the change. The difference, from a real example:
+
+> ✗ B2a — the seam that chooses a path, plus embeddings
+> ✓ Ragen can call model providers directly now, so LiteLLM becomes optional
+>   rather than required.
+
+The first is true and useless; it names an internal step by its plan letter. The
+second is the same commit described to the person running it.
+
+Keep it to a sentence or two. This is a note to your Friday self, not a draft —
+the post gets written from these, not out of them.
+
+## What does not belong here
+
+There are four other places, and an item in the wrong one is lost:
+
+| | |
+| --- | --- |
+| [`adrs/`](adrs/) | **why** a decision was made, and what it rules out |
+| [`lessons.md`](lessons.md) | what went **wrong**, so nobody re-discovers it |
+| [`specs/`](specs/) | what we intend to build, before building it |
+| [the `/changelog` page](https://docs.ragen.ai/changelog) | release notes, generated from GitHub Releases — no hand-editing |
+
+Overlap is fine and expected: the gateway work below is an ADR, a lesson *and* a
+changelog note, because "why we chose this", "what bit us" and "what you get"
+are three different sentences for three different readers. Write all three.
+
+## Conventions
+
+- **English.** Both posts exist and the Polish one is the translation; the repo
+  is English throughout. A Polish phrase that already reads well can sit in
+  brackets rather than be lost.
+- **Tag each entry `[major]` or `[brief]`.** The post gives major items their own
+  section with a heading and two or three paragraphs, and sweeps the rest into
+  *In brief* / *Krócej*. Deciding this at merge time is most of Friday's work.
+- **Name the thread** where one is obvious. The posts group a fortnight into two
+  or three threads ("September had two clear threads: an answer that shows where
+  it came from, and a new interface") — that grouping is much easier to see from
+  inside the week than from the commit list.
+- **Link the PR**, so the detail is one click away and the note can stay short.
+- **Be accurate about what actually shipped.** A note written from intent rather
+  than from the merge is how a post claims a thing that is still behind a flag.
+
+## After publishing
+
+Replace the week's section with a single line linking the published post, and
+start a fresh `## Unreleased`. The value here is the un-published backlog; the
+archive is the blog.
+
+---
+
+## Unreleased
+
+### Thread: the application calls model providers itself
+
+- `[major]` **Ragen can call model providers directly, so LiteLLM stops being a
+  required service.** It used to proxy every model call; now that is one of two
+  paths, chosen by `LLM_GATEWAY`. For a self-hoster this is one fewer service to
+  run and one fewer set of credentials to keep in step.
+  **Not yet the default** — `litellm` still is, while the native path is watched
+  on demo. Do not write this up as done until that flips.
+  ([#1175](https://github.com/webamigos/RagenAI/pull/1175), ADR-49)
+
+- `[major]` **Any OpenAI-compatible gateway can be attached instead** — Portkey,
+  vLLM, Ollama, or LiteLLM itself. The point is that the seam is not
+  LiteLLM-shaped: it takes an endpoint, so the choice of gateway (or of none)
+  belongs to whoever runs the deployment.
+  ([`attaching-a-gateway.md`](attaching-a-gateway.md))
+
+- `[brief]` **Speech was returning 404 in every environment and now works.** It
+  was pointed at the proxy, which serves no audio route. Worth a line precisely
+  because nobody reported it — it had never worked.
+  ([#1175](https://github.com/webamigos/RagenAI/pull/1175))
+
+- `[brief]` **Per-team rate limits are enforced by Ragen itself**, instead of by
+  LiteLLM virtual keys. Same limits, no longer dependent on the proxy being in
+  the path.
+  ([#1175](https://github.com/webamigos/RagenAI/pull/1175))
+
+- `[brief]` **`npm run gateway:preflight --probe`** makes one real call per
+  configured model and says whether a deployment can actually serve what it is
+  configured to use — before a cutover rather than after the first 5xx.
+  ([#1175](https://github.com/webamigos/RagenAI/pull/1175))
