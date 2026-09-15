@@ -6,8 +6,9 @@ import { OrganizationSettingsService } from '../organizations/organization-setti
 import { StorageUsageService } from '../organizations/storage-usage.service.js';
 import { FoldersService } from './folders.service.js';
 import { S3StorageService } from '../storage/s3-storage.service.js';
-import { TemporalClientService } from '../temporal/temporal-client.service.js';
-import { Workflow } from '../temporal/temporal.consts.js';
+import { JobsService } from '../jobs/jobs.service.js';
+import { Workflow } from '../jobs/jobs.consts.js';
+import { toRunFileEmbeddingsPayload } from '@ragenai/jobs';
 import { parseFile } from './parse-file.js';
 import { PiiPolicy, type UserFile } from '../generated/prisma/client.js';
 import { SubscriptionsService } from '../subscriptions/subscriptions.service.js';
@@ -62,7 +63,7 @@ export type UploadFileResult = {
  *   3. Create the `UserFile` row
  *   4. Upload raw bytes to S3 (rolls back the DB row on failure)
  *   5. Mark `isUploaded: true`
- *   6. Start the `runFileEmbeddings` Temporal workflow
+ *   6. Start the `runFileEmbeddings` job
  *
  * Throws `UploadRejectedError` on expected rejections (limits, S3/
  * workflow failure). Unexpected failures bubble up unchanged.
@@ -86,7 +87,7 @@ export class UploadFileService {
     private readonly folders: FoldersService,
     private readonly auditLog: AuditLogService,
     private readonly s3: S3StorageService,
-    private readonly temporal: TemporalClientService,
+    private readonly jobs: JobsService,
     private readonly subscriptions: SubscriptionsService,
   ) {}
 
@@ -222,21 +223,18 @@ export class UploadFileService {
 
     const workflowId = `doc-${randomUUID()}`;
     try {
-      await this.temporal.startWorkflow(
+      await this.jobs.start(
         Workflow.RUN_FILE_EMBEDDINGS,
         workflowId,
-        [
-          {
-            ...updatedRecord,
-            projectId,
-            organizationSlug: organizationSlug ?? undefined,
-            organizationId,
-            userEmail: userEmail ?? undefined,
-            userId: userId ?? undefined,
-            requestId: workflowId,
-            piiPolicy: resolvedPiiPolicy,
-          },
-        ],
+        toRunFileEmbeddingsPayload(updatedRecord, {
+          projectId,
+          organizationSlug: organizationSlug ?? undefined,
+          organizationId,
+          userEmail: userEmail ?? undefined,
+          userId: userId ?? undefined,
+          requestId: workflowId,
+          piiPolicy: resolvedPiiPolicy,
+        }),
       );
     } catch (wfErr) {
       // The file is already in S3 and the DB. We intentionally don't

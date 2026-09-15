@@ -9,7 +9,7 @@ import {
 import { getActiveMember } from '@/lib/auth-guards';
 import { canManageOrg } from '@/lib/auth-access-control';
 import { deleteFileCommand } from '@/features/documents/services/commands/delete-file-command';
-import { getTemporalClient, TASK_QUEUE_NAME } from '@/libs/temporal';
+import { jobs } from '@/libs/jobs';
 import { Workflow } from '@/features/documents/contracts/document.types';
 import {
   EmbeddingStatus,
@@ -20,6 +20,7 @@ import type { PermissionLevel } from '@/features/documents/contracts/permission.
 import { logger } from '@/app/lib/utils/logger';
 import { UnauthorizedException } from '@/libs/utils/errors';
 import { ragenApiRequest } from '@/libs/ragen-api-client/client';
+import { toRunFileEmbeddingsPayload } from '@ragenai/jobs';
 
 type OperationResult = { success: true } | { success: false; error: string };
 
@@ -236,17 +237,11 @@ export async function bulkReembedFilesAction(
   for (const fileRecord of fileRecords) {
     const workflowId = `reembed-${nanoid()}`;
     try {
-      const client = getTemporalClient();
-      await client.workflow.start(Workflow.RUN_FILE_EMBEDDINGS, {
-        taskQueue: TASK_QUEUE_NAME,
+      await jobs().start(
+        Workflow.RUN_FILE_EMBEDDINGS,
         workflowId,
-        args: [
-          {
-            ...fileRecord,
-            requestId: workflowId,
-          },
-        ],
-      });
+        toRunFileEmbeddingsPayload(fileRecord, { requestId: workflowId }),
+      );
       await db.userFile.update({
         where: { id: fileRecord.id },
         data: {
@@ -261,7 +256,7 @@ export async function bulkReembedFilesAction(
     } catch (err) {
       logger.error(
         { err, fileId: fileRecord.id },
-        'bulkReembedFilesAction: workflow start failed',
+        'bulkReembedFilesAction: job start failed',
       );
       failed.push({
         fileId: fileRecord.id,

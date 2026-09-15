@@ -6,7 +6,8 @@ import { FileType } from '@/generated/prisma/client';
 import { logger } from '@/app/lib/utils/logger';
 import { getDriveFileContentQuery } from '../queries/get-drive-file-content-query';
 import { uploadToS3WithOrg } from '@/app/lib/services/storage';
-import { getTemporalClient, TASK_QUEUE_NAME } from '@/libs/temporal';
+import { jobs } from '@/libs/jobs';
+import { toRunFileEmbeddingsPayload } from '@ragenai/jobs';
 import { Workflow } from '@/features/documents/contracts/document.types';
 import { assertCanManageDocuments } from '@/features/subscriptions/services/feature-guards';
 
@@ -114,21 +115,17 @@ export const importDriveFileToProjectCommand = async (
 
   // Start embedding workflow
   const workflowId = `drive-file-${nanoid()}`;
-  const temporalClient = getTemporalClient();
-  await temporalClient.workflow.start(Workflow.RUN_FILE_EMBEDDINGS, {
-    taskQueue: TASK_QUEUE_NAME,
+  await jobs().start(
+    Workflow.RUN_FILE_EMBEDDINGS,
     workflowId,
-    args: [
-      {
-        ...fileRecord,
-        projectId: project.id,
-        organizationSlug: org.slug,
-        organizationId: org.id,
-        userEmail: user?.email ?? undefined,
-        userId,
-      },
-    ],
-  });
+    toRunFileEmbeddingsPayload(fileRecord, {
+      projectId: project.id,
+      organizationSlug: org.slug ?? undefined,
+      organizationId: org.id,
+      userEmail: user?.email ?? undefined,
+      userId,
+    }),
+  );
 
   logger.info(
     { workflowId, driveFileId, fileName: driveFileName },

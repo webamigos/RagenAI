@@ -8,7 +8,7 @@ import {
 } from '@/app/lib/utils/auth-helpers';
 import { applySuggestionsCommand } from '@/features/documents/services/commands/apply-suggestions-command';
 import { Workflow } from '@/features/documents/contracts/document.types';
-import { getTemporalClient, TASK_QUEUE_NAME } from '@/libs/temporal';
+import { jobs } from '@/libs/jobs';
 import db from '@ragenai/prisma-client';
 import {
   getDocumentActor,
@@ -83,26 +83,23 @@ export async function POST(
       });
 
       try {
-        const client = getTemporalClient();
         // Embeds the optimized text directly. The earlier approach overwrote
         // the stored file with it so that RUN_FILE_EMBEDDINGS would pick it
         // up — which destroys the user's original whenever it is not already
         // plain text: UTF-8 written under <id>.pdf is a PDF that no longer
         // opens.
-        await client.workflow.start(Workflow.REINDEX_DOCUMENT_VERSION, {
-          taskQueue: TASK_QUEUE_NAME,
-          workflowId: `reindex-${id}-${nanoid()}`,
-          args: [
-            {
-              orgId,
-              fileId: file.id,
-              fileName: file.fileName,
-              projectId: file.projectId,
-              userId,
-              content: doc?.content ?? '',
-            },
-          ],
-        });
+        await jobs().start(
+          Workflow.REINDEX_DOCUMENT_VERSION,
+          `reindex-${id}-${nanoid()}`,
+          {
+            orgId,
+            fileId: file.id,
+            fileName: file.fileName,
+            projectId: file.projectId,
+            userId,
+            content: doc?.content ?? '',
+          },
+        );
         reindexStarted = true;
       } catch (err) {
         // The document is already rewritten and versioned; reporting failure

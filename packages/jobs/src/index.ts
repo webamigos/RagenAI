@@ -19,6 +19,8 @@ export {
   type PruneAnalyticsRetrievalsResult,
 } from './contract';
 
+export { type IngestFileRow, toRunFileEmbeddingsPayload } from './payloads';
+
 export {
   type JobRuntime,
   type JobRun,

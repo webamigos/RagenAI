@@ -1,10 +1,11 @@
 import { nanoid } from 'nanoid';
 import db from '@ragenai/prisma-client';
-import { getTemporalClient, TASK_QUEUE_NAME } from '@/libs/temporal';
+import { jobs } from '@/libs/jobs';
 import { Workflow } from '@/features/documents/contracts/document.types';
 import { logger } from '@/app/lib/utils/logger';
 import { NotFoundException } from '@/libs/utils/errors';
 import { persistUserFileUpdateWithRetry } from '@/features/documents/utils/persist-user-file-update-with-retry';
+import { toRunFileEmbeddingsPayload } from '@ragenai/jobs';
 
 export async function reembedFileCommand(
   fileId: string,
@@ -21,25 +22,11 @@ export async function reembedFileCommand(
   const workflowId = `reembed-${nanoid()}`;
 
   try {
-    const client = getTemporalClient();
-    await client.workflow.start(Workflow.RUN_FILE_EMBEDDINGS, {
-      taskQueue: TASK_QUEUE_NAME,
+    await jobs().start(
+      Workflow.RUN_FILE_EMBEDDINGS,
       workflowId,
-      args: [
-        {
-          ...file,
-          uploadedAt: file.uploadedAt?.toISOString() ?? null,
-          parsingStartedAt: file.parsingStartedAt?.toISOString() ?? null,
-          parsingCompletedAt: file.parsingCompletedAt?.toISOString() ?? null,
-          parsingFailedAt: file.parsingFailedAt?.toISOString() ?? null,
-          embeddingStartedAt: file.embeddingStartedAt?.toISOString() ?? null,
-          embeddingCompletedAt:
-            file.embeddingCompletedAt?.toISOString() ?? null,
-          embeddingFailedAt: file.embeddingFailedAt?.toISOString() ?? null,
-          requestId: workflowId,
-        },
-      ],
-    });
+      toRunFileEmbeddingsPayload(file, { requestId: workflowId }),
+    );
   } catch (wfErr) {
     logger.error({ err: wfErr, fileId }, 'Failed to start re-embed workflow');
     throw wfErr;

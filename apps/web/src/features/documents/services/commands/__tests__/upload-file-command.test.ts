@@ -18,12 +18,9 @@ vi.mock('@/app/lib/services/storage', () => ({
   uploadToS3WithOrg: (...args: unknown[]) => mockUploadToS3(...args),
 }));
 
-const mockWorkflowStart = vi.fn();
-vi.mock('@/libs/temporal', () => ({
-  getTemporalClient: () => ({
-    workflow: { start: (...args: unknown[]) => mockWorkflowStart(...args) },
-  }),
-  TASK_QUEUE_NAME: 'ragen-tasks',
+const mockJobStart = vi.fn();
+vi.mock('@/libs/jobs', () => ({
+  jobs: () => ({ start: (...args: unknown[]) => mockJobStart(...args) }),
 }));
 
 vi.mock('@/features/documents/contracts/document.types', () => ({
@@ -109,7 +106,7 @@ describe('uploadFileCommand', () => {
       organizationId: 'org-1',
     });
     mockUploadToS3.mockResolvedValue(undefined);
-    mockWorkflowStart.mockResolvedValue(undefined);
+    mockJobStart.mockResolvedValue(undefined);
     mockUserFileDelete.mockResolvedValue(undefined);
   });
 
@@ -132,12 +129,10 @@ describe('uploadFileCommand', () => {
       where: { id: 'file-1', organizationId: 'org-1' },
       data: expect.objectContaining({ isUploaded: true }),
     });
-    expect(mockWorkflowStart).toHaveBeenCalledWith(
+    expect(mockJobStart).toHaveBeenCalledWith(
       'runFileEmbeddings',
-      expect.objectContaining({
-        taskQueue: 'ragen-tasks',
-        workflowId: expect.stringMatching(/^doc-/),
-      }),
+      expect.stringMatching(/^doc-/),
+      expect.objectContaining({ id: 'file-1' }),
     );
     expect(result).toMatchObject({
       fileRecord: expect.objectContaining({ id: 'file-1' }),
@@ -221,7 +216,7 @@ describe('uploadFileCommand', () => {
   });
 
   it('surfaces workflow start failures (DB + S3 remain)', async () => {
-    mockWorkflowStart.mockRejectedValue(new Error('temporal down'));
+    mockJobStart.mockRejectedValue(new Error('temporal down'));
 
     await expect(
       uploadFileCommand({
@@ -246,11 +241,10 @@ describe('uploadFileCommand', () => {
       piiPolicy: PiiPolicy.STRICT,
     });
 
-    expect(mockWorkflowStart).toHaveBeenCalledWith(
+    expect(mockJobStart).toHaveBeenCalledWith(
       'runFileEmbeddings',
-      expect.objectContaining({
-        args: [expect.objectContaining({ piiPolicy: 'STRICT' })],
-      }),
+      expect.any(String),
+      expect.objectContaining({ piiPolicy: 'STRICT' }),
     );
     // Should not query folder when piiPolicy is explicitly provided
     expect(mockGetFolderPiiPolicy).not.toHaveBeenCalled();
@@ -264,11 +258,10 @@ describe('uploadFileCommand', () => {
       projectId: null,
     });
 
-    expect(mockWorkflowStart).toHaveBeenCalledWith(
+    expect(mockJobStart).toHaveBeenCalledWith(
       'runFileEmbeddings',
-      expect.objectContaining({
-        args: [expect.objectContaining({ piiPolicy: 'TOXIC_ONLY' })],
-      }),
+      expect.any(String),
+      expect.objectContaining({ piiPolicy: 'TOXIC_ONLY' }),
     );
     expect(mockGetFolderPiiPolicy).not.toHaveBeenCalled();
   });
@@ -285,11 +278,10 @@ describe('uploadFileCommand', () => {
     });
 
     expect(mockGetFolderPiiPolicy).toHaveBeenCalledWith('folder-1', 'org-1');
-    expect(mockWorkflowStart).toHaveBeenCalledWith(
+    expect(mockJobStart).toHaveBeenCalledWith(
       'runFileEmbeddings',
-      expect.objectContaining({
-        args: [expect.objectContaining({ piiPolicy: 'NONE' })],
-      }),
+      expect.any(String),
+      expect.objectContaining({ piiPolicy: 'NONE' }),
     );
   });
 });

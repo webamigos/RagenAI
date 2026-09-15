@@ -7,7 +7,7 @@ import {
 } from '@/app/lib/utils/auth-helpers';
 import { rollbackDocumentVersionCommand } from '@/features/documents/services/commands/rollback-document-version-command';
 import { Workflow } from '@/features/documents/contracts/document.types';
-import { getTemporalClient, TASK_QUEUE_NAME } from '@/libs/temporal';
+import { jobs } from '@/libs/jobs';
 import db from '@ragenai/prisma-client';
 import {
   getDocumentActor,
@@ -62,24 +62,17 @@ export async function POST(
     if (file) {
       const workflowId = `reindex-${id}-${nanoid()}`;
       try {
-        const client = getTemporalClient();
         // Deliberately not RUN_FILE_EMBEDDINGS: that re-parses the stored file,
         // which still holds the original upload, so it would undo the rollback
-        // in the index. This workflow embeds the version text and clears the
+        // in the index. This job embeds the version text and clears the
         // previous chunks first.
-        await client.workflow.start(Workflow.REINDEX_DOCUMENT_VERSION, {
-          taskQueue: TASK_QUEUE_NAME,
-          workflowId,
-          args: [
-            {
-              orgId,
-              fileId: file.id,
-              fileName: file.fileName,
-              projectId: file.projectId,
-              userId,
-              content: newVersion.content,
-            },
-          ],
+        await jobs().start(Workflow.REINDEX_DOCUMENT_VERSION, workflowId, {
+          orgId,
+          fileId: file.id,
+          fileName: file.fileName,
+          projectId: file.projectId,
+          userId,
+          content: newVersion.content,
         });
       } catch (err) {
         // The rollback itself succeeded; reporting failure would invite the

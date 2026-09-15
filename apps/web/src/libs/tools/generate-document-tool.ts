@@ -2,7 +2,7 @@ import { z, toJSONSchema } from 'zod';
 import { jsonSchema } from 'ai';
 import { nanoid } from 'nanoid';
 import { ragenAuthClient } from '@/libs/ragen-vault/client';
-import { getTemporalClient, TASK_QUEUE_NAME } from '@/libs/temporal';
+import { jobs } from '@/libs/jobs';
 import { Workflow } from '@/features/documents/contracts/document.types';
 import { logger } from '@/app/lib/utils/logger';
 
@@ -98,22 +98,15 @@ export function createGenerateDocumentTool(ctx: GenerateDocumentToolContext) {
       const workflowId = `docgen-${ctx.orgId}-${nanoid()}`;
 
       try {
-        const client = getTemporalClient();
-        await client.workflow.start(Workflow.GENERATE_DOCUMENT, {
-          workflowId,
-          taskQueue: TASK_QUEUE_NAME,
-          args: [
-            {
-              templateName,
-              rawInput: { content: rawInput },
-              clientName,
-              driveFolderId,
-              driveAccessToken,
-              orgId: ctx.orgId,
-              userId: ctx.userId,
-              userEmail: ctx.userEmail,
-            },
-          ],
+        await jobs().start(Workflow.GENERATE_DOCUMENT, workflowId, {
+          templateName,
+          rawInput: { content: rawInput },
+          clientName,
+          driveFolderId,
+          driveAccessToken,
+          orgId: ctx.orgId,
+          userId: ctx.userId,
+          userEmail: ctx.userEmail,
         });
       } catch (error) {
         logger.error(

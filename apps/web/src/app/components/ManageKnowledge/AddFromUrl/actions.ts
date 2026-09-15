@@ -10,7 +10,7 @@ import { logger } from '@/app/lib/utils/logger';
 import { getDefaultProjectIdQuery as fetchOrganizationDefaultProjectId } from '@/features/projects/services/queries/get-default-project-query';
 import { saveOrganizationPublicMetadataCommand as saveOrganizationPublicMetadata } from '@/features/organizations/services/commands/save-organization-metadata-command';
 import { type WebsiteLoaderMode } from '@/features/documents/contracts/document.types';
-import { getTemporalClient, TASK_QUEUE_NAME } from '@/libs/temporal';
+import { jobs } from '@/libs/jobs';
 import {
   type ScrapeWebsiteWorkflowPayload,
   Workflow,
@@ -64,7 +64,6 @@ export async function processUrl(
     const fullFileName = `${url}-${mode}`;
 
     const websiteWorkflowId = `web-${nanoid()}`;
-    const client = getTemporalClient();
 
     const websiteWorkflowPayload: ScrapeWebsiteWorkflowPayload = {
       url,
@@ -76,16 +75,16 @@ export async function processUrl(
       userId: user?.id ?? undefined,
     };
 
-    const embeddingsHandle = await client.workflow.start(
+    await jobs().start(
       Workflow.SCRAPE_WEBSITE,
-      {
-        taskQueue: TASK_QUEUE_NAME,
-        workflowId: websiteWorkflowId,
-        args: [websiteWorkflowPayload],
-      },
+      websiteWorkflowId,
+      websiteWorkflowPayload,
     );
 
-    logger.info('embeddingsHandle: %j', embeddingsHandle, 2);
+    logger.info(
+      { workflowId: websiteWorkflowId },
+      'Scrape website job started',
+    );
 
     // ==== LEGACY CODE BELOW
     // const fullFileName = `${url}-${mode}`;

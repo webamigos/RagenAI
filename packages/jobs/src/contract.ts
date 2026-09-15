@@ -164,6 +164,17 @@ export interface OptimizeDocumentPayload {
   userId?: string | null;
   documentText: string;
   documentTitle?: string;
+  /**
+   * The active version's RAG score, carried so the job row shows it while the
+   * run is still `processing`.
+   *
+   * Absent from every type this payload has ever had, and sent by the route
+   * and read by `optimizeDocumentSuggestions` regardless — an untyped
+   * `args: [...]` is what let the two agree behind the type's back. Typing the
+   * producer side is what surfaced it; dropping the field instead would blank
+   * a score the UI already shows.
+   */
+  baseScore?: number | null;
 }
 
 export interface ScoreDocumentPayload {
