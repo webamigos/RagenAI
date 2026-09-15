@@ -245,12 +245,58 @@ export const MAIL_SEAM = {
   },
 } as const satisfies ProviderSeam;
 
+/**
+ * Text-to-speech and speech-to-text.
+ *
+ * No default variant, and unlike mail, **unset means off** rather than
+ * "detect from credentials". `getTtsProvider()` returns `null` when nothing
+ * selects a provider, and a null provider is a feature that is simply absent —
+ * not a degraded mode. Speech bills per request and sits outside the core loop,
+ * so an `OPENAI_API_KEY` present for chat must not quietly enable it.
+ * `ELEVENLABS_API_KEY` does select ElevenLabs, because that key has no other
+ * use here.
+ *
+ * `openai` means **OpenAI's `/v1/audio/*` API**, not OpenAI the company:
+ * `SPEECH_BASE_URL` points it at vLLM, a LiteLLM proxy, or any host that speaks
+ * the same shape (Q6). Before B3 it read `LITELLM_PROXY_URL` and there was no
+ * way to say otherwise — which was worse than a missing option, because the
+ * shipped proxy config registers no audio route, so choosing `openai` in any
+ * deployment that had a proxy URL produced a 404 per request.
+ */
+export const SPEECH_SEAM = {
+  discriminant: 'SPEECH_PROVIDER',
+  group: 'speech',
+  label: 'Speech',
+  whenUnset:
+    'Unset leaves speech off, unless `ELEVENLABS_API_KEY` is set, which selects ElevenLabs. Deliberately not detected from `OPENAI_API_KEY`: that key is there for chat, and speech bills per request.',
+  variants: {
+    elevenlabs: {
+      required: ['ELEVENLABS_API_KEY'],
+      fields: { ELEVENLABS_API_KEY: 'apiKey' },
+      summary: 'ElevenLabs, for both synthesis and transcription.',
+    },
+    openai: {
+      required: [],
+      optional: ['SPEECH_BASE_URL', 'SPEECH_API_KEY', 'TTS_MODEL', 'STT_MODEL'],
+      fields: {
+        SPEECH_BASE_URL: 'baseUrl',
+        SPEECH_API_KEY: 'apiKey',
+        TTS_MODEL: 'ttsModel',
+        STT_MODEL: 'sttModel',
+      },
+      summary:
+        "OpenAI's `/v1/audio/*` API. Nothing is required here because `SPEECH_API_KEY` falls back to `OPENAI_API_KEY`, which a deployment reaching OpenAI already has; `SPEECH_BASE_URL` defaults to OpenAI itself and is how you point at vLLM or a proxy instead.",
+    },
+  },
+} as const satisfies ProviderSeam;
+
 /** Every seam, for a consumer that renders or checks all of them. */
 export const PROVIDER_SEAMS = [
   STORAGE_SEAM,
   ENCRYPTION_SEAM,
   RERANK_SEAM,
   MAIL_SEAM,
+  SPEECH_SEAM,
 ] as const;
 
 /** The variant names of a seam — `'local' | 's3'` for storage. */

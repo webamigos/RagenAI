@@ -18,6 +18,7 @@ export {
   encryptionRules,
   fieldGroupRules,
   seamRule,
+  speechRules,
   storageRules,
 } from './provider-rules';
 
@@ -47,6 +48,7 @@ export {
   MAIL_SEAM,
   RERANK_SEAM,
   PROVIDER_SEAMS,
+  SPEECH_SEAM,
   STORAGE_SEAM,
   type ProviderSeam,
   type RequiredVarsOf,

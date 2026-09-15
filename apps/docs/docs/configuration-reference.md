@@ -133,6 +133,29 @@ Log the message instead of sending it. What a laptop wants, and an explicit way 
 
 Needs nothing else.
 
+### Speech
+
+Chosen with `SPEECH_PROVIDER`. Unset leaves speech off, unless `ELEVENLABS_API_KEY` is set, which selects ElevenLabs. Deliberately not detected from `OPENAI_API_KEY`: that key is there for chat, and speech bills per request.
+
+#### `SPEECH_PROVIDER=elevenlabs`
+
+ElevenLabs, for both synthesis and transcription.
+
+| Variable             | Config field |              |
+| -------------------- | ------------ | ------------ |
+| `ELEVENLABS_API_KEY` | `apiKey`     | **required** |
+
+#### `SPEECH_PROVIDER=openai`
+
+OpenAI's `/v1/audio/*` API. Nothing is required here because `SPEECH_API_KEY` falls back to `OPENAI_API_KEY`, which a deployment reaching OpenAI already has; `SPEECH_BASE_URL` defaults to OpenAI itself and is how you point at vLLM or a proxy instead.
+
+| Variable          | Config field |          |
+| ----------------- | ------------ | -------- |
+| `SPEECH_BASE_URL` | `baseUrl`    | optional |
+| `SPEECH_API_KEY`  | `apiKey`     | optional |
+| `TTS_MODEL`       | `ttsModel`   | optional |
+| `STT_MODEL`       | `sttModel`   | optional |
+
 ## Settings
 
 No choice to make — these are the same variables whatever else is

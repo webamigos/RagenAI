@@ -264,6 +264,35 @@ export const reranker = z.object({
 });
 
 /**
+ * Text-to-speech and speech-to-text.
+ *
+ * `SPEECH_PROVIDER` is optional, and unset means **off** rather than
+ * "detect something": `getTtsProvider()` returns `null` unless
+ * `ELEVENLABS_API_KEY` is set or the variable names a provider. Speech costs
+ * money per request and is not part of the core product loop, so turning it on
+ * because a key happened to be present is the wrong default — mail can detect,
+ * this should not.
+ *
+ * `SPEECH_BASE_URL` is what separates this from an OpenAI-only integration. The
+ * `openai` variant speaks OpenAI's `/v1/audio/*` API, which vLLM, a LiteLLM
+ * proxy and several hosted providers also speak; pointing the base URL
+ * elsewhere is the supported way to use one (Q6). It used to read
+ * `LITELLM_PROXY_URL`, which was worse than useless — the shipped proxy config
+ * registers no audio route at all, so every deployment that set the proxy URL
+ * and chose `openai` got a 404 per request.
+ */
+export const speech = z.object({
+  SPEECH_PROVIDER: blankAsUndefined(
+    z.enum(['elevenlabs', 'openai']).optional(),
+  ),
+  SPEECH_BASE_URL: blankAsUndefined(httpUrl().optional()),
+  SPEECH_API_KEY: z.string().optional(),
+  TTS_MODEL: blankAsUndefined(z.string().optional()),
+  STT_MODEL: blankAsUndefined(z.string().optional()),
+  ELEVENLABS_API_KEY: z.string().optional(),
+});
+
+/**
  * Outgoing mail.
  *
  * `MAIL_PROVIDER` is optional and usually unset: `getMailProvider()` detects

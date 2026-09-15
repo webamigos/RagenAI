@@ -158,6 +158,20 @@ promising.
   preferences, gated the way `reasoning_effort` is. Not part of Phase B; it
   changes no existing behaviour, because there is none.
 
+  **There is a first-party AI SDK provider for it** — `@openrouter/ai-sdk-provider`,
+  v3.0.0, peer-depending on `ai: ^7.0.0`, which is the version this monorepo
+  runs since B0c. So the fifth family is an adapter of the same three lines as
+  the other four, not a hand-written client, and it lands in
+  `PROVIDER_FACTORIES` beside `createOpenAI` and `createVertex`. Not installed
+  here yet.
+
+  The one thing to verify while implementing rather than assume: that the
+  package exposes OpenRouter's `provider` routing preferences (order, ZDR,
+  `data_collection`) through `providerOptions`. If it does not, the family is
+  still worth having for the model catalogue, but the EU/ZDR guarantees remain
+  unenforced — which is the part that has to be true before
+  `docs/model-routing.md` can describe them as real.
+
   **Independently of the answer, `docs/model-routing.md` documents behaviour
   that does not exist** and should either be implemented or marked as not
   implemented. A reader today would configure `OPENROUTER_ZDR=true` and get
@@ -927,9 +941,36 @@ resumes:
             against the process's cwd, which no app in this monorepo shares with
             the repository root — the worker marked four documents FAILED rather
             than saying anything about configuration.
-- [ ] **B3.** Move speech and transcription
+- [x] **B3.** Move speech and transcription
       ([openai-provider.ts](../../apps/web/src/libs/speech/openai-provider.ts))
-      off `LITELLM_PROXY_URL`.
+      off `LITELLM_PROXY_URL`. Done 2026-09-15.
+
+      Not a cleanup — **a fix.** Both providers preferred `LITELLM_PROXY_URL`
+      over OpenAI's own endpoint, and `infra/litellm/config.yaml` registers no
+      `/v1/audio/*` route and never has. Since the proxy URL is *required* by
+      every app's env schema, the fallback to `api.openai.com` was unreachable
+      in exactly the deployments that needed it: `SPEECH_PROVIDER=openai` meant
+      a 404 per synthesis and per transcription, everywhere.
+
+      Replaced by `SPEECH_BASE_URL` (default `https://api.openai.com`) and
+      `SPEECH_API_KEY` (falling back to `OPENAI_API_KEY`), declared as
+      `SPEECH_SEAM` in `provider-seams.ts` alongside storage, encryption,
+      rerank and mail. That makes attaching a local vLLM — or a LiteLLM that
+      *has* been given audio routes — configuration rather than the one
+      hardcoded road, which is Q6's shape. Both values are read per call, not
+      in the constructor, because `index.ts` caches the provider for the life
+      of the process.
+
+      A missing key now throws naming both variables instead of sending
+      `Authorization: Bearer ` and letting the upstream return a 401 that reads
+      like a wrong key rather than an absent one.
+
+      Two stale documents fixed alongside: `.env.example` claimed speech
+      auto-detects OpenAI from `OPENAI_API_KEY` or `LITELLM_PROXY_URL` — it
+      never has, and deliberately still does not, because speech bills per
+      request and that key is there for chat; and `apps/docs/docs/open-models.md`
+      recommended the proxy path as the way to keep speech on-premise, which
+      was the broken one.
 - [ ] **B4.** Flip the default to `native` in one environment (demo) for a
       week, then everywhere. The flag stays — but as a seam variant naming an
       endpoint, not as `litellm|native`, which B6 reduces to one value. Q6.
