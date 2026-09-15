@@ -18,13 +18,30 @@ describe('parseApiEnv', () => {
     expect(withEnv({ TARGET_ENV: undefined }).ok).toBe(false);
   });
 
-  it('requires LITELLM_MASTER_KEY in production, and says why', () => {
-    const result = withEnv({ TARGET_ENV: 'production' });
+  it('requires LITELLM_MASTER_KEY in production on the proxy path, and says why', () => {
+    const result = withEnv({
+      TARGET_ENV: 'production',
+      LLM_GATEWAY: 'litellm',
+    });
 
     expect(result.ok).toBe(false);
     if (!result.ok) {
       expect(result.report).toContain('LITELLM_MASTER_KEY');
       expect(result.report).toContain('every model call is authenticated');
+    }
+  });
+
+  /**
+   * The default is `native`, where nothing authenticates against a proxy.
+   * Demanding the credential anyway would refuse to boot a correctly
+   * configured deployment, and the obvious workaround — invent a dummy master
+   * key — is how a boot check stops being believed.
+   */
+  it('does not require LITELLM_MASTER_KEY when no gateway is named', () => {
+    const result = withEnv({ TARGET_ENV: 'production' });
+
+    if (!result.ok) {
+      expect(result.report).not.toContain('LITELLM_MASTER_KEY');
     }
   });
 

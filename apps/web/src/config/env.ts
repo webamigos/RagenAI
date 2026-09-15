@@ -4,6 +4,7 @@ import {
   fragments,
   parseEnv,
   TOKEN_VAULT_GROUP,
+  litellmRules,
   requiredInDeployedEnvs,
   speechRules,
   storageRules,
@@ -102,12 +103,9 @@ export const webEnvSchema = fragments.targetEnv
     NEXT_PUBLIC_TARGET_ENV: fragments.blankAsUndefined(z.string().optional()),
   })
   .superRefine((env, ctx) => {
-    requiredInDeployedEnvs(
-      env,
-      ctx,
-      ['LITELLM_MASTER_KEY'],
-      'every model call is authenticated against the proxy',
-    );
+    // Only on the proxy path — `native` is the default and authenticates
+    // nothing against a proxy. See `litellmRules`.
+    litellmRules(env, ctx);
 
     requiredInDeployedEnvs(
       env,

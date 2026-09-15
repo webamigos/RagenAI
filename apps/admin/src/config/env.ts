@@ -6,6 +6,7 @@ import {
   httpUrl,
   parseEnv,
   TOKEN_VAULT_GROUP,
+  litellmRules,
   requiredInDeployedEnvs,
 } from '@ragenai/env';
 import { z } from 'zod';
@@ -96,10 +97,12 @@ export const adminEnvSchema = fragments.targetEnv
     // config — so the two cannot disagree about half-configured (ADR-32).
     fieldGroupRules(TOKEN_VAULT_GROUP)(env, ctx);
 
-    requiredInDeployedEnvs(
+    // Only on the proxy path: with `LLM_GATEWAY=native` there is no proxy for
+    // the page to manage and no model call authenticating against it. See
+    // `litellmRules`.
+    litellmRules(
       env,
       ctx,
-      ['LITELLM_MASTER_KEY'],
       'the proxy page authenticates against it, and every model call does',
     );
 

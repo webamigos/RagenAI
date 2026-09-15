@@ -4,6 +4,7 @@ import {
   fragments,
   parseEnv,
   TOKEN_VAULT_GROUP,
+  litellmRules,
   requiredInDeployedEnvs,
 } from '@ragenai/env';
 import { z } from 'zod';
@@ -46,12 +47,9 @@ export const apiEnvSchema = fragments.targetEnvRequired
     PORT: z.string().optional(),
   })
   .superRefine((env, ctx) => {
-    requiredInDeployedEnvs(
-      env,
-      ctx,
-      ['LITELLM_MASTER_KEY'],
-      'every model call is authenticated against the proxy',
-    );
+    // Only on the proxy path — `native` is the default and authenticates
+    // nothing against a proxy. See `litellmRules`.
+    litellmRules(env, ctx);
 
     // The comment on the field says this is not optional in a deployment;
     // until now nothing enforced it. Without the shared secret every call to
