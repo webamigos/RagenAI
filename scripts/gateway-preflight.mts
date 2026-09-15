@@ -1,0 +1,205 @@
+/**
+ * Can this deployment actually serve what it is configured to use?
+ *
+ * Run it before flipping `LLM_GATEWAY` to `native` (B4), against the same
+ * environment the app will get:
+ *
+ *   npm run gateway:preflight              # routing and credentials only
+ *   npm run gateway:preflight -- --probe   # ...and one real call per model
+ *
+ * **The `--probe` half is the one with evidence behind it.** B2c's first run
+ * failed three ways that a presence check would have called healthy: Vertex had
+ * `VERTEX_CREDENTIALS` set and still could not authenticate, because the
+ * variable holds JSON where Google's libraries want a file path; a preview
+ * model 404'd because the route could not name its region; and the route table
+ * itself was unreadable from the app's working directory. "Configured" and
+ * "works" are different questions, and only the second one matters at a flip.
+ *
+ * See docs/lessons/a-provider-package-is-not-configured-until-something-calls-it.md.
+ */
+import { embed, generateText } from 'ai';
+
+import {
+  UnknownModelError,
+  gatewayFromEnv,
+  gatewayModeFromEnv,
+} from '@ragenai/llm-gateway';
+
+/** A model id this deployment will ask for, and where the id comes from. */
+type ConfiguredModel = {
+  readonly variable: string;
+  readonly id: string;
+  readonly kind: 'chat' | 'embedding';
+  /** Only reached on a fallback path, so a failure is less urgent. */
+  readonly fallbackOnly?: boolean;
+};
+
+function configuredModels(env: NodeJS.ProcessEnv): ConfiguredModel[] {
+  const models: ConfiguredModel[] = [];
+
+  const add = (
+    variable: string,
+    id: string | undefined,
+    kind: ConfiguredModel['kind'],
+    fallbackOnly = false,
+  ) => {
+    if (id?.trim()) {
+      models.push({ variable, id: id.trim(), kind, fallbackOnly });
+    }
+  };
+
+  add('DEFAULT_MODEL', env.DEFAULT_MODEL, 'chat');
+  add('REPHRASE_MODEL', env.REPHRASE_MODEL ?? 'mistral-small-3.2', 'chat');
+  add('SUMMARY_MODEL', env.SUMMARY_MODEL ?? 'gemini-2.5-flash', 'chat');
+  add(
+    'EMBEDDINGS_MODEL',
+    env.EMBEDDINGS_MODEL ?? 'bge-multilingual-gemma2',
+    'embedding',
+  );
+  add('MULTIMODAL_FALLBACK_MODEL', env.MULTIMODAL_FALLBACK_MODEL, 'chat', true);
+  // Only reached when Docling fails or DOCUMENT_PARSER=legacy — but its default
+  // is served by neither path today, which is exactly the sort of thing this
+  // script exists to say out loud rather than discover during an ingest.
+  add('PDF_MODEL', env.PDF_MODEL ?? 'claude-haiku-4-5', 'chat', true);
+
+  // De-duplicate by id, keeping the first variable that named it.
+  const seen = new Set<string>();
+  return models.filter((model) => {
+    const key = `${model.kind}:${model.id}`;
+    if (seen.has(key)) {
+      return false;
+    }
+    seen.add(key);
+    return true;
+  });
+}
+
+type Outcome = {
+  readonly model: ConfiguredModel;
+  readonly status: 'ok' | 'unroutable' | 'unconfigured' | 'failed';
+  readonly detail?: string;
+};
+
+async function check(
+  gateway: ReturnType<typeof gatewayFromEnv>,
+  model: ConfiguredModel,
+  probe: boolean,
+): Promise<Outcome> {
+  const route = gateway.routeFor(model.id);
+  if (!route) {
+    return {
+      model,
+      status: 'unroutable',
+      detail: 'no entry in the route table',
+    };
+  }
+
+  if (!gateway.serves(model.id)) {
+    return {
+      model,
+      status: 'unconfigured',
+      detail: `routed to ${route.provider}${route.connection ? `/${route.connection}` : ''}, which has no credentials here`,
+    };
+  }
+
+  if (!probe) {
+    return { model, status: 'ok', detail: `→ ${route.provider}` };
+  }
+
+  try {
+    if (model.kind === 'embedding') {
+      const embedding = await gateway.resolveEmbeddingModel(model.id);
+      const { embedding: vector } = await embed({
+        model: embedding,
+        value: 'preflight',
+      });
+      return { model, status: 'ok', detail: `→ ${route.provider}, ${vector.length} dims` };
+    }
+
+    const chat = await gateway.resolveModel(model.id);
+    const { text } = await generateText({
+      model: chat,
+      prompt: 'Reply with exactly: OK',
+    });
+    return {
+      model,
+      status: 'ok',
+      detail: `→ ${route.provider}, answered ${JSON.stringify(text.slice(0, 20))}`,
+    };
+  } catch (error) {
+    const message =
+      error instanceof UnknownModelError
+        ? error.message
+        : (error as Error).message.split('\n')[0];
+    return { model, status: 'failed', detail: message?.slice(0, 180) };
+  }
+}
+
+async function main(): Promise<void> {
+  const probe = process.argv.includes('--probe');
+  const mode = gatewayModeFromEnv();
+
+  console.log(`LLM_GATEWAY=${mode}`);
+  if (mode !== 'native') {
+    console.log(
+      'This checks the gateway path. The proxy path is unaffected by anything below.\n',
+    );
+  }
+
+  const models = configuredModels(process.env);
+  if (models.length === 0) {
+    console.error('No models configured — is DEFAULT_MODEL set?');
+    process.exitCode = 1;
+    return;
+  }
+
+  const gateway = gatewayFromEnv();
+  console.log(
+    `Route table serves ${gateway.availableModels().length} model(s) with credentials present.`,
+  );
+  console.log(probe ? 'Probing each configured model…\n' : 'Checking routing and credentials only (pass --probe to make real calls)…\n');
+
+  const outcomes: Outcome[] = [];
+  for (const model of models) {
+    outcomes.push(await check(gateway, model, probe));
+  }
+
+  for (const { model, status, detail } of outcomes) {
+    const mark = status === 'ok' ? 'ok  ' : status === 'failed' ? 'FAIL' : 'MISS';
+    const note = model.fallbackOnly ? ' (fallback path only)' : '';
+    console.log(
+      `  ${mark}  ${model.variable.padEnd(26)} ${model.id.padEnd(28)} ${detail ?? ''}${note}`,
+    );
+  }
+
+  // A fallback-only model that cannot be served is reported and does not fail
+  // the check: it is already broken on the proxy path, so it is not a reason to
+  // refuse a flip that changes nothing about it.
+  const blocking = outcomes.filter(
+    (o) => o.status !== 'ok' && !o.model.fallbackOnly,
+  );
+  const advisory = outcomes.filter(
+    (o) => o.status !== 'ok' && o.model.fallbackOnly,
+  );
+
+  console.log();
+  if (advisory.length > 0) {
+    console.log(
+      `${advisory.length} fallback-only model(s) cannot be served. Not blocking — they are equally unserved on the proxy path.`,
+    );
+  }
+  if (blocking.length > 0) {
+    console.error(
+      `${blocking.length} model(s) this deployment uses cannot be served. Do not flip LLM_GATEWAY here.`,
+    );
+    process.exitCode = 1;
+    return;
+  }
+  console.log(
+    probe
+      ? 'Every configured model answered. Safe to flip.'
+      : 'Every configured model is routed and has credentials. Re-run with --probe before flipping — presence is not usability.',
+  );
+}
+
+await main();

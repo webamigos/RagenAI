@@ -140,6 +140,22 @@ COPY --from=builder /app/apps/worker/public ./apps/worker/public
 COPY --from=builder /app/apps/worker/package.json ./apps/worker/package.json
 COPY package.json ./package.json
 
+# The gateway's route table. Copied from the build context rather than from an
+# earlier stage, so it does not depend on what that stage happened to include.
+#
+# Without this, `LLM_GATEWAY=native` fails at the first model call with
+# "cannot read route table" — and that is the *only* deployment shape it fails
+# in: docker-compose mounts this directory into every app service, so the file
+# is present there and absent from the images Railway actually builds. The
+# guard counting those mounts was green throughout, because it checked the
+# shape that works. `dockerfile-ships-the-route-table.test.ts` now checks this
+# one.
+#
+# `defaultRouteTablePath()` walks up from the process's cwd, which is why one
+# location serves all three images despite the worker running from
+# /app/apps/worker.
+COPY infra/llm-gateway ./infra/llm-gateway
+
 USER worker
 
 # Prefer IPv6 DNS resolution for Railway internal networking (neutral on IPv4-only networks)

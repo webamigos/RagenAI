@@ -971,9 +971,34 @@ resumes:
       request and that key is there for chat; and `apps/docs/docs/open-models.md`
       recommended the proxy path as the way to keep speech on-premise, which
       was the broken one.
-- [ ] **B4.** Flip the default to `native` in one environment (demo) for a
+- [~] **B4.** Flip the default to `native` in one environment (demo) for a
       week, then everywhere. The flag stays — but as a seam variant naming an
       endpoint, not as `litellm|native`, which B6 reduces to one value. Q6.
+
+      **Repo side done 2026-09-15; the flip itself is a dashboard change**
+      (ADR-47) and has not been made. [The runbook](../runbooks/llm-gateway-cutover.md)
+      is the procedure, including rollback.
+
+      Preparing it found the blocker that would have taken demo down:
+      **no runtime image contained the route table.** All three Dockerfiles
+      copy `.next/standalone`, `dist` and `packages`, and none copied `infra/`.
+      `docker-compose.fullapp.yml` mounts the directory into all four services
+      — and the guard that exists to keep the "configuration, not code"
+      promise honest counted *those mounts*, so it was green while the only
+      exposed environment could not read the file at all. Under
+      `LLM_GATEWAY=litellm` nothing reads it, so the absence was invisible; the
+      flip is what would have found it, in the most expensive place. Each image
+      now copies it, and the guard checks both deployment shapes.
+
+      `npm run gateway:preflight -- --probe` resolves every model the
+      deployment is configured to use and makes one real call each. It encodes
+      the B2c lesson — presence is not usability — and it already reports the
+      known `PDF_MODEL` gap as advisory rather than blocking, since that model
+      is equally unserved on the proxy path.
+
+      Not done here, deliberately: `DEFAULT_GATEWAY_MODE` stays `litellm`.
+      Changing it flips local development and every fresh clone, which belongs
+      with "then everywhere" rather than with "one environment".
 - [ ] **B5.** Remove virtual keys: `resolveLiteLLMKeyQuery`, the remaining team
       commands, the three columns.
 - [ ] **B6.** Remove the infrastructure: `infra/litellm/`, the compose service

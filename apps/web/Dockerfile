@@ -153,6 +153,22 @@ COPY --from=builder --chown=nextjs:nodejs /app/apps/web/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/apps/web/.next/static ./apps/web/.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/apps/web/public ./apps/web/public
 COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
+
+# The gateway's route table. Copied from the build context rather than from an
+# earlier stage, so it does not depend on what that stage happened to include.
+#
+# Without this, `LLM_GATEWAY=native` fails at the first model call with
+# "cannot read route table" — and that is the *only* deployment shape it fails
+# in: docker-compose mounts this directory into every app service, so the file
+# is present there and absent from the images Railway actually builds. The
+# guard counting those mounts was green throughout, because it checked the
+# shape that works. `dockerfile-ships-the-route-table.test.ts` now checks this
+# one.
+#
+# `defaultRouteTablePath()` walks up from the process's cwd, which is why one
+# location serves all three images despite the worker running from
+# /app/apps/worker.
+COPY --chown=nextjs:nodejs infra/llm-gateway ./infra/llm-gateway
 COPY --from=builder --chown=nextjs:nodejs /app/prisma.config.ts ./prisma.config.ts
 
 # Install prisma CLI with all deps in a temp dir (avoids standalone package.json conflicts)

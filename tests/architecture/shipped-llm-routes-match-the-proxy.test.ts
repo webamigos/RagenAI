@@ -114,6 +114,30 @@ describe('the shipped LLM route table', () => {
     expect(mounts).toHaveLength(services.length);
   });
 
+  /**
+   * The mount test above checks docker-compose. Railway builds the Dockerfiles
+   * and mounts nothing, and Railway is the only exposed environment there is
+   * — so "the route table is configuration, and it is present" was verified
+   * for the deployment shape that works and not for the one that ships.
+   *
+   * Under `LLM_GATEWAY=litellm` the absence is invisible, because nothing
+   * reads the file. The flip is what would have found it, in the environment
+   * where finding it is most expensive.
+   */
+  it('is copied into every runtime image', () => {
+    const dockerfiles = ['web', 'api', 'worker'].map((app) => ({
+      app,
+      source: readFileSync(join(root, 'apps', app, 'Dockerfile'), 'utf8'),
+    }));
+
+    for (const { app, source } of dockerfiles) {
+      expect(
+        /^COPY\b.*\binfra\/llm-gateway\b/m.test(source),
+        `apps/${app}/Dockerfile must COPY infra/llm-gateway — without it, LLM_GATEWAY=native cannot read its route table in a built image`,
+      ).toBe(true);
+    }
+  });
+
   it('ships a JSON Schema that still matches the zod schema', () => {
     // The schema file is what an editor reads, and zod is what actually
     // refuses a bad table. Two descriptions of one shape drift, and the one
