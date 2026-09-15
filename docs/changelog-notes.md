@@ -145,4 +145,4 @@ archive is the blog.
   template literal is never empty, so the fallback could not run. The worker
   and apps/api always had this right; every producer now reads the same
   default.
-  ([#TBD](https://github.com/webamigos/RagenAI/pulls))
+  ([#1203](https://github.com/webamigos/RagenAI/pull/1203))
