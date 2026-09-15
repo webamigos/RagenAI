@@ -68,6 +68,26 @@ archive is the blog.
 
 ## Unreleased
 
+### Thread: the worker runtime becomes replaceable
+
+- `[major]` **Cancelling a document ingest now takes effect immediately, and
+  keeps working after the job has finished being tracked.** Cancellation used to
+  be a message sent into a running workflow's memory: the file stayed
+  "processing" in the interface until the pipeline next looked at the flag,
+  cancelling a job the engine had already forgotten raised an error, and a
+  worker restart lost the request entirely. It is a status on the file now — the
+  interface updates on the click, the pipeline stops at its next checkpoint, and
+  a restart changes nothing. Cancelling still lets an in-flight parse finish
+  rather than killing it mid-file, which is deliberate: the alternative leaves
+  half-written state behind.
+  ([#1207](https://github.com/webamigos/RagenAI/pull/1207))
+
+- `[brief]` **A cancelled file can be re-indexed again.** Cancelling writes a
+  status that later writes cannot overwrite, with one exception for starting
+  fresh — so "re-embed" on a cancelled document works instead of being silently
+  refused.
+  ([#1207](https://github.com/webamigos/RagenAI/pull/1207))
+
 ### Thread: the application calls model providers itself (continued)
 
 - `[major]` **An Anthropic key now works on its own.** `anthropic` is a provider
