@@ -59,15 +59,8 @@ export type TeamRateLimitResult =
  */
 export async function checkTeamRateLimitQuery({
   teamId,
-  estimatedTokens = 0,
 }: {
   teamId: string | null;
-  /**
-   * Tokens this turn is expected to spend, for the `tpm` bucket. Zero is a
-   * legitimate caller — the request bucket still applies, and a turn whose
-   * size is not yet known should not be charged a guess.
-   */
-  estimatedTokens?: number;
 }): Promise<TeamRateLimitResult> {
   if (!teamId) {
     return { ok: true };
@@ -109,17 +102,18 @@ export async function checkTeamRateLimitQuery({
       }
     }
 
-    if (limits.tpmLimit != null && estimatedTokens > 0) {
-      // Counted *before* the turn, from an estimate, because a limit applied
-      // after the tokens are spent is an accounting entry rather than a limit.
-      // It therefore overshoots by at most one turn, which is what the proxy
-      // did too.
-      const tokens = await redis.incrByWithExpire(
-        `team:rl:tpm:${teamId}`,
-        estimatedTokens,
-        WINDOW_SECONDS,
-      );
-      if (tokens > limits.tpmLimit) {
+    if (limits.tpmLimit != null) {
+      // Read, never incremented here. The turn's token count is not knowable
+      // before it runs, and charging a guess refuses real requests on
+      // arithmetic nobody can audit — so the window is charged afterwards,
+      // from the usage row, by `chargeTeamTokenUsage`.
+      //
+      // The limit therefore bites on the *next* request in the window rather
+      // than this one, overshooting by at most one turn. That is what the
+      // proxy did too, and it is the price of counting real tokens instead of
+      // imagined ones.
+      const spent = Number((await redis.get(`team:rl:tpm:${teamId}`)) ?? 0);
+      if (spent >= limits.tpmLimit) {
         return {
           ok: false,
           scope: 'tpm',
@@ -152,5 +146,41 @@ export async function assertWithinTeamRateLimit(input: {
       result.limit,
       result.retryAfterSeconds,
     );
+  }
+}
+
+/**
+ * Add a finished turn's **actual** tokens to the team's `tpm` window.
+ *
+ * Separated from the check because the two cannot happen at the same moment:
+ * the limit has to be evaluated before the model runs, and the only honest
+ * token count exists after it. Pairing a pre-turn read with a post-turn charge
+ * keeps the arithmetic auditable — every token in the window was really spent
+ * — at the cost of letting one turn over the line.
+ *
+ * Fails open and silently, for the same reason the check does: Redis is
+ * optional here, and a deployment without it must still answer chat.
+ */
+export async function chargeTeamTokenUsage(
+  teamId: string | null,
+  totalTokens: number,
+): Promise<void> {
+  if (!teamId || totalTokens <= 0) {
+    return;
+  }
+
+  const redis = getRedisInstance();
+  if (!redis) {
+    return;
+  }
+
+  try {
+    await redis.incrByWithExpire(
+      `team:rl:tpm:${teamId}`,
+      totalTokens,
+      WINDOW_SECONDS,
+    );
+  } catch (err) {
+    logger.warn({ err, teamId }, 'Could not charge team token usage');
   }
 }

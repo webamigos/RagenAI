@@ -12,6 +12,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const mockFindUnique = vi.hoisted(() => vi.fn());
 const mockIncrWithExpire = vi.hoisted(() => vi.fn());
 const mockIncrByWithExpire = vi.hoisted(() => vi.fn());
+const mockGet = vi.hoisted(() => vi.fn());
 const mockGetRedis = vi.hoisted(() => vi.fn());
 
 vi.mock('@ragenai/prisma-client', () => ({
@@ -29,6 +30,7 @@ vi.mock('@/app/lib/utils/logger', () => ({
 import {
   TeamRateLimitError,
   assertWithinTeamRateLimit,
+  chargeTeamTokenUsage,
   checkTeamRateLimitQuery,
 } from '../check-team-rate-limit-query';
 
@@ -37,9 +39,11 @@ beforeEach(() => {
   mockGetRedis.mockReturnValue({
     incrWithExpire: mockIncrWithExpire,
     incrByWithExpire: mockIncrByWithExpire,
+    get: mockGet,
   });
   mockIncrWithExpire.mockResolvedValue(1);
   mockIncrByWithExpire.mockResolvedValue(1);
+  mockGet.mockResolvedValue(null);
 });
 
 describe('when there is nothing to limit', () => {
@@ -106,21 +110,34 @@ describe('tokens per minute', () => {
     mockFindUnique.mockResolvedValue({ rpmLimit: null, tpmLimit: 1000 });
   });
 
-  it('charges the estimate to the bucket', async () => {
-    await checkTeamRateLimitQuery({ teamId: 'team-1', estimatedTokens: 250 });
+  /**
+   * The check reads; it never writes. The previous version charged a
+   * caller-supplied estimate, and since no caller ever supplied one, the whole
+   * `tpm` branch was unreachable — a limit shown in settings and enforced
+   * nowhere.
+   */
+  it('reads the window without charging anything', async () => {
+    mockGet.mockResolvedValue('250');
 
-    expect(mockIncrByWithExpire).toHaveBeenCalledWith(
-      'team:rl:tpm:team-1',
-      250,
-      60,
-    );
+    await checkTeamRateLimitQuery({ teamId: 'team-1' });
+
+    expect(mockGet).toHaveBeenCalledWith('team:rl:tpm:team-1');
+    expect(mockIncrByWithExpire).not.toHaveBeenCalled();
   });
 
-  it('refuses once the bucket is over', async () => {
-    mockIncrByWithExpire.mockResolvedValue(1001);
+  it('allows while the window is under the limit', async () => {
+    mockGet.mockResolvedValue('999');
 
     await expect(
-      checkTeamRateLimitQuery({ teamId: 'team-1', estimatedTokens: 250 }),
+      checkTeamRateLimitQuery({ teamId: 'team-1' }),
+    ).resolves.toEqual({ ok: true });
+  });
+
+  it('refuses once the window has reached the limit', async () => {
+    mockGet.mockResolvedValue('1000');
+
+    await expect(
+      checkTeamRateLimitQuery({ teamId: 'team-1' }),
     ).resolves.toEqual({
       ok: false,
       scope: 'tpm',
@@ -129,11 +146,48 @@ describe('tokens per minute', () => {
     });
   });
 
-  /** A turn whose size is unknown must not be charged a guess. */
-  it('does not touch the bucket when no estimate is given', async () => {
-    await checkTeamRateLimitQuery({ teamId: 'team-1' });
+  it('treats an empty window as nothing spent', async () => {
+    mockGet.mockResolvedValue(null);
+
+    await expect(
+      checkTeamRateLimitQuery({ teamId: 'team-1' }),
+    ).resolves.toEqual({ ok: true });
+  });
+});
+
+describe('charging a finished turn', () => {
+  it('adds the real token count to the window', async () => {
+    await chargeTeamTokenUsage('team-1', 432);
+
+    expect(mockIncrByWithExpire).toHaveBeenCalledWith(
+      'team:rl:tpm:team-1',
+      432,
+      60,
+    );
+  });
+
+  it('charges nothing for organization-level work', async () => {
+    await chargeTeamTokenUsage(null, 432);
 
     expect(mockIncrByWithExpire).not.toHaveBeenCalled();
+  });
+
+  it('charges nothing for a turn that spent nothing', async () => {
+    await chargeTeamTokenUsage('team-1', 0);
+
+    expect(mockIncrByWithExpire).not.toHaveBeenCalled();
+  });
+
+  it('never throws when Redis is unavailable', async () => {
+    mockGetRedis.mockReturnValue(null);
+
+    await expect(chargeTeamTokenUsage('team-1', 432)).resolves.toBeUndefined();
+  });
+
+  it('never throws when Redis rejects', async () => {
+    mockIncrByWithExpire.mockRejectedValue(new Error('down'));
+
+    await expect(chargeTeamTokenUsage('team-1', 432)).resolves.toBeUndefined();
   });
 });
 

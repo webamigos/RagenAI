@@ -378,12 +378,12 @@ export async function streamEvents({
           // docs/specs/2026-09-14-replace-litellm-with-an-in-process-gateway.md.
           assertWithinUsageLimits(usageLimits, { organizationId: orgId });
 
-          // Per-team requests-per-minute. Enforced here since B5 removed the
-          // virtual keys LiteLLM enforced it on — see Q3, which required the
-          // replacement to land before the proxy lost the field rather than
-          // after. `tpm` is not charged here: the turn's token count is not
-          // known until it finishes, and a guessed estimate would refuse real
-          // requests on arithmetic nobody can audit.
+          // Per-team requests- and tokens-per-minute. Enforced here since B5
+          // removed the virtual keys LiteLLM enforced it on — see Q3, which
+          // required the replacement to land before the proxy lost the field
+          // rather than after. `tpm` is read here and charged after the turn
+          // by `trackAiUsage`, from the real token count: a guessed estimate
+          // would refuse real requests on arithmetic nobody can audit.
           await assertWithinTeamRateLimit({ teamId: usageTeamId });
 
           sendApiEvent(controller, 'thread_found', {

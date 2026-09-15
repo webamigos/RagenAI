@@ -2,6 +2,7 @@ import db from '@ragenai/prisma-client';
 import { logger } from '@/app/lib/utils/logger';
 import type { CreateAiUsageInput } from '../../contracts/ai-usage.types';
 import { calculateCost } from '../../constants/ai-pricing';
+import { chargeTeamTokenUsage } from '@/features/teams/services/queries/check-team-rate-limit-query';
 
 export async function createAiUsageCommand(
   input: CreateAiUsageInput,
@@ -65,4 +66,10 @@ export async function createAiUsageCommand(
  */
 export async function trackAiUsage(input: CreateAiUsageInput): Promise<void> {
   await createAiUsageCommand(input).catch(() => {});
+  // The team's per-minute token window is charged from the same numbers that
+  // reach the usage row, because this is the one point every chat surface
+  // already passes through with a real token count in hand. Charging it at the
+  // call sites instead would mean remembering to, at each of them, which is
+  // how `tpm` came to be enforced nowhere at all.
+  await chargeTeamTokenUsage(input.teamId, input.totalTokens);
 }

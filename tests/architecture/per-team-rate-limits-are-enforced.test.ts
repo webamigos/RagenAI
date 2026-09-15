@@ -71,7 +71,7 @@ describe('per-team rate limits are enforced by the application', () => {
     const callers = [...walk(join(REPO_ROOT, 'apps', 'web', 'src'))]
       .filter((file) => !/__tests__|\.test\.tsx?$/.test(file))
       .filter((file) =>
-        readFileSync(file, 'utf8').includes('assertWithinTeamRateLimit'),
+        /\bassertWithinTeamRateLimit\s*\(/.test(readFileSync(file, 'utf8')),
       )
       .map((file) => relative(REPO_ROOT, file))
       // The module that defines it does not count as a caller.
@@ -82,6 +82,78 @@ describe('per-team rate limits are enforced by the application', () => {
       'Nothing calls assertWithinTeamRateLimit. A limit that is computed is ' +
         'not a limit — a limit is a call site.',
     ).toBeGreaterThan(0);
+  });
+
+  /**
+   * "Something calls it" was too weak, and weak in the way that mattered: it
+   * passed for months while **only** the panel enforced. The public API routes
+   * resolved the same team for attribution and charged nothing, so an
+   * integration key kept its limit only while the proxy was still in the path.
+   *
+   * Every entry point is therefore named, and a new one has to be added here
+   * deliberately — which is the point. Reaching the limiter through
+   * `refuseIfOverTeamRateLimit` counts; that helper is checked below.
+   */
+  const CHAT_ENTRY_POINTS = [
+    'apps/web/src/app/api/threads/services/assistant-stream.ts',
+    'apps/web/src/app/api/v1/chat/route.ts',
+    'apps/web/src/app/api/v1/chat/completions/route.ts',
+  ];
+
+  it.each(CHAT_ENTRY_POINTS)('%s reaches the limiter', (entryPoint) => {
+    const text = source(entryPoint);
+    // An invocation, not a mention: an import, a comment or a renamed
+    // identifier all contain the name, and the first version of this guard
+    // was fooled by exactly that.
+    const reaches =
+      /\b(?:assertWithinTeamRateLimit|refuseIfOverTeamRateLimit)\s*\(/.test(
+        text,
+      );
+
+    expect(
+      reaches,
+      `${entryPoint} starts a model turn without charging the team's ` +
+        'per-minute limit. Every chat entry point enforces, or the limit is ' +
+        'only as real as the least-guarded way in.',
+    ).toBe(true);
+  });
+
+  it('the API refusal helper is the limiter, not a copy of it', () => {
+    const helper = source('apps/web/src/app/api/v1/check-team-rate-limit.ts');
+
+    expect(
+      helper.includes('checkTeamRateLimitQuery'),
+      'refuseIfOverTeamRateLimit must delegate to checkTeamRateLimitQuery — a ' +
+        'second implementation is a second thing to keep in step.',
+    ).toBe(true);
+    expect(
+      helper.includes('429'),
+      'A refusal that is not a 429 is not a rate limit to any client.',
+    ).toBe(true);
+  });
+
+  /**
+   * apps/api ported the chat orchestration rather than proxying to apps/web's
+   * internal routes, so the enforcement above does not reach it — and it has
+   * never had a team limiter of its own (no Redis client, no team resolution).
+   *
+   * This is recorded rather than asserted because it is outstanding work, not
+   * a regression from B5. The assertion is inverted deliberately: when apps/api
+   * gains enforcement, this test fails and whoever did it deletes the note.
+   */
+  it('records that apps/api still has no team limiter', () => {
+    const apiSources = [...walk(join(REPO_ROOT, 'apps', 'api', 'src'))]
+      .filter((file) => !/\.spec\.ts$/.test(file))
+      .filter((file) => !file.includes('generated'))
+      .filter((file) =>
+        readFileSync(file, 'utf8').includes('checkTeamRateLimitQuery'),
+      );
+
+    expect(
+      apiSources.length,
+      'apps/api now references the team limiter. Add its chat entry points to ' +
+        'CHAT_ENTRY_POINTS above and delete this test.',
+    ).toBe(0);
   });
 
   /**
