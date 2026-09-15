@@ -26,6 +26,7 @@
  * this one answers "what does choosing it require".
  */
 import { createRequire } from 'node:module';
+import { execFileSync } from 'node:child_process';
 import { existsSync, readdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 
@@ -221,7 +222,55 @@ export async function renderConfigReference() {
   });
 }
 
+/**
+ * Which branch this repository is on, or null when that cannot be answered.
+ *
+ * A detached HEAD, a worktree without git, an exported tarball — all give
+ * nothing, and none of them is a reason to refuse. The check below only fires
+ * on a definite answer that is not `main`.
+ */
+function currentBranch() {
+  try {
+    return execFileSync('git', ['rev-parse', '--abbrev-ref', 'HEAD'], {
+      cwd: join(import.meta.dirname, '..', '..'),
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+    }).trim();
+  } catch {
+    return null;
+  }
+}
+
 if (process.argv[1] === import.meta.filename) {
+  /**
+   * The page is written into *another repository*, so whatever this one is
+   * checked out at becomes published documentation. Generating from a feature
+   * branch silently commits that branch's half-finished view of the schema.
+   *
+   * That is not hypothetical: a run from a branch that predated a merged fix
+   * rewrote the published gateway section back to describing the proxy as the
+   * only path, and the diff looked like an unrelated improvement — it also
+   * carried a change that *was* wanted, which is what made it plausible.
+   *
+   * `ALLOW_OFF_MAIN=1` is the deliberate override, for previewing a change
+   * before it merges.
+   */
+  const branch = currentBranch();
+  if (branch && branch !== 'main' && process.env.ALLOW_OFF_MAIN !== '1') {
+    console.error(
+      `Refusing to write the configuration reference from "${branch}".\n` +
+        '\n' +
+        'It is written into the ragen-docs repository, so it publishes whatever\n' +
+        'this repository is checked out at. From a feature branch that means\n' +
+        "publishing that branch's schema, including the parts still under\n" +
+        'review, and quietly reverting anything merged since it was cut.\n' +
+        '\n' +
+        '  git checkout main && git pull   # then run this again\n' +
+        '  ALLOW_OFF_MAIN=1 npm run docs:config-reference   # to preview\n',
+    );
+    process.exit(1);
+  }
+
   const directory = dirname(target);
   if (!existsSync(directory)) {
     console.error(
