@@ -22,5 +22,19 @@ export default defineConfig({
     include: ['src/**/__tests__/**/*.ts', 'src/**/*.{spec,test}.ts'],
     exclude: ['**/node_modules/**', 'dist/**', 'lib/**', 'generated/**'],
     testTimeout: 20_000,
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json-summary', 'html'],
+      reportsDirectory: './coverage',
+      // Without an explicit `include`, v8 reports only the files a test
+      // imported — an untested module would simply be absent, and the
+      // percentage would describe the tested subset rather than the app.
+      include: ['src/**/*.ts'],
+      exclude: [
+        'src/generated/**',
+        'src/**/__tests__/**',
+        'src/**/*.{spec,test}.ts',
+      ],
+    },
   },
 });

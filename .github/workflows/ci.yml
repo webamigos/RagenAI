@@ -146,9 +146,15 @@ jobs:
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup-workspace
-      # web runs separately because it is the one that produces the coverage
-      # summary the comment below reads.
-      - run: npm run test:coverage --workspace=@webamigos/ragen-web
+      # Every app that has a suite produces its own coverage summary, and the
+      # comment below reports them per app. One blended number hid the spread
+      # entirely: apps/api sits near 74% while apps/web and apps/admin are
+      # around 30%, and "31%" described none of them.
+      #
+      # It runs through turbo rather than npm so that `^build` happens first.
+      # Running an app's vitest directly against a stale package dist fails its
+      # suite for reasons that have nothing to do with the change under test.
+      - run: npx turbo run test:coverage
       # This now includes the root vitest project, as the `//#test` task in
       # turbo.json — which is where packages/* (they have no test script of
       # their own) and tests/architecture's repo-wide guards actually run.
@@ -159,11 +165,20 @@ jobs:
       # local validation during ADR-40 and went red on main. The wiring is
       # held by tests/architecture/the-gate-runs-the-repo-wide-guards.test.ts.
       - run: npx turbo run test --filter='!@webamigos/ragen-web'
+          --filter='!@webamigos/ragen-api'
+          --filter='!@webamigos/ragen-admin'
+          --filter='!@webamigos/ragen-worker'
       - name: Coverage report
         if: always() && github.event_name == 'pull_request'
         uses: MishaKav/jest-coverage-comment@v1.0.36
         with:
-          coverage-summary-path: apps/web/coverage/coverage-summary.json
+          # One row per app. apps/docs has no suite; apps/mcp and the packages
+          # report through the root project, which writes no summary of its own.
+          multiple-files: |
+            web, ./apps/web/coverage/coverage-summary.json
+            api, ./apps/api/coverage/coverage-summary.json
+            admin, ./apps/admin/coverage/coverage-summary.json
+            worker, ./apps/worker/coverage/coverage-summary.json
 
   build:
     name: Build

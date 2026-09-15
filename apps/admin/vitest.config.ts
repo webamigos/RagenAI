@@ -20,5 +20,19 @@ export default defineConfig({
     globals: true,
     include: ['src/**/*.test.ts', 'src/**/*.test.tsx'],
     clearMocks: true,
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json-summary', 'html'],
+      reportsDirectory: './coverage',
+      // Without an explicit `include`, v8 reports only the files a test
+      // imported — an untested module would simply be absent, and the
+      // percentage would describe the tested subset rather than the app.
+      include: ['src/**/*.{ts,tsx}'],
+      exclude: [
+        'src/generated/**',
+        'src/**/*.test.{ts,tsx}',
+        'src/**/__tests__/**',
+      ],
+    },
   },
 });

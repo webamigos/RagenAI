@@ -38,5 +38,20 @@ export default defineConfig({
     // lives in test/ and has its own config, as it did under jest.
     include: ['src/**/*.spec.ts'],
     exclude: ['**/node_modules/**', 'dist/**'],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json-summary', 'html'],
+      reportsDirectory: './coverage',
+      // Without an explicit `include`, v8 reports only the files a test
+      // imported — an untested module would simply be absent, and the
+      // percentage would describe the tested subset rather than the app.
+      include: ['src/**/*.ts'],
+      exclude: [
+        'src/**/*.spec.ts',
+        'src/**/*.e2e-spec.ts',
+        'src/main.ts',
+        'src/**/*.module.ts',
+      ],
+    },
   },
 });
