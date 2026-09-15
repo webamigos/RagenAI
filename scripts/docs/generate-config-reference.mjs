@@ -26,7 +26,7 @@
  * this one answers "what does choosing it require".
  */
 import { createRequire } from 'node:module';
-import { existsSync, writeFileSync } from 'node:fs';
+import { existsSync, readdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 
 import * as prettier from 'prettier';
@@ -170,6 +170,41 @@ function renderUnformatted() {
 }
 
 /**
+ * `ADR-04` in a summary becomes a link to the decision record.
+ *
+ * The published reference lives in another repository now, so a relative path
+ * cannot reach `docs/adrs/`. An absolute GitHub URL can, and the records are
+ * public.
+ *
+ * The number is resolved to a filename by reading the directory rather than
+ * guessing the slug, and an unknown number throws. A reference to an ADR that
+ * does not exist is a typo worth failing on — the alternative is a page full
+ * of confident 404s, which is the failure mode this whole generator exists to
+ * avoid.
+ */
+const ADR_BASE = 'https://github.com/webamigos/RagenAI/blob/main/docs/adrs';
+
+function linkAdrs(markdown) {
+  const directory = join(import.meta.dirname, '..', '..', 'docs', 'adrs');
+  const byNumber = new Map(
+    readdirSync(directory)
+      .filter((file) => file.endsWith('.md'))
+      .map((file) => [file.slice(0, file.indexOf('-')), file]),
+  );
+
+  return markdown.replace(/\bADR-(\d+)\b/g, (whole, number) => {
+    const file = byNumber.get(number);
+    if (!file) {
+      throw new Error(
+        `${whole} is referenced in packages/env but docs/adrs has no record ` +
+          `numbered ${number}. Fix the reference, or add the record.`,
+      );
+    }
+    return `[${whole}](${ADR_BASE}/${file})`;
+  });
+}
+
+/**
  * The page as it is committed: rendered, then formatted with the repository's
  * own prettier configuration, so `prettier --check` passes on a generated file
  * the same as on a hand-written one.
@@ -180,7 +215,7 @@ function renderUnformatted() {
 export async function renderConfigReference() {
   const options = await prettier.resolveConfig(target, { editorconfig: true });
 
-  return prettier.format(renderUnformatted(), {
+  return prettier.format(linkAdrs(renderUnformatted()), {
     ...options,
     filepath: target,
   });
