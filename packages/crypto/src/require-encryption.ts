@@ -1,5 +1,6 @@
 import { isDeployedEnv, normalizeTargetEnv } from '@ragenai/env';
 import { isEncryptionConfigured } from './key-provider';
+import { encryptionProviderIsUnusable } from './probe';
 
 /**
  * Whether this process must have an encryption provider configured before it
@@ -55,6 +56,21 @@ export type EncryptionStartupStatus = 'ok' | 'bypassed' | 'blocked';
 export function getEncryptionStartupStatus(
   env: NodeJS.ProcessEnv = process.env,
 ): EncryptionStartupStatus {
+  /**
+   * A provider the boot probe proved unusable is `blocked`, and no
+   * `ALLOW_UNENCRYPTED` rescues it — which reads backwards until you follow
+   * what the opt-out actually does. It waives the *requirement*; it does not
+   * make `isEncryptionEnabled()` false, so every write still calls the broken
+   * key and still throws. Answering `bypassed` here would promise a plaintext
+   * fallback that does not exist, and hide a wrong key behind a warning.
+   *
+   * False while the probe has not run, so `apps/worker` and every test keep
+   * today's behaviour.
+   */
+  if (encryptionProviderIsUnusable()) {
+    return 'blocked';
+  }
+
   if (isEncryptionConfigured()) {
     return 'ok';
   }

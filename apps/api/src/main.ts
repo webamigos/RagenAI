@@ -8,7 +8,10 @@ import { ApiExceptionFilter } from './common/filters/api-exception.filter.js';
 import { ReplaceIdsInterceptor } from './common/interceptors/replace-ids.interceptor.js';
 import { parseApiEnv } from './config/env.js';
 import { loadLocalEnv } from './config/load-local-env.js';
-import { getEncryptionStartupStatus } from '@ragenai/crypto';
+import {
+  getEncryptionStartupStatus,
+  probeEncryptionProvider,
+} from '@ragenai/crypto';
 import { PrismaService } from './prisma/prisma.service.js';
 import { recordEncryptionBypassEvent } from './security/record-encryption-bypass-event.js';
 
@@ -33,7 +36,28 @@ async function bootstrap() {
   // same reason as the env parse above: a misconfigured service should say so
   // in one legible block rather than silently persist plaintext at the first
   // chat.
+  // Whether the provider *works*, not just whether its variables are set —
+  // one throwaway data key, wrapped and unwrapped. A key the credentials may
+  // not use is otherwise indistinguishable from a good one until the first
+  // write, which for this service means a 500 per request forever.
+  const probe = await probeEncryptionProvider();
+  if (probe.status === 'unavailable') {
+    console.warn(
+      `Could not verify the ${probe.provider} encryption provider at startup: ` +
+        `${probe.detail}. Starting anyway — this looks transient.`,
+    );
+  }
+
   const encryptionStatus = getEncryptionStartupStatus();
+  if (encryptionStatus === 'blocked' && probe.status === 'misconfigured') {
+    console.error(
+      `Refusing to start: the ${probe.provider} encryption provider is ` +
+        `configured but unusable: ${probe.detail}. Check that the credentials ` +
+        'may use this specific key, and that the key id and region name a key ' +
+        'they can reach.',
+    );
+    process.exit(1);
+  }
   if (encryptionStatus === 'blocked') {
     console.error(
       'Refusing to start: no encryption provider is configured. Set ' +

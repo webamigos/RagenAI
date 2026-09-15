@@ -2,7 +2,33 @@ const DEFAULT_REGION = 'fr-par';
 const API_HOST = 'https://api.scaleway.com';
 const DEFAULT_REQUEST_TIMEOUT_MS = 10_000;
 
-type ScalewayAction = 'generate-data-key' | 'encrypt' | 'decrypt';
+export type ScalewayAction = 'generate-data-key' | 'encrypt' | 'decrypt';
+
+/**
+ * A refusal from Key Manager, carrying the HTTP status rather than burying it
+ * in prose.
+ *
+ * The status is the whole difference between "this deployment is wired wrong
+ * and will never work" (403 on a key the IAM application may not use, 404 on
+ * a key id from another project or region) and "the network had a bad
+ * second". `probeEncryptionProvider()` has to tell those apart to decide
+ * whether a boot should be blocked, and parsing it back out of the message is
+ * how that kind of check rots.
+ *
+ * The message is unchanged from the plain `Error` this replaced — it is what
+ * operators have already seen in logs, and it names the action and the body
+ * Scaleway sent.
+ */
+export class ScalewayKmsError extends Error {
+  constructor(
+    readonly action: ScalewayAction,
+    readonly status: number,
+    readonly body: string,
+  ) {
+    super(`Scaleway Key Manager ${action} failed (${status}): ${body}`);
+    this.name = 'ScalewayKmsError';
+  }
+}
 
 /**
  * Thin HTTP client for Scaleway Key Manager.
@@ -136,9 +162,7 @@ export class ScalewayKMSService {
 
       if (!response.ok) {
         const errBody = await response.text();
-        throw new Error(
-          `Scaleway Key Manager ${action} failed (${response.status}): ${errBody}`,
-        );
+        throw new ScalewayKmsError(action, response.status, errBody);
       }
 
       return (await response.json()) as T;
