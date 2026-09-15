@@ -61,7 +61,7 @@ const ENV_PATHS: Record<EnvTarget, { example: string; local: string }> = {
 
 /**
  * `promptLlmProvider`'s three outcomes — a real choice, an explicit "I'll
- * configure LiteLLM myself", and the user cancelling the prompt (Ctrl+C /
+ * configure the route table myself", and the user cancelling the prompt (Ctrl+C /
  * Escape) — must stay distinguishable. Collapsing cancel into skip used to
  * mean pressing Ctrl+C here silently fell through to writing env files,
  * starting Docker and running migrations, instead of stopping like every
@@ -694,20 +694,19 @@ async function maybeStartDocker(
         '    && RAGEN_STACK_NAME=my-ragen \\',
         '       POSTGRES_PORT=55532 QDRANT_PORT=6343 QDRANT_GRPC_PORT=6344 \\',
         '       TEMPORAL_PORT=7243 TEMPORAL_UI_PORT=8090 \\',
-        '       LITELLM_PORT=4010 LITELLM_DB_PORT=55533 \\',
         '       DOCLING_PORT=5011 REDIS_PORT=56479 \\',
         '       PRESIDIO_ANALYZER_PORT=5012 PRESIDIO_ANONYMIZER_PORT=5013 \\',
         '       docker compose up -d',
         '',
         'Then update .env.local to match: DATABASE_URL, QDRANT_URL,',
-        'LITELLM_PROXY_URL, REDIS_URL, DOCLING_URL, TEMPORAL_SERVER_ADDRESS and',
-        'the two PRESIDIO_* URLs all name a host port.',
+        'REDIS_URL, DOCLING_URL, TEMPORAL_SERVER_ADDRESS and the two',
+        'PRESIDIO_* URLs all name a host port.',
       ].join('\n'),
     );
   }
 
   const proceed = await confirmOrSkip(
-    'Start the backing services now? (Postgres, Qdrant, Temporal, LiteLLM, Redis, …)',
+    'Start the backing services now? (Postgres, Qdrant, Temporal, Redis, …)',
     yes,
   );
   if (!proceed) {
@@ -723,7 +722,7 @@ async function maybeStartDocker(
 
   return runStep(
     clack.spinner(),
-    'Starting docker compose (Postgres, Qdrant, Temporal, LiteLLM, Redis, …)',
+    'Starting docker compose (Postgres, Qdrant, Temporal, Redis, …)',
     'Backing services started.',
     () => startDockerServices({ cwd: targetDir }),
   );

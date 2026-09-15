@@ -1,10 +1,10 @@
 import type { RouteTableEntry } from './route-table';
 
 /**
- * The `infra/litellm/config.yaml` shipped in the repo only wires Azure
- * OpenAI, AWS Bedrock, Google Vertex and Scaleway — none of which a new
- * self-hoster can use in five minutes. These two entries let the wizard
- * paste a plain OpenAI or Anthropic key and get a working model instead.
+ * The route table shipped in the repo only wires Azure OpenAI, AWS Bedrock,
+ * Google Vertex and Scaleway — none of which a new self-hoster can use in five
+ * minutes. These two entries let the wizard paste a plain OpenAI or Anthropic
+ * key and get a working model instead.
  */
 export type LlmProviderChoice = 'openai' | 'anthropic';
 
@@ -56,10 +56,10 @@ export const LLM_PROVIDERS: Record<LlmProviderChoice, LlmProviderConfig> = {
     label: 'Anthropic',
     apiKeyEnvVar: 'ANTHROPIC_API_KEY',
     // Not "claude-haiku-4-5" — packages/platform-contracts/src/llm/model-catalog.ts
-    // already uses that name for the (commented) Bedrock deployment of the
-    // same model. Two model_list entries sharing a model_name become one
-    // load-balanced pool in LiteLLM, silently mixing direct-Anthropic and
-    // Bedrock traffic under Bedrock's catalog metadata.
+    // already uses that name for the Bedrock deployment of the same model, and
+    // the route table is a map: a second entry under that key would silently
+    // replace the first, so a scaffolded install would take over a catalogue
+    // name it does not own and serve it from a different account.
     modelName: 'claude-haiku-4-5-direct',
     gatewayProvider: 'anthropic',
     upstreamModel: 'claude-haiku-4-5-20251001',
@@ -102,9 +102,9 @@ export function resolveLlmProviderChoice(
     REPHRASE_MODEL: config.modelName,
   };
 
-  // Written as well as the route table, and deliberately: `docker compose up`
-  // starts LiteLLM whatever `LLM_GATEWAY` says, so configuring both makes
-  // `LLM_GATEWAY=litellm` a working rollback rather than a broken one.
+  // The route table is the whole configuration now. There is no second place
+  // to keep in step and no flag to roll back to — #1194 removed the proxy path
+  // and the variable that chose it.
   const routes: RouteTableEntry[] = [
     {
       modelName: config.modelName,

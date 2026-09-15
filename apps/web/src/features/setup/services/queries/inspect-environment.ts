@@ -40,11 +40,6 @@ const REQUIRED: Array<Omit<SetupFinding, 'severity'>> = [
     example: GENERATE_HEX_32,
   },
   {
-    id: 'llm-gateway',
-    vars: ['LITELLM_PROXY_URL'],
-    example: 'http://localhost:4000',
-  },
-  {
     id: 'default-model',
     vars: ['DEFAULT_MODEL', 'DEFAULT_MODEL_PROVIDER'],
     example:
@@ -130,9 +125,60 @@ export function inspectEnvironment(env: Env): SetupReport {
     findings.push(objectStorageMisconfig);
   }
 
+  const missingModelCredentials = findMissingModelCredentials(env);
+  if (missingModelCredentials) {
+    findings.push(missingModelCredentials);
+  }
+
   return {
     findings,
     hasBlockingIssues: findings.some((f) => f.severity === 'required'),
+  };
+}
+
+/**
+ * Whether this deployment can reach a model provider at all.
+ *
+ * This replaces a `LITELLM_PROXY_URL` check that survived the proxy it named:
+ * #1194 deleted the variable, so the checklist asked every install for
+ * something nothing reads — on the sign-in screen, as a blocking issue, with
+ * no way to satisfy it.
+ *
+ * The rule cannot be a list of variables that must all be present, because the
+ * five provider families need different ones and a deployment needs exactly
+ * one family. So it is "any credential at all": the first required entry of
+ * each family in `@ragenai/llm-gateway`'s `credentials-from-env`, plus any
+ * `LLM_<CONNECTION>_BASE_URL` for an OpenAI-compatible upstream, whose name is
+ * chosen by the route and cannot be enumerated here.
+ *
+ * Deliberately shallow. Whether a *particular* model's route has the
+ * credentials it needs is `npm run gateway:preflight -- --probe`, which makes
+ * one real call per model; a setup checklist reading `process.env` cannot know
+ * that and should not pretend to.
+ */
+function findMissingModelCredentials(env: Env): SetupFinding | null {
+  const anyFamily = [
+    'OPENAI_API_KEY',
+    'ANTHROPIC_API_KEY',
+    'AZURE_API_KEY',
+    'AWS_BEDROCK_REGION',
+    'VERTEX_PROJECT',
+  ].some((name) => isSet(env[name]));
+
+  const anyCompatible = Object.entries(env).some(
+    ([name, value]) => /^LLM_[A-Z0-9_]+_BASE_URL$/.test(name) && isSet(value),
+  );
+
+  if (anyFamily || anyCompatible) {
+    return null;
+  }
+
+  return {
+    id: 'model-provider-credentials',
+    severity: 'required',
+    vars: ['OPENAI_API_KEY'],
+    example:
+      'OPENAI_API_KEY=sk-... — or another provider family: ANTHROPIC_API_KEY, AZURE_API_KEY, AWS_BEDROCK_REGION, VERTEX_PROJECT',
   };
 }
 

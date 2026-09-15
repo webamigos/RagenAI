@@ -148,22 +148,22 @@ app: real env vars beat an app's own `.env` files, which beat the root's — see
 DATABASE_URL="postgresql://postgres:pass123@localhost:55432/ragen"
 REDIS_URL=redis://localhost:56379
 QDRANT_URL=http://localhost:6333
-DEFAULT_MODEL_PROVIDER=litellm
-DEFAULT_MODEL=gpt-4o-mini   # plus OPENAI_API_KEY and a route for it
+DEFAULT_MODEL_PROVIDER=litellm   # the pricing namespace, not a gateway
+DEFAULT_MODEL=gpt-4o-mini        # plus OPENAI_API_KEY and a route for it
 ```
 
 App dev ports: **web 3000**, **admin 3200**, **docs 3400** — 3100 is ragen-token-vault and 3001 is apps/api. `next dev` and `docusaurus start` both default to 3000, so every app but web pins `--port`.
 
 Service ports on the host: **Postgres 55432**, **Redis 56379**, Qdrant 6333,
-Temporal 7233 (UI 8080), LiteLLM 4000. Inside the compose network each service
+Temporal 7233 (UI 8080). Inside the compose network each service
 still listens on its standard port — only the published mapping moved, and
 every one is overridable (`POSTGRES_PORT`, `REDIS_PORT`, …).
 
 **Postgres and Redis are on non-standard ports on purpose.** A native Postgres
 on 5432 answers instead of the container and `prisma migrate` then talks to the
 wrong database *while reporting success* — twice now. Check which server
-answers before believing a schema problem. Qdrant and LiteLLM keep standard
-ports because the app falls back to them in code.
+answers before believing a schema problem. Qdrant keeps its standard port
+because the app falls back to it in code.
 See [`docs/lessons.md`](docs/lessons.md).
 
 Optional local observability: `docker compose --profile observability up -d`,
@@ -172,9 +172,9 @@ then point the app at it with `OTEL_EXPORTER_OTLP_ENDPOINT` — see
 
 ## Architecture
 
-**Stack**: Next.js 16 (App Router) + React 19 + TypeScript ~5.7 + Tailwind 4 + Postgres (Prisma 7) + Qdrant (hybrid dense+sparse) + Temporal.io + LiteLLM proxy + Scaleway reranker. Redis is optional (rate limiting only).
+**Stack**: Next.js 16 (App Router) + React 19 + TypeScript ~5.7 + Tailwind 4 + Postgres (Prisma 7) + Qdrant (hybrid dense+sparse) + Temporal.io + Scaleway reranker. Model providers are called directly, per the route table (ADR-49). Redis is optional (rate limiting only).
 
-**What it is**: RAG AI chat app with unified LLM gateway (LiteLLM), document knowledge bases, and a public API.
+**What it is**: RAG AI chat app with an in-process model gateway, document knowledge bases, and a public API.
 
 **Monorepo layout**: npm workspaces, `apps/*` + `packages/*` — five apps
 (`web`, `api`, `admin`, `worker`, `docs`) over ten packages, with one
@@ -360,7 +360,7 @@ Moved to [`docs/settings-pages.md`](docs/settings-pages.md) — see the Task Rou
 - Tailwind v4 with `@theme` directive in `src/app/[locale]/global.css`. Brand colors: Ragen red `#cb1d3d`, Ragen blue `#252d53`.
 - Error classes: `UnauthorizedException`, `NotFoundException`, `LimitExceededException`. Temporal workflows: reference by string name, not function import.
 - Logging: Pino w/ OpenTelemetry. Import `@/app/lib/utils/logger` — it picks server or client at **runtime**; nothing swaps them at build time. The server pick uses the *bundler's* `require`, so outside webpack/Turbopack (every `tsx` script) it falls back to the client logger instead of throwing, as it used to.
-- Observability: OTel traces/metrics/logs via `src/instrumentation.ts` + `instrumentation-client.ts`; auto-instrumentation covers HTTP, Postgres, Prisma and outgoing `fetch`. **A no-op in apps/web unless `OTEL_EXPORTER_OTLP_ENDPOINT` is set**; the worker also traces on `LANGFUSE_SECRET_KEY` alone. LLM tracing is LiteLLM → Langfuse *and* app-level — see [ADR-22](docs/adrs/22-observability-opentelemetry.md).
+- Observability: OTel traces/metrics/logs via `src/instrumentation.ts` + `instrumentation-client.ts`; auto-instrumentation covers HTTP, Postgres, Prisma and outgoing `fetch`. **A no-op in apps/web unless `OTEL_EXPORTER_OTLP_ENDPOINT` is set**; the worker also traces on `LANGFUSE_SECRET_KEY` alone. LLM tracing is app-level since the proxy went — see [ADR-22](docs/adrs/22-observability-opentelemetry.md).
 - Pre-commit: lint-staged runs `eslint --fix` + `prettier --write`, dispatching each file to its own workspace in `lint-staged.config.mjs` — add an entry there when you add a workspace. Conventional commits, enforced by commitlint.
 
 ## Model Defaults
