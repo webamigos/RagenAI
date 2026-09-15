@@ -2,7 +2,6 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 const mockFindFirst = vi.fn();
 const mockUpdate = vi.fn();
-const mockUpdateLiteLLM = vi.fn();
 const mockTrackAudit = vi.fn();
 
 vi.mock('@ragenai/prisma-client', () => ({
@@ -12,11 +11,6 @@ vi.mock('@ragenai/prisma-client', () => ({
       update: (...args: unknown[]) => mockUpdate(...args),
     },
   },
-}));
-
-vi.mock('../update-litellm-team-command', () => ({
-  updateLiteLLMForTeamCommand: (...args: unknown[]) =>
-    mockUpdateLiteLLM(...args),
 }));
 
 vi.mock(
@@ -37,8 +31,6 @@ const updatedTeamRow = {
   rpmLimit: 60,
   tpmLimit: 100_000,
   allowedModels: ['gpt-5.4'],
-  litellmTeamId: 'team-1',
-  litellmKeyToken: 'enc:key',
 };
 
 describe('updateTeamSettingsCommand', () => {
@@ -54,10 +46,9 @@ describe('updateTeamSettingsCommand', () => {
       allowedModels: [],
     });
     mockUpdate.mockResolvedValue(updatedTeamRow);
-    mockUpdateLiteLLM.mockResolvedValue(undefined);
   });
 
-  it('updates Prisma and triggers the LiteLLM sync', async () => {
+  it('updates Prisma and records the change', async () => {
     const result = await updateTeamSettingsCommand('team-1', 'org-1', {
       name: 'Legal',
       budgetUsdCents: 5000,
@@ -82,7 +73,6 @@ describe('updateTeamSettingsCommand', () => {
         allowedModels: ['gpt-5.4'],
       },
     });
-    expect(mockUpdateLiteLLM).toHaveBeenCalledWith({ teamId: 'team-1' });
     expect(mockTrackAudit).toHaveBeenCalledWith(
       expect.objectContaining({
         action: 'team.settings_updated',
@@ -90,7 +80,7 @@ describe('updateTeamSettingsCommand', () => {
         entityId: 'team-1',
       }),
     );
-    expect(result.litellmProvisioned).toBe(true);
+    expect(result.budgetUsdCents).toBe(5000);
   });
 
   it('throws NotFoundException when the team is not in the caller org', async () => {
@@ -102,7 +92,6 @@ describe('updateTeamSettingsCommand', () => {
       }),
     ).rejects.toThrow(/Team not found/);
     expect(mockUpdate).not.toHaveBeenCalled();
-    expect(mockUpdateLiteLLM).not.toHaveBeenCalled();
   });
 
   it('rejects invalid budgetDuration before touching the DB', async () => {
@@ -131,19 +120,5 @@ describe('updateTeamSettingsCommand', () => {
       where: { id: 'team-1' },
       data: { budgetUsdCents: 2500 },
     });
-  });
-
-  it('marks litellmProvisioned false when ids are missing after update', async () => {
-    mockUpdate.mockResolvedValue({
-      ...updatedTeamRow,
-      litellmTeamId: null,
-      litellmKeyToken: null,
-    });
-
-    const result = await updateTeamSettingsCommand('team-1', 'org-1', {
-      budgetUsdCents: 100,
-    });
-
-    expect(result.litellmProvisioned).toBe(false);
   });
 });

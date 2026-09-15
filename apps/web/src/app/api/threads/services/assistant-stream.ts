@@ -42,7 +42,6 @@ import { buildMcpContext } from '@/libs/mcp/provider-instructions';
 import { getProjectMcpProvidersQuery } from '@/features/projects/services/queries/get-project-mcp-providers-query';
 import { getAvailableConnectorProvidersForOrg } from '@/features/connectors/services/queries/get-available-connectors-query';
 import { observe, updateActiveTrace } from '@langfuse/tracing';
-import { resolveLiteLLMKeyQuery } from '@/features/teams/services/queries/resolve-litellm-key-query';
 import { checkUsageLimitsQuery } from '@/features/ai-usage/services/queries/check-usage-limits-query';
 import {
   assertWithinUsageLimits,
@@ -50,6 +49,8 @@ import {
   UsageLimitError,
 } from '@/features/ai-usage/services/queries/assert-within-usage-limits';
 import { getActiveTeamIdFromCookie } from '@/features/teams/utils/active-team-cookie';
+import { resolveUsageTeamQuery } from '@/features/teams/services/queries/resolve-usage-team-query';
+import { assertWithinTeamRateLimit } from '@/features/teams/services/queries/check-team-rate-limit-query';
 import { getSession, getUserTeamIds, getActiveMember } from '@/lib/auth-guards';
 import type { OrgVisibilityScope } from '@ragenai/platform-contracts';
 
@@ -344,13 +345,13 @@ export async function streamEvents({
           const currentUserId = await getCurrentUserId();
           const activeTeamIdCookie = await getActiveTeamIdFromCookie();
 
-          const [rawSettings, threadRecord, keyResolution, usageLimits] =
+          const [rawSettings, threadRecord, usageTeamId, usageLimits] =
             await Promise.all([
               getAllSettings(orgId),
               getThreadDetails(publicThreadId, orgId, {
                 includeMessages: true,
               }),
-              resolveLiteLLMKeyQuery({
+              resolveUsageTeamQuery({
                 orgId,
                 userId: currentUserId,
                 activeTeamId: activeTeamIdCookie,
@@ -377,19 +378,17 @@ export async function streamEvents({
           // docs/specs/2026-09-14-replace-litellm-with-an-in-process-gateway.md.
           assertWithinUsageLimits(usageLimits, { organizationId: orgId });
 
+          // Per-team requests-per-minute. Enforced here since B5 removed the
+          // virtual keys LiteLLM enforced it on — see Q3, which required the
+          // replacement to land before the proxy lost the field rather than
+          // after. `tpm` is not charged here: the turn's token count is not
+          // known until it finishes, and a guessed estimate would refuse real
+          // requests on arithmetic nobody can audit.
+          await assertWithinTeamRateLimit({ teamId: usageTeamId });
+
           sendApiEvent(controller, 'thread_found', {
             id: threadRecord.id,
           });
-
-          logger.info(
-            {
-              orgId,
-              userId: currentUserId,
-              resolvedTeamId: keyResolution?.teamId ?? null,
-              keySource: keyResolution?.source ?? 'master',
-            },
-            'Resolved LiteLLM key for chat request',
-          );
 
           // When the model selector is hidden, rawSettings.model already
           // reflects env DEFAULT_MODEL (resolved in getAllSettings) — so we
@@ -425,7 +424,6 @@ export async function streamEvents({
             prompt: rawSettings.prompt,
             maxDocumentsToRetrieve: rawSettings.maxDocumentsToRetrieve,
             voiceId: rawSettings.voiceId,
-            litellmApiKey: keyResolution?.apiKey,
           };
 
           const piiSystemInstruction =
@@ -1044,10 +1042,10 @@ export async function streamEvents({
               projectId: effectiveProjectId ?? null,
               threadId: publicThreadId,
               userId,
-              // The team whose key paid for the turn, so the teams UI and the
-              // key that was actually charged cannot disagree about who spent
-              // what. Null when the organization key served the request.
-              teamId: keyResolution?.teamId ?? null,
+              // The team this turn is attributed to — the caller's active team
+              // when they are a member of it, or their only team. Null when
+              // neither resolves, and the spend belongs to the org alone.
+              teamId: usageTeamId,
               step: AiUsageStep.CHAT_COMPLETION,
               provider: trackedProvider,
               model: trackedModelId,

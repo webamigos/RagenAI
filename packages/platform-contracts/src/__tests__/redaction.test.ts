@@ -119,10 +119,7 @@ describe('SENSITIVE_FIELDS', () => {
         'fireworksApiKey',
       ],
     ],
-    [
-      'vault and LiteLLM tokens',
-      ['litellmApiKey', 'litellmKeyToken', 'accessToken', 'refreshToken'],
-    ],
+    ['vault tokens', ['accessToken', 'refreshToken']],
     ['API-key material', ['apiKey', 'hashedValue', 'maskedValue']],
     ['OAuth material', ['clientSecret', 'codeVerifier']],
     ['generic secrets', ['password', 'token', 'secret']],

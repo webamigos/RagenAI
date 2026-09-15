@@ -1,7 +1,6 @@
 import db from '@ragenai/prisma-client';
 import { NotFoundException } from '@/libs/utils/errors';
 import { trackAudit } from '@/features/audit-logs/services/commands/create-audit-log-command';
-import { updateLiteLLMForTeamCommand } from './update-litellm-team-command';
 import type {
   TeamSettings,
   UpdateTeamSettingsInput,
@@ -10,12 +9,15 @@ import type {
 const VALID_BUDGET_DURATIONS = new Set(['7d', '30d', '90d', '1y']);
 
 /**
- * Update a team's budget / rate limits / allowed-models whitelist and sync
- * the change to LiteLLM. Scoped by `organizationId` to prevent cross-org
- * mutations from a compromised session. Bypasses Better Auth's updateTeam
- * endpoint because those fields are Ragen-only — afterUpdateTeam hook only
- * fires for Better Auth's managed fields, so we call the LiteLLM sync
- * directly here.
+ * Update a team's budget / rate limits / allowed-models whitelist.
+ *
+ * Scoped by `organizationId` to prevent cross-org mutations from a compromised
+ * session. Bypasses Better Auth's updateTeam endpoint because those fields are
+ * Ragen-only.
+ *
+ * These settings used to be pushed to a LiteLLM virtual key as well. They are
+ * not any more: the application enforces its own ceilings before every turn
+ * (Phase A), so the database row *is* the limit rather than a copy of one.
  */
 export async function updateTeamSettingsCommand(
   teamId: string,
@@ -73,8 +75,6 @@ export async function updateTeamSettingsCommand(
     },
   });
 
-  await updateLiteLLMForTeamCommand({ teamId });
-
   trackAudit({
     action: 'team.settings_updated',
     entityType: 'Team',
@@ -106,7 +106,5 @@ export async function updateTeamSettingsCommand(
     rpmLimit: updated.rpmLimit,
     tpmLimit: updated.tpmLimit,
     allowedModels: updated.allowedModels,
-    litellmProvisioned:
-      updated.litellmTeamId != null && updated.litellmKeyToken != null,
   };
 }

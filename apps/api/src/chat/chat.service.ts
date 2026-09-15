@@ -7,7 +7,6 @@ import { type ChatDto } from './dto/chat.dto.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { ApiLimitsService } from '../api-limits/api-limits.service.js';
 import { OrganizationSettingsService } from '../organizations/organization-settings.service.js';
-import { ResolveLiteLLMKeyService } from '../teams/resolve-litellm-key.service.js';
 import { LoadMcpToolsService } from '../mcp/load-mcp-tools.service.js';
 import { InitializeBasicRagService } from '../chains/basic-rag/initialize-basic-rag.service.js';
 import { PersistApiThreadService } from '../threads/persist-api-thread.service.js';
@@ -33,7 +32,6 @@ export class ChatService {
     private readonly prisma: PrismaService,
     private readonly apiLimits: ApiLimitsService,
     private readonly organizationSettings: OrganizationSettingsService,
-    private readonly resolveLiteLLMKey: ResolveLiteLLMKeyService,
     private readonly loadMcpTools: LoadMcpToolsService,
     private readonly initializeBasicRag: InitializeBasicRagService,
     private readonly persistApiThread: PersistApiThreadService,
@@ -81,19 +79,13 @@ export class ChatService {
       return;
     }
 
-    const [rawSettings, keyResolution] = await Promise.all([
-      this.organizationSettings.getAllSettings(context.orgId),
-      this.resolveLiteLLMKey.resolveForRequest({
-        orgId: context.orgId,
-        userId: context.userId,
-        routeTag: 'v1.chat',
-      }),
-    ]);
+    const rawSettings = await this.organizationSettings.getAllSettings(
+      context.orgId,
+    );
 
     const settings = {
       ...rawSettings,
       apiKey: rawSettings.apiKey ?? '',
-      litellmApiKey: keyResolution.apiKey,
     };
 
     const { mcpTools, mcpContext, closeMcpClients } =

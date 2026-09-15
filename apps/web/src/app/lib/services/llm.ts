@@ -7,7 +7,6 @@ import type { ChatCompletionOptions } from '@/libs/llm/types/chat-completion';
 import type { LiteLLMCredentials } from '@/libs/llm/types/credentials';
 import { isReasoningModel, normalizeModelId } from '../../components/config';
 import { logger } from '../utils/logger';
-import { getLiteLLMOrgApiKey } from '@/features/organizations/services/organization-settings';
 import { resolveEmbeddingsModel } from '@ragenai/rag-core';
 import {
   nativeChatInstance,
@@ -126,13 +125,11 @@ export const createChatCompletionInstanceWithOrg = async (
     });
   }
 
-  // Resolving the org's virtual key is a proxy-only concern: the key exists to
-  // carry LiteLLM's per-team budget, which Phase A moved into the database.
-  const orgKey = await getLiteLLMOrgApiKey(orgId);
-
-  const credentials: LiteLLMCredentials = orgKey
-    ? { ...litellmCredentials(), apiKey: orgKey }
-    : litellmCredentials();
+  // The master key. Per-org virtual keys carried LiteLLM's own budget, which
+  // the application has enforced since Phase A and B5 removed — so the org is
+  // now only a credential *scope*, which the gateway path above threads and
+  // the proxy path has no use for.
+  const credentials: LiteLLMCredentials = litellmCredentials();
 
   const rawModel =
     options.model || options.modelName || defaultModel() || undefined;

@@ -3,7 +3,6 @@ import { generateText } from 'ai';
 
 import { db } from '../db/index.js';
 import { logger } from '../logger.js';
-import { decryptApiKey } from '../../utils/decrypt-api-key.js';
 import { isMasterKeyRequired } from './require-master-key.js';
 import {
   nativeChatModel,
@@ -82,69 +81,20 @@ export async function getEmbeddingModel(modelId: string) {
   return masterLitellm.textEmbeddingModel(modelId);
 }
 
-// Tiny in-process cache so we don't hit Postgres for every embedding batch in
-// the same workflow run. apps/web does no caching at all; a short TTL here is
-// safe because key rotation is rare and a stale value just costs one retry.
-type CachedKey = { value: string | null; expiresAt: number };
-const orgKeyCache = new Map<string, CachedKey>();
-const ORG_KEY_TTL_MS = 60_000;
-
-const resolveOrgLiteLLMKey = async (orgId: string): Promise<string | null> => {
-  const cached = orgKeyCache.get(orgId);
-  if (cached && cached.expiresAt > Date.now()) {
-    return cached.value;
-  }
-
-  let resolved: string | null = null;
-  try {
-    const encrypted = await db.getOrgLiteLLMKeyEncrypted(orgId);
-    if (encrypted) {
-      resolved = decryptApiKey(encrypted);
-    }
-  } catch (err) {
-    logger.warn(
-      { err, orgId },
-      'Failed to resolve per-org LiteLLM key, falling back to master key',
-    );
-  }
-
-  orgKeyCache.set(orgId, {
-    value: resolved,
-    expiresAt: Date.now() + ORG_KEY_TTL_MS,
-  });
-  return resolved;
-};
-
 /**
- * Returns a LiteLLM provider instance scoped to a specific organization. Falls
- * back to the master key (with a warning log) when the org has no virtual key
- * configured — older orgs created before the LiteLLM team rollout in
- * apps/web may not have one yet.
- */
-const getProviderForOrg = async (orgId: string) => {
-  const orgKey = await resolveOrgLiteLLMKey(orgId);
-  if (orgKey) {
-    return buildLiteLLMProvider(orgKey);
-  }
-
-  logger.warn(
-    { orgId },
-    'No per-org LiteLLM key found, falling back to master key — usage will not be attributed to the org',
-  );
-  return masterLitellm;
-};
-
-/**
- * Org-scoped chat model. Uses the per-org LiteLLM virtual key so usage shows
- * up under the right team in LiteLLM/Langfuse and counts against the org's
- * budget.
+ * Org-scoped chat model.
+ *
+ * `orgId` no longer picks a per-org LiteLLM virtual key — those carried the
+ * proxy's own budget, which the application enforces itself since Phase A, and
+ * B5 removed them. On the proxy path this is now the master key; on the gateway
+ * path the org becomes a credential scope, which is where per-org keys will
+ * return if they return (ragen-token-vault, ADR-13/ADR-32).
  */
 export async function getChatModelForOrg(orgId: string, modelId: string) {
   if (usingNativeGateway()) {
     return nativeChatModel(modelId, orgId);
   }
-  const provider = await getProviderForOrg(orgId);
-  return provider.chat(modelId);
+  return masterLitellm.chat(modelId);
 }
 
 /**
@@ -154,8 +104,7 @@ export async function getEmbeddingModelForOrg(orgId: string, modelId: string) {
   if (usingNativeGateway()) {
     return nativeEmbeddingModel(modelId, orgId);
   }
-  const provider = await getProviderForOrg(orgId);
-  return provider.textEmbeddingModel(modelId);
+  return masterLitellm.textEmbeddingModel(modelId);
 }
 
 const PDF_TIMEOUT_MS = 120_000; // 2 minutes for PDF processing
@@ -228,18 +177,7 @@ export async function generateTextWithPdf(params: {
     return generateTextWithPdfNatively(params);
   }
 
-  let authKey = LITELLM_MASTER_KEY || 'sk-litellm-dev-key';
-  if (params.orgId) {
-    const orgKey = await resolveOrgLiteLLMKey(params.orgId);
-    if (orgKey) {
-      authKey = orgKey;
-    } else {
-      logger.warn(
-        { orgId: params.orgId },
-        'No per-org LiteLLM key for PDF call, falling back to master key',
-      );
-    }
-  }
+  const authKey = LITELLM_MASTER_KEY || 'sk-litellm-dev-key';
 
   const response = await fetch(`${LITELLM_PROXY_URL}/v1/chat/completions`, {
     method: 'POST',

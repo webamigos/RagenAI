@@ -21,7 +21,7 @@ import { SupabaseVectorStoreClient } from '@/libs/vector-store/supabase-client';
 import { isSupportedVectorStore } from '@ragenai/rag-core';
 
 type InitializePublicRagChainParams = {
-  settings: OrganizationSettings & { litellmApiKey?: string };
+  settings: OrganizationSettings;
   organizationId: string;
   projectInstruction?: string | null;
   projectId: string;
@@ -46,12 +46,10 @@ export const initializePublicRagChain = async ({
       temperature: answerTemperature,
       prompt: answerInstructions,
       maxDocumentsToRetrieve,
-      litellmApiKey,
     } = settings;
 
     const embeddingModel = createEmbeddingsInstance({
       organizationId,
-      litellmApiKey,
     });
     const contentModerator = createModerationInstance();
 
@@ -59,13 +57,11 @@ export const initializePublicRagChain = async ({
       apiKey,
       model: DEFAULT_REPHRASE_MODEL,
       temperature: DEFAULT_REPHRASE_TEMPERATURE,
-      litellmApiKey,
     });
     const answerGenerator = createChatCompletionInstance({
       apiKey,
       model: answerModel,
       temperature: answerTemperature,
-      litellmApiKey,
     });
 
     const [orgMetadata, ragPipelineSettings] = await Promise.all([
@@ -142,7 +138,6 @@ export const initializePublicRagChain = async ({
       config: {
         metadataFilter,
         maxDocumentsToRetrieve,
-        litellmApiKey,
         answerInstructions: finalInstructions,
         tracking: { organizationId },
         ragSettings: {

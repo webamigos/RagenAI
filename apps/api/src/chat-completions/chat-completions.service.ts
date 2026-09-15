@@ -11,7 +11,6 @@ import { type ProjectId } from '../common/types/brand.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { ApiLimitsService } from '../api-limits/api-limits.service.js';
 import { OrganizationSettingsService } from '../organizations/organization-settings.service.js';
-import { ResolveLiteLLMKeyService } from '../teams/resolve-litellm-key.service.js';
 import { LoadMcpToolsService } from '../mcp/load-mcp-tools.service.js';
 import { InitializeBasicRagService } from '../chains/basic-rag/initialize-basic-rag.service.js';
 import { PersistApiThreadService } from '../threads/persist-api-thread.service.js';
@@ -59,7 +58,6 @@ export class ChatCompletionsService {
     private readonly prisma: PrismaService,
     private readonly apiLimits: ApiLimitsService,
     private readonly organizationSettings: OrganizationSettingsService,
-    private readonly resolveLiteLLMKey: ResolveLiteLLMKeyService,
     private readonly loadMcpTools: LoadMcpToolsService,
     private readonly initializeBasicRag: InitializeBasicRagService,
     private readonly persistApiThread: PersistApiThreadService,
@@ -112,21 +110,15 @@ export class ChatCompletionsService {
       );
     }
 
-    const [rawSettings, keyResolution] = await Promise.all([
-      this.organizationSettings.getAllSettings(context.orgId),
-      this.resolveLiteLLMKey.resolveForRequest({
-        orgId: context.orgId,
-        userId: context.userId,
-        routeTag: 'v1.chat.completions',
-      }),
-    ]);
+    const rawSettings = await this.organizationSettings.getAllSettings(
+      context.orgId,
+    );
 
     // Apply per-request overrides on top of the org defaults. Undefined
     // overrides leave the org value untouched.
     const settings = {
       ...rawSettings,
       apiKey: rawSettings.apiKey ?? '',
-      litellmApiKey: keyResolution.apiKey,
       ...(dto.model !== undefined ? { model: dto.model } : {}),
       ...(dto.temperature !== undefined
         ? { temperature: dto.temperature }

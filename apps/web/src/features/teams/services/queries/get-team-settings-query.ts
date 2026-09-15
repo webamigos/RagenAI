@@ -24,7 +24,5 @@ export async function getTeamSettingsQuery(
     rpmLimit: team.rpmLimit,
     tpmLimit: team.tpmLimit,
     allowedModels: team.allowedModels,
-    litellmProvisioned:
-      team.litellmTeamId != null && team.litellmKeyToken != null,
   };
 }

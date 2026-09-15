@@ -14,7 +14,6 @@ export type TeamSettings = {
   rpmLimit: number | null;
   tpmLimit: number | null;
   allowedModels: string[];
-  litellmProvisioned: boolean;
 };
 
 export type UpdateTeamSettingsInput = {

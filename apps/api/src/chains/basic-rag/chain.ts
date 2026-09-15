@@ -105,7 +105,6 @@ export const basicRagChain = async ({
           retrievalQueries,
           config?.maxDocumentsToRetrieve,
           config?.metadataFilter,
-          config?.litellmApiKey,
           config?.ragSettings?.rerankingEnabled ?? true,
           config?.tracking,
           config?.trackAiUsage,

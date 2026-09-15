@@ -26,10 +26,9 @@ const MAX_RERANK_MS = 15_000;
 export async function rerankDocumentsScaleway(
   query: string,
   documents: VectorStoreDocument[],
-  options: Omit<RerankOptions, 'litellmApiKey'> = {},
+  options: RerankOptions = {},
 ): Promise<VectorStoreDocument[]> {
   const { topN = DEFAULT_RERANK_TOP_N, tracking } = options;
-  // litellmApiKey is intentionally ignored — Scaleway path bypasses LiteLLM.
   if (documents.length === 0) {
     return [];
   }

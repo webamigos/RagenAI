@@ -303,23 +303,6 @@ const updateThumbnailKey = async ({
 };
 
 /**
- * Reads the encrypted per-organization LiteLLM virtual key. Decryption is the
- * caller's responsibility (see `utils/decrypt-api-key.ts`). Returns null when
- * the org has no row in `organization_settings` or no key set, in which case
- * the caller should fall back to the LITELLM_MASTER_KEY.
- */
-const getOrgLiteLLMKeyEncrypted = async (
-  orgId: string,
-): Promise<string | null> => {
-  const row = await getPrisma().organizationSettings.findUnique({
-    where: { organizationId: orgId },
-    select: { litellmApiKey: true },
-  });
-
-  return row?.litellmApiKey ?? null;
-};
-
-/**
  * Merge-update the `metadata` JSONB column on a user_files row. Uses the
  * PostgreSQL `||` operator so existing keys (e.g. Google Drive import fields)
  * are preserved — only the keys present in `patch` are overwritten or added.
@@ -866,7 +849,6 @@ const deleteExpiredDocumentRetrievals = async (
 
 export const db = {
   getUserFile,
-  getOrgLiteLLMKeyEncrypted,
   createFileDetailsInDB,
   updateFileBinaryInfo,
   updateParsingStatus,

@@ -1553,7 +1553,8 @@
     "api-key-error": "API-avaimen määritys puuttuu - tarkista asetuksesi",
     "unknown-error": "Pyyntösi käsittelyssä tapahtui odottamaton virhe - yritä uudelleen",
     "llm-api-error": "Pyyntö kielimallin API:lle epäonnistui",
-    "usage-limit-exceeded": "Organisaatiosi on saavuttanut kuukausittaisen käyttörajansa - se nollautuu ensi kuun alussa. Pyydä organisaation järjestelmänvalvojaa nostamaan sitä."
+    "usage-limit-exceeded": "Organisaatiosi on saavuttanut kuukausittaisen käyttörajansa - se nollautuu ensi kuun alussa. Pyydä organisaation järjestelmänvalvojaa nostamaan sitä.",
+    "rate-limit-exceeded": "Tiimisi lähettää pyyntöjä nopeammin kuin minuuttikohtainen raja sallii - odota hetki ja yritä uudelleen."
   },
   "onboarding": {
     "first-step": "Aloitetaan lyhyellä oppaalla, joka auttaa sinua käyttämään sovellustamme tehokkaasti. Se esittelee sinulle keskeiset ominaisuudet, jotka helpottavat työtäsi. Aloitetaan!",

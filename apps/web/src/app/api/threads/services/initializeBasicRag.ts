@@ -31,7 +31,7 @@ import { getImportedKbFileIdsQuery } from '@/features/documents/services/queries
 import type { ReasoningEffortLevel } from '@/libs/llm/types';
 import { isSupportedVectorStore } from '@ragenai/rag-core';
 type InitializeRagChainParams = {
-  settings: OrganizationSettings & { litellmApiKey?: string };
+  settings: OrganizationSettings;
   orgId: string;
   userId?: string | null;
   userTeamIds?: string[];
@@ -111,14 +111,12 @@ export const initializeRagChain = async ({
       temperature: answerTemperature,
       prompt: answerInstructions,
       maxDocumentsToRetrieve,
-      litellmApiKey,
     } = settings;
 
     const embeddingModel = createEmbeddingsInstance({
       organizationId: orgId,
       userId: userId ?? undefined,
       projectId: projectId ?? undefined,
-      litellmApiKey,
     });
     const contentModerator = createModerationInstance();
 
@@ -126,13 +124,11 @@ export const initializeRagChain = async ({
       apiKey,
       model: DEFAULT_REPHRASE_MODEL,
       temperature: DEFAULT_REPHRASE_TEMPERATURE,
-      litellmApiKey,
     });
     const answerGenerator = createChatCompletionInstance({
       apiKey,
       model: answerModel,
       temperature: answerTemperature,
-      litellmApiKey,
       reasoningEffort,
     });
 
@@ -209,7 +205,6 @@ export const initializeRagChain = async ({
         knowledgeScope,
         maxDocumentsToRetrieve,
         maxTokens,
-        litellmApiKey,
         answerInstructions: answerInstructions || '',
         projectInstruction: projectInstruction || '',
         threadDocuments: threadDocuments || [],

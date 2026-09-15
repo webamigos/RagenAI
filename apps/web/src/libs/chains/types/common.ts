@@ -69,8 +69,6 @@ export interface RagChainConfig extends ChainConfig {
    * about scopes behaves exactly as before.
    */
   knowledgeScope?: import('@ragenai/platform-contracts').KnowledgeScope;
-  /** Org's virtual LiteLLM key — used to attribute rerank usage to the org. */
-  litellmApiKey?: string;
 }
 
 export interface ChainUsage {

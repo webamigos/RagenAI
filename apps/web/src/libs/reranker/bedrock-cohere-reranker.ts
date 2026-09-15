@@ -14,8 +14,6 @@ export type RerankTrackingContext = {
 export type RerankOptions = {
   /** Number of top results to return (default: 5). */
   topN?: number;
-  /** LiteLLM virtual key — attributes spend to the org in LiteLLM. */
-  litellmApiKey?: string;
   /** Caller context — when present, the call is recorded in AiUsage. */
   tracking?: RerankTrackingContext;
 };
@@ -54,7 +52,7 @@ export async function rerankDocuments(
   documents: VectorStoreDocument[],
   options: RerankOptions = {},
 ): Promise<VectorStoreDocument[]> {
-  const { topN = DEFAULT_RERANK_TOP_N, litellmApiKey, tracking } = options;
+  const { topN = DEFAULT_RERANK_TOP_N, tracking } = options;
   if (documents.length === 0) {
     return [];
   }
@@ -67,10 +65,10 @@ export async function rerankDocuments(
   const baseUrl = (
     process.env.LITELLM_PROXY_URL || 'http://localhost:4000'
   ).replace(/\/$/, '');
-  // Prefer the org's virtual LiteLLM key so usage is attributed to the org
-  // in LiteLLM (Team / Key Name). Fall back to master key only if missing.
-  const apiKey =
-    litellmApiKey || process.env.LITELLM_MASTER_KEY || 'sk-litellm';
+  // The master key. Per-org virtual keys carried LiteLLM's own budget, which
+  // Phase A moved into the database (B5) — so there is nothing left for a
+  // per-org key to do here, and `ai_usage` already attributes the call.
+  const apiKey = process.env.LITELLM_MASTER_KEY || 'sk-litellm';
 
   const texts = documents.map((doc) => doc.pageContent);
 

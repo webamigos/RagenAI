@@ -11,7 +11,7 @@ import { getRagPipelineSettings } from '@/features/organizations/services/organi
 import type { ReasoningEffortLevel } from '@/libs/llm/types';
 
 type InitializeConversationChainParams = {
-  settings: OrganizationSettings & { litellmApiKey?: string };
+  settings: OrganizationSettings;
   orgId: string;
   projectInstruction?: string | null;
   mcpTools?: Record<string, any>;
@@ -32,7 +32,7 @@ export const initializeConversationChain = async ({
   reasoningEffort,
 }: InitializeConversationChainParams) => {
   try {
-    const { apiKey, model, temperature, prompt, litellmApiKey } = settings;
+    const { apiKey, model, temperature, prompt } = settings;
 
     const ragPipelineSettings = await getRagPipelineSettings(orgId);
 
@@ -43,7 +43,6 @@ export const initializeConversationChain = async ({
           apiKey,
           model,
           temperature,
-          litellmApiKey,
           reasoningEffort,
         }),
       },

@@ -96,18 +96,6 @@ export async function finalizeOnboardingCommand(preferredOrgId?: string) {
           'Set default vector store for new organization',
         );
 
-        // Create LiteLLM team + virtual key
-        try {
-          const { ensureLiteLLMTeamCommand } =
-            await import('@/features/organizations/services/commands/litellm-team-command');
-          await ensureLiteLLMTeamCommand(orgId, `${userName}'s Organization`);
-        } catch (litellmError) {
-          logger.error(
-            { err: litellmError, orgId },
-            'Failed to create LiteLLM team during onboarding (will retry later)',
-          );
-        }
-
         // Apply default limits (including the $10 monthly budget) and RAG
         // settings to the new org. The limits live in the database and are
         // enforced from there; nothing is pushed to the proxy.

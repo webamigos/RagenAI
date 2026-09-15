@@ -1012,8 +1012,43 @@ resumes:
       Not done here, deliberately: `DEFAULT_GATEWAY_MODE` stays `litellm`.
       Changing it flips local development and every fresh clone, which belongs
       with "then everywhere" rather than with "one environment".
-- [ ] **B5.** Remove virtual keys: `resolveLiteLLMKeyQuery`, the remaining team
-      commands, the three columns.
+- [x] **B5.** Remove virtual keys: `resolveLiteLLMKeyQuery`, the remaining team
+      commands, the three columns. Done 2026-09-15.
+
+      **It could not be done as written, and the guard is what said so.**
+      `only-rate-limits-reach-the-proxy.test.ts` held Q3's obligation: budgets
+      and allowlists had moved into the database, `tpm`/`rpm` had not, and the
+      proxy was the only thing enforcing them — so it failed if the forwarding
+      stopped while nothing had replaced it. Removing the virtual keys removes
+      the vehicle, so the guard fired exactly as designed. The answer was to
+      build the replacement, not to delete the guard:
+      `checkTeamRateLimitQuery`, a Redis token bucket over the same two fields,
+      called before every turn, with its own `chain-errors.rate-limit-exceeded`
+      in all fifteen locales. It fails **open** when Redis is absent, because
+      Redis is optional here and the hard stop is the monthly ceiling in
+      Postgres.
+
+      **Team attribution survived the removal.** `resolveLiteLLMKeyQuery`
+      decided two things at once — which key to charge and, as a side effect,
+      which team `AiUsage.teamId` recorded. Deleting it wholesale would have
+      made the teams UI silently report nothing, so its second half is now
+      `resolveUsageTeamQuery`: same precedence, same membership check (the
+      active team arrives in a cookie), no key.
+
+      Also gone: `apps/admin`'s `syncOrgMemberToLiteLLM`, whose whole purpose
+      was keeping proxy team membership in step with the database, and the
+      `litellmProvisioned` banner in team settings, which reported a state that
+      no longer exists.
+
+      The migration drops `organization_settings.litellm_api_key`,
+      `teams.litellm_team_id` and `teams.litellm_key_token`. Deploy ordering is
+      one-way: the application stops selecting them in the same release, so a
+      rollback to an older image would fail against the new schema. Roll the
+      migration back with it, or roll forward.
+
+      `Team.budgetUsdCents`, `budgetDuration`, `rpmLimit`, `tpmLimit` and
+      `allowedModels` are deliberately kept — those are Ragen's own settings,
+      read from the database, and now enforced from there.
 - [ ] **B6.** Remove the infrastructure: `infra/litellm/`, the compose service
       and its Postgres, the Helm values, the devcontainer wiring, the e2e mock
       proxy, the promptfoo configs' base URLs, `packages/litellm-client`,

@@ -401,7 +401,6 @@ export async function retrieveRelevantDocuments(
   queries: string | string[],
   maxDocuments = 4,
   metadataFilter?: object,
-  litellmApiKey?: string,
   rerankingEnabled = true,
   tracking?: {
     organizationId?: string | null;
@@ -458,7 +457,6 @@ export async function retrieveRelevantDocuments(
     // phrasing, which is the most faithful representation of user intent.
     const reranked = await rerankDocuments(queryList[0], uniqueDocs, {
       topN: maxDocuments,
-      litellmApiKey,
       tracking,
       trackAiUsage,
     });
@@ -480,7 +478,6 @@ export async function retrieveRelevantDocumentsWithIds(
   queries: string | string[],
   maxDocuments = 4,
   metadataFilter?: object,
-  litellmApiKey?: string,
   rerankingEnabled = true,
   tracking?: {
     organizationId?: string | null;
@@ -557,7 +554,6 @@ export async function retrieveRelevantDocumentsWithIds(
           async () =>
             rerankDocuments(queryList[0], uniqueDocs, {
               topN: maxDocuments,
-              litellmApiKey,
               tracking,
               trackAiUsage,
             }),

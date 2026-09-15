@@ -32,7 +32,6 @@ describe('SearchService', () => {
     getAllSettings: Mock;
     getRagPipelineSettings: Mock;
   };
-  let resolveLiteLLMKey: { resolveForRequest: Mock };
   let initializeBasicRag: { buildRetrievalContext: Mock };
   let aiUsage: { track: Mock };
   let folders: { getMembershipContext: Mock };
@@ -72,7 +71,6 @@ describe('SearchService', () => {
       getAllSettings: vi.fn(),
       getRagPipelineSettings: vi.fn(),
     };
-    resolveLiteLLMKey = { resolveForRequest: vi.fn() };
     initializeBasicRag = { buildRetrievalContext: vi.fn() };
     aiUsage = { track: vi.fn().mockResolvedValue(undefined) };
     folders = { getMembershipContext: vi.fn() };
@@ -92,11 +90,6 @@ describe('SearchService', () => {
       contentModerationEnabled: false,
       rerankingEnabled: true,
     });
-    resolveLiteLLMKey.resolveForRequest.mockResolvedValue({
-      apiKey: 'sk-litellm',
-      teamId: null,
-      source: 'org',
-    });
     initializeBasicRag.buildRetrievalContext.mockResolvedValue({
       vectorStore: fakeVectorStore,
       metadataFilter: { must: [] },
@@ -115,7 +108,6 @@ describe('SearchService', () => {
       prisma as any,
       apiLimits as any,
       organizationSettings as any,
-      resolveLiteLLMKey as any,
       initializeBasicRag as any,
       aiUsage as any,
       folders as any,
@@ -204,7 +196,6 @@ describe('SearchService', () => {
       'What is our refund policy?',
       4,
       { must: [] },
-      'sk-litellm',
       true,
       {
         organizationId: 'org-1',
@@ -246,7 +237,6 @@ describe('SearchService', () => {
       expect.anything(),
       expect.anything(),
       expect.anything(),
-      expect.anything(),
     );
   });
 
@@ -260,7 +250,6 @@ describe('SearchService', () => {
     await service.search(baseDto, mockContext);
 
     expect(mockRetrieve).toHaveBeenCalledWith(
-      expect.anything(),
       expect.anything(),
       expect.anything(),
       expect.anything(),

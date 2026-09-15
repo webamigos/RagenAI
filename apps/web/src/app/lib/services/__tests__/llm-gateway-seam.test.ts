@@ -18,7 +18,6 @@ const nativeChatInstance = vi.hoisted(() => vi.fn(() => ({ id: 'native' })));
 const nativeEmbeddingInstance = vi.hoisted(() =>
   vi.fn(async () => ({ id: 'native-embedding' })),
 );
-const getLiteLLMOrgApiKey = vi.hoisted(() => vi.fn(async () => 'sk-org'));
 const TrackedEmbeddingsProvider = vi.hoisted(() =>
   vi.fn(function (this: Record<string, unknown>) {
     this.id = 'tracked';
@@ -38,10 +37,6 @@ vi.mock('@/libs/llm/native-models', () => ({
   nativeChatInstance,
   nativeEmbeddingInstance,
   usingNativeGateway: () => process.env.LLM_GATEWAY === 'native',
-}));
-
-vi.mock('@/features/organizations/services/organization-settings', () => ({
-  getLiteLLMOrgApiKey,
 }));
 
 vi.mock('@ragenai/rag-core', () => ({
@@ -86,15 +81,6 @@ describe('LLM_GATEWAY=litellm (the default)', () => {
 
     expect(embeddingsCreateInstance).toHaveBeenCalledOnce();
     expect(nativeEmbeddingInstance).not.toHaveBeenCalled();
-  });
-
-  it('still resolves the org virtual key for the org-aware path', async () => {
-    const { createChatCompletionInstanceWithOrg } = await load();
-
-    await createChatCompletionInstanceWithOrg({ model: 'gpt-5.4' }, 'org_1');
-
-    expect(getLiteLLMOrgApiKey).toHaveBeenCalledWith('org_1');
-    expect(createInstance).toHaveBeenCalledOnce();
   });
 });
 
@@ -142,22 +128,6 @@ describe('LLM_GATEWAY=native', () => {
       'org_1',
       undefined,
       undefined,
-    );
-  });
-
-  /**
-   * The virtual key carries LiteLLM's per-team budget, which Phase A moved
-   * into the database. Reading it on the native path would be a pointless
-   * query — and, once B5 drops the column, a failing one.
-   */
-  it('does not resolve an org virtual key', async () => {
-    const { createChatCompletionInstanceWithOrg } = await load();
-
-    await createChatCompletionInstanceWithOrg({ model: 'gpt-5.4' }, 'org_1');
-
-    expect(getLiteLLMOrgApiKey).not.toHaveBeenCalled();
-    expect(nativeChatInstance).toHaveBeenCalledWith(
-      expect.objectContaining({ model: 'gpt-5.4', organizationId: 'org_1' }),
     );
   });
 

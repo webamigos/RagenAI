@@ -51,13 +51,8 @@ vi.mock('@/app/api/v1/check-usage-ceilings', () => ({
     mockRefuseIfOverUsageCeiling(organizationId),
 }));
 
-vi.mock('@/app/api/v1/resolve-litellm-key', () => ({
-  resolveLiteLLMKeyForRequest: () =>
-    Promise.resolve({
-      apiKey: 'test-key',
-      teamId: null,
-      source: 'org' as const,
-    }),
+vi.mock('@/features/teams/services/queries/resolve-usage-team-query', () => ({
+  resolveUsageTeamQuery: () => Promise.resolve(null),
 }));
 
 vi.mock('@/app/api/v1/load-mcp-tools', () => ({

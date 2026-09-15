@@ -3,4 +3,5 @@ export type ChainErrorCode =
   | 'api-key-error'
   | 'unknown-error'
   | 'llm-api-error'
-  | 'usage-limit-exceeded';
+  | 'usage-limit-exceeded'
+  | 'rate-limit-exceeded';

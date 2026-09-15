@@ -31,8 +31,6 @@ export const SENSITIVE_FIELDS: ReadonlySet<string> = new Set([
   'openrouterApiKey',
   'fireworksApiKey',
   'azureOpenaiCredentials',
-  'litellmApiKey',
-  'litellmKeyToken',
 ]);
 
 export const REDACTED = '[REDACTED]';

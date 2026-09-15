@@ -113,6 +113,40 @@ export class RedisService {
     }
   }
 
+  /**
+   * `incrWithExpire`, by an arbitrary amount.
+   *
+   * A token bucket counts tokens, not requests, so it cannot use INCR. Same
+   * Lua-script reasoning: the expiry has to be set in the same round trip as
+   * the first increment, or a crash between the two leaves a key that never
+   * expires and a team rate-limited forever.
+   */
+  async incrByWithExpire(
+    key: string,
+    amount: number,
+    ttlSeconds: number,
+  ): Promise<number> {
+    const luaScript = `
+      local current = redis.call('INCRBY', KEYS[1], ARGV[1])
+      if current == tonumber(ARGV[1]) then
+        redis.call('EXPIRE', KEYS[1], ARGV[2])
+      end
+      return current
+    `;
+    try {
+      return (await this.client.eval(
+        luaScript,
+        1,
+        key,
+        amount,
+        ttlSeconds,
+      )) as number;
+    } catch (error) {
+      logger.error({ err: error, key }, 'Error incrementing key in Redis');
+      throw new Error('Failed to increment key in Redis');
+    }
+  }
+
   async disconnect(): Promise<void> {
     await this.client.quit();
   }

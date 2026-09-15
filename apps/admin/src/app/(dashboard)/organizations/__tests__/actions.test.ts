@@ -12,7 +12,6 @@ const memberCount = vi.fn();
 const teamFindMany = vi.fn();
 const teamMemberUpsert = vi.fn();
 const teamMemberDeleteMany = vi.fn();
-const syncOrgMemberToLiteLLM = vi.fn();
 
 vi.mock('@/lib/auth-guard', () => ({
   requireAdmin: (...args: unknown[]) => requireAdmin(...args),
@@ -28,9 +27,7 @@ vi.mock('@/lib/audit', async (importOriginal) => ({
 
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }));
 
-vi.mock('@/lib/litellm', () => ({
-  syncOrgMemberToLiteLLM: (...a: unknown[]) => syncOrgMemberToLiteLLM(...a),
-}));
+vi.mock('@/lib/litellm', () => ({}));
 
 vi.mock('@/lib/db', () => ({
   prisma: {
@@ -90,7 +87,6 @@ beforeEach(() => {
   memberCount.mockResolvedValue(1);
   teamFindMany.mockResolvedValue([{ id: `${ORG_ID}-general` }]);
   teamMemberDeleteMany.mockResolvedValue({ count: 1 });
-  syncOrgMemberToLiteLLM.mockResolvedValue({ ok: true, teamsUpdated: 1 });
 });
 
 describe('renameOrgAction', () => {
@@ -278,38 +274,6 @@ describe('addOrgMemberAction', () => {
 
     expect(teamMemberUpsert.mock.calls[0][0].update).toEqual({});
   });
-
-  it('syncs the member to LiteLLM and reports the outcome', async () => {
-    const result = await addOrgMemberAction(
-      ORG_ID,
-      'new@example.com',
-      'member',
-    );
-
-    expect(syncOrgMemberToLiteLLM).toHaveBeenCalledWith(
-      ORG_ID,
-      { userId: 'u-target', userEmail: 'new@example.com' },
-      'add',
-    );
-    expect(result).toEqual({ ok: true, teamsUpdated: 1 });
-  });
-
-  it('still adds the member when the proxy is unreachable', async () => {
-    syncOrgMemberToLiteLLM.mockResolvedValue({
-      ok: false,
-      reason: 'ECONNREFUSED',
-      teamsUpdated: 0,
-    });
-
-    const result = await addOrgMemberAction(
-      ORG_ID,
-      'new@example.com',
-      'member',
-    );
-
-    expect(memberCreate).toHaveBeenCalled();
-    expect(result.ok).toBe(false);
-  });
 });
 
 describe('removeOrgMemberAction', () => {
@@ -335,16 +299,6 @@ describe('removeOrgMemberAction', () => {
     expect(teamMemberDeleteMany).toHaveBeenCalledWith({
       where: { userId: 'u-target', team: { organizationId: ORG_ID } },
     });
-  });
-
-  it('syncs the removal to LiteLLM', async () => {
-    await removeOrgMemberAction(ORG_ID, 'u-target');
-
-    expect(syncOrgMemberToLiteLLM).toHaveBeenCalledWith(
-      ORG_ID,
-      { userId: 'u-target', userEmail: 'leaving@example.com' },
-      'remove',
-    );
   });
 
   it('refuses when the account is not a member', async () => {

@@ -1553,7 +1553,8 @@
     "api-key-error": "Chybí konfigurace API klíče - zkontrolujte svá nastavení",
     "unknown-error": "Při zpracování vašeho požadavku došlo k neočekávané chybě - zkuste to znovu",
     "llm-api-error": "Požadavek na API jazykového modelu se nezdařil",
-    "usage-limit-exceeded": "Vaše organizace dosáhla měsíčního limitu využití - resetuje se na začátku příštího měsíce. Požádejte administrátora organizace o jeho zvýšení."
+    "usage-limit-exceeded": "Vaše organizace dosáhla měsíčního limitu využití - resetuje se na začátku příštího měsíce. Požádejte administrátora organizace o jeho zvýšení.",
+    "rate-limit-exceeded": "Váš tým odesílá požadavky rychleji, než dovoluje limit za minutu - chvíli počkejte a zkuste to znovu."
   },
   "onboarding": {
     "first-step": "Začněme rychlým průvodcem, který vám pomůže efektivně používat naši aplikaci. Seznámí vás s klíčovými funkcemi, které usnadní vaši práci. Pojďme na to!",
