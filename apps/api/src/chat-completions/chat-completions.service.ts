@@ -119,6 +119,9 @@ export class ChatCompletionsService {
     const usageTeamId = await this.teamRateLimit.resolveUsageTeam({
       orgId: context.orgId,
       userId: context.userId,
+      // Membership is checked inside; a team the caller does not belong to
+      // falls through to their sole team, or to no team.
+      activeTeamId: context.teamId,
     });
     await this.teamRateLimit.assertWithinLimit(usageTeamId);
 

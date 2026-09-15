@@ -79,12 +79,19 @@ export class ApiKeyGuard implements CanActivate {
       throw new UnauthorizedException('Invalid API key');
     }
 
+    // Caller-supplied and deliberately unvalidated here — see `ApiContext`.
+    const teamHeader = request.headers['x-ragen-team-id'];
+    const claimedTeamId = Array.isArray(teamHeader)
+      ? teamHeader[0]
+      : teamHeader;
+
     const apiContext: ApiContext = {
       orgId: dbKey.organizationId as OrgId,
       userId: dbKey.createdBy as UserId,
       ...(dbKey.projectId ? { projectId: dbKey.projectId as ProjectId } : {}),
       keyId: keyId as KeyId,
       debugMode: dbKey.debugMode,
+      ...(claimedTeamId ? { teamId: claimedTeamId } : {}),
     };
 
     (request as unknown as Record<string, unknown>)[API_CONTEXT_KEY] =

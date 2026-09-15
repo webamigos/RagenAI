@@ -616,6 +616,28 @@ describe('ChatCompletionsService', () => {
       expect(initializeBasicRag.initializeRagChain).not.toHaveBeenCalled();
     });
 
+    /**
+     * Without this the caller's team never reaches the limiter, so anyone in
+     * more than one team resolved to `null` — and `null` is not rate limited at
+     * all. The header is unvalidated at the guard on purpose; membership is
+     * checked inside `resolveUsageTeam`.
+     */
+    it('passes the caller-claimed team through to be validated', async () => {
+      initializeBasicRag.initializeRagChain.mockResolvedValue(makeChain({}));
+      const { res } = createMockRes();
+
+      await service.create(
+        baseDto,
+        { ...mockContext, teamId: 'team-claimed' },
+        createMockReq(),
+        res,
+      );
+
+      expect(teamRateLimit.resolveUsageTeam).toHaveBeenCalledWith(
+        expect.objectContaining({ activeTeamId: 'team-claimed' }),
+      );
+    });
+
     it('charges the real token count once the turn is done', async () => {
       teamRateLimit.resolveUsageTeam.mockResolvedValue('team-1');
       initializeBasicRag.initializeRagChain.mockResolvedValue(makeChain({}));

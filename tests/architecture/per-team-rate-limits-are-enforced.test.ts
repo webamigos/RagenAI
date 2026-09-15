@@ -111,10 +111,22 @@ describe('per-team rate limits are enforced by the application', () => {
     // limiter under its own names — `TeamRateLimitService`. Same obligation,
     // two spellings, because the two apps share the Redis keys rather than the
     // code.
-    const reaches =
+    //
+    // A bare `check()` does not count. It returns a verdict and enforces
+    // nothing, so a call whose result is dropped would satisfy a looser guard
+    // while the limit did nothing — which is the exact failure this file
+    // exists to catch. Either the call throws on its own, or its result has to
+    // be read and refused on.
+    const throwsOnItsOwn =
       /\b(?:assertWithinTeamRateLimit|refuseIfOverTeamRateLimit)\s*\(/.test(
         text,
-      ) || /\bteamRateLimit\.(?:check|assertWithinLimit)\s*\(/.test(text);
+      ) || /\bteamRateLimit\.assertWithinLimit\s*\(/.test(text);
+
+    const checksAndRefuses =
+      /\bteamRateLimit\.check\s*\(/.test(text) &&
+      /if\s*\(\s*!\s*\w*[Ll]imit(?:\w*)?\.ok\s*\)/.test(text);
+
+    const reaches = throwsOnItsOwn || checksAndRefuses;
 
     expect(
       reaches,
