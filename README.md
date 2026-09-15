@@ -65,9 +65,10 @@ there is no hosted tier we would rather sell you.
 what leaves your network under which configuration — including the two cases
 where the honest answer is "it depends how you set it up".
 
-**No lock-in on the model.** Every model call goes through a LiteLLM proxy that
-you also run. Scaleway, Azure OpenAI, AWS Bedrock, Google Vertex, OpenRouter, or
-a model on your own GPU — changing provider is a config file, not a migration.
+**No lock-in on the model.** Ragen calls providers itself, or goes through a
+gateway you run — LiteLLM, Portkey, vLLM, Ollama, anything speaking OpenAI's
+API. Scaleway, Azure OpenAI, AWS Bedrock, Google Vertex, OpenRouter, or a model
+on your own GPU — changing provider is a route, not a migration.
 
 **Multi-tenancy is structural.** One Qdrant collection per organization, a
 tenant-scope guard in the Prisma layer that flags any query missing its org
@@ -160,16 +161,16 @@ surface and has no public instance — the page above is what it looks like.
 
 ## ⚖️ How it compares
 
-|                           | Hosted "chat with your docs" | Your own LangChain stack    | **Ragen**                                           |
-| ------------------------- | ---------------------------- | --------------------------- | --------------------------------------------------- |
-| Where your documents live | Vendor's cloud               | Yours                       | **Yours**                                           |
-| Choice of model           | Vendor's shortlist           | Anything                    | **Anything LiteLLM supports**                       |
-| Access control            | Usually per workspace        | Whatever you build          | **Per file and folder, enforced at retrieval**      |
-| Multi-tenant              | Per seat, per workspace      | Whatever you build          | **Built in — org-scoped data and index**            |
-| Retrieval quality         | Opaque                       | Yours to tune, and to debug | **Hybrid + rerank + multi-query, ADR per decision** |
-| Time to a working answer  | Minutes                      | Weeks                       | **Minutes — one command, plus your own model keys** |
-| Cost shape                | Per seat, forever            | Your engineers' time        | **Your infrastructure + model spend**               |
-| When it breaks            | Support ticket               | You                         | **You, with the source and the ADRs**               |
+|                           | Hosted "chat with your docs" | Your own LangChain stack    | **Ragen**                                            |
+| ------------------------- | ---------------------------- | --------------------------- | ---------------------------------------------------- |
+| Where your documents live | Vendor's cloud               | Yours                       | **Yours**                                            |
+| Choice of model           | Vendor's shortlist           | Anything                    | **Any provider, direct or through your own gateway** |
+| Access control            | Usually per workspace        | Whatever you build          | **Per file and folder, enforced at retrieval**       |
+| Multi-tenant              | Per seat, per workspace      | Whatever you build          | **Built in — org-scoped data and index**             |
+| Retrieval quality         | Opaque                       | Yours to tune, and to debug | **Hybrid + rerank + multi-query, ADR per decision**  |
+| Time to a working answer  | Minutes                      | Weeks                       | **Minutes — one command, plus your own model keys**  |
+| Cost shape                | Per seat, forever            | Your engineers' time        | **Your infrastructure + model spend**                |
+| When it breaks            | Support ticket               | You                         | **You, with the source and the ADRs**                |
 
 Fair warning on the middle column: if your requirements are genuinely unusual,
 building it yourself is a legitimate answer. Ragen is the better trade when you
@@ -214,10 +215,9 @@ something.
 | Docker | >= 24.0, Compose >= v2.26 | same                                    |
 | GPU    | **not needed**            | **not needed**                          |
 
-**No GPU, unless you want one.** Chat, embeddings and reranking all leave
-through the LiteLLM proxy, so the machine running Ragen does no model
-inference of its own. Point LiteLLM at a hosted provider and a laptop is
-enough. A GPU only enters the picture if you decide to serve models yourself,
+**No GPU, unless you want one.** Chat, embeddings and reranking all leave over
+the network, so the machine running Ragen does no model inference of its own.
+Point it at a hosted provider and a laptop is enough. A GPU only enters the picture if you decide to serve models yourself,
 which is supported and is a separate box.
 
 **Where the memory actually goes.** Measured on an idle stack, backing services
@@ -227,7 +227,7 @@ only:
 | ------------------------------- | ----------- | --------------------------------- |
 | Presidio analyzer               | 959 MB      | PII masking (optional)            |
 | Docling                         | 721 MB      | local document parsing            |
-| LiteLLM                         | 560 MB      | every model call                  |
+| LiteLLM                         | 560 MB      | model calls on the proxy path     |
 | Temporal                        | 97 MB       | async ingest                      |
 | Postgres                        | 93 MB       | everything                        |
 | Presidio anonymizer             | 55 MB       | PII masking (optional)            |
@@ -235,10 +235,12 @@ only:
 | LiteLLM's Postgres, Temporal UI | 38 MB       | the two supporting containers     |
 | **Total**                       | **~2.6 GB** |                                   |
 
-Two of those are optional and together account for a gigabyte: drop Presidio if
-you are not masking PII, and `DOCUMENT_PARSER=legacy` skips Docling. Qdrant is
-the line that moves as you add documents — the figure above is a near-empty
-index, so size that one against your own corpus rather than against this table.
+Three of those are optional, and together they are most of the total: drop
+Presidio if you are not masking PII, `DOCUMENT_PARSER=legacy` skips Docling, and
+`LLM_GATEWAY=native` removes LiteLLM and its Postgres — the app then calls
+providers itself. Qdrant is the line that moves as you add documents; the figure
+above is a near-empty index, so size that one against your own corpus rather
+than against this table.
 Redis is optional and only used for rate limiting. The four applications run on
 top of all this and are not in the table.
 
@@ -340,9 +342,10 @@ used for training. Every claim points at the code or the ADR behind it, and
 says plainly where something is configuration-dependent or not yet built.
 
 **[Open models on your own hardware](https://docs.ragen.ai/docs/open-models)**
-is the other half of that answer: how to point LiteLLM at a vLLM or Ollama
-server you run, the four model settings that keep a cloud default until you
-change them, and the calls that still reach outward once you have.
+is the other half of that answer: how to point Ragen at a vLLM or Ollama server
+you run — directly or through a proxy — the four model settings that keep a
+cloud default until you change them, and the calls that still reach outward once
+you have.
 
 Two things worth knowing before you deploy:
 
@@ -408,6 +411,7 @@ the shape of it rather than a substitute for it.
   offer. The trade-offs are real and each spec states them: a hosted parser
   means your documents leave your deployment, pgvector shares a failure domain
   with your database, and BullMQ re-runs a crashed job instead of resuming it.
+
 - **A Python client.** The TypeScript SDK is official and published. Python is
   the language most people integrating the API are actually writing in.
 - **Slack as a place to ask.** Not the existing Slack connector, which reads
