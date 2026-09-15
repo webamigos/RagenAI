@@ -190,19 +190,22 @@ export const RERANK_SEAM = {
         'Scaleway /v1/rerank (qwen3-embedding-8b). The default. `SCW_API_KEY` is the same account key the Scaleway encryption provider uses — one key, two features.',
     },
     cohere: {
-      required: [],
-      optional: [
-        'RERANK_COHERE_BASE_URL',
-        'RERANK_COHERE_API_KEY',
-        'RERANK_MODEL',
-      ],
+      // Required *of this variant*, while the fragment keeps it optional: the
+      // variant itself is opt-in, so a deployment on the default Scaleway
+      // reranker declares none of this. There is no `rerankRules` calling
+      // `requiredForProvider`, so nothing rejects a boot without it — what
+      // this changes is the generated reference and the installer's typed
+      // config, which said "optional" about the one variable the variant
+      // cannot work without.
+      required: ['RERANK_COHERE_BASE_URL'],
+      optional: ['RERANK_COHERE_API_KEY', 'RERANK_MODEL'],
       fields: {
         RERANK_COHERE_BASE_URL: 'baseUrl',
         RERANK_COHERE_API_KEY: 'apiKey',
         RERANK_MODEL: 'model',
       },
       summary:
-        "Cohere Rerank v3.5, over any endpoint speaking Cohere's `/rerank` shape. `RERANK_COHERE_BASE_URL` names it; unset falls back to `LITELLM_PROXY_URL` so a deployment running the proxy needs no change — and that fallback goes when the proxy does. Opt-in: `cohere-rerank-v3-5` is not registered in infra/litellm/config.yaml, so choosing this variant without pointing it somewhere that serves the model degrades to no reranking, silently.",
+        "Cohere Rerank v3.5, over any endpoint speaking Cohere's `/rerank` shape. `RERANK_COHERE_BASE_URL` names it, and there is nothing to fall back to: the `LITELLM_PROXY_URL` default went with the proxy in B6, so selecting this variant without an endpoint reranks nothing. That failure is silent by design — an unreachable reranker degrades to no reranking rather than erroring — so set the URL deliberately and confirm reranking is happening rather than assuming it.",
     },
   },
 } as const satisfies ProviderSeam;
