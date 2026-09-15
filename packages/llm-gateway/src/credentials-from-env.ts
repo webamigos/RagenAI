@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+
 import type {
   CredentialScope,
   CredentialSource,
@@ -52,6 +54,54 @@ function connectionEnvNames(connection: string): {
     names.apiKey.push('SCW_API_KEY');
   }
   return names;
+}
+
+/**
+ * The service account in `VERTEX_CREDENTIALS`, if there is one.
+ *
+ * The proxy accepts either the JSON itself or a path to it, so both are handled
+ * here — a deployment that already runs LiteLLM has one of the two set and
+ * should not have to learn a third convention to try the gateway.
+ *
+ * Returns `undefined` rather than throwing when the variable is unset: Google's
+ * application default credentials are a perfectly good way to authenticate
+ * (a GCE/Cloud Run service identity supplies them with no variable at all), and
+ * this is the one provider where "no credentials configured" is routinely
+ * correct. Malformed content is a different matter and does throw — a blob that
+ * cannot be parsed is a misconfiguration, and falling through to ADC would
+ * report it as an unrelated permissions error much later.
+ */
+function serviceAccountFromEnv(): Record<string, unknown> | undefined {
+  const raw = process.env.VERTEX_CREDENTIALS?.trim();
+  if (!raw) {
+    return undefined;
+  }
+
+  const json = raw.startsWith('{') ? raw : readCredentialsFile(raw);
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(json);
+  } catch (cause) {
+    throw new Error(
+      `VERTEX_CREDENTIALS is not valid JSON: ${(cause as Error).message}`,
+    );
+  }
+
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+    throw new Error('VERTEX_CREDENTIALS must be a JSON object');
+  }
+  return parsed as Record<string, unknown>;
+}
+
+function readCredentialsFile(path: string): string {
+  try {
+    return readFileSync(path, 'utf8');
+  } catch (cause) {
+    throw new Error(
+      `VERTEX_CREDENTIALS points at ${path}, which cannot be read: ${(cause as Error).message}`,
+    );
+  }
 }
 
 function firstSet(names: readonly string[]): string | undefined {
@@ -111,6 +161,7 @@ export class EnvCredentialSource implements CredentialSource {
         return {
           project: process.env.VERTEX_PROJECT,
           location: process.env.VERTEX_LOCATION,
+          serviceAccount: serviceAccountFromEnv(),
         };
       case 'openai':
         return {

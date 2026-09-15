@@ -1,6 +1,7 @@
 export { routeFileJsonSchema } from './json-schema';
 export {
   DEFAULT_ROUTE_TABLE_PATH,
+  defaultRouteTablePath,
   ROUTE_FILE_SCHEMA,
   InvalidRouteTableError,
   findRoute,

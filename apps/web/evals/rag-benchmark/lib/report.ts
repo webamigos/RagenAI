@@ -137,6 +137,9 @@ export function renderMarkdown(report: Report): string {
     `| embeddings | \`${fingerprint.embeddingsModel}\` (${fingerprint.vectorSize}-dim) |`,
     `| reranking | ${fingerprint.rerankingEnabled} — \`${fingerprint.rerankProvider}\` / \`${fingerprint.rerankModel}\` |`,
     `| multi-query variants | ${fingerprint.multiQueryVariants} |`,
+    // The one line that says which of Phase B's two arms this is. Reported by
+    // the app, not by the harness — see `appGatewayMode` in run.ts.
+    `| LLM path | \`${fingerprint.llmGateway}\` |`,
     '',
     '## Overall',
     '',

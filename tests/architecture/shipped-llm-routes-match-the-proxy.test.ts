@@ -44,6 +44,44 @@ describe('the shipped LLM route table', () => {
     expect(gatewayModels).toEqual(proxyModels);
   });
 
+  /**
+   * Model names agreeing is not the same as the two paths serving the same
+   * thing. The proxy pins `gemini-3-flash-preview` to `vertex_location: global`
+   * on that one entry, because Google serves preview models from the global
+   * endpoint only — and the route table, which had no per-route location at
+   * all, sent it to `VERTEX_LOCATION` and got a 404. The name check above
+   * passed throughout. Found by actually running the gateway arm of the B2
+   * measurement, which is the thing a guard is supposed to spare you.
+   */
+  it('pins the same Vertex location the proxy pins, per model', () => {
+    const yaml = readFileSync(join(root, 'infra/litellm/config.yaml'), 'utf8');
+
+    // Each live `- model_name:` block up to the next one, so a commented-out
+    // entry contributes nothing.
+    const blocks = [
+      ...yaml.matchAll(
+        /^ {2}- model_name:\s*(\S+)\n((?: {4}.*\n|\n(?= {4}))*)/gm,
+      ),
+    ];
+    expect(blocks.length).toBeGreaterThan(0);
+
+    const routes = loadRouteTable(routeFile);
+
+    for (const [, modelName, body] of blocks) {
+      const route = routes[modelName!];
+      if (route?.provider !== 'vertex') {
+        continue;
+      }
+
+      const location = body!.match(/vertex_location:\s*(\S+)/)?.[1];
+      // `os.environ/VERTEX_LOCATION` means "the deployment's default", which is
+      // exactly what a route with no location of its own resolves to.
+      const pinned = location?.startsWith('os.environ/') ? undefined : location;
+
+      expect(route.location, `${modelName} location`).toBe(pinned);
+    }
+  });
+
   it('names a connection for every openai-compatible route', () => {
     // The provider covers Scaleway, vLLM, Ollama, TGI and a LiteLLM proxy, so
     // "which upstream" is not inferable. The credential source refuses a route

@@ -50,6 +50,30 @@ const JUDGE_MODEL = process.env.RAG_EVAL_JUDGE_MODEL ?? 'gemini-2.5-flash';
 
 const DEFAULT_CORPUS_DIR = join(__dirname, 'corpora', 'kolej-bilingual-v1');
 
+/**
+ * Which path the app is serving on, from the app itself.
+ *
+ * Reading `process.env.LLM_GATEWAY` here would record what this process was
+ * told, not what the app did — and the app is a separate process started with
+ * its own environment. A run stamped `native` that the app served through the
+ * proxy is the one failure the Phase B comparison cannot detect on its own,
+ * because both arms produce believable numbers.
+ */
+async function appGatewayMode(): Promise<string> {
+  try {
+    const res = await fetch(`${APP_URL}/api/healthcheck`);
+    if (!res.ok) {
+      return `(unknown: healthcheck ${res.status})`;
+    }
+    const body = (await res.json()) as { llmGateway?: unknown };
+    return typeof body.llmGateway === 'string'
+      ? body.llmGateway
+      : '(unknown: healthcheck did not say)';
+  } catch (error) {
+    return `(unknown: ${(error as Error).message})`;
+  }
+}
+
 async function login(): Promise<string> {
   const res = await fetch(`${APP_URL}/api/auth/sign-in/email`, {
     method: 'POST',
@@ -248,7 +272,7 @@ async function deleteUploadedFiles(
   );
 }
 
-function fingerprint(): StackFingerprint {
+async function fingerprint(): Promise<StackFingerprint> {
   let gitSha = 'unknown';
   try {
     gitSha = execSync('git rev-parse --short HEAD', {
@@ -271,6 +295,7 @@ function fingerprint(): StackFingerprint {
     rerankingEnabled: process.env.FEATURE_FLAG_RERANKING === '1' ? 'on' : 'off',
     multiQueryVariants: process.env.MULTI_QUERY_VARIANT_COUNT ?? '1 (default)',
     appUrl: APP_URL,
+    llmGateway: await appGatewayMode(),
   };
 }
 
@@ -495,7 +520,7 @@ async function main(): Promise<void> {
   const report: Report = {
     corpus: corpus.name,
     corpusVersion: corpus.version,
-    fingerprint: fingerprint(),
+    fingerprint: await fingerprint(),
     results,
   };
 

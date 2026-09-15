@@ -7,8 +7,13 @@ Taken on **2026-09-14** at commit `e19088f76`.
 [The spec](specs/2026-09-14-replace-litellm-with-an-in-process-gateway.md)'s B2
 asks for the retrieval evals under both paths per
 [ADR-20](adrs/20-pause-and-measure-rag-quality.md), with the comparison recorded
-here. This is the first half — the proxy arm. The gateway arm goes in beside it
-when B2 lands.
+here. This is the first half — the proxy arm.
+
+> **The gateway arm is now measured**, in one sitting against a fresh proxy arm:
+> [`rag-gateway-comparison-2026-09-15.md`](rag-gateway-comparison-2026-09-15.md).
+> No retrieval regression; one question differs reproducibly, and it is answer
+> composition rather than retrieval. Read that document's per-question table
+> before its totals — the 88%/79% gap is mostly this document's own spread.
 
 ## The number
 

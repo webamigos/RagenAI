@@ -1,4 +1,5 @@
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
+import { dirname, isAbsolute, join, parse as parsePath } from 'node:path';
 import { parse as parseYaml } from 'yaml';
 import { z } from 'zod';
 
@@ -31,6 +32,7 @@ const routeSchema = z.object({
   provider: z.enum(PROVIDER_IDS),
   model: z.string().min(1),
   connection: z.string().min(1).optional(),
+  location: z.string().min(1).optional(),
 });
 
 /**
@@ -75,8 +77,44 @@ export function loadRouteTable(parsed: unknown): RouteTable {
   return Object.freeze({ ...result.data.routes });
 }
 
-/** Where the route table lives when nothing says otherwise. */
+/** Where the route table lives when nothing says otherwise, from the root. */
 export const DEFAULT_ROUTE_TABLE_PATH = 'infra/llm-gateway/routes.yaml';
+
+/**
+ * The default path, resolved against the repository root rather than the
+ * current directory.
+ *
+ * A bare relative path was the first implementation and it only worked for a
+ * process started from the root. Every app in this monorepo starts from its own
+ * directory — `apps/worker` runs `tsx ./src/worker.ts` from `apps/worker`,
+ * Next from `apps/web`, Nest from `apps/api` — so the table was unreachable for
+ * all three, and the failure arrived as an ingest that marked four documents
+ * FAILED rather than as anything about configuration. Found by running the B2
+ * measurement, not by any test.
+ *
+ * Walking up for the file (rather than for a `package.json`, or a `.git` that a
+ * worktree spells differently) keeps this true wherever the repository is
+ * checked out, and true in a container where the file is mounted beside the
+ * app. An explicit `LLM_ROUTES_PATH` is never walked — an operator naming a
+ * path means that path.
+ */
+export function defaultRouteTablePath(cwd: string = process.cwd()): string {
+  let directory = cwd;
+  const { root } = parsePath(cwd);
+
+  for (;;) {
+    const candidate = join(directory, DEFAULT_ROUTE_TABLE_PATH);
+    if (existsSync(candidate)) {
+      return candidate;
+    }
+    if (directory === root) {
+      // Nothing found. Return the bare relative path so the error names what
+      // was actually looked for rather than a directory nobody chose.
+      return DEFAULT_ROUTE_TABLE_PATH;
+    }
+    directory = dirname(directory);
+  }
+}
 
 /** Read and validate a route table from a YAML file. */
 export function readRouteTableFile(path: string): RouteTable {
@@ -112,7 +150,13 @@ export function readRouteTableFile(path: string): RouteTable {
 export function routeTableFromEnv(
   env: NodeJS.ProcessEnv = process.env,
 ): RouteTable {
-  return readRouteTableFile(env.LLM_ROUTES_PATH || DEFAULT_ROUTE_TABLE_PATH);
+  const configured = env.LLM_ROUTES_PATH?.trim();
+  if (configured) {
+    return readRouteTableFile(
+      isAbsolute(configured) ? configured : join(process.cwd(), configured),
+    );
+  }
+  return readRouteTableFile(defaultRouteTablePath());
 }
 
 /**

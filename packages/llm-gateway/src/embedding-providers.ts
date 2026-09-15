@@ -38,7 +38,12 @@ export const EMBEDDING_PROVIDER_FACTORIES: Record<
   vertex: (route, credentials) =>
     createVertex({
       project: credentials.project,
-      location: credentials.location,
+      // The route wins: a regional default cannot serve a model that only
+      // exists on another endpoint. See `Route.location`.
+      location: route.location ?? credentials.location,
+      ...(credentials.serviceAccount
+        ? { googleAuthOptions: { credentials: credentials.serviceAccount } }
+        : {}),
     }).textEmbeddingModel(route.model),
 
   openai: (route, credentials) =>

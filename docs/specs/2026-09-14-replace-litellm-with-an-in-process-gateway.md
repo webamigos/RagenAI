@@ -125,6 +125,70 @@ promising.
   Ragen. B7's ADR should say so outright, or the first self-hoster will set a
   budget in LiteLLM and be surprised that Ragen ignores it.
 
+## Open
+
+- **Q7 — should the gateway have an OpenRouter provider family?** Raised
+  2026-09-15 while B2c was running. The short answer is that the gateway is not
+  *missing* OpenRouter relative to the proxy, because **nothing routes to
+  OpenRouter today, on either path**:
+
+  | where | what is there | reachable? |
+  | --- | --- | --- |
+  | `infra/litellm/config.yaml` | no entry at all | no |
+  | `getModelProvider()` (apps/web `config.ts`) | returns `'litellm'` unconditionally | the `\|\| 'openrouter'` fallback in `assistant-stream.ts` is dead code |
+  | `OrganizationSettings.openrouterApiKey` | stored, encrypted, decrypted, returned | nothing consumes it for a model call |
+  | `docs/model-routing.md` | six `OPENROUTER_*` env vars | **appear in zero TypeScript files** |
+  | `ai-pricing.ts` | an `openrouter` price block | priced, never billed |
+
+  So adding it is **new capability, not parity** — which is a different
+  decision and worth taking deliberately.
+
+  If it is taken: OpenRouter is OpenAI-compatible, so it already works as
+  `provider: openai-compatible, connection: openrouter` with no package change
+  at all. What that *cannot* express is the part
+  [`docs/model-routing.md`](../model-routing.md) calls critical — the EU base
+  URL, `provider.order`, `data_collection: deny` and ZDR-only routing are
+  OpenRouter-specific fields in the request body, and a generic
+  OpenAI-compatible client will not send them. Silently not sending them is the
+  bad outcome: the deployment believes it has zero data retention and does not.
+  That is the same argument that made `openai` its own family rather than a
+  base URL — the quirks are the point.
+
+  Recommended shape: a fifth family whose `providerOptions` carry the routing
+  preferences, gated the way `reasoning_effort` is. Not part of Phase B; it
+  changes no existing behaviour, because there is none.
+
+  **Independently of the answer, `docs/model-routing.md` documents behaviour
+  that does not exist** and should either be implemented or marked as not
+  implemented. A reader today would configure `OPENROUTER_ZDR=true` and get
+  nothing.
+
+- **Q8 — is an in-process gateway the right shape, or should Ragen ship its own
+  small proxy?** Raised 2026-09-15. The programme assumed "no separate service"
+  and this reopens it on purpose, because the argument for one is real:
+
+  - **One place for configuration and environment variables.** Today provider
+    credentials have to reach *three* processes — web, api and worker — which
+    is precisely the operational cost Q1 accepted when it allowed credentials
+    into the application processes ("credential rotation stops being one
+    container restart and becomes three").
+  - **One place for the route table.** B1 mounts
+    `infra/llm-gateway/routes.yaml` into four services to keep it
+    configuration-not-code, and a guard counts the mounts because one missing
+    mount makes that false again. A single owner would need no mount count.
+
+  Against: it is another service to build, deploy, monitor and keep available —
+  and a hop in front of every model call — which is most of what ADR-04 is
+  being retired for. It also reintroduces the thing B2c is currently measuring
+  away.
+
+  Not a decision for Phase B. Worth noting that the two advantages are both
+  about *where configuration lives*, not about the data plane, so they may be
+  obtainable without a service — the route table moving to the database (which
+  `loadRouteTable` already anticipates by taking parsed content) and
+  credentials moving to ragen-token-vault (which `CredentialSource`'s `scope`
+  already anticipates) would give one owner for both, with no new hop.
+
 ## Problem
 
 ### The proxy's job has shrunk to the point where the integration costs more than it saves
@@ -827,7 +891,42 @@ resumes:
             default parser, so only the fallback path reaches them, which is
             why it went unnoticed. Choosing replacements is a model decision
             with cost and quality consequences, not a refactor.
-      - [ ] **B2c.** The gateway arm of the measurement, per question.
+      - [x] **B2c — the gateway arm, per question.** Recorded in
+            [the comparison](../rag-gateway-comparison-2026-09-15.md). Three
+            runs per arm, one sitting, commit `269b13422`.
+
+            **No retrieval regression.** Sixteen of twenty-four questions give
+            the identical verdict in both arms across all six runs;
+            same-language is 16/16 in every run of both; the control floor is
+            0/23 throughout. Four questions flap *within* an arm — the noise
+            floor the baseline described.
+
+            **One question differs stably** — `xl-en2pl-refund-pct`, 0/3 native
+            against 3/3 proxy — and it is **not** a retrieval failure. Both arms
+            retrieve the right document, state the right figure and pass the
+            rubric; the native arm additionally volunteers the sibling
+            document's distractor figure, which trips `expectNone`. The change
+            is in generation, not retrieval: the chain sends no temperature, so
+            each path inherits its own client's defaults, and LiteLLM's
+            OpenAI-compatible translation to Vertex is not the same request as
+            `@ai-sdk/google-vertex` makes. Worth settling before B4.
+
+            Totals were 88% proxy against 79% native — **wider than one
+            question, narrower than this instrument's own spread**, which is why
+            the comparison is per question. Cross-lingual went 5/8 to 3/8, a
+            direction rather than a result on a corpus whose noise floor is four
+            questions.
+
+            Three real defects fell out of running it, all invisible to every
+            static check and all now fixed: the gateway ignored
+            `VERTEX_CREDENTIALS` (Google's libraries want a file path in
+            `GOOGLE_APPLICATION_CREDENTIALS`, so Vertex could not authenticate
+            at all); the route table had no per-route `location`, so
+            `gemini-3-flash-preview` 404'd outside the `global` endpoint the
+            proxy config pins it to; and the default route-table path resolved
+            against the process's cwd, which no app in this monorepo shares with
+            the repository root — the worker marked four documents FAILED rather
+            than saying anything about configuration.
 - [ ] **B3.** Move speech and transcription
       ([openai-provider.ts](../../apps/web/src/libs/speech/openai-provider.ts))
       off `LITELLM_PROXY_URL`.
