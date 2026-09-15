@@ -27,7 +27,11 @@ vi.mock('@/libs/litellm/client', () => ({ fetchLiteLLMModels }));
 
 vi.mock('@ragenai/llm-gateway', () => ({
   gatewayFromEnv,
-  usingNativeGateway: () => process.env.LLM_GATEWAY === 'native',
+  // Mirrors the real default, which is `native`. Written as `=== 'native'`
+  // this double kept answering "proxy" for an unset value long after the
+  // real function stopped — a test double that lies in exactly the
+  // direction that makes the suite pass.
+  usingNativeGateway: () => process.env.LLM_GATEWAY !== 'litellm',
 }));
 
 vi.mock('@/app/lib/utils/logger', () => ({
@@ -48,9 +52,9 @@ afterEach(() => {
   process.env = { ...saved };
 });
 
-describe('LLM_GATEWAY=litellm (the default)', () => {
+describe('LLM_GATEWAY=litellm', () => {
   beforeEach(() => {
-    delete process.env.LLM_GATEWAY;
+    process.env.LLM_GATEWAY = 'litellm';
   });
 
   it('asks the proxy what it serves', async () => {

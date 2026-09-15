@@ -165,6 +165,7 @@ describe('ChatService', () => {
 
   afterEach(() => {
     vi.restoreAllMocks();
+    delete process.env.LLM_GATEWAY;
   });
 
   it('returns 404 when the assistant/project is not found', async () => {
@@ -267,6 +268,10 @@ describe('ChatService', () => {
   });
 
   it('returns JSON for non-streaming requests and tracks usage', async () => {
+    // Named rather than inherited. This case describes the proxy path — see
+    // the `servedBy` comment below — and `native` is the default, so leaving
+    // the variable unset used to select the other arm and record `azure`.
+    process.env.LLM_GATEWAY = 'litellm';
     const req = createMockReq();
     const res = createMockRes();
     initializeBasicRag.initializeRagChain.mockResolvedValue(makeChain({}));
