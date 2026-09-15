@@ -5,9 +5,9 @@
  * It used to: `isProductionTargetEnv && <GoogleTagManager gtmId="GTM-…" />`,
  * with the vendor's container id as a literal in an Apache-2.0 repository. A
  * self-hosted deployment reports its traffic to whoever owns that container,
- * and `apps/docs/docs/self-hosting.md` tells self-hosters to set exactly the
+ * and the self-hosting guide tells self-hosters to set exactly the
  * variable that switched it on. Measuring traffic is a vendor concern, so it
- * lives in `apps/docs`, which nobody but the vendor deploys.
+ * lives on the documentation site, which nobody but the vendor deploys.
  *
  * `tests/architecture/analytics-ids-are-not-hardcoded.test.ts` fails if an id
  * comes back. See

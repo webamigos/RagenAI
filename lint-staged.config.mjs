@@ -11,7 +11,7 @@
  * missing after it was written, because a workspace added later only lands
  * here if whoever added it remembers this file: `packages/env`,
  * `packages/platform-contracts` and `packages/litellm-client` were linted by
- * `turbo run lint` in CI but not on commit, and `apps/docs` and `packages/db`
+ * `turbo run lint` in CI but not on commit, and `packages/db`
  * had no ESLint config at all, so nothing linted them anywhere.
  *
  * `tests/architecture/lint-staged-covers-every-workspace.test.ts` now derives
@@ -22,7 +22,6 @@ const workspaces = {
   'apps/web': '@webamigos/ragen-web',
   'apps/admin': '@webamigos/ragen-admin',
   'apps/api': '@webamigos/ragen-api',
-  'apps/docs': '@webamigos/ragen-docs',
   'apps/worker': '@webamigos/ragen-worker',
   'apps/mcp': '@webamigos/ragen-mcp',
   'packages/create-ragen-app': 'create-ragen-app',

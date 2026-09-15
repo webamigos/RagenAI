@@ -87,7 +87,7 @@ export type ListAssistantsResult =
  * Calls apps/api's existing GET /v1/assistants, scoped to the caller's own
  * organization by the API key alone — no separate access check needed here,
  * apps/api already returns "every assistant your org owns" (see
- * apps/docs/docs/api-reference/assistants.md) and nothing else.
+ * https://docs.ragen.ai/api-reference/assistants) and nothing else.
  *
  * Returns only {id, name}: the full OpenAI Assistant object apps/api returns
  * carries several always-constant fields (tools, tool_resources, top_p,

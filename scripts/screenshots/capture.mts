@@ -22,12 +22,12 @@
  *      `signIn()` on a navigation timeout that says nothing about why.
  *   2. Seed the states the pages need:
  *        psql "postgresql://postgres:pass123@localhost:55432/ragen_e2e" \
- *          -f apps/docs/screenshots/demo-data.sql
+ *          -f scripts/screenshots/demo-data.sql
  *   3. Start it: `npm run admin:dev` or `npm run web:dev`.
  *      `web`'s knowledge base reads its folders through apps/api, so
  *      `npm run api:dev` has to be up for that shot as well — pointed at the
  *      same database. Without it the rail simply renders no folders.
- *   4. `npx tsx apps/docs/screenshots/capture.mts [admin|web|all] [shot...]`
+ *   4. `npx tsx scripts/screenshots/capture.mts [admin|web|all] [shot...]`
  *
  * With no argument it captures both, which is what CI-less regeneration
  * wants; naming one app, and optionally the shots within it, is for iterating
@@ -61,13 +61,16 @@ const PASSWORD = process.env.SCREENSHOT_PASSWORD ?? 'E2eTestPassword123!';
  *
  * This script wrote to `static/` while every consumer read from `docs/` —
  * `admin-panel.md` references `./img/admin/…` relatively, and the README
- * points at `apps/docs/docs/img/admin/…`. So `static/img/admin` sat empty and
+ * points at `docs/img/admin/…`. So `static/img/admin` sat empty and
  * regenerating the screenshots changed nothing anybody could see, which is
  * why the committed captures still carried an old logo: the one command that
  * would have refreshed them was writing somewhere else.
  */
 function outDir(app: string): string {
-  return join(import.meta.dirname, '..', 'docs', 'img', app);
+  // `scripts/screenshots/` → the repository's own `docs/img/`, which is what
+  // the README embeds. It used to be one level up, when this lived inside the
+  // Docusaurus site that has since moved to its own repository.
+  return join(import.meta.dirname, '..', '..', 'docs', 'img', app);
 }
 
 /**
@@ -419,7 +422,7 @@ function selectedApps(): App[] {
  * deciding which of them moved for a reason. Naming the shot keeps the diff
  * to the thing that changed.
  *
- *   npx tsx apps/docs/screenshots/capture.mts web knowledge-base
+ *   npx tsx scripts/screenshots/capture.mts web knowledge-base
  *
  * Shot names need a single app, not `all` — they are that app's names.
  */

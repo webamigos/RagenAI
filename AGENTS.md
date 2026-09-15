@@ -29,8 +29,6 @@ npm run ragen:up:everything  # Everything in containers, apps included
 npm run generate:types   # Prisma client for every app (root owns the schema)
 npm run test:e2e         # Playwright E2E tests (requires ragen_e2e DB)
 npm run db:seed          # Seed database (uses .env.local)
-npm run docs:dev         # Docusaurus documentation site (apps/docs)
-npm run docs:build       # Build the docs site (fails on a broken internal link)
 npm run worker:dev       # Temporal worker (apps/worker) in watch mode
 npm run worker:test      # Worker Jest suite
 npm run check:config-paths   # Fail if a CI-config path glob matches nothing
@@ -81,7 +79,7 @@ Before starting a nontrivial task, match it against this table and read the link
 | Monorepo task graph, caching, adding a workspace | this file's "Monorepo tasks (Turborepo)" section, `turbo.json` |
 | Where a module, route or library lives | [`docs/architecture.md`](docs/architecture.md) |
 | Running the whole ecosystem locally, ports, companion services | [`docs/companion-services.md`](docs/companion-services.md) |
-| Documentation site, published docs, self-hosting guide | [ADR-30](docs/adrs/30-absorb-ragen-docs-into-monorepo.md), `apps/docs/docs/` |
+| Documentation site, published docs, self-hosting guide | the **`ragen-docs`** repository (Mintlify) — not this one. `npm run docs:config-reference` writes the generated reference into a sibling checkout |
 | Anything touching `apps/api`, the NestJS port, or what's been cut over vs. stays local | [ADR-21](docs/adrs/21-monorepo-and-api-decoupling.md) (read the latest updates first), `apps/api/AGENTS.md` |
 | Document ingest, Temporal workflows, anything in `apps/worker` | [ADR-26](docs/adrs/26-absorb-ragen-worker-into-monorepo.md), [ADR-40](docs/adrs/40-worker-uses-prisma-not-knex.md) — its data layer is knex, migrating, `apps/worker/AGENTS.md` |
 | Writing or reviewing a spec before building | [`docs/specs/README.md`](docs/specs/README.md), [`docs/specs/TEMPLATE.md`](docs/specs/TEMPLATE.md) |

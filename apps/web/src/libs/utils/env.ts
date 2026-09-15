@@ -17,7 +17,7 @@
  * the vendor's Google Tag Manager container on it. That is gone: the container
  * id was a literal in an Apache-2.0 repository, and self-hosters are told to
  * set `TARGET_ENV=production`, so the gate enrolled them in the vendor's
- * analytics. Analytics now lives in `apps/docs` alone. Do not reach for this
+ * analytics. Analytics now lives on the documentation site alone. Do not reach for this
  * constant to re-gate anything vendor-specific — the question you actually
  * want is "is this the vendor's own deployment", and `TARGET_ENV` cannot
  * answer it.

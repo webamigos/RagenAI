@@ -134,8 +134,7 @@ jobs:
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup-workspace
-      # web, admin, api, worker and the four packages. apps/docs has no lint
-      # script, as before.
+      # web, admin, api, worker and the four packages.
       - run: npm run lint
 
   test:
@@ -184,8 +183,9 @@ jobs:
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup-workspace
-      # web, admin, api, worker, docs and the packages. Docusaurus fails on a
-      # broken internal link, so this is the docs link check as well.
+      # web, admin, api, worker and the packages. The docs site left this
+      # repository, and its broken-link check went with it — it now belongs to
+      # whatever builds ragen-docs.
       #
       # apps/admin had no job at all before ADR-era CI, which is how a broken
       # import reached main: nothing compiled it, and a cached turbo result

@@ -29,7 +29,7 @@ import { describe, expect, it } from 'vitest';
  * already shipped.
  *
  * See docs/lessons/a-custom-property-override-on-root-loses-to-the-element-that-owns-it.md
- * for the same family in apps/docs.
+ * for the same family on the documentation site.
  */
 
 const REPO_ROOT = join(import.meta.dirname, '..', '..');
