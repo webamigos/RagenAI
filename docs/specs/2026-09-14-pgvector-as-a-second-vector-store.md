@@ -133,30 +133,36 @@ The worker routing is therefore not a later phase. It is the first one.
 ## Relationship to the other 2026-09-14 specs
 
 Four specs written on 2026-09-14 share one shape: **a seam, and a second
-implementation behind it.** Three of them make a concern selectable and change
-no default — the job runtime, the vector store, the document parser. The fourth
-replaces the LiteLLM proxy outright, and is the only one of the four that
-retires anything.
+implementation behind it.** Two of them make a concern selectable and change
+no default — the vector store and the document parser. The other two retire
+something: the LiteLLM proxy, gone from `main` since 2026-09-15 (#1194), and
+Temporal, which the worker spec replaced with BullMQ by a decision taken the
+same day.
 
-The install-size argument is what motivates them, but **none of the three
-deletes the incumbent.** Temporal stays a supported runtime, Qdrant stays
-`DEFAULT_VECTOR_STORE`, Docling stays the default parser — each of those is
-written in the relevant spec's own _Out of scope_.
+The install-size argument is what motivates them, and **this spec is one of the
+two that leaves the incumbent in place.** Qdrant stays `DEFAULT_VECTOR_STORE`
+and Docling stays the default parser — both written in the relevant spec's own
+_Out of scope_. The job runtime is no longer in that group: BullMQ replaces
+Temporal, whose adapter moves to `webamigos/ragen-enterprise` and is supported
+from there.
 
 | Spec                                                                           | Makes selectable                             | The incumbent, afterwards                            | What choosing the alternative costs                          |
 | ------------------------------------------------------------------------------ | -------------------------------------------- | ---------------------------------------------------- | ------------------------------------------------------------ |
-| [A second worker runtime](2026-09-14-a-second-worker-runtime-bullmq.md)        | the job runtime (`WORKER_RUNTIME`)           | Temporal stays supported; **Phase E flips the default** | no replay — a crash re-runs the job from the top; Redis becomes required |
+| [BullMQ is the worker runtime](2026-09-15-bullmq-is-the-worker-runtime.md)     | — it **replaces** rather than adds           | Temporal leaves the default install and the repository; its adapter is supported from `ragen-enterprise` | no replay anywhere — a crash re-runs the job from the top; Redis becomes required |
 | [pgvector](2026-09-14-pgvector-as-a-second-vector-store.md)                    | the vector store (`Organization.vectorStore`) | Qdrant stays the default, and the recommendation      | a shared failure domain with Postgres, and different retrieval numbers |
 | [Mistral Document AI](2026-09-14-mistral-document-ai-as-a-second-parser.md)    | the document parser (`DOCUMENT_PARSER`)      | Docling stays the default                            | documents leave the deployment                                |
-| [LiteLLM retirement](2026-09-14-replace-litellm-with-an-in-process-gateway.md) | — it **replaces** rather than adds           | the proxy is retired in Phase B                      | provider keys move into the application processes             |
+| [LiteLLM retirement](2026-09-14-replace-litellm-with-an-in-process-gateway.md) | — it replaced rather than added              | **done**: the proxy is gone from `main` (#1194)      | provider keys live in the application processes               |
 
-The container count is a **consequence available to an operator who selects
-every alternative**, not the goal and not something the default install does. A
-profile that opts into all of them runs without `temporal`, `temporal-ui`,
-`qdrant`, `docling`, `litellm` and `litellm-postgres` — ten services down to
-four, and to one once the BullMQ spec's Phase F puts queues on Postgres and
-Presidio stays optional. That profile is additional. **No spec here subtracts a
-capability; each adds a choice**, and the elasticity is the deliverable.
+The container count is now partly a default and partly a **consequence
+available to an operator who selects every alternative**. `litellm` and
+`litellm-postgres` are already gone; `temporal` and `temporal-ui` go with the
+worker spec whether an operator chooses anything or not; `qdrant` and `docling`
+go only for a profile that opts out of them. Nine compose services become seven
+by default, four for that profile, and one once the BullMQ spec's Phase F puts
+queues on Postgres and Presidio stays optional — though that spec also promotes
+Redis from optional to required, so the arithmetic is smaller than it looks.
+**These two specs subtract no capability; each adds a choice**, and the
+elasticity is the deliverable.
 
 That is worth stating in each spec because the reviewer of any one of them is
 looking at a quarter of a programme, and the reason to accept a trade-off in one

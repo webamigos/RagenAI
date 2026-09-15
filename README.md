@@ -394,14 +394,16 @@ the shape of it rather than a substitute for it.
 
 - **Pluggable infrastructure, and a smaller install as the payoff.** Three
   parts of the stack are things you should be able to choose rather than
-  inherit: the job runtime, the vector store and the document parser. Three
-  specs put a seam in front of each and add a second implementation behind it —
-  [BullMQ alongside Temporal](docs/specs/2026-09-14-a-second-worker-runtime-bullmq.md),
+  inherit: the job runtime, the vector store and the document parser. Each has
+  a spec that puts a seam in front of it —
+  [BullMQ as the worker runtime](docs/specs/2026-09-15-bullmq-is-the-worker-runtime.md),
   [pgvector alongside Qdrant](docs/specs/2026-09-14-pgvector-as-a-second-vector-store.md),
   [Mistral Document AI alongside Docling](docs/specs/2026-09-14-mistral-document-ai-as-a-second-parser.md).
-  **Nothing is removed:** Temporal stays a supported runtime, Qdrant stays the
-  default vector store, Docling stays the default parser. A fourth spec, the
-  [in-process model gateway](docs/specs/2026-09-14-replace-litellm-with-an-in-process-gateway.md),
+  Two of the three only add a choice: Qdrant stays the default vector store and
+  Docling stays the default parser. The worker is the exception — BullMQ
+  replaces Temporal, whose adapter moves to a separate repository and stays
+  supported from there for installs that want durable execution. A fourth spec,
+  the [in-process model gateway](docs/specs/2026-09-14-replace-litellm-with-an-in-process-gateway.md),
   replaced the LiteLLM proxy.
 
   The payoff is that an install can be assembled to fit: select every
