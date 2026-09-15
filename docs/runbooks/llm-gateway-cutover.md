@@ -172,6 +172,18 @@ rather than an incident.
 ## Then everywhere
 
 After a week without an operational signal, flip the remaining environments the
-same way. Changing `DEFAULT_GATEWAY_MODE` in `packages/llm-gateway` — which
-would flip local development and every fresh clone — belongs with that step,
-not with this one.
+same way.
+
+`DEFAULT_GATEWAY_MODE` in `packages/llm-gateway` is `native` as of 2026-09-15,
+so this procedure has changed shape: an environment that sets nothing is
+already on the gateway, and what needs setting is the *exception*
+(`LLM_GATEWAY=litellm`) rather than the rule. Steps 1 and 3 above matter more
+because of it — an environment inheriting the default has its credentials
+checked by nobody unless you run the preflight.
+
+**A fresh clone is the one place still on the proxy on purpose.** `docker
+compose up` starts LiteLLM and the shipped route table names Azure, Bedrock,
+Vertex and Scaleway, which a new checkout has no credentials for, so the
+minimum `.env.local` in `AGENTS.md` pins `LLM_GATEWAY=litellm`. Drop that line
+once you have provider credentials of your own — and run the preflight, which
+is the whole point of it existing.

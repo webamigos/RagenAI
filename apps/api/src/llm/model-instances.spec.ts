@@ -59,9 +59,11 @@ afterEach(() => {
 
 const load = () => import('./model-instances.js');
 
-describe('LLM_GATEWAY=litellm (the default)', () => {
+describe('LLM_GATEWAY=litellm', () => {
   beforeEach(() => {
-    delete process.env.LLM_GATEWAY;
+    // Named, not unset: `native` is the default now, so leaving this out
+    // selects the arm this block is not about.
+    process.env.LLM_GATEWAY = 'litellm';
   });
 
   it('builds chat through the proxy factory', async () => {

@@ -8,14 +8,14 @@ import {
 } from '../gateway-mode';
 
 describe('choosing a path', () => {
-  it('defaults to the proxy when nothing says otherwise', () => {
-    expect(gatewayModeFromEnv({})).toBe('litellm');
-    expect(DEFAULT_GATEWAY_MODE).toBe('litellm');
+  it('defaults to calling providers directly when nothing says otherwise', () => {
+    expect(gatewayModeFromEnv({})).toBe('native');
+    expect(DEFAULT_GATEWAY_MODE).toBe('native');
   });
 
   it('treats an empty value as unset rather than invalid', () => {
-    expect(gatewayModeFromEnv({ LLM_GATEWAY: '' })).toBe('litellm');
-    expect(gatewayModeFromEnv({ LLM_GATEWAY: '   ' })).toBe('litellm');
+    expect(gatewayModeFromEnv({ LLM_GATEWAY: '' })).toBe('native');
+    expect(gatewayModeFromEnv({ LLM_GATEWAY: '   ' })).toBe('native');
   });
 
   it('reads both modes', () => {
@@ -49,6 +49,8 @@ describe('choosing a path', () => {
   it('answers the question every call site actually asks', () => {
     expect(usingNativeGateway({ LLM_GATEWAY: 'native' })).toBe(true);
     expect(usingNativeGateway({ LLM_GATEWAY: 'litellm' })).toBe(false);
-    expect(usingNativeGateway({})).toBe(false);
+    // An unset value is the flip: a deployment that never named a path now
+    // calls providers directly rather than reaching for a proxy.
+    expect(usingNativeGateway({})).toBe(true);
   });
 });

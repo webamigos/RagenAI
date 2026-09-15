@@ -68,6 +68,9 @@ const ROOT_TEMPLATE = [
   'DATABASE_URL=postgresql://old',
   '# LITELLM_MASTER_KEY=',
   'DEFAULT_MODEL_PROVIDER=litellm',
+  // The installer pins the proxy: LLM_GATEWAY defaults to `native`, which a
+  // scaffolded install has no provider credentials for.
+  '# LLM_GATEWAY=native',
   'DEFAULT_MODEL=gemini-3-flash-preview',
   'REPHRASE_MODEL=gemini-2.5-flash',
   'EMBEDDINGS_MODEL=bge-multilingual-gemma2',
@@ -286,6 +289,28 @@ describe('run', () => {
     // Without this one the knowledge base 404s on a model the install has no
     // credentials for — the shipped default is Scaleway's.
     expect(String(config?.[1])).toContain('model_name: text-embedding-3-small');
+  });
+
+  /**
+   * `LLM_GATEWAY` defaults to `native`, and a scaffolded install is the one
+   * shape that cannot take that default: the wizard writes a LiteLLM config
+   * from one OpenAI or Anthropic key, while the shipped route table names
+   * Azure, Bedrock, Vertex and Scaleway. Inheriting the default would make
+   * every model call in a brand-new installation fail on the first question,
+   * with the scaffold itself reporting success.
+   */
+  it('pins the proxy, which the scaffolded config is the only thing set up for', async () => {
+    vi.mocked(clack.select).mockResolvedValueOnce('openai' as never);
+    vi.mocked(clack.password).mockResolvedValueOnce('sk-test' as never);
+    vi.mocked(clack.confirm).mockResolvedValue(false as never);
+
+    await run(['/tmp/ragen-test']);
+
+    const rootEnv = vi
+      .mocked(writeFileSync)
+      .mock.calls.find(([path]) => String(path).endsWith('/.env.local'));
+
+    expect(String(rootEnv?.[1])).toContain('LLM_GATEWAY=litellm');
   });
 
   it('points the rephrase model at the provider that was just configured', async () => {

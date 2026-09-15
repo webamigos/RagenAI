@@ -167,10 +167,11 @@ describe('parseWorkerEnv', () => {
   });
 
   describe('deployed environments', () => {
-    it('requires LITELLM_MASTER_KEY in production', () => {
+    it('requires LITELLM_MASTER_KEY in production on the proxy path', () => {
       const result = withEnv({
         TARGET_ENV: 'production',
         QDRANT_URL: 'http://qdrant:6333',
+        LLM_GATEWAY: 'litellm',
       });
 
       expect(result.ok).toBe(false);
@@ -179,6 +180,25 @@ describe('parseWorkerEnv', () => {
           'LITELLM_MASTER_KEY',
         );
       }
+    });
+
+    /**
+     * `native` is the default, and nothing on that path authenticates against
+     * a proxy — this is the same rule `isMasterKeyRequired` already applied to
+     * the provider it builds, which the env contract used to contradict.
+     *
+     * Asserted as a deployment that parses rather than as an issue list that
+     * happens not to name the variable: the second form passes just as well
+     * when the parse failed for an unrelated reason, or when the rule never
+     * ran at all.
+     */
+    it('accepts a deployed environment with no master key when no gateway is named', () => {
+      const result = withEnv({
+        TARGET_ENV: 'production',
+        QDRANT_URL: 'http://qdrant:6333',
+      });
+
+      expect(result.ok).toBe(true);
     });
 
     it('requires a vector store in production', () => {

@@ -20,6 +20,7 @@ export {
   seamRule,
   speechRules,
   storageRules,
+  litellmRules,
 } from './provider-rules';
 
 export {

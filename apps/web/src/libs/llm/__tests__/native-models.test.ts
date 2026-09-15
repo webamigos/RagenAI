@@ -36,12 +36,17 @@ afterEach(() => {
 });
 
 describe('the application side of LLM_GATEWAY', () => {
-  it('stays on the proxy unless asked otherwise', () => {
+  it('calls providers directly unless asked otherwise', () => {
     delete process.env.LLM_GATEWAY;
+    expect(usingNativeGateway()).toBe(true);
+  });
+
+  it('switches back when the flag says litellm', () => {
+    process.env.LLM_GATEWAY = 'litellm';
     expect(usingNativeGateway()).toBe(false);
   });
 
-  it('switches when the flag says native', () => {
+  it('reads an explicit native the same as the default', () => {
     process.env.LLM_GATEWAY = 'native';
     expect(usingNativeGateway()).toBe(true);
   });

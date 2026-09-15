@@ -237,8 +237,12 @@ only:
 
 Three of those are optional, and together they are most of the total: drop
 Presidio if you are not masking PII, `DOCUMENT_PARSER=legacy` skips Docling, and
-`LLM_GATEWAY=native` removes LiteLLM and its Postgres — the app then calls
-providers itself. Qdrant is the line that moves as you add documents; the figure
+`LLM_GATEWAY=native` — the default — sends model calls straight to the
+providers rather than through LiteLLM. Note what it does *not* do: the
+`litellm` and `litellm-postgres` services carry no compose profile, so
+`docker compose up` still starts them. Dropping those two lines from the table
+means not starting them, and keeping `RERANK_PROVIDER` off `cohere` — the one
+feature that still falls back to the proxy's URL. Qdrant is the line that moves as you add documents; the figure
 above is a near-empty index, so size that one against your own corpus rather
 than against this table.
 Redis is optional and only used for rate limiting. The four applications run on

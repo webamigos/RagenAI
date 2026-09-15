@@ -5,18 +5,33 @@ import { routeTableFromEnv } from './route-table';
 /**
  * Which path a model call takes.
  *
- * `litellm` is the default for the whole of Phase B, and that ordering is the
- * point: the gateway ships reachable but unused, so the two paths can be run
- * against the same questions on the same day. B4 flips the default in one
- * environment, then everywhere; B6 reduces this to a single value, at which
- * point the flag becomes a seam naming an endpoint rather than a choice
- * between two implementations. See Q6 in the spec.
+ * `native` is the default as of B4's "then everywhere" step. For the whole of
+ * Phase B before it the order was the other way round — the gateway shipped
+ * reachable but unused, so both paths could be run against the same questions
+ * on the same day — and the evidence for flipping is that comparison
+ * (`docs/rag-gateway-comparison-2026-09-15.md`: no retrieval regression, one
+ * reproducible difference in answer composition) plus demo running `native`
+ * and reporting it on `/api/healthcheck`.
+ *
+ * `litellm` remains a supported value, not a deprecated one: B6 is what
+ * reduces this to a single value, at which point the flag becomes a seam
+ * naming an endpoint rather than a choice between two implementations. Until
+ * then, setting it back is the rollback the runbook documents. See Q6 in the
+ * spec.
+ *
+ * **What this default changes for an existing deployment**: one that never set
+ * `LLM_GATEWAY` moves from the proxy to direct provider calls on its next
+ * deploy, and the provider credentials must therefore be present in the web,
+ * api and worker processes rather than only in the proxy container. That is
+ * the operational consequence Q1 accepted, and
+ * `npm run gateway:preflight -- --probe` is how it is checked before a deploy
+ * rather than discovered after one.
  */
 export const GATEWAY_MODES = ['litellm', 'native'] as const;
 
 export type GatewayMode = (typeof GATEWAY_MODES)[number];
 
-export const DEFAULT_GATEWAY_MODE: GatewayMode = 'litellm';
+export const DEFAULT_GATEWAY_MODE: GatewayMode = 'native';
 
 export class InvalidGatewayModeError extends Error {
   constructor(value: string) {
@@ -65,8 +80,9 @@ let cached: LlmGateway | null = null;
  *
  * Lazy for the same reason every credential read in this repository is lazy: a
  * build step that imports a module must not be made to hold a route table and
- * a set of provider keys. Nothing is read until the first call, which under
- * `LLM_GATEWAY=litellm` never comes.
+ * a set of provider keys. Nothing is read until the first call — which under
+ * `LLM_GATEWAY=litellm` never comes, and which under the new default comes on
+ * the first model call rather than at import.
  */
 export function gatewayFromEnv(): LlmGateway {
   if (!cached) {

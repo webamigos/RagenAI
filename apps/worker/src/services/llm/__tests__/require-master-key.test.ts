@@ -4,9 +4,19 @@ import { isMasterKeyRequired } from '../require-master-key.js';
  * `NODE_ENV` is `test` while Jest runs, which on its own short-circuits the
  * rule. Every case here therefore passes an explicit environment object rather
  * than leaning on the ambient one.
+ *
+ * `LLM_GATEWAY` is pinned for the same reason, since the default became
+ * `native`: every case below that asserts the key *is* required is describing
+ * the proxy path, and inheriting the default would make them assert the
+ * opposite of what they are named for. The flip itself is covered by its own
+ * case rather than by leaving these ambient.
  */
 const env = (overrides: NodeJS.ProcessEnv = {}): NodeJS.ProcessEnv =>
-  ({ NODE_ENV: 'production', ...overrides }) as NodeJS.ProcessEnv;
+  ({
+    NODE_ENV: 'production',
+    LLM_GATEWAY: 'litellm',
+    ...overrides,
+  }) as NodeJS.ProcessEnv;
 
 describe('isMasterKeyRequired', () => {
   it('is satisfied once the key is present, whatever the environment', () => {
@@ -35,6 +45,22 @@ describe('isMasterKeyRequired', () => {
       isMasterKeyRequired(
         env({ LLM_GATEWAY: 'native', TARGET_ENV: 'production' }),
       ),
+    ).toBe(false);
+  });
+
+  /**
+   * The default is `native` as of B4's "then everywhere" step, so a deployed
+   * worker that names no gateway is on the path where this credential does
+   * not exist. Asserted separately from the `LLM_GATEWAY: 'native'` case
+   * above, because what is being checked is the *default* rather than the
+   * value — the two stop being the same thing the moment B6 moves it.
+   */
+  it('excuses a missing key when nothing names a gateway at all', () => {
+    expect(
+      isMasterKeyRequired({
+        NODE_ENV: 'production',
+        TARGET_ENV: 'production',
+      } as NodeJS.ProcessEnv),
     ).toBe(false);
   });
 

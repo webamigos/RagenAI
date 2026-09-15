@@ -106,12 +106,35 @@ describe('the apps/admin environment contract', () => {
   });
 
   describe('secrets a deployment cannot do without', () => {
-    it.each([['LITELLM_MASTER_KEY'], ['INTERNAL_API_SECRET']])(
+    it.each([['INTERNAL_API_SECRET']])(
       'requires %s once TARGET_ENV is deployed',
       (name) => {
         expect(issueNames(without(name))).toContain(name);
       },
     );
+
+    /**
+     * `LITELLM_MASTER_KEY` left this list when `LLM_GATEWAY` started
+     * defaulting to `native`: it is a proxy credential, and the admin proxy
+     * page has nothing to authenticate against when no proxy is in the
+     * picture. Required on the proxy path, and only there.
+     */
+    it('requires LITELLM_MASTER_KEY once the proxy is named', () => {
+      expect(
+        issueNames({
+          ...without('LITELLM_MASTER_KEY'),
+          LLM_GATEWAY: 'litellm',
+        }),
+      ).toContain('LITELLM_MASTER_KEY');
+    });
+
+    /**
+     * `.ok`, not "the issue list does not name it": the weaker form passes
+     * just as well when the parse failed for some unrelated reason.
+     */
+    it('accepts a deployment without it when no gateway is named', () => {
+      expect(parseAdminEnv(without('LITELLM_MASTER_KEY')).ok).toBe(true);
+    });
 
     it('requires neither on a local clone', () => {
       expect(parseAdminEnv({ ...base, TARGET_ENV: 'local' }).ok).toBe(true);

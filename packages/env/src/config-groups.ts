@@ -81,7 +81,7 @@ export const GATEWAY_GROUP = {
     LLM_ROUTES_PATH: 'routesPath',
   },
   summary:
-    '`LLM_GATEWAY` decides how model calls are made: `litellm` (the default) sends them to a proxy you run, `native` has Ragen call providers itself through `@ragenai/llm-gateway` (ADR-49). Under `native` the route table names the upstream per model and credentials come per provider — the route table is `infra/llm-gateway/routes.yaml`, or `LLM_ROUTES_PATH` if you name your own. `LITELLM_PROXY_URL` is still required under both values for now, so that the two paths can be compared on one machine; under the proxy path an unset URL is not a degraded mode, it is no LLM at all.',
+    '`LLM_GATEWAY` decides how model calls are made: `native` (the default) has Ragen call providers itself through `@ragenai/llm-gateway` (ADR-49), `litellm` sends them to a proxy you run. Under `native` the route table names the upstream per model and credentials come per provider — the route table is `infra/llm-gateway/routes.yaml`, or `LLM_ROUTES_PATH` if you name your own, and those credentials have to be present in the web, api and worker processes rather than only in a proxy container. `LITELLM_PROXY_URL` is still required under both values, because the opt-in Cohere reranker falls back to it when `RERANK_COHERE_BASE_URL` is unset; under the proxy path an unset URL is not a degraded mode, it is no LLM at all.',
 } as const satisfies FieldGroup;
 
 export const VECTOR_STORE_GROUP = {
