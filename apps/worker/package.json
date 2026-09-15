@@ -116,6 +116,7 @@
     "@temporalio/testing": "1.23.0",
     "@tsconfig/node18": "^18.2.4",
     "@types/crypto-js": "^4.2.2",
+    "@types/node": "^22.0.0",
     "@types/pdf-parse": "^1.1.5",
     "@typescript-eslint/eslint-plugin": "^8.29.0",
     "@typescript-eslint/parser": "^8.29.0",
@@ -130,7 +131,8 @@
     "prisma": "^7.10.0",
     "ts-node": "^10.9.2",
     "tsx": "^4.23.13",
-    "typescript": "5.8.3"
+    "typescript": "5.8.3",
+    "vitest": "^4.1.11"
   },
   "private": true
 }
