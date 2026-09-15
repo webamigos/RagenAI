@@ -99,7 +99,7 @@ never reads it at all; its limiter is in-memory.
 
 Most configuration has a sensible default. These four do not, or default to
 something a production install should change. This section is the shortlist —
-the [configuration reference](/docs/configuration-reference) is the complete
+the [configuration reference](https://docs.ragen.ai/configuration/environment-reference) is the complete
 one, generated from the same tables each app checks at boot, so it cannot drift
 from what the code requires.
 
@@ -171,8 +171,7 @@ generated secret, not a shared or predictable value.
 For production, add an `ENCRYPTION_PROVIDER`, a persistent `STORAGE_LOCAL_PATH`
 volume or S3 credentials, and `DOCLING_STRICT=1` if documents must not leave
 your network. Every variable, with which provider makes which of them
-mandatory, is in the [configuration
-reference](/docs/configuration-reference).
+mandatory, is in the [configuration reference](https://docs.ragen.ai/configuration/environment-reference).
 
 ## Feature flags
 

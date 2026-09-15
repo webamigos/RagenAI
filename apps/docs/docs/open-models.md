@@ -107,7 +107,7 @@ structure and the defaulting live, and where choosing a provider makes its
 variables mandatory in your editor.
 
 It is not a second place to set a value. **Nothing reads `ragen.config.ts` at
-runtime** ([ADR-37](/docs/configuration-reference)): each field holds an
+runtime** (ADR-37): each field holds an
 expression over `process.env`, so the environment variable is still what
 decides. Editing the file without setting the variable changes nothing.
 
@@ -118,9 +118,8 @@ config field at all. Feature flags resolve per organization rather than per
 deployment, and the rest are read by a single app. Those are environment
 variables and nothing else.
 
-The full list is the [configuration
-reference](/docs/configuration-reference), which is generated from the same
-tables.
+The full list is the [configuration reference](https://docs.ragen.ai/configuration/environment-reference), which is generated
+from the same tables.
 :::
 
 ## Wiring vLLM in
