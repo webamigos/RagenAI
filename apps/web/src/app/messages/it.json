@@ -2161,6 +2161,8 @@
     "password-submit": "Visualizza conversazione"
   },
   "pii-policy": {
+    "not-configured-title": "Nessun mascheramento configurato",
+    "not-configured-body": "Il mascheramento dei dati personali richiede un analizzatore e un anonimizzatore Presidio. Imposta PRESIDIO_ANALYZER_URL e PRESIDIO_ANONYMIZER_URL, poi avviali con `docker compose --profile pii up -d`. Fino ad allora non è possibile scegliere una policy, perché nulla la applicherebbe.",
     "select-label": "Politica di mascheramento dei dati personali",
     "label": "Politica di mascheramento dei dati personali",
     "none-label": "Nessuna — mantieni tutti i dati",

@@ -2161,6 +2161,8 @@
     "password-submit": "Wyświetl wątek"
   },
   "pii-policy": {
+    "not-configured-title": "Nie skonfigurowano maskowania",
+    "not-configured-body": "Maskowanie danych osobowych wymaga analizatora i anonimizatora Presidio. Ustaw PRESIDIO_ANALYZER_URL i PRESIDIO_ANONYMIZER_URL, a następnie uruchom je poleceniem `docker compose --profile pii up -d`. Do tego czasu nie da się wybrać polityki, bo nic by jej nie egzekwowało.",
     "select-label": "Polityka maskowania PII",
     "label": "Polityka maskowania PII",
     "none-label": "Bez maskowania",

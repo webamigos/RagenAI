@@ -168,7 +168,17 @@ services:
     networks:
       - ragen-network
 
+  # Behind a profile: PII masking is opt-in, and these two are the heaviest
+  # thing in the stack — the analyzer is a local build carrying spaCy models.
+  # A deployment that does not mask should not pay for them, and until this
+  # profile existed every `docker compose up` did.
+  #
+  #   docker compose --profile pii up -d
+  #
+  # Nothing depends_on them: the apps reach them over HTTP, and only when
+  # PRESIDIO_ANALYZER_URL and PRESIDIO_ANONYMIZER_URL are set.
   presidio-analyzer:
+    profiles: ['pii']
     build:
       context: ./infra/presidio/analyzer
       dockerfile: Dockerfile
@@ -190,6 +200,7 @@ services:
       start_period: 60s
 
   presidio-anonymizer:
+    profiles: ['pii']
     # Presidio moved from Microsoft to the independent Data Privacy Stack org
     # (github.com/data-privacy-stack/presidio) — mcr.microsoft.com/presidio-*
     # is now a frozen legacy registry. Pinned rather than :latest for the same

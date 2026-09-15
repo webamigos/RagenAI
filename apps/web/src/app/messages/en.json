@@ -2161,6 +2161,8 @@
     "password-submit": "View thread"
   },
   "pii-policy": {
+    "not-configured-title": "No masker is configured",
+    "not-configured-body": "PII masking needs a Presidio analyzer and anonymizer. Set PRESIDIO_ANALYZER_URL and PRESIDIO_ANONYMIZER_URL, then start them with `docker compose --profile pii up -d`. Until then a policy cannot be chosen, because nothing would enforce it.",
     "select-label": "PII masking policy",
     "label": "PII Masking Policy",
     "none-label": "None — keep all data",

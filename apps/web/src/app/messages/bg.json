@@ -2161,6 +2161,8 @@
     "password-submit": "Виж разговора"
   },
   "pii-policy": {
+    "not-configured-title": "Няма конфигурирано маскиране",
+    "not-configured-body": "Маскирането на лични данни изисква анализатор и анонимизатор на Presidio. Задайте PRESIDIO_ANALYZER_URL и PRESIDIO_ANONYMIZER_URL и ги стартирайте с `docker compose --profile pii up -d`. Дотогава не може да се избере политика, защото нищо няма да я прилага.",
     "select-label": "Политика за маскиране на лични данни",
     "label": "Политика за маскиране на лични данни",
     "none-label": "Няма — запази всички данни",

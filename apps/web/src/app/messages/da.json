@@ -2161,6 +2161,8 @@
     "password-submit": "Se samtalen"
   },
   "pii-policy": {
+    "not-configured-title": "Ingen maskering er konfigureret",
+    "not-configured-body": "Maskering af persondata kræver en Presidio-analyzer og -anonymizer. Sæt PRESIDIO_ANALYZER_URL og PRESIDIO_ANONYMIZER_URL, og start dem med `docker compose --profile pii up -d`. Indtil da kan der ikke vælges en politik, fordi intet ville håndhæve den.",
     "select-label": "Politik for maskering af personoplysninger",
     "label": "Politik for maskering af personoplysninger",
     "none-label": "Ingen — behold alle data",

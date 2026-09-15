@@ -29,6 +29,19 @@ services:
       TEMPORAL_SERVER_ADDRESS: temporal:7233
       RAGEN_API_INTERNAL_URL: http://api:3001
       NEXT_PUBLIC_APP_URL: http://localhost:${WEB_PORT:-3000}
+      # Empty unless you set them, which is what keeps PII masking opt-in —
+      # availability follows these two URLs. They are passed through at all
+      # because the variables never reached these containers before, so masking
+      # could not work in this stack even when someone asked for it: the web
+      # app's old built-in default pointed at its own localhost.
+      #
+      # On this network the values are the service names:
+      #   PRESIDIO_ANALYZER_URL=http://presidio-analyzer:3000
+      #   PRESIDIO_ANONYMIZER_URL=http://presidio-anonymizer:3000
+      # and the services themselves need `--profile pii`.
+      PRESIDIO_ANALYZER_URL: ${PRESIDIO_ANALYZER_URL:-}
+      PRESIDIO_ANONYMIZER_URL: ${PRESIDIO_ANONYMIZER_URL:-}
+      FEATURE_FLAG_PII_MASKING: ${FEATURE_FLAG_PII_MASKING:-}
       BETTER_AUTH_URL: http://localhost:${WEB_PORT:-3000}
       TARGET_ENV: ${TARGET_ENV:-local}
       # The same volume the worker writes to. Without this the app cannot read
@@ -100,6 +113,19 @@ services:
       TEMPORAL_SERVER_ADDRESS: temporal:7233
       DOCLING_URL: http://docling:5001
       RAGEN_APP_URL: http://web:3000
+      # Empty unless you set them, which is what keeps PII masking opt-in —
+      # availability follows these two URLs. They are passed through at all
+      # because the variables never reached these containers before, so masking
+      # could not work in this stack even when someone asked for it: the web
+      # app's old built-in default pointed at its own localhost.
+      #
+      # On this network the values are the service names:
+      #   PRESIDIO_ANALYZER_URL=http://presidio-analyzer:3000
+      #   PRESIDIO_ANONYMIZER_URL=http://presidio-anonymizer:3000
+      # and the services themselves need `--profile pii`.
+      PRESIDIO_ANALYZER_URL: ${PRESIDIO_ANALYZER_URL:-}
+      PRESIDIO_ANONYMIZER_URL: ${PRESIDIO_ANONYMIZER_URL:-}
+      FEATURE_FLAG_PII_MASKING: ${FEATURE_FLAG_PII_MASKING:-}
       TARGET_ENV: ${TARGET_ENV:-local}
       # Both sides must agree on this volume, or the worker writes documents the
       # app cannot read — see ADR-27.

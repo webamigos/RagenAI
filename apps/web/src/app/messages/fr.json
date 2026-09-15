@@ -2161,6 +2161,8 @@
     "password-submit": "Voir le fil"
   },
   "pii-policy": {
+    "not-configured-title": "Aucun masquage n'est configuré",
+    "not-configured-body": "Le masquage des données personnelles nécessite un analyseur et un anonymiseur Presidio. Définissez PRESIDIO_ANALYZER_URL et PRESIDIO_ANONYMIZER_URL, puis démarrez-les avec `docker compose --profile pii up -d`. D'ici là, aucune politique ne peut être choisie, car rien ne l'appliquerait.",
     "select-label": "Politique de masquage des données personnelles",
     "label": "Politique de masquage des données personnelles",
     "none-label": "Aucune — conserver toutes les données",

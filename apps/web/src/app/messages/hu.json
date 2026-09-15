@@ -2161,6 +2161,8 @@
     "password-submit": "Beszélgetés megtekintése"
   },
   "pii-policy": {
+    "not-configured-title": "Nincs beállítva maszkolás",
+    "not-configured-body": "A személyes adatok maszkolásához Presidio elemző és anonimizáló szükséges. Állítsd be a PRESIDIO_ANALYZER_URL és a PRESIDIO_ANONYMIZER_URL értékét, majd indítsd el őket a `docker compose --profile pii up -d` paranccsal. Addig nem választható házirend, mert semmi nem érvényesítené.",
     "select-label": "Személyes adatok maszkolási szabályzata",
     "label": "Személyes adatok maszkolási szabályzata",
     "none-label": "Nincs — minden adat megtartása",

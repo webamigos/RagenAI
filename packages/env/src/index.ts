@@ -67,3 +67,10 @@ export {
   TARGET_ENV_VALUES,
   type TargetEnv,
 } from './target-env';
+
+export {
+  isPiiMaskingConfigured,
+  isPiiMaskingEnabled,
+  isPiiMaskingMisconfigured,
+  PII_MASKING_MISCONFIGURED_MESSAGE,
+} from './pii';
