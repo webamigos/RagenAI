@@ -80,6 +80,14 @@ archive is the blog.
   deploy — worth saying plainly in the post, because it means provider
   credentials have to reach the web, api and worker processes rather than only
   a proxy container. `LLM_GATEWAY=litellm` puts the proxy back.
+
+  Be precise about the scope when writing this up: it is **model calls** that
+  stop going through the proxy. A deployment running `RERANK_PROVIDER=cohere`
+  without `RERANK_COHERE_BASE_URL` still reaches for `LITELLM_PROXY_URL`, so
+  the proxy has to stay up for it; that is why the variable is still required.
+  Speech is not in that group — it has its own base URL and never read the
+  proxy's. Nor does the default remove the LiteLLM compose services, which
+  carry no profile and start regardless.
   ([#1175](https://github.com/webamigos/RagenAI/pull/1175), ADR-49)
 
 - `[major]` **Any OpenAI-compatible gateway can be attached instead** — Portkey,

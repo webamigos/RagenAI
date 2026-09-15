@@ -158,13 +158,13 @@ export const database = z.object({
  * failure, not a run that silently measured the wrong arm.
  *
  * `LITELLM_PROXY_URL` stays required under both values, which outlived the
- * reason first given for it (comparing both arms on one machine). It is now
- * the last thing making a proxy-free installation set a variable it never
- * reads, and relaxing it is B6's business rather than this flip's: the
- * fallbacks that still reach for it — speech's `SPEECH_BASE_URL`, the
- * reranker's `RERANK_COHERE_BASE_URL` — resolve to it today, so making it
- * optional here would turn a missing URL into a runtime 404 on two features
- * instead of a boot failure naming the variable.
+ * reason first given for it (comparing both arms on one machine). Relaxing it
+ * is B6's business rather than this flip's, because one fallback still
+ * resolves to it: the opt-in Cohere reranker reads
+ * `RERANK_COHERE_BASE_URL || LITELLM_PROXY_URL`
+ * (`bedrock-cohere-reranker.ts`). Speech does **not** — `SPEECH_BASE_URL`
+ * falls back to the provider's own base URL, not to the proxy — so it is one
+ * opt-in feature at stake here, not two.
  */
 export const litellm = z.object({
   LITELLM_PROXY_URL: httpUrl(),

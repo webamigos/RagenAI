@@ -1023,11 +1023,15 @@ resumes:
       credentials for.
 
       Still open, and the reason this is not yet B6: `create-ragen-app`
-      scaffolds a LiteLLM-shaped installation (`DEFAULT_MODEL_PROVIDER`,
-      a generated `LITELLM_MASTER_KEY`, a written proxy config) and knows
-      nothing about `LLM_GATEWAY` or a route table. A fresh install therefore
-      still gets the proxy, which is coherent but no longer matches the
-      default.
+      scaffolds a LiteLLM-shaped installation — `DEFAULT_MODEL_PROVIDER`, a
+      generated `LITELLM_MASTER_KEY`, a written proxy config — from the single
+      OpenAI or Anthropic key it asks for. It now writes `LLM_GATEWAY=litellm`
+      into the generated `.env.local` rather than inheriting the default, since
+      the shipped route table names providers a fresh install has no
+      credentials for. So a scaffolded install is explicitly on the proxy,
+      which is coherent, but it is the opposite of what a deployment gets.
+      Closing that gap means generating a route table pointing the default
+      models at the one provider the user actually gave us.
 - [x] **B5.** Remove virtual keys: `resolveLiteLLMKeyQuery`, the remaining team
       commands, the three columns. Done 2026-09-15.
 
