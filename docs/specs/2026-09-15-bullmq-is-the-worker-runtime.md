@@ -31,11 +31,34 @@ idempotency a load-bearing requirement rather than a nicety.
   once against the Temporal baseline and then the baseline leaves, rather than
   being re-proven forever by a dual-runtime guard.
 - **Temporal is extracted, not deleted.** Confirmed 2026-09-15. Its adapter
-  becomes `@ragenai/jobs-temporal` and moves to `webamigos/ragen-enterprise`
-  (private, empty as of 2026-09-15; scaffolded alongside this spec). An install
-  that needs durable execution adds the package to the worker image and sets
-  `WORKER_RUNTIME=temporal`. What "supported" means is defined in §8 — a runtime
-  nothing runs in CI is not supported, it is abandoned with a package name.
+  becomes `@ragenai/jobs-temporal`, and its destination is
+  `webamigos/ragen-enterprise` (private; scaffolded alongside this spec). An
+  install that needs durable execution adds the package to the worker image and
+  sets `WORKER_RUNTIME=temporal`. What "supported" means is defined in §8 — a
+  runtime nothing runs in CI is not supported, it is abandoned with a package
+  name.
+- **Nothing is published, and the extraction waits for an image.** Confirmed
+  2026-09-15, answering what was Q1. No npm package: not `@ragenai/jobs`, not
+  the adapter. The delivery mechanism is a container image, and **publishing
+  `ragen-worker` is deliberately future work** — nothing in this repository
+  publishes an image today (`ghcr.io` appears only in the Docling and Presidio
+  upgrade runbooks).
+
+  So the adapter cannot leave yet, and the phases say so rather than pretending
+  otherwise: **Phase E keeps `packages/jobs-temporal` in this repository** as an
+  optional workspace that the worker image does not install, and **Phase G
+  moves it out** once the image exists. Two things follow that are worth
+  knowing before reading Phase E:
+
+  - While the adapter is here, the parity job of §8.3 runs *here*, which is the
+    easier half. Phase G moves the job with the package, and that is the point
+    at which "supported" starts costing something.
+  - A developer's root `npm install` still fetches the `@temporalio/*` family,
+    because a workspace's dependencies are installed whether or not the image
+    wants them. What Phase E removes is Temporal from the **image**, the
+    **compose file**, the **chart** and the **default runtime** — not from a
+    contributor's `node_modules`. Claiming otherwise would be the kind of
+    almost-true statement this spec is trying to avoid.
 - **`apps/worker` is neither renamed nor duplicated.** The other reading of
   "keep the current one" is a second worker application, `apps/worker-temporal`,
   next to a BullMQ one. That is the `apps/worker-lite` alternative this spec
@@ -45,53 +68,6 @@ idempotency a load-bearing requirement rather than a nicety.
   extracted is the **adapter** — the runtime bootstrap and the client — not a
   copy of the pipeline. The eight handlers and the 69 activity modules stay in
   one place and both runtimes consume them.
-
-## Open Questions
-
-<!--
-While this block is here, the spec is not ready to implement and no code
-should be written from it.
--->
-
-- **Q1 — how does the adapter reach an install: an npm package, or an image?**
-  `@ragenai/jobs-temporal` lives in another repository and needs the contract,
-  the handlers and `JobContext` as a real dependency rather than a copy. There
-  are two mechanisms, and each has a prerequisite this project does not have
-  yet. **Neither needs a third repository.**
-
-  **(a) npm.** Publish `@ragenai/jobs` from here, and
-  `@ragenai/jobs-temporal` from there. Prerequisite: a scoped package and a
-  semantic-release entry — small, and the machinery exists
-  ([`release.yml`](../../.github/workflows/release.yml) already publishes with
-  provenance). What it buys: an install building its own worker image from
-  source can `npm i` the adapter. What it costs: a published contract is a
-  compatibility promise owed to people we do not know, for a package whose
-  only real consumer is one repository we control.
-
-  **(b) The image.** Publish `ragen-worker` to a container registry; the
-  enterprise repository's Dockerfile is `FROM` it plus the compiled adapter.
-  This works because of something the runtime image already does:
-  `/app/node_modules/@ragenai/*` are symlinks into `/app/packages/`, and
-  `packages/` is copied in — so `@ragenai/jobs` resolves *inside the image*
-  with its built `dist`, and the adapter declares it as a peer dependency it
-  never installs. The adapter then compiles against the exact contract the
-  image ships, which is stronger than compiling against a version number that
-  can skew from it. Prerequisite, and it is the real one: **no Ragen image is
-  published anywhere today** — `ghcr.io` appears in this repository only in
-  the Docling and Presidio upgrade runbooks, and self-hosting currently means
-  building from source.
-
-  _Recommendation: (b)._ The deployment artifact is an image either way —
-  §8.1 says so — and under (b) the npm package adds nothing but an API
-  promise. The prerequisite is worth having on its own: an install that must
-  build four images from source to try Ragen is a worse first hour than the
-  one it could have.
-
-  **This question gates Phase E only; Phases A–D do not depend on it.** If the
-  answer is that neither prerequisite is wanted, the fallback is not a third
-  mechanism — it is leaving the adapter in this monorepo as an optional
-  workspace, which costs the dual-maintenance the 2026-09-15 decision was
-  taken to avoid and should be chosen deliberately, not by default.
 
 ## Problem
 
@@ -148,10 +124,14 @@ becoming unavailable to an install that actually wants it.
 
 ## Out of scope
 
-- **Deleting Temporal.** It stops being the default and leaves this repository.
-  The adapter stays maintained behind the seam, in `ragen-enterprise`. No ADR
-  here says Temporal was a mistake — only that durable execution is not what
-  these eight jobs need.
+- **Deleting Temporal.** It stops being the default and leaves the image in
+  Phase E; it leaves the repository in Phase G, once there is a published image
+  to layer an adapter onto. The adapter stays maintained behind the seam either
+  way. No ADR here says Temporal was a mistake — only that durable execution is
+  not what these eight jobs need.
+- **Publishing anything.** No npm package and no container image is published
+  by this spec. Publishing `ragen-worker` is Phase G's gate and its own
+  change.
 - **Changing what an activity does.** The 69 modules under
   `apps/worker/src/activities/` keep their signatures. Two steps (C3, C4) change
   what *ingest* does — delete this file's vectors before writing, pass
@@ -182,7 +162,7 @@ choice and change no default: the vector store and the document parser.
 
 | Spec | Makes selectable | The incumbent, afterwards | What choosing the alternative costs |
 | --- | --- | --- | --- |
-| [This spec](2026-09-15-bullmq-is-the-worker-runtime.md) | — it **replaces** rather than adds | Temporal leaves the default install and the repository; the adapter is supported from `ragen-enterprise` | no replay anywhere — a crash re-runs the job from the top; **Redis becomes required** |
+| [This spec](2026-09-15-bullmq-is-the-worker-runtime.md) | — it **replaces** rather than adds | Temporal leaves the default install in Phase E and the repository in Phase G; the adapter stays supported | no replay anywhere — a crash re-runs the job from the top; **Redis becomes required** |
 | [pgvector](2026-09-14-pgvector-as-a-second-vector-store.md) | the vector store (`Organization.vectorStore`) | Qdrant stays the default, and the recommendation | a shared failure domain with Postgres, and different retrieval numbers |
 | [Mistral Document AI](2026-09-14-mistral-document-ai-as-a-second-parser.md) | the document parser (`DOCUMENT_PARSER`) | Docling stays the default | documents leave the deployment |
 | [LiteLLM retirement](2026-09-14-replace-litellm-with-an-in-process-gateway.md) | — it replaced rather than added | **done**: the proxy is gone from `main` | provider keys live in the application processes |
@@ -427,37 +407,46 @@ the panel.
 
 ### 8. What "Temporal is still supported" is promised to mean
 
-A runtime in another repository that nothing runs is abandoned with a package
-name. The promise is therefore specific, and Phase E is not done until all four
-parts of it exist:
+A runtime that nothing runs is abandoned with a package name. The promise is
+therefore specific, and it is held in two stages, because the adapter stays
+here until there is an image to layer it onto.
 
-1. **One artifact, not a fork.** `ragen-enterprise` ships
+**In Phase E, while the adapter is still in this repository:**
+
+1. **One package, and no `@temporalio/*` outside it.** `packages/jobs-temporal`
+   holds the whole family; the architecture guard says so, and the worker image
+   does not install that workspace — so the artifact we ship carries no
+   Temporal SDK while the source still supports it.
+2. **The contract is an import, not a copy.** `@ragenai/jobs` is a workspace
+   dependency. This is the free half; Phase G is where it stops being free.
+3. **CI runs the real thing.** The worker integration suite runs against a real
+   Temporal container as well as a real Redis, nightly. That job failing is how
+   we learn that a change to `ctx.steps` broke durable retries.
+
+**In Phase G, once `ragen-worker` is published and the adapter moves:**
+
+4. **One artifact, not a fork.** `ragen-enterprise` ships
    `@ragenai/jobs-temporal` and a Dockerfile that is `FROM` the OSS worker
-   image plus the adapter — an image this project does not publish yet, which
-   is half of Q1. It contains no handler, no
-   activity and no pipeline — those come from the image and from
-   `@ragenai/jobs`. Rejected alternative: an enterprise worker application with
-   its own copy of the activities, which is `apps/worker-lite` again with a
-   licence attached.
-2. **The contract is a dependency, not a copy.** `@ragenai/jobs` is consumed
-   as a package — from a registry, or from inside the base image, per Q1. A
-   hand-synced copy of the job names in the enterprise repository is the
-   failure ADR-33 exists to prevent, and no test in either repository would
-   catch it.
-3. **Its CI runs the real thing.** The enterprise repository runs the worker
-   integration suite against a real Temporal container, against the current OSS
-   handlers, nightly and on every push. That job failing is how we learn that a
-   change to `ctx.steps` broke durable retries — nothing in this repository can
-   tell us.
-4. **A breaking change to `JobContext` is a major version of `@ragenai/jobs`.**
-   The seam is now a published interface with an out-of-repo consumer, which is
-   a cost this spec adds and did not have before.
+   image plus the adapter. It contains no handler, no activity and no pipeline
+   — those come from the image. Rejected alternative: an enterprise worker
+   application with its own copy of the activities, which is `apps/worker-lite`
+   again with a licence attached.
+5. **The contract comes from inside the image.** The runtime image's
+   `/app/node_modules/@ragenai/*` are symlinks into `/app/packages/`, which is
+   copied in, so `@ragenai/jobs` resolves there with its built `dist`. The
+   adapter declares it as a peer dependency it never installs and compiles
+   against the contract the image actually ships — no registry, and no version
+   number that can skew from the thing it type-checks against.
+6. **The parity job moves with the package**, and a breaking change to
+   `JobContext` becomes a breaking change for an out-of-repository consumer.
+   That is the cost this spec adds, and it is deferred, not avoided.
 
 [ADR-32](../adrs/32-token-vault-and-mcp-stay-separate.md) — *measure drift
-first* — is the rule that applies to a sibling repository, and it is worth being
-explicit that this change spends that budget deliberately rather than by
-accident. The thing that keeps drift bounded is (1): the enterprise artifact is
-a thin layer over an image we build anyway.
+first* — is the rule that applies to a sibling repository, and this change
+spends that budget deliberately rather than by accident. The thing that keeps
+drift bounded is (4): the enterprise artifact is a thin layer over an image we
+build anyway. Until that image exists, the drift is zero, because nothing has
+left.
 
 ### What BullMQ 6 actually gives us (research, 2026-09-14)
 
@@ -532,11 +521,12 @@ a thin layer over an image we build anyway.
    Helm, with a comment calling it "API rate limiting only. The apps run without
    it." After Phase E the worker does not start without it, which is a new hard
    dependency for every install and the reason Phase F exists.
-7. **Rollback stops being a variable.** Before Phase E, reverting is
-   `WORKER_RUNTIME=temporal`. After it, the Temporal path is a package in
-   another repository, so rolling back means installing something. That is a
-   deliberate trade for not maintaining two defaults, and it makes Phase D's
-   parity evidence the thing the decision rests on.
+7. **Rollback gets worse in two steps.** Through Phase E, reverting is
+   `WORKER_RUNTIME=temporal` plus a worker image built with that workspace
+   installed — the source is still here. After Phase G the Temporal path is a
+   package in another repository, so rolling back means pulling a different
+   image. That is a deliberate trade for not maintaining two defaults, and it
+   is what makes Phase D's parity evidence the thing the decision rests on.
 
 ## Core surfaces touched
 
@@ -544,7 +534,7 @@ a thin layer over an image we build anyway.
 | --- | --- | --- |
 | `prisma/schema.prisma` | **None.** `UserFile.workflowId` is reused as the run id; only its comment changes | n/a — and that is the cheap case |
 | `packages/jobs` (new) | The seam, the eight handlers, the BullMQ adapter | package tests + web/api/worker builds; `tests/architecture/jobs-seam-is-the-only-runtime-import.test.ts` |
-| `packages/jobs-temporal` (new, then extracted) | The Temporal adapter, sole holder of `@temporalio/*` | its own tests; the same architecture guard |
+| `packages/jobs-temporal` (new; extracted in Phase G) | The Temporal adapter, sole holder of `@temporalio/*`, and the one workspace the worker image does not install | its own tests; the same architecture guard; `a-scoped-dockerfile-installs-every-workspace-dep.test.ts` |
 | `packages/env` | `WORKER_RUNTIME`, `WORKER_CONCURRENCY`, `WORKER_ADMIN_*`; `REDIS_URL` becomes required for the worker | `provider-fragments-carry-their-rules.test.ts`, `config-groups`, `ragen-config-is-generated.test.ts`, `config-reference-is-generated.test.ts` |
 | `packages/create-ragen-app` | Manifest keys, the compose service list, the outro | `create-ragen-app-manifest-is-current.test.ts` + `installer.yml` |
 | `apps/web/src/libs/temporal/` | Thin re-export in Phase A, **deleted** in Phase E | build + the existing command tests |
@@ -552,7 +542,7 @@ a thin layer over an image we build anyway.
 | `apps/worker/src/workflows/` | Bodies move to `packages/jobs/handlers/`; `signals.ts` deleted (§4) | worker integration suite |
 | `apps/worker/src/activities/` | Unchanged, except C3/C4 | worker tests + D1 |
 | auth / tenant scoping | Unchanged. The `docgen-{orgId}-` prefix check and every `organizationId` filter stay as they are | guard tests, `ragen-tenant-scope-audit` |
-| `tests/architecture/the-temporal-family-moves-together.test.ts` | Deleted in Phase E — the family leaves with the adapter | the new guard replaces it |
+| `tests/architecture/the-temporal-family-moves-together.test.ts` | Re-pointed at `packages/jobs-temporal` in Phase E, and leaves with it in Phase G. The family still has to move as one version; it just has one home | itself |
 | `docker-compose*.yml`, Helm, Terraform | Temporal removed (Helm template deleted, Terraform variables dropped); Redis required, `noeviction` + AOF | `docs-name-the-published-service-ports.test.ts`, `helm.yml`, `check:config-paths` |
 | `.github/workflows/ci.yml`, `e2e.yml`, `helm.yml` | The four dummy `TEMPORAL_*` variables in both suites, e2e's `paths-ignore` comment, and `helm.yml`'s `--set config.TEMPORAL_SERVER_ADDRESS` | the workflows themselves; `every-pull-request-runs-ci.test.ts` |
 | `README.md`, the other two 2026-09-14 specs | The programme framing and the shared table — **already corrected** with this rewrite; E4 keeps the service lists true as the phases land | review — no test asserts prose, which is why it is in a step |
@@ -659,15 +649,17 @@ Each phase leaves the application working.
 - [ ] **D2.** Run the [2026-09-05 load test](../lessons/worker-concurrency-load-test-2026-09-05.md)
       method on both runtimes, same day, same stack, and record the numbers in a
       lesson. Parity here means "no worse", measured — not assumed. This is the
-      evidence the Phase E decision rests on, and after E it cannot be produced
-      in this repository again.
+      evidence the Phase E decision rests on. It stays reproducible here until
+      Phase G, which is one more reason the adapter's move is worth deferring
+      rather than rushing.
 - [ ] **D3.** A `ragen:up:full` variant with no Temporal at all, and a clean
       clone that ingests a document, cancels one, and generates a document with
       `WORKER_RUNTIME=bullmq`.
 
-### Phase E — BullMQ is the worker, Temporal leaves
+### Phase E — BullMQ is the worker; Temporal stays here, out of the image
 
-Gated on Q1 and on D2's numbers.
+Gated on D2's numbers. The adapter does not move in this phase — see *Answered*
+— so what changes is what an install runs, not where the code lives.
 
 - [ ] **E1.** ADR-44 (reserved): *BullMQ is the worker runtime; durable
       execution is an enterprise adapter*. It supersedes
@@ -688,17 +680,17 @@ Gated on Q1 and on D2's numbers.
       service table and its ingest description, which still says a Temporal
       workflow takes over.
 - [ ] **E5.** Delete what the seam made dead: `apps/web/src/libs/temporal/`,
-      `the-temporal-family-moves-together.test.ts`, the `@temporalio/*`
-      dependencies from `apps/worker`, `apps/api` and the root manifest, and
-      dependabot's `temporal` group — which exists only to hold that family
-      together and moves to the enterprise repository with it.
-- [ ] **E6.** Move `packages/jobs-temporal` to `webamigos/ragen-enterprise` with
-      its Dockerfile (`FROM` the OSS worker image), its nightly integration job
-      against a real Temporal, and the two schedule scripts' Temporal paths.
-      Publish `@ragenai/jobs` per Q1.
-      [`docs/open-core-boundary.md`](../open-core-boundary.md) already records
-      that `ragen-enterprise` is Apache-2.0 and not a commercial path; check it
-      still describes what that repository holds.
+      and the `@temporalio/*` dependencies from `apps/worker`, `apps/api` and
+      the root manifest — they belong to `packages/jobs-temporal` now, which is
+      where `the-temporal-family-moves-together.test.ts` and dependabot's
+      `temporal` group start pointing instead of being deleted. That family
+      still has to move as one version; it just has one home.
+- [ ] **E6.** Take Temporal out of the **image**, not the repository: the
+      worker Dockerfile's `npm ci --workspace=…` list omits
+      `@ragenai/jobs-temporal`, and
+      `a-scoped-dockerfile-installs-every-workspace-dep.test.ts` is the check
+      that this stays deliberate rather than becoming a missing entry. An
+      install that wants durable execution builds from source until Phase G.
 - [ ] **E7.** Link bull-board from `apps/admin`, and open a follow-up for
       proxying it behind Better Auth per ADR-35.
 
@@ -708,6 +700,27 @@ Gated on Q1 and on D2's numbers.
       `runMigrations()` in the deploy path and the `bullmq` schema isolated.
       This is what makes the light-profile claim true, and *What we lose* #6 is
       what makes it worth scheduling rather than filing.
+
+### Phase G — the adapter leaves, once there is an image to layer it onto
+
+Gated on publishing `ragen-worker`, which is not part of this spec and has no
+date. Until then Phase E's arrangement is the steady state, and it is a working
+one: durable execution is available to anyone who builds from source.
+
+- [ ] **G1.** Publish the worker image (its own change — every app image would
+      benefit, and self-hosting today means building four of them from source).
+- [ ] **G2.** Move `packages/jobs-temporal` to `webamigos/ragen-enterprise`
+      with its Dockerfile (`FROM` that image), the nightly parity job, the
+      `temporalio` dependabot group, and the two schedule scripts' Temporal
+      paths. The adapter takes `@ragenai/jobs` as a peer dependency resolved
+      from inside the base image — nothing is published to npm (see §8.5).
+- [ ] **G3.** Drop `@ragenai/jobs-temporal` from this repository's workspaces
+      and from the architecture guard's allow-list, so a re-introduced
+      `@temporalio/*` import fails here.
+- [ ] **G4.** Check that
+      [`docs/open-core-boundary.md`](../open-core-boundary.md) still describes
+      what that repository holds; it already records that `ragen-enterprise` is
+      Apache-2.0 and not a commercial path.
 
 ## Testing
 
@@ -721,16 +734,18 @@ Per the Testing Requirements in [`AGENTS.md`](../../AGENTS.md):
   often left untested.
 - **Architecture**: `jobs-seam-is-the-only-runtime-import.test.ts` — every job
   name has a handler, and `@temporalio/*` appears in exactly one package.
-  `the-temporal-family-moves-together.test.ts` stays until E5 and then goes with
-  the family.
+  `the-temporal-family-moves-together.test.ts` keeps its invariant and follows
+  the family to `packages/jobs-temporal` in E5.
 - **Integration** (`apps/worker`, real Redis): D1's list. This is the gate,
   because the Playwright suite deliberately never starts the worker —
   `.github/workflows/e2e.yml` sets a dummy `TEMPORAL_SERVER_ADDRESS` and
   path-ignores `apps/worker/**`. No `p0` e2e can cover this, and pretending
   otherwise would be the failure mode `AGENTS.md` warns about.
-- **Cross-repository**: the same suite, run from `ragen-enterprise` against a
-  real Temporal and the published `@ragenai/jobs` (§8.3). Nightly, and on every
-  push there.
+- **Both runtimes, nightly.** While the adapter lives here, the same
+  integration suite runs against a real Temporal as well as a real Redis, in
+  the nightly job — the cheap version of §8.3, available precisely because
+  nothing has been extracted yet. It moves to `ragen-enterprise` with the
+  package in Phase G, and that is when it starts costing something.
 - **Manual**: a new row in [`docs/regression-checklist.md`](../regression-checklist.md)
   — upload, cancel mid-ingest, re-embed a folder, generate a document, roll a
   version back — run once per runtime before Phase E.
