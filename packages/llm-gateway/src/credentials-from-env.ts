@@ -202,6 +202,9 @@ export class EnvCredentialSource implements CredentialSource {
         return {
           apiKey: process.env.AZURE_API_KEY,
           baseUrl: process.env.AZURE_API_BASE,
+          // Optional: the provider has its own default. Passed through when
+          // set so a deployment pinning a version for the proxy keeps it.
+          apiVersion: process.env.AZURE_API_VERSION,
         };
       case 'bedrock':
         return { region: process.env.AWS_BEDROCK_REGION };

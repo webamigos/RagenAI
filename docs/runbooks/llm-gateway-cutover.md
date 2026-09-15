@@ -34,7 +34,21 @@ Speech is not affected: B3 gave it `SPEECH_BASE_URL` of its own. The reranker's
    `VERTEX_CREDENTIALS` is the service-account JSON itself, not a path. The
    gateway reads it that way on purpose, so a deployment running the proxy needs
    no new secrets — but it is also the one that failed first when this was
-   built, so check it is present and whole.
+   built, so check it is present and whole. `AZURE_API_VERSION` is passed
+   through for the same reason; Azure refuses a request whose version predates
+   the feature it uses.
+
+   The full list, for the route table as shipped:
+
+   | Provider | Variables |
+   | --- | --- |
+   | Azure | `AZURE_API_KEY`, `AZURE_API_BASE`, `AZURE_API_VERSION` |
+   | Bedrock | `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_BEDROCK_REGION` |
+   | Vertex | `VERTEX_PROJECT`, `VERTEX_LOCATION`, `VERTEX_CREDENTIALS` |
+   | Scaleway | `SCW_API_BASE`, `SCW_API_KEY` |
+
+   These are the proxy's own names, so they can be copied from the LiteLLM
+   service rather than reissued.
 
 2. **Confirm the image ships the route table.** Every runtime image `COPY`s
    `infra/llm-gateway`, and an architecture guard fails the build if one stops.
@@ -57,6 +71,22 @@ Speech is not affected: B3 gave it `SPEECH_BASE_URL` of its own. The reranker's
    A `MISS` on a fallback-only model — `PDF_MODEL`'s default `claude-haiku-4-5`
    is one today — is reported and does not block: those are equally unserved on
    the proxy path, so the flip changes nothing about them.
+
+4. **Know that the model picker still asks the proxy.**
+   `getAvailableModelsForOrganization()` populates it from
+   `fetchLiteLLMModels()` — `LITELLM_PROXY_URL/v1/models` — regardless of
+   `LLM_GATEWAY`. While the proxy is still running that is harmless, and B4
+   leaves it running. But it means the picker offers whatever *the proxy*
+   serves, not what **the app processes** can serve, so a model whose
+   credentials you gave the proxy and not the three services will be offered
+   and then fail on the first turn.
+
+   The gateway already answers the right question — `availableModels()` is
+   credential-aware for exactly this reason — it is simply not wired to the
+   picker yet. Until it is, the safe rule is: **give the three services
+   credentials for every provider in the picker, not only for the models you
+   expect people to use.** For the shipped route table that means Azure,
+   Bedrock, Vertex and Scaleway.
 
 ## The flip
 

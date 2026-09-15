@@ -20,6 +20,7 @@ export const PROVIDER_FACTORIES: Record<
     createAzure({
       apiKey: credentials.apiKey,
       baseURL: credentials.baseUrl,
+      ...(credentials.apiVersion ? { apiVersion: credentials.apiVersion } : {}),
     })(route.model),
 
   bedrock: (route, credentials) =>

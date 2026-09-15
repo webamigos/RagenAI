@@ -185,3 +185,29 @@ describe('extra headers for a connection', () => {
     ).rejects.toThrow(/"x-retries" must be a string/);
   });
 });
+
+/**
+ * The third Azure variable. Reading two of a provider's three and ignoring the
+ * rest is what `VERTEX_CREDENTIALS` already cost — twice is a pattern.
+ */
+describe('Azure api-version', () => {
+  it('is passed through when the deployment pins one', async () => {
+    process.env.AZURE_API_KEY = 'k';
+    process.env.AZURE_API_BASE = 'https://example.openai.azure.com';
+    process.env.AZURE_API_VERSION = '2026-05-01-preview';
+
+    const credentials = await new EnvCredentialSource().forProvider('azure');
+
+    expect(credentials.apiVersion).toBe('2026-05-01-preview');
+  });
+
+  it('is left unset when the deployment does not, so the provider defaults', async () => {
+    process.env.AZURE_API_KEY = 'k';
+    process.env.AZURE_API_BASE = 'https://example.openai.azure.com';
+    delete process.env.AZURE_API_VERSION;
+
+    const credentials = await new EnvCredentialSource().forProvider('azure');
+
+    expect(credentials.apiVersion).toBeUndefined();
+  });
+});

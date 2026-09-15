@@ -84,6 +84,17 @@ export type ProviderCredentials = {
    * vLLM and quietly fails for the rest.
    */
   readonly headers?: Record<string, string>;
+  /**
+   * Azure's `api-version` query parameter.
+   *
+   * Azure OpenAI dates its API and refuses a request whose version predates the
+   * feature it uses, so the proxy has always passed `AZURE_API_VERSION`
+   * explicitly. Reading `AZURE_API_KEY` and `AZURE_API_BASE` while ignoring the
+   * third variable is the same mistake `VERTEX_CREDENTIALS` was — two thirds of
+   * a provider's configuration adopted, and the missing third only noticed on a
+   * real call.
+   */
+  readonly apiVersion?: string;
 };
 
 /**
