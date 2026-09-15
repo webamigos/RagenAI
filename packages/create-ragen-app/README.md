@@ -9,8 +9,8 @@ npx create-ragen-app my-ragen-app
 
 It clones the repo, generates every secret it safely can, lets you paste a
 plain OpenAI or Anthropic API key instead of configuring an enterprise model
-provider, starts the backing services (Postgres, Qdrant, Temporal, LiteLLM,
-Redis, …) in Docker, and runs the app's own first-run setup (Prisma client,
+provider, starts the backing services (Postgres, Qdrant, Temporal, Redis, …)
+in Docker, and runs the app's own first-run setup (Prisma client,
 migrations, seed data). What is left is starting the two apps, in separate
 terminals:
 
@@ -84,10 +84,10 @@ Stripe, email, MCP connectors) ships exactly as documented in the repo's own
 ## Declining to paste a key
 
 Typing a provider API key into someone else's CLI is a reasonable thing to
-refuse, so the provider step is skippable — pick *"I'll configure LiteLLM
+refuse, so the provider step is skippable — pick *"I will configure the routes
 myself"*, or press enter on an empty key. The install still completes, and
 `SETUP-LLM.md` is written into the new directory with the exact `.env.local`
-values and `model_list` entries for OpenAI and Anthropic, plus the one
+values and route-table entries for OpenAI and Anthropic, plus the one
 ordering constraint that matters (`VECTOR_SIZE` has to be right *before* the
 first document is indexed). `src/manual-setup.ts` generates that file from
 `LLM_PROVIDERS`, so it cannot drift from what the wizard would have done.

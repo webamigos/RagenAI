@@ -16,10 +16,8 @@ export interface RouteTableEntry {
 /**
  * The route table for a scaffolded installation.
  *
- * Written **over** the table shipped in the repository rather than beside it,
- * which is the same thing this wizard already does to
- * `infra/litellm/config.yaml`. Two reasons, and the second is the one that
- * decides it:
+ * Written **over** the table shipped in the repository rather than beside it.
+ * Two reasons, and the second is the one that decides it:
  *
  * - The shipped table names Azure, Bedrock, Vertex and Scaleway. A new
  *   installation has credentials for none of them, so every entry in it is a
@@ -42,7 +40,7 @@ export function renderRouteTable(entries: readonly RouteTableEntry[]): string {
   return `# Written by create-ragen-app for this installation.
 #
 # Which upstream serves each model id the application asks for. Ragen calls
-# these providers itself — LLM_GATEWAY=native — with no proxy in the path.
+# these providers itself, with no proxy in the path.
 #
 # This replaced the table shipped in the repository, which routes to Azure,
 # Bedrock, Vertex and Scaleway. Those entries are not wrong, they are simply

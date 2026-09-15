@@ -17,9 +17,10 @@ function providerSection(choice: LlmProviderChoice): string[] {
 
   const envLines = [
     `${config.apiKeyEnvVar}=<your ${config.label} key>`,
-    // The wizard writes this, so the guide must too — otherwise following it
-    // by hand produces a proxy install where the wizard produces a direct one.
-    'LLM_GATEWAY=native',
+    // Not a gateway selector: `litellm` is the pricing namespace `AiUsage`
+    // writes against, and the provider that actually served a turn is recorded
+    // separately as `servedBy`. The flag that used to sit here went with the
+    // proxy in #1194.
     'DEFAULT_MODEL_PROVIDER=litellm',
     `DEFAULT_MODEL=${config.modelName}`,
     `REPHRASE_MODEL=${config.modelName}`,

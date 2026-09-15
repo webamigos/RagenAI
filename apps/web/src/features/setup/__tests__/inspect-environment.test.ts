@@ -8,7 +8,7 @@ const completeEnv = {
   DATABASE_URL: 'postgresql://postgres:pass@localhost:5432/ragen',
   BETTER_AUTH_SECRET: 'a'.repeat(64),
   SECRET_KEY: 'b'.repeat(64),
-  LITELLM_PROXY_URL: 'http://localhost:4000',
+  OPENAI_API_KEY: 'sk-test',
   DEFAULT_MODEL: 'gemini-3-flash-preview',
   DEFAULT_MODEL_PROVIDER: 'litellm',
   QDRANT_URL: 'http://localhost:6333',
@@ -38,6 +38,40 @@ describe('inspectEnvironment', () => {
       report.findings.filter((f) => f.severity === 'required'),
     ).toHaveLength(5);
     expect(idsOf({})).toContain('database');
+  });
+
+  it('asks for model-provider credentials when no family has any', () => {
+    // The check this replaced named `LITELLM_PROXY_URL`, which #1194 deleted —
+    // so it reported a blocking issue on every install, with nothing an
+    // operator could set to clear it.
+    expect(idsOf({ ...completeEnv, OPENAI_API_KEY: undefined })).toContain(
+      'model-provider-credentials',
+    );
+  });
+
+  it('accepts any one provider family, or an OpenAI-compatible connection', () => {
+    // Five families need five different variables and a deployment needs one,
+    // so this is "any", not "all".
+    for (const name of [
+      'ANTHROPIC_API_KEY',
+      'AZURE_API_KEY',
+      'AWS_BEDROCK_REGION',
+      'VERTEX_PROJECT',
+    ]) {
+      expect(
+        idsOf({ ...completeEnv, OPENAI_API_KEY: undefined, [name]: 'set' }),
+      ).not.toContain('model-provider-credentials');
+    }
+
+    // A connection's variables are named after the route's `connection`, which
+    // this file cannot enumerate — so the shape is what is recognised.
+    expect(
+      idsOf({
+        ...completeEnv,
+        OPENAI_API_KEY: undefined,
+        LLM_OLLAMA_BASE_URL: 'http://localhost:11434/v1',
+      }),
+    ).not.toContain('model-provider-credentials');
   });
 
   it('treats an empty or whitespace-only value as unset', () => {
