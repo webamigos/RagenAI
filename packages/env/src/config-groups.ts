@@ -70,10 +70,18 @@ export const GATEWAY_GROUP = {
   group: 'gateway',
   label: 'Model gateway',
   required: ['LITELLM_PROXY_URL'],
-  optional: ['LITELLM_MASTER_KEY'],
-  fields: { LITELLM_PROXY_URL: 'url', LITELLM_MASTER_KEY: 'masterKey' },
+  // `LLM_GATEWAY` and `LLM_ROUTES_PATH` were in the schema but absent from this
+  // list, so the generated reference documented only half the contract — the
+  // half that is on its way out. They are the first thing a reader needs.
+  optional: ['LLM_GATEWAY', 'LLM_ROUTES_PATH', 'LITELLM_MASTER_KEY'],
+  fields: {
+    LITELLM_PROXY_URL: 'url',
+    LITELLM_MASTER_KEY: 'masterKey',
+    LLM_GATEWAY: 'gateway',
+    LLM_ROUTES_PATH: 'routesPath',
+  },
   summary:
-    'Every model call goes through LiteLLM (ADR-04), so an unset URL is not a degraded mode — it is no LLM at all. The key is optional locally and required on a deployment.',
+    '`LLM_GATEWAY` decides how model calls are made: `litellm` (the default) sends them to a proxy you run, `native` has Ragen call providers itself through `@ragenai/llm-gateway` (ADR-49). Under `native` the route table names the upstream per model and credentials come per provider — the route table is `infra/llm-gateway/routes.yaml`, or `LLM_ROUTES_PATH` if you name your own. `LITELLM_PROXY_URL` is still required under both values for now, so that the two paths can be compared on one machine; under the proxy path an unset URL is not a degraded mode, it is no LLM at all.',
 } as const satisfies FieldGroup;
 
 export const VECTOR_STORE_GROUP = {
