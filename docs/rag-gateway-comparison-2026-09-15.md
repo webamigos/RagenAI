@@ -12,9 +12,11 @@ second, where they belong.
 
 ## The answer
 
-**Retrieval is unchanged.** Sixteen of twenty-four questions return the
-identical verdict in both arms across all six runs. Four more flap *within* an
-arm, which is the documented noise floor rather than a finding.
+**Retrieval is unchanged.** Nineteen of twenty-four questions return the
+identical verdict in both arms across all six runs — seventeen passing 3/3 in
+both, and two failing 0/3 in both, which the corpus already failed before the
+gateway existed. Of the five that differ, four flap *within* an arm, which is
+the documented noise floor rather than a finding.
 
 **One question differs stably: `xl-en2pl-refund-pct` — 0/3 native, 3/3 proxy.**
 It is the only case in the corpus where the two paths disagree reproducibly, and

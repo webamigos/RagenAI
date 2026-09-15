@@ -93,6 +93,8 @@ export const createChatCompletionInstance = (
     return nativeChatInstance({
       model: selectedModel,
       reasoningEffort: options.reasoningEffort,
+      // Normalized above: undefined for models that reject the parameter.
+      temperature,
     });
   }
 

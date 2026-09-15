@@ -26,6 +26,7 @@ export { usingNativeGateway };
 export function nativeChatInstance(options: {
   model?: string;
   reasoningEffort?: ReasoningEffortLevel;
+  temperature?: number;
   organizationId?: string;
 }): LanguageModelV4 {
   if (!options.model) {
@@ -37,6 +38,7 @@ export function nativeChatInstance(options: {
   return nativeChatModel(gatewayFromEnv(), {
     modelId: options.model,
     reasoningEffort: options.reasoningEffort,
+    temperature: options.temperature,
     supportsReasoningEffort,
     scope: options.organizationId
       ? { organizationId: options.organizationId }

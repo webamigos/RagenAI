@@ -20,6 +20,12 @@ export type NativeChatModelRequest = {
   readonly modelId: string;
   readonly reasoningEffort?: ReasoningEffortLevel;
   /**
+   * Applied when the caller does not set one per call. The proxy path bakes
+   * temperature into the model at construction, so without this the two paths
+   * disagree on every turn: `native` silently used each provider's default.
+   */
+  readonly temperature?: number;
+  /**
    * Which models accept a reasoning effort. Injected because that is a fact
    * about the catalogue (`MODEL_REGISTRY`), which this package does not read.
    */
@@ -116,17 +122,26 @@ class NativeChatModel implements LanguageModelV4 {
         )
       : undefined;
 
+    // A per-call temperature is an explicit request and wins; this only fills
+    // in the one the seam was constructed with.
+    const callOptions =
+      this.request.temperature !== undefined &&
+      options.temperature === undefined
+        ? { ...options, temperature: this.request.temperature }
+        : options;
+
     if (!reasoning) {
-      return { model, callOptions: options };
+      return { model, callOptions };
     }
 
     return {
       model,
       callOptions: {
-        ...options,
-        // The caller's own provider options win: this is a default the
-        // application applies, not an override of an explicit request.
-        providerOptions: { ...reasoning, ...options.providerOptions },
+        ...callOptions,
+        providerOptions: mergeProviderOptions(
+          reasoning,
+          callOptions.providerOptions,
+        ),
       },
     };
   }
@@ -162,4 +177,33 @@ export function nativeChatModel(
   request: NativeChatModelRequest,
 ): LanguageModelV4 {
   return new NativeChatModel(gateway, request);
+}
+
+/**
+ * The caller's own provider options win — this is a default the application
+ * applies, not an override of an explicit request — but they win **per field**,
+ * not per provider namespace.
+ *
+ * A shallow spread looked equivalent and was not: `reasoning` is
+ * `{ openai: { reasoningEffort } }`, so a caller passing any other `openai`
+ * option replaced that whole object and dropped the configured effort. The
+ * namespace is exactly how callers pass provider options, so the shallow
+ * version failed in the common case rather than an exotic one.
+ */
+type ProviderOptions = NonNullable<
+  LanguageModelV4CallOptions['providerOptions']
+>;
+
+function mergeProviderOptions(
+  defaults: ProviderOptions,
+  callers: LanguageModelV4CallOptions['providerOptions'],
+): ProviderOptions {
+  const merged: ProviderOptions = { ...defaults, ...callers };
+  for (const [namespace, values] of Object.entries(defaults)) {
+    const callerValues = callers?.[namespace];
+    if (callerValues) {
+      merged[namespace] = { ...values, ...callerValues };
+    }
+  }
+  return merged;
 }

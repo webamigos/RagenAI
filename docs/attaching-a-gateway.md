@@ -1,7 +1,9 @@
 # Attaching an external AI gateway
 
-Ragen calls model providers itself (`packages/llm-gateway`), and that is the
-default. It is **not** the only option: any endpoint that speaks OpenAI's
+Ragen can call model providers itself (`packages/llm-gateway`), which is what
+`LLM_GATEWAY=native` selects — the default is still `litellm`, and switching
+takes that variable plus a redeploy. It is **not** the only option: any endpoint
+that speaks OpenAI's
 `/v1/chat/completions` and `/v1/embeddings` can serve some or all of the
 models, chosen per model, with no change to any code.
 

@@ -143,7 +143,7 @@ OpenTelemetry instrumentation with OTLP exporters for traces, metrics, and logs.
 ## Tech Stack
 
 - **Temporal** v1.13.0 for workflow orchestration
-- **Vercel AI SDK** (`ai`, `@ai-sdk/openai`, `@ai-sdk/anthropic`) for LLM chat completions, embeddings, and Claude native PDF processing, all routed through **LiteLLM proxy** (shared with apps/web)
+- **Vercel AI SDK** (`ai`, `@ai-sdk/openai`, `@ai-sdk/anthropic`) for LLM chat completions, embeddings, and Claude native PDF processing, routed through **LiteLLM proxy** or, when `LLM_GATEWAY=native`, called directly via `packages/llm-gateway` (either way, shared with apps/web)
 - **SheetJS** (`xlsx`) for CSV/Excel file parsing
 - **Prisma** + PostgreSQL for persistence, generated from the root
   `prisma/schema.prisma` via its own `workerClient` generator

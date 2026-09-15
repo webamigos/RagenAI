@@ -102,7 +102,7 @@ Railway configuration lives in the dashboard, not in this repository
 ([ADR-47](../adrs/47-railway-configuration-lives-in-the-dashboard.md)). Set, on
 **each** of the environment's `web`, `api` and `worker` services:
 
-```
+```text
 LLM_GATEWAY=native
 ```
 

@@ -1,8 +1,6 @@
 import { createOpenAI } from '@ai-sdk/openai';
 import { generateText } from 'ai';
 
-import { db } from '../db/index.js';
-import { logger } from '../logger.js';
 import { isMasterKeyRequired } from './require-master-key.js';
 import {
   nativeChatModel,

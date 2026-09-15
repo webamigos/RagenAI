@@ -314,3 +314,126 @@ describe('a gateway-backed chat model', () => {
     });
   });
 });
+
+describe('the configured temperature', () => {
+  it('is forwarded to doGenerate when the caller sets none', async () => {
+    const oss = upstream('gpt-oss-120b');
+    const model = nativeChatModel(gatewayWith({ oss }), {
+      modelId: 'gpt-oss-120b',
+      temperature: 0.2,
+      supportsReasoningEffort: neverReasons,
+      multimodal: { textOnlyModels: new Set() },
+    });
+
+    await model.doGenerate(call(textPrompt));
+
+    expect(oss.doGenerate.mock.calls[0][0].temperature).toBe(0.2);
+  });
+
+  it('is forwarded to doStream too', async () => {
+    const oss = upstream('gpt-oss-120b');
+    const model = nativeChatModel(gatewayWith({ oss }), {
+      modelId: 'gpt-oss-120b',
+      temperature: 0.2,
+      supportsReasoningEffort: neverReasons,
+      multimodal: { textOnlyModels: new Set() },
+    });
+
+    await model.doStream(call(textPrompt));
+
+    expect(oss.doStream.mock.calls[0][0].temperature).toBe(0.2);
+  });
+
+  it('never overrides one the caller asked for', async () => {
+    const oss = upstream('gpt-oss-120b');
+    const model = nativeChatModel(gatewayWith({ oss }), {
+      modelId: 'gpt-oss-120b',
+      temperature: 0.2,
+      supportsReasoningEffort: neverReasons,
+      multimodal: { textOnlyModels: new Set() },
+    });
+
+    await model.doGenerate(call(textPrompt, { temperature: 0.9 }));
+
+    expect(oss.doGenerate.mock.calls[0][0].temperature).toBe(0.9);
+  });
+
+  it('leaves temperature unset when the seam configured none', async () => {
+    const oss = upstream('gpt-oss-120b');
+    const model = nativeChatModel(gatewayWith({ oss }), {
+      modelId: 'gpt-oss-120b',
+      supportsReasoningEffort: neverReasons,
+      multimodal: { textOnlyModels: new Set() },
+    });
+
+    await model.doGenerate(call(textPrompt));
+
+    expect(oss.doGenerate.mock.calls[0][0].temperature).toBeUndefined();
+  });
+});
+
+describe('merging provider options', () => {
+  /**
+   * The regression this guards: a shallow spread replaced the whole `openai`
+   * namespace, so any unrelated caller option silently dropped the configured
+   * reasoning effort.
+   */
+  it('keeps the reasoning default alongside an unrelated caller option', async () => {
+    const oss = upstream('gpt-oss-120b');
+    const model = nativeChatModel(gatewayWith({ oss }), {
+      modelId: 'gpt-oss-120b',
+      reasoningEffort: 'high',
+      supportsReasoningEffort: alwaysReasons,
+      multimodal: { textOnlyModels: new Set() },
+    });
+
+    await model.doGenerate(
+      call(textPrompt, {
+        providerOptions: { openai: { parallelToolCalls: false } },
+      }),
+    );
+
+    expect(oss.doGenerate.mock.calls[0][0].providerOptions?.openai).toEqual({
+      reasoningEffort: 'high',
+      parallelToolCalls: false,
+    });
+  });
+
+  it('still lets the caller override the effort explicitly', async () => {
+    const oss = upstream('gpt-oss-120b');
+    const model = nativeChatModel(gatewayWith({ oss }), {
+      modelId: 'gpt-oss-120b',
+      reasoningEffort: 'high',
+      supportsReasoningEffort: alwaysReasons,
+      multimodal: { textOnlyModels: new Set() },
+    });
+
+    await model.doGenerate(
+      call(textPrompt, {
+        providerOptions: { openai: { reasoningEffort: 'low' } },
+      }),
+    );
+
+    expect(oss.doGenerate.mock.calls[0][0].providerOptions?.openai).toEqual({
+      reasoningEffort: 'low',
+    });
+  });
+
+  it('leaves another provider namespace untouched', async () => {
+    const oss = upstream('gpt-oss-120b');
+    const model = nativeChatModel(gatewayWith({ oss }), {
+      modelId: 'gpt-oss-120b',
+      reasoningEffort: 'high',
+      supportsReasoningEffort: alwaysReasons,
+      multimodal: { textOnlyModels: new Set() },
+    });
+
+    await model.doGenerate(
+      call(textPrompt, { providerOptions: { anthropic: { topK: 5 } } }),
+    );
+
+    const sent = oss.doGenerate.mock.calls[0][0].providerOptions;
+    expect(sent?.anthropic).toEqual({ topK: 5 });
+    expect(sent?.openai).toEqual({ reasoningEffort: 'high' });
+  });
+});

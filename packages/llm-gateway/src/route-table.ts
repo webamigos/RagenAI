@@ -1,5 +1,11 @@
 import { existsSync, readFileSync } from 'node:fs';
-import { dirname, isAbsolute, join, parse as parsePath } from 'node:path';
+import {
+  dirname,
+  isAbsolute,
+  join,
+  parse as parsePath,
+  resolve,
+} from 'node:path';
 import { parse as parseYaml } from 'yaml';
 import { z } from 'zod';
 
@@ -99,8 +105,11 @@ export const DEFAULT_ROUTE_TABLE_PATH = 'infra/llm-gateway/routes.yaml';
  * path means that path.
  */
 export function defaultRouteTablePath(cwd: string = process.cwd()): string {
-  let directory = cwd;
-  const { root } = parsePath(cwd);
+  // Resolved first: `parsePath('.').root` is '' and `dirname('.')` is '.', so
+  // a relative cwd never reaches the root and the walk below spins forever.
+  // The default is absolute, but callers and tests pass relative paths.
+  let directory = resolve(cwd);
+  const { root } = parsePath(directory);
 
   for (;;) {
     const candidate = join(directory, DEFAULT_ROUTE_TABLE_PATH);

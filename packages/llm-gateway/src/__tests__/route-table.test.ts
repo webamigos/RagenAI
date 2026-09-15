@@ -169,3 +169,20 @@ describe('finding the shipped route table', () => {
     expect(defaultRouteTablePath(tmpdir())).toBe(DEFAULT_ROUTE_TABLE_PATH);
   });
 });
+
+describe('the default route table path', () => {
+  /**
+   * `parsePath('.').root` is '' and `dirname('.')` is '.', so an unresolved
+   * relative cwd never reaches the root — the walk spun forever rather than
+   * giving up. The default cwd is absolute, which is why nothing caught it.
+   */
+  it('terminates on a relative cwd instead of walking forever', () => {
+    expect(defaultRouteTablePath('.')).toBeTypeOf('string');
+  });
+
+  it('finds the same file from a relative and an absolute cwd', () => {
+    expect(defaultRouteTablePath('.')).toBe(
+      defaultRouteTablePath(process.cwd()),
+    );
+  });
+});

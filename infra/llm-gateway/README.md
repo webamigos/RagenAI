@@ -128,7 +128,7 @@ them.
 
 ## Turning it on
 
-```
+```text
 LLM_GATEWAY=native
 ```
 
