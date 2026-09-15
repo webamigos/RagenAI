@@ -29,6 +29,7 @@ import {
 } from '../common/utils/openai-format.js';
 import { type CreateChatCompletionDto } from './dto/create-chat-completion.dto.js';
 import { supportsReasoningEffort } from '../llm/model-registry.js';
+import { servingProvider } from '../llm/native-models.js';
 
 /**
  * Direct implementation of `POST /v1/chat/completions` — replaces the
@@ -193,13 +194,18 @@ export class ChatCompletionsService {
           threadId,
           userId: context.userId,
           step: 'CHAT_COMPLETION',
-          // Every model routes through LiteLLM in this deployment.
+          // The pricing namespace, not the vendor — see `servingProvider`,
+          // which records who actually served the turn in metadata. Changing
+          // this column zeroes every cost.
           provider: 'litellm',
           model: effectiveModel,
           inputTokens: usage.inputTokens ?? 0,
           outputTokens: usage.outputTokens ?? 0,
           totalTokens: usage.totalTokens ?? 0,
-          metadata: { source: 'API' },
+          metadata: {
+            source: 'API',
+            servedBy: servingProvider(effectiveModel) ?? 'litellm',
+          },
         });
         return {
           prompt_tokens: usage.inputTokens ?? 0,

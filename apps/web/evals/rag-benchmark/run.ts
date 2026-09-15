@@ -61,7 +61,11 @@ const DEFAULT_CORPUS_DIR = join(__dirname, 'corpora', 'kolej-bilingual-v1');
  */
 async function appGatewayMode(): Promise<string> {
   try {
-    const res = await fetch(`${APP_URL}/api/healthcheck`);
+    // A deadline, because this runs before a benchmark that takes minutes: an
+    // unbounded fetch against a wedged app hangs the whole run with no output.
+    const res = await fetch(`${APP_URL}/api/healthcheck`, {
+      signal: AbortSignal.timeout(10_000),
+    });
     if (!res.ok) {
       return `(unknown: healthcheck ${res.status})`;
     }
@@ -272,7 +276,30 @@ async function deleteUploadedFiles(
   );
 }
 
-async function fingerprint(): Promise<StackFingerprint> {
+/**
+ * The mode the app was in when the run *finished*, refusing to label the run at
+ * all if it is not the mode it started in.
+ *
+ * Reading it only at the end was the gap: a redeploy or a flipped flag
+ * mid-benchmark would stamp every question with whichever path happened to be
+ * serving when the last one completed, and both arms produce believable
+ * numbers either way. That is the one failure this comparison cannot detect
+ * from its own results, which is why the app reports the mode from inside its
+ * own process — and why reading it once was not enough.
+ */
+async function settledGatewayMode(startedAs: string): Promise<string> {
+  const endedAs = await appGatewayMode();
+  if (endedAs !== startedAs) {
+    throw new Error(
+      `The app changed gateway mode during the run: started as "${startedAs}", ` +
+        `ended as "${endedAs}". The results mix two paths and cannot be ` +
+        'attributed to either — re-run against one deployment.',
+    );
+  }
+  return endedAs;
+}
+
+async function fingerprint(llmGateway: string): Promise<StackFingerprint> {
   let gitSha = 'unknown';
   try {
     gitSha = execSync('git rev-parse --short HEAD', {
@@ -295,7 +322,7 @@ async function fingerprint(): Promise<StackFingerprint> {
     rerankingEnabled: process.env.FEATURE_FLAG_RERANKING === '1' ? 'on' : 'off',
     multiQueryVariants: process.env.MULTI_QUERY_VARIANT_COUNT ?? '1 (default)',
     appUrl: APP_URL,
-    llmGateway: await appGatewayMode(),
+    llmGateway,
   };
 }
 
@@ -344,6 +371,13 @@ async function main(): Promise<void> {
     `  ${corpus.documents.length} documents, ${questions.length} questions`,
   );
   console.log(`  arms: ${arms.join(', ')}\n`);
+
+  // Read before a single question runs, and compared against the mode at the
+  // end — see `settledGatewayMode`. The app answers this from inside its own
+  // process, so it reports what actually served the requests rather than what
+  // this harness was told.
+  const startedUnderGateway = await appGatewayMode();
+  console.log(`  llm gateway: ${startedUnderGateway}\n`);
 
   const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
   const prisma = new PrismaClient({ adapter });
@@ -520,7 +554,9 @@ async function main(): Promise<void> {
   const report: Report = {
     corpus: corpus.name,
     corpusVersion: corpus.version,
-    fingerprint: await fingerprint(),
+    fingerprint: await fingerprint(
+      await settledGatewayMode(startedUnderGateway),
+    ),
     results,
   };
 

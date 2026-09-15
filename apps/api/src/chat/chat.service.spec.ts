@@ -267,7 +267,10 @@ describe('ChatService', () => {
         inputTokens: 10,
         outputTokens: 5,
         totalTokens: 15,
-        metadata: { source: 'API' },
+        // `servedBy` is the provider that actually served the turn. It is
+        // here and not in `provider` because that column is the pricing key —
+        // see `servingProvider`. Under the proxy path both read `litellm`.
+        metadata: { source: 'API', servedBy: 'litellm' },
       }),
     );
     expect(closeMcpClients).toHaveBeenCalledTimes(1);

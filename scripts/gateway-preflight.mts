@@ -17,6 +17,8 @@
  *
  * See docs/lessons/a-provider-package-is-not-configured-until-something-calls-it.md.
  */
+import { pathToFileURL } from 'node:url';
+
 import { embed, generateText } from 'ai';
 
 import {
@@ -34,7 +36,9 @@ type ConfiguredModel = {
   readonly fallbackOnly?: boolean;
 };
 
-function configuredModels(env: NodeJS.ProcessEnv): ConfiguredModel[] {
+export function configuredModels(
+  env: NodeJS.ProcessEnv,
+): ConfiguredModel[] {
   const models: ConfiguredModel[] = [];
 
   const add = (
@@ -202,4 +206,14 @@ async function main(): Promise<void> {
   );
 }
 
-await main();
+/**
+ * Only when run as a command. Importing this module — which its own test does,
+ * to check the model list without making a network call — must not start a
+ * preflight against whatever happens to be in the environment.
+ */
+if (
+  process.argv[1] &&
+  import.meta.url === pathToFileURL(process.argv[1]).href
+) {
+  await main();
+}

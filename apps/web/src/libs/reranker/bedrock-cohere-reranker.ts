@@ -52,6 +52,46 @@ function cohereBaseUrl(): string | undefined {
 }
 
 /**
+ * The rerank endpoint, and who is actually being billed for it.
+ *
+ * Cohere's own API versions its path — `/v2/rerank` — while a LiteLLM proxy and
+ * the gateways that sit in front of one expose a bare `/rerank`. Appending
+ * `/rerank` unconditionally 404s against "Cohere directly", which is one of the
+ * three targets the comment above advertises.
+ *
+ * The provider travels with the choice rather than being assumed, because
+ * `ai_usage.provider` is the column an operator reconciles an invoice against:
+ * a call Cohere billed, recorded as `litellm`, is wrong there in a way no error
+ * surfaces. Anything that is not Cohere's own host stays `litellm`, which is
+ * what those rows have always said and what the proxy path still is.
+ */
+export function rerankEndpoint(baseUrl: string | undefined): {
+  url: string;
+  provider: string;
+} {
+  const base = (baseUrl ?? 'http://localhost:4000').replace(/\/$/, '');
+
+  let host = '';
+  try {
+    host = new URL(base).hostname;
+  } catch {
+    // Not a parseable URL — treat it as the proxy-shaped path it used to be.
+    return { url: `${base}/rerank`, provider: 'litellm' };
+  }
+
+  if (!/(^|\.)cohere\.(ai|com)$/i.test(host)) {
+    return { url: `${base}/rerank`, provider: 'litellm' };
+  }
+
+  // An operator who already named a version in the URL means that version.
+  const versioned = /\/v\d+$/.test(base);
+  return {
+    url: versioned ? `${base}/rerank` : `${base}/v2/rerank`,
+    provider: 'cohere',
+  };
+}
+
+/**
  * Rerank documents using Cohere Rerank v3.5 via LiteLLM proxy.
  *
  * Routes through LiteLLM's /rerank endpoint so costs, tokens, and Langfuse
@@ -77,10 +117,8 @@ export async function rerankDocuments(
     return documents;
   }
 
-  const baseUrl = (cohereBaseUrl() ?? 'http://localhost:4000').replace(
-    /\/$/,
-    '',
-  );
+  const { url: rerankUrl, provider: rerankProvider } =
+    rerankEndpoint(cohereBaseUrl());
   // Its own key, falling back to the proxy's while the proxy still exists.
   // Per-org virtual keys carried LiteLLM's own budget, which Phase A moved
   // into the database (B5) — nothing is left for a per-org key to do here, and
@@ -93,7 +131,7 @@ export async function rerankDocuments(
   const texts = documents.map((doc) => doc.pageContent);
 
   try {
-    const response = await fetch(`${baseUrl}/rerank`, {
+    const response = await fetch(rerankUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -182,7 +220,7 @@ export async function rerankDocuments(
         userId: tracking.userId,
         projectId: tracking.projectId,
         step: AiUsageStep.RERANKING,
-        provider: 'litellm',
+        provider: rerankProvider,
         model: RERANK_MODEL,
         inputTokens: tokens,
         outputTokens: 0,

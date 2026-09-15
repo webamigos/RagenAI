@@ -35,10 +35,25 @@ describe('credentials from the environment', () => {
   });
 
   it('names every variable that is missing, not just the first', async () => {
-    // A boot failure that reports one of three missing keys costs three
-    // restarts to diagnose.
+    // A boot failure that reports one of several missing keys costs a restart
+    // each to diagnose. Vertex is the multi-variable case now that Bedrock
+    // needs only its region.
+    await expect(source.forProvider('vertex')).rejects.toThrow(
+      /VERTEX_PROJECT, VERTEX_LOCATION/,
+    );
+  });
+
+  /**
+   * Bedrock takes credentials from the AWS default chain, so the region is the
+   * only thing the environment has to name. Requiring static keys blocked every
+   * instance-role deployment while `providers.ts` passed none anyway.
+   */
+  it('asks Bedrock for nothing but a region', async () => {
     await expect(source.forProvider('bedrock')).rejects.toThrow(
-      /AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_BEDROCK_REGION/,
+      /AWS_BEDROCK_REGION/,
+    );
+    await expect(source.forProvider('bedrock')).rejects.not.toThrow(
+      /AWS_ACCESS_KEY_ID/,
     );
   });
 

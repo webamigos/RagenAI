@@ -6,8 +6,9 @@ const nativeChatModel = vi.hoisted(() =>
 const resolveEmbeddingModel = vi.hoisted(() =>
   vi.fn(() => Promise.resolve({ id: 'native-embedding' })),
 );
+const routeFor = vi.hoisted(() => vi.fn(() => undefined as unknown));
 const gatewayFromEnv = vi.hoisted(() =>
-  vi.fn(() => ({ resolveEmbeddingModel })),
+  vi.fn(() => ({ resolveEmbeddingModel, routeFor })),
 );
 
 vi.mock('@ragenai/llm-gateway', async (importOriginal) => {
@@ -15,8 +16,12 @@ vi.mock('@ragenai/llm-gateway', async (importOriginal) => {
   return { ...actual, gatewayFromEnv, nativeChatModel };
 });
 
-const { nativeChatInstance, nativeEmbeddingInstance, usingNativeGateway } =
-  await import('./native-models.js');
+const {
+  nativeChatInstance,
+  nativeEmbeddingInstance,
+  servingProvider,
+  usingNativeGateway,
+} = await import('./native-models.js');
 
 const originalGateway = process.env.LLM_GATEWAY;
 
@@ -101,5 +106,45 @@ describe('building a native embedding model', () => {
     expect(resolveEmbeddingModel).toHaveBeenCalledWith('qwen3-embedding-8b', {
       scope: undefined,
     });
+  });
+});
+
+describe('the provider that actually served a turn', () => {
+  /**
+   * This exists for `ai_usage.metadata.servedBy`. It must stay out of the
+   * `provider` column: that is the key `calculateCost` looks pricing up under,
+   * and the `litellm` namespace there holds the whole catalogue — so writing a
+   * real provider into it would find no price and record every turn at zero.
+   */
+  it('is nothing on the proxy path, so the caller keeps its own default', () => {
+    delete process.env.LLM_GATEWAY;
+
+    expect(servingProvider('gpt-5.4')).toBeUndefined();
+    expect(routeFor).not.toHaveBeenCalled();
+  });
+
+  it('is the route provider when the gateway serves the turn', () => {
+    process.env.LLM_GATEWAY = 'native';
+    routeFor.mockReturnValue({ provider: 'vertex' });
+
+    expect(servingProvider('gemini-2.5-flash')).toBe('vertex');
+  });
+
+  it('is nothing for a model the route table does not know', () => {
+    process.env.LLM_GATEWAY = 'native';
+    routeFor.mockReturnValue(undefined);
+
+    expect(servingProvider('not-routed')).toBeUndefined();
+  });
+
+  /** Attribution must never be the reason a turn fails to be recorded. */
+  it('is nothing rather than a throw when the gateway cannot be built', () => {
+    process.env.LLM_GATEWAY = 'native';
+    gatewayFromEnv.mockImplementationOnce(() => {
+      throw new Error('no route table');
+    });
+
+    expect(() => servingProvider('gpt-5.4')).not.toThrow();
+    expect(servingProvider('gpt-5.4')).toBeUndefined();
   });
 });

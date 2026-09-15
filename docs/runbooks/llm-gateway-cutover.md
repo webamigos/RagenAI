@@ -47,7 +47,7 @@ today.
    | Vertex | `VERTEX_PROJECT`, `VERTEX_LOCATION`, `VERTEX_CREDENTIALS` |
    | Scaleway | `SCW_API_BASE`, `SCW_API_KEY` |
    | Azure | `AZURE_API_KEY`, `AZURE_API_BASE`, `AZURE_API_VERSION` |
-   | Bedrock | `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_BEDROCK_REGION` |
+   | Bedrock | `AWS_BEDROCK_REGION` (credentials come from the AWS default chain — static keys, an instance role or SSO) |
 
    Vertex and Scaleway are the minimum — they serve the default chat, rephrase,
    summary and embedding models. Azure and Bedrock decide whether their models

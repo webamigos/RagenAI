@@ -54,3 +54,27 @@ export function nativeEmbeddingInstance(
     scope: organizationId ? { organizationId } : undefined,
   });
 }
+
+/**
+ * The provider that actually served a turn, for the `ai_usage` metadata.
+ *
+ * It is deliberately **not** put in the `provider` column. That column is the
+ * key `calculateCost` looks pricing up under, and the `litellm` namespace there
+ * holds the whole catalogue — Scaleway, Vertex and Bedrock models alike — so
+ * writing `vertex` or `openai-compatible` into it would find no pricing entry
+ * and silently record every turn as costing zero. The monthly cost ceiling is
+ * computed from those rows, so that failure would be quiet and expensive.
+ *
+ * Attribution therefore rides in metadata until the pricing table is keyed by
+ * real provider. Anyone moving it must move the pricing table first.
+ */
+export function servingProvider(modelId: string): string | undefined {
+  if (!usingNativeGateway()) {
+    return undefined;
+  }
+  try {
+    return gatewayFromEnv().routeFor(modelId)?.provider;
+  } catch {
+    return undefined;
+  }
+}

@@ -22,7 +22,16 @@ export class MissingCredentialsError extends Error {
  */
 const REQUIRED: Record<Exclude<ProviderId, 'openai-compatible'>, string[]> = {
   azure: ['AZURE_API_KEY', 'AZURE_API_BASE'],
-  bedrock: ['AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY', 'AWS_BEDROCK_REGION'],
+  // Only the region. `createAmazonBedrock` is handed no credentials — see
+  // `providers.ts`, which already says so — because the AWS default chain
+  // supplies them from the proxy's env keys, an instance role or SSO. Demanding
+  // static keys here contradicted that and hard-blocked every role-based
+  // deployment, which is the normal way to run this on ECS or EC2.
+  //
+  // It does mean a region with no reachable credentials reads as configured.
+  // Presence was never the real gate — `npm run gateway:preflight -- --probe`
+  // is, because it makes one real call per model.
+  bedrock: ['AWS_BEDROCK_REGION'],
   vertex: ['VERTEX_PROJECT', 'VERTEX_LOCATION'],
   // One variable, and the base URL is optional — the whole point of having
   // this family separate from `openai-compatible` is that a deployment with

@@ -12,6 +12,7 @@ import { InitializeBasicRagService } from '../chains/basic-rag/initialize-basic-
 import { PersistApiThreadService } from '../threads/persist-api-thread.service.js';
 import { AiUsageService } from '../ai-usage/ai-usage.service.js';
 import { supportsReasoningEffort } from '../llm/model-registry.js';
+import { servingProvider } from '../llm/native-models.js';
 
 /**
  * Direct implementation of `POST /v1/chat` — replaces the previous
@@ -153,14 +154,18 @@ export class ChatService {
           threadId,
           userId: context.userId,
           step: 'CHAT_COMPLETION',
-          // Every model routes through LiteLLM in this deployment — see
-          // apps/web's getModelProvider(), which always returns this too.
+          // The pricing namespace, not the vendor — see `servingProvider`,
+          // which records who actually served the turn in metadata. Changing
+          // this column zeroes every cost.
           provider: 'litellm',
           model: modelId,
           inputTokens: usage.inputTokens ?? 0,
           outputTokens: usage.outputTokens ?? 0,
           totalTokens: usage.totalTokens ?? 0,
-          metadata: { source: 'API' },
+          metadata: {
+            source: 'API',
+            servedBy: servingProvider(modelId) ?? 'litellm',
+          },
         });
       };
 
