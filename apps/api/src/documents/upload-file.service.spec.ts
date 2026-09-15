@@ -9,9 +9,9 @@ import { type StorageUsageService } from '../organizations/storage-usage.service
 import { type FoldersService } from './folders.service.js';
 import { type AuditLogService } from '../audit-logs/audit-log.service.js';
 import { type S3StorageService } from '../storage/s3-storage.service.js';
-import { type TemporalClientService } from '../temporal/temporal-client.service.js';
+import { type JobsService } from '../jobs/jobs.service.js';
 import { type SubscriptionsService } from '../subscriptions/subscriptions.service.js';
-import { Workflow } from '../temporal/temporal.consts.js';
+import { Workflow } from '../jobs/jobs.consts.js';
 
 function makeFile(
   overrides: Partial<Express.Multer.File> = {},
@@ -39,7 +39,7 @@ describe('UploadFileService', () => {
   let folders: { getFolderPiiPolicy: Mock };
   let auditLog: { track: Mock };
   let s3: { upload: Mock; delete: Mock };
-  let temporal: { startWorkflow: Mock };
+  let jobs: { start: Mock };
   let subscriptions: { isFeatureEnabled: Mock };
   let service: UploadFileService;
 
@@ -72,7 +72,7 @@ describe('UploadFileService', () => {
     folders = { getFolderPiiPolicy: vi.fn().mockResolvedValue('TOXIC_ONLY') };
     auditLog = { track: vi.fn() };
     s3 = { upload: vi.fn().mockResolvedValue(undefined), delete: vi.fn() };
-    temporal = { startWorkflow: vi.fn().mockResolvedValue(undefined) };
+    jobs = { start: vi.fn().mockResolvedValue(undefined) };
     // Uploading is gated on `manageDocuments`; these cases exercise the
     // pipeline, so the flag is on unless a test says otherwise.
     subscriptions = { isFeatureEnabled: vi.fn().mockResolvedValue(true) };
@@ -84,7 +84,7 @@ describe('UploadFileService', () => {
       folders as unknown as FoldersService,
       auditLog as unknown as AuditLogService,
       s3 as unknown as S3StorageService,
-      temporal as unknown as TemporalClientService,
+      jobs as unknown as JobsService,
       subscriptions as unknown as SubscriptionsService,
     );
   });
@@ -104,7 +104,7 @@ describe('UploadFileService', () => {
     ).rejects.toThrow('cannot add or remove documents');
 
     expect(s3.upload).not.toHaveBeenCalled();
-    expect(temporal.startWorkflow).not.toHaveBeenCalled();
+    expect(jobs.start).not.toHaveBeenCalled();
   });
 
   it('uploads to S3 under an org-prefixed key and starts the embeddings workflow', async () => {
@@ -124,15 +124,13 @@ describe('UploadFileService', () => {
       where: { id: 'file-1', organizationId: 'org-1' },
       data: { isUploaded: true, uploadedAt: expect.any(Date) },
     });
-    expect(temporal.startWorkflow).toHaveBeenCalledWith(
+    expect(jobs.start).toHaveBeenCalledWith(
       Workflow.RUN_FILE_EMBEDDINGS,
       expect.stringMatching(/^doc-/),
-      [
-        expect.objectContaining({
-          organizationId: 'org-1',
-          projectId: 'proj-1',
-        }),
-      ],
+      expect.objectContaining({
+        organizationId: 'org-1',
+        projectId: 'proj-1',
+      }),
     );
     expect(result.fileRecord).toEqual({
       id: 'file-1',
@@ -206,7 +204,7 @@ describe('UploadFileService', () => {
   });
 
   it('surfaces a workflow_start_failed error without rolling back the file', async () => {
-    temporal.startWorkflow.mockRejectedValue(new Error('temporal down'));
+    jobs.start.mockRejectedValue(new Error('temporal down'));
 
     await expect(
       service.uploadFile({
@@ -234,10 +232,10 @@ describe('UploadFileService', () => {
       'folder-1',
       'org-1',
     );
-    expect(temporal.startWorkflow).toHaveBeenCalledWith(
+    expect(jobs.start).toHaveBeenCalledWith(
       expect.anything(),
       expect.anything(),
-      [expect.objectContaining({ piiPolicy: 'STRICT' })],
+      expect.objectContaining({ piiPolicy: 'STRICT' }),
     );
   });
 
@@ -252,10 +250,10 @@ describe('UploadFileService', () => {
     });
 
     expect(folders.getFolderPiiPolicy).not.toHaveBeenCalled();
-    expect(temporal.startWorkflow).toHaveBeenCalledWith(
+    expect(jobs.start).toHaveBeenCalledWith(
       expect.anything(),
       expect.anything(),
-      [expect.objectContaining({ piiPolicy: 'NONE' })],
+      expect.objectContaining({ piiPolicy: 'NONE' }),
     );
   });
 });

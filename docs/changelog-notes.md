@@ -137,3 +137,12 @@ archive is the blog.
   configured model and says whether a deployment can actually serve what it is
   configured to use — before a cutover rather than after the first 5xx.
   ([#1175](https://github.com/webamigos/RagenAI/pull/1175))
+
+- `[brief]` **A local install without `TEMPORAL_SERVER_ADDRESS` set now falls
+  back to `localhost:7233` instead of connecting to the literal string
+  `"undefined"`.** apps/web built the address as
+  `` `${process.env.TEMPORAL_SERVER_ADDRESS}` || 'localhost:7233' ``, and a
+  template literal is never empty, so the fallback could not run. The worker
+  and apps/api always had this right; every producer now reads the same
+  default.
+  ([#1203](https://github.com/webamigos/RagenAI/pull/1203))

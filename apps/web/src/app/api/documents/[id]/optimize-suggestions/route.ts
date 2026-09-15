@@ -4,7 +4,7 @@ import {
   getOrgIdFromAuthOrThrow,
   getCurrentUserId,
 } from '@/app/lib/utils/auth-helpers';
-import { getTemporalClient, TASK_QUEUE_NAME } from '@/libs/temporal';
+import { jobs } from '@/libs/jobs';
 import { Workflow } from '@/features/documents/contracts/document.types';
 import { getFileFromS3 } from '@/app/lib/services/storage';
 import db from '@ragenai/prisma-client';
@@ -130,23 +130,20 @@ export async function POST(
   `;
 
   try {
-    const client = getTemporalClient();
-    await client.workflow.start(Workflow.OPTIMIZE_DOCUMENT, {
-      taskQueue: TASK_QUEUE_NAME,
-      workflowId: `optimize-${doc.id}-${jobId}`,
-      args: [
-        {
-          jobId,
-          documentId: doc.id,
-          orgId,
-          projectId: doc.projectId ?? null,
-          userId,
-          documentText: content,
-          documentTitle: doc.title,
-          baseScore: resolvedBaseScore,
-        },
-      ],
-    });
+    await jobs().start(
+      Workflow.OPTIMIZE_DOCUMENT,
+      `optimize-${doc.id}-${jobId}`,
+      {
+        jobId,
+        documentId: doc.id,
+        orgId,
+        projectId: doc.projectId ?? null,
+        userId,
+        documentText: content,
+        documentTitle: doc.title,
+        baseScore: resolvedBaseScore,
+      },
+    );
   } catch (err) {
     logger.error(
       { err, documentId: doc.id },

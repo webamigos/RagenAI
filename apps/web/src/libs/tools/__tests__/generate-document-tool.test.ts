@@ -3,21 +3,15 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 const mockGetToken = vi.hoisted(() =>
   vi.fn().mockResolvedValue({ accessToken: 'mock-drive-token' }),
 );
-const mockWorkflowStart = vi.hoisted(() =>
-  vi.fn().mockResolvedValue(undefined),
-);
-const mockGetTemporalClient = vi.hoisted(() =>
-  vi.fn().mockReturnValue({ workflow: { start: mockWorkflowStart } }),
-);
+const mockJobStart = vi.hoisted(() => vi.fn().mockResolvedValue(undefined));
 const mockNanoid = vi.hoisted(() => vi.fn().mockReturnValue('abc123'));
 
 vi.mock('@/libs/ragen-vault/client', () => ({
   ragenAuthClient: { getToken: mockGetToken },
 }));
 
-vi.mock('@/libs/temporal', () => ({
-  getTemporalClient: mockGetTemporalClient,
-  TASK_QUEUE_NAME: 'ragen-tasks',
+vi.mock('@/libs/jobs', () => ({
+  jobs: () => ({ start: mockJobStart }),
 }));
 
 vi.mock('nanoid', () => ({ nanoid: mockNanoid }));
@@ -64,22 +58,20 @@ describe('createGenerateDocumentTool', () => {
       'GOOGLE_DRIVE',
     );
 
-    expect(mockWorkflowStart).toHaveBeenCalledWith('generateDocument', {
-      workflowId: 'docgen-org-1-abc123',
-      taskQueue: 'ragen-tasks',
-      args: [
-        {
-          templateName: 'workshop-summary',
-          rawInput: { content: 'Some workshop notes' },
-          clientName: 'Acme Corp',
-          driveFolderId: 'folder-123',
-          driveAccessToken: 'mock-drive-token',
-          orgId: 'org-1',
-          userId: 'user-1',
-          userEmail: 'test@example.com',
-        },
-      ],
-    });
+    expect(mockJobStart).toHaveBeenCalledWith(
+      'generateDocument',
+      'docgen-org-1-abc123',
+      {
+        templateName: 'workshop-summary',
+        rawInput: { content: 'Some workshop notes' },
+        clientName: 'Acme Corp',
+        driveFolderId: 'folder-123',
+        driveAccessToken: 'mock-drive-token',
+        orgId: 'org-1',
+        userId: 'user-1',
+        userEmail: 'test@example.com',
+      },
+    );
 
     expect(result).toEqual({
       success: true,
@@ -104,11 +96,11 @@ describe('createGenerateDocumentTool', () => {
       workflowId: null,
       message: expect.stringContaining('Google Drive is not connected'),
     });
-    expect(mockWorkflowStart).not.toHaveBeenCalled();
+    expect(mockJobStart).not.toHaveBeenCalled();
   });
 
-  it('returns error when Temporal workflow fails to start', async () => {
-    mockWorkflowStart.mockRejectedValueOnce(new Error('Temporal down'));
+  it('returns error when the job fails to start', async () => {
+    mockJobStart.mockRejectedValueOnce(new Error('Temporal down'));
 
     const tool = createGenerateDocumentTool(ctx);
     const result = await tool.execute({

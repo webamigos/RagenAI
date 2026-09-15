@@ -1,13 +1,12 @@
-export const targetEnv = process.env.TARGET_ENV!;
-
-export const TEMPORAL_NAMESPACE = process.env.TEMPORAL_NAMESPACE || 'local';
-// export const TEMPORAL_SERVER_ADDRESS =
-//   `${TEMPORAL_NAMESPACE}.${process.env.TEMPORAL_SERVER_ADDRESS}` ||
-//   'localhost:7233';
 export const TEMPORAL_SERVER_ADDRESS =
-  `${process.env.TEMPORAL_SERVER_ADDRESS}` || 'localhost:7233';
+  process.env.TEMPORAL_SERVER_ADDRESS || 'localhost:7233';
 
-export const TASK_QUEUE_NAME = 'ragen-tasks';
-
+/**
+ * The cancel signal's name.
+ *
+ * The last thing in this directory that is not the client. It goes when
+ * cancellation becomes a database fact (the worker-runtime spec's §4), which
+ * is also what removes the need to keep this string identical to the worker's
+ * `ACTIVITY_CANCEL_EMBEDDING_COMMAND`.
+ */
 export const ACTIVITY_CANCEL_EMBEDDING_COMMAND = 'cancelEmbedding';
-export const ACTIVITY_EMBEDDING_STATE_QUERY = 'embeddingState';

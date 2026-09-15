@@ -9,12 +9,9 @@ vi.mock('@ragenai/prisma-client', () => ({
   },
 }));
 
-const mockWorkflowStart = vi.fn();
-vi.mock('@/libs/temporal', () => ({
-  getTemporalClient: () => ({
-    workflow: { start: (...args: unknown[]) => mockWorkflowStart(...args) },
-  }),
-  TASK_QUEUE_NAME: 'ragen-tasks',
+const mockJobStart = vi.fn();
+vi.mock('@/libs/jobs', () => ({
+  jobs: () => ({ start: (...args: unknown[]) => mockJobStart(...args) }),
 }));
 
 vi.mock('@/features/documents/contracts/document.types', () => ({
@@ -66,7 +63,7 @@ function makeFileRecord(overrides: Record<string, unknown> = {}) {
 describe('reembedFileCommand', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockWorkflowStart.mockResolvedValue(undefined);
+    mockJobStart.mockResolvedValue(undefined);
   });
 
   it('starts the Temporal workflow and returns workflowId on success', async () => {
@@ -77,12 +74,10 @@ describe('reembedFileCommand', () => {
     expect(mockFindFirst).toHaveBeenCalledWith({
       where: { id: 'file-1', organizationId: 'org-1' },
     });
-    expect(mockWorkflowStart).toHaveBeenCalledWith(
+    expect(mockJobStart).toHaveBeenCalledWith(
       'runFileEmbeddings',
-      expect.objectContaining({
-        taskQueue: 'ragen-tasks',
-        workflowId: 'reembed-test-nano-id',
-      }),
+      'reembed-test-nano-id',
+      expect.objectContaining({ id: 'file-1' }),
     );
     expect(result).toEqual({ workflowId: 'reembed-test-nano-id' });
   });
@@ -94,23 +89,22 @@ describe('reembedFileCommand', () => {
       'File not found: missing-file',
     );
 
-    expect(mockWorkflowStart).not.toHaveBeenCalled();
+    expect(mockJobStart).not.toHaveBeenCalled();
   });
 
-  it('passes piiPolicy from the DB record to workflow args', async () => {
+  it('passes piiPolicy from the DB record into the payload', async () => {
     mockFindFirst.mockResolvedValue(makeFileRecord({ piiPolicy: 'NONE' }));
 
     await reembedFileCommand('file-1', 'org-1');
 
-    expect(mockWorkflowStart).toHaveBeenCalledWith(
+    expect(mockJobStart).toHaveBeenCalledWith(
       'runFileEmbeddings',
-      expect.objectContaining({
-        args: [expect.objectContaining({ piiPolicy: 'NONE' })],
-      }),
+      expect.any(String),
+      expect.objectContaining({ piiPolicy: 'NONE' }),
     );
   });
 
-  it('converts Date fields to ISO strings in workflow args', async () => {
+  it('converts Date fields to ISO strings in the payload', async () => {
     const uploadedAt = new Date('2024-03-15T08:30:00Z');
     const embeddingCompletedAt = new Date('2024-03-15T08:31:00Z');
     mockFindFirst.mockResolvedValue(
@@ -119,39 +113,31 @@ describe('reembedFileCommand', () => {
 
     await reembedFileCommand('file-1', 'org-1');
 
-    expect(mockWorkflowStart).toHaveBeenCalledWith(
+    expect(mockJobStart).toHaveBeenCalledWith(
       'runFileEmbeddings',
+      expect.any(String),
       expect.objectContaining({
-        args: [
-          expect.objectContaining({
-            uploadedAt: '2024-03-15T08:30:00.000Z',
-            embeddingCompletedAt: '2024-03-15T08:31:00.000Z',
-          }),
-        ],
+        uploadedAt: '2024-03-15T08:30:00.000Z',
+        embeddingCompletedAt: '2024-03-15T08:31:00.000Z',
       }),
     );
   });
 
-  it('passes requestId equal to the workflowId in workflow args', async () => {
+  it('passes requestId equal to the run id in the payload', async () => {
     mockFindFirst.mockResolvedValue(makeFileRecord());
 
     await reembedFileCommand('file-1', 'org-1');
 
-    expect(mockWorkflowStart).toHaveBeenCalledWith(
+    expect(mockJobStart).toHaveBeenCalledWith(
       'runFileEmbeddings',
-      expect.objectContaining({
-        args: [
-          expect.objectContaining({
-            requestId: 'reembed-test-nano-id',
-          }),
-        ],
-      }),
+      expect.any(String),
+      expect.objectContaining({ requestId: 'reembed-test-nano-id' }),
     );
   });
 
   it('re-throws workflow start errors', async () => {
     mockFindFirst.mockResolvedValue(makeFileRecord());
-    mockWorkflowStart.mockRejectedValue(new Error('temporal unavailable'));
+    mockJobStart.mockRejectedValue(new Error('temporal unavailable'));
 
     await expect(reembedFileCommand('file-1', 'org-1')).rejects.toThrow(
       'temporal unavailable',

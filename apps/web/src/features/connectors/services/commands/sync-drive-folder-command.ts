@@ -7,7 +7,8 @@ import { logger } from '@/app/lib/utils/logger';
 import { listDriveFolderFilesQuery } from '../queries/list-drive-folder-files-query';
 import { getDriveFileContentQuery } from '../queries/get-drive-file-content-query';
 import { uploadToS3WithOrg } from '@/app/lib/services/storage';
-import { getTemporalClient, TASK_QUEUE_NAME } from '@/libs/temporal';
+import { jobs } from '@/libs/jobs';
+import { toRunFileEmbeddingsPayload } from '@ragenai/jobs';
 import { Workflow } from '@/features/documents/contracts/document.types';
 import { assertCanManageDocuments } from '@/features/subscriptions/services/feature-guards';
 
@@ -124,8 +125,6 @@ export const syncDriveFolderCommand = async (
   let unchangedCount = 0;
   let failedCount = 0;
 
-  const temporalClient = getTemporalClient();
-
   const syncSingleFile = async (
     driveFile: (typeof driveFiles)[number],
   ): Promise<'new' | 'updated' | 'unchanged' | 'failed'> => {
@@ -208,31 +207,28 @@ export const syncDriveFolderCommand = async (
           },
         });
 
-        // Re-run embedding workflow
+        // Re-run embedding
         const workflowId = `drive-sync-${nanoid()}`;
-        await temporalClient.workflow.start(Workflow.RUN_FILE_EMBEDDINGS, {
-          taskQueue: TASK_QUEUE_NAME,
+        await jobs().start(
+          Workflow.RUN_FILE_EMBEDDINGS,
           workflowId,
-          args: [
-            {
-              ...existingFile,
-              fileSize: fileContent.byteLength,
-              fileName: driveFile.name.endsWith('.md')
-                ? driveFile.name
-                : `${driveFile.name}.md`,
-              metadata: {
-                driveFileId: driveFile.id,
-                driveFolderId: syncRecord.driveFolderId,
-                driveModifiedTime: driveFile.modified_time,
-              },
-              projectId: project.id,
-              organizationSlug: org.slug,
-              organizationId: org.id,
-              userEmail: user?.email ?? undefined,
-              userId,
+          toRunFileEmbeddingsPayload(existingFile, {
+            fileSize: fileContent.byteLength,
+            fileName: driveFile.name.endsWith('.md')
+              ? driveFile.name
+              : `${driveFile.name}.md`,
+            metadata: {
+              driveFileId: driveFile.id,
+              driveFolderId: syncRecord.driveFolderId,
+              driveModifiedTime: driveFile.modified_time,
             },
-          ],
-        });
+            projectId: project.id,
+            organizationSlug: org.slug ?? undefined,
+            organizationId: org.id,
+            userEmail: user?.email ?? undefined,
+            userId,
+          }),
+        );
 
         logger.info(
           { workflowId, driveFileId: driveFile.id, fileName: driveFile.name },
@@ -287,20 +283,17 @@ export const syncDriveFolderCommand = async (
       });
 
       const workflowId = `drive-sync-${nanoid()}`;
-      await temporalClient.workflow.start(Workflow.RUN_FILE_EMBEDDINGS, {
-        taskQueue: TASK_QUEUE_NAME,
+      await jobs().start(
+        Workflow.RUN_FILE_EMBEDDINGS,
         workflowId,
-        args: [
-          {
-            ...fileRecord,
-            projectId: project.id,
-            organizationSlug: org.slug,
-            organizationId: org.id,
-            userEmail: user?.email ?? undefined,
-            userId,
-          },
-        ],
-      });
+        toRunFileEmbeddingsPayload(fileRecord, {
+          projectId: project.id,
+          organizationSlug: org.slug ?? undefined,
+          organizationId: org.id,
+          userEmail: user?.email ?? undefined,
+          userId,
+        }),
+      );
 
       logger.info(
         { workflowId, driveFileId: driveFile.id, fileName: driveFile.name },

@@ -17,9 +17,11 @@ import { JOB_NAMES } from '@ragenai/jobs';
  *   into `packages/jobs` — see the worker-runtime spec's §2.
  * - **One package imports the engine.** `@temporalio/*` belongs to
  *   `packages/jobs-temporal` alone, which is what turns the spec's Phase G
- *   extraction into a `git mv`. The apps still import it directly while the
- *   producer call sites are being moved (Phase A4); that is a temporary state
- *   this test deliberately does not bless.
+ *   extraction into a `git mv`. `apps/api` stopped importing it directly in
+ *   Phase A4; `apps/web` still does, from two files the seam cannot answer
+ *   yet — the cancel command sends a signal and the docgen status route
+ *   describes a workflow. Phase B removes both, and this test does not bless
+ *   the gap in the meantime.
  */
 const ROOT = join(import.meta.dirname, '..', '..');
 const PACKAGES = join(ROOT, 'packages');

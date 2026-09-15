@@ -6,7 +6,7 @@ import {
   getOrgIdFromAuthOrThrow,
   getCurrentUserId,
 } from '@/app/lib/utils/auth-helpers';
-import { getTemporalClient, TASK_QUEUE_NAME } from '@/libs/temporal';
+import { jobs } from '@/libs/jobs';
 import { ragenAuthClient } from '@/libs/ragen-vault/client';
 import { Workflow } from '@/features/documents/contracts/document.types';
 import { logger } from '@/app/lib/utils/logger';
@@ -82,25 +82,17 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // Start Temporal workflow
   const workflowId = `docgen-${orgId}-${nanoid()}`;
   try {
-    const client = getTemporalClient();
-    await client.workflow.start(Workflow.GENERATE_DOCUMENT, {
-      workflowId,
-      taskQueue: TASK_QUEUE_NAME,
-      args: [
-        {
-          templateName: body.templateName,
-          rawInput: body.rawInput,
-          clientName: body.clientName,
-          driveFolderId: body.driveFolderId,
-          driveAccessToken,
-          orgId,
-          userId,
-          userEmail: session.user.email,
-        },
-      ],
+    await jobs().start(Workflow.GENERATE_DOCUMENT, workflowId, {
+      templateName: body.templateName,
+      rawInput: body.rawInput,
+      clientName: body.clientName,
+      driveFolderId: body.driveFolderId,
+      driveAccessToken,
+      orgId,
+      userId,
+      userEmail: session.user.email,
     });
   } catch (error) {
     logger.error(

@@ -682,22 +682,22 @@ Each phase leaves the application working.
 
 ### Phase A — the seam, still on Temporal
 
-- [ ] **A1.** Create `packages/jobs` (`contract.ts`, `runtime.ts`, `retry.ts`)
+- [x] **A1.** Create `packages/jobs` (`contract.ts`, `runtime.ts`, `retry.ts`)
       and `packages/jobs-temporal` (the adapter). `WORKER_RUNTIME` exists in
       `@ragenai/env`, defaults to `temporal`, and resolves the adapter by
       dynamic import.
-- [ ] **A2.** Move the `Workflow` enum and payload types out of `apps/web`'s
+- [x] **A2.** Move the `Workflow` enum and payload types out of `apps/web`'s
       contracts and delete the hand-synced copy in
       `apps/api/src/temporal/temporal.consts.ts`; both re-export from the
       package. Add `jobs-seam-is-the-only-runtime-import.test.ts`: every job
       name has a handler, and no `@temporalio/*` import exists outside
       `packages/jobs-temporal`.
-- [ ] **A3.** Port the eight workflow bodies to `(payload, ctx)` handlers, in
+- [x] **A3.** Port the eight workflow bodies to `(payload, ctx)` handlers, in
       place in `apps/worker/src/handlers/`, using `ctx.steps` / `ctx.log` /
       `JobFailure`. Behaviour identical; the worker registers them with
       whichever runtime it resolved. The guard in A2 gains the direction that
       keeps this honest: nothing in `packages/*` imports from `apps/*`.
-- [ ] **A4.** Replace the nineteen producer call sites in `apps/web` and
+- [x] **A4.** Replace the nineteen producer call sites in `apps/web` and
       `apps/api` with `getJobRuntime().start(...)`. `apps/api/src/temporal/`
       becomes `jobs/`; `apps/web/src/libs/temporal/` becomes a re-export shim.
 

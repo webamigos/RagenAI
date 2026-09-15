@@ -26,12 +26,9 @@ vi.mock('@ragenai/prisma-client', () => ({
   },
 }));
 
-const mockWorkflowStart = vi.fn();
-vi.mock('@/libs/temporal', () => ({
-  getTemporalClient: () => ({
-    workflow: { start: (...args: unknown[]) => mockWorkflowStart(...args) },
-  }),
-  TASK_QUEUE_NAME: 'ragen-tasks',
+const mockJobStart = vi.fn();
+vi.mock('@/libs/jobs', () => ({
+  jobs: () => ({ start: (...args: unknown[]) => mockJobStart(...args) }),
 }));
 
 vi.mock('@/features/documents/contracts/document.types', () => ({
@@ -90,7 +87,7 @@ describe('reembedFolderWithPolicyCommand', () => {
     mockFolderFindFirst.mockResolvedValue(null);
     mockFileUpdateMany.mockResolvedValue({ count: 0 });
     mockFileUpdate.mockResolvedValue({});
-    mockWorkflowStart.mockResolvedValue(undefined);
+    mockJobStart.mockResolvedValue(undefined);
   });
 
   it('returns empty result when folder has no uploaded files', async () => {
@@ -107,7 +104,7 @@ describe('reembedFolderWithPolicyCommand', () => {
       data: { piiPolicy: PiiPolicy.STRICT },
     });
     expect(result).toEqual({ succeeded: [], failed: [], total: 0 });
-    expect(mockWorkflowStart).not.toHaveBeenCalled();
+    expect(mockJobStart).not.toHaveBeenCalled();
     expect(mockFileUpdateMany).not.toHaveBeenCalled();
   });
 
@@ -134,13 +131,13 @@ describe('reembedFolderWithPolicyCommand', () => {
       PiiPolicy.STRICT,
     );
 
-    expect(mockWorkflowStart).toHaveBeenCalledTimes(2);
+    expect(mockJobStart).toHaveBeenCalledTimes(2);
     expect(result.succeeded).toEqual(['file-1', 'file-2']);
     expect(result.failed).toEqual([]);
     expect(result.total).toBe(2);
   });
 
-  it('updates piiPolicy and resets statuses per-file only after successful workflow start', async () => {
+  it('updates piiPolicy and resets statuses per-file only after the job starts', async () => {
     mockFileFindMany.mockResolvedValue([makeFile('file-1')]);
 
     await reembedFolderWithPolicyCommand('folder-1', 'org-1', PiiPolicy.STRICT);
@@ -159,12 +156,12 @@ describe('reembedFolderWithPolicyCommand', () => {
     });
   });
 
-  it('does not update piiPolicy in DB for files whose workflow start failed', async () => {
+  it('does not update piiPolicy in DB for files whose job failed to start', async () => {
     mockFileFindMany.mockResolvedValue([
       makeFile('file-1'),
       makeFile('file-2'),
     ]);
-    mockWorkflowStart
+    mockJobStart
       .mockRejectedValueOnce(new Error('temporal down'))
       .mockResolvedValueOnce(undefined);
 
@@ -190,7 +187,7 @@ describe('reembedFolderWithPolicyCommand', () => {
       makeFile('file-1'),
       makeFile('file-2'),
     ]);
-    mockWorkflowStart
+    mockJobStart
       .mockRejectedValueOnce(new Error('temporal down'))
       .mockResolvedValueOnce(undefined);
 

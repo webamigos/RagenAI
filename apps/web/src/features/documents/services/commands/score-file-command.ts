@@ -1,6 +1,6 @@
 import db from '@ragenai/prisma-client';
 import { getFileFromS3 } from '@/app/lib/services/storage';
-import { getTemporalClient, TASK_QUEUE_NAME } from '@/libs/temporal';
+import { jobs } from '@/libs/jobs';
 import { Workflow } from '@/features/documents/contracts/document.types';
 import { logger } from '@/app/lib/utils/logger';
 
@@ -53,21 +53,14 @@ export async function scoreFileCommand(
     throw new Error('File has no content to score');
   }
 
-  const client = getTemporalClient();
-  await client.workflow.start(Workflow.SCORE_DOCUMENT, {
-    taskQueue: TASK_QUEUE_NAME,
-    workflowId: `score-${fileId}-${Date.now()}`,
-    args: [
-      {
-        fileId,
-        documentId: file.document?.id ?? null,
-        orgId,
-        projectId: file.projectId ?? null,
-        fileName: file.fileName ?? undefined,
-        documentText: content,
-      },
-    ],
+  await jobs().start(Workflow.SCORE_DOCUMENT, `score-${fileId}-${Date.now()}`, {
+    fileId,
+    documentId: file.document?.id ?? null,
+    orgId,
+    projectId: file.projectId ?? null,
+    fileName: file.fileName ?? undefined,
+    documentText: content,
   });
 
-  logger.info({ fileId, orgId }, 'Score document workflow started');
+  logger.info({ fileId, orgId }, 'Score document job started');
 }

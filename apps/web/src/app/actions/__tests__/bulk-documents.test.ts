@@ -43,10 +43,9 @@ vi.mock('@/libs/ragen-api-client/client', () => ({
   ragenApiRequest: (...args: unknown[]) => mockRagenApiRequest(...args),
 }));
 
-const mockGetTemporalClient = vi.fn();
-vi.mock('@/libs/temporal', () => ({
-  getTemporalClient: () => mockGetTemporalClient(),
-  TASK_QUEUE_NAME: 'test-queue',
+const mockJobStart = vi.fn();
+vi.mock('@/libs/jobs', () => ({
+  jobs: () => ({ start: (...args: unknown[]) => mockJobStart(...args) }),
 }));
 
 vi.mock('@/app/lib/utils/logger', () => ({
@@ -293,20 +292,15 @@ describe('bulkShareFilesAction', () => {
 });
 
 describe('bulkReembedFilesAction', () => {
-  const mockWorkflowStart = vi.fn();
-
   beforeEach(() => {
     vi.clearAllMocks();
     mockGetOrgIdFromAuthOrThrow.mockResolvedValue('org-1');
     mockGetCurrentUserId.mockResolvedValue('user-1');
-    mockWorkflowStart.mockResolvedValue(undefined);
-    mockGetTemporalClient.mockReturnValue({
-      workflow: { start: mockWorkflowStart },
-    });
+    mockJobStart.mockResolvedValue(undefined);
     mockUpdate.mockResolvedValue(undefined);
   });
 
-  it('starts workflow and updates status per file after success', async () => {
+  it('starts the job and updates status per file after success', async () => {
     mockFindMany.mockResolvedValue([
       {
         id: 'file-1',
@@ -320,7 +314,7 @@ describe('bulkReembedFilesAction', () => {
 
     expect(result.succeeded).toEqual(['file-1']);
     expect(result.failed).toHaveLength(0);
-    expect(mockWorkflowStart).toHaveBeenCalledTimes(1);
+    expect(mockJobStart).toHaveBeenCalledTimes(1);
     expect(mockUpdate).toHaveBeenCalledWith(
       expect.objectContaining({
         where: { id: 'file-1' },
@@ -329,7 +323,7 @@ describe('bulkReembedFilesAction', () => {
     );
   });
 
-  it('does NOT update status when workflow start fails', async () => {
+  it('does NOT update status when the job fails to start', async () => {
     mockFindMany.mockResolvedValue([
       {
         id: 'file-2',
@@ -338,7 +332,7 @@ describe('bulkReembedFilesAction', () => {
         projectId: null,
       },
     ]);
-    mockWorkflowStart.mockRejectedValue(new Error('Temporal down'));
+    mockJobStart.mockRejectedValue(new Error('Temporal down'));
 
     const result = await bulkReembedFilesAction(['file-2']);
 

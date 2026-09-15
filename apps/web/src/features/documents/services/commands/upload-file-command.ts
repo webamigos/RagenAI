@@ -5,7 +5,7 @@ import { PiiPolicy } from '@/generated/prisma/client';
 import { createFileCommand } from './create-file-command';
 import { getFileType, parseFile } from '@/app/lib/services/fileParser';
 import { uploadToS3WithOrg } from '@/app/lib/services/storage';
-import { getTemporalClient, TASK_QUEUE_NAME } from '@/libs/temporal';
+import { jobs } from '@/libs/jobs';
 import { Workflow } from '@/features/documents/contracts/document.types';
 import { getStorageLimits } from '@/features/organizations/services/organization-settings';
 import { assertCanManageDocuments } from '@/features/subscriptions/services/feature-guards';
@@ -16,6 +16,7 @@ import {
 import { logger } from '@/app/lib/utils/logger';
 import { getFolderPiiPolicyQuery } from '@/features/documents/services/queries/get-folder-pii-policy-query';
 import { persistUserFileUpdateWithRetry } from '@/features/documents/utils/persist-user-file-update-with-retry';
+import { toRunFileEmbeddingsPayload } from '@ragenai/jobs';
 
 /**
  * Reason an upload was rejected. Callers translate these into HTTP
@@ -73,7 +74,7 @@ export type UploadFileResult = {
  *   3. Create the `UserFile` row
  *   4. Upload raw bytes to S3 (rolls back the DB row on failure)
  *   5. Mark `isUploaded: true`
- *   6. Start the `runFileEmbeddings` Temporal workflow
+ *   6. Start the `runFileEmbeddings` job
  *
  * Throws `UploadRejectedError` on expected rejections (limits, S3
  * failure). Unexpected failures bubble up unchanged.
@@ -216,23 +217,19 @@ export async function uploadFileCommand(
 
   const workflowId = `doc-${nanoid()}`;
   try {
-    const client = getTemporalClient();
-    await client.workflow.start(Workflow.RUN_FILE_EMBEDDINGS, {
-      taskQueue: TASK_QUEUE_NAME,
+    await jobs().start(
+      Workflow.RUN_FILE_EMBEDDINGS,
       workflowId,
-      args: [
-        {
-          ...updatedRecord,
-          projectId,
-          organizationSlug: organizationSlug ?? undefined,
-          organizationId,
-          userEmail: userEmail ?? undefined,
-          userId: userId ?? undefined,
-          requestId: workflowId,
-          piiPolicy: resolvedPiiPolicy,
-        },
-      ],
-    });
+      toRunFileEmbeddingsPayload(updatedRecord, {
+        projectId,
+        organizationSlug: organizationSlug ?? undefined,
+        organizationId,
+        userEmail: userEmail ?? undefined,
+        userId: userId ?? undefined,
+        requestId: workflowId,
+        piiPolicy: resolvedPiiPolicy,
+      }),
+    );
   } catch (wfErr) {
     // The file is already in S3 and the DB. We intentionally don't
     // roll back — the user can retry embedding separately — but we
