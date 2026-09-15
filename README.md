@@ -198,7 +198,7 @@ npm run ragen:up:everything
 ```
 
 Builds and starts every Ragen application — web, API, ingest worker, admin —
-alongside Postgres, Qdrant, Temporal, LiteLLM, Docling and Redis. No Node
+alongside Postgres, Qdrant, Temporal, Docling and Redis. No Node
 toolchain on the host, which makes it the fastest way to evaluate a self-hosted
 install.
 
@@ -227,28 +227,23 @@ only:
 | ------------------------------- | ----------- | --------------------------------- |
 | Presidio analyzer               | 959 MB      | PII masking (optional)            |
 | Docling                         | 721 MB      | local document parsing            |
-| LiteLLM                         | 560 MB      | model calls on the proxy path     |
 | Temporal                        | 97 MB       | async ingest                      |
 | Postgres                        | 93 MB       | everything                        |
 | Presidio anonymizer             | 55 MB       | PII masking (optional)            |
 | Qdrant                          | 43 MB       | retrieval — grows with your index |
-| LiteLLM's Postgres, Temporal UI | 38 MB       | the two supporting containers     |
+| Temporal UI                     | 38 MB       | the supporting container          |
 | **Total**                       | **~2.6 GB** |                                   |
 
 Three of those are optional, and together they are most of the total: drop
 Presidio if you are not masking PII, `DOCUMENT_PARSER=legacy` skips Docling, and
-`LLM_GATEWAY=native` — the default — sends model calls straight to the
-providers rather than through LiteLLM. Note what it does *not* do: the
-`litellm` and `litellm-postgres` services carry no compose profile, so
-`docker compose up` still starts them. Dropping those two lines from the table
-means not starting them, and keeping `RERANK_PROVIDER` off `cohere` — the one
-feature that still falls back to the proxy's URL. Qdrant is the line that moves as you add documents; the figure
+Ragen calls model providers itself, so there is no proxy in this table any
+more — the `litellm` services went with the path that used them. Qdrant is the line that moves as you add documents; the figure
 above is a near-empty index, so size that one against your own corpus rather
 than against this table.
 Redis is optional and only used for rate limiting. The four applications run on
 top of all this and are not in the table.
 
-`npm run ragen:up:app` runs a smaller set — Postgres, Qdrant and LiteLLM, no
+`npm run ragen:up:app` runs a smaller set — Postgres and Qdrant, no
 document processing — when you only want to try the chat. Sizing guidance for
 larger installs is in
 [Self-hosting](https://docs.ragen.ai/docs/self-hosting).
@@ -407,7 +402,7 @@ the shape of it rather than a substitute for it.
   **Nothing is removed:** Temporal stays a supported runtime, Qdrant stays the
   default vector store, Docling stays the default parser. A fourth spec, the
   [in-process model gateway](docs/specs/2026-09-14-replace-litellm-with-an-in-process-gateway.md),
-  does replace the LiteLLM proxy.
+  replaced the LiteLLM proxy.
 
   The payoff is that an install can be assembled to fit: select every
   alternative and Ragen runs on a small VM, or on managed Postgres with no
@@ -489,9 +484,9 @@ share one Prisma schema.
 | `rag-core`                                                               | vector and embedding contracts — web, api, worker                                                                     |
 | `platform-contracts`                                                     | values every app must resolve identically: model catalogue, feature flags, connector metadata, tenant-scope model map |
 | `storage`                                                                | file storage providers — local by default, S3-compatible opt-in                                                       |
-| `litellm-client`, `vault-client`, `observability`, `db`, `eslint-config` | the remaining cross-app wiring                                                                                        |
+| `vault-client`, `observability`, `db`, `eslint-config` | the remaining cross-app wiring                                                                                        |
 
-Supporting services — LiteLLM, Docling, Presidio, the OTel collector — live in
+Supporting services — Docling, Presidio, the OTel collector — live in
 [`infra/`](infra/README.md), each with its own deployment config.
 
 The full picture — routing, auth, the settings and admin surfaces, the feature

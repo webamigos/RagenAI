@@ -363,10 +363,6 @@ Moved to [`docs/settings-pages.md`](docs/settings-pages.md) — see the Task Rou
 - Observability: OTel traces/metrics/logs via `src/instrumentation.ts` + `instrumentation-client.ts`; auto-instrumentation covers HTTP, Postgres, Prisma and outgoing `fetch`. **A no-op in apps/web unless `OTEL_EXPORTER_OTLP_ENDPOINT` is set**; the worker also traces on `LANGFUSE_SECRET_KEY` alone. LLM tracing is LiteLLM → Langfuse *and* app-level — see [ADR-22](docs/adrs/22-observability-opentelemetry.md).
 - Pre-commit: lint-staged runs `eslint --fix` + `prettier --write`, dispatching each file to its own workspace in `lint-staged.config.mjs` — add an entry there when you add a workspace. Conventional commits, enforced by commitlint.
 
-## LiteLLM Proxy
-
-Moved to [`docs/litellm-proxy.md`](docs/litellm-proxy.md) — see the Task Router.
-
 ## Model Defaults
 
 - **Chat**: env `DEFAULT_MODEL`, falling back to `gemini-3-flash-preview` (`defaultOrganizationSettings.model`). `gpt-5.4` is provisioned but not the default.

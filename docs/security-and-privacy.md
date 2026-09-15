@@ -30,15 +30,16 @@ This is the question that matters most, and the honest answer is: **it depends
 on how you configure the model layer**, because that is the only part of Ragen
 that needs to talk to anything.
 
-Ragen routes every LLM and embedding call through a [LiteLLM](https://docs.litellm.ai/)
-proxy that you also run. LiteLLM decides which backend answers. That indirection
-is the whole reason the model layer is swappable — see
-[ADR-04](adrs/04-litellm-unified-llm-gateway.md).
+Ragen calls model providers itself, and a route table you control says which
+upstream serves each model id — see
+[ADR-49](adrs/49-the-application-calls-model-providers-itself.md). That table is
+the whole of the model layer's swappability: nothing in the application names a
+provider.
 
-| Configuration                             | What leaves your network                                                        |
-| ----------------------------------------- | ------------------------------------------------------------------------------- |
-| LiteLLM pointed at a locally-served model | Nothing, in normal operation                                                    |
-| LiteLLM pointed at a commercial API       | The prompt: the question plus the retrieved document chunks needed to answer it |
+| Configuration                              | What leaves your network                                                        |
+| ------------------------------------------ | ------------------------------------------------------------------------------- |
+| Routes pointed at a locally-served model    | Nothing, in normal operation                                                    |
+| Routes pointed at a commercial API          | The prompt: the question plus the retrieved document chunks needed to answer it |
 
 **Two things to know before assuming isolation:**
 

@@ -36,7 +36,7 @@ It reads its own `apps/worker/.env.local` — see `apps/worker/.env.example`.
 
 **Requires**: Temporal server (started via `docker compose up` at the repo root), PostgreSQL and Qdrant. Storage credentials are only needed with `STORAGE_PROVIDER=s3`; the default local provider needs none.
 
-**Key env vars**: `TEMPORAL_SERVER_ADDRESS` (default `localhost:7233`), `DATABASE_URL`, `QDRANT_URL`, `LITELLM_PROXY_URL`, `LITELLM_MASTER_KEY`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`, `S3_BUCKET_NAME`.
+**Key env vars**: `TEMPORAL_SERVER_ADDRESS` (default `localhost:7233`), `DATABASE_URL`, `QDRANT_URL`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`, `S3_BUCKET_NAME`.
 
 **Workflows**:
 
@@ -98,27 +98,35 @@ npm run dev              # http://localhost:3200
 
 **Auth**: Uses the same Better Auth instance as apps/web — only app-level admins (`User.role = 'admin'`) can access.
 
-### LiteLLM (Unified LLM Gateway)
+### Model gateway (in-process)
 
-All LLM calls (chat completions + embeddings) are routed through a LiteLLM proxy that provides a single OpenAI-compatible API across providers (Azure OpenAI, AWS Bedrock, Google Vertex AI).
+There is no proxy container. Ragen turns a model id into a provider call itself,
+in `packages/llm-gateway` (ADR-49), so chat and embeddings go straight to Azure
+OpenAI, AWS Bedrock, Google Vertex, Anthropic, OpenAI or any OpenAI-compatible
+endpoint.
 
-LiteLLM is started automatically via `docker compose up` on port **4000**.
+**Config**: `infra/llm-gateway/routes.yaml` names the upstream for each model id
+the application asks for; `LLM_ROUTES_PATH` points at your own file instead. It
+carries no credentials — those come per provider from the environment, and they
+have to be present in the web, api and worker processes rather than in one
+container.
 
-```bash
-# UI for model management
-open http://localhost:4000/ui    # Login: admin / sk-litellm-dev-key
-```
-
-**Config**: `infra/litellm/config.yaml` — defines model names, provider routing, and Langfuse callbacks. Baked into Docker image for Railway deployment.
-
-**Key env vars** (set on the LiteLLM container, not apps/web):
+**Key env vars** (on the app processes, per provider you actually serve):
 
 - `AZURE_API_KEY`, `AZURE_API_BASE`, `AZURE_API_VERSION` — Azure OpenAI
-- `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION_NAME` — AWS Bedrock
+- `AWS_BEDROCK_REGION` plus the AWS default credential chain — AWS Bedrock
 - `VERTEX_CREDENTIALS`, `VERTEX_PROJECT`, `VERTEX_LOCATION` — Google Vertex AI
-- `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY`, `LANGFUSE_HOST` — LLM tracing
+- `OPENAI_API_KEY` / `ANTHROPIC_API_KEY` — those providers directly
+- `LLM_<CONNECTION>_BASE_URL` / `_API_KEY` — an OpenAI-compatible upstream
+  (Portkey, vLLM, Ollama, or a LiteLLM you run yourself)
 
-**apps/web env vars**: `LITELLM_PROXY_URL=http://localhost:4000`, `LITELLM_MASTER_KEY=sk-litellm-dev-key`, `DEFAULT_MODEL_PROVIDER=litellm`, `DEFAULT_MODEL=gemini-3-flash-preview` (matches `.env.example`). Always verify model names against `infra/litellm/config.yaml` — that file is the source of truth and model lineups rotate.
+Check before deploying, with one real call per configured model:
+
+```bash
+npm run gateway:preflight -- --probe
+```
+
+Attaching an external gateway: [`attaching-a-gateway.md`](attaching-a-gateway.md).
 
 ### Docling (Document Parser)
 
@@ -170,7 +178,7 @@ from the repository root's `.env.local` and `.env` — the same precedence
 `apps/web` and `apps/admin` get from `scripts/load-root-env.mjs`, implemented in
 `apps/api/src/config/load-local-env.ts` because it has to run before
 `parseApiEnv()` refuses to boot. So the root `.env.local` from AGENTS.md is
-enough to start the API against the local Postgres, LiteLLM and Qdrant; an
+enough to start the API against the local Postgres and Qdrant; an
 `apps/api/.env` is only needed for values that differ from the root.
 
 > **Gotcha:** `apps/api` keeps its **own copies** of the RAG engine, vector store, connectors and the tenant-scope guard. A fix in `apps/web/src/` usually needs the same edit in `apps/api/src/`, and the root `tsc -p .` does not cover `apps/api` — run `npm run api:build`.
@@ -197,8 +205,8 @@ forwards to `GET /v1/assistants` — both using the caller's own Ragen API key.
 
 ```bash
 # 1. Start infrastructure (from the repo root) — pick one:
-npm run ragen:up:full            # Full stack: Postgres, Qdrant, Temporal, LiteLLM, Docling, Redis
-npm run ragen:up:app             # App-only:  Postgres, Qdrant, LiteLLM (no document processing)
+npm run ragen:up:full            # Full stack: Postgres, Qdrant, Temporal, Docling, Redis
+npm run ragen:up:app             # App-only:  Postgres, Qdrant (no document processing)
 
 # 2. Start apps/web
 npm run dev                      # http://localhost:3000
@@ -231,7 +239,6 @@ cd apps/mcp && npm run dev                # :3300
 | ----------------------------- | --------- | ----------------------------------------------- |
 | apps/web                      | 3000      | Always                                          |
 | apps/worker                   | —         | Document processing (requires `ragen:up:full`)  |
-| LiteLLM                       | 4000      | Always (auto-started via docker compose)        |
 | Docling                       | 5001      | Document parsing (`ragen:up:full`, UI at `/ui`) |
 | Temporal UI                   | 8080      | Debugging workflows (`ragen:up:full`)           |
 | ragen-token-vault             | 3100      | External connectors + API key validation        |

@@ -38,7 +38,7 @@ database problem. `.claude/skills/ragen-e2e-triage/SKILL.md` has the command
 and the symptoms.
 
 `npm run build` has to succeed before `npm run test:e2e` — the suite drives the
-built app, not the dev server. If LiteLLM is not listening on :4000,
+built app, not the dev server. If the mock LLM is not listening on :4100,
 `e2e/mock-llm-server.ts` starts on its own.
 
 - All routes use `/pl` locale prefix (Polish UI in assertions)
