@@ -1056,10 +1056,29 @@ resumes:
       `RERANK_SEAM`'s `cohere` variant at its own base URL in the same PR —
       it routes through `LITELLM_PROXY_URL` today and fails silently without
       it. Q6.
-- [ ] **B7.** Write the ADR superseding ADR-04 and reducing ADR-34. Add an
+- [~] **B7.** Write the ADR superseding ADR-04 and reducing ADR-34. Add an
       architecture test asserting nothing imports a LiteLLM symbol. Add the
       lesson: _a query that computes a limit is not a limit until something
       calls it._
+
+      **ADR written 2026-09-15**:
+      [ADR-49](../adrs/49-the-application-calls-model-providers-itself.md).
+      ADR-04 is marked superseded, ADR-34 reduced. It records what this phase
+      decided *and* what it deliberately did not — the flip everywhere, an
+      OpenRouter family (Q7), and where the route table lives long-term.
+
+      **The lesson already existed** and said the exact sentence this line
+      asks for — `enforcement-moved-to-a-dependency-left-its-query-behind.md`,
+      written when Phase A found the five-month gap. Rather than duplicate it,
+      it gained the second half this phase supplied: **a guard that fails
+      because its subject moved is right, and the change is incomplete.** B5
+      removed the virtual keys that per-team rate limiting was enforced on,
+      `only-rate-limits-reach-the-proxy.test.ts` fired exactly as designed, and
+      the answer was to build the replacement rather than delete the guard.
+
+      **The architecture test waits for B6**, which is the change that makes it
+      true — asserting nothing imports a LiteLLM symbol cannot pass while the
+      proxy path is the default and `packages/litellm-client` still ships.
 
 ## Testing
 

@@ -1,6 +1,11 @@
 # ADR-34: Share the LiteLLM Client Across the Apps
 
-**Status:** Accepted and implemented.
+**Status:** Accepted and implemented; **reduced by
+[ADR-49](49-the-application-calls-model-providers-itself.md)** (2026-09-15).
+The shared client still exists and is still the right shape for what remains of
+it, but most of what it was shared *for* is gone: the team and virtual-key
+functions have no callers since B5, and B6 removes the package with the rest of
+the proxy infrastructure.
 **Date:** 2026-09-03
 
 ## Update (2026-09-14): the premise that the app enforces its own cost limits was wrong

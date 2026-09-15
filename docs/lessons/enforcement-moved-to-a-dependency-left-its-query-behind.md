@@ -85,6 +85,32 @@ Three checks that would each have caught this:
 
 A limit that is computed is not a limit. A limit is a call site.
 
+### The same mistake, offered again in 2026-09 — and refused by a guard
+
+B5 of the proxy retirement removed LiteLLM's virtual keys. Per-team `rpm`/`tpm`
+were enforced **only** by the proxy, on those keys, so removing them removed the
+enforcement — the identical shape: two fields still collected in the team
+settings panel, enforced by nothing, and no static check able to see it.
+
+The difference is that this time something did see it.
+`only-rate-limits-reach-the-proxy.test.ts` had been written to fail *both* ways
+— if a budget went back to the proxy, and if the rate limits stopped going
+there while nothing had replaced them. It fired, and the correct response was
+**to build the replacement rather than to delete the guard**: a Redis token
+bucket (`checkTeamRateLimitQuery`), called before every turn, with the guard
+rewritten to point at it.
+
+So the durable rule has a second half:
+
+**When a guard fails because its subject moved, the guard is right and the
+change is incomplete.** The tempting reading is that the guard is stale — it
+names a file that no longer exists, so it looks like maintenance. It is not: a
+guard that encodes an obligation fails exactly once, at the moment the
+obligation comes due, and deleting it then is how the obligation is skipped in
+silence. Rewrite it to hold the same invariant in its new home, and make it
+assert that something *calls* the replacement, not merely that the replacement
+exists.
+
 ## Applies to
 
 Anything where a policy is expressed as a query or predicate rather than a

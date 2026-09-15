@@ -1,6 +1,11 @@
 # ADR-04: LiteLLM as Unified LLM Gateway
 
-**Status:** Accepted
+**Status:** **Superseded by [ADR-49](49-the-application-calls-model-providers-itself.md)**
+(2026-09-15). Accepted 2025-01-01 and correct for the application as it then
+was — every one of the five reasons below had since migrated into the
+application, mostly without anyone deciding that it should. Attaching a proxy
+remains supported; it is no longer the only road. See
+[`docs/attaching-a-gateway.md`](../attaching-a-gateway.md).
 **Date:** 2025-01-01
 
 ## Context
