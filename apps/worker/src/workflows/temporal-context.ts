@@ -1,5 +1,9 @@
-import { log, proxyActivities, workflowInfo } from '@temporalio/workflow';
-import { ApplicationFailure } from '@temporalio/common';
+import {
+  ApplicationFailure,
+  log,
+  proxyActivities,
+  workflowInfo,
+} from '@temporalio/workflow';
 import type { JobContext, JobLogger, StepOptions } from '@ragenai/jobs';
 
 import type { EmbeddingStage } from './signals.js';
