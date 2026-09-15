@@ -54,6 +54,8 @@
     "@qdrant/js-client-rest": "^1.17.0",
     "@ragenai/crypto": "*",
     "@ragenai/env": "*",
+    "@ragenai/jobs": "*",
+    "@ragenai/jobs-temporal": "*",
     "@ragenai/litellm-client": "*",
     "@ragenai/llm-gateway": "*",
     "@ragenai/observability": "*",

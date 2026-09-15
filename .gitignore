@@ -48,6 +48,10 @@ next-env.d.ts
 e2e/.auth/
 /ctrf
 /dist
+# Package build output. Not root-anchored above, so it was not covered:
+# packages/litellm-client/dist is tracked on main for exactly that reason,
+# left behind when its source was deleted.
+packages/*/dist
 node_modules/
 
 # Docker

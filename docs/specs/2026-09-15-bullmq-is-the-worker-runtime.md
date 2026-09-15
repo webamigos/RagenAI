@@ -239,11 +239,13 @@ A new workspace package, consumed by `apps/web`, `apps/api` and `apps/worker`:
 ```
 packages/jobs/src/
   contract.ts      JOB names, payload types, JobRuntime, JobContext
-  handlers/        the eight pipelines, runtime-neutral
   runtime.ts       getJobRuntime() — reads WORKER_RUNTIME, returns one impl
   bullmq/          adapter over bullmq
   retry.ts         the shared retry/timeout semantics (see §2)
 ```
+
+The eight pipelines stay in `apps/worker`, beside the activities they call, and
+are handed to the runtime at boot — see §2.
 
 The producer-side interface is everything the nineteen call sites in `apps/web`
 and `apps/api` do today:
@@ -313,19 +315,23 @@ export async function runFileEmbeddings(payload: RunFileEmbeddingsPayload, ctx: 
   });
 ```
 
-`Activities` is the part that decides whether the package boundary survives.
-Today the type is `typeof activities`, where `activities` is
-`apps/worker/src/activities/index.ts`. A handler in `packages/jobs` written
-that way makes the *package* resolve types from an *app* — a type-only import
-is still an import, it inverts the dependency the workspace graph declares, and
-`tsc --build` would need the app's declarations to build the package. So the
-signatures move first: `packages/jobs/contract.ts` declares an
-`Activities` interface, `ctx.steps<A extends Activities>` is parameterised by
-it, and `apps/worker/src/activities/index.ts` gains
-`satisfies Activities` so the implementation is checked against the contract
-rather than the contract being inferred from the implementation. This is a
-precondition for moving the handlers, not a cleanup afterwards — hence its own
-step (A3).
+**The handlers stay in `apps/worker`, beside the activities, and the runtime is
+injected into them.** An earlier draft moved them into `packages/jobs`, which
+forced a question with no cheap answer: `typeof activities` is
+`apps/worker/src/activities/index.ts`, so a handler in the package would make
+the *package* resolve types from an *app* — a type-only import is still an
+import, and it inverts the dependency the workspace graph declares. Fixing that
+means declaring all 69 activity signatures in the package and having the worker
+`satisfies` them: safe, because drift becomes a compile error, and a large
+interface to maintain forever.
+
+Injecting the runtime instead costs nothing and needs none of it. `ctx.steps<A>`
+is generic over whatever the caller passes, so `ctx.steps<typeof activities>`
+stays legal *in the worker*, where `activities` already lives; the package
+never names an activity. What both runtimes share is the contract and the
+context, which is the part that actually has to be common — and the enterprise
+adapter still consumes the handlers from the worker image (§8.4), so nothing
+that needed them loses them.
 
 - On Temporal, `ctx.steps` **is** `proxyActivities` — same durable retries, same
   timeouts, byte-for-byte the same behaviour.
@@ -500,6 +506,39 @@ drift bounded is (4): the enterprise artifact is a thin layer over an image we
 build anyway. Until that image exists, the drift is zero, because nothing has
 left.
 
+### 9. Which variables are required follows the runtime
+
+`REDIS_URL` and `TEMPORAL_SERVER_ADDRESS` are not both mandatory, and they are
+not both optional either: each is required exactly when its runtime is
+selected. Today the worker's schema demands the Temporal variables
+unconditionally, which is correct only while Temporal is the only runtime —
+after Phase E it would refuse to start a deployment that does not run Temporal
+at all.
+
+`WORKER_RUNTIME` therefore becomes a **provider seam** in `@ragenai/env`, like
+storage, encryption and speech before it: the discriminant, one variant per
+runtime, and each variant's `required` list. `bullmq` requires `REDIS_URL`;
+`temporal` requires `TEMPORAL_SERVER_ADDRESS` and whatever else that path
+cannot start without.
+
+Two things follow from the seam machinery rather than from anything new here,
+and both are the reason to use it instead of a hand-written `superRefine`:
+
+- **The rule has to be merged with the fragment or it validates nothing.**
+  That is ADR-37's rule and `provider-fragments-carry-their-rules.test.ts` is
+  what enforces it. A `workerRuntimeRules` that no schema calls is the failure
+  mode this repository already paid for once, in #1116.
+- **The generated configuration reference says which is which for free.** It
+  renders a section per variant from the same table, so an operator reading
+  the reference sees "required" against `REDIS_URL` under BullMQ and against
+  the Temporal variables under Temporal — without either being described as
+  required in general, which is what a single flat list would have to claim.
+
+This lands with Phase C's `WORKER_RUNTIME=bullmq` (the point at which a
+deployment can select the other branch), not with Phase E, so that the first
+install to choose BullMQ is told about `REDIS_URL` at boot rather than at the
+first upload.
+
 ### What BullMQ 6 actually gives us (research, 2026-09-14)
 
 | | |
@@ -585,13 +624,13 @@ left.
 | Surface | Change | What catches a mistake |
 | --- | --- | --- |
 | `prisma/schema.prisma` | **None.** `UserFile.workflowId` is reused as the run id; only its comment changes | n/a — and that is the cheap case |
-| `packages/jobs` (new) | The seam, the eight handlers, the BullMQ adapter | package tests + web/api/worker builds; `tests/architecture/jobs-seam-is-the-only-runtime-import.test.ts` |
+| `packages/jobs` (new) | The seam and the BullMQ adapter — contract, runtime resolution, retry semantics | package tests + web/api/worker builds; `tests/architecture/jobs-seam-is-the-only-runtime-import.test.ts` |
 | `packages/jobs-temporal` (new; extracted in Phase G) | The Temporal adapter, sole holder of `@temporalio/*`, and the one workspace the worker image does not install | its own tests; the same architecture guard; `a-scoped-dockerfile-installs-every-workspace-dep.test.ts` |
-| `packages/env` | `WORKER_RUNTIME`, `WORKER_CONCURRENCY`, `WORKER_ADMIN_*`; `REDIS_URL` becomes required for the worker | `provider-fragments-carry-their-rules.test.ts`, `config-groups`, `ragen-config-is-generated.test.ts`, `config-reference-is-generated.test.ts` |
+| `packages/env` | `WORKER_RUNTIME` becomes a **seam with its own rule** (§9), plus `WORKER_CONCURRENCY` and `WORKER_ADMIN_*` | `provider-fragments-carry-their-rules.test.ts`, `config-groups`, `ragen-config-is-generated.test.ts`, `config-reference-is-generated.test.ts` |
 | `packages/create-ragen-app` | Manifest keys, the compose service list, the outro | `create-ragen-app-manifest-is-current.test.ts` + `installer.yml` |
 | `apps/web/src/libs/temporal/` | Thin re-export in Phase A, **deleted** in Phase E | build + the existing command tests |
 | `apps/api/src/temporal/` | `TemporalClientService` → `JobsService`, directory renamed to `jobs/`; the hand-synced job-name copy deleted | `apps/api` unit tests, `shared-contracts-are-not-recopied.test.ts` |
-| `apps/worker/src/workflows/` | Bodies move to `packages/jobs/handlers/`; `signals.ts` deleted (§4) | worker integration suite |
+| `apps/worker/src/workflows/` | Becomes `handlers/`: the same pipelines, runtime-neutral and in place; `signals.ts` deleted (§4) | worker integration suite |
 | `apps/worker/src/activities/` | Unchanged, except C3/C4 | worker tests + D1 |
 | auth / tenant scoping | Unchanged. The `docgen-{orgId}-` prefix check and every `organizationId` filter stay as they are | guard tests, `ragen-tenant-scope-audit` |
 | `tests/architecture/the-temporal-family-moves-together.test.ts` | Re-pointed at `packages/jobs-temporal` in Phase E, and leaves with it in Phase G. The family still has to move as one version; it just has one home | itself |
@@ -653,18 +692,12 @@ Each phase leaves the application working.
       package. Add `jobs-seam-is-the-only-runtime-import.test.ts`: every job
       name has a handler, and no `@temporalio/*` import exists outside
       `packages/jobs-temporal`.
-- [ ] **A3.** Declare the `Activities` interface in
-      `packages/jobs/contract.ts` and make `apps/worker/src/activities/index.ts`
-      `satisfies` it. **Before** A4, because a handler typed
-      `ctx.steps<typeof activities>` would make `packages/jobs` resolve types
-      from `apps/worker` and invert the dependency the workspace graph declares
-      — see §2. The guard in A2 gains that direction: nothing in `packages/*`
-      imports from `apps/*`.
-- [ ] **A4.** Port the eight workflow bodies to `(payload, ctx)` handlers in
-      `packages/jobs/handlers/`, using `ctx.steps` / `ctx.log` / `JobFailure`.
-      Behaviour identical; the Temporal adapter registers them as Temporal
-      workflows.
-- [ ] **A5.** Replace the nineteen producer call sites in `apps/web` and
+- [ ] **A3.** Port the eight workflow bodies to `(payload, ctx)` handlers, in
+      place in `apps/worker/src/handlers/`, using `ctx.steps` / `ctx.log` /
+      `JobFailure`. Behaviour identical; the worker registers them with
+      whichever runtime it resolved. The guard in A2 gains the direction that
+      keeps this honest: nothing in `packages/*` imports from `apps/*`.
+- [ ] **A4.** Replace the nineteen producer call sites in `apps/web` and
       `apps/api` with `getJobRuntime().start(...)`. `apps/api/src/temporal/`
       becomes `jobs/`; `apps/web/src/libs/temporal/` becomes a re-export shim.
 
@@ -681,8 +714,13 @@ Each phase leaves the application working.
       `concurrency`, `attempts`, backoff and timeouts derived from the same
       options object the Temporal adapter reads; `lockDuration: 300_000`;
       retention policies; SIGTERM/SIGINT graceful `worker.close()`.
-- [ ] **C2.** `WORKER_RUNTIME=bullmq` accepted. Worker boot asserts the Redis
-      `maxmemory-policy` and refuses to start on an evicting instance.
+- [ ] **C2.** `WORKER_RUNTIME=bullmq` accepted, and `WORKER_RUNTIME` becomes a
+      seam in `@ragenai/env` with a rule per variant (§9): `REDIS_URL` required
+      under `bullmq`, the `TEMPORAL_*` variables under `temporal`, neither
+      required in general. The rule is merged with the fragment in every app
+      that reads it, or it validates nothing. Worker boot additionally asserts
+      the Redis `maxmemory-policy` and refuses to start on an evicting
+      instance.
 - [ ] **C3.** **Ingest deletes this file's existing vectors before writing**, on
       every run, on both runtimes. Without this a redelivered job duplicates
       every chunk. Covered by a test that runs `runFileEmbeddings` twice and

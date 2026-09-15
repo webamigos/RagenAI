@@ -1,17 +1,20 @@
 /**
- * Duplicated from apps/web's src/libs/temporal/consts.ts (task queue
- * name) and src/features/documents/contracts/document.types.ts
- * (`Workflow` enum — only the member apps/api actually starts). See
- * docs/adrs/21-monorepo-and-api-decoupling.md.
+ * Re-exported from `@ragenai/jobs`, which owns these now.
  *
- * apps/api never runs Temporal workflows itself (that's ragen-worker) —
- * it only starts them by name, so per this repo's convention
- * ("Temporal workflows: reference by string name, not function import",
- * see apps/web's AGENTS.md), keeping just the queue name + workflow
- * type string here is enough. Keep in sync by hand.
+ * This file used to declare its own copy of the queue name and a one-member
+ * subset of apps/web's `Workflow` enum, with a comment saying "keep in sync by
+ * hand" — the duplication
+ * [ADR-33](../../../../docs/adrs/33-shared-platform-contracts-package.md) and
+ * `tests/architecture/shared-contracts-are-not-recopied.test.ts` exist to stop.
+ * The names live in the seam now, and the task queue belongs to the Temporal
+ * adapter that reads it.
  */
-export const TASK_QUEUE_NAME = 'ragen-tasks';
+import type { JobName } from '@ragenai/jobs';
 
-export enum Workflow {
-  RUN_FILE_EMBEDDINGS = 'runFileEmbeddings',
-}
+export { TASK_QUEUE_NAME } from '@ragenai/jobs-temporal';
+
+export const Workflow = {
+  RUN_FILE_EMBEDDINGS: 'runFileEmbeddings',
+} as const satisfies Record<string, JobName>;
+
+export type Workflow = (typeof Workflow)[keyof typeof Workflow];

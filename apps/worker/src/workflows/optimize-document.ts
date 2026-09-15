@@ -1,36 +1,20 @@
-import { proxyActivities } from '@temporalio/workflow';
-import type * as activities from '../activities/index.js';
+import type { OptimizeDocumentPayload } from '@ragenai/jobs';
 
-export type OptimizeDocumentPayload = {
-  jobId: string;
-  documentId: string;
-  orgId: string;
-  projectId?: string | null;
-  userId?: string | null;
-  documentText: string;
-  documentTitle?: string;
-};
+import { optimizeDocument as handler } from '../handlers/optimize-document.js';
+import { runOnTemporal } from './temporal-context.js';
 
+export type { OptimizeDocumentPayload };
+
+/**
+ * The Temporal entry point. The pipeline itself is in `../handlers`, which
+ * knows nothing about the engine — see the worker-runtime spec's §2.
+ *
+ * This file stays because `workflowsPath` bundles a directory of workflow
+ * functions into the sandbox, and because the name a producer starts is the
+ * name exported here.
+ */
 export async function optimizeDocument(
   payload: OptimizeDocumentPayload,
 ): Promise<void> {
-  const { optimizeDocumentSuggestions, sendSuccessNotification } =
-    proxyActivities<typeof activities>({
-      retry: {
-        initialInterval: '2 seconds',
-        maximumInterval: '2 minutes',
-        backoffCoefficient: 2,
-        maximumAttempts: 2,
-      },
-      // Scoring N suggestions sequentially can take several minutes
-      startToCloseTimeout: '15 minutes',
-    });
-
-  await optimizeDocumentSuggestions(payload);
-
-  await sendSuccessNotification({
-    content: `Document optimization complete`,
-    intlKey: 'document-optimization-complete',
-    meta: { forceRefresh: true },
-  });
+  return runOnTemporal(handler, payload);
 }
