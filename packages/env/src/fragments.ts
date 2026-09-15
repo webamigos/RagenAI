@@ -152,15 +152,19 @@ export const database = z.object({
  * model provider directly, so an unset proxy URL is not a degraded mode — it
  * is no LLM at all.
  *
- * `LLM_GATEWAY` is the Phase B seam: `native` routes through
- * `@ragenai/llm-gateway` straight to the provider, `litellm` (the default)
- * keeps the proxy. It is declared here rather than left as a loose string so a
- * typo is a boot failure, not a run that silently measured the wrong arm.
+ * `LLM_GATEWAY` is the Phase B seam: `native` (the default) routes through
+ * `@ragenai/llm-gateway` straight to the provider, `litellm` keeps the proxy.
+ * It is declared here rather than left as a loose string so a typo is a boot
+ * failure, not a run that silently measured the wrong arm.
  *
- * `LITELLM_PROXY_URL` stays required under both values for now, deliberately:
- * the two arms are compared on one machine with the proxy up, and relaxing it
- * belongs with B4's flip of the default rather than with the seam that makes
- * the comparison possible.
+ * `LITELLM_PROXY_URL` stays required under both values, which outlived the
+ * reason first given for it (comparing both arms on one machine). It is now
+ * the last thing making a proxy-free installation set a variable it never
+ * reads, and relaxing it is B6's business rather than this flip's: the
+ * fallbacks that still reach for it — speech's `SPEECH_BASE_URL`, the
+ * reranker's `RERANK_COHERE_BASE_URL` — resolve to it today, so making it
+ * optional here would turn a missing URL into a runtime 404 on two features
+ * instead of a boot failure naming the variable.
  */
 export const litellm = z.object({
   LITELLM_PROXY_URL: httpUrl(),
@@ -171,7 +175,7 @@ export const litellm = z.object({
   // never make a model call. `tests/architecture/gateway-modes-agree.test.ts`
   // fails if the two lists drift.
   LLM_GATEWAY: blankAsUndefined(
-    z.enum(['litellm', 'native']).default('litellm'),
+    z.enum(['litellm', 'native']).default('native'),
   ),
   /** Points at a route table other than the shipped one. See Q6. */
   LLM_ROUTES_PATH: z.string().optional(),

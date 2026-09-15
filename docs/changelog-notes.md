@@ -74,8 +74,12 @@ archive is the blog.
   required service.** It used to proxy every model call; now that is one of two
   paths, chosen by `LLM_GATEWAY`. For a self-hoster this is one fewer service to
   run and one fewer set of credentials to keep in step.
-  **Not yet the default** — `litellm` still is, while the native path is watched
-  on demo. Do not write this up as done until that flips.
+  **Now the default** (2026-09-15): demo has been running `native` and reports
+  it on `/api/healthcheck`, and `DEFAULT_GATEWAY_MODE` followed. A deployment
+  that never set `LLM_GATEWAY` moves to direct provider calls on its next
+  deploy — worth saying plainly in the post, because it means provider
+  credentials have to reach the web, api and worker processes rather than only
+  a proxy container. `LLM_GATEWAY=litellm` puts the proxy back.
   ([#1175](https://github.com/webamigos/RagenAI/pull/1175), ADR-49)
 
 - `[major]` **Any OpenAI-compatible gateway can be attached instead** — Portkey,

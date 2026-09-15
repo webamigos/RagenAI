@@ -984,7 +984,7 @@ resumes:
       request and that key is there for chat; and `apps/docs/docs/open-models.md`
       recommended the proxy path as the way to keep speech on-premise, which
       was the broken one.
-- [~] **B4.** Flip the default to `native` in one environment (demo) for a
+- [x] **B4.** Flip the default to `native` in one environment (demo) for a
       week, then everywhere. The flag stays — but as a seam variant naming an
       endpoint, not as `litellm|native`, which B6 reduces to one value. Q6.
 
@@ -1009,9 +1009,25 @@ resumes:
       known `PDF_MODEL` gap as advisory rather than blocking, since that model
       is equally unserved on the proxy path.
 
-      Not done here, deliberately: `DEFAULT_GATEWAY_MODE` stays `litellm`.
-      Changing it flips local development and every fresh clone, which belongs
-      with "then everywhere" rather than with "one environment".
+      **Demo flipped 2026-09-15** and reports it — `/api/healthcheck` answers
+      `{"status":"ok","llmGateway":"native"}`, which is the claim worth
+      trusting rather than what was set in the dashboard.
+
+      `DEFAULT_GATEWAY_MODE` is now `native` (2026-09-15), which is the "then
+      everywhere" half. Two consequences were deliberately taken on with it:
+      a deployment that never set `LLM_GATEWAY` moves to direct provider calls
+      on its next deploy and needs provider credentials in web, api and worker;
+      and local development would do the same, so the minimum `.env.local` in
+      `AGENTS.md` now pins `LLM_GATEWAY=litellm` — `docker compose up` starts a
+      proxy, and the shipped route table names providers a fresh clone has no
+      credentials for.
+
+      Still open, and the reason this is not yet B6: `create-ragen-app`
+      scaffolds a LiteLLM-shaped installation (`DEFAULT_MODEL_PROVIDER`,
+      a generated `LITELLM_MASTER_KEY`, a written proxy config) and knows
+      nothing about `LLM_GATEWAY` or a route table. A fresh install therefore
+      still gets the proxy, which is coherent but no longer matches the
+      default.
 - [x] **B5.** Remove virtual keys: `resolveLiteLLMKeyQuery`, the remaining team
       commands, the three columns. Done 2026-09-15.
 
@@ -1112,9 +1128,9 @@ re-runnable; PRs 7 and 8 are only safe to revert while the proxy still holds the
 budgets they stopped writing, which is why they land after PRs 3–5 are proven in
 production.
 
-**Phase B** is flag-gated end to end. `LLM_GATEWAY=litellm` is the default
-through B1–B3; demo flips first in B4; production follows after a week with no
-error-rate or eval regression. Rollback until B5 is one environment variable
+**Phase B** is flag-gated end to end. `LLM_GATEWAY=litellm` was the default
+through B1–B3; demo flipped first in B4 and the default followed; production
+follows after a week with no error-rate or eval regression. Rollback until B5 is one environment variable
 and a restart, which is why B5 and B6 are separate steps from B4 and must not
 land in the same release.
 

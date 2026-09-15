@@ -237,8 +237,9 @@ only:
 
 Three of those are optional, and together they are most of the total: drop
 Presidio if you are not masking PII, `DOCUMENT_PARSER=legacy` skips Docling, and
-`LLM_GATEWAY=native` removes LiteLLM and its Postgres — the app then calls
-providers itself. Qdrant is the line that moves as you add documents; the figure
+LiteLLM and its Postgres are not started at all under the default
+`LLM_GATEWAY=native`, where the app calls providers itself; they come back only
+if you set `LLM_GATEWAY=litellm`. Qdrant is the line that moves as you add documents; the figure
 above is a near-empty index, so size that one against your own corpus rather
 than against this table.
 Redis is optional and only used for rate limiting. The four applications run on

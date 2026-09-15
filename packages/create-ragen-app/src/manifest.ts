@@ -80,6 +80,26 @@ export const MANIFEST: ManifestEntry[] = [
 
   // --- Local-dev defaults that correct a stale example value ---
   {
+    // `LLM_GATEWAY` defaults to `native` as of 2026-09-15, and a scaffolded
+    // install is the one shape that cannot take that default: the wizard
+    // writes a LiteLLM config from the single OpenAI or Anthropic key it
+    // asked for, while the shipped route table names Azure, Bedrock, Vertex
+    // and Scaleway — providers a fresh install has no credentials for. Left
+    // unset, every model call in a brand-new installation would fail on the
+    // first question, with the scaffold reporting success.
+    //
+    // So the installer pins the proxy explicitly rather than inheriting a
+    // default written for deployments that already hold provider credentials.
+    // Making a scaffolded install `native` is a larger change than a pin —
+    // it needs a generated route table pointing every default model at the
+    // one provider the user actually gave us — and it is the natural next
+    // step here, not a rename of this line.
+    key: 'LLM_GATEWAY',
+    strategy: 'local-default',
+    targets: ['root'],
+    value: 'litellm',
+  },
+  {
     // Ships commented out, which leaves apps/web sending no Authorization
     // header while docker-compose.yml starts the proxy *with* a master key
     // (`${LITELLM_MASTER_KEY:-sk-litellm-dev-key}`) — so every call to the
