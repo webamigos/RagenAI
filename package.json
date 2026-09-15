@@ -1,7 +1,7 @@
 {
   "name": "@webamigos/ragen",
   "version": "0.0.0-semantically-released",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "engines": {
     "node": ">=24"
   },
