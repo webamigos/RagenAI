@@ -84,12 +84,16 @@ export function createEmbeddingsInstance(
 ): EmbeddingsProvider {
   const embeddingsModel = resolveEmbeddingsModel();
 
-  // `llm-gateway` rather than the real upstream: that is `ModelProvider`'s
-  // business, and it owns the pricing namespace and every historical row.
+  // `litellm` is the pricing namespace `calculateCost` looks under, and it
+  // holds the whole catalogue — Scaleway, Vertex and Bedrock models alike.
+  // Writing the real upstream here finds no entry and records every embedding
+  // at **zero**, which the monthly cost ceiling is then computed from. The
+  // name outlived the proxy; moving it is B6b, and it moves with the pricing
+  // table or not at all.
   return new TrackedEmbeddingsProvider(
     nativeEmbeddingInstance(embeddingsModel, organizationId),
     embeddingsModel,
-    'llm-gateway',
+    'litellm',
     organizationId,
     userId,
     projectId,

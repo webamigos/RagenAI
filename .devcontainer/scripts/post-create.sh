@@ -57,7 +57,6 @@ cat <<'EOF'
   Before the first question: paste an LLM provider key into
   .env.local, then restart the proxy so it picks it up:
 
-    docker restart ragen-litellm
 
   Optional: npm run db:seed  (subscription plans + test user)
 ============================================================

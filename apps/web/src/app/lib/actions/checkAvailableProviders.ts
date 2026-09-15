@@ -18,10 +18,23 @@ type ProviderStatus = {
 export async function checkAvailableProviders(
   _orgId: string,
 ): Promise<ProviderStatus[]> {
+  // `litellm` names the pricing namespace, not a proxy — see `ai-pricing`.
+  // What "available" means is whether this deployment can serve anything at
+  // all, which is the route table plus the credentials behind it, so it is
+  // asked of the gateway rather than of a URL that no longer exists.
+  let available = false;
+  try {
+    available = gatewayFromEnv().availableModels().length > 0;
+  } catch {
+    // An unreadable or empty route table is "serves nothing", not a crash:
+    // this feeds a status list, and the per-model call still fails loudly.
+    available = false;
+  }
+
   return [
     {
       provider: 'litellm',
-      available: !!process.env.LITELLM_PROXY_URL,
+      available,
       source: 'environment',
     },
   ];

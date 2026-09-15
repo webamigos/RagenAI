@@ -368,7 +368,7 @@ Moved to [`docs/settings-pages.md`](docs/settings-pages.md) — see the Task Rou
 - **Chat**: env `DEFAULT_MODEL`, falling back to `gemini-3-flash-preview` (`defaultOrganizationSettings.model`). `gpt-5.4` is provisioned but not the default.
 - **Rephrase / multi-query expansion**: `gemini-2.5-flash` — do not upgrade without explicit approval
 - **Summary** (worker, ADR-16): `gemini-2.5-flash` — faster than `gpt-5.4-nano` for short outputs, strong Polish. Set via `SUMMARY_MODEL` in `apps/worker/src/consts.ts`.
-- Always verify against `infra/litellm/config.yaml` (older docs mentioned `gpt-4o`/`gpt-4.1-nano` which are no longer provisioned).
+- Always verify against `infra/llm-gateway/routes.yaml`, and that the credentials exist: `npm run gateway:preflight -- --probe` makes one real call per configured model.
 
 ## Per-Org Model Management
 

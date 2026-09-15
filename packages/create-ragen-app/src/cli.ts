@@ -224,14 +224,11 @@ export async function run(argv: string[]): Promise<boolean> {
       [
         'No LLM provider configured, so chat and the knowledge base are off.',
         '',
-        'This path leaves LLM_GATEWAY=litellm, so configure the proxy —',
-        'two files to edit, then `docker compose restart litellm`:',
-        '  .env.local              — your key, DEFAULT_MODEL, REPHRASE_MODEL,',
-        '                            EMBEDDINGS_MODEL, VECTOR_SIZE',
-        '  infra/litellm/config.yaml — a model_list entry per model',
-        '',
-        'To call providers directly instead, set LLM_GATEWAY=native and put',
-        `a route per model in ${ROUTE_TABLE_PATH}.`,
+        'Two files to edit:',
+        '  .env.local                    — your key, DEFAULT_MODEL,',
+        '                                  REPHRASE_MODEL, EMBEDDINGS_MODEL,',
+        '                                  VECTOR_SIZE',
+        `  ${ROUTE_TABLE_PATH} — a route per model`,
         '',
         `Exact values for OpenAI and Anthropic are written to ${guidePath}.`,
       ].join('\n'),
@@ -602,7 +599,7 @@ async function promptLlmProvider(): Promise<LlmProviderPromptResult> {
     options: [
       { value: 'openai' as const, label: LLM_PROVIDERS.openai.label },
       { value: 'anthropic' as const, label: LLM_PROVIDERS.anthropic.label },
-      { value: 'skip' as const, label: "I'll configure LiteLLM myself" },
+      { value: 'skip' as const, label: 'I will configure the routes myself' },
     ],
   });
 

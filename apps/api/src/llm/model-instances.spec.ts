@@ -87,7 +87,7 @@ describe('LLM_GATEWAY=native', () => {
     expect(embeddingsCreateInstance).not.toHaveBeenCalled();
   });
 
-  it('records embeddings usage against the gateway, not the proxy', async () => {
+  it('prices embeddings under the namespace the cost table actually has', async () => {
     const { createEmbeddingsInstance } = await load();
     const trackAiUsage = vi.fn();
 
@@ -96,7 +96,7 @@ describe('LLM_GATEWAY=native', () => {
     expect(TrackedEmbeddingsProvider).toHaveBeenCalledWith(
       expect.anything(),
       'qwen3-embedding-8b',
-      'llm-gateway',
+      'litellm',
       'org_1',
       undefined,
       undefined,

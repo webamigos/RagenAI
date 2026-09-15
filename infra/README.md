@@ -10,7 +10,7 @@ maintain around them — and not `packages/`, because nothing imports them.
 | `presidio/analyzer/` | Presidio analyzer with Polish recognizers, for optional PII masking (ADR-24) | its own Railway service |
 | `otel/` | OpenTelemetry Collector config for the optional local observability stack | local only |
 
-The first three each have their own Railway service. **If you move a directory
+The first two each have their own Railway service. **If you move a directory
 here, the matching service's Dockerfile path has to change with it** — and that
 setting lives in the Railway dashboard, not in this repository. There is nothing
 in the tree to edit alongside the move, which is exactly why it is easy to

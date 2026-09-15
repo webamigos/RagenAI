@@ -107,9 +107,10 @@ LLM_LITELLM_BASE_URL=http://litellm:4000/v1
 LLM_LITELLM_API_KEY=<LITELLM_MASTER_KEY, or a virtual key>
 ```
 
-`infra/litellm/` still contains a working proxy configuration if you want a
-starting point. Note that `model:` here is LiteLLM's `model_name`, not the
-upstream's — LiteLLM does that mapping itself, which is most of what it is for.
+Note that `model:` here is LiteLLM's `model_name`, not the upstream's — LiteLLM
+does that mapping itself, which is most of what it is for. The proxy
+configuration this repository used to ship was removed with the proxy; start
+from LiteLLM's own documentation.
 
 ## vLLM, Ollama, TGI
 
@@ -151,7 +152,7 @@ routes:
 ## Checking it worked
 
 ```bash
-LLM_GATEWAY=native npm run gateway:preflight -- --probe
+npm run gateway:preflight -- --probe
 ```
 
 Resolves every model the deployment is configured to use and makes one real

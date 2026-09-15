@@ -247,10 +247,14 @@ export const reranker = z.object({
   SCW_API_BASE: blankAsUndefined(httpUrl().optional()),
   SCW_API_KEY: z.string().optional(),
   /**
-   * The `cohere` variant's own endpoint. Optional because it falls back to
-   * `LITELLM_PROXY_URL` while that still exists — which is exactly why it had
-   * to be added before the proxy goes: an unreachable reranker degrades to "no
-   * reranking" rather than erroring, so the loss would have been silent.
+   * The `cohere` variant's own endpoint, and **required** when that variant is
+   * selected — the `LITELLM_PROXY_URL` fallback went with the proxy in B6.
+   *
+   * Optional in the schema because the variant itself is opt-in, and a
+   * deployment on the default Scaleway reranker needs neither. The cost of
+   * getting that wrong is quiet: an unreachable reranker degrades to "no
+   * reranking" rather than erroring, which is why this variable was added
+   * before the proxy was removed rather than with it.
    */
   RERANK_COHERE_BASE_URL: blankAsUndefined(httpUrl().optional()),
   RERANK_COHERE_API_KEY: z.string().optional(),

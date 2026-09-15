@@ -40,7 +40,7 @@ helm install ragen deploy/helm/ragen \
 
 `existingSecret` makes that Secret the only one: the chart renders none of its
 own, so it must carry **every** key the pods read — `POSTGRES_PASSWORD` and the
-six shared secrets below included, since nothing generates them for you in this
+five shared secrets below included, since nothing generates them for you in this
 mode. Leave `existingSecret` unset to have the chart generate the shared ones
 and supply only the provider keys through a values file.
 

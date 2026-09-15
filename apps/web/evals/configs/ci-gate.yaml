@@ -18,9 +18,11 @@ defaultTest:
   options:
     # The grader is promptfoo's own model call, not the product's — it does
     # not go through @ragenai/llm-gateway, so it needs an endpoint of its own.
-    # OpenAI by default; EVAL_GRADER_BASE_URL points it elsewhere.
+    # Model and endpoint have to agree: this pair is OpenAI's, reached with
+    # OPENAI_API_KEY. Point EVAL_GRADER_BASE_URL elsewhere and change the model
+    # id with it, or the grader asks a host for a model it does not serve.
     provider:
-      id: 'openai:chat:gemini-2.5-flash'
+      id: 'openai:chat:gpt-4o-mini'
       config:
         apiBaseUrl: '{{ env.EVAL_GRADER_BASE_URL | default("https://api.openai.com/v1") }}'
         apiKeyEnvar: OPENAI_API_KEY
