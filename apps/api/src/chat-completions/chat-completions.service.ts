@@ -15,6 +15,7 @@ import { LoadMcpToolsService } from '../mcp/load-mcp-tools.service.js';
 import { InitializeBasicRagService } from '../chains/basic-rag/initialize-basic-rag.service.js';
 import { PersistApiThreadService } from '../threads/persist-api-thread.service.js';
 import { AiUsageService } from '../ai-usage/ai-usage.service.js';
+import { TeamRateLimitService } from '../team-limits/team-rate-limit.service.js';
 import { foldMessages, mergeProjectInstruction } from './fold-messages.js';
 import {
   buildChatCompletion,
@@ -63,6 +64,7 @@ export class ChatCompletionsService {
     private readonly initializeBasicRag: InitializeBasicRagService,
     private readonly persistApiThread: PersistApiThreadService,
     private readonly aiUsage: AiUsageService,
+    private readonly teamRateLimit: TeamRateLimitService,
   ) {}
 
   async create(
@@ -110,6 +112,15 @@ export class ChatCompletionsService {
         HttpStatus.TOO_MANY_REQUESTS,
       );
     }
+
+    // Per-team, before any retrieval or model turn. The ceilings above are
+    // monthly and say nothing about a burst; this is the per-minute allowance
+    // the team settings panel has always shown.
+    const usageTeamId = await this.teamRateLimit.resolveUsageTeam({
+      orgId: context.orgId,
+      userId: context.userId,
+    });
+    await this.teamRateLimit.assertWithinLimit(usageTeamId);
 
     const rawSettings = await this.organizationSettings.getAllSettings(
       context.orgId,
@@ -207,6 +218,9 @@ export class ChatCompletionsService {
             servedBy: servingProvider(effectiveModel) ?? 'litellm',
           },
         });
+        // The team's per-minute token window, charged from the real
+        // count rather than a pre-turn guess — see `charge`.
+        await this.teamRateLimit.charge(usageTeamId, usage.totalTokens ?? 0);
         return {
           prompt_tokens: usage.inputTokens ?? 0,
           completion_tokens: usage.outputTokens ?? 0,

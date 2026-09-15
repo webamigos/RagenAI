@@ -11,6 +11,7 @@ import { LoadMcpToolsService } from '../mcp/load-mcp-tools.service.js';
 import { InitializeBasicRagService } from '../chains/basic-rag/initialize-basic-rag.service.js';
 import { PersistApiThreadService } from '../threads/persist-api-thread.service.js';
 import { AiUsageService } from '../ai-usage/ai-usage.service.js';
+import { TeamRateLimitService } from '../team-limits/team-rate-limit.service.js';
 import { supportsReasoningEffort } from '../llm/model-registry.js';
 import { servingProvider } from '../llm/native-models.js';
 
@@ -37,6 +38,7 @@ export class ChatService {
     private readonly initializeBasicRag: InitializeBasicRagService,
     private readonly persistApiThread: PersistApiThreadService,
     private readonly aiUsage: AiUsageService,
+    private readonly teamRateLimit: TeamRateLimitService,
   ) {}
 
   async chat(dto: ChatDto, context: ApiContext, req: Request, res: Response) {
@@ -76,6 +78,26 @@ export class ChatService {
         exceeded: ceilings.exceeded,
         current: ceilings.current,
         limits: ceilings.limits,
+      });
+      return;
+    }
+
+    // Per-team, before any retrieval or model turn. The organization ceilings
+    // above are monthly and say nothing about a burst; this is the per-minute
+    // allowance the team settings panel has always shown.
+    const usageTeamId = await this.teamRateLimit.resolveUsageTeam({
+      orgId: context.orgId,
+      userId: context.userId,
+    });
+    const teamLimit = await this.teamRateLimit.check(usageTeamId);
+    if (!teamLimit.ok) {
+      res.setHeader('Retry-After', String(teamLimit.retryAfterSeconds));
+      res.status(429).json({
+        error: `Team ${teamLimit.scope} limit of ${teamLimit.limit} exceeded`,
+        code: 429,
+        scope: teamLimit.scope,
+        limit: teamLimit.limit,
+        retryAfterSeconds: teamLimit.retryAfterSeconds,
       });
       return;
     }
@@ -167,6 +189,9 @@ export class ChatService {
             servedBy: servingProvider(modelId) ?? 'litellm',
           },
         });
+        // The team's per-minute token window, charged from the real
+        // count rather than a pre-turn guess — see `charge`.
+        await this.teamRateLimit.charge(usageTeamId, usage.totalTokens ?? 0);
       };
 
       if (isStream) {
