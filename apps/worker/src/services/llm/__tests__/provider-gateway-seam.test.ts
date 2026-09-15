@@ -67,9 +67,12 @@ afterEach(() => {
 
 const load = () => import('../provider.js');
 
-describe('LLM_GATEWAY=litellm (the default)', () => {
+describe('LLM_GATEWAY=litellm', () => {
   beforeEach(() => {
-    delete process.env.LLM_GATEWAY;
+    // Set, not deleted. This was the default until B4's "then everywhere"
+    // step; unsetting it now selects the *other* arm, which would leave this
+    // block asserting the proxy against the gateway's behaviour.
+    process.env.LLM_GATEWAY = 'litellm';
   });
 
   it('builds a chat model through the proxy provider', async () => {
