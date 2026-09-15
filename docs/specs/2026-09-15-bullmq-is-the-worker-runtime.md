@@ -162,7 +162,7 @@ choice and change no default: the vector store and the document parser.
 
 | Spec | Makes selectable | The incumbent, afterwards | What choosing the alternative costs |
 | --- | --- | --- | --- |
-| [This spec](2026-09-15-bullmq-is-the-worker-runtime.md) | — it **replaces** rather than adds | Temporal leaves the default install in Phase E and the repository in Phase G; the adapter stays supported | no replay anywhere — a crash re-runs the job from the top; **Redis becomes required** |
+| [This spec](2026-09-15-bullmq-is-the-worker-runtime.md) | — it **replaces** rather than adds | Temporal leaves the default install in Phase E and the repository in Phase G; the adapter stays supported, and an install running it still replays | **on the default runtime** a crash re-runs the job from the top, so every activity has to be idempotent; **Redis becomes required** |
 | [pgvector](2026-09-14-pgvector-as-a-second-vector-store.md) | the vector store (`Organization.vectorStore`) | Qdrant stays the default, and the recommendation | a shared failure domain with Postgres, and different retrieval numbers |
 | [Mistral Document AI](2026-09-14-mistral-document-ai-as-a-second-parser.md) | the document parser (`DOCUMENT_PARSER`) | Docling stays the default | documents leave the deployment |
 | [LiteLLM retirement](2026-09-14-replace-litellm-with-an-in-process-gateway.md) | — it replaced rather than added | **done**: the proxy is gone from `main` | provider keys live in the application processes |
@@ -799,10 +799,16 @@ Per the Testing Requirements in [`AGENTS.md`](../../AGENTS.md):
   `the-temporal-family-moves-together.test.ts` keeps its invariant and follows
   the family to `packages/jobs-temporal` in E5.
 - **Integration** (`apps/worker`, real Redis): D1's list. This is the gate,
-  because the Playwright suite deliberately never starts the worker —
-  `.github/workflows/e2e.yml` sets a dummy `TEMPORAL_SERVER_ADDRESS` and
-  path-ignores `apps/worker/**`. No `p0` e2e can cover this, and pretending
-  otherwise would be the failure mode `AGENTS.md` warns about.
+  because **no e2e test can be one.** `.github/workflows/e2e.yml` builds and
+  starts `apps/api` and the web app, and starts no worker at all — nothing
+  consumes a queue during that suite — and it path-ignores `apps/worker/**` so
+  a worker-only change does not even trigger it. So no `p0` e2e can cover this,
+  and pretending otherwise would be the failure mode `AGENTS.md` warns about.
+
+  Stated that way on purpose: the same workflow also sets four dummy
+  `TEMPORAL_*` variables, which is the *evidence* people usually cite for "the
+  suite does not run the worker" — and E2 deletes them. The reason has to
+  outlive them, and it does: a process nobody starts cannot be under test.
 - **Both runtimes, nightly.** While the adapter lives here, the same
   integration suite runs against a real Temporal as well as a real Redis, in
   the nightly job — the cheap version of §8.3, available precisely because
