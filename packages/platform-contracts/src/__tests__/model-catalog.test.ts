@@ -127,29 +127,34 @@ describe('helpers', () => {
 
 /**
  * Advisory direction only. Which models a deployment serves is a per-deployment
- * choice made by commenting entries in and out of `config.yaml`, and an entry
- * here for a model this deployment does not serve is harmless — nothing matches
- * it. The reverse is not harmless: a model the proxy serves and users can pick,
+ * choice — it points `LLM_ROUTES_PATH` at its own table — and an entry here for
+ * a model this deployment does not route is harmless, because nothing matches
+ * it. The reverse is not harmless: a model the table serves and users can pick,
  * with no entry here, gets an inferred label and no visibility decision.
+ *
+ * Read from the route table since B6, which is the same question asked of the
+ * file that answers it now.
  */
-describe('against infra/litellm/config.yaml', () => {
-  const config = readFileSync(
-    path.join(REPO_ROOT, 'infra/litellm/config.yaml'),
+describe('against infra/llm-gateway/routes.yaml', () => {
+  const table = readFileSync(
+    path.join(REPO_ROOT, 'infra/llm-gateway/routes.yaml'),
     'utf8',
   );
 
-  const provisioned = config
+  // Two-space keys under `routes:` are the model ids; `provider`, `model`,
+  // `connection` and `location` are four-space properties of one.
+  const routed = table
     .split('\n')
-    .map((line) => line.match(/^\s*-\s*model_name:\s*(\S+)/))
+    .map((line) => line.match(/^ {2}([A-Za-z0-9][\w.-]*):\s*$/))
     .filter((m): m is RegExpMatchArray => m !== null)
     .map((m) => m[1]);
 
-  it('found the provisioned model names', () => {
-    expect(provisioned.length).toBeGreaterThan(3);
+  it('found the routed model ids', () => {
+    expect(routed.length).toBeGreaterThan(3);
   });
 
-  it('knows every model the proxy currently serves', () => {
-    const unknown = provisioned.filter((name) => !MODEL_REGISTRY[name]);
+  it('knows every model the route table serves', () => {
+    const unknown = routed.filter((name) => !MODEL_REGISTRY[name]);
     expect(unknown).toEqual([]);
   });
 });

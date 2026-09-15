@@ -47,13 +47,6 @@ spec:
           ports:
             - name: http
               containerPort: {{ $cfg.port }}
-          {{- if $cfg.config }}
-          volumeMounts:
-            - name: config
-              mountPath: /app/config.yaml
-              subPath: config.yaml
-          {{- end }}
-          {{- end }}
           {{- if eq $name "docling" }}
           env:
             - name: UVICORN_HOST

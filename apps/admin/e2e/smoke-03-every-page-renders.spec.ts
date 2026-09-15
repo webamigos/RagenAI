@@ -27,7 +27,6 @@ const PAGES: [keyof typeof ROUTES, string][] = [
   ['templateAccess', 'Assistants Access Management'],
   ['apiKeys', 'API Keys'],
   ['defaults', 'Apply Defaults'],
-  ['proxy', 'Proxy'],
   ['aiUsage', 'AI Usage'],
   ['diskUsage', 'Disk Usage'],
   ['activityLog', 'Activity Log'],
