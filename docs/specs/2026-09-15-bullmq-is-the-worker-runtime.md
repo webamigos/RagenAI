@@ -668,11 +668,10 @@ Gated on Q1 and on D2's numbers.
 - [ ] **E6.** Move `packages/jobs-temporal` to `webamigos/ragen-enterprise` with
       its Dockerfile (`FROM` the OSS worker image), its nightly integration job
       against a real Temporal, and the two schedule scripts' Temporal paths.
-      Publish `@ragenai/jobs` per Q1. Add a line to
-      [`docs/open-core-boundary.md`](../open-core-boundary.md) recording that
-      `ragen-enterprise` is Apache-2.0 and is **not** a commercial path — a
-      repository with that name and no note will be read as one, and that
-      document is the only place the project says what is gated.
+      Publish `@ragenai/jobs` per Q1.
+      [`docs/open-core-boundary.md`](../open-core-boundary.md) already records
+      that `ragen-enterprise` is Apache-2.0 and not a commercial path; check it
+      still describes what that repository holds.
 - [ ] **E7.** Link bull-board from `apps/admin`, and open a follow-up for
       proxying it behind Better Auth per ADR-35.
 

@@ -19,6 +19,20 @@ above it.
 When commercial directories are added they will be listed here, and each will
 carry its own `LICENSE`.
 
+### `webamigos/ragen-enterprise` is not one of them
+
+A sibling repository by that name exists, and the name is misleading enough to
+be worth a paragraph: **it is Apache 2.0, the same as this one, and nothing in
+it is gated.** It holds deployment-side components that would otherwise cost
+every install something it may not want — the first is the Temporal adapter for
+the job runtime, which the worker no longer uses by default
+([the worker-runtime spec](specs/2026-09-15-bullmq-is-the-worker-runtime.md)).
+Moving a component out of the default install is not the same as moving it out
+of the licence, and that repository's own `README` says so.
+
+The rule above still decides the question: a path is commercial when it carries
+its own `LICENSE` file. No path there does, so none is.
+
 ## Third-party paths
 
 Same mechanism as above, different nature: code the project did not write. Two
