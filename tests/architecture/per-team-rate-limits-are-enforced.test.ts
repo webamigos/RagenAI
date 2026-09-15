@@ -98,6 +98,8 @@ describe('per-team rate limits are enforced by the application', () => {
     'apps/web/src/app/api/threads/services/assistant-stream.ts',
     'apps/web/src/app/api/v1/chat/route.ts',
     'apps/web/src/app/api/v1/chat/completions/route.ts',
+    'apps/api/src/chat/chat.service.ts',
+    'apps/api/src/chat-completions/chat-completions.service.ts',
   ];
 
   it.each(CHAT_ENTRY_POINTS)('%s reaches the limiter', (entryPoint) => {
@@ -105,10 +107,14 @@ describe('per-team rate limits are enforced by the application', () => {
     // An invocation, not a mention: an import, a comment or a renamed
     // identifier all contain the name, and the first version of this guard
     // was fooled by exactly that.
+    // apps/api ported the orchestration rather than proxying, so it has its own
+    // limiter under its own names — `TeamRateLimitService`. Same obligation,
+    // two spellings, because the two apps share the Redis keys rather than the
+    // code.
     const reaches =
       /\b(?:assertWithinTeamRateLimit|refuseIfOverTeamRateLimit)\s*\(/.test(
         text,
-      );
+      ) || /\bteamRateLimit\.(?:check|assertWithinLimit)\s*\(/.test(text);
 
     expect(
       reaches,
@@ -133,27 +139,19 @@ describe('per-team rate limits are enforced by the application', () => {
   });
 
   /**
-   * apps/api ported the chat orchestration rather than proxying to apps/web's
-   * internal routes, so the enforcement above does not reach it — and it has
-   * never had a team limiter of its own (no Redis client, no team resolution).
-   *
-   * This is recorded rather than asserted because it is outstanding work, not
-   * a regression from B5. The assertion is inverted deliberately: when apps/api
-   * gains enforcement, this test fails and whoever did it deletes the note.
+   * The two apps enforce separately and must spend the *same* allowance. A
+   * team's `rpm` is one budget the panel and the API both draw on — which is
+   * what the LiteLLM virtual key did — so a key spelled differently in one app
+   * silently doubles every limit an operator set.
    */
-  it('records that apps/api still has no team limiter', () => {
-    const apiSources = [...walk(join(REPO_ROOT, 'apps', 'api', 'src'))]
-      .filter((file) => !/\.spec\.ts$/.test(file))
-      .filter((file) => !file.includes('generated'))
-      .filter((file) =>
-        readFileSync(file, 'utf8').includes('checkTeamRateLimitQuery'),
-      );
+  it('both apps count against the same Redis keys', () => {
+    const web = source(LIMITER);
+    const api = source('apps/api/src/team-limits/team-rate-limit.service.ts');
 
-    expect(
-      apiSources.length,
-      'apps/api now references the team limiter. Add its chat entry points to ' +
-        'CHAT_ENTRY_POINTS above and delete this test.',
-    ).toBe(0);
+    for (const key of ['team:rl:rpm:', 'team:rl:tpm:']) {
+      expect(web, `apps/web lost the ${key} key`).toContain(key);
+      expect(api, `apps/api lost the ${key} key`).toContain(key);
+    }
   });
 
   /**
