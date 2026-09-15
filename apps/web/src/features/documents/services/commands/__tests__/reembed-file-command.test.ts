@@ -1,10 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 const mockFindFirst = vi.fn();
+const mockUpdateMany = vi.fn();
+const mockUpdate = vi.fn();
 vi.mock('@ragenai/prisma-client', () => ({
   default: {
     userFile: {
       findFirst: (...args: unknown[]) => mockFindFirst(...args),
+      updateMany: (...args: unknown[]) => mockUpdateMany(...args),
+      update: (...args: unknown[]) => mockUpdate(...args),
     },
   },
 }));
@@ -64,6 +68,30 @@ describe('reembedFileCommand', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockJobStart.mockResolvedValue(undefined);
+    mockUpdateMany.mockResolvedValue({ count: 1 });
+    mockUpdate.mockResolvedValue(undefined);
+  });
+
+  // Without this the new run records no status at all on a file whose previous
+  // ingest was cancelled: CANCELLED is sticky in the worker's status writers,
+  // with no exception, and clearing it is the producer's job because only a
+  // producer knows a new run is starting. Order matters — after the start, the
+  // worker could already have written STARTED and this would erase it.
+  it('clears the previous run status before starting the new run', async () => {
+    mockFindFirst.mockResolvedValue(makeFileRecord());
+
+    await reembedFileCommand('file-1', 'org-1');
+
+    expect(mockUpdateMany).toHaveBeenCalledWith({
+      where: { id: 'file-1', organizationId: 'org-1' },
+      data: {
+        parsingStatus: 'NOT_STARTED',
+        embeddingStatus: 'NOT_STARTED',
+      },
+    });
+    expect(mockUpdateMany.mock.invocationCallOrder[0]).toBeLessThan(
+      mockJobStart.mock.invocationCallOrder[0],
+    );
   });
 
   it('starts the Temporal workflow and returns workflowId on success', async () => {

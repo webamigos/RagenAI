@@ -47,47 +47,99 @@ const TERMINAL_EMBEDDING: EmbeddingStatus[] = [
  * interrupted, because none of them heartbeat. What `requestCancel` adds is
  * the part the engine does own — a job still queued should never start.
  */
+/**
+ * Which phase a cancel should be written to, if any.
+ *
+ * Parsing first: a run that has not finished parsing has not started
+ * embedding. Embedding is only cancellable once parsing has **completed** —
+ * after a failed or already-cancelled parse there is no embedding phase to
+ * stop, and writing CANCELLED to a column the run never reached would leave a
+ * status nobody can interpret (and would make a second cancel of an already
+ * cancelled file write to the other column rather than doing nothing).
+ */
+function cancellablePhase(file: {
+  parsingStatus: ParsingStatus;
+  embeddingStatus: EmbeddingStatus;
+}): 'parsing' | 'embedding' | null {
+  if (!TERMINAL_PARSING.includes(file.parsingStatus)) {
+    return 'parsing';
+  }
+  if (
+    file.parsingStatus === ParsingStatus.COMPLETED &&
+    !TERMINAL_EMBEDDING.includes(file.embeddingStatus)
+  ) {
+    return 'embedding';
+  }
+  return null;
+}
+
+const PHASE_WRITE = {
+  parsing: {
+    where: { parsingStatus: { notIn: TERMINAL_PARSING } },
+    data: { parsingStatus: ParsingStatus.CANCELLED },
+  },
+  embedding: {
+    where: { embeddingStatus: { notIn: TERMINAL_EMBEDDING } },
+    data: { embeddingStatus: EmbeddingStatus.CANCELLED },
+  },
+} as const;
+
 export async function cancelFileEmbeddingCommand(
   fileId: string,
   organizationId: string,
 ): Promise<void> {
   const file = await db.userFile.findFirst({
     where: { id: fileId, organizationId },
-    select: { workflowId: true, parsingStatus: true },
+    select: {
+      workflowId: true,
+      parsingStatus: true,
+      embeddingStatus: true,
+    },
   });
 
   if (!file) {
     throw new NotFoundException(`File not found: ${fileId}`);
   }
 
-  // Which column to write is which phase is live. Parsing first: a run that
-  // has not finished parsing has not started embedding, and marking the phase
-  // it never reached would be a status nobody can interpret.
-  const cancelParsing = !TERMINAL_PARSING.includes(file.parsingStatus);
+  // Bounded at two. The pipeline can cross from parsing into embedding between
+  // the read above and the write below, and a cancel aimed at the phase that
+  // just ended matches no rows — which would otherwise be reported as "already
+  // finished" while the ingest carried on embedding. Re-reading and writing to
+  // the phase that is live now closes that. It is bounded rather than a loop
+  // because there are only two phases: the second attempt cannot be overtaken
+  // by a third transition.
+  let phase = cancellablePhase(file);
+  let written = false;
 
-  const { count } = await db.userFile.updateMany({
-    // Conditional, and that is the whole guard. A cancel racing the pipeline's
-    // own COMPLETED write matches nothing rather than resurrecting a finished
-    // ingest, and a second cancel is a no-op.
-    where: cancelParsing
-      ? { id: fileId, organizationId, parsingStatus: { notIn: TERMINAL_PARSING } }
-      : {
-          id: fileId,
-          organizationId,
-          embeddingStatus: { notIn: TERMINAL_EMBEDDING },
-        },
-    data: cancelParsing
-      ? { parsingStatus: ParsingStatus.CANCELLED, parsingFailedAt: new Date() }
-      : {
-          embeddingStatus: EmbeddingStatus.CANCELLED,
-          embeddingFailedAt: new Date(),
-        },
-  });
+  for (let attempt = 1; attempt <= 2 && phase && !written; attempt++) {
+    const { count } = await db.userFile.updateMany({
+      // Conditional, and that is the whole guard: a cancel racing the
+      // pipeline's own COMPLETED write matches nothing rather than
+      // resurrecting a finished ingest.
+      where: { id: fileId, organizationId, ...PHASE_WRITE[phase].where },
+      data: {
+        ...PHASE_WRITE[phase].data,
+        ...(phase === 'parsing'
+          ? { parsingFailedAt: new Date() }
+          : { embeddingFailedAt: new Date() }),
+      },
+    });
 
-  if (count === 0) {
-    // Not an error. The ingest finished, failed, or was already cancelled
-    // between the read above and this write — all of which mean there is
-    // nothing to stop, and none of which the user needs to see as a failure.
+    written = count > 0;
+
+    if (!written && attempt === 1) {
+      const current = await db.userFile.findFirst({
+        where: { id: fileId, organizationId },
+        select: { parsingStatus: true, embeddingStatus: true },
+      });
+      phase = current ? cancellablePhase(current) : null;
+    }
+  }
+
+  if (!written) {
+    // Not an error. The ingest finished, failed, or was already cancelled —
+    // all of which mean there is nothing to stop, and none of which the user
+    // needs to see as a failure.
     logger.info(
       { fileId, organizationId },
       'Cancel requested for a file whose ingest had already finished',

@@ -15,6 +15,7 @@ import {
   canAccessDocument,
 } from '@/features/documents/services/queries/get-document-actor';
 import { logger } from '@/app/lib/utils/logger';
+import { resetIngestStatusForNewRun } from '@/features/documents/utils/reset-ingest-status-for-new-run';
 
 export const dynamic = 'force-dynamic';
 
@@ -80,6 +81,13 @@ export async function POST(
       const doc = await db.userDocument.findFirst({
         where: { id, organizationId: orgId },
         select: { content: true },
+      });
+
+      // A file whose ingest was cancelled carries a CANCELLED status the
+      // worker will not write over, so the re-index would record nothing.
+      await resetIngestStatusForNewRun({
+        fileId: file.id,
+        organizationId: orgId,
       });
 
       try {

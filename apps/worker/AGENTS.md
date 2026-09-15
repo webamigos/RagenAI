@@ -92,10 +92,13 @@ into:
   `temporalContext` warns and continues. Throwing there would reach the parsing
   catch and record FAILED, so a database blip would destroy a healthy ingest.
   The next checkpoint asks again, and the row does not go away.
-- **CANCELLED is sticky, with `STARTED` as the one exception.** Both status
-  writers carry that `where` clause. Without the exception a cancelled file
-  could never be re-indexed, and neither `reembedFileCommand` nor
-  `bulkReembedFilesAction` checks a status, so nothing would report the refusal.
+- **CANCELLED is sticky, with no exception.** Both status writers carry that
+  `where` clause, so no write from a cancelled run gets over it. It briefly had
+  an exception for `STARTED`, on the grounds that a new run opens by writing it
+  — but a *cancelled* run writes `STARTED` too, at the top of its embedding
+  phase, which reopened the window the clause exists to close. Re-indexability
+  comes from the producer instead: `resetIngestStatusForNewRun` clears the
+  status before a new run starts, which is knowledge only a producer has.
 
 A missing row reads as cancelled: deleting a file mid-ingest is a stronger
 statement than cancelling it.
@@ -220,7 +223,7 @@ Requires Node >= 24. Copy `.env.example` for local setup. Key env vars:
 - **Infrastructure**: `TEMPORAL_SERVER_ADDRESS`, `DATABASE_URL`, `REDIS_URL`, `QDRANT_URL`, `QDRANT_API_KEY`, `MEILISEARCH_URL` (legacy), `PUSHER_*`, `FIRECRAWL_API_KEY`
 - **LLM**: the provider credentials listed in `infra/llm-gateway/README.md`, and optionally `LLM_ROUTES_PATH`. The app calls providers itself; `npm run gateway:preflight -- --probe` from the repo root makes one real call per configured model.
 - **Document parsing**: `DOCUMENT_PARSER` (`docling` default, or `legacy`), `DOCLING_URL`, `DOCLING_STRICT`. Docling parses locally, which is why it is the default — the legacy PDF loader sends the document to an external model. On a Docling failure the workflow falls back to the legacy loaders; `DOCLING_STRICT=1` makes it fail the ingest instead, which is what a confidential deployment wants, because the fallback would otherwise ship the document off-site exactly when local parsing is unavailable. SRT and EPUB always use their legacy loader; PPTX only works via Docling.
-- **PDF processing (legacy path only)**: `PDF_PROCESSOR` (`claude` default or `vision`), `PDF_MODEL` (defaults to `claude-haiku-4-5`) — uses LiteLLM Anthropic pass-through for usage tracking.
+- **PDF processing (legacy path only)**: `PDF_PROCESSOR` (`claude` default or `vision`), `PDF_MODEL` (defaults to `claude-haiku-4-5`). The model resolves through `infra/llm-gateway/routes.yaml` like every other one — the Anthropic pass-through this used to rely on was LiteLLM's, and B6 removed it with the proxy (ADR-49). Usage is recorded by the application.
 
   > These three models — `claude-haiku-4-5` here, and `availableModels.mini`
   > / `.nano` (`gpt-5.4-mini`, `gpt-5.4-nano`) in

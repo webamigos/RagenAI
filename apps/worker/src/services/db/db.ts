@@ -189,22 +189,21 @@ const updateEmbeddingStatus = async ({
 
   const { count } = await getPrisma().userFile.updateMany({
     // A cancellation is final for the run that was cancelled: once CANCELLED
-    // is on the row, a late activity finishing its work must not write
-    // COMPLETED over it. The spec's §4 calls this "a `where` clause instead of
-    // ordering luck".
+    // is on the row, no write from that run gets over it. The spec's §4 calls
+    // this "a `where` clause instead of ordering luck".
     //
-    // STARTED is the exception, and it is what makes a cancelled file
-    // re-indexable: a new run opens by writing STARTED, so letting that
-    // through resets the phase while blocking everything else. Without it,
-    // cancelling a file would make it permanently un-reingestable — and
-    // `reembedFileCommand` and `bulkReembedFilesAction` check no status at
-    // all, so nothing would even report the refusal.
+    // No exception, deliberately — STARTED used to have one. A *new* run opens
+    // by writing STARTED, so letting STARTED through was how a cancelled file
+    // stayed re-indexable; but a cancelled run writes STARTED too, at the top
+    // of its embedding phase, which left the very window this clause exists to
+    // close: a cancel landing between the pipeline's last checkpoint and that
+    // write was overwritten and silently lost. Re-indexability comes from the
+    // producer instead — `resetIngestStatusForNewRun`, which knows a new run is
+    // starting, where this function cannot.
     where: {
       id: fileId,
       organizationId: orgId,
-      ...(embedding_status === EmbeddingStatus.STARTED
-        ? {}
-        : { embeddingStatus: { not: EmbeddingStatus.CANCELLED } }),
+      embeddingStatus: { not: EmbeddingStatus.CANCELLED },
     },
     data: { embeddingStatus: embedding_status, ...updateDate },
   });
@@ -232,14 +231,12 @@ const updateParsingStatus = async ({
   }
 
   const { count } = await getPrisma().userFile.updateMany({
-    // See `updateEmbeddingStatus` for why CANCELLED is sticky and why STARTED
-    // is the one status allowed through it.
+    // See `updateEmbeddingStatus` for why CANCELLED is sticky with no
+    // exception, and where re-indexability comes from instead.
     where: {
       id: fileId,
       organizationId: orgId,
-      ...(parsing_status === ParsingStatus.STARTED
-        ? {}
-        : { parsingStatus: { not: ParsingStatus.CANCELLED } }),
+      parsingStatus: { not: ParsingStatus.CANCELLED },
     },
     data: { parsingStatus: parsing_status, ...updateDate },
   });

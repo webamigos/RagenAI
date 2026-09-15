@@ -175,14 +175,15 @@ describe('updateParsingStatus', () => {
   });
 });
 
-// The sticky-CANCELLED `where` clause. It is the whole reason a late activity
-// cannot write COMPLETED over a cancellation — the status writers used to rely
-// on ordering — and the STARTED exception is what keeps a cancelled file
-// re-indexable. Remove either and every other test in this repository still
-// passes: one leaves a cancelled ingest able to report success, the other makes
-// `reembedFileCommand` fail silently, since it checks no status at all.
-describe('CANCELLED is sticky, and STARTED is the one status through it', () => {
+// The sticky-CANCELLED `where` clause. It is the whole reason a write from a
+// cancelled run cannot land — the status writers used to rely on ordering — and
+// it has no exception, which is the part worth pinning. STARTED used to be one,
+// and a cancelled run writes STARTED too (at the top of its embedding phase),
+// so the exception reopened the window this clause exists to close.
+// Re-indexability comes from `resetIngestStatusForNewRun` on the producer side.
+describe('CANCELLED is sticky, with no exception', () => {
   it.each([
+    EmbeddingStatus.STARTED,
     EmbeddingStatus.COMPLETED,
     EmbeddingStatus.FAILED,
     EmbeddingStatus.NOT_STARTED,
@@ -199,6 +200,7 @@ describe('CANCELLED is sticky, and STARTED is the one status through it', () => 
   });
 
   it.each([
+    ParsingStatus.STARTED,
     ParsingStatus.COMPLETED,
     ParsingStatus.FAILED,
     ParsingStatus.NOT_STARTED,
@@ -212,27 +214,6 @@ describe('CANCELLED is sticky, and STARTED is the one status through it', () => 
       ...SCOPE,
       parsingStatus: { not: ParsingStatus.CANCELLED },
     });
-  });
-
-  // A re-ingest opens by writing STARTED. Blocking it too would make
-  // cancellation permanent, and nothing on the re-embed path checks a status,
-  // so the user would be told the re-index started when it had not.
-  it('lets a new run reset a cancelled embedding with STARTED', async () => {
-    await db.updateEmbeddingStatus({
-      ...WHERE,
-      data: { embedding_status: EmbeddingStatus.STARTED },
-    });
-
-    expect(mockUpdateMany.mock.calls[0][0].where).toEqual(SCOPE);
-  });
-
-  it('lets a new run reset a cancelled parse with STARTED', async () => {
-    await db.updateParsingStatus({
-      ...WHERE,
-      data: { parsing_status: ParsingStatus.STARTED },
-    });
-
-    expect(mockUpdateMany.mock.calls[0][0].where).toEqual(SCOPE);
   });
 
   it('still scopes every one of those writes by org', async () => {
