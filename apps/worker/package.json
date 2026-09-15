@@ -17,6 +17,7 @@
     "prestart": "npm run build",
     "start": "node --import @opentelemetry/instrumentation/hook.mjs --import ./dist/instrument.js --env-file-if-exists=../../.env.local --env-file-if-exists=.env.local dist/worker.js",
     "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
     "test:presidio-integration": "vitest run --config ./vitest.presidio-integration.config.ts",
     "typecheck": "tsc --noEmit --incremental --tsBuildInfoFile ./typecheck.tsbuildinfo"
   },
