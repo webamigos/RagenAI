@@ -191,10 +191,18 @@ export const RERANK_SEAM = {
     },
     cohere: {
       required: [],
-      optional: ['RERANK_MODEL'],
-      fields: { RERANK_MODEL: 'model' },
+      optional: [
+        'RERANK_COHERE_BASE_URL',
+        'RERANK_COHERE_API_KEY',
+        'RERANK_MODEL',
+      ],
+      fields: {
+        RERANK_COHERE_BASE_URL: 'baseUrl',
+        RERANK_COHERE_API_KEY: 'apiKey',
+        RERANK_MODEL: 'model',
+      },
       summary:
-        'Cohere Rerank v3.5 through the LiteLLM proxy, so cost and traces are tracked like any other model call. Requires nothing of its own: it routes through `LITELLM_PROXY_URL`, which the gateway already requires. Opt-in — `cohere-rerank-v3-5` is no longer registered in infra/litellm/config.yaml.',
+        "Cohere Rerank v3.5, over any endpoint speaking Cohere's `/rerank` shape. `RERANK_COHERE_BASE_URL` names it; unset falls back to `LITELLM_PROXY_URL` so a deployment running the proxy needs no change — and that fallback goes when the proxy does. Opt-in: `cohere-rerank-v3-5` is not registered in infra/litellm/config.yaml, so choosing this variant without pointing it somewhere that serves the model degrades to no reranking, silently.",
     },
   },
 } as const satisfies ProviderSeam;

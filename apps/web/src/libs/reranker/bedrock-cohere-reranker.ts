@@ -27,13 +27,28 @@ export interface RerankResult {
 }
 
 /**
- * Check if reranking is available (LiteLLM proxy configured).
+ * Whether the Cohere rerank path is available.
+ *
+ * `RERANK_COHERE_BASE_URL` is what makes this variant survive B6. It has always
+ * routed through `LITELLM_PROXY_URL`, which that phase deletes — and the
+ * failure would have been silent, because an unreachable reranker degrades to
+ * "no reranking" rather than erroring. Q6 calls this out by name: the endpoint
+ * has to become configuration either way.
+ *
+ * `LITELLM_PROXY_URL` is still accepted as a fallback so a deployment running
+ * the proxy today needs no change; it goes with the proxy itself.
  */
 export function isRerankingEnabled(): boolean {
-  return (
-    process.env.FEATURE_FLAG_RERANKING === '1' &&
-    !!process.env.LITELLM_PROXY_URL
-  );
+  return process.env.FEATURE_FLAG_RERANKING === '1' && !!cohereBaseUrl();
+}
+
+/**
+ * Where the `/rerank` call goes. Any endpoint speaking Cohere's rerank shape —
+ * a LiteLLM proxy that has it registered, Cohere directly, or a gateway in
+ * front of either.
+ */
+function cohereBaseUrl(): string | undefined {
+  return process.env.RERANK_COHERE_BASE_URL || process.env.LITELLM_PROXY_URL;
 }
 
 /**
@@ -62,13 +77,18 @@ export async function rerankDocuments(
     return documents;
   }
 
-  const baseUrl = (
-    process.env.LITELLM_PROXY_URL || 'http://localhost:4000'
-  ).replace(/\/$/, '');
-  // The master key. Per-org virtual keys carried LiteLLM's own budget, which
-  // Phase A moved into the database (B5) — so there is nothing left for a
-  // per-org key to do here, and `ai_usage` already attributes the call.
-  const apiKey = process.env.LITELLM_MASTER_KEY || 'sk-litellm';
+  const baseUrl = (cohereBaseUrl() ?? 'http://localhost:4000').replace(
+    /\/$/,
+    '',
+  );
+  // Its own key, falling back to the proxy's while the proxy still exists.
+  // Per-org virtual keys carried LiteLLM's own budget, which Phase A moved
+  // into the database (B5) — nothing is left for a per-org key to do here, and
+  // `ai_usage` already attributes the call.
+  const apiKey =
+    process.env.RERANK_COHERE_API_KEY ||
+    process.env.LITELLM_MASTER_KEY ||
+    'sk-litellm';
 
   const texts = documents.map((doc) => doc.pageContent);
 

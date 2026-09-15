@@ -261,6 +261,14 @@ export const reranker = z.object({
   RERANK_MODEL: blankAsUndefined(z.string().optional()),
   SCW_API_BASE: blankAsUndefined(httpUrl().optional()),
   SCW_API_KEY: z.string().optional(),
+  /**
+   * The `cohere` variant's own endpoint. Optional because it falls back to
+   * `LITELLM_PROXY_URL` while that still exists — which is exactly why it had
+   * to be added before the proxy goes: an unreachable reranker degrades to "no
+   * reranking" rather than erroring, so the loss would have been silent.
+   */
+  RERANK_COHERE_BASE_URL: blankAsUndefined(httpUrl().optional()),
+  RERANK_COHERE_API_KEY: z.string().optional(),
 });
 
 /**

@@ -19,8 +19,10 @@ only in the proxy container. Rotation stops being one restart and becomes
 three. That is the main thing to get right before flipping, and the preflight
 below is how you check it.
 
-Speech is not affected: B3 gave it `SPEECH_BASE_URL` of its own. The reranker's
-`cohere` variant still routes through `LITELLM_PROXY_URL` until B6.
+Speech is not affected: B3 gave it `SPEECH_BASE_URL` of its own, and the
+reranker's `cohere` variant now has `RERANK_COHERE_BASE_URL` — it still falls
+back to `LITELLM_PROXY_URL` while the proxy exists, so nothing needs setting
+today.
 
 ## Before you flip
 
@@ -42,10 +44,14 @@ Speech is not affected: B3 gave it `SPEECH_BASE_URL` of its own. The reranker's
 
    | Provider | Variables |
    | --- | --- |
-   | Azure | `AZURE_API_KEY`, `AZURE_API_BASE`, `AZURE_API_VERSION` |
-   | Bedrock | `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_BEDROCK_REGION` |
    | Vertex | `VERTEX_PROJECT`, `VERTEX_LOCATION`, `VERTEX_CREDENTIALS` |
    | Scaleway | `SCW_API_BASE`, `SCW_API_KEY` |
+   | Azure | `AZURE_API_KEY`, `AZURE_API_BASE`, `AZURE_API_VERSION` |
+   | Bedrock | `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_BEDROCK_REGION` |
+
+   Vertex and Scaleway are the minimum — they serve the default chat, rephrase,
+   summary and embedding models. Azure and Bedrock decide whether their models
+   appear in the picker at all (see step 4).
 
    These are the proxy's own names, so they can be copied from the LiteLLM
    service rather than reissued.
@@ -72,21 +78,23 @@ Speech is not affected: B3 gave it `SPEECH_BASE_URL` of its own. The reranker's
    is one today — is reported and does not block: those are equally unserved on
    the proxy path, so the flip changes nothing about them.
 
-4. **Know that the model picker still asks the proxy.**
-   `getAvailableModelsForOrganization()` populates it from
-   `fetchLiteLLMModels()` — `LITELLM_PROXY_URL/v1/models` — regardless of
-   `LLM_GATEWAY`. While the proxy is still running that is harmless, and B4
-   leaves it running. But it means the picker offers whatever *the proxy*
-   serves, not what **the app processes** can serve, so a model whose
-   credentials you gave the proxy and not the three services will be offered
-   and then fail on the first turn.
+4. **The model picker follows the flag.** Under `native`,
+   `getAvailableModelsForOrganization()` offers only what
+   `gateway.availableModels()` says this deployment can serve — which is
+   credential-aware, so a provider whose keys the three services do not have
+   simply does not appear. It used to ask the proxy regardless of the flag,
+   which meant offering models the app processes could not serve and failing on
+   the first click.
 
-   The gateway already answers the right question — `availableModels()` is
-   credential-aware for exactly this reason — it is simply not wired to the
-   picker yet. Until it is, the safe rule is: **give the three services
-   credentials for every provider in the picker, not only for the models you
-   expect people to use.** For the shipped route table that means Azure,
-   Bedrock, Vertex and Scaleway.
+   That narrows what you must configure: **the minimum is the providers behind
+   the models you actually want offered.** Vertex and Scaleway cover the
+   defaults (chat, rephrase, summary, embeddings). Add Azure and Bedrock only
+   if you want their models in the picker — without them those models are
+   hidden rather than broken.
+
+   If the route table cannot be read at all, the picker falls back to the full
+   catalogue rather than going empty: an empty picker reads as a broken
+   product, and the per-model call still fails loudly.
 
 ## The flip
 

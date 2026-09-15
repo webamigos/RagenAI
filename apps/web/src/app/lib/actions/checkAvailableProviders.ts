@@ -7,6 +7,8 @@ import {
 } from '../../components/config';
 import { getAllowedModels } from '@/features/organizations/services/organization-settings';
 import { fetchLiteLLMModels } from '@/libs/litellm/client';
+import { gatewayFromEnv, usingNativeGateway } from '@ragenai/llm-gateway';
+import { logger } from '@/app/lib/utils/logger';
 
 type ProviderStatus = {
   provider: ModelProvider;
@@ -26,18 +28,60 @@ export async function checkAvailableProviders(
   ];
 }
 
+/**
+ * The models this deployment can actually answer with, under the gateway.
+ *
+ * `serves()` is credential-aware on purpose: the shipped route table describes
+ * Ragen's own installation, so a deployment holding one provider's credentials
+ * has routes it cannot honour. Offering those in the picker turns the first
+ * click into a credentials error — which is exactly what `LLM_GATEWAY=native`
+ * used to do, because this function asked the *proxy* what it served whatever
+ * the flag said, and the proxy's credentials are not the app processes'.
+ *
+ * Falls back to the full catalogue rather than an empty picker if the route
+ * table cannot be read: an empty model list is indistinguishable from "this
+ * product is broken", and the call itself still fails loudly per model.
+ */
+function gatewayModels(): AvailableModel[] {
+  try {
+    const gateway = gatewayFromEnv();
+    const served = new Set(gateway.availableModels());
+    const offered = availableModels.filter((model) => served.has(model.value));
+
+    if (offered.length === 0) {
+      logger.warn(
+        { served: served.size },
+        'Gateway serves no model the picker knows about — falling back to the full catalogue',
+      );
+      return [...availableModels];
+    }
+    return offered;
+  } catch (error) {
+    logger.warn(
+      { err: error },
+      'Could not read the gateway route table — falling back to the full catalogue',
+    );
+    return [...availableModels];
+  }
+}
+
 export async function getAvailableModelsForOrganization(
   orgId: string,
 ): Promise<AvailableModel[]> {
   const allowedModels = await getAllowedModels(orgId);
 
-  // Fetch models dynamically from LiteLLM proxy
   let models: AvailableModel[];
-  try {
-    const litellmModels = await fetchLiteLLMModels();
-    models = litellmModels.length > 0 ? litellmModels : [...availableModels];
-  } catch {
-    models = [...availableModels];
+  if (usingNativeGateway()) {
+    models = gatewayModels();
+  } else {
+    // Ask the proxy what it serves. Its answer is the right one *for the proxy
+    // path*, and only for it.
+    try {
+      const litellmModels = await fetchLiteLLMModels();
+      models = litellmModels.length > 0 ? litellmModels : [...availableModels];
+    } catch {
+      models = [...availableModels];
+    }
   }
 
   if (allowedModels.length > 0) {
