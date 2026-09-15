@@ -25,6 +25,18 @@ routes:
   gpt-5.6-luna:
     provider: azure
     model: gpt-5.6-luna
+  # The worker's own two, and the reason this file had a hole in it. Neither is
+  # a chat model a user picks — `gpt-5.4-nano` parses SRT segments and checks a
+  # key is live, `gpt-5.4-mini` is the `mini` tier of the PDF chain — so no
+  # catalogue entry named them and nothing listed them as missing. They were
+  # served by the proxy's own config until B6 removed that path, at which point
+  # both resolved to nothing.
+  gpt-5.4-mini:
+    provider: azure
+    model: gpt-5.4-mini
+  gpt-5.4-nano:
+    provider: azure
+    model: gpt-5.4-nano
 
   # --- Bedrock ------------------------------------------------------------
   # `model` is the upstream's own name, and Bedrock's differs from ours: it
@@ -39,6 +51,12 @@ routes:
   claude-opus-5:
     provider: bedrock
     model: eu.anthropic.claude-opus-5
+  # `PDF_MODEL`'s default, in `apps/worker/src/config/env.ts` and in the PDF
+  # chain's own config. Same hole as the two Azure entries above: a default
+  # nothing declared, so nothing noticed when the proxy stopped answering.
+  claude-haiku-4-5:
+    provider: bedrock
+    model: eu.anthropic.claude-haiku-4-5
 
   # --- Vertex -------------------------------------------------------------
   # `location: global` is not a stylistic choice. Google serves preview models

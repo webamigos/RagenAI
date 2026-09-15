@@ -12,6 +12,10 @@
  * its own is unfalsifiable.
  */
 
+import { generateText } from 'ai';
+
+import { nativeChatInstance } from '@/libs/llm/native-models';
+
 /**
  * Node's `fetch` has no default timeout, so a stalled socket blocks the run
  * forever rather than failing into the retry. A pipeline turn is seconds and a
@@ -82,40 +86,33 @@ export function parseRagStream(raw: string): RagAnswer {
   return { text: parts.join(''), citedFileIds };
 }
 
-/** The control arm: same model, same question, no documents. */
+/**
+ * The control arm: same model, same question, no documents.
+ *
+ * Resolved through the gateway the product uses, rather than by posting
+ * `/v1/chat/completions` at a base URL. It did the latter until this change,
+ * against `LITELLM_PROXY_URL ?? 'http://localhost:4000'` — and B6 removed the
+ * proxy, so the control arm and the judge had been pointing at nothing since.
+ * A benchmark whose control cannot answer produces no number at all, which is
+ * the one failure mode that does not look like a quality regression.
+ *
+ * Going through `nativeChatInstance` also means the control reaches the same
+ * upstream the RAG arm does, which is what makes the two columns comparable:
+ * the gap is supposed to be retrieval, not two different routes to two
+ * different deployments of the same model name.
+ */
 export async function askControl(opts: {
-  baseUrl: string;
-  apiKey?: string;
   model: string;
   question: string;
 }): Promise<string> {
-  const res = await fetch(`${opts.baseUrl}/v1/chat/completions`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(opts.apiKey ? { Authorization: `Bearer ${opts.apiKey}` } : {}),
-    },
-    body: JSON.stringify({
-      model: opts.model,
-      temperature: 0,
-      messages: [
-        {
-          // Deliberately plain. Giving the control a "say you don't know"
-          // instruction would hand it the guard cases for free and make the
-          // comparison flattering in the wrong direction; giving it none at
-          // all is what a user typing into a bare chat box gets.
-          role: 'user',
-          content: opts.question,
-        },
-      ],
-    }),
-    signal: AbortSignal.timeout(CONTROL_TIMEOUT_MS),
+  const { text } = await generateText({
+    model: nativeChatInstance({ model: opts.model, temperature: 0 }),
+    // Deliberately plain. Giving the control a "say you don't know"
+    // instruction would hand it the guard cases for free and make the
+    // comparison flattering in the wrong direction; giving it none at all is
+    // what a user typing into a bare chat box gets.
+    prompt: opts.question,
+    abortSignal: AbortSignal.timeout(CONTROL_TIMEOUT_MS),
   });
-  if (!res.ok) {
-    throw new Error(`Control call failed (${res.status}): ${await res.text()}`);
-  }
-  const data = (await res.json()) as {
-    choices?: { message?: { content?: string } }[];
-  };
-  return data.choices?.[0]?.message?.content ?? '';
+  return text;
 }

@@ -1,4 +1,16 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+
+const { mockGenerateText, mockNativeChatInstance } = vi.hoisted(() => ({
+  mockGenerateText: vi.fn(),
+  mockNativeChatInstance: vi.fn(() => ({ id: 'model-instance' })),
+}));
+
+vi.mock('ai', () => ({ generateText: mockGenerateText }));
+
+vi.mock('@/libs/llm/native-models', () => ({
+  nativeChatInstance: mockNativeChatInstance,
+}));
+
 import {
   normalizeForMatch,
   normalizeNumbers,
@@ -6,6 +18,7 @@ import {
   containsExpectation,
   runAssertions,
   parseJudgeVerdict,
+  judge,
 } from '../lib/grade';
 import type { Question } from '../lib/types';
 
@@ -181,5 +194,58 @@ describe('parseJudgeVerdict', () => {
     const verdict = parseJudgeVerdict('{"pass": "yes"}');
     expect(verdict.error).toBe('judge verdict has no boolean "pass"');
     expect(verdict.pass).toBe(false);
+  });
+});
+
+/**
+ * Same correction as `askControl`: the judge posted at the proxy's base URL,
+ * which B6 removed. An unreachable judge does not report a worse score — it
+ * reports nothing, and every rubric case falls out of the denominator.
+ */
+describe('judge', () => {
+  beforeEach(() => {
+    mockGenerateText
+      .mockReset()
+      .mockResolvedValue({ text: '{"pass": true, "reason": "ok"}' });
+    mockNativeChatInstance.mockClear();
+  });
+
+  it('resolves the judge model through the gateway', async () => {
+    await judge('rubric', 'question', 'answer', { model: 'gemini-2.5-flash' });
+
+    expect(mockNativeChatInstance).toHaveBeenCalledWith({
+      model: 'gemini-2.5-flash',
+      temperature: 0,
+    });
+  });
+
+  it('sends the rubric, question and answer in the prompt', async () => {
+    await judge('RUB', 'Q?', 'A.', { model: 'gemini-2.5-flash' });
+
+    const call = mockGenerateText.mock.calls[0][0] as Record<string, string>;
+    expect(call.prompt).toContain('RUB');
+    expect(call.prompt).toContain('Q?');
+    expect(call.prompt).toContain('A.');
+    expect(call.system).toContain('JSON only');
+  });
+
+  it('reads the verdict out of the generated text', async () => {
+    mockGenerateText.mockResolvedValue({
+      text: '{"pass": false, "reason": "invented a figure"}',
+    });
+
+    await expect(
+      judge('rubric', 'question', 'answer', { model: 'gemini-2.5-flash' }),
+    ).resolves.toMatchObject({ pass: false, reason: 'invented a figure' });
+  });
+
+  it('leaves an unreadable verdict ungraded rather than failed', async () => {
+    mockGenerateText.mockResolvedValue({ text: 'I think it is fine' });
+
+    const verdict = await judge('rubric', 'question', 'answer', {
+      model: 'gemini-2.5-flash',
+    });
+
+    expect(verdict.error).toBeDefined();
   });
 });

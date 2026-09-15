@@ -8,7 +8,7 @@ import { configuredModels } from '../../scripts/gateway-preflight.mts';
  * proves the script does not run a preflight on import, which it used to.
  */
 describe('the models a deployment is configured to use', () => {
-  it('defaults the three models an env need not name', () => {
+  it('defaults the models an env need not name', () => {
     const models = configuredModels({});
 
     expect(models.map((m) => `${m.variable}=${m.id}`)).toEqual([
@@ -16,7 +16,23 @@ describe('the models a deployment is configured to use', () => {
       'SUMMARY_MODEL=gemini-2.5-flash',
       'EMBEDDINGS_MODEL=bge-multilingual-gemma2',
       'PDF_MODEL=claude-haiku-4-5',
+      'apps/worker pdf-process-rag mini tier=gpt-5.4-mini',
+      'apps/worker SRT segmentation=gpt-5.4-nano',
     ]);
+  });
+
+  /**
+   * The gap this script had. A model named by a constant in worker source has
+   * no variable to read, so a check that enumerates the environment cannot see
+   * it — and all three of these were unroutable while the preflight reported a
+   * clean deployment. Asserting them by id, because there is no variable name
+   * to key on and that is exactly the point.
+   */
+  it('includes the models named in source rather than by a variable', () => {
+    const ids = configuredModels({}).map((m) => m.id);
+
+    expect(ids).toContain('gpt-5.4-mini');
+    expect(ids).toContain('gpt-5.4-nano');
   });
 
   it('omits a variable that is set to nothing rather than defaulting it', () => {
@@ -46,15 +62,15 @@ describe('the models a deployment is configured to use', () => {
    * A fallback-only miss is reported but does not block a flip — it is equally
    * unserved on the proxy path — so the flag has to survive de-duplication.
    */
-  it('marks the two fallback-only models', () => {
+  it('marks every fallback-only model', () => {
     const models = configuredModels({ MULTIMODAL_FALLBACK_MODEL: 'gpt-5.4' });
 
     expect(
       models
         .filter((m) => m.fallbackOnly)
-        .map((m) => m.variable)
+        .map((m) => m.id)
         .sort(),
-    ).toEqual(['MULTIMODAL_FALLBACK_MODEL', 'PDF_MODEL']);
+    ).toEqual(['claude-haiku-4-5', 'gpt-5.4', 'gpt-5.4-mini', 'gpt-5.4-nano']);
   });
 
   it('de-duplicates by id, keeping the variable that named it first', () => {

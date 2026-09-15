@@ -1,3 +1,7 @@
+import { generateText } from 'ai';
+
+import { nativeChatInstance } from '@/libs/llm/native-models';
+
 import type { Question } from './types';
 
 /**
@@ -121,55 +125,33 @@ export interface JudgeVerdict {
   error?: string;
 }
 
+const JUDGE_TIMEOUT_MS = 120_000;
+
 /**
  * Ask the judge model whether the answer satisfies the rubric.
  *
- * Routed through the LiteLLM proxy like everything else, so the benchmark
- * needs no provider key of its own.
+ * Through the gateway, like the control arm — it used to post
+ * `/v1/chat/completions` at `LITELLM_PROXY_URL`, which B6 removed. See
+ * `arms.ts`'s `askControl` for why that mattered more than it looked.
  */
 export async function judge(
   rubric: string,
   question: string,
   answer: string,
-  opts: { baseUrl: string; apiKey?: string; model: string },
+  opts: { model: string },
 ): Promise<JudgeVerdict> {
-  const body = {
-    model: opts.model,
-    temperature: 0,
-    messages: [
-      {
-        role: 'system',
-        content:
-          'You grade answers against a rubric. Reply with JSON only: {"pass": boolean, "reason": string}. ' +
-          'The reason must be one short sentence. Grade strictly: if the rubric is only partly satisfied, that is a fail. ' +
-          'Judge the answer against the rubric alone — do not reward or punish it for the language it is written in unless the rubric says so.',
-      },
-      {
-        role: 'user',
-        content: `RUBRIC:\n${rubric}\n\nQUESTION:\n${question}\n\nANSWER:\n${answer}`,
-      },
-    ],
-  };
-
-  const res = await fetch(`${opts.baseUrl}/v1/chat/completions`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(opts.apiKey ? { Authorization: `Bearer ${opts.apiKey}` } : {}),
-    },
-    body: JSON.stringify(body),
-    // As in arms.ts: an un-timed-out fetch turns a stalled socket into a hung
+  const { text } = await generateText({
+    model: nativeChatInstance({ model: opts.model, temperature: 0 }),
+    system:
+      'You grade answers against a rubric. Reply with JSON only: {"pass": boolean, "reason": string}. ' +
+      'The reason must be one short sentence. Grade strictly: if the rubric is only partly satisfied, that is a fail. ' +
+      'Judge the answer against the rubric alone — do not reward or punish it for the language it is written in unless the rubric says so.',
+    prompt: `RUBRIC:\n${rubric}\n\nQUESTION:\n${question}\n\nANSWER:\n${answer}`,
+    // As in arms.ts: an un-timed-out call turns a stalled socket into a hung
     // run instead of a retry.
-    signal: AbortSignal.timeout(120_000),
+    abortSignal: AbortSignal.timeout(JUDGE_TIMEOUT_MS),
   });
-  if (!res.ok) {
-    throw new Error(`Judge call failed (${res.status}): ${await res.text()}`);
-  }
-  const data = (await res.json()) as {
-    choices?: { message?: { content?: string } }[];
-  };
-  const raw = data.choices?.[0]?.message?.content ?? '';
-  return parseJudgeVerdict(raw);
+  return parseJudgeVerdict(text);
 }
 
 /**
