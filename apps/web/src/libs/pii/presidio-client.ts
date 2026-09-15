@@ -16,8 +16,12 @@ class PresidioClient {
   private analyzerUrl: string;
 
   constructor() {
-    this.analyzerUrl =
-      process.env.PRESIDIO_ANALYZER_URL ?? 'http://localhost:5002';
+    // No default. `http://localhost:5002` used to stand in here, which made
+    // "configured" impossible to tell from "not configured" — and was wrong
+    // in every containerised deployment, where localhost is the web container
+    // rather than the analyzer. Callers reach this only when
+    // `isPiiMaskingEnabled()` is true, which requires the variable.
+    this.analyzerUrl = process.env.PRESIDIO_ANALYZER_URL ?? '';
   }
 
   async anonymize(text: string, language: string): Promise<AnonymizeResult> {

@@ -1,3 +1,4 @@
+import { isPiiMaskingEnabled } from '@ragenai/env';
 import { resolveEmbeddingsModel } from '@ragenai/rag-core';
 
 export const targetEnv = process.env.TARGET_ENV!;
@@ -99,13 +100,21 @@ export const SUMMARY_MODEL = process.env.SUMMARY_MODEL || 'gemini-2.5-flash';
 export const TABLE_CHUNKS_ENABLED =
   process.env.FEATURE_FLAG_TABLE_CHUNKS === '1';
 
-export const PII_MASKING_ENABLED = process.env.FEATURE_FLAG_PII_MASKING === '1';
+/**
+ * Availability follows the two Presidio URLs; `FEATURE_FLAG_PII_MASKING=0` is
+ * the kill switch. Read through `@ragenai/env` so this app and `apps/web`
+ * cannot drift — they each used to compare the flag themselves.
+ */
+export const PII_MASKING_ENABLED = isPiiMaskingEnabled();
 
-export const PRESIDIO_ANALYZER_URL =
-  process.env.PRESIDIO_ANALYZER_URL || 'http://presidio-analyzer:3000';
+// No `||` default. The compose service names stood in here, which made an
+// unset variable indistinguishable from a configured one — the very thing
+// PII_MASKING_ENABLED now decides on. Nothing reads these unless masking is
+// enabled, which requires them.
+export const PRESIDIO_ANALYZER_URL = process.env.PRESIDIO_ANALYZER_URL ?? '';
 
 export const PRESIDIO_ANONYMIZER_URL =
-  process.env.PRESIDIO_ANONYMIZER_URL || 'http://presidio-anonymizer:3000';
+  process.env.PRESIDIO_ANONYMIZER_URL ?? '';
 
 /**
  * The organization the nightly demo cleanup empties — and whose restrictions

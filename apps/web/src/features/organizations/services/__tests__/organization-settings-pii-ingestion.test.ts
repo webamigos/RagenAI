@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 const mockFindUnique = vi.fn();
 const mockFindUniqueOrThrow = vi.fn();
@@ -45,6 +45,7 @@ import {
   getPiiIngestionMode,
   savePiiIngestionMode,
   getOrCreatePiiDek,
+  PiiMaskingNotConfiguredError,
 } from '../organization-settings';
 
 // The write-restriction gates resolve flags from the database. These files
@@ -57,7 +58,27 @@ vi.mock('@/features/subscriptions/services/feature-guards', () => ({
   assertCanManageOrganizationSettings: vi.fn(),
 }));
 
+/**
+ * A policy is only meaningful where something can enforce it, so
+ * `savePiiIngestionMode` refuses without a masker. Every case below is about
+ * what happens once one exists; the refusal has its own block at the end.
+ */
+const PRESIDIO_ENV = {
+  PRESIDIO_ANALYZER_URL: 'http://presidio-analyzer:3000',
+  PRESIDIO_ANONYMIZER_URL: 'http://presidio-anonymizer:3000',
+};
+
 describe('PII Ingestion Mode Settings', () => {
+  const originalEnv = process.env;
+
+  beforeEach(() => {
+    process.env = { ...originalEnv, ...PRESIDIO_ENV };
+  });
+
+  afterEach(() => {
+    process.env = originalEnv;
+  });
+
   const testDek = randomBytes(32);
   const testEncryptedDek = 'enc-dek-base64';
 
@@ -107,6 +128,29 @@ describe('PII Ingestion Mode Settings', () => {
           }),
         }),
       );
+    });
+
+    it.each(['dual_content', 'destructive'] as const)(
+      'refuses to store %s when no masker is configured',
+      async (mode) => {
+        delete process.env.PRESIDIO_ANALYZER_URL;
+        delete process.env.PRESIDIO_ANONYMIZER_URL;
+
+        await expect(
+          savePiiIngestionMode('org-1', mode),
+        ).rejects.toBeInstanceOf(PiiMaskingNotConfiguredError);
+        // Not written, not partially written: a stored policy nothing enforces
+        // reads as active in the admin panel and changes nothing on disk.
+        expect(mockUpsert).not.toHaveBeenCalled();
+      },
+    );
+
+    it('refuses when only one half of the masker is configured', async () => {
+      delete process.env.PRESIDIO_ANONYMIZER_URL;
+
+      await expect(
+        savePiiIngestionMode('org-1', 'dual_content'),
+      ).rejects.toBeInstanceOf(PiiMaskingNotConfiguredError);
     });
 
     it('does not call getOrCreatePiiDek when mode is destructive', async () => {

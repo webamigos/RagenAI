@@ -2161,6 +2161,8 @@
     "password-submit": "Näytä keskustelu"
   },
   "pii-policy": {
+    "not-configured-title": "Peittämistä ei ole määritetty",
+    "not-configured-body": "Henkilötietojen peittäminen vaatii Presidio-analysaattorin ja -anonymisoijan. Aseta PRESIDIO_ANALYZER_URL ja PRESIDIO_ANONYMIZER_URL ja käynnistä ne komennolla `docker compose --profile pii up -d`. Siihen asti käytäntöä ei voi valita, koska mikään ei valvoisi sitä.",
     "select-label": "Henkilötietojen peittokäytäntö",
     "label": "Henkilötietojen peittokäytäntö",
     "none-label": "Ei mitään — säilytä kaikki tiedot",

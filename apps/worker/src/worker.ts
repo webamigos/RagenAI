@@ -5,6 +5,11 @@ import * as activities from './activities/index.js';
 import { TASK_QUEUE_NAME } from './shared.js';
 import { TEMPORAL_SERVER_ADDRESS } from './consts.js';
 import { parseWorkerEnv } from './config/env.js';
+import {
+  isPiiMaskingMisconfigured,
+  PII_MASKING_MISCONFIGURED_MESSAGE,
+} from '@ragenai/env';
+
 import { resolveWorkflowsPath } from './workflows-path.js';
 
 const env = parseWorkerEnv();
@@ -16,6 +21,19 @@ if (!env.ok) {
   // eslint-disable-next-line no-console
   console.error(env.report);
   process.exit(1);
+}
+
+/**
+ * `FEATURE_FLAG_PII_MASKING=1` used to be the whole switch. Availability now
+ * follows the two Presidio URLs, so an upgrade that carried the flag and
+ * relied on the old built-in defaults would stop masking — and a security
+ * control turning itself off during an upgrade must not do so quietly. Loud,
+ * and not fatal: refusing to start would take document ingest down over a
+ * setting the deployment may no longer want.
+ */
+if (isPiiMaskingMisconfigured()) {
+  // eslint-disable-next-line no-console
+  console.error(`[security] ${PII_MASKING_MISCONFIGURED_MESSAGE}`);
 }
 
 import { logger } from './services/logger.js';

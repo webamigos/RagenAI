@@ -2161,6 +2161,8 @@
     "password-submit": "Thread ansehen"
   },
   "pii-policy": {
+    "not-configured-title": "Keine Maskierung konfiguriert",
+    "not-configured-body": "Die Maskierung personenbezogener Daten benötigt einen Presidio-Analyzer und -Anonymizer. Setzen Sie PRESIDIO_ANALYZER_URL und PRESIDIO_ANONYMIZER_URL und starten Sie beide mit `docker compose --profile pii up -d`. Bis dahin lässt sich keine Richtlinie wählen, da nichts sie durchsetzen würde.",
     "select-label": "Richtlinie zur Maskierung personenbezogener Daten",
     "label": "Richtlinie zur Maskierung personenbezogener Daten",
     "none-label": "Keine — alle Daten beibehalten",

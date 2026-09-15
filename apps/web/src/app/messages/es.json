@@ -2161,6 +2161,8 @@
     "password-submit": "Ver hilo"
   },
   "pii-policy": {
+    "not-configured-title": "No hay ningún enmascarador configurado",
+    "not-configured-body": "El enmascarado de datos personales necesita un analizador y un anonimizador de Presidio. Define PRESIDIO_ANALYZER_URL y PRESIDIO_ANONYMIZER_URL y arráncalos con `docker compose --profile pii up -d`. Hasta entonces no se puede elegir una política, porque nada la aplicaría.",
     "select-label": "Política de enmascaramiento de datos personales",
     "label": "Política de enmascaramiento de datos personales",
     "none-label": "Ninguna — conservar todos los datos",

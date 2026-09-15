@@ -2161,6 +2161,8 @@
     "password-submit": "Zobraziť konverzáciu"
   },
   "pii-policy": {
+    "not-configured-title": "Maskovanie nie je nakonfigurované",
+    "not-configured-body": "Maskovanie osobných údajov vyžaduje analyzátor a anonymizátor Presidio. Nastavte PRESIDIO_ANALYZER_URL a PRESIDIO_ANONYMIZER_URL a spustite ich príkazom `docker compose --profile pii up -d`. Dovtedy sa nedá zvoliť pravidlo, pretože by ho nič nevynucovalo.",
     "select-label": "Zásada maskovania osobných údajov",
     "label": "Zásada maskovania osobných údajov",
     "none-label": "Žiadna — zachovať všetky dáta",

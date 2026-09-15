@@ -31,7 +31,12 @@ beforeEach(() => {
   // The rest of this file tests the "masking is turned on" behavior — the
   // feature defaults to off, so opt in explicitly. Disabled-by-default
   // behavior has its own describe block below.
-  process.env.FEATURE_FLAG_PII_MASKING = '1';
+  //
+  // Opting in means configuring a masker: availability follows the two
+  // Presidio URLs, and `FEATURE_FLAG_PII_MASKING` only switches a configured
+  // deployment off.
+  process.env.PRESIDIO_ANALYZER_URL = 'http://presidio-analyzer:3000';
+  process.env.PRESIDIO_ANONYMIZER_URL = 'http://presidio-anonymizer:3000';
 });
 
 afterEach(() => {
@@ -39,25 +44,42 @@ afterEach(() => {
 });
 
 describe('isPiiMaskingEnabled', () => {
-  it('defaults to disabled when the flag is unset', () => {
-    delete process.env.FEATURE_FLAG_PII_MASKING;
+  it('is disabled with no masker configured', () => {
+    delete process.env.PRESIDIO_ANALYZER_URL;
+    delete process.env.PRESIDIO_ANONYMIZER_URL;
     expect(isPiiMaskingEnabled()).toBe(false);
   });
 
-  it('is disabled for any value other than "1"', () => {
-    process.env.FEATURE_FLAG_PII_MASKING = 'true';
+  it('is disabled with only half a masker', () => {
+    delete process.env.PRESIDIO_ANONYMIZER_URL;
     expect(isPiiMaskingEnabled()).toBe(false);
   });
 
-  it('is enabled when set to "1"', () => {
+  it('is enabled once both URLs are set, with no flag', () => {
+    expect(isPiiMaskingEnabled()).toBe(true);
+  });
+
+  /**
+   * The flag changed meaning: it used to be the enabler, and is now the kill
+   * switch. `=1` therefore has to keep masking on rather than be read as an
+   * unrecognised value — deployments that asked for masking the old way still
+   * carry it.
+   */
+  it('keeps masking on for the old opt-in spelling', () => {
     process.env.FEATURE_FLAG_PII_MASKING = '1';
     expect(isPiiMaskingEnabled()).toBe(true);
+  });
+
+  it('is switched off by the kill switch', () => {
+    process.env.FEATURE_FLAG_PII_MASKING = '0';
+    expect(isPiiMaskingEnabled()).toBe(false);
   });
 });
 
 describe('anonymizeWithSecurityEvents when disabled (the default)', () => {
   it('returns the original text unmasked without calling Presidio or recording any event', async () => {
-    delete process.env.FEATURE_FLAG_PII_MASKING;
+    delete process.env.PRESIDIO_ANALYZER_URL;
+    delete process.env.PRESIDIO_ANONYMIZER_URL;
 
     const result = await anonymizeWithSecurityEvents('Jan Kowalski', 'pl', ctx);
 

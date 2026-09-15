@@ -82,6 +82,17 @@ export async function register() {
     });
   }
 
+  // Same shape as the encryption checks above, and for the same reason: a
+  // security control that stops applying should say so once at boot rather
+  // than never. `FEATURE_FLAG_PII_MASKING=1` was the whole switch until
+  // availability moved to the Presidio URLs, so an upgrade carrying the flag
+  // and relying on the old built-in defaults now masks nothing.
+  const { isPiiMaskingMisconfigured, PII_MASKING_MISCONFIGURED_MESSAGE } =
+    await import('@ragenai/env');
+  if (isPiiMaskingMisconfigured()) {
+    console.error(`[security] ${PII_MASKING_MISCONFIGURED_MESSAGE}`);
+  }
+
   // Subscribers rely on Node-only imports (mailer, Prisma). Gated on
   // NEXT_RUNTIME above so Edge bundles never pull them in.
   const { registerAllSubscribers } = await import('./libs/events/subscribers');

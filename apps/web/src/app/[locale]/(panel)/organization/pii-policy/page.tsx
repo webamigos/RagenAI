@@ -1,3 +1,4 @@
+import { isPiiMaskingConfigured } from '@ragenai/env';
 import { getTranslations } from 'next-intl/server';
 import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
 import { requireOrgAdmin } from '@/lib/auth-guards';
@@ -16,6 +17,12 @@ export default async function PiiPolicySettingsPage() {
 
   const t = await getTranslations('pii-policy');
   const currentMode = await getPiiIngestionMode(orgId);
+  // The table below explains what the policies mean, which is worth reading
+  // whether or not this deployment can enforce one. Only the control that
+  // changes the setting is withheld — `savePiiIngestionMode` refuses anyway,
+  // and offering a switch that throws is worse than explaining why there
+  // isn't one.
+  const maskingConfigured = isPiiMaskingConfigured();
 
   return (
     <div className="max-w-2xl space-y-8">
@@ -133,7 +140,19 @@ export default async function PiiPolicySettingsPage() {
       </section>
 
       <section>
-        <PiiIngestionModeSwitch initialMode={currentMode} />
+        {maskingConfigured ? (
+          <PiiIngestionModeSwitch initialMode={currentMode} />
+        ) : (
+          <div
+            role="note"
+            className="rounded-lg border border-border bg-muted p-4 text-sm text-muted-foreground"
+          >
+            <p className="font-medium text-foreground">
+              {t('not-configured-title')}
+            </p>
+            <p className="mt-1">{t('not-configured-body')}</p>
+          </div>
+        )}
       </section>
     </div>
   );

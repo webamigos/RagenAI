@@ -1,3 +1,4 @@
+import { isPiiMaskingConfigured } from '@ragenai/env';
 import db from '@ragenai/prisma-client';
 import {
   DEFAULT_MONTHLY_COST_LIMIT_CENTS,
@@ -773,10 +774,35 @@ export async function getPiiIngestionMode(
   return 'destructive';
 }
 
+/**
+ * Thrown when a deployment with no Presidio tries to choose a PII policy.
+ *
+ * The guard is here rather than in the page, because a page that hides a
+ * control is a suggestion and this is a rule: the only thing that makes a
+ * policy mean anything is a masker that can enforce it, and without
+ * `PRESIDIO_ANALYZER_URL` and `PRESIDIO_ANONYMIZER_URL` there is none.
+ * Storing the choice anyway leaves a setting that reads as active in the
+ * admin panel and changes nothing about what is written to disk.
+ */
+export class PiiMaskingNotConfiguredError extends Error {
+  constructor() {
+    super(
+      'PII policies need a masker. Set PRESIDIO_ANALYZER_URL and ' +
+        'PRESIDIO_ANONYMIZER_URL, and start the analyzer and anonymizer ' +
+        '(`docker compose --profile pii up -d`).',
+    );
+    this.name = 'PiiMaskingNotConfiguredError';
+  }
+}
+
 export async function savePiiIngestionMode(
   orgId: string,
   mode: PiiIngestionMode,
 ): Promise<void> {
+  if (!isPiiMaskingConfigured()) {
+    throw new PiiMaskingNotConfiguredError();
+  }
+
   await upsertSettings(orgId, { piiIngestionMode: mode });
   if (mode === 'dual_content') {
     await getOrCreatePiiDek(orgId);

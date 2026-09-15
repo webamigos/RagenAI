@@ -1,3 +1,5 @@
+import { isPiiMaskingEnabled } from '@ragenai/env';
+
 import { presidioClient, type AnonymizeResult } from './presidio-client';
 import { recordSecurityEvent } from '@/features/security/services/commands/record-security-event-command';
 
@@ -17,14 +19,17 @@ function deriveEntityCounts(aliasMap: Record<string, string>): {
 
 /**
  * PII masking is opt-in — most deployments don't need it, and requiring a
- * running Presidio analyzer just to send a chat message is the kind of
- * default that turns a 15-minute local setup into a multi-service Docker
- * build. Set FEATURE_FLAG_PII_MASKING=1 for deployments in regulated
- * industries that actually need it.
+ * running Presidio analyzer just to send a chat message is the kind of default
+ * that turns a 15-minute local setup into a multi-service Docker build.
+ *
+ * What makes it opt-in is now the configuration rather than a separate flag:
+ * set `PRESIDIO_ANALYZER_URL` and `PRESIDIO_ANONYMIZER_URL` and this
+ * deployment masks. `FEATURE_FLAG_PII_MASKING=0` remains as a kill switch.
+ * Re-exported from `@ragenai/env` so `apps/worker` and the settings page
+ * cannot answer this question differently — they used to hold their own copy
+ * of the flag comparison.
  */
-export function isPiiMaskingEnabled(): boolean {
-  return process.env.FEATURE_FLAG_PII_MASKING === '1';
-}
+export { isPiiMaskingEnabled };
 
 /**
  * Wraps `presidioClient.anonymize()` and records a `CHAT_PII_DETECTED`
