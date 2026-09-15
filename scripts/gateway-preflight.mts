@@ -203,10 +203,15 @@ async function main(): Promise<void> {
     process.exitCode = 1;
     return;
   }
+  // "required", not "configured": a fallback-only miss is reported above and
+  // does not block, so claiming every *configured* model was fine contradicted
+  // the advisory line printed three lines earlier — which is exactly what a
+  // local run showed, three MISSes followed by "Every configured model is
+  // routed and has credentials".
   console.log(
     probe
-      ? 'Every configured model answered.'
-      : 'Every configured model is routed and has credentials. Re-run with --probe — presence is not usability.',
+      ? 'Every required model answered.'
+      : 'Every required model is routed and has credentials. Re-run with --probe — presence is not usability.',
   );
 }
 
