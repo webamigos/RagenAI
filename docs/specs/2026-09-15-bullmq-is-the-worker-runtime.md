@@ -53,20 +53,45 @@ While this block is here, the spec is not ready to implement and no code
 should be written from it.
 -->
 
-- **Q1 — is `@ragenai/jobs` published to a registry, and which one?**
-  `@ragenai/jobs-temporal` lives in another repository, so it needs the
-  contract, the handlers and `JobContext` as a real dependency. Three ways:
-  publish `@ragenai/jobs` to public npm (the repository already releases with
-  provenance via [`release.yml`](../../.github/workflows/release.yml), so this
-  is a `package.json` field and a semantic-release entry); publish it privately
-  to GitHub Packages; or skip publishing and have the enterprise repository take
-  this one as a git dependency for its own typecheck while the *runtime*
-  resolution happens inside the customer's worker image, where `@ragenai/jobs`
-  is already present. _Recommendation: public npm._ Nothing in the package is
-  secret — it is job names, payload types and retry maths — the release
-  machinery exists, and a public contract is what lets an enterprise adapter be
-  built without a copy of this monorepo. **This question gates Phase E only;
-  Phases A–D do not depend on it.**
+- **Q1 — how does the adapter reach an install: an npm package, or an image?**
+  `@ragenai/jobs-temporal` lives in another repository and needs the contract,
+  the handlers and `JobContext` as a real dependency rather than a copy. There
+  are two mechanisms, and each has a prerequisite this project does not have
+  yet. **Neither needs a third repository.**
+
+  **(a) npm.** Publish `@ragenai/jobs` from here, and
+  `@ragenai/jobs-temporal` from there. Prerequisite: a scoped package and a
+  semantic-release entry — small, and the machinery exists
+  ([`release.yml`](../../.github/workflows/release.yml) already publishes with
+  provenance). What it buys: an install building its own worker image from
+  source can `npm i` the adapter. What it costs: a published contract is a
+  compatibility promise owed to people we do not know, for a package whose
+  only real consumer is one repository we control.
+
+  **(b) The image.** Publish `ragen-worker` to a container registry; the
+  enterprise repository's Dockerfile is `FROM` it plus the compiled adapter.
+  This works because of something the runtime image already does:
+  `/app/node_modules/@ragenai/*` are symlinks into `/app/packages/`, and
+  `packages/` is copied in — so `@ragenai/jobs` resolves *inside the image*
+  with its built `dist`, and the adapter declares it as a peer dependency it
+  never installs. The adapter then compiles against the exact contract the
+  image ships, which is stronger than compiling against a version number that
+  can skew from it. Prerequisite, and it is the real one: **no Ragen image is
+  published anywhere today** — `ghcr.io` appears in this repository only in
+  the Docling and Presidio upgrade runbooks, and self-hosting currently means
+  building from source.
+
+  _Recommendation: (b)._ The deployment artifact is an image either way —
+  §8.1 says so — and under (b) the npm package adds nothing but an API
+  promise. The prerequisite is worth having on its own: an install that must
+  build four images from source to try Ragen is a worse first hour than the
+  one it could have.
+
+  **This question gates Phase E only; Phases A–D do not depend on it.** If the
+  answer is that neither prerequisite is wanted, the fallback is not a third
+  mechanism — it is leaving the adapter in this monorepo as an optional
+  workspace, which costs the dual-maintenance the 2026-09-15 decision was
+  taken to avoid and should be chosen deliberately, not by default.
 
 ## Problem
 
@@ -407,16 +432,18 @@ name. The promise is therefore specific, and Phase E is not done until all four
 parts of it exist:
 
 1. **One artifact, not a fork.** `ragen-enterprise` ships
-   `@ragenai/jobs-temporal` and a Dockerfile that is `FROM` the published OSS
-   worker image plus `npm i @ragenai/jobs-temporal`. It contains no handler, no
+   `@ragenai/jobs-temporal` and a Dockerfile that is `FROM` the OSS worker
+   image plus the adapter — an image this project does not publish yet, which
+   is half of Q1. It contains no handler, no
    activity and no pipeline — those come from the image and from
    `@ragenai/jobs`. Rejected alternative: an enterprise worker application with
    its own copy of the activities, which is `apps/worker-lite` again with a
    licence attached.
 2. **The contract is a dependency, not a copy.** `@ragenai/jobs` is consumed
-   from a registry (Q1). A hand-synced copy of the job names in the enterprise
-   repository is the failure ADR-33 exists to prevent, and no test in either
-   repository would catch it.
+   as a package — from a registry, or from inside the base image, per Q1. A
+   hand-synced copy of the job names in the enterprise repository is the
+   failure ADR-33 exists to prevent, and no test in either repository would
+   catch it.
 3. **Its CI runs the real thing.** The enterprise repository runs the worker
    integration suite against a real Temporal container, against the current OSS
    handlers, nightly and on every push. That job failing is how we learn that a
