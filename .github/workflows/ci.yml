@@ -154,6 +154,11 @@ jobs:
       # It runs through turbo rather than npm so that `^build` happens first.
       # Running an app's vitest directly against a stale package dist fails its
       # suite for reasons that have nothing to do with the change under test.
+      # Still coverage rather than a plain `test` run: the summaries are
+      # useful locally and the artifacts cost nothing. The PR comment that
+      # reported them is gone — four numbers on every pull request that
+      # nobody acted on is noise, and noise on every PR trains people to
+      # skim past the comments that do matter.
       - run: npx turbo run test:coverage
       # This now includes the root vitest project, as the `//#test` task in
       # turbo.json — which is where packages/* (they have no test script of
@@ -168,17 +173,6 @@ jobs:
           --filter='!@webamigos/ragen-api'
           --filter='!@webamigos/ragen-admin'
           --filter='!@webamigos/ragen-worker'
-      - name: Coverage report
-        if: always() && github.event_name == 'pull_request'
-        uses: MishaKav/jest-coverage-comment@v1.0.36
-        with:
-          # One row per app. apps/docs has no suite; apps/mcp and the packages
-          # report through the root project, which writes no summary of its own.
-          multiple-files: |
-            web, ./apps/web/coverage/coverage-summary.json
-            api, ./apps/api/coverage/coverage-summary.json
-            admin, ./apps/admin/coverage/coverage-summary.json
-            worker, ./apps/worker/coverage/coverage-summary.json
 
   build:
     name: Build
