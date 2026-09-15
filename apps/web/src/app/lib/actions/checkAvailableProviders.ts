@@ -6,8 +6,7 @@ import {
   type AvailableModel,
 } from '../../components/config';
 import { getAllowedModels } from '@/features/organizations/services/organization-settings';
-import { fetchLiteLLMModels } from '@/libs/litellm/client';
-import { gatewayFromEnv, usingNativeGateway } from '@ragenai/llm-gateway';
+import { gatewayFromEnv } from '@ragenai/llm-gateway';
 import { logger } from '@/app/lib/utils/logger';
 
 type ProviderStatus = {
@@ -70,19 +69,10 @@ export async function getAvailableModelsForOrganization(
 ): Promise<AvailableModel[]> {
   const allowedModels = await getAllowedModels(orgId);
 
-  let models: AvailableModel[];
-  if (usingNativeGateway()) {
-    models = gatewayModels();
-  } else {
-    // Ask the proxy what it serves. Its answer is the right one *for the proxy
-    // path*, and only for it.
-    try {
-      const litellmModels = await fetchLiteLLMModels();
-      models = litellmModels.length > 0 ? litellmModels : [...availableModels];
-    } catch {
-      models = [...availableModels];
-    }
-  }
+  // From the route table, which is credential-aware: a provider this
+  // deployment holds no keys for contributes nothing, rather than appearing in
+  // the picker and failing on the first click.
+  let models: AvailableModel[] = gatewayModels();
 
   if (allowedModels.length > 0) {
     models = models.filter((model) => allowedModels.includes(model.value));

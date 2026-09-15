@@ -1,7 +1,8 @@
 description: 'CI gate — minimal fast eval subset (must pass >= 80%)'
 
-# `model` must be a model_name from infra/litellm/config.yaml — the provider always
-# routes through the LiteLLM proxy and ignores any other provider hint.
+# `model` must be a key in the route table (infra/llm-gateway/routes.yaml, or
+# LLM_ROUTES_PATH). The provider resolves it through @ragenai/llm-gateway and
+# ignores any other provider hint.
 providers:
   - id: 'file://../providers/rag-chain.provider.ts'
     label: 'RAG Chain (gemini-2.5-flash)'
@@ -15,12 +16,14 @@ tests: 'file://../datasets/ci-gate.yaml'
 
 defaultTest:
   options:
-    # Grade through LiteLLM as well, so evals need no provider key of their own.
+    # The grader is promptfoo's own model call, not the product's — it does
+    # not go through @ragenai/llm-gateway, so it needs an endpoint of its own.
+    # OpenAI by default; EVAL_GRADER_BASE_URL points it elsewhere.
     provider:
       id: 'openai:chat:gemini-2.5-flash'
       config:
-        apiBaseUrl: '{{ env.LITELLM_PROXY_URL }}/v1'
-        apiKeyEnvar: LITELLM_MASTER_KEY
+        apiBaseUrl: '{{ env.EVAL_GRADER_BASE_URL | default("https://api.openai.com/v1") }}'
+        apiKeyEnvar: OPENAI_API_KEY
   threshold: 0.8
 
 # Relative to the working directory, NOT to this file (unlike file:// above).

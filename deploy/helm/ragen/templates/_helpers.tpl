@@ -98,14 +98,6 @@ RDS" a one-line change rather than a fork of the chart.
 {{- end -}}
 {{- end -}}
 
-{{- define "ragen.litellmUrl" -}}
-{{- if .Values.config.LITELLM_PROXY_URL -}}
-{{- .Values.config.LITELLM_PROXY_URL -}}
-{{- else -}}
-{{- printf "http://%s-litellm:%v" (include "ragen.fullname" .) .Values.litellm.port -}}
-{{- end -}}
-{{- end -}}
-
 {{- define "ragen.doclingUrl" -}}
 {{- if .Values.config.DOCLING_URL -}}
 {{- .Values.config.DOCLING_URL -}}
@@ -164,8 +156,6 @@ it — Kubernetes expands `$(VAR)` only against variables declared earlier.
 - name: REDIS_URL
   value: {{ . | quote }}
 {{- end }}
-- name: LITELLM_PROXY_URL
-  value: {{ include "ragen.litellmUrl" . | quote }}
 - name: DOCLING_URL
   value: {{ include "ragen.doclingUrl" . | quote }}
 - name: TEMPORAL_SERVER_ADDRESS
@@ -187,5 +177,5 @@ provider and has to be supplied. Defined here because both the Secret and
 NOTES.txt need the same list, and two copies of it would drift.
 */}}
 {{- define "ragen.generatedSecretKeys" -}}
-BETTER_AUTH_SECRET SECRET_KEY INTERNAL_API_SECRET SESSION_AUTH_SECRET WORKER_SECRET_KEY LITELLM_MASTER_KEY
+BETTER_AUTH_SECRET SECRET_KEY INTERNAL_API_SECRET SESSION_AUTH_SECRET WORKER_SECRET_KEY
 {{- end -}}

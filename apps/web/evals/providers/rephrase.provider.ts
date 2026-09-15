@@ -3,9 +3,8 @@ import type {
   CallApiContextParams,
   ProviderResponse,
 } from 'promptfoo';
-import { ChatCompletionFactory } from '@/libs/llm/chat-completion-factory';
 import { rephraseAndExpand } from '@/libs/chains/basic-rag/operations';
-import { getLiteLLMCredentials, DEFAULT_EVAL_MODEL } from './shared';
+import { evalChatModel, DEFAULT_EVAL_MODEL } from './shared';
 
 export interface RephraseProviderConfig {
   model?: string;
@@ -33,10 +32,7 @@ export class RephraseProvider implements ApiProvider {
   ): Promise<ProviderResponse> {
     const model = this.providerConfig.model ?? DEFAULT_EVAL_MODEL;
 
-    const questionRephraser = ChatCompletionFactory.createInstance(
-      getLiteLLMCredentials(),
-      { model },
-    );
+    const questionRephraser = evalChatModel(model);
 
     try {
       const chatHistory = context?.vars?.chat_history;

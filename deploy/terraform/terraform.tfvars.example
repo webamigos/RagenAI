@@ -19,7 +19,6 @@ secrets = {
   INTERNAL_API_SECRET = "..."
   SESSION_AUTH_SECRET = "..."
   WORKER_SECRET_KEY   = "..."
-  LITELLM_MASTER_KEY  = "..."
   OPENAI_API_KEY      = "..."
   # Only when a values file sets `temporal.database.password` — the chart then
   # reads Temporal's password from this key rather than POSTGRES_PASSWORD.

@@ -52,31 +52,6 @@ afterEach(() => {
   process.env = { ...saved };
 });
 
-describe('LLM_GATEWAY=litellm', () => {
-  beforeEach(() => {
-    process.env.LLM_GATEWAY = 'litellm';
-  });
-
-  it('asks the proxy what it serves', async () => {
-    fetchLiteLLMModels.mockResolvedValue([
-      { value: 'gpt-5.4', label: 'GPT', provider: 'litellm', origin: 'openai' },
-    ]);
-
-    const models = await getAvailableModelsForOrganization('org-1');
-
-    expect(models.map((m) => m.value)).toEqual(['gpt-5.4']);
-    expect(gatewayFromEnv).not.toHaveBeenCalled();
-  });
-
-  it('falls back to the catalogue when the proxy is unreachable', async () => {
-    fetchLiteLLMModels.mockRejectedValue(new Error('ECONNREFUSED'));
-
-    const models = await getAvailableModelsForOrganization('org-1');
-
-    expect(models.length).toBe(availableModels.length);
-  });
-});
-
 describe('LLM_GATEWAY=native', () => {
   beforeEach(() => {
     process.env.LLM_GATEWAY = 'native';

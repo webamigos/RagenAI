@@ -4,7 +4,6 @@ import {
   fragments,
   parseEnv,
   TOKEN_VAULT_GROUP,
-  litellmRules,
   requiredInDeployedEnvs,
 } from '@ragenai/env';
 import { z } from 'zod';
@@ -27,7 +26,7 @@ import { z } from 'zod';
  */
 export const apiEnvSchema = fragments.targetEnvRequired
   .merge(fragments.database)
-  .merge(fragments.litellm)
+  .merge(fragments.llmGateway)
   .merge(fragments.models)
   .merge(fragments.temporal)
   .merge(fragments.redis)
@@ -48,8 +47,6 @@ export const apiEnvSchema = fragments.targetEnvRequired
   })
   .superRefine((env, ctx) => {
     // Only on the proxy path — `native` is the default and authenticates
-    // nothing against a proxy. See `litellmRules`.
-    litellmRules(env, ctx);
 
     // The comment on the field says this is not optional in a deployment;
     // until now nothing enforced it. Without the shared secret every call to

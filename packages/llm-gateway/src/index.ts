@@ -21,16 +21,7 @@ export {
   UnknownModelError,
   type GatewayOptions,
 } from './resolve-model';
-export {
-  DEFAULT_GATEWAY_MODE,
-  GATEWAY_MODES,
-  InvalidGatewayModeError,
-  gatewayFromEnv,
-  gatewayModeFromEnv,
-  resetGatewayCache,
-  usingNativeGateway,
-  type GatewayMode,
-} from './gateway-mode';
+export { gatewayFromEnv, resetGatewayCache } from './gateway-instance';
 export {
   hasMultimodalContent,
   multimodalPolicyFromEnv,

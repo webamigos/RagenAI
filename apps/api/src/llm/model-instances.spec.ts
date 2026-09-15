@@ -59,32 +59,6 @@ afterEach(() => {
 
 const load = () => import('./model-instances.js');
 
-describe('LLM_GATEWAY=litellm', () => {
-  beforeEach(() => {
-    // Named, not unset: `native` is the default now, so leaving this out
-    // selects the arm this block is not about.
-    process.env.LLM_GATEWAY = 'litellm';
-  });
-
-  it('builds chat through the proxy factory', async () => {
-    const { createChatCompletionInstance } = await load();
-
-    createChatCompletionInstance({ model: 'gpt-oss-120b' });
-
-    expect(createInstance).toHaveBeenCalledOnce();
-    expect(nativeChatInstance).not.toHaveBeenCalled();
-  });
-
-  it('builds embeddings through the proxy factory', async () => {
-    const { createEmbeddingsInstance } = await load();
-
-    createEmbeddingsInstance({ organizationId: 'org_1' });
-
-    expect(embeddingsCreateInstance).toHaveBeenCalledOnce();
-    expect(nativeEmbeddingInstance).not.toHaveBeenCalled();
-  });
-});
-
 describe('LLM_GATEWAY=native', () => {
   beforeEach(() => {
     process.env.LLM_GATEWAY = 'native';

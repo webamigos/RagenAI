@@ -165,7 +165,6 @@ describe('ChatService', () => {
 
   afterEach(() => {
     vi.restoreAllMocks();
-    delete process.env.LLM_GATEWAY;
   });
 
   it('returns 404 when the assistant/project is not found', async () => {
@@ -268,10 +267,6 @@ describe('ChatService', () => {
   });
 
   it('returns JSON for non-streaming requests and tracks usage', async () => {
-    // Named rather than inherited. This case describes the proxy path — see
-    // the `servedBy` comment below — and `native` is the default, so leaving
-    // the variable unset used to select the other arm and record `azure`.
-    process.env.LLM_GATEWAY = 'litellm';
     const req = createMockReq();
     const res = createMockRes();
     initializeBasicRag.initializeRagChain.mockResolvedValue(makeChain({}));
@@ -289,8 +284,9 @@ describe('ChatService', () => {
         totalTokens: 15,
         // `servedBy` is the provider that actually served the turn. It is
         // here and not in `provider` because that column is the pricing key —
-        // see `servingProvider`. Under the proxy path both read `litellm`.
-        metadata: { source: 'API', servedBy: 'litellm' },
+        // see `servingProvider`, and the note there about why moving it needs
+        // the pricing table moved first.
+        metadata: { source: 'API', servedBy: 'azure' },
       }),
     );
     expect(closeMcpClients).toHaveBeenCalledTimes(1);

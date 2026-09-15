@@ -20,7 +20,7 @@ npm run web:dev     # http://localhost:3000, auto-forwarded
 ```
 
 The machine type matters: `devcontainer.json` asks for **4 cores / 16 GB**.
-The 2-core tier does not fit Postgres, Qdrant, LiteLLM, Temporal and a
+The 2-core tier does not fit Postgres, Qdrant, Temporal and a
 Turbopack dev server at once — it swaps, and every symptom then looks like a
 slow app instead of a small machine.
 
@@ -44,14 +44,14 @@ None of this applies in a Codespace, where nothing else is running.
 
 ## What starts, and what doesn't
 
-`runServices` in `devcontainer.json` starts Postgres, Qdrant, LiteLLM (plus its
+`runServices` in `devcontainer.json` starts Postgres, Qdrant (plus its
 own Postgres), Redis and Temporal. Left out on purpose: Docling (~700 MB,
 needed only when `DOCUMENT_PARSER=docling`), Presidio (~1 GB, PII masking),
 the Temporal UI and the observability profile.
 
 To add one, put it in `runServices` and rebuild the container. The Docker
-socket is mounted, so `docker ps`, `docker logs ragen-litellm` and
-`docker restart ragen-litellm` work from inside the container — but
+socket is mounted, so `docker ps`, `docker logs ragen-qdrant` and
+`docker restart ragen-qdrant` work from inside the container — but
 `docker compose up` does not: Compose would hand the outer daemon container
 paths (`/workspace/infra/...`) that do not exist on the host, and the bind
 mounts would come up empty.

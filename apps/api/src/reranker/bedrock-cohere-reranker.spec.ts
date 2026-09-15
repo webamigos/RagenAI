@@ -40,15 +40,15 @@ describe('bedrock-cohere-reranker', () => {
   });
 
   describe('isRerankingEnabled', () => {
-    it('should return true when feature flag and LITELLM_PROXY_URL are set', () => {
+    it('should return true when the feature flag and its own base URL are set', () => {
       process.env.FEATURE_FLAG_RERANKING = '1';
-      process.env.LITELLM_PROXY_URL = 'http://localhost:4000';
+      process.env.RERANK_COHERE_BASE_URL = 'https://api.cohere.ai';
       expect(isRerankingEnabled()).toBe(true);
     });
 
-    it('should return false when LITELLM_PROXY_URL is missing', () => {
+    it('should return false when no base URL is set', () => {
       process.env.FEATURE_FLAG_RERANKING = '1';
-      delete process.env.LITELLM_PROXY_URL;
+      delete process.env.RERANK_COHERE_BASE_URL;
       expect(isRerankingEnabled()).toBe(false);
     });
 
@@ -186,14 +186,6 @@ describe('bedrock-cohere-reranker', () => {
       process.env.FEATURE_FLAG_RERANKING = '1';
       delete process.env.LITELLM_PROXY_URL;
       process.env.RERANK_COHERE_BASE_URL = 'https://api.cohere.ai';
-
-      expect(isRerankingEnabled()).toBe(true);
-    });
-
-    it('still accepts the proxy URL, so a running deployment needs no change', () => {
-      process.env.FEATURE_FLAG_RERANKING = '1';
-      delete process.env.RERANK_COHERE_BASE_URL;
-      process.env.LITELLM_PROXY_URL = 'http://localhost:4000';
 
       expect(isRerankingEnabled()).toBe(true);
     });

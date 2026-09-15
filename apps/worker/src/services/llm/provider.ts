@@ -1,56 +1,6 @@
-import { createOpenAI } from '@ai-sdk/openai';
 import { generateText } from 'ai';
 
-import { isMasterKeyRequired } from './require-master-key.js';
-import {
-  nativeChatModel,
-  nativeEmbeddingModel,
-  usingNativeGateway,
-} from './native-models.js';
-
-const LITELLM_PROXY_URL =
-  process.env.LITELLM_PROXY_URL || 'http://localhost:4000';
-const LITELLM_MASTER_KEY = process.env.LITELLM_MASTER_KEY;
-
-// The rule itself lives in `./require-master-key`, where it can be tested
-// without importing this module — which throws as it loads and drags knex,
-// the logger and the AI SDK in with it.
-if (isMasterKeyRequired(process.env)) {
-  throw new Error(
-    'LITELLM_MASTER_KEY is required in non-development environments. ' +
-      'Set it via environment variables or .env file.',
-  );
-}
-
-/**
- * Forces `encoding_format='float'` on embedding requests. Scaleway's
- * vLLM-based embedding endpoint rejects requests where this field is null
- * or missing.
- */
-const litellmFetch: typeof fetch = async (url, init) => {
-  if (init?.body && typeof init.body === 'string') {
-    try {
-      const body = JSON.parse(init.body);
-      body.encoding_format = 'float';
-      init = { ...init, body: JSON.stringify(body) };
-    } catch {
-      // not JSON, pass through
-    }
-  }
-  return fetch(url, init);
-};
-
-const buildLiteLLMProvider = (apiKey: string) =>
-  createOpenAI({
-    baseURL: `${LITELLM_PROXY_URL}/v1`,
-    apiKey,
-    fetch: litellmFetch,
-  });
-
-// Master-key provider used as a fallback (and for non-org-scoped operations).
-const masterLitellm = buildLiteLLMProvider(
-  LITELLM_MASTER_KEY || 'sk-litellm-dev-key',
-);
+import { nativeChatModel, nativeEmbeddingModel } from './native-models.js';
 
 /**
  * Returns a chat model bound to the LiteLLM **master key**.
@@ -60,10 +10,7 @@ const masterLitellm = buildLiteLLMProvider(
  * org's spend budget actually applies.
  */
 export async function getChatModel(modelId: string) {
-  if (usingNativeGateway()) {
-    return nativeChatModel(modelId);
-  }
-  return masterLitellm.chat(modelId);
+  return nativeChatModel(modelId);
 }
 
 /**
@@ -73,10 +20,7 @@ export async function getChatModel(modelId: string) {
  * `getChatModel` above.
  */
 export async function getEmbeddingModel(modelId: string) {
-  if (usingNativeGateway()) {
-    return nativeEmbeddingModel(modelId);
-  }
-  return masterLitellm.textEmbeddingModel(modelId);
+  return nativeEmbeddingModel(modelId);
 }
 
 /**
@@ -89,20 +33,14 @@ export async function getEmbeddingModel(modelId: string) {
  * return if they return (ragen-token-vault, ADR-13/ADR-32).
  */
 export async function getChatModelForOrg(orgId: string, modelId: string) {
-  if (usingNativeGateway()) {
-    return nativeChatModel(modelId, orgId);
-  }
-  return masterLitellm.chat(modelId);
+  return nativeChatModel(modelId, orgId);
 }
 
 /**
  * Org-scoped embedding model. See `getChatModelForOrg`.
  */
 export async function getEmbeddingModelForOrg(orgId: string, modelId: string) {
-  if (usingNativeGateway()) {
-    return nativeEmbeddingModel(modelId, orgId);
-  }
-  return masterLitellm.textEmbeddingModel(modelId);
+  return nativeEmbeddingModel(modelId, orgId);
 }
 
 const PDF_TIMEOUT_MS = 120_000; // 2 minutes for PDF processing
@@ -154,15 +92,13 @@ async function generateTextWithPdfNatively(params: {
 }
 
 /**
- * Sends a PDF to a Claude model via LiteLLM's OpenAI-compatible endpoint using
- * Anthropic document content blocks. LiteLLM translates these to the Bedrock
- * Converse API format, keeping data in the configured AWS region (EU).
+ * Sends a PDF to a Claude model as Anthropic document content blocks.
  *
- * When `orgId` is supplied, the org's per-org LiteLLM virtual key is used so
- * usage is attributed correctly. Otherwise the master key is used.
- *
- * Under `LLM_GATEWAY=native` this whole shape is bypassed — see
- * `generateTextWithPdfNatively`.
+ * Kept as the name every caller already uses; the work is
+ * `generateTextWithPdfNatively`. What it used to wrap was a hand-built
+ * `/v1/chat/completions` post to the proxy with a base64 data URL, which the
+ * proxy translated to Bedrock's Converse API — that went with the proxy, and
+ * the AI SDK's Bedrock provider does the translation now.
  */
 export async function generateTextWithPdf(params: {
   model: string;
@@ -171,62 +107,5 @@ export async function generateTextWithPdf(params: {
   prompt: string;
   orgId?: string;
 }): Promise<string> {
-  if (usingNativeGateway()) {
-    return generateTextWithPdfNatively(params);
-  }
-
-  const authKey = LITELLM_MASTER_KEY || 'sk-litellm-dev-key';
-
-  const response = await fetch(`${LITELLM_PROXY_URL}/v1/chat/completions`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${authKey}`,
-    },
-    signal: AbortSignal.timeout(PDF_TIMEOUT_MS),
-    body: JSON.stringify({
-      model: params.model,
-      messages: [
-        {
-          role: 'system',
-          content: params.system,
-        },
-        {
-          role: 'user',
-          content: [
-            {
-              type: 'image_url',
-              image_url: {
-                url: `data:application/pdf;base64,${params.pdfBase64}`,
-              },
-            },
-            {
-              type: 'text',
-              text: params.prompt,
-            },
-          ],
-        },
-      ],
-    }),
-  });
-
-  if (!response.ok) {
-    const errorBody = await response.text();
-    throw new Error(
-      `LiteLLM PDF request failed (${response.status}): ${errorBody}`,
-    );
-  }
-
-  let data: { choices?: Array<{ message?: { content?: string } }> };
-  try {
-    // `json()` is typed as Promise<unknown> under the monorepo's @types/node,
-    // so the shape is asserted here. It is unvalidated external JSON either
-    // way — every field below is read optionally.
-    data = (await response.json()) as typeof data;
-  } catch {
-    throw new Error(
-      `LiteLLM PDF request returned invalid JSON (${response.status} ${response.statusText})`,
-    );
-  }
-  return data.choices?.[0]?.message?.content ?? '';
+  return generateTextWithPdfNatively(params);
 }

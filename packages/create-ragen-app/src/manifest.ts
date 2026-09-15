@@ -80,40 +80,6 @@ export const MANIFEST: ManifestEntry[] = [
 
   // --- Local-dev defaults that correct a stale example value ---
   {
-    // The baseline, and `resolveLlmProviderChoice` overrides it with `native`
-    // whenever a provider key is actually configured — which is both branches
-    // the wizard offers.
-    //
-    // What is left is the third path: "I'll configure LiteLLM myself". That
-    // one writes no route table, and the table shipped in the repository names
-    // Azure, Bedrock, Vertex and Scaleway — providers a fresh install has no
-    // credentials for. Inheriting the `native` default there would make every
-    // model call fail on the first question, so this pins the proxy the manual
-    // guide then tells them to configure.
-    key: 'LLM_GATEWAY',
-    strategy: 'local-default',
-    targets: ['root'],
-    value: 'litellm',
-  },
-  {
-    // Ships commented out, which leaves apps/web sending no Authorization
-    // header while docker-compose.yml starts the proxy *with* a master key
-    // (`${LITELLM_MASTER_KEY:-sk-litellm-dev-key}`) — so every call to the
-    // proxy came back 401 and the model picker silently fell back to a
-    // static list.
-    //
-    // This is deliberately the same literal as the compose default rather
-    // than a generated secret: Compose interpolates `${LITELLM_MASTER_KEY}`
-    // from the shell or a root `.env`, and never from `.env.local`. A
-    // generated value here would land in the app and not in the container,
-    // which is the 401 again with a harder-to-see cause. It is a local-dev
-    // credential on a loopback port; a deployed install sets its own.
-    key: 'LITELLM_MASTER_KEY',
-    strategy: 'local-default',
-    targets: ['root'],
-    value: 'sk-litellm-dev-key',
-  },
-  {
     // docker-compose.yml maps Postgres to host port 55432. A native or other
     // Postgres on 5432 would otherwise silently answer instead of the
     // container, and report success against the wrong database. The

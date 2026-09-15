@@ -1,9 +1,5 @@
 import type { EmbeddingModelV4, LanguageModelV4 } from '@ai-sdk/provider';
-import {
-  gatewayFromEnv,
-  nativeChatModel,
-  usingNativeGateway,
-} from '@ragenai/llm-gateway';
+import { gatewayFromEnv, nativeChatModel } from '@ragenai/llm-gateway';
 
 import { supportsReasoningEffort } from './model-registry.js';
 import { type ReasoningEffortLevel } from './types/index.js';
@@ -20,8 +16,6 @@ import { type ReasoningEffortLevel } from './types/index.js';
  * model call reaches a provider directly, and a binding that picked wrong would
  * surface as a measurement that found no difference.
  */
-
-export { usingNativeGateway };
 
 export function nativeChatInstance(options: {
   model?: string;
@@ -69,9 +63,6 @@ export function nativeEmbeddingInstance(
  * real provider. Anyone moving it must move the pricing table first.
  */
 export function servingProvider(modelId: string): string | undefined {
-  if (!usingNativeGateway()) {
-    return undefined;
-  }
   try {
     return gatewayFromEnv().routeFor(modelId)?.provider;
   } catch {

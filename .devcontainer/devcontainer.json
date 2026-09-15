@@ -7,7 +7,7 @@
   ],
   "service": "workspace",
   "workspaceFolder": "/workspace",
-  "runServices": ["postgres", "qdrant", "litellm", "redis", "temporal"],
+  "runServices": ["postgres", "qdrant", "redis", "temporal"],
   "remoteUser": "node",
   "features": {
     "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}

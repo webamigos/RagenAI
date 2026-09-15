@@ -1,11 +1,9 @@
 {{- /*
-The stateless supporting services: LiteLLM, Docling and the two Presidio
-containers. Same shape as the apps, but each carries its own image from
+The stateless supporting services: Docling and the two Presidio containers. Same shape as the apps, but each carries its own image from
 upstream rather than one built from this repository.
 */}}
 {{- $root := . -}}
 {{- $services := list
-      (dict "name" "litellm"             "cfg" .Values.litellm)
       (dict "name" "docling"             "cfg" .Values.docling)
       (dict "name" "presidio-analyzer"   "cfg" .Values.presidio.analyzer)
       (dict "name" "presidio-anonymizer" "cfg" .Values.presidio.anonymizer)
@@ -49,36 +47,6 @@ spec:
           ports:
             - name: http
               containerPort: {{ $cfg.port }}
-          {{- if eq $name "litellm" }}
-          args: ['--config', '/app/config.yaml', '--port', '{{ $cfg.port }}']
-          env:
-            - name: LITELLM_MASTER_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: {{ include "ragen.secretName" $root }}
-                  key: LITELLM_MASTER_KEY
-            # The proxy keeps its own key/spend tables. It shares the bundled
-            # Postgres rather than running a second one, which is what the
-            # compose file does with a separate container.
-            - name: POSTGRES_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ include "ragen.secretName" $root }}
-                  key: POSTGRES_PASSWORD
-            {{- /*
-              This is the proxy's own database, not the application's — it
-              holds keys and spend, and pointing it at the app database would
-              be wrong. With the bundled Postgres it gets a `litellm` database
-              beside the app's; with a managed one, set `litellm.databaseUrl`.
-              Unset, the proxy still routes, it just persists nothing.
-            */}}
-            {{- if $root.Values.litellm.databaseUrl }}
-            - name: DATABASE_URL
-              value: {{ $root.Values.litellm.databaseUrl | quote }}
-            {{- else if $root.Values.postgres.enabled }}
-            - name: DATABASE_URL
-              value: {{ printf "postgresql://%s:$(POSTGRES_PASSWORD)@%s:%v/litellm" $root.Values.postgres.auth.username (include "ragen.postgresHost" $root) $root.Values.postgres.port | quote }}
-            {{- end }}
           {{- if $cfg.config }}
           volumeMounts:
             - name: config
@@ -106,7 +74,7 @@ spec:
           {{- end }}
           readinessProbe:
             httpGet:
-              path: {{ if eq $name "litellm" }}/health/liveliness{{ else }}/health{{ end }}
+              path: /health
               port: http
             {{- if eq $name "docling" }}
             # Docling loads its models before it serves anything; the compose
@@ -120,12 +88,6 @@ spec:
             periodSeconds: 10
           resources:
             {{- toYaml $cfg.resources | nindent 12 }}
-      {{- if and (eq $name "litellm") $cfg.config }}
-      volumes:
-        - name: config
-          configMap:
-            name: {{ include "ragen.fullname" $root }}-litellm-config
-      {{- end }}
       {{- with $root.Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
@@ -148,16 +110,4 @@ spec:
     {{- include "ragen.selectorLabels" $root | nindent 4 }}
     app.kubernetes.io/component: {{ $name }}
 {{- end }}
-{{- end }}
-{{- if and .Values.litellm.enabled .Values.litellm.config }}
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: {{ include "ragen.fullname" . }}-litellm-config
-  labels:
-    {{- include "ragen.labels" . | nindent 4 }}
-data:
-  config.yaml: |
-    {{- .Values.litellm.config | nindent 4 }}
 {{- end }}

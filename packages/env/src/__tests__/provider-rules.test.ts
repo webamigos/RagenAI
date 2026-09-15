@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { type z } from 'zod';
 
 import * as fragments from '../fragments';
-import { encryptionRules, litellmRules, storageRules } from '../provider-rules';
+import { encryptionRules, storageRules } from '../provider-rules';
 import { parseEnv } from '../parse';
 
 /**
@@ -12,15 +12,6 @@ import { parseEnv } from '../parse';
  */
 const storageSchema = fragments.storage.superRefine(storageRules);
 const encryptionSchema = fragments.encryption.superRefine(encryptionRules);
-/**
- * Merged with `targetEnv`, not used bare: `requiredInDeployedEnvs` reads
- * `TARGET_ENV`, and zod strips keys the schema does not declare — so the
- * fragment on its own would make every case here pass for the wrong reason.
- * The apps merge both, which is what this mirrors.
- */
-const litellmSchema = fragments.targetEnv
-  .merge(fragments.litellm)
-  .superRefine((env, ctx) => litellmRules(env, ctx));
 
 const namesOf = <T extends z.ZodType>(
   schema: T,
@@ -124,53 +115,5 @@ describe('encryptionRules', () => {
         ENCRYPTION_MASTER_KEY: 'x',
       }).ok,
     ).toBe(true);
-  });
-});
-
-/**
- * `LITELLM_MASTER_KEY` was demanded of every deployed environment by four
- * apps, with the reason "every model call is authenticated against the proxy"
- * — true only while `LLM_GATEWAY` defaulted to `litellm`. Once the default
- * became `native`, that rule refused to boot correctly configured deployments
- * over a credential nothing on their path uses.
- */
-describe('litellmRules', () => {
-  const deployed = {
-    LITELLM_PROXY_URL: 'http://proxy:4000',
-    TARGET_ENV: 'production',
-  };
-
-  it('requires the key when the proxy is named', () => {
-    expect(
-      namesOf(litellmSchema, { ...deployed, LLM_GATEWAY: 'litellm' }),
-    ).toContain('LITELLM_MASTER_KEY');
-  });
-
-  it('does not require it when the gateway is native', () => {
-    expect(
-      namesOf(litellmSchema, { ...deployed, LLM_GATEWAY: 'native' }),
-    ).not.toContain('LITELLM_MASTER_KEY');
-  });
-
-  /**
-   * The case the flip created: an unset value reaches the rule as the enum's
-   * default, which is `native`. Asserted separately from the explicit
-   * `native` above, because the two stop being the same thing when B6 moves
-   * the default again.
-   */
-  it('does not require it when nothing names a gateway', () => {
-    expect(namesOf(litellmSchema, deployed)).not.toContain(
-      'LITELLM_MASTER_KEY',
-    );
-  });
-
-  it('is silent outside a deployed environment, proxy or not', () => {
-    expect(
-      namesOf(litellmSchema, {
-        LITELLM_PROXY_URL: 'http://proxy:4000',
-        TARGET_ENV: 'local',
-        LLM_GATEWAY: 'litellm',
-      }),
-    ).not.toContain('LITELLM_MASTER_KEY');
   });
 });

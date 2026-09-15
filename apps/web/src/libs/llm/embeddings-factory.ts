@@ -1,13 +1,7 @@
 import { embed, embedMany } from 'ai';
-import { createOpenAI } from '@ai-sdk/openai';
 import { AiUsageStep } from '@/generated/prisma/client';
 import { trackAiUsage } from '@/features/ai-usage/services/commands/create-ai-usage-command';
-import type {
-  LiteLLMCredentials,
-  BaseEmbeddingsConfig,
-  EmbeddingsProvider,
-} from './types';
-import { DEFAULT_EMBEDDINGS_MODEL } from '@ragenai/rag-core';
+import type { EmbeddingsProvider } from './types';
 
 export class TrackedEmbeddingsProvider implements EmbeddingsProvider {
   readonly model: string;
@@ -87,57 +81,5 @@ export class TrackedEmbeddingsProvider implements EmbeddingsProvider {
     }
 
     return embedding;
-  }
-}
-
-export class EmbeddingsFactory {
-  static createInstance(
-    credentials: LiteLLMCredentials,
-    config: BaseEmbeddingsConfig,
-    organizationId?: string,
-    userId?: string,
-    projectId?: string,
-  ): EmbeddingsProvider {
-    if (!credentials.baseUrl) {
-      throw new Error('LiteLLM baseUrl is required for embeddings');
-    }
-
-    const baseUrl = credentials.baseUrl.endsWith('/')
-      ? credentials.baseUrl.slice(0, -1)
-      : credentials.baseUrl;
-
-    const litellm = createOpenAI({
-      baseURL: `${baseUrl}/v1`,
-      apiKey: credentials.apiKey || 'sk-litellm',
-      // Strip encoding_format from embedding requests to avoid LiteLLM/Bedrock Cohere bug
-      // where embedding_types is sent as string instead of array
-      fetch: async (url, init) => {
-        if (init?.body && typeof init.body === 'string') {
-          try {
-            const body = JSON.parse(init.body);
-            if (body.encoding_format !== undefined) {
-              delete body.encoding_format;
-              init = { ...init, body: JSON.stringify(body) };
-            }
-          } catch {
-            // not JSON, pass through
-          }
-        }
-        return fetch(url, init);
-      },
-    });
-
-    // Last-resort fallback. Kept aligned with the callers' default and with
-    // VECTOR_SIZE's 3584 default — a 1024-dim fallback here would silently
-    // produce vectors Qdrant rejects. See ADR-26.
-    const modelName = config.model || DEFAULT_EMBEDDINGS_MODEL;
-    return new TrackedEmbeddingsProvider(
-      litellm.textEmbeddingModel(modelName),
-      modelName,
-      'litellm',
-      organizationId,
-      userId,
-      projectId,
-    );
   }
 }

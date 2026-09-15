@@ -98,9 +98,9 @@ export default defineConfig({
   },
 
   gateway: {
-    // Every model call goes through LiteLLM (ADR-04).
-    url: process.env.LITELLM_PROXY_URL ?? 'http://localhost:4000',
-    masterKey: process.env.LITELLM_MASTER_KEY,
+    // Ragen calls providers itself (ADR-49). The shipped route table is the
+    // default; name your own here.
+    routesPath: process.env.LLM_ROUTES_PATH,
   },
 
   vectorStore: {

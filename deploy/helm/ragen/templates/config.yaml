@@ -11,7 +11,7 @@ data:
     here, where `kubectl describe configmap` shows it.
   */}}
   {{- range $key, $value := .Values.config }}
-  {{- if and $value (not (has $key (list "DATABASE_URL" "QDRANT_URL" "REDIS_URL" "LITELLM_PROXY_URL" "DOCLING_URL" "PRESIDIO_ANALYZER_URL" "PRESIDIO_ANONYMIZER_URL" "TEMPORAL_SERVER_ADDRESS"))) }}
+  {{- if and $value (not (has $key (list "DATABASE_URL" "QDRANT_URL" "REDIS_URL" "DOCLING_URL" "PRESIDIO_ANALYZER_URL" "PRESIDIO_ANONYMIZER_URL" "TEMPORAL_SERVER_ADDRESS"))) }}
   {{ $key }}: {{ $value | quote }}
   {{- end }}
   {{- end }}

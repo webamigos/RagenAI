@@ -31,23 +31,10 @@ function providerSection(choice: LlmProviderChoice): string[] {
     `    model: ${config.upstreamModel}`,
   ];
 
-  const yamlLines = [
-    `  - model_name: ${config.modelName}`,
-    '    litellm_params:',
-    `      model: ${config.litellmModel}`,
-    `      api_key: os.environ/${config.apiKeyEnvVar}`,
-  ];
-
   if (config.embeddings) {
     envLines.push(
       `EMBEDDINGS_MODEL=${config.embeddings.modelName}`,
       `VECTOR_SIZE=${config.embeddings.vectorSize}`,
-    );
-    yamlLines.push(
-      `  - model_name: ${config.embeddings.modelName}`,
-      '    litellm_params:',
-      `      model: ${config.embeddings.litellmModel}`,
-      `      api_key: os.environ/${config.apiKeyEnvVar}`,
     );
     routeLines.push(
       `  ${config.embeddings.modelName}:`,
@@ -75,19 +62,6 @@ function providerSection(choice: LlmProviderChoice): string[] {
     'The table shipped in the repository routes to Azure, Bedrock, Vertex and',
     'Scaleway. Those entries are not wrong, they are simply not yours.',
     '',
-    `<details><summary>Prefer to run a proxy instead?</summary>`,
-    '',
-    'Set `LLM_GATEWAY=litellm` rather than `native`, leave the route table',
-    'alone, and add this under the existing `model_list:` key in',
-    '`infra/litellm/config.yaml`:',
-    '',
-    '```yaml',
-    ...yamlLines,
-    '```',
-    '',
-    'Then `docker compose restart litellm`.',
-    '',
-    '</details>',
     ...(config.embeddings ? [] : secondProviderForEmbeddings(config.label)),
     '',
   ];

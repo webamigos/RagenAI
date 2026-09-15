@@ -7,11 +7,7 @@ import {
   STORAGE_SEAM,
   type ProviderSeam,
 } from './provider-seams';
-import {
-  allOrNone,
-  requiredForProvider,
-  requiredInDeployedEnvs,
-} from './rules';
+import { allOrNone, requiredForProvider } from './rules';
 
 type Ctx = z.RefinementCtx;
 type Env = Record<string, unknown>;
@@ -102,35 +98,4 @@ export function fieldGroupRules(
       allOrNone(env, ctx, vars, label);
     }
   };
-}
-
-/**
- * `LITELLM_MASTER_KEY` is mandatory on a deployment **only when that
- * deployment talks to a proxy**.
- *
- * Four apps used to demand it unconditionally, with the reason
- * "every model call is authenticated against the proxy" — true while
- * `LLM_GATEWAY` defaulted to `litellm`, and false from the moment the default
- * became `native`. Left alone, the flip would have refused to boot every
- * deployed environment on the new default over a credential nothing on that
- * path authenticates with, and the obvious workaround — invent a dummy master
- * key — is exactly how a boot check stops being believed. `apps/worker`'s
- * `isMasterKeyRequired` already carried this reasoning for the provider it
- * builds; the env contract did not.
- *
- * The comparison is against `litellm` rather than for `native` on purpose: the
- * value reaching a `superRefine` has already been through the enum's
- * `.default()`, so an unset variable arrives as the default and an
- * unrecognised one never arrives at all.
- */
-export function litellmRules(
-  env: Env,
-  ctx: Ctx,
-  reason = 'every model call is authenticated against the proxy',
-): void {
-  if (env.LLM_GATEWAY !== 'litellm') {
-    return;
-  }
-
-  requiredInDeployedEnvs(env, ctx, ['LITELLM_MASTER_KEY'], reason);
 }

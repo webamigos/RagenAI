@@ -9,24 +9,11 @@ describe('resolveLlmProviderChoice', () => {
     expect(result.envUpdates).toEqual({
       OPENAI_API_KEY: 'sk-test-key',
       DEFAULT_MODEL: 'gpt-4o-mini',
-      LLM_GATEWAY: 'native',
       DEFAULT_MODEL_PROVIDER: 'litellm',
       REPHRASE_MODEL: 'gpt-4o-mini',
       EMBEDDINGS_MODEL: 'text-embedding-3-small',
       VECTOR_SIZE: '1536',
     });
-    expect(result.liteLLMEntries).toEqual([
-      {
-        modelName: 'gpt-4o-mini',
-        model: 'openai/gpt-4o-mini',
-        apiKeyEnvVar: 'OPENAI_API_KEY',
-      },
-      {
-        modelName: 'text-embedding-3-small',
-        model: 'openai/text-embedding-3-small',
-        apiKeyEnvVar: 'OPENAI_API_KEY',
-      },
-    ]);
     expect(result.embeddingsConfigured).toBe(true);
 
     // The route table is what a scaffolded install actually reads, since
@@ -47,17 +34,9 @@ describe('resolveLlmProviderChoice', () => {
     expect(result.envUpdates).toEqual({
       ANTHROPIC_API_KEY: 'sk-ant-test-key',
       DEFAULT_MODEL: 'claude-haiku-4-5-direct',
-      LLM_GATEWAY: 'native',
       DEFAULT_MODEL_PROVIDER: 'litellm',
       REPHRASE_MODEL: 'claude-haiku-4-5-direct',
     });
-    expect(result.liteLLMEntries).toEqual([
-      {
-        modelName: 'claude-haiku-4-5-direct',
-        model: 'anthropic/claude-haiku-4-5-20251001',
-        apiKeyEnvVar: 'ANTHROPIC_API_KEY',
-      },
-    ]);
     // Leaving EMBEDDINGS_MODEL alone is the point: overriding it with
     // something this key cannot serve would break the knowledge base in a
     // way that only shows up on the first upload.
@@ -96,14 +75,5 @@ describe('resolveLlmProviderChoice', () => {
 
     expect(envUpdates.VECTOR_SIZE).toBe(String(openai?.vectorSize));
     expect(envUpdates.EMBEDDINGS_MODEL).toBe(openai?.modelName);
-  });
-
-  it('gives every LiteLLM entry the key env var it was configured with', () => {
-    for (const choice of ['openai', 'anthropic'] as const) {
-      const { liteLLMEntries } = resolveLlmProviderChoice(choice, 'key');
-      for (const entry of liteLLMEntries) {
-        expect(entry.apiKeyEnvVar).toBe(LLM_PROVIDERS[choice].apiKeyEnvVar);
-      }
-    }
   });
 });

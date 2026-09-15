@@ -11,7 +11,6 @@ describe('manualLlmSetupInstructions', () => {
       expect(guide).toContain(config.label);
       expect(guide).toContain(`${config.apiKeyEnvVar}=`);
       expect(guide).toContain(`DEFAULT_MODEL=${config.modelName}`);
-      expect(guide).toContain(`model: ${config.litellmModel}`);
     }
   });
 
@@ -33,7 +32,6 @@ describe('manualLlmSetupInstructions', () => {
   it('gives OpenAI an embedding model and its matching vector size', () => {
     expect(guide).toContain('EMBEDDINGS_MODEL=text-embedding-3-small');
     expect(guide).toContain('VECTOR_SIZE=1536');
-    expect(guide).toContain('model: openai/text-embedding-3-small');
   });
 
   it('says plainly that Anthropic cannot serve embeddings', () => {
@@ -73,7 +71,6 @@ describe('manualLlmSetupInstructions', () => {
 
   it('names both files to edit and how to apply them', () => {
     expect(guide).toContain('.env.local');
-    expect(guide).toContain('infra/litellm/config.yaml');
-    expect(guide).toContain('docker compose restart litellm');
+    expect(guide).toContain('infra/llm-gateway/routes.yaml');
   });
 });

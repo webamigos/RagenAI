@@ -3,11 +3,10 @@ import type {
   CallApiContextParams,
   ProviderResponse,
 } from 'promptfoo';
-import { ChatCompletionFactory } from '@/libs/llm/chat-completion-factory';
 import { conversationChain } from '@/libs/chains/conversation-chain/chain';
 import {
   createNoopModeration,
-  getLiteLLMCredentials,
+  evalChatModel,
   DEFAULT_EVAL_MODEL,
 } from './shared';
 
@@ -39,10 +38,7 @@ export class ConversationProvider implements ApiProvider {
   ): Promise<ProviderResponse> {
     const model = this.providerConfig.model ?? DEFAULT_EVAL_MODEL;
 
-    const answerGenerator = ChatCompletionFactory.createInstance(
-      getLiteLLMCredentials(),
-      { model },
-    );
+    const answerGenerator = evalChatModel(model);
 
     try {
       const chain = await conversationChain({

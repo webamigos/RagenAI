@@ -42,7 +42,6 @@ export async function POST(request: NextRequest) {
     const model = await createChatCompletionInstanceWithOrg(
       { model: GENERATOR_MODEL, temperature: 0.3 },
       orgId,
-      true,
     );
 
     const result = generateOptimizedDocument(body.content, model);

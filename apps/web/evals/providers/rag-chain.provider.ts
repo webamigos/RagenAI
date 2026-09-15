@@ -1,5 +1,4 @@
 import type { ApiProvider, ProviderResponse } from 'promptfoo';
-import { ChatCompletionFactory } from '@/libs/llm/chat-completion-factory';
 import { basicRagChain } from '@/libs/chains/basic-rag/chain';
 import { MockVectorStoreClient } from '../fixtures/mock-vector-store';
 import demoCorpus from '../fixtures/documents/demo-corpus.json' with { type: 'json' };
@@ -8,7 +7,7 @@ import type { VectorStoreDocument } from '@/libs/vector-store/types';
 import {
   createNoopModeration,
   createNoopEmbeddings,
-  getLiteLLMCredentials,
+  evalChatModel,
   DEFAULT_EVAL_MODEL,
 } from './shared';
 
@@ -46,15 +45,8 @@ export class RagChainProvider implements ApiProvider {
 
   async callApi(prompt: string): Promise<ProviderResponse> {
     const model = this.providerConfig.model ?? DEFAULT_EVAL_MODEL;
-    const credentials = getLiteLLMCredentials();
-
-    const answerGenerator = ChatCompletionFactory.createInstance(credentials, {
-      model,
-    });
-    const questionRephraser = ChatCompletionFactory.createInstance(
-      credentials,
-      { model },
-    );
+    const answerGenerator = evalChatModel(model);
+    const questionRephraser = evalChatModel(model);
 
     try {
       const chain = await basicRagChain({

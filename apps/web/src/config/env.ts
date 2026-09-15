@@ -4,7 +4,6 @@ import {
   fragments,
   parseEnv,
   TOKEN_VAULT_GROUP,
-  litellmRules,
   requiredInDeployedEnvs,
   speechRules,
   storageRules,
@@ -55,7 +54,7 @@ import { z } from 'zod';
  */
 export const webEnvSchema = fragments.targetEnv
   .merge(fragments.database)
-  .merge(fragments.litellm)
+  .merge(fragments.llmGateway)
   .merge(fragments.models)
   .merge(fragments.temporal)
   .merge(fragments.redis)
@@ -104,8 +103,6 @@ export const webEnvSchema = fragments.targetEnv
   })
   .superRefine((env, ctx) => {
     // Only on the proxy path — `native` is the default and authenticates
-    // nothing against a proxy. See `litellmRules`.
-    litellmRules(env, ctx);
 
     requiredInDeployedEnvs(
       env,

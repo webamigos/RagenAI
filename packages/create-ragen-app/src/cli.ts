@@ -20,7 +20,6 @@ import {
   type EncryptionSelection,
 } from './encryption-provider';
 import { applyEnvOverrides } from './env-file';
-import { addLiteLLMModel, type LiteLLMModelEntry } from './litellm-config';
 import { manualLlmSetupInstructions } from './manual-setup';
 import { ROUTE_TABLE_PATH, writeRouteTable } from './route-table';
 import { checkNodeVersion } from './node-version';
@@ -202,11 +201,9 @@ export async function run(argv: string[]): Promise<boolean> {
   }
 
   if (llmChoice) {
-    // The route table is what the install actually uses: `LLM_GATEWAY` is
-    // `native` for both providers the wizard offers. The proxy config is
-    // written too, so setting `LLM_GATEWAY=litellm` is a working rollback.
+    // The route table is the whole of it now: B6 removed the proxy, so there
+    // is no second file to keep in step and no rollback that needs one.
     writeRouteTable(targetDir, llmChoice.routes);
-    patchLiteLLMConfig(targetDir, llmChoice.liteLLMEntries);
 
     if (!llmChoice.embeddingsConfigured) {
       clack.log.warn(
@@ -631,24 +628,6 @@ async function promptLlmProvider(): Promise<LlmProviderPromptResult> {
     cancelled: false,
     choice: resolveLlmProviderChoice(choice as LlmProviderChoice, apiKey),
   };
-}
-
-function patchLiteLLMConfig(
-  targetDir: string,
-  entries: LiteLLMModelEntry[],
-): void {
-  const configPath = join(targetDir, 'infra/litellm/config.yaml');
-  // Reversed because each insert goes directly under `model_list:`, so the
-  // last one applied ends up on top. Reading the file afterwards should show
-  // the chat model first and the embedding model under it, in the order the
-  // wizard asked about them.
-  const patched = [...entries]
-    .reverse()
-    .reduce(
-      (config, entry) => addLiteLLMModel(config, entry),
-      readFileSync(configPath, 'utf8'),
-    );
-  writeFileSync(configPath, patched);
 }
 
 /**

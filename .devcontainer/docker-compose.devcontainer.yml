@@ -1,7 +1,7 @@
 # The workspace container — the only service this file adds. Every backing
 # service comes from the repository's own docker-compose.yml, which this file
 # is layered on top of (see .devcontainer/devcontainer.json). There is
-# deliberately no second copy of the Postgres/Qdrant/LiteLLM definitions here:
+# deliberately no second copy of the Postgres/Qdrant definitions here:
 # a copy would drift, and drift in a service definition is invisible until
 # something behaves differently inside the container than on a laptop.
 #
@@ -26,7 +26,6 @@ services:
       # values intact and unrewritten.
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-pass123}@postgres:5432/${POSTGRES_DB:-ragen}
       QDRANT_URL: http://qdrant:6333
-      LITELLM_PROXY_URL: http://litellm:4000
       TEMPORAL_SERVER_ADDRESS: temporal:7233
       REDIS_URL: redis://redis:6379
       # Next's dev server watches a bind mount, which delivers no inotify

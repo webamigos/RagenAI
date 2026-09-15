@@ -1,3 +1,4 @@
+import { nativeChatInstance } from '@/libs/llm/native-models';
 import type { ModerationInstance } from '@/app/lib/services/llm';
 import type { EmbeddingsProvider } from '@/libs/llm/types/embeddings';
 import type { LiteLLMCredentials } from '@/libs/llm/types/credentials';
@@ -11,12 +12,17 @@ import type { LiteLLMCredentials } from '@/libs/llm/types/credentials';
  */
 export const DEFAULT_EVAL_MODEL = 'gemini-2.5-flash';
 
-export function getLiteLLMCredentials(): LiteLLMCredentials {
-  return {
-    provider: 'litellm',
-    baseUrl: process.env.LITELLM_PROXY_URL || 'http://localhost:4000',
-    apiKey: process.env.LITELLM_MASTER_KEY,
-  };
+/**
+ * The chat model an eval runs against.
+ *
+ * Built through the same gateway the application uses, so a suite measures the
+ * product rather than a second code path that happens to resemble it. It used
+ * to build a proxy client from `LITELLM_PROXY_URL`; B6 removed the proxy, and
+ * the model id now resolves against `infra/llm-gateway/routes.yaml` like every
+ * other call in the repository.
+ */
+export function evalChatModel(model: string) {
+  return nativeChatInstance({ model });
 }
 
 /**

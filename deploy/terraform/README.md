@@ -39,7 +39,6 @@ config:
   DATABASE_URL: postgresql://<user>:<password>@<host>:5432/<database>
 ```
 
-The same applies to `litellm.databaseUrl`.
 
 ## Secrets and state
 

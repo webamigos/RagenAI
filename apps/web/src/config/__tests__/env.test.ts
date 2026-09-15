@@ -12,13 +12,11 @@ import { parseWebEnv } from '../env';
  */
 const base = {
   DATABASE_URL: 'postgresql://user:pass@localhost:5432/ragen',
-  LITELLM_PROXY_URL: 'http://localhost:4000',
 };
 
 const deployed = {
   ...base,
   TARGET_ENV: 'demo',
-  LITELLM_MASTER_KEY: 'sk-x',
   SECRET_KEY: 'k',
   SESSION_AUTH_SECRET: 's',
   BETTER_AUTH_SECRET: 'b',
@@ -37,18 +35,6 @@ describe('the apps/web environment contract', () => {
     expect(parseWebEnv({ ...base, DATABASE_URL: 'not-a-url' }).ok).toBe(false);
   });
 
-  it('rejects a proxy endpoint with no scheme', () => {
-    // `z.string().url()` alone accepts `localhost:4000` — it reads
-    // `localhost:` as the scheme. Dropping `http://` is the single most
-    // likely way to mistype this.
-    const result = parseWebEnv({
-      ...base,
-      LITELLM_PROXY_URL: 'localhost:4000',
-    });
-
-    expect(result.ok).toBe(false);
-  });
-
   it('accepts a fully configured deployment', () => {
     expect(parseWebEnv(deployed).ok).toBe(true);
   });
@@ -64,33 +50,6 @@ describe('the apps/web environment contract', () => {
       }
     },
   );
-
-  /**
-   * `LITELLM_MASTER_KEY` left the list above when `LLM_GATEWAY` started
-   * defaulting to `native`. It is a proxy credential, and nothing on the
-   * default path authenticates against a proxy — demanding it anyway refuses
-   * to boot a correctly configured deployment, and the obvious workaround is
-   * to invent a dummy value, which is how a boot check stops being believed.
-   */
-  it('refuses a deployment missing LITELLM_MASTER_KEY once the proxy is named', () => {
-    const result = parseWebEnv({
-      ...deployed,
-      LITELLM_MASTER_KEY: undefined,
-      LLM_GATEWAY: 'litellm',
-    });
-
-    expect(result.ok).toBe(false);
-    if (!result.ok) {
-      expect(result.report).toContain('LITELLM_MASTER_KEY');
-    }
-  });
-
-  /** Asserted as a deployment that parses, not as a report that stays silent. */
-  it('accepts a deployment without it when no gateway is named', () => {
-    expect(parseWebEnv({ ...deployed, LITELLM_MASTER_KEY: undefined }).ok).toBe(
-      true,
-    );
-  });
 
   it('refuses a deployment with no origin for email links', () => {
     // getBaseUrl() throws for this, but every caller is inside a mailer that
