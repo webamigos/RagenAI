@@ -38,7 +38,75 @@ const REQUIRED: Record<Exclude<ProviderId, 'openai-compatible'>, string[]> = {
   // just an OpenAI key configures nothing else.
   openai: ['OPENAI_API_KEY'],
   anthropic: ['ANTHROPIC_API_KEY'],
+  // One key, and nothing else required. Everything below is optional and
+  // narrows where a request may be served from.
+  openrouter: ['OPENROUTER_API_KEY'],
 };
+
+/** A comma-separated list of provider slugs, or undefined when unset. */
+function slugList(name: string): string[] | undefined {
+  const raw = process.env[name]?.trim();
+  if (!raw) {
+    return undefined;
+  }
+  const slugs = raw
+    .split(',')
+    .map((slug) => slug.trim())
+    .filter((slug) => slug.length > 0);
+  return slugs.length > 0 ? slugs : undefined;
+}
+
+/**
+ * OpenRouter's provider-routing preferences, as the `provider` object it takes
+ * in the request body.
+ *
+ * **Every one of these is off unless set, including the two that
+ * `docs/model-routing.md` used to describe as defaults.** That document
+ * promised EU-region routing and zero data retention out of the box; no
+ * TypeScript file had ever read any of these six variables, so nothing was
+ * enforcing either, and no deployment has them today. Turning them on by
+ * default here would be a new behaviour dressed as a restoration — and it
+ * would break the case this provider exists for, since EU in-region routing
+ * needs an enterprise or pay-as-you-go plan and a newcomer's free key would
+ * start failing. They are one variable each, and the documentation now says so
+ * instead of claiming them.
+ */
+function openRouterProviderPreferences(): Record<string, unknown> | undefined {
+  const preferences: Record<string, unknown> = {};
+
+  const order = slugList('OPENROUTER_PROVIDER_ORDER');
+  if (order) {
+    preferences.order = order;
+  }
+  const only = slugList('OPENROUTER_PROVIDER_ONLY');
+  if (only) {
+    preferences.only = only;
+  }
+  const ignore = slugList('OPENROUTER_PROVIDER_IGNORE');
+  if (ignore) {
+    preferences.ignore = ignore;
+  }
+
+  const dataCollection = process.env.OPENROUTER_DATA_COLLECTION?.trim();
+  if (dataCollection) {
+    if (dataCollection !== 'allow' && dataCollection !== 'deny') {
+      throw new Error(
+        `OPENROUTER_DATA_COLLECTION must be "allow" or "deny", got "${dataCollection}"`,
+      );
+    }
+    preferences.data_collection = dataCollection;
+  }
+
+  // Only `true` turns it on. A typo must not read as "yes" on a setting whose
+  // whole job is to keep prompts off retaining endpoints.
+  if (process.env.OPENROUTER_ZDR?.trim() === 'true') {
+    preferences.zdr = true;
+  }
+
+  return Object.keys(preferences).length > 0
+    ? { provider: preferences }
+    : undefined;
+}
 
 /**
  * An OpenAI-compatible upstream is named, and its variables are derived from
@@ -235,6 +303,17 @@ export class EnvCredentialSource implements CredentialSource {
         return {
           apiKey: process.env.ANTHROPIC_API_KEY,
           baseUrl: process.env.ANTHROPIC_BASE_URL,
+        };
+      case 'openrouter':
+        return {
+          apiKey: process.env.OPENROUTER_API_KEY,
+          // Unset means OpenRouter's own endpoint. Set it to
+          // `https://eu.openrouter.ai/api` to keep traffic in the EU, which
+          // their enterprise and pay-as-you-go plans offer.
+          baseUrl: process.env.OPENROUTER_BASE_URL,
+          // Attribution on the openrouter.ai dashboard, and nothing else.
+          headers: headersFromEnv('OPENROUTER_HEADERS'),
+          extraBody: openRouterProviderPreferences(),
         };
     }
   }

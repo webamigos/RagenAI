@@ -7,6 +7,7 @@ export const PROVIDER_IDS = [
   'vertex',
   'openai',
   'anthropic',
+  'openrouter',
   'openai-compatible',
 ] as const;
 
@@ -85,6 +86,18 @@ export type ProviderCredentials = {
    * vLLM and quietly fails for the rest.
    */
   readonly headers?: Record<string, string>;
+  /**
+   * Fields merged into every request body, for an upstream whose routing is
+   * expressed there rather than in a header or a URL.
+   *
+   * OpenRouter is the case that needs it: which upstream provider serves a
+   * model, whether to refuse providers that retain prompts, and whether to
+   * restrict to zero-data-retention endpoints are all a `provider` object in
+   * the JSON body. None of it can be said with a base URL, a key or a header,
+   * so a deployment that cares where its documents go could not express that
+   * without this.
+   */
+  readonly extraBody?: Record<string, unknown>;
   /**
    * Azure's `api-version` query parameter.
    *

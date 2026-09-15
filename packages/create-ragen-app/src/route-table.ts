@@ -11,6 +11,16 @@ export interface RouteTableEntry {
   provider: string;
   /** The upstream's own name for the model, which may differ from the id. */
   model: string;
+  /**
+   * Which credentials an `openai-compatible` route uses, and therefore which
+   * `LLM_<NAME>_*` variables it reads. Omitted for providers with one upstream.
+   * An `openai-compatible` route is not optional about it: resolving one with
+   * no connection throws `MissingCredentialsError` naming "a `connection` on
+   * the route", before any `LLM_*` variable is read. So omitting it scaffolds
+   * an install that refuses to serve the model at all, rather than one that
+   * reaches the wrong upstream.
+   */
+  connection?: string;
 }
 
 /**
@@ -32,8 +42,10 @@ export interface RouteTableEntry {
 export function renderRouteTable(entries: readonly RouteTableEntry[]): string {
   const routes = entries
     .map(
-      ({ modelName, provider, model }) =>
-        `  ${modelName}:\n    provider: ${provider}\n    model: ${model}\n`,
+      ({ modelName, provider, model, connection }) =>
+        `  ${modelName}:\n    provider: ${provider}\n` +
+        (connection ? `    connection: ${connection}\n` : '') +
+        `    model: ${model}\n`,
     )
     .join('');
 

@@ -4,6 +4,7 @@ import { createVertex } from '@ai-sdk/google-vertex';
 import { createAnthropic } from '@ai-sdk/anthropic';
 import { createOpenAI } from '@ai-sdk/openai';
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
+import { createOpenRouter } from '@openrouter/ai-sdk-provider';
 import type { LanguageModelV4 } from '@ai-sdk/provider';
 
 import type { ProviderCredentials, ProviderId, Route } from './types';
@@ -74,6 +75,29 @@ export const PROVIDER_FACTORIES: Record<
       // Unset means Anthropic proper. Set for a regional endpoint or a
       // gateway that speaks Anthropic's own API rather than OpenAI's.
       baseURL: credentials.baseUrl,
+    })(route.model),
+
+  /**
+   * OpenRouter, which is one key in front of most of the catalogue.
+   *
+   * Reachable through `openai-compatible` by pointing a base URL at it, and
+   * separate for the same two reasons `openai` is. It is the shortest path from
+   * "I want to try Ragen" to a working install — one key, every model, and
+   * embeddings too, so the knowledge base works rather than only chat. And its
+   * routing preferences live in the request body, which a base URL and a header
+   * cannot express: `provider.zdr`, `provider.data_collection` and
+   * `provider.order` are how a deployment says where its documents may go, and
+   * they are the difference between a privacy claim and a privacy setting.
+   */
+  openrouter: (route, credentials) =>
+    createOpenRouter({
+      apiKey: credentials.apiKey,
+      // Unset means OpenRouter's own endpoint. Set to reach the EU region, or
+      // a proxy in front of it.
+      ...(credentials.baseUrl ? { baseURL: credentials.baseUrl } : {}),
+      ...(credentials.headers ? { headers: credentials.headers } : {}),
+      // Provider preferences, already shaped as the body OpenRouter expects.
+      ...(credentials.extraBody ? { extraBody: credentials.extraBody } : {}),
     })(route.model),
 
   'openai-compatible': (route, credentials) =>
