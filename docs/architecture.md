@@ -44,11 +44,12 @@ This is an npm-workspaces monorepo (`apps/*` + `packages/*`):
 If the two sides disagree on the tokenizer, the hash, or the dimensionality,
 
 Supporting services — Docling, Presidio and the OTel collector — live
-in `infra/`; see [`../infra/README.md`](../infra/README.md). Their Railway
-settings, including which Dockerfile each service builds, are dashboard
-settings rather than files in this repository
+in `infra/`; see [`../infra/README.md`](../infra/README.md). Docling and
+Presidio each have a Railway service; the OTel collector is local only. For the
+two that are deployed, the Railway settings — including which Dockerfile each
+builds — are dashboard settings rather than files in this repository
 ([ADR-47](adrs/47-railway-configuration-lives-in-the-dashboard.md)), so moving
-one of these directories means editing that service in the Railway dashboard.
+either directory means editing that service in the dashboard.
 
 ## Inside `apps/web/src`
 
