@@ -46,7 +46,6 @@ const MANIFESTS = [
   'apps/admin/package.json',
   'apps/worker/package.json',
   'apps/mcp/package.json',
-  'apps/docs/package.json',
   'packages/rag-core/package.json',
   'packages/db/package.json',
 ];

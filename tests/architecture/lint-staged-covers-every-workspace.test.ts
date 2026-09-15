@@ -16,7 +16,7 @@ import { describe, expect, it } from 'vitest';
  *   `packages/litellm-client` (ADR-34) each shipped with an ESLint config and
  *   a `lint` script, so `turbo run lint` checked them in CI while nothing
  *   checked them on commit;
- * - `apps/docs` and `packages/db` had no ESLint config at all and no `lint`
+ * - `packages/db` had no ESLint config at all and no `lint`
  *   script, so no CI job covered them either — they were unlinted everywhere.
  *
  * A comment asking the next person to remember is what was there before, and

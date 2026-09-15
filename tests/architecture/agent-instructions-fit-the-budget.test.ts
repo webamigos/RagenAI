@@ -84,7 +84,6 @@ describe('agent instruction files fit the instruction budget', () => {
       'apps/api/AGENTS.md',
       'apps/admin/AGENTS.md',
       'apps/worker/AGENTS.md',
-      'apps/docs/AGENTS.md',
       'apps/mcp/AGENTS.md',
     ];
     const unwatched = candidates.filter(

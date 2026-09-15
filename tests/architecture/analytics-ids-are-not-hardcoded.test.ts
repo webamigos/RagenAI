@@ -14,17 +14,21 @@ import { describe, expect, it } from 'vitest';
  *
  * - the repository is Apache-2.0 and the application is meant to be
  *   self-hosted, so the id ships to every deployment; and
- * - `apps/docs/docs/self-hosting.md` tells self-hosters to set
- *   `TARGET_ENV=production`, which is precisely the gate that switched it on.
+ * - the self-hosting guide tells self-hosters to set `TARGET_ENV=production`,
+ *   which is precisely the gate that switched it on.
  *
  * So the default self-hosted install reported its visitors — inside an
  * authenticated product, where the path carries thread and document
  * `publicId`s — to a container the vendor owns. Nobody chose that.
  *
- * Measuring traffic is a vendor concern, and it now lives in `apps/docs`,
- * which nobody but the vendor deploys. Even there the id comes from
- * `DOCS_GTAG_ID` with no default, so a local `docs:dev` or somebody else's
- * docs build loads no script.
+ * Measuring traffic is a vendor concern, and it lives on the documentation
+ * site, which nobody but the vendor deploys.
+ *
+ * **That site left this repository**, and the assertions that went with it —
+ * that its id comes from `DOCS_GTAG_ID` with no default, and that the build
+ * ARG actually reaches the build — left with it. They belong wherever the site
+ * is built now. What stays here is the half that protects a self-hoster: no
+ * analytics id, anywhere, in the surfaces they run.
  *
  * This is the same family as `apps/web/src/app/emails/utils/base-url.ts`,
  * whose header records the identical mistake with the vendor's URLs: a
@@ -88,9 +92,6 @@ function stripComments(source: string): string {
     .replace(/(^|[^:])\/\/.*$/gm, '$1');
 }
 
-function read(relativePath: string): string {
-  return readFileSync(join(REPO_ROOT, relativePath), 'utf8');
-}
 
 const files = [
   ...sourceFiles(join(REPO_ROOT, 'apps')),
@@ -100,8 +101,6 @@ const files = [
   code: stripComments(readFileSync(file, 'utf8')),
 }));
 
-const DOCS_CONFIG = 'apps/docs/docusaurus.config.ts';
-const DOCS_DOCKERFILE = 'apps/docs/Dockerfile';
 const PRODUCT_APPS = ['apps/web/', 'apps/admin/'];
 
 describe('analytics ids', () => {
@@ -143,52 +142,9 @@ describe('analytics ids', () => {
         '',
         'These are the surfaces a customer self-hosts, and their paths carry',
         'thread and document identifiers. Traffic measurement belongs to',
-        `${DOCS_CONFIG}, which only the vendor deploys.`,
+        'the documentation site, which only the vendor deploys.',
       ].join('\n'),
     ).toEqual([]);
-  });
-});
-
-/**
- * The docs site is where measurement is allowed, so the assertions there are
- * the mirror image: not "no id", but "the id can only come from outside the
- * repository, and it actually reaches the build".
- *
- * A static site resolves `process.env` at build time, and Railway exposes a
- * service variable to a Dockerfile build only through an `ARG`. Miss either
- * half and the site simply carries no analytics — with no error, in a
- * deployment that looks configured. That is the failure this guards.
- */
-describe('the docs site reads its measurement id from the environment', () => {
-  const config = read(DOCS_CONFIG);
-  const dockerfile = read(DOCS_DOCKERFILE);
-
-  it('reads DOCS_GTAG_ID rather than carrying an id', () => {
-    expect(stripComments(config)).toMatch(/process\.env\.DOCS_GTAG_ID/);
-  });
-
-  it('omits the gtag option entirely when the variable is unset', () => {
-    // `gtag: { trackingID: undefined }` throws in the plugin's option
-    // validation, so the option has to be spread in conditionally rather than
-    // passed with an empty value. An unset variable must mean "no analytics",
-    // not "broken build".
-    expect(stripComments(config)).toMatch(/\.\.\.\([\s\S]*?gtag:/);
-  });
-
-  it('declares the build ARG, and exports it so the build can read it', () => {
-    // An ARG alone is invisible to `process.env`; without the ENV line the
-    // site builds clean and measures nothing.
-    expect(dockerfile).toMatch(/^ARG DOCS_GTAG_ID$/m);
-    expect(dockerfile).toMatch(/^ENV DOCS_GTAG_ID=\$DOCS_GTAG_ID$/m);
-  });
-
-  it('declares it before the build step that consumes it', () => {
-    const declaration = dockerfile.indexOf('ENV DOCS_GTAG_ID=');
-    const build = dockerfile.indexOf('RUN npm run build');
-
-    expect(declaration).toBeGreaterThan(-1);
-    expect(build).toBeGreaterThan(-1);
-    expect(declaration).toBeLessThan(build);
   });
 });
 

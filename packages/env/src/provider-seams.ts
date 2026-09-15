@@ -5,7 +5,7 @@
  * implementation, and that choice makes a different set of variables mandatory
  * and a different set meaningful. That fact was previously written down three
  * times in three languages — as `requiredForProvider` calls in
- * `provider-rules.ts`, as prose in `apps/docs/docs/configuration.md`, and as
+ * `provider-rules.ts`, as prose on the documentation site, and as
  * whatever the person editing `.env` happened to remember. The copies drifted,
  * which is not a hypothesis: the review of #1114 found the documentation
  * listing `S3_ENDPOINT_URL` as required when it is optional, and omitting

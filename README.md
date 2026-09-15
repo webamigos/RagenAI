@@ -119,34 +119,34 @@ by CI instead of living in someone's head.
 
 The app itself — an assistant answering from a knowledge base:
 
-![Ragen chat](apps/docs/docs/img/web/chat.png)
+![Ragen chat](docs/img/web/chat.png)
 
 The knowledge base, where documents are uploaded, versioned and shared:
 
-![Knowledge base](apps/docs/docs/img/web/knowledge-base.png)
+![Knowledge base](docs/img/web/knowledge-base.png)
 
 Settings, which is where most of the per-user and per-organization behaviour
 is decided:
 
-![Application settings](apps/docs/docs/img/web/settings-general.png)
+![Application settings](docs/img/web/settings-general.png)
 
 The platform admin panel — one installation, every organization in it. This is
 the operator's surface and a separate app; the per-organization settings a
 customer's own owners and admins use live in the main app, and neither is a
 bigger version of the other. The two roles are unrelated fields on unrelated
-tables: [Two kinds of administrator](apps/docs/docs/concepts.md#two-kinds-of-administrator).
+tables: [Two kinds of administrator](https://docs.ragen.ai/concepts/access-control).
 
-![Ragen admin dashboard](apps/docs/docs/img/admin/dashboard-full.png)
+![Ragen admin dashboard](docs/img/admin/dashboard-full.png)
 
 Connector health, showing which MCP integrations are failing and why:
 
-![Connector health](apps/docs/docs/img/admin/connector-health.png)
+![Connector health](docs/img/admin/connector-health.png)
 
 Every page of the panel is documented, with screenshots regenerated from a
 scripted demo state rather than captured by hand — unless one is marked
-`manual` in `apps/docs/screenshots/capture.mts`, which is how a hand-placed
+`manual` in `scripts/screenshots/capture.mts`, which is how a hand-placed
 image survives the next run:
-[Admin panel](apps/docs/docs/admin-panel.md).
+[Admin panel](https://docs.ragen.ai/security/admin-panel).
 
 Three screenshots of the app itself are currently such exceptions. They are the
 design-system v2 targets from `apps/web/design_handoff_ragen_panel/`, so they
@@ -478,7 +478,6 @@ share one Prisma schema.
 | [`apps/api`](apps/api)       | NestJS public API, the OpenAI-compatible surface                                      |
 | [`apps/worker`](apps/worker) | Temporal worker: ingest, embedding, re-indexing                                       |
 | [`apps/admin`](apps/admin)   | Platform admin — organizations, models, limits, usage                                 |
-| [`apps/docs`](apps/docs)     | The Docusaurus documentation site                                                     |
 | [`apps/mcp`](apps/mcp)       | MCP server exposing Ragen's own chat to external MCP clients (Claude Desktop, Cursor) |
 
 | Package                                                                  | Shared by                                                                                                             |
