@@ -1,8 +1,8 @@
 /**
  * Can this deployment actually serve what it is configured to use?
  *
- * Run it before flipping `LLM_GATEWAY` to `native` (B4), against the same
- * environment the app will get:
+ * Run it against the same environment the app will get — after changing a
+ * route, adding a model, or rotating a provider's credentials:
  *
  *   npm run gateway:preflight              # routing and credentials only
  *   npm run gateway:preflight -- --probe   # ...and one real call per model
@@ -13,7 +13,7 @@
  * variable holds JSON where Google's libraries want a file path; a preview
  * model 404'd because the route could not name its region; and the route table
  * itself was unreadable from the app's working directory. "Configured" and
- * "works" are different questions, and only the second one matters at a flip.
+ * "works" are different questions, and only the second one matters.
  *
  * See docs/lessons/a-provider-package-is-not-configured-until-something-calls-it.md.
  */
@@ -21,11 +21,7 @@ import { pathToFileURL } from 'node:url';
 
 import { embed, generateText } from 'ai';
 
-import {
-  UnknownModelError,
-  gatewayFromEnv,
-  gatewayModeFromEnv,
-} from '@ragenai/llm-gateway';
+import { UnknownModelError, gatewayFromEnv } from '@ragenai/llm-gateway';
 
 /** A model id this deployment will ask for, and where the id comes from. */
 type ConfiguredModel = {
@@ -149,15 +145,12 @@ async function check(
 
 async function main(): Promise<void> {
   const probe = process.argv.includes('--probe');
-  const mode = gatewayModeFromEnv();
 
-  console.log(`LLM_GATEWAY=${mode}`);
-  if (mode !== 'native') {
-    console.log(
-      'This checks the gateway path. The proxy path is unaffected by anything below.\n',
-    );
-  }
-
+  // There is one path now. This printed `LLM_GATEWAY=<mode>` and offered to
+  // reassure you that "the proxy path is unaffected" — B6 removed both the
+  // flag and the proxy, and took `gatewayModeFromEnv` with them, so this
+  // script had been failing to *load* since. See the note on the test that
+  // did not catch it.
   const models = configuredModels(process.env);
   if (models.length === 0) {
     console.error('No models configured — is DEFAULT_MODEL set?');
@@ -185,8 +178,11 @@ async function main(): Promise<void> {
   }
 
   // A fallback-only model that cannot be served is reported and does not fail
-  // the check: it is already broken on the proxy path, so it is not a reason to
-  // refuse a flip that changes nothing about it.
+  // the check. The original reason — that it was equally broken on the proxy
+  // path, so it was no reason to refuse a flip — expired with the proxy. The
+  // reason now is narrower and still holds: these sit on paths a deployment
+  // may never reach (a PDF the primary parser could not handle, an image on a
+  // text-only model), so saying so is proportionate and failing is not.
   const blocking = outcomes.filter(
     (o) => o.status !== 'ok' && !o.model.fallbackOnly,
   );
@@ -197,20 +193,25 @@ async function main(): Promise<void> {
   console.log();
   if (advisory.length > 0) {
     console.log(
-      `${advisory.length} fallback-only model(s) cannot be served. Not blocking — they are equally unserved on the proxy path.`,
+      `${advisory.length} fallback-only model(s) cannot be served. Not blocking — these sit on paths a deployment may never reach.`,
     );
   }
   if (blocking.length > 0) {
     console.error(
-      `${blocking.length} model(s) this deployment uses cannot be served. Do not flip LLM_GATEWAY here.`,
+      `${blocking.length} model(s) this deployment uses cannot be served.`,
     );
     process.exitCode = 1;
     return;
   }
+  // "required", not "configured": a fallback-only miss is reported above and
+  // does not block, so claiming every *configured* model was fine contradicted
+  // the advisory line printed three lines earlier — which is exactly what a
+  // local run showed, three MISSes followed by "Every configured model is
+  // routed and has credentials".
   console.log(
     probe
-      ? 'Every configured model answered. Safe to flip.'
-      : 'Every configured model is routed and has credentials. Re-run with --probe before flipping — presence is not usability.',
+      ? 'Every required model answered.'
+      : 'Every required model is routed and has credentials. Re-run with --probe — presence is not usability.',
   );
 }
 

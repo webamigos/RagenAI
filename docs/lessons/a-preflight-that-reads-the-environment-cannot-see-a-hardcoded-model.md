@@ -53,6 +53,30 @@ point. The general form: **`AGENTS.md`'s "a limit that is computed is not a
 limit — a limit is a call site" applies to route tables too.** A route table is
 proved by what calls it, not by what it contains.
 
+## The same script could not be loaded at all
+
+Found by running it, immediately after the routes above were added:
+
+```
+SyntaxError: The requested module '@ragenai/llm-gateway'
+  does not provide an export named 'gatewayModeFromEnv'
+```
+
+B6 deleted the flag and the function that read it; the script still imported
+both. So the tool that was supposed to catch the missing routes had itself been
+dead since that merge, and the two failures hid each other.
+
+`tests/scripts/gateway-preflight.test.ts` imports this script and was green
+throughout. The reason generalises: the package resolves to a CommonJS `dist`,
+and **Node's ESM loader link-checks named imports against it and throws, while
+vite's interop does not** — a missing name is simply `undefined`, and no test
+called the function. A test that imports a module without exercising it proves
+the file parses, not that it loads.
+
+The guard added with the fix reads the script's import block as text and checks
+every name against the package's actual exports, which is the cheapest thing
+that fails for the real reason.
+
 **Applies to**: every model id in this repository, and to the same shape
 wherever a checker enumerates configuration to decide what a deployment needs —
 the enumeration is a claim about completeness that nothing verifies.
