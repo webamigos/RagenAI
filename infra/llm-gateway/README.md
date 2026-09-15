@@ -37,7 +37,7 @@ schema that validates it, and the `# yaml-language-server:` line at the top of
 }
 ```
 
-- `provider` — one of `azure`, `bedrock`, `vertex`, `openai`,
+- `provider` — one of `azure`, `bedrock`, `vertex`, `openai`, `anthropic`,
   `openai-compatible`.
 - `model` — the upstream's own name, which is **not** the key. They differ
   wherever the upstream has its own spelling; Bedrock prefixes a region and a
@@ -120,11 +120,20 @@ running the proxy today needs no new secrets to run the gateway — which is wha
 lets the two be compared directly while `LLM_GATEWAY` still chooses between
 them.
 
-| provider  | variables                                                       |
-| --------- | --------------------------------------------------------------- |
-| `azure`   | `AZURE_API_KEY`, `AZURE_API_BASE`                               |
-| `bedrock` | `AWS_BEDROCK_REGION` (plus the default AWS credential chain)    |
-| `vertex`  | `VERTEX_PROJECT`, `VERTEX_LOCATION` (plus application defaults) |
+| provider    | variables                                                       |
+| ----------- | --------------------------------------------------------------- |
+| `azure`     | `AZURE_API_KEY`, `AZURE_API_BASE`                               |
+| `bedrock`   | `AWS_BEDROCK_REGION` (plus the default AWS credential chain)    |
+| `vertex`    | `VERTEX_PROJECT`, `VERTEX_LOCATION` (plus application defaults) |
+| `openai`    | `OPENAI_API_KEY` (`OPENAI_BASE_URL` optional)                   |
+| `anthropic` | `ANTHROPIC_API_KEY` (`ANTHROPIC_BASE_URL` optional)             |
+
+`anthropic` serves **chat only** — Anthropic publishes no embeddings endpoint,
+so a route pointing an embedding model there fails with
+`EmbeddingsUnsupportedError` rather than somewhere inside the AI SDK. The same
+models are also reachable through `bedrock` (`eu.anthropic.*`) and `vertex`;
+which one a deployment uses is a routing decision, which is why it lives in the
+table.
 
 ## Turning it on
 
@@ -132,7 +141,8 @@ them.
 LLM_GATEWAY=native
 ```
 
-`litellm` is the default and keeps the proxy. Anything else is refused at boot
+`native` is the default as of 2026-09-15; `litellm` keeps a proxy in front and
+is the documented rollback. Anything else is refused at boot
 rather than treated as the default — a typo that fell back would run the proxy
 arm while reporting the gateway's, and the only evidence would be a comparison
 that found no difference, which is also what a clean cutover looks like.

@@ -37,6 +37,7 @@ const REQUIRED: Record<Exclude<ProviderId, 'openai-compatible'>, string[]> = {
   // this family separate from `openai-compatible` is that a deployment with
   // just an OpenAI key configures nothing else.
   openai: ['OPENAI_API_KEY'],
+  anthropic: ['ANTHROPIC_API_KEY'],
 };
 
 /**
@@ -229,6 +230,11 @@ export class EnvCredentialSource implements CredentialSource {
           // Unset means OpenAI proper. A deployment behind a gateway or a
           // regional endpoint that still speaks OpenAI's own API sets it.
           baseUrl: process.env.OPENAI_BASE_URL,
+        };
+      case 'anthropic':
+        return {
+          apiKey: process.env.ANTHROPIC_API_KEY,
+          baseUrl: process.env.ANTHROPIC_BASE_URL,
         };
     }
   }

@@ -68,6 +68,10 @@ Five provider families — `azure`, `bedrock`, `vertex`, `openai` and
 `openai-compatible` — each a thin adapter taking a route and its credentials
 and returning a model. No routing decisions live in the package.
 
+*(Six since 2026-09-15: `anthropic` was added so a deployment holding a plain
+Anthropic key can use it directly, rather than only through Bedrock or Vertex.
+Chat only — Anthropic publishes no embeddings endpoint.)*
+
 **The route table is configuration, not a constant.** `infra/llm-gateway/routes.yaml`,
 validated by a zod schema at load, with a JSON Schema generated from the same
 zod schema for editor support. `LLM_ROUTES_PATH` points at a different file.

@@ -21,6 +21,23 @@ export class UnknownModelError extends Error {
   }
 }
 
+/**
+ * A route points at a provider that serves chat but not embeddings —
+ * `anthropic` today, which publishes no embeddings endpoint.
+ *
+ * Its own error rather than `UnknownModelError`: the model id *is* routed, and
+ * telling an operator "no route for …" would send them to the route table to
+ * add an entry that is already there. What is wrong is the entry's provider.
+ */
+export class EmbeddingsUnsupportedError extends Error {
+  constructor(modelId: string, provider: string) {
+    super(
+      `"${modelId}" routes to ${provider}, which serves no embedding models`,
+    );
+    this.name = 'EmbeddingsUnsupportedError';
+  }
+}
+
 export type GatewayOptions = {
   readonly routes: RouteTable;
   readonly credentials: CredentialSource;
@@ -59,9 +76,8 @@ export class LlmGateway {
   private readonly routes: RouteTable;
   private readonly credentials: CredentialSource;
   private readonly factories: Record<ProviderId, ProviderFactory>;
-  private readonly embeddingFactories: Record<
-    ProviderId,
-    EmbeddingProviderFactory
+  private readonly embeddingFactories: Partial<
+    Record<ProviderId, EmbeddingProviderFactory>
   >;
   private readonly isConfigured: (
     provider: ProviderId,
@@ -139,8 +155,23 @@ export class LlmGateway {
     modelId: string,
     options?: { scope?: CredentialScope },
   ): Promise<EmbeddingModelV4> {
-    const { route, credentials } = await this.route(modelId, options?.scope);
-    return this.embeddingFactories[route.provider](route, credentials);
+    const route = findRoute(this.routes, modelId);
+    if (!route) {
+      throw new UnknownModelError(modelId);
+    }
+
+    /**
+     * Before the credentials, not after. A provider that serves no embeddings
+     * serves none whether or not this deployment holds its key, so loading
+     * credentials first answers `MissingCredentialsError` — which sends an
+     * operator to set a variable that would change nothing.
+     */
+    const factory = this.embeddingFactories[route.provider];
+    if (!factory) {
+      throw new EmbeddingsUnsupportedError(modelId, route.provider);
+    }
+
+    return factory(route, await this.credentialsFor(route, options?.scope));
   }
 
   private async route(modelId: string, scope?: CredentialScope) {
@@ -149,11 +180,13 @@ export class LlmGateway {
       throw new UnknownModelError(modelId);
     }
 
-    const credentials = await this.credentials.forProvider(route.provider, {
+    return { route, credentials: await this.credentialsFor(route, scope) };
+  }
+
+  private async credentialsFor(route: Route, scope?: CredentialScope) {
+    return this.credentials.forProvider(route.provider, {
       connection: route.connection,
       scope,
     });
-
-    return { route, credentials };
   }
 }

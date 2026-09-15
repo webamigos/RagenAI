@@ -6,6 +6,7 @@ export const PROVIDER_IDS = [
   'bedrock',
   'vertex',
   'openai',
+  'anthropic',
   'openai-compatible',
 ] as const;
 

@@ -22,6 +22,7 @@ import {
 import { applyEnvOverrides } from './env-file';
 import { addLiteLLMModel, type LiteLLMModelEntry } from './litellm-config';
 import { manualLlmSetupInstructions } from './manual-setup';
+import { ROUTE_TABLE_PATH, writeRouteTable } from './route-table';
 import { checkNodeVersion } from './node-version';
 import {
   LLM_PROVIDERS,
@@ -201,6 +202,10 @@ export async function run(argv: string[]): Promise<boolean> {
   }
 
   if (llmChoice) {
+    // The route table is what the install actually uses: `LLM_GATEWAY` is
+    // `native` for both providers the wizard offers. The proxy config is
+    // written too, so setting `LLM_GATEWAY=litellm` is a working rollback.
+    writeRouteTable(targetDir, llmChoice.routes);
     patchLiteLLMConfig(targetDir, llmChoice.liteLLMEntries);
 
     if (!llmChoice.embeddingsConfigured) {
@@ -222,10 +227,14 @@ export async function run(argv: string[]): Promise<boolean> {
       [
         'No LLM provider configured, so chat and the knowledge base are off.',
         '',
-        'Two files to edit, then `docker compose restart litellm`:',
+        'This path leaves LLM_GATEWAY=litellm, so configure the proxy —',
+        'two files to edit, then `docker compose restart litellm`:',
         '  .env.local              — your key, DEFAULT_MODEL, REPHRASE_MODEL,',
         '                            EMBEDDINGS_MODEL, VECTOR_SIZE',
         '  infra/litellm/config.yaml — a model_list entry per model',
+        '',
+        'To call providers directly instead, set LLM_GATEWAY=native and put',
+        `a route per model in ${ROUTE_TABLE_PATH}.`,
         '',
         `Exact values for OpenAI and Anthropic are written to ${guidePath}.`,
       ].join('\n'),

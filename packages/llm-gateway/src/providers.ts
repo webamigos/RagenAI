@@ -1,6 +1,7 @@
 import { createAmazonBedrock } from '@ai-sdk/amazon-bedrock';
 import { createAzure } from '@ai-sdk/azure';
 import { createVertex } from '@ai-sdk/google-vertex';
+import { createAnthropic } from '@ai-sdk/anthropic';
 import { createOpenAI } from '@ai-sdk/openai';
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 import type { LanguageModelV4 } from '@ai-sdk/provider';
@@ -53,6 +54,25 @@ export const PROVIDER_FACTORIES: Record<
       apiKey: credentials.apiKey,
       // Unset for OpenAI proper; set only by a deployment pointing at a
       // gateway or a regional endpoint that still speaks OpenAI's own API.
+      baseURL: credentials.baseUrl,
+    })(route.model),
+
+  /**
+   * Anthropic's own API, for a deployment holding a plain Anthropic key rather
+   * than access to Bedrock or Vertex. The same models reach Ragen three ways —
+   * this, `bedrock` (`eu.anthropic.*`) and `vertex` — and which one a
+   * deployment uses is a routing decision, which is why it belongs in the
+   * table and not in code.
+   *
+   * Chat only. Anthropic publishes no embeddings endpoint, so this provider is
+   * deliberately absent from `EMBEDDING_PROVIDER_FACTORIES` — see the note
+   * there.
+   */
+  anthropic: (route, credentials) =>
+    createAnthropic({
+      apiKey: credentials.apiKey,
+      // Unset means Anthropic proper. Set for a regional endpoint or a
+      // gateway that speaks Anthropic's own API rather than OpenAI's.
       baseURL: credentials.baseUrl,
     })(route.model),
 

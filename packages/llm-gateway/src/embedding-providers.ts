@@ -19,10 +19,19 @@ import type { ProviderCredentials, ProviderId, Route } from './types';
  * The route table therefore needs no `kind` field, and gains none here: adding
  * one would ask an operator to restate something the model id already says, and
  * would be wrong for the upstreams that serve both from one endpoint.
+ *
+ * **Partial, and the gap is the point.** `anthropic` is absent because
+ * Anthropic publishes no embeddings endpoint — not because nobody got round to
+ * it. A stub throwing "not implemented" would say the same thing later and
+ * less clearly; leaving the key out makes the type carry it, and
+ * `LlmGateway.resolveEmbeddingModel` turns a route pointing here into an error
+ * that names the provider rather than a `TypeError` about calling undefined.
  */
-export const EMBEDDING_PROVIDER_FACTORIES: Record<
-  ProviderId,
-  (route: Route, credentials: ProviderCredentials) => EmbeddingModelV4
+export const EMBEDDING_PROVIDER_FACTORIES: Partial<
+  Record<
+    ProviderId,
+    (route: Route, credentials: ProviderCredentials) => EmbeddingModelV4
+  >
 > = {
   azure: (route, credentials) =>
     createAzure({

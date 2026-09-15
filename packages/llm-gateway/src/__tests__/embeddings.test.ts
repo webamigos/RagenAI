@@ -2,7 +2,11 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { EMBEDDING_PROVIDER_FACTORIES } from '../embedding-providers';
 import { PROVIDER_FACTORIES } from '../providers';
-import { LlmGateway, UnknownModelError } from '../resolve-model';
+import {
+  EmbeddingsUnsupportedError,
+  LlmGateway,
+  UnknownModelError,
+} from '../resolve-model';
 import { loadRouteTable } from '../route-table';
 import type {
   CredentialSource,
@@ -19,6 +23,10 @@ const routes = loadRouteTable({
       connection: 'scaleway',
     },
     'gpt-5.4': { provider: 'azure', model: 'gpt-5.4' },
+    'claude-haiku-4-5-direct': {
+      provider: 'anthropic',
+      model: 'claude-haiku-4-5-20251001',
+    },
   },
 });
 
@@ -107,9 +115,56 @@ describe('resolving an embedding model', () => {
     expect(chat).not.toHaveBeenCalled();
   });
 
-  it('has an embedding factory for every provider the chat table serves', () => {
+  /**
+   * Providers that serve chat and no embeddings, because the upstream has no
+   * embeddings API at all. Listed rather than inferred so that adding a
+   * provider forces the decision: anything missing from the embedding table
+   * and absent here fails this test.
+   */
+  const SERVE_NO_EMBEDDINGS = ['anthropic'];
+
+  it('has an embedding factory for every chat provider that serves embeddings', () => {
+    const chat = Object.keys(PROVIDER_FACTORIES).sort();
+
     expect(Object.keys(EMBEDDING_PROVIDER_FACTORIES).sort()).toEqual(
-      Object.keys(PROVIDER_FACTORIES).sort(),
+      chat.filter((provider) => !SERVE_NO_EMBEDDINGS.includes(provider)),
     );
+  });
+
+  /**
+   * The model id is routed, so `UnknownModelError` would send an operator to
+   * the route table to add an entry that is already there. What is wrong is
+   * the entry's provider, and the error says so.
+   */
+  it('names the provider when a route points at one with no embeddings', async () => {
+    const gateway = new LlmGateway({ routes, credentials });
+
+    await expect(
+      gateway.resolveEmbeddingModel('claude-haiku-4-5-direct'),
+    ).rejects.toThrow(EmbeddingsUnsupportedError);
+    await expect(
+      gateway.resolveEmbeddingModel('claude-haiku-4-5-direct'),
+    ).rejects.toThrow(/anthropic/);
+  });
+
+  /**
+   * The order matters more than it looks. A provider serving no embeddings
+   * serves none whether or not this deployment holds its key, so asking for
+   * credentials first answers "ANTHROPIC_API_KEY is missing" — which sends an
+   * operator to set a variable that changes nothing.
+   */
+  it('says so without asking for credentials it does not need', async () => {
+    const forProvider = vi.fn(async () => {
+      throw new Error('MissingCredentialsError: ANTHROPIC_API_KEY');
+    });
+    const gateway = new LlmGateway({
+      routes,
+      credentials: { forProvider } as unknown as CredentialSource,
+    });
+
+    await expect(
+      gateway.resolveEmbeddingModel('claude-haiku-4-5-direct'),
+    ).rejects.toThrow(EmbeddingsUnsupportedError);
+    expect(forProvider).not.toHaveBeenCalled();
   });
 });

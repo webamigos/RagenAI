@@ -1,4 +1,5 @@
 import type { LiteLLMModelEntry } from './litellm-config';
+import type { RouteTableEntry } from './route-table';
 
 /**
  * The `infra/litellm/config.yaml` shipped in the repo only wires Azure
@@ -11,6 +12,8 @@ export type LlmProviderChoice = 'openai' | 'anthropic';
 export interface LlmEmbeddingsConfig {
   modelName: string;
   litellmModel: string;
+  /** The upstream's own name, for the route table. */
+  upstreamModel: string;
   /** Output dimensionality — must match `VECTOR_SIZE`, see rag-core's vector contract. */
   vectorSize: number;
 }
@@ -20,6 +23,15 @@ export interface LlmProviderConfig {
   apiKeyEnvVar: string;
   modelName: string;
   litellmModel: string;
+  /**
+   * The `@ragenai/llm-gateway` provider that serves this key directly, and the
+   * upstream's own name for the model. Both providers the wizard offers have
+   * one, so a scaffolded install calls the provider itself — the same default
+   * every other deployment gets — rather than routing through a proxy it only
+   * runs because the wizard configured one.
+   */
+  gatewayProvider: string;
+  upstreamModel: string;
   /**
    * Undefined for a provider with no embeddings API of its own. Chat still
    * works; the knowledge base does not, because retrieval has nothing to
@@ -36,9 +48,12 @@ export const LLM_PROVIDERS: Record<LlmProviderChoice, LlmProviderConfig> = {
     apiKeyEnvVar: 'OPENAI_API_KEY',
     modelName: 'gpt-4o-mini',
     litellmModel: 'openai/gpt-4o-mini',
+    gatewayProvider: 'openai',
+    upstreamModel: 'gpt-4o-mini',
     embeddings: {
       modelName: 'text-embedding-3-small',
       litellmModel: 'openai/text-embedding-3-small',
+      upstreamModel: 'text-embedding-3-small',
       vectorSize: 1536,
     },
   },
@@ -52,14 +67,24 @@ export const LLM_PROVIDERS: Record<LlmProviderChoice, LlmProviderConfig> = {
     // Bedrock traffic under Bedrock's catalog metadata.
     modelName: 'claude-haiku-4-5-direct',
     litellmModel: 'anthropic/claude-haiku-4-5-20251001',
+    gatewayProvider: 'anthropic',
+    upstreamModel: 'claude-haiku-4-5-20251001',
     // Anthropic ships no embeddings endpoint, so there is nothing to point
-    // EMBEDDINGS_MODEL at with this key alone.
+    // EMBEDDINGS_MODEL at with this key alone. The gateway says the same
+    // thing in its own shape: `anthropic` has no entry in
+    // EMBEDDING_PROVIDER_FACTORIES, and a route pointing there raises
+    // EmbeddingsUnsupportedError rather than failing inside the AI SDK.
   },
 };
 
 export interface LlmProviderChoiceResult {
   envUpdates: Record<string, string>;
   liteLLMEntries: LiteLLMModelEntry[];
+  /**
+   * The route table this installation gets. Written over the one shipped in
+   * the repository, which names providers a new install has no keys for.
+   */
+  routes: RouteTableEntry[];
   /** False when the picked provider cannot serve embeddings — the caller warns. */
   embeddingsConfigured: boolean;
 }
@@ -73,6 +98,12 @@ export function resolveLlmProviderChoice(
   const envUpdates: Record<string, string> = {
     [config.apiKeyEnvVar]: apiKey,
     DEFAULT_MODEL: config.modelName,
+    // Overrides the manifest's `litellm`, which is the baseline for the one
+    // path that reaches neither branch here: "I'll configure LiteLLM myself".
+    LLM_GATEWAY: 'native',
+    // Not the gateway. This names the pricing namespace `AiUsage` writes
+    // against, where the whole catalogue lives under `litellm`; the provider
+    // that actually served a turn is recorded separately as `servedBy`.
     DEFAULT_MODEL_PROVIDER: 'litellm',
     // .env.example ships gemini-2.5-flash here, which needs Vertex
     // credentials. Multi-query expansion is on by default (ADR-15), so
@@ -89,6 +120,17 @@ export function resolveLlmProviderChoice(
     },
   ];
 
+  // Written as well as the route table, and deliberately: `docker compose up`
+  // starts LiteLLM whatever `LLM_GATEWAY` says, so configuring both makes
+  // `LLM_GATEWAY=litellm` a working rollback rather than a broken one.
+  const routes: RouteTableEntry[] = [
+    {
+      modelName: config.modelName,
+      provider: config.gatewayProvider,
+      model: config.upstreamModel,
+    },
+  ];
+
   if (config.embeddings) {
     envUpdates.EMBEDDINGS_MODEL = config.embeddings.modelName;
     // VECTOR_SIZE and EMBEDDINGS_MODEL have to agree or Qdrant rejects every
@@ -100,11 +142,17 @@ export function resolveLlmProviderChoice(
       model: config.embeddings.litellmModel,
       apiKeyEnvVar: config.apiKeyEnvVar,
     });
+    routes.push({
+      modelName: config.embeddings.modelName,
+      provider: config.gatewayProvider,
+      model: config.embeddings.upstreamModel,
+    });
   }
 
   return {
     envUpdates,
     liteLLMEntries,
+    routes,
     embeddingsConfigured: Boolean(config.embeddings),
   };
 }
