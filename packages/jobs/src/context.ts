@@ -21,6 +21,16 @@ export interface JobContext {
   log: JobLogger;
 
   /**
+   * Publish a coarse progress marker.
+   *
+   * Temporal exposes it through the state query a caller polls before deciding
+   * whether cancelling is still worth it; BullMQ has `job.updateProgress`. A
+   * handler should not know which, and neither should have to be the reason a
+   * pipeline reports where it is.
+   */
+  progress(stage: string): void;
+
+  /**
    * Whether this run has been cancelled, re-read at each checkpoint.
    *
    * A database read rather than an engine signal, so both runtimes answer it

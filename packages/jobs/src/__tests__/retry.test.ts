@@ -58,3 +58,25 @@ describe('backoffMs', () => {
     expect(backoffMs(pii, 3)).toBe(120_000);
   });
 });
+
+describe('backoffMs with a partial policy', () => {
+  it("fills unspecified fields from Temporal's defaults", () => {
+    // `generateDocument`'s upload step is exactly this: one attempt, nothing
+    // else stated. The wrapper must not read the missing fields as zero, which
+    // would retry immediately and forever where Temporal waits a second.
+    const onlyAttempts = { maximumAttempts: 1 };
+
+    expect(backoffMs(onlyAttempts, 1)).toBe(1_000);
+    expect(backoffMs(onlyAttempts, 2)).toBe(2_000);
+  });
+
+  it('caps at 100x the initial interval when no maximum is given', () => {
+    const noMaximum = { initialInterval: '2 seconds', backoffCoefficient: 10 };
+
+    expect(backoffMs(noMaximum, 1)).toBe(2_000);
+    expect(backoffMs(noMaximum, 2)).toBe(20_000);
+    // 200s would be next; the default cap is 100 x 2s.
+    expect(backoffMs(noMaximum, 3)).toBe(200_000);
+    expect(backoffMs(noMaximum, 4)).toBe(200_000);
+  });
+});

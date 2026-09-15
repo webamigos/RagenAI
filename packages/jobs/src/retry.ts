@@ -9,13 +9,29 @@
  * behaviour change disguised as a port.
  */
 
+/**
+ * Every field is optional, because the policies in this repository are.
+ * `generateDocument`'s upload step is `{ maximumAttempts: 1 }` and nothing
+ * else — a Drive upload that failed once should surface, not be retried — and
+ * Temporal fills the rest from its own defaults. `backoffMs` fills them from
+ * the same numbers, so "unspecified" means the same thing to both engines
+ * instead of meaning "zero" to one of them.
+ */
 export interface RetryPolicy {
   /** Temporal's duration strings — '1 second', '2 minutes'. */
-  initialInterval: string;
-  maximumInterval: string;
-  backoffCoefficient: number;
-  maximumAttempts: number;
+  initialInterval?: string;
+  maximumInterval?: string;
+  backoffCoefficient?: number;
+  maximumAttempts?: number;
 }
+
+/** Temporal's own defaults, which an unspecified field inherits. */
+export const RETRY_DEFAULTS = {
+  initialInterval: '1 second',
+  backoffCoefficient: 2,
+  /** Temporal caps at 100× the initial interval when none is given. */
+  maximumIntervalMultiplier: 100,
+} as const;
 
 export interface StepOptions {
   retry: RetryPolicy;
@@ -69,9 +85,15 @@ export function durationMs(duration: string): number {
  * is load-bearing rather than tidy.
  */
 export function backoffMs(policy: RetryPolicy, attempt: number): number {
-  const initial = durationMs(policy.initialInterval);
-  const maximum = durationMs(policy.maximumInterval);
-  const grown = initial * policy.backoffCoefficient ** Math.max(0, attempt - 1);
+  const initial = durationMs(
+    policy.initialInterval ?? RETRY_DEFAULTS.initialInterval,
+  );
+  const maximum = policy.maximumInterval
+    ? durationMs(policy.maximumInterval)
+    : initial * RETRY_DEFAULTS.maximumIntervalMultiplier;
+  const coefficient =
+    policy.backoffCoefficient ?? RETRY_DEFAULTS.backoffCoefficient;
+  const grown = initial * coefficient ** Math.max(0, attempt - 1);
 
   return Math.min(grown, maximum);
 }
