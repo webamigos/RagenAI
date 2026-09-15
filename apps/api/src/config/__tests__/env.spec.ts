@@ -36,13 +36,20 @@ describe('parseApiEnv', () => {
    * Demanding the credential anyway would refuse to boot a correctly
    * configured deployment, and the obvious workaround — invent a dummy master
    * key — is how a boot check stops being believed.
+   *
+   * Asserted as a deployment that *parses*, not as one whose report happens
+   * not to mention the variable. Every other deployed requirement is supplied
+   * here on purpose: without them the parse fails for unrelated reasons, and
+   * an assertion about what the report does not say would pass whether or not
+   * this rule works.
    */
-  it('does not require LITELLM_MASTER_KEY when no gateway is named', () => {
-    const result = withEnv({ TARGET_ENV: 'production' });
+  it('accepts a deployed environment with no master key when no gateway is named', () => {
+    const result = withEnv({
+      TARGET_ENV: 'production',
+      INTERNAL_API_SECRET: 'internal-secret',
+    });
 
-    if (!result.ok) {
-      expect(result.report).not.toContain('LITELLM_MASTER_KEY');
-    }
+    expect(result.ok).toBe(true);
   });
 
   it('requires INTERNAL_API_SECRET in production', () => {

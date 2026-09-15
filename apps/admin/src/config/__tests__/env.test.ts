@@ -128,10 +128,12 @@ describe('the apps/admin environment contract', () => {
       ).toContain('LITELLM_MASTER_KEY');
     });
 
-    it('does not require it when no gateway is named', () => {
-      expect(issueNames(without('LITELLM_MASTER_KEY'))).not.toContain(
-        'LITELLM_MASTER_KEY',
-      );
+    /**
+     * `.ok`, not "the issue list does not name it": the weaker form passes
+     * just as well when the parse failed for some unrelated reason.
+     */
+    it('accepts a deployment without it when no gateway is named', () => {
+      expect(parseAdminEnv(without('LITELLM_MASTER_KEY')).ok).toBe(true);
     });
 
     it('requires neither on a local clone', () => {
