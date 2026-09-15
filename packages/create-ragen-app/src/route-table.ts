@@ -11,6 +11,13 @@ export interface RouteTableEntry {
   provider: string;
   /** The upstream's own name for the model, which may differ from the id. */
   model: string;
+  /**
+   * Which credentials an `openai-compatible` route uses, and therefore which
+   * `LLM_<NAME>_*` variables it reads. Omitted for providers with one upstream.
+   * Without it a Scaleway route resolves to the generic connection, finds no
+   * base URL, and fails at the first call rather than at install time.
+   */
+  connection?: string;
 }
 
 /**
@@ -32,8 +39,10 @@ export interface RouteTableEntry {
 export function renderRouteTable(entries: readonly RouteTableEntry[]): string {
   const routes = entries
     .map(
-      ({ modelName, provider, model }) =>
-        `  ${modelName}:\n    provider: ${provider}\n    model: ${model}\n`,
+      ({ modelName, provider, model, connection }) =>
+        `  ${modelName}:\n    provider: ${provider}\n` +
+        (connection ? `    connection: ${connection}\n` : '') +
+        `    model: ${model}\n`,
     )
     .join('');
 

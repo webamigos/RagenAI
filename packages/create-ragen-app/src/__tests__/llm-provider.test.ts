@@ -77,3 +77,71 @@ describe('resolveLlmProviderChoice', () => {
     expect(envUpdates.EMBEDDINGS_MODEL).toBe(openai?.modelName);
   });
 });
+
+/**
+ * The two choices that configure a whole install from one account.
+ *
+ * Both are here because of what the wizard's own comment says about the
+ * shipped route table: it names four providers a new self-hoster has no
+ * credentials for. Scaleway is the sharpest case — it *is* in that table, so
+ * an install could see the models and reach none of them.
+ */
+describe('resolveLlmProviderChoice — one key, a working install', () => {
+  it('gives OpenRouter chat and embeddings, so the knowledge base works', () => {
+    const result = resolveLlmProviderChoice('openrouter', 'sk-or-test');
+
+    expect(result.embeddingsConfigured).toBe(true);
+    expect(result.envUpdates.OPENROUTER_API_KEY).toBe('sk-or-test');
+    expect(result.routes.map((r) => r.provider)).toEqual([
+      'openrouter',
+      'openrouter',
+    ]);
+    // The upstream is namespaced and the id is not: the id is what the
+    // application and the catalogue use.
+    expect(result.routes[0].model).toContain('/');
+    expect(result.routes[0].modelName).not.toContain('/');
+  });
+
+  it('matches VECTOR_SIZE to the embedding model, which Qdrant fixes at creation', () => {
+    expect(
+      resolveLlmProviderChoice('openrouter', 'k').envUpdates.VECTOR_SIZE,
+    ).toBe('1536');
+    // Scaleway's is the repository default, so this one alone changes nothing.
+    expect(
+      resolveLlmProviderChoice('scaleway', 'k', 'https://x/v1').envUpdates
+        .VECTOR_SIZE,
+    ).toBe('3584');
+  });
+
+  it('carries the connection on a Scaleway route, without which it reads the wrong credentials', () => {
+    const result = resolveLlmProviderChoice(
+      'scaleway',
+      'scw-key',
+      'https://api.scaleway.ai/project/v1',
+    );
+
+    expect(result.routes.every((r) => r.connection === 'scaleway')).toBe(true);
+    expect(result.routes.every((r) => r.provider === 'openai-compatible')).toBe(
+      true,
+    );
+  });
+
+  it('writes the Scaleway base URL, because its endpoint carries the project id', () => {
+    const result = resolveLlmProviderChoice(
+      'scaleway',
+      'scw-key',
+      'https://api.scaleway.ai/project/v1',
+    );
+
+    expect(result.envUpdates.SCW_API_BASE).toBe(
+      'https://api.scaleway.ai/project/v1',
+    );
+    expect(result.envUpdates.SCW_API_KEY).toBe('scw-key');
+  });
+
+  it('writes no base URL for a provider whose endpoint is a constant', () => {
+    const result = resolveLlmProviderChoice('openrouter', 'sk-or-test');
+
+    expect(result.envUpdates.SCW_API_BASE).toBeUndefined();
+  });
+});

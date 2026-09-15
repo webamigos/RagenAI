@@ -3,6 +3,7 @@ import { createAzure } from '@ai-sdk/azure';
 import { createVertex } from '@ai-sdk/google-vertex';
 import { createOpenAI } from '@ai-sdk/openai';
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
+import { createOpenRouter } from '@openrouter/ai-sdk-provider';
 import type { EmbeddingModelV4 } from '@ai-sdk/provider';
 
 import type { ProviderCredentials, ProviderId, Route } from './types';
@@ -33,6 +34,20 @@ export const EMBEDDING_PROVIDER_FACTORIES: Partial<
     (route: Route, credentials: ProviderCredentials) => EmbeddingModelV4
   >
 > = {
+  /**
+   * Present, unlike `anthropic`: OpenRouter serves embedding models as well as
+   * chat ones (`openai/text-embedding-3-small` and friends). That is what lets
+   * one key configure a whole install — a provider with chat and no embeddings
+   * gives you a chatbot with no knowledge base.
+   */
+  openrouter: (route, credentials) =>
+    createOpenRouter({
+      apiKey: credentials.apiKey,
+      ...(credentials.baseUrl ? { baseURL: credentials.baseUrl } : {}),
+      ...(credentials.headers ? { headers: credentials.headers } : {}),
+      ...(credentials.extraBody ? { extraBody: credentials.extraBody } : {}),
+    }).textEmbeddingModel(route.model),
+
   azure: (route, credentials) =>
     createAzure({
       apiKey: credentials.apiKey,

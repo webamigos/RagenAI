@@ -245,3 +245,93 @@ describe('Azure api-version', () => {
     expect(credentials.apiVersion).toBeUndefined();
   });
 });
+
+/**
+ * OpenRouter's provider-routing preferences.
+ *
+ * `docs/model-routing.md` described six of these as configuration, two of them
+ * as defaults — and no TypeScript file had ever read one, so ZDR and EU
+ * routing were documented and unenforced. These assert the shape that reaches
+ * the wire, and that nothing is sent unless asked for: turning them on by
+ * default would be a new behaviour dressed as a restoration, and would break a
+ * free key, since EU in-region routing needs a paid plan.
+ */
+describe('OpenRouter credentials', () => {
+  const source = new EnvCredentialSource();
+
+  beforeEach(() => {
+    for (const name of [
+      'OPENROUTER_API_KEY',
+      'OPENROUTER_BASE_URL',
+      'OPENROUTER_ZDR',
+      'OPENROUTER_DATA_COLLECTION',
+      'OPENROUTER_PROVIDER_ORDER',
+      'OPENROUTER_PROVIDER_ONLY',
+      'OPENROUTER_PROVIDER_IGNORE',
+      'OPENROUTER_HEADERS',
+    ]) {
+      delete process.env[name];
+    }
+    process.env.OPENROUTER_API_KEY = 'sk-or-test';
+  });
+
+  it('needs only the key', async () => {
+    const credentials = await source.forProvider('openrouter');
+
+    expect(credentials.apiKey).toBe('sk-or-test');
+    expect(credentials.baseUrl).toBeUndefined();
+    expect(credentials.extraBody).toBeUndefined();
+  });
+
+  it('refuses to start without one, naming the variable', async () => {
+    delete process.env.OPENROUTER_API_KEY;
+
+    await expect(source.forProvider('openrouter')).rejects.toThrow(
+      'OPENROUTER_API_KEY',
+    );
+  });
+
+  it('sends zero data retention only when asked', async () => {
+    process.env.OPENROUTER_ZDR = 'true';
+
+    const credentials = await source.forProvider('openrouter');
+
+    expect(credentials.extraBody).toEqual({ provider: { zdr: true } });
+  });
+
+  it('treats anything but "true" as off, because a typo must not read as yes', async () => {
+    process.env.OPENROUTER_ZDR = 'yes';
+
+    expect((await source.forProvider('openrouter')).extraBody).toBeUndefined();
+  });
+
+  it('parses the provider lists, trimming what a copied value carries', async () => {
+    process.env.OPENROUTER_PROVIDER_ORDER = ' google-vertex , amazon-bedrock ';
+    process.env.OPENROUTER_PROVIDER_IGNORE = 'some-provider';
+
+    const credentials = await source.forProvider('openrouter');
+
+    expect(credentials.extraBody).toEqual({
+      provider: {
+        order: ['google-vertex', 'amazon-bedrock'],
+        ignore: ['some-provider'],
+      },
+    });
+  });
+
+  it('rejects a data-collection value OpenRouter does not accept', async () => {
+    process.env.OPENROUTER_DATA_COLLECTION = 'maybe';
+
+    await expect(source.forProvider('openrouter')).rejects.toThrow(
+      'OPENROUTER_DATA_COLLECTION',
+    );
+  });
+
+  it('carries a base URL when one is set, which is how EU routing is selected', async () => {
+    process.env.OPENROUTER_BASE_URL = 'https://eu.openrouter.ai/api';
+
+    expect((await source.forProvider('openrouter')).baseUrl).toBe(
+      'https://eu.openrouter.ai/api',
+    );
+  });
+});

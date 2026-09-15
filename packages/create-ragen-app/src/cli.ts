@@ -580,7 +580,8 @@ async function resolveLlmProvider(
 function providerFromEnvironment(
   choice: LlmProviderChoice,
 ): LlmProviderPromptResult {
-  const { apiKeyEnvVar, label } = LLM_PROVIDERS[choice];
+  const config = LLM_PROVIDERS[choice];
+  const { apiKeyEnvVar, label } = config;
   const apiKey = process.env[apiKeyEnvVar]?.trim();
 
   if (!apiKey) {
@@ -590,13 +591,33 @@ function providerFromEnvironment(
     return { cancelled: true };
   }
 
-  return { cancelled: false, choice: resolveLlmProviderChoice(choice, apiKey) };
+  // Same rule as the key: an explicit `--provider` that cannot be configured
+  // stops the install rather than scaffolding a half-wired one.
+  const baseUrl = config.baseUrl
+    ? process.env[config.baseUrl.envVar]?.trim()
+    : undefined;
+  if (config.baseUrl && !baseUrl) {
+    clack.cancel(
+      `--provider=${choice} also needs ${config.baseUrl.envVar} — its endpoint is per-project, so a key alone cannot reach it. Export it and run again.`,
+    );
+    return { cancelled: true };
+  }
+
+  return {
+    cancelled: false,
+    choice: resolveLlmProviderChoice(choice, apiKey, baseUrl),
+  };
 }
 
 async function promptLlmProvider(): Promise<LlmProviderPromptResult> {
   const choice = await clack.select({
     message: 'Which LLM provider should power chat?',
+    // Ordered by how far one key gets a new install, not by vendor fame. The
+    // first two configure chat *and* embeddings, so the knowledge base works
+    // rather than only the chat box.
     options: [
+      { value: 'openrouter' as const, label: LLM_PROVIDERS.openrouter.label },
+      { value: 'scaleway' as const, label: LLM_PROVIDERS.scaleway.label },
       { value: 'openai' as const, label: LLM_PROVIDERS.openai.label },
       { value: 'anthropic' as const, label: LLM_PROVIDERS.anthropic.label },
       { value: 'skip' as const, label: 'I will configure the routes myself' },
@@ -610,8 +631,10 @@ async function promptLlmProvider(): Promise<LlmProviderPromptResult> {
     return { cancelled: false, choice: undefined };
   }
 
+  const config = LLM_PROVIDERS[choice as LlmProviderChoice];
+
   const apiKey = await clack.password({
-    message: `Paste your ${LLM_PROVIDERS[choice as LlmProviderChoice].label} API key`,
+    message: `Paste your ${config.label} API key`,
   });
 
   if (clack.isCancel(apiKey)) {
@@ -621,9 +644,28 @@ async function promptLlmProvider(): Promise<LlmProviderPromptResult> {
     return { cancelled: false, choice: undefined };
   }
 
+  // A provider whose endpoint is not a constant needs a second value, and
+  // needs it before the install is written — Scaleway's base URL carries the
+  // project id, so a key on its own scaffolds something that 404s later.
+  let baseUrl: string | undefined;
+  if (config.baseUrl) {
+    const answer = await clack.text({ message: config.baseUrl.prompt });
+    if (clack.isCancel(answer)) {
+      return { cancelled: true };
+    }
+    if (!answer) {
+      return { cancelled: false, choice: undefined };
+    }
+    baseUrl = answer;
+  }
+
   return {
     cancelled: false,
-    choice: resolveLlmProviderChoice(choice as LlmProviderChoice, apiKey),
+    choice: resolveLlmProviderChoice(
+      choice as LlmProviderChoice,
+      apiKey,
+      baseUrl,
+    ),
   };
 }
 

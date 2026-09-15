@@ -17,6 +17,11 @@ function providerSection(choice: LlmProviderChoice): string[] {
 
   const envLines = [
     `${config.apiKeyEnvVar}=<your ${config.label} key>`,
+    // A provider whose endpoint is per-project needs its base URL named here
+    // too, or the key reaches nothing. Scaleway is the one that does.
+    ...(config.baseUrl
+      ? [`${config.baseUrl.envVar}=<https://api.scaleway.ai/<project-id>/v1>`]
+      : []),
     // Not a gateway selector: `litellm` is the pricing namespace `AiUsage`
     // writes against, and the provider that actually served a turn is recorded
     // separately as `servedBy`. The flag that used to sit here went with the
@@ -26,9 +31,14 @@ function providerSection(choice: LlmProviderChoice): string[] {
     `REPHRASE_MODEL=${config.modelName}`,
   ];
 
+  const connectionLine = config.connection
+    ? [`    connection: ${config.connection}`]
+    : [];
+
   const routeLines = [
     `  ${config.modelName}:`,
     `    provider: ${config.gatewayProvider}`,
+    ...connectionLine,
     `    model: ${config.upstreamModel}`,
   ];
 
@@ -40,6 +50,7 @@ function providerSection(choice: LlmProviderChoice): string[] {
     routeLines.push(
       `  ${config.embeddings.modelName}:`,
       `    provider: ${config.gatewayProvider}`,
+      ...connectionLine,
       `    model: ${config.embeddings.upstreamModel}`,
     );
   }
@@ -129,6 +140,8 @@ export function manualLlmSetupInstructions(): string {
     '`.env.local` and the route table. Pick one provider, apply both edits,',
     'and restart the apps.',
     '',
+    ...providerSection('openrouter'),
+    ...providerSection('scaleway'),
     ...providerSection('openai'),
     ...providerSection('anthropic'),
     '## Before you upload anything',
