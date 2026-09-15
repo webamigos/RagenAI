@@ -12,6 +12,7 @@ var mockUpdateMany: Mock;
 var mockFileCreate: Mock;
 var mockDocumentCreate: Mock;
 var mockFileFindFirst: Mock;
+var mockFileFindUnique: Mock;
 /* eslint-enable no-var */
 
 vi.mock('../prisma.js', () => {
@@ -19,12 +20,14 @@ vi.mock('../prisma.js', () => {
   mockFileCreate = vi.fn();
   mockDocumentCreate = vi.fn();
   mockFileFindFirst = vi.fn();
+  mockFileFindUnique = vi.fn();
   return {
     getPrisma: () => ({
       userFile: {
         updateMany: mockUpdateMany,
         create: mockFileCreate,
         findFirst: mockFileFindFirst,
+        findUnique: mockFileFindUnique,
       },
       userDocument: { create: mockDocumentCreate },
     }),
@@ -44,6 +47,7 @@ beforeEach(() => {
   mockFileCreate.mockReset();
   mockDocumentCreate.mockReset();
   mockFileFindFirst.mockReset().mockResolvedValue({ ownerId: null });
+  mockFileFindUnique.mockReset();
 });
 
 describe('the single-column file updates', () => {
@@ -168,6 +172,117 @@ describe('updateParsingStatus', () => {
     expect(Object.keys(mockUpdateMany.mock.calls[0][0].data)).toEqual([
       'parsingStatus',
     ]);
+  });
+});
+
+// The sticky-CANCELLED `where` clause. It is the whole reason a write from a
+// cancelled run cannot land — the status writers used to rely on ordering — and
+// it has no exception, which is the part worth pinning. STARTED used to be one,
+// and a cancelled run writes STARTED too (at the top of its embedding phase),
+// so the exception reopened the window this clause exists to close.
+// Re-indexability comes from `resetIngestStatusForNewRun` on the producer side.
+describe('CANCELLED is sticky, with no exception', () => {
+  it.each([
+    EmbeddingStatus.STARTED,
+    EmbeddingStatus.COMPLETED,
+    EmbeddingStatus.FAILED,
+    EmbeddingStatus.NOT_STARTED,
+  ])('refuses to write %s over a cancelled embedding', async (status) => {
+    await db.updateEmbeddingStatus({
+      ...WHERE,
+      data: { embedding_status: status },
+    });
+
+    expect(mockUpdateMany.mock.calls[0][0].where).toEqual({
+      ...SCOPE,
+      embeddingStatus: { not: EmbeddingStatus.CANCELLED },
+    });
+  });
+
+  it.each([
+    ParsingStatus.STARTED,
+    ParsingStatus.COMPLETED,
+    ParsingStatus.FAILED,
+    ParsingStatus.NOT_STARTED,
+  ])('refuses to write %s over a cancelled parse', async (status) => {
+    await db.updateParsingStatus({
+      ...WHERE,
+      data: { parsing_status: status },
+    });
+
+    expect(mockUpdateMany.mock.calls[0][0].where).toEqual({
+      ...SCOPE,
+      parsingStatus: { not: ParsingStatus.CANCELLED },
+    });
+  });
+
+  it('still scopes every one of those writes by org', async () => {
+    await db.updateParsingStatus({
+      ...WHERE,
+      data: { parsing_status: ParsingStatus.COMPLETED },
+    });
+
+    expect(mockUpdateMany.mock.calls[0][0].where).toMatchObject({
+      organizationId: 'org-1',
+    });
+  });
+});
+
+// The read behind every cancellation checkpoint. It runs about five times per
+// ingest, which is why it reads the unique key rather than `workflow_id`.
+describe('isIngestCancelled', () => {
+  it('reads the unique key, not the run id', async () => {
+    mockFileFindUnique.mockResolvedValue({
+      parsingStatus: ParsingStatus.STARTED,
+      embeddingStatus: EmbeddingStatus.NOT_STARTED,
+    });
+
+    await db.isIngestCancelled('file-1', 'org-1');
+
+    expect(mockFileFindUnique.mock.calls[0][0].where).toEqual({
+      id_organizationId: { id: 'file-1', organizationId: 'org-1' },
+    });
+  });
+
+  // Either column counts: the cancel command writes to whichever phase was
+  // live, so a pipeline that has moved on to embedding must still see a
+  // cancellation recorded against the phase it left.
+  it.each([
+    [
+      'a cancelled parse',
+      {
+        parsingStatus: ParsingStatus.CANCELLED,
+        embeddingStatus: EmbeddingStatus.NOT_STARTED,
+      },
+    ],
+    [
+      'a cancelled embedding',
+      {
+        parsingStatus: ParsingStatus.COMPLETED,
+        embeddingStatus: EmbeddingStatus.CANCELLED,
+      },
+    ],
+  ])('reports cancelled for %s', async (_label, row) => {
+    mockFileFindUnique.mockResolvedValue(row);
+
+    expect(await db.isIngestCancelled('file-1', 'org-1')).toBe(true);
+  });
+
+  it('reports not cancelled for a run in flight', async () => {
+    mockFileFindUnique.mockResolvedValue({
+      parsingStatus: ParsingStatus.STARTED,
+      embeddingStatus: EmbeddingStatus.NOT_STARTED,
+    });
+
+    expect(await db.isIngestCancelled('file-1', 'org-1')).toBe(false);
+  });
+
+  // Deleting a file mid-ingest is a stronger statement than cancelling it. The
+  // alternative is a pipeline embedding chunks against a row that is gone.
+  it('treats a missing row as cancelled', async () => {
+    mockFileFindUnique.mockResolvedValue(null);
+
+    expect(await db.isIngestCancelled('file-1', 'org-1')).toBe(true);
   });
 });
 

@@ -3,6 +3,7 @@ export * from './create-file-record.js';
 export * from './create-initial-document-version.js';
 export * from './delete-stale-demo-threads.js';
 export * from './get-file-record.js';
+export * from './is-ingest-cancelled.js';
 export * from './merge-file-metadata.js';
 export * from './prune-document-retrievals.js';
 export * from './restore-demo-organization-restrictions.js';

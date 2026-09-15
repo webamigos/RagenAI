@@ -46,8 +46,32 @@ export interface JobContext {
    *
    * A database read rather than an engine signal, so both runtimes answer it
    * the same way and a cancelled run stops at the same points under either.
+   * The spec's §4 has the rest of the reasoning; the short version is that
+   * BullMQ has no signals, and inventing a Redis-only equivalent would give
+   * the two runtimes two different cancellation mechanisms.
+   *
+   * **It takes the subject rather than deriving it from `runId`.** The run id
+   * is in `user_files.workflow_id`, which has no index, and a checkpoint runs
+   * about five times per ingest — a sequential scan each time. `(id,
+   * organization_id)` is the table's unique key, so the caller passes what it
+   * already has and the read stays one indexed lookup. The spec's data-model
+   * section says "no migration, deliberately", and this is what keeps that
+   * true.
    */
-  checkCancelled(): Promise<boolean>;
+  checkCancelled(subject: CancellationSubject): Promise<boolean>;
+}
+
+/**
+ * Which ingest a checkpoint is asking about.
+ *
+ * Both fields, always: the organization is half of the key being looked up, so
+ * it cannot be dropped by editing a `where` clause later — the same reason
+ * `getUserFile` uses `findUnique` on `id_organizationId` rather than
+ * `findFirst` with two filters.
+ */
+export interface CancellationSubject {
+  readonly fileId: string;
+  readonly orgId: string;
 }
 
 export interface JobLogger {

@@ -4,9 +4,12 @@ import {
   proxyActivities,
   workflowInfo,
 } from '@temporalio/workflow';
-import type { JobContext, JobLogger, StepOptions } from '@ragenai/jobs';
-
-import type { EmbeddingStage } from './signals.js';
+import type {
+  CancellationSubject,
+  JobContext,
+  JobLogger,
+  StepOptions,
+} from '@ragenai/jobs';
 
 /**
  * A `JobContext` backed by Temporal, built inside the workflow sandbox.
@@ -18,12 +21,27 @@ import type { EmbeddingStage } from './signals.js';
  * `JobContext` and would run against a BullMQ one unchanged, which is the
  * point of the seam.
  */
-export interface TemporalContextOptions {
-  /** Reads the cooperative cancel flag the signal handler sets. */
-  isCancelled?: () => boolean;
-  /** Publishes the coarse stage the state query reports. */
-  onProgress?: (stage: EmbeddingStage) => void;
-}
+/**
+ * The cancellation read, as a Temporal activity.
+ *
+ * It has to be one: a workflow runs in a sandbox with no I/O, so the handler's
+ * `ctx.checkCancelled()` cannot touch the database from here. On BullMQ the
+ * same context will call the query directly.
+ *
+ * Its own retry policy, short and separate from any handler's. A checkpoint is
+ * a fast indexed read that should not hold a pipeline up, and it must not
+ * inherit the ten-minute timeout a parse step runs under — but nor should one
+ * blip cancel nothing: two attempts, then the answer is "not cancelled" and
+ * the pipeline continues, which is the safe direction. Refusing to continue
+ * because a status read failed would turn a database hiccup into a failed
+ * ingest.
+ */
+const { isIngestCancelled } = proxyActivities<{
+  isIngestCancelled(subject: CancellationSubject): Promise<boolean>;
+}>({
+  startToCloseTimeout: '20 seconds',
+  retry: { maximumAttempts: 2 },
+});
 
 const temporalLogger: JobLogger = {
   debug: (message, meta) => log.debug(message, meta),
@@ -32,9 +50,7 @@ const temporalLogger: JobLogger = {
   error: (message, meta) => log.error(message, meta),
 };
 
-export function temporalContext(
-  options: TemporalContextOptions = {},
-): JobContext {
+export function temporalContext(): JobContext {
   return {
     runId: workflowInfo().workflowId,
     // The cast is the seam's one concession to Temporal's types:
@@ -48,10 +64,34 @@ export function temporalContext(
         stepOptions as unknown as Parameters<typeof proxyActivities>[0],
       ) as unknown as A,
     log: temporalLogger,
-    checkCancelled: async (): Promise<boolean> =>
-      options.isCancelled?.() ?? false,
+    // Was a signal-set boolean in workflow memory. It is the row now, which is
+    // what lets the cancel command flip the UI immediately instead of at the
+    // next checkpoint, and what makes a cancel arriving after the engine has
+    // forgotten the run a no-op rather than a `WorkflowNotFoundError`.
+    checkCancelled: async (subject: CancellationSubject): Promise<boolean> => {
+      try {
+        return await isIngestCancelled(subject);
+      } catch (error) {
+        // Both attempts failed. Answering "not cancelled" is the deliberate
+        // direction: the alternative is throwing out of a checkpoint, which
+        // the handler's catch blocks would record as a FAILED ingest — a
+        // database blip would then destroy work that was going fine. A
+        // cancellation that misses this checkpoint is caught by the next one,
+        // and the row it reads does not go away.
+        log.warn('cancellation checkpoint could not read the file status', {
+          ...subject,
+          error: String(error),
+        });
+        return false;
+      }
+    },
+    // Temporal has no progress primitive a workflow can publish outside a
+    // query, and the query went with the signal — nothing polled it. A log
+    // line is what is left, and it is replay-aware because `log` is the
+    // workflow logger. BullMQ has `job.updateProgress`, which is why the
+    // handler still reports rather than the wrapper guessing.
     progress: (stage: string): void => {
-      options.onProgress?.(stage as EmbeddingStage);
+      log.info('ingest stage', { stage });
     },
   };
 }
@@ -69,10 +109,9 @@ export function temporalContext(
 export async function runOnTemporal<P, R>(
   handler: (payload: P, ctx: JobContext) => Promise<R>,
   payload: P,
-  options: TemporalContextOptions = {},
 ): Promise<R> {
   try {
-    return await handler(payload, temporalContext(options));
+    return await handler(payload, temporalContext());
   } catch (error) {
     throw asApplicationFailure(error);
   }

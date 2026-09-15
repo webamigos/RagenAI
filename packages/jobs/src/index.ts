@@ -36,7 +36,12 @@ export {
   backoffMs,
 } from './retry';
 
-export { type JobContext, type JobLogger, JobFailure } from './context';
+export {
+  type JobContext,
+  type JobLogger,
+  type CancellationSubject,
+  JobFailure,
+} from './context';
 
 export {
   getJobRuntime,

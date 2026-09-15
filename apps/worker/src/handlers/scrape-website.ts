@@ -99,8 +99,10 @@ export async function scrapeWebsite(
     CHUNK_SETTINGS[fileType as keyof typeof CHUNK_SETTINGS];
 
   // ==== CANCELLATION: cooperative, not preemptive — see ./ingest-cancellation.
-  // The engine-side half (a signal on Temporal) lives in the wrapper; what is
-  // left here is the checkpoint, which is the part both runtimes share.
+  // There is no engine-side half any more: the cancel command writes CANCELLED
+  // to the row and this reads it, so both runtimes stop at the same points.
+  // The file is passed rather than derived from the run id, because
+  // `workflow_id` has no index and this runs about five times per ingest.
   let stage: EmbeddingStage = 'parsing';
   const enterStage = (next: EmbeddingStage): void => {
     stage = next;
@@ -108,7 +110,7 @@ export async function scrapeWebsite(
   };
 
   async function checkCancelled(): Promise<void> {
-    if (!(await ctx.checkCancelled())) {
+    if (!(await ctx.checkCancelled({ fileId, orgId }))) {
       return;
     }
     if (stage === 'parsing') {
