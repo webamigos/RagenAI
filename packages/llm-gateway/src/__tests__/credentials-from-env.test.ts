@@ -9,8 +9,13 @@ const source = new EnvCredentialSource();
 const ORIGINAL = { ...process.env };
 
 beforeEach(() => {
+  // `OPENAI_` and `ANTHROPIC_` belong here for the same reason as the rest:
+  // a developer with either exported in their shell — which is the normal
+  // state of a machine that runs the preflight — otherwise gets a different
+  // result from CI, where nothing is set. That difference reads as a flaky
+  // test rather than as the environment coupling it is.
   for (const key of Object.keys(process.env)) {
-    if (/^(AZURE|AWS|VERTEX|SCW|LLM)_/.test(key)) {
+    if (/^(AZURE|AWS|VERTEX|SCW|LLM|OPENAI|ANTHROPIC)_/.test(key)) {
       delete process.env[key];
     }
   }
@@ -55,6 +60,20 @@ describe('credentials from the environment', () => {
     await expect(source.forProvider('bedrock')).rejects.not.toThrow(
       /AWS_ACCESS_KEY_ID/,
     );
+  });
+
+  it('asks Anthropic for a key, and leaves its base URL optional', async () => {
+    await expect(source.forProvider('anthropic')).rejects.toThrow(
+      /ANTHROPIC_API_KEY/,
+    );
+
+    process.env.ANTHROPIC_API_KEY = 'sk-ant';
+
+    // Unset base URL means Anthropic proper; a regional endpoint sets it.
+    await expect(source.forProvider('anthropic')).resolves.toEqual({
+      apiKey: 'sk-ant',
+      baseUrl: undefined,
+    });
   });
 
   it('throws MissingCredentialsError rather than returning a blank', async () => {

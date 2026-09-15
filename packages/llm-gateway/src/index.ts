@@ -17,6 +17,7 @@ export {
 } from './credentials-from-env';
 export {
   LlmGateway,
+  EmbeddingsUnsupportedError,
   UnknownModelError,
   type GatewayOptions,
 } from './resolve-model';

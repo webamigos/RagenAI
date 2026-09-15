@@ -68,6 +68,20 @@ archive is the blog.
 
 ## Unreleased
 
+### Thread: the application calls model providers itself (continued)
+
+- `[major]` **An Anthropic key now works on its own.** `anthropic` is a provider
+  in the route table, so a deployment holding a plain Anthropic key uses it
+  directly instead of needing Bedrock or Vertex access to reach the same
+  models. Chat only — Anthropic publishes no embeddings endpoint, and a route
+  pointing an embedding model there now says so by name rather than failing
+  somewhere inside the SDK.
+
+- `[brief]` **A scaffolded install calls providers directly, like everything
+  else.** `create-ragen-app` writes a route table for the one key you gave it
+  and sets `LLM_GATEWAY=native`. It still writes the proxy config, so switching
+  to `litellm` is a rollback rather than a second setup.
+
 ### Thread: a misconfiguration that says so
 
 - `[brief]` **A deployment whose encryption key does not work now says so at

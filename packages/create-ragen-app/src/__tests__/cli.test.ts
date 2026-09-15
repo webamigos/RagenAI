@@ -292,25 +292,65 @@ describe('run', () => {
   });
 
   /**
-   * `LLM_GATEWAY` defaults to `native`, and a scaffolded install is the one
-   * shape that cannot take that default: the wizard writes a LiteLLM config
-   * from one OpenAI or Anthropic key, while the shipped route table names
-   * Azure, Bedrock, Vertex and Scaleway. Inheriting the default would make
-   * every model call in a brand-new installation fail on the first question,
-   * with the scaffold itself reporting success.
+   * A scaffolded install takes the same path every other deployment does:
+   * `native`, with a route table naming the one provider whose key the user
+   * actually gave us. The table shipped in the repository routes to Azure,
+   * Bedrock, Vertex and Scaleway, so leaving it in place would make every
+   * model call fail on the first question while the scaffold reported success.
    */
-  it('pins the proxy, which the scaffolded config is the only thing set up for', async () => {
+  it('scaffolds a direct install: native, with a route table it can serve', async () => {
     vi.mocked(clack.select).mockResolvedValueOnce('openai' as never);
     vi.mocked(clack.password).mockResolvedValueOnce('sk-test' as never);
     vi.mocked(clack.confirm).mockResolvedValue(false as never);
 
     await run(['/tmp/ragen-test']);
 
-    const rootEnv = vi
-      .mocked(writeFileSync)
-      .mock.calls.find(([path]) => String(path).endsWith('/.env.local'));
+    const written = vi.mocked(writeFileSync).mock.calls;
 
-    expect(String(rootEnv?.[1])).toContain('LLM_GATEWAY=litellm');
+    const rootEnv = written.find(([path]) =>
+      String(path).endsWith('/.env.local'),
+    );
+    expect(String(rootEnv?.[1])).toContain('LLM_GATEWAY=native');
+
+    const routes = written.find(([path]) =>
+      String(path).endsWith('infra/llm-gateway/routes.yaml'),
+    );
+    expect(routes, 'expected a route table to be written').toBeDefined();
+    expect(String(routes?.[1])).toContain('gpt-4o-mini:\n    provider: openai');
+    expect(String(routes?.[1])).toContain(
+      'text-embedding-3-small:\n    provider: openai',
+    );
+    // Nothing from the shipped table survives: those are routes to a 401.
+    expect(String(routes?.[1])).not.toContain('vertex');
+  });
+
+  it('still writes the proxy config, so the rollback is a working one', async () => {
+    vi.mocked(clack.select).mockResolvedValueOnce('anthropic' as never);
+    vi.mocked(clack.password).mockResolvedValueOnce('sk-ant' as never);
+    vi.mocked(clack.confirm).mockResolvedValue(false as never);
+
+    await run(['/tmp/ragen-test']);
+
+    const written = vi.mocked(writeFileSync).mock.calls;
+
+    expect(
+      String(
+        written.find(([path]) =>
+          String(path).endsWith('infra/llm-gateway/routes.yaml'),
+        )?.[1],
+      ),
+    ).toContain('provider: anthropic');
+
+    // `docker compose up` starts LiteLLM whatever LLM_GATEWAY says, so a
+    // configured proxy is what makes `LLM_GATEWAY=litellm` a rollback rather
+    // than a second outage.
+    expect(
+      String(
+        written.find(([path]) =>
+          String(path).endsWith('infra/litellm/config.yaml'),
+        )?.[1],
+      ),
+    ).toContain('anthropic/claude-haiku-4-5-20251001');
   });
 
   it('points the rephrase model at the provider that was just configured', async () => {

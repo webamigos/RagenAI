@@ -17,9 +17,18 @@ function providerSection(choice: LlmProviderChoice): string[] {
 
   const envLines = [
     `${config.apiKeyEnvVar}=<your ${config.label} key>`,
+    // The wizard writes this, so the guide must too — otherwise following it
+    // by hand produces a proxy install where the wizard produces a direct one.
+    'LLM_GATEWAY=native',
     'DEFAULT_MODEL_PROVIDER=litellm',
     `DEFAULT_MODEL=${config.modelName}`,
     `REPHRASE_MODEL=${config.modelName}`,
+  ];
+
+  const routeLines = [
+    `  ${config.modelName}:`,
+    `    provider: ${config.gatewayProvider}`,
+    `    model: ${config.upstreamModel}`,
   ];
 
   const yamlLines = [
@@ -40,6 +49,11 @@ function providerSection(choice: LlmProviderChoice): string[] {
       `      model: ${config.embeddings.litellmModel}`,
       `      api_key: os.environ/${config.apiKeyEnvVar}`,
     );
+    routeLines.push(
+      `  ${config.embeddings.modelName}:`,
+      `    provider: ${config.gatewayProvider}`,
+      `    model: ${config.embeddings.upstreamModel}`,
+    );
   }
 
   return [
@@ -51,11 +65,29 @@ function providerSection(choice: LlmProviderChoice): string[] {
     ...envLines,
     '```',
     '',
-    '`infra/litellm/config.yaml`, under the existing `model_list:` key:',
+    '`infra/llm-gateway/routes.yaml` — replace the `routes:` block with:',
+    '',
+    '```yaml',
+    'routes:',
+    ...routeLines,
+    '```',
+    '',
+    'The table shipped in the repository routes to Azure, Bedrock, Vertex and',
+    'Scaleway. Those entries are not wrong, they are simply not yours.',
+    '',
+    `<details><summary>Prefer to run a proxy instead?</summary>`,
+    '',
+    'Set `LLM_GATEWAY=litellm` rather than `native`, leave the route table',
+    'alone, and add this under the existing `model_list:` key in',
+    '`infra/litellm/config.yaml`:',
     '',
     '```yaml',
     ...yamlLines,
     '```',
+    '',
+    'Then `docker compose restart litellm`.',
+    '',
+    '</details>',
     ...(config.embeddings
       ? []
       : [
@@ -76,11 +108,9 @@ export function manualLlmSetupInstructions(): string {
     'base will not work until one is configured. Nothing here needs to go',
     'through a CLI — edit the two files below yourself.',
     '',
-    'Pick one provider, apply both edits, then restart the proxy:',
-    '',
-    '```bash',
-    'docker compose restart litellm',
-    '```',
+    'Ragen calls providers directly by default, so the two files are your',
+    '`.env.local` and the route table. Pick one provider, apply both edits,',
+    'and restart the apps.',
     '',
     ...providerSection('openai'),
     ...providerSection('anthropic'),
@@ -93,10 +123,14 @@ export function manualLlmSetupInstructions(): string {
     '',
     '## Check it worked',
     '',
+    'One real call per model this installation is configured to use:',
+    '',
     '```bash',
-    'curl -s -H "Authorization: Bearer $LITELLM_MASTER_KEY" \\',
-    '  http://localhost:4000/v1/models',
+    'npm run gateway:preflight -- --probe',
     '```',
+    '',
+    'It resolves each model and calls it. "Configured" and "works" are',
+    'different questions, and only the second one matters here.',
     '',
     `Anything else — S3 storage, encryption at rest, Stripe, email, MCP`,
     `connectors — is documented at ${SELF_HOSTING_DOCS}.`,

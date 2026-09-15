@@ -23,6 +23,7 @@
               "bedrock",
               "vertex",
               "openai",
+              "anthropic",
               "openai-compatible"
             ]
           },

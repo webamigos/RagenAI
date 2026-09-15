@@ -21,6 +21,23 @@ export class UnknownModelError extends Error {
   }
 }
 
+/**
+ * A route points at a provider that serves chat but not embeddings —
+ * `anthropic` today, which publishes no embeddings endpoint.
+ *
+ * Its own error rather than `UnknownModelError`: the model id *is* routed, and
+ * telling an operator "no route for …" would send them to the route table to
+ * add an entry that is already there. What is wrong is the entry's provider.
+ */
+export class EmbeddingsUnsupportedError extends Error {
+  constructor(modelId: string, provider: string) {
+    super(
+      `"${modelId}" routes to ${provider}, which serves no embedding models`,
+    );
+    this.name = 'EmbeddingsUnsupportedError';
+  }
+}
+
 export type GatewayOptions = {
   readonly routes: RouteTable;
   readonly credentials: CredentialSource;
@@ -59,9 +76,8 @@ export class LlmGateway {
   private readonly routes: RouteTable;
   private readonly credentials: CredentialSource;
   private readonly factories: Record<ProviderId, ProviderFactory>;
-  private readonly embeddingFactories: Record<
-    ProviderId,
-    EmbeddingProviderFactory
+  private readonly embeddingFactories: Partial<
+    Record<ProviderId, EmbeddingProviderFactory>
   >;
   private readonly isConfigured: (
     provider: ProviderId,
@@ -140,7 +156,11 @@ export class LlmGateway {
     options?: { scope?: CredentialScope },
   ): Promise<EmbeddingModelV4> {
     const { route, credentials } = await this.route(modelId, options?.scope);
-    return this.embeddingFactories[route.provider](route, credentials);
+    const factory = this.embeddingFactories[route.provider];
+    if (!factory) {
+      throw new EmbeddingsUnsupportedError(modelId, route.provider);
+    }
+    return factory(route, credentials);
   }
 
   private async route(modelId: string, scope?: CredentialScope) {

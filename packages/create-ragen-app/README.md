@@ -55,6 +55,7 @@ What counts as install-affecting:
 | --- | --- |
 | A new or renamed env var that a fresh install must set | `src/manifest.ts` (generated secret or corrected default) |
 | A default model, embedding model or `VECTOR_SIZE` change | `src/llm-provider.ts` — and the two must stay consistent, or Qdrant rejects every upsert |
+| A new `@ragenai/llm-gateway` provider, or a change to route-table shape | `src/llm-provider.ts` (`gatewayProvider`, `upstreamModel`) and `src/route-table.ts` — the scaffold writes `infra/llm-gateway/routes.yaml`, which is what a scaffolded install actually reads |
 | An app the web app can no longer run without | the outro in `src/cli.ts`, which tells people what to start |
 | A new first-run step (migration, seed, generate) | `src/tasks.ts` and `maybeRunFirstTimeSetup` |
 | A `docker-compose.yml` service, port or name change | `src/tasks.ts`, and the collision check in `ragenStackVolumeExists` |

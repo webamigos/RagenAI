@@ -9,6 +9,7 @@ describe('resolveLlmProviderChoice', () => {
     expect(result.envUpdates).toEqual({
       OPENAI_API_KEY: 'sk-test-key',
       DEFAULT_MODEL: 'gpt-4o-mini',
+      LLM_GATEWAY: 'native',
       DEFAULT_MODEL_PROVIDER: 'litellm',
       REPHRASE_MODEL: 'gpt-4o-mini',
       EMBEDDINGS_MODEL: 'text-embedding-3-small',
@@ -27,6 +28,17 @@ describe('resolveLlmProviderChoice', () => {
       },
     ]);
     expect(result.embeddingsConfigured).toBe(true);
+
+    // The route table is what a scaffolded install actually reads, since
+    // `LLM_GATEWAY` is `native`. Both models resolve through the one key.
+    expect(result.routes).toEqual([
+      { modelName: 'gpt-4o-mini', provider: 'openai', model: 'gpt-4o-mini' },
+      {
+        modelName: 'text-embedding-3-small',
+        provider: 'openai',
+        model: 'text-embedding-3-small',
+      },
+    ]);
   });
 
   it('wires Anthropic, which has no embeddings API', () => {
@@ -35,6 +47,7 @@ describe('resolveLlmProviderChoice', () => {
     expect(result.envUpdates).toEqual({
       ANTHROPIC_API_KEY: 'sk-ant-test-key',
       DEFAULT_MODEL: 'claude-haiku-4-5-direct',
+      LLM_GATEWAY: 'native',
       DEFAULT_MODEL_PROVIDER: 'litellm',
       REPHRASE_MODEL: 'claude-haiku-4-5-direct',
     });
@@ -51,6 +64,17 @@ describe('resolveLlmProviderChoice', () => {
     expect(result.envUpdates.EMBEDDINGS_MODEL).toBeUndefined();
     expect(result.envUpdates.VECTOR_SIZE).toBeUndefined();
     expect(result.embeddingsConfigured).toBe(false);
+
+    // Routed to the gateway's own `anthropic` provider — the chat model only.
+    // The route table has no embedding entry for the same reason the env has
+    // no EMBEDDINGS_MODEL: there is nothing to point either at.
+    expect(result.routes).toEqual([
+      {
+        modelName: 'claude-haiku-4-5-direct',
+        provider: 'anthropic',
+        model: 'claude-haiku-4-5-20251001',
+      },
+    ]);
   });
 
   it('never leaves REPHRASE_MODEL on the shipped Vertex default', () => {
