@@ -178,7 +178,7 @@ function findMissingModelCredentials(env: Env): SetupFinding | null {
     severity: 'required',
     vars: ['OPENAI_API_KEY'],
     example:
-      'OPENAI_API_KEY=sk-... — or another provider family: ANTHROPIC_API_KEY, AZURE_API_KEY, AWS_BEDROCK_REGION, VERTEX_PROJECT',
+      'OPENAI_API_KEY=sk-... — or another provider family: ANTHROPIC_API_KEY, AZURE_API_KEY, AWS_BEDROCK_REGION, VERTEX_PROJECT — or an OpenAI-compatible upstream: LLM_<CONNECTION>_BASE_URL, e.g. LLM_OLLAMA_BASE_URL=http://localhost:11434/v1',
   };
 }
 
