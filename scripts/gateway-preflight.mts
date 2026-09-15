@@ -61,10 +61,18 @@ export function configuredModels(
     'embedding',
   );
   add('MULTIMODAL_FALLBACK_MODEL', env.MULTIMODAL_FALLBACK_MODEL, 'chat', true);
-  // Only reached when Docling fails or DOCUMENT_PARSER=legacy — but its default
-  // is served by neither path today, which is exactly the sort of thing this
-  // script exists to say out loud rather than discover during an ingest.
+  // Only reached when Docling fails or DOCUMENT_PARSER=legacy.
   add('PDF_MODEL', env.PDF_MODEL ?? 'claude-haiku-4-5', 'chat', true);
+
+  // Named in worker source rather than by a variable, and therefore invisible
+  // to a check that reads the environment — which is how all three of these
+  // ended up with no route at all while this script reported a clean
+  // deployment. `gpt-5.4-nano` parses SRT segments and probes whether a key is
+  // live; `gpt-5.4-mini` is the `mini` tier of the PDF chain. There is no
+  // variable to override them with, so they are added under the constant's
+  // own home.
+  add('apps/worker pdf-process-rag mini tier', 'gpt-5.4-mini', 'chat', true);
+  add('apps/worker SRT segmentation', 'gpt-5.4-nano', 'chat', true);
 
   // De-duplicate by id, keeping the first variable that named it.
   const seen = new Set<string>();

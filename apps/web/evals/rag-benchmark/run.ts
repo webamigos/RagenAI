@@ -41,8 +41,6 @@ const THREAD_ID =
   process.env.RAG_EVAL_THREAD_ID ?? 'e2e00000-0000-0000-0000-00e2e0000010';
 const INGEST_TIMEOUT_MS = Number(process.env.RAG_EVAL_TIMEOUT_MS ?? 600_000);
 
-const LITELLM_URL = process.env.LITELLM_PROXY_URL ?? 'http://localhost:4000';
-const LITELLM_KEY = process.env.LITELLM_MASTER_KEY;
 /** The control arm and the judge must be named explicitly, so the report can. */
 const CONTROL_MODEL =
   process.env.RAG_EVAL_CONTROL_MODEL ?? 'gemini-3-flash-preview';
@@ -463,8 +461,6 @@ async function main(): Promise<void> {
             answer = await withRetry(
               () =>
                 askControl({
-                  baseUrl: LITELLM_URL,
-                  apiKey: LITELLM_KEY,
                   model: CONTROL_MODEL,
                   question: q.question,
                 }),
@@ -482,8 +478,6 @@ async function main(): Promise<void> {
             const verdict = await withRetry(
               () =>
                 judge(q.rubric!, q.question, answer, {
-                  baseUrl: LITELLM_URL,
-                  apiKey: LITELLM_KEY,
                   model: JUDGE_MODEL,
                 }),
               { onRetry },

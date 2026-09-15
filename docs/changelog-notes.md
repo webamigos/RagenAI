@@ -146,3 +146,12 @@ archive is the blog.
   and apps/api always had this right; every producer now reads the same
   default.
   ([#1203](https://github.com/webamigos/RagenAI/pull/1203))
+
+- `[brief]` **PDF fallback parsing and SRT uploads could not reach a model at
+  all.** Three model ids the worker uses — `claude-haiku-4-5`, `gpt-5.4-mini`
+  and `gpt-5.4-nano` — had no entry in the gateway's route table, so they
+  resolved to nothing once the proxy that used to serve them was retired. Two
+  of them are named by constants in worker source rather than by an environment
+  variable, which is why the preflight that exists to catch this could not see
+  them; it can now.
+  ([#1204](https://github.com/webamigos/RagenAI/pull/1204))
