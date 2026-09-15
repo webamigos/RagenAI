@@ -30,6 +30,8 @@ const workspaces = {
   'packages/env': '@ragenai/env',
   'packages/llm-gateway': '@ragenai/llm-gateway',
   'packages/observability': '@ragenai/observability',
+  'packages/jobs': '@ragenai/jobs',
+  'packages/jobs-temporal': '@ragenai/jobs-temporal',
   'packages/platform-contracts': '@ragenai/platform-contracts',
   'packages/rag-core': '@ragenai/rag-core',
   'packages/storage': '@ragenai/storage',

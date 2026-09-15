@@ -41,6 +41,8 @@
     "@ragenai/crypto": "*",
     "@ragenai/db": "*",
     "@ragenai/env": "*",
+    "@ragenai/jobs": "*",
+    "@ragenai/jobs-temporal": "*",
     "@ragenai/litellm-client": "*",
     "@ragenai/llm-gateway": "*",
     "@ragenai/observability": "*",

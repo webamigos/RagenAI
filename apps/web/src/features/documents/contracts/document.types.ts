@@ -1,3 +1,5 @@
+import type { JobName, ScrapeWebsitePayload } from '@ragenai/jobs';
+
 import type {
   UserDocument,
   UserFile,
@@ -56,25 +58,28 @@ export enum WebsiteLoaderMode {
   SCRAPE = 'scrape',
 }
 
-// Temporal workflow names
-export enum Workflow {
-  RUN_FILE_EMBEDDINGS = 'runFileEmbeddings',
-  SCRAPE_WEBSITE = 'scrapeWebsite',
-  GENERATE_DOCUMENT = 'generateDocument',
-  REINDEX_DOCUMENT_VERSION = 'reindexDocumentVersion',
-  OPTIMIZE_DOCUMENT = 'optimizeDocument',
-  SCORE_DOCUMENT = 'scoreDocument',
-}
+/**
+ * The job names, as the call sites have always spelled them.
+ *
+ * The values now come from `@ragenai/jobs`, which owns them: this used to be a
+ * `enum` here and a hand-synced subset of it in `apps/api`, whose own comment
+ * said "keep in sync by hand". `satisfies` is what makes the move safe — a
+ * value that is not a real job name is a compile error here rather than a
+ * runtime "workflow type not registered" in the worker.
+ */
+export const Workflow = {
+  RUN_FILE_EMBEDDINGS: 'runFileEmbeddings',
+  SCRAPE_WEBSITE: 'scrapeWebsite',
+  GENERATE_DOCUMENT: 'generateDocument',
+  REINDEX_DOCUMENT_VERSION: 'reindexDocumentVersion',
+  OPTIMIZE_DOCUMENT: 'optimizeDocument',
+  SCORE_DOCUMENT: 'scoreDocument',
+} as const satisfies Record<string, JobName>;
 
-export interface ScrapeWebsiteWorkflowPayload {
-  url: string;
-  mode: WebsiteLoaderMode;
-  orgId: UserFile['organizationId'];
-  projectId: UserFile['projectId'];
-  orgSlug?: string;
-  userEmail?: string;
-  userId?: string;
-}
+export type Workflow = (typeof Workflow)[keyof typeof Workflow];
+
+/** Re-exported so a caller keeps one import for a payload and its job name. */
+export type ScrapeWebsiteWorkflowPayload = ScrapeWebsitePayload;
 
 export type ParsedFile = {
   content: string | Buffer;
