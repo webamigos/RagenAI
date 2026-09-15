@@ -146,4 +146,25 @@ describe('resolving an embedding model', () => {
       gateway.resolveEmbeddingModel('claude-haiku-4-5-direct'),
     ).rejects.toThrow(/anthropic/);
   });
+
+  /**
+   * The order matters more than it looks. A provider serving no embeddings
+   * serves none whether or not this deployment holds its key, so asking for
+   * credentials first answers "ANTHROPIC_API_KEY is missing" — which sends an
+   * operator to set a variable that changes nothing.
+   */
+  it('says so without asking for credentials it does not need', async () => {
+    const forProvider = vi.fn(async () => {
+      throw new Error('MissingCredentialsError: ANTHROPIC_API_KEY');
+    });
+    const gateway = new LlmGateway({
+      routes,
+      credentials: { forProvider } as unknown as CredentialSource,
+    });
+
+    await expect(
+      gateway.resolveEmbeddingModel('claude-haiku-4-5-direct'),
+    ).rejects.toThrow(EmbeddingsUnsupportedError);
+    expect(forProvider).not.toHaveBeenCalled();
+  });
 });

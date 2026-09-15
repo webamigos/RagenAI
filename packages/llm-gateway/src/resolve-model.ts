@@ -155,12 +155,23 @@ export class LlmGateway {
     modelId: string,
     options?: { scope?: CredentialScope },
   ): Promise<EmbeddingModelV4> {
-    const { route, credentials } = await this.route(modelId, options?.scope);
+    const route = findRoute(this.routes, modelId);
+    if (!route) {
+      throw new UnknownModelError(modelId);
+    }
+
+    /**
+     * Before the credentials, not after. A provider that serves no embeddings
+     * serves none whether or not this deployment holds its key, so loading
+     * credentials first answers `MissingCredentialsError` — which sends an
+     * operator to set a variable that would change nothing.
+     */
     const factory = this.embeddingFactories[route.provider];
     if (!factory) {
       throw new EmbeddingsUnsupportedError(modelId, route.provider);
     }
-    return factory(route, credentials);
+
+    return factory(route, await this.credentialsFor(route, options?.scope));
   }
 
   private async route(modelId: string, scope?: CredentialScope) {
@@ -169,11 +180,13 @@ export class LlmGateway {
       throw new UnknownModelError(modelId);
     }
 
-    const credentials = await this.credentials.forProvider(route.provider, {
+    return { route, credentials: await this.credentialsFor(route, scope) };
+  }
+
+  private async credentialsFor(route: Route, scope?: CredentialScope) {
+    return this.credentials.forProvider(route.provider, {
       connection: route.connection,
       scope,
     });
-
-    return { route, credentials };
   }
 }

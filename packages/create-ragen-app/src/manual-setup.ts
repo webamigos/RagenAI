@@ -88,15 +88,57 @@ function providerSection(choice: LlmProviderChoice): string[] {
     'Then `docker compose restart litellm`.',
     '',
     '</details>',
-    ...(config.embeddings
-      ? []
-      : [
-          '',
-          `${config.label} has no embeddings API, so the knowledge base needs a`,
-          'second provider. Leave `EMBEDDINGS_MODEL` and `VECTOR_SIZE` alone and',
-          'add one (OpenAI, Scaleway or Cohere) before uploading documents.',
-        ]),
+    ...(config.embeddings ? [] : secondProviderForEmbeddings(config.label)),
     '',
+  ];
+}
+
+/**
+ * What to add when the chosen provider serves chat and nothing else.
+ *
+ * Concrete rather than "add one (OpenAI, Scaleway or Cohere)", because the
+ * instructions above replace the whole `routes:` block — so the shipped
+ * `EMBEDDINGS_MODEL` default stops being routed at all, and the knowledge base
+ * fails on the first upload with a model id nothing serves. Telling someone to
+ * leave that variable alone was correct while a proxy served it and is wrong
+ * now.
+ *
+ * OpenAI rather than a choice, for the same reason the wizard picks defaults:
+ * one working recipe beats three that each need a decision. Derived from
+ * `LLM_PROVIDERS.openai` so the model name and its vector size cannot drift
+ * from what the wizard would have written.
+ */
+function secondProviderForEmbeddings(label: string): string[] {
+  const openai = LLM_PROVIDERS.openai;
+  const embeddings = openai.embeddings;
+  if (!embeddings) {
+    return [];
+  }
+
+  return [
+    '',
+    `${label} publishes no embeddings API, so the knowledge base needs a`,
+    'second provider. Anything else with one will do; this is the shortest',
+    'working version.',
+    '',
+    'Add to `.env.local`:',
+    '',
+    '```',
+    `${openai.apiKeyEnvVar}=<your ${openai.label} key>`,
+    `EMBEDDINGS_MODEL=${embeddings.modelName}`,
+    `VECTOR_SIZE=${embeddings.vectorSize}`,
+    '```',
+    '',
+    'And a second entry under `routes:`, beside the chat one above:',
+    '',
+    '```yaml',
+    `  ${embeddings.modelName}:`,
+    `    provider: ${openai.gatewayProvider}`,
+    `    model: ${embeddings.upstreamModel}`,
+    '```',
+    '',
+    'Without both, uploads fail on a model id nothing serves — the route table',
+    'you wrote above replaced the one that used to carry a default.',
   ];
 }
 
