@@ -53,18 +53,43 @@ describe('the apps/web environment contract', () => {
     expect(parseWebEnv(deployed).ok).toBe(true);
   });
 
-  it.each([
-    ['LITELLM_MASTER_KEY'],
-    ['SECRET_KEY'],
-    ['SESSION_AUTH_SECRET'],
-    ['BETTER_AUTH_SECRET'],
-  ])('refuses a deployment missing %s', (name) => {
-    const result = parseWebEnv({ ...deployed, [name]: undefined });
+  it.each([['SECRET_KEY'], ['SESSION_AUTH_SECRET'], ['BETTER_AUTH_SECRET']])(
+    'refuses a deployment missing %s',
+    (name) => {
+      const result = parseWebEnv({ ...deployed, [name]: undefined });
+
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.report).toContain(name);
+      }
+    },
+  );
+
+  /**
+   * `LITELLM_MASTER_KEY` left the list above when `LLM_GATEWAY` started
+   * defaulting to `native`. It is a proxy credential, and nothing on the
+   * default path authenticates against a proxy — demanding it anyway refuses
+   * to boot a correctly configured deployment, and the obvious workaround is
+   * to invent a dummy value, which is how a boot check stops being believed.
+   */
+  it('refuses a deployment missing LITELLM_MASTER_KEY once the proxy is named', () => {
+    const result = parseWebEnv({
+      ...deployed,
+      LITELLM_MASTER_KEY: undefined,
+      LLM_GATEWAY: 'litellm',
+    });
 
     expect(result.ok).toBe(false);
     if (!result.ok) {
-      expect(result.report).toContain(name);
+      expect(result.report).toContain('LITELLM_MASTER_KEY');
     }
+  });
+
+  /** Asserted as a deployment that parses, not as a report that stays silent. */
+  it('accepts a deployment without it when no gateway is named', () => {
+    expect(parseWebEnv({ ...deployed, LITELLM_MASTER_KEY: undefined }).ok).toBe(
+      true,
+    );
   });
 
   it('refuses a deployment with no origin for email links', () => {
