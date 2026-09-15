@@ -72,6 +72,18 @@ export type ProviderCredentials = {
    * not in fact read the same configuration — see `serviceAccountFromEnv`.
    */
   readonly serviceAccount?: Record<string, unknown>;
+  /**
+   * Extra request headers, for an OpenAI-compatible upstream that needs more
+   * than a bearer token to know what to do.
+   *
+   * This is what makes "attach any OpenAI-compatible gateway" true rather than
+   * nearly true. Portkey routes on `x-portkey-provider` or `x-portkey-config`;
+   * OpenRouter attributes traffic with `HTTP-Referer` and `X-Title`; several
+   * hosted gateways select a deployment the same way. A base URL and a key
+   * cannot express any of it, so without this the promise holds for LiteLLM and
+   * vLLM and quietly fails for the rest.
+   */
+  readonly headers?: Record<string, string>;
 };
 
 /**

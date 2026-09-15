@@ -118,6 +118,19 @@ promising.
   it stops working silently, so the endpoint has to become configuration either
   way.
 
+  **Made concrete 2026-09-15.** [`docs/attaching-a-gateway.md`](../attaching-a-gateway.md)
+  documents Portkey, LiteLLM, vLLM and Ollama as worked examples, which is the
+  form this answer had to take to be true — Q6 was a decision, and until it was
+  written down as a procedure nobody could act on it.
+
+  Writing it exposed one gap: a connection could carry a base URL and a key and
+  nothing else, and **Portkey routes on headers** (`x-portkey-provider`, or
+  `x-portkey-config` for a saved routing config). So the promise held for
+  LiteLLM and vLLM and quietly failed for the gateway most worth attaching.
+  `LLM_<NAME>_HEADERS` closes it. This is also the answer to Q8: the reason not
+  to build a proxy of our own is that attaching a better one is two lines of
+  configuration.
+
   **Virtual keys are not part of the offer.** B5 drops `Team.litellmTeamId`,
   `Team.litellmKeyToken` and `OrganizationSettings.litellmApiKey` because the
   application takes over budgets. Anyone attaching their own LiteLLM gets a

@@ -105,3 +105,83 @@ describe('credentials from the environment', () => {
     });
   });
 });
+
+/**
+ * Headers are what make "attach any OpenAI-compatible gateway" true rather
+ * than nearly true: Portkey routes on `x-portkey-provider`, OpenRouter
+ * attributes on `HTTP-Referer`, and a base URL plus a key expresses neither.
+ */
+describe('extra headers for a connection', () => {
+  it('are absent when the variable is unset', async () => {
+    delete process.env.LLM_PORTKEY_HEADERS;
+    process.env.LLM_PORTKEY_BASE_URL = 'http://localhost:8787/v1';
+
+    const credentials = await new EnvCredentialSource().forProvider(
+      'openai-compatible',
+      { connection: 'portkey' },
+    );
+
+    expect(credentials.headers).toBeUndefined();
+  });
+
+  it('are read as a JSON object', async () => {
+    process.env.LLM_PORTKEY_BASE_URL = 'http://localhost:8787/v1';
+    process.env.LLM_PORTKEY_HEADERS =
+      '{"x-portkey-provider":"openai","x-portkey-trace-id":"ragen"}';
+
+    const credentials = await new EnvCredentialSource().forProvider(
+      'openai-compatible',
+      { connection: 'portkey' },
+    );
+
+    expect(credentials.headers).toEqual({
+      'x-portkey-provider': 'openai',
+      'x-portkey-trace-id': 'ragen',
+    });
+  });
+
+  it('derives the variable name from the connection', async () => {
+    process.env.LLM_MY_GATEWAY_BASE_URL = 'http://localhost:9000/v1';
+    process.env.LLM_MY_GATEWAY_HEADERS = '{"x-tenant":"acme"}';
+
+    const credentials = await new EnvCredentialSource().forProvider(
+      'openai-compatible',
+      { connection: 'my-gateway' },
+    );
+
+    expect(credentials.headers).toEqual({ 'x-tenant': 'acme' });
+  });
+
+  /**
+   * Ignoring a malformed value would route traffic to the wrong upstream, or
+   * bill it to the wrong account, with nothing to read in either case.
+   */
+  it('throws on content that is not a JSON object', async () => {
+    process.env.LLM_PORTKEY_BASE_URL = 'http://localhost:8787/v1';
+
+    process.env.LLM_PORTKEY_HEADERS = 'x-portkey-provider=openai';
+    await expect(
+      new EnvCredentialSource().forProvider('openai-compatible', {
+        connection: 'portkey',
+      }),
+    ).rejects.toThrow(/must be a JSON object/);
+
+    process.env.LLM_PORTKEY_HEADERS = '["a","b"]';
+    await expect(
+      new EnvCredentialSource().forProvider('openai-compatible', {
+        connection: 'portkey',
+      }),
+    ).rejects.toThrow(/must be a JSON object/);
+  });
+
+  it('throws when a header value is not a string', async () => {
+    process.env.LLM_PORTKEY_BASE_URL = 'http://localhost:8787/v1';
+    process.env.LLM_PORTKEY_HEADERS = '{"x-retries":3}';
+
+    await expect(
+      new EnvCredentialSource().forProvider('openai-compatible', {
+        connection: 'portkey',
+      }),
+    ).rejects.toThrow(/"x-retries" must be a string/);
+  });
+});

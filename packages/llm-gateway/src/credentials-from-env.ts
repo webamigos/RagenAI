@@ -43,11 +43,13 @@ const REQUIRED: Record<Exclude<ProviderId, 'openai-compatible'>, string[]> = {
 function connectionEnvNames(connection: string): {
   baseUrl: string[];
   apiKey: string[];
+  headers: string[];
 } {
   const slug = connection.toUpperCase().replace(/[^A-Z0-9]+/g, '_');
   const names = {
     baseUrl: [`LLM_${slug}_BASE_URL`],
     apiKey: [`LLM_${slug}_API_KEY`],
+    headers: [`LLM_${slug}_HEADERS`],
   };
   if (connection === 'scaleway') {
     names.baseUrl.push('SCW_API_BASE');
@@ -104,6 +106,48 @@ function readCredentialsFile(path: string): string {
   }
 }
 
+/**
+ * Extra headers for a connection, as a JSON object.
+ *
+ * JSON rather than `k=v,k=v` because header values contain commas, equals signs
+ * and spaces routinely, and a format that cannot express its own content is
+ * worse than a slightly awkward one. `VERTEX_CREDENTIALS` is already JSON here,
+ * so an operator has met the convention.
+ *
+ * Malformed content throws rather than being ignored: a header that silently
+ * failed to apply would route traffic to the wrong upstream, or bill it to the
+ * wrong account, with nothing to read in either case.
+ */
+function headersFromEnv(name: string): Record<string, string> | undefined {
+  const raw = process.env[name]?.trim();
+  if (!raw) {
+    return undefined;
+  }
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(raw);
+  } catch (cause) {
+    throw new Error(
+      `${name} must be a JSON object of headers: ${(cause as Error).message}`,
+    );
+  }
+
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+    throw new Error(`${name} must be a JSON object of headers`);
+  }
+
+  const entries = Object.entries(parsed as Record<string, unknown>);
+  for (const [key, value] of entries) {
+    if (typeof value !== 'string') {
+      throw new Error(
+        `${name}: header "${key}" must be a string, got ${typeof value}`,
+      );
+    }
+  }
+  return Object.fromEntries(entries) as Record<string, string>;
+}
+
 function firstSet(names: readonly string[]): string | undefined {
   for (const name of names) {
     const value = process.env[name];
@@ -140,7 +184,11 @@ export class EnvCredentialSource implements CredentialSource {
       if (!baseUrl) {
         throw new MissingCredentialsError(provider, names.baseUrl);
       }
-      return { baseUrl, apiKey };
+      return {
+        baseUrl,
+        apiKey,
+        headers: headersFromEnv(names.headers[0]!),
+      };
     }
 
     const required = REQUIRED[provider];

@@ -99,6 +99,17 @@ reads `LLM_OLLAMA_BASE_URL` and `LLM_OLLAMA_API_KEY`:
 
 The API key is optional, because a local Ollama has none. The base URL is not.
 
+`LLM_<NAME>_HEADERS` takes a JSON object of extra headers, applied after the
+bearer token. That is what lets a gateway that routes on headers be attached at
+all — Portkey selects its upstream with `x-portkey-provider` or a saved config
+with `x-portkey-config`, and a base URL plus a key cannot express either.
+Malformed content throws rather than being ignored, because a header that
+silently failed to apply would send traffic to the wrong upstream with nothing
+to read afterwards.
+
+Worked examples for Portkey, LiteLLM, vLLM and Ollama:
+[`docs/attaching-a-gateway.md`](../../docs/attaching-a-gateway.md).
+
 `scaleway` also accepts the proxy-era `SCW_API_BASE` / `SCW_API_KEY`, so the one
 connection that exists today keeps working with no change to any environment.
 

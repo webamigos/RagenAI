@@ -57,5 +57,8 @@ export const EMBEDDING_PROVIDER_FACTORIES: Record<
       name: route.connection ?? 'openai-compatible',
       baseURL: credentials.baseUrl!,
       apiKey: credentials.apiKey,
+      // Applied after the bearer token, so a connection can add routing or
+      // attribution headers without displacing its own authentication.
+      headers: credentials.headers,
     }).textEmbeddingModel(route.model),
 };
