@@ -76,7 +76,9 @@ archive is the blog.
   because the vector store's point ids are random and an upsert therefore
   cannot replace anything. The effect was retrieval quoting text that had been
   replaced, and quoting it twice: both copies competed for the same answer.
-  Ingest now clears a file's existing chunks before writing new ones.
+  Ingest now clears a file's existing chunks before writing new ones. Scraped
+  pages are unaffected: re-scraping a URL creates a new entry rather than
+  replacing one, so it never had the duplicate.
   ([#1209](https://github.com/webamigos/RagenAI/pull/1209))
 
 - `[major]` **Cancelling a document ingest now takes effect immediately, and

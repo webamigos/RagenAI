@@ -47,7 +47,6 @@ export async function scrapeWebsite(
 
     // activities/meilisearch
     addDocumentsToVectorStore,
-    deleteDocumentVectors,
 
     // activities/splitters
     splitText,
@@ -227,12 +226,18 @@ export async function scrapeWebsite(
       status: EmbeddingStatus.STARTED,
     });
 
-    // See parse-and-embed.ts: point ids are random uuids, so an upsert cannot
-    // replace an earlier ingest of the same file. A re-scrape of a page that
-    // has changed would otherwise leave the old text in the index beside the
-    // new, and a redelivered job would duplicate every chunk.
-    await deleteDocumentVectors({ orgId, fileId });
-
+    // No `deleteDocumentVectors` here, unlike parse-and-embed: this handler
+    // calls `createFileRecord` above, so `fileId` names a row created seconds
+    // ago with no chunks of its own, and clearing it would delete nothing. A
+    // re-scrape produces a *new* knowledge-base entry rather than replacing
+    // one, which is the current product behaviour and not something a vector
+    // clear can paper over.
+    //
+    // That also means this handler is not yet idempotent under redelivery: a
+    // redelivered job creates a second row and a second document, which is a
+    // duplicate row rather than a duplicate chunk. Fixing it belongs with C4,
+    // where payloads shrink to identifiers and handlers re-read what they were
+    // given instead of creating it.
     await addDocumentsToVectorStore({
       orgId,
       docs: updatedDocs,

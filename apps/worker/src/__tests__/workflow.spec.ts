@@ -781,7 +781,11 @@ describe('runFileEmbeddings workflow', () => {
       );
     });
 
-    it('clears a scraped page’s chunks before re-writing them', async () => {
+    // scrapeWebsite deliberately has no clear: it creates its own UserFile row
+    // per run, so the id it would clear belongs to a row created seconds
+    // earlier with nothing in the index. Asserting the absence keeps the next
+    // reader from "fixing" it back into a call that deletes nothing.
+    it('does not clear vectors on a scrape, because the row is new', async () => {
       const activities = createMockActivities();
 
       await runWorkflow<string>(
@@ -797,15 +801,8 @@ describe('runFileEmbeddings workflow', () => {
         activities,
       );
 
-      expect(activities.deleteDocumentVectors).toHaveBeenCalledWith({
-        orgId: 'org-1',
-        fileId: 'file-1',
-      });
-      expect(
-        activities.deleteDocumentVectors.mock.invocationCallOrder[0],
-      ).toBeLessThan(
-        activities.addDocumentsToVectorStore.mock.invocationCallOrder[0],
-      );
+      expect(activities.addDocumentsToVectorStore).toHaveBeenCalled();
+      expect(activities.deleteDocumentVectors).not.toHaveBeenCalled();
     });
   });
 
