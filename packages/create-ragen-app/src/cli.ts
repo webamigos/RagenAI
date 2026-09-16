@@ -267,12 +267,13 @@ export async function run(argv: string[]): Promise<boolean> {
     );
   }
 
+  let dockerFailed = false;
   if (!args.skipDocker) {
-    if (
-      !(await maybeStartDocker(targetDir, args.yes, piiMasking.composeProfiles))
-    ) {
-      return false;
-    }
+    ({ failed: dockerFailed } = await maybeStartDocker(
+      targetDir,
+      args.yes,
+      piiMasking.composeProfiles,
+    ));
   }
 
   if (!args.skipInstall) {
@@ -282,7 +283,14 @@ export async function run(argv: string[]): Promise<boolean> {
     // .env.local themselves — so the values just written have to be passed
     // through explicitly.
     const rootEnv = parseDotenv(rootWrite.content);
-    if (!(await maybeRunFirstTimeSetup(targetDir, args.yes, rootEnv))) {
+    if (
+      !(await maybeRunFirstTimeSetup(
+        targetDir,
+        args.yes,
+        rootEnv,
+        dockerFailed,
+      ))
+    ) {
       return false;
     }
   }
@@ -892,11 +900,16 @@ async function runStep(
   return true;
 }
 
+/**
+ * `failed` is *not* the same as "the user declined": someone running their own
+ * Postgres answers no and their database is fine. Only a compose that tried and
+ * could not is a reason to keep migrations away from it.
+ */
 async function maybeStartDocker(
   targetDir: string,
   yes: boolean,
   profiles: string[] = [],
-): Promise<boolean> {
+): Promise<{ failed: boolean }> {
   const withPii = profiles.includes(PII_COMPOSE_PROFILE);
 
   // Before the confirm, not after: sharing a database with an install you
@@ -947,28 +960,69 @@ async function maybeStartDocker(
     yes,
   );
   if (!proceed) {
-    return true;
+    return { failed: false };
   }
 
   if (!(await isDockerAvailable())) {
     clack.log.warn(
       'Docker does not seem to be available — skipping. Install Docker and run `docker compose up -d` yourself.',
     );
-    return true;
+    return { failed: false };
   }
 
-  return runStep(
-    clack.spinner(),
-    'Starting docker compose (Postgres, Qdrant, Redis, …)',
-    'Backing services started.',
-    () => startDockerServices({ cwd: targetDir, profiles }),
-  );
+  const spinner = clack.spinner();
+  spinner.start('Starting docker compose (Postgres, Qdrant, Redis, …)');
+
+  try {
+    await startDockerServices({ cwd: targetDir, profiles });
+    spinner.stop('Backing services started.');
+  } catch (error) {
+    // **Not fatal, deliberately.** Every other step here aborts the install on
+    // failure because it would leave a tree that fails later; this one is the
+    // exception. The files are already written and correct, and the usual
+    // reason compose fails is the one the warning above predicts — another
+    // Ragen stack holding these container names and ports. Stopping there
+    // leaves someone with a complete install, a raw `ExecaError` and no next
+    // step, which is how a first run ends in a support question.
+    spinner.stop('Backing services — not started.', 1);
+    clack.log.warn(
+      [
+        'docker compose could not start the services, and the install carried',
+        'on: the files are written, so this is the one step you can redo by',
+        'hand. The usual cause is another Ragen stack already holding these',
+        'container names and host ports — compose says so with "Conflict. The',
+        'container name … is already in use".',
+        '',
+        'Either stop the other stack, or start this one under its own name and',
+        'ports with the command printed above, then point .env.local at them.',
+        '',
+        `The error was: ${String(error)}`,
+      ].join('\n'),
+    );
+    return { failed: true };
+  }
+
+  return { failed: false };
 }
 
+/**
+ * `skipDatabaseSteps` is the compose failure reaching this far, and it is not
+ * caution for its own sake. The usual cause of that failure is another Ragen
+ * stack holding these container names — which means its Postgres is answering
+ * on the very port this install was just configured for. Running `migrate
+ * deploy` and the seed then writes into *that* install's database: the exact
+ * thing the warning two prompts earlier exists to prevent, arrived at by a
+ * different road.
+ *
+ * npm install and `prisma generate` still run. Both are local to the new tree,
+ * neither opens a connection, and skipping them would leave something that
+ * cannot be finished by hand.
+ */
 async function maybeRunFirstTimeSetup(
   targetDir: string,
   yes: boolean,
   env: NodeJS.ProcessEnv,
+  skipDatabaseSteps = false,
 ): Promise<boolean> {
   const proceed = await confirmOrSkip(
     'Install dependencies and run first-time setup (prisma generate, migrate, seed)?',
@@ -991,22 +1045,41 @@ async function maybeRunFirstTimeSetup(
       'Prisma client generated.',
       () => generatePrismaClient({ cwd: targetDir, env }),
     ],
-    [
-      'Applying database migrations',
-      'Migrations applied.',
-      () => migrateDatabase({ cwd: targetDir, env }),
-    ],
-    [
-      'Seeding the database',
-      'Database seeded.',
-      () => seedDatabase({ cwd: targetDir, env }),
-    ],
+    ...(skipDatabaseSteps
+      ? []
+      : ([
+          [
+            'Applying database migrations',
+            'Migrations applied.',
+            () => migrateDatabase({ cwd: targetDir, env }),
+          ],
+          [
+            'Seeding the database',
+            'Database seeded.',
+            () => seedDatabase({ cwd: targetDir, env }),
+          ],
+        ] as Array<[string, string, () => Promise<void>]>)),
   ];
 
   for (const [label, successMessage, task] of steps) {
     if (!(await runStep(spinner, label, successMessage, task))) {
       return false;
     }
+  }
+
+  if (skipDatabaseSteps) {
+    clack.log.warn(
+      [
+        'Migrations and seeding were skipped, because the services did not',
+        'start. A Postgres may well be answering on that port — the one',
+        'belonging to the stack that refused to make room — and migrating into',
+        'it would touch an install you did not mean to change.',
+        '',
+        'Once this install has services of its own:',
+        '  npx prisma migrate deploy',
+        '  npm run db:seed',
+      ].join('\n'),
+    );
   }
 
   return true;
