@@ -191,6 +191,12 @@ function createMockActivities() {
     // has to be registered even by tests that never cancel — an unregistered
     // activity fails the run rather than being skipped.
     isIngestCancelled: vi.fn().mockResolvedValue(false),
+    // The re-index reads the document rather than being handed its text — see
+    // the payload below, which now names the document instead of carrying it.
+    getDocumentContent: vi.fn().mockResolvedValue({
+      content: '# Restored\n\nThe rolled-back text.',
+      title: 'Restored',
+    }),
   };
 }
 
@@ -1122,7 +1128,7 @@ describe('reindexDocumentVersion workflow', () => {
     fileName: 'readme.txt',
     projectId: 'proj-1',
     userId: 'user-1',
-    content: '# Restored\n\nThe rolled-back text.',
+    documentId: 'doc-1',
   };
 
   it('clears the previous chunks before writing the new ones', async () => {
@@ -1149,14 +1155,29 @@ describe('reindexDocumentVersion workflow', () => {
     );
   });
 
-  it('embeds the version text and never reads the stored file', async () => {
+  it('embeds the document’s current text and never reads the stored file', async () => {
     const activities = createMockActivities();
+    activities.getDocumentContent.mockResolvedValue({
+      content: '# Restored\n\nThe rolled-back text.',
+      title: 'Restored',
+    });
 
     await runWorkflow('reindexDocumentVersion', [payload], activities);
 
+    // Asked for the document named in the payload, and embedded what came
+    // back — not something the payload carried.
+    expect(activities.getDocumentContent).toHaveBeenCalledWith({
+      documentId: 'doc-1',
+      orgId: 'org-1',
+    });
     expect(activities.splitText).toHaveBeenCalledWith(
       expect.objectContaining({
-        rawDocs: [{ pageContent: payload.content, metadata: {} }],
+        rawDocs: [
+          {
+            pageContent: '# Restored\n\nThe rolled-back text.',
+            metadata: {},
+          },
+        ],
       }),
     );
     // The whole reason this workflow exists: runFileEmbeddings re-parses the
@@ -1212,15 +1233,34 @@ describe('reindexDocumentVersion workflow', () => {
     );
   });
 
+  /**
+   * Unreachable while the text rode in the payload: a producer always had
+   * *something*. Now the document can have been deleted between enqueue and
+   * run, and clearing the chunks for a document that no longer exists would
+   * be the one outcome worse than not re-indexing.
+   */
+  it('refuses when the document has gone missing since the job was queued', async () => {
+    const activities = createMockActivities();
+    activities.getDocumentContent.mockResolvedValue(null);
+
+    await expect(
+      runWorkflow('reindexDocumentVersion', [payload], activities),
+    ).rejects.toThrow();
+
+    expect(activities.deleteDocumentVectors).not.toHaveBeenCalled();
+  });
+
   it('refuses empty content rather than emptying the index', async () => {
     const activities = createMockActivities();
+    // Empty because the document is empty now, not because a payload said so:
+    // the text is read at run time, so this is the state that matters.
+    activities.getDocumentContent.mockResolvedValue({
+      content: '   ',
+      title: null,
+    });
 
     try {
-      await runWorkflow(
-        'reindexDocumentVersion',
-        [{ ...payload, content: '   ' }],
-        activities,
-      );
+      await runWorkflow('reindexDocumentVersion', [payload], activities);
       expect.fail('Expected workflow to throw');
     } catch (err) {
       // Empty content won't become non-empty on retry.

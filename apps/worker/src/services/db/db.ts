@@ -244,6 +244,29 @@ const updateParsingStatus = async ({
   return count;
 };
 
+/**
+ * A document's current text and title.
+ *
+ * Added so the two jobs that used to *carry* the text can read it instead.
+ * Both producers persist the document before they enqueue — a rollback makes
+ * the version active first, and apply-suggestions writes the optimized text
+ * first — so reading here is not merely equivalent, it is more correct: the
+ * job embeds whatever is current rather than whatever its payload froze. Two
+ * rollbacks in quick succession used to race, and the one whose payload was
+ * written first could win.
+ */
+const getDocumentContent = async (
+  documentId: string,
+  orgId: string,
+): Promise<{ content: string; title: string | null } | null> => {
+  const row = await getPrisma().userDocument.findUnique({
+    where: { id_organizationId: { id: documentId, organizationId: orgId } },
+    select: { content: true, title: true },
+  });
+
+  return row ? { content: row.content ?? '', title: row.title } : null;
+};
+
 const createMarkdownDocument = async ({
   title,
   content,
@@ -903,6 +926,7 @@ const deleteExpiredDocumentRetrievals = async (
 
 export const db = {
   getUserFile,
+  getDocumentContent,
   isIngestCancelled,
   createFileDetailsInDB,
   updateFileBinaryInfo,

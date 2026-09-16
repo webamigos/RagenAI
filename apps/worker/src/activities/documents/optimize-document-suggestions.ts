@@ -1,4 +1,5 @@
 import { generateObject } from 'ai';
+import { JobFailure } from '@ragenai/jobs';
 import { z } from 'zod';
 import { randomUUID } from 'crypto';
 import { getChatModelForOrg } from '../../services/llm/provider.js';
@@ -143,8 +144,6 @@ export async function optimizeDocumentSuggestions({
   orgId,
   projectId,
   userId,
-  documentText,
-  documentTitle,
   baseScore: canonicalBaseScore,
 }: {
   jobId: string;
@@ -152,11 +151,32 @@ export async function optimizeDocumentSuggestions({
   orgId: string;
   projectId?: string | null;
   userId?: string | null;
-  documentText: string;
-  documentTitle?: string;
   baseScore?: number | null;
 }): Promise<void> {
   const startedAt = Date.now();
+
+  // Read here rather than carried in the payload. A document's full text in a
+  // job payload is a copy of it in Redis — unencrypted, and outside the
+  // retention anyone reasons about — and the copy is stale by construction:
+  // the producer writes the document first, so what it says now is what should
+  // be optimized.
+  const document = await db.getDocumentContent(documentId, orgId);
+
+  // The document can be deleted between enqueue and run, which could not
+  // happen while the text rode in the payload. Refused before anything else,
+  // and non-retryably: a deleted document does not come back, and every write
+  // below targets `user_documents.metadata` for this id — so marking the job
+  // failed would write nowhere and leave it reading `processing` for good.
+  // `reindexDocumentVersion` refuses the same case; handling it in one of the
+  // two paths this PR changed and not the other was the gap.
+  if (!document) {
+    throw JobFailure.nonRetryable(
+      `Document ${documentId} no longer exists — nothing to optimize`,
+    );
+  }
+
+  const documentText = document.content;
+  const documentTitle = document.title ?? undefined;
 
   // Mark as processing — preserve existing suggestions so the user can still
   // see and act on them while the new job runs. Only id/status/baseScore are
