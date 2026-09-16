@@ -16,6 +16,10 @@ topics:
 
 # BullMQ matches Temporal at 20 concurrent ingests — but only once `WORKER_CONCURRENCY` matches; at the shipped default it is 2x slower
 
+> **Acted on.** `DEFAULT_CONCURRENCY` was raised from 10 to 20 the same day, so
+> "the shipped default" in the title describes what was measured, not what
+> ships now. The numbers below are unchanged and are what that change rests on.
+
 **Context**: D2 of
 [the worker-runtime spec](../specs/2026-09-15-bullmq-is-the-worker-runtime.md) —
 the measurement Phase E's decision rests on, and the one
@@ -51,16 +55,23 @@ at level 20):
    runs (BullMQ 23.9/25.3/28.1, Temporal 11.1–18.7 over eight). A customer's
    first document import is exactly this shape, so this is the number that
    would have been read as "the port made ingest slower".
-2. **It is not the engine. It is the concurrency ceiling, and the split says
-   so.** `DEFAULT_CONCURRENCY` is 10 whole jobs per queue; Temporal's
-   `maxConcurrentActivityTaskExecutions: 50` counted *activities*, and one
-   ingest is about twenty sequential ones, so twenty files ran at once there.
-   The entire difference sits before the work starts — median time from enqueue
-   to the first status write is 18.5s on BullMQ-at-10 against 1.41s on
-   Temporal, while the parse and embed medians are the same on both. Set
-   `WORKER_CONCURRENCY=20` and the median becomes **12.3s against Temporal's
-   12.5s**: the same number, and the queue wait is now *lower* than Temporal's
-   (0.69s against 1.41s).
+2. **It is not the engine, and one setting removed it.** Two separate findings,
+   worth keeping separate. *Not the engine*: the entire difference sits before
+   the work starts — median time from enqueue to the first status write is
+   18.5s on BullMQ-at-10 against 1.41s on Temporal, while the parse and embed
+   medians are the same on both. *One setting*: change `WORKER_CONCURRENCY` to
+   20, alter nothing else, and the median becomes **12.3s against Temporal's
+   12.5s**, with the pre-parse window now *shorter* than Temporal's (0.69s
+   against 1.41s).
+
+   The mechanism is almost certainly the slot wait — `DEFAULT_CONCURRENCY` is
+   10 whole jobs per queue, while Temporal's
+   `maxConcurrentActivityTaskExecutions: 50` counted *activities*, about twenty
+   per ingest, so twenty files ran at once there and ten here. But the window
+   that grew also contains the file's download and type detection, and the
+   c20 runs happened later in the afternoon than the c10 ones, so this is the
+   best available explanation rather than something the instrument isolated.
+   One of the eight c20 repetitions behaved exactly like a c10 one.
 3. **The tail is wider on BullMQ and this measurement cannot say why.** p95
    29.6s against 22.1s at matched concurrency, and the per-run medians spread
    further (9.2–24.0s over eight runs, against 11.1–18.7s). Both have n=8
@@ -75,11 +86,11 @@ parsing starts", not pure engine latency, and on a slow S3 moment it absorbs
 that too. It is still the right column to read for this question, because the
 alternative — parse and embed — is identical on both runtimes.
 
-**Rule**: **parity is a configuration claim, not an engine claim.** Before
-Phase E flips the default, either raise `DEFAULT_CONCURRENCY` or make
-`WORKER_CONCURRENCY` impossible to miss in the install path — a deployment that
-takes the default gets the 2x, and it will look like the runtime's fault
-because that is what changed. Conversely, do not read this as "BullMQ is
+**Rule**: **parity is a configuration claim, not an engine claim.** Both halves
+were done on the strength of this: `DEFAULT_CONCURRENCY` became 20, and the
+installer writes the variable explicitly so an operator can find the knob. A
+deployment that had taken the old default would have got the 2x and read it as
+the runtime's fault, because the runtime is what changed. Conversely, do not read this as "BullMQ is
 slower": at one file it is *faster* (6.9s against 10.0s), which is the engine's
 own overhead showing up where nothing queues.
 

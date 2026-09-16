@@ -56,8 +56,33 @@ export const LOCK_DURATION_MS = 300_000;
  */
 export const MAX_STALLED_COUNT = 1;
 
-/** Conservative, and not derived from Temporal's number — see the spec's §3. */
-export const DEFAULT_CONCURRENCY = 10;
+/**
+ * How many whole jobs a worker runs at once.
+ *
+ * It was 10 — the conservative read of the only measurement that existed, and
+ * deliberately *not* Temporal's `maxConcurrentActivityTaskExecutions: 50`,
+ * which counted activities rather than jobs (one ingest is about twenty of
+ * them, so copying it across would have raised real concurrency several fold
+ * in one commit).
+ *
+ * D2 measured the difference on 2026-09-16 and 10 turned out to be the wrong
+ * conservative number. With twenty documents uploaded at once — a customer's
+ * first import, and the shape this meets soonest — the median per document was
+ * **24.9s at 10 against 12.5s on Temporal**, and the difference sat entirely
+ * *before parsing began*: the parse and embed medians were identical on both
+ * engines. A slot wait is the mechanism — ten of twenty files cannot start
+ * until another finishes — though that window also holds the file's download
+ * and type detection, so the measurement bounds where the cost is, not which
+ * of the two it is. At 20 it is 12.3s, which is parity, and parity with the
+ * engine being replaced is the whole promise of the port. See
+ * `docs/lessons/bullmq-matches-temporal-at-equal-concurrency-2026-09-16.md`.
+ *
+ * **Twenty is not a ceiling anyone proved.** It is the number that matches what
+ * Temporal did with the same twenty files; a deployment whose provider rate
+ * limits bind sooner should lower it, and `WORKER_CONCURRENCY` is how. The
+ * limit that binds in practice is the model provider's, not the worker's.
+ */
+export const DEFAULT_CONCURRENCY = 20;
 
 export type JobHandler<N extends JobName> = (
   payload: JobPayloads[N],
