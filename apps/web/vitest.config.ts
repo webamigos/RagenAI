@@ -35,7 +35,6 @@ export default defineConfig({
       // `include` in the repo and never run.
       'evals/**/*.test.ts',
     ],
-    exclude: ['temporal/**'],
     clearMocks: true,
     coverage: {
       provider: 'v8',

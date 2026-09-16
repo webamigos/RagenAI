@@ -198,7 +198,7 @@ npm run ragen:up:everything
 ```
 
 Builds and starts every Ragen application — web, API, ingest worker, admin —
-alongside Postgres, Qdrant, Temporal, Docling and Redis. No Node
+alongside Postgres, Qdrant, Redis, Docling and Presidio. No Node
 toolchain on the host, which makes it the fastest way to evaluate a self-hosted
 install.
 
@@ -227,12 +227,11 @@ only:
 | ------------------------------- | ----------- | --------------------------------- |
 | Presidio analyzer               | 959 MB      | PII masking (optional)            |
 | Docling                         | 721 MB      | local document parsing            |
-| Temporal                        | 97 MB       | async ingest                      |
 | Postgres                        | 93 MB       | everything                        |
 | Presidio anonymizer             | 55 MB       | PII masking (optional)            |
 | Qdrant                          | 43 MB       | retrieval — grows with your index |
-| Temporal UI                     | 38 MB       | the supporting container          |
-| **Total**                       | **~2.6 GB** |                                   |
+| Redis                           | 11 MB       | the ingest queue                  |
+| **Total**                       | **~1.9 GB** |                                   |
 
 Three of those are optional, and together they are most of the total: drop
 Presidio if you are not masking PII, `DOCUMENT_PARSER=legacy` skips Docling, and
@@ -240,8 +239,9 @@ Ragen calls model providers itself, so there is no proxy in this table any
 more — the `litellm` services went with the path that used them. Qdrant is the line that moves as you add documents; the figure
 above is a near-empty index, so size that one against your own corpus rather
 than against this table.
-Redis is optional and only used for rate limiting. The four applications run on
-top of all this and are not in the table.
+Redis is not optional under the default runtime — it holds the ingest queue,
+and rate limiting rides along on it. The four applications run on top of all
+this and are not in the table.
 
 `npm run ragen:up:app` runs a smaller set — Postgres and Qdrant, no
 document processing — when you only want to try the chat. Sizing guidance for
@@ -270,7 +270,7 @@ RAG optimization suggestions you review before accepting
 
 **Documents**
 PDF, DOCX, XLSX, CSV, EPUB, SRT, Markdown, plain text, images and URLs ·
-local parsing with Docling by default · async ingest on Temporal, so a large
+local parsing with Docling by default · async ingest on a queue, so a large
 upload does not block anything
 
 **Integrations (MCP)**
@@ -298,7 +298,7 @@ Ukrainian, Danish, Swedish, Finnish, Czech and Slovak
 
 ## ⚙️ How it works
 
-**Ingest** — a file lands in storage, and a Temporal workflow takes over:
+**Ingest** — a file lands in storage, and a background job takes over:
 parse, chunk with a splitter chosen for the file type, generate a summary of
 the whole document, prepend that summary as its own chunk, embed densely and
 sparsely, upsert into the organization's Qdrant collection. It runs
@@ -400,9 +400,11 @@ the shape of it rather than a substitute for it.
   [pgvector alongside Qdrant](docs/specs/2026-09-14-pgvector-as-a-second-vector-store.md),
   [Mistral Document AI alongside Docling](docs/specs/2026-09-14-mistral-document-ai-as-a-second-parser.md).
   Two of the three only add a choice: Qdrant stays the default vector store and
-  Docling stays the default parser. The worker is the exception — BullMQ
-  replaces Temporal, whose adapter moves to a separate repository and stays
-  supported from there for installs that want durable execution. A fourth spec,
+  Docling stays the default parser. The worker is the exception, and it has
+  landed — **BullMQ is the runtime** ([ADR-44](docs/adrs/44-bullmq-is-the-worker-runtime.md)),
+  Temporal is an adapter behind the same seam, and what is still ahead is
+  moving that adapter to a separate repository, where it stays supported for
+  installs that want durable execution. A fourth spec,
   the [in-process model gateway](docs/specs/2026-09-14-replace-litellm-with-an-in-process-gateway.md),
   replaced the LiteLLM proxy.
 
@@ -477,7 +479,7 @@ share one Prisma schema.
 | ---------------------------- | ------------------------------------------------------------------------------------- |
 | [`apps/web`](apps/web)       | The Next.js app — chat, knowledge base, projects, settings                            |
 | [`apps/api`](apps/api)       | NestJS public API, the OpenAI-compatible surface                                      |
-| [`apps/worker`](apps/worker) | Temporal worker: ingest, embedding, re-indexing                                       |
+| [`apps/worker`](apps/worker) | Job worker: ingest, embedding, re-indexing                                            |
 | [`apps/admin`](apps/admin)   | Platform admin — organizations, models, limits, usage                                 |
 | [`apps/mcp`](apps/mcp)       | MCP server exposing Ragen's own chat to external MCP clients (Claude Desktop, Cursor) |
 

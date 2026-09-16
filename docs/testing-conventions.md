@@ -43,7 +43,7 @@ built app, not the dev server. If the mock LLM is not listening on :4100,
 
 - All routes use `/pl` locale prefix (Polish UI in assertions)
 - Import `ROUTES`/`LABELS` from `e2e/helpers.ts`
-- Mock external APIs (S3, Temporal, LLM) via `page.route()` — never hit real backends
+- Never hit a real backend. `page.route()` stubs the app's own endpoints — stubbing `/api/upload` is what keeps S3 and the job queue out of the run — while the LLM is a real local process, `e2e/mock-llm-server.ts` on :4100 (see above)
 - `buildMockSSE()` for streaming chat
 - Tests run sequentially (single worker, shared DB state)
 - `getByTestId()` for interactive elements; regex for Polish text

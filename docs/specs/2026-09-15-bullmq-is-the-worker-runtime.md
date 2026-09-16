@@ -896,17 +896,42 @@ Gated on D2's numbers. The adapter does not move in this phase — see *Answered
   look principled and mean less. It lands in `.env` rather than being applied
   silently, because the ceiling that really binds is the model provider's rate
   limit and the operator is the only one who knows it.
-- [ ] **E4.** Docs: `docs/companion-services.md`, `docs/architecture.md`, the
+- [x] **E4.** Docs: `docs/companion-services.md`, `docs/architecture.md`, the
       generated configuration reference, `AGENTS.md` (Task Router row, Core
       Surfaces, Commands), `apps/worker/AGENTS.md` (the "Temporal-Specific
       Constraints" section becomes BullMQ's operational rules), and the README's
       service table and its ingest description, which still says a Temporal
       workflow takes over.
-- [ ] **E5.** Delete what the seam made dead: `apps/web/src/libs/temporal/`,
-      and the `@temporalio/*` dependencies from `apps/worker`, `apps/api` and
-      the root manifest — they belong to `packages/jobs-temporal` now, which is
-      where `the-temporal-family-moves-together.test.ts` and dependabot's
-      `temporal` group start pointing instead of being deleted. That family
+
+  The generated configuration reference is the one half that is not in this
+  repository — it regenerates from `main` into `ragen-docs`.
+
+  **The sweep found three things that were not prose.** `@/temporal/*` in
+  `apps/web/tsconfig.json` pointed at `apps/web/temporal/src`, a directory that
+  does not exist and that nothing imports — deleted from the config and from
+  AGENTS.md's alias list; `vitest.config.ts` excluded the same missing
+  directory. `apps/web/src/libs/temporal/` is **already gone**, so E5 owes only
+  the `@temporalio/*` dependencies. And `AGENTS.md` is ~100 bytes under its
+  budget after this, which is the next thing to give: the sweep spent most of
+  the remaining slack.
+
+  **The constraints section is now two lists and a shared rule.** What both
+  engines impose — plain, serialisable payloads — leads; then BullMQ's own,
+  which are the ones with teeth: an evicting Redis is refused at boot, a
+  blocked event loop becomes a *duplicate parallel run* (hence the five-minute
+  lock and `maxStalledCount: 1`), retries belong to the step rather than the
+  job, concurrency counts whole jobs, more than one worker is fine, and a
+  finished job stays readable for an hour because `getRun` is polled. Temporal's
+  three keep their own subsection.
+- [ ] **E5.** Delete what the seam made dead: the `@temporalio/*` dependencies
+      from `apps/worker`, `apps/api` and the root manifest — they belong to
+      `packages/jobs-temporal` now, which is where
+      `the-temporal-family-moves-together.test.ts` and dependabot's `temporal`
+      group start pointing instead of being deleted.
+
+  `apps/web/src/libs/temporal/` was the other half of this item and is **already
+  gone** — E4's sweep went looking for it to document it and found nothing
+  there. That family
       still has to move as one version; it just has one home.
 - [ ] **E6.** Take Temporal out of the **image**, not the repository: the
       worker Dockerfile's `npm ci --workspace=…` list omits

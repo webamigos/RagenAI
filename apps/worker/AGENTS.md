@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Ragen Worker is a **Temporal worker** that processes document parsing, embedding, and website scraping tasks for the Ragen AI platform. It consumes jobs from a Temporal task queue, orchestrating file downloads from S3, document parsing, text chunking, **document summary generation**, **hybrid embedding generation** (dense + BM25 sparse), thumbnail creation, and vector storage in Qdrant (with Meilisearch as legacy fallback).
+Ragen Worker processes document parsing, embedding, and website scraping tasks for the Ragen AI platform. It consumes jobs from **BullMQ queues on Redis** ([ADR-44](../../docs/adrs/44-bullmq-is-the-worker-runtime.md)) — Temporal is an adapter behind the same seam, selected with `WORKER_RUNTIME=temporal` — orchestrating file downloads from S3, document parsing, text chunking, **document summary generation**, **hybrid embedding generation** (dense + BM25 sparse), thumbnail creation, and vector storage in Qdrant (with Meilisearch as legacy fallback).
 
 See the repo's ADRs (root `docs/adrs/`) for the retrieval-quality decisions this worker implements:
 - [ADR-14](../../docs/adrs/14-hybrid-search-dense-sparse.md) — hybrid dense + BM25 sparse vectors with RRF fusion
@@ -20,7 +20,7 @@ See the repo's ADRs (root `docs/adrs/`) for the retrieval-quality decisions this
 | `npm run test` | Run the Vitest suite |
 | `npm run test:watch` | Run Vitest in watch mode |
 | `npm run lint` | Run ESLint |
-| `temporal server start-dev` | Start local Temporal dev server |
+| `docker compose up redis` (repo root) | The queues live here — the worker will not start without one |
 
 Run a single test file: `npx vitest run path/to/test.ts`
 
@@ -57,15 +57,16 @@ type errors since it was written.
 
 ### Pipelines, and the engine under them
 
-The worker connects to a Temporal server and listens on the `ragen-tasks` queue.
+The worker consumes one BullMQ queue per job name, on `REDIS_URL`. Under `WORKER_RUNTIME=temporal` it connects to a Temporal server and listens on `ragen-tasks` instead; nothing in `src/handlers/` can tell.
 
 **The pipelines are in `src/handlers/` and import no engine.** Each takes a
-payload and a `JobContext` from `@ragenai/jobs`; `src/workflows/` holds a
-three-line wrapper per handler that runs it on Temporal, plus
-`temporal-context.ts`, which is the whole adapter — `ctx.steps` *is*
-`proxyActivities`. Put pipeline logic in a handler and engine concerns in the
-wrapper: anything that reaches for `@temporalio/*` from `src/handlers/` has
-undone the seam that Phase C's BullMQ runtime depends on.
+payload and a `JobContext` from `@ragenai/jobs`; `src/bullmq-runtime.ts` registers
+each handler with `@ragenai/jobs-bullmq`, where `ctx.steps` runs a step in
+process with the retry policy it declares. `src/workflows/` is the Temporal
+half — a three-line wrapper per handler plus `temporal-context.ts`, where
+`ctx.steps` *is* `proxyActivities`. Put pipeline logic in a handler and engine
+concerns in the runtime: anything that reaches for `@temporalio/*` or `bullmq`
+from `src/handlers/` has undone the seam both runtimes stand on.
 
 Eight pipelines. The two ingest paths:
 
@@ -106,11 +107,11 @@ into:
 - **Cooperative, never preemptive.** Checkpoints sit *between* steps, so an
   in-flight parse finishes instead of being torn down. A cancellation therefore
   lands at the next checkpoint, not instantly.
-- **A failed read answers "not cancelled."** On Temporal the read is an
-  activity (a workflow sandbox has no I/O) with two attempts; if both fail,
-  `temporalContext` warns and continues. Throwing there would reach the parsing
-  catch and record FAILED, so a database blip would destroy a healthy ingest.
-  The next checkpoint asks again, and the row does not go away.
+- **A failed read answers "not cancelled."** Under BullMQ the read is a plain
+  query; on Temporal it is an activity (a workflow sandbox has no I/O) with two
+  attempts. Either way a failure warns and continues: throwing would reach the
+  parsing catch and record FAILED, so a database blip would destroy a healthy
+  ingest. The next checkpoint asks again, and the row does not go away.
 - **CANCELLED is sticky, with no exception.** Both status writers carry that
   `where` clause, so no write from a cancelled run gets over it. It briefly had
   an exception for `STARTED`, on the grounds that a new run opens by writing it
@@ -122,7 +123,7 @@ into:
 A missing row reads as cancelled: deleting a file mid-ingest is a stronger
 statement than cancelling it.
 
-Producers (`apps/web`, `apps/api`) hold no Temporal client — they go through
+Producers (`apps/web`, `apps/api`) hold no engine client — they go through
 `JobRuntime` (`jobs().start/getRun/requestCancel`). `requestCancel` drops a job
 the worker has not started yet, and *only* that; a running job stops because of
 the row.
@@ -195,10 +196,47 @@ OpenTelemetry instrumentation with OTLP exporters for traces, metrics, and logs.
 - `splitters.ts` - Splitter configuration utilities
 - `supported-mime-types.ts` - MIME type allowlist
 
-## Temporal-Specific Constraints
+## Runtime Constraints
 
-- **Activities must return plain objects** - methods/functions are lost during serialization
-- **Use string names for workflows in production** - passing workflow functions works in dev but breaks in prod due to different build artifacts
+Both engines serialize what crosses them, so the first rule outlives either:
+
+- **Payloads and step results must be plain objects** — methods and class
+  instances are lost, whether the transport is Redis or a Temporal task queue.
+
+### BullMQ (the default)
+
+- **Redis must not evict.** Queue state *is* the data: an `allkeys-lru`
+  instance deletes jobs at random under memory pressure, which is
+  indistinguishable from work nobody submitted. The worker reads
+  `maxmemory-policy` at boot and refuses to start against an evicting server;
+  compose sets `noeviction` and `appendonly yes`.
+- **A blocked event loop is a duplicate run.** A job renews its lock while it
+  runs, and `sharp`, `resvg`, `pdfium` and `xlsx` block the loop hard enough to
+  miss that — BullMQ then calls the job stalled and runs it **again, in
+  parallel with the first**. The lock is five minutes rather than the 30-second
+  default for exactly that reason, and `maxStalledCount: 1` allows one
+  redelivery, not two. A ten-minute Docling parse is fine: it awaits I/O and
+  the timer still fires.
+- **Handlers must survive redelivery.** A crashed worker's job comes back;
+  ingest survives it because it clears the file's chunks before every write —
+  Qdrant point ids are random uuids, so a second write would *add* a copy — and
+  the integration suite asserts exactly that.
+- **Retries belong to the step, not the job.** `ctx.steps` applies each step's
+  declared policy in process. BullMQ's own `attempts` retries the *whole* job,
+  which would re-download, re-parse and re-chunk a document to reach the
+  embedding that failed.
+- **Concurrency is whole jobs** (`WORKER_CONCURRENCY`, default 20) — not
+  Temporal's `maxConcurrentActivityTaskExecutions: 50`, which counted
+  activities, about twenty per ingest.
+- **More than one worker is fine**, and is how you add throughput. The queues
+  are the coordination.
+- **A finished job is readable for an hour** (failures, a day). The
+  document-generation UI polls `getRun`, so shortening that turns a success
+  into a 404.
+
+### Temporal (`WORKER_RUNTIME=temporal`, adapter)
+
+- **Use string names for workflows in production** — passing workflow functions works in dev but breaks in prod due to different build artifacts
 - **After renaming an activity**, Temporal Cloud may still reference the old name; create a new workflow name instead
 - **Only one worker instance** should run with a given build at a time
 
@@ -209,7 +247,7 @@ OpenTelemetry instrumentation with OTLP exporters for traces, metrics, and logs.
 
 ## Tech Stack
 
-- **Temporal** v1.13.0 for workflow orchestration, behind the `@ragenai/jobs` seam — a pipeline never imports it
+- **BullMQ** on Redis for job orchestration, behind the `@ragenai/jobs` seam — a pipeline never imports it. **Temporal** v1.13.0 is the other implementation of the same seam, selected with `WORKER_RUNTIME=temporal` ([ADR-44](../../docs/adrs/44-bullmq-is-the-worker-runtime.md))
 - **Vercel AI SDK** (`ai`, `@ai-sdk/openai`, `@ai-sdk/anthropic`) for LLM chat completions, embeddings, and Claude native PDF processing, routed by `packages/llm-gateway` (shared with apps/web)
 - **SheetJS** (`xlsx`) for CSV/Excel file parsing
 - **Prisma** + PostgreSQL for persistence, generated from the root
@@ -220,7 +258,7 @@ OpenTelemetry instrumentation with OTLP exporters for traces, metrics, and logs.
   Knex is gone.
 - **Qdrant** (`@qdrant/js-client-rest`) for vector storage (default)
 - **Meilisearch** (`meilisearch`) for vector storage (legacy)
-- **Redis** (ioredis) for caching
+- **Redis** (ioredis) for the queues and for caching — the worker refuses to start without it under BullMQ
 - **AWS S3** for document storage
 - **Sharp** + **@resvg/resvg-js** for image processing and thumbnail generation
 - **Langfuse** for LLM observability, fed by this app's own OTel spans now that the proxy is gone
@@ -239,7 +277,7 @@ OpenTelemetry instrumentation with OTLP exporters for traces, metrics, and logs.
 ## Environment
 
 Requires Node >= 24. Copy `.env.example` for local setup. Key env vars:
-- **Infrastructure**: `TEMPORAL_SERVER_ADDRESS`, `DATABASE_URL`, `REDIS_URL`, `QDRANT_URL`, `QDRANT_API_KEY`, `MEILISEARCH_URL` (legacy), `PUSHER_*`, `FIRECRAWL_API_KEY`
+- **Infrastructure**: `REDIS_URL`, `DATABASE_URL`, `QDRANT_URL`, `QDRANT_API_KEY`, `MEILISEARCH_URL` (legacy), `PUSHER_*`, `FIRECRAWL_API_KEY`. `WORKER_RUNTIME` picks the engine and decides which of `REDIS_URL` / `TEMPORAL_SERVER_ADDRESS` is mandatory — neither is required in general, each is required by the runtime that reads it. `WORKER_CONCURRENCY` and the `WORKER_ADMIN_*` trio (dashboard) are BullMQ's.
 - **LLM**: the provider credentials listed in `infra/llm-gateway/README.md`, and optionally `LLM_ROUTES_PATH`. The app calls providers itself; `npm run gateway:preflight -- --probe` from the repo root makes one real call per configured model.
 - **Document parsing**: `DOCUMENT_PARSER` (`docling` default, or `legacy`), `DOCLING_URL`, `DOCLING_STRICT`. Docling parses locally, which is why it is the default — the legacy PDF loader sends the document to an external model. On a Docling failure the workflow falls back to the legacy loaders; `DOCLING_STRICT=1` makes it fail the ingest instead, which is what a confidential deployment wants, because the fallback would otherwise ship the document off-site exactly when local parsing is unavailable. SRT and EPUB always use their legacy loader; PPTX only works via Docling.
 - **PDF processing (legacy path only)**: `PDF_PROCESSOR` (`claude` default or `vision`), `PDF_MODEL` (defaults to `claude-haiku-4-5`). The model resolves through `infra/llm-gateway/routes.yaml` like every other one — the Anthropic pass-through this used to rely on was LiteLLM's, and B6 removed it with the proxy (ADR-49). Usage is recorded by the application.

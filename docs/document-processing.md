@@ -2,7 +2,7 @@
 
 Split out of `AGENTS.md` to keep it under Codex's 32,768-byte `project_doc_max_bytes` budget. Reached from that file's Task Router.
 
-Upload → S3 → Temporal worker (`apps/worker`) → parse → embed → store in Qdrant. Status via `ParsingStatus`/`EmbeddingStatus` enums.
+Upload → S3 → the ingest job in `apps/worker` → parse → embed → store in Qdrant. Status via `ParsingStatus`/`EmbeddingStatus` enums.
 
 **File types** (`FileType` enum: `PDF`, `EPUB`, `DOCX`, `SRT`, `TEXT`, `MARKDOWN`, `URL`, `IMAGE`, `CSV`, `XLSX`):
 - **PDF**: worker uses Claude native PDF (base64 to Claude in single call). `PDF_PROCESSOR=claude|vision`, `PDF_MODEL`. **`claude-haiku-4-5` is commented out in `infra/litellm/config.yaml`** — pointing `PDF_MODEL` at it 404s at the proxy. Use an enabled model or re-enable it there first. Chat: attached as binary data URL.

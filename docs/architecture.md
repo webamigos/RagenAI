@@ -17,7 +17,7 @@ This is an npm-workspaces monorepo (`apps/*` + `packages/*`):
 │   ├── web/                      # The Next.js app (ADR-29 moved it off the root)
 │   ├── api/                      # NestJS public API
 │   ├── admin/                    # Platform admin panel
-│   ├── worker/                   # Temporal document-ingest worker
+│   ├── worker/                   # Document-ingest worker (BullMQ, ADR-44)
 │   └── docs/                     # Docusaurus documentation site (ADR-30)
 ├── packages/
 │   ├── db/                       # Prisma client singleton
@@ -89,7 +89,7 @@ apps/web/src/
 │   ├── reranker/                 # Scaleway rerank (default) or Bedrock Cohere (post-retrieval)
 │   ├── document-loaders/         # PDF, EPUB, DOCX, Markdown, SRT, CSV, XLSX, Image, URL parsing
 │   ├── db/                       # Prisma client singleton (@ragenai/prisma-client)
-│   ├── temporal/                 # Temporal.io client
+│   ├── jobs/                     # The producer side of @ragenai/jobs
 │   ├── payments/                 # Stripe integration
 │   ├── mcp/                      # MCP client for external tool servers
 │   ├── ragen-vault/              # Wiring for @ragenai/vault-client (env + logger)
@@ -111,7 +111,7 @@ The tree above is the map; this is what the modules actually do.
 - `reranker/` — Scaleway `/v1/rerank` (default) or Bedrock Cohere Rerank v3.5, selected by `RERANK_PROVIDER`
 - `document-loaders/` — PDF, EPUB, DOCX, Markdown, SRT, CSV, XLSX, Image, URL parsing
 - `db/` — Prisma singleton
-- `temporal/` — Temporal.io client for async document workflows
+- `jobs/` — registers this app's job-runtime adapters and exposes `jobs()`; every producer enqueues through it and none holds an engine client ([ADR-44](adrs/44-bullmq-is-the-worker-runtime.md))
 - `payments/` — Stripe
 - `mcp/` — MCP client via `@ai-sdk/mcp`
 - `ragen-vault/` — wiring for `@ragenai/vault-client` (reads this app's env, passes its logger). The client and the HMAC signing live in the package — do not add a fourth copy ([ADR-32](adrs/32-token-vault-and-mcp-stay-separate.md)).
