@@ -346,22 +346,68 @@ export const WORKER_RUNTIME_SEAM = {
         'Temporal, no longer the default and no longer in the compose file — an install that wants durable execution runs its own server and selects it here. `TEMPORAL_SERVER_ADDRESS` is required rather than left to the `localhost:7233` fallback, because that fallback is right on a laptop and silent everywhere else: a deployed process pointing at its own container connects to nothing and processes nothing, with no error to read.',
     },
     bullmq: {
-      required: ['REDIS_URL'],
+      required: [],
       optional: [
+        'BULLMQ_BACKEND',
         'WORKER_CONCURRENCY',
         'WORKER_ADMIN_PORT',
         'WORKER_ADMIN_USER',
         'WORKER_ADMIN_PASSWORD',
       ],
       fields: {
-        REDIS_URL: 'url',
+        BULLMQ_BACKEND: 'backend',
         WORKER_CONCURRENCY: 'concurrency',
         WORKER_ADMIN_PORT: 'adminPort',
         WORKER_ADMIN_USER: 'adminUser',
         WORKER_ADMIN_PASSWORD: 'adminPassword',
       },
       summary:
-        'BullMQ over Redis, and the default. `REDIS_URL` has no fallback anywhere — a queue with no Redis is a worker that starts and quietly processes nothing, which is the worse outcome. The Redis it points at must run `maxmemory-policy noeviction`: an evicting instance drops queue keys, and the jobs go with them. The queue dashboard replaces the Temporal UI an install used to get on port 8080; it is off unless `WORKER_ADMIN_USER` and `WORKER_ADMIN_PASSWORD` are both set, because it shows every job payload and a dashboard that appears by default on an unauthenticated port is a finding rather than a feature.',
+        'BullMQ, and the default. Where it keeps the queues is its own choice — `BULLMQ_BACKEND`, below — which is why nothing is required at this level: Redis is mandatory for one of those two answers and irrelevant to the other. The queue dashboard replaces the Temporal UI an install used to get on port 8080; it is off unless `WORKER_ADMIN_USER` and `WORKER_ADMIN_PASSWORD` are both set, because it shows every job payload and a dashboard that appears by default on an unauthenticated port is a finding rather than a feature.',
+    },
+  },
+} as const satisfies ProviderSeam;
+
+/**
+ * Where BullMQ keeps the queues — the seam's second level.
+ *
+ * **Nested, and the nesting is the point.** This answers a question only a
+ * BullMQ install has, so its requirement is conditional on the level above:
+ * `bullmqBackendRules` runs nothing when the runtime is Temporal. A flat rule
+ * would demand a Redis url of an install that runs no BullMQ at all, which is
+ * the mistake the worker-runtime seam exists to have stopped making.
+ *
+ * It is what makes the light profile true. Selecting pgvector and a hosted
+ * parser removes two services; the queue was the one that could not be
+ * removed, because BullMQ meant Redis. BullMQ 6 stores queue state in
+ * PostgreSQL, so an install with one database can now have no Redis at all.
+ *
+ * The trade is throughput, and it is real: BullMQ's own documentation puts the
+ * PostgreSQL backend at roughly half of Redis's. That is a reason to leave the
+ * default where it is, not a reason to withhold the choice from an install
+ * whose ingest is measured in documents per hour.
+ */
+export const BULLMQ_BACKEND_SEAM = {
+  discriminant: 'BULLMQ_BACKEND',
+  group: 'bullmqBackend',
+  label: 'BullMQ backend',
+  defaultVariant: 'redis',
+  variants: {
+    redis: {
+      required: ['REDIS_URL'],
+      optional: [],
+      fields: { REDIS_URL: 'url' },
+      summary:
+        'Redis, and the default. `REDIS_URL` has no fallback anywhere — a queue with no Redis is a worker that starts and quietly processes nothing, which is the worse outcome. The Redis it points at must run `maxmemory-policy noeviction`: an evicting instance drops queue keys, and the jobs go with them, indistinguishably from work nobody submitted. The worker reads the policy at boot and refuses to start against an evicting server.',
+    },
+    postgres: {
+      required: ['DATABASE_URL'],
+      optional: ['BULLMQ_POSTGRES_SCHEMA'],
+      fields: {
+        DATABASE_URL: 'url',
+        BULLMQ_POSTGRES_SCHEMA: 'schema',
+      },
+      summary:
+        'PostgreSQL, for an install that would rather not run Redis. The queues live in their own schema — `bullmq` by default, and never `public` — so nothing in it meets the application schema Prisma owns, and `DATABASE_URL` is the database that is already there rather than a second one. The worker migrates that schema at boot, inside one transaction and behind an advisory lock, so concurrent workers starting together apply it exactly once. Slower than Redis, by roughly half on BullMQ\u2019s own numbers, and the difference lands on queue operations rather than on the work.',
     },
   },
 } as const satisfies ProviderSeam;
@@ -374,6 +420,7 @@ export const PROVIDER_SEAMS = [
   MAIL_SEAM,
   SPEECH_SEAM,
   WORKER_RUNTIME_SEAM,
+  BULLMQ_BACKEND_SEAM,
 ] as const;
 
 /** The variant names of a seam — `'local' | 's3'` for storage. */

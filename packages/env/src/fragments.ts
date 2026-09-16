@@ -331,6 +331,22 @@ export const mail = z.object({
  */
 export const workerRuntime = z.object({
   WORKER_RUNTIME: blankAsUndefined(z.enum(['temporal', 'bullmq']).optional()),
+
+  /**
+   * Where BullMQ keeps the queues — the seam's second level.
+   *
+   * BullMQ 6 can store queue state in PostgreSQL instead of Redis, which is
+   * what lets an install that has selected every lighter alternative stop
+   * running Redis at all: `postgres` reuses the database that is already
+   * there. It is not the default, and the trade is throughput — BullMQ's own
+   * documentation puts the Postgres backend at roughly half of Redis's.
+   *
+   * Meaningless under `WORKER_RUNTIME=temporal`, which is why what it makes
+   * mandatory is nested rather than flat: `REDIS_URL` is required only when
+   * BullMQ is the runtime *and* Redis is the backend. A flat rule would demand
+   * Redis of a Temporal install.
+   */
+  BULLMQ_BACKEND: blankAsUndefined(z.enum(['redis', 'postgres']).optional()),
 });
 
 /**
