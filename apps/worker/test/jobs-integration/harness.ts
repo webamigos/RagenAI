@@ -108,6 +108,34 @@ export interface HarnessOptions {
 export const TEST_REDIS_URL =
   process.env.JOBS_TEST_REDIS_URL ?? 'redis://localhost:56379/15';
 
+/**
+ * Refuse to flush a database that might not be ours.
+ *
+ * `flushdb()` deletes every key in the selected logical database, and a Redis
+ * URL with no path selects **database 0** — which is where `REDIS_URL` points,
+ * and therefore where a developer's own queues, cached organization settings
+ * and rate-limit keys live. The comment above promised "its own database
+ * index"; a promise in a comment is not a guard, and the failure would be
+ * silent and immediate.
+ *
+ * Any explicit non-zero index is accepted rather than 15 alone: the number is
+ * a convention, and a deployment's CI is entitled to pick another. Zero is the
+ * one that cannot be distinguished from "nobody chose".
+ */
+function assertOwnDatabase(url: string): void {
+  const database = new URL(url).pathname.replace(/^\//, '');
+
+  if (!/^[1-9][0-9]*$/.test(database)) {
+    throw new Error(
+      `the jobs integration suite refuses to flush "${url}": its URL selects ` +
+        `${database === '' ? 'no database, which means database 0' : `database ${database}`}, ` +
+        'and every test here starts by deleting every key in it. Point ' +
+        'JOBS_TEST_REDIS_URL at a database of its own — the default is ' +
+        'redis://localhost:56379/15.',
+    );
+  }
+}
+
 /** Quiet by default: a failing assertion is the signal, not a retry's log. */
 function testLogger(): JobLogger {
   const noop = (): void => {};
@@ -115,6 +143,8 @@ function testLogger(): JobLogger {
 }
 
 async function flushTestRedis(): Promise<void> {
+  assertOwnDatabase(TEST_REDIS_URL);
+
   const redis = new Redis(TEST_REDIS_URL, { maxRetriesPerRequest: 1 });
   try {
     await redis.flushdb();

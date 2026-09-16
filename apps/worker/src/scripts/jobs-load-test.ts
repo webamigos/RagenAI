@@ -106,6 +106,30 @@ interface RunResult {
 const POLL_INTERVAL_MS = 500;
 const RUN_TIMEOUT_MS = 15 * 60_000;
 
+/**
+ * The run stopped with jobs possibly still live, so nothing is deleted.
+ *
+ * Cleaning up underneath a running ingest is the one thing worse than leaving
+ * rows behind: the handler is mid-pipeline, and a delete races its writes —
+ * chunks land in the collection after the delete that was meant to remove
+ * them, and the leftovers are now invisible, because the row that named them
+ * is gone. A failed measurement is cheap; orphaned vectors in a real
+ * organization's collection are not.
+ *
+ * So the ids travel with the error, the script prints them, and a person
+ * decides once the queue is quiet.
+ */
+class LoadTestAborted extends Error {
+  constructor(
+    message: string,
+    readonly orgId: string,
+    readonly fileIds: string[],
+  ) {
+    super(message);
+    this.name = 'LoadTestAborted';
+  }
+}
+
 function parseOptions(argv: string[]): Options {
   const value = (flag: string): string | undefined => {
     const index = argv.indexOf(flag);
@@ -127,10 +151,19 @@ function parseOptions(argv: string[]): Options {
     throw new Error('--repetitions takes a positive integer');
   }
 
+  // Same treatment as the other two. `Number('abc')` is NaN, and
+  // `while (count < NaN)` is false on the first check — so an unvalidated
+  // value produces a file with no content at all, ingested successfully, and a
+  // measurement of how fast the pipeline embeds nothing.
+  const words = Number(value('--words') ?? '500');
+  if (!Number.isInteger(words) || words < 1) {
+    throw new Error('--words takes a positive integer');
+  }
+
   return {
     levels,
     repetitions,
-    words: Number(value('--words') ?? '500'),
+    words,
     json: value('--json'),
     keep: argv.includes('--keep'),
   };
@@ -201,41 +234,63 @@ async function runOnce(
   const content = Buffer.from(syntheticDocument(words), 'utf8');
   const fileIds: string[] = [];
 
-  for (let index = 0; index < level; index++) {
-    const fileId = randomUUID();
-    const fileName = `load-${fileId}.txt`;
+  try {
+    for (let index = 0; index < level; index++) {
+      const fileId = randomUUID();
+      const fileName = `load-${fileId}.txt`;
 
-    await aws.uploadToS3(orgId, `${fileId}.txt`, content);
-    await prisma.userFile.create({
-      data: {
-        id: fileId,
-        organizationId: orgId,
-        projectId,
-        fileName,
-        fileSize: content.byteLength,
-        fileType: 'TEXT',
-        isBinaryFile: false,
-        isUploaded: true,
-        uploadedAt: new Date(),
-        // Every producer persists what it knows *before* enqueueing — the rule
-        // C4b arrived at, when four producers were found writing after the
-        // start. The handler reads this row rather than a payload copy.
-        workflowId: fileId,
-      },
-    });
-    fileIds.push(fileId);
+      // Recorded *before* the first write that can leave something behind. An
+      // upload that succeeds and a row insert that fails would otherwise leave
+      // an object nothing knows about — the id has to be on the cleanup list
+      // before it exists anywhere else.
+      fileIds.push(fileId);
+
+      await aws.uploadToS3(orgId, `${fileId}.txt`, content);
+      await prisma.userFile.create({
+        data: {
+          id: fileId,
+          organizationId: orgId,
+          projectId,
+          fileName,
+          fileSize: content.byteLength,
+          fileType: 'TEXT',
+          isBinaryFile: false,
+          isUploaded: true,
+          uploadedAt: new Date(),
+          // Every producer persists what it knows *before* enqueueing — the
+          // rule C4b arrived at, when four producers were found writing after
+          // the start. The handler reads this row rather than a payload copy.
+          workflowId: fileId,
+        },
+      });
+    }
+  } catch (error) {
+    // Nothing has been enqueued yet, so nothing is running and cleaning up is
+    // safe — which is exactly why this path cleans up and the ones below do
+    // not.
+    await cleanup(orgId, fileIds);
+    throw error;
   }
 
   const enqueuedAt = Date.now();
-  await Promise.all(
-    fileIds.map((fileId) =>
-      jobs().start('runFileEmbeddings', fileId, { fileId, orgId }),
-    ),
-  );
+  try {
+    await Promise.all(
+      fileIds.map((fileId) =>
+        jobs().start('runFileEmbeddings', fileId, { fileId, orgId }),
+      ),
+    );
+  } catch (error) {
+    throw new LoadTestAborted(
+      `could not enqueue every run (${error instanceof Error ? error.message : String(error)}). Some of these files may already be running, so nothing was deleted.`,
+      orgId,
+      fileIds,
+    );
+  }
   const startMs = Date.now() - enqueuedAt;
 
   const deadline = Date.now() + RUN_TIMEOUT_MS;
   let rows: Awaited<ReturnType<typeof prisma.userFile.findMany>> = [];
+  let finished = false;
 
   while (Date.now() < deadline) {
     rows = await prisma.userFile.findMany({
@@ -246,17 +301,39 @@ async function runOnce(
     // when parsing failed, because embedding never starts after that and
     // waiting for a status that will not be written is how a load test hangs
     // for its full timeout and reports nothing.
-    const done = rows.every(
-      (row) =>
-        TERMINAL.has(row.embeddingStatus) ||
-        row.parsingStatus === 'FAILED' ||
-        row.parsingStatus === 'CANCELLED',
-    );
+    // `every` on an empty (or short) array is true, so the length check is not
+    // a belt-and-braces addition: a row deleted mid-run — or a query that came
+    // back with fewer than were created — would otherwise read as "everything
+    // finished", and the batch would be reported from the files that happened
+    // to be there.
+    const done =
+      rows.length === fileIds.length &&
+      rows.every(
+        (row) =>
+          TERMINAL.has(row.embeddingStatus) ||
+          row.parsingStatus === 'FAILED' ||
+          row.parsingStatus === 'CANCELLED',
+      );
 
     if (done) {
+      finished = true;
       break;
     }
     await sleep(POLL_INTERVAL_MS);
+  }
+
+  if (!finished) {
+    // A run still moving at the deadline is a measurement that failed, and the
+    // jobs behind it are still live. Reporting its numbers would be worse than
+    // stopping: they describe a batch that never finished, and the usual next
+    // step — clean up and carry on — would delete rows out from under a
+    // running pipeline. The commonest cause is the worker being on the other
+    // runtime, in which case nothing ever consumed these at all.
+    throw new LoadTestAborted(
+      `level ${level}, repetition ${repetition}: the runs had not finished after ${RUN_TIMEOUT_MS}ms. Check that a worker is running with the same WORKER_RUNTIME. Nothing was deleted.`,
+      orgId,
+      fileIds,
+    );
   }
 
   const wallMs = Date.now() - enqueuedAt;
@@ -393,6 +470,9 @@ async function main(): Promise<void> {
   console.log(`project: ${project.id}`);
 
   const results: RunResult[] = [];
+  // An abort leaves live jobs behind, so it also leaves everything they touch:
+  // the project, the rows and the vectors stay until a person looks.
+  let retain = options.keep;
 
   try {
     for (const level of options.levels) {
@@ -416,8 +496,20 @@ async function main(): Promise<void> {
         }
       }
     }
+  } catch (error) {
+    if (error instanceof LoadTestAborted) {
+      retain = true;
+      console.error(`\naborted: ${error.message}`);
+      console.error(
+        `project ${project.id} and these files were left in place, because the jobs behind them may still be running:\n  ${error.fileIds.join('\n  ')}`,
+      );
+      console.error(
+        'Once the queue is quiet, delete the files in the UI or drop the project; their vectors go with the files.',
+      );
+    }
+    throw error;
   } finally {
-    if (!options.keep) {
+    if (!retain) {
       try {
         await prisma.aiUsage.deleteMany({ where: { projectId: project.id } });
         await prisma.project.delete({ where: { id: project.id } });
