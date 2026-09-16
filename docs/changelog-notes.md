@@ -196,5 +196,5 @@ archive is the blog.
   information about X [1]"*, where `[1]` tells the reader that source discusses
   X. Seen on demo in Italian; measured at 5 refusals in 50 carrying a citation
   before the fix, 0 in 50 after, with the rest of the citation suite unchanged.
-  ([#PR](https://github.com/webamigos/RagenAI/pull/PR))
+  ([#1218](https://github.com/webamigos/RagenAI/pull/1218))
 
