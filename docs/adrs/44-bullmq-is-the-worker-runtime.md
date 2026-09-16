@@ -90,8 +90,9 @@ default of 10 the median was 24.9s, because BullMQ's `concurrency` counts whole
 jobs while Temporal's `maxConcurrentActivityTaskExecutions: 50` counted
 activities, about twenty per ingest. **The port's one visible regression was a
 unit confusion in a default**, not anything about the engines, and the parse and
-embed medians were identical throughout. Raising `DEFAULT_CONCURRENCY` to 20 is
-part of E2, and the installer writes the variable explicitly besides.
+embed medians were identical throughout. `DEFAULT_CONCURRENCY` was raised to 20
+on the strength of it, and the installer writes the variable explicitly
+besides, so the knob is findable rather than implied.
 
 ## Consequences
 
