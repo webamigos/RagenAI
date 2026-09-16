@@ -99,6 +99,26 @@ describe('the jobs seam is the only place that names a runtime', () => {
     ).toEqual([]);
   });
 
+  /**
+   * The same rule as Temporal's, and it earns its place for the same reason:
+   * the moment `bullmq` is imported from a handler or an app, the adapter stops
+   * being replaceable and Phase G stops being a move. It is cheaper to hold now,
+   * with one importer, than to re-establish later.
+   */
+  it('only packages/jobs-bullmq imports bullmq', () => {
+    const offenders = packagesExcept(['jobs-bullmq']).filter((file) =>
+      importsIn(file).some(
+        (specifier) =>
+          specifier === 'bullmq' || specifier.startsWith('bullmq/'),
+      ),
+    );
+
+    expect(
+      offenders.map((f) => f.replace(`${ROOT}/`, '')),
+      'the engine belongs to its adapter package — that is what makes the extraction a move rather than a rewrite',
+    ).toEqual([]);
+  });
+
   it('every job name has a workflow that answers to it', () => {
     const workflows = sourceFiles(
       join(ROOT, 'apps', 'worker', 'src', 'workflows'),
