@@ -25,16 +25,27 @@ export { MAINTENANCE_QUEUE, QUEUE_NAMES, queueNameFor } from './queues.js';
  */
 
 /**
- * Redis connection defaults BullMQ requires rather than prefers.
+ * A producer connection keeps ioredis's finite retry budget, deliberately.
  *
- * `maxRetriesPerRequest: null` is not tuning: ioredis otherwise fails a
- * command after 20 attempts, and BullMQ's blocking reads are long-lived
- * commands, so a brief Redis blip kills the client instead of reconnecting
- * through it. BullMQ refuses to start a Worker without it.
+ * `maxRetriesPerRequest: null` is the setting BullMQ documents, and it is the
+ * wrong one here. It applies to *blocking* connections — BullMQ forces it on
+ * those itself (`checkBlockingOptions` warns only when
+ * `extraOptions.blocking`), because a `Worker`'s long-lived reads must survive
+ * a blip rather than be abandoned after twenty attempts. A `Queue` is
+ * constructed with `hasBlockingConnection = false`, so nothing requires it of
+ * a producer.
+ *
+ * Setting it anyway would change what an outage looks like at the call site:
+ * `start()` would queue the command and wait for Redis to come back rather
+ * than rejecting. The spec's failure table says the opposite — "Redis down
+ * while a producer enqueues: `jobs.start()` throws; every call site already
+ * handles a start failure" — and those call sites do (`workflow_start_failed`
+ * in `uploadFileCommand`, the same shape in apps/api). An upload request that
+ * hangs until Redis returns is worse than one that fails and says so.
+ *
+ * The worker's own connections set it, where it belongs, beside the `Worker`
+ * instances that need it.
  */
-export const REDIS_DEFAULTS = {
-  maxRetriesPerRequest: null,
-} as const;
 
 /**
  * How long a finished job stays readable.
@@ -84,10 +95,7 @@ export class BullMqJobRuntime implements JobRuntime {
   private readonly ownsQueues: boolean;
 
   constructor(options: BullMqJobRuntimeOptions = {}) {
-    this.connection = options.connection ?? {
-      url: process.env.REDIS_URL,
-      ...REDIS_DEFAULTS,
-    };
+    this.connection = options.connection ?? { url: process.env.REDIS_URL };
     this.queues = options.queues ?? new Map();
     this.ownsQueues = options.queues === undefined;
   }

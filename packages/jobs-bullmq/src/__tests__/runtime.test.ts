@@ -62,6 +62,31 @@ describe('the queue a job goes to', () => {
   });
 });
 
+describe('the producer connection', () => {
+  /**
+   * `maxRetriesPerRequest: null` is BullMQ's documented setting and belongs to
+   * *blocking* connections — a `Worker`'s long reads, which must survive a blip
+   * rather than be abandoned after twenty attempts. A `Queue` is not blocking,
+   * and setting it here would make an outage hang the caller instead of
+   * rejecting: an upload request would wait for Redis to come back rather than
+   * failing with the `workflow_start_failed` its call site already handles.
+   */
+  it('does not disable ioredis retries, so an outage rejects instead of hanging', async () => {
+    const runtime = new BullMqJobRuntime();
+
+    await runtime.start('runFileEmbeddings', 'run-1', {} as never);
+
+    const queue = (
+      runtime as never as { queues: Map<string, FakeQueue> }
+    ).queues.get('runFileEmbeddings')!;
+    const { connection } = queue.opts as {
+      connection: Record<string, unknown>;
+    };
+
+    expect(connection).not.toHaveProperty('maxRetriesPerRequest', null);
+  });
+});
+
 describe('start', () => {
   it("uses the caller's run id, because the row already holds it", async () => {
     const runtime = new BullMqJobRuntime();
