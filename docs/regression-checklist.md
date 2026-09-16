@@ -46,10 +46,11 @@
 
 The one part of the BullMQ port no automated suite reaches: the job-runtime
 integration suite stubs the activities, and `e2e.yml` starts no worker at all.
-Run this against a stack started with `npm run ragen:up:bullmq` (no Temporal
-container at all) as well as against the Temporal one — the producers and the
-worker must both carry the same `WORKER_RUNTIME`, or nothing consumes the
-queue. See [the load-test runbook](runbooks/worker-runtime-load-test.md).
+`npm run ragen:up:full` is the BullMQ stack now — Temporal is no longer in the
+compose file at all (ADR-44). To run the Temporal column as well, start one
+yourself and set `WORKER_RUNTIME=temporal` on **both** the worker and the
+producers; a mismatch means nothing consumes the queue. See
+[the load-test runbook](runbooks/worker-runtime-load-test.md).
 
 - [ ] Upload a document — it parses, embeds and answers a question in chat
 - [ ] Cancel an ingest mid-run — the file shows CANCELLED, not stuck in PROCESSING

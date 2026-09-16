@@ -815,14 +815,14 @@ Each phase leaves the application working.
       clone that ingests a document, cancels one, and generates a document with
       `WORKER_RUNTIME=bullmq`.
 
-  The variant is `npm run ragen:up:bullmq` — an overlay that moves both
-  Temporal services behind a profile, rather than a `profiles:` key in the
-  base file, because that would change what a plain `docker compose up`
-  starts and changing the default is Phase E's decision. The manual half is
-  a new section in
-  [the regression checklist](../regression-checklist.md), to be run once per
-  runtime; it is the part no automated suite reaches, since D1 stubs the
-  activities and `e2e.yml` starts no worker.
+  The variant was `npm run ragen:up:bullmq`, an overlay that moved both Temporal
+  services behind a profile — deliberately an overlay rather than a `profiles:`
+  key in the base file, because changing what a plain `docker compose up`
+  starts was E2's decision to make. **E2 has since made it**, so the overlay is
+  gone and `ragen:up:full` *is* the Temporal-free stack. The manual half is a
+  section in [the regression checklist](../regression-checklist.md); it is the
+  part no automated suite reaches, since D1 stubs the activities and `e2e.yml`
+  starts no worker.
 
 ### Phase E — BullMQ is the worker; Temporal stays here, out of the image
 
@@ -836,16 +836,29 @@ Gated on D2's numbers. The adapter does not move in this phase — see *Answered
       with ADR-26, not with this change — and records the drift budget ADR-32
       asks for: zero while the adapter is here, bounded by shape afterwards,
       with the nightly parity job as the detector.
-- [ ] **E2.** **The default concurrency is decided: `DEFAULT_CONCURRENCY` is
-      20**, raised on the strength of D2 rather than left at the conservative
-      10 — see §3. That covers the deployment that writes its own `.env` or
-      deploys from Helm, which the installer's half (E3) never reaches. Then:
-      compose:
-      `temporal` and `temporal-ui` deleted. Redis gains
-      `--maxmemory-policy noeviction` and AOF. Helm: `temporal.yaml` deleted,
-      `redis.enabled: true` and its "rate limiting only" comment rewritten.
-      Terraform variables dropped. Both CI suites lose the four dummy
-      `TEMPORAL_*` variables; `helm.yml` loses its `--set`.
+- [x] **E2.** The default concurrency is decided (`DEFAULT_CONCURRENCY` is 20 —
+      see §3), and Temporal leaves the default install: compose's `temporal` and
+      `temporal-ui` deleted, Redis gaining `--maxmemory-policy noeviction` and
+      AOF; Helm's `temporal.yaml` deleted with `redis.enabled: true` and its
+      "rate limiting only" comment rewritten; the Terraform variable dropped;
+      both CI suites losing the four dummy `TEMPORAL_*` variables and
+      `helm.yml` its `--set`.
+
+  **The default runtime moves with them, and had to.** `resolveWorkerRuntime`
+  returned `temporal` for an unset variable and the seam's `defaultVariant`
+  said the same, so removing the container without flipping the default would
+  have left `docker compose up` followed by `npm run worker:dev` connecting to
+  a Temporal that is not there. The two are one change.
+
+  `docker-compose.no-temporal.yml` and `ragen:up:bullmq` are deleted with it:
+  D3's overlay existed to preview this state, and `ragen:up:full` *is* that
+  state now.
+
+  **What this does not do** is make the producers validate the runtime's own
+  requirement. `REDIS_URL` is required under `bullmq` by the seam, but only
+  `apps/worker` merges that rule — so a web or api deployment without Redis
+  fails at the first upload rather than at boot. Filed separately; it predates
+  this change, which only moves which variable is the silently missing one.
 - [ ] **E3.** `create-ragen-app`: `WORKER_RUNTIME=bullmq`, Temporal out of the
       backing-services list and the outro, `REDIS_URL` promoted to required, the
       port-collision check kept honest.

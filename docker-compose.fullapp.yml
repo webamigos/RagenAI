@@ -5,9 +5,8 @@
 #   # or simply: npm run ragen:up:everything
 #
 # Why this exists: Ragen is self-hosted software, and until now `docker compose
-# up` gave you only the dependencies — Postgres, Qdrant, Temporal,
-# Docling, Redis — while web/api/worker/admin still had to be started by hand on
-# the host. Evaluating or deploying Ragen should not require a Node toolchain.
+# up` gave you only the dependencies — Postgres, Qdrant, Docling, Redis —
+# while web/api/worker/admin still had to be started by hand on the host. Evaluating or deploying Ragen should not require a Node toolchain.
 #
 # Every build context is the repository root, because the lockfile, the shared
 # Prisma schema and the workspace packages all live there.
@@ -25,7 +24,6 @@ services:
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-pass123}@postgres:5432/${POSTGRES_DB:-ragen}
       QDRANT_URL: http://qdrant:6333
       REDIS_URL: redis://redis:6379
-      TEMPORAL_SERVER_ADDRESS: temporal:7233
       RAGEN_API_INTERNAL_URL: http://api:3001
       NEXT_PUBLIC_APP_URL: http://localhost:${WEB_PORT:-3000}
       # Empty unless you set them, which is what keeps PII masking opt-in —
@@ -105,7 +103,6 @@ services:
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-pass123}@postgres:5432/${POSTGRES_DB:-ragen}
       QDRANT_URL: http://qdrant:6333
       REDIS_URL: redis://redis:6379
-      TEMPORAL_SERVER_ADDRESS: temporal:7233
       DOCLING_URL: http://docling:5001
       RAGEN_APP_URL: http://web:3000
       # Empty unless you set them, which is what keeps PII masking opt-in —
@@ -137,7 +134,9 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      temporal:
+      # The queues live in Redis now (ADR-44), so this is the dependency that
+      # decides whether the worker can consume anything at all.
+      redis:
         condition: service_started
     networks:
       - ragen-network

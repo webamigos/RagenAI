@@ -1,7 +1,7 @@
 # Ragen — default values.
 #
 # The chart ships a working self-hosted deployment out of the box: Postgres,
-# Qdrant, Redis and Temporal all run in-cluster. For a managed setup, set
+# Qdrant and Redis all run in-cluster. For a managed setup, set
 # `<service>.enabled: false` and point the matching URL in `config` at your
 # provider. Nothing else changes.
 
@@ -35,8 +35,10 @@ securityContext:
 # ---------------------------------------------------------------------------
 # Applications
 # ---------------------------------------------------------------------------
-# `worker` has no port: it is a Temporal worker and only makes outbound
-# connections, so it gets a Deployment and no Service.
+# `worker` has no port: it consumes queues and only makes outbound
+# connections, so it gets a Deployment and no Service. The queue dashboard is
+# the exception and is off unless WORKER_ADMIN_USER and WORKER_ADMIN_PASSWORD
+# are both set.
 # Schema migrations run as a pre-install/pre-upgrade hook, using the web image
 # (it already carries prisma/ and the CLI). Turn this off if migrations are
 # applied out of band — from CI, or by someone holding DDL credentials the
@@ -218,8 +220,16 @@ qdrant:
     limits: { memory: 4Gi }
 
 redis:
-  # Optional — API rate limiting only. The apps run without it.
-  enabled: false
+  # Required. It holds the job queues (ADR-44) as well as the worker's
+  # organization-settings cache, so an install without it has no background
+  # processing — no ingest, no scraping, no document generation. It was
+  # optional while Temporal carried the jobs and Redis carried only rate
+  # limiting.
+  #
+  # The deployment sets `maxmemory-policy noeviction` and appendonly: an
+  # evicting Redis drops queue keys under pressure and the jobs go with them,
+  # silently, and the worker refuses to start against one.
+  enabled: true
   image: redis:7-alpine
   # setpriv needs these to drop to the redis user; without them the entrypoint
   # fails with 'setresuid failed' — verified, not assumed.
@@ -237,43 +247,6 @@ redis:
   resources:
     requests: { cpu: 50m, memory: 128Mi }
     limits: { memory: 256Mi }
-
-temporal:
-  enabled: true
-  image: temporalio/auto-setup:1.26.2
-  # Verified by running the image with these restrictions applied.
-  securityContext:
-    allowPrivilegeEscalation: false
-    capabilities:
-      drop: ['ALL']
-    seccompProfile:
-      type: RuntimeDefault
-  port: 7233
-  namespace: default
-  ui:
-    enabled: true
-    image: temporalio/ui:2.36.0
-    # Writes its config file at startup, so it keeps DAC_OVERRIDE; without it
-    # the image exits with 'unable to create ./config/docker.yaml'.
-    securityContext:
-      allowPrivilegeEscalation: false
-      capabilities:
-        drop: ['ALL']
-        add: ['DAC_OVERRIDE']
-      seccompProfile:
-        type: RuntimeDefault
-    port: 8080
-  # Temporal keeps its own state in Postgres. With the bundled Postgres it
-  # uses that instance; point these elsewhere for a managed one, or disable
-  # the whole block and use Temporal Cloud via config.TEMPORAL_SERVER_ADDRESS.
-  database:
-    host: '' # defaults to the bundled Postgres service
-    port: 5432
-    user: postgres
-    password: '' # defaults to postgres.auth.password
-  resources:
-    requests: { cpu: 250m, memory: 512Mi }
-    limits: { memory: 1Gi }
 
 # ---------------------------------------------------------------------------
 # Configuration
@@ -304,6 +277,10 @@ config:
   DOCLING_URL: ''
   PRESIDIO_ANALYZER_URL: ''
   PRESIDIO_ANONYMIZER_URL: ''
+  # Set both only to run background jobs on Temporal instead of BullMQ
+  # (ADR-44). The chart no longer deploys a Temporal server; this points at one
+  # you run yourself, and the worker and the apps must agree on the runtime.
+  WORKER_RUNTIME: ''
   TEMPORAL_SERVER_ADDRESS: ''
   # Public URLs. Set these — sign-in links and OAuth callbacks are built from
   # them, and there is no sensible default.

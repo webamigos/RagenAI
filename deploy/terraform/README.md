@@ -19,7 +19,7 @@ that is the one file to change — `versions.tf`.
 
 Managed data services are handled through chart values rather than code here:
 set `postgres.enabled: false` and `config.DATABASE_URL` in a values file and
-the chart stops deploying its own. Same for Qdrant, Redis and Temporal. See the
+the chart stops deploying its own. Same for Qdrant and Redis. See the
 chart's README.
 
 **Do not put the password in `config.DATABASE_URL` literally.** That value is

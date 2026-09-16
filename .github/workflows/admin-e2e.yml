@@ -6,7 +6,7 @@ name: Admin E2E Tests
 # Prisma; nothing exercised sign-in or the role check that keeps customers out.
 #
 # Separate from e2e.yml rather than a job inside it: different app, different
-# port, its own build, and no dependency on apps/api, Temporal or the mock LLM
+# port, its own build, and no dependency on apps/api, the worker or the mock LLM
 # server. Keeping them apart means a failure names which surface broke.
 #
 # Runs on every PR — the whole suite is under a minute, so there is nothing to

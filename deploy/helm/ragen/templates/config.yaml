@@ -11,7 +11,7 @@ data:
     here, where `kubectl describe configmap` shows it.
   */}}
   {{- range $key, $value := .Values.config }}
-  {{- if and $value (not (has $key (list "DATABASE_URL" "QDRANT_URL" "REDIS_URL" "DOCLING_URL" "PRESIDIO_ANALYZER_URL" "PRESIDIO_ANONYMIZER_URL" "TEMPORAL_SERVER_ADDRESS"))) }}
+  {{- if and $value (not (has $key (list "DATABASE_URL" "QDRANT_URL" "REDIS_URL" "DOCLING_URL" "PRESIDIO_ANALYZER_URL" "PRESIDIO_ANONYMIZER_URL"))) }}
   {{ $key }}: {{ $value | quote }}
   {{- end }}
   {{- end }}
@@ -39,14 +39,6 @@ stringData:
   {{- if $existing }}{{ $prior = $existing.data }}{{ end }}
 
   POSTGRES_PASSWORD: {{ .Values.postgres.auth.password | default (index $prior "POSTGRES_PASSWORD" | default "" | b64dec) | default (randAlphaNum 24) | quote }}
-  {{- /*
-    Temporal's own database password, when it differs from the bundled one.
-    It lives here rather than inline in the Deployment so it is not readable
-    from `kubectl get deploy -o yaml`.
-  */}}
-  {{- with .Values.temporal.database.password }}
-  TEMPORAL_POSTGRES_PASSWORD: {{ . | quote }}
-  {{- end }}
   {{- range $key, $value := .Values.secrets }}
   {{- if $value }}
   {{ $key }}: {{ $value | quote }}

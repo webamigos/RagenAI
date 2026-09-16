@@ -74,13 +74,6 @@ variable "secrets" {
     WORKER_SECRET_KEY — plus whichever provider keys the
     deployment uses (OPENAI_API_KEY, GOOGLE_*, SCW_API_KEY).
 
-    One conditional key: if a values file sets `temporal.database.password`,
-    the chart reads Temporal's password from TEMPORAL_POSTGRES_PASSWORD instead
-    of POSTGRES_PASSWORD, so that key has to be here too. Setting it in values
-    while managing secrets here is contradictory — put the password in this map
-    and leave the values entry alone — but the chart supports both, so the
-    requirement is worth knowing.
-
     Do not put real values in a .tfvars file committed to git. Source them from
     a secret manager with a data source, or pass them at apply time. See the
     README's note on state.

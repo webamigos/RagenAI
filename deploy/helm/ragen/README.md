@@ -1,7 +1,7 @@
 # Ragen Helm chart
 
 Deploys the five workloads in this repository — `web`, `api`, `admin`, `docs`
-and the Temporal ingest `worker` — plus the services they depend on.
+and the ingest `worker` — plus the services they depend on.
 
 Everything stateful is bundled and switched on by default, so a fresh cluster
 gets a working install from one command. Every one of those is also a
@@ -93,8 +93,8 @@ Secret must contain `POSTGRES_PASSWORD` too.
 
 ## Managed services
 
-The bundled Postgres, Qdrant, Redis and Temporal are each a single replica
-with no replication, failover or backup. That is deliberate: it makes a trial
+The bundled Postgres, Qdrant and Redis are each a single replica with no
+replication, failover or backup. That is deliberate: it makes a trial
 install work, and it is not what you want under a production database. Point
 the matching `config` entry at a real service and disable the bundled one:
 
@@ -103,20 +103,29 @@ postgres:
   enabled: false
 qdrant:
   enabled: false
-temporal:
+redis:
   enabled: false
 config:
   DATABASE_URL: postgresql://<user>:<password>@db.rds.amazonaws.com:5432/ragen
   QDRANT_URL: https://xyz.qdrant.cloud
-  TEMPORAL_SERVER_ADDRESS: eu-central-1.aws.api.temporal.io:7233
+  REDIS_URL: rediss://<user>:<password>@managed-redis:6379
 ```
 
 Nothing else changes — the apps read those URLs through the same helpers
 either way. Set `DATABASE_DIRECT_URL` as well if a connection pooler sits in
 front of Postgres; migrations use it to bypass the pooler.
 
-Redis is optional (rate limiting only). With `redis.enabled: false` and no
-`config.REDIS_URL`, the variable is simply not set.
+**Redis is not optional.** It holds the job queues (ADR-44) as well as the
+worker's settings cache, so `redis.enabled: false` with no `config.REDIS_URL`
+leaves the install with no background processing at all — nothing parses,
+embeds, scrapes or generates. A managed Redis must run `maxmemory-policy
+noeviction`; the worker checks at boot and refuses to start against an evicting
+instance, because a dropped queue key is a job that vanishes without an error.
+
+To run background jobs on Temporal instead, set `config.WORKER_RUNTIME:
+temporal` and `config.TEMPORAL_SERVER_ADDRESS` at a server you operate — the
+chart no longer deploys one. The worker image does not ship the Temporal
+adapter either; see [ADR-44](../../../docs/adrs/44-bullmq-is-the-worker-runtime.md).
 
 ## Storage
 
