@@ -5,6 +5,7 @@ import * as activities from './activities/index.js';
 import { TASK_QUEUE_NAME } from './shared.js';
 import { TEMPORAL_SERVER_ADDRESS } from './consts.js';
 import { parseWorkerEnv } from './config/env.js';
+import { resolveRunnableRuntime } from './runtime-guard.js';
 import {
   isPiiMaskingMisconfigured,
   PII_MASKING_MISCONFIGURED_MESSAGE,
@@ -20,6 +21,20 @@ if (!env.ok) {
   // is the shared one every app prints, rather than zod's nested dump.
   // eslint-disable-next-line no-console
   console.error(env.report);
+  process.exit(1);
+}
+
+/**
+ * A runtime the contract accepts but this build cannot run is refused here,
+ * before anything connects — see `runtime-guard.ts`. Falling through to the
+ * Temporal bootstrap below would give an operator who selected BullMQ a worker
+ * that starts, stays healthy and never picks up a job.
+ */
+const runnable = resolveRunnableRuntime();
+
+if (!runnable.ok) {
+  // eslint-disable-next-line no-console
+  console.error(runnable.message);
   process.exit(1);
 }
 
