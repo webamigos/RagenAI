@@ -51,7 +51,6 @@
     "@ragenai/rag-core": "*",
     "@ragenai/storage": "*",
     "@ragenai/vault-client": "*",
-    "@temporalio/client": "1.23.0",
     "ai": "^7.0.99"
   },
   "engines": {
