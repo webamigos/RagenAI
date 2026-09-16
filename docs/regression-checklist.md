@@ -42,6 +42,22 @@
 - [ ] Delete a document — removed from list and search
 - [ ] Add content from URL — parsed and embedded
 
+### Worker runtime (run once per `WORKER_RUNTIME`, before Phase E)
+
+The one part of the BullMQ port no automated suite reaches: the job-runtime
+integration suite stubs the activities, and `e2e.yml` starts no worker at all.
+Run this against a stack started with `npm run ragen:up:bullmq` (no Temporal
+container at all) as well as against the Temporal one — the producers and the
+worker must both carry the same `WORKER_RUNTIME`, or nothing consumes the
+queue. See [the load-test runbook](runbooks/worker-runtime-load-test.md).
+
+- [ ] Upload a document — it parses, embeds and answers a question in chat
+- [ ] Cancel an ingest mid-run — the file shows CANCELLED, not stuck in PROCESSING
+- [ ] Re-embed a folder — every file in it re-runs, and retrieval does not return duplicate chunks
+- [ ] Generate a document — the status route stops polling and hands back a file
+- [ ] Roll a document version back — the re-index embeds the restored text
+- [ ] Both nightly schedules exist after the switch (bull-board, or the Temporal UI)
+
 ### Projects
 
 - [ ] Create new project — appears in project list

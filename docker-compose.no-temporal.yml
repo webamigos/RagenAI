@@ -1,0 +1,26 @@
+# The stack as it will look after Phase E, available before Phase E decides.
+#
+# An overlay on `docker-compose.yml` that moves the two Temporal services
+# behind a profile, so they do not start:
+#
+#   npm run ragen:up:bullmq
+#
+# Pair it with `WORKER_RUNTIME=bullmq` on the worker **and on the producers** —
+# they must agree, because a producer writes to one engine only and a mismatch
+# looks exactly like a worker that is merely slow.
+#
+# This is the spec's D3: proving that nothing outside the worker quietly needs
+# Temporal to be reachable. It is an overlay rather than a profile in the base
+# file on purpose — adding `profiles:` there would change what a plain
+# `docker compose up` starts, and changing the default is Phase E's decision,
+# gated on D2's numbers.
+#
+# Starting them again from this overlay, should you want the comparison in one
+# session: `docker compose -f docker-compose.yml -f docker-compose.no-temporal.yml
+# --profile temporal up`.
+services:
+  temporal:
+    profiles: ['temporal']
+
+  temporal-ui:
+    profiles: ['temporal']
