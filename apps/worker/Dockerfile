@@ -29,6 +29,7 @@ COPY packages/env/package.json packages/env/
 COPY packages/platform-contracts/package.json packages/platform-contracts/
 COPY packages/jobs/package.json packages/jobs/
 COPY packages/jobs-temporal/package.json packages/jobs-temporal/
+COPY packages/jobs-bullmq/package.json packages/jobs-bullmq/
 COPY packages/llm-gateway/package.json packages/llm-gateway/
 
 # --ignore-scripts stays: it stops every other package's install script from
@@ -54,6 +55,7 @@ RUN npm ci --workspace=@webamigos/ragen-worker \
     --workspace=@ragenai/platform-contracts \
     --workspace=@ragenai/jobs \
     --workspace=@ragenai/jobs-temporal \
+    --workspace=@ragenai/jobs-bullmq \
     --workspace=@ragenai/llm-gateway \
     --ignore-scripts
 RUN mkdir -p /app/apps/worker/node_modules
@@ -68,6 +70,7 @@ RUN npm ci --workspace=@webamigos/ragen-worker \
     --workspace=@ragenai/platform-contracts \
     --workspace=@ragenai/jobs \
     --workspace=@ragenai/jobs-temporal \
+    --workspace=@ragenai/jobs-bullmq \
     --workspace=@ragenai/llm-gateway \
     --omit=dev --ignore-scripts
 # Guarantee the nested workspace node_modules exists so the runner's COPY of it
@@ -113,6 +116,7 @@ RUN npm run build --workspace=@ragenai/env \
     && npm run build --workspace=@ragenai/platform-contracts \
     && npm run build --workspace=@ragenai/jobs \
     && npm run build --workspace=@ragenai/jobs-temporal \
+    && npm run build --workspace=@ragenai/jobs-bullmq \
     && npm run build --workspace=@ragenai/rag-core \
     && npm run build --workspace=@ragenai/observability \
     && npm run build --workspace=@ragenai/storage \

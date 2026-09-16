@@ -9,9 +9,33 @@ import {
   type JobSchedule,
 } from '@ragenai/jobs';
 
-import { MAINTENANCE_QUEUE, QUEUE_NAMES, queueNameFor } from './queues.js';
+import { QUEUE_NAMES, queueNameFor } from './queues.js';
 
 export { MAINTENANCE_QUEUE, QUEUE_NAMES, queueNameFor } from './queues.js';
+export {
+  createJobContext,
+  runStep,
+  DEFAULT_MAX_ATTEMPTS,
+  type JobContextDeps,
+} from './context.js';
+export {
+  assertQueueRedisHealthy,
+  createBullWorkers,
+  closeBullWorkers,
+  DEFAULT_CONCURRENCY,
+  LOCK_DURATION_MS,
+  MAX_STALLED_COUNT,
+  WORKER_REDIS_DEFAULTS,
+  type BullWorkers,
+  type CreateWorkersOptions,
+  type JobHandler,
+  type JobHandlers,
+} from './worker.js';
+export {
+  assertNoEviction,
+  EVICTION_MESSAGE,
+  type RedisConfigReader,
+} from './redis-health.js';
 
 /**
  * The BullMQ adapter, and the only package in this repository that imports
