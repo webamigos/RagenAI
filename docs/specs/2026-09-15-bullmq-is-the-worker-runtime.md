@@ -923,15 +923,40 @@ Gated on D2's numbers. The adapter does not move in this phase — see *Answered
   job, concurrency counts whole jobs, more than one worker is fine, and a
   finished job stays readable for an hour because `getRun` is polled. Temporal's
   three keep their own subsection.
-- [ ] **E5.** Delete what the seam made dead: the `@temporalio/*` dependencies
-      from `apps/worker`, `apps/api` and the root manifest — they belong to
+- [x] **E5.** Delete what the seam made dead: the `@temporalio/*` declarations
+      nothing imports — the root's and `apps/web`'s `@temporalio/client`, and
+      `apps/worker`'s `@temporalio/activity` — and move `apps/worker`'s
+      `@temporalio/client` to devDependencies, where its one importer (a test)
+      lives. `@temporalio/worker` and `@temporalio/workflow` stay: the worker
+      runs the Temporal runtime in process and imports both. They belong to
       `packages/jobs-temporal` now, which is where
       `the-temporal-family-moves-together.test.ts` and dependabot's `temporal`
       group start pointing instead of being deleted.
 
   `apps/web/src/libs/temporal/` was the other half of this item and is **already
   gone** — E4's sweep went looking for it to document it and found nothing
-  there. That family
+  there.
+
+  **What came out is what nothing imported.** The root and `apps/web` each
+  declared `@temporalio/client` and no file in either reaches for it: the
+  producer client belongs to `@ragenai/jobs-temporal`, and producers go through
+  `jobs()`. `apps/worker` also declared `@temporalio/activity`, imported
+  nowhere. `apps/api` had already been cleaned when its jobs service moved to
+  the seam — the spec's list was written before that landed.
+
+  **What stayed, and why it is not an oversight.** `apps/worker` keeps
+  `@temporalio/worker` and `@temporalio/workflow`: it *runs* the Temporal
+  runtime in process, so `src/worker.ts` and `src/workflows/` import them for
+  real. Removing those is not a dependency edit, it is moving the runtime — and
+  that is Phase G, where the adapter leaves for its own repository. E6 takes
+  them out of the **image** instead, which is the part an install feels.
+  `@temporalio/client` moved to devDependencies, where its one importer (a
+  workflow test) lives.
+
+  Six declarations across two manifests now, down from nine across four. The
+  guard follows: it asserts that `apps/worker` *and* `packages/jobs-temporal`
+  both still declare something, so a future move that empties either cannot
+  pass over an empty list. That family
       still has to move as one version; it just has one home.
 - [ ] **E6.** Take Temporal out of the **image**, not the repository: the
       worker Dockerfile's `npm ci --workspace=…` list omits

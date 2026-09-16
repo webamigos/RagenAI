@@ -34,6 +34,14 @@ import { describe, expect, it } from 'vitest';
  *
  * Hence both halves of the rule: one version, and written exactly, since a
  * range is how the versions drift apart while the file still looks aligned.
+ *
+ * **The family shrank in E5 and the rule did not.** The root and `apps/web`
+ * declared `@temporalio/client` and imported it nowhere — `@ragenai/jobs-temporal`
+ * owns the producer client, and every producer reaches it through
+ * `@ragenai/jobs`. `apps/worker` kept `worker` and `workflow`, which its
+ * Temporal runtime imports, and moved `client` to devDependencies, where its
+ * one importer (a test) lives. Six declarations across two manifests now,
+ * down from nine across four: fewer places to drift, same failure if they do.
  */
 
 const REPO_ROOT = join(import.meta.dirname, '..', '..');
@@ -90,10 +98,35 @@ describe('the Temporal family moves together', () => {
   it('finds the declarations it is meant to police', () => {
     // Guard on the guard. If a rename or a workspace move empties MANIFESTS,
     // every assertion below passes over an empty list and says nothing.
-    expect(declarations.length).toBeGreaterThanOrEqual(6);
-    expect(
-      declarations.some((d) => d.manifest === 'apps/worker/package.json'),
-    ).toBe(true);
+    expect(declarations.length).toBeGreaterThanOrEqual(5);
+
+    // The two manifests that legitimately hold the family after E5: the
+    // adapter package, which owns the client every producer reaches through
+    // `@ragenai/jobs`, and the worker, which runs the Temporal runtime
+    // in process. A move that empties either is a move this test must see.
+    for (const manifest of [
+      'apps/worker/package.json',
+      'packages/jobs-temporal/package.json',
+    ]) {
+      expect(
+        declarations.some((d) => d.manifest === manifest),
+        `${manifest} declares no @temporalio/* package — if that is deliberate, this guard moves with it.`,
+      ).toBe(true);
+    }
+
+    // Named rather than counted. A total is a weak proxy for "the worker can
+    // still run Temporal": these two are what `src/temporal-runtime.ts` and
+    // `src/workflows/` import, so losing either is a broken adapter path,
+    // while a devDependency going away for an unrelated reason is not. Phase G
+    // moves them, and then this list moves with it.
+    for (const name of ['@temporalio/worker', '@temporalio/workflow']) {
+      expect(
+        declarations.some(
+          (d) => d.manifest === 'apps/worker/package.json' && d.name === name,
+        ),
+        `apps/worker no longer declares ${name}, which its Temporal runtime imports.`,
+      ).toBe(true);
+    }
   });
 
   it('pins every @temporalio/* package to an exact version', () => {
