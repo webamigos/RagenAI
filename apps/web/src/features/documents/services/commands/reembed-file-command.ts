@@ -6,7 +6,6 @@ import { logger } from '@/app/lib/utils/logger';
 import { NotFoundException } from '@/libs/utils/errors';
 import { persistUserFileUpdateWithRetry } from '@/features/documents/utils/persist-user-file-update-with-retry';
 import { resetIngestStatusForNewRun } from '@/features/documents/utils/reset-ingest-status-for-new-run';
-import { toRunFileEmbeddingsPayload } from '@ragenai/jobs';
 
 export async function reembedFileCommand(
   fileId: string,
@@ -29,11 +28,10 @@ export async function reembedFileCommand(
   await resetIngestStatusForNewRun({ fileId, organizationId });
 
   try {
-    await jobs().start(
-      Workflow.RUN_FILE_EMBEDDINGS,
-      workflowId,
-      toRunFileEmbeddingsPayload(file, { requestId: workflowId }),
-    );
+    await jobs().start(Workflow.RUN_FILE_EMBEDDINGS, workflowId, {
+      fileId: file.id,
+      orgId: file.organizationId,
+    });
   } catch (wfErr) {
     logger.error({ err: wfErr, fileId }, 'Failed to start re-embed workflow');
     throw wfErr;

@@ -20,7 +20,6 @@ import type { PermissionLevel } from '@/features/documents/contracts/permission.
 import { logger } from '@/app/lib/utils/logger';
 import { UnauthorizedException } from '@/libs/utils/errors';
 import { ragenApiRequest } from '@/libs/ragen-api-client/client';
-import { toRunFileEmbeddingsPayload } from '@ragenai/jobs';
 
 type OperationResult = { success: true } | { success: false; error: string };
 
@@ -237,11 +236,10 @@ export async function bulkReembedFilesAction(
   for (const fileRecord of fileRecords) {
     const workflowId = `reembed-${nanoid()}`;
     try {
-      await jobs().start(
-        Workflow.RUN_FILE_EMBEDDINGS,
-        workflowId,
-        toRunFileEmbeddingsPayload(fileRecord, { requestId: workflowId }),
-      );
+      await jobs().start(Workflow.RUN_FILE_EMBEDDINGS, workflowId, {
+        fileId: fileRecord.id,
+        orgId: fileRecord.organizationId,
+      });
       await db.userFile.update({
         where: { id: fileRecord.id },
         data: {
