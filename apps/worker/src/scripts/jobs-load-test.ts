@@ -511,8 +511,18 @@ async function main(): Promise<void> {
   } finally {
     if (!retain) {
       try {
-        await prisma.aiUsage.deleteMany({ where: { projectId: project.id } });
-        await prisma.project.delete({ where: { id: project.id } });
+        // Both filtered by organization as well as by id — not because the
+        // project id is ambiguous (it is a uuid), but because the tenant-scope
+        // guard warns on every query that omits it, and a script that prints
+        // two warnings per run teaches the reader to ignore the guard. The
+        // delete becomes `deleteMany` for the same reason: `delete` takes a
+        // unique selector, which cannot carry a second column.
+        await prisma.aiUsage.deleteMany({
+          where: { projectId: project.id, organizationId: orgId },
+        });
+        await prisma.project.deleteMany({
+          where: { id: project.id, organizationId: orgId },
+        });
       } catch (error) {
         console.warn(
           `could not delete project ${project.id} — remove it by hand:`,
