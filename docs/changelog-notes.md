@@ -186,3 +186,15 @@ archive is the blog.
   variable, which is why the preflight that exists to catch this could not see
   them; it can now.
   ([#1204](https://github.com/webamigos/RagenAI/pull/1204))
+
+- `[brief]` **An answer saying the documents contain nothing about a topic no
+  longer carries a citation.** Retrieval always returns the closest passages it
+  can find, so a question about something the corpus does not cover still had
+  chunks in front of the model — and the citation rule distinguished only
+  between sentences that use the context and sentences that do not. A statement
+  of absence is neither, so the model cited anyway: *"the documents contain no
+  information about X [1]"*, where `[1]` tells the reader that source discusses
+  X. Seen on demo in Italian; measured at 5 refusals in 50 carrying a citation
+  before the fix, 0 in 50 after, with the rest of the citation suite unchanged.
+  ([#1218](https://github.com/webamigos/RagenAI/pull/1218))
+

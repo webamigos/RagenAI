@@ -56,9 +56,41 @@
 
 - description: 'No document holds the answer, so nothing may be cited'
   vars:
+    # A weak case on its own, and worth knowing why. The mock store drops every
+    # chunk that shares no term with the question, so this one retrieves
+    # **nothing** — the model has no source to cite even if it wanted to. It
+    # proves the pipeline declines; it cannot prove the citation rule. The case
+    # below is the one that can.
     question: 'What is the office Wi-Fi password?'
   assert:
     - type: javascript
       value: '(context.metadata?.citedFiles ?? []).length === 0'
     - type: llm-rubric
       value: 'Says the information is not in the provided documents, without inventing a password'
+
+- description: 'A statement of absence carries no citation, even when chunks were retrieved'
+  vars:
+    # Seen on demo on 2026-09-16: an Italian question about global warming was
+    # answered correctly — "I documenti forniti non contengono informazioni …
+    # relativi al riscaldamento globale" — with `[1]` attached to it, pointing
+    # at the product overview. To a reader, that marker says the overview
+    # discusses global warming.
+    #
+    # Retrieval is not the bug. Hybrid search always returns top-k, so a
+    # question about something the corpus does not cover retrieves *something*
+    # and the pipeline then correctly declines. Only the citation is wrong.
+    #
+    # Worded in English with corpus vocabulary rather than in the demo's
+    # Italian, because that is what this harness can reproduce: the mock store
+    # scores by keyword overlap, so the Italian original retrieves nothing here
+    # and the case would pass for the wrong reason. "documents" pulls the
+    # overview's *What it does not do* section — "It does not invent an answer
+    # when the documents do not contain one" — which is the chunk that made the
+    # demo's citation so plausible to the model: a source that appears to
+    # endorse the refusal.
+    question: 'What do the documents say about global warming?'
+  assert:
+    - type: javascript
+      value: '(context.metadata?.citedFiles ?? []).length === 0'
+    - type: llm-rubric
+      value: 'States that the provided documents contain no information about global warming, and does not answer the question from general knowledge as though the documents supported it'
