@@ -174,7 +174,7 @@ then point the app at it with `OTEL_EXPORTER_OTLP_ENDPOINT` — see
 
 ## Architecture
 
-**Stack**: Next.js 16 (App Router) + React 19 + TypeScript ~5.7 + Tailwind 4 + Postgres (Prisma 7) + Qdrant (hybrid dense+sparse) + BullMQ on Redis (ADR-44) + Scaleway reranker. Model providers are called directly, per the route table (ADR-49). **Redis is the queue**, not optional: a producer without `REDIS_URL` will not boot.
+**Stack**: Next.js 16 (App Router) + React 19 + TypeScript ~5.7 + Tailwind 4 + Postgres (Prisma 7) + Qdrant (hybrid dense+sparse) + BullMQ on Redis (ADR-44) + Scaleway reranker. Model providers are called directly, per the route table (ADR-49). **Redis is the queue**: without `REDIS_URL` apps/api and the worker refuse to boot; apps/web reports it and serves the setup page.
 
 **What it is**: RAG AI chat app with an in-process model gateway, document knowledge bases, and a public API.
 

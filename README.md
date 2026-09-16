@@ -239,8 +239,9 @@ Ragen calls model providers itself, so there is no proxy in this table any
 more — the `litellm` services went with the path that used them. Qdrant is the line that moves as you add documents; the figure
 above is a near-empty index, so size that one against your own corpus rather
 than against this table.
-Redis is optional and only used for rate limiting. The four applications run on
-top of all this and are not in the table.
+Redis is not optional under the default runtime — it holds the ingest queue,
+and rate limiting rides along on it. The four applications run on top of all
+this and are not in the table.
 
 `npm run ragen:up:app` runs a smaller set — Postgres and Qdrant, no
 document processing — when you only want to try the chat. Sizing guidance for
