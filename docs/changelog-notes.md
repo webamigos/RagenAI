@@ -217,4 +217,4 @@ archive is the blog.
   Temporal instead of writing `localhost:7233` on your behalf. The next-steps
   block also names `npm run worker:dev`: without a worker an upload is accepted
   and never parsed.
-  ([#PR](https://github.com/webamigos/RagenAI/pull/PR))
+  ([#1225](https://github.com/webamigos/RagenAI/pull/1225))
