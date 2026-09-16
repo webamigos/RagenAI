@@ -37,6 +37,15 @@ const TEMPORAL_ONLY = [
   join('apps', 'worker', 'src', 'workflows') + sep,
 ];
 
+/**
+ * `temporal-failure.ts` imports the SDK, so importing *it* from a shared
+ * module loads the SDK just as surely as naming the package — one indirection
+ * further down, where a text search for `@temporalio` finds nothing. This
+ * nearly happened while answering a review: two helpers went in beside its
+ * `ApplicationFailure` import and were then imported from `worker.ts`.
+ */
+const CARRIES_THE_SDK = /\.\/temporal-failure\.js|\.\.\/temporal-failure\.js/;
+
 function* walk(dir: string): Generator<string> {
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
     const full = join(dir, entry.name);
@@ -54,7 +63,28 @@ const sources = [...walk(WORKER_SRC)]
   .map((path) => relative(REPO_ROOT, path))
   .filter((path) => !IS_TEST.test(path.split(sep).join('/')));
 
-const STATIC_IMPORT = /^\s*import\s[^;]*from\s*['"]@temporalio\/[^'"]+['"]/m;
+/**
+ * Every edge that makes Node resolve a package, and none that does not.
+ *
+ * Three shapes load it: a value import, a bare side-effect import
+ * (`import '@temporalio/worker'`, which runs the module for nothing else), and
+ * a re-export (`export { x } from …`, which is an import with a different
+ * name). `import type` and `export type` are erased by tsc and load nothing,
+ * so flagging them would be a false positive on the one spelling that is
+ * always safe — and would push someone toward `// eslint-disable`-shaped
+ * workarounds rather than the fix.
+ */
+function loadsPackage(pattern: string): RegExp {
+  return new RegExp(
+    // import … from 'pkg' / export … from 'pkg', but not `import type`
+    `^\\s*(?:import|export)\\s+(?!type\\s)[^;]*?from\\s*['"]${pattern}['"]` +
+      // import 'pkg'
+      `|^\\s*import\\s*['"]${pattern}['"]`,
+    'm',
+  );
+}
+
+const STATIC_IMPORT = loadsPackage('@temporalio\\/[^\'"]+');
 
 describe('the Temporal SDK stays on the Temporal path', () => {
   it('finds the worker sources it is meant to police', () => {
@@ -67,11 +97,13 @@ describe('the Temporal SDK stays on the Temporal path', () => {
   });
 
   it('is imported only by modules a BullMQ start never loads', () => {
-    const offenders = sources.filter(
-      (path) =>
-        !TEMPORAL_ONLY.some((allowed) => path.startsWith(allowed)) &&
-        STATIC_IMPORT.test(readFileSync(join(REPO_ROOT, path), 'utf8')),
-    );
+    const offenders = sources.filter((path) => {
+      if (TEMPORAL_ONLY.some((allowed) => path.startsWith(allowed))) {
+        return false;
+      }
+      const source = readFileSync(join(REPO_ROOT, path), 'utf8');
+      return STATIC_IMPORT.test(source) || CARRIES_THE_SDK.test(source);
+    });
 
     expect(
       offenders,

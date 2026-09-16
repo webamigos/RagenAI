@@ -71,9 +71,15 @@ RUN mkdir -p /app/apps/worker/node_modules
 # and only when `WORKER_RUNTIME=temporal` selects it, so a BullMQ start never
 # reaches for what is absent and a Temporal start fails with a sentence rather
 # than a MODULE_NOT_FOUND from a path nobody recognises. `src/worker.ts` does
-# the same for the Temporal runtime itself. An install that wants durable
-# execution builds this image with the adapter added back, until Phase G moves
-# it to its own repository.
+# the same for the Temporal runtime itself.
+#
+# **What an install that wants durable execution has to do**, concretely: the
+# packages are `apps/worker`'s devDependencies now, and this stage installs
+# with `--omit=dev`, so putting the adapter back on the `--workspace=` list
+# below is *not* enough. Either drop `--omit=dev` here — which also brings in
+# every other dev dependency, so the image grows by more than Temporal — or add
+# a stage of your own that installs them on top. Phase G moves the adapter to
+# its own repository and replaces this with a supported answer.
 #
 # `tests/architecture/a-scoped-dockerfile-installs-every-workspace-dep.test.ts`
 # knows about this one omission and requires the dynamic-import half of it, so

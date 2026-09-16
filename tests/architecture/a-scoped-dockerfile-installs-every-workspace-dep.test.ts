@@ -148,13 +148,20 @@ describe('a Dockerfile that installs scoped names every workspace it needs', () 
   it.each(exemptions)(
     'apps/$app reaches $name dynamically, since its image does not ship it',
     ({ app, name }) => {
-      // The whole exemption rests on this. A `import { X } from '<name>'` at
-      // the top of any file the app loads resolves before a single line runs,
-      // so the container would fail to start on the runtime it *does* ship —
-      // and it would fail in the image only, which is the one place nothing
-      // here can see.
+      // The whole exemption rests on this. A static import of `<name>` at the
+      // top of any file the app loads resolves before a single line runs, so
+      // the container would fail to start on the runtime it *does* ship — and
+      // it would fail in the image only, which is the one place nothing here
+      // can see.
+      //
+      // Three spellings resolve the package and one does not: a value import,
+      // a bare `import '<name>'` for side effects, and a re-export are all
+      // loads; `import type` / `export type` are erased by tsc. The same
+      // matching as `the-temporal-sdk-stays-on-the-temporal-path.test.ts`,
+      // which polices the SDK the same way one level down.
       const staticImport = new RegExp(
-        `^\\s*import\\s[^;]*from\\s*['"]${name}['"]`,
+        `^\\s*(?:import|export)\\s+(?!type\\s)[^;]*?from\\s*['"]${name}['"]` +
+          `|^\\s*import\\s*['"]${name}['"]`,
         'm',
       );
       const dynamicImport = new RegExp(`import\\(\\s*['"]${name}['"]`);

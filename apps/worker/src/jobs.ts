@@ -6,6 +6,11 @@ import {
 } from '@ragenai/jobs';
 import { BullMqJobRuntime } from '@ragenai/jobs-bullmq';
 
+import {
+  isMissingTemporalPackage,
+  withCause,
+} from './utils/missing-package.js';
+
 /**
  * The job runtime, as `apps/worker` sees it.
  *
@@ -35,15 +40,20 @@ if (resolveWorkerRuntime() === 'temporal') {
     const { TemporalJobRuntime } = await import('@ragenai/jobs-temporal');
     registerJobRuntime('temporal', () => new TemporalJobRuntime());
   } catch (error) {
-    // The one failure this arrangement can produce, named rather than left as
-    // a bare MODULE_NOT_FOUND from a path nobody recognises. An install that
-    // wants durable execution builds the image with the adapter — see ADR-44
-    // and the worker Dockerfile.
-    throw new Error(
-      'WORKER_RUNTIME=temporal, but this build does not include ' +
-        '@ragenai/jobs-temporal, so the schedule scripts have no producer. ' +
-        'The published worker image ships the BullMQ runtime only (ADR-44). ' +
-        `The import failed with: ${String(error)}`,
+    // Only a missing package is the case this build deliberately creates;
+    // anything else is a real failure inside the adapter and keeps its own
+    // stack rather than being relabelled.
+    if (!isMissingTemporalPackage(error)) {
+      throw error;
+    }
+
+    throw withCause(
+      new Error(
+        'WORKER_RUNTIME=temporal, but this build does not include ' +
+          '@ragenai/jobs-temporal, so the schedule scripts have no producer. ' +
+          'The published worker image ships the BullMQ runtime only (ADR-44).',
+      ),
+      error,
     );
   }
 }
