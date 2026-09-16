@@ -4,11 +4,21 @@ import { resolveEmbeddingsModel } from '@ragenai/rag-core';
 export const targetEnv = process.env.TARGET_ENV!;
 
 export const TEMPORAL_NAMESPACE = process.env.TEMPORAL_NAMESPACE || 'local';
-// export const TEMPORAL_SERVER_ADDRESS =
-//   `${TEMPORAL_NAMESPACE}.${process.env.TEMPORAL_SERVER_ADDRESS}` ||
-//   'localhost:7233';
+
+/**
+ * The Temporal server to connect to.
+ *
+ * `??` and not a template literal. This read
+ * `` `${process.env.TEMPORAL_SERVER_ADDRESS}` || 'localhost:7233' ``, and a
+ * template literal is never the empty string — so with the variable unset the
+ * address became the literal `"undefined"` and the fallback could not run.
+ * #1203 fixed the identical line in apps/web; this copy survived because the
+ * worker's schema demanded the variable, which made the fallback unreachable
+ * rather than correct. Making that requirement conditional on `WORKER_RUNTIME`
+ * is what would have set it loose.
+ */
 export const TEMPORAL_SERVER_ADDRESS =
-  `${process.env.TEMPORAL_SERVER_ADDRESS}` || 'localhost:7233';
+  process.env.TEMPORAL_SERVER_ADDRESS ?? 'localhost:7233';
 
 /**
  * Embedding model used for both ingest and query.

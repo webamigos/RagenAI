@@ -20,6 +20,7 @@ export {
   seamRule,
   speechRules,
   storageRules,
+  workerRuntimeRules,
 } from './provider-rules';
 
 export {
@@ -50,6 +51,7 @@ export {
   PROVIDER_SEAMS,
   SPEECH_SEAM,
   STORAGE_SEAM,
+  WORKER_RUNTIME_SEAM,
   type ProviderSeam,
   type RequiredVarsOf,
   type SeamVariant,

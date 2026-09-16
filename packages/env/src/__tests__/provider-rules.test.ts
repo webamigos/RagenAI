@@ -2,7 +2,11 @@ import { describe, expect, it } from 'vitest';
 import { type z } from 'zod';
 
 import * as fragments from '../fragments';
-import { encryptionRules, storageRules } from '../provider-rules';
+import {
+  encryptionRules,
+  storageRules,
+  workerRuntimeRules,
+} from '../provider-rules';
 import { parseEnv } from '../parse';
 
 /**
@@ -12,6 +16,10 @@ import { parseEnv } from '../parse';
  */
 const storageSchema = fragments.storage.superRefine(storageRules);
 const encryptionSchema = fragments.encryption.superRefine(encryptionRules);
+const workerRuntimeSchema = fragments.workerRuntime
+  .merge(fragments.temporal)
+  .merge(fragments.redis)
+  .superRefine(workerRuntimeRules);
 
 const namesOf = <T extends z.ZodType>(
   schema: T,
@@ -115,5 +123,78 @@ describe('encryptionRules', () => {
         ENCRYPTION_MASTER_KEY: 'x',
       }).ok,
     ).toBe(true);
+  });
+});
+
+/**
+ * §9 of the worker-runtime spec: neither variable is required in general, and
+ * each is required exactly when its runtime is selected.
+ */
+describe('workerRuntimeRules', () => {
+  it('requires the Temporal address under temporal', () => {
+    expect(
+      namesOf(workerRuntimeSchema, { WORKER_RUNTIME: 'temporal' }),
+    ).toEqual(['TEMPORAL_SERVER_ADDRESS']);
+  });
+
+  /**
+   * The case the rule machinery did not previously handle. `WORKER_RUNTIME` is
+   * usually unset, `requiredForProvider` matches the variable against a variant
+   * name, and an unset variable matches none — so before `seamRule` learned
+   * about `defaultVariant`, the default configuration validated nothing while
+   * looking validated. Moving the worker's existing hard requirement into the
+   * seam would have silently dropped it.
+   */
+  it('requires it when the runtime is unset too, because temporal is the default', () => {
+    expect(namesOf(workerRuntimeSchema, {})).toEqual([
+      'TEMPORAL_SERVER_ADDRESS',
+    ]);
+  });
+
+  it('requires Redis under bullmq, and nothing about Temporal', () => {
+    expect(namesOf(workerRuntimeSchema, { WORKER_RUNTIME: 'bullmq' })).toEqual([
+      'REDIS_URL',
+    ]);
+  });
+
+  it('accepts bullmq with a Redis url and no Temporal at all', () => {
+    expect(
+      parseEnv(workerRuntimeSchema, {
+        WORKER_RUNTIME: 'bullmq',
+        REDIS_URL: 'redis://localhost:6379',
+      }).ok,
+    ).toBe(true);
+  });
+
+  it('accepts temporal with an address and no Redis at all', () => {
+    expect(
+      parseEnv(workerRuntimeSchema, {
+        WORKER_RUNTIME: 'temporal',
+        TEMPORAL_SERVER_ADDRESS: 'temporal:7233',
+      }).ok,
+    ).toBe(true);
+  });
+
+  // Neither is required in general — the whole point of the seam. A flat list
+  // would have to call both mandatory, which is wrong for every deployment.
+  it('does not require the other runtime’s variable in either direction', () => {
+    expect(
+      namesOf(workerRuntimeSchema, {
+        WORKER_RUNTIME: 'bullmq',
+        REDIS_URL: 'redis://localhost:6379',
+      }),
+    ).not.toContain('TEMPORAL_SERVER_ADDRESS');
+    expect(
+      namesOf(workerRuntimeSchema, {
+        WORKER_RUNTIME: 'temporal',
+        TEMPORAL_SERVER_ADDRESS: 'temporal:7233',
+      }),
+    ).not.toContain('REDIS_URL');
+  });
+
+  it('treats a blank runtime as unset rather than as a variant', () => {
+    expect(namesOf(workerRuntimeSchema, { WORKER_RUNTIME: '  ' })).toEqual([
+      'TEMPORAL_SERVER_ADDRESS',
+    ]);
   });
 });

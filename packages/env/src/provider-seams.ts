@@ -301,6 +301,56 @@ export const SPEECH_SEAM = {
   },
 } as const satisfies ProviderSeam;
 
+/**
+ * Which engine runs background jobs (the worker-runtime spec, §9).
+ *
+ * The first seam here whose *default* variant requires anything, which is why
+ * `seamRule` had to learn about `defaultVariant` — see `provider-rules.ts`.
+ * Storage's default requires nothing and the reranker's default has no rule at
+ * all, so an unset discriminant had never yet needed to mean something.
+ *
+ * The point of the seam is that neither variable is required in general.
+ * Before it, the worker demanded the Temporal variables unconditionally, which
+ * is right only while Temporal is the only runtime: after the switch it would
+ * refuse to start a deployment that runs no Temporal at all. And `REDIS_URL`
+ * cannot simply become mandatory everywhere either — apps/web runs without it
+ * today, with the settings cache computing directly and the chatbot rate
+ * limiter failing open.
+ *
+ * `TEMPORAL_CERT` and `TEMPORAL_KEY` are carried because `.env.example` ships
+ * them, but nothing reads either yet; see `fragments.temporal`.
+ */
+export const WORKER_RUNTIME_SEAM = {
+  discriminant: 'WORKER_RUNTIME',
+  group: 'workerRuntime',
+  label: 'Worker runtime',
+  defaultVariant: 'temporal',
+  variants: {
+    temporal: {
+      required: ['TEMPORAL_SERVER_ADDRESS'],
+      optional: ['TEMPORAL_NAMESPACE', 'TEMPORAL_CERT', 'TEMPORAL_KEY'],
+      fields: {
+        TEMPORAL_SERVER_ADDRESS: 'address',
+        TEMPORAL_NAMESPACE: 'namespace',
+        TEMPORAL_CERT: 'cert',
+        TEMPORAL_KEY: 'key',
+      },
+      summary:
+        'Temporal (ADR-26), the default. `TEMPORAL_SERVER_ADDRESS` is required rather than left to the `localhost:7233` fallback, because that fallback is right on a laptop and silent everywhere else: a deployed process pointing at its own container connects to nothing and processes nothing, with no error to read.',
+    },
+    bullmq: {
+      required: ['REDIS_URL'],
+      optional: ['WORKER_CONCURRENCY'],
+      fields: {
+        REDIS_URL: 'url',
+        WORKER_CONCURRENCY: 'concurrency',
+      },
+      summary:
+        'BullMQ over Redis. `REDIS_URL` has no fallback anywhere — a queue with no Redis is a worker that starts and quietly processes nothing, which is the worse outcome. The Redis it points at must run `maxmemory-policy noeviction`: an evicting instance drops queue keys, and the jobs go with them.',
+    },
+  },
+} as const satisfies ProviderSeam;
+
 /** Every seam, for a consumer that renders or checks all of them. */
 export const PROVIDER_SEAMS = [
   STORAGE_SEAM,
@@ -308,6 +358,7 @@ export const PROVIDER_SEAMS = [
   RERANK_SEAM,
   MAIL_SEAM,
   SPEECH_SEAM,
+  WORKER_RUNTIME_SEAM,
 ] as const;
 
 /** The variant names of a seam — `'local' | 's3'` for storage. */
