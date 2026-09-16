@@ -1,10 +1,10 @@
 import {
   getJobRuntime,
   registerJobRuntime,
+  resolveWorkerRuntime,
   type JobRuntime,
 } from '@ragenai/jobs';
 import { BullMqJobRuntime } from '@ragenai/jobs-bullmq';
-import { TemporalJobRuntime } from '@ragenai/jobs-temporal';
 
 /**
  * The job runtime, as `apps/worker` sees it.
@@ -20,12 +20,33 @@ import { TemporalJobRuntime } from '@ragenai/jobs-temporal';
  * that is now follows `WORKER_RUNTIME` rather than being Temporal by
  * construction.
  *
- * Both adapters are registered and the variable picks one at call time.
- * Neither constructor opens a connection, so the one this deployment does not
- * use costs a module import and nothing else.
+ * **Only the selected runtime's adapter is loaded**, which is the difference
+ * from `apps/web` and `apps/api`. Both of those register eagerly, because a
+ * Next or Nest build traces static imports and a computed specifier would not
+ * survive bundling. This app is plain Node, and its image is built without
+ * `@ragenai/jobs-temporal` (the worker Dockerfile omits it): a static import
+ * would fail at module resolution on every start, including the BullMQ one
+ * every install now takes.
  */
-registerJobRuntime('temporal', () => new TemporalJobRuntime());
 registerJobRuntime('bullmq', () => new BullMqJobRuntime());
+
+if (resolveWorkerRuntime() === 'temporal') {
+  try {
+    const { TemporalJobRuntime } = await import('@ragenai/jobs-temporal');
+    registerJobRuntime('temporal', () => new TemporalJobRuntime());
+  } catch (error) {
+    // The one failure this arrangement can produce, named rather than left as
+    // a bare MODULE_NOT_FOUND from a path nobody recognises. An install that
+    // wants durable execution builds the image with the adapter — see ADR-44
+    // and the worker Dockerfile.
+    throw new Error(
+      'WORKER_RUNTIME=temporal, but this build does not include ' +
+        '@ragenai/jobs-temporal, so the schedule scripts have no producer. ' +
+        'The published worker image ships the BullMQ runtime only (ADR-44). ' +
+        `The import failed with: ${String(error)}`,
+    );
+  }
+}
 
 export function jobs(): JobRuntime {
   return getJobRuntime();

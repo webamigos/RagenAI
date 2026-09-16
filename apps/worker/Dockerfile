@@ -28,6 +28,7 @@ COPY packages/storage/package.json packages/storage/
 COPY packages/env/package.json packages/env/
 COPY packages/platform-contracts/package.json packages/platform-contracts/
 COPY packages/jobs/package.json packages/jobs/
+# Built, but not installed into the *running* image — see the prod-deps stage.
 COPY packages/jobs-temporal/package.json packages/jobs-temporal/
 COPY packages/jobs-bullmq/package.json packages/jobs-bullmq/
 COPY packages/llm-gateway/package.json packages/llm-gateway/
@@ -60,6 +61,23 @@ RUN npm ci --workspace=@webamigos/ragen-worker \
     --ignore-scripts
 RUN mkdir -p /app/apps/worker/node_modules
 
+# **`@ragenai/jobs-temporal` is missing from this list, and that is E6.**
+# The running image ships one runtime, the default one (ADR-44) — the adapter
+# and its `@temporalio/client` stay out of it. The `deps` stage above keeps it,
+# because the *compile* needs its type declarations; this stage is the one that
+# decides what the container actually contains.
+#
+# It works because `apps/worker/src/jobs.ts` imports the adapter dynamically,
+# and only when `WORKER_RUNTIME=temporal` selects it, so a BullMQ start never
+# reaches for what is absent and a Temporal start fails with a sentence rather
+# than a MODULE_NOT_FOUND from a path nobody recognises. `src/worker.ts` does
+# the same for the Temporal runtime itself. An install that wants durable
+# execution builds this image with the adapter added back, until Phase G moves
+# it to its own repository.
+#
+# `tests/architecture/a-scoped-dockerfile-installs-every-workspace-dep.test.ts`
+# knows about this one omission and requires the dynamic-import half of it, so
+# it stays a decision rather than becoming a missing entry.
 FROM manifests AS prod-deps
 RUN npm ci --workspace=@webamigos/ragen-worker \
     --workspace=@ragenai/crypto \
@@ -69,7 +87,6 @@ RUN npm ci --workspace=@webamigos/ragen-worker \
     --workspace=@ragenai/env \
     --workspace=@ragenai/platform-contracts \
     --workspace=@ragenai/jobs \
-    --workspace=@ragenai/jobs-temporal \
     --workspace=@ragenai/jobs-bullmq \
     --workspace=@ragenai/llm-gateway \
     --omit=dev --ignore-scripts

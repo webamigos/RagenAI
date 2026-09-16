@@ -218,3 +218,12 @@ archive is the blog.
   block also names `npm run worker:dev`: without a worker an upload is accepted
   and never parsed.
   ([#1225](https://github.com/webamigos/RagenAI/pull/1225))
+
+- `[brief]` **The worker image is 180 MB smaller, because it now ships one job
+  runtime instead of two.** BullMQ has been the default since ADR-44, but every
+  image still carried the full Temporal SDK — 182 MB, most of it prebuilt
+  native binaries the default runtime never loads. It is a build-time
+  dependency now: a deployment that wants durable execution builds the image
+  with it, and everyone else pulls 1.01 GB instead of 1.19 GB. Nothing changes
+  for a running install.
+  ([#PR](https://github.com/webamigos/RagenAI/pull/PR))
