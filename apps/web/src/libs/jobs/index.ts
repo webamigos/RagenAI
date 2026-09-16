@@ -3,6 +3,7 @@ import {
   registerJobRuntime,
   type JobRuntime,
 } from '@ragenai/jobs';
+import { BullMqJobRuntime } from '@ragenai/jobs-bullmq';
 import { TemporalJobRuntime } from '@ragenai/jobs-temporal';
 
 /**
@@ -28,6 +29,13 @@ import { TemporalJobRuntime } from '@ragenai/jobs-temporal';
  * is the one the worker has always used.
  */
 registerJobRuntime('temporal', () => new TemporalJobRuntime());
+/**
+ * Both adapters are registered, and `WORKER_RUNTIME` picks between them at
+ * call time. Registering the one this deployment does not use costs a module
+ * import and nothing else — neither constructor opens a connection, and only
+ * the selected factory is ever called.
+ */
+registerJobRuntime('bullmq', () => new BullMqJobRuntime());
 
 export function jobs(): JobRuntime {
   return getJobRuntime();

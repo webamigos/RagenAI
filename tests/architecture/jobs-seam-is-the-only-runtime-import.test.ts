@@ -25,11 +25,29 @@ import { JOB_NAMES } from '@ragenai/jobs';
  */
 const ROOT = join(import.meta.dirname, '..', '..');
 const PACKAGES = join(ROOT, 'packages');
+const APPS = join(ROOT, 'apps');
+
+/**
+ * Build output is not source, and walking it makes this guard answer
+ * differently depending on whether someone has run a build. `.next` in
+ * particular contains the traced server bundle, which inlines whatever the app
+ * imported transitively — so scanning it reports `bullmq` as an app import
+ * because the *adapter* uses it, which is the opposite of what this asserts.
+ * It also took the scan from one second to five.
+ */
+const NOT_SOURCE = new Set([
+  'node_modules',
+  'dist',
+  '.next',
+  '.turbo',
+  'coverage',
+  'generated',
+]);
 
 const sourceFiles = (dir: string): string[] => {
   const out: string[] = [];
   for (const entry of readdirSync(dir)) {
-    if (entry === 'node_modules' || entry === 'dist') {
+    if (NOT_SOURCE.has(entry)) {
       continue;
     }
     const path = join(dir, entry);
@@ -41,6 +59,23 @@ const sourceFiles = (dir: string): string[] => {
   }
   return out;
 };
+
+/**
+ * Packages *and* apps, for a rule that has no legitimate exception.
+ *
+ * `packagesExcept` alone is what the `@temporalio/*` assertion can use, because
+ * apps/worker genuinely imports `@temporalio/worker`: it is the process that
+ * runs the workflows, and Phase G has to deal with that separately. BullMQ has
+ * no such history — it arrived with the seam already in place — so the boundary
+ * is drawn where it should have been from the start, and an app reaching for
+ * `bullmq` is caught rather than discovered during the extraction.
+ */
+const everywhereExcept = (excludedPackages: string[]): string[] => [
+  ...packagesExcept(excludedPackages),
+  ...readdirSync(APPS)
+    .filter((name) => statSync(join(APPS, name)).isDirectory())
+    .flatMap((name) => sourceFiles(join(APPS, name))),
+];
 
 const packagesExcept = (excluded: string[]): string[] =>
   readdirSync(PACKAGES)
@@ -91,6 +126,33 @@ describe('the jobs seam is the only place that names a runtime', () => {
   it('only packages/jobs-temporal imports @temporalio/*', () => {
     const offenders = packagesExcept(['jobs-temporal']).filter((file) =>
       importsIn(file).some((specifier) => specifier.startsWith('@temporalio/')),
+    );
+
+    expect(
+      offenders.map((f) => f.replace(`${ROOT}/`, '')),
+      'the engine belongs to its adapter package — that is what makes the extraction a move rather than a rewrite',
+    ).toEqual([]);
+  });
+
+  /**
+   * The same rule as Temporal's, and it earns its place for the same reason:
+   * the moment `bullmq` is imported from a handler or an app, the adapter stops
+   * being replaceable and Phase G stops being a move. It is cheaper to hold now,
+   * with one importer, than to re-establish later.
+   *
+   * Apps are in scope here and not in the Temporal assertion above, which is
+   * the difference worth stating: apps/worker imports `@temporalio/worker`
+   * because it runs the workflows, and that is a debt Phase G inherits. The
+   * consumer half of BullMQ therefore goes *through this package* rather than
+   * being built in the worker — the rule decides the design rather than
+   * recording it afterwards.
+   */
+  it('only packages/jobs-bullmq imports bullmq', () => {
+    const offenders = everywhereExcept(['jobs-bullmq']).filter((file) =>
+      importsIn(file).some(
+        (specifier) =>
+          specifier === 'bullmq' || specifier.startsWith('bullmq/'),
+      ),
     );
 
     expect(
