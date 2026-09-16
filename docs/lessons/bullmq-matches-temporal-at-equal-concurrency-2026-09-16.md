@@ -55,16 +55,23 @@ at level 20):
    runs (BullMQ 23.9/25.3/28.1, Temporal 11.1–18.7 over eight). A customer's
    first document import is exactly this shape, so this is the number that
    would have been read as "the port made ingest slower".
-2. **It is not the engine. It is the concurrency ceiling, and the split says
-   so.** `DEFAULT_CONCURRENCY` is 10 whole jobs per queue; Temporal's
-   `maxConcurrentActivityTaskExecutions: 50` counted *activities*, and one
-   ingest is about twenty sequential ones, so twenty files ran at once there.
-   The entire difference sits before the work starts — median time from enqueue
-   to the first status write is 18.5s on BullMQ-at-10 against 1.41s on
-   Temporal, while the parse and embed medians are the same on both. Set
-   `WORKER_CONCURRENCY=20` and the median becomes **12.3s against Temporal's
-   12.5s**: the same number, and the queue wait is now *lower* than Temporal's
-   (0.69s against 1.41s).
+2. **It is not the engine, and one setting removed it.** Two separate findings,
+   worth keeping separate. *Not the engine*: the entire difference sits before
+   the work starts — median time from enqueue to the first status write is
+   18.5s on BullMQ-at-10 against 1.41s on Temporal, while the parse and embed
+   medians are the same on both. *One setting*: change `WORKER_CONCURRENCY` to
+   20, alter nothing else, and the median becomes **12.3s against Temporal's
+   12.5s**, with the pre-parse window now *shorter* than Temporal's (0.69s
+   against 1.41s).
+
+   The mechanism is almost certainly the slot wait — `DEFAULT_CONCURRENCY` is
+   10 whole jobs per queue, while Temporal's
+   `maxConcurrentActivityTaskExecutions: 50` counted *activities*, about twenty
+   per ingest, so twenty files ran at once there and ten here. But the window
+   that grew also contains the file's download and type detection, and the
+   c20 runs happened later in the afternoon than the c10 ones, so this is the
+   best available explanation rather than something the instrument isolated.
+   One of the eight c20 repetitions behaved exactly like a c10 one.
 3. **The tail is wider on BullMQ and this measurement cannot say why.** p95
    29.6s against 22.1s at matched concurrency, and the per-run medians spread
    further (9.2–24.0s over eight runs, against 11.1–18.7s). Both have n=8

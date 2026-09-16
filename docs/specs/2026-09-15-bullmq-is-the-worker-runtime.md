@@ -783,18 +783,20 @@ Each phase leaves the application working.
       rather than rushing.
 
   **Done, 2026-09-16: [the numbers](../lessons/bullmq-matches-temporal-at-equal-concurrency-2026-09-16.md).**
-  416 ingests, both runtimes, one machine, one afternoon, zero failures. At
-  twenty concurrent files BullMQ's median was **24.9s against Temporal's 12.5s
-  at a concurrency of 10**, and **12.3s against 12.5s at 20** — the difference
-  is the concurrency ceiling rather than the engine, and the parse and embed
-  medians are identical on both. `concurrency` counts whole jobs; Temporal's 50
-  counted *activities*, about twenty per ingest, so twenty files ran at once
-  there and ten here.
+  416 ingests, both runtimes, one machine, one afternoon, zero failures. On the
+  same twenty-document upload, BullMQ's median was **24.9s against Temporal's
+  12.5s at a concurrency of 10**, and **12.3s against 12.5s at 20**. Two things
+  the measurement supports: the difference sat entirely *before parsing began*
+  — the parse and embed medians are identical on both engines — and raising the
+  concurrency setting removed it. `concurrency` counts whole jobs, where
+  Temporal's 50 counted *activities*, about twenty per ingest, so the two
+  numbers were never the same unit.
 
   **Acted on: `DEFAULT_CONCURRENCY` is 20**, and the installer writes the
   variable explicitly so the knob is findable — see §3 and E2/E3. At a
-  concurrency of 10 a deployment would have met the 2x on its first bulk import
-  and read it as the runtime's fault, because the runtime is what changed. At
+  concurrency of 10 a deployment would have met that 2x on its first bulk
+  import and read it as the runtime's fault, because the runtime is what
+  changed. At
   one file BullMQ is the faster of the two (6.9s against 10.0s).
 
   **The instrument:**
