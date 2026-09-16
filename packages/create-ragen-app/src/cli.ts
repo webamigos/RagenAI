@@ -35,6 +35,11 @@ import {
   type EnvTarget,
   type ManifestEntry,
 } from './manifest';
+import {
+  resolvePiiMaskingSelection,
+  PII_COMPOSE_PROFILE,
+  type PiiMaskingSelection,
+} from './pii-masking';
 import { generateSecret } from './secrets';
 import {
   resolveStorageSelection,
@@ -155,6 +160,14 @@ export async function run(argv: string[]): Promise<boolean> {
     return false;
   }
 
+  const piiPrompt = await resolvePiiMasking(args);
+  if (piiPrompt.cancelled) {
+    clack.cancel('Cancelled.');
+    return false;
+  }
+  const piiMasking = piiPrompt.selection;
+  Object.assign(rootOverrides, piiMasking.envUpdates);
+
   // Asked here rather than left to an env edit, because choosing BullMQ is
   // also what configures the queue dashboard — and an install that picked the
   // runtime but not the dashboard would have no view of its own queues, which
@@ -255,7 +268,9 @@ export async function run(argv: string[]): Promise<boolean> {
   }
 
   if (!args.skipDocker) {
-    if (!(await maybeStartDocker(targetDir, args.yes))) {
+    if (
+      !(await maybeStartDocker(targetDir, args.yes, piiMasking.composeProfiles))
+    ) {
       return false;
     }
   }
@@ -274,6 +289,17 @@ export async function run(argv: string[]): Promise<boolean> {
 
   // Printed before the outro, and printed at all because it is the only time
   // this value is readable: it is written to .env.local and never shown again.
+  if (piiMasking.enabled) {
+    clack.log.info(
+      "PII masking is on. Presidio sits behind compose's `" +
+        PII_COMPOSE_PROFILE +
+        '` profile, so start the stack with `docker compose --profile ' +
+        PII_COMPOSE_PROFILE +
+        ' up -d` — a plain `up` skips those two containers and the app would ' +
+        'point at services nobody started.',
+    );
+  }
+
   if (workerRuntime.dashboard) {
     const { user, password, port } = workerRuntime.dashboard;
     clack.note(
@@ -444,6 +470,38 @@ async function resolveStorage(args: CliArgs): Promise<StoragePromptResult> {
     return { cancelled: false, selection: resolveStorageSelection('local') };
   }
   return promptStorage();
+}
+
+type PiiPromptResult =
+  { cancelled: true } | { cancelled: false; selection: PiiMaskingSelection };
+
+/**
+ * Unattended installs get no PII masking, which is the shipped default.
+ *
+ * Presidio is two containers behind compose's `pii` profile and the analyzer
+ * alone is the stack's largest memory consumer — 959 MB idle. Turning that on
+ * for anyone who passed `--yes` would nearly double what a trial install needs
+ * to run, for a feature most evaluations never reach.
+ */
+async function resolvePiiMasking(args: CliArgs): Promise<PiiPromptResult> {
+  if (isUnattended(args)) {
+    return { cancelled: false, selection: resolvePiiMaskingSelection(false) };
+  }
+
+  const enabled = await clack.confirm({
+    message:
+      'Mask personal data in documents with Presidio? (adds two containers, ~1 GB)',
+    initialValue: false,
+  });
+
+  if (clack.isCancel(enabled)) {
+    return { cancelled: true };
+  }
+
+  return {
+    cancelled: false,
+    selection: resolvePiiMaskingSelection(enabled === true),
+  };
 }
 
 async function resolveEncryption(
@@ -837,7 +895,10 @@ async function runStep(
 async function maybeStartDocker(
   targetDir: string,
   yes: boolean,
+  profiles: string[] = [],
 ): Promise<boolean> {
+  const withPii = profiles.includes(PII_COMPOSE_PROFILE);
+
   // Before the confirm, not after: sharing a database with an install you
   // already depend on is the kind of thing to decline, and you can only
   // decline it if you are told first.
@@ -857,11 +918,21 @@ async function maybeStartDocker(
         '    && RAGEN_STACK_NAME=my-ragen \\',
         '       POSTGRES_PORT=55532 QDRANT_PORT=6343 QDRANT_GRPC_PORT=6344 \\',
         '       DOCLING_PORT=5011 REDIS_PORT=56479 \\',
-        '       PRESIDIO_ANALYZER_PORT=5012 PRESIDIO_ANONYMIZER_PORT=5013 \\',
-        '       docker compose up -d',
+        // Built from what this install actually chose. A command that omits
+        // the profile starts a stack without the services whose urls were just
+        // written — which is the same half-configuration the profile exists to
+        // prevent, only printed instead of executed.
+        ...(withPii
+          ? [
+              '       PRESIDIO_ANALYZER_PORT=5012 PRESIDIO_ANONYMIZER_PORT=5013 \\',
+              `       docker compose --profile ${PII_COMPOSE_PROFILE} up -d`,
+            ]
+          : ['       docker compose up -d']),
         '',
-        'Then update .env.local to match: DATABASE_URL, QDRANT_URL, REDIS_URL,',
-        'DOCLING_URL and the two PRESIDIO_* URLs all name a host port.',
+        'Then update .env.local to match: DATABASE_URL, QDRANT_URL, REDIS_URL',
+        withPii
+          ? 'DOCLING_URL and the two PRESIDIO_* URLs all name a host port.'
+          : 'and DOCLING_URL all name a host port.',
         '',
         // Not a compose port: the worker serves it itself, so two workers on
         // one machine collide on it without docker-compose having an opinion.
@@ -890,7 +961,7 @@ async function maybeStartDocker(
     clack.spinner(),
     'Starting docker compose (Postgres, Qdrant, Redis, …)',
     'Backing services started.',
-    () => startDockerServices({ cwd: targetDir }),
+    () => startDockerServices({ cwd: targetDir, profiles }),
   );
 }
 

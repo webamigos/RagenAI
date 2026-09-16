@@ -16,7 +16,7 @@ content. Edit this file, never the pointer.
 ## Commands
 
 ```bash
-docker compose up        # Postgres, Redis, Qdrant, Docling, Presidio
+docker compose up        # Postgres, Redis, Qdrant, Docling (Presidio: --profile pii)
 npm run web:dev          # Next.js dev server (apps/web)
 npm run web:build        # Production build
 npm run verify           # THE gate: generate types, then lint + typecheck + test + build

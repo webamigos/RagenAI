@@ -205,7 +205,8 @@ forwards to `GET /v1/assistants` — both using the caller's own Ragen API key.
 
 ```bash
 # 1. Start infrastructure (from the repo root) — pick one:
-npm run ragen:up:full            # Full stack: Postgres, Qdrant, Redis, Docling, Presidio
+npm run ragen:up:full            # Full stack: Postgres, Qdrant, Redis, Docling
+#                                  (PII masking adds Presidio: --profile pii)
 npm run ragen:up:app             # App-only:  Postgres, Qdrant (no document processing)
 
 # 2. Start apps/web

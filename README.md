@@ -198,7 +198,7 @@ npm run ragen:up:everything
 ```
 
 Builds and starts every Ragen application — web, API, ingest worker, admin —
-alongside Postgres, Qdrant, Redis, Docling and Presidio. No Node
+alongside Postgres, Qdrant, Redis and Docling. No Node
 toolchain on the host, which makes it the fastest way to evaluate a self-hosted
 install.
 
@@ -233,7 +233,11 @@ only:
 | Redis                           | 11 MB       | the ingest queue                  |
 | **Total**                       | **~1.9 GB** |                                   |
 
-Three of those are optional, and together they are most of the total: drop
+Three of those are optional, and together they are most of the total — the
+table is the stack with every optional part switched on. **Presidio is not in a
+default `docker compose up` at all**: both of its services sit behind the `pii`
+profile, so unless you asked the installer for PII masking the idle stack is
+about 900 MB rather than 1.9 GB. Drop
 Presidio if you are not masking PII, `DOCUMENT_PARSER=legacy` skips Docling, and
 Ragen calls model providers itself, so there is no proxy in this table any
 more — the `litellm` services went with the path that used them. Qdrant is the line that moves as you add documents; the figure
