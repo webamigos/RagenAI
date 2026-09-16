@@ -205,5 +205,5 @@ archive is the blog.
   and every second of the difference was a document waiting for a slot rather
   than being processed. Lower it with `WORKER_CONCURRENCY` if your model
   provider's rate limits bind before the worker does.
-  ([#PRNUM](https://github.com/webamigos/RagenAI/pull/PRNUM))
+  ([#1221](https://github.com/webamigos/RagenAI/pull/1221))
 
