@@ -766,14 +766,27 @@ Each phase leaves the application working.
     untestable in a suite; without the override `maxStalledCount: 1` could
     only have been asserted as a constant, which is not evidence that a
     stalled job is redelivered exactly once.
-- [ ] **D2.** Run the [2026-09-05 load test](../lessons/worker-concurrency-load-test-2026-09-05.md)
+- [x] **D2.** Run the [2026-09-05 load test](../lessons/worker-concurrency-load-test-2026-09-05.md)
       method on both runtimes, same day, same stack, and record the numbers in a
       lesson. Parity here means "no worse", measured — not assumed. This is the
       evidence the Phase E decision rests on. It stays reproducible here until
       Phase G, which is one more reason the adapter's move is worth deferring
       rather than rushing.
 
-  **The instrument exists; the numbers do not.**
+  **Done, 2026-09-16: [the numbers](../lessons/bullmq-matches-temporal-at-equal-concurrency-2026-09-16.md).**
+  416 ingests, both runtimes, one machine, one afternoon, zero failures. At
+  twenty concurrent files BullMQ's median is **24.9s against Temporal's 12.5s
+  at the shipped default**, and **12.3s against 12.5s once
+  `WORKER_CONCURRENCY=20`** — the whole difference is the concurrency ceiling,
+  not the engine, and the parse and embed medians are identical on both.
+  `DEFAULT_CONCURRENCY` is 10 whole jobs; Temporal's 50 counted *activities*,
+  about twenty per ingest, so twenty files ran at once there. **E2 therefore
+  owes the default a decision**: raise it, or make `WORKER_CONCURRENCY`
+  impossible to miss in the install path. A deployment that takes the default
+  gets the 2x, and it will look like the runtime's fault, because that is what
+  changed. At one file BullMQ is the faster of the two (6.9s against 10.0s).
+
+  **The instrument:**
   `apps/worker/src/scripts/jobs-load-test.ts` enqueues through the seam, so
   `WORKER_RUNTIME` chooses what it measures, and
   [a runbook](../runbooks/worker-runtime-load-test.md) has the procedure. It is
