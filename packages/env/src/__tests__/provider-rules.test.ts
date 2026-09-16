@@ -145,7 +145,7 @@ describe('workerRuntimeRules', () => {
    * looking validated. Moving the worker's existing hard requirement into the
    * seam would have silently dropped it.
    */
-  // ADR-44 moved the default, and with it which variable an unset runtime
+  // The decision that moved the default moved with it which variable an unset runtime
   // demands. This is the assertion that would have silently kept demanding
   // Temporal's address from an install that runs no Temporal.
   it('requires Redis when the runtime is unset too, because bullmq is the default', () => {

@@ -1,4 +1,4 @@
-import { describe, expect, it, vi, beforeEach } from 'vitest';
+import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const { mockBullStart, mockTemporalStart } = vi.hoisted(() => ({
   mockBullStart: vi.fn(),
@@ -35,9 +35,28 @@ vi.mock('@ragenai/jobs-temporal', () => ({
 import { jobs } from '../index';
 
 describe('apps/web job runtime', () => {
+  /**
+   * The suite decides the runtime, not the shell it runs in.
+   *
+   * A developer or a CI runner with `WORKER_RUNTIME=temporal` exported would
+   * otherwise fail the default-runtime case below while runtime selection is
+   * working perfectly — the same environment coupling that made the Node
+   * version leak into `create-ragen-app`'s suite.
+   */
+  const originalRuntime = process.env.WORKER_RUNTIME;
+
   beforeEach(() => {
+    delete process.env.WORKER_RUNTIME;
     mockBullStart.mockReset().mockResolvedValue(undefined);
     mockTemporalStart.mockReset().mockResolvedValue(undefined);
+  });
+
+  afterAll(() => {
+    if (originalRuntime === undefined) {
+      delete process.env.WORKER_RUNTIME;
+    } else {
+      process.env.WORKER_RUNTIME = originalRuntime;
+    }
   });
 
   it('resolves an adapter for the runtime this deployment is configured for', () => {
