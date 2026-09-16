@@ -5,6 +5,7 @@ import {
   parseEnv,
   TOKEN_VAULT_GROUP,
   requiredInDeployedEnvs,
+  workerRuntimeProducerRules,
 } from '@ragenai/env';
 import { z } from 'zod';
 
@@ -28,6 +29,7 @@ export const apiEnvSchema = fragments.targetEnvRequired
   .merge(fragments.database)
   .merge(fragments.llmGateway)
   .merge(fragments.models)
+  .merge(fragments.workerRuntime)
   .merge(fragments.temporal)
   .merge(fragments.redis)
   .merge(fragments.qdrant)
@@ -62,6 +64,13 @@ export const apiEnvSchema = fragments.targetEnvRequired
     // `fragments.encryption` was merged and nothing checked it, so a chosen
     // provider with no key reached the crypto package as "not configured".
     encryptionRules(env, ctx);
+    // The producers' half of the worker-runtime seam. This app enqueues jobs
+    // and never runs them, and the two variants are not symmetric for it:
+    // under BullMQ there is no fallback for `REDIS_URL`, so a missing one is a
+    // failed upload rather than a degraded one; under Temporal the adapter's
+    // `localhost:7233` default is right in compose, and demanding the address
+    // here would refuse to boot deployments that work today.
+    workerRuntimeProducerRules(env, ctx);
 
     // The vault client signs its requests, so a URL without the secret
     // produces 401s from the vault rather than an obvious misconfiguration

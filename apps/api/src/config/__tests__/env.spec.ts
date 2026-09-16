@@ -3,6 +3,10 @@ import { parseApiEnv } from '../env.js';
 const VALID: Record<string, string> = {
   TARGET_ENV: 'local',
   DATABASE_URL: 'postgresql://postgres:pass@localhost:55432/ragen',
+  // Part of the documented minimum, and required since ADR-44 made BullMQ the
+  // default: this service enqueues jobs, and a producer that cannot reach
+  // Redis cannot enqueue at all.
+  REDIS_URL: 'redis://localhost:56379',
 };
 
 const withEnv = (overrides: Record<string, string | undefined> = {}) =>
@@ -88,5 +92,31 @@ describe('parseApiEnv', () => {
 
   it('ignores variables it does not mention, so it can grow incrementally', () => {
     expect(withEnv({ SOME_FUTURE_VARIABLE: 'x' }).ok).toBe(true);
+  });
+});
+
+/**
+ * The producers' half of the worker-runtime seam (ADR-44).
+ *
+ * The two variants are not symmetric for a service that only enqueues. Under
+ * BullMQ there is no fallback for `REDIS_URL`, so a missing one is an upload
+ * that fails at request time rather than a service that refuses to start and
+ * says which variable. Under Temporal the adapter falls back to
+ * `localhost:7233` — right in compose — and demanding the address here would
+ * refuse to boot deployments that work today, which is the mistake the master
+ * key case above was written to prevent.
+ */
+describe('the worker runtime it enqueues into', () => {
+  it('demands Redis when the runtime is unset, because bullmq is the default', () => {
+    const result = withEnv({ REDIS_URL: undefined });
+
+    expect(result.ok).toBe(false);
+    expect(result.ok || result.report).toContain('REDIS_URL');
+  });
+
+  it('demands nothing extra under temporal, which has a working fallback', () => {
+    expect(
+      withEnv({ REDIS_URL: undefined, WORKER_RUNTIME: 'temporal' }).ok,
+    ).toBe(true);
   });
 });

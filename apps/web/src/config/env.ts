@@ -7,6 +7,7 @@ import {
   requiredInDeployedEnvs,
   speechRules,
   storageRules,
+  workerRuntimeProducerRules,
 } from '@ragenai/env';
 import { z } from 'zod';
 
@@ -56,6 +57,7 @@ export const webEnvSchema = fragments.targetEnv
   .merge(fragments.database)
   .merge(fragments.llmGateway)
   .merge(fragments.models)
+  .merge(fragments.workerRuntime)
   .merge(fragments.temporal)
   .merge(fragments.redis)
   .merge(fragments.qdrant)
@@ -152,6 +154,12 @@ export const webEnvSchema = fragments.targetEnv
     storageRules(env, ctx);
     encryptionRules(env, ctx);
     speechRules(env, ctx);
+    // The producers' half of the worker-runtime seam: `REDIS_URL` under
+    // BullMQ, which is the default, and nothing under Temporal — this app
+    // enqueues rather than runs jobs, and only one of the two variants leaves
+    // it with no fallback. Reported rather than fatal, like everything else
+    // here.
+    workerRuntimeProducerRules(env, ctx);
 
     // Both pairs, from the table that also describes them to the written
     // config — so the two cannot disagree about half-configured (ADR-32).

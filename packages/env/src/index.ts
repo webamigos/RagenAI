@@ -21,6 +21,7 @@ export {
   speechRules,
   storageRules,
   workerRuntimeRules,
+  workerRuntimeProducerRules,
 } from './provider-rules';
 
 export {

@@ -12,6 +12,11 @@ import { parseWebEnv } from '../env';
  */
 const base = {
   DATABASE_URL: 'postgresql://user:pass@localhost:5432/ragen',
+  // Part of the documented minimum — `.env.example` ships it and AGENTS.md's
+  // minimal `.env.local` lists it — and required since ADR-44 made BullMQ the
+  // default: this app enqueues jobs, and a producer that cannot reach Redis
+  // cannot enqueue at all.
+  REDIS_URL: 'redis://localhost:56379',
 };
 
 const deployed = {
@@ -101,5 +106,33 @@ describe('the apps/web environment contract', () => {
     });
 
     expect(result.ok).toBe(false);
+  });
+});
+
+/**
+ * The producers' half of the worker-runtime seam (ADR-44).
+ *
+ * Under BullMQ there is no fallback: without `REDIS_URL` the first upload
+ * fails at request time with a Redis error three layers from the cause, which
+ * is what a boot report naming the variable replaces. Under Temporal the
+ * adapter falls back to `localhost:7233`, so demanding an address here would
+ * refuse deployments that work today.
+ */
+describe('the worker runtime it enqueues into', () => {
+  it('asks for Redis when the runtime is unset, because bullmq is the default', () => {
+    const result = parseWebEnv({ ...base, REDIS_URL: undefined });
+
+    expect(result.ok).toBe(false);
+    expect(result.ok || result.report).toContain('REDIS_URL');
+  });
+
+  it('asks for nothing extra under temporal, which has a working fallback', () => {
+    const result = parseWebEnv({
+      ...base,
+      REDIS_URL: undefined,
+      WORKER_RUNTIME: 'temporal',
+    });
+
+    expect(result.ok).toBe(true);
   });
 });
