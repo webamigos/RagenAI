@@ -2,11 +2,9 @@ import {
   fieldGroupRules,
   encryptionRules,
   fragments,
-  isDeployedEnv,
   parseEnv,
   TOKEN_VAULT_GROUP,
   requiredInDeployedEnvs,
-  workerRuntimeRules,
 } from '@ragenai/env';
 import { z } from 'zod';
 
@@ -30,7 +28,6 @@ export const apiEnvSchema = fragments.targetEnvRequired
   .merge(fragments.database)
   .merge(fragments.llmGateway)
   .merge(fragments.models)
-  .merge(fragments.workerRuntime)
   .merge(fragments.temporal)
   .merge(fragments.redis)
   .merge(fragments.qdrant)
@@ -65,15 +62,6 @@ export const apiEnvSchema = fragments.targetEnvRequired
     // `fragments.encryption` was merged and nothing checked it, so a chosen
     // provider with no key reached the crypto package as "not configured".
     encryptionRules(env, ctx);
-
-    // Which runtime's variables are mandatory follows `WORKER_RUNTIME` (§9 of
-    // the worker-runtime spec). Deployed-only, as in apps/web: this service
-    // enqueues jobs rather than running them and falls back to
-    // `localhost:7233`, which is right on a laptop and silently wrong on a
-    // deployment — the bug #1203 fixed.
-    if (typeof env.TARGET_ENV === 'string' && isDeployedEnv(env.TARGET_ENV)) {
-      workerRuntimeRules(env, ctx);
-    }
 
     // The vault client signs its requests, so a URL without the secret
     // produces 401s from the vault rather than an obvious misconfiguration

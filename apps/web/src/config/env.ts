@@ -7,7 +7,6 @@ import {
   requiredInDeployedEnvs,
   speechRules,
   storageRules,
-  workerRuntimeRules,
 } from '@ragenai/env';
 import { z } from 'zod';
 
@@ -57,7 +56,6 @@ export const webEnvSchema = fragments.targetEnv
   .merge(fragments.database)
   .merge(fragments.llmGateway)
   .merge(fragments.models)
-  .merge(fragments.workerRuntime)
   .merge(fragments.temporal)
   .merge(fragments.redis)
   .merge(fragments.qdrant)
@@ -154,17 +152,6 @@ export const webEnvSchema = fragments.targetEnv
     storageRules(env, ctx);
     encryptionRules(env, ctx);
     speechRules(env, ctx);
-
-    // Which runtime's variables are mandatory follows `WORKER_RUNTIME` (§9 of
-    // the worker-runtime spec). Deployed-only here, unlike apps/worker: this
-    // process enqueues jobs rather than running them, and falls back to
-    // `localhost:7233` — right on a laptop, and the documented minimum
-    // `.env.local` lists neither variable. On a deployment that fallback is
-    // silent and wrong, which is exactly the bug #1203 fixed, so it is checked
-    // there.
-    if (isDeployment(env.TARGET_ENV)) {
-      workerRuntimeRules(env, ctx);
-    }
 
     // Both pairs, from the table that also describes them to the written
     // config — so the two cannot disagree about half-configured (ADR-32).

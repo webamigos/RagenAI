@@ -138,10 +138,21 @@ export function fieldGroupRules(
  * address under Temporal, neither required in general (the worker-runtime
  * spec's §9).
  *
- * Called at full strength by the process that *runs* jobs, and only on a
- * deployment by the processes that merely enqueue them: apps/web and apps/api
- * fall back to `localhost:7233`, which is right on a laptop and wrong in a way
- * that says nothing anywhere else, so the documented minimum `.env.local`
- * keeps working while a deployment is told.
+ * **Called by apps/worker only**, and that is a deliberate limit rather than
+ * an oversight. The worker *is* the runtime: it has no business defaulting to
+ * a Temporal on its own container, so the address is a hard requirement there.
+ * apps/web and apps/api merely enqueue, and both fall back to
+ * `localhost:7233` — correct on a laptop and in compose. Requiring it of them
+ * would refuse to boot deployments that work today, which is the mistake
+ * apps/api's own env tests were written to prevent: "demanding the credential
+ * anyway would refuse to boot a correctly configured deployment, and the
+ * obvious workaround — invent a dummy value — is how a boot check stops being
+ * believed."
+ *
+ * The producer side of this arrives with the BullMQ adapter, where it has a
+ * consequence worth a boot failure: a producer with no `REDIS_URL` cannot
+ * enqueue at all, and there is no fallback to soften it. Adding it before the
+ * adapter exists would only enforce the Temporal half, which is the half that
+ * has a working default.
  */
 export const workerRuntimeRules = seamRule(WORKER_RUNTIME_SEAM);
