@@ -90,7 +90,8 @@ default of 10 the median was 24.9s, because BullMQ's `concurrency` counts whole
 jobs while Temporal's `maxConcurrentActivityTaskExecutions: 50` counted
 activities, about twenty per ingest. **The port's one visible regression was a
 unit confusion in a default**, not anything about the engines, and the parse and
-embed medians were identical throughout. The default is now 20.
+embed medians were identical throughout. Raising `DEFAULT_CONCURRENCY` to 20 is
+part of E2, and the installer writes the variable explicitly besides.
 
 ## Consequences
 
@@ -127,17 +128,26 @@ on the abandoned engine; drain before switching.
 ## What "Temporal is still supported" is promised to mean
 
 A runtime nothing runs is abandoned with a package name, so the promise is
-specific:
+specific. Two of the three are commitments this decision makes rather than
+facts it reports, and saying which is which is the point of writing them down:
 
-1. **One package**, and no `@temporalio/*` outside it —
-   `jobs-seam-is-the-only-runtime-import.test.ts` enforces it.
-2. **The contract is an import, not a copy.** `@ragenai/jobs` is a workspace
-   dependency while the adapter is here, and a peer dependency resolved from
-   inside the image after Phase G.
-3. **CI runs the real thing.** The worker integration suite is written
-   runtime-agnostic and runs against a real Temporal as well as a real Redis,
-   nightly. That job failing is how we learn that a change to `ctx.steps` broke
-   durable retries.
+1. **One package**, and no `@temporalio/*` outside it. **Not true yet.**
+   `jobs-seam-is-the-only-runtime-import.test.ts` holds the line for
+   `packages/*` today and deliberately exempts `apps/worker`, which still
+   imports `@temporalio/worker` to run its own Temporal branch. E5 moves those
+   dependencies into the adapter and E6 takes them out of the image; the guard
+   tightens to cover the apps when they do.
+2. **The contract is an import, not a copy.** True now: `@ragenai/jobs` is a
+   workspace dependency, and it becomes a peer dependency resolved from inside
+   the image after Phase G.
+3. **CI runs the real thing** — planned, not running. The D1 integration suite
+   is written runtime-agnostic and its harness has one implementation; asking
+   it for Temporal fails loudly rather than falling back, precisely so this
+   gap cannot be mistaken for coverage. Writing the Temporal harness and the
+   nightly job is part of Phase E, and that job failing is how we would learn
+   that a change to `ctx.steps` broke durable retries. **Until it exists, the
+   promise in this section is a commitment rather than a mechanism** — which
+   is the failure mode the section opens by naming.
 
 ### The drift budget
 
