@@ -232,3 +232,13 @@ archive is the blog.
   `apps/worker`'s devDependencies installed restores it, and the worker-runtime
   spec's Phase G replaces that with a supported package.
   ([#1229](https://github.com/webamigos/RagenAI/pull/1229))
+
+- `[brief]` **The admin panel links to the queue dashboard.** The worker has
+  served bull-board on its own port since the BullMQ runtime shipped, and
+  nothing pointed at it — you had to know the port. Set `WORKER_ADMIN_URL` on
+  the admin app and a "Queue Dashboard" item appears in its sidebar, opening
+  the board in a new tab; leave it unset and there is no item, which is the
+  right answer for an install that runs no dashboard. The board still has its
+  own login for now — one sign-in instead of two is
+  [#1232](https://github.com/webamigos/RagenAI/issues/1232).
+  ([#1233](https://github.com/webamigos/RagenAI/pull/1233))

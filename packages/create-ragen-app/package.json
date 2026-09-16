@@ -5,7 +5,7 @@
   "description": "Scaffold a self-hosted Ragen AI installation with one command",
   "license": "Apache-2.0",
   "bin": {
-    "create-ragen-app": "./dist/index.js"
+    "create-ragen-app": "dist/index.js"
   },
   "main": "./dist/index.js",
   "files": [
@@ -16,7 +16,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/webamigos/RagenAI.git",
+    "url": "git+https://github.com/webamigos/RagenAI.git",
     "directory": "packages/create-ragen-app"
   },
   "scripts": {

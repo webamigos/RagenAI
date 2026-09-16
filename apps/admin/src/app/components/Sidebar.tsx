@@ -24,6 +24,8 @@ import {
   KeyRound,
   PlugZap,
   ArrowRightLeft,
+  ListChecks,
+  ExternalLink,
 } from 'lucide-react';
 import { signOut } from '@/lib/auth-client';
 import { cn } from '@/lib/utils';
@@ -126,7 +128,22 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function Sidebar() {
+/**
+ * Where the queue dashboard lives, when there is one.
+ *
+ * It is the worker's own surface — bull-board on `WORKER_ADMIN_PORT`, behind
+ * Basic Auth — not a page of this app, so this is an external link and the
+ * panel cannot know the address: the worker may be a different container or a
+ * different host. An unset `WORKER_ADMIN_URL` hides the item rather than
+ * offering a link to a port that answers nothing, which is the failure a
+ * hard-coded `localhost:8090` would ship to every install.
+ *
+ * Passed down from the server layout instead of read here. A `NEXT_PUBLIC_`
+ * variable is inlined at build time, so one set at runtime renders on the
+ * server and vanishes on hydration — see
+ * `docs/lessons/a-next-public-var-set-at-runtime-flashes-then-vanishes.md`.
+ */
+export function Sidebar({ queueDashboardUrl }: { queueDashboardUrl?: string }) {
   const pathname = usePathname();
   const { collapsed, mobileOpen, toggle, setMobileOpen } = useSidebar();
 
@@ -152,6 +169,7 @@ export function Sidebar() {
           collapsed={false}
           onNavigate={() => setMobileOpen(false)}
           toggle={toggle}
+          queueDashboardUrl={queueDashboardUrl}
         />
       </aside>
 
@@ -166,6 +184,7 @@ export function Sidebar() {
           pathname={pathname}
           collapsed={collapsed}
           toggle={toggle}
+          queueDashboardUrl={queueDashboardUrl}
         />
       </aside>
     </>
@@ -177,11 +196,13 @@ function SidebarContent({
   collapsed,
   onNavigate,
   toggle,
+  queueDashboardUrl,
 }: {
   pathname: string;
   collapsed: boolean;
   onNavigate?: () => void;
   toggle: () => void;
+  queueDashboardUrl?: string;
 }) {
   return (
     <>
@@ -236,6 +257,31 @@ function SidebarContent({
             </Link>
           );
         })}
+
+        {queueDashboardUrl && (
+          <a
+            href={queueDashboardUrl}
+            target="_blank"
+            rel="noreferrer"
+            title={collapsed ? 'Queue Dashboard' : undefined}
+            className={cn(
+              'flex items-center rounded-md text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
+              collapsed
+                ? 'justify-center px-2 py-2'
+                : 'gap-3 px-3 py-2 text-sm font-medium',
+            )}
+          >
+            <ListChecks className="h-4 w-4 shrink-0" />
+            {!collapsed && (
+              <>
+                <span>Queue Dashboard</span>
+                {/* Says "this leaves the panel" before the click, which is the
+                    honest thing for a surface with its own Basic Auth prompt. */}
+                <ExternalLink className="ml-auto h-3.5 w-3.5 shrink-0 opacity-60" />
+              </>
+            )}
+          </a>
+        )}
       </nav>
 
       <div
