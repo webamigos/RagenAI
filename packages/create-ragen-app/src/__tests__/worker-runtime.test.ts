@@ -32,11 +32,12 @@ describe('resolveWorkerRuntimeSelection', () => {
   });
 
   /**
-   * The code's default is 10 whole jobs, and the first thing a new install
-   * meets is a bulk import — where 10 measured at roughly twice the latency of
-   * 20, all of it spent waiting for a slot. Writing the number into `.env`
-   * rather than relying on the default is what makes it a knob the operator
-   * can find.
+   * The code's default is 20 whole jobs since D2 raised it from 10 — the first
+   * thing a new install meets is a bulk import, where 10 measured at roughly
+   * twice the latency of 20, all of it spent waiting for a slot. Writing the
+   * number into `.env` anyway, rather than relying on a default that now
+   * agrees with it, is what makes it a knob the operator can find when a
+   * provider starts rate-limiting.
    */
   it('writes an explicit concurrency for bullmq', () => {
     const selection = resolveWorkerRuntimeSelection('bullmq');

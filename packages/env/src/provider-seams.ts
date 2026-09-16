@@ -336,7 +336,7 @@ export const WORKER_RUNTIME_SEAM = {
         TEMPORAL_KEY: 'key',
       },
       summary:
-        'Temporal, no longer the default and no longer in the compose file ([ADR-44](../../../docs/adrs/44-bullmq-is-the-worker-runtime.md)) — an install that wants durable execution runs its own server and selects it here. `TEMPORAL_SERVER_ADDRESS` is required rather than left to the `localhost:7233` fallback, because that fallback is right on a laptop and silent everywhere else: a deployed process pointing at its own container connects to nothing and processes nothing, with no error to read.',
+        'Temporal, no longer the default and no longer in the compose file (ADR-44) — an install that wants durable execution runs its own server and selects it here. `TEMPORAL_SERVER_ADDRESS` is required rather than left to the `localhost:7233` fallback, because that fallback is right on a laptop and silent everywhere else: a deployed process pointing at its own container connects to nothing and processes nothing, with no error to read.',
     },
     bullmq: {
       required: ['REDIS_URL'],
@@ -354,7 +354,7 @@ export const WORKER_RUNTIME_SEAM = {
         WORKER_ADMIN_PASSWORD: 'adminPassword',
       },
       summary:
-        'BullMQ over Redis, the default ([ADR-44](../../../docs/adrs/44-bullmq-is-the-worker-runtime.md)). `REDIS_URL` has no fallback anywhere — a queue with no Redis is a worker that starts and quietly processes nothing, which is the worse outcome. The Redis it points at must run `maxmemory-policy noeviction`: an evicting instance drops queue keys, and the jobs go with them. The queue dashboard replaces the Temporal UI an install used to get on port 8080; it is off unless `WORKER_ADMIN_USER` and `WORKER_ADMIN_PASSWORD` are both set, because it shows every job payload and a dashboard that appears by default on an unauthenticated port is a finding rather than a feature.',
+        'BullMQ over Redis, the default (ADR-44). `REDIS_URL` has no fallback anywhere — a queue with no Redis is a worker that starts and quietly processes nothing, which is the worse outcome. The Redis it points at must run `maxmemory-policy noeviction`: an evicting instance drops queue keys, and the jobs go with them. The queue dashboard replaces the Temporal UI an install used to get on port 8080; it is off unless `WORKER_ADMIN_USER` and `WORKER_ADMIN_PASSWORD` are both set, because it shows every job payload and a dashboard that appears by default on an unauthenticated port is a finding rather than a feature.',
     },
   },
 } as const satisfies ProviderSeam;

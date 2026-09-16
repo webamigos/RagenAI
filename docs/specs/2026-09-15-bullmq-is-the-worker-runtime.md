@@ -866,7 +866,8 @@ Gated on D2's numbers. The adapter does not move in this phase — see *Answered
   **`WORKER_CONCURRENCY` is already written by the installer** (decided
   2026-09-16, shipped ahead of this phase because it only fires when an
   operator explicitly picks BullMQ, which they can do today). It writes an
-  explicit `20` rather than leaving the code's 10, and a constant rather than
+  explicit `20` — the same number `DEFAULT_CONCURRENCY` now carries in code
+  (§3), written out rather than inherited silently — and a constant rather than
   something derived from `os.cpus()`: an ingest is almost entirely waiting — on
   storage, on the parser, on the embedding provider — so core count predicts
   nothing about how many can be in flight, and a hardware-derived number would

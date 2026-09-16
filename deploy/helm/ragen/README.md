@@ -124,8 +124,10 @@ instance, because a dropped queue key is a job that vanishes without an error.
 
 To run background jobs on Temporal instead, set `config.WORKER_RUNTIME:
 temporal` and `config.TEMPORAL_SERVER_ADDRESS` at a server you operate — the
-chart no longer deploys one. The worker image does not ship the Temporal
-adapter either; see [ADR-44](../../../docs/adrs/44-bullmq-is-the-worker-runtime.md).
+chart no longer deploys one. The images still ship the Temporal adapter, so
+this is configuration rather than a rebuild, and `config` is one ConfigMap read
+by every workload, which is what keeps the producers and the worker on the same
+runtime. See [ADR-44](../../../docs/adrs/44-bullmq-is-the-worker-runtime.md).
 
 ## Storage
 

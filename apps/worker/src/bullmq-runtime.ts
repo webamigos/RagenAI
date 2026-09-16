@@ -52,11 +52,11 @@ const handlers: JobHandlers = {
  * Concurrency counts whole jobs here, and counted activities on Temporal.
  *
  * `maxConcurrentActivityTaskExecutions: 50` never meant fifty files: one
- * ingest is roughly twenty sequential activities. Copying the number across
- * would have raised real concurrency several fold in one commit, so the
- * default is the conservative read of the only measurement there is — the
- * 2026-09-05 load test, which ran 20 concurrent ingests twice with no failures
- * and explicitly refused to call 20 a safe ceiling.
+ * ingest is roughly twenty sequential activities, so copying the number across
+ * would have raised real concurrency several fold in one commit. Unset leaves
+ * `DEFAULT_CONCURRENCY` in `@ragenai/jobs-bullmq` to answer — 20 since D2
+ * measured 10 at roughly twice the per-document latency on a twenty-file
+ * upload, not a ceiling anyone has proved.
  */
 function resolveConcurrency(): number | undefined {
   const raw = process.env.WORKER_CONCURRENCY?.trim();
