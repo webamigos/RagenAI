@@ -36,6 +36,32 @@ and its three tests were the only ones in the file that passed.
 raising it cannot quietly turn those tests into tests of a supported version.
 No production code changed — the coupling was the test's.
 
+## The same shape again, from the other direction (2026-09-16)
+
+ADR-44 flipped the default worker runtime to BullMQ. `apps/api`'s
+`jobs.service.spec.ts` stubbed the *Temporal* adapter and leaned on it being
+the default, so the flip turned a wiring test into one that constructed a real
+`BullMqJobRuntime` and opened a real connection.
+
+It then failed **two different ways in two environments**, which is what makes
+it worth recording next to the first case:
+
+- on a developer machine with a Redis running, `queue.add()` resolved and the
+  test failed on `expected "vi.fn()" to be called at least once` — a mock
+  assertion that says nothing about Redis;
+- in CI, with no Redis, it hung until `Test timed out in 5000ms`.
+
+Neither message names the cause, and the two do not look like the same bug.
+The fix was to stop depending on which runtime is default: stub both adapters
+and name the one the case means.
+
+One honest note about how it was found. `npm run verify` ran before the push
+and its failure was attributed, wrongly, to the one red guard that *was*
+expected (`config-reference-is-generated`); the task list was not read past it.
+CI found the rest. **When `verify` fails, read which tasks failed, not whether
+the one you predicted is among them.**
+
+
 **Rule**: a unit test must not read the environment its runner happens to be
 in. `process.version`, `process.platform`, `process.env.CI`, the system
 timezone and `Date.now()` are all inputs, and a test that takes them from the
