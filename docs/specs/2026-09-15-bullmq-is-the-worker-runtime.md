@@ -923,8 +923,12 @@ Gated on D2's numbers. The adapter does not move in this phase — see *Answered
   job, concurrency counts whole jobs, more than one worker is fine, and a
   finished job stays readable for an hour because `getRun` is polled. Temporal's
   three keep their own subsection.
-- [x] **E5.** Delete what the seam made dead: the `@temporalio/*` dependencies
-      from `apps/worker`, `apps/api` and the root manifest — they belong to
+- [x] **E5.** Delete what the seam made dead: the `@temporalio/*` declarations
+      nothing imports — the root's and `apps/web`'s `@temporalio/client`, and
+      `apps/worker`'s `@temporalio/activity` — and move `apps/worker`'s
+      `@temporalio/client` to devDependencies, where its one importer (a test)
+      lives. `@temporalio/worker` and `@temporalio/workflow` stay: the worker
+      runs the Temporal runtime in process and imports both. They belong to
       `packages/jobs-temporal` now, which is where
       `the-temporal-family-moves-together.test.ts` and dependabot's `temporal`
       group start pointing instead of being deleted.

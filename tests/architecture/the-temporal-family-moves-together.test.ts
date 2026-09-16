@@ -113,6 +113,20 @@ describe('the Temporal family moves together', () => {
         `${manifest} declares no @temporalio/* package — if that is deliberate, this guard moves with it.`,
       ).toBe(true);
     }
+
+    // Named rather than counted. A total is a weak proxy for "the worker can
+    // still run Temporal": these two are what `src/temporal-runtime.ts` and
+    // `src/workflows/` import, so losing either is a broken adapter path,
+    // while a devDependency going away for an unrelated reason is not. Phase G
+    // moves them, and then this list moves with it.
+    for (const name of ['@temporalio/worker', '@temporalio/workflow']) {
+      expect(
+        declarations.some(
+          (d) => d.manifest === 'apps/worker/package.json' && d.name === name,
+        ),
+        `apps/worker no longer declares ${name}, which its Temporal runtime imports.`,
+      ).toBe(true);
+    }
   });
 
   it('pins every @temporalio/* package to an exact version', () => {
