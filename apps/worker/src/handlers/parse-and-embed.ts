@@ -70,6 +70,7 @@ export async function runFileEmbeddings(
 
     // activities/meilisearch
     addDocumentsToVectorStore,
+    deleteDocumentVectors,
 
     // activities/splitters
     splitText,
@@ -538,6 +539,22 @@ export async function runFileEmbeddings(
       orgId,
       status: EmbeddingStatus.STARTED,
     });
+
+    // Clear this file's previous chunks before writing the new ones. Qdrant
+    // point ids are random uuids, so an upsert cannot replace an earlier
+    // ingest: without this, re-embedding leaves both versions in the
+    // collection and retrieval cites text the user has replaced. It matters
+    // twice over once jobs are delivered at least once — a redelivered job
+    // would otherwise duplicate every chunk of a document that had already
+    // succeeded.
+    //
+    // Before the write rather than after it, which is a deliberate trade: if
+    // the embedding then fails, the file is left with no chunks instead of
+    // stale ones, and its status says FAILED. Keeping the old chunks as a
+    // fallback would mean retrieval quietly answering from text the user has
+    // already replaced — the failure this clear exists to prevent. Same order
+    // as `reindexDocumentVersion`, which made the same call.
+    await deleteDocumentVectors({ orgId, fileId });
 
     await addDocumentsToVectorStore({
       orgId,

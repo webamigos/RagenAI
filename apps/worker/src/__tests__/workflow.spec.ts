@@ -736,6 +736,76 @@ describe('runFileEmbeddings workflow', () => {
     });
   });
 
+  // C3 of the worker-runtime spec. Qdrant point ids are random uuids, so an
+  // upsert cannot replace an earlier ingest of the same file: without this
+  // clear, a second run leaves both copies in the collection. That is already
+  // true of every re-embed today, and becomes true of ordinary success once
+  // jobs are delivered at least once and a completed job can be redelivered.
+  describe('the previous chunks are cleared before the new ones are written', () => {
+    it('deletes the file’s vectors before adding any', async () => {
+      const activities = createMockActivities();
+
+      await runWorkflow<string>(
+        'runFileEmbeddings',
+        [makeUserFile({ fileName: 'readme.txt' })],
+        activities,
+      );
+
+      expect(activities.deleteDocumentVectors).toHaveBeenCalledWith({
+        orgId: 'org-1',
+        fileId: 'file-1',
+      });
+      expect(
+        activities.deleteDocumentVectors.mock.invocationCallOrder[0],
+      ).toBeLessThan(
+        activities.addDocumentsToVectorStore.mock.invocationCallOrder[0],
+      );
+    });
+
+    // The spec's own acceptance check: run it twice and the index must not
+    // hold two copies. Counted through the mocks rather than against a live
+    // Qdrant — one delete per add is what keeps the point count flat.
+    it('clears again on a second run, so a redelivery cannot double the index', async () => {
+      const activities = createMockActivities();
+      const payload = makeUserFile({ fileName: 'readme.txt' });
+
+      await runWorkflow<string>('runFileEmbeddings', [payload], activities);
+      await runWorkflow<string>('runFileEmbeddings', [payload], activities);
+
+      expect(activities.addDocumentsToVectorStore).toHaveBeenCalledTimes(2);
+      expect(activities.deleteDocumentVectors).toHaveBeenCalledTimes(2);
+      expect(
+        activities.deleteDocumentVectors.mock.invocationCallOrder[1],
+      ).toBeLessThan(
+        activities.addDocumentsToVectorStore.mock.invocationCallOrder[1],
+      );
+    });
+
+    // scrapeWebsite deliberately has no clear: it creates its own UserFile row
+    // per run, so the id it would clear belongs to a row created seconds
+    // earlier with nothing in the index. Asserting the absence keeps the next
+    // reader from "fixing" it back into a call that deletes nothing.
+    it('does not clear vectors on a scrape, because the row is new', async () => {
+      const activities = createMockActivities();
+
+      await runWorkflow<string>(
+        'scrapeWebsite',
+        [
+          {
+            url: 'https://example.com',
+            mode: 'scrape',
+            orgId: 'org-1',
+            projectId: 'proj-1',
+          },
+        ],
+        activities,
+      );
+
+      expect(activities.addDocumentsToVectorStore).toHaveBeenCalled();
+      expect(activities.deleteDocumentVectors).not.toHaveBeenCalled();
+    });
+  });
+
   describe('cancellation', () => {
     it('cancels before parsing when the row already says CANCELLED, marking ParsingStatus.CANCELLED', async () => {
       const activities = createMockActivities();
