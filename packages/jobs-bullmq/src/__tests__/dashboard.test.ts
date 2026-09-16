@@ -7,7 +7,13 @@ import request from 'supertest';
  * gets in, not what it renders.
  */
 
-vi.mock('bullmq', () => ({ Queue: class {} }));
+const queueClose = vi.hoisted(() => vi.fn(async () => undefined));
+
+vi.mock('bullmq', () => ({
+  Queue: class {
+    close = queueClose;
+  },
+}));
 
 vi.mock('@bull-board/api', () => ({ createBullBoard: vi.fn() }));
 vi.mock('@bull-board/api/bullMQAdapter', () => ({
@@ -129,5 +135,37 @@ describe('startQueueDashboard', () => {
     expect(log.info).toHaveBeenCalledWith(
       expect.stringContaining('WORKER_ADMIN_USER'),
     );
+  });
+});
+
+/**
+ * The dashboard starts *after* the workers are consuming and *before* the
+ * shutdown task is registered, so a throw here exits the process with jobs in
+ * flight and no drain — every lock stranded for five minutes, then
+ * redelivered. Losing a race for port 8090 must not cost that.
+ *
+ * Forced with an out-of-range port rather than a real `EADDRINUSE`: two
+ * wildcard binds coexist on a dual-stack host often enough that the conflict
+ * is not reproducible across machines, and the property under test is that
+ * *no* startup failure escapes — which is why the whole body is wrapped rather
+ * than the `listen` call alone.
+ */
+describe('when the dashboard cannot start', () => {
+  it('returns null instead of throwing, and closes what it opened', async () => {
+    queueClose.mockClear();
+
+    const dashboard = await startQueueDashboard({
+      connection: {},
+      log,
+      port: 999_999,
+      user: 'ops',
+      password: 'correct-horse',
+    });
+
+    expect(dashboard).toBeNull();
+    expect(log.error).toHaveBeenCalled();
+    // Otherwise the failure leaves a socket per queue open against a Redis
+    // nothing is reading from.
+    expect(queueClose).toHaveBeenCalled();
   });
 });

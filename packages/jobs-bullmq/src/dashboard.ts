@@ -154,16 +154,46 @@ export async function startQueueDashboard(
     return null;
   }
 
-  const queues = QUEUE_NAMES.map(
-    (name) => new Queue(name, { connection: options.connection }),
-  );
-  const app = createDashboardApp({ queues, credentials: { user, password } });
   const port = options.port ?? DEFAULT_ADMIN_PORT;
+  const queues: Queue[] = [];
+  let server: Server;
 
-  const server = await new Promise<Server>((resolve, reject) => {
-    const listening = app.listen(port, () => resolve(listening));
-    listening.once('error', reject);
-  });
+  // Total: this never throws. The dashboard is a *view* of the queues, and the
+  // worker that owns them has already started consuming by the time this runs
+  // — so an optional operator surface failing to bind must not take the jobs
+  // down with it. Letting it propagate did exactly that: the boot rejected,
+  // the process exited, and every in-flight job's lock was stranded for the
+  // five minutes `LOCK_DURATION_MS` allows, to be redelivered afterwards.
+  // `EADDRINUSE` on 8090 is the everyday way in.
+  //
+  // The whole body is covered rather than the `listen` alone, because opening
+  // the queues and building the app can fail too, and a caller cannot tell
+  // those apart from a bind failure.
+  try {
+    for (const name of QUEUE_NAMES) {
+      queues.push(new Queue(name, { connection: options.connection }));
+    }
+
+    const app = createDashboardApp({
+      queues,
+      credentials: { user, password },
+    });
+
+    server = await new Promise<Server>((resolve, reject) => {
+      const listening = app.listen(port, () => resolve(listening));
+      listening.once('error', reject);
+    });
+  } catch (error) {
+    // Whatever was opened, closed: these connections would otherwise outlive
+    // the failure and keep a socket per queue against a Redis nothing is
+    // reading from.
+    await Promise.allSettled(queues.map((queue) => queue.close()));
+    options.log.error(
+      'queue dashboard could not start; the worker continues without it',
+      { port, err: String(error) },
+    );
+    return null;
+  }
 
   options.log.info('queue dashboard listening', { port });
 

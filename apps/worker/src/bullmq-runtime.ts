@@ -110,9 +110,15 @@ export async function startBullMqWorker(): Promise<RunningBullMq> {
 
   startBullWorkers(workers);
 
-  // After the workers, so a dashboard that fails to bind does not stop jobs
-  // running — and off entirely unless both credentials are set, because it
-  // shows every job's payload.
+  // After the workers, and deliberately incapable of stopping them:
+  // `startQueueDashboard` returns `null` on any failure rather than throwing,
+  // because this runs *after* the workers began consuming and before
+  // `runBullMq` registers its shutdown task. A throw here would exit the
+  // process with jobs in flight and no drain — stranding every lock for five
+  // minutes — over an optional operator surface losing a race for port 8090.
+  //
+  // Off entirely unless both credentials are set, because it shows every job's
+  // payload.
   const dashboard = await startQueueDashboard({
     connection: { url: process.env.REDIS_URL },
     log: logger,
