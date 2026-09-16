@@ -55,11 +55,22 @@ Neither message names the cause, and the two do not look like the same bug.
 The fix was to stop depending on which runtime is default: stub both adapters
 and name the one the case means.
 
-One honest note about how it was found. `npm run verify` ran before the push
-and its failure was attributed, wrongly, to the one red guard that *was*
-expected (`config-reference-is-generated`); the task list was not read past it.
-CI found the rest. **When `verify` fails, read which tasks failed, not whether
-the one you predicted is among them.**
+**And the reason local `verify` did not catch it is worth more than the bug.**
+`turbo run` stops scheduling when a task fails. The repo-wide guard task
+(`//#test`) runs early and contains `config-reference-is-generated`, which is
+*expected* red for anyone with a `ragen-docs` checkout on the wrong branch — so
+on those machines `verify` halts there and **13 of 59 tasks never run at all**.
+The summary says `45 successful, 59 total`, and the missing fourteen are easy
+to read as cached.
+
+Two tests were broken by the same default flip, in two apps. The first was
+found by CI; the second — `apps/web`'s `libs/jobs` test, failing identically —
+was found only by re-running with `npm run verify -- --continue`, which is what
+turns a stop into a full report.
+
+So: **when `verify` fails, note how many tasks ran, not only which one
+failed** — and if the failure is one you expected, re-run with `--continue`
+before believing the rest is green.
 
 
 **Rule**: a unit test must not read the environment its runner happens to be
