@@ -105,7 +105,7 @@ export async function POST(
             fileName: file.fileName,
             projectId: file.projectId,
             userId,
-            content: doc?.content ?? '',
+            documentId: id,
           },
         );
         reindexStarted = true;
