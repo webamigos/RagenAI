@@ -859,9 +859,31 @@ Gated on D2's numbers. The adapter does not move in this phase — see *Answered
   `apps/worker` merges that rule — so a web or api deployment without Redis
   fails at the first upload rather than at boot. Filed separately; it predates
   this change, which only moves which variable is the silently missing one.
-- [ ] **E3.** `create-ragen-app`: `WORKER_RUNTIME=bullmq`, Temporal out of the
+- [x] **E3.** `create-ragen-app`: `WORKER_RUNTIME=bullmq`, Temporal out of the
       backing-services list and the outro, `REDIS_URL` promoted to required, the
       port-collision check kept honest.
+
+  **"Promoted to required" became "written by the selection".** `REDIS_URL` was
+  already uncommented in `.env.example`, so leaving it there would have made this
+  step prose. The runtime choice now writes the variable its own runtime cannot
+  start without — `REDIS_URL` under BullMQ, `TEMPORAL_SERVER_ADDRESS` under
+  Temporal — which is what E2 and #1224 together made load-bearing: a scaffold
+  that picks a runtime and not its address hands over an install that refuses to
+  boot. The seam is now the third entry in
+  `create-ragen-app-knows-the-provider-seams.test.ts`, so "the wizard asks for
+  every credential the seam makes mandatory" is checked rather than reviewed.
+
+  **The Temporal address is prompted, not defaulted.** Its `localhost:7233` is
+  offered as a prefilled answer: right on a laptop, silent everywhere else, and
+  after E2 it names a server the operator runs rather than one this install
+  starts. Selecting Temporal also warns that nothing below will start one.
+
+  **The unattended default flipped with it.** `--yes` and `--provider` used to
+  answer Temporal on the grounds that a flag should not pick an engine; the same
+  reasoning now answers BullMQ, because the shipped default is what "accept the
+  defaults" means and the other answer scaffolds a worker pointing at nothing.
+  The outro grew `npm run worker:dev`: with ingest on a queue nobody drains, an
+  upload is accepted and never parsed.
 
   **`WORKER_CONCURRENCY` is already written by the installer** (decided
   2026-09-16, shipped ahead of this phase because it only fires when an

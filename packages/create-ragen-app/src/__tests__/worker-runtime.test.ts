@@ -2,19 +2,71 @@ import { describe, expect, it } from 'vitest';
 
 import {
   DEFAULT_ADMIN_USER,
+  DEFAULT_REDIS_URL,
+  DEFAULT_TEMPORAL_SERVER_ADDRESS,
   DEFAULT_WORKER_CONCURRENCY,
   generateAdminPassword,
   resolveWorkerRuntimeSelection,
 } from '../worker-runtime';
 
 describe('resolveWorkerRuntimeSelection', () => {
-  it('writes only the runtime for temporal', () => {
-    const selection = resolveWorkerRuntimeSelection('temporal');
+  /**
+   * The address is written with the runtime, not left to `.env.example`: the
+   * seam makes it mandatory under Temporal, and ADR-44 took the server out of
+   * the compose file — so the value now names something the operator runs.
+   */
+  it('writes the runtime and the address it was given for temporal', () => {
+    const selection = resolveWorkerRuntimeSelection('temporal', {
+      temporalServerAddress: 'temporal.internal:7233',
+    });
 
-    expect(selection.envUpdates).toEqual({ WORKER_RUNTIME: 'temporal' });
+    expect(selection.envUpdates).toEqual({
+      WORKER_RUNTIME: 'temporal',
+      TEMPORAL_SERVER_ADDRESS: 'temporal.internal:7233',
+    });
     // Nothing to show: the Temporal UI is its own service, not ours to
     // configure.
     expect(selection.dashboard).toBeUndefined();
+  });
+
+  it('falls back to the adapter’s own address when the answer is blank', () => {
+    const selection = resolveWorkerRuntimeSelection('temporal', {
+      temporalServerAddress: '   ',
+    });
+
+    expect(selection.envUpdates.TEMPORAL_SERVER_ADDRESS).toBe(
+      DEFAULT_TEMPORAL_SERVER_ADDRESS,
+    );
+  });
+
+  /**
+   * The fallback points at BullMQ now, and the direction matters. It used to
+   * answer Temporal, which was right while the compose file ran one; after
+   * ADR-44 an unexpected value — a future variant, a mistyped flag — would
+   * otherwise scaffold an install whose worker connects to a server nobody
+   * started.
+   */
+  it('treats anything that is not temporal as the default runtime', () => {
+    const selection = resolveWorkerRuntimeSelection(
+      'sqs' as unknown as 'bullmq',
+    );
+
+    expect(selection.choice).toBe('bullmq');
+    expect(selection.envUpdates.WORKER_RUNTIME).toBe('bullmq');
+  });
+
+  /**
+   * Since #1224 the producers validate this at boot: apps/web and apps/api
+   * enqueue, BullMQ gives them no fallback, and a scaffolded install missing
+   * the variable would refuse to start rather than fail at the first upload.
+   */
+  it('writes the Redis url BullMQ cannot run without', () => {
+    const selection = resolveWorkerRuntimeSelection('bullmq');
+
+    expect(selection.envUpdates.REDIS_URL).toBe(DEFAULT_REDIS_URL);
+    // The published port, not 6379: a native Redis on the standard one answers
+    // instead of the container.
+    expect(DEFAULT_REDIS_URL).toContain('56379');
   });
 
   /**

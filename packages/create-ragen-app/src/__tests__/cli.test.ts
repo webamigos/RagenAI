@@ -94,8 +94,13 @@ const ROOT_TEMPLATE = [
   '# SCW_API_KEY=',
   '# AWS_KMS_KEY_ID=',
   // The worker-runtime prompt writes these. Same reasoning as the two above:
-  // a template without them makes the install abort on missing keys.
-  'WORKER_RUNTIME=temporal',
+  // a template without them makes the install abort on missing keys. Both
+  // runtime variables are here because the wizard writes the one its answer
+  // needs — `REDIS_URL` under BullMQ, the address under Temporal.
+  'WORKER_RUNTIME=bullmq',
+  'REDIS_URL=redis://localhost:56379',
+  'WORKER_CONCURRENCY=',
+  'TEMPORAL_SERVER_ADDRESS=',
   '# WORKER_ADMIN_PORT=',
   '# WORKER_ADMIN_USER=',
   '# WORKER_ADMIN_PASSWORD=',
@@ -325,6 +330,61 @@ describe('run', () => {
       .mock.calls.find(([path]) => String(path).endsWith('/.env.local'));
 
     expect(String(rootEnv?.[1])).toContain('REPHRASE_MODEL=gpt-4o-mini');
+  });
+
+  /**
+   * What a fresh install is now: BullMQ on the Redis the compose file already
+   * runs. The `REDIS_URL` line is the load-bearing one — since #1224 apps/web
+   * and apps/api validate it at boot, so a scaffold that picked the runtime
+   * and not its address would hand someone an install that refuses to start.
+   */
+  it('scaffolds a BullMQ install, with the Redis url the producers check at boot', async () => {
+    vi.stubEnv('OPENAI_API_KEY', 'sk-from-env');
+    vi.mocked(clack.confirm).mockResolvedValue(false as never);
+
+    await run(['/tmp/ragen-test', '--provider=openai']);
+
+    const rootEnv = vi
+      .mocked(writeFileSync)
+      .mock.calls.find(([path]) => String(path).endsWith('/.env.local'));
+
+    expect(String(rootEnv?.[1])).toContain('WORKER_RUNTIME=bullmq');
+    expect(String(rootEnv?.[1])).toContain('REDIS_URL=redis://localhost:56379');
+    // Unattended answers the shipped default rather than asking, so nothing
+    // above prompted for it.
+    expect(clack.select).not.toHaveBeenCalled();
+  });
+
+  /**
+   * Choosing Temporal is choosing a server this install does not start (ADR-44
+   * took it out of the compose file), so the wizard asks where it is rather
+   * than writing `localhost:7233` on the operator's behalf — an address that is
+   * right on a laptop and silent everywhere else.
+   */
+  it('asks where Temporal is when Temporal is chosen', async () => {
+    vi.mocked(clack.select)
+      .mockResolvedValueOnce('skip' as never)
+      .mockResolvedValueOnce('local' as never)
+      .mockResolvedValueOnce('local' as never)
+      .mockResolvedValueOnce('temporal' as never);
+    vi.mocked(clack.text).mockResolvedValueOnce(
+      'temporal.internal:7233' as never,
+    );
+    vi.mocked(clack.confirm).mockResolvedValue(false as never);
+
+    await run(['/tmp/ragen-test']);
+
+    const rootEnv = vi
+      .mocked(writeFileSync)
+      .mock.calls.find(([path]) => String(path).endsWith('/.env.local'));
+
+    expect(String(rootEnv?.[1])).toContain('WORKER_RUNTIME=temporal');
+    expect(String(rootEnv?.[1])).toContain(
+      'TEMPORAL_SERVER_ADDRESS=temporal.internal:7233',
+    );
+    expect(clack.log.warn).toHaveBeenCalledWith(
+      expect.stringContaining('docker-compose.yml'),
+    );
   });
 
   it("warns before a second install silently shares the first one's data", async () => {
