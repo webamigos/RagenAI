@@ -61,8 +61,22 @@ export async function ragenStackVolumeExists(): Promise<boolean> {
   }
 }
 
-export async function startDockerServices({ cwd }: RunOptions): Promise<void> {
-  await execa('docker', ['compose', 'up', '-d'], { cwd, stdio: 'inherit' });
+/**
+ * `profiles` names compose profiles to add to the default set.
+ *
+ * Without it, choosing PII masking would write the two Presidio URLs and start
+ * nothing behind them: those services sit behind compose's `pii` profile, so a
+ * plain `up -d` skips them and the app would point at containers nobody ran.
+ */
+export async function startDockerServices({
+  cwd,
+  profiles = [],
+}: RunOptions & { profiles?: string[] }): Promise<void> {
+  const args = profiles.flatMap((profile) => ['--profile', profile]);
+  await execa('docker', ['compose', ...args, 'up', '-d'], {
+    cwd,
+    stdio: 'inherit',
+  });
 }
 
 export async function installDependencies({ cwd }: RunOptions): Promise<void> {

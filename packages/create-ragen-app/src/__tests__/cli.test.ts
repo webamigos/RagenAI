@@ -97,6 +97,11 @@ const ROOT_TEMPLATE = [
   // a template without them makes the install abort on missing keys. Both
   // runtime variables are here because the wizard writes the one its answer
   // needs — `REDIS_URL` under BullMQ, the address under Temporal.
+  // The PII prompt writes these when it is answered yes. Commented out in the
+  // real `.env.example`, which is what "off unless asked for" looks like on
+  // disk — `applyEnvOverrides` uncomments a line it is given a value for.
+  '# PRESIDIO_ANALYZER_URL=',
+  '# PRESIDIO_ANONYMIZER_URL=',
   'WORKER_RUNTIME=bullmq',
   'REDIS_URL=redis://localhost:56379',
   'WORKER_CONCURRENCY=',

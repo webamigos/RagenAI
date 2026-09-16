@@ -242,3 +242,15 @@ archive is the blog.
   own login for now — one sign-in instead of two is
   [#1232](https://github.com/webamigos/RagenAI/issues/1232).
   ([#1233](https://github.com/webamigos/RagenAI/pull/1233))
+
+- `[brief]` **The installer asks about PII masking, and the answer is no by
+  default.** Presidio is two containers and the analyzer alone is the heaviest
+  thing in the stack — 959 MB idle, more than the document parser — so a trial
+  install no longer pays for a feature most evaluations never reach. Say yes and
+  the wizard writes both Presidio URLs *and* starts the stack with the compose
+  profile those services sit behind; say nothing and masking is off by
+  construction, because availability follows the URLs rather than a flag. The
+  docs also stopped claiming Presidio starts by default: a plain
+  `docker compose up` has never started it, which makes the idle stack about
+  900 MB rather than the 1.9 GB the memory table adds up to.
+  ([#1234](https://github.com/webamigos/RagenAI/pull/1234))
