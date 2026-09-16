@@ -2,7 +2,7 @@
   "name": "@ragenai/jobs-bullmq",
   "version": "1.0.0",
   "private": true,
-  "description": "The BullMQ adapter behind the @ragenai/jobs seam — the only package that imports bullmq",
+  "description": "The BullMQ adapter behind the @ragenai/jobs seam \u2014 the only package that imports bullmq",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "files": [
@@ -15,13 +15,19 @@
     "typecheck": "tsc --noEmit --incremental --tsBuildInfoFile ./typecheck.tsbuildinfo"
   },
   "dependencies": {
+    "@bull-board/api": "^9.10.1",
+    "@bull-board/express": "^9.10.1",
     "@ragenai/jobs": "*",
-    "bullmq": "^6.0.0"
+    "bullmq": "^6.0.0",
+    "express": "^5.2.1"
   },
   "devDependencies": {
     "@ragenai/eslint-config": "*",
+    "@types/express": "^5.0.0",
     "@types/node": "^22.0.0",
+    "@types/supertest": "^6.0.3",
     "eslint": "^9.39.5",
+    "supertest": "^7.1.1",
     "typescript": "~5.7.0"
   },
   "engines": {

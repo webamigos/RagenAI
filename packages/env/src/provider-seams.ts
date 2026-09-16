@@ -340,13 +340,21 @@ export const WORKER_RUNTIME_SEAM = {
     },
     bullmq: {
       required: ['REDIS_URL'],
-      optional: ['WORKER_CONCURRENCY'],
+      optional: [
+        'WORKER_CONCURRENCY',
+        'WORKER_ADMIN_PORT',
+        'WORKER_ADMIN_USER',
+        'WORKER_ADMIN_PASSWORD',
+      ],
       fields: {
         REDIS_URL: 'url',
         WORKER_CONCURRENCY: 'concurrency',
+        WORKER_ADMIN_PORT: 'adminPort',
+        WORKER_ADMIN_USER: 'adminUser',
+        WORKER_ADMIN_PASSWORD: 'adminPassword',
       },
       summary:
-        'BullMQ over Redis. `REDIS_URL` has no fallback anywhere — a queue with no Redis is a worker that starts and quietly processes nothing, which is the worse outcome. The Redis it points at must run `maxmemory-policy noeviction`: an evicting instance drops queue keys, and the jobs go with them.',
+        'BullMQ over Redis. `REDIS_URL` has no fallback anywhere — a queue with no Redis is a worker that starts and quietly processes nothing, which is the worse outcome. The Redis it points at must run `maxmemory-policy noeviction`: an evicting instance drops queue keys, and the jobs go with them. The queue dashboard replaces the Temporal UI an install used to get on port 8080; it is off unless `WORKER_ADMIN_USER` and `WORKER_ADMIN_PASSWORD` are both set, because it shows every job payload and a dashboard that appears by default on an unauthenticated port is a finding rather than a feature.',
     },
   },
 } as const satisfies ProviderSeam;

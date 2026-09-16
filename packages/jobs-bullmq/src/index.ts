@@ -33,6 +33,13 @@ export {
   type JobHandlers,
 } from './worker.js';
 export {
+  createDashboardApp,
+  startQueueDashboard,
+  DEFAULT_ADMIN_PORT,
+  type DashboardCredentials,
+  type QueueDashboard,
+} from './dashboard.js';
+export {
   assertNoEviction,
   EVICTION_MESSAGE,
   type RedisConfigReader,

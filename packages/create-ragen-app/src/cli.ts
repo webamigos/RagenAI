@@ -42,6 +42,12 @@ import {
   type StorageSelection,
 } from './storage-provider';
 import {
+  resolveWorkerRuntimeSelection,
+  WORKER_RUNTIME_LABELS,
+  type WorkerRuntimeChoice,
+  type WorkerRuntimeSelection,
+} from './worker-runtime';
+import {
   generatePrismaClient,
   installDependencies,
   isDockerAvailable,
@@ -149,6 +155,18 @@ export async function run(argv: string[]): Promise<boolean> {
     return false;
   }
 
+  // Asked here rather than left to an env edit, because choosing BullMQ is
+  // also what configures the queue dashboard — and an install that picked the
+  // runtime but not the dashboard would have no view of its own queues, which
+  // is what the Temporal UI gave away for free.
+  const runtimePrompt = await resolveWorkerRuntime(args);
+  if (runtimePrompt.cancelled) {
+    clack.cancel('Cancelled.');
+    return false;
+  }
+  const workerRuntime = runtimePrompt.selection;
+  Object.assign(rootOverrides, workerRuntime.envUpdates);
+
   const storage = storagePrompt.selection;
   const encryption = encryptionPrompt.selection;
 
@@ -252,6 +270,24 @@ export async function run(argv: string[]): Promise<boolean> {
     if (!(await maybeRunFirstTimeSetup(targetDir, args.yes, rootEnv))) {
       return false;
     }
+  }
+
+  // Printed before the outro, and printed at all because it is the only time
+  // this value is readable: it is written to .env.local and never shown again.
+  if (workerRuntime.dashboard) {
+    const { user, password, port } = workerRuntime.dashboard;
+    clack.note(
+      [
+        `http://localhost:${port}`,
+        `user:     ${user}`,
+        `password: ${password}`,
+        '',
+        'Generated for this install and written to .env.local. It is not a',
+        'shared default — every install gets its own — so save it now if you',
+        'want it somewhere other than that file.',
+      ].join('\n'),
+      'Queue dashboard',
+    );
   }
 
   clack.outro(
@@ -415,6 +451,49 @@ async function resolveEncryption(
     return { cancelled: false, selection: resolveEncryptionSelection('local') };
   }
   return promptEncryption();
+}
+
+type WorkerRuntimePromptResult =
+  { cancelled: true } | { cancelled: false; selection: WorkerRuntimeSelection };
+
+/**
+ * Unattended installs take Temporal, the shipped default.
+ *
+ * Not BullMQ, even though it needs less: switching the runtime is a decision
+ * about what a deployment runs, and `--provider` exists so CI can install
+ * without answering questions — not so it can pick a different engine on the
+ * operator's behalf. An install that wants BullMQ says so in `.env.local`, or
+ * answers the prompt.
+ */
+async function resolveWorkerRuntime(
+  args: CliArgs,
+): Promise<WorkerRuntimePromptResult> {
+  if (isUnattended(args)) {
+    return {
+      cancelled: false,
+      selection: resolveWorkerRuntimeSelection('temporal'),
+    };
+  }
+  return promptWorkerRuntime();
+}
+
+async function promptWorkerRuntime(): Promise<WorkerRuntimePromptResult> {
+  const choice = await clack.select({
+    message: 'Which engine should run background jobs?',
+    options: (['temporal', 'bullmq'] as const).map((value) => ({
+      value,
+      label: WORKER_RUNTIME_LABELS[value],
+    })),
+  });
+
+  if (clack.isCancel(choice)) {
+    return { cancelled: true };
+  }
+
+  return {
+    cancelled: false,
+    selection: resolveWorkerRuntimeSelection(choice as WorkerRuntimeChoice),
+  };
 }
 
 async function promptStorage(): Promise<StoragePromptResult> {

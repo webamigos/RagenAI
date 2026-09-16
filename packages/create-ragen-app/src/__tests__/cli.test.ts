@@ -93,6 +93,12 @@ const ROOT_TEMPLATE = [
   '# SCW_KEY_MANAGER_KEY_ID=',
   '# SCW_API_KEY=',
   '# AWS_KMS_KEY_ID=',
+  // The worker-runtime prompt writes these. Same reasoning as the two above:
+  // a template without them makes the install abort on missing keys.
+  'WORKER_RUNTIME=temporal',
+  '# WORKER_ADMIN_PORT=',
+  '# WORKER_ADMIN_USER=',
+  '# WORKER_ADMIN_PASSWORD=',
 ].join('\n');
 
 const ROOT_TEMPLATE_MISSING_DATABASE_URL = ROOT_TEMPLATE.split('\n')
