@@ -539,4 +539,31 @@ describe('a docker start that fails', () => {
     // The setup after it still runs: the install is finished, not abandoned.
     expect(generatePrismaClient).toHaveBeenCalled();
   });
+
+  /**
+   * The sharper half of the same failure. Compose usually refuses because
+   * another Ragen stack holds these names — and that stack's Postgres is
+   * answering on the port this install was just configured for. Migrating
+   * would write into *its* database.
+   */
+  it('keeps migrations and the seed away from a database it did not start', async () => {
+    vi.mocked(clack.select).mockResolvedValueOnce('skip' as never);
+    vi.mocked(clack.confirm).mockResolvedValue(true as never);
+    vi.mocked(startDockerServices).mockRejectedValueOnce(
+      new Error(
+        'Conflict. The container name "/ragen-postgres" is already in use',
+      ),
+    );
+
+    await expect(run(['/tmp/ragen-test'])).resolves.toBe(true);
+
+    // Local to the new tree, no connection opened — still runs.
+    expect(generatePrismaClient).toHaveBeenCalled();
+    // These two talk to a database.
+    expect(migrateDatabase).not.toHaveBeenCalled();
+    expect(seedDatabase).not.toHaveBeenCalled();
+    expect(clack.log.warn).toHaveBeenCalledWith(
+      expect.stringContaining('npx prisma migrate deploy'),
+    );
+  });
 });
