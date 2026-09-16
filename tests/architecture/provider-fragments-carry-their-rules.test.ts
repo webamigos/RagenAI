@@ -126,6 +126,45 @@ describe('a provider fragment is merged with the rule that gives it meaning', ()
     },
   );
 
+  /**
+   * The alternation above accepts either rule, which is right for a producer
+   * and wrong for the runtime. apps/worker *is* the runtime: it has no
+   * business defaulting to a Temporal on its own container, so
+   * `TEMPORAL_SERVER_ADDRESS` is a hard requirement there — and a deployed
+   * worker pointing at a `localhost:7233` that answers nothing processes
+   * nothing, with no error to read. Swapping it for the producers' half would
+   * drop that requirement while still satisfying the pairing, so the runtime
+   * is pinned to the whole rule.
+   *
+   * What each rule *requires* is asserted in
+   * `packages/env/src/__tests__/provider-rules.test.ts`, which can parse an
+   * environment; this test only reads source as text.
+   */
+  it('pins apps/worker to the whole rule, not the producers’ half', () => {
+    const workerSchemas = sourceFiles.filter(
+      (file) =>
+        relative(REPO_ROOT, file).startsWith(join('apps', 'worker') + sep) &&
+        /fragments\s*\.\s*workerRuntime\b/.test(readFileSync(file, 'utf8')),
+    );
+
+    expect(
+      workerSchemas.length,
+      'apps/worker merges fragments.workerRuntime somewhere; if that moved, this guard has to move with it.',
+    ).toBeGreaterThan(0);
+
+    const producerHalfOnly = workerSchemas
+      .filter((file) => {
+        const source = readFileSync(file, 'utf8');
+        return !/\bworkerRuntimeRules\s*\(/.test(source);
+      })
+      .map((file) => relative(REPO_ROOT, file));
+
+    expect(
+      producerHalfOnly,
+      'These files are the worker runtime and call workerRuntimeRules(env, ctx) nowhere, so WORKER_RUNTIME=temporal with no TEMPORAL_SERVER_ADDRESS would parse clean and the worker would connect to a localhost:7233 that answers nothing.',
+    ).toEqual([]);
+  });
+
   it('finds the schemas it is supposed to be guarding', () => {
     // A walk that silently matched nothing would make every assertion above
     // pass for the wrong reason.
