@@ -70,6 +70,15 @@ archive is the blog.
 
 ### Thread: the worker runtime becomes replaceable
 
+- `[major]` **Re-indexing a document no longer leaves the old version in the
+  index.** Every re-embed — a single file, a bulk re-embed, a folder policy
+  change — added a fresh set of chunks without removing the previous ones,
+  because the vector store's point ids are random and an upsert therefore
+  cannot replace anything. The effect was retrieval quoting text that had been
+  replaced, and quoting it twice: both copies competed for the same answer.
+  Ingest now clears a file's existing chunks before writing new ones.
+  ([#PR](https://github.com/webamigos/RagenAI/pull/PR))
+
 - `[major]` **Cancelling a document ingest now takes effect immediately, and
   keeps working after the job has finished being tracked.** Cancellation used to
   be a message sent into a running workflow's memory: the file stayed

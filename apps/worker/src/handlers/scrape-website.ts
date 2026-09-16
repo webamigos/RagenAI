@@ -47,6 +47,7 @@ export async function scrapeWebsite(
 
     // activities/meilisearch
     addDocumentsToVectorStore,
+    deleteDocumentVectors,
 
     // activities/splitters
     splitText,
@@ -225,6 +226,12 @@ export async function scrapeWebsite(
       orgId,
       status: EmbeddingStatus.STARTED,
     });
+
+    // See parse-and-embed.ts: point ids are random uuids, so an upsert cannot
+    // replace an earlier ingest of the same file. A re-scrape of a page that
+    // has changed would otherwise leave the old text in the index beside the
+    // new, and a redelivered job would duplicate every chunk.
+    await deleteDocumentVectors({ orgId, fileId });
 
     await addDocumentsToVectorStore({
       orgId,
