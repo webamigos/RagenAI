@@ -6,6 +6,7 @@ import {
   encryptionRules,
   storageRules,
   workerRuntimeRules,
+  workerRuntimeProducerRules,
 } from '../provider-rules';
 import { parseEnv } from '../parse';
 
@@ -20,6 +21,12 @@ const workerRuntimeSchema = fragments.workerRuntime
   .merge(fragments.temporal)
   .merge(fragments.redis)
   .superRefine(workerRuntimeRules);
+
+/** What apps/web and apps/api merge: the same fragments, half the rule. */
+const producerSchema = fragments.workerRuntime
+  .merge(fragments.temporal)
+  .merge(fragments.redis)
+  .superRefine(workerRuntimeProducerRules);
 
 const namesOf = <T extends z.ZodType>(
   schema: T,
@@ -197,5 +204,49 @@ describe('workerRuntimeRules', () => {
     expect(namesOf(workerRuntimeSchema, { WORKER_RUNTIME: '  ' })).toEqual([
       'REDIS_URL',
     ]);
+  });
+});
+
+/**
+ * The producers' half, and the asymmetry that makes it a half rather than a
+ * weaker copy: under BullMQ a producer that cannot reach Redis cannot enqueue
+ * at all, and under Temporal the adapter falls back to `localhost:7233`.
+ */
+describe('workerRuntimeProducerRules', () => {
+  it('requires Redis under bullmq', () => {
+    expect(namesOf(producerSchema, { WORKER_RUNTIME: 'bullmq' })).toEqual([
+      'REDIS_URL',
+    ]);
+  });
+
+  it('requires Redis when the runtime is unset, because bullmq is the default', () => {
+    expect(namesOf(producerSchema, {})).toEqual(['REDIS_URL']);
+  });
+
+  /**
+   * The point of the narrowing. Demanding the address of every producer would
+   * refuse to boot deployments that work today — the mistake apps/api's own
+   * env tests were written to prevent, since the obvious workaround is to
+   * invent a dummy value, and that is how a boot check stops being believed.
+   */
+  it('requires nothing under temporal, where the adapter has a fallback', () => {
+    expect(namesOf(producerSchema, { WORKER_RUNTIME: 'temporal' })).toEqual([]);
+  });
+
+  it('accepts bullmq with a Redis url', () => {
+    expect(
+      parseEnv(producerSchema, {
+        WORKER_RUNTIME: 'bullmq',
+        REDIS_URL: 'redis://localhost:6379',
+      }).ok,
+    ).toBe(true);
+  });
+
+  // The worker keeps both halves: it *is* the runtime, and has no business
+  // defaulting to a Temporal on its own container.
+  it('is narrower than the worker rule it comes from', () => {
+    expect(
+      namesOf(workerRuntimeSchema, { WORKER_RUNTIME: 'temporal' }),
+    ).toEqual(['TEMPORAL_SERVER_ADDRESS']);
   });
 });

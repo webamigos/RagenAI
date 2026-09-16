@@ -54,9 +54,22 @@ const PAIRINGS = [
   },
   {
     fragment: 'workerRuntime',
-    rule: 'workerRuntimeRules',
+    /**
+     * Two acceptable rules, because the seam is not symmetric for everyone who
+     * merges it. `workerRuntimeRules` is both halves and belongs to the
+     * worker, which *is* the runtime. `workerRuntimeProducerRules` is the
+     * BullMQ half alone, for apps/web and apps/api: a producer with no
+     * `REDIS_URL` cannot enqueue at all, while one with no Temporal address
+     * has the adapter's `localhost:7233` fallback, and demanding that of them
+     * would refuse to boot deployments that work today.
+     *
+     * What the pairing still guarantees is that merging the fragment means
+     * calling *a* rule that gives it meaning. A file that merges and calls
+     * neither is what this test is for.
+     */
+    rule: '(?:workerRuntimeRules|workerRuntimeProducerRules)',
     consequence:
-      'WORKER_RUNTIME=bullmq with no REDIS_URL would parse clean, and the worker would start and quietly process nothing — the failure this seam exists to turn into a boot error naming the variable',
+      'WORKER_RUNTIME=bullmq with no REDIS_URL would parse clean, and the app would enqueue into nothing — the failure this seam exists to turn into a boot error naming the variable',
   },
 ] as const;
 
@@ -88,14 +101,16 @@ const sourceFiles = SEARCH_ROOTS.flatMap((root) => {
 
 describe('a provider fragment is merged with the rule that gives it meaning', () => {
   it.each(PAIRINGS)(
-    'every schema merging fragments.$fragment also calls $rule',
+    'every schema merging fragments.$fragment also calls its rule',
     ({ fragment, rule, consequence }) => {
       // `.merge(fragments.storage)` and `fragments.storage.superRefine(...)`
       // both count as merging it; a bare mention in a comment does not.
       const merges = new RegExp(
         `fragments\\s*\\.\\s*${fragment}\\b|\\bmerge\\s*\\(\\s*${fragment}\\b`,
       );
-      const calls = new RegExp(`\\b${rule}\\s*\\(`);
+      // `rule` may be an alternation when a seam has more than one legitimate
+      // rule; the word boundary goes outside it so both spellings match.
+      const calls = new RegExp(`\\b(?:${rule})\\s*\\(`);
 
       const unpaired = sourceFiles
         .filter((file) => {
@@ -110,6 +125,45 @@ describe('a provider fragment is merged with the rule that gives it meaning', ()
       ).toEqual([]);
     },
   );
+
+  /**
+   * The alternation above accepts either rule, which is right for a producer
+   * and wrong for the runtime. apps/worker *is* the runtime: it has no
+   * business defaulting to a Temporal on its own container, so
+   * `TEMPORAL_SERVER_ADDRESS` is a hard requirement there — and a deployed
+   * worker pointing at a `localhost:7233` that answers nothing processes
+   * nothing, with no error to read. Swapping it for the producers' half would
+   * drop that requirement while still satisfying the pairing, so the runtime
+   * is pinned to the whole rule.
+   *
+   * What each rule *requires* is asserted in
+   * `packages/env/src/__tests__/provider-rules.test.ts`, which can parse an
+   * environment; this test only reads source as text.
+   */
+  it('pins apps/worker to the whole rule, not the producers’ half', () => {
+    const workerSchemas = sourceFiles.filter(
+      (file) =>
+        relative(REPO_ROOT, file).startsWith(join('apps', 'worker') + sep) &&
+        /fragments\s*\.\s*workerRuntime\b/.test(readFileSync(file, 'utf8')),
+    );
+
+    expect(
+      workerSchemas.length,
+      'apps/worker merges fragments.workerRuntime somewhere; if that moved, this guard has to move with it.',
+    ).toBeGreaterThan(0);
+
+    const producerHalfOnly = workerSchemas
+      .filter((file) => {
+        const source = readFileSync(file, 'utf8');
+        return !/\bworkerRuntimeRules\s*\(/.test(source);
+      })
+      .map((file) => relative(REPO_ROOT, file));
+
+    expect(
+      producerHalfOnly,
+      'These files are the worker runtime and call workerRuntimeRules(env, ctx) nowhere, so WORKER_RUNTIME=temporal with no TEMPORAL_SERVER_ADDRESS would parse clean and the worker would connect to a localhost:7233 that answers nothing.',
+    ).toEqual([]);
+  });
 
   it('finds the schemas it is supposed to be guarding', () => {
     // A walk that silently matched nothing would make every assertion above

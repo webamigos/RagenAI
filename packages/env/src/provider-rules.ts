@@ -53,8 +53,20 @@ type Env = Record<string, unknown>;
  * first where it matters, and leaving this out would have quietly dropped the
  * worker's existing `TEMPORAL_SERVER_ADDRESS` requirement the moment it moved
  * into the seam.
+ *
+ * `only` narrows the rule to some of the seam's variants, for a consumer that
+ * genuinely needs one half of it and not the other. The worker-runtime seam is
+ * the case: a producer that cannot reach Redis cannot enqueue at all, while a
+ * producer with no Temporal address has a working fallback, so requiring both
+ * of apps/web and apps/api would refuse to boot deployments that work today.
+ * It is deliberately not a way to opt out of an inconvenient requirement —
+ * every use of it should be able to name the fallback that makes the skipped
+ * variant safe.
  */
-export function seamRule(seam: ProviderSeam): (env: Env, ctx: Ctx) => void {
+export function seamRule(
+  seam: ProviderSeam,
+  only?: readonly string[],
+): (env: Env, ctx: Ctx) => void {
   return (env, ctx) => {
     const chosen = env[seam.discriminant];
     const selected =
@@ -67,6 +79,10 @@ export function seamRule(seam: ProviderSeam): (env: Env, ctx: Ctx) => void {
     // defaults, and stay so.
     const spec = selected === undefined ? undefined : seam.variants[selected];
     if (spec === undefined || selected === undefined) {
+      return;
+    }
+
+    if (only && !only.includes(selected)) {
       return;
     }
 
@@ -156,3 +172,27 @@ export function fieldGroupRules(
  * has a working default.
  */
 export const workerRuntimeRules = seamRule(WORKER_RUNTIME_SEAM);
+
+/**
+ * The producers' half of the same seam: `REDIS_URL` under BullMQ, and nothing
+ * under Temporal.
+ *
+ * apps/web and apps/api enqueue rather than run jobs, and the two variants are
+ * not symmetric for them. **Under BullMQ there is no fallback**: a producer
+ * that cannot reach Redis cannot enqueue at all, so the first upload fails at
+ * request time with a Redis error three layers from the cause — exactly the
+ * failure a boot check naming the variable exists to replace. **Under Temporal
+ * there is one**: the adapter falls back to `localhost:7233`, which is right on
+ * a laptop and in compose, and requiring the address of every producer would
+ * refuse to boot deployments that work today. That is the mistake apps/api's
+ * own env tests were written to prevent — "the obvious workaround, inventing a
+ * dummy value, is how a boot check stops being believed".
+ *
+ * So this is not the worker's rule with a hole in it. It is the half that has
+ * a consequence, applied where the consequence lands. The worker keeps both,
+ * because the worker *is* the runtime and has no business defaulting to a
+ * Temporal on its own container.
+ */
+export const workerRuntimeProducerRules = seamRule(WORKER_RUNTIME_SEAM, [
+  'bullmq',
+]);

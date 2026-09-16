@@ -47,6 +47,13 @@ permissions:
 env:
   DATABASE_URL: 'postgresql://postgres:postgres@localhost:5432/ragen_e2e'
   DATABASE_DIRECT_URL: 'postgresql://postgres:postgres@localhost:5432/ragen_e2e'
+  # ADR-44 made BullMQ the default runtime, and apps/api validates the
+  # producers' half of that seam at boot: under BullMQ there is no fallback for
+  # `REDIS_URL`, so a producer without one cannot enqueue at all and refuses to
+  # start. The suite still consumes nothing — the service below exists so this
+  # variable names a Redis that answers. A dummy value would boot the app and
+  # mean nothing, which is how a boot check stops being believed.
+  REDIS_URL: 'redis://localhost:6379'
   BETTER_AUTH_SECRET: 'e2e-test-secret-key-min-32-chars-long'
   # Phase C of ADR-21 routes several Server Actions through apps/api, so the
   # suite needs it running — without these three, connectors, project upload
@@ -115,6 +122,18 @@ jobs:
           - 5432:5432
         options: >-
           --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        # Matches docker-compose.yml and the Jobs Integration job. Nothing in
+        # this suite drains a queue; this is here so the producers' boot check
+        # has a real Redis to be checked against.
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
