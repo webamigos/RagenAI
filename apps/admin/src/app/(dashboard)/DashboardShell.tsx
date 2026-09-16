@@ -19,11 +19,17 @@ function MobileHeader() {
   );
 }
 
-export function DashboardShell({ children }: { children: React.ReactNode }) {
+export function DashboardShell({
+  children,
+  queueDashboardUrl,
+}: {
+  children: React.ReactNode;
+  queueDashboardUrl?: string;
+}) {
   return (
     <SidebarProvider>
       <div className="flex h-screen overflow-hidden">
-        <Sidebar />
+        <Sidebar queueDashboardUrl={queueDashboardUrl} />
         <div className="flex flex-1 flex-col overflow-hidden">
           <MobileHeader />
           <main className="flex-1 overflow-y-auto p-4 md:p-8">{children}</main>

@@ -1005,8 +1005,24 @@ Gated on D2's numbers. The adapter does not move in this phase — see *Answered
   `the-temporal-sdk-stays-on-the-temporal-path.test.ts` fails when any module
   outside `temporal-runtime.ts`, `temporal-failure.ts` or `src/workflows/`
   imports `@temporalio/*`. Both were checked by mutation.
-- [ ] **E7.** Link bull-board from `apps/admin`, and open a follow-up for
-      proxying it behind Better Auth per ADR-35.
+- [x] **E7.** Link bull-board from `apps/admin`, and open a follow-up for
+      proxying it behind Better Auth per ADR-35
+      ([#1232](https://github.com/webamigos/RagenAI/issues/1232)).
+
+  **The address is configuration, and an unset one hides the link.** The
+  dashboard is the worker's surface on `WORKER_ADMIN_PORT`, it exists only when
+  that process has the two admin credentials, and the worker is often another
+  container — so the panel cannot derive the address. `WORKER_ADMIN_URL` is
+  optional in `apps/admin`'s env schema, and the sidebar item is simply absent
+  without it: a visible link to a port that answers nothing reads as "the
+  dashboard is broken" rather than "this install runs none".
+
+  **Not `NEXT_PUBLIC_`.** The value is read in the server layout and passed to
+  the sidebar as a prop. A `NEXT_PUBLIC_` variable is inlined at build time, so
+  one set on a deployed container renders server-side and vanishes on
+  hydration — the lesson
+  [`a-next-public-var-set-at-runtime-flashes-then-vanishes`](../lessons/a-next-public-var-set-at-runtime-flashes-then-vanishes.md)
+  is exactly this shape.
 
 ### Phase F — later, not now
 

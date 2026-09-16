@@ -69,6 +69,26 @@ export const adminEnvSchema = fragments.targetEnv
     /** Where an invitation email points. */
     RAGEN_APP_URL: blankAsUndefined(httpUrl().optional()),
 
+    /**
+     * The worker's queue dashboard (bull-board), if this install runs one.
+     *
+     * Optional on purpose, and hiding the link when it is unset is the correct
+     * behaviour rather than a degraded one. The dashboard is the worker's own
+     * surface on `WORKER_ADMIN_PORT`, it exists only when that process has
+     * `WORKER_ADMIN_USER` and `WORKER_ADMIN_PASSWORD`, and the worker may be a
+     * different container or host — so this panel cannot derive the address,
+     * and a hard-coded `localhost:8090` would ship a dead link to every
+     * install that is not a laptop.
+     */
+    WORKER_ADMIN_URL: blankAsUndefined(
+      httpUrl()
+        .refine(noEmbeddedCredentials, {
+          message:
+            'WORKER_ADMIN_URL must not carry credentials — no user or password before the host. The dashboard prompts for them; putting them in the url puts the password in a link, and so into browser history, screenshots and the page’s own DOM.',
+        })
+        .optional(),
+    ),
+
     /** Shared secret for apps/web's internal endpoints. */
     INTERNAL_API_SECRET: blankAsUndefined(z.string().optional()),
   })
@@ -140,3 +160,52 @@ export type AdminEnv = z.infer<typeof adminEnvSchema>;
 
 export const parseAdminEnv = (source?: Record<string, string | undefined>) =>
   parseEnv(adminEnvSchema, source);
+
+/**
+ * A url with no `user:password@` in it.
+ *
+ * The queue dashboard is behind Basic Auth, which makes embedding the
+ * credentials the tempting way to skip its prompt — and this value is rendered
+ * as an `href`, so it would land in browser history, in screenshots and in the
+ * DOM of a page. The schema rejects it at boot; `readQueueDashboardUrl()` is
+ * the same rule at the read site.
+ */
+function noEmbeddedCredentials(value: string): boolean {
+  try {
+    const url = new URL(value);
+    return url.username === '' && url.password === '';
+  } catch {
+    // Not parseable is `httpUrl()`'s problem, not this refinement's.
+    return true;
+  }
+}
+
+/**
+ * The queue dashboard's address, as the panel should use it.
+ *
+ * A read boundary rather than a bare `process.env` lookup, because this value
+ * becomes a link. It is *not* a full `parseAdminEnv()`: that validates fifteen
+ * variables and returns a report, so a malformed `STRIPE_SECRET_KEY` would
+ * decide whether this link renders. Every other reader in this app reads
+ * `process.env` directly — see the note on the schema — so this stays one
+ * variable's rule, applied where it is read.
+ *
+ * Returns `undefined` for unset, blank, unparseable, or credential-carrying —
+ * all of which mean "do not offer this link". The boot report is what tells an
+ * operator *why*; the panel just does not show a link it cannot trust.
+ */
+export function readQueueDashboardUrl(
+  source: Record<string, string | undefined> = process.env,
+): string | undefined {
+  const raw = source.WORKER_ADMIN_URL?.trim();
+  if (!raw) {
+    return undefined;
+  }
+
+  const parsed = httpUrl().safeParse(raw);
+  if (!parsed.success || !noEmbeddedCredentials(raw)) {
+    return undefined;
+  }
+
+  return raw;
+}

@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation';
 import { getAdminUser } from '@/lib/auth-guard';
+import { readQueueDashboardUrl } from '@/config/env';
 import { DashboardShell } from './DashboardShell';
 
 export default async function DashboardLayout({
@@ -16,5 +17,16 @@ export default async function DashboardLayout({
     redirect('/login?error=forbidden');
   }
 
-  return <DashboardShell>{children}</DashboardShell>;
+  // Read here rather than in the client component: a `NEXT_PUBLIC_` variable
+  // would be inlined at build time, so an operator setting this on a deployed
+  // container would see the link render and then disappear on hydration.
+  //
+  // Through the read boundary rather than off `process.env`, because the value
+  // becomes an `href`: `readQueueDashboardUrl` drops a url that is malformed or
+  // carries credentials instead of rendering it.
+  return (
+    <DashboardShell queueDashboardUrl={readQueueDashboardUrl()}>
+      {children}
+    </DashboardShell>
+  );
 }
