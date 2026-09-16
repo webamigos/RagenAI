@@ -156,7 +156,19 @@ describe('reembedFolderWithPolicyCommand', () => {
     });
   });
 
-  it('does not update piiPolicy in DB for files whose job failed to start', async () => {
+  /**
+   * The order reversed, deliberately, and this test records what that costs.
+   *
+   * The policy is written *before* the job starts, because the ingest reads it
+   * off the row — writing after was already a race and would now be a
+   * certainty. The consequence is that a file whose job fails to start keeps
+   * the new policy with a `NOT_STARTED` status: the operator's intent is
+   * recorded and the file is visibly un-ingested, which is the honest pair.
+   * The alternative — the old order — ran the ingest under a policy that might
+   * never be persisted, and the masking that actually applies is the one that
+   * matters.
+   */
+  it('keeps the written policy when the job fails to start, with the file left un-ingested', async () => {
     mockFileFindMany.mockResolvedValue([
       makeFile('file-1'),
       makeFile('file-2'),
@@ -165,21 +177,33 @@ describe('reembedFolderWithPolicyCommand', () => {
       .mockRejectedValueOnce(new Error('temporal down'))
       .mockResolvedValueOnce(undefined);
 
-    await reembedFolderWithPolicyCommand('folder-1', 'org-1', PiiPolicy.STRICT);
+    const result = await reembedFolderWithPolicyCommand(
+      'folder-1',
+      'org-1',
+      PiiPolicy.STRICT,
+    );
 
-    // file-2 succeeded — should get the update
-    expect(mockFileUpdate).toHaveBeenCalledTimes(1);
-    expect(mockFileUpdate).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: { id: 'file-2', organizationId: 'org-1' },
-      }),
-    );
-    // file-1 failed — must NOT be updated
-    expect(mockFileUpdate).not.toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: { id: 'file-1', organizationId: 'org-1' },
-      }),
-    );
+    // Both were written before either start was attempted.
+    expect(mockFileUpdate).toHaveBeenCalledTimes(2);
+    for (const id of ['file-1', 'file-2']) {
+      expect(mockFileUpdate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id, organizationId: 'org-1' },
+          data: expect.objectContaining({
+            piiPolicy: PiiPolicy.STRICT,
+            parsingStatus: 'NOT_STARTED',
+            embeddingStatus: 'NOT_STARTED',
+          }),
+        }),
+      );
+    }
+
+    // The caller still learns which one did not start, which is what makes
+    // "un-ingested" actionable rather than silent.
+    expect(result.failed).toEqual([
+      expect.objectContaining({ fileId: 'file-1' }),
+    ]);
+    expect(result.succeeded).toEqual(['file-2']);
   });
 
   it('puts failed files in failed[] and continues processing remaining files', async () => {
