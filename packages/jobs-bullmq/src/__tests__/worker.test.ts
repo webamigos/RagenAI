@@ -122,8 +122,9 @@ describe('createBullWorkers', () => {
    * The default is measured, so a change to it has to face the measurement.
    *
    * D2 compared the two engines on the same twenty-document upload: at 10 the
-   * median per document was 24.9s against Temporal's 12.5s, all of it waiting
-   * for a slot, and at 20 it is 12.3s. Twenty is parity with the engine being
+   * median per document was 24.9s against Temporal's 12.5s, with the whole
+   * difference before parsing began rather than in the work, and at 20 it is
+   * 12.3s. Twenty is parity with the engine being
    * replaced, which is the port's whole promise — so this number is not a
    * taste, and lowering it should come with a reason and a run.
    */

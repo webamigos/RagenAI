@@ -46,8 +46,8 @@ export const DEFAULT_ADMIN_USER = 'admin';
  *
  * It matches `DEFAULT_CONCURRENCY` in `@ragenai/jobs-bullmq`, which D2 raised
  * from 10 to 20 on the strength of the same measurement: twenty documents
- * uploaded at once took a median of 24.9s each at 10 and 12.3s at 20, the whole
- * difference being time spent waiting for a slot.
+ * uploaded at once took a median of 24.9s each at 10 and 12.3s at 20, the
+ * difference sitting entirely before parsing began rather than in the work.
  *
  * **Written anyway, even though it now equals the default.** The number the
  * operator has to revisit is this one — it is the first thing to lower when a

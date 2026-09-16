@@ -365,8 +365,8 @@ refused to call 20 a safe ceiling.
 
 **D2 measured it and 10 was the wrong conservative number**, so the default is
 now `20`. On the same twenty-document upload, 10 gave a median of 24.9s per
-document against Temporal's 12.5s — all of it waiting for a slot, with
-identical parse and embed times — and 20 gives 12.3s. Conservatism that costs
+document against Temporal's 12.5s — the whole difference falling before
+parsing began, with identical parse and embed times — and 20 gives 12.3s. Conservatism that costs
 parity with the engine being replaced is not caution, it is a regression with a
 reason attached. Twenty is still not a proven ceiling: it is the number that
 matches what Temporal did with the same files, and a deployment whose provider
@@ -784,16 +784,18 @@ Each phase leaves the application working.
 
   **Done, 2026-09-16: [the numbers](../lessons/bullmq-matches-temporal-at-equal-concurrency-2026-09-16.md).**
   416 ingests, both runtimes, one machine, one afternoon, zero failures. At
-  twenty concurrent files BullMQ's median is **24.9s against Temporal's 12.5s
-  at the shipped default**, and **12.3s against 12.5s once
-  `WORKER_CONCURRENCY=20`** — the whole difference is the concurrency ceiling,
-  not the engine, and the parse and embed medians are identical on both.
-  `DEFAULT_CONCURRENCY` is 10 whole jobs; Temporal's 50 counted *activities*,
-  about twenty per ingest, so twenty files ran at once there. **E2 therefore
-  owes the default a decision**: raise it, or make `WORKER_CONCURRENCY`
-  impossible to miss in the install path. A deployment that takes the default
-  gets the 2x, and it will look like the runtime's fault, because that is what
-  changed. At one file BullMQ is the faster of the two (6.9s against 10.0s).
+  twenty concurrent files BullMQ's median was **24.9s against Temporal's 12.5s
+  at a concurrency of 10**, and **12.3s against 12.5s at 20** — the difference
+  is the concurrency ceiling rather than the engine, and the parse and embed
+  medians are identical on both. `concurrency` counts whole jobs; Temporal's 50
+  counted *activities*, about twenty per ingest, so twenty files ran at once
+  there and ten here.
+
+  **Acted on: `DEFAULT_CONCURRENCY` is 20**, and the installer writes the
+  variable explicitly so the knob is findable — see §3 and E2/E3. At a
+  concurrency of 10 a deployment would have met the 2x on its first bulk import
+  and read it as the runtime's fault, because the runtime is what changed. At
+  one file BullMQ is the faster of the two (6.9s against 10.0s).
 
   **The instrument:**
   `apps/worker/src/scripts/jobs-load-test.ts` enqueues through the seam, so

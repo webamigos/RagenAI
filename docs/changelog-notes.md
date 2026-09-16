@@ -202,8 +202,9 @@ archive is the blog.
   time instead of ten.** The old default was the conservative read of a
   measurement that did not exist yet; the one that does says ten cost a bulk
   upload about twice the latency of twenty — 24.9s per document against 12.5s —
-  and every second of the difference was a document waiting for a slot rather
-  than being processed. Lower it with `WORKER_CONCURRENCY` if your model
+  with the whole difference landing before a document started parsing rather
+  than in the parsing and embedding themselves, which measured the same either
+  way. Lower it with `WORKER_CONCURRENCY` if your model
   provider's rate limits bind before the worker does.
   ([#1221](https://github.com/webamigos/RagenAI/pull/1221))
 

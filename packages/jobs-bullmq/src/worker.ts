@@ -68,10 +68,13 @@ export const MAX_STALLED_COUNT = 1;
  * D2 measured the difference on 2026-09-16 and 10 turned out to be the wrong
  * conservative number. With twenty documents uploaded at once — a customer's
  * first import, and the shape this meets soonest — the median per document was
- * **24.9s at 10 against 12.5s on Temporal**, all of it spent waiting for a
- * slot: the parse and embed medians were identical on both engines. At 20 it
- * is 12.3s, which is parity, and parity with the engine being replaced is the
- * whole promise of the port. See
+ * **24.9s at 10 against 12.5s on Temporal**, and the difference sat entirely
+ * *before parsing began*: the parse and embed medians were identical on both
+ * engines. A slot wait is the mechanism — ten of twenty files cannot start
+ * until another finishes — though that window also holds the file's download
+ * and type detection, so the measurement bounds where the cost is, not which
+ * of the two it is. At 20 it is 12.3s, which is parity, and parity with the
+ * engine being replaced is the whole promise of the port. See
  * `docs/lessons/bullmq-matches-temporal-at-equal-concurrency-2026-09-16.md`.
  *
  * **Twenty is not a ceiling anyone proved.** It is the number that matches what
