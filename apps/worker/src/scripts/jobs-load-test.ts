@@ -91,6 +91,16 @@ interface RunResult {
   medianParseMs: number | null;
   medianEmbedMs: number | null;
   files: FileTiming[];
+  /**
+   * Every file this run created, which is **not** the same list as `files`.
+   *
+   * `files` is built from the rows that came back, so a run that timed out —
+   * or whose row was deleted underneath it — describes fewer files than it
+   * made. Cleaning up from that list leaves the difference behind: an object
+   * in storage and a row in the database, in a real organization, from the
+   * run that went wrong. The created ids are what gets cleaned.
+   */
+  created: string[];
 }
 
 const POLL_INTERVAL_MS = 500;
@@ -286,6 +296,7 @@ async function runOnce(
     medianParseMs: median(files.map((file) => file.parseMs)),
     medianEmbedMs: median(files.map((file) => file.embedMs)),
     files,
+    created: fileIds,
   };
 }
 
@@ -305,6 +316,16 @@ async function cleanup(orgId: string, fileIds: string[]): Promise<void> {
       await deleteDocumentVectors({ orgId, fileId });
     } catch (error) {
       console.warn(`could not delete vectors for ${fileId}:`, error);
+    }
+
+    try {
+      // The upload is the one thing that outlives the database row: deleting
+      // the row leaves the object, and nothing ever looks at it again. On a
+      // local provider that is a directory quietly filling up; on S3 it is a
+      // bill. Same key the upload used — `${orgId}/${fileId}.txt`.
+      await aws.deleteFromS3(orgId, `${fileId}.txt`);
+    } catch (error) {
+      console.warn(`could not delete the stored file for ${fileId}:`, error);
     }
 
     try {
@@ -391,10 +412,7 @@ async function main(): Promise<void> {
         results.push(result);
 
         if (!options.keep) {
-          await cleanup(
-            orgId,
-            result.files.map((file) => file.fileId),
-          );
+          await cleanup(orgId, result.created);
         }
       }
     }
