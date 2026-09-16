@@ -40,6 +40,30 @@ export function generateAdminPassword(): string {
 
 export const DEFAULT_ADMIN_USER = 'admin';
 
+/**
+ * How many documents the worker ingests at once, written explicitly rather
+ * than left to the code's default.
+ *
+ * The default in `@ragenai/jobs-bullmq` is 10, and 10 is the wrong number for
+ * the shape this install will actually meet first: a customer's initial
+ * import. Measured on 2026-09-16 against the live stack, twenty documents
+ * uploaded at once took a median of 24.9s each at 10, and 12.3s at 20 — the
+ * whole difference being time spent waiting for a slot, with identical parse
+ * and embed times. An install that takes the default gets the slower number
+ * and has no way to learn why.
+ *
+ * **A constant, not a guess from the machine.** `os.cpus().length` is the
+ * tempting input and it measures the wrong thing: an ingest is almost entirely
+ * waiting — on storage, on the parser, on the embedding provider — so cores
+ * predict nothing about how many can be in flight. A number derived from
+ * hardware would look principled and mean less than this one.
+ *
+ * Written into `.env` rather than applied silently, because the ceiling that
+ * really binds is the model provider's rate limit, and the operator is the
+ * only one who knows it. A value they can see is a value they can raise.
+ */
+export const DEFAULT_WORKER_CONCURRENCY = '20';
+
 export interface WorkerRuntimeSelection {
   choice: WorkerRuntimeChoice;
   envUpdates: Record<string, string>;
@@ -64,6 +88,7 @@ export function resolveWorkerRuntimeSelection(
     choice,
     envUpdates: {
       WORKER_RUNTIME: 'bullmq',
+      WORKER_CONCURRENCY: DEFAULT_WORKER_CONCURRENCY,
       WORKER_ADMIN_USER: DEFAULT_ADMIN_USER,
       WORKER_ADMIN_PASSWORD: password,
       WORKER_ADMIN_PORT: port,
