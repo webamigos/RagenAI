@@ -77,6 +77,7 @@
     "@ragenai/crypto": "*",
     "@ragenai/env": "*",
     "@ragenai/jobs": "*",
+    "@ragenai/jobs-bullmq": "*",
     "@ragenai/jobs-temporal": "*",
     "@ragenai/llm-gateway": "*",
     "@ragenai/observability": "*",

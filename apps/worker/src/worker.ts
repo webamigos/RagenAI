@@ -5,6 +5,7 @@ import * as activities from './activities/index.js';
 import { TASK_QUEUE_NAME } from './shared.js';
 import { TEMPORAL_SERVER_ADDRESS } from './consts.js';
 import { parseWorkerEnv } from './config/env.js';
+import { resolveWorkerRuntime } from '@ragenai/jobs';
 import {
   isPiiMaskingMisconfigured,
   PII_MASKING_MISCONFIGURED_MESSAGE,
@@ -38,12 +39,7 @@ if (isPiiMaskingMisconfigured()) {
 
 import { logger } from './services/logger.js';
 
-async function run() {
-  const { instrumentationReady } = await import('./instrument.js');
-  await instrumentationReady;
-
-  cleanStaleTmpFiles();
-
+async function runTemporal(): Promise<void> {
   const connection = await NativeConnection.connect({
     address: TEMPORAL_SERVER_ADDRESS,
   });
@@ -58,6 +54,61 @@ async function run() {
 
   await worker.run();
   await connection.close();
+}
+
+/**
+ * BullMQ has no equivalent of `worker.run()` blocking until shutdown — the
+ * workers consume from the moment they are constructed — so this waits for a
+ * signal and closes them.
+ *
+ * Closing is not tidiness. A process killed mid-job leaves its lock held until
+ * it expires, five minutes later by `LOCK_DURATION_MS`, and BullMQ then
+ * redelivers work that was nearly finished. Every redeploy would pay the cost
+ * that long lock exists to avoid. `close()` stops taking new jobs and waits
+ * for the ones in flight.
+ */
+async function runBullMq(): Promise<void> {
+  const { startBullMqWorker, closeBullWorkers } =
+    await import('./bullmq-runtime.js');
+
+  const workers = await startBullMqWorker();
+
+  await new Promise<void>((resolve) => {
+    let closing = false;
+
+    const shutdown = (signal: string): void => {
+      // A second signal during a slow drain must not start a second close:
+      // the first is already waiting for the jobs in flight.
+      if (closing) {
+        logger.warn({ signal }, 'already draining; ignoring');
+        return;
+      }
+      closing = true;
+
+      logger.info({ signal }, 'draining BullMQ workers');
+      closeBullWorkers(workers)
+        .catch((err) => logger.error({ err }, 'failed to close cleanly'))
+        .finally(resolve);
+    };
+
+    process.once('SIGTERM', () => shutdown('SIGTERM'));
+    process.once('SIGINT', () => shutdown('SIGINT'));
+  });
+}
+
+async function run() {
+  const { instrumentationReady } = await import('./instrument.js');
+  await instrumentationReady;
+
+  cleanStaleTmpFiles();
+
+  // The only place this process branches on the runtime. What follows each
+  // branch is engine-specific by definition; what the handlers do is not,
+  // which is the whole return on the seam.
+  const runtime = resolveWorkerRuntime();
+  logger.info({ runtime }, 'starting worker');
+
+  await (runtime === 'bullmq' ? runBullMq() : runTemporal());
 }
 
 run().catch((err) => {
