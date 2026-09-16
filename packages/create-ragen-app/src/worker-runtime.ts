@@ -44,13 +44,16 @@ export const DEFAULT_ADMIN_USER = 'admin';
  * How many documents the worker ingests at once, written explicitly rather
  * than left to the code's default.
  *
- * The default in `@ragenai/jobs-bullmq` is 10, and 10 is the wrong number for
- * the shape this install will actually meet first: a customer's initial
- * import. Measured on 2026-09-16 against the live stack, twenty documents
- * uploaded at once took a median of 24.9s each at 10, and 12.3s at 20 — the
- * whole difference being time spent waiting for a slot, with identical parse
- * and embed times. An install that takes the default gets the slower number
- * and has no way to learn why.
+ * It matches `DEFAULT_CONCURRENCY` in `@ragenai/jobs-bullmq`, which D2 raised
+ * from 10 to 20 on the strength of the same measurement: twenty documents
+ * uploaded at once took a median of 24.9s each at 10 and 12.3s at 20, the whole
+ * difference being time spent waiting for a slot.
+ *
+ * **Written anyway, even though it now equals the default.** The number the
+ * operator has to revisit is this one — it is the first thing to lower when a
+ * provider starts rate-limiting — and a default they never see is not a knob
+ * they can find. If the two ever diverge, this line is the install's answer and
+ * the code's is the fallback for everyone else.
  *
  * **A constant, not a guess from the machine.** `os.cpus().length` is the
  * tempting input and it measures the wrong thing: an ingest is almost entirely

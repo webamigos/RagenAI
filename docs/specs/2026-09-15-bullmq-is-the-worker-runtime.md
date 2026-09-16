@@ -358,11 +358,20 @@ so it never meant fifty concurrent files. BullMQ's `concurrency` counts whole
 jobs. Copying the 50 across would raise real concurrency several fold in one
 commit.
 
-Default `WORKER_CONCURRENCY=10`, and the only measurement we have —
+The default was `10`, the conservative read of
 [the 2026-09-05 load test](../lessons/worker-concurrency-load-test-2026-09-05.md)
-— is 20 concurrent ingests, twice, zero failures, p95 between 27s and 49s. That
-lesson explicitly refuses to call 20 a safe ceiling, so 10 is the conservative
-read of it, not a derived number.
+— 20 concurrent ingests, twice, zero failures, and a lesson that explicitly
+refused to call 20 a safe ceiling.
+
+**D2 measured it and 10 was the wrong conservative number**, so the default is
+now `20`. On the same twenty-document upload, 10 gave a median of 24.9s per
+document against Temporal's 12.5s — all of it waiting for a slot, with
+identical parse and embed times — and 20 gives 12.3s. Conservatism that costs
+parity with the engine being replaced is not caution, it is a regression with a
+reason attached. Twenty is still not a proven ceiling: it is the number that
+matches what Temporal did with the same files, and a deployment whose provider
+rate limits bind sooner lowers it with `WORKER_CONCURRENCY`. See
+[the measurement](../lessons/bullmq-matches-temporal-at-equal-concurrency-2026-09-16.md).
 
 ### 4. Cancellation becomes a database fact
 
@@ -820,13 +829,11 @@ Gated on D2's numbers. The adapter does not move in this phase — see *Answered
       execution is an enterprise adapter*. It supersedes
       [ADR-07](../adrs/07-temporal-document-processing.md), says why the 2024
       rejection no longer applies, and records the drift budget ADR-32 asks for.
-- [ ] **E2.** **Decide the default concurrency first** — D2 measured a 2x at
-      twenty concurrent files between `WORKER_CONCURRENCY` 10 and 20, and 10 is
-      what `DEFAULT_CONCURRENCY` ships. Either raise it or accept that the
-      default is the slow one; what is not acceptable is a deployment meeting
-      the difference on its first bulk import with nothing in front of it. The
-      installer's half is already done — see E3 — so this is about what a
-      deployment that *does not* use the installer gets. Then: compose:
+- [ ] **E2.** **The default concurrency is decided: `DEFAULT_CONCURRENCY` is
+      20**, raised on the strength of D2 rather than left at the conservative
+      10 — see §3. That covers the deployment that writes its own `.env` or
+      deploys from Helm, which the installer's half (E3) never reaches. Then:
+      compose:
       `temporal` and `temporal-ui` deleted. Redis gains
       `--maxmemory-policy noeviction` and AOF. Helm: `temporal.yaml` deleted,
       `redis.enabled: true` and its "rate limiting only" comment rewritten.

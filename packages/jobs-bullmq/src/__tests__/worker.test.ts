@@ -118,6 +118,26 @@ describe('createBullWorkers', () => {
     ).toBe(true);
   });
 
+  /**
+   * The default is measured, so a change to it has to face the measurement.
+   *
+   * D2 compared the two engines on the same twenty-document upload: at 10 the
+   * median per document was 24.9s against Temporal's 12.5s, all of it waiting
+   * for a slot, and at 20 it is 12.3s. Twenty is parity with the engine being
+   * replaced, which is the port's whole promise — so this number is not a
+   * taste, and lowering it should come with a reason and a run.
+   */
+  it('gives every ingest queue the measured default', () => {
+    build();
+
+    const ingest = constructed.filter(
+      (worker) => worker.name !== 'ragen-maintenance',
+    );
+
+    expect(ingest.length).toBeGreaterThan(0);
+    expect(ingest.every((worker) => worker.opts.concurrency === 20)).toBe(true);
+  });
+
   // Per-worker, on top of the global ceiling `upsertSchedule` sets: this keeps
   // one replica from running both nightly jobs at once.
   it('pins the maintenance queue to one job at a time', () => {

@@ -16,6 +16,10 @@ topics:
 
 # BullMQ matches Temporal at 20 concurrent ingests — but only once `WORKER_CONCURRENCY` matches; at the shipped default it is 2x slower
 
+> **Acted on.** `DEFAULT_CONCURRENCY` was raised from 10 to 20 the same day, so
+> "the shipped default" in the title describes what was measured, not what
+> ships now. The numbers below are unchanged and are what that change rests on.
+
 **Context**: D2 of
 [the worker-runtime spec](../specs/2026-09-15-bullmq-is-the-worker-runtime.md) —
 the measurement Phase E's decision rests on, and the one
@@ -75,11 +79,11 @@ parsing starts", not pure engine latency, and on a slow S3 moment it absorbs
 that too. It is still the right column to read for this question, because the
 alternative — parse and embed — is identical on both runtimes.
 
-**Rule**: **parity is a configuration claim, not an engine claim.** Before
-Phase E flips the default, either raise `DEFAULT_CONCURRENCY` or make
-`WORKER_CONCURRENCY` impossible to miss in the install path — a deployment that
-takes the default gets the 2x, and it will look like the runtime's fault
-because that is what changed. Conversely, do not read this as "BullMQ is
+**Rule**: **parity is a configuration claim, not an engine claim.** Both halves
+were done on the strength of this: `DEFAULT_CONCURRENCY` became 20, and the
+installer writes the variable explicitly so an operator can find the knob. A
+deployment that had taken the old default would have got the 2x and read it as
+the runtime's fault, because the runtime is what changed. Conversely, do not read this as "BullMQ is
 slower": at one file it is *faster* (6.9s against 10.0s), which is the engine's
 own overhead showing up where nothing queues.
 
