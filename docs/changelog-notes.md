@@ -77,7 +77,7 @@ archive is the blog.
   cannot replace anything. The effect was retrieval quoting text that had been
   replaced, and quoting it twice: both copies competed for the same answer.
   Ingest now clears a file's existing chunks before writing new ones.
-  ([#PR](https://github.com/webamigos/RagenAI/pull/PR))
+  ([#1209](https://github.com/webamigos/RagenAI/pull/1209))
 
 - `[major]` **Cancelling a document ingest now takes effect immediately, and
   keeps working after the job has finished being tracked.** Cancellation used to
