@@ -139,8 +139,6 @@ export async function POST(
         orgId,
         projectId: doc.projectId ?? null,
         userId,
-        documentText: content,
-        documentTitle: doc.title,
         baseScore: resolvedBaseScore,
       },
     );

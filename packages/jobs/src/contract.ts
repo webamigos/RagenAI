@@ -152,8 +152,18 @@ export interface ReindexDocumentVersionPayload {
   fileName: string;
   projectId: string | null;
   userId: string | null;
-  /** The active version's text. */
-  content: string;
+  /**
+   * The document whose current text to embed.
+   *
+   * An identifier, where this used to be the text itself. A payload is a copy:
+   * on Temporal it sat in workflow history, and on BullMQ it sits in Redis —
+   * unencrypted, and outside the retention anyone reasons about. It is also
+   * the staler of the two: every producer persists the document *before*
+   * enqueueing, so re-reading embeds what the document says now rather than
+   * what it said when the job was queued, which is what two rollbacks in quick
+   * succession used to get wrong.
+   */
+  documentId: string;
 }
 
 export interface OptimizeDocumentPayload {
@@ -162,8 +172,6 @@ export interface OptimizeDocumentPayload {
   orgId: string;
   projectId?: string | null;
   userId?: string | null;
-  documentText: string;
-  documentTitle?: string;
   /**
    * The active version's RAG score, carried so the job row shows it while the
    * run is still `processing`.

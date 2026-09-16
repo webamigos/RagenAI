@@ -143,8 +143,6 @@ export async function optimizeDocumentSuggestions({
   orgId,
   projectId,
   userId,
-  documentText,
-  documentTitle,
   baseScore: canonicalBaseScore,
 }: {
   jobId: string;
@@ -152,11 +150,18 @@ export async function optimizeDocumentSuggestions({
   orgId: string;
   projectId?: string | null;
   userId?: string | null;
-  documentText: string;
-  documentTitle?: string;
   baseScore?: number | null;
 }): Promise<void> {
   const startedAt = Date.now();
+
+  // Read here rather than carried in the payload. A document's full text in a
+  // job payload is a copy of it in Redis — unencrypted, and outside the
+  // retention anyone reasons about — and the copy is stale by construction:
+  // the producer writes the document first, so what it says now is what should
+  // be optimized.
+  const document = await db.getDocumentContent(documentId, orgId);
+  const documentText = document?.content ?? '';
+  const documentTitle = document?.title ?? undefined;
 
   // Mark as processing — preserve existing suggestions so the user can still
   // see and act on them while the new job runs. Only id/status/baseScore are

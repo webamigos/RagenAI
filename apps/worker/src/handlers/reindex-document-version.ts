@@ -35,6 +35,7 @@ export async function reindexDocumentVersion(
     prepareMetadata,
     addDocumentsToVectorStore,
     deleteDocumentVectors,
+    getDocumentContent,
     splitText,
   } = ctx.steps<typeof activities>({
     retry: {
@@ -46,11 +47,19 @@ export async function reindexDocumentVersion(
     startToCloseTimeout: '10 minutes',
   });
 
-  const { orgId, fileId, fileName, projectId, content } = payload;
+  const { orgId, fileId, fileName, projectId, documentId } = payload;
+
+  // Read rather than received. Every producer persists the document before it
+  // enqueues — a rollback makes the version active first, apply-suggestions
+  // writes the optimized text first — so this embeds what the document says
+  // now. The payload version embedded what it said when the job was queued,
+  // which two rollbacks in quick succession could get wrong.
+  const document = await getDocumentContent({ documentId, orgId });
+  const content = document?.content ?? '';
 
   if (content.trim() === '') {
     throw JobFailure.nonRetryable(
-      `Refusing to re-index file ${fileId} with empty content — this would leave the document unsearchable`,
+      `Refusing to re-index file ${fileId} with empty content — this would leave the document unsearchable. Document ${documentId} is ${document ? 'empty' : 'missing'}.`,
     );
   }
 

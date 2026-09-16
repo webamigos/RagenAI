@@ -79,7 +79,7 @@ export async function POST(
           fileName: file.fileName,
           projectId: file.projectId,
           userId,
-          content: newVersion.content,
+          documentId: id,
         });
       } catch (err) {
         // The rollback itself succeeded; reporting failure would invite the
