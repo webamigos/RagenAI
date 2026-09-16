@@ -316,6 +316,24 @@ export const mail = z.object({
 });
 
 /**
+ * Which engine runs background jobs (the worker-runtime spec, §9).
+ *
+ * Only the discriminant lives here. The variables it makes mandatory —
+ * `REDIS_URL` under BullMQ, `TEMPORAL_SERVER_ADDRESS` under Temporal — are
+ * declared by the `redis` and `temporal` fragments and required *conditionally*
+ * by `workerRuntimeRules`. That is the whole point: neither is required in
+ * general, and the worker's schema demanding the Temporal variables
+ * unconditionally is correct only while Temporal is the only runtime.
+ *
+ * Optional, with the default living in `resolveWorkerRuntime()` rather than
+ * here, so that one function decides what unset means for both the schema and
+ * the seam that picks an adapter.
+ */
+export const workerRuntime = z.object({
+  WORKER_RUNTIME: blankAsUndefined(z.enum(['temporal', 'bullmq']).optional()),
+});
+
+/**
  * Temporal, which runs document ingest (ADR-26).
  *
  * All optional, because `TEMPORAL_SERVER_ADDRESS` genuinely is for apps/web

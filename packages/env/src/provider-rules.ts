@@ -5,6 +5,7 @@ import {
   ENCRYPTION_SEAM,
   SPEECH_SEAM,
   STORAGE_SEAM,
+  WORKER_RUNTIME_SEAM,
   type ProviderSeam,
 } from './provider-seams';
 import { allOrNone, requiredForProvider } from './rules';
@@ -41,12 +42,44 @@ type Env = Record<string, unknown>;
  * Every variant is offered to `requiredForProvider`, which is a no-op unless
  * the discriminant matches it — so this is the same set of calls the rules
  * used to make by hand, generated from the table instead.
+ *
+ * **An unset discriminant selects `defaultVariant`**, and that is not a
+ * nicety. `requiredForProvider` compares the variable to the variant name, so
+ * an unset variable matches nothing and every requirement is skipped — which
+ * means a seam whose default has requirements would validate nothing in its
+ * most common configuration, while looking validated. That had never bitten
+ * because no default variant required anything: storage's `local` requires
+ * nothing and the reranker's `scaleway` has no rule. `WORKER_RUNTIME` is the
+ * first where it matters, and leaving this out would have quietly dropped the
+ * worker's existing `TEMPORAL_SERVER_ADDRESS` requirement the moment it moved
+ * into the seam.
  */
 export function seamRule(seam: ProviderSeam): (env: Env, ctx: Ctx) => void {
   return (env, ctx) => {
-    for (const [variant, spec] of Object.entries(seam.variants)) {
-      requiredForProvider(env, ctx, seam.discriminant, variant, spec.required);
+    const chosen = env[seam.discriminant];
+    const selected =
+      typeof chosen === 'string' && chosen.trim() !== ''
+        ? chosen
+        : seam.defaultVariant;
+
+    // No default and nothing chosen, or a value the schema's own enum will
+    // reject anyway — both were already no-ops before this learned about
+    // defaults, and stay so.
+    const spec = selected === undefined ? undefined : seam.variants[selected];
+    if (spec === undefined || selected === undefined) {
+      return;
     }
+
+    // The discriminant is substituted rather than passed through, because
+    // `requiredForProvider` matches on the variable's own value and the whole
+    // point here is the case where it has none.
+    requiredForProvider(
+      { ...env, [seam.discriminant]: selected },
+      ctx,
+      seam.discriminant,
+      selected,
+      spec.required,
+    );
   };
 }
 
@@ -99,3 +132,27 @@ export function fieldGroupRules(
     }
   };
 }
+
+/**
+ * Which engine runs background jobs — `REDIS_URL` under BullMQ, the Temporal
+ * address under Temporal, neither required in general (the worker-runtime
+ * spec's §9).
+ *
+ * **Called by apps/worker only**, and that is a deliberate limit rather than
+ * an oversight. The worker *is* the runtime: it has no business defaulting to
+ * a Temporal on its own container, so the address is a hard requirement there.
+ * apps/web and apps/api merely enqueue, and both fall back to
+ * `localhost:7233` — correct on a laptop and in compose. Requiring it of them
+ * would refuse to boot deployments that work today, which is the mistake
+ * apps/api's own env tests were written to prevent: "demanding the credential
+ * anyway would refuse to boot a correctly configured deployment, and the
+ * obvious workaround — invent a dummy value — is how a boot check stops being
+ * believed."
+ *
+ * The producer side of this arrives with the BullMQ adapter, where it has a
+ * consequence worth a boot failure: a producer with no `REDIS_URL` cannot
+ * enqueue at all, and there is no fallback to soften it. Adding it before the
+ * adapter exists would only enforce the Temporal half, which is the half that
+ * has a working default.
+ */
+export const workerRuntimeRules = seamRule(WORKER_RUNTIME_SEAM);

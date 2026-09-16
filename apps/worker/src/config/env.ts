@@ -5,6 +5,7 @@ import {
   parseEnv,
   requiredInDeployedEnvs,
   storageRules,
+  workerRuntimeRules,
 } from '@ragenai/env';
 import { z } from 'zod';
 
@@ -29,7 +30,18 @@ export const workerEnvSchema = fragments.targetEnvRequired
   .merge(fragments.qdrant)
   .merge(fragments.observability)
   .merge(fragments.storage)
-  .merge(fragments.temporalRequired)
+  // `temporal`, not `temporalRequired`: which variables this process cannot
+  // start without now follows `WORKER_RUNTIME`, and demanding the Temporal
+  // ones unconditionally is correct only while Temporal is the only runtime —
+  // after the switch it would refuse to start a deployment running no Temporal
+  // at all. `workerRuntimeRules` in the refinement below requires
+  // `TEMPORAL_SERVER_ADDRESS` under `temporal`, which is the default, so
+  // nothing about today's boot changes.
+  .merge(fragments.workerRuntime)
+  .merge(fragments.temporal)
+  // Stays unconditional. The seam requires it under `bullmq`, but this process
+  // needs Redis either way — the organization-settings cache has no fallback,
+  // and `services/redis.ts` reads `process.env.REDIS_URL!`.
   .merge(fragments.redisRequired)
   .merge(fragments.encryption)
   .extend({
@@ -105,6 +117,7 @@ export const workerEnvSchema = fragments.targetEnvRequired
     // encryption provider silently did to PII ingest — moved with them.
     storageRules(env, ctx);
     encryptionRules(env, ctx);
+    workerRuntimeRules(env, ctx);
 
     // Present is not the same as usable. `encryptionRules` only checks
     // that the variable is non-empty, so `ENCRYPTION_MASTER_KEY=x` booted and

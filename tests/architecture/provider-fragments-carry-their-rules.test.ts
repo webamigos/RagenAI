@@ -52,6 +52,12 @@ const PAIRINGS = [
     consequence:
       'a chosen ENCRYPTION_PROVIDER with no key would read as "encryption not configured" — which silently downgraded PII ingest to masked-only once already',
   },
+  {
+    fragment: 'workerRuntime',
+    rule: 'workerRuntimeRules',
+    consequence:
+      'WORKER_RUNTIME=bullmq with no REDIS_URL would parse clean, and the worker would start and quietly process nothing — the failure this seam exists to turn into a boot error naming the variable',
+  },
 ] as const;
 
 function* walk(dir: string): Generator<string> {
@@ -109,7 +115,7 @@ describe('a provider fragment is merged with the rule that gives it meaning', ()
     // A walk that silently matched nothing would make every assertion above
     // pass for the wrong reason.
     const merging = sourceFiles.filter((file) =>
-      /fragments\s*\.\s*(?:storage|encryption)\b/.test(
+      /fragments\s*\.\s*(?:storage|encryption|workerRuntime)\b/.test(
         readFileSync(file, 'utf8'),
       ),
     );
