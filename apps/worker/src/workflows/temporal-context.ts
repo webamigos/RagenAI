@@ -1,15 +1,12 @@
-import {
-  ApplicationFailure,
-  log,
-  proxyActivities,
-  workflowInfo,
-} from '@temporalio/workflow';
+import { log, proxyActivities, workflowInfo } from '@temporalio/workflow';
 import type {
   CancellationSubject,
   JobContext,
   JobLogger,
   StepOptions,
 } from '@ragenai/jobs';
+
+import { asApplicationFailure } from '../temporal-failure.js';
 
 /**
  * A `JobContext` backed by Temporal, built inside the workflow sandbox.
@@ -115,33 +112,4 @@ export async function runOnTemporal<P, R>(
   } catch (error) {
     throw asApplicationFailure(error);
   }
-}
-
-/**
- * Translate a handler's failure into the engine's.
- *
- * A handler throws `JobFailure` and never imports an engine's error class, so
- * something has to map `retryable: false` onto
- * `ApplicationFailure.nonRetryable` — and preserve `type`, which the ingest
- * workflows' catch blocks use to tell an already-recorded cancellation apart
- * from every other failure.
- */
-export function asApplicationFailure(
-  error: unknown,
-): ApplicationFailure | unknown {
-  if (
-    error instanceof Error &&
-    error.name === 'JobFailure' &&
-    'retryable' in error
-  ) {
-    const failure = error as Error & { retryable: boolean; type?: string };
-    return failure.retryable
-      ? ApplicationFailure.create({
-          message: failure.message,
-          type: failure.type,
-        })
-      : ApplicationFailure.nonRetryable(failure.message, failure.type);
-  }
-
-  return error;
 }

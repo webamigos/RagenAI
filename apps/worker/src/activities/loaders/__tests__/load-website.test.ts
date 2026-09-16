@@ -44,7 +44,13 @@ describe('loadWebsite', () => {
         projectId: 'proj-1',
       }),
     ).rejects.toMatchObject({
-      nonRetryable: true,
+      // The seam's failure, not Temporal's. `temporal-runtime.ts` translates
+      // it into `ApplicationFailure.nonRetryable` at the activity boundary —
+      // asserted in `src/__tests__/temporal-failure.spec.ts` — so the
+      // behaviour under Temporal is unchanged while this activity stays free
+      // of an engine's error class.
+      name: 'JobFailure',
+      retryable: false,
       message: 'Invalid crawl mode',
     });
 

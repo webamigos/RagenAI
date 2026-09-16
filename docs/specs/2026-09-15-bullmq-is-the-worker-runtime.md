@@ -958,12 +958,53 @@ Gated on D2's numbers. The adapter does not move in this phase — see *Answered
   both still declare something, so a future move that empties either cannot
   pass over an empty list. That family
       still has to move as one version; it just has one home.
-- [ ] **E6.** Take Temporal out of the **image**, not the repository: the
+- [x] **E6.** Take Temporal out of the **image**, not the repository: the
       worker Dockerfile's `npm ci --workspace=…` list omits
       `@ragenai/jobs-temporal`, and
       `a-scoped-dockerfile-installs-every-workspace-dep.test.ts` is the check
       that this stays deliberate rather than becoming a missing entry. An
       install that wants durable execution builds from source until Phase G.
+
+  **The mechanism above does nothing, and building the image is what said so.**
+  Omitting a workspace from `--workspace=` does not keep it out: npm links every
+  workspace in the tree and installs the linked package's own dependencies, so
+  `@ragenai/jobs-temporal` and its `@temporalio/client` were still in the
+  runner. And they were the small half anyway — the 182 MB of `@temporalio` in
+  that image was `@temporalio/worker`, a *production dependency of apps/worker*,
+  with `core-bridge`'s prebuilt native binaries accounting for 147 MB of it.
+
+  **What actually moved it** was making every Temporal import conditional and
+  then moving the packages to `devDependencies`, where `--omit=dev` reaches
+  them:
+
+  - `runTemporal` moved out of `worker.ts` into `temporal-runtime.ts`, loaded
+    through `await import(...)` — the mirror of what `runBullMq` already did;
+  - `jobs.ts` registers the Temporal adapter only when `WORKER_RUNTIME` selects
+    it, instead of importing it at module scope;
+  - `activities/loaders/load-website.ts` threw `ApplicationFailure` for one
+    validation. That single line, in an activity **both** engines run, pinned
+    `@temporalio/workflow` into an image that never runs Temporal. It throws the
+    seam's `JobFailure` now;
+  - which needed the translation the port never wrote: `runOnTemporal` mapped
+    `JobFailure` to `ApplicationFailure` for workflows, and nothing did it for
+    activities — where a plain `Error` is *retryable*, so a non-retryable
+    failure would have been retried under the activity's own policy before
+    failing anyway. `temporal-runtime.ts` wraps every activity with it.
+
+  **Measured, twice, on real builds:** the image goes from **1.19 GB to 1.01
+  GB**, and `node_modules/@temporalio` inside it from **182 MB to 13 MB**. What
+  is left is `client`, `common` and `proto`, pulled in by the adapter through
+  the workspace link that no `--workspace=` flag suppresses; removing those is
+  Phase G's move, not a Dockerfile edit. Inside the built image,
+  `import('./dist/bullmq-runtime.js')` resolves and
+  `import('./dist/temporal-runtime.js')` fails — which is the pair that proves
+  the split rather than describing it.
+
+  Two guards hold it: the scoped-Dockerfile test learns the one deliberate
+  omission and **requires the dynamic import** that makes it safe, and
+  `the-temporal-sdk-stays-on-the-temporal-path.test.ts` fails when any module
+  outside `temporal-runtime.ts`, `temporal-failure.ts` or `src/workflows/`
+  imports `@temporalio/*`. Both were checked by mutation.
 - [ ] **E7.** Link bull-board from `apps/admin`, and open a follow-up for
       proxying it behind Better Auth per ADR-35.
 

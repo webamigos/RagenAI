@@ -1,17 +1,15 @@
-import { NativeConnection, Worker } from '@temporalio/worker';
 import { cleanStaleTmpFiles } from './utils/cleanup-tmp.js';
 
-import * as activities from './activities/index.js';
-import { TASK_QUEUE_NAME } from './shared.js';
-import { TEMPORAL_SERVER_ADDRESS } from './consts.js';
 import { parseWorkerEnv } from './config/env.js';
+import {
+  isMissingTemporalPackage,
+  withCause,
+} from './utils/missing-package.js';
 import { resolveWorkerRuntime } from '@ragenai/jobs';
 import {
   isPiiMaskingMisconfigured,
   PII_MASKING_MISCONFIGURED_MESSAGE,
 } from '@ragenai/env';
-
-import { resolveWorkflowsPath } from './workflows-path.js';
 
 const env = parseWorkerEnv();
 
@@ -38,23 +36,6 @@ if (isPiiMaskingMisconfigured()) {
 }
 
 import { logger } from './services/logger.js';
-
-async function runTemporal(): Promise<void> {
-  const connection = await NativeConnection.connect({
-    address: TEMPORAL_SERVER_ADDRESS,
-  });
-
-  const worker = await Worker.create({
-    connection,
-    workflowsPath: resolveWorkflowsPath(),
-    activities,
-    taskQueue: TASK_QUEUE_NAME,
-    maxConcurrentActivityTaskExecutions: 50,
-  });
-
-  await worker.run();
-  await connection.close();
-}
 
 /**
  * BullMQ has no equivalent of `worker.run()` blocking until shutdown — the
@@ -104,7 +85,41 @@ async function run() {
   const runtime = resolveWorkerRuntime();
   logger.info({ runtime }, 'starting worker');
 
-  await (runtime === 'bullmq' ? runBullMq() : runTemporal());
+  if (runtime === 'bullmq') {
+    await runBullMq();
+    return;
+  }
+
+  // Imported here rather than at the top, so a BullMQ start never loads the
+  // Temporal SDK — which is what lets the image ship without it.
+  //
+  // This is also where a Temporal start fails in the published image, and a
+  // bare `Cannot find package '@temporalio/worker'` says nothing about why.
+  // The adapter one module over resolves fine there (npm links every
+  // workspace, so `@ragenai/jobs-temporal` and its client are present); it is
+  // the *runtime* that was left out, deliberately.
+  const { runTemporal } = await import('./temporal-runtime.js').catch(
+    (error: unknown) => {
+      // Anything that is not a missing package is a real failure inside that
+      // module, and saying "no Temporal SDK" about it would replace a usable
+      // stack with a confident wrong answer.
+      if (!isMissingTemporalPackage(error)) {
+        throw error;
+      }
+
+      throw withCause(
+        new Error(
+          'WORKER_RUNTIME=temporal, but this build does not include the ' +
+            'Temporal SDK. The published worker image ships the BullMQ runtime ' +
+            "only (ADR-44): `@temporalio/*` are apps/worker's devDependencies " +
+            'and the image installs with --omit=dev. To run on Temporal, build ' +
+            'the image with those devDependencies installed.',
+        ),
+        error,
+      );
+    },
+  );
+  await runTemporal();
 }
 
 run().catch((err) => {

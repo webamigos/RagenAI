@@ -1,5 +1,6 @@
+import { JobFailure } from '@ragenai/jobs';
+
 import { WebsiteLoaderMode } from '../../types/WebsiteLoaderMode.js';
-import { ApplicationFailure } from '@temporalio/workflow';
 import { WebsiteDocumentLoader } from '../../services/document-loaders/website-loader.js';
 import { type UserFile } from '../../types/UserFile.js';
 import { logger } from '../../services/logger.js';
@@ -17,7 +18,11 @@ export const loadWebsite = async ({
   projectId,
 }: WebsiteDocumentLoaderParams) => {
   if (mode !== WebsiteLoaderMode.CRAWL && mode !== WebsiteLoaderMode.SCRAPE) {
-    throw ApplicationFailure.nonRetryable('Invalid crawl mode');
+    // The seam's failure, not Temporal's: this activity runs on both engines,
+    // and `temporal-runtime.ts` translates it at the boundary for the one that
+    // needs `ApplicationFailure`. Importing that class here is what kept
+    // `@temporalio/workflow` in an image that never runs Temporal.
+    throw JobFailure.nonRetryable('Invalid crawl mode');
   }
   const loader = new WebsiteDocumentLoader({
     url,

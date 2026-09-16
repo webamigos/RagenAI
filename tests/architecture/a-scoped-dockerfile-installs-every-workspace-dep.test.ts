@@ -1,5 +1,5 @@
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { readdirSync, readFileSync } from 'node:fs';
+import { join, relative } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
@@ -23,10 +23,31 @@ import { describe, expect, it } from 'vitest';
  * Nothing before the image build can see it: a root install hoists every
  * workspace into one `node_modules`, so local builds and CI resolve packages
  * the scoped install never installs.
+ *
+ * **One package is deliberately absent from one image**, and the difference
+ * between that and the bug above is what `OMITTED_FROM_RUNTIME` records. The
+ * worker's production install leaves out `@ragenai/jobs-temporal` (the spec's
+ * E6): the running image ships the default runtime only, and an install that
+ * wants durable execution builds it back in. That is safe exactly as long as
+ * nothing in the app *statically* imports the package — a static import fails
+ * at module resolution on every start, including the BullMQ one every install
+ * takes — so this file checks the dynamic import rather than taking the
+ * Dockerfile's word for it.
  */
 const REPO_ROOT = join(import.meta.dirname, '..', '..');
 
 const APPS = ['web', 'api', 'admin', 'worker', 'mcp'];
+
+/**
+ * Workspaces an app builds with but does not ship, by app.
+ *
+ * An entry here buys an exemption from the install-and-ship rule and pays for
+ * it with the assertions below: the app must reach the package through
+ * `await import(...)` and must not name it in a top-level `import`.
+ */
+const OMITTED_FROM_RUNTIME: Record<string, string[]> = {
+  worker: ['@ragenai/jobs-temporal'],
+};
 
 function read(path: string): string | null {
   try {
@@ -57,6 +78,31 @@ function workspaceDeps(app: string): string[] {
   );
 }
 
+/** Every `.ts` file under an app's `src/`, as text. */
+function sourceFiles(app: string): { path: string; source: string }[] {
+  const root = join(REPO_ROOT, 'apps', app, 'src');
+  const found: { path: string; source: string }[] = [];
+
+  const walk = (dir: string): void => {
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      const full = join(dir, entry.name);
+      if (entry.isDirectory()) {
+        walk(full);
+      } else if (/\.tsx?$/.test(entry.name)) {
+        found.push({ path: full, source: readFileSync(full, 'utf8') });
+      }
+    }
+  };
+
+  try {
+    walk(root);
+  } catch {
+    return [];
+  }
+
+  return found;
+}
+
 const scoped = APPS.filter((app) => {
   const dockerfile = read(`apps/${app}/Dockerfile`);
   return dockerfile !== null && /npm ci\s+--workspace=/.test(dockerfile);
@@ -71,7 +117,8 @@ describe('a Dockerfile that installs scoped names every workspace it needs', () 
 
   it.each(scoped)('apps/%s', (app) => {
     const dockerfile = read(`apps/${app}/Dockerfile`) ?? '';
-    const needed = workspaceDeps(app);
+    const omitted = OMITTED_FROM_RUNTIME[app] ?? [];
+    const needed = workspaceDeps(app).filter((name) => !omitted.includes(name));
 
     const missing = needed.filter((name) => {
       const short = name.replace('@ragenai/', '');
@@ -93,4 +140,57 @@ describe('a Dockerfile that installs scoped names every workspace it needs', () 
         'with TS2307 naming the module.',
     ).toEqual([]);
   });
+
+  const exemptions = Object.entries(OMITTED_FROM_RUNTIME).flatMap(
+    ([app, names]) => names.map((name) => ({ app, name })),
+  );
+
+  it.each(exemptions)(
+    'apps/$app reaches $name dynamically, since its image does not ship it',
+    ({ app, name }) => {
+      // The whole exemption rests on this. A static import of `<name>` at the
+      // top of any file the app loads resolves before a single line runs, so
+      // the container would fail to start on the runtime it *does* ship — and
+      // it would fail in the image only, which is the one place nothing here
+      // can see.
+      //
+      // Three spellings resolve the package and one does not: a value import,
+      // a bare `import '<name>'` for side effects, and a re-export are all
+      // loads; `import type` / `export type` are erased by tsc. The same
+      // matching as `the-temporal-sdk-stays-on-the-temporal-path.test.ts`,
+      // which polices the SDK the same way one level down.
+      const staticImport = new RegExp(
+        `^\\s*(?:import|export)\\s+(?!type\\s)[^;]*?from\\s*['"]${name}['"]` +
+          `|^\\s*import\\s*['"]${name}['"]`,
+        'm',
+      );
+      const dynamicImport = new RegExp(`import\\(\\s*['"]${name}['"]`);
+
+      const files = sourceFiles(app);
+      expect(
+        files.length,
+        `apps/${app}/src has no sources to check`,
+      ).toBeGreaterThan(0);
+
+      const offenders = files
+        .filter(({ source }) => staticImport.test(source))
+        .map(({ path }) => relative(REPO_ROOT, path));
+
+      expect(
+        offenders,
+        `${name} is omitted from apps/${app}'s production install, so these ` +
+          'files must not import it at the top level — the container would ' +
+          'fail at module resolution before reaching the branch that would ' +
+          'never have used it.',
+      ).toEqual([]);
+
+      expect(
+        files.some(({ source }) => dynamicImport.test(source)),
+        `Nothing in apps/${app} imports ${name} dynamically. If the app no ` +
+          'longer uses it at all, drop the dependency and this exemption ' +
+          'rather than leaving a package that is declared, built and ' +
+          'unreachable.',
+      ).toBe(true);
+    },
+  );
 });
