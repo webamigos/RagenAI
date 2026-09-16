@@ -36,6 +36,43 @@ and its three tests were the only ones in the file that passed.
 raising it cannot quietly turn those tests into tests of a supported version.
 No production code changed — the coupling was the test's.
 
+## The same shape again, from the other direction (2026-09-16)
+
+ADR-44 flipped the default worker runtime to BullMQ. `apps/api`'s
+`jobs.service.spec.ts` stubbed the *Temporal* adapter and leaned on it being
+the default, so the flip turned a wiring test into one that constructed a real
+`BullMqJobRuntime` and opened a real connection.
+
+It then failed **two different ways in two environments**, which is what makes
+it worth recording next to the first case:
+
+- on a developer machine with a Redis running, `queue.add()` resolved and the
+  test failed on `expected "vi.fn()" to be called at least once` — a mock
+  assertion that says nothing about Redis;
+- in CI, with no Redis, it hung until `Test timed out in 5000ms`.
+
+Neither message names the cause, and the two do not look like the same bug.
+The fix was to stop depending on which runtime is default: stub both adapters
+and name the one the case means.
+
+**And the reason local `verify` did not catch it is worth more than the bug.**
+`turbo run` stops scheduling when a task fails. The repo-wide guard task
+(`//#test`) runs early and contains `config-reference-is-generated`, which is
+*expected* red for anyone with a `ragen-docs` checkout on the wrong branch — so
+on those machines `verify` halts there and **13 of 59 tasks never run at all**.
+The summary says `45 successful, 59 total`, and the missing fourteen are easy
+to read as cached.
+
+Two tests were broken by the same default flip, in two apps. The first was
+found by CI; the second — `apps/web`'s `libs/jobs` test, failing identically —
+was found only by re-running with `npm run verify -- --continue`, which is what
+turns a stop into a full report.
+
+So: **when `verify` fails, note how many tasks ran, not only which one
+failed** — and if the failure is one you expected, re-run with `--continue`
+before believing the rest is green.
+
+
 **Rule**: a unit test must not read the environment its runner happens to be
 in. `process.version`, `process.platform`, `process.env.CI`, the system
 timezone and `Date.now()` are all inputs, and a test that takes them from the

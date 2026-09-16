@@ -22,10 +22,13 @@ afterEach(() => {
 });
 
 describe('resolveWorkerRuntime', () => {
-  it('defaults to temporal while that is what the worker runs', () => {
-    expect(resolveWorkerRuntime({})).toBe('temporal');
-    expect(resolveWorkerRuntime({ WORKER_RUNTIME: '' })).toBe('temporal');
-    expect(resolveWorkerRuntime({ WORKER_RUNTIME: '  ' })).toBe('temporal');
+  // ADR-44. An unset variable means BullMQ, which is what the compose file
+  // starts and what the worker image ships with; Temporal is now the thing an
+  // install selects, not the thing it gets by omission.
+  it('defaults to bullmq, which is what an install runs', () => {
+    expect(resolveWorkerRuntime({})).toBe('bullmq');
+    expect(resolveWorkerRuntime({ WORKER_RUNTIME: '' })).toBe('bullmq');
+    expect(resolveWorkerRuntime({ WORKER_RUNTIME: '  ' })).toBe('bullmq');
   });
 
   it('accepts the two runtimes and rejects anything else', () => {
@@ -40,7 +43,7 @@ describe('getJobRuntime', () => {
   it('builds the registered adapter once', () => {
     const runtime = stub();
     const factory = vi.fn(() => runtime);
-    registerJobRuntime('temporal', factory);
+    registerJobRuntime('bullmq', factory);
 
     expect(getJobRuntime({})).toBe(runtime);
     expect(getJobRuntime({})).toBe(runtime);

@@ -66,41 +66,6 @@ services:
     networks:
       - ragen-network
 
-  temporal:
-    image: temporalio/auto-setup:1.26.2
-    container_name: ${RAGEN_STACK_NAME:-ragen}-temporal
-    restart: unless-stopped
-    depends_on:
-      postgres:
-        condition: service_healthy
-    environment:
-      DB: postgres12
-      DB_PORT: 5432
-      POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PWD: ${POSTGRES_PASSWORD:-pass123}
-      POSTGRES_SEEDS: postgres
-      DYNAMIC_CONFIG_FILE_PATH: config/dynamicconfig/development-sql.yaml
-    ports:
-      - "${RAGEN_BIND_ADDR:-127.0.0.1}:${TEMPORAL_PORT:-7233}:7233"
-    volumes:
-      - ./infra/temporal/dynamicconfig:/etc/temporal/config/dynamicconfig
-    networks:
-      - ragen-network
-
-  temporal-ui:
-    image: temporalio/ui:2.36.0
-    container_name: ${RAGEN_STACK_NAME:-ragen}-temporal-ui
-    restart: unless-stopped
-    depends_on:
-      - temporal
-    environment:
-      TEMPORAL_ADDRESS: temporal:7233
-      TEMPORAL_CORS_ORIGINS: http://localhost:3000
-    ports:
-      - "${RAGEN_BIND_ADDR:-127.0.0.1}:${TEMPORAL_UI_PORT:-8080}:8080"
-    networks:
-      - ragen-network
-
   docling:
     # Pinned to a release rather than :latest — a floating tag lets two nodes
     # run different builds and a rollback doesn't restore the previous image
@@ -178,10 +143,26 @@ services:
       retries: 5
       start_period: 30s
 
-  # Optional — only needed for API rate limiting
+  # Required. It holds the job queues (ADR-44) as well as the worker's
+  # organization-settings cache, so an install without it has no background
+  # processing at all — not a degraded rate limiter.
   redis:
     image: redis:7-alpine
     container_name: ${RAGEN_STACK_NAME:-ragen}-redis
+    # Two settings the queues depend on, and neither is Redis's default here.
+    #
+    # `noeviction`: with a memory policy that evicts, Redis drops queue keys
+    # under pressure and the jobs go with them — silently, and
+    # indistinguishably from work nobody submitted. The worker asserts this at
+    # boot and refuses to start against an evicting instance.
+    #
+    # `appendonly`: without it a restart loses whatever was queued. BullMQ
+    # guarantees the message, which is worth nothing if the message is in a
+    # volume that forgets.
+    command: >-
+      redis-server
+      --maxmemory-policy noeviction
+      --appendonly yes
     ports:
       - "${RAGEN_BIND_ADDR:-127.0.0.1}:${REDIS_PORT:-56379}:6379"
     volumes:

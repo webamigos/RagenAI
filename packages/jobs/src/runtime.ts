@@ -3,10 +3,15 @@ import type { JobRuntime } from './runtime-contract';
 /**
  * Which engine runs the jobs.
  *
- * `temporal` is the only value Phase A accepts; `bullmq` arrives with its
- * adapter in Phase C. The variable exists from the first commit so that every
- * consumer reads the seam rather than a client, which is what makes the later
- * switch a configuration change instead of a refactor.
+ * `bullmq` is the default since [ADR-44](../../../docs/adrs/44-bullmq-is-the-worker-runtime.md),
+ * and `temporal` is the adapter an install selects when it wants durable
+ * execution. The variable existed from the first commit of the seam so that
+ * every consumer read the seam rather than a client — which is what made this
+ * flip a configuration change rather than a refactor.
+ *
+ * **Producers and the worker must agree.** A producer writes to one engine
+ * only, so a mismatch is not an error anywhere: it is a queue nobody consumes,
+ * which reads as a worker that is merely slow.
  */
 export type WorkerRuntime = 'temporal' | 'bullmq';
 
@@ -17,7 +22,7 @@ export function resolveWorkerRuntime(
 ): WorkerRuntime {
   const raw = env.WORKER_RUNTIME?.trim();
   if (!raw) {
-    return 'temporal';
+    return 'bullmq';
   }
   if (!KNOWN.includes(raw as WorkerRuntime)) {
     throw new Error(

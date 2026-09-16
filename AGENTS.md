@@ -25,7 +25,6 @@ npm run lint             # ESLint across every workspace (or web:lint / api:lint
 npm run web:test         # Unit tests. Add a path to run one file.
 npm run packages:test    # Workspace package tests
 npm run ragen:up:full    # Backing services only (apps run on the host)
-npm run ragen:up:bullmq  # ...the same, with no Temporal container (WORKER_RUNTIME=bullmq)
 npm run ragen:up:everything  # Everything in containers, apps included
 npm run generate:types   # Prisma client for every app (root owns the schema)
 npm run test:e2e         # Playwright E2E tests (requires ragen_e2e DB)

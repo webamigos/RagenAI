@@ -145,10 +145,11 @@ describe('workerRuntimeRules', () => {
    * looking validated. Moving the worker's existing hard requirement into the
    * seam would have silently dropped it.
    */
-  it('requires it when the runtime is unset too, because temporal is the default', () => {
-    expect(namesOf(workerRuntimeSchema, {})).toEqual([
-      'TEMPORAL_SERVER_ADDRESS',
-    ]);
+  // The decision that moved the default moved with it which variable an unset runtime
+  // demands. This is the assertion that would have silently kept demanding
+  // Temporal's address from an install that runs no Temporal.
+  it('requires Redis when the runtime is unset too, because bullmq is the default', () => {
+    expect(namesOf(workerRuntimeSchema, {})).toEqual(['REDIS_URL']);
   });
 
   it('requires Redis under bullmq, and nothing about Temporal', () => {
@@ -194,7 +195,7 @@ describe('workerRuntimeRules', () => {
 
   it('treats a blank runtime as unset rather than as a variant', () => {
     expect(namesOf(workerRuntimeSchema, { WORKER_RUNTIME: '  ' })).toEqual([
-      'TEMPORAL_SERVER_ADDRESS',
+      'REDIS_URL',
     ]);
   });
 });

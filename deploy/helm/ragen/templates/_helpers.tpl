@@ -129,14 +129,6 @@ so this helper is the only thing that emits them.
 {{- end -}}
 {{- end -}}
 
-{{- define "ragen.temporalAddress" -}}
-{{- if .Values.config.TEMPORAL_SERVER_ADDRESS -}}
-{{- .Values.config.TEMPORAL_SERVER_ADDRESS -}}
-{{- else -}}
-{{- printf "%s-temporal:%v" (include "ragen.fullname" .) .Values.temporal.port -}}
-{{- end -}}
-{{- end -}}
-
 {{/*
 Env shared by every app: the ConfigMap, the Secret, and the resolved
 dependency URLs. POSTGRES_PASSWORD comes first so DATABASE_URL can interpolate
@@ -158,8 +150,6 @@ it — Kubernetes expands `$(VAR)` only against variables declared earlier.
 {{- end }}
 - name: DOCLING_URL
   value: {{ include "ragen.doclingUrl" . | quote }}
-- name: TEMPORAL_SERVER_ADDRESS
-  value: {{ include "ragen.temporalAddress" . | quote }}
 {{- with (include "ragen.presidioAnalyzerUrl" .) }}
 - name: PRESIDIO_ANALYZER_URL
   value: {{ . | quote }}

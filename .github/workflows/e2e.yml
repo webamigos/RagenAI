@@ -20,9 +20,13 @@ on:
       - '*.md'
       - '.vscode/**'
       - '.husky/**'
-      # The suite never starts the worker (TEMPORAL_SERVER_ADDRESS is a dummy),
-      # so worker-only changes cannot affect it. They still get Worker / Lint,
-      # Test and Build from ci.yml.
+      # The suite starts no worker at all — nothing here consumes a queue — so
+      # worker-only changes cannot affect it. They still get Worker / Lint,
+      # Test and Build from ci.yml, and the Jobs Integration job, which is the
+      # one that actually runs the queues. The four dummy TEMPORAL_* variables
+      # that used to be the evidence for this went with ADR-44; the reason has
+      # to outlive them, and it does: a process nobody starts cannot be under
+      # test.
       - 'apps/worker/**'
   schedule:
     # 02:00 UTC daily. Scheduled runs always use the default branch (main).
@@ -56,10 +60,6 @@ env:
   TEST_USER_PASSWORD: 'E2eTestPassword123!'
   SECRET_KEY: 'dummy'
   TARGET_ENV: 'test'
-  TEMPORAL_SERVER_ADDRESS: 'http://example.com'
-  TEMPORAL_NAMESPACE: 'ci'
-  TEMPORAL_CERT: 'dummy'
-  TEMPORAL_KEY: 'dummy'
   MEILISEARCH_URL: 'http://example.com'
   MEILISEARCH_MASTER_KEY: 'dummy'
   SUPABASE_API_URL: 'http://example.com'

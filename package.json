@@ -11,7 +11,6 @@
     "prepare": "husky",
     "db:seed": "tsx --env-file=.env.local ./prisma/seed.ts",
     "ragen:up:full": "docker compose up",
-    "ragen:up:bullmq": "docker compose -f docker-compose.yml -f docker-compose.no-temporal.yml up",
     "ragen:up:app": "docker compose -f docker-compose.app.yml up",
     "admin:dev": "npm run dev --workspace=@webamigos/ragen-admin",
     "admin:build": "turbo run build --filter=@webamigos/ragen-admin",

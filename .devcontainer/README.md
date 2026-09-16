@@ -20,7 +20,7 @@ npm run web:dev     # http://localhost:3000, auto-forwarded
 ```
 
 The machine type matters: `devcontainer.json` asks for **4 cores / 16 GB**.
-The 2-core tier does not fit Postgres, Qdrant, Temporal and a
+The 2-core tier does not fit Postgres, Qdrant, Redis and a
 Turbopack dev server at once — it swaps, and every symptom then looks like a
 slow app instead of a small machine.
 
@@ -44,10 +44,10 @@ None of this applies in a Codespace, where nothing else is running.
 
 ## What starts, and what doesn't
 
-`runServices` in `devcontainer.json` starts Postgres, Qdrant, Redis and
-Temporal. Left out on purpose: Docling (~700 MB,
-needed only when `DOCUMENT_PARSER=docling`), Presidio (~1 GB, PII masking),
-the Temporal UI and the observability profile.
+`runServices` in `devcontainer.json` starts Postgres, Qdrant and Redis — Redis
+because the job queues live there (ADR-44), not only for rate limiting. Left
+out on purpose: Docling (~700 MB, needed only when `DOCUMENT_PARSER=docling`),
+Presidio (~1 GB, PII masking) and the observability profile.
 
 To add one, put it in `runServices` and rebuild the container. The Docker
 socket is mounted, so `docker ps`, `docker logs ragen-qdrant` and
