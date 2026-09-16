@@ -820,7 +820,14 @@ Gated on D2's numbers. The adapter does not move in this phase — see *Answered
       execution is an enterprise adapter*. It supersedes
       [ADR-07](../adrs/07-temporal-document-processing.md), says why the 2024
       rejection no longer applies, and records the drift budget ADR-32 asks for.
-- [ ] **E2.** Compose: `temporal` and `temporal-ui` deleted. Redis gains
+- [ ] **E2.** **Decide the default concurrency first** — D2 measured a 2x at
+      twenty concurrent files between `WORKER_CONCURRENCY` 10 and 20, and 10 is
+      what `DEFAULT_CONCURRENCY` ships. Either raise it or accept that the
+      default is the slow one; what is not acceptable is a deployment meeting
+      the difference on its first bulk import with nothing in front of it. The
+      installer's half is already done — see E3 — so this is about what a
+      deployment that *does not* use the installer gets. Then: compose:
+      `temporal` and `temporal-ui` deleted. Redis gains
       `--maxmemory-policy noeviction` and AOF. Helm: `temporal.yaml` deleted,
       `redis.enabled: true` and its "rate limiting only" comment rewritten.
       Terraform variables dropped. Both CI suites lose the four dummy
@@ -828,6 +835,17 @@ Gated on D2's numbers. The adapter does not move in this phase — see *Answered
 - [ ] **E3.** `create-ragen-app`: `WORKER_RUNTIME=bullmq`, Temporal out of the
       backing-services list and the outro, `REDIS_URL` promoted to required, the
       port-collision check kept honest.
+
+  **`WORKER_CONCURRENCY` is already written by the installer** (decided
+  2026-09-16, shipped ahead of this phase because it only fires when an
+  operator explicitly picks BullMQ, which they can do today). It writes an
+  explicit `20` rather than leaving the code's 10, and a constant rather than
+  something derived from `os.cpus()`: an ingest is almost entirely waiting — on
+  storage, on the parser, on the embedding provider — so core count predicts
+  nothing about how many can be in flight, and a hardware-derived number would
+  look principled and mean less. It lands in `.env` rather than being applied
+  silently, because the ceiling that really binds is the model provider's rate
+  limit and the operator is the only one who knows it.
 - [ ] **E4.** Docs: `docs/companion-services.md`, `docs/architecture.md`, the
       generated configuration reference, `AGENTS.md` (Task Router row, Core
       Surfaces, Commands), `apps/worker/AGENTS.md` (the "Temporal-Specific
