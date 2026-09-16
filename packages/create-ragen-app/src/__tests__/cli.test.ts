@@ -509,3 +509,34 @@ describe('run', () => {
     });
   });
 });
+
+describe('a docker start that fails', () => {
+  /**
+   * The one step whose failure must not abort the install.
+   *
+   * Every other step here stops, because carrying on would leave a tree that
+   * fails later somewhere that does not point back. This one is different: the
+   * files are already written and correct, and the usual cause is the conflict
+   * the warning above predicts — another Ragen stack holding these container
+   * names and ports. Aborting leaves a complete install, a raw `ExecaError`
+   * and no next step.
+   */
+  it('warns and carries on instead of cancelling the install', async () => {
+    vi.mocked(clack.select).mockResolvedValueOnce('skip' as never);
+    vi.mocked(clack.confirm).mockResolvedValue(true as never);
+    vi.mocked(startDockerServices).mockRejectedValueOnce(
+      new Error(
+        'Conflict. The container name "/ragen-qdrant" is already in use',
+      ),
+    );
+
+    await expect(run(['/tmp/ragen-test'])).resolves.toBe(true);
+
+    expect(clack.cancel).not.toHaveBeenCalled();
+    expect(clack.log.warn).toHaveBeenCalledWith(
+      expect.stringContaining('already holding these'),
+    );
+    // The setup after it still runs: the install is finished, not abandoned.
+    expect(generatePrismaClient).toHaveBeenCalled();
+  });
+});

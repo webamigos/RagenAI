@@ -957,12 +957,38 @@ async function maybeStartDocker(
     return true;
   }
 
-  return runStep(
-    clack.spinner(),
-    'Starting docker compose (Postgres, Qdrant, Redis, …)',
-    'Backing services started.',
-    () => startDockerServices({ cwd: targetDir, profiles }),
-  );
+  const spinner = clack.spinner();
+  spinner.start('Starting docker compose (Postgres, Qdrant, Redis, …)');
+
+  try {
+    await startDockerServices({ cwd: targetDir, profiles });
+    spinner.stop('Backing services started.');
+  } catch (error) {
+    // **Not fatal, deliberately.** Every other step here aborts the install on
+    // failure because it would leave a tree that fails later; this one is the
+    // exception. The files are already written and correct, and the usual
+    // reason compose fails is the one the warning above predicts — another
+    // Ragen stack holding these container names and ports. Stopping there
+    // leaves someone with a complete install, a raw `ExecaError` and no next
+    // step, which is how a first run ends in a support question.
+    spinner.stop('Backing services — not started.', 1);
+    clack.log.warn(
+      [
+        'docker compose could not start the services, and the install carried',
+        'on: the files are written, so this is the one step you can redo by',
+        'hand. The usual cause is another Ragen stack already holding these',
+        'container names and host ports — compose says so with "Conflict. The',
+        'container name … is already in use".',
+        '',
+        'Either stop the other stack, or start this one under its own name and',
+        'ports with the command printed above, then point .env.local at them.',
+        '',
+        `The error was: ${String(error)}`,
+      ].join('\n'),
+    );
+  }
+
+  return true;
 }
 
 async function maybeRunFirstTimeSetup(
