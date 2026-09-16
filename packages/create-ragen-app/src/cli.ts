@@ -42,9 +42,9 @@ import {
   type StorageSelection,
 } from './storage-provider';
 import {
+  DEFAULT_TEMPORAL_SERVER_ADDRESS,
   resolveWorkerRuntimeSelection,
   WORKER_RUNTIME_LABELS,
-  type WorkerRuntimeChoice,
   type WorkerRuntimeSelection,
 } from './worker-runtime';
 import {
@@ -296,13 +296,15 @@ export async function run(argv: string[]): Promise<boolean> {
       `  cd ${targetDir}`,
       '  npm run api:dev     # in one terminal',
       '  npm run web:dev     # in another',
+      '  npm run worker:dev  # in a third — document ingest runs here',
       '',
       // Both, not just web: apps/web delegates thread creation, the thread
       // sidebar and notifications to apps/api (ADR-21), so starting only the
       // web app gets you a panel that loads and a chat that cannot open a
       // thread.
       'apps/api is not optional — the web app creates threads through it,',
-      'so chat fails without it.',
+      'so chat fails without it. Without the worker an upload is accepted and',
+      'never parsed: the queue fills and nothing drains it.',
       '',
       'App:   http://localhost:3000',
       'API:   http://localhost:3001',
@@ -457,13 +459,14 @@ type WorkerRuntimePromptResult =
   { cancelled: true } | { cancelled: false; selection: WorkerRuntimeSelection };
 
 /**
- * Unattended installs take Temporal, the shipped default.
+ * Unattended installs take BullMQ, the shipped default.
  *
- * Not BullMQ, even though it needs less: switching the runtime is a decision
- * about what a deployment runs, and `--provider` exists so CI can install
- * without answering questions — not so it can pick a different engine on the
- * operator's behalf. An install that wants BullMQ says so in `.env.local`, or
- * answers the prompt.
+ * The reasoning did not change when the answer did: `--yes` means "accept the
+ * defaults", not "pick an engine on the operator's behalf". It used to answer
+ * Temporal because that is what the compose file ran; ADR-44 took Temporal out
+ * of it, so answering Temporal now would scaffold an install whose worker
+ * connects to a server nobody started. An install that wants durable execution
+ * answers the prompt, and brings its own address with it.
  */
 async function resolveWorkerRuntime(
   args: CliArgs,
@@ -471,7 +474,7 @@ async function resolveWorkerRuntime(
   if (isUnattended(args)) {
     return {
       cancelled: false,
-      selection: resolveWorkerRuntimeSelection('temporal'),
+      selection: resolveWorkerRuntimeSelection('bullmq'),
     };
   }
   return promptWorkerRuntime();
@@ -480,7 +483,9 @@ async function resolveWorkerRuntime(
 async function promptWorkerRuntime(): Promise<WorkerRuntimePromptResult> {
   const choice = await clack.select({
     message: 'Which engine should run background jobs?',
-    options: (['temporal', 'bullmq'] as const).map((value) => ({
+    // BullMQ first, because clack's first option is the one a bare Enter
+    // takes — and it is the one this install's compose file can actually run.
+    options: (['bullmq', 'temporal'] as const).map((value) => ({
       value,
       label: WORKER_RUNTIME_LABELS[value],
     })),
@@ -490,9 +495,40 @@ async function promptWorkerRuntime(): Promise<WorkerRuntimePromptResult> {
     return { cancelled: true };
   }
 
+  if (choice !== 'temporal') {
+    return {
+      cancelled: false,
+      selection: resolveWorkerRuntimeSelection('bullmq'),
+    };
+  }
+
+  // Asked rather than defaulted, because the answer stopped being local.
+  // Temporal left the compose file with ADR-44, so this address names a server
+  // the operator runs; `localhost:7233` is right on a laptop and silent
+  // everywhere else — a deployed worker pointing at its own container connects
+  // to nothing and processes nothing, with no error to read.
+  clack.log.warn(
+    [
+      'Temporal is not in this install’s docker-compose.yml (ADR-44) — it is an',
+      'adapter now, and you run the server yourself. Nothing below starts one.',
+    ].join(' '),
+  );
+
+  const address = await clack.text({
+    message: 'Temporal server address?',
+    initialValue: DEFAULT_TEMPORAL_SERVER_ADDRESS,
+    placeholder: DEFAULT_TEMPORAL_SERVER_ADDRESS,
+  });
+
+  if (clack.isCancel(address)) {
+    return { cancelled: true };
+  }
+
   return {
     cancelled: false,
-    selection: resolveWorkerRuntimeSelection(choice as WorkerRuntimeChoice),
+    selection: resolveWorkerRuntimeSelection('temporal', {
+      temporalServerAddress: String(address),
+    }),
   };
 }
 
@@ -820,20 +856,23 @@ async function maybeStartDocker(
         `  cd ${targetDir} \\`,
         '    && RAGEN_STACK_NAME=my-ragen \\',
         '       POSTGRES_PORT=55532 QDRANT_PORT=6343 QDRANT_GRPC_PORT=6344 \\',
-        '       TEMPORAL_PORT=7243 TEMPORAL_UI_PORT=8090 \\',
         '       DOCLING_PORT=5011 REDIS_PORT=56479 \\',
         '       PRESIDIO_ANALYZER_PORT=5012 PRESIDIO_ANONYMIZER_PORT=5013 \\',
         '       docker compose up -d',
         '',
-        'Then update .env.local to match: DATABASE_URL, QDRANT_URL,',
-        'REDIS_URL, DOCLING_URL, TEMPORAL_SERVER_ADDRESS and the two',
-        'PRESIDIO_* URLs all name a host port.',
+        'Then update .env.local to match: DATABASE_URL, QDRANT_URL, REDIS_URL,',
+        'DOCLING_URL and the two PRESIDIO_* URLs all name a host port.',
+        '',
+        // Not a compose port: the worker serves it itself, so two workers on
+        // one machine collide on it without docker-compose having an opinion.
+        'WORKER_ADMIN_PORT too, if both installs run a worker — the queue',
+        'dashboard is served by the worker process, not by a container.',
       ].join('\n'),
     );
   }
 
   const proceed = await confirmOrSkip(
-    'Start the backing services now? (Postgres, Qdrant, Temporal, Redis, …)',
+    'Start the backing services now? (Postgres, Qdrant, Redis, …)',
     yes,
   );
   if (!proceed) {
@@ -849,7 +888,7 @@ async function maybeStartDocker(
 
   return runStep(
     clack.spinner(),
-    'Starting docker compose (Postgres, Qdrant, Temporal, Redis, …)',
+    'Starting docker compose (Postgres, Qdrant, Redis, …)',
     'Backing services started.',
     () => startDockerServices({ cwd: targetDir }),
   );

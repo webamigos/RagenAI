@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import { ENCRYPTION_SEAM, STORAGE_SEAM } from '@ragenai/env';
+import {
+  ENCRYPTION_SEAM,
+  STORAGE_SEAM,
+  WORKER_RUNTIME_SEAM,
+} from '@ragenai/env';
 
 import {
   ENCRYPTION_LABELS,
@@ -11,6 +15,11 @@ import {
   resolveStorageSelection,
   STORAGE_LABELS,
 } from '../../packages/create-ragen-app/src/storage-provider';
+import {
+  resolveWorkerRuntimeSelection,
+  WORKER_RUNTIME_LABELS,
+  type WorkerRuntimeChoice,
+} from '../../packages/create-ragen-app/src/worker-runtime';
 
 /**
  * `create-ragen-app` is published to npm and `@ragenai/env` is `private: true`,
@@ -54,6 +63,29 @@ const SEAMS = [
         keyId: 'id',
         apiKey: 'key',
       }),
+  },
+  /**
+   * The third seam the wizard answers, and the one where the required variable
+   * is the whole point: since #1224 a producer with no `REDIS_URL` under BullMQ
+   * refuses to boot, and the worker with no `TEMPORAL_SERVER_ADDRESS` under
+   * Temporal connects to a `localhost:7233` that ADR-44 no longer starts. A
+   * wizard that writes the runtime and not its address configures an install
+   * that stops at startup — which is exactly what "writes every variable the
+   * seam requires" is for.
+   *
+   * It writes no config fields: the runtime is environment only, and
+   * `ragen.config.ts` has no group for it.
+   */
+  {
+    name: 'worker runtime',
+    seam: WORKER_RUNTIME_SEAM,
+    labels: WORKER_RUNTIME_LABELS as Record<string, string>,
+    select: (variant: string) => ({
+      ...resolveWorkerRuntimeSelection(variant as WorkerRuntimeChoice, {
+        temporalServerAddress: 'temporal.internal:7233',
+      }),
+      configFields: [],
+    }),
   },
 ] as const;
 

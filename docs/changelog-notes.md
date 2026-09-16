@@ -208,3 +208,13 @@ archive is the blog.
   provider's rate limits bind before the worker does.
   ([#1221](https://github.com/webamigos/RagenAI/pull/1221))
 
+
+- `[brief]` **A new self-hosted install now scaffolds onto BullMQ, and writes
+  the address its runtime needs.** `npm create ragen-app` used to answer
+  Temporal, which stopped being something the install runs when Temporal left
+  the compose file — so the wizard now picks BullMQ on the Redis it already
+  starts, writes `REDIS_URL` with it, and asks where the server is if you pick
+  Temporal instead of writing `localhost:7233` on your behalf. The next-steps
+  block also names `npm run worker:dev`: without a worker an upload is accepted
+  and never parsed.
+  ([#1225](https://github.com/webamigos/RagenAI/pull/1225))

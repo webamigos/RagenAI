@@ -12,9 +12,32 @@ import { randomBytes } from 'node:crypto';
 export type WorkerRuntimeChoice = 'temporal' | 'bullmq';
 
 export const WORKER_RUNTIME_LABELS: Record<WorkerRuntimeChoice, string> = {
-  temporal: 'Temporal — the default. Needs the Temporal service running.',
-  bullmq: 'BullMQ — runs on the Redis this install already has.',
+  bullmq: 'BullMQ — the default. Runs on the Redis this install already has.',
+  temporal:
+    'Temporal — durable execution, on a server you run yourself (ADR-44).',
 };
+
+/**
+ * The published Redis port, not the standard one.
+ *
+ * `docker-compose.yml` maps Redis to 56379 for the reason Postgres is on
+ * 55432: a native Redis on 6379 answers instead of the container, and nothing
+ * about the resulting failure names a port.
+ */
+export const DEFAULT_REDIS_URL = 'redis://localhost:56379';
+
+/**
+ * What the address prompt starts from — the adapter's own fallback, and what
+ * `.env.example` ships.
+ *
+ * Offered as a prefilled answer rather than written silently: right on a
+ * laptop, wrong everywhere else, and a deployed worker pointing at its own
+ * container connects to nothing and processes nothing with no error to read.
+ * Temporal left the compose file with ADR-44, so this address now names a
+ * server the operator runs — which makes it exactly the value they should see
+ * before it is written.
+ */
+export const DEFAULT_TEMPORAL_SERVER_ADDRESS = 'localhost:7233';
 
 /**
  * A password the operator never has to invent, and that is never the same
@@ -67,6 +90,11 @@ export const DEFAULT_ADMIN_USER = 'admin';
  */
 export const DEFAULT_WORKER_CONCURRENCY = '20';
 
+export interface WorkerRuntimeAnswers {
+  /** Blank takes `DEFAULT_TEMPORAL_SERVER_ADDRESS`. */
+  temporalServerAddress: string;
+}
+
 export interface WorkerRuntimeSelection {
   choice: WorkerRuntimeChoice;
   envUpdates: Record<string, string>;
@@ -74,23 +102,43 @@ export interface WorkerRuntimeSelection {
   dashboard?: { user: string; password: string; port: string };
 }
 
+/**
+ * **The runtime each variant cannot work without is written here**, not left to
+ * whatever `.env.example` happens to ship. `REDIS_URL` is required under
+ * BullMQ and `TEMPORAL_SERVER_ADDRESS` under Temporal, and since #1224 the
+ * producers refuse to boot without the one their runtime names — so a wizard
+ * that picks the runtime and not its address configures an install that stops
+ * at startup. `create-ragen-app-knows-the-provider-seams.test.ts` holds this to
+ * the seam.
+ */
 export function resolveWorkerRuntimeSelection(
   choice: WorkerRuntimeChoice,
+  answers?: WorkerRuntimeAnswers,
 ): WorkerRuntimeSelection {
-  // Only an explicit `bullmq` writes dashboard credentials. Matching on the
-  // other branch instead would make any unexpected value — a future variant, a
-  // mistyped flag — quietly configure an operator port.
-  if (choice !== 'bullmq') {
-    return { choice: 'temporal', envUpdates: { WORKER_RUNTIME: 'temporal' } };
+  // Only an explicit `temporal` leaves the default. The fallback used to point
+  // the other way, when Temporal was what the compose file ran; now an
+  // unexpected value — a future variant, a mistyped flag — lands on the runtime
+  // this install actually ships, rather than on one that is no longer there.
+  if (choice === 'temporal') {
+    return {
+      choice: 'temporal',
+      envUpdates: {
+        WORKER_RUNTIME: 'temporal',
+        TEMPORAL_SERVER_ADDRESS:
+          answers?.temporalServerAddress.trim() ||
+          DEFAULT_TEMPORAL_SERVER_ADDRESS,
+      },
+    };
   }
 
   const password = generateAdminPassword();
   const port = '8090';
 
   return {
-    choice,
+    choice: 'bullmq',
     envUpdates: {
       WORKER_RUNTIME: 'bullmq',
+      REDIS_URL: DEFAULT_REDIS_URL,
       WORKER_CONCURRENCY: DEFAULT_WORKER_CONCURRENCY,
       WORKER_ADMIN_USER: DEFAULT_ADMIN_USER,
       WORKER_ADMIN_PASSWORD: password,
