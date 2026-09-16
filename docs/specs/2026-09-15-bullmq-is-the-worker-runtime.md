@@ -829,10 +829,13 @@ Each phase leaves the application working.
 Gated on D2's numbers. The adapter does not move in this phase — see *Answered*
 — so what changes is what an install runs, not where the code lives.
 
-- [ ] **E1.** ADR-44 (reserved): *BullMQ is the worker runtime; durable
-      execution is an enterprise adapter*. It supersedes
-      [ADR-07](../adrs/07-temporal-document-processing.md), says why the 2024
-      rejection no longer applies, and records the drift budget ADR-32 asks for.
+- [x] **E1.** [ADR-44](../adrs/44-bullmq-is-the-worker-runtime.md): *BullMQ is
+      the worker runtime; durable execution is an enterprise adapter*. It
+      supersedes [ADR-07](../adrs/07-temporal-document-processing.md), says why
+      the 2024 rejection no longer applies — the coupling it rejected went away
+      with ADR-26, not with this change — and records the drift budget ADR-32
+      asks for: zero while the adapter is here, bounded by shape afterwards,
+      with the nightly parity job as the detector.
 - [ ] **E2.** **The default concurrency is decided: `DEFAULT_CONCURRENCY` is
       20**, raised on the strength of D2 rather than left at the conservative
       10 — see §3. That covers the deployment that writes its own `.env` or

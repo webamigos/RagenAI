@@ -1,6 +1,12 @@
 # ADR-07: Temporal for Document Processing
 
-**Status:** Accepted
+**Status:** **Superseded by [ADR-44](44-bullmq-is-the-worker-runtime.md)**
+(2026-09-16). Accepted 2024-06-01 and correct for the design as it then stood.
+Its one-line rejection of BullMQ — *"couples processing to the web server
+process"* — was aimed at a coupling that no longer exists: the worker has been
+its own service since [ADR-26](26-absorb-ragen-worker-into-monorepo.md), so the
+engine choice no longer decides where parsing runs. Durable execution survives
+as an enterprise adapter rather than as the default.
 **Date:** 2024-06-01
 
 ## Context
