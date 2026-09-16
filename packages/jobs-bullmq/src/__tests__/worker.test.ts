@@ -1,0 +1,129 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+/**
+ * Construction and consumption are separate here, and that separation is the
+ * whole safety property: a `Worker` takes jobs the moment it exists, so
+ * anything that must happen first — the eviction check, installing the
+ * shutdown task — has to happen between the two.
+ */
+
+const constructed: FakeWorker[] = [];
+
+class FakeWorker {
+  run = vi.fn(async () => undefined);
+  close = vi.fn(async () => undefined);
+  backend = { client: Promise.resolve({ config: vi.fn() }) };
+  constructor(
+    public name: string,
+    public processor: (job: unknown) => Promise<unknown>,
+    public opts: Record<string, unknown>,
+  ) {
+    constructed.push(this);
+  }
+}
+
+class FakeUnrecoverableError extends Error {}
+
+vi.mock('bullmq', () => ({
+  Worker: FakeWorker,
+  UnrecoverableError: FakeUnrecoverableError,
+  Queue: class {},
+  Job: { fromId: vi.fn() },
+}));
+
+const { createBullWorkers, startBullWorkers, closeBullWorkers, QUEUE_NAMES } =
+  await import('../index.js');
+
+const log = { debug: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn() };
+
+const build = () =>
+  createBullWorkers({
+    handlers: {} as never,
+    activities: {},
+    log,
+    isCancelled: async () => false,
+  });
+
+beforeEach(() => {
+  constructed.length = 0;
+  vi.clearAllMocks();
+});
+
+describe('createBullWorkers', () => {
+  it('opens one worker per queue', () => {
+    expect(build()).toHaveLength(QUEUE_NAMES.length);
+  });
+
+  /**
+   * Without this the eviction check races jobs that have already started, and
+   * a check that fails leaves workers consuming from a Redis it just refused.
+   */
+  it('does not start consuming on construction', () => {
+    build();
+
+    expect(constructed.every((worker) => worker.opts.autorun === false)).toBe(
+      true,
+    );
+    expect(
+      constructed.every((worker) => worker.run.mock.calls.length === 0),
+    ).toBe(true);
+  });
+
+  // A blocked event loop cannot renew a lock; BullMQ then calls the job
+  // stalled and runs it a second time in parallel, which for an ingest means
+  // two runs writing the same file's chunks.
+  it('gives every queue the long lock and a single stall allowance', () => {
+    build();
+
+    expect(
+      constructed.every(
+        (worker) =>
+          worker.opts.lockDuration === 300_000 &&
+          worker.opts.maxStalledCount === 1,
+      ),
+    ).toBe(true);
+  });
+
+  // Per-worker, on top of the global ceiling `upsertSchedule` sets: this keeps
+  // one replica from running both nightly jobs at once.
+  it('pins the maintenance queue to one job at a time', () => {
+    build();
+
+    const maintenance = constructed.find(
+      (worker) => worker.name === 'ragen-maintenance',
+    )!;
+    expect(maintenance.opts.concurrency).toBe(1);
+  });
+
+  it('keeps the blocking-connection retry setting consumers need', () => {
+    build();
+
+    expect(
+      (constructed[0].opts.connection as Record<string, unknown>)
+        .maxRetriesPerRequest,
+    ).toBeNull();
+  });
+});
+
+describe('startBullWorkers', () => {
+  it('starts every worker, and only when asked', () => {
+    const workers = build();
+    expect(constructed.every((w) => w.run.mock.calls.length === 0)).toBe(true);
+
+    startBullWorkers(workers);
+
+    expect(constructed.every((w) => w.run.mock.calls.length === 1)).toBe(true);
+  });
+});
+
+describe('closeBullWorkers', () => {
+  it('closes every worker, so a redeploy does not strand locks', async () => {
+    const workers = build();
+
+    await closeBullWorkers(workers);
+
+    expect(constructed.every((w) => w.close.mock.calls.length === 1)).toBe(
+      true,
+    );
+  });
+});

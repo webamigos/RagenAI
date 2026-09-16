@@ -5,7 +5,7 @@ import * as activities from './activities/index.js';
 import { TASK_QUEUE_NAME } from './shared.js';
 import { TEMPORAL_SERVER_ADDRESS } from './consts.js';
 import { parseWorkerEnv } from './config/env.js';
-import { resolveRunnableRuntime } from './runtime-guard.js';
+import { resolveWorkerRuntime } from '@ragenai/jobs';
 import {
   isPiiMaskingMisconfigured,
   PII_MASKING_MISCONFIGURED_MESSAGE,
@@ -25,20 +25,6 @@ if (!env.ok) {
 }
 
 /**
- * A runtime the contract accepts but this build cannot run is refused here,
- * before anything connects — see `runtime-guard.ts`. Falling through to the
- * Temporal bootstrap below would give an operator who selected BullMQ a worker
- * that starts, stays healthy and never picks up a job.
- */
-const runnable = resolveRunnableRuntime();
-
-if (!runnable.ok) {
-  // eslint-disable-next-line no-console
-  console.error(runnable.message);
-  process.exit(1);
-}
-
-/**
  * `FEATURE_FLAG_PII_MASKING=1` used to be the whole switch. Availability now
  * follows the two Presidio URLs, so an upgrade that carried the flag and
  * relied on the old built-in defaults would stop masking — and a security
@@ -53,12 +39,7 @@ if (isPiiMaskingMisconfigured()) {
 
 import { logger } from './services/logger.js';
 
-async function run() {
-  const { instrumentationReady } = await import('./instrument.js');
-  await instrumentationReady;
-
-  cleanStaleTmpFiles();
-
+async function runTemporal(): Promise<void> {
   const connection = await NativeConnection.connect({
     address: TEMPORAL_SERVER_ADDRESS,
   });
@@ -73,6 +54,54 @@ async function run() {
 
   await worker.run();
   await connection.close();
+}
+
+/**
+ * BullMQ has no equivalent of `worker.run()` blocking until shutdown — the
+ * workers consume from the moment they are constructed — so this waits for a
+ * signal and closes them.
+ *
+ * Closing is not tidiness. A process killed mid-job leaves its lock held until
+ * it expires, five minutes later by `LOCK_DURATION_MS`, and BullMQ then
+ * redelivers work that was nearly finished. Every redeploy would pay the cost
+ * that long lock exists to avoid. `close()` stops taking new jobs and waits
+ * for the ones in flight.
+ */
+async function runBullMq(): Promise<void> {
+  const { startBullMqWorker, closeBullWorkers } =
+    await import('./bullmq-runtime.js');
+  const { registerShutdownTask } = await import('./instrument.js');
+
+  const workers = await startBullMqWorker();
+
+  // Registered rather than listening for SIGTERM here. `instrument.ts` already
+  // installs the signal handlers and they end in `process.exit(0)` — a second
+  // handler does not get a turn, it gets killed halfway through. The telemetry
+  // flush is fast and a drain is not, so the drain would have been the half
+  // that lost.
+  registerShutdownTask(async () => {
+    logger.info('draining BullMQ workers');
+    await closeBullWorkers(workers);
+  });
+
+  // Nothing left to await. The workers hold their connections, so the process
+  // stays alive, and shutdown belongs to the owner above.
+  await new Promise<never>(() => {});
+}
+
+async function run() {
+  const { instrumentationReady } = await import('./instrument.js');
+  await instrumentationReady;
+
+  cleanStaleTmpFiles();
+
+  // The only place this process branches on the runtime. What follows each
+  // branch is engine-specific by definition; what the handlers do is not,
+  // which is the whole return on the seam.
+  const runtime = resolveWorkerRuntime();
+  logger.info({ runtime }, 'starting worker');
+
+  await (runtime === 'bullmq' ? runBullMq() : runTemporal());
 }
 
 run().catch((err) => {
