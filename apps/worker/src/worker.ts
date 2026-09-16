@@ -70,30 +70,23 @@ async function runTemporal(): Promise<void> {
 async function runBullMq(): Promise<void> {
   const { startBullMqWorker, closeBullWorkers } =
     await import('./bullmq-runtime.js');
+  const { registerShutdownTask } = await import('./instrument.js');
 
   const workers = await startBullMqWorker();
 
-  await new Promise<void>((resolve) => {
-    let closing = false;
-
-    const shutdown = (signal: string): void => {
-      // A second signal during a slow drain must not start a second close:
-      // the first is already waiting for the jobs in flight.
-      if (closing) {
-        logger.warn({ signal }, 'already draining; ignoring');
-        return;
-      }
-      closing = true;
-
-      logger.info({ signal }, 'draining BullMQ workers');
-      closeBullWorkers(workers)
-        .catch((err) => logger.error({ err }, 'failed to close cleanly'))
-        .finally(resolve);
-    };
-
-    process.once('SIGTERM', () => shutdown('SIGTERM'));
-    process.once('SIGINT', () => shutdown('SIGINT'));
+  // Registered rather than listening for SIGTERM here. `instrument.ts` already
+  // installs the signal handlers and they end in `process.exit(0)` — a second
+  // handler does not get a turn, it gets killed halfway through. The telemetry
+  // flush is fast and a drain is not, so the drain would have been the half
+  // that lost.
+  registerShutdownTask(async () => {
+    logger.info('draining BullMQ workers');
+    await closeBullWorkers(workers);
   });
+
+  // Nothing left to await. The workers hold their connections, so the process
+  // stays alive, and shutdown belongs to the owner above.
+  await new Promise<never>(() => {});
 }
 
 async function run() {

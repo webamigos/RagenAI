@@ -1,3 +1,25 @@
+/**
+ * Work that must finish before the process exits.
+ *
+ * There is exactly one shutdown owner in this process, and it is here, because
+ * this file already installs the SIGTERM/SIGINT handlers and they end in
+ * `process.exit(0)`. A second handler elsewhere does not get a turn: whichever
+ * flush finishes first kills the process out from under the other. That is not
+ * hypothetical — the BullMQ drain was written as its own handler and would have
+ * been cut short by this one after the telemetry flush, which is fast, while
+ * the drain waits for jobs that are not.
+ *
+ * So a component with work to finish registers it rather than listening for
+ * the signal itself.
+ */
+type ShutdownTask = () => Promise<void>;
+
+const shutdownTasks: ShutdownTask[] = [];
+
+export function registerShutdownTask(task: ShutdownTask): void {
+  shutdownTasks.push(task);
+}
+
 import {
   NodeTracerProvider,
   BatchSpanProcessor,
@@ -105,7 +127,22 @@ function registerProvider() {
     instrumentations: [new HttpInstrumentation(), new PgInstrumentation()],
   });
 
+  let closing = false;
+
   const shutdown = async () => {
+    // A second signal during a slow drain must not start a second shutdown —
+    // the first is already waiting for work in flight.
+    if (closing) {
+      return;
+    }
+    closing = true;
+
+    // Registered work first, telemetry second, exit last. The order is the
+    // whole point: a BullMQ drain can take as long as the jobs in flight, and
+    // those jobs emit spans — flushing before they finish would lose exactly
+    // the traces of the work that took longest.
+    await Promise.allSettled(shutdownTasks.map((task) => task()));
+
     await Promise.allSettled([
       tracerProvider?.shutdown(),
       meterProvider?.shutdown(),

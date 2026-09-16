@@ -22,6 +22,7 @@ export {
   assertQueueRedisHealthy,
   createBullWorkers,
   closeBullWorkers,
+  startBullWorkers,
   DEFAULT_CONCURRENCY,
   LOCK_DURATION_MS,
   MAX_STALLED_COUNT,

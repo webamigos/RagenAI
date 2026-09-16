@@ -102,11 +102,17 @@ function asEngineFailure(error: unknown): unknown {
 }
 
 /**
- * Open one `Worker` per queue.
+ * Open one `Worker` per queue, **not yet consuming**.
  *
  * Per queue rather than one for everything, so a queue of slow ingests cannot
  * starve document generation, and each can be given its own concurrency later
  * without reshaping this.
+ *
+ * `autorun: false` is the load-bearing option. A `Worker` starts taking jobs
+ * the moment it is constructed, which would mean the eviction check and the
+ * shutdown handler both race work that has already begun — and a failed check
+ * would leave workers consuming from a Redis it just refused. Construction and
+ * consumption are separated so the caller decides when it is safe to start.
  */
 /**
  * The consumers this app is running.
@@ -160,6 +166,7 @@ export function createBullWorkers(options: CreateWorkersOptions): BullWorkers {
       },
       {
         connection,
+        autorun: false,
         // The maintenance queue runs the two nightly jobs, which must not
         // overlap. Its ceiling is set globally by `upsertSchedule`; this keeps
         // a single replica from running both at once as well.
@@ -202,4 +209,17 @@ export async function assertQueueRedisHealthy(
 
   const client = await worker.backend.client;
   await assertNoEviction(client as unknown as RedisConfigReader, log);
+}
+
+/**
+ * Begin consuming, once the caller has decided it is safe to.
+ *
+ * Separate from construction because everything that must happen first — the
+ * eviction check, installing the shutdown task — needs the workers to exist
+ * and needs them not to be running yet.
+ */
+export function startBullWorkers(workers: BullWorkers): void {
+  for (const worker of workers) {
+    void worker.run();
+  }
 }

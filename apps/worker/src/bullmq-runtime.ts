@@ -2,6 +2,7 @@ import {
   assertQueueRedisHealthy,
   closeBullWorkers,
   createBullWorkers,
+  startBullWorkers,
   type BullWorkers,
   type JobHandlers,
 } from '@ragenai/jobs-bullmq';
@@ -84,10 +85,22 @@ export async function startBullMqWorker(): Promise<BullWorkers> {
     isCancelled: ({ fileId, orgId }) => db.isIngestCancelled(fileId, orgId),
   });
 
-  // After the workers exist, so it borrows a connection that is already
-  // configured — and before any job can run, because the answer decides
-  // whether running jobs is safe at all.
-  await assertQueueRedisHealthy(workers, logger);
+  // Between construction and consumption, which is why `createBullWorkers`
+  // builds them with `autorun: false`. The check borrows a connection that is
+  // already configured, and no job can have started while it runs — a failed
+  // check that left workers consuming from a Redis it had just refused would
+  // be worse than no check.
+  try {
+    await assertQueueRedisHealthy(workers, logger);
+  } catch (error) {
+    // Close what was opened before letting the boot fail. Otherwise the
+    // process exits holding connections, and the error a reader sees is a
+    // socket teardown rather than the eviction policy that caused it.
+    await closeBullWorkers(workers).catch(() => undefined);
+    throw error;
+  }
+
+  startBullWorkers(workers);
 
   logger.info(
     { queues: workers.map((worker) => worker.name) },

@@ -34,15 +34,64 @@ const handlerFiles = (dir: string): string[] =>
     return /\.ts$/.test(entry) ? [path] : [];
   });
 
-/** `ctx.steps<...>({ ... })` and the object literal that follows it. */
-const STEP_CALL = /ctx\s*\.\s*steps\s*(?:<[^>]*>)?\s*\(/g;
+const STEP = /ctx\s*\.\s*steps\b/g;
+
+/**
+ * Skip the type argument, if there is one, and return the index of the `(`.
+ *
+ * A flat `<[^>]*>` cannot do this. It stops at the first `>`, which is right
+ * for `ctx.steps<typeof activities>(…)` and wrong for a type argument
+ * containing a nested generic or an arrow — `<{ load: () => Promise<string> }>`
+ * ends the match at the `>` in `=>`, the following `\s*\(` then fails, and the
+ * call is **not matched at all**. A guard that silently stops seeing a call
+ * site is the failure mode this repository keeps paying for, so the scan
+ * tracks depth and steps over `=>` instead.
+ */
+function openParenAfter(source: string, from: number): number {
+  let i = from;
+  while (i < source.length && /\s/.test(source[i])) {
+    i++;
+  }
+
+  if (source[i] !== '<') {
+    return source[i] === '(' ? i : -1;
+  }
+
+  let depth = 0;
+  for (; i < source.length; i++) {
+    const char = source[i];
+    if (char === '<') {
+      depth++;
+    } else if (char === '>') {
+      // The `>` of an arrow closes nothing.
+      if (source[i - 1] === '=') {
+        continue;
+      }
+      depth--;
+      if (depth === 0) {
+        i++;
+        break;
+      }
+    }
+  }
+
+  while (i < source.length && /\s/.test(source[i])) {
+    i++;
+  }
+  return source[i] === '(' ? i : -1;
+}
 
 function policyBodies(source: string): string[] {
   const bodies: string[] = [];
 
-  for (const match of source.matchAll(STEP_CALL)) {
+  for (const match of source.matchAll(STEP)) {
+    const paren = openParenAfter(source, match.index + match[0].length);
+    if (paren === -1) {
+      continue;
+    }
+
     let depth = 0;
-    const from = match.index + match[0].length;
+    const from = paren + 1;
 
     for (let i = from; i < source.length; i++) {
       const char = source[i];
