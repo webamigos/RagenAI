@@ -300,7 +300,7 @@ describe('bulkReembedFilesAction', () => {
     mockUpdate.mockResolvedValue(undefined);
   });
 
-  it('starts the job and updates status per file after success', async () => {
+  it('clears the previous run status before starting, scoped to the org', async () => {
     mockFindMany.mockResolvedValue([
       {
         id: 'file-1',
@@ -317,13 +317,32 @@ describe('bulkReembedFilesAction', () => {
     expect(mockJobStart).toHaveBeenCalledTimes(1);
     expect(mockUpdate).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: { id: 'file-1' },
-        data: expect.objectContaining({ embeddingStatus: 'NOT_STARTED' }),
+        // Scoped: this was `{ id }` alone, which is the shape the tenant-scope
+        // guard exists to catch.
+        where: { id: 'file-1', organizationId: 'org-1' },
+        data: expect.objectContaining({
+          embeddingStatus: 'NOT_STARTED',
+          parsingStatus: 'NOT_STARTED',
+          // Recorded so a cancel can find the run; this path used to leave it
+          // unset, which made a bulk re-embed uncancellable.
+          workflowId: expect.stringMatching(/^reembed-/),
+        }),
       }),
+    );
+    // Order is the property: the worker refuses to write over CANCELLED, so a
+    // job that started first would record no status at all.
+    expect(mockUpdate.mock.invocationCallOrder[0]).toBeLessThan(
+      mockJobStart.mock.invocationCallOrder[0],
     );
   });
 
-  it('does NOT update status when the job fails to start', async () => {
+  /**
+   * The reset now precedes the start, so "no update on failure" is no longer
+   * true — and could not be, since the status it clears is what the run needs
+   * cleared before it begins. The file is left reset and reported as failed,
+   * which is the honest pair: visibly un-ingested, and named to the caller.
+   */
+  it('reports the failure, with the file left reset rather than half-started', async () => {
     mockFindMany.mockResolvedValue([
       {
         id: 'file-2',
@@ -340,7 +359,12 @@ describe('bulkReembedFilesAction', () => {
     expect(result.failed).toEqual([
       { fileId: 'file-2', fileName: 'bad.pdf', error: 'workflow_start_failed' },
     ]);
-    expect(mockUpdate).not.toHaveBeenCalled();
+    expect(mockUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 'file-2', organizationId: 'org-1' },
+        data: expect.objectContaining({ embeddingStatus: 'NOT_STARTED' }),
+      }),
+    );
   });
 
   it('reports not_found for fileIds missing from DB', async () => {

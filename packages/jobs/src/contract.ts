@@ -80,43 +80,27 @@ export type JobName = (typeof JOB_NAMES)[number];
  * have (`organizationSlug`, `userEmail`, `requestId`, `piiPolicy`) and its
  * timestamps are strings, because a payload is JSON on the wire.
  */
+/**
+ * The ingest payload: which file, in which organization.
+ *
+ * It used to be the `user_files` row — twenty-odd fields, nine of them dates
+ * the payload typed as strings — plus context the row did not have. Every
+ * producer built it through `toRunFileEmbeddingsPayload`, which existed
+ * because nine call sites had each converted a different subset by hand.
+ *
+ * All of it is read from the row now, and the row is the better source: every
+ * producer already writes what it knows *before* it enqueues, so a payload
+ * copy could only be equal or stale. The Drive sync made that plainest — it
+ * wrote `fileName`, `fileSize` and `metadata` to the row and then repeated the
+ * same three values into the payload, because the object it held in memory was
+ * the stale one.
+ *
+ * `requestId` is gone too: it was the run id echoed back for log correlation,
+ * and a handler has `ctx.runId`.
+ */
 export interface RunFileEmbeddingsPayload {
-  id: string;
-  organizationId: string;
-  fileName: string;
-  fileSize: number;
-  fileType: FileType;
-  createdAt: string | null;
-  updatedAt: string | null;
-  metadata: unknown;
-  documentId: string | null;
-  projectId: string | null;
-  isUploaded: boolean;
-  uploadedAt: string | null;
-  parsingStatus: ParsingStatus;
-  parsingStartedAt: string | null;
-  parsingCompletedAt: string | null;
-  parsingFailedAt: string | null;
-  embeddingStatus: EmbeddingStatus;
-  embeddingStartedAt: string | null;
-  embeddingCompletedAt: string | null;
-  embeddingFailedAt: string | null;
-  isBinaryFile: boolean;
-  fileExtension?: string | null;
-  fileMimeType?: string | null;
-  thumbnailS3Key?: string | null;
-  sourceFileId?: string | null;
-  folderId?: string | null;
-  pageCount?: number | null;
-  /** ISO 639-3 code detected by franc in the worker. */
-  language?: string | null;
-  organizationSlug?: string;
-  userEmail?: string;
-  userId?: string;
-  /** The run id, echoed back so a log line can be correlated end to end. */
-  requestId?: string;
-  /** PII masking policy applied at ingest time. */
-  piiPolicy?: PiiPolicy;
+  fileId: string;
+  orgId: string;
 }
 
 export interface ScrapeWebsitePayload {

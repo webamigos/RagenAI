@@ -105,7 +105,7 @@ describe('reembedFileCommand', () => {
     expect(mockJobStart).toHaveBeenCalledWith(
       'runFileEmbeddings',
       'reembed-test-nano-id',
-      expect.objectContaining({ id: 'file-1' }),
+      { fileId: 'file-1', orgId: 'org-1' },
     );
     expect(result).toEqual({ workflowId: 'reembed-test-nano-id' });
   });
@@ -120,47 +120,33 @@ describe('reembedFileCommand', () => {
     expect(mockJobStart).not.toHaveBeenCalled();
   });
 
-  it('passes piiPolicy from the DB record into the payload', async () => {
-    mockFindFirst.mockResolvedValue(makeFileRecord({ piiPolicy: 'NONE' }));
-
-    await reembedFileCommand('file-1', 'org-1');
-
-    expect(mockJobStart).toHaveBeenCalledWith(
-      'runFileEmbeddings',
-      expect.any(String),
-      expect.objectContaining({ piiPolicy: 'NONE' }),
-    );
-  });
-
-  it('converts Date fields to ISO strings in the payload', async () => {
-    const uploadedAt = new Date('2024-03-15T08:30:00Z');
-    const embeddingCompletedAt = new Date('2024-03-15T08:31:00Z');
+  /**
+   * The payload is two identifiers now, so there is nothing left to get wrong
+   * about its shape — which is what the three tests replaced here asserted: a
+   * `piiPolicy` copied from the row, and nine `Date` columns converted to ISO
+   * strings because `client.workflow.start` took `args: unknown[]` and the
+   * serializer did it silently.
+   *
+   * What replaces them is the property that made the copy unnecessary: the
+   * ingest reads the row, so the row is the only thing that has to be right.
+   */
+  it('sends identifiers rather than a copy of the row', async () => {
     mockFindFirst.mockResolvedValue(
-      makeFileRecord({ uploadedAt, embeddingCompletedAt }),
-    );
-
-    await reembedFileCommand('file-1', 'org-1');
-
-    expect(mockJobStart).toHaveBeenCalledWith(
-      'runFileEmbeddings',
-      expect.any(String),
-      expect.objectContaining({
-        uploadedAt: '2024-03-15T08:30:00.000Z',
-        embeddingCompletedAt: '2024-03-15T08:31:00.000Z',
+      makeFileRecord({
+        piiPolicy: 'NONE',
+        uploadedAt: new Date('2024-03-15T08:30:00Z'),
       }),
     );
-  });
-
-  it('passes requestId equal to the run id in the payload', async () => {
-    mockFindFirst.mockResolvedValue(makeFileRecord());
 
     await reembedFileCommand('file-1', 'org-1');
 
-    expect(mockJobStart).toHaveBeenCalledWith(
-      'runFileEmbeddings',
-      expect.any(String),
-      expect.objectContaining({ requestId: 'reembed-test-nano-id' }),
-    );
+    const payload = mockJobStart.mock.calls[0][2] as Record<string, unknown>;
+    expect(payload).toEqual({ fileId: 'file-1', orgId: 'org-1' });
+    // No row fields rode along: a stale copy of any of these is what the
+    // handler reading the row exists to prevent.
+    expect(payload).not.toHaveProperty('piiPolicy');
+    expect(payload).not.toHaveProperty('uploadedAt');
+    expect(payload).not.toHaveProperty('fileName');
   });
 
   it('re-throws workflow start errors', async () => {

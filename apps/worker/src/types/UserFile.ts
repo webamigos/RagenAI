@@ -1,13 +1,12 @@
 /**
- * The `runFileEmbeddings` workflow payload — *not* a mirror of the
- * `user_files` row, which is what it looks like at first glance.
+ * The `user_files` row, as the worker reads it.
  *
- * apps/web starts the workflow with this, so it carries context the row does
- * not have (`organizationSlug`, `userEmail`, `requestId`, `piiPolicy`) and its
- * timestamps are strings, because a Temporal payload is JSON on the wire. Its
- * shape is in the history of every unfinished run, so it is not something to
- * "unify" with the schema — see
- * [ADR-40](../../../docs/adrs/40-worker-uses-prisma-not-knex.md).
+ * It used to be the `runFileEmbeddings` *payload*, which looked like the row
+ * and was not: it carried context the row did not have (`organizationSlug`,
+ * `userEmail`, `requestId`) and every producer built it by hand. The payload
+ * is two identifiers now and the handler reads the row, so this describes the
+ * row — timestamps still typed as strings, because they cross an activity
+ * boundary as JSON.
  *
  * The three enums it uses are a different matter: those were declared here by
  * hand *and* in `services/db/types/UserFile.ts`, two copies of values the
@@ -70,11 +69,8 @@ export interface UserFile {
   pageCount?: number | null;
   /** ISO 639-3 code detected by franc in the Temporal worker. */
   language?: string | null;
-  organizationSlug?: string;
-  userEmail?: string;
-  userId?: string;
-  /** Temporal workflow ID used as e2e correlation ID. Set by apps/web's /api/upload. */
-  requestId?: string;
+  /** Who uploaded it. Notifications and document authorship are attributed here. */
+  ownerId?: string | null;
   /** PII masking policy applied at ingest time. */
   piiPolicy?: 'NONE' | 'TOXIC_ONLY' | 'STRICT';
 }

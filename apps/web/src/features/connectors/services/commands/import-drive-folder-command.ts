@@ -9,7 +9,6 @@ import { listDriveFolderFilesQuery } from '../queries/list-drive-folder-files-qu
 import { getDriveFileContentQuery } from '../queries/get-drive-file-content-query';
 import { uploadToS3WithOrg } from '@/app/lib/services/storage';
 import { jobs } from '@/libs/jobs';
-import { toRunFileEmbeddingsPayload } from '@ragenai/jobs';
 import { Workflow } from '@/features/documents/contracts/document.types';
 import { assertCanManageDocuments } from '@/features/subscriptions/services/feature-guards';
 
@@ -174,17 +173,10 @@ export const importDriveFolderCommand = async (
 
     // Start embedding workflow
     const workflowId = `drive-import-${nanoid()}`;
-    await jobs().start(
-      Workflow.RUN_FILE_EMBEDDINGS,
-      workflowId,
-      toRunFileEmbeddingsPayload(fileRecord, {
-        projectId: project.id,
-        organizationSlug: org.slug ?? undefined,
-        organizationId: org.id,
-        userEmail: user?.email ?? undefined,
-        userId,
-      }),
-    );
+    await jobs().start(Workflow.RUN_FILE_EMBEDDINGS, workflowId, {
+      fileId: fileRecord.id,
+      orgId: fileRecord.organizationId,
+    });
 
     logger.info(
       {

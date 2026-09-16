@@ -51,8 +51,13 @@ export async function sanitizeDocuments({
   rawDocs: Document[];
   fileId: UserFile['id'];
   organizationId: UserFile['organizationId'];
-  userId?: UserFile['userId'];
-  requestId?: UserFile['requestId'];
+  /**
+   * Who to attribute the security event to, and which run found it. Neither
+   * is a column: the owner comes off the row and the run id off `ctx.runId`,
+   * since the ingest payload shrank to identifiers.
+   */
+  userId?: string | null;
+  requestId?: string;
   fileName: UserFile['fileName'];
   fileType: FileType;
 }): Promise<Document[]> {

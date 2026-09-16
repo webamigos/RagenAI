@@ -8,7 +8,6 @@ import { listDriveFolderFilesQuery } from '../queries/list-drive-folder-files-qu
 import { getDriveFileContentQuery } from '../queries/get-drive-file-content-query';
 import { uploadToS3WithOrg } from '@/app/lib/services/storage';
 import { jobs } from '@/libs/jobs';
-import { toRunFileEmbeddingsPayload } from '@ragenai/jobs';
 import { Workflow } from '@/features/documents/contracts/document.types';
 import { assertCanManageDocuments } from '@/features/subscriptions/services/feature-guards';
 
@@ -209,26 +208,10 @@ export const syncDriveFolderCommand = async (
 
         // Re-run embedding
         const workflowId = `drive-sync-${nanoid()}`;
-        await jobs().start(
-          Workflow.RUN_FILE_EMBEDDINGS,
-          workflowId,
-          toRunFileEmbeddingsPayload(existingFile, {
-            fileSize: fileContent.byteLength,
-            fileName: driveFile.name.endsWith('.md')
-              ? driveFile.name
-              : `${driveFile.name}.md`,
-            metadata: {
-              driveFileId: driveFile.id,
-              driveFolderId: syncRecord.driveFolderId,
-              driveModifiedTime: driveFile.modified_time,
-            },
-            projectId: project.id,
-            organizationSlug: org.slug ?? undefined,
-            organizationId: org.id,
-            userEmail: user?.email ?? undefined,
-            userId,
-          }),
-        );
+        await jobs().start(Workflow.RUN_FILE_EMBEDDINGS, workflowId, {
+          fileId: existingFile.id,
+          orgId: existingFile.organizationId,
+        });
 
         logger.info(
           { workflowId, driveFileId: driveFile.id, fileName: driveFile.name },
@@ -283,17 +266,10 @@ export const syncDriveFolderCommand = async (
       });
 
       const workflowId = `drive-sync-${nanoid()}`;
-      await jobs().start(
-        Workflow.RUN_FILE_EMBEDDINGS,
-        workflowId,
-        toRunFileEmbeddingsPayload(fileRecord, {
-          projectId: project.id,
-          organizationSlug: org.slug ?? undefined,
-          organizationId: org.id,
-          userEmail: user?.email ?? undefined,
-          userId,
-        }),
-      );
+      await jobs().start(Workflow.RUN_FILE_EMBEDDINGS, workflowId, {
+        fileId: fileRecord.id,
+        orgId: fileRecord.organizationId,
+      });
 
       logger.info(
         { workflowId, driveFileId: driveFile.id, fileName: driveFile.name },

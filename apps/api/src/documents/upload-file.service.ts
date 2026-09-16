@@ -8,7 +8,6 @@ import { FoldersService } from './folders.service.js';
 import { S3StorageService } from '../storage/s3-storage.service.js';
 import { JobsService } from '../jobs/jobs.service.js';
 import { Workflow } from '../jobs/jobs.consts.js';
-import { toRunFileEmbeddingsPayload } from '@ragenai/jobs';
 import { parseFile } from './parse-file.js';
 import { PiiPolicy, type UserFile } from '../generated/prisma/client.js';
 import { SubscriptionsService } from '../subscriptions/subscriptions.service.js';
@@ -95,10 +94,8 @@ export class UploadFileService {
     const {
       file,
       organizationId,
-      organizationSlug,
       projectId,
       userId,
-      userEmail,
       folderId = null,
       piiPolicy,
     } = params;
@@ -206,11 +203,11 @@ export class UploadFileService {
       );
     }
 
-    const updatedRecord = await this.prisma.client.userFile.update({
-      where: { id: fileRecord.id, organizationId },
-      data: { isUploaded: true, uploadedAt: new Date() },
-    });
-
+    // Resolved *into the row*, not into the payload. An explicit policy was
+    // already written at create time; a folder-derived one was not — it only
+    // ever reached the ingest as a payload field. Now that the ingest reads
+    // the row, leaving it out would upload a file into a STRICT folder and
+    // mask it as TOXIC_ONLY, silently and only for the run that mattered.
     let resolvedPiiPolicy: PiiPolicy = PiiPolicy.TOXIC_ONLY;
     if (piiPolicy) {
       resolvedPiiPolicy = piiPolicy;
@@ -221,21 +218,24 @@ export class UploadFileService {
       );
     }
 
+    const updatedRecord = await this.prisma.client.userFile.update({
+      where: { id: fileRecord.id, organizationId },
+      data: {
+        isUploaded: true,
+        uploadedAt: new Date(),
+        piiPolicy: resolvedPiiPolicy,
+      },
+    });
+
     const workflowId = `doc-${randomUUID()}`;
     try {
-      await this.jobs.start(
-        Workflow.RUN_FILE_EMBEDDINGS,
-        workflowId,
-        toRunFileEmbeddingsPayload(updatedRecord, {
-          projectId,
-          organizationSlug: organizationSlug ?? undefined,
-          organizationId,
-          userEmail: userEmail ?? undefined,
-          userId: userId ?? undefined,
-          requestId: workflowId,
-          piiPolicy: resolvedPiiPolicy,
-        }),
-      );
+      await this.jobs.start(Workflow.RUN_FILE_EMBEDDINGS, workflowId, {
+        fileId: updatedRecord.id,
+        // The organization the caller was authorised for, not whatever the
+        // update happened to return — the same value, from the source that
+        // cannot drift.
+        orgId: organizationId,
+      });
     } catch (wfErr) {
       // The file is already in S3 and the DB. We intentionally don't
       // roll back — the caller can retry embedding separately — but we

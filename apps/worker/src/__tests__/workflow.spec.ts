@@ -73,6 +73,8 @@ function makeUserFile(overrides: Partial<UserFile> = {}): UserFile {
     embeddingCompletedAt: null,
     embeddingFailedAt: null,
     isBinaryFile: false,
+    ownerId: null,
+    piiPolicy: 'TOXIC_ONLY',
     ...overrides,
   };
 }
@@ -191,12 +193,13 @@ function createMockActivities() {
     // has to be registered even by tests that never cancel — an unregistered
     // activity fails the run rather than being skipped.
     isIngestCancelled: vi.fn().mockResolvedValue(false),
-    // The re-index reads the document rather than being handed its text — see
-    // the payload below, which now names the document instead of carrying it.
+    // Both halves of C4 read rather than receive: the re-index reads the
+    // document it was told to embed, and the ingest reads its own row.
     getDocumentContent: vi.fn().mockResolvedValue({
       content: '# Restored\n\nThe rolled-back text.',
       title: 'Restored',
     }),
+    getFileRecord: vi.fn(),
   };
 }
 
@@ -242,6 +245,24 @@ async function runWorkflow<T>(
   ) as Promise<T>;
 }
 
+/**
+ * Start an ingest the way a producer does now: with identifiers.
+ *
+ * The fixture is the `user_files` row, which is what the handler reads — the
+ * payload used to be a copy of it, and the copy is what this change removed.
+ */
+async function runIngest<T>(
+  file: UserFile,
+  activities: Record<string, Mock>,
+): Promise<T> {
+  activities.getFileRecord.mockResolvedValue(file);
+  return runWorkflow<T>(
+    'runFileEmbeddings',
+    [{ fileId: file.id, orgId: file.organizationId }],
+    activities,
+  );
+}
+
 function getWorkflowFailureCause(err: unknown): string {
   if (err instanceof WorkflowFailedError && err.cause) {
     return String(err.cause.message);
@@ -269,11 +290,7 @@ describe('runFileEmbeddings workflow', () => {
     const activities = createMockActivities();
     const payload = makeUserFile({ fileName: 'readme.txt' });
 
-    const result = await runWorkflow<string>(
-      'runFileEmbeddings',
-      [payload],
-      activities,
-    );
+    const result = await runIngest<string>(payload, activities);
 
     expect(result).toBe('success! file-1, readme.txt');
 
@@ -336,11 +353,7 @@ describe('runFileEmbeddings workflow', () => {
       fileType: FileType.PDF,
     });
 
-    const result = await runWorkflow<string>(
-      'runFileEmbeddings',
-      [payload],
-      activities,
-    );
+    const result = await runIngest<string>(payload, activities);
 
     expect(result).toContain('success');
     expect(activities.checkMimeType).toHaveBeenCalled();
@@ -375,9 +388,8 @@ describe('runFileEmbeddings workflow', () => {
         parser: 'docling',
         strict: false,
       });
-      await runWorkflow<string>(
-        'runFileEmbeddings',
-        [makeUserFile({ fileName: 'document.pdf', fileType: FileType.PDF })],
+      await runIngest<string>(
+        makeUserFile({ fileName: 'document.pdf', fileType: FileType.PDF }),
         activities,
       );
       return activities.updatePageCount.mock.calls[0]?.[0];
@@ -429,7 +441,7 @@ describe('runFileEmbeddings workflow', () => {
     });
 
     try {
-      await runWorkflow('runFileEmbeddings', [payload], activities);
+      await runIngest(payload, activities);
       expect.fail('Expected workflow to throw');
     } catch (err) {
       // Activity retries exhaust → the workflow sees the failure
@@ -444,7 +456,7 @@ describe('runFileEmbeddings workflow', () => {
     const payload = makeUserFile();
 
     try {
-      await runWorkflow('runFileEmbeddings', [payload], activities);
+      await runIngest(payload, activities);
       expect.fail('Expected workflow to throw');
     } catch (err) {
       expect(getWorkflowFailureCause(err)).toContain('Document parsing failed');
@@ -464,7 +476,7 @@ describe('runFileEmbeddings workflow', () => {
     const payload = makeUserFile();
 
     try {
-      await runWorkflow('runFileEmbeddings', [payload], activities);
+      await runIngest(payload, activities);
       expect.fail('Expected workflow to throw');
     } catch (err) {
       expect(getWorkflowFailureCause(err)).toContain('Embedding failed');
@@ -491,11 +503,7 @@ describe('runFileEmbeddings workflow', () => {
       fileType: FileType.PDF,
     });
 
-    const result = await runWorkflow<string>(
-      'runFileEmbeddings',
-      [payload],
-      activities,
-    );
+    const result = await runIngest<string>(payload, activities);
 
     // Workflow should still succeed
     expect(result).toContain('success');
@@ -510,7 +518,7 @@ describe('runFileEmbeddings workflow', () => {
 
     const payload = makeUserFile({ fileName: 'report.txt' });
 
-    await runWorkflow('runFileEmbeddings', [payload], activities);
+    await runIngest(payload, activities);
 
     // Summary activity was called with the concatenated document text
     expect(activities.generateDocumentSummary).toHaveBeenCalledWith(
@@ -550,7 +558,7 @@ describe('runFileEmbeddings workflow', () => {
 
     const payload = makeUserFile({ fileName: 'readme.txt' });
 
-    await runWorkflow('runFileEmbeddings', [payload], activities);
+    await runIngest(payload, activities);
 
     // First chunk into prepareMetadata is the raw loader output, not a
     // synthetic summary chunk
@@ -570,11 +578,7 @@ describe('runFileEmbeddings workflow', () => {
 
     const payload = makeUserFile({ fileName: 'readme.txt' });
 
-    const result = await runWorkflow<string>(
-      'runFileEmbeddings',
-      [payload],
-      activities,
-    );
+    const result = await runIngest<string>(payload, activities);
 
     // Workflow still succeeds despite the summary rejection — the outer
     // try/catch in the workflow swallows it so retrieval-side ingest is
@@ -603,7 +607,7 @@ describe('runFileEmbeddings workflow', () => {
     const payload = makeUserFile({ fileName: 'video.mp4' });
 
     try {
-      await runWorkflow('runFileEmbeddings', [payload], activities);
+      await runIngest(payload, activities);
       expect.fail('Expected workflow to throw');
     } catch (err) {
       expect(getWorkflowFailureCause(err)).toContain('Unsupported mime type');
@@ -629,7 +633,7 @@ describe('runFileEmbeddings workflow', () => {
     const payload = makeUserFile({ fileName: 'slides.ppt' });
 
     try {
-      await runWorkflow('runFileEmbeddings', [payload], activities);
+      await runIngest(payload, activities);
       expect.fail('Expected workflow to throw');
     } catch (err) {
       expect(getWorkflowFailureCause(err)).toBe(
@@ -674,7 +678,7 @@ describe('runFileEmbeddings workflow', () => {
     );
 
     const payload = makeUserFile({ fileName: 'sensitive.txt' });
-    await runWorkflow('runFileEmbeddings', [payload], activities);
+    await runIngest(payload, activities);
 
     expect(activities.applyDualContentMode).toHaveBeenCalledTimes(1);
     // originalDocs must contain the pre-masking content
@@ -690,7 +694,7 @@ describe('runFileEmbeddings workflow', () => {
 
       // A re-ingest carries the previously stored tag.
       const payload = makeUserFile({ language: 'pol' });
-      await runWorkflow('runFileEmbeddings', [payload], activities);
+      await runIngest(payload, activities);
 
       expect(activities.maskPii).toHaveBeenCalledWith(
         expect.objectContaining({ language: 'eng' }),
@@ -710,7 +714,7 @@ describe('runFileEmbeddings workflow', () => {
       );
 
       const payload = makeUserFile({ language: 'pol' });
-      await runWorkflow('runFileEmbeddings', [payload], activities);
+      await runIngest(payload, activities);
 
       // The record is left alone, so the chunks must claim the same language
       // it still holds — and masking must use the Polish model, not the
@@ -729,7 +733,7 @@ describe('runFileEmbeddings workflow', () => {
       activities.detectDocumentLanguage.mockResolvedValue(null);
 
       const payload = makeUserFile({ language: 'pol' });
-      await runWorkflow('runFileEmbeddings', [payload], activities);
+      await runIngest(payload, activities);
 
       // "Undetermined" is a result, not a failure: the seed must not survive
       // it, or a tag would outlive the content it described.
@@ -747,13 +751,49 @@ describe('runFileEmbeddings workflow', () => {
   // clear, a second run leaves both copies in the collection. That is already
   // true of every re-embed today, and becomes true of ordinary success once
   // jobs are delivered at least once and a completed job can be redelivered.
+  /**
+   * Reachable only since the payload shrank to identifiers: a producer always
+   * had a row in hand, so "the file is gone" could not happen. It can now, and
+   * every step below the read writes to that row.
+   */
+  it('refuses when the file has been deleted since the job was queued', async () => {
+    const activities = createMockActivities();
+    activities.getFileRecord.mockResolvedValue(null);
+
+    const result = await runWorkflow<string>(
+      'runFileEmbeddings',
+      [{ fileId: 'file-1', orgId: 'org-1' }],
+      activities,
+    ).catch((err: unknown) => err);
+
+    expect(result).toBeInstanceOf(WorkflowFailedError);
+    expect(getWorkflowFailureNonRetryable(result)).toBe(true);
+    // Nothing downstream ran: no status written for a row that is not there.
+    expect(activities.updateParsingStatus).not.toHaveBeenCalled();
+    expect(activities.checkIsBinaryFile).not.toHaveBeenCalled();
+  });
+
+  // The row is the source now, so what it says is what gets ingested — the
+  // Drive sync used to write these to the row and then repeat them into the
+  // payload from the stale object it held.
+  it('takes the file name from the row rather than from the caller', async () => {
+    const activities = createMockActivities();
+
+    const result = await runIngest<string>(
+      makeUserFile({ fileName: 'renamed-by-drive.md' }),
+      activities,
+    );
+
+    expect(result).toBe('success! file-1, renamed-by-drive.md');
+    expect(activities.getFileRecord).toHaveBeenCalledWith('file-1', 'org-1');
+  });
+
   describe('the previous chunks are cleared before the new ones are written', () => {
     it('deletes the file’s vectors before adding any', async () => {
       const activities = createMockActivities();
 
-      await runWorkflow<string>(
-        'runFileEmbeddings',
-        [makeUserFile({ fileName: 'readme.txt' })],
+      await runIngest<string>(
+        makeUserFile({ fileName: 'readme.txt' }),
         activities,
       );
 
@@ -775,8 +815,8 @@ describe('runFileEmbeddings workflow', () => {
       const activities = createMockActivities();
       const payload = makeUserFile({ fileName: 'readme.txt' });
 
-      await runWorkflow<string>('runFileEmbeddings', [payload], activities);
-      await runWorkflow<string>('runFileEmbeddings', [payload], activities);
+      await runIngest<string>(payload, activities);
+      await runIngest<string>(payload, activities);
 
       expect(activities.addDocumentsToVectorStore).toHaveBeenCalledTimes(2);
       expect(activities.deleteDocumentVectors).toHaveBeenCalledTimes(2);
@@ -818,11 +858,9 @@ describe('runFileEmbeddings workflow', () => {
       activities.isIngestCancelled.mockResolvedValue(true);
 
       const payload = makeUserFile({ fileName: 'readme.txt' });
-      const result = await runWorkflow<string>(
-        'runFileEmbeddings',
-        [payload],
-        activities,
-      ).catch((err: unknown) => err);
+      const result = await runIngest<string>(payload, activities).catch(
+        (err: unknown) => err,
+      );
 
       expect(result).toBeInstanceOf(WorkflowFailedError);
       expect(getWorkflowFailureCause(result)).toContain(
@@ -845,9 +883,8 @@ describe('runFileEmbeddings workflow', () => {
       const activities = createMockActivities();
       activities.isIngestCancelled.mockResolvedValue(true);
 
-      await runWorkflow<string>(
-        'runFileEmbeddings',
-        [makeUserFile({ fileName: 'readme.txt' })],
+      await runIngest<string>(
+        makeUserFile({ fileName: 'readme.txt' }),
         activities,
       ).catch(() => undefined);
 
@@ -868,11 +905,9 @@ describe('runFileEmbeddings workflow', () => {
       );
 
       const payload = makeUserFile({ fileName: 'readme.txt' });
-      const result = await runWorkflow<string>(
-        'runFileEmbeddings',
-        [payload],
-        activities,
-      ).catch((err: unknown) => err);
+      const result = await runIngest<string>(payload, activities).catch(
+        (err: unknown) => err,
+      );
 
       expect(result).toBeInstanceOf(WorkflowFailedError);
       expect(getWorkflowFailureCause(result)).toContain(
@@ -902,11 +937,9 @@ describe('runFileEmbeddings workflow', () => {
       );
 
       const payload = makeUserFile({ fileName: 'readme.txt' });
-      const result = await runWorkflow<string>(
-        'runFileEmbeddings',
-        [payload],
-        activities,
-      ).catch((err: unknown) => err);
+      const result = await runIngest<string>(payload, activities).catch(
+        (err: unknown) => err,
+      );
 
       expect(result).toBeInstanceOf(WorkflowFailedError);
       // Parsing already succeeded — cooperative cancellation does not undo it.
@@ -933,9 +966,8 @@ describe('runFileEmbeddings workflow', () => {
         new Error('connection terminated unexpectedly'),
       );
 
-      const result = await runWorkflow<string>(
-        'runFileEmbeddings',
-        [makeUserFile({ fileName: 'readme.txt' })],
+      const result = await runIngest<string>(
+        makeUserFile({ fileName: 'readme.txt' }),
         activities,
       );
 

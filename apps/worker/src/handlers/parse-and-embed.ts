@@ -26,6 +26,7 @@ export async function runFileEmbeddings(
   const {
     // activities/db
     bindFileWithDocument,
+    getFileRecord,
     createInitialDocumentVersion,
     mergeFileMetadata,
     updateBinaryInfo,
@@ -114,10 +115,29 @@ export async function runFileEmbeddings(
     startToCloseTimeout: '10 minutes',
   });
 
-  const fileId = payload.id;
-  const fileName = payload.fileName;
-  const orgId = payload.organizationId;
-  const projectId = payload.projectId;
+  const { fileId, orgId } = payload;
+
+  // The row, not a copy of it. The payload used to carry twenty-odd fields and
+  // every producer wrote what it knew to the row *before* enqueueing — so the
+  // copy could only be equal or stale, and the Drive sync proved it by writing
+  // `fileName`, `fileSize` and `metadata` and then repeating the same three
+  // values into the payload from the object it still held in memory.
+  //
+  // Non-retryable when it is gone: a file deleted between enqueue and run does
+  // not come back, and every step below writes to that row.
+  const file = await getFileRecord(fileId, orgId);
+
+  if (!file) {
+    throw JobFailure.nonRetryable(
+      `File ${fileId} no longer exists in organization ${orgId} — nothing to ingest`,
+    );
+  }
+
+  const fileName = file.fileName;
+  const projectId = file.projectId;
+  // Bound once: the narrowing from the guard above does not survive into the
+  // nested scopes further down, and `ownerId` is read in two of them.
+  const ownerId = file.ownerId ?? null;
 
   // Locator passed to every activity that needs the underlying file.
   // Each activity calls ensureLocalFile() internally so the file is fetched
@@ -179,7 +199,7 @@ export async function runFileEmbeddings(
 
     if (!mimeType) {
       throw JobFailure.nonRetryable(
-        `Cannot detect mime type for file ${payload.id}`,
+        `Cannot detect mime type for file ${fileId}`,
       );
     }
 
@@ -233,7 +253,7 @@ export async function runFileEmbeddings(
   // fresh set of chunks carrying no language while the record still claims
   // one, and would mask a known-Polish document with the English model. A
   // detection that runs replaces this value, including with null.
-  let language: string | null = payload.language ?? null;
+  let language: string | null = file.language ?? null;
   let languageDetectionFailed = false;
   try {
     await updateParsingStatus({
@@ -346,8 +366,8 @@ export async function runFileEmbeddings(
       rawDocs,
       fileId,
       organizationId: orgId,
-      userId: payload.userId,
-      requestId: payload.requestId,
+      userId: ownerId ?? undefined,
+      requestId: ctx.runId,
       fileName,
       fileType,
     });
@@ -373,7 +393,7 @@ export async function runFileEmbeddings(
     }
 
     // PII masking — runs after sanitization, before chunking
-    const piiPolicy = payload.piiPolicy ?? 'TOXIC_ONLY';
+    const piiPolicy = file.piiPolicy ?? 'TOXIC_ONLY';
     const docsBeforeMasking = rawDocs.map((d) => ({
       ...d,
       metadata: { ...d.metadata },
@@ -384,8 +404,8 @@ export async function runFileEmbeddings(
       language,
       fileId,
       organizationId: orgId,
-      userId: payload.userId ?? null,
-      requestId: payload.requestId ?? null,
+      userId: ownerId,
+      requestId: ctx.runId,
     });
 
     // Dual-content mode: add encrypted original to each chunk's metadata
@@ -461,7 +481,7 @@ export async function runFileEmbeddings(
       throw parsingError;
     }
     throw new JobFailure(
-      `Document parsing failed for file ${payload.id}: ${parsingError instanceof Error ? parsingError.message : String(parsingError)}`,
+      `Document parsing failed for file ${fileId}: ${parsingError instanceof Error ? parsingError.message : String(parsingError)}`,
     );
   }
 
@@ -500,7 +520,7 @@ export async function runFileEmbeddings(
       documentText,
       orgId,
       projectId,
-      userId: payload.userId ?? null,
+      userId: ownerId,
       fileName,
     });
   } catch (summaryError) {
@@ -522,7 +542,7 @@ export async function runFileEmbeddings(
       fileName,
       organizationId: orgId,
       projectId: projectId,
-      piiPolicy: payload.piiPolicy,
+      piiPolicy: file.piiPolicy,
       language,
     },
     fileType,
@@ -559,7 +579,7 @@ export async function runFileEmbeddings(
     await addDocumentsToVectorStore({
       orgId,
       projectId,
-      userId: payload.userId ?? null,
+      userId: ownerId,
       docs: updatedDocs,
     });
 
@@ -583,7 +603,7 @@ export async function runFileEmbeddings(
       throw embeddingError;
     }
     throw new JobFailure(
-      `Embedding failed for file ${payload.id}: ${embeddingError instanceof Error ? embeddingError.message : String(embeddingError)}`,
+      `Embedding failed for file ${fileId}: ${embeddingError instanceof Error ? embeddingError.message : String(embeddingError)}`,
     );
   }
 
@@ -614,7 +634,7 @@ export async function runFileEmbeddings(
       documentText,
       orgId,
       projectId,
-      userId: payload.userId ?? null,
+      userId: ownerId,
       fileName,
     });
 
@@ -669,7 +689,7 @@ export async function runFileEmbeddings(
         organizationId: orgId,
         content,
         title: fileName,
-        authorId: payload.userId ?? null,
+        authorId: ownerId,
         ragScore,
       });
     } catch (versionError) {
@@ -723,10 +743,10 @@ export async function runFileEmbeddings(
       await bindFileWithDocument({ fileId, documentId: documentRow.id, orgId });
       await seedInitialVersion(documentRow.id, finalDocument);
     }
-  } else if (payload.documentId) {
+  } else if (file.documentId) {
     // The legacy PDF loader creates the UserDocument itself, so this is the
     // only place its history can be started.
-    await seedInitialVersion(payload.documentId, documentText);
+    await seedInitialVersion(file.documentId, documentText);
   }
 
   await sendSuccessNotification({
@@ -740,5 +760,5 @@ export async function runFileEmbeddings(
   // ==== FILE IS NOT NEEDED ANYMORE - REMOVE IT
   await deleteFileFromTmp(locator);
 
-  return `success! ${fileId}, ${payload.fileName}`;
+  return `success! ${fileId}, ${fileName}`;
 }

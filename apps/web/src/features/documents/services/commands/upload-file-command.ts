@@ -16,7 +16,6 @@ import {
 import { logger } from '@/app/lib/utils/logger';
 import { getFolderPiiPolicyQuery } from '@/features/documents/services/queries/get-folder-pii-policy-query';
 import { persistUserFileUpdateWithRetry } from '@/features/documents/utils/persist-user-file-update-with-retry';
-import { toRunFileEmbeddingsPayload } from '@ragenai/jobs';
 
 /**
  * Reason an upload was rejected. Callers translate these into HTTP
@@ -203,11 +202,12 @@ export async function uploadFileCommand(
     );
   }
 
-  const updatedRecord = await db.userFile.update({
-    where: { id: fileRecord.id, organizationId },
-    data: { isUploaded: true, uploadedAt: new Date() },
-  });
-
+  // Resolved *into the row*, not into the payload. An explicit policy was
+  // already written at create time; a folder-derived one was not — it only
+  // ever reached the ingest as a payload field. Now that the ingest reads the
+  // row, leaving it out would upload a file into a STRICT folder and mask it
+  // as TOXIC_ONLY, silently and only for the run that mattered. apps/api's
+  // upload had the identical gap.
   let resolvedPiiPolicy: PiiPolicy = PiiPolicy.TOXIC_ONLY;
   if (piiPolicy) {
     resolvedPiiPolicy = piiPolicy;
@@ -215,21 +215,24 @@ export async function uploadFileCommand(
     resolvedPiiPolicy = await getFolderPiiPolicyQuery(folderId, organizationId);
   }
 
+  const updatedRecord = await db.userFile.update({
+    where: { id: fileRecord.id, organizationId },
+    data: {
+      isUploaded: true,
+      uploadedAt: new Date(),
+      piiPolicy: resolvedPiiPolicy,
+    },
+  });
+
   const workflowId = `doc-${nanoid()}`;
   try {
-    await jobs().start(
-      Workflow.RUN_FILE_EMBEDDINGS,
-      workflowId,
-      toRunFileEmbeddingsPayload(updatedRecord, {
-        projectId,
-        organizationSlug: organizationSlug ?? undefined,
-        organizationId,
-        userEmail: userEmail ?? undefined,
-        userId: userId ?? undefined,
-        requestId: workflowId,
-        piiPolicy: resolvedPiiPolicy,
-      }),
-    );
+    await jobs().start(Workflow.RUN_FILE_EMBEDDINGS, workflowId, {
+      fileId: updatedRecord.id,
+      // The organization the caller was authorised for, not whatever the
+      // update happened to return — the same value, from the source that
+      // cannot drift.
+      orgId: organizationId,
+    });
   } catch (wfErr) {
     // The file is already in S3 and the DB. We intentionally don't
     // roll back — the user can retry embedding separately — but we

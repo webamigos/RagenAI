@@ -132,7 +132,7 @@ describe('uploadFileCommand', () => {
     expect(mockJobStart).toHaveBeenCalledWith(
       'runFileEmbeddings',
       expect.stringMatching(/^doc-/),
-      expect.objectContaining({ id: 'file-1' }),
+      { fileId: 'file-1', orgId: 'org-1' },
     );
     expect(result).toMatchObject({
       fileRecord: expect.objectContaining({ id: 'file-1' }),
@@ -232,7 +232,28 @@ describe('uploadFileCommand', () => {
     expect(mockUserFileDelete).not.toHaveBeenCalled();
   });
 
-  it('passes piiPolicy from params to workflow args', async () => {
+  /**
+   * The policy is written to the **row** now, not sent in the payload, because
+   * the ingest reads the row. That move is the reason these three assert a
+   * database write rather than a job argument — and the folder case below is
+   * the one that was actually broken: it was resolved into the payload and
+   * never persisted, so a file uploaded into a STRICT folder would have been
+   * masked as TOXIC_ONLY the moment the ingest started reading the row.
+   */
+  type UpdateCall = { data: Record<string, unknown> };
+
+  /**
+   * The call that carries the policy, found by content rather than position:
+   * a second `update` writes `workflowId` after the job starts, so `at(-1)` is
+   * the wrong one and picking by index would quietly pass the day a third
+   * write appears.
+   */
+  const policyWrittenToRow = (): UpdateCall =>
+    (mockUserFileUpdate.mock.calls as [UpdateCall][])
+      .map(([call]) => call)
+      .find((call) => 'piiPolicy' in call.data)!;
+
+  it('writes an explicit policy to the row, and does not ask the folder', async () => {
     await uploadFileCommand({
       file: makeFile(100),
       organizationId: 'org-1',
@@ -241,16 +262,11 @@ describe('uploadFileCommand', () => {
       piiPolicy: PiiPolicy.STRICT,
     });
 
-    expect(mockJobStart).toHaveBeenCalledWith(
-      'runFileEmbeddings',
-      expect.any(String),
-      expect.objectContaining({ piiPolicy: 'STRICT' }),
-    );
-    // Should not query folder when piiPolicy is explicitly provided
+    expect(policyWrittenToRow().data.piiPolicy).toBe('STRICT');
     expect(mockGetFolderPiiPolicy).not.toHaveBeenCalled();
   });
 
-  it('defaults piiPolicy to TOXIC_ONLY when not provided and no folderId', async () => {
+  it('writes TOXIC_ONLY when nothing says otherwise', async () => {
     await uploadFileCommand({
       file: makeFile(100),
       organizationId: 'org-1',
@@ -258,15 +274,11 @@ describe('uploadFileCommand', () => {
       projectId: null,
     });
 
-    expect(mockJobStart).toHaveBeenCalledWith(
-      'runFileEmbeddings',
-      expect.any(String),
-      expect.objectContaining({ piiPolicy: 'TOXIC_ONLY' }),
-    );
+    expect(policyWrittenToRow().data.piiPolicy).toBe('TOXIC_ONLY');
     expect(mockGetFolderPiiPolicy).not.toHaveBeenCalled();
   });
 
-  it('inherits piiPolicy from folder when not explicitly set', async () => {
+  it('writes the folder’s policy to the row, before the job starts', async () => {
     mockGetFolderPiiPolicy.mockResolvedValue('NONE');
 
     await uploadFileCommand({
@@ -278,10 +290,23 @@ describe('uploadFileCommand', () => {
     });
 
     expect(mockGetFolderPiiPolicy).toHaveBeenCalledWith('folder-1', 'org-1');
-    expect(mockJobStart).toHaveBeenCalledWith(
-      'runFileEmbeddings',
-      expect.any(String),
-      expect.objectContaining({ piiPolicy: 'NONE' }),
+    expect(policyWrittenToRow().data.piiPolicy).toBe('NONE');
+    // Order is the property, not a detail: the ingest reads this row, so a
+    // job that started first would mask under whatever the row said before.
+    expect(mockUserFileUpdate.mock.invocationCallOrder[0]).toBeLessThan(
+      mockJobStart.mock.invocationCallOrder[0],
     );
+  });
+
+  it('starts the job with identifiers only', async () => {
+    await uploadFileCommand({
+      file: makeFile(100),
+      organizationId: 'org-1',
+      organizationSlug: 'o',
+      projectId: null,
+    });
+
+    const payload = mockJobStart.mock.calls[0][2] as Record<string, unknown>;
+    expect(Object.keys(payload).sort()).toEqual(['fileId', 'orgId']);
   });
 });
