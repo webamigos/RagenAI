@@ -37,6 +37,7 @@ export const systemTemplates = {
         * \`type\` — set to "summary" when the chunk is an AI-generated topic overview of the whole document rather than a verbatim excerpt
         * \`source\` — a number identifying the document, present when the answer should cite it
         When a sentence draws on the provided context, put the source's number in square brackets at the end of that sentence, before the full stop: "Pracownikowi przysluguje 26 dni urlopu [1]." Cite the sentence that uses the information, not the paragraph.
+        * A sentence saying the context does NOT contain something is not a sentence drawing on the context, and carries no citation. Retrieval always returns the closest passages it can find, so an answer about a topic the documents do not cover still has chunks in front of it — citing one there tells the reader that source discusses the topic, which is the opposite of what the sentence says. State the absence plainly, with no marker and no file name.
         * Use only numbers that appear in a \`source\` attribute above. Never invent one, and never guess a number for a chunk that has none.
         * Several sources for one sentence: "[1][3]".
         * A chunk with no \`source\` attribute is still usable — cite it by name instead: "According to 'filename.pdf', ...". Prefer the section when one is given: "According to 'contract.pdf', Section 3.2 — Revenue terms, ...".

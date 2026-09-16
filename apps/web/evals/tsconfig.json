@@ -5,6 +5,7 @@
     "rootDir": "..",
     "paths": {
       "@/app/lib/utils/logger": ["./shims/logger.ts"],
+      "server-only": ["./shims/server-only.ts"],
       "@/*": ["../src/*"],
       "@/temporal/*": ["../temporal/src/*"],
       "@ragenai/common-ui/*": ["../src/libs/common-ui/*"],
