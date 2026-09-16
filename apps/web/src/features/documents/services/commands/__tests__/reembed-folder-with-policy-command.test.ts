@@ -168,6 +168,30 @@ describe('reembedFolderWithPolicyCommand', () => {
    * never be persisted, and the masking that actually applies is the one that
    * matters.
    */
+  /**
+   * The run id is reserved on the row before the start, so a start that failed
+   * leaves the file pointing at a run that does not exist and a later cancel
+   * would look it up and find nothing.
+   */
+  it('releases the reserved run id when the job fails to start', async () => {
+    mockFileFindMany.mockResolvedValue([makeFile('file-1')]);
+    mockJobStart.mockRejectedValue(new Error('temporal down'));
+
+    await reembedFolderWithPolicyCommand('folder-1', 'org-1', PiiPolicy.STRICT);
+
+    // Conditional on this attempt's id: if a newer re-embed has already
+    // claimed the row, that one owns it and must not be unhooked by this
+    // failure.
+    expect(mockFileUpdateMany).toHaveBeenCalledWith({
+      where: {
+        id: 'file-1',
+        organizationId: 'org-1',
+        workflowId: expect.stringMatching(/^reembed-/),
+      },
+      data: { workflowId: null },
+    });
+  });
+
   it('keeps the written policy when the job fails to start, with the file left un-ingested', async () => {
     mockFileFindMany.mockResolvedValue([
       makeFile('file-1'),

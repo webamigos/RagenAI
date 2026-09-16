@@ -236,19 +236,28 @@ export async function bulkReembedFilesAction(
   for (const fileRecord of fileRecords) {
     const workflowId = `reembed-${nanoid()}`;
     try {
-      await jobs().start(Workflow.RUN_FILE_EMBEDDINGS, workflowId, {
-        fileId: fileRecord.id,
-        orgId: fileRecord.organizationId,
-      });
+      // Before the start, not after. The worker's status writers refuse to
+      // write over CANCELLED, so a file cancelled earlier would accept nothing
+      // from its new run — the run would go through and record no status at
+      // all. Every other producer that restarts an ingest clears first for the
+      // same reason.
       await db.userFile.update({
-        where: { id: fileRecord.id },
+        where: { id: fileRecord.id, organizationId: orgId },
         data: {
           embeddingStatus: EmbeddingStatus.NOT_STARTED,
           parsingStatus: ParsingStatus.NOT_STARTED,
           embeddingStartedAt: null,
           embeddingCompletedAt: null,
           embeddingFailedAt: null,
+          // Recorded here too, so a cancel can find the run. This path left it
+          // unset, which made a bulk re-embed uncancellable.
+          workflowId,
         },
+      });
+
+      await jobs().start(Workflow.RUN_FILE_EMBEDDINGS, workflowId, {
+        fileId: fileRecord.id,
+        orgId,
       });
       succeeded.push(fileRecord.id);
     } catch (err) {

@@ -87,6 +87,27 @@ async function reembedSingleFolder(
         { err, fileId: file.id },
         'reembedFolderWithPolicyCommand: job start failed',
       );
+
+      // The id was reserved on the row before the start, so a start that
+      // failed leaves the file pointing at a run that does not exist — and a
+      // later cancel would look it up and find nothing. Cleared conditionally,
+      // matching this attempt's id: if a newer re-embed has already claimed
+      // the row, that one owns it and must not be unhooked by this failure.
+      await db.userFile
+        .updateMany({
+          where: { id: file.id, organizationId, workflowId },
+          data: { workflowId: null },
+        })
+        .catch((clearErr: unknown) => {
+          // Best-effort by design: the file is already being reported as
+          // failed, and turning a cleanup miss into a second error would hide
+          // the one the caller needs.
+          logger.warn(
+            { err: clearErr, fileId: file.id, workflowId },
+            'reembedFolderWithPolicyCommand: could not clear the reserved run id',
+          );
+        });
+
       failed.push({
         fileId: file.id,
         fileName: file.fileName ?? file.id,
