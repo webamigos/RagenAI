@@ -173,6 +173,39 @@ jobs:
           --filter='!@webamigos/ragen-admin'
           --filter='!@webamigos/ragen-worker'
 
+  # The gate for the worker runtime, and the only job in this repository that
+  # runs a queue. No e2e test can cover this: `e2e.yml` builds and starts
+  # apps/api and the web app and starts **no worker at all**, so nothing
+  # consumes a queue during that suite — and it path-ignores `apps/worker/**`,
+  # so a worker-only change does not even trigger it. The spec's D1.
+  jobs-integration:
+    name: Jobs Integration
+    runs-on: ubuntu-latest
+    services:
+      redis:
+        # Matches docker-compose.yml. The suite uses database 15 on it, and
+        # flushes that database between tests.
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      JOBS_TEST_REDIS_URL: redis://localhost:6379/15
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-workspace
+      # The handlers and the adapter, against a real Redis: every job name
+      # delivered and completed, the declared retry policies, cancellation,
+      # schedules, stalled-job redelivery, and the C3 assertion that a
+      # re-delivered ingest does not duplicate a document's chunks.
+      - run: npm run worker:test:jobs
+
   build:
     name: Build
     runs-on: ubuntu-latest

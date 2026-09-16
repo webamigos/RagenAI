@@ -8,11 +8,14 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const fromId = vi.hoisted(() => vi.fn());
 
+const schedulers = vi.hoisted(() => ({ value: [] as { key: string }[] }));
+
 class FakeQueue {
   add = vi.fn();
   setGlobalConcurrency = vi.fn();
   upsertJobScheduler = vi.fn();
   removeJobScheduler = vi.fn();
+  getJobSchedulers = vi.fn(async () => schedulers.value);
   close = vi.fn();
   constructor(
     public name: string,
@@ -165,6 +168,26 @@ describe('getRun', () => {
    * runs, and the route answers 404 — collapsing it into `failed` would tell a
    * user their document failed when it did not.
    */
+  /**
+   * The read is two round trips — the job, then its state — and a run that
+   * finishes between them leaves a snapshot with no result attached. Reported
+   * as-is, that is `{ completed, result: null }`: a generated document with no
+   * file behind it, on the one route that reads a result. Found by the D1
+   * integration suite, whose poll is tight enough to land in the window.
+   */
+  it('re-reads a run that finished between the two reads', async () => {
+    fromId
+      .mockResolvedValueOnce(jobIn('completed', { returnvalue: null }))
+      .mockResolvedValueOnce(
+        jobIn('completed', { returnvalue: { fileId: 'f1' } }),
+      );
+
+    expect(await new BullMqJobRuntime().getRun('docgen-2')).toEqual({
+      status: 'completed',
+      result: { fileId: 'f1' },
+    });
+  });
+
   it('answers unknown for a run no queue has heard of', async () => {
     expect(await new BullMqJobRuntime().getRun('gone')).toEqual({
       status: 'unknown',
@@ -257,5 +280,24 @@ describe('upsertSchedule', () => {
       runtime as never as { queues: Map<string, FakeQueue> }
     ).queues.get(MAINTENANCE_QUEUE)!;
     expect(queue.setGlobalConcurrency).toHaveBeenCalledWith(1);
+  });
+});
+
+describe('listSchedules', () => {
+  /**
+   * The ensure-scripts are run by hand and re-run without thinking, so "how
+   * many schedules are there" has to be answerable. Every queue is asked,
+   * because a schedule created before a job moved between queues still lives
+   * on the old one.
+   */
+  it('collects the ids from every queue', async () => {
+    schedulers.value = [{ key: 'demo-cleanup' }];
+
+    const ids = await new BullMqJobRuntime().listSchedules();
+
+    expect(ids).toHaveLength(QUEUE_NAMES.length);
+    expect(new Set(ids)).toEqual(new Set(['demo-cleanup']));
+
+    schedulers.value = [];
   });
 });

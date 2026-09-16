@@ -75,6 +75,21 @@ export interface CreateWorkersOptions extends Omit<
   connection?: ConnectionOptions;
   concurrency?: number;
   log: JobLogger;
+  /**
+   * How long a job may hold its lock, and how often stalled jobs are swept up.
+   *
+   * Overridable only so the integration suite can prove the stalled path. The
+   * production numbers are five minutes and BullMQ's 30-second sweep, which
+   * together mean a crashed worker's job is redelivered five minutes later —
+   * correct, and far past any test's patience. A test that could not shorten
+   * them would have to assert the *settings* instead of the behaviour, which
+   * is how `maxStalledCount: 1` would have gone untested.
+   *
+   * Nothing in the application passes them. `apps/worker` constructs its
+   * workers in `bullmq-runtime.ts` and names neither.
+   */
+  lockDuration?: number;
+  stalledInterval?: number;
 }
 
 /**
@@ -171,7 +186,10 @@ export function createBullWorkers(options: CreateWorkersOptions): BullWorkers {
         // overlap. Its ceiling is set globally by `upsertSchedule`; this keeps
         // a single replica from running both at once as well.
         concurrency: queueName === MAINTENANCE_QUEUE ? 1 : concurrency,
-        lockDuration: LOCK_DURATION_MS,
+        lockDuration: options.lockDuration ?? LOCK_DURATION_MS,
+        ...(options.stalledInterval === undefined
+          ? {}
+          : { stalledInterval: options.stalledInterval }),
         maxStalledCount: MAX_STALLED_COUNT,
       },
     );

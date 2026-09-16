@@ -30,7 +30,8 @@ npm run generate:types   # Prisma client for every app (root owns the schema)
 npm run test:e2e         # Playwright E2E tests (requires ragen_e2e DB)
 npm run db:seed          # Seed database (uses .env.local)
 npm run worker:dev       # Temporal worker (apps/worker) in watch mode
-npm run worker:test      # Worker Jest suite
+npm run worker:test      # Worker Vitest suite
+npm run worker:test:jobs # Job-runtime integration suite (needs Redis) — the BullMQ gate
 npm run check:config-paths   # Fail if a CI-config path glob matches nothing
 npx turbo run build      # Build every workspace, in dependency order, cached
 npx turbo run build --filter=@webamigos/ragen-api   # ...just one, plus what it needs

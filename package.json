@@ -23,6 +23,7 @@
     "worker:dev": "npm run dev --workspace=@webamigos/ragen-worker",
     "worker:build": "turbo run build --filter=@webamigos/ragen-worker",
     "worker:test": "turbo run test  --filter=@webamigos/ragen-worker",
+    "worker:test:jobs": "npm run test:jobs-integration --workspace=@webamigos/ragen-worker",
     "worker:lint": "turbo run lint  --filter=@webamigos/ragen-worker",
     "worker:start": "npm run start --workspace=@webamigos/ragen-worker",
     "packages:build": "turbo run build --filter=./packages/*",

@@ -19,7 +19,14 @@ export default defineConfig({
     // no import added to 96 files.
     globals: true,
     environment: 'node',
-    include: ['src/**/__tests__/**/*.ts', 'src/**/*.{spec,test}.ts'],
+    // Every suite in this app is named `*.spec.ts` or `*.test.ts`, so the
+    // suffix alone is the whole list. It used to also collect
+    // `src/**/__tests__/**/*.ts`, which meant a fixture module placed beside
+    // the suites was itself collected and failed the run with "no test suite
+    // found" — the reason `src/services/__tests__/fixtures/` held only JSON.
+    // `createMockActivities` is shared with the jobs integration suite now, so
+    // a fixture needs somewhere to live.
+    include: ['src/**/*.{spec,test}.ts'],
     exclude: ['**/node_modules/**', 'dist/**', 'lib/**', 'generated/**'],
     testTimeout: 20_000,
     coverage: {

@@ -34,6 +34,25 @@ or `class`, never an arrow.
 The Presidio integration suite has its own config and still needs the
 containers: `npm run test:presidio-integration`.
 
+**The job-runtime integration suite** is the other one with its own config, and
+it is the gate for the BullMQ port: `npm run test:jobs-integration` (or
+`npm run worker:test:jobs` from the root), with a Redis up. It runs the real
+handlers against real queues — every job name delivered and completed, the
+retry policies the handlers declare, cancellation's two halves, schedules,
+stalled-job redelivery, and the assertion that a redelivered ingest does not
+duplicate a document's chunks. It uses **database 15** of `REDIS_URL`'s server
+and flushes it between tests; point it elsewhere with `JOBS_TEST_REDIS_URL`.
+
+No e2e test can replace it: `e2e.yml` starts no worker and path-ignores
+`apps/worker/**`. In CI it is the `Jobs Integration` job, with a Redis service
+container.
+
+Both of those suites live in `test/`, which `tsconfig.json` cannot cover — its
+`rootDir` is `src`, because that is what `tsc --build` emits. `tsconfig.test.json`
+type-checks them, and `npm run typecheck` runs both configs. Without it a suite
+outside `src/` compiles nowhere, which is how the Presidio file had carried two
+type errors since it was written.
+
 ## Architecture
 
 ### Pipelines, and the engine under them
