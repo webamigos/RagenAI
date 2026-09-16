@@ -122,21 +122,29 @@ describe('UploadFileService', () => {
     );
     expect(update).toHaveBeenCalledWith({
       where: { id: 'file-1', organizationId: 'org-1' },
-      data: { isUploaded: true, uploadedAt: expect.any(Date) },
+      data: {
+        isUploaded: true,
+        uploadedAt: expect.any(Date),
+        piiPolicy: 'TOXIC_ONLY',
+      },
     });
+    // Identifiers only: the ingest reads the row, so nothing about the file
+    // rides along to go stale.
     expect(jobs.start).toHaveBeenCalledWith(
       Workflow.RUN_FILE_EMBEDDINGS,
       expect.stringMatching(/^doc-/),
-      expect.objectContaining({
-        organizationId: 'org-1',
-        projectId: 'proj-1',
-      }),
+      { fileId: 'file-1', orgId: 'org-1' },
     );
+
+    // Restored: the splice that rewrote the payload assertion above took this
+    // with it, and what the caller gets back is a separate promise from what
+    // the job is started with.
     expect(result.fileRecord).toEqual({
       id: 'file-1',
       fileName: 'report.pdf',
       isUploaded: true,
     });
+
     expect(auditLog.track).toHaveBeenCalledWith(
       expect.objectContaining({ orgId: 'org-1', action: 'document.uploaded' }),
     );
@@ -232,10 +240,16 @@ describe('UploadFileService', () => {
       'folder-1',
       'org-1',
     );
-    expect(jobs.start).toHaveBeenCalledWith(
-      expect.anything(),
-      expect.anything(),
-      expect.objectContaining({ piiPolicy: 'STRICT' }),
+    // Written to the row, which is what the ingest reads. It used to reach the
+    // job as a payload field and was never persisted — so this is the case
+    // that was actually broken: a STRICT folder masked as TOXIC_ONLY.
+    expect(update).toHaveBeenCalledWith({
+      where: { id: 'file-1', organizationId: 'org-1' },
+      data: expect.objectContaining({ piiPolicy: 'STRICT' }),
+    });
+    // And before the job starts, since that is what the job will read.
+    expect(update.mock.invocationCallOrder[0]).toBeLessThan(
+      jobs.start.mock.invocationCallOrder[0],
     );
   });
 
@@ -250,10 +264,9 @@ describe('UploadFileService', () => {
     });
 
     expect(folders.getFolderPiiPolicy).not.toHaveBeenCalled();
-    expect(jobs.start).toHaveBeenCalledWith(
-      expect.anything(),
-      expect.anything(),
-      expect.objectContaining({ piiPolicy: 'NONE' }),
-    );
+    expect(update).toHaveBeenCalledWith({
+      where: { id: 'file-1', organizationId: 'org-1' },
+      data: expect.objectContaining({ piiPolicy: 'NONE' }),
+    });
   });
 });

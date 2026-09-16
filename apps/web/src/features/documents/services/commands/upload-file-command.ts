@@ -228,7 +228,10 @@ export async function uploadFileCommand(
   try {
     await jobs().start(Workflow.RUN_FILE_EMBEDDINGS, workflowId, {
       fileId: updatedRecord.id,
-      orgId: updatedRecord.organizationId,
+      // The organization the caller was authorised for, not whatever the
+      // update happened to return — the same value, from the source that
+      // cannot drift.
+      orgId: organizationId,
     });
   } catch (wfErr) {
     // The file is already in S3 and the DB. We intentionally don't
