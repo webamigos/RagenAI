@@ -173,7 +173,8 @@ export class BullMqJobRuntime implements JobRuntime {
    */
   async getRun(runId: string): Promise<JobRun> {
     for (const name of QUEUE_NAMES) {
-      const job = await Job.fromId(this.queue(name), runId);
+      const queue = this.queue(name);
+      const job = await Job.fromId(queue, runId);
       if (!job) {
         continue;
       }
@@ -181,13 +182,27 @@ export class BullMqJobRuntime implements JobRuntime {
       const state = await job.getState();
       const status = STATUS[state] ?? 'unknown';
 
-      if (status !== 'completed') {
-        return status === 'failed'
-          ? { status, failure: job.failedReason }
-          : { status };
+      if (status === 'running' || status === 'unknown') {
+        return { status };
       }
 
-      return { status, result: job.returnvalue as JobRun['result'] };
+      /**
+       * Re-read before reporting an outcome, because the first read is a
+       * snapshot taken *before* the state was asked for.
+       *
+       * A job that finishes in that window answers `completed` from the state
+       * and `null` from the hash the snapshot captured — the docgen route then
+       * shows a generated document with no file behind it. Once a state is
+       * terminal the outcome is already written (BullMQ moves the job and
+       * records the value in one script), so a second read after observing it
+       * cannot be early. Found by the D1 integration suite, which polls fast
+       * enough to land in the window a human poller hits rarely.
+       */
+      const finished = (await Job.fromId(queue, runId)) ?? job;
+
+      return status === 'failed'
+        ? { status, failure: finished.failedReason }
+        : { status, result: finished.returnvalue as JobRun['result'] };
     }
 
     // Not an error, and not a failure: both engines forget finished runs, and
@@ -252,6 +267,26 @@ export class BullMqJobRuntime implements JobRuntime {
       { pattern: schedule.cron, tz: schedule.timezone },
       { name: schedule.job, opts: RETENTION },
     );
+  }
+
+  /**
+   * The schedule ids this deployment currently has, across every queue.
+   *
+   * Not on `JobRuntime`: no application code asks. It is here because
+   * "re-running the ensure-schedule script does not create a second schedule"
+   * is an assertion someone has to be able to make — the D1 integration suite
+   * makes it, and an operator debugging a schedule that fires twice can reach
+   * the same answer without opening redis-cli.
+   */
+  async listSchedules(): Promise<string[]> {
+    const ids: string[] = [];
+
+    for (const name of QUEUE_NAMES) {
+      const schedulers = await this.queue(name).getJobSchedulers();
+      ids.push(...schedulers.map((scheduler) => String(scheduler.key)));
+    }
+
+    return ids;
   }
 
   async deleteSchedule(id: string): Promise<void> {

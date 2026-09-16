@@ -84,6 +84,40 @@ describe('createBullWorkers', () => {
     ).toBe(true);
   });
 
+  /**
+   * The lock and the sweep are overridable, and nothing in the application
+   * overrides them.
+   *
+   * The integration suite does, because the production numbers mean waiting
+   * five minutes for a stalled job to come back — and a suite that could not
+   * shorten them would have asserted the settings instead of the behaviour,
+   * which is how `maxStalledCount: 1` would have gone untested. The default
+   * has to stay the long one, which is what the assertion above says and this
+   * one keeps honest.
+   */
+  it('takes a shorter lock and sweep when a caller asks, and offers no sweep otherwise', () => {
+    build();
+    expect(constructed[0]!.opts.stalledInterval).toBeUndefined();
+
+    constructed.length = 0;
+    createBullWorkers({
+      handlers: {} as never,
+      activities: {},
+      log,
+      isCancelled: async () => false,
+      lockDuration: 1_000,
+      stalledInterval: 1_000,
+    });
+
+    expect(
+      constructed.every(
+        (worker) =>
+          worker.opts.lockDuration === 1_000 &&
+          worker.opts.stalledInterval === 1_000,
+      ),
+    ).toBe(true);
+  });
+
   // Per-worker, on top of the global ceiling `upsertSchedule` sets: this keeps
   // one replica from running both nightly jobs at once.
   it('pins the maintenance queue to one job at a time', () => {

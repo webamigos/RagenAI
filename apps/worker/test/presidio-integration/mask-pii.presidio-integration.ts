@@ -19,7 +19,7 @@
  * `infra/presidio/analyzer/recognizers/pl_recognizers.py`), not real people's
  * identifiers.
  */
-import type { Document } from '../../src/types/Document';
+import type { Document } from '../../src/types/Document.js';
 // Type-only import — erased at compile time, so it carries no runtime
 // module evaluation and doesn't affect the require() timing below.
 // These must be set before `mask-pii` — and the `consts.ts` it pulls in — is
@@ -80,7 +80,16 @@ describe('Presidio analyzer — real detection scenarios', () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     });
-    return res.json();
+    // `fetch`'s json() is `unknown` (it is, on any Response). Asserted rather
+    // than validated because the analyzer's own contract is what these tests
+    // are checking against — a shape mismatch shows up as a failed assertion
+    // below, which is the right place for it.
+    return (await res.json()) as {
+      entity_type: string;
+      start: number;
+      end: number;
+      score: number;
+    }[];
   }
 
   it('detects a valid PESEL', async () => {

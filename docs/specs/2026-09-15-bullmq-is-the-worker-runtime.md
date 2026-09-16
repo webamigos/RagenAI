@@ -703,55 +703,100 @@ Each phase leaves the application working.
 
 ### Phase B — cancellation and status stop being Temporal-shaped
 
-- [ ] **B1.** `cancelFileEmbeddingCommand` writes CANCELLED conditionally;
+- [x] **B1.** `cancelFileEmbeddingCommand` writes CANCELLED conditionally;
       `ctx.checkCancelled()` reads the row. Delete the signal and query
       definitions. Still on Temporal.
-- [ ] **B2.** The docgen status route goes through `jobs.getRun(runId)`.
+- [x] **B2.** The docgen status route goes through `jobs.getRun(runId)`.
 
 ### Phase C — the BullMQ adapter
 
-- [ ] **C1.** BullMQ adapter: one queue per job name plus `ragen-maintenance`;
+- [x] **C1.** BullMQ adapter: one queue per job name plus `ragen-maintenance`;
       `concurrency`, `attempts`, backoff and timeouts derived from the same
       options object the Temporal adapter reads; `lockDuration: 300_000`;
       retention policies; SIGTERM/SIGINT graceful `worker.close()`.
-- [ ] **C2.** `WORKER_RUNTIME=bullmq` accepted, and `WORKER_RUNTIME` becomes a
+- [x] **C2.** `WORKER_RUNTIME=bullmq` accepted, and `WORKER_RUNTIME` becomes a
       seam in `@ragenai/env` with a rule per variant (§9): `REDIS_URL` required
       under `bullmq`, the `TEMPORAL_*` variables under `temporal`, neither
       required in general. The rule is merged with the fragment in every app
       that reads it, or it validates nothing. Worker boot additionally asserts
       the Redis `maxmemory-policy` and refuses to start on an evicting
       instance.
-- [ ] **C3.** **Ingest deletes this file's existing vectors before writing**, on
+- [x] **C3.** **Ingest deletes this file's existing vectors before writing**, on
       every run, on both runtimes. Without this a redelivered job duplicates
       every chunk. Covered by a test that runs `runFileEmbeddings` twice and
       asserts the Qdrant point count does not double.
-- [ ] **C4.** Shrink payloads to identifiers: `runFileEmbeddings` takes
+- [x] **C4.** Shrink payloads to identifiers: `runFileEmbeddings` takes
       `{ fileId, orgId }` and re-reads the row; `optimizeDocument` and
       `reindexDocumentVersion` stop carrying document text. Fixes staleness and
       keeps document content out of Redis.
-- [ ] **C5.** Port both schedule scripts to `upsertJobScheduler`, keeping
+- [x] **C5.** Port both schedule scripts to `upsertJobScheduler`, keeping
       `--delete` and the per-day `jobId`. Both keep their Temporal path while
       the adapter is still in-repo.
-- [ ] **C6.** bull-board on `WORKER_ADMIN_PORT` behind Basic Auth, off unless
+- [x] **C6.** bull-board on `WORKER_ADMIN_PORT` behind Basic Auth, off unless
       credentials are set; `/health` unauthenticated. Wire `bullmq-otel` into
       the existing collector.
 
 ### Phase D — prove parity, once
 
-- [ ] **D1.** Worker integration suite against a real Redis (compose service in
+- [x] **D1.** Worker integration suite against a real Redis (compose service in
       CI): each of the eight jobs enqueued and completed, retries, cancel,
       schedule fire, stalled-job recovery, and the C3 double-run assertion. The
       suite is written runtime-agnostic, because §8.3 reuses it against Temporal
       from the other repository.
+
+  Landed as `apps/worker/test/jobs-integration/` (`npm run worker:test:jobs`,
+  the `Jobs Integration` job in `ci.yml`). Three things it turned up or
+  settled, because each is a decision the next phase inherits:
+
+  - **It found a real defect on its first run.** `getRun` read the job and
+    then its state, so a run finishing between the two reads answered
+    `completed` with a `null` result — the docgen route's one consumer would
+    show a generated document with no file. The adapter's unit tests cannot
+    see it: they mock `Job.fromId`, so both reads are the same object. See
+    [the lesson](../lessons/a-status-read-in-two-round-trips-reports-a-result-it-never-saw.md).
+  - **Runtime-agnostic means the assertions, not the harness.** The suites
+    touch `JobRuntime` and a `JobRuntimeHarness` interface only; the harness
+    is the engine-specific half and holds one implementation today.
+    `WORKER_RUNTIME=temporal` selects a harness that does not exist yet and
+    **fails**, rather than falling back — a parity suite that quietly tested
+    one engine twice would report parity it never measured. Writing the
+    Temporal harness is part of the nightly job in §8.3.
+  - **`lockDuration` and `stalledInterval` became overridable**, and nothing
+    in the application overrides them. Five minutes is correct and
+    untestable in a suite; without the override `maxStalledCount: 1` could
+    only have been asserted as a constant, which is not evidence that a
+    stalled job is redelivered exactly once.
 - [ ] **D2.** Run the [2026-09-05 load test](../lessons/worker-concurrency-load-test-2026-09-05.md)
       method on both runtimes, same day, same stack, and record the numbers in a
       lesson. Parity here means "no worse", measured — not assumed. This is the
       evidence the Phase E decision rests on. It stays reproducible here until
       Phase G, which is one more reason the adapter's move is worth deferring
       rather than rushing.
+
+  **The instrument exists; the numbers do not.**
+  `apps/worker/src/scripts/jobs-load-test.ts` enqueues through the seam, so
+  `WORKER_RUNTIME` chooses what it measures, and
+  [a runbook](../runbooks/worker-runtime-load-test.md) has the procedure. It is
+  deliberately not the 2026-09-05 script: that run had no lower-concurrency
+  baseline and no repetitions, which is why its own lesson refused to read
+  "~2x at the tail" as a fact about concurrency. This one takes levels and
+  repetitions, and splits each file's time into queue wait, parse and embed
+  from timestamps the pipeline already writes — so a difference can be
+  attributed to the engine or to the providers rather than assigned to
+  whichever one is under review.
+
 - [ ] **D3.** A `ragen:up:full` variant with no Temporal at all, and a clean
       clone that ingests a document, cancels one, and generates a document with
       `WORKER_RUNTIME=bullmq`.
+
+  The variant is `npm run ragen:up:bullmq` — an overlay that moves both
+  Temporal services behind a profile, rather than a `profiles:` key in the
+  base file, because that would change what a plain `docker compose up`
+  starts and changing the default is Phase E's decision. The manual half is
+  a new section in
+  [the regression checklist](../regression-checklist.md), to be run once per
+  runtime; it is the part no automated suite reaches, since D1 stubs the
+  activities and `e2e.yml` starts no worker.
 
 ### Phase E — BullMQ is the worker; Temporal stays here, out of the image
 
