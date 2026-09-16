@@ -72,7 +72,7 @@ async function runBullMq(): Promise<void> {
     await import('./bullmq-runtime.js');
   const { registerShutdownTask } = await import('./instrument.js');
 
-  const workers = await startBullMqWorker();
+  const { workers, dashboard } = await startBullMqWorker();
 
   // Registered rather than listening for SIGTERM here. `instrument.ts` already
   // installs the signal handlers and they end in `process.exit(0)` — a second
@@ -81,7 +81,10 @@ async function runBullMq(): Promise<void> {
   // that lost.
   registerShutdownTask(async () => {
     logger.info('draining BullMQ workers');
+    // Workers first: the dashboard is a view of them, and closing it early
+    // would blind an operator watching a drain they are waiting on.
     await closeBullWorkers(workers);
+    await dashboard?.close();
   });
 
   // Nothing left to await. The workers hold their connections, so the process

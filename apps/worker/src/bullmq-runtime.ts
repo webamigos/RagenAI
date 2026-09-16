@@ -3,7 +3,9 @@ import {
   closeBullWorkers,
   createBullWorkers,
   startBullWorkers,
+  startQueueDashboard,
   type BullWorkers,
+  type QueueDashboard,
   type JobHandlers,
 } from '@ragenai/jobs-bullmq';
 
@@ -72,7 +74,13 @@ function resolveConcurrency(): number | undefined {
   return parsed;
 }
 
-export async function startBullMqWorker(): Promise<BullWorkers> {
+export interface RunningBullMq {
+  workers: BullWorkers;
+  /** `null` when the dashboard is off, which is the default. */
+  dashboard: QueueDashboard | null;
+}
+
+export async function startBullMqWorker(): Promise<RunningBullMq> {
   const workers = createBullWorkers({
     handlers,
     activities: activities as unknown as Parameters<
@@ -102,12 +110,31 @@ export async function startBullMqWorker(): Promise<BullWorkers> {
 
   startBullWorkers(workers);
 
+  // After the workers, and deliberately incapable of stopping them:
+  // `startQueueDashboard` returns `null` on any failure rather than throwing,
+  // because this runs *after* the workers began consuming and before
+  // `runBullMq` registers its shutdown task. A throw here would exit the
+  // process with jobs in flight and no drain — stranding every lock for five
+  // minutes — over an optional operator surface losing a race for port 8090.
+  //
+  // Off entirely unless both credentials are set, because it shows every job's
+  // payload.
+  const dashboard = await startQueueDashboard({
+    connection: { url: process.env.REDIS_URL },
+    log: logger,
+    port: process.env.WORKER_ADMIN_PORT
+      ? Number(process.env.WORKER_ADMIN_PORT)
+      : undefined,
+    user: process.env.WORKER_ADMIN_USER,
+    password: process.env.WORKER_ADMIN_PASSWORD,
+  });
+
   logger.info(
     { queues: workers.map((worker) => worker.name) },
     'BullMQ worker started',
   );
 
-  return workers;
+  return { workers, dashboard };
 }
 
 export { closeBullWorkers };
