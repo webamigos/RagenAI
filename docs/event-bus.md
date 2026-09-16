@@ -22,4 +22,4 @@ document it. Covers `apps/web/src/libs/events/` — the in-process typed pub/sub
 
 **Adding a new event:** add the id → payload shape to `RagenEvents`, call `eventBus.emit(...)` at the site, then create any subscribers that should react.
 
-**Limitations**: the bus is in-process and non-persistent. Events lost on crash or missed by other instances in a multi-instance deploy. For durability use Temporal or a DB write.
+**Limitations**: the bus is in-process and non-persistent. Events lost on crash or missed by other instances in a multi-instance deploy. For durability use a background job (`@ragenai/jobs`) or a DB write.

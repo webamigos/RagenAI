@@ -16,7 +16,7 @@ content. Edit this file, never the pointer.
 ## Commands
 
 ```bash
-docker compose up        # Postgres, Redis, Qdrant, Temporal
+docker compose up        # Postgres, Redis, Qdrant, Docling, Presidio
 npm run web:dev          # Next.js dev server (apps/web)
 npm run web:build        # Production build
 npm run verify           # THE gate: generate types, then lint + typecheck + test + build
@@ -29,7 +29,7 @@ npm run ragen:up:everything  # Everything in containers, apps included
 npm run generate:types   # Prisma client for every app (root owns the schema)
 npm run test:e2e         # Playwright E2E tests (requires ragen_e2e DB)
 npm run db:seed          # Seed database (uses .env.local)
-npm run worker:dev       # Temporal worker (apps/worker) in watch mode
+npm run worker:dev       # Background-job worker (apps/worker) in watch mode
 npm run worker:test      # Worker Vitest suite
 npm run worker:test:jobs # Job-runtime integration suite (needs Redis) — the BullMQ gate
 npm run check:config-paths   # Fail if a CI-config path glob matches nothing
@@ -82,7 +82,7 @@ Before starting a nontrivial task, match it against this table and read the link
 | Running the whole ecosystem locally, ports, companion services | [`docs/companion-services.md`](docs/companion-services.md) |
 | Documentation site, published docs, self-hosting guide | the **`ragen-docs`** repository (Mintlify) — not this one. `npm run docs:config-reference` writes the generated reference into a sibling checkout |
 | Anything touching `apps/api`, the NestJS port, or what's been cut over vs. stays local | [ADR-21](docs/adrs/21-monorepo-and-api-decoupling.md) (read the latest updates first), `apps/api/AGENTS.md` |
-| Document ingest, Temporal workflows, anything in `apps/worker` | [ADR-26](docs/adrs/26-absorb-ragen-worker-into-monorepo.md), [ADR-40](docs/adrs/40-worker-uses-prisma-not-knex.md) — its data layer is knex, migrating, `apps/worker/AGENTS.md` |
+| Document ingest, background jobs, anything in `apps/worker` | [ADR-44](docs/adrs/44-bullmq-is-the-worker-runtime.md) — BullMQ runs jobs, Temporal is an adapter — [ADR-26](docs/adrs/26-absorb-ragen-worker-into-monorepo.md), [ADR-40](docs/adrs/40-worker-uses-prisma-not-knex.md), `apps/worker/AGENTS.md` |
 | Writing or reviewing a spec before building | [`docs/specs/README.md`](docs/specs/README.md), [`docs/specs/TEMPLATE.md`](docs/specs/TEMPLATE.md) |
 | **Testing & ops** | |
 | Document ingest file types, PDF/DOCX/XLSX handling | [`docs/document-processing.md`](docs/document-processing.md) |
@@ -156,9 +156,10 @@ DEFAULT_MODEL=gpt-4o-mini        # plus OPENAI_API_KEY and a route for it
 App dev ports: **web 3000**, **admin 3200**, **docs 3400** — 3100 is ragen-token-vault and 3001 is apps/api. `next dev` and `docusaurus start` both default to 3000, so every app but web pins `--port`.
 
 Service ports on the host: **Postgres 55432**, **Redis 56379**, Qdrant 6333,
-Temporal 7233 (UI 8080). Inside the compose network each service
-still listens on its standard port — only the published mapping moved, and
-every one is overridable (`POSTGRES_PORT`, `REDIS_PORT`, …).
+Docling 5001. Inside the compose network each service still listens on its
+standard port — only the published mapping moved, and every one is overridable
+(`POSTGRES_PORT`, `REDIS_PORT`, …). Temporal is not in the compose file
+(ADR-44); the queue dashboard is the worker's own (`WORKER_ADMIN_PORT`, 8090).
 
 **Postgres and Redis are on non-standard ports on purpose.** A native Postgres
 on 5432 answers instead of the container and `prisma migrate` then talks to the
@@ -173,7 +174,7 @@ then point the app at it with `OTEL_EXPORTER_OTLP_ENDPOINT` — see
 
 ## Architecture
 
-**Stack**: Next.js 16 (App Router) + React 19 + TypeScript ~5.7 + Tailwind 4 + Postgres (Prisma 7) + Qdrant (hybrid dense+sparse) + Temporal.io + Scaleway reranker. Model providers are called directly, per the route table (ADR-49). Redis is optional (rate limiting only).
+**Stack**: Next.js 16 (App Router) + React 19 + TypeScript ~5.7 + Tailwind 4 + Postgres (Prisma 7) + Qdrant (hybrid dense+sparse) + BullMQ on Redis (ADR-44) + Scaleway reranker. Model providers are called directly, per the route table (ADR-49). **Redis is the queue**, not optional: a producer without `REDIS_URL` will not boot.
 
 **What it is**: RAG AI chat app with an in-process model gateway, document knowledge bases, and a public API.
 
@@ -337,7 +338,6 @@ Moved to [`docs/settings-pages.md`](docs/settings-pages.md) — see the Task Rou
 
 ```
 @/*                    → apps/web/src/*
-@/temporal/*           → apps/web/temporal/src/*
 @ragenai/common-ui/*   → apps/web/src/libs/common-ui/*
 @ragenai/prisma-client → apps/web/src/libs/db
 ```
@@ -359,7 +359,7 @@ Moved to [`docs/settings-pages.md`](docs/settings-pages.md) — see the Task Rou
 - Timestamps use `Timestamptz`; default TZ Europe/Warsaw.
 - i18n: `next-intl` (locales: `apps/web/src/app/config.ts`). Use `@/i18n/routing`'s `Link`/`redirect`/`usePathname`/`useRouter`, not `next/link`.
 - Tailwind v4 with `@theme` directive in `src/app/[locale]/global.css`. Brand colors: Ragen red `#cb1d3d`, Ragen blue `#252d53`.
-- Error classes: `UnauthorizedException`, `NotFoundException`, `LimitExceededException`. Temporal workflows: reference by string name, not function import.
+- Error classes: `UnauthorizedException`, `NotFoundException`, `LimitExceededException`. Jobs: start them by name through `@ragenai/jobs`, never by importing a handler.
 - Logging: Pino w/ OpenTelemetry. Import `@/app/lib/utils/logger` — it picks server or client at **runtime**; nothing swaps them at build time. The server pick uses the *bundler's* `require`, so outside webpack/Turbopack (every `tsx` script) it falls back to the client logger instead of throwing, as it used to.
 - Observability: OTel traces/metrics/logs via `src/instrumentation.ts` + `instrumentation-client.ts`; auto-instrumentation covers HTTP, Postgres, Prisma and outgoing `fetch`. **A no-op in apps/web unless `OTEL_EXPORTER_OTLP_ENDPOINT` is set**; the worker also traces on `LANGFUSE_SECRET_KEY` alone. LLM tracing is app-level since the proxy went — see [ADR-22](docs/adrs/22-observability-opentelemetry.md).
 - Pre-commit: lint-staged runs `eslint --fix` + `prettier --write`, dispatching each file to its own workspace in `lint-staged.config.mjs` — add an entry there when you add a workspace. Conventional commits, enforced by commitlint.

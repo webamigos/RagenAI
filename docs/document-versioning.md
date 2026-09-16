@@ -12,7 +12,7 @@ numbered per document. `change_type` is one of `UPLOAD`, `MANUAL`,
 
 - **v1 comes from ingest.** `createInitialDocumentVersion` runs in
   `parse-and-embed` after the document row exists, carrying the RAG score the
-  scorer just produced. It is idempotent — Temporal replays the workflow — and
+  scorer just produced. It is idempotent — a job can be redelivered and re-run — and
   best-effort *after* retries: a document with embeddings and no v1 is still
   usable, and `src/scripts/seed-document-versions-v1.ts` backfills.
 - **Rollback appends.** Restoring version N writes a new version with N's
@@ -51,7 +51,7 @@ visible in the UI, and recoverable by re-running.
 
 ## RAG optimization (Suggest & Accept)
 
-`optimizeDocument` (Temporal) generates candidate edits against the same rubric
+`optimizeDocument` (a background job) generates candidate edits against the same rubric
 as the scorer, then evaluates each one per scoring dimension with a separate
 model call. The UI polls `optimization-job` because a long document takes
 minutes.

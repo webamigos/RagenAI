@@ -10,7 +10,7 @@ This monorepo is part of a multi-service ecosystem. All repos live under the sam
 ```
 ┌─────────────┐     ┌──────────────┐     ┌──────────────────┐
 │  apps/web   │────▸│ apps/worker  │────▸│     Qdrant       │
-│  (Next.js)  │     │  (Temporal)  │     │  (vector store)  │
+│  (Next.js)  │     │   (BullMQ)   │     │  (vector store)  │
 └──────┬──────┘     └──────────────┘     └──────────────────┘
        │
        ├───────────▸┌──────────────────┐
@@ -26,7 +26,7 @@ This monorepo is part of a multi-service ecosystem. All repos live under the sam
 
 ### apps/worker
 
-Temporal worker that processes document parsing, embedding generation, thumbnail creation, and website scraping. Lives in this monorepo as an npm workspace (ADR-26); it used to be the standalone `ragen-worker` repository, which is now archived.
+The job worker: document parsing, embedding generation, thumbnail creation and website scraping. It consumes BullMQ queues on Redis ([ADR-44](adrs/44-bullmq-is-the-worker-runtime.md)); Temporal is an adapter behind the same seam, selected with `WORKER_RUNTIME=temporal` and no longer part of the compose file. Lives in this monorepo as an npm workspace (ADR-26); it used to be the standalone `ragen-worker` repository, which is now archived.
 
 ```bash
 npm run worker:dev   # Start worker in watch mode
@@ -34,11 +34,11 @@ npm run worker:dev   # Start worker in watch mode
 
 It reads its own `apps/worker/.env.local` — see `apps/worker/.env.example`.
 
-**Requires**: Temporal server (started via `docker compose up` at the repo root), PostgreSQL and Qdrant. Storage credentials are only needed with `STORAGE_PROVIDER=s3`; the default local provider needs none.
+**Requires**: Redis, PostgreSQL and Qdrant (all started via `docker compose up` at the repo root). Storage credentials are only needed with `STORAGE_PROVIDER=s3`; the default local provider needs none.
 
-**Key env vars**: `TEMPORAL_SERVER_ADDRESS` (default `localhost:7233`), `DATABASE_URL`, `QDRANT_URL`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`, `S3_BUCKET_NAME`.
+**Key env vars**: `REDIS_URL`, `DATABASE_URL`, `QDRANT_URL`, `WORKER_CONCURRENCY` (default 20), `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`, `S3_BUCKET_NAME`. Under `WORKER_RUNTIME=temporal`, `TEMPORAL_SERVER_ADDRESS` takes `REDIS_URL`'s place as the mandatory one.
 
-**Workflows**:
+**Jobs** (eight in all; these are the two that matter most):
 
 - `runFileEmbeddings` — fetch from storage → parse → chunk → embed → store in Qdrant
 - `scrapeWebsite` — Scrape URL via FireCrawl → create document → embed → store
@@ -205,7 +205,7 @@ forwards to `GET /v1/assistants` — both using the caller's own Ragen API key.
 
 ```bash
 # 1. Start infrastructure (from the repo root) — pick one:
-npm run ragen:up:full            # Full stack: Postgres, Qdrant, Temporal, Docling, Redis
+npm run ragen:up:full            # Full stack: Postgres, Qdrant, Redis, Docling, Presidio
 npm run ragen:up:app             # App-only:  Postgres, Qdrant (no document processing)
 
 # 2. Start apps/web
@@ -240,7 +240,7 @@ cd apps/mcp && npm run dev                # :3300
 | apps/web                      | 3000      | Always                                          |
 | apps/worker                   | —         | Document processing (requires `ragen:up:full`)  |
 | Docling                       | 5001      | Document parsing (`ragen:up:full`, UI at `/ui`) |
-| Temporal UI                   | 8080      | Debugging workflows (`ragen:up:full`)           |
+| Queue dashboard               | 8090      | Inspecting jobs (the worker serves it, when `WORKER_ADMIN_USER`/`_PASSWORD` are set) |
 | ragen-token-vault             | 3100      | External connectors + API key validation        |
 | ragen-connectors              | 8001-8003 | External connectors                             |
 | Ragen Admin                   | 3200      | Platform administration                         |
