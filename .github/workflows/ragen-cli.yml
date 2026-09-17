@@ -37,10 +37,10 @@ jobs:
       - name: Pack the CLI as npm would publish it
         run: |
           mkdir -p /tmp/pack
-          npm pack --workspace=ragen --pack-destination=/tmp/pack
+          npm pack --workspace=ragen-cli --pack-destination=/tmp/pack
 
       - name: Install it globally
-        run: npm install -g /tmp/pack/ragen-*.tgz
+        run: npm install -g /tmp/pack/ragen-cli-*.tgz
 
       - name: It runs, and reports the version the repository declares
         run: |

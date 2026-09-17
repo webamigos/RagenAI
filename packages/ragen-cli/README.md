@@ -1,13 +1,20 @@
-# ragen
+# ragen-cli
 
 The command line for [Ragen AI](https://docs.ragen.ai) — a self-hosted RAG chat
 platform with document knowledge bases, an in-process model gateway and a
 public API.
 
 ```bash
-npm install -g ragen
+npm install -g ragen-cli
 ragen --help
 ```
+
+## The package is `ragen-cli`; the command is `ragen`
+
+npm refuses the unscoped name `ragen` — its similarity filter reads it as too
+close to the existing `raven` and `hygen`, and returns 403 to anyone who tries,
+not just to us. `bin` is independent of `name`, so the command you type is
+unaffected.
 
 ## What works today
 
@@ -61,7 +68,7 @@ would actually damage the install.
 There is no publish job in CI. From a clean checkout:
 
 ```bash
-npm version <patch|minor|major> --workspace=ragen
+npm version <patch|minor|major> --workspace=ragen-cli
 ```
 
 Land that on `main` **before** publishing. npm versions are immutable: a
@@ -70,7 +77,7 @@ only by pushing the commit that should have gone first, and `npm unpublish` is
 limited to 72 hours and burns the version number permanently.
 
 ```bash
-npm publish --workspace=ragen
+npm publish --workspace=ragen-cli
 ```
 
 `prepack` runs `clean` before `build` deliberately — `files` publishes `dist`
@@ -79,7 +86,7 @@ wholesale, so without the clean a deleted source file lingers in the tarball.
 Then exercise what was actually published, not what was packed:
 
 ```bash
-npm install -g ragen@latest && ragen --version
+npm install -g ragen-cli@latest && ragen --version
 ```
 
 ## Licence

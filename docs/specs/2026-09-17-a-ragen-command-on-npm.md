@@ -1,6 +1,6 @@
 ---
 title: A `ragen` command published on npm
-status: draft
+status: in-progress
 areas: [api, auth, mcp, self-hosting]
 adrs: [13, 32, 37, 38]
 ---
@@ -9,13 +9,18 @@ adrs: [13, 32, 37, 38]
 
 ## TLDR
 
-A globally installable CLI — `npm i -g ragen` — that talks to a Ragen install
-the way `gh` talks to GitHub. The non-obvious part is that the command everyone
+A globally installable CLI — `npm i -g ragen-cli`, which puts a `ragen`
+command on your PATH — that talks to a Ragen install the way `gh` talks to
+GitHub. The non-obvious part is that the command everyone
 asks for first, `ragen plugin install`, has nothing to install: ADR-38 sanctions
 MCP as the plugin API but records that **none of it is built**. So the package
 ships in phases, and Phase A exists mostly to own the name.
 
-`ragen` is unclaimed on npm (verified 2026-09-17: the registry returns 404).
+The package is **`ragen-cli`**, not `ragen`: npm's similarity filter refuses
+the unscoped name against the existing `raven` and `hygen`, for everyone, so it
+was never available to claim — see
+[the lesson](../lessons/npm-can-refuse-a-new-unscoped-name-and-says-so-last.md).
+`bin` is independent of `name`, so the command is still `ragen`.
 `create-ragen-app` is already published from this repository at 0.6.1, so the
 packaging path is known rather than guessed.
 
@@ -40,10 +45,6 @@ before any of them are answered.
   wizard is a second thing to keep in step with the env manifest.
   *Recommendation: keep `create-ragen-app` as the scaffolder; `ragen create`
   delegates to it and is a convenience, never a fork.*
-- **Q3.** Who owns the unscoped `ragen` name, and what else may claim it later?
-  An unscoped name is a one-time, irreversible choice for the project. If a
-  hosted product, a Python package or a Homebrew formula will want the same
-  word, that should be decided once, here, not per-registry.
 - **Q4.** What does the CLI authenticate as? API keys are opaque and carry no
   org context (ADR-13), and they live in the token vault (ADR-32). A CLI needs
   a durable local credential; is an API key pasted into `ragen login` the
@@ -93,16 +94,27 @@ Three concrete gaps:
 
 ## Proposed solution
 
-A new workspace, `packages/ragen-cli`, published as `ragen`, modelled directly
+A new workspace, `packages/ragen-cli`, published as `ragen-cli`, modelled directly
 on `packages/create-ragen-app`. The rejected alternatives:
+
+**Answered by the registry, 2026-09-17** (was Q3, who owns the unscoped name):
+nobody can. npm refuses `ragen` as too similar to `raven` and `hygen`. The name
+is `ragen-cli`; `@ragenai/cli` remains available as a defensive scoped publish,
+and an appeal to npm support for `ragen` can run in the background without
+blocking anything. Because the filter blocks the name for every account, there
+is no squatting risk to race.
+
+The rejected alternatives:
 
 - **Publish a placeholder with no behaviour.** It claims the name at the cost
   of the first impression, and an empty package tends to stay empty. Phase A
   instead ships something small that works.
 - **Wait until ADR-38 Tier 1 is built.** That is a quarter of work on the
   connector side, and the name is claimable by anyone in the meantime.
-- **Scope it as `@ragenai/cli`.** Safe, and nobody types it. The scoped name
-  should be registered defensively as well, pointing at the same tarball.
+- **Scope it as `@ragenai/cli`.** Bypasses the filter and matches the
+  monorepo's internal `@ragenai/*` convention, but needs an npm organization and
+  is less discoverable for an OSS CLI. Worth registering defensively later;
+  not the primary name.
 
 ### Packaging, and why it is copied rather than reinvented
 
@@ -141,7 +153,7 @@ ragen plugin ...     manage custom MCP connectors           (Phase D, blocked on
 | `packages/env` | None. The CLI reads its own config file and `RAGEN_*` variables from the user's shell; it is not a Ragen service and must not import the app's env contract | — |
 | `apps/api` | Phase B adds a read-only health/identity endpoint; Phase D adds connector registration | its own tests; API keys stay opaque per ADR-13 |
 | auth / tenant scoping | Every CLI call is an ordinary API-key call. The CLI derives no org from user input — the key does | existing guards |
-| `lint-staged.config.mjs` | One entry, `'packages/ragen-cli': 'ragen'` | `tests/architecture/lint-staged-covers-every-workspace.test.ts` derives the expected set from the filesystem and fails until the map agrees |
+| `lint-staged.config.mjs` | One entry, `'packages/ragen-cli': 'ragen-cli'` | `tests/architecture/lint-staged-covers-every-workspace.test.ts` derives the expected set from the filesystem and fails until the map agrees |
 | `packages/create-ragen-app` | None. `ragen create` shells out; it does not import it | `installer.yml` still exercises the real first-run path |
 
 ## Data model
@@ -185,31 +197,36 @@ file. A key is never echoed back, including in `--verbose` output.
 
 Independent of every open question.
 
-- [ ] **A1.** `packages/ragen-cli` with `package.json` (`"name": "ragen"`,
+- [x] **A1.** `packages/ragen-cli` with `package.json` (`"name": "ragen-cli"`,
+  `bin` mapping the command `ragen`,
   `bin`, `files`, `publishConfig.access: public`, `engines`), the CommonJS
   `tsconfig.json`, `eslint.config.mjs` (`no-console` off for the entry point,
   as in `create-ragen-app`), `.gitignore`.
-- [ ] **A2.** `src/index.ts` (shebang, error boundary, exit code), `src/cli.ts`
+- [x] **A2.** `src/index.ts` (shebang, error boundary, exit code), `src/cli.ts`
   (pure command router, dependencies injected), `src/args.ts`,
   `src/commands.ts` — one table of `{ name, summary, status }` from which help
   output *and* the "not yet" message are derived, so the two cannot disagree.
-- [ ] **A3.** `ragen create [dir]` spawning `npx create-ragen-app@latest` with
+- [x] **A3.** `ragen create [dir]` spawning `npx create-ragen-app@latest` with
   stdio inherited, injected as a function so the router stays testable.
-- [ ] **A4.** Unit tests beside the source: argument parsing, help text,
+- [x] **A4.** Unit tests beside the source: argument parsing, help text,
   unknown command, a planned command exiting non-zero, and the spawn binding
   (AGENTS.md is explicit that thin bindings get a test — they are the only
   place the wiring exists).
-- [ ] **A5.** Register the workspace: `lint-staged.config.mjs`,
-  `npm run check:config-paths`, `npm run verify` green.
-- [ ] **A6.** A CI smoke job modelled on `installer.yml`: `npm pack`, install
+- [~] **A5.** Register the workspace: `lint-staged.config.mjs` done and its
+  architecture guard passes, `check-config-path-globs` clean. **`npm run verify`
+  and ESLint have not run** — this was built in a worktree with no
+  `node_modules`, and `npm install --no-workspaces` cannot resolve this tree.
+  They must run before the branch lands.
+- [x] **A6.** A CI smoke job modelled on `installer.yml`: `npm pack`, install
   the tarball, run `ragen --help` and `ragen --version`. Exercise the artefact
   npm would serve, not the workspace.
-- [ ] **A7.** README covering the manual publish procedure — `npm version` →
+- [x] **A7.** README covering the manual publish procedure — `npm version` →
   PR → merge → `npm publish` **from `main`**. Publishing first is exactly how
   the registry once ended up ahead of the repository, and npm versions are
   immutable.
-- [ ] **A8.** Publish `ragen@0.1.0`. Register `@ragenai/cli` as well if Q3 says
-  the scope should be held too.
+- [ ] **A8.** Publish `ragen-cli@0.1.0`.
+- [ ] **A9.** Ask npm support to release `ragen`; if granted, republish under it
+  and leave `ragen-cli` pointing at the new name.
 
 ### Phase B — it can talk to an install
 

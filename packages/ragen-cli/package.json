@@ -1,5 +1,5 @@
 {
-  "name": "ragen",
+  "name": "ragen-cli",
   "version": "0.1.0",
   "private": false,
   "description": "Command line for Ragen AI — the self-hosted RAG chat platform",
