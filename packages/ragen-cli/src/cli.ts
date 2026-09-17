@@ -6,8 +6,13 @@ export interface RunOptions {
   version: string;
   /** Injected so the router is testable without spawning anything. */
   create: (args: string[]) => number;
-  out?: (message: string) => void;
-  err?: (message: string) => void;
+  /**
+   * Required, not defaulted to `console`: the router does no I/O of its own,
+   * which is what lets a test read its output instead of capturing a stream.
+   * index.ts is the one place that knows about the process.
+   */
+  out: (message: string) => void;
+  err: (message: string) => void;
 }
 
 /**
@@ -17,8 +22,7 @@ export interface RunOptions {
  * index.ts and nowhere else.
  */
 export function run(argv: string[], options: RunOptions): number {
-  const out = options.out ?? ((message: string) => console.log(message));
-  const err = options.err ?? ((message: string) => console.error(message));
+  const { out, err } = options;
 
   const args = parseArgs(argv);
 

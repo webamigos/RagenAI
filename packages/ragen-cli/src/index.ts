@@ -13,6 +13,8 @@ try {
   process.exitCode = run(process.argv.slice(2), {
     version,
     create: (args) => runCreate(args),
+    out: (message) => console.log(message),
+    err: (message) => console.error(message),
   });
 } catch (error: unknown) {
   console.error(error instanceof Error ? error.message : error);
