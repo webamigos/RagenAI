@@ -93,12 +93,14 @@ when a request named no assistant, `ApiKeyGuard` populated that from
 and wrote it. Read in any order, that is a working feature: an API key bound to
 an assistant, with a documented fallback.
 
-Nothing was bound to anything. The server action behind the panel calls
-`createApiKeyCommand({ name, debugMode })` and the form has no assistant field,
+Nothing was bound to anything. The server action behind the panel called
+`createApiKeyCommand({ name, debugMode })` and the form had no assistant field,
 so the argument was never passed, the column stayed null, and the fallback
 resolved to `undefined`. `Thread.projectId` is nullable, so the result was a
 thread with no project and no error — the feature failing silently in exactly
-the shape of the feature working.
+the shape of the feature working. (Past tense throughout: the change that
+prompted this lesson is what made the key carry a scope, so the action now
+forwards one and validates the project behind it.)
 
 What makes this worth its own section is that the column looked *more*
 implemented than a missing one would: four files agreed about it. The thing

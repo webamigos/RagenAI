@@ -31,10 +31,14 @@ import { OpenAiExceptionFilter } from '../common/filters/openai-exception.filter
  *
  * Scoped by the API key. A knowledge-base key — the default — sees every
  * assistant its org owns, so `client.assistants.list()` behaves the way an
- * OpenAI client expects. A key created for one assistant sees, changes and
- * deletes that one and no other: its scope is a boundary, not a default, and
- * without that half of it a key "scoped to assistant A" could still rename and
- * delete B. See `AssistantScopeService`.
+ * OpenAI client expects. A key created for one assistant sees and changes that
+ * one and no other: its scope is a boundary, not a default, and without that
+ * half of it a key "scoped to assistant A" could still rename and delete B.
+ *
+ * Such a key deletes nothing at all, which is two rules meeting rather than
+ * one: `remove` has always refused to delete the assistant a key is bound to,
+ * because that revokes the key's own context without warning, and every other
+ * assistant is now refused by the scope. See `AssistantScopeService`.
  */
 @ApiTags('Assistants')
 @ApiSecurity('bearer')
