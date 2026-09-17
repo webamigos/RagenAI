@@ -1,0 +1,62 @@
+# The CLI is published to npm as `ragen` and installed globally, which is a
+# path nothing else in this repository exercises. `npm run verify` compiles the
+# workspace; it does not prove that the *tarball* npm serves has a runnable
+# `bin`. The failures that distinguishes are the cheap, embarrassing ones: a
+# missing shebang, `files` omitting dist, an ESM/CommonJS mismatch between the
+# emitted entry point and the nearest package.json.
+#
+# Modelled on installer.yml, which exists for the same reason one level up.
+name: Ragen CLI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ragen-cli-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  tarball:
+    name: Install the packed CLI and run it
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - uses: ./.github/actions/setup-workspace
+
+      # `npm pack` honours `files`, `bin` and `prepack`, so this is the
+      # artifact npm would serve — not the workspace, which resolves files the
+      # published package does not carry.
+      - name: Pack the CLI as npm would publish it
+        run: |
+          mkdir -p /tmp/pack
+          npm pack --workspace=ragen-cli --pack-destination=/tmp/pack
+
+      - name: Install it globally
+        run: npm install -g /tmp/pack/ragen-cli-*.tgz
+
+      - name: It runs, and reports the version the repository declares
+        run: |
+          set -euo pipefail
+          declared=$(node -p "require('./packages/ragen-cli/package.json').version")
+          reported=$(ragen --version)
+          if [ "$declared" != "$reported" ]; then
+            echo "Packed CLI reports $reported, package.json says $declared." >&2
+            exit 1
+          fi
+          ragen --help
+
+      - name: A command that is not built exits non-zero
+        run: |
+          set -euo pipefail
+          if ragen plugin install >/dev/null 2>&1; then
+            echo "ragen plugin exited 0; a script would read that as success." >&2
+            exit 1
+          fi
