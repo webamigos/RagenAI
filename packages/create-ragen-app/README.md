@@ -33,13 +33,20 @@ yourself.
 
 ## Node version
 
-A Ragen installation needs Node 24, and the wizard refuses to create one on
-anything older _before_ it clones. Not because the CLI needs it — it does not,
-and 0.2.0 was published and verified on Node 22 by accident — but because the
-setup it runs for you (`npm install` across the monorepo, `prisma generate`,
-`migrate deploy`, the seed) runs under the caller's Node and leaves a tree
-that fails much later, nowhere near the cause. npm's `EBADENGINE` does warn,
+A Ragen installation needs Node **24.15.0** or newer, and the wizard refuses to
+create one on anything older _before_ it clones. Not because the CLI needs it —
+it does not, and 0.2.0 was published and verified on Node 22 by accident — but
+because the setup it runs for you (`npm install` across the monorepo, `prisma
+generate`, `migrate deploy`, the seed) runs under the caller's Node and leaves a
+tree that fails much later, nowhere near the cause. npm's `EBADENGINE` does warn,
 as one line inside a wall of install output that does not say what breaks.
+
+**The patch digit is not decoration.** `jsdom` — a transitive dependency, which
+narrowed its range with no version bump of ours — requires `^24.15.0`, and the
+repository sets `engine-strict=true`, so npm stops rather than warns. Node 24.0
+through 24.14 fail `npm install` while looking, to every other check, like a
+supported Node; the refusal says so, because "needs Node 24" read by someone who
+has Node 24 is a riddle.
 
 `--skip-install` turns the refusal into a warning, because then the wizard
 runs nothing itself: scaffold here, run the setup on a supported Node. `--yes`
@@ -66,7 +73,7 @@ What counts as install-affecting:
 | An app the web app can no longer run without                                      | the outro in `src/cli.ts`, which tells people what to start                                                                                                                                                     |
 | A variable a provider seam makes required                                         | `src/worker-runtime.ts`, `src/storage-provider.ts` or `src/encryption-provider.ts` — the selection writes it, and `tests/architecture/create-ragen-app-knows-the-provider-seams.test.ts` fails when it does not |
 | A new first-run step (migration, seed, generate)                                  | `src/tasks.ts` and `maybeRunFirstTimeSetup`                                                                                                                                                                     |
-| A `docker-compose.yml` service, port or name change                               | `src/tasks.ts`, and the collision check in `ragenStackVolumeExists`                                                                                                                                             |
+| A `docker-compose.yml` service or published port change                           | `PUBLISHED_PORTS` in `src/tasks.ts` — the wizard probes those ports before starting the stack, and `tests/architecture/installer-ports-agree-with-compose.test.ts` fails when the two tables disagree            |
 | A gate that a brand-new install cannot pass (registration, licensing, onboarding) | usually the app, not this package — a fresh install must be able to reach a working chat without an administrator who does not exist yet                                                                        |
 
 `tests/architecture/create-ragen-app-manifest-is-current.test.ts` catches one

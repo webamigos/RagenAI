@@ -1,16 +1,14 @@
-version: "3"
-
 # Lightweight compose for developing the app without document processing.
-# Excludes: Temporal, Temporal UI, Docling.
-# Includes Qdrant for RAG retrieval (querying existing knowledge base).
+# Excludes Docling, and therefore document ingest — and Redis, so no background
+# jobs either. Includes Qdrant for RAG retrieval (querying an existing
+# knowledge base).
 # Usage: docker compose -f docker-compose.app.yml up
 
-# Container, volume and network names are pinned rather than left to
-# Compose's own project-name prefixing, so `docker logs ragen-postgres` and
-# the runbooks that spell that name keep working. The cost is that the names
-# are global to the Docker daemon: a second Ragen checkout on the same
-# machine collides on the container names and, worse, silently *shares* the
-# postgres and qdrant volumes with the first one.
+# Names are left to Compose's own project prefixing, for the reasons
+# docker-compose.yml spells out at length: pinned names are global to the
+# Docker daemon, so a second checkout collided on them and shared this file's
+# postgres and qdrant volumes with the first. Ports are the part prefixing does
+# not solve — set POSTGRES_PORT and QDRANT_PORT on a second stack.
 #
 # Published ports bind to loopback, not to every interface. Compose's default
 # is 0.0.0.0, which put every service — including ones holding provider
@@ -19,16 +17,10 @@ version: "3"
 # it. Nothing in the stack needs the wider bind: services reach each other by
 # name on the compose network, and the apps run on the host. Set
 # RAGEN_BIND_ADDR=0.0.0.0 to opt back in deliberately.
-#
-# RAGEN_STACK_NAME is the way out. It defaults to `ragen`, so an existing
-# install keeps every name and every volume it already has; set it to
-# anything else (create-ragen-app does, for a second install) and the whole
-# stack — containers, volumes, network — moves out of the way of the first.
 
 services:
   postgres:
     image: postgres:16
-    container_name: ${RAGEN_STACK_NAME:-ragen}-postgres
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
@@ -48,7 +40,6 @@ services:
 
   qdrant:
     image: qdrant/qdrant:v1.17.1
-    container_name: ${RAGEN_STACK_NAME:-ragen}-qdrant
     restart: unless-stopped
     environment:
       QDRANT__SERVICE__GRPC_PORT: 6334
@@ -67,10 +58,7 @@ services:
 
 volumes:
   postgres_data:
-    name: ${RAGEN_STACK_NAME:-ragen}-postgres-data
   qdrant_data:
-    name: ${RAGEN_STACK_NAME:-ragen}-qdrant-data
 networks:
   ragen-network:
-    name: ${RAGEN_STACK_NAME:-ragen}-network
     driver: bridge

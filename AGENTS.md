@@ -141,9 +141,11 @@ whenever a rule matters more than a comment can enforce.
 
 ## Local Development
 
-Node.js 24.x (Active LTS). One `.env.local` at the repository root serves every
-app: real env vars beat an app's own `.env` files, which beat the root's — see
-`scripts/load-root-env.mjs`. Minimum root `.env.local`:
+Node.js **24.15.0**+, not merely 24: `engine-strict` plus a transitive
+`^24.15.0` makes 24.0–24.14 fail `npm install`. One `.env.local` at the
+repository root serves every app: real env vars beat an app's own `.env` files,
+which beat the root's — see `scripts/load-root-env.mjs`. Minimum root
+`.env.local`:
 
 ```
 DATABASE_URL="postgresql://postgres:pass123@localhost:55432/ragen"
@@ -163,10 +165,13 @@ standard port — only the published mapping moved, and every one is overridable
 
 **Postgres and Redis are on non-standard ports on purpose.** A native Postgres
 on 5432 answers instead of the container and `prisma migrate` then talks to the
-wrong database *while reporting success* — twice now. Check which server
-answers before believing a schema problem. Qdrant keeps its standard port
-because the app falls back to it in code.
-See [`docs/lessons.md`](docs/lessons.md).
+wrong database *while reporting success* — twice now. Check which server answers
+before believing a schema problem. Qdrant keeps its standard port: the app falls
+back to it in code. See [`docs/lessons.md`](docs/lessons.md).
+
+**Container names are Compose's, not ours** — `ragen-app-postgres-1`, not
+`ragen-postgres`. Use `docker compose ps` / `logs <service>` from the repo root;
+a pinned name is what made two installs share one database.
 
 Optional local observability: `docker compose --profile observability up -d`,
 then point the app at it with `OTEL_EXPORTER_OTLP_ENDPOINT` — see
@@ -288,9 +293,15 @@ adapter, the paths, why the guard only warns:
 Sixteen modules. What each is for, and the two that carry a warning:
 [`docs/architecture.md`](docs/architecture.md).
 
-### Knowledge Base
+### Knowledge Base, Document Processing, Thread Encryption, Vector Store, MCP, Settings
 
-Moved to [`docs/knowledge-base.md`](docs/knowledge-base.md) — see the Task Router.
+Each has its own doc, reached from the Task Router:
+[`knowledge-base`](docs/knowledge-base.md),
+[`document-processing`](docs/document-processing.md),
+[`thread-encryption`](docs/thread-encryption.md),
+[`vector-store`](docs/vector-store.md),
+[`mcp-integrations`](docs/mcp-integrations.md),
+[`settings-pages`](docs/settings-pages.md).
 
 ### Document Versions & RAG Optimization
 
@@ -302,26 +313,6 @@ original upload) and **never overwrite the stored file to make it pick up new
 text** (that destroys a non-plaintext original). Use
 `Workflow.REINDEX_DOCUMENT_VERSION`, which embeds the version text and clears
 the previous chunks first.
-
-### Document Processing
-
-Moved to [`docs/document-processing.md`](docs/document-processing.md) — see the Task Router.
-
-### Thread Message Encryption
-
-Moved to [`docs/thread-encryption.md`](docs/thread-encryption.md) — see the Task Router.
-
-### Vector Store (Qdrant, Hybrid)
-
-Moved to [`docs/vector-store.md`](docs/vector-store.md) — see the Task Router.
-
-### MCP Integrations
-
-Moved to [`docs/mcp-integrations.md`](docs/mcp-integrations.md) — see the Task Router.
-
-### Settings Pages
-
-Moved to [`docs/settings-pages.md`](docs/settings-pages.md) — see the Task Router.
 
 ### Server Actions
 

@@ -57,7 +57,9 @@ import {
   installDependencies,
   isDockerAvailable,
   migrateDatabase,
-  ragenStackVolumeExists,
+  PII_PUBLISHED_PORTS,
+  PUBLISHED_PORTS,
+  busyPublishedPorts,
   seedDatabase,
   startDockerServices,
 } from './tasks';
@@ -912,34 +914,46 @@ async function maybeStartDocker(
 ): Promise<{ failed: boolean }> {
   const withPii = profiles.includes(PII_COMPOSE_PROFILE);
 
-  // Before the confirm, not after: sharing a database with an install you
-  // already depend on is the kind of thing to decline, and you can only
+  // Before the confirm, not after: starting a stack onto ports something else
+  // already answers on is the kind of thing to decline, and you can only
   // decline it if you are told first.
-  if (await ragenStackVolumeExists()) {
+  //
+  // This used to warn about *data* — pinned volume names meant a second
+  // install silently opened the first one's database. docker-compose.yml no
+  // longer pins them, so containers, volumes and the network are scoped to the
+  // project directory and two installs coexist. Ports are the half that
+  // prefixing cannot fix: a published port is a host port either way.
+  const candidates = withPii
+    ? [...PUBLISHED_PORTS, ...PII_PUBLISHED_PORTS]
+    : PUBLISHED_PORTS;
+  const busy = await busyPublishedPorts(candidates);
+
+  if (busy.length > 0) {
     clack.log.warn(
       [
-        'This machine already runs a Ragen stack, and docker-compose.yml pins',
-        'container, volume and network names globally — so starting this one',
-        'would reuse the existing Postgres and Qdrant data, not create its own.',
+        'Something is already listening on ports this stack publishes:',
         '',
-        'To keep them apart, answer no here and start the stack yourself under a',
-        'distinct name *and* distinct host ports — the name only moves the',
-        'containers and volumes, while the published ports would still collide',
-        'with the running stack:',
+        ...busy.map(
+          ({ service, variable, port }) =>
+            `  ${port}  ${service} (${variable})`,
+        ),
+        '',
+        'Usually that is another Ragen install. Its containers and volumes no',
+        'longer collide with this one — Compose scopes those to the directory —',
+        'but a host port belongs to whoever bound it first, so `docker compose',
+        'up` will fail, and worse, DATABASE_URL here would point at that other',
+        "install's Postgres if it did not.",
+        '',
+        'Answer no here and start this stack on ports of its own:',
         '',
         `  cd ${targetDir} \\`,
-        '    && RAGEN_STACK_NAME=my-ragen \\',
-        '       POSTGRES_PORT=55532 QDRANT_PORT=6343 QDRANT_GRPC_PORT=6344 \\',
-        '       DOCLING_PORT=5011 REDIS_PORT=56479 \\',
+        `    && ${busy.map(({ variable, port }) => `${variable}=${port + 100}`).join(' ')} \\`,
         // Built from what this install actually chose. A command that omits
         // the profile starts a stack without the services whose urls were just
         // written — which is the same half-configuration the profile exists to
         // prevent, only printed instead of executed.
         ...(withPii
-          ? [
-              '       PRESIDIO_ANALYZER_PORT=5012 PRESIDIO_ANONYMIZER_PORT=5013 \\',
-              `       docker compose --profile ${PII_COMPOSE_PROFILE} up -d`,
-            ]
+          ? [`       docker compose --profile ${PII_COMPOSE_PROFILE} up -d`]
           : ['       docker compose up -d']),
         '',
         'Then update .env.local to match: DATABASE_URL, QDRANT_URL, REDIS_URL',
@@ -989,12 +1003,11 @@ async function maybeStartDocker(
       [
         'docker compose could not start the services, and the install carried',
         'on: the files are written, so this is the one step you can redo by',
-        'hand. The usual cause is another Ragen stack already holding these',
-        'container names and host ports — compose says so with "Conflict. The',
-        'container name … is already in use".',
+        'hand. The usual cause is another stack already holding these host',
+        'ports — compose says so with "port is already allocated".',
         '',
-        'Either stop the other stack, or start this one under its own name and',
-        'ports with the command printed above, then point .env.local at them.',
+        'Either stop the other stack, or start this one on ports of its own,',
+        'then point .env.local at them.',
         '',
         `The error was: ${String(error)}`,
       ].join('\n'),
@@ -1007,9 +1020,9 @@ async function maybeStartDocker(
 
 /**
  * `skipDatabaseSteps` is the compose failure reaching this far, and it is not
- * caution for its own sake. The usual cause of that failure is another Ragen
- * stack holding these container names — which means its Postgres is answering
- * on the very port this install was just configured for. Running `migrate
+ * caution for its own sake. The usual cause of that failure is another stack
+ * holding these host ports — which means its Postgres is answering on the very
+ * port this install was just configured for. Running `migrate
  * deploy` and the seed then writes into *that* install's database: the exact
  * thing the warning two prompts earlier exists to prevent, arrived at by a
  * different road.

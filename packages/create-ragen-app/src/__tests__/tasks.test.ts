@@ -1,7 +1,12 @@
+import { createServer, type Server } from 'node:net';
+
 import { execa } from 'execa';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
+  PII_PUBLISHED_PORTS,
+  PUBLISHED_PORTS,
+  busyPublishedPorts,
   generatePrismaClient,
   installDependencies,
   isDockerAvailable,
@@ -147,5 +152,77 @@ describe('migrateDatabase', () => {
       migrateDatabase({ cwd: '/tmp/app' }, { retries: 2, retryDelayMs: 0 }),
     ).rejects.toThrow(/failed after 2 attempts/);
     expect(mockedExeca).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe('busyPublishedPorts', () => {
+  /**
+   * A real socket, not a mocked one. The thing worth testing here is whether
+   * an occupied port is *recognised*, and every way of getting that wrong —
+   * binding the wrong interface, treating a non-EADDRINUSE error as busy,
+   * resolving before the probe closes — survives a mock of `node:net` intact.
+   */
+  const listeners: Server[] = [];
+
+  async function occupy(port: number): Promise<void> {
+    const server = createServer();
+    listeners.push(server);
+    await new Promise<void>((resolve, reject) => {
+      server.once('error', reject);
+      server.listen(port, '127.0.0.1', resolve);
+    });
+  }
+
+  afterEach(async () => {
+    await Promise.all(
+      listeners.splice(0).map(
+        (server) =>
+          new Promise<void>((resolve) => {
+            server.close(() => {
+              resolve();
+            });
+          }),
+      ),
+    );
+  });
+
+  it('reports nothing for ports no one is listening on', async () => {
+    // Two ports in the ephemeral range, chosen to be uninteresting to anything
+    // this repository runs.
+    expect(
+      await busyPublishedPorts([
+        { service: 'a', variable: 'A_PORT', port: 59_231 },
+        { service: 'b', variable: 'B_PORT', port: 59_232 },
+      ]),
+    ).toEqual([]);
+  });
+
+  it('reports exactly the occupied one, so the warning can name it', async () => {
+    await occupy(59_233);
+
+    expect(
+      await busyPublishedPorts([
+        { service: 'taken', variable: 'TAKEN_PORT', port: 59_233 },
+        { service: 'free', variable: 'FREE_PORT', port: 59_234 },
+      ]),
+    ).toEqual([{ service: 'taken', variable: 'TAKEN_PORT', port: 59_233 }]);
+  });
+
+  it('leaves the port free after probing it', async () => {
+    // The probe binds to find out. If it did not release, running the wizard
+    // twice — or the wizard then compose — would fail on a port it occupied
+    // itself.
+    await busyPublishedPorts([
+      { service: 'probe', variable: 'PROBE_PORT', port: 59_235 },
+    ]);
+
+    await expect(occupy(59_235)).resolves.toBeUndefined();
+  });
+
+  it('defaults to the ports a plain `docker compose up` publishes', async () => {
+    // Called with no argument by the wizard, so an empty default table would
+    // silently check nothing.
+    expect(PUBLISHED_PORTS.length).toBe(5);
+    expect(PII_PUBLISHED_PORTS.length).toBe(2);
   });
 });

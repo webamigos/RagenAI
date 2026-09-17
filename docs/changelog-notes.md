@@ -80,6 +80,47 @@ archive is the blog.
   available to claim.
   ([#1237](https://github.com/webamigos/RagenAI/pull/1237))
 
+### Thread: the first run works on a machine that is not empty
+
+- `[major]` **Two Ragen installs on one machine no longer share a database.**
+  `docker-compose.yml` pinned its container, volume and network names
+  (`ragen-postgres`, `ragen-postgres-data`, `ragen-network`) instead of letting
+  Compose prefix them per project. Those names are global to the Docker daemon,
+  so a second install collided on every container name and — the part nobody
+  saw — attached to the *first* install's Postgres and Qdrant volumes. Names are
+  Compose's now, so two checkouts coexist with no configuration. Published ports
+  are not prefixed by anything and still collide; the installer probes them
+  before it starts the stack and tells you which one is taken and what to set.
+
+  **If you already run a stack, read this before upgrading.** Your data is in
+  volumes named `ragen-postgres-data` and `ragen-qdrant-data`; a `docker compose
+  up` after this change creates new, empty ones named for your project directory
+  (`ragen-app_postgres_data`). Nothing is deleted — the old volumes are still
+  there — but the stack comes up blank. To keep the data, copy it across once,
+  with the stack stopped:
+
+  ```bash
+  docker run --rm -v ragen-postgres-data:/from -v ragen-app_postgres_data:/to \
+    alpine sh -c 'cd /from && cp -a . /to'
+  ```
+
+  (substitute your own project name — `docker compose config --format json | jq
+  -r .name` prints it — and repeat for `qdrant`.) Or start fresh and re-ingest.
+  `RAGEN_STACK_NAME` is gone; `COMPOSE_PROJECT_NAME` does that job now, and you
+  rarely need it.
+
+- `[brief]` **The installer refuses Node 24.14 and below, instead of failing
+  halfway through.** `jsdom` — a transitive dependency, arriving with no version
+  bump of ours — requires `^24.15.0`, and the repository sets
+  `engine-strict=true`, so npm stops rather than warns. `engines.node` still
+  said `>=24`, so `create-ragen-app` cleared Node 24.13, cloned, wrote
+  `.env.local`, started Docker, and only then hit `EBADENGINE`. The declared
+  minimum is `24.15.0` everywhere now, the refusal happens in the first second,
+  and it says why the patch digit matters — which is the part someone who
+  already has "Node 24" needs to hear.
+  ([86bc1vbqz](https://app.clickup.com/t/86bc1vbqz))
+
+
 ### Thread: the worker runtime becomes replaceable
 
 - `[major]` **Re-indexing a document no longer leaves the old version in the

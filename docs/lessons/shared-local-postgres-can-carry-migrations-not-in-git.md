@@ -10,8 +10,11 @@ topics: ['prisma', 'migrations', 'git-worktrees', 'local-development', 'postgres
 **Context**: implementing a Prisma migration (adding a `CANCELLED` enum value and a
 `workflowId` column to `UserFile`) in a git worktree checked out from `main`, while a
 second, unrelated session worked on i18n translations in the primary checkout. Both
-point at the same `.env.local` `DATABASE_URL` — `ragen-postgres` on `localhost:55432`
-is one Docker container shared by the whole machine, not one per worktree or branch.
+point at the same `.env.local` `DATABASE_URL` — the compose Postgres on
+`localhost:55432` is one Docker container shared by the whole machine, not one per
+worktree or branch. (At the time the container was named `ragen-postgres`, pinned
+globally; names are Compose-prefixed now, but the port is still one port, so the
+sharing this lesson is about is unchanged.)
 
 **Problem**: `prisma migrate dev` refused to apply the new migration and reported
 drift: the live database already had tables, enum values and indexes (a

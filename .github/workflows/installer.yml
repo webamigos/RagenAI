@@ -113,3 +113,42 @@ jobs:
             echo "Refused, but still created /tmp/ragen-old-node." >&2
             exit 1
           fi
+
+      # And the case the Node 22 step above cannot see. Every check here ran
+      # `node-version: 24`, which installs the newest 24.x and always
+      # satisfies the floor — so a floor that moved *within* the major was
+      # invisible to CI and visible to anyone whose `nvm install 24` predated
+      # it. 24.14 is the last release the tree rejects; pinning it is the only
+      # way this stays true after the next transitive bump.
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24.14'
+
+      - name: Refuse to scaffold on a Node 24 older than the floor
+        run: |
+          if /tmp/installer/node_modules/.bin/create-ragen-app /tmp/ragen-old-patch \
+               --provider=openai --skip-docker; then
+            echo "Expected a refusal on $(node --version), but the installer proceeded." >&2
+            exit 1
+          fi
+          if [ -e /tmp/ragen-old-patch ]; then
+            echo "Refused, but still created /tmp/ragen-old-patch." >&2
+            exit 1
+          fi
+
+      # The other half: the floor has to be reachable. A typo that refuses
+      # every Node would pass both steps above and break every install.
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24.15'
+
+      - name: Scaffold on the oldest Node the tree accepts
+        env:
+          COMMIT_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          /tmp/installer/node_modules/.bin/create-ragen-app /tmp/ragen-floor \
+            --ref="$COMMIT_SHA" \
+            --provider=openai \
+            --skip-docker \
+            --skip-install
+          node scripts/ci/assert-scaffolded-install.mjs /tmp/ragen-floor

@@ -10,12 +10,16 @@
 #
 # Every build context is the repository root, because the lockfile, the shared
 # Prisma schema and the workspace packages all live there.
+#
+# Container names are Compose's, not ours — see docker-compose.yml's header.
+# These four used to be pinned (`ragen-web`, `ragen-api`, …), which made two
+# checkouts on one machine collide on names that are global to the daemon.
+# `docker compose ps` from the project directory is the readable replacement.
 services:
   web:
     build:
       context: .
       dockerfile: apps/web/Dockerfile
-    container_name: ragen-web
     restart: unless-stopped
     ports:
       - '${WEB_PORT:-3000}:3000'
@@ -65,7 +69,6 @@ services:
     build:
       context: .
       dockerfile: apps/api/Dockerfile
-    container_name: ragen-api
     restart: unless-stopped
     ports:
       - '${API_PORT:-3001}:3001'
@@ -97,7 +100,6 @@ services:
     build:
       context: .
       dockerfile: apps/worker/Dockerfile
-    container_name: ragen-worker
     restart: unless-stopped
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-pass123}@postgres:5432/${POSTGRES_DB:-ragen}
@@ -145,7 +147,6 @@ services:
     build:
       context: .
       dockerfile: apps/admin/Dockerfile
-    container_name: ragen-admin
     restart: unless-stopped
     ports:
       - '${ADMIN_PORT:-3200}:3200'

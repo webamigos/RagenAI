@@ -1,3 +1,5 @@
+import { createServer } from 'node:net';
+
 import { execa } from 'execa';
 
 export interface RunOptions {
@@ -30,35 +32,91 @@ export async function isDockerAvailable(): Promise<boolean> {
 }
 
 /**
- * Whether this Docker daemon already runs a Ragen stack.
+ * Every host port a default `docker compose up` publishes, with the variable
+ * that moves it. The order is the order the warning prints them in.
  *
- * docker-compose.yml pins container, volume and network names instead of
- * letting Compose prefix them per project, so a second install does not just
- * collide on the container names — it silently attaches to the *same*
- * postgres and qdrant volumes as the first one. Checking the volume rather
- * than a container catches a stack that is merely stopped, which is the
- * case that looks safest and is not.
- *
- * Reads RAGEN_STACK_NAME for the same reason compose does: someone already
- * running a stack under a name of their own would otherwise be told their
- * machine is clear, and collide with it.
+ * Defaults are duplicated from docker-compose.yml rather than parsed out of
+ * it, because this runs *before* the repository is cloned — there is no file
+ * to read yet. `ports-agree-with-compose.test.ts` holds the two in step.
  */
-export async function ragenStackVolumeExists(): Promise<boolean> {
-  const stackName = process.env.RAGEN_STACK_NAME?.trim() || 'ragen';
-  const postgresVolume = `${stackName}-postgres-data`;
+export const PUBLISHED_PORTS = [
+  { service: 'Postgres', variable: 'POSTGRES_PORT', port: 55432 },
+  { service: 'Qdrant', variable: 'QDRANT_PORT', port: 6333 },
+  { service: 'Qdrant (gRPC)', variable: 'QDRANT_GRPC_PORT', port: 6334 },
+  { service: 'Docling', variable: 'DOCLING_PORT', port: 5001 },
+  { service: 'Redis', variable: 'REDIS_PORT', port: 56379 },
+] as const;
 
-  try {
-    const { stdout } = await execa(
-      'docker',
-      ['volume', 'ls', '--format', '{{.Name}}'],
-      { timeout: 10_000 },
-    );
-    return stdout.split('\n').some((name) => name.trim() === postgresVolume);
-  } catch {
-    // Same reasoning as isDockerAvailable: an unreachable daemon is not a
-    // reason to fail, the caller is about to find that out anyway.
-    return false;
-  }
+/** The two more, behind the `pii` profile, that only a masking install starts. */
+export const PII_PUBLISHED_PORTS = [
+  {
+    service: 'Presidio analyzer',
+    variable: 'PRESIDIO_ANALYZER_PORT',
+    port: 5002,
+  },
+  {
+    service: 'Presidio anonymizer',
+    variable: 'PRESIDIO_ANONYMIZER_PORT',
+    port: 5003,
+  },
+] as const;
+
+export interface PublishedPort {
+  service: string;
+  variable: string;
+  port: number;
+}
+
+/**
+ * Which of these host ports something is already listening on.
+ *
+ * This replaces a check for the volume `ragen-postgres-data`. That volume name
+ * was pinned in docker-compose.yml, which is what made a second install share
+ * the first one's database — and removing the pin removed the sharing, so the
+ * old check now answers a question nobody is asking and would answer "clear"
+ * for every install made after the change. A guard that quietly stops firing
+ * is worse than no guard.
+ *
+ * Ports are what is genuinely left: Compose prefixes names per project, and
+ * prefixes nothing about a published port, so two stacks still collide on
+ * 55432. Binding is also a better probe than asking Docker — it sees a native
+ * Postgres on the port as well, which is the other way this install ends up
+ * talking to a database it did not start.
+ */
+export async function busyPublishedPorts(
+  candidates: readonly PublishedPort[] = PUBLISHED_PORTS,
+): Promise<PublishedPort[]> {
+  const results = await Promise.all(
+    candidates.map(async (candidate) =>
+      (await isPortInUse(candidate.port)) ? candidate : undefined,
+    ),
+  );
+  return results.filter((candidate): candidate is PublishedPort =>
+    Boolean(candidate),
+  );
+}
+
+/**
+ * Loopback only, because that is where docker-compose.yml publishes
+ * (`RAGEN_BIND_ADDR` defaults to 127.0.0.1). Anything other than EADDRINUSE —
+ * a permission error, a system without IPv4 loopback — reports "free": the
+ * cost of a missed warning is a compose error the caller then reads, and the
+ * cost of a false one is telling someone their machine is occupied when it is
+ * not.
+ */
+function isPortInUse(port: number): Promise<boolean> {
+  return new Promise((resolve) => {
+    const server = createServer();
+    server.once('error', (error: NodeJS.ErrnoException) => {
+      resolve(error.code === 'EADDRINUSE');
+    });
+    server.once('listening', () => {
+      server.close(() => {
+        resolve(false);
+      });
+    });
+    server.listen(port, '127.0.0.1');
+  });
 }
 
 /**

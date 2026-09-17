@@ -27,13 +27,14 @@ slow app instead of a small machine.
 **Locally** (VS Code → _Dev Containers: Reopen in Container_) works too, with
 three caveats worth knowing before you spend an hour on it:
 
-- **stop your host stack first** — `npm run ragen:down`. `docker-compose.yml`
-  pins container names (`ragen-postgres`, …) and publishes fixed host ports,
-  neither of which is namespaced per Compose project, so a stack that is
-  already up makes the dev container fail to start: first on a name conflict,
-  and once that is resolved, on `Bind for 127.0.0.1:55432 failed: port is
-already allocated`. The dev container then owns the same containers and the
-  same volumes, so your data is still there;
+- **stop your host stack first** — `npm run ragen:down`. Container, volume and
+  network names are Compose-prefixed per project, so those no longer collide —
+  but **published host ports are not prefixed**, and a stack that is already up
+  makes the dev container fail to start with `Bind for 127.0.0.1:55432 failed:
+  port is already allocated`. Note the other half of that change: the dev
+  container gets its **own** volumes now, so it starts on an empty database and
+  `post-create.sh` migrates and seeds it. Your host stack's data is untouched
+  and is not what you will be looking at;
 - it needs roughly 10 GB of Docker disk on top of what a Ragen stack already
   uses — `node_modules` and every build output get their own volume;
 - **it does not work from a git worktree.** A worktree's `.git` is a pointer
@@ -50,8 +51,10 @@ out on purpose: Docling (~700 MB, needed only when `DOCUMENT_PARSER=docling`),
 Presidio (~1 GB, PII masking) and the observability profile.
 
 To add one, put it in `runServices` and rebuild the container. The Docker
-socket is mounted, so `docker ps`, `docker logs ragen-qdrant` and
-`docker restart ragen-qdrant` work from inside the container — but
+socket is mounted, so `docker ps`, `docker logs <name>` and
+`docker restart <name>` work from inside the container — names are
+Compose-prefixed (`ragen-app-qdrant-1`), so read them off `docker ps` rather
+than spelling them; but
 `docker compose up` does not: Compose would hand the outer daemon container
 paths (`/workspace/infra/...`) that do not exist on the host, and the bind
 mounts would come up empty.
@@ -107,12 +110,14 @@ or when a new workspace's build output has no volume.
 - **`prisma migrate deploy` fails after switching branches** — usually a
   migration present in one branch and not the other. `npx prisma migrate
 status` says which; the container stays usable either way.
-- **A service is unhealthy** — `docker logs ragen-postgres` (names are pinned
-  in `docker-compose.yml`, not Compose-prefixed).
+- **A service is unhealthy** — `docker compose logs postgres` from the
+  repository root, which names the service rather than the container and is
+  right in every checkout.
 - **The model picker is empty** — the picker offers only models that are both
   routed and have credentials present, so an empty one usually means neither.
   `npm run gateway:preflight -- --probe` says which of the two it is.
 - **You want a clean database** — stop the container, then
-  `docker volume rm ragen-postgres-data ragen-qdrant-data`, then rebuild.
-  Those volumes are shared with a host-side `npm run ragen:up:full` stack: the
-  names are global to the daemon, so this wipes that one too.
+  `docker compose down -v` from the repository root, then rebuild. The volumes
+  are scoped to this project, so a host-side `npm run ragen:up:full` stack in
+  another directory is not affected (it used to be — the names were global to
+  the daemon, and this wiped both).
