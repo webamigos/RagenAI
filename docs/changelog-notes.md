@@ -68,6 +68,18 @@ archive is the blog.
 
 ## Unreleased
 
+### Thread: Ragen gets a command line
+
+- `[major]` **`npm i -g ragen-cli` gives you a `ragen` command.** Today it
+  scaffolds an installation and nothing else — `ragen create my-app` is
+  `npx create-ragen-app` with the same flags — and the commands that are not
+  built (`login`, `doctor`, `kb`, `plugin`) are listed in `ragen help` under
+  "Not built yet" and exit non-zero rather than quietly doing nothing. The
+  package is `ragen-cli` and not `ragen` because npm refuses the plain name as
+  too similar to `raven` and `hygen`, for every account, so it was never
+  available to claim.
+  ([#1237](https://github.com/webamigos/RagenAI/pull/1237))
+
 ### Thread: the worker runtime becomes replaceable
 
 - `[major]` **Re-indexing a document no longer leaves the old version in the
