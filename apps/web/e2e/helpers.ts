@@ -33,6 +33,7 @@ export const ROUTES = {
   organizationAiUsage: '/pl/organization/ai-usage',
   organizationDiskUsage: '/pl/organization/disk-usage',
   organizationChatbots: '/pl/organization/chatbots',
+  organizationApiKeys: '/pl/organization/api-keys',
   notifications: '/pl/notifications',
   publicAssistant: (accessToken: string) =>
     `/pl/public/assistants/${accessToken}`,

@@ -5,6 +5,7 @@ const mockGetUserId = vi.fn();
 const mockRequireOrgAdmin = vi.fn();
 const mockCreateCommand = vi.fn();
 const mockProjectFindFirst = vi.fn();
+const mockAssistantsQuery = vi.fn();
 
 vi.mock('@/app/lib/utils/auth-helpers', () => ({
   getOrgIdFromAuthOrThrow: (...args: unknown[]) => mockGetOrgId(...args),
@@ -27,6 +28,13 @@ vi.mock('@/features/organizations/services/queries/get-api-keys-query', () => ({
 }));
 
 vi.mock(
+  '@/features/projects/services/queries/get-org-assistants-query',
+  () => ({
+    getOrgAssistantsQuery: (...args: unknown[]) => mockAssistantsQuery(...args),
+  }),
+);
+
+vi.mock(
   '@/features/organizations/services/commands/remove-api-key-command',
   () => ({ removeApiKeyCommand: vi.fn() }),
 );
@@ -45,7 +53,7 @@ vi.mock('@ragenai/prisma-client', () => ({
   },
 }));
 
-import { createApiKey } from '../actions';
+import { createApiKey, getAssistantsForKeyScope } from '../actions';
 
 describe('createApiKey action', () => {
   beforeEach(() => {
@@ -120,5 +128,30 @@ describe('createApiKey action', () => {
       /User session not found/,
     );
     expect(mockCreateCommand).not.toHaveBeenCalled();
+  });
+});
+
+// Fills the scope picker, so it answers "which assistants may this admin bind
+// a key to" — a question about the caller's org, not about the form's input.
+describe('getAssistantsForKeyScope action', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockGetOrgId.mockResolvedValue('org-1');
+    mockRequireOrgAdmin.mockResolvedValue(undefined);
+    mockAssistantsQuery.mockResolvedValue([{ id: 'proj-1', title: 'Support' }]);
+  });
+
+  it('asks only for the caller org assistants', async () => {
+    await expect(getAssistantsForKeyScope()).resolves.toEqual([
+      { id: 'proj-1', title: 'Support' },
+    ]);
+    expect(mockAssistantsQuery).toHaveBeenCalledWith('org-1');
+  });
+
+  it('requires an org admin', async () => {
+    mockRequireOrgAdmin.mockRejectedValue(new Error('forbidden'));
+
+    await expect(getAssistantsForKeyScope()).rejects.toThrow('forbidden');
+    expect(mockAssistantsQuery).not.toHaveBeenCalled();
   });
 });

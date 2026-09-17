@@ -357,10 +357,16 @@ are `ApiKeyGuard` and both are org-wide today.
   rejection; the server action's org check.
 - **Component (`apps/web`)** — the creation form: an assistant choice submits a
   `projectId`, a knowledge-base choice submits none.
-- **E2E (`p0-*`)** — create an assistant-scoped key in the panel and see it listed
-  with its scope. Only `smoke-*` and `p0-*` gate a PR, and key creation is the
-  path that must not break. The API matrix stays in Nest unit tests; no e2e
-  harness speaks to `apps/api`.
+- **E2E (`p0-*`)** — `p0-28-api-key-scope`: the dialog offers the scope, defaults
+  to the knowledge base, and reveals an assistant picker filled from the seeded
+  org. Only `smoke-*` and `p0-*` gate a PR, so the surface that must not break
+  belongs in this tier. **Creating a key is deliberately not exercised**, which
+  is narrower than this section first claimed: `createApiKeyCommand` writes the
+  secret to ragen-token-vault on :3100, which the suite does not run, so that
+  test would fail for a setup reason rather than a code one — the failure mode
+  `ragen-e2e-triage` exists to untangle. The write path is covered by the
+  command's and the form's unit tests. The API matrix stays in Nest unit tests;
+  no e2e harness speaks to `apps/api`.
 - **Manual, once** — point n8n's OpenAI node at the API with a scoped key and
   complete a turn. It is the reason this exists and nothing here covers a
   third-party client.
