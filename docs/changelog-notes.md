@@ -93,6 +93,13 @@ archive is the blog.
   reaches one assistant and not the rest of the organization — which it could
   before.
 
+- `[brief]` **The API lists the models it serves.** `GET /v1/models` answers
+  with the models this deployment can actually reach and the organization is
+  allowed to use, so an OpenAI-compatible client fills its model picker instead
+  of showing an error there. Read-only, and narrower than it sounds: it is the
+  intersection of the catalogue, the route table and the per-org allowlist, so
+  a model it lists is one that will answer.
+
 - `[brief]` **`GET /v1/files` no longer answers for other organizations.** It
   filtered on the API key's assistant and nothing else, and no key has ever had
   one, so the filter evaluated to nothing. Nothing was exposed, because no key

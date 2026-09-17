@@ -1,14 +1,16 @@
 /**
- * The LLM catalogue: LiteLLM model IDs mapped to how the product presents them.
+ * The LLM catalogue: model IDs mapped to how the product presents them.
  *
  * This is *presentation* metadata, not the list of models a deployment serves.
- * Which models exist is decided by `infra/litellm/config.yaml` and read at
- * runtime from the proxy's `/v1/models`; this module supplies the label,
- * grouping and visibility for the IDs that come back, and the set of IDs an
- * administrator may put on an organization's allowlist.
+ * Which models a deployment can serve is `infra/llm-gateway/routes.yaml`, read
+ * through `gatewayFromEnv().availableModels()` — there is no proxy to ask any
+ * more, and `infra/litellm/config.yaml`, which this comment used to name, was
+ * deleted with it (ADR-49). This module supplies the label, grouping and
+ * visibility for the IDs a route table offers, and the set of IDs an
+ * administrator may put on an organization's allowlist. `GET /v1/models` in
+ * apps/api is the intersection of the three.
  *
- * Keying is the thing to get right: LiteLLM model IDs carry **no provider
- * prefix**. `apps/admin` once kept its own copy that did (`openai/gpt-5.3-chat`),
+ * Keying is the thing to get right: the IDs carry **no provider prefix**. `apps/admin` once kept its own copy that did (`openai/gpt-5.3-chat`),
  * which matched nothing and silently emptied organizations' model pickers
  * instead of restricting them. That is why this lives in one place — see
  * docs/lessons/hand-copied-lists-drift-and-typecheck-only-sees-one.md.
