@@ -224,7 +224,8 @@ Independent of every open question.
   PR → merge → `npm publish` **from `main`**. Publishing first is exactly how
   the registry once ended up ahead of the repository, and npm versions are
   immutable.
-- [ ] **A8.** Publish `ragen-cli@0.1.0`.
+- [x] **A8.** Publish `ragen-cli@0.1.0`. **Done 2026-09-17, ahead of this
+  merge** — see the pull request's disclosure. The next publish goes from `main`.
 - [ ] **A9.** Ask npm support to release `ragen`; if granted, republish under it
   and leave `ragen-cli` pointing at the new name.
 

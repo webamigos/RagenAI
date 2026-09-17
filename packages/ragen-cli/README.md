@@ -5,9 +5,13 @@ platform with document knowledge bases, an in-process model gateway and a
 public API.
 
 ```bash
-npm install -g ragen-cli
-ragen --help
+npx ragen-cli@latest help     # no install
+npm install -g ragen-cli      # or install it, then just `ragen`
 ```
+
+Reach for `npx` while the only substantial command is `create`, which you run
+once per installation. Install it globally when you run it often — and expect to
+upgrade it yourself, because a global CLI goes stale without saying so.
 
 ## The package is `ragen-cli`; the command is `ragen`
 
@@ -15,6 +19,11 @@ npm refuses the unscoped name `ragen` — its similarity filter reads it as too
 close to the existing `raven` and `hygen`, and returns 403 to anyone who tries,
 not just to us. `bin` is independent of `name`, so the command you type is
 unaffected.
+
+The split only bites with `npx`, which resolves a **package**: `npx ragen-cli`
+works, `npx ragen` looks for a package that does not exist. (It may appear to
+work on a machine that already has the CLI installed globally — npx runs a
+binary it finds on `PATH` before it fetches anything.)
 
 ## What works today
 
@@ -29,9 +38,13 @@ ragen version
 forwards its arguments unchanged, so this is equivalent:
 
 ```bash
-npx create-ragen-app ./my-ragen --skip-docker
+npx --yes create-ragen-app@latest ./my-ragen --skip-docker
 ragen create ./my-ragen --skip-docker
 ```
+
+`--yes` and `@latest` are what `ragen create` passes, so the two lines above run
+the same version without a confirmation prompt. A bare `npx create-ragen-app`
+may reuse whatever copy npx has cached.
 
 The scaffolder stays the scaffolder. It is the only thing exercising the
 first-run path, CI runs it on every pull request, and a second copy of that

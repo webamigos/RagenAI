@@ -36,12 +36,22 @@ one described the actual obstacle.
 The cost was about forty minutes spent on authentication, rotating a token and
 working around a browser login — all of it irrelevant to the outcome.
 
-**Rule**: before building anything around an unscoped npm name, prove the
-registry will accept it. `npm view <name>` returning 404 means *unclaimed*, not
-*obtainable* — the similarity filter is a separate gate that only fires at
-publish time. Check it first with an authenticated dry run against the real
-endpoint, and treat a 404 on `PUT` as an authentication answer, never as a
-statement about the package. When the filter does fire, a scoped name
+**Rule**: before building anything around an unscoped npm name, publish a
+throwaway `0.0.1` under it — that is the only check there is. `npm view <name>`
+returning 404 means *unclaimed*, not *obtainable*, and **`npm publish --dry-run`
+does not consult the filter either**. Measured here against the refused name:
+
+```
+$ npm publish --dry-run --access public     # package.json says "name": "ragen"
++ ragen@0.0.1
+exit 0
+```
+
+A dry run never asks the registry whether the name is allowed, so it reports
+success for a name that cannot be published. The community tool `can-i-publish`
+works by attempting a real publish probe, which is the same admission. Treat a
+404 on `PUT` as an authentication answer, never as a statement about the
+package. When the filter does fire, a scoped name
 (`@scope/thing`) bypasses it entirely, and `bin` is independent of `name`, so
 the command a user types need not change — only the install line.
 

@@ -72,7 +72,7 @@ archive is the blog.
 
 - `[major]` **`npm i -g ragen-cli` gives you a `ragen` command.** Today it
   scaffolds an installation and nothing else — `ragen create my-app` is
-  `npx create-ragen-app` with the same flags — and the commands that are not
+  `npx create-ragen-app@latest` with the same flags — and the commands that are not
   built (`login`, `doctor`, `kb`, `plugin`) are listed in `ragen help` under
   "Not built yet" and exit non-zero rather than quietly doing nothing. The
   package is `ragen-cli` and not `ragen` because npm refuses the plain name as
