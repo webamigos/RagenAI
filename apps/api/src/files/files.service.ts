@@ -33,9 +33,17 @@ export class FilesService {
   ) {}
 
   /**
-   * List files visible to the caller's project. Direct Prisma — the
-   * API key's project scope is the sole filter we need; there is no
-   * cross-project visibility on this endpoint.
+   * List files visible to the caller. Direct Prisma, and the
+   * `organizationId` clause is the load-bearing one.
+   *
+   * It was once absent, on the reasoning that the API key's project was
+   * "the sole filter we need". No key has ever carried a project — nothing
+   * in the monorepo wrote `ApiKey.projectId` — so `context.projectId` was
+   * always `undefined`, Prisma dropped the clause it appeared in, and this
+   * endpoint listed every file in every organization. A filter that is
+   * only correct when an optional value is present is not a filter; the
+   * tenant scope goes in unconditionally and the project narrows within
+   * it.
    */
   async list(
     context: ApiContext,
@@ -46,7 +54,8 @@ export class FilesService {
 
     const rows = await this.prisma.client.userFile.findMany({
       where: {
-        projectId: context.projectId as unknown as string,
+        organizationId: context.orgId,
+        ...(context.projectId ? { projectId: context.projectId } : {}),
       },
       orderBy: { createdAt: 'desc' },
       take: limit,
@@ -64,13 +73,14 @@ export class FilesService {
     return buildList(rows.map((r) => toOpenAIFile(r)));
   }
 
-  /** Get one file by OpenAI-prefixed id. */
+  /** Get one file by OpenAI-prefixed id, within the caller's org — see `list`. */
   async get(id: string, context: ApiContext): Promise<OpenAIFile> {
     const rawId = stripPrefix(id, 'file');
     const row = await this.prisma.client.userFile.findFirst({
       where: {
         id: rawId,
-        projectId: context.projectId as unknown as string,
+        organizationId: context.orgId,
+        ...(context.projectId ? { projectId: context.projectId } : {}),
       },
       select: {
         id: true,

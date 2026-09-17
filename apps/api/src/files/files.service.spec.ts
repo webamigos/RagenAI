@@ -102,12 +102,38 @@ describe('FilesService', () => {
     expect(result.data[1].status).toBe('uploaded');
   });
 
-  it('list: scopes query by projectId and honors limit', async () => {
+  it('list: scopes query by org and project, and honors limit', async () => {
     const { service, prisma } = buildService([]);
     await service.list(context, { limit: 5 });
     const call = (prisma.client.userFile.findMany as Mock).mock.calls[0][0];
-    expect(call.where).toEqual({ projectId: 'proj-1' });
+    expect(call.where).toEqual({
+      organizationId: 'org-1',
+      projectId: 'proj-1',
+    });
     expect(call.take).toBe(5);
+  });
+
+  // The shape every key in the product actually has: no bound project, because
+  // nothing has ever written `ApiKey.projectId`. The org clause used to be
+  // absent here and the project clause was `undefined`, which Prisma drops —
+  // so this endpoint listed every organization's files to any valid key.
+  it('list: still scopes by org when the key has no project', async () => {
+    const { service, prisma } = buildService([]);
+    const { projectId: _unused, ...keyWithoutProject } = context;
+    await service.list(keyWithoutProject, {});
+    const call = (prisma.client.userFile.findMany as Mock).mock.calls[0][0];
+    expect(call.where).toEqual({ organizationId: 'org-1' });
+    expect(call.where.projectId).toBeUndefined();
+  });
+
+  it('get: still scopes by org when the key has no project', async () => {
+    const { service, prisma } = buildService([], null);
+    const { projectId: _unused, ...keyWithoutProject } = context;
+    await expect(
+      service.get('file-abc', keyWithoutProject),
+    ).rejects.toBeInstanceOf(NotFoundException);
+    const call = (prisma.client.userFile.findFirst as Mock).mock.calls[0][0];
+    expect(call.where).toEqual({ id: 'abc', organizationId: 'org-1' });
   });
 
   it('list: decodes cursor by stripping file- prefix', async () => {
@@ -116,6 +142,19 @@ describe('FilesService', () => {
     const call = (prisma.client.userFile.findMany as Mock).mock.calls[0][0];
     expect(call.cursor).toEqual({ id: 'abc' });
     expect(call.skip).toBe(1);
+  });
+
+  it('get: scopes query by org and project', async () => {
+    const { service, prisma } = buildService([], null);
+    await expect(service.get('file-abc', context)).rejects.toBeInstanceOf(
+      NotFoundException,
+    );
+    const call = (prisma.client.userFile.findFirst as Mock).mock.calls[0][0];
+    expect(call.where).toEqual({
+      id: 'abc',
+      organizationId: 'org-1',
+      projectId: 'proj-1',
+    });
   });
 
   it('get: returns the OpenAI file when found', async () => {
