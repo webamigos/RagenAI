@@ -84,8 +84,31 @@ Two corollaries, both of which cost more than the fix:
   bug.** When a field is optional, the case worth asserting is the one where it
   is absent — that is the shape every live caller has.
 
+## The other half: it also looked like a feature
+
+The same column was read by a second thing, and there it produced the opposite
+illusion. `ThreadsService.resolveAssistantId` fell back to `context.projectId`
+when a request named no assistant, `ApiKeyGuard` populated that from
+`ApiKey.projectId`, and `createApiKeyCommand` accepted a `projectId` argument
+and wrote it. Read in any order, that is a working feature: an API key bound to
+an assistant, with a documented fallback.
+
+Nothing was bound to anything. The server action behind the panel calls
+`createApiKeyCommand({ name, debugMode })` and the form has no assistant field,
+so the argument was never passed, the column stayed null, and the fallback
+resolved to `undefined`. `Thread.projectId` is nullable, so the result was a
+thread with no project and no error — the feature failing silently in exactly
+the shape of the feature working.
+
+What makes this worth its own section is that the column looked *more*
+implemented than a missing one would: four files agreed about it. The thing
+none of them established is whether any code path ever supplies the value.
+**Trace a column from its writer, not from its readers** — the readers will
+happily describe a feature that has never once run.
+
 ## Applies to
 
-Every query in `apps/api` against a tenant-scoped model, and any `where` built
-by spreading or interpolating an optional. The `ragen-tenant-scope-audit` skill
+Every query in `apps/api` against a tenant-scoped model, any `where` built by
+spreading or interpolating an optional, and any column whose only writer is a
+parameter someone has to remember to pass. The `ragen-tenant-scope-audit` skill
 covers the backlog; `docs/tenant-scope-guard.md` covers the guard that warns.

@@ -335,13 +335,11 @@ are `ApiKeyGuard` and both are org-wide today.
       ("Defaults to the API key project") becomes wrong under key-first
       precedence and is rewritten, not appended to.
 - [x] **E3.** A line in [`docs/changelog-notes.md`](../changelog-notes.md).
-- [ ] **E4.** _(waiting on A0's rebase.)_ A0 already added
-      `a-tenant-filter-that-only-works-when-an-optional-value-is-set.md`, which
-      covers the dead column from the leak's side. Extend that file — rather
-      than writing a near-duplicate, as `lessons.md` asks — with the other half:
-      the same column was read by a fallback nothing reached, which is what made
-      a scope look implemented. Left until the branches meet, so the edit does
-      not become a conflict.
+- [x] **E4.** Extended A0's
+      `a-tenant-filter-that-only-works-when-an-optional-value-is-set.md` rather
+      than writing a near-duplicate, as `lessons.md` asks: the leak was one half
+      of that column, and the fallback nothing ever reached — which made a scope
+      look implemented — is the other.
 - [ ] **E5.** _(hand-off, other repository.)_ Note for `ragen-docs`: the endpoints, what each key scope reaches,
       and the MCP-connector asymmetry.
 
