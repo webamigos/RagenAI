@@ -35,6 +35,7 @@ const workspaces = {
   'packages/jobs-temporal': '@ragenai/jobs-temporal',
   'packages/platform-contracts': '@ragenai/platform-contracts',
   'packages/rag-core': '@ragenai/rag-core',
+  'packages/ragen-cli': 'ragen',
   'packages/storage': '@ragenai/storage',
   'packages/vault-client': '@ragenai/vault-client',
 };

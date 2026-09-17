@@ -1,0 +1,25 @@
+{
+  // CommonJS + declarations, same reasoning as packages/create-ragen-app: this
+  // package is published standalone and run as a global `bin`, which resolves
+  // a plain CommonJS entry without any module-type ambiguity. The repository
+  // root is `"type": "module"`, but Node reads the *nearest* package.json to
+  // dist/index.js — and this one deliberately declares no `type` at all.
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "types": ["node"],
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules", "dist", "src/**/__tests__/**"]
+}

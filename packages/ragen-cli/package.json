@@ -1,0 +1,50 @@
+{
+  "name": "ragen",
+  "version": "0.1.0",
+  "private": false,
+  "description": "Command line for Ragen AI — the self-hosted RAG chat platform",
+  "license": "Apache-2.0",
+  "bin": {
+    "ragen": "dist/index.js"
+  },
+  "main": "./dist/index.js",
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "ragen",
+    "rag",
+    "ai",
+    "chatbot",
+    "cli",
+    "self-hosted"
+  ],
+  "homepage": "https://github.com/webamigos/RagenAI/tree/main/packages/ragen-cli#readme",
+  "bugs": {
+    "url": "https://github.com/webamigos/RagenAI/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/webamigos/RagenAI.git",
+    "directory": "packages/ragen-cli"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "clean": "rm -rf dist",
+    "prepack": "npm run clean && npm run build",
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit --incremental --tsBuildInfoFile ./typecheck.tsbuildinfo"
+  },
+  "devDependencies": {
+    "@ragenai/eslint-config": "*",
+    "@types/node": "^22.0.0",
+    "eslint": "^9.39.5",
+    "typescript": "~5.7.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
