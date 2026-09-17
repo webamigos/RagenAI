@@ -7,6 +7,7 @@ import {
 import { type Request, type Response } from 'express';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { type ApiContext } from '../common/types/api-context.js';
+import { AssistantScopeService } from '../common/services/assistant-scope.service.js';
 import {
   buildError,
   buildList,
@@ -30,21 +31,45 @@ export class FilesService {
     private readonly prisma: PrismaService,
     private readonly uploadFile: UploadFileService,
     private readonly deleteFile: DeleteFileService,
+    private readonly assistantScope: AssistantScopeService,
   ) {}
 
   /**
-   * List files visible to the caller. Direct Prisma, and the
-   * `organizationId` clause is the load-bearing one.
+   * The `where` every read on this controller starts from.
    *
-   * It was once absent, on the reasoning that the API key's project was
-   * "the sole filter we need". No key has ever carried a project — nothing
-   * in the monorepo wrote `ApiKey.projectId` — so `context.projectId` was
-   * always `undefined`, Prisma dropped the clause it appeared in, and this
-   * endpoint listed every file in every organization. A filter that is
-   * only correct when an optional value is present is not a filter; the
-   * tenant scope goes in unconditionally and the project narrows within
-   * it.
+   * `organizationId` is unconditional and load-bearing: it was once absent,
+   * on the reasoning that the API key's project was "the sole filter we
+   * need", and because no key has ever carried a project the clause it stood
+   * in for evaluated to `undefined` — which Prisma drops — so this endpoint
+   * listed every file in every organization. A filter that is only correct
+   * when an optional value is present is not a filter.
+   *
+   * Within the org, the key's scope narrows: an assistant key sees that
+   * assistant's files, a knowledge-base key sees the files that belong to no
+   * assistant — the same split the retrieval filter makes. A context with no
+   * key scope (session-authenticated, internal) narrows by its project if it
+   * has one, as before.
    */
+  private visibleFiles(context: ApiContext) {
+    const orgScope = { organizationId: context.orgId };
+
+    switch (context.knowledgeScope) {
+      case 'ASSISTANT':
+        return {
+          ...orgScope,
+          projectId: this.assistantScope.confinedToProject(context),
+        };
+      case 'KNOWLEDGE_BASE':
+        return { ...orgScope, projectId: null };
+      default:
+        return {
+          ...orgScope,
+          ...(context.projectId ? { projectId: context.projectId } : {}),
+        };
+    }
+  }
+
+  /** List the files this caller can see — see `visibleFiles`. */
   async list(
     context: ApiContext,
     query: ListFilesDto,
@@ -53,10 +78,7 @@ export class FilesService {
     const cursorId = query.after ? stripPrefix(query.after, 'file') : undefined;
 
     const rows = await this.prisma.client.userFile.findMany({
-      where: {
-        organizationId: context.orgId,
-        ...(context.projectId ? { projectId: context.projectId } : {}),
-      },
+      where: this.visibleFiles(context),
       orderBy: { createdAt: 'desc' },
       take: limit,
       ...(cursorId ? { skip: 1, cursor: { id: cursorId } } : {}),
@@ -73,15 +95,11 @@ export class FilesService {
     return buildList(rows.map((r) => toOpenAIFile(r)));
   }
 
-  /** Get one file by OpenAI-prefixed id, within the caller's org — see `list`. */
+  /** Get one file by OpenAI-prefixed id, within `visibleFiles`. */
   async get(id: string, context: ApiContext): Promise<OpenAIFile> {
     const rawId = stripPrefix(id, 'file');
     const row = await this.prisma.client.userFile.findFirst({
-      where: {
-        id: rawId,
-        organizationId: context.orgId,
-        ...(context.projectId ? { projectId: context.projectId } : {}),
-      },
+      where: { id: rawId, ...this.visibleFiles(context) },
       select: {
         id: true,
         fileName: true,
@@ -168,6 +186,20 @@ export class FilesService {
     context: ApiContext,
   ): Promise<{ id: string; object: 'file'; deleted: true }> {
     const rawId = stripPrefix(id, 'file');
+
+    // `deleteFile` scopes by organization, which was the whole boundary when
+    // a key reached the whole organization. It no longer is: a key confined
+    // to one assistant must not delete another assistant's file, so the same
+    // visibility used for reads decides whether this file exists for this
+    // caller at all.
+    const visible = await this.prisma.client.userFile.findFirst({
+      where: { id: rawId, ...this.visibleFiles(context) },
+      select: { id: true },
+    });
+    if (!visible) {
+      throw new NotFoundException(`File '${id}' not found`);
+    }
+
     const result = await this.deleteFile.deleteFile({
       fileId: rawId,
       organizationId: context.orgId,

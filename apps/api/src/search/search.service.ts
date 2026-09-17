@@ -6,8 +6,7 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { type ApiContext } from '../common/types/api-context.js';
-import { type ProjectId } from '../common/types/brand.js';
-import { stripPrefix } from '../common/utils/openai-format.js';
+import { AssistantScopeService } from '../common/services/assistant-scope.service.js';
 import { type SearchDto } from './dto/search.dto.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { ApiLimitsService } from '../api-limits/api-limits.service.js';
@@ -46,24 +45,29 @@ export class SearchService {
     private readonly initializeBasicRag: InitializeBasicRagService,
     private readonly aiUsage: AiUsageService,
     private readonly folders: FoldersService,
+    private readonly assistantScope: AssistantScopeService,
   ) {}
 
   async search(
     dto: SearchDto,
     context: ApiContext,
   ): Promise<{ context: string; file_ids: string[] }> {
-    const resolvedProjectId = stripPrefix(
+    // Same resolver as the chat surfaces: the key's scope decides, and
+    // `assistant_id` has to agree with it. Null searches the knowledge base.
+    const resolvedProjectId = await this.assistantScope.resolve(
       dto.assistant_id,
-      'asst',
-    ) as ProjectId;
+      context,
+    );
 
-    const project = await this.prisma.client.project.findFirst({
-      where: { id: resolvedProjectId, organizationId: context.orgId },
-      select: { id: true },
-    });
+    if (resolvedProjectId) {
+      const project = await this.prisma.client.project.findFirst({
+        where: { id: resolvedProjectId, organizationId: context.orgId },
+        select: { id: true },
+      });
 
-    if (!project) {
-      throw new NotFoundException('Assistant not found');
+      if (!project) {
+        throw new NotFoundException('Assistant not found');
+      }
     }
 
     const apiLimit = await this.apiLimits.checkApiRequestLimit(context.orgId);

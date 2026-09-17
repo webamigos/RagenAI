@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument */
 import type { Mock } from 'vitest';
-import { HttpException, NotFoundException } from '@nestjs/common';
+import { AssistantScopeService } from '../common/services/assistant-scope.service.js';
+import { ForbiddenException, HttpException } from '@nestjs/common';
 import { EventEmitter } from 'events';
 import { type Request, type Response } from 'express';
 import { ChatCompletionsService } from './chat-completions.service.js';
@@ -115,7 +116,10 @@ describe('ChatCompletionsService', () => {
       charge: vi.fn().mockResolvedValue(undefined),
     };
 
+    // `id` matters now: with no key scope the resolver looks the project up
+    // and returns the row's own id, rather than echoing what was asked for.
     prisma.client.project.findFirst.mockResolvedValue({
+      id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
       settings: { instructions: 'be nice' },
     });
     apiLimits.checkApiRequestLimit.mockResolvedValue({
@@ -146,6 +150,7 @@ describe('ChatCompletionsService', () => {
       persistApiThread as any,
       aiUsage as any,
       teamRateLimit as any,
+      new AssistantScopeService(prisma as any),
     );
   });
 
@@ -153,13 +158,16 @@ describe('ChatCompletionsService', () => {
     vi.restoreAllMocks();
   });
 
-  it('throws NotFoundException when the assistant/project is not found', async () => {
+  it('refuses an assistant the caller cannot reach', async () => {
     prisma.client.project.findFirst.mockResolvedValue(null);
     const { res } = createMockRes();
 
+    // 403, not the 404 this endpoint used to answer: the question under a key
+    // scope is whether this caller may ask, and 404 vs 403 would report
+    // whether the assistant exists.
     await expect(
       service.create(baseDto, mockContext, createMockReq(), res),
-    ).rejects.toBeInstanceOf(NotFoundException);
+    ).rejects.toBeInstanceOf(ForbiddenException);
     expect(initializeBasicRag.initializeRagChain).not.toHaveBeenCalled();
   });
 

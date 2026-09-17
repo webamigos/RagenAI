@@ -514,6 +514,15 @@ model ApiKey {
   projectId      String?       @map("project_id") @db.Uuid
   debugMode      Boolean       @default(false) @map("debug_mode")
 
+  /// What this key may reach, using the same three levels a thread has.
+  /// `ASSISTANT` means `projectId` — and the pair is a boundary, not a
+  /// default: a key bound to one assistant is refused for another. The
+  /// relation above is `onDelete: SetNull`, so `ASSISTANT` with a null
+  /// `projectId` is reachable without anyone writing the row; it is
+  /// rejected rather than widened (`scopeRequiresProject`). `MODEL_ONLY`
+  /// is not offered yet — apps/api's chain does not honour it.
+  knowledgeScope KnowledgeScope @default(KNOWLEDGE_BASE) @map("knowledge_scope")
+
   @@index([organizationId])
   @@map("api_keys")
 }

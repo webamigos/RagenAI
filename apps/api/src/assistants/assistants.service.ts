@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -16,21 +17,29 @@ import {
   type ProjectWithSettings,
 } from './assistants.mapper.js';
 import { type ApiContext } from '../common/types/api-context.js';
+import { AssistantScopeService } from '../common/services/assistant-scope.service.js';
 import { type CreateAssistantDto } from './dto/create-assistant.dto.js';
 import { type UpdateAssistantDto } from './dto/update-assistant.dto.js';
 import { type ListAssistantsDto } from './dto/list-assistants.dto.js';
 
 @Injectable()
 export class AssistantsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly assistantScope: AssistantScopeService,
+  ) {}
 
   /**
-   * List assistants in the caller's org. We deliberately scope by
-   * organization (not project) because:
-   *  1. OpenAI's `client.assistants.list()` is expected to return many
-   *     entries, not the single project the API key is bound to.
-   *  2. The key's `projectId` is the *default project for chat/files*,
-   *     not a visibility boundary across assistants.
+   * List the assistants this key may see.
+   *
+   * This used to be org-wide for every key, on the reasoning that OpenAI's
+   * `client.assistants.list()` should return many entries and that the key's
+   * project was "the default project for chat/files, not a visibility
+   * boundary across assistants". The second half of that is no longer true:
+   * a key is created with a scope, and an `ASSISTANT` scope is a boundary —
+   * so a key bound to one assistant lists that one. The first half still
+   * holds for a knowledge-base key, which is the default and still sees the
+   * whole organization.
    */
   async list(
     context: ApiContext,
@@ -40,8 +49,13 @@ export class AssistantsService {
     const order = query.order ?? 'desc';
     const cursorId = query.after ? stripPrefix(query.after, 'asst') : undefined;
 
+    const confinedTo = this.assistantScope.confinedToProject(context);
+
     const rows = await this.prisma.client.project.findMany({
-      where: { organizationId: context.orgId },
+      where: {
+        organizationId: context.orgId,
+        ...(confinedTo ? { id: confinedTo } : {}),
+      },
       orderBy: { createdAt: order },
       take: limit,
       ...(cursorId ? { skip: 1, cursor: { id: cursorId } } : {}),
@@ -53,6 +67,7 @@ export class AssistantsService {
   }
 
   async get(id: string, context: ApiContext): Promise<OpenAIAssistant> {
+    this.assistantScope.assertMayManage(stripPrefix(id, 'asst'), context);
     const project = await this.findOrThrow(id, context);
     const orgDefaults = await this.getOrgDefaults(context.orgId);
     return toOpenAIAssistant(project, orgDefaults);
@@ -62,6 +77,15 @@ export class AssistantsService {
     dto: CreateAssistantDto,
     context: ApiContext,
   ): Promise<OpenAIAssistant> {
+    // A key confined to one assistant cannot mint another. The new project
+    // would be unreachable with this key and permanent in the organization —
+    // a boundary that leaks in the one direction nobody checks.
+    if (this.assistantScope.confinedToProject(context)) {
+      throw new ForbiddenException(
+        'This API key is scoped to a single assistant and cannot create another',
+      );
+    }
+
     // Create Project + ProjectSettings atomically. Prisma nested-write
     // handles the settings side for us — one round-trip, no orphans
     // on the instructions side if the settings insert would fail.
@@ -91,6 +115,7 @@ export class AssistantsService {
     context: ApiContext,
   ): Promise<OpenAIAssistant> {
     const rawId = stripPrefix(id, 'asst');
+    this.assistantScope.assertMayManage(rawId, context);
     await this.findOrThrow(id, context); // ensures it exists + org-scoped
 
     // OpenAI allows `instructions: null` to clear — we treat "undefined"
@@ -124,6 +149,7 @@ export class AssistantsService {
     context: ApiContext,
   ): Promise<{ id: string; object: 'assistant.deleted'; deleted: true }> {
     const rawId = stripPrefix(id, 'asst');
+    this.assistantScope.assertMayManage(rawId, context);
 
     // Refuse to delete the project this API key is bound to — that
     // would revoke the key's own context without warning. Admins who

@@ -5,6 +5,7 @@ import { ApiKeyGuard } from './guards/api-key.guard.js';
 import { RagenWebClient } from './services/ragen-web.client.js';
 import { SessionAuthService } from './services/session-auth.service.js';
 import { SessionAuthGuard } from './guards/session-auth.guard.js';
+import { AssistantScopeService } from './services/assistant-scope.service.js';
 
 @Global()
 @Module({
@@ -15,6 +16,7 @@ import { SessionAuthGuard } from './guards/session-auth.guard.js';
     RagenWebClient,
     SessionAuthService,
     SessionAuthGuard,
+    AssistantScopeService,
   ],
   exports: [
     ApiKeysService,
@@ -22,6 +24,7 @@ import { SessionAuthGuard } from './guards/session-auth.guard.js';
     RagenWebClient,
     SessionAuthService,
     SessionAuthGuard,
+    AssistantScopeService,
   ],
 })
 export class CommonModule {}

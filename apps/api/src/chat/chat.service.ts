@@ -1,8 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { type Request, type Response } from 'express';
 import { type ApiContext } from '../common/types/api-context.js';
-import { type ProjectId } from '../common/types/brand.js';
-import { stripPrefix } from '../common/utils/openai-format.js';
+import { AssistantScopeService } from '../common/services/assistant-scope.service.js';
 import { type ChatDto } from './dto/chat.dto.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { ApiLimitsService } from '../api-limits/api-limits.service.js';
@@ -39,22 +38,29 @@ export class ChatService {
     private readonly persistApiThread: PersistApiThreadService,
     private readonly aiUsage: AiUsageService,
     private readonly teamRateLimit: TeamRateLimitService,
+    private readonly assistantScope: AssistantScopeService,
   ) {}
 
   async chat(dto: ChatDto, context: ApiContext, req: Request, res: Response) {
     const isStream = dto.stream === true;
 
-    const resolvedProjectId = stripPrefix(
+    // The key's scope decides; `assistant_id` only has to agree with it.
+    // This endpoint has no protocol reason to make the field optional, but a
+    // knowledge-base key must be able to call it — and one resolver answering
+    // "which assistant" everywhere beats four that disagree.
+    const resolvedProjectId = await this.assistantScope.resolve(
       dto.assistant_id,
-      'asst',
-    ) as ProjectId;
+      context,
+    );
 
-    const project = await this.prisma.client.project.findFirst({
-      where: { id: resolvedProjectId, organizationId: context.orgId },
-      select: { settings: { select: { instructions: true } } },
-    });
+    const project = resolvedProjectId
+      ? await this.prisma.client.project.findFirst({
+          where: { id: resolvedProjectId, organizationId: context.orgId },
+          select: { settings: { select: { instructions: true } } },
+        })
+      : null;
 
-    if (!project) {
+    if (resolvedProjectId && !project) {
       res.status(404).json({ error: 'Assistant not found', code: 404 });
       return;
     }
@@ -137,7 +143,7 @@ export class ChatService {
         orgId: context.orgId,
         userId: context.userId,
         projectId: resolvedProjectId,
-        projectInstruction: project.settings?.instructions ?? null,
+        projectInstruction: project?.settings?.instructions ?? null,
         mcpTools,
         mcpContext,
         reasoningEffort: derivedReasoningEffort,

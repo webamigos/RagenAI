@@ -6,7 +6,15 @@ import { trackAudit } from '@/features/audit-logs/services/commands/create-audit
 import { recordSecurityEvent } from '@/features/security/services/commands/record-security-event-command';
 import { logger } from '@/app/lib/utils/logger';
 import { isFeatureEnabledQuery } from '@/features/subscriptions/services/queries/get-effective-features-query';
-import { UnauthorizedException } from '@/libs/utils/errors';
+import {
+  BadRequestException,
+  UnauthorizedException,
+} from '@/libs/utils/errors';
+import {
+  DEFAULT_KNOWLEDGE_SCOPE,
+  scopeRequiresProject,
+  type KnowledgeScope,
+} from '@ragenai/platform-contracts';
 
 const VAULT_PROVIDER = 'ragen-api-key';
 const KEY_PREFIX = 'sk-';
@@ -15,6 +23,12 @@ type CreateApiKeyInput = {
   orgId: string;
   userId: string;
   name: string;
+  /**
+   * What the key may reach. Omitted means `KNOWLEDGE_BASE`, which is both
+   * `DEFAULT_KNOWLEDGE_SCOPE` and the column's default — a key created by a
+   * caller that predates this field behaves the way every key did before it.
+   */
+  knowledgeScope?: KnowledgeScope;
   projectId?: string;
   debugMode?: boolean;
 };
@@ -31,10 +45,50 @@ function generateApiKey(keyId: string): string {
   return `${KEY_PREFIX}${keyId}.${secret}`;
 }
 
+/**
+ * The scope and the project are one fact written in two columns, so they are
+ * checked together before either is stored. `ASSISTANT` is a boundary the API
+ * enforces on every request; a row where the two disagree would be a boundary
+ * that cannot be evaluated, discovered at request time rather than here.
+ *
+ * `MODEL_ONLY` is a legal `KnowledgeScope` and is refused on purpose: the
+ * value exists for threads, and apps/api's chain does not yet honour it, so a
+ * key promising not to retrieve would retrieve anyway.
+ */
+function assertScopeAndProjectAgree(
+  knowledgeScope: KnowledgeScope,
+  projectId: string | undefined,
+): void {
+  if (knowledgeScope === 'MODEL_ONLY') {
+    throw new BadRequestException(
+      'MODEL_ONLY is not available for API keys yet',
+    );
+  }
+  if (scopeRequiresProject(knowledgeScope) && !projectId) {
+    throw new BadRequestException(
+      'An ASSISTANT-scoped API key needs the assistant it is scoped to',
+    );
+  }
+  if (!scopeRequiresProject(knowledgeScope) && projectId) {
+    throw new BadRequestException(
+      `An API key scoped to ${knowledgeScope} cannot also name an assistant`,
+    );
+  }
+}
+
 export const createApiKeyCommand = async (
   input: CreateApiKeyInput,
 ): Promise<CreateApiKeyResult> => {
-  const { orgId, userId, name, projectId, debugMode } = input;
+  const {
+    orgId,
+    userId,
+    name,
+    projectId,
+    debugMode,
+    knowledgeScope = DEFAULT_KNOWLEDGE_SCOPE,
+  } = input;
+
+  assertScopeAndProjectAgree(knowledgeScope, projectId);
 
   const canCreate = await isFeatureEnabledQuery(orgId, 'apiAccess');
   if (!canCreate) {
@@ -50,6 +104,7 @@ export const createApiKeyCommand = async (
       maskedValue: '', // placeholder, updated below
       organizationId: orgId,
       projectId: projectId ?? null,
+      knowledgeScope,
       createdBy: userId,
       debugMode: debugMode ?? false,
     },
@@ -78,7 +133,12 @@ export const createApiKeyCommand = async (
       action: 'api-key.created',
       entityType: 'api-key',
       entityId: apiKey.id,
-      newData: { name, projectId, debugMode: debugMode ?? false },
+      newData: {
+        name,
+        projectId,
+        knowledgeScope,
+        debugMode: debugMode ?? false,
+      },
     });
 
     recordSecurityEvent({
@@ -90,6 +150,7 @@ export const createApiKeyCommand = async (
       metadata: {
         apiKeyId: apiKey.id,
         projectId,
+        knowledgeScope,
         keyName: name,
       },
     });

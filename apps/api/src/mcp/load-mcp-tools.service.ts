@@ -9,7 +9,15 @@ import { buildMcpContext } from './provider-instructions.js';
 export type LoadMcpToolsParams = {
   orgId: string;
   userId: string;
-  projectId: string;
+  /**
+   * Null for a knowledge-base request. The body below already branches on it:
+   * with no project, the per-project narrowing is skipped and every connector
+   * the org has enabled is loaded — which makes such a request *wider* in
+   * tools than any assistant-scoped one. That is the pre-existing behaviour
+   * for a no-project turn, kept deliberately, and documented rather than
+   * changed here.
+   */
+  projectId: string | null;
 };
 
 export type LoadMcpToolsResult = {

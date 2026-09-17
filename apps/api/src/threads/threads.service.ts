@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 import {
   buildList,
@@ -18,10 +14,14 @@ import { type ApiContext } from '../common/types/api-context.js';
 import { type CreateThreadDto } from './dto/create-thread.dto.js';
 import { type UpdateThreadDto } from './dto/update-thread.dto.js';
 import { type ListThreadsDto } from './dto/list-threads.dto.js';
+import { AssistantScopeService } from '../common/services/assistant-scope.service.js';
 
 @Injectable()
 export class ThreadsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly assistantScope: AssistantScopeService,
+  ) {}
 
   async list(
     context: ApiContext,
@@ -52,9 +52,12 @@ export class ThreadsService {
     dto: CreateThreadDto,
     context: ApiContext,
   ): Promise<OpenAIThread> {
-    // assistant_id override defaults to the API key's project. Rejected
-    // if it points to a project the caller doesn't own.
-    const projectId = await this.resolveAssistantId(dto.assistant_id, context);
+    // The key's scope decides; `assistant_id` has to agree with it. Null is
+    // a scope of its own — a thread on the knowledge base.
+    const projectId = await this.assistantScope.resolve(
+      dto.assistant_id,
+      context,
+    );
 
     const thread = await this.prisma.client.thread.create({
       data: {
@@ -141,35 +144,6 @@ export class ThreadsService {
       throw new NotFoundException(`Thread '${id}' not found`);
     }
     return thread;
-  }
-
-  /**
-   * Translate the caller-supplied `assistant_id` (OpenAI-style, may be
-   * `asst-<projectId>` or the raw id) into a Project.id, verifying the
-   * project belongs to the caller's org. Undefined → fall back to the
-   * API key's bound project.
-   */
-  private async resolveAssistantId(
-    assistantId: string | undefined,
-    context: ApiContext,
-  ): Promise<string> {
-    if (!assistantId) {
-      return context.projectId as unknown as string;
-    }
-    const rawProjectId = stripPrefix(assistantId, 'asst');
-    const project = await this.prisma.client.project.findFirst({
-      where: {
-        id: rawProjectId,
-        organizationId: context.orgId,
-      },
-      select: { id: true },
-    });
-    if (!project) {
-      throw new BadRequestException(
-        `assistant_id '${assistantId}' is not valid for this org`,
-      );
-    }
-    return project.id;
   }
 
   private threadSelect() {

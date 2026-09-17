@@ -156,10 +156,26 @@ describe('CreateChatCompletionDto under the global validation pipe', () => {
     ).resolves.toContain('reasoning_effort');
   });
 
-  it('still requires assistant_id and a non-empty messages array', async () => {
+  // The whole point of the change: a body an OpenAI client can actually
+  // produce. `messages` stays required; nothing else is.
+  it('accepts a body with no assistant_id — the API key carries the scope', async () => {
     await expect(
-      rejectionDetail({ messages: [{ role: 'user', content: 'Hi' }] }),
+      validate({ messages: [{ role: 'user', content: 'Hi' }] }),
+    ).resolves.toMatchObject({
+      messages: [{ role: 'user', content: 'Hi' }],
+    });
+  });
+
+  it('still rejects an empty assistant_id rather than treating it as absent', async () => {
+    await expect(
+      rejectionDetail({
+        assistant_id: '',
+        messages: [{ role: 'user', content: 'Hi' }],
+      }),
     ).resolves.toContain('assistant_id');
+  });
+
+  it('still requires a non-empty messages array', async () => {
     await expect(
       rejectionDetail({ assistant_id: 'asst-abc', messages: [] }),
     ).resolves.toContain('messages');

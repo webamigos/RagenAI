@@ -45,9 +45,12 @@ export class ChatMessageDto {
 /**
  * OpenAI-compatible `POST /v1/chat/completions` request body.
  *
- * Required fields: `messages` and `assistant_id`. `model` is optional
- * because ragen falls back to the org-default model when not set. All
- * other parameters are optional with sensible defaults.
+ * The only required field is `messages`. `assistant_id` is a Ragen
+ * extension the OpenAI wire format has no slot for — requiring it made
+ * this endpoint uncallable by any client that speaks that format — so
+ * the API key carries the assistant instead and this field only has to
+ * agree with it. `model` is optional because ragen falls back to the
+ * org-default model when not set.
  *
  * ## Why the long tail of unused fields
  *
@@ -66,13 +69,16 @@ export class ChatMessageDto {
  */
 export class CreateChatCompletionDto {
   @ApiProperty({
-    description: 'The assistant (project) ID to query against.',
+    required: false,
+    description:
+      'The assistant (project) to query against. Optional: the API key already carries a scope, and this field must agree with it — naming a different assistant, or naming one at all on a knowledge-base key, is a 403. Omit it and the key decides.',
     example: 'f47ac10b-58cc-4372-a567-0e02b2c3d479',
   })
+  @IsOptional()
   @IsString()
   @MinLength(1)
   @MaxLength(200)
-  assistant_id!: string;
+  assistant_id?: string;
 
   @ApiProperty({ type: [ChatMessageDto] })
   @IsArray()

@@ -26,6 +26,7 @@ import {
   toggleApiKey,
   toggleDebugMode,
 } from '../actions';
+import type { KnowledgeScope } from '@ragenai/platform-contracts';
 
 type ApiKeyDto = {
   id: string;
@@ -34,13 +35,19 @@ type ApiKeyDto = {
   isActive: boolean;
   debugMode: boolean;
   createdAt: Date;
+  knowledgeScope: KnowledgeScope;
+  projectId: string | null;
+  project?: { title: string | null } | null;
 };
+
+type Assistant = { id: string; title: string | null };
 
 type ApiKeysListProps = {
   initialKeys: ApiKeyDto[];
+  assistants: Assistant[];
 };
 
-export function ApiKeysList({ initialKeys }: ApiKeysListProps) {
+export function ApiKeysList({ initialKeys, assistants }: ApiKeysListProps) {
   const t = useTranslations('api-keys');
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -54,7 +61,25 @@ export function ApiKeysList({ initialKeys }: ApiKeysListProps) {
   // Create form state
   const [name, setName] = useState('');
   const [debugMode, setDebugMode] = useState(false);
+  // The default matches the column default and DEFAULT_KNOWLEDGE_SCOPE: a key
+  // nobody thought about reaches the knowledge base, never an assistant.
+  const [knowledgeScope, setKnowledgeScope] =
+    useState<KnowledgeScope>('KNOWLEDGE_BASE');
+  const [projectId, setProjectId] = useState('');
   const [createError, setCreateError] = useState<string | null>(null);
+
+  const resetCreateForm = () => {
+    setName('');
+    setDebugMode(false);
+    setKnowledgeScope('KNOWLEDGE_BASE');
+    setProjectId('');
+    setCreateError(null);
+  };
+
+  const describeScope = (key: ApiKeyDto) =>
+    key.knowledgeScope === 'ASSISTANT'
+      ? (key.project?.title ?? t('assistant'))
+      : t('scope-knowledge-base');
 
   const handleCreate = () => {
     if (name.length < 3) {
@@ -62,14 +87,24 @@ export function ApiKeysList({ initialKeys }: ApiKeysListProps) {
       return;
     }
 
+    if (knowledgeScope === 'ASSISTANT' && !projectId) {
+      setCreateError(t('project-is-required'));
+      return;
+    }
+
     setCreateError(null);
     startTransition(async () => {
       try {
-        const result = await createApiKey(name, debugMode);
+        const scopedToAssistant = knowledgeScope === 'ASSISTANT';
+        const result = await createApiKey({
+          name,
+          debugMode,
+          knowledgeScope,
+          ...(scopedToAssistant ? { projectId } : {}),
+        });
+        const chosenAssistant = assistants.find((a) => a.id === projectId);
         setCreatedKey(result.fullKey);
         setCreateOpen(false);
-        setName('');
-        setDebugMode(false);
         setKeys((prev) => [
           {
             id: result.id,
@@ -78,9 +113,15 @@ export function ApiKeysList({ initialKeys }: ApiKeysListProps) {
             isActive: true,
             debugMode,
             createdAt: new Date(),
+            knowledgeScope,
+            projectId: scopedToAssistant ? projectId : null,
+            project: scopedToAssistant
+              ? { title: chosenAssistant?.title ?? null }
+              : null,
           },
           ...prev,
         ]);
+        resetCreateForm();
       } catch {
         setCreateError(t('failed-to-load'));
       }
@@ -170,6 +211,9 @@ export function ApiKeysList({ initialKeys }: ApiKeysListProps) {
                   {t('name')}
                 </th>
                 <th className="px-4 py-3 text-left font-medium text-muted-foreground">
+                  {t('scope')}
+                </th>
+                <th className="px-4 py-3 text-left font-medium text-muted-foreground">
                   {t('secret-key')}
                 </th>
                 <th className="px-4 py-3 text-left font-medium text-muted-foreground">
@@ -194,6 +238,9 @@ export function ApiKeysList({ initialKeys }: ApiKeysListProps) {
                 >
                   <td className="px-4 py-3 font-medium text-foreground">
                     {key.name}
+                  </td>
+                  <td className="px-4 py-3 text-muted-foreground">
+                    {describeScope(key)}
                   </td>
                   <td className="px-4 py-3">
                     <code className="rounded bg-muted px-2 py-0.5 text-xs text-muted-foreground">
@@ -247,9 +294,7 @@ export function ApiKeysList({ initialKeys }: ApiKeysListProps) {
         onOpenChange={(open) => {
           setCreateOpen(open);
           if (!open) {
-            setName('');
-            setDebugMode(false);
-            setCreateError(null);
+            resetCreateForm();
           }
         }}
       >
@@ -273,6 +318,75 @@ export function ApiKeysList({ initialKeys }: ApiKeysListProps) {
                 autoFocus
               />
             </div>
+            <fieldset>
+              <legend className="mb-1.5 block text-sm font-medium text-foreground">
+                {t('scope')}
+              </legend>
+              <div className="flex flex-col gap-2">
+                <label className="flex items-start gap-3 rounded-lg border border-border px-3 py-3 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="knowledge-scope"
+                    className="mt-0.5 size-4 border-border text-primary focus:ring-primary"
+                    checked={knowledgeScope === 'KNOWLEDGE_BASE'}
+                    onChange={() => {
+                      setKnowledgeScope('KNOWLEDGE_BASE');
+                      setProjectId('');
+                    }}
+                  />
+                  <span>
+                    <span className="block text-sm font-medium text-foreground">
+                      {t('scope-knowledge-base')}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {t('scope-knowledge-base-description')}
+                    </span>
+                  </span>
+                </label>
+                <label className="flex items-start gap-3 rounded-lg border border-border px-3 py-3 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="knowledge-scope"
+                    className="mt-0.5 size-4 border-border text-primary focus:ring-primary"
+                    checked={knowledgeScope === 'ASSISTANT'}
+                    onChange={() => setKnowledgeScope('ASSISTANT')}
+                  />
+                  <span>
+                    <span className="block text-sm font-medium text-foreground">
+                      {t('scope-assistant')}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {t('scope-assistant-description')}
+                    </span>
+                  </span>
+                </label>
+              </div>
+            </fieldset>
+
+            {knowledgeScope === 'ASSISTANT' && (
+              <div>
+                <label
+                  htmlFor="api-key-assistant"
+                  className="mb-1.5 block text-sm font-medium text-foreground"
+                >
+                  {t('assistant')}
+                </label>
+                <select
+                  id="api-key-assistant"
+                  value={projectId}
+                  onChange={(e) => setProjectId(e.target.value)}
+                  className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground focus:ring-primary"
+                >
+                  <option value="">{t('select-assistant')}</option>
+                  {assistants.map((assistant) => (
+                    <option key={assistant.id} value={assistant.id}>
+                      {assistant.title ?? assistant.id}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
             <label className="flex items-center justify-between gap-4 rounded-lg border border-border px-3 py-3 cursor-pointer">
               <div>
                 <span className="block text-sm font-medium text-foreground">

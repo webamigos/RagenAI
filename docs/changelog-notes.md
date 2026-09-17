@@ -79,6 +79,26 @@ archive is the blog.
   too similar to `raven` and `hygen`, for every account, so it was never
   available to claim.
   ([#1237](https://github.com/webamigos/RagenAI/pull/1237))
+### Thread: the API speaks OpenAI
+
+- `[major]` **An OpenAI-compatible client can now be pointed at Ragen.**
+  `POST /v1/chat/completions` required `assistant_id`, a field the OpenAI wire
+  format has no slot for — so n8n, the OpenAI SDKs and anything else speaking
+  that protocol got a 400 before the request reached anything. The assistant is
+  chosen when the API key is created instead: a key reaches either one assistant
+  or the whole knowledge base, the panel says which, and `assistant_id` becomes
+  an optional field that has to agree with the key rather than a requirement.
+  The same choice now applies to `/v1/chat`, `/v1/search`, `/v1/threads`,
+  `/v1/assistants` and `/v1/files`, so a key handed to an outside integrator
+  reaches one assistant and not the rest of the organization — which it could
+  before.
+
+- `[brief]` **`GET /v1/files` no longer answers for other organizations.** It
+  filtered on the API key's assistant and nothing else, and no key has ever had
+  one, so the filter evaluated to nothing. Nothing was exposed, because no key
+  has been issued anywhere yet — and since a key had no way to carry an
+  assistant before this release, the first one issued would have leaked.
+  ([#1236](https://github.com/webamigos/RagenAI/pull/1236))
 
 ### Thread: the worker runtime becomes replaceable
 
