@@ -218,15 +218,34 @@ separated here rather than overloaded into one field.
 interruption leaves less retrievable than the operation intended, never more**,
 and so a retry finishes from wherever it stopped:
 
-- **Publish**: set `publishedAt` → write chunks → set the file `COMPLETED`. A
-  crash anywhere in that leaves a page marked published that answers nothing, or
-  one answering with a file still marked withdrawn — both visibly wrong,
+- **Publish**: one transaction — bump the generation, set `publishedAt`, insert
+  the `PUBLISH` decision — → write chunks → set the file `COMPLETED`. A crash
+  after the transaction leaves a page marked published that answers nothing, or
+  one answering with a file still marked withdrawn; both are visibly wrong,
   harmless, and fixed by the retry.
-- **Unpublish**: delete chunks → set `embeddingStatus = WITHDRAWN` → clear
-  `publishedAt`. A crash leaves a page still marked published that answers
-  nothing — the same benign state, from the other direction.
+- **Unpublish**: delete chunks → one transaction — bump the generation, set
+  `embeddingStatus = WITHDRAWN`, clear `publishedAt`, insert the `UNPUBLISH`
+  decision. A crash during the delete leaves a page still marked published that
+  answers nothing — the same benign state, from the other direction.
 
-Each step is idempotent. **Never the reverse order in either case**: writing
+**The decision row is written inside that transaction, not beside it.**
+`KnowledgeDecision` is append-only, so an insert is the one step that cannot be
+made idempotent by repeating it: a retry would append a second row for the same
+act, and an audit ledger that double-counts is worse than one that is merely
+incomplete. Two things prevent it. The decision is atomic with the Postgres
+state it records, so there is never publication state without its decision or a
+decision without its state — only the Qdrant work sits outside the transaction,
+which is the part the ordering above already makes safe. And the decision is
+unique on **`(pageId, action, publicationGeneration)`**, so a re-run of the same
+operation collides with its own row instead of adding one.
+
+That uniqueness only works if **a retry continues an operation rather than
+starting a new one**: it carries the generation the operation was given, and
+does not bump again. Bumping on retry would mint a fresh key, defeat the
+constraint and leave two `PUBLISH` rows for one act. A new generation means a
+new operation, which is what makes the constraint meaningful.
+
+Every other step is idempotent by repetition. **Never the reverse order in either case**: writing
 chunks before `publishedAt`, or clearing `publishedAt` before deleting chunks,
 both leave content retrievable that the page's own state says is not published,
 and nothing in retrieval would notice. Republish after a partial withdrawal is
@@ -413,8 +432,12 @@ autoincrement `id` plus a `publicId` UUID for URLs, camelCase fields with
   resolves the finding on success.
 - **`KnowledgeDecision`** — append-only: `pageId`, `actorId`, `action`
   (`APPROVE | REJECT | MERGE | SET_OWNER | SET_ACCESS | WIDEN_ACCESS | PUBLISH | UNPUBLISH | VERIFY`),
-  `before`/`after` JSON, `createdAt`. No update and no delete; the widening rule
-  and the publish/withdraw history are enforceable only because this exists.
+  `publicationGeneration`, `before`/`after` JSON, `createdAt`. No update and no
+  delete; the widening rule and the publish/withdraw history are enforceable
+  only because this exists. `PUBLISH` and `UNPUBLISH` rows are **unique on
+  `(pageId, action, publicationGeneration)`** — an append-only row cannot be
+  made idempotent by repeating it, so a retried publication has to collide with
+  its own row rather than append a second one (see "Withdrawal").
 - **`EmbeddingStatus`** gains **`STAGED`** and **`WITHDRAWN`**. `STAGED` is an
   uploaded document parsed and deliberately not embedded, awaiting curation.
   `WITHDRAWN` is a published page's file after an unpublish. Both are distinct
@@ -562,15 +585,18 @@ Phase D, so every phase before it is invisible to existing users.
       with an owner only.
 - [ ] **E2.** Publish: an approved page becomes a `UserFile` carrying
       `metadata.brainPageId`, ingested with predefined chunk boundaries and the
-      curated `accessible_by` — never the source file's. `publishedAt` is set
-      before the chunks are written, the file ends `COMPLETED` (including on a
-      republish out of `WITHDRAWN`), and the page's publication generation is
-      checked at each step.
+      curated `accessible_by` — never the source file's. The generation bump,
+      `publishedAt` and the `PUBLISH` decision go in one transaction before the
+      chunks are written, the file ends `COMPLETED` (including on a republish
+      out of `WITHDRAWN`), and the page's publication generation is checked at
+      each step.
 - [ ] **E3.** Unpublish: delete the page's chunks, set the file to
       `WITHDRAWN`, clear `publishedAt`, keep the page approved and its
-      `UserFile`, record the decision. Each step idempotent, in that order, so
-      any interruption leaves a state a retry finishes. A test that publish and
-      unpublish cannot interleave into chunks-without-publication.
+      `UserFile`, record the `UNPUBLISH` decision — the last four in one
+      transaction. Each step idempotent, in that order, so any interruption
+      leaves a state a retry finishes. Tests that publish and unpublish cannot
+      interleave into chunks-without-publication, and that a retried
+      publication writes exactly one decision row.
 - [ ] **E4.** `tests/architecture/brain-export-never-widens-access.test.ts`.
 - [ ] **E5.** Re-publication by diff: `contentHash` per page, re-embed only what
       changed, delete what was removed.
