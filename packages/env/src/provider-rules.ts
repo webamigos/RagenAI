@@ -2,6 +2,7 @@ import { type z } from 'zod';
 
 import { type FieldGroup } from './config-groups';
 import {
+  BULLMQ_BACKEND_SEAM,
   ENCRYPTION_SEAM,
   SPEECH_SEAM,
   STORAGE_SEAM,
@@ -37,6 +38,21 @@ type Env = Record<string, unknown>;
  */
 
 /**
+ * Which variant a seam resolves to, given an environment.
+ *
+ * Shared by `seamRule` and `nestedSeamRule` so that a nested seam reads its
+ * parent by exactly the rule the parent enforces itself. Resolving it twice,
+ * slightly differently, is how a nested check comes to disagree with the one
+ * above it about which variant is even selected.
+ */
+function selectedVariant(seam: ProviderSeam, env: Env): string | undefined {
+  const chosen = env[seam.discriminant];
+  return typeof chosen === 'string' && chosen.trim() !== ''
+    ? chosen
+    : seam.defaultVariant;
+}
+
+/**
  * Turn a seam into the refinement that enforces it.
  *
  * Every variant is offered to `requiredForProvider`, which is a no-op unless
@@ -68,11 +84,7 @@ export function seamRule(
   only?: readonly string[],
 ): (env: Env, ctx: Ctx) => void {
   return (env, ctx) => {
-    const chosen = env[seam.discriminant];
-    const selected =
-      typeof chosen === 'string' && chosen.trim() !== ''
-        ? chosen
-        : seam.defaultVariant;
+    const selected = selectedVariant(seam, env);
 
     // No default and nothing chosen, or a value the schema's own enum will
     // reject anyway — both were already no-ops before this learned about
@@ -174,25 +186,63 @@ export function fieldGroupRules(
 export const workerRuntimeRules = seamRule(WORKER_RUNTIME_SEAM);
 
 /**
- * The producers' half of the same seam: `REDIS_URL` under BullMQ, and nothing
- * under Temporal.
+ * Run a seam's check only when the seam above it selected a given variant.
  *
- * apps/web and apps/api enqueue rather than run jobs, and the two variants are
- * not symmetric for them. **Under BullMQ there is no fallback**: a producer
- * that cannot reach Redis cannot enqueue at all, so the first upload fails at
- * request time with a Redis error three layers from the cause — exactly the
- * failure a boot check naming the variable exists to replace. **Under Temporal
- * there is one**: the adapter falls back to `localhost:7233`, which is right on
- * a laptop and in compose, and requiring the address of every producer would
- * refuse to boot deployments that work today. That is the mistake apps/api's
- * own env tests were written to prevent — "the obvious workaround, inventing a
- * dummy value, is how a boot check stops being believed".
+ * A nested seam answers a question that the outer choice may not even pose.
+ * `BULLMQ_BACKEND` is the case: it decides between Redis and PostgreSQL for an
+ * install running BullMQ, and means nothing to one running Temporal. Enforced
+ * flatly it would demand `REDIS_URL` — the default backend's requirement — of
+ * a Temporal deployment that has no queue at all, which is the exact failure
+ * the worker-runtime seam was introduced to remove.
  *
- * So this is not the worker's rule with a hole in it. It is the half that has
- * a consequence, applied where the consequence lands. The worker keeps both,
- * because the worker *is* the runtime and has no business defaulting to a
- * Temporal on its own container.
+ * The parent is read through `selectedVariant`, so an unset `WORKER_RUNTIME`
+ * resolves to its default before this compares anything. That matters here
+ * more than anywhere: BullMQ *is* the default, so a nested rule that only
+ * fired on an explicit `WORKER_RUNTIME=bullmq` would check nothing in the
+ * configuration almost every install actually has — validated-looking and
+ * validating nothing.
  */
-export const workerRuntimeProducerRules = seamRule(WORKER_RUNTIME_SEAM, [
+export function nestedSeamRule(
+  parent: ProviderSeam,
+  parentVariant: string,
+  child: ProviderSeam,
+  only?: readonly string[],
+): (env: Env, ctx: Ctx) => void {
+  const rule = seamRule(child, only);
+
+  return (env, ctx) => {
+    if (selectedVariant(parent, env) !== parentVariant) {
+      return;
+    }
+    rule(env, ctx);
+  };
+}
+
+/**
+ * What BullMQ cannot start without, which depends on where it keeps the
+ * queues.
+ *
+ * **This is where the old `REDIS_URL` requirement went**, and it is the same
+ * requirement: under the default backend a process with no Redis cannot
+ * enqueue or consume at all, and there is no fallback to soften it — the first
+ * upload fails at request time with a Redis error three layers from the cause,
+ * which is exactly the failure a boot check naming the variable replaces.
+ * Under `postgres` that Redis is not merely optional, it is irrelevant, and
+ * demanding it would refuse to boot the configuration the backend choice
+ * exists to allow.
+ *
+ * Called by the producers *and* the worker, unlike the seam above it. The
+ * asymmetry that made `workerRuntimeProducerRules` necessary was about
+ * Temporal: a producer with no Temporal address has the adapter's
+ * `localhost:7233` fallback, so requiring it of apps/web and apps/api would
+ * refuse to boot deployments that work today, while the worker — which *is*
+ * the runtime — has no business defaulting to a Temporal on its own container.
+ * Nothing about the BullMQ half is asymmetric in that way: whoever touches the
+ * queue needs the datastore it lives in. So this replaces that export rather
+ * than sitting beside it.
+ */
+export const bullmqBackendRules = nestedSeamRule(
+  WORKER_RUNTIME_SEAM,
   'bullmq',
-]);
+  BULLMQ_BACKEND_SEAM,
+);

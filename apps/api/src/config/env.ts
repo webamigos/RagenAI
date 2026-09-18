@@ -5,7 +5,7 @@ import {
   parseEnv,
   TOKEN_VAULT_GROUP,
   requiredInDeployedEnvs,
-  workerRuntimeProducerRules,
+  bullmqBackendRules,
 } from '@ragenai/env';
 import { z } from 'zod';
 
@@ -64,13 +64,14 @@ export const apiEnvSchema = fragments.targetEnvRequired
     // `fragments.encryption` was merged and nothing checked it, so a chosen
     // provider with no key reached the crypto package as "not configured".
     encryptionRules(env, ctx);
-    // The producers' half of the worker-runtime seam. This app enqueues jobs
-    // and never runs them, and the two variants are not symmetric for it:
-    // under BullMQ there is no fallback for `REDIS_URL`, so a missing one is a
-    // failed upload rather than a degraded one; under Temporal the adapter's
-    // `localhost:7233` default is right in compose, and demanding the address
-    // here would refuse to boot deployments that work today.
-    workerRuntimeProducerRules(env, ctx);
+    // What BullMQ cannot enqueue without, which is now a question about the
+    // backend rather than about the runtime: `REDIS_URL` under the default
+    // one, `DATABASE_URL` under `postgres`, and nothing at all under Temporal.
+    // This app enqueues jobs and never runs them, so a missing datastore is a
+    // failed upload rather than a degraded one — while the Temporal address it
+    // does not check has the adapter's `localhost:7233` fallback, and
+    // demanding that here would refuse to boot deployments that work today.
+    bullmqBackendRules(env, ctx);
 
     // The vault client signs its requests, so a URL without the secret
     // produces 401s from the vault rather than an obvious misconfiguration

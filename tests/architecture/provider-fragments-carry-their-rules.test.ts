@@ -55,21 +55,27 @@ const PAIRINGS = [
   {
     fragment: 'workerRuntime',
     /**
-     * Two acceptable rules, because the seam is not symmetric for everyone who
-     * merges it. `workerRuntimeRules` is both halves and belongs to the
-     * worker, which *is* the runtime. `workerRuntimeProducerRules` is the
-     * BullMQ half alone, for apps/web and apps/api: a producer with no
-     * `REDIS_URL` cannot enqueue at all, while one with no Temporal address
-     * has the adapter's `localhost:7233` fallback, and demanding that of them
-     * would refuse to boot deployments that work today.
+     * `bullmqBackendRules`, and no longer an alternation with
+     * `workerRuntimeRules`.
      *
-     * What the pairing still guarantees is that merging the fragment means
-     * calling *a* rule that gives it meaning. A file that merges and calls
-     * neither is what this test is for.
+     * The alternation was right while the runtime seam carried the BullMQ
+     * requirement itself. It does not any more: BullMQ can keep its queues in
+     * Redis or in PostgreSQL, so `REDIS_URL` moved one level down into
+     * `BULLMQ_BACKEND_SEAM`, where the rule can tell the two apart. That
+     * leaves `workerRuntimeRules` enforcing the Temporal half alone — which is
+     * real, and is why the worker calls it too, but it requires *nothing* in
+     * the default configuration. Accepting it here would therefore accept a
+     * schema that validates nothing for the runtime every install actually
+     * runs, while looking paired.
+     *
+     * So the pairing names the rule that carries the consequence. The worker
+     * calls both; apps/web and apps/api call this one, because the Temporal
+     * address they do not check has a working fallback and a queue they cannot
+     * reach does not.
      */
-    rule: '(?:workerRuntimeRules|workerRuntimeProducerRules)',
+    rule: 'bullmqBackendRules',
     consequence:
-      'WORKER_RUNTIME=bullmq with no REDIS_URL would parse clean, and the app would enqueue into nothing — the failure this seam exists to turn into a boot error naming the variable',
+      'a BullMQ install with no REDIS_URL would parse clean, and the app would enqueue into nothing — the failure this seam exists to turn into a boot error naming the variable',
   },
 ] as const;
 

@@ -3,10 +3,10 @@ import { type z } from 'zod';
 
 import * as fragments from '../fragments';
 import {
+  bullmqBackendRules,
   encryptionRules,
   storageRules,
   workerRuntimeRules,
-  workerRuntimeProducerRules,
 } from '../provider-rules';
 import { parseEnv } from '../parse';
 
@@ -22,11 +22,19 @@ const workerRuntimeSchema = fragments.workerRuntime
   .merge(fragments.redis)
   .superRefine(workerRuntimeRules);
 
-/** What apps/web and apps/api merge: the same fragments, half the rule. */
-const producerSchema = fragments.workerRuntime
+/**
+ * The nested seam, with the database fragment the `postgres` variant names.
+ *
+ * `DATABASE_URL` is already mandatory in that fragment, so the rule's
+ * requirement of it is documentation more than enforcement — but it has to be
+ * *here* for the assertions below to tell "requires the database" from
+ * "requires Redis", which is the whole distinction the backend choice makes.
+ */
+const backendSchema = fragments.workerRuntime
   .merge(fragments.temporal)
   .merge(fragments.redis)
-  .superRefine(workerRuntimeProducerRules);
+  .extend({ DATABASE_URL: fragments.database.shape.DATABASE_URL.optional() })
+  .superRefine(bullmqBackendRules);
 
 const namesOf = <T extends z.ZodType>(
   schema: T,
@@ -152,17 +160,22 @@ describe('workerRuntimeRules', () => {
    * looking validated. Moving the worker's existing hard requirement into the
    * seam would have silently dropped it.
    */
-  // The decision that moved the default moved with it which variable an unset runtime
-  // demands. This is the assertion that would have silently kept demanding
-  // Temporal's address from an install that runs no Temporal.
-  it('requires Redis when the runtime is unset too, because bullmq is the default', () => {
-    expect(namesOf(workerRuntimeSchema, {})).toEqual(['REDIS_URL']);
+  /**
+   * It used to be `['REDIS_URL']`, and the change is the point of the nested
+   * seam rather than a relaxation: BullMQ needs a datastore, but *which* one
+   * is a second question, so the requirement moved to `bullmqBackendRules`
+   * where it can distinguish them. Asserting the emptiness here is what keeps
+   * the two levels from both claiming it — a requirement enforced twice is one
+   * that cannot be removed from either place with confidence.
+   */
+  it('requires nothing under bullmq, because the backend decides that', () => {
+    expect(namesOf(workerRuntimeSchema, { WORKER_RUNTIME: 'bullmq' })).toEqual(
+      [],
+    );
   });
 
-  it('requires Redis under bullmq, and nothing about Temporal', () => {
-    expect(namesOf(workerRuntimeSchema, { WORKER_RUNTIME: 'bullmq' })).toEqual([
-      'REDIS_URL',
-    ]);
+  it('requires nothing when the runtime is unset, since bullmq is the default', () => {
+    expect(namesOf(workerRuntimeSchema, {})).toEqual([]);
   });
 
   it('accepts bullmq with a Redis url and no Temporal at all', () => {
@@ -201,50 +214,97 @@ describe('workerRuntimeRules', () => {
   });
 
   it('treats a blank runtime as unset rather than as a variant', () => {
-    expect(namesOf(workerRuntimeSchema, { WORKER_RUNTIME: '  ' })).toEqual([
-      'REDIS_URL',
-    ]);
+    expect(namesOf(workerRuntimeSchema, { WORKER_RUNTIME: '  ' })).toEqual([]);
   });
 });
 
 /**
- * The producers' half, and the asymmetry that makes it a half rather than a
- * weaker copy: under BullMQ a producer that cannot reach Redis cannot enqueue
- * at all, and under Temporal the adapter falls back to `localhost:7233`.
+ * The nested seam: what BullMQ cannot run without, and only when BullMQ is
+ * what runs.
+ *
+ * This is where the worker-runtime seam's old `REDIS_URL` requirement went,
+ * and the tests below are written to hold it to the same strength rather than
+ * to describe the new shape. The one genuinely new assertion is the nesting:
+ * a Temporal install must be asked for nothing here, including when the
+ * backend variable happens to carry a value, because a flat rule would read
+ * the default `redis` and demand a queue datastore of a deployment that has
+ * no queue.
  */
-describe('workerRuntimeProducerRules', () => {
-  it('requires Redis under bullmq', () => {
-    expect(namesOf(producerSchema, { WORKER_RUNTIME: 'bullmq' })).toEqual([
+describe('bullmqBackendRules', () => {
+  it('requires Redis under the default backend', () => {
+    expect(namesOf(backendSchema, { WORKER_RUNTIME: 'bullmq' })).toEqual([
       'REDIS_URL',
     ]);
   });
 
-  it('requires Redis when the runtime is unset, because bullmq is the default', () => {
-    expect(namesOf(producerSchema, {})).toEqual(['REDIS_URL']);
+  /**
+   * The configuration almost every install actually has. A nested rule that
+   * only fired on an explicit `WORKER_RUNTIME=bullmq` would check nothing in
+   * the default case while looking validated — the same trap `seamRule` had
+   * to learn about `defaultVariant` to avoid, one level down.
+   */
+  it('requires Redis when both levels are unset, because both default', () => {
+    expect(namesOf(backendSchema, {})).toEqual(['REDIS_URL']);
+  });
+
+  it('requires the database under postgres, and says nothing about Redis', () => {
+    expect(
+      namesOf(backendSchema, {
+        WORKER_RUNTIME: 'bullmq',
+        BULLMQ_BACKEND: 'postgres',
+      }),
+    ).toEqual(['DATABASE_URL']);
   });
 
   /**
-   * The point of the narrowing. Demanding the address of every producer would
-   * refuse to boot deployments that work today — the mistake apps/api's own
-   * env tests were written to prevent, since the obvious workaround is to
-   * invent a dummy value, and that is how a boot check stops being believed.
+   * The configuration this seam exists to allow: a worker with a database and
+   * no Redis anywhere. It was a boot failure before the requirement moved.
    */
-  it('requires nothing under temporal, where the adapter has a fallback', () => {
-    expect(namesOf(producerSchema, { WORKER_RUNTIME: 'temporal' })).toEqual([]);
-  });
-
-  it('accepts bullmq with a Redis url', () => {
+  it('accepts a postgres-backed queue with no Redis at all', () => {
     expect(
-      parseEnv(producerSchema, {
+      parseEnv(backendSchema, {
         WORKER_RUNTIME: 'bullmq',
-        REDIS_URL: 'redis://localhost:6379',
+        BULLMQ_BACKEND: 'postgres',
+        DATABASE_URL: 'postgresql://localhost:5432/ragen',
       }).ok,
     ).toBe(true);
   });
 
-  // The worker keeps both halves: it *is* the runtime, and has no business
-  // defaulting to a Temporal on its own container.
-  it('is narrower than the worker rule it comes from', () => {
+  it('asks a Temporal install for nothing', () => {
+    expect(namesOf(backendSchema, { WORKER_RUNTIME: 'temporal' })).toEqual([]);
+  });
+
+  /**
+   * The failure a flat rule produces, asserted directly. `BULLMQ_BACKEND` is
+   * meaningless under Temporal, and reading it anyway would demand `REDIS_URL`
+   * of an install running no queue — which is the mistake the worker-runtime
+   * seam was introduced to stop making, repeated one level down.
+   */
+  it('ignores the backend entirely when the runtime is Temporal', () => {
+    expect(
+      namesOf(backendSchema, {
+        WORKER_RUNTIME: 'temporal',
+        BULLMQ_BACKEND: 'redis',
+      }),
+    ).toEqual([]);
+  });
+
+  it('treats a blank backend as unset rather than as a variant', () => {
+    expect(
+      namesOf(backendSchema, {
+        WORKER_RUNTIME: 'bullmq',
+        BULLMQ_BACKEND: '  ',
+      }),
+    ).toEqual(['REDIS_URL']);
+  });
+
+  /**
+   * The level above keeps its own half. The worker calls both, because it is
+   * the runtime and has no business defaulting to a Temporal on its own
+   * container; the producers call only this one, whose consequence — a queue
+   * they cannot reach — has no fallback.
+   */
+  it('leaves the Temporal address to the rule that owns it', () => {
     expect(
       namesOf(workerRuntimeSchema, { WORKER_RUNTIME: 'temporal' }),
     ).toEqual(['TEMPORAL_SERVER_ADDRESS']);

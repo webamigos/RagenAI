@@ -7,7 +7,7 @@ import {
   requiredInDeployedEnvs,
   speechRules,
   storageRules,
-  workerRuntimeProducerRules,
+  bullmqBackendRules,
 } from '@ragenai/env';
 import { z } from 'zod';
 
@@ -154,12 +154,12 @@ export const webEnvSchema = fragments.targetEnv
     storageRules(env, ctx);
     encryptionRules(env, ctx);
     speechRules(env, ctx);
-    // The producers' half of the worker-runtime seam: `REDIS_URL` under
-    // BullMQ, which is the default, and nothing under Temporal — this app
-    // enqueues rather than runs jobs, and only one of the two variants leaves
-    // it with no fallback. Reported rather than fatal, like everything else
-    // here.
-    workerRuntimeProducerRules(env, ctx);
+    // What BullMQ cannot enqueue without: `REDIS_URL` under the default
+    // backend, `DATABASE_URL` under `postgres`, and nothing under Temporal,
+    // whose address has a working fallback. This app enqueues rather than runs
+    // jobs, so the datastore is the half with no fallback. Reported rather
+    // than fatal, like everything else here.
+    bullmqBackendRules(env, ctx);
 
     // Both pairs, from the table that also describes them to the written
     // config — so the two cannot disagree about half-configured (ADR-32).

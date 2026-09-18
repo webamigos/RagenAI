@@ -6,6 +6,7 @@ import {
   requiredInDeployedEnvs,
   storageRules,
   workerRuntimeRules,
+  bullmqBackendRules,
 } from '@ragenai/env';
 import { z } from 'zod';
 
@@ -39,14 +40,19 @@ export const workerEnvSchema = fragments.targetEnvRequired
   // nothing about today's boot changes.
   .merge(fragments.workerRuntime)
   .merge(fragments.temporal)
-  // Stays unconditional. The seam requires it under `bullmq`, but this process
-  // needs Redis either way — the organization-settings cache has no fallback,
-  // and `services/redis.ts` reads `process.env.REDIS_URL!`.
-  .merge(fragments.redisRequired)
+  // Conditional now, and the unconditional version was justified by a caller
+  // that did not exist. The comment here used to say this process needs Redis
+  // either way, "because the organization-settings cache has no fallback and
+  // `services/redis.ts` reads `process.env.REDIS_URL!`" — but that service had
+  // no importers at all, the settings reads go through Prisma, and the only
+  // live reader of the variable in this app is the BullMQ runtime. So Redis is
+  // what the *queue* needs, `bullmqBackendRules` below says exactly when, and
+  // an install on the PostgreSQL backend can now run the worker without one.
+  .merge(fragments.redis)
   .merge(fragments.encryption)
   .extend({
     // Redis for organization settings
-    SECRET_KEY: z.string(), // for hashing organization settings in Redis
+    SECRET_KEY: z.string(), // decrypts stored API keys — see utils/decrypt-api-key.ts
 
     // Meilisearch (legacy — kept for backwards compatibility)
     MEILISEARCH_URL: z.string().url().optional(),
@@ -118,6 +124,12 @@ export const workerEnvSchema = fragments.targetEnvRequired
     storageRules(env, ctx);
     encryptionRules(env, ctx);
     workerRuntimeRules(env, ctx);
+    // The BullMQ half, one level down: `workerRuntimeRules` covers the runtime
+    // choice — the Temporal address this process cannot default for itself —
+    // and this covers where BullMQ keeps the queues. Both, because the worker
+    // *is* the runtime: it consumes from whichever datastore was chosen, so a
+    // missing one is a worker that starts and processes nothing.
+    bullmqBackendRules(env, ctx);
 
     // Present is not the same as usable. `encryptionRules` only checks
     // that the variable is non-empty, so `ENCRYPTION_MASTER_KEY=x` booted and

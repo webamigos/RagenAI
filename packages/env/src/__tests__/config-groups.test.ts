@@ -172,8 +172,10 @@ describe('the strengths a fragment comes in', () => {
   it.each([['TEMPORAL_SERVER_ADDRESS'], ['REDIS_URL']])(
     'refuses a worker environment without %s',
     (name) => {
-      // apps/worker has no fallback for either: it is the process that runs
-      // the workflows, and it caches organization settings in Redis.
+      // The subject is the required *strength*, not who merges it: both of
+      // these fragments have a plain variant whose variables are optional, and
+      // this asserts the other one actually refuses. (No app merges either
+      // today — the worker's Redis became conditional on the queue backend.)
       const schema = fragments.targetEnv
         .merge(fragments.temporalRequired)
         .merge(fragments.redisRequired);

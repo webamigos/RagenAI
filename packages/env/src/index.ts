@@ -15,13 +15,14 @@ export {
 } from './rules';
 
 export {
+  bullmqBackendRules,
   encryptionRules,
   fieldGroupRules,
+  nestedSeamRule,
   seamRule,
   speechRules,
   storageRules,
   workerRuntimeRules,
-  workerRuntimeProducerRules,
 } from './provider-rules';
 
 export {
@@ -46,6 +47,7 @@ export {
 } from './define-config';
 
 export {
+  BULLMQ_BACKEND_SEAM,
   ENCRYPTION_SEAM,
   MAIL_SEAM,
   RERANK_SEAM,

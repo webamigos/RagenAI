@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   ENCRYPTION_SEAM,
   STORAGE_SEAM,
+  BULLMQ_BACKEND_SEAM,
   WORKER_RUNTIME_SEAM,
 } from '@ragenai/env';
 
@@ -39,10 +40,45 @@ import {
  * else's first install, which is the worst place to find them.
  */
 
+/**
+ * A seam with no second level. Spelled out rather than left optional so every
+ * entry has the same shape, and so adding a nested seam to another one is a
+ * deliberate edit here rather than a silently absent field.
+ */
+const NOT_NESTED = null;
+
+type Nesting = {
+  /** The parent variant the nested seam applies under. */
+  readonly under: string;
+  /** The nested variant the installer writes while it asks no question. */
+  readonly variant: string;
+  readonly seam: ProviderSeam;
+} | null;
+
+/** What the nested seam contributes to a parent variant, if anything. */
+const nestedVars = (
+  nesting: Nesting,
+  parentVariant: string,
+): { known: readonly string[]; required: readonly string[] } => {
+  if (!nesting || nesting.under !== parentVariant) {
+    return { known: [], required: [] };
+  }
+  const spec = nesting.seam.variants[nesting.variant];
+  return {
+    known: [
+      nesting.seam.discriminant,
+      ...spec.required,
+      ...(spec.optional ?? []),
+    ],
+    required: spec.required,
+  };
+};
+
 const SEAMS = [
   {
     name: 'storage',
     seam: STORAGE_SEAM,
+    nested: NOT_NESTED,
     labels: STORAGE_LABELS as Record<string, string>,
     // The installer offers the same variants the seam declares.
     select: (variant: string) =>
@@ -57,6 +93,7 @@ const SEAMS = [
   {
     name: 'encryption',
     seam: ENCRYPTION_SEAM,
+    nested: NOT_NESTED,
     labels: ENCRYPTION_LABELS as Record<string, string>,
     select: (variant: string) =>
       resolveEncryptionSelection(variant as EncryptionChoice, {
@@ -79,6 +116,23 @@ const SEAMS = [
   {
     name: 'worker runtime',
     seam: WORKER_RUNTIME_SEAM,
+    /**
+     * The one seam with a second level, and the installer still asks one
+     * question about both.
+     *
+     * `BULLMQ_BACKEND` decides whether the queues live in Redis or in
+     * PostgreSQL, so `REDIS_URL` belongs to that seam rather than to this one.
+     * The wizard does not ask yet: choosing BullMQ writes the Redis url,
+     * which is the default backend's requirement and therefore a correct
+     * install. Until it asks, the variables it may write are this seam's plus
+     * the nested default's — and the requirement below stays as strong as it
+     * was, which is the half that would otherwise quietly stop being checked.
+     */
+    nested: {
+      under: 'bullmq',
+      variant: 'redis',
+      seam: BULLMQ_BACKEND_SEAM,
+    },
     labels: WORKER_RUNTIME_LABELS as Record<string, string>,
     select: (variant: string) => ({
       ...resolveWorkerRuntimeSelection(variant as WorkerRuntimeChoice, {
@@ -114,12 +168,13 @@ describe('the installer knows the same provider seams', () => {
 
   it.each(SEAMS)(
     'writes only variables the $name seam names',
-    ({ seam, select }) => {
+    ({ seam, select, nested }) => {
       for (const [variant, spec] of Object.entries(seam.variants)) {
         const known = [
           seam.discriminant,
           ...spec.required,
           ...(spec.optional ?? []),
+          ...nestedVars(nested, variant).known,
         ];
         const written = Object.keys(select(variant).envUpdates);
 
@@ -133,14 +188,24 @@ describe('the installer knows the same provider seams', () => {
 
   it.each(SEAMS)(
     'writes every variable the $name seam requires',
-    ({ seam, select }) => {
+    ({ seam, select, nested }) => {
       // The one that matters most: a credential the seam made mandatory and
       // the wizard does not ask for produces an install that cannot boot.
+      //
+      // The nested seam's requirements count as this seam's while the wizard
+      // asks one question about both. Without that, moving `REDIS_URL` down a
+      // level would have taken it out of this check silently — the wizard
+      // would still write it, nothing would say it had to, and the day it
+      // stopped would be someone else's first install.
       for (const [variant, spec] of Object.entries(seam.variants)) {
         const written = Object.keys(select(variant).envUpdates);
+        const required = [
+          ...spec.required,
+          ...nestedVars(nested, variant).required,
+        ];
 
         expect(
-          [...spec.required].filter((name) => !written.includes(name)),
+          required.filter((name) => !written.includes(name)),
           `${seam.discriminant}=${variant} is missing a required variable`,
         ).toEqual([]);
       }

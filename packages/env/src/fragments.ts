@@ -331,6 +331,34 @@ export const mail = z.object({
  */
 export const workerRuntime = z.object({
   WORKER_RUNTIME: blankAsUndefined(z.enum(['temporal', 'bullmq']).optional()),
+
+  /**
+   * Where BullMQ keeps the queues — the second level of the same seam.
+   *
+   * BullMQ 6 stores queue state in PostgreSQL as well as in Redis, which is
+   * what lets an install that has already chosen the lighter alternative for
+   * every other service stop running Redis at all: `postgres` reuses the
+   * database that is there anyway. Redis stays the default, and the trade is
+   * throughput.
+   *
+   * Meaningless under `WORKER_RUNTIME=temporal`, which is why what it makes
+   * mandatory is nested rather than flat — see `bullmqBackendRules`. A flat
+   * rule would demand a Redis url of an install that runs no BullMQ at all,
+   * which is the mistake the worker-runtime seam was created to stop making.
+   */
+  BULLMQ_BACKEND: blankAsUndefined(z.enum(['redis', 'postgres']).optional()),
+
+  /**
+   * The PostgreSQL schema the queues live in, `bullmq` by default.
+   *
+   * Declared here rather than in the `database` fragment because it configures
+   * the queue, not the application's database: `DATABASE_URL` is shared with
+   * Prisma and this namespace is what keeps the two from meeting. Never
+   * `public` — the backend creates and migrates whatever it is given, and
+   * pointing it at the schema Prisma owns would put queue tables among the
+   * application's.
+   */
+  BULLMQ_POSTGRES_SCHEMA: blankAsUndefined(z.string().optional()),
 });
 
 /**
@@ -376,7 +404,17 @@ export const redis = z.object({
   REDIS_URL: blankAsUndefined(redisUrl().optional()),
 });
 
-/** `redis` for the worker, which has no fallback for it. */
+/**
+ * The required strength of `redis`, which **no app merges any more.**
+ *
+ * apps/worker did, on the grounds that it needed Redis whatever the runtime.
+ * That turned out to rest on a service with no importers; its live need is the
+ * queue, so the requirement moved into `BULLMQ_BACKEND_SEAM` where it is
+ * conditional on the backend. Kept as the counterpart to `redis` rather than
+ * deleted, because the pair is the shape every fragment with two strengths
+ * has — but do not reach for it to express "this process needs Redis" without
+ * checking that the process still does.
+ */
 export const redisRequired = z.object({
   REDIS_URL: redisUrl(),
 });
