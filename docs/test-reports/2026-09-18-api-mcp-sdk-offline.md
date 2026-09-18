@@ -141,11 +141,35 @@ Worth noting alongside: the rephrase stage of the same chain handles an
 unroutable model correctly — it logs `Rephrase-and-expand failed, falling back
 to raw input question` and carries on. Only the answer model is fatal.
 
-**The fix**: `initializeRagChain` calls `assertModelIsRoutable()` before it
-builds anything, which is a synchronous lookup in the loaded route table. An
-unroutable model is now a 400 naming the model and listing the ones this
-installation does serve. Verified against the running service: the request is
-refused and the process stays up.
+**The fix**, in two layers.
+
+`initializeRagChain` calls `assertModelIsRoutable()` before it builds anything —
+a synchronous lookup in the loaded route table. An unroutable model is now a 400
+naming the model and listing the ones this installation serves.
+
+Re-reading the diff adversarially found a **second trigger the answer-model
+check did not cover**: the *embeddings* model. `createEmbeddingsInstance`
+returns a promise (`resolveEmbeddingModel` is async), so an unroutable
+`EMBEDDINGS_MODEL` leaves a rejection nothing awaits once the request has failed
+for another reason — and Node exits on it *after* the request was correctly
+answered with a 500, which is what made it hard to attribute. Confirmed
+pre-existing by checking out `apps/api` at the pre-fix commit and reproducing
+it there. Both models are checked now.
+
+The deeper issue is that this process creates promises that outlive the request
+that made them, so the next one nobody has hit yet would do the same. `main.ts`
+installs an `unhandledRejection` handler that logs the reason at error level and
+keeps serving. Proven by A/B rather than assumed: with the routability check
+disabled and the handler in place, the same configuration that killed the
+baseline produced
+
+```
+ERROR [Bootstrap] Unhandled promise rejection — the service is staying up,
+but this is a defect: UnknownModelError: no route for model "embed-model-with-no-route"
+```
+
+and `/v1/healthcheck` answered 200 afterwards. The handler is a floor, not a
+cure: it logs every rejection as a defect rather than hiding it.
 
 ### F3 — Chat requires an OpenAI key even when moderation is off — FIXED
 

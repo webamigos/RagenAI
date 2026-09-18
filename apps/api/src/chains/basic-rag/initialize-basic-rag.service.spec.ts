@@ -81,8 +81,13 @@ describe('InitializeBasicRagService', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     availableModels.mockReturnValue(['stub-chat', 'other-model']);
+    // `resolveEmbeddingsModel()` reads EMBEDDINGS_MODEL, defaulting to
+    // `bge-multilingual-gemma2` — route both it and the answer model, or every
+    // case here fails on the embeddings guard rather than on its own subject.
     routeFor.mockImplementation((id: string) =>
-      id === 'stub-chat' ? { provider: 'openai-compatible' } : undefined,
+      id === 'model-with-no-route'
+        ? undefined
+        : { provider: 'openai-compatible' },
     );
     service = makeService();
   });
@@ -103,6 +108,23 @@ describe('InitializeBasicRagService', () => {
     await expect(
       service.initializeRagChain(withModel('model-with-no-route')),
     ).rejects.toThrow(/stub-chat, other-model/);
+  });
+
+  // The second way an unroutable model ended the process, and the one the
+  // answer-model guard alone did not close: `createEmbeddingsInstance` returns
+  // a *promise* (`resolveEmbeddingModel` is async), so an unroutable
+  // EMBEDDINGS_MODEL leaves a rejection nothing awaits once the request has
+  // failed for another reason. Node exits on it — after the request was
+  // correctly answered with a 500, which is what made it hard to attribute.
+  it('refuses an unroutable embeddings model too', async () => {
+    routeFor.mockImplementation((id: string) =>
+      id === 'stub-chat' ? { provider: 'openai-compatible' } : undefined,
+    );
+
+    await expect(service.initializeRagChain(params)).rejects.toBeInstanceOf(
+      BadRequestException,
+    );
+    expect(basicRagChain).not.toHaveBeenCalled();
   });
 
   // Moderation is off unless MODERATION_ENABLED=1, but the instance was built

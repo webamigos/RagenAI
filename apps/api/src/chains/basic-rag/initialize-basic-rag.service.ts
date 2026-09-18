@@ -11,6 +11,7 @@ import {
   createEmbeddingsInstance,
 } from '../../llm/model-instances.js';
 import { isModelRoutable, routableModels } from '../../llm/native-models.js';
+import { resolveEmbeddingsModel } from '@ragenai/rag-core';
 import { QdrantVectorStoreClient } from '../../vector-store/qdrant-client.js';
 import { MeilisearchVectorStoreClient } from '../../vector-store/meilisearch-client.js';
 import { SupabaseVectorStoreClient } from '../../vector-store/supabase-client.js';
@@ -124,14 +125,22 @@ export class InitializeBasicRagService {
         maxDocumentsToRetrieve,
       } = settings;
 
-      // Before anything is built. An unroutable answer model does not fail the
-      // request, it ends the process: the provider is never constructed, the
-      // AI SDK raises `AI_NoOutputGeneratedError` from a stream flush callback
-      // outside any request-scoped catch, and Node exits on the unhandled
-      // rejection. Reachable from a hostile `"model"` in the request body and,
-      // without anyone being hostile, from an org default that no longer has a
-      // row in the route table.
+      // Before anything is built. An unroutable model does not fail the
+      // request, it ends the process, and by two different routes:
+      //
+      //  - the answer model is never constructed, so the AI SDK raises
+      //    `AI_NoOutputGeneratedError` from a stream flush callback outside any
+      //    request-scoped catch;
+      //  - `createEmbeddingsInstance` returns a *promise* (`resolveEmbeddingModel`
+      //    is async), so an unroutable embeddings model produces a rejection
+      //    that nothing awaits once the request has failed for another reason.
+      //
+      // Either way Node exits on the unhandled rejection. Both are reachable
+      // from a `"model"` in the request body, and without anyone being hostile
+      // from an org default or an `EMBEDDINGS_MODEL` that no longer has a row
+      // in the route table.
       assertModelIsRoutable(answerModel);
+      assertModelIsRoutable(resolveEmbeddingsModel());
 
       const embeddingModel = createEmbeddingsInstance(
         {

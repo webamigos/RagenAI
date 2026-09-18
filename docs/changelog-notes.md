@@ -363,7 +363,9 @@ archive is the blog.
   surfaced from inside a stream where nothing was watching. It is now a 400
   that names the model and lists the ones that do work. The same crash was
   reachable without anyone trying: an organization's configured default model
-  losing its row in `routes.yaml` was enough.
+  losing its row in `routes.yaml` was enough, and the embedding model had the
+  same problem by a different route. The API also stays up now when a promise
+  fails that nothing was waiting for — it logs the fault instead of exiting.
 
 - `[brief]` **Chat no longer demands an OpenAI key it was not going to use.**
   Content moderation is off unless you turn it on, but the client for it was

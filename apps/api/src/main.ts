@@ -170,6 +170,32 @@ async function bootstrap() {
   const port =
     configService.get<number>('RAGEN_API_PORT') ??
     configService.get<number>('PORT', 3001);
+  // A rejection nobody awaited must not end the service.
+  //
+  // Node exits on an unhandled rejection by default, and this process creates
+  // promises that outlive the request that made them: `createEmbeddingsInstance`
+  // returns one (`resolveEmbeddingModel` is async), and the AI SDK raises from
+  // stream flush callbacks that belong to no caller. So a single bad request —
+  // a `model` this installation does not serve was the one found in testing —
+  // took the API down for every caller, after correctly answering that request
+  // with a 500.
+  //
+  // Logged at error with the reason intact, never swallowed quietly: this
+  // keeps the service up, it does not make the bug go away, and a rejection
+  // reaching here is always a defect worth fixing at its source. The specific
+  // triggers found so far are refused up front in
+  // `initialize-basic-rag.service.ts`; this is the floor under the ones nobody
+  // has hit yet.
+  process.on('unhandledRejection', (reason) => {
+    logger.error(
+      `Unhandled promise rejection — the service is staying up, but this is a defect: ${
+        reason instanceof Error
+          ? (reason.stack ?? reason.message)
+          : String(reason)
+      }`,
+    );
+  });
+
   await app.listen(port);
   logger.log(`ragen-api running on port ${port}`);
 }
