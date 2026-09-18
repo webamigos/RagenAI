@@ -187,7 +187,13 @@ on it.
 Publication is reversible, per page, as an explicit action:
 
 - **Publish** creates the page's `UserFile` (once, on first publication), sets
-  `publishedAt`, writes its chunks and records a `PUBLISH` decision.
+  `publishedAt`, writes its chunks, sets the file's `embeddingStatus` to
+  `COMPLETED` and records a `PUBLISH` decision. The status write is what the
+  ordinary ingest path already does once vectors are in place, and it matters
+  most on a **republish**, where the file is coming back from `WITHDRAWN`: a
+  page that is serving again while its file still reads as withdrawn would be
+  two sources of truth disagreeing. Re-running publish on an already-published
+  page is idempotent — same content, same file, same terminal state.
 - **Unpublish** deletes those chunks, sets the file's `embeddingStatus` to
   `WITHDRAWN` and clears `publishedAt`. The page stays `APPROVED` — withdrawing
   it from retrieval is not the same as un-approving it — and the ledger keeps
@@ -212,9 +218,10 @@ separated here rather than overloaded into one field.
 interruption leaves less retrievable than the operation intended, never more**,
 and so a retry finishes from wherever it stopped:
 
-- **Publish**: set `publishedAt` → write chunks. A crash between them leaves a
-  page marked published that answers nothing — visibly wrong, harmless, and
-  fixed by the retry.
+- **Publish**: set `publishedAt` → write chunks → set the file `COMPLETED`. A
+  crash anywhere in that leaves a page marked published that answers nothing, or
+  one answering with a file still marked withdrawn — both visibly wrong,
+  harmless, and fixed by the retry.
 - **Unpublish**: delete chunks → set `embeddingStatus = WITHDRAWN` → clear
   `publishedAt`. A crash leaves a page still marked published that answers
   nothing — the same benign state, from the other direction.
@@ -326,17 +333,26 @@ predicate as any other read of that document** — `fileAccessWhere` in
 equivalent in `apps/api` — and sources the reader cannot reach are omitted from
 the rendered citation rather than shown without a link.
 
-**Authorization is checked before deletion, and the order matters.** A source
-that is both deleted and one the reader could not have seen is **omitted**, not
-rendered as "source no longer available" — otherwise the placeholder becomes an
-oracle telling anyone which documents used to exist. Only a source the reader
-would have been allowed to open renders the placeholder, and it carries just
-what the citation already showed: the file name and the span. Nothing is
-resolved from the deleted document itself, because there is nothing left to
-resolve. The page itself still
-cites normally; it is the second level that narrows per reader, which also
-means two people can correctly see different source lists under the same
-answer.
+**A deleted source is omitted from the rendered citation, for every reader.**
+No "source no longer available" placeholder, and this is the second answer to
+the question: the first was "show the placeholder to readers who could have
+opened the file", and it cannot be implemented. `fileAccessWhere` is a predicate
+over the `UserFile` row; once the row is gone there is nothing to evaluate it
+against, so "could have opened it" has no answer at render time. The only way to
+keep the placeholder is to persist an authorization snapshot on
+`KnowledgePageSource` and check the reader against that — a point-in-time copy of
+who could see a file, going stale the moment someone's access changes, existing
+solely to decide whether to show a filename. Not worth it, and a placeholder
+shown on a stale snapshot is the oracle we were avoiding.
+
+Omitting it loses nothing that matters: **the fact that a source is gone reaches
+the person who can act on it**, as the page's `STALE` finding in Brain, which is
+access-controlled on its own terms. A reader of a chat answer cannot restore a
+deleted document; the page's owner can re-curate it.
+
+The page itself still cites normally; it is the second level that narrows per
+reader, which also means two people can correctly see different source lists
+under the same answer.
 
 ## Data model
 
@@ -374,9 +390,9 @@ autoincrement `id` plus a `publicId` UUID for URLs, camelCase fields with
   source file is deleted, `SetNull` would erase which file it was, and
   `Restrict` would block deleting the file. An audit attribute has to survive
   the row it points at. **`sourceDeletedAt` is the dangling state**: set when
-  the referenced file is gone, it is what raises the `STALE` finding and what
-  makes the renderer show the citation as "source no longer available" instead
-  of resolving nothing and silently dropping it.
+  the referenced file is gone, it raises the page's `STALE` finding and tells the
+  renderer to omit that source rather than attempt a lookup that cannot succeed
+  (see "Withdrawal" for why it is omitted rather than shown as a placeholder).
 - **`KnowledgeEdge`** — `fromPageId`, `toPageId`, `kind`, `origin`
   (`EXTRACTED | INFERRED | AMBIGUOUS`), `confidence`. The origin distinction is
   taken from SwarmVault and is the difference between a graph you can trust and
@@ -450,9 +466,10 @@ wrong reflex here and would be expensive to undo.
 - **A source file is deleted after a page was approved.** The page stays, its
   `KnowledgePageSource` row gets `sourceDeletedAt` (the row survives because
   `fileId` carries no foreign key), and the page gets a `STALE` finding. The
-  citation renders as "source no longer available" rather than vanishing.
-  Deleting a document must not silently rewrite curated knowledge, and must not
-  leave a citation pointing at nothing either.
+  deleted source drops out of the rendered citation for every reader; the
+  finding is how the fact reaches the page's owner, who is the only person who
+  can do anything about it. Deleting a document must not silently rewrite
+  curated knowledge — and the row surviving is what keeps it from doing so.
 - **A source document is re-ingested and its text changes.** The citation still
   resolves — it is pinned to `documentVersionId`, which is immutable — and the
   page gets a `STALE` finding naming the source whose active version moved on.
@@ -546,7 +563,8 @@ Phase D, so every phase before it is invisible to existing users.
 - [ ] **E2.** Publish: an approved page becomes a `UserFile` carrying
       `metadata.brainPageId`, ingested with predefined chunk boundaries and the
       curated `accessible_by` — never the source file's. `publishedAt` is set
-      before the chunks are written, and the page's publication generation is
+      before the chunks are written, the file ends `COMPLETED` (including on a
+      republish out of `WITHDRAWN`), and the page's publication generation is
       checked at each step.
 - [ ] **E3.** Unpublish: delete the page's chunks, set the file to
       `WITHDRAWN`, clear `publishedAt`, keep the page approved and its
