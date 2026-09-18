@@ -65,11 +65,13 @@ const RECOMMENDED: Array<Omit<SetupFinding, 'severity'>> = [
     example: 'SMTP_HOST=smtp.example.com, or RESEND_API_KEY=re_...',
   },
   {
-    // Either satisfies this. `BETTER_AUTH_URL` is what Better Auth signs its
-    // own email links with and what `emails/utils/base-url.ts` prefers;
-    // `NEXT_PUBLIC_APP_URL` is the build-time-inlined alternative.
+    // Any of the three satisfies this. `BETTER_AUTH_URL` is what Better Auth
+    // signs its own email links with and what `emails/utils/base-url.ts`
+    // prefers; `APP_URL` is the runtime name the browser now reads through
+    // `public-runtime-config.ts`; `NEXT_PUBLIC_APP_URL` is the build-time
+    // spelling that still works and cannot be set on a prebuilt image.
     id: 'app-url',
-    vars: ['BETTER_AUTH_URL', 'NEXT_PUBLIC_APP_URL'],
+    vars: ['BETTER_AUTH_URL', 'APP_URL', 'NEXT_PUBLIC_APP_URL'],
     example: 'https://ragen.example.com',
   },
   {

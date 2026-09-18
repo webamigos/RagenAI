@@ -66,6 +66,7 @@ import { StreamUnmasker } from '@/libs/pii/stream-unmasker';
 import { anonymizeWithSecurityEvents } from '@/libs/pii/anonymize-with-security-events';
 import { applyPiiUnmaskToTools } from '@/libs/mcp/client';
 import { toRetrievalEvent } from '@/features/threads/utils/retrieval-event';
+import { readPublicRuntimeConfig } from '@/config/public-runtime-config';
 
 /**
  * Load thread documents from database for a specific thread
@@ -395,7 +396,7 @@ export async function streamEvents({
           // bypass per-thread `preferredModel` (legacy from when users could
           // pick) and per-org public override.
           const hideSelector =
-            process.env.NEXT_PUBLIC_HIDE_MODEL_SELECTOR === '1';
+            readPublicRuntimeConfig().hideModelSelector === '1';
           let effectiveModel = hideSelector
             ? rawSettings.model
             : threadRecord.preferredModel || rawSettings.model;

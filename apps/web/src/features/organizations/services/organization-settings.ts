@@ -18,6 +18,7 @@ import type {
 import { decryptApiKey, encryptApiKey } from '@/app/lib/utils/hashApiKey';
 import { generateThreadKey, decryptThreadKey } from '@ragenai/crypto';
 import { assertCanManageOrganizationSettings } from '@/features/subscriptions/services/feature-guards';
+import { readPublicRuntimeConfig } from '@/config/public-runtime-config';
 
 /**
  * Every `save…` in this file goes through here, which is why the
@@ -246,7 +247,7 @@ export async function getModel(orgId: string): Promise<string | null> {
   // When the model selector is hidden, env DEFAULT_MODEL is the source of
   // truth — bypass per-org override stored in DB (legacy from when org
   // admins could pick) and the seed default ('gemini-3-flash-preview').
-  if (process.env.NEXT_PUBLIC_HIDE_MODEL_SELECTOR === '1') {
+  if (readPublicRuntimeConfig().hideModelSelector === '1') {
     return (
       process.env.DEFAULT_MODEL ?? defaultOrganizationSettings.model ?? null
     );
@@ -267,7 +268,7 @@ export async function savePublicChatModel(
 export async function getPublicChatModel(
   orgId: string,
 ): Promise<string | null> {
-  if (process.env.NEXT_PUBLIC_HIDE_MODEL_SELECTOR === '1') {
+  if (readPublicRuntimeConfig().hideModelSelector === '1') {
     return process.env.DEFAULT_MODEL ?? null;
   }
   const settings = await getSettings(orgId);
@@ -845,7 +846,7 @@ export async function getOrCreatePiiDek(orgId: string): Promise<Buffer> {
  * — bypass the per-org override stored in DB and the seed default.
  */
 function resolveOrgModel(dbValue: string | null | undefined): string {
-  if (process.env.NEXT_PUBLIC_HIDE_MODEL_SELECTOR === '1') {
+  if (readPublicRuntimeConfig().hideModelSelector === '1') {
     return process.env.DEFAULT_MODEL ?? defaultOrganizationSettings.model;
   }
   return dbValue || defaultOrganizationSettings.model;

@@ -13,10 +13,14 @@
  * (`baseURL` in `src/lib/auth.ts`), so every other link in every other email
  * this app sends already resolves this way. It is also read at runtime, unlike
  * `NEXT_PUBLIC_APP_URL`, which Next inlines at build time and which therefore
- * cannot be set by an operator running a prebuilt image — that one stays as a
- * fallback for installs that only configured it.
+ * cannot be set by an operator running a prebuilt image. That fallback now goes
+ * through `readPublicRuntimeConfig()`, which reads the real environment for
+ * both the new `APP_URL` and the legacy name, so an install that configured
+ * only one of them still works from an image nobody rebuilt.
  */
 import { isDeployedEnv, normalizeTargetEnv } from '@ragenai/env';
+
+import { readPublicRuntimeConfig } from '@/config/public-runtime-config';
 
 const LOCAL_FALLBACK = 'http://localhost:3000';
 
@@ -31,7 +35,13 @@ export function getBaseUrl(): string {
   // Same rule as the first-run environment inspector's `isSet`.
   const configured = [
     process.env.BETTER_AUTH_URL,
-    process.env.NEXT_PUBLIC_APP_URL,
+    // The runtime reader, not `process.env.NEXT_PUBLIC_APP_URL`: that
+    // expression is replaced at build time, so an operator running a prebuilt
+    // image could not set it. `BETTER_AUTH_URL` stays *first* — Better Auth
+    // signs its own links with it, and an install that set both to different
+    // origins must not get emails that disagree with the links Better Auth
+    // sends.
+    readPublicRuntimeConfig().appUrl,
   ].find((value) => typeof value === 'string' && value.trim() !== '');
 
   if (configured !== undefined) {

@@ -25,6 +25,7 @@ import { SettingsProvider } from '@/context/AssistantSettingsContext';
 import { SearchThreadsProvider } from '@/context/SearchThreadsContext';
 import { GlobalSearchDialog } from '@/app/components/Sidebar/ThreadsHistory/GlobalSearchDialog';
 import { EncryptionRequiredScreen } from '@/app/components/EncryptionRequiredScreen';
+import { PublicRuntimeConfigScript } from '@/config/PublicRuntimeConfigScript';
 import { routing } from '@/i18n/routing';
 import { notFound } from 'next/navigation';
 
@@ -102,6 +103,15 @@ export default async function LocaleLayout({ children, params }: Props) {
         suppressHydrationWarning
       >
         <body className={`${interFont.className} h-full`}>
+          {/*
+            First in the body, because a client module may read the
+            configuration as it initialises and the element has to exist by
+            then. Absent from the encryption-blocked branch above on purpose:
+            that screen renders nothing that reads configuration, and the
+            block is deliberately independent of anything that could also be
+            broken.
+          */}
+          <PublicRuntimeConfigScript />
           <Providers>
             <SearchThreadsProvider>
               <GlobalSearchDialog />

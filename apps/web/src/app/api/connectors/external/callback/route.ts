@@ -14,6 +14,7 @@ import { RagenAuthOAuthClientProvider } from '@/libs/ragen-vault';
 import { logger } from '@/app/lib/utils/logger';
 import { recordConnectorFailureCommand } from '@/features/connectors/services/commands/record-connector-failure-command';
 import { defaultLocale, locales } from '@/app/config';
+import { readPublicRuntimeConfig } from '@/config/public-runtime-config';
 
 export const dynamic = 'force-dynamic';
 
@@ -101,8 +102,8 @@ export async function GET(request: NextRequest) {
     }
 
     // The callback URL is this route itself (the same URL the user is hitting now)
-    const appOrigin = process.env.NEXT_PUBLIC_APP_URL
-      ? new URL(process.env.NEXT_PUBLIC_APP_URL).origin
+    const appOrigin = readPublicRuntimeConfig().appUrl
+      ? new URL(readPublicRuntimeConfig().appUrl).origin
       : request.nextUrl.origin;
     const callbackUrl = `${appOrigin}/api/connectors/external/callback?provider=${provider}`;
 
@@ -208,8 +209,8 @@ function redirectWithStatus(request: NextRequest, status: string) {
     }
   }
 
-  const appOrigin = process.env.NEXT_PUBLIC_APP_URL
-    ? new URL(process.env.NEXT_PUBLIC_APP_URL).origin
+  const appOrigin = readPublicRuntimeConfig().appUrl
+    ? new URL(readPublicRuntimeConfig().appUrl).origin
     : request.nextUrl.origin;
   const settingsUrl = new URL(`/${locale}/settings/connectors`, appOrigin);
   settingsUrl.searchParams.set('status', status);
