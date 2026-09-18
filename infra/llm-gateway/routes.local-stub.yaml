@@ -1,0 +1,32 @@
+# Route table for the offline test environment.
+#
+# This box has no egress to Azure, Bedrock, Vertex or Scaleway, so every model
+# the tests exercise is served by the local OpenAI-compatible stub in
+# scripts/test-env/stub-llm-server.mjs. `connection: scaleway` picks up
+# LLM_SCALEWAY_BASE_URL / LLM_SCALEWAY_API_KEY from .env.local, which point at
+# that stub.
+version: 1
+
+routes:
+  stub-chat:
+    provider: openai-compatible
+    connection: scaleway
+    model: stub-chat
+  stub-embed:
+    provider: openai-compatible
+    connection: scaleway
+    model: stub-embed
+
+  # The application's own defaults, served by the same stub. Without these the
+  # org default model (`gemini-3-flash-preview`) and the rephrase/summary model
+  # (`gemini-2.5-flash`) have no route, which is not a realistic environment —
+  # and on `/v1/chat` an unroutable answer model takes the process down rather
+  # than failing the request (see the test report).
+  gemini-3-flash-preview:
+    provider: openai-compatible
+    connection: scaleway
+    model: stub-chat
+  gemini-2.5-flash:
+    provider: openai-compatible
+    connection: scaleway
+    model: stub-chat
