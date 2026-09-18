@@ -137,6 +137,17 @@ point: Notion is a row.
 `apps/web`'s `PROVIDER_LIST` and writes rows from it, not a SQL literal list,
 and the two `icon` fields are both carried (see the model).
 
+**That import is a dependency, and it is load-bearing in the wrong direction.**
+`PROVIDER_LIST` pulls in every manifest, `shared-config.ts` reads server URLs
+from `process.env` at module load, and the HubSpot and Slack manifests read
+OAuth client ids and secrets the same way. So a seed runner without the web
+alias, the generated Prisma module graph, or those variables fails before it
+writes a row — and it fails while holding secrets it had no reason to load. The
+seed therefore reads a **dependency-free projection** (slug, label, authType,
+scopes, prompt fragment) generated from the manifests and committed beside it,
+and a test compares the projection against `PROVIDER_LIST` so the two cannot
+drift. The comparison belongs in CI, not in the migration path.
+
 **A built-in's server URL stays in the environment.** `MCP_GOOGLE_SERVER_URL`
 and its four siblings are read at module load in `shared-config.ts`, with
 fallbacks, and every deployment sets them. Seeding those values into a column
@@ -147,6 +158,20 @@ resolves it from env; it is required and authoritative for every row an
 operator creates.** A later spec may move built-ins to the column; doing it
 here would mean writing the environment's current values into the database at
 migration time, which is the one thing a migration cannot see.
+
+**And `McpConnector.mcpServerUrl` is a third source that already has rows in
+it.** It is a required column on every existing connector, written when the
+connector was created, so after this work three places can name a server: the
+environment (built-ins), the catalogue row (operator entries), and the
+connector row (all of them, historically). The resolver reads exactly one:
+**the catalogue entry, or the behaviour pack's environment lookup for a
+built-in. The connector's own column is never consulted again.** It is left
+written and unread by the same argument that keeps
+`OrganizationSettings.contentModerationEnabled` alive elsewhere — a column
+dropped in the release that replaces it is a column with no rollback — and a
+follow-up removes it. Any other order would mean a catalogue edit silently not
+reaching the connectors it exists to govern, and the SSRF policy checking a URL
+that is not the one being dialled.
 
 Rejected alternatives:
 
@@ -178,8 +203,12 @@ risks orphaning live OAuth tokens.
 New entries get lowercase-kebab slugs (`notion`, `spotify`). So the column
 holds two casings by design. The alternative — normalising on read — is a
 function that rewrites vault paths, which is the failure this avoids. The
-column comment says so; a validator enforces the pattern
-`^[A-Za-z][A-Za-z0-9_-]*$` and immutability after creation.
+column comment says so; the validator enforces immutability after creation and
+**the format it actually documents**: `^[a-z][a-z0-9-]*$` for anything created
+from now on, with the eleven legacy uppercase values admitted only by the seed
+and the migration. The looser `^[A-Za-z][A-Za-z0-9_-]*$` would accept `Foo_Bar`
+— a twelfth casing convention, in the column whose casing feeds vault paths and
+`customerId`, which is the cost this section is trying not to pay twice.
 
 ### Migrating the column without a maintenance window
 
@@ -252,6 +281,17 @@ So: **the policy applies by default, and an entry may opt out** with
 `allowsPrivateAddress`, off by default, settable only by a platform admin, with
 the form stating what it permits. The opt-out is recorded in the audit log.
 
+**The opt-out does not reach the address this section opened with.** An
+operator's internal MCP server lives on RFC 1918 space; cloud metadata lives on
+link-local `169.254.0.0/16` (and `fd00:ec2::254`), and nothing an operator
+legitimately self-hosts is there. So `allowsPrivateAddress` widens the guard to
+the private ranges only, and link-local, loopback, unique-local and the
+metadata addresses stay refused with the flag on — checked after DNS
+resolution, where a public hostname that resolves to `169.254.169.254` is the
+attack this ordering exists to stop. A flag that permitted everything the guard
+was written for would be a rename of "off", and the threat this spec names by
+address would be reachable through the feature it proposes.
+
 **The policy has to move before it can be applied.** It lives in
 `apps/api/src/connectors/` and nowhere else, while `apps/web` opens MCP
 sessions of its own — `src/libs/mcp/client.ts`, and the external connect and
@@ -276,6 +316,13 @@ against the URL and lists the tool names. It is the only way an operator can
 tell a working MCP endpoint from a typo before a customer does, and it doubles
 as the evidence that the server speaks MCP at all. Failures render the reason,
 the way `lastError` / `lastErrorAt` already do on a connector card.
+
+It is also an admin-triggered outbound request to an address the admin just
+typed, so it is bounded rather than open-ended: a connect deadline and a
+tool-list deadline (5 s each), an `AbortSignal` propagated from the request so
+navigating away stops the work, and the MCP client and its transport closed on
+every exit — success, failure, timeout and cancellation alike. Without that, one
+unresponsive endpoint holds an admin request open for as long as it cares to.
 
 ## Core surfaces touched
 
@@ -402,7 +449,7 @@ below covers it.
 | Admin points an entry at a private address | Refused unless `allowsPrivateAddress` is on, at save time and again at connect time (DNS rebinding). |
 | Admin deletes an entry with live connectors | Refused. The entry is disabled instead, which hides it from the gallery and stops new connections while existing `McpConnector` rows keep resolving. Deletion is allowed only once no connector references the slug. |
 | An entry is disabled mid-conversation | The turn already loaded its tools; it finishes. The next turn does not see them. |
-| A slug is reused after deletion | Prevented: `slug` is unique, immutable, and deletion requires zero referencing connectors — otherwise the new entry would inherit the old one's vault tokens. |
+| A slug is reused after deletion | Prevented, and "zero referencing connectors" is not enough on its own: `allowedConnectors` arrays and vault paths are keyed by slug too, and the row below admits an array can still name a deleted one. So deletion requires zero referencing connectors **and** purges the slug from every `allowedConnectors` array and every vault path that carries it; a slug that cannot be fully purged cannot be deleted, only disabled. Otherwise a reused slug inherits an old allowlist entry or an old token — the quietest possible way for one operator's server to be handed another's credentials. |
 | Two entries expose tools with the same name | The MCP client namespaces per connector, as it does today for eleven. No new failure, but Test connection surfaces the names so an operator can see a collision coming. |
 | OAuth client secret rotated upstream | Every existing token keeps working until it refreshes, then fails to `ERROR` with `lastError` set. The admin re-stores credentials; no row changes. |
 | Vault unreachable when an admin stores credentials | The action fails and the row keeps `oauthCredentialsStored = false`. Nothing half-succeeds: the row is written only after the vault confirms. |
@@ -556,10 +603,16 @@ the order is the whole safety argument:
   reverts by reverting code.
 - B5 is irreversible without a restore. Nothing else ships in that release.
 
-Phases C and D revert by reverting code; rows created in the meantime become
-entries whose form cannot be opened, not broken connectors, because the runtime
-resolver treats an unknown `authType` as "not connectable" rather than
-throwing.
+Phases C and D revert by reverting code, and it is worth being exact about what
+that costs rather than reassuring: the runtime resolver treats an unknown
+`authType` as "not connectable" rather than throwing, so nothing crashes — but a
+customer who connected an operator-defined external server before the revert
+finds it stops connecting, which is a broken connector from the only seat that
+matters. Nothing crashing is not nothing happening. So reverting D is gated the
+way B3 is: the admin action refuses while any `EXTERNAL_MCP` connector row
+exists, and taking the revert anyway is a decision made with that count on
+screen. Phase D should not reach a deployment carrying real connectors until it
+has been through demo for a full connect and token-refresh cycle.
 
 There is no feature flag over the catalogue: an entry's `enabled` is the
 switch, and an operator who wants none of this simply never adds a row.

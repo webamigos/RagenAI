@@ -225,8 +225,18 @@ sites:
 
 That is the complete set: `/api/threads`, `/api/guest-threads/…` and
 `/api/chatbot/[token]/chat` all build a web chain; `apps/api`'s `/chat` and
-`/chat-completions` build the API one. Evaluation runs concurrently with
-`rephraseAndExpand`, as moderation does today.
+`/chat-completions` build the API one.
+
+**Concurrency with `rephraseAndExpand` survives only for rules that do not
+transform.** Moderation runs concurrently today because it returns a verdict:
+the text it read is the text that moves on. `MASK` breaks that. A rule that
+rewrites the input has to finish before anything downstream reads it, or
+`rephraseAndExpand` — and the retrieval query built from it — sees the original
+while the model sees the mask. So the stage splits by what the resolved rule
+set contains, not per message: with only `LOG` and `BLOCK` input rules the
+evaluation stays concurrent, and the first `MASK` rule makes the input stage
+blocking for that organization. The resolver knows which it has before the turn
+starts, so this costs latency only where a mask is actually configured.
 
 **Output** — in the stream funnel: `mapFullStream` in
 `apps/web/src/libs/chains/utils/stream-mapper.ts` and its counterpart at
@@ -237,7 +247,14 @@ That is the complete set: `/api/threads`, `/api/guest-threads/…` and
   chunk boundary is still caught. In `apps/web` this transform is placed
   **inside** `mapFullStream`, upstream of `StreamUnmasker`, so there is one
   buffering layer inside the chain and one outside it and the order is fixed
-  rather than emergent.
+  rather than emergent. **The window is a bound the pattern has to fit inside.**
+  A rule whose match can run past 256 characters would have its prefix flushed
+  before the match completes, and `BLOCK` or `MASK` would then not fire at all
+  — a guardrail that reads as enabled on the page and is enforced by nothing.
+  Save-time validation therefore rejects a pattern whose maximum match width is
+  unbounded or wider than the window, and names the window in the refusal. An
+  operator who needs an unbounded pattern uses an `LLM_POLICY` output rule,
+  which buffers the whole answer regardless.
 - An `LLM_POLICY` output rule **cannot stream**: the judge needs the finished
   answer, so the stream is buffered and released after the verdict. The rule
   form says so next to the toggle, in words: *"Output policies judged by a
@@ -256,7 +273,15 @@ original iterator unwrapped.
   (`[[redacted:<rule>]]`, not `<TYPE_n>`) so `StreamUnmasker`, which walks the
   same buffer for alias tokens, cannot mistake one for the other. On input, the
   **stored** user message is the original: masking changes what the model is
-  given, not what the thread records.
+  given, not what the thread records. **That only holds if history is masked on
+  the way back out.** `chat_history` is assembled from stored messages —
+  `getChatbotThreadHistoryQuery` decrypts them, and the chain passes them into
+  the model messages — so a mask applied to turn one's message alone is undone
+  at turn two, when the original returns through history. The input stage
+  therefore applies `MASK` rules to the assembled `chat_history` as well as to
+  the current message, every turn. Rejected: masking at write time, which would
+  make a thread unreadable to its own owner and destroy the original
+  irreversibly on behalf of a rule that may later turn out to be wrong.
 - `BLOCK` on input — a `GuardrailError` (`ChainError`, code
   `guardrail-blocked`) through the existing chain-error path, localized in
   `apps/web`. `apps/api` has no locale layer, so it returns the code in the
@@ -293,7 +318,7 @@ clients read `security_events` and `ai_usage`, and the services deploy
 independently — see
 [`docs/lessons/adding-an-enum-value-breaks-older-readers.md`](../lessons/adding-an-enum-value-breaks-older-readers.md).
 This applies to `GUARDRAIL_BLOCKED` / `GUARDRAIL_FLAGGED` **and** to
-`AiUsageStep.GUARDRAIL`. All four land in Phase A, with no writer, so every
+`AiUsageStep.GUARDRAIL`. All three land in Phase A, with no writer, so every
 reader is deployed before the first row exists.
 
 **`Guardrail` is deliberately absent from `TENANT_SCOPED_MODELS`.** Loading the
@@ -380,6 +405,14 @@ Plus, in existing enums: `SecurityEventType` gains `GUARDRAIL_BLOCKED` and
 `GUARDRAIL_FLAGGED`; `AiUsageStep` gains `GUARDRAIL`, so a judge model's cost
 shows on the AI-usage page under its own name rather than inside `MODERATION`.
 
+**`SecurityEventSource` gains nothing.** Guardrail events reuse the values that
+exist — `chat` from the panel and API chains, `chatbot` from the widget — because
+`source` answers *where the request came from* and `eventType` already answers
+*what fired*. A `guardrail` source would be rejected by `SOURCE_VALUES` in
+`apps/web/src/app/api/internal/security-events/notify/route.ts` and would fail
+to compile against either app's union, which is two ways of finding out the same
+thing late.
+
 ### Migration, and what happens to today's behaviour
 
 **No migration in this repository contains an `INSERT`, and none can read
@@ -389,9 +422,20 @@ shows on the AI-usage page under its own name rather than inside `MODERATION`.
 rules — `content-moderation` (`BLOCK`) and `jailbreak-detection` (`LOG`), both
 `enabled = false` — and insert a `GuardrailOrgOverride` for every organization
 whose `OrganizationSettings.content_moderation_enabled` is non-null, carrying
-that value. The per-org half of today's semantics is in the database, so it
-survives exactly, including the organization that had explicitly turned
-moderation off.
+that value.
+
+**The deployment gate has to travel with it, or the seed changes behaviour
+instead of preserving it.** That column is read only when `IS_ON_PREMISE`; in
+SaaS it is ignored, so a SaaS organization sitting on `false` is being moderated
+today and expects to be. An override the resolver honours everywhere would turn
+moderation *off* for exactly those tenants — a silent downgrade, in the one
+direction nobody would choose. So the seeded rows are marked as what they are:
+the migration writes them with `origin = 'legacy-on-premise'`, and the resolver
+skips an override so marked unless `IS_ON_PREMISE`. On-premise semantics then
+survive exactly, including the organization that had explicitly turned
+moderation off; SaaS semantics do not move at all. An override an administrator
+creates later carries no marking and applies everywhere, which is the whole
+point of the feature.
 
 *What SQL cannot do:* know whether `MODERATION_ENABLED=1` was set on this
 installation. Seeding `enabled = false` is the safe half of that choice — no
@@ -420,12 +464,15 @@ panel.
 |---|---|
 | Postgres unreachable when loading rules, cache cold | **Fail open.** The alarm is a `logger.error` with `audit: true`, *not* a security event — `recordSecurityEvent` writes to the database that is down, so an event is the one alarm this failure would swallow. Rejected fail-closed: a blip would take chat down for every tenant, and the state it falls back to is the one every installation is in today. The real mitigation is the 60 s per-org cache, so a blip does not reach the loop at all. |
 | Judge model times out or returns malformed output | Treated as pass, `GUARDRAIL_FLAGGED` with `metadata.error`. Same choice the jailbreak classifier already makes: a classifier that can take the product down is a bigger risk than the one it catches. Timeout 3 s, the classifier's current `DEFAULT_TIMEOUT_MS`, as a per-rule field. |
-| An operator saves a catastrophically backtracking regex | Refused at save time: compiled and run against a 10 KB adversarial fixture with a 50 ms budget, and a pattern that exceeds it is rejected with the fixture shown. At runtime a second guard — a total per-turn budget across all pattern rules; exceeding it skips the remainder and logs. Input is already capped by `MAX_USER_INPUT_LENGTH` (10 000). |
+| An operator saves a catastrophically backtracking regex | Refused at save time: compiled and run against a 10 KB adversarial fixture with a 50 ms budget, and a pattern that exceeds it is rejected with the fixture shown. At runtime a second guard — a total per-turn budget across all pattern rules; exceeding it skips the remainder and logs. **That budget is checked between rules, not inside one:** a JavaScript `RegExp` cannot be interrupted once it has entered a match, so it bounds how many patterns run, never how long one of them runs. Bounding the single match is the save-time fixture's job, which is why that gate rejects rather than warns. If the implementation can reach a linear-time engine (RE2) the runtime evaluator should use it, and this row gets weaker. Input is already capped by `MAX_USER_INPUT_LENGTH` (10 000). |
 | A rule matches every message | Nothing technical fails; this is why `LOG` is the creation default and why the page shows each rule's 7-day hit count. |
 | An override points at a rule that is not a platform rule | Refused by the admin action; dropped by the resolver if one exists anyway. |
 | Two platform rules claim one built-in key | Prevented by the partial unique index above. |
 | Two administrators edit the same rule | Last write wins; both in the audit log with before/after. No locking — the audit trail answers the question that actually gets asked. |
 | An output `BLOCK` fires after text has streamed | The client receives `guardrail-violation` and discards what it rendered: the user sees an answer begin and then be replaced. This is the honest cost of streaming, and it is why an operator who wants no leakage at all must use an `LLM_POLICY` output rule, which buffers. |
+| Rules exist before any evaluator does | Phase A ships no evaluator, so a rule created there is a row and an audit entry and nothing else. During B's rolling deploy the halves disagree for the length of the roll: an upgraded instance enforces, an older one does not. That window is the one every flag here has, and the creation default is what makes it cheap — `LOG` means the disagreement is in what gets recorded, not in who gets blocked. An operator promoting a rule to `BLOCK` mid-roll is choosing that knowingly. |
+| An administrator edits or deletes a built-in rule | `key` and `kind` are immutable on a platform rule once written, and a rule with a non-null `key` can be disabled but not deleted. The unique index above stops two rules claiming one built-in key; this stops the opposite and quieter failure, a detector that no longer exists at all. `guardrails:preflight` checks the built-ins are present and well-formed, not only that the flags and the rule state agree. |
+| Several `LLM_POLICY` rules active at once | Policy rules on one stage run concurrently, so latency stays at the slowest rather than the sum — but spend is the sum, and it scales with the rule count while nothing on screen says so. Active policy rules are capped per organization (`MAX_ACTIVE_LLM_POLICIES`, 3 to begin with), a `BOTH` policy counts against both stages, and the form states the cap where the operator meets it rather than in a runbook. |
 | Organization deleted | `onDelete: Cascade` on both tables; platform rules untouched. |
 | Rule deleted mid-turn | The turn uses the snapshot it loaded. No coordination. |
 | `apps/web` and `apps/api` on different builds | Rows are shared, evaluators are not. The resolver drops rules whose `kind` or `stage` is outside `SUPPORTED_COMBINATIONS` for the running build, the way `sanitizeFeatureOverrides` drops unknown keys — an older reader evaluates them as "no verdict" instead of throwing. |
