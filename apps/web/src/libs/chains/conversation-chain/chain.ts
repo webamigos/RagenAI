@@ -1,4 +1,5 @@
 import { streamText, stepCountIs } from 'ai';
+import { isOnPremise } from '@ragenai/env';
 import { buildToolApprovalConfig } from '@/libs/mcp/client';
 import type { ToolGatingContext } from '@/libs/security/tool-gating-context';
 import {
@@ -45,7 +46,7 @@ export const conversationChain = async ({
       // When enabled, SaaS mode always enforces; on-premise respects org setting.
       const shouldModerateContent =
         process.env.MODERATION_ENABLED === '1' &&
-        (!process.env.IS_ON_PREMISE ||
+        (!isOnPremise() ||
           config?.ragSettings?.contentModerationEnabled !== false);
       if (shouldModerateContent) {
         await moderateContent(

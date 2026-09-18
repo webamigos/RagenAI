@@ -130,6 +130,20 @@ export const targetEnv = z.object({
 });
 
 /**
+ * Whether the installation is run by the people who use it.
+ *
+ * Declared so it appears in the generated configuration reference and in the
+ * app schemas, but never read from the parsed value: `isOnPremise()` in
+ * `./deployment` is the one reading, because `apps/web` has no parsed-env
+ * singleton and its call sites go to `process.env` directly. Two readings of
+ * this variable is the thing being fixed, so this fragment deliberately does
+ * not create a third.
+ */
+export const deployment = z.object({
+  IS_ON_PREMISE: blankAsUndefined(z.string().optional()),
+});
+
+/**
  * `targetEnv` for a process that must not guess.
  *
  * Defaulting to `local` is right for a developer's fresh clone and dangerous

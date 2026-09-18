@@ -54,6 +54,7 @@ import { z } from 'zod';
  * work without at all are required unconditionally instead.
  */
 export const webEnvSchema = fragments.targetEnv
+  .merge(fragments.deployment)
   .merge(fragments.database)
   .merge(fragments.llmGateway)
   .merge(fragments.models)

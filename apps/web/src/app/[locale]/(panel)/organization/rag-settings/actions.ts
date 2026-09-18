@@ -1,5 +1,7 @@
 'use server';
 
+import { isOnPremise } from '@ragenai/env';
+
 import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
 import { requireOrgAdmin } from '@/lib/auth-guards';
 import {
@@ -41,6 +43,6 @@ export async function getRagSettingsAction(): Promise<RagSettingsPageData> {
       rephrase: process.env.REPHRASE_MODEL || 'gemini-2.5-flash',
       answer: answerModel || 'gemini-3-flash-preview',
     },
-    isOnPremise: process.env.IS_ON_PREMISE === '1',
+    isOnPremise: isOnPremise(),
   };
 }
