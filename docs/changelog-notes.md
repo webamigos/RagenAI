@@ -68,6 +68,20 @@ archive is the blog.
 
 ## Unreleased
 
+### Thread: one name for every workspace
+
+- `[brief]` **Every workspace in the monorepo is `@ragenai/*` now.** The five
+  apps and the repository root were `@webamigos/ragen-*` while all ten packages
+  were already `@ragenai/*` — two layers of history rather than a convention.
+  If you script against this repo, a command naming a workspace needs its new
+  name: `npm run test:e2e --workspace=@ragenai/web`, not
+  `@webamigos/ragen-web`. Nothing you install moves: the SDK stays
+  `@webamigos/ragen-sdk-ts`, `create-ragen-app` and `ragen-cli` are unchanged,
+  and the published images are still `ghcr.io/webamigos/ragen-<app>` because
+  those names never came from a package name.
+  ([#1253](https://github.com/webamigos/RagenAI/pull/1253))
+
+
 ### Thread: Ragen gets a command line
 
 - `[major]` **`npm i -g ragen-cli` gives you a `ragen` command.** Today it
