@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { startHarness, type JobRuntimeHarness } from './harness.js';
+import { startHarness, traits, type JobRuntimeHarness } from './harness.js';
 
 /**
  * What happens when a job stops renewing its lock.
@@ -34,7 +34,16 @@ function blockEventLoop(ms: number): void {
   }
 }
 
-describe('stalled jobs', () => {
+/**
+ * BullMQ's alone, and skipped rather than translated on the parity run.
+ *
+ * Temporal has no lock to lose — its equivalents are activity heartbeats and
+ * task timeouts, a different mechanism with different settings — and it cannot
+ * take `handlerOverrides` either, because its workflows come from a sandboxed
+ * bundle built from disk. Asserting BullMQ's numbers against it would be
+ * testing a translation nobody wrote. See `RuntimeTraits.redeliversStalledJobs`.
+ */
+describe.runIf(traits().redeliversStalledJobs)('stalled jobs', () => {
   let harness: JobRuntimeHarness;
 
   afterEach(async () => {

@@ -487,8 +487,33 @@ here until there is an image to layer it onto.
 2. **The contract is an import, not a copy.** `@ragenai/jobs` is a workspace
    dependency. This is the free half; Phase G is where it stops being free.
 3. **CI runs the real thing.** The worker integration suite runs against a real
-   Temporal container as well as a real Redis, nightly. That job failing is how
-   we learn that a change to `ctx.steps` broke durable retries.
+   Temporal as well as a real Redis, nightly. That job failing is how we learn
+   that a change to `ctx.steps` broke durable retries.
+
+   **Landed** as `.github/workflows/jobs-parity.yml` — a matrix over both
+   runtimes at 04:00 UTC, plus the pull requests that touch the seam, the
+   adapter or the Temporal workflow wrappers.
+   `tests/architecture/every-job-runtime-is-exercised.test.ts` holds the matrix
+   to the `WorkerRuntime` union, because a runtime dropped from it leaves CI
+   green.
+
+   Two things about it differ from this paragraph as written, both deliberate:
+
+   - **Not a container.** `@temporalio/testing` starts a real Temporal server
+     from a cached binary instead of `temporalio/auto-setup`, which would need
+     its own Postgres, seeds and readiness handling in every job — and which a
+     developer cannot run at all, since Phase E deleted Temporal from
+     `docker-compose.yml`. `JOBS_TEST_TEMPORAL_ADDRESS` points the suite at a
+     container for anyone who wants one.
+   - **Five differences are named rather than asserted away.** `RuntimeTraits`
+     in the harness records where the engines legitimately disagree: the failure
+     text `getRun` carries, what a run cancelled before it started reads back
+     as, whether a handler can be stubbed, whether an expired lock redelivers,
+     and the scheduler's cron dialect. Three tests are BullMQ's alone (the two
+     stalled-job cases and the redelivered-ingest one) and are skipped rather
+     than translated. Everything else — all eight job names, results, retry
+     counts, non-retryable steps, cooperative cancellation, schedules — runs on
+     both.
 
 **In Phase G, once `ragen-worker` is published and the adapter moves:**
 
@@ -1080,11 +1105,11 @@ Per the Testing Requirements in [`AGENTS.md`](../../AGENTS.md):
   `TEMPORAL_*` variables, which is the *evidence* people usually cite for "the
   suite does not run the worker" — and E2 deletes them. The reason has to
   outlive them, and it does: a process nobody starts cannot be under test.
-- **Both runtimes, nightly.** While the adapter lives here, the same
-  integration suite runs against a real Temporal as well as a real Redis, in
-  the nightly job — the cheap version of §8.3, available precisely because
-  nothing has been extracted yet. It moves to `ragen-enterprise` with the
-  package in Phase G, and that is when it starts costing something.
+- **Both runtimes, nightly.** Done — `jobs-parity.yml`; see §8.3 for what it
+  runs and the two ways it differs from the sentence that asked for it. The
+  cheap version, available precisely because nothing has been extracted yet: it
+  moves to `ragen-enterprise` with the package in Phase G, and that is when it
+  starts costing something.
 - **Manual**: a new row in [`docs/regression-checklist.md`](../regression-checklist.md)
   — upload, cancel mid-ingest, re-embed a folder, generate a document, roll a
   version back — run once per runtime before Phase E.
