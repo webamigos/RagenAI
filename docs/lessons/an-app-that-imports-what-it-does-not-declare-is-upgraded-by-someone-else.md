@@ -12,8 +12,8 @@ and `@ai-sdk/google-vertex`. Scoping the upgrade started with the ordinary
 question — which workspaces resolve `ai`, and at what version:
 
 ```
-+-- @webamigos/ragen-api  -> ai@6.0.99 deduped
-+-- @webamigos/ragen-worker -> ai@6.0.99 deduped
++-- @ragenai/api  -> ai@6.0.99 deduped
++-- @ragenai/worker -> ai@6.0.99 deduped
 `-- ai@6.0.99
 ```
 

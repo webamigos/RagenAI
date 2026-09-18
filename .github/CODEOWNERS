@@ -6,7 +6,7 @@
 # specific rules belong at the BOTTOM of this file, not the top.
 
 # Default: anything not matched below.
-*                                       @webamigos/ragen-ai
+*                                       @ragenai/ragen-ai
 
 # CI/CD, release and deployment infrastructure. Dockerfile is unanchored on
 # purpose: ADR-29/ADR-30 moved them out of the repo root and there is now one
@@ -15,32 +15,32 @@
 # `**/railway.toml` used to sit here too. Those files are gone — Railway never
 # read them, and its settings live in the dashboard (ADR-47). A `.railway/`
 # rule belongs here if this repository ever adopts `railway.ts`.
-/.github/workflows/                     @webamigos/ragen-ai
-**/Dockerfile                           @webamigos/ragen-ai
-/docker-compose.yml                     @webamigos/ragen-ai
+/.github/workflows/                     @ragenai/ragen-ai
+**/Dockerfile                           @ragenai/ragen-ai
+/docker-compose.yml                     @ragenai/ragen-ai
 
 # Database schema and migrations — a bad migration is expensive to undo on
 # customer-hosted installs.
-/prisma/                                @webamigos/ragen-ai
+/prisma/                                @ragenai/ragen-ai
 
 # Auth, access control and tenant isolation. Cross-tenant leakage is the bug
 # class this project cares most about (ADR-23).
-/apps/web/src/lib/auth.ts               @webamigos/ragen-ai
-/apps/web/src/lib/auth-guards.ts        @webamigos/ragen-ai
-/apps/web/src/lib/auth-access-control.ts    @webamigos/ragen-ai
-/apps/web/src/libs/db/tenant-scope-guard.ts @webamigos/ragen-ai
-/apps/api/src/prisma/tenant-scope-guard.ts  @webamigos/ragen-ai
-/packages/platform-contracts/src/tenant-scope/  @webamigos/ragen-ai
-/apps/api/src/common/guards/            @webamigos/ragen-ai
-/apps/api/src/common/services/session-auth.service.ts   @webamigos/ragen-ai
-/apps/api/src/common/decorators/session-auth-context.decorator.ts   @webamigos/ragen-ai
+/apps/web/src/lib/auth.ts               @ragenai/ragen-ai
+/apps/web/src/lib/auth-guards.ts        @ragenai/ragen-ai
+/apps/web/src/lib/auth-access-control.ts    @ragenai/ragen-ai
+/apps/web/src/libs/db/tenant-scope-guard.ts @ragenai/ragen-ai
+/apps/api/src/prisma/tenant-scope-guard.ts  @ragenai/ragen-ai
+/packages/platform-contracts/src/tenant-scope/  @ragenai/ragen-ai
+/apps/api/src/common/guards/            @ragenai/ragen-ai
+/apps/api/src/common/services/session-auth.service.ts   @ragenai/ragen-ai
+/apps/api/src/common/decorators/session-auth-context.decorator.ts   @ragenai/ragen-ai
 
 # Encryption and secret handling.
-/packages/crypto/                       @webamigos/ragen-ai
-/apps/web/src/libs/crypto/              @webamigos/ragen-ai
-/apps/web/src/libs/ragen-vault/         @webamigos/ragen-ai
-/apps/api/src/ragen-vault/              @webamigos/ragen-ai
-/packages/vault-client/                 @webamigos/ragen-ai
+/packages/crypto/                       @ragenai/ragen-ai
+/apps/web/src/libs/crypto/              @ragenai/ragen-ai
+/apps/web/src/libs/ragen-vault/         @ragenai/ragen-ai
+/apps/api/src/ragen-vault/              @ragenai/ragen-ai
+/packages/vault-client/                 @ragenai/ragen-ai
 
 # Licensing, security policy and this file itself — single owner on purpose.
 # Any owner listed on a line can approve alone, so these stay narrow.

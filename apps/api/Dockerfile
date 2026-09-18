@@ -37,7 +37,7 @@ RUN npx prisma generate
 # "Cannot find module '@ragenai/…'" for each one. It succeeded on a developer's
 # machine only when their host happened to have the artifacts, which Docker
 # never copied anyway.
-RUN npx turbo run build --filter=@webamigos/ragen-api
+RUN npx turbo run build --filter=@ragenai/api
 # Drop devDependencies from the shared root node_modules before it's
 # copied into the production image below. `npm prune` (not a separate
 # `npm ci --omit=dev`) operates on the exact tree `npm run build` just

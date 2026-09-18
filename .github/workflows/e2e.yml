@@ -298,9 +298,9 @@ jobs:
           FILTER: ${{ steps.scope.outputs.filter }}
         run: |
           if [ -n "$FILTER" ]; then
-            npm run test:e2e --workspace=@webamigos/ragen-web -- "$FILTER"
+            npm run test:e2e --workspace=@ragenai/web -- "$FILTER"
           else
-            npm run test:e2e --workspace=@webamigos/ragen-web
+            npm run test:e2e --workspace=@ragenai/web
           fi
 
       - name: Dump apps/api log on failure

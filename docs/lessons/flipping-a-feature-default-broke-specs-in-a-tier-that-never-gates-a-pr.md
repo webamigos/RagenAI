@@ -25,7 +25,7 @@ Diagnosis was slower than it should have been because a plausible wrong answer w
 **Rule for tiering**: `p1`–`p3` is not "important but slower" — it is "will not stop the change that breaks it". Anything that must block a merge belongs in `smoke-*` or `p0-*`. When a change lands that a `p1` spec covers, run that spec locally; the PR check will not do it for you:
 
 ```bash
-npm run test:e2e --workspace=@webamigos/ragen-web -- "p1-3(2|4)-"
+npm run test:e2e --workspace=@ragenai/web -- "p1-3(2|4)-"
 ```
 
 **Rule for the seed**: keep one fixture honest about the shipping defaults. The e2e seed's second organization deliberately has no `featureOverrides`, so it resolves every flag the way a real organization does on day one. Grant overrides to the primary org only, and only for what a spec actually needs.

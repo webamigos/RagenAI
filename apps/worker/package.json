@@ -1,5 +1,5 @@
 {
-  "name": "@webamigos/ragen-worker",
+  "name": "@ragenai/worker",
   "version": "0.0.1",
   "description": "Temporal worker for Ragen AI (document ingest pipeline)",
   "type": "module",

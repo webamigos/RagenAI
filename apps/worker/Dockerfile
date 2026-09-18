@@ -47,7 +47,7 @@ COPY packages/llm-gateway/package.json packages/llm-gateway/
 # step became both unnecessary and impossible: `scripts/build.js` is now
 # `scripts/build.ts`, and the image failed with MODULE_NOT_FOUND.
 FROM manifests AS deps
-RUN npm ci --workspace=@webamigos/ragen-worker \
+RUN npm ci --workspace=@ragenai/worker \
     --workspace=@ragenai/crypto \
     --workspace=@ragenai/rag-core \
     --workspace=@ragenai/observability \
@@ -85,7 +85,7 @@ RUN mkdir -p /app/apps/worker/node_modules
 # knows about this one omission and requires the dynamic-import half of it, so
 # it stays a decision rather than becoming a missing entry.
 FROM manifests AS prod-deps
-RUN npm ci --workspace=@webamigos/ragen-worker \
+RUN npm ci --workspace=@ragenai/worker \
     --workspace=@ragenai/crypto \
     --workspace=@ragenai/rag-core \
     --workspace=@ragenai/observability \
@@ -153,7 +153,7 @@ RUN npm run build --workspace=@ragenai/env \
 # with plain `tsc --build`, which emits only what it compiles, and the client is
 # .js/.mjs/.wasm. Under src/ it would be missing from dist/ entirely.
 RUN npx prisma generate
-RUN npm run build --workspace=@webamigos/ragen-worker
+RUN npm run build --workspace=@ragenai/worker
 
 FROM base AS runner
 WORKDIR /app

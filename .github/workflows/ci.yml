@@ -164,10 +164,10 @@ jobs:
       # local gate entirely. That is how a knex-shaped assertion survived
       # local validation during ADR-40 and went red on main. The wiring is
       # held by tests/architecture/the-gate-runs-the-repo-wide-guards.test.ts.
-      - run: npx turbo run test --filter='!@webamigos/ragen-web'
-          --filter='!@webamigos/ragen-api'
-          --filter='!@webamigos/ragen-admin'
-          --filter='!@webamigos/ragen-worker'
+      - run: npx turbo run test --filter='!@ragenai/web'
+          --filter='!@ragenai/api'
+          --filter='!@ragenai/admin'
+          --filter='!@ragenai/worker'
 
   # The gate for the worker runtime, and the only job in this repository that
   # runs a queue. No e2e test can cover this: `e2e.yml` builds and starts
