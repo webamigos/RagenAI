@@ -1,4 +1,5 @@
 import { streamText, stepCountIs } from 'ai';
+import { isOnPremise } from '@ragenai/env';
 import { buildToolApprovalConfig } from '../../mcp/client.js';
 import {
   rephraseAndExpand,
@@ -19,7 +20,7 @@ function shouldModerate(
   if (process.env.MODERATION_ENABLED !== '1') {
     return false;
   }
-  if (!process.env.IS_ON_PREMISE) {
+  if (!isOnPremise()) {
     return true;
   }
   return ragSettings?.contentModerationEnabled !== false;
