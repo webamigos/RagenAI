@@ -15,7 +15,19 @@ import { z } from 'zod';
 /** Where apps/api answers when nobody says otherwise. Only ever right locally. */
 const LOCAL_RAGEN_API_URL = 'http://localhost:3001';
 
-export const mcpEnvSchema = fragments.targetEnv
+/**
+ * `targetEnvRequired`, not `targetEnv` — the same choice apps/worker makes,
+ * and for a sharper reason here.
+ *
+ * `targetEnv` defaults to `local`, which reads as a convenience and acts as a
+ * disabled guard: with `TARGET_ENV` unset on a deployment, the refinement
+ * below never fires, `RAGEN_API_URL` falls through to localhost, and the
+ * server boots clean while every tool call fails with a connection error —
+ * exactly the failure the comment on that field describes. The variable that
+ * decides whether a rule applies cannot be the one with a forgiving default.
+ */
+
+export const mcpEnvSchema = fragments.targetEnvRequired
   .merge(fragments.observability)
   .extend({
     PORT: z.coerce.number().int().positive().max(65535).default(3300),

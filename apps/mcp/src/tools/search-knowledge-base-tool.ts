@@ -18,8 +18,9 @@ export function registerSearchKnowledgeBaseTool(
     parameters: z.object({
       assistant_id: z
         .string()
+        .optional()
         .describe(
-          'The Ragen assistant (project) ID whose knowledge base to search.',
+          'The Ragen assistant (project) ID whose knowledge base to search. Optional — the API key decides by itself, and naming an assistant the key is not scoped to is refused.',
         ),
       query: z.string().min(1).describe('The search query.'),
       max_results: z

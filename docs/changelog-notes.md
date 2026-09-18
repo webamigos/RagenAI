@@ -81,6 +81,12 @@ archive is the blog.
   ([#1237](https://github.com/webamigos/RagenAI/pull/1237))
 ### Thread: the API speaks OpenAI
 
+- `[brief]` **The MCP server works with a knowledge-base key again.** Both
+  tools declared `assistant_id` as required, so a key scoped to the knowledge
+  base — the default — could not call them: whatever the model filled in came
+  back a 403. The field is optional now and omitted when nobody names one, which
+  is what the key expects.
+
 - `[major]` **An OpenAI-compatible client can now be pointed at Ragen.**
   `POST /v1/chat/completions` required `assistant_id`, a field the OpenAI wire
   format has no slot for — so n8n, the OpenAI SDKs and anything else speaking

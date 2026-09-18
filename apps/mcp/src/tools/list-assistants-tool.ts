@@ -14,7 +14,7 @@ export function registerListAssistantsTool(
   server.addTool({
     name: TOOL_NAME,
     description:
-      "List the Ragen assistants available to the caller's organization, with the id and name of each. Use this to find an assistant_id to pass to ragen_chat.",
+      'List the Ragen assistants this API key can reach, with the id and name of each. A key scoped to the whole knowledge base lists every assistant its organization owns; a key created for one assistant lists that one. Use this to find an assistant_id for ragen_chat — or, if exactly one comes back, to confirm you can omit it.',
     parameters: z.object({}),
     execute: async (_args, { session }) => {
       if (!session) {

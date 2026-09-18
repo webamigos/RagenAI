@@ -11,6 +11,7 @@ const config: Config = {
   modulePathIgnorePatterns: ['<rootDir>/dist/'],
   clearMocks: true,
   forceExit: true,
+  setupFiles: ['<rootDir>/jest.setup.ts'],
   // Source uses Node16 module resolution (import specifiers end in `.js`,
   // per the project's `"type": "module"`) — strip that extension so
   // ts-jest's CommonJS transform can resolve the same files under Jest.

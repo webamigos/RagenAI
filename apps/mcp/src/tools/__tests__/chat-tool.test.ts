@@ -11,7 +11,7 @@ jest.mock('../../client/ragen-api-client.js', () => ({
 const mockChat = chat as jest.MockedFunction<typeof chat>;
 
 type ExecuteArgs = {
-  assistant_id: string;
+  assistant_id?: string;
   message: string;
   context?: string;
   reasoning_effort?: 'low' | 'medium' | 'high';
@@ -39,6 +39,27 @@ function captureExecute(): ExecuteFn {
 describe('ragen_chat tool', () => {
   beforeEach(() => {
     mockChat.mockReset();
+  });
+
+  // The schema used to demand an assistant. With the key carrying a scope,
+  // a knowledge-base key has no assistant to name and apps/api refuses the
+  // request if one is named anyway — so "not provided" has to reach the
+  // client as an absent field, not an empty one.
+  it('passes no assistant when the caller names none', async () => {
+    mockChat.mockResolvedValue({ ok: true, text: 'Hi there' });
+    const execute = captureExecute();
+
+    await execute(
+      { message: 'Hello' },
+      { session: { apiKey: 'Bearer sk-test.secret' } },
+    );
+
+    expect(mockChat).toHaveBeenCalledWith('Bearer sk-test.secret', {
+      assistant_id: undefined,
+      content: 'Hello',
+      context: undefined,
+      reasoning_effort: undefined,
+    });
   });
 
   it('calls the API client with the session apiKey and mapped args', async () => {

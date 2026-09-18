@@ -12,11 +12,14 @@ export function registerChatTool(server: FastMCP<RagenSession>): void {
   server.addTool({
     name: TOOL_NAME,
     description:
-      "Send a message to a Ragen assistant and get its answer. The assistant retrieves from its own organization's knowledge base — pass the assistant_id of the specific assistant to talk to.",
+      "Send a message to a Ragen assistant and get its answer. The assistant retrieves from its own organization's knowledge base. Omit assistant_id unless you have one: the API key already carries a scope, and a key bound to a single assistant refuses a request naming a different one.",
     parameters: z.object({
       assistant_id: z
         .string()
-        .describe('The Ragen assistant (project) ID to send the message to.'),
+        .optional()
+        .describe(
+          'The Ragen assistant (project) ID to send the message to. Optional — the API key decides by itself, and naming an assistant the key is not scoped to is refused. Use ragen_list_assistants to see which ones this key can reach.',
+        ),
       message: z.string().min(1).describe('The message to send.'),
       context: z
         .string()

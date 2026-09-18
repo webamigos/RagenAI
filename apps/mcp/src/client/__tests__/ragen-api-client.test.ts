@@ -45,6 +45,25 @@ describe('chat', () => {
     });
   });
 
+  // The shape a knowledge-base key needs: apps/api refuses a request that
+  // names any assistant when the key is not scoped to one, so the field has
+  // to be absent from the body rather than present and empty.
+  it('omits assistant_id entirely when the caller does not name one', async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: () => Promise.resolve({ text: 'Hello back' }),
+    });
+
+    await chat('Bearer sk-test.secret', { content: 'Hi' });
+
+    const body = JSON.parse(
+      (mockFetch.mock.calls[0][1] as { body: string }).body,
+    ) as Record<string, unknown>;
+    expect(body).toEqual({ content: 'Hi', stream: false });
+    expect('assistant_id' in body).toBe(false);
+  });
+
   it('parses a JSON error body (404/429 shape) into the error message', async () => {
     mockFetch.mockResolvedValue({
       ok: false,
@@ -289,6 +308,24 @@ describe('searchKnowledgeBase', () => {
       (mockFetch.mock.calls[0][1] as { body: string }).body,
     );
     expect(body).toEqual({ assistant_id: 'asst-1', query: 'refund policy' });
+  });
+
+  it('omits assistant_id entirely when the caller does not name one', async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: () => Promise.resolve({ context: '<chunk />', file_ids: [] }),
+    });
+
+    await searchKnowledgeBase('Bearer sk-test.secret', {
+      query: 'refund policy',
+    });
+
+    const body = JSON.parse(
+      (mockFetch.mock.calls[0][1] as { body: string }).body,
+    ) as Record<string, unknown>;
+    expect(body).toEqual({ query: 'refund policy' });
+    expect('assistant_id' in body).toBe(false);
   });
 
   it('parses the { message } error shape from the global ApiExceptionFilter', async () => {

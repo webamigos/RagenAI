@@ -1,7 +1,15 @@
 import { getEnv } from '../config/env.js';
 
 export type ChatRequest = {
-  assistant_id: string;
+  /**
+   * Optional, and omitted from the body when absent — `JSON.stringify` drops
+   * an undefined value, which is what apps/api needs to see. The API key
+   * carries a scope now: a key bound to one assistant answers for it without
+   * being told, and a knowledge-base key **refuses** a request that names any
+   * assistant at all. Sending this unconditionally, as this client used to,
+   * makes every knowledge-base key a 403.
+   */
+  assistant_id?: string;
   content: string;
   context?: string;
   reasoning_effort?: 'low' | 'medium' | 'high';
@@ -84,10 +92,11 @@ export type ListAssistantsResult =
   | { ok: false; status: number; message: string };
 
 /**
- * Calls apps/api's existing GET /v1/assistants, scoped to the caller's own
- * organization by the API key alone — no separate access check needed here,
- * apps/api already returns "every assistant your org owns" (see
- * https://docs.ragen.ai/api-reference/assistants) and nothing else.
+ * Calls apps/api's existing GET /v1/assistants, scoped by the API key alone —
+ * no separate access check needed here. What that scope means depends on the
+ * key: a knowledge-base key (the default) sees every assistant its org owns,
+ * and a key created for one assistant sees that one. Either way apps/api
+ * decides, and this client shows what it is handed.
  *
  * Returns only {id, name}: the full OpenAI Assistant object apps/api returns
  * carries several always-constant fields (tools, tool_resources, top_p,
@@ -137,7 +146,8 @@ export async function listAssistants(
 }
 
 export type SearchKnowledgeBaseRequest = {
-  assistant_id: string;
+  /** Optional — see `ChatRequest.assistant_id`. */
+  assistant_id?: string;
   query: string;
   max_results?: number;
 };
