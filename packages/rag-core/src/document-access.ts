@@ -24,6 +24,8 @@
 
 /**
  * Known gap, recorded here because this is where the next person will look.
+ * Tracked as issue #1245, which carries the call sites and the open design
+ * questions; this docblock is the short version.
  *
  * `metadata.accessible_by` is written at ingest and **never refreshed**.
  * Nothing calls `syncFolderVectorPermissions` — not apps/web, not apps/api;
@@ -42,7 +44,7 @@
  * Closing it means calling the sync from every path that changes who may read
  * a file — a share, an unshare, a folder move, a team change, an `isOrgWide`
  * toggle, an owner deletion — which is a larger change than the one that made
- * the field real.
+ * the field real. See #1245.
  */
 
 /** A permission row, from a file, its folder, or one of that folder's ancestors. */
