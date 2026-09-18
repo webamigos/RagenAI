@@ -153,7 +153,20 @@ describe('devcontainer.json agrees with the repository', () => {
   });
 
   it('pins the same Node major as .nvmrc', () => {
+    // Major only, and the asymmetry is deliberate. `.nvmrc` carries a full
+    // version because nvm resolves a bare major to whatever 24.x is already
+    // installed, which is how someone ended up on 24.13 against a floor of
+    // 24.15.0. The devcontainers images publish `:24-bookworm` and no patch
+    // tag, so the container tracks the latest 24 — which satisfies the floor
+    // rather than pinning to it. The drift this guards against is a *major*
+    // apart, and that is still caught.
     const nvmrc = readFileSync(join(REPO_ROOT, '.nvmrc'), 'utf8').trim();
+    const nvmrcMajor = /^(\d+)/.exec(nvmrc)?.[1];
+    expect(
+      nvmrcMajor,
+      `.nvmrc reads "${nvmrc}", which does not start with a Node major.`,
+    ).toBeDefined();
+
     const compose = readFileSync(
       join(DEVCONTAINER, 'docker-compose.devcontainer.yml'),
       'utf8',
@@ -164,7 +177,7 @@ describe('devcontainer.json agrees with the repository', () => {
     expect(
       image,
       `.nvmrc asks for Node ${nvmrc}, but the dev container image is ${image}. A container on a different major is the drift this whole directory exists to remove.`,
-    ).toContain(`:${nvmrc}-`);
+    ).toContain(`:${nvmrcMajor}-`);
   });
 
   it('pins every feature to a digest', () => {

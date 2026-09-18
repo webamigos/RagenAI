@@ -188,7 +188,9 @@ npx create-ragen-app my-ragen-app
 repo, generates every secret it safely can, lets you paste a plain OpenAI or
 Anthropic key instead of configuring an enterprise LLM provider, starts the
 backing services in Docker, and runs the first-time Prisma setup — ending at
-`cd my-ragen-app && npm run web:dev`. Requires Node.js 24+; `--skip-docker`,
+`cd my-ragen-app && npm run web:dev`. Requires Node.js `^24.15.0 || >=26.0.0` —
+a range rather than a minimum, and the wizard refuses outside it before it
+clones anything; `--skip-docker`,
 `--skip-install` and `--yes` are available for a more manual or scripted run.
 
 Already have the repo cloned:

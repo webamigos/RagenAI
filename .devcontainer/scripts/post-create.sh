@@ -36,7 +36,7 @@ for attempt in 1 2 3; do
     # a shell either way, but printing "Ready" over a database that has no
     # schema is how someone spends an hour debugging the wrong layer.
     echo "ERROR: prisma migrate deploy failed three times."
-    echo "       The container is usable. Check 'docker logs ragen-postgres',"
+    echo "       The container is usable. Check 'docker compose logs postgres',"
     echo "       then rerun: npx prisma migrate deploy"
     exit 1
   fi

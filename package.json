@@ -3,7 +3,7 @@
   "version": "0.0.0-semantically-released",
   "license": "Apache-2.0",
   "engines": {
-    "node": ">=24"
+    "node": "^24.15.0 || >=26.0.0"
   },
   "scripts": {
     "generate:types": "prisma generate",

@@ -33,13 +33,31 @@ yourself.
 
 ## Node version
 
-A Ragen installation needs Node 24, and the wizard refuses to create one on
-anything older _before_ it clones. Not because the CLI needs it — it does not,
-and 0.2.0 was published and verified on Node 22 by accident — but because the
-setup it runs for you (`npm install` across the monorepo, `prisma generate`,
-`migrate deploy`, the seed) runs under the caller's Node and leaves a tree
-that fails much later, nowhere near the cause. npm's `EBADENGINE` does warn,
+A Ragen installation runs on `^24.15.0 || >=26.0.0`, and the wizard refuses
+anything outside that _before_ it clones. Not because the CLI needs it —
+it does not, and 0.2.0 was published and verified on Node 22 by accident — but
+because the setup it runs for you (`npm install` across the monorepo, `prisma
+generate`, `migrate deploy`, the seed) runs under the caller's Node and leaves a
+tree that fails much later, nowhere near the cause. npm's `EBADENGINE` does warn,
 as one line inside a wall of install output that does not say what breaks.
+
+**It is a range rather than a minimum, and both ends matter.** `jsdom` — a
+transitive dependency, which narrowed its range with no version bump of ours —
+requires `^22.22.2 || ^24.15.0 || >=26.0.0`, and the repository sets
+`engine-strict=true`, so npm stops rather than warns. Two consequences:
+
+- Node 24.0 through 24.14 fail `npm install` while looking, to every other
+  check, like a supported Node. The refusal names the reason, because "needs
+  Node 24" read by someone who has Node 24 is a riddle.
+- **Node 25 fails too**, and no minimum version can say so — `>=24.15.0` accepts
+  it. Odd-numbered Node lines never become LTS and libraries routinely omit
+  them, so the gap is normal rather than an oversight. A caller on 25 gets a
+  refusal that says "newer than the minimum and still not supported", not "too
+  old", which would send them to upgrade again.
+
+Node 22 is inside jsdom's range and deliberately outside ours: this repository
+has required 24 since long before any of this, and widening support is a
+decision rather than a consequence of a dependency's range.
 
 `--skip-install` turns the refusal into a warning, because then the wizard
 runs nothing itself: scaffold here, run the setup on a supported Node. `--yes`
@@ -66,7 +84,8 @@ What counts as install-affecting:
 | An app the web app can no longer run without                                      | the outro in `src/cli.ts`, which tells people what to start                                                                                                                                                     |
 | A variable a provider seam makes required                                         | `src/worker-runtime.ts`, `src/storage-provider.ts` or `src/encryption-provider.ts` — the selection writes it, and `tests/architecture/create-ragen-app-knows-the-provider-seams.test.ts` fails when it does not |
 | A new first-run step (migration, seed, generate)                                  | `src/tasks.ts` and `maybeRunFirstTimeSetup`                                                                                                                                                                     |
-| A `docker-compose.yml` service, port or name change                               | `src/tasks.ts`, and the collision check in `ragenStackVolumeExists`                                                                                                                                             |
+| A `docker-compose.yml` service or published port change                           | `PUBLISHED_PORTS` in `src/tasks.ts` — the wizard probes those ports before starting the stack, and `tests/architecture/installer-ports-agree-with-compose.test.ts` fails when the two tables disagree            |
+| A change to how Compose scopes its resources                                      | `resolveComposeProjectName` in `src/tasks.ts` — it writes `COMPOSE_PROJECT_NAME` into the install's `.env`, which is the only thing keeping two installs in same-named directories apart                          |
 | A gate that a brand-new install cannot pass (registration, licensing, onboarding) | usually the app, not this package — a fresh install must be able to reach a working chat without an administrator who does not exist yet                                                                        |
 
 `tests/architecture/create-ragen-app-manifest-is-current.test.ts` catches one

@@ -11,11 +11,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { cloneRagenApp } from '../clone';
 import { run } from '../cli';
-import { REQUIRED_NODE_MAJOR } from '../node-version';
+import { REQUIRED_NODE_VERSION, parseNodeVersion } from '../node-version';
 import {
+  busyPublishedPorts,
   generatePrismaClient,
   migrateDatabase,
-  ragenStackVolumeExists,
+  resolveComposeProjectName,
   seedDatabase,
   startDockerServices,
 } from '../tasks';
@@ -48,9 +49,17 @@ vi.mock('../clone', () => ({
   cloneRagenApp: vi.fn().mockResolvedValue(undefined),
 }));
 
-vi.mock('../tasks', () => ({
+vi.mock('../tasks', async (importOriginal) => ({
+  // The port tables are data the warning formats, not behaviour to stub — and
+  // a mock that forgot them would make `cli.ts` iterate `undefined`.
+  ...(await importOriginal<typeof import('../tasks')>()),
   isDockerAvailable: vi.fn().mockResolvedValue(true),
-  ragenStackVolumeExists: vi.fn().mockResolvedValue(false),
+  busyPublishedPorts: vi.fn().mockResolvedValue([]),
+  // Stubbed rather than inherited: the real one shells out to `docker compose
+  // ls`, which made every test in this file wait on a daemon.
+  resolveComposeProjectName: vi
+    .fn()
+    .mockResolvedValue({ name: 'ragen-test', disambiguated: false }),
   startDockerServices: vi.fn().mockResolvedValue(undefined),
   installDependencies: vi.fn().mockResolvedValue(undefined),
   generatePrismaClient: vi.fn().mockResolvedValue(undefined),
@@ -159,7 +168,7 @@ function mockTemplates(rootTemplate = ROOT_TEMPLATE): void {
 }
 
 /**
- * `run()` refuses to scaffold on a Node below `REQUIRED_NODE_MAJOR`, reading
+ * `run()` refuses to scaffold on a Node below `REQUIRED_NODE_VERSION`, reading
  * the real `process.version` — so on a developer machine running Node 22 every
  * test in this file aborted at the gate before reaching the flow it was
  * written for, and the whole suite failed with twelve assertions about
@@ -183,7 +192,7 @@ function pinNodeVersion(version: string): void {
 }
 
 beforeEach(() => {
-  pinNodeVersion(`v${REQUIRED_NODE_MAJOR}.0.0`);
+  pinNodeVersion(`v${REQUIRED_NODE_VERSION}`);
   // `mockReset` first: `clearMocks: true` clears recorded calls but does *not*
   // drain the `mockResolvedValueOnce` queue, so an answer a test queued and
   // never reached — the cases that abort before any prompt — leaked into the
@@ -392,16 +401,49 @@ describe('run', () => {
     );
   });
 
-  it("warns before a second install silently shares the first one's data", async () => {
-    vi.mocked(ragenStackVolumeExists).mockResolvedValueOnce(true);
+  it('warns, before starting anything, about a port something else already holds', async () => {
+    // Containers and volumes are Compose's to scope now, so the collision that
+    // is left is a host port — and the consequence is the same one the old
+    // volume warning was about: DATABASE_URL pointing at a database this
+    // install did not create.
+    vi.mocked(busyPublishedPorts).mockResolvedValueOnce([
+      { service: 'Postgres', variable: 'POSTGRES_PORT', port: 55432 },
+    ]);
     vi.mocked(clack.select).mockResolvedValueOnce('skip' as never);
     vi.mocked(clack.confirm).mockResolvedValue(false as never);
 
     await run(['/tmp/ragen-test']);
 
-    expect(clack.log.warn).toHaveBeenCalledWith(
-      expect.stringContaining('RAGEN_STACK_NAME'),
-    );
+    const warning = vi
+      .mocked(clack.log.warn)
+      .mock.calls.map(([message]) => String(message))
+      .find((message) => message.includes('POSTGRES_PORT'));
+
+    expect(warning, 'no warning named the busy port').toBeDefined();
+    // The port that is actually taken, and a free one to move it to — not a
+    // generic "check your ports".
+    expect(warning).toContain('55432');
+    expect(warning).toContain('POSTGRES_PORT=55532');
+    // And it fires before the stack starts, or it is advice after the fact.
+    expect(startDockerServices).not.toHaveBeenCalled();
+  });
+
+  it('says nothing when every published port is free', async () => {
+    // The old check read a volume name that this change stopped creating, so
+    // it would have answered "clear" forever. A warning that cannot fire and a
+    // warning that always fires are the same bug.
+    vi.mocked(clack.select).mockResolvedValueOnce('skip' as never);
+    vi.mocked(clack.confirm).mockResolvedValue(false as never);
+
+    await run(['/tmp/ragen-test']);
+
+    const warnings = vi
+      .mocked(clack.log.warn)
+      .mock.calls.map(([message]) => String(message));
+
+    expect(
+      warnings.some((message) => message.includes('already listening')),
+    ).toBe(false);
   });
 
   it('takes the key from the environment when --provider is given', async () => {
@@ -464,14 +506,140 @@ describe('run', () => {
     await expect(run(['/tmp/ragen-test'])).resolves.toBe(false);
   });
 
+  it('pins the Compose project name in .env, so a later `docker compose up` agrees', async () => {
+    // Not `.env.local`: Compose reads `.env` from the project directory on its
+    // own, which is what makes the name survive this process exiting. A name
+    // set only in the installer's environment would scope the stack it starts
+    // and nothing the user runs afterwards.
+    vi.mocked(clack.select).mockResolvedValueOnce('skip' as never);
+    vi.mocked(clack.confirm).mockResolvedValue(false as never);
+
+    await run(['/tmp/ragen-test']);
+
+    const dotEnv = vi
+      .mocked(writeFileSync)
+      .mock.calls.find(([path]) => String(path).endsWith('/.env'));
+
+    expect(dotEnv, 'no .env was written').toBeDefined();
+    expect(String(dotEnv?.[1])).toContain('COMPOSE_PROJECT_NAME=ragen-test');
+  });
+
+  it('keeps a Compose project name the directory already chose', async () => {
+    // The stability rule, and the one that makes the rest of this safe. A
+    // second wizard run over an existing tree must not rename the project: the
+    // new name would address empty volumes and abandon the database the first
+    // run migrated. That can happen innocently — the first run decided while
+    // Docker was up, this one cannot reach it.
+    vi.mocked(readFileSync).mockImplementation((path) => {
+      const p = String(path);
+      if (p.endsWith('/.env')) {
+        return 'COMPOSE_PROJECT_NAME=chosen-earlier\n';
+      }
+      if (p.endsWith('apps/admin/.env.example')) {
+        return ADMIN_TEMPLATE;
+      }
+      if (p.endsWith('.env.example')) {
+        return ROOT_TEMPLATE;
+      }
+      if (p.endsWith('config.yaml')) {
+        return 'model_list:\n';
+      }
+      if (p.endsWith('ragen.config.ts')) {
+        return CONFIG_TEMPLATE;
+      }
+      throw new Error(`unexpected readFileSync path in test: ${p}`);
+    });
+    vi.mocked(clack.select).mockResolvedValueOnce('skip' as never);
+    vi.mocked(clack.confirm).mockResolvedValue(false as never);
+
+    await run(['/tmp/ragen-test']);
+
+    // Not asked, and not rewritten.
+    expect(resolveComposeProjectName).not.toHaveBeenCalled();
+    const dotEnv = vi
+      .mocked(writeFileSync)
+      .mock.calls.find(([path]) => String(path).endsWith('/.env'));
+    expect(dotEnv).toBeUndefined();
+  });
+
+  it('explains a path-derived name when Docker could not be asked', async () => {
+    // The hashed name is cautious, not a symptom, and saying so is the
+    // difference between a note and a mystery in `docker ps`.
+    vi.mocked(resolveComposeProjectName).mockResolvedValueOnce({
+      name: 'ragen-test-9cdfdb',
+      disambiguated: true,
+      daemonUnreachable: true,
+    });
+    vi.mocked(clack.select).mockResolvedValueOnce('skip' as never);
+    vi.mocked(clack.confirm).mockResolvedValue(false as never);
+
+    await run(['/tmp/ragen-test']);
+
+    const messages = [
+      ...vi.mocked(clack.log.info).mock.calls,
+      ...vi.mocked(clack.log.warn).mock.calls,
+    ].map(([message]) => String(message));
+    const note = messages.find((message) =>
+      message.includes('ragen-test-9cdfdb'),
+    );
+
+    expect(note, 'the path-derived name was not explained').toBeDefined();
+    expect(note).toContain('Could not ask Docker');
+  });
+
+  it('says so when the directory name was already taken by another project', async () => {
+    // The silent half of the collision: Compose names a project after its
+    // directory, so /work/a/ragen and /work/b/ragen are one project. A
+    // *stopped* first stack holds no port, so the port warning cannot see it
+    // and the second install just opens the first one's database.
+    vi.mocked(resolveComposeProjectName).mockResolvedValueOnce({
+      name: 'ragen-a1b2c3',
+      disambiguated: true,
+      takenBy: '/work/a/ragen/docker-compose.yml',
+    });
+    vi.mocked(clack.select).mockResolvedValueOnce('skip' as never);
+    vi.mocked(clack.confirm).mockResolvedValue(false as never);
+
+    await run(['/tmp/ragen-test']);
+
+    const dotEnv = vi
+      .mocked(writeFileSync)
+      .mock.calls.find(([path]) => String(path).endsWith('/.env'));
+    expect(String(dotEnv?.[1])).toContain('COMPOSE_PROJECT_NAME=ragen-a1b2c3');
+
+    const warning = vi
+      .mocked(clack.log.warn)
+      .mock.calls.map(([message]) => String(message))
+      .find((message) => message.includes('ragen-a1b2c3'));
+
+    expect(warning, 'the disambiguation was silent').toBeDefined();
+    // Name the project it would have collided with, or the warning is a
+    // mystery about someone else's machine.
+    expect(warning).toContain('/work/a/ragen/docker-compose.yml');
+  });
+
   describe('on an unsupported Node', () => {
     /*
      * Derived from the requirement rather than hardcoded, so raising
-     * `REQUIRED_NODE_MAJOR` cannot quietly turn these into tests of a
+     * `REQUIRED_NODE_VERSION` cannot quietly turn these into tests of a
      * supported version. `beforeEach` pins a supported one back for every
      * other test in the file, so nothing here needs restoring.
+     *
+     * One *patch* below the floor, not one major: that is the shape of the
+     * failure this guards. A caller on the floor's own major reads a refusal
+     * naming "Node 24" as a bug in the wizard, which is why the message names
+     * the full version and these assertions check for it.
      */
-    const TOO_OLD = `v${REQUIRED_NODE_MAJOR - 1}.22.3`;
+    const FLOOR = parseNodeVersion(REQUIRED_NODE_VERSION);
+    if (!FLOOR) {
+      throw new Error(
+        `REQUIRED_NODE_VERSION is unparseable: ${REQUIRED_NODE_VERSION}`,
+      );
+    }
+    const TOO_OLD =
+      FLOOR.patch > 0
+        ? `v${FLOOR.major}.${FLOOR.minor}.${FLOOR.patch - 1}`
+        : `v${FLOOR.major}.${FLOOR.minor - 1}.0`;
 
     it('refuses before cloning anything', async () => {
       pinNodeVersion(TOO_OLD);
@@ -482,7 +650,7 @@ describe('run', () => {
       expect(cloneRagenApp).not.toHaveBeenCalled();
       expect(writeFileSync).not.toHaveBeenCalled();
       expect(clack.cancel).toHaveBeenCalledWith(
-        expect.stringContaining('Node 24'),
+        expect.stringContaining(REQUIRED_NODE_VERSION),
       );
     });
 
@@ -504,7 +672,7 @@ describe('run', () => {
 
       expect(cloneRagenApp).toHaveBeenCalled();
       expect(clack.log.warn).toHaveBeenCalledWith(
-        expect.stringContaining('Node 24'),
+        expect.stringContaining(REQUIRED_NODE_VERSION),
       );
     });
   });
@@ -517,24 +685,21 @@ describe('a docker start that fails', () => {
    * Every other step here stops, because carrying on would leave a tree that
    * fails later somewhere that does not point back. This one is different: the
    * files are already written and correct, and the usual cause is the conflict
-   * the warning above predicts — another Ragen stack holding these container
-   * names and ports. Aborting leaves a complete install, a raw `ExecaError`
-   * and no next step.
+   * the warning above predicts — another stack holding these host ports.
+   * Aborting leaves a complete install, a raw `ExecaError` and no next step.
    */
   it('warns and carries on instead of cancelling the install', async () => {
     vi.mocked(clack.select).mockResolvedValueOnce('skip' as never);
     vi.mocked(clack.confirm).mockResolvedValue(true as never);
     vi.mocked(startDockerServices).mockRejectedValueOnce(
-      new Error(
-        'Conflict. The container name "/ragen-qdrant" is already in use',
-      ),
+      new Error('Bind for 127.0.0.1:6333 failed: port is already allocated'),
     );
 
     await expect(run(['/tmp/ragen-test'])).resolves.toBe(true);
 
     expect(clack.cancel).not.toHaveBeenCalled();
     expect(clack.log.warn).toHaveBeenCalledWith(
-      expect.stringContaining('already holding these'),
+      expect.stringContaining('already holding these host'),
     );
     // The setup after it still runs: the install is finished, not abandoned.
     expect(generatePrismaClient).toHaveBeenCalled();
@@ -542,17 +707,15 @@ describe('a docker start that fails', () => {
 
   /**
    * The sharper half of the same failure. Compose usually refuses because
-   * another Ragen stack holds these names — and that stack's Postgres is
-   * answering on the port this install was just configured for. Migrating
-   * would write into *its* database.
+   * another stack holds these ports — and that stack's Postgres is answering
+   * on the port this install was just configured for. Migrating would write
+   * into *its* database.
    */
   it('keeps migrations and the seed away from a database it did not start', async () => {
     vi.mocked(clack.select).mockResolvedValueOnce('skip' as never);
     vi.mocked(clack.confirm).mockResolvedValue(true as never);
     vi.mocked(startDockerServices).mockRejectedValueOnce(
-      new Error(
-        'Conflict. The container name "/ragen-postgres" is already in use',
-      ),
+      new Error('Bind for 127.0.0.1:55432 failed: port is already allocated'),
     );
 
     await expect(run(['/tmp/ragen-test'])).resolves.toBe(true);

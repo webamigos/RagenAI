@@ -5,7 +5,7 @@ import {
   statSync,
   writeFileSync,
 } from 'node:fs';
-import { join } from 'node:path';
+import { basename, join, resolve } from 'node:path';
 
 import * as clack from '@clack/prompts';
 import { parse as parseDotenv } from 'dotenv';
@@ -57,7 +57,10 @@ import {
   installDependencies,
   isDockerAvailable,
   migrateDatabase,
-  ragenStackVolumeExists,
+  PII_PUBLISHED_PORTS,
+  PUBLISHED_PORTS,
+  busyPublishedPorts,
+  resolveComposeProjectName,
   seedDatabase,
   startDockerServices,
 } from './tasks';
@@ -198,6 +201,12 @@ export async function run(argv: string[]): Promise<boolean> {
     );
     return false;
   }
+
+  // Compose's project name, pinned for this directory before anything starts.
+  // Two installs whose directories share a basename would otherwise share the
+  // project — and therefore the containers and volumes — and a *stopped* first
+  // stack makes that silent: no port is held, so nothing refuses.
+  await writeComposeProjectName(targetDir);
 
   // After the env write, so a run that stops on drifted keys has not already
   // rewritten a file in the clone.
@@ -418,6 +427,114 @@ function overridesForTarget(
     overrides[entry.key] = resolved.get(entry) as string;
   }
   return overrides;
+}
+
+/**
+ * Writes `COMPOSE_PROJECT_NAME` into the new tree's `.env`.
+ *
+ * `.env`, not `.env.local`, and the distinction is the point: Compose reads
+ * `.env` from the project directory by itself, so every later `docker compose`
+ * the caller runs — days after this wizard exited — uses the same name. A
+ * value passed only in the installer's own environment would name one project
+ * here and a different one afterwards, which is the empty-database failure
+ * rather than a fix for it.
+ *
+ * Safe to sit beside the install's own config: `scripts/load-root-env.mjs`
+ * reads `.env` last, `.env.local` wins over it, nothing in the apps reads this
+ * variable, and `.env` is gitignored.
+ *
+ * Failure here is a warning, not an abort. The files are correct and Compose
+ * still works — it simply falls back to the basename, which is where this
+ * started.
+ */
+async function writeComposeProjectName(targetDir: string): Promise<void> {
+  // An existing value wins over anything resolved here, and this is not
+  // politeness — it is what makes the mechanism stable. Re-running the wizard
+  // over a tree that already has a stack must not rename its project: the new
+  // name would address empty volumes and abandon the database the first run
+  // migrated. That can happen for an innocent reason too — the first run
+  // decided while Docker was up, this one cannot reach it — so the rule is
+  // "whatever this directory already decided", not "whatever we would decide
+  // again".
+  const existing = readComposeProjectName(targetDir);
+  if (existing) {
+    clack.log.info(
+      `Keeping this directory's Compose project name: ${existing} (from .env).`,
+    );
+    return;
+  }
+
+  const project = await resolveComposeProjectName(targetDir);
+
+  try {
+    writeFileSync(
+      join(targetDir, '.env'),
+      [
+        "# Read by docker compose, not by the apps. It scopes this install's",
+        '# containers, volumes and network, so a second Ragen checkout cannot',
+        '# reuse them — which it would if both directories had the same name,',
+        '# since that basename is what Compose uses when this is unset.',
+        `COMPOSE_PROJECT_NAME=${project.name}`,
+        '',
+      ].join('\n'),
+      { mode: 0o600 },
+    );
+  } catch (error) {
+    clack.log.warn(
+      [
+        `Could not write .env with COMPOSE_PROJECT_NAME: ${String(error)}`,
+        "Compose will fall back to this directory's name, which another",
+        `install in a directory called "${basename(resolve(targetDir))}" would`,
+        'share — add the line by hand if you have one.',
+      ].join('\n'),
+    );
+    return;
+  }
+
+  if (project.daemonUnreachable) {
+    // Not a collision — a question that could not be asked. Said plainly, or
+    // the hashed name in `docker ps` looks like something went wrong.
+    clack.log.info(
+      [
+        'Could not ask Docker which Compose projects exist, so this install',
+        `took a name derived from its path: ${project.name}. A stopped daemon`,
+        'still holds the volumes of earlier installs, and the plain directory',
+        'name would have reused them.',
+      ].join(' '),
+    );
+    return;
+  }
+
+  if (project.disambiguated) {
+    clack.log.warn(
+      [
+        `This machine already runs a Compose project called "${basename(resolve(targetDir))}"`,
+        project.takenBy ? `(from ${project.takenBy}).` : '.',
+        '',
+        'Compose names a project after its directory, so this install would',
+        "have reused that one's containers and volumes — including its",
+        `database. Written .env with COMPOSE_PROJECT_NAME=${project.name}`,
+        'instead, so the two stay apart. Host ports are separate and may still',
+        'collide; see below.',
+      ].join(' '),
+    );
+  }
+}
+
+/**
+ * Reads `COMPOSE_PROJECT_NAME` back out of an install's `.env`, or undefined
+ * when there is no such file or no such line. Parsed with dotenv rather than a
+ * regex so a quoted value reads the same way Compose reads it.
+ */
+function readComposeProjectName(targetDir: string): string | undefined {
+  try {
+    const parsed = parseDotenv(readFileSync(join(targetDir, '.env'), 'utf8'));
+    const name = parsed.COMPOSE_PROJECT_NAME?.trim();
+    return name === undefined || name === '' ? undefined : name;
+  } catch {
+    // No `.env` is the normal case on a fresh clone.
+    return undefined;
+  }
 }
 
 interface WriteEnvFileResult {
@@ -912,34 +1029,46 @@ async function maybeStartDocker(
 ): Promise<{ failed: boolean }> {
   const withPii = profiles.includes(PII_COMPOSE_PROFILE);
 
-  // Before the confirm, not after: sharing a database with an install you
-  // already depend on is the kind of thing to decline, and you can only
+  // Before the confirm, not after: starting a stack onto ports something else
+  // already answers on is the kind of thing to decline, and you can only
   // decline it if you are told first.
-  if (await ragenStackVolumeExists()) {
+  //
+  // This used to warn about *data* — pinned volume names meant a second
+  // install silently opened the first one's database. docker-compose.yml no
+  // longer pins them, so containers, volumes and the network are scoped to the
+  // project directory and two installs coexist. Ports are the half that
+  // prefixing cannot fix: a published port is a host port either way.
+  const candidates = withPii
+    ? [...PUBLISHED_PORTS, ...PII_PUBLISHED_PORTS]
+    : PUBLISHED_PORTS;
+  const busy = await busyPublishedPorts(candidates);
+
+  if (busy.length > 0) {
     clack.log.warn(
       [
-        'This machine already runs a Ragen stack, and docker-compose.yml pins',
-        'container, volume and network names globally — so starting this one',
-        'would reuse the existing Postgres and Qdrant data, not create its own.',
+        'Something is already listening on ports this stack publishes:',
         '',
-        'To keep them apart, answer no here and start the stack yourself under a',
-        'distinct name *and* distinct host ports — the name only moves the',
-        'containers and volumes, while the published ports would still collide',
-        'with the running stack:',
+        ...busy.map(
+          ({ service, variable, port }) =>
+            `  ${port}  ${service} (${variable})`,
+        ),
+        '',
+        'Usually that is another Ragen install. Its containers and volumes no',
+        'longer collide with this one — Compose scopes those to the directory —',
+        'but a host port belongs to whoever bound it first, so `docker compose',
+        'up` will fail, and worse, DATABASE_URL here would point at that other',
+        "install's Postgres if it did not.",
+        '',
+        'Answer no here and start this stack on ports of its own:',
         '',
         `  cd ${targetDir} \\`,
-        '    && RAGEN_STACK_NAME=my-ragen \\',
-        '       POSTGRES_PORT=55532 QDRANT_PORT=6343 QDRANT_GRPC_PORT=6344 \\',
-        '       DOCLING_PORT=5011 REDIS_PORT=56479 \\',
+        `    && ${busy.map(({ variable, port }) => `${variable}=${port + 100}`).join(' ')} \\`,
         // Built from what this install actually chose. A command that omits
         // the profile starts a stack without the services whose urls were just
         // written — which is the same half-configuration the profile exists to
         // prevent, only printed instead of executed.
         ...(withPii
-          ? [
-              '       PRESIDIO_ANALYZER_PORT=5012 PRESIDIO_ANONYMIZER_PORT=5013 \\',
-              `       docker compose --profile ${PII_COMPOSE_PROFILE} up -d`,
-            ]
+          ? [`       docker compose --profile ${PII_COMPOSE_PROFILE} up -d`]
           : ['       docker compose up -d']),
         '',
         'Then update .env.local to match: DATABASE_URL, QDRANT_URL, REDIS_URL',
@@ -989,12 +1118,11 @@ async function maybeStartDocker(
       [
         'docker compose could not start the services, and the install carried',
         'on: the files are written, so this is the one step you can redo by',
-        'hand. The usual cause is another Ragen stack already holding these',
-        'container names and host ports — compose says so with "Conflict. The',
-        'container name … is already in use".',
+        'hand. The usual cause is another stack already holding these host',
+        'ports — compose says so with "port is already allocated".',
         '',
-        'Either stop the other stack, or start this one under its own name and',
-        'ports with the command printed above, then point .env.local at them.',
+        'Either stop the other stack, or start this one on ports of its own,',
+        'then point .env.local at them.',
         '',
         `The error was: ${String(error)}`,
       ].join('\n'),
@@ -1007,9 +1135,9 @@ async function maybeStartDocker(
 
 /**
  * `skipDatabaseSteps` is the compose failure reaching this far, and it is not
- * caution for its own sake. The usual cause of that failure is another Ragen
- * stack holding these container names — which means its Postgres is answering
- * on the very port this install was just configured for. Running `migrate
+ * caution for its own sake. The usual cause of that failure is another stack
+ * holding these host ports — which means its Postgres is answering on the very
+ * port this install was just configured for. Running `migrate
  * deploy` and the seed then writes into *that* install's database: the exact
  * thing the warning two prompts earlier exists to prevent, arrived at by a
  * different road.
