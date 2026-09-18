@@ -96,6 +96,27 @@ describe('parsePublicRuntimeConfig', () => {
     },
   );
 
+  it.each([['42'], ['null'], ['{}'], ['[]'], ['true']])(
+    'keeps a field empty when the document gives it %s instead of a string',
+    (value) => {
+      // Spreading the parsed object would have made the type a promise this
+      // function does not keep: the field would type-check as a string and
+      // reach `new Pusher(42)`. Raised by CodeRabbit.
+      expect(parsePublicRuntimeConfig(`{"pusherKey":${value}}`).pusherKey).toBe(
+        '',
+      );
+    },
+  );
+
+  it('drops keys the shape does not declare', () => {
+    const config = parsePublicRuntimeConfig(
+      '{"appUrl":"https://ragen.example","somethingElse":"x"}',
+    );
+
+    expect(config.appUrl).toBe('https://ragen.example');
+    expect(Object.keys(config)).not.toContain('somethingElse');
+  });
+
   it('keeps every field present even when the document carries only some', () => {
     const config = parsePublicRuntimeConfig('{"pusherKey":"pk"}');
 

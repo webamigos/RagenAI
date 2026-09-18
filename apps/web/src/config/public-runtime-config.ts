@@ -147,7 +147,24 @@ export function parsePublicRuntimeConfig(
     if (typeof parsed !== 'object' || parsed === null) {
       return empty;
     }
-    return { ...empty, ...(parsed as Partial<PublicRuntimeConfig>) };
+
+    /**
+     * Copied field by field, and only when the value is a string.
+     *
+     * Spreading the parsed object would have made the type a promise this
+     * function does not keep: `{"pusherKey":42}` type-checks as
+     * `PublicRuntimeConfig` and reaches `new Pusher(42)`. The document is
+     * written by this application's own server, so that is a lie about the
+     * shape rather than an attack — but the shape is what every consumer
+     * branches on, and an unknown key would ride along too.
+     */
+    const source = parsed as Record<string, unknown>;
+    return Object.fromEntries(
+      Object.keys(empty).map((key) => [
+        key,
+        typeof source[key] === 'string' ? source[key] : '',
+      ]),
+    ) as unknown as PublicRuntimeConfig;
   } catch {
     return empty;
   }
