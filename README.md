@@ -2,7 +2,7 @@
   <img src="docs/assets/ragen-banner.png" alt="Ragen AI" width="100%">
 </p>
 
-# Ragen AI
+# Ragen AI - now open-sourced 🎉
 
 **Turn your company documents into an AI assistant that answers from your
 data — on your own servers, with your own models.**
