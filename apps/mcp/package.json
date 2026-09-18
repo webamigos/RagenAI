@@ -1,5 +1,5 @@
 {
-  "name": "@webamigos/ragen-mcp",
+  "name": "@ragenai/mcp",
   "version": "0.0.1",
   "description": "MCP server exposing Ragen's own chat capability to external MCP clients",
   "type": "module",

@@ -34,7 +34,7 @@ npm run worker:test      # Worker Vitest suite
 npm run worker:test:jobs # Job-runtime integration suite (needs Redis) — the BullMQ gate
 npm run check:config-paths   # Fail if a CI-config path glob matches nothing
 npx turbo run build      # Build every workspace, in dependency order, cached
-npx turbo run build --filter=@webamigos/ragen-api   # ...just one, plus what it needs
+npx turbo run build --filter=@ragenai/api   # ...just one, plus what it needs
 ```
 
 **E2E** needs a separate `ragen_e2e` database and a successful `npm run build`

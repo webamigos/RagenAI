@@ -56,7 +56,7 @@ node scripts/test-env/stub-llm-server.mjs &
 npx tsx --env-file=.env.local scripts/test-env/setup-tenant.ts   # prints the API key
 npm run api:dev &
 npm run worker:dev &
-npm run dev --workspace=@webamigos/ragen-mcp &
+npm run dev --workspace=@ragenai/mcp &
 ```
 
 ragen-token-vault is a separate repository; clone it, give it its own database

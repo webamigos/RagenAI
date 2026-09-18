@@ -1,5 +1,5 @@
 {
-  "name": "@webamigos/ragen-admin",
+  "name": "@ragenai/admin",
   "version": "1.0.0",
   "private": true,
   "type": "module",

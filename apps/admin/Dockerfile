@@ -28,7 +28,7 @@ ENV BETTER_AUTH_SECRET="build-placeholder-secret-min-32-chars!" \
 # excludes `**/dist` so a locally-built one is never copied in — every
 # `@ragenai/*` package resolves through `main: ./dist/index.js`, so without this
 # the compile fails with "Can't resolve '@ragenai/…'".
-RUN npx turbo run build --filter=@webamigos/ragen-admin
+RUN npx turbo run build --filter=@ragenai/admin
 
 FROM base AS runner
 WORKDIR /app

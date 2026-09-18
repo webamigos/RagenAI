@@ -152,7 +152,7 @@ open http://localhost:5001/ui
 
 ### Ragen API (`apps/api`)
 
-Public API service built with NestJS. Since [ADR-21](adrs/21-monorepo-and-api-decoupling.md) it lives **in this repo** as the `@webamigos/ragen-api` workspace — not in a separate checkout. The standalone `ragen-api` repo is archived as the historical record.
+Public API service built with NestJS. Since [ADR-21](adrs/21-monorepo-and-api-decoupling.md) it lives **in this repo** as the `@ragenai/api` workspace — not in a separate checkout. The standalone `ragen-api` repo is archived as the historical record.
 
 ```bash
 npm run api:dev      # http://localhost:3001 (watch mode)

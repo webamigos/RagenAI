@@ -19,11 +19,11 @@
  * is the only thing that makes this list stay correct.
  */
 const workspaces = {
-  'apps/web': '@webamigos/ragen-web',
-  'apps/admin': '@webamigos/ragen-admin',
-  'apps/api': '@webamigos/ragen-api',
-  'apps/worker': '@webamigos/ragen-worker',
-  'apps/mcp': '@webamigos/ragen-mcp',
+  'apps/web': '@ragenai/web',
+  'apps/admin': '@ragenai/admin',
+  'apps/api': '@ragenai/api',
+  'apps/worker': '@ragenai/worker',
+  'apps/mcp': '@ragenai/mcp',
   'packages/create-ragen-app': 'create-ragen-app',
   'packages/crypto': '@ragenai/crypto',
   'packages/db': '@ragenai/db',

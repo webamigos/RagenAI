@@ -113,7 +113,7 @@ provider" — which is the failure that actually happened.
 earlier draft proposed an optional peer with a lazy `import()`, to keep
 several megabytes out of images that use Scaleway. That would not have
 worked: `apps/worker/Dockerfile` installs with
-`npm ci --workspace=@webamigos/ragen-worker …`, which resolves the worker's
+`npm ci --workspace=@ragenai/worker …`, which resolves the worker's
 own manifest and not the root's, so an optional peer would be absent from the
 image and the lazy import would throw `MODULE_NOT_FOUND` — inside the same
 `try/catch`, producing the identical silent fallback with a different log

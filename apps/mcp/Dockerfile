@@ -25,7 +25,7 @@ COPY packages/observability/package.json packages/observability/
 COPY packages/env/package.json packages/env/
 
 FROM manifests AS prod-deps
-RUN npm ci --workspace=@webamigos/ragen-mcp --omit=dev --ignore-scripts
+RUN npm ci --workspace=@ragenai/mcp --omit=dev --ignore-scripts
 # Guarantee the nested workspace node_modules exists so the runner's COPY of
 # it never fails on a tree where npm happened to hoist everything.
 RUN mkdir -p /app/apps/mcp/node_modules
@@ -36,7 +36,7 @@ RUN mkdir -p /app/apps/mcp/node_modules
 # have to be run explicitly below rather than happening as part of the install.
 FROM manifests AS deps
 RUN npm ci \
-    --workspace=@webamigos/ragen-mcp \
+    --workspace=@ragenai/mcp \
     --workspace=@ragenai/observability \
     --workspace=@ragenai/env \
     --ignore-scripts
@@ -67,7 +67,7 @@ COPY --from=deps /app/packages/env/node_modules ./packages/env/node_modules
 # first line tsc fails with "Cannot find module '@ragenai/observability'".
 RUN npm run build --workspace=@ragenai/observability
 RUN npm run build --workspace=@ragenai/env
-RUN npm run build --workspace=@webamigos/ragen-mcp
+RUN npm run build --workspace=@ragenai/mcp
 
 FROM base AS runner
 WORKDIR /app

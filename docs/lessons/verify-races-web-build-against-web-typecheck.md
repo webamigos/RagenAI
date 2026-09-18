@@ -13,8 +13,8 @@ calls it "THE gate" and "the one command that checks all of them at once".
 
 **Problem**: `turbo.json` declares `typecheck: { dependsOn: ["^build"] }`. The
 caret means _dependencies'_ builds — the packages a workspace consumes. It says
-nothing about the workspace's **own** build, so `@webamigos/ragen-web#typecheck`
-and `@webamigos/ragen-web#build` are unordered siblings and turbo runs them
+nothing about the workspace's **own** build, so `@ragenai/web#typecheck`
+and `@ragenai/web#build` are unordered siblings and turbo runs them
 concurrently.
 
 `next build` regenerates `apps/web/.next/types/`, and `tsconfig.json` includes
