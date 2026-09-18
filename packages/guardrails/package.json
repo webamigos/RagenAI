@@ -1,0 +1,26 @@
+{
+  "name": "@ragenai/guardrails",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Guardrail contracts and the pure rule resolver — shared by apps/web, apps/api and apps/admin so the runtime and the authoring surface cannot disagree about what a rule is",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "clean": "rm -rf dist",
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit --incremental --tsBuildInfoFile ./typecheck.tsbuildinfo"
+  },
+  "devDependencies": {
+    "@ragenai/eslint-config": "*",
+    "@types/node": "^22.0.0",
+    "eslint": "^9.39.5",
+    "typescript": "~5.7.0"
+  },
+  "engines": {
+    "node": "^24.15.0 || >=26.0.0"
+  }
+}
