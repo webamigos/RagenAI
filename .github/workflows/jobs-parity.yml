@@ -59,17 +59,45 @@ permissions:
 
 jobs:
   parity:
-    name: Jobs Parity / ${{ matrix.runtime }}
+    name: Jobs Parity / ${{ matrix.leg }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     strategy:
-      # Both results, always. A parity job that stopped at the first red would
+      # Every result, always. A parity job that stopped at the first red would
       # report "BullMQ failed" and leave the question it exists to answer —
-      # whether the other engine failed the same way — unanswered.
+      # whether the others failed the same way — unanswered.
       fail-fast: false
       matrix:
-        runtime: [bullmq, temporal]
+        # Three legs, not two, because BullMQ is two datastores. The third one
+        # earned its place immediately: pointed at PostgreSQL the first time,
+        # the suite failed the three stalled-job tests, which is a difference
+        # in redelivery that no unit test and no Redis run would have shown.
+        include:
+          - leg: bullmq-redis
+            runtime: bullmq
+            backend: redis
+          - leg: bullmq-postgres
+            runtime: bullmq
+            backend: postgres
+          - leg: temporal
+            runtime: temporal
+            backend: ''
     services:
+      # Both datastores for every leg. A service container cannot be
+      # conditioned on a matrix value, and the unused one costs a second —
+      # against a conditional that would have to be right three times.
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: ragen_jobs_parity
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
       redis:
         # Matches docker-compose.yml. Started for both runtimes because a
         # service container cannot be conditioned on a matrix value, and an
@@ -86,7 +114,12 @@ jobs:
       # Selected the way a deployment selects it, not through a flag only the
       # tests know about.
       WORKER_RUNTIME: ${{ matrix.runtime }}
+      BULLMQ_BACKEND: ${{ matrix.backend }}
       JOBS_TEST_REDIS_URL: redis://localhost:6379/15
+      # Its own database, not the application's: the suite drops and rebuilds
+      # its schema between tests, which is the PostgreSQL counterpart of
+      # flushing Redis database 15.
+      JOBS_TEST_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/ragen_jobs_parity
     steps:
       - uses: actions/checkout@v7
         with:

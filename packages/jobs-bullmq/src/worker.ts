@@ -1,4 +1,4 @@
-import { UnrecoverableError, Worker, type ConnectionOptions } from 'bullmq';
+import { UnrecoverableError, Worker } from 'bullmq';
 import {
   JOB_NAMES,
   type JobName,
@@ -8,6 +8,12 @@ import {
 } from '@ragenai/jobs';
 
 import { createJobContext, type JobContextDeps } from './context.js';
+import {
+  backendFactoryFor,
+  resolveQueueBackend,
+  type AnyWorker,
+  type QueueBackend,
+} from './backend.js';
 import { assertNoEviction, type RedisConfigReader } from './redis-health.js';
 import { MAINTENANCE_QUEUE, QUEUE_NAMES, queueNameFor } from './queues.js';
 
@@ -97,7 +103,8 @@ export interface CreateWorkersOptions extends Omit<
 > {
   handlers: JobHandlers;
   activities: JobContextDeps['activities'];
-  connection?: ConnectionOptions;
+  /** Defaults to what the environment selected. */
+  backend?: QueueBackend;
   concurrency?: number;
   log: JobLogger;
   /**
@@ -161,13 +168,22 @@ function asEngineFailure(error: unknown): unknown {
  * handle without importing `bullmq` — which the architecture guard forbids
  * outside this package, type-only imports included.
  */
-export type BullWorkers = Worker[];
+export type BullWorkers = AnyWorker[];
 
 export function createBullWorkers(options: CreateWorkersOptions): BullWorkers {
-  const connection: ConnectionOptions = {
-    ...(options.connection ?? { url: process.env.REDIS_URL }),
-    ...WORKER_REDIS_DEFAULTS,
-  };
+  const backend = options.backend ?? resolveQueueBackend();
+  /**
+   * `WORKER_REDIS_DEFAULTS` is `maxRetriesPerRequest: null`, which is an
+   * ioredis option and means nothing to a `pg` pool. Spread only onto the
+   * connection it belongs to, rather than onto both and trusting the other
+   * driver to ignore it — `PostgresConnection` forwards its config to
+   * node-postgres, which is not documented to ignore what it does not know.
+   */
+  const connection =
+    backend.kind === 'redis'
+      ? { ...backend.connection, ...WORKER_REDIS_DEFAULTS }
+      : backend.connection;
+  const backendFactory = backendFactoryFor(backend);
 
   const concurrency = options.concurrency ?? DEFAULT_CONCURRENCY;
 
@@ -217,6 +233,7 @@ export function createBullWorkers(options: CreateWorkersOptions): BullWorkers {
           : { stalledInterval: options.stalledInterval }),
         maxStalledCount: MAX_STALLED_COUNT,
       },
+      backendFactory,
     );
   });
 }
@@ -241,17 +258,43 @@ export async function closeBullWorkers(workers: BullWorkers): Promise<void> {
  * library documents as Redis-specific — and this package is the one allowed to
  * hold it. The app would otherwise have to name `bullmq` to type the result.
  */
-export async function assertQueueRedisHealthy(
+export async function assertQueueBackendHealthy(
   workers: BullWorkers,
+  backend: QueueBackend,
   log: JobLogger,
 ): Promise<void> {
+  /**
+   * Nothing to do on PostgreSQL, and the reason is not "no check exists".
+   * `migrateQueueSchema` runs before this on the worker's boot path and is the
+   * stronger check: it refuses a schema written by a newer BullMQ
+   * (`SchemaVersionMismatchError`) and creates the one that is missing, so by
+   * the time this is reached the datastore has already been asserted
+   * compatible. Repeating `assertSchemaCompatibility` here would re-read what
+   * the migration just wrote.
+   *
+   * The eviction check has no such predecessor: nothing about opening a Redis
+   * connection reveals its `maxmemory-policy`.
+   */
+  if (backend.kind !== 'redis') {
+    return;
+  }
+
   const worker = workers[0];
   if (!worker) {
     return;
   }
 
-  const client = await worker.backend.client;
-  await assertNoEviction(client as unknown as RedisConfigReader, log);
+  /**
+   * `client` is the Redis backend's own escape hatch and is absent from
+   * `IQueueBackend`, which is the honest shape now that a worker can be on
+   * either. The cast is safe because the branch above established the backend
+   * kind — and it sits here rather than at the type alias so that the one
+   * Redis-specific reach in this package is visible where it happens.
+   */
+  const redisBacked = worker.backend as unknown as {
+    client: Promise<RedisConfigReader>;
+  };
+  await assertNoEviction(await redisBacked.client, log);
 }
 
 /**

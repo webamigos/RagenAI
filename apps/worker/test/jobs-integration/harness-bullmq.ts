@@ -3,11 +3,14 @@ import { Redis } from 'ioredis';
 import type { CancellationSubject, JobRun } from '@ragenai/jobs';
 import {
   BullMqJobRuntime,
+  redisBackend,
+  resetQueueSchemaForTests,
   closeBullWorkers,
   createBullWorkers,
   startBullWorkers,
   type BullWorkers,
   type JobHandlers,
+  type QueueBackend,
 } from '@ragenai/jobs-bullmq';
 
 import { createMockActivities } from '../../src/__tests__/fixtures/mock-activities.js';
@@ -77,13 +80,55 @@ async function flushTestRedis(): Promise<void> {
   }
 }
 
+/**
+ * Where the suite's queues live, and why it is never the application's.
+ *
+ * The Redis half flushes database 15; the PostgreSQL half drops and rebuilds a
+ * schema of its own. Both are destructive by design — each test starts from
+ * nothing — which is why neither reads the variable the application uses:
+ * `JOBS_TEST_DATABASE_URL` falls back to `DATABASE_URL` because a developer's
+ * local database is the only one there, but the *schema* is always the test's
+ * own, never `bullmq` and never `public`.
+ */
+const TEST_POSTGRES_SCHEMA =
+  process.env.JOBS_TEST_POSTGRES_SCHEMA ?? 'bullmq_jobs_integration';
+
+function testBackend(): QueueBackend {
+  if (process.env.BULLMQ_BACKEND !== 'postgres') {
+    return redisBackend(TEST_REDIS_URL);
+  }
+
+  const connectionString =
+    process.env.JOBS_TEST_DATABASE_URL ?? process.env.DATABASE_URL;
+
+  if (!connectionString) {
+    throw new Error(
+      'BULLMQ_BACKEND=postgres needs JOBS_TEST_DATABASE_URL (or DATABASE_URL) — the suite creates its own schema in that database',
+    );
+  }
+
+  return {
+    kind: 'postgres',
+    connection: { connectionString, schema: TEST_POSTGRES_SCHEMA },
+  };
+}
+
 export async function startBullMqHarness(
   options: HarnessOptions,
 ): Promise<JobRuntimeHarness> {
-  await flushTestRedis();
+  const backend = testBackend();
+
+  if (backend.kind === 'postgres') {
+    // Drops the schema and re-runs the migrations, which is this backend's
+    // equivalent of `flushdb` — and, unlike the worker's boot path, it happens
+    // per harness because each test needs an empty queue rather than a
+    // compatible one.
+    await resetQueueSchemaForTests(backend, testLogger());
+  } else {
+    await flushTestRedis();
+  }
 
   const activities = options.activities ?? createMockActivities();
-  const connection = { url: TEST_REDIS_URL };
 
   const handlers: JobHandlers = {
     runFileEmbeddings,
@@ -97,14 +142,14 @@ export async function startBullMqHarness(
     ...options.handlerOverrides,
   };
 
-  const jobs = new BullMqJobRuntime({ connection });
+  const jobs = new BullMqJobRuntime({ backend });
 
   const workers: BullWorkers = createBullWorkers({
     handlers,
     activities: activities as unknown as Parameters<
       typeof createBullWorkers
     >[0]['activities'],
-    connection,
+    backend,
     concurrency: options.concurrency,
     lockDuration: options.lockDuration,
     stalledInterval: options.stalledInterval,

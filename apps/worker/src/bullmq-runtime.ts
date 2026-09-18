@@ -1,7 +1,10 @@
 import {
-  assertQueueRedisHealthy,
   closeBullWorkers,
+  assertQueueBackendHealthy,
   createBullWorkers,
+  describeBackend,
+  migrateQueueSchema,
+  resolveQueueBackend,
   startBullWorkers,
   startQueueDashboard,
   type BullWorkers,
@@ -81,7 +84,21 @@ export interface RunningBullMq {
 }
 
 export async function startBullMqWorker(): Promise<RunningBullMq> {
+  const backend = resolveQueueBackend();
+
+  /**
+   * Before anything opens a queue, and only here.
+   *
+   * The worker is the one process allowed to run the queue schema's DDL —
+   * apps/web and apps/api enqueue from request handlers and have no business
+   * creating tables. The cost is a boot order: a producer that starts against
+   * a schema no worker has migrated yet fails its first enqueue naming the
+   * schema, rather than silently enqueueing into nothing. A no-op on Redis.
+   */
+  await migrateQueueSchema(backend, logger);
+
   const workers = createBullWorkers({
+    backend,
     handlers,
     activities: activities as unknown as Parameters<
       typeof createBullWorkers
@@ -99,7 +116,7 @@ export async function startBullMqWorker(): Promise<RunningBullMq> {
   // check that left workers consuming from a Redis it had just refused would
   // be worse than no check.
   try {
-    await assertQueueRedisHealthy(workers, logger);
+    await assertQueueBackendHealthy(workers, backend, logger);
   } catch (error) {
     // Close what was opened before letting the boot fail. Otherwise the
     // process exits holding connections, and the error a reader sees is a
@@ -120,7 +137,7 @@ export async function startBullMqWorker(): Promise<RunningBullMq> {
   // Off entirely unless both credentials are set, because it shows every job's
   // payload.
   const dashboard = await startQueueDashboard({
-    connection: { url: process.env.REDIS_URL },
+    backend,
     log: logger,
     port: process.env.WORKER_ADMIN_PORT
       ? Number(process.env.WORKER_ADMIN_PORT)
@@ -130,7 +147,10 @@ export async function startBullMqWorker(): Promise<RunningBullMq> {
   });
 
   logger.info(
-    { queues: workers.map((worker) => worker.name) },
+    {
+      queues: workers.map((worker) => worker.name),
+      backend: describeBackend(backend),
+    },
     'BullMQ worker started',
   );
 

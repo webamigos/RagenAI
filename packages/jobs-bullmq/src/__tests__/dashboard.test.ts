@@ -9,6 +9,14 @@ import request from 'supertest';
 
 const queueClose = vi.hoisted(() => vi.fn(async () => undefined));
 
+/**
+ * A literal rather than `redisBackend()`, because this file mocks `bullmq`
+ * wholesale — importing the backend module would pull the real one through the
+ * mock, which does not carry the PostgreSQL exports it reads at load time.
+ * What the dashboard needs from a backend here is the shape, not the helper.
+ */
+const REDIS_BACKEND = { kind: 'redis', connection: {} } as const;
+
 vi.mock('bullmq', () => ({
   Queue: class {
     close = queueClose;
@@ -118,7 +126,7 @@ describe('startQueueDashboard', () => {
     ['a blank user', { user: '  ', password: 'correct-horse' }],
   ])('does not start with %s', async (_label, over) => {
     const dashboard = await startQueueDashboard({
-      connection: {},
+      backend: REDIS_BACKEND,
       log,
       ...over,
     });
@@ -130,7 +138,7 @@ describe('startQueueDashboard', () => {
   // deployment, and refusing to run the worker over an optional operator
   // surface would be the wrong trade.
   it('says why it is off rather than failing the boot', async () => {
-    await startQueueDashboard({ connection: {}, log });
+    await startQueueDashboard({ backend: REDIS_BACKEND, log });
 
     expect(log.info).toHaveBeenCalledWith(
       expect.stringContaining('WORKER_ADMIN_USER'),
@@ -155,7 +163,7 @@ describe('when the dashboard cannot start', () => {
     queueClose.mockClear();
 
     const dashboard = await startQueueDashboard({
-      connection: {},
+      backend: REDIS_BACKEND,
       log,
       port: 999_999,
       user: 'ops',

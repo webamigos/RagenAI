@@ -1,4 +1,11 @@
-import { Job, Queue, type ConnectionOptions, type JobsOptions } from 'bullmq';
+import { Job, Queue, type JobsOptions } from 'bullmq';
+
+import {
+  backendFactoryFor,
+  resolveQueueBackend,
+  type AnyQueue,
+  type QueueBackend,
+} from './backend.js';
 import {
   JOB_NAMES,
   type JobName,
@@ -19,7 +26,7 @@ export {
   type JobContextDeps,
 } from './context.js';
 export {
-  assertQueueRedisHealthy,
+  assertQueueBackendHealthy,
   createBullWorkers,
   closeBullWorkers,
   startBullWorkers,
@@ -44,6 +51,15 @@ export {
   EVICTION_MESSAGE,
   type RedisConfigReader,
 } from './redis-health.js';
+export {
+  backendFactoryFor,
+  describeBackend,
+  migrateQueueSchema,
+  redisBackend,
+  resetQueueSchemaForTests,
+  resolveQueueBackend,
+  type QueueBackend,
+} from './backend.js';
 
 /**
  * The BullMQ adapter, and the only package in this repository that imports
@@ -116,18 +132,24 @@ const STATUS: Record<string, JobRunStatus> = {
 };
 
 export interface BullMqJobRuntimeOptions {
-  connection?: ConnectionOptions;
+  /**
+   * Which datastore, and how to reach it. Defaults to what the environment
+   * selected — every app constructs this with no options at all, so the
+   * backend choice reaches them through `resolveQueueBackend` rather than
+   * through nineteen call sites.
+   */
+  backend?: QueueBackend;
   /** Injectable for tests, and for a process that already opened its queues. */
-  queues?: Map<string, Queue>;
+  queues?: Map<string, AnyQueue>;
 }
 
 export class BullMqJobRuntime implements JobRuntime {
-  private readonly connection: ConnectionOptions;
-  private readonly queues: Map<string, Queue>;
+  private readonly backend: QueueBackend;
+  private readonly queues: Map<string, AnyQueue>;
   private readonly ownsQueues: boolean;
 
   constructor(options: BullMqJobRuntimeOptions = {}) {
-    this.connection = options.connection ?? { url: process.env.REDIS_URL };
+    this.backend = options.backend ?? resolveQueueBackend();
     this.queues = options.queues ?? new Map();
     this.ownsQueues = options.queues === undefined;
   }
@@ -137,10 +159,14 @@ export class BullMqJobRuntime implements JobRuntime {
    * and a producer builds a runtime on a request path — so opening all eight
    * to enqueue one job would cost eight connections per process for no reason.
    */
-  private queue(name: string): Queue {
+  private queue(name: string): AnyQueue {
     let queue = this.queues.get(name);
     if (!queue) {
-      queue = new Queue(name, { connection: this.connection });
+      queue = new Queue(
+        name,
+        { connection: this.backend.connection },
+        backendFactoryFor(this.backend),
+      );
       this.queues.set(name, queue);
     }
     return queue;

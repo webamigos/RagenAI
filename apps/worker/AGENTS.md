@@ -215,6 +215,15 @@ Both engines serialize what crosses them, so the first rule outlives either:
 
 ### BullMQ (the default)
 
+> **These are the Redis backend's properties.** `BULLMQ_BACKEND=postgres` keeps
+> the same queues in PostgreSQL, and at least one of the rules below does not
+> hold there: a job whose worker blocks the event loop was **not** redelivered
+> in testing, at settings where Redis redelivers it. That inverts the failure
+> mode — stuck rather than duplicated — and it has not been characterised. Treat
+> the Postgres backend as unproven for any install whose jobs block the loop,
+> which is every install that parses a PDF. See
+> [the lesson](../../docs/lessons/the-postgres-queue-backend-does-not-redeliver-a-stalled-job.md).
+
 - **Redis must not evict.** Queue state *is* the data: an `allkeys-lru`
   instance deletes jobs at random under memory pressure, which is
   indistinguishable from work nobody submitted. The worker reads

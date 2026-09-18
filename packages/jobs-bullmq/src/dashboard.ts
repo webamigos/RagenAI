@@ -10,7 +10,13 @@ import express, {
   type Request,
   type Response,
 } from 'express';
-import { Queue, type ConnectionOptions } from 'bullmq';
+import { Queue } from 'bullmq';
+
+import {
+  backendFactoryFor,
+  type AnyQueue,
+  type QueueBackend,
+} from './backend.js';
 import type { JobLogger } from '@ragenai/jobs';
 
 import { QUEUE_NAMES } from './queues.js';
@@ -90,7 +96,7 @@ function requireBasicAuth(
 }
 
 export interface DashboardOptions {
-  queues: Queue[];
+  queues: AnyQueue[];
   credentials: DashboardCredentials;
 }
 
@@ -109,7 +115,22 @@ export function createDashboardApp(options: DashboardOptions): Express {
   const serverAdapter = new ExpressAdapter();
   serverAdapter.setBasePath('/');
   createBullBoard({
-    queues: options.queues.map((queue) => new BullMQAdapter(queue)),
+    /**
+     * The cast is bull-board's typing lagging its own runtime, not a claim
+     * about this queue.
+     *
+     * `BullMQAdapter`'s signature still names the Redis-backed `Queue`, while
+     * its implementation handles either: `getDatastoreStats()` queries the
+     * `pg` pool through `queue.getBackend()`, `getRedisInfo()` returns null
+     * instead of throwing when there is no Redis client, and the source says
+     * "v6: reuse the queue's backend, so the producer works on any datastore".
+     * Verified against @bull-board/api 9.10 — re-check on a major upgrade,
+     * because a dashboard that renders an empty board is the failure this
+     * hides if it ever stops being true.
+     */
+    queues: options.queues.map(
+      (queue) => new BullMQAdapter(queue as unknown as Queue),
+    ),
     serverAdapter,
   });
 
@@ -124,7 +145,13 @@ export interface QueueDashboard {
 }
 
 export interface StartDashboardOptions {
-  connection: ConnectionOptions;
+  /**
+   * The same backend the workers consume from. bull-board reads a queue's
+   * counts through the queue object, so pointing the dashboard at a different
+   * datastore than the workers would render an empty board and no error —
+   * which is why this is the backend rather than a connection of its own.
+   */
+  backend: QueueBackend;
   log: JobLogger;
   port?: number;
   user?: string;
@@ -155,7 +182,7 @@ export async function startQueueDashboard(
   }
 
   const port = options.port ?? DEFAULT_ADMIN_PORT;
-  const queues: Queue[] = [];
+  const queues: AnyQueue[] = [];
   let server: Server;
 
   // Total: this never throws. The dashboard is a *view* of the queues, and the
@@ -171,7 +198,13 @@ export async function startQueueDashboard(
   // those apart from a bind failure.
   try {
     for (const name of QUEUE_NAMES) {
-      queues.push(new Queue(name, { connection: options.connection }));
+      queues.push(
+        new Queue(
+          name,
+          { connection: options.backend.connection },
+          backendFactoryFor(options.backend),
+        ),
+      );
     }
 
     const app = createDashboardApp({

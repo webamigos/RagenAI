@@ -24,6 +24,7 @@ const ROOT = join(import.meta.dirname, '..', '..');
 
 const SEAM = join(ROOT, 'packages', 'jobs', 'src', 'runtime.ts');
 const WORKFLOW = join(ROOT, '.github', 'workflows', 'jobs-parity.yml');
+const BACKEND_SEAM = join(ROOT, 'packages', 'env', 'src', 'provider-seams.ts');
 
 /**
  * The runtimes, read from the union rather than imported.
@@ -49,22 +50,49 @@ function declaredRuntimes(): string[] {
 describe('every job runtime is exercised', () => {
   it('runs the integration suite against each runtime the seam declares', () => {
     const workflow = readFileSync(WORKFLOW, 'utf8');
-    const matrix = /runtime:\s*\[([^\]]+)\]/.exec(workflow);
+    const legs = [...workflow.matchAll(/^\s+runtime:\s*(\S+)\s*$/gm)].map(
+      (match) => match[1],
+    );
 
     expect(
-      matrix,
-      'the parity workflow has no `runtime: [...]` matrix — without one, this job tests whichever engine the default happens to be',
-    ).not.toBeNull();
-
-    const exercised = matrix![1]
-      .split(',')
-      .map((entry) => entry.trim())
-      .sort();
+      legs,
+      'the parity workflow has no `runtime:` entries — without them, this job tests whichever engine the default happens to be',
+    ).not.toEqual([]);
 
     expect(
-      exercised,
-      'a runtime the seam offers and CI never runs is abandoned, not supported — add it to the matrix in .github/workflows/jobs-parity.yml',
+      [...new Set(legs)].sort(),
+      'a runtime the seam offers and CI never runs is abandoned, not supported — add a leg to the matrix in .github/workflows/jobs-parity.yml',
     ).toEqual(declaredRuntimes());
+  });
+
+  /**
+   * BullMQ is two datastores, and the suite found them behaving differently
+   * the first time it was pointed at the second one. A matrix that ran only
+   * the default backend would report "BullMQ passes" while never touching the
+   * configuration this seam exists to allow.
+   *
+   * Read from `packages/env`'s seam rather than from a list here, so adding a
+   * third backend fails this test until a leg runs it — the same rule the
+   * runtimes get above, one level down.
+   */
+  it('runs every BullMQ backend the seam declares', () => {
+    const seam = readFileSync(BACKEND_SEAM, 'utf8');
+    const declared = [
+      ...seam.matchAll(/BULLMQ_BACKEND_SEAM[\s\S]*?variants:\s*\{/g),
+    ].length;
+
+    expect(
+      declared,
+      'no BULLMQ_BACKEND_SEAM in packages/env — if the seam moved, this guard has to move with it',
+    ).toBe(1);
+
+    const backends = [
+      ...readFileSync(WORKFLOW, 'utf8').matchAll(/^\s+backend:\s*(\S+)\s*$/gm),
+    ]
+      .map((match) => match[1].replace(/'/g, ''))
+      .filter((value) => value !== '');
+
+    expect([...new Set(backends)].sort()).toEqual(['postgres', 'redis']);
   });
 
   it('selects the runtime the way a deployment does', () => {
