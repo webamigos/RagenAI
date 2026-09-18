@@ -47,6 +47,13 @@ export const TENANT_SCOPED_MODELS: Record<string, string> = {
   DocumentVersion: 'organizationId',
   DocumentCitation: 'orgId',
   DocumentRetrieval: 'orgId',
+  // Nullable on Guardrail, where null marks a platform rule applying to every
+  // organization. The guard covers the column, not the nullability: a query
+  // for one organization's rules that forgets the scope returns every
+  // organization's, which is the leak. Reading platform rules deliberately
+  // asks for `organizationId: null`, which is a scope, not the absence of one.
+  Guardrail: 'organizationId',
+  GuardrailOrgOverride: 'organizationId',
 };
 
 /**

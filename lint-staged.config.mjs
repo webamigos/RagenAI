@@ -28,6 +28,7 @@ const workspaces = {
   'packages/crypto': '@ragenai/crypto',
   'packages/db': '@ragenai/db',
   'packages/env': '@ragenai/env',
+  'packages/guardrails': '@ragenai/guardrails',
   'packages/llm-gateway': '@ragenai/llm-gateway',
   'packages/observability': '@ragenai/observability',
   'packages/jobs': '@ragenai/jobs',
