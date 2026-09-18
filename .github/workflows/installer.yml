@@ -136,8 +136,29 @@ jobs:
             exit 1
           fi
 
+      # And the case that is not "too old" at all. jsdom's range is
+      # `^22.22.2 || ^24.15.0 || >=26.0.0`, which skips the whole 25 line —
+      # odd-numbered Nodes never become LTS and libraries routinely omit them.
+      # A floor cannot express that: `>=24.15.0` accepts 25 and `npm install`
+      # does not. This is the only check in the repository that would notice.
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '25'
+
+      - name: Refuse to scaffold on a Node newer than the supported line
+        run: |
+          if /tmp/installer/node_modules/.bin/create-ragen-app /tmp/ragen-odd-major \
+               --provider=openai --skip-docker; then
+            echo "Expected a refusal on $(node --version), but the installer proceeded." >&2
+            exit 1
+          fi
+          if [ -e /tmp/ragen-odd-major ]; then
+            echo "Refused, but still created /tmp/ragen-odd-major." >&2
+            exit 1
+          fi
+
       # The other half: the floor has to be reachable. A typo that refuses
-      # every Node would pass both steps above and break every install.
+      # every Node would pass all three steps above and break every install.
       - uses: actions/setup-node@v7
         with:
           node-version: '24.15'

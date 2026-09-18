@@ -1,7 +1,14 @@
 # Container, volume and network names are left to Compose, which prefixes them
 # with the project name — the directory this file sits in, unless
-# COMPOSE_PROJECT_NAME says otherwise. Two Ragen checkouts on one machine
-# therefore coexist with no configuration at all.
+# COMPOSE_PROJECT_NAME says otherwise. Two Ragen checkouts in differently named
+# directories therefore coexist with no configuration at all.
+#
+# **Two directories with the same basename do not.** `/work/a/ragen` and
+# `/work/b/ragen` produce the same project name, and so the same containers and
+# the same volumes — the collision below, narrowed rather than removed, and
+# silent when the first stack is stopped, because then no port is held either.
+# `create-ragen-app` writes COMPOSE_PROJECT_NAME into the install's `.env` to
+# settle it; set it by hand for a checkout made any other way.
 #
 # They used to be pinned (`container_name: ragen-postgres`, `name:` on each
 # volume, a fixed network name) so that `docker logs ragen-postgres` and the
@@ -18,8 +25,12 @@
 #
 # What this does NOT fix: published ports. Prefixing names does not move a
 # port, so two stacks both publishing 55432 still collide — set POSTGRES_PORT,
-# QDRANT_PORT, QDRANT_GRPC_PORT, DOCLING_PORT and REDIS_PORT on the second one.
-# create-ragen-app warns about exactly this before it starts anything.
+# QDRANT_PORT, QDRANT_GRPC_PORT, DOCLING_PORT and REDIS_PORT on the second one,
+# plus PRESIDIO_ANALYZER_PORT and PRESIDIO_ANONYMIZER_PORT if it runs
+# `--profile pii`. (The observability profile publishes three more —
+# OTEL_COLLECTOR_GRPC_PORT, OTEL_COLLECTOR_HTTP_PORT, JAEGER_UI_PORT — and a
+# plain `up` starts none of them.) create-ragen-app probes the ports it is
+# about to publish and names the taken ones before it starts anything.
 #
 # Published ports bind to loopback, not to every interface. Compose's default
 # is 0.0.0.0, which put every service — including ones holding provider

@@ -7,8 +7,9 @@
 # Names are left to Compose's own project prefixing, for the reasons
 # docker-compose.yml spells out at length: pinned names are global to the
 # Docker daemon, so a second checkout collided on them and shared this file's
-# postgres and qdrant volumes with the first. Ports are the part prefixing does
-# not solve — set POSTGRES_PORT and QDRANT_PORT on a second stack.
+# postgres and qdrant volumes with the first. Two things prefixing does not
+# solve — set POSTGRES_PORT and QDRANT_PORT on a second stack, and
+# COMPOSE_PROJECT_NAME if its directory has the same basename as the first.
 #
 # Published ports bind to loopback, not to every interface. Compose's default
 # is 0.0.0.0, which put every service — including ones holding provider

@@ -36,8 +36,16 @@ benefit (a readable name) has a replacement that the cost does not: `docker
 compose ps` and `docker compose logs <service>` name *services*, work from the
 project directory, and are correct in every checkout.
 
-Two things this does **not** fix, both worth stating when someone proposes it:
+Three things this does **not** fix, all worth stating when someone proposes it:
 
+- **The project name is the directory *basename*, not the path.** `/work/a/ragen`
+  and `/work/b/ragen` are one project, with one set of volumes — the same bug,
+  narrowed rather than removed. And it is the *quiet* case: a stopped first
+  stack holds no port, so the port warning below cannot see it either.
+  `create-ragen-app` writes `COMPOSE_PROJECT_NAME` into the install's `.env`,
+  which Compose reads from the project directory on every later command; a value
+  passed only in the installer's own environment would name one project during
+  the install and a different one afterwards, which is worse than no fix.
 - **Published ports are not prefixed by anything.** Two stacks publishing 55432
   still collide, so a port warning is still needed — `create-ragen-app` probes
   the ports it is about to publish before starting the stack.

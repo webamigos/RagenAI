@@ -141,8 +141,8 @@ whenever a rule matters more than a comment can enforce.
 
 ## Local Development
 
-Node.js **24.15.0**+, not merely 24: `engine-strict` plus a transitive
-`^24.15.0` makes 24.0–24.14 fail `npm install`. One `.env.local` at the
+Node.js `^24.15.0 || >=26.0.0` — a range, not a floor: `engine-strict` plus
+jsdom's range fails 24.0–24.14 **and all of 25**. One `.env.local` at the
 repository root serves every app: real env vars beat an app's own `.env` files,
 which beat the root's — see `scripts/load-root-env.mjs`. Minimum root
 `.env.local`:
@@ -166,12 +166,12 @@ standard port — only the published mapping moved, and every one is overridable
 **Postgres and Redis are on non-standard ports on purpose.** A native Postgres
 on 5432 answers instead of the container and `prisma migrate` then talks to the
 wrong database *while reporting success* — twice now. Check which server answers
-before believing a schema problem. Qdrant keeps its standard port: the app falls
-back to it in code. See [`docs/lessons.md`](docs/lessons.md).
+before believing a schema problem. See [`docs/lessons.md`](docs/lessons.md).
 
-**Container names are Compose's, not ours** — `ragen-app-postgres-1`, not
-`ragen-postgres`. Use `docker compose ps` / `logs <service>` from the repo root;
-a pinned name is what made two installs share one database.
+**Container names are Compose's** — `ragen-app-postgres-1`, not
+`ragen-postgres`; use `docker compose ps` / `logs <service>` from the repo root.
+The project name is the directory *basename*, so two checkouts called `ragen`
+share volumes — set `COMPOSE_PROJECT_NAME` in `.env`.
 
 Optional local observability: `docker compose --profile observability up -d`,
 then point the app at it with `OTEL_EXPORTER_OTLP_ENDPOINT` — see

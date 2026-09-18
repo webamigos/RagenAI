@@ -32,6 +32,7 @@ function read(relativePath) {
 
 const rootEnv = read('.env.local');
 const adminEnv = read('apps/admin/.env.local');
+const composeEnv = read('.env');
 const routes = read('infra/llm-gateway/routes.yaml');
 
 function envValue(contents, key) {
@@ -168,6 +169,23 @@ if (routes.includes('provider: vertex')) {
 if (existsSync(join(targetDir, 'SETUP-LLM.md'))) {
   failures.push(
     'SETUP-LLM.md was written even though a provider was configured',
+  );
+}
+
+// Compose reads `.env` from the project directory, so this line is what keeps
+// two installs apart after the wizard has exited. Written by the installer
+// rather than by the repository, so nothing in the clone would reveal its
+// absence — and without it Compose falls back to the directory basename, which
+// a second install in a directory of the same name would share, volumes and
+// all.
+const composeProject = envValue(composeEnv, 'COMPOSE_PROJECT_NAME');
+if (!composeProject) {
+  failures.push(
+    '.env: COMPOSE_PROJECT_NAME is unset, so Compose falls back to the directory name',
+  );
+} else if (!/^[a-z0-9][a-z0-9_-]*$/.test(composeProject)) {
+  failures.push(
+    `.env: COMPOSE_PROJECT_NAME="${composeProject}" is not a name Compose accepts ([a-z0-9][a-z0-9_-]*), so every compose command would fail`,
   );
 }
 

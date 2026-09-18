@@ -16,6 +16,7 @@ import {
   busyPublishedPorts,
   generatePrismaClient,
   migrateDatabase,
+  resolveComposeProjectName,
   seedDatabase,
   startDockerServices,
 } from '../tasks';
@@ -54,6 +55,11 @@ vi.mock('../tasks', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../tasks')>()),
   isDockerAvailable: vi.fn().mockResolvedValue(true),
   busyPublishedPorts: vi.fn().mockResolvedValue([]),
+  // Stubbed rather than inherited: the real one shells out to `docker compose
+  // ls`, which made every test in this file wait on a daemon.
+  resolveComposeProjectName: vi
+    .fn()
+    .mockResolvedValue({ name: 'ragen-test', disambiguated: false }),
   startDockerServices: vi.fn().mockResolvedValue(undefined),
   installDependencies: vi.fn().mockResolvedValue(undefined),
   generatePrismaClient: vi.fn().mockResolvedValue(undefined),
@@ -498,6 +504,55 @@ describe('run', () => {
     vi.mocked(clack.select).mockResolvedValueOnce('skip' as never);
 
     await expect(run(['/tmp/ragen-test'])).resolves.toBe(false);
+  });
+
+  it('pins the Compose project name in .env, so a later `docker compose up` agrees', async () => {
+    // Not `.env.local`: Compose reads `.env` from the project directory on its
+    // own, which is what makes the name survive this process exiting. A name
+    // set only in the installer's environment would scope the stack it starts
+    // and nothing the user runs afterwards.
+    vi.mocked(clack.select).mockResolvedValueOnce('skip' as never);
+    vi.mocked(clack.confirm).mockResolvedValue(false as never);
+
+    await run(['/tmp/ragen-test']);
+
+    const dotEnv = vi
+      .mocked(writeFileSync)
+      .mock.calls.find(([path]) => String(path).endsWith('/.env'));
+
+    expect(dotEnv, 'no .env was written').toBeDefined();
+    expect(String(dotEnv?.[1])).toContain('COMPOSE_PROJECT_NAME=ragen-test');
+  });
+
+  it('says so when the directory name was already taken by another project', async () => {
+    // The silent half of the collision: Compose names a project after its
+    // directory, so /work/a/ragen and /work/b/ragen are one project. A
+    // *stopped* first stack holds no port, so the port warning cannot see it
+    // and the second install just opens the first one's database.
+    vi.mocked(resolveComposeProjectName).mockResolvedValueOnce({
+      name: 'ragen-a1b2c3',
+      disambiguated: true,
+      takenBy: '/work/a/ragen/docker-compose.yml',
+    });
+    vi.mocked(clack.select).mockResolvedValueOnce('skip' as never);
+    vi.mocked(clack.confirm).mockResolvedValue(false as never);
+
+    await run(['/tmp/ragen-test']);
+
+    const dotEnv = vi
+      .mocked(writeFileSync)
+      .mock.calls.find(([path]) => String(path).endsWith('/.env'));
+    expect(String(dotEnv?.[1])).toContain('COMPOSE_PROJECT_NAME=ragen-a1b2c3');
+
+    const warning = vi
+      .mocked(clack.log.warn)
+      .mock.calls.map(([message]) => String(message))
+      .find((message) => message.includes('ragen-a1b2c3'));
+
+    expect(warning, 'the disambiguation was silent').toBeDefined();
+    // Name the project it would have collided with, or the warning is a
+    // mystery about someone else's machine.
+    expect(warning).toContain('/work/a/ragen/docker-compose.yml');
   });
 
   describe('on an unsupported Node', () => {

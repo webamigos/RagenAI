@@ -5,7 +5,7 @@ import {
   statSync,
   writeFileSync,
 } from 'node:fs';
-import { join } from 'node:path';
+import { basename, join, resolve } from 'node:path';
 
 import * as clack from '@clack/prompts';
 import { parse as parseDotenv } from 'dotenv';
@@ -60,6 +60,7 @@ import {
   PII_PUBLISHED_PORTS,
   PUBLISHED_PORTS,
   busyPublishedPorts,
+  resolveComposeProjectName,
   seedDatabase,
   startDockerServices,
 } from './tasks';
@@ -200,6 +201,12 @@ export async function run(argv: string[]): Promise<boolean> {
     );
     return false;
   }
+
+  // Compose's project name, pinned for this directory before anything starts.
+  // Two installs whose directories share a basename would otherwise share the
+  // project — and therefore the containers and volumes — and a *stopped* first
+  // stack makes that silent: no port is held, so nothing refuses.
+  await writeComposeProjectName(targetDir);
 
   // After the env write, so a run that stops on drifted keys has not already
   // rewritten a file in the clone.
@@ -420,6 +427,68 @@ function overridesForTarget(
     overrides[entry.key] = resolved.get(entry) as string;
   }
   return overrides;
+}
+
+/**
+ * Writes `COMPOSE_PROJECT_NAME` into the new tree's `.env`.
+ *
+ * `.env`, not `.env.local`, and the distinction is the point: Compose reads
+ * `.env` from the project directory by itself, so every later `docker compose`
+ * the caller runs — days after this wizard exited — uses the same name. A
+ * value passed only in the installer's own environment would name one project
+ * here and a different one afterwards, which is the empty-database failure
+ * rather than a fix for it.
+ *
+ * Safe to sit beside the install's own config: `scripts/load-root-env.mjs`
+ * reads `.env` last, `.env.local` wins over it, nothing in the apps reads this
+ * variable, and `.env` is gitignored.
+ *
+ * Failure here is a warning, not an abort. The files are correct and Compose
+ * still works — it simply falls back to the basename, which is where this
+ * started.
+ */
+async function writeComposeProjectName(targetDir: string): Promise<void> {
+  const project = await resolveComposeProjectName(targetDir);
+
+  try {
+    writeFileSync(
+      join(targetDir, '.env'),
+      [
+        "# Read by docker compose, not by the apps. It scopes this install's",
+        '# containers, volumes and network, so a second Ragen checkout cannot',
+        '# reuse them — which it would if both directories had the same name,',
+        '# since that basename is what Compose uses when this is unset.',
+        `COMPOSE_PROJECT_NAME=${project.name}`,
+        '',
+      ].join('\n'),
+      { mode: 0o600 },
+    );
+  } catch (error) {
+    clack.log.warn(
+      [
+        `Could not write .env with COMPOSE_PROJECT_NAME: ${String(error)}`,
+        "Compose will fall back to this directory's name, which another",
+        `install in a directory called "${basename(resolve(targetDir))}" would`,
+        'share — add the line by hand if you have one.',
+      ].join('\n'),
+    );
+    return;
+  }
+
+  if (project.disambiguated) {
+    clack.log.warn(
+      [
+        `This machine already runs a Compose project called "${basename(resolve(targetDir))}"`,
+        project.takenBy ? `(from ${project.takenBy}).` : '.',
+        '',
+        'Compose names a project after its directory, so this install would',
+        "have reused that one's containers and volumes — including its",
+        `database. Written .env with COMPOSE_PROJECT_NAME=${project.name}`,
+        'instead, so the two stay apart. Host ports are separate and may still',
+        'collide; see below.',
+      ].join(' '),
+    );
+  }
 }
 
 interface WriteEnvFileResult {

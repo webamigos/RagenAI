@@ -1,4 +1,6 @@
+import { createHash } from 'node:crypto';
 import { createServer } from 'node:net';
+import { basename, resolve } from 'node:path';
 
 import { execa } from 'execa';
 
@@ -29,6 +31,101 @@ export async function isDockerAvailable(): Promise<boolean> {
   } catch {
     return false;
   }
+}
+
+/**
+ * Compose takes its project name from the **directory basename**, which is not
+ * the same as being unique per install.
+ *
+ * Removing the pinned `container_name`/volume `name:` from docker-compose.yml
+ * scopes every resource to the project, and that is what lets two checkouts
+ * coexist. But `/work/a/ragen` and `/work/b/ragen` produce the same project
+ * name, and therefore the same containers, volumes and network — the original
+ * bug, narrowed to same-named directories rather than fixed. Worse than the
+ * port collision, because a *stopped* first stack collides silently: no port
+ * is held, nothing refuses, and the second install opens the first one's
+ * database.
+ *
+ * So the name is decided here, at install time, and written to the new tree's
+ * `.env` — which Compose reads from the project directory on every later
+ * `docker compose` the user runs, with no flag to remember. `.env` is the
+ * lowest-precedence file `scripts/load-root-env.mjs` reads and is gitignored,
+ * and nothing in the apps reads `COMPOSE_PROJECT_NAME`, so it cannot collide
+ * with the install's own configuration.
+ *
+ * The basename is kept whenever it is free, because the readability given up
+ * with the pinned names is worth not giving up twice. A suffix appears only
+ * when this daemon already runs a project of that name from somewhere else.
+ */
+export interface ComposeProjectName {
+  name: string;
+  /** True when the plain basename was taken and a suffix was added. */
+  disambiguated: boolean;
+  /** The compose file of the project that took it, for the message. */
+  takenBy?: string;
+}
+
+/**
+ * Compose accepts `[a-z0-9][a-z0-9_-]*`. A directory called `My Ragen!` or
+ * `.ragen` is perfectly legal and would otherwise make every compose command
+ * fail with a validation error after the install had finished.
+ */
+export function normalizeComposeProjectName(raw: string): string {
+  const cleaned = raw
+    .toLowerCase()
+    .replace(/[^a-z0-9_-]+/g, '-')
+    .replace(/^[^a-z0-9]+/, '')
+    .replace(/-+$/, '');
+  return cleaned || 'ragen';
+}
+
+/** Six hex characters of the absolute path — stable for this directory. */
+function pathSuffix(absoluteDir: string): string {
+  return createHash('sha256').update(absoluteDir).digest('hex').slice(0, 6);
+}
+
+export async function resolveComposeProjectName(
+  targetDir: string,
+): Promise<ComposeProjectName> {
+  const absoluteDir = resolve(targetDir);
+  const base = normalizeComposeProjectName(basename(absoluteDir));
+
+  let projects: Array<{ Name?: string; ConfigFiles?: string }> = [];
+  try {
+    const { stdout } = await execa(
+      'docker',
+      ['compose', 'ls', '--all', '--format', 'json'],
+      { timeout: 10_000 },
+    );
+    projects = JSON.parse(stdout) as typeof projects;
+  } catch {
+    // Same reasoning as isDockerAvailable: an unreachable daemon, or a Compose
+    // too old for `ls --format json`, is not a reason to fail. The plain name
+    // is what Compose would have used anyway, so this degrades to the previous
+    // behaviour rather than to something worse.
+    return { name: base, disambiguated: false };
+  }
+
+  // A project whose compose files live under *this* directory is this install
+  // — a re-run of the wizard over an existing tree — and must keep its name,
+  // or the second run would point at empty volumes.
+  const collision = projects.find(
+    (project) =>
+      project.Name === base &&
+      !(project.ConfigFiles ?? '')
+        .split(',')
+        .some((file) => resolve(file.trim()).startsWith(`${absoluteDir}/`)),
+  );
+
+  if (!collision) {
+    return { name: base, disambiguated: false };
+  }
+
+  return {
+    name: `${base}-${pathSuffix(absoluteDir)}`,
+    disambiguated: true,
+    takenBy: collision.ConfigFiles?.split(',')[0]?.trim(),
+  };
 }
 
 /**

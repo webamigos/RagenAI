@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   REQUIRED_NODE_VERSION,
+  SUPPORTED_NODE_ENGINES_RANGE,
   checkNodeVersion,
   parseNodeVersion,
 } from '../node-version';
@@ -26,20 +27,27 @@ function enginesNode(path: string): string | undefined {
   return engines?.node;
 }
 
-describe('REQUIRED_NODE_VERSION', () => {
-  it('matches this package’s own engines field', () => {
+describe('SUPPORTED_NODE_RANGES', () => {
+  it('renders to this package’s own engines field', () => {
     // Two statements of the same requirement, and the whole exercise here was
     // about copies of a value drifting apart. npm reads `engines`; the wizard
-    // reads this constant; a user meets whichever fires first.
-    expect(enginesNode(PACKAGE_JSON)).toBe(`>=${REQUIRED_NODE_VERSION}`);
+    // reads the table; a user meets whichever fires first.
+    expect(enginesNode(PACKAGE_JSON)).toBe(SUPPORTED_NODE_ENGINES_RANGE);
   });
 
-  it('matches the engines field of the repository it installs', () => {
-    // The one that actually failed: the wizard's floor was right about the
+  it('renders to the engines field of the repository it installs', () => {
+    // The one that actually failed: the wizard's check was right about the
     // CLI and wrong about the tree it clones, so it cleared 24.13 and then
     // `npm install` stopped on it. This package is published from the same
     // repository, so the cloned root is the file above us.
-    expect(enginesNode(ROOT_PACKAGE_JSON)).toBe(`>=${REQUIRED_NODE_VERSION}`);
+    expect(enginesNode(ROOT_PACKAGE_JSON)).toBe(SUPPORTED_NODE_ENGINES_RANGE);
+  });
+
+  it('is a range with a gap, not a minimum', () => {
+    // `>=24.15.0` was the second wrong answer. It fixes the patch digit and
+    // still accepts Node 25, which jsdom's range omits entirely.
+    expect(SUPPORTED_NODE_ENGINES_RANGE).toContain('||');
+    expect(REQUIRED_NODE_VERSION).toBe('24.15.0');
   });
 });
 
@@ -71,11 +79,37 @@ describe('checkNodeVersion', () => {
     ).toEqual({ kind: 'ok' });
   });
 
-  it('passes a newer major, rather than pinning to one release line', () => {
+  it('passes a newer LTS major, rather than pinning to one release line', () => {
     expect(
       checkNodeVersion({ version: 'v26.0.0', willRunSetup: true }),
     ).toEqual({ kind: 'ok' });
+    expect(
+      checkNodeVersion({ version: 'v28.4.1', willRunSetup: true }),
+    ).toEqual({ kind: 'ok' });
   });
+
+  // The second half of the boundary, and the one a floor cannot express.
+  // jsdom's range is `^22.22.2 || ^24.15.0 || >=26.0.0`: Node 25 satisfies
+  // none of it, so `>=24.15.0` would clear a Node that `npm install` rejects —
+  // the original bug with a different number.
+  it.each(['v25.0.0', 'v25.9.9'])(
+    'refuses %s, which is newer than the minimum and still unsupported',
+    (version) => {
+      const verdict = checkNodeVersion({ version, willRunSetup: true });
+
+      expect(verdict.kind).toBe('refuse');
+      // Not "too old" — that would send someone to upgrade, which is what
+      // they already did.
+      expect(verdict).toHaveProperty(
+        'message',
+        expect.stringContaining('newer than the minimum'),
+      );
+      expect(verdict).toHaveProperty(
+        'message',
+        expect.stringContaining('25.x'),
+      );
+    },
+  );
 
   // The boundary this whole change exists for. 24.14 and 24.15 differ by a
   // patch digit and by whether `npm install` completes at all, and every

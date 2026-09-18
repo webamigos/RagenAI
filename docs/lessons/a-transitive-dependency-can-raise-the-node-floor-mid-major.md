@@ -38,22 +38,39 @@ be; the one job that deliberately tested an *unsupported* Node used 22, a
 different major. So the only way to observe the bug was to be a stranger with an
 older 24 pinned — which is the population the installer exists for.
 
-**Rule**: a minimum Node is a **full version**, not a major, and it is one
-number stated once. A bare major is a true statement about the release line and
-a false one about the tree, because a dependency you did not choose can raise
-the floor inside a major at any time. Concretely:
+There is a second half to the same mistake, found in review of the fix. The
+first correction was `>=24.15.0` — right about the patch digit and still wrong,
+because jsdom's range *skips the entire 25 line*. Odd-numbered Node releases
+never become LTS and libraries routinely omit them, so a minimum version is the
+wrong shape for the requirement no matter which number it holds: it cannot
+express a gap. `>=24.15.0` would have cleared Node 25 and failed `npm install`
+on it, reproducing the original bug with a newer version.
 
-- `engines.node` names `major.minor.patch` in the root and every workspace, and
+**Rule**: what a tree runs on is a **range**, not a floor, and it is stated
+once. A bare major is a true statement about the release line and a false one
+about the tree; a bare `>=` is a true statement about the oldest version and a
+false one about everything above it. A dependency you did not choose can move
+either end at any time. Concretely:
+
+- `engines.node` carries the real range — today `^24.15.0 || >=26.0.0` — in the
+  root and every workspace, and
   `tests/architecture/the-node-floor-is-one-number.test.ts` holds them, `.nvmrc`
-  and the installer's constant to the same value.
+  and the installer's own table to the same one. A workspace that deliberately
+  differs (a published *client*, which runs before any install exists) has to
+  say so in its own README, so an exemption cannot be a silent line in an array.
 - `.nvmrc` carries the full version. `nvm use 24` selects whatever 24.x is
   already installed, which is how someone lands below the floor while believing
   they followed the instructions.
 - A refusal message must say **why the patch digit matters**. "Needs Node 24"
   read by someone who has Node 24 is a riddle, and the likely conclusion is that
   the installer is broken.
-- CI must pin the version *below* the floor as well as one above it. A job on
-  "latest major" cannot fail this way and therefore proves nothing about it.
+- CI must pin real versions on **both** sides of every boundary: below the floor
+  (24.14), inside a gap (25), and at the floor itself (24.15). A job on "latest
+  major" cannot fail any of these ways and therefore proves nothing about them.
+  Only npm, on an actual Node, can answer whether the declared range is true —
+  an architecture test compares our declarations to each other and would hold
+  twenty-one manifests in perfect agreement on a range a dependency has since
+  moved beyond.
 
 **Applies to**: `engines` fields anywhere in the monorepo, `.nvmrc`,
 `packages/create-ragen-app`, and any CI job that selects a Node version.

@@ -26,10 +26,10 @@ existing PR does not start a run either.
 
 ## Getting set up
 
-Node.js 24.15.0 or newer, and Docker. The patch digit is not decoration: a
-transitive dependency requires `^24.15.0` and `.npmrc` sets
-`engine-strict=true`, so `npm install` stops on anything older. Full
-instructions are in
+Node.js `^24.15.0 || >=26.0.0`, and Docker. It is a range rather than a
+minimum: a transitive dependency requires `^22.22.2 || ^24.15.0 || >=26.0.0` and
+`.npmrc` sets `engine-strict=true`, so `npm install` stops on 24.0–24.14 and on
+all of 25. Full instructions are in
 [AGENTS.md](AGENTS.md#local-development); the short version:
 
 ```bash

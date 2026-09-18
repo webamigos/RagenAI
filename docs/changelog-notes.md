@@ -106,18 +106,21 @@ archive is the blog.
 
   (substitute your own project name — `docker compose config --format json | jq
   -r .name` prints it — and repeat for `qdrant`.) Or start fresh and re-ingest.
-  `RAGEN_STACK_NAME` is gone; `COMPOSE_PROJECT_NAME` does that job now, and you
-  rarely need it.
+  `RAGEN_STACK_NAME` is gone; `COMPOSE_PROJECT_NAME` does that job now, and the
+  installer writes it into the new install's `.env` for you — which matters,
+  because Compose names a project after its *directory*, so two installs both
+  called `ragen` would still have shared everything.
 
-- `[brief]` **The installer refuses Node 24.14 and below, instead of failing
-  halfway through.** `jsdom` — a transitive dependency, arriving with no version
-  bump of ours — requires `^24.15.0`, and the repository sets
-  `engine-strict=true`, so npm stops rather than warns. `engines.node` still
-  said `>=24`, so `create-ragen-app` cleared Node 24.13, cloned, wrote
-  `.env.local`, started Docker, and only then hit `EBADENGINE`. The declared
-  minimum is `24.15.0` everywhere now, the refusal happens in the first second,
-  and it says why the patch digit matters — which is the part someone who
-  already has "Node 24" needs to hear.
+- `[brief]` **Ragen states which Nodes it runs on, and the installer refuses the
+  rest in the first second.** `jsdom` — a transitive dependency, arriving with
+  no version bump of ours — requires `^22.22.2 || ^24.15.0 || >=26.0.0`, and the
+  repository sets `engine-strict=true`, so npm stops rather than warns.
+  `engines.node` said `>=24`, so `create-ragen-app` cleared Node 24.13, cloned,
+  wrote `.env.local`, started Docker, and only then hit `EBADENGINE`. It is
+  `^24.15.0 || >=26.0.0` everywhere now — a range, not a minimum, because that
+  range skips the whole Node 25 line and no `>=` can say so. The refusal names
+  the reason, which is what someone who already has "Node 24" (or a *newer*
+  Node 25) needs to hear.
   ([86bc1vbqz](https://app.clickup.com/t/86bc1vbqz))
 
 
