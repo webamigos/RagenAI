@@ -1067,8 +1067,8 @@ one: durable execution is available to anyone who builds from source.
       benefit, and self-hosting today means building four of them from source).
 
   **Landed** as `.github/workflows/publish-images.yml`: `ragen-worker`,
-  `ragen-api` and `ragen-admin` to `ghcr.io/webamigos`, amd64, on a published
-  release, tagged `vX.Y.Z` / `X.Y` / `sha-…` / `latest`.
+  `ragen-api`, `ragen-admin` and `ragen-mcp` to `ghcr.io/webamigos`, amd64, on
+  a published release, tagged `vX.Y.Z` / `X.Y` / `sha-…` / `latest`.
 
   **`web` is not among them, and that is a finding rather than a phase
   boundary.** Its Dockerfile takes ten `NEXT_PUBLIC_*` build arguments which
@@ -1076,8 +1076,9 @@ one: durable execution is available to anyone who builds from source.
   `NEXT_PUBLIC_APP_URL` and the two Pusher values. One published image would
   therefore carry the publisher's values into every install's browser: it would
   start cleanly and leave realtime notifications dead. Publishing it needs those
-  moved to runtime, which is a change to the application. `mcp` is absent only
-  because it sits outside this programme.
+  moved to runtime, which is a change to the application. Everything else is
+  published, `mcp` included — it takes no build arguments, and sitting outside
+  this programme is not a reason to make somebody compile it.
 
   `tests/architecture/a-release-can-trigger-the-image-build.test.ts` holds two
   couplings that would otherwise fail open: the release must be created with a

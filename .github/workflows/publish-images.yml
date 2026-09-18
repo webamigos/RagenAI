@@ -18,9 +18,10 @@ name: Publish images
 # image. Publishing it needs those variables moved to runtime first, which is a
 # change to the application rather than to this file.
 #
-# `mcp` is absent for a different and much smaller reason: it is a
-# self-contained service outside this programme. Adding either is one matrix
-# entry once the question above is settled.
+# `mcp` *is* here, despite sitting outside this programme: its Dockerfile takes
+# no build arguments and uses the same monorepo-root context, so the only thing
+# that had kept it out was scope — which is not a reason to make somebody build
+# it from source.
 on:
   release:
     types: [published]
@@ -45,7 +46,7 @@ jobs:
       # One broken image should not hide whether the others build.
       fail-fast: false
       matrix:
-        app: [worker, api, admin]
+        app: [worker, api, admin, mcp]
     steps:
       - uses: actions/checkout@v7
         with:
