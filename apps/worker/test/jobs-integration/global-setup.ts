@@ -12,19 +12,21 @@ declare module 'vitest' {
 /**
  * The Temporal server the parity run talks to, started once for the whole run.
  *
- * Two ways in, and the order matters:
+ * Two ways in — the default, and the override the code checks first:
  *
- * - **`JOBS_TEST_TEMPORAL_ADDRESS`** — a server somebody else is running. This
- *   is what CI uses: `temporalio/auto-setup` as a service container, which is
- *   the "real Temporal container" the spec's §8.3 asks for, and which exercises
- *   the same image a deployment would run.
- * - **Otherwise, a local dev server**, downloaded and cached by
+ * - **A local dev server** by default, downloaded and cached by
  *   `@temporalio/testing`. Not the time-skipping Java stub `workflow.spec.ts`
  *   uses — that one has no scheduler, and a third of this suite is schedules.
- *   This is what makes `WORKER_RUNTIME=temporal npm run test:jobs-integration`
- *   work on a laptop, with no container and no compose service: Phase E deleted
- *   Temporal from `docker-compose.yml` on purpose, and putting it back for a
- *   test would undo the thing that phase was for.
+ *   **This is the path CI takes as well**, not only a laptop's: `jobs-parity.yml`
+ *   sets no address, so both run the same server. Phase E deleted Temporal from
+ *   `docker-compose.yml` on purpose, and a compose service or an
+ *   `auto-setup` container in the workflow would each undo half of what that
+ *   phase was for.
+ * - **`JOBS_TEST_TEMPORAL_ADDRESS`** — an override, for a server somebody else
+ *   is running. `temporalio/auto-setup` is the closest thing to the "real
+ *   Temporal container" §8.3 asks for and exercises the image a deployment
+ *   runs, so point this at one when that is the question. Nothing in this
+ *   repository sets it.
  *
  * Started here rather than per harness because a server start is seconds and
  * the suite builds a dozen harnesses — and because a global setup is the only
