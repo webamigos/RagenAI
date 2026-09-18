@@ -121,7 +121,7 @@ export function resolveGuardrails(
       continue;
     }
 
-    if (override.origin === 'legacy-on-premise' && input.isOnPremise !== true) {
+    if (override.origin === 'legacy_on_premise' && input.isOnPremise !== true) {
       dropped.push({
         reason: 'override-is-legacy-on-premise',
         guardrailPublicId: target,

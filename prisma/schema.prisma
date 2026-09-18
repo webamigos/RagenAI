@@ -630,19 +630,21 @@ model Organization {
   hasKnowledge Boolean @default(false) @map("has_knowledge")
   vectorStore  String? @map("vector_store")
 
-  members          Member[]
-  settings         OrganizationSettings?
-  projects         Project[]
-  apiKeys          ApiKey[]
-  aiUsages         AiUsage[]
-  teams            Team[]
-  folders          DocumentFolder[]
-  mcpConnectors    McpConnector[]
-  mcpOAuthTokens   McpOAuthToken[]
-  googleDriveSyncs GoogleDriveSync[]
-  auditLogs        AuditLog[]
-  chatbots         Chatbot[]
-  securityEvents   SecurityEvent[]
+  members            Member[]
+  settings           OrganizationSettings?
+  projects           Project[]
+  apiKeys            ApiKey[]
+  aiUsages           AiUsage[]
+  teams              Team[]
+  folders            DocumentFolder[]
+  mcpConnectors      McpConnector[]
+  mcpOAuthTokens     McpOAuthToken[]
+  googleDriveSyncs   GoogleDriveSync[]
+  auditLogs          AuditLog[]
+  chatbots           Chatbot[]
+  securityEvents     SecurityEvent[]
+  guardrails         Guardrail[]
+  guardrailOverrides GuardrailOrgOverride[]
 
   @@map("organizations")
 }
@@ -981,6 +983,11 @@ enum AiUsageStep {
   REPHRASING
   EMBEDDINGS
   RERANKING
+  /// A judge model run by an LLM_POLICY guardrail. Its own step rather than
+  /// folded into MODERATION so the AI-usage page can answer "what did the
+  /// guardrails cost" — a question an operator asks precisely because policy
+  /// rules are the expensive kind, one model call per rule per turn.
+  GUARDRAIL
 }
 
 enum McpConnectorStatus {
@@ -1143,6 +1150,115 @@ enum SecurityEventType {
   /// misconfiguration because it requires an explicit, human-set opt-out —
   /// see docs/thread-encryption.md.
   ENCRYPTION_REQUIREMENT_BYPASSED
+  /// A guardrail refused a turn. Separate from FLAGGED because the incidents
+  /// view filters on this field, and "what did we stop" and "what did we
+  /// merely notice" are the two questions an operator has about a rule set.
+  GUARDRAIL_BLOCKED
+  /// A guardrail matched and let the turn through — a LOG-action rule, or a
+  /// judge that failed open. This is the row that makes observation mode
+  /// worth anything: a rule nobody can see firing is a rule nobody will
+  /// promote to BLOCK.
+  GUARDRAIL_FLAGGED
+}
+
+/// A rule the guardrail loop evaluates.
+///
+/// `organizationId = null` marks a platform rule, applying to every
+/// organization; a set one marks that organization's own. The two are unioned
+/// rather than merged — see packages/guardrails' resolver, which is the single
+/// place that precedence is expressed.
+model Guardrail {
+  id             Int                   @id @default(autoincrement())
+  publicId       String                @unique @default(uuid()) @map("public_id")
+  /// null = a platform rule, applying to every organization.
+  organizationId String?               @map("organization_id")
+  /// Set for BUILT_IN rules, null for operator-authored ones.
+  key            String?
+  name           String
+  description    String?
+  kind           GuardrailKind
+  stage          GuardrailStage
+  action         GuardrailAction       @default(LOG)
+  enabled        Boolean               @default(true)
+  severity       SecurityEventSeverity @default(warn)
+  /// PATTERN only.
+  pattern        String?
+  patternIsRegex Boolean               @default(false) @map("pattern_is_regex")
+  /// LLM_POLICY only — the prose the judge model is given.
+  policy         String?
+  /// LLM_POLICY and scored built-ins, 0–1.
+  threshold      Float?
+  createdBy      String?               @map("created_by")
+  createdAt      DateTime              @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime              @updatedAt @map("updated_at") @db.Timestamptz
+
+  organization Organization?          @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  overrides    GuardrailOrgOverride[]
+
+  /// Does NOT stop two platform rules claiming one built-in key: Postgres
+  /// treats NULLs as distinct, so every platform row is unique to this index
+  /// by virtue of having no organization. The migration adds a partial unique
+  /// index that Prisma cannot express, and without it the resolver can be
+  /// handed two verdicts for one detector with no defined answer.
+  @@unique([organizationId, key])
+  @@index([organizationId, enabled])
+  @@map("guardrails")
+}
+
+/// An adjustment to a platform rule for one organization. Every field is
+/// nullable and null means inherit — the same tri-state as FeatureOverrides,
+/// for the same reason: "off" and "not decided here" are different answers.
+model GuardrailOrgOverride {
+  id             Int                      @id @default(autoincrement())
+  guardrailId    Int                      @map("guardrail_id")
+  organizationId String                   @map("organization_id")
+  enabled        Boolean?
+  action         GuardrailAction?
+  threshold      Float?
+  /// Set by the migration on the rows it seeds from
+  /// OrganizationSettings.contentModerationEnabled, and by nothing else.
+  ///
+  /// That column is read only when IS_ON_PREMISE; in SaaS it is ignored and
+  /// the organization is moderated regardless of what it holds. An override
+  /// honoured everywhere would therefore turn moderation *off* for tenants
+  /// that have it on today. The resolver skips a marked override unless the
+  /// installation is on-premise, so the seed preserves behaviour instead of
+  /// changing it. An override an administrator creates later carries no
+  /// marking and applies everywhere, which is the point of the feature.
+  origin         GuardrailOverrideOrigin? @map("origin")
+  createdAt      DateTime                 @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime                 @updatedAt @map("updated_at") @db.Timestamptz
+
+  guardrail    Guardrail    @relation(fields: [guardrailId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([guardrailId, organizationId])
+  @@index([organizationId])
+  @@map("guardrail_org_overrides")
+}
+
+enum GuardrailKind {
+  BUILT_IN
+  PATTERN
+  LLM_POLICY
+}
+
+enum GuardrailStage {
+  INPUT
+  OUTPUT
+  BOTH
+}
+
+enum GuardrailAction {
+  BLOCK
+  MASK
+  LOG
+}
+
+/// Why an override exists, where that changes how it is read. Only the
+/// migration writes a value; an administrator's override has none.
+enum GuardrailOverrideOrigin {
+  legacy_on_premise
 }
 
 model ThreadShare {

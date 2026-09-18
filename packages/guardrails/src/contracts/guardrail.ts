@@ -173,6 +173,17 @@ export type GuardrailOverride = {
   origin?: GuardrailOverrideOrigin | null;
 };
 
-export const GUARDRAIL_OVERRIDE_ORIGINS = ['legacy-on-premise'] as const;
+/**
+ * Spelled exactly as the Postgres enum is, underscore and all, against this
+ * package's kebab-case habit everywhere else.
+ *
+ * Those other unions never leave the process. This one is a stored column, and
+ * a spelling that needs translating on the way in is a translation somebody
+ * will forget — at which point the value is not recognised, the override is
+ * treated as an ordinary administrator one, and it applies in SaaS too. That
+ * is the silent downgrade this marking exists to prevent, reintroduced by the
+ * marking itself. One spelling, no mapping.
+ */
+export const GUARDRAIL_OVERRIDE_ORIGINS = ['legacy_on_premise'] as const;
 export type GuardrailOverrideOrigin =
   (typeof GUARDRAIL_OVERRIDE_ORIGINS)[number];
