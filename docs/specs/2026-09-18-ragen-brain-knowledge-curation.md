@@ -186,12 +186,12 @@ on it.
 
 Publication is reversible, per page, as an explicit action:
 
-- **Publish** creates the page's `UserFile` (once, on first publication),
-  writes its chunks, sets `publishedAt` and records a `PUBLISH` decision.
+- **Publish** creates the page's `UserFile` (once, on first publication), sets
+  `publishedAt`, writes its chunks and records a `PUBLISH` decision.
 - **Unpublish** deletes those chunks, sets the file's `embeddingStatus` to
-  `STAGED` and clears `publishedAt`. The page stays `APPROVED` — withdrawing it
-  from retrieval is not the same as un-approving it — and the ledger keeps both
-  events, so "who put this in front of people, and who took it out" is
+  `WITHDRAWN` and clears `publishedAt`. The page stays `APPROVED` — withdrawing
+  it from retrieval is not the same as un-approving it — and the ledger keeps
+  both events, so "who put this in front of people, and who took it out" is
   answerable.
 
 **The published `UserFile` is never deleted, and `publishedFileId` is never
@@ -208,15 +208,42 @@ is whether it is currently serving. A reader of the schema who takes the null
 check from the wrong column gets the wrong answer, which is why they are
 separated here rather than overloaded into one field.
 
-**Order, and what a retry finds.** Delete chunks → set `embeddingStatus =
-STAGED` → clear `publishedAt`. Each step is idempotent and safe to repeat, and
-the sequence is chosen so every interruption leaves a state a retry can finish
-from: a crash after the delete leaves a file with no vectors and a stale
-`publishedAt`, which the retry corrects; the reverse order would leave
-`publishedAt` null while chunks are still retrievable, which nothing would
-detect. **Never the reverse.** Republish after a partial withdrawal is the
-ordinary publish path: it re-embeds the current page content into the existing
-file, so it recovers a half-finished withdrawal rather than tripping over it.
+**Order, and what a retry finds.** Both operations are ordered so that **every
+interruption leaves less retrievable than the operation intended, never more**,
+and so a retry finishes from wherever it stopped:
+
+- **Publish**: set `publishedAt` → write chunks. A crash between them leaves a
+  page marked published that answers nothing — visibly wrong, harmless, and
+  fixed by the retry.
+- **Unpublish**: delete chunks → set `embeddingStatus = WITHDRAWN` → clear
+  `publishedAt`. A crash leaves a page still marked published that answers
+  nothing — the same benign state, from the other direction.
+
+Each step is idempotent. **Never the reverse order in either case**: writing
+chunks before `publishedAt`, or clearing `publishedAt` before deleting chunks,
+both leave content retrievable that the page's own state says is not published,
+and nothing in retrieval would notice. Republish after a partial withdrawal is
+the ordinary publish path: it re-embeds the current page content into the
+existing file, recovering a half-finished withdrawal rather than tripping over
+it.
+
+**Retrieval does not check `publishedAt`, and is not asked to.** The alternative
+— an activation marker in the chunk payload that retrieval filters on — would
+add a field to `VectorStoreDocumentMetadata` and a clause to every retrieval
+path in two apps, which is precisely the cost this design avoids. The ordering
+above makes it unnecessary: no window exists in which chunks are retrievable
+while the page is not published, because chunks are never written before
+`publishedAt` and always deleted before it is cleared.
+
+**One publication operation per page at a time.** The ordering only holds if
+publish and unpublish do not interleave. Without that, an all-success sequence —
+publish writes chunks, unpublish deletes them and clears `publishedAt`, the
+first publish then writes the rest — leaves chunks in Qdrant that the page says
+are not published, which is the one state the order was chosen to prevent. So
+the page carries a **publication generation**, bumped by every transition and
+checked at each step: an operation whose generation is stale aborts instead of
+writing, and the operation that bumped it is the one that completes. This is the
+same optimistic check approval uses, applied to a longer operation.
 
 Withdrawal is clean **because** of D9. If source documents were published
 alongside pages, a document cited by two pages could not be withdrawn when one
@@ -263,21 +290,21 @@ nothing in `tests/architecture/` would catch it — so
 
 ## Core surfaces touched
 
-| Surface                                 | Change                                                              | What catches a mistake                                                             |
-| --------------------------------------- | ------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| `prisma/schema.prisma`                  | five new models, all additive; one new `EmbeddingStatus` member     | migration + `npm run verify`                                                       |
-| `packages/platform-contracts`           | `brain` feature key; `TENANT_SCOPED_MODELS` gains the five models   | package tests, `shared-contracts-are-not-recopied`                                 |
-| `packages/brain-contracts` _(new)_      | bundle manifest + page frontmatter Zod schemas                      | package tests; consumers: web, worker                                              |
-| `packages/brain-core` _(new)_           | extraction, findings, graph, intersection rule                      | package tests; consumers: web, worker                                              |
-| `packages/jobs`                         | new job names + payloads; `STAGED` in the `EmbeddingStatus` union   | `job-payload-enums-match-the-schema`, `worker:test:jobs`                           |
-| `apps/worker` ingest handler            | the vector write becomes conditional on the destination             | worker tests + the BullMQ gate; a p0 e2e that a staged file is not retrievable     |
-| `src/libs/db/tenant-scope-guard.ts`     | five models added to the covered set                                | warns at runtime; it does **not** block — the `where` clause still has to be right |
-| ingest / `accessible_by`                | a new publish path writes it from curation instead of from the file | `every-ingest-path-writes-accessible-by.test.ts`                                   |
-| upload UI + document list               | a destination choice, and a visible state for staged files          | component tests + e2e                                                              |
-| `packages/rag-core` (`vector-metadata`) | **no change in v1**                                                 | —                                                                                  |
-| citations (`DocumentCitation`)          | **no schema change**                                                | existing e2e                                                                       |
-| `packages/create-ragen-app`             | new env var for the extraction model, if one is added               | `create-ragen-app-manifest-is-current`                                             |
-| `lint-staged.config.mjs`                | an entry per new workspace                                          | pre-commit, and nothing else                                                       |
+| Surface                                 | Change                                                                            | What catches a mistake                                                             |
+| --------------------------------------- | --------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| `prisma/schema.prisma`                  | five new models, all additive; one new `EmbeddingStatus` member                   | migration + `npm run verify`                                                       |
+| `packages/platform-contracts`           | `brain` feature key; `TENANT_SCOPED_MODELS` gains the five models                 | package tests, `shared-contracts-are-not-recopied`                                 |
+| `packages/brain-contracts` _(new)_      | bundle manifest + page frontmatter Zod schemas                                    | package tests; consumers: web, worker                                              |
+| `packages/brain-core` _(new)_           | extraction, findings, graph, intersection rule                                    | package tests; consumers: web, worker                                              |
+| `packages/jobs`                         | new job names + payloads; `STAGED` and `WITHDRAWN` in the `EmbeddingStatus` union | `job-payload-enums-match-the-schema`, `worker:test:jobs`                           |
+| `apps/worker` ingest handler            | the vector write becomes conditional on the destination                           | worker tests + the BullMQ gate; a p0 e2e that a staged file is not retrievable     |
+| `src/libs/db/tenant-scope-guard.ts`     | five models added to the covered set                                              | warns at runtime; it does **not** block — the `where` clause still has to be right |
+| ingest / `accessible_by`                | a new publish path writes it from curation instead of from the file               | `every-ingest-path-writes-accessible-by.test.ts`                                   |
+| upload UI + document list               | a destination choice, and a visible state for staged files                        | component tests + e2e                                                              |
+| `packages/rag-core` (`vector-metadata`) | **no change in v1**                                                               | —                                                                                  |
+| citations (`DocumentCitation`)          | **no schema change**                                                              | existing e2e                                                                       |
+| `packages/create-ragen-app`             | new env var for the extraction model, if one is added                             | `create-ragen-app-manifest-is-current`                                             |
+| `lint-staged.config.mjs`                | an entry per new workspace                                                        | pre-commit, and nothing else                                                       |
 
 **Why rag-core and the citation tables do not change.** A published page is a
 `UserFile` like any other, so retrieval, `DocumentCitation`, `DocumentRetrieval`
@@ -297,7 +324,16 @@ perfectly correct. **Every source resolved for rendering passes the same file
 predicate as any other read of that document** — `fileAccessWhere` in
 `apps/web/src/features/documents/services/queries/document-access.ts`, and its
 equivalent in `apps/api` — and sources the reader cannot reach are omitted from
-the rendered citation rather than shown without a link. The page itself still
+the rendered citation rather than shown without a link.
+
+**Authorization is checked before deletion, and the order matters.** A source
+that is both deleted and one the reader could not have seen is **omitted**, not
+rendered as "source no longer available" — otherwise the placeholder becomes an
+oracle telling anyone which documents used to exist. Only a source the reader
+would have been allowed to open renders the placeholder, and it carries just
+what the citation already showed: the file name and the span. Nothing is
+resolved from the deleted document itself, because there is nothing left to
+resolve. The page itself still
 cites normally; it is the second level that narrows per reader, which also
 means two people can correctly see different source lists under the same
 answer.
@@ -314,7 +350,8 @@ autoincrement `id` plus a `publicId` UUID for URLs, camelCase fields with
   `ownerId` (the person who vouches for it — not the uploader), `accessibleBy`
   (`String[]` of `org:` / `user:` / `team:` principals), `validFrom`,
   `supersededById`, `verifyEvery` (ISO-8601 duration), `lastVerifiedAt`,
-  `lastVerifiedBy`, `publishedFileId`, `publishedAt`, timestamps.
+  `lastVerifiedBy`, `publishedFileId`, `publishedAt`, `publicationGeneration`,
+  timestamps.
   **`status` and publication are independent**: `publishedAt` null means "not in
   the index", and an approved page that was withdrawn is exactly that.
   `publishedFileId` outlives a withdrawal (see "Withdrawal"), so it is not the
@@ -362,13 +399,25 @@ autoincrement `id` plus a `publicId` UUID for URLs, camelCase fields with
   (`APPROVE | REJECT | MERGE | SET_OWNER | SET_ACCESS | WIDEN_ACCESS | PUBLISH | UNPUBLISH | VERIFY`),
   `before`/`after` JSON, `createdAt`. No update and no delete; the widening rule
   and the publish/withdraw history are enforceable only because this exists.
-- **`EmbeddingStatus`** gains **`STAGED`** — parsed, deliberately not embedded.
-  Distinct from `NOT_STARTED` (queued, will be) and from `CANCELLED` (someone
-  stopped it); a state that means "this is fine and it is not in the index" has
-  to be its own value or the document list cannot tell the user the truth.
+- **`EmbeddingStatus`** gains **`STAGED`** and **`WITHDRAWN`**. `STAGED` is an
+  uploaded document parsed and deliberately not embedded, awaiting curation.
+  `WITHDRAWN` is a published page's file after an unpublish. Both are distinct
+  from `NOT_STARTED` (queued, will be) and from `CANCELLED` (someone stopped
+  it); a state that means "this is fine and it is not in the index" has to be
+  its own value or the document list cannot tell the user the truth.
+
+  **They are two values rather than one on purpose, and an earlier draft had it
+  wrong.** Reusing `STAGED` for a withdrawn page put it in the set that _send to
+  the knowledge base_ (F5) promotes, so the one action meant to rescue staged
+  uploads would have re-indexed exactly the pages a person had just withdrawn —
+  and left them retrievable with `publishedAt` still null, the state everything
+  above is arranged to prevent. F5 selects `STAGED`, so `WITHDRAWN` is excluded
+  by construction rather than by a rule someone has to remember. A withdrawn
+  page returns to the index only through publish, which is the only thing that
+  sets `publishedAt`.
 
 **Migration and existing rows.** Every model is new and the enum member is
-additive, so there is no backfill: no row written before this change is `STAGED`,
+additive, so there is no backfill: no row written before this change carries either new status,
 and nothing reads the new tables. The one pre-existing shape Brain writes is a
 new `UserFile` for a published page — never an update to a customer's uploaded
 file.
@@ -443,7 +492,7 @@ Phase D, so every phase before it is invisible to existing users.
 - [ ] **A1.** `packages/brain-contracts`: Zod schemas for the page frontmatter
       and the bundle manifest (§18 of the research), plus the published-file
       metadata shape. Tests for valid and invalid input.
-- [ ] **A2.** Prisma: the five models, the `STAGED` enum member, and the
+- [ ] **A2.** Prisma: the five models, the `STAGED` and `WITHDRAWN` enum members, and the
       migration. `npm run verify` green, no behaviour change.
 - [ ] **A3.** The five models into `TENANT_SCOPED_MODELS`; `brain` into
       `FEATURE_KEYS`, code default `false`.
@@ -496,11 +545,14 @@ Phase D, so every phase before it is invisible to existing users.
       with an owner only.
 - [ ] **E2.** Publish: an approved page becomes a `UserFile` carrying
       `metadata.brainPageId`, ingested with predefined chunk boundaries and the
-      curated `accessible_by` — never the source file's.
-- [ ] **E3.** Unpublish: delete the page's chunks, set the file to `STAGED`,
-      clear `publishedAt`, keep the page approved and its `UserFile`, record the
-      decision. Each step idempotent, in that order, so any interruption leaves
-      a state a retry finishes.
+      curated `accessible_by` — never the source file's. `publishedAt` is set
+      before the chunks are written, and the page's publication generation is
+      checked at each step.
+- [ ] **E3.** Unpublish: delete the page's chunks, set the file to
+      `WITHDRAWN`, clear `publishedAt`, keep the page approved and its
+      `UserFile`, record the decision. Each step idempotent, in that order, so
+      any interruption leaves a state a retry finishes. A test that publish and
+      unpublish cannot interleave into chunks-without-publication.
 - [ ] **E4.** `tests/architecture/brain-export-never-widens-access.test.ts`.
 - [ ] **E5.** Re-publication by diff: `contentHash` per page, re-embed only what
       changed, delete what was removed.
@@ -528,7 +580,8 @@ Phase D, so every phase before it is invisible to existing users.
       uncurated.
 - [ ] **F5.** _Send to the knowledge base_ on a staged file: `runFileEmbeddings`
       with the knowledge-base destination, per file and over a selection,
-      idempotent, and not gated on the `brain` flag.
+      idempotent, and not gated on the `brain` flag. It selects `STAGED` only —
+      a `WITHDRAWN` page's file is not promotable, and a test says so.
 - [ ] **F6.** A `p0-*` e2e asserting a staged document is not retrievable —
       through chat, through the API, and at every knowledge scope.
 
@@ -581,7 +634,8 @@ Phase D, so every phase before it is invisible to existing users.
 
   **The transition, precisely**, because "one job run per file" is not an
   instruction: the document list offers _send to the knowledge base_ on any
-  `STAGED` file, which starts `runFileEmbeddings` for it with the destination
+  `STAGED` file — and on `STAGED` only, so a withdrawn page's file is never
+  swept back into the index by it — which starts `runFileEmbeddings` for it with the destination
   set to the knowledge base — the same job, same payload shape, and the same
   path the file would have taken had it been uploaded there in the first place.
   It re-parses (the stored file is unchanged, so the result is the same text)
