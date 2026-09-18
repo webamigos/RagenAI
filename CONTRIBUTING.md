@@ -59,7 +59,7 @@ npx vitest run
 npm run api:build          # the only thing that typechecks apps/api
 ```
 
-`npm run test:e2e` (Playwright) needs a seeded `ragen_e2e` database and a
+`npm run web:e2e` (Playwright) needs a seeded `ragen_e2e` database and a
 production build first — CI runs it, so you usually don't have to.
 
 ## Three things that catch everyone
