@@ -464,7 +464,7 @@ panel.
 |---|---|
 | Postgres unreachable when loading rules, cache cold | **Fail open.** The alarm is a `logger.error` with `audit: true`, *not* a security event — `recordSecurityEvent` writes to the database that is down, so an event is the one alarm this failure would swallow. Rejected fail-closed: a blip would take chat down for every tenant, and the state it falls back to is the one every installation is in today. The real mitigation is the 60 s per-org cache, so a blip does not reach the loop at all. |
 | Judge model times out or returns malformed output | Treated as pass, `GUARDRAIL_FLAGGED` with `metadata.error`. Same choice the jailbreak classifier already makes: a classifier that can take the product down is a bigger risk than the one it catches. Timeout 3 s, the classifier's current `DEFAULT_TIMEOUT_MS`, as a per-rule field. |
-| An operator saves a catastrophically backtracking regex | Refused at save time: compiled and run against a 10 KB adversarial fixture with a 50 ms budget, and a pattern that exceeds it is rejected with the fixture shown. At runtime a second guard — a total per-turn budget across all pattern rules; exceeding it skips the remainder and logs. **That budget is checked between rules, not inside one:** a JavaScript `RegExp` cannot be interrupted once it has entered a match, so it bounds how many patterns run, never how long one of them runs. Bounding the single match is the save-time fixture's job, which is why that gate rejects rather than warns. If the implementation can reach a linear-time engine (RE2) the runtime evaluator should use it, and this row gets weaker. Input is already capped by `MAX_USER_INPUT_LENGTH` (10 000). |
+| An operator saves a catastrophically backtracking regex | Refused at save time: run against a 10 KB adversarial fixture with a 50 ms budget, and a pattern that exceeds it is rejected with the fixture shown. **The run happens in a `worker_threads` worker that is terminated on the deadline, not timed in-process.** Timing the call measures a call that has to return in order to be measured, and the patterns this exists to catch are exactly the ones that do not: `(a+)+$` takes 17 ms at 18 characters, 832 ms at 26, and does not finish at 10 000 — so the in-process version hangs on every pattern it should refuse and passes every one it should not. A worker can be killed from outside; nothing else about a JavaScript `RegExp` can be. At runtime a second guard — a total per-turn budget across all pattern rules; exceeding it skips the remainder and logs. **That budget is checked between rules, not inside one:** a JavaScript `RegExp` cannot be interrupted once it has entered a match, so it bounds how many patterns run, never how long one of them runs. Bounding the single match is the save-time fixture's job, which is why that gate rejects rather than warns. If the implementation can reach a linear-time engine (RE2) the runtime evaluator should use it, and this row gets weaker. Input is already capped by `MAX_USER_INPUT_LENGTH` (10 000). |
 | A rule matches every message | Nothing technical fails; this is why `LOG` is the creation default and why the page shows each rule's 7-day hit count. |
 | An override points at a rule that is not a platform rule | Refused by the admin action; dropped by the resolver if one exists anyway. |
 | Two platform rules claim one built-in key | Prevented by the partial unique index above. |
@@ -484,7 +484,7 @@ Each phase leaves the application working.
 ### Phase A — the package, the schema, the authoring surface
 
 Ends with rules an operator can create and nothing reading them. Deliberate:
-the four enum members must reach every reader before a writer exists.
+the three enum members must reach every reader before a writer exists.
 
 - [ ] **A1.** `packages/guardrails` — contracts (`GuardrailKind`, `…Stage`,
       `…Action`, the built-in catalogue with labels, `SUPPORTED_COMBINATIONS`),
@@ -602,7 +602,7 @@ PR that breaks it.
 ## Rollout and rollback
 
 Migration first, and **every reader deployed before any writer** — the enum
-hazard is the one hard ordering constraint here. Phase A adds all four members
+hazard is the one hard ordering constraint here. Phase A adds all three members
 and writes none.
 
 Before the Phase B deploy, run `npm run guardrails:preflight` on each service
