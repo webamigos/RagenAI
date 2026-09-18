@@ -484,7 +484,7 @@ Each phase leaves the application working.
 ### Phase A — the package, the schema, the authoring surface
 
 Ends with rules an operator can create and nothing reading them. Deliberate:
-the four enum members must reach every reader before a writer exists.
+the three enum members must reach every reader before a writer exists.
 
 - [ ] **A1.** `packages/guardrails` — contracts (`GuardrailKind`, `…Stage`,
       `…Action`, the built-in catalogue with labels, `SUPPORTED_COMBINATIONS`),
@@ -602,7 +602,7 @@ PR that breaks it.
 ## Rollout and rollback
 
 Migration first, and **every reader deployed before any writer** — the enum
-hazard is the one hard ordering constraint here. Phase A adds all four members
+hazard is the one hard ordering constraint here. Phase A adds all three members
 and writes none.
 
 Before the Phase B deploy, run `npm run guardrails:preflight` on each service
