@@ -1,5 +1,6 @@
 'use client';
 
+import { publicRuntimeConfig } from '@/config/public-runtime-config';
 import { useState, useEffect, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import { ChevronUpDownIcon, CheckIcon } from '@heroicons/react/20/solid';
@@ -276,7 +277,7 @@ const ModelSelectorInlineImpl = ({
 };
 
 export const ModelSelectorInline = (props: Props) => {
-  if (process.env.NEXT_PUBLIC_HIDE_MODEL_SELECTOR === '1') {
+  if (publicRuntimeConfig().hideModelSelector === '1') {
     return null;
   }
   return <ModelSelectorInlineImpl {...props} />;

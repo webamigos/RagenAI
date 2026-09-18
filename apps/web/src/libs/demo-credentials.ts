@@ -19,13 +19,16 @@
  * data, and is an ordinary member of one organization with no platform role.
  * Never put a credential here that is any of those things less.
  */
+
+import { publicRuntimeConfig } from '@/config/public-runtime-config';
 export type DemoCredentials = { email: string; password: string };
 
 function read(): DemoCredentials | null {
   // Literal member access, because Next inlines `process.env.NEXT_PUBLIC_*`
   // at build time only when it can see the whole name.
-  const email = process.env.NEXT_PUBLIC_DEMO_EMAIL?.trim();
-  const password = process.env.NEXT_PUBLIC_DEMO_PASSWORD?.trim();
+  const { demoEmail, demoPassword } = publicRuntimeConfig();
+  const email = demoEmail.trim();
+  const password = demoPassword.trim();
 
   if (!email || !password) {
     return null;

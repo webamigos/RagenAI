@@ -1,5 +1,6 @@
 'use client';
 
+import { publicRuntimeConfig } from '@/config/public-runtime-config';
 import { useState, useEffect, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import { ClipboardIcon, CheckIcon } from '@heroicons/react/24/outline';
@@ -27,7 +28,7 @@ export function EmbedCodeSection({ widgetToken }: EmbedCodeSectionProps) {
   const appUrl =
     typeof window !== 'undefined'
       ? window.location.origin
-      : (process.env.NEXT_PUBLIC_APP_URL ?? '');
+      : publicRuntimeConfig().appUrl;
 
   const snippet = `<script\n  src="${appUrl}/chatbot-widget.js"\n  data-chatbot-token="${widgetToken}"\n  async\n></script>`;
 

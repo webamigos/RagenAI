@@ -1,3 +1,4 @@
+import { publicRuntimeConfig } from '@/config/public-runtime-config';
 import { trace } from '@opentelemetry/api';
 import { logs } from '@opentelemetry/api-logs';
 import {
@@ -19,15 +20,23 @@ import { UserContextSpanProcessor } from '@/libs/monitoring/otel-user-context';
 import { initWebVitals } from '@/providers/Telemetry/web-vitals';
 import { initErrorTracking } from '@/providers/Telemetry/error-tracking';
 
-const COLLECTOR_URL = process.env.NEXT_PUBLIC_OTEL_COLLECTOR_URL;
+/**
+ * Read from the document rather than from the bundle.
+ *
+ * This file runs before the application hydrates, and the configuration
+ * element is the first thing in `<body>` — Next's own scripts come after the
+ * content, so the element is parsed by the time this executes. That ordering
+ * is why the element lives at the top of the body rather than anywhere
+ * convenient.
+ */
+const { otelCollectorUrl: COLLECTOR_URL, targetEnv } = publicRuntimeConfig();
 
 if (COLLECTOR_URL) {
   const clientServiceName =
-    process.env.NEXT_PUBLIC_OTEL_SERVICE_NAME ?? 'ragen-web-client';
+    publicRuntimeConfig().otelServiceName || 'ragen-web-client';
   const resourceAttrs: Record<string, string> = {
     'service.name': clientServiceName,
   };
-  const targetEnv = process.env.NEXT_PUBLIC_TARGET_ENV;
   if (targetEnv) {
     resourceAttrs['deployment.environment.name'] = targetEnv;
   }
@@ -79,7 +88,7 @@ export function onRouterTransitionStart(
   }
 
   const tracer = trace.getTracer(
-    process.env.NEXT_PUBLIC_OTEL_SERVICE_NAME ?? 'ragen-web-client',
+    publicRuntimeConfig().otelServiceName || 'ragen-web-client',
   );
   const span = tracer.startSpan('navigation', {
     attributes: {

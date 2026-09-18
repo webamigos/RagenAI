@@ -1,9 +1,12 @@
+import { publicRuntimeConfig } from '@/config/public-runtime-config';
 import { mapPinoLogToOtel } from '@ragenai/observability';
 import pino, { type Logger } from 'pino';
 import { otelLogger } from '@/libs/monitoring/otel-logger';
 
-const isProductionTargetEnv =
-  process.env.NEXT_PUBLIC_TARGET_ENV === 'production';
+// A function rather than a constant: the value comes from the document now,
+// and this module is imported before the document is necessarily readable.
+const isProductionTargetEnv = () =>
+  publicRuntimeConfig().targetEnv === 'production';
 
 const COLOR = {
   RESET: '\x1b[0m',
@@ -32,10 +35,10 @@ const getLevelColor = (level: string): string => {
 };
 
 const logger: Logger = pino({
-  level: isProductionTargetEnv ? 'info' : 'debug',
+  level: isProductionTargetEnv() ? 'info' : 'debug',
   browser: {
     write: (logObj: unknown) => {
-      if (isProductionTargetEnv) {
+      if (isProductionTargetEnv()) {
         return;
       }
 

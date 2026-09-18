@@ -1,18 +1,21 @@
 'use client';
 
+import { publicRuntimeConfig } from '@/config/public-runtime-config';
 import { getPusherClient } from './pusher-client';
 import { subscribeSSE } from './sse-client';
 import { type NotificationEvent, type NotificationMessage } from './types';
 
 type EventCallback = (message: NotificationMessage) => void;
 
-const isPusherConfigured = Boolean(process.env.NEXT_PUBLIC_PUSHER_KEY);
+// Asked at subscribe time rather than at module load: the key now comes from
+// the document, which this module may be imported before.
+const isPusherConfigured = () => Boolean(publicRuntimeConfig().pusherKey);
 
 export function subscribeNotification(
   event: NotificationEvent,
   callback: EventCallback,
 ): () => void {
-  if (isPusherConfigured) {
+  if (isPusherConfigured()) {
     return subscribePusher(event, callback);
   }
   return subscribeSSE(event, callback);

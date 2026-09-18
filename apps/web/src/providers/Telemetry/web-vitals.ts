@@ -1,13 +1,35 @@
+import { publicRuntimeConfig } from '@/config/public-runtime-config';
 import type { Metric } from 'web-vitals';
 
-const COLLECTOR_URL = process.env.NEXT_PUBLIC_OTEL_COLLECTOR_URL;
-const TARGET_ENV = process.env.NEXT_PUBLIC_TARGET_ENV || '';
-// Must resolve the same way as instrumentation-client.ts, or Web Vitals land
-// under a different service.name than the rest of the browser telemetry.
-const SERVICE_NAME =
-  process.env.NEXT_PUBLIC_OTEL_SERVICE_NAME ?? 'ragen-web-client';
+/**
+ * Read per call, not once at module load.
+ *
+ * These were module constants, which is the shape that stops working when the
+ * values come from the document rather than from the bundle: this module is
+ * imported while the page is still assembling, and a constant would capture
+ * whatever was readable at that instant. `publicRuntimeConfig()` caches after
+ * the first successful read, so the cost of asking again is a property lookup.
+ *
+ * `serviceName` must resolve the same way as `instrumentation-client.ts`, or
+ * Web Vitals land under a different `service.name` than the rest of the
+ * browser telemetry.
+ */
+function telemetryConfig() {
+  const config = publicRuntimeConfig();
+  return {
+    collectorUrl: config.otelCollectorUrl,
+    targetEnv: config.targetEnv,
+    serviceName: config.otelServiceName || 'ragen-web-client',
+  };
+}
 
 function sendMetric(metric: Metric) {
+  const {
+    collectorUrl: COLLECTOR_URL,
+    targetEnv: TARGET_ENV,
+    serviceName: SERVICE_NAME,
+  } = telemetryConfig();
+
   if (!COLLECTOR_URL) {
     return;
   }
@@ -87,7 +109,7 @@ function sendMetric(metric: Metric) {
 }
 
 export function initWebVitals() {
-  if (!COLLECTOR_URL) {
+  if (!telemetryConfig().collectorUrl) {
     return;
   }
 

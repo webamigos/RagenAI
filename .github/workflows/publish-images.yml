@@ -9,19 +9,16 @@ name: Publish images
 # programme's Phase G waits on — `ragen-enterprise` layers the Temporal adapter
 # `FROM` the worker image rather than rebuilding the pipeline.
 #
-# **`web` is deliberately not here.** Its Dockerfile takes ten `NEXT_PUBLIC_*`
-# build arguments, and Next inlines those into the client bundle — the build
-# *is* the runtime for them, as that file says at length. Three are per-install
-# by nature (`NEXT_PUBLIC_APP_URL` and the two Pusher values), so a published
-# image would carry ours, start cleanly, and leave a self-hoster with dead
-# realtime notifications and the wrong application URL. That is worse than no
-# image. Publishing it needs those variables moved to runtime first, which is a
-# change to the application rather than to this file.
+# **`web` is here now.** It was the one exclusion, because its Dockerfile took
+# ten `NEXT_PUBLIC_*` build arguments and Next inlines those into the client
+# bundle — three of them (`APP_URL` and the two Pusher values) differ per
+# install, so one image would have carried the publisher's answers into every
+# visitor's browser. Those values are read at runtime now; the Dockerfile
+# declares no build arguments and an architecture test keeps it that way.
 #
-# `mcp` *is* here, despite sitting outside this programme: its Dockerfile takes
-# no build arguments and uses the same monorepo-root context, so the only thing
-# that had kept it out was scope — which is not a reason to make somebody build
-# it from source.
+# `mcp` is here despite sitting outside this programme, for the same reason:
+# no build arguments, same monorepo-root context, and scope is not a reason to
+# make somebody compile it.
 on:
   release:
     types: [published]
@@ -53,7 +50,7 @@ jobs:
       # One broken image should not hide whether the others build.
       fail-fast: false
       matrix:
-        app: [worker, api, admin, mcp]
+        app: [worker, api, admin, mcp, web]
     steps:
       - uses: actions/checkout@v7
         with:

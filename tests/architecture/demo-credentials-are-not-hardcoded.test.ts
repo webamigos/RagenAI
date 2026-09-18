@@ -11,8 +11,10 @@ import { describe, expect, it } from 'vitest';
  * repository, harmless-looking, and shipped to everyone who clones it. A
  * credential is worse, because it keeps working after someone notices.
  *
- * `libs/demo-credentials.ts` reads `NEXT_PUBLIC_DEMO_EMAIL` and
- * `NEXT_PUBLIC_DEMO_PASSWORD` and returns nothing when either is missing, so
+ * `libs/demo-credentials.ts` reads the deployment's `demoEmail` and
+ * `demoPassword` through `publicRuntimeConfig()` — formerly the
+ * `NEXT_PUBLIC_DEMO_*` build-time pair — and returns nothing when either is
+ * missing, so
  * a self-hosted build renders no box at all. The presence of the two
  * variables is the gate rather than `TARGET_ENV === 'demo'` — `libs/utils/env.ts`
  * warns against that after the tag-manager incident, since `TARGET_ENV`
@@ -75,8 +77,15 @@ describe('demo credentials are not hardcoded', () => {
   it('are read from the environment, with no fallback', () => {
     const reader = readFileSync(join(REPO_ROOT, READER), 'utf8');
 
-    expect(reader).toMatch(/process\.env\.NEXT_PUBLIC_DEMO_EMAIL/);
-    expect(reader).toMatch(/process\.env\.NEXT_PUBLIC_DEMO_PASSWORD/);
+    // The source moved, the rule did not. These used to be
+    // `process.env.NEXT_PUBLIC_DEMO_*`, which Next inlined at build time —
+    // fine while `apps/web` was built per install, wrong once one image serves
+    // all of them. `publicRuntimeConfig()` reads the deployment's own
+    // environment; what this test polices is that the values come from
+    // configuration rather than from this file.
+    expect(reader).toMatch(/publicRuntimeConfig\(\)/);
+    expect(reader).toMatch(/demoEmail/);
+    expect(reader).toMatch(/demoPassword/);
     // Returning null when either is absent is what keeps the box off a
     // self-hosted build.
     expect(reader).toMatch(/return null/);
