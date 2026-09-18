@@ -615,7 +615,13 @@ Phase D, so every phase before it is invisible to existing users.
 ## Rollout and rollback
 
 - **Flag**: `brain` in `FEATURE_KEYS`, code default `false`, per-org override
-  through the admin panel (ADR-35). Every route and job checks it.
+  through the admin panel (ADR-35). Every Brain route and job checks it, **with
+  one deliberate exception**: _send to the knowledge base_ (F5) does not. It is
+  a knowledge-base operation on a file that happens to be staged, and it is the
+  only way out for staged files if Brain is switched off — gating it behind the
+  flag would strand exactly the documents the rollback path below exists to
+  rescue. An implementer reading "every job checks it" as absolute would build
+  that trap, so the exception is stated here and not only at F5.
 - **No behaviour change for existing installations.** Mode 1 is the default and
   is today's path; staged intake is chosen per upload. An organization that
   never turns Brain on sees nothing.
