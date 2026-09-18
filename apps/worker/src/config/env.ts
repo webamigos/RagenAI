@@ -39,14 +39,25 @@ export const workerEnvSchema = fragments.targetEnvRequired
   // nothing about today's boot changes.
   .merge(fragments.workerRuntime)
   .merge(fragments.temporal)
-  // Stays unconditional. The seam requires it under `bullmq`, but this process
-  // needs Redis either way — the organization-settings cache has no fallback,
-  // and `services/redis.ts` reads `process.env.REDIS_URL!`.
-  .merge(fragments.redisRequired)
+  // `redis`, not `redisRequired`, because `workerRuntimeRules` below already
+  // requires it — under `bullmq`, which is the default — and this process has
+  // no need for it beyond the queue.
+  //
+  // The unconditional version was justified by a caller that did not exist.
+  // The comment here used to say this process needs Redis either way,
+  // "because the organization-settings cache has no fallback and
+  // `services/redis.ts` reads `process.env.REDIS_URL!`" — but that service had
+  // no importers anywhere, the settings reads go through Prisma in
+  // `services/db/db.ts`, and the only live reader of the variable in this app
+  // is the BullMQ runtime. So the requirement was stated twice, once by the
+  // seam that knows when it applies and once here regardless, and only the
+  // second one would have refused to start a Temporal deployment with no
+  // Redis.
+  .merge(fragments.redis)
   .merge(fragments.encryption)
   .extend({
     // Redis for organization settings
-    SECRET_KEY: z.string(), // for hashing organization settings in Redis
+    SECRET_KEY: z.string(), // decrypts stored API keys — see utils/decrypt-api-key.ts
 
     // Meilisearch (legacy — kept for backwards compatibility)
     MEILISEARCH_URL: z.string().url().optional(),
