@@ -281,12 +281,23 @@ describe('unsupported combinations', () => {
     ]);
   });
 
-  it('drops everything on a build with no evaluator, which is Phase A', () => {
+  it('uses the package default when the caller states no set', () => {
+    // The default is what the package can evaluate: PATTERN at INPUT, and
+    // nothing else. A kind whose evaluator does not exist anywhere is dropped
+    // rather than resolved to a rule that would be enforced by nothing.
     const result = resolveGuardrails({
-      platformRules: [rule({ publicId: 'p1' })],
+      platformRules: [
+        rule({ publicId: 'pattern-input' }),
+        rule({ publicId: 'judge', kind: 'LLM_POLICY' }),
+        rule({ publicId: 'on-output', stage: 'OUTPUT' }),
+      ],
     });
 
-    expect(result.rules).toEqual([]);
+    expect(result.rules.map((r) => r.publicId)).toEqual(['pattern-input']);
+    expect(result.dropped.map((d) => d.guardrailPublicId).sort()).toEqual([
+      'judge',
+      'on-output',
+    ]);
   });
 });
 

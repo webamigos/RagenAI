@@ -1,0 +1,312 @@
+'use client';
+
+import {
+  ACTIONS_BY_KIND,
+  GUARDRAIL_SEVERITIES,
+  SUPPORTED_COMBINATIONS,
+  type GuardrailAction,
+  type GuardrailKind,
+  type GuardrailSeverity,
+  type GuardrailStage,
+} from '@ragenai/guardrails';
+import { useMemo, useState, useTransition } from 'react';
+import { toast } from 'sonner';
+
+import {
+  createGuardrailAction,
+  updateGuardrailAction,
+  type GuardrailRow,
+} from '../actions';
+
+/**
+ * The kinds this build can evaluate, and the stages each can run at.
+ *
+ * Derived from `SUPPORTED_COMBINATIONS` rather than from the enum, so the form
+ * cannot offer a rule that nothing would evaluate. That is the difference
+ * between a page that is honest and a page with a "not enforced yet" banner
+ * on it — the banner starts lying the moment one combination works, and these
+ * arrive one at a time.
+ */
+function useOffered() {
+  return useMemo(() => {
+    const stagesByKind = new Map<GuardrailKind, GuardrailStage[]>();
+    for (const combination of SUPPORTED_COMBINATIONS) {
+      const stages = stagesByKind.get(combination.kind) ?? [];
+      stages.push(combination.stage);
+      stagesByKind.set(combination.kind, stages);
+    }
+    // `BOTH` is offered only where both halves are, because it is shorthand
+    // for two stages rather than a third one.
+    for (const [kind, stages] of stagesByKind) {
+      if (stages.includes('INPUT') && stages.includes('OUTPUT')) {
+        stages.push('BOTH');
+      }
+      stagesByKind.set(kind, stages);
+    }
+    return stagesByKind;
+  }, []);
+}
+
+export function GuardrailForm({
+  rule,
+  onClose,
+}: {
+  rule?: GuardrailRow;
+  onClose: () => void;
+}) {
+  const offered = useOffered();
+  const kinds = [...offered.keys()];
+
+  const [name, setName] = useState(rule?.name ?? '');
+  const [description, setDescription] = useState(rule?.description ?? '');
+  const [kind, setKind] = useState<GuardrailKind>(
+    rule?.kind ?? kinds[0] ?? 'PATTERN',
+  );
+  const [stage, setStage] = useState<GuardrailStage>(rule?.stage ?? 'INPUT');
+  const [action, setAction] = useState<GuardrailAction>(rule?.action ?? 'LOG');
+  const [severity, setSeverity] = useState<GuardrailSeverity>(
+    rule?.severity ?? 'warn',
+  );
+  const [pattern, setPattern] = useState(rule?.pattern ?? '');
+  const [patternIsRegex, setPatternIsRegex] = useState(
+    rule?.patternIsRegex ?? false,
+  );
+  const [isPending, startTransition] = useTransition();
+
+  const isBuiltIn = rule?.key != null;
+  const stages = offered.get(kind) ?? [];
+  const actions = ACTIONS_BY_KIND[kind] ?? [];
+
+  const submit = () => {
+    startTransition(async () => {
+      const input = {
+        name,
+        description,
+        kind,
+        stage,
+        action,
+        severity,
+        pattern: kind === 'PATTERN' ? pattern : undefined,
+        patternIsRegex: kind === 'PATTERN' ? patternIsRegex : undefined,
+      };
+
+      const result = rule
+        ? await updateGuardrailAction(rule.publicId, input)
+        : await createGuardrailAction(input);
+
+      if (result.ok) {
+        toast.success(rule ? 'Rule saved' : 'Rule created, switched off');
+        onClose();
+      } else {
+        toast.error(result.message);
+      }
+    });
+  };
+
+  if (kinds.length === 0) {
+    return (
+      <Shell onClose={onClose}>
+        <h2 className="text-lg font-semibold">Nothing to author yet</h2>
+        <p className="mt-2 text-sm text-muted-foreground">
+          This build ships no guardrail evaluator, so any rule saved here would
+          be enforced by nothing. The form returns when the first kind can run.
+        </p>
+      </Shell>
+    );
+  }
+
+  return (
+    <Shell onClose={onClose}>
+      <h2 className="text-lg font-semibold">
+        {rule ? 'Edit rule' : 'New platform rule'}
+      </h2>
+      <p className="mt-1 text-sm text-muted-foreground">
+        A platform rule applies to every organization. An organization can
+        adjust it for itself; it cannot delete it.
+      </p>
+
+      <div className="mt-6 space-y-4">
+        <Field label="Name">
+          <input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
+          />
+        </Field>
+
+        <Field label="Description" hint="Shown to whoever reads the rule list.">
+          <input
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
+          />
+        </Field>
+
+        <Field label="Kind">
+          <select
+            value={kind}
+            disabled={isBuiltIn}
+            onChange={(e) => setKind(e.target.value as GuardrailKind)}
+            className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm disabled:opacity-60"
+          >
+            {kinds.map((k) => (
+              <option key={k} value={k}>
+                {k}
+              </option>
+            ))}
+          </select>
+          {isBuiltIn ? (
+            <p className="mt-1 text-xs text-muted-foreground">
+              A built-in detector&apos;s kind is fixed. You can change what it
+              does when it fires.
+            </p>
+          ) : null}
+        </Field>
+
+        <Field label="Stage">
+          <select
+            value={stage}
+            onChange={(e) => setStage(e.target.value as GuardrailStage)}
+            className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
+          >
+            {stages.map((s) => (
+              <option key={s} value={s}>
+                {s}
+              </option>
+            ))}
+          </select>
+        </Field>
+
+        <Field label="On a hit">
+          <select
+            value={action}
+            onChange={(e) => setAction(e.target.value as GuardrailAction)}
+            className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
+          >
+            {actions.map((a) => (
+              <option key={a} value={a}>
+                {a}
+              </option>
+            ))}
+          </select>
+        </Field>
+
+        <Field label="Severity of the event it records">
+          <select
+            value={severity}
+            onChange={(e) => setSeverity(e.target.value as GuardrailSeverity)}
+            className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
+          >
+            {GUARDRAIL_SEVERITIES.map((s) => (
+              <option key={s} value={s}>
+                {s}
+              </option>
+            ))}
+          </select>
+        </Field>
+
+        {kind === 'PATTERN' ? (
+          <>
+            <Field
+              label="Pattern"
+              hint="Checked against personal data that Presidio has already masked, so a rule for a national ID will not match the number — it will have become a placeholder by then."
+            >
+              <input
+                value={pattern}
+                onChange={(e) => setPattern(e.target.value)}
+                className="w-full rounded-md border border-border bg-background px-3 py-2 font-mono text-sm"
+              />
+            </Field>
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={patternIsRegex}
+                onChange={(e) => setPatternIsRegex(e.target.checked)}
+              />
+              Treat as a regular expression
+            </label>
+          </>
+        ) : null}
+      </div>
+
+      <div className="mt-6 flex justify-end gap-2">
+        <button
+          type="button"
+          onClick={onClose}
+          className="rounded-md border border-border px-3 py-2 text-sm hover:bg-accent"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          disabled={isPending}
+          onClick={submit}
+          className="rounded-md bg-primary px-3 py-2 text-sm text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+        >
+          {submitLabel({ isPending, isEdit: rule != null })}
+        </button>
+      </div>
+    </Shell>
+  );
+}
+
+/**
+ * "Checking…" rather than "Saving…" on purpose: the wait is the save-time
+ * pattern probe, which runs the rule against adversarial fixtures before
+ * anything is written. Telling an operator it is saving would make a refusal
+ * look like a failure to save rather than a verdict on their pattern.
+ */
+function submitLabel({
+  isPending,
+  isEdit,
+}: {
+  isPending: boolean;
+  isEdit: boolean;
+}): string {
+  if (isPending) {
+    return 'Checking…';
+  }
+  return isEdit ? 'Save' : 'Create';
+}
+
+function Shell({
+  children,
+  onClose,
+}: {
+  children: React.ReactNode;
+  onClose: () => void;
+}) {
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-background/80 p-4"
+      onClick={onClose}
+    >
+      <div
+        className="w-full max-w-lg rounded-xl border border-border bg-card p-6"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function Field({
+  label,
+  hint,
+  children,
+}: {
+  label: string;
+  hint?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div>
+      <label className="mb-1 block text-sm font-medium">{label}</label>
+      {children}
+      {hint ? (
+        <p className="mt-1 text-xs text-muted-foreground">{hint}</p>
+      ) : null}
+    </div>
+  );
+}
