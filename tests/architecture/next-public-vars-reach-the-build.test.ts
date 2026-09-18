@@ -57,6 +57,21 @@ function sourceFiles(dir: string): string[] {
   });
 }
 
+/**
+ * Comments are not reads.
+ *
+ * The rule is about what the compiler inlines, and prose *explaining* the rule
+ * names the same variables — `public-runtime-config.ts` documents the
+ * mechanism with a `process.env.NEXT_PUBLIC_FOO` example, and this test
+ * collected it as a variable the Dockerfile had to declare. A guard that fires
+ * on its own explanation is a guard somebody deletes.
+ *
+ * Deliberately naive: a `//` inside a string literal truncates that line. The
+ * direction of that error is safe here — it can hide a read, never invent one.
+ */
+const withoutComments = (source: string): string =>
+  source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '');
+
 let cached: Map<string, string[]> | undefined;
 
 /**
@@ -72,7 +87,7 @@ function namesReadByTheApp(): Map<string, string[]> {
   const found = new Map<string, string[]>();
 
   for (const file of sourceFiles(WEB_SRC)) {
-    const contents = readFileSync(file, 'utf8');
+    const contents = withoutComments(readFileSync(file, 'utf8'));
     for (const match of contents.matchAll(READ)) {
       const name = match[1] as string;
       const where = file.slice(REPO_ROOT.length + 1);
