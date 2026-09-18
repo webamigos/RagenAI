@@ -1,11 +1,11 @@
 import { NOTIFICATIONS_DEFAULT_CHANNEL } from './config';
 import { NotificationEvent, type NotificationMessage } from './types';
+import { readPublicRuntimeConfig } from '@/config/public-runtime-config';
 
 const PUSHER_APP_ID = process.env.PUSHER_APP_ID;
 const PUSHER_KEY = process.env.PUSHER_KEY;
 const PUSHER_SECRET = process.env.PUSHER_SECRET;
-const PUSHER_CLUSTER =
-  process.env.PUSHER_CLUSTER || process.env.NEXT_PUBLIC_PUSHER_CLUSTER || 'eu';
+const PUSHER_CLUSTER = readPublicRuntimeConfig().pusherCluster || 'eu';
 
 const isPusherConfigured = Boolean(
   PUSHER_APP_ID && PUSHER_KEY && PUSHER_SECRET,

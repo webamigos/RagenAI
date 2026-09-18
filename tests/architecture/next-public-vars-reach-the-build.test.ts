@@ -1,6 +1,7 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
+import ts from 'typescript';
 import { describe, expect, it } from 'vitest';
 
 /**
@@ -57,6 +58,51 @@ function sourceFiles(dir: string): string[] {
   });
 }
 
+/**
+ * Comments are not reads — decided by TypeScript's own scanner.
+ *
+ * The rule is about what the compiler inlines, and prose *explaining* the rule
+ * names the same variables: `public-runtime-config.ts` documents the mechanism
+ * with a `process.env.NEXT_PUBLIC_FOO` example, and this test collected it as
+ * a variable the Dockerfile had to declare. A guard that fires on its own
+ * explanation is a guard somebody deletes.
+ *
+ * **The first version stripped comments with a regex, and that was wrong in
+ * the one direction a guard cannot afford.** `//` occurs inside string
+ * literals constantly — every `https://` — so a line like
+ * `const u = "https://x"; process.env.NEXT_PUBLIC_FOO;` lost its real access,
+ * and the Dockerfile check would then pass without ever seeing the name. The
+ * comment there called that "safe, it can hide a read, never invent one":
+ * hiding a read is precisely the failure this test exists to prevent, and
+ * inventing one is merely noisy.
+ *
+ * So the scanner decides. Comment trivia is dropped; string and template
+ * literals are kept, because a name appearing inside one is a false positive
+ * — the direction that costs somebody a minute rather than a release.
+ */
+const withoutComments = (source: string): string => {
+  const scanner = ts.createScanner(
+    ts.ScriptTarget.Latest,
+    /* skipTrivia */ false,
+    ts.LanguageVariant.JSX,
+    source,
+  );
+
+  let out = '';
+  for (
+    let token = scanner.scan();
+    token !== ts.SyntaxKind.EndOfFileToken;
+    token = scanner.scan()
+  ) {
+    const isComment =
+      token === ts.SyntaxKind.SingleLineCommentTrivia ||
+      token === ts.SyntaxKind.MultiLineCommentTrivia;
+    out += isComment ? ' ' : scanner.getTokenText();
+  }
+
+  return out;
+};
+
 let cached: Map<string, string[]> | undefined;
 
 /**
@@ -72,7 +118,7 @@ function namesReadByTheApp(): Map<string, string[]> {
   const found = new Map<string, string[]>();
 
   for (const file of sourceFiles(WEB_SRC)) {
-    const contents = readFileSync(file, 'utf8');
+    const contents = withoutComments(readFileSync(file, 'utf8'));
     for (const match of contents.matchAll(READ)) {
       const name = match[1] as string;
       const where = file.slice(REPO_ROOT.length + 1);
