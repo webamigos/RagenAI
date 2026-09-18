@@ -1,9 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */
 import type { Mock } from 'vitest';
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { ThreadsService } from './threads.service.js';
 import { type PrismaService } from '../prisma/prisma.service.js';
 import { type ApiContext } from '../common/types/api-context.js';
+import { AssistantScopeService } from '../common/services/assistant-scope.service.js';
 import {
   type OrgId,
   type UserId,
@@ -27,7 +28,10 @@ describe('ThreadsService', () => {
     projectId: 'proj-bound',
   };
 
-  function makeService(overrides: Partial<Record<string, Mock>> = {}) {
+  function makeService(
+    overrides: Partial<Record<string, Mock>> = {},
+    project: unknown = { id: 'proj-bound' },
+  ) {
     const threadOps = {
       findMany: vi.fn().mockResolvedValue([thread]),
       findFirst: vi.fn().mockResolvedValue(thread),
@@ -40,7 +44,7 @@ describe('ThreadsService', () => {
       deleteMany: vi.fn().mockResolvedValue({ count: 0 }),
     };
     const projectOps = {
-      findFirst: vi.fn().mockResolvedValue({ id: 'proj-bound' }),
+      findFirst: vi.fn().mockResolvedValue(project),
     };
     // $transaction passes through — it's used in remove() to wrap
     // message + thread deleteMany in one batch. The mock just awaits
@@ -54,7 +58,7 @@ describe('ThreadsService', () => {
       },
     } as unknown as PrismaService;
     return {
-      service: new ThreadsService(prisma),
+      service: new ThreadsService(prisma, new AssistantScopeService(prisma)),
       threadOps,
       messageOps,
       projectOps,
@@ -100,17 +104,45 @@ describe('ThreadsService', () => {
   });
 
   it('create: rejects assistant_id not in org', async () => {
-    const { service: svc } = makeService();
-    // Repoint the project lookup to null
-    (svc as any).prisma = {
-      client: {
-        thread: { create: vi.fn() },
-        project: { findFirst: vi.fn().mockResolvedValue(null) },
-      },
-    };
+    const { service: svc, threadOps } = makeService({}, null);
+    // 403, not the 400 this endpoint used to answer: under a key scope the
+    // question is "may you ask this", and a 404/400 split would say whether
+    // the id exists.
     await expect(
       svc.create({ assistant_id: 'asst-other-org' }, context),
-    ).rejects.toBeInstanceOf(BadRequestException);
+    ).rejects.toBeInstanceOf(ForbiddenException);
+    expect(threadOps.create).not.toHaveBeenCalled();
+  });
+
+  // With a scoped key the precedence inverts: the key decides, and
+  // `assistant_id` is a field that has to agree with it.
+  it('create: a key bound to an assistant refuses a thread for another', async () => {
+    const { service, threadOps } = makeService();
+    const scopedKey: ApiContext = {
+      ...context,
+      knowledgeScope: 'ASSISTANT',
+      projectId: 'proj-bound' as ProjectId,
+    };
+
+    await expect(
+      service.create({ assistant_id: 'asst-proj-other' }, scopedKey),
+    ).rejects.toBeInstanceOf(ForbiddenException);
+    expect(threadOps.create).not.toHaveBeenCalled();
+  });
+
+  it('create: a knowledge-base key opens a thread with no project', async () => {
+    const { service, threadOps } = makeService();
+    const kbKey: ApiContext = {
+      orgId: context.orgId,
+      userId: context.userId,
+      keyId: context.keyId,
+      debugMode: false,
+      knowledgeScope: 'KNOWLEDGE_BASE',
+    };
+
+    await service.create({}, kbKey);
+
+    expect(threadOps.create.mock.calls[0][0].data.projectId).toBe(null);
   });
 
   it('create: nested-writes seed messages', async () => {

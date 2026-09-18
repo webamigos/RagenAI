@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-argument */
 import type { Mock, MockedFunction } from 'vitest';
-import { NotFoundException } from '@nestjs/common';
+import { AssistantScopeService } from '../common/services/assistant-scope.service.js';
+import { ForbiddenException } from '@nestjs/common';
 import { SearchService } from './search.service.js';
 import { retrieveRelevantDocumentsWithIds } from '../chains/basic-rag/operations.js';
 import { type ApiContext } from '../common/types/api-context.js';
@@ -75,7 +76,9 @@ describe('SearchService', () => {
     aiUsage = { track: vi.fn().mockResolvedValue(undefined) };
     folders = { getMembershipContext: vi.fn() };
 
-    prisma.client.project.findFirst.mockResolvedValue({ id: 'proj-1' });
+    prisma.client.project.findFirst.mockResolvedValue({
+      id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+    });
     apiLimits.checkApiRequestLimit.mockResolvedValue({
       exceeded: false,
       current: 0,
@@ -111,6 +114,7 @@ describe('SearchService', () => {
       initializeBasicRag as any,
       aiUsage as any,
       folders as any,
+      new AssistantScopeService(prisma as any),
     );
   });
 
@@ -141,11 +145,13 @@ describe('SearchService', () => {
     );
   });
 
-  it('throws NotFoundException when the assistant/project is not found', async () => {
+  it('refuses an assistant the caller cannot reach', async () => {
     prisma.client.project.findFirst.mockResolvedValue(null);
 
+    // 403, not 404: under a key scope the question is whether this caller
+    // may ask, and a 404 would answer whether the assistant exists.
     await expect(service.search(baseDto, mockContext)).rejects.toThrow(
-      NotFoundException,
+      ForbiddenException,
     );
     expect(initializeBasicRag.buildRetrievalContext).not.toHaveBeenCalled();
   });

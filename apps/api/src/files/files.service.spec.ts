@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */
 import type { Mock } from 'vitest';
+import { AssistantScopeService } from '../common/services/assistant-scope.service.js';
 import { NotFoundException, BadRequestException } from '@nestjs/common';
 import { type Request, type Response } from 'express';
 import { EventEmitter } from 'events';
@@ -37,6 +38,7 @@ describe('FilesService', () => {
     const prisma = {
       client: {
         userFile: { findMany, findFirst },
+        project: { findFirst: vi.fn().mockResolvedValue({ id: 'proj-1' }) },
         organization: { findUnique: organizationFindUnique },
       },
     } as unknown as PrismaService;
@@ -51,7 +53,12 @@ describe('FilesService', () => {
     } as unknown as DeleteFileService;
 
     return {
-      service: new FilesService(prisma, uploadFile, deleteFile),
+      service: new FilesService(
+        prisma,
+        uploadFile,
+        deleteFile,
+        new AssistantScopeService(prisma),
+      ),
       prisma,
       organizationFindUnique,
       uploadFileMock,
@@ -289,7 +296,7 @@ describe('FilesService', () => {
   });
 
   it('remove: strips the file- prefix and returns the OpenAI delete shape', async () => {
-    const { service, deleteFileMock } = buildService();
+    const { service, deleteFileMock } = buildService([], { id: 'abc' });
     deleteFileMock.mockResolvedValue({
       deleted: true,
       fileId: 'abc',
@@ -316,5 +323,58 @@ describe('FilesService', () => {
     await expect(service.remove('file-abc', context)).rejects.toBeInstanceOf(
       NotFoundException,
     );
+  });
+  // The key's scope decides which files exist for this caller, the same split
+  // the retrieval filter makes — an assistant key sees its assistant's files,
+  // a knowledge-base key sees the ones that belong to no assistant.
+  describe('the key scope narrows within the organization', () => {
+    const boundKey: ApiContext = {
+      ...context,
+      knowledgeScope: 'ASSISTANT',
+      projectId: 'proj-1' as ProjectId,
+    };
+    const kbKey: ApiContext = {
+      orgId: context.orgId,
+      userId: context.userId,
+      keyId: context.keyId,
+      debugMode: false,
+      knowledgeScope: 'KNOWLEDGE_BASE',
+    };
+
+    it('an assistant key lists its assistant files', async () => {
+      const { service, prisma } = buildService([]);
+      await service.list(boundKey, {});
+      expect(
+        (prisma.client.userFile.findMany as Mock).mock.calls[0][0].where,
+      ).toEqual({ organizationId: 'org-1', projectId: 'proj-1' });
+    });
+
+    it('a knowledge-base key lists the files with no assistant', async () => {
+      const { service, prisma } = buildService([]);
+      await service.list(kbKey, {});
+      expect(
+        (prisma.client.userFile.findMany as Mock).mock.calls[0][0].where,
+      ).toEqual({ organizationId: 'org-1', projectId: null });
+    });
+
+    it('an orphaned assistant key is refused rather than widened', async () => {
+      const { service } = buildService([]);
+      await expect(
+        service.list({ ...kbKey, knowledgeScope: 'ASSISTANT' }, {}),
+      ).rejects.toThrow(/no longer exists/);
+    });
+
+    // deleteFile() scopes by organization, which stopped being the whole
+    // boundary the moment a key could be confined to one assistant.
+    it('delete refuses a file outside the key scope before deleting anything', async () => {
+      const { service, prisma, deleteFileMock } = buildService([], null);
+      await expect(service.remove('file-abc', boundKey)).rejects.toBeInstanceOf(
+        NotFoundException,
+      );
+      expect(
+        (prisma.client.userFile.findFirst as Mock).mock.calls[0][0].where,
+      ).toEqual({ id: 'abc', organizationId: 'org-1', projectId: 'proj-1' });
+      expect(deleteFileMock).not.toHaveBeenCalled();
+    });
   });
 });

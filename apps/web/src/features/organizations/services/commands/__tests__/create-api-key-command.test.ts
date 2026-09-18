@@ -78,6 +78,7 @@ describe('createApiKeyCommand', () => {
       orgId: 'org-1',
       userId: 'user-1',
       name: 'Test Key',
+      knowledgeScope: 'ASSISTANT',
       projectId: 'proj-1',
     });
 
@@ -88,6 +89,7 @@ describe('createApiKeyCommand', () => {
         maskedValue: '',
         organizationId: 'org-1',
         projectId: 'proj-1',
+        knowledgeScope: 'ASSISTANT',
         createdBy: 'user-1',
       }),
     });
@@ -132,6 +134,7 @@ describe('createApiKeyCommand', () => {
       orgId: 'org-1',
       userId: 'user-1',
       name: 'Test',
+      knowledgeScope: 'ASSISTANT',
       projectId: 'proj-1',
     });
 
@@ -165,12 +168,91 @@ describe('createApiKeyCommand', () => {
         orgId: 'org-1',
         userId: 'user-1',
         name: 'Test',
+        knowledgeScope: 'ASSISTANT',
         projectId: 'proj-1',
       }),
     ).rejects.toThrow('vault unavailable');
 
     expect(mockDelete).toHaveBeenCalledWith({
       where: { id: keyId },
+    });
+  });
+  // The scope and the project are one fact in two columns. A row where they
+  // disagree is a boundary the API cannot evaluate, so it is refused here
+  // rather than at request time.
+  describe('scope and project must agree', () => {
+    it('defaults to KNOWLEDGE_BASE when no scope is given', async () => {
+      mockCreate.mockResolvedValue({ id: 'key-1' });
+      mockUpdate.mockResolvedValue({});
+      mockStoreToken.mockResolvedValue(undefined);
+
+      await createApiKeyCommand({
+        orgId: 'org-1',
+        userId: 'user-1',
+        name: 'k',
+      });
+
+      expect(mockCreate).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          knowledgeScope: 'KNOWLEDGE_BASE',
+          projectId: null,
+        }),
+      });
+    });
+
+    it('rejects an ASSISTANT scope with no assistant', async () => {
+      await expect(
+        createApiKeyCommand({
+          orgId: 'org-1',
+          userId: 'user-1',
+          name: 'k',
+          knowledgeScope: 'ASSISTANT',
+        }),
+      ).rejects.toThrow(/needs the assistant/);
+
+      expect(mockCreate).not.toHaveBeenCalled();
+    });
+
+    it('rejects a KNOWLEDGE_BASE scope that also names an assistant', async () => {
+      await expect(
+        createApiKeyCommand({
+          orgId: 'org-1',
+          userId: 'user-1',
+          name: 'k',
+          knowledgeScope: 'KNOWLEDGE_BASE',
+          projectId: 'proj-1',
+        }),
+      ).rejects.toThrow(/cannot also name an assistant/);
+
+      expect(mockCreate).not.toHaveBeenCalled();
+    });
+
+    // A legal KnowledgeScope that apps/api's chain does not honour yet: a key
+    // promising not to retrieve would retrieve anyway.
+    it('rejects MODEL_ONLY', async () => {
+      await expect(
+        createApiKeyCommand({
+          orgId: 'org-1',
+          userId: 'user-1',
+          name: 'k',
+          knowledgeScope: 'MODEL_ONLY',
+        }),
+      ).rejects.toThrow(/MODEL_ONLY is not available/);
+
+      expect(mockCreate).not.toHaveBeenCalled();
+    });
+
+    it('refuses before checking the plan, so the message names the real problem', async () => {
+      mockIsFeatureEnabled.mockResolvedValue(false);
+
+      await expect(
+        createApiKeyCommand({
+          orgId: 'org-1',
+          userId: 'user-1',
+          name: 'k',
+          knowledgeScope: 'ASSISTANT',
+        }),
+      ).rejects.toThrow(/needs the assistant/);
     });
   });
 });

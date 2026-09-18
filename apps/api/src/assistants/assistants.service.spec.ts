@@ -1,6 +1,11 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */
 import type { Mock } from 'vitest';
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { AssistantScopeService } from '../common/services/assistant-scope.service.js';
+import {
+  BadRequestException,
+  ForbiddenException,
+  NotFoundException,
+} from '@nestjs/common';
 import { AssistantsService } from './assistants.service.js';
 import { type PrismaService } from '../prisma/prisma.service.js';
 import { type ApiContext } from '../common/types/api-context.js';
@@ -46,7 +51,11 @@ describe('AssistantsService', () => {
         },
       },
     } as unknown as PrismaService;
-    return { service: new AssistantsService(prisma), prisma, projectOps };
+    return {
+      service: new AssistantsService(prisma, new AssistantScopeService(prisma)),
+      prisma,
+      projectOps,
+    };
   }
 
   it('list: scopes by org, paginates by cursor, applies order', async () => {
@@ -171,5 +180,81 @@ describe('AssistantsService', () => {
     await expect(service.remove('asst-proj-a', context)).rejects.toBeInstanceOf(
       NotFoundException,
     );
+  });
+  // The half of the boundary that is not about answering questions: a key
+  // bound to one assistant used to be able to list, rename and delete every
+  // other assistant in the org, which is the outcome that made the scope a
+  // boundary rather than a default in the first place.
+  describe('a key confined to one assistant', () => {
+    const boundKey: ApiContext = {
+      ...context,
+      knowledgeScope: 'ASSISTANT',
+      projectId: 'proj-a' as ProjectId,
+    };
+
+    it('lists only its own assistant', async () => {
+      const { service, projectOps } = makeService();
+      await service.list(boundKey, {});
+      expect(projectOps.findMany.mock.calls[0][0].where).toEqual({
+        organizationId: 'org-1',
+        id: 'proj-a',
+      });
+    });
+
+    it('reads its own assistant', async () => {
+      const { service } = makeService();
+      await expect(service.get('asst-proj-a', boundKey)).resolves.toMatchObject(
+        { id: 'asst-proj-a' },
+      );
+    });
+
+    it('refuses to read another assistant', async () => {
+      const { service, projectOps } = makeService();
+      await expect(service.get('asst-proj-b', boundKey)).rejects.toBeInstanceOf(
+        ForbiddenException,
+      );
+      expect(projectOps.findFirst).not.toHaveBeenCalled();
+    });
+
+    it('refuses to rename another assistant', async () => {
+      const { service, projectOps } = makeService();
+      await expect(
+        service.update('asst-proj-b', { name: 'Mine now' }, boundKey),
+      ).rejects.toBeInstanceOf(ForbiddenException);
+      expect(projectOps.update).not.toHaveBeenCalled();
+    });
+
+    it('refuses to delete another assistant', async () => {
+      const { service, projectOps } = makeService();
+      await expect(
+        service.remove('asst-proj-b', boundKey),
+      ).rejects.toBeInstanceOf(ForbiddenException);
+      expect(projectOps.deleteMany).not.toHaveBeenCalled();
+    });
+
+    // The new assistant would be unreachable with this key and permanent in
+    // the org — a boundary leaking in the one direction nobody checks.
+    it('refuses to create another assistant', async () => {
+      const { service, projectOps } = makeService();
+      await expect(
+        service.create({ name: 'Another' }, boundKey),
+      ).rejects.toBeInstanceOf(ForbiddenException);
+      expect(projectOps.create).not.toHaveBeenCalled();
+    });
+
+    // onDelete: SetNull can produce this without anyone writing the row.
+    it('refuses everything once its assistant is gone', async () => {
+      const { service } = makeService();
+      const orphaned: ApiContext = {
+        orgId: context.orgId,
+        userId: context.userId,
+        keyId: context.keyId,
+        debugMode: false,
+        knowledgeScope: 'ASSISTANT',
+      };
+      await expect(service.list(orphaned, {})).rejects.toThrow(
+        /no longer exists/,
+      );
+    });
   });
 });

@@ -148,6 +148,19 @@ export class OrganizationSettingsService {
     };
   }
 
+  /**
+   * The model ids this organization is restricted to.
+   *
+   * **Empty means no restriction**, not "no models allowed" — the column
+   * defaults to `[]` and every organization that predates per-org model
+   * management has it. Callers filter only when the array is non-empty; a
+   * caller that treats `[]` as an allowlist empties the picker for everyone.
+   */
+  async getAllowedModels(orgId: string): Promise<string[]> {
+    const settings = await this.getSettings(orgId);
+    return settings?.allowedModels ?? [];
+  }
+
   async getAllowedConnectors(orgId: string): Promise<string[]> {
     const settings = await this.getSettings(orgId);
     return settings?.allowedConnectors ?? [];

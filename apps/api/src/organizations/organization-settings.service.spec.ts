@@ -156,6 +156,26 @@ describe('OrganizationSettingsService', () => {
     });
   });
 
+  describe('getAllowedModels', () => {
+    // The distinction the column's own default depends on: `[]` is every
+    // organization that predates per-org model management, and it means "no
+    // restriction". A caller reading it as an allowlist empties every picker.
+    it('returns an empty array when nothing is set, meaning no restriction', async () => {
+      const { service } = makeService({});
+      expect(await service.getAllowedModels('org-1')).toEqual([]);
+    });
+
+    it('returns the stored allowlist', async () => {
+      const { service } = makeService({
+        allowedModels: ['gpt-5.4', 'gemini-3-flash-preview'],
+      });
+      expect(await service.getAllowedModels('org-1')).toEqual([
+        'gpt-5.4',
+        'gemini-3-flash-preview',
+      ]);
+    });
+  });
+
   describe('getAllowedConnectors', () => {
     it('returns an empty array when not set', async () => {
       const { service } = makeService({});

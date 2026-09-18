@@ -1,3 +1,4 @@
+import { type KnowledgeScope } from '@ragenai/platform-contracts';
 import {
   type KeyId,
   type UserId,
@@ -9,6 +10,16 @@ export interface ApiContext {
   orgId: OrgId;
   userId: UserId;
   projectId?: ProjectId;
+  /**
+   * What the API key may reach, and a boundary rather than a default:
+   * `AssistantScopeService` refuses a request for anything else.
+   *
+   * **Absent means no key boundary applies, not `KNOWLEDGE_BASE`.**
+   * `SessionAuthService` builds this same context for internal,
+   * session-authenticated callers, which have no key and no scope — treating
+   * an absent scope as a value would 403 every one of them.
+   */
+  knowledgeScope?: KnowledgeScope;
   keyId: KeyId;
   debugMode: boolean;
   /**

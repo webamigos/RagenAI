@@ -46,7 +46,8 @@ export class PersistApiThreadService {
   }: {
     orgId: string;
     userId: string;
-    projectId: string;
+    /** Null for a knowledge-base turn; `Thread.projectId` is nullable. */
+    projectId: string | null;
     question: string;
     chatHistory?: string;
   }): Promise<CreateApiThreadResult | null> {

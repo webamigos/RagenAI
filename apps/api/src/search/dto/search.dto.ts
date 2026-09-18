@@ -10,14 +10,16 @@ import {
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class SearchDto {
-  @ApiProperty({
-    description: 'The assistant (project) ID to search against.',
+  @ApiPropertyOptional({
+    description:
+      'The assistant (project) to search. Optional: the API key carries a scope and this field must agree with it. Omitted, the key decides — a knowledge-base key searches the knowledge base.',
     example: 'f47ac10b-58cc-4372-a567-0e02b2c3d479',
   })
   @IsString()
+  @IsOptional()
   @MinLength(1)
   @MaxLength(200)
-  assistant_id!: string;
+  assistant_id?: string;
 
   @ApiProperty({
     description: 'The search query.',

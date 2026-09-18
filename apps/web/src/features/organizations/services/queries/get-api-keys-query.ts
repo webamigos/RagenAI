@@ -22,6 +22,11 @@ export const getApiKeysQuery = async (organizationId: string) => {
       isActive: true,
       debugMode: true,
       createdAt: true,
+      knowledgeScope: true,
+      projectId: true,
+      // The scope is only legible with the assistant's name next to it; the
+      // id alone tells a reader nothing about what the key can reach.
+      project: { select: { title: true } },
     },
     orderBy: {
       createdAt: 'desc',

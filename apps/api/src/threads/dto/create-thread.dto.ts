@@ -65,7 +65,7 @@ export class CreateThreadDto {
   @ApiProperty({
     required: false,
     description:
-      'Ragen extension — bind the thread to an assistant (project). Defaults to the API key project.',
+      "Ragen extension — the assistant (project) this thread belongs to. The API key's scope decides, and this field has to agree with it: naming a different assistant, or naming one at all on a knowledge-base key, is a 403. Omitted, the key decides.",
   })
   @IsOptional()
   @IsString()

@@ -11,14 +11,16 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 export type ReasoningEffort = 'low' | 'medium' | 'high';
 
 export class ChatDto {
-  @ApiProperty({
-    description: 'The assistant (project) ID to query against.',
+  @ApiPropertyOptional({
+    description:
+      'The assistant (project) to query against. Optional: the API key carries a scope and this field must agree with it. Omit it and the key decides; a knowledge-base key needs it omitted.',
     example: 'f47ac10b-58cc-4372-a567-0e02b2c3d479',
   })
   @IsString()
+  @IsOptional()
   @MinLength(1)
   @MaxLength(200)
-  assistant_id!: string;
+  assistant_id?: string;
 
   @ApiProperty({
     description: 'The user message to send to the AI',

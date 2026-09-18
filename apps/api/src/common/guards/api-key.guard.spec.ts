@@ -25,6 +25,7 @@ describe('ApiKeyGuard', () => {
     isActive: true,
     organizationId: 'org_1',
     projectId: 'proj_1',
+    knowledgeScope: 'ASSISTANT',
     createdBy: 'user_1',
     debugMode: false,
   };
@@ -86,6 +87,7 @@ describe('ApiKeyGuard', () => {
         isActive: true,
         organizationId: true,
         projectId: true,
+        knowledgeScope: true,
         createdBy: true,
         debugMode: true,
       },
@@ -100,6 +102,9 @@ describe('ApiKeyGuard', () => {
       orgId: 'org_1',
       userId: 'user_1',
       projectId: 'proj_1',
+      // The boundary `AssistantScopeService` enforces; it comes from the DB
+      // row, like everything else here.
+      knowledgeScope: 'ASSISTANT',
       keyId: 'key_5',
       debugMode: false,
     });

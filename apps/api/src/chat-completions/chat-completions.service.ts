@@ -7,7 +7,6 @@ import {
 } from '@nestjs/common';
 import { type Request, type Response } from 'express';
 import { type ApiContext } from '../common/types/api-context.js';
-import { type ProjectId } from '../common/types/brand.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { ApiLimitsService } from '../api-limits/api-limits.service.js';
 import { OrganizationSettingsService } from '../organizations/organization-settings.service.js';
@@ -16,6 +15,7 @@ import { InitializeBasicRagService } from '../chains/basic-rag/initialize-basic-
 import { PersistApiThreadService } from '../threads/persist-api-thread.service.js';
 import { AiUsageService } from '../ai-usage/ai-usage.service.js';
 import { TeamRateLimitService } from '../team-limits/team-rate-limit.service.js';
+import { AssistantScopeService } from '../common/services/assistant-scope.service.js';
 import { foldMessages, mergeProjectInstruction } from './fold-messages.js';
 import {
   buildChatCompletion,
@@ -23,7 +23,6 @@ import {
   chatCompletionId,
   encodeSseData,
   nowUnixSeconds,
-  stripPrefix,
   SSE_DONE,
   type OpenAIChatCompletionChunk,
   type OpenAIUsage,
@@ -65,6 +64,7 @@ export class ChatCompletionsService {
     private readonly persistApiThread: PersistApiThreadService,
     private readonly aiUsage: AiUsageService,
     private readonly teamRateLimit: TeamRateLimitService,
+    private readonly assistantScope: AssistantScopeService,
   ) {}
 
   async create(
@@ -77,17 +77,25 @@ export class ChatCompletionsService {
     const includeUsage =
       !isStream || dto.stream_options?.include_usage === true;
 
-    const resolvedProjectId = stripPrefix(
+    // `assistant_id` is optional here — an OpenAI-compatible client has
+    // nowhere to put it — so the key's scope decides and the field, when
+    // present, has to agree with it. Null is a scope of its own: the
+    // knowledge base.
+    const resolvedProjectId = await this.assistantScope.resolve(
       dto.assistant_id,
-      'asst',
-    ) as ProjectId;
+      context,
+    );
 
-    const project = await this.prisma.client.project.findFirst({
-      where: { id: resolvedProjectId, organizationId: context.orgId },
-      select: { settings: { select: { instructions: true } } },
-    });
+    // Only an assistant carries instructions. A knowledge-base turn has none
+    // to merge, so there is nothing to look up.
+    const project = resolvedProjectId
+      ? await this.prisma.client.project.findFirst({
+          where: { id: resolvedProjectId, organizationId: context.orgId },
+          select: { settings: { select: { instructions: true } } },
+        })
+      : null;
 
-    if (!project) {
+    if (resolvedProjectId && !project) {
       throw new NotFoundException('Assistant not found');
     }
 
@@ -168,7 +176,7 @@ export class ChatCompletionsService {
         userId: context.userId,
         projectId: resolvedProjectId,
         projectInstruction: mergeProjectInstruction(
-          project.settings?.instructions ?? null,
+          project?.settings?.instructions ?? null,
           systemPrompts,
         ),
         maxTokens: dto.max_tokens ?? dto.max_completion_tokens,

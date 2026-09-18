@@ -4,6 +4,8 @@ import { ChatService } from './chat.service.js';
 import { ChatController } from './chat.controller.js';
 import { ChatCompletionsService } from '../chat-completions/chat-completions.service.js';
 import { ChatCompletionsController } from '../chat-completions/chat-completions.controller.js';
+import { ModelsService } from '../models/models.service.js';
+import { ModelsController } from '../models/models.controller.js';
 import { SearchService } from '../search/search.service.js';
 import { SearchController } from '../search/search.controller.js';
 
@@ -65,6 +67,11 @@ describe('AppModule (full DI graph wiring)', () => {
     );
     expect(moduleRef.get(SearchService)).toBeInstanceOf(SearchService);
     expect(moduleRef.get(SearchController)).toBeInstanceOf(SearchController);
+    // ModelsModule pulls OrganizationsModule in on its own rather than
+    // relying on another module having imported it; nest build only
+    // typechecks, so this compile is what proves that.
+    expect(moduleRef.get(ModelsService)).toBeInstanceOf(ModelsService);
+    expect(moduleRef.get(ModelsController)).toBeInstanceOf(ModelsController);
 
     await moduleRef.close();
   });

@@ -1,5 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument */
 import type { Mock } from 'vitest';
+import { ForbiddenException } from '@nestjs/common';
+import { AssistantScopeService } from '../common/services/assistant-scope.service.js';
 import { ChatService } from './chat.service.js';
 import { type ApiContext } from '../common/types/api-context.js';
 import {
@@ -129,7 +131,10 @@ describe('ChatService', () => {
       charge: vi.fn().mockResolvedValue(undefined),
     };
 
+    // `id` matters now: with no key scope the resolver looks the project up
+    // and returns the row's own id, rather than echoing what was asked for.
     prisma.client.project.findFirst.mockResolvedValue({
+      id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
       settings: { instructions: 'be nice' },
     });
     apiLimits.checkApiRequestLimit.mockResolvedValue({
@@ -160,6 +165,7 @@ describe('ChatService', () => {
       persistApiThread as any,
       aiUsage as any,
       teamRateLimit as any,
+      new AssistantScopeService(prisma as any),
     );
   });
 
@@ -167,18 +173,18 @@ describe('ChatService', () => {
     vi.restoreAllMocks();
   });
 
-  it('returns 404 when the assistant/project is not found', async () => {
+  it('refuses an assistant the caller cannot reach', async () => {
     prisma.client.project.findFirst.mockResolvedValue(null);
     const req = createMockReq();
     const res = createMockRes();
 
-    await service.chat(baseDto, mockContext, req, res);
+    // Thrown rather than written to `res`: the rejection happens before the
+    // response starts, so the global filter formats it — and it is a 403,
+    // because the question is whether this caller may ask for it.
+    await expect(
+      service.chat(baseDto, mockContext, req, res),
+    ).rejects.toBeInstanceOf(ForbiddenException);
 
-    expect((res as any).status).toHaveBeenCalledWith(404);
-    expect((res as any).json).toHaveBeenCalledWith({
-      error: 'Assistant not found',
-      code: 404,
-    });
     expect(initializeBasicRag.initializeRagChain).not.toHaveBeenCalled();
   });
 

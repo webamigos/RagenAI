@@ -12,6 +12,7 @@ import { ChatCompletionsModule } from './chat-completions/chat-completions.modul
 import { SearchModule } from './search/search.module.js';
 import { FilesModule } from './files/files.module.js';
 import { AssistantsModule } from './assistants/assistants.module.js';
+import { ModelsModule } from './models/models.module.js';
 import { ThreadsModule } from './threads/threads.module.js';
 import { RagEngineModule } from './rag-engine/rag-engine.module.js';
 import { NotificationsModule } from './notifications/notifications.module.js';
@@ -85,6 +86,7 @@ import { SubscriptionsModule } from './subscriptions/subscriptions.module.js';
     SearchModule,
     FilesModule,
     AssistantsModule,
+    ModelsModule,
     ThreadsModule,
     RagEngineModule,
     NotificationsModule,
