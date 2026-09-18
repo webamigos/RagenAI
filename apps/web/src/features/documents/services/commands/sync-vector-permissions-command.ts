@@ -3,15 +3,15 @@
 import db from '@ragenai/prisma-client';
 import { logger } from '@/app/lib/utils/logger';
 import { QdrantClient } from '@qdrant/js-client-rest';
+import { computeAccessiblePrincipals } from '@ragenai/rag-core';
 
 /**
- * Compute the accessible_by array for a file based on its ownership,
- * folder assignment, team association, and explicit permissions.
+ * Compute the `accessible_by` array for a file — the principals allowed to
+ * retrieve its chunks.
  *
- * Returns an array of principal strings like:
- * - "org:<orgId>" — visible to all org members
- * - "user:<userId>" — visible to specific user
- * - "team:<teamId>" — visible to team members
+ * Reads the rows; the rule itself is `computeAccessiblePrincipals` in
+ * `@ragenai/rag-core`, shared with apps/api and with the worker's ingest so
+ * the three cannot drift. The docblock there records what the drift was.
  */
 export async function computeAccessibleBy(
   fileId: string,
@@ -21,6 +21,7 @@ export async function computeAccessibleBy(
     where: { id: fileId, organizationId },
     select: {
       ownerId: true,
+      isOrgWide: true,
       folderId: true,
       folder: {
         select: {
@@ -39,83 +40,43 @@ export async function computeAccessibleBy(
     },
   });
 
+  // No such file in this organization. Nothing to widen it to.
   if (!file) {
-    return [`org:${organizationId}`];
+    return [];
   }
 
-  // Legacy file (no owner): accessible to all org members
-  if (!file.ownerId) {
-    return [`org:${organizationId}`];
-  }
+  const grants = [...file.permissions];
 
-  const principals = new Set<string>();
-
-  // Owner always has access
-  principals.add(`user:${file.ownerId}`);
-
-  // Team folder access
-  if (file.folder?.teamId) {
-    principals.add(`team:${file.folder.teamId}`);
-  }
-
-  // Direct file permissions
-  for (const perm of file.permissions) {
-    if (perm.granteeType === 'user') {
-      principals.add(`user:${perm.granteeId}`);
-    } else if (perm.granteeType === 'team') {
-      principals.add(`team:${perm.granteeId}`);
-    }
-  }
-
-  // Folder-level permissions (check the folder and its ancestors)
+  // Folder-level permissions, and those of the folder's ancestors — inherited
+  // rather than copied onto each file, so this is what makes a folder share
+  // mean anything.
   if (file.folderId) {
-    const folderPermissions = await db.documentPermission.findMany({
-      where: {
-        resourceType: 'folder',
-        folderId: file.folderId,
-      },
-      select: {
-        granteeType: true,
-        granteeId: true,
-      },
-    });
-
-    for (const perm of folderPermissions) {
-      if (perm.granteeType === 'user') {
-        principals.add(`user:${perm.granteeId}`);
-      } else if (perm.granteeType === 'team') {
-        principals.add(`team:${perm.granteeId}`);
-      }
-    }
-
-    // Also check ancestor folder permissions via path
+    const folderIds = [file.folderId];
     if (file.folder?.path && file.folder.path !== '/') {
-      const ancestorIds = file.folder.path.split('/').filter(Boolean);
-
-      if (ancestorIds.length > 0) {
-        const ancestorPermissions = await db.documentPermission.findMany({
-          where: {
-            resourceType: 'folder',
-            folderId: { in: ancestorIds },
-          },
-          select: {
-            granteeType: true,
-            granteeId: true,
-          },
-        });
-
-        for (const perm of ancestorPermissions) {
-          if (perm.granteeType === 'user') {
-            principals.add(`user:${perm.granteeId}`);
-          } else if (perm.granteeType === 'team') {
-            principals.add(`team:${perm.granteeId}`);
-          }
-        }
-      }
+      folderIds.push(...file.folder.path.split('/').filter(Boolean));
     }
+
+    // `DocumentPermission` carries no organization column — it is scoped
+    // through its relation to the file or folder, which is the shape the
+    // tenant-scope guard cannot check. The scope holds here because every id
+    // in `folderIds` comes from the org-scoped file row above: its own
+    // `folderId`, and the ancestor ids in that folder's materialized path,
+    // which is built within one organization. Do not widen this to a caller-
+    // supplied folder id without adding an organization filter.
+    const folderPermissions = await db.documentPermission.findMany({
+      where: { resourceType: 'folder', folderId: { in: folderIds } },
+      select: { granteeType: true, granteeId: true },
+    });
+    grants.push(...folderPermissions);
   }
 
-  return Array.from(principals);
+  return computeAccessiblePrincipals({
+    organizationId,
+    ownerId: file.ownerId,
+    isOrgWide: file.isOrgWide,
+    folderTeamId: file.folder?.teamId ?? null,
+    grants,
+  });
 }
 
 /**

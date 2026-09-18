@@ -32,6 +32,7 @@ export async function reindexDocumentVersion(
     detectDocumentLanguage,
     updateEmbeddingStatus,
     updateLanguage,
+    computeFileAccessPrincipals,
     prepareMetadata,
     addDocumentsToVectorStore,
     deleteDocumentVectors,
@@ -100,6 +101,8 @@ export async function reindexDocumentVersion(
     const rawDocs: Document[] = [{ pageContent: content, metadata: {} }];
     const docs = await splitText({ fileType, rawDocs, splitterSettings });
 
+    const accessibleBy = await computeFileAccessPrincipals(fileId, orgId);
+
     const updatedDocs = await prepareMetadata({
       docs,
       fileRecord: {
@@ -108,6 +111,7 @@ export async function reindexDocumentVersion(
         organizationId: orgId,
         projectId,
         language,
+        accessibleBy,
       },
       fileType,
       splitterSettings,

@@ -33,6 +33,7 @@ describe('ChatService', () => {
     assertWithinLimit: Mock;
     charge: Mock;
   };
+  let folders: { getMembershipContext: Mock };
 
   const mockContext: ApiContext = {
     orgId: 'org-1' as OrgId,
@@ -130,6 +131,13 @@ describe('ChatService', () => {
       assertWithinLimit: vi.fn().mockResolvedValue(undefined),
       charge: vi.fn().mockResolvedValue(undefined),
     };
+    // An owner by default, which is what `orgVisibilityScope('owner')`
+    // returns and what the existing cases assume they can see.
+    folders = {
+      getMembershipContext: vi
+        .fn()
+        .mockResolvedValue({ scope: 'organization', userTeamIds: [] }),
+    };
 
     // `id` matters now: with no key scope the resolver looks the project up
     // and returns the row's own id, rather than echoing what was asked for.
@@ -166,6 +174,10 @@ describe('ChatService', () => {
       aiUsage as any,
       teamRateLimit as any,
       new AssistantScopeService(prisma as any),
+      // Resolves the caller's visibility scope. Without it the chain falls
+      // back to `member` and retrieval matches nothing — see
+      // `computeAccessiblePrincipals` in @ragenai/rag-core.
+      folders as any,
     );
   });
 
@@ -356,6 +368,26 @@ describe('ChatService', () => {
     await service.chat(baseDto, mockContext, req, res);
 
     expect(persistApiThread.createApiThread).not.toHaveBeenCalled();
+  });
+
+  // Same defect as the one guarded in chat-completions.service.spec.ts: an
+  // omitted scope does not narrow retrieval, it empties it.
+  it("passes the caller's visibility scope and team ids to the chain", async () => {
+    folders.getMembershipContext.mockResolvedValue({
+      scope: 'member',
+      userTeamIds: ['team-7'],
+    });
+    initializeBasicRag.initializeRagChain.mockResolvedValue(makeChain({}));
+
+    await service.chat(baseDto, mockContext, createMockReq(), createMockRes());
+
+    expect(folders.getMembershipContext).toHaveBeenCalledWith(
+      mockContext.orgId,
+      mockContext.userId,
+    );
+    expect(initializeBasicRag.initializeRagChain).toHaveBeenCalledWith(
+      expect.objectContaining({ scope: 'member', userTeamIds: ['team-7'] }),
+    );
   });
 
   it('defaults reasoning effort to medium for a model that supports it, unless explicitly set', async () => {

@@ -4,6 +4,7 @@ import { PrismaService } from '../prisma/prisma.service.js';
 // A `require()` while apps/api was CommonJS — see the note in
 // vector-store/qdrant-client.ts.
 import { QdrantClient } from '@qdrant/js-client-rest';
+import { computeAccessiblePrincipals } from '@ragenai/rag-core';
 
 /**
  * Ported from apps/web's
@@ -20,6 +21,13 @@ export class VectorPermissionsService {
 
   constructor(private readonly prisma: PrismaService) {}
 
+  /**
+   * The principals allowed to retrieve this file's chunks.
+   *
+   * Reads the rows; the rule itself is `computeAccessiblePrincipals` in
+   * `@ragenai/rag-core`, shared with apps/web and with the worker's ingest so
+   * the three cannot drift. The docblock there records what the drift was.
+   */
   async computeAccessibleBy(
     fileId: string,
     organizationId: string,
@@ -28,6 +36,7 @@ export class VectorPermissionsService {
       where: { id: fileId, organizationId },
       select: {
         ownerId: true,
+        isOrgWide: true,
         folderId: true,
         folder: {
           select: { id: true, teamId: true, path: true, ownerId: true },
@@ -38,66 +47,42 @@ export class VectorPermissionsService {
       },
     });
 
+    // No such file in this organization. Nothing to widen it to.
     if (!file) {
-      return [`org:${organizationId}`];
+      return [];
     }
 
-    if (!file.ownerId) {
-      return [`org:${organizationId}`];
-    }
+    const grants = [...file.permissions];
 
-    const principals = new Set<string>();
-    principals.add(`user:${file.ownerId}`);
-
-    if (file.folder?.teamId) {
-      principals.add(`team:${file.folder.teamId}`);
-    }
-
-    for (const perm of file.permissions) {
-      if (perm.granteeType === 'user') {
-        principals.add(`user:${perm.granteeId}`);
-      } else if (perm.granteeType === 'team') {
-        principals.add(`team:${perm.granteeId}`);
-      }
-    }
-
+    // Folder-level permissions, and those of the folder's ancestors.
     if (file.folderId) {
+      const folderIds = [file.folderId];
+      if (file.folder?.path && file.folder.path !== '/') {
+        folderIds.push(...file.folder.path.split('/').filter(Boolean));
+      }
+
+      // `DocumentPermission` carries no organization column — it is scoped
+      // through its relation to the file or folder, which is the shape the
+      // tenant-scope guard cannot check. The scope holds here because every id
+      // in `folderIds` comes from the org-scoped file row above: its own
+      // `folderId`, and the ancestor ids in that folder's materialized path,
+      // which is built within one organization. Do not widen this to a caller-
+      // supplied folder id without adding an organization filter.
       const folderPermissions =
         await this.prisma.client.documentPermission.findMany({
-          where: { resourceType: 'folder', folderId: file.folderId },
+          where: { resourceType: 'folder', folderId: { in: folderIds } },
           select: { granteeType: true, granteeId: true },
         });
-
-      for (const perm of folderPermissions) {
-        if (perm.granteeType === 'user') {
-          principals.add(`user:${perm.granteeId}`);
-        } else if (perm.granteeType === 'team') {
-          principals.add(`team:${perm.granteeId}`);
-        }
-      }
-
-      if (file.folder?.path && file.folder.path !== '/') {
-        const ancestorIds = file.folder.path.split('/').filter(Boolean);
-
-        if (ancestorIds.length > 0) {
-          const ancestorPermissions =
-            await this.prisma.client.documentPermission.findMany({
-              where: { resourceType: 'folder', folderId: { in: ancestorIds } },
-              select: { granteeType: true, granteeId: true },
-            });
-
-          for (const perm of ancestorPermissions) {
-            if (perm.granteeType === 'user') {
-              principals.add(`user:${perm.granteeId}`);
-            } else if (perm.granteeType === 'team') {
-              principals.add(`team:${perm.granteeId}`);
-            }
-          }
-        }
-      }
+      grants.push(...folderPermissions);
     }
 
-    return Array.from(principals);
+    return computeAccessiblePrincipals({
+      organizationId,
+      ownerId: file.ownerId,
+      isOrgWide: file.isOrgWide,
+      folderTeamId: file.folder?.teamId ?? null,
+      grants,
+    });
   }
 
   /**

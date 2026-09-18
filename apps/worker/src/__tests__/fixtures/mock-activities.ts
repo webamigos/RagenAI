@@ -83,6 +83,23 @@ export function createMockActivities() {
     loadWebsite: vi
       .fn()
       .mockResolvedValue([{ pageContent: 'website content', metadata: {} }]),
+    // The four `parse-and-embed` also asks for. Absent until
+    // `a-handler-activity-has-a-stub` went looking: the integration suite
+    // ingests a TEXT file, so these branches were never reached and the gap
+    // was invisible — a CSV or XLSX ingest through the same harness would
+    // have failed on wiring.
+    loadCsv: vi
+      .fn()
+      .mockResolvedValue([{ pageContent: 'csv content', metadata: {} }]),
+    loadDocx: vi
+      .fn()
+      .mockResolvedValue([{ pageContent: 'docx content', metadata: {} }]),
+    loadXlsx: vi
+      .fn()
+      .mockResolvedValue([{ pageContent: 'xlsx content', metadata: {} }]),
+    loadImage: vi
+      .fn()
+      .mockResolvedValue([{ pageContent: 'image description', metadata: {} }]),
     splitText: vi.fn().mockImplementation(({ rawDocs }) => rawDocs),
     // Mock preserves the incoming chunk_type so tests can assert that
     // synthetic summary chunks survive into updatedDocs and are correctly
@@ -171,6 +188,11 @@ export function createMockActivities() {
       title: 'Restored',
     }),
     getFileRecord: vi.fn(),
+    // Who may retrieve the file's chunks. A plausible non-empty answer rather
+    // than `[]`, so a handler that drops it on the way to `prepareMetadata`
+    // shows up as missing principals rather than as an empty list that is
+    // also a legitimate value.
+    computeFileAccessPrincipals: vi.fn().mockResolvedValue(['user:owner-1']),
 
     // ---- the five handlers `workflow.spec.ts` never ran ----
     //

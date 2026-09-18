@@ -14,6 +14,20 @@ type FileRecordInfo = {
   piiPolicy?: 'NONE' | 'TOXIC_ONLY' | 'STRICT';
   /** ISO 639-3 code detected by franc. One value per document, spread into every chunk's metadata. */
   language?: string | null;
+  /**
+   * Principals allowed to retrieve this file's chunks, from
+   * `computeFileAccessPrincipals`.
+   *
+   * Required, not optional. `buildMetadataFilter` demands this field at any
+   * scope below `organization`, so a chunk written without it is a chunk
+   * retrieval cannot reach — and an optional field is one a new call site
+   * forgets silently. Three handlers write vectors; making this mandatory
+   * turns a fourth that forgets into a compile error.
+   *
+   * An empty array is a legitimate value: it means nobody at member scope may
+   * reach this file, which is what an unowned, unshared, ungranted file is.
+   */
+  accessibleBy: string[];
 };
 
 type Params = {
@@ -92,6 +106,7 @@ export const prepareMetadata = async ({
         previous_chunk_id: index > 0 ? index - 1 : -1,
         next_chunk_id: index < docs.length - 1 ? index + 1 : -1,
         status: 'active',
+        accessible_by: fileRecord.accessibleBy,
         embedding_model: EMBEDDINGS_MODEL,
         pii_policy: fileRecord.piiPolicy ?? 'TOXIC_ONLY',
         ...(fileRecord.language ? { language: fileRecord.language } : {}),

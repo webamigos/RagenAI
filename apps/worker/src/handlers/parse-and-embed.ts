@@ -26,6 +26,7 @@ export async function runFileEmbeddings(
   const {
     // activities/db
     bindFileWithDocument,
+    computeFileAccessPrincipals,
     getFileRecord,
     createInitialDocumentVersion,
     mergeFileMetadata,
@@ -534,26 +535,42 @@ export async function runFileEmbeddings(
       ? [{ pageContent: summary, metadata: { chunk_type: 'summary' } }, ...docs]
       : docs;
 
-  // ==== PREPARE DOCUMENTS FOR VECTOR STORE
-  const updatedDocs = await prepareMetadata({
-    docs: docsWithSummary,
-    fileRecord: {
-      id: fileId,
-      fileName,
-      organizationId: orgId,
-      projectId: projectId,
-      piiPolicy: file.piiPolicy,
-      language,
-    },
-    fileType,
-    splitterSettings,
-  });
-
   enterStage('embedding');
   await checkCancelled();
 
-  // ==== GENERATE EMBEDDINGS AND STORE IN VECTOR DB
+  // ==== PREPARE DOCUMENTS FOR VECTOR STORE, THEN EMBED AND STORE
+  //
+  // Both steps sit inside the try: each is an activity that can exhaust its
+  // retries, and outside it a failure would propagate with the file still
+  // reading as its previous embedding status. The catch below is what records
+  // FAILED, so anything that can fail on the way to the vector store belongs
+  // in front of it.
+  //
+  // Declared out here because the markdown-document step further down reads it.
+  // Every path through the catch throws, so it is definitely assigned by the
+  // time that step runs.
+  let updatedDocs: Awaited<ReturnType<typeof prepareMetadata>>;
+
   try {
+    // Read here rather than from `file` above: ingest can take minutes, and
+    // the principals must reflect the file's sharing as it stands when the
+    // chunks are written, not as it stood when the job was picked up.
+    const accessibleBy = await computeFileAccessPrincipals(fileId, orgId);
+
+    updatedDocs = await prepareMetadata({
+      docs: docsWithSummary,
+      fileRecord: {
+        id: fileId,
+        fileName,
+        organizationId: orgId,
+        projectId: projectId,
+        piiPolicy: file.piiPolicy,
+        language,
+        accessibleBy,
+      },
+      fileType,
+      splitterSettings,
+    });
     await updateEmbeddingStatus({
       fileId,
       orgId,

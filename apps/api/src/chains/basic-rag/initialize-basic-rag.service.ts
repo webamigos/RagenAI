@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import {
   NO_ACCESS_PRINCIPAL,
   type OrgVisibilityScope,
@@ -10,6 +10,8 @@ import {
   createChatCompletionInstance,
   createEmbeddingsInstance,
 } from '../../llm/model-instances.js';
+import { isModelRoutable, routableModels } from '../../llm/native-models.js';
+import { resolveEmbeddingsModel } from '@ragenai/rag-core';
 import { QdrantVectorStoreClient } from '../../vector-store/qdrant-client.js';
 import { MeilisearchVectorStoreClient } from '../../vector-store/meilisearch-client.js';
 import { SupabaseVectorStoreClient } from '../../vector-store/supabase-client.js';
@@ -67,6 +69,26 @@ const DEFAULT_REPHRASE_TEMPERATURE = Number.isNaN(parsedRephraseTemp)
  * B chat-cutover update); closed at cutover time, ahead of any real
  * traffic reaching this path.
  */
+/**
+ * Refuse a model this deployment cannot serve, as a 400 rather than a crash.
+ *
+ * The message names the model and lists the ones that do resolve, because the
+ * two realistic causes need different answers: a caller passing a model the
+ * installation does not have, and an operator whose `routes.yaml` no longer
+ * carries the organization's configured default.
+ */
+function assertModelIsRoutable(modelId: string | undefined): void {
+  if (!modelId || isModelRoutable(modelId)) {
+    return;
+  }
+
+  throw new BadRequestException(
+    `No route for model "${modelId}". This installation serves: ${
+      routableModels().join(', ') || '(no models are configured)'
+    }. See infra/llm-gateway/routes.yaml.`,
+  );
+}
+
 @Injectable()
 export class InitializeBasicRagService {
   private readonly logger = new Logger(InitializeBasicRagService.name);
@@ -103,6 +125,23 @@ export class InitializeBasicRagService {
         maxDocumentsToRetrieve,
       } = settings;
 
+      // Before anything is built. An unroutable model does not fail the
+      // request, it ends the process, and by two different routes:
+      //
+      //  - the answer model is never constructed, so the AI SDK raises
+      //    `AI_NoOutputGeneratedError` from a stream flush callback outside any
+      //    request-scoped catch;
+      //  - `createEmbeddingsInstance` returns a *promise* (`resolveEmbeddingModel`
+      //    is async), so an unroutable embeddings model produces a rejection
+      //    that nothing awaits once the request has failed for another reason.
+      //
+      // Either way Node exits on the unhandled rejection. Both are reachable
+      // from a `"model"` in the request body, and without anyone being hostile
+      // from an org default or an `EMBEDDINGS_MODEL` that no longer has a row
+      // in the route table.
+      assertModelIsRoutable(answerModel);
+      assertModelIsRoutable(resolveEmbeddingsModel());
+
       const embeddingModel = createEmbeddingsInstance(
         {
           organizationId: orgId,
@@ -111,7 +150,13 @@ export class InitializeBasicRagService {
         },
         trackAiUsage,
       );
-      const contentModerator = createModerationInstance();
+
+      // Built only if it will be used. `createModerationInstance()` throws
+      // without an OpenAI key, and `shouldModerate()` defaults to off, so
+      // constructing it eagerly made every chat request on an installation
+      // with no OpenAI credentials fail with a 500 — over a feature that was
+      // disabled. Deferred to the chain, which knows whether it will moderate.
+      const contentModerator = () => createModerationInstance();
 
       const questionRephraser = createChatCompletionInstance({
         apiKey,
@@ -201,6 +246,13 @@ export class InitializeBasicRagService {
     metadataFilter?: object;
     trackAiUsage?: TrackAiUsage;
   }): Promise<{ vectorStore: VectorStoreClient; metadataFilter?: object }> {
+    // The search path reaches `createEmbeddingsInstance` without going through
+    // `initializeRagChain`, so it needs the same guard. Without it an
+    // unroutable EMBEDDINGS_MODEL rejects later, when `similaritySearch`
+    // consumes the deferred provider, and `/v1/search` answers 500 where chat
+    // answers a 400 that names the problem.
+    assertModelIsRoutable(resolveEmbeddingsModel());
+
     const embeddingModel = createEmbeddingsInstance(
       {
         organizationId: orgId,

@@ -13,7 +13,16 @@ export interface BaseChatChainInput {
 }
 
 export interface BaseChatChainModels {
-  contentModerator: ModerationInstance;
+  /**
+   * Built on demand, not handed over ready-made.
+   *
+   * `createModerationInstance()` throws without an OpenAI key, and moderation
+   * is off unless `MODERATION_ENABLED=1`, so constructing it eagerly made
+   * every chat request fail on an installation that had deliberately not
+   * configured OpenAI — for a feature it was not using. A factory means the
+   * key is only required by the code path that actually calls the API.
+   */
+  contentModerator: () => ModerationInstance;
   answerGenerator: LanguageModelV4;
 }
 

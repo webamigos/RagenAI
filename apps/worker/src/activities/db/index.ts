@@ -2,6 +2,7 @@ export * from './bind-file-with-document.js';
 export * from './create-file-record.js';
 export * from './create-initial-document-version.js';
 export * from './delete-stale-demo-threads.js';
+export * from './compute-file-access-principals.js';
 export * from './get-file-record.js';
 export * from './is-ingest-cancelled.js';
 export * from './merge-file-metadata.js';

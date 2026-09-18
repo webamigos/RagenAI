@@ -34,6 +34,9 @@ export async function scrapeWebsite(
     // activities/documents
     createMarkdownDocument,
 
+    // activities/db
+    computeFileAccessPrincipals,
+
     // activities/embeddings
     prepareMetadata,
 
@@ -201,25 +204,33 @@ export async function scrapeWebsite(
     );
   }
 
-  // ==== PREPARE DOCUMENTS FOR VECTOR STORE
-
-  const updatedDocs = await prepareMetadata({
-    docs,
-    fileRecord: {
-      id: fileRecord.id,
-      fileName: fileRecord.file_name,
-      organizationId: fileRecord.organization_id,
-      projectId: fileRecord.project_id,
-    },
-    fileType,
-    splitterSettings,
-  });
-
   enterStage('embedding');
   await checkCancelled();
 
-  // ==== GENERATE EMBEDDINGS AND STORE IN VECTOR DB
+  // ==== PREPARE DOCUMENTS FOR VECTOR STORE, THEN EMBED AND STORE
+  //
+  // Both steps sit inside the try, for the reason spelled out in
+  // `parse-and-embed`: the catch below is what records FAILED, so an activity
+  // that can exhaust its retries on the way to the vector store belongs in
+  // front of it rather than after it.
   try {
+    const accessibleBy = await computeFileAccessPrincipals(
+      fileRecord.id,
+      fileRecord.organization_id,
+    );
+
+    const updatedDocs = await prepareMetadata({
+      docs,
+      fileRecord: {
+        id: fileRecord.id,
+        fileName: fileRecord.file_name,
+        organizationId: fileRecord.organization_id,
+        projectId: fileRecord.project_id,
+        accessibleBy,
+      },
+      fileType,
+      splitterSettings,
+    });
     await updateEmbeddingStatus({
       fileId,
       orgId,

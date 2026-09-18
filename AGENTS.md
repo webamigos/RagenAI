@@ -155,7 +155,7 @@ DEFAULT_MODEL_PROVIDER=litellm   # the pricing namespace, not a gateway
 DEFAULT_MODEL=gpt-4o-mini        # plus OPENAI_API_KEY and a route for it
 ```
 
-App dev ports: **web 3000**, **admin 3200**, **docs 3400** — 3100 is ragen-token-vault and 3001 is apps/api. `next dev` and `docusaurus start` both default to 3000, so every app but web pins `--port`.
+App dev ports: **web 3000**, **api 3001**, **vault 3100**, **admin 3200**, **mcp 3300**, **docs 3400**. **No bare `PORT` in the root `.env.local`** — three services read it, so one value moves all three. Use `RAGEN_API_PORT` / `RAGEN_MCP_PORT`.
 
 Service ports on the host: **Postgres 55432**, **Redis 56379**, Qdrant 6333,
 Docling 5001. Inside the compose network each service still listens on its

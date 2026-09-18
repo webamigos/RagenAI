@@ -15,6 +15,38 @@ import {
 import { PrismaService } from './prisma/prisma.service.js';
 import { recordEncryptionBypassEvent } from './security/record-encryption-bypass-event.js';
 
+const DEFAULT_PORT = 3001;
+
+/**
+ * The TCP port to listen on, as an actual number.
+ *
+ * `ConfigService` hands back whatever is in `process.env`, which is a string —
+ * the `get<number>()` generic is an assertion, not a conversion, and neither
+ * name is coerced by `apiEnvSchema`. `app.listen()` treats a string as an IPC
+ * path rather than a port, so `RAGEN_API_PORT=hig` would quietly bind a pipe
+ * called `hig` and serve nobody, with the log line reporting it as the port.
+ *
+ * Refusing beats guessing here: a mistyped port is a deployment that needs
+ * fixing, not one to start anyway on 3001.
+ */
+function resolvePort(...candidates: (string | undefined)[]): number {
+  for (const raw of candidates) {
+    if (raw === undefined || raw.trim() === '') {
+      continue;
+    }
+
+    const parsed = Number(raw);
+    if (!Number.isInteger(parsed) || parsed < 1 || parsed > 65535) {
+      throw new Error(
+        `Invalid port "${raw}": set RAGEN_API_PORT (or PORT) to an integer between 1 and 65535, or leave both unset for ${DEFAULT_PORT}.`,
+      );
+    }
+    return parsed;
+  }
+
+  return DEFAULT_PORT;
+}
+
 async function bootstrap() {
   // Local files first, then validation — in that order, or a fresh clone
   // fails validation on variables that sit in the root .env.local. A no-op
@@ -159,7 +191,44 @@ async function bootstrap() {
     );
   }
 
-  const port = configService.get<number>('PORT', 3001);
+  // `RAGEN_API_PORT` first, then `PORT`.
+  //
+  // `PORT` alone is what a single-container host (Railway) injects, so it has
+  // to keep working. But every app in this monorepo reading that one generic
+  // name means a `PORT` in the shared root `.env.local` follows all of them at
+  // once: `PORT=3001` for this service also moved apps/mcp onto 3001, where it
+  // died with EADDRINUSE. The app-specific name wins, so one file can give
+  // each app its own port.
+  const port = resolvePort(
+    configService.get<string>('RAGEN_API_PORT'),
+    configService.get<string>('PORT'),
+  );
+  // A rejection nobody awaited must not end the service.
+  //
+  // Node exits on an unhandled rejection by default, and this process creates
+  // promises that outlive the request that made them: `createEmbeddingsInstance`
+  // returns one (`resolveEmbeddingModel` is async), and the AI SDK raises from
+  // stream flush callbacks that belong to no caller. So a single bad request —
+  // a `model` this installation does not serve was the one found in testing —
+  // took the API down for every caller, after correctly answering that request
+  // with a 500.
+  //
+  // Logged at error with the reason intact, never swallowed quietly: this
+  // keeps the service up, it does not make the bug go away, and a rejection
+  // reaching here is always a defect worth fixing at its source. The specific
+  // triggers found so far are refused up front in
+  // `initialize-basic-rag.service.ts`; this is the floor under the ones nobody
+  // has hit yet.
+  process.on('unhandledRejection', (reason) => {
+    logger.error(
+      `Unhandled promise rejection — the service is staying up, but this is a defect: ${
+        reason instanceof Error
+          ? (reason.stack ?? reason.message)
+          : String(reason)
+      }`,
+    );
+  });
+
   await app.listen(port);
   logger.log(`ragen-api running on port ${port}`);
 }
