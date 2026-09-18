@@ -79,6 +79,19 @@ describe('refusing a pattern that can backtrack catastrophically', () => {
     await expect(probe('[A-Z]{2}\\d{9}')).resolves.toEqual({ ok: true });
   }, 20_000);
 
+  it('probes under the flags the evaluator will actually run', async () => {
+    // The hole this closes. The probe compiled `gu`/`g` while the evaluator
+    // ran `giu`/`gi`, so a case-sensitive probe failed fast on a fixture of
+    // lowercase `a`s and passed the pattern — which then backtracked
+    // catastrophically at request time, where nothing can interrupt it.
+    const result = await probe('^(?:A+)+$');
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.failure.code).toBe('too-slow');
+    }
+  }, 20_000);
+
   it('skips the probe for a literal, which cannot backtrack', async () => {
     const result = await validatePattern({
       pattern: '(a+)+$',

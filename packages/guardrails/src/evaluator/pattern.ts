@@ -57,6 +57,51 @@ export function maskLabelFor(rule: GuardrailRule): string {
   return slug || 'rule';
 }
 
+/**
+ * The flags a pattern runs under, preferred first.
+ *
+ * Exported because the save-time validator has to probe a pattern under the
+ * flags it will actually execute with, and it did not: it probed `gu`/`g`
+ * while this ran `giu`/`gi`. A case-sensitive probe fails fast on a fixture
+ * that the case-insensitive runtime backtracks through — `^(?:A+)+$` passes a
+ * `gu` probe against a fixture of lowercase `a`s and then hangs under `gi`.
+ * Two constants in two files is how that happened; one is how it stops.
+ *
+ * `u` is a preference rather than a requirement: it rejects patterns that are
+ * legal without it, and a rule saved before this evaluator existed should keep
+ * running rather than silently match nothing.
+ */
+export const PATTERN_FLAGS = ['giu', 'gi'] as const;
+
+export type CompiledPattern =
+  { ok: true; regex: RegExp; flags: string } | { ok: false; message: string };
+
+/** Compile a pattern the way it will be run, or say why it cannot be. */
+export function compilePattern(source: string): CompiledPattern {
+  let lastMessage = 'invalid regular expression';
+  for (const flags of PATTERN_FLAGS) {
+    try {
+      return { ok: true, regex: new RegExp(source, flags), flags };
+    } catch (error) {
+      lastMessage = error instanceof Error ? error.message : String(error);
+    }
+  }
+  return { ok: false, message: lastMessage };
+}
+
+/**
+ * Turn a literal into a regex source that matches it and nothing else.
+ *
+ * A literal is searched with the same engine as a regex rule, rather than with
+ * `indexOf` over two lowercased strings. That version returned offsets into
+ * the *lowercased* haystack: `'İ'.toLowerCase()` is two code points, so every
+ * offset after one shifted by one and `applyMask` cut the wrong span — leaving
+ * the match visible and redacting its neighbour.
+ */
+export function literalToPattern(literal: string): string {
+  return literal.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 /** Find every match of one pattern rule in `text`. */
 export function evaluatePattern(
   rule: GuardrailRule,
@@ -67,47 +112,21 @@ export function evaluatePattern(
     return [];
   }
 
-  return rule.patternIsRegex === true
-    ? findRegexSpans(pattern, text)
-    : findLiteralSpans(pattern, text);
-}
+  // A literal is escaped and run through the same engine, so both kinds share
+  // one set of flags and one notion of where a match starts.
+  const source =
+    rule.patternIsRegex === true ? pattern : literalToPattern(pattern);
 
-function findLiteralSpans(needle: string, haystack: string): PatternSpan[] {
-  const spans: PatternSpan[] = [];
-  if (needle.length === 0) {
-    return spans;
-  }
-  // Case-insensitive, because an operator writing a literal is naming a thing,
-  // not a spelling. A rule that catches "Confidential" and misses
-  // "CONFIDENTIAL" is a rule that looks like it works.
-  const lowerNeedle = needle.toLowerCase();
-  const lowerHaystack = haystack.toLowerCase();
-  let from = 0;
-  for (;;) {
-    const at = lowerHaystack.indexOf(lowerNeedle, from);
-    if (at === -1) {
-      return spans;
-    }
-    spans.push({ start: at, end: at + needle.length });
-    from = at + needle.length;
-  }
+  return findRegexSpans(source, text);
 }
 
 function findRegexSpans(source: string, text: string): PatternSpan[] {
   const spans: PatternSpan[] = [];
-  let regex: RegExp;
-  try {
-    regex = new RegExp(source, 'giu');
-  } catch {
-    try {
-      // `u` rejects patterns that are legal without it. A rule saved before
-      // this evaluator existed should still run rather than silently match
-      // nothing, so the unicode flag is a preference, not a requirement.
-      regex = new RegExp(source, 'gi');
-    } catch {
-      return spans;
-    }
+  const compiled = compilePattern(source);
+  if (!compiled.ok) {
+    return spans;
   }
+  const { regex } = compiled;
 
   for (;;) {
     const match = regex.exec(text);

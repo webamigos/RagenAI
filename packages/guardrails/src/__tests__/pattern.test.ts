@@ -57,6 +57,29 @@ describe('matching a literal', () => {
     ]);
   });
 
+  it('reports offsets into the original text, not a lowercased copy', () => {
+    // `'İ'.toLowerCase()` is two code points, so lowercasing the haystack
+    // shifted every offset after it by one. Searching a lowercased copy and
+    // returning its indices put the span one character late: applyMask left
+    // the match visible and redacted its neighbour instead.
+    const text = 'İxy';
+    const spans = evaluatePattern(rule({ pattern: 'x' }), text);
+
+    expect(spans).toEqual([{ start: 1, end: 2 }]);
+    expect(text.slice(spans[0].start, spans[0].end)).toBe('x');
+  });
+
+  it('masks the characters it matched, whatever precedes them', () => {
+    const masked = applyMask('İxy', [
+      {
+        rule: rule({ name: 'x' }),
+        spans: evaluatePattern(rule({ pattern: 'x' }), 'İxy'),
+      },
+    ]);
+
+    expect(masked).toBe('İ[[redacted:x]]y');
+  });
+
   it('returns nothing for an empty or missing pattern', () => {
     expect(evaluatePattern(rule({ pattern: '' }), 'text')).toEqual([]);
     expect(evaluatePattern(rule({ pattern: null }), 'text')).toEqual([]);

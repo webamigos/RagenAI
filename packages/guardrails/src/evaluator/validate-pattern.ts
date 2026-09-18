@@ -1,4 +1,5 @@
 import type { GuardrailStage } from '../contracts/guardrail';
+import { compilePattern } from './pattern';
 import { probeRegex } from './redos-probe';
 
 /**
@@ -150,6 +151,22 @@ export async function validatePattern(
         failure: { code: 'not-a-regex', message: outcome.message },
       };
     }
+    if (outcome.elapsedMs !== null && outcome.elapsedMs >= REDOS_BUDGET_MS) {
+      // The timer is armed when the parent processes the worker's `started`
+      // message, and the worker begins matching before that — so a busy event
+      // loop can leave a match running longer than the budget and still have
+      // it report back as completed. The worker's own measurement is of the
+      // match alone, so it is the verdict; the timer is only what bounds a
+      // match that never returns at all.
+      return {
+        ok: false,
+        failure: {
+          code: 'too-slow',
+          budgetMs: REDOS_BUDGET_MS,
+          fixture: `${fixture.slice(0, 32)}… (${fixture.length} chars)`,
+        },
+      };
+    }
   }
 
   return OK;
@@ -159,27 +176,23 @@ type CompileResult =
   | { ok: true; flags: string }
   | { ok: false; failure: { code: 'not-a-regex'; message: string } };
 
+/**
+ * Compiled exactly as the evaluator compiles it, flags included.
+ *
+ * This used to probe under `gu`/`g` while the evaluator ran `giu`/`gi`, which
+ * made the gate miss the case it exists for: a case-sensitive probe fails fast
+ * on a fixture the case-insensitive runtime backtracks through, so
+ * `^(?:A+)+$` was accepted here and could hang there. Both now go through
+ * `compilePattern`, which is the only place the flags are decided.
+ */
 function compile(pattern: string): CompileResult {
-  try {
-    void new RegExp(pattern, 'gu');
-    return { ok: true, flags: 'gu' };
-  } catch (unicodeError) {
-    try {
-      void new RegExp(pattern, 'g');
-      // `u` rejects patterns that are legal without it, and the evaluator
-      // falls back the same way, so the probe has to test what will run.
-      return { ok: true, flags: 'g' };
-    } catch (error) {
-      return {
+  const compiled = compilePattern(pattern);
+  return compiled.ok
+    ? { ok: true, flags: compiled.flags }
+    : {
         ok: false,
-        failure: {
-          code: 'not-a-regex',
-          message:
-            error instanceof Error ? error.message : String(unicodeError),
-        },
+        failure: { code: 'not-a-regex', message: compiled.message },
       };
-    }
-  }
 }
 
 function validateWidth(
