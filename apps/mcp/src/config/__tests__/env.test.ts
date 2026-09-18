@@ -9,16 +9,26 @@ function withEnv(overrides: Record<string, string | undefined>) {
 }
 
 describe('mcpEnvSchema', () => {
-  it('needs nothing at all — every value has a working local default', () => {
-    const env = mcpEnvSchema.parse({});
+  it('needs only TARGET_ENV — every other value has a working local default', () => {
+    const env = mcpEnvSchema.parse({ TARGET_ENV: 'local' });
 
     expect(env.PORT).toBe(3300);
     expect(env.RAGEN_API_URL).toBe('http://localhost:3001');
     expect(env.TARGET_ENV).toBe('local');
   });
 
+  // The variable that decides whether a rule applies must not have a
+  // forgiving default. Unset on a deployment, `targetEnv` would read as
+  // `local`, the RAGEN_API_URL refinement would never fire, and the server
+  // would boot clean and pointed at a localhost that is not there.
+  it('refuses to start without TARGET_ENV rather than assuming local', () => {
+    expect(() => mcpEnvSchema.parse({})).toThrow();
+  });
+
   it('coerces PORT, which arrives as a string from the environment', () => {
-    expect(mcpEnvSchema.parse({ PORT: '8080' }).PORT).toBe(8080);
+    expect(mcpEnvSchema.parse({ TARGET_ENV: 'local', PORT: '8080' }).PORT).toBe(
+      8080,
+    );
   });
 
   it.each([
@@ -33,8 +43,10 @@ describe('mcpEnvSchema', () => {
   });
 
   it('accepts the boundary ports', () => {
-    expect(mcpEnvSchema.parse({ PORT: '1' }).PORT).toBe(1);
-    expect(mcpEnvSchema.parse({ PORT: '65535' }).PORT).toBe(65535);
+    expect(mcpEnvSchema.parse({ TARGET_ENV: 'local', PORT: '1' }).PORT).toBe(1);
+    expect(
+      mcpEnvSchema.parse({ TARGET_ENV: 'local', PORT: '65535' }).PORT,
+    ).toBe(65535);
   });
 
   it('requires RAGEN_API_URL in a deployed environment, despite having a default', () => {
@@ -76,11 +88,14 @@ describe('getEnv', () => {
   });
 
   it('returns the parsed environment', () => {
-    expect(withEnv({ PORT: '3399' }).PORT).toBe(3399);
+    expect(withEnv({ TARGET_ENV: 'local', PORT: '3399' }).PORT).toBe(3399);
   });
 
   it('caches, so nothing downstream re-reads process.env and gets a different answer', () => {
-    const first = withEnv({ RAGEN_API_URL: 'http://api.internal:3001' });
+    const first = withEnv({
+      TARGET_ENV: 'local',
+      RAGEN_API_URL: 'http://api.internal:3001',
+    });
     process.env.RAGEN_API_URL = 'http://somewhere-else:9999';
 
     expect(getEnv()).toBe(first);
@@ -92,7 +107,10 @@ describe('getEnv', () => {
     // whole Jest run down from an unrelated variable, with no failing
     // assertion to explain it.
     expect(() =>
-      withEnv({ OTEL_EXPORTER_OTLP_ENDPOINT: 'localhost:4318' }),
+      withEnv({
+        TARGET_ENV: 'local',
+        OTEL_EXPORTER_OTLP_ENDPOINT: 'localhost:4318',
+      }),
     ).toThrow(/OTEL_EXPORTER_OTLP_ENDPOINT/);
   });
 });
