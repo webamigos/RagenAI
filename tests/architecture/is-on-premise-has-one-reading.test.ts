@@ -49,6 +49,18 @@ const EXTENSIONS = ['.ts', '.tsx', '.mjs', '.js'];
  * match, and a `process.env.IS_ON_PREMISE` written inside such a string is not
  * a reading either.
  */
+/**
+ * Every spelling of a direct read.
+ *
+ * Dot access and both quote styles for the bracket form. The first version of
+ * this missed `process.env["IS_ON_PREMISE"]`, which is the shape a formatter
+ * with different quote settings produces — so a guard against drift had a
+ * spelling-shaped hole of its own, which is the joke this comment exists to
+ * stop being repeated.
+ */
+const DIRECT_READ =
+  /process\.env\s*(?:\.IS_ON_PREMISE\b|\[\s*['"`]IS_ON_PREMISE['"`]\s*\])/;
+
 function stripComments(source: string): string {
   return source
     .replace(/\/\*[\s\S]*?\*\//g, '')
@@ -84,11 +96,7 @@ describe('IS_ON_PREMISE', () => {
         // caught itself on its own prose the first time it ran.
         const code = stripComments(readFileSync(file, 'utf8'));
 
-        if (
-          /process\.env\.IS_ON_PREMISE|process\.env\['IS_ON_PREMISE'\]/.test(
-            code,
-          )
-        ) {
+        if (DIRECT_READ.test(code)) {
           offenders.push(rel);
         }
       }
