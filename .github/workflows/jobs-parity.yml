@@ -21,16 +21,31 @@ on:
     # three long jobs do not contend for runners.
     - cron: '0 4 * * *'
   workflow_dispatch:
-  # On a pull request, only for the files whose breakage this job is the sole
-  # detector of: the seam, the adapter, the Temporal workflow wrappers, and this
-  # job's own configuration. Deliberately *not* the handlers — they change often
-  # and `Jobs Integration` in ci.yml already runs them against BullMQ on every
-  # PR, so adding them here would double that cost to catch a Temporal-only
-  # regression the nightly run reports within a day.
+  # On a pull request, for the files whose breakage this job is the sole
+  # detector of: the seam, the adapter, the two Temporal-only modules in the
+  # worker, the workflow wrappers, the handlers, and this job's own
+  # configuration.
+  #
+  # **The handlers are in, and the first draft had them out.** The argument for
+  # leaving them out was that they change often and `Jobs Integration` already
+  # runs them against BullMQ on every PR, so adding them here would double that
+  # cost for a regression the nightly run would report within a day. Then the
+  # job ran: 1m44s and 1m45s, the two *fastest* checks on the pull request that
+  # added it, against 4m47s for `Test` and 4m59s for `test-e2e`. The cost
+  # argument was a guess, and the measurement does not support it — while a
+  # handler is the most likely place for a Temporal-only break to come from,
+  # since `ctx.steps` is `proxyActivities` there and an in-process retry loop
+  # here.
   pull_request:
     paths:
       - 'packages/jobs/**'
       - 'packages/jobs-temporal/**'
+      - 'apps/worker/src/handlers/**'
+      # `temporal-failure.ts` and `temporal-runtime.ts` — the only Temporal-only
+      # source outside the adapter package, and the activity boundary where
+      # `JobFailure` becomes `ApplicationFailure`. A change here is invisible to
+      # every other check by construction.
+      - 'apps/worker/src/temporal-*.ts'
       - 'apps/worker/src/workflows/**'
       - 'apps/worker/test/jobs-integration/**'
       - 'apps/worker/vitest.jobs-integration.config.ts'

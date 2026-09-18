@@ -492,7 +492,8 @@ here until there is an image to layer it onto.
 
    **Landed** as `.github/workflows/jobs-parity.yml` — a matrix over both
    runtimes at 04:00 UTC, plus the pull requests that touch the seam, the
-   adapter or the Temporal workflow wrappers.
+   adapter, the handlers, the workflow wrappers or the worker's two
+   Temporal-only modules.
    `tests/architecture/every-job-runtime-is-exercised.test.ts` holds the matrix
    to the `WorkerRuntime` union, because a runtime dropped from it leaves CI
    green.
