@@ -41,11 +41,14 @@ on:
       - 'packages/jobs/**'
       - 'packages/jobs-temporal/**'
       - 'apps/worker/src/handlers/**'
-      # `temporal-failure.ts` and `temporal-runtime.ts` — the only Temporal-only
-      # source outside the adapter package, and the activity boundary where
-      # `JobFailure` becomes `ApplicationFailure`. A change here is invisible to
-      # every other check by construction.
+      # The Temporal-only source outside the adapter package, which nothing
+      # else in CI looks at on a pull request: `temporal-failure.ts` is the
+      # activity boundary where `JobFailure` becomes `ApplicationFailure`,
+      # `temporal-runtime.ts` is the worker bootstrap, and `workflows-path.ts`
+      # answers where the workflow bundle is built from — the harness passes it
+      # to `bundleWorkflowCode`, so a wrong answer there fails only this job.
       - 'apps/worker/src/temporal-*.ts'
+      - 'apps/worker/src/workflows-path.ts'
       - 'apps/worker/src/workflows/**'
       - 'apps/worker/test/jobs-integration/**'
       - 'apps/worker/vitest.jobs-integration.config.ts'
