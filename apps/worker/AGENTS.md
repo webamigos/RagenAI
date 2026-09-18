@@ -47,6 +47,16 @@ No e2e test can replace it: `e2e.yml` starts no worker and path-ignores
 `apps/worker/**`. In CI it is the `Jobs Integration` job, with a Redis service
 container.
 
+**The same suite is the Temporal parity run**:
+`WORKER_RUNTIME=temporal npm run test:jobs-integration` needs no Redis and no
+container — `@temporalio/testing` starts a real Temporal server from a cached
+binary (`JOBS_TEST_TEMPORAL_ADDRESS` points it at your own). CI runs it nightly
+as `Jobs Parity`, over both runtimes. Where the engines genuinely differ, the
+difference is a field on `RuntimeTraits` in `test/jobs-integration/harness.ts` —
+read that table before assuming a parity failure is a regression, and add to it
+only when you have established that an engine, not the adapter, is what
+disagrees. Three tests are BullMQ's alone and skip on the Temporal leg.
+
 Both of those suites live in `test/`, which `tsconfig.json` cannot cover — its
 `rootDir` is `src`, because that is what `tsc --build` emits. `tsconfig.test.json`
 type-checks them, and `npm run typecheck` runs both configs. Without it a suite

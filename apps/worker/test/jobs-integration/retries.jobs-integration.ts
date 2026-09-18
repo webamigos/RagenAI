@@ -2,7 +2,11 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import { JobFailure } from '@ragenai/jobs';
 
-import { startHarness, type JobRuntimeHarness } from './harness.js';
+import {
+  expectFailedWith,
+  startHarness,
+  type JobRuntimeHarness,
+} from './harness.js';
 
 /**
  * A step's retry policy, enforced against a real queue.
@@ -64,8 +68,7 @@ describe('step retries', () => {
     await harness.jobs.start('scoreDocument', 'retry-2', SCORE_PAYLOAD);
     const run = await harness.waitForRun('retry-2', 60_000);
 
-    expect(run.status).toBe('failed');
-    expect(run.failure).toContain('provider down');
+    expectFailedWith(run, 'provider down');
     // Three, which is `scoreDocument`'s `maximumAttempts` — not six, which is
     // what a job BullMQ also retried would produce.
     expect(harness.activities.scoreDocumentForRag).toHaveBeenCalledTimes(3);
@@ -81,8 +84,7 @@ describe('step retries', () => {
     await harness.jobs.start('scoreDocument', 'retry-3', SCORE_PAYLOAD);
     const run = await harness.waitForRun('retry-3');
 
-    expect(run.status).toBe('failed');
-    expect(run.failure).toContain('unsupported document');
+    expectFailedWith(run, 'unsupported document');
     // The whole point of `retryable: false` surviving the port. Retrying an
     // unsupported file type turns one clear failure into several slow ones,
     // and on this runtime the translation to `UnrecoverableError` is what
