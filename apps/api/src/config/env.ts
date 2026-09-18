@@ -26,6 +26,7 @@ import { z } from 'zod';
  * then, not off this object.
  */
 export const apiEnvSchema = fragments.targetEnvRequired
+  .merge(fragments.deployment)
   .merge(fragments.database)
   .merge(fragments.llmGateway)
   .merge(fragments.models)

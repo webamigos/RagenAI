@@ -70,6 +70,8 @@ export {
   type TargetEnv,
 } from './target-env';
 
+export { isOnPremise } from './deployment';
+
 export {
   isPiiMaskingConfigured,
   isPiiMaskingEnabled,
