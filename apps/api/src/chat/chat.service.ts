@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { type Request, type Response } from 'express';
 import { type ApiContext } from '../common/types/api-context.js';
 import { AssistantScopeService } from '../common/services/assistant-scope.service.js';
+import { FoldersService } from '../documents/folders.service.js';
 import { type ChatDto } from './dto/chat.dto.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { ApiLimitsService } from '../api-limits/api-limits.service.js';
@@ -39,6 +40,7 @@ export class ChatService {
     private readonly aiUsage: AiUsageService,
     private readonly teamRateLimit: TeamRateLimitService,
     private readonly assistantScope: AssistantScopeService,
+    private readonly folders: FoldersService,
   ) {}
 
   async chat(dto: ChatDto, context: ApiContext, req: Request, res: Response) {
@@ -111,9 +113,13 @@ export class ChatService {
       return;
     }
 
-    const rawSettings = await this.organizationSettings.getAllSettings(
-      context.orgId,
-    );
+    // See the same call in `ChatCompletionsService`: without the caller's
+    // scope, `initializeRagChain` defaults to `member` and retrieval silently
+    // matches nothing.
+    const [rawSettings, membership] = await Promise.all([
+      this.organizationSettings.getAllSettings(context.orgId),
+      this.folders.getMembershipContext(context.orgId, context.userId),
+    ]);
 
     const settings = {
       ...rawSettings,
@@ -142,6 +148,8 @@ export class ChatService {
         settings,
         orgId: context.orgId,
         userId: context.userId,
+        scope: membership.scope,
+        userTeamIds: membership.userTeamIds,
         projectId: resolvedProjectId,
         projectInstruction: project?.settings?.instructions ?? null,
         mcpTools,

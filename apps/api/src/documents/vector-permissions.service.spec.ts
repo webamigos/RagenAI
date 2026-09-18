@@ -47,20 +47,28 @@ describe('VectorPermissionsService', () => {
   });
 
   describe('computeAccessibleBy', () => {
-    it('falls back to org-wide access when the file does not exist', async () => {
+    // Was `['org:org-1']`. A lookup that finds nothing is not evidence that
+    // everyone may read it: this is an access boundary, so a miss fails
+    // closed. A chunk nobody can reach is recoverable; one everybody can
+    // reach is a leak.
+    it('grants nobody when the file does not exist', async () => {
       const { service } = makeService({
         userFile: { findFirst: vi.fn().mockResolvedValue(null) },
       });
 
       const result = await service.computeAccessibleBy('missing-file', 'org-1');
-      expect(result).toEqual(['org:org-1']);
+      expect(result).toEqual([]);
     });
 
-    it('treats a legacy file with no owner as org-wide accessible', async () => {
+    // Org-wide is the flag now, not a null owner. The `is_org_wide` migration
+    // backfilled `true` onto every then-ownerless row, so a legacy file
+    // carries the flag and still reads as org-wide.
+    it('treats a legacy file carrying the org-wide flag as org-wide accessible', async () => {
       const { service } = makeService({
         userFile: {
           findFirst: vi.fn().mockResolvedValue({
             ownerId: null,
+            isOrgWide: true,
             folderId: null,
             folder: null,
             permissions: [],
@@ -70,6 +78,26 @@ describe('VectorPermissionsService', () => {
 
       const result = await service.computeAccessibleBy('file-1', 'org-1');
       expect(result).toEqual(['org:org-1']);
+    });
+
+    // The other half, and the reason the flag exists: the owner FK is
+    // ON DELETE SET NULL, so deleting a user used to republish every private
+    // file they owned to the whole organization.
+    it('does not publish a file whose owner was deleted', async () => {
+      const { service } = makeService({
+        userFile: {
+          findFirst: vi.fn().mockResolvedValue({
+            ownerId: null,
+            isOrgWide: false,
+            folderId: null,
+            folder: null,
+            permissions: [],
+          }),
+        },
+      });
+
+      const result = await service.computeAccessibleBy('file-1', 'org-1');
+      expect(result).toEqual([]);
     });
 
     it('always includes the owner as a principal', async () => {
@@ -157,13 +185,14 @@ describe('VectorPermissionsService', () => {
       );
     });
 
+    // The folder and its ancestors are read in one query rather than two —
+    // same principals, one round trip on a path that runs per file.
     it('includes principals from ancestor folder permissions via the materialized path', async () => {
       const findMany = vi
         .fn()
-        .mockResolvedValueOnce([]) // folder-level permissions for folder-2
-        .mockResolvedValueOnce([
+        .mockResolvedValue([
           { granteeType: 'team', granteeId: 'team-ancestor' },
-        ]); // ancestor permissions
+        ]);
 
       const { service } = makeService({
         userFile: {
@@ -187,12 +216,12 @@ describe('VectorPermissionsService', () => {
       expect(result).toEqual(
         expect.arrayContaining(['user:user-1', 'team:team-ancestor']),
       );
-      expect(findMany).toHaveBeenNthCalledWith(1, {
-        where: { resourceType: 'folder', folderId: 'folder-2' },
-        select: { granteeType: true, granteeId: true },
-      });
-      expect(findMany).toHaveBeenNthCalledWith(2, {
-        where: { resourceType: 'folder', folderId: { in: ['folder-1'] } },
+      expect(findMany).toHaveBeenCalledTimes(1);
+      expect(findMany).toHaveBeenCalledWith({
+        where: {
+          resourceType: 'folder',
+          folderId: { in: ['folder-2', 'folder-1'] },
+        },
         select: { granteeType: true, granteeId: true },
       });
     });
@@ -269,6 +298,7 @@ describe('VectorPermissionsService', () => {
             .mockResolvedValue([{ id: 'file-1' }, { id: 'file-2' }]),
           findFirst: vi.fn().mockResolvedValue({
             ownerId: null,
+            isOrgWide: true,
             folderId: null,
             folder: null,
             permissions: [],

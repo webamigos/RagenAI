@@ -33,6 +33,7 @@ describe('ChatCompletionsService', () => {
     assertWithinLimit: Mock;
     charge: Mock;
   };
+  let folders: { getMembershipContext: Mock };
 
   const mockContext: ApiContext = {
     orgId: 'org-1' as OrgId,
@@ -115,6 +116,13 @@ describe('ChatCompletionsService', () => {
       assertWithinLimit: vi.fn().mockResolvedValue(undefined),
       charge: vi.fn().mockResolvedValue(undefined),
     };
+    // An owner by default, which is what `orgVisibilityScope('owner')`
+    // returns and what the existing cases assume they can see.
+    folders = {
+      getMembershipContext: vi
+        .fn()
+        .mockResolvedValue({ scope: 'organization', userTeamIds: [] }),
+    };
 
     // `id` matters now: with no key scope the resolver looks the project up
     // and returns the row's own id, rather than echoing what was asked for.
@@ -151,6 +159,10 @@ describe('ChatCompletionsService', () => {
       aiUsage as any,
       teamRateLimit as any,
       new AssistantScopeService(prisma as any),
+      // Resolves the caller's visibility scope. Without it the chain falls
+      // back to `member` and retrieval matches nothing — see
+      // `computeAccessiblePrincipals` in @ragenai/rag-core.
+      folders as any,
     );
   });
 
@@ -281,6 +293,34 @@ describe('ChatCompletionsService', () => {
           model: 'claude-opus-4-6',
           temperature: 0.1,
         }),
+      }),
+    );
+  });
+
+  // The defect this guards: the chain defaults to `scope: 'member'`, and
+  // `buildMetadataFilter` then demands `metadata.accessible_by`. Omitting the
+  // caller's real scope does not narrow retrieval, it empties it — and
+  // silently, because an empty retrieval is a normal RAG outcome. `/v1/search`
+  // resolved membership and this surface did not, so the same key answered one
+  // and not the other.
+  it("passes the caller's visibility scope and team ids to the chain", async () => {
+    folders.getMembershipContext.mockResolvedValue({
+      scope: 'member',
+      userTeamIds: ['team-7', 'team-9'],
+    });
+    initializeBasicRag.initializeRagChain.mockResolvedValue(makeChain({}));
+    const { res } = createMockRes();
+
+    await service.create(baseDto, mockContext, createMockReq(), res);
+
+    expect(folders.getMembershipContext).toHaveBeenCalledWith(
+      mockContext.orgId,
+      mockContext.userId,
+    );
+    expect(initializeBasicRag.initializeRagChain).toHaveBeenCalledWith(
+      expect.objectContaining({
+        scope: 'member',
+        userTeamIds: ['team-7', 'team-9'],
       }),
     );
   });

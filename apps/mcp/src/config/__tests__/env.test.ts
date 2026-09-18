@@ -25,6 +25,28 @@ describe('mcpEnvSchema', () => {
     expect(() => mcpEnvSchema.parse({})).toThrow();
   });
 
+  // The root `.env.local` is shared by every app in the monorepo, so a `PORT`
+  // meant for one of them followed all of them: `PORT=3001` for apps/api put
+  // this server on apps/api's port, where it died with EADDRINUSE. The
+  // app-specific name is how one shared file gives each app its own port;
+  // bare `PORT` stays supported because that is what a single-container host
+  // injects.
+  it('prefers RAGEN_MCP_PORT over a PORT meant for another app', () => {
+    expect(
+      mcpEnvSchema.parse({
+        TARGET_ENV: 'local',
+        RAGEN_MCP_PORT: '3300',
+        PORT: '3001',
+      }).PORT,
+    ).toBe(3300);
+  });
+
+  it('still honours a bare PORT when no app-specific one is set', () => {
+    expect(mcpEnvSchema.parse({ TARGET_ENV: 'local', PORT: '8080' }).PORT).toBe(
+      8080,
+    );
+  });
+
   it('coerces PORT, which arrives as a string from the environment', () => {
     expect(mcpEnvSchema.parse({ TARGET_ENV: 'local', PORT: '8080' }).PORT).toBe(
       8080,

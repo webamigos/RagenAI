@@ -159,7 +159,17 @@ async function bootstrap() {
     );
   }
 
-  const port = configService.get<number>('PORT', 3001);
+  // `RAGEN_API_PORT` first, then `PORT`.
+  //
+  // `PORT` alone is what a single-container host (Railway) injects, so it has
+  // to keep working. But every app in this monorepo reading that one generic
+  // name means a `PORT` in the shared root `.env.local` follows all of them at
+  // once: `PORT=3001` for this service also moved apps/mcp onto 3001, where it
+  // died with EADDRINUSE. The app-specific name wins, so one file can give
+  // each app its own port.
+  const port =
+    configService.get<number>('RAGEN_API_PORT') ??
+    configService.get<number>('PORT', 3001);
   await app.listen(port);
   logger.log(`ragen-api running on port ${port}`);
 }

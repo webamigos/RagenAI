@@ -5,9 +5,9 @@
   "type": "module",
   "description": "Ragen AI web application (Next.js)",
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --port 3000",
     "build": "next build",
-    "start": "next start",
+    "start": "next start --port 3000",
     "lint": "eslint",
     "serve": "npx http-server --port 5433 out",
     "test": "vitest run",

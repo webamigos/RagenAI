@@ -69,3 +69,27 @@ export function servingProvider(modelId: string): string | undefined {
     return undefined;
   }
 }
+
+/**
+ * Whether this deployment can actually answer with `modelId`.
+ *
+ * Asked before a chat chain is built, because the alternative is worse than a
+ * bad answer: an unroutable model reaches `streamText`, the provider is never
+ * constructed, and the AI SDK raises `AI_NoOutputGeneratedError` from a
+ * `TransformStream` flush callback — outside any request-scoped `catch`, so it
+ * lands as an unhandled rejection and takes the process down. One request with
+ * a bad `model` therefore ended the service for every caller.
+ *
+ * `routeFor` is a synchronous lookup in the loaded route table, so this costs
+ * nothing per request. A table that cannot be read at all is a different
+ * failure and is left to surface as itself, rather than being reported here as
+ * "no such model".
+ */
+export function isModelRoutable(modelId: string): boolean {
+  return gatewayFromEnv().routeFor(modelId) !== undefined;
+}
+
+/** The model ids this deployment serves, for an error message that helps. */
+export function routableModels(): string[] {
+  return gatewayFromEnv().availableModels();
+}

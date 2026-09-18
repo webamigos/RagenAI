@@ -62,5 +62,21 @@ empty context rather than an error.
   write path which creates points also writes the principal — this is exactly
   the kind of rule `tests/architecture/` exists for.
 
+## What was done
+
+The rule moved to `computeAccessiblePrincipals` in `@ragenai/rag-core`, the
+chat surfaces now resolve the caller's scope, and `prepareMetadata` takes the
+principals as a **required** field so a fourth write path is a compile error.
+`tests/architecture/every-ingest-path-writes-accessible-by.test.ts` is the
+tripwire.
+
+Extracting the rule found a second defect both copies shared, which is the part
+worth remembering: they keyed org-wide off a null owner, and the `is_org_wide`
+migration exists precisely to stop that meaning. Deleting a user therefore
+published their private files to the whole organization through RAG, while a
+file deliberately shared with the organization reached only its owner. Two
+copies of a rule do not just drift from each other — they drift together, away
+from the schema that replaced the signal they read.
+
 Found by `scripts/test-env/`; detail in
 [`docs/test-reports/2026-09-18-api-mcp-sdk-offline.md`](../test-reports/2026-09-18-api-mcp-sdk-offline.md).

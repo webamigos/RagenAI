@@ -34,6 +34,9 @@ export async function scrapeWebsite(
     // activities/documents
     createMarkdownDocument,
 
+    // activities/db
+    computeFileAccessPrincipals,
+
     // activities/embeddings
     prepareMetadata,
 
@@ -203,6 +206,11 @@ export async function scrapeWebsite(
 
   // ==== PREPARE DOCUMENTS FOR VECTOR STORE
 
+  const accessibleBy = await computeFileAccessPrincipals(
+    fileRecord.id,
+    fileRecord.organization_id,
+  );
+
   const updatedDocs = await prepareMetadata({
     docs,
     fileRecord: {
@@ -210,6 +218,7 @@ export async function scrapeWebsite(
       fileName: fileRecord.file_name,
       organizationId: fileRecord.organization_id,
       projectId: fileRecord.project_id,
+      accessibleBy,
     },
     fileType,
     splitterSettings,

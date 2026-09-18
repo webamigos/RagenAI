@@ -301,6 +301,7 @@ describe('embeddings / prepareMetadata', () => {
       fileName: 'test.pdf',
       organizationId: 'org1',
       projectId: 'proj-1',
+      accessibleBy: ['user:owner-1'],
     };
 
     const result = (await env.run(prepareMetadata, {
@@ -339,6 +340,7 @@ describe('embeddings / prepareMetadata', () => {
         fileName: 'single.txt',
         organizationId: 'org1',
         projectId: null,
+        accessibleBy: ['user:owner-1'],
       },
       fileType: FileType.TEXT,
       splitterSettings: { chunkSize: 800, chunkOverlap: 200 },
@@ -359,6 +361,7 @@ describe('embeddings / prepareMetadata', () => {
         fileName: 'w.txt',
         organizationId: 'o1',
         projectId: null,
+        accessibleBy: ['user:owner-1'],
       },
       fileType: FileType.TEXT,
       splitterSettings: { chunkSize: 800, chunkOverlap: 200 },

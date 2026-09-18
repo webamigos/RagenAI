@@ -40,6 +40,61 @@ const getUserFile = async (fileId: string, orgId: string) => {
 };
 
 /**
+ * The rows `computeAccessiblePrincipals` needs to decide who may retrieve a
+ * file's chunks: the file's own ownership and sharing flags, the containing
+ * folder's team, and every grant on the file, on that folder, and on the
+ * folder's ancestors.
+ *
+ * Same `@@unique([id, organizationId])` lookup as `getUserFile`, for the same
+ * reason — the org is part of the key rather than a filter someone can drop.
+ */
+const getFileAccessRows = async (fileId: string, orgId: string) => {
+  const file = await getPrisma().userFile.findUnique({
+    where: { id_organizationId: { id: fileId, organizationId: orgId } },
+    select: {
+      ownerId: true,
+      isOrgWide: true,
+      folderId: true,
+      folder: { select: { teamId: true, path: true } },
+      permissions: { select: { granteeType: true, granteeId: true } },
+    },
+  });
+
+  if (!file) {
+    return null;
+  }
+
+  const grants = [...file.permissions];
+
+  if (file.folderId) {
+    const folderIds = [file.folderId];
+    if (file.folder?.path && file.folder.path !== '/') {
+      folderIds.push(...file.folder.path.split('/').filter(Boolean));
+    }
+
+    // `DocumentPermission` carries no organization column — it is scoped
+    // through its relation to the file or folder, which is the shape the
+    // tenant-scope guard cannot check. The scope holds here because every id
+    // in `folderIds` comes from the org-scoped file row above: its own
+    // `folderId`, and the ancestor ids in that folder's materialized path,
+    // which is built within one organization. Do not widen this to a caller-
+    // supplied folder id without adding an organization filter.
+    const folderPermissions = await getPrisma().documentPermission.findMany({
+      where: { resourceType: 'folder', folderId: { in: folderIds } },
+      select: { granteeType: true, granteeId: true },
+    });
+    grants.push(...folderPermissions);
+  }
+
+  return {
+    ownerId: file.ownerId,
+    isOrgWide: file.isOrgWide,
+    folderTeamId: file.folder?.teamId ?? null,
+    grants,
+  };
+};
+
+/**
  * What `createFileDetailsInDB` hands back.
  *
  * Written out rather than `Pick<UserFile, …>`, because it deliberately is not
@@ -926,6 +981,7 @@ const deleteExpiredDocumentRetrievals = async (
 
 export const db = {
   getUserFile,
+  getFileAccessRows,
   getDocumentContent,
   isIngestCancelled,
   createFileDetailsInDB,

@@ -26,6 +26,7 @@ export async function runFileEmbeddings(
   const {
     // activities/db
     bindFileWithDocument,
+    computeFileAccessPrincipals,
     getFileRecord,
     createInitialDocumentVersion,
     mergeFileMetadata,
@@ -535,6 +536,11 @@ export async function runFileEmbeddings(
       : docs;
 
   // ==== PREPARE DOCUMENTS FOR VECTOR STORE
+  // Read here rather than from `file` above: ingest can take minutes, and the
+  // principals must reflect the file's sharing as it stands when the chunks
+  // are written, not as it stood when the job was picked up.
+  const accessibleBy = await computeFileAccessPrincipals(fileId, orgId);
+
   const updatedDocs = await prepareMetadata({
     docs: docsWithSummary,
     fileRecord: {
@@ -544,6 +550,7 @@ export async function runFileEmbeddings(
       projectId: projectId,
       piiPolicy: file.piiPolicy,
       language,
+      accessibleBy,
     },
     fileType,
     splitterSettings,

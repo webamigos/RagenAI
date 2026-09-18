@@ -36,3 +36,9 @@ export {
   type VectorStoreDocumentMetadata,
   type VectorStoreMetadataFilter,
 } from './vector-metadata';
+
+export {
+  computeAccessiblePrincipals,
+  type DocumentAccessGrant,
+  type DocumentAccessInput,
+} from './document-access';

@@ -40,7 +40,7 @@ context, a passing case does mean retrieval supplied the right source. It says
 
 ## Findings
 
-### F1 — A document ingested through the public API is invisible to chat
+### F1 — A document ingested through the public API is invisible to chat — FIXED
 
 **Severity: high.** Upload a file via `POST /v1/files`, wait until the API
 reports `status: processed`, then ask about it through `/v1/chat` or
@@ -91,7 +91,31 @@ other direction — a condition that matches nothing is not a permission check �
 so this is worth treating as a correctness issue in `docs/knowledge-base.md`'s
 model, not only a retrieval bug.
 
-### F2 — An unroutable model takes the whole API process down
+**The fix**, in three parts:
+
+- `ChatCompletionsService` and `ChatService` now resolve
+  `FoldersService.getMembershipContext()` and pass `scope` / `userTeamIds`,
+  exactly as `SearchService` already did.
+- `prepareMetadata` takes `accessibleBy` as a **required** field, and the three
+  handlers that write vector points compute it first through a new
+  `computeFileAccessPrincipals` activity. Required rather than optional so a
+  fourth write path is a compile error, not a silent gap.
+- The rule itself moved to `computeAccessiblePrincipals` in
+  `@ragenai/rag-core`; apps/web's and apps/api's copies now delegate to it.
+
+Extracting it surfaced a second defect the two copies shared: both still keyed
+org-wide sharing off a **null owner**, which is what the `is_org_wide` migration
+(20260909180000) exists to stop meaning. So a file whose owner had been deleted
+was published to the whole organization (the FK is `ON DELETE SET NULL`), and a
+file deliberately shared with the organization reached nobody but its owner,
+because `isOrgWide` was never read. The shared rule reads the flag, and a
+lookup that finds no file now yields no principals instead of `['org:<id>']` —
+an access boundary fails closed.
+
+`tests/architecture/every-ingest-path-writes-accessible-by.test.ts` holds all of
+it.
+
+### F2 — An unroutable model takes the whole API process down — FIXED
 
 **Severity: high (denial of service).** Any authenticated caller can kill
 apps/api with one request:
@@ -117,7 +141,13 @@ Worth noting alongside: the rephrase stage of the same chain handles an
 unroutable model correctly — it logs `Rephrase-and-expand failed, falling back
 to raw input question` and carries on. Only the answer model is fatal.
 
-### F3 — Chat requires an OpenAI key even when moderation is off
+**The fix**: `initializeRagChain` calls `assertModelIsRoutable()` before it
+builds anything, which is a synchronous lookup in the loaded route table. An
+unroutable model is now a 400 naming the model and listing the ones this
+installation does serve. Verified against the running service: the request is
+refused and the process stays up.
+
+### F3 — Chat requires an OpenAI key even when moderation is off — FIXED
 
 **Severity: medium.** `initialize-basic-rag.service.ts` calls
 `createModerationInstance()` unconditionally, and that throws when neither
@@ -128,19 +158,38 @@ default — `shouldModerate()` in `chain.ts` returns `false` unless
 Effect: a self-hosted install with, say, only Scaleway credentials gets HTTP 500
 on **every** chat request, with `Cannot create moderation instance: set
 OPENAI_MODERATION_KEY or OPENAI_API_KEY` in the log and nothing in the response
-pointing at it. Constructing it lazily, or only when `shouldModerate()` is true,
-would fix it.
+pointing at it.
 
-### F4 — `PORT` in the root `.env.local` follows every app
+**The fix**: `BaseChatChainModels.contentModerator` is a factory
+(`() => ModerationInstance`) that the chain calls only inside the
+`shouldModerate()` branch, so the key is required by the code path that
+actually calls the API. Verified by deleting `OPENAI_API_KEY` from the
+environment entirely and running a chat request: HTTP 200.
+
+### F4 — `PORT` in the root `.env.local` follows every app — FIXED
 
 **Severity: low, but it costs a confusing hour.** The root `.env.local` is
 shared by all five apps. `PORT=3001` for apps/api also reached apps/mcp, whose
 schema defaults to 3300, and it died with `EADDRINUSE` on apps/api's port. The
 same trap is waiting for apps/admin and apps/worker.
 
-Either the apps should read app-specific names (`API_PORT`, `MCP_PORT`), or
-`docs/architecture.md` and `.env.example` should say plainly that `PORT` must
-never appear in the root file. This report's environment does the latter.
+**The fix**: apps/api reads `RAGEN_API_PORT` before `PORT`, apps/mcp reads
+`RAGEN_MCP_PORT` before `PORT`, and apps/web pins `--port 3000` the way
+apps/admin already pinned 3200. Bare `PORT` still works and still wins over the
+default, because that is what a single-container host injects. `.env.example`
+carries the port table and the rule, and
+`tests/architecture/an-app-port-is-not-the-shared-one.test.ts` enforces it.
+
+Verified by putting `PORT=3001` back in the shared root file: both services
+came up on their own ports.
+
+**The token vault needs no port change.** Its 3100 collides with nothing
+(web 3000, api 3001, vault 3100, admin 3200, mcp 3300, docs 3400), and it reads
+its own `.env.local` in its own repository rather than this one's, so the shared
+file never reaches it. It does share the same weakness — it reads a bare `PORT`
+— and separately defaults `HOST` to `::`, which fails outright where IPv6 is
+unavailable (it did here, and needed `HOST=127.0.0.1`). Both are one-line
+changes in `webamigos/ragen-token-vault`, out of scope for this repository.
 
 ### F5 — The worker's collection cache never invalidates
 

@@ -343,3 +343,33 @@ archive is the blog.
   `docker compose up` has never started it, which makes the idle stack about
   900 MB rather than the 1.9 GB the memory table adds up to.
   ([#1234](https://github.com/webamigos/RagenAI/pull/1234))
+
+- `[brief]` **A document uploaded through the public API is answerable as soon
+  as it finishes processing.** It was not: the chat endpoints retrieved as if
+  the caller were an ordinary member, and the permission field that check reads
+  was never written at ingest — only when someone later changed a share. So the
+  API would report a file `processed`, `/v1/search` would return it, and the
+  assistant would say it did not know. Ingest writes the field now, and the two
+  chat endpoints resolve the caller's real scope the way search already did.
+  Two access bugs fell out of the same place: deleting a user used to publish
+  every private file they owned to the whole organization, and a file
+  deliberately shared with the organization reached nobody but its owner.
+  Documents indexed before this still need
+  `apps/web/src/scripts/backfill-accessible-by.ts` once.
+
+- `[brief]` **A bad model name no longer takes the API down.** Asking
+  `/v1/chat/completions` for a model this installation does not serve killed
+  the whole process — for every caller, from one request — because the failure
+  surfaced from inside a stream where nothing was watching. It is now a 400
+  that names the model and lists the ones that do work. The same crash was
+  reachable without anyone trying: an organization's configured default model
+  losing its row in `routes.yaml` was enough.
+
+- `[brief]` **Chat no longer demands an OpenAI key it was not going to use.**
+  Content moderation is off unless you turn it on, but the client for it was
+  built on every request and threw without OpenAI credentials — so a
+  self-hosted install running, say, Scaleway answered 500 to every chat, over a
+  feature it had switched off. Also: running several apps from the one
+  `.env.local` no longer needs care about `PORT`. Use `RAGEN_API_PORT` and
+  `RAGEN_MCP_PORT`; a bare `PORT` used to follow every app at once and put the
+  MCP server on the API's port.

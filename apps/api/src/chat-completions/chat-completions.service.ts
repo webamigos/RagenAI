@@ -16,6 +16,7 @@ import { PersistApiThreadService } from '../threads/persist-api-thread.service.j
 import { AiUsageService } from '../ai-usage/ai-usage.service.js';
 import { TeamRateLimitService } from '../team-limits/team-rate-limit.service.js';
 import { AssistantScopeService } from '../common/services/assistant-scope.service.js';
+import { FoldersService } from '../documents/folders.service.js';
 import { foldMessages, mergeProjectInstruction } from './fold-messages.js';
 import {
   buildChatCompletion,
@@ -65,6 +66,7 @@ export class ChatCompletionsService {
     private readonly aiUsage: AiUsageService,
     private readonly teamRateLimit: TeamRateLimitService,
     private readonly assistantScope: AssistantScopeService,
+    private readonly folders: FoldersService,
   ) {}
 
   async create(
@@ -133,9 +135,18 @@ export class ChatCompletionsService {
     });
     await this.teamRateLimit.assertWithinLimit(usageTeamId);
 
-    const rawSettings = await this.organizationSettings.getAllSettings(
-      context.orgId,
-    );
+    // The caller's visibility scope, resolved the same way `SearchService`
+    // resolves it. Skipping this does not fall back to something narrower but
+    // still working — `initializeRagChain` defaults to `scope: 'member'`, and
+    // `buildMetadataFilter` then requires `metadata.accessible_by` to name the
+    // caller. Retrieval returns nothing, the chain renders an empty context
+    // and the model answers from the instructions alone. Nothing throws, so
+    // the only symptom is an assistant that does not know its own knowledge
+    // base.
+    const [rawSettings, membership] = await Promise.all([
+      this.organizationSettings.getAllSettings(context.orgId),
+      this.folders.getMembershipContext(context.orgId, context.userId),
+    ]);
 
     // Apply per-request overrides on top of the org defaults. Undefined
     // overrides leave the org value untouched.
@@ -174,6 +185,8 @@ export class ChatCompletionsService {
         settings,
         orgId: context.orgId,
         userId: context.userId,
+        scope: membership.scope,
+        userTeamIds: membership.userTeamIds,
         projectId: resolvedProjectId,
         projectInstruction: mergeProjectInstruction(
           project?.settings?.instructions ?? null,

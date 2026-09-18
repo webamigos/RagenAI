@@ -143,8 +143,21 @@ export type VectorStoreDocumentMetadata = {
   /** ISO 639-3 code detected by franc at ingest time. One value per document, shared by every chunk. */
   language?: string;
   /**
-   * User ids allowed to retrieve this chunk, for the chatbot's metadata
-   * filter. Only the web ingest path writes it.
+   * The principals — `org:<id>` / `user:<id>` / `team:<id>` — allowed to
+   * retrieve this chunk. `buildMetadataFilter` requires one of the caller's
+   * principals to appear here at any visibility scope below `organization`,
+   * which makes this the retrieval half of document access control, not a
+   * chatbot-only convenience as this comment used to say.
+   *
+   * It also said "only the web ingest path writes it", which was worse than
+   * wrong: *no* ingest path wrote it. The worker created a payload index on
+   * the key and nothing ever filled it, so every freshly ingested document was
+   * unreachable below organization scope. `computeFileAccessPrincipals` fills
+   * it now, and `prepareMetadata` takes it as a required field.
+   *
+   * Optional on the type because chunks written before that change exist and
+   * have no value here; `apps/web/src/scripts/backfill-accessible-by.ts` is
+   * what fills them.
    */
   accessible_by?: string[];
 };

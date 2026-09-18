@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import {
   NO_ACCESS_PRINCIPAL,
   type OrgVisibilityScope,
@@ -10,6 +10,7 @@ import {
   createChatCompletionInstance,
   createEmbeddingsInstance,
 } from '../../llm/model-instances.js';
+import { isModelRoutable, routableModels } from '../../llm/native-models.js';
 import { QdrantVectorStoreClient } from '../../vector-store/qdrant-client.js';
 import { MeilisearchVectorStoreClient } from '../../vector-store/meilisearch-client.js';
 import { SupabaseVectorStoreClient } from '../../vector-store/supabase-client.js';
@@ -67,6 +68,26 @@ const DEFAULT_REPHRASE_TEMPERATURE = Number.isNaN(parsedRephraseTemp)
  * B chat-cutover update); closed at cutover time, ahead of any real
  * traffic reaching this path.
  */
+/**
+ * Refuse a model this deployment cannot serve, as a 400 rather than a crash.
+ *
+ * The message names the model and lists the ones that do resolve, because the
+ * two realistic causes need different answers: a caller passing a model the
+ * installation does not have, and an operator whose `routes.yaml` no longer
+ * carries the organization's configured default.
+ */
+function assertModelIsRoutable(modelId: string | undefined): void {
+  if (!modelId || isModelRoutable(modelId)) {
+    return;
+  }
+
+  throw new BadRequestException(
+    `No route for model "${modelId}". This installation serves: ${
+      routableModels().join(', ') || '(no models are configured)'
+    }. See infra/llm-gateway/routes.yaml.`,
+  );
+}
+
 @Injectable()
 export class InitializeBasicRagService {
   private readonly logger = new Logger(InitializeBasicRagService.name);
@@ -103,6 +124,15 @@ export class InitializeBasicRagService {
         maxDocumentsToRetrieve,
       } = settings;
 
+      // Before anything is built. An unroutable answer model does not fail the
+      // request, it ends the process: the provider is never constructed, the
+      // AI SDK raises `AI_NoOutputGeneratedError` from a stream flush callback
+      // outside any request-scoped catch, and Node exits on the unhandled
+      // rejection. Reachable from a hostile `"model"` in the request body and,
+      // without anyone being hostile, from an org default that no longer has a
+      // row in the route table.
+      assertModelIsRoutable(answerModel);
+
       const embeddingModel = createEmbeddingsInstance(
         {
           organizationId: orgId,
@@ -111,7 +141,13 @@ export class InitializeBasicRagService {
         },
         trackAiUsage,
       );
-      const contentModerator = createModerationInstance();
+
+      // Built only if it will be used. `createModerationInstance()` throws
+      // without an OpenAI key, and `shouldModerate()` defaults to off, so
+      // constructing it eagerly made every chat request on an installation
+      // with no OpenAI credentials fail with a 500 — over a feature that was
+      // disabled. Deferred to the chain, which knows whether it will moderate.
+      const contentModerator = () => createModerationInstance();
 
       const questionRephraser = createChatCompletionInstance({
         apiKey,

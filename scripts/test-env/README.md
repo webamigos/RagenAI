@@ -76,15 +76,15 @@ for f in scripts/test-env/sample-docs/*.md; do
     -F "file=@$f;type=text/markdown" -o /dev/null
 done
 
-# then, once every file reports `processed`:
-(cd apps/web && npx tsx src/scripts/backfill-accessible-by.ts)
-
 node scripts/test-env/test-api.mjs
 node scripts/test-env/test-mcp.mjs
 SDK_DIR=<ragen-sdk-ts checkout> node scripts/test-env/test-sdk.mjs
 ```
 
-The backfill step is **not** housekeeping — it works around a defect. Ingest
-never writes `metadata.accessible_by`, and the chat path retrieves at `member`
-scope, so without it a freshly ingested document is invisible to chat while
-`/v1/search` can still see it. The report has the detail.
+No backfill step: ingest writes `metadata.accessible_by` itself now, so a
+freshly uploaded document is answerable as soon as it reports `processed`. It
+did not use to be — that was defect F1 in the report, and the SDK suite's
+grounding case is what catches a regression.
+
+`apps/web/src/scripts/backfill-accessible-by.ts` is still what fills the field
+on chunks written before that change.

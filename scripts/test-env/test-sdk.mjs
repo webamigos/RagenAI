@@ -270,16 +270,14 @@ if (uploaded) {
         content: 'Jaki jest identyfikator kontrolny dokumentu SDKPROBE7788?',
       }),
     );
-    // KNOWN DEFECT (see the test report): ingest never writes
-    // `metadata.accessible_by`, and the chat path retrieves at `member`
-    // scope, so a document is invisible to chat until apps/web's
-    // `backfill-accessible-by` script runs — even though the API has already
-    // reported it `processed` and `/v1/search` can see it. Left failing on
-    // purpose: making it pass would mean running the backfill inside the
-    // test, which would hide the thing this case exists to show.
+    // This case is why the accessible_by fix exists. It used to fail: ingest
+    // wrote no principals and the chat path retrieved at `member` scope, so a
+    // document the API had already reported `processed` was invisible to
+    // chat while `/v1/search` could see it. No backfill runs here — a fresh
+    // upload has to be answerable on its own.
     record(
       'grounding',
-      'chat answers from a document uploaded through the SDK (KNOWN DEFECT: needs accessible_by backfill)',
+      'chat answers from a document uploaded through the SDK',
       /SDKPROBE7788/.test(answer.text),
       answer.text.slice(0, 110).replace(/\s+/g, ' '),
     );

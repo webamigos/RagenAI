@@ -14,6 +14,7 @@ import { z } from 'zod';
  */
 /** Where apps/api answers when nobody says otherwise. Only ever right locally. */
 const LOCAL_RAGEN_API_URL = 'http://localhost:3001';
+const DEFAULT_PORT = 3300;
 
 /**
  * `targetEnvRequired`, not `targetEnv` — the same choice apps/worker makes,
@@ -30,7 +31,15 @@ const LOCAL_RAGEN_API_URL = 'http://localhost:3001';
 export const mcpEnvSchema = fragments.targetEnvRequired
   .merge(fragments.observability)
   .extend({
-    PORT: z.coerce.number().int().positive().max(65535).default(3300),
+    // `RAGEN_MCP_PORT` first, then `PORT` — see the transform below.
+    //
+    // `PORT` alone is what a single-container host injects, so it stays
+    // supported. It is also a name every app in this monorepo reads, and the
+    // root `.env.local` is shared by all of them: a `PORT=3001` meant for
+    // apps/api followed this server onto apps/api's port, where it died with
+    // EADDRINUSE. The app-specific name wins so one file can serve both.
+    RAGEN_MCP_PORT: z.coerce.number().int().positive().max(65535).optional(),
+    PORT: z.coerce.number().int().positive().max(65535).optional(),
     // Optional here rather than `.default(...)`, and defaulted in the
     // transform below, because a Zod default is applied *before* superRefine
     // runs — so `requiredInDeployedEnvs` would see the localhost fallback
@@ -48,6 +57,7 @@ export const mcpEnvSchema = fragments.targetEnvRequired
   })
   .transform((env) => ({
     ...env,
+    PORT: env.RAGEN_MCP_PORT ?? env.PORT ?? DEFAULT_PORT,
     RAGEN_API_URL: env.RAGEN_API_URL ?? LOCAL_RAGEN_API_URL,
   }));
 

@@ -6,6 +6,7 @@ const baseFileRecord = {
   fileName: 'doc.md',
   organizationId: 'org-1',
   projectId: null,
+  accessibleBy: ['user:owner-1'],
 };
 
 const splitterSettings = { chunkSize: 1000, chunkOverlap: 100 };
@@ -115,5 +116,47 @@ describe('prepareMetadata — source regions', () => {
 
     expect(result[0].metadata.source_page).toBe(3);
     expect('source_regions' in result[0].metadata).toBe(false);
+  });
+});
+
+describe('prepareMetadata — accessible_by', () => {
+  // The retrieval half of document access control. It was absent from every
+  // chunk the worker wrote, so `buildMetadataFilter` matched nothing below
+  // organization scope and a freshly ingested document answered nothing.
+  it('writes the principals onto every chunk', async () => {
+    const docs = [
+      { pageContent: 'first chunk', metadata: {} },
+      { pageContent: 'second chunk', metadata: {} },
+    ];
+
+    const result = await prepareMetadata({
+      docs,
+      fileRecord: {
+        ...baseFileRecord,
+        accessibleBy: ['org:org-1', 'team:team-7'],
+      },
+      fileType: FileType.MARKDOWN,
+      splitterSettings,
+    });
+
+    expect(result).toHaveLength(2);
+    for (const doc of result) {
+      expect(doc.metadata.accessible_by).toEqual(['org:org-1', 'team:team-7']);
+    }
+  });
+
+  // An empty list is a real answer — nobody may reach this file at member
+  // scope — and must be written as such rather than omitted, which would make
+  // the chunk indistinguishable from one predating the field.
+  it('writes an empty list rather than omitting the key', async () => {
+    const result = await prepareMetadata({
+      docs: [{ pageContent: 'a chunk', metadata: {} }],
+      fileRecord: { ...baseFileRecord, accessibleBy: [] },
+      fileType: FileType.MARKDOWN,
+      splitterSettings,
+    });
+
+    expect(result[0].metadata).toHaveProperty('accessible_by');
+    expect(result[0].metadata.accessible_by).toEqual([]);
   });
 });

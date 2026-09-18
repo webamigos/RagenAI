@@ -64,7 +64,7 @@ export const basicRagChain = async ({
       const [, { standaloneQuestion, variants }] = await Promise.all([
         shouldModerate(config?.ragSettings)
           ? moderateContent(
-              models.contentModerator,
+              models.contentModerator(),
               sanitizedInput,
               true,
               config?.tracking,
