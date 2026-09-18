@@ -1063,8 +1063,28 @@ Gated on publishing `ragen-worker`, which is not part of this spec and has no
 date. Until then Phase E's arrangement is the steady state, and it is a working
 one: durable execution is available to anyone who builds from source.
 
-- [ ] **G1.** Publish the worker image (its own change — every app image would
+- [x] **G1.** Publish the worker image (its own change — every app image would
       benefit, and self-hosting today means building four of them from source).
+
+  **Landed** as `.github/workflows/publish-images.yml`: `ragen-worker`,
+  `ragen-api`, `ragen-admin` and `ragen-mcp` to `ghcr.io/webamigos`, amd64, on
+  a published release, tagged `vX.Y.Z` / `X.Y` / `sha-…` / `latest`.
+
+  **`web` is not among them, and that is a finding rather than a phase
+  boundary.** Its Dockerfile takes ten `NEXT_PUBLIC_*` build arguments which
+  Next inlines into the client bundle, and three are per-install by nature —
+  `NEXT_PUBLIC_APP_URL` and the two Pusher values. One published image would
+  therefore carry the publisher's values into every install's browser: it would
+  start cleanly and leave realtime notifications dead. Publishing it needs those
+  moved to runtime, which is a change to the application. Everything else is
+  published, `mcp` included — it takes no build arguments, and sitting outside
+  this programme is not a reason to make somebody compile it.
+
+  `tests/architecture/a-release-can-trigger-the-image-build.test.ts` holds two
+  couplings that would otherwise fail open: the release must be created with a
+  non-default token (GitHub starts no workflow for events made with
+  `GITHUB_TOKEN`, so the images would silently stop being built), and no app
+  with `ARG NEXT_PUBLIC_*` may enter the matrix.
 - [ ] **G2.** Move `packages/jobs-temporal` to `webamigos/ragen-enterprise`
       with its Dockerfile (`FROM` that image), the nightly parity job, the
       `temporalio` dependabot group, and the two schedule scripts' Temporal
