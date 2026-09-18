@@ -28,6 +28,39 @@ describe('parseWorkerEnv', () => {
     expect(withEnv({}).ok).toBe(true);
   });
 
+  /**
+   * Redis is the queue's, not this process's.
+   *
+   * The schema used to merge `redisRequired`, so `REDIS_URL` was demanded of
+   * every worker whatever the runtime — justified by a comment naming
+   * `services/redis.ts`, which had no importers at all. The settings reads go
+   * through Prisma, and the only live reader of the variable here is the
+   * BullMQ runtime. So the requirement belongs to `workerRuntimeRules`, which
+   * knows when it applies, and these three cases are what that difference
+   * means.
+   */
+  it('refuses BullMQ with no Redis, which is a worker that consumes nothing', () => {
+    const result = withEnv({ WORKER_RUNTIME: 'bullmq', REDIS_URL: undefined });
+
+    expect(result.ok).toBe(false);
+    expect(result.ok ? [] : result.issues.map(({ name }) => name)).toContain(
+      'REDIS_URL',
+    );
+  });
+
+  it('accepts Temporal with no Redis, which the old schema refused', () => {
+    // The regression this fixes: a deployment running Temporal and no queue
+    // could not start, because the variable was required twice — once by the
+    // seam that knows it applies only to BullMQ, and once unconditionally.
+    expect(
+      withEnv({ WORKER_RUNTIME: 'temporal', REDIS_URL: undefined }).ok,
+    ).toBe(true);
+  });
+
+  it('accepts BullMQ with a Redis url', () => {
+    expect(withEnv({ WORKER_RUNTIME: 'bullmq' }).ok).toBe(true);
+  });
+
   it('demands TARGET_ENV rather than defaulting it', () => {
     // A deployed worker with no TARGET_ENV would otherwise read as "local"
     // and skip every staging/production rule below.
