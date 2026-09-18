@@ -1,0 +1,94 @@
+name: Publish images
+
+# Container images for the apps that can be published as-is.
+#
+# Self-hosting today means building them from source: `npm run
+# ragen:up:everything` runs `docker compose --build`, so every install compiles
+# four images before it can start. This publishes the ones that are the same
+# for everybody, which is the spec's G1 and the gate the worker-runtime
+# programme's Phase G waits on — `ragen-enterprise` layers the Temporal adapter
+# `FROM` the worker image rather than rebuilding the pipeline.
+#
+# **`web` is deliberately not here.** Its Dockerfile takes ten `NEXT_PUBLIC_*`
+# build arguments, and Next inlines those into the client bundle — the build
+# *is* the runtime for them, as that file says at length. Three are per-install
+# by nature (`NEXT_PUBLIC_APP_URL` and the two Pusher values), so a published
+# image would carry ours, start cleanly, and leave a self-hoster with dead
+# realtime notifications and the wrong application URL. That is worse than no
+# image. Publishing it needs those variables moved to runtime first, which is a
+# change to the application rather than to this file.
+#
+# `mcp` is absent for a different and much smaller reason: it is a
+# self-contained service outside this programme. Adding either is one matrix
+# entry once the question above is settled.
+on:
+  release:
+    types: [published]
+  # So the workflow can be proved before a release depends on it, and re-run
+  # when a publish fails for a reason the tag has nothing to do with.
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Tag or SHA to build'
+        required: false
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  publish:
+    name: Publish / ${{ matrix.app }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      # One broken image should not hide whether the others build.
+      fail-fast: false
+      matrix:
+        app: [worker, api, admin]
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+          ref: ${{ inputs.ref || github.ref }}
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/ragen-${{ matrix.app }}
+          # `type=semver` reads the release tag, which semantic-release writes
+          # as `vX.Y.Z`. The sha tag is what a rollback pins to, because
+          # `latest` moves and a minor tag moves with it.
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha,format=long
+            type=raw,value=latest,enable=${{ github.event_name == 'release' }}
+
+      - uses: docker/build-push-action@v6
+        with:
+          # The monorepo root, for every app: the lockfile lives there and npm
+          # resolves the workspace tree from it. Each Dockerfile says so on its
+          # first line.
+          context: .
+          file: apps/${{ matrix.app }}/Dockerfile
+          # amd64 only. arm64 would have to cross-build under QEMU, which costs
+          # several times the build for an architecture no deployment target
+          # here uses; add it when something asks for it rather than in advance.
+          platforms: linux/amd64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=${{ matrix.app }}
+          cache-to: type=gha,scope=${{ matrix.app }},mode=max
+
+concurrency:
+  # Per tag, so two releases in quick succession do not race to move `latest`.
+  group: publish-images-${{ github.event.release.tag_name || github.ref }}
+  cancel-in-progress: false
