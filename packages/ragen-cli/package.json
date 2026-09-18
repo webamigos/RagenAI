@@ -32,7 +32,7 @@
     "directory": "packages/ragen-cli"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "tsc -p tsconfig.json && chmod +x dist/index.js",
     "clean": "rm -rf dist",
     "prepack": "npm run clean && npm run build",
     "lint": "eslint",
