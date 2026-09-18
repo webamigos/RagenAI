@@ -48,6 +48,26 @@ describe('probing a regex under a deadline', () => {
     expect(outcome.kind).toBe('completed');
   }, 20_000);
 
+  it('does not charge worker startup against the match budget', async () => {
+    // The regression this exists for. The budget used to start when the worker
+    // was spawned, so on a loaded machine the deadline could fire before the
+    // regex had even compiled — and an ordinary pattern was refused. It showed
+    // up as `\\d{4}-\\d{4}` failing during a verify run with every workspace
+    // building at once, which is the worst way to find it: reproducible for the
+    // operator, green for us.
+    //
+    // A 5 ms budget is below any plausible worker startup, so this passes only
+    // because the clock starts at the match.
+    const outcome = await probeRegex({
+      source: '\\d{4}-\\d{4}',
+      flags: 'gu',
+      fixture: LONG_RUN,
+      budgetMs: 5,
+    });
+
+    expect(outcome.kind).toBe('completed');
+  }, 20_000);
+
   it('reports a pattern the worker cannot compile', async () => {
     const outcome = await probeRegex({
       source: '([a-z',

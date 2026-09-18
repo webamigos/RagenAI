@@ -48,6 +48,9 @@ const { parentPort, workerData } = require('node:worker_threads');
 const { source, flags, fixture } = workerData;
 try {
   const regex = new RegExp(source, flags);
+  // Compiled and about to match. The parent starts its deadline here, not when
+  // the worker was spawned — see the note on startup below.
+  parentPort.postMessage({ kind: 'started' });
   const started = Date.now();
   regex.test(fixture);
   parentPort.postMessage({ kind: 'completed', elapsedMs: Date.now() - started });
@@ -59,6 +62,22 @@ try {
 }
 `;
 
+/**
+ * How long the worker may take to exist and compile, before its match is timed.
+ *
+ * Spawning a worker is tens of milliseconds on an idle machine and can be far
+ * more on a loaded one. Counting that against the match budget is how a
+ * perfectly ordinary pattern gets refused because the CI box was busy — which
+ * is exactly what happened: `\\d{4}-\\d{4}` was rejected during a run with
+ * every workspace building in parallel. An operator whose valid rule is
+ * refused, reproducibly on their machine and not on ours, has no way to tell
+ * that from a real verdict.
+ *
+ * So the deadline starts when the worker says it is about to match. This cap
+ * only stops a worker that never gets there at all.
+ */
+const STARTUP_ALLOWANCE_MS = 10_000;
+
 export async function probeRegex(options: {
   source: string;
   flags: string;
@@ -69,6 +88,7 @@ export async function probeRegex(options: {
 
   return new Promise<RedosProbeOutcome>((resolve) => {
     let settled = false;
+    let timer: NodeJS.Timeout;
     const worker = new Worker(WORKER_SOURCE, {
       eval: true,
       workerData: { source, flags, fixture },
@@ -89,14 +109,24 @@ export async function probeRegex(options: {
       resolve(outcome);
     };
 
-    const timer = setTimeout(() => {
-      settle({ kind: 'timed-out', budgetMs });
-    }, budgetMs);
-    // A pending timer should not hold the process open on the way out.
-    timer.unref?.();
+    const arm = (ms: number, outcome: RedosProbeOutcome): void => {
+      clearTimeout(timer);
+      timer = setTimeout(() => settle(outcome), ms);
+      // A pending timer should not hold the process open on the way out.
+      timer.unref?.();
+    };
 
-    worker.on('message', (outcome: RedosProbeOutcome) => {
-      settle(outcome);
+    arm(STARTUP_ALLOWANCE_MS, {
+      kind: 'failed',
+      message: `worker did not start within ${STARTUP_ALLOWANCE_MS}ms`,
+    });
+
+    worker.on('message', (message: RedosProbeOutcome | { kind: 'started' }) => {
+      if (message.kind === 'started') {
+        arm(budgetMs, { kind: 'timed-out', budgetMs });
+        return;
+      }
+      settle(message);
     });
     worker.on('error', (error: Error) => {
       settle({ kind: 'failed', message: error.message });
