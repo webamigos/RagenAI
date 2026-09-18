@@ -1,5 +1,6 @@
 'use client';
 
+import { publicRuntimeConfig } from '@/config/public-runtime-config';
 import { useTranslations } from 'next-intl';
 
 import {
@@ -10,7 +11,7 @@ import {
 
 export default function PromptManagementPage() {
   const t = useTranslations('assistant-settings');
-  const hideModelSelector = process.env.NEXT_PUBLIC_HIDE_MODEL_SELECTOR === '1';
+  const hideModelSelector = publicRuntimeConfig().hideModelSelector === '1';
 
   return (
     <div className="space-y-8">

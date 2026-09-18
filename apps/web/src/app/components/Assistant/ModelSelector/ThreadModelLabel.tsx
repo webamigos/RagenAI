@@ -1,5 +1,6 @@
 'use client';
 
+import { publicRuntimeConfig } from '@/config/public-runtime-config';
 import {
   availableModels,
   normalizeModelId,
@@ -12,7 +13,7 @@ type Props = {
 };
 
 export const ThreadModelLabel = ({ model }: Props) => {
-  if (process.env.NEXT_PUBLIC_HIDE_MODEL_SELECTOR === '1') {
+  if (publicRuntimeConfig().hideModelSelector === '1') {
     return null;
   }
   if (!model) {

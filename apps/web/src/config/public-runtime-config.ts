@@ -128,8 +128,17 @@ export function publicRuntimeConfig(): PublicRuntimeConfig {
   }
 
   const element = document.getElementById(PUBLIC_CONFIG_ELEMENT_ID);
-  cached = parsePublicRuntimeConfig(element?.textContent);
-  return cached;
+  const config = parsePublicRuntimeConfig(element?.textContent);
+
+  // A miss is not cached. A module that reads this before the element has been
+  // parsed would otherwise pin empty values for the life of the page — and the
+  // readers that run earliest are the telemetry ones, where the symptom is
+  // simply no telemetry and nothing to explain it.
+  if (element) {
+    cached = config;
+  }
+
+  return config;
 }
 
 /** Exported for the tests, and for the script element to stay in step with it. */
@@ -173,4 +182,31 @@ export function parsePublicRuntimeConfig(
 /** Test seam; the browser cache above would otherwise outlive a test's DOM. */
 export function clearPublicRuntimeConfigCache(): void {
   cached = undefined;
+}
+
+/**
+ * Test seam: install a configuration the way the server would have.
+ *
+ * Tests run in jsdom, where `document` exists, so `publicRuntimeConfig()`
+ * takes the browser path and finds no element — stubbing `process.env` no
+ * longer reaches it, and should not: the browser bundle has no `process`, so a
+ * fallback to it here would be a lie that only works under a test runner.
+ *
+ * This writes the same element the root layout renders, which keeps a test
+ * honest about where the value comes from.
+ */
+export function setPublicRuntimeConfigForTests(
+  values: Partial<PublicRuntimeConfig>,
+): void {
+  clearPublicRuntimeConfigCache();
+  document.getElementById(PUBLIC_CONFIG_ELEMENT_ID)?.remove();
+
+  const script = document.createElement('script');
+  script.id = PUBLIC_CONFIG_ELEMENT_ID;
+  script.type = 'application/json';
+  script.textContent = JSON.stringify({
+    ...readPublicRuntimeConfig({}),
+    ...values,
+  });
+  document.body.append(script);
 }

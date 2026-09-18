@@ -1,31 +1,17 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-
-const ENV = { ...process.env };
+import { setPublicRuntimeConfigForTests } from '@/config/public-runtime-config';
+import { describe, expect, it, vi } from 'vitest';
 
 /**
- * The credentials are read at module load, so each case sets the environment
- * and imports fresh — the same thing Next does at build time.
+ * The credentials come from the configuration the server renders into the
+ * document, so each case installs one and imports fresh. It used to set
+ * `process.env` and lean on Next inlining it at build time — which is exactly
+ * what stopped, so one image can be published and configured per install.
  */
-async function load(env: Record<string, string | undefined>) {
+async function load(env: Parameters<typeof setPublicRuntimeConfigForTests>[0]) {
   vi.resetModules();
-  for (const [key, value] of Object.entries(env)) {
-    if (value === undefined) {
-      delete process.env[key];
-    } else {
-      process.env[key] = value;
-    }
-  }
+  setPublicRuntimeConfigForTests(env);
   return import('../demo-credentials');
 }
-
-beforeEach(() => {
-  delete process.env.NEXT_PUBLIC_DEMO_EMAIL;
-  delete process.env.NEXT_PUBLIC_DEMO_PASSWORD;
-});
-
-afterEach(() => {
-  process.env = { ...ENV };
-});
 
 describe('isSharedDemoAccount', () => {
   it('is false for everyone when no demo account is published', async () => {
@@ -38,7 +24,7 @@ describe('isSharedDemoAccount', () => {
   it('is false when only one of the two variables is set', async () => {
     // Presence of *both* is the gate, the same rule the sign-in notice uses.
     const { isSharedDemoAccount } = await load({
-      NEXT_PUBLIC_DEMO_EMAIL: 'showcase@example.com',
+      demoEmail: 'showcase@example.com',
     });
 
     expect(isSharedDemoAccount('showcase@example.com')).toBe(false);
@@ -46,8 +32,8 @@ describe('isSharedDemoAccount', () => {
 
   it('matches the published address and nobody else', async () => {
     const { isSharedDemoAccount } = await load({
-      NEXT_PUBLIC_DEMO_EMAIL: 'showcase@example.com',
-      NEXT_PUBLIC_DEMO_PASSWORD: 'published-password',
+      demoEmail: 'showcase@example.com',
+      demoPassword: 'published-password',
     });
 
     expect(isSharedDemoAccount('showcase@example.com')).toBe(true);
@@ -60,8 +46,8 @@ describe('isSharedDemoAccount', () => {
   it('ignores case and surrounding whitespace', async () => {
     // Better Auth lower-cases addresses; an operator typing the variable may not.
     const { isSharedDemoAccount } = await load({
-      NEXT_PUBLIC_DEMO_EMAIL: 'Showcase@Example.com ',
-      NEXT_PUBLIC_DEMO_PASSWORD: 'published-password',
+      demoEmail: 'Showcase@Example.com ',
+      demoPassword: 'published-password',
     });
 
     expect(isSharedDemoAccount('showcase@example.com')).toBe(true);

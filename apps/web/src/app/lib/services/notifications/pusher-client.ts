@@ -1,17 +1,19 @@
 'use client';
 
+import { publicRuntimeConfig } from '@/config/public-runtime-config';
 import Pusher from 'pusher-js';
 
 let pusherInstance: Pusher | null = null;
 
 export function getPusherClient(): Pusher | null {
-  if (!process.env.NEXT_PUBLIC_PUSHER_KEY) {
+  const { pusherKey, pusherCluster } = publicRuntimeConfig();
+  if (!pusherKey) {
     return null;
   }
 
   if (!pusherInstance) {
-    pusherInstance = new Pusher(process.env.NEXT_PUBLIC_PUSHER_KEY, {
-      cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER || 'eu',
+    pusherInstance = new Pusher(pusherKey, {
+      cluster: pusherCluster || 'eu',
     });
   }
 

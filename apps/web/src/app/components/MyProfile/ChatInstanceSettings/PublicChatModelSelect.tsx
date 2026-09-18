@@ -1,5 +1,6 @@
 'use client';
 
+import { publicRuntimeConfig } from '@/config/public-runtime-config';
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 
@@ -141,7 +142,7 @@ const PublicChatModelSelectImpl = () => {
 };
 
 export const PublicChatModelSelect = () => {
-  if (process.env.NEXT_PUBLIC_HIDE_MODEL_SELECTOR === '1') {
+  if (publicRuntimeConfig().hideModelSelector === '1') {
     return null;
   }
   return <PublicChatModelSelectImpl />;

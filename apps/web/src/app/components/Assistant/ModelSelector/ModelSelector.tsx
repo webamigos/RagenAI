@@ -1,5 +1,6 @@
 'use client';
 
+import { publicRuntimeConfig } from '@/config/public-runtime-config';
 import { useState, useEffect, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import { ChevronDownIcon } from '@heroicons/react/24/outline';
@@ -196,7 +197,7 @@ const ModelSelectorImpl = ({
 };
 
 export const ModelSelector = (props: Props) => {
-  if (process.env.NEXT_PUBLIC_HIDE_MODEL_SELECTOR === '1') {
+  if (publicRuntimeConfig().hideModelSelector === '1') {
     return null;
   }
   return <ModelSelectorImpl {...props} />;

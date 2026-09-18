@@ -18,9 +18,8 @@
  * both the new `APP_URL` and the legacy name, so an install that configured
  * only one of them still works from an image nobody rebuilt.
  */
-import { isDeployedEnv, normalizeTargetEnv } from '@ragenai/env';
-
 import { readPublicRuntimeConfig } from '@/config/public-runtime-config';
+import { isDeployedEnv, normalizeTargetEnv } from '@ragenai/env';
 
 const LOCAL_FALLBACK = 'http://localhost:3000';
 

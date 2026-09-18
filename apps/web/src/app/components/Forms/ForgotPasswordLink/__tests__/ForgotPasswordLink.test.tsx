@@ -1,3 +1,4 @@
+import { setPublicRuntimeConfigForTests } from '@/config/public-runtime-config';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 
@@ -10,28 +11,24 @@ vi.mock('@/i18n/routing', () => ({
 const ENV = { ...process.env };
 
 /**
- * The credentials are read at module load, so each case sets the environment
- * and then imports fresh — the same thing Next does at build time.
+ * The credentials come from the configuration the server renders into the
+ * document, so each case installs one and then imports fresh. It used to set
+ * `process.env` and rely on Next inlining it at build time; that is exactly
+ * what stopped, so that an image can be published once and configured per
+ * install.
  */
-async function renderLink(env: Record<string, string | undefined>) {
+async function renderLink(
+  env: Parameters<typeof setPublicRuntimeConfigForTests>[0],
+) {
   vi.resetModules();
-  for (const [key, value] of Object.entries(env)) {
-    if (value === undefined) {
-      delete process.env[key];
-    } else {
-      process.env[key] = value;
-    }
-  }
+  setPublicRuntimeConfigForTests(env);
 
   const { ForgotPasswordLink } = await import('../ForgotPasswordLink');
 
   render(<ForgotPasswordLink label="Nie pamiętasz hasła?" />);
 }
 
-beforeEach(() => {
-  delete process.env.NEXT_PUBLIC_DEMO_EMAIL;
-  delete process.env.NEXT_PUBLIC_DEMO_PASSWORD;
-});
+beforeEach(() => {});
 
 afterEach(() => {
   process.env = { ...ENV };
@@ -48,8 +45,8 @@ describe('ForgotPasswordLink', () => {
 
   it('disappears once a deployment publishes a shared demo account', async () => {
     await renderLink({
-      NEXT_PUBLIC_DEMO_EMAIL: 'demo@example.com',
-      NEXT_PUBLIC_DEMO_PASSWORD: 'secret',
+      demoEmail: 'demo@example.com',
+      demoPassword: 'secret',
     });
 
     expect(screen.queryByRole('link')).not.toBeInTheDocument();
@@ -58,7 +55,7 @@ describe('ForgotPasswordLink', () => {
   it('stays for a half-configured deployment, which publishes nothing', async () => {
     // Same gate as the notice: one variable alone is not an offer of a demo
     // account, so nothing about the screen changes.
-    await renderLink({ NEXT_PUBLIC_DEMO_EMAIL: 'demo@example.com' });
+    await renderLink({ demoEmail: 'demo@example.com' });
 
     expect(screen.getByRole('link')).toBeInTheDocument();
   });

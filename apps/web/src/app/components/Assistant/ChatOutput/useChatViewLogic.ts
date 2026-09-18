@@ -1,3 +1,4 @@
+import { publicRuntimeConfig } from '@/config/public-runtime-config';
 import { useUser } from '@/app/hooks/use-auth';
 import { useState, useEffect, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
@@ -24,14 +25,20 @@ import {
 } from '@/libs/security/link-rewriter';
 
 /**
- * Client-side trusted-link allowlist. The raw list comes from
- * `NEXT_PUBLIC_TRUSTED_LINK_DOMAINS` so it reaches the browser (Next.js
- * only inlines `NEXT_PUBLIC_*` vars into client bundles). Parsed once
- * at module load — no reason to re-parse on every render.
+ * Client-side trusted-link allowlist, read from the configuration the server
+ * rendered into the document rather than from the bundle — so one published
+ * image can serve installs with different allowlists.
+ *
+ * Parsed on first use and memoised, not at module load: the value now comes
+ * from the document, which this module may be imported before.
  */
-const TRUSTED_DOMAINS = parseTrustedDomains(
-  process.env.NEXT_PUBLIC_TRUSTED_LINK_DOMAINS,
-);
+let trustedDomains: ReturnType<typeof parseTrustedDomains> | undefined;
+const getTrustedDomains = () => {
+  trustedDomains ??= parseTrustedDomains(
+    publicRuntimeConfig().trustedLinkDomains,
+  );
+  return trustedDomains;
+};
 
 export const createMarkdownRenderer = () => {
   const md = new MarkdownIt({
@@ -191,7 +198,7 @@ export const useChatViewLogic = (
       // would see them as relative-to-untrusted-origin links.
       const sanitized = sanitizeHtml(md.render(content));
       return rewriteLinksInHtml(sanitized, {
-        trustedDomains: TRUSTED_DOMAINS,
+        trustedDomains: getTrustedDomains(),
       });
     };
   }, [md]);
