@@ -430,7 +430,7 @@ SaaS it is ignored, so a SaaS organization sitting on `false` is being moderated
 today and expects to be. An override the resolver honours everywhere would turn
 moderation *off* for exactly those tenants — a silent downgrade, in the one
 direction nobody would choose. So the seeded rows are marked as what they are:
-the migration writes them with `origin = 'legacy-on-premise'`, and the resolver
+the migration writes them with `origin = 'legacy_on_premise'`, and the resolver
 skips an override so marked unless `IS_ON_PREMISE`. On-premise semantics then
 survive exactly, including the organization that had explicitly turned
 moderation off; SaaS semantics do not move at all. An override an administrator

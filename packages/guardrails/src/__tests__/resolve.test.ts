@@ -217,7 +217,7 @@ describe('the legacy on-premise gate', () => {
         guardrailPublicId: 'p1',
         organizationId: 'org-a',
         enabled: false,
-        origin: 'legacy-on-premise' as const,
+        origin: 'legacy_on_premise' as const,
       },
     ],
     supportedCombinations: EVERYTHING,
