@@ -186,18 +186,43 @@ on it.
 
 Publication is reversible, per page, as an explicit action:
 
-- **Publish** creates the page's `UserFile`, writes its chunks and records a
-  `PUBLISH` decision.
-- **Unpublish** deletes those chunks and clears `publishedFileId`. The page
-  stays `APPROVED` — withdrawing it from retrieval is not the same as
-  un-approving it — and the ledger keeps both events, so "who put this in front
-  of people, and who took it out" is answerable.
+- **Publish** creates the page's `UserFile` (once, on first publication),
+  writes its chunks, sets `publishedAt` and records a `PUBLISH` decision.
+- **Unpublish** deletes those chunks, sets the file's `embeddingStatus` to
+  `STAGED` and clears `publishedAt`. The page stays `APPROVED` — withdrawing it
+  from retrieval is not the same as un-approving it — and the ledger keeps both
+  events, so "who put this in front of people, and who took it out" is
+  answerable.
 
-This is clean **because** of D9. If source documents were published alongside
-pages, a document cited by two pages could not be withdrawn when one of them
-was, and "I withdrew it and it still shows up in answers" would be a legitimate
-bug report with no good fix. Indexing only pages makes withdrawal a per-page
-delete and nothing else.
+**The published `UserFile` is never deleted, and `publishedFileId` is never
+cleared.** Two reasons, and the first is not obvious: `DocumentCitation` and
+`DocumentRetrieval` are `onDelete: Cascade` on `UserFile`, so deleting the file
+would erase the record of every past answer that cited the page. A withdrawn
+page's history has to survive its withdrawal. The second is that republishing
+then reuses the same file rather than minting a new identity for the same
+knowledge.
+
+So **`publishedAt`, not `publishedFileId`, is what "in the index" means.**
+`publishedFileId` is where this page's publication vehicle lives; `publishedAt`
+is whether it is currently serving. A reader of the schema who takes the null
+check from the wrong column gets the wrong answer, which is why they are
+separated here rather than overloaded into one field.
+
+**Order, and what a retry finds.** Delete chunks → set `embeddingStatus =
+STAGED` → clear `publishedAt`. Each step is idempotent and safe to repeat, and
+the sequence is chosen so every interruption leaves a state a retry can finish
+from: a crash after the delete leaves a file with no vectors and a stale
+`publishedAt`, which the retry corrects; the reverse order would leave
+`publishedAt` null while chunks are still retrievable, which nothing would
+detect. **Never the reverse.** Republish after a partial withdrawal is the
+ordinary publish path: it re-embeds the current page content into the existing
+file, so it recovers a half-finished withdrawal rather than tripping over it.
+
+Withdrawal is clean **because** of D9. If source documents were published
+alongside pages, a document cited by two pages could not be withdrawn when one
+of them was, and "I withdrew it and it still shows up in answers" would be a
+legitimate bug report with no good fix. Indexing only pages makes withdrawal a
+per-page delete and nothing else.
 
 For mode 1 there is a separate, human-triggered action: **take a curated source
 document out of retrieval**, once its knowledge lives in approved pages. It is
@@ -262,6 +287,21 @@ is a render-time lookup: the published file carries `metadata.brainPageId`, and
 the renderer joins it to `KnowledgePageSource`. A `layer` field on the chunk
 payload would only be needed for two-stage retrieval, which D9 rules out.
 
+**That lookup is an authorization boundary, not a join.** A person may widen a
+page's `accessibleBy` beyond the intersection of its sources, so a reader can
+legitimately retrieve a page while having no right to any of the documents
+behind it. Resolving `brainPageId` → `KnowledgePageSource` → source documents
+with a plain join would then hand them a filename and a span from a file they
+cannot open — a leak through the citation footer, with retrieval itself
+perfectly correct. **Every source resolved for rendering passes the same file
+predicate as any other read of that document** — `fileAccessWhere` in
+`apps/web/src/features/documents/services/queries/document-access.ts`, and its
+equivalent in `apps/api` — and sources the reader cannot reach are omitted from
+the rendered citation rather than shown without a link. The page itself still
+cites normally; it is the second level that narrows per reader, which also
+means two people can correctly see different source lists under the same
+answer.
+
 ## Data model
 
 Five additive models plus one enum member. Conventions per AGENTS.md: `Int`
@@ -275,19 +315,49 @@ autoincrement `id` plus a `publicId` UUID for URLs, camelCase fields with
   (`String[]` of `org:` / `user:` / `team:` principals), `validFrom`,
   `supersededById`, `verifyEvery` (ISO-8601 duration), `lastVerifiedAt`,
   `lastVerifiedBy`, `publishedFileId`, `publishedAt`, timestamps.
-  **`status` and publication are independent**: `publishedFileId` null means
-  "not in the index", and an approved page that was withdrawn is exactly that.
-- **`KnowledgePageSource`** — `pageId`, `fileId`, `span` (e.g. `"p.4 §2"`),
-  `hash`. What makes a page auditable, and what the second citation level reads.
+  **`status` and publication are independent**: `publishedAt` null means "not in
+  the index", and an approved page that was withdrawn is exactly that.
+  `publishedFileId` outlives a withdrawal (see "Withdrawal"), so it is not the
+  field to test.
+- **`KnowledgePageSource`** — `pageId`, `fileId`, `documentVersionId`, `span`
+  (e.g. `"p.4 §2"`), `hash`, `sourceDeletedAt`.
+  **The version, not just the file, is what a citation points at.** A span
+  approved against today's text resolves against whatever the file says later:
+  re-ingest a corrected PDF and "p. 4 §2" is a different paragraph, while the
+  citation still claims a person checked it. `DocumentVersion` is immutable and
+  exactly one version is active per document, so pinning
+  `documentVersionId` at curation time makes the citation reproducible. `hash`
+  is then the check rather than the anchor: when the document's active version
+  moves on, the page gets a `STALE` finding naming the changed source, and the
+  citation keeps rendering against the version the curator actually read until
+  someone re-approves it.
+  `fileId` is a **plain column with no foreign key** — deliberately, and for the
+  reason `UserDocument.ownerId` gives in the schema: every referential action
+  available gets this wrong. `Cascade` would delete curated provenance when a
+  source file is deleted, `SetNull` would erase which file it was, and
+  `Restrict` would block deleting the file. An audit attribute has to survive
+  the row it points at. **`sourceDeletedAt` is the dangling state**: set when
+  the referenced file is gone, it is what raises the `STALE` finding and what
+  makes the renderer show the citation as "source no longer available" instead
+  of resolving nothing and silently dropping it.
 - **`KnowledgeEdge`** — `fromPageId`, `toPageId`, `kind`, `origin`
   (`EXTRACTED | INFERRED | AMBIGUOUS`), `confidence`. The origin distinction is
   taken from SwarmVault and is the difference between a graph you can trust and
   a graph that looks impressive.
-- **`KnowledgeFinding`** — `type` (`CONTRADICTION | GAP | STALE | ORPHAN | UNOWNED`),
-  `severity`, `pageIds`, `detail`, `status` (`OPEN | RESOLVED | DISMISSED`),
-  `detectedAt`. `STALE` and `UNOWNED` are computed from `verifyEvery` /
-  `lastVerifiedAt` / `ownerId` — a query, not a module, which is the whole
-  reason those fields exist from day one.
+- **`KnowledgeFinding`** — `type`
+  (`CONTRADICTION | GAP | STALE | ORPHAN | UNOWNED | EXTRACTION_FAILED`),
+  `severity`, `pageIds`, `fileId`, `detail`, `status`
+  (`OPEN | RESOLVED | DISMISSED`), `detectedAt`. `STALE` and `UNOWNED` are
+  computed from `verifyEvery` / `lastVerifiedAt` / `ownerId` — a query, not a
+  module, which is the whole reason those fields exist from day one.
+  **`EXTRACTION_FAILED` is why this carries a `fileId` as well as `pageIds`**:
+  it is the one finding about a document that produced no page at all. The job
+  runtime records a failed run, but a failed run is not a place anyone looks and
+  disappears into job history; a document whose knowledge never made it into
+  curation has to be visible where curation happens. It is raised per document,
+  never fails the batch, carries the parse error in `detail`, and the inbox
+  offers a retry that re-runs `brainExtract` for that document alone and
+  resolves the finding on success.
 - **`KnowledgeDecision`** — append-only: `pageId`, `actorId`, `action`
   (`APPROVE | REJECT | MERGE | SET_OWNER | SET_ACCESS | WIDEN_ACCESS | PUBLISH | UNPUBLISH | VERIFY`),
   `before`/`after` JSON, `createdAt`. No update and no delete; the widening rule
@@ -315,9 +385,11 @@ wrong reflex here and would be expensive to undo.
   pilot is a bill nobody approved. Per-run budget, in documents and tokens,
   checked before the run and enforced during it; the existing usage-ceiling call
   sites are the precedent — a computed limit is not a limit.
-- **The LLM returns something the schema rejects.** One retry with the parse
-  error fed back, then the document is parked as `extraction_failed` and shown
-  in findings. It never fails the batch.
+- **The LLM returns something the schema rejects.** One automatic retry with the
+  parse error fed back, then an `EXTRACTION_FAILED` finding naming the document
+  and the error, offering a retry in the inbox. It never fails the batch. The
+  finding is the durable record — a failed job run is not, because nobody
+  curating knowledge is reading job history.
 - **A staged document is never curated.** It sits parsed and unindexed forever,
   which is safe but invisible; the Brain inbox shows age and volume so a
   forgotten pile is a number on a screen rather than a surprise at the next
@@ -326,10 +398,17 @@ wrong reflex here and would be expensive to undo.
   states the file is in Brain and not searchable, and the empty-answer path does
   not silently pretend it looked. This is the most likely support ticket of the
   whole feature.
-- **A source file is deleted after a page was approved.** The page stays, the
-  source row is marked dangling, and the page gets a `STALE` finding. Deleting a
-  document must not silently rewrite curated knowledge, and must not leave a
-  citation pointing at nothing either.
+- **A source file is deleted after a page was approved.** The page stays, its
+  `KnowledgePageSource` row gets `sourceDeletedAt` (the row survives because
+  `fileId` carries no foreign key), and the page gets a `STALE` finding. The
+  citation renders as "source no longer available" rather than vanishing.
+  Deleting a document must not silently rewrite curated knowledge, and must not
+  leave a citation pointing at nothing either.
+- **A source document is re-ingested and its text changes.** The citation still
+  resolves — it is pinned to `documentVersionId`, which is immutable — and the
+  page gets a `STALE` finding naming the source whose active version moved on.
+  Without the pin, an approved span would quietly start pointing at a different
+  paragraph while still claiming a person checked it.
 - **A source file's permissions change after publication.** The published page's
   `accessibleBy` is a curation decision and does not follow the source. A
   narrowing on any source raises a finding for the owner; retrieval is neither
@@ -388,8 +467,11 @@ Phase D, so every phase before it is invisible to existing users.
 
 - [ ] **C1.** Contradiction detection over extracted claims → `KnowledgeFinding`.
 - [ ] **C2.** Gap, orphan, stale and unowned findings as queries over the pages'
-      own fields.
-- [ ] **C3.** Graph assembly (`graphology`, Louvain communities) with
+      own fields. `STALE` covers both a deleted source (`sourceDeletedAt`) and a
+      source whose active `DocumentVersion` moved past the pinned one.
+- [ ] **C3.** `EXTRACTION_FAILED` findings raised by the extract handler, per
+      document, carrying the error.
+- [ ] **C4.** Graph assembly (`graphology`, Louvain communities) with
       `EXTRACTED` / `INFERRED` / `AMBIGUOUS` kept distinct.
 
 ### Phase D — Review interface
@@ -399,10 +481,13 @@ Phase D, so every phase before it is invisible to existing users.
 - [ ] **D2.** The review queue: merge candidates, set owner, set access,
       approve, reject — every action writing `KnowledgeDecision`. Widening
       access is a distinct action with its own confirmation.
-- [ ] **D3.** Graph view (Sigma.js or react-force-graph), scoped to a
+- [ ] **D3.** Retry an `EXTRACTION_FAILED` document from the findings list:
+      re-runs `brainExtract` for that document alone and resolves the finding on
+      success.
+- [ ] **D4.** Graph view (Sigma.js or react-force-graph), scoped to a
       neighbourhood — a graph that hangs the tab on a real corpus is a demo that
       fails at the customer's data volume.
-- [ ] **D4.** Flag on for our own organization. The first phase a user can see.
+- [ ] **D5.** Flag on for our own organization. The first phase a user can see.
 
 ### Phase E — Publication, withdrawal, export
 
@@ -412,14 +497,19 @@ Phase D, so every phase before it is invisible to existing users.
 - [ ] **E2.** Publish: an approved page becomes a `UserFile` carrying
       `metadata.brainPageId`, ingested with predefined chunk boundaries and the
       curated `accessible_by` — never the source file's.
-- [ ] **E3.** Unpublish: delete the page's chunks, clear `publishedFileId`,
-      keep the page approved, record the decision. Idempotent, and ordered so a
-      crash cannot leave vectors without a file.
+- [ ] **E3.** Unpublish: delete the page's chunks, set the file to `STAGED`,
+      clear `publishedAt`, keep the page approved and its `UserFile`, record the
+      decision. Each step idempotent, in that order, so any interruption leaves
+      a state a retry finishes.
 - [ ] **E4.** `tests/architecture/brain-export-never-widens-access.test.ts`.
 - [ ] **E5.** Re-publication by diff: `contentHash` per page, re-embed only what
       changed, delete what was removed.
 - [ ] **E6.** Two-level citation rendering in `apps/web` and `apps/api`:
-      `metadata.brainPageId` → `KnowledgePageSource` → source documents.
+      `metadata.brainPageId` → `KnowledgePageSource` → source documents,
+      resolved against the pinned `documentVersionId` and filtered by the same
+      file predicate as any other read (`fileAccessWhere`). A test that a reader
+      who may see a widened page but not its sources gets the page and no source
+      list.
 - [ ] **E7.** Take a curated source document out of retrieval — per document,
       human-triggered, reversible by re-running ingest. Mode 1's path to a clean
       index, and never automatic.
@@ -436,7 +526,10 @@ Phase D, so every phase before it is invisible to existing users.
       openable, not searchable.
 - [ ] **F4.** The Brain inbox: what is staged, how old, how much of it is still
       uncurated.
-- [ ] **F5.** A `p0-*` e2e asserting a staged document is not retrievable —
+- [ ] **F5.** _Send to the knowledge base_ on a staged file: `runFileEmbeddings`
+      with the knowledge-base destination, per file and over a selection,
+      idempotent, and not gated on the `brain` flag.
+- [ ] **F6.** A `p0-*` e2e asserting a staged document is not retrievable —
       through chat, through the API, and at every knowledge scope.
 
 ### Phase G — Verification loop _(v1.1, listed so it is designed for, not built)_
@@ -484,8 +577,21 @@ Phase D, so every phase before it is invisible to existing users.
   Removing them is the unpublish action (E3), not a code revert.
 - **What a revert must not strand**: staged files. If Brain is disabled while
   documents sit in `STAGED`, they stay parsed, listed and unindexed — safe, but
-  the operator needs a way to send them through normal ingest. That is one job
-  run per file, and it is the documented answer rather than a manual fix.
+  the operator needs a way to send them through normal ingest.
+
+  **The transition, precisely**, because "one job run per file" is not an
+  instruction: the document list offers _send to the knowledge base_ on any
+  `STAGED` file, which starts `runFileEmbeddings` for it with the destination
+  set to the knowledge base — the same job, same payload shape, and the same
+  path the file would have taken had it been uploaded there in the first place.
+  It re-parses (the stored file is unchanged, so the result is the same text)
+  and ends at `COMPLETED`, at which point the file is an ordinary indexed
+  document. Re-running it is idempotent: a file already `COMPLETED` re-embeds to
+  the same content, and the existing ingest path already clears a document's
+  previous chunks. **The action does not depend on the `brain` flag** — it is a
+  knowledge-base operation on a file that happens to be staged, and gating it
+  behind Brain would strand exactly the files this paragraph exists to rescue.
+  It is available per file and over a selection; the same call, repeated.
 
 ## Sources
 
