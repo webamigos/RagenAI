@@ -373,6 +373,12 @@ model GuardrailOrgOverride {
   enabled        Boolean?
   action         GuardrailAction?
   threshold      Float?
+  /// Set by the migration on the rows it seeds from
+  /// OrganizationSettings.contentModerationEnabled, and by nothing else. See
+  /// "Migration, and what happens to today's behaviour" below: the resolver
+  /// skips a marked override unless IS_ON_PREMISE, which is what keeps the
+  /// seed preserving behaviour instead of changing it.
+  origin         GuardrailOverrideOrigin? @map("origin")
   createdAt      DateTime         @default(now()) @map("created_at") @db.Timestamptz
   updatedAt      DateTime         @updatedAt @map("updated_at") @db.Timestamptz
 
@@ -387,6 +393,13 @@ model GuardrailOrgOverride {
 enum GuardrailKind   { BUILT_IN PATTERN LLM_POLICY }
 enum GuardrailStage  { INPUT OUTPUT BOTH }
 enum GuardrailAction { BLOCK MASK LOG }
+
+/// Why an override exists, where that changes how it is read. Only the
+/// migration writes a value; an administrator's override has none. Spelled
+/// with an underscore on both sides of the boundary — Postgres cannot take a
+/// hyphen, and a value that needed translating on the way in is a translation
+/// somebody forgets, at which point the override applies in SaaS too.
+enum GuardrailOverrideOrigin { legacy_on_premise }
 ```
 
 `@@unique([organizationId, key])` does **not** stop two platform rules claiming
