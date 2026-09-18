@@ -136,6 +136,7 @@ export const ADMIN_ACTIONS = {
   guardrailUpdated: 'admin.guardrail.updated',
   guardrailToggled: 'admin.guardrail.toggled',
   guardrailDeleted: 'admin.guardrail.deleted',
+  guardrailOverrideChanged: 'admin.guardrail.override_changed',
   registrationToggled: 'admin.registration.toggled',
 } as const;
 
