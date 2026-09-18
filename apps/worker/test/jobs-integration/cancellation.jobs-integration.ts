@@ -2,7 +2,12 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import { makeUserFile } from '../../src/__tests__/fixtures/mock-activities.js';
 import { ParsingStatus } from '../../src/types/UserFile.js';
-import { startHarness, type JobRuntimeHarness } from './harness.js';
+import {
+  expectFailedWith,
+  startHarness,
+  traits,
+  type JobRuntimeHarness,
+} from './harness.js';
 
 /**
  * Cancellation, which is two mechanisms wearing one name.
@@ -36,10 +41,13 @@ describe('cancellation', () => {
     await new Promise((resolve) => setTimeout(resolve, 1_000));
 
     expect(harness.activities.getFileRecord).not.toHaveBeenCalled();
-    // The run is gone rather than failed: nothing ran, so there is nothing to
-    // report a failure about.
+    // Not failed — nothing ran, so there is nothing to report a failure about.
+    // What is left behind differs by engine and the seam does not care:
+    // BullMQ removed the job from the queue, so there is no record to describe;
+    // Temporal closed an execution that was RUNNING from the moment it was
+    // created. See `RuntimeTraits.cancelledBeforeStart`.
     await expect(harness.jobs.getRun('cancel-queued')).resolves.toEqual({
-      status: 'unknown',
+      status: traits().cancelledBeforeStart,
     });
   });
 
@@ -72,8 +80,7 @@ describe('cancellation', () => {
     await harness.jobs.start('runFileEmbeddings', 'cancel-running', INGEST);
     const run = await harness.waitForRun('cancel-running');
 
-    expect(run.status).toBe('failed');
-    expect(run.failure).toContain('Embedding cancelled by user');
+    expectFailedWith(run, 'Embedding cancelled by user');
     expect(harness.activities.updateParsingStatus).toHaveBeenCalledWith(
       expect.objectContaining({ status: ParsingStatus.CANCELLED }),
     );

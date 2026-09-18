@@ -1,6 +1,8 @@
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { startHarness, type JobRuntimeHarness } from './harness.js';
+import type { JobSchedule } from '@ragenai/jobs';
+
+import { startHarness, traits, type JobRuntimeHarness } from './harness.js';
 
 /**
  * The two nightly jobs, driven by the engine's own scheduler.
@@ -11,20 +13,27 @@ import { startHarness, type JobRuntimeHarness } from './harness.js';
  * itself on each run would show up as two nightly deletes interleaving, months
  * later, in production.
  *
- * **The cadence here is seconds, not nights.** BullMQ's pattern parser accepts
- * a six-field cron, so the schedule under test fires every two seconds; the
- * production patterns are five-field and fire once a day. What is being proven
- * is the plumbing — registration, firing, idempotent re-registration, deletion
- * — not the cron dialect the ensure-scripts pass.
+ * **The cadence here is seconds, not nights**, and it is the one thing in this
+ * file the engine gets to choose: the production patterns are five-field and
+ * fire once a day, while a suite waiting for those would be measuring its own
+ * patience. The dialects differ — see `RuntimeTraits.everyFewSeconds` — and
+ * Temporal's way of disagreeing is to accept BullMQ's string and never fire it.
+ * What is being proven is the plumbing: registration, firing, idempotent
+ * re-registration, deletion.
  */
-const EVERY_TWO_SECONDS = '*/2 * * * * *';
-
-const SCHEDULE = {
+const SCHEDULE: JobSchedule = {
   id: 'jobs-integration-demo-cleanup',
   job: 'cleanupDemoThreads',
-  cron: EVERY_TWO_SECONDS,
+  cron: traits().everyFewSeconds,
   timezone: 'Europe/Warsaw',
-} as const;
+};
+
+/**
+ * A second, different cadence — what it changes *to* does not matter, only
+ * that the spec changed, which is what the upsert has to survive. Derived from
+ * the first so it stays in whichever dialect this run speaks.
+ */
+const A_DIFFERENT_CADENCE = SCHEDULE.cron.replace('2', '3');
 
 const sleep = (ms: number): Promise<void> =>
   new Promise((resolve) => setTimeout(resolve, ms));
@@ -72,7 +81,10 @@ describe('schedules', () => {
 
     await harness.jobs.upsertSchedule(SCHEDULE);
     await harness.jobs.upsertSchedule(SCHEDULE);
-    await harness.jobs.upsertSchedule({ ...SCHEDULE, cron: '*/3 * * * * *' });
+    await harness.jobs.upsertSchedule({
+      ...SCHEDULE,
+      cron: A_DIFFERENT_CADENCE,
+    });
 
     // The ensure-scripts are run by hand and re-run without thinking. Three
     // registrations, one schedule.

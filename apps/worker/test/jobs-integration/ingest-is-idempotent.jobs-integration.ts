@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { makeUserFile } from '../../src/__tests__/fixtures/mock-activities.js';
-import { startHarness, type JobRuntimeHarness } from './harness.js';
+import { startHarness, traits, type JobRuntimeHarness } from './harness.js';
 
 /**
  * The spec's C3, asserted where it can actually go wrong.
@@ -77,39 +77,52 @@ describe('ingest is idempotent', () => {
     expect(deletes[1]).toBeLessThan(writes[1]);
   });
 
-  it('clears them again when the same job is redelivered', async () => {
-    let writes = 0;
+  /**
+   * The redelivery half is BullMQ's, because a stalled job is: this test
+   * provokes one by holding the event loop past the lock, and Temporal has no
+   * lock to hold past. The re-run half above is the one that runs on both, and
+   * it is the one that covers a re-embed or a folder-wide re-index.
+   */
+  it.runIf(traits().redeliversStalledJobs)(
+    'clears them again when the same job is redelivered',
+    async () => {
+      let writes = 0;
 
-    harness = await startHarness({
-      lockDuration: 1_000,
-      stalledInterval: 1_000,
-    });
-    harness.activities.getFileRecord.mockResolvedValue(makeUserFile());
-    // The first write holds the loop past the lock, so the job is redelivered
-    // after its chunks are already in the store — the exact state the spec
-    // calls the highest-risk item in the port.
-    harness.activities.addDocumentsToVectorStore.mockImplementation(() => {
-      writes += 1;
-      if (writes === 1) {
-        blockEventLoop(3_000);
-      }
-      return Promise.resolve({ inputTokens: 50 });
-    });
+      harness = await startHarness({
+        lockDuration: 1_000,
+        stalledInterval: 1_000,
+      });
+      harness.activities.getFileRecord.mockResolvedValue(makeUserFile());
+      // The first write holds the loop past the lock, so the job is redelivered
+      // after its chunks are already in the store — the exact state the spec
+      // calls the highest-risk item in the port.
+      harness.activities.addDocumentsToVectorStore.mockImplementation(() => {
+        writes += 1;
+        if (writes === 1) {
+          blockEventLoop(3_000);
+        }
+        return Promise.resolve({ inputTokens: 50 });
+      });
 
-    await harness.jobs.start('runFileEmbeddings', 'ingest-redelivered', INGEST);
-    const run = await harness.waitForRun('ingest-redelivered', 60_000);
+      await harness.jobs.start(
+        'runFileEmbeddings',
+        'ingest-redelivered',
+        INGEST,
+      );
+      const run = await harness.waitForRun('ingest-redelivered', 60_000);
 
-    expect(run.status).toBe('completed');
-    expect(writes).toBe(2);
-    // Twice, not once: the redelivery re-runs from the top, and its delete is
-    // what keeps the first attempt's chunks from surviving beside the second's.
-    expect(harness.activities.deleteDocumentVectors).toHaveBeenCalledTimes(2);
+      expect(run.status).toBe('completed');
+      expect(writes).toBe(2);
+      // Twice, not once: the redelivery re-runs from the top, and its delete is
+      // what keeps the first attempt's chunks from surviving beside the second's.
+      expect(harness.activities.deleteDocumentVectors).toHaveBeenCalledTimes(2);
 
-    const deletes =
-      harness.activities.deleteDocumentVectors.mock.invocationCallOrder;
-    const written =
-      harness.activities.addDocumentsToVectorStore.mock.invocationCallOrder;
-    expect(deletes[1]).toBeGreaterThan(written[0]);
-    expect(deletes[1]).toBeLessThan(written[1]);
-  });
+      const deletes =
+        harness.activities.deleteDocumentVectors.mock.invocationCallOrder;
+      const written =
+        harness.activities.addDocumentsToVectorStore.mock.invocationCallOrder;
+      expect(deletes[1]).toBeGreaterThan(written[0]);
+      expect(deletes[1]).toBeLessThan(written[1]);
+    },
+  );
 });

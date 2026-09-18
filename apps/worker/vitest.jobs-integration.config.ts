@@ -26,6 +26,13 @@ export default defineConfig({
      * of through a flag only the tests know about.
      */
     env: { WORKER_RUNTIME: process.env.WORKER_RUNTIME ?? 'bullmq' },
+    /**
+     * Starts the Temporal server for a parity run, and nothing at all for a
+     * BullMQ one — Redis is a container the developer or the CI job already
+     * has, while Temporal is no longer in `docker-compose.yml` (E2) and has to
+     * come from somewhere.
+     */
+    globalSetup: ['./test/jobs-integration/global-setup.ts'],
     include: ['test/jobs-integration/**/*.jobs-integration.ts'],
     exclude: ['**/node_modules/**', 'dist/**', 'lib/**', 'generated/**'],
     clearMocks: false,

@@ -1,48 +1,31 @@
-import { Redis } from 'ioredis';
-import type { Mock } from 'vitest';
+import { expect, type Mock } from 'vitest';
 
 import {
   resolveWorkerRuntime,
-  type CancellationSubject,
   type JobLogger,
   type JobRun,
+  type JobRunStatus,
   type JobRuntime,
   type WorkerRuntime,
 } from '@ragenai/jobs';
-import {
-  BullMqJobRuntime,
-  closeBullWorkers,
-  createBullWorkers,
-  startBullWorkers,
-  type BullWorkers,
-  type JobHandlers,
-} from '@ragenai/jobs-bullmq';
-
-import { createMockActivities } from '../../src/__tests__/fixtures/mock-activities.js';
-import { cleanupDemoThreads } from '../../src/handlers/cleanup-demo-threads.js';
-import { generateDocument } from '../../src/handlers/generate-document.js';
-import { optimizeDocument } from '../../src/handlers/optimize-document.js';
-import { pruneAnalyticsRetrievals } from '../../src/handlers/prune-analytics-retrievals.js';
-import { reindexDocumentVersion } from '../../src/handlers/reindex-document-version.js';
-import { runFileEmbeddings } from '../../src/handlers/parse-and-embed.js';
-import { scoreDocument } from '../../src/handlers/score-document.js';
-import { scrapeWebsite } from '../../src/handlers/scrape-website.js';
+import type { JobHandlers } from '@ragenai/jobs-bullmq';
 
 /**
  * One runtime under test, behind the seam's own vocabulary.
  *
  * The suites below start jobs through `JobRuntime` and read them back through
  * `getRun` — never through a queue, a client or an engine's own types — so the
- * same files can be pointed at the other adapter. That is not decoration:
- * §8.3 of the spec promises this suite runs against a real Temporal as well,
- * nightly, and that promise is only affordable if the assertions are already
- * engine-free.
+ * same files run against either adapter. That is not decoration: §8.3 of the
+ * spec promises this suite runs against a real Temporal as well, nightly, and
+ * that promise is only affordable if the assertions are already engine-free.
  *
- * **What exists today is the BullMQ implementation.** The Temporal one is
- * Phase E's nightly job (`WORKER_RUNTIME=temporal` here selects it), and
- * `startHarness` says so rather than falling back to BullMQ — a parity suite
- * that silently tested the same engine twice would be worse than no parity
- * suite, because the report would say both.
+ * **Both implementations exist now.** BullMQ is the one CI runs per pull
+ * request (the spec's D1); Temporal is the nightly parity job, selected the
+ * same way a deployment selects it — `WORKER_RUNTIME=temporal`. Where the two
+ * genuinely differ, the difference is named in `RuntimeTraits` rather than
+ * hidden behind a fallback: a parity suite that quietly tested one engine
+ * twice would be worse than no parity suite, because the report would say
+ * both.
  */
 export interface JobRuntimeHarness {
   /** Which engine this run is exercising, for a failure message to name. */
@@ -65,7 +48,7 @@ export interface JobRuntimeHarness {
    *
    * On the seam this is engine-specific — nothing in the application lists
    * schedules — so it belongs to the harness, which is the layer that knows
-   * which engine it started. A Temporal harness answers it from the schedule
+   * which engine it started. The Temporal harness answers it from the schedule
    * client.
    */
   listScheduleIds(): Promise<string[]>;
@@ -79,6 +62,127 @@ export interface JobRuntimeHarness {
   close(): Promise<void>;
 }
 
+/**
+ * The five places the two engines do not agree, stated once.
+ *
+ * A parity suite is only worth running if it can tell a *difference* from a
+ * *regression*, and the way to do that is to write the differences down where
+ * both runs read them — not as a skipped file on one side and an `if` in the
+ * other. Every field here is a fact about an engine that the application is
+ * entitled to see, so each one is also a small specification of what an
+ * adapter owes the seam.
+ *
+ * Nothing here is a knob. Adding a field is admitting the runtimes diverge
+ * somewhere new, which is exactly the conversation the nightly job exists to
+ * start.
+ */
+export interface RuntimeTraits {
+  /**
+   * Does `getRun` carry the failure's message, or only its status?
+   *
+   * BullMQ's does, because `job.failedReason` is a field the adapter already
+   * has. Temporal's does not, and deliberately: `describe()` carries the
+   * status without the failure, and reading the failure means calling
+   * `result()`, which *throws the workflow's own error* at a caller who asked
+   * for a status. The one consumer — the document-status route — logs the
+   * text and shows the user a generic message either way, so the adapter
+   * declines the second round trip.
+   *
+   * What this costs is diagnostic, and it is worth knowing before debugging a
+   * Temporal install: `failure` is always `undefined` in that log line.
+   */
+  readonly reportsFailureText: boolean;
+
+  /**
+   * What a run cancelled before any worker saw it reads back as.
+   *
+   * BullMQ removes the job from the queue, so it reads `unknown` — there is no
+   * record left to describe. Temporal has no queue to remove from: a workflow
+   * is RUNNING from the moment it is created, and cancelling it leaves a
+   * closed, CANCELLED execution in history. Both satisfy what the seam
+   * promises (`requestCancel` stops a job that has not started); they differ
+   * in what remains afterwards, and the one consumer — the status route —
+   * treats `unknown` and `cancelled` the same way.
+   */
+  readonly cancelledBeforeStart: JobRunStatus;
+
+  /**
+   * Can a test swap a handler for a stub?
+   *
+   * BullMQ registers a record of functions, so yes. Temporal loads workflows
+   * from `workflowsPath` into a sandboxed bundle built from disk, so a closure
+   * cannot reach it — which is a property of the engine, not of the adapter,
+   * and the reason the stalled-job suite is BullMQ's alone.
+   */
+  readonly acceptsHandlerOverrides: boolean;
+
+  /**
+   * Does an unrenewed lock redeliver the job?
+   *
+   * The failure mode BullMQ has and Temporal does not, and the whole subject
+   * of `stalled-jobs.jobs-integration.ts`. Temporal's activity heartbeats and
+   * task timeouts are a different mechanism with different settings; asserting
+   * BullMQ's against it would be testing a translation nobody wrote.
+   */
+  readonly redeliversStalledJobs: boolean;
+
+  /**
+   * A cadence of roughly two seconds, in the dialect this engine's scheduler
+   * speaks.
+   *
+   * The production schedules are five-field and fire nightly; a suite that
+   * waited for those would be measuring its own patience, so it registers a
+   * fast one instead — and the fast one is where the dialects part. BullMQ's
+   * parser takes a six-field cron with seconds. Temporal's takes five, and
+   * **accepts a six-field string without ever firing it**: the schedule is
+   * created, `listSchedules` returns it, and nothing runs — measured at zero
+   * actions in sixty seconds, against thirty-three for the interval form.
+   *
+   * So this is not a knob for tuning the suite's speed. It is the reason a
+   * naive parity run reports "Temporal does not fire schedules at all", which
+   * is false, and which would have been this job's first wrong answer.
+   */
+  readonly everyFewSeconds: string;
+}
+
+const TRAITS: Record<WorkerRuntime, RuntimeTraits> = {
+  bullmq: {
+    reportsFailureText: true,
+    cancelledBeforeStart: 'unknown',
+    acceptsHandlerOverrides: true,
+    redeliversStalledJobs: true,
+    everyFewSeconds: '*/2 * * * * *',
+  },
+  temporal: {
+    reportsFailureText: false,
+    cancelledBeforeStart: 'cancelled',
+    acceptsHandlerOverrides: false,
+    redeliversStalledJobs: false,
+    everyFewSeconds: '@every 2s',
+  },
+};
+
+/** The traits of the runtime this process was told to exercise. */
+export const traits = (): RuntimeTraits => TRAITS[resolveWorkerRuntime()];
+
+/**
+ * A run failed, and — where the engine carries the text — failed for the
+ * stated reason.
+ *
+ * The status half is the parity assertion and holds on both runtimes; the text
+ * half is `reportsFailureText`. Written as one call rather than an `if` at
+ * three call sites so that the *reason* a suite stops checking the message is
+ * one link away, instead of being re-explained each time or, worse, dropped
+ * from both runs to make the file read evenly.
+ */
+export function expectFailedWith(run: JobRun, reason: string | RegExp): void {
+  expect(run.status, `expected a failed run, got ${run.status}`).toBe('failed');
+
+  if (traits().reportsFailureText) {
+    expect(run.failure).toMatch(reason);
+  }
+}
+
 export interface HarnessOptions {
   /** Defaults to a fresh `createMockActivities()`. */
   activities?: Record<string, Mock>;
@@ -90,175 +194,69 @@ export interface HarnessOptions {
    */
   consume?: boolean;
   concurrency?: number;
-  /** Test-only; see `CreateWorkersOptions`. */
+  /** Test-only, and BullMQ-only; see `CreateWorkersOptions`. */
   lockDuration?: number;
   stalledInterval?: number;
+  /** BullMQ-only — see `RuntimeTraits.acceptsHandlerOverrides`. */
   handlerOverrides?: Partial<JobHandlers>;
 }
 
-/**
- * Where the suite's Redis is, and why it is never the application's.
- *
- * Every test flushes the database it is given, so pointing this at the
- * `REDIS_URL` a developer has in `.env.local` would delete their local queues
- * and rate-limit keys between assertions. The default is therefore the compose
- * Redis on its **own database index** — the same server, a namespace nothing
- * else in this repository writes to.
- */
-export const TEST_REDIS_URL =
-  process.env.JOBS_TEST_REDIS_URL ?? 'redis://localhost:56379/15';
-
-/**
- * Refuse to flush a database that might not be ours.
- *
- * `flushdb()` deletes every key in the selected logical database, and a Redis
- * URL with no path selects **database 0** — which is where `REDIS_URL` points,
- * and therefore where a developer's own queues, cached organization settings
- * and rate-limit keys live. The comment above promised "its own database
- * index"; a promise in a comment is not a guard, and the failure would be
- * silent and immediate.
- *
- * Any explicit non-zero index is accepted rather than 15 alone: the number is
- * a convention, and a deployment's CI is entitled to pick another. Zero is the
- * one that cannot be distinguished from "nobody chose".
- */
-function assertOwnDatabase(url: string): void {
-  const database = new URL(url).pathname.replace(/^\//, '');
-
-  if (!/^[1-9][0-9]*$/.test(database)) {
-    throw new Error(
-      `the jobs integration suite refuses to flush "${url}": its URL selects ` +
-        `${database === '' ? 'no database, which means database 0' : `database ${database}`}, ` +
-        'and every test here starts by deleting every key in it. Point ' +
-        'JOBS_TEST_REDIS_URL at a database of its own — the default is ' +
-        'redis://localhost:56379/15.',
-    );
-  }
-}
-
 /** Quiet by default: a failing assertion is the signal, not a retry's log. */
-function testLogger(): JobLogger {
+export function testLogger(): JobLogger {
   const noop = (): void => {};
   return { debug: noop, info: noop, warn: noop, error: noop };
 }
 
-async function flushTestRedis(): Promise<void> {
-  assertOwnDatabase(TEST_REDIS_URL);
-
-  const redis = new Redis(TEST_REDIS_URL, { maxRetriesPerRequest: 1 });
-  try {
-    await redis.flushdb();
-  } finally {
-    await redis.quit();
-  }
-}
-
-const sleep = (ms: number): Promise<void> =>
+export const sleep = (ms: number): Promise<void> =>
   new Promise((resolve) => setTimeout(resolve, ms));
 
-async function startBullMqHarness(
-  options: HarnessOptions,
-): Promise<JobRuntimeHarness> {
-  await flushTestRedis();
+/**
+ * Wait for a terminal state through the seam, on either engine.
+ *
+ * Polling `getRun` rather than awaiting an engine's own completion primitive is
+ * deliberate: `getRun` is what the document-status route calls, so this waits
+ * on the same read a user's browser does, and a runtime that finished a job but
+ * could not describe it would hang here — which is the correct answer.
+ */
+export async function pollUntilTerminal(
+  jobs: JobRuntime,
+  runId: string,
+  timeoutMs = 30_000,
+): Promise<JobRun> {
+  const deadline = Date.now() + timeoutMs;
+  let last: JobRun = { status: 'running' };
 
-  const activities = options.activities ?? createMockActivities();
-  const connection = { url: TEST_REDIS_URL };
-
-  const handlers: JobHandlers = {
-    runFileEmbeddings,
-    scrapeWebsite,
-    generateDocument,
-    reindexDocumentVersion,
-    optimizeDocument,
-    scoreDocument,
-    cleanupDemoThreads,
-    pruneAnalyticsRetrievals,
-    ...options.handlerOverrides,
-  };
-
-  const jobs = new BullMqJobRuntime({ connection });
-
-  const workers: BullWorkers = createBullWorkers({
-    handlers,
-    activities: activities as unknown as Parameters<
-      typeof createBullWorkers
-    >[0]['activities'],
-    connection,
-    concurrency: options.concurrency,
-    lockDuration: options.lockDuration,
-    stalledInterval: options.stalledInterval,
-    log: testLogger(),
-    // The same read the application injects, wired to the same stub the
-    // Temporal suite registers as an activity — so a cancellation test reads
-    // identically on both runtimes.
-    isCancelled: (subject: CancellationSubject) =>
-      activities.isIngestCancelled(subject) as Promise<boolean>,
-  });
-
-  let consuming = false;
-  const startConsuming = (): void => {
-    if (!consuming) {
-      startBullWorkers(workers);
-      consuming = true;
+  while (Date.now() < deadline) {
+    last = await jobs.getRun(runId);
+    if (last.status !== 'running') {
+      return last;
     }
-  };
-
-  if (options.consume !== false) {
-    startConsuming();
+    await sleep(50);
   }
 
-  return {
-    runtimeName: 'bullmq',
-    jobs,
-    activities,
-    startConsuming,
-    listScheduleIds: () => jobs.listSchedules(),
-    async stopConsuming(): Promise<void> {
-      if (consuming) {
-        await closeBullWorkers(workers);
-        consuming = false;
-      }
-    },
-    async waitForRun(runId: string, timeoutMs = 30_000): Promise<JobRun> {
-      const deadline = Date.now() + timeoutMs;
-      let last: JobRun = { status: 'running' };
-
-      while (Date.now() < deadline) {
-        last = await jobs.getRun(runId);
-        if (last.status !== 'running') {
-          return last;
-        }
-        await sleep(50);
-      }
-
-      throw new Error(
-        `run "${runId}" was still ${last.status} after ${timeoutMs}ms`,
-      );
-    },
-    async close(): Promise<void> {
-      if (consuming) {
-        await closeBullWorkers(workers);
-        consuming = false;
-      }
-      await jobs.close();
-    },
-  };
+  throw new Error(
+    `run "${runId}" was still ${last.status} after ${timeoutMs}ms`,
+  );
 }
 
+/**
+ * Start the runtime `WORKER_RUNTIME` names.
+ *
+ * The implementations are reached by dynamic import for the same reason
+ * `worker.ts` reaches `temporal-runtime.ts` that way: a static import would
+ * load `@temporalio/worker` — and its native bridge — into every BullMQ run of
+ * this suite, which is the arrangement E6 spent a phase undoing.
+ */
 export async function startHarness(
   options: HarnessOptions = {},
 ): Promise<JobRuntimeHarness> {
   const runtime = resolveWorkerRuntime();
 
-  if (runtime !== 'bullmq') {
-    throw new Error(
-      `no integration harness for WORKER_RUNTIME="${runtime}". ` +
-        'Only the BullMQ one exists in this repository (D1); the Temporal ' +
-        "harness is the nightly parity job of the spec's §8.3, and it lands " +
-        'with Phase E. Running this suite against an unimplemented runtime ' +
-        'must fail rather than quietly test BullMQ twice.',
-    );
+  if (runtime === 'temporal') {
+    const { startTemporalHarness } = await import('./harness-temporal.js');
+    return startTemporalHarness(options);
   }
 
+  const { startBullMqHarness } = await import('./harness-bullmq.js');
   return startBullMqHarness(options);
 }
