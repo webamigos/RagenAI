@@ -314,6 +314,33 @@ The default union is a data leak at the first customer with an HR folder, and
 nothing in `tests/architecture/` would catch it — so
 `brain-export-never-widens-access.test.ts` is part of Phase E, not a follow-up.
 
+**Changing access on a published page reaches the chunks, or it has not
+happened.** `accessibleBy` is copied onto the published `UserFile` and into
+`accessible_by` on every chunk at publish time. If `SET_ACCESS` or
+`WIDEN_ACCESS` only rewrote the page row, a narrowing would leave the removed
+principals still able to retrieve the page — a revocation the audit ledger
+records and retrieval ignores, which is worse than not offering the action. The
+mirror case is milder and still wrong: a widening nobody can use.
+
+Ragen already has the mechanism, so this is a call rather than a design:
+`syncFolderVectorPermissions` / `computeAccessibleBy` in
+`apps/web/src/features/documents/services/commands/sync-vector-permissions-command.ts`,
+and `vector-permissions.service.ts` in `apps/api`, exist to push a permission
+change onto chunks that are already indexed. An access change on a page with
+`publishedAt` set runs that path against the page's published file.
+
+**Its ordering follows the same fail-closed rule as publication**, and the two
+directions go opposite ways:
+
+- **Narrowing**: chunks first, then the page row. The window has the index
+  stricter than the page claims — nobody sees anything they should not.
+- **Widening**: the page row first, then the chunks. The window has the index
+  stricter than the page claims, again.
+
+Both windows err the same way on purpose: a failure mid-change never leaves
+retrieval more permissive than the decision. E4 tests both directions, because
+narrowing is the one a customer will actually audit.
+
 ## Core surfaces touched
 
 | Surface                                 | Change                                                                            | What catches a mistake                                                             |
@@ -412,6 +439,25 @@ autoincrement `id` plus a `publicId` UUID for URLs, camelCase fields with
   the referenced file is gone, it raises the page's `STALE` finding and tells the
   renderer to omit that source rather than attempt a lookup that cannot succeed
   (see "Withdrawal" for why it is omitted rather than shown as a placeholder).
+
+  **Something has to write it**, and no foreign key will: that is the price of
+  the column being plain. The document-delete path sets `sourceDeletedAt` on
+  every `KnowledgePageSource` naming the file, in the same transaction as the
+  delete, and raises or updates the owner's `STALE` finding. A **reconciliation
+  sweep** — sources whose `fileId` matches no live row and whose
+  `sourceDeletedAt` is null — is the safety net, and it is not optional: it
+  covers files deleted before this feature existed, bulk deletes down paths
+  nobody remembered to touch, and the transaction that half-committed. Both are
+  idempotent: setting a timestamp that is already set, and resolving to a
+  finding that already exists, change nothing.
+
+  **Not the event bus**, though it is the obvious home for a lifecycle
+  side-effect. `docs/event-bus.md` says of itself that it is in-process and
+  non-persistent, that events are "lost on crash or missed by other instances in
+  a multi-instance deploy", and that durability wants a DB write or a job. A
+  citation that silently keeps pointing at a deleted document is exactly the
+  failure that instruction is there to prevent.
+
 - **`KnowledgeEdge`** — `fromPageId`, `toPageId`, `kind`, `origin`
   (`EXTRACTED | INFERRED | AMBIGUOUS`), `confidence`. The origin distinction is
   taken from SwarmVault and is the difference between a graph you can trust and
@@ -419,7 +465,12 @@ autoincrement `id` plus a `publicId` UUID for URLs, camelCase fields with
 - **`KnowledgeFinding`** — `type`
   (`CONTRADICTION | GAP | STALE | ORPHAN | UNOWNED | EXTRACTION_FAILED`),
   `severity`, `pageIds`, `fileId`, `detail`, `status`
-  (`OPEN | RESOLVED | DISMISSED`), `detectedAt`. `STALE` and `UNOWNED` are
+  (`OPEN | RESOLVED | DISMISSED`), `detectedAt`. **Both subjects are optional
+  and at least one is always set**: `CONTRADICTION` carries two or more
+  `pageIds` and no `fileId`; `GAP`, `ORPHAN`, `STALE` and `UNOWNED` carry one
+  page; `EXTRACTION_FAILED` carries a `fileId` and an empty `pageIds`, because
+  it is about a document that produced no page. Empty rather than null for the
+  array, so a reader never has to tell the two apart. `STALE` and `UNOWNED` are
   computed from `verifyEvery` / `lastVerifiedAt` / `ownerId` — a query, not a
   module, which is the whole reason those fields exist from day one.
   **`EXTRACTION_FAILED` is why this carries a `fileId` as well as `pageIds`**:
@@ -438,6 +489,11 @@ autoincrement `id` plus a `publicId` UUID for URLs, camelCase fields with
   `(pageId, action, publicationGeneration)`** — an append-only row cannot be
   made idempotent by repeating it, so a retried publication has to collide with
   its own row rather than append a second one (see "Withdrawal").
+  **`publicationGeneration` is null for every other action.** Approving, merging
+  or setting an owner has no generation to carry, and a default of `0` would
+  make the unique constraint reject the second `APPROVE` on a page — an audit
+  ledger refusing to record a legitimate act. Null is the honest value and the
+  constraint ignores it.
 - **`EmbeddingStatus`** gains **`STAGED`** and **`WITHDRAWN`**. `STAGED` is an
   uploaded document parsed and deliberately not embedded, awaiting curation.
   `WITHDRAWN` is a published page's file after an unpublish. Both are distinct
@@ -597,16 +653,26 @@ Phase D, so every phase before it is invisible to existing users.
       leaves a state a retry finishes. Tests that publish and unpublish cannot
       interleave into chunks-without-publication, and that a retried
       publication writes exactly one decision row.
-- [ ] **E4.** `tests/architecture/brain-export-never-widens-access.test.ts`.
-- [ ] **E5.** Re-publication by diff: `contentHash` per page, re-embed only what
+- [ ] **E4.** An access change on a published page reaches its chunks, through
+      the existing vector-permission sync. Narrowing writes the chunks first,
+      widening writes the page first, so neither leaves retrieval more
+      permissive than the decision. Tests both directions; narrowing is the one
+      a customer audits.
+- [ ] **E5.** Deleting a source document sets `sourceDeletedAt` on every
+      `KnowledgePageSource` naming it, in the delete's own transaction, and
+      raises the owner's `STALE` finding. Plus the reconciliation sweep for
+      sources whose file is gone and whose timestamp is not set — both
+      idempotent, both tested.
+- [ ] **E6.** `tests/architecture/brain-export-never-widens-access.test.ts`.
+- [ ] **E7.** Re-publication by diff: `contentHash` per page, re-embed only what
       changed, delete what was removed.
-- [ ] **E6.** Two-level citation rendering in `apps/web` and `apps/api`:
+- [ ] **E8.** Two-level citation rendering in `apps/web` and `apps/api`:
       `metadata.brainPageId` → `KnowledgePageSource` → source documents,
       resolved against the pinned `documentVersionId` and filtered by the same
       file predicate as any other read (`fileAccessWhere`). A test that a reader
       who may see a widened page but not its sources gets the page and no source
       list.
-- [ ] **E7.** Take a curated source document out of retrieval — per document,
+- [ ] **E9.** Take a curated source document out of retrieval — per document,
       human-triggered, reversible by re-running ingest. Mode 1's path to a clean
       index, and never automatic.
 
