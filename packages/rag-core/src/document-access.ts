@@ -22,6 +22,29 @@
  * interpretation.
  */
 
+/**
+ * Known gap, recorded here because this is where the next person will look.
+ *
+ * `metadata.accessible_by` is written at ingest and **never refreshed**.
+ * Nothing calls `syncFolderVectorPermissions` — not apps/web, not apps/api;
+ * `documents.controller.ts` says so explicitly ("Nothing to wire"), and the
+ * only other writer is the one-shot `backfill-accessible-by` script. So a
+ * share revoked after a document was indexed still satisfies the retrieval
+ * filter until that document is re-ingested.
+ *
+ * `fileAccessWhere` reads the database directly, so the knowledge-base listing
+ * honours a revocation immediately. The lag is retrieval-only, and it is new
+ * in the sense that it had nothing to lag behind before: the field was absent,
+ * so the filter matched nothing and member-scope retrieval returned nothing at
+ * all. Trading "no retrieval" for "retrieval that lags a revoke" is the right
+ * direction, not the destination.
+ *
+ * Closing it means calling the sync from every path that changes who may read
+ * a file — a share, an unshare, a folder move, a team change, an `isOrgWide`
+ * toggle, an owner deletion — which is a larger change than the one that made
+ * the field real.
+ */
+
 /** A permission row, from a file, its folder, or one of that folder's ancestors. */
 export type DocumentAccessGrant = {
   granteeType: string;

@@ -246,6 +246,13 @@ export class InitializeBasicRagService {
     metadataFilter?: object;
     trackAiUsage?: TrackAiUsage;
   }): Promise<{ vectorStore: VectorStoreClient; metadataFilter?: object }> {
+    // The search path reaches `createEmbeddingsInstance` without going through
+    // `initializeRagChain`, so it needs the same guard. Without it an
+    // unroutable EMBEDDINGS_MODEL rejects later, when `similaritySearch`
+    // consumes the deferred provider, and `/v1/search` answers 500 where chat
+    // answers a 400 that names the problem.
+    assertModelIsRoutable(resolveEmbeddingsModel());
+
     const embeddingModel = createEmbeddingsInstance(
       {
         organizationId: orgId,

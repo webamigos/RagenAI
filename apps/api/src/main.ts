@@ -15,6 +15,38 @@ import {
 import { PrismaService } from './prisma/prisma.service.js';
 import { recordEncryptionBypassEvent } from './security/record-encryption-bypass-event.js';
 
+const DEFAULT_PORT = 3001;
+
+/**
+ * The TCP port to listen on, as an actual number.
+ *
+ * `ConfigService` hands back whatever is in `process.env`, which is a string —
+ * the `get<number>()` generic is an assertion, not a conversion, and neither
+ * name is coerced by `apiEnvSchema`. `app.listen()` treats a string as an IPC
+ * path rather than a port, so `RAGEN_API_PORT=hig` would quietly bind a pipe
+ * called `hig` and serve nobody, with the log line reporting it as the port.
+ *
+ * Refusing beats guessing here: a mistyped port is a deployment that needs
+ * fixing, not one to start anyway on 3001.
+ */
+function resolvePort(...candidates: (string | undefined)[]): number {
+  for (const raw of candidates) {
+    if (raw === undefined || raw.trim() === '') {
+      continue;
+    }
+
+    const parsed = Number(raw);
+    if (!Number.isInteger(parsed) || parsed < 1 || parsed > 65535) {
+      throw new Error(
+        `Invalid port "${raw}": set RAGEN_API_PORT (or PORT) to an integer between 1 and 65535, or leave both unset for ${DEFAULT_PORT}.`,
+      );
+    }
+    return parsed;
+  }
+
+  return DEFAULT_PORT;
+}
+
 async function bootstrap() {
   // Local files first, then validation — in that order, or a fresh clone
   // fails validation on variables that sit in the root .env.local. A no-op
@@ -167,9 +199,10 @@ async function bootstrap() {
   // once: `PORT=3001` for this service also moved apps/mcp onto 3001, where it
   // died with EADDRINUSE. The app-specific name wins, so one file can give
   // each app its own port.
-  const port =
-    configService.get<number>('RAGEN_API_PORT') ??
-    configService.get<number>('PORT', 3001);
+  const port = resolvePort(
+    configService.get<string>('RAGEN_API_PORT'),
+    configService.get<string>('PORT'),
+  );
   // A rejection nobody awaited must not end the service.
   //
   // Node exits on an unhandled rejection by default, and this process creates

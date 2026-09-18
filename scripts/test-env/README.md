@@ -78,7 +78,7 @@ done
 
 node scripts/test-env/test-api.mjs
 node scripts/test-env/test-mcp.mjs
-SDK_DIR=<ragen-sdk-ts checkout> node scripts/test-env/test-sdk.mjs
+node scripts/test-env/test-sdk.mjs   # SDK_DIR= if the SDK is not beside this repo
 ```
 
 No backfill step: ingest writes `metadata.accessible_by` itself now, so a

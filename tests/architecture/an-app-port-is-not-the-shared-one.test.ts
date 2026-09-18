@@ -31,9 +31,29 @@ describe('an app port is not the shared one', () => {
   it('has apps/api prefer RAGEN_API_PORT over PORT', () => {
     const source = read('apps/api/src/main.ts');
 
-    expect(source).toContain("configService.get<number>('RAGEN_API_PORT')");
-    // The fallback stays: Railway injects PORT alone.
-    expect(source).toContain("configService.get<number>('PORT', 3001)");
+    // Order matters, so assert it rather than just the presence of both:
+    // `resolvePort` takes the first value that is set.
+    const api = source.indexOf("get<string>('RAGEN_API_PORT')");
+    const bare = source.indexOf("get<string>('PORT')");
+
+    expect(api).toBeGreaterThan(-1);
+    // The fallback stays: a single-container host injects PORT alone.
+    expect(bare).toBeGreaterThan(-1);
+    expect(api).toBeLessThan(bare);
+  });
+
+  // `ConfigService` returns what is in `process.env`, which is a string, and
+  // neither name is coerced by `apiEnvSchema`. `app.listen()` reads a string as
+  // an IPC path, so an unvalidated value binds a pipe and serves nobody while
+  // the log line reports it as the port.
+  it('converts the chosen port to a validated integer before listening', () => {
+    const source = read('apps/api/src/main.ts');
+
+    expect(source).toContain('function resolvePort');
+    expect(source).toMatch(/Number\.isInteger\(parsed\)/);
+    expect(source).toMatch(/parsed < 1 \|\| parsed > 65535/);
+    // Refuses rather than silently falling back to the default.
+    expect(source).toMatch(/throw new Error\(\s*`Invalid port/);
   });
 
   it('has apps/mcp prefer RAGEN_MCP_PORT over PORT', () => {

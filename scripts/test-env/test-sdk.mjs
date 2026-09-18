@@ -9,17 +9,41 @@
  * assistants, and the error path for a bad key.
  */
 import { createRequire } from 'node:module';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const SDK_DIR = process.env.SDK_DIR ?? '/home/user/webamigos/ragen-sdk-ts';
+// Paths are derived from this file's own location, not written out for one
+// machine: an absolute default works on the checkout it was written on and
+// fails on every other one, and it fails *inside* a case — `readFileSync`
+// throwing under `files.uploadAndWait` — so it reads as the API being broken
+// rather than the harness being misconfigured.
+const HERE = path.dirname(fileURLToPath(import.meta.url));
+const REPO_ROOT = path.resolve(HERE, '..', '..');
+
+// The SDK is a sibling repository, so its location genuinely varies. Default
+// to a checkout beside this one and say so plainly when it is not there.
+const SDK_DIR =
+  process.env.SDK_DIR ?? path.resolve(REPO_ROOT, '..', 'ragen-sdk-ts');
 const BASE_URL = process.env.API_BASE ?? 'http://127.0.0.1:3001/v1';
 const KEY = process.env.RAGEN_API_KEY;
-const DOCS =
-  process.env.SAMPLE_DOCS ?? '/home/user/RagenAI/scripts/test-env/sample-docs';
+const DOCS = process.env.SAMPLE_DOCS ?? path.join(HERE, 'sample-docs');
 
 if (!KEY) {
   console.error('set RAGEN_API_KEY');
+  process.exit(1);
+}
+
+if (!existsSync(path.join(SDK_DIR, 'dist/index.mjs'))) {
+  console.error(
+    `No SDK build at ${SDK_DIR}/dist/index.mjs. Clone webamigos/ragen-sdk-ts, ` +
+      'run `npm install && npm run build` in it, and point SDK_DIR at it.',
+  );
+  process.exit(1);
+}
+
+if (!existsSync(DOCS)) {
+  console.error(`No sample documents at ${DOCS}. Set SAMPLE_DOCS.`);
   process.exit(1);
 }
 

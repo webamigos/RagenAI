@@ -15,10 +15,13 @@ carries a fact that exists only in one specific document.
 | --------------------------------------------------------------------------------------- | --------- |
 | `test-api.mjs` — `/v1/search`, `/v1/chat/completions` streamed and not, auth            | **17/17** |
 | `test-mcp.mjs` — MCP over HTTP-stream: tool discovery, all three tools, auth            | **11/11** |
-| `test-sdk.mjs` — SDK 0.3.0 built from source: files, assistants, both chat APIs, errors | **12/13** |
+| `test-sdk.mjs` — SDK 0.3.0 built from source: files, assistants, both chat APIs, errors | **13/13** |
 | `ragen-sdk-ts` own unit tests (`vitest run`)                                            | **47/47** |
 
-The one SDK failure is defect **F1** below, left failing on purpose.
+**All four defects below are fixed**, and these numbers are from the run after
+the fixes. The SDK's grounding case — upload through the SDK, then ask about the
+document — is the one that used to fail; it is the direct test of F1 and now
+passes with no backfill step.
 
 ### What the environment does and does not prove
 
@@ -115,6 +118,21 @@ an access boundary fails closed.
 `tests/architecture/every-ingest-path-writes-accessible-by.test.ts` holds all of
 it.
 
+**Left open, deliberately.** `accessible_by` is written at ingest and never
+refreshed: nothing calls `syncFolderVectorPermissions` from either app —
+`documents.controller.ts` states this outright ("Nothing to wire") — so the only
+other writer is the one-shot backfill script. A share revoked after a document
+was indexed therefore still satisfies the retrieval filter until that document
+is re-ingested. The knowledge-base listing is unaffected, because
+`fileAccessWhere` reads the database directly; the lag is retrieval-only.
+
+This is not a regression so much as a gap that only became reachable once the
+field held a value — before, it was absent, the filter matched nothing, and
+member-scope retrieval returned nothing at all. Closing it means calling the
+sync from every path that changes who may read a file (share, unshare, folder
+move, team change, `isOrgWide` toggle, owner deletion), which is a larger
+change than the one that made the field real, and belongs in its own.
+
 ### F2 — An unroutable model takes the whole API process down — FIXED
 
 **Severity: high (denial of service).** Any authenticated caller can kill
@@ -148,10 +166,10 @@ a synchronous lookup in the loaded route table. An unroutable model is now a 400
 naming the model and listing the ones this installation serves.
 
 Re-reading the diff adversarially found a **second trigger the answer-model
-check did not cover**: the *embeddings* model. `createEmbeddingsInstance`
+check did not cover**: the _embeddings_ model. `createEmbeddingsInstance`
 returns a promise (`resolveEmbeddingModel` is async), so an unroutable
 `EMBEDDINGS_MODEL` leaves a rejection nothing awaits once the request has failed
-for another reason — and Node exits on it *after* the request was correctly
+for another reason — and Node exits on it _after_ the request was correctly
 answered with a 500, which is what made it hard to attribute. Confirmed
 pre-existing by checking out `apps/api` at the pre-fix commit and reproducing
 it there. Both models are checked now.
