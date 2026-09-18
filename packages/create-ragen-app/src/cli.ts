@@ -448,6 +448,22 @@ function overridesForTarget(
  * started.
  */
 async function writeComposeProjectName(targetDir: string): Promise<void> {
+  // An existing value wins over anything resolved here, and this is not
+  // politeness — it is what makes the mechanism stable. Re-running the wizard
+  // over a tree that already has a stack must not rename its project: the new
+  // name would address empty volumes and abandon the database the first run
+  // migrated. That can happen for an innocent reason too — the first run
+  // decided while Docker was up, this one cannot reach it — so the rule is
+  // "whatever this directory already decided", not "whatever we would decide
+  // again".
+  const existing = readComposeProjectName(targetDir);
+  if (existing) {
+    clack.log.info(
+      `Keeping this directory's Compose project name: ${existing} (from .env).`,
+    );
+    return;
+  }
+
   const project = await resolveComposeProjectName(targetDir);
 
   try {
@@ -475,6 +491,20 @@ async function writeComposeProjectName(targetDir: string): Promise<void> {
     return;
   }
 
+  if (project.daemonUnreachable) {
+    // Not a collision — a question that could not be asked. Said plainly, or
+    // the hashed name in `docker ps` looks like something went wrong.
+    clack.log.info(
+      [
+        'Could not ask Docker which Compose projects exist, so this install',
+        `took a name derived from its path: ${project.name}. A stopped daemon`,
+        'still holds the volumes of earlier installs, and the plain directory',
+        'name would have reused them.',
+      ].join(' '),
+    );
+    return;
+  }
+
   if (project.disambiguated) {
     clack.log.warn(
       [
@@ -488,6 +518,22 @@ async function writeComposeProjectName(targetDir: string): Promise<void> {
         'collide; see below.',
       ].join(' '),
     );
+  }
+}
+
+/**
+ * Reads `COMPOSE_PROJECT_NAME` back out of an install's `.env`, or undefined
+ * when there is no such file or no such line. Parsed with dotenv rather than a
+ * regex so a quoted value reads the same way Compose reads it.
+ */
+function readComposeProjectName(targetDir: string): string | undefined {
+  try {
+    const parsed = parseDotenv(readFileSync(join(targetDir, '.env'), 'utf8'));
+    const name = parsed.COMPOSE_PROJECT_NAME?.trim();
+    return name === undefined || name === '' ? undefined : name;
+  } catch {
+    // No `.env` is the normal case on a fresh clone.
+    return undefined;
   }
 }
 

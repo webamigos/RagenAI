@@ -57,8 +57,16 @@ describe('parseNodeVersion', () => {
     ['v22.22.3', { major: 22, minor: 22, patch: 3 }],
     ['24.0.0', { major: 24, minor: 0, patch: 0 }],
     ['  v26.1.0  ', { major: 26, minor: 1, patch: 0 }],
-    ['v24.15.0-nightly', { major: 24, minor: 15, patch: 0 }],
+    [
+      'v24.15.0-nightly',
+      { major: 24, minor: 15, patch: 0, prerelease: 'nightly' },
+    ],
+    ['v25.0.0-rc.1', { major: 25, minor: 0, patch: 0, prerelease: 'rc.1' }],
   ])('reads %s as %o', (version, expected) => {
+    // The prerelease tail is kept, not discarded. Dropping it would make
+    // `24.15.0-nightly` compare equal to `24.15.0`, and semver puts it below —
+    // which is the difference between accepting a Node and accepting one whose
+    // `npm install` fails.
     expect(parseNodeVersion(version)).toEqual(expected);
   });
 
@@ -183,6 +191,53 @@ describe('checkNodeVersion', () => {
       expect.stringContaining('24.15.0'),
     );
     expect(verdict).toHaveProperty('message', expect.stringContaining('jsdom'));
+  });
+
+  // npm checks engines with `includePrerelease: true`, so these verdicts were
+  // taken from `semver.satisfies(v, '^24.15.0 || >=26.0.0', {includePrerelease: true})`
+  // rather than reasoned about — the point is to agree with the tool that
+  // will actually stop the install.
+  describe('prereleases, as npm sees them', () => {
+    it.each([
+      // A prerelease of a range's own starting version sorts *below* it.
+      ['v24.15.0-nightly', 'refuse'],
+      ['v26.0.0-rc.1', 'refuse'],
+      // One above a range's start is inside it.
+      ['v24.16.0-rc.1', 'ok'],
+      ['v27.0.0-nightly', 'ok'],
+    ])('%s → %s, matching npm', (version, expected) => {
+      expect(checkNodeVersion({ version, willRunSetup: true }).kind).toBe(
+        expected,
+      );
+    });
+
+    it('says the version is a prerelease, not that it is too old', () => {
+      // `24.15.0-nightly` and the required `24.15.0` look identical at a
+      // glance, so a refusal that only prints both numbers reads as a bug.
+      const verdict = checkNodeVersion({
+        version: 'v24.15.0-nightly',
+        willRunSetup: true,
+      });
+
+      expect(verdict).toHaveProperty(
+        'message',
+        expect.stringContaining('prerelease'),
+      );
+      expect(verdict).toHaveProperty(
+        'message',
+        expect.stringContaining('24.15.0-nightly'),
+      );
+    });
+
+    it('refuses a prerelease of an unsupported line, where npm would allow it', () => {
+      // The one deliberate difference, in the safe direction: npm accepts
+      // `25.0.0-rc.1` because it sorts below the `<25.0.0` bound, but the
+      // *released* 25 line is unsupported — so an install scaffolded on the
+      // release candidate would work today and stop working at 25.0.0 final.
+      expect(
+        checkNodeVersion({ version: 'v25.0.0-rc.1', willRunSetup: true }).kind,
+      ).toBe('refuse');
+    });
   });
 
   it('does not refuse a version string it cannot read', () => {

@@ -36,19 +36,36 @@ benefit (a readable name) has a replacement that the cost does not: `docker
 compose ps` and `docker compose logs <service>` name *services*, work from the
 project directory, and are correct in every checkout.
 
-Three things this does **not** fix, all worth stating when someone proposes it:
+Three things unpinning does **not** settle by itself, all worth stating when
+someone proposes it:
 
-- **The project name is the directory *basename*, not the path.** `/work/a/ragen`
-  and `/work/b/ragen` are one project, with one set of volumes — the same bug,
-  narrowed rather than removed. And it is the *quiet* case: a stopped first
-  stack holds no port, so the port warning below cannot see it either.
-  `create-ragen-app` writes `COMPOSE_PROJECT_NAME` into the install's `.env`,
-  which Compose reads from the project directory on every later command; a value
-  passed only in the installer's own environment would name one project during
-  the install and a different one afterwards, which is worse than no fix.
+- **Compose derives the project name from the directory *basename*, not the
+  path.** Left at the default, `/work/a/ragen` and `/work/b/ragen` are one
+  project with one set of volumes — the original bug, narrowed to same-named
+  directories rather than removed. And that residue is the *quiet* case: a
+  stopped first stack holds no port, so the port warning below cannot see it
+  either.
+
+  **An install made by `create-ragen-app` is not exposed to this.** It resolves
+  a name per absolute path and writes `COMPOSE_PROJECT_NAME` into the install's
+  `.env`, which Compose reads from the project directory on every later command
+  — so two supported installs stay apart whatever their directories are called,
+  and an existing value is never overwritten, because renaming a project
+  abandons the volumes holding its database. What remains exposed is a checkout
+  made some other way: `git clone` into a directory whose name is already in
+  use needs that line added by hand.
+
+  Two things worth keeping from how that was built. The value has to live in a
+  file Compose reads by itself — one passed in the installer's own environment
+  would name one project during the install and a different one afterwards,
+  which is worse than no fix. And when the daemon cannot be reached the name
+  falls back to the path-derived one, not the bare basename: a stopped daemon
+  still holds the volumes of every earlier install, so the pretty guess fails
+  silently and the ugly one fails visibly.
 - **Published ports are not prefixed by anything.** Two stacks publishing 55432
-  still collide, so a port warning is still needed — `create-ragen-app` probes
-  the ports it is about to publish before starting the stack.
+  still collide, whoever created them, so a port warning is still needed —
+  `create-ragen-app` probes the ports it is about to publish before starting
+  the stack.
 - **Existing installs come up empty.** The volumes are renamed, not migrated
   (`ragen-postgres-data` → `<project>_postgres_data`). Nothing is deleted, but
   the stack starts blank unless the data is copied across; say so in the release

@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { createServer } from 'node:net';
-import { basename, resolve } from 'node:path';
+import { basename, isAbsolute, relative, resolve } from 'node:path';
 
 import { execa } from 'execa';
 
@@ -63,6 +63,12 @@ export interface ComposeProjectName {
   disambiguated: boolean;
   /** The compose file of the project that took it, for the message. */
   takenBy?: string;
+  /**
+   * True when the suffix was added because Docker could not be asked, rather
+   * than because a collision was seen. A different sentence to the reader:
+   * nothing is wrong, and the name is cautious rather than forced.
+   */
+  daemonUnreachable?: boolean;
 }
 
 /**
@@ -84,11 +90,33 @@ function pathSuffix(absoluteDir: string): string {
   return createHash('sha256').update(absoluteDir).digest('hex').slice(0, 6);
 }
 
+/**
+ * Whether a compose file belongs to the install in `absoluteDir`.
+ *
+ * `relative()` rather than a `startsWith(dir + '/')` prefix test, for two
+ * reasons: on Windows `resolve()` returns backslashes, so a forward-slash
+ * prefix never matches and every re-run would look like a collision — which
+ * renames the stack and abandons its volumes, the worst outcome available
+ * here. And a prefix test is true for `/work/ragen-app-2` against
+ * `/work/ragen-app` unless the separator is appended exactly right.
+ *
+ * A file *inside* the directory counts, at any depth: `-f infra/compose.yml`
+ * is a legitimate way to run this stack, and treating it as someone else's
+ * project is the same destructive mistake.
+ */
+function isInsideDirectory(file: string, absoluteDir: string): boolean {
+  const path = relative(absoluteDir, resolve(file.trim()));
+  // `..` means outside; an absolute result means a different Windows drive,
+  // where "inside" is not a question that has a yes.
+  return !path.startsWith('..') && !isAbsolute(path);
+}
+
 export async function resolveComposeProjectName(
   targetDir: string,
 ): Promise<ComposeProjectName> {
   const absoluteDir = resolve(targetDir);
   const base = normalizeComposeProjectName(basename(absoluteDir));
+  const suffixed = `${base}-${pathSuffix(absoluteDir)}`;
 
   let projects: Array<{ Name?: string; ConfigFiles?: string }> = [];
   try {
@@ -99,11 +127,16 @@ export async function resolveComposeProjectName(
     );
     projects = JSON.parse(stdout) as typeof projects;
   } catch {
-    // Same reasoning as isDockerAvailable: an unreachable daemon, or a Compose
-    // too old for `ls --format json`, is not a reason to fail. The plain name
-    // is what Compose would have used anyway, so this degrades to the previous
-    // behaviour rather than to something worse.
-    return { name: base, disambiguated: false };
+    // An unreachable daemon, or a Compose too old for `ls --format json`.
+    //
+    // The plain basename is *not* the safe answer here, which is what it first
+    // looked like. A daemon that cannot be reached still holds the volumes of
+    // every install made before it stopped, and they collide as soon as it
+    // starts — so falling back to the basename fails in the silent, expensive
+    // direction: a second install quietly opening the first one's database.
+    // The suffix fails in the visible, cheap one: a less pretty name in
+    // `docker ps`.
+    return { name: suffixed, disambiguated: true, daemonUnreachable: true };
   }
 
   // A project whose compose files live under *this* directory is this install
@@ -114,7 +147,7 @@ export async function resolveComposeProjectName(
       project.Name === base &&
       !(project.ConfigFiles ?? '')
         .split(',')
-        .some((file) => resolve(file.trim()).startsWith(`${absoluteDir}/`)),
+        .some((file) => isInsideDirectory(file, absoluteDir)),
   );
 
   if (!collision) {
@@ -122,7 +155,7 @@ export async function resolveComposeProjectName(
   }
 
   return {
-    name: `${base}-${pathSuffix(absoluteDir)}`,
+    name: suffixed,
     disambiguated: true,
     takenBy: collision.ConfigFiles?.split(',')[0]?.trim(),
   };

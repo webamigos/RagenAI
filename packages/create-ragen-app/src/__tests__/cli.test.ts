@@ -524,6 +524,69 @@ describe('run', () => {
     expect(String(dotEnv?.[1])).toContain('COMPOSE_PROJECT_NAME=ragen-test');
   });
 
+  it('keeps a Compose project name the directory already chose', async () => {
+    // The stability rule, and the one that makes the rest of this safe. A
+    // second wizard run over an existing tree must not rename the project: the
+    // new name would address empty volumes and abandon the database the first
+    // run migrated. That can happen innocently — the first run decided while
+    // Docker was up, this one cannot reach it.
+    vi.mocked(readFileSync).mockImplementation((path) => {
+      const p = String(path);
+      if (p.endsWith('/.env')) {
+        return 'COMPOSE_PROJECT_NAME=chosen-earlier\n';
+      }
+      if (p.endsWith('apps/admin/.env.example')) {
+        return ADMIN_TEMPLATE;
+      }
+      if (p.endsWith('.env.example')) {
+        return ROOT_TEMPLATE;
+      }
+      if (p.endsWith('config.yaml')) {
+        return 'model_list:\n';
+      }
+      if (p.endsWith('ragen.config.ts')) {
+        return CONFIG_TEMPLATE;
+      }
+      throw new Error(`unexpected readFileSync path in test: ${p}`);
+    });
+    vi.mocked(clack.select).mockResolvedValueOnce('skip' as never);
+    vi.mocked(clack.confirm).mockResolvedValue(false as never);
+
+    await run(['/tmp/ragen-test']);
+
+    // Not asked, and not rewritten.
+    expect(resolveComposeProjectName).not.toHaveBeenCalled();
+    const dotEnv = vi
+      .mocked(writeFileSync)
+      .mock.calls.find(([path]) => String(path).endsWith('/.env'));
+    expect(dotEnv).toBeUndefined();
+  });
+
+  it('explains a path-derived name when Docker could not be asked', async () => {
+    // The hashed name is cautious, not a symptom, and saying so is the
+    // difference between a note and a mystery in `docker ps`.
+    vi.mocked(resolveComposeProjectName).mockResolvedValueOnce({
+      name: 'ragen-test-9cdfdb',
+      disambiguated: true,
+      daemonUnreachable: true,
+    });
+    vi.mocked(clack.select).mockResolvedValueOnce('skip' as never);
+    vi.mocked(clack.confirm).mockResolvedValue(false as never);
+
+    await run(['/tmp/ragen-test']);
+
+    const messages = [
+      ...vi.mocked(clack.log.info).mock.calls,
+      ...vi.mocked(clack.log.warn).mock.calls,
+    ].map(([message]) => String(message));
+    const note = messages.find((message) =>
+      message.includes('ragen-test-9cdfdb'),
+    );
+
+    expect(note, 'the path-derived name was not explained').toBeDefined();
+    expect(note).toContain('Could not ask Docker');
+  });
+
   it('says so when the directory name was already taken by another project', async () => {
     // The silent half of the collision: Compose names a project after its
     // directory, so /work/a/ragen and /work/b/ragen are one project. A

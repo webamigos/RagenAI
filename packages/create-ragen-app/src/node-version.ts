@@ -93,6 +93,15 @@ export interface NodeVersion {
   major: number;
   minor: number;
   patch: number;
+  /**
+   * The `-nightly`/`-rc.1` tail, without its dash. Kept because dropping it
+   * would make a prerelease compare equal to the release it precedes, and
+   * semver puts it *below*: `24.15.0-nightly` does not satisfy `^24.15.0`.
+   * npm checks engines with `includePrerelease: true`, which changes which
+   * prereleases pass but not that one — so ignoring the tail would accept a
+   * Node whose `npm install` fails, which is this whole exercise again.
+   */
+  prerelease?: string;
 }
 
 /**
@@ -102,7 +111,9 @@ export interface NodeVersion {
  * for the same reason: guessing `.0` would refuse a release that may be fine.
  */
 export function parseNodeVersion(version: string): NodeVersion | undefined {
-  const match = /^v?(\d+)\.(\d+)\.(\d+)/.exec(version.trim());
+  const match = /^v?(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z.-]+))?/.exec(
+    version.trim(),
+  );
   if (!match) {
     return undefined;
   }
@@ -110,6 +121,7 @@ export function parseNodeVersion(version: string): NodeVersion | undefined {
     major: Number(match[1]),
     minor: Number(match[2]),
     patch: Number(match[3]),
+    ...(match[4] === undefined ? {} : { prerelease: match[4] }),
   };
 }
 
@@ -117,13 +129,29 @@ export function formatNodeVersion({
   major,
   minor,
   patch,
+  prerelease,
 }: NodeVersion): string {
-  return `${major}.${minor}.${patch}`;
+  const base = `${major}.${minor}.${patch}`;
+  return prerelease === undefined ? base : `${base}-${prerelease}`;
 }
 
-/** Negative when `a` is older than `b`, positive when newer, 0 when equal. */
+/**
+ * Negative when `a` is older than `b`, positive when newer, 0 when equal.
+ *
+ * Prereleases follow semver: `24.15.0-rc.1` is *older* than `24.15.0`, which
+ * is the rule that matters here — it is what makes a prerelease of a range's
+ * starting version fall outside that range, exactly as npm finds it.
+ * Prereleases are not ordered against each other, because nothing here needs
+ * it: a version either reaches a range's start or it does not.
+ */
 function compareNodeVersions(a: NodeVersion, b: NodeVersion): number {
-  return a.major - b.major || a.minor - b.minor || a.patch - b.patch;
+  const numeric = a.major - b.major || a.minor - b.minor || a.patch - b.patch;
+  if (numeric !== 0) {
+    return numeric;
+  }
+  const aPre = a.prerelease === undefined ? 0 : -1;
+  const bPre = b.prerelease === undefined ? 0 : -1;
+  return aPre - bPre;
 }
 
 /**
@@ -148,6 +176,18 @@ export function isSupportedNodeVersion(version: NodeVersion): boolean {
 }
 
 /**
+ * One deliberate difference from npm, in the safe direction.
+ *
+ * npm passes `includePrerelease: true`, under which `25.0.0-rc.1` satisfies
+ * `^24.15.0` — it sorts below the `<25.0.0` bound. The check here refuses it,
+ * because the *released* 25 line is unsupported and scaffolding onto a release
+ * candidate of it would work today and stop working at 25.0.0 final. The cases
+ * that matter agree with npm exactly: a prerelease of a range's own starting
+ * version (`24.15.0-nightly`, `26.0.0-rc.1`) is refused by both, and one above
+ * it (`24.16.0-rc.1`, `27.0.0-nightly`) is accepted by both.
+ */
+
+/**
  * A line the caller can paste. `nvm install`, not `nvm use`: someone in this
  * position usually has *some* Node of that major already, and `nvm use 24`
  * would select exactly the one that does not work.
@@ -163,6 +203,13 @@ function describeUnsupported(version: NodeVersion): string {
   const floor = parseNodeVersion(REQUIRED_NODE_VERSION);
   const tooOld = floor ? compareNodeVersions(version, floor) < 0 : false;
   const current = formatNodeVersion(version);
+
+  // A prerelease reads as a supported version to the eye, so the message has
+  // to say which part of it is the problem — otherwise the number in the
+  // refusal looks identical to the number in the requirement.
+  if (version.prerelease !== undefined) {
+    return `Node ${current} is a prerelease, and a Ragen installation needs ${SUPPORTED_NODE_ENGINES_RANGE}. semver sorts a prerelease below the release it precedes, so ${current} does not satisfy that range and npm will refuse it — use a released Node.`;
+  }
 
   if (tooOld) {
     return `A Ragen installation needs Node ${SUPPORTED_NODE_ENGINES_RANGE}, and this is Node ${current}.`;

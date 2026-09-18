@@ -46,6 +46,14 @@ wrong shape for the requirement no matter which number it holds: it cannot
 express a gap. `>=24.15.0` would have cleared Node 25 and failed `npm install`
 on it, reproducing the original bug with a newer version.
 
+And a third, found in the same review: **a prerelease is below the release it
+precedes.** `24.15.0-nightly` reads as the required version and does not satisfy
+`^24.15.0` — semver sorts it lower — so a check that parses three digits and
+drops the tail accepts a Node whose `npm install` fails. Worth reading npm's own
+code rather than reasoning about it: it calls `semver.satisfies` with
+`includePrerelease: true`, which means `24.16.0-rc.1` *does* pass and
+`26.0.0-rc.1` does not. Those verdicts are not guessable from the range.
+
 **Rule**: what a tree runs on is a **range**, not a floor, and it is stated
 once. A bare major is a true statement about the release line and a false one
 about the tree; a bare `>=` is a true statement about the oldest version and a
@@ -64,6 +72,11 @@ either end at any time. Concretely:
 - A refusal message must say **why the patch digit matters**. "Needs Node 24"
   read by someone who has Node 24 is a riddle, and the likely conclusion is that
   the installer is broken.
+- A version check has to agree with **npm's** semver call, options included,
+  not with a reading of the range. Where it deliberately differs — this one
+  refuses `25.0.0-rc.1`, which npm accepts, because the released 25 line is
+  unsupported — the difference belongs in a comment and a test, not in a
+  surprise.
 - CI must pin real versions on **both** sides of every boundary: below the floor
   (24.14), inside a gap (25), and at the floor itself (24.15). A job on "latest
   major" cannot fail any of these ways and therefore proves nothing about them.

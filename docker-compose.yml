@@ -3,12 +3,13 @@
 # COMPOSE_PROJECT_NAME says otherwise. Two Ragen checkouts in differently named
 # directories therefore coexist with no configuration at all.
 #
-# **Two directories with the same basename do not.** `/work/a/ragen` and
-# `/work/b/ragen` produce the same project name, and so the same containers and
-# the same volumes — the collision below, narrowed rather than removed, and
-# silent when the first stack is stopped, because then no port is held either.
-# `create-ragen-app` writes COMPOSE_PROJECT_NAME into the install's `.env` to
-# settle it; set it by hand for a checkout made any other way.
+# **Two directories with the same basename would not**, left at the default:
+# they produce the same project name, and so the same containers and volumes —
+# silently, when the first stack is stopped and no port is held either.
+# `create-ragen-app` settles that by writing COMPOSE_PROJECT_NAME into the
+# install's `.env`, which Compose reads from this directory on every command,
+# so an install made by the wizard is not exposed to it. A checkout made some
+# other way is: add that line if this directory's name is already in use.
 #
 # They used to be pinned (`container_name: ragen-postgres`, `name:` on each
 # volume, a fixed network name) so that `docker logs ragen-postgres` and the

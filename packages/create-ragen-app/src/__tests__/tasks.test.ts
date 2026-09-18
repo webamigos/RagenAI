@@ -347,15 +347,52 @@ describe('resolveComposeProjectName', () => {
     });
   });
 
-  it('falls back to the plain name when docker cannot be asked', async () => {
-    // An unreachable daemon, or a Compose too old for `ls --format json`. The
-    // plain name is what Compose would have used anyway, so this degrades to
-    // the old behaviour rather than to something worse.
+  it('suffixes rather than guessing when docker cannot be asked', async () => {
+    // The plain basename looked like the safe fallback and is not: a daemon
+    // that cannot be reached still holds the volumes of every install made
+    // before it stopped, and they collide the moment it starts. So this fails
+    // in the visible direction — a less pretty name — rather than the silent
+    // one, a second install opening the first one's database.
     mockedExeca.mockRejectedValueOnce(new Error('daemon not running'));
 
-    expect(await resolveComposeProjectName('/work/a/ragen')).toEqual({
-      name: 'ragen',
-      disambiguated: false,
-    });
+    const resolved = await resolveComposeProjectName('/work/a/ragen');
+
+    expect(resolved.name).toMatch(/^ragen-[0-9a-f]{6}$/);
+    expect(resolved.daemonUnreachable).toBe(true);
+    // No `takenBy`: nothing was seen to collide with. The caller says a
+    // different sentence for this case.
+    expect(resolved.takenBy).toBeUndefined();
   });
+
+  it('agrees with itself about a path, daemon or no daemon', async () => {
+    // The suffix for a directory has to be the same one the collision path
+    // produces, or the two branches would name the same install differently.
+    composeLsReturns([
+      { Name: 'ragen', ConfigFiles: '/elsewhere/ragen/docker-compose.yml' },
+    ]);
+    const seen = await resolveComposeProjectName('/work/a/ragen');
+    mockedExeca.mockRejectedValueOnce(new Error('daemon not running'));
+    const unseen = await resolveComposeProjectName('/work/a/ragen');
+
+    expect(unseen.name).toBe(seen.name);
+  });
+
+  it.each([
+    // The case a `startsWith(dir + '/')` prefix test got wrong: a sibling
+    // whose name merely begins with ours is someone else's project.
+    ['/work/ragen-app-2/docker-compose.yml', true],
+    // And the case it got wrong in the other, destructive direction: a compose
+    // file nested inside this install is still this install, and renaming its
+    // project would abandon the volumes holding its database.
+    ['/work/ragen-app/infra/compose.yml', false],
+  ])(
+    'treats a project whose config is at %s as a collision: %s',
+    async (configFile, expectedCollision) => {
+      composeLsReturns([{ Name: 'ragen-app', ConfigFiles: configFile }]);
+
+      const resolved = await resolveComposeProjectName('/work/ragen-app');
+
+      expect(resolved.disambiguated).toBe(expectedCollision);
+    },
+  );
 });
