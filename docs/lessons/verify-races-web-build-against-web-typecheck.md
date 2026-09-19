@@ -70,8 +70,14 @@ failing on `@ragenai/admin#typecheck` for a route the branch never had.
 `npm run typecheck` alone does not clear it: the stale file is still there, so
 it fails again — and a reader following "if it passes it was the race" then
 concludes the opposite of the truth, that the change under test is at fault.
-`rm -rf apps/<app>/.next` clears it in one command, and the same typecheck then
-passes on an unchanged tree.
+Clearing it is one command — both Next apps, so there is nothing to
+substitute and nothing to get wrong:
+
+```bash
+rm -rf apps/web/.next apps/admin/.next
+```
+
+The same typecheck then passes on an unchanged tree.
 
 Two ways to tell them apart without guessing:
 
@@ -87,8 +93,8 @@ Two ways to tell them apart without guessing:
 under `.next/types` is an artifact problem, not the change under test — but
 *which* artifact problem decides how you confirm it. Re-run
 `npm run typecheck` on its own: passing means the cold-cache race, failing
-again means a `.next` from another branch, which `rm -rf apps/<app>/.next`
-clears. Do not "fix" either by editing the reported file; it is generated.
+again means a `.next` from another branch, which
+`rm -rf apps/web/.next apps/admin/.next` clears. Do not "fix" either by editing the reported file; it is generated.
 The durable fix is an explicit `build` edge for web's typecheck
 (`dependsOn: ["^build", "build"]`), which also reflects reality — typechecking
 Next's generated validator before the build that generates it is meaningless.
