@@ -84,6 +84,7 @@ Before starting a nontrivial task, match it against this table and read the link
 | Anything touching `apps/api`, the NestJS port, or what's been cut over vs. stays local | [ADR-21](docs/adrs/21-monorepo-and-api-decoupling.md) (read the latest updates first), `apps/api/AGENTS.md` |
 | Document ingest, background jobs, anything in `apps/worker` | [ADR-44](docs/adrs/44-bullmq-is-the-worker-runtime.md) — BullMQ runs jobs, Temporal is an adapter — [ADR-26](docs/adrs/26-absorb-ragen-worker-into-monorepo.md), [ADR-40](docs/adrs/40-worker-uses-prisma-not-knex.md), `apps/worker/AGENTS.md` |
 | Writing or reviewing a spec before building | [`docs/specs/README.md`](docs/specs/README.md), [`docs/specs/TEMPLATE.md`](docs/specs/TEMPLATE.md) |
+| A feature too big for one PR, several people on it, or which commits cut a release | [ADR-50](docs/adrs/50-a-large-feature-ships-as-many-small-prs.md) — small PRs onto `main` behind a feature key defaulting to `false`, never a release branch; a slice behind a disabled key is a `chore` and releases nothing |
 | **Testing & ops** | |
 | Document ingest file types, PDF/DOCX/XLSX handling | [`docs/document-processing.md`](docs/document-processing.md) |
 | Settings pages, per-permission nav | [`docs/settings-pages.md`](docs/settings-pages.md) |
@@ -155,27 +156,20 @@ DEFAULT_MODEL_PROVIDER=litellm   # the pricing namespace, not a gateway
 DEFAULT_MODEL=gpt-4o-mini        # plus OPENAI_API_KEY and a route for it
 ```
 
-App dev ports: **web 3000**, **api 3001**, **vault 3100**, **admin 3200**, **mcp 3300**, **docs 3400**. **No bare `PORT` in the root `.env.local`** — three services read it, so one value moves all three. Use `RAGEN_API_PORT` / `RAGEN_MCP_PORT`.
+**No bare `PORT` in the root `.env.local`** — three services read it, so one
+value moves all three. Use `RAGEN_API_PORT` / `RAGEN_MCP_PORT`.
 
-Service ports on the host: **Postgres 55432**, **Redis 56379**, Qdrant 6333,
-Docling 5001. Inside the compose network each service still listens on its
-standard port — only the published mapping moved, and every one is overridable
-(`POSTGRES_PORT`, `REDIS_PORT`, …). Temporal is not in the compose file
-(ADR-44); the queue dashboard is the worker's own (`WORKER_ADMIN_PORT`, 8090).
+**Postgres 55432 and Redis 56379 are on non-standard ports on purpose.** A bare
+`prisma migrate` loads no `.env.local` — `prisma.config.ts` reads
+`process.env.DATABASE_URL` and nothing else — so it uses whatever that variable
+holds in the shell, or fails on an empty one. A stale value naming 5432 reaches
+a native Postgres rather than the container and migrates *that*, reporting
+success — twice now. Check which server answered before believing a schema
+problem. See [`docs/lessons.md`](docs/lessons.md).
 
-**Postgres and Redis are on non-standard ports on purpose.** A native Postgres
-on 5432 answers instead of the container and `prisma migrate` then talks to the
-wrong database *while reporting success* — twice now. Check which server answers
-before believing a schema problem. See [`docs/lessons.md`](docs/lessons.md).
-
-**Container names are Compose's** — `ragen-app-postgres-1`, not
-`ragen-postgres`; use `docker compose ps` / `logs <service>` from the repo root.
-The project name is the directory *basename*, so two checkouts called `ragen`
-share volumes — set `COMPOSE_PROJECT_NAME` in `.env`.
-
-Optional local observability: `docker compose --profile observability up -d`,
-then point the app at it with `OTEL_EXPORTER_OTLP_ENDPOINT` — see
-[ADR-22](docs/adrs/22-observability-opentelemetry.md).
+Every port, Compose's container names, why two checkouts named `ragen` share
+volumes, and the observability profile:
+[`docs/companion-services.md`](docs/companion-services.md).
 
 ## Architecture
 
@@ -361,14 +355,7 @@ the previous chunks first.
 - **Rephrase / multi-query expansion**: `gemini-2.5-flash` — do not upgrade without explicit approval
 - **Summary** (worker, ADR-16): `gemini-2.5-flash` — faster than `gpt-5.4-nano` for short outputs, strong Polish. Set via `SUMMARY_MODEL` in `apps/worker/src/consts.ts`.
 - Always verify against `infra/llm-gateway/routes.yaml`, and that the credentials exist: `npm run gateway:preflight -- --probe` makes one real call per configured model.
-
-## Per-Org Model Management
-
-- `OrganizationSettings.allowedModels` (`String[]`, default `[]`) — empty = no restriction (back-compat)
-- Filtered in `getAvailableModelsForOrganization()` (`src/app/lib/actions/checkAvailableProviders.ts`)
-- Defaults in `Settings` table key `default_allowed_models`, applied to new orgs via `applyDefaultLimitsToOrg()`
-- Admin UI: `apps/admin/src/app/(dashboard)/models/`
-- Key functions in `src/features/organizations/services/organization-settings.ts`: `getAllowedModels()`, `saveAllowedModels()`, `getDefaultAllowedModels()`, `saveDefaultAllowedModels()`
+- **Per-org restriction**: `OrganizationSettings.allowedModels`, empty = no restriction. The filter, the platform defaults and the admin UI: [`docs/ai-models.md`](docs/ai-models.md).
 
 ## Testing Requirements
 

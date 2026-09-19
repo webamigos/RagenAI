@@ -105,6 +105,30 @@ chat models are served by somebody else entirely.
 Code: `src/app/lib/services/llm.ts` → `createModerationInstance()`, called from
 `src/libs/chains/basic-rag/chain.ts`.
 
+## Restricting which models an organization may use
+
+The route table says which models *exist*. When `allowedModels` is non-empty an
+organization is offered the intersection of the two — a model has to be in the
+route table *and* in the allowlist. An empty allowlist restricts nothing, and
+the route table alone decides.
+
+`OrganizationSettings.allowedModels` (`String[]`) holds the restriction. It
+defaults to `[]`, and **empty means no restriction** rather than "nothing
+allowed" — the back-compatible reading, since every organization predates the
+column.
+
+- The filter is `getAvailableModelsForOrganization()` in
+  `apps/web/src/app/lib/actions/checkAvailableProviders.ts`.
+- Platform-wide defaults live in the `Settings` table under
+  `default_allowed_models`, and are copied onto a new organization by
+  `applyDefaultLimitsToOrg()`.
+- Reads and writes go through
+  `apps/web/src/features/organizations/services/organization-settings.ts`:
+  `getAllowedModels()`, `saveAllowedModels()`, `getDefaultAllowedModels()`,
+  `saveDefaultAllowedModels()`.
+- The admin UI is `apps/admin/src/app/(dashboard)/models/` — platform-wide
+  scope, so it belongs in `apps/admin` rather than `apps/web` (ADR-35).
+
 ## Environment summary
 
 ```env

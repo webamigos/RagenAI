@@ -201,6 +201,23 @@ forwards to `GET /v1/assistants` — both using the caller's own Ragen API key.
 
 **Requires**: apps/api (port 3001) running and reachable.
 
+### Compose project names, container names and optional observability
+
+**Container names are Compose's, not ours** — `ragen-app-postgres-1`, not
+`ragen-postgres`. Use `docker compose ps` and `docker compose logs <service>`
+from the repository root rather than guessing a name.
+
+The Compose project name defaults to the *basename* of the directory the file
+sits in, so two checkouts both called `ragen` share the same volumes — one
+`docker compose down -v` in the wrong window then wipes the other one's
+database. Set `COMPOSE_PROJECT_NAME` in `.env` per checkout.
+
+**Optional local observability**: `docker compose --profile observability up -d`
+starts the collector, and the app only exports to it once
+`OTEL_EXPORTER_OTLP_ENDPOINT` is set — without that variable `apps/web`'s
+instrumentation is a no-op. See
+[ADR-22](adrs/22-observability-opentelemetry.md).
+
 ### Running Everything Locally
 
 ```bash
@@ -247,3 +264,18 @@ cd apps/mcp && npm run dev                # :3300
 | Ragen Admin                   | 3200      | Platform administration                         |
 | Ragen API                     | 3001      | Public API (chat endpoint, API key auth)        |
 | Ragen MCP Server (`apps/mcp`) | 3300      | Exposing chat to external MCP clients           |
+| Ragen Docs (`apps/docs`)      | 3400      | The documentation site                          |
+| Postgres                      | **55432** | Always (published port; 5432 inside the network) |
+| Redis                         | **56379** | Always (published port; 6379 inside the network) |
+| Qdrant                        | 6333      | Always                                          |
+
+Every published port is overridable — `POSTGRES_PORT`, `REDIS_PORT` and so on —
+and only the *published* mapping moved: inside the Compose network each service
+still answers on its standard port. Temporal is not in the Compose file at all
+(ADR-44), and the queue dashboard is the worker's own (`WORKER_ADMIN_PORT`,
+8090).
+
+App dev ports are web 3000, api 3001, vault 3100, admin 3200, mcp 3300 and docs
+3400. Three of those services read a bare `PORT`, so setting one in the root
+`.env.local` moves all three at once; use `RAGEN_API_PORT` and `RAGEN_MCP_PORT`
+instead.
