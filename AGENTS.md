@@ -159,11 +159,13 @@ DEFAULT_MODEL=gpt-4o-mini        # plus OPENAI_API_KEY and a route for it
 **No bare `PORT` in the root `.env.local`** — three services read it, so one
 value moves all three. Use `RAGEN_API_PORT` / `RAGEN_MCP_PORT`.
 
-**Postgres 55432 and Redis 56379 are on non-standard ports on purpose.** A
-native Postgres on 5432 answers instead of the container and `prisma migrate`
-then talks to the wrong database *while reporting success* — twice now. Check
-which server answers before believing a schema problem. See
-[`docs/lessons.md`](docs/lessons.md).
+**Postgres 55432 and Redis 56379 are on non-standard ports on purpose.** A bare
+`prisma migrate` loads no `.env.local` — `prisma.config.ts` reads
+`process.env.DATABASE_URL` and nothing else — so it uses whatever that variable
+holds in the shell, or fails on an empty one. A stale value naming 5432 reaches
+a native Postgres rather than the container and migrates *that*, reporting
+success — twice now. Check which server answered before believing a schema
+problem. See [`docs/lessons.md`](docs/lessons.md).
 
 Every port, Compose's container names, why two checkouts named `ragen` share
 volumes, and the observability profile:

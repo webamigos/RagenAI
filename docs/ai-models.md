@@ -107,9 +107,10 @@ Code: `src/app/lib/services/llm.ts` → `createModerationInstance()`, called fro
 
 ## Restricting which models an organization may use
 
-The route table says which models *exist*; this says which of them a given
-organization is offered. The two are independent, and a model missing from
-either one is not served.
+The route table says which models *exist*. When `allowedModels` is non-empty an
+organization is offered the intersection of the two — a model has to be in the
+route table *and* in the allowlist. An empty allowlist restricts nothing, and
+the route table alone decides.
 
 `OrganizationSettings.allowedModels` (`String[]`) holds the restriction. It
 defaults to `[]`, and **empty means no restriction** rather than "nothing
