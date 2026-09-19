@@ -1090,7 +1090,7 @@ its devDependencies installed.
   non-default token (GitHub starts no workflow for events made with
   `GITHUB_TOKEN`, so the images would silently stop being built), and no app
   with `ARG NEXT_PUBLIC_*` may enter the matrix.
-- [ ] **G2.** Move `packages/jobs-temporal` to `webamigos/ragen-enterprise`
+- [x] **G2.** Move `packages/jobs-temporal` to `webamigos/ragen-enterprise`
       with its Dockerfile (`FROM` that image), the nightly parity job, the
       `temporalio` dependabot group, and the two schedule scripts' Temporal
       paths. The adapter takes `@ragenai/jobs` as a peer dependency resolved
@@ -1109,15 +1109,108 @@ its devDependencies installed.
   - **The producers need no layer.** `web` and `api` only enqueue, through
     `@temporalio/client`, which the workspace link keeps in every image (the
     13 MB E6 measured). It is the worker alone that cannot serve the runtime.
+
+    **That sentence is true today and stops being true at G3**, which is the
+    finding G2 turned up. Both producers reach the adapter through a *static*
+    import — `apps/web/src/libs/jobs/index.ts` and
+    `apps/api/src/jobs/jobs.service.ts` both do
+    `import { TemporalJobRuntime } from '@ragenai/jobs-temporal'`, eagerly,
+    because `registerJobRuntime` replaced §1's dynamic specifier for the two
+    apps a bundler traces. Dropping the workspace takes those lines with it, so
+    G3 has to decide what a Temporal deployment's `web` and `api` do. See G3.
   - **G3 cannot land until the parity job is green *there*.** Until then the
     two copies are one half-finished move, not a supported fork, and the core's
     is the one an install uses.
+
+  **Landed** in `ragen-enterprise` as `packages/jobs-temporal`: the adapter
+  file unchanged apart from its header, 27 tests beside it, a Dockerfile that
+  is `FROM ghcr.io/webamigos/ragen-worker:2.0.0`, and
+  `.github/workflows/temporal-parity.yml` — which checks out this repository,
+  builds the adapter against *this* checkout's `@ragenai/jobs`, splices the
+  build into the core's `node_modules` and runs `npm run worker:test:jobs` with
+  `WORKER_RUNTIME=temporal`. Proven rather than reasoned about: the layered
+  image boots on a real Temporal and registers pollers on `ragen-tasks`,
+  `ensure-analytics-retention-schedule.js` run from it creates the schedule,
+  and the spliced suite passes 21 and skips BullMQ's own 3 — and fails when the
+  spliced build is corrupted, so it is the code under test.
+
+  Three things in the item above turned out differently:
+
+  - **The dependabot group does not move, it is copied** — and it already was.
+    `ragen-enterprise` has had a `temporal` group since it was scaffolded, and
+    this repository keeps its own, because the bootstrap that stays here pins
+    the same family.
+  - **The schedule scripts have no Temporal path to move.** Both go through
+    `jobs()` since C5. What is Temporal-specific is operational, and it is
+    documented where it applies: on Temporal they need the adapter, so they run
+    from the enterprise image.
+  - **The worker-side bootstrap stays here.** It was the open question, and the
+    answer is below.
+
+  **Decision — the bootstrap stays in the core.** `temporal-runtime.ts` imports
+  the worker's 69 activity modules and `src/workflows/` imports its eight
+  handlers, so moving either would mean compiling the pipeline in
+  `ragen-enterprise` — invariants 1 and 2 of that repository's `AGENTS.md`,
+  both of them, and the `apps/worker-lite` shape this spec already rejected.
+  The published image settles it from the other side too: it carries the whole
+  bootstrap compiled, `dist/workflows/index.js` included, so the layer only
+  ever had to add `node_modules`, and injecting a bootstrap would have meant
+  writing into the base image's own `dist` — `worker.ts` resolves
+  `./temporal-runtime.js` relative to itself. What this costs is stated rather
+  than hidden: `@temporalio/*` imports stay in this repository, so G3's guard
+  tightens only as far as
+  `the-temporal-sdk-stays-on-the-temporal-path.test.ts` already does, and
+  `apps/worker` keeps the SDK in its devDependencies.
+
 - [ ] **G3.** Drop `@ragenai/jobs-temporal` from this repository's workspaces
       and from the architecture guard's allow-list, so a re-introduced
       `@temporalio/*` import fails here. The seam's dynamic specifier and its
       ambient declaration are what keep `tsc --build` working with the package
       gone (§1) — so this step ends with a build of a default install that has
       no adapter installed, which is the only thing that proves it.
+
+  **Blocked, on a decision rather than on the parity job.** Two things this
+  item assumed are not true of the code as built, and both were found by doing
+  G2:
+
+  - **The producers import the adapter statically.** §1 designed
+    `getJobRuntime()` to reach the adapter through a specifier the compiler
+    does not follow, with an ambient declaration as the type side. That is not
+    what shipped: `registerJobRuntime()` replaced it, because a Next or Nest
+    build does not trace a computed specifier, and each app registers its
+    adapters eagerly at its own entry point. `apps/worker` is the exception —
+    it alone uses `await import('@ragenai/jobs-temporal')`, guarded by
+    `resolveWorkerRuntime()`, which is what lets its image omit the package.
+    `apps/web` and `apps/api` do not. So dropping the workspace is not a
+    deletion, it is a change to how two applications load a runtime.
+  - **There is no ambient declaration to rely on.** `packages/jobs` declares
+    none; nothing in the tree does. Whatever G3 does for the producers has to
+    supply the type side as well as the runtime side.
+
+  So G3 needs an answer to *what does a Temporal deployment's `web` and `api`
+  run*, and the three on the table are: layer those two images the way the
+  worker is layered (which for `apps/web` means adding a package to a Next
+  standalone output, and for both means a dynamic, absence-tolerant
+  registration); require a Temporal install to build `web` and `api` from
+  source with the adapter added, leaving the published images BullMQ-only; or
+  keep the producer adapter here and move only what the worker needs, which is
+  effectively not doing G3. The first widens the enterprise layer from one
+  image to three, which `ragen-enterprise`'s invariant 5 says needs the
+  argument re-made in an ADR here.
+
+  Also, and separately, `every-job-runtime-is-exercised.test.ts` asserts that
+  `jobs-parity.yml`'s matrix equals the `WorkerRuntime` union. When the
+  Temporal leg moves out, that guard has to be rewritten rather than deleted —
+  the same problem as `the-temporal-family-moves-together.test.ts` below, and
+  the same answer: the assertion that a runtime is exercised *somewhere* is the
+  one worth keeping.
+
+  **`@temporalio/*` stay in `apps/worker`'s devDependencies**, because the
+  bootstrap stays (see G2). Only `@ragenai/jobs-temporal` leaves that manifest.
+  `the-temporal-family-moves-together.test.ts` currently requires both
+  `apps/worker` and `packages/jobs-temporal` to declare something, and the
+  second half of that has to be rewritten to name `apps/worker` alone.
+
 - [ ] **G4.** Check that
       [`docs/open-core-boundary.md`](../open-core-boundary.md) still describes
       what that repository holds; it already records that `ragen-enterprise` is

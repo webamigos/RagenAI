@@ -15,6 +15,17 @@ name: Jobs Parity
 # workflow file. When the adapter moves, this job moves with it and has to
 # resolve two repositories at a pinned pair of versions. Read that as an
 # argument for keeping it green rather than for postponing it.
+#
+# **G2 has moved it, and this copy has not gone yet.**
+# `webamigos/ragen-enterprise`'s `temporal-parity.yml` now runs the same suite
+# against the adapter that repository ships: it checks this repository out at
+# `main`, builds the adapter against *this* checkout's `@ragenai/jobs` and
+# splices the build into `node_modules` before running
+# `npm run worker:test:jobs`. Both jobs exist on purpose while both copies of
+# the adapter do — the one an install uses is still this one, and the two stop
+# being redundant at G3. Whatever G3 does to this file,
+# `every-job-runtime-is-exercised.test.ts` reads its matrix, so the guard has to
+# move with it rather than be deleted.
 on:
   schedule:
     # 04:00 UTC — after the nightly E2E (02:00) and mutation (03:00) runs, so

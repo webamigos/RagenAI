@@ -3,9 +3,14 @@
 **Status:** Accepted. Supersedes [ADR-07](07-temporal-document-processing.md).
 Implemented through
 [the worker-runtime spec](../specs/2026-09-15-bullmq-is-the-worker-runtime.md) —
-Phases A–E done, so BullMQ is the shipped runtime. Phase G has begun: its gate,
-a published `ragen-worker` image, is met (G1), and moving the adapter to
-`ragen-enterprise` (G2–G4) is open work.
+Phases A–E done, so BullMQ is the shipped runtime. Phase G is most of the way:
+its gate, a published `ragen-worker` image, is met (G1); the adapter, its
+Dockerfile and its parity job are in `ragen-enterprise` (G2); this document and
+the open-core boundary describe what that repository holds (G4). **G3 — this
+repository dropping its own copy — is open**, and blocked on a decision rather
+than on time: `apps/web` and `apps/api` import the adapter statically, so
+dropping the workspace changes how two applications load a runtime. The spec's
+G3 has the three options.
 **Date:** 2026-09-16
 
 ## Context
@@ -141,8 +146,13 @@ facts it reports, and saying which is which is the point of writing them down:
    is `apps/worker`'s own Temporal bootstrap (`temporal-runtime.ts`,
    `temporal-failure.ts`, `src/workflows/`), which
    `the-temporal-sdk-stays-on-the-temporal-path.test.ts` confines to those
-   three paths. The guard tightens the rest of the way at G3, when the adapter
-   leaves.
+   three paths. **Those three paths are now the end state, not a waypoint.**
+   G2 decided that the worker-side bootstrap stays here: `temporal-runtime.ts`
+   imports the 69 activity modules and `src/workflows/` imports the eight
+   handlers, so moving them would mean compiling the pipeline in
+   `ragen-enterprise` — which is the `apps/worker-lite` shape that repository
+   exists to avoid. G3 removes `@ragenai/jobs-temporal` and nothing else, so
+   this guard tightens by one package rather than to zero.
 2. **The contract is an import, not a copy.** True now: `@ragenai/jobs` is a
    workspace dependency, and it becomes a peer dependency resolved from inside
    the image after Phase G.
@@ -155,8 +165,15 @@ facts it reports, and saying which is which is the point of writing them down:
    starts a real Temporal server from `@temporalio/testing` rather than a
    container, and records the five places the engines legitimately disagree
    instead of asserting them away. That job failing is how we learn that a
-   change to `ctx.steps` broke durable retries — and at G2 it moves to
-   `ragen-enterprise`, which is where this promise starts costing something.
+   change to `ctx.steps` broke durable retries.
+
+   **G2 moved it**, and it now costs what the spec said it would. In
+   `ragen-enterprise` the same job checks out this repository at `main`, builds
+   the adapter against *this* checkout's `@ragenai/jobs`, splices the build
+   into the core's `node_modules` and runs `npm run worker:test:jobs` — so the
+   question it answers is whether the next release can still run Temporal, not
+   whether the last one could. Until G3 lands, this repository's
+   `jobs-parity.yml` runs too, over both runtimes.
 
 ### The drift budget
 
