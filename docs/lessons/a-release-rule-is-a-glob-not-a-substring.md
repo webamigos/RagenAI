@@ -56,12 +56,17 @@ regardless — as the guarantee that a break is never silenced, not as an orderi
 trick — but the stated reason was wrong, which is its own kind of trap for
 whoever edits the file next.
 
-**Rule**: **every string in a semantic-release `releaseRules` entry is a glob.**
-Escape the brackets — `"*\\[no release\\]*"` — and treat any punctuation in a
-rule value as glob syntax until proven otherwise. More generally: when a config
-value's failure mode is *silence*, "the JSON parses" is not verification. Run
-the tool's own matching code against real inputs, from both sides — a case that
-must match and a case that must not.
+**Rule**: **every string *matcher* in a semantic-release `releaseRules` entry is
+a glob** — `subject`, `type`, `scope` and their neighbours. `release` is not one
+of them, and neither are `breaking` and `revert`: `analyze-commit.js`
+destructures all three out (`({ breaking, revert, release, ...rule })`) before
+matching, so `release: "major"` is an action rather than a pattern. Escape the
+brackets — `"*\\[no release\\]*"` — and treat punctuation in a matcher as glob
+syntax until proven otherwise.
+
+More generally: when a config value's failure mode is *silence*, "the JSON
+parses" is not verification. Run the tool's own matching code against real
+inputs, from both sides — a case that must match and a case that must not.
 
 `tests/architecture/a-release-rule-matches-only-what-it-names.test.ts` fails on
 an unescaped bracket in any rule value, and asserts the breaking rule exists. It
