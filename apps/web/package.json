@@ -32,7 +32,8 @@
     "eval:view": "promptfoo view",
     "emails:dev": "email dev -d src/app/emails -p 3001",
     "test:watch": "vitest",
-    "typecheck": "tsc --noEmit --incremental --tsBuildInfoFile ./typecheck.tsbuildinfo"
+    "typecheck": "tsc --noEmit --incremental --tsBuildInfoFile ./typecheck.tsbuildinfo",
+    "seed:demo": "tsx --conditions=react-server --env-file-if-exists=../../.env.local --env-file-if-exists=.env.local src/scripts/seed-demo-organization.ts"
   },
   "dependencies": {
     "@ai-sdk/mcp": "^2.0.49",

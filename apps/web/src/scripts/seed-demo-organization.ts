@@ -2,11 +2,17 @@
 /**
  * Turn an ordinary organization into the demo showcase tenant.
  *
- * Run with, from `apps/web`:
- *   TARGET_ENV=demo DEMO_ORGANIZATION_SLUG=<slug> \
- *     npx tsx --env-file=../../.env.local src/scripts/seed-demo-organization.ts
+ * Run with:
+ *   TARGET_ENV=demo DEMO_ORGANIZATION_SLUG=<slug> npm run web:seed:demo
  *
- * Add `--corpus-only` to re-ingest the corpus into a tenant that is already
+ * Through the npm script rather than `npx tsx`, because this script's import
+ * chain reaches `feature-guards.ts` and its `import 'server-only'` — a package
+ * whose default entry point throws by design, and which only a bundler
+ * resolves to the empty module. The script passes `--conditions=react-server`,
+ * which makes plain Node pick the same entry. Without it the run dies before
+ * `main()`.
+ *
+ * Add `-- --corpus-only` to re-ingest the corpus into a tenant that is already
  * restricted — which needs `manageDocuments` lifted for the length of the run,
  * for the reason under "Order matters" below.
  *

@@ -64,10 +64,14 @@ just run the seed. It ingests the corpus first and applies the restrictions
 last, in that order for exactly this reason:
 
 ```bash
-cd apps/web
-TARGET_ENV=demo DEMO_ORGANIZATION_SLUG=<slug> \
-  npx tsx --env-file=../../.env.local src/scripts/seed-demo-organization.ts
+TARGET_ENV=demo DEMO_ORGANIZATION_SLUG=<slug> npm run web:seed:demo
 ```
+
+Run it through the npm script, not `npx tsx` directly. The script's import chain
+reaches `feature-guards.ts`, which is marked `server-only` — a package whose
+default entry point throws on purpose, and which only Next's bundler resolves
+to the empty module. `--conditions=react-server`, which the npm script passes,
+is what makes plain Node resolve it the same way.
 
 It is idempotent — a document already present by file name is skipped — so
 re-running it after adding a file here uploads only the new one.
@@ -76,8 +80,8 @@ re-running it after adding a file here uploads only the new one.
 length of the run, whichever route you take:
 
 1. Admin panel → the organization → **Features** → `manageDocuments` → on.
-2. Upload: `--corpus-only` re-runs the ingest half of the seed alone, or use
-   the documents page by drag and drop.
+2. Upload: `npm run web:seed:demo -- --corpus-only` re-runs the ingest half of
+   the seed alone, or use the documents page by drag and drop.
 3. Put the flag back. The worker's nightly `cleanupDemoThreads` re-applies the
    overrides at 03:00 Europe/Warsaw anyway, so one left on is corrected within
    a night — but that is a backstop, not the procedure.
