@@ -57,8 +57,17 @@ read that table before assuming a parity failure is a regression, and add to it
 only when you have established that an engine, not the adapter, is what
 disagrees. Three tests are BullMQ's alone and skip on the Temporal leg.
 
-Both of those suites live in `test/`, which `tsconfig.json` cannot cover — its
-`rootDir` is `src`, because that is what `tsc --build` emits. `tsconfig.test.json`
+**Three TypeScript configs, and which is which matters.** `tsconfig.json` is
+the project as an editor and `typecheck` see it: `src/**`, tests included,
+because a suite nothing compiles is where type drift hides.
+`tsconfig.build.json` is what `npm run build` emits into `dist/` — the same
+inputs minus the tests, because `dist/` is what the image ships and it used to
+ship 252 compiled test files, three of which imported devDependencies the
+image does not install. `tsconfig.test.json` type-checks the suites that live
+outside `src/`. Narrow the build in the second; never in the first.
+
+Both of the container-backed suites live in `test/`, which `tsconfig.json`
+cannot cover — its `rootDir` is `src`, because that is what the build emits. `tsconfig.test.json`
 type-checks them, and `npm run typecheck` runs both configs. Without it a suite
 outside `src/` compiles nowhere, which is how the Presidio file had carried two
 type errors since it was written.

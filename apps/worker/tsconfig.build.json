@@ -1,0 +1,35 @@
+{
+  // What `tsc --build` emits into `dist/`, which is what the image ships.
+  //
+  // **`tsconfig.json` is not this file, and that is the point.** Its `include`
+  // is `src/**/*.ts`, which is right for an editor and for `typecheck` — the
+  // suites under `src/**/__tests__/` have to be type-checked, and CI's typecheck
+  // job exists because "the app builds skip test files entirely, which is where
+  // the type drift was". It is wrong for the build: the same glob put 63
+  // compiled test files, 762 KB, into every published worker image, and three of
+  // them name `@temporalio/testing` and `@temporalio/nyc-test-coverage` —
+  // devDependencies `npm ci --omit=dev` deliberately leaves out, so they are
+  // modules that could never load in the artifact that carries them.
+  //
+  // Found while building `ragen-enterprise`'s layered worker image: its
+  // `verify-layer.mjs` reads the base image's compiled output to decide which
+  // `@temporalio/*` packages must resolve, and had to special-case `__tests__`
+  // to avoid demanding a test framework in production.
+  //
+  // The shape is `apps/mcp`'s, which had it right, and `apps/api`'s
+  // `tsconfig.build.json`, which excludes `**/*spec.ts` for the same reason.
+  // `apps/worker` was the one app building straight from `tsconfig.json`.
+  //
+  // `rootDir` stays `./src` in the base config, so narrowing the inputs here
+  // cannot move it — the failure `apps/api`'s own comment describes, where a
+  // stray root-level file makes tsc emit `dist/src/main.js` and `start` looks
+  // for `dist/main.js`.
+  "extends": "./tsconfig.json",
+  "exclude": [
+    "node_modules",
+    "dist",
+    "src/**/__tests__/**",
+    "src/**/*.spec.ts",
+    "src/**/*.test.ts"
+  ]
+}
