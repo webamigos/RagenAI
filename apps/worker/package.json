@@ -12,7 +12,7 @@
     "predev": "npm run clear",
     "dev": "nodemon --exec 'tsx --env-file-if-exists=../../.env.local --env-file-if-exists=.env.local ./src/worker.ts' --watch src --ext ts",
     "prebuild": "npm run clear",
-    "build": "tsc --build",
+    "build": "tsc --build tsconfig.build.json",
     "test:watch": "vitest",
     "prestart": "npm run build",
     "start": "node --import @opentelemetry/instrumentation/hook.mjs --import ./dist/instrument.js --env-file-if-exists=../../.env.local --env-file-if-exists=.env.local dist/worker.js",

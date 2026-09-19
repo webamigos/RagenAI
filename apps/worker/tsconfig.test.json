@@ -1,8 +1,13 @@
 {
   // The suites that live outside `src/` — the Presidio integration tests and
   // the job-runtime integration suite. `tsconfig.json` cannot cover them: its
-  // `rootDir` is `src`, because that is what `tsc --build` emits into `dist`,
-  // and a file above the root is an error there rather than a test.
+  // `rootDir` is `src`, because that is what the build emits into `dist`, and a
+  // file above the root is an error there rather than a test.
+  //
+  // It extends `tsconfig.json` and **not** `tsconfig.build.json`, which is the
+  // distinction to keep: the build config exists to drop test sources from
+  // `dist`, and inheriting it here would drop them from the only thing that
+  // type-checks them too.
   //
   // They still have to be type-checked. CI's typecheck job exists because "the
   // app builds skip test files entirely, which is where the type drift was" —
