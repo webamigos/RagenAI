@@ -5,6 +5,7 @@ import {
   GUARDRAIL_SEVERITIES,
   SUPPORTED_COMBINATIONS,
   type GuardrailAction,
+  type GuardrailCombination,
   type GuardrailKind,
   type GuardrailSeverity,
   type GuardrailStage,
@@ -27,8 +28,19 @@ import {
  * on it — the banner starts lying the moment one combination works, and these
  * arrive one at a time.
  */
-function useOffered(existing?: { kind: GuardrailKind; stage: GuardrailStage }) {
-  return useMemo(() => {
+/**
+ * Which stages the form may offer for each kind.
+ *
+ * Exported and pure so it can be tested as itself. It was a closure inside the
+ * hook, and the duplicate stage it emitted was invisible to every test that
+ * only drove behaviour — React renders two identical `<option>`s without
+ * complaint, so nothing failed and nothing said anything.
+ */
+export function offeredStagesByKind(
+  supported: readonly GuardrailCombination[],
+  existing?: { kind: GuardrailKind; stage: GuardrailStage },
+): Map<GuardrailKind, GuardrailStage[]> {
+  {
     const stagesByKind = new Map<GuardrailKind, GuardrailStage[]>();
     // A rule being edited contributes its own kind and stage, whether or not
     // this build evaluates them. A built-in is seeded `BUILT_IN`/`INPUT`,
@@ -43,21 +55,34 @@ function useOffered(existing?: { kind: GuardrailKind; stage: GuardrailStage }) {
           : [existing.stage],
       );
     }
-    for (const combination of SUPPORTED_COMBINATIONS) {
+    for (const combination of supported) {
       const stages = stagesByKind.get(combination.kind) ?? [];
       stages.push(combination.stage);
       stagesByKind.set(combination.kind, stages);
     }
     // `BOTH` is offered only where both halves are, because it is shorthand
     // for two stages rather than a third one.
+    //
+    // Deduplicated, because the edited rule seeds its own stage and the
+    // supported set can name the same one: a `BOTH` pattern rule seeded
+    // `INPUT`, `OUTPUT`, `BOTH`, then took `INPUT` from the supported set and
+    // `BOTH` from the line above, and the select rendered each twice.
     for (const [kind, stages] of stagesByKind) {
-      if (stages.includes('INPUT') && stages.includes('OUTPUT')) {
-        stages.push('BOTH');
+      const unique = [...new Set(stages)];
+      if (unique.includes('INPUT') && unique.includes('OUTPUT')) {
+        unique.push('BOTH');
       }
-      stagesByKind.set(kind, stages);
+      stagesByKind.set(kind, [...new Set(unique)]);
     }
     return stagesByKind;
-  }, [existing]);
+  }
+}
+
+function useOffered(existing?: { kind: GuardrailKind; stage: GuardrailStage }) {
+  return useMemo(
+    () => offeredStagesByKind(SUPPORTED_COMBINATIONS, existing),
+    [existing],
+  );
 }
 
 export function GuardrailForm({
