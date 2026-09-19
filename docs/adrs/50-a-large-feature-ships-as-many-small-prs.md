@@ -3,7 +3,8 @@
 **Status:** Accepted. Mostly a record of how the repository already works —
 `main` is the only long-lived branch and the CI is already shaped for it — plus
 one thing that was not written down anywhere: what to do when a feature is too
-big for one pull request and several people are building it. No code changes.
+big for one pull request and several people are building it. The only change
+outside this file is the `[no release]` opt-out in `.releaserc`.
 **Date:** 2026-09-19
 
 ## Context
@@ -118,6 +119,57 @@ own.
   A key defaulting to `false` costs nothing and means every subsequent slice can
   merge whenever it is ready.
 
+## Which commits cut a release
+
+Slicing a feature into several pull requests has one visible cost: with
+`release.yml:4` running semantic-release on every push to `main`, ten merges
+used to mean ten version bumps for one feature. The version is at `1.256.x`
+largely because of that.
+
+The bumps are not the expensive part. `publish-images.yml:22` triggers on
+`release: types: [published]` and builds five container images — `worker`,
+`api`, `admin`, `mcp`, `web` — moving `latest` with each one (`:87`). So a merge
+of an internal slice, hidden behind a key that is `false`, republished every
+image for everybody self-hosting.
+
+**The commit type is what decides, and for a flag-gated slice the honest type is
+not `feat`.** semantic-release's default rules bump on `feat` (minor), `fix` and
+`perf` (patch), and a breaking change (major); `chore`, `refactor`, `test`,
+`docs`, `ci`, `build` and `style` release nothing. Mapped onto the four slices
+above:
+
+| Slice | Type | Release |
+|---|---|---|
+| 1. Migration — additive, nothing reads it | `chore(db):` | none |
+| 2. Domain layer — nothing calls it | `chore(web):` / `refactor(web):` | none |
+| 3. Surface behind a `false` key | `chore(web):` | none |
+| 4. Flip the key | `feat(web):` | one minor |
+
+One feature, one release. This is not a loophole in the convention, it is the
+convention read correctly: `feat` describes what a user receives, and code
+behind a disabled flag delivers nothing. The same goes for `fix` — a correction
+to code that never shipped is not a fix for anyone, it is `chore`.
+
+Pull requests are squash-merged here (every commit on `main` carries its
+`(#1234)`), so the pull request title *is* the commit subject. The title is the
+whole lever; nothing has to be policed in anyone's local history.
+
+For the cases where the type has to stay `feat` or `fix` and a release still is
+not wanted — a CI fix worth landing but not worth five images — `.releaserc`
+carries an explicit opt-out:
+
+```json
+{ "subject": "*[no release]*", "release": false }
+```
+
+`fix(ci): give the image build a driver that can cache [no release]` bumps
+nothing. The commit still appears in the next release's notes, so nothing is
+lost from the record, and when every commit since the last tag is marked,
+semantic-release does nothing at all rather than cutting an empty release.
+
+A marker in the subject rather than a scope like `feat(no-release):`, because
+scopes are spoken for: one per workspace, since `#1253`.
+
 ## When an integration branch is nonetheless right
 
 There are cases — a feature reviewed as a whole by someone outside the team, a
@@ -142,8 +194,9 @@ pull request is the point. Then:
 ## Consequences
 
 - Reviews stay small, which is the only reliable way to keep them real.
-- Releases stay small and individually revertable, which is what
-  `release.yml` assumes.
+- A feature cuts one release rather than ten, and moves `latest` on the
+  published images once rather than ten times — without holding anything back
+  from `main` to achieve it.
 - Unfinished code sits on `main`, unreachable behind a `false` key. That is a
   trade: dead code is visible in the tree, and somebody has to remove the key
   once the feature is permanent. Worth it against a three-week branch.
