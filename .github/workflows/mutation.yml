@@ -32,6 +32,7 @@ jobs:
         with:
           node-version: '24'
           cache: npm
+      - uses: ./.github/actions/use-pinned-npm
       - run: npm ci
       # packages/*/dist is not in git; see the note in ci.yml.
       - run: npm run packages:build

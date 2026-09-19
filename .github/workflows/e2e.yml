@@ -152,6 +152,8 @@ jobs:
         with:
           node-version: '24'
 
+      - uses: ./.github/actions/use-pinned-npm
+
       # The RESOLVED version, not the range. `devDependencies['@playwright/test']`
       # reads `^1.63.0`, which does not change when the lockfile resolves a new
       # patch — so the cache key stayed the same while the browser build the
