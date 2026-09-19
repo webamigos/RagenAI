@@ -378,6 +378,15 @@ the five were consequences of one Phase A change.
           an architecture test for the wiring, since the script itself is neither
           typechecked nor runnable outside a full app environment.
 
+- [x] **D5.** (added 2026-09-19) The corpus itself:
+      [`scripts/demo-corpus/`](../../scripts/demo-corpus/README.md) — twelve
+      PDF/XLSX/DOCX documents about one fictional company, built by a
+      generator so the facts in them can be kept consistent, plus the demo
+      questions each one answers. D1's inline markdown stays where it is: it
+      proves the seed runs, and it is three paragraphs long. This is what a
+      prospect is actually shown, and it exercises three ingest paths the
+      markdown does not touch.
+
 ### Phase E — nightly thread cleanup
 
 The repository has no Temporal Schedule, so this introduces the pattern as
@@ -404,7 +413,7 @@ much as the job.
       `@ragenai/platform-contracts` so the seed and the worker write the same
       object; the worker upserts exactly those two columns and leaves
       `allowedModels` — the operator's choice — alone.
-- [x] **E5.** (added 2026-09-08) The shared *account* is frozen as well as the
+- [x] **E5.** (added 2026-09-08) The shared _account_ is frozen as well as the
       tenant: name, password and session revocation are refused by a Better
       Auth `hooks.before` in `lib/auth.ts` for the address in
       `NEXT_PUBLIC_DEMO_EMAIL`, and the forms disable themselves for it. Keyed

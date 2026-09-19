@@ -104,3 +104,7 @@ apps/*/data/
 # list on every container start (.devcontainer/scripts/generate-compose-volumes.sh),
 # so committing it would only preserve a stale copy.
 .devcontainer/docker-compose.volumes.yml
+
+# Python bytecode (scripts/demo-corpus)
+__pycache__/
+*.pyc
