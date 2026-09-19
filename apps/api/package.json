@@ -56,7 +56,6 @@
     "@ragenai/env": "*",
     "@ragenai/jobs": "*",
     "@ragenai/jobs-bullmq": "*",
-    "@ragenai/jobs-temporal": "*",
     "@ragenai/litellm-client": "*",
     "@ragenai/llm-gateway": "*",
     "@ragenai/observability": "*",

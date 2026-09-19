@@ -190,6 +190,13 @@ jobs:
           --health-timeout 5s
           --health-retries 5
     env:
+      # Named rather than defaulted, and `every-job-runtime-is-exercised.test.ts`
+      # reads it. The suite's config falls back to `bullmq`, so leaving this out
+      # worked — until the day something changed the default, at which point
+      # this job would have run the other engine and still reported "Jobs
+      # Integration". Selecting it the way a deployment does is the same
+      # argument the parity job made.
+      WORKER_RUNTIME: bullmq
       JOBS_TEST_REDIS_URL: redis://localhost:6379/15
     steps:
       - uses: actions/checkout@v7
@@ -200,6 +207,13 @@ jobs:
       # delivered and completed, the declared retry policies, cancellation,
       # schedules, stalled-job redelivery, and the C3 assertion that a
       # re-delivered ingest does not duplicate a document's chunks.
+      #
+      # **BullMQ only, since G3.** The Temporal leg of this suite needs
+      # `@ragenai/jobs-temporal`, which is in `webamigos/ragen-enterprise` now;
+      # that repository's `temporal-parity.yml` checks this one out, splices its
+      # build of the adapter into `node_modules` and runs the same command with
+      # `WORKER_RUNTIME=temporal`. `jobs-parity.yml` is gone from here because
+      # its second leg went with the package, and a matrix of one is this job.
       - run: npm run worker:test:jobs
 
   build:

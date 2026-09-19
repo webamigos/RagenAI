@@ -1,12 +1,11 @@
 // `vi.mock` is hoisted above these declarations, so they travel up with it.
 // jest exempted names beginning with `mock`; vitest has no such exemption.
-const { mockBullStart, mockTemporalStart } = vi.hoisted(() => ({
+const { mockBullStart } = vi.hoisted(() => ({
   mockBullStart: vi.fn(),
-  mockTemporalStart: vi.fn(),
 }));
 
 /**
- * Both adapters are stubbed; the seam is not.
+ * The adapter is stubbed; the seam is not.
  *
  * Mocking `@ragenai/jobs` instead would have left this test asserting that a
  * mock calls a mock — and the thing worth checking here is the wiring itself:
@@ -15,12 +14,16 @@ const { mockBullStart, mockTemporalStart } = vi.hoisted(() => ({
  * whole of what this five-line binding does, and it fails silently when it
  * breaks.
  *
- * **Both, since ADR-44.** The suite used to stub Temporal alone and lean on it
- * being the default, so the flip to BullMQ turned a wiring test into a real
- * `Queue` opening a real connection: locally that reached a developer's Redis
- * and failed an assertion, and in CI it hung until the 5s timeout. A test that
- * depends on which runtime is default is testing the default rather than the
- * wiring — so this one names the runtime it means, and covers both.
+ * **One adapter, since G3.** This file used to stub Temporal alone and lean on
+ * it being the default, so ADR-44's flip to BullMQ turned a wiring test into a
+ * real `Queue` opening a real connection — locally it reached a developer's
+ * Redis and failed an assertion, in CI it hung until the 5s timeout — and the
+ * fix was to stub both. There is one to stub now: `@ragenai/jobs-temporal`
+ * moved to `webamigos/ragen-enterprise` and this application registers BullMQ
+ * only. What a `WORKER_RUNTIME=temporal` deployment gets from an unmodified
+ * build is asserted in `packages/jobs`' `runtime.test.ts` — the seam's throw —
+ * for the reason the note below gives: `getJobRuntime` caches where
+ * `vi.resetModules()` cannot reach.
  */
 vi.mock('@ragenai/jobs-bullmq', () => ({
   // `new BullMqJobRuntime()` — an arrow has no [[Construct]].
@@ -29,27 +32,22 @@ vi.mock('@ragenai/jobs-bullmq', () => ({
   }),
 }));
 
-vi.mock('@ragenai/jobs-temporal', () => ({
-  TemporalJobRuntime: vi.fn(function () {
-    return { start: mockTemporalStart };
-  }),
-}));
-
 import { Workflow } from './jobs.consts.js';
 
 /**
  * The service, with the runtime this deployment would resolve.
  *
- * **There is no case here for selecting Temporal, and that is a limitation
- * rather than a decision.** `getJobRuntime()` builds its runtime once and
- * caches it inside `@ragenai/jobs`, which vitest externalises — so
- * `vi.resetModules()` hands back a fresh `jobs.service.js` but the *same*
- * cached runtime, and a second case selecting the other adapter would quietly
- * assert against the first one's. The seam's own selection logic is covered
- * where it lives, in `packages/jobs`' `resolveWorkerRuntime` and
- * `getJobRuntime` tests, over every variant. What is left for this file is the
- * binding: that importing the service registers adapters and `start` reaches
- * the resolved one.
+ * **There is no case here for selecting Temporal, and since G3 that is a
+ * decision as well as a limitation.** The limitation: `getJobRuntime()` builds
+ * its runtime once and caches it inside `@ragenai/jobs`, which vitest
+ * externalises — so `vi.resetModules()` hands back a fresh `jobs.service.js`
+ * but the *same* cached runtime, and a second case selecting another adapter
+ * would quietly assert against the first one's. The decision: this application
+ * registers no Temporal adapter at all now, so there is nothing here for such
+ * a case to reach. Both halves are covered in `packages/jobs`' own
+ * `resolveWorkerRuntime` and `getJobRuntime` tests. What is left for this file
+ * is the binding: that importing the service registers an adapter and `start`
+ * reaches the resolved one.
  */
 async function serviceFor() {
   vi.resetModules();
@@ -64,7 +62,6 @@ describe('JobsService', () => {
 
   beforeEach(() => {
     mockBullStart.mockReset().mockResolvedValue(undefined);
-    mockTemporalStart.mockReset().mockResolvedValue(undefined);
   });
 
   afterAll(() => {
@@ -92,7 +89,6 @@ describe('JobsService', () => {
     expect(mockBullStart).toHaveBeenCalledWith('runFileEmbeddings', 'doc-abc', {
       id: 'file-1',
     });
-    expect(mockTemporalStart).not.toHaveBeenCalled();
   });
 
   it('propagates a failure to start, because the caller rolls back on it', async () => {

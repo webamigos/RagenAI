@@ -25,6 +25,16 @@ import { describe, expect, it } from 'vitest';
  * `await import('./temporal-runtime.js')`, plus the workflow modules Temporal
  * bundles for its own sandbox. Tests are exempt: they run from a root install,
  * where the SDK is always present.
+ *
+ * **Those three paths are the end state, not a waypoint.** They used to be
+ * described as what would shrink when the spec's G3 moved the adapter out.
+ * G3 has happened — `@ragenai/jobs-temporal` is in
+ * `webamigos/ragen-enterprise` — and G2 decided the *bootstrap* stays here,
+ * because `temporal-runtime.ts` imports the worker's 69 activity modules and
+ * `src/workflows/` imports its eight handlers: moving them would mean
+ * compiling the pipeline in that repository, which is the `apps/worker-lite`
+ * shape ADR-44 rejected. So this list does not get shorter, and it is the
+ * whole of what keeps `@temporalio/*` off a BullMQ start.
  */
 const REPO_ROOT = join(import.meta.dirname, '..', '..');
 

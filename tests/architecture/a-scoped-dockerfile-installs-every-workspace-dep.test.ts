@@ -24,15 +24,15 @@ import { describe, expect, it } from 'vitest';
  * workspace into one `node_modules`, so local builds and CI resolve packages
  * the scoped install never installs.
  *
- * **One package is deliberately absent from one image**, and the difference
- * between that and the bug above is what `OMITTED_FROM_RUNTIME` records. The
- * worker's production install leaves out `@ragenai/jobs-temporal` (the spec's
- * E6): the running image ships the default runtime only, and an install that
- * wants durable execution builds it back in. That is safe exactly as long as
- * nothing in the app *statically* imports the package — a static import fails
- * at module resolution on every start, including the BullMQ one every install
- * takes — so this file checks the dynamic import rather than taking the
- * Dockerfile's word for it.
+ * **`OMITTED_FROM_RUNTIME` is empty since G3, and the machinery stays.** It
+ * recorded one entry — the worker's production install left out
+ * `@ragenai/jobs-temporal` while that package was still a workspace here (the
+ * spec's E6). G3 moved the package to `webamigos/ragen-enterprise`, so there
+ * is no longer a declared-but-unshipped dependency to exempt: the worker
+ * declares it nowhere and loads it, when an image has layered it in, through
+ * `@ragenai/jobs`'s constant specifier. Keeping the map and its assertions
+ * costs nothing and is what the next optional runtime lands in; emptying it
+ * without saying so is how the exemption would come back unexamined.
  */
 const REPO_ROOT = join(import.meta.dirname, '..', '..');
 
@@ -45,9 +45,7 @@ const APPS = ['web', 'api', 'admin', 'worker', 'mcp'];
  * it with the assertions below: the app must reach the package through
  * `await import(...)` and must not name it in a top-level `import`.
  */
-const OMITTED_FROM_RUNTIME: Record<string, string[]> = {
-  worker: ['@ragenai/jobs-temporal'],
-};
+const OMITTED_FROM_RUNTIME: Record<string, string[]> = {};
 
 function read(path: string): string | null {
   try {
@@ -145,9 +143,12 @@ describe('a Dockerfile that installs scoped names every workspace it needs', () 
     ([app, names]) => names.map((name) => ({ app, name })),
   );
 
-  it.each(exemptions)(
-    'apps/$app reaches $name dynamically, since its image does not ship it',
-    ({ app, name }) => {
+  it('every exemption is reached dynamically, since its image does not ship it', () => {
+    // One case rather than `it.each`, because the list is empty since G3 and
+    // `it.each([])` throws. Empty is the correct state — nothing is declared
+    // and unshipped any more — so what this asserts is the rule an entry buys
+    // its way past, for whenever the next optional runtime lands here.
+    for (const { app, name } of exemptions) {
       // The whole exemption rests on this. A static import of `<name>` at the
       // top of any file the app loads resolves before a single line runs, so
       // the container would fail to start on the runtime it *does* ship — and
@@ -191,6 +192,44 @@ describe('a Dockerfile that installs scoped names every workspace it needs', () 
           'rather than leaving a package that is declared, built and ' +
           'unreachable.',
       ).toBe(true);
-    },
-  );
+    }
+  });
+
+  /**
+   * The exemption that G3 retired, asserted from the other side.
+   *
+   * `apps/worker` no longer declares `@ragenai/jobs-temporal`, so the loop
+   * above has nothing to check — but the property that made the omission safe
+   * still has to hold, and now nothing else states it: the worker reaches the
+   * adapter dynamically, through the seam's constant specifier, and never at
+   * the top of a module. A static import would fail every start, including the
+   * BullMQ one, and it would fail only in an image.
+   */
+  it('apps/worker reaches the out-of-repository adapter dynamically', () => {
+    const files = sourceFiles('worker');
+    expect(files.length).toBeGreaterThan(0);
+
+    const staticImport =
+      /^\s*(?:import|export)\s+(?!type\s)[^;]*?from\s*['"]@ragenai\/jobs-temporal['"]|^\s*import\s*['"]@ragenai\/jobs-temporal['"]/m;
+
+    expect(
+      files
+        .filter(({ source }) => staticImport.test(source))
+        .map(({ path }) => relative(REPO_ROOT, path)),
+      '@ragenai/jobs-temporal is in webamigos/ragen-enterprise since G3. A ' +
+        'static import of it does not resolve in this repository at all, and ' +
+        'would fail every worker start in an image that had layered it in.',
+    ).toEqual([]);
+
+    expect(
+      files.some(({ source }) =>
+        /import\(\s*TEMPORAL_ADAPTER_PACKAGE\s*\)/.test(source),
+      ),
+      'Nothing in apps/worker loads the adapter through ' +
+        "`import(TEMPORAL_ADAPTER_PACKAGE)`. That constant is the seam's, and " +
+        'passing it rather than a literal is what keeps `tsc --build` working ' +
+        'on a default install — TypeScript resolves a literal specifier ' +
+        'whichever branch guards it.',
+    ).toBe(true);
+  });
 });
