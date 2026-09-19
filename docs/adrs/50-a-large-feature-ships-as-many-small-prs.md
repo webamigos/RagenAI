@@ -159,13 +159,23 @@ not wanted — a CI fix worth landing but not worth five images — `.releaserc`
 carries an explicit opt-out:
 
 ```json
-{ "subject": "*[no release]*", "release": false }
+"releaseRules": [
+  { "breaking": true, "release": "major" },
+  { "subject": "*[no release]*", "release": false }
+]
 ```
 
 `fix(ci): give the image build a driver that can cache [no release]` bumps
 nothing. The commit still appears in the next release's notes, so nothing is
 lost from the record, and when every commit since the last tag is marked,
 semantic-release does nothing at all rather than cutting an empty release.
+
+**The breaking rule is first because the rules are evaluated in order and the
+first match wins.** Without it, a commit carrying both a `BREAKING CHANGE`
+footer and the marker would match the opt-out and release nothing — the one
+case where silence is worst, since the notes announcing the break would not be
+published either. Anything that matches no rule falls through to the defaults,
+which is why they are not restated here.
 
 A marker in the subject rather than a scope like `feat(no-release):`, because
 scopes are spoken for: one per workspace, since `#1253`.

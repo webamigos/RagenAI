@@ -8,6 +8,10 @@
       {
         "releaseRules": [
           {
+            "breaking": true,
+            "release": "major"
+          },
+          {
             "subject": "*[no release]*",
             "release": false
           }
