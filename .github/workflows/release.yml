@@ -26,6 +26,8 @@ jobs:
         with:
           node-version: '24'
 
+      - uses: ./.github/actions/use-pinned-npm
+
       - name: Install dependencies
         run: npm clean-install
 

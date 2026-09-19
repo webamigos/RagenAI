@@ -39,6 +39,8 @@ runs:
       with:
         node-version: '24'
 
+    - uses: ./.github/actions/use-pinned-npm
+
     - name: Cache dependencies
       id: deps-rw
       if: inputs.save-cache == 'true'
