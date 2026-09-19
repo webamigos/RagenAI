@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { NextIntlClientProvider } from 'next-intl';
@@ -123,6 +123,39 @@ describe('ProjectInstructionForm', () => {
         message: 'Could not save the instruction',
       }),
     );
+    expect(textarea).toHaveValue(INSTRUCTION);
+  });
+
+  it('ignores an initial load that lands after a successful save', async () => {
+    const user = userEvent.setup();
+    let resolveInitialLoad: (value: {
+      success: boolean;
+      instruction: string | null;
+    }) => void;
+    mockGetProjectInstruction.mockReturnValue(
+      new Promise((resolve) => {
+        resolveInitialLoad = resolve;
+      }),
+    );
+
+    renderForm();
+
+    const textarea = screen.getByRole('textbox');
+    await user.type(textarea, INSTRUCTION);
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+
+    await waitFor(() =>
+      expect(mockSaveProjectInstruction).toHaveBeenCalledWith(
+        'proj-1',
+        INSTRUCTION,
+      ),
+    );
+
+    // The load finally answers, carrying the value from before the save.
+    await act(async () => {
+      resolveInitialLoad({ success: true, instruction: null });
+    });
+
     expect(textarea).toHaveValue(INSTRUCTION);
   });
 

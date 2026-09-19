@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslations } from 'next-intl';
@@ -55,7 +55,16 @@ export const ProjectInstructionForm = ({
     },
   });
 
+  // The initial load does not block submission, so its response can land
+  // after a save. It carries the value from *before* that save, and resetting
+  // to it would blank the box again — the same lie by a different route.
+  // Once the operator has submitted, the box reflects their intent and the
+  // in-flight load has nothing left to say.
+  const submitSupersedesInitialLoad = useRef(false);
+
   const onSubmit = async (data: ProjectInstructionFormData) => {
+    submitSupersedesInitialLoad.current = true;
+
     try {
       const result = await saveProjectInstructionAction(
         projectId,
@@ -90,14 +99,24 @@ export const ProjectInstructionForm = ({
   };
 
   useEffect(() => {
+    submitSupersedesInitialLoad.current = false;
+    let abandoned = false;
+
     const fetchInstruction = async () => {
       const result = await getProjectInstructionAction(projectId);
+      if (abandoned || submitSupersedesInitialLoad.current) {
+        return;
+      }
       if (result.success) {
         reset({ description: result.instruction || '' });
       }
     };
 
     fetchInstruction();
+
+    return () => {
+      abandoned = true;
+    };
   }, [projectId]);
 
   return (
