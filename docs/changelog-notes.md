@@ -68,6 +68,21 @@ archive is the blog.
 
 ## Unreleased
 
+### Thread: a field that does not lie about what it holds
+
+- `[brief]` **A project instruction stays in the box after you save it.** The
+  form reset to its empty default on success, so the operator saw the success
+  toast and watched their instruction vanish at the same moment — the save had
+  worked, the field was wrong about it. A second, narrower version of the same
+  bug goes with it: the instruction the page loads when it opens could arrive
+  *after* a save and overwrite it with the value from before.
+  ([#1265](https://github.com/webamigos/RagenAI/pull/1265))
+
+  One line rather than a section: nothing was ever lost, but the only feedback
+  the screen gave said otherwise, which is the kind of thing people stop
+  trusting a panel over.
+
+
 ### Thread: one name for every workspace
 
 - `[brief]` **Every workspace in the monorepo is `@ragenai/*` now.** The five
