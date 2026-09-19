@@ -124,10 +124,20 @@ instance, because a dropped queue key is a job that vanishes without an error.
 
 To run background jobs on Temporal instead, set `config.WORKER_RUNTIME:
 temporal` and `config.TEMPORAL_SERVER_ADDRESS` at a server you operate — the
-chart no longer deploys one. The images still ship the Temporal adapter, so
-this is configuration rather than a rebuild, and `config` is one ConfigMap read
-by every workload, which is what keeps the producers and the worker on the same
-runtime. See [ADR-44](../../../docs/adrs/44-bullmq-is-the-worker-runtime.md).
+chart no longer deploys one. `config` is one ConfigMap read by every workload,
+which is what keeps the producers and the worker on the same runtime.
+
+**That setting alone is not enough for the worker**, and the failure is at
+boot rather than at the first job. The published `ragen-worker` image ships the
+BullMQ runtime only: `@temporalio/*` are `apps/worker`'s devDependencies and the
+image installs with `--omit=dev`, so selecting Temporal there exits with a
+message saying exactly that. A Temporal deployment needs a worker image built
+with those devDependencies installed — until the adapter's own image lands in
+[`ragen-enterprise`](https://github.com/webamigos/ragen-enterprise), which is
+`FROM` this one and adds them. The producers (`web`, `api`) need no such
+rebuild: they only enqueue, and their client comes through the adapter package
+the images do carry.
+See [ADR-44](../../../docs/adrs/44-bullmq-is-the-worker-runtime.md).
 
 ## Storage
 
