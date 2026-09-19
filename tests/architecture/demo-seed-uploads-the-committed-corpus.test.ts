@@ -21,7 +21,7 @@ import { describe, expect, it } from 'vitest';
 
 const REPO_ROOT = join(import.meta.dirname, '..', '..');
 const SEED = 'apps/web/src/scripts/seed-demo-organization.ts';
-const CORPUS = 'scripts/demo-corpus/files';
+const CORPUS = 'scripts/demo-corpus/files/pl';
 
 const source = readFileSync(join(REPO_ROOT, SEED), 'utf8');
 

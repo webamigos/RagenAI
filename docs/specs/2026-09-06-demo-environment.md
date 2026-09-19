@@ -210,18 +210,18 @@ is the point.
       questioned them does not survive contact with the code.
 
       The premise was that a shared account many prospects hit at once is
-                  exactly where production limits are wrong. But `ThrottlerGuard` is
-                  registered with no custom tracker, so it keys on **IP, not on the
-                  account** — the multiplier in `apps/api/src/app.module.ts` raises limits
-                  only for `local` (1.5x) and `ci`/`test` (100x), and prospects arriving
-                  from different networks never share a bucket.
+                      exactly where production limits are wrong. But `ThrottlerGuard` is
+                      registered with no custom tracker, so it keys on **IP, not on the
+                      account** — the multiplier in `apps/api/src/app.module.ts` raises limits
+                      only for `local` (1.5x) and `ci`/`test` (100x), and prospects arriving
+                      from different networks never share a bucket.
 
-                  The residual risk is narrower and accepted: several people behind one
-                  office NAT do share one, and `expensive` allows 10 requests a minute,
-                  so a three-person demo from one meeting room could trip it. Revisit if
-                  that is ever observed — the fix is one branch in the multiplier, not a
-                  design change. Not pre-emptively raised, because a limit loosened
-                  without evidence is a limit nobody can reason about later.
+                      The residual risk is narrower and accepted: several people behind one
+                      office NAT do share one, and `expensive` allows 10 requests a minute,
+                      so a three-person demo from one meeting room could trip it. Revisit if
+                      that is ever observed — the fix is one branch in the multiplier, not a
+                      design change. Not pre-emptively raised, because a limit loosened
+                      without evidence is a limit nobody can reason about later.
 
 - [x] **A5.** Add `demo` to `TARGET_ENV_VALUES`. Also update
       [`.env.example:7`](../../.env.example) (which documents the list) and
@@ -370,23 +370,32 @@ the five were consequences of one Phase A change.
       error which environment it found.
 
       Done. `assertDemoSeedTarget` lives in
-          `features/subscriptions/services/`, not beside the script, because
-          `apps/web/tsconfig.json` excludes `src/scripts` — a guard written there
-          could reference a renamed export and still ship. Unset `TARGET_ENV`
-          counts as "not demo"; the override is `--not-really-demo` and the script
-          warns loudly when it is used. Backed by a unit test for the decision and
-          an architecture test for the wiring, since the script itself is neither
-          typechecked nor runnable outside a full app environment.
+              `features/subscriptions/services/`, not beside the script, because
+              `apps/web/tsconfig.json` excludes `src/scripts` — a guard written there
+              could reference a renamed export and still ship. Unset `TARGET_ENV`
+              counts as "not demo"; the override is `--not-really-demo` and the script
+              warns loudly when it is used. Backed by a unit test for the decision and
+              an architecture test for the wiring, since the script itself is neither
+              typechecked nor runnable outside a full app environment.
 
 - [x] **D5.** (added 2026-09-19) The corpus itself:
       [`scripts/demo-corpus/`](../../scripts/demo-corpus/README.md) — twelve
       PDF/XLSX/DOCX documents about one fictional company, built by a
       generator so the facts in them can be kept consistent, plus the demo
-      questions each one answers. The seed reads that directory; D1's three
-      inline markdown documents are gone, since a corpus that lives in a
-      script is one nobody can open, diff or hand to a salesperson. It also
-      exercises three ingest paths — PDF through the model, XLSX through
-      SheetJS, DOCX through mammoth — that markdown does not touch.
+      questions each one answers, in Polish and in English. The seed reads
+      that directory; D1's three inline markdown documents are gone, since a
+      corpus that lives in a script is one nobody can open, diff or hand to a
+      salesperson. It also exercises three ingest paths — PDF through the
+      model, XLSX through SheetJS, DOCX through mammoth — that markdown does
+      not touch.
+
+      The two languages quote the same figures in each locale's own
+          formatting, so they can share one knowledge base without answering a
+          question two ways, or serve two tenants. The generator runs on
+          dependencies the monorepo already has (`docx`, `xlsx`, Playwright's
+          Chromium), and
+          `tests/architecture/demo-corpus-agrees-with-itself.test.ts` holds the
+          documents to each other in CI.
 
 ### Phase E — nightly thread cleanup
 

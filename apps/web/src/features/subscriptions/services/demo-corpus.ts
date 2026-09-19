@@ -15,8 +15,18 @@ import { SUPPORTED_MIME_TYPES } from '@/app/lib/constants/supportedMimeTypes';
  * facts in them agree with each other.
  */
 
-/** Repo-relative, because the seed resolves it against the repository root. */
-export const DEMO_CORPUS_DIRECTORY = 'scripts/demo-corpus/files';
+/**
+ * Repo-relative, because the seed resolves it against the repository root.
+ *
+ * The corpus is built in two languages, one directory each, and the seed takes
+ * one of them: a demo tenant shown to a Polish prospect and one shown to an
+ * English-speaking prospect are different tenants, not one tenant holding both.
+ * Point `DEMO_CORPUS_DIR` at `scripts/demo-corpus/files/en` for the English
+ * set — or at both, if a bilingual knowledge base is the thing being
+ * demonstrated; the two sets quote the same figures, so they cannot contradict
+ * each other.
+ */
+export const DEMO_CORPUS_DIRECTORY = 'scripts/demo-corpus/files/pl';
 
 /** Overrides the directory, for a corpus kept outside the repository. */
 export const DEMO_CORPUS_DIRECTORY_ENV = 'DEMO_CORPUS_DIR';

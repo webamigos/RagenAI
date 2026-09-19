@@ -89,11 +89,18 @@ describe('selectDemoCorpusFiles', () => {
 
 /**
  * The committed corpus and this selector have to agree: a file added to
- * `scripts/demo-corpus/files` that lands in `skipped` would be silently left
- * out of every demo, and nothing else would report it.
+ * `scripts/demo-corpus/files/<locale>` that lands in `skipped` would be
+ * silently left out of every demo, and nothing else would report it.
+ *
+ * Both language sets are checked, not just the one the seed defaults to — the
+ * English set is reached by pointing `DEMO_CORPUS_DIR` at it, which is exactly
+ * the path nobody exercises until a demo is about to start.
  */
-describe('the committed corpus', () => {
-  const entries = readdirSync(join(REPO_ROOT, DEMO_CORPUS_DIRECTORY));
+describe.each([
+  ['the default (Polish) corpus', DEMO_CORPUS_DIRECTORY],
+  ['the English corpus', 'scripts/demo-corpus/files/en'],
+])('%s', (_label, directory) => {
+  const entries = readdirSync(join(REPO_ROOT, directory));
   const { files, skipped } = selectDemoCorpusFiles(entries);
 
   it('is where the seed expects it', () => {
@@ -101,7 +108,9 @@ describe('the committed corpus', () => {
   });
 
   it('is entirely uploadable', () => {
-    expect(skipped).toEqual([]);
+    // The README.txt written beside each set is deliberately not uploadable —
+    // it is a note for whoever downloads the folder, not demo material.
+    expect(skipped).toEqual(['README.txt']);
   });
 
   it('covers the three formats a prospect actually brings', () => {
@@ -110,5 +119,9 @@ describe('the committed corpus', () => {
     );
 
     expect(extensions).toEqual(new Set(['pdf', 'xlsx', 'docx']));
+  });
+
+  it('holds twelve documents', () => {
+    expect(files).toHaveLength(12);
   });
 });
