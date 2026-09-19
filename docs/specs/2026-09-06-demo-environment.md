@@ -382,10 +382,11 @@ the five were consequences of one Phase A change.
       [`scripts/demo-corpus/`](../../scripts/demo-corpus/README.md) — twelve
       PDF/XLSX/DOCX documents about one fictional company, built by a
       generator so the facts in them can be kept consistent, plus the demo
-      questions each one answers. D1's inline markdown stays where it is: it
-      proves the seed runs, and it is three paragraphs long. This is what a
-      prospect is actually shown, and it exercises three ingest paths the
-      markdown does not touch.
+      questions each one answers. The seed reads that directory; D1's three
+      inline markdown documents are gone, since a corpus that lives in a
+      script is one nobody can open, diff or hand to a salesperson. It also
+      exercises three ingest paths — PDF through the model, XLSX through
+      SheetJS, DOCX through mammoth — that markdown does not touch.
 
 ### Phase E — nightly thread cleanup
 

@@ -2,9 +2,11 @@
 
 Twelve documents — four PDF, four XLSX, four DOCX — for the showcase tenant
 described in [`docs/specs/2026-09-06-demo-environment.md`](../../docs/specs/2026-09-06-demo-environment.md).
-They are what a prospect is meant to be shown. The three short markdown files
-`seed-demo-organization.ts` carries inline stay where they are — they exist to
-prove the seed runs, and nobody would be impressed by them.
+They are what a prospect is meant to be shown. `seed-demo-organization.ts`
+used to carry three short markdown files inline; it reads this directory
+instead, so replacing the corpus means adding files here rather than editing a
+script that is neither typechecked nor runnable outside a full app
+environment.
 
 Upload them and the demo has something to answer questions about: a price list
 with thresholds, a contract with penalties, an SLA with response times, minutes
@@ -53,20 +55,41 @@ model as base64 (`PDF_PROCESSOR`), so pages cost money on every re-ingest.
 ## Uploading them
 
 **The demo tenant refuses uploads.** `manageDocuments: false` is one of its
-feature overrides and the gate does not exempt anybody — that is the point of
-it. Two ways round, in order of preference:
+feature overrides, `uploadFileCommand` asserts it on every path into the
+knowledge base, and the gate exempts nobody — not the UI, not the API, not this
+seed. That is the point of it.
 
-1. **Seed before restricting.** `seed-demo-organization.ts` ingests the corpus
-   first and applies the restrictions last, for exactly this reason. Its
-   `--corpus-only` flag re-runs the ingest half alone.
-2. **Lift the flag, upload, put it back.** Admin panel → the organization →
-   features → `manageDocuments`. The worker's nightly `cleanupDemoThreads`
-   re-applies the overrides anyway, so a flag left on is corrected within a
-   night — but put it back yourself rather than relying on that.
+**On a tenant that is not yet restricted** — the normal case, the first time —
+just run the seed. It ingests the corpus first and applies the restrictions
+last, in that order for exactly this reason:
 
-On any non-demo environment, the documents page takes them by drag and drop.
+```bash
+cd apps/web
+TARGET_ENV=demo DEMO_ORGANIZATION_SLUG=<slug> \
+  npx tsx --env-file=../../.env.local src/scripts/seed-demo-organization.ts
+```
 
-Through the public API, with an API key that has the right project:
+It is idempotent — a document already present by file name is skipped — so
+re-running it after adding a file here uploads only the new one.
+
+**On a tenant that is already restricted**, the flag has to come off for the
+length of the run, whichever route you take:
+
+1. Admin panel → the organization → **Features** → `manageDocuments` → on.
+2. Upload: `--corpus-only` re-runs the ingest half of the seed alone, or use
+   the documents page by drag and drop.
+3. Put the flag back. The worker's nightly `cleanupDemoThreads` re-applies the
+   overrides at 03:00 Europe/Warsaw anyway, so one left on is corrected within
+   a night — but that is a backstop, not the procedure.
+
+Setting the flag through the admin panel rather than in the database is worth
+the extra clicks: `saveOrgFeatureOverridesAction` writes an audit entry and a
+`ADMIN_SETTINGS_CHANGED` security event, so "who opened the demo tenant, and
+when" has an answer.
+
+Through the public API instead — note `apps/api` holds its own ported copy of
+the gate (ADR-21), reading the same override, so the flag has to be off for
+this too:
 
 ```bash
 export RAGEN_API_KEY=sk-...

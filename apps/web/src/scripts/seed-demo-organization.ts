@@ -2,9 +2,13 @@
 /**
  * Turn an ordinary organization into the demo showcase tenant.
  *
- * Run with:
+ * Run with, from `apps/web`:
  *   TARGET_ENV=demo DEMO_ORGANIZATION_SLUG=<slug> \
- *     npx tsx src/scripts/seed-demo-organization.ts
+ *     npx tsx --env-file=../../.env.local src/scripts/seed-demo-organization.ts
+ *
+ * Add `--corpus-only` to re-ingest the corpus into a tenant that is already
+ * restricted — which needs `manageDocuments` lifted for the length of the run,
+ * for the reason under "Order matters" below.
  *
  * `TARGET_ENV=demo` is required, and the requirement is the point — see
  * `features/subscriptions/services/assert-demo-seed-target`. This script finds
@@ -41,9 +45,13 @@
  * and re-running the script after a manual restriction requires lifting the
  * flag again first. `--corpus-only` exists for exactly that case.
  *
- * Idempotent: an already-seeded document is skipped by title, and the settings
- * write is an upsert.
+ * Idempotent: an already-seeded document is skipped by file name, and the
+ * settings write is an upsert. Adding a file to the corpus and re-running
+ * therefore uploads that one file.
  */
+
+import { readFile, readdir } from 'node:fs/promises';
+import { isAbsolute, join } from 'node:path';
 
 import db from '@ragenai/prisma-client';
 
@@ -56,98 +64,40 @@ import {
   DEMO_SEED_OVERRIDE_FLAG,
   assertDemoSeedTarget,
 } from '@/features/subscriptions/services/assert-demo-seed-target';
+import {
+  DEMO_CORPUS_DIRECTORY,
+  DEMO_CORPUS_DIRECTORY_ENV,
+  selectDemoCorpusFiles,
+} from '@/features/subscriptions/services/demo-corpus';
 
 /**
- * Placeholder corpus.
+ * Where the corpus comes from.
  *
- * Deliberately generic: with one shared account, prospect B reads prospect A's
- * conversation until the nightly cleanup runs (spec, "Consequences we are
- * accepting"), so nothing here may be anything we would mind a stranger
- * quoting. Replace with real material before the demo is handed out — the
- * shape, not the prose, is what this script fixes.
+ * `scripts/demo-corpus/` in this repository by default — twelve PDF, XLSX and
+ * DOCX documents about one fictional company, generated so their facts agree
+ * with each other, with the demo questions they answer in its README.
+ *
+ * It used to be three markdown strings inlined here. They proved the seed ran
+ * and were never meant to be shown to anybody — their own comment said to
+ * replace them before the demo was handed out. Markdown also exercises none of
+ * the ingest paths a prospect's own documents take: PDF through the model,
+ * XLSX through SheetJS, DOCX through mammoth. A demo that works over three
+ * markdown files has not shown that.
+ *
+ * `DEMO_CORPUS_DIR` points somewhere else — an absolute path, or one relative
+ * to the repository root — for a corpus that should not be committed.
  */
-const PLACEHOLDER_CORPUS = [
-  {
-    title: 'Ragen — product overview',
-    body: `# Ragen — product overview
+const REPO_ROOT = join(import.meta.dirname, '..', '..', '..', '..');
 
-Ragen answers questions about your own documents. It retrieves the passages
-that bear on a question and cites them, so an answer can be checked rather
-than trusted.
+function corpusDirectory(): string {
+  const configured = process.env[DEMO_CORPUS_DIRECTORY_ENV]?.trim();
 
-## What it is for
+  if (!configured) {
+    return join(REPO_ROOT, DEMO_CORPUS_DIRECTORY);
+  }
 
-Teams keep knowledge in documents nobody rereads: contracts, handbooks,
-specifications, meeting notes. Ragen makes that material answerable in
-conversation, with citations back to the source.
-
-## How retrieval works
-
-Every document is split into passages and indexed twice — once by meaning and
-once by wording. A question searches both, and the results are merged. Asking
-about a term that appears verbatim and asking about an idea phrased
-differently therefore both work.
-
-## What it does not do
-
-It does not invent an answer when the documents do not contain one. If nothing
-relevant is retrieved, it says so.`,
-  },
-  {
-    title: 'Sample handbook — expenses and travel',
-    body: `# Expenses and travel
-
-A placeholder policy document, written so that questions about it have
-checkable answers.
-
-## Approval
-
-Expenses under 500 PLN need no prior approval. Anything above requires written
-approval from a team lead before the spend, not after.
-
-## Travel
-
-Book trains in second class and flights in economy. A different class needs
-the same written approval as an expense above 500 PLN.
-
-Accommodation is reimbursed up to 600 PLN per night in Warsaw, Krakow and
-Wroclaw, and up to 450 PLN elsewhere in Poland.
-
-## Deadlines
-
-Submit receipts within 30 days of the expense. Submissions after 60 days are
-not reimbursed without a written exception.
-
-## Not covered
-
-Fines, personal entertainment and alcohol are never reimbursed.`,
-  },
-  {
-    title: 'Sample FAQ — support and availability',
-    body: `# Support and availability
-
-A placeholder FAQ, written to be answerable without ambiguity.
-
-## When is support available?
-
-Weekdays between 9:00 and 17:00 Central European Time, excluding Polish public
-holidays.
-
-## How quickly is a ticket answered?
-
-A first response arrives within one business day. A ticket marked as blocking
-production is answered within four business hours.
-
-## Where is data stored?
-
-In the European Union. Documents and conversations do not leave the region.
-
-## Can a conversation be deleted?
-
-Yes. Deleting a conversation removes its messages and its citations. Deleting a
-document removes it from the index, so later answers no longer draw on it.`,
-  },
-] as const;
+  return isAbsolute(configured) ? configured : join(REPO_ROOT, configured);
+}
 
 /**
  * `DEMO_FEATURE_OVERRIDES` and `DEMO_MONTHLY_COST_LIMIT_CENTS` are imported
@@ -208,16 +158,43 @@ async function resolveOrganization(slug: string) {
  * `embeddingStatus: 'COMPLETED'` and no vectors, which is right for a load
  * test of permission queries and useless here: a demo whose corpus is not
  * really indexed answers every question with "I could not find that". Going
- * through the real command means the Temporal ingest runs and the passages
- * reach Qdrant.
+ * through the real command means the ingest job runs and the passages reach
+ * Qdrant.
+ *
+ * It also means this is gated like any other upload: `uploadFileCommand` calls
+ * `assertCanManageDocuments`, which the demo tenant's own overrides turn off.
+ * That is why the restrictions are applied last, and why re-running this after
+ * they are in place needs the flag lifted first — see `main()`.
  */
 async function seedCorpus(organizationId: string, projectId: string) {
+  const directory = corpusDirectory();
+
+  let entries: string[];
+  try {
+    entries = await readdir(directory);
+  } catch {
+    throw new Error(
+      `No corpus directory at ${directory}. It ships with the repository as ` +
+        `${DEMO_CORPUS_DIRECTORY}; set ${DEMO_CORPUS_DIRECTORY_ENV} to seed from somewhere else.`,
+    );
+  }
+
+  const { files, skipped } = selectDemoCorpusFiles(entries);
+
+  if (files.length === 0) {
+    throw new Error(
+      `No uploadable documents in ${directory}. Seeding nothing would leave the demo answering every question with "I could not find that".`,
+    );
+  }
+
+  for (const name of skipped) {
+    console.log(`  ignored (unsupported type): ${name}`);
+  }
+
   let created = 0;
-  let skipped = 0;
+  let skippedCount = 0;
 
-  for (const document of PLACEHOLDER_CORPUS) {
-    const fileName = `${document.title}.md`;
-
+  for (const { fileName, mimeType } of files) {
     const existing = await db.userFile.findFirst({
       where: { organizationId, fileName },
       select: { id: true },
@@ -225,13 +202,12 @@ async function seedCorpus(organizationId: string, projectId: string) {
 
     if (existing) {
       console.log(`  skipped (already present): ${fileName}`);
-      skipped += 1;
+      skippedCount += 1;
       continue;
     }
 
-    const file = new File([document.body], fileName, {
-      type: 'text/markdown',
-    });
+    const bytes = await readFile(join(directory, fileName));
+    const file = new File([bytes], fileName, { type: mimeType });
 
     const result = await uploadFileCommand({
       file,
@@ -246,7 +222,7 @@ async function seedCorpus(organizationId: string, projectId: string) {
     created += 1;
   }
 
-  return { created, skipped };
+  return { created, skipped: skippedCount, directory };
 }
 
 async function applyRestrictions(organizationId: string) {
@@ -290,7 +266,7 @@ async function main() {
   );
 
   if (!args.restrictOnly) {
-    console.log('Corpus:');
+    console.log(`Corpus (${corpusDirectory()}):`);
     const { created, skipped } = await seedCorpus(organization.id, project.id);
     console.log(`  ${created} ingested, ${skipped} already present\n`);
   }
@@ -307,7 +283,8 @@ async function main() {
   console.log(
     'Done. Two things this script deliberately does not do:\n' +
       '  - allowedModels: set it in the admin panel, so the choice is visible where it is managed.\n' +
-      '  - wait for embeddings: ingest is asynchronous. Check the documents page before demoing.',
+      '  - wait for embeddings: ingest is asynchronous. Check the documents page before demoing.\n' +
+      '    A PDF still parsing answers nothing, which is a poor first impression to make.',
   );
 }
 
