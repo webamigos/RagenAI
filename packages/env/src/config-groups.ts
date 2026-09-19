@@ -124,7 +124,7 @@ export const TEMPORAL_GROUP = {
     TEMPORAL_NAMESPACE: 'namespace',
   },
   summary:
-    'Document ingest runs as Temporal workflows (ADR-26). Optional here because apps/web and apps/api fall back to localhost:7233, and required outright in apps/worker, which is the process that runs them. `TEMPORAL_CERT` and `TEMPORAL_KEY` are deliberately absent: they are declared in the schema but nothing reads them yet.',
+    'Read only when `WORKER_RUNTIME` selects Temporal, which is not the default and is not in the compose file (ADR-44) — under BullMQ nothing here is consulted at all. Optional in this listing because requiredness follows the runtime: the seam above makes `TEMPORAL_SERVER_ADDRESS` mandatory once Temporal is chosen. `TEMPORAL_CERT` and `TEMPORAL_KEY` are deliberately absent: they are declared in the schema but nothing reads them yet.',
 } as const satisfies FieldGroup;
 
 export const REDIS_GROUP = {
@@ -134,7 +134,7 @@ export const REDIS_GROUP = {
   optional: ['REDIS_URL'],
   fields: { REDIS_URL: 'url' },
   summary:
-    'Required by apps/worker, which caches organization settings through it. Genuinely optional in apps/web, where the absence is a real mode rather than a degraded one — the settings cache computes values directly, and the public chatbot rate limiter fails open, so rate limiting is off rather than enforced with a fallback limit.',
+    'The job queue on the default runtime (ADR-44), and an organization-settings cache besides. apps/worker requires it on either runtime; under BullMQ apps/web and apps/api need it too, because a producer that cannot reach Redis cannot enqueue a job — so an upload fails rather than being processed later. Optional in this listing only because requiredness follows the runtime, which the seam above states. It must run `maxmemory-policy noeviction`: an evicting instance drops queue keys and the queued jobs go with them.',
 } as const satisfies FieldGroup;
 
 export const OBSERVABILITY_GROUP = {
