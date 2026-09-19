@@ -1,0 +1,60 @@
+name: Use the pinned npm
+description: Make `npm` the version package.json pins, so a lockfile written locally is one CI accepts.
+
+# `package.json` declares `packageManager: npm@10.9.8`. Nothing was enforcing
+# it: `actions/setup-node` installs whatever npm ships with the Node line it
+# resolves, and `node-version: '24'` means the newest 24.x, which carries
+# npm 11. So the repository pinned one package manager and CI installed with
+# another.
+#
+# That is not cosmetic, because the two disagree about this tree. npm 10 prunes
+# `@modelcontextprotocol/sdk/node_modules/zod` from the lockfile; npm 11's
+# `npm ci` requires it and refuses the install:
+#
+#     npm error `npm ci` can only install packages when your package.json and
+#     package-lock.json are in sync.
+#     npm error Missing: zod@3.25.76 from lock file
+#
+# Every job then fails in 12-40 seconds, before any of them reaches the code —
+# which reads as a broken branch rather than as a tooling split. It happened
+# twice in one day (#1255, then #1258) and both times from the most ordinary
+# action there is: adding a dependency to a workspace, which is done with
+# `npm install`, whose pruning nothing local reports. `npm run verify` cannot
+# catch it either — the gate never runs `npm ci`.
+#
+# ## Why corepack rather than `npm i -g npm@10.9.8`
+#
+# Corepack reads the version from `packageManager`, so the pin stays in one
+# place and changing it does not mean editing seven workflows. A hard-coded
+# version here would be a second pin, which is the shape of problem this is
+# fixing.
+#
+# ## Why not pin npm 11 instead and regenerate the lockfile
+#
+# npm 11 cannot install this tree at all — it stops on an ERESOLVE peer
+# conflict that npm 10 resolves. Moving the pin forward is real work on the
+# dependency graph, and worth doing on its own; it is not a prerequisite for
+# CI agreeing with the repository about which npm it uses.
+#
+# ## Where this is deliberately not used
+#
+# `installer.yml`'s four Node-version probes. They set Node 22, 24.14, 25 and
+# 24.15 to prove `engines` refuses the unsupported ones on a machine that is
+# meant to look like a user's. Forcing a package manager there would be testing
+# our runner rather than their environment.
+
+runs:
+  using: composite
+  steps:
+    - name: Enable corepack for npm
+      shell: bash
+      # The prompt is interactive and there is no terminal here; without this
+      # the first fetch of a non-bundled version hangs until the job times out.
+      env:
+        COREPACK_ENABLE_DOWNLOAD_PROMPT: '0'
+      run: |
+        corepack enable npm
+        # Printed rather than asserted: a mismatch is visible in the log where
+        # somebody is already looking, and asserting an exact version here
+        # would be the third place the pin lives.
+        echo "npm $(npm --version) (package.json pins $(node -p "require('./package.json').packageManager"))"
