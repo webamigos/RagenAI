@@ -188,6 +188,51 @@ describe('an administrator’s own override', () => {
   });
 });
 
+describe('what the action accepts', () => {
+  it.each([
+    ['a string', { enabled: 'yes' }],
+    ['a number', { enabled: 1 }],
+    ['an object', { enabled: {} }],
+  ])('refuses %s rather than letting Prisma throw', async (_label, patch) => {
+    // A Server Action is called from a client component, so a stale tab or a
+    // hand-made request can send anything. A non-null, non-boolean value
+    // passed the old `=== null` check and reached Prisma, which throws —
+    // escaping the declared result type instead of coming back as a refusal.
+    guardrailFindFirst.mockResolvedValue({ id: 1, publicId: 'gr-1' });
+
+    const result = await setGuardrailOverrideAction(
+      ORG,
+      'gr-1',
+      patch as unknown as { enabled: boolean | null },
+    );
+
+    expect(result.ok).toBe(false);
+    expect(overrideCreate).not.toHaveBeenCalled();
+    expect(overrideUpdate).not.toHaveBeenCalled();
+    expect(overrideDelete).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ['undefined', { enabled: undefined }],
+    ['an absent key', {}],
+  ])(
+    'reads %s as inherit, which is what its absence means',
+    async (_l, patch) => {
+      guardrailFindFirst.mockResolvedValue({ id: 1, publicId: 'gr-1' });
+      overrideFindFirst.mockResolvedValue({ id: 10, enabled: false });
+
+      const result = await setGuardrailOverrideAction(
+        ORG,
+        'gr-1',
+        patch as unknown as { enabled: boolean | null },
+      );
+
+      expect(result).toEqual({ ok: true });
+      expect(overrideDelete).toHaveBeenCalledWith({ where: { id: 10 } });
+    },
+  );
+});
+
 describe('inherit', () => {
   it('removes the row rather than storing one that decides nothing', async () => {
     guardrailFindFirst.mockResolvedValue({ id: 1, publicId: 'gr-1' });

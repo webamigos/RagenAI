@@ -24,8 +24,23 @@ const SOURCE_LABELS: Record<string, string> = {
 
 type TriState = 'inherit' | 'on' | 'off';
 
-function toTriState(row: OrgGuardrailRow): TriState {
-  if (row.override == null || row.override.enabled == null) {
+/**
+ * What the control shows: the state in effect, not the row as stored.
+ *
+ * A seeded `legacy_on_premise` override is stored and ignored off-premise, so
+ * reading it back would put the select on "Force off" while the rule is on.
+ * Two things then go wrong at once: the control states something untrue, and
+ * the note beside it — "changing it here makes it apply immediately" — cannot
+ * be acted on, because choosing the value already displayed fires no change
+ * event. The operator would have to toggle away and back.
+ *
+ * So an inert row reads as "Inherit", which is what is actually happening, and
+ * every option in the select is a real change from there. What is stored, and
+ * why it does nothing, is said in words beside the control rather than encoded
+ * in it.
+ */
+function toTriState(row: OrgGuardrailRow, inert: boolean): TriState {
+  if (inert || row.override == null || row.override.enabled == null) {
     return 'inherit';
   }
   return row.override.enabled ? 'on' : 'off';
@@ -104,7 +119,7 @@ export function OrgGuardrailsView({
             <div className="shrink-0">
               {row.isPlatformRule ? (
                 <select
-                  value={toTriState(row)}
+                  value={toTriState(row, inert)}
                   disabled={isPending}
                   onChange={(e) => change(row, e.target.value as TriState)}
                   className="rounded-md border border-border bg-background px-2 py-1 text-sm disabled:opacity-50"

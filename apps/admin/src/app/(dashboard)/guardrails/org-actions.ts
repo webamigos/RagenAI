@@ -12,10 +12,12 @@ import {
   type GuardrailValueSource,
 } from '@ragenai/guardrails';
 
+import { revalidatePath } from 'next/cache';
+import { z } from 'zod';
+
 import { ADMIN_ACTIONS, recordAdminAction } from '@/lib/audit';
 import { requireAdmin } from '@/lib/auth-guard';
 import { prisma } from '@/lib/db';
-import { revalidatePath } from 'next/cache';
 
 const REVALIDATE_PATH = '/guardrails';
 
@@ -183,6 +185,23 @@ export type OverrideInput = {
   enabled: boolean | null;
 };
 
+/**
+ * The input as it arrives, which is whatever JSON reached a Server Action.
+ *
+ * `OverrideInput` is a compile-time shape and this action is called from a
+ * client component, so a stale tab or a hand-made request can send `{}` or a
+ * string. A non-null, non-boolean value passes the `=== null` check and
+ * reaches Prisma, which rejects it by throwing — escaping the declared
+ * `OverrideResult` instead of coming back as a refusal. A missing value would
+ * also not be read as inherit, which is what its absence means.
+ */
+const overrideInputSchema = z.object({
+  enabled: z
+    .boolean()
+    .nullish()
+    .transform((value) => value ?? null),
+});
+
 export type OverrideResult = { ok: true } | { ok: false; message: string };
 
 /**
@@ -199,6 +218,15 @@ export async function setGuardrailOverrideAction(
   input: OverrideInput,
 ): Promise<OverrideResult> {
   const admin = await requireAdmin();
+
+  const parsed = overrideInputSchema.safeParse(input);
+  if (!parsed.success) {
+    return {
+      ok: false,
+      message: 'An override is either on, off, or inherited.',
+    };
+  }
+  const enabled = parsed.data.enabled;
 
   const rule = await prisma.guardrail.findFirst({
     where: { publicId: guardrailPublicId, organizationId: null },
@@ -217,7 +245,7 @@ export async function setGuardrailOverrideAction(
     where: { guardrailId: rule.id, organizationId },
   });
 
-  if (input.enabled === null) {
+  if (enabled === null) {
     // Inherit means no row, not a row full of nulls: a row that decides
     // nothing is a row somebody has to interpret later.
     if (existing) {
@@ -229,14 +257,14 @@ export async function setGuardrailOverrideAction(
       // Clearing `origin` is deliberate: an administrator touching a seeded
       // row is making it their own decision, and it should then apply the way
       // every other override does.
-      data: { enabled: input.enabled, origin: null },
+      data: { enabled, origin: null },
     });
   } else {
     await prisma.guardrailOrgOverride.create({
       data: {
         guardrailId: rule.id,
         organizationId,
-        enabled: input.enabled,
+        enabled,
       },
     });
   }
@@ -248,7 +276,7 @@ export async function setGuardrailOverrideAction(
     entityId: guardrailPublicId,
     organizationId,
     before: { enabled: existing?.enabled ?? null },
-    after: { enabled: input.enabled },
+    after: { enabled },
     securityEvent: { eventType: 'ADMIN_SETTINGS_CHANGED' },
   });
 
