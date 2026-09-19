@@ -161,7 +161,7 @@ carries an explicit opt-out:
 ```json
 "releaseRules": [
   { "breaking": true, "release": "major" },
-  { "subject": "*[no release]*", "release": false }
+  { "subject": "*\\[no release\\]*", "release": false }
 ]
 ```
 
@@ -170,12 +170,28 @@ nothing. The commit still appears in the next release's notes, so nothing is
 lost from the record, and when every commit since the last tag is marked,
 semantic-release does nothing at all rather than cutting an empty release.
 
-**The breaking rule is first because the rules are evaluated in order and the
-first match wins.** Without it, a commit carrying both a `BREAKING CHANGE`
-footer and the marker would match the opt-out and release nothing — the one
-case where silence is worst, since the notes announcing the break would not be
-published either. Anything that matches no rule falls through to the defaults,
-which is why they are not restated here.
+Three things about that config are not guessable, and getting any of them
+wrong is silent:
+
+- **A rule value is a glob, matched with micromatch**, so the brackets have to
+  be escaped. `"*[no release]*"` is a character class — one character out of
+  `n o ' ' r e l a s` — which matches very nearly every commit subject in this
+  repository and switches releases off altogether. It was written that way here
+  first, and the only symptom is a release that never comes.
+- **A matching rule that says `release: false` returns `false`, not
+  `undefined`**, and `index.js` falls back to the default rules only on
+  `undefined`. That is the whole mechanism: the marker suppresses the release
+  precisely because a matched rule stops the fallback.
+- **Matching rules do not resolve first-to-last — the highest release type
+  wins** (`analyze-commit.js`), and `major` ends the analysis early. So a commit
+  carrying both a `BREAKING CHANGE` footer and the marker releases `major`
+  whichever order the two rules are in. The breaking rule is not ordering, it
+  is the guarantee: without it the marker would silence the one release that
+  must never be silent, because the notes announcing the break would not be
+  published either. It is written first so the short-circuit can take effect.
+
+Anything matching no rule at all falls through to the defaults, which is why
+they are not restated here.
 
 A marker in the subject rather than a scope like `feat(no-release):`, because
 scopes are spoken for: one per workspace, since `#1253`.

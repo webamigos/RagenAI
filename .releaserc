@@ -12,7 +12,7 @@
             "release": "major"
           },
           {
-            "subject": "*[no release]*",
+            "subject": "*\\[no release\\]*",
             "release": false
           }
         ]
