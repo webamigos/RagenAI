@@ -68,6 +68,20 @@ archive is the blog.
 
 ## Unreleased
 
+### Thread: the version number says something again
+
+- `[major]` **Ragen is on 2.0.0.** Nothing in the product broke — the jump is
+  the point. The line reached 1.217.0 by counting 217 minor bumps of ordinary
+  feature work, one per merge, so the number had stopped telling anyone what
+  had changed between two of them. 2.0.0 restarts it alongside a rule that
+  makes releases rarer: work that ships behind a disabled feature key is a
+  `chore` and cuts no release, and only turning the key on is a `feat`. One
+  feature, one version. For anyone self-hosting, the practical effect is that
+  `latest` and the published images move when something actually reaches them
+  (ADR-50 in [#1264](https://github.com/webamigos/RagenAI/pull/1264); the
+  version reset itself is
+  [#1266](https://github.com/webamigos/RagenAI/pull/1266))
+
 ### Thread: a field that does not lie about what it holds
 
 - `[brief]` **A project instruction stays in the box after you save it.** The
