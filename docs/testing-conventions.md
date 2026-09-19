@@ -37,7 +37,15 @@ wrong fails about thirty `p0` tests with assertions that look nothing like a
 database problem. `.claude/skills/ragen-e2e-triage/SKILL.md` has the command
 and the symptoms.
 
-`npm run build` has to succeed before `npm run test:e2e` — the suite drives the
+**There is no root `build` or `test:e2e` script**, and both were documented
+here until they cost somebody a triage cycle. The root delegates per app:
+`web:build`, `api:build`, `web:e2e`, `admin:e2e`. Running the names that do not
+exist produces `npm error Missing script`, which reads as a broken checkout
+rather than as a wrong command — and it lands exactly when the next paragraph
+matters most. `tests/architecture/documented-commands-exist.test.ts` fails on
+the next one of these that creeps back in.
+
+`npm run web:build` has to succeed before `npm run web:e2e` — the suite drives the
 built app, not the dev server. If the mock LLM is not listening on :4100,
 `e2e/mock-llm-server.ts` starts on its own.
 

@@ -104,7 +104,7 @@ Two traps in the same area:
 
 ```bash
 npm run verify                       # lint + typecheck + test + build, every workspace
-npm run build && npm run test:e2e    # the build is not optional; see ragen-e2e-triage
+npm run web:build && npm run web:e2e  # the build is not optional; see ragen-e2e-triage
 ```
 
 For anything touching auth, sessions or organizations, `test:e2e` is the only

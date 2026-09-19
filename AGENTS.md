@@ -27,7 +27,7 @@ npm run packages:test    # Workspace package tests
 npm run ragen:up:full    # Backing services only (apps run on the host)
 npm run ragen:up:everything  # Everything in containers, apps included
 npm run generate:types   # Prisma client for every app (root owns the schema)
-npm run test:e2e         # Playwright E2E tests (requires ragen_e2e DB)
+npm run web:e2e          # Playwright E2E tests (requires ragen_e2e DB)
 npm run db:seed          # Seed database (uses .env.local)
 npm run worker:dev       # Background-job worker (apps/worker) in watch mode
 npm run worker:test      # Worker Vitest suite
@@ -37,8 +37,8 @@ npx turbo run build      # Build every workspace, in dependency order, cached
 npx turbo run build --filter=@ragenai/api   # ...just one, plus what it needs
 ```
 
-**E2E** needs a separate `ragen_e2e` database and a successful `npm run build`
-first — one-time setup in
+**E2E** needs a separate `ragen_e2e` database and a successful
+`npm run web:build` first — one-time setup in
 [`docs/testing-conventions.md`](docs/testing-conventions.md).
 
 ## Task Router
@@ -398,7 +398,7 @@ user. What each file there is for:
 
 **Naming**: `{priority}-{##}-{name}.spec.ts` where priority is `smoke-01..06` (unauth), `smoke-07+` (auth), `p0-*` (critical), `p1-*` (high), `p2-*` (medium), `p3-*` (low/admin/edge cases).
 
-**The prefix decides when CI runs it.** A PR runs only `smoke-*` and `p0-*` (82 of 175 tests); the full suite runs on push to `main` and nightly. So a `p1`–`p3` test will not gate the PR that breaks it — put anything that must block a merge in `smoke-*` or `p0-*`. Run everything locally with `npm run test:e2e`, or just the fast tier with `npx playwright test "(smoke|p0)-"`.
+**The prefix decides when CI runs it.** A PR runs only `smoke-*` and `p0-*` (82 of 175 tests); the full suite runs on push to `main` and nightly. So a `p1`–`p3` test will not gate the PR that breaks it — put anything that must block a merge in `smoke-*` or `p0-*`. Run everything with `npm run web:e2e`; the fast tier is `npx playwright test "(smoke|p0)-"` in `apps/web`.
 
 **Conventions**: see [`docs/testing-conventions.md`](docs/testing-conventions.md).
 

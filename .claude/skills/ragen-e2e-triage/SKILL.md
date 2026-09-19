@@ -12,7 +12,7 @@ through once. This skill is about telling the two apart.
 
 ## The mistake to avoid first
 
-`AGENTS.md` requires `npm run build` before `npm run test:e2e`. Skip it and the
+`AGENTS.md` requires `npm run web:build` before the suite. Skip it and the
 suite fails in a way that is **indistinguishable from a real auth regression**:
 the setup project plus `smoke-05` and `smoke-06` all time out on
 `page.waitForURL('**/pl/new')`.
