@@ -93,9 +93,18 @@ export function isBuiltInGuardrailKey(
  * the moment the first combination works — which is the release after this
  * one. This is a list precisely so that each entry can arrive on its own.
  *
- * Phase B adds `PATTERN`/`INPUT` and `BUILT_IN`/`INPUT`; C adds
- * `LLM_POLICY`/`INPUT`; D opens `OUTPUT`. Until then the set is empty, which
- * is the honest answer for a build that ships no evaluator at all.
+ * **It answers what this package can evaluate, not what any app has wired up.**
+ * The two are different questions and only the first belongs here. A rule kind
+ * with no evaluator anywhere is a lie on the form — offering `LLM_POLICY`
+ * before a judge exists promises a feature. A rule whose evaluator exists but
+ * whose call site arrives in the next phase is an ordinary deployment state,
+ * and it is what "Phase A ends with rules an operator can create and nothing
+ * reading them" describes.
+ *
+ * So: `PATTERN`/`INPUT`, which `evaluator/pattern.ts` implements. `OUTPUT`
+ * waits for the sliding-window transform in Phase D — evaluating a whole
+ * string is not the same problem as evaluating a stream — `BUILT_IN` for the
+ * detectors to be absorbed in B and C, and `LLM_POLICY` for the judge in C.
  */
 export type GuardrailCombination = {
   kind: GuardrailKind;
@@ -103,7 +112,7 @@ export type GuardrailCombination = {
 };
 
 export const SUPPORTED_COMBINATIONS: readonly GuardrailCombination[] =
-  Object.freeze([]);
+  Object.freeze([Object.freeze({ kind: 'PATTERN', stage: 'INPUT' })] as const);
 
 /**
  * `BOTH` is shorthand for two stages, not a third one, so a rule carrying it

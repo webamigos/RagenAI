@@ -20,6 +20,7 @@ import {
   Layers,
   Plug,
   ShieldCheck,
+  ShieldHalf,
   ToggleRight,
   KeyRound,
   PlugZap,
@@ -60,6 +61,7 @@ const navItems = [
   { href: '/ai-usage', label: 'AI Usage', icon: Brain },
   { href: '/disk-usage', label: 'Disk Usage', icon: HardDrive },
   { href: '/activity-log', label: 'Activity Log', icon: ScrollText },
+  { href: '/guardrails', label: 'Guardrails', icon: ShieldHalf },
   { href: '/incidents', label: 'Incidents', icon: ShieldAlert },
 ];
 
