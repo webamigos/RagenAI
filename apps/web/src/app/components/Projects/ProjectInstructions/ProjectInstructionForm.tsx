@@ -64,7 +64,16 @@ export const ProjectInstructionForm = ({
 
       if (result.success) {
         successToast({ message: t('instruction-saved') });
-        reset();
+        // Reset *to what was saved*, not to the empty default. A bare
+        // `reset()` returns the form to `defaultValues`, so the operator
+        // watched their instruction disappear from the box at the moment they
+        // saved it.
+        //
+        // This is not the fix for `p0-22-projects`' flapping assertion — that
+        // was measured and it is not: the value never reaches
+        // `project_settings.instructions` at all, while the endpoint reports
+        // success. This only stops the field lying about what was just saved.
+        reset({ description: data.description });
 
         if (onSuccess) {
           onSuccess();
