@@ -137,11 +137,13 @@ describe('creating', () => {
     expect(create).not.toHaveBeenCalled();
   });
 
-  it('refuses an action the kind cannot carry out', async () => {
+  it('allows MASK on a pattern, which is the one kind that returns a span', async () => {
+    // Named for what it asserts. `ACTIONS_BY_KIND` refuses MASK on BUILT_IN
+    // and LLM_POLICY, but neither is a combination this build offers, so no
+    // valid input reaches that branch through this action today — a test
+    // claiming to cover the refusal would be claiming coverage it has not got.
     const result = await createGuardrailAction({ ...VALID, action: 'MASK' });
 
-    // MASK is valid for PATTERN, so this one is allowed — the guard is about
-    // the kinds that return no span.
     expect(result).toEqual({ ok: true });
   });
 
@@ -167,29 +169,101 @@ describe('creating', () => {
     expect(result.ok).toBe(false);
     expect(create).not.toHaveBeenCalled();
   });
+
+  it.each([
+    ['a severity that is not one', { severity: 'catastrophic' }],
+    ['a name that is not text', { name: 42 }],
+    ['a stage that is not one', { stage: 'SOMETIMES' }],
+    ['an action that is not one', { action: 'SHOUT' }],
+    ['a pattern that is not text', { pattern: { evil: true } }],
+  ])('refuses %s rather than letting Prisma throw', async (_label, patch) => {
+    // A Server Action takes whatever JSON reaches it. Without a shape check
+    // `severity: 'catastrophic'` comes back as a Prisma enum error and a
+    // non-string name throws inside `.trim()` — both as an unhandled failure
+    // rather than as the field-level refusal everything else here gives.
+    const result = await createGuardrailAction({
+      ...VALID,
+      ...patch,
+    } as unknown as Parameters<typeof createGuardrailAction>[0]);
+
+    expect(result.ok).toBe(false);
+    expect(create).not.toHaveBeenCalled();
+  });
 });
 
 describe('editing', () => {
-  it('will not change a built-in detector’s kind', async () => {
+  const BUILT_IN = {
+    id: 1,
+    publicId: ID,
+    key: 'content-moderation',
+    kind: 'BUILT_IN',
+    name: 'Content moderation',
+    stage: 'INPUT',
+    action: 'BLOCK',
+    pattern: null,
+    enabled: false,
+  };
+
+  it('will not change a built-in detector’s kind, and says which rule it is', async () => {
     // `key` is what the resolver matches a detector on. A renamed or retyped
     // built-in is a detector that silently no longer exists, and the unique
     // index cannot catch it — that guards the opposite failure.
-    findFirst.mockResolvedValue({
-      id: 1,
-      publicId: ID,
-      key: 'content-moderation',
-      kind: 'BUILT_IN',
-      name: 'Content moderation',
-      stage: 'INPUT',
-      action: 'BLOCK',
-      pattern: null,
-      enabled: false,
-    });
+    //
+    // The message is asserted because the first version of this test passed
+    // for the wrong reason: the combination check rejected BUILT_IN before
+    // this guard ran, so `ok: false` proved nothing about the guard and hid
+    // the fact that *every* built-in edit was refused.
+    findFirst.mockResolvedValue(BUILT_IN);
 
     const result = await updateGuardrailAction(ID, VALID);
 
     expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.message).toContain('content-moderation');
+      expect(result.message).toContain('built-in');
+    }
     expect(update).not.toHaveBeenCalled();
+  });
+
+  it('saves a built-in edit that keeps its identity', async () => {
+    // The bug this covers: BUILT_IN/INPUT is not in SUPPORTED_COMBINATIONS
+    // until Phase B, so validating the combination before the identity guard
+    // refused every edit of a seeded rule — while the page kept offering an
+    // Edit button for it.
+    findFirst.mockResolvedValue(BUILT_IN);
+
+    const result = await updateGuardrailAction(ID, {
+      ...VALID,
+      kind: 'BUILT_IN',
+      action: 'LOG',
+      pattern: undefined,
+      patternIsRegex: undefined,
+    });
+
+    expect(result).toEqual({ ok: true });
+    expect(update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ action: 'LOG', stage: 'INPUT' }),
+      }),
+    );
+  });
+
+  it('keeps a built-in on the stage it was seeded with', async () => {
+    findFirst.mockResolvedValue(BUILT_IN);
+
+    await updateGuardrailAction(ID, {
+      ...VALID,
+      kind: 'BUILT_IN',
+      stage: 'OUTPUT',
+      action: 'LOG',
+      pattern: undefined,
+    });
+
+    expect(update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ stage: 'INPUT' }),
+      }),
+    );
   });
 
   it('scopes its lookup to platform rules', async () => {

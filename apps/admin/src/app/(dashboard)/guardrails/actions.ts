@@ -2,6 +2,10 @@
 
 import {
   ACTIONS_BY_KIND,
+  GUARDRAIL_ACTIONS,
+  GUARDRAIL_KINDS,
+  GUARDRAIL_SEVERITIES,
+  GUARDRAIL_STAGES,
   isActionValidForKind,
   isCombinationSupported,
   type GuardrailAction,
@@ -94,12 +98,24 @@ export type GuardrailMutationResult =
  */
 async function validate(
   input: GuardrailInput,
+  /**
+   * A rule whose kind and stage are the platform's, not the operator's.
+   *
+   * A built-in is seeded `BUILT_IN`/`INPUT`, which `SUPPORTED_COMBINATIONS`
+   * does not list — the evaluator arrives in Phase B. Running the combination
+   * check over it rejected every edit of a built-in before the identity guard
+   * below could say what is actually editable, so the page offered an Edit
+   * button that could never succeed. The check belongs to what an operator
+   * *chooses*; these two fields they cannot.
+   */
+  fixedByPlatform = false,
 ): Promise<GuardrailMutationResult> {
-  if (input.name.trim().length === 0) {
-    return { ok: false, message: 'A rule needs a name.' };
+  const shapeError = validateShape(input);
+  if (shapeError) {
+    return { ok: false, message: shapeError };
   }
 
-  if (!isCombinationSupported(input.kind, input.stage)) {
+  if (!fixedByPlatform && !isCombinationSupported(input.kind, input.stage)) {
     return {
       ok: false,
       message:
@@ -135,6 +151,41 @@ async function validate(
   }
 
   return { ok: true };
+}
+
+/**
+ * The input is whatever JSON reached a Server Action, so nothing about it is
+ * known yet.
+ *
+ * The form sends the right shapes; a stale tab and a hand-made request do not.
+ * Without this, `severity: 'catastrophic'` reaches Prisma and comes back as an
+ * enum error, and a non-string `name` throws inside `.trim()` — both surfacing
+ * as an unhandled Server Action failure rather than as the field-level refusal
+ * the rest of this file is careful to give.
+ */
+function validateShape(input: GuardrailInput): string | null {
+  if (typeof input.name !== 'string' || input.name.trim().length === 0) {
+    return 'A rule needs a name.';
+  }
+  if (input.description != null && typeof input.description !== 'string') {
+    return 'A description has to be text.';
+  }
+  if (!(GUARDRAIL_KINDS as readonly string[]).includes(input.kind)) {
+    return `${String(input.kind)} is not a kind of rule.`;
+  }
+  if (!(GUARDRAIL_STAGES as readonly string[]).includes(input.stage)) {
+    return `${String(input.stage)} is not a stage.`;
+  }
+  if (!(GUARDRAIL_ACTIONS as readonly string[]).includes(input.action)) {
+    return `${String(input.action)} is not something a rule can do.`;
+  }
+  if (!(GUARDRAIL_SEVERITIES as readonly string[]).includes(input.severity)) {
+    return `${String(input.severity)} is not a severity.`;
+  }
+  if (input.pattern != null && typeof input.pattern !== 'string') {
+    return 'A pattern has to be text.';
+  }
+  return null;
 }
 
 function describeFailure(
@@ -229,16 +280,13 @@ export async function updateGuardrailAction(
     return { ok: false, message: 'That rule no longer exists.' };
   }
 
-  const verdict = await validate(input);
-  if (!verdict.ok) {
-    return verdict;
-  }
+  const isBuiltIn = existing.key !== null;
 
   // A built-in's identity is what the resolver matches on, so `key` and `kind`
   // are not editable — a renamed key is a detector that silently no longer
   // exists, which the unique index cannot catch because it guards the opposite
   // failure.
-  if (existing.key !== null && input.kind !== existing.kind) {
+  if (isBuiltIn && input.kind !== existing.kind) {
     return {
       ok: false,
       message:
@@ -247,12 +295,21 @@ export async function updateGuardrailAction(
     };
   }
 
+  // The identity guard runs first, so by here a built-in's kind and stage are
+  // the platform's own and are not the operator's to be judged on.
+  const verdict = await validate(input, isBuiltIn);
+  if (!verdict.ok) {
+    return verdict;
+  }
+
   const updated = await prisma.guardrail.update({
     where: { id: existing.id },
     data: {
       name: input.name.trim(),
       description: input.description?.trim() || null,
-      stage: input.stage,
+      // A built-in keeps the stage it was seeded with. Offering it on the form
+      // would be offering a choice the resolver does not honour.
+      stage: isBuiltIn ? existing.stage : input.stage,
       action: input.action,
       severity: input.severity,
       pattern: input.pattern ?? null,

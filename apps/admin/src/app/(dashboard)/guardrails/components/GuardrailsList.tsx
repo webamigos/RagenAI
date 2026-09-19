@@ -33,15 +33,22 @@ export function GuardrailsList({ rules }: { rules: GuardrailRow[] }) {
     success: string,
   ) => {
     startTransition(async () => {
-      const result = await work();
-      if (result.ok) {
-        toast.success(success);
-        setDeleteTarget(null);
-      } else {
-        // The refusals here explain a design constraint — why a built-in
-        // cannot be deleted, why a pattern was rejected — so they are shown
-        // rather than replaced with "something went wrong".
-        toast.error(result.message ?? 'That did not work.');
+      try {
+        const result = await work();
+        if (result.ok) {
+          toast.success(success);
+          setDeleteTarget(null);
+        } else {
+          // The refusals here explain a design constraint — why a built-in
+          // cannot be deleted, why a pattern was rejected — so they are shown
+          // rather than replaced with "something went wrong".
+          toast.error(result.message ?? 'That did not work.');
+        }
+      } catch {
+        // A refusal comes back as `{ ok: false }`; a Prisma or audit failure
+        // rejects, and an uncaught rejection leaves the row looking untouched
+        // with no error at all.
+        toast.error('That did not work. The server reported a failure.');
       }
     });
   };

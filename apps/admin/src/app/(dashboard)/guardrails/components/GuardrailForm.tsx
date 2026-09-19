@@ -27,9 +27,22 @@ import {
  * on it — the banner starts lying the moment one combination works, and these
  * arrive one at a time.
  */
-function useOffered() {
+function useOffered(existing?: { kind: GuardrailKind; stage: GuardrailStage }) {
   return useMemo(() => {
     const stagesByKind = new Map<GuardrailKind, GuardrailStage[]>();
+    // A rule being edited contributes its own kind and stage, whether or not
+    // this build evaluates them. A built-in is seeded `BUILT_IN`/`INPUT`,
+    // which `SUPPORTED_COMBINATIONS` does not list until Phase B — without
+    // this both selects render with no option matching the value they hold,
+    // which reads as an empty form rather than as a fixed field.
+    if (existing) {
+      stagesByKind.set(
+        existing.kind,
+        existing.stage === 'BOTH'
+          ? ['INPUT', 'OUTPUT', 'BOTH']
+          : [existing.stage],
+      );
+    }
     for (const combination of SUPPORTED_COMBINATIONS) {
       const stages = stagesByKind.get(combination.kind) ?? [];
       stages.push(combination.stage);
@@ -44,7 +57,7 @@ function useOffered() {
       stagesByKind.set(kind, stages);
     }
     return stagesByKind;
-  }, []);
+  }, [existing]);
 }
 
 export function GuardrailForm({
@@ -54,7 +67,9 @@ export function GuardrailForm({
   rule?: GuardrailRow;
   onClose: () => void;
 }) {
-  const offered = useOffered();
+  const offered = useOffered(
+    rule ? { kind: rule.kind, stage: rule.stage } : undefined,
+  );
   const kinds = [...offered.keys()];
 
   const [name, setName] = useState(rule?.name ?? '');
@@ -90,15 +105,23 @@ export function GuardrailForm({
         patternIsRegex: kind === 'PATTERN' ? patternIsRegex : undefined,
       };
 
-      const result = rule
-        ? await updateGuardrailAction(rule.publicId, input)
-        : await createGuardrailAction(input);
+      try {
+        const result = rule
+          ? await updateGuardrailAction(rule.publicId, input)
+          : await createGuardrailAction(input);
 
-      if (result.ok) {
-        toast.success(rule ? 'Rule saved' : 'Rule created, switched off');
-        onClose();
-      } else {
-        toast.error(result.message);
+        if (result.ok) {
+          toast.success(rule ? 'Rule saved' : 'Rule created, switched off');
+          onClose();
+        } else {
+          toast.error(result.message);
+        }
+      } catch {
+        // A refused action returns `{ ok: false }`; a Prisma or audit failure
+        // rejects instead, and without this the transition ends with neither
+        // branch having run — the dialog sits there looking like nothing
+        // happened, which is the one outcome worse than an error.
+        toast.error('That did not save. The server reported a failure.');
       }
     });
   };
@@ -126,24 +149,31 @@ export function GuardrailForm({
       </p>
 
       <div className="mt-6 space-y-4">
-        <Field label="Name">
+        <Field htmlFor="guardrail-name" label="Name">
           <input
+            id="guardrail-name"
             value={name}
             onChange={(e) => setName(e.target.value)}
             className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
           />
         </Field>
 
-        <Field label="Description" hint="Shown to whoever reads the rule list.">
+        <Field
+          htmlFor="guardrail-description"
+          label="Description"
+          hint="Shown to whoever reads the rule list."
+        >
           <input
+            id="guardrail-description"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
           />
         </Field>
 
-        <Field label="Kind">
+        <Field htmlFor="guardrail-kind" label="Kind">
           <select
+            id="guardrail-kind"
             value={kind}
             disabled={isBuiltIn}
             onChange={(e) => setKind(e.target.value as GuardrailKind)}
@@ -163,8 +193,9 @@ export function GuardrailForm({
           ) : null}
         </Field>
 
-        <Field label="Stage">
+        <Field htmlFor="guardrail-stage" label="Stage">
           <select
+            id="guardrail-stage"
             value={stage}
             onChange={(e) => setStage(e.target.value as GuardrailStage)}
             className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
@@ -177,8 +208,9 @@ export function GuardrailForm({
           </select>
         </Field>
 
-        <Field label="On a hit">
+        <Field htmlFor="guardrail-action" label="On a hit">
           <select
+            id="guardrail-action"
             value={action}
             onChange={(e) => setAction(e.target.value as GuardrailAction)}
             className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
@@ -191,8 +223,12 @@ export function GuardrailForm({
           </select>
         </Field>
 
-        <Field label="Severity of the event it records">
+        <Field
+          htmlFor="guardrail-severity"
+          label="Severity of the event it records"
+        >
           <select
+            id="guardrail-severity"
             value={severity}
             onChange={(e) => setSeverity(e.target.value as GuardrailSeverity)}
             className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
@@ -208,10 +244,12 @@ export function GuardrailForm({
         {kind === 'PATTERN' ? (
           <>
             <Field
+              htmlFor="guardrail-pattern"
               label="Pattern"
               hint="Checked against personal data that Presidio has already masked, so a rule for a national ID will not match the number — it will have become a placeholder by then."
             >
               <input
+                id="guardrail-pattern"
                 value={pattern}
                 onChange={(e) => setPattern(e.target.value)}
                 className="w-full rounded-md border border-border bg-background px-3 py-2 font-mono text-sm"
@@ -292,17 +330,22 @@ function Shell({
 }
 
 function Field({
+  htmlFor,
   label,
   hint,
   children,
 }: {
+  /** The control's `id`. Without it the label is decoration, not a label. */
+  htmlFor: string;
   label: string;
   hint?: string;
   children: React.ReactNode;
 }) {
   return (
     <div>
-      <label className="mb-1 block text-sm font-medium">{label}</label>
+      <label htmlFor={htmlFor} className="mb-1 block text-sm font-medium">
+        {label}
+      </label>
       {children}
       {hint ? (
         <p className="mt-1 text-xs text-muted-foreground">{hint}</p>
