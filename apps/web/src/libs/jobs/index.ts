@@ -34,6 +34,7 @@ import { BullMqJobRuntime } from '@ragenai/jobs-bullmq';
  * application itself**, adding `@ragenai/jobs-temporal` to this workspace's
  * dependencies and one line beside the registration below:
  *
+ *     import { TemporalJobRuntime } from '@ragenai/jobs-temporal';
  *     registerJobRuntime('temporal', () => new TemporalJobRuntime());
  *
  * Two lines, written down rather than made to look automatic —

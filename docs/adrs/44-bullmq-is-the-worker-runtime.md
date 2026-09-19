@@ -164,24 +164,24 @@ facts it reports, and saying which is which is the point of writing them down:
    image, where `/app/node_modules/@ragenai/*` symlink into `/app/packages/`, so
    the adapter compiles against the contract the artifact ships rather than a
    version number that can skew from it.
-3. **CI runs the real thing.** True now, as `.github/workflows/jobs-parity.yml`
-   — the D1 integration suite over both runtimes at 04:00 UTC and on every pull
-   request touching the seam, the adapter, the handlers, the workflow wrappers
-   or the worker's Temporal-only modules, with
-   `every-job-runtime-is-exercised.test.ts` holding the matrix to the
-   `WorkerRuntime` union so a runtime dropped from it cannot leave CI green. It
-   starts a real Temporal server from `@temporalio/testing` rather than a
-   container, and records the five places the engines legitimately disagree
-   instead of asserting them away. That job failing is how we learn that a
-   change to `ctx.steps` broke durable retries.
+3. **CI runs the real thing**, and since G2 it runs in `ragen-enterprise`.
+   That repository's `temporal-parity.yml` checks this one out, builds its
+   `@ragenai/jobs-temporal` against *this* checkout's `@ragenai/jobs`, splices
+   the build into `node_modules` and runs `npm run worker:test:jobs` with
+   `WORKER_RUNTIME=temporal` — so the question it answers is whether the *next*
+   release can still run Temporal, not whether the last one could. It starts a
+   real Temporal server from `@temporalio/testing` rather than a container, and
+   records the five places the engines legitimately disagree instead of
+   asserting them away. That job failing is how we learn that a change to
+   `ctx.steps` broke durable retries.
 
-   **G2 moved it**, and it now costs what the spec said it would. In
-   `ragen-enterprise` the same job checks out this repository at `main`, builds
-   the adapter against *this* checkout's `@ragenai/jobs`, splices the build
-   into the core's `node_modules` and runs `npm run worker:test:jobs` — so the
-   question it answers is whether the next release can still run Temporal, not
-   whether the last one could. Until G3 lands, this repository's
-   `jobs-parity.yml` runs too, over both runtimes.
+   **`jobs-parity.yml` is gone from this repository.** Its Temporal leg needed
+   the adapter, and a matrix of one is `ci.yml`'s `Jobs Integration`, which now
+   names `WORKER_RUNTIME: bullmq` rather than leaning on the default.
+   `every-job-runtime-is-exercised.test.ts` moved with it: it asserts that the
+   default runtime is exercised *here* and that every other member of the
+   `WorkerRuntime` union names the repository that runs it, so a third adapter
+   still cannot be added without somebody answering for it.
 
 ### The drift budget
 
@@ -189,7 +189,7 @@ facts it reports, and saying which is which is the point of writing them down:
 repository be justified by measured drift rather than by preference, so this
 change spends that budget deliberately:
 
-- **While the adapter is here, drift is zero** — it is a workspace in this
+- **While the adapter was here, drift was zero** — it was a workspace in this
   monorepo, carried by the same pull requests.
 - **After Phase G it is bounded by shape**: `ragen-enterprise` ships the adapter
   and a Dockerfile that is `FROM` the OSS worker image. It contains no handler,

@@ -35,8 +35,10 @@ repository's own `README` says so.
 
 **It holds no handler, no activity and no pipeline**, which is the shape that
 bounds the drift ADR-32 asks to be measured rather than assumed: those come
-from the image. This repository still carries its own copy of the adapter until
-the spec's G3, so an install today uses the one here.
+from the image. It is the only copy of the adapter — the spec's G3 removed this
+repository's — so a deployment that wants durable execution runs that
+repository's worker image, and builds `web` and `api` from source with the
+adapter added, because the images published here are BullMQ producers.
 
 The rule above still decides the question: a path is commercial when it carries
 its own `LICENSE` file. No path there does, so none is.

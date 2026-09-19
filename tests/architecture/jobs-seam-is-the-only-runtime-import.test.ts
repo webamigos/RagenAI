@@ -174,7 +174,16 @@ describe('the jobs seam is the only place that names a runtime', () => {
         Record<string, string> | undefined
       >;
       return (
-        ['dependencies', 'devDependencies', 'peerDependencies'] as const
+        [
+          'dependencies',
+          'devDependencies',
+          'peerDependencies',
+          // npm installs optional dependencies by default, so this is the
+          // section that would put the package back while looking like a
+          // hedge. A guard that omitted it would stay green through exactly
+          // the edit it exists to catch.
+          'optionalDependencies',
+        ] as const
       ).some(
         (section) => pkg[section]?.['@ragenai/jobs-temporal'] !== undefined,
       );
