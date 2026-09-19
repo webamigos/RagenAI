@@ -1198,6 +1198,34 @@ its devDependencies installed.
   image to three, which `ragen-enterprise`'s invariant 5 says needs the
   argument re-made in an ADR here.
 
+  **Recommended, not yet decided: the second.** The published `ragen-web` and
+  `ragen-api` stay BullMQ-only, and a Temporal install adds
+  `@ragenai/jobs-temporal` to those two manifests and rebuilds them; only the
+  worker gets a ready-made layer. Four reasons:
+
+  - It is the only one of the three that keeps the drift budget as already
+    argued — one thin layer over one image. The first spends budget nobody has
+    argued for; the third argues against Phase G existing, because a sibling
+    repository holding a Dockerfile is what ADR-32 says not to do.
+  - The first collapses into it for `apps/web` regardless. A Next standalone
+    build has already traced its imports, so layering that image means either
+    patching `.next/standalone/node_modules` — which is invariant 2 again — or
+    rebuilding, which is this option with machinery in between.
+  - The asymmetry is real. The worker *runs* Temporal: the SDK, the workflow
+    sandbox, 331 MB of native bridge, and a bootstrap it cannot compile itself.
+    `web` and `api` need `@temporalio/client` (13 MB) and about forty lines of
+    registration.
+  - It keeps Phase E's promise literally true — *durable execution is available
+    to anyone who builds from source* — and improves on it, by making the
+    expensive third of it a pull-and-run.
+
+  The cost, stated rather than glossed: `durable-execution.md`'s "two things, no
+  more" becomes three, one of which is "rebuild two images". And a refinement
+  worth holding back rather than building: `apps/api` compiles to plain CommonJS
+  and could be layered later behind an absence-tolerant dynamic import.
+  `apps/web` genuinely cannot, and doing one without the other would make the
+  deployment story harder to explain for no gain.
+
   Also, and separately, `every-job-runtime-is-exercised.test.ts` asserts that
   `jobs-parity.yml`'s matrix equals the `WorkerRuntime` union. When the
   Temporal leg moves out, that guard has to be rewritten rather than deleted —
