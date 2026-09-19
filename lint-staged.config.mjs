@@ -33,7 +33,6 @@ const workspaces = {
   'packages/observability': '@ragenai/observability',
   'packages/jobs': '@ragenai/jobs',
   'packages/jobs-bullmq': '@ragenai/jobs-bullmq',
-  'packages/jobs-temporal': '@ragenai/jobs-temporal',
   'packages/platform-contracts': '@ragenai/platform-contracts',
   'packages/rag-core': '@ragenai/rag-core',
   'packages/ragen-cli': 'ragen-cli',

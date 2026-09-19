@@ -95,9 +95,10 @@ async function run() {
   //
   // This is also where a Temporal start fails in the published image, and a
   // bare `Cannot find package '@temporalio/worker'` says nothing about why.
-  // The adapter one module over resolves fine there (npm links every
-  // workspace, so `@ragenai/jobs-temporal` and its client are present); it is
-  // the *runtime* that was left out, deliberately.
+  // Two separate things are absent and only one of them is named by that
+  // error: the SDK, which `--omit=dev` leaves out of this image, and the
+  // adapter `jobs.ts` loads, which G3 moved out of the repository entirely.
+  // `ragen-enterprise`'s image restores both.
   const { runTemporal } = await import('./temporal-runtime.js').catch(
     (error: unknown) => {
       // Anything that is not a missing package is a real failure inside that
@@ -112,8 +113,9 @@ async function run() {
           'WORKER_RUNTIME=temporal, but this build does not include the ' +
             'Temporal SDK. The published worker image ships the BullMQ runtime ' +
             "only (ADR-44): `@temporalio/*` are apps/worker's devDependencies " +
-            'and the image installs with --omit=dev. To run on Temporal, build ' +
-            'the image with those devDependencies installed.',
+            'and the image installs with --omit=dev. To run on Temporal, use ' +
+            "webamigos/ragen-enterprise's worker image, which is FROM this one " +
+            'and adds the SDK and the adapter.',
         ),
         error,
       );

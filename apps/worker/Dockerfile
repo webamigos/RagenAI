@@ -28,8 +28,6 @@ COPY packages/storage/package.json packages/storage/
 COPY packages/env/package.json packages/env/
 COPY packages/platform-contracts/package.json packages/platform-contracts/
 COPY packages/jobs/package.json packages/jobs/
-# Built, but not installed into the *running* image — see the prod-deps stage.
-COPY packages/jobs-temporal/package.json packages/jobs-temporal/
 COPY packages/jobs-bullmq/package.json packages/jobs-bullmq/
 COPY packages/llm-gateway/package.json packages/llm-gateway/
 
@@ -55,35 +53,36 @@ RUN npm ci --workspace=@ragenai/worker \
     --workspace=@ragenai/env \
     --workspace=@ragenai/platform-contracts \
     --workspace=@ragenai/jobs \
-    --workspace=@ragenai/jobs-temporal \
     --workspace=@ragenai/jobs-bullmq \
     --workspace=@ragenai/llm-gateway \
     --ignore-scripts
 RUN mkdir -p /app/apps/worker/node_modules
 
-# **`@ragenai/jobs-temporal` is missing from this list, and that is E6.**
-# The running image ships one runtime, the default one (ADR-44) — the adapter
-# and its `@temporalio/client` stay out of it. The `deps` stage above keeps it,
-# because the *compile* needs its type declarations; this stage is the one that
-# decides what the container actually contains.
+# **This image ships one runtime, and that is E6 plus G3.**
 #
-# It works because `apps/worker/src/jobs.ts` imports the adapter dynamically,
-# and only when `WORKER_RUNTIME=temporal` selects it, so a BullMQ start never
-# reaches for what is absent and a Temporal start fails with a sentence rather
-# than a MODULE_NOT_FOUND from a path nobody recognises. `src/worker.ts` does
-# the same for the Temporal runtime itself.
+# The `@temporalio/*` family are `apps/worker`'s devDependencies and this stage
+# installs with `--omit=dev`, so the SDK — 182 MB, most of it `core-bridge`'s
+# prebuilt native binaries — is not in the running image. The adapter is not in
+# this repository at all any more: `@ragenai/jobs-temporal` moved to
+# `webamigos/ragen-enterprise` in G3.
 #
-# **What an install that wants durable execution has to do**, concretely: the
-# packages are `apps/worker`'s devDependencies now, and this stage installs
-# with `--omit=dev`, so putting the adapter back on the `--workspace=` list
-# below is *not* enough. Either drop `--omit=dev` here — which also brings in
-# every other dev dependency, so the image grows by more than Temporal — or add
-# a stage of your own that installs them on top. Phase G moves the adapter to
-# its own repository and replaces this with a supported answer.
+# It works because `apps/worker/src/jobs.ts` and `src/worker.ts` reach both
+# through dynamic imports taken only when `WORKER_RUNTIME=temporal` selects
+# them, so a BullMQ start never touches what is absent and a Temporal start
+# fails with a sentence rather than a MODULE_NOT_FOUND from a path nobody
+# recognises. The adapter's specifier is a constant from `@ragenai/jobs` rather
+# than a literal, which is what keeps `tsc --build` working now that the package
+# is genuinely gone.
+#
+# **What an install that wants durable execution does**: run
+# `ragen-enterprise`'s image instead of this one. Its Dockerfile is `FROM` this
+# image and adds the adapter and the SDK to
+# `/app/apps/worker/node_modules`. Building this image with `--omit=dev` dropped
+# would restore the SDK and still leave no adapter, so it is not a shortcut.
 #
 # `tests/architecture/a-scoped-dockerfile-installs-every-workspace-dep.test.ts`
-# knows about this one omission and requires the dynamic-import half of it, so
-# it stays a decision rather than becoming a missing entry.
+# checks the dynamic-import half of this, so it stays a decision rather than
+# becoming a missing entry.
 FROM manifests AS prod-deps
 RUN npm ci --workspace=@ragenai/worker \
     --workspace=@ragenai/crypto \
@@ -138,7 +137,6 @@ RUN npm run build --workspace=@ragenai/env \
     && npm run build --workspace=@ragenai/crypto \
     && npm run build --workspace=@ragenai/platform-contracts \
     && npm run build --workspace=@ragenai/jobs \
-    && npm run build --workspace=@ragenai/jobs-temporal \
     && npm run build --workspace=@ragenai/jobs-bullmq \
     && npm run build --workspace=@ragenai/rag-core \
     && npm run build --workspace=@ragenai/observability \

@@ -24,11 +24,21 @@ carry its own `LICENSE`.
 A sibling repository by that name exists, and the name is misleading enough to
 be worth a paragraph: **it is Apache 2.0, the same as this one, and nothing in
 it is gated.** It holds deployment-side components that would otherwise cost
-every install something it may not want — the first is the Temporal adapter for
-the job runtime, which the worker no longer uses by default
-([the worker-runtime spec](specs/2026-09-15-bullmq-is-the-worker-runtime.md)).
-Moving a component out of the default install is not the same as moving it out
-of the licence, and that repository's own `README` says so.
+every install something it may not want. There is exactly one:
+`@ragenai/jobs-temporal`, the Temporal adapter for the job runtime, plus a
+Dockerfile that layers it and the Temporal SDK onto the published
+`ragen-worker` image — the worker runs on BullMQ by default
+([the worker-runtime spec](specs/2026-09-15-bullmq-is-the-worker-runtime.md),
+[ADR-44](adrs/44-bullmq-is-the-worker-runtime.md)). Moving a component out of
+the default install is not the same as moving it out of the licence, and that
+repository's own `README` says so.
+
+**It holds no handler, no activity and no pipeline**, which is the shape that
+bounds the drift ADR-32 asks to be measured rather than assumed: those come
+from the image. It is the only copy of the adapter — the spec's G3 removed this
+repository's — so a deployment that wants durable execution runs that
+repository's worker image, and builds `web` and `api` from source with the
+adapter added, because the images published here are BullMQ producers.
 
 The rule above still decides the question: a path is commercial when it carries
 its own `LICENSE` file. No path there does, so none is.

@@ -1,8 +1,7 @@
 import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
-const { mockBullStart, mockTemporalStart } = vi.hoisted(() => ({
+const { mockBullStart } = vi.hoisted(() => ({
   mockBullStart: vi.fn(),
-  mockTemporalStart: vi.fn(),
 }));
 
 /**
@@ -13,22 +12,23 @@ const { mockBullStart, mockTemporalStart } = vi.hoisted(() => ({
  * and gets "no adapter registered for WORKER_RUNTIME". So the test exercises
  * the real resolution path and stubs only the engines underneath it.
  *
- * **Both, since ADR-44.** Stubbing Temporal alone worked only while Temporal
- * was the default; the flip to BullMQ left this constructing a real
- * `BullMqJobRuntime` and opening a connection, which fails as a mock
- * assertion on a machine with Redis running and as a timeout without one. A
- * test that leans on the default is asserting the default.
+ * **BullMQ alone, since G3.** This file used to stub both adapters — Temporal
+ * first, then both, because stubbing Temporal alone worked only while Temporal
+ * was the default and the flip to BullMQ left this opening a real connection.
+ * There is one adapter to stub now: `@ragenai/jobs-temporal` moved to
+ * `webamigos/ragen-enterprise` and this application no longer registers it.
+ * **What a Temporal deployment now gets from this build is asserted in
+ * `packages/jobs`, not here.** An unmodified `apps/web` set to
+ * `WORKER_RUNTIME=temporal` throws the seam's *no adapter registered* on the
+ * first enqueue — the loud failure, rather than a queue nobody reads — and
+ * that case lives in `runtime.test.ts` because `getJobRuntime` caches inside
+ * `@ragenai/jobs`, which vitest externalises: `vi.resetModules()` here returns
+ * a fresh copy of this module and the same already-resolved runtime.
  */
 vi.mock('@ragenai/jobs-bullmq', () => ({
   // `new BullMqJobRuntime()` — an arrow has no [[Construct]].
   BullMqJobRuntime: vi.fn(function () {
     return { start: mockBullStart };
-  }),
-}));
-
-vi.mock('@ragenai/jobs-temporal', () => ({
-  TemporalJobRuntime: vi.fn(function () {
-    return { start: mockTemporalStart };
   }),
 }));
 
@@ -48,7 +48,6 @@ describe('apps/web job runtime', () => {
   beforeEach(() => {
     delete process.env.WORKER_RUNTIME;
     mockBullStart.mockReset().mockResolvedValue(undefined);
-    mockTemporalStart.mockReset().mockResolvedValue(undefined);
   });
 
   afterAll(() => {
@@ -78,7 +77,6 @@ describe('apps/web job runtime', () => {
       orgId: 'org-1',
       projectId: null,
     });
-    expect(mockTemporalStart).not.toHaveBeenCalled();
   });
 
   it('builds the runtime once, because a producer calls jobs() per request', () => {

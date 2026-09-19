@@ -8,8 +8,10 @@
  * `*EmbeddingProcessInput` types went with them; nothing had imported one.
  *
  * The queue name is also `TASK_QUEUE_NAME` in `@ragenai/jobs-temporal`, which
- * is the producer side of the same string. They are deliberately not shared:
- * the adapter is the package that leaves in Phase G, and the worker has to
- * keep listening on this queue whichever runtime it was built with.
+ * is the producer side of the same string. They were deliberately not shared,
+ * and G3 is why that was right: the adapter is in
+ * `webamigos/ragen-enterprise` now, and this worker has to keep listening on
+ * this queue whichever runtime it was built with. Sharing the constant would
+ * have made the queue name a cross-repository contract.
  */
 export const TASK_QUEUE_NAME = 'ragen-tasks';

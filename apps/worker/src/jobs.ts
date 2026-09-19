@@ -2,7 +2,9 @@ import {
   getJobRuntime,
   registerJobRuntime,
   resolveWorkerRuntime,
+  TEMPORAL_ADAPTER_PACKAGE,
   type JobRuntime,
+  type TemporalAdapterModule,
 } from '@ragenai/jobs';
 import { BullMqJobRuntime } from '@ragenai/jobs-bullmq';
 
@@ -25,19 +27,28 @@ import {
  * that is now follows `WORKER_RUNTIME` rather than being Temporal by
  * construction.
  *
- * **Only the selected runtime's adapter is loaded**, which is the difference
- * from `apps/web` and `apps/api`. Both of those register eagerly, because a
- * Next or Nest build traces static imports and a computed specifier would not
- * survive bundling. This app is plain Node, and its image is built without
- * `@ragenai/jobs-temporal` (the worker Dockerfile omits it): a static import
- * would fail at module resolution on every start, including the BullMQ one
- * every install now takes.
+ * **This is the only application that can load the Temporal adapter at all**,
+ * which is the difference from `apps/web` and `apps/api`. Both of those
+ * register BullMQ and nothing else since G3: a Next or Nest build traces static
+ * imports, so they cannot reach a package that is not in the tree, and a
+ * Temporal deployment adds it back to those two itself — see
+ * `ragen-enterprise`'s `docs/durable-execution.md`. This app is plain Node and
+ * has the dynamic import that makes the enterprise worker image work.
+ *
+ * `@ragenai/jobs-temporal` is not a dependency of this workspace since G3; it
+ * lives in `webamigos/ragen-enterprise`, and an image that wants it layers it
+ * in. The specifier therefore comes from the seam as a constant rather than
+ * being written here as a literal — TypeScript resolves a literal at compile
+ * time whichever branch guards it, so this file would not build on a default
+ * install.
  */
 registerJobRuntime('bullmq', () => new BullMqJobRuntime());
 
 if (resolveWorkerRuntime() === 'temporal') {
   try {
-    const { TemporalJobRuntime } = await import('@ragenai/jobs-temporal');
+    const { TemporalJobRuntime } = (await import(
+      TEMPORAL_ADAPTER_PACKAGE
+    )) as TemporalAdapterModule;
     registerJobRuntime('temporal', () => new TemporalJobRuntime());
   } catch (error) {
     // Only a missing package is the case this build deliberately creates;
@@ -51,7 +62,10 @@ if (resolveWorkerRuntime() === 'temporal') {
       new Error(
         'WORKER_RUNTIME=temporal, but this build does not include ' +
           '@ragenai/jobs-temporal, so the schedule scripts have no producer. ' +
-          'The published worker image ships the BullMQ runtime only (ADR-44).',
+          'That package is not part of Ragen since ADR-44 and the ' +
+          "worker-runtime spec's G3 — it is in webamigos/ragen-enterprise, " +
+          'whose Dockerfile layers it and the Temporal SDK onto this image. ' +
+          'Run that image instead of this one.',
       ),
       error,
     );

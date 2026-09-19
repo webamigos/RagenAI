@@ -280,6 +280,8 @@ config:
   # Set both only to run background jobs on Temporal instead of BullMQ
   # (ADR-44). The chart no longer deploys a Temporal server; this points at one
   # you run yourself, and the worker and the apps must agree on the runtime.
+  # The published worker image cannot serve this runtime — it ships no Temporal
+  # SDK and says so at boot. See the README before setting it.
   WORKER_RUNTIME: ''
   TEMPORAL_SERVER_ADDRESS: ''
   # Public URLs. Set these — sign-in links and OAuth callbacks are built from

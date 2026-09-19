@@ -1059,9 +1059,15 @@ Gated on D2's numbers. The adapter does not move in this phase — see *Answered
 
 ### Phase G — the adapter leaves, once there is an image to layer it onto
 
-Gated on publishing `ragen-worker`, which is not part of this spec and has no
-date. Until then Phase E's arrangement is the steady state, and it is a working
-one: durable execution is available to anyone who builds from source.
+**Done.** G1 published the images, G2 moved the adapter to
+`webamigos/ragen-enterprise` with its Dockerfile and its parity job, G3 dropped
+this repository's copy, and G4 brought the open-core boundary up to date.
+
+What a Temporal install does now, in full: run `ragen-enterprise`'s worker
+image instead of the OSS one — it is `FROM` it and adds the adapter and the
+SDK — and build `web` and `api` from source with the adapter added, because
+those two are published BullMQ-only (G3's decision, and its reasoning is
+there). The schedule scripts run from the enterprise image too.
 
 - [x] **G1.** Publish the worker image (its own change — every app image would
       benefit, and self-hosting today means building four of them from source).
@@ -1070,105 +1076,190 @@ one: durable execution is available to anyone who builds from source.
   `ragen-api`, `ragen-admin` and `ragen-mcp` to `ghcr.io/webamigos`, amd64, on
   a published release, tagged `vX.Y.Z` / `X.Y` / `sha-…` / `latest`.
 
-  **`web` is not among them, and that is a finding rather than a phase
-  boundary.** Its Dockerfile takes ten `NEXT_PUBLIC_*` build arguments which
-  Next inlines into the client bundle, and three are per-install by nature —
-  `NEXT_PUBLIC_APP_URL` and the two Pusher values. One published image would
-  therefore carry the publisher's values into every install's browser: it would
-  start cleanly and leave realtime notifications dead. Publishing it needs those
-  moved to runtime, which is a change to the application. Everything else is
-  published, `mcp` included — it takes no build arguments, and sitting outside
-  this programme is not a reason to make somebody compile it.
+  **`web` was the one exclusion, and it is published now too.** Its Dockerfile
+  took ten `NEXT_PUBLIC_*` build arguments which Next inlines into the client
+  bundle, and three are per-install by nature — `NEXT_PUBLIC_APP_URL` and the
+  two Pusher values. One published image would have carried the publisher's
+  values into every install's browser: it would start cleanly and leave
+  realtime notifications dead. #1249 moved the public configuration to a
+  runtime read and #1250 published the image, so the Dockerfile now declares no
+  build arguments and an architecture test keeps it that way. `mcp` is
+  published for the same reason it always could have been — no build arguments,
+  and sitting outside this programme is not a reason to make somebody compile
+  it.
 
   `tests/architecture/a-release-can-trigger-the-image-build.test.ts` holds two
   couplings that would otherwise fail open: the release must be created with a
   non-default token (GitHub starts no workflow for events made with
   `GITHUB_TOKEN`, so the images would silently stop being built), and no app
   with `ARG NEXT_PUBLIC_*` may enter the matrix.
-- [ ] **G2.** Move `packages/jobs-temporal` to `webamigos/ragen-enterprise`
+- [x] **G2.** Move `packages/jobs-temporal` to `webamigos/ragen-enterprise`
       with its Dockerfile (`FROM` that image), the nightly parity job, the
       `temporalio` dependabot group, and the two schedule scripts' Temporal
       paths. The adapter takes `@ragenai/jobs` as a peer dependency resolved
       from inside the base image — nothing is published to npm (see §8.5).
-- [ ] **G3.** Drop `@ragenai/jobs-temporal` from this repository's workspaces
+
+  **The layer restores the SDK, not just the adapter**, and the first draft of
+  this item did not say so. E6 moved `@temporalio/worker` and
+  `@temporalio/workflow` to `apps/worker`'s devDependencies, which is what took
+  169 MB out of the image — so the published worker carries the Temporal
+  *bootstrap* (`temporal-runtime.ts`, `src/workflows/`) with none of the
+  packages it imports, and `WORKER_RUNTIME=temporal` on an unextended image
+  exits at boot with a message saying exactly that. The enterprise Dockerfile
+  therefore installs the SDK family alongside the adapter. Two consequences
+  worth writing down before G3:
+
+  - **The producers need no layer.** `web` and `api` only enqueue, through
+    `@temporalio/client`, which the workspace link keeps in every image (the
+    13 MB E6 measured). It is the worker alone that cannot serve the runtime.
+
+    **That sentence is true today and stops being true at G3**, which is the
+    finding G2 turned up. Both producers reach the adapter through a *static*
+    import — `apps/web/src/libs/jobs/index.ts` and
+    `apps/api/src/jobs/jobs.service.ts` both do
+    `import { TemporalJobRuntime } from '@ragenai/jobs-temporal'`, eagerly,
+    because `registerJobRuntime` replaced §1's dynamic specifier for the two
+    apps a bundler traces. Dropping the workspace takes those lines with it, so
+    G3 has to decide what a Temporal deployment's `web` and `api` do. See G3.
+  - **G3 cannot land until the parity job is green *there*.** Until then the
+    two copies are one half-finished move, not a supported fork, and the core's
+    is the one an install uses.
+
+  **Landed** in `ragen-enterprise` as `packages/jobs-temporal`: the adapter
+  file unchanged apart from its header, 27 tests beside it, a Dockerfile that
+  is `FROM ghcr.io/webamigos/ragen-worker:2.0.0`, and
+  `.github/workflows/temporal-parity.yml` — which checks out this repository,
+  builds the adapter against *this* checkout's `@ragenai/jobs`, splices the
+  build into the core's `node_modules` and runs `npm run worker:test:jobs` with
+  `WORKER_RUNTIME=temporal`. Proven rather than reasoned about: the layered
+  image boots on a real Temporal and registers pollers on `ragen-tasks`,
+  `ensure-analytics-retention-schedule.js` run from it creates the schedule,
+  and the spliced suite passes 21 and skips BullMQ's own 3 — and fails when the
+  spliced build is corrupted, so it is the code under test.
+
+  Three things in the item above turned out differently:
+
+  - **The dependabot group does not move, it is copied** — and it already was.
+    `ragen-enterprise` has had a `temporal` group since it was scaffolded, and
+    this repository keeps its own, because the bootstrap that stays here pins
+    the same family.
+  - **The schedule scripts have no Temporal path to move.** Both go through
+    `jobs()` since C5. What is Temporal-specific is operational, and it is
+    documented where it applies: on Temporal they need the adapter, so they run
+    from the enterprise image.
+  - **The worker-side bootstrap stays here.** It was the open question, and the
+    answer is below.
+
+  **Decision — the bootstrap stays in the core.** `temporal-runtime.ts` imports
+  the worker's 69 activity modules and `src/workflows/` imports its eight
+  handlers, so moving either would mean compiling the pipeline in
+  `ragen-enterprise` — invariants 1 and 2 of that repository's `AGENTS.md`,
+  both of them, and the `apps/worker-lite` shape this spec already rejected.
+  The published image settles it from the other side too: it carries the whole
+  bootstrap compiled, `dist/workflows/index.js` included, so the layer only
+  ever had to add `node_modules`, and injecting a bootstrap would have meant
+  writing into the base image's own `dist` — `worker.ts` resolves
+  `./temporal-runtime.js` relative to itself. What this costs is stated rather
+  than hidden: `@temporalio/*` imports stay in this repository, so G3's guard
+  tightens only as far as
+  `the-temporal-sdk-stays-on-the-temporal-path.test.ts` already does, and
+  `apps/worker` keeps the SDK in its devDependencies.
+
+- [x] **G3.** Drop `@ragenai/jobs-temporal` from this repository's workspaces
       and from the architecture guard's allow-list, so a re-introduced
       `@temporalio/*` import fails here. The seam's dynamic specifier and its
       ambient declaration are what keep `tsc --build` working with the package
       gone (§1) — so this step ends with a build of a default install that has
       no adapter installed, which is the only thing that proves it.
-- [ ] **G4.** Check that
+
+  **Two things this item assumed were not true of the code as built**, and both
+  were found by doing G2:
+
+  - **The producers imported the adapter statically.** §1 designed
+    `getJobRuntime()` to reach the adapter through a specifier the compiler
+    does not follow, with an ambient declaration as the type side. That is not
+    what shipped: `registerJobRuntime()` replaced it, because a Next or Nest
+    build does not trace a computed specifier, and each app registered its
+    adapters eagerly at its own entry point. `apps/worker` was the exception —
+    it alone used `await import('@ragenai/jobs-temporal')`, guarded by
+    `resolveWorkerRuntime()`, which is what let its image omit the package.
+  - **There was no ambient declaration to rely on.** `packages/jobs` declared
+    none; nothing in the tree did. And `apps/worker`'s literal specifier was
+    not enough either — TypeScript resolves a literal in a dynamic import at
+    compile time whatever guards it, so the worker would have failed
+    `tsc --build` too.
+
+  **Decided: option 1 — the published `web` and `api` stay BullMQ-only.** A
+  deployment that wants Temporal producers builds those two itself, adding the
+  package to the workspace and one `registerJobRuntime('temporal', …)` line to
+  each. Only the worker gets a ready-made layer. The reasoning, which was
+  recorded before the decision and is kept because it is what a reader will
+  want:
+
+  - It is the only one of the three options that keeps the drift budget as
+    already argued — one thin layer over one image. Layering all three spends
+    budget nobody has argued for; keeping the producer adapter here argues
+    against Phase G existing, because a sibling repository holding a Dockerfile
+    is what ADR-32 says not to do.
+  - Layering collapses into building from source for `apps/web` regardless. A
+    Next standalone build has already traced its imports, so layering that
+    image means either patching `.next/standalone/node_modules` — which is
+    `ragen-enterprise`'s invariant 2 again — or rebuilding.
+  - The asymmetry is real. The worker *runs* Temporal: the SDK, the workflow
+    sandbox, 331 MB of native bridge, and a bootstrap it cannot compile itself.
+    `web` and `api` need `@temporalio/client` and about forty lines.
+  - It keeps Phase E's promise literally true — *durable execution is available
+    to anyone who builds from source* — and improves on it, by making the
+    expensive third of it a pull-and-run.
+
+  Stated rather than glossed: `durable-execution.md`'s "two things, no more"
+  became three, one of which is "rebuild two images". And `apps/api` *could*
+  have been layered — it compiles to plain CommonJS — but doing one producer
+  and not the other would leave a deployment enqueueing to two engines, which
+  reads as a worker that is merely slow. Both are treated the same because the
+  same deployment enqueues through both.
+
+  **What landed.** `packages/jobs-temporal` is gone, and with it the
+  declaration in three manifests, the worker Dockerfile's three lines, the
+  `lint-staged` entry and the lockfile's workspace link.
+  `packages/jobs/src/optional-adapter.ts` is the replacement for §1's ambient
+  declaration: `TEMPORAL_ADAPTER_PACKAGE`, a constant so that no call site
+  writes a literal, and `TemporalAdapterModule<Options>`, the narrowest true
+  statement about a module this repository does not contain. `apps/worker` and
+  the parity harness load through it; `apps/web` and `apps/api` register BullMQ
+  and say at the call site what a Temporal deployment adds.
+
+  `jobs-parity.yml` is deleted — its Temporal leg went with the package, and a
+  matrix of one is `ci.yml`'s `Jobs Integration`, which now names
+  `WORKER_RUNTIME: bullmq` rather than leaning on the default.
+
+  The guards, all five, rewritten rather than relaxed:
+  `jobs-seam-is-the-only-runtime-import` drops its exception for the adapter
+  package and gains one that no workspace may *declare* it — a manifest entry
+  alone puts it in every image, and the import check would stay green;
+  `the-temporal-family-moves-together` keeps its one-exact-version rule around
+  `apps/worker` alone, which is the half that survives the move;
+  `a-scoped-dockerfile-installs-every-workspace-dep`'s exemption list is empty
+  and gains a direct assertion that the worker reaches the adapter through
+  `import(TEMPORAL_ADAPTER_PACKAGE)`;
+  `every-job-runtime-is-exercised` asserts the default runtime is exercised
+  *here* and every other one is recorded with the repository that runs it, so a
+  third adapter still cannot be added silently;
+  `the-temporal-sdk-stays-on-the-temporal-path` is unchanged in substance and
+  now says its three paths are the end state.
+
+  **Proven, not reasoned about**: `npm run verify` 62/62 on a tree with no
+  adapter in it — which is the build of a default install this item asks for —
+  and the worker image built from that tree still takes the enterprise layer
+  and runs on a real Temporal.
+
+- [x] **G4.** Check that
       [`docs/open-core-boundary.md`](../open-core-boundary.md) still describes
       what that repository holds; it already records that `ragen-enterprise` is
       Apache-2.0 and not a commercial path.
 
-## Testing
-
-Per the Testing Requirements in [`AGENTS.md`](../../AGENTS.md):
-
-- **Unit** (`packages/jobs`): the retry/backoff wrapper against the same policy
-  objects the Temporal adapter passes through; timeout behaviour; the name
-  registry; `JobFailure` → `UnrecoverableError` / `ApplicationFailure` mapping;
-  schedule id and cron construction; `getJobRuntime()`'s missing-package error.
-  These are thin binding files, which `AGENTS.md` calls out as the ones most
-  often left untested.
-- **Architecture**: `jobs-seam-is-the-only-runtime-import.test.ts` — every job
-  name has a handler, and `@temporalio/*` appears in exactly one package.
-  `the-temporal-family-moves-together.test.ts` keeps its invariant and follows
-  the family to `packages/jobs-temporal` in E5.
-- **Integration** (`apps/worker`, real Redis): D1's list. This is the gate,
-  because **no e2e test can be one.** `.github/workflows/e2e.yml` builds and
-  starts `apps/api` and the web app, and starts no worker at all — nothing
-  consumes a queue during that suite — and it path-ignores `apps/worker/**` so
-  a worker-only change does not even trigger it. So no `p0` e2e can cover this,
-  and pretending otherwise would be the failure mode `AGENTS.md` warns about.
-
-  Stated that way on purpose: the same workflow also sets four dummy
-  `TEMPORAL_*` variables, which is the *evidence* people usually cite for "the
-  suite does not run the worker" — and E2 deletes them. The reason has to
-  outlive them, and it does: a process nobody starts cannot be under test.
-- **Both runtimes, nightly.** Done — `jobs-parity.yml`; see §8.3 for what it
-  runs and the two ways it differs from the sentence that asked for it. The
-  cheap version, available precisely because nothing has been extracted yet: it
-  moves to `ragen-enterprise` with the package in Phase G, and that is when it
-  starts costing something.
-- **Manual**: a new row in [`docs/regression-checklist.md`](../regression-checklist.md)
-  — upload, cancel mid-ingest, re-embed a folder, generate a document, roll a
-  version back — run once per runtime before Phase E.
-- **Measurement**: D2, recorded as a lesson.
-
-## Rollout and rollback
-
-**Per deployment, by env var, until Phase E.** `WORKER_RUNTIME` is read by the
-worker and by every producer; they must agree, and the worker logs the resolved
-value once at boot next to the concurrency and lock settings.
-
-**Order that matters.** Phases A and B ship with no behaviour change and no
-operator action. Phase C is opt-in. Phase E changes the default and removes the
-engine, and the flip is: drain (stop producers, let in-flight runs finish,
-confirm no `PROCESSING` files) → delete both Temporal schedules with the
-`--delete` scripts → switch `WORKER_RUNTIME` → start the worker → confirm both
-schedules exist in bull-board.
-
-**Rollback.** Before E5/E6: set `WORKER_RUNTIME=temporal` and restart, after the
-same drain — there is no migration to unwind, which is the point of keeping the
-schema untouched. After E6: install `@ragenai/jobs-temporal` (or run the
-enterprise worker image), then the same procedure. What rollback does *not*
-recover is in-flight BullMQ jobs; they stay in Redis, unread, and the affected
-files need a re-embed. Re-create the Temporal schedules with the same scripts.
-
-**The one-way doors.** C3 and C4 change ingest and payload shape for both
-runtimes and stay even if BullMQ were abandoned, because they are correct on
-Temporal too. E2 is the other one: deleting the compose service and the Helm
-template is a revert away in git, but an operator who has already dropped the
-Temporal schema from Postgres is not.
-
-## Sources
-
-- [BullMQ changelog](https://docs.bullmq.io/changelog) — v6.0.0 (2026-07-30), pluggable backends, repeatable jobs removed
-- [BullMQ — PostgreSQL backend](https://docs.bullmq.io/guide/postgresql) — setup, `runMigrations()`, ~1.5–2× throughput gap
-- [BullMQ — Going to production](https://docs.bullmq.io/guide/going-to-production) — `noeviction`, AOF, `maxRetriesPerRequest: null`, graceful shutdown
-- [BullMQ telemetry](https://bullmq.io/news/241104/telemetry-support/) and [`bullmq-otel`](https://github.com/taskforcesh/bullmq-otel)
-- [bull-board](https://github.com/felixmosh/bull-board) — supports BullMQ ≥ 5.56 and all of v6, including Postgres-backed queues
-- [`bullmq@6.3.6` on npm](https://registry.npmjs.org/bullmq/latest) — MIT, optional peers `ioredis` / `pg` / `redis` / `bullmq-otel`
-- [Best job queue alternatives (Inngest, 2026)](https://www.inngest.com/blog/best-job-queue-alternatives) — "Celery and BullMQ guarantee the message. Temporal guarantees the program."
-- Internal prior art: `justnails-app` — `packages/queue`, `apps/worker/src/registry.ts`, `apps/worker/src/bull-board.ts`
+  **Landed**, and it was the small edit it was expected to be: the page now
+  names the one component that is there, says the Dockerfile layers the SDK as
+  well as the adapter, and states that the layer holds no handler, activity or
+  pipeline — which is the shape that bounds the drift ADR-32 asks to be
+  measured.

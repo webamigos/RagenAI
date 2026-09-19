@@ -124,10 +124,32 @@ instance, because a dropped queue key is a job that vanishes without an error.
 
 To run background jobs on Temporal instead, set `config.WORKER_RUNTIME:
 temporal` and `config.TEMPORAL_SERVER_ADDRESS` at a server you operate — the
-chart no longer deploys one. The images still ship the Temporal adapter, so
-this is configuration rather than a rebuild, and `config` is one ConfigMap read
-by every workload, which is what keeps the producers and the worker on the same
-runtime. See [ADR-44](../../../docs/adrs/44-bullmq-is-the-worker-runtime.md).
+chart no longer deploys one. `config` is one ConfigMap read by every workload,
+which is what keeps the producers and the worker on the same runtime.
+
+**That setting alone is not enough**, and it is not enough in two different
+places. None of the images published here can serve Temporal.
+
+**The worker** fails at boot rather than at the first job. The published
+`ragen-worker` ships the BullMQ runtime only: `@temporalio/*` are
+`apps/worker`'s devDependencies and the image installs with `--omit=dev`, so
+selecting Temporal there exits with a message saying exactly that. Point
+`image.repository` for the worker at
+[`ragen-enterprise`](https://github.com/webamigos/ragen-enterprise)'s image
+instead, which is `FROM` this one and adds the adapter and the SDK.
+
+**The producers fail at the first enqueue.** `web` and `api` registered the
+Temporal adapter until the worker-runtime spec's G3 moved
+`@ragenai/jobs-temporal` out of this repository; the published images register
+BullMQ alone and throw *no adapter registered for WORKER_RUNTIME="temporal"* on
+the first job. There is no image to swap here — a Next standalone build traces
+its imports, so it cannot be layered the way the worker's can. Build both from
+source with the adapter added, which is a dependency and two lines per
+application; `ragen-enterprise`'s `docs/durable-execution.md` has the procedure.
+
+The two nightly schedules are registered by scripts, and on Temporal those need
+the adapter too — run them from the enterprise image.
+See [ADR-44](../../../docs/adrs/44-bullmq-is-the-worker-runtime.md).
 
 ## Storage
 

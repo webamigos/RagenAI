@@ -418,3 +418,23 @@ archive is the blog.
   `.env.local` no longer needs care about `PORT`. Use `RAGEN_API_PORT` and
   `RAGEN_MCP_PORT`; a bare `PORT` used to follow every app at once and put the
   MCP server on the API's port.
+
+- `[brief]` **Durable execution is a published image away, and the default
+  install no longer carries it at all.** Running the worker on Temporal used to
+  mean compiling the whole thing. There is now a Dockerfile in
+  [`webamigos/ragen-enterprise`](https://github.com/webamigos/ragen-enterprise)
+  that layers the Temporal adapter and the SDK onto
+  `ghcr.io/webamigos/ragen-worker`, so a self-hoster who wants replay builds one
+  small image on top of ours. Everyone else gets a worker with no Temporal
+  adapter and no `@temporalio/*` in it whatsoever — the package moved out of
+  Ragen entirely, so it is gone from the image rather than merely unused. The
+  nightly parity job moved with it, and still runs Ragen's own job-runtime suite
+  against a real Temporal server, so "Temporal is supported" stays a thing that
+  is tested rather than a package name.
+
+  **If you run Temporal today, read this before upgrading.** The published `web`
+  and `api` images are now BullMQ producers: they enqueue, and they no longer
+  contain the Temporal adapter. Keeping a Temporal deployment means building
+  those two from source with the adapter added — a dependency and two lines each,
+  documented in `ragen-enterprise`. The worker itself is the ready-made image.
+  The schedule scripts have to run from that image too.

@@ -13,6 +13,11 @@
 /**
  * A module-resolution failure naming a package this build leaves out.
  *
+ * Two of them, for two reasons: `@temporalio/*` are devDependencies the
+ * production install omits, and `@ragenai/jobs-temporal` is not in this
+ * repository at all since G3 — it is in `webamigos/ragen-enterprise`. Both are
+ * "this build was made without durable execution" rather than a defect.
+ *
  * Narrow on purpose. The dynamic imports that make the Temporal runtime
  * optional would otherwise turn *any* failure inside those modules — a
  * TypeError at module scope, a bad env read — into "this build has no
