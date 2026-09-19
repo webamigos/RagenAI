@@ -443,8 +443,8 @@ archive is the blog.
   `ghcr.io/webamigos/ragen-{web,api,worker,admin,mcp}` were `linux/amd64` only,
   which nothing refused and nothing reported: an arm64 host pulled the amd64
   image and ran it under emulation, and the only sign was a badge in Docker
-  Desktop — plus whatever a native module did when it hit an instruction Rosetta
-  handles badly, which looked like a bug in Ragen. Every tag is a
+  Desktop — plus whatever a native module did when it hit something the
+  emulator handled badly, which looked like a bug in Ragen. Every tag is a
   two-architecture manifest now, with each architecture built on a runner that
   provides it, so `docker pull` gets the right one and nothing emulates
   anything. Nothing to change on your side; pull the new tag. Self-hosting on a

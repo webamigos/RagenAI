@@ -24,10 +24,10 @@ name: Publish images
 # alone until 2026-09-19, on the reasoning that no deployment target used
 # arm64 and cross-building under QEMU cost several times the build. The first
 # half was true of deployment and false of development: a Mac on Apple silicon
-# pulls the amd64 variant, runs it under Rosetta, and Docker Desktop flags it
-# — and a native module that segfaults under emulation reads as an application
-# bug. The second half stopped applying when this repository went public,
-# because `ubuntu-24.04-arm` is then a free hosted runner. So each architecture
+# pulls the amd64 variant, emulates it, and Docker Desktop flags it — and a
+# native module that segfaults under emulation reads as an application bug.
+# The second half stopped applying when this repository went public, because
+# `ubuntu-24.04-arm` is then a free hosted runner. So each architecture
 # is built natively, side by side, and `merge` joins the two digests into one
 # tag. Nothing emulates anything.
 on:

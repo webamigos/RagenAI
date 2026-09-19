@@ -79,6 +79,17 @@ describe('every image is published for both architectures', () => {
       'an architecture left the build matrix — an image that omits one is pulled and emulated on that host, which nothing here would notice',
     ).toEqual(['amd64', 'arm64']);
 
+    // Checked before the runners themselves, because it is what makes
+    // checking them mean anything: a matrix can name `ubuntu-24.04-arm` while
+    // `runs-on` sends every job to the same amd64 host, and then the entries
+    // below are documentation rather than configuration.
+    expect(
+      /^\$\{\{\s*matrix\.platform\.runner\s*\}\}$/.test(
+        workflow.jobs.build?.['runs-on'] ?? '',
+      ),
+      '`build` does not run on `matrix.platform.runner` — whatever the matrix says, both architectures then land on one host and the second is a cross-build under QEMU',
+    ).toBe(true);
+
     for (const { arch, runner } of platforms) {
       expect(
         NATIVE_RUNNERS[arch]?.test(runner),
