@@ -47,9 +47,11 @@ export {
 
 /**
  * The BullMQ adapter, and the only package in this repository that imports
- * `bullmq` — the same rule `@ragenai/jobs-temporal` follows for `@temporalio/*`,
- * and for the same reason: one architecture guard, and an extraction later that
- * is a `git mv` rather than an archaeology exercise.
+ * `bullmq` — the rule `@ragenai/jobs-temporal` followed for `@temporalio/*`
+ * until G3 moved it to `webamigos/ragen-enterprise`, which is the payoff: one
+ * architecture guard here, and an extraction that was a copy of one file
+ * rather than an archaeology exercise. This is the default runtime and is not
+ * going anywhere, but the rule is what keeps that a choice.
  *
  * This is the **producer** half: what `apps/web` and `apps/api` do to a job.
  * Consuming the queues — `Worker` instances, concurrency, lock duration,

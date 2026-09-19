@@ -3,14 +3,19 @@
 **Status:** Accepted. Supersedes [ADR-07](07-temporal-document-processing.md).
 Implemented through
 [the worker-runtime spec](../specs/2026-09-15-bullmq-is-the-worker-runtime.md) —
-Phases A–E done, so BullMQ is the shipped runtime. Phase G is most of the way:
-its gate, a published `ragen-worker` image, is met (G1); the adapter, its
-Dockerfile and its parity job are in `ragen-enterprise` (G2); this document and
-the open-core boundary describe what that repository holds (G4). **G3 — this
-repository dropping its own copy — is open**, and blocked on a decision rather
-than on time: `apps/web` and `apps/api` import the adapter statically, so
-dropping the workspace changes how two applications load a runtime. The spec's
-G3 has the three options.
+Phases A–E and G all done. BullMQ is the shipped runtime, and
+`@ragenai/jobs-temporal` is in
+[`webamigos/ragen-enterprise`](https://github.com/webamigos/ragen-enterprise)
+with its Dockerfile and its parity job — this repository contains no adapter
+and no `@ragenai/jobs-temporal` declaration. What stays here is the worker's
+Temporal *bootstrap*, on the three paths
+`the-temporal-sdk-stays-on-the-temporal-path.test.ts` confines it to, because
+it imports the handlers and the activities.
+
+**A Temporal install now**: run `ragen-enterprise`'s worker image, which is
+`FROM` the published one and adds the adapter and the SDK; and build `web` and
+`api` from source with the adapter added, because those two are published
+BullMQ-only. That asymmetry is G3's decision and its reasoning is in the spec.
 **Date:** 2026-09-16
 
 ## Context
@@ -153,9 +158,12 @@ facts it reports, and saying which is which is the point of writing them down:
    `ragen-enterprise` — which is the `apps/worker-lite` shape that repository
    exists to avoid. G3 removes `@ragenai/jobs-temporal` and nothing else, so
    this guard tightens by one package rather than to zero.
-2. **The contract is an import, not a copy.** True now: `@ragenai/jobs` is a
-   workspace dependency, and it becomes a peer dependency resolved from inside
-   the image after Phase G.
+2. **The contract is an import, not a copy.** True on both sides now.
+   `@ragenai/jobs` is a workspace dependency here, and in `ragen-enterprise` it
+   is a peer dependency the adapter never installs — resolved out of the worker
+   image, where `/app/node_modules/@ragenai/*` symlink into `/app/packages/`, so
+   the adapter compiles against the contract the artifact ships rather than a
+   version number that can skew from it.
 3. **CI runs the real thing.** True now, as `.github/workflows/jobs-parity.yml`
    — the D1 integration suite over both runtimes at 04:00 UTC and on every pull
    request touching the seam, the adapter, the handlers, the workflow wrappers

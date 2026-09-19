@@ -15,13 +15,15 @@ import { JOB_NAMES } from '@ragenai/jobs';
  *   unbuildable without an app's declarations. This is why the eight handlers
  *   stayed in `apps/worker` beside the activities they call rather than moving
  *   into `packages/jobs` — see the worker-runtime spec's §2.
- * - **One package imports the engine.** `@temporalio/*` belongs to
- *   `packages/jobs-temporal` alone, which is what turns the spec's Phase G
- *   extraction into a `git mv`. `apps/api` stopped importing it directly in
- *   Phase A4; `apps/web` still does, from two files the seam cannot answer
- *   yet — the cancel command sends a signal and the docgen status route
- *   describes a workflow. Phase B removes both, and this test does not bless
- *   the gap in the meantime.
+ * - **One package imports the engine.** `@temporalio/*` belonged to
+ *   `packages/jobs-temporal` alone, which is what turned the spec's Phase G
+ *   extraction into a copy of one file. **That package is gone** — G3 moved it
+ *   to `webamigos/ragen-enterprise` — so no package here may import the SDK at
+ *   all, and the assertion below takes no exception. `apps/worker` is the one
+ *   place that still does, from the three modules a Temporal start reaches and
+ *   `the-temporal-sdk-stays-on-the-temporal-path.test.ts` confines it to; that
+ *   is the bootstrap, which G2 decided stays here because it imports the
+ *   handlers and the activities.
  */
 const ROOT = join(import.meta.dirname, '..', '..');
 const PACKAGES = join(ROOT, 'packages');
@@ -65,10 +67,11 @@ const sourceFiles = (dir: string): string[] => {
  *
  * `packagesExcept` alone is what the `@temporalio/*` assertion can use, because
  * apps/worker genuinely imports `@temporalio/worker`: it is the process that
- * runs the workflows, and Phase G has to deal with that separately. BullMQ has
- * no such history — it arrived with the seam already in place — so the boundary
- * is drawn where it should have been from the start, and an app reaching for
- * `bullmq` is caught rather than discovered during the extraction.
+ * runs the workflows, and G2 settled that the bootstrap stays here rather than
+ * following the adapter out. BullMQ has no such history — it arrived with the
+ * seam already in place — so the boundary is drawn where it should have been
+ * from the start, and an app reaching for `bullmq` is caught rather than
+ * discovered during an extraction.
  */
 const everywhereExcept = (excludedPackages: string[]): string[] => [
   ...packagesExcept(excludedPackages),
@@ -123,14 +126,65 @@ describe('the jobs seam is the only place that names a runtime', () => {
     ).toEqual([]);
   });
 
-  it('only packages/jobs-temporal imports @temporalio/*', () => {
-    const offenders = packagesExcept(['jobs-temporal']).filter((file) =>
+  it('no package imports @temporalio/*, now that the adapter has left', () => {
+    // No exception list, and that is the G3 change. While
+    // `packages/jobs-temporal` was here this read `packagesExcept(...)`; the
+    // package is in `webamigos/ragen-enterprise` now, so a `@temporalio/*`
+    // import appearing under `packages/` is a re-introduction rather than the
+    // adapter doing its job.
+    const offenders = packagesExcept([]).filter((file) =>
       importsIn(file).some((specifier) => specifier.startsWith('@temporalio/')),
     );
 
     expect(
       offenders.map((f) => f.replace(`${ROOT}/`, '')),
-      'the engine belongs to its adapter package — that is what makes the extraction a move rather than a rewrite',
+      'the engine left with its adapter in G3 — a package reaching for @temporalio/* is pulling it back in',
+    ).toEqual([]);
+  });
+
+  /**
+   * The other half of G3, and the one a text search cannot infer: no workspace
+   * may declare the adapter either.
+   *
+   * A dependency without an import is how the package would come back — npm
+   * links every workspace it knows about, so a manifest entry alone puts it in
+   * the tree and in every image built from it, and the guard above would stay
+   * green because nothing had imported it yet.
+   */
+  it('no workspace declares @ragenai/jobs-temporal', () => {
+    const manifests = [
+      'package.json',
+      ...readdirSync(APPS)
+        .filter((name) => statSync(join(APPS, name)).isDirectory())
+        .map((name) => join('apps', name, 'package.json')),
+      ...readdirSync(PACKAGES)
+        .filter((name) => statSync(join(PACKAGES, name)).isDirectory())
+        .map((name) => join('packages', name, 'package.json')),
+    ];
+
+    const declaring = manifests.filter((manifest) => {
+      let raw: string;
+      try {
+        raw = readFileSync(join(ROOT, manifest), 'utf8');
+      } catch {
+        return false;
+      }
+      const pkg = JSON.parse(raw) as Record<
+        string,
+        Record<string, string> | undefined
+      >;
+      return (
+        ['dependencies', 'devDependencies', 'peerDependencies'] as const
+      ).some(
+        (section) => pkg[section]?.['@ragenai/jobs-temporal'] !== undefined,
+      );
+    });
+
+    expect(
+      declaring,
+      'the adapter is in webamigos/ragen-enterprise since G3. A deployment that ' +
+        'wants Temporal adds it to its own build — see that repository’s ' +
+        'docs/durable-execution.md — rather than to this repository.',
     ).toEqual([]);
   });
 

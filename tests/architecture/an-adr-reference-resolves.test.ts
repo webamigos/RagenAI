@@ -89,7 +89,9 @@ function walk(dir: string, found: string[] = []): string[] {
   return found;
 }
 
-const adrFiles = readdirSync(ADR_DIR).filter((name) => /^\d{2}-.+\.md$/.test(name));
+const adrFiles = readdirSync(ADR_DIR).filter((name) =>
+  /^\d{2}-.+\.md$/.test(name),
+);
 const numbers = new Set(adrFiles.map((name) => name.slice(0, 2)));
 const slugs = new Set(adrFiles);
 const sourceFiles = walk(REPO_ROOT);

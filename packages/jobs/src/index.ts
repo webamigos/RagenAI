@@ -46,4 +46,9 @@ export {
   resolveWorkerRuntime,
   type WorkerRuntime,
 } from './runtime';
+
+export {
+  TEMPORAL_ADAPTER_PACKAGE,
+  type TemporalAdapterModule,
+} from './optional-adapter';
 export { registerJobRuntime } from './runtime';

@@ -59,4 +59,25 @@ describe('getJobRuntime', () => {
       /no adapter registered for WORKER_RUNTIME="bullmq"/,
     );
   });
+
+  /**
+   * The same rule from the direction G3 made real, and the reason it is a
+   * second case rather than a parameter.
+   *
+   * Since G3 `@ragenai/jobs-temporal` is in `webamigos/ragen-enterprise`, and
+   * `apps/web` and `apps/api` register BullMQ only — so an unmodified build
+   * set to `WORKER_RUNTIME=temporal` reaches exactly this throw on its first
+   * enqueue. That is the intended behaviour of a real deployment mistake, not
+   * an abstract branch, and neither producer's own suite can assert it:
+   * `getJobRuntime` caches in this module, which vitest externalises, so
+   * `vi.resetModules()` in an app hands back a fresh app module and the same
+   * resolved runtime.
+   */
+  it('throws for temporal on a build that ships only the default adapter', () => {
+    registerJobRuntime('bullmq', stub);
+
+    expect(() => getJobRuntime({ WORKER_RUNTIME: 'temporal' })).toThrow(
+      /no adapter registered for WORKER_RUNTIME="temporal"/,
+    );
+  });
 });

@@ -111,7 +111,6 @@
     "@commitlint/cli": "^19.8.0",
     "@commitlint/config-conventional": "^19.8.0",
     "@ragenai/eslint-config": "*",
-    "@ragenai/jobs-temporal": "*",
     "@temporalio/client": "1.23.0",
     "@temporalio/common": "1.23.0",
     "@temporalio/nyc-test-coverage": "1.23.0",

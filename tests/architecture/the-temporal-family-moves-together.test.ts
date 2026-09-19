@@ -35,13 +35,21 @@ import { describe, expect, it } from 'vitest';
  * Hence both halves of the rule: one version, and written exactly, since a
  * range is how the versions drift apart while the file still looks aligned.
  *
- * **The family shrank in E5 and the rule did not.** The root and `apps/web`
- * declared `@temporalio/client` and imported it nowhere — `@ragenai/jobs-temporal`
- * owns the producer client, and every producer reaches it through
- * `@ragenai/jobs`. `apps/worker` kept `worker` and `workflow`, which its
- * Temporal runtime imports, and moved `client` to devDependencies, where its
- * one importer (a test) lives. Six declarations across two manifests now,
- * down from nine across four: fewer places to drift, same failure if they do.
+ * **The family shrank in E5, again in G3, and the rule did not.** E5 removed
+ * the declarations nothing imported — the root and `apps/web` both declared
+ * `@temporalio/client` and imported it nowhere. G3 moved
+ * `packages/jobs-temporal` out of this repository altogether, to
+ * `webamigos/ragen-enterprise`, taking the last `@temporalio/client`
+ * declaration outside `apps/worker` with it.
+ *
+ * **One manifest holds the family now, and that is what this guard had to be
+ * rewritten around rather than deleted.** It used to require that *both*
+ * `apps/worker` and `packages/jobs-temporal` declare something, which a move
+ * emptying either would have passed over silently — a guard that is satisfied
+ * by an empty list says nothing. The rule that survives the move is the one
+ * that mattered: whatever declares the family declares all of it, at one exact
+ * version. G2 decided the bootstrap stays here, so `apps/worker` is the
+ * manifest, and the two packages its Temporal runtime imports are named below.
  */
 
 const REPO_ROOT = join(import.meta.dirname, '..', '..');
@@ -54,7 +62,6 @@ const MANIFESTS = [
   'apps/admin/package.json',
   'apps/worker/package.json',
   'apps/mcp/package.json',
-  'packages/jobs-temporal/package.json',
   'packages/rag-core/package.json',
   'packages/db/package.json',
 ];
@@ -98,27 +105,24 @@ describe('the Temporal family moves together', () => {
   it('finds the declarations it is meant to police', () => {
     // Guard on the guard. If a rename or a workspace move empties MANIFESTS,
     // every assertion below passes over an empty list and says nothing.
-    expect(declarations.length).toBeGreaterThanOrEqual(5);
+    expect(declarations.length).toBeGreaterThanOrEqual(4);
 
-    // The two manifests that legitimately hold the family after E5: the
-    // adapter package, which owns the client every producer reaches through
-    // `@ragenai/jobs`, and the worker, which runs the Temporal runtime
-    // in process. A move that empties either is a move this test must see.
-    for (const manifest of [
-      'apps/worker/package.json',
-      'packages/jobs-temporal/package.json',
-    ]) {
-      expect(
-        declarations.some((d) => d.manifest === manifest),
-        `${manifest} declares no @temporalio/* package — if that is deliberate, this guard moves with it.`,
-      ).toBe(true);
-    }
+    // The one manifest that legitimately holds the family since G3: the
+    // worker, which runs the Temporal bootstrap in process. The adapter's
+    // manifest used to be named here too, and is in `ragen-enterprise` now —
+    // its half of the version lock is that repository's dependabot group.
+    expect(
+      declarations.some((d) => d.manifest === 'apps/worker/package.json'),
+      'apps/worker declares no @temporalio/* package. If the bootstrap has ' +
+        'moved out too, this guard moves with it rather than passing over an ' +
+        'empty list — and ADR-44 and ' +
+        '`the-temporal-sdk-stays-on-the-temporal-path` both say it stays.',
+    ).toBe(true);
 
     // Named rather than counted. A total is a weak proxy for "the worker can
     // still run Temporal": these two are what `src/temporal-runtime.ts` and
     // `src/workflows/` import, so losing either is a broken adapter path,
-    // while a devDependency going away for an unrelated reason is not. Phase G
-    // moves them, and then this list moves with it.
+    // while a devDependency going away for an unrelated reason is not.
     for (const name of ['@temporalio/worker', '@temporalio/workflow']) {
       expect(
         declarations.some(
