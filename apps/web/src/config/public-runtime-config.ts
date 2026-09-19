@@ -8,7 +8,8 @@
  * shares, and wrong for every value here — the application's own URL, the
  * self-hoster's Pusher account, which domains links may point at. One
  * published image cannot carry ten installs' answers, which is why
- * `apps/web` is the one image `publish-images.yml` does not publish.
+ * `apps/web` was the one image `publish-images.yml` refused to publish. It is
+ * published now, and this file is the reason.
  *
  * So these values move here. The server reads the environment it is actually
  * running in, serialises the result into the document, and the browser reads
