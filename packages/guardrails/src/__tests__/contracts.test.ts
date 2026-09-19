@@ -63,11 +63,22 @@ describe('which actions a kind can carry out', () => {
 });
 
 describe('supported combinations', () => {
-  it('is empty in this build, which ships no evaluator', () => {
-    // Phase A deliberately ends with rules an operator can create and nothing
-    // reading them. An entry here before an evaluator exists would let the
-    // admin form offer an effect the build does not have.
-    expect(SUPPORTED_COMBINATIONS).toEqual([]);
+  it('reports what the package evaluates, and nothing beyond it', () => {
+    // The distinction this constant turns on: a kind with no evaluator
+    // anywhere is a lie on the admin form, while a kind whose evaluator exists
+    // but whose call site arrives next phase is an ordinary deployment state.
+    // `PATTERN`/`INPUT` is implemented in evaluator/pattern.ts; OUTPUT needs
+    // the sliding-window transform, which evaluating a whole string is not.
+    expect(SUPPORTED_COMBINATIONS).toEqual([
+      { kind: 'PATTERN', stage: 'INPUT' },
+    ]);
+  });
+
+  it('offers no kind whose evaluator does not exist at all', () => {
+    const kinds = new Set(SUPPORTED_COMBINATIONS.map((c) => c.kind));
+
+    expect(kinds.has('LLM_POLICY')).toBe(false);
+    expect(kinds.has('BUILT_IN')).toBe(false);
   });
 
   it('answers per stage against an injected set', () => {

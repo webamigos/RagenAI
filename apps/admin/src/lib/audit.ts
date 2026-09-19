@@ -132,6 +132,10 @@ export const ADMIN_ACTIONS = {
   defaultRagSettingsChanged: 'admin.defaults.rag_settings_changed',
   defaultsPropagated: 'admin.defaults.propagated',
   defaultFeaturesChanged: 'admin.defaults.features_changed',
+  guardrailCreated: 'admin.guardrail.created',
+  guardrailUpdated: 'admin.guardrail.updated',
+  guardrailToggled: 'admin.guardrail.toggled',
+  guardrailDeleted: 'admin.guardrail.deleted',
   registrationToggled: 'admin.registration.toggled',
 } as const;
 
