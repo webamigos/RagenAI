@@ -418,3 +418,16 @@ archive is the blog.
   `.env.local` no longer needs care about `PORT`. Use `RAGEN_API_PORT` and
   `RAGEN_MCP_PORT`; a bare `PORT` used to follow every app at once and put the
   MCP server on the API's port.
+
+- `[brief]` **Durable execution is a published image away.** Running the worker
+  on Temporal used to mean building it from source. There is now a Dockerfile in
+  [`webamigos/ragen-enterprise`](https://github.com/webamigos/ragen-enterprise)
+  that layers the Temporal adapter and the SDK onto
+  `ghcr.io/webamigos/ragen-worker`, so a self-hoster who wants replay builds one
+  small image instead of the whole worker — and everyone else keeps the 1.01 GB
+  worker that ships no Temporal at all. The nightly parity job moved with it: it
+  runs Ragen's own job-runtime suite against a real Temporal server, so
+  "Temporal is supported" stays a thing that is tested rather than a package
+  name. Two notes for anyone switching: the schedule scripts have to run from
+  that image too, and `apps/web` and `apps/api` are still built with the adapter
+  in, so nothing about an existing Temporal deployment changes yet.
