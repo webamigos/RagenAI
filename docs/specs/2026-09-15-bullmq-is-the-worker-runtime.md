@@ -1059,9 +1059,12 @@ Gated on D2's numbers. The adapter does not move in this phase — see *Answered
 
 ### Phase G — the adapter leaves, once there is an image to layer it onto
 
-Gated on publishing `ragen-worker`, which is not part of this spec and has no
-date. Until then Phase E's arrangement is the steady state, and it is a working
-one: durable execution is available to anyone who builds from source.
+**The gate is open.** G1 landed, so `ragen-worker` is published on every
+release and G2–G4 are unblocked work rather than deferred work. Phase E's
+arrangement remains the steady state only until G3 drops the adapter here;
+while both copies exist, the core's is the one an install uses, and durable
+execution is still available to anyone who builds the worker from source with
+its devDependencies installed.
 
 - [x] **G1.** Publish the worker image (its own change — every app image would
       benefit, and self-hosting today means building four of them from source).
@@ -1070,15 +1073,17 @@ one: durable execution is available to anyone who builds from source.
   `ragen-api`, `ragen-admin` and `ragen-mcp` to `ghcr.io/webamigos`, amd64, on
   a published release, tagged `vX.Y.Z` / `X.Y` / `sha-…` / `latest`.
 
-  **`web` is not among them, and that is a finding rather than a phase
-  boundary.** Its Dockerfile takes ten `NEXT_PUBLIC_*` build arguments which
-  Next inlines into the client bundle, and three are per-install by nature —
-  `NEXT_PUBLIC_APP_URL` and the two Pusher values. One published image would
-  therefore carry the publisher's values into every install's browser: it would
-  start cleanly and leave realtime notifications dead. Publishing it needs those
-  moved to runtime, which is a change to the application. Everything else is
-  published, `mcp` included — it takes no build arguments, and sitting outside
-  this programme is not a reason to make somebody compile it.
+  **`web` was the one exclusion, and it is published now too.** Its Dockerfile
+  took ten `NEXT_PUBLIC_*` build arguments which Next inlines into the client
+  bundle, and three are per-install by nature — `NEXT_PUBLIC_APP_URL` and the
+  two Pusher values. One published image would have carried the publisher's
+  values into every install's browser: it would start cleanly and leave
+  realtime notifications dead. #1249 moved the public configuration to a
+  runtime read and #1250 published the image, so the Dockerfile now declares no
+  build arguments and an architecture test keeps it that way. `mcp` is
+  published for the same reason it always could have been — no build arguments,
+  and sitting outside this programme is not a reason to make somebody compile
+  it.
 
   `tests/architecture/a-release-can-trigger-the-image-build.test.ts` holds two
   couplings that would otherwise fail open: the release must be created with a
@@ -1090,6 +1095,23 @@ one: durable execution is available to anyone who builds from source.
       `temporalio` dependabot group, and the two schedule scripts' Temporal
       paths. The adapter takes `@ragenai/jobs` as a peer dependency resolved
       from inside the base image — nothing is published to npm (see §8.5).
+
+  **The layer restores the SDK, not just the adapter**, and the first draft of
+  this item did not say so. E6 moved `@temporalio/worker` and
+  `@temporalio/workflow` to `apps/worker`'s devDependencies, which is what took
+  169 MB out of the image — so the published worker carries the Temporal
+  *bootstrap* (`temporal-runtime.ts`, `src/workflows/`) with none of the
+  packages it imports, and `WORKER_RUNTIME=temporal` on an unextended image
+  exits at boot with a message saying exactly that. The enterprise Dockerfile
+  therefore installs the SDK family alongside the adapter. Two consequences
+  worth writing down before G3:
+
+  - **The producers need no layer.** `web` and `api` only enqueue, through
+    `@temporalio/client`, which the workspace link keeps in every image (the
+    13 MB E6 measured). It is the worker alone that cannot serve the runtime.
+  - **G3 cannot land until the parity job is green *there*.** Until then the
+    two copies are one half-finished move, not a supported fork, and the core's
+    is the one an install uses.
 - [ ] **G3.** Drop `@ragenai/jobs-temporal` from this repository's workspaces
       and from the architecture guard's allow-list, so a re-introduced
       `@temporalio/*` import fails here. The seam's dynamic specifier and its

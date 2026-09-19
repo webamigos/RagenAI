@@ -204,6 +204,17 @@ alongside Postgres, Qdrant, Redis and Docling. No Node
 toolchain on the host, which makes it the fastest way to evaluate a self-hosted
 install.
 
+Deploying rather than evaluating? Every release publishes the application
+images, so a deployment that is not tracking `main` does not have to compile
+them:
+
+```bash
+docker pull ghcr.io/webamigos/ragen-web:latest    # also: -api, -worker, -admin, -mcp
+```
+
+Each carries four tags — the full version, the minor series, the exact commit
+(`sha-…`) and `latest`. Pin production to the `sha-` tag; the other three move.
+
 Either way, open <http://localhost:3000>, upload a document, and ask it
 something.
 
