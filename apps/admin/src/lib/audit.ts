@@ -143,6 +143,10 @@ export const ADMIN_ACTIONS = {
    * a platform administrator testing a draft has no organization to bill.
    */
   guardrailPolicyTested: 'admin.guardrail.policy_tested',
+  catalogueEntryCreated: 'admin.mcp_catalogue.created',
+  catalogueEntryUpdated: 'admin.mcp_catalogue.updated',
+  catalogueEntryToggled: 'admin.mcp_catalogue.toggled',
+  catalogueEntryDeleted: 'admin.mcp_catalogue.deleted',
   registrationToggled: 'admin.registration.toggled',
 } as const;
 

@@ -520,12 +520,12 @@ step — not B4.
 
 ### Phase C — an operator can add one
 
-- [ ] **C1.** Move `private-address.ts`, `guarded-fetch.ts` and
+- [x] **C1.** Move `private-address.ts`, `guarded-fetch.ts` and
       `guarded-mcp-transport.ts` into `packages/connector-guard`; wire
       `apps/web`'s MCP client and connect/callback routes through it. This
       lands **before** anything can save a URL, and it closes a gap that
       predates this spec: `apps/web` has never checked connector addresses.
-- [ ] **C2.** `/mcp-catalogue` becomes writable for `SERVER_SIDE` and
+- [x] **C2.** `/mcp-catalogue` becomes writable for `SERVER_SIDE` and
       `API_KEY_BEARER` entries — create, edit, enable, disable,
       delete-when-unused — **with the address policy and `allowsPrivateAddress`
       in the same step**. A form that saves a URL and a check on that URL are

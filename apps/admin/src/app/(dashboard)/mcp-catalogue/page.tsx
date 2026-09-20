@@ -1,5 +1,8 @@
 import { listCatalogueEntriesAction } from './actions';
 import type { CatalogueEntryView } from './catalogue-view';
+import { CatalogueEntryForm } from './components/CatalogueEntryForm';
+import { CatalogueRowActions } from './components/CatalogueRowActions';
+import type { CatalogueEntryInput } from './validation';
 
 export const dynamic = 'force-dynamic';
 
@@ -64,6 +67,24 @@ function OrganizationsCell({ view }: { view: CatalogueEntryView }) {
   );
 }
 
+/** The row, in the shape the form edits. */
+function toFormValues(view: CatalogueEntryView): CatalogueEntryInput {
+  return {
+    slug: view.entry.slug,
+    label: view.entry.label,
+    description: view.entry.description ?? '',
+    // A built-in leaves the column null and resolves from the environment;
+    // the form shows what it would dial, and refuses to save a built-in
+    // anyway.
+    mcpServerUrl: view.entry.mcpServerUrl ?? view.serverUrl ?? '',
+    authType: view.entry.authType,
+    icon: view.entry.icon ?? '',
+    lucideIcon: view.entry.lucideIcon ?? 'plug',
+    systemPrompt: view.entry.systemPrompt ?? '',
+    allowsPrivateAddress: view.entry.allowsPrivateAddress,
+  };
+}
+
 export default async function McpCataloguePage() {
   const entries = await listCatalogueEntriesAction();
 
@@ -78,14 +99,27 @@ export default async function McpCataloguePage() {
           otherwise point them at the wrong host.
         </p>
         <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
-          This page is read-only for now. Which organizations may use an entry
-          is set on{' '}
+          Which organizations may use an entry is set on{' '}
           <a href="/connectors" className="text-primary hover:underline">
             Connectors
           </a>
           .
         </p>
       </div>
+
+      <details className="rounded-xl border border-border bg-card p-6">
+        <summary className="cursor-pointer text-lg font-semibold">
+          Add a connector
+        </summary>
+        <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
+          The server has to speak MCP over HTTP. Nothing is deployed and no
+          release is needed — the entry is live for the organizations your
+          allowlist permits as soon as it is saved.
+        </p>
+        <div className="mt-4">
+          <CatalogueEntryForm />
+        </div>
+      </details>
 
       <div className="rounded-lg border border-border">
         <table className="w-full text-sm">
@@ -125,6 +159,15 @@ export default async function McpCataloguePage() {
                 </td>
                 <td className="px-4 py-3 text-muted-foreground">
                   <OrganizationsCell view={view} />
+                </td>
+                <td className="px-4 py-3 align-top">
+                  <CatalogueRowActions
+                    publicId={view.entry.publicId}
+                    slug={view.entry.slug}
+                    enabled={view.entry.enabled}
+                    isBuiltIn={view.entry.isBuiltIn}
+                    entry={toFormValues(view)}
+                  />
                 </td>
               </tr>
             ))}

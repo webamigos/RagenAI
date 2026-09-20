@@ -2,11 +2,16 @@
 
 import {
   isMcpAuthType,
+  type McpAuthType,
   type McpCatalogEntryDto,
 } from '@ragenai/platform-contracts';
+import { revalidatePath } from 'next/cache';
 
+import { ADMIN_ACTIONS, recordAdminAction } from '@/lib/audit';
 import { requireAdmin } from '@/lib/auth-guard';
 import { prisma } from '@/lib/db';
+
+import { validateEntry, type CatalogueEntryInput } from './validation';
 
 import {
   toCatalogueEntryView,
@@ -94,4 +99,293 @@ async function getDefaultAllowedConnectors(): Promise<string[]> {
   } catch {
     return [];
   }
+}
+
+export type CatalogueWriteResult = {
+  ok: boolean;
+  message?: string;
+  field?: keyof CatalogueEntryInput;
+};
+
+/**
+ * Create an entry. This is the feature: a platform administrator adds Notion
+ * and it is connectable, with no migration, no release and no deploy.
+ */
+export async function createCatalogueEntryAction(
+  input: CatalogueEntryInput,
+): Promise<CatalogueWriteResult> {
+  const admin = await requireAdmin();
+
+  const failure = validateEntry(input, { isNew: true });
+  if (failure) {
+    return { ok: false, field: failure.field, message: failure.message };
+  }
+
+  const slug = input.slug.trim();
+
+  // Case-insensitively, because `customerId` is
+  // `{orgId}:{userId}:{slug.toLowerCase()}`: a slug `slack` beside the
+  // built-in `SLACK` would send both connectors the same `x-customer-id`.
+  // The database carries a `lower(slug)` unique index as well; this is the
+  // message, that is the guarantee.
+  const clash = await prisma.mcpCatalogEntry.findFirst({
+    where: { slug: { equals: slug, mode: 'insensitive' } },
+    select: { slug: true },
+  });
+  if (clash) {
+    return {
+      ok: false,
+      field: 'slug',
+      message:
+        clash.slug === slug
+          ? 'That slug is already in the catalogue.'
+          : `That slug differs only in case from “${clash.slug}”, and the two would share one customer id.`,
+    };
+  }
+
+  const entry = await prisma.mcpCatalogEntry.create({
+    data: {
+      slug,
+      label: input.label.trim(),
+      description: input.description.trim() || null,
+      icon: input.icon.trim() || null,
+      lucideIcon: input.lucideIcon.trim() || 'plug',
+      mcpServerUrl: input.mcpServerUrl.trim(),
+      authType: input.authType as McpAuthType,
+      systemPrompt: input.systemPrompt.trim() || null,
+      allowsPrivateAddress: input.allowsPrivateAddress,
+      isBuiltIn: false,
+      enabled: true,
+      createdBy: admin.id,
+    },
+    select: { id: true, slug: true, publicId: true },
+  });
+
+  await recordAdminAction({
+    admin,
+    action: ADMIN_ACTIONS.catalogueEntryCreated,
+    entityType: 'mcp_catalogue_entry',
+    entityId: entry.publicId,
+    after: {
+      slug: entry.slug,
+      authType: input.authType,
+      mcpServerUrl: input.mcpServerUrl.trim(),
+      // Recorded because it widens what the server may dial, which is the
+      // one field on this form with a security consequence.
+      allowsPrivateAddress: input.allowsPrivateAddress,
+    },
+  });
+
+  revalidatePath('/mcp-catalogue');
+  return { ok: true };
+}
+
+/**
+ * Edit an entry. The slug is not editable — vault token paths, `customerId`s
+ * and every `allowedConnectors` array hold it, and changing it would orphan
+ * live credentials rather than rename anything.
+ */
+export async function updateCatalogueEntryAction(
+  publicId: string,
+  input: CatalogueEntryInput,
+): Promise<CatalogueWriteResult> {
+  const admin = await requireAdmin();
+
+  const existing = await prisma.mcpCatalogEntry.findUnique({
+    where: { publicId },
+    select: {
+      id: true,
+      slug: true,
+      isBuiltIn: true,
+      authType: true,
+      mcpServerUrl: true,
+      allowsPrivateAddress: true,
+    },
+  });
+  if (!existing) {
+    return { ok: false, message: 'That entry is no longer in the catalogue.' };
+  }
+  if (existing.isBuiltIn) {
+    return {
+      ok: false,
+      message:
+        'A built-in entry is defined by the code that ships with it. You can disable it, and set which organizations may use it.',
+    };
+  }
+
+  const failure = validateEntry(input, { isNew: false });
+  if (failure) {
+    return { ok: false, field: failure.field, message: failure.message };
+  }
+
+  await prisma.mcpCatalogEntry.update({
+    where: { id: existing.id },
+    data: {
+      label: input.label.trim(),
+      description: input.description.trim() || null,
+      icon: input.icon.trim() || null,
+      lucideIcon: input.lucideIcon.trim() || 'plug',
+      mcpServerUrl: input.mcpServerUrl.trim(),
+      authType: input.authType as McpAuthType,
+      systemPrompt: input.systemPrompt.trim() || null,
+      allowsPrivateAddress: input.allowsPrivateAddress,
+    },
+  });
+
+  await recordAdminAction({
+    admin,
+    action: ADMIN_ACTIONS.catalogueEntryUpdated,
+    entityType: 'mcp_catalogue_entry',
+    entityId: publicId,
+    before: {
+      authType: existing.authType,
+      mcpServerUrl: existing.mcpServerUrl,
+      allowsPrivateAddress: existing.allowsPrivateAddress,
+    },
+    after: {
+      authType: input.authType,
+      mcpServerUrl: input.mcpServerUrl.trim(),
+      allowsPrivateAddress: input.allowsPrivateAddress,
+    },
+  });
+
+  revalidatePath('/mcp-catalogue');
+  return { ok: true };
+}
+
+/**
+ * Enable or disable an entry, including a built-in.
+ *
+ * Disabling is the switch an operator has instead of a feature flag: it hides
+ * the entry from the gallery and stops new connections, while existing
+ * `McpConnector` rows keep resolving until the turn they are in finishes.
+ */
+export async function setCatalogueEntryEnabledAction(
+  publicId: string,
+  enabled: boolean,
+): Promise<CatalogueWriteResult> {
+  const admin = await requireAdmin();
+
+  const existing = await prisma.mcpCatalogEntry.findUnique({
+    where: { publicId },
+    select: { id: true, slug: true, enabled: true },
+  });
+  if (!existing) {
+    return { ok: false, message: 'That entry is no longer in the catalogue.' };
+  }
+
+  await prisma.mcpCatalogEntry.update({
+    where: { id: existing.id },
+    data: { enabled },
+  });
+
+  await recordAdminAction({
+    admin,
+    action: ADMIN_ACTIONS.catalogueEntryToggled,
+    entityType: 'mcp_catalogue_entry',
+    entityId: publicId,
+    before: { slug: existing.slug, enabled: existing.enabled },
+    after: { slug: existing.slug, enabled },
+  });
+
+  revalidatePath('/mcp-catalogue');
+  return { ok: true };
+}
+
+/**
+ * Delete an entry — only once nothing holds its slug.
+ *
+ * "No connectors" is not enough on its own. `allowedConnectors` arrays and
+ * vault token paths are keyed by slug too, so a slug reused after a deletion
+ * would inherit an old allowlist entry or an old token: the quietest possible
+ * way for one operator's server to be handed another's credentials. So this
+ * refuses while any connector or OAuth token names the slug, and purges the
+ * allowlists in the same transaction as the delete.
+ *
+ * An entry that cannot be fully purged is disabled instead, which reaches the
+ * same place for a user and loses nothing.
+ */
+export async function deleteCatalogueEntryAction(
+  publicId: string,
+): Promise<CatalogueWriteResult> {
+  const admin = await requireAdmin();
+
+  const existing = await prisma.mcpCatalogEntry.findUnique({
+    where: { publicId },
+    select: { id: true, slug: true, isBuiltIn: true },
+  });
+  if (!existing) {
+    return { ok: false, message: 'That entry is no longer in the catalogue.' };
+  }
+  if (existing.isBuiltIn) {
+    return {
+      ok: false,
+      message:
+        'A built-in entry ships with Ragen and is re-seeded on every deploy. Disable it instead.',
+    };
+  }
+
+  const [connectors, tokens] = await Promise.all([
+    prisma.mcpConnector.count({ where: { providerSlug: existing.slug } }),
+    prisma.mcpOAuthToken.count({ where: { providerSlug: existing.slug } }),
+  ]);
+
+  if (connectors > 0 || tokens > 0) {
+    return {
+      ok: false,
+      message:
+        connectors > 0
+          ? `${connectors} connector${connectors === 1 ? '' : 's'} still use this entry. Disable it instead — that stops new connections and leaves the existing ones working.`
+          : 'Credentials are still stored against this entry. Disable it instead, or disconnect the connectors that left them behind.',
+    };
+  }
+
+  const organizations = await prisma.organizationSettings.findMany({
+    where: { allowedConnectors: { has: existing.slug } },
+    select: { id: true, allowedConnectors: true },
+  });
+
+  await prisma.$transaction([
+    ...organizations.map((settings) =>
+      prisma.organizationSettings.update({
+        where: { id: settings.id },
+        data: {
+          allowedConnectors: settings.allowedConnectors.filter(
+            (slug) => slug !== existing.slug,
+          ),
+        },
+      }),
+    ),
+    prisma.mcpCatalogEntry.delete({ where: { id: existing.id } }),
+  ]);
+
+  await purgeFromPlatformDefaults(existing.slug);
+
+  await recordAdminAction({
+    admin,
+    action: ADMIN_ACTIONS.catalogueEntryDeleted,
+    entityType: 'mcp_catalogue_entry',
+    entityId: publicId,
+    before: {
+      slug: existing.slug,
+      allowlistsPurged: organizations.length,
+    },
+    after: { deleted: true },
+  });
+
+  revalidatePath('/mcp-catalogue');
+  return { ok: true };
+}
+
+/** The platform-wide default allowlist is a JSON array in `Settings`. */
+async function purgeFromPlatformDefaults(slug: string): Promise<void> {
+  const defaults = await getDefaultAllowedConnectors();
+  if (!defaults.includes(slug)) {
+    return;
+  }
+
+  await prisma.settings.update({
+    where: { key: DEFAULT_ALLOWED_CONNECTORS_KEY },
+    data: { value: JSON.stringify(defaults.filter((entry) => entry !== slug)) },
+  });
 }
