@@ -1,6 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import {
+  describeProviderError,
   evaluateInputStage,
+  providerErrorReason,
   securityEventTypeFor,
   type ModerationVerdict,
   type ResolvedGuardrail,
@@ -81,9 +83,11 @@ export class RunInputGuardrailsService {
       // Reachable and not a reason to refuse the turn: an administrator
       // enabled a check this deployment has no credentials for. A
       // misconfiguration worth saying out loud, not a content decision.
+      // No `err`: this one is a local construction failure rather than a
+      // provider response, but the rule is the same and an exception here is
+      // not worth making a second judgement call about.
       this.logger.warn(
-        'content-moderation is enabled but no moderation provider is configured',
-        err,
+        `content-moderation is enabled but no moderation provider is configured (${providerErrorReason(err)})`,
       );
       return { outcome: 'error', reason: 'no-moderation-provider' };
     }
@@ -100,11 +104,13 @@ export class RunInputGuardrailsService {
       }
       return result.flagged ? { outcome: 'hit' } : { outcome: 'pass' };
     } catch (err) {
-      this.logger.error('Moderation provider call failed', err);
-      return {
-        outcome: 'error',
-        reason: err instanceof Error ? err.message.slice(0, 120) : 'unknown',
-      };
+      // Described, not handed to the logger: this call is made with the
+      // caller's own message, and a provider error object rendered in full
+      // puts it in the log. See `describeProviderError`.
+      this.logger.error(
+        `Moderation provider call failed (${JSON.stringify(describeProviderError(err))})`,
+      );
+      return { outcome: 'error', reason: providerErrorReason(err) };
     }
   }
 

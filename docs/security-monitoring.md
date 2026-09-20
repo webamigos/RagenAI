@@ -17,9 +17,9 @@ How to set up dashboards, interpret audit events, and tune thresholds for the pr
 | `TOOL_CALL_CONFIRMED` | chat | info | (no escalation) | User clicked Approve on blocked tool |
 | `TOOL_CALL_DENIED` | chat | info | (no escalation) | User clicked Deny on blocked tool |
 | `TOOL_ARGS_HIGH_RISK` | mcp | info | 3 in 10 min → critical | Phase 3 inspector found secrets/base64/high-entropy in tool args |
-| `CHAT_JAILBREAK_DETECTED` | chat | info | 5 in 10 min → critical | Phase 6 classifier scored user message above threshold |
-| `GUARDRAIL_BLOCKED` | chat | the rule's own | (no escalation) | A `BLOCK` guardrail refused the turn — see [guardrails](guardrails.md) |
-| `GUARDRAIL_FLAGGED` | chat | the rule's own | (no escalation) | A guardrail matched and the turn continued: a `LOG` rule, or a `MASK` |
+| `CHAT_JAILBREAK_DETECTED` | chat | info | 5 in 10 min → critical | **No longer written.** The classifier is the `jailbreak-detection` guardrail rule now, and files the two rows below. Kept in the enum because the historical rows are still there and the filters still have to name them |
+| `GUARDRAIL_BLOCKED` | chat, chatbot, api | the rule's own | (no escalation) | A `BLOCK` guardrail refused the turn — see [guardrails](guardrails.md) |
+| `GUARDRAIL_FLAGGED` | chat, chatbot, api | the rule's own | (no escalation) | A guardrail matched and the turn continued: a `LOG` rule, a `MASK`, or a scored rule over its threshold |
 | `UPLOAD_SUSPICIOUS_CONTENT` | upload | info | 3 in 24 hr → critical | Phase 4 sanitizer flagged prompt-injection patterns in ingested content |
 | `RATE_LIMIT_HIT` | infra | info | 20 in 60 min → critical | Redis rate limiter triggered |
 | `MCP_OAUTH_FAILED` | mcp | info | (no escalation) | MCP connector OAuth token refresh failed |
@@ -30,17 +30,40 @@ All LLM calls route through LiteLLM which traces to Langfuse automatically. The 
 
 ### 1. Jailbreak score distribution
 
-**Langfuse → Traces → Filter by `functionId: jailbreak-classifier`**
+Jailbreak detection is a **guardrail rule** now, not a standalone classifier
+gated by an environment variable. Two consequences for reading it:
 
-Create a histogram of `metadata.jailbreakScore` across all traces. Expected distribution:
+**How often it fires: `/guardrails` in `apps/admin`.** The
+`jailbreak-detection` row carries its hits over the last seven days, split
+into blocked and flagged, across every organization and both runtimes. That is
+the number to watch, and unlike the old trace histogram it exists whether or
+not this installation runs Langfuse. `/incidents`, filtered to guardrail hits,
+gives the same events one at a time, each carrying the rule and the judge's
+**score**.
+
+**The per-turn score distribution, if you want it: Langfuse → Generations →
+`functionId: guardrail-policy-judge`.** Each judge call is its own generation
+with its score as the output. It is no longer trace metadata, because the
+judge is no longer a special case — it is one of several scored rules and they
+all go through one call site. Expected shape, unchanged:
+
 - 95%+ of turns score 0.0–0.2 (normal questions)
 - 1–3% score 0.3–0.5 (ambiguous, e.g. users quoting security articles)
 - <1% score 0.6+ (genuine probes or false positives)
 
 **Action thresholds:**
-- If >5% of daily turns score above 0.5 → the classifier is too sensitive, raise `JAILBREAK_DETECTION_THRESHOLD`
-- If genuine attacks consistently score below 0.6 → the classifier prompt needs tuning
-- If you see 0 scores everywhere → check that `JAILBREAK_DETECTION_ENABLED=true` is set
+
+- If >5% of daily turns score above 0.5 → the rule is too sensitive. Raise its
+  `threshold` in the admin panel, for one organization or for all of them. No
+  deploy.
+- If genuine attacks consistently score below 0.6 → the classifier prompt
+  needs tuning, and that *is* a deploy: it is fixed in code
+  (`JAILBREAK_SYSTEM_PROMPT` in `packages/guardrails`) precisely so it is the
+  same question on every surface. An operator who wants their own wording
+  writes an `LLM_POLICY` rule instead.
+- If you see nothing at all → check the rule is enabled in the panel. It is
+  seeded **off**, like every other rule, and `JAILBREAK_DETECTION_ENABLED` no
+  longer switches anything on.
 
 ### 2. Tool confirmation rate
 
@@ -120,10 +143,16 @@ Tune by adjusting the weights in `src/libs/security/tool-arg-inspector.ts` or ad
 
 ### "User is probing for jailbreaks"
 
-Signal: 5+ `CHAT_JAILBREAK_DETECTED` events in 10 minutes from one user → escalated to critical → email arrives.
+Signal: a run of `GUARDRAIL_FLAGGED` events naming `jailbreak-detection`, each
+carrying the judge's score. **This no longer escalates on burst and no longer
+emails**: it was `CHAT_JAILBREAK_DETECTED` with a 5-in-10-minutes rule, and it
+is a guardrail hit now, which does not escalate — see the table above. What
+replaces the email is that the rule can *block*, which the classifier never
+could, and that its severity is the operator's to set. A rule set to
+`critical` emails on its first hit, through the ordinary severity path.
 
 Steps:
-1. Open the incident in ragen-admin → Incidents
+1. Open the incident in ragen-admin → Incidents, filtered to guardrail hits
 2. Check "Similar events" sidebar — how many in the last hour?
 3. If it's a spike from one user: their session is still active, the defenses are working (Phase 1 context boundaries + Phase 2 tool gating). No immediate action needed unless they're also triggering `TOOL_CALL_BLOCKED` or `TOOL_ARGS_HIGH_RISK`.
 4. If you want to stop it: ban the user via ragen-admin → Users → Ban. Better Auth blocks their session.
@@ -154,11 +183,11 @@ Steps:
 
 | Config | Default | File | What to tune |
 |---|---|---|---|
-| Jailbreak threshold | 0.7 | env `JAILBREAK_DETECTION_THRESHOLD` | Lower to catch more, raise to reduce FP |
+| Jailbreak threshold | 0.7 | the **admin panel**, per rule and per org | Lower to catch more, raise to reduce FP. Was `JAILBREAK_DETECTION_THRESHOLD`, which is read by nothing now |
 | Tool-arg secret pattern weight | 5 | `src/libs/security/tool-arg-inspector.ts` | Each secret match → instant block. Add/remove patterns here. |
 | Tool-arg base64 weight | 3 | same | Lone blob → medium (audit). With high entropy → high (block). |
 | Tool-arg entropy threshold | 4.5 | same | Shannon entropy above this + length ≥ 512 chars → signal fires |
-| Escalation window/threshold | per-event | `src/features/security/utils/escalation-rules.ts` | `AUTH_LOGIN_FAILED: 10/60min`, `CHAT_JAILBREAK_DETECTED: 5/10min`, etc. |
+| Escalation window/threshold | per-event | `src/features/security/utils/escalation-rules.ts` | `AUTH_LOGIN_FAILED: 10/60min`, `CHAT_JAILBREAK_DETECTED: 5/10min`, etc. **A jailbreak hit is a `GUARDRAIL_FLAGGED`/`GUARDRAIL_BLOCKED` event now**, so the `CHAT_JAILBREAK_DETECTED` rule no longer fires — neither guardrail event escalates on burst |
 | Email dedupe window | 15 min | `src/app/emails/services/mailer.ts` | `SECURITY_DEDUPE_WINDOW_MS` constant |
 | Email rate cap | 20/hr | same | `SECURITY_RATE_MAX` constant |
 | Guardrail rules | none enabled | the **admin panel**, not a file | Kind, stage, action, severity and per-org overrides — the one row here that is not a deploy |

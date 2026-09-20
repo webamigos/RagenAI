@@ -30,6 +30,7 @@ import { wrapVectorStoreWithDualContentDecode } from './decode-dual-content-chun
 import { getImportedKbFileIdsQuery } from '@/features/documents/services/queries/get-imported-kb-file-ids-query';
 import type { ReasoningEffortLevel } from '@/libs/llm/types';
 import { isSupportedVectorStore } from '@ragenai/rag-core';
+import type { SecurityEventSource } from '@/features/security/contracts/security-event.types';
 type InitializeRagChainParams = {
   settings: OrganizationSettings;
   orgId: string;
@@ -66,6 +67,11 @@ type InitializeRagChainParams = {
    * `supportsReasoningEffort` (e.g. GPT-OSS via Scaleway).
    */
   reasoningEffort?: ReasoningEffortLevel;
+  /**
+   * Which surface this turn arrived through, for a guardrail hit's security
+   * event. This factory serves four of them; only the panel is `chat`.
+   */
+  guardrailSource?: SecurityEventSource;
 };
 
 const DEFAULT_REPHRASE_MODEL = process.env.REPHRASE_MODEL || 'gemini-2.5-flash';
@@ -90,6 +96,7 @@ export const initializeRagChain = async ({
   approvedToolCalls,
   maxTokens,
   reasoningEffort,
+  guardrailSource,
 }: InitializeRagChainParams) => {
   // Rejected, not defaulted. Falling back to the knowledge base when the
   // project is missing would turn a client bug into a silently *wider* search
@@ -212,6 +219,7 @@ export const initializeRagChain = async ({
         mcpContext,
         approvedToolCalls: approvedToolCalls ?? [],
         tracking: { organizationId: orgId, projectId, userId },
+        guardrailSource,
         ragSettings: {
           multiQueryEnabled: ragPipelineSettings.multiQueryEnabled,
           contentModerationEnabled:

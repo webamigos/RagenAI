@@ -1,9 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import {
+  JudgeTimeoutError,
   POLICY_JUDGE_MODEL,
-  POLICY_JUDGE_SYSTEM_PROMPT,
   POLICY_JUDGE_TIMEOUT_MS,
-  policyJudgePrompt,
+  providerErrorReason,
   type JudgePolicy,
   type PolicyJudgement,
 } from '@ragenai/guardrails';
@@ -14,7 +14,16 @@ import { createChatCompletionInstance } from '../llm/model-instances.js';
 import type { TrackAiUsage } from '../ai-usage/types.js';
 
 /**
- * apps/api's judge for `LLM_POLICY` rules — the model call, and its bill.
+ * apps/api's judge for scored rules — the model call, and its bill.
+ *
+ * "Scored" is two kinds since C2: an `LLM_POLICY` and `jailbreak-detection`.
+ * This service cannot tell them apart and must not — it is handed a system
+ * prompt and a user prompt. Which prompt a rule gets is `judgeRequestFor` in
+ * the package.
+ *
+ * C2 is also what gives the public API a jailbreak detector at all: the old
+ * classifier was called from two apps/web routes and from nothing here, so the
+ * rule resolved for API traffic and was enforced by nothing.
  *
  * The two are one service for the reason C1 is one step: a judge that runs
  * without recording what it cost is a per-turn, per-rule call to an external
@@ -67,7 +76,7 @@ export class PolicyJudgeService {
 
   /** Build the judge handed to `evaluateInputStage` for one turn. */
   forTurn(context: PolicyJudgeContext): JudgePolicy {
-    return async ({ rule, text }): Promise<PolicyJudgement> => {
+    return async ({ rule, system, prompt }): Promise<PolicyJudgement> => {
       const startedAt = Date.now();
 
       try {
@@ -80,8 +89,8 @@ export class PolicyJudgeService {
         const judging = generateObject({
           model,
           schema: judgementSchema,
-          system: POLICY_JUDGE_SYSTEM_PROMPT,
-          messages: [{ role: 'user', content: policyJudgePrompt(rule, text) }],
+          system,
+          messages: [{ role: 'user', content: prompt }],
           experimental_telemetry: {
             isEnabled: true,
             functionId: 'guardrail-policy-judge',
@@ -93,7 +102,7 @@ export class PolicyJudgeService {
         // turn open before the model has been asked the question at all.
         const timing = new Promise<never>((_, reject) => {
           setTimeout(
-            () => reject(new Error('policy judge timeout')),
+            () => reject(new JudgeTimeoutError()),
             POLICY_JUDGE_TIMEOUT_MS,
           );
         });
@@ -107,14 +116,16 @@ export class PolicyJudgeService {
         // Pass on error. The same choice the moderation adapter makes: a
         // classifier that can take the product down is a bigger risk than the
         // one it catches.
+        //
+        // **Described, never handed to the logger.** Passing `err` as a
+        // parameter here printed the caller's own message: the AI SDK's
+        // `APICallError` carries `requestBodyValues`, the whole request body,
+        // and Nest's logger renders an error parameter in full. Verified, on
+        // this runtime, not inferred from apps/web's.
         this.logger.warn(
-          `Policy judge could not answer for ${rule.publicId}; the rule did not run for this turn`,
-          err,
+          `Policy judge could not answer for ${rule.publicId} (${providerErrorReason(err)}); the rule did not run for this turn`,
         );
-        return {
-          outcome: 'error',
-          reason: err instanceof Error ? err.message.slice(0, 120) : 'unknown',
-        };
+        return { outcome: 'error', reason: providerErrorReason(err) };
       }
     };
   }

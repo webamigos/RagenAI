@@ -588,12 +588,36 @@ match.
       `policy` — the row the resolver drops. The admin action now validates
       against the authorable set rather than the supported one, which is what
       closes that as a hand-made request too.
-- [ ] **C2.** Absorb the jailbreak classifier as a scored built-in evaluated
+- [x] **C2.** Absorb the jailbreak classifier as a scored built-in evaluated
       **inside the loop**, and delete the two route-level calls in
       `assistant-stream.ts` and `chatbot/[token]/chat/route.ts`. This is not
       just tidying: `apps/api` never called the classifier at all, so until it
       runs in the chain the `jailbreak-detection` rule resolves for API traffic
       and is enforced by nothing there. `JAILBREAK_DETECTION_*` retired.
+
+      Four things it turned out to need beyond the sketch. **The judge dep now
+      receives its prompt rather than building it** — with two kinds of scored
+      rule, *choosing* the prompt became a decision, and a decision made in
+      each binding is one two runtimes can make differently, silently, since
+      both choices produce a number in the right range. **The policy cap does
+      not count the built-in**: counting everything judged would let an
+      organization's own three policies push the platform's detector past
+      `MAX_ACTIVE_LLM_POLICIES` and switch it off, through a change that was
+      not about jailbreak at all. **`guardrailSource` is threaded through the
+      web chain**, because `initializeRagChain` serves four surfaces and
+      hardcoded `chat`, while the deleted chatbot-route call correctly
+      recorded `chatbot` — deleting it would have refiled every widget hit
+      under a surface nobody would filter for. And **`MODERATION_ENABLED`
+      retires here too**: B3 left it read by nothing, so `.env.example` was
+      still shipping all three dead gates to every fresh install.
+
+      Two deliberate losses, both stated in `docs/security-monitoring.md`. The
+      per-turn score is no longer trace *metadata* — it is the judge call's own
+      Langfuse generation, and the security event's `score`. And a burst of
+      jailbreak hits no longer escalates to `critical` and emails, because
+      guardrail events do not escalate; what replaces it is that the rule can
+      now **block**, which the classifier never could, and that its severity is
+      the operator's to set.
 - [ ] **C3.** The policy editor, with a "test this policy" box that runs the
       judge against text the operator pastes.
 

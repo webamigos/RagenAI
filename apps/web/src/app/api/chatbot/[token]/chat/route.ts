@@ -16,15 +16,11 @@ import { getChatbotThreadHistoryQuery } from '@/features/chatbots/services/queri
 import { buildChatbotMetadataFilter } from './metadata-filter';
 import { checkChatbotRateLimit } from './rate-limit';
 import { checkUsageLimitsQuery } from '@/features/ai-usage/services/queries/check-usage-limits-query';
+import { recordSecurityEvent } from '@/features/security/services/commands/record-security-event-command';
 import {
   assertWithinUsageLimits,
   isUsageLimitRefusal,
 } from '@/features/ai-usage/services/queries/assert-within-usage-limits';
-import {
-  classifyJailbreakRisk,
-  isAboveJailbreakThreshold,
-} from '@/libs/security/jailbreak-classifier';
-import { recordSecurityEvent } from '@/features/security/services/commands/record-security-event-command';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -216,56 +212,12 @@ export async function POST(
         // other early-return branches don't drop it from history.
         await saveUserMessage();
 
-        // Fire-and-forget jailbreak classification. Public chatbots are
-        // the most exposed jailbreak surface — we want the score on
-        // every turn for the security dashboard and escalation rules.
-        // Short-circuits to score=0 when JAILBREAK_DETECTION_ENABLED is
-        // off. Must not delay or block the user's stream.
-        void classifyJailbreakRisk(message)
-          .then((classification) => {
-            if (classification.skipped) {
-              return;
-            }
-            // `classification.reason` is LLM-derived text that may
-            // quote or paraphrase the user's message — never emit it
-            // to Langfuse when at-rest encryption is on, otherwise
-            // the content would leak through the observability layer.
-            // SecurityEvent metadata is an internal org-admin audit
-            // surface so the reason still lands there.
-            updateActiveTrace({
-              metadata: {
-                jailbreakScore: classification.score,
-                ...(classification.reason && !skipLangfuseContent
-                  ? { jailbreakReason: classification.reason }
-                  : {}),
-              },
-            });
-            if (isAboveJailbreakThreshold(classification.score)) {
-              recordSecurityEvent({
-                eventType: 'CHAT_JAILBREAK_DETECTED',
-                severity: 'info',
-                source: 'chatbot',
-                organizationId,
-                ipAddress: clientIp,
-                userAgent: request.headers.get('user-agent') ?? null,
-                metadata: {
-                  score: classification.score,
-                  chatbotId: chatbot.id,
-                  threadId: thread.id,
-                  messageLength: message.length,
-                  ...(classification.reason
-                    ? { reason: classification.reason }
-                    : {}),
-                },
-              });
-            }
-          })
-          .catch((err) => {
-            logger.debug(
-              { err },
-              'Jailbreak classifier post-processing failed (chatbot)',
-            );
-          });
+        // Jailbreak classification used to be a fire-and-forget call right
+        // here, gated on `JAILBREAK_DETECTION_ENABLED`. It is a guardrail
+        // rule now — `jailbreak-detection`, evaluated inside the chain — so
+        // it is switched on per organization from the admin panel, it can
+        // block rather than only observe, and it covers the public API, which
+        // this route-level call never did.
 
         try {
           // Before RAG costs anything. The widget is the surface where an
@@ -296,6 +248,12 @@ export async function POST(
             scope: 'none',
             metadataFilter,
             projectInstruction: chatbot.chatbotPrompt,
+            // The widget is its own surface on the incidents page. Without
+            // this a hit here is filed as `chat`, and an operator filtering
+            // for what the public widget is being sent does not find it —
+            // which is what the deleted call above got right and the chain's
+            // default does not know.
+            guardrailSource: 'chatbot',
           });
 
           const result = await ragChain.stream({

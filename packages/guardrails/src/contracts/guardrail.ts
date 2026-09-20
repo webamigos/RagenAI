@@ -74,11 +74,17 @@ export type BuiltInGuardrailKey = (typeof BUILT_IN_GUARDRAIL_KEYS)[number];
  * and stage differ in whether an evaluator exists for them. So the identifier
  * is the unit, and `evaluateInputStage` has exactly one branch per entry here.
  *
- * `jailbreak-detection` joins this list in Phase C, in the same change that
- * gives it an evaluator — never before, or it reads as enabled and does
- * nothing; never after, or it is dropped while the panel says otherwise.
+ * `jailbreak-detection` joined this list in Phase C2, in the same change that
+ * gave it an evaluator — never before, or it reads as enabled and does
+ * nothing; never after, or it is dropped while the panel says otherwise. Its
+ * evaluator is the judge loop in `evaluator/policy.ts`: it is a *scored*
+ * built-in, which is why it shares a branch with `LLM_POLICY` rather than
+ * with `content-moderation`, whose provider returns a flag and not a number.
  */
-export const EVALUABLE_BUILT_IN_KEYS = ['content-moderation'] as const;
+export const EVALUABLE_BUILT_IN_KEYS = [
+  'content-moderation',
+  'jailbreak-detection',
+] as const;
 
 export function isEvaluableBuiltIn(key: string | null): boolean {
   return (

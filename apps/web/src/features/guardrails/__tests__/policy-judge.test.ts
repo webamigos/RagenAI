@@ -36,12 +36,18 @@ vi.mock(
   }),
 );
 
+const mockLoggerWarn = vi.fn();
 vi.mock('@/app/lib/utils/logger', () => ({
-  logger: { warn: vi.fn(), error: vi.fn(), debug: vi.fn(), info: vi.fn() },
+  logger: {
+    warn: (...a: unknown[]) => mockLoggerWarn(...a),
+    error: vi.fn(),
+    debug: vi.fn(),
+    info: vi.fn(),
+  },
 }));
 
 const { createPolicyJudge } = await import('../utils/policy-judge');
-const { POLICY_JUDGE_MODEL, POLICY_JUDGE_SYSTEM_PROMPT } =
+const { POLICY_JUDGE_MODEL, POLICY_JUDGE_SYSTEM_PROMPT, judgeRequestFor } =
   await import('@ragenai/guardrails');
 
 type Rule = Parameters<ReturnType<typeof createPolicyJudge>>[0]['rule'];
@@ -87,7 +93,7 @@ describe('what the judge costs', () => {
     // operator asks precisely because policy rules are the expensive kind.
     answers(0.1);
 
-    await createPolicyJudge({ tracking })({ rule: rule(), text: 'hello' });
+    await createPolicyJudge({ tracking })(judgeRequestFor(rule(), 'hello'));
 
     expect(mockTrackAiUsage).toHaveBeenCalledTimes(1);
     expect(mockTrackAiUsage).toHaveBeenCalledWith(
@@ -110,7 +116,7 @@ describe('what the judge costs', () => {
     // which on a working rule set is nearly always.
     answers(0);
 
-    await createPolicyJudge({ tracking })({ rule: rule(), text: 'hello' });
+    await createPolicyJudge({ tracking })(judgeRequestFor(rule(), 'hello'));
 
     expect(mockTrackAiUsage).toHaveBeenCalledTimes(1);
   });
@@ -122,10 +128,9 @@ describe('what the judge costs', () => {
     answers(0.9);
     mockTrackAiUsage.mockRejectedValue(new Error('database is down'));
 
-    const verdict = await createPolicyJudge({ tracking })({
-      rule: rule(),
-      text: 'hello',
-    });
+    const verdict = await createPolicyJudge({ tracking })(
+      judgeRequestFor(rule(), 'hello'),
+    );
 
     expect(verdict).toEqual({ outcome: 'scored', score: 0.9 });
   });
@@ -138,10 +143,9 @@ describe('what the judge is asked', () => {
     // wrong — so both read these out of `@ragenai/guardrails`.
     answers(0.2);
 
-    await createPolicyJudge({ tracking })({
-      rule: rule(),
-      text: 'what do they charge?',
-    });
+    await createPolicyJudge({ tracking })(
+      judgeRequestFor(rule(), 'what do they charge?'),
+    );
 
     expect(mockCreateChatCompletionInstance).toHaveBeenCalledWith(
       expect.objectContaining({ model: POLICY_JUDGE_MODEL, temperature: 0 }),
@@ -165,10 +169,9 @@ describe('when the judge cannot answer', () => {
     // worth an operator's attention.
     mockGenerateObject.mockRejectedValue(new Error('provider exploded'));
 
-    const verdict = await createPolicyJudge({ tracking })({
-      rule: rule(),
-      text: 'hello',
-    });
+    const verdict = await createPolicyJudge({ tracking })(
+      judgeRequestFor(rule(), 'hello'),
+    );
 
     expect(verdict.outcome).toBe('error');
   });
@@ -177,14 +180,14 @@ describe('when the judge cannot answer', () => {
     mockGenerateObject.mockRejectedValue(new Error('provider exploded'));
 
     await expect(
-      createPolicyJudge({ tracking })({ rule: rule(), text: 'hello' }),
+      createPolicyJudge({ tracking })(judgeRequestFor(rule(), 'hello')),
     ).resolves.toBeDefined();
   });
 
   it('records no usage for a call that produced none', async () => {
     mockGenerateObject.mockRejectedValue(new Error('timeout'));
 
-    await createPolicyJudge({ tracking })({ rule: rule(), text: 'hello' });
+    await createPolicyJudge({ tracking })(judgeRequestFor(rule(), 'hello'));
 
     expect(mockTrackAiUsage).not.toHaveBeenCalled();
   });
@@ -194,13 +197,85 @@ describe('when the judge cannot answer', () => {
     // request contains the customer's message.
     mockGenerateObject.mockRejectedValue(new Error('x'.repeat(500)));
 
-    const verdict = await createPolicyJudge({ tracking })({
-      rule: rule(),
-      text: 'hello',
-    });
+    const verdict = await createPolicyJudge({ tracking })(
+      judgeRequestFor(rule(), 'hello'),
+    );
 
     expect(
       verdict.outcome === 'error' ? verdict.reason.length : 0,
     ).toBeLessThanOrEqual(120);
+  });
+});
+
+describe('what a failed judge puts in the log', () => {
+  /**
+   * The bug this file did not catch, at the level it actually lived.
+   *
+   * The catch path logged `{ err }`. The AI SDK's `APICallError` carries
+   * `requestBodyValues` — the whole request body, which for a judge is the
+   * system prompt plus the customer's message — and pino copies every
+   * enumerable property of an error. Every test above passed throughout,
+   * because each one asserted the *verdict* and none asserted what was
+   * written down on the way to it.
+   */
+  function apiCallError(): Error {
+    const err = new Error('Bad Request');
+    err.name = 'APICallError';
+    return Object.assign(err, {
+      url: 'https://provider/v1/models/x',
+      requestBodyValues: {
+        system: 'You are a policy compliance classifier.',
+        messages: [{ role: 'user', content: 'my password is hunter2' }],
+      },
+      statusCode: 400,
+    });
+  }
+
+  it('writes nothing from the request body', async () => {
+    mockGenerateObject.mockRejectedValue(apiCallError());
+
+    await createPolicyJudge({ tracking })(
+      judgeRequestFor(rule(), 'my password is hunter2'),
+    );
+
+    expect(mockLoggerWarn).toHaveBeenCalledTimes(1);
+    const written = JSON.stringify(mockLoggerWarn.mock.calls[0]);
+
+    expect(
+      written,
+      "The customer's message reached the log through the error object. It " +
+        'is in the thread, where its owner can see it and the platform ' +
+        'cannot — a log line is neither.',
+    ).not.toContain('hunter2');
+    expect(written).not.toContain('policy compliance');
+  });
+
+  it('still says enough to act on', async () => {
+    // Not a licence to log nothing: an operator needs to tell credentials
+    // from a rate limit from a bad request.
+    //
+    // Drives the judge itself rather than reading the previous test's mock —
+    // `beforeEach` clears it, so that version asserted against `undefined`
+    // and reported a type error instead of a verdict.
+    mockGenerateObject.mockRejectedValue(apiCallError());
+
+    await createPolicyJudge({ tracking })(judgeRequestFor(rule(), 'hello'));
+
+    const written = JSON.stringify(mockLoggerWarn.mock.calls[0]);
+    expect(written).toContain('APICallError');
+    expect(written).toContain('400');
+  });
+
+  it('returns a reason that carries no request text either', async () => {
+    // The `reason` reaches `onJudgeError`, which logs it. It used to be the
+    // provider's message truncated to 120 characters, which bounded the leak
+    // rather than closing it.
+    mockGenerateObject.mockRejectedValue(apiCallError());
+
+    const verdict = await createPolicyJudge({ tracking })(
+      judgeRequestFor(rule(), 'my password is hunter2'),
+    );
+
+    expect(verdict).toEqual({ outcome: 'error', reason: 'APICallError:400' });
   });
 });
