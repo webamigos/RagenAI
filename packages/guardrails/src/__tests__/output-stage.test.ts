@@ -4,6 +4,7 @@ import { OUTPUT_WINDOW_CHARS } from '../contracts/guardrail';
 import {
   createOutputStage,
   releaseBoundary,
+  wholeCodePoint,
   type OutputStageDeps,
   type OutputStageEvent,
 } from '../evaluator/output-stage';
@@ -215,6 +216,43 @@ describe('createOutputStage', () => {
     });
   });
 
+  it('files a LOG rule that matched the same delta as the block', () => {
+    // The spans of a blocking pass are still in the buffer, so no release has
+    // counted them and none ever will. A rule whose only match was in that
+    // pass would be missing from the hit counts entirely — and a `LOG` rule
+    // fires on what the model produced, whether or not the reader saw it.
+    const logging = rule({ publicId: 'log-1', action: 'LOG', pattern: 'aaa' });
+    const blocking = rule({
+      publicId: 'block-1',
+      action: 'BLOCK',
+      pattern: 'nope',
+    });
+
+    run([logging, blocking], ['aaa and then nope'], 2);
+
+    expect(record).toHaveBeenCalledWith({
+      rule: expect.objectContaining({ publicId: 'log-1' }),
+      matchCount: 1,
+    });
+    expect(record).toHaveBeenCalledWith({
+      rule: expect.objectContaining({ publicId: 'block-1' }),
+    });
+  });
+
+  it('never releases half of a surrogate pair', () => {
+    // The boundary counts UTF-16 code units and an emoji is two of them.
+    // Splitting one puts a lone surrogate in the delta that goes out over SSE,
+    // which renders as a replacement character on both sides of the seam — for
+    // text nothing matched.
+    const stage = createOutputStage([rule()], deps, { windowChars: 4 });
+
+    const released = textOf(stage.push('a😀cde'));
+    expect(released).toBe('a');
+    expect(released).not.toContain('\ud83d');
+
+    expect(released + textOf(stage.flush())).toBe('a😀cde');
+  });
+
   it('reports a rule the budget skipped once, not once per delta', () => {
     // A zero budget skips every rule on every pass, which is what a
     // misbehaving pattern looks like from here. The report has to reach the
@@ -261,6 +299,24 @@ describe('createOutputStage', () => {
     stage.push('x'.repeat(OUTPUT_WINDOW_CHARS + 10));
 
     expect(stage.held).toBe(OUTPUT_WINDOW_CHARS);
+  });
+});
+
+describe('wholeCodePoint', () => {
+  it('pulls a boundary back off the seam of a surrogate pair', () => {
+    expect(wholeCodePoint('a😀b', 2)).toBe(1);
+  });
+
+  it('leaves a boundary that falls between whole characters', () => {
+    expect(wholeCodePoint('a😀b', 3)).toBe(3);
+    expect(wholeCodePoint('abc', 2)).toBe(2);
+  });
+
+  it('leaves the two ends alone', () => {
+    // Nothing is released at 0, and at the end the pair is whole by
+    // definition — pulling back there would hold a character for no reason.
+    expect(wholeCodePoint('😀', 0)).toBe(0);
+    expect(wholeCodePoint('😀', 2)).toBe(2);
   });
 });
 

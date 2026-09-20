@@ -214,6 +214,20 @@ export function createOutputStage(
       blocked = true;
       buffer = '';
       const rule = resolve(blocking.rule);
+      // The rules that matched *this* pass are counted before the turn ends,
+      // and not only the ones a previous release finalized. Their spans are
+      // still in the buffer, so no pass has counted them and none will — and
+      // a `LOG` rule that matched the same delta as the block is a rule that
+      // fired on what the model produced, whether or not the reader saw it.
+      //
+      // The input stage drops the equivalent hits, and the asymmetry is
+      // deliberate: there it returns early to avoid paying for the expensive
+      // kinds, and there is nothing to save by returning early here.
+      for (const hit of hits) {
+        if (hit.rule.action !== 'BLOCK') {
+          count(hit.rule, hit.spans.length);
+        }
+      }
       recordAll();
       deps.record({ rule });
       return [{ type: 'blocked', rule }];
@@ -221,22 +235,17 @@ export function createOutputStage(
 
     const boundary = final
       ? buffer.length
-      : releaseBoundary(buffer.length, hits, windowChars);
+      : wholeCodePoint(
+          buffer,
+          releaseBoundary(buffer.length, hits, windowChars),
+        );
 
     const finalized: PatternHit[] = [];
     for (const hit of hits) {
       const spans = hit.spans.filter((span) => span.end <= boundary);
       if (spans.length > 0) {
         finalized.push({ rule: hit.rule, spans });
-        const seen = matchesByRule.get(hit.rule.publicId);
-        if (seen) {
-          seen.matchCount += spans.length;
-        } else {
-          matchesByRule.set(hit.rule.publicId, {
-            rule: resolve(hit.rule),
-            matchCount: spans.length,
-          });
-        }
+        count(hit.rule, spans.length);
       }
     }
 
@@ -247,6 +256,18 @@ export function createOutputStage(
     buffer = buffer.slice(boundary);
 
     return text.length > 0 ? [{ type: 'text', text }] : [];
+  }
+
+  function count(rule: { publicId: string }, spans: number): void {
+    const seen = matchesByRule.get(rule.publicId);
+    if (seen) {
+      seen.matchCount += spans;
+      return;
+    }
+    matchesByRule.set(rule.publicId, {
+      rule: resolve(rule),
+      matchCount: spans,
+    });
   }
 
   function recordAll(): void {
@@ -271,6 +292,30 @@ export function createOutputStage(
  * being able to state it in a test directly, rather than only through the
  * stream that uses it.
  */
+/**
+ * Pull a boundary back off the seam of a surrogate pair.
+ *
+ * `String.prototype.slice` counts UTF-16 code units, and an emoji is two of
+ * them. A boundary landing between the halves releases a lone high surrogate
+ * and holds its partner, so the reader is shown a replacement character and
+ * the next delta opens with a second one — for text that was never matched by
+ * anything. Concatenated they would still be one emoji, which is why nothing
+ * downstream notices: the damage is done by the split itself, in the delta
+ * that goes out over SSE.
+ *
+ * Off by one code unit, so a pair is always released whole. It never moves the
+ * boundary forward, which would release a character the window is holding for
+ * a reason.
+ */
+export function wholeCodePoint(text: string, boundary: number): number {
+  if (boundary <= 0 || boundary >= text.length) {
+    return boundary;
+  }
+  const previous = text.charCodeAt(boundary - 1);
+  const isHighSurrogate = previous >= 0xd800 && previous <= 0xdbff;
+  return isHighSurrogate ? boundary - 1 : boundary;
+}
+
 export function releaseBoundary(
   length: number,
   hits: readonly PatternHit[],
