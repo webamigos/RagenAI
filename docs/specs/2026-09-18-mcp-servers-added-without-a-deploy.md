@@ -531,10 +531,10 @@ step — not B4.
       in the same step**. A form that saves a URL and a check on that URL are
       one change: shipping the first alone hands a platform admin an
       unvalidated endpoint the server will open a session against.
-- [ ] **C3.** Icon handling — a brand asset URL or an upload through the
+- [x] **C3.** Icon handling — a brand asset URL or an upload through the
       storage abstraction (ADR-27), plus the lucide fallback — before entries
       can be created, so none is created without one.
-- [ ] **C4.** The allowlist validator in
+- [x] **C4.** The allowlist validator in
       `apps/admin/.../connectors/actions.ts` asks the catalogue instead of
       `isConnectorProvider`. Without this a new entry cannot be granted to any
       organization.

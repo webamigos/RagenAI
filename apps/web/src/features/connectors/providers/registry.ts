@@ -73,6 +73,7 @@ export function toPublicProviderDto(
     name: def.name,
     description: def.description,
     icon: def.icon,
+    iconUrl: def.iconUrl ?? null,
     mcpServerUrl: def.mcpServerUrl,
     authBaseUrl: def.authBaseUrl,
     authPath: def.authPath,

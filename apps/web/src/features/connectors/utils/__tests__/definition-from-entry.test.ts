@@ -142,3 +142,32 @@ describe('a catalogue row resolved into a provider definition', () => {
     }
   });
 });
+
+describe('the icon a card renders', () => {
+  it("takes the row's own asset when it has one", () => {
+    expect(
+      definitionFromEntry(
+        entry({ icon: 'https://cdn.test/notion.svg' }),
+        undefined,
+      ).iconUrl,
+    ).toBe('https://cdn.test/notion.svg');
+  });
+
+  it('falls back to the built-in asset this app ships', () => {
+    expect(
+      definitionFromEntry(entry({ slug: 'SLACK', icon: null }), undefined)
+        .iconUrl,
+    ).toBe('/assets/connectors/slack.svg');
+  });
+
+  it('is null when nothing has one, so the card renders the lucide icon', () => {
+    // An `<img>` with no `src` renders as a broken image, which is what an
+    // entry an operator added would have shown before this.
+    const definition = definitionFromEntry(
+      entry({ slug: 'notion', icon: null, lucideIcon: 'notebook' }),
+      undefined,
+    );
+    expect(definition.iconUrl).toBeNull();
+    expect(definition.icon).toBe('notebook');
+  });
+});

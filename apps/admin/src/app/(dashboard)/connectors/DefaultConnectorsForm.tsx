@@ -2,9 +2,22 @@
 
 import { useState } from 'react';
 import { saveDefaultAllowedConnectorsAction } from './actions';
-import { allConnectors } from './connectors-config';
 
-export function DefaultConnectorsForm({ defaults }: { defaults: string[] }) {
+export type GrantableConnector = {
+  value: string;
+  label: string;
+  icon: string | null;
+  enabled: boolean;
+};
+
+export function DefaultConnectorsForm({
+  defaults,
+  allConnectors,
+}: {
+  defaults: string[];
+  /** The catalogue, so an entry added from /mcp-catalogue can be granted. */
+  allConnectors: GrantableConnector[];
+}) {
   const [selected, setSelected] = useState<Set<string>>(new Set(defaults));
   const [loading, setLoading] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -75,8 +88,21 @@ export function DefaultConnectorsForm({ defaults }: { defaults: string[] }) {
               onChange={() => toggleConnector(connector.value)}
               className="h-4 w-4 rounded border-input"
             />
-            <img src={connector.icon} alt="" className="size-5 shrink-0" />
-            <span className="text-sm">{connector.label}</span>
+            {connector.icon ? (
+              <img src={connector.icon} alt="" className="size-5 shrink-0" />
+            ) : (
+              // An entry an operator added may have no brand asset; an
+              // `<img>` with no `src` renders as a broken image.
+              <span className="size-5 shrink-0 rounded bg-muted" aria-hidden />
+            )}
+            <span className="text-sm">
+              {connector.label}
+              {connector.enabled ? null : (
+                <span className="ml-2 text-xs text-muted-foreground">
+                  disabled in the catalogue
+                </span>
+              )}
+            </span>
           </label>
         ))}
       </div>

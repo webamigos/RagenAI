@@ -1,5 +1,6 @@
 import type { McpCatalogEntryDto } from '@ragenai/platform-contracts';
 import type { ProviderDefinition } from '../contracts/connector.types';
+import { PROVIDER_ICON_PATHS } from './provider-icons';
 
 /**
  * A catalogue row plus its optional behaviour pack, as one
@@ -36,6 +37,10 @@ export function definitionFromEntry(
     // `ProviderDefinition.icon` is the lucide name; the brand asset is a
     // separate field and is looked up by slug where it is rendered.
     icon: entry.lucideIcon ?? pack?.icon ?? 'plug',
+    // The row's own asset, or the built-in one this app ships. Null for an
+    // entry whose operator gave it neither, and the card renders the lucide
+    // icon instead of a broken image.
+    iconUrl: entry.icon ?? PROVIDER_ICON_PATHS[entry.slug] ?? null,
     // Null on a built-in row on purpose — its address is the environment's,
     // and a database promoted between environments must not move it.
     mcpServerUrl: entry.mcpServerUrl ?? pack?.mcpServerUrl ?? '',

@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/routing';
-import { Loader2Icon } from 'lucide-react';
+import { Loader2Icon, Plug } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
@@ -69,6 +69,17 @@ export function ConnectorCard({ provider, connector }: ConnectorCardProps) {
   const isExternalMcp = provider.authType === 'external_mcp';
   const isCustomHeaderAuth = provider.authType === 'api_key_custom_header';
   const isServerSide = provider.authType === 'server_side';
+
+  // The eleven built-ins are translated; an entry an operator added is not,
+  // and `t()` on a missing key renders the key path. Its label and
+  // description are on its row, which is where its language lives now.
+  const nameKey = `providers.${provider.provider}.name` as never;
+  const descriptionKey = `providers.${provider.provider}.description` as never;
+  const name = t.has(nameKey) ? t(nameKey) : provider.name;
+  const description = t.has(descriptionKey)
+    ? t(descriptionKey)
+    : provider.description;
+  const brandAsset = provider.iconUrl ?? providerIcons[provider.provider];
 
   const [customHeaderDialogOpen, setCustomHeaderDialogOpen] = useState(false);
   const [siteUrl, setSiteUrl] = useState('');
@@ -418,24 +429,24 @@ export function ConnectorCard({ provider, connector }: ConnectorCardProps) {
     <div className="flex flex-col gap-4 rounded-lg border border-border p-4 sm:flex-row sm:items-center">
       <div className="flex items-center gap-3 sm:contents">
         <div className="flex size-10 shrink-0 items-center justify-center rounded-lg">
-          <img
-            src={providerIcons[provider.provider]}
-            alt={provider.name}
-            className="size-6"
-          />
+          {brandAsset ? (
+            <img src={brandAsset} alt={provider.name} className="size-6" />
+          ) : (
+            // A connector an operator added has no file under
+            // `public/assets/connectors/`. An `<img>` with no `src` renders
+            // as a broken image, so the lucide fallback is what the row's
+            // `lucideIcon` is for.
+            <Plug className="size-6 text-muted-foreground" aria-hidden />
+          )}
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <h3 className="text-sm font-medium text-foreground">
-              {t(`providers.${provider.provider}.name`)}
-            </h3>
+            <h3 className="text-sm font-medium text-foreground">{name}</h3>
             {isConnected && <Badge variant="ready">{t('connected')}</Badge>}
             {isPending && <Badge variant="pending">{t('pending')}</Badge>}
             {isFailing && <Badge variant="destructive">{t('failing')}</Badge>}
           </div>
-          <p className="mt-0.5 text-sm text-muted-foreground">
-            {t(`providers.${provider.provider}.description`)}
-          </p>
+          <p className="mt-0.5 text-sm text-muted-foreground">{description}</p>
           {isFailing && (
             <div className="mt-1.5 text-sm text-destructive">
               <p>

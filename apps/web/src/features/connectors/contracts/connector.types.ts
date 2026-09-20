@@ -74,6 +74,12 @@ export type ProviderDefinition = {
   oauthClientSecret?: string;
   /** If true, rewrites `scope` → `user_scope` in the OAuth authorization URL (required by Slack). */
   useUserScope?: boolean;
+  /**
+   * The brand asset for this connector, when it has one: a path under each
+   * app's `public/` for a built-in, or whatever URL an operator gave their
+   * entry. Distinct from `icon`, which is a lucide name.
+   */
+  iconUrl?: string | null;
   /** For `api_key_custom_header`: HTTP header name (e.g. `X-MCP-API-Key`). */
   headerName?: string;
   /** For `api_key_custom_header`: path appended to the user-supplied site URL (e.g. `/wp-json/woocommerce/mcp`). */
@@ -117,7 +123,15 @@ export type PublicProviderDto = {
   provider: string;
   name: string;
   description: string;
+  /** A lucide icon name — the fallback when there is no brand asset. */
   icon: string;
+  /**
+   * The brand asset, from the catalogue row. A connector an operator added has
+   * no file under `public/assets/connectors/`, so the map keyed by slug cannot
+   * answer for it — and an `<img>` with no `src` renders as a broken image on
+   * the card, which is what happens if this is forgotten.
+   */
+  iconUrl?: string | null;
   mcpServerUrl: string;
   authBaseUrl?: string;
   authPath?: string;
