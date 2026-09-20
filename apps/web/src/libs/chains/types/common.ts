@@ -197,6 +197,20 @@ export interface RetrievalSummary {
 
 export interface ChainStreamResult {
   textStream: AsyncIterable<string>;
+  /**
+   * The model's own resolved text, which the output window never saw.
+   *
+   * The third way text leaves a chain, and the only one that is not guarded.
+   * It cannot be: the window is streaming state, so evaluating this promise
+   * would mean a second window over the same answer — two buffers, and two
+   * hits filed for one block.
+   *
+   * So it has exactly one reader, `assistant-stream.ts`'s empty-answer
+   * fallback, and that reader is gated on a refusal: on a blocked turn it must
+   * not run, or the turn stores the very text the rule stopped.
+   * `tests/architecture/a-chain-hands-out-guarded-text.test.ts` is what keeps
+   * that true. `apps/api` has no such reader and therefore no such field.
+   */
   text: PromiseLike<string>;
   fullStream: AsyncIterable<ChainStreamPart>;
   reasoningText: PromiseLike<string | undefined>;

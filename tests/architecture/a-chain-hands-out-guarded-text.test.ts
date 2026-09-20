@@ -62,3 +62,47 @@ describe('a chain hands out guarded text', () => {
     );
   });
 });
+
+/**
+ * The one exit that is not guarded, and the one reader allowed to touch it.
+ *
+ * `ChainStreamResult.text` is the AI SDK's own promise: the window is
+ * streaming state, so guarding it would mean a second window over the same
+ * answer — two buffers, two hits filed for one block. `apps/api` has no reader
+ * for it and no such field; `apps/web` has exactly one, and it must not run on
+ * a refused turn or the turn stores the text the rule stopped.
+ *
+ * Asserted here because the alternative is remembering, which is what this
+ * whole phase is about not doing.
+ */
+describe('the resolved text is read only where a refusal is checked', () => {
+  const ASSISTANT_STREAM =
+    'apps/web/src/app/api/threads/services/assistant-stream.ts';
+
+  it('has one reader in apps/web, and it is the empty-answer fallback', () => {
+    const source = read(ASSISTANT_STREAM);
+    const reads = source.match(/streamResult\.text/g) ?? [];
+
+    expect(
+      reads.length,
+      "the model's own text has grown a second reader; each one is a way to " +
+        'store an answer the output window never saw',
+    ).toBe(1);
+  });
+
+  it('gates that fallback on the guardrail having not fired', () => {
+    const source = read(ASSISTANT_STREAM);
+
+    expect(
+      source,
+      'the empty-answer fallback must not run on a refused turn: it reads the ' +
+        "model's own text, which never passed through the window",
+    ).toMatch(/if \(!fullMessage && !guardrailBlocked\)/);
+  });
+
+  it('is absent from the API chain, which has no reader for it', () => {
+    const source = read('apps/api/src/chains/basic-rag/chain.ts');
+
+    expect(source).not.toMatch(/^\s*text:\s*result\.text/m);
+  });
+});

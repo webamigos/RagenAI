@@ -218,7 +218,6 @@ export const basicRagChain = async ({
         // text view was the SDK's own and never met the window at all, so a
         // rule applied to whichever surfaces happened to read `fullStream`.
         textStream: textOfStream(guardedStream),
-        text: result.text,
         fullStream: guardedStream,
         reasoningText: result.reasoningText,
         // Every step, not just the last — the value the monthly cost and

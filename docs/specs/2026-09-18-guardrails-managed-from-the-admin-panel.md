@@ -824,11 +824,14 @@ If it slips, A–C and E still ship a complete capability.
       for exactly this; chunks already on the wire cannot be retracted, and
       inventing a field no client reads would only look like they could be.
 
-      Left as it is, deliberately: the chain's resolved `text` promise is
-      still the model's own. Its single consumer is `assistant-stream.ts`'s
-      fallback, which D1 already skips on a refused turn, and guarding it
-      would mean a second window over the same answer — two buffers, two hits
-      filed for one block.
+      The resolved `text` promise is the third exit and the one that stays
+      the model's own: the window is streaming state, so evaluating it would
+      mean a second window over the same answer — two buffers, two hits filed
+      for one block. `apps/api` had no reader for it, so it no longer has the
+      field; `apps/web` has exactly one, the empty-answer fallback, and that
+      reader is gated on a refusal. "Its one consumer already checks" was the
+      first answer here and it is not one: it is remembering, which is what
+      this phase exists to replace. The guard above asserts both halves.
 - [ ] **D3.** Buffered evaluation for `LLM_POLICY` output rules, and the
       latency warning on the rule form.
 - [ ] **D4.** `SUPPORTED_COMBINATIONS` opens the `OUTPUT` stage; the admin form

@@ -119,7 +119,16 @@ export interface ChainUsage {
 
 export interface ChainStreamResult {
   textStream: AsyncIterable<string>;
-  text: PromiseLike<string>;
+  /**
+   * Removed, deliberately: there is no resolved-text exit here.
+   *
+   * It was the AI SDK's own promise, which never meets the output window —
+   * a third way for an answer to leave a chain and the only one no surface in
+   * this app read. Keeping it would have left a guarded `fullStream`, a
+   * guarded `textStream` and one accessor that quietly is not, waiting for a
+   * future route to pick it. apps/web still has it for a single fallback that
+   * is gated on a refusal; see the guard in `tests/architecture`.
+   */
   fullStream: AsyncIterable<ChainStreamPart>;
   reasoningText: PromiseLike<string | undefined>;
   usage: PromiseLike<ChainUsage>;
