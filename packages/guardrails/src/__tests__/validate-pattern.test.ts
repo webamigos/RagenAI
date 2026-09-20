@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
+import { OUTPUT_WINDOW_CHARS } from '../contracts/guardrail';
 import {
   adversarialFixtures,
   maxMatchWidth,
-  OUTPUT_WINDOW_CHARS,
   REDOS_BUDGET_MS,
   REDOS_FIXTURE_CHARS,
   validatePattern,

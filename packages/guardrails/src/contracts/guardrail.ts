@@ -269,6 +269,25 @@ export function isCombinationSupported(
 }
 
 /**
+ * How much of an answer the output funnel holds back, in characters.
+ *
+ * Two things depend on this number and they must be the same number. The
+ * funnel holds the last `OUTPUT_WINDOW_CHARS` characters so a match spanning a
+ * chunk boundary is still caught; `validatePatternShape` refuses to save an
+ * output pattern whose match can be wider than that, because such a rule would
+ * have its prefix released before the match completed and would then be
+ * enforced by nothing.
+ *
+ * In `contracts` rather than beside either of them, and for the reason
+ * `DEFAULT_POLICY_THRESHOLD` moved here in C3: this entry point is the only
+ * one a `'use client'` component may import — the barrel re-exports the ReDoS
+ * probe and its `node:worker_threads` — so a rule form that could not reach
+ * this number would write its own copy of 256 into a help string, and the
+ * sentence explaining the refusal would be free to drift from the refusal.
+ */
+export const OUTPUT_WINDOW_CHARS = 256;
+
+/**
  * Severity of the security event a hit writes. Mirrors the existing
  * `SecurityEventSeverity` union rather than introducing a parallel one.
  */

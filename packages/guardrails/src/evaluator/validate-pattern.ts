@@ -1,4 +1,7 @@
-import type { GuardrailStage } from '../contracts/guardrail';
+import {
+  OUTPUT_WINDOW_CHARS,
+  type GuardrailStage,
+} from '../contracts/guardrail';
 import { compilePattern } from './pattern';
 import { probeRegex } from './redos-probe';
 
@@ -26,9 +29,6 @@ import { probeRegex } from './redos-probe';
  * is synchronous and instant, so a form can run it on every keystroke; the
  * probe spawns a worker, so it belongs in the save action.
  */
-
-/** The output funnel's sliding window, in characters. */
-export const OUTPUT_WINDOW_CHARS = 256;
 
 /** Wall-clock a fixture run may take before a pattern is refused. */
 export const REDOS_BUDGET_MS = 50;
