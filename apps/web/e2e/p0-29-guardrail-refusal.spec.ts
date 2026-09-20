@@ -68,6 +68,24 @@ async function withPrisma<T>(fn: (prisma: any) => Promise<T>): Promise<T> {
   }
 }
 
+/**
+ * How many events of a type exist right now.
+ *
+ * Counted before and after each turn rather than asserted against zero. The
+ * suite shares one database and does not truncate `security_events` between
+ * runs, so `count > 0` passes on a leftover row from an earlier run — which
+ * is exactly what it did the first time this was checked locally, while the
+ * same assertion failed in CI on a database that happened to be clean. A
+ * delta is true in both.
+ */
+async function eventCount(
+  eventType: 'GUARDRAIL_BLOCKED' | 'GUARDRAIL_FLAGGED',
+): Promise<number> {
+  return withPrisma((prisma) =>
+    prisma.securityEvent.count({ where: { eventType } }),
+  );
+}
+
 async function ask(
   page: import('@playwright/test').Page,
   question: string,
@@ -130,22 +148,16 @@ test.describe('a guardrail refuses a turn', () => {
   test('the refusal is recorded, without the matched text', async ({
     page,
   }) => {
+    const before = await eventCount('GUARDRAIL_BLOCKED');
+
     await ask(page, `Trzecie pytanie, ${BLOCKED}`);
     await expect(page.getByText(REFUSAL)).toBeVisible({ timeout: 20_000 });
 
     // `recordSecurityEvent` is fire-and-forget, so the row lands shortly after
     // the response. Polled rather than slept on.
     await expect
-      .poll(
-        () =>
-          withPrisma((prisma) =>
-            prisma.securityEvent.count({
-              where: { eventType: 'GUARDRAIL_BLOCKED' },
-            }),
-          ),
-        { timeout: 15_000 },
-      )
-      .toBeGreaterThan(0);
+      .poll(() => eventCount('GUARDRAIL_BLOCKED'), { timeout: 15_000 })
+      .toBeGreaterThan(before);
 
     const event = await withPrisma(
       (prisma): Promise<{ metadata: unknown } | null> =>
@@ -164,6 +176,8 @@ test.describe('a guardrail refuses a turn', () => {
 
 test.describe('a LOG rule observes and nothing else', () => {
   test('the turn is not refused, and the rule still ran', async ({ page }) => {
+    const before = await eventCount('GUARDRAIL_FLAGGED');
+
     await ask(page, `Pytanie z ${LOGGED} w środku`);
 
     // Observation mode is the creation default and has to be genuinely
@@ -178,16 +192,8 @@ test.describe('a LOG rule observes and nothing else', () => {
     // since "no refusal appeared" is also true of a chain that never
     // evaluated a rule. A `LOG` hit is filed as GUARDRAIL_FLAGGED.
     await expect
-      .poll(
-        () =>
-          withPrisma((prisma) =>
-            prisma.securityEvent.count({
-              where: { eventType: 'GUARDRAIL_FLAGGED' },
-            }),
-          ),
-        { timeout: 15_000 },
-      )
-      .toBeGreaterThan(0);
+      .poll(() => eventCount('GUARDRAIL_FLAGGED'), { timeout: 15_000 })
+      .toBeGreaterThan(before);
   });
 });
 

@@ -102,7 +102,22 @@ env:
   REPHRASE_MODEL: 'mock-model'
   # The mock speaks OpenAI's API, so it attaches as an `openai-compatible`
   # connection rather than as a proxy. See apps/web/e2e/routes.e2e.yaml.
-  LLM_ROUTES_PATH: 'apps/web/e2e/routes.e2e.yaml'
+  #
+  # **Absolute, and it has to be.** `routeTableFromEnv` joins a relative
+  # `LLM_ROUTES_PATH` onto `process.cwd()` and deliberately does not walk up
+  # for it — naming a path means that path. The two processes in this job have
+  # different working directories: apps/api starts from the repository root, so
+  # a relative path resolved; the Next server is started by Playwright with cwd
+  # `apps/web`, so the same string became `apps/web/apps/web/e2e/...`. The
+  # gateway does not fail on that — it warns and falls back to the full model
+  # catalogue, which does not contain `mock-model` and has no credentials for
+  # anything it does contain. Building the model instances then threw during
+  # chain initialization, before the guardrail stage ran at all, and the
+  # reader got `unknown-error`. `p0-29` spent two days on it.
+  # `tests/architecture/a-configured-route-table-path-is-absolute.test.ts`
+  # guards the path now, and `playwright.config.ts` pipes the server's stdout
+  # so the warning is no longer discarded.
+  LLM_ROUTES_PATH: '${{ github.workspace }}/apps/web/e2e/routes.e2e.yaml'
   LLM_MOCK_BASE_URL: 'http://localhost:4100/v1'
   LLM_MOCK_API_KEY: 'sk-mock-e2e'
   GOOGLE_API_KEY: 'dummy'
