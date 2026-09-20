@@ -556,9 +556,9 @@ step — not B4.
 
 ### Phase E — the seams that outlive it
 
-- [ ] **E1.** `docs/mcp-integrations.md` rewritten around rows; a Task Router
+- [x] **E1.** `docs/mcp-integrations.md` rewritten around rows; a Task Router
       row; an ADR for "the connector catalogue is data, not an enum".
-- [ ] **E2.** `packages/create-ragen-app`: a fresh install gets the seeded
+- [x] **E2.** `packages/create-ragen-app`: a fresh install gets the seeded
       catalogue and no per-connector environment variables beyond those a
       built-in still needs.
 

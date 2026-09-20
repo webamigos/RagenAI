@@ -65,6 +65,8 @@ Before starting a nontrivial task, match it against this table and read the link
 | **Integrations** | |
 | MCP connectors (Slack/HubSpot/ClickUp/Google/Fireflies) | [`docs/mcp-integrations.md`](docs/mcp-integrations.md), ADR [05](docs/adrs/05-mcp-integration-strategy.md) |
 | Connector OAuth flows, where tokens are stored | [`docs/token-vault.md`](docs/token-vault.md), ADR [32](docs/adrs/32-token-vault-and-mcp-stay-separate.md) |
+| Adding a connector, or anything about which connectors exist | [ADR-52](docs/adrs/52-the-connector-catalogue-is-data-not-an-enum.md) — the catalogue is rows a platform admin edits at `/mcp-catalogue`, not an enum; a manifest is optional code beside one |
+| A connector URL that must not reach a private address | [`packages/connector-guard`](packages/connector-guard/src) — one policy, three moments (save, connect, every tool call); `allowsPrivateAddress` admits RFC 1918 and nothing else |
 | Whether a sibling repository belongs in the monorepo | [ADR-32](docs/adrs/32-token-vault-and-mcp-stay-separate.md) — measure drift first |
 | Where a new admin page or read belongs — `apps/web` or `apps/admin` | [ADR-35](docs/adrs/35-two-admin-surfaces-split-by-scope.md) — per-org is web, platform-wide is admin |
 | Adding a feature flag, a model, or an MCP connector | [`packages/platform-contracts`](packages/platform-contracts/src) and [ADR-33](docs/adrs/33-shared-platform-contracts-package.md) — declare it once, never per app |
