@@ -499,44 +499,44 @@ Each phase leaves the application working.
 Ends with rules an operator can create and nothing reading them. Deliberate:
 the three enum members must reach every reader before a writer exists.
 
-- [ ] **A1.** `packages/guardrails` — contracts (`GuardrailKind`, `…Stage`,
+- [x] **A1.** `packages/guardrails` — contracts (`GuardrailKind`, `…Stage`,
       `…Action`, the built-in catalogue with labels, `SUPPORTED_COMBINATIONS`),
       the pure resolver (platform ∪ org, overrides applied and validated,
       source reported, unsupported combinations dropped) and its unit tests. No
       Prisma, Next or provider SDK.
-- [ ] **A2.** The pattern evaluator, the save-time ReDoS validator and the
+- [x] **A2.** The pattern evaluator, the save-time ReDoS validator and the
       per-turn budget, with the adversarial fixture in the tests.
-- [ ] **A3.** Prisma models, the partial unique index, the two
+- [x] **A3.** Prisma models, the partial unique index, the two
       `SecurityEventType` members and `AiUsageStep.GUARDRAIL`, the migration
       and the SQL half of the seed.
-- [ ] **A4.** `apps/admin` → `/guardrails`: platform rules list, create, edit,
+- [x] **A4.** `apps/admin` → `/guardrails`: platform rules list, create, edit,
       delete, each behind `requireAdmin()` and `recordAdminAction` with four
       new `ADMIN_ACTIONS` names; sidebar entry. The form offers only what
       `SUPPORTED_COMBINATIONS` reports, so nothing on the page claims an effect
       it does not have.
-- [ ] **A5.** Per-organization view on the same page — the organization picker
+- [x] **A5.** Per-organization view on the same page — the organization picker
       `/rag-settings` already uses, the effective set with each value's source,
       and override controls.
 
 ### Phase B — input guardrails, every surface
 
-- [ ] **B1.** `GUARDRAILS_DISABLED` in `packages/env` and in
+- [x] **B1.** `GUARDRAILS_DISABLED` in `packages/env` and in
       `create-ragen-app`, plus `npm run guardrails:preflight`. Both land
       **before** any rule can block: the break-glass has to exist by the time
       the first customer message can be refused.
-- [ ] **B2.** `apps/web` binding — the rule loader with its 60 s per-org cache
+- [x] **B2.** `apps/web` binding — the rule loader with its 60 s per-org cache
       and cold-cache fail-open path, the `recordSecurityEvent` adapter, and the
       moderation adapter over the existing `ModerationInstance`.
-- [ ] **B3.** Replace `moderateContent()` in `basic-rag/chain.ts` and
+- [x] **B3.** Replace `moderateContent()` in `basic-rag/chain.ts` and
       `conversation-chain/chain.ts`, retire the `MODERATION_ENABLED` read at
       both, add `GuardrailError` and `guardrail-blocked` to 15 locale files.
       One step: while the env gate stands, a rule enabled in the panel still
       does nothing, which is the gap this spec exists to close.
-- [ ] **B4.** The same in `apps/api/src/chains/basic-rag/chain.ts`, with the
+- [x] **B4.** The same in `apps/api/src/chains/basic-rag/chain.ts`, with the
       NestJS loader, the `SecurityEventService` adapter and the error shape.
       This is what makes the public API and the chatbot widget covered rather
       than assumed to be.
-- [ ] **B5.** The two proofs that B2–B4 actually landed:
+- [x] **B5.** The two proofs that B2–B4 actually landed:
       `tests/architecture/guardrails-are-not-recopied.test.ts`, and a test that
       asserts a chat turn **reads the rules at all** — see below for why the
       second one is not redundant.
@@ -783,6 +783,12 @@ If it slips, A–C and E still ship a complete capability.
       blocked output writes the refusal, never the withheld text, through the
       existing thread-encryption function (ADR-42). Stopping the stream and
       deciding what is stored are one change.
+      Shipped as two PRs, per ADR-50. The window itself lands first in
+      `packages/guardrails` with no consumer — nothing resolves an `OUTPUT`
+      rule until D4 adds the combination, so an evaluator that exists and is
+      called by nobody is the same deliberate state Phase A ended in. The
+      `apps/web` funnel and the persistence path follow, and the checkbox is
+      the second one's.
 - [ ] **D2.** The same in `apps/api`'s funnel.
 - [ ] **D3.** Buffered evaluation for `LLM_POLICY` output rules, and the
       latency warning on the rule form.
