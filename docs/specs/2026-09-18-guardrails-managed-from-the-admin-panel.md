@@ -606,8 +606,13 @@ If it slips, A–C and E still ship a complete capability.
       so a mistyped filter reached the driver as an unknown enum value and
       answered with a `PrismaClientValidationError` instead of a table — and
       the CSV export, which reads the same query string, cast it the same way.
-- [ ] **E3.** `docs/guardrails.md`, a Task Router row, and the
-      `docs/security-monitoring.md` table extended.
+- [x] **E3.** `docs/guardrails.md`, a Task Router row, and the
+      `docs/security-monitoring.md` table extended — the event table, the
+      admin-panel views and the threshold reference, whose guardrail row is
+      the only one in it that is not a deploy.
+      `a-documented-window-matches-its-constant` now reads the cache window
+      out of both documents: the new page is the one an operator reads during
+      an incident, and a number no test reads is a number free to drift.
 
 ### Later, deliberately not now
 

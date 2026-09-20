@@ -18,6 +18,8 @@ How to set up dashboards, interpret audit events, and tune thresholds for the pr
 | `TOOL_CALL_DENIED` | chat | info | (no escalation) | User clicked Deny on blocked tool |
 | `TOOL_ARGS_HIGH_RISK` | mcp | info | 3 in 10 min → critical | Phase 3 inspector found secrets/base64/high-entropy in tool args |
 | `CHAT_JAILBREAK_DETECTED` | chat | info | 5 in 10 min → critical | Phase 6 classifier scored user message above threshold |
+| `GUARDRAIL_BLOCKED` | chat | the rule's own | (no escalation) | A `BLOCK` guardrail refused the turn — see [guardrails](guardrails.md) |
+| `GUARDRAIL_FLAGGED` | chat | the rule's own | (no escalation) | A guardrail matched and the turn continued: a `LOG` rule, or a `MASK` |
 | `UPLOAD_SUSPICIOUS_CONTENT` | upload | info | 3 in 24 hr → critical | Phase 4 sanitizer flagged prompt-injection patterns in ingested content |
 | `RATE_LIMIT_HIT` | infra | info | 20 in 60 min → critical | Redis rate limiter triggered |
 | `MCP_OAUTH_FAILED` | mcp | info | (no escalation) | MCP connector OAuth token refresh failed |
@@ -89,9 +91,16 @@ Tune by adjusting the weights in `src/libs/security/tool-arg-inspector.ts` or ad
 ### ragen-admin — Incidents (app admin)
 
 - Global view — all organizations + pre-auth events
-- Filters: severity, resolved, period, event type (text input), organization ID
+- Filters: severity, resolved, period, event type (grouped select — `Any guardrail hit` covers both guardrail types), organization ID
 - Detail page: full metadata, user agent, IP, request ID, "Similar events" sidebar (last 10 with same actor + event type)
 - Resolve action records the admin's email
+
+### ragen-admin — Guardrails (app admin)
+
+- Authors the rules a chat turn has to pass, platform-wide and per organization
+- Each rule carries its hits for the last 7 days, split into blocked and flagged
+- A rule that is on and has matched nothing reads `0`; one that is off reads `—`, because a rule nothing evaluated has not been measured
+- Severity of a guardrail's events is the rule's own, set on the rule — so an `info` rule never reaches the email threshold, by the operator's own choice
 
 ## Email alert tuning
 
@@ -152,3 +161,5 @@ Steps:
 | Escalation window/threshold | per-event | `src/features/security/utils/escalation-rules.ts` | `AUTH_LOGIN_FAILED: 10/60min`, `CHAT_JAILBREAK_DETECTED: 5/10min`, etc. |
 | Email dedupe window | 15 min | `src/app/emails/services/mailer.ts` | `SECURITY_DEDUPE_WINDOW_MS` constant |
 | Email rate cap | 20/hr | same | `SECURITY_RATE_MAX` constant |
+| Guardrail rules | none enabled | the **admin panel**, not a file | Kind, stage, action, severity and per-org overrides — the one row here that is not a deploy |
+| Guardrail break-glass | off | env `GUARDRAILS_DISABLED` | Restarts the service into pre-guardrail behaviour when the panel cannot be reached in time |

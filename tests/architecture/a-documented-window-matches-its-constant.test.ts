@@ -41,7 +41,22 @@ const SPEC = join(
   '2026-09-18-guardrails-managed-from-the-admin-panel.md',
 );
 
-const spec = readFileSync(join(REPO_ROOT, SPEC), 'utf8');
+/**
+ * Every document that states the window, not only the spec.
+ *
+ * `docs/guardrails.md` is the page an operator reads during an incident — it
+ * is where "disable the rule; it stops applying within the 60 s cache" is
+ * addressed to the person acting on it, while the spec addresses whoever is
+ * building the thing. A number this test does not read is a number free to
+ * drift, and the one that drifts unnoticed is the one nobody is writing code
+ * against.
+ */
+const DOCUMENTS = [SPEC, join('docs', 'guardrails.md')];
+
+const documented = DOCUMENTS.map((path) => ({
+  path,
+  text: readFileSync(join(REPO_ROOT, path), 'utf8'),
+}));
 
 /**
  * Every place the spec states the window in seconds.
@@ -51,9 +66,11 @@ const spec = readFileSync(join(REPO_ROOT, SPEC), 'utf8');
  * assertion below fails if the matches disappear, which is what would happen
  * if somebody reworded every occurrence at once.
  */
-const statedSeconds = [
-  ...spec.matchAll(/(\d+)\s*s\s+(?:per-org\s+)?cache/g),
-].map((match) => Number(match[1]));
+const statedSeconds = documented.flatMap(({ text }) =>
+  [...text.matchAll(/(\d+)\s*s\s+(?:per-org\s+)?cache/g)].map((match) =>
+    Number(match[1]),
+  ),
+);
 
 describe('a documented window matches its constant', () => {
   it('finds the statements it claims to check', () => {
@@ -61,7 +78,8 @@ describe('a documented window matches its constant', () => {
     // failure mode `docs/lessons.md` records three separate instances of.
     expect(
       statedSeconds.length,
-      `${SPEC} no longer states the cache window as "<n> s cache". ` +
+      `${DOCUMENTS.join(' / ')} no longer state the cache window as ` +
+        '"<n> s cache". ' +
         'Either the wording changed — update the pattern in this test — or ' +
         'the promise was removed, in which case say so deliberately.',
     ).toBeGreaterThanOrEqual(2);
@@ -72,7 +90,7 @@ describe('a documented window matches its constant', () => {
     // wrong: whichever an operator reads first is the one they act on.
     expect(
       [...new Set(statedSeconds)],
-      'the spec states more than one cache window',
+      'the documents state more than one cache window between them',
     ).toHaveLength(1);
   });
 
@@ -81,7 +99,8 @@ describe('a documented window matches its constant', () => {
 
     expect(
       GUARDRAIL_CACHE_TTL_MS,
-      `${SPEC} promises a ${seconds} s cache and the code uses ` +
+      `${DOCUMENTS.join(' / ')} promise a ${seconds} s cache and the code ` +
+        `uses ` +
         `${GUARDRAIL_CACHE_TTL_MS}ms. An operator disabling a rule during an ` +
         'incident is told how long to wait by that sentence. Change both, in ' +
         'one commit, or change neither.',
