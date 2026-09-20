@@ -1,6 +1,5 @@
 import type {
   McpConnector,
-  McpConnectorProvider,
   McpConnectorStatus,
 } from '@/generated/prisma/client';
 
@@ -36,10 +35,9 @@ export type SystemPromptFragment =
 
 export type ProviderDefinition = {
   /**
-   * A catalogue slug. Was `McpConnectorProvider`; widened to a string because
-   * the catalogue stopped being an enum — see
-   * docs/specs/2026-09-18-mcp-servers-added-without-a-deploy.md. The eleven
-   * built-ins keep their SHOUTING names, and an entry added from the panel is
+   * A catalogue slug — a row in `McpCatalogEntry`. The eleven built-ins keep
+   * the SHOUTING names they had as enum members, because vault token paths and
+   * `customerId`s already hold those strings; an entry added from the panel is
    * lowercase-kebab.
    */
   provider: string;
@@ -133,4 +131,4 @@ export type CustomHeaderCredentials = {
   consumerSecret?: string;
 };
 
-export type { McpConnectorProvider, McpConnectorStatus };
+export type { McpConnectorStatus };

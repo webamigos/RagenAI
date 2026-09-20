@@ -1,5 +1,6 @@
 'use server';
 
+import { connectorSlug } from '@ragenai/platform-contracts';
 import db from '@ragenai/prisma-client';
 import { McpConnectorStatus } from '@/generated/prisma/client';
 import { logger } from '@/app/lib/utils/logger';
@@ -66,7 +67,6 @@ export const createConnectorCommand = async (
       },
       select: {
         id: true,
-        provider: true,
         providerSlug: true,
         customerId: true,
         mcpServerUrl: true,
@@ -78,7 +78,7 @@ export const createConnectorCommand = async (
       action: 'connector.connected',
       entityType: 'connector',
       entityId: connector.id,
-      newData: { provider: connector.provider },
+      newData: { provider: connectorSlug(connector) },
     });
 
     return connector;

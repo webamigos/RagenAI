@@ -113,7 +113,7 @@ export class ConnectorsService {
         },
         select: {
           id: true,
-          provider: true,
+          providerSlug: true,
           customerId: true,
           mcpServerUrl: true,
           status: true,
@@ -126,7 +126,7 @@ export class ConnectorsService {
         action: 'connector.connected',
         entityType: 'connector',
         entityId: connector.id,
-        newData: { provider: connector.provider },
+        newData: { provider: connectorSlug(connector) },
       });
 
       return connector;

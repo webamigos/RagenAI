@@ -22,7 +22,7 @@ import { PROVIDER_LIST } from './registry';
  * migration path.
  */
 export type BuiltInCatalogEntry = {
-  /** The current `McpConnectorProvider` value, verbatim. */
+  /** The catalogue slug: the old enum member, verbatim. */
   slug: string;
   label: string;
   description: string;

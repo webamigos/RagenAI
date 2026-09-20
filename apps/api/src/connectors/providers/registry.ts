@@ -16,8 +16,8 @@ import { OPEN_MERCATO_PROVIDER } from './open-mercato.js';
  *
  * This used to be `Record<McpConnectorProvider, ProviderDefinition>`, and that
  * annotation was the guarantee that every connector had a manifest: a missing
- * entry was a compile error. Deleting the enum deletes that guarantee, and
- * nothing about moving the catalogue into rows brings it back — see
+ * entry was a compile error. The enum is gone and nothing brings that
+ * guarantee back — see
  * docs/specs/2026-09-18-mcp-servers-added-without-a-deploy.md.
  *
  * What replaces it is deliberately weaker, because the list is no longer meant

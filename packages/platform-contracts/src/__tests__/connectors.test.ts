@@ -16,34 +16,36 @@ const REPO_ROOT = path.resolve(
 );
 
 /**
- * `prisma/schema.prisma` decides which connectors exist. A value here that the
- * enum does not have can never match a real `McpConnector.provider` row; an
- * enum member missing here has no label, no icon, and cannot be allowlisted.
+ * This list used to be checked against the `McpConnectorProvider` enum in
+ * `prisma/schema.prisma`, which was the answer to which connectors exist. The
+ * catalogue is rows now and the enum is gone
+ * (docs/specs/2026-09-18-mcp-servers-added-without-a-deploy.md), so the list
+ * here means something narrower: **the eleven built-ins**, which are the
+ * seed's input and nothing else. A connector an operator adds is a row, has
+ * its label and icon on that row, and is not here.
  *
- * Each app also assigns this map into a `Record<McpConnectorProvider, …>`
- * typed by its own generated enum, so a missing member fails typecheck at the
- * binding site. This test covers the other direction — an extra key here,
- * which such an assignment accepts silently.
+ * The comparison moves with the meaning: against
+ * `prisma/catalog/built-in-connectors.json`, the projection the seed and the
+ * migration actually write. An extra key here would describe a connector no
+ * installation has; a missing one would leave a seeded entry without the
+ * label and asset path this package is for.
  */
-describe('against the McpConnectorProvider enum', () => {
-  const schema = readFileSync(
-    path.join(REPO_ROOT, 'prisma/schema.prisma'),
-    'utf8',
-  );
+describe('against the seeded catalogue', () => {
+  const seeded = (
+    JSON.parse(
+      readFileSync(
+        path.join(REPO_ROOT, 'prisma/catalog/built-in-connectors.json'),
+        'utf8',
+      ),
+    ) as { slug: string }[]
+  ).map((entry) => entry.slug);
 
-  const members = (
-    schema.match(/enum McpConnectorProvider \{([^}]*)\}/)?.[1] ?? ''
-  )
-    .split('\n')
-    .map((line) => line.trim())
-    .filter((line) => /^[A-Z][A-Z0-9_]*$/.test(line));
-
-  it('found the enum, so this is not passing on an empty comparison', () => {
-    expect(members.length).toBeGreaterThan(3);
+  it('found the projection, so this is not passing on an empty comparison', () => {
+    expect(seeded.length).toBeGreaterThan(3);
   });
 
-  it('covers exactly the enum members', () => {
-    expect([...CONNECTOR_PROVIDERS].sort()).toEqual([...members].sort());
+  it('covers exactly the seeded built-ins', () => {
+    expect([...CONNECTOR_PROVIDERS].sort()).toEqual([...seeded].sort());
   });
 });
 

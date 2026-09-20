@@ -513,7 +513,7 @@ step — not B4.
       with the runtime resolver, and add
       `tests/architecture/every-seeded-connector-resolves.test.ts` — **while the
       enum still exists**, so this step is deployable and reversible on its own.
-- [ ] **B5.** Drop `provider` and the `McpConnectorProvider` type; update
+- [x] **B5.** Drop `provider` and the `McpConnectorProvider` type; update
       `packages/platform-contracts/src/__tests__/connectors.test.ts`, which
       parses that enum out of `schema.prisma` and fails the moment it is gone.
       Nothing else ships in this release.

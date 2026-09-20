@@ -1,6 +1,5 @@
 import type {
   McpConnector,
-  McpConnectorProvider,
   McpConnectorStatus,
 } from '../generated/prisma/client.js';
 
@@ -39,9 +38,7 @@ export type SystemPromptFragment =
 
 export type ProviderDefinition = {
   /**
-   * A catalogue slug. Was `McpConnectorProvider`; widened because the
-   * catalogue stopped being an enum — see
-   * docs/specs/2026-09-18-mcp-servers-added-without-a-deploy.md.
+   * A catalogue slug — a row in `McpCatalogEntry`. See apps/web's sibling.
    */
   provider: string;
   name: string;
@@ -129,4 +126,4 @@ export type CustomHeaderCredentials = {
   consumerSecret?: string;
 };
 
-export type { McpConnectorProvider, McpConnectorStatus };
+export type { McpConnectorStatus };

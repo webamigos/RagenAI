@@ -18,7 +18,7 @@ export type ActiveToolCall = {
   toolName: string;
   /**
    * Provider slug derived from the prefix, UPPERCASE to match
-   * `McpConnectorProvider` enum values (`CLICKUP`, `GOOGLE_CALENDAR`,
+   * catalogue slugs (`CLICKUP`, `GOOGLE_CALENDAR`,
    * etc.). Used for icon lookup.
    */
   provider: string;

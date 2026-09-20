@@ -56,7 +56,6 @@ export async function forceDisconnectConnectorAction(
     where: { id: connectorId },
     select: {
       id: true,
-      provider: true,
       providerSlug: true,
       customerId: true,
       organizationId: true,

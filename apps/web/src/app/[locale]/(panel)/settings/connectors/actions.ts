@@ -12,10 +12,10 @@ import type {
 } from '@/features/connectors/contracts/connector.types';
 
 // Matches ConnectorsController#create → ConnectorsService#createConnector's
-// `select: { id, provider, customerId, mcpServerUrl, status }`.
+// `select: { id, providerSlug, customerId, mcpServerUrl, status }`.
 type CreatedConnector = Pick<
   McpConnector,
-  'id' | 'provider' | 'customerId' | 'mcpServerUrl' | 'status'
+  'id' | 'providerSlug' | 'customerId' | 'mcpServerUrl' | 'status'
 >;
 
 // Matches the fields ConnectorsService#registerApiKeyBearer/

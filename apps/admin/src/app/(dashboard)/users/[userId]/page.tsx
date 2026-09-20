@@ -68,7 +68,6 @@ async function getUserDetails(userId: string) {
     prisma.mcpConnector.findMany({
       where: { userId: user.id },
       select: {
-        provider: true,
         providerSlug: true,
         status: true,
         enabled: true,

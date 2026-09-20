@@ -9,21 +9,19 @@ import {
 } from '../../prisma/catalog/seed-catalogue';
 
 /**
- * The catalogue table replaces the `McpConnectorProvider` enum as the answer to
- * *which connectors exist*, and for the length of the migration both are the
- * truth at once. Three copies of the same eleven names have to agree:
+ * The catalogue table replaced the `McpConnectorProvider` enum as the answer
+ * to *which connectors exist*. Two copies of the same eleven names have to
+ * agree:
  *
- *   1. the enum in `prisma/schema.prisma`,
- *   2. `prisma/catalog/built-in-connectors.json`, projected from the manifests,
- *   3. the seed INSERT in the migration that creates the table — the only one
- *      of the three a deployment running `prisma migrate deploy` ever executes.
+ *   1. `prisma/catalog/built-in-connectors.json`, projected from the manifests,
+ *   2. the seed INSERT in the migration that creates the table — the only one
+ *      of the two a deployment running `prisma migrate deploy` ever executes.
  *
- * The third is why this reads the migration as text. A built-in whose row the
+ * The second is why this reads the migration as text. A built-in whose row the
  * migration never inserted resolves to nothing in production while every test
  * that seeds from the JSON passes.
  *
- * This guard goes when the enum does (Phase B5); the JSON-to-migration half
- * stays.
+ * The enum half of this guard went with the enum at B5.
  */
 
 const REPO_ROOT = join(import.meta.dirname, '..', '..');
@@ -47,12 +45,6 @@ function enumMembers(source: string, name: string): string[] {
 describe('the seeded catalogue', () => {
   const schema = readFileSync(SCHEMA, 'utf8');
   const entries = readBuiltInCatalogue();
-
-  it('carries exactly the McpConnectorProvider members, in schema order', () => {
-    expect(entries.map((e) => e.slug)).toEqual(
-      enumMembers(schema, 'McpConnectorProvider'),
-    );
-  });
 
   it('uses an auth type the McpAuthType enum declares', () => {
     const authTypes = enumMembers(schema, 'McpAuthType');

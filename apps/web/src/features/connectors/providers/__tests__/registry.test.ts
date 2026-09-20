@@ -1,5 +1,7 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
 import { describe, expect, it } from 'vitest';
-import { McpConnectorProvider } from '@/generated/prisma/client';
 import {
   PROVIDER_LIST,
   PROVIDER_REGISTRY,
@@ -9,11 +11,32 @@ import {
 } from '../registry';
 import { buildMcpContext } from '../system-prompt';
 
+/**
+ * The eleven built-ins, read from the projection the seed and the migration
+ * write. It is the catalogue's own list of what ships with Ragen, and it
+ * replaced the enum this file used to compare against.
+ */
+const BUILT_IN_SLUGS: string[] = (
+  JSON.parse(
+    readFileSync(
+      join(
+        import.meta.dirname,
+        '../../../../../../../prisma/catalog/built-in-connectors.json',
+      ),
+      'utf8',
+    ),
+  ) as { slug: string }[]
+).map((entry) => entry.slug);
+
 describe('PROVIDER_REGISTRY', () => {
-  it('covers every McpConnectorProvider enum value', () => {
-    const enumValues = Object.values(McpConnectorProvider).sort();
+  it('covers every built-in the catalogue is seeded with', () => {
+    // Not every catalogue entry — an entry an operator adds has no pack at
+    // all, which is the point of the catalogue. The eleven that ship with
+    // Ragen still do, and `every-seeded-connector-resolves.test.ts` is the
+    // guard that says so across both apps.
+    const seeded = BUILT_IN_SLUGS.sort();
     const registryKeys = Object.keys(PROVIDER_REGISTRY).sort();
-    expect(registryKeys).toEqual(enumValues);
+    expect(registryKeys).toEqual(seeded);
   });
 
   it('exposes PROVIDER_LIST with one entry per registry key', () => {
@@ -22,11 +45,11 @@ describe('PROVIDER_REGISTRY', () => {
     expect(listProviders).toEqual(Object.keys(PROVIDER_REGISTRY).sort());
   });
 
-  it('returns the manifest for every enum value via getProvider', () => {
-    for (const enumValue of Object.values(McpConnectorProvider)) {
-      const manifest = getProvider(enumValue);
+  it('returns the pack for every built-in slug via getProvider', () => {
+    for (const slug of BUILT_IN_SLUGS) {
+      const manifest = getProvider(slug);
       expect(manifest).toBeDefined();
-      expect(manifest?.provider).toBe(enumValue);
+      expect(manifest?.provider).toBe(slug);
       expect(manifest?.name).toBeTruthy();
       expect(manifest?.description).toBeTruthy();
     }

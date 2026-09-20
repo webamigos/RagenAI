@@ -105,7 +105,7 @@ export function authTypeRequiresBehaviourPack(authType: McpAuthType): boolean {
 export const CATALOG_SLUG_PATTERN = /^[a-z][a-z0-9-]*$/;
 
 /**
- * The eleven slugs that are the old `McpConnectorProvider` values verbatim.
+ * The eleven slugs that were the `McpConnectorProvider` enum's values verbatim.
  * They are admitted by the seed and the migration and by nothing else: vault
  * token paths, `customerId`s and every `allowedConnectors` array already hold
  * those strings, so renaming them in step would orphan live OAuth tokens.
@@ -157,20 +157,16 @@ export function slugsCollide(a: string, b: string): boolean {
 /**
  * A connector's catalogue slug, as read off a row.
  *
- * Since B3 of docs/specs/2026-09-18-mcp-servers-added-without-a-deploy.md
- * `providerSlug` is `NOT NULL` and carries the composite uniqueness, so there
- * is nothing left to fall back to — the `?? provider` that lived here through
- * steps 1 and 2 is gone with the column's nullability.
+ * It reads one column and nothing else, which is the end state the
+ * expand/contract in docs/specs/2026-09-18-mcp-servers-added-without-a-deploy.md
+ * was for: `provider` and its `McpConnectorProvider` type are gone, and
+ * `providerSlug` is `NOT NULL` and carries the composite uniqueness.
  *
- * The function stays because the accessor does: every reader goes through it
- * rather than reaching for a column name, so B5's drop touches one file and
- * leaves no reader quietly reading a column that is not there.
+ * The accessor stays. Every reader goes through it rather than reaching for a
+ * column name, which is what made the drop a one-file change — and it is the
+ * same lever if the column is ever renamed again.
  */
-export function connectorSlug(row: {
-  providerSlug: string;
-  /** Unwritten since B3, unread since B2, dropped at B5. */
-  provider?: string | null;
-}): string {
+export function connectorSlug(row: { providerSlug: string }): string {
   return row.providerSlug;
 }
 
