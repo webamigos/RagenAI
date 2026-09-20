@@ -33,13 +33,16 @@ const REPO_ROOT = join(import.meta.dirname, '..', '..');
 type ReleaseRule = Record<string, unknown>;
 
 const releaseRules = (): ReleaseRule[] => {
-  const config = JSON.parse(readFileSync(join(REPO_ROOT, '.releaserc'), 'utf8')) as {
+  const config = JSON.parse(
+    readFileSync(join(REPO_ROOT, '.releaserc'), 'utf8'),
+  ) as {
     plugins: (string | [string, { releaseRules?: ReleaseRule[] }])[];
   };
 
   const analyzer = config.plugins.find(
     (plugin): plugin is [string, { releaseRules?: ReleaseRule[] }] =>
-      Array.isArray(plugin) && plugin[0] === '@semantic-release/commit-analyzer',
+      Array.isArray(plugin) &&
+      plugin[0] === '@semantic-release/commit-analyzer',
   );
 
   return analyzer?.[1].releaseRules ?? [];
@@ -66,14 +69,22 @@ describe('a release rule matches only what it names', () => {
   });
 
   /**
-   * Not a style rule. `release: false` on a rule that a breaking commit can
-   * match would suppress the one release that must never be suppressed: the
-   * notes announcing the break go out with it or not at all.
+   * Two halves, and the rule has to satisfy both.
    *
-   * Order does not decide it — matching rules resolve to the *highest* release
-   * type, not the first — so what this asserts is that the rule exists at all.
+   * **It must release.** `release: false` on a rule that a breaking commit can
+   * match would suppress the one release that must never be suppressed: the
+   * notes announcing the break go out with it or not at all. Order does not
+   * decide it — matching rules resolve to the *highest* release type, not the
+   * first — so what this asserts is that the rule exists at all.
+   *
+   * **It must not release a major.** Without a custom rule the default ruleset
+   * bumps the major on any breaking footer, and between 2026-09-19 and
+   * 2026-09-20 that turned four internal environment-variable renames into
+   * 2.0.0, 3.0.0, 4.0.0 and 5.0.0 — four majors in two days for a product with
+   * no consumer that any of them broke. The major is a deliberate act now; see
+   * ADR-51. Restore `major` here and the next `feat!:` starts the climb again.
    */
-  it('keeps a breaking change releasing, whatever else a commit matches', () => {
-    expect(releaseRules()).toContainEqual({ breaking: true, release: 'major' });
+  it('keeps a breaking change releasing, but no longer as a major', () => {
+    expect(releaseRules()).toContainEqual({ breaking: true, release: 'minor' });
   });
 });
