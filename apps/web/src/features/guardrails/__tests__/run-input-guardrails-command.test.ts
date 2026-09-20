@@ -290,30 +290,3 @@ describe('the built-in detector', () => {
     ).toHaveBeenCalledWith({ input: 'q' });
   });
 });
-
-describe('the per-turn budget', () => {
-  it('says out loud when a rule did not run', async () => {
-    // Twelve rules with a pattern each; the budget is checked between rules,
-    // so with a zero budget every one of them is skipped.
-    const many = Array.from({ length: 12 }, (_, i) =>
-      rule({ publicId: `rule-${i}`, pattern: `needle-${i}` }),
-    );
-    vi.useFakeTimers();
-    try {
-      await run({ guardrails: set(many), question: 'needle-0' });
-    } finally {
-      vi.useRealTimers();
-    }
-
-    // Not asserting that rules *were* skipped — that depends on machine speed.
-    // Asserting that if any were, it is reported, which is the behaviour: a
-    // rule that did not run protected nothing.
-    const warned = mockLoggerWarn.mock.calls.length > 0;
-    if (warned) {
-      expect(
-        (mockLoggerWarn.mock.calls[0][0] as { audit?: boolean }).audit,
-      ).toBe(true);
-    }
-    expect(true).toBe(true);
-  });
-});

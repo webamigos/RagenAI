@@ -5,6 +5,7 @@ import {
   isActionValidForKind,
   isCombinationSupported,
   SUPPORTED_COMBINATIONS,
+  isEvaluableBuiltIn,
 } from '../contracts/guardrail';
 
 /**
@@ -38,6 +39,16 @@ export type ResolvedGuardrail = GuardrailRule & {
  */
 export type GuardrailDropReason =
   | 'unsupported-combination'
+  /**
+   * A `BUILT_IN` whose key this build has no evaluator for.
+   *
+   * Its own reason rather than `unsupported-combination`, because the two need
+   * different answers from whoever reads the drop. An unsupported combination
+   * is a shape the build cannot evaluate at all; this is a seeded detector
+   * that exists, is listed in the catalogue, and is waiting for the phase that
+   * implements it. `jailbreak-detection` is in exactly that state.
+   */
+  | 'built-in-has-no-evaluator'
   | 'override-targets-non-platform-rule'
   | 'override-for-unknown-rule'
   | 'override-action-invalid-for-kind'
@@ -138,6 +149,17 @@ export function resolveGuardrails(
     if (!isCombinationSupported(rule.kind, rule.stage, supported)) {
       dropped.push({
         reason: 'unsupported-combination',
+        guardrailPublicId: rule.publicId,
+      });
+      continue;
+    }
+    // Support for a built-in is per key, not per kind: `BUILT_IN`/`INPUT`
+    // covers both seeded detectors and only one of them has an evaluator.
+    // Without this, `jailbreak-detection` resolves, is kept, matches no branch
+    // and is enforced by nothing — while the panel shows it enabled.
+    if (rule.kind === 'BUILT_IN' && !isEvaluableBuiltIn(rule.key)) {
+      dropped.push({
+        reason: 'built-in-has-no-evaluator',
         guardrailPublicId: rule.publicId,
       });
       continue;

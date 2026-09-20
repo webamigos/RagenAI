@@ -1,6 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { guardrailsDisabled, isOnPremise } from '@ragenai/env';
 import {
+  GUARDRAIL_CACHE_TTL_MS,
+  GUARDRAIL_FAILURE_TTL_MS,
   hasTransformingRule,
   resolveGuardrails,
   type GuardrailAction,
@@ -39,16 +41,6 @@ const NO_GUARDRAILS: OrgGuardrails = {
   hasTransformingInputRule: false,
   degraded: false,
 };
-
-/** Matches apps/web. A rule switched off in the panel takes effect within this. */
-const CACHE_TTL_MS = 60_000;
-
-/**
- * Shorter, and for the opposite reason: this is the window in which guardrails
- * are not enforced. Long enough that a Postgres outage costs one query per
- * organization per interval instead of a connection timeout on every turn.
- */
-const FAILURE_TTL_MS = 5_000;
 
 type Row = {
   publicId: string;
@@ -180,7 +172,7 @@ export class GuardrailsService {
 
       this.cache.set(organizationId, {
         value,
-        expiresAt: Date.now() + CACHE_TTL_MS,
+        expiresAt: Date.now() + GUARDRAIL_CACHE_TTL_MS,
       });
       return value;
     } catch (err) {
@@ -198,7 +190,7 @@ export class GuardrailsService {
       const value: OrgGuardrails = { ...NO_GUARDRAILS, degraded: true };
       this.cache.set(organizationId, {
         value,
-        expiresAt: Date.now() + FAILURE_TTL_MS,
+        expiresAt: Date.now() + GUARDRAIL_FAILURE_TTL_MS,
       });
       return value;
     }

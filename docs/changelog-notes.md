@@ -94,11 +94,13 @@ archive is the blog.
   `node:worker_threads`, which cannot exist in a browser bundle. A platform
   administrator can now actually do what the page was built for — list the
   built-in detectors, write a pattern rule, switch one on, and set a
-  per-organization override that says which layer decided each value. Worth
-  stating plainly for anyone reading the panel: **nothing enforces these rules
-  yet.** Phase A deliberately ships the authoring surface without an evaluator,
-  so a rule created today is a stored row and an audit entry; the chat still
-  moderates through `MODERATION_ENABLED`. Enforcement is the next phase.
+  per-organization override that says which layer decided each value.
+
+  Ordering matters if both of these are written up together: this fix landed
+  while the authoring surface still enforced nothing, and the entry above is
+  what made the rules apply. A post that presents them the other way round
+  would describe a week in which guardrails blocked messages through a page
+  that did not render.
 
 
 ### Thread: the version number says something again

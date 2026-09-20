@@ -261,14 +261,24 @@ describe('isModerationRule', () => {
 });
 
 describe('a supported combination is evaluable', () => {
-  it('keeps the seeded built-ins rather than dropping them', async () => {
-    // The bug this exists for: `SUPPORTED_COMBINATIONS` listed only
-    // PATTERN/INPUT while the two seeded detectors are BUILT_IN/INPUT, so the
-    // runtime resolver discarded `content-moderation` as unsupported. An
-    // operator enabled moderation, the panel showed it enabled, nothing ran,
-    // and `guardrails:preflight` called the configuration reconciled.
+  it('keeps the built-in that has an evaluator and drops the one that does not', async () => {
+    // Two bugs, same silence, opposite causes — and this test asserted the
+    // second one until a review caught it.
+    //
+    // First `SUPPORTED_COMBINATIONS` omitted `BUILT_IN`/`INPUT`, so the seeded
+    // `content-moderation` rule was discarded while the panel showed it
+    // enabled. Adding the combination fixed that and made
+    // `jailbreak-detection` — the same kind and stage, with no evaluator —
+    // resolve, be kept, match no branch, and be enforced by nothing. The
+    // original version of this test expected exactly that, because it was
+    // written to prove the first fix and took "both survive" as the goal.
+    //
+    // Support for a built-in is per key. `EVALUABLE_BUILT_IN_KEYS` is the
+    // unit, and `jailbreak-detection` joins it in the phase that implements
+    // it.
     const { resolveGuardrails } = await import('../resolver/resolve');
-    const { BUILT_IN_GUARDRAIL_KEYS } = await import('../contracts/guardrail');
+    const { BUILT_IN_GUARDRAIL_KEYS, EVALUABLE_BUILT_IN_KEYS } =
+      await import('../contracts/guardrail');
 
     const resolution = resolveGuardrails({
       platformRules: BUILT_IN_GUARDRAIL_KEYS.map((key) => ({
@@ -277,10 +287,37 @@ describe('a supported combination is evaluable', () => {
       })),
     });
 
-    expect(resolution.dropped).toEqual([]);
     expect(resolution.rules.map((r) => r.publicId)).toEqual([
-      ...BUILT_IN_GUARDRAIL_KEYS,
+      ...EVALUABLE_BUILT_IN_KEYS,
     ]);
+    expect(resolution.dropped).toEqual(
+      BUILT_IN_GUARDRAIL_KEYS.filter(
+        (key) => !(EVALUABLE_BUILT_IN_KEYS as readonly string[]).includes(key),
+      ).map((key) => ({
+        reason: 'built-in-has-no-evaluator',
+        guardrailPublicId: key,
+      })),
+    );
+  });
+
+  it('every evaluable built-in has a branch in this stage', async () => {
+    // The binding between the list and the code that reads it. A key added to
+    // `EVALUABLE_BUILT_IN_KEYS` without a branch here is a rule the resolver
+    // keeps and nothing acts on — which is the state this whole test block
+    // exists to make impossible.
+    const { EVALUABLE_BUILT_IN_KEYS } = await import('../contracts/guardrail');
+    const { readFileSync } = await import('node:fs');
+    const source = readFileSync(
+      new URL('../evaluator/input-stage.ts', import.meta.url),
+      'utf8',
+    ).replace(/\/\*[\s\S]*?\*\//g, '');
+
+    for (const key of EVALUABLE_BUILT_IN_KEYS) {
+      expect(
+        source.includes(`'${key}'`),
+        `${key} is listed as evaluable but input-stage.ts never names it`,
+      ).toBe(true);
+    }
   });
 
   it('is a superset of what an operator may author', async () => {
@@ -297,5 +334,73 @@ describe('a supported combination is evaluable', () => {
         `${combination.kind}/${combination.stage} can be authored but not evaluated`,
       ).toBe(true);
     }
+  });
+});
+
+describe('the per-turn budget', () => {
+  it('reports every rule it could not run', async () => {
+    // Deterministic, which the first attempt at this was not: with a zero
+    // budget the check between rules fails on the first one, so every rule is
+    // skipped regardless of how fast the machine is.
+    const many = Array.from({ length: 5 }, (_, i) =>
+      rule({ publicId: `rule-${i}`, pattern: `needle-${i}` }),
+    );
+
+    await evaluateInputStage(
+      many,
+      { question: 'needle-0', chatHistory: '', moderateHistory: false },
+      deps,
+      { budgetMs: 0 },
+    );
+
+    expect(onBudgetExhausted).toHaveBeenCalledTimes(1);
+    const [skipped] = onBudgetExhausted.mock.calls[0] as [
+      ResolvedGuardrail[],
+      number,
+    ];
+    expect(skipped.map((r) => r.publicId)).toEqual(many.map((r) => r.publicId));
+  });
+
+  it('reports the resolved rules, not the raw ones', async () => {
+    // The callback is what a runtime logs from, and a bare `GuardrailRule` has
+    // no severity or source on it. Passing the wrong object would make the log
+    // line right and useless.
+    await evaluateInputStage(
+      [rule({ publicId: 'only', severity: 'critical' })],
+      { question: 'x', chatHistory: '', moderateHistory: false },
+      deps,
+      { budgetMs: 0 },
+    );
+
+    const [skipped] = onBudgetExhausted.mock.calls[0] as [
+      ResolvedGuardrail[],
+      number,
+    ];
+    expect(skipped[0].severity).toBe('critical');
+    expect(skipped[0].sources).toBeDefined();
+  });
+
+  it('says nothing when every rule ran', async () => {
+    await evaluateInputStage(
+      [rule()],
+      { question: 'nothing here', chatHistory: '', moderateHistory: false },
+      deps,
+    );
+
+    expect(onBudgetExhausted).not.toHaveBeenCalled();
+  });
+
+  it('skips a rule rather than refusing the turn', async () => {
+    // A `BLOCK` rule that never ran must not block. Exhausting the budget is a
+    // capacity problem, and turning it into a refusal would make a slow turn
+    // look like a policy decision.
+    const result = await evaluateInputStage(
+      [rule({ action: 'BLOCK', pattern: 'hunter2' })],
+      { question: 'hunter2', chatHistory: '', moderateHistory: false },
+      deps,
+      { budgetMs: 0 },
+    );
+
+    expect(result.blockedBy).toBeUndefined();
   });
 });

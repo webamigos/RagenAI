@@ -115,10 +115,29 @@ export function securityEventTypeFor(
   return rule.action === 'BLOCK' ? 'GUARDRAIL_BLOCKED' : 'GUARDRAIL_FLAGGED';
 }
 
+export type InputStageOptions = {
+  /**
+   * The turn's pattern budget, in milliseconds.
+   *
+   * Exposed because it is the one thing about this function that cannot be
+   * observed from outside it: with the default, whether a rule is skipped
+   * depends on how fast the machine is, so a test either asserts nothing or
+   * asserts something flaky. The first version of the test for this did the
+   * former — a conditional assertion followed by `expect(true).toBe(true)` —
+   * which is the shape `docs/lessons/three-shapes-of-a-test-that-guards-
+   * nothing.md` was written about, on the same day.
+   *
+   * It is also where a per-organization budget goes if one is ever wanted.
+   * Neither binding passes it today.
+   */
+  readonly budgetMs?: number;
+};
+
 export async function evaluateInputStage(
   rules: readonly ResolvedGuardrail[],
   input: InputStageInput,
   deps: InputStageDeps,
+  options: InputStageOptions = {},
 ): Promise<InputStageResult> {
   const unchanged = {
     question: input.question,
@@ -151,6 +170,7 @@ export async function evaluateInputStage(
   const { hits, skipped, elapsedMs } = runPatternRules(
     patternRules,
     input.question,
+    options.budgetMs === undefined ? {} : { budgetMs: options.budgetMs },
   );
 
   if (skipped.length > 0) {
@@ -207,7 +227,11 @@ export async function evaluateInputStage(
   const maskRules = patternRules.filter((rule) => rule.action === 'MASK');
   const historyHits: PatternHit[] =
     input.chatHistory.length > 0 && maskRules.length > 0
-      ? runPatternRules(maskRules, input.chatHistory).hits
+      ? runPatternRules(
+          maskRules,
+          input.chatHistory,
+          options.budgetMs === undefined ? {} : { budgetMs: options.budgetMs },
+        ).hits
       : [];
 
   if (questionMaskHits.length === 0 && historyHits.length === 0) {

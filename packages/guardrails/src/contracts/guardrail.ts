@@ -58,6 +58,34 @@ export const BUILT_IN_GUARDRAIL_KEYS = [
 ] as const;
 export type BuiltInGuardrailKey = (typeof BUILT_IN_GUARDRAIL_KEYS)[number];
 
+/**
+ * Which built-ins this build can actually run.
+ *
+ * Support for a built-in is **per key, not per kind**, and conflating the two
+ * is a bug this file has now had in both directions. First
+ * `SUPPORTED_COMBINATIONS` omitted `BUILT_IN`/`INPUT` entirely, so the seeded
+ * `content-moderation` rule was discarded while the panel showed it enabled.
+ * Adding the combination fixed that and created the mirror image:
+ * `jailbreak-detection` is also `BUILT_IN`/`INPUT`, so it became "supported"
+ * — kept by the resolver, matched by no branch of `evaluateInputStage`, and
+ * enforced by nothing. Same silence, opposite cause.
+ *
+ * A kind × stage pair cannot express this, because two rules of the same kind
+ * and stage differ in whether an evaluator exists for them. So the identifier
+ * is the unit, and `evaluateInputStage` has exactly one branch per entry here.
+ *
+ * `jailbreak-detection` joins this list in Phase C, in the same change that
+ * gives it an evaluator — never before, or it reads as enabled and does
+ * nothing; never after, or it is dropped while the panel says otherwise.
+ */
+export const EVALUABLE_BUILT_IN_KEYS = ['content-moderation'] as const;
+
+export function isEvaluableBuiltIn(key: string | null): boolean {
+  return (
+    key !== null && (EVALUABLE_BUILT_IN_KEYS as readonly string[]).includes(key)
+  );
+}
+
 export const BUILT_IN_GUARDRAIL_LABELS: Readonly<
   Record<BuiltInGuardrailKey, string>
 > = Object.freeze({

@@ -151,7 +151,16 @@ describe('overrides', () => {
     // should not turn into no protection.
     const result = resolveGuardrails({
       platformRules: [
-        rule({ publicId: 'p1', kind: 'BUILT_IN', action: 'BLOCK' }),
+        // A real built-in key, because support for a built-in is per key: one
+        // with no key, or a key this build has no evaluator for, is dropped
+        // before any override is considered. This test is about the override,
+        // so the rule under it has to be one that can exist.
+        rule({
+          publicId: 'p1',
+          kind: 'BUILT_IN',
+          key: 'content-moderation',
+          action: 'BLOCK',
+        }),
       ],
       overrides: [
         { guardrailPublicId: 'p1', organizationId: 'org-a', action: 'MASK' },
