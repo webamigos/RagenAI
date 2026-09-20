@@ -538,3 +538,24 @@ archive is the blog.
   with a check that every kind of AI call the product records has somewhere to
   appear: the same gap had already happened twice and would have kept
   happening, because nothing breaks when it does.
+- `[brief]` **Jailbreak detection is a rule you can see and switch on, and it
+  now covers the public API.** It used to be an environment variable and a
+  classifier that ran beside the answer: it scored each message, wrote an
+  audit event when the score was high, and could not stop anything — it was
+  telemetry by construction. It is a guardrail rule now, alongside content
+  moderation and anything you write yourself. That means you turn it on per
+  organization from the admin panel rather than at deploy time, you set its
+  threshold there, and you choose whether a hit blocks the turn or is only
+  recorded. It also runs on the **public API and the embedded chat widget**,
+  which the old classifier did not — the API had no jailbreak detection at
+  all, while the panel happily listed the rule. Hits from the widget say so,
+  so you can filter incidents down to what the public widget is being sent.
+  `JAILBREAK_DETECTION_ENABLED` and `JAILBREAK_DETECTION_THRESHOLD` are read
+  by nothing now, and neither is `MODERATION_ENABLED`; run
+  `npm run guardrails:preflight` once before upgrading — it compares what you
+  were enforcing against what the panel holds and refuses a deploy that would
+  quietly stop enforcing it — then delete all three from your environment. One
+  thing is smaller than before: a burst of jailbreak hits no longer escalates
+  to critical and emails you. A rule that can refuse the message is the
+  replacement, and you can set any rule's severity to critical if you want the
+  email on the first hit.

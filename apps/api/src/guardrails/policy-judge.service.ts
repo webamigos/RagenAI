@@ -1,9 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import {
   POLICY_JUDGE_MODEL,
-  POLICY_JUDGE_SYSTEM_PROMPT,
   POLICY_JUDGE_TIMEOUT_MS,
-  policyJudgePrompt,
   type JudgePolicy,
   type PolicyJudgement,
 } from '@ragenai/guardrails';
@@ -14,7 +12,16 @@ import { createChatCompletionInstance } from '../llm/model-instances.js';
 import type { TrackAiUsage } from '../ai-usage/types.js';
 
 /**
- * apps/api's judge for `LLM_POLICY` rules — the model call, and its bill.
+ * apps/api's judge for scored rules — the model call, and its bill.
+ *
+ * "Scored" is two kinds since C2: an `LLM_POLICY` and `jailbreak-detection`.
+ * This service cannot tell them apart and must not — it is handed a system
+ * prompt and a user prompt. Which prompt a rule gets is `judgeRequestFor` in
+ * the package.
+ *
+ * C2 is also what gives the public API a jailbreak detector at all: the old
+ * classifier was called from two apps/web routes and from nothing here, so the
+ * rule resolved for API traffic and was enforced by nothing.
  *
  * The two are one service for the reason C1 is one step: a judge that runs
  * without recording what it cost is a per-turn, per-rule call to an external
@@ -67,7 +74,7 @@ export class PolicyJudgeService {
 
   /** Build the judge handed to `evaluateInputStage` for one turn. */
   forTurn(context: PolicyJudgeContext): JudgePolicy {
-    return async ({ rule, text }): Promise<PolicyJudgement> => {
+    return async ({ rule, system, prompt }): Promise<PolicyJudgement> => {
       const startedAt = Date.now();
 
       try {
@@ -80,8 +87,8 @@ export class PolicyJudgeService {
         const judging = generateObject({
           model,
           schema: judgementSchema,
-          system: POLICY_JUDGE_SYSTEM_PROMPT,
-          messages: [{ role: 'user', content: policyJudgePrompt(rule, text) }],
+          system,
+          messages: [{ role: 'user', content: prompt }],
           experimental_telemetry: {
             isEnabled: true,
             functionId: 'guardrail-policy-judge',

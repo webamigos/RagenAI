@@ -81,10 +81,18 @@ See the audit discussion on feat/embeddable-chatbot dated 2026-04-14.
 
 ## P2 — polish
 
-### 8. Jailbreak classifier
-`classifyJailbreakRisk(...)` is fire-and-forget in `assistant-stream.ts`
-and feeds the security dashboard. Public chatbots are the most exposed
-jailbreak surface — consider enabling.
+### 8. Jailbreak classifier — **done, and more than was asked**
+Closed by guardrails phase C2. `classifyJailbreakRisk(...)` is gone; the
+detector is the `jailbreak-detection` guardrail rule, evaluated inside the
+chain, so the widget is covered by the same call site as everything else —
+no separate call to remember to add. It is seeded **off**: switch it on in
+the admin panel's `/guardrails`, per organization if you want the widget's
+organization stricter than the panel's.
+
+Two things it gained on the way: hits from the widget are filed with
+`source: 'chatbot'`, so `/incidents` can be filtered to exactly the surface
+this file is about; and the rule can **block** the turn, which the old
+fire-and-forget classifier could not — it was telemetry by construction.
 
 ### 9. SecurityEvent recording
 CORS rejections, 429s, invalid tokens, origin mismatches are currently

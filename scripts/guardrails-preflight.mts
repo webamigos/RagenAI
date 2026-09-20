@@ -4,17 +4,24 @@
  *   npm run guardrails:preflight
  *
  * Run it against the environment a service will actually get, on each service,
- * **before** the Phase B deploy. Phase B moves moderation from an environment
- * variable to a row an operator can see. Between those two worlds there is one
- * way to lose protection without anyone noticing: an installation running with
- * `MODERATION_ENABLED=1` today, whose `content-moderation` rule is still
- * disabled in the panel — because that is the creation default, and because
+ * **before** the deploy that moves a detector from a variable to a row. There
+ * have been two such deploys: Phase B for `content-moderation`, Phase C2 for
+ * `jailbreak-detection`. Both have the same one way to lose protection without
+ * anyone noticing — an installation running with the variable set, whose rule
+ * is still disabled in the panel, because disabled is the creation default and
  * Phase A shipped the rules switched off on purpose.
  *
- * Deploy B3 in that state and moderation stops. Nothing errors. The chat keeps
+ * Deploy in that state and the check stops. Nothing errors. The chat keeps
  * answering, the panel keeps listing the rule, and the only evidence is an
  * absence. So this script exits non-zero while the two disagree, and says
  * which way to reconcile them.
+ *
+ * **This is the only thing in the product that still reads those variables.**
+ * Nothing at runtime does, as of C2 — which is what makes the script worth
+ * keeping rather than deleting with them: it is the bridge between the world
+ * that had them and the world that does not, and an operator who has not
+ * crossed it yet still needs it. Once both rows read the way you want, delete
+ * the variables from your environment.
  *
  * It reads the database rather than guessing, because "what the panel says" is
  * a row, not a configuration file — and the whole point of the phase is that
@@ -30,20 +37,22 @@ import { PrismaClient } from '../apps/web/src/generated/prisma/client.js';
 /** The built-in whose environment counterpart this phase retires. */
 type BuiltIn = {
   readonly key: string;
-  /** The variable that decides it today, before B3. */
+  /** The variable that decided it, before the rule replaced it. */
   readonly variable: string;
   /** Whether that variable currently says "on". */
   readonly envEnabled: boolean;
 };
 
 /**
- * The same truthiness the runtime uses, restated rather than imported.
+ * The truthiness the runtime used, restated rather than imported.
  *
- * `jailbreak-classifier.ts` accepts `1`, `true`, `yes`; `shouldModerate()`
- * accepts only `1`. A preflight that applied one rule to both would report a
- * disagreement that does not exist, or miss one that does — so each variable
- * is read the way the code that reads it today reads it, and that is the point
- * of the script rather than a detail of it.
+ * It had to be restated even then — `jailbreak-classifier.ts` accepted `1`,
+ * `true`, `yes`, while `shouldModerate()` accepted only `1`, and a preflight
+ * applying one rule to both would report a disagreement that does not exist or
+ * miss one that does. Now it *has* to be: neither reader exists any more, and
+ * this script's whole job is to read an operator's environment the way the
+ * build they are upgrading *from* read it. Do not "simplify" these two to
+ * match each other.
  */
 export function environmentSaysEnabled(
   env: NodeJS.ProcessEnv,
@@ -80,10 +89,11 @@ export type Disagreement = {
  * Compare the two worlds, and say which way to reconcile each difference.
  *
  * Only one direction is dangerous. Environment on, rule off is **lost
- * protection** the moment B3 deploys, and it is silent. Rule on, environment
- * off is the opposite: the operator has already written down what they want
- * and B3 will start doing it — worth printing, because it is a change in
- * behaviour nobody may be expecting, but it is not a regression.
+ * protection** the moment the new build deploys, and it is silent. Rule on,
+ * environment off is the opposite: the operator has already written down what
+ * they want and the new build will start doing it — worth printing, because it
+ * is a change in behaviour nobody may be expecting, but it is not a
+ * regression.
  */
 export function disagreements(
   builtIns: readonly BuiltIn[],
@@ -107,7 +117,7 @@ export function disagreements(
       ruleEnabled,
       reconcile: builtIn.envEnabled
         ? `Enable "${builtIn.key}" in the admin panel before deploying, or this stops being enforced.`
-        : `"${builtIn.key}" is enabled in the panel and ${builtIn.variable} is not set. Phase B will start enforcing it.`,
+        : `"${builtIn.key}" is enabled in the panel and ${builtIn.variable} is not set. The new build will start enforcing it.`,
     });
   }
 
@@ -264,7 +274,7 @@ async function main(): Promise<void> {
 
   if (losesProtection.length > 0) {
     console.error(
-      `\n${losesProtection.length} protection(s) this service enforces today would stop at the Phase B deploy.`,
+      `\n${losesProtection.length} protection(s) this service enforces today would stop at this deploy.`,
     );
     process.exitCode = 1;
     return;
@@ -286,7 +296,7 @@ async function main(): Promise<void> {
   console.log(
     differences.length > 0
       ? '\nNothing would stop being enforced. The notes above are changes the panel already asks for.'
-      : '\nThe panel and the environment agree. Safe to deploy Phase B to this service.',
+      : '\nThe panel and the environment agree. Safe to deploy to this service.',
   );
 }
 

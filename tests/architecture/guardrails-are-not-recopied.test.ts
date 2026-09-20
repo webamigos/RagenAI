@@ -72,6 +72,14 @@ const PACKAGE_ONLY_SYMBOLS = [
   'runPolicyRules',
   'policyThresholdFor',
   'hasEvaluablePolicy',
+  // C2's primitives. Which prompt a scored rule gets is `judgeRequestFor`,
+  // and a binding that imported the builders could choose for itself — the
+  // exact decision C2 moved into the package, because two kinds of scored
+  // rule made choosing a decision at all.
+  'judgeRequestFor',
+  'policyJudgePrompt',
+  'jailbreakPrompt',
+  'isJudgedRule',
 ];
 
 /**
@@ -247,14 +255,29 @@ describe('guardrails are not recopied', () => {
       expect(code, `${where} does not read POLICY_JUDGE_MODEL`).toContain(
         'POLICY_JUDGE_MODEL',
       );
+      // It takes the prompt rather than building it, which is what C2 changed
+      // and why: with two kinds of scored rule — an `LLM_POLICY` and the
+      // jailbreak built-in — *choosing* the prompt became a decision, and
+      // `judgeRequestFor` in the package is where it is made.
       expect(
         code,
-        `${where} does not read POLICY_JUDGE_SYSTEM_PROMPT`,
-      ).toContain('POLICY_JUDGE_SYSTEM_PROMPT');
+        `${where} does not take its prompt from the judge request. ` +
+          'A binding that assembles one has forked the question the two ' +
+          'runtimes ask, and the fork is silent because both halves produce ' +
+          'a number in the right range.',
+        // Anchored to the judge function's own parameter list. The first
+        // version of this was `/\{[^}]*system[^}]*prompt[^}]*\}/`, which
+        // matched the `generateObject({ model, schema, system, messages: [{
+        // ... content: prompt }] })` call a few lines below and passed with
+        // the destructure deleted. Verified by deleting it.
+      ).toMatch(/async\s*\(\s*\{[^}]*\bsystem\b[^}]*\bprompt\b[^}]*\}/);
+
       expect(
         code,
-        `${where} does not build its prompt with the shared one`,
-      ).toContain('policyJudgePrompt');
+        `${where} declares a prompt of its own. The prompts are ` +
+          '`POLICY_JUDGE_SYSTEM_PROMPT` and `JAILBREAK_SYSTEM_PROMPT` in ' +
+          '@ragenai/guardrails, so every runtime asks the same question.',
+      ).not.toMatch(/(SYSTEM_)?PROMPT\s*=/);
       expect(
         code,
         `${where} runs a judge model and never records what it cost. ` +

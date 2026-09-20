@@ -58,10 +58,6 @@ import { orgVisibilityScope } from '@/lib/auth-access-control';
 import { createBuiltInTools, getBuiltInToolsContext } from '@/libs/tools';
 import { isEncryptionEnabled } from '@ragenai/crypto';
 import { recordSecurityEvent } from '@/features/security/services/commands/record-security-event-command';
-import {
-  classifyJailbreakRisk,
-  isAboveJailbreakThreshold,
-} from '@/libs/security/jailbreak-classifier';
 import { StreamUnmasker } from '@/libs/pii/stream-unmasker';
 import { anonymizeWithSecurityEvents } from '@/libs/pii/anonymize-with-security-events';
 import { applyPiiUnmaskToTools } from '@/libs/mcp/client';
@@ -619,16 +615,6 @@ export async function streamEvents({
             tags: traceTags,
           });
 
-          // Phase 6 — fire-and-forget jailbreak classification. Must
-          // NEVER delay the user's stream; we don't await this here.
-          // On resolve: attach score to Langfuse trace, and if it
-          // crosses the threshold, record a CHAT_JAILBREAK_DETECTED
-          // event. The Phase 0.5 escalation rule (5 in 10 min from
-          // same user) bumps severity to critical automatically.
-          // Disabled unless JAILBREAK_DETECTION_ENABLED is truthy in
-          // env — the classifier short-circuits to score=0 otherwise.
-          // Jailbreak classification moved after PII masking — see below.
-
           if (mode === AssistantMode.INTERNAL) {
             if (filteredMode === ChatType.CONVERSATION) {
               const inlineThreadDocuments = userMessage.threadDocuments || [];
@@ -808,43 +794,16 @@ export async function streamEvents({
             'PII masked prompt before LLM',
           );
 
-          void classifyJailbreakRisk(piiResult.maskedText)
-            .then((classification) => {
-              if (classification.skipped) {
-                return;
-              }
-              updateActiveTrace({
-                metadata: {
-                  jailbreakScore: classification.score,
-                  ...(classification.reason
-                    ? { jailbreakReason: classification.reason }
-                    : {}),
-                },
-              });
-              if (isAboveJailbreakThreshold(classification.score)) {
-                recordSecurityEvent({
-                  eventType: 'CHAT_JAILBREAK_DETECTED',
-                  severity: 'info',
-                  source: 'chat',
-                  organizationId: orgId ?? null,
-                  userId: userId ?? null,
-                  metadata: {
-                    score: classification.score,
-                    threadId: threadRecord.id,
-                    messageLength: piiResult.maskedText.length,
-                    ...(classification.reason
-                      ? { reason: classification.reason }
-                      : {}),
-                  },
-                });
-              }
-            })
-            .catch((err) => {
-              logger.debug(
-                { err },
-                'Jailbreak classifier post-processing failed',
-              );
-            });
+          // Jailbreak classification used to run here, fire-and-forget, gated
+          // on `JAILBREAK_DETECTION_ENABLED`. It is a guardrail rule now —
+          // `jailbreak-detection`, evaluated inside the chain beside every
+          // other rule — which is what makes it switchable per organization
+          // from the panel, able to block rather than only observe, and
+          // present on the public API, where this call never was.
+          //
+          // It still reads the masked text: the chain is given
+          // `piiResult.maskedText` below, and a guardrail sits downstream of
+          // that by design.
 
           applyPiiUnmaskToTools(mcpTools, piiResult.aliasMap);
 

@@ -397,11 +397,15 @@ describe('an organization-scoped built-in', () => {
     const resolution = resolveGuardrails({
       platformRules: [],
       orgRules: [
+        // A key no build has an evaluator for. It was `jailbreak-detection`
+        // until C2 gave that one a judge — the point of the test is the
+        // *absence* of an evaluator, so it has to name a key that has none,
+        // not a key that happened to have none when it was written.
         rule({
-          publicId: 'org-jailbreak',
+          publicId: 'org-unknown-built-in',
           organizationId: 'org-a',
           kind: 'BUILT_IN',
-          key: 'jailbreak-detection',
+          key: 'a-detector-from-a-newer-build',
         }),
       ],
       overrides: [],
@@ -412,7 +416,7 @@ describe('an organization-scoped built-in', () => {
     expect(resolution.dropped).toEqual([
       {
         reason: 'built-in-has-no-evaluator',
-        guardrailPublicId: 'org-jailbreak',
+        guardrailPublicId: 'org-unknown-built-in',
       },
     ]);
   });

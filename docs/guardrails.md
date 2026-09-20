@@ -47,26 +47,38 @@ Two lists, and they are deliberately different questions:
   admin action validates against this list rather than the one above, because
   a Server Action is a public endpoint.
 
-Support for a built-in is **per key, not per kind**. `content-moderation` is
-evaluated; `jailbreak-detection` is seeded and is not (`EVALUABLE_BUILT_IN_KEYS`),
-and it gains its evaluator and that entry in the same change — never before, or
-it reads as enabled and does nothing.
+Support for a built-in is **per key, not per kind**, and both seeded detectors
+are now evaluated (`EVALUABLE_BUILT_IN_KEYS`). A key gains its evaluator and
+its entry in that list in the same change — never before, or it reads as
+enabled and does nothing.
+
+They are evaluated differently, which is the point of the per-key list:
+`content-moderation` asks OpenAI's moderation endpoint, which returns a flag;
+`jailbreak-detection` asks a judge model, which returns a score. The second
+therefore shares the policy loop below rather than the moderation branch.
 
 The `OUTPUT` stage is not shipped. It is in the schema and in the vocabulary so
 that every reader had it before a writer appeared.
 
 ### Policies judged by a model
 
-An `LLM_POLICY` rule carries prose, and a judge model scores the message
-against it from 0 to 1. At or above the rule's `threshold` — 0.7 when it names
-none, the jailbreak classifier's own default — the rule has fired.
+Two kinds of rule are scored by a judge model from 0 to 1: an `LLM_POLICY`,
+judged against the operator's prose, and the `jailbreak-detection` built-in,
+judged against a prompt fixed in code. At or above the rule's `threshold` —
+0.7 when it names none — the rule has fired.
+
+Which prompt a rule gets is `judgeRequestFor` in the package, not a decision
+either binding makes. A binding is handed a system prompt and a user prompt
+and asks the model; that is all it knows. Two runtimes free to choose the
+prompt would choose differently eventually, and the failure would be silent,
+because both choices produce a number in the right range.
 
 | Thing | Value | Where |
 | --- | --- | --- |
 | Judge model | `gemini-2.5-flash` | `POLICY_JUDGE_MODEL` |
 | Timeout | 3 s, per rule | `POLICY_JUDGE_TIMEOUT_MS` |
 | Default threshold | 0.7 | `DEFAULT_POLICY_THRESHOLD` |
-| Active policies per stage | 3 | `MAX_ACTIVE_LLM_POLICIES` |
+| Active **operator** policies per stage | 3 | `MAX_ACTIVE_LLM_POLICIES` |
 
 All four are constants in `packages/guardrails`, read by both runtimes. None is
 configurable, and that is deliberate: two runtimes asking a different model a
@@ -81,6 +93,11 @@ the model is asked the question. Capped because concurrency bounds the latency
 and nothing bounds the *spend*: a fourth policy rule is a fourth model call per
 turn, for ever. Rules the cap left out are reported, the same way a rule the
 pattern budget skipped is.
+
+**The cap counts operator-authored policies and never the built-in.** Counting
+everything judged would let an organization's own three policy rules push
+`jailbreak-detection` past the cap and switch the platform's detector off —
+silently, and through a change that was not about jailbreak at all.
 
 **A judge that cannot answer is a pass, and is logged rather than recorded.** A
 timed-out judge and a judge that read the message and found nothing are the
@@ -134,6 +151,19 @@ That is the complete set. `/api/threads`, `/api/guest-threads/…` and
 `/api/chatbot/[token]/chat` all build a web chain; `apps/api`'s `/chat` and
 `/chat-completions` build the API one — so the public API and the embedded
 widget are covered rather than assumed to be.
+
+**One call site per side per app is what made C2 worth doing.** The jailbreak
+classifier it absorbed was called from two routes in `apps/web` and from
+nothing in `apps/api`, so the rule resolved for API traffic and was enforced
+by nothing there — a gap nobody would find from a screen. Moving it into the
+loop covered the public API without a line of API-specific code.
+
+**Which surface a hit is filed under is the caller's to say.** The web chain
+reads `config.guardrailSource`, defaulting to `chat`; the chatbot route passes
+`chatbot`, and `apps/api` passes `api`. `initializeRagChain` serves four
+surfaces, so a hit from the widget filed as `chat` is a hit an operator cannot
+find when they filter the incidents page by the surface they are worried
+about.
 
 What differs per runtime — reaching a database, recording an event, which error
 class is thrown — is injected. What a rule _means_ is

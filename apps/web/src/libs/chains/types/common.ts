@@ -42,6 +42,18 @@ export interface ChainConfig {
    * API (`/api/v1/chat/completions`) from the caller's `max_tokens`.
    */
   maxTokens?: number;
+  /**
+   * Which surface this turn arrived through, for the security event a
+   * guardrail hit writes.
+   *
+   * A property of the *caller*, not of the chain: `initializeRagChain` is
+   * shared by the panel, the embedded widget, a guest thread and the
+   * OpenAI-compatible route, and a hit from the widget filed as `chat` is a
+   * hit an operator cannot find when they filter the incidents page by the
+   * surface they are worried about. Defaults to `chat`, which is what every
+   * caller that predates this field is.
+   */
+  guardrailSource?: import('@/features/security/contracts/security-event.types').SecurityEventSource;
   ragSettings?: ChainRagSettings;
   mcpTools?: Record<string, any>;
   mcpContext?: string;

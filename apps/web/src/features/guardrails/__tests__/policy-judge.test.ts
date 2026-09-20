@@ -41,7 +41,7 @@ vi.mock('@/app/lib/utils/logger', () => ({
 }));
 
 const { createPolicyJudge } = await import('../utils/policy-judge');
-const { POLICY_JUDGE_MODEL, POLICY_JUDGE_SYSTEM_PROMPT } =
+const { POLICY_JUDGE_MODEL, POLICY_JUDGE_SYSTEM_PROMPT, judgeRequestFor } =
   await import('@ragenai/guardrails');
 
 type Rule = Parameters<ReturnType<typeof createPolicyJudge>>[0]['rule'];
@@ -87,7 +87,7 @@ describe('what the judge costs', () => {
     // operator asks precisely because policy rules are the expensive kind.
     answers(0.1);
 
-    await createPolicyJudge({ tracking })({ rule: rule(), text: 'hello' });
+    await createPolicyJudge({ tracking })(judgeRequestFor(rule(), 'hello'));
 
     expect(mockTrackAiUsage).toHaveBeenCalledTimes(1);
     expect(mockTrackAiUsage).toHaveBeenCalledWith(
@@ -110,7 +110,7 @@ describe('what the judge costs', () => {
     // which on a working rule set is nearly always.
     answers(0);
 
-    await createPolicyJudge({ tracking })({ rule: rule(), text: 'hello' });
+    await createPolicyJudge({ tracking })(judgeRequestFor(rule(), 'hello'));
 
     expect(mockTrackAiUsage).toHaveBeenCalledTimes(1);
   });
@@ -122,10 +122,9 @@ describe('what the judge costs', () => {
     answers(0.9);
     mockTrackAiUsage.mockRejectedValue(new Error('database is down'));
 
-    const verdict = await createPolicyJudge({ tracking })({
-      rule: rule(),
-      text: 'hello',
-    });
+    const verdict = await createPolicyJudge({ tracking })(
+      judgeRequestFor(rule(), 'hello'),
+    );
 
     expect(verdict).toEqual({ outcome: 'scored', score: 0.9 });
   });
@@ -138,10 +137,9 @@ describe('what the judge is asked', () => {
     // wrong — so both read these out of `@ragenai/guardrails`.
     answers(0.2);
 
-    await createPolicyJudge({ tracking })({
-      rule: rule(),
-      text: 'what do they charge?',
-    });
+    await createPolicyJudge({ tracking })(
+      judgeRequestFor(rule(), 'what do they charge?'),
+    );
 
     expect(mockCreateChatCompletionInstance).toHaveBeenCalledWith(
       expect.objectContaining({ model: POLICY_JUDGE_MODEL, temperature: 0 }),
@@ -165,10 +163,9 @@ describe('when the judge cannot answer', () => {
     // worth an operator's attention.
     mockGenerateObject.mockRejectedValue(new Error('provider exploded'));
 
-    const verdict = await createPolicyJudge({ tracking })({
-      rule: rule(),
-      text: 'hello',
-    });
+    const verdict = await createPolicyJudge({ tracking })(
+      judgeRequestFor(rule(), 'hello'),
+    );
 
     expect(verdict.outcome).toBe('error');
   });
@@ -177,14 +174,14 @@ describe('when the judge cannot answer', () => {
     mockGenerateObject.mockRejectedValue(new Error('provider exploded'));
 
     await expect(
-      createPolicyJudge({ tracking })({ rule: rule(), text: 'hello' }),
+      createPolicyJudge({ tracking })(judgeRequestFor(rule(), 'hello')),
     ).resolves.toBeDefined();
   });
 
   it('records no usage for a call that produced none', async () => {
     mockGenerateObject.mockRejectedValue(new Error('timeout'));
 
-    await createPolicyJudge({ tracking })({ rule: rule(), text: 'hello' });
+    await createPolicyJudge({ tracking })(judgeRequestFor(rule(), 'hello'));
 
     expect(mockTrackAiUsage).not.toHaveBeenCalled();
   });
@@ -194,10 +191,9 @@ describe('when the judge cannot answer', () => {
     // request contains the customer's message.
     mockGenerateObject.mockRejectedValue(new Error('x'.repeat(500)));
 
-    const verdict = await createPolicyJudge({ tracking })({
-      rule: rule(),
-      text: 'hello',
-    });
+    const verdict = await createPolicyJudge({ tracking })(
+      judgeRequestFor(rule(), 'hello'),
+    );
 
     expect(
       verdict.outcome === 'error' ? verdict.reason.length : 0,

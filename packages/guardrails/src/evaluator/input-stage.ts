@@ -7,6 +7,7 @@ import type { ResolvedGuardrail } from '../resolver/resolve';
 import { applyMask, runPatternRules, type PatternHit } from './pattern';
 import {
   MAX_ACTIVE_LLM_POLICIES,
+  isJudgedRule,
   runPolicyRules,
   type JudgePolicy,
 } from './policy';
@@ -263,15 +264,22 @@ export async function evaluateInputStage(
     // the one it catches.
   }
 
-  // Policy rules last among the deciding kinds, because they are the most
+  // Judged rules last among the deciding kinds, because they are the most
   // expensive: a local regex or a moderation endpoint that already refuses the
   // turn should not be preceded by one model call per rule.
+  //
+  // "Judged" is two shapes in one loop — an `LLM_POLICY` with the operator's
+  // prose, and `jailbreak-detection`, whose prompt is fixed in code. C2 made
+  // the second one of these rather than a route-level call of its own, which
+  // is what gives the public API a detector it never had: `apps/api` never
+  // called the classifier at all, so until it ran here the rule resolved for
+  // API traffic and was enforced by nothing there.
   //
   // Against the question alone, like the patterns and for the same reason. A
   // policy judged over `chatHistory` refuses this turn for something said
   // earlier and already allowed through, which makes a thread permanently
   // unusable after one borderline message.
-  const policyRules = rules.filter((rule) => rule.kind === 'LLM_POLICY');
+  const policyRules = rules.filter(isJudgedRule);
   if (policyRules.length > 0) {
     const policyRun = await runPolicyRules(
       policyRules,

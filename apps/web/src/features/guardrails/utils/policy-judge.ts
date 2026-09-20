@@ -1,8 +1,6 @@
 import {
   POLICY_JUDGE_MODEL,
-  POLICY_JUDGE_SYSTEM_PROMPT,
   POLICY_JUDGE_TIMEOUT_MS,
-  policyJudgePrompt,
   type JudgePolicy,
   type PolicyJudgement,
 } from '@ragenai/guardrails';
@@ -16,7 +14,15 @@ import { trackAiUsage } from '@/features/ai-usage/services/commands/create-ai-us
 import type { ChainTrackingContext } from '@/libs/chains/types/common';
 
 /**
- * apps/web's judge for `LLM_POLICY` rules — the model call, and its bill.
+ * apps/web's judge for scored rules — the model call, and its bill.
+ *
+ * "Scored" is two kinds since C2: an `LLM_POLICY`, judged against the
+ * operator's prose, and `jailbreak-detection`, judged against a prompt fixed
+ * in code. This file cannot tell them apart and must not: it is handed a
+ * system prompt and a user prompt and asks the model. Choosing between them is
+ * `judgeRequestFor` in the package, because a choice made here is a choice
+ * apps/api could make differently — silently, since both produce a number in
+ * the right range.
  *
  * Those two are one file on purpose. A judge model is one call per rule per
  * turn, to an external provider on most installations, and a judge that runs
@@ -61,7 +67,7 @@ export type PolicyJudgeContext = {
  * attribute is a number on a page and not an answer.
  */
 export function createPolicyJudge(context: PolicyJudgeContext): JudgePolicy {
-  return async ({ rule, text }): Promise<PolicyJudgement> => {
+  return async ({ rule, system, prompt }): Promise<PolicyJudgement> => {
     const startedAt = Date.now();
 
     try {
@@ -73,8 +79,8 @@ export function createPolicyJudge(context: PolicyJudgeContext): JudgePolicy {
       const judging = generateObject({
         model,
         schema: judgementSchema,
-        system: POLICY_JUDGE_SYSTEM_PROMPT,
-        messages: [{ role: 'user', content: policyJudgePrompt(rule, text) }],
+        system,
+        messages: [{ role: 'user', content: prompt }],
         experimental_telemetry: {
           isEnabled: true,
           functionId: 'guardrail-policy-judge',
