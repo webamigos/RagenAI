@@ -9,7 +9,7 @@ import {
   type GuardrailKind,
   type GuardrailSeverity,
   type GuardrailStage,
-} from '@ragenai/guardrails';
+} from '@ragenai/guardrails/contracts';
 import { useMemo, useState, useTransition } from 'react';
 import { toast } from 'sonner';
 

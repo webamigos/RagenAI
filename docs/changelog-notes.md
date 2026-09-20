@@ -68,6 +68,22 @@ archive is the blog.
 
 ## Unreleased
 
+### Thread: guardrails, authored in the panel
+
+- `[brief]` **The platform-guardrails page in the admin panel works.** It
+  shipped this week and never rendered for anyone: the page loaded, then
+  replaced itself with "This page couldn't load", in the dev server and in a
+  production build alike. A client component reached a module that imports
+  `node:worker_threads`, which cannot exist in a browser bundle. A platform
+  administrator can now actually do what the page was built for — list the
+  built-in detectors, write a pattern rule, switch one on, and set a
+  per-organization override that says which layer decided each value. Worth
+  stating plainly for anyone reading the panel: **nothing enforces these rules
+  yet.** Phase A deliberately ships the authoring surface without an evaluator,
+  so a rule created today is a stored row and an audit entry; the chat still
+  moderates through `MODERATION_ENABLED`. Enforcement is the next phase.
+
+
 ### Thread: the version number says something again
 
 - `[major]` **Ragen is on 2.0.0.** Nothing in the product broke — the jump is

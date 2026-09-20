@@ -43,6 +43,12 @@ const INSTRUCTION_FILES = [
   // because this list is exhaustive by design, not because it is at any risk
   // of growing.
   'apps/web/AGENTS.md',
+  // Same file, same generator, one workspace later: `next dev` writes it into
+  // every Next app, and apps/admin's simply had not been run on a machine
+  // where anyone noticed. Committed rather than ignored, so the byte budget
+  // above still covers it — and so the first person to run `admin:dev` does
+  // not get a red `npm run verify` for a file they never wrote.
+  'apps/admin/AGENTS.md',
 ];
 
 function sizeOf(relative: string): number {

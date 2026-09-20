@@ -1,6 +1,6 @@
 'use client';
 
-import { BUILT_IN_GUARDRAIL_LABELS } from '@ragenai/guardrails';
+import { BUILT_IN_GUARDRAIL_LABELS } from '@ragenai/guardrails/contracts';
 import { useState, useTransition } from 'react';
 import { toast } from 'sonner';
 
