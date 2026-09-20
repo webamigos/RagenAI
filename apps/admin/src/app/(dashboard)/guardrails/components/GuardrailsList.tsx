@@ -127,6 +127,7 @@ export function GuardrailsList({
                   <HitCounts
                     counts={hits[rule.publicId]}
                     enabled={rule.enabled}
+                    overrideCount={rule.overrideCount}
                   />
                 </td>
                 <td className="px-4 py-3">

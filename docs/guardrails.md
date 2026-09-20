@@ -146,8 +146,17 @@ threshold unreachable.
 
 - **`/guardrails` in `apps/admin`** — each rule's hits over the last 7 days,
   split into blocked and flagged, across every organization and both runtimes.
-  A rule that is on and has matched nothing shows `0`; a rule that is off shows
-  nothing at all, because a rule nothing evaluated has not been measured.
+  A rule that is on and has matched nothing shows `0`; a rule that is off
+  everywhere shows `—`, because a rule nothing evaluated has not been measured
+  and `0` would read as "measured, no false positives".
+
+  "Off everywhere" is the platform default **plus** no override rows: an
+  override can switch a platform-disabled rule on for one organization
+  (`resolve.ts` takes `enabled` from the override whenever it is set), and its
+  hits carry the same rule id. So a rule that is off by default but overridden
+  somewhere shows `0` rather than `—`, and its hits are never described as
+  historical.
+
 - **`/incidents`** — filter by `Any guardrail hit`, or by blocked and flagged
   separately. "What did we stop" and "what did we merely notice" are the two
   questions worth asking of a rule set, which is why they are two event types.

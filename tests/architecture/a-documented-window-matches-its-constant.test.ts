@@ -66,36 +66,44 @@ const documented = DOCUMENTS.map((path) => ({
  * assertion below fails if the matches disappear, which is what would happen
  * if somebody reworded every occurrence at once.
  */
-const statedSeconds = documented.flatMap(({ text }) =>
-  [...text.matchAll(/(\d+)\s*s\s+(?:per-org\s+)?cache/g)].map((match) =>
-    Number(match[1]),
+const statedSeconds = documented.map(({ path, text }) => ({
+  path,
+  seconds: [...text.matchAll(/(\d+)\s*s\s+(?:per-org\s+)?cache/g)].map(
+    (match) => Number(match[1]),
   ),
-);
+}));
+
+const allSeconds = statedSeconds.flatMap(({ seconds }) => seconds);
 
 describe('a documented window matches its constant', () => {
-  it('finds the statements it claims to check', () => {
-    // Without this the assertion below passes over an empty list, which is the
-    // failure mode `docs/lessons.md` records three separate instances of.
-    expect(
-      statedSeconds.length,
-      `${DOCUMENTS.join(' / ')} no longer state the cache window as ` +
-        '"<n> s cache". ' +
-        'Either the wording changed — update the pattern in this test — or ' +
-        'the promise was removed, in which case say so deliberately.',
-    ).toBeGreaterThanOrEqual(2);
-  });
+  // Per document, not over the total. Counting the matches together let one
+  // document carry the other: the spec states the window twice, so a reworded
+  // `docs/guardrails.md` would leave the operator-facing page unchecked while
+  // the count still cleared its threshold. That is the same "passes over an
+  // empty list" failure this assertion exists to prevent, one level up.
+  it.each(statedSeconds)(
+    'finds the statement it claims to check in $path',
+    ({ path, seconds }) => {
+      expect(
+        seconds.length,
+        `${path} no longer states the cache window as "<n> s cache". ` +
+          'Either the wording changed — update the pattern in this test — or ' +
+          'the promise was removed, in which case say so deliberately.',
+      ).toBeGreaterThanOrEqual(1);
+    },
+  );
 
   it('states one window, not several', () => {
     // Two different numbers in the same document is worse than either being
     // wrong: whichever an operator reads first is the one they act on.
     expect(
-      [...new Set(statedSeconds)],
+      [...new Set(allSeconds)],
       'the documents state more than one cache window between them',
     ).toHaveLength(1);
   });
 
   it('agrees with GUARDRAIL_CACHE_TTL_MS', () => {
-    const [seconds] = statedSeconds;
+    const [seconds] = allSeconds;
 
     expect(
       GUARDRAIL_CACHE_TTL_MS,

@@ -504,8 +504,9 @@ archive is the blog.
   nowhere to look. Every platform rule now carries its hits for the last seven
   days, split into what it blocked and what it merely flagged, across every
   organization and both the panel and the public API. A rule that is switched
-  on and has matched nothing says `0`; a rule that is off says nothing at all,
-  because a rule nothing evaluated has not been measured. On the incidents
+  on and has matched nothing says `0`; a rule that is off everywhere says `—`,
+  because a rule nothing evaluated has not been measured, and `0` would read as
+  "measured, nothing to worry about". On the incidents
   page, the event-type filter is a real list instead of a box you had to type
   an enum member into, with "any guardrail hit" at the top — and a filter it
   does not recognise now shows everything rather than an error page, which is

@@ -7,8 +7,15 @@ import type { GuardrailHitCounts } from '../hit-window';
 function render(
   counts: GuardrailHitCounts | undefined,
   enabled: boolean,
+  overrideCount = 0,
 ): string {
-  return renderToStaticMarkup(<HitCounts counts={counts} enabled={enabled} />);
+  return renderToStaticMarkup(
+    <HitCounts
+      counts={counts}
+      enabled={enabled}
+      overrideCount={overrideCount}
+    />,
+  );
 }
 
 describe('a rule with hits', () => {
@@ -38,6 +45,16 @@ describe('a rule with hits', () => {
     expect(markup).toContain('4 blocked');
     expect(markup).toContain('Switched off since');
   });
+
+  it('does not call them historical when an organization may have it on', () => {
+    const markup = render({ blocked: 4, flagged: 0 }, false, 2);
+
+    // The counts are an aggregate across organizations and an override can
+    // enable a platform-disabled rule, so these hits may be arriving now.
+    expect(markup).toContain('4 blocked');
+    expect(markup).not.toContain('Switched off since');
+    expect(markup).toContain('override');
+  });
 });
 
 describe('a rule with no hits', () => {
@@ -46,12 +63,22 @@ describe('a rule with no hits', () => {
     expect(render({ blocked: 0, flagged: 0 }, true)).toContain('0');
   });
 
-  it('reports nothing when it is switched off, because nothing was measured', () => {
+  it('reports nothing when it is off everywhere, because nothing was measured', () => {
     const markup = render(undefined, false);
 
-    // Not `0`: a rule nothing evaluated did not match nothing, and the
-    // difference is exactly what an operator would read the column for.
+    // Not `0`: a rule nothing evaluated did not match nothing, and `0` reads as
+    // "measured, no false positives" — the reading a rule gets promoted on.
     expect(markup).not.toContain('>0<');
     expect(markup).toContain('—');
+  });
+
+  it('reports zero when an override could have run it, even though the platform default is off', () => {
+    const markup = render(undefined, false, 1);
+
+    // `resolve.ts` takes `enabled` from the override whenever it is set, so a
+    // rule that is off by default can be evaluated for an organization that
+    // turned it on — and then no hits *is* a measurement.
+    expect(markup).toContain('0');
+    expect(markup).not.toContain('—');
   });
 });
