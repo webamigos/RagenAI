@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from 'next/server';
+import { connectorSlug } from '@ragenai/platform-contracts';
 import {
   buildCsvString,
   csvDownloadHeaders,
@@ -396,7 +397,7 @@ const DATASETS: Record<string, Dataset> = {
       });
 
       return rows.map((row) => ({
-        provider: row.provider,
+        provider: connectorSlug(row),
         organization: row.organization?.name ?? row.organizationId,
         user: row.user?.email ?? row.user?.name ?? row.userId,
         status: row.status,

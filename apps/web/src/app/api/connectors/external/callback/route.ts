@@ -1,15 +1,13 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { auth as mcpAuth } from '@ai-sdk/mcp';
-import {
-  type McpConnectorProvider,
-  McpConnectorStatus,
-} from '@/generated/prisma/client';
+import { McpConnectorStatus } from '@/generated/prisma/client';
 import db from '@ragenai/prisma-client';
 import {
   getOrgIdFromAuthOrThrow,
   getCurrentUserId,
 } from '@/app/lib/utils/auth-helpers';
 import { getProviderDefinition } from '@/features/connectors/constants/providers';
+import { legacyProviderColumn } from '@/features/connectors/utils/legacy-provider-column';
 import { RagenAuthOAuthClientProvider } from '@/libs/ragen-vault';
 import { logger } from '@/app/lib/utils/logger';
 import { recordConnectorFailureCommand } from '@/features/connectors/services/commands/record-connector-failure-command';
@@ -78,9 +76,8 @@ async function exchangeSlackToken(
 
 export async function GET(request: NextRequest) {
   const code = request.nextUrl.searchParams.get('code');
-  const provider = request.nextUrl.searchParams.get(
-    'provider',
-  ) as McpConnectorProvider | null;
+  // A catalogue slug, validated by `getProviderDefinition` below.
+  const provider = request.nextUrl.searchParams.get('provider');
 
   if (!code || !provider) {
     return redirectWithStatus(request, 'error');
@@ -153,7 +150,7 @@ export async function GET(request: NextRequest) {
         organizationId_userId_provider: {
           organizationId: orgId,
           userId: userId,
-          provider,
+          provider: legacyProviderColumn(provider),
         },
       },
       update: {
@@ -167,7 +164,7 @@ export async function GET(request: NextRequest) {
       create: {
         organizationId: orgId,
         userId: userId,
-        provider,
+        provider: legacyProviderColumn(provider),
         providerSlug: provider,
         mcpServerUrl: providerDef.mcpServerUrl,
         customerId: `${orgId}:${userId}:${provider.toLowerCase()}`,

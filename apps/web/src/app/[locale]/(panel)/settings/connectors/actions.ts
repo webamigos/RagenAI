@@ -1,9 +1,6 @@
 'use server';
 
-import {
-  type McpConnectorProvider,
-  type McpConnector,
-} from '@/generated/prisma/client';
+import { type McpConnector } from '@/generated/prisma/client';
 import {
   getOrgIdFromAuthOrThrow,
   getCurrentUserId,
@@ -44,7 +41,7 @@ export async function getConnectors() {
   });
 }
 
-export async function initiateConnection(provider: McpConnectorProvider) {
+export async function initiateConnection(provider: string) {
   const orgId = await getOrgIdFromAuthOrThrow();
   const userId = await getCurrentUserId();
   if (!userId) {
@@ -101,10 +98,7 @@ export async function toggleProvider(connectorId: string, enabled: boolean) {
   });
 }
 
-export async function registerApiKey(
-  provider: McpConnectorProvider,
-  apiKey: string,
-) {
+export async function registerApiKey(provider: string, apiKey: string) {
   const orgId = await getOrgIdFromAuthOrThrow();
   const userId = await getCurrentUserId();
   if (!userId) {
@@ -125,7 +119,7 @@ export async function registerApiKey(
 }
 
 export async function registerCustomHeaderConnection(
-  provider: McpConnectorProvider,
+  provider: string,
   credentials: CustomHeaderCredentials,
 ) {
   const orgId = await getOrgIdFromAuthOrThrow();
@@ -143,7 +137,7 @@ export async function registerCustomHeaderConnection(
 }
 
 export async function testCustomHeaderConnection(
-  provider: McpConnectorProvider,
+  provider: string,
   credentials: CustomHeaderCredentials,
 ) {
   // Auth check only — we don't need the IDs because nothing is persisted.

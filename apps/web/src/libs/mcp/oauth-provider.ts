@@ -4,13 +4,14 @@ import type {
   OAuthClientInformation,
   OAuthClientMetadata,
 } from '@ai-sdk/mcp';
-import type { McpConnectorProvider } from '@/generated/prisma/client';
 import db from '@ragenai/prisma-client';
+import { legacyProviderColumn } from '@/features/connectors/utils/legacy-provider-column';
 
 export type OAuthProviderOptions = {
   orgId: string;
   userId: string;
-  provider: McpConnectorProvider;
+  /** A catalogue slug — see connector.types.ts. */
+  provider: string;
   callbackUrl: string;
   fixedClientId?: string;
   fixedClientSecret?: string;
@@ -20,7 +21,7 @@ export class PrismaOAuthClientProvider implements OAuthClientProvider {
   private _authorizationUrl: URL | undefined;
   private orgId: string;
   private userId: string;
-  private provider: McpConnectorProvider;
+  private provider: string;
   private callbackUrl: string;
   private fixedClientId?: string;
   private fixedClientSecret?: string;
@@ -61,7 +62,7 @@ export class PrismaOAuthClientProvider implements OAuthClientProvider {
         organizationId_userId_provider: {
           organizationId: this.orgId,
           userId: this.userId,
-          provider: this.provider,
+          provider: legacyProviderColumn(this.provider),
         },
       },
     });
@@ -93,7 +94,7 @@ export class PrismaOAuthClientProvider implements OAuthClientProvider {
         organizationId_userId_provider: {
           organizationId: this.orgId,
           userId: this.userId,
-          provider: this.provider,
+          provider: legacyProviderColumn(this.provider),
         },
       },
       update: {
@@ -109,7 +110,7 @@ export class PrismaOAuthClientProvider implements OAuthClientProvider {
       create: {
         organizationId: this.orgId,
         userId: this.userId,
-        provider: this.provider,
+        provider: legacyProviderColumn(this.provider),
         providerSlug: this.provider,
         accessToken: tokens.access_token,
         refreshToken: tokens.refresh_token || null,
@@ -134,7 +135,7 @@ export class PrismaOAuthClientProvider implements OAuthClientProvider {
         organizationId_userId_provider: {
           organizationId: this.orgId,
           userId: this.userId,
-          provider: this.provider,
+          provider: legacyProviderColumn(this.provider),
         },
       },
     });
@@ -155,7 +156,7 @@ export class PrismaOAuthClientProvider implements OAuthClientProvider {
         organizationId_userId_provider: {
           organizationId: this.orgId,
           userId: this.userId,
-          provider: this.provider,
+          provider: legacyProviderColumn(this.provider),
         },
       },
       update: {
@@ -166,7 +167,7 @@ export class PrismaOAuthClientProvider implements OAuthClientProvider {
       create: {
         organizationId: this.orgId,
         userId: this.userId,
-        provider: this.provider,
+        provider: legacyProviderColumn(this.provider),
         providerSlug: this.provider,
         accessToken: '',
         clientId: info.client_id,
@@ -185,7 +186,7 @@ export class PrismaOAuthClientProvider implements OAuthClientProvider {
         organizationId_userId_provider: {
           organizationId: this.orgId,
           userId: this.userId,
-          provider: this.provider,
+          provider: legacyProviderColumn(this.provider),
         },
       },
       update: {
@@ -195,7 +196,7 @@ export class PrismaOAuthClientProvider implements OAuthClientProvider {
       create: {
         organizationId: this.orgId,
         userId: this.userId,
-        provider: this.provider,
+        provider: legacyProviderColumn(this.provider),
         providerSlug: this.provider,
         accessToken: '',
         codeVerifier: verifier,
@@ -209,7 +210,7 @@ export class PrismaOAuthClientProvider implements OAuthClientProvider {
         organizationId_userId_provider: {
           organizationId: this.orgId,
           userId: this.userId,
-          provider: this.provider,
+          provider: legacyProviderColumn(this.provider),
         },
       },
     });

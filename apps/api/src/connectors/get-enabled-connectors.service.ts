@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { connectorSlug } from '@ragenai/platform-contracts';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { McpConnectorStatus } from '../generated/prisma/client.js';
 
@@ -15,7 +16,7 @@ export class GetEnabledConnectorsService {
 
   async getEnabledConnectors(organizationId: string, userId: string) {
     try {
-      return await this.prisma.client.mcpConnector.findMany({
+      const rows = await this.prisma.client.mcpConnector.findMany({
         where: {
           organizationId,
           userId,
@@ -25,12 +26,19 @@ export class GetEnabledConnectorsService {
         select: {
           id: true,
           provider: true,
+          providerSlug: true,
           mcpServerUrl: true,
           customerId: true,
           organizationId: true,
           userId: true,
         },
       });
+
+      // The seam where the expand/contract stops being visible: downstream
+      // sees one `provider`, and it is the catalogue slug. A row written by a
+      // service still on the previous release has no `providerSlug`, which is
+      // what the fallback inside `connectorSlug` is for.
+      return rows.map((row) => ({ ...row, provider: connectorSlug(row) }));
     } catch (error) {
       this.logger.error('Error fetching enabled connectors', error);
       throw error;

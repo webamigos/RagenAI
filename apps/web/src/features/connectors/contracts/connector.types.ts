@@ -7,7 +7,6 @@ import type {
 export type ConnectorDto = Pick<
   McpConnector,
   | 'id'
-  | 'provider'
   | 'mcpServerUrl'
   | 'customerId'
   | 'enabled'
@@ -18,7 +17,20 @@ export type ConnectorDto = Pick<
   // a connector that looks merely disconnected and has no idea it broke.
   | 'lastError'
   | 'lastErrorAt'
->;
+> & {
+  /**
+   * A catalogue slug, not the enum. Mid-expand/contract the row carries both
+   * columns and `providerSlug` is nullable, so read the pair through
+   * `connectorSlug()` and never one of them on its own — a row written by a
+   * service still on the previous release has no slug.
+   *
+   * Widened to `string` here rather than left as `McpConnectorProvider`
+   * because this is a wire type: the enum is a property of the column, and
+   * the column is going.
+   */
+  provider: string;
+  providerSlug: string | null;
+};
 
 export type SystemPromptContext = {
   timeZone: string;
@@ -28,7 +40,14 @@ export type SystemPromptFragment =
   string | ((ctx: SystemPromptContext) => string);
 
 export type ProviderDefinition = {
-  provider: McpConnectorProvider;
+  /**
+   * A catalogue slug. Was `McpConnectorProvider`; widened to a string because
+   * the catalogue stopped being an enum — see
+   * docs/specs/2026-09-18-mcp-servers-added-without-a-deploy.md. The eleven
+   * built-ins keep their SHOUTING names, and an entry added from the panel is
+   * lowercase-kebab.
+   */
+  provider: string;
   name: string;
   description: string;
   icon: string;
@@ -93,7 +112,7 @@ export type ProviderDefinition = {
  * Only fields the Connectors UI actually needs are exposed.
  */
 export type PublicProviderDto = {
-  provider: McpConnectorProvider;
+  provider: string;
   name: string;
   description: string;
   icon: string;

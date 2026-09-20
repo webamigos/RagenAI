@@ -22,6 +22,7 @@ describe('GetEnabledConnectorsService', () => {
       select: {
         id: true,
         provider: true,
+        providerSlug: true,
         mcpServerUrl: true,
         customerId: true,
         organizationId: true,
@@ -30,8 +31,13 @@ describe('GetEnabledConnectorsService', () => {
     });
   });
 
-  it('returns the connectors found', async () => {
-    const connectors = [{ id: '1', provider: 'CLICKUP' }];
+  it('returns the connectors found, under their catalogue slug', async () => {
+    const connectors = [
+      { id: '1', provider: 'CLICKUP', providerSlug: 'CLICKUP' },
+      // A row written by a service still on the previous release: no slug,
+      // and the enum column is what the caller must end up seeing.
+      { id: '2', provider: 'SLACK', providerSlug: null },
+    ];
     const findMany = vi.fn().mockResolvedValue(connectors);
     const prisma = {
       client: { mcpConnector: { findMany } },
@@ -39,7 +45,8 @@ describe('GetEnabledConnectorsService', () => {
     const service = new GetEnabledConnectorsService(prisma);
 
     const result = await service.getEnabledConnectors('org-1', 'user-1');
-    expect(result).toBe(connectors);
+
+    expect(result.map((c) => c.provider)).toEqual(['CLICKUP', 'SLACK']);
   });
 
   it('rethrows on Prisma failure', async () => {

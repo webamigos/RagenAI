@@ -41,10 +41,13 @@ export const PROVIDER_REGISTRY: Record<
 export const PROVIDER_LIST: readonly ProviderDefinition[] =
   Object.values(PROVIDER_REGISTRY);
 
-export function getProvider(
-  provider: McpConnectorProvider,
-): ProviderDefinition {
-  return PROVIDER_REGISTRY[provider];
+/**
+ * Takes a catalogue slug, which is a string: the eleven built-ins are still
+ * keys of `PROVIDER_REGISTRY`, and an entry added from the admin panel has no
+ * manifest at all. Sibling of apps/web's.
+ */
+export function getProvider(provider: string): ProviderDefinition | undefined {
+  return (PROVIDER_REGISTRY as Record<string, ProviderDefinition>)[provider];
 }
 
 /**

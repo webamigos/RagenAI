@@ -154,6 +154,25 @@ export function slugsCollide(a: string, b: string): boolean {
   return catalogCustomerSlug(a) === catalogCustomerSlug(b);
 }
 
+/**
+ * A connector's catalogue slug, as read off a row.
+ *
+ * `McpConnector.provider` and `McpOAuthToken.provider` are mid-expand/contract:
+ * `providerSlug` is the column that replaces them, nullable until step 3, and
+ * it holds the same string. Every reader goes through here rather than through
+ * `??` at the call site, so that when the old column is dropped there is one
+ * line to change and no reader left quietly reading it.
+ *
+ * A row written by a service still on the previous release has no slug, which
+ * is exactly the case the fallback exists for.
+ */
+export function connectorSlug(row: {
+  provider: string;
+  providerSlug?: string | null;
+}): string {
+  return row.providerSlug ?? row.provider;
+}
+
 export type CatalogResolution<P extends CatalogBehaviourPack> =
   | { status: 'unknown'; slug: string }
   | {

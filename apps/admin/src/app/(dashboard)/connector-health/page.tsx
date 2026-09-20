@@ -1,4 +1,5 @@
 import { formatDistanceToNow } from 'date-fns';
+import { connectorSlug } from '@ragenai/platform-contracts';
 
 import { ExportButton } from '@/app/components/ExportButton';
 import { Pagination } from '@/app/components/Pagination';
@@ -249,7 +250,7 @@ export default async function ConnectorHealthPage({
                 >
                   <td className="px-4 py-3">
                     <span className="font-medium">
-                      {connector.provider.toLowerCase()}
+                      {connectorSlug(connector).toLowerCase()}
                     </span>
                     {!connector.enabled && (
                       <span className="block text-xs text-muted-foreground">
@@ -307,7 +308,7 @@ export default async function ConnectorHealthPage({
                   <td className="px-4 py-3">
                     <ConnectorHealthActions
                       connectorId={connector.id}
-                      provider={connector.provider.toLowerCase()}
+                      provider={connectorSlug(connector).toLowerCase()}
                       userLabel={userLabel}
                       vaultConfigured={vaultConfigured}
                     />

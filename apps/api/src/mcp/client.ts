@@ -1,6 +1,5 @@
 import { Logger } from '@nestjs/common';
 import { createMCPClient, type MCPClient } from '@ai-sdk/mcp';
-import type { McpConnectorProvider } from '../generated/prisma/client.js';
 import { getProviderDefinition } from '../connectors/provider-definition.js';
 import { createGuardedMcpTransport } from '../connectors/guarded-mcp-transport.js';
 import type { ProviderDefinition } from '../connectors/types.js';
@@ -367,9 +366,7 @@ export async function createMcpToolsFromConnectors(
 
   for (const connector of connectors) {
     try {
-      const providerDef = getProviderDefinition(
-        connector.provider as McpConnectorProvider,
-      );
+      const providerDef = getProviderDefinition(connector.provider);
 
       // Resolve the MCP server URL at tool-load time rather than trusting
       // the value snapshotted on the connector row at connect time.
@@ -438,7 +435,7 @@ export async function createMcpToolsFromConnectors(
         const authProvider = new RagenAuthOAuthClientProvider({
           orgId: connector.organizationId,
           userId: connector.userId,
-          provider: connector.provider as McpConnectorProvider,
+          provider: connector.provider,
           callbackUrl: '', // No redirect needed for runtime token injection
           fixedClientId: providerDef.oauthClientId,
           fixedClientSecret: providerDef.oauthClientSecret,
@@ -497,7 +494,7 @@ export async function createMcpToolsFromConnectors(
           mcpServerUrlStored: connector.mcpServerUrl,
           mcpServerUrlTried: resolveMcpServerUrl(
             connector,
-            getProviderDefinition(connector.provider as McpConnectorProvider),
+            getProviderDefinition(connector.provider),
           ),
         },
         error,

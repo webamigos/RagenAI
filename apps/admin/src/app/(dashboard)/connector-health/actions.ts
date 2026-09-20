@@ -1,4 +1,5 @@
 'use server';
+import { connectorSlug } from '@ragenai/platform-contracts';
 
 import { requireAdmin } from '@/lib/auth-guard';
 import { ADMIN_ACTIONS, recordAdminAction } from '@/lib/audit';
@@ -56,6 +57,7 @@ export async function forceDisconnectConnectorAction(
     select: {
       id: true,
       provider: true,
+      providerSlug: true,
       customerId: true,
       organizationId: true,
       userId: true,
@@ -78,9 +80,12 @@ export async function forceDisconnectConnectorAction(
 
   let tokenWasAlreadyGone = false;
   try {
+    // The vault path is keyed by the slug the token was stored under, which
+    // is what `connectorSlug` resolves. Deleting under the wrong key would
+    // report success and leave the credential in place.
     await getVaultClient().deleteToken(
       connector.customerId,
-      connector.provider,
+      connectorSlug(connector),
     );
   } catch (error) {
     if (isNotFound(error)) {
@@ -88,7 +93,7 @@ export async function forceDisconnectConnectorAction(
       tokenWasAlreadyGone = true;
     } else {
       logger.error(
-        { err: error, connectorId, provider: connector.provider },
+        { err: error, connectorId, provider: connectorSlug(connector) },
         'Failed to delete connector token from the vault',
       );
       return {
@@ -109,7 +114,7 @@ export async function forceDisconnectConnectorAction(
     entityId: connector.id,
     organizationId: connector.organizationId,
     before: {
-      provider: connector.provider,
+      provider: connectorSlug(connector),
       userId: connector.userId,
       status: connector.status,
       lastError: connector.lastError,

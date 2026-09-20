@@ -1,4 +1,3 @@
-import { type McpConnectorProvider } from '@/generated/prisma/client';
 import { logger } from '@/app/lib/utils/logger';
 import { getProviderDefinition } from '../../constants/providers';
 import { createConnectorCommand } from './create-connector-command';
@@ -12,7 +11,7 @@ import { fetchWithTimeout } from '../../utils/fetch-with-timeout';
 export const registerApiKeyCommand = async (
   organizationId: string,
   userId: string,
-  provider: McpConnectorProvider,
+  provider: string,
   apiKey: string,
 ) => {
   const providerDef = getProviderDefinition(provider);

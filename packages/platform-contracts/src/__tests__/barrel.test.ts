@@ -37,6 +37,7 @@ describe('the public entry point', () => {
     ['resolveCatalogEntry', 'function'],
     ['isConnectable', 'function'],
     ['catalogSystemPrompt', 'function'],
+    ['connectorSlug', 'function'],
     ['allowedCatalogEntries', 'function'],
     ['authTypeRequiresBehaviourPack', 'function'],
     ['TENANT_SCOPED_MODELS', 'object'],

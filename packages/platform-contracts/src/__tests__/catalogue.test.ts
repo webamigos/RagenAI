@@ -11,6 +11,7 @@ import {
   catalogCustomerSlug,
   catalogSlugError,
   catalogSystemPrompt,
+  connectorSlug,
   isCatalogSlug,
   isConnectable,
   isLegacyCatalogSlug,
@@ -260,5 +261,29 @@ describe('the allowlist over the catalogue', () => {
         (e) => e.slug,
       ),
     ).toEqual(['notion']);
+  });
+});
+
+describe('the slug on a connector row', () => {
+  it('reads the new column when it has one', () => {
+    expect(connectorSlug({ provider: 'SLACK', providerSlug: 'SLACK' })).toBe(
+      'SLACK',
+    );
+  });
+
+  it('falls back to the enum column for a row written by an older service', () => {
+    // Three services deploy independently, so for the length of the
+    // expand/contract a row can arrive with `provider` and no slug. That is
+    // the case this fallback exists for, and the only one.
+    expect(connectorSlug({ provider: 'SLACK', providerSlug: null })).toBe(
+      'SLACK',
+    );
+    expect(connectorSlug({ provider: 'SLACK' })).toBe('SLACK');
+  });
+
+  it('prefers the slug when the two disagree', () => {
+    expect(
+      connectorSlug({ provider: 'SLACK', providerSlug: 'slack-internal' }),
+    ).toBe('slack-internal');
   });
 });

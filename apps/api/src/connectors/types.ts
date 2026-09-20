@@ -13,7 +13,6 @@ import type {
 export type ConnectorDto = Pick<
   McpConnector,
   | 'id'
-  | 'provider'
   | 'mcpServerUrl'
   | 'customerId'
   | 'enabled'
@@ -26,7 +25,11 @@ export type ConnectorDto = Pick<
   // typecheck only ever sees one of them.
   | 'lastError'
   | 'lastErrorAt'
->;
+> & {
+  /** A catalogue slug. See apps/web's sibling for why this is a string. */
+  provider: string;
+  providerSlug: string | null;
+};
 
 export type SystemPromptContext = {
   timeZone: string;
@@ -36,7 +39,12 @@ export type SystemPromptFragment =
   string | ((ctx: SystemPromptContext) => string);
 
 export type ProviderDefinition = {
-  provider: McpConnectorProvider;
+  /**
+   * A catalogue slug. Was `McpConnectorProvider`; widened because the
+   * catalogue stopped being an enum — see
+   * docs/specs/2026-09-18-mcp-servers-added-without-a-deploy.md.
+   */
+  provider: string;
   name: string;
   description: string;
   icon: string;
@@ -98,7 +106,7 @@ export type ProviderDefinition = {
  * slice — kept for parity with the original registry's public API.
  */
 export type PublicProviderDto = {
-  provider: McpConnectorProvider;
+  provider: string;
   name: string;
   description: string;
   icon: string;

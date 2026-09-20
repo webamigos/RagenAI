@@ -1,10 +1,8 @@
 'use server';
 
 import db from '@ragenai/prisma-client';
-import {
-  type McpConnectorProvider,
-  McpConnectorStatus,
-} from '@/generated/prisma/client';
+import { legacyProviderColumn } from '../../utils/legacy-provider-column';
+import { McpConnectorStatus } from '@/generated/prisma/client';
 import { logger } from '@/app/lib/utils/logger';
 import { trackAudit } from '@/features/audit-logs/services/commands/create-audit-log-command';
 import { getProviderDefinition } from '../../constants/providers';
@@ -14,7 +12,7 @@ import { UnauthorizedException } from '@/libs/utils/errors';
 export const createConnectorCommand = async (
   organizationId: string,
   userId: string,
-  provider: McpConnectorProvider,
+  provider: string,
 ) => {
   const canConnect = await isFeatureEnabledQuery(
     organizationId,
@@ -51,7 +49,7 @@ export const createConnectorCommand = async (
         organizationId_userId_provider: {
           organizationId: organizationId,
           userId: userId,
-          provider,
+          provider: legacyProviderColumn(provider),
         },
       },
       update: {
@@ -66,7 +64,7 @@ export const createConnectorCommand = async (
       create: {
         organizationId: organizationId,
         userId: userId,
-        provider,
+        provider: legacyProviderColumn(provider),
         providerSlug: provider,
         mcpServerUrl: mcpServerUrl,
         customerId: customerId,
@@ -75,6 +73,7 @@ export const createConnectorCommand = async (
       select: {
         id: true,
         provider: true,
+        providerSlug: true,
         customerId: true,
         mcpServerUrl: true,
         status: true,

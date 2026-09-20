@@ -8,7 +8,6 @@ import {
 } from '@/features/organizations/services/organization-settings';
 import { CONNECTOR_PROVIDERS } from '@/features/connectors/constants/providers';
 import { PROVIDER_ICON_PATHS } from '@/features/connectors/utils/provider-icons';
-import type { McpConnectorProvider } from '@/generated/prisma/client';
 import { logger } from '@/app/lib/utils/logger';
 
 export type AvailableConnectorInfo = {
@@ -36,7 +35,7 @@ export async function getOrgConnectorSettingsAction(): Promise<{
   let available = CONNECTOR_PROVIDERS.map((p) => ({
     provider: p.provider,
     name: p.name,
-    icon: PROVIDER_ICON_PATHS[p.provider as McpConnectorProvider] ?? '',
+    icon: PROVIDER_ICON_PATHS[p.provider] ?? '',
   }));
 
   if (appDefaults.length > 0) {

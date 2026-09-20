@@ -5,6 +5,7 @@ import { AuditLogService } from '../audit-logs/audit-log.service.js';
 import { SubscriptionsService } from '../subscriptions/subscriptions.service.js';
 import { ragenAuthClient } from '../ragen-vault/index.js';
 import { getProviderDefinition } from './provider-definition.js';
+import { legacyProviderColumn } from './legacy-provider-column.js';
 import { fetchWithTimeout } from './fetch-with-timeout.js';
 import { normalizeSiteUrl } from './site-url.js';
 import {
@@ -12,10 +13,7 @@ import {
   isBlockedAddressError,
   isInsecureProtocolError,
 } from './guarded-mcp-transport.js';
-import {
-  McpConnectorStatus,
-  type McpConnectorProvider,
-} from '../generated/prisma/client.js';
+import { McpConnectorStatus } from '../generated/prisma/client.js';
 import { type ConnectorDto, type CustomHeaderCredentials } from './types.js';
 
 export type ConnectorLookupResult = {
@@ -60,7 +58,7 @@ export class ConnectorsService {
   async createConnector(
     organizationId: string,
     userId: string,
-    provider: McpConnectorProvider,
+    provider: string,
   ) {
     const canConnect = await this.subscriptions.isFeatureEnabled(
       organizationId,
@@ -97,7 +95,7 @@ export class ConnectorsService {
           organizationId_userId_provider: {
             organizationId,
             userId,
-            provider,
+            provider: legacyProviderColumn(provider),
           },
         },
         update: {
@@ -112,7 +110,7 @@ export class ConnectorsService {
         create: {
           organizationId,
           userId,
-          provider,
+          provider: legacyProviderColumn(provider),
           providerSlug: provider,
           mcpServerUrl,
           customerId,
@@ -234,7 +232,7 @@ export class ConnectorsService {
   async registerApiKey(
     organizationId: string,
     userId: string,
-    provider: McpConnectorProvider,
+    provider: string,
     apiKey: string,
   ) {
     const providerDef = getProviderDefinition(provider);
@@ -305,7 +303,7 @@ export class ConnectorsService {
   async registerApiKeyBearer(
     organizationId: string,
     userId: string,
-    provider: McpConnectorProvider,
+    provider: string,
     apiKey: string,
   ) {
     const providerDef = getProviderDefinition(provider);
@@ -326,7 +324,7 @@ export class ConnectorsService {
           organizationId_userId_provider: {
             organizationId,
             userId,
-            provider,
+            provider: legacyProviderColumn(provider),
           },
         },
         update: {
@@ -339,7 +337,7 @@ export class ConnectorsService {
         create: {
           organizationId,
           userId,
-          provider,
+          provider: legacyProviderColumn(provider),
           providerSlug: provider,
           mcpServerUrl: providerDef.mcpServerUrl,
           customerId,
@@ -367,7 +365,7 @@ export class ConnectorsService {
   async registerApiKeyCustomHeader(
     organizationId: string,
     userId: string,
-    provider: McpConnectorProvider,
+    provider: string,
     credentials: CustomHeaderCredentials,
   ) {
     const providerDef = getProviderDefinition(provider);
@@ -409,7 +407,7 @@ export class ConnectorsService {
           organizationId_userId_provider: {
             organizationId,
             userId,
-            provider,
+            provider: legacyProviderColumn(provider),
           },
         },
         update: {
@@ -422,7 +420,7 @@ export class ConnectorsService {
         create: {
           organizationId,
           userId,
-          provider,
+          provider: legacyProviderColumn(provider),
           providerSlug: provider,
           mcpServerUrl,
           customerId,
@@ -454,7 +452,7 @@ export class ConnectorsService {
    * generic so we don't leak upstream error shapes to the client.
    */
   async testCustomHeaderConnection(
-    provider: McpConnectorProvider,
+    provider: string,
     credentials: CustomHeaderCredentials,
   ): Promise<TestConnectionResult> {
     const providerDef = getProviderDefinition(provider);
@@ -547,11 +545,15 @@ export class ConnectorsService {
   async getConnector(
     organizationId: string,
     userId: string,
-    provider: McpConnectorProvider,
+    provider: string,
   ): Promise<ConnectorLookupResult> {
     const connector = await this.prisma.client.mcpConnector.findUnique({
       where: {
-        organizationId_userId_provider: { organizationId, userId, provider },
+        organizationId_userId_provider: {
+          organizationId,
+          userId,
+          provider: legacyProviderColumn(provider),
+        },
       },
       select: {
         mcpServerUrl: true,
@@ -592,6 +594,10 @@ export class ConnectorsService {
         select: {
           id: true,
           provider: true,
+          // Both columns, for the length of the expand/contract: apps/web
+          // reads the pair through `connectorSlug()`, and a row written by a
+          // service still on the previous release has no slug.
+          providerSlug: true,
           mcpServerUrl: true,
           customerId: true,
           enabled: true,

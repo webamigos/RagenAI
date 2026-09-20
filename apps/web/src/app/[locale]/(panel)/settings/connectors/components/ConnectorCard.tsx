@@ -136,6 +136,7 @@ export function ConnectorCard({ provider, connector }: ConnectorCardProps) {
         ...currentConnector,
         id: updated.id,
         provider: provider.provider,
+        providerSlug: provider.provider,
         mcpServerUrl: provider.mcpServerUrl,
         customerId: '',
         status: updated.status,
@@ -180,6 +181,7 @@ export function ConnectorCard({ provider, connector }: ConnectorCardProps) {
         ...currentConnector,
         id: updated.id,
         provider: provider.provider,
+        providerSlug: provider.provider,
         mcpServerUrl: provider.mcpServerUrl,
         customerId: '',
         status: updated.status,
@@ -211,6 +213,7 @@ export function ConnectorCard({ provider, connector }: ConnectorCardProps) {
       const callbackUrl = `${window.location.origin}/api/connectors/external/callback?provider=${provider.provider}`;
       const params = new URLSearchParams({
         provider: provider.provider,
+        providerSlug: provider.provider,
         callback_url: callbackUrl,
       });
       const response = await fetch(
@@ -368,6 +371,7 @@ export function ConnectorCard({ provider, connector }: ConnectorCardProps) {
         ...currentConnector,
         id: connectorId,
         provider: provider.provider,
+        providerSlug: provider.provider,
         mcpServerUrl: provider.mcpServerUrl,
         customerId: '',
         status: updated.status,

@@ -15,7 +15,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { PROVIDER_ICON_PATHS } from '@/features/connectors/utils/provider-icons';
-import type { McpConnectorProvider } from '@/generated/prisma/client';
 import { logger } from '@/app/lib/utils/logger';
 import { statusToast } from '@/app/lib/utils/toast';
 import { PROJECT_MCP_PROVIDERS_CHANGED_EVENT } from '@/features/projects/contracts/events';
@@ -160,8 +159,7 @@ export function IntegrationsOnboardingDialog({ projectId }: Props) {
 
         <div className="space-y-2 max-h-72 overflow-y-auto">
           {connected.map(({ provider }) => {
-            const iconPath =
-              PROVIDER_ICON_PATHS[provider as McpConnectorProvider];
+            const iconPath = PROVIDER_ICON_PATHS[provider];
             return (
               <label
                 key={provider}

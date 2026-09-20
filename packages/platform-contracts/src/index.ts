@@ -81,6 +81,7 @@ export {
   catalogCustomerSlug,
   catalogSlugError,
   catalogSystemPrompt,
+  connectorSlug,
   isCatalogSlug,
   isConnectable,
   isLegacyCatalogSlug,

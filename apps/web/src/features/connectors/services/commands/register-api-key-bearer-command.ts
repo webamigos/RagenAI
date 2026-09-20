@@ -1,10 +1,8 @@
 'use server';
 
 import db from '@ragenai/prisma-client';
-import {
-  type McpConnectorProvider,
-  McpConnectorStatus,
-} from '@/generated/prisma/client';
+import { legacyProviderColumn } from '../../utils/legacy-provider-column';
+import { McpConnectorStatus } from '@/generated/prisma/client';
 import { logger } from '@/app/lib/utils/logger';
 import { getProviderDefinition } from '../../constants/providers';
 import { ragenAuthClient } from '@/libs/ragen-vault';
@@ -17,7 +15,7 @@ import { ragenAuthClient } from '@/libs/ragen-vault';
 export const registerApiKeyBearerCommand = async (
   organizationId: string,
   userId: string,
-  provider: McpConnectorProvider,
+  provider: string,
   apiKey: string,
 ) => {
   const providerDef = getProviderDefinition(provider);
@@ -40,7 +38,7 @@ export const registerApiKeyBearerCommand = async (
         organizationId_userId_provider: {
           organizationId: organizationId,
           userId: userId,
-          provider,
+          provider: legacyProviderColumn(provider),
         },
       },
       update: {
@@ -53,7 +51,7 @@ export const registerApiKeyBearerCommand = async (
       create: {
         organizationId: organizationId,
         userId: userId,
-        provider,
+        provider: legacyProviderColumn(provider),
         providerSlug: provider,
         mcpServerUrl: providerDef.mcpServerUrl,
         customerId: customerId,

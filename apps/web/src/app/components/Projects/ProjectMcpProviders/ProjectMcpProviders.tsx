@@ -6,7 +6,6 @@ import { PuzzlePieceIcon } from '@heroicons/react/24/outline';
 import { Checkbox } from '@/components/ui/checkbox';
 import { PROVIDER_ICON_PATHS } from '@/features/connectors/utils/provider-icons';
 import { PROJECT_MCP_PROVIDERS_CHANGED_EVENT } from '@/features/projects/contracts/events';
-import type { McpConnectorProvider } from '@/generated/prisma/client';
 import { logger } from '@/app/lib/utils/logger';
 import {
   getConnectedProvidersAction,
@@ -125,8 +124,7 @@ export function ProjectMcpProviders({ projectId }: ProjectMcpProvidersProps) {
       ) : (
         <div className="space-y-2">
           {connectedProviders.map(({ provider }) => {
-            const iconPath =
-              PROVIDER_ICON_PATHS[provider as McpConnectorProvider];
+            const iconPath = PROVIDER_ICON_PATHS[provider];
             return (
               <label
                 key={provider}

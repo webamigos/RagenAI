@@ -11,7 +11,6 @@ import { ApiExcludeController } from '@nestjs/swagger';
 import { ConnectorsService } from './connectors.service.js';
 import { GetAvailableConnectorsService } from './get-available-connectors.service.js';
 import { getProviderDefinition } from './provider-definition.js';
-import { type McpConnectorProvider } from '../generated/prisma/client.js';
 import { RegisterApiKeyDto } from './dto/register-api-key.dto.js';
 import { CustomHeaderCredentialsDto } from './dto/custom-header-credentials.dto.js';
 import { ToggleConnectorDto } from './dto/toggle-connector.dto.js';
@@ -64,7 +63,7 @@ export class ConnectorsController {
 
   @Post(':provider')
   create(
-    @Param('provider') provider: McpConnectorProvider,
+    @Param('provider') provider: string,
     @GetSessionAuthContext() context: SessionAuthContext,
   ) {
     return this.connectors.createConnector(
@@ -120,7 +119,7 @@ export class ConnectorsController {
    */
   @Post(':provider/api-key')
   registerApiKey(
-    @Param('provider') provider: McpConnectorProvider,
+    @Param('provider') provider: string,
     @Body() dto: RegisterApiKeyDto,
     @GetSessionAuthContext() context: SessionAuthContext,
   ) {
@@ -143,7 +142,7 @@ export class ConnectorsController {
 
   @Post(':provider/custom-header')
   registerCustomHeader(
-    @Param('provider') provider: McpConnectorProvider,
+    @Param('provider') provider: string,
     @Body() dto: CustomHeaderCredentialsDto,
     @GetSessionAuthContext() context: SessionAuthContext,
   ) {
@@ -157,7 +156,7 @@ export class ConnectorsController {
 
   @Post(':provider/test-custom-header')
   testCustomHeader(
-    @Param('provider') provider: McpConnectorProvider,
+    @Param('provider') provider: string,
     @Body() dto: CustomHeaderCredentialsDto,
   ) {
     return this.connectors.testCustomHeaderConnection(provider, dto);

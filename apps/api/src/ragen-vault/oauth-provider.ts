@@ -5,7 +5,6 @@ import type {
   OAuthClientInformation,
   OAuthClientMetadata,
 } from '@ai-sdk/mcp';
-import { type McpConnectorProvider } from '../generated/prisma/client.js';
 import type { StoreTokenData } from '@ragenai/vault-client';
 import { ragenAuthClient } from './client.js';
 
@@ -21,7 +20,8 @@ const logger = new Logger('RagenAuthOAuthClientProvider');
 export type OAuthProviderOptions = {
   orgId: string;
   userId: string;
-  provider: McpConnectorProvider;
+  /** A catalogue slug. */
+  provider: string;
   callbackUrl: string;
   fixedClientId?: string;
   fixedClientSecret?: string;
@@ -33,7 +33,7 @@ export class RagenAuthOAuthClientProvider implements OAuthClientProvider {
   private _authorizationUrl: URL | undefined;
   private orgId: string;
   private userId: string;
-  private provider: McpConnectorProvider;
+  private provider: string;
   private callbackUrl: string;
   private fixedClientId?: string;
   private fixedClientSecret?: string;

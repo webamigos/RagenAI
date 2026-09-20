@@ -25,10 +25,18 @@ describe('PROVIDER_REGISTRY', () => {
   it('returns the manifest for every enum value via getProvider', () => {
     for (const enumValue of Object.values(McpConnectorProvider)) {
       const manifest = getProvider(enumValue);
-      expect(manifest.provider).toBe(enumValue);
-      expect(manifest.name).toBeTruthy();
-      expect(manifest.description).toBeTruthy();
+      expect(manifest).toBeDefined();
+      expect(manifest?.provider).toBe(enumValue);
+      expect(manifest?.name).toBeTruthy();
+      expect(manifest?.description).toBeTruthy();
     }
+  });
+
+  it('answers undefined for a slug no manifest carries', () => {
+    // A connector added from the admin panel has no manifest at all, and a
+    // row can name a slug this build has never heard of. That is a supported
+    // state, not a crash — see the B4 resolver.
+    expect(getProvider('notion')).toBeUndefined();
   });
 
   it('uses stable string identifiers matching enum values', () => {

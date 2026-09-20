@@ -1,7 +1,10 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { CONNECTOR_METADATA } from '@ragenai/platform-contracts';
+import {
+  CONNECTOR_METADATA,
+  type ConnectorProvider,
+} from '@ragenai/platform-contracts';
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -40,7 +43,10 @@ describe('the built-in connector projection', () => {
 
   it('agrees with CONNECTOR_METADATA on every label and brand asset', () => {
     for (const def of PROVIDER_LIST) {
-      const metadata = CONNECTOR_METADATA[def.provider];
+      // `def.provider` is a slug now, so the lookup needs narrowing. Every
+      // built-in still has a metadata entry; `every-seeded-connector-resolves`
+      // is what will say so once the enum is gone.
+      const metadata = CONNECTOR_METADATA[def.provider as ConnectorProvider];
       expect(metadata.label).toBe(def.name);
       expect(metadata.icon).toBe(
         committed.find((e) => e.slug === def.provider)?.icon,

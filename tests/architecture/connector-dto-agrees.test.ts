@@ -39,15 +39,33 @@ const API_SERVICE = join(
   'apps/api/src/connectors/connectors.service.ts',
 );
 
-/** The field names inside `export type ConnectorDto = Pick<McpConnector, …>`. */
+/**
+ * Every field `ConnectorDto` promises, from both halves of it.
+ *
+ * The declaration is no longer a bare `Pick`: `provider` left the Pick when it
+ * stopped being the enum, and `providerSlug` joined it in an intersection —
+ * see docs/specs/2026-09-18-mcp-servers-added-without-a-deploy.md. Reading only
+ * the Pick would have quietly stopped checking the two fields the migration is
+ * about, which is the failure this whole test exists to catch.
+ */
 function pickedFields(source: string): string[] {
-  const block = source.match(
-    /export type ConnectorDto = Pick<\s*McpConnector,([\s\S]*?)>;/,
-  )?.[1];
-  if (!block) {
+  const declaration = source.match(
+    /export type ConnectorDto = Pick<\s*McpConnector,([\s\S]*?)>\s*(&\s*\{([\s\S]*?)\n\};|;)/,
+  );
+  if (!declaration) {
     return [];
   }
-  return [...block.matchAll(/'([A-Za-z0-9_]+)'/g)].map((match) => match[1]!);
+
+  const picked = [...declaration[1].matchAll(/'([A-Za-z0-9_]+)'/g)].map(
+    (match) => match[1]!,
+  );
+  const intersected = declaration[3]
+    ? [...declaration[3].matchAll(/^\s{2}([A-Za-z0-9_]+)\??:/gm)].map(
+        (match) => match[1]!,
+      )
+    : [];
+
+  return [...picked, ...intersected];
 }
 
 /** The keys of the `select` in `getUserConnectors`. */
@@ -67,6 +85,16 @@ describe('ConnectorDto', () => {
   const web = pickedFields(readFileSync(WEB_TYPES, 'utf8'));
   const api = pickedFields(readFileSync(API_TYPES, 'utf8'));
   const selected = selectedFields(readFileSync(API_SERVICE, 'utf8'));
+
+  it('still names the two columns the expand/contract is moving', () => {
+    // `provider` and `providerSlug` are declared outside the Pick, and a
+    // reader that lost track of them would leave the API free to stop sending
+    // either one.
+    expect(web).toContain('provider');
+    expect(web).toContain('providerSlug');
+    expect(api).toContain('provider');
+    expect(api).toContain('providerSlug');
+  });
 
   it('is declared in both workspaces', () => {
     expect(web.length, 'apps/web ConnectorDto not found').toBeGreaterThan(0);

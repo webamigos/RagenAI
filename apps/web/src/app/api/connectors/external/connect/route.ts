@@ -1,6 +1,5 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { auth as mcpAuth } from '@ai-sdk/mcp';
-import { type McpConnectorProvider } from '@/generated/prisma/client';
 import {
   getOrgIdFromAuthOrThrow,
   getCurrentUserId,
@@ -13,9 +12,9 @@ import { readPublicRuntimeConfig } from '@/config/public-runtime-config';
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
-  const provider = request.nextUrl.searchParams.get(
-    'provider',
-  ) as McpConnectorProvider | null;
+  // A catalogue slug. Validated by `getProviderDefinition` below — an unknown
+  // one gets a 400, as an unknown enum value did.
+  const provider = request.nextUrl.searchParams.get('provider');
   const callbackUrl = request.nextUrl.searchParams.get('callback_url');
 
   if (!provider || !callbackUrl) {
