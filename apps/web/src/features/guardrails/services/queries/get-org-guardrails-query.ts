@@ -1,6 +1,5 @@
 import { guardrailsDisabled, isOnPremise } from '@ragenai/env';
 import {
-  hasTransformingRule,
   resolveGuardrails,
   type GuardrailAction,
   type GuardrailKind,
@@ -122,17 +121,14 @@ function toRule(row: GuardrailRow): GuardrailRule {
  */
 function shape(
   rules: readonly ResolvedGuardrail[],
-): Pick<OrgGuardrails, 'input' | 'output' | 'hasTransformingInputRule'> {
+): Pick<OrgGuardrails, 'input' | 'output'> {
   const enabled = rules.filter((rule) => rule.enabled);
   const atStage = (stage: 'INPUT' | 'OUTPUT') =>
     enabled.filter((rule) => rule.stage === stage || rule.stage === 'BOTH');
 
-  const input = atStage('INPUT');
-
   return {
-    input,
+    input: atStage('INPUT'),
     output: atStage('OUTPUT'),
-    hasTransformingInputRule: hasTransformingRule(input),
   };
 }
 

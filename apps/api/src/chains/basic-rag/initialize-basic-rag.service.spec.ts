@@ -57,7 +57,6 @@ describe('InitializeBasicRagService', () => {
       forOrganization: vi.fn().mockResolvedValue({
         input: [],
         output: [],
-        hasTransformingInputRule: false,
         degraded: false,
       }),
     };

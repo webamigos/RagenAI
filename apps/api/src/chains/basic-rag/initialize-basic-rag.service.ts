@@ -218,7 +218,6 @@ export class InitializeBasicRagService {
           // organization per minute and not one per turn.
           guardrails: {
             rules: [...orgGuardrails.input],
-            hasTransformingInputRule: orgGuardrails.hasTransformingInputRule,
             run: (guardrailInput) =>
               this.runGuardrails.run({
                 ...guardrailInput,

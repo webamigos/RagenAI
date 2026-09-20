@@ -58,7 +58,6 @@ const run = () =>
     guardrails: {
       input: [someRule],
       output: [],
-      hasTransformingInputRule: false,
       degraded: false,
       dropped: [],
     },

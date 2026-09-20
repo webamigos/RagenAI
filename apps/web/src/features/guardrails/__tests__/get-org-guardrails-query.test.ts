@@ -106,25 +106,17 @@ describe('getOrgGuardrailsQuery', () => {
     expect(result.input).toEqual([]);
   });
 
-  it('reports a MASK input rule, because it changes how the stage is scheduled', async () => {
+  it('carries a MASK rule through like any other enabled input rule', async () => {
+    // The set used to also report *whether* it held one, so the chain could
+    // run the stage beside `rephraseAndExpand` when it did not. The stage is
+    // unconditionally blocking now — a refused question must not reach the
+    // rephraser — so the flag is gone and what is left to assert is that a
+    // MASK rule is resolved rather than dropped.
     mockGuardrailFindMany.mockResolvedValue([patternRule({ action: 'MASK' })]);
 
     const result = await getOrgGuardrailsQuery(ORG);
 
-    expect(result.hasTransformingInputRule).toBe(true);
-  });
-
-  it('does not report one for a rule that only judges', async () => {
-    mockGuardrailFindMany.mockResolvedValue([
-      patternRule({ action: 'LOG' }),
-      patternRule({ publicId: 'rule-2', action: 'BLOCK' }),
-    ]);
-
-    const result = await getOrgGuardrailsQuery(ORG);
-
-    // The concurrency with rephraseAndExpand survives for these, and this is
-    // the assertion that keeps the optimisation honest.
-    expect(result.hasTransformingInputRule).toBe(false);
+    expect(result.input.map((rule) => rule.action)).toEqual(['MASK']);
   });
 });
 

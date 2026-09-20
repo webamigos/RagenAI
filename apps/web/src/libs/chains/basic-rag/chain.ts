@@ -33,9 +33,9 @@ export const basicRagChain = async ({
       // Step 1: Sanitize and validate the input
       const sanitizedInput = sanitizeAndValidateInput(input);
 
-      // Step 2: Moderate content and rephrase+expand in parallel.
-      // Moderation doesn't affect the rephrased query — it only gates the
-      // final answer. Running them concurrently saves one full LLM round-trip.
+      // Step 2: Guardrails, then rephrase+expand. These ran concurrently
+      // until the input stage gained rules that can refuse the turn — see
+      // the note above the two awaits below for why that had to stop.
       // The merged rephraseAndExpand() produces the standalone question AND
       // query variants in a single LLM call (saves another round-trip vs the
       // old sequential rephrase → expandQueries flow).
@@ -79,39 +79,35 @@ export const basicRagChain = async ({
         return { ...sanitizedInput, question, chat_history: chatHistory };
       };
 
-      // The concurrency survives only for rules that judge rather than rewrite.
+      // Sequential, and it has to be. This used to run `evaluateGuardrails()`
+      // beside `rephraseAndExpand` for every rule that judges rather than
+      // rewrites, on the grounds that a verdict does not change the text and
+      // so costs nothing to compute in parallel.
       //
-      // Moderation could run beside `rephraseAndExpand` because it returns a
-      // verdict: the text it read is the text that moves on. A `MASK` rule
-      // breaks that — the rewrite has to land before anything downstream reads
-      // the input, or the retrieval query is built from the original while the
-      // model is shown the mask. The resolver knows which kind the set holds
-      // before the turn starts, so this costs latency only where a mask is
-      // actually configured.
-      let guardedInput = sanitizedInput;
-      let rephrased: Awaited<ReturnType<typeof rephraseAndExpand>>;
-
-      if (guardrails?.hasTransformingInputRule) {
-        guardedInput = await evaluateGuardrails();
-        rephrased = await rephraseAndExpand(
-          models.questionRephraser,
-          guardedInput,
-          multiQueryEnabled,
-          undefined,
-          config?.tracking,
-        );
-      } else {
-        [guardedInput, rephrased] = await Promise.all([
-          evaluateGuardrails(),
-          rephraseAndExpand(
-            models.questionRephraser,
-            sanitizedInput,
-            multiQueryEnabled,
-            undefined,
-            config?.tracking,
-          ),
-        ]);
-      }
+      // It costs the thing the feature exists for. `rephraseAndExpand` is a
+      // model call, so a question a `BLOCK` rule refuses was already sent to
+      // the rephraser by the time the refusal was decided — to an external
+      // provider, on most installations. "Blocked" then means the reader saw
+      // no answer, not that the text stayed inside. `p0-29` asserts the turn
+      // "was refused before the chain reached a model" and took the absence
+      // of the *answer* model as proof; the rephraser is a model too.
+      //
+      // The race also decided which error the reader got. Whichever promise
+      // rejected first won, so an unrelated failure in the rephraser — an
+      // unrouted model, a provider blip — surfaced instead of the refusal,
+      // as `unknown-error`. That is how this was found: in CI, where the
+      // rephraser has no route, every `BLOCK` turn reported an unexpected
+      // error and the refusal never rendered.
+      //
+      // The cost is one round-trip of latency on a turn with rules enabled.
+      const guardedInput = await evaluateGuardrails();
+      const rephrased = await rephraseAndExpand(
+        models.questionRephraser,
+        guardedInput,
+        multiQueryEnabled,
+        undefined,
+        config?.tracking,
+      );
 
       const { standaloneQuestion, variants } = rephrased;
 

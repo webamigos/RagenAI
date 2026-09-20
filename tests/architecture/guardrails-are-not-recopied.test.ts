@@ -73,9 +73,9 @@ const DUPLICATED_DECISIONS: Array<{ pattern: RegExp; instead: string }> = [
   {
     pattern: /action\s*===\s*'(BLOCK|MASK|LOG)'/,
     instead:
-      'call `hasTransformingRule()` or `securityEventTypeFor()` from ' +
-      '@ragenai/guardrails. An app deciding what an action means is the ' +
-      'duplication this test exists for.',
+      'call `securityEventTypeFor()` from @ragenai/guardrails, or let ' +
+      '`evaluateInputStage()` apply the action. An app deciding what an ' +
+      'action means is the duplication this test exists for.',
   },
   {
     pattern: /GUARDRAIL_(BLOCKED|FLAGGED)/,
@@ -165,7 +165,11 @@ describe('guardrails are not recopied', () => {
       'utf8',
     );
 
-    expect(inputStage).toContain('export function hasTransformingRule');
+    // `hasTransformingRule` was named here too, until the chains stopped
+    // scheduling the input stage around a MASK rule and started always
+    // running it first — a refused question must not reach the rephraser.
+    // It had exactly one purpose and no caller left, so it went rather than
+    // becoming an export kept alive by its own guard.
     expect(inputStage).toContain('export function securityEventTypeFor');
     expect(inputStage).toContain('export async function evaluateInputStage');
   });

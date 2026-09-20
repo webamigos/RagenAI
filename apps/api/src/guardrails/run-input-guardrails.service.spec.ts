@@ -45,9 +45,6 @@ const guardrails = (input: unknown[] = []): OrgGuardrails =>
   ({
     input,
     output: [],
-    hasTransformingInputRule: input.some(
-      (r) => (r as { action: string }).action === 'MASK',
-    ),
     degraded: false,
   }) as OrgGuardrails;
 

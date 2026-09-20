@@ -3,7 +3,6 @@ import { guardrailsDisabled, isOnPremise } from '@ragenai/env';
 import {
   GUARDRAIL_CACHE_TTL_MS,
   GUARDRAIL_FAILURE_TTL_MS,
-  hasTransformingRule,
   resolveGuardrails,
   type GuardrailAction,
   type GuardrailKind,
@@ -29,8 +28,6 @@ import { PrismaService } from '../prisma/prisma.service.js';
 export type OrgGuardrails = {
   readonly input: readonly ResolvedGuardrail[];
   readonly output: readonly ResolvedGuardrail[];
-  /** Whether any input rule rewrites the text rather than judging it. */
-  readonly hasTransformingInputRule: boolean;
   /** True when the set is empty because a load failed, not because nothing is configured. */
   readonly degraded: boolean;
 };
@@ -38,7 +35,6 @@ export type OrgGuardrails = {
 const NO_GUARDRAILS: OrgGuardrails = {
   input: [],
   output: [],
-  hasTransformingInputRule: false,
   degraded: false,
 };
 
@@ -161,12 +157,9 @@ export class GuardrailsService {
       const enabled = resolution.rules.filter((rule) => rule.enabled);
       const atStage = (stage: 'INPUT' | 'OUTPUT') =>
         enabled.filter((rule) => rule.stage === stage || rule.stage === 'BOTH');
-      const input = atStage('INPUT');
-
       const value: OrgGuardrails = {
-        input,
+        input: atStage('INPUT'),
         output: atStage('OUTPUT'),
-        hasTransformingInputRule: hasTransformingRule(input),
         degraded: false,
       };
 

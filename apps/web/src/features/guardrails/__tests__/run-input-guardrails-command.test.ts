@@ -51,7 +51,6 @@ const rule = (over: Partial<Rule> = {}): Rule =>
 const set = (input: Rule[] = []) => ({
   input,
   output: [],
-  hasTransformingInputRule: input.some((r) => r.action === 'MASK'),
   degraded: false,
   dropped: [],
 });

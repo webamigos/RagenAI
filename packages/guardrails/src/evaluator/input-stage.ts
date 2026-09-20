@@ -79,23 +79,6 @@ export function isModerationRule(rule: ResolvedGuardrail): boolean {
 }
 
 /**
- * Whether a rule set makes the input stage blocking.
- *
- * One function because it was two: both loaders wrote
- * `rules.some(r => r.action === 'MASK')` for themselves. That is the decision
- * that splits the input stage from `rephraseAndExpand`, and two copies of it
- * can drift into one runtime running the stage concurrently while the other
- * does not — a latency difference nobody would notice and a correctness
- * difference nobody would look for, since a mask applied after the retrieval
- * query is built protects nothing.
- */
-export function hasTransformingRule(
-  rules: readonly ResolvedGuardrail[],
-): boolean {
-  return rules.some((rule) => rule.action === 'MASK');
-}
-
-/**
  * Which security event a hit is filed under.
  *
  * Also one function because it was two, once per runtime. `BLOCK` is the only

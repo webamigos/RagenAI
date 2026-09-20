@@ -34,9 +34,9 @@ export const basicRagChain = async ({
       // Step 1: Sanitize and validate the input
       const sanitizedInput = sanitizeAndValidateInput(input);
 
-      // Step 2: Moderate content and rephrase+expand in parallel.
-      // Moderation doesn't affect the rephrased query — it only gates the
-      // final answer. Running them concurrently saves one full LLM round-trip.
+      // Step 2: Guardrails, then rephrase+expand. These ran concurrently
+      // until the input stage gained rules that can refuse the turn — see
+      // the note above the two awaits below for why that had to stop.
       // The merged rephraseAndExpand() produces the standalone question AND
       // query variants in a single LLM call (saves another round-trip vs the
       // old sequential rephrase → expandQueries flow).
@@ -61,38 +61,28 @@ export const basicRagChain = async ({
         return { ...sanitizedInput, question, chat_history: chatHistory };
       };
 
-      // The concurrency survives only for rules that judge rather than
-      // rewrite. Moderation could run beside `rephraseAndExpand` because it
-      // returns a verdict: the text it read is the text that moves on. A
-      // `MASK` rule breaks that — the rewrite has to land before anything
-      // downstream reads the input, or the retrieval query is built from the
-      // original while the model is shown the mask.
-      let guardedInput = sanitizedInput;
-      let rephrased: Awaited<ReturnType<typeof rephraseAndExpand>>;
-
-      if (guardrails?.hasTransformingInputRule) {
-        guardedInput = await evaluateGuardrails();
-        rephrased = await rephraseAndExpand(
-          models.questionRephraser,
-          guardedInput,
-          multiQueryEnabled,
-          undefined,
-          config?.tracking,
-          config?.trackAiUsage,
-        );
-      } else {
-        [guardedInput, rephrased] = await Promise.all([
-          evaluateGuardrails(),
-          rephraseAndExpand(
-            models.questionRephraser,
-            sanitizedInput,
-            multiQueryEnabled,
-            undefined,
-            config?.tracking,
-            config?.trackAiUsage,
-          ),
-        ]);
-      }
+      // Sequential, and it has to be — the same change apps/web's chain
+      // carries, for the same reason and worth stating twice rather than
+      // leaving one runtime to be found later.
+      //
+      // Running `evaluateGuardrails()` beside `rephraseAndExpand` meant a
+      // question a `BLOCK` rule refuses had already been sent to the
+      // rephraser, which is a model call to an external provider on most
+      // installations. "Blocked" then described what the reader saw, not
+      // where the text went. Whichever promise rejected first also decided
+      // which error surfaced, so a rephraser failure hid the refusal behind
+      // `unknown-error`.
+      //
+      // The cost is one round-trip of latency on a turn with rules enabled.
+      const guardedInput = await evaluateGuardrails();
+      const rephrased = await rephraseAndExpand(
+        models.questionRephraser,
+        guardedInput,
+        multiQueryEnabled,
+        undefined,
+        config?.tracking,
+        config?.trackAiUsage,
+      );
 
       const { standaloneQuestion, variants } = rephrased;
 

@@ -87,6 +87,19 @@ archive is the blog.
   the two disagree, and refuse if turning it on would otherwise be forgotten.
   `GUARDRAILS_DISABLED=1` remains as break-glass on a service.
 
+- `[brief]` **A blocked message no longer reaches a model at all.** The
+  refusal always worked, but the chain evaluated the rules *beside* the query
+  rephraser rather than before it, to save a round-trip — so a message a
+  block rule refused had already been sent to the rephrasing model, which on
+  most installations is an external provider. Nobody saw an answer, and the
+  text left the building anyway. The stage runs first now, on both the app and
+  the public API, and the guarantee reads the way people assume it does:
+  refused means it never went anywhere. Costs one round-trip of latency on
+  turns with rules enabled. The same change fixes a rarer wrong answer — when
+  the rephraser failed for its own reasons, whichever failure landed first won
+  the race, so a refused message could report "an unexpected error" instead of
+  the refusal.
+
 - `[brief]` **The platform-guardrails page in the admin panel works.** It
   shipped this week and never rendered for anyone: the page loaded, then
   replaced itself with "This page couldn't load", in the dev server and in a

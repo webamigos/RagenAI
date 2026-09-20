@@ -73,7 +73,6 @@ export interface ChainConfig {
    */
   guardrails?: {
     readonly rules: import('@ragenai/guardrails').ResolvedGuardrail[];
-    readonly hasTransformingInputRule: boolean;
     readonly run: (input: {
       question: string;
       chatHistory: string | undefined;
