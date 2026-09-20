@@ -96,9 +96,20 @@ export type GuardrailInput = {
   /** LLM_POLICY only — the prose the judge model is given. */
   policy?: string;
   /**
-   * LLM_POLICY only. `undefined` and `null` both mean "the rule names none",
-   * which is how `DEFAULT_POLICY_THRESHOLD` comes to apply — an empty field is
-   * a choice to inherit, not a zero.
+   * The score a **scored** rule fires at — a policy, or a built-in whose
+   * detector is a judge. `isScoredRule` is the question; the kind alone is not.
+   *
+   * `undefined` and `null` are different instructions, and this comment said
+   * otherwise until C4 gave the field to built-ins. On an **update**,
+   * `undefined` is the key not being in the request — a stale tab, or a
+   * hand-made one — and the stored value is left alone, because writing over
+   * it resets a tuned detector as a side effect of some other edit. `null` is
+   * an operator clearing the field: the rule then names no threshold and
+   * `DEFAULT_POLICY_THRESHOLD` applies. Never a zero, which matches every
+   * message.
+   *
+   * On a **create** there is no prior value to protect, so both are stored as
+   * `null`. `policyColumnsFor` is where all of this happens.
    */
   threshold?: number | null;
 };

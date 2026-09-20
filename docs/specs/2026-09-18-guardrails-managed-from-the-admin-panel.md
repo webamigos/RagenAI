@@ -725,14 +725,14 @@ match.
       reports success and the number is then ignored for ever.
 - [ ] **C4b.** The two override values, on the organization page.
 
-      1. **`GuardrailOrgOverride.threshold`.** The resolver validates its range
-         and records `override-threshold-out-of-range` when it fails.
-      2. **`GuardrailOrgOverride.action`.** The resolver honours it, refuses
-         `MASK` on a built-in or a policy with a documented fallback, and files
-         `override-action-invalid-for-kind`. This is the one an organization is
-         most likely to want — "keep the platform's rule, but only log it for
-         us" is the whole point of an override, and the panel cannot express
-         it.
+  1. **`GuardrailOrgOverride.threshold`.** The resolver validates its range
+     and records `override-threshold-out-of-range` when it fails.
+  2. **`GuardrailOrgOverride.action`.** The resolver honours it, refuses
+     `MASK` on a built-in or a policy with a documented fallback, and files
+     `override-action-invalid-for-kind`. This is the one an organization is
+     most likely to want — "keep the platform's rule, but only log it for
+     us" is the whole point of an override, and the panel cannot express
+     it.
 
       `setGuardrailOverrideAction` writes `enabled` and nothing else, and the
       shape of that action is the trap. **`enabled: null` currently deletes the

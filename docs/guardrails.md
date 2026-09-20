@@ -210,7 +210,9 @@ C4b in the spec, and it is called out here rather than left for somebody to
 deduce from a schema.
 
 A third one is now closed: a scored built-in's own `threshold` on the platform
-rule. See below.
+rule — see [Tuning a built-in detector](#tuning-a-built-in-detector) above. A
+link rather than a direction, because that section sits earlier on the page and
+"below" was already wrong the day it was written.
 
 **One override origin is special.** Rows marked `legacy_on_premise` were seeded
 by the migration from `OrganizationSettings.contentModerationEnabled`, and are
