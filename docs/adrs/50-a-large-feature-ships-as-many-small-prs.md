@@ -134,8 +134,9 @@ image for everybody self-hosting.
 
 **The commit type is what decides, and for a flag-gated slice the honest type is
 not `feat`.** semantic-release's default rules bump on `feat` (minor), `fix` and
-`perf` (patch), and a breaking change (major); `chore`, `refactor`, `test`,
-`docs`, `ci`, `build` and `style` release nothing. Mapped onto the four slices
+`perf` (patch), and a breaking change (a major by default, a minor here since
+ADR-51); `chore`, `refactor`, `test`, `docs`, `ci`, `build` and `style` release
+nothing. Mapped onto the four slices
 above:
 
 | Slice | Type | Release |
@@ -160,10 +161,14 @@ carries an explicit opt-out:
 
 ```json
 "releaseRules": [
-  { "breaking": true, "release": "major" },
+  { "breaking": true, "release": "minor" },
   { "subject": "*\\[no release\\]*", "release": false }
 ]
 ```
+
+The breaking rule reads `minor` rather than `major` because of ADR-51: a
+breaking footer still releases, and still earns its **BREAKING CHANGES**
+heading, but the first number moves only when somebody cuts it by hand.
 
 `fix(ci): give the image build a driver that can cache [no release]` bumps
 nothing. The commit still appears in the next release's notes, so nothing is
@@ -183,12 +188,13 @@ wrong is silent:
   `undefined`. That is the whole mechanism: the marker suppresses the release
   precisely because a matched rule stops the fallback.
 - **Matching rules do not resolve first-to-last — the highest release type
-  wins** (`analyze-commit.js`), and `major` ends the analysis early. So a commit
-  carrying both a `BREAKING CHANGE` footer and the marker releases `major`
-  whichever order the two rules are in. The breaking rule is not ordering, it
-  is the guarantee: without it the marker would silence the one release that
-  must never be silent, because the notes announcing the break would not be
-  published either. It is written first so the short-circuit can take effect.
+  wins** (`analyze-commit.js`). So a commit carrying both a `BREAKING CHANGE`
+  footer and the marker releases a minor whichever order the two rules are in:
+  `minor` beats `false`. The breaking rule is not ordering, it is the
+  guarantee — without it the marker would silence the one release that must
+  never be silent, because the notes announcing the break would not be
+  published either. (Before ADR-51 it read `major`, which also short-circuited
+  the analysis; `minor` does not, and nothing depends on that.)
 
 Anything matching no rule at all falls through to the defaults, which is why
 they are not restated here.

@@ -130,6 +130,21 @@ archive is the blog.
   version reset itself is
   [#1266](https://github.com/webamigos/RagenAI/pull/1266))
 
+- `[major]` **...and back on 2.x, after briefly reaching 5.0.0.** The rule
+  above fixed how often a release happens and left open what it is numbered.
+  Over the two days that followed, three internal changes retired an
+  environment variable — `MODERATION_ENABLED`, `JAILBREAK_DETECTION_ENABLED`,
+  the Temporal adapter — and each said so in its commit footer, which is the
+  honest thing to write for anyone whose `.env` still sets one. It was also,
+  under the default rules, a major release each time: 3.0.0, 4.0.0, 5.0.0 in
+  thirty-six hours, announcing breakage to consumers none of them had. Those
+  six releases have been withdrawn and the line resumes at 2.1.0. From now on
+  a breaking note is a minor, and the first number moves only when somebody
+  decides it should — so if you pin Ragen, a major means a deliberate
+  statement about your upgrade rather than an environment variable you never
+  set. Images already published as 3.x, 4.x and 5.0.0 stay in the registry;
+  `latest` follows the 2.x line again (ADR-51)
+
 ### Thread: a field that does not lie about what it holds
 
 - `[brief]` **A project instruction stays in the box after you save it.** The

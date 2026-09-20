@@ -9,7 +9,7 @@
         "releaseRules": [
           {
             "breaking": true,
-            "release": "major"
+            "release": "minor"
           },
           {
             "subject": "*\\[no release\\]*",
