@@ -514,8 +514,25 @@ const createSecurityEvent = async (input: {
   }
 };
 
+/**
+ * Mirrors the `AiUsageStep` Prisma enum (root prisma/schema.prisma), declared
+ * here as a string-literal union so this module needs no generated client at
+ * this boundary.
+ *
+ * It carries every member, not only the ones this app writes today. The
+ * worker writes `EMBEDDINGS` and `CHAT_COMPLETION`; it had drifted two members
+ * short of the schema, which costs nothing until the day something here wants
+ * to write one of them and cannot — and the symptom then is an absent cost,
+ * not a wrong one. `tests/architecture/every-ai-usage-step-is-on-the-page.ts`
+ * holds this to the schema, which is how the two missing ones were found.
+ */
 type AiUsageStep =
-  'EMBEDDINGS' | 'CHAT_COMPLETION' | 'REPHRASING' | 'MODERATION';
+  | 'EMBEDDINGS'
+  | 'CHAT_COMPLETION'
+  | 'REPHRASING'
+  | 'MODERATION'
+  | 'RERANKING'
+  | 'GUARDRAIL';
 
 /**
  * Insert a row into `ai_usage`. Never throws — tracking failures must

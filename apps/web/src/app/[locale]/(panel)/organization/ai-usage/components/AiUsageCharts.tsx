@@ -37,6 +37,10 @@ const STEP_COLORS: Record<string, string> = {
   MODERATION: '#10b981',
   REPHRASING: '#f59e0b',
   EMBEDDINGS: '#4f46e5',
+  // Taken from CHART_COLORS above rather than invented, so a step added later
+  // still has somewhere to come from. Not `#ef4444`: red reads as an error
+  // state on a cost chart, and reranking is an ordinary line item.
+  RERANKING: '#06b6d4',
   GUARDRAIL: '#ec4899',
 };
 
@@ -45,6 +49,7 @@ const STEP_LABELS: Record<string, string> = {
   MODERATION: 'MODERATION',
   REPHRASING: 'REPHRASING',
   EMBEDDINGS: 'EMBEDDINGS',
+  RERANKING: 'RERANKING',
   GUARDRAIL: 'GUARDRAIL',
 };
 

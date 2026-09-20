@@ -25,6 +25,10 @@ const STEPS = [
   { value: AiUsageStep.MODERATION, label: 'Moderation' },
   { value: AiUsageStep.REPHRASING, label: 'Rephrasing' },
   { value: AiUsageStep.EMBEDDINGS, label: 'Embeddings' },
+  // Reranking is opt-in (`FEATURE_FLAG_RERANKING=1`), which is exactly why it
+  // needs to be filterable: an operator turns it on to find out what it costs,
+  // and without a row here that is the one question they cannot ask.
+  { value: AiUsageStep.RERANKING, label: 'Reranking' },
   // A judge model run by an LLM_POLICY guardrail. Its own row rather than
   // folded into Moderation, because "what did the guardrails cost" is the
   // question an operator asks about the expensive kind of rule.

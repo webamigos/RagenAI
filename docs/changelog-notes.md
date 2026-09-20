@@ -529,3 +529,12 @@ archive is the blog.
   in the log — a check that can take chat down is worse than the thing it
   catches. Writing a policy from the panel arrives in the next change; this one
   is the engine underneath it.
+
+- `[brief]` **Reranking now shows up on the AI-usage page.** It has been
+  written to the usage table since reranking shipped, and the page had no
+  label, no colour and no filter option for it — so the cost was counted in
+  your totals and could not be separated out. Reranking is opt-in, which makes
+  that the one question somebody who enabled it wants answered. Fixed, along
+  with a check that every kind of AI call the product records has somewhere to
+  appear: the same gap had already happened twice and would have kept
+  happening, because nothing breaks when it does.
