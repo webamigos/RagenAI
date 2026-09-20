@@ -114,6 +114,16 @@ export type InputStageOptions = {
    * Neither binding passes it today.
    */
   readonly budgetMs?: number;
+  /**
+   * The clock, for the same reason `budgetMs` is here.
+   *
+   * The question and the history share one budget, and “the history got what
+   * was left” cannot be asserted by setting a number alone — whether the
+   * question consumed it depends on how fast the machine is. A test that
+   * cannot control both ends up asserting nothing, which is the shape this
+   * file has already produced once.
+   */
+  readonly now?: () => number;
 };
 
 export async function evaluateInputStage(
@@ -150,10 +160,18 @@ export async function evaluateInputStage(
   // nobody a way to see why. History is masked below — a different operation,
   // which changes what the model is shown and refuses nothing.
   const patternRules = rules.filter((rule) => rule.kind === 'PATTERN');
+  const patternOptions: { budgetMs?: number; now?: () => number } = {};
+  if (options.budgetMs !== undefined) {
+    patternOptions.budgetMs = options.budgetMs;
+  }
+  if (options.now !== undefined) {
+    patternOptions.now = options.now;
+  }
+
   const { hits, skipped, elapsedMs } = runPatternRules(
     patternRules,
     input.question,
-    options.budgetMs === undefined ? {} : { budgetMs: options.budgetMs },
+    patternOptions,
   );
 
   if (skipped.length > 0) {
@@ -208,14 +226,34 @@ export async function evaluateInputStage(
   // masked. The rule protects one turn and then stops, indistinguishable from
   // working.
   const maskRules = patternRules.filter((rule) => rule.action === 'MASK');
-  const historyHits: PatternHit[] =
-    input.chatHistory.length > 0 && maskRules.length > 0
-      ? runPatternRules(
-          maskRules,
-          input.chatHistory,
-          options.budgetMs === undefined ? {} : { budgetMs: options.budgetMs },
-        ).hits
-      : [];
+
+  // The history runs on what is **left** of the turn's budget, not on a fresh
+  // copy of it. `budgetMs` is documented as the turn's, and handing the second
+  // pass a full one made the real ceiling twice the number — on the slowest
+  // possible input, since a history is every stored message concatenated.
+  //
+  // Its skips are reported too. They were dropped on the floor: only `.hits`
+  // was read, so a MASK rule the history pass ran out of time for was not
+  // applied and said nothing — a mask silently not applied is the failure
+  // this whole feature exists to make visible. Two calls rather than one
+  // aggregated, because the question's has to happen before the `BLOCK`
+  // return above can skip the rest of this function.
+  let historyHits: PatternHit[] = [];
+  if (input.chatHistory.length > 0 && maskRules.length > 0) {
+    const historyRun = runPatternRules(maskRules, input.chatHistory, {
+      ...patternOptions,
+      ...(options.budgetMs === undefined
+        ? {}
+        : { budgetMs: Math.max(0, options.budgetMs - elapsedMs) }),
+    });
+    historyHits = historyRun.hits;
+    if (historyRun.skipped.length > 0) {
+      deps.onBudgetExhausted(
+        historyRun.skipped.map(resolve),
+        elapsedMs + historyRun.elapsedMs,
+      );
+    }
+  }
 
   if (questionMaskHits.length === 0 && historyHits.length === 0) {
     return unchanged;

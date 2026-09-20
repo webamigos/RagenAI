@@ -404,3 +404,92 @@ describe('the per-turn budget', () => {
     expect(result.blockedBy).toBeUndefined();
   });
 });
+
+describe('the question and the history share one budget', () => {
+  /**
+   * A clock that advances a fixed step on every read.
+   *
+   * `runPatternRules` reads it three times per call — start, the per-rule
+   * check, and the elapsed total — so a step of five against a budget of ten
+   * lets the question pass finish having spent the whole budget, and leaves
+   * the history nothing. Without controlling it, "the history got what was
+   * left" is a claim about how fast this machine is.
+   */
+  const steppingClock = (step: number) => {
+    let t = 0;
+    return () => {
+      const value = t;
+      t += step;
+      return value;
+    };
+  };
+
+  const maskRule = rule({
+    publicId: 'mask-1',
+    action: 'MASK',
+    pattern: 'hunter2',
+  });
+
+  it('does not hand the history a fresh budget', async () => {
+    // The history is every stored message concatenated — the slowest input
+    // the stage ever sees — so a second full budget made the real ceiling
+    // twice the documented number.
+    const result = await evaluateInputStage(
+      [maskRule],
+      {
+        question: 'nothing here',
+        chatHistory: 'the password is hunter2',
+        moderateHistory: false,
+      },
+      deps,
+      { budgetMs: 10, now: steppingClock(5) },
+    );
+
+    // Unmasked, because the rule never ran: the question spent the budget.
+    // Under a fresh budget it would have run and returned '***' here, which
+    // is what this asserts against.
+    expect(result.chatHistory).toBe('the password is hunter2');
+  });
+
+  it('reports the history rules it had no budget for', async () => {
+    // These were dropped on the floor: only `.hits` was read from the history
+    // run, so a MASK rule that did not get to run was not applied and said
+    // nothing. A mask silently not applied is the exact failure this feature
+    // exists to make visible.
+    await evaluateInputStage(
+      [maskRule],
+      {
+        question: 'nothing here',
+        chatHistory: 'the password is hunter2',
+        moderateHistory: false,
+      },
+      deps,
+      { budgetMs: 10, now: steppingClock(5) },
+    );
+
+    expect(onBudgetExhausted).toHaveBeenCalledTimes(1);
+    const [skipped] = onBudgetExhausted.mock.calls[0] as [
+      ResolvedGuardrail[],
+      number,
+    ];
+    expect(skipped.map((r) => r.publicId)).toEqual(['mask-1']);
+  });
+
+  it('still masks the history when the budget has room', async () => {
+    // The guard on the guard: a change that simply stopped running the
+    // history pass would satisfy both assertions above.
+    const result = await evaluateInputStage(
+      [maskRule],
+      {
+        question: 'nothing here',
+        chatHistory: 'the password is hunter2',
+        moderateHistory: false,
+      },
+      deps,
+      { budgetMs: 10_000, now: steppingClock(1) },
+    );
+
+    expect(result.chatHistory).not.toContain('hunter2');
+    expect(onBudgetExhausted).not.toHaveBeenCalled();
+  });
+});

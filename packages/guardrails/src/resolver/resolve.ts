@@ -175,6 +175,21 @@ export function resolveGuardrails(
       });
       continue;
     }
+    // The same predicate the platform loop applies, and for the same reason.
+    // An operator cannot author a `BUILT_IN` — `AUTHORABLE_COMBINATIONS`
+    // excludes it — so an org-scoped one arrives only from a seed, a
+    // migration or a future feature. That is exactly the row nobody would
+    // think to check: kept here, it would read as enabled in the panel,
+    // match no branch of `evaluateInputStage`, and be enforced by nothing.
+    // Two loops disagreeing about what the build can evaluate is how this
+    // bug has already shipped twice, in both directions.
+    if (rule.kind === 'BUILT_IN' && !isEvaluableBuiltIn(rule.key)) {
+      dropped.push({
+        reason: 'built-in-has-no-evaluator',
+        guardrailPublicId: rule.publicId,
+      });
+      continue;
+    }
     out.push({
       ...rule,
       isPlatformRule: false,
