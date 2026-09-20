@@ -15,18 +15,31 @@ test.use({ storageState: AUTH_FILE });
  * protection now, and one that looks exactly like a working configuration
  * because the panel lists the rule and the audit entry exists.
  *
- * **The rules are seeded, not created here, and that is the whole lesson of
- * this file.** The first version created them in `beforeAll`. It passed
- * locally and failed in CI three retries out of three: the loader caches a
- * resolved rule set per organization for 60 s, so a rule written mid-suite is
- * invisible to a server that has already served a hundred specs — while
- * running the spec alone gives a freshly booted server with a cold cache,
- * which sees it at once. The spec's own comment asserted it "exercises a cold
- * cache every time"; that was true only in isolation, which is the one way it
- * was never going to run.
+ * **The rules are seeded, not created here.** The first version created them
+ * in `beforeAll`. It passed locally and failed in CI three retries out of
+ * three: the loader caches a resolved rule set per organization for 60 s, so
+ * a rule written mid-suite is invisible to a server that has already served a
+ * hundred specs — while running the spec alone gives a freshly booted server
+ * with a cold cache, which sees it at once. The spec's own comment asserted
+ * it "exercises a cold cache every time"; that was true only in isolation,
+ * which is the one way it was never going to run. Seeded fixtures exist
+ * before any server boots, so no cached set can be missing them. See
+ * `e2e/seed/e2e-seed.ts`.
  *
- * Seeded fixtures exist before any server boots, so no cached set can be
- * missing them. See `e2e/seed/e2e-seed.ts`.
+ * **That fix was right and this file still failed**, which is the part worth
+ * carrying forward. Two more things had to be true, and neither was:
+ *
+ * 1. Every model the chain resolves needs a route in `routes.e2e.yaml`. The
+ *    rephraser defaulted to `gemini-2.5-flash` and the organization to
+ *    `gemini-3-flash-preview`; neither had one, and `UnknownModelError` is
+ *    not a `ChainError`, so the SSE filter reported `unknown-error`.
+ * 2. The chain ran the guardrail stage *beside* the rephraser, so that
+ *    rejection won the race and the refusal never rendered at all.
+ *
+ * The seeding fix could not have made this pass, and the fixture guard below
+ * kept saying the rules were fine — because they were. When a guard is green
+ * and the thing it guards is red, the guard is answering a different
+ * question.
  *
  * Deliberately **not** mocking the chat stream, for the same reason `p0-27`
  * does not: every other chat spec routes the threads API to a canned SSE
@@ -102,8 +115,15 @@ test.describe('a guardrail refuses a turn', () => {
     await ask(page, `Drugie pytanie, ${BLOCKED}`);
 
     await expect(page.getByText(REFUSAL)).toBeVisible({ timeout: 20_000 });
-    // The mock LLM's absence is the assertion: the turn was refused before the
-    // chain reached a model, not after it produced something.
+    // The mock LLM's absence is the assertion: the turn was refused before it
+    // produced an answer.
+    //
+    // Not before the chain reached *a* model, which this once claimed. The
+    // rephraser is a model too and leaves nothing in the transcript, so no
+    // assertion here can see it — and for a while it was being called with
+    // the refused question. That is guarded in
+    // `chain-guardrails-precede-the-model.test.ts`, per runtime, where the
+    // call is visible.
     await expect(page.getByText(MOCK_ANSWER)).toHaveCount(0);
   });
 
@@ -143,7 +163,7 @@ test.describe('a guardrail refuses a turn', () => {
 });
 
 test.describe('a LOG rule observes and nothing else', () => {
-  test('the turn is not refused', async ({ page }) => {
+  test('the turn is not refused, and the rule still ran', async ({ page }) => {
     await ask(page, `Pytanie z ${LOGGED} w środku`);
 
     // Observation mode is the creation default and has to be genuinely
@@ -151,6 +171,23 @@ test.describe('a LOG rule observes and nothing else', () => {
     // false-positive rate nobody has measured.
     await expect(page.getByText(REFUSAL)).toHaveCount(0);
     await expect(page).toHaveURL(/\/chats\/.+/, { timeout: 20_000 });
+
+    // And the rule observed something, which is the half an absence cannot
+    // show. Without this the test passes when guardrails do not run at all —
+    // the same vacuity that let the `BLOCK` failure above hide for a day,
+    // since "no refusal appeared" is also true of a chain that never
+    // evaluated a rule. A `LOG` hit is filed as GUARDRAIL_FLAGGED.
+    await expect
+      .poll(
+        () =>
+          withPrisma((prisma) =>
+            prisma.securityEvent.count({
+              where: { eventType: 'GUARDRAIL_FLAGGED' },
+            }),
+          ),
+        { timeout: 15_000 },
+      )
+      .toBeGreaterThan(0);
   });
 });
 

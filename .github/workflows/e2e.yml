@@ -85,6 +85,21 @@ env:
   FEATURE_FLAG_MODEL_SELECT: 1
   DEFAULT_MODEL_PROVIDER: 'litellm'
   DEFAULT_MODEL: 'mock-model'
+  # Every model the chat path resolves has to name a route in the table below,
+  # or `resolveModel` throws `UnknownModelError` — a plain Error, which the SSE
+  # filter reports as `unknown-error` because it is not a `ChainError`. That is
+  # how `p0-29` failed for a day: the rephraser defaults to `gemini-2.5-flash`,
+  # which no route covered, and its rejection reached the reader instead of the
+  # guardrail refusal it was racing.
+  #
+  # `DEFAULT_MODEL` is not enough on its own — it wins only when the model
+  # selector is hidden, and this suite enables it. The answer model comes from
+  # the seeded organization's settings; see apps/web/e2e/seed/e2e-seed.ts.
+  #
+  # Retrieval is still not exercised here: there is no Qdrant service in this
+  # job, so a turn that reaches the knowledge base cannot complete whatever the
+  # route table says. Specs that need a full RAG answer need that first.
+  REPHRASE_MODEL: 'mock-model'
   # The mock speaks OpenAI's API, so it attaches as an `openai-compatible`
   # connection rather than as a proxy. See apps/web/e2e/routes.e2e.yaml.
   LLM_ROUTES_PATH: 'apps/web/e2e/routes.e2e.yaml'
