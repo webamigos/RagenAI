@@ -4,6 +4,8 @@ import db from '@ragenai/prisma-client';
 import { AiUsageStep } from '@/generated/prisma/client';
 import { initializeRagChain } from '@/app/api/threads/services/initializeBasicRag';
 import { getAllSettings } from '@/features/organizations/services/organization-settings';
+import { OUTPUT_GUARDRAIL_REFUSAL } from '@/features/guardrails/constants';
+import { GuardrailError } from '@/libs/chains/errors';
 import { logger } from '@/app/lib/utils/logger';
 import { trackAiUsage } from '@/features/ai-usage/services/commands/create-ai-usage-command';
 import {
@@ -217,12 +219,35 @@ export async function POST(request: NextRequest) {
           async start(controller) {
             try {
               let fullText = '';
+              let streamGuardrailBlocked: {
+                guardrail: string;
+                rule: string;
+              } | null = null;
               for await (const part of result.fullStream) {
                 if (part.type === 'text-delta') {
                   fullText += part.textDelta;
                   controller.enqueue(
                     encoder.encode(
                       `data: ${JSON.stringify({ text: part.textDelta })}\n\n`,
+                    ),
+                  );
+                } else if (part.type === 'guardrail-violation') {
+                  // The window stopped the answer, so what has been sent is
+                  // withheld: `replace` tells the caller to drop it, and the
+                  // refusal is what gets saved. Without this branch the part
+                  // would be ignored and the partial answer stored — the one
+                  // outcome the rule exists to prevent.
+                  streamGuardrailBlocked = {
+                    guardrail: part.guardrailPublicId,
+                    rule: part.guardrailName,
+                  };
+                  fullText = OUTPUT_GUARDRAIL_REFUSAL;
+                  controller.enqueue(
+                    encoder.encode(
+                      `data: ${JSON.stringify({
+                        text: OUTPUT_GUARDRAIL_REFUSAL,
+                        replace: true,
+                      })}\n\n`,
                     ),
                   );
                 } else if (part.type === 'reasoning-delta') {
@@ -234,7 +259,7 @@ export async function POST(request: NextRequest) {
                 }
               }
               if (saveAssistantMessage) {
-                await saveAssistantMessage(fullText);
+                await saveAssistantMessage(fullText, streamGuardrailBlocked);
               }
               await trackUsage();
               controller.enqueue(encoder.encode('data: [DONE]\n\n'));
@@ -259,15 +284,29 @@ export async function POST(request: NextRequest) {
 
       // Non-streaming: collect full response and return JSON
       let text = '';
+      let guardrailBlocked: { guardrail: string; rule: string } | null = null;
       try {
         for await (const chunk of result.textStream) {
           text += chunk;
         }
+      } catch (err) {
+        if (!(err instanceof GuardrailError)) {
+          throw err;
+        }
+        // `textStream` is the guarded one, so a block arrives as a thrown
+        // error rather than as a short answer. A refused answer is a result,
+        // not a fault: caught here, the refusal is what is saved and what the
+        // caller is given, instead of a 500 with nothing stored.
+        guardrailBlocked = {
+          guardrail: err.guardrailPublicId,
+          rule: err.guardrailName,
+        };
+        text = OUTPUT_GUARDRAIL_REFUSAL;
       } finally {
         await closeMcpClients();
       }
       if (saveAssistantMessage) {
-        await saveAssistantMessage(text);
+        await saveAssistantMessage(text, guardrailBlocked);
       }
       await trackUsage();
 

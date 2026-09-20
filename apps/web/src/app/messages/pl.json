@@ -460,7 +460,8 @@
       "thinking": "Myślenie",
       "regenerate": "Regeneruj odpowiedź",
       "regenerate-error": "Nie udało się zregenerować odpowiedzi. Spróbuj ponownie.",
-      "read-only-banner": "Przeglądasz wątek innego użytkownika. Nie możesz wysyłać wiadomości w tym wątku."
+      "read-only-banner": "Przeglądasz wątek innego użytkownika. Nie możesz wysyłać wiadomości w tym wątku.",
+      "guardrail-blocked-answer": "Odpowiedź została wstrzymana, ponieważ pasuje do reguły ustawionej przez administratora Twojej organizacji."
     }
   },
   "assistant-settings": {

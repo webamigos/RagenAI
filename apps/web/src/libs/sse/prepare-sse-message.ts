@@ -14,6 +14,7 @@ import {
   type ApiSseToolApprovalRequest,
   type ApiSseRetrieval,
   type ApiSseCitations,
+  type ApiSseGuardrailViolation,
 } from '@/features/threads/contracts/events.types';
 
 export const prepareSseMessage = (
@@ -52,6 +53,7 @@ export type ApiEvent =
   | 'tool_call'
   | 'tool_result'
   | 'tool_approval_request'
+  | 'guardrail_violation'
   | 'error'
   | 'close';
 
@@ -65,7 +67,8 @@ export type ApiEventData =
   | ApiSseToolResult
   | ApiSseToolApprovalRequest
   | ApiSseRetrieval
-  | ApiSseCitations;
+  | ApiSseCitations
+  | ApiSseGuardrailViolation;
 
 export const prepareApiSseMessage = (
   event: ApiEvent,

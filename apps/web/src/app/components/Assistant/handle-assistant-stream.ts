@@ -74,6 +74,8 @@ type CommonConfig = {
   userMessage: MessageDto;
   userMessageId: string;
   t: TranslationFn;
+  /** The `assistant.chat` namespace — the copy that appears inside the thread. */
+  tChat: TranslationFn;
   tChainErrors: TranslationFn;
   tApiEvents: TranslationFn;
   threadId: Thread['id'];
@@ -171,6 +173,7 @@ export const handleAssistantStream = async ({
   userMessage,
   userMessageId,
   t,
+  tChat,
   tChainErrors,
   tApiEvents,
   threadId,
@@ -468,6 +471,33 @@ export const handleAssistantStream = async ({
               );
             }
             break;
+
+          case 'guardrail_violation': {
+            // The only event that takes back what has already been rendered.
+            // The deltas so far are the answer a rule stopped, and the server
+            // is storing the refusal rather than that text — so the two have
+            // to agree about what the reader ends up looking at.
+            accumulatingMessage = tChat('guardrail-blocked-answer');
+            accumulatingReasoning = '';
+            isCurrentlyReasoning = false;
+            // The sources rail goes too. `retrieval` arrives before the first
+            // token, so by now this turn has a pending set of file names and
+            // passages waiting for `final_response` to file them against the
+            // saved message — and a source card carries the chunk the answer
+            // was built from. On a refused answer that chunk can be the very
+            // text the rule matched, offered under a message that says the
+            // answer was withheld.
+            reduxDispatch(clearPendingRetrieval({ threadId }));
+            reduxDispatch(
+              setStreamedMessage({
+                content: accumulatingMessage,
+                runId,
+                createdAt: new Date().toISOString(),
+                isReasoning: false,
+              }),
+            );
+            break;
+          }
 
           case 'error':
             if (messageData) {

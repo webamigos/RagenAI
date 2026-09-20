@@ -1059,7 +1059,14 @@
                       firstChunk = false;
                       botMsgEl.classList.remove('typing');
                     }
-                    accumulated += parsed.text;
+                    // `replace` is sent when an output guardrail withheld the
+                    // answer: what has already been rendered is the text the
+                    // rule stopped, so it is dropped rather than appended to.
+                    // The server stores the same sentence, so a reload shows
+                    // what the visitor saw.
+                    accumulated = parsed.replace
+                      ? parsed.text
+                      : accumulated + parsed.text;
                     botMsgEl.innerHTML = renderMarkdown(accumulated);
                     var msgs = botMsgEl.parentElement;
                     if (msgs) {

@@ -357,7 +357,10 @@ describe('ChatService', () => {
     expect(persistApiThread.createApiThread).toHaveBeenCalledWith(
       expect.objectContaining({ orgId: 'org-1', userId: 'user-1' }),
     );
-    expect(saveAssistantMessage).toHaveBeenCalledWith('response');
+    // `null` for the guardrail marker, and asserted rather than ignored: the
+    // second argument is what tells a stored refusal from an answer, so a
+    // turn nothing refused has to say so explicitly.
+    expect(saveAssistantMessage).toHaveBeenCalledWith('response', null);
   });
 
   it('does not persist a thread when debug mode is off', async () => {

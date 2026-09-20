@@ -13,7 +13,7 @@ import type { BasicRagChainParams } from '../types/basic-rag.js';
 import { MAX_TOOL_STEPS } from '../types/common.js';
 import type { BaseChatChainOutput } from '../types/common.js';
 import { partitionThreadDocuments } from '../utils/chain-utils.js';
-import { mapFullStream } from '../utils/stream-mapper.js';
+import { mapFullStream, textOfStream } from '../utils/stream-mapper.js';
 
 // Kept async to preserve the original apps/web call signature (`await
 // basicRagChain(...)`) — only the nested `stream` function below awaits.
@@ -202,10 +202,23 @@ export const basicRagChain = async ({
           : {}),
       });
 
+      // The output window, or nothing. `mapFullStream` returns its own
+      // iterator unwrapped when there is no stage, so an organization with no
+      // output rules is not buffered.
+      const guardedStream = mapFullStream(
+        result.fullStream,
+        config?.guardrails?.outputStage?.(),
+      );
+
       return {
-        textStream: result.textStream,
-        text: result.text,
-        fullStream: mapFullStream(result.fullStream),
+        // One mapped stream, and `textStream` is a view of it. They share an
+        // iterator, so a caller consumes one of them and not both — which is
+        // what keeps the window single: two would each hold their own buffer
+        // and each file its own hit for the same answer. Before this, the
+        // text view was the SDK's own and never met the window at all, so a
+        // rule applied to whichever surfaces happened to read `fullStream`.
+        textStream: textOfStream(guardedStream),
+        fullStream: guardedStream,
         reasoningText: result.reasoningText,
         // Every step, not just the last — the value the monthly cost and
         // token ceilings aggregate.

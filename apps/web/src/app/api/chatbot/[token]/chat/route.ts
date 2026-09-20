@@ -6,6 +6,7 @@ import { getOrCreateChatbotThreadCommand } from '@/features/chatbots/services/co
 import { createMessageInDbCommand } from '@/features/messages/services/commands/create-message-command';
 import { initializeRagChain } from '@/app/api/threads/services/initializeBasicRag';
 import { getAllSettings } from '@/features/organizations/services/organization-settings';
+import { OUTPUT_GUARDRAIL_REFUSAL } from '@/features/guardrails/constants';
 import { logger } from '@/app/lib/utils/logger';
 import { AiUsageStep, Role, Source } from '@/generated/prisma/client';
 import { trackAiUsage } from '@/features/ai-usage/services/commands/create-ai-usage-command';
@@ -262,6 +263,8 @@ export async function POST(
           });
 
           let fullResponse = '';
+          let guardrailBlocked: { guardrail: string; rule: string } | null =
+            null;
 
           for await (const part of result.fullStream) {
             if (part.type === 'text-delta') {
@@ -269,6 +272,34 @@ export async function POST(
               controller.enqueue(
                 encoder.encode(
                   `data: ${JSON.stringify({ text: part.textDelta })}\n\n`,
+                ),
+              );
+            } else if (part.type === 'guardrail-violation') {
+              // The window stopped the answer. What the visitor has been sent
+              // so far is withheld: `replace` tells the widget to drop it,
+              // and what is persisted below is the refusal rather than the
+              // text — the same rule as the panel, on the surface where the
+              // reader is a stranger on somebody else's website.
+              guardrailBlocked = {
+                guardrail: part.guardrailPublicId,
+                rule: part.guardrailName,
+              };
+              fullResponse = OUTPUT_GUARDRAIL_REFUSAL;
+              logger.warn(
+                {
+                  audit: true,
+                  organizationId,
+                  guardrail: part.guardrailPublicId,
+                  threadId: thread.id,
+                },
+                'An output guardrail refused a chatbot answer',
+              );
+              controller.enqueue(
+                encoder.encode(
+                  `data: ${JSON.stringify({
+                    text: OUTPUT_GUARDRAIL_REFUSAL,
+                    replace: true,
+                  })}\n\n`,
                 ),
               );
             }
@@ -321,7 +352,13 @@ export async function POST(
             try {
               await createMessageInDbCommand({
                 threadId: thread.id,
-                message: { content: fullResponse, source: Source.CHATBOT },
+                message: {
+                  content: fullResponse,
+                  source: Source.CHATBOT,
+                  ...(guardrailBlocked
+                    ? { metadata: { guardrailBlocked } }
+                    : {}),
+                },
                 role: Role.ASSISTANT,
               });
             } catch (err) {

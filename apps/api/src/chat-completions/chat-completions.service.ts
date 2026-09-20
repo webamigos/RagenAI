@@ -31,6 +31,10 @@ import {
 import { type CreateChatCompletionDto } from './dto/create-chat-completion.dto.js';
 import { supportsReasoningEffort } from '../llm/model-registry.js';
 import { servingProvider } from '../llm/native-models.js';
+import { OUTPUT_GUARDRAIL_REFUSAL } from '@ragenai/guardrails';
+
+import { GuardrailError } from '../chains/errors.js';
+import type { GuardrailBlockedMarker } from '../threads/persist-api-thread.service.js';
 
 /**
  * Direct implementation of `POST /v1/chat/completions` — replaces the
@@ -269,24 +273,46 @@ export class ChatCompletionsService {
         return;
       }
 
+      // `textStream` is the guarded one, so a block arrives as a thrown
+      // `GuardrailError` rather than as a short answer. Caught here: a refused
+      // answer is a result, and letting it reach the outer handler would turn
+      // it into an error envelope with nothing saved.
       let text = '';
+      let guardrailBlocked: GuardrailBlockedMarker | null = null;
       try {
         for await (const chunk of result.textStream) {
           text += chunk;
         }
+      } catch (err) {
+        if (!(err instanceof GuardrailError)) {
+          throw err;
+        }
+        guardrailBlocked = {
+          guardrail: err.guardrailPublicId,
+          rule: err.guardrailName,
+        };
+        text = OUTPUT_GUARDRAIL_REFUSAL;
       } finally {
         await closeMcpClients();
       }
       if (saveAssistantMessage) {
-        await saveAssistantMessage(text);
+        await saveAssistantMessage(text, guardrailBlocked);
       }
       const usage = await trackUsage();
 
-      res
-        .status(200)
-        .json(
-          buildChatCompletion({ model: effectiveModel, content: text, usage }),
-        );
+      res.status(200).json(
+        buildChatCompletion({
+          model: effectiveModel,
+          content: text,
+          usage,
+          // The same signal as the streaming branch, for the same reason: a
+          // caller that cannot tell a refusal from an answer will store it
+          // as one.
+          ...(guardrailBlocked
+            ? { finishReason: 'content_filter' as const }
+            : {}),
+        }),
+      );
     } catch (error) {
       await closeMcpClients();
 
@@ -312,7 +338,10 @@ export class ChatCompletionsService {
     model: string;
     includeUsage: boolean;
     trackUsage: () => Promise<OpenAIUsage | undefined>;
-    saveAssistantMessage?: (content: string) => Promise<void>;
+    saveAssistantMessage?: (
+      content: string,
+      guardrailBlocked?: GuardrailBlockedMarker | null,
+    ) => Promise<void>;
   }): Promise<void> {
     const {
       textStream,
@@ -346,22 +375,44 @@ export class ChatCompletionsService {
 
     try {
       let fullText = '';
-      for await (const chunk of textStream) {
-        fullText += chunk;
-        res.write(
-          encodeSseData(
-            buildChatCompletionChunk({
-              id,
-              model,
-              created,
-              delta: { content: chunk },
-            }),
-          ),
-        );
+      let guardrailBlocked: GuardrailBlockedMarker | null = null;
+      let finishReason: 'stop' | 'content_filter' = 'stop';
+      try {
+        for await (const chunk of textStream) {
+          fullText += chunk;
+          res.write(
+            encodeSseData(
+              buildChatCompletionChunk({
+                id,
+                model,
+                created,
+                delta: { content: chunk },
+              }),
+            ),
+          );
+        }
+      } catch (err) {
+        if (!(err instanceof GuardrailError)) {
+          throw err;
+        }
+        // The window refused the answer. The stream ends with
+        // `content_filter`, which is what this format has for exactly this
+        // and what OpenAI itself sends — there is no way to retract chunks
+        // already on the wire, so the honest signal is the finish reason
+        // rather than a field of our own invention that no client reads.
+        //
+        // What is *stored* is the refusal and not the prefix, which is the
+        // half that outlives the request.
+        guardrailBlocked = {
+          guardrail: err.guardrailPublicId,
+          rule: err.guardrailName,
+        };
+        fullText = OUTPUT_GUARDRAIL_REFUSAL;
+        finishReason = 'content_filter';
       }
 
       if (saveAssistantMessage) {
-        await saveAssistantMessage(fullText);
+        await saveAssistantMessage(fullText, guardrailBlocked);
       }
       const usage = await trackUsage();
 
@@ -373,7 +424,7 @@ export class ChatCompletionsService {
               model,
               created,
               delta: {},
-              finishReason: 'stop',
+              finishReason,
             }),
           ),
         );

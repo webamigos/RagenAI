@@ -58,6 +58,7 @@ import { orgVisibilityScope } from '@/lib/auth-access-control';
 import { createBuiltInTools, getBuiltInToolsContext } from '@/libs/tools';
 import { isEncryptionEnabled } from '@ragenai/crypto';
 import { recordSecurityEvent } from '@/features/security/services/commands/record-security-event-command';
+import { answerToPersist } from '@/features/guardrails/utils/answer-to-persist';
 import { StreamUnmasker } from '@/libs/pii/stream-unmasker';
 import { anonymizeWithSecurityEvents } from '@/libs/pii/anonymize-with-security-events';
 import { PII_MASKING_LANGUAGE } from '@/libs/pii/masking-language';
@@ -842,6 +843,17 @@ export async function streamEvents({
 
           let fullMessage = '';
           let reasoningContent = '';
+          /**
+           * Set when an output guardrail refused the answer mid-stream.
+           *
+           * Everything below reads it, because a refused turn is not a short
+           * answer: the accumulated text is withheld, the unmasker's buffer
+           * goes with it, and the resolved-text fallback must not run — that
+           * one would reach past the window into the model's own text and
+           * store exactly what the rule stopped.
+           */
+          let guardrailBlocked: { guardrail: string; rule: string } | null =
+            null;
           const usedToolNames = new Set<string>();
           const streamUnmasker = new StreamUnmasker(piiResult.aliasMap);
 
@@ -898,6 +910,34 @@ export async function streamEvents({
                 // Tool results are not persisted locally — each MCP
                 // service owns its own data. Nothing to store here.
                 break;
+              case 'guardrail-violation': {
+                // The chain's window stopped the stream. What the reader has
+                // seen so far is withheld: the client replaces it on this
+                // event, and nothing here keeps it either.
+                guardrailBlocked = {
+                  guardrail: part.guardrailPublicId,
+                  rule: part.guardrailName,
+                };
+                fullMessage = '';
+                reasoningContent = '';
+                logger.warn(
+                  {
+                    audit: true,
+                    organizationId: orgId ?? null,
+                    guardrail: part.guardrailPublicId,
+                    threadId: threadRecord.id,
+                  },
+                  'An output guardrail refused an answer',
+                );
+                // The security event is the window's, through
+                // `recordGuardrailHit` — filing a second one here would
+                // double every block in the hit counts on the guardrails page.
+                sendApiEvent(controller, 'guardrail_violation', {
+                  guardrail: part.guardrailPublicId,
+                  rule: part.guardrailName,
+                });
+                break;
+              }
               case 'tool-approval-request': {
                 // Phase 2 prompt-injection gating: the SDK paused a write
                 // tool because RAG context is present in this turn. The
@@ -947,14 +987,18 @@ export async function streamEvents({
             }
           }
 
-          const flushedTail = streamUnmasker.flush();
+          // Both of these are skipped on a refused turn, and both would
+          // otherwise undo it. The unmasker still holds the tail of the text
+          // the rule stopped, and the fallback below reads the model's own
+          // resolved text — which never passed through the window at all.
+          const flushedTail = guardrailBlocked ? '' : streamUnmasker.flush();
           if (flushedTail) {
             fullMessage += flushedTail;
             sendApiEvent(controller, 'delta', { content: flushedTail });
           }
 
           // Fallback: use resolved text if fullMessage is empty (multi-step tool use)
-          if (!fullMessage) {
+          if (!fullMessage && !guardrailBlocked) {
             try {
               const resolvedText = (await streamResult.text) || '';
               if (resolvedText) {
@@ -1031,21 +1075,26 @@ export async function streamEvents({
           sendApiEvent(controller, 'save_assistant_response');
 
           try {
+            // The refusal, never the withheld text. Stopping the stream and
+            // deciding what is stored are one change: shipping the first
+            // alone would persist the very text the rule exists to suppress,
+            // and the thread is where it would sit afterwards.
+            const persisted = answerToPersist({
+              fullMessage,
+              blocked: guardrailBlocked,
+              reasoningContent,
+              reasoningEffort: supportsReasoningEffort(effectiveModel)
+                ? 'medium'
+                : null,
+              model: trackedModelId ?? null,
+            });
+
             const dbMessage = await createMessageInDB({
               threadId: threadRecord.id,
               message: {
-                content: fullMessage,
+                content: persisted.content,
                 source: Source.UI,
-                metadata:
-                  reasoningContent.length > 0
-                    ? {
-                        reasoningContent,
-                        reasoningEffort: supportsReasoningEffort(effectiveModel)
-                          ? 'medium'
-                          : null,
-                        model: trackedModelId ?? null,
-                      }
-                    : undefined,
+                metadata: persisted.metadata,
               },
               role: Role.ASSISTANT,
               runId: '',

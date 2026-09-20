@@ -2,9 +2,11 @@ import { Module } from '@nestjs/common';
 
 import { PrismaModule } from '../prisma/prisma.module.js';
 import { SecurityModule } from '../security/security.module.js';
+import { GuardrailHitService } from './guardrail-hit.service.js';
 import { GuardrailsService } from './guardrails.service.js';
 import { PolicyJudgeService } from './policy-judge.service.js';
 import { RunInputGuardrailsService } from './run-input-guardrails.service.js';
+import { RunOutputGuardrailsService } from './run-output-guardrails.service.js';
 
 /**
  * The loader and the binding, exported together.
@@ -16,7 +18,17 @@ import { RunInputGuardrailsService } from './run-input-guardrails.service.js';
  */
 @Module({
   imports: [PrismaModule, SecurityModule],
-  providers: [GuardrailsService, PolicyJudgeService, RunInputGuardrailsService],
-  exports: [GuardrailsService, RunInputGuardrailsService],
+  providers: [
+    GuardrailsService,
+    GuardrailHitService,
+    PolicyJudgeService,
+    RunInputGuardrailsService,
+    RunOutputGuardrailsService,
+  ],
+  exports: [
+    GuardrailsService,
+    RunInputGuardrailsService,
+    RunOutputGuardrailsService,
+  ],
 })
 export class GuardrailsModule {}

@@ -26,6 +26,7 @@ import { GetOrganizationMetadataService } from '../../organizations/get-organiza
 import { GetImportedKbFileIdsService } from '../../documents/get-imported-kb-file-ids.service.js';
 import { GuardrailsService } from '../../guardrails/guardrails.service.js';
 import { RunInputGuardrailsService } from '../../guardrails/run-input-guardrails.service.js';
+import { RunOutputGuardrailsService } from '../../guardrails/run-output-guardrails.service.js';
 import { type OrganizationSettings } from '../../organizations/types.js';
 import { type ThreadDocumentUI } from '../types/thread-document.js';
 import { type BaseChatChainOutput } from '../types/common.js';
@@ -100,6 +101,7 @@ export class InitializeBasicRagService {
     private readonly organizationMetadata: GetOrganizationMetadataService,
     private readonly importedKbFileIds: GetImportedKbFileIdsService,
     private readonly guardrails: GuardrailsService,
+    private readonly runOutputGuardrails: RunOutputGuardrailsService,
     private readonly runGuardrails: RunInputGuardrailsService,
   ) {}
 
@@ -232,6 +234,23 @@ export class InitializeBasicRagService {
                 // So a policy judge's cost lands on the right project and
                 // user, and on a page at all: this runtime has no global
                 // usage recorder to import.
+                projectId,
+                trackAiUsage,
+                apiKey,
+              }),
+            // The window for this turn, built per turn: one shared between
+            // turns would evaluate the second answer against the tail of the
+            // first. `undefined` when the organization has no output rules,
+            // and then the funnel is not wrapped at all.
+            outputStage: () =>
+              this.runOutputGuardrails.guardFor({
+                guardrails: orgGuardrails,
+                organizationId: orgId,
+                userId,
+                source: 'api',
+                // So a judge's cost on a buffered turn lands on the right
+                // project and user, and on a page at all: this runtime has no
+                // global usage recorder to import.
                 projectId,
                 trackAiUsage,
                 apiKey,

@@ -5,11 +5,13 @@ import {
   EVALUABLE_BUILT_IN_KEYS,
   SUPPORTED_COMBINATIONS,
   type GuardrailKind,
+  type GuardrailStage,
 } from '../contracts/guardrail';
 import {
   evaluateInputStage,
   type InputStageDeps,
 } from '../evaluator/input-stage';
+import { createOutputStage } from '../evaluator/output-stage';
 import type { ResolvedGuardrail } from '../resolver/resolve';
 
 /**
@@ -54,7 +56,10 @@ const FIRING_RULE: Partial<Record<GuardrailKind, Partial<ResolvedGuardrail>>> =
 
 const QUESTION = 'the password is hunter2';
 
-function ruleFor(kind: GuardrailKind): ResolvedGuardrail {
+function ruleFor(
+  kind: GuardrailKind,
+  stage: Exclude<GuardrailStage, 'BOTH'> = 'INPUT',
+): ResolvedGuardrail {
   return {
     publicId: `rule-${kind}`,
     organizationId: null,
@@ -62,7 +67,7 @@ function ruleFor(kind: GuardrailKind): ResolvedGuardrail {
     name: kind,
     description: null,
     kind,
-    stage: 'INPUT',
+    stage,
     // `BLOCK`, because a refused turn is the one outcome no amount of
     // accidental no-op can produce.
     action: 'BLOCK',
@@ -93,6 +98,37 @@ function alwaysFiring(): InputStageDeps {
     onJudgeError: vi.fn(),
   };
 }
+
+/**
+ * One driver per stage: it runs a `BLOCK` rule through the real evaluator for
+ * that stage and answers with the kind that stopped the turn, or `undefined`.
+ *
+ * Per stage rather than per kind, because the stage decides the shape of the
+ * evaluation — the input stage reads a whole message and answers once, the
+ * output stage is a window fed delta by delta — while the claim being checked
+ * is the same for both: something acts on this combination.
+ */
+const DRIVERS: Record<
+  Exclude<GuardrailStage, 'BOTH'>,
+  (rule: ResolvedGuardrail) => Promise<GuardrailKind | undefined>
+> = {
+  INPUT: async (rule) => {
+    const result = await evaluateInputStage(
+      [rule],
+      { question: QUESTION, chatHistory: '', moderateHistory: false },
+      alwaysFiring(),
+    );
+    return result.blockedBy?.kind;
+  },
+  OUTPUT: async (rule) => {
+    const stage = createOutputStage([rule], {
+      record: vi.fn(),
+      onBudgetExhausted: vi.fn(),
+    });
+    const events = [...stage.push(QUESTION), ...stage.flush()];
+    return events.find((event) => event.type === 'blocked')?.rule.kind;
+  },
+};
 
 describe('a supported combination is evaluable', () => {
   it('names a firing example for every supported kind', () => {
@@ -127,6 +163,38 @@ describe('a supported combination is evaluable', () => {
       ).toBe(kind);
     },
   );
+
+  it('drives every supported combination through the stage that owns it', async () => {
+    // The kind-level assertion above covers the input stage, which is the only
+    // stage `SUPPORTED_COMBINATIONS` names today. This one is written over the
+    // constant rather than over a stage, so the combination D4 adds is checked
+    // by the change that adds it — and a kind listed for `OUTPUT` with no
+    // branch in the window fails here rather than in production.
+    for (const combination of SUPPORTED_COMBINATIONS) {
+      const driver = DRIVERS[combination.stage];
+      expect(
+        driver,
+        `${combination.stage} is in SUPPORTED_COMBINATIONS and this test cannot drive it`,
+      ).toBeDefined();
+
+      expect(
+        await driver(ruleFor(combination.kind, combination.stage)),
+        `${combination.kind}/${combination.stage} is supported and nothing acts on it. ` +
+          'The resolver keeps such a rule, the panel shows it enabled, and it is ' +
+          'enforced by nothing.',
+      ).toBe(combination.kind);
+    }
+  });
+
+  it('can refuse a turn on the output stage, before any combination names it', async () => {
+    // The guard on the guard, and the reason the loop above is not vacuous
+    // while `SUPPORTED_COMBINATIONS` names no `OUTPUT` entry. A driver that
+    // could never report a block would make that loop pass for every future
+    // output combination without evaluating one — the first shape in
+    // `docs/lessons/three-shapes-of-a-test-that-guards-nothing.md`, arriving
+    // through the test written to prevent it.
+    expect(await DRIVERS.OUTPUT(ruleFor('PATTERN', 'OUTPUT'))).toBe('PATTERN');
+  });
 
   it('every built-in the catalogue names is either evaluable or absent from the evaluable list', () => {
     // The per-key half of the same claim. `BUILT_IN`/`INPUT` covers both

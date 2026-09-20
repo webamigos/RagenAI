@@ -499,44 +499,44 @@ Each phase leaves the application working.
 Ends with rules an operator can create and nothing reading them. Deliberate:
 the three enum members must reach every reader before a writer exists.
 
-- [ ] **A1.** `packages/guardrails` — contracts (`GuardrailKind`, `…Stage`,
+- [x] **A1.** `packages/guardrails` — contracts (`GuardrailKind`, `…Stage`,
       `…Action`, the built-in catalogue with labels, `SUPPORTED_COMBINATIONS`),
       the pure resolver (platform ∪ org, overrides applied and validated,
       source reported, unsupported combinations dropped) and its unit tests. No
       Prisma, Next or provider SDK.
-- [ ] **A2.** The pattern evaluator, the save-time ReDoS validator and the
+- [x] **A2.** The pattern evaluator, the save-time ReDoS validator and the
       per-turn budget, with the adversarial fixture in the tests.
-- [ ] **A3.** Prisma models, the partial unique index, the two
+- [x] **A3.** Prisma models, the partial unique index, the two
       `SecurityEventType` members and `AiUsageStep.GUARDRAIL`, the migration
       and the SQL half of the seed.
-- [ ] **A4.** `apps/admin` → `/guardrails`: platform rules list, create, edit,
+- [x] **A4.** `apps/admin` → `/guardrails`: platform rules list, create, edit,
       delete, each behind `requireAdmin()` and `recordAdminAction` with four
       new `ADMIN_ACTIONS` names; sidebar entry. The form offers only what
       `SUPPORTED_COMBINATIONS` reports, so nothing on the page claims an effect
       it does not have.
-- [ ] **A5.** Per-organization view on the same page — the organization picker
+- [x] **A5.** Per-organization view on the same page — the organization picker
       `/rag-settings` already uses, the effective set with each value's source,
       and override controls.
 
 ### Phase B — input guardrails, every surface
 
-- [ ] **B1.** `GUARDRAILS_DISABLED` in `packages/env` and in
+- [x] **B1.** `GUARDRAILS_DISABLED` in `packages/env` and in
       `create-ragen-app`, plus `npm run guardrails:preflight`. Both land
       **before** any rule can block: the break-glass has to exist by the time
       the first customer message can be refused.
-- [ ] **B2.** `apps/web` binding — the rule loader with its 60 s per-org cache
+- [x] **B2.** `apps/web` binding — the rule loader with its 60 s per-org cache
       and cold-cache fail-open path, the `recordSecurityEvent` adapter, and the
       moderation adapter over the existing `ModerationInstance`.
-- [ ] **B3.** Replace `moderateContent()` in `basic-rag/chain.ts` and
+- [x] **B3.** Replace `moderateContent()` in `basic-rag/chain.ts` and
       `conversation-chain/chain.ts`, retire the `MODERATION_ENABLED` read at
       both, add `GuardrailError` and `guardrail-blocked` to 15 locale files.
       One step: while the env gate stands, a rule enabled in the panel still
       does nothing, which is the gap this spec exists to close.
-- [ ] **B4.** The same in `apps/api/src/chains/basic-rag/chain.ts`, with the
+- [x] **B4.** The same in `apps/api/src/chains/basic-rag/chain.ts`, with the
       NestJS loader, the `SecurityEventService` adapter and the error shape.
       This is what makes the public API and the chatbot widget covered rather
       than assumed to be.
-- [ ] **B5.** The two proofs that B2–B4 actually landed:
+- [x] **B5.** The two proofs that B2–B4 actually landed:
       `tests/architecture/guardrails-are-not-recopied.test.ts`, and a test that
       asserts a chat turn **reads the rules at all** — see below for why the
       second one is not redundant.
@@ -778,16 +778,100 @@ match.
 Independently revertible, and the only phase that touches thread persistence.
 If it slips, A–C and E still ship a complete capability.
 
-- [ ] **D1.** The sliding-window transform for `PATTERN` output rules inside
+- [x] **D1.** The sliding-window transform for `PATTERN` output rules inside
       `mapFullStream` in `apps/web`, **including** the persistence path: a
       blocked output writes the refusal, never the withheld text, through the
       existing thread-encryption function (ADR-42). Stopping the stream and
       deciding what is stored are one change.
-- [ ] **D2.** The same in `apps/api`'s funnel.
-- [ ] **D3.** Buffered evaluation for `LLM_POLICY` output rules, and the
+      Shipped as two PRs, per ADR-50. The window itself lands first in
+      `packages/guardrails` with no consumer — nothing resolves an `OUTPUT`
+      rule until D4 adds the combination, so an evaluator that exists and is
+      called by nobody is the same deliberate state Phase A ended in. The
+      `apps/web` funnel and the persistence path follow, and the checkbox is
+      the second one's.
+- [x] **D1c.** The exits that are not the stream funnel, in both apps.
+
+      `mapFullStream` is one of three ways text leaves a chain, and the other
+      two bypass it completely: `textStream` and the resolved `text`. Three
+      call sites read them — `/api/v1/chat`'s non-streaming branch and *both*
+      branches of `/api/v1/chat/completions`, whose streaming path streams
+      `textStream` rather than the full one. An output rule would apply to the
+      panel and the widget and not to those, which is exactly the silence this
+      spec exists to remove, and no runtime signal would say so.
+
+      Found while wiring D1, and it ships nothing false in the meantime
+      because `OUTPUT` is not authorable until D4 — **which is therefore
+      blocked on this and on D2.** The fix is not a fourth call site: it is
+      the chain handing out a guarded `textStream`, so a future exit is
+      covered by construction rather than by remembering.
+
+      `assistant-stream.ts`'s resolved-text fallback is the same hazard and is
+      already closed in D1: it reads the model's own text, which never passed
+      through the window, so it is skipped on a refused turn.
+- [x] **D2.** The same in `apps/api`'s funnel, and done with D1c rather than
+      after it: `apps/api` reads `textStream` at three of the five uncovered
+      call sites, so the two are one decision about how a chain hands out
+      text. Both apps now derive `textStream` from the mapped stream, and
+      `tests/architecture/a-chain-hands-out-guarded-text.test.ts` is what
+      keeps it derived.
+
+      A block reaches a text reader as a thrown `GuardrailError`, not as a
+      short answer. A string iterator has nowhere to put "and the reason it
+      stopped is a rule", and an iterator that simply ends is the easiest
+      thing in the world to treat as a finished answer — which persists the
+      text the rule stopped. The OpenAI-compatible surface ends its stream
+      with `finish_reason: 'content_filter'`, which is what that format has
+      for exactly this; chunks already on the wire cannot be retracted, and
+      inventing a field no client reads would only look like they could be.
+
+      The resolved `text` promise is the third exit and the one that stays
+      the model's own: the window is streaming state, so evaluating it would
+      mean a second window over the same answer — two buffers, two hits filed
+      for one block. `apps/api` had no reader for it, so it no longer has the
+      field; `apps/web` has exactly one, the empty-answer fallback, and that
+      reader is gated on a refusal. "Its one consumer already checks" was the
+      first answer here and it is not one: it is remembering, which is what
+      this phase exists to replace. The guard above asserts both halves.
+- [x] **D3.** Buffered evaluation for `LLM_POLICY` output rules, and the
       latency warning on the rule form.
+
+      Not "the window plus a judge": a second **mode**, picked before the
+      first token. A judge scores a finished answer, so one judged output rule
+      turns the whole turn from streamed into buffered — and once the answer
+      is in hand the window has nothing left to do either, so the patterns run
+      over the complete text in the same pass. `OutputGuard` is the union the
+      funnel takes, and the binding decides which arm, because the choice
+      decides what the reader sees happen rather than what a rule allows.
+
+      A turn cannot change its mind halfway: by then it would have streamed
+      half an answer. So `needsWholeAnswer` is asked once, over the resolved
+      set, before anything is emitted.
+
+      One thing the two modes must agree on, and it is why the anchor refusal
+      from D1 stays: a rule is authored once and may run in either, so
+      `^`/`$`/`\b` cannot be allowed here merely because this mode would read
+      them correctly. A rule that behaved differently depending on whether the
+      organization also happened to have a policy would be the worst kind of
+      surprise.
+
+      The latency notice is `OUTPUT_POLICY_LATENCY_NOTICE` in `contracts`,
+      rendered on the form for `OUTPUT` and `BOTH` and not for `INPUT`, where
+      it would be false. It is tested in both directions — never shown and
+      always shown both fail — because a notice that is always there is as
+      wrong as one that is never there, and only one of those is visible.
 - [ ] **D4.** `SUPPORTED_COMBINATIONS` opens the `OUTPUT` stage; the admin form
-      starts offering it.
+      starts offering it. Blocked on D1c and D2: the constant is what makes an
+      output rule resolve at all, so opening it while a surface is uncovered
+      is the "reads as enabled, enforced by nothing" failure arriving through
+      the constant meant to prevent it — which has already happened once, in
+      Phase B.
+
+      `a-supported-combination-is-evaluable` is already written over the
+      constant rather than over the input stage, so it checks the new entry in
+      the change that adds it. `docs/guardrails.md`, the changelog note and a
+      `p0-` e2e covering a blocked answer belong here too, for the reason they
+      do not belong earlier: until this item there is nothing an operator can
+      turn on.
 
 ### Phase E — seeing what it did
 

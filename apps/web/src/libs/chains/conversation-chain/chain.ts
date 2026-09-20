@@ -1,6 +1,7 @@
 import { streamText, stepCountIs } from 'ai';
 import { buildToolApprovalConfig } from '@/libs/mcp/client';
 import { getOrgGuardrailsQuery } from '@/features/guardrails/services/queries/get-org-guardrails-query';
+import { createOutputGuardrailsCommand } from '@/features/guardrails/services/commands/create-output-guardrails-command';
 import { runInputGuardrailsCommand } from '@/features/guardrails/services/commands/run-input-guardrails-command';
 import type { ToolGatingContext } from '@/libs/security/tool-gating-context';
 import {
@@ -13,7 +14,7 @@ import type { BaseChatChainOutput } from '../types/common';
 import type { ThreadDocumentUI } from '@/features/documents/contracts/document.types';
 import { sanitizeAndValidateInput } from '../utils/common-operations';
 import { partitionThreadDocuments } from '../utils/chain-utils';
-import { mapFullStream } from '../utils/stream-mapper';
+import { mapFullStream, textOfStream } from '../utils/stream-mapper';
 
 function formatThreadDocuments(docs: ThreadDocumentUI[]): string {
   const withContent = docs.filter((d) => d.content?.trim());
@@ -43,8 +44,15 @@ export const conversationChain = async ({
       // rephrase call to run beside, so the `MASK` split that `basic-rag`
       // needs does not arise here.
       let guardedInput = sanitizedInput;
+      // Declared out here because the output window needs the same resolved
+      // set further down. Loading it twice would be a second query per turn
+      // and, worse, two sets that a cache expiry between them could make
+      // disagree — the input stage refusing under one rule set while the
+      // answer is checked against another.
+      let guardrails:
+        Awaited<ReturnType<typeof getOrgGuardrailsQuery>> | undefined;
       if (config?.tracking?.organizationId) {
-        const guardrails = await getOrgGuardrailsQuery(
+        guardrails = await getOrgGuardrailsQuery(
           config.tracking.organizationId,
         );
         const { question, chatHistory } = await runInputGuardrailsCommand({
@@ -131,10 +139,26 @@ export const conversationChain = async ({
           : {}),
       });
 
+      const guardedStream = mapFullStream(
+        result.fullStream,
+        createOutputGuardrailsCommand({
+          guardrails,
+          organizationId: config?.tracking?.organizationId,
+          userId: config?.tracking?.userId,
+          source: config?.guardrailSource ?? 'chat',
+        }),
+      );
+
       return {
-        textStream: result.textStream,
+        // One mapped stream, and `textStream` is a view of it. They share an
+        // iterator, so a caller consumes one of them and not both — which is
+        // what keeps the window single: two would each hold their own buffer
+        // and each file its own hit for the same answer. Before this, the
+        // text view was the SDK's own and never met the window at all, so a
+        // rule applied to whichever surfaces happened to read `fullStream`.
+        textStream: textOfStream(guardedStream),
         text: result.text,
-        fullStream: mapFullStream(result.fullStream),
+        fullStream: guardedStream,
         reasoningText: result.reasoningText,
         // Every step, not just the last — the value the monthly cost and
         // token ceilings aggregate.

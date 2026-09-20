@@ -19,6 +19,8 @@ import { refuseIfOverUsageCeiling } from '@/app/api/v1/check-usage-ceilings';
 import { loadMcpToolsForApiRequest } from '@/app/api/v1/load-mcp-tools';
 import { createApiThread } from '@/app/api/v1/persist-api-thread';
 import { resolveUsageTeamQuery } from '@/features/teams/services/queries/resolve-usage-team-query';
+import { OUTPUT_GUARDRAIL_REFUSAL } from '@/features/guardrails/constants';
+import { GuardrailError } from '@/libs/chains/errors';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -286,16 +288,43 @@ export async function POST(request: NextRequest) {
           async start(controller) {
             try {
               let fullText = '';
-              for await (const chunk of result.textStream) {
-                fullText += chunk;
+              let guardrailBlocked: {
+                guardrail: string;
+                rule: string;
+              } | null = null;
+              try {
+                for await (const chunk of result.textStream) {
+                  fullText += chunk;
+                  controller.enqueue(
+                    encoder.encode(
+                      `data: ${JSON.stringify({ text: chunk })}\n\n`,
+                    ),
+                  );
+                }
+              } catch (err) {
+                if (!(err instanceof GuardrailError)) {
+                  throw err;
+                }
+                // The window refused the answer mid-stream. What has been
+                // sent is the text it stopped, so the caller is told to
+                // replace it rather than to append — and what is saved is the
+                // refusal, which is the half that outlives the request.
+                guardrailBlocked = {
+                  guardrail: err.guardrailPublicId,
+                  rule: err.guardrailName,
+                };
+                fullText = OUTPUT_GUARDRAIL_REFUSAL;
                 controller.enqueue(
                   encoder.encode(
-                    `data: ${JSON.stringify({ text: chunk })}\n\n`,
+                    `data: ${JSON.stringify({
+                      text: OUTPUT_GUARDRAIL_REFUSAL,
+                      replace: true,
+                    })}\n\n`,
                   ),
                 );
               }
               if (saveAssistantMessage) {
-                await saveAssistantMessage(fullText);
+                await saveAssistantMessage(fullText, guardrailBlocked);
               }
               // Resolve usage after the stream completes. The Vercel AI
               // SDK promises only settle once the underlying provider
@@ -357,15 +386,29 @@ export async function POST(request: NextRequest) {
 
       // Non-streaming: collect full response + usage.
       let text = '';
+      let guardrailBlocked: { guardrail: string; rule: string } | null = null;
       try {
         for await (const chunk of result.textStream) {
           text += chunk;
         }
+      } catch (err) {
+        if (!(err instanceof GuardrailError)) {
+          throw err;
+        }
+        // `textStream` is the guarded one, so a block arrives as a thrown
+        // error rather than as a short answer. A refused answer is a result,
+        // not a fault: caught here, the refusal is what is saved and what the
+        // caller is given, instead of a 500 with nothing stored.
+        guardrailBlocked = {
+          guardrail: err.guardrailPublicId,
+          rule: err.guardrailName,
+        };
+        text = OUTPUT_GUARDRAIL_REFUSAL;
       } finally {
         await closeMcpClients();
       }
       if (saveAssistantMessage) {
-        await saveAssistantMessage(text);
+        await saveAssistantMessage(text, guardrailBlocked);
       }
       const usage = await Promise.resolve(result.usage).catch(() => undefined);
 

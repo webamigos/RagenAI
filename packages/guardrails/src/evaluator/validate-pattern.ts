@@ -1,4 +1,7 @@
-import type { GuardrailStage } from '../contracts/guardrail';
+import {
+  OUTPUT_WINDOW_CHARS,
+  type GuardrailStage,
+} from '../contracts/guardrail';
 import { compilePattern } from './pattern';
 import { probeRegex } from './redos-probe';
 
@@ -27,9 +30,6 @@ import { probeRegex } from './redos-probe';
  * probe spawns a worker, so it belongs in the save action.
  */
 
-/** The output funnel's sliding window, in characters. */
-export const OUTPUT_WINDOW_CHARS = 256;
-
 /** Wall-clock a fixture run may take before a pattern is refused. */
 export const REDOS_BUDGET_MS = 50;
 
@@ -48,6 +48,7 @@ export type PatternValidationFailure =
   | { code: 'not-a-regex'; message: string }
   | { code: 'too-slow'; budgetMs: number; fixture: string }
   | { code: 'match-width-unbounded' }
+  | { code: 'string-anchor-on-output' }
   | { code: 'match-width-over-window'; width: number; window: number };
 
 export type PatternValidationResult =
@@ -101,7 +102,59 @@ export function validatePatternShape(
     return { ok: false, failure: compiled.failure };
   }
 
+  if (stage !== 'INPUT' && usesStringAnchors(pattern)) {
+    return { ok: false, failure: { code: 'string-anchor-on-output' } };
+  }
+
   return validateWidth(maxMatchWidth(pattern), stage);
+}
+
+/**
+ * Whether the pattern anchors to the start or end of the string it is run
+ * against.
+ *
+ * On output that string is the window's buffer, not the answer — so `^` and
+ * `$` mean "the start and end of whatever the provider happened to send",
+ * which is the one thing the window exists to stop a rule depending on. `foo$`
+ * blocks the moment a delta ends in `foo`, even though the sentence carries
+ * on; `^foo` matches once enough text has been released for the buffer to
+ * begin there.
+ *
+ * Refused rather than fixed, and the two halves need different fixes: `$`
+ * could be deferred to the final release, but `^` needs to know whether the
+ * buffer is still at the answer's start, and a rule whose meaning depends on
+ * which of the two it used would be worse than one that is not allowed. Input
+ * is unaffected — a message arrives whole, so its anchors mean what they say.
+ *
+ * Escaped ones are literal characters and a class is its own language, where
+ * `^` is negation. Neither is an anchor, and refusing them would rule out
+ * matching a price.
+ */
+export function usesStringAnchors(source: string): boolean {
+  let inClass = false;
+
+  for (let i = 0; i < source.length; i += 1) {
+    const char = source[i];
+    if (char === '\\') {
+      i += 1;
+      continue;
+    }
+    if (inClass) {
+      if (char === ']') {
+        inClass = false;
+      }
+      continue;
+    }
+    if (char === '[') {
+      inClass = true;
+      continue;
+    }
+    if (char === '^' || char === '$') {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 /**

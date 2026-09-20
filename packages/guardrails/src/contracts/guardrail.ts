@@ -269,6 +269,43 @@ export function isCombinationSupported(
 }
 
 /**
+ * How much of an answer the output funnel holds back, in characters.
+ *
+ * Two things depend on this number and they must be the same number. The
+ * funnel holds the last `OUTPUT_WINDOW_CHARS` characters so a match spanning a
+ * chunk boundary is still caught; `validatePatternShape` refuses to save an
+ * output pattern whose match can be wider than that, because such a rule would
+ * have its prefix released before the match completed and would then be
+ * enforced by nothing.
+ *
+ * In `contracts` rather than beside either of them, and for the reason
+ * `DEFAULT_POLICY_THRESHOLD` moved here in C3: this entry point is the only
+ * one a `'use client'` component may import — the barrel re-exports the ReDoS
+ * probe and its `node:worker_threads` — so a rule form that could not reach
+ * this number would write its own copy of 256 into a help string, and the
+ * sentence explaining the refusal would be free to drift from the refusal.
+ */
+export const OUTPUT_WINDOW_CHARS = 256;
+
+/**
+ * What is stored in place of an answer an `OUTPUT` rule refused.
+ *
+ * The withheld text is never stored — that is the whole point of the rule —
+ * and an empty assistant message would read as a bug rather than a decision.
+ *
+ * One sentence for both runtimes, because both persist it: `apps/web` writes
+ * it to a thread and `apps/api` to an API thread, and the same refusal spelled
+ * two ways is two products. English, and deliberately not the only thing a
+ * reader sees: `apps/web`'s panel renders
+ * `assistant.chat.guardrail-blocked-answer` in their own language off the
+ * message's `guardrailBlocked` marker, because neither `/api/threads` nor the
+ * public API has a locale to translate with. What is stored is what an export
+ * or an API read gets, which is a sentence rather than a blank.
+ */
+export const OUTPUT_GUARDRAIL_REFUSAL =
+  "The answer was withheld because it matched a rule set by your organization's administrator.";
+
+/**
  * Severity of the security event a hit writes. Mirrors the existing
  * `SecurityEventSeverity` union rather than introducing a parallel one.
  */
@@ -431,6 +468,24 @@ export function isThresholdInRange(value: number): boolean {
  * allowance — so three platform policies leave a tenant no room for one of
  * their own, and the rules past the cap do not run rather than queueing.
  */
+/**
+ * The sentence the rule form puts next to an output policy.
+ *
+ * It states the one thing an operator cannot discover from the form and would
+ * otherwise discover from a support ticket: a judged output rule turns the
+ * whole answer from streamed into buffered. Nothing is shown until the model
+ * has read what the assistant wrote and scored it, which is a change to how
+ * the product *feels* rather than to what it allows — the kind of thing that
+ * gets reported as "chat got slow" by someone who never saw this page.
+ *
+ * In `contracts` for the reason the cap notice is: the form is a `'use
+ * client'` component and may import this entry point and no other.
+ */
+export const OUTPUT_POLICY_LATENCY_NOTICE =
+  'Output policies judged by a model delay the whole answer — it appears at ' +
+  'once instead of word by word, because the judge has to read the finished ' +
+  'answer before any of it can be shown.';
+
 export const POLICY_CAP_NOTICE =
   `Each organization may run ${MAX_ACTIVE_LLM_POLICIES} policy rules at ` +
   'once on a stage. A platform policy counts against that allowance in ' +

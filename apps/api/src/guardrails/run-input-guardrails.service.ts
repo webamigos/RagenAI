@@ -3,13 +3,12 @@ import {
   describeProviderError,
   evaluateInputStage,
   providerErrorReason,
-  securityEventTypeFor,
   type ModerationVerdict,
   type ResolvedGuardrail,
 } from '@ragenai/guardrails';
 
 import { GuardrailError } from '../chains/errors.js';
-import { SecurityEventService } from '../security/security-event.service.js';
+import { GuardrailHitService } from './guardrail-hit.service.js';
 import type { ModerationInstance } from '../chains/moderation-instance.js';
 import type { OrgGuardrails } from './guardrails.service.js';
 import { PolicyJudgeService } from './policy-judge.service.js';
@@ -68,7 +67,7 @@ export class RunInputGuardrailsService {
   private readonly logger = new Logger(RunInputGuardrailsService.name);
 
   constructor(
-    private readonly securityEvents: SecurityEventService,
+    private readonly hits: GuardrailHitService,
     private readonly policyJudge: PolicyJudgeService,
   ) {}
 
@@ -120,33 +119,19 @@ export class RunInputGuardrailsService {
     matchCount?: number,
     score?: number,
   ): void {
-    this.securityEvents.record({
-      // The mapping is the package's, so this runtime and apps/web cannot file
-      // the same hit differently. No cast is needed: `SecurityEventType` has
-      // carried both members since Phase A, which added them to the enum with
-      // no writer precisely so every reader would have them first.
-      eventType: securityEventTypeFor(rule),
-      // The rule's own severity, not a constant: an operator who set a rule to
-      // `info` said it was noise, and overriding that makes the alerting
-      // threshold unreachable.
-      severity: rule.severity,
+    // The event's shape is `GuardrailHitService`'s, and the output window
+    // writes through the same one. It was written out here, and a second copy
+    // of it beside the window would have been free to spell `stage`
+    // differently — at which point an operator filtering the incidents page
+    // for output blocks finds only half of them.
+    this.hits.record({
+      rule,
+      stage: 'INPUT',
       source: input.source,
       organizationId: input.organizationId,
-      userId: input.userId ?? null,
-      metadata: {
-        guardrail: rule.publicId,
-        rule: rule.key ?? rule.name,
-        kind: rule.kind,
-        stage: 'INPUT',
-        action: rule.action,
-        // A count, never the text. The matched span is the caller's own
-        // message, and this table is rendered in plain text in the admin panel.
-        ...(matchCount === undefined ? {} : { matchCount }),
-        // The judge's 0–1 score, for a policy rule. A number, never the
-        // judge's prose reason — that paraphrases the caller's own message,
-        // which is what keeps a matched span out of this event too.
-        ...(score === undefined ? {} : { score }),
-      },
+      userId: input.userId,
+      matchCount,
+      score,
     });
   }
 
