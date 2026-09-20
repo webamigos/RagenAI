@@ -13,6 +13,26 @@ import http from 'http';
 const PORT = parseInt(process.env.MOCK_LLM_PORT || '4100', 10);
 const MOCK_RESPONSE = 'This is a mock AI response for e2e testing.';
 
+/**
+ * A prompt can ask for a token to come back in the answer.
+ *
+ * Output guardrails need an answer that matches a rule, and this server
+ * answers every prompt with the same sentence — so a fixture matching that
+ * sentence would refuse every chat spec in the suite rather than the one
+ * under test. Echoing a token the prompt carries keeps the blast radius to
+ * the spec that asks for it.
+ *
+ * The token reaches the *answer*, which is the only side an output rule
+ * reads. It is in the question too, and that is harmless: no input fixture
+ * matches it.
+ */
+const ECHO_REQUEST = /zzqx-echo-([a-z0-9-]{1,40})/i;
+
+function responseFor(body: string): string {
+  const match = ECHO_REQUEST.exec(body);
+  return match ? `${MOCK_RESPONSE} Echo: zzqx-echo-${match[1]}` : MOCK_RESPONSE;
+}
+
 function handleChatCompletions(
   req: http.IncomingMessage,
   res: http.ServerResponse,
@@ -31,6 +51,8 @@ function handleChatCompletions(
       // default to streaming
     }
 
+    const responseText = responseFor(body);
+
     if (stream) {
       res.writeHead(200, {
         'Content-Type': 'text/event-stream',
@@ -39,7 +61,7 @@ function handleChatCompletions(
       });
 
       // Send chunks in OpenAI streaming format
-      const words = MOCK_RESPONSE.split(' ');
+      const words = responseText.split(' ');
       for (const word of words) {
         const chunk = {
           id: 'chatcmpl-mock',
@@ -86,7 +108,7 @@ function handleChatCompletions(
           choices: [
             {
               index: 0,
-              message: { role: 'assistant', content: MOCK_RESPONSE },
+              message: { role: 'assistant', content: responseText },
               finish_reason: 'stop',
             },
           ],

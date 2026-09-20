@@ -12,6 +12,7 @@ import {
   type InputStageDeps,
 } from '../evaluator/input-stage';
 import { createOutputStage } from '../evaluator/output-stage';
+import { evaluateOutputText, needsWholeAnswer } from '../evaluator/output-text';
 import type { ResolvedGuardrail } from '../resolver/resolve';
 
 /**
@@ -121,6 +122,22 @@ const DRIVERS: Record<
     return result.blockedBy?.kind;
   },
   OUTPUT: async (rule) => {
+    // Two evaluators, and the driver picks between them exactly as a binding
+    // does — a judged rule cannot be scored by the window, and a rule routed
+    // to the wrong one would look like a missing branch rather than a wrong
+    // question. D4 is where that mattered: adding `LLM_POLICY`/`OUTPUT` to
+    // the list made this fail against a driver that only knew the window.
+    if (needsWholeAnswer([rule])) {
+      const result = await evaluateOutputText([rule], QUESTION, {
+        judge: vi.fn().mockResolvedValue({ outcome: 'scored', score: 1 }),
+        record: vi.fn(),
+        onBudgetExhausted: vi.fn(),
+        onPolicyCapExceeded: vi.fn(),
+        onJudgeError: vi.fn(),
+      });
+      return result.blockedBy?.kind;
+    }
+
     const stage = createOutputStage([rule], {
       record: vi.fn(),
       onBudgetExhausted: vi.fn(),

@@ -1,4 +1,7 @@
-import type { GuardrailCombination } from '@ragenai/guardrails';
+import {
+  AUTHORABLE_COMBINATIONS,
+  type GuardrailCombination,
+} from '@ragenai/guardrails';
 import { describe, expect, it } from 'vitest';
 
 import { offeredStagesByKind } from '../components/GuardrailForm';
@@ -56,5 +59,32 @@ describe('the stages the form offers', () => {
 
     expect(inputOnly.get('PATTERN')).not.toContain('BOTH');
     expect(bothHalves.get('PATTERN')).toContain('BOTH');
+  });
+});
+
+/**
+ * What the form actually offers, rather than what it does with a list.
+ *
+ * Every test above hands `offeredStagesByKind` a set of its own, which is how
+ * the derivation should be tested — and leaves the real question unasked: is
+ * the output stage on the menu at all? That is a property of
+ * `AUTHORABLE_COMBINATIONS`, and D4 is the change that made it true.
+ */
+describe('the stages this build offers an operator', () => {
+  const offered = offeredStagesByKind([...AUTHORABLE_COMBINATIONS]);
+
+  it('offers a pattern rule on either stage, and on both', () => {
+    expect(offered.get('PATTERN')).toEqual(['INPUT', 'OUTPUT', 'BOTH']);
+  });
+
+  it('offers a policy rule on either stage, and on both', () => {
+    expect(offered.get('LLM_POLICY')).toEqual(['INPUT', 'OUTPUT', 'BOTH']);
+  });
+
+  it('offers no built-in, which is seeded rather than written', () => {
+    // A `BUILT_IN` is identified by a key the code knows. One an operator
+    // typed would have no key and no detector behind it — a rule that
+    // resolves, is kept, matches nothing and reads as enabled.
+    expect([...offered.keys()]).not.toContain('BUILT_IN');
   });
 });

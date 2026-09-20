@@ -301,14 +301,25 @@ describe('unsupported combinations', () => {
   });
 
   it('uses the package default when the caller states no set', () => {
-    // The default is what the package can evaluate: PATTERN at INPUT, and
-    // nothing else. A kind whose evaluator does not exist anywhere is dropped
-    // rather than resolved to a rule that would be enforced by nothing.
+    // The default is what the package can evaluate. `PATTERN` is evaluable at
+    // both stages as of D4, so the row that must still be dropped is a
+    // `BUILT_IN` on the output side: both seeded detectors ask about the
+    // user's message, and neither is a question about an answer.
+    //
+    // The example changed when D4 opened the stage, and that is the point of
+    // writing it as an example rather than as a list — a rule that becomes
+    // evaluable should make this test's *subject* move, not its assertion.
     const result = resolveGuardrails({
       platformRules: [
         rule({ publicId: 'pattern-input' }),
         rule({ publicId: 'judge', kind: 'LLM_POLICY' }),
-        rule({ publicId: 'on-output', stage: 'OUTPUT' }),
+        rule({
+          publicId: 'on-output',
+          kind: 'BUILT_IN',
+          key: 'content-moderation',
+          stage: 'OUTPUT',
+          pattern: null,
+        }),
       ],
     });
 

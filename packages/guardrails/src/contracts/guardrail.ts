@@ -219,6 +219,26 @@ export const SUPPORTED_COMBINATIONS: readonly GuardrailCombination[] =
     Object.freeze({ kind: 'PATTERN', stage: 'INPUT' }),
     Object.freeze({ kind: 'BUILT_IN', stage: 'INPUT' }),
     Object.freeze({ kind: 'LLM_POLICY', stage: 'INPUT' }),
+    // D4, and the phase's only switch. Everything D1–D3 built resolved to
+    // nothing until these two lines: the resolver drops a combination it does
+    // not find here, so an output rule could be written, listed and enabled
+    // and still be dropped before any evaluator saw it.
+    //
+    // Added last on purpose, and after *every* surface was covered rather
+    // than after the first one. D1c found three call sites reading a chain's
+    // text through an accessor the funnel never touched; opening the stage
+    // then would have enforced an output rule in the panel and the widget and
+    // nowhere else, which is the failure this constant exists to prevent
+    // arriving through the constant itself — as it already did once in Phase
+    // B.
+    //
+    // No `BUILT_IN`/`OUTPUT`: both seeded detectors read the *user's*
+    // message. `content-moderation` asks a provider endpoint about it and
+    // `jailbreak-detection` scores an attempt to override instructions, and
+    // neither is a question about an answer. A built-in that belongs on the
+    // output side would arrive with its own evaluator and its own key.
+    Object.freeze({ kind: 'PATTERN', stage: 'OUTPUT' }),
+    Object.freeze({ kind: 'LLM_POLICY', stage: 'OUTPUT' }),
   ] as const);
 
 /**
@@ -248,6 +268,15 @@ export const AUTHORABLE_COMBINATIONS: readonly GuardrailCombination[] =
   Object.freeze([
     Object.freeze({ kind: 'PATTERN', stage: 'INPUT' }),
     Object.freeze({ kind: 'LLM_POLICY', stage: 'INPUT' }),
+    // Authorable in the same change that makes them evaluable, because for
+    // these two the gap would be the harmful direction: a stage the runtime
+    // enforces and the form does not offer is a capability nobody can reach,
+    // and the reverse — offered and unenforced — is what the split between
+    // these lists exists to prevent. `isCombinationSupported` derives `BOTH`
+    // from the pair, so a rule running at both stages becomes authorable here
+    // too, for these kinds and not for `BUILT_IN`.
+    Object.freeze({ kind: 'PATTERN', stage: 'OUTPUT' }),
+    Object.freeze({ kind: 'LLM_POLICY', stage: 'OUTPUT' }),
   ] as const);
 
 /**

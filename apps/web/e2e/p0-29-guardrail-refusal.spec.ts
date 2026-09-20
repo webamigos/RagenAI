@@ -104,20 +104,39 @@ test.describe('the seeded fixtures are what this spec assumes', () => {
     // would make every assertion below pass for the wrong reason: no rule
     // means no refusal, which is what three of these tests assert the absence
     // of.
-    type Fixture = { action: string; enabled: boolean; pattern: string };
+    type Fixture = {
+      action: string;
+      enabled: boolean;
+      pattern: string;
+      stage: string;
+    };
     const rules = await withPrisma<Fixture[]>((prisma) =>
       prisma.guardrail.findMany({
         where: { name: { startsWith: 'E2E guardrail' } },
-        select: { action: true, enabled: true, pattern: true },
+        select: {
+          action: true,
+          enabled: true,
+          pattern: true,
+          stage: true,
+        },
       }),
     );
 
-    expect(rules).toHaveLength(2);
+    // The input pair this spec is about. A third fixture is seeded for
+    // `p0-30` and reads the answer rather than the question, so it is scoped
+    // out here rather than counted — a length assertion over everything named
+    // "E2E guardrail" would fail whenever the output suite grows one.
+    const onInput = rules.filter((rule) => rule.stage === 'INPUT');
+
+    expect(onInput).toHaveLength(2);
     expect(
-      rules.every((rule) => rule.enabled),
+      onInput.every((rule) => rule.enabled),
       'a disabled fixture would make the refusal tests pass vacuously',
     ).toBe(true);
-    expect(rules.map((rule) => rule.pattern).sort()).toEqual([BLOCKED, LOGGED]);
+    expect(onInput.map((rule) => rule.pattern).sort()).toEqual([
+      BLOCKED,
+      LOGGED,
+    ]);
   });
 });
 

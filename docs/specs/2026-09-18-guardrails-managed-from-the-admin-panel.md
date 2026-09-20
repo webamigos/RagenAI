@@ -859,19 +859,32 @@ If it slips, A–C and E still ship a complete capability.
       it would be false. It is tested in both directions — never shown and
       always shown both fail — because a notice that is always there is as
       wrong as one that is never there, and only one of those is visible.
-- [ ] **D4.** `SUPPORTED_COMBINATIONS` opens the `OUTPUT` stage; the admin form
+- [x] **D4.** `SUPPORTED_COMBINATIONS` opens the `OUTPUT` stage; the admin form
       starts offering it. Blocked on D1c and D2: the constant is what makes an
       output rule resolve at all, so opening it while a surface is uncovered
       is the "reads as enabled, enforced by nothing" failure arriving through
       the constant meant to prevent it — which has already happened once, in
       Phase B.
 
-      `a-supported-combination-is-evaluable` is already written over the
-      constant rather than over the input stage, so it checks the new entry in
-      the change that adds it. `docs/guardrails.md`, the changelog note and a
-      `p0-` e2e covering a blocked answer belong here too, for the reason they
-      do not belong earlier: until this item there is nothing an operator can
-      turn on.
+      `a-supported-combination-is-evaluable` was already written over the
+      constant, so it checked the new entries in the change that added them —
+      and it failed, which is the point: its `OUTPUT` driver knew the window
+      and not the buffered pass, so `LLM_POLICY`/`OUTPUT` resolved to a
+      combination nothing acted on. The driver now picks the mode the way a
+      binding does.
+
+      Two `OUTPUT` entries and not three. A `BUILT_IN` asks a question about
+      the *user's* message — a moderation endpoint about it, a classifier
+      scoring an attempt to override instructions — and neither is a question
+      about an answer.
+
+      `p0-30` covers a withheld answer end to end. Its fixture matches what
+      `mock-llm-server.ts` echoes back when a prompt asks for a token, not
+      what the mock always says: a rule matching the ordinary answer would
+      refuse every chat spec in the suite. It asserts the stored refusal
+      **positively** — "the content does not contain the token" is true of
+      ciphertext too, so on an install with thread encryption on it would pass
+      while proving nothing.
 
 ### Phase E — seeing what it did
 
