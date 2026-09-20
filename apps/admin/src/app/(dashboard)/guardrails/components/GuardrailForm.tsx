@@ -6,6 +6,7 @@ import {
   GUARDRAIL_SEVERITIES,
   AUTHORABLE_COMBINATIONS,
   isScoredRule,
+  OUTPUT_POLICY_LATENCY_NOTICE,
   POLICY_CAP_NOTICE,
   type GuardrailAction,
   type GuardrailCombination,
@@ -380,6 +381,18 @@ export function GuardrailForm({
             <p className="rounded-md border border-border bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
               {POLICY_CAP_NOTICE}
             </p>
+
+            {/* Only on a stage that runs it. A judged rule on the output side
+                turns the whole answer from streamed into buffered, which is a
+                change to how the product feels rather than to what it allows
+                — the kind of thing reported as "chat got slow" by somebody who
+                never saw this page. Rendered off the stage rather than shown
+                always, because it is false for an input policy. */}
+            {stage !== 'INPUT' ? (
+              <p className="rounded-md border border-border bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
+                {OUTPUT_POLICY_LATENCY_NOTICE}
+              </p>
+            ) : null}
 
             <PolicyTrial policy={policy} threshold={parsedThreshold} />
           </>

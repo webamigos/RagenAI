@@ -468,6 +468,24 @@ export function isThresholdInRange(value: number): boolean {
  * allowance — so three platform policies leave a tenant no room for one of
  * their own, and the rules past the cap do not run rather than queueing.
  */
+/**
+ * The sentence the rule form puts next to an output policy.
+ *
+ * It states the one thing an operator cannot discover from the form and would
+ * otherwise discover from a support ticket: a judged output rule turns the
+ * whole answer from streamed into buffered. Nothing is shown until the model
+ * has read what the assistant wrote and scored it, which is a change to how
+ * the product *feels* rather than to what it allows — the kind of thing that
+ * gets reported as "chat got slow" by someone who never saw this page.
+ *
+ * In `contracts` for the reason the cap notice is: the form is a `'use
+ * client'` component and may import this entry point and no other.
+ */
+export const OUTPUT_POLICY_LATENCY_NOTICE =
+  'Output policies judged by a model delay the whole answer — it appears at ' +
+  'once instead of word by word, because the judge has to read the finished ' +
+  'answer before any of it can be shown.';
+
 export const POLICY_CAP_NOTICE =
   `Each organization may run ${MAX_ACTIVE_LLM_POLICIES} policy rules at ` +
   'once on a stage. A platform policy counts against that allowance in ' +

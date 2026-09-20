@@ -243,11 +243,17 @@ export class InitializeBasicRagService {
             // first. `undefined` when the organization has no output rules,
             // and then the funnel is not wrapped at all.
             outputStage: () =>
-              this.runOutputGuardrails.stageFor({
+              this.runOutputGuardrails.guardFor({
                 guardrails: orgGuardrails,
                 organizationId: orgId,
                 userId,
                 source: 'api',
+                // So a judge's cost on a buffered turn lands on the right
+                // project and user, and on a page at all: this runtime has no
+                // global usage recorder to import.
+                projectId,
+                trackAiUsage,
+                apiKey,
               }),
           },
           ragSettings: {

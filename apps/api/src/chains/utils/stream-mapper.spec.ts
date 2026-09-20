@@ -206,11 +206,14 @@ describe('mapFullStream with an output guardrail window', () => {
   });
 
   const stageFor = (rules: ResolvedGuardrail[], windowChars = 4) =>
-    createOutputStage(
-      rules,
-      { record: vi.fn(), onBudgetExhausted: vi.fn() },
-      { windowChars },
-    );
+    ({
+      mode: 'window',
+      stage: createOutputStage(
+        rules,
+        { record: vi.fn(), onBudgetExhausted: vi.fn() },
+        { windowChars },
+      ),
+    }) as const;
 
   it('is the iterator it has always been when there is no stage', async () => {
     const results = await collectStream(
@@ -394,7 +397,7 @@ describe('textOfStream', () => {
           { type: 'text-delta', text: 'the key is hun' },
           { type: 'text-delta', text: 'ter2' },
         ]),
-        stage,
+        { mode: 'window', stage },
       ),
     );
 
@@ -402,5 +405,114 @@ describe('textOfStream', () => {
       code: 'guardrail-blocked',
       guardrailPublicId: 'rule-9',
     });
+  });
+});
+
+/**
+ * The buffered mode, which is what a judged output rule turns a turn into.
+ *
+ * The window and this share a funnel and nothing else: one releases text as it
+ * goes, the other holds every word until a model has read the answer. A caller
+ * that treated the second as "the window, plus waiting" would stream half an
+ * answer before finding out.
+ */
+describe('mapFullStream in buffered mode', () => {
+  const bufferedTo = (
+    verdict: { text: string; blockedBy?: ResolvedGuardrail },
+    seen?: (text: string) => void,
+  ) =>
+    ({
+      mode: 'buffered',
+      evaluate: (text: string) => {
+        seen?.(text);
+        return Promise.resolve(verdict);
+      },
+    }) as const;
+
+  it('releases nothing until the answer is finished, then all of it', async () => {
+    let judgedText = '';
+    const results = await collectStream(
+      mapFullStream(
+        createMockStream([
+          { type: 'text-delta', text: 'one ' },
+          { type: 'text-delta', text: 'two ' },
+          { type: 'text-delta', text: 'three' },
+        ]),
+        bufferedTo({ text: 'one two three' }, (t) => {
+          judgedText = t;
+        }),
+      ),
+    );
+
+    // The judge saw the whole answer, and the reader gets it as one delta —
+    // splitting it back into the provider's chunks would only pretend the
+    // answer had streamed.
+    expect(judgedText).toBe('one two three');
+    expect(results).toEqual([
+      { type: 'text-delta', textDelta: 'one two three' },
+    ]);
+  });
+
+  it('releases what the evaluator returned, not what the model said', async () => {
+    const results = await collectStream(
+      mapFullStream(
+        createMockStream([{ type: 'text-delta', text: 'the key is hunter2' }]),
+        bufferedTo({ text: 'the key is [[redacted:secrets]]' }),
+      ),
+    );
+
+    expect(results).toEqual([
+      { type: 'text-delta', textDelta: 'the key is [[redacted:secrets]]' },
+    ]);
+  });
+
+  it('emits a violation and no text at all when a rule refused the answer', async () => {
+    const blocking = {
+      publicId: 'policy-9',
+      key: null,
+      name: 'No competitor pricing',
+    } as unknown as ResolvedGuardrail;
+
+    const results = await collectStream(
+      mapFullStream(
+        createMockStream([
+          { type: 'text-delta', text: 'their price is ' },
+          { type: 'text-delta', text: '12 zloty' },
+        ]),
+        bufferedTo({ text: 'their price is 12 zloty', blockedBy: blocking }),
+      ),
+    );
+
+    expect(results).toEqual([
+      {
+        type: 'guardrail-violation',
+        guardrailPublicId: 'policy-9',
+        guardrailName: 'No competitor pricing',
+      },
+    ]);
+    expect(JSON.stringify(results)).not.toContain('12 zloty');
+  });
+
+  it('passes a tool call straight through as it happens', async () => {
+    // No text is leaving around it, so there is nothing to keep it in step
+    // with — holding it back would only make it arrive later for no reason.
+    const results = await collectStream(
+      mapFullStream(
+        createMockStream([
+          { type: 'text-delta', text: 'checking' },
+          {
+            type: 'tool-call',
+            toolCallId: 't1',
+            toolName: 'search',
+            input: {},
+          },
+          { type: 'text-delta', text: ' done' },
+        ]),
+        bufferedTo({ text: 'checking done' }),
+      ),
+    );
+
+    const types = results.map((part) => (part as { type: string }).type);
+    expect(types).toEqual(['tool-call', 'text-delta']);
   });
 });

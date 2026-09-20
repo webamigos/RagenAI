@@ -79,15 +79,17 @@ export interface ChainConfig {
       moderateHistory: boolean;
     }) => Promise<{ question: string; chatHistory: string }>;
     /**
-     * Builds the output window for this turn, or `undefined` when the
-     * organization has no output rules.
+     * Builds this turn's output guard, or `undefined` when the organization
+     * has no output rules. Which of the two modes it is — a sliding window,
+     * or the whole answer held for a judge — is the binding's decision, not
+     * the chain's.
      *
      * A factory rather than an instance because a window carries the turn's
      * state: one shared between turns would evaluate the second answer
      * against the tail of the first.
      */
     readonly outputStage?: () =>
-      import('@ragenai/guardrails').OutputStage | undefined;
+      import('@ragenai/guardrails').OutputGuard | undefined;
   };
   threadDocuments?: ThreadDocumentUI[];
   /**

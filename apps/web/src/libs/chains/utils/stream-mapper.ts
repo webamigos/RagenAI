@@ -1,4 +1,4 @@
-import type { OutputStage } from '@ragenai/guardrails';
+import type { OutputGuard, OutputTextResult } from '@ragenai/guardrails';
 
 import { GuardrailError } from '../errors';
 import type { ChainStreamPart } from '../types/common';
@@ -33,11 +33,24 @@ function cleanToolCallId(id: string): string {
  *
  * Without one, the returned iterator is the same shape it has always been and
  * costs nothing: an organization with no output rules is not buffered.
+ *
+ * Two modes, picked before the first token. `window` releases text as it goes,
+ * holding the last few hundred characters so a match spanning a delta is still
+ * caught. `buffered` releases nothing until the answer is finished, because a
+ * judged rule scores the whole answer and there is no verdict to act on before
+ * the last token — the rule form says so next to the toggle. A turn cannot
+ * change its mind halfway: by then it would have streamed half an answer.
  */
 export async function* mapFullStream(
   sdkStream: AsyncIterable<any>,
-  outputStage?: OutputStage,
+  guard?: OutputGuard,
 ): AsyncIterable<ChainStreamPart> {
+  if (guard?.mode === 'buffered') {
+    yield* bufferedAnswer(sdkStream, guard.evaluate);
+    return;
+  }
+
+  const outputStage = guard?.stage;
   /**
    * Non-text parts that arrived while text was held back, with the position
    * they arrived at.
@@ -201,5 +214,90 @@ export async function* textOfStream(
     if (part.type === 'text-delta') {
       yield part.textDelta;
     }
+  }
+}
+
+/**
+ * The buffered mode: nothing is released until the answer is finished.
+ *
+ * A judged output rule scores the whole answer, so there is no verdict to act
+ * on before the last token — and once the whole answer is in hand there is
+ * nothing left for a window to do either, so the patterns run over it in the
+ * same pass.
+ *
+ * Parts that are not text pass straight through as they arrive rather than
+ * queueing. In the window's mode they queue because text is leaving around
+ * them and the order matters; here *no* text leaves until the end, so a tool
+ * call held back would only arrive later for no reason. The reader sees the
+ * turn's tool calls, then the answer, which is the truthful account of a turn
+ * whose answer could not be shown until it was complete.
+ */
+async function* bufferedAnswer(
+  sdkStream: AsyncIterable<any>,
+  evaluate: (text: string) => Promise<OutputTextResult>,
+): AsyncIterable<ChainStreamPart> {
+  let answer = '';
+
+  for await (const part of sdkStream) {
+    switch (part.type) {
+      case 'text-delta':
+        answer += part.text;
+        break;
+      case 'reasoning-start':
+        yield { type: 'reasoning-start', id: part.id };
+        break;
+      case 'reasoning-delta':
+        yield { type: 'reasoning-delta', id: part.id, delta: part.text };
+        break;
+      case 'reasoning-end':
+        yield { type: 'reasoning-end', id: part.id };
+        break;
+      case 'tool-call':
+        yield {
+          type: 'tool-call',
+          toolCallId: cleanToolCallId(part.toolCallId),
+          toolName: part.toolName,
+          args: part.input ?? part.args,
+        };
+        break;
+      case 'tool-result':
+        yield {
+          type: 'tool-result',
+          toolCallId: cleanToolCallId(part.toolCallId),
+          toolName: part.toolName,
+          result: part.output !== undefined ? part.output : part.result,
+        };
+        break;
+      case 'tool-approval-request': {
+        const toolCall = part.toolCall ?? {};
+        yield {
+          type: 'tool-approval-request',
+          approvalId: part.approvalId,
+          toolCallId: cleanToolCallId(toolCall.toolCallId ?? ''),
+          toolName: toolCall.toolName ?? 'unknown',
+          args: toolCall.input ?? toolCall.args,
+        };
+        break;
+      }
+      // Ignore other event types (source, finish, finish-step, etc.)
+    }
+  }
+
+  const verdict = await evaluate(answer);
+
+  if (verdict.blockedBy) {
+    yield {
+      type: 'guardrail-violation',
+      guardrailPublicId: verdict.blockedBy.publicId,
+      guardrailName: verdict.blockedBy.key ?? verdict.blockedBy.name,
+    };
+    return;
+  }
+
+  // One delta, because that is what happened: the answer arrived at once.
+  // Splitting it back into the provider's chunks would only pretend otherwise,
+  // and every consumer already accumulates deltas into one string.
+  if (verdict.text.length > 0) {
+    yield { type: 'text-delta', textDelta: verdict.text };
   }
 }
