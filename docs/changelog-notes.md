@@ -607,3 +607,15 @@ archive is the blog.
   says so. Content moderation has no such field on purpose: it asks a
   provider's endpoint that answers yes or no rather than with a score, so a
   threshold there would be a number nothing reads.
+
+- **An organization can now be given its own answer to "what happens when this
+  fires", not just "does it run".** Overriding a platform rule for one customer
+  used to be a single switch: on, off, or inherit. It now also takes the action
+  — so you can keep a blocking rule in place for everyone and have it merely
+  log for one tenant while they work through the false positives — and, on a
+  rule judged by a model, the score it fires at. Both were already honoured
+  everywhere the rules run; there was simply no control that could set them.
+  Two guardrails around the edges: a threshold is offered only on a rule whose
+  verdict is actually a score, and an action is refused when the rule cannot
+  carry it out, so you find out at the point of saving rather than from a rule
+  that quietly keeps doing what it did before.

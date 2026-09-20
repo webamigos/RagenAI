@@ -197,22 +197,31 @@ an operator who cannot see _why_ a rule is on is not in control of it.
 An override whose target is not a platform rule is incoherent. It is refused
 twice: the admin action will not write one, and the resolver drops it.
 
-**Two of these values the resolver reads and no page can yet write.** An
-override's `action` and `threshold` are both honoured — validated, with their
-own `dropped` reasons when they are out of range or incoherent — but
-`setGuardrailOverrideAction` writes `enabled` and nothing else.
+**All three of an override's values can be set from the organization page**:
+whether the rule runs, what it does when it fires, and — on a scored rule — the
+score it fires at. "Keep the platform's rule, but only log it for us" is the
+thing an override exists for, and until C4b the resolver honoured that and no
+control could express it.
 
-This is the *opposite* of the failure the rest of this page is about. Nothing
-is silently unenforced — the code is a knob with no handle, and it reads as
-though the feature is there. "Keep the platform's rule, but only log it for us"
-is the thing an override exists for and the panel cannot express it yet. It is
-C4b in the spec, and it is called out here rather than left for somebody to
-deduce from a schema.
+Two things about how the row is stored are worth knowing, because both are
+places a value could quietly disappear:
 
-A third one is now closed: a scored built-in's own `threshold` on the platform
-rule — see [Tuning a built-in detector](#tuning-a-built-in-detector) above. A
-link rather than a direction, because that section sits earlier on the page and
-"below" was already wrong the day it was written.
+- **The row goes when all three are inherited, not when the state is.**
+  Inherit means no row rather than a row full of nulls. That was one condition
+  while there was one field; deleting on the enabled state alone would discard
+  an organization's tuned threshold the first time somebody set that state back
+  to inherit, from a control saying nothing about thresholds.
+- **A threshold is only offered where a verdict is a score**, and refused
+  elsewhere rather than stored. An action is refused when the kind cannot carry
+  it out — `MASK` on a built-in or a policy, neither of which returns a span.
+  The resolver would catch both and carry on, which is right at read time and
+  useless at save time: the page would report success and the choice would
+  never apply.
+
+`tests/architecture/a-resolver-branch-has-a-writer.test.ts` is what keeps this
+true. It runs the opposite way from every other guard here — they catch a rule
+an operator can author that nothing enforces; it catches a value the resolver
+honours that nothing can set.
 
 **One override origin is special.** Rows marked `legacy_on_premise` were seeded
 by the migration from `OrganizationSettings.contentModerationEnabled`, and are

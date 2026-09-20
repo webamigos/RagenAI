@@ -20,6 +20,24 @@ import { ROUTES, TEST_ORG_NAME } from './constants';
 const RULE_NAME = 'E2E throwaway rule';
 const RENAMED = 'E2E throwaway rule (edited)';
 
+/** The organization card for the rule under test. */
+const orgCard = (page: Page) =>
+  page.locator('div.rounded-lg.border', { hasText: RENAMED }).last();
+
+/**
+ * The action select, read back after a reload.
+ *
+ * A round trip is the point: a `<select>` holds whatever was chosen, stored or
+ * not, so asserting its value without reloading would pass against a write
+ * that never happened.
+ */
+const onHitAfterReload = async (page: Page) => {
+  // Awaited. A floating `page.reload()` races the locator that follows it, and
+  // the resulting flake looks like a slow server rather than like this.
+  await page.reload();
+  return orgCard(page).getByLabel(`On a hit for ${RENAMED}`, { exact: true });
+};
+
 const escapeForRegExp = (value: string): string =>
   value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
@@ -151,15 +169,21 @@ test.describe.serial('platform guardrails', () => {
     ).toBeVisible({ timeout: 20_000 });
 
     // The per-organization rows are cards, not table rows.
-    const card = page
-      .locator('div.rounded-lg.border', { hasText: RENAMED })
-      .last();
+    const card = orgCard(page);
     await expect(card).toBeVisible({ timeout: 20_000 });
+
+    // **Addressed by label, not by tag.** A row carried one `<select>` until
+    // an override could set the action as well as the state, and
+    // `card.locator('select')` then matched two — a strict-mode violation that
+    // no unit test could have seen, because it is a property of the rendered
+    // row rather than of either control.
+    const state = card.getByLabel(`State for ${RENAMED}`, { exact: true });
+    const onHit = card.getByLabel(`On a hit for ${RENAMED}`, { exact: true });
 
     // Before: nothing decided it here, so the platform rule did.
     await expect(card).toContainText('from the platform rule');
 
-    await card.locator('select').selectOption('on');
+    await state.selectOption('on');
     await expect(page.getByText('Override saved')).toBeVisible();
 
     // After: the page says which layer decided it, which is the whole reason
@@ -168,10 +192,40 @@ test.describe.serial('platform guardrails', () => {
       timeout: 20_000,
     });
 
-    // Put it back, so the delete below is not deleting a rule with an
+    // The action override, which is the one an organization actually asks for:
+    // keep the platform's rule, but only log it for us. The resolver has
+    // honoured it since Phase A and no control could set it until C4b, so this
+    // is the assertion that would catch that regressing.
+    //
+    // **Checked after a reload, not from the toast.** A select shows what was
+    // chosen whether or not anything stored it, and by this point several
+    // saves have happened — the toasts stack, so `getByText('Override saved')`
+    // matches more than one and asserts nothing useful either. The value
+    // surviving a round trip is the only part that means the write landed.
+    await onHit.selectOption('LOG');
+    await expect(await onHitAfterReload(page)).toHaveValue('LOG', {
+      timeout: 20_000,
+    });
+
+    // Put both back, so the delete below is not deleting a rule with an
     // override hanging off it for reasons unrelated to what is being tested.
-    await card.locator('select').selectOption('inherit');
-    await expect(page.getByText('Override saved')).toBeVisible();
+    // The action first: the row is removed only when every field inherits, so
+    // clearing the state while an action is still set leaves the row in place
+    // — that is the behaviour C4b introduced, and it is why this order
+    // matters rather than being incidental.
+    await onHit.selectOption('inherit');
+    await expect(await onHitAfterReload(page)).toHaveValue('inherit', {
+      timeout: 20_000,
+    });
+
+    await orgCard(page)
+      .getByLabel(`State for ${RENAMED}`, { exact: true })
+      .selectOption('inherit');
+
+    // Back to inheriting everything, which is the state with no row at all.
+    await expect(orgCard(page)).toContainText('from the platform rule', {
+      timeout: 20_000,
+    });
   });
 
   test('the rule can be deleted again', async ({ page }) => {
