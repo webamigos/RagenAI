@@ -1,4 +1,4 @@
-import { PROVIDER_REGISTRY } from './registry.js';
+import type { ProviderDefinition } from '../types.js';
 
 /**
  * Ported verbatim from apps/web's
@@ -6,15 +6,17 @@ import { PROVIDER_REGISTRY } from './registry.js';
  * docs/adrs/21-monorepo-and-api-decoupling.md.
  */
 
-/** Whether a behaviour pack carries a prompt fragment for this slug. */
-function hasBehaviourPack(value: string): boolean {
-  return value in PROVIDER_REGISTRY;
-}
-
+/**
+ * `definitions` is the resolved catalogue keyed by slug — a row merged with
+ * its behaviour pack. Passed in rather than read from the registry, because a
+ * connector an operator added carries its prompt on its row and the registry
+ * only knows the eleven that ship with Ragen. Sibling of apps/web's.
+ */
 export function buildMcpContext(
   connectorProviders: string[],
   timeZone: string,
   currentDateTime: string,
+  definitions: Record<string, ProviderDefinition> = {},
 ): string {
   const header = `You have access to external tools via connected integrations (${connectorProviders.join(', ')}). Authentication is handled automatically — just call the tools directly without any credentials.
 
@@ -23,10 +25,7 @@ Current date and time: ${currentDateTime} (timezone: ${timeZone}). Use this to r
   const sections: string[] = [header];
 
   for (const providerId of connectorProviders) {
-    if (!hasBehaviourPack(providerId)) {
-      continue;
-    }
-    const fragment = PROVIDER_REGISTRY[providerId].systemPromptFragment;
+    const fragment = definitions[providerId]?.systemPromptFragment;
     if (!fragment) {
       continue;
     }

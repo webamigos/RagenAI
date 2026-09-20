@@ -74,6 +74,17 @@ export type ProviderDefinition = {
   oauthClientSecret?: string;
   /** If true, rewrites `scope` → `user_scope` in the OAuth authorization URL (required by Slack). */
   useUserScope?: boolean;
+  /** The brand asset, when this connector has one. See apps/web's sibling. */
+  iconUrl?: string | null;
+  /**
+   * Set when this connector's address is one somebody typed — a catalogue row
+   * an operator created, or the shop URL a user supplies at connect time — so
+   * it must pass the SSRF policy at connect time and on every tool call.
+   * Absent for a built-in resolved from `MCP_*_SERVER_URL`.
+   */
+  addressGuard?: { allowPrivate: boolean };
+  /** True when the OAuth client credentials are in the vault, not in env. */
+  oauthCredentialsStored?: boolean;
   /** For `api_key_custom_header`: HTTP header name (e.g. `X-MCP-API-Key`). */
   headerName?: string;
   /** For `api_key_custom_header`: path appended to the user-supplied site URL (e.g. `/wp-json/woocommerce/mcp`). */

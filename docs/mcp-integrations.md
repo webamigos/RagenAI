@@ -16,6 +16,8 @@ A `ProviderDefinition` is a **behaviour pack** now — optional code keyed by sl
 
 **An entry's own OAuth client credentials** are stored under the catalogue's customer id, `ragen-catalogue`, and the row keeps only `oauthCredentialsStored`. `getConnectorOAuthCredentialsQuery` is the one place that decides where a connector's credentials come from: the environment for a built-in, the vault for an entry an operator created.
 
+Both apps resolve the catalogue — `apps/web` through `getConnectorDefinitionsQuery`, `apps/api` through `CatalogueService`. The second matters for two reasons that are not symmetry: an entry disabled in the panel has to stop working through the public API too, and an operator's typed URL has to reach the address policy on that path as well.
+
 **Addresses are checked** by `@ragenai/connector-guard` at three moments — save time in the panel, connect time, and every tool call — for every URL somebody typed. A built-in resolved from `MCP_*_SERVER_URL` keeps the deployer-controlled exemption. `allowsPrivateAddress` widens the policy to RFC 1918 space and to nothing else.
 
 **Key files**: `apps/admin/src/app/(dashboard)/mcp-catalogue/` (the panel), `packages/connector-guard` (the address policy, the guarded transport and `probeMcpServer`, which is Test connection), `src/features/connectors/`, `src/libs/mcp/client.ts`, `src/libs/ragen-vault/` (wiring) + `packages/vault-client` (the client itself), `src/libs/chains/basic-rag/chain.ts` + `conversation-chain/chain.ts`, `src/app/[locale]/(panel)/settings/connectors/`, `src/app/api/connectors/external/`, `src/app/api/threads/services/assistant-stream.ts`.

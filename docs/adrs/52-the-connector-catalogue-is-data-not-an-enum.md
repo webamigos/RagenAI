@@ -111,7 +111,11 @@ token-refresh cycle.
 - The eleven are still described twice, in `apps/web` and `apps/api`. Retiring
   that duplicate is its own spec; until then
   `every-seeded-connector-resolves.test.ts` holds the copies to each other.
-- `apps/api` still resolves connectors from its compiled manifests rather than
-  from rows, so an entry added from the panel is connectable from the app and
-  not yet from the public API. Named here so it is a known gap rather than a
-  surprise.
+- `apps/api` resolves from the catalogue too, through its own
+  `CatalogueService`. It had to: an entry disabled in the panel would otherwise
+  have kept working through the public API — an entry that is off everywhere
+  except one path is not off — and an operator's typed URL would have been
+  dialled there with no address check, because that app's guard covered only
+  the shop-URL shape. What it does *not* yet do is read a catalogue entry's
+  vault-held OAuth credentials, so an `EXTERNAL_MCP` entry an operator created
+  authorizes from the app and not from the API.
