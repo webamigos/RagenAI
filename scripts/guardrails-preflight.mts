@@ -24,7 +24,7 @@ import { pathToFileURL } from 'node:url';
 
 import { PrismaPg } from '@prisma/adapter-pg';
 
-import { guardrailsDisabled } from '../packages/env/src/deployment.js';
+import { guardrailsDisabled } from '@ragenai/env';
 import { PrismaClient } from '../apps/web/src/generated/prisma/client.js';
 
 /** The built-in whose environment counterpart this phase retires. */
@@ -148,7 +148,8 @@ async function readPlatformRules(): Promise<Map<string, boolean>> {
 async function main(): Promise<void> {
   // Said first, because it makes everything below moot. A service started with
   // the break-glass set evaluates nothing, whatever the panel holds.
-  if (guardrailsDisabled(process.env)) {
+  const broken = guardrailsDisabled(process.env);
+  if (broken) {
     console.log(
       'GUARDRAILS_DISABLED is set: this service will evaluate no rules at all.',
     );
@@ -186,15 +187,12 @@ async function main(): Promise<void> {
   }
   console.log();
 
+  // Everything is reported before anything returns. The first version exited
+  // on a missing row, so a database that was both unseeded *and* about to lose
+  // moderation reported one problem, took a fix, and only then mentioned the
+  // other — two round trips on a check whose whole purpose is to say what is
+  // wrong before a deploy, not after one.
   const missing = missingRules(builtIns, rules);
-  if (missing.length > 0) {
-    console.error(
-      `No platform rule exists for: ${missing.join(', ')}. The guardrails seed has not run against this database.`,
-    );
-    process.exitCode = 1;
-    return;
-  }
-
   const differences = disagreements(builtIns, rules);
   const losesProtection = differences.filter((d) => d.envEnabled);
 
@@ -204,7 +202,25 @@ async function main(): Promise<void> {
     );
   }
 
-  if (losesProtection.length > 0) {
+  if (missing.length > 0) {
+    console.error(
+      `  BLOCK  No platform rule exists for: ${missing.join(', ')}. The guardrails seed has not run against this database.`,
+    );
+  }
+
+  // The break-glass makes the reconciliation advice unactionable rather than
+  // wrong: with it set, enabling a rule in the panel changes nothing, because
+  // the service will evaluate none of them. Blocking the deploy on advice the
+  // operator cannot act on is worse than saying what is actually true.
+  if (broken) {
+    console.log(
+      '\nNot blocking: GUARDRAILS_DISABLED is set, so no rule will be enforced' +
+        ' after this deploy either. Reconcile the rows above before you unset it.',
+    );
+    return;
+  }
+
+  if (missing.length > 0 || losesProtection.length > 0) {
     console.error(
       `\n${losesProtection.length} protection(s) this service enforces today would stop at the Phase B deploy.`,
     );
