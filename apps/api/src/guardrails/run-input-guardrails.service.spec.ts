@@ -15,7 +15,19 @@ import type { OrgGuardrails } from './guardrails.service.js';
  */
 
 const record = vi.fn();
-const service = () => new RunInputGuardrailsService({ record } as never);
+/**
+ * The judge is a stub that scores zero, so nothing here depends on a model.
+ * Overridden per test where a policy rule is the subject — see the
+ * `PolicyJudgeService` spec for what the real one does with the score.
+ */
+const judge = vi.fn().mockResolvedValue({ outcome: 'scored', score: 0 });
+const service = () =>
+  new RunInputGuardrailsService(
+    { record } as never,
+    {
+      forTurn: () => judge,
+    } as never,
+  );
 
 const rule = (over: Record<string, unknown> = {}) =>
   ({

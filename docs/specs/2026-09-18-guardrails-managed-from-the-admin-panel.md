@@ -564,10 +564,30 @@ match.
 
 ### Phase C — policies judged by a model
 
-- [ ] **C1.** The `LLM_POLICY` evaluator *and* its `AiUsageStep.GUARDRAIL`
+- [x] **C1.** The `LLM_POLICY` evaluator *and* its `AiUsageStep.GUARDRAIL`
       tracking, in one step — a judge that runs without recording its cost is
       the thing C2 was supposed to prevent. Judge prompt, `generateObject` with
       a 0–1 score, threshold, 3 s timeout, pass-on-error.
+
+      Three things came out differently from the sketch above, each for a
+      reason worth keeping. **The timeout is a constant, not a per-rule
+      field** — the schema has no column for it, and one both runtimes read is
+      the half of that which can be true today. **The judge is not asked for a
+      `reason`**, unlike the classifier it replaces: an explanation
+      paraphrases the customer's message, and the only two places it could go,
+      the security event and the trace, are the two this product keeps
+      customer content out of. The score alone is what tells a false positive
+      from a real one. And **`MAX_ACTIVE_LLM_POLICIES` is enforced in the
+      loop**, not only where rules are authored — an authoring check is one a
+      seed, a migration or a hand-made request walks past, and the thing being
+      bounded is a bill.
+
+      `LLM_POLICY` is now in `SUPPORTED_COMBINATIONS` and deliberately still
+      absent from `AUTHORABLE_COMBINATIONS`: the form has no field for the
+      prose until C3, so a rule authored as one would be written with no
+      `policy` — the row the resolver drops. The admin action now validates
+      against the authorable set rather than the supported one, which is what
+      closes that as a hand-made request too.
 - [ ] **C2.** Absorb the jailbreak classifier as a scored built-in evaluated
       **inside the loop**, and delete the two route-level calls in
       `assistant-stream.ts` and `chatbot/[token]/chat/route.ts`. This is not

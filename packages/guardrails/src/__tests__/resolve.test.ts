@@ -181,7 +181,12 @@ describe('overrides', () => {
     (threshold) => {
       const result = resolveGuardrails({
         platformRules: [
-          rule({ publicId: 'p1', kind: 'LLM_POLICY', threshold: 0.8 }),
+          rule({
+            publicId: 'p1',
+            kind: 'LLM_POLICY',
+            threshold: 0.8,
+            policy: 'Never discuss a competitor’s pricing.',
+          }),
         ],
         overrides: [
           { guardrailPublicId: 'p1', organizationId: 'org-a', threshold },
@@ -202,7 +207,12 @@ describe('overrides', () => {
     (threshold) => {
       const result = resolveGuardrails({
         platformRules: [
-          rule({ publicId: 'p1', kind: 'LLM_POLICY', threshold: 0.8 }),
+          rule({
+            publicId: 'p1',
+            kind: 'LLM_POLICY',
+            threshold: 0.8,
+            policy: 'Never discuss a competitor’s pricing.',
+          }),
         ],
         overrides: [
           { guardrailPublicId: 'p1', organizationId: 'org-a', threshold },
@@ -427,5 +437,66 @@ describe('an organization-scoped built-in', () => {
 
     expect(resolution.rules.map((r) => r.publicId)).toEqual(['org-moderation']);
     expect(resolution.dropped).toEqual([]);
+  });
+});
+
+describe('a policy rule with no policy', () => {
+  // The `LLM_POLICY` shape of the failure `built-in-has-no-evaluator` catches
+  // for detectors: a row whose kind the build can evaluate in principle and
+  // which has nothing to evaluate in fact. The combination check cannot see
+  // it, because the combination is supported.
+  const blank = ['', '   ', null, undefined] as const;
+
+  it.each(blank)('is dropped from the platform layer (%j)', (policy) => {
+    const result = resolveGuardrails({
+      platformRules: [rule({ publicId: 'p1', kind: 'LLM_POLICY', policy })],
+      supportedCombinations: EVERYTHING,
+    });
+
+    expect(result.rules).toEqual([]);
+    expect(result.dropped).toEqual([
+      { reason: 'policy-has-no-text', guardrailPublicId: 'p1' },
+    ]);
+  });
+
+  it.each(blank)(
+    'is dropped from an organization’s own rules (%j)',
+    (policy) => {
+      // Both loops, because two loops disagreeing about what the build can
+      // evaluate is how the built-in version of this bug shipped twice.
+      const result = resolveGuardrails({
+        platformRules: [],
+        orgRules: [
+          rule({
+            publicId: 'o1',
+            organizationId: 'org-a',
+            kind: 'LLM_POLICY',
+            policy,
+          }),
+        ],
+        supportedCombinations: EVERYTHING,
+      });
+
+      expect(result.rules).toEqual([]);
+      expect(result.dropped).toEqual([
+        { reason: 'policy-has-no-text', guardrailPublicId: 'o1' },
+      ]);
+    },
+  );
+
+  it('keeps one that has prose', () => {
+    const result = resolveGuardrails({
+      platformRules: [
+        rule({
+          publicId: 'p1',
+          kind: 'LLM_POLICY',
+          policy: 'Never discuss a competitor’s pricing.',
+        }),
+      ],
+      supportedCombinations: EVERYTHING,
+    });
+
+    expect(result.rules.map((r) => r.publicId)).toEqual(['p1']);
+    expect(result.dropped).toEqual([]);
   });
 });

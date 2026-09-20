@@ -37,6 +37,7 @@ const STEP_COLORS: Record<string, string> = {
   MODERATION: '#10b981',
   REPHRASING: '#f59e0b',
   EMBEDDINGS: '#4f46e5',
+  GUARDRAIL: '#ec4899',
 };
 
 const STEP_LABELS: Record<string, string> = {
@@ -44,6 +45,7 @@ const STEP_LABELS: Record<string, string> = {
   MODERATION: 'MODERATION',
   REPHRASING: 'REPHRASING',
   EMBEDDINGS: 'EMBEDDINGS',
+  GUARDRAIL: 'GUARDRAIL',
 };
 
 function formatCost(value: number): string {

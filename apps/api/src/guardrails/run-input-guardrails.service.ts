@@ -10,6 +10,8 @@ import { GuardrailError } from '../chains/errors.js';
 import { SecurityEventService } from '../security/security-event.service.js';
 import type { ModerationInstance } from '../chains/moderation-instance.js';
 import type { OrgGuardrails } from './guardrails.service.js';
+import { PolicyJudgeService } from './policy-judge.service.js';
+import type { TrackAiUsage } from '../ai-usage/types.js';
 
 /**
  * apps/api's binding to the shared input stage.
@@ -48,13 +50,25 @@ export type ApiInputGuardrailInput = {
   readonly userId?: string | null;
   /** `api` for the public API, `chatbot` for the embedded widget. */
   readonly source: 'api' | 'chatbot';
+  /** Where a judge model's cost is attributed. */
+  readonly projectId?: string | null;
+  /**
+   * Injected rather than imported, like every other usage recorder here — the
+   * chain is a plain function with no container to reach into.
+   */
+  readonly trackAiUsage?: TrackAiUsage;
+  /** The organization's own provider credentials, when it has them. */
+  readonly apiKey?: string;
 };
 
 @Injectable()
 export class RunInputGuardrailsService {
   private readonly logger = new Logger(RunInputGuardrailsService.name);
 
-  constructor(private readonly securityEvents: SecurityEventService) {}
+  constructor(
+    private readonly securityEvents: SecurityEventService,
+    private readonly policyJudge: PolicyJudgeService,
+  ) {}
 
   private async moderate(
     factory: () => ModerationInstance,
@@ -98,6 +112,7 @@ export class RunInputGuardrailsService {
     rule: ResolvedGuardrail,
     input: ApiInputGuardrailInput,
     matchCount?: number,
+    score?: number,
   ): void {
     this.securityEvents.record({
       // The mapping is the package's, so this runtime and apps/web cannot file
@@ -121,6 +136,10 @@ export class RunInputGuardrailsService {
         // A count, never the text. The matched span is the caller's own
         // message, and this table is rendered in plain text in the admin panel.
         ...(matchCount === undefined ? {} : { matchCount }),
+        // The judge's 0–1 score, for a policy rule. A number, never the
+        // judge's prose reason — that paraphrases the caller's own message,
+        // which is what keeps a matched span out of this event too.
+        ...(score === undefined ? {} : { score }),
       },
     });
   }
@@ -137,10 +156,28 @@ export class RunInputGuardrailsService {
       },
       {
         moderate: (text) => this.moderate(input.moderator, text),
-        record: ({ rule, matchCount }) => this.record(rule, input, matchCount),
+        judge: this.policyJudge.forTurn({
+          organizationId: input.organizationId,
+          projectId: input.projectId,
+          userId: input.userId,
+          trackAiUsage: input.trackAiUsage,
+          apiKey: input.apiKey,
+        }),
+        record: ({ rule, matchCount, score }) =>
+          this.record(rule, input, matchCount, score),
         onBudgetExhausted: (skipped, elapsedMs) =>
           this.logger.warn(
             `Guardrail budget exhausted after ${elapsedMs}ms; ${skipped.length} pattern rule(s) did not run for ${input.organizationId}`,
+          ),
+        onPolicyCapExceeded: (skipped, cap) =>
+          this.logger.warn(
+            `More than ${cap} policy rules are active for ${input.organizationId}; ${skipped.length} did not run`,
+          ),
+        // Logged, not recorded as a security event: an event says a rule
+        // fired, and a rule that could not run is the opposite claim.
+        onJudgeError: (rule, reason) =>
+          this.logger.warn(
+            `Policy rule ${rule.publicId} did not run for ${input.organizationId}: ${reason}`,
           ),
       },
     );

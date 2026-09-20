@@ -90,6 +90,13 @@ type GuardrailRow = {
   severity: string;
   pattern: string | null;
   patternIsRegex: boolean;
+  /**
+   * The prose a judge model is given. Carried because it *is* the prompt: a
+   * resolved `LLM_POLICY` rule without it reaches the evaluator with nothing
+   * to evaluate, which the resolver then drops — so dropping it here would
+   * make every policy rule vanish for reasons no page could explain.
+   */
+  policy: string | null;
   threshold: number | null;
 };
 
@@ -107,6 +114,7 @@ function toRule(row: GuardrailRow): GuardrailRule {
     severity: row.severity as GuardrailSeverity,
     pattern: row.pattern,
     patternIsRegex: row.patternIsRegex,
+    policy: row.policy,
     threshold: row.threshold,
   };
 }

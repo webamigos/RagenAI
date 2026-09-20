@@ -6,6 +6,7 @@ import {
   GUARDRAIL_KINDS,
   GUARDRAIL_SEVERITIES,
   GUARDRAIL_STAGES,
+  AUTHORABLE_COMBINATIONS,
   isActionValidForKind,
   isCombinationSupported,
   type GuardrailAction,
@@ -101,12 +102,12 @@ async function validate(
   /**
    * A rule whose kind and stage are the platform's, not the operator's.
    *
-   * A built-in is seeded `BUILT_IN`/`INPUT`, which `SUPPORTED_COMBINATIONS`
-   * does not list — the evaluator arrives in Phase B. Running the combination
-   * check over it rejected every edit of a built-in before the identity guard
-   * below could say what is actually editable, so the page offered an Edit
-   * button that could never succeed. The check belongs to what an operator
-   * *chooses*; these two fields they cannot.
+   * A built-in is seeded `BUILT_IN`/`INPUT`, which the authorable set
+   * deliberately never lists — a built-in is seeded, not created. Running the
+   * combination check over it rejected every edit of a built-in before the
+   * identity guard below could say what is actually editable, so the page
+   * offered an Edit button that could never succeed. The check belongs to what
+   * an operator *chooses*; these two fields they cannot.
    */
   fixedByPlatform = false,
 ): Promise<GuardrailMutationResult> {
@@ -115,11 +116,22 @@ async function validate(
     return { ok: false, message: shapeError };
   }
 
-  if (!fixedByPlatform && !isCombinationSupported(input.kind, input.stage)) {
+  // Against what an operator may **author**, not against what the build can
+  // evaluate. The two stopped being the same question in Phase B and diverged
+  // further in C: `LLM_POLICY` is evaluable as of the judge, and a rule of
+  // that kind authored through this action would be written with no `policy`
+  // — a row the resolver then drops, on a page that shows it enabled.
+  //
+  // A Server Action is a public endpoint, so the form offering only
+  // `AUTHORABLE_COMBINATIONS` is not the check; this is.
+  if (
+    !fixedByPlatform &&
+    !isCombinationSupported(input.kind, input.stage, AUTHORABLE_COMBINATIONS)
+  ) {
     return {
       ok: false,
       message:
-        `This build cannot evaluate ${input.kind} rules at ${input.stage}. ` +
+        `This panel cannot author ${input.kind} rules at ${input.stage}. ` +
         'Saving one would put a rule on the page that nothing enforces.',
     };
   }

@@ -157,11 +157,16 @@ export type GuardrailCombination = {
  * Before, and a rule is kept and silently does nothing; after, and a rule is
  * dropped while the panel says otherwise. `a-supported-combination-is-
  * evaluable` in the tests holds the seeded built-ins to it.
+ *
+ * `LLM_POLICY`/`INPUT` joins it in Phase C, in the change that adds
+ * `evaluator/policy.ts` and the judge branch of `evaluateInputStage` — the
+ * same rule, applied to the kind rather than to a key.
  */
 export const SUPPORTED_COMBINATIONS: readonly GuardrailCombination[] =
   Object.freeze([
     Object.freeze({ kind: 'PATTERN', stage: 'INPUT' }),
     Object.freeze({ kind: 'BUILT_IN', stage: 'INPUT' }),
+    Object.freeze({ kind: 'LLM_POLICY', stage: 'INPUT' }),
   ] as const);
 
 /**

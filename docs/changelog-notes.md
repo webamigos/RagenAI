@@ -511,3 +511,21 @@ archive is the blog.
   an enum member into, with "any guardrail hit" at the top — and a filter it
   does not recognise now shows everything rather than an error page, which is
   what a typo used to produce there and in the CSV export.
+
+- `[brief]` **A guardrail rule can now be a policy written in plain language,
+  and you can see what judging it cost.** Until now a rule had to be a pattern
+  or one of the two built-in detectors, which covers "never let this string
+  through" and not "this assistant answers only about our product catalogue".
+  A policy rule carries the sentence you would say to a colleague, and a model
+  scores each message against it from 0 to 1; at or above the rule's threshold
+  the rule has fired, and — like every other rule — it starts in observation
+  mode, recording what it would have done. Policies on a turn are judged at
+  the same time rather than one after another, so three rules cost one wait
+  and not three, and no more than three run at once: each one is a model call
+  on every turn, and that is a bill rather than a delay. Judging shows on the
+  AI-usage page under its own **Guardrail** step, so "what are the guardrails
+  costing us" is a number you can read instead of a line on a provider's
+  invoice. A judge that times out or fails lets the turn through and says so
+  in the log — a check that can take chat down is worse than the thing it
+  catches. Writing a policy from the panel arrives in the next change; this one
+  is the engine underneath it.

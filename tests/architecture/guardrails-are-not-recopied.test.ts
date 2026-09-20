@@ -60,6 +60,18 @@ const PACKAGE_ONLY_SYMBOLS = [
   'mergeSpans',
   'maskPlaceholder',
   'maskLabelFor',
+  // Phase C's primitives, added with the judge they belong to. An app that
+  // calls `runPolicyRules` and loops over the hits has written the policy half
+  // of the input stage again, and the two copies would then disagree about the
+  // cap, about what an error means, or about which rule blocks first.
+  //
+  // `policyThresholdFor` is here for a sharper reason than the others: a
+  // second copy of "0.7 when the rule names none" is a rule that is more
+  // sensitive on one surface than the other for the same organization, which
+  // is invisible until somebody compares two incident lists.
+  'runPolicyRules',
+  'policyThresholdFor',
+  'hasEvaluablePolicy',
 ];
 
 /**
@@ -186,5 +198,68 @@ describe('guardrails are not recopied', () => {
     // becoming an export kept alive by its own guard.
     expect(inputStage).toContain('export function securityEventTypeFor');
     expect(inputStage).toContain('export async function evaluateInputStage');
+
+    // The judge's question and its model, which C1 added. A binding that
+    // spelled either for itself would make one runtime's policy rules behave
+    // differently from the other's for the same organization — the public API
+    // being the surface where nobody would notice.
+    const policy = readFileSync(
+      join(REPO_ROOT, PACKAGE_SRC, 'evaluator', 'policy.ts'),
+      'utf8',
+    );
+    expect(policy).toContain('export const POLICY_JUDGE_MODEL');
+    expect(policy).toContain('export const POLICY_JUDGE_SYSTEM_PROMPT');
+    expect(policy).toContain('export function policyJudgePrompt');
+    expect(policy).toContain('export const DEFAULT_POLICY_THRESHOLD');
+  });
+
+  it('every judge binding reads its model, its prompt and its step', () => {
+    // Positive rather than negative, because the failure this guards is an
+    // *absence*: a binding that stopped importing `POLICY_JUDGE_MODEL` and
+    // hardcoded a model id would pass any test that only looks at files
+    // mentioning the constant. A negative match narrower than the thing it
+    // forbids is the first shape in
+    // docs/lessons/three-shapes-of-a-test-that-guards-nothing.md.
+    //
+    // The step is asserted here and not only in each app's unit test because
+    // it is the whole reason Phase C1 is one step rather than two: *a judge
+    // that runs without recording its cost is the thing C2 was supposed to
+    // prevent.* Dropping the `trackAiUsage` call breaks nothing anybody can
+    // see — the page simply shows spend with no step accounting for it.
+    const bindings = appFiles.filter((file) =>
+      /policy-judge\.(ts|service\.ts)$/.test(file),
+    );
+
+    expect(
+      bindings.map((f) => relative(REPO_ROOT, f)).sort(),
+      'Both runtimes have a judge. If one of these is missing, either it was ' +
+        'renamed or a runtime lost its judge — and a runtime with no judge ' +
+        'resolves LLM_POLICY rules and enforces none of them.',
+    ).toEqual([
+      'apps/api/src/guardrails/policy-judge.service.ts',
+      'apps/web/src/features/guardrails/utils/policy-judge.ts',
+    ]);
+
+    for (const binding of bindings) {
+      const code = stripComments(readFileSync(binding, 'utf8'));
+      const where = relative(REPO_ROOT, binding);
+
+      expect(code, `${where} does not read POLICY_JUDGE_MODEL`).toContain(
+        'POLICY_JUDGE_MODEL',
+      );
+      expect(
+        code,
+        `${where} does not read POLICY_JUDGE_SYSTEM_PROMPT`,
+      ).toContain('POLICY_JUDGE_SYSTEM_PROMPT');
+      expect(
+        code,
+        `${where} does not build its prompt with the shared one`,
+      ).toContain('policyJudgePrompt');
+      expect(
+        code,
+        `${where} runs a judge model and never records what it cost. ` +
+          'That is the failure Phase C1 was made one step to prevent.',
+      ).toContain('GUARDRAIL');
+    }
   });
 });
