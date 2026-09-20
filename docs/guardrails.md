@@ -180,6 +180,21 @@ an operator who cannot see _why_ a rule is on is not in control of it.
 An override whose target is not a platform rule is incoherent. It is refused
 twice: the admin action will not write one, and the resolver drops it.
 
+**Three of these values the resolver reads and no page can yet write.** An
+override's `action` and `threshold` are both honoured — validated, with their
+own `dropped` reasons when they are out of range or incoherent — but
+`setGuardrailOverrideAction` writes `enabled` and nothing else. The same goes
+for a scored built-in's own `threshold` on the platform rule: `policyThresholdFor`
+reads it and the form offers no field, so `jailbreak-detection` runs at whatever
+sensitivity the migration seeded.
+
+This is the *opposite* of the failure the rest of this page is about. Nothing
+is silently unenforced — the code is a knob with no handle, and it reads as
+though the feature is there. "Keep the platform's rule, but only log it for us"
+is the thing an override exists for and the panel cannot express it yet. It is
+C4 in the spec, and it is called out here rather than left for somebody to
+deduce from a schema.
+
 **One override origin is special.** Rows marked `legacy_on_premise` were seeded
 by the migration from `OrganizationSettings.contentModerationEnabled`, and are
 honoured only when the installation is on-premise — because that column was
