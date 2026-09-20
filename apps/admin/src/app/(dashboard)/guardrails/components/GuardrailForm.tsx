@@ -3,7 +3,7 @@
 import {
   ACTIONS_BY_KIND,
   GUARDRAIL_SEVERITIES,
-  SUPPORTED_COMBINATIONS,
+  AUTHORABLE_COMBINATIONS,
   type GuardrailAction,
   type GuardrailCombination,
   type GuardrailKind,
@@ -22,7 +22,7 @@ import {
 /**
  * The kinds this build can evaluate, and the stages each can run at.
  *
- * Derived from `SUPPORTED_COMBINATIONS` rather than from the enum, so the form
+ * Derived from `AUTHORABLE_COMBINATIONS` rather than from the enum, so the form
  * cannot offer a rule that nothing would evaluate. That is the difference
  * between a page that is honest and a page with a "not enforced yet" banner
  * on it — the banner starts lying the moment one combination works, and these
@@ -44,7 +44,8 @@ export function offeredStagesByKind(
     const stagesByKind = new Map<GuardrailKind, GuardrailStage[]>();
     // A rule being edited contributes its own kind and stage, whether or not
     // this build evaluates them. A built-in is seeded `BUILT_IN`/`INPUT`,
-    // which `SUPPORTED_COMBINATIONS` does not list until Phase B — without
+    // which `AUTHORABLE_COMBINATIONS` deliberately never lists, because a
+    // built-in is seeded rather than created — without
     // this both selects render with no option matching the value they hold,
     // which reads as an empty form rather than as a fixed field.
     if (existing) {
@@ -80,7 +81,7 @@ export function offeredStagesByKind(
 
 function useOffered(existing?: { kind: GuardrailKind; stage: GuardrailStage }) {
   return useMemo(
-    () => offeredStagesByKind(SUPPORTED_COMBINATIONS, existing),
+    () => offeredStagesByKind(AUTHORABLE_COMBINATIONS, existing),
     [existing],
   );
 }

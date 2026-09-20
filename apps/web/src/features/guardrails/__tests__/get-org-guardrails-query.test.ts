@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const mockGuardrailFindMany = vi.fn();
 const mockOverrideFindMany = vi.fn();
 const mockLoggerError = vi.fn();
+const mockLoggerWarn = vi.fn();
 const mockGuardrailsDisabled = vi.fn(() => false);
 const mockIsOnPremise = vi.fn(() => false);
 
@@ -23,7 +24,7 @@ vi.mock('@ragenai/env', () => ({
 vi.mock('@/app/lib/utils/logger', () => ({
   logger: {
     error: (...a: unknown[]) => mockLoggerError(...a),
-    warn: vi.fn(),
+    warn: (...a: unknown[]) => mockLoggerWarn(...a),
     info: vi.fn(),
     debug: vi.fn(),
   },
@@ -227,6 +228,46 @@ describe('when the database cannot be reached', () => {
     } finally {
       vi.useRealTimers();
     }
+  });
+});
+
+describe('a row the resolver discarded', () => {
+  it('is said out loud, because nothing else will say it', async () => {
+    // An override pointing at a rule that is not a platform rule: the admin
+    // action refuses to create one, and the resolver drops it if a row exists
+    // anyway. Dropped is the dangerous state — the panel shows the rule as
+    // configured because it reports what is stored, and only the runtime
+    // knows it threw the row away.
+    mockGuardrailFindMany.mockResolvedValue([patternRule()]);
+    mockOverrideFindMany.mockResolvedValue([
+      {
+        guardrail: { publicId: 'not-a-platform-rule' },
+        enabled: false,
+        action: null,
+        threshold: null,
+        origin: null,
+      },
+    ]);
+
+    await getOrgGuardrailsQuery(ORG);
+
+    const warned = mockLoggerWarn.mock.calls.find(([, message]) =>
+      String(message).includes('discarded'),
+    );
+    expect(warned, 'no warning named the discarded row').toBeDefined();
+    expect((warned![0] as { audit?: boolean }).audit).toBe(true);
+  });
+
+  it('says nothing when the resolver kept everything', async () => {
+    mockGuardrailFindMany.mockResolvedValue([patternRule()]);
+
+    await getOrgGuardrailsQuery(ORG);
+
+    expect(
+      mockLoggerWarn.mock.calls.filter(([, m]) =>
+        String(m).includes('discarded'),
+      ),
+    ).toEqual([]);
   });
 });
 

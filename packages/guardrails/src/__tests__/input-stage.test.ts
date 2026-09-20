@@ -259,3 +259,43 @@ describe('isModerationRule', () => {
     ).toBe(false);
   });
 });
+
+describe('a supported combination is evaluable', () => {
+  it('keeps the seeded built-ins rather than dropping them', async () => {
+    // The bug this exists for: `SUPPORTED_COMBINATIONS` listed only
+    // PATTERN/INPUT while the two seeded detectors are BUILT_IN/INPUT, so the
+    // runtime resolver discarded `content-moderation` as unsupported. An
+    // operator enabled moderation, the panel showed it enabled, nothing ran,
+    // and `guardrails:preflight` called the configuration reconciled.
+    const { resolveGuardrails } = await import('../resolver/resolve');
+    const { BUILT_IN_GUARDRAIL_KEYS } = await import('../contracts/guardrail');
+
+    const resolution = resolveGuardrails({
+      platformRules: BUILT_IN_GUARDRAIL_KEYS.map((key) => ({
+        ...rule({ publicId: key, kind: 'BUILT_IN', key, pattern: null }),
+        organizationId: null,
+      })),
+    });
+
+    expect(resolution.dropped).toEqual([]);
+    expect(resolution.rules.map((r) => r.publicId)).toEqual([
+      ...BUILT_IN_GUARDRAIL_KEYS,
+    ]);
+  });
+
+  it('is a superset of what an operator may author', async () => {
+    // Authoring is the narrower question: a built-in is seeded, so a new one
+    // an operator typed would have no key and no detector behind it. Anything
+    // authorable must nonetheless be evaluable, or the form offers a rule the
+    // runtime throws away.
+    const { AUTHORABLE_COMBINATIONS, isCombinationSupported } =
+      await import('../contracts/guardrail');
+
+    for (const combination of AUTHORABLE_COMBINATIONS) {
+      expect(
+        isCombinationSupported(combination.kind, combination.stage),
+        `${combination.kind}/${combination.stage} can be authored but not evaluated`,
+      ).toBe(true);
+    }
+  });
+});

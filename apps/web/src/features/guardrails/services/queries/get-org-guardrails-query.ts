@@ -181,6 +181,19 @@ export async function getOrgGuardrailsQuery(
       // has no evaluator for.
     });
 
+    // A dropped row is a rule that reads as enabled in the panel and is
+    // enforced by nothing — the failure this whole feature exists to prevent,
+    // and until now it was returned in `dropped` and read by nobody. The
+    // panel deliberately shows every combination because it reports what is
+    // *stored*; only the runtime knows what it threw away, so only the
+    // runtime can say so.
+    if (resolution.dropped.length > 0) {
+      logger.warn(
+        { audit: true, organizationId, dropped: resolution.dropped },
+        'Guardrail rows were discarded and will not be enforced',
+      );
+    }
+
     const value: OrgGuardrails = {
       ...shape(resolution.rules),
       degraded: false,

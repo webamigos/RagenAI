@@ -154,6 +154,17 @@ export class GuardrailsService {
         // panel passes every combination because it reports what is stored.
       });
 
+      // A dropped row reads as enabled in the panel and is enforced by
+      // nothing. The panel reports what is stored; only the runtime knows what
+      // it discarded, so only the runtime can say so.
+      if (resolution.dropped.length > 0) {
+        this.logger.warn(
+          `Guardrail rows discarded for ${organizationId} and not enforced: ${resolution.dropped
+            .map((drop) => `${drop.guardrailPublicId} (${drop.reason})`)
+            .join(', ')}`,
+        );
+      }
+
       const enabled = resolution.rules.filter((rule) => rule.enabled);
       const atStage = (stage: 'INPUT' | 'OUTPUT') =>
         enabled.filter((rule) => rule.stage === stage || rule.stage === 'BOTH');

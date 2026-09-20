@@ -111,7 +111,46 @@ export type GuardrailCombination = {
   stage: Exclude<GuardrailStage, 'BOTH'>;
 };
 
+/**
+ * What this build can **evaluate**, which is the default the resolver drops
+ * against.
+ *
+ * `BUILT_IN`/`INPUT` is here as of Phase B, and leaving it out was a real bug
+ * rather than a pending item. The two seeded detectors are `BUILT_IN`/`INPUT`,
+ * so with only `PATTERN`/`INPUT` listed the runtime resolver discarded
+ * `content-moderation` as an unsupported combination — an operator enabled
+ * moderation in the panel, the panel showed it enabled, and nothing ran.
+ * `guardrails:preflight` would have called that configuration reconciled.
+ * That is the exact failure this whole spec exists to prevent, arriving
+ * through the constant meant to prevent it.
+ *
+ * So the rule for editing this list: **add a combination in the same change
+ * that teaches an evaluator to handle it, never before and never after.**
+ * Before, and a rule is kept and silently does nothing; after, and a rule is
+ * dropped while the panel says otherwise. `a-supported-combination-is-
+ * evaluable` in the tests holds the seeded built-ins to it.
+ */
 export const SUPPORTED_COMBINATIONS: readonly GuardrailCombination[] =
+  Object.freeze([
+    Object.freeze({ kind: 'PATTERN', stage: 'INPUT' }),
+    Object.freeze({ kind: 'BUILT_IN', stage: 'INPUT' }),
+  ] as const);
+
+/**
+ * What an operator may **author**, which is a smaller set and not the same
+ * question.
+ *
+ * A `BUILT_IN` is seeded, not created: it is identified by a `key` the code
+ * knows, and a new one an operator typed would have no key and no detector
+ * behind it — a rule that resolves, is kept, matches nothing, and reads as
+ * enabled. So the admin form offers this list while the resolver drops
+ * against the one above.
+ *
+ * The two were one constant until Phase B, when they stopped meaning the same
+ * thing. Collapsing them again would reintroduce one of the two failures
+ * described above, depending on which way it was collapsed.
+ */
+export const AUTHORABLE_COMBINATIONS: readonly GuardrailCombination[] =
   Object.freeze([Object.freeze({ kind: 'PATTERN', stage: 'INPUT' })] as const);
 
 /**
