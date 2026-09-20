@@ -47,6 +47,7 @@
     "typecheck": "turbo run typecheck",
     "verify": "npm run generate:types && turbo run lint typecheck typecheck:config test build --concurrency=4",
     "check:config-paths": "node scripts/ci/check-config-path-globs.mjs",
+    "guardrails:preflight": "node --env-file-if-exists=.env.local --import tsx scripts/guardrails-preflight.mts",
     "gateway:preflight": "node --env-file-if-exists=.env.local --import tsx scripts/gateway-preflight.mts",
     "admin:e2e": "npm run test:e2e --workspace=@ragenai/admin"
   },

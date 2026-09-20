@@ -58,8 +58,30 @@ const EXTENSIONS = ['.ts', '.tsx', '.mjs', '.js'];
  * spelling-shaped hole of its own, which is the joke this comment exists to
  * stop being repeated.
  */
-const DIRECT_READ =
-  /process\.env\s*(?:\.IS_ON_PREMISE\b|\[\s*['"`]IS_ON_PREMISE['"`]\s*\])/;
+/**
+ * The variables that get exactly one reading, and the function that holds it.
+ *
+ * `GUARDRAILS_DISABLED` joins the rule on arrival rather than after it drifts.
+ * It is break-glass: somebody sets it mid-incident and needs it to mean what
+ * they wrote. A second reading asking `!process.env.GUARDRAILS_DISABLED` would
+ * make `GUARDRAILS_DISABLED=0` disable guardrails — the reverse of what
+ * writing `0` intends, which is precisely the bug `IS_ON_PREMISE` already had.
+ */
+const ONE_READING: Array<{ variable: string; helper: string }> = [
+  { variable: 'IS_ON_PREMISE', helper: 'isOnPremise()' },
+  { variable: 'GUARDRAILS_DISABLED', helper: 'guardrailsDisabled()' },
+];
+
+/**
+ * Every spelling of a direct read, for one variable.
+ *
+ * Built per variable rather than written out, so adding a row above cannot
+ * bring a subtly different pattern with it.
+ */
+const directRead = (variable: string) =>
+  new RegExp(
+    `process\\.env\\s*(?:\\.${variable}\\b|\\[\\s*['"\`]${variable}['"\`]\\s*\\])`,
+  );
 
 function stripComments(source: string): string {
   return source
@@ -81,7 +103,9 @@ function* sourceFiles(dir: string): Generator<string> {
   }
 }
 
-describe('IS_ON_PREMISE', () => {
+describe.each(ONE_READING)('$variable', ({ variable, helper }) => {
+  const pattern = directRead(variable);
+
   it('is read from process.env in exactly one file', () => {
     const offenders: string[] = [];
 
@@ -96,7 +120,7 @@ describe('IS_ON_PREMISE', () => {
         // caught itself on its own prose the first time it ran.
         const code = stripComments(readFileSync(file, 'utf8'));
 
-        if (DIRECT_READ.test(code)) {
+        if (pattern.test(code)) {
           offenders.push(rel);
         }
       }
@@ -105,8 +129,8 @@ describe('IS_ON_PREMISE', () => {
     expect(
       offenders,
       [
-        'These files read IS_ON_PREMISE from the environment directly.',
-        `Call \`isOnPremise()\` from @ragenai/env instead — ${THE_ONE_READING}`,
+        `These files read ${variable} from the environment directly.`,
+        `Call \`${helper}\` from @ragenai/env instead — ${THE_ONE_READING}`,
         'holds the one parse, and a second reading of this variable is what',
         'made a per-organization toggle work while the page said it did not.',
       ].join('\n'),
@@ -121,6 +145,18 @@ describe('IS_ON_PREMISE', () => {
       'utf8',
     );
 
-    expect(fragments).toContain('IS_ON_PREMISE');
+    expect(fragments).toContain(variable);
+  });
+
+  it('has a helper exported under that name', () => {
+    // The message above names a function to call. If it were renamed, this
+    // test would keep passing while telling every reader to call something
+    // that does not exist.
+    const index = readFileSync(
+      join(REPO_ROOT, 'packages', 'env', 'src', 'index.ts'),
+      'utf8',
+    );
+
+    expect(index).toContain(helper.replace('()', ''));
   });
 });

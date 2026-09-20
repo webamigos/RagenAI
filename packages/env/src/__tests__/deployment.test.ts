@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { isOnPremise } from '../deployment';
+import { guardrailsDisabled, isOnPremise } from '../deployment';
 
 describe('isOnPremise', () => {
   it.each(['1', 'true', 'yes', 'on'])('accepts %s', (value) => {
@@ -58,5 +58,35 @@ describe('isOnPremise', () => {
       isOnPremise({ IS_ON_PREMISE: '1' }),
     );
     expect(isOnPremise({ IS_ON_PREMISE: '0' })).toBe(isOnPremise({}));
+  });
+});
+
+describe('guardrailsDisabled', () => {
+  it('is false when unset, which is what every installation gets', () => {
+    expect(guardrailsDisabled({})).toBe(false);
+  });
+
+  it.each(['1', 'true', 'yes', 'on', 'TRUE', ' On '])(
+    'reads %j as disabled',
+    (value) => {
+      expect(guardrailsDisabled({ GUARDRAILS_DISABLED: value })).toBe(true);
+    },
+  );
+
+  it.each(['0', 'false', 'no', 'off', '', '  '])(
+    'reads %j as not disabled',
+    (value) => {
+      expect(guardrailsDisabled({ GUARDRAILS_DISABLED: value })).toBe(false);
+    },
+  );
+
+  it('does not treat an arbitrary string as disabled', () => {
+    // The trap `isOnPremise` was built to avoid: `!process.env.FOO` makes any
+    // non-empty string mean yes, so a value somebody left behind — a comment,
+    // a date, the word `unset` — would silently switch guardrails off across
+    // a whole deployment.
+    expect(
+      guardrailsDisabled({ GUARDRAILS_DISABLED: 'disabled-2026-09-20' }),
+    ).toBe(false);
   });
 });
