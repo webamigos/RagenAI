@@ -4,7 +4,7 @@ export class ChainError extends Error {
   constructor(
     message: string,
     public code: ChainErrorCode,
-    public originalErrorMessage?: string
+    public originalErrorMessage?: string,
   ) {
     super(message);
     this.name = 'ChainError';
@@ -14,6 +14,24 @@ export class ChainError extends Error {
 export class ModerationError extends ChainError {
   constructor(message = 'Content was flagged by moderation') {
     super(message, 'moderation-error');
+  }
+}
+
+/**
+ * A guardrail refused the turn.
+ *
+ * Carries the rule so the caller can record an event without re-deriving which
+ * rule fired, and *not* the matched text: that is the customer's message, and
+ * an error object is exactly the kind of thing that ends up in a log.
+ */
+export class GuardrailError extends ChainError {
+  constructor(
+    public guardrailPublicId: string,
+    public guardrailName: string,
+    message = 'Input was refused by a guardrail',
+  ) {
+    super(message, 'guardrail-blocked');
+    this.name = 'GuardrailError';
   }
 }
 
@@ -32,7 +50,7 @@ export class UnknownChainError extends ChainError {
 export class LLMApiError extends ChainError {
   constructor(
     message = 'LLM API request failed',
-    originalErrorMessage?: string
+    originalErrorMessage?: string,
   ) {
     super(message, 'llm-api-error', originalErrorMessage);
   }

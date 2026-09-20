@@ -70,6 +70,23 @@ archive is the blog.
 
 ### Thread: guardrails, authored in the panel
 
+- `[major]` **A guardrail written in the admin panel now applies to the chat.**
+  Until this week the panel could author rules and nothing read them; content
+  moderation was decided by `MODERATION_ENABLED`, an environment variable only
+  a self-hoster could reach and nobody could see from inside the product. A
+  platform administrator can now write a rule — a pattern, or the built-in
+  moderation detector — switch it on, and have it take effect on every
+  organization's next turn, inside the one-minute cache. Three actions:
+  **block** the message with a localized refusal, **mask** the match before the
+  model is shown it, or **log** it and let the turn through. Every rule is
+  created switched off, in log mode, because a rule that starts by blocking is
+  a rule whose false-positive rate nobody has measured. For anyone
+  self-hosting: `MODERATION_ENABLED` stops being read, so the equivalent of
+  your current setting is the `content-moderation` rule in the panel — run
+  `npm run guardrails:preflight` before upgrading and it will tell you whether
+  the two disagree, and refuse if turning it on would otherwise be forgotten.
+  `GUARDRAILS_DISABLED=1` remains as break-glass on a service.
+
 - `[brief]` **The platform-guardrails page in the admin panel works.** It
   shipped this week and never rendered for anyone: the page loaded, then
   replaced itself with "This page couldn't load", in the dev server and in a

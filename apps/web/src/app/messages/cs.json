@@ -1556,6 +1556,7 @@
   "chain-errors": {
     "sending-error": "Při odesílání zprávy došlo k chybě",
     "moderation-error": "Obsah byl označen jako nevhodný naším systémem moderace a nelze ho zpracovat",
+    "guardrail-blocked": "Vaše zpráva nebyla odeslána, protože odpovídá pravidlu nastavenému správcem vaší organizace.",
     "api-key-error": "Chybí konfigurace API klíče - zkontrolujte svá nastavení",
     "unknown-error": "Při zpracování vašeho požadavku došlo k neočekávané chybě - zkuste to znovu",
     "llm-api-error": "Požadavek na API jazykového modelu se nezdařil",

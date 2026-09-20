@@ -1556,6 +1556,7 @@
   "chain-errors": {
     "sending-error": "Viestin lähettämisessä tapahtui virhe",
     "moderation-error": "Sisältöjärjestelmämme on merkinnyt sisällön sopimattomaksi, eikä sitä voida käsitellä",
+    "guardrail-blocked": "Viestiäsi ei lähetetty, koska se vastaa organisaatiosi järjestelmänvalvojan asettamaa sääntöä.",
     "api-key-error": "API-avaimen määritys puuttuu - tarkista asetuksesi",
     "unknown-error": "Pyyntösi käsittelyssä tapahtui odottamaton virhe - yritä uudelleen",
     "llm-api-error": "Pyyntö kielimallin API:lle epäonnistui",

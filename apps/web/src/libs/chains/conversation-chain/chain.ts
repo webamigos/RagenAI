@@ -1,6 +1,7 @@
 import { streamText, stepCountIs } from 'ai';
-import { isOnPremise } from '@ragenai/env';
 import { buildToolApprovalConfig } from '@/libs/mcp/client';
+import { getOrgGuardrailsQuery } from '@/features/guardrails/services/queries/get-org-guardrails-query';
+import { runInputGuardrailsCommand } from '@/features/guardrails/services/commands/run-input-guardrails-command';
 import type { ToolGatingContext } from '@/libs/security/tool-gating-context';
 import {
   buildConversationMessages,
@@ -10,10 +11,7 @@ import type { ConversationChainParams } from '../types/conversation';
 import { MAX_TOOL_STEPS } from '../types/common';
 import type { BaseChatChainOutput } from '../types/common';
 import type { ThreadDocumentUI } from '@/features/documents/contracts/document.types';
-import {
-  sanitizeAndValidateInput,
-  moderateContent,
-} from '../utils/common-operations';
+import { sanitizeAndValidateInput } from '../utils/common-operations';
 import { partitionThreadDocuments } from '../utils/chain-utils';
 import { mapFullStream } from '../utils/stream-mapper';
 
@@ -41,20 +39,33 @@ export const conversationChain = async ({
       // Step 1: Sanitize and validate the input
       const sanitizedInput = sanitizeAndValidateInput(input);
 
-      // Step 2: Moderate the content (no history moderation for conversation).
-      // `MODERATION_ENABLED` is the global kill-switch (default: disabled).
-      // When enabled, SaaS mode always enforces; on-premise respects org setting.
-      const shouldModerateContent =
-        process.env.MODERATION_ENABLED === '1' &&
-        (!isOnPremise() ||
-          config?.ragSettings?.contentModerationEnabled !== false);
-      if (shouldModerateContent) {
-        await moderateContent(
-          models.contentModerator,
-          sanitizedInput,
-          false,
-          config?.tracking,
+      // Step 2: Guardrails. This chain is sequential either way — there is no
+      // rephrase call to run beside, so the `MASK` split that `basic-rag`
+      // needs does not arise here.
+      let guardedInput = sanitizedInput;
+      if (config?.tracking?.organizationId) {
+        const guardrails = await getOrgGuardrailsQuery(
+          config.tracking.organizationId,
         );
+        const { question, chatHistory } = await runInputGuardrailsCommand({
+          guardrails,
+          moderator: models.contentModerator,
+          question: sanitizedInput.question,
+          chatHistory: sanitizedInput.chat_history,
+          // This chain has never moderated the history, only the question.
+          // Preserved rather than unified with `basic-rag`: changing what the
+          // built-in detector reads is a behaviour change, and this phase is
+          // moving a decision, not a behaviour.
+          moderateHistory: false,
+          organizationId: config.tracking.organizationId,
+          userId: config.tracking.userId,
+          source: 'chat',
+        });
+        guardedInput = {
+          ...sanitizedInput,
+          question,
+          chat_history: chatHistory,
+        };
       }
 
       // Step 3: Build messages and stream the answer
@@ -63,8 +74,8 @@ export const conversationChain = async ({
         : { textDocs: [], imageDocs: [] };
 
       const { system, messages } = buildConversationMessages(
-        sanitizedInput.question,
-        sanitizedInput.chat_history,
+        guardedInput.question,
+        guardedInput.chat_history,
         config?.answerInstructions,
         config?.projectInstruction,
         imageDocs.length > 0 ? imageDocs : undefined,

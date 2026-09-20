@@ -1556,6 +1556,7 @@
   "chain-errors": {
     "sending-error": "Hiba történt az üzenet küldése közben",
     "moderation-error": "A rendszerünk a tartalmat nem megfelelőnek jelölte, ezért nem dolgozható fel",
+    "guardrail-blocked": "Az üzenetet nem küldtük el, mert megfelel a szervezete rendszergazdája által beállított szabálynak.",
     "api-key-error": "Hiányzik az API kulcs konfigurációja - ellenőrizd a beállításaidat",
     "unknown-error": "Váratlan hiba történt a kérésed feldolgozása közben - próbáld újra",
     "llm-api-error": "A nyelvi modell API-jához intézett kérés sikertelen volt",

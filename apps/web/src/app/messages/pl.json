@@ -1556,6 +1556,7 @@
   "chain-errors": {
     "sending-error": "Wystąpił błąd podczas wysyłania wiadomości",
     "moderation-error": "Wiadomość została oznaczona jako nieodpowiednia przez nasz system moderacji i nie może zostać przetworzona",
+    "guardrail-blocked": "Wiadomość nie została wysłana, ponieważ pasuje do reguły ustawionej przez administratora Twojej organizacji.",
     "api-key-error": "Brak klucza API - sprawdź ustawienia asystenta",
     "unknown-error": "Wystąpił nieoczekiwany błąd podczas przetwarzania Twojego zapytania - spróbuj ponownie",
     "llm-api-error": "Wystąpił błąd w zapytaniu do modelu językowego",
