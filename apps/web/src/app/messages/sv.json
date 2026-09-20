@@ -1556,6 +1556,7 @@
   "chain-errors": {
     "sending-error": "Ett fel uppstod vid sändning av meddelandet",
     "moderation-error": "Innehållet har flaggats som olämpligt av vårt modereringssystem och kan inte bearbetas",
+    "guardrail-blocked": "Ditt meddelande skickades inte eftersom det matchar en regel som din organisations administratör har angett.",
     "api-key-error": "API-nyckelkonfigurationen saknas - kontrollera dina inställningar",
     "unknown-error": "Ett oväntat fel uppstod vid bearbetning av din begäran - försök igen",
     "llm-api-error": "Begäran till språkmodellens API misslyckades",

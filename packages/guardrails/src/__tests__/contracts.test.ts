@@ -64,21 +64,34 @@ describe('which actions a kind can carry out', () => {
 
 describe('supported combinations', () => {
   it('reports what the package evaluates, and nothing beyond it', () => {
-    // The distinction this constant turns on: a kind with no evaluator
-    // anywhere is a lie on the admin form, while a kind whose evaluator exists
-    // but whose call site arrives next phase is an ordinary deployment state.
-    // `PATTERN`/`INPUT` is implemented in evaluator/pattern.ts; OUTPUT needs
-    // the sliding-window transform, which evaluating a whole string is not.
+    // `PATTERN`/`INPUT` is `evaluator/pattern.ts`; `BUILT_IN`/`INPUT` is the
+    // moderation branch of `evaluator/input-stage.ts`, which arrived in Phase
+    // B. OUTPUT is absent for both because evaluating a whole string is not
+    // the same problem as evaluating a stream — that needs Phase D's sliding
+    // window.
     expect(SUPPORTED_COMBINATIONS).toEqual([
       { kind: 'PATTERN', stage: 'INPUT' },
+      { kind: 'BUILT_IN', stage: 'INPUT' },
     ]);
   });
 
   it('offers no kind whose evaluator does not exist at all', () => {
     const kinds = new Set(SUPPORTED_COMBINATIONS.map((c) => c.kind));
 
+    // `LLM_POLICY` has no evaluator anywhere until Phase C. Listing it would
+    // make the resolver keep a rule nothing can act on.
     expect(kinds.has('LLM_POLICY')).toBe(false);
-    expect(kinds.has('BUILT_IN')).toBe(false);
+
+    // `BUILT_IN` is here, and this assertion used to say the opposite.
+    //
+    // It was right in Phase A, when no evaluator for it existed, and it went
+    // stale the moment Phase B added one — locking in a real bug: the two
+    // seeded detectors are `BUILT_IN`/`INPUT`, so the runtime resolver
+    // discarded `content-moderation` as unsupported while the panel showed it
+    // enabled. A test that asserts a snapshot of a capability keeps passing
+    // after the capability changes, which is the whole reason this comment is
+    // longer than the line below it.
+    expect(kinds.has('BUILT_IN')).toBe(true);
   });
 
   it('answers per stage against an injected set', () => {

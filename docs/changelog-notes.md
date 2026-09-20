@@ -70,6 +70,36 @@ archive is the blog.
 
 ### Thread: guardrails, authored in the panel
 
+- `[major]` **A guardrail written in the admin panel now applies to the chat.**
+  Until this week the panel could author rules and nothing read them; content
+  moderation was decided by `MODERATION_ENABLED`, an environment variable only
+  a self-hoster could reach and nobody could see from inside the product. A
+  platform administrator can now write a rule — a pattern, or the built-in
+  moderation detector — switch it on, and have it take effect on every
+  organization's next turn, inside the one-minute cache. Three actions:
+  **block** the message with a localized refusal, **mask** the match before the
+  model is shown it, or **log** it and let the turn through. Every rule is
+  created switched off, in log mode, because a rule that starts by blocking is
+  a rule whose false-positive rate nobody has measured. For anyone
+  self-hosting: `MODERATION_ENABLED` stops being read, so the equivalent of
+  your current setting is the `content-moderation` rule in the panel — run
+  `npm run guardrails:preflight` before upgrading and it will tell you whether
+  the two disagree, and refuse if turning it on would otherwise be forgotten.
+  `GUARDRAILS_DISABLED=1` remains as break-glass on a service.
+
+- `[brief]` **A blocked message no longer reaches a model at all.** The
+  refusal always worked, but the chain evaluated the rules *beside* the query
+  rephraser rather than before it, to save a round-trip — so a message a
+  block rule refused had already been sent to the rephrasing model, which on
+  most installations is an external provider. Nobody saw an answer, and the
+  text left the building anyway. The stage runs first now, on both the app and
+  the public API, and the guarantee reads the way people assume it does:
+  refused means it never went anywhere. Costs one round-trip of latency on
+  turns with rules enabled. The same change fixes a rarer wrong answer — when
+  the rephraser failed for its own reasons, whichever failure landed first won
+  the race, so a refused message could report "an unexpected error" instead of
+  the refusal.
+
 - `[brief]` **The platform-guardrails page in the admin panel works.** It
   shipped this week and never rendered for anyone: the page loaded, then
   replaced itself with "This page couldn't load", in the dev server and in a
@@ -77,11 +107,13 @@ archive is the blog.
   `node:worker_threads`, which cannot exist in a browser bundle. A platform
   administrator can now actually do what the page was built for — list the
   built-in detectors, write a pattern rule, switch one on, and set a
-  per-organization override that says which layer decided each value. Worth
-  stating plainly for anyone reading the panel: **nothing enforces these rules
-  yet.** Phase A deliberately ships the authoring surface without an evaluator,
-  so a rule created today is a stored row and an audit entry; the chat still
-  moderates through `MODERATION_ENABLED`. Enforcement is the next phase.
+  per-organization override that says which layer decided each value.
+
+  Ordering matters if both of these are written up together: this fix landed
+  while the authoring surface still enforced nothing, and the entry above is
+  what made the rules apply. A post that presents them the other way round
+  would describe a week in which guardrails blocked messages through a page
+  that did not render.
 
 
 ### Thread: the version number says something again

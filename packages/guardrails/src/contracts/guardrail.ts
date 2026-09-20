@@ -58,6 +58,34 @@ export const BUILT_IN_GUARDRAIL_KEYS = [
 ] as const;
 export type BuiltInGuardrailKey = (typeof BUILT_IN_GUARDRAIL_KEYS)[number];
 
+/**
+ * Which built-ins this build can actually run.
+ *
+ * Support for a built-in is **per key, not per kind**, and conflating the two
+ * is a bug this file has now had in both directions. First
+ * `SUPPORTED_COMBINATIONS` omitted `BUILT_IN`/`INPUT` entirely, so the seeded
+ * `content-moderation` rule was discarded while the panel showed it enabled.
+ * Adding the combination fixed that and created the mirror image:
+ * `jailbreak-detection` is also `BUILT_IN`/`INPUT`, so it became "supported"
+ * — kept by the resolver, matched by no branch of `evaluateInputStage`, and
+ * enforced by nothing. Same silence, opposite cause.
+ *
+ * A kind × stage pair cannot express this, because two rules of the same kind
+ * and stage differ in whether an evaluator exists for them. So the identifier
+ * is the unit, and `evaluateInputStage` has exactly one branch per entry here.
+ *
+ * `jailbreak-detection` joins this list in Phase C, in the same change that
+ * gives it an evaluator — never before, or it reads as enabled and does
+ * nothing; never after, or it is dropped while the panel says otherwise.
+ */
+export const EVALUABLE_BUILT_IN_KEYS = ['content-moderation'] as const;
+
+export function isEvaluableBuiltIn(key: string | null): boolean {
+  return (
+    key !== null && (EVALUABLE_BUILT_IN_KEYS as readonly string[]).includes(key)
+  );
+}
+
 export const BUILT_IN_GUARDRAIL_LABELS: Readonly<
   Record<BuiltInGuardrailKey, string>
 > = Object.freeze({
@@ -111,7 +139,46 @@ export type GuardrailCombination = {
   stage: Exclude<GuardrailStage, 'BOTH'>;
 };
 
+/**
+ * What this build can **evaluate**, which is the default the resolver drops
+ * against.
+ *
+ * `BUILT_IN`/`INPUT` is here as of Phase B, and leaving it out was a real bug
+ * rather than a pending item. The two seeded detectors are `BUILT_IN`/`INPUT`,
+ * so with only `PATTERN`/`INPUT` listed the runtime resolver discarded
+ * `content-moderation` as an unsupported combination — an operator enabled
+ * moderation in the panel, the panel showed it enabled, and nothing ran.
+ * `guardrails:preflight` would have called that configuration reconciled.
+ * That is the exact failure this whole spec exists to prevent, arriving
+ * through the constant meant to prevent it.
+ *
+ * So the rule for editing this list: **add a combination in the same change
+ * that teaches an evaluator to handle it, never before and never after.**
+ * Before, and a rule is kept and silently does nothing; after, and a rule is
+ * dropped while the panel says otherwise. `a-supported-combination-is-
+ * evaluable` in the tests holds the seeded built-ins to it.
+ */
 export const SUPPORTED_COMBINATIONS: readonly GuardrailCombination[] =
+  Object.freeze([
+    Object.freeze({ kind: 'PATTERN', stage: 'INPUT' }),
+    Object.freeze({ kind: 'BUILT_IN', stage: 'INPUT' }),
+  ] as const);
+
+/**
+ * What an operator may **author**, which is a smaller set and not the same
+ * question.
+ *
+ * A `BUILT_IN` is seeded, not created: it is identified by a `key` the code
+ * knows, and a new one an operator typed would have no key and no detector
+ * behind it — a rule that resolves, is kept, matches nothing, and reads as
+ * enabled. So the admin form offers this list while the resolver drops
+ * against the one above.
+ *
+ * The two were one constant until Phase B, when they stopped meaning the same
+ * thing. Collapsing them again would reintroduce one of the two failures
+ * described above, depending on which way it was collapsed.
+ */
+export const AUTHORABLE_COMBINATIONS: readonly GuardrailCombination[] =
   Object.freeze([Object.freeze({ kind: 'PATTERN', stage: 'INPUT' })] as const);
 
 /**

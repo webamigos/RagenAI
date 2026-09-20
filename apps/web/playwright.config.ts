@@ -62,6 +62,18 @@ export default defineConfig({
     url: baseURL,
     timeout: 120 * 1000,
     reuseExistingServer: !process.env.CI,
+    // Playwright defaults `stdout` to 'ignore' and only pipes `stderr`, so
+    // every line the application logs was thrown away while Next's own
+    // stack traces came through — which reads exactly like an app that logs
+    // nothing. Pino writes to stdout.
+    //
+    // It cost two days on `p0-29`. The route table could not be read, the
+    // gateway said so on the first request (`cannot read route table at
+    // apps/web/apps/web/e2e/…`), and the diagnosis instead went through the
+    // rule cache, the model defaults and a disproved theory about the missing
+    // Qdrant service, because the one line that named the fault was
+    // discarded by the test runner.
+    stdout: 'pipe',
   },
 
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */

@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const mockGuardrailFindMany = vi.fn();
 const mockOverrideFindMany = vi.fn();
 const mockLoggerError = vi.fn();
+const mockLoggerWarn = vi.fn();
 const mockGuardrailsDisabled = vi.fn(() => false);
 const mockIsOnPremise = vi.fn(() => false);
 
@@ -23,7 +24,7 @@ vi.mock('@ragenai/env', () => ({
 vi.mock('@/app/lib/utils/logger', () => ({
   logger: {
     error: (...a: unknown[]) => mockLoggerError(...a),
-    warn: vi.fn(),
+    warn: (...a: unknown[]) => mockLoggerWarn(...a),
     info: vi.fn(),
     debug: vi.fn(),
   },
@@ -105,25 +106,17 @@ describe('getOrgGuardrailsQuery', () => {
     expect(result.input).toEqual([]);
   });
 
-  it('reports a MASK input rule, because it changes how the stage is scheduled', async () => {
+  it('carries a MASK rule through like any other enabled input rule', async () => {
+    // The set used to also report *whether* it held one, so the chain could
+    // run the stage beside `rephraseAndExpand` when it did not. The stage is
+    // unconditionally blocking now — a refused question must not reach the
+    // rephraser — so the flag is gone and what is left to assert is that a
+    // MASK rule is resolved rather than dropped.
     mockGuardrailFindMany.mockResolvedValue([patternRule({ action: 'MASK' })]);
 
     const result = await getOrgGuardrailsQuery(ORG);
 
-    expect(result.hasTransformingInputRule).toBe(true);
-  });
-
-  it('does not report one for a rule that only judges', async () => {
-    mockGuardrailFindMany.mockResolvedValue([
-      patternRule({ action: 'LOG' }),
-      patternRule({ publicId: 'rule-2', action: 'BLOCK' }),
-    ]);
-
-    const result = await getOrgGuardrailsQuery(ORG);
-
-    // The concurrency with rephraseAndExpand survives for these, and this is
-    // the assertion that keeps the optimisation honest.
-    expect(result.hasTransformingInputRule).toBe(false);
+    expect(result.input.map((rule) => rule.action)).toEqual(['MASK']);
   });
 });
 
@@ -227,6 +220,46 @@ describe('when the database cannot be reached', () => {
     } finally {
       vi.useRealTimers();
     }
+  });
+});
+
+describe('a row the resolver discarded', () => {
+  it('is said out loud, because nothing else will say it', async () => {
+    // An override pointing at a rule that is not a platform rule: the admin
+    // action refuses to create one, and the resolver drops it if a row exists
+    // anyway. Dropped is the dangerous state — the panel shows the rule as
+    // configured because it reports what is stored, and only the runtime
+    // knows it threw the row away.
+    mockGuardrailFindMany.mockResolvedValue([patternRule()]);
+    mockOverrideFindMany.mockResolvedValue([
+      {
+        guardrail: { publicId: 'not-a-platform-rule' },
+        enabled: false,
+        action: null,
+        threshold: null,
+        origin: null,
+      },
+    ]);
+
+    await getOrgGuardrailsQuery(ORG);
+
+    const warned = mockLoggerWarn.mock.calls.find(([, message]) =>
+      String(message).includes('discarded'),
+    );
+    expect(warned, 'no warning named the discarded row').toBeDefined();
+    expect((warned![0] as { audit?: boolean }).audit).toBe(true);
+  });
+
+  it('says nothing when the resolver kept everything', async () => {
+    mockGuardrailFindMany.mockResolvedValue([patternRule()]);
+
+    await getOrgGuardrailsQuery(ORG);
+
+    expect(
+      mockLoggerWarn.mock.calls.filter(([, m]) =>
+        String(m).includes('discarded'),
+      ),
+    ).toEqual([]);
   });
 });
 

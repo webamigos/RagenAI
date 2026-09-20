@@ -1556,6 +1556,7 @@
   "chain-errors": {
     "sending-error": "Der opstod en fejl under afsendelse af beskeden",
     "moderation-error": "Indholdet er markeret som upassende af vores modereringssystem og kan ikke behandles",
+    "guardrail-blocked": "Din besked blev ikke sendt, fordi den matcher en regel, som din organisations administrator har oprettet.",
     "api-key-error": "API-nøglekonfigurationen mangler - tjek dine indstillinger",
     "unknown-error": "Der opstod en uventet fejl under behandlingen af din anmodning - prøv igen",
     "llm-api-error": "Anmodningen til sprogmodellens API mislykkedes",

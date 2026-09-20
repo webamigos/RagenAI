@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { InitializeBasicRagService } from './basic-rag/initialize-basic-rag.service.js';
+import { GuardrailsModule } from '../guardrails/guardrails.module.js';
 import { OrganizationsModule } from '../organizations/organizations.module.js';
 import { DocumentsModule } from '../documents/documents.module.js';
 
@@ -14,7 +15,7 @@ import { DocumentsModule } from '../documents/documents.module.js';
  * docs/adrs/21-monorepo-and-api-decoupling.md.
  */
 @Module({
-  imports: [OrganizationsModule, DocumentsModule],
+  imports: [OrganizationsModule, DocumentsModule, GuardrailsModule],
   providers: [InitializeBasicRagService],
   exports: [InitializeBasicRagService],
 })

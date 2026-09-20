@@ -9,6 +9,7 @@ import {
 import { type Response } from 'express';
 import { buildError } from '../utils/openai-format.js';
 import { RagenWebError } from '../services/ragen-web.client.js';
+import { GuardrailError } from '../../chains/errors.js';
 
 /**
  * Exception filter for OpenAI-compatible endpoints. Returns the
@@ -38,6 +39,24 @@ export class OpenAiExceptionFilter implements ExceptionFilter {
           message: body.message ?? `Upstream error (${exception.status})`,
           type,
           code: body.code ?? null,
+        }),
+      );
+      return;
+    }
+
+    // A guardrail refusal is the caller's input being rejected, not a fault.
+    //
+    // Without this it fell through to the 500 below — `ChainError` is a plain
+    // `Error`, so an administrator's rule would have surfaced as "Internal
+    // server error" with no code, and the caller would retry it forever.
+    // `apps/api` has no locale layer, so the code is what the caller renders:
+    // it has to be specific and it has to be stable.
+    if (exception instanceof GuardrailError) {
+      response.status(HttpStatus.BAD_REQUEST).json(
+        buildError({
+          message: exception.message,
+          type: 'invalid_request_error',
+          code: exception.code,
         }),
       );
       return;

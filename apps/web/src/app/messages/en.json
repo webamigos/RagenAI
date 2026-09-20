@@ -1556,6 +1556,7 @@
   "chain-errors": {
     "sending-error": "Error occured while sending message",
     "moderation-error": "The content was flagged as inappropriate by our moderation system and cannot be processed",
+    "guardrail-blocked": "Your message was not sent because it matched a rule set by your organization's administrator.",
     "api-key-error": "The API key configuration is missing - please check your settings",
     "unknown-error": "An unexpected error occurred while processing your request - please try again",
     "llm-api-error": "The language model API request failed",

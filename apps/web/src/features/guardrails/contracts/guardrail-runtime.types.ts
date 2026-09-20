@@ -15,19 +15,6 @@ export type OrgGuardrails = {
   /** Output-stage rules. Unused until Phase D; loaded now so it is not a second query later. */
   readonly output: readonly ResolvedGuardrail[];
   /**
-   * Whether any input rule rewrites the text rather than judging it.
-   *
-   * Decides whether the input stage can still run concurrently with
-   * `rephraseAndExpand`. It can when every rule returns a verdict — the text
-   * that was read is the text that moves on. A `MASK` rule breaks that: the
-   * rewrite has to land before anything downstream reads the input, or the
-   * retrieval query is built from the original while the model sees the mask.
-   *
-   * A property of the set, so the cost is paid only by organizations that
-   * actually configured a mask.
-   */
-  readonly hasTransformingInputRule: boolean;
-  /**
    * True when this set is empty because something went wrong, not because
    * nothing is configured.
    *
@@ -46,7 +33,6 @@ export type OrgGuardrails = {
 export const NO_GUARDRAILS: OrgGuardrails = {
   input: [],
   output: [],
-  hasTransformingInputRule: false,
   degraded: false,
   dropped: [],
 };

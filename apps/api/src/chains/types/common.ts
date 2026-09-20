@@ -17,10 +17,15 @@ export interface BaseChatChainModels {
    * Built on demand, not handed over ready-made.
    *
    * `createModerationInstance()` throws without an OpenAI key, and moderation
-   * is off unless `MODERATION_ENABLED=1`, so constructing it eagerly made
-   * every chat request fail on an installation that had deliberately not
-   * configured OpenAI — for a feature it was not using. A factory means the
-   * key is only required by the code path that actually calls the API.
+   * runs only when an administrator has enabled the `content-moderation`
+   * guardrail — so constructing it eagerly made every chat request fail on an
+   * installation that had deliberately not configured OpenAI, for a feature it
+   * was not using. A factory means the key is only required by the code path
+   * that actually calls the API.
+   *
+   * The gate used to be `MODERATION_ENABLED=1`; it is a row now, which makes
+   * the factory matter more rather than less — the rule can be switched on at
+   * any moment without a deploy.
    */
   contentModerator: () => ModerationInstance;
   answerGenerator: LanguageModelV4;
@@ -57,6 +62,23 @@ export interface ChainConfig {
   mcpTools?: Record<string, any>;
   mcpContext?: string;
   tracking?: ChainTrackingContext;
+  /**
+   * Guardrails for this turn, and the function that evaluates them.
+   *
+   * Injected rather than imported, exactly as `trackAiUsage` is: the chain is
+   * a plain function and the loader is a Nest service, so the assembly site
+   * supplies both. A surface that passes neither runs unguarded — which is
+   * what every surface did before this phase, and is why the two are optional
+   * together rather than separately.
+   */
+  guardrails?: {
+    readonly rules: import('@ragenai/guardrails').ResolvedGuardrail[];
+    readonly run: (input: {
+      question: string;
+      chatHistory: string | undefined;
+      moderateHistory: boolean;
+    }) => Promise<{ question: string; chatHistory: string }>;
+  };
   threadDocuments?: ThreadDocumentUI[];
   /**
    * Tool call IDs the user has already explicitly approved for this turn.

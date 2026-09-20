@@ -55,6 +55,16 @@ export default defineConfig({
     url: `${baseURL}/login`,
     timeout: 120 * 1000,
     reuseExistingServer: !process.env.CI,
+    // Playwright defaults `stdout` to 'ignore' and pipes only `stderr`, so
+    // everything the application logs is discarded while Next's own stack
+    // traces come through — which reads exactly like an app that logs
+    // nothing. Pino writes to stdout.
+    //
+    // The same default cost two days on apps/web's `p0-29`: the gateway was
+    // reporting an unreadable route table on the first request of every run
+    // and nobody could see it. Set here too, before this suite needs it
+    // rather than after.
+    stdout: 'pipe',
   },
 
   use: {

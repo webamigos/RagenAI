@@ -1,4 +1,4 @@
-import type { ResolvedGuardrail } from '@ragenai/guardrails';
+import type { ModerationVerdict } from '@ragenai/guardrails';
 
 import type { ModerationInstance } from '@/app/lib/services/llm';
 import { logger } from '@/app/lib/utils/logger';
@@ -19,25 +19,18 @@ import { logger } from '@/app/lib/utils/logger';
  * this provider.
  */
 
-export type GuardrailVerdict =
-  | { readonly outcome: 'pass' }
-  | { readonly outcome: 'hit' }
-  /**
-   * The evaluator could not reach a verdict.
-   *
-   * Separate from `pass` even though both let the turn through, because the
-   * two are different facts and only one of them is worth an alert. Folding
-   * them together is how "the moderation provider has been down for a week"
-   * becomes indistinguishable from "nothing was flagged".
-   */
-  | { readonly outcome: 'error'; readonly reason: string };
-
-/** The built-in this adapter serves. */
-export const MODERATION_GUARDRAIL_KEY = 'content-moderation';
-
-export function isModerationRule(rule: ResolvedGuardrail): boolean {
-  return rule.kind === 'BUILT_IN' && rule.key === MODERATION_GUARDRAIL_KEY;
-}
+/**
+ * The verdict shape and the rule predicate live in `@ragenai/guardrails`.
+ *
+ * Both runtimes have to agree on what "the provider could not answer" means —
+ * a copy here would be a second definition of the one thing the two apps must
+ * not disagree about.
+ */
+export {
+  isModerationRule,
+  MODERATION_GUARDRAIL_KEY,
+  type ModerationVerdict,
+} from '@ragenai/guardrails';
 
 /**
  * Ask the provider, and treat a failure as a pass.
@@ -52,7 +45,7 @@ export function isModerationRule(rule: ResolvedGuardrail): boolean {
 export async function evaluateModeration(
   moderator: ModerationInstance | undefined,
   text: string,
-): Promise<GuardrailVerdict> {
+): Promise<ModerationVerdict> {
   if (!moderator) {
     // Reachable: the instance is built from provider credentials, and a rule
     // can be enabled on an installation that has none. That is a

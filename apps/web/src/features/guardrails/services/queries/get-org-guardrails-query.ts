@@ -121,17 +121,14 @@ function toRule(row: GuardrailRow): GuardrailRule {
  */
 function shape(
   rules: readonly ResolvedGuardrail[],
-): Pick<OrgGuardrails, 'input' | 'output' | 'hasTransformingInputRule'> {
+): Pick<OrgGuardrails, 'input' | 'output'> {
   const enabled = rules.filter((rule) => rule.enabled);
   const atStage = (stage: 'INPUT' | 'OUTPUT') =>
     enabled.filter((rule) => rule.stage === stage || rule.stage === 'BOTH');
 
-  const input = atStage('INPUT');
-
   return {
-    input,
+    input: atStage('INPUT'),
     output: atStage('OUTPUT'),
-    hasTransformingInputRule: input.some((rule) => rule.action === 'MASK'),
   };
 }
 
@@ -180,6 +177,19 @@ export async function getOrgGuardrailsQuery(
       // stored; a runtime that did the same would try to evaluate a rule it
       // has no evaluator for.
     });
+
+    // A dropped row is a rule that reads as enabled in the panel and is
+    // enforced by nothing — the failure this whole feature exists to prevent,
+    // and until now it was returned in `dropped` and read by nobody. The
+    // panel deliberately shows every combination because it reports what is
+    // *stored*; only the runtime knows what it threw away, so only the
+    // runtime can say so.
+    if (resolution.dropped.length > 0) {
+      logger.warn(
+        { audit: true, organizationId, dropped: resolution.dropped },
+        'Guardrail rows were discarded and will not be enforced',
+      );
+    }
 
     const value: OrgGuardrails = {
       ...shape(resolution.rules),

@@ -50,11 +50,24 @@ describe('InitializeBasicRagService', () => {
       get: vi.fn().mockResolvedValue({ vectorStore: 'qdrant' }),
     };
     const importedKbFileIds = { get: vi.fn().mockResolvedValue([]) };
+    // An organization with no rules, which is what every installation has
+    // until somebody enables one — so this suite keeps asserting the
+    // unguarded path it was written for.
+    const guardrails = {
+      forOrganization: vi.fn().mockResolvedValue({
+        input: [],
+        output: [],
+        degraded: false,
+      }),
+    };
+    const runGuardrails = { run: vi.fn() };
 
     return new InitializeBasicRagService(
       organizationSettings as never,
       organizationMetadata as never,
       importedKbFileIds as never,
+      guardrails as never,
+      runGuardrails as never,
     );
   }
 

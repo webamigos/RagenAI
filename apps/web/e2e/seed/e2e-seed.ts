@@ -64,6 +64,17 @@ const adapter = new PrismaPg({ connectionString });
 const prisma = new PrismaClient({ adapter });
 
 /**
+ * The only model this run can reach.
+ *
+ * `mock-llm-server.ts` serves it and `apps/web/e2e/routes.e2e.yaml` is the
+ * one-entry route table pointing at that server. Any other model id resolves
+ * to `UnknownModelError`, which reaches the browser as `unknown-error`
+ * because it is not a `ChainError` — an unhelpful way to learn that a
+ * fixture named a hosted model.
+ */
+const MOCK_MODEL = 'mock-model';
+
+/**
  * Features the primary test organization is opted into.
  *
  * `publicChatbot` and `publicThreadLinks` default to `false` in
@@ -232,9 +243,17 @@ async function seed() {
   console.log('Created member with owner role');
 
   // 5. Create organization settings (required for upload storage limit checks)
+  //
+  // `model` is pinned to the mock rather than left to the shipping default.
+  // `getModel` prefers the stored value whenever the model selector is on,
+  // which this suite turns on — so without this the chat path resolves
+  // `gemini-3-flash-preview`, which has no route in `routes.e2e.yaml`, and
+  // every real turn dies as `unknown-error`. `DEFAULT_MODEL` does not save it:
+  // that is read only when the selector is hidden.
   await prisma.organizationSettings.create({
     data: {
       organizationId: TEST_ORG_ID,
+      model: MOCK_MODEL,
       featureOverrides: TEST_ORG_FEATURE_OVERRIDES,
     },
   });
@@ -353,9 +372,14 @@ async function seed() {
   // use it only switch orgs, so it costs nothing to keep one fixture honest
   // about the shipping defaults. Give it overrides only when a spec here
   // actually needs a flag on.
+  //
+  // `model` is the one exception, and it is not a flag: leaving it unset
+  // resolves a real hosted model that this run has no route to, so the
+  // fixture would be honest about the defaults and unable to answer.
   await prisma.organizationSettings.create({
     data: {
       organizationId: TEST_ORG2_ID,
+      model: MOCK_MODEL,
     },
   });
   console.log('Created organization settings for second org');
@@ -521,6 +545,53 @@ async function seed() {
     },
   });
   console.log(`Created disposable file: ${TEST_DISPOSABLE_FILE_NAME}`);
+
+  // Guardrail fixtures, seeded rather than created by the spec that uses them.
+  //
+  // `p0-29` created its own rules in `beforeAll` and passed locally and failed
+  // in CI, three retries out of three. The loader caches a resolved rule set
+  // per organization for 60 s, so a rule written mid-suite is invisible to a
+  // server that has already served a hundred specs — while a server started
+  // moments earlier, which is what running the spec alone gives you, has a
+  // cold cache and sees it immediately. The spec's own comment claimed it
+  // "exercises a cold cache every time"; that was true only in isolation.
+  //
+  // Seeding them means they exist before any server boots, so no cached set
+  // can be missing them. The patterns are deliberately unpronounceable: they
+  // must appear in no other spec's messages, no seeded document and no
+  // prompt, or an unrelated chat test starts being refused.
+  await prisma.guardrail.deleteMany({
+    where: { name: { startsWith: 'E2E guardrail' } },
+  });
+  await prisma.guardrail.createMany({
+    data: [
+      {
+        organizationId: null,
+        name: 'E2E guardrail BLOCK',
+        description: 'Fixture for p0-29. Refuses the turn.',
+        kind: 'PATTERN',
+        stage: 'INPUT',
+        action: 'BLOCK',
+        enabled: true,
+        severity: 'warn',
+        pattern: 'zzqx-blocked-token',
+        patternIsRegex: false,
+      },
+      {
+        organizationId: null,
+        name: 'E2E guardrail LOG',
+        description: 'Fixture for p0-29. Records and lets the turn through.',
+        kind: 'PATTERN',
+        stage: 'INPUT',
+        action: 'LOG',
+        enabled: true,
+        severity: 'info',
+        pattern: 'zzqx-logged-token',
+        patternIsRegex: false,
+      },
+    ],
+  });
+  console.log('Created guardrail fixtures: one BLOCK, one LOG');
 
   console.log('E2E seed complete.');
 }

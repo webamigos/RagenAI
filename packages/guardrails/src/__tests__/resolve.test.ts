@@ -151,7 +151,16 @@ describe('overrides', () => {
     // should not turn into no protection.
     const result = resolveGuardrails({
       platformRules: [
-        rule({ publicId: 'p1', kind: 'BUILT_IN', action: 'BLOCK' }),
+        // A real built-in key, because support for a built-in is per key: one
+        // with no key, or a key this build has no evaluator for, is dropped
+        // before any override is considered. This test is about the override,
+        // so the rule under it has to be one that can exist.
+        rule({
+          publicId: 'p1',
+          kind: 'BUILT_IN',
+          key: 'content-moderation',
+          action: 'BLOCK',
+        }),
       ],
       overrides: [
         { guardrailPublicId: 'p1', organizationId: 'org-a', action: 'MASK' },
@@ -358,5 +367,65 @@ describe('reading the resolved set', () => {
     });
 
     expect(inputStageMustBlock(result)).toBe(false);
+  });
+});
+
+describe('an organization-scoped built-in', () => {
+  /**
+   * The platform loop drops a `BUILT_IN` with no evaluator; the org loop used
+   * to keep it. An operator cannot author one — `AUTHORABLE_COMBINATIONS`
+   * excludes `BUILT_IN` — so such a row arrives only from a seed, a migration
+   * or a future feature, which is precisely the row nobody would think to
+   * check. Kept, it reads as enabled in the panel, matches no branch of
+   * `evaluateInputStage`, and is enforced by nothing.
+   *
+   * This exact mistake has now shipped twice in opposite directions: once
+   * dropping `content-moderation`, once keeping `jailbreak-detection`. Two
+   * loops disagreeing about what the build can evaluate is the shape of it.
+   */
+  it('is dropped when it has no evaluator, exactly as a platform one is', () => {
+    const resolution = resolveGuardrails({
+      platformRules: [],
+      orgRules: [
+        rule({
+          publicId: 'org-jailbreak',
+          organizationId: 'org-a',
+          kind: 'BUILT_IN',
+          key: 'jailbreak-detection',
+        }),
+      ],
+      overrides: [],
+      supported: EVERYTHING,
+    });
+
+    expect(resolution.rules).toEqual([]);
+    expect(resolution.dropped).toEqual([
+      {
+        reason: 'built-in-has-no-evaluator',
+        guardrailPublicId: 'org-jailbreak',
+      },
+    ]);
+  });
+
+  it('survives when it does have one, so the check is not a blanket ban', () => {
+    // The guard on the guard: dropping every org-scoped BUILT_IN would
+    // satisfy the assertion above and quietly disable moderation for any
+    // organization that carries its own row.
+    const resolution = resolveGuardrails({
+      platformRules: [],
+      orgRules: [
+        rule({
+          publicId: 'org-moderation',
+          organizationId: 'org-a',
+          kind: 'BUILT_IN',
+          key: 'content-moderation',
+        }),
+      ],
+      overrides: [],
+      supported: EVERYTHING,
+    });
+
+    expect(resolution.rules.map((r) => r.publicId)).toEqual(['org-moderation']);
+    expect(resolution.dropped).toEqual([]);
   });
 });

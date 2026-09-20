@@ -1556,6 +1556,7 @@
   "chain-errors": {
     "sending-error": "Ha ocurrido un error al enviar el mensaje",
     "moderation-error": "El contenido ha sido marcado como inapropiado por nuestro sistema de moderación y no se puede procesar",
+    "guardrail-blocked": "Tu mensaje no se envió porque coincide con una regla establecida por el administrador de tu organización.",
     "api-key-error": "Falta la configuración de la clave API - comprueba tu configuración",
     "unknown-error": "Ha ocurrido un error inesperado al procesar tu solicitud - inténtalo de nuevo",
     "llm-api-error": "La solicitud a la API del modelo de lenguaje ha fallado",

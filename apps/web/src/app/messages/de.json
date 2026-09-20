@@ -1556,6 +1556,7 @@
   "chain-errors": {
     "sending-error": "Beim Senden der Nachricht ist ein Fehler aufgetreten",
     "moderation-error": "Der Inhalt wurde von unserem Moderationssystem als unangemessen eingestuft und kann nicht verarbeitet werden",
+    "guardrail-blocked": "Ihre Nachricht wurde nicht gesendet, da sie einer von Ihrer Organisation festgelegten Regel entspricht.",
     "api-key-error": "Die API-Schlüsselkonfiguration fehlt - bitte überprüfe deine Einstellungen",
     "unknown-error": "Bei der Verarbeitung deiner Anfrage ist ein unerwarteter Fehler aufgetreten - bitte versuche es erneut",
     "llm-api-error": "Die Anfrage an die API des Sprachmodells ist fehlgeschlagen",
