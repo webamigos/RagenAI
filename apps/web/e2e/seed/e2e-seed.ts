@@ -522,6 +522,53 @@ async function seed() {
   });
   console.log(`Created disposable file: ${TEST_DISPOSABLE_FILE_NAME}`);
 
+  // Guardrail fixtures, seeded rather than created by the spec that uses them.
+  //
+  // `p0-29` created its own rules in `beforeAll` and passed locally and failed
+  // in CI, three retries out of three. The loader caches a resolved rule set
+  // per organization for 60 s, so a rule written mid-suite is invisible to a
+  // server that has already served a hundred specs — while a server started
+  // moments earlier, which is what running the spec alone gives you, has a
+  // cold cache and sees it immediately. The spec's own comment claimed it
+  // "exercises a cold cache every time"; that was true only in isolation.
+  //
+  // Seeding them means they exist before any server boots, so no cached set
+  // can be missing them. The patterns are deliberately unpronounceable: they
+  // must appear in no other spec's messages, no seeded document and no
+  // prompt, or an unrelated chat test starts being refused.
+  await prisma.guardrail.deleteMany({
+    where: { name: { startsWith: 'E2E guardrail' } },
+  });
+  await prisma.guardrail.createMany({
+    data: [
+      {
+        organizationId: null,
+        name: 'E2E guardrail BLOCK',
+        description: 'Fixture for p0-29. Refuses the turn.',
+        kind: 'PATTERN',
+        stage: 'INPUT',
+        action: 'BLOCK',
+        enabled: true,
+        severity: 'warn',
+        pattern: 'zzqx-blocked-token',
+        patternIsRegex: false,
+      },
+      {
+        organizationId: null,
+        name: 'E2E guardrail LOG',
+        description: 'Fixture for p0-29. Records and lets the turn through.',
+        kind: 'PATTERN',
+        stage: 'INPUT',
+        action: 'LOG',
+        enabled: true,
+        severity: 'info',
+        pattern: 'zzqx-logged-token',
+        patternIsRegex: false,
+      },
+    ],
+  });
+  console.log('Created guardrail fixtures: one BLOCK, one LOG');
+
   console.log('E2E seed complete.');
 }
 
