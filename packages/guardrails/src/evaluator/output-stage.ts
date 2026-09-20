@@ -146,6 +146,22 @@ export function createOutputStage(
   };
 
   let buffer = '';
+  /**
+   * The tail of what has already been released, for matching only.
+   *
+   * A zero-width assertion reads the characters around a match, and the
+   * buffer's first character is not the start of the answer — so `\bfoo` on a
+   * buffer that begins `foo` matches, although the released text ended in
+   * `z` and there is no word boundary in the answer at all. Nothing about
+   * that is visible: the rule fires on text that does not match it.
+   *
+   * So the rules are run over `context + buffer` and spans starting inside
+   * the context are dropped. One that *begins* in the context and reaches the
+   * buffer is dropped too: the context is a window wide, so such a match is
+   * wider than the window, which is the case `validatePatternShape` refuses
+   * at save time.
+   */
+  let context = '';
   let blocked = false;
   /** Spans finalized so far, per rule, for the single event each one gets. */
   const matchesByRule = new Map<
@@ -187,11 +203,25 @@ export function createOutputStage(
   return stage;
 
   function release(final: boolean): OutputStageEvent[] {
-    const { hits, skipped, elapsedMs } = runPatternRules(
-      patternRules,
-      buffer,
-      patternOptions,
-    );
+    const scanned = context + buffer;
+    const {
+      hits: scannedHits,
+      skipped,
+      elapsedMs,
+    } = runPatternRules(patternRules, scanned, patternOptions);
+
+    const hits: PatternHit[] = [];
+    for (const hit of scannedHits) {
+      const spans = hit.spans
+        .filter((span) => span.start >= context.length)
+        .map((span) => ({
+          start: span.start - context.length,
+          end: span.end - context.length,
+        }));
+      if (spans.length > 0) {
+        hits.push({ rule: hit.rule, spans });
+      }
+    }
 
     if (skipped.length > 0) {
       const unreported = skipped.filter(
@@ -249,10 +279,15 @@ export function createOutputStage(
       }
     }
 
+    const releasing = buffer.slice(0, boundary);
     const text = applyMask(
-      buffer.slice(0, boundary),
+      releasing,
       finalized.filter((hit) => hit.rule.action === 'MASK'),
     );
+    // The text as the *rules* saw it, not as the reader will: a placeholder
+    // in the context would be matched against by the next pass, and what
+    // preceded a character is what preceded it.
+    context = (context + releasing).slice(-windowChars);
     buffer = buffer.slice(boundary);
 
     return text.length > 0 ? [{ type: 'text', text }] : [];

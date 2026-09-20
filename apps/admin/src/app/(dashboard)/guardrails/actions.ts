@@ -289,6 +289,14 @@ function describeFailure(
         `output window is ${failure.window}. A longer match is flushed before ` +
         'it completes, so the rule would never fire.'
       );
+    case 'string-anchor-on-output':
+      return (
+        '`^` and `$` cannot be used in an output rule. The answer is ' +
+        'evaluated in pieces as it streams, so they would anchor to whatever ' +
+        'the model happened to send rather than to the answer — `foo$` would ' +
+        'fire the moment a chunk ended in `foo`. Escape them (`\\$`) to match ' +
+        'the characters themselves.'
+      );
   }
 }
 

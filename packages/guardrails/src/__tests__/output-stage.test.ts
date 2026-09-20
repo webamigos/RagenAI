@@ -294,6 +294,42 @@ describe('createOutputStage', () => {
     expect(record).not.toHaveBeenCalled();
   });
 
+  it('reads a word boundary against the answer, not against the buffer', () => {
+    // 'zzzz' is released before 'foo!' completes, so a rule run on the buffer
+    // alone sees a string that *begins* `foo` — and `\bfoo` matches it. In
+    // the answer there is no word boundary there at all. The rule fires on
+    // text that does not match it, and nothing about that is visible.
+    const wordBoundary = rule({
+      action: 'BLOCK',
+      pattern: '\\bfoo',
+      patternIsRegex: true,
+    });
+
+    const events = run([wordBoundary], ['zzzzfoo', '!'], 3);
+
+    expect(textOf(events)).toBe('zzzzfoo!');
+    expect(record).not.toHaveBeenCalled();
+  });
+
+  it('still matches a word boundary that is really there', () => {
+    // The mirror of the test above: dropping matches that start inside the
+    // context must not drop the ones that begin in the buffer, or the whole
+    // assertion class stops working rather than starting to work correctly.
+    const wordBoundary = rule({
+      action: 'BLOCK',
+      pattern: '\\bfoo',
+      patternIsRegex: true,
+      publicId: 'rule-b',
+    });
+
+    const events = run([wordBoundary], ['zzzz foo', '!'], 3);
+
+    expect(events.some((event) => event.type === 'blocked')).toBe(true);
+    expect(record).toHaveBeenCalledWith({
+      rule: expect.objectContaining({ publicId: 'rule-b' }),
+    });
+  });
+
   it('defaults to the window the pattern validator refuses patterns against', () => {
     const stage = createOutputStage([rule()], deps, {});
     stage.push('x'.repeat(OUTPUT_WINDOW_CHARS + 10));
