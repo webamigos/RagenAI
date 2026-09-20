@@ -538,25 +538,29 @@ the three enum members must reach every reader before a writer exists.
       than assumed to be.
 - [ ] **B5.** The two proofs that B2–B4 actually landed:
       `tests/architecture/guardrails-are-not-recopied.test.ts`, and a test that
-      asserts a chat turn **reads the rules at all**.
+      asserts a chat turn **reads the rules at all** — see below for why the
+      second one is not redundant.
 
-      The second one is here because of what this phase's worst failure looks
-      like. A rule that blocks nothing is indistinguishable, from every surface
-      a person can see, from Phase A working as designed — the panel lists the
-      rule, the audit entry exists, the chat answers normally. That is exactly
-      how the monthly usage ceilings were enforced by nothing for five months
-      with every static check green, and `AGENTS.md` states the rule it cost us:
-      *a limit that is computed is not a limit — a limit is a call site.*
+#### Why B5 asserts the rules are read, and not only that a turn is refused
 
-      Measured at the end of Phase A, a turn in `apps/web` carrying a phrase an
-      enabled `BLOCK` rule matches left `pg_stat_user_tables` unmoved on both
-      `guardrails` and `guardrail_org_overrides` — 8 seq / 104 idx before and
-      after — and reached the model. That is the correct Phase A result and the
-      exact reading that must change once B3 merges. So assert the loader is
-      called on a chat turn, not only that a blocked turn is refused: a refusal
-      test fails loudly when the binding is wrong, and passes silently when the
-      binding is *missing* and the assertion is written against a rule that
-      happens not to match.
+This phase's worst failure is not a rule that refuses wrongly. It is a rule
+that does nothing: indistinguishable, from every surface a person can see, from
+Phase A working as designed — the panel lists the rule, the audit entry exists,
+the chat answers normally. That is exactly how the monthly usage ceilings were
+enforced by nothing for five months with every static check green, and
+`AGENTS.md` states the rule it cost us: *a limit that is computed is not a
+limit — a limit is a call site.*
+
+Measured at the end of Phase A: a turn in `apps/web` carrying a phrase an
+enabled `BLOCK` rule matches left `pg_stat_user_tables` unmoved on both
+`guardrails` and `guardrail_org_overrides` — 8 seq / 104 idx before and after —
+and reached the model. That is the correct Phase A result, and the exact
+reading that has to change once B3 merges.
+
+So assert the loader is reached on a chat turn, not only that a blocked turn is
+refused. A refusal test fails loudly when the binding is wrong, and passes
+silently when the binding is *missing* and the fixture rule happens not to
+match.
 
 ### Phase C — policies judged by a model
 
