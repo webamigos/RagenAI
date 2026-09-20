@@ -7,7 +7,6 @@ import {
   getCurrentUserId,
 } from '@/app/lib/utils/auth-helpers';
 import { getProviderDefinition } from '@/features/connectors/constants/providers';
-import { legacyProviderColumn } from '@/features/connectors/utils/legacy-provider-column';
 import { RagenAuthOAuthClientProvider } from '@/libs/ragen-vault';
 import { logger } from '@/app/lib/utils/logger';
 import { recordConnectorFailureCommand } from '@/features/connectors/services/commands/record-connector-failure-command';
@@ -147,24 +146,19 @@ export async function GET(request: NextRequest) {
     // Mark the connector as connected
     await db.mcpConnector.upsert({
       where: {
-        organizationId_userId_provider: {
+        organizationId_userId_providerSlug: {
           organizationId: orgId,
           userId: userId,
-          provider: legacyProviderColumn(provider),
+          providerSlug: provider,
         },
       },
       update: {
         status: McpConnectorStatus.CONNECTED,
         connectedAt: new Date(),
-        // Written on update as well as create: a row written by a service
-        // still on the previous release carries no slug, and touching it is
-        // the cheapest moment to give it one.
-        providerSlug: provider,
       },
       create: {
         organizationId: orgId,
         userId: userId,
-        provider: legacyProviderColumn(provider),
         providerSlug: provider,
         mcpServerUrl: providerDef.mcpServerUrl,
         customerId: `${orgId}:${userId}:${provider.toLowerCase()}`,

@@ -17,7 +17,6 @@ import { getEnabledConnectorsQuery } from '../get-enabled-connectors-query';
 function row(over: Record<string, unknown> = {}) {
   return {
     id: 'conn-1',
-    provider: 'SLACK',
     providerSlug: 'SLACK',
     mcpServerUrl: 'https://mcp.slack.com/mcp',
     customerId: 'org:user:slack',
@@ -33,18 +32,18 @@ describe('the enabled-connectors query', () => {
     mockFindMany.mockResolvedValue([row()]);
   });
 
-  it('reads both columns, because one of them is on its way out', () => {
+  it('reads the slug column, and not the one on its way out', () => {
     return getEnabledConnectorsQuery('org', 'user').then(() => {
-      const select = (mockFindMany.mock.calls[0][0] as { select: object })
-        .select;
-      expect(select).toMatchObject({ provider: true, providerSlug: true });
+      const select = mockFindMany.mock.calls[0][0] as {
+        select: Record<string, unknown>;
+      };
+      expect(select.select.providerSlug).toBe(true);
+      expect(select.select.provider).toBeUndefined();
     });
   });
 
   it('hands downstream one provider, and it is the slug', async () => {
-    mockFindMany.mockResolvedValue([
-      row({ providerSlug: 'notion', provider: 'SLACK' }),
-    ]);
+    mockFindMany.mockResolvedValue([row({ providerSlug: 'notion' })]);
 
     const [connector] = await getEnabledConnectorsQuery('org', 'user');
 
@@ -54,11 +53,11 @@ describe('the enabled-connectors query', () => {
     expect(connector.provider).toBe('notion');
   });
 
-  it('falls back to the enum column for a row an older service wrote', async () => {
-    mockFindMany.mockResolvedValue([row({ providerSlug: null })]);
+  it('carries the slug through as `provider` for every consumer downstream', async () => {
+    mockFindMany.mockResolvedValue([row({ providerSlug: 'FIREFLIES' })]);
 
     const [connector] = await getEnabledConnectorsQuery('org', 'user');
 
-    expect(connector.provider).toBe('SLACK');
+    expect(connector.provider).toBe('FIREFLIES');
   });
 });

@@ -1,10 +1,13 @@
 import db from '@ragenai/prisma-client';
-import {
-  McpConnectorProvider,
-  McpConnectorStatus,
-} from '@/generated/prisma/client';
+import { McpConnectorStatus } from '@/generated/prisma/client';
 import { ragenAuthClient } from '@/libs/ragen-vault';
 import { logger } from '@/app/lib/utils/logger';
+
+/**
+ * The catalogue slug, which for a built-in is the old enum member verbatim —
+ * vault token paths and `customerId`s already hold that string.
+ */
+const FIREFLIES_SLUG = 'FIREFLIES';
 
 export type FirefliesConnectorResult = {
   apiKey: string;
@@ -16,10 +19,10 @@ export const getFirefliesConnectorQuery = async (
 ): Promise<FirefliesConnectorResult> => {
   const connector = await db.mcpConnector.findUnique({
     where: {
-      organizationId_userId_provider: {
+      organizationId_userId_providerSlug: {
         organizationId: organizationId,
         userId: userId,
-        provider: McpConnectorProvider.FIREFLIES,
+        providerSlug: FIREFLIES_SLUG,
       },
     },
     select: {
@@ -40,7 +43,7 @@ export const getFirefliesConnectorQuery = async (
   try {
     const token = await ragenAuthClient.getToken(
       connector.customerId,
-      McpConnectorProvider.FIREFLIES,
+      FIREFLIES_SLUG,
     );
 
     if (!token?.accessToken) {

@@ -1,11 +1,11 @@
 import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { createMCPClient } from '@ai-sdk/mcp';
+import { connectorSlug } from '@ragenai/platform-contracts';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { AuditLogService } from '../audit-logs/audit-log.service.js';
 import { SubscriptionsService } from '../subscriptions/subscriptions.service.js';
 import { ragenAuthClient } from '../ragen-vault/index.js';
 import { getProviderDefinition } from './provider-definition.js';
-import { legacyProviderColumn } from './legacy-provider-column.js';
 import { fetchWithTimeout } from './fetch-with-timeout.js';
 import { normalizeSiteUrl } from './site-url.js';
 import {
@@ -92,25 +92,20 @@ export class ConnectorsService {
     try {
       const connector = await this.prisma.client.mcpConnector.upsert({
         where: {
-          organizationId_userId_provider: {
+          organizationId_userId_providerSlug: {
             organizationId,
             userId,
-            provider: legacyProviderColumn(provider),
+            providerSlug: provider,
           },
         },
         update: {
           status: McpConnectorStatus.PENDING,
           mcpServerUrl,
           customerId,
-          // Written on update as well as create: a row written by a service
-          // still on the previous release carries no slug, and touching it is
-          // the cheapest moment to give it one.
-          providerSlug: provider,
         },
         create: {
           organizationId,
           userId,
-          provider: legacyProviderColumn(provider),
           providerSlug: provider,
           mcpServerUrl,
           customerId,
@@ -149,7 +144,7 @@ export class ConnectorsService {
     try {
       const connector = await this.prisma.client.mcpConnector.findUnique({
         where: { id: connectorId, organizationId, userId },
-        select: { provider: true, customerId: true },
+        select: { providerSlug: true, customerId: true },
       });
 
       if (!connector) {
@@ -159,11 +154,11 @@ export class ConnectorsService {
       try {
         await ragenAuthClient.deleteToken(
           connector.customerId,
-          connector.provider,
+          connectorSlug(connector),
         );
       } catch (error) {
         this.logger.warn(
-          `Failed to delete token from ragen-vault (may not exist), provider=${connector.provider}`,
+          `Failed to delete token from ragen-vault (may not exist), provider=${connectorSlug(connector)}`,
           error,
         );
       }
@@ -178,7 +173,7 @@ export class ConnectorsService {
         action: 'connector.disconnected',
         entityType: 'connector',
         entityId: connectorId,
-        oldData: { provider: connector.provider },
+        oldData: { provider: connectorSlug(connector) },
       });
 
       return deleted;
@@ -321,10 +316,10 @@ export class ConnectorsService {
 
       return await this.prisma.client.mcpConnector.upsert({
         where: {
-          organizationId_userId_provider: {
+          organizationId_userId_providerSlug: {
             organizationId,
             userId,
-            provider: legacyProviderColumn(provider),
+            providerSlug: provider,
           },
         },
         update: {
@@ -332,12 +327,10 @@ export class ConnectorsService {
           mcpServerUrl: providerDef.mcpServerUrl,
           customerId,
           connectedAt: new Date(),
-          providerSlug: provider,
         },
         create: {
           organizationId,
           userId,
-          provider: legacyProviderColumn(provider),
           providerSlug: provider,
           mcpServerUrl: providerDef.mcpServerUrl,
           customerId,
@@ -404,10 +397,10 @@ export class ConnectorsService {
     try {
       return await this.prisma.client.mcpConnector.upsert({
         where: {
-          organizationId_userId_provider: {
+          organizationId_userId_providerSlug: {
             organizationId,
             userId,
-            provider: legacyProviderColumn(provider),
+            providerSlug: provider,
           },
         },
         update: {
@@ -415,12 +408,10 @@ export class ConnectorsService {
           mcpServerUrl,
           customerId,
           connectedAt: new Date(),
-          providerSlug: provider,
         },
         create: {
           organizationId,
           userId,
-          provider: legacyProviderColumn(provider),
           providerSlug: provider,
           mcpServerUrl,
           customerId,
@@ -549,10 +540,10 @@ export class ConnectorsService {
   ): Promise<ConnectorLookupResult> {
     const connector = await this.prisma.client.mcpConnector.findUnique({
       where: {
-        organizationId_userId_provider: {
+        organizationId_userId_providerSlug: {
           organizationId,
           userId,
-          provider: legacyProviderColumn(provider),
+          providerSlug: provider,
         },
       },
       select: {
@@ -593,10 +584,6 @@ export class ConnectorsService {
         where: { organizationId, userId },
         select: {
           id: true,
-          provider: true,
-          // Both columns, for the length of the expand/contract: apps/web
-          // reads the pair through `connectorSlug()`, and a row written by a
-          // service still on the previous release has no slug.
           providerSlug: true,
           mcpServerUrl: true,
           customerId: true,

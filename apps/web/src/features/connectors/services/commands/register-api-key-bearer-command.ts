@@ -1,7 +1,6 @@
 'use server';
 
 import db from '@ragenai/prisma-client';
-import { legacyProviderColumn } from '../../utils/legacy-provider-column';
 import { McpConnectorStatus } from '@/generated/prisma/client';
 import { logger } from '@/app/lib/utils/logger';
 import { getProviderDefinition } from '../../constants/providers';
@@ -35,10 +34,10 @@ export const registerApiKeyBearerCommand = async (
     // Create/update the connector and mark as connected
     return await db.mcpConnector.upsert({
       where: {
-        organizationId_userId_provider: {
+        organizationId_userId_providerSlug: {
           organizationId: organizationId,
           userId: userId,
-          provider: legacyProviderColumn(provider),
+          providerSlug: provider,
         },
       },
       update: {
@@ -46,12 +45,10 @@ export const registerApiKeyBearerCommand = async (
         mcpServerUrl: providerDef.mcpServerUrl,
         customerId: customerId,
         connectedAt: new Date(),
-        providerSlug: provider,
       },
       create: {
         organizationId: organizationId,
         userId: userId,
-        provider: legacyProviderColumn(provider),
         providerSlug: provider,
         mcpServerUrl: providerDef.mcpServerUrl,
         customerId: customerId,

@@ -128,10 +128,10 @@ describe('ConnectorsService', () => {
       expect(upsert).toHaveBeenCalledWith(
         expect.objectContaining({
           where: {
-            organizationId_userId_provider: {
+            organizationId_userId_providerSlug: {
               organizationId: 'org-1',
               userId: 'user-1',
-              provider: 'CLICKUP',
+              providerSlug: 'CLICKUP',
             },
           },
         }),
@@ -179,7 +179,7 @@ describe('ConnectorsService', () => {
     it('deletes the vault token and the DB row, then audit-logs it', async () => {
       const findUnique = vi
         .fn()
-        .mockResolvedValue({ provider: 'CLICKUP', customerId: 'cust-1' });
+        .mockResolvedValue({ providerSlug: 'CLICKUP', customerId: 'cust-1' });
       const del = vi.fn().mockResolvedValue({ id: 'conn-1' });
       const { service, auditLog } = makeService({
         findUnique,
@@ -200,7 +200,7 @@ describe('ConnectorsService', () => {
     it('still deletes the DB row when the vault token delete fails', async () => {
       const findUnique = vi
         .fn()
-        .mockResolvedValue({ provider: 'CLICKUP', customerId: 'cust-1' });
+        .mockResolvedValue({ providerSlug: 'CLICKUP', customerId: 'cust-1' });
       const del = vi.fn().mockResolvedValue({ id: 'conn-1' });
       mockDeleteToken.mockRejectedValue(new Error('vault down'));
       const { service } = makeService({ findUnique, delete: del });

@@ -811,36 +811,36 @@ model DocumentPermission {
 }
 
 model McpConnector {
-  id             String               @id @default(uuid()) @db.Uuid
-  organizationId String               @map("organization_id")
-  userId         String               @map("user_id")
-  provider       McpConnectorProvider
-  /// The catalogue slug this connector resolves through — the column that
-  /// replaces `provider`, holding the same string. Nullable for the length of
-  /// the expand/contract in
-  /// docs/specs/2026-09-18-mcp-servers-added-without-a-deploy.md: web, api and
-  /// admin deploy independently, so a column whose type changes in one release
-  /// breaks whichever service redeploys second. Every writer writes both; every
-  /// reader reads `providerSlug ?? provider` until it is NOT NULL.
-  providerSlug   String?              @map("provider_slug")
-  mcpServerUrl   String               @map("mcp_server_url")
-  customerId     String               @map("customer_id")
-  enabled        Boolean              @default(true)
-  status         McpConnectorStatus   @default(PENDING)
-  connectedAt    DateTime?            @map("connected_at") @db.Timestamptz
+  id             String                @id @default(uuid()) @db.Uuid
+  organizationId String                @map("organization_id")
+  userId         String                @map("user_id")
+  /// Written by nobody since B3 and read by nobody since B2. Left in place,
+  /// nullable, because a column dropped in the release that replaces it is a
+  /// column with no rollback; B5 drops it on its own.
+  provider       McpConnectorProvider?
+  /// The catalogue slug this connector resolves through. Authoritative since
+  /// B3 of docs/specs/2026-09-18-mcp-servers-added-without-a-deploy.md: it
+  /// carries the composite uniqueness and it is what every reader and writer
+  /// uses.
+  providerSlug   String                @map("provider_slug")
+  mcpServerUrl   String                @map("mcp_server_url")
+  customerId     String                @map("customer_id")
+  enabled        Boolean               @default(true)
+  status         McpConnectorStatus    @default(PENDING)
+  connectedAt    DateTime?             @map("connected_at") @db.Timestamptz
   /// Why this connector last failed, and when. Written by
   /// `recordConnectorFailureCommand` and cleared on the next success, so a
   /// stale reason cannot outlive the fault it describes. `status` alone said
   /// only that something broke; support needs the sentence.
-  lastError      String?              @map("last_error")
-  lastErrorAt    DateTime?            @map("last_error_at") @db.Timestamptz
-  createdAt      DateTime             @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt      DateTime             @updatedAt @map("updated_at") @db.Timestamptz
+  lastError      String?               @map("last_error")
+  lastErrorAt    DateTime?             @map("last_error_at") @db.Timestamptz
+  createdAt      DateTime              @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime              @updatedAt @map("updated_at") @db.Timestamptz
 
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([organizationId, userId, provider])
+  @@unique([organizationId, userId, providerSlug])
   @@index([organizationId])
   @@index([userId])
   @@index([status])
@@ -848,28 +848,29 @@ model McpConnector {
 }
 
 model McpOAuthToken {
-  id             String               @id @default(uuid()) @db.Uuid
-  organizationId String               @map("organization_id")
-  userId         String               @map("user_id")
-  provider       McpConnectorProvider
-  /// Same expand/contract as `McpConnector.providerSlug`, and the same string.
-  /// A token row is keyed by provider too, so it has to move in step or a
+  id             String                @id @default(uuid()) @db.Uuid
+  organizationId String                @map("organization_id")
+  userId         String                @map("user_id")
+  /// As on `McpConnector`: unwritten, unread, dropped at B5.
+  provider       McpConnectorProvider?
+  /// The catalogue slug these tokens belong to. A token row is keyed by
+  /// provider too, so it moved in step with the connector — otherwise a
   /// connector would resolve to a catalogue entry whose tokens it cannot find.
-  providerSlug   String?              @map("provider_slug")
-  accessToken    String               @map("access_token")
-  refreshToken   String?              @map("refresh_token")
-  expiresAt      DateTime?            @map("expires_at") @db.Timestamptz
-  tokenType      String               @default("Bearer") @map("token_type")
-  clientId       String?              @map("client_id")
-  clientSecret   String?              @map("client_secret")
-  codeVerifier   String?              @map("code_verifier")
-  createdAt      DateTime             @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt      DateTime             @updatedAt @map("updated_at") @db.Timestamptz
+  providerSlug   String                @map("provider_slug")
+  accessToken    String                @map("access_token")
+  refreshToken   String?               @map("refresh_token")
+  expiresAt      DateTime?             @map("expires_at") @db.Timestamptz
+  tokenType      String                @default("Bearer") @map("token_type")
+  clientId       String?               @map("client_id")
+  clientSecret   String?               @map("client_secret")
+  codeVerifier   String?               @map("code_verifier")
+  createdAt      DateTime              @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime              @updatedAt @map("updated_at") @db.Timestamptz
 
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([organizationId, userId, provider])
+  @@unique([organizationId, userId, providerSlug])
   @@index([organizationId, userId])
   @@map("mcp_oauth_tokens")
 }

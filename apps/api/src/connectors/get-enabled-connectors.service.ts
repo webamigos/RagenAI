@@ -25,7 +25,6 @@ export class GetEnabledConnectorsService {
         },
         select: {
           id: true,
-          provider: true,
           providerSlug: true,
           mcpServerUrl: true,
           customerId: true,
@@ -34,10 +33,8 @@ export class GetEnabledConnectorsService {
         },
       });
 
-      // The seam where the expand/contract stops being visible: downstream
-      // sees one `provider`, and it is the catalogue slug. A row written by a
-      // service still on the previous release has no `providerSlug`, which is
-      // what the fallback inside `connectorSlug` is for.
+      // The seam where the column name stops being visible: downstream sees
+      // one `provider`, and it is the catalogue slug off `provider_slug`.
       return rows.map((row) => ({ ...row, provider: connectorSlug(row) }));
     } catch (error) {
       this.logger.error('Error fetching enabled connectors', error);

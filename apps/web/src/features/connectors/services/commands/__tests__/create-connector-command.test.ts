@@ -75,22 +75,20 @@ describe('createConnectorCommand feature gate', () => {
     expect(mockUpsert).toHaveBeenCalledWith(
       expect.objectContaining({
         where: {
-          organizationId_userId_provider: {
+          organizationId_userId_providerSlug: {
             organizationId: ORG,
             userId: USER,
-            provider: 'CLICKUP',
+            providerSlug: 'CLICKUP',
           },
         },
       }),
     );
   });
 
-  it('writes the slug beside the enum, on create and on update', async () => {
-    // Expand/contract, step 1: the reads move in a later release, so both
-    // columns have to carry the value through every deploy in between. The
-    // update branch matters as much as the create one — a row written by a
-    // service still on the previous release has no slug until something
-    // touches it.
+  it('writes the slug, and no longer the enum column', async () => {
+    // Expand/contract, step 3: `provider_slug` is NOT NULL and carries the
+    // uniqueness, and `provider` is nullable and written by nobody. A writer
+    // that still filled it would be keeping a column alive that B5 drops.
     mockIsFeatureEnabled.mockResolvedValue(true);
     mockUpsert.mockResolvedValue({
       id: 'conn-1',
@@ -106,8 +104,8 @@ describe('createConnectorCommand feature gate', () => {
       create: Record<string, unknown>;
       update: Record<string, unknown>;
     };
-    expect(args.create.provider).toBe('CLICKUP');
     expect(args.create.providerSlug).toBe('CLICKUP');
-    expect(args.update.providerSlug).toBe('CLICKUP');
+    expect(args.create.provider).toBeUndefined();
+    expect(args.update.provider).toBeUndefined();
   });
 });

@@ -19,17 +19,12 @@ export type ConnectorDto = Pick<
   | 'lastErrorAt'
 > & {
   /**
-   * A catalogue slug, not the enum. Mid-expand/contract the row carries both
-   * columns and `providerSlug` is nullable, so read the pair through
-   * `connectorSlug()` and never one of them on its own — a row written by a
-   * service still on the previous release has no slug.
-   *
-   * Widened to `string` here rather than left as `McpConnectorProvider`
-   * because this is a wire type: the enum is a property of the column, and
-   * the column is going.
+   * The catalogue slug. Authoritative since B3 of
+   * docs/specs/2026-09-18-mcp-servers-added-without-a-deploy.md: the enum
+   * column is neither written nor read any more, so it is not on the wire
+   * either. Read it through `connectorSlug()` rather than by name.
    */
-  provider: string;
-  providerSlug: string | null;
+  providerSlug: string;
 };
 
 export type SystemPromptContext = {

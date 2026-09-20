@@ -5,7 +5,6 @@ import type {
   OAuthClientMetadata,
 } from '@ai-sdk/mcp';
 import db from '@ragenai/prisma-client';
-import { legacyProviderColumn } from '@/features/connectors/utils/legacy-provider-column';
 
 export type OAuthProviderOptions = {
   orgId: string;
@@ -59,10 +58,10 @@ export class PrismaOAuthClientProvider implements OAuthClientProvider {
   async tokens(): Promise<OAuthTokens | undefined> {
     const record = await db.mcpOAuthToken.findUnique({
       where: {
-        organizationId_userId_provider: {
+        organizationId_userId_providerSlug: {
           organizationId: this.orgId,
           userId: this.userId,
-          provider: legacyProviderColumn(this.provider),
+          providerSlug: this.provider,
         },
       },
     });
@@ -91,10 +90,10 @@ export class PrismaOAuthClientProvider implements OAuthClientProvider {
 
     await db.mcpOAuthToken.upsert({
       where: {
-        organizationId_userId_provider: {
+        organizationId_userId_providerSlug: {
           organizationId: this.orgId,
           userId: this.userId,
-          provider: legacyProviderColumn(this.provider),
+          providerSlug: this.provider,
         },
       },
       update: {
@@ -102,15 +101,10 @@ export class PrismaOAuthClientProvider implements OAuthClientProvider {
         refreshToken: tokens.refresh_token || null,
         expiresAt,
         tokenType: tokens.token_type || 'Bearer',
-        // Written on update as well as create: a row written by a service
-        // still on the previous release carries no slug, and touching it is
-        // the cheapest moment to give it one.
-        providerSlug: this.provider,
       },
       create: {
         organizationId: this.orgId,
         userId: this.userId,
-        provider: legacyProviderColumn(this.provider),
         providerSlug: this.provider,
         accessToken: tokens.access_token,
         refreshToken: tokens.refresh_token || null,
@@ -132,10 +126,10 @@ export class PrismaOAuthClientProvider implements OAuthClientProvider {
     // Otherwise check DB for dynamically registered client info
     const record = await db.mcpOAuthToken.findUnique({
       where: {
-        organizationId_userId_provider: {
+        organizationId_userId_providerSlug: {
           organizationId: this.orgId,
           userId: this.userId,
-          provider: legacyProviderColumn(this.provider),
+          providerSlug: this.provider,
         },
       },
     });
@@ -153,21 +147,19 @@ export class PrismaOAuthClientProvider implements OAuthClientProvider {
   async saveClientInformation(info: OAuthClientInformation): Promise<void> {
     await db.mcpOAuthToken.upsert({
       where: {
-        organizationId_userId_provider: {
+        organizationId_userId_providerSlug: {
           organizationId: this.orgId,
           userId: this.userId,
-          provider: legacyProviderColumn(this.provider),
+          providerSlug: this.provider,
         },
       },
       update: {
         clientId: info.client_id,
         clientSecret: info.client_secret || null,
-        providerSlug: this.provider,
       },
       create: {
         organizationId: this.orgId,
         userId: this.userId,
-        provider: legacyProviderColumn(this.provider),
         providerSlug: this.provider,
         accessToken: '',
         clientId: info.client_id,
@@ -183,20 +175,18 @@ export class PrismaOAuthClientProvider implements OAuthClientProvider {
   async saveCodeVerifier(verifier: string): Promise<void> {
     await db.mcpOAuthToken.upsert({
       where: {
-        organizationId_userId_provider: {
+        organizationId_userId_providerSlug: {
           organizationId: this.orgId,
           userId: this.userId,
-          provider: legacyProviderColumn(this.provider),
+          providerSlug: this.provider,
         },
       },
       update: {
         codeVerifier: verifier,
-        providerSlug: this.provider,
       },
       create: {
         organizationId: this.orgId,
         userId: this.userId,
-        provider: legacyProviderColumn(this.provider),
         providerSlug: this.provider,
         accessToken: '',
         codeVerifier: verifier,
@@ -207,10 +197,10 @@ export class PrismaOAuthClientProvider implements OAuthClientProvider {
   async codeVerifier(): Promise<string> {
     const record = await db.mcpOAuthToken.findUnique({
       where: {
-        organizationId_userId_provider: {
+        organizationId_userId_providerSlug: {
           organizationId: this.orgId,
           userId: this.userId,
-          provider: legacyProviderColumn(this.provider),
+          providerSlug: this.provider,
         },
       },
     });

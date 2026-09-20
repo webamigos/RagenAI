@@ -2,7 +2,6 @@ import { McpConnectorStatus } from '@/generated/prisma/client';
 import { logger } from '@/app/lib/utils/logger';
 import { recordSecurityEvent } from '@/features/security/services/commands/record-security-event-command';
 import db from '@ragenai/prisma-client';
-import { legacyProviderColumn } from '../../utils/legacy-provider-column';
 
 /**
  * Mark a connector as broken, and say why.
@@ -106,11 +105,7 @@ export async function recordConnectorFailureCommand({
       where: {
         organizationId,
         userId,
-        // Still the enum column. Both columns carry the same string for any
-        // row this can match — B1 backfilled and every writer dual-writes — so
-        // filtering on either finds the same rows. The `where` moves to
-        // `providerSlug` at B3, with the unique constraint.
-        provider: legacyProviderColumn(provider),
+        providerSlug: provider,
         OR: [
           { status: { not: McpConnectorStatus.ERROR } },
           { lastError: { not: reason } },
@@ -130,10 +125,10 @@ export async function recordConnectorFailureCommand({
       // URL, since `mcpServerUrl` and `customerId` are required columns.
       const existing = await db.mcpConnector.findUnique({
         where: {
-          organizationId_userId_provider: {
+          organizationId_userId_providerSlug: {
             organizationId,
             userId,
-            provider: legacyProviderColumn(provider),
+            providerSlug: provider,
           },
         },
         select: { id: true },
@@ -144,7 +139,6 @@ export async function recordConnectorFailureCommand({
           data: {
             organizationId,
             userId,
-            provider: legacyProviderColumn(provider),
             providerSlug: provider,
             mcpServerUrl,
             customerId: `${organizationId}:${userId}:${provider.toLowerCase()}`,
@@ -213,7 +207,7 @@ export async function clearConnectorFailureCommand({
       where: {
         organizationId,
         userId,
-        provider: legacyProviderColumn(provider),
+        providerSlug: provider,
         OR: [
           { status: McpConnectorStatus.ERROR },
           { lastError: { not: null } },

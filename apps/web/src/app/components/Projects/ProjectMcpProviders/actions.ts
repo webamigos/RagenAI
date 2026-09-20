@@ -34,17 +34,17 @@ export async function getConnectedProvidersAction(): Promise<
         userId,
         status: McpConnectorStatus.CONNECTED,
       },
-      select: { provider: true },
-      orderBy: { provider: 'asc' },
+      select: { providerSlug: true },
+      orderBy: { providerSlug: 'asc' },
     }),
     getAvailableConnectorProvidersForOrg(orgId),
   ]);
 
   return connectors
-    .filter((c) => availableProviders.includes(c.provider))
+    .filter((c) => availableProviders.includes(c.providerSlug))
     .map((c) => ({
-      provider: c.provider,
-      name: c.provider,
+      provider: c.providerSlug,
+      name: c.providerSlug,
     }));
 }
 

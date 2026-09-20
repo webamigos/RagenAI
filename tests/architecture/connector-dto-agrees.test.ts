@@ -86,14 +86,16 @@ describe('ConnectorDto', () => {
   const api = pickedFields(readFileSync(API_TYPES, 'utf8'));
   const selected = selectedFields(readFileSync(API_SERVICE, 'utf8'));
 
-  it('still names the two columns the expand/contract is moving', () => {
-    // `provider` and `providerSlug` are declared outside the Pick, and a
-    // reader that lost track of them would leave the API free to stop sending
-    // either one.
-    expect(web).toContain('provider');
+  it('still names the column the expand/contract landed on', () => {
+    // `providerSlug` is declared outside the Pick, because it is a `string`
+    // here rather than the enum the column used to be. A reader that lost
+    // track of it would leave the API free to stop sending the one field that
+    // says which connector a row is.
     expect(web).toContain('providerSlug');
-    expect(api).toContain('provider');
     expect(api).toContain('providerSlug');
+    // And the enum column is off the wire entirely since B3.
+    expect(web).not.toContain('provider');
+    expect(api).not.toContain('provider');
   });
 
   it('is declared in both workspaces', () => {

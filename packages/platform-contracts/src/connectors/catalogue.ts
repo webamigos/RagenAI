@@ -157,20 +157,21 @@ export function slugsCollide(a: string, b: string): boolean {
 /**
  * A connector's catalogue slug, as read off a row.
  *
- * `McpConnector.provider` and `McpOAuthToken.provider` are mid-expand/contract:
- * `providerSlug` is the column that replaces them, nullable until step 3, and
- * it holds the same string. Every reader goes through here rather than through
- * `??` at the call site, so that when the old column is dropped there is one
- * line to change and no reader left quietly reading it.
+ * Since B3 of docs/specs/2026-09-18-mcp-servers-added-without-a-deploy.md
+ * `providerSlug` is `NOT NULL` and carries the composite uniqueness, so there
+ * is nothing left to fall back to — the `?? provider` that lived here through
+ * steps 1 and 2 is gone with the column's nullability.
  *
- * A row written by a service still on the previous release has no slug, which
- * is exactly the case the fallback exists for.
+ * The function stays because the accessor does: every reader goes through it
+ * rather than reaching for a column name, so B5's drop touches one file and
+ * leaves no reader quietly reading a column that is not there.
  */
 export function connectorSlug(row: {
-  provider: string;
-  providerSlug?: string | null;
+  providerSlug: string;
+  /** Unwritten since B3, unread since B2, dropped at B5. */
+  provider?: string | null;
 }): string {
-  return row.providerSlug ?? row.provider;
+  return row.providerSlug;
 }
 
 export type CatalogResolution<P extends CatalogBehaviourPack> =

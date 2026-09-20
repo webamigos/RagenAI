@@ -21,7 +21,6 @@ describe('GetEnabledConnectorsService', () => {
       },
       select: {
         id: true,
-        provider: true,
         providerSlug: true,
         mcpServerUrl: true,
         customerId: true,
@@ -33,10 +32,8 @@ describe('GetEnabledConnectorsService', () => {
 
   it('returns the connectors found, under their catalogue slug', async () => {
     const connectors = [
-      { id: '1', provider: 'CLICKUP', providerSlug: 'CLICKUP' },
-      // A row written by a service still on the previous release: no slug,
-      // and the enum column is what the caller must end up seeing.
-      { id: '2', provider: 'SLACK', providerSlug: null },
+      { id: '1', providerSlug: 'CLICKUP' },
+      { id: '2', providerSlug: 'SLACK' },
     ];
     const findMany = vi.fn().mockResolvedValue(connectors);
     const prisma = {

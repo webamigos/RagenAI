@@ -50,7 +50,6 @@ export const getEnabledConnectorsQuery = async (
       },
       select: {
         id: true,
-        provider: true,
         providerSlug: true,
         mcpServerUrl: true,
         customerId: true,
@@ -63,11 +62,10 @@ export const getEnabledConnectorsQuery = async (
       },
     });
 
-    // The seam where the expand/contract stops being visible. Downstream —
-    // the allowlist filter, the project filter, the tool loader — sees one
-    // `provider`, and it is the catalogue slug. A row written by a service
-    // still on the previous release has no `providerSlug`, which is what the
-    // fallback inside `connectorSlug` is for.
+    // The seam where the column name stops being visible. Downstream — the
+    // allowlist filter, the project filter, the tool loader — sees one
+    // `provider`, and it is the catalogue slug off `provider_slug`. The enum
+    // column is not selected at all since B3.
     return rows.map((row) => ({ ...row, provider: connectorSlug(row) }));
   } catch (error) {
     logger.error({ err: error }, 'Error fetching enabled connectors');

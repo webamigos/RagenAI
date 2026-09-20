@@ -47,7 +47,7 @@ const { forceDisconnectConnectorAction } = await import('../actions');
 const ADMIN = { id: 'admin-1', email: 'admin@example.com', name: 'Admin' };
 const CONNECTOR = {
   id: 'conn-1',
-  provider: 'SLACK',
+  providerSlug: 'SLACK',
   customerId: 'org-1:user-1:slack',
   organizationId: 'org-1',
   userId: 'user-1',

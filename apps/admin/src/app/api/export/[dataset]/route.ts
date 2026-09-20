@@ -7,7 +7,6 @@ import {
 
 // Same relative reach as `lib/audit.ts`, from one directory deeper: the
 // client is generated into apps/web.
-import type { McpConnectorProvider } from '../../../../../../web/src/generated/prisma/client';
 
 import { parseEventTypeFilter } from '../../../(dashboard)/incidents/event-types';
 
@@ -382,7 +381,7 @@ const DATASETS: Record<string, Dataset> = {
               }
             : {}),
           ...(params.get('provider')
-            ? { provider: params.get('provider')! as McpConnectorProvider }
+            ? { providerSlug: params.get('provider')! }
             : {}),
         },
         include: {

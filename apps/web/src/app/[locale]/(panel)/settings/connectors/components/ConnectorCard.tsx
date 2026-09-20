@@ -135,7 +135,6 @@ export function ConnectorCard({ provider, connector }: ConnectorCardProps) {
       setCurrentConnector({
         ...currentConnector,
         id: updated.id,
-        provider: provider.provider,
         providerSlug: provider.provider,
         mcpServerUrl: provider.mcpServerUrl,
         customerId: '',
@@ -180,7 +179,6 @@ export function ConnectorCard({ provider, connector }: ConnectorCardProps) {
       setCurrentConnector({
         ...currentConnector,
         id: updated.id,
-        provider: provider.provider,
         providerSlug: provider.provider,
         mcpServerUrl: provider.mcpServerUrl,
         customerId: '',
@@ -212,7 +210,6 @@ export function ConnectorCard({ provider, connector }: ConnectorCardProps) {
 
       const callbackUrl = `${window.location.origin}/api/connectors/external/callback?provider=${provider.provider}`;
       const params = new URLSearchParams({
-        provider: provider.provider,
         providerSlug: provider.provider,
         callback_url: callbackUrl,
       });
@@ -370,7 +367,6 @@ export function ConnectorCard({ provider, connector }: ConnectorCardProps) {
       setCurrentConnector({
         ...currentConnector,
         id: connectorId,
-        provider: provider.provider,
         providerSlug: provider.provider,
         mcpServerUrl: provider.mcpServerUrl,
         customerId: '',

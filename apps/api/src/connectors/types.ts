@@ -26,9 +26,8 @@ export type ConnectorDto = Pick<
   | 'lastError'
   | 'lastErrorAt'
 > & {
-  /** A catalogue slug. See apps/web's sibling for why this is a string. */
-  provider: string;
-  providerSlug: string | null;
+  /** The catalogue slug. See apps/web's sibling. */
+  providerSlug: string;
 };
 
 export type SystemPromptContext = {

@@ -1,6 +1,5 @@
 import db from '@ragenai/prisma-client';
 import { McpConnectorStatus } from '@/generated/prisma/client';
-import { legacyProviderColumn } from '../../utils/legacy-provider-column';
 import { getProviderDefinition } from '../../constants/providers';
 
 export type ConnectorLookupResult = {
@@ -16,10 +15,10 @@ export const getConnectorQuery = async (
 ): Promise<ConnectorLookupResult> => {
   const connector = await db.mcpConnector.findUnique({
     where: {
-      organizationId_userId_provider: {
+      organizationId_userId_providerSlug: {
         organizationId: organizationId,
         userId: userId,
-        provider: legacyProviderColumn(provider),
+        providerSlug: provider,
       },
     },
     select: {

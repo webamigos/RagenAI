@@ -265,25 +265,18 @@ describe('the allowlist over the catalogue', () => {
 });
 
 describe('the slug on a connector row', () => {
-  it('reads the new column when it has one', () => {
-    expect(connectorSlug({ provider: 'SLACK', providerSlug: 'SLACK' })).toBe(
-      'SLACK',
-    );
+  it('is the slug column, which is NOT NULL since B3', () => {
+    expect(connectorSlug({ providerSlug: 'SLACK' })).toBe('SLACK');
   });
 
-  it('falls back to the enum column for a row written by an older service', () => {
-    // Three services deploy independently, so for the length of the
-    // expand/contract a row can arrive with `provider` and no slug. That is
-    // the case this fallback exists for, and the only one.
-    expect(connectorSlug({ provider: 'SLACK', providerSlug: null })).toBe(
-      'SLACK',
-    );
-    expect(connectorSlug({ provider: 'SLACK' })).toBe('SLACK');
-  });
-
-  it('prefers the slug when the two disagree', () => {
+  it('ignores the enum column, which is unwritten and on its way out', () => {
+    // The `?? provider` that lived here through steps 1 and 2 went with the
+    // column's nullability. The accessor stays so B5's drop touches one file.
     expect(
       connectorSlug({ provider: 'SLACK', providerSlug: 'slack-internal' }),
     ).toBe('slack-internal');
+    expect(connectorSlug({ provider: null, providerSlug: 'notion' })).toBe(
+      'notion',
+    );
   });
 });

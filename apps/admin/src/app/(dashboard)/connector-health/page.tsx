@@ -51,7 +51,7 @@ async function getConnectors(params: SearchParams) {
     where.status = params.status;
   }
   if (params.provider) {
-    where.provider = params.provider;
+    where.providerSlug = params.provider;
   }
 
   const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
@@ -80,8 +80,8 @@ async function getConnectors(params: SearchParams) {
         orderBy: { name: 'asc' },
       }),
       prisma.mcpConnector
-        .groupBy({ by: ['provider'], _count: true })
-        .then((rows) => rows.map((row) => row.provider).sort()),
+        .groupBy({ by: ['providerSlug'], _count: true })
+        .then((rows) => rows.map((row) => row.providerSlug).sort()),
       // Platform-wide rather than filtered: this strip answers "is anything
       // wrong right now", which must not change when a filter is applied.
       Promise.all([

@@ -1,7 +1,6 @@
 'use server';
 
 import db from '@ragenai/prisma-client';
-import { legacyProviderColumn } from '../../utils/legacy-provider-column';
 import { McpConnectorStatus } from '@/generated/prisma/client';
 import { logger } from '@/app/lib/utils/logger';
 import { trackAudit } from '@/features/audit-logs/services/commands/create-audit-log-command';
@@ -46,25 +45,20 @@ export const createConnectorCommand = async (
   try {
     const connector = await db.mcpConnector.upsert({
       where: {
-        organizationId_userId_provider: {
+        organizationId_userId_providerSlug: {
           organizationId: organizationId,
           userId: userId,
-          provider: legacyProviderColumn(provider),
+          providerSlug: provider,
         },
       },
       update: {
         status: McpConnectorStatus.PENDING,
         mcpServerUrl: mcpServerUrl,
         customerId: customerId,
-        // Written on update as well as create: a row written by a service
-        // still on the previous release carries no slug, and touching it is
-        // the cheapest moment to give it one.
-        providerSlug: provider,
       },
       create: {
         organizationId: organizationId,
         userId: userId,
-        provider: legacyProviderColumn(provider),
         providerSlug: provider,
         mcpServerUrl: mcpServerUrl,
         customerId: customerId,

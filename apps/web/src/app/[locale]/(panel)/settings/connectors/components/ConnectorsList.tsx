@@ -1,4 +1,5 @@
 'use client';
+import { connectorSlug } from '@ragenai/platform-contracts';
 
 import { useTranslations } from 'next-intl';
 import { Badge } from '@/components/ui/badge';
@@ -48,7 +49,7 @@ export function ConnectorsList({ providers, connectors }: ConnectorsListProps) {
       )}
       {providers.map((provider) => {
         const connector = connectors.find(
-          (c) => c.provider === provider.provider,
+          (c) => connectorSlug(c) === provider.provider,
         );
         return (
           <ConnectorCard
