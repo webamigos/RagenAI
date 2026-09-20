@@ -1,6 +1,9 @@
 import {
+  describeProviderError,
+  JudgeTimeoutError,
   POLICY_JUDGE_MODEL,
   POLICY_JUDGE_TIMEOUT_MS,
+  providerErrorReason,
   type JudgePolicy,
   type PolicyJudgement,
 } from '@ragenai/guardrails';
@@ -92,7 +95,7 @@ export function createPolicyJudge(context: PolicyJudgeContext): JudgePolicy {
       // the turn open before the model has been asked the question.
       const timing = new Promise<never>((_, reject) => {
         setTimeout(
-          () => reject(new Error('policy judge timeout')),
+          () => reject(new JudgeTimeoutError()),
           POLICY_JUDGE_TIMEOUT_MS,
         );
       });
@@ -107,16 +110,21 @@ export function createPolicyJudge(context: PolicyJudgeContext): JudgePolicy {
       // the classifier before it both make: a classifier that can take the
       // product down is a bigger risk than the one it catches.
       //
-      // The message is truncated because it is a provider's, and provider
-      // errors have been known to echo the request back.
+      // **The error is described, never logged.** `{ err }` here put the
+      // customer's message in the log: the AI SDK's `APICallError` carries
+      // `requestBodyValues`, the whole request body, and pino's default
+      // serializer copies every enumerable property of an error. Truncating
+      // the message, which is what this used to do, bounded that rather than
+      // closing it. See `describeProviderError`.
       logger.warn(
-        { err, audit: true, guardrail: rule.publicId },
+        {
+          audit: true,
+          guardrail: rule.publicId,
+          judgeError: describeProviderError(err),
+        },
         'Policy judge could not answer; the rule did not run for this turn',
       );
-      return {
-        outcome: 'error',
-        reason: err instanceof Error ? err.message.slice(0, 120) : 'unknown',
-      };
+      return { outcome: 'error', reason: providerErrorReason(err) };
     }
   };
 }

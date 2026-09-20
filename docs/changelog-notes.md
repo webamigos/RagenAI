@@ -538,6 +538,7 @@ archive is the blog.
   with a check that every kind of AI call the product records has somewhere to
   appear: the same gap had already happened twice and would have kept
   happening, because nothing breaks when it does.
+
 - `[brief]` **Jailbreak detection is a rule you can see and switch on, and it
   now covers the public API.** It used to be an environment variable and a
   classifier that ran beside the answer: it scored each message, wrote an

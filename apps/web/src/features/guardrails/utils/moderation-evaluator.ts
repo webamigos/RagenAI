@@ -1,4 +1,8 @@
-import type { ModerationVerdict } from '@ragenai/guardrails';
+import {
+  describeProviderError,
+  providerErrorReason,
+  type ModerationVerdict,
+} from '@ragenai/guardrails';
 
 import type { ModerationInstance } from '@/app/lib/services/llm';
 import { logger } from '@/app/lib/utils/logger';
@@ -72,10 +76,13 @@ export async function evaluateModeration(
 
     return result.flagged ? { outcome: 'hit' } : { outcome: 'pass' };
   } catch (err) {
-    logger.error({ err, audit: true }, 'Moderation provider call failed');
-    return {
-      outcome: 'error',
-      reason: err instanceof Error ? err.message.slice(0, 120) : 'unknown',
-    };
+    // Described, not logged. This adapter is called with the customer's
+    // message, so a provider error object reaching the log is the same leak
+    // the judge had — and this one is older. See `describeProviderError`.
+    logger.error(
+      { audit: true, moderationError: describeProviderError(err) },
+      'Moderation provider call failed',
+    );
+    return { outcome: 'error', reason: providerErrorReason(err) };
   }
 }

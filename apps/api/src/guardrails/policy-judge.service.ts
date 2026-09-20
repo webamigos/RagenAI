@@ -1,7 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import {
+  JudgeTimeoutError,
   POLICY_JUDGE_MODEL,
   POLICY_JUDGE_TIMEOUT_MS,
+  providerErrorReason,
   type JudgePolicy,
   type PolicyJudgement,
 } from '@ragenai/guardrails';
@@ -100,7 +102,7 @@ export class PolicyJudgeService {
         // turn open before the model has been asked the question at all.
         const timing = new Promise<never>((_, reject) => {
           setTimeout(
-            () => reject(new Error('policy judge timeout')),
+            () => reject(new JudgeTimeoutError()),
             POLICY_JUDGE_TIMEOUT_MS,
           );
         });
@@ -114,14 +116,16 @@ export class PolicyJudgeService {
         // Pass on error. The same choice the moderation adapter makes: a
         // classifier that can take the product down is a bigger risk than the
         // one it catches.
+        //
+        // **Described, never handed to the logger.** Passing `err` as a
+        // parameter here printed the caller's own message: the AI SDK's
+        // `APICallError` carries `requestBodyValues`, the whole request body,
+        // and Nest's logger renders an error parameter in full. Verified, on
+        // this runtime, not inferred from apps/web's.
         this.logger.warn(
-          `Policy judge could not answer for ${rule.publicId}; the rule did not run for this turn`,
-          err,
+          `Policy judge could not answer for ${rule.publicId} (${providerErrorReason(err)}); the rule did not run for this turn`,
         );
-        return {
-          outcome: 'error',
-          reason: err instanceof Error ? err.message.slice(0, 120) : 'unknown',
-        };
+        return { outcome: 'error', reason: providerErrorReason(err) };
       }
     };
   }
