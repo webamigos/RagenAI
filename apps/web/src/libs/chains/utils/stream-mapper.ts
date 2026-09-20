@@ -1,5 +1,6 @@
 import type { OutputStage } from '@ragenai/guardrails';
 
+import { GuardrailError } from '../errors';
 import type { ChainStreamPart } from '../types/common';
 
 /**
@@ -163,6 +164,42 @@ export async function* mapFullStream(
     const released = consumed - outputStage.held;
     while (queued.length > 0 && (queued[0] as { at: number }).at <= released) {
       yield (queued.shift() as { part: ChainStreamPart }).part;
+    }
+  }
+}
+
+/**
+ * The text of a mapped stream, for a caller that wants strings.
+ *
+ * `textStream` used to be the AI SDK's own, which meant it never met the
+ * output window: an organization's rule applied to the surfaces that read
+ * `fullStream` and to no other, and nothing anywhere said so. It is derived
+ * from the mapped stream now, so a surface is covered by which function it
+ * calls rather than by somebody remembering.
+ *
+ * **The two share one iterator**, so a caller consumes one of them, not both.
+ * That is what makes the window single: two would each hold their own buffer
+ * and each file its own hit for the same answer.
+ *
+ * A block throws rather than ending the stream quietly. A string iterator has
+ * nowhere to put "and the reason it stopped is a rule", and a caller that
+ * treated the end as the end of the answer would persist the text it had — the
+ * one outcome the rule exists to prevent. An exception cannot be ignored by
+ * accident.
+ */
+export async function* textOfStream(
+  parts: AsyncIterable<ChainStreamPart>,
+): AsyncIterable<string> {
+  for await (const part of parts) {
+    if (part.type === 'guardrail-violation') {
+      throw new GuardrailError(
+        part.guardrailPublicId,
+        part.guardrailName,
+        'The answer was refused by a guardrail',
+      );
+    }
+    if (part.type === 'text-delta') {
+      yield part.textDelta;
     }
   }
 }

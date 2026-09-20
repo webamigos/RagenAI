@@ -789,7 +789,7 @@ If it slips, A–C and E still ship a complete capability.
       called by nobody is the same deliberate state Phase A ended in. The
       `apps/web` funnel and the persistence path follow, and the checkbox is
       the second one's.
-- [ ] **D1c.** The exits that are not the stream funnel, in `apps/web`.
+- [x] **D1c.** The exits that are not the stream funnel, in both apps.
 
       `mapFullStream` is one of three ways text leaves a chain, and the other
       two bypass it completely: `textStream` and the resolved `text`. Three
@@ -808,7 +808,27 @@ If it slips, A–C and E still ship a complete capability.
       `assistant-stream.ts`'s resolved-text fallback is the same hazard and is
       already closed in D1: it reads the model's own text, which never passed
       through the window, so it is skipped on a refused turn.
-- [ ] **D2.** The same in `apps/api`'s funnel.
+- [x] **D2.** The same in `apps/api`'s funnel, and done with D1c rather than
+      after it: `apps/api` reads `textStream` at three of the five uncovered
+      call sites, so the two are one decision about how a chain hands out
+      text. Both apps now derive `textStream` from the mapped stream, and
+      `tests/architecture/a-chain-hands-out-guarded-text.test.ts` is what
+      keeps it derived.
+
+      A block reaches a text reader as a thrown `GuardrailError`, not as a
+      short answer. A string iterator has nowhere to put "and the reason it
+      stopped is a rule", and an iterator that simply ends is the easiest
+      thing in the world to treat as a finished answer — which persists the
+      text the rule stopped. The OpenAI-compatible surface ends its stream
+      with `finish_reason: 'content_filter'`, which is what that format has
+      for exactly this; chunks already on the wire cannot be retracted, and
+      inventing a field no client reads would only look like they could be.
+
+      Left as it is, deliberately: the chain's resolved `text` promise is
+      still the model's own. Its single consumer is `assistant-stream.ts`'s
+      fallback, which D1 already skips on a refused turn, and guarding it
+      would mean a second window over the same answer — two buffers, two hits
+      filed for one block.
 - [ ] **D3.** Buffered evaluation for `LLM_POLICY` output rules, and the
       latency warning on the rule form.
 - [ ] **D4.** `SUPPORTED_COMBINATIONS` opens the `OUTPUT` stage; the admin form

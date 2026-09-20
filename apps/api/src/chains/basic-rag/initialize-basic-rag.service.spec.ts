@@ -61,12 +61,18 @@ describe('InitializeBasicRagService', () => {
       }),
     };
     const runGuardrails = { run: vi.fn() };
+    // No output rules either, so the window is never built — the same
+    // unguarded path, now stated for both stages rather than one.
+    const runOutputGuardrails = {
+      stageFor: vi.fn().mockReturnValue(undefined),
+    };
 
     return new InitializeBasicRagService(
       organizationSettings as never,
       organizationMetadata as never,
       importedKbFileIds as never,
       guardrails as never,
+      runOutputGuardrails as never,
       runGuardrails as never,
     );
   }

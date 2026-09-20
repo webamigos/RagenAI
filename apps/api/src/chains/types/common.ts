@@ -78,6 +78,16 @@ export interface ChainConfig {
       chatHistory: string | undefined;
       moderateHistory: boolean;
     }) => Promise<{ question: string; chatHistory: string }>;
+    /**
+     * Builds the output window for this turn, or `undefined` when the
+     * organization has no output rules.
+     *
+     * A factory rather than an instance because a window carries the turn's
+     * state: one shared between turns would evaluate the second answer
+     * against the tail of the first.
+     */
+    readonly outputStage?: () =>
+      import('@ragenai/guardrails').OutputStage | undefined;
   };
   threadDocuments?: ThreadDocumentUI[];
   /**
@@ -142,6 +152,23 @@ export type ChainStreamPart =
       toolCallId: string;
       toolName: string;
       args: unknown;
+    }
+  /**
+   * An `OUTPUT` guardrail refused the answer mid-stream.
+   *
+   * The stream ends here: nothing after this part is emitted, and every
+   * consumer treats the text it has accumulated as withheld rather than as a
+   * partial answer. Persisting that prefix would store exactly the text the
+   * rule exists to suppress, which is why stopping the stream and deciding
+   * what is stored are one change and not two.
+   *
+   * Carries the rule's identity and not the matched text — the same rule as
+   * `GuardrailError`, and for the same reason: this object reaches logs.
+   */
+  | {
+      type: 'guardrail-violation';
+      guardrailPublicId: string;
+      guardrailName: string;
     }
   | { type: 'other'; [key: string]: unknown };
 

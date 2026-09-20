@@ -288,6 +288,24 @@ export function isCombinationSupported(
 export const OUTPUT_WINDOW_CHARS = 256;
 
 /**
+ * What is stored in place of an answer an `OUTPUT` rule refused.
+ *
+ * The withheld text is never stored — that is the whole point of the rule —
+ * and an empty assistant message would read as a bug rather than a decision.
+ *
+ * One sentence for both runtimes, because both persist it: `apps/web` writes
+ * it to a thread and `apps/api` to an API thread, and the same refusal spelled
+ * two ways is two products. English, and deliberately not the only thing a
+ * reader sees: `apps/web`'s panel renders
+ * `assistant.chat.guardrail-blocked-answer` in their own language off the
+ * message's `guardrailBlocked` marker, because neither `/api/threads` nor the
+ * public API has a locale to translate with. What is stored is what an export
+ * or an API read gets, which is a sentence rather than a blank.
+ */
+export const OUTPUT_GUARDRAIL_REFUSAL =
+  "The answer was withheld because it matched a rule set by your organization's administrator.";
+
+/**
  * Severity of the security event a hit writes. Mirrors the existing
  * `SecurityEventSeverity` union rather than introducing a parallel one.
  */

@@ -1,6 +1,7 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 
 import { GuardrailError } from '../chains/errors.js';
+import { GuardrailHitService } from './guardrail-hit.service.js';
 import { RunInputGuardrailsService } from './run-input-guardrails.service.js';
 import type { OrgGuardrails } from './guardrails.service.js';
 
@@ -23,7 +24,11 @@ const record = vi.fn();
 const judge = vi.fn().mockResolvedValue({ outcome: 'scored', score: 0 });
 const service = () =>
   new RunInputGuardrailsService(
-    { record } as never,
+    // The real hit service over a mocked event writer, so these assertions
+    // still describe the row that reaches `security_events` rather than the
+    // arguments of a mock in between. The shape moved into
+    // `GuardrailHitService` when the output window needed the same one.
+    new GuardrailHitService({ record } as never),
     {
       forTurn: () => judge,
     } as never,

@@ -20,14 +20,12 @@ const mockRunInputGuardrails = vi.fn();
 vi.mock(
   '@/features/guardrails/services/queries/get-org-guardrails-query',
   () => ({
-    getOrgGuardrailsQuery: vi
-      .fn()
-      .mockResolvedValue({
-        input: [],
-        output: [],
-        degraded: false,
-        dropped: [],
-      }),
+    getOrgGuardrailsQuery: vi.fn().mockResolvedValue({
+      input: [],
+      output: [],
+      degraded: false,
+      dropped: [],
+    }),
   }),
 );
 
@@ -65,6 +63,11 @@ vi.mock('ai', () => ({
 vi.mock('@/libs/mcp/client', () => ({ buildToolApprovalConfig: vi.fn() }));
 vi.mock('../../utils/stream-mapper', () => ({
   mapFullStream: (s: unknown) => s,
+  // The chain derives its text view from the mapped stream now, so a mock of
+  // this module has to answer for both exits — otherwise the chain throws
+  // here and this suite fails for a reason that has nothing to do with the
+  // surface it is about.
+  textOfStream: (s: unknown) => s,
 }));
 
 const { basicRagChain } = await import('../chain');

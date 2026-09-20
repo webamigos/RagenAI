@@ -8,13 +8,37 @@ import {
   decryptThreadKey,
 } from '@ragenai/crypto';
 
+/**
+ * Why an assistant message holds a refusal instead of an answer.
+ *
+ * Written only when an `OUTPUT` guardrail stopped the turn. The panel renders
+ * a localized sentence off this rather than off the stored content, which is
+ * English — neither this API nor `/api/threads` has a locale to translate
+ * with, and a thread created through the API is read in the panel like any
+ * other.
+ *
+ * Spelled as apps/web spells it, because the panel reads both.
+ */
+export type GuardrailBlockedMarker = {
+  guardrail: string;
+  rule: string;
+};
+
 export type CreateApiThreadResult = {
   threadId: string;
   /**
    * Call after the full assistant response is collected to persist it.
    * Fire-and-forget safe — errors are logged, never thrown.
+   *
+   * `guardrailBlocked` marks a stored refusal. It is a second argument rather
+   * than something inferred from the content, because "this text happens to
+   * equal the refusal sentence" is not the same claim as "a rule refused this
+   * answer" — and the panel renders on the marker.
    */
-  saveAssistantMessage: (content: string) => Promise<void>;
+  saveAssistantMessage: (
+    content: string,
+    guardrailBlocked?: GuardrailBlockedMarker | null,
+  ) => Promise<void>;
 };
 
 /**
@@ -90,7 +114,10 @@ export class PersistApiThreadService {
 
       return {
         threadId,
-        saveAssistantMessage: async (content: string) => {
+        saveAssistantMessage: async (
+          content: string,
+          guardrailBlocked?: GuardrailBlockedMarker | null,
+        ) => {
           try {
             const encrypted = await this.maybeEncrypt(threadId, content);
             await this.prisma.client.message.create({
@@ -99,6 +126,7 @@ export class PersistApiThreadService {
                 content: encrypted,
                 role: Role.ASSISTANT,
                 source: Source.API,
+                ...(guardrailBlocked ? { metadata: { guardrailBlocked } } : {}),
               },
             });
           } catch (err) {
