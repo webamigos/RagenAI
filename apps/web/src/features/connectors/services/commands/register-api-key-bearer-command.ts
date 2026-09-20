@@ -3,7 +3,7 @@
 import db from '@ragenai/prisma-client';
 import { McpConnectorStatus } from '@/generated/prisma/client';
 import { logger } from '@/app/lib/utils/logger';
-import { getProviderDefinition } from '../../constants/providers';
+import { resolveConnectorDefinitionQuery } from '../queries/get-connector-definitions-query';
 import { ragenAuthClient } from '@/libs/ragen-vault';
 
 /**
@@ -17,7 +17,7 @@ export const registerApiKeyBearerCommand = async (
   provider: string,
   apiKey: string,
 ) => {
-  const providerDef = getProviderDefinition(provider);
+  const providerDef = await resolveConnectorDefinitionQuery(provider);
   if (!providerDef || providerDef.authType !== 'api_key_bearer') {
     throw new Error(`Invalid provider for API key bearer auth: ${provider}`);
   }

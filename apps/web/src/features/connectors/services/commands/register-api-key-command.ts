@@ -1,5 +1,5 @@
 import { logger } from '@/app/lib/utils/logger';
-import { getProviderDefinition } from '../../constants/providers';
+import { resolveConnectorDefinitionQuery } from '../queries/get-connector-definitions-query';
 import { createConnectorCommand } from './create-connector-command';
 import { markConnectorConnectedCommand } from './mark-connector-connected-command';
 import { fetchWithTimeout } from '../../utils/fetch-with-timeout';
@@ -14,7 +14,7 @@ export const registerApiKeyCommand = async (
   provider: string,
   apiKey: string,
 ) => {
-  const providerDef = getProviderDefinition(provider);
+  const providerDef = await resolveConnectorDefinitionQuery(provider);
   if (
     !providerDef ||
     providerDef.authType !== 'api_key' ||

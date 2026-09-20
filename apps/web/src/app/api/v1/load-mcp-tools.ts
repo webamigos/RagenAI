@@ -1,6 +1,6 @@
 import { logger } from '@/app/lib/utils/logger';
 import { getEnabledConnectorsQuery } from '@/features/connectors/services/queries/get-enabled-connectors-query';
-import { getAvailableConnectorProvidersForOrg } from '@/features/connectors/services/queries/get-available-connectors-query';
+import { getAvailableConnectorsForOrg } from '@/features/connectors/services/queries/get-available-connectors-query';
 import { getProjectMcpProvidersQuery } from '@/features/projects/services/queries/get-project-mcp-providers-query';
 import { createMcpToolsFromConnectors } from '@/libs/mcp/client';
 import { buildMcpContext } from '@/libs/mcp/provider-instructions';
@@ -32,11 +32,13 @@ export async function loadMcpToolsForApiRequest({
   try {
     let connectors = await getEnabledConnectorsQuery(orgId, userId);
 
-    const orgAllowedProviders =
-      await getAvailableConnectorProvidersForOrg(orgId);
-    connectors = connectors.filter((c) =>
-      orgAllowedProviders.includes(c.provider),
+    // One resolution of the catalogue for the whole turn: the allowlist and
+    // the definitions the loader needs come from the same rows.
+    const available = await getAvailableConnectorsForOrg(orgId);
+    const definitions = Object.fromEntries(
+      available.map((definition) => [definition.provider, definition]),
     );
+    connectors = connectors.filter((c) => c.provider in definitions);
 
     if (projectId && connectors.length > 0) {
       const projectMcpProviders = await getProjectMcpProvidersQuery(projectId);
@@ -54,7 +56,7 @@ export async function loadMcpToolsForApiRequest({
     }
 
     const { tools, loadedProviders, closeAll } =
-      await createMcpToolsFromConnectors(connectors);
+      await createMcpToolsFromConnectors(connectors, definitions);
 
     const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
     const currentDateTime = new Date().toLocaleString('en-US', {
@@ -66,6 +68,7 @@ export async function loadMcpToolsForApiRequest({
       loadedProviders,
       timeZone,
       currentDateTime,
+      definitions,
     );
 
     logger.info(

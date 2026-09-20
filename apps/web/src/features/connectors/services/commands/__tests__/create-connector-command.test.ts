@@ -30,8 +30,12 @@ vi.mock(
   }),
 );
 
-vi.mock('../../constants/providers', () => ({
-  getProviderDefinition: (...args: unknown[]) => mockGetProviderDef(...args),
+// The command resolves its definition from the catalogue now — a row merged
+// with its optional behaviour pack — rather than from the compiled-in
+// manifests.
+vi.mock('../../queries/get-connector-definitions-query', () => ({
+  resolveConnectorDefinitionQuery: (...args: unknown[]) =>
+    mockGetProviderDef(...args),
 }));
 
 import { createConnectorCommand } from '../create-connector-command';

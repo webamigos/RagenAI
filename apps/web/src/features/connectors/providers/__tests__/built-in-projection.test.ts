@@ -54,14 +54,22 @@ describe('the built-in connector projection', () => {
     }
   });
 
-  it('treats a manifest with no authType as SERVER_SIDE', () => {
-    // Five Google entries carry no `authType` and reach the MCP container
-    // through its own `/auth/google`. "Unset" is not an auth shape, so the row
-    // states what those paths already do in effect.
-    expect(projectAuthType(undefined)).toBe('SERVER_SIDE');
+  it('treats a manifest with no authType as OAUTH, never SERVER_SIDE', () => {
+    // The five Google entries carry no `authType` and reach `/auth/google` on
+    // the MCP container through the popup — `ConnectorCard` falls through its
+    // four branches to `authBaseUrl + authPath`.
+    //
+    // `server_side` is a different branch and means the opposite: the MCP
+    // service already holds the credential, so the card skips the popup and
+    // flips the connector straight to CONNECTED. Seeding these five that way
+    // would have replaced their authorization with a row claiming they were
+    // already authorized. Nothing branches on `'oauth'`, which is what makes
+    // it behave exactly as `undefined` does.
+    expect(projectAuthType(undefined)).toBe('OAUTH');
     expect(projectAuthType('external_mcp')).toBe('EXTERNAL_MCP');
+    expect(projectAuthType('server_side')).toBe('SERVER_SIDE');
     expect(
-      committed.filter((e) => e.authType === 'SERVER_SIDE').map((e) => e.slug),
+      committed.filter((e) => e.authType === 'OAUTH').map((e) => e.slug),
     ).toEqual([
       'GOOGLE_CALENDAR',
       'GOOGLE_ANALYTICS',
@@ -69,6 +77,7 @@ describe('the built-in connector projection', () => {
       'GOOGLE_DRIVE',
       'GMAIL',
     ]);
+    expect(committed.filter((e) => e.authType === 'SERVER_SIDE')).toEqual([]);
   });
 
   it('drops a system prompt that is a function, and keeps every string one', () => {

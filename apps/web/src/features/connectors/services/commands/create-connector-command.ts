@@ -4,7 +4,7 @@ import db from '@ragenai/prisma-client';
 import { McpConnectorStatus } from '@/generated/prisma/client';
 import { logger } from '@/app/lib/utils/logger';
 import { trackAudit } from '@/features/audit-logs/services/commands/create-audit-log-command';
-import { getProviderDefinition } from '../../constants/providers';
+import { resolveConnectorDefinitionQuery } from '../queries/get-connector-definitions-query';
 import { isFeatureEnabledQuery } from '@/features/subscriptions/services/queries/get-effective-features-query';
 import { UnauthorizedException } from '@/libs/utils/errors';
 
@@ -23,7 +23,7 @@ export const createConnectorCommand = async (
     );
   }
 
-  const providerDef = getProviderDefinition(provider);
+  const providerDef = await resolveConnectorDefinitionQuery(provider);
   if (!providerDef) {
     throw new Error(`Unknown provider: ${provider}`);
   }

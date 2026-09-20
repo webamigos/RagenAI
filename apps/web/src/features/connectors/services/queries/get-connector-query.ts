@@ -1,6 +1,6 @@
 import db from '@ragenai/prisma-client';
 import { McpConnectorStatus } from '@/generated/prisma/client';
-import { getProviderDefinition } from '../../constants/providers';
+import { resolveConnectorDefinitionQuery } from './get-connector-definitions-query';
 
 export type ConnectorLookupResult = {
   mcpServerUrl: string;
@@ -41,7 +41,7 @@ export const getConnectorQuery = async (
 
   // Use authBaseUrl from provider definition for REST endpoints (HTTP API),
   // falling back to mcpServerUrl with /mcp suffix stripped
-  const providerDef = getProviderDefinition(provider);
+  const providerDef = await resolveConnectorDefinitionQuery(provider);
   const baseUrl =
     providerDef?.authBaseUrl || connector.mcpServerUrl.replace(/\/mcp$/, '');
 

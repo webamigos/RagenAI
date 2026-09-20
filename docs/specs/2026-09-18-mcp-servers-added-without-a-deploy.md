@@ -378,8 +378,20 @@ model McpCatalogEntry {
   mcpServerUrl String? @map("mcp_server_url")
   /// Required here, although `ProviderDefinition.authType` is optional and
   /// several paths branch on it being undefined. A manifest with no authType
-  /// seeds to `SERVER_SIDE`, which is what those paths already do in effect —
-  /// stated rather than inherited, because "unset" is not an auth shape.
+  /// seeds to `OAUTH` — stated rather than inherited, because "unset" is not
+  /// an auth shape.
+  ///
+  /// **Corrected during B4.** This said `SERVER_SIDE`, on the reading that it
+  /// is "what those paths already do in effect". It is not: a manifest with no
+  /// `authType` falls through every branch in `ConnectorCard` to the popup at
+  /// `authBaseUrl + authPath`, which is how the five Google connectors reach
+  /// `/auth/google`. `server_side` is the opposite branch — the MCP service
+  /// already holds the credential, so the card skips the popup and flips the
+  /// connector straight to CONNECTED. Seeded that way, those five would have
+  /// claimed to be connected without ever authorizing. `OAUTH` is right
+  /// because nothing in either app branches on `'oauth'`, so every path takes
+  /// the turn it takes for `undefined` today. See
+  /// docs/lessons/an-unset-auth-type-is-oauth-not-server-side.md.
   authType    McpAuthType @map("auth_type")
   authBaseUrl String?  @map("auth_base_url")
   authPath    String?  @map("auth_path")
@@ -486,18 +498,18 @@ Each phase leaves the application working.
 Expand and contract. This is the phase to rehearse on demo, and B2 is the large
 step — not B4.
 
-- [ ] **B1.** Add `providerSlug String?` to `McpConnector` and `McpOAuthToken`;
+- [x] **B1.** Add `providerSlug String?` to `McpConnector` and `McpOAuthToken`;
       backfill from `provider::text`; write both columns everywhere. Additive,
       no reader changes.
-- [ ] **B2.** Every reader reads `providerSlug ?? provider`. **This is where the
+- [x] **B2.** Every reader reads `providerSlug ?? provider`. **This is where the
       57 sites stop typechecking**, because the expression widens to `string`:
       annotations, DTOs, function signatures and the two `packages/` files all
       change here, plus the four enum casts in
       `scripts/screenshots/demo-data.sql`. Behaviour is unchanged; the diff is
       not small.
-- [ ] **B3.** `providerSlug` `NOT NULL`, uniqueness moved to it, writes to
+- [x] **B3.** `providerSlug` `NOT NULL`, uniqueness moved to it, writes to
       `provider` stopped.
-- [ ] **B4.** Replace `PROVIDER_REGISTRY`'s `Record<McpConnectorProvider, …>`
+- [x] **B4.** Replace `PROVIDER_REGISTRY`'s `Record<McpConnectorProvider, …>`
       with the runtime resolver, and add
       `tests/architecture/every-seeded-connector-resolves.test.ts` — **while the
       enum still exists**, so this step is deployable and reversible on its own.

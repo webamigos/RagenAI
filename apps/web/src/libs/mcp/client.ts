@@ -1,6 +1,5 @@
 import { createMCPClient, type MCPClient } from '@ai-sdk/mcp';
 import { logger } from '@/app/lib/utils/logger';
-import { getProviderDefinition } from '@/features/connectors/constants/providers';
 import type { ProviderDefinition } from '@/features/connectors/contracts/connector.types';
 import {
   RagenAuthOAuthClientProvider,
@@ -349,9 +348,18 @@ export function wrapToolsForConnector(
 /**
  * Create MCP clients for a list of connectors and gather their tools.
  * Returns merged tools and a cleanup function to close all clients.
+ *
+ * `definitions` is the resolved catalogue, keyed by slug — rows merged with
+ * their behaviour packs. It is passed in rather than looked up here because
+ * resolving it reads the database, and this function is called once per turn
+ * with the connectors already loaded: one query for the set beats one per
+ * connector. A connector whose slug the catalogue no longer carries resolves
+ * to `undefined` and is skipped with its reason recorded, exactly as an
+ * unknown provider always was.
  */
 export async function createMcpToolsFromConnectors(
   connectors: McpConnectorInfo[],
+  definitions: Record<string, ProviderDefinition> = {},
 ) {
   const clients: MCPClient[] = [];
   const mergedTools: Record<string, any> = {};
@@ -359,7 +367,7 @@ export async function createMcpToolsFromConnectors(
 
   for (const connector of connectors) {
     try {
-      const providerDef = getProviderDefinition(connector.provider);
+      const providerDef = definitions[connector.provider];
 
       // Resolve the MCP server URL at tool-load time rather than trusting
       // the value snapshotted on the connector row at connect time.
@@ -493,7 +501,7 @@ export async function createMcpToolsFromConnectors(
           mcpServerUrlStored: connector.mcpServerUrl,
           mcpServerUrlTried: resolveMcpServerUrl(
             connector,
-            getProviderDefinition(connector.provider),
+            definitions[connector.provider],
           ),
         },
         'Failed to initialize MCP connector, skipping',

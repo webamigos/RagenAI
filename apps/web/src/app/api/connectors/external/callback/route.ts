@@ -6,7 +6,7 @@ import {
   getOrgIdFromAuthOrThrow,
   getCurrentUserId,
 } from '@/app/lib/utils/auth-helpers';
-import { getProviderDefinition } from '@/features/connectors/constants/providers';
+import { resolveConnectorDefinitionQuery } from '@/features/connectors/services/queries/get-connector-definitions-query';
 import { RagenAuthOAuthClientProvider } from '@/libs/ragen-vault';
 import { logger } from '@/app/lib/utils/logger';
 import { recordConnectorFailureCommand } from '@/features/connectors/services/commands/record-connector-failure-command';
@@ -82,7 +82,7 @@ export async function GET(request: NextRequest) {
     return redirectWithStatus(request, 'error');
   }
 
-  const providerDef = getProviderDefinition(provider);
+  const providerDef = await resolveConnectorDefinitionQuery(provider);
   if (!providerDef || providerDef.authType !== 'external_mcp') {
     return redirectWithStatus(request, 'error');
   }

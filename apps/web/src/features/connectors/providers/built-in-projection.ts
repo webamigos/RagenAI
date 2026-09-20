@@ -48,16 +48,26 @@ export type BuiltInCatalogEntry = {
 };
 
 /**
- * `ProviderDefinition.authType` is optional and several paths branch on it
- * being undefined. A manifest with no authType projects to `SERVER_SIDE`,
- * which is what those paths already do in effect — stated rather than
- * inherited, because "unset" is not an auth shape.
+ * `ProviderDefinition.authType` is optional, and a manifest that leaves it
+ * unset takes the popup OAuth flow: `ConnectorCard` falls through its four
+ * `authType` branches to `authBaseUrl + authPath`, which is how the five
+ * Google connectors reach `/auth/google` on the MCP container.
+ *
+ * So "unset" projects to **`OAUTH`**, not to `SERVER_SIDE`. The spec said
+ * `SERVER_SIDE`, on the reading that it is "what those paths already do in
+ * effect"; it is not. `server_side` is its own branch, and it means the MCP
+ * service holds the credential and the connector goes straight to `CONNECTED`
+ * with no popup at all. Seeding the Google five that way would have replaced
+ * their authorization with a row that claims they are already authorized —
+ * silently, and only visible the first time a user connected Gmail and got no
+ * mail. Nothing branches on `'oauth'`, so it behaves exactly as `undefined`
+ * does today, which is the property that makes it the right value.
  */
 export function projectAuthType(
   authType: ProviderDefinition['authType'],
 ): BuiltInCatalogEntry['authType'] {
   if (!authType) {
-    return 'SERVER_SIDE';
+    return 'OAUTH';
   }
   return authType.toUpperCase() as BuiltInCatalogEntry['authType'];
 }

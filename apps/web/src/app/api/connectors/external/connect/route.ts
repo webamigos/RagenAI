@@ -4,7 +4,7 @@ import {
   getOrgIdFromAuthOrThrow,
   getCurrentUserId,
 } from '@/app/lib/utils/auth-helpers';
-import { getProviderDefinition } from '@/features/connectors/constants/providers';
+import { resolveConnectorDefinitionQuery } from '@/features/connectors/services/queries/get-connector-definitions-query';
 import { RagenAuthOAuthClientProvider } from '@/libs/ragen-vault';
 import { logger } from '@/app/lib/utils/logger';
 import { readPublicRuntimeConfig } from '@/config/public-runtime-config';
@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const providerDef = getProviderDefinition(provider);
+  const providerDef = await resolveConnectorDefinitionQuery(provider);
   if (!providerDef || providerDef.authType !== 'external_mcp') {
     return NextResponse.json({ error: 'Invalid provider' }, { status: 400 });
   }

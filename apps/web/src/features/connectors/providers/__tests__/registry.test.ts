@@ -57,29 +57,66 @@ describe('buildMcpContext', () => {
     expect(output).toContain(now);
   });
 
-  it('appends each known providers system prompt fragment', () => {
-    const output = buildMcpContext(['CLICKUP', 'FIREFLIES'], timeZone, now);
+  // The fragments arrive as resolved definitions — a catalogue row merged
+  // with its behaviour pack — rather than being looked up here, because a
+  // connector an operator added carries its prompt on its row and the registry
+  // only knows the eleven that ship with Ragen. The packs are what a built-in
+  // resolves to, so passing them is the built-in case.
+  it('appends each connectors system prompt fragment', () => {
+    const output = buildMcpContext(
+      ['CLICKUP', 'FIREFLIES'],
+      timeZone,
+      now,
+      PROVIDER_REGISTRY,
+    );
     expect(output).toContain('For ClickUp:');
     expect(output).toContain('For Fireflies.ai');
   });
 
   it('injects the caller timezone into function-style fragments', () => {
-    const output = buildMcpContext(['GOOGLE_CALENDAR'], timeZone, now);
+    const output = buildMcpContext(
+      ['GOOGLE_CALENDAR'],
+      timeZone,
+      now,
+      PROVIDER_REGISTRY,
+    );
     expect(output).toContain(`timeZone="${timeZone}"`);
   });
 
-  it('skips unknown providers without throwing', () => {
+  it('skips a connector nothing resolved, without throwing', () => {
     const output = buildMcpContext(
       ['HUBSPOT', 'NOT_A_REAL_PROVIDER'],
       timeZone,
       now,
+      PROVIDER_REGISTRY,
     );
     expect(output).toContain('For HubSpot');
     expect(output).not.toContain('NOT_A_REAL_PROVIDER:');
   });
 
+  it('takes a prompt off a row with no behaviour pack at all', () => {
+    // The whole point of the catalogue: Notion is a row, and its prompt is
+    // text on that row.
+    const output = buildMcpContext(['notion'], timeZone, now, {
+      notion: {
+        provider: 'notion',
+        name: 'Notion',
+        description: 'Search pages.',
+        icon: 'notebook',
+        mcpServerUrl: 'https://mcp.notion.com/mcp',
+        systemPromptFragment: 'For Notion: search before you answer.',
+      },
+    });
+    expect(output).toContain('For Notion: search before you answer.');
+  });
+
   it('includes the fragment for providers that define one', () => {
-    const output = buildMcpContext(['WOOCOMMERCE'], timeZone, now);
+    const output = buildMcpContext(
+      ['WOOCOMMERCE'],
+      timeZone,
+      now,
+      PROVIDER_REGISTRY,
+    );
     expect(output).toContain('For WooCommerce');
   });
 });
