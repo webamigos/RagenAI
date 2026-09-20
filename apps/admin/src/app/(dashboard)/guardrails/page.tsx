@@ -4,6 +4,7 @@ import { prisma } from '@/lib/db';
 import { listPlatformGuardrailsAction } from './actions';
 import { GuardrailsPage } from './components/GuardrailsPage';
 import { OrgGuardrailsView } from './components/OrgGuardrailsView';
+import { getGuardrailHitCounts } from './hit-counts';
 import { getOrgGuardrailsAction } from './org-actions';
 
 export const dynamic = 'force-dynamic';
@@ -23,6 +24,10 @@ export default async function Page({
     }),
   ]);
 
+  // After the rules, not beside them: the counts are asked for by rule id, so
+  // the page only pays for the rows it is about to render.
+  const hits = await getGuardrailHitCounts(rules.map((rule) => rule.publicId));
+
   const selected = params.orgId
     ? orgs.find((o) => o.id === params.orgId)
     : null;
@@ -30,7 +35,7 @@ export default async function Page({
 
   return (
     <div className="space-y-8">
-      <GuardrailsPage rules={rules} />
+      <GuardrailsPage rules={rules} hits={hits} />
 
       <div className="rounded-xl border border-border bg-card p-6">
         <h2 className="text-xl font-semibold">One organization</h2>

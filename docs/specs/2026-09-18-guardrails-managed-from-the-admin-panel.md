@@ -595,11 +595,24 @@ If it slips, A–C and E still ship a complete capability.
 
 ### Phase E — seeing what it did
 
-- [ ] **E1.** 7-day hit counts per rule on the guardrails page, from
-      `security_events`.
-- [ ] **E2.** The incidents view filters on the two new event types.
-- [ ] **E3.** `docs/guardrails.md`, a Task Router row, and the
-      `docs/security-monitoring.md` table extended.
+- [x] **E1.** 7-day hit counts per rule on the guardrails page, from
+      `security_events`. Counted per rule through a `metadata` JSON-path filter
+      rather than one grouped `$queryRaw`: `security_events` is tenant-scoped,
+      and `raw-sql-carries-its-org-filter` covers `apps/admin` too — see
+      `docs/lessons/the-admin-panel-cannot-write-raw-sql-on-a-tenant-scoped-table.md`.
+- [x] **E2.** The incidents view filters on the two new event types, plus a
+      combined "any guardrail hit". The free-text event-type box became a
+      validated select in the same step: it was cast straight into the query,
+      so a mistyped filter reached the driver as an unknown enum value and
+      answered with a `PrismaClientValidationError` instead of a table — and
+      the CSV export, which reads the same query string, cast it the same way.
+- [x] **E3.** `docs/guardrails.md`, a Task Router row, and the
+      `docs/security-monitoring.md` table extended — the event table, the
+      admin-panel views and the threshold reference, whose guardrail row is
+      the only one in it that is not a deploy.
+      `a-documented-window-matches-its-constant` now reads the cache window
+      out of both documents: the new page is the one an operator reads during
+      an incident, and a number no test reads is a number free to drift.
 
 ### Later, deliberately not now
 

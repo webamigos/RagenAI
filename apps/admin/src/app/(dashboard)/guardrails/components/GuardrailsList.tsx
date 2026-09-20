@@ -9,7 +9,9 @@ import {
   toggleGuardrailAction,
   type GuardrailRow,
 } from '../actions';
+import type { GuardrailHitsByRule } from '../hit-window';
 import { GuardrailForm } from './GuardrailForm';
+import { HitCounts } from './HitCounts';
 
 /**
  * What a rule does when it matches, in words rather than in enum spelling.
@@ -23,7 +25,13 @@ const ACTION_DESCRIPTIONS: Record<string, string> = {
   LOG: 'Records it, turn continues',
 };
 
-export function GuardrailsList({ rules }: { rules: GuardrailRow[] }) {
+export function GuardrailsList({
+  rules,
+  hits,
+}: {
+  rules: GuardrailRow[];
+  hits: GuardrailHitsByRule;
+}) {
   const [editing, setEditing] = useState<GuardrailRow | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<GuardrailRow | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -74,6 +82,7 @@ export function GuardrailsList({ rules }: { rules: GuardrailRow[] }) {
               <th className="px-4 py-3 font-medium">Rule</th>
               <th className="px-4 py-3 font-medium">Matches</th>
               <th className="px-4 py-3 font-medium">On a hit</th>
+              <th className="px-4 py-3 font-medium">Hits</th>
               <th className="px-4 py-3 font-medium">State</th>
               <th className="px-4 py-3 font-medium">Overrides</th>
               <th className="px-4 py-3" />
@@ -113,6 +122,13 @@ export function GuardrailsList({ rules }: { rules: GuardrailRow[] }) {
                 </td>
                 <td className="px-4 py-3 text-muted-foreground">
                   {ACTION_DESCRIPTIONS[rule.action] ?? rule.action}
+                </td>
+                <td className="px-4 py-3 text-muted-foreground">
+                  <HitCounts
+                    counts={hits[rule.publicId]}
+                    enabled={rule.enabled}
+                    overrideCount={rule.overrideCount}
+                  />
                 </td>
                 <td className="px-4 py-3">
                   {/* State is a word, not only a colour: the panel rules ask

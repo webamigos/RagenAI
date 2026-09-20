@@ -1,3 +1,8 @@
+import {
+  BLOCKED_HIT_EVENT,
+  FLAGGED_HIT_EVENT,
+  type GuardrailSecurityEventType,
+} from '../contracts/guardrail';
 import type { ResolvedGuardrail } from '../resolver/resolve';
 import { applyMask, runPatternRules, type PatternHit } from './pattern';
 
@@ -94,8 +99,8 @@ export function isModerationRule(rule: ResolvedGuardrail): boolean {
  */
 export function securityEventTypeFor(
   rule: ResolvedGuardrail,
-): 'GUARDRAIL_BLOCKED' | 'GUARDRAIL_FLAGGED' {
-  return rule.action === 'BLOCK' ? 'GUARDRAIL_BLOCKED' : 'GUARDRAIL_FLAGGED';
+): GuardrailSecurityEventType {
+  return rule.action === 'BLOCK' ? BLOCKED_HIT_EVENT : FLAGGED_HIT_EVENT;
 }
 
 export type InputStageOptions = {

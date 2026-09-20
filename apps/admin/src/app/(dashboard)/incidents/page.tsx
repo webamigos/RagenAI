@@ -4,6 +4,7 @@ import { Pagination } from '@/app/components/Pagination';
 import type { Prisma } from '../../../../../web/src/generated/prisma/client';
 import { ExportButton } from '@/app/components/ExportButton';
 import { AlertStatus } from './AlertStatus';
+import { EVENT_TYPE_GROUPS, parseEventTypeFilter } from './event-types';
 
 export const dynamic = 'force-dynamic';
 
@@ -61,9 +62,11 @@ async function getIncidents(params: SearchParams) {
   if (params.organizationId) {
     where.organizationId = params.organizationId;
   }
-  if (params.eventType) {
-    where.eventType =
-      params.eventType as Prisma.SecurityEventWhereInput['eventType'];
+  // Parsed, not cast. An unknown value narrows nothing; it used to reach the
+  // driver and throw.
+  const eventType = parseEventTypeFilter(params.eventType);
+  if (eventType) {
+    where.eventType = eventType;
   }
   if (params.resolved === 'true') {
     where.resolvedAt = { not: null };
@@ -145,14 +148,23 @@ export default async function IncidentsPage({
 
       {/* Filters as a GET form so it matches the organizations page pattern */}
       <form className="flex flex-wrap gap-2 text-sm">
-        <input
-          type="text"
+        <select
           name="eventType"
           defaultValue={params.eventType ?? ''}
-          placeholder="Event type (e.g. AUTH_LOGIN_FAILED)"
           aria-label="Event type filter"
-          className="w-64 rounded-md border border-input bg-background px-2 py-1 font-mono text-xs placeholder:text-muted-foreground"
-        />
+          className="w-64 rounded-md border border-input bg-background px-2 py-1"
+        >
+          <option value="">All event types</option>
+          {EVENT_TYPE_GROUPS.map((group) => (
+            <optgroup key={group.label} label={group.label}>
+              {group.options.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </optgroup>
+          ))}
+        </select>
         <input
           type="text"
           name="organizationId"

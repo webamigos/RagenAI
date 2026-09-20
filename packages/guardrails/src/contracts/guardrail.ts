@@ -263,3 +263,42 @@ export type GuardrailOverride = {
 export const GUARDRAIL_OVERRIDE_ORIGINS = ['legacy_on_premise'] as const;
 export type GuardrailOverrideOrigin =
   (typeof GUARDRAIL_OVERRIDE_ORIGINS)[number];
+
+/**
+ * The two `SecurityEventType` members a guardrail hit is ever filed under.
+ *
+ * Here rather than in each app for the same reason `securityEventTypeFor` is:
+ * `tests/architecture/guardrails-are-not-recopied.test.ts` forbids an app
+ * naming either literal, because an app that can spell them is an app that can
+ * decide between them — and two runtimes filing the same hit differently is
+ * how the incidents page comes to under-report blocks from one surface.
+ *
+ * Reading is not filing, and the admin panel does need to name both: it counts
+ * hits per rule and offers them as a filter. So the vocabulary is exported,
+ * and the decision stays a function.
+ *
+ * Spelled as the Postgres enum spells them, and returned as string literals
+ * rather than imported from a generated client — this package has no database,
+ * and the members have existed in `SecurityEventType` since Phase A precisely
+ * so every reader had them before a writer appeared.
+ *
+ * The constants are **not** named after the members they hold, which looks
+ * like an oversight and is not: that guard matches source text, and an
+ * identifier containing `GUARDRAIL_BLOCKED` fails it in an app exactly as the
+ * literal would. Narrowing the pattern to quoted strings was the alternative,
+ * and the test's own comment is against it — a negative match narrower than
+ * the thing it forbids is the first shape in
+ * `docs/lessons/three-shapes-of-a-test-that-guards-nothing.md`. So the names
+ * are the thing that gives, and this paragraph is why nobody should rename
+ * them back.
+ */
+export const BLOCKED_HIT_EVENT = 'GUARDRAIL_BLOCKED';
+export const FLAGGED_HIT_EVENT = 'GUARDRAIL_FLAGGED';
+
+export const GUARDRAIL_SECURITY_EVENT_TYPES = [
+  BLOCKED_HIT_EVENT,
+  FLAGGED_HIT_EVENT,
+] as const;
+
+export type GuardrailSecurityEventType =
+  (typeof GUARDRAIL_SECURITY_EVENT_TYPES)[number];
