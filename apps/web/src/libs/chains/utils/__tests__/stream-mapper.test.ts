@@ -271,12 +271,16 @@ describe('mapFullStream with an output guardrail window', () => {
     expect(JSON.stringify(results)).not.toContain('and here is more');
   });
 
-  it('holds a tool call behind the text it came after', async () => {
-    // The window is wider than 'before', so nothing has been released when
-    // the tool call arrives. Emitted straight away it would be the *first*
-    // part of the stream — ahead of text the reader has not been shown yet —
-    // and a transcript would have the call happening before the sentence that
-    // led to it.
+  it('holds a tool call until the text it came after has been released', async () => {
+    // Two wrong versions this distinguishes. Emitted as it arrives, the call
+    // is the *first* part of the stream, ahead of a sentence the reader has
+    // not seen. Emitted as soon as any text is released, it gets past the one
+    // character the window let go of and still precedes the rest of 'before'.
+    //
+    // What it does not assert is that the call comes before 'after'. Both
+    // leave in the same release, and splitting a released chunk at the call's
+    // position cannot be done honestly once a MASK rule has changed the
+    // text's length. Never early; at most one release late.
     const results = await collectStream(
       mapFullStream(
         createMockStream([
@@ -294,9 +298,15 @@ describe('mapFullStream with an output guardrail window', () => {
     );
 
     const types = results.map((part) => (part as { type: string }).type);
-    expect(types[0]).toBe('text-delta');
-    expect(types.indexOf('tool-call')).toBe(1);
-    expect(types.lastIndexOf('text-delta')).toBeGreaterThan(1);
+    const toolAt = types.indexOf('tool-call');
+    const textBeforeTheCall = results
+      .slice(0, toolAt)
+      .filter((part) => (part as { type: string }).type === 'text-delta')
+      .map((part) => (part as { textDelta: string }).textDelta)
+      .join('');
+
+    expect(toolAt).toBeGreaterThan(-1);
+    expect(textBeforeTheCall).toContain('before');
   });
 
   it('emits a tool call straight away when the window is holding nothing', async () => {

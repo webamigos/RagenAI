@@ -38,15 +38,25 @@ export async function* mapFullStream(
   outputStage?: OutputStage,
 ): AsyncIterable<ChainStreamPart> {
   /**
-   * Non-text parts that arrived while text was held back.
+   * Non-text parts that arrived while text was held back, with the position
+   * they arrived at.
    *
    * A tool call emitted straight away would reach the reader ahead of the text
-   * that preceded it, because that text is still inside the window. So they
-   * queue behind it and are released with it. A part can therefore be up to
-   * one release late and is never early, which is the direction that keeps a
-   * transcript readable.
+   * that preceded it, because that text is still inside the window. So each
+   * one records how much text had been pushed when it arrived, and waits until
+   * at least that much has been *released*. Counting a part as releasable
+   * because some text went out is not the same test and was the first version
+   * of this: a partial release let a tool call past text it came after.
+   *
+   * What remains is that a part trails text that arrived *after* it, when both
+   * leave in one release. Splitting the released chunk at the part's position
+   * would fix that and cannot be done honestly — a `MASK` rule changes the
+   * text's length, so a position in what went in does not locate a point in
+   * what comes out. So: never early, and at most one release late.
    */
-  const queued: ChainStreamPart[] = [];
+  const queued: { at: number; part: ChainStreamPart }[] = [];
+  /** Characters handed to the window so far. The queue's positions are in these. */
+  let consumed = 0;
 
   for await (const part of sdkStream) {
     switch (part.type) {
@@ -55,6 +65,7 @@ export async function* mapFullStream(
           yield { type: 'text-delta', textDelta: part.text };
           break;
         }
+        consumed += part.text.length;
         for (const event of outputStage.push(part.text)) {
           if (event.type === 'blocked') {
             // Everything queued behind the window goes with the text it was
@@ -69,74 +80,50 @@ export async function* mapFullStream(
             return;
           }
           yield { type: 'text-delta', textDelta: event.text };
-          yield* drain(queued);
         }
+        yield* drain();
         break;
       }
       case 'reasoning-start':
-        yield* hold(
-          queued,
-          { type: 'reasoning-start', id: part.id },
-          outputStage,
-        );
+        yield* hold({ type: 'reasoning-start', id: part.id });
         break;
       case 'reasoning-delta':
         // Reasoning is not the answer and is not evaluated: an output rule
         // reads what the reader is shown. It is held only so it keeps its
         // place relative to the text around it.
-        yield* hold(
-          queued,
-          { type: 'reasoning-delta', id: part.id, delta: part.text },
-          outputStage,
-        );
+        yield* hold({ type: 'reasoning-delta', id: part.id, delta: part.text });
         break;
       case 'reasoning-end':
-        yield* hold(
-          queued,
-          { type: 'reasoning-end', id: part.id },
-          outputStage,
-        );
+        yield* hold({ type: 'reasoning-end', id: part.id });
         break;
       case 'tool-call':
-        yield* hold(
-          queued,
-          {
-            type: 'tool-call',
-            toolCallId: cleanToolCallId(part.toolCallId),
-            toolName: part.toolName,
-            args: part.input ?? part.args,
-          },
-          outputStage,
-        );
+        yield* hold({
+          type: 'tool-call',
+          toolCallId: cleanToolCallId(part.toolCallId),
+          toolName: part.toolName,
+          args: part.input ?? part.args,
+        });
         break;
       case 'tool-result':
-        yield* hold(
-          queued,
-          {
-            type: 'tool-result',
-            toolCallId: cleanToolCallId(part.toolCallId),
-            toolName: part.toolName,
-            result: part.output !== undefined ? part.output : part.result,
-          },
-          outputStage,
-        );
+        yield* hold({
+          type: 'tool-result',
+          toolCallId: cleanToolCallId(part.toolCallId),
+          toolName: part.toolName,
+          result: part.output !== undefined ? part.output : part.result,
+        });
         break;
       case 'tool-approval-request': {
         // AI SDK v6 emits this when a tool's `needsApproval` predicate
         // returns true. The shape has the full typed tool call nested
         // under `toolCall`; we flatten it into our ChainStreamPart.
         const toolCall = part.toolCall ?? {};
-        yield* hold(
-          queued,
-          {
-            type: 'tool-approval-request',
-            approvalId: part.approvalId,
-            toolCallId: cleanToolCallId(toolCall.toolCallId ?? ''),
-            toolName: toolCall.toolName ?? 'unknown',
-            args: toolCall.input ?? toolCall.args,
-          },
-          outputStage,
-        );
+        yield* hold({
+          type: 'tool-approval-request',
+          approvalId: part.approvalId,
+          toolCallId: cleanToolCallId(toolCall.toolCallId ?? ''),
+          toolName: toolCall.toolName ?? 'unknown',
+          args: toolCall.input ?? toolCall.args,
+        });
         break;
       }
       // Ignore other event types (source, finish, finish-step, etc.)
@@ -156,31 +143,26 @@ export async function* mapFullStream(
       }
       yield { type: 'text-delta', textDelta: event.text };
     }
-    yield* drain(queued);
+    // Everything the window had is out, so every position is reached.
+    yield* drain();
   }
-}
 
-/**
- * Emit a non-text part, or queue it while the window is holding text.
- *
- * Checked per part rather than once per turn: an answer holds text only while
- * the window has something in it, so a tool call arriving before the first
- * delta — or after the last one has been released — is not delayed at all.
- */
-function* hold(
-  queued: ChainStreamPart[],
-  part: ChainStreamPart,
-  outputStage: OutputStage | undefined,
-): Generator<ChainStreamPart> {
-  if (outputStage && outputStage.held > 0) {
-    queued.push(part);
-    return;
+  /** Emit a non-text part, or queue it behind the text it came after. */
+  function* hold(part: ChainStreamPart): Generator<ChainStreamPart> {
+    if (!outputStage || outputStage.held === 0) {
+      yield part;
+      return;
+    }
+    queued.push({ at: consumed, part });
   }
-  yield part;
-}
 
-function* drain(queued: ChainStreamPart[]): Generator<ChainStreamPart> {
-  while (queued.length > 0) {
-    yield queued.shift() as ChainStreamPart;
+  function* drain(): Generator<ChainStreamPart> {
+    if (!outputStage) {
+      return;
+    }
+    const released = consumed - outputStage.held;
+    while (queued.length > 0 && (queued[0] as { at: number }).at <= released) {
+      yield (queued.shift() as { part: ChainStreamPart }).part;
+    }
   }
 }
