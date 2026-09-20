@@ -23,6 +23,7 @@ const PAGES: [keyof typeof ROUTES, string][] = [
   ['connectors', 'Connectors Management'],
   ['connectorHealth', 'Connector Health'],
   ['ragSettings', 'RAG Settings'],
+  ['guardrails', 'Guardrails'],
   ['assistantTemplates', 'Global Assistants'],
   ['templateAccess', 'Assistants Access Management'],
   ['apiKeys', 'API Keys'],

@@ -536,7 +536,31 @@ the three enum members must reach every reader before a writer exists.
       NestJS loader, the `SecurityEventService` adapter and the error shape.
       This is what makes the public API and the chatbot widget covered rather
       than assumed to be.
-- [ ] **B5.** `tests/architecture/guardrails-are-not-recopied.test.ts`.
+- [ ] **B5.** The two proofs that B2–B4 actually landed:
+      `tests/architecture/guardrails-are-not-recopied.test.ts`, and a test that
+      asserts a chat turn **reads the rules at all** — see below for why the
+      second one is not redundant.
+
+#### Why B5 asserts the rules are read, and not only that a turn is refused
+
+This phase's worst failure is not a rule that refuses wrongly. It is a rule
+that does nothing: indistinguishable, from every surface a person can see, from
+Phase A working as designed — the panel lists the rule, the audit entry exists,
+the chat answers normally. That is exactly how the monthly usage ceilings were
+enforced by nothing for five months with every static check green, and
+`AGENTS.md` states the rule it cost us: *a limit that is computed is not a
+limit — a limit is a call site.*
+
+Measured at the end of Phase A: a turn in `apps/web` carrying a phrase an
+enabled `BLOCK` rule matches left `pg_stat_user_tables` unmoved on both
+`guardrails` and `guardrail_org_overrides` — 8 seq / 104 idx before and after —
+and reached the model. That is the correct Phase A result, and the exact
+reading that has to change once B3 merges.
+
+So assert the loader is reached on a chat turn, not only that a blocked turn is
+refused. A refusal test fails loudly when the binding is wrong, and passes
+silently when the binding is *missing* and the fixture rule happens not to
+match.
 
 ### Phase C — policies judged by a model
 
@@ -602,7 +626,15 @@ downstream, asserting alias tokens still resolve.
 
 **Architecture**: `guardrails-are-not-recopied.test.ts`; the existing
 `server-actions-are-guarded` and `role-checks-are-not-inlined` tests cover the
-new admin page.
+new admin page. Phase A also showed that `client-bundles-stay-browser-safe`
+must cover `apps/admin`, not `apps/web` alone — the barrel re-exports the ReDoS
+probe and its `node:worker_threads` import, which took the whole authoring page
+down on hydration while every other check stayed green. Client components import
+`@ragenai/guardrails/contracts`.
+
+**That the rules are read at all** (B5): a chat turn must touch the guardrail
+tables. Asserted directly rather than inferred from a refusal — see B5 for why
+a refusal test passes silently when the binding is absent.
 
 **E2E**, in the tier that gates a merge: a new `p0-` spec — a blocking input
 rule produces the localized refusal and persists no assistant message; a `LOG`

@@ -5,6 +5,17 @@
   "description": "Guardrail contracts and the pure rule resolver — shared by apps/web, apps/api and apps/admin so the runtime and the authoring surface cannot disagree about what a rule is",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "//exports": "Two entry points, because one of them must be reachable from a browser. The root barrel re-exports the ReDoS probe, which imports `node:worker_threads` at module scope — Turbopack cannot externalise that for a client chunk, so a `'use client'` component importing the barrel builds fine and then blanks the page on hydration with `Cannot find module 'node:worker_threads'`. `./contracts` is the vocabulary alone: no imports at all, which is what makes it safe to say so here.",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./contracts": {
+      "types": "./dist/contracts/guardrail.d.ts",
+      "default": "./dist/contracts/guardrail.js"
+    }
+  },
   "files": [
     "dist"
   ],

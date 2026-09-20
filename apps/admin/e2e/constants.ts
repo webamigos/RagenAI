@@ -45,6 +45,7 @@ export const ROUTES = {
   connectors: '/connectors',
   connectorHealth: '/connector-health',
   ragSettings: '/rag-settings',
+  guardrails: '/guardrails',
   assistantTemplates: '/assistant-templates',
   templateAccess: '/template-access',
   apiKeys: '/api-keys',

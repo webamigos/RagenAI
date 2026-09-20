@@ -43,8 +43,46 @@ import { describe, expect, it } from 'vitest';
  * guards the named, common mistake rather than claiming to prove an absence.
  */
 
+/**
+ * Generous on purpose: this is a CPU budget, not a correctness one.
+ *
+ * Each case walks the import graph from every `'use client'` file in both
+ * apps, which is ~800ms of pure work on an idle machine and several times that
+ * under `npm run verify`, where four Next builds are competing for the same
+ * cores. It has already timed out there once at vitest's 5s default, with the
+ * failing case measuring 264ms alone — and a timeout reads as a regression in
+ * whatever change happens to be in flight. See
+ * `docs/lessons/a-five-second-test-timeout-fires-under-verifys-concurrency.md`.
+ */
+const WALK_TIMEOUT_MS = 60_000;
+
 const REPO_ROOT = join(import.meta.dirname, '..', '..');
 const WEB_SRC = join(REPO_ROOT, 'apps', 'web', 'src');
+const ADMIN_SRC = join(REPO_ROOT, 'apps', 'admin', 'src');
+
+/**
+ * Both Next apps, because this guard read only one of them and the leak it
+ * exists to catch shipped in the other.
+ *
+ * `apps/admin`'s `/guardrails` page imported `@ragenai/guardrails` from two
+ * `'use client'` components. The barrel re-exports the ReDoS probe, which
+ * imports `node:worker_threads` — so the page server-rendered, hydrated, threw
+ * `Cannot find module 'node:worker_threads'` and replaced itself with the
+ * error boundary. `next build` was green, every unit test was green, and the
+ * page was blank.
+ *
+ * Both apps alias `@/*` to their own `src`, which is why the root travels with
+ * the file rather than being a module-level constant.
+ */
+const SCAN_ROOTS: Array<{ label: string; src: string; minClients: number }> = [
+  { label: 'apps/web', src: WEB_SRC, minClients: 100 },
+  { label: 'apps/admin', src: ADMIN_SRC, minClients: 20 },
+];
+
+/** The scan root a file belongs to, for resolving its `@/` imports. */
+function rootFor(file: string): string {
+  return file.startsWith(ADMIN_SRC) ? ADMIN_SRC : WEB_SRC;
+}
 
 /**
  * Modules that must never be reachable from the browser, and why.
@@ -52,7 +90,18 @@ const WEB_SRC = join(REPO_ROOT, 'apps', 'web', 'src');
  * Matched as substrings of the import specifier, so `@/generated/prisma/client`
  * and a relative path ending in the same thing both count.
  */
-const SERVER_ONLY: Array<{ specifier: string; because: string }> = [
+const SERVER_ONLY: Array<{
+  specifier: string;
+  because: string;
+  /**
+   * Match the specifier exactly rather than as a substring.
+   *
+   * Needed where a package's safe entry point is spelled as its barrel plus a
+   * subpath: `@ragenai/guardrails/contracts` contains `@ragenai/guardrails`,
+   * so the default substring match would ban the fix along with the mistake.
+   */
+  exact?: boolean;
+}> = [
   {
     specifier: '@/generated/prisma/client',
     because:
@@ -66,6 +115,17 @@ const SERVER_ONLY: Array<{ specifier: string; because: string }> = [
       'it is the alias for `src/libs/db`, the server Prisma singleton, so it ' +
       'pulls in `@/generated/prisma/client` and the tenant-scope extension ' +
       'with it. A client component has no business holding a database handle.',
+  },
+  {
+    specifier: '@ragenai/guardrails',
+    exact: true,
+    because:
+      'its barrel re-exports the ReDoS probe, which imports ' +
+      '`node:worker_threads` at module scope. Turbopack cannot externalise a ' +
+      'node builtin into a client chunk, so the page server-renders, hydrates, ' +
+      "throws `Cannot find module 'node:worker_threads'` and replaces itself " +
+      'with the error boundary — green build, blank page. Client components ' +
+      'import `@ragenai/guardrails/contracts`, which has no imports at all.',
   },
   {
     specifier: 'app/lib/utils/logger/serverLogger',
@@ -177,7 +237,7 @@ function valueImports(source: string): string[] {
 function resolveSpecifier(specifier: string, fromFile: string): string | null {
   let base: string;
   if (specifier.startsWith('@/')) {
-    base = join(WEB_SRC, specifier.slice(2));
+    base = join(rootFor(fromFile), specifier.slice(2));
   } else if (specifier.startsWith('.')) {
     base = resolve(dirname(fromFile), specifier);
   } else {
@@ -201,7 +261,14 @@ function resolveSpecifier(specifier: string, fromFile: string): string | null {
 }
 
 /** The import chain from a client entry point to a forbidden module, if any. */
-function pathToServerOnly(entry: string, specifier: string): string[] | null {
+function pathToServerOnly(
+  entry: string,
+  specifier: string,
+  exact = false,
+): string[] | null {
+  const matches = (imported: string): boolean =>
+    exact ? imported === specifier : imported.includes(specifier);
+
   const seen = new Set<string>();
   const stack: Array<{ file: string; trail: string[] }> = [
     { file: entry, trail: [entry] },
@@ -222,7 +289,7 @@ function pathToServerOnly(entry: string, specifier: string): string[] | null {
     }
 
     for (const imported of valueImports(source)) {
-      if (imported.includes(specifier)) {
+      if (matches(imported)) {
         return [...trail, imported];
       }
       const next = resolveSpecifier(imported, file);
@@ -235,23 +302,34 @@ function pathToServerOnly(entry: string, specifier: string): string[] | null {
   return null;
 }
 
-const allFiles = sourceFiles(WEB_SRC);
-const clientEntryPoints = allFiles.filter((file) =>
-  hasDirective(read(file), 'use client'),
-);
+const clientEntryPointsByRoot = SCAN_ROOTS.map((root) => ({
+  ...root,
+  entries: sourceFiles(root.src).filter((file) =>
+    hasDirective(read(file), 'use client'),
+  ),
+}));
+const clientEntryPoints = clientEntryPointsByRoot.flatMap((r) => r.entries);
 
 describe('client bundles stay browser-safe', () => {
-  it('finds the client components it claims to check', () => {
-    // Without this, a change to how the directive is written would make every
-    // assertion below pass over an empty list.
-    expect(clientEntryPoints.length).toBeGreaterThan(100);
-  });
+  it.each(clientEntryPointsByRoot)(
+    'finds the client components it claims to check in $label',
+    ({ label, entries, minClients }) => {
+      // Without this, a change to how the directive is written — or a scan
+      // root that quietly stops resolving — would make every assertion below
+      // pass over an empty list. Per root, because a healthy apps/web count
+      // hid apps/admin not being read at all.
+      expect(
+        entries.length,
+        `${label} contributed ${entries.length} client components to the scan`,
+      ).toBeGreaterThan(minClients);
+    },
+  );
 
   it.each(SERVER_ONLY)(
     'no client component can reach $specifier',
-    ({ specifier, because }) => {
+    ({ specifier, because, exact }) => {
       const offenders = clientEntryPoints
-        .map((entry) => pathToServerOnly(entry, specifier))
+        .map((entry) => pathToServerOnly(entry, specifier, exact === true))
         .filter((trail): trail is string[] => trail !== null);
 
       const report = offenders
@@ -272,6 +350,7 @@ describe('client bundles stay browser-safe', () => {
           `nor the import, which is why this test exists.`,
       ).toEqual([]);
     },
+    WALK_TIMEOUT_MS,
   );
 
   it('stops at a server action instead of walking through it', () => {
