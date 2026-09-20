@@ -122,6 +122,21 @@ export function missingRules(
   return builtIns.filter((b) => !ruleEnabledByKey.has(b.key)).map((b) => b.key);
 }
 
+/** Something printable, whatever the thrown value turned out to be. */
+function describeError(err: unknown): string {
+  if (err instanceof Error) {
+    const parts = [err.name, err.message.trim()].filter(
+      (part) => part.length > 0,
+    );
+    const described = parts.join(': ');
+    if (described.length > 0) {
+      return described;
+    }
+  }
+  const asString = String(err).trim();
+  return asString.length > 0 ? asString : 'no detail available';
+}
+
 async function readPlatformRules(): Promise<Map<string, boolean>> {
   const connectionString = process.env.DATABASE_URL;
   if (!connectionString) {
@@ -159,7 +174,34 @@ async function main(): Promise<void> {
   }
 
   const builtIns = environmentSaysEnabled(process.env);
-  const rules = await readPlatformRules();
+
+  // The break-glass has to survive a database it cannot read. Moving the
+  // `broken` check below the query left the non-blocking path unreachable
+  // whenever DATABASE_URL was unset or Postgres was down — which is a plausible
+  // shape for the incident that made somebody set the variable in the first
+  // place. Still a hard failure when the break-glass is *not* set: a preflight
+  // that cannot see the rules has not verified anything.
+  let rules: Map<string, boolean>;
+  try {
+    rules = await readPlatformRules();
+  } catch (err) {
+    if (!broken) {
+      throw err;
+    }
+    // `message` alone is not enough: Prisma's connection errors arrive with an
+    // empty one, and the first run of this printed "Could not read the rules,
+    // so nothing below was reconciled:" followed by nothing at all — a warning
+    // that tells the operator strictly less than silence would.
+    console.warn(
+      `Could not read the rules, so nothing below was reconciled: ${describeError(err)}`,
+    );
+    console.warn(
+      'Not blocking, because GUARDRAILS_DISABLED is set and no rule will be ' +
+        'enforced after this deploy either. Re-run this once the database is ' +
+        'reachable, and before you unset the break-glass.',
+    );
+    return;
+  }
 
   // Widths from the content, not guessed: `JAILBREAK_DETECTION_ENABLED=off`
   // is 31 characters and overran a hand-picked 22, which pushed the third
@@ -220,9 +262,22 @@ async function main(): Promise<void> {
     return;
   }
 
-  if (missing.length > 0 || losesProtection.length > 0) {
+  if (losesProtection.length > 0) {
     console.error(
       `\n${losesProtection.length} protection(s) this service enforces today would stop at the Phase B deploy.`,
+    );
+    process.exitCode = 1;
+    return;
+  }
+
+  // Its own summary. Sharing the line above reported "0 protection(s) would
+  // stop" for an unseeded database — a true number attached to the wrong
+  // sentence, which reads as a script that is confused rather than one that
+  // found something.
+  if (missing.length > 0) {
+    console.error(
+      '\nThe guardrails seed has not run here, so there is nothing to ' +
+        'reconcile against. Apply the migration and re-run before deploying.',
     );
     process.exitCode = 1;
     return;
