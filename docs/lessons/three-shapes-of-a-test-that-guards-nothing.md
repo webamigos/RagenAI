@@ -1,5 +1,5 @@
 ---
-title: "Three shapes of a test that guards nothing, from one day: a negative match over free text, an assertion that freezes a capability, and a check for a mention instead of a call"
+title: "Five shapes of a test that guards nothing: a negative match over free text, an assertion that freezes a capability, a check for a mention instead of a call, a guard handed a copy of its own registry, and a positive match that matched the wrong construct"
 modules: ['web', 'api', 'admin', 'ci']
 areas: ['testing', 'architecture']
 topics: ['false-green', 'architecture-tests', 'vacuous-tests', 'guardrails', 'test-design', 'verification']
@@ -144,7 +144,47 @@ this file works, and this one was simply not run through it, because a test
    at the same time, a new file is missing from both and the check is silent.
    Walk the source; keep a list only for *exceptions*, each with its reason.
 
+## Afterword: a fifth, in Phase C — a positive match that matched the wrong thing
+
+The four above are all *negative* or *comparative*. This one is a positive
+assertion, which felt like the safe shape after reading this file, and it was
+vacuous within minutes of being written.
+
+C2 moved the choice of judge prompt into `packages/guardrails`, so each app's
+judge binding now receives `{ rule, system, prompt }` instead of building the
+prompt itself. The guard for that:
+
+```ts
+expect(code).toMatch(/\{[^}]*\bsystem\b[^}]*\bprompt\b[^}]*\}/);
+```
+
+It passes on a file that has deleted the destructure entirely — because a few
+lines below it sits
+
+```ts
+generateObject({ model, schema, system, messages: [{ content: prompt }] })
+```
+
+and `[^}]*` happily crosses an opening brace. The regex was written to describe
+the destructuring parameter and it described *any brace-delimited region
+containing those two words*, of which the file has two.
+
+Two things about how it was found, both worth copying. It was **not** found by
+reading it: it had been read, and the reading is what produced the confidence.
+It was found by **deleting the thing it guards and re-running** — thirty
+seconds, one `sed`, and the test stayed green. The fix anchors the match to the
+construct (`/async\s*\(\s*\{[^}]*\bsystem\b[^}]*\bprompt\b[^}]*\}/`), and
+the same deletion then fails it.
+
+5. **Sabotage every new guard before you trust it.** Corollary 3 says match the
+   construct rather than the identifier; this says you cannot tell from reading
+   whether you did. Break the code the guard protects, watch it go red, put the
+   code back. A guard that has never been seen to fail has never been tested,
+   and a *positive* assertion is no safer here than a negative one — it just
+   feels that way.
+
 **Applies to**: every test in `tests/architecture/`; any test asserting that
 something is *absent* from a payload, a log or a bundle; any assertion over a
 constant that describes what the build can do; any guard that compares two
-lists a human maintains.
+lists a human maintains; **and any regex that is meant to describe a syntactic
+construct rather than a word.**
