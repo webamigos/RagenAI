@@ -39,6 +39,16 @@ export type GuardrailHit = {
    * the thread, where its owner can see it and the platform cannot.
    */
   readonly matchCount?: number;
+  /**
+   * The judge's 0–1 score, for a policy rule or a scored built-in.
+   *
+   * A number, and never the judge's prose reason. The reason paraphrases the
+   * customer's message, and the rule that keeps a matched span out of this
+   * event is the same rule: the message is in the thread, where its owner can
+   * see it and the platform cannot. The score is what tells a false positive
+   * from a real one, and what tells an operator where to put the threshold.
+   */
+  readonly score?: number;
 };
 
 /**
@@ -80,6 +90,7 @@ export function recordGuardrailHit(hit: GuardrailHit): void {
       stage: hit.stage,
       action: hit.rule.action,
       ...(hit.matchCount === undefined ? {} : { matchCount: hit.matchCount }),
+      ...(hit.score === undefined ? {} : { score: hit.score }),
     },
   });
 }

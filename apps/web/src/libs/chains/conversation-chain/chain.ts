@@ -60,6 +60,9 @@ export const conversationChain = async ({
           organizationId: config.tracking.organizationId,
           userId: config.tracking.userId,
           source: 'chat',
+          // So a judge model's cost lands on the right project and user, not
+          // only the right organization.
+          tracking: config.tracking,
         });
         guardedInput = {
           ...sanitizedInput,

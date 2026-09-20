@@ -92,6 +92,31 @@ describe('the enum members Phase A adds and nothing writes', () => {
   it('AiUsageStep has GUARDRAIL', () => {
     expect(prismaEnum('AiUsageStep')).toContain('GUARDRAIL');
   });
+
+  it('apps/api’s hand-copied AiUsageStep union agrees with the schema', () => {
+    // That union is a string-literal type written by hand, so this app can
+    // stay off the generated client — its own file says "keep in sync with
+    // the schema by hand", which is a sentence, not a mechanism.
+    //
+    // The cost of it being wrong is specific: a step the union omits cannot
+    // be passed by any caller in this app, so the usage row is never written
+    // and the cost never appears. That is exactly what `GUARDRAIL` would have
+    // cost on the API path — the runtime where a judge runs on automated
+    // traffic and nobody is watching a page.
+    const types = readFileSync(
+      join(REPO_ROOT, 'apps', 'api', 'src', 'ai-usage', 'types.ts'),
+      'utf8',
+    );
+    const union = /export type AiUsageStep =([\s\S]*?);/.exec(types)?.[1];
+
+    expect(
+      union,
+      'AiUsageStep is not a string-literal union here any more',
+    ).toBeDefined();
+    expect(
+      [...(union ?? '').matchAll(/'([A-Z_]+)'/g)].map((m) => m[1]),
+    ).toEqual(prismaEnum('AiUsageStep'));
+  });
 });
 
 describe('the index Prisma cannot express', () => {

@@ -72,15 +72,20 @@ describe('supported combinations', () => {
     expect(SUPPORTED_COMBINATIONS).toEqual([
       { kind: 'PATTERN', stage: 'INPUT' },
       { kind: 'BUILT_IN', stage: 'INPUT' },
+      { kind: 'LLM_POLICY', stage: 'INPUT' },
     ]);
   });
 
   it('offers no kind whose evaluator does not exist at all', () => {
     const kinds = new Set(SUPPORTED_COMBINATIONS.map((c) => c.kind));
 
-    // `LLM_POLICY` has no evaluator anywhere until Phase C. Listing it would
-    // make the resolver keep a rule nothing can act on.
-    expect(kinds.has('LLM_POLICY')).toBe(false);
+    // `LLM_POLICY` is here as of Phase C, and this assertion used to say the
+    // opposite — for the same reason the `BUILT_IN` one below it did, and with
+    // the same expiry date. Both are snapshots of a capability, which is a
+    // shape that keeps passing after the capability changes; the thing that
+    // makes them worth keeping is that each one has to be edited by the change
+    // that adds the evaluator, in the same commit.
+    expect(kinds.has('LLM_POLICY')).toBe(true);
 
     // `BUILT_IN` is here, and this assertion used to say the opposite.
     //

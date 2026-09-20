@@ -5,6 +5,11 @@ import {
 } from '../contracts/guardrail';
 import type { ResolvedGuardrail } from '../resolver/resolve';
 import { applyMask, runPatternRules, type PatternHit } from './pattern';
+import {
+  MAX_ACTIVE_LLM_POLICIES,
+  runPolicyRules,
+  type JudgePolicy,
+} from './policy';
 
 /**
  * The input stage, once, for both runtimes.
@@ -33,10 +38,28 @@ export type InputStageDeps = {
    * with no moderation credentials is never asked for them.
    */
   readonly moderate: (text: string) => Promise<ModerationVerdict>;
+  /**
+   * Ask the judge model to score one `LLM_POLICY` rule.
+   *
+   * Injected for the same reason `moderate` is: the model call belongs to the
+   * runtime, the decision about what the score means belongs here. A binding
+   * that forgets to record what the call cost is the failure this phase was
+   * split to prevent, which is why both bindings' judges are tested for it.
+   */
+  readonly judge: JudgePolicy;
   /** Fire-and-forget. Called once per rule that fired. */
   readonly record: (hit: {
     rule: ResolvedGuardrail;
     matchCount?: number;
+    /**
+     * The judge's 0–1 score, for a policy or a scored built-in.
+     *
+     * A number, and never the judge's prose reason. The reason paraphrases the
+     * customer's message, which is the thing this product encrypts per
+     * organization and scrubs before it reaches a log — the same rule that
+     * keeps a matched span out of a pattern rule's event.
+     */
+    score?: number;
   }) => void;
   /**
    * Some rules did not run because the turn's budget was gone.
@@ -49,6 +72,27 @@ export type InputStageDeps = {
     skipped: readonly ResolvedGuardrail[],
     elapsedMs: number,
   ) => void;
+  /**
+   * More policy rules were active than may run at once.
+   *
+   * Reported for the same reason as the pattern budget and with a different
+   * cause: the pattern budget bounds latency, this bounds spend. Either way a
+   * rule that did not run protected nothing, and the operator who added the
+   * fourth policy is the one person who can act on it.
+   */
+  readonly onPolicyCapExceeded: (
+    skipped: readonly ResolvedGuardrail[],
+    cap: number,
+  ) => void;
+  /**
+   * A judge could not answer. Treated as a pass, and said out loud.
+   *
+   * Not a `record` call: a security event says a rule *fired*, and a rule that
+   * could not run is the opposite claim. Conflating them puts a row on the
+   * incidents page for every provider blip and makes the hit counts on the
+   * guardrails page describe the provider rather than the rule set.
+   */
+  readonly onJudgeError: (rule: ResolvedGuardrail, reason: string) => void;
 };
 
 export type InputStageInput = {
@@ -129,6 +173,12 @@ export type InputStageOptions = {
    * file has already produced once.
    */
   readonly now?: () => number;
+  /**
+   * How many policy rules may run on this stage. Defaults to
+   * `MAX_ACTIVE_LLM_POLICIES`; exposed so a test can state the cap rather than
+   * having to author four rules to reach it.
+   */
+  readonly policyCap?: number;
 };
 
 export async function evaluateInputStage(
@@ -211,6 +261,50 @@ export async function evaluateInputStage(
     // treating a provider failure as a hit would let an outage refuse every
     // turn — a classifier that can take the product down is a bigger risk than
     // the one it catches.
+  }
+
+  // Policy rules last among the deciding kinds, because they are the most
+  // expensive: a local regex or a moderation endpoint that already refuses the
+  // turn should not be preceded by one model call per rule.
+  //
+  // Against the question alone, like the patterns and for the same reason. A
+  // policy judged over `chatHistory` refuses this turn for something said
+  // earlier and already allowed through, which makes a thread permanently
+  // unusable after one borderline message.
+  const policyRules = rules.filter((rule) => rule.kind === 'LLM_POLICY');
+  if (policyRules.length > 0) {
+    const policyRun = await runPolicyRules(
+      policyRules,
+      input.question,
+      deps.judge,
+      { cap: options.policyCap ?? MAX_ACTIVE_LLM_POLICIES },
+    );
+
+    if (policyRun.skipped.length > 0) {
+      deps.onPolicyCapExceeded(
+        policyRun.skipped.map(resolve),
+        options.policyCap ?? MAX_ACTIVE_LLM_POLICIES,
+      );
+    }
+    for (const failure of policyRun.errors) {
+      deps.onJudgeError(resolve(failure.rule), failure.reason);
+    }
+
+    // Every hit is recorded before any of them returns, so a `LOG` policy that
+    // fired on the same turn as a `BLOCK` one still appears in the hit counts.
+    // The pattern branch above cannot do this — it has to return before the
+    // expensive kinds run — and that asymmetry is deliberate rather than an
+    // inconsistency: there is nothing left to save by returning early here.
+    for (const hit of policyRun.hits) {
+      deps.record({ rule: resolve(hit.rule), score: hit.score });
+    }
+
+    const blockingPolicy = policyRun.hits.find(
+      (hit) => hit.rule.action === 'BLOCK',
+    );
+    if (blockingPolicy) {
+      return { ...unchanged, blockedBy: resolve(blockingPolicy.rule) };
+    }
   }
 
   for (const hit of hits.filter((h) => h.rule.action === 'LOG')) {

@@ -25,6 +25,10 @@ const STEPS = [
   { value: AiUsageStep.MODERATION, label: 'Moderation' },
   { value: AiUsageStep.REPHRASING, label: 'Rephrasing' },
   { value: AiUsageStep.EMBEDDINGS, label: 'Embeddings' },
+  // A judge model run by an LLM_POLICY guardrail. Its own row rather than
+  // folded into Moderation, because "what did the guardrails cost" is the
+  // question an operator asks about the expensive kind of rule.
+  { value: AiUsageStep.GUARDRAIL, label: 'Guardrail' },
 ];
 
 export function AiUsageFiltersBar({ filters, onChange }: Props) {

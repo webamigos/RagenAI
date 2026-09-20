@@ -14,6 +14,7 @@ const STEP_LABELS: Record<string, string> = {
   MODERATION: 'MODERATION',
   REPHRASING: 'REPHRASING',
   EMBEDDINGS: 'EMBEDDINGS',
+  GUARDRAIL: 'GUARDRAIL',
 };
 
 const STEP_BADGE_COLORS: Record<string, string> = {
@@ -22,6 +23,7 @@ const STEP_BADGE_COLORS: Record<string, string> = {
   REPHRASING: 'bg-pending-tint text-pending dark:bg-pending/30',
   EMBEDDINGS:
     'bg-brand-100 text-brand-800 dark:bg-brand-900/30 dark:text-brand-300',
+  GUARDRAIL: 'bg-muted text-muted-foreground',
 };
 
 function formatDate(d: Date | string): string {

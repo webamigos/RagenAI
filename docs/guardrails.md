@@ -35,20 +35,65 @@ the authority, and the admin form offers only what it allows.
 Two lists, and they are deliberately different questions:
 
 - **`SUPPORTED_COMBINATIONS`** — what the package can evaluate:
-  `PATTERN`/`INPUT` and `BUILT_IN`/`INPUT`. The resolver drops anything else,
-  so an older service meeting a row from a newer one treats it as no verdict
-  rather than throwing.
+  `PATTERN`/`INPUT`, `BUILT_IN`/`INPUT` and `LLM_POLICY`/`INPUT`. The resolver
+  drops anything else, so an older service meeting a row from a newer one
+  treats it as no verdict rather than throwing.
 - **`AUTHORABLE_COMBINATIONS`** — what an operator may create:
   `PATTERN`/`INPUT` alone. A built-in is _seeded_, identified by a `key` the
-  code knows; one somebody typed would have no detector behind it.
+  code knows; one somebody typed would have no detector behind it. A policy
+  rule is evaluable but not yet authorable: the form has no field for the
+  prose, so a rule created as one would be saved with no policy — the shape
+  the resolver drops. The policy editor is the phase after this one, and the
+  admin action validates against this list rather than the one above, because
+  a Server Action is a public endpoint.
 
 Support for a built-in is **per key, not per kind**. `content-moderation` is
 evaluated; `jailbreak-detection` is seeded and is not (`EVALUABLE_BUILT_IN_KEYS`),
 and it gains its evaluator and that entry in the same change — never before, or
 it reads as enabled and does nothing.
 
-`LLM_POLICY` and the `OUTPUT` stage are not shipped. Both are in the schema and
-in the vocabulary so that every reader had them before a writer appeared.
+The `OUTPUT` stage is not shipped. It is in the schema and in the vocabulary so
+that every reader had it before a writer appeared.
+
+### Policies judged by a model
+
+An `LLM_POLICY` rule carries prose, and a judge model scores the message
+against it from 0 to 1. At or above the rule's `threshold` — 0.7 when it names
+none, the jailbreak classifier's own default — the rule has fired.
+
+| Thing | Value | Where |
+| --- | --- | --- |
+| Judge model | `gemini-2.5-flash` | `POLICY_JUDGE_MODEL` |
+| Timeout | 3 s, per rule | `POLICY_JUDGE_TIMEOUT_MS` |
+| Default threshold | 0.7 | `DEFAULT_POLICY_THRESHOLD` |
+| Active policies per stage | 3 | `MAX_ACTIVE_LLM_POLICIES` |
+
+All four are constants in `packages/guardrails`, read by both runtimes. None is
+configurable, and that is deliberate: two runtimes asking a different model a
+different question would be two products, and the public API is the one nobody
+would notice was wrong.
+
+**Policy rules run last, concurrently, and capped.** Last because they are the
+expensive kind — a local pattern or a moderation endpoint that already refuses
+the turn should not be preceded by one model call per rule. Concurrently
+because three rules at the timeout would otherwise be a nine-second wait before
+the model is asked the question. Capped because concurrency bounds the latency
+and nothing bounds the *spend*: a fourth policy rule is a fourth model call per
+turn, for ever. Rules the cap left out are reported, the same way a rule the
+pattern budget skipped is.
+
+**A judge that cannot answer is a pass, and is logged rather than recorded.** A
+timed-out judge and a judge that read the message and found nothing are the
+same score and different events; filing the first as a hit would put a row on
+the incidents page for every provider blip, and make this page's hit counts
+describe the provider rather than the rule set.
+
+**What the judge costs shows on the AI-usage page under `GUARDRAIL`.** Its own
+step, not folded into `MODERATION`, because "what did the guardrails cost" is
+the question an operator asks precisely about the expensive kind of rule. A
+timed-out judge records nothing — there is no usage to record — which the
+provider may still bill for; that is the honest limit of measuring this from
+the client side.
 
 ## How a rule reaches an organization
 
@@ -133,7 +178,9 @@ message. Otherwise a mask applied at turn one is undone at turn two, when the
 original comes back through history.
 
 The event carries the rule's `publicId`, its key or name, kind, stage, action
-and a **match count**. It never carries the matched text: that is the
+and a **match count** — plus, for a policy rule, the judge's **score**. It
+never carries the matched text, and it never carries the judge's prose reason,
+which is why the judge is not asked for one: that is the
 customer's message, which this product encrypts per organization (ADR-06) and
 scrubs before it reaches a log. The rule and the count are enough to tell a
 false positive from a real one.

@@ -5,7 +5,20 @@
  * AiUsageService itself — keep in sync with the schema by hand.
  */
 export type AiUsageStep =
-  'MODERATION' | 'CHAT_COMPLETION' | 'REPHRASING' | 'EMBEDDINGS' | 'RERANKING';
+  | 'MODERATION'
+  | 'CHAT_COMPLETION'
+  | 'REPHRASING'
+  | 'EMBEDDINGS'
+  | 'RERANKING'
+  /**
+   * A judge model run by an `LLM_POLICY` guardrail.
+   *
+   * Its own step rather than folded into `MODERATION`, so the AI-usage page
+   * can answer "what did the guardrails cost" — the question an operator asks
+   * precisely because policy rules are the expensive kind: one model call per
+   * rule per turn.
+   */
+  | 'GUARDRAIL';
 
 export type CreateAiUsageInput = {
   organizationId: string;

@@ -52,16 +52,39 @@ const builtIn = (over: Partial<ResolvedGuardrail> = {}) =>
     ...over,
   });
 
+const policyRule = (over: Partial<ResolvedGuardrail> = {}) =>
+  rule({
+    publicId: 'policy-1',
+    kind: 'LLM_POLICY',
+    name: 'No competitor pricing',
+    pattern: null,
+    policy: 'Never discuss a competitor’s pricing.',
+    ...over,
+  });
+
 let deps: InputStageDeps;
 let moderate: ReturnType<typeof vi.fn>;
+let judge: ReturnType<typeof vi.fn>;
 let record: ReturnType<typeof vi.fn>;
 let onBudgetExhausted: ReturnType<typeof vi.fn>;
+let onPolicyCapExceeded: ReturnType<typeof vi.fn>;
+let onJudgeError: ReturnType<typeof vi.fn>;
 
 beforeEach(() => {
   moderate = vi.fn().mockResolvedValue({ outcome: 'pass' });
+  judge = vi.fn().mockResolvedValue({ outcome: 'scored', score: 0 });
   record = vi.fn();
   onBudgetExhausted = vi.fn();
-  deps = { moderate, record, onBudgetExhausted };
+  onPolicyCapExceeded = vi.fn();
+  onJudgeError = vi.fn();
+  deps = {
+    moderate,
+    judge,
+    record,
+    onBudgetExhausted,
+    onPolicyCapExceeded,
+    onJudgeError,
+  };
 });
 
 const evaluate = (
@@ -522,5 +545,127 @@ describe('which event type a hit is filed under', () => {
         securityEventTypeFor(rule({ action })),
       );
     }
+  });
+});
+
+describe('policy rules in the input stage', () => {
+  it('asks the judge and records a hit with its score', async () => {
+    judge.mockResolvedValue({ outcome: 'scored', score: 0.91 });
+
+    await evaluate([policyRule()], { question: 'what do they charge?' });
+
+    expect(judge).toHaveBeenCalledWith({
+      rule: expect.objectContaining({ publicId: 'policy-1' }),
+      text: 'what do they charge?',
+    });
+    expect(record).toHaveBeenCalledWith({
+      rule: expect.objectContaining({ publicId: 'policy-1' }),
+      score: 0.91,
+    });
+  });
+
+  it('blocks the turn when a BLOCK policy scores over its threshold', async () => {
+    judge.mockResolvedValue({ outcome: 'scored', score: 0.8 });
+
+    const result = await evaluate([
+      policyRule({ action: 'BLOCK', threshold: 0.5 }),
+    ]);
+
+    expect(result.blockedBy?.publicId).toBe('policy-1');
+  });
+
+  it('judges the question and not the history', async () => {
+    // A policy judged over `chatHistory` refuses this turn for something said
+    // earlier and already allowed through, which makes a thread permanently
+    // unusable after one borderline message and gives nobody a way to see why.
+    await evaluate([policyRule()], {
+      question: 'this turn',
+      chatHistory: 'an earlier turn',
+    });
+
+    expect(judge).toHaveBeenCalledWith({
+      rule: expect.anything(),
+      text: 'this turn',
+    });
+  });
+
+  it('never asks a judge when a pattern rule has already refused the turn', async () => {
+    // The ordering is the whole reason the expensive kinds come last: a local
+    // regex that already refuses the turn should not be preceded by one model
+    // call per policy rule.
+    const result = await evaluate([rule({ action: 'BLOCK' }), policyRule()], {
+      question: 'the password is hunter2',
+    });
+
+    expect(result.blockedBy?.publicId).toBe('rule-1');
+    expect(judge).not.toHaveBeenCalled();
+  });
+
+  it('never asks a judge when moderation has already refused the turn', async () => {
+    moderate.mockResolvedValue({ outcome: 'hit' });
+
+    const result = await evaluate([builtIn({ action: 'BLOCK' }), policyRule()]);
+
+    expect(result.blockedBy?.publicId).toBe('mod-1');
+    expect(judge).not.toHaveBeenCalled();
+  });
+
+  it('reports a judge that could not answer, without recording a hit', async () => {
+    // Not a `record` call: a security event says a rule fired, and a rule that
+    // could not run is the opposite claim. Filing it as a hit would put a row
+    // on the incidents page for every provider blip.
+    judge.mockResolvedValue({ outcome: 'error', reason: 'timeout' });
+
+    const result = await evaluate([policyRule({ action: 'BLOCK' })]);
+
+    expect(result.blockedBy).toBeUndefined();
+    expect(record).not.toHaveBeenCalled();
+    expect(onJudgeError).toHaveBeenCalledWith(
+      expect.objectContaining({ publicId: 'policy-1' }),
+      'timeout',
+    );
+  });
+
+  it('reports the policies the cap left out', async () => {
+    judge.mockResolvedValue({ outcome: 'scored', score: 0 });
+    const rules = ['a', 'b'].map((publicId) => policyRule({ publicId }));
+
+    await evaluateInputStage(
+      rules,
+      { question: 'hello', chatHistory: '', moderateHistory: false },
+      deps,
+      { policyCap: 1 },
+    );
+
+    expect(judge).toHaveBeenCalledTimes(1);
+    expect(onPolicyCapExceeded).toHaveBeenCalledWith(
+      [expect.objectContaining({ publicId: 'b' })],
+      1,
+    );
+  });
+
+  it('records every policy hit, including ones on a turn a policy blocks', async () => {
+    // A `LOG` policy that fired on a blocked turn still belongs in the hit
+    // counts: that is how an operator tells a rule that is quietly agreeing
+    // with the blocking one from a rule that never fires at all. Nothing is
+    // saved by returning before recording — the model calls have all happened.
+    judge.mockResolvedValue({ outcome: 'scored', score: 0.9 });
+
+    const result = await evaluate([
+      policyRule({ publicId: 'logging', action: 'LOG' }),
+      policyRule({ publicId: 'blocking', action: 'BLOCK' }),
+    ]);
+
+    expect(result.blockedBy?.publicId).toBe('blocking');
+    expect(record.mock.calls.map(([hit]) => hit.rule.publicId)).toEqual([
+      'logging',
+      'blocking',
+    ]);
+  });
+
+  it('asks no judge when the organization has no policy rules', async () => {
+    await evaluate([rule(), builtIn()]);
+
+    expect(judge).not.toHaveBeenCalled();
   });
 });

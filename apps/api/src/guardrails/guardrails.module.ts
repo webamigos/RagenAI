@@ -3,6 +3,7 @@ import { Module } from '@nestjs/common';
 import { PrismaModule } from '../prisma/prisma.module.js';
 import { SecurityModule } from '../security/security.module.js';
 import { GuardrailsService } from './guardrails.service.js';
+import { PolicyJudgeService } from './policy-judge.service.js';
 import { RunInputGuardrailsService } from './run-input-guardrails.service.js';
 
 /**
@@ -15,7 +16,7 @@ import { RunInputGuardrailsService } from './run-input-guardrails.service.js';
  */
 @Module({
   imports: [PrismaModule, SecurityModule],
-  providers: [GuardrailsService, RunInputGuardrailsService],
+  providers: [GuardrailsService, PolicyJudgeService, RunInputGuardrailsService],
   exports: [GuardrailsService, RunInputGuardrailsService],
 })
 export class GuardrailsModule {}

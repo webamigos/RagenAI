@@ -229,6 +229,12 @@ export class InitializeBasicRagService {
                 // key: `/chat` and `/chat/completions`. The embedded widget
                 // goes through apps/web, which records `chatbot` itself.
                 source: 'api',
+                // So a policy judge's cost lands on the right project and
+                // user, and on a page at all: this runtime has no global
+                // usage recorder to import.
+                projectId,
+                trackAiUsage,
+                apiKey,
               }),
           },
           ragSettings: {

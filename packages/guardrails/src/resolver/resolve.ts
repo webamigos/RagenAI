@@ -1,3 +1,4 @@
+import { hasEvaluablePolicy } from '../evaluator/policy';
 import {
   type GuardrailCombination,
   type GuardrailOverride,
@@ -49,6 +50,16 @@ export type GuardrailDropReason =
    * implements it. `jailbreak-detection` is in exactly that state.
    */
   | 'built-in-has-no-evaluator'
+  /**
+   * An `LLM_POLICY` row whose `policy` is empty.
+   *
+   * The prose *is* the prompt, so a blank one leaves the judge scoring a
+   * message against nothing — and both answers it could invent are wrong: a
+   * zero makes the rule read as enabled and never fire, a one refuses every
+   * turn. Dropped rather than defaulted, and reported so the page can say why
+   * a rule somebody switched on is not running.
+   */
+  | 'policy-has-no-text'
   | 'override-targets-non-platform-rule'
   | 'override-for-unknown-rule'
   | 'override-action-invalid-for-kind'
@@ -164,6 +175,16 @@ export function resolveGuardrails(
       });
       continue;
     }
+    // A policy rule with no policy is the `LLM_POLICY` shape of the same
+    // failure: a row the build can evaluate in principle and has nothing to
+    // evaluate in fact. The kind is supported, so nothing above catches it.
+    if (rule.kind === 'LLM_POLICY' && !hasEvaluablePolicy(rule)) {
+      dropped.push({
+        reason: 'policy-has-no-text',
+        guardrailPublicId: rule.publicId,
+      });
+      continue;
+    }
     out.push(applyOverride(rule, overridesByRule.get(rule.publicId), dropped));
   }
 
@@ -186,6 +207,16 @@ export function resolveGuardrails(
     if (rule.kind === 'BUILT_IN' && !isEvaluableBuiltIn(rule.key)) {
       dropped.push({
         reason: 'built-in-has-no-evaluator',
+        guardrailPublicId: rule.publicId,
+      });
+      continue;
+    }
+    // The same predicate the platform loop applies, for the same reason: two
+    // loops disagreeing about what the build can evaluate is how the built-in
+    // version of this bug shipped twice, in both directions.
+    if (rule.kind === 'LLM_POLICY' && !hasEvaluablePolicy(rule)) {
+      dropped.push({
+        reason: 'policy-has-no-text',
         guardrailPublicId: rule.publicId,
       });
       continue;
