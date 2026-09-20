@@ -24,6 +24,8 @@ import { type TrackAiUsage } from '../../ai-usage/types.js';
 import { OrganizationSettingsService } from '../../organizations/organization-settings.service.js';
 import { GetOrganizationMetadataService } from '../../organizations/get-organization-metadata.service.js';
 import { GetImportedKbFileIdsService } from '../../documents/get-imported-kb-file-ids.service.js';
+import { GuardrailsService } from '../../guardrails/guardrails.service.js';
+import { RunInputGuardrailsService } from '../../guardrails/run-input-guardrails.service.js';
 import { type OrganizationSettings } from '../../organizations/types.js';
 import { type ThreadDocumentUI } from '../types/thread-document.js';
 import { type BaseChatChainOutput } from '../types/common.js';
@@ -97,6 +99,8 @@ export class InitializeBasicRagService {
     private readonly organizationSettings: OrganizationSettingsService,
     private readonly organizationMetadata: GetOrganizationMetadataService,
     private readonly importedKbFileIds: GetImportedKbFileIdsService,
+    private readonly guardrails: GuardrailsService,
+    private readonly runGuardrails: RunInputGuardrailsService,
   ) {}
 
   async initializeRagChain({
@@ -158,6 +162,9 @@ export class InitializeBasicRagService {
       // disabled. Deferred to the chain, which knows whether it will moderate.
       const contentModerator = () => createModerationInstance();
 
+      // One load per turn, served from the loader's per-organization cache.
+      const orgGuardrails = await this.guardrails.forOrganization(orgId);
+
       const questionRephraser = createChatCompletionInstance({
         apiKey,
         model: DEFAULT_REPHRASE_MODEL,
@@ -205,6 +212,26 @@ export class InitializeBasicRagService {
           approvedToolCalls: approvedToolCalls ?? [],
           tracking: { organizationId: orgId, projectId, userId },
           trackAiUsage,
+          // Loaded here rather than inside the chain because the chain is a
+          // plain function with no container to reach into. The loader caches
+          // per organization for a minute, so this costs one query per
+          // organization per minute and not one per turn.
+          guardrails: {
+            rules: [...orgGuardrails.input],
+            hasTransformingInputRule: orgGuardrails.hasTransformingInputRule,
+            run: (guardrailInput) =>
+              this.runGuardrails.run({
+                ...guardrailInput,
+                guardrails: orgGuardrails,
+                moderator: contentModerator,
+                organizationId: orgId,
+                userId,
+                // Both surfaces that build this chain are reached with an API
+                // key: `/chat` and `/chat/completions`. The embedded widget
+                // goes through apps/web, which records `chatbot` itself.
+                source: 'api',
+              }),
+          },
           ragSettings: {
             multiQueryEnabled: ragPipelineSettings.multiQueryEnabled,
             contentModerationEnabled:

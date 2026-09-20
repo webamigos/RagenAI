@@ -53,6 +53,7 @@
     "@prisma/instrumentation": "^7.10.0",
     "@qdrant/js-client-rest": "^1.17.0",
     "@ragenai/crypto": "*",
+    "@ragenai/guardrails": "*",
     "@ragenai/env": "*",
     "@ragenai/jobs": "*",
     "@ragenai/jobs-bullmq": "*",

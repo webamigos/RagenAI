@@ -1,5 +1,4 @@
 import { streamText, stepCountIs } from 'ai';
-import { isOnPremise } from '@ragenai/env';
 import { buildToolApprovalConfig } from '../../mcp/client.js';
 import {
   rephraseAndExpand,
@@ -9,27 +8,7 @@ import {
   validateAnswerGenerator,
 } from './operations.js';
 
-/**
- * Whether content moderation should run. `MODERATION_ENABLED` is the global
- * kill-switch (default: disabled). When enabled, SaaS mode always enforces
- * moderation; on-premise respects the per-org setting.
- */
-function shouldModerate(
-  ragSettings: { contentModerationEnabled: boolean } | undefined,
-): boolean {
-  if (process.env.MODERATION_ENABLED !== '1') {
-    return false;
-  }
-  if (!isOnPremise()) {
-    return true;
-  }
-  return ragSettings?.contentModerationEnabled !== false;
-}
-
-import {
-  sanitizeAndValidateInput,
-  moderateContent,
-} from '../utils/common-operations/index.js';
+import { sanitizeAndValidateInput } from '../utils/common-operations/index.js';
 import type { BasicRagChainParams } from '../types/basic-rag.js';
 import { MAX_TOOL_STEPS } from '../types/common.js';
 import type { BaseChatChainOutput } from '../types/common.js';
@@ -62,25 +41,60 @@ export const basicRagChain = async ({
       // query variants in a single LLM call (saves another round-trip vs the
       // old sequential rephrase → expandQueries flow).
       const multiQueryEnabled = config?.ragSettings?.multiQueryEnabled ?? true;
-      const [, { standaloneQuestion, variants }] = await Promise.all([
-        shouldModerate(config?.ragSettings)
-          ? moderateContent(
-              models.contentModerator(),
-              sanitizedInput,
-              true,
-              config?.tracking,
-              config?.trackAiUsage,
-            )
-          : Promise.resolve(),
-        rephraseAndExpand(
+
+      // Guardrails replace the `MODERATION_ENABLED` read that used to gate
+      // this. What runs is now a row an administrator can see, and an empty
+      // rule set is the off switch.
+      const guardrails = config?.guardrails;
+      const evaluateGuardrails = async () => {
+        if (!guardrails || guardrails.rules.length === 0) {
+          return sanitizedInput;
+        }
+        const { question, chatHistory } = await guardrails.run({
+          question: sanitizedInput.question,
+          chatHistory: sanitizedInput.chat_history,
+          // This chain has always moderated the question together with the
+          // history. Preserved rather than unified with apps/web's other
+          // chain: this phase moves a decision, not a behaviour.
+          moderateHistory: true,
+        });
+        return { ...sanitizedInput, question, chat_history: chatHistory };
+      };
+
+      // The concurrency survives only for rules that judge rather than
+      // rewrite. Moderation could run beside `rephraseAndExpand` because it
+      // returns a verdict: the text it read is the text that moves on. A
+      // `MASK` rule breaks that — the rewrite has to land before anything
+      // downstream reads the input, or the retrieval query is built from the
+      // original while the model is shown the mask.
+      let guardedInput = sanitizedInput;
+      let rephrased: Awaited<ReturnType<typeof rephraseAndExpand>>;
+
+      if (guardrails?.hasTransformingInputRule) {
+        guardedInput = await evaluateGuardrails();
+        rephrased = await rephraseAndExpand(
           models.questionRephraser,
-          sanitizedInput,
+          guardedInput,
           multiQueryEnabled,
           undefined,
           config?.tracking,
           config?.trackAiUsage,
-        ),
-      ]);
+        );
+      } else {
+        [guardedInput, rephrased] = await Promise.all([
+          evaluateGuardrails(),
+          rephraseAndExpand(
+            models.questionRephraser,
+            sanitizedInput,
+            multiQueryEnabled,
+            undefined,
+            config?.tracking,
+            config?.trackAiUsage,
+          ),
+        ]);
+      }
+
+      const { standaloneQuestion, variants } = rephrased;
 
       // Defensively dedupe the full query list (order-preserving) so any
       // future change in rephraseAndExpand cannot cause redundant Qdrant
@@ -122,7 +136,11 @@ export const basicRagChain = async ({
       // Step 5: Build messages and stream the answer
       const { system, messages } = buildRagMessages(
         standaloneQuestion,
-        sanitizedInput.chat_history,
+        // The guarded history, not the sanitized one. Masking the input and
+        // then handing the model the original is the exact failure a mask
+        // exists to prevent — and it would look like the rule working: the
+        // event is recorded and the placeholder is in the retrieval query.
+        guardedInput.chat_history,
         context,
         threadContext,
         config?.answerInstructions,

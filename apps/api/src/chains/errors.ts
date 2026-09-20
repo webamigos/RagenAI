@@ -17,6 +17,24 @@ export class ModerationError extends ChainError {
   }
 }
 
+/**
+ * A guardrail refused the turn.
+ *
+ * Carries the rule so the caller can say which one without re-deriving it, and
+ * deliberately not the matched text: that is the caller's own message, and an
+ * error object is exactly the kind of thing that ends up in a log.
+ */
+export class GuardrailError extends ChainError {
+  constructor(
+    public guardrailPublicId: string,
+    public guardrailName: string,
+    message = 'Input was refused by a guardrail',
+  ) {
+    super(message, 'guardrail-blocked');
+    this.name = 'GuardrailError';
+  }
+}
+
 export class ApiKeyError extends ChainError {
   constructor(message = 'API Key not found') {
     super(message, 'api-key-error');
