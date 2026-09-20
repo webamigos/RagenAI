@@ -1,4 +1,3 @@
-import { McpConnectorProvider } from '../../generated/prisma/client.js';
 import type { ProviderDefinition } from '../types.js';
 
 /**
@@ -7,7 +6,7 @@ import type { ProviderDefinition } from '../types.js';
  * docs/adrs/21-monorepo-and-api-decoupling.md.
  */
 export const OPEN_MERCATO_PROVIDER: ProviderDefinition = {
-  provider: McpConnectorProvider.OPEN_MERCATO,
+  provider: 'OPEN_MERCATO',
   name: 'Open Mercato',
   description:
     'Look up customers, deals and orders from Open Mercato – a CRM/ERP framework built with AI and designed for AI.',

@@ -1,4 +1,3 @@
-import { McpConnectorProvider } from '../../generated/prisma/client.js';
 import type { ProviderDefinition, PublicProviderDto } from '../types.js';
 import { CLICKUP_PROVIDER } from './clickup.js';
 import { FIREFLIES_PROVIDER } from './fireflies.js';
@@ -13,48 +12,54 @@ import { WOOCOMMERCE_PROVIDER } from './woocommerce.js';
 import { OPEN_MERCATO_PROVIDER } from './open-mercato.js';
 
 /**
- * Ported verbatim from apps/web's
- * src/features/connectors/providers/registry.ts. See
- * docs/adrs/21-monorepo-and-api-decoupling.md.
+ * Behaviour packs, keyed by catalogue slug.
  *
- * Every value in the Prisma `McpConnectorProvider` enum must have a
- * manifest here. Missing entries are caught at compile time thanks to
- * `Record<McpConnectorProvider, …>`.
+ * This used to be `Record<McpConnectorProvider, ProviderDefinition>`, and that
+ * annotation was the guarantee that every connector had a manifest: a missing
+ * entry was a compile error. Deleting the enum deletes that guarantee, and
+ * nothing about moving the catalogue into rows brings it back — see
+ * docs/specs/2026-09-18-mcp-servers-added-without-a-deploy.md.
+ *
+ * What replaces it is deliberately weaker, because the list is no longer meant
+ * to be fixed: a runtime lookup that answers "no behaviour pack" rather than
+ * crashing, and `tests/architecture/every-seeded-connector-resolves.test.ts`
+ * from the other direction. **A connector with no code here is a supported
+ * state** — that is the whole point of the catalogue. A pack exists for the
+ * two things a row cannot hold: a system prompt that must compute, and the
+ * `api_key_custom_header` URL assembly.
  */
-export const PROVIDER_REGISTRY: Record<
-  McpConnectorProvider,
-  ProviderDefinition
-> = {
-  [McpConnectorProvider.GOOGLE_CALENDAR]: GOOGLE_CALENDAR_PROVIDER,
-  [McpConnectorProvider.GOOGLE_ANALYTICS]: GOOGLE_ANALYTICS_PROVIDER,
-  [McpConnectorProvider.GOOGLE_ADS]: GOOGLE_ADS_PROVIDER,
-  [McpConnectorProvider.GOOGLE_DRIVE]: GOOGLE_DRIVE_PROVIDER,
-  [McpConnectorProvider.GMAIL]: GMAIL_PROVIDER,
-  [McpConnectorProvider.CLICKUP]: CLICKUP_PROVIDER,
-  [McpConnectorProvider.HUBSPOT]: HUBSPOT_PROVIDER,
-  [McpConnectorProvider.FIREFLIES]: FIREFLIES_PROVIDER,
-  [McpConnectorProvider.SLACK]: SLACK_PROVIDER,
-  [McpConnectorProvider.WOOCOMMERCE]: WOOCOMMERCE_PROVIDER,
-  [McpConnectorProvider.OPEN_MERCATO]: OPEN_MERCATO_PROVIDER,
-};
+export const PROVIDER_REGISTRY: Record<string, ProviderDefinition> =
+  Object.fromEntries(
+    [
+      GOOGLE_CALENDAR_PROVIDER,
+      GOOGLE_ANALYTICS_PROVIDER,
+      GOOGLE_ADS_PROVIDER,
+      GOOGLE_DRIVE_PROVIDER,
+      GMAIL_PROVIDER,
+      CLICKUP_PROVIDER,
+      HUBSPOT_PROVIDER,
+      FIREFLIES_PROVIDER,
+      SLACK_PROVIDER,
+      WOOCOMMERCE_PROVIDER,
+      OPEN_MERCATO_PROVIDER,
+    ].map((definition) => [definition.provider, definition]),
+  );
 
 export const PROVIDER_LIST: readonly ProviderDefinition[] =
   Object.values(PROVIDER_REGISTRY);
 
 /**
- * Takes a catalogue slug, which is a string: the eleven built-ins are still
- * keys of `PROVIDER_REGISTRY`, and an entry added from the admin panel has no
- * manifest at all. Sibling of apps/web's.
+ * The behaviour pack for a catalogue slug, or `undefined` when none carries it
+ * — an entry an operator added has no code at all.
  */
 export function getProvider(provider: string): ProviderDefinition | undefined {
-  return (PROVIDER_REGISTRY as Record<string, ProviderDefinition>)[provider];
+  return PROVIDER_REGISTRY[provider];
 }
 
 /**
  * Strips everything a browser shouldn't see — OAuth secrets, server-side
- * auth config, and any function-valued prompt fragments. Not currently
- * used by anything in this slice — kept for parity with the original
- * registry's public API.
+ * auth config, and any function-valued prompt fragments. Kept for parity with
+ * apps/web's registry, which this file is a port of.
  */
 export function toPublicProviderDto(
   def: ProviderDefinition,

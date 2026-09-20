@@ -1,9 +1,8 @@
-import { McpConnectorProvider } from '@/generated/prisma/client';
 import type { ProviderDefinition } from '../contracts/connector.types';
 import { MCP_GOOGLE_AUTH_URL, MCP_GOOGLE_SERVER_URL } from './shared-config';
 
 export const GOOGLE_DRIVE_PROVIDER: ProviderDefinition = {
-  provider: McpConnectorProvider.GOOGLE_DRIVE,
+  provider: 'GOOGLE_DRIVE',
   name: 'Google Drive',
   description: 'Search and read documents from your Google Drive.',
   icon: 'folder',

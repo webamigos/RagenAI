@@ -1,7 +1,7 @@
-import { type McpConnectorProvider } from '@/generated/prisma/client';
 import { PROVIDER_REGISTRY } from './registry';
 
-function isKnownProvider(value: string): value is McpConnectorProvider {
+/** Whether a behaviour pack carries a prompt fragment for this slug. */
+function hasBehaviourPack(value: string): boolean {
   return value in PROVIDER_REGISTRY;
 }
 
@@ -17,10 +17,10 @@ Current date and time: ${currentDateTime} (timezone: ${timeZone}). Use this to r
   const sections: string[] = [header];
 
   for (const providerId of connectorProviders) {
-    if (!isKnownProvider(providerId)) {
+    if (!hasBehaviourPack(providerId)) {
       continue;
     }
-    const fragment = PROVIDER_REGISTRY[providerId].systemPromptFragment;
+    const fragment = PROVIDER_REGISTRY[providerId]!.systemPromptFragment;
     if (!fragment) {
       continue;
     }

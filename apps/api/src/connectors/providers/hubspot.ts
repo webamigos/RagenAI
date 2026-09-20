@@ -1,9 +1,8 @@
-import { McpConnectorProvider } from '../../generated/prisma/client.js';
 import type { ProviderDefinition } from '../types.js';
 import { MCP_HUBSPOT_SERVER_URL } from './shared-config.js';
 
 export const HUBSPOT_PROVIDER: ProviderDefinition = {
-  provider: McpConnectorProvider.HUBSPOT,
+  provider: 'HUBSPOT',
   name: 'HubSpot',
   description: 'Access contacts, companies, deals, and CRM data.',
   icon: 'database',
