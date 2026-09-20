@@ -1,8 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { GUARDRAIL_SECURITY_EVENT_TYPES } from '../contracts/guardrail';
 import {
   evaluateInputStage,
   isModerationRule,
+  securityEventTypeFor,
   type InputStageDeps,
 } from '../evaluator/input-stage';
 import type { ResolvedGuardrail } from '../resolver/resolve';
@@ -491,5 +493,34 @@ describe('the question and the history share one budget', () => {
 
     expect(result.chatHistory).not.toContain('hunter2');
     expect(onBudgetExhausted).not.toHaveBeenCalled();
+  });
+});
+
+describe('which event type a hit is filed under', () => {
+  it('files a block as blocked and everything else as flagged', () => {
+    expect(securityEventTypeFor(rule({ action: 'BLOCK' }))).toBe(
+      'GUARDRAIL_BLOCKED',
+    );
+    // `MASK` shares `GUARDRAIL_FLAGGED` with `LOG`: something was found and
+    // the turn continued, which is the same story from the incidents page.
+    expect(securityEventTypeFor(rule({ action: 'MASK' }))).toBe(
+      'GUARDRAIL_FLAGGED',
+    );
+    expect(securityEventTypeFor(rule({ action: 'LOG' }))).toBe(
+      'GUARDRAIL_FLAGGED',
+    );
+  });
+
+  it('can only return a type the shared list names', () => {
+    // The list is what apps/admin counts and filters by, and it is a separate
+    // declaration from the mapping above. If a new action started filing under
+    // a type the list does not hold, the hit would exist, be invisible on the
+    // guardrails page and be unreachable from the incidents filter — three
+    // surfaces disagreeing, all of them green.
+    for (const action of ['BLOCK', 'MASK', 'LOG'] as const) {
+      expect(GUARDRAIL_SECURITY_EVENT_TYPES).toContain(
+        securityEventTypeFor(rule({ action })),
+      );
+    }
   });
 });

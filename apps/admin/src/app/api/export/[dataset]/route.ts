@@ -8,6 +8,8 @@ import {
 // client is generated into apps/web.
 import type { McpConnectorProvider } from '../../../../../../web/src/generated/prisma/client';
 
+import { parseEventTypeFilter } from '../../../(dashboard)/incidents/event-types';
+
 import { getAdminUser } from '@/lib/auth-guard';
 import { ADMIN_ACTIONS, recordAdminAction } from '@/lib/audit';
 import { prisma } from '@/lib/db';
@@ -162,6 +164,11 @@ const DATASETS: Record<string, Dataset> = {
     ],
     load: async (request) => {
       const params = request.nextUrl.searchParams;
+      // Parsed through the page's own filter, so a CSV always matches the
+      // table it was downloaded from — including the combined guardrails
+      // filter, which is not an enum member and would previously have been
+      // cast straight into the query.
+      const eventType = parseEventTypeFilter(params.get('eventType'));
       const rows = await prisma.securityEvent.findMany({
         where: {
           createdAt: { gte: since(parseDays(params.get('days'))) },
@@ -171,9 +178,7 @@ const DATASETS: Record<string, Dataset> = {
           ...(parseSeverity(params.get('severity'))
             ? { severity: parseSeverity(params.get('severity'))! }
             : {}),
-          ...(params.get('eventType')
-            ? { eventType: params.get('eventType') as never }
-            : {}),
+          ...(eventType ? { eventType } : {}),
           // `resolved=true|false` on the page maps to whether resolvedAt is set.
           ...(params.get('resolved') === 'true'
             ? { resolvedAt: { not: null } }

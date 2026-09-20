@@ -3,10 +3,17 @@
 import { useState } from 'react';
 
 import type { GuardrailRow } from '../actions';
+import { HIT_WINDOW_DAYS, type GuardrailHitsByRule } from '../hit-window';
 import { GuardrailForm } from './GuardrailForm';
 import { GuardrailsList } from './GuardrailsList';
 
-export function GuardrailsPage({ rules }: { rules: GuardrailRow[] }) {
+export function GuardrailsPage({
+  rules,
+  hits,
+}: {
+  rules: GuardrailRow[];
+  hits: GuardrailHitsByRule;
+}) {
   const [creating, setCreating] = useState(false);
 
   return (
@@ -17,7 +24,9 @@ export function GuardrailsPage({ rules }: { rules: GuardrailRow[] }) {
           <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
             Rules every organization is subject to. A new rule starts switched
             off, because a rule that begins by blocking is a rule whose
-            false-positive rate nobody has measured yet.
+            false-positive rate nobody has measured yet. Hits are the last{' '}
+            {HIT_WINDOW_DAYS} days, across every organization and both the panel
+            and the public API.
           </p>
         </div>
         <button
@@ -29,7 +38,7 @@ export function GuardrailsPage({ rules }: { rules: GuardrailRow[] }) {
         </button>
       </div>
 
-      <GuardrailsList rules={rules} />
+      <GuardrailsList rules={rules} hits={hits} />
 
       {creating ? <GuardrailForm onClose={() => setCreating(false)} /> : null}
     </div>
