@@ -69,15 +69,29 @@ const PACKAGE_ONLY_SYMBOLS = [
  * duplication this guards against typechecks perfectly — that is the whole
  * reason it survived review twice.
  */
-const DUPLICATED_DECISIONS: Array<{ pattern: RegExp; instead: string }> = [
+const DUPLICATED_DECISIONS: Array<{
+  name: string;
+  pattern: RegExp;
+  instead: string;
+}> = [
   {
-    pattern: /action\s*===\s*'(BLOCK|MASK|LOG)'/,
+    name: 'what an action means',
+    // Three spellings of the same decision, because one of them is not a
+    // guard. The original matched `action === 'BLOCK'` only: a double-quoted
+    // literal, a reversed comparison, or a `switch` over the action all read
+    // as compliant while doing exactly what this forbids. A negative match
+    // narrower than the thing it forbids is the first shape in
+    // docs/lessons/three-shapes-of-a-test-that-guards-nothing.md, and this
+    // file is where that lesson was learned.
+    pattern:
+      /(?:action\s*[!=]==\s*['"](?:BLOCK|MASK|LOG)['"]|['"](?:BLOCK|MASK|LOG)['"]\s*[!=]==\s*action|case\s+['"](?:BLOCK|MASK|LOG)['"]\s*:)/,
     instead:
       'call `securityEventTypeFor()` from @ragenai/guardrails, or let ' +
       '`evaluateInputStage()` apply the action. An app deciding what an ' +
       'action means is the duplication this test exists for.',
   },
   {
+    name: 'which event type a hit is filed under',
     pattern: /GUARDRAIL_(BLOCKED|FLAGGED)/,
     instead:
       'call `securityEventTypeFor()`. Naming the event type in an app is how ' +
@@ -144,7 +158,7 @@ describe('guardrails are not recopied', () => {
   });
 
   it.each(DUPLICATED_DECISIONS)(
-    'no app decides $pattern for itself',
+    'no app decides $name for itself',
     ({ pattern, instead }) => {
       const offenders = appFiles.filter((file) =>
         pattern.test(stripComments(readFileSync(file, 'utf8'))),

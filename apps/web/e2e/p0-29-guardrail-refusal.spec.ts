@@ -48,6 +48,8 @@ test.use({ storageState: AUTH_FILE });
 
 /** Matches the seeded `BLOCK` fixture. Appears nowhere else in this suite. */
 const BLOCKED = 'zzqx-blocked-token';
+/** What `recordGuardrailHit` files the seeded BLOCK rule's events under. */
+const BLOCK_FIXTURE_NAME = 'E2E guardrail BLOCK';
 /** Matches the seeded `LOG` fixture. */
 const LOGGED = 'zzqx-logged-token';
 
@@ -159,14 +161,27 @@ test.describe('a guardrail refuses a turn', () => {
       .poll(() => eventCount('GUARDRAIL_BLOCKED'), { timeout: 15_000 })
       .toBeGreaterThan(before);
 
+    // Scoped to the fixture, not merely to the newest row. `recordGuardrailHit`
+    // writes `metadata.rule` as the key or, for an operator's own rule, its
+    // name — so the seeded BLOCK rule is addressable. Ordering by `createdAt`
+    // alone would let a retry, or any later spec that trips a different rule,
+    // supply the row this assertion then clears.
     const event = await withPrisma(
       (prisma): Promise<{ metadata: unknown } | null> =>
         prisma.securityEvent.findFirst({
-          where: { eventType: 'GUARDRAIL_BLOCKED' },
+          where: {
+            eventType: 'GUARDRAIL_BLOCKED',
+            metadata: { path: ['rule'], equals: BLOCK_FIXTURE_NAME },
+          },
           orderBy: { createdAt: 'desc' },
           select: { metadata: true },
         }),
     );
+
+    expect(
+      event,
+      'no event for the seeded BLOCK fixture — the count above was satisfied by someone else’s row',
+    ).not.toBeNull();
 
     // The matched span is the customer's message, and this table is rendered
     // in plain text in the admin panel for every operator.

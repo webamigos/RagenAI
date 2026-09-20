@@ -658,9 +658,13 @@ nothing, which is this feature's own failure mode. Exposing a cache-clearing
 seam to the test would assert that the seam works, not that the window does.
 What would genuinely cover it is a unit test over the loader with fake timers,
 which exists (`the cache` in `get-org-guardrails-query.test.ts`), plus knowing
-that the number in `GUARDRAIL_CACHE_TTL_MS` is the one the runbook quotes. The
-gap is that nothing ties the documented minute to the constant; if that matters
-later, assert the constant from the docs rather than sleeping in an e2e.
+that the number in `GUARDRAIL_CACHE_TTL_MS` is the one the runbook quotes.
+`tests/architecture/a-documented-window-matches-its-constant.test.ts` now does
+the second half: it reads the minute out of this document and asserts
+`GUARDRAIL_CACHE_TTL_MS` equals it, so the prose is the source and a change to
+either side fails. What remains uncovered is the window itself — that a rule
+disabled mid-minute really is still enforced until the entry expires — and
+that is the part deliberately left to the unit test over the loader.
 
 ## Rollout and rollback
 

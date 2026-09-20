@@ -118,6 +118,33 @@ Three corollaries, each earned above:
    comments, type-only references and unrelated locals all mention a symbol.
    Strip what cannot execute before deciding a call exists.
 
+## Afterword: a fourth, found in review two days later
+
+Kept here rather than in its own file, because it is the same failure and the
+same feature — but it is a distinct shape and it survived the sweep that
+found the three above.
+
+`a-chain-reads-its-guardrails.test.ts` carried a second assertion whose whole
+job was to keep the first one honest: *a fifth chain that takes a
+`contentModerator` is a fifth surface that can refuse — or fail to*. It
+compared a `candidates` array against `known`, the set built from `CHAINS`.
+Every entry in `candidates` was also in `CHAINS`, so `!known.has(file)` was
+false for all of them and the filter could never return anything. Not narrow,
+not stale: **incapable**, from the day it was written, and green.
+
+The shape is a guard whose input is a copy of the thing it is guarding. It
+reads as thorough — two lists, a comparison, a comment explaining the risk —
+and the comment is what sells it. Sabotage catches it instantly (add an
+unregistered chain; nothing fails), which is the point: the rule at the top of
+this file works, and this one was simply not run through it, because a test
+*about* exhaustiveness looks like it has already been thought about.
+
+4. **A guard must discover its input, not be handed a copy of the registry it
+   checks.** If both sides of the comparison are maintained by the same hand
+   at the same time, a new file is missing from both and the check is silent.
+   Walk the source; keep a list only for *exceptions*, each with its reason.
+
 **Applies to**: every test in `tests/architecture/`; any test asserting that
 something is *absent* from a payload, a log or a bundle; any assertion over a
-constant that describes what the build can do.
+constant that describes what the build can do; any guard that compares two
+lists a human maintains.
