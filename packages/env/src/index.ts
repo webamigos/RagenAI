@@ -70,7 +70,7 @@ export {
   type TargetEnv,
 } from './target-env';
 
-export { isOnPremise } from './deployment';
+export { guardrailsDisabled, isOnPremise } from './deployment';
 
 export {
   isPiiMaskingConfigured,

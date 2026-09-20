@@ -54,3 +54,32 @@ export function isOnPremise(env: Env = process.env): boolean {
   const value = env.IS_ON_PREMISE;
   return typeof value === 'string' && TRUTHY.has(value.trim().toLowerCase());
 }
+
+/**
+ * Break-glass: stop evaluating guardrails on this service, now.
+ *
+ * Not a feature flag, and deliberately not the inverse of one. The off switch
+ * for guardrails is an empty rule set — every rule disabled in the panel,
+ * which takes effect inside the 60 s loader cache. There is no
+ * `GUARDRAILS_ENABLED`, because an installation that has written no rules is
+ * already in the state such a variable would give it.
+ *
+ * What this exists for is the case the panel cannot reach in time: a judge
+ * model that starts refusing everything, or a pattern rule matching every
+ * message, failing faster than an operator can sign in and switch it off. Then
+ * the deployment's own environment is the shorter path, and restarting with
+ * `GUARDRAILS_DISABLED=1` puts the service back to the behaviour every
+ * installation has today.
+ *
+ * It lands in B1, before any rule can block a customer's message in B3. A
+ * break-glass added after the thing it protects against is a break-glass that
+ * was missing exactly once.
+ *
+ * Parsed through the same `TRUTHY` set as `isOnPremise` and for the same
+ * reason: somebody reaching for this is reaching for it during an incident,
+ * and `GUARDRAILS_DISABLED=true` must not quietly mean "no".
+ */
+export function guardrailsDisabled(env: Env = process.env): boolean {
+  const value = env.GUARDRAILS_DISABLED;
+  return typeof value === 'string' && TRUTHY.has(value.trim().toLowerCase());
+}

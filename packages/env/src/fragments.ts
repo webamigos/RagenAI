@@ -141,6 +141,15 @@ export const targetEnv = z.object({
  */
 export const deployment = z.object({
   IS_ON_PREMISE: blankAsUndefined(z.string().optional()),
+  /**
+   * Break-glass for guardrails, declared here for the same reason and read the
+   * same way: `guardrailsDisabled()` in `./deployment` is the one parse.
+   *
+   * Optional, and it stays optional — a fresh install must not have to name it.
+   * The off switch for guardrails is an empty rule set; this is the shorter
+   * path when a rule is failing faster than an operator can reach the panel.
+   */
+  GUARDRAILS_DISABLED: blankAsUndefined(z.string().optional()),
 });
 
 /**
