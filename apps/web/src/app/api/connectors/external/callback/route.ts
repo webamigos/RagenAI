@@ -7,6 +7,7 @@ import {
   getCurrentUserId,
 } from '@/app/lib/utils/auth-helpers';
 import { resolveConnectorDefinitionQuery } from '@/features/connectors/services/queries/get-connector-definitions-query';
+import { getConnectorOAuthCredentialsQuery } from '@/features/connectors/services/queries/get-connector-credentials-query';
 import { blockedAddressReason } from '@/features/connectors/utils/refuse-blocked-address';
 import { RagenAuthOAuthClientProvider } from '@/libs/ragen-vault';
 import { logger } from '@/app/lib/utils/logger';
@@ -115,13 +116,15 @@ export async function GET(request: NextRequest) {
       : request.nextUrl.origin;
     const callbackUrl = `${appOrigin}/api/connectors/external/callback?provider=${provider}`;
 
+    const credentials = await getConnectorOAuthCredentialsQuery(providerDef);
+
     const oauthProvider = new RagenAuthOAuthClientProvider({
       orgId,
       userId,
       provider,
       callbackUrl,
-      fixedClientId: providerDef.oauthClientId,
-      fixedClientSecret: providerDef.oauthClientSecret,
+      fixedClientId: credentials.clientId,
+      fixedClientSecret: credentials.clientSecret,
     });
 
     // Slack uses a non-standard token response (nested under authed_user),

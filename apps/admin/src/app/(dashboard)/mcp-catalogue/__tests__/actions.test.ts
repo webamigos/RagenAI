@@ -80,6 +80,8 @@ function input(over: Partial<CatalogueEntryInput> = {}): CatalogueEntryInput {
     lucideIcon: 'notebook',
     systemPrompt: '',
     allowsPrivateAddress: false,
+    scopes: [],
+    useUserScope: false,
     ...over,
   };
 }
@@ -293,5 +295,42 @@ describe('testing a connection', () => {
     expect(probeMcpServer).toHaveBeenCalledWith('http://10.0.0.5/mcp', {
       allowPrivate: true,
     });
+  });
+});
+
+describe('an OAuth entry', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    findFirst.mockResolvedValue(null);
+    create.mockResolvedValue({ id: 1, slug: 'notion', publicId: 'pub-1' });
+  });
+
+  it('stores its scopes and its user-scope quirk on the row', async () => {
+    await createCatalogueEntryAction(
+      input({
+        authType: 'EXTERNAL_MCP',
+        scopes: ['search:read.public', 'channels:history'],
+        useUserScope: true,
+      }),
+    );
+
+    expect(create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          scopes: ['search:read.public', 'channels:history'],
+          useUserScope: true,
+        }),
+      }),
+    );
+  });
+
+  it('never writes a client secret to a column', async () => {
+    await createCatalogueEntryAction(input({ authType: 'EXTERNAL_MCP' }));
+
+    // ADR-32: the row carries `oauthCredentialsStored` and nothing else, so a
+    // secret cannot reach a `SELECT *` or the admin activity feed.
+    const written = create.mock.calls[0][0].data as Record<string, unknown>;
+    expect(Object.keys(written)).not.toContain('oauthClientSecret');
+    expect(Object.keys(written)).not.toContain('oauthClientId');
   });
 });

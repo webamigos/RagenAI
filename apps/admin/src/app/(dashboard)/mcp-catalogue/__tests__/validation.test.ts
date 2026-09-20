@@ -18,6 +18,8 @@ function input(over: Partial<CatalogueEntryInput> = {}): CatalogueEntryInput {
     lucideIcon: 'notebook',
     systemPrompt: '',
     allowsPrivateAddress: false,
+    scopes: [],
+    useUserScope: false,
     ...over,
   };
 }
@@ -27,15 +29,30 @@ describe('what an operator may save', () => {
     expect(validateEntry(input())).toBeNull();
   });
 
-  it('offers only the shapes a row can carry on its own', () => {
-    // `EXTERNAL_MCP` needs client credentials in the vault, which is Phase D.
-    expect(CREATABLE_AUTH_TYPES).toEqual(['SERVER_SIDE', 'API_KEY_BEARER']);
-    expect(validateEntry(input({ authType: 'EXTERNAL_MCP' }))?.field).toBe(
-      'authType',
-    );
+  it('offers the three shapes a row can describe, and no more', () => {
+    expect(CREATABLE_AUTH_TYPES).toEqual([
+      'SERVER_SIDE',
+      'API_KEY_BEARER',
+      'EXTERNAL_MCP',
+    ]);
+    // The shop-URL shape assembles its address from what a *user* types at
+    // connect time, which is code rather than a column.
     expect(
       validateEntry(input({ authType: 'API_KEY_CUSTOM_HEADER' }))?.field,
     ).toBe('authType');
+  });
+
+  it('accepts scopes for an OAuth entry and refuses them for the others', () => {
+    expect(
+      validateEntry(
+        input({ authType: 'EXTERNAL_MCP', scopes: ['search:read'] }),
+      ),
+    ).toBeNull();
+    expect(
+      validateEntry(
+        input({ authType: 'API_KEY_BEARER', scopes: ['search:read'] }),
+      )?.field,
+    ).toBe('scopes');
   });
 
   it('enforces the slug format on creation only', () => {

@@ -170,6 +170,32 @@ export function connectorSlug(row: { providerSlug: string }): string {
   return row.providerSlug;
 }
 
+/**
+ * Where a catalogue entry's own OAuth client credentials live in
+ * ragen-token-vault.
+ *
+ * They are never columns (ADR-32), so the row keeps `oauthCredentialsStored`
+ * and nothing else — which also keeps a client secret out of every `SELECT *`
+ * and out of the admin activity feed, whose `stripSensitiveFields` would
+ * otherwise be the only thing between it and the log.
+ *
+ * The vault keys on `(customerId, provider)`. A user's token uses
+ * `{orgId}:{userId}:{slug}`; these belong to the installation rather than to
+ * anyone in it, so they take a customer id no organization can collide with —
+ * an organization id is a Better Auth id, never this string.
+ */
+export const CATALOGUE_CREDENTIALS_CUSTOMER_ID = 'ragen-catalogue';
+
+export function catalogueCredentialsAddress(slug: string): {
+  customerId: string;
+  provider: string;
+} {
+  return {
+    customerId: CATALOGUE_CREDENTIALS_CUSTOMER_ID,
+    provider: catalogCustomerSlug(slug),
+  };
+}
+
 export type CatalogResolution<P extends CatalogBehaviourPack> =
   | { status: 'unknown'; slug: string }
   | {

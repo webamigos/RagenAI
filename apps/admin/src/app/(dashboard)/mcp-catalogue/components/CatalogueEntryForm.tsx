@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 
 import {
   createCatalogueEntryAction,
+  storeCatalogueOAuthCredentialsAction,
   testCatalogueConnectionAction,
   updateCatalogueEntryAction,
   type ConnectionTestResult,
@@ -15,6 +16,7 @@ const AUTH_TYPE_LABELS: Record<string, string> = {
   SERVER_SIDE:
     'Server-side — the MCP server holds the credential, users just switch it on',
   API_KEY_BEARER: 'API key — each user pastes their own key',
+  EXTERNAL_MCP: 'OAuth — each user authorizes with the service',
 };
 
 const EMPTY: CatalogueEntryInput = {
@@ -27,6 +29,8 @@ const EMPTY: CatalogueEntryInput = {
   lucideIcon: 'plug',
   systemPrompt: '',
   allowsPrivateAddress: false,
+  scopes: [],
+  useUserScope: false,
 };
 
 export type CatalogueEntryFormProps = {
@@ -197,6 +201,58 @@ export function CatalogueEntryForm({ entry, onDone }: CatalogueEntryFormProps) {
         />
       </Field>
 
+      {values.authType === 'EXTERNAL_MCP' ? (
+        <div className="space-y-4 rounded-lg border border-border p-4">
+          <Field
+            label="Scopes"
+            hint="One per line. Sent with the authorization request."
+            error={fieldError('scopes')}
+          >
+            <textarea
+              className="min-h-20 w-full rounded-md border border-border bg-background px-3 py-2 font-mono text-xs"
+              value={values.scopes.join('\n')}
+              onChange={(event) =>
+                set(
+                  'scopes',
+                  event.target.value
+                    .split('\n')
+                    .map((scope) => scope.trim())
+                    .filter((scope) => scope.length > 0),
+                )
+              }
+            />
+          </Field>
+
+          <label className="flex items-start gap-3 text-sm">
+            <input
+              type="checkbox"
+              className="mt-1"
+              checked={values.useUserScope}
+              onChange={(event) => set('useUserScope', event.target.checked)}
+            />
+            <span>
+              <span className="font-medium">
+                Send scopes as <code>user_scope</code>
+              </span>
+              <span className="mt-1 block text-muted-foreground">
+                Slack requires this. Nothing else here does — leave it off
+                unless the service documents it.
+              </span>
+            </span>
+          </label>
+
+          {entry ? (
+            <OAuthCredentials publicId={entry.publicId} />
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              Save the entry first, then add its OAuth client id and secret —
+              they go to ragen-token-vault against the saved row, never to the
+              database.
+            </p>
+          )}
+        </div>
+      ) : null}
+
       <label className="flex items-start gap-3 rounded-lg border border-border p-3 text-sm">
         <input
           type="checkbox"
@@ -274,6 +330,73 @@ export function CatalogueEntryForm({ entry, onDone }: CatalogueEntryFormProps) {
         ) : null}
       </div>
     </form>
+  );
+}
+
+/**
+ * The second step for an OAuth entry: its client id and secret.
+ *
+ * They are written to ragen-token-vault and never to the database (ADR-32),
+ * which is why this is a step against a saved row rather than two more fields
+ * on the create form — there is nothing to key them against until the row
+ * exists.
+ *
+ * The form never renders them back. A secret this panel could display is a
+ * secret in a screenshot; what it shows is whether one is stored.
+ */
+function OAuthCredentials({ publicId }: { publicId: string }) {
+  const [clientId, setClientId] = useState('');
+  const [clientSecret, setClientSecret] = useState('');
+  const [pending, startTransition] = useTransition();
+
+  const store = () => {
+    startTransition(async () => {
+      const result = await storeCatalogueOAuthCredentialsAction(
+        publicId,
+        clientId,
+        clientSecret,
+      );
+      if (result.ok) {
+        toast.success('Credentials stored in the vault.');
+        setClientId('');
+        setClientSecret('');
+      } else {
+        toast.error(result.message ?? 'The credentials were not stored.');
+      }
+    });
+  };
+
+  return (
+    <div className="space-y-2">
+      <div className="text-sm font-medium">OAuth client credentials</div>
+      <div className="flex flex-wrap gap-2">
+        <input
+          className="min-w-48 flex-1 rounded-md border border-border bg-background px-3 py-2 text-sm"
+          value={clientId}
+          placeholder="Client id"
+          onChange={(event) => setClientId(event.target.value)}
+        />
+        <input
+          className="min-w-48 flex-1 rounded-md border border-border bg-background px-3 py-2 text-sm"
+          value={clientSecret}
+          type="password"
+          placeholder="Client secret"
+          onChange={(event) => setClientSecret(event.target.value)}
+        />
+        <button
+          type="button"
+          onClick={store}
+          disabled={pending || !clientId.trim() || !clientSecret.trim()}
+          className="rounded-md border border-border px-4 py-2 text-sm disabled:opacity-60"
+        >
+          {pending ? 'Storing…' : 'Store in the vault'}
+        </button>
+      </div>
+      <p className="text-xs text-muted-foreground">
+        They go to ragen-token-vault, never to the database, and this form
+        cannot read them back.
+      </p>
+    </div>
   );
 }
 

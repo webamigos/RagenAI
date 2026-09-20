@@ -153,6 +153,7 @@ export const ADMIN_ACTIONS = {
    * typed, and this entry is the only record it leaves.
    */
   catalogueConnectionTested: 'admin.mcp_catalogue.connection_tested',
+  catalogueCredentialsStored: 'admin.mcp_catalogue.credentials_stored',
   registrationToggled: 'admin.registration.toggled',
 } as const;
 

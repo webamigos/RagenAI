@@ -38,6 +38,8 @@ describe('the public entry point', () => {
     ['isConnectable', 'function'],
     ['catalogSystemPrompt', 'function'],
     ['connectorSlug', 'function'],
+    ['catalogueCredentialsAddress', 'function'],
+    ['CATALOGUE_CREDENTIALS_CUSTOMER_ID', 'string'],
     ['allowedCatalogEntries', 'function'],
     ['authTypeRequiresBehaviourPack', 'function'],
     ['TENANT_SCOPED_MODELS', 'object'],

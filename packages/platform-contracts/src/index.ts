@@ -72,6 +72,7 @@ export type {
 } from './connectors/connectors';
 
 export {
+  CATALOGUE_CREDENTIALS_CUSTOMER_ID,
   CATALOG_SLUG_PATTERN,
   LEGACY_CATALOG_SLUGS,
   MCP_AUTH_TYPES,
@@ -81,6 +82,7 @@ export {
   catalogCustomerSlug,
   catalogSlugError,
   catalogSystemPrompt,
+  catalogueCredentialsAddress,
   connectorSlug,
   isCatalogSlug,
   isConnectable,

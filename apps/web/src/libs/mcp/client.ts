@@ -4,6 +4,7 @@ import {
   isBlockedAddress,
 } from '@ragenai/connector-guard';
 import { logger } from '@/app/lib/utils/logger';
+import { getConnectorOAuthCredentialsQuery } from '@/features/connectors/services/queries/get-connector-credentials-query';
 import type { ProviderDefinition } from '@/features/connectors/contracts/connector.types';
 import {
   RagenAuthOAuthClientProvider,
@@ -462,13 +463,19 @@ export async function createMcpToolsFromConnectors(
           [providerDef.headerName]: tokenData.accessToken,
         });
       } else if (providerDef?.authType === 'external_mcp') {
+        // Environment for a built-in, ragen-token-vault for an entry an
+        // operator created. A refresh needs the client credentials, so this
+        // runs per connector rather than at authorization time only.
+        const credentials =
+          await getConnectorOAuthCredentialsQuery(providerDef);
+
         const authProvider = new RagenAuthOAuthClientProvider({
           orgId: connector.organizationId,
           userId: connector.userId,
           provider: connector.provider,
           callbackUrl: '', // No redirect needed for runtime token injection
-          fixedClientId: providerDef.oauthClientId,
-          fixedClientSecret: providerDef.oauthClientSecret,
+          fixedClientId: credentials.clientId,
+          fixedClientSecret: credentials.clientSecret,
         });
         client = await connect(resolvedUrl, providerDef, {}, authProvider);
       } else {

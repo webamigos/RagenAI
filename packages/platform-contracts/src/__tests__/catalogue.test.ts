@@ -11,6 +11,7 @@ import {
   catalogCustomerSlug,
   catalogSlugError,
   catalogSystemPrompt,
+  catalogueCredentialsAddress,
   connectorSlug,
   isCatalogSlug,
   isConnectable,
@@ -278,5 +279,20 @@ describe('the slug on a connector row', () => {
     expect(connectorSlug({ provider: null, providerSlug: 'notion' })).toBe(
       'notion',
     );
+  });
+});
+
+describe("a catalogue entry's own OAuth credentials", () => {
+  it('are addressed by a customer id no organization can hold', () => {
+    // An organization id is a Better Auth id; this is a fixed string, so the
+    // installation's credentials cannot collide with anybody's tokens.
+    expect(catalogueCredentialsAddress('notion')).toEqual({
+      customerId: 'ragen-catalogue',
+      provider: 'notion',
+    });
+  });
+
+  it('lowercase the slug, as every vault path does', () => {
+    expect(catalogueCredentialsAddress('SLACK').provider).toBe('slack');
   });
 });

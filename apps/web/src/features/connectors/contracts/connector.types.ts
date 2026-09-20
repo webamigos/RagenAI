@@ -72,6 +72,13 @@ export type ProviderDefinition = {
   scopes?: string[];
   oauthClientId?: string;
   oauthClientSecret?: string;
+  /**
+   * True when this entry's OAuth client credentials are in ragen-token-vault
+   * rather than in the environment — an entry an operator created. The values
+   * are never columns (ADR-32), so this boolean is what a caller has before it
+   * asks the vault for them.
+   */
+  oauthCredentialsStored?: boolean;
   /** If true, rewrites `scope` → `user_scope` in the OAuth authorization URL (required by Slack). */
   useUserScope?: boolean;
   /**

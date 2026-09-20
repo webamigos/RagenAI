@@ -543,13 +543,16 @@ step — not B4.
 
 ### Phase D — OAuth entries
 
-- [ ] **D1.** Catalogue-scoped credential storage in ragen-token-vault;
+- [x] **D1.** Catalogue-scoped credential storage in ragen-token-vault;
       `oauthCredentialsStored` written only after the vault confirms.
-- [ ] **D2.** `connect/route.ts` and the API counterpart read credentials from
+- [x] **D2.** `connect/route.ts` and the API counterpart read credentials from
       the vault for row-defined entries, env for built-ins.
-- [ ] **D3.** `EXTERNAL_MCP` offered in the entry form, with scopes and
-      `useUserScope`. End-to-end proof: add Notion from the panel and connect
-      it as a user, on demo, before this phase is called done.
+- [~] **D3.** `EXTERNAL_MCP` offered in the entry form, with scopes and
+      `useUserScope`. **Code is in; the proof is not.** The end-to-end run —
+      add Notion from the panel and connect it as a user, on demo — needs a
+      running vault and a real Notion OAuth app, and this phase is not done
+      until somebody has done it. See "Manual, and named because nothing else
+      covers it" under Testing.
 
 ### Phase E — the seams that outlive it
 

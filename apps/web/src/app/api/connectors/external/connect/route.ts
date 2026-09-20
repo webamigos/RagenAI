@@ -5,6 +5,7 @@ import {
   getCurrentUserId,
 } from '@/app/lib/utils/auth-helpers';
 import { resolveConnectorDefinitionQuery } from '@/features/connectors/services/queries/get-connector-definitions-query';
+import { getConnectorOAuthCredentialsQuery } from '@/features/connectors/services/queries/get-connector-credentials-query';
 import { blockedAddressReason } from '@/features/connectors/utils/refuse-blocked-address';
 import { RagenAuthOAuthClientProvider } from '@/libs/ragen-vault';
 import { logger } from '@/app/lib/utils/logger';
@@ -68,13 +69,17 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    // Environment for a built-in, ragen-token-vault for an entry an operator
+    // created. One `if`, in one place — see the query.
+    const credentials = await getConnectorOAuthCredentialsQuery(providerDef);
+
     const oauthProvider = new RagenAuthOAuthClientProvider({
       orgId,
       userId,
       provider,
       callbackUrl,
-      fixedClientId: providerDef.oauthClientId,
-      fixedClientSecret: providerDef.oauthClientSecret,
+      fixedClientId: credentials.clientId,
+      fixedClientSecret: credentials.clientSecret,
       useUserScope: providerDef.useUserScope,
     });
     const scope = providerDef.scopes?.length

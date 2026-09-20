@@ -1,6 +1,7 @@
 'use server';
 
 import {
+  catalogueCredentialsAddress,
   isMcpAuthType,
   type McpAuthType,
   type McpCatalogEntryDto,
@@ -10,6 +11,7 @@ import { revalidatePath } from 'next/cache';
 import { ADMIN_ACTIONS, recordAdminAction } from '@/lib/audit';
 import { requireAdmin } from '@/lib/auth-guard';
 import { prisma } from '@/lib/db';
+import { getVaultClient, isVaultConfigured } from '@/lib/vault';
 
 import { probeMcpServer } from '@ragenai/connector-guard';
 
@@ -160,6 +162,8 @@ export async function createCatalogueEntryAction(
       authType: input.authType as McpAuthType,
       systemPrompt: input.systemPrompt.trim() || null,
       allowsPrivateAddress: input.allowsPrivateAddress,
+      scopes: input.scopes,
+      useUserScope: input.useUserScope,
       isBuiltIn: false,
       enabled: true,
       createdBy: admin.id,
@@ -235,6 +239,8 @@ export async function updateCatalogueEntryAction(
       authType: input.authType as McpAuthType,
       systemPrompt: input.systemPrompt.trim() || null,
       allowsPrivateAddress: input.allowsPrivateAddress,
+      scopes: input.scopes,
+      useUserScope: input.useUserScope,
     },
   });
 
@@ -440,4 +446,92 @@ export async function testCatalogueConnectionAction(
   });
 
   return result;
+}
+
+/**
+ * Store an entry's OAuth client id and secret.
+ *
+ * **They go to ragen-token-vault, never to the database** (ADR-32). The row
+ * keeps one boolean, which also keeps a client secret out of every `SELECT *`
+ * and out of the admin activity feed — whose `stripSensitiveFields` would
+ * otherwise be the only thing standing between it and the log.
+ *
+ * Nothing half-succeeds: the boolean is written only after the vault confirms,
+ * so an entry that says its credentials are stored is an entry whose
+ * credentials are stored.
+ */
+export async function storeCatalogueOAuthCredentialsAction(
+  publicId: string,
+  clientId: string,
+  clientSecret: string,
+): Promise<CatalogueWriteResult> {
+  const admin = await requireAdmin();
+
+  if (clientId.trim().length === 0 || clientSecret.trim().length === 0) {
+    return {
+      ok: false,
+      message: 'Both the client id and the client secret are required.',
+    };
+  }
+
+  if (!isVaultConfigured()) {
+    return {
+      ok: false,
+      message:
+        'Storing credentials needs RAGEN_TOKEN_VAULT_URL and RAGEN_TOKEN_VAULT_SERVICE_SECRET on the admin app — a client secret is never written to the database.',
+    };
+  }
+
+  const entry = await prisma.mcpCatalogEntry.findUnique({
+    where: { publicId },
+    select: { id: true, slug: true, isBuiltIn: true },
+  });
+  if (!entry) {
+    return { ok: false, message: 'That entry is no longer in the catalogue.' };
+  }
+  if (entry.isBuiltIn) {
+    return {
+      ok: false,
+      message:
+        'A built-in reads its OAuth credentials from the environment it was deployed with.',
+    };
+  }
+
+  const address = catalogueCredentialsAddress(entry.slug);
+  try {
+    await getVaultClient().storeToken(address.customerId, address.provider, {
+      // The vault's shape is a token; these rows carry only client
+      // information, which is how `saveClientInformation` already stores a
+      // dynamically registered client.
+      accessToken: '',
+      clientId: clientId.trim(),
+      clientSecret: clientSecret.trim(),
+      tokenType: 'ClientCredentials',
+    });
+  } catch (error) {
+    return {
+      ok: false,
+      message: `The vault did not accept the credentials, so nothing was saved: ${
+        error instanceof Error ? error.message : String(error)
+      }. Retrying is safe.`,
+    };
+  }
+
+  await prisma.mcpCatalogEntry.update({
+    where: { id: entry.id },
+    data: { oauthCredentialsStored: true },
+  });
+
+  await recordAdminAction({
+    admin,
+    action: ADMIN_ACTIONS.catalogueCredentialsStored,
+    entityType: 'mcp_catalogue_entry',
+    entityId: publicId,
+    // The slug and the fact, never the values: this feed is exactly what
+    // ADR-32 keeps a secret out of.
+    after: { slug: entry.slug, oauthCredentialsStored: true },
+  });
+
+  revalidatePath('/mcp-catalogue');
+  return { ok: true };
 }

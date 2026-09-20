@@ -22,18 +22,27 @@ export type CatalogueEntryInput = {
   lucideIcon: string;
   systemPrompt: string;
   allowsPrivateAddress: boolean;
+  /** `EXTERNAL_MCP` only: what the authorization request asks for. */
+  scopes: string[];
+  /**
+   * `EXTERNAL_MCP` only: rewrite `scope` to `user_scope` in the authorization
+   * URL. Slack requires it; nothing else here does.
+   */
+  useUserScope: boolean;
 };
 
 /**
- * The shapes this panel can create. `EXTERNAL_MCP` needs OAuth client
- * credentials in the vault (Phase D) and the other three are seeded only:
+ * The shapes this panel can create. The other three are seeded only:
  * `API_KEY_CUSTOM_HEADER` assembles its URL from a shop address the *user*
  * types, which is code, and `OAUTH`/`API_KEY` predate the manifest shapes
  * that replaced them.
+ *
+ * `EXTERNAL_MCP` joined the list in Phase D, with the vault-held client
+ * credentials it needs — an entry saved without them is saved and cannot be
+ * connected, which the form says rather than refusing the save: the
+ * credentials are a second step against a row that must exist first.
  */
-export const CREATABLE_AUTH_TYPES = OPERATOR_CREATABLE_AUTH_TYPES.filter(
-  (authType) => authType !== 'EXTERNAL_MCP',
-);
+export const CREATABLE_AUTH_TYPES = OPERATOR_CREATABLE_AUTH_TYPES;
 
 export type ValidationFailure = {
   field: keyof CatalogueEntryInput;
@@ -109,6 +118,13 @@ export function validateEntry(
   );
   if (urlProblem) {
     return { field: 'mcpServerUrl', message: urlProblem };
+  }
+
+  if (input.authType !== 'EXTERNAL_MCP' && input.scopes.length > 0) {
+    return {
+      field: 'scopes',
+      message: 'Scopes are part of an OAuth authorization request.',
+    };
   }
 
   // A brand asset is optional — the gallery falls back to the lucide icon —

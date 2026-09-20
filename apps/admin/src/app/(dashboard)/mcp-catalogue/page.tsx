@@ -82,6 +82,8 @@ function toFormValues(view: CatalogueEntryView): CatalogueEntryInput {
     lucideIcon: view.entry.lucideIcon ?? 'plug',
     systemPrompt: view.entry.systemPrompt ?? '',
     allowsPrivateAddress: view.entry.allowsPrivateAddress,
+    scopes: view.entry.scopes,
+    useUserScope: view.entry.useUserScope,
   };
 }
 

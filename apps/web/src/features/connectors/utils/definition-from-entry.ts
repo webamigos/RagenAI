@@ -54,6 +54,7 @@ export function definitionFromEntry(
     // ragen-token-vault, which Phase D wires in.
     oauthClientId: pack?.oauthClientId,
     oauthClientSecret: pack?.oauthClientSecret,
+    oauthCredentialsStored: entry.oauthCredentialsStored,
     useUserScope: entry.useUserScope || pack?.useUserScope,
     headerName: pack?.headerName,
     mcpServerUrlPath: pack?.mcpServerUrlPath,
