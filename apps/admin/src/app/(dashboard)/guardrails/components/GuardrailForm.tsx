@@ -5,6 +5,7 @@ import {
   DEFAULT_POLICY_THRESHOLD,
   GUARDRAIL_SEVERITIES,
   AUTHORABLE_COMBINATIONS,
+  isScoredRule,
   POLICY_CAP_NOTICE,
   type GuardrailAction,
   type GuardrailCombination,
@@ -129,6 +130,17 @@ export function GuardrailForm({
   const actions = ACTIONS_BY_KIND[kind] ?? [];
 
   /**
+   * Whether this rule's verdict is a score, and so whether a threshold means
+   * anything.
+   *
+   * Asked of the kind *and* the key, never of the kind alone.
+   * `content-moderation` is a `BUILT_IN` whose provider answers with a flag —
+   * a threshold on it would be a field that changes nothing, sitting next to a
+   * number an operator would reasonably believe they had tuned.
+   */
+  const scored = isScoredRule({ kind, key: rule?.key ?? null });
+
+  /**
    * The typed threshold as a number, or `null` for "use the default".
    *
    * `null` rather than `undefined` for an unparseable string on purpose: it is
@@ -151,7 +163,11 @@ export function GuardrailForm({
         pattern: kind === 'PATTERN' ? pattern : undefined,
         patternIsRegex: kind === 'PATTERN' ? patternIsRegex : undefined,
         policy: kind === 'LLM_POLICY' ? policy : undefined,
-        threshold: kind === 'LLM_POLICY' ? parsedThreshold : undefined,
+        // Sent for a scored built-in too, whose prose is fixed in code but
+        // whose sensitivity is the operator's. Before C4 the field did not
+        // exist and the action had to leave the column untouched; now it is
+        // theirs to set.
+        threshold: scored ? parsedThreshold : undefined,
       };
 
       try {
@@ -316,39 +332,48 @@ export function GuardrailForm({
         ) : null}
 
         {kind === 'LLM_POLICY' ? (
+          <Field
+            htmlFor="guardrail-policy"
+            label="Policy"
+            hint="Written for a judge model, not for a person: it is asked how strongly a message violates this, and answers with a score. The message it reads has already had personal data replaced with placeholders such as <PERSON_1>, so a policy about phone numbers will be judging <PHONE_NUMBER_1> rather than a number."
+          >
+            <textarea
+              id="guardrail-policy"
+              rows={5}
+              value={policy}
+              onChange={(e) => setPolicy(e.target.value)}
+              className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
+            />
+          </Field>
+        ) : null}
+
+        {/* Offered for every scored rule, which is a policy *and* a built-in
+            whose detector is a judge. A built-in's question is fixed in code
+            and its sensitivity is not: before C4 there was no field, so
+            `jailbreak-detection` ran at whatever the migration seeded and the
+            resolver read a column nothing could write. */}
+        {scored ? (
+          <Field
+            htmlFor="guardrail-threshold"
+            label="Score at which it fires"
+            hint={thresholdHint(isBuiltIn)}
+          >
+            <input
+              id="guardrail-threshold"
+              type="number"
+              min={0}
+              max={1}
+              step={0.05}
+              value={threshold}
+              placeholder={String(DEFAULT_POLICY_THRESHOLD)}
+              onChange={(e) => setThreshold(e.target.value)}
+              className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
+            />
+          </Field>
+        ) : null}
+
+        {kind === 'LLM_POLICY' ? (
           <>
-            <Field
-              htmlFor="guardrail-policy"
-              label="Policy"
-              hint="Written for a judge model, not for a person: it is asked how strongly a message violates this, and answers with a score. The message it reads has already had personal data replaced with placeholders such as <PERSON_1>, so a policy about phone numbers will be judging <PHONE_NUMBER_1> rather than a number."
-            >
-              <textarea
-                id="guardrail-policy"
-                rows={5}
-                value={policy}
-                onChange={(e) => setPolicy(e.target.value)}
-                className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
-              />
-            </Field>
-
-            <Field
-              htmlFor="guardrail-threshold"
-              label="Score at which it fires"
-              hint={`Between 0 and 1. Leave it empty for ${DEFAULT_POLICY_THRESHOLD}. A lower number fires more often, on weaker evidence.`}
-            >
-              <input
-                id="guardrail-threshold"
-                type="number"
-                min={0}
-                max={1}
-                step={0.05}
-                value={threshold}
-                placeholder={String(DEFAULT_POLICY_THRESHOLD)}
-                onChange={(e) => setThreshold(e.target.value)}
-                className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
-              />
-            </Field>
-
             {/* Where the operator meets the cap, rather than in a runbook. A
                 platform policy is the case they will get wrong: it is written
                 once here and then spends against every organization. */}
@@ -399,6 +424,24 @@ function submitLabel({
     return 'Checking…';
   }
   return isEdit ? 'Save' : 'Create';
+}
+
+/**
+ * What the threshold means, which differs by what the operator can change.
+ *
+ * For a policy they wrote the question and the sensitivity. For a built-in the
+ * question is fixed in code and only the sensitivity is theirs — saying so is
+ * the difference between a number somebody tunes and a number somebody avoids
+ * touching because they cannot tell what else it affects.
+ */
+function thresholdHint(isBuiltIn: boolean): string {
+  const shared =
+    `Between 0 and 1. Leave it empty for ${DEFAULT_POLICY_THRESHOLD}. ` +
+    'A lower number fires more often, on weaker evidence.';
+
+  return isBuiltIn
+    ? `${shared} This detector's question is fixed; how sure it has to be is yours.`
+    : shared;
 }
 
 function Shell({

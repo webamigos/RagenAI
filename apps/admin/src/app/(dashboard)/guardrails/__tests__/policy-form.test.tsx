@@ -99,6 +99,58 @@ describe('the policy editor', () => {
   });
 });
 
+describe('a scored built-in', () => {
+  const jailbreak: GuardrailRow = {
+    ...base,
+    kind: 'BUILT_IN',
+    key: 'jailbreak-detection',
+    name: 'Jailbreak detection',
+    threshold: 0.6,
+  };
+
+  const moderation: GuardrailRow = {
+    ...base,
+    kind: 'BUILT_IN',
+    key: 'content-moderation',
+    name: 'Content moderation',
+  };
+
+  /**
+   * The column the resolver has always read and nothing could write. Before
+   * C4 `jailbreak-detection` ran at whatever sensitivity the migration seeded,
+   * with no way to change it short of SQL.
+   */
+  it('offers the threshold its detector actually fires at', () => {
+    const markup = render(jailbreak);
+
+    expect(markup).toContain('guardrail-threshold');
+    expect(markup).toContain('value="0.6"');
+  });
+
+  it('says the question is fixed and only the sensitivity is theirs', () => {
+    // Otherwise it is a number an operator avoids touching, because they
+    // cannot tell what else it changes.
+    expect(render(jailbreak)).toContain('fixed');
+  });
+
+  /**
+   * Per **key**, not per kind — the distinction `SCORED_BUILT_IN_KEYS` exists
+   * for. `content-moderation` is a `BUILT_IN` whose provider answers with a
+   * flag, so a threshold field on it would be a number that changes nothing.
+   */
+  it('is not offered for a built-in whose verdict is a flag', () => {
+    expect(render(moderation)).not.toContain('guardrail-threshold');
+  });
+
+  it.each([
+    ['the policy field', 'guardrail-policy'],
+    ['the trial box', 'Test this policy'],
+    ['the cap notice', 'counts against that allowance'],
+  ])('does not show %s — its question is code, not prose', (_l, fragment) => {
+    expect(render(jailbreak)).not.toContain(fragment);
+  });
+});
+
 describe('a pattern rule', () => {
   /**
    * Both directions, so a form that rendered every field for every kind would
@@ -109,6 +161,7 @@ describe('a pattern rule', () => {
     ['the policy field', 'guardrail-policy'],
     ['the trial box', 'Test this policy'],
     ['the cap notice', 'counts against that allowance'],
+    ['the threshold field', 'guardrail-threshold'],
   ])('does not show %s', (_label, fragment) => {
     expect(render(patternRule)).not.toContain(fragment);
   });

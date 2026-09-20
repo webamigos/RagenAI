@@ -596,3 +596,14 @@ archive is the blog.
   rules at once on a stage, and the form says so where you meet it — a policy
   rule is a model call per message, for ever, so the limit is about the bill
   rather than about speed.
+
+- **The jailbreak detector's sensitivity is now yours to set.** It is judged by
+  a model and scored 0 to 1, and the score at which it fires has always been
+  stored on the rule and read on every turn — but no page could change it, so
+  it ran at whatever the install shipped with. The rule form now offers it, the
+  same field a policy rule has. Lower it to catch more and accept more false
+  positives; raise it to fire only on the obvious. The question the detector
+  asks stays fixed in code — only how sure it has to be is yours, and the form
+  says so. Content moderation has no such field on purpose: it asks a
+  provider's endpoint that answers yes or no rather than with a score, so a
+  threshold there would be a number nothing reads.
