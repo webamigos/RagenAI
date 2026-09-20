@@ -72,6 +72,31 @@ export type {
 } from './connectors/connectors';
 
 export {
+  CATALOG_SLUG_PATTERN,
+  LEGACY_CATALOG_SLUGS,
+  MCP_AUTH_TYPES,
+  OPERATOR_CREATABLE_AUTH_TYPES,
+  allowedCatalogEntries,
+  authTypeRequiresBehaviourPack,
+  catalogCustomerSlug,
+  catalogSlugError,
+  catalogSystemPrompt,
+  isCatalogSlug,
+  isConnectable,
+  isLegacyCatalogSlug,
+  isMcpAuthType,
+  resolveCatalogEntry,
+  slugsCollide,
+} from './connectors/catalogue';
+export type {
+  CatalogBehaviourPack,
+  CatalogResolution,
+  McpAuthType,
+  McpCatalogEntryDto,
+  SystemPromptContext,
+} from './connectors/catalogue';
+
+export {
   APP_ADMIN_ROLE,
   APP_USER_ROLE,
   NO_ACCESS_PRINCIPAL,
