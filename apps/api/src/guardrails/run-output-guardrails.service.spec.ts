@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import type { ResolvedGuardrail } from '@ragenai/guardrails';
+import type { OutputGuard, ResolvedGuardrail } from '@ragenai/guardrails';
 
 import { RunOutputGuardrailsService } from './run-output-guardrails.service.js';
 
@@ -47,14 +47,32 @@ const rule = (over: Partial<ResolvedGuardrail> = {}): ResolvedGuardrail => ({
 const guardrails = (output: ResolvedGuardrail[]) =>
   ({ input: [], output, degraded: false, dropped: [] }) as never;
 
+/** The window of a guard the test knows is windowed. */
+const windowOf = (guard: OutputGuard | undefined) => {
+  if (guard?.mode !== 'window') {
+    throw new Error('expected a windowed guard, got ' + String(guard?.mode));
+  }
+  return guard.stage;
+};
+
 describe('RunOutputGuardrailsService', () => {
+  let judge: ReturnType<typeof vi.fn>;
   let hits: { record: ReturnType<typeof vi.fn> };
   let service: RunOutputGuardrailsService;
   let warn: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
+    judge = vi.fn().mockResolvedValue({ outcome: 'scored', score: 0 });
     hits = { record: vi.fn() };
-    service = new RunOutputGuardrailsService(hits as never);
+    // A judge that is never asked: every rule in this suite is a `PATTERN`,
+    // so the binding builds the window. The buffered mode has its own tests
+    // below, where the judge is the subject.
+    service = new RunOutputGuardrailsService(
+      hits as never,
+      {
+        forTurn: () => judge,
+      } as never,
+    );
     warn = vi.fn();
     (service as unknown as { logger: { warn: unknown } }).logger = {
       warn,
@@ -63,7 +81,7 @@ describe('RunOutputGuardrailsService', () => {
 
   it('builds nothing when the organization has no output rules', () => {
     expect(
-      service.stageFor({
+      service.guardFor({
         guardrails: guardrails([]),
         organizationId: 'org-1',
         source: 'api',
@@ -72,15 +90,17 @@ describe('RunOutputGuardrailsService', () => {
   });
 
   it('files a hit against the output stage, with the surface it arrived on', () => {
-    const stage = service.stageFor({
-      guardrails: guardrails([rule()]),
-      organizationId: 'org-1',
-      userId: 'user-1',
-      source: 'api',
-    });
+    const stage = windowOf(
+      service.guardFor({
+        guardrails: guardrails([rule()]),
+        organizationId: 'org-1',
+        userId: 'user-1',
+        source: 'api',
+      }),
+    );
 
-    stage?.push('the key is hunter2 and that is all');
-    stage?.flush();
+    stage.push('the key is hunter2 and that is all');
+    stage.flush();
 
     expect(hits.record).toHaveBeenCalledTimes(1);
     expect(hits.record).toHaveBeenCalledWith(
@@ -102,17 +122,19 @@ describe('RunOutputGuardrailsService', () => {
     // A zero budget with a stopped clock is what a misbehaving pattern looks
     // like from here, and the only way to reach this branch without depending
     // on how fast the machine is.
-    const stage = service.stageFor(
-      {
-        guardrails: guardrails([rule()]),
-        organizationId: 'org-1',
-        source: 'api',
-      },
-      { budgetMs: 0, now: () => 1_000 },
+    const stage = windowOf(
+      service.guardFor(
+        {
+          guardrails: guardrails([rule()]),
+          organizationId: 'org-1',
+          source: 'api',
+        },
+        { budgetMs: 0, now: () => 1_000 },
+      ),
     );
 
-    stage?.push('the key is hunter2');
-    stage?.flush();
+    stage.push('the key is hunter2');
+    stage.flush();
 
     expect(hits.record).not.toHaveBeenCalled();
     expect(warn).toHaveBeenCalledTimes(1);

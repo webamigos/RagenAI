@@ -1,6 +1,7 @@
 import {
   DEFAULT_POLICY_THRESHOLD,
   MAX_ACTIVE_LLM_POLICIES,
+  OUTPUT_POLICY_LATENCY_NOTICE,
 } from '@ragenai/guardrails/contracts';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
@@ -218,5 +219,40 @@ describe('the rule list', () => {
 
     expect(markup).toContain(patternRule.pattern!);
     expect(markup).not.toContain('fires at');
+  });
+});
+
+/**
+ * The one thing about an output policy an operator cannot see from the form.
+ *
+ * A judged rule on the output side holds the whole answer until a model has
+ * read it, so the answer appears at once instead of word by word. That is a
+ * change to how the product feels rather than to what it allows — which is
+ * exactly the kind of thing that comes back as "chat got slow" from somebody
+ * who never opened this page.
+ */
+describe('the latency an output policy costs', () => {
+  it('says so on a policy that runs on the output stage', () => {
+    const markup = render({ ...policyRule, stage: 'OUTPUT' });
+
+    expect(markup).toContain(OUTPUT_POLICY_LATENCY_NOTICE.slice(0, 40));
+  });
+
+  it('says so on a BOTH rule, which runs there too', () => {
+    const markup = render({ ...policyRule, stage: 'BOTH' });
+
+    expect(markup).toContain(OUTPUT_POLICY_LATENCY_NOTICE.slice(0, 40));
+  });
+
+  it('stays quiet on an input policy, where it would be false', () => {
+    const markup = render({ ...policyRule, stage: 'INPUT' });
+
+    expect(markup).not.toContain(OUTPUT_POLICY_LATENCY_NOTICE.slice(0, 40));
+  });
+
+  it('stays quiet on a pattern rule, which streams either way', () => {
+    const markup = render({ ...patternRule, stage: 'OUTPUT' });
+
+    expect(markup).not.toContain(OUTPUT_POLICY_LATENCY_NOTICE.slice(0, 40));
   });
 });

@@ -832,8 +832,33 @@ If it slips, A–C and E still ship a complete capability.
       reader is gated on a refusal. "Its one consumer already checks" was the
       first answer here and it is not one: it is remembering, which is what
       this phase exists to replace. The guard above asserts both halves.
-- [ ] **D3.** Buffered evaluation for `LLM_POLICY` output rules, and the
+- [x] **D3.** Buffered evaluation for `LLM_POLICY` output rules, and the
       latency warning on the rule form.
+
+      Not "the window plus a judge": a second **mode**, picked before the
+      first token. A judge scores a finished answer, so one judged output rule
+      turns the whole turn from streamed into buffered — and once the answer
+      is in hand the window has nothing left to do either, so the patterns run
+      over the complete text in the same pass. `OutputGuard` is the union the
+      funnel takes, and the binding decides which arm, because the choice
+      decides what the reader sees happen rather than what a rule allows.
+
+      A turn cannot change its mind halfway: by then it would have streamed
+      half an answer. So `needsWholeAnswer` is asked once, over the resolved
+      set, before anything is emitted.
+
+      One thing the two modes must agree on, and it is why the anchor refusal
+      from D1 stays: a rule is authored once and may run in either, so
+      `^`/`$`/`\b` cannot be allowed here merely because this mode would read
+      them correctly. A rule that behaved differently depending on whether the
+      organization also happened to have a policy would be the worst kind of
+      surprise.
+
+      The latency notice is `OUTPUT_POLICY_LATENCY_NOTICE` in `contracts`,
+      rendered on the form for `OUTPUT` and `BOTH` and not for `INPUT`, where
+      it would be false. It is tested in both directions — never shown and
+      always shown both fail — because a notice that is always there is as
+      wrong as one that is never there, and only one of those is visible.
 - [ ] **D4.** `SUPPORTED_COMBINATIONS` opens the `OUTPUT` stage; the admin form
       starts offering it. Blocked on D1c and D2: the constant is what makes an
       output rule resolve at all, so opening it while a surface is uncovered

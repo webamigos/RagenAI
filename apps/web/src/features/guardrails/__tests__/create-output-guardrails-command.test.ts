@@ -66,6 +66,14 @@ beforeEach(() => {
   mockWarn.mockClear();
 });
 
+/** The window of a guard the test knows is windowed. */
+const windowOf = (guard: ReturnType<typeof createOutputGuardrailsCommand>) => {
+  if (guard?.mode !== 'window') {
+    throw new Error('expected a windowed guard, got ' + String(guard?.mode));
+  }
+  return guard.stage;
+};
+
 describe('createOutputGuardrailsCommand', () => {
   it('builds nothing when the organization has no output rules', () => {
     expect(
@@ -91,15 +99,17 @@ describe('createOutputGuardrailsCommand', () => {
   });
 
   it('files a hit against the output stage, with the surface it arrived on', () => {
-    const stage = createOutputGuardrailsCommand({
-      guardrails: guardrails([rule()]),
-      organizationId: 'org-1',
-      userId: 'user-1',
-      source: 'chatbot',
-    });
+    const stage = windowOf(
+      createOutputGuardrailsCommand({
+        guardrails: guardrails([rule()]),
+        organizationId: 'org-1',
+        userId: 'user-1',
+        source: 'chatbot',
+      }),
+    );
 
-    stage?.push('the key is hunter2 and that is all');
-    stage?.flush();
+    stage.push('the key is hunter2 and that is all');
+    stage.flush();
 
     expect(mockRecordSecurityEvent).toHaveBeenCalledTimes(1);
     const event = mockRecordSecurityEvent.mock.calls[0][0];
@@ -111,14 +121,16 @@ describe('createOutputGuardrailsCommand', () => {
   });
 
   it('never puts the matched text in the event', () => {
-    const stage = createOutputGuardrailsCommand({
-      guardrails: guardrails([rule()]),
-      organizationId: 'org-1',
-      source: 'chat',
-    });
+    const stage = windowOf(
+      createOutputGuardrailsCommand({
+        guardrails: guardrails([rule()]),
+        organizationId: 'org-1',
+        source: 'chat',
+      }),
+    );
 
-    stage?.push('the key is hunter2');
-    stage?.flush();
+    stage.push('the key is hunter2');
+    stage.flush();
 
     expect(JSON.stringify(mockRecordSecurityEvent.mock.calls)).not.toContain(
       'hunter2',
@@ -133,17 +145,19 @@ describe('createOutputGuardrailsCommand', () => {
     // A zero budget with a stopped clock is what a misbehaving pattern looks
     // like from here, and it is the only way to reach this branch without
     // depending on how fast the machine is.
-    const stage = createOutputGuardrailsCommand(
-      {
-        guardrails: guardrails([rule()]),
-        organizationId: 'org-1',
-        source: 'chat',
-      },
-      { budgetMs: 0, now: () => 1_000 },
+    const stage = windowOf(
+      createOutputGuardrailsCommand(
+        {
+          guardrails: guardrails([rule()]),
+          organizationId: 'org-1',
+          source: 'chat',
+        },
+        { budgetMs: 0, now: () => 1_000 },
+      ),
     );
 
-    stage?.push('the key is hunter2');
-    stage?.flush();
+    stage.push('the key is hunter2');
+    stage.flush();
 
     expect(mockRecordSecurityEvent).not.toHaveBeenCalled();
     expect(mockWarn).toHaveBeenCalledTimes(1);
