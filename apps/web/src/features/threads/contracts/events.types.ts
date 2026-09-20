@@ -147,6 +147,22 @@ export type ApiSseCitations = {
   fileIds: string[];
 };
 
+/**
+ * An `OUTPUT` guardrail refused the answer mid-stream.
+ *
+ * Not an `error`: the turn did what it was configured to do, the model was
+ * called and billed, and an assistant message is saved. The client replaces
+ * the text it has streamed so far with the localized refusal — that text was
+ * withheld, and it is the one event where what has already been rendered has
+ * to be taken back.
+ *
+ * Carries the rule's identity, never the matched text.
+ */
+export type ApiSseGuardrailViolation = {
+  guardrail: string;
+  rule: string;
+};
+
 export type SseMessageError = {
   type: 'error';
   message: string;

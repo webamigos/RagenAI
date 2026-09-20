@@ -1,6 +1,7 @@
 import { streamText, stepCountIs } from 'ai';
 import { buildToolApprovalConfig } from '@/libs/mcp/client';
 import { getOrgGuardrailsQuery } from '@/features/guardrails/services/queries/get-org-guardrails-query';
+import { createOutputGuardrailsCommand } from '@/features/guardrails/services/commands/create-output-guardrails-command';
 import { runInputGuardrailsCommand } from '@/features/guardrails/services/commands/run-input-guardrails-command';
 import {
   DEFAULT_KNOWLEDGE_SCOPE,
@@ -248,7 +249,18 @@ export const basicRagChain = async ({
       return {
         textStream: result.textStream,
         text: result.text,
-        fullStream: mapFullStream(result.fullStream),
+        // The output window, or nothing. `mapFullStream` returns its own
+        // iterator unwrapped when there is no stage, so an organization with
+        // no output rules is not buffered.
+        fullStream: mapFullStream(
+          result.fullStream,
+          createOutputGuardrailsCommand({
+            guardrails,
+            organizationId: config?.tracking?.organizationId,
+            userId: config?.tracking?.userId,
+            source: config?.guardrailSource ?? 'chat',
+          }),
+        ),
         reasoningText: result.reasoningText,
         // Every step, not just the last — the value the monthly cost and
         // token ceilings aggregate.

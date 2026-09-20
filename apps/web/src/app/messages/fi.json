@@ -460,7 +460,8 @@
       "thinking": "Ajattelen",
       "regenerate": "Luo vastaus uudelleen",
       "regenerate-error": "Vastauksen luominen uudelleen epäonnistui. Yritä uudelleen.",
-      "read-only-banner": "Tarkastelet toisen käyttäjän keskustelua. Et voi lähettää viestejä tässä keskustelussa."
+      "read-only-banner": "Tarkastelet toisen käyttäjän keskustelua. Et voi lähettää viestejä tässä keskustelussa.",
+      "guardrail-blocked-answer": "Vastaus pidätettiin, koska se vastaa organisaatiosi järjestelmänvalvojan asettamaa sääntöä."
     }
   },
   "assistant-settings": {

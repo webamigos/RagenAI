@@ -324,6 +324,21 @@ const AssistantAnswer = ({
     be a second copy of a fact that is already here.
   */
   const [openSource, setOpenSource] = useState<RetrievalSource | null>(null);
+  const tChat = useTranslations('assistant.chat');
+
+  // An answer a rule withheld, rendered in the reader's language rather than
+  // from `content`. The stored sentence is English: `/api/threads` is not
+  // under `[locale]`, so the route that writes the row has no locale to
+  // translate with, and a Polish reader would otherwise meet English on
+  // reload. There are no sources and no citations to show — there is no
+  // answer — so this returns rather than falling through.
+  if (message.metadata?.guardrailBlocked) {
+    return (
+      <p className="text-muted-foreground text-[0.9375rem] leading-relaxed italic">
+        {tChat('guardrail-blocked-answer')}
+      </p>
+    );
+  }
 
   return (
     <>

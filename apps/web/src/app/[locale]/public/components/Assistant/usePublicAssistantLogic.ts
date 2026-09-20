@@ -62,6 +62,7 @@ export const usePublicAssistantLogic = (
   const promptFormRef = useRef<PromptFormRef>(null);
 
   const t = useTranslations('Index');
+  const tChat = useTranslations('assistant.chat');
   const tChainErrors = useTranslations('chain-errors');
   const tApiEvents = useTranslations('api-events');
 
@@ -103,6 +104,7 @@ export const usePublicAssistantLogic = (
             userMessageId: userMessage.id,
             userMessage,
             t,
+            tChat,
             tChainErrors,
             tApiEvents,
             threadId,
@@ -173,6 +175,7 @@ export const usePublicAssistantLogic = (
         userMessageId,
         userMessage,
         t,
+        tChat,
         tChainErrors,
         tApiEvents,
         threadId,

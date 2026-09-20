@@ -460,7 +460,8 @@
       "thinking": "Premýšľam",
       "regenerate": "Znova vygenerovať odpoveď",
       "regenerate-error": "Odpoveď sa nepodarilo znova vygenerovať. Skúste to znova.",
-      "read-only-banner": "Prezeráte konverzáciu iného používateľa. V tejto konverzácii nemôžete odosielať správy."
+      "read-only-banner": "Prezeráte konverzáciu iného používateľa. V tejto konverzácii nemôžete odosielať správy.",
+      "guardrail-blocked-answer": "Odpoveď bola zadržaná, pretože zodpovedá pravidlu nastavenému správcom vašej organizácie."
     }
   },
   "assistant-settings": {

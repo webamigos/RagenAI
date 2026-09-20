@@ -74,6 +74,8 @@ type CommonConfig = {
   userMessage: MessageDto;
   userMessageId: string;
   t: TranslationFn;
+  /** The `assistant.chat` namespace — the copy that appears inside the thread. */
+  tChat: TranslationFn;
   tChainErrors: TranslationFn;
   tApiEvents: TranslationFn;
   threadId: Thread['id'];
@@ -171,6 +173,7 @@ export const handleAssistantStream = async ({
   userMessage,
   userMessageId,
   t,
+  tChat,
   tChainErrors,
   tApiEvents,
   threadId,
@@ -468,6 +471,25 @@ export const handleAssistantStream = async ({
               );
             }
             break;
+
+          case 'guardrail_violation': {
+            // The only event that takes back what has already been rendered.
+            // The deltas so far are the answer a rule stopped, and the server
+            // is storing the refusal rather than that text — so the two have
+            // to agree about what the reader ends up looking at.
+            accumulatingMessage = tChat('guardrail-blocked-answer');
+            accumulatingReasoning = '';
+            isCurrentlyReasoning = false;
+            reduxDispatch(
+              setStreamedMessage({
+                content: accumulatingMessage,
+                runId,
+                createdAt: new Date().toISOString(),
+                isReasoning: false,
+              }),
+            );
+            break;
+          }
 
           case 'error':
             if (messageData) {

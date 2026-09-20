@@ -460,7 +460,8 @@
       "thinking": "Tänker",
       "regenerate": "Generera svaret igen",
       "regenerate-error": "Det gick inte att generera svaret igen. Försök igen.",
-      "read-only-banner": "Du tittar på en annan användares konversation. Du kan inte skicka meddelanden i den här konversationen."
+      "read-only-banner": "Du tittar på en annan användares konversation. Du kan inte skicka meddelanden i den här konversationen.",
+      "guardrail-blocked-answer": "Svaret hölls tillbaka eftersom det matchar en regel som din organisations administratör har angett."
     }
   },
   "assistant-settings": {

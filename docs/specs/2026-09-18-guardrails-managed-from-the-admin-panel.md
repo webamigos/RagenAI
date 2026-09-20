@@ -778,7 +778,7 @@ match.
 Independently revertible, and the only phase that touches thread persistence.
 If it slips, A–C and E still ship a complete capability.
 
-- [ ] **D1.** The sliding-window transform for `PATTERN` output rules inside
+- [x] **D1.** The sliding-window transform for `PATTERN` output rules inside
       `mapFullStream` in `apps/web`, **including** the persistence path: a
       blocked output writes the refusal, never the withheld text, through the
       existing thread-encryption function (ADR-42). Stopping the stream and
@@ -789,11 +789,41 @@ If it slips, A–C and E still ship a complete capability.
       called by nobody is the same deliberate state Phase A ended in. The
       `apps/web` funnel and the persistence path follow, and the checkbox is
       the second one's.
+- [ ] **D1c.** The exits that are not the stream funnel, in `apps/web`.
+
+      `mapFullStream` is one of three ways text leaves a chain, and the other
+      two bypass it completely: `textStream` and the resolved `text`. Three
+      call sites read them — `/api/v1/chat`'s non-streaming branch and *both*
+      branches of `/api/v1/chat/completions`, whose streaming path streams
+      `textStream` rather than the full one. An output rule would apply to the
+      panel and the widget and not to those, which is exactly the silence this
+      spec exists to remove, and no runtime signal would say so.
+
+      Found while wiring D1, and it ships nothing false in the meantime
+      because `OUTPUT` is not authorable until D4 — **which is therefore
+      blocked on this and on D2.** The fix is not a fourth call site: it is
+      the chain handing out a guarded `textStream`, so a future exit is
+      covered by construction rather than by remembering.
+
+      `assistant-stream.ts`'s resolved-text fallback is the same hazard and is
+      already closed in D1: it reads the model's own text, which never passed
+      through the window, so it is skipped on a refused turn.
 - [ ] **D2.** The same in `apps/api`'s funnel.
 - [ ] **D3.** Buffered evaluation for `LLM_POLICY` output rules, and the
       latency warning on the rule form.
 - [ ] **D4.** `SUPPORTED_COMBINATIONS` opens the `OUTPUT` stage; the admin form
-      starts offering it.
+      starts offering it. Blocked on D1c and D2: the constant is what makes an
+      output rule resolve at all, so opening it while a surface is uncovered
+      is the "reads as enabled, enforced by nothing" failure arriving through
+      the constant meant to prevent it — which has already happened once, in
+      Phase B.
+
+      `a-supported-combination-is-evaluable` is already written over the
+      constant rather than over the input stage, so it checks the new entry in
+      the change that adds it. `docs/guardrails.md`, the changelog note and a
+      `p0-` e2e covering a blocked answer belong here too, for the reason they
+      do not belong earlier: until this item there is nothing an operator can
+      turn on.
 
 ### Phase E — seeing what it did
 

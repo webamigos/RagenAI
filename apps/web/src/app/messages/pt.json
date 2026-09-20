@@ -460,7 +460,8 @@
       "thinking": "Pensando",
       "regenerate": "Gerar resposta novamente",
       "regenerate-error": "Falha ao gerar a resposta novamente. Tente novamente.",
-      "read-only-banner": "Você está visualizando a conversa de outro usuário. Você não pode enviar mensagens nesta conversa."
+      "read-only-banner": "Você está visualizando a conversa de outro usuário. Você não pode enviar mensagens nesta conversa.",
+      "guardrail-blocked-answer": "A resposta foi retida porque corresponde a uma regra definida pelo administrador da sua organização."
     }
   },
   "assistant-settings": {
