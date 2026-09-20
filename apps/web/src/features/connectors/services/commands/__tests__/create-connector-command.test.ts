@@ -84,4 +84,30 @@ describe('createConnectorCommand feature gate', () => {
       }),
     );
   });
+
+  it('writes the slug beside the enum, on create and on update', async () => {
+    // Expand/contract, step 1: the reads move in a later release, so both
+    // columns have to carry the value through every deploy in between. The
+    // update branch matters as much as the create one — a row written by a
+    // service still on the previous release has no slug until something
+    // touches it.
+    mockIsFeatureEnabled.mockResolvedValue(true);
+    mockUpsert.mockResolvedValue({
+      id: 'conn-1',
+      provider: 'CLICKUP',
+      customerId: `${ORG}:${USER}:clickup`,
+      mcpServerUrl: 'https://example.com/mcp',
+      status: 'PENDING',
+    });
+
+    await createConnectorCommand(ORG, USER, 'CLICKUP' as any);
+
+    const args = mockUpsert.mock.calls[0][0] as {
+      create: Record<string, unknown>;
+      update: Record<string, unknown>;
+    };
+    expect(args.create.provider).toBe('CLICKUP');
+    expect(args.create.providerSlug).toBe('CLICKUP');
+    expect(args.update.providerSlug).toBe('CLICKUP');
+  });
 });

@@ -159,11 +159,16 @@ export async function GET(request: NextRequest) {
       update: {
         status: McpConnectorStatus.CONNECTED,
         connectedAt: new Date(),
+        // Written on update as well as create: a row written by a service
+        // still on the previous release carries no slug, and touching it is
+        // the cheapest moment to give it one.
+        providerSlug: provider,
       },
       create: {
         organizationId: orgId,
         userId: userId,
         provider,
+        providerSlug: provider,
         mcpServerUrl: providerDef.mcpServerUrl,
         customerId: `${orgId}:${userId}:${provider.toLowerCase()}`,
         status: McpConnectorStatus.CONNECTED,

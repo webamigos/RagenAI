@@ -48,11 +48,13 @@ export const registerApiKeyBearerCommand = async (
         mcpServerUrl: providerDef.mcpServerUrl,
         customerId: customerId,
         connectedAt: new Date(),
+        providerSlug: provider,
       },
       create: {
         organizationId: organizationId,
         userId: userId,
         provider,
+        providerSlug: provider,
         mcpServerUrl: providerDef.mcpServerUrl,
         customerId: customerId,
         status: McpConnectorStatus.CONNECTED,

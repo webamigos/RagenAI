@@ -101,11 +101,16 @@ export class PrismaOAuthClientProvider implements OAuthClientProvider {
         refreshToken: tokens.refresh_token || null,
         expiresAt,
         tokenType: tokens.token_type || 'Bearer',
+        // Written on update as well as create: a row written by a service
+        // still on the previous release carries no slug, and touching it is
+        // the cheapest moment to give it one.
+        providerSlug: this.provider,
       },
       create: {
         organizationId: this.orgId,
         userId: this.userId,
         provider: this.provider,
+        providerSlug: this.provider,
         accessToken: tokens.access_token,
         refreshToken: tokens.refresh_token || null,
         expiresAt,
@@ -156,11 +161,13 @@ export class PrismaOAuthClientProvider implements OAuthClientProvider {
       update: {
         clientId: info.client_id,
         clientSecret: info.client_secret || null,
+        providerSlug: this.provider,
       },
       create: {
         organizationId: this.orgId,
         userId: this.userId,
         provider: this.provider,
+        providerSlug: this.provider,
         accessToken: '',
         clientId: info.client_id,
         clientSecret: info.client_secret || null,
@@ -183,11 +190,13 @@ export class PrismaOAuthClientProvider implements OAuthClientProvider {
       },
       update: {
         codeVerifier: verifier,
+        providerSlug: this.provider,
       },
       create: {
         organizationId: this.orgId,
         userId: this.userId,
         provider: this.provider,
+        providerSlug: this.provider,
         accessToken: '',
         codeVerifier: verifier,
       },

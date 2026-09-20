@@ -58,11 +58,16 @@ export const createConnectorCommand = async (
         status: McpConnectorStatus.PENDING,
         mcpServerUrl: mcpServerUrl,
         customerId: customerId,
+        // Written on update as well as create: a row written by a service
+        // still on the previous release carries no slug, and touching it is
+        // the cheapest moment to give it one.
+        providerSlug: provider,
       },
       create: {
         organizationId: organizationId,
         userId: userId,
         provider,
+        providerSlug: provider,
         mcpServerUrl: mcpServerUrl,
         customerId: customerId,
         status: McpConnectorStatus.PENDING,

@@ -104,11 +104,16 @@ export class ConnectorsService {
           status: McpConnectorStatus.PENDING,
           mcpServerUrl,
           customerId,
+          // Written on update as well as create: a row written by a service
+          // still on the previous release carries no slug, and touching it is
+          // the cheapest moment to give it one.
+          providerSlug: provider,
         },
         create: {
           organizationId,
           userId,
           provider,
+          providerSlug: provider,
           mcpServerUrl,
           customerId,
           status: McpConnectorStatus.PENDING,
@@ -329,11 +334,13 @@ export class ConnectorsService {
           mcpServerUrl: providerDef.mcpServerUrl,
           customerId,
           connectedAt: new Date(),
+          providerSlug: provider,
         },
         create: {
           organizationId,
           userId,
           provider,
+          providerSlug: provider,
           mcpServerUrl: providerDef.mcpServerUrl,
           customerId,
           status: McpConnectorStatus.CONNECTED,
@@ -410,11 +417,13 @@ export class ConnectorsService {
           mcpServerUrl,
           customerId,
           connectedAt: new Date(),
+          providerSlug: provider,
         },
         create: {
           organizationId,
           userId,
           provider,
+          providerSlug: provider,
           mcpServerUrl,
           customerId,
           status: McpConnectorStatus.CONNECTED,

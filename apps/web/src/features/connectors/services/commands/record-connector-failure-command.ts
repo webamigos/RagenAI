@@ -136,6 +136,7 @@ export async function recordConnectorFailureCommand({
             organizationId,
             userId,
             provider,
+            providerSlug: provider,
             mcpServerUrl,
             customerId: `${organizationId}:${userId}:${provider.toLowerCase()}`,
             status: McpConnectorStatus.ERROR,
