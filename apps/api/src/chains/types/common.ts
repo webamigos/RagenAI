@@ -78,6 +78,16 @@ export interface ChainConfig {
       chatHistory: string | undefined;
       moderateHistory: boolean;
     }) => Promise<{ question: string; chatHistory: string }>;
+    /**
+     * Builds the output window for this turn, or `undefined` when the
+     * organization has no output rules.
+     *
+     * A factory rather than an instance because a window carries the turn's
+     * state: one shared between turns would evaluate the second answer
+     * against the tail of the first.
+     */
+    readonly outputStage?: () =>
+      import('@ragenai/guardrails').OutputStage | undefined;
   };
   threadDocuments?: ThreadDocumentUI[];
   /**
@@ -109,7 +119,16 @@ export interface ChainUsage {
 
 export interface ChainStreamResult {
   textStream: AsyncIterable<string>;
-  text: PromiseLike<string>;
+  /**
+   * Removed, deliberately: there is no resolved-text exit here.
+   *
+   * It was the AI SDK's own promise, which never meets the output window —
+   * a third way for an answer to leave a chain and the only one no surface in
+   * this app read. Keeping it would have left a guarded `fullStream`, a
+   * guarded `textStream` and one accessor that quietly is not, waiting for a
+   * future route to pick it. apps/web still has it for a single fallback that
+   * is gated on a refusal; see the guard in `tests/architecture`.
+   */
   fullStream: AsyncIterable<ChainStreamPart>;
   reasoningText: PromiseLike<string | undefined>;
   usage: PromiseLike<ChainUsage>;
@@ -142,6 +161,23 @@ export type ChainStreamPart =
       toolCallId: string;
       toolName: string;
       args: unknown;
+    }
+  /**
+   * An `OUTPUT` guardrail refused the answer mid-stream.
+   *
+   * The stream ends here: nothing after this part is emitted, and every
+   * consumer treats the text it has accumulated as withheld rather than as a
+   * partial answer. Persisting that prefix would store exactly the text the
+   * rule exists to suppress, which is why stopping the stream and deciding
+   * what is stored are one change and not two.
+   *
+   * Carries the rule's identity and not the matched text — the same rule as
+   * `GuardrailError`, and for the same reason: this object reaches logs.
+   */
+  | {
+      type: 'guardrail-violation';
+      guardrailPublicId: string;
+      guardrailName: string;
     }
   | { type: 'other'; [key: string]: unknown };
 

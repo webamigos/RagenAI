@@ -14,6 +14,10 @@ import { AiUsageService } from '../ai-usage/ai-usage.service.js';
 import { TeamRateLimitService } from '../team-limits/team-rate-limit.service.js';
 import { supportsReasoningEffort } from '../llm/model-registry.js';
 import { servingProvider } from '../llm/native-models.js';
+import { OUTPUT_GUARDRAIL_REFUSAL } from '@ragenai/guardrails';
+
+import { GuardrailError } from '../chains/errors.js';
+import type { GuardrailBlockedMarker } from '../threads/persist-api-thread.service.js';
 
 /**
  * Direct implementation of `POST /v1/chat` — replaces the previous
@@ -220,11 +224,29 @@ export class ChatService {
 
         try {
           let fullText = '';
+          let guardrailBlocked: GuardrailBlockedMarker | null = null;
           for await (const part of result.fullStream) {
             if (part.type === 'text-delta') {
               fullText += part.textDelta;
               res.write(
                 `data: ${JSON.stringify({ text: part.textDelta })}\n\n`,
+              );
+            } else if (part.type === 'guardrail-violation') {
+              // The window stopped the answer, so what has been sent is
+              // withheld: `replace` tells the caller to drop it, and the
+              // refusal is what gets saved. Without this branch the part
+              // would be ignored and the partial answer stored — the one
+              // outcome the rule exists to prevent.
+              guardrailBlocked = {
+                guardrail: part.guardrailPublicId,
+                rule: part.guardrailName,
+              };
+              fullText = OUTPUT_GUARDRAIL_REFUSAL;
+              res.write(
+                `data: ${JSON.stringify({
+                  text: OUTPUT_GUARDRAIL_REFUSAL,
+                  replace: true,
+                })}\n\n`,
               );
             } else if (part.type === 'reasoning-delta') {
               res.write(
@@ -233,7 +255,7 @@ export class ChatService {
             }
           }
           if (saveAssistantMessage) {
-            await saveAssistantMessage(fullText);
+            await saveAssistantMessage(fullText, guardrailBlocked);
           }
           await trackUsage();
           res.write('data: [DONE]\n\n');
@@ -247,16 +269,31 @@ export class ChatService {
       }
 
       // Non-streaming: collect the full response and return JSON.
+      //
+      // `textStream` is the guarded one, so a block arrives as a thrown
+      // `GuardrailError` rather than as a short answer. Caught rather than
+      // allowed to reach the outer handler, which would answer 500 and save
+      // nothing — a refused answer is a result, not a fault.
       let text = '';
+      let guardrailBlocked: GuardrailBlockedMarker | null = null;
       try {
         for await (const chunk of result.textStream) {
           text += chunk;
         }
+      } catch (err) {
+        if (!(err instanceof GuardrailError)) {
+          throw err;
+        }
+        guardrailBlocked = {
+          guardrail: err.guardrailPublicId,
+          rule: err.guardrailName,
+        };
+        text = OUTPUT_GUARDRAIL_REFUSAL;
       } finally {
         await closeMcpClients();
       }
       if (saveAssistantMessage) {
-        await saveAssistantMessage(text);
+        await saveAssistantMessage(text, guardrailBlocked);
       }
       await trackUsage();
 

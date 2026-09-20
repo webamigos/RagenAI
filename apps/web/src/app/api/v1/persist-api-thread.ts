@@ -7,6 +7,7 @@ import {
   encryptContent,
   decryptThreadKey,
 } from '@ragenai/crypto';
+import type { GuardrailBlockedMetadata } from '@/features/messages/contracts/message.types';
 
 /**
  * Create a Thread + user Message for an API request, then return a
@@ -74,8 +75,16 @@ export async function createApiThread({
       /**
        * Call after the full assistant response is collected to persist it.
        * Fire-and-forget safe — errors are logged, never thrown.
+       *
+       * `guardrailBlocked` marks a stored refusal. A second argument rather
+       * than something inferred from the content, because "this text happens
+       * to equal the refusal sentence" is not the claim "a rule refused this
+       * answer" — and the panel renders on the marker.
        */
-      saveAssistantMessage: async (content: string) => {
+      saveAssistantMessage: async (
+        content: string,
+        guardrailBlocked?: GuardrailBlockedMetadata | null,
+      ) => {
         try {
           const encrypted = await maybeEncrypt(threadId, content);
           await db.message.create({
@@ -84,6 +93,7 @@ export async function createApiThread({
               content: encrypted,
               role: Role.ASSISTANT,
               source: Source.API,
+              ...(guardrailBlocked ? { metadata: { guardrailBlocked } } : {}),
             },
           });
         } catch (err) {

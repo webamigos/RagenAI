@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { createOutputStage, type ResolvedGuardrail } from '@ragenai/guardrails';
 
-import { mapFullStream } from '../stream-mapper';
+import { mapFullStream, textOfStream } from '../stream-mapper';
 
 async function* createMockStream(
   parts: { type: string; [key: string]: unknown }[],
@@ -326,5 +326,80 @@ describe('mapFullStream with an output guardrail window', () => {
     );
 
     expect((results[0] as { type: string }).type).toBe('tool-call');
+  });
+});
+
+/**
+ * The text view, which is what every non-streaming surface reads.
+ *
+ * `textStream` used to be the AI SDK's own and never met the window, so an
+ * output rule applied to whichever surfaces happened to read `fullStream` —
+ * the panel and the widget — and to no other. Five call sites across two apps
+ * were in that state, and nothing anywhere said so.
+ */
+describe('textOfStream', () => {
+  it('yields the text of a mapped stream and nothing else', async () => {
+    const text = await collectStream(
+      textOfStream(
+        mapFullStream(
+          createMockStream([
+            { type: 'text-delta', text: 'one ' },
+            { type: 'tool-call', toolCallId: 't1', toolName: 'x', input: {} },
+            { type: 'text-delta', text: 'two' },
+          ]),
+        ),
+      ),
+    );
+
+    expect(text.join('')).toBe('one two');
+  });
+
+  it('throws when a rule refused the answer, rather than ending quietly', async () => {
+    // A string iterator has nowhere to put "and the reason it stopped is a
+    // rule". A caller that took the end for the end of the answer would
+    // persist the text it had, which is the one outcome the rule exists to
+    // prevent — and an ended iterator is the easiest thing in the world to
+    // treat as a finished answer.
+    const stage = createOutputStage(
+      [
+        {
+          publicId: 'rule-9',
+          organizationId: null,
+          key: null,
+          name: 'No secrets',
+          kind: 'PATTERN',
+          stage: 'OUTPUT',
+          action: 'BLOCK',
+          enabled: true,
+          severity: 'warn',
+          pattern: 'hunter2',
+          patternIsRegex: false,
+          threshold: null,
+          isPlatformRule: true,
+          sources: {
+            enabled: 'platform-rule',
+            action: 'platform-rule',
+            threshold: 'platform-rule',
+          },
+        } as unknown as ResolvedGuardrail,
+      ],
+      { record: vi.fn(), onBudgetExhausted: vi.fn() },
+      { windowChars: 8 },
+    );
+
+    const text = textOfStream(
+      mapFullStream(
+        createMockStream([
+          { type: 'text-delta', text: 'the key is hun' },
+          { type: 'text-delta', text: 'ter2' },
+        ]),
+        stage,
+      ),
+    );
+
+    await expect(collectStream(text)).rejects.toMatchObject({
+      code: 'guardrail-blocked',
+      guardrailPublicId: 'rule-9',
+    });
   });
 });
