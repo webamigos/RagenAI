@@ -11,6 +11,7 @@
     "lint": "eslint",
     "serve": "npx http-server --port 5433 out",
     "test": "vitest run",
+    "connectors:projection": "tsx scripts/write-connector-projection.ts",
     "perf:seed": "tsx perf/seed-load.ts",
     "perf:test": "vitest run -c vitest.perf.config.ts --disable-console-intercept",
     "test:coverage": "vitest run --coverage",

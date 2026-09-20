@@ -7,6 +7,7 @@ import {
   SubscriptionPlanType,
 } from '../apps/web/src/generated/prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
+import { seedBuiltInCatalogue } from './catalog/seed-catalogue';
 
 // Stripe sync is optional: most local/self-hosted setups don't have Stripe
 // credentials at all (cloud/subscriptions is deferred), and syncInternalPlans()
@@ -102,7 +103,9 @@ async function syncStripePlans() {
     const productPrices = new Map<string, Stripe.Price[]>();
     for (const price of stripePrices.data) {
       const product = price.product as Stripe.Product;
-      if (!product.active) {continue;}
+      if (!product.active) {
+        continue;
+      }
 
       processedProductIds.add(product.id);
       if (!productPrices.has(product.id)) {
@@ -171,11 +174,18 @@ async function syncStripePlans() {
   }
 }
 
+async function syncConnectorCatalogue() {
+  console.log('Syncing MCP connector catalogue...');
+  const count = await seedBuiltInCatalogue(prisma);
+  console.log(`Catalogue in sync: ${count} built-in entries.`);
+}
+
 async function main() {
   try {
     console.log('Seeding process started...');
     await syncInternalPlans();
     await syncStripePlans();
+    await syncConnectorCatalogue();
     console.log('Seeding finished.');
   } catch (error) {
     console.error('Error seeding default plans:', error);
