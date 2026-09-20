@@ -120,6 +120,7 @@ describe('the seeded override, which is stored and ignored in SaaS', () => {
     expect(view.rules[0].override).toEqual({
       enabled: false,
       action: null,
+      threshold: null,
       isLegacyOnPremise: true,
     });
   });
@@ -162,7 +163,13 @@ describe('an administrator’s own override', () => {
     await setGuardrailOverrideAction(ORG, 'gr-1', { enabled: false });
 
     expect(overrideCreate).toHaveBeenCalledWith({
-      data: { guardrailId: 1, organizationId: ORG, enabled: false },
+      data: {
+        guardrailId: 1,
+        organizationId: ORG,
+        enabled: false,
+        action: null,
+        threshold: null,
+      },
     });
     const written = overrideCreate.mock.calls[0][0].data;
     expect(written.origin).toBeUndefined();
@@ -183,7 +190,7 @@ describe('an administrator’s own override', () => {
 
     expect(overrideUpdate).toHaveBeenCalledWith({
       where: { id: 10 },
-      data: { enabled: true, origin: null },
+      data: { enabled: true, action: null, threshold: null, origin: null },
     });
   });
 });
@@ -296,8 +303,8 @@ describe('the audit trail', () => {
       expect.objectContaining({
         action: 'admin.guardrail.override_changed',
         organizationId: ORG,
-        before: { enabled: true },
-        after: { enabled: false },
+        before: { enabled: true, action: null, threshold: null },
+        after: { enabled: false, action: null, threshold: null },
       }),
     );
   });
@@ -313,5 +320,220 @@ describe('the guard', () => {
     guardrailFindFirst.mockResolvedValue(null);
     await setGuardrailOverrideAction(ORG, 'gr-1', { enabled: true });
     expect(requireAdmin).toHaveBeenCalled();
+  });
+});
+
+describe('overriding what a rule does, and how sure it has to be', () => {
+  const JAILBREAK = {
+    id: 2,
+    publicId: 'gr-jailbreak',
+    organizationId: null,
+    key: 'jailbreak-detection',
+    name: 'Jailbreak detection',
+    description: null,
+    kind: 'BUILT_IN',
+    stage: 'INPUT',
+    action: 'BLOCK',
+    enabled: true,
+    severity: 'warn',
+    pattern: null,
+    patternIsRegex: false,
+    threshold: 0.7,
+  };
+
+  const PATTERN_RULE = {
+    ...MODERATION,
+    id: 3,
+    publicId: 'gr-pattern',
+    key: null,
+    name: 'Card numbers',
+    kind: 'PATTERN',
+    pattern: '\\d{4}',
+  };
+
+  const dataOf = (mock: typeof overrideCreate | typeof overrideUpdate) =>
+    (mock.mock.calls[0]![0] as { data: Record<string, unknown> }).data;
+
+  beforeEach(() => {
+    guardrailFindFirst.mockResolvedValue(JAILBREAK);
+    overrideFindFirst.mockResolvedValue(null);
+  });
+
+  /**
+   * The one an organization is most likely to want. "Keep the platform's rule,
+   * but only log it for us" is the whole reason an override exists, and the
+   * resolver has honoured it since Phase A with nothing able to write it.
+   */
+  it('writes an action override', async () => {
+    const result = await setGuardrailOverrideAction(ORG, 'gr-jailbreak', {
+      enabled: null,
+      action: 'LOG',
+      threshold: null,
+    });
+
+    expect(result).toEqual({ ok: true });
+    expect(dataOf(overrideCreate)).toMatchObject({ action: 'LOG' });
+  });
+
+  it('writes a threshold override on a scored rule', async () => {
+    await setGuardrailOverrideAction(ORG, 'gr-jailbreak', {
+      enabled: null,
+      action: null,
+      threshold: 0.4,
+    });
+
+    expect(dataOf(overrideCreate)).toMatchObject({ threshold: 0.4 });
+  });
+
+  /**
+   * The resolver would also catch this — it keeps the rule's own action and
+   * files `override-action-invalid-for-kind`. That is right at read time and
+   * useless at authoring time: the save would report success and the choice
+   * would never apply. `MASK` needs a span and a built-in returns a verdict
+   * over the whole text.
+   */
+  it('refuses an action the kind cannot carry out', async () => {
+    const result = await setGuardrailOverrideAction(ORG, 'gr-jailbreak', {
+      enabled: null,
+      action: 'MASK',
+      threshold: null,
+    });
+
+    expect(result.ok).toBe(false);
+    expect(overrideCreate).not.toHaveBeenCalled();
+    expect(overrideUpdate).not.toHaveBeenCalled();
+  });
+
+  it.each([-0.5, 1.5])('refuses %p as a threshold', async (threshold) => {
+    const result = await setGuardrailOverrideAction(ORG, 'gr-jailbreak', {
+      enabled: null,
+      action: null,
+      threshold,
+    });
+
+    expect(result.ok).toBe(false);
+    expect(overrideCreate).not.toHaveBeenCalled();
+  });
+
+  /**
+   * Per key, not per kind — the same distinction the platform form makes.
+   * A pattern rule's verdict is a match, not a score, so a threshold on it is
+   * a number an operator sets and nothing reads.
+   */
+  it('refuses a threshold on a rule whose verdict is not a score', async () => {
+    guardrailFindFirst.mockResolvedValue(PATTERN_RULE);
+
+    const result = await setGuardrailOverrideAction(ORG, 'gr-pattern', {
+      enabled: null,
+      action: null,
+      threshold: 0.5,
+    });
+
+    expect(result.ok).toBe(false);
+    expect(overrideCreate).not.toHaveBeenCalled();
+  });
+
+  it('still lets a pattern rule’s action be overridden', async () => {
+    guardrailFindFirst.mockResolvedValue(PATTERN_RULE);
+
+    const result = await setGuardrailOverrideAction(ORG, 'gr-pattern', {
+      enabled: null,
+      action: 'MASK',
+      threshold: null,
+    });
+
+    // A pattern match *does* carry a span, so MASK is coherent here — the
+    // refusal above is about the kind, not about MASK.
+    expect(result).toEqual({ ok: true });
+    expect(dataOf(overrideCreate)).toMatchObject({ action: 'MASK' });
+  });
+});
+
+describe('when the override row goes away', () => {
+  const JAILBREAK = {
+    id: 2,
+    publicId: 'gr-jailbreak',
+    organizationId: null,
+    key: 'jailbreak-detection',
+    name: 'Jailbreak detection',
+    description: null,
+    kind: 'BUILT_IN',
+    stage: 'INPUT',
+    action: 'BLOCK',
+    enabled: true,
+    severity: 'warn',
+    pattern: null,
+    patternIsRegex: false,
+    threshold: 0.7,
+  };
+
+  beforeEach(() => {
+    guardrailFindFirst.mockResolvedValue(JAILBREAK);
+  });
+
+  /**
+   * **The trap this slice was written around.** Inherit means no row rather
+   * than a row full of nulls, and that was a single condition for as long as
+   * there was a single field. Deleting on `enabled === null` alone would
+   * discard an organization's tuned threshold the first time anybody set its
+   * enabled state back to inherit — from a control that says nothing about
+   * thresholds.
+   */
+  it('keeps the row when another field is still set', async () => {
+    overrideFindFirst.mockResolvedValue({
+      id: 10,
+      enabled: true,
+      action: null,
+      threshold: 0.4,
+    });
+
+    await setGuardrailOverrideAction(ORG, 'gr-jailbreak', {
+      enabled: null,
+      action: null,
+      threshold: 0.4,
+    });
+
+    expect(overrideDelete).not.toHaveBeenCalled();
+    expect(overrideUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ enabled: null, threshold: 0.4 }),
+      }),
+    );
+  });
+
+  it('deletes it only when all three are inherited', async () => {
+    overrideFindFirst.mockResolvedValue({
+      id: 10,
+      enabled: true,
+      action: 'LOG',
+      threshold: 0.4,
+    });
+
+    await setGuardrailOverrideAction(ORG, 'gr-jailbreak', {
+      enabled: null,
+      action: null,
+      threshold: null,
+    });
+
+    expect(overrideDelete).toHaveBeenCalledWith({ where: { id: 10 } });
+  });
+
+  /**
+   * A tab open from before this slice sends `enabled` alone. Reading that as
+   * "inherit the other two" is the honest meaning of what it sent — and it is
+   * what the schema does, so the declared type and the parser agree.
+   */
+  it('reads a request carrying only enabled as inheriting the rest', async () => {
+    overrideFindFirst.mockResolvedValue(null);
+
+    const result = await setGuardrailOverrideAction(ORG, 'gr-jailbreak', {
+      enabled: false,
+    });
+
+    expect(result).toEqual({ ok: true });
+    expect(
+      (overrideCreate.mock.calls[0]![0] as { data: Record<string, unknown> })
+        .data,
+    ).toMatchObject({ enabled: false, action: null, threshold: null });
   });
 });

@@ -723,7 +723,7 @@ match.
       the resolver uses. The resolver's answer to a bad value is to drop it and
       carry on — right at runtime, useless at authoring time, because the save
       reports success and the number is then ignored for ever.
-- [ ] **C4b.** The two override values, on the organization page.
+- [x] **C4b.** The two override values, on the organization page.
 
   1. **`GuardrailOrgOverride.threshold`.** The resolver validates its range
      and records `override-threshold-out-of-range` when it fails.
@@ -742,12 +742,36 @@ match.
       an organization's tuned threshold the first time somebody set its
       enabled state back to inherit. The row goes when *all three* are null.
 
-      Worth doing in the same slice, because it is the reason this whole gap
-      survived: **an architecture guard that a resolver branch has a writer.**
+      Done in the same slice, because it is the reason this whole gap
+      survived: **`tests/architecture/a-resolver-branch-has-a-writer.test.ts`.**
       Every existing guard runs the other way — they catch a rule that is
-      authorable and unenforced. Nothing catches the opposite, and the opposite
+      authorable and unenforced. Nothing caught the opposite, and the opposite
       is what happens when a schema is designed ahead of its panel, which is
       how this feature was built, on purpose.
+
+      It has two halves and the second is what makes it more than a list. One
+      asserts each override field the resolver reads is written into a row by
+      the admin action; the other derives the field list *from the resolver*
+      and fails when it grows one the test does not name. Without that, a
+      fourth column could be added to the schema and the resolver and this
+      guard would keep passing over three of four — which is exactly how the
+      first three got here.
+
+      Its completeness pattern matches **every** `override.<field>` mention
+      rather than one comparison shape. The first version matched
+      `override.x != null`, which is how `action` and `threshold` are read and
+      is not how `enabled` is — that one is `=== true || === false`, because
+      `false` is a decision and `null` is not. A pattern narrower than the
+      thing it forbids is the first shape in
+      `docs/lessons/three-shapes-of-a-test-that-guards-nothing.md`.
+
+      Two more things the UI had to get right. **Every write sends all three
+      fields**, with the two the operator did not touch read from what is
+      stored: a control that sent only its own field would have to mean "leave
+      the rest alone", and then nothing could ever clear the last one. And the
+      **threshold commits on blur, not on change** — a number input fires per
+      character, so typing `0.55` would save `0`, then `0.5`, then `0.55`, and
+      the first of those is a threshold that matches every message.
 
 ### Phase D — output guardrails
 
