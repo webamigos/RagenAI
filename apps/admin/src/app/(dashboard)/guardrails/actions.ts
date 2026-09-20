@@ -7,6 +7,7 @@ import {
   GUARDRAIL_SEVERITIES,
   GUARDRAIL_STAGES,
   AUTHORABLE_COMBINATIONS,
+  describePolicyFailure,
   isActionValidForKind,
   isCombinationSupported,
   type GuardrailAction,
@@ -14,6 +15,7 @@ import {
   type GuardrailSeverity,
   type GuardrailStage,
   validatePattern,
+  validatePolicy,
 } from '@ragenai/guardrails';
 
 import { ADMIN_ACTIONS, recordAdminAction } from '@/lib/audit';
@@ -35,6 +37,8 @@ export type GuardrailRow = {
   severity: GuardrailSeverity;
   pattern: string | null;
   patternIsRegex: boolean;
+  policy: string | null;
+  threshold: number | null;
   createdAt: Date;
   updatedAt: Date;
   /** How many organizations have adjusted this rule. */
@@ -70,6 +74,8 @@ export async function listPlatformGuardrailsAction(): Promise<GuardrailRow[]> {
     severity: row.severity as GuardrailSeverity,
     pattern: row.pattern,
     patternIsRegex: row.patternIsRegex,
+    policy: row.policy,
+    threshold: row.threshold,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
     overrideCount: row._count.overrides,
@@ -85,6 +91,14 @@ export type GuardrailInput = {
   severity: GuardrailSeverity;
   pattern?: string;
   patternIsRegex?: boolean;
+  /** LLM_POLICY only — the prose the judge model is given. */
+  policy?: string;
+  /**
+   * LLM_POLICY only. `undefined` and `null` both mean "the rule names none",
+   * which is how `DEFAULT_POLICY_THRESHOLD` comes to apply — an empty field is
+   * a choice to inherit, not a zero.
+   */
+  threshold?: number | null;
 };
 
 export type GuardrailMutationResult =
@@ -162,6 +176,21 @@ async function validate(
     }
   }
 
+  if (input.kind === 'LLM_POLICY') {
+    // The same predicate the resolver drops on, reached through the package's
+    // authoring gate rather than re-read here. A rule saved with prose this
+    // panel considers fine and the resolver considers empty is a rule the page
+    // shows enabled and the runtime never runs — and nothing anywhere says so.
+    const verdict = validatePolicy({
+      policy: input.policy,
+      threshold: input.threshold,
+    });
+
+    if (!verdict.ok) {
+      return { ok: false, message: describePolicyFailure(verdict.failure) };
+    }
+  }
+
   return { ok: true };
 }
 
@@ -196,6 +225,18 @@ function validateShape(input: GuardrailInput): string | null {
   }
   if (input.pattern != null && typeof input.pattern !== 'string') {
     return 'A pattern has to be text.';
+  }
+  if (input.policy != null && typeof input.policy !== 'string') {
+    return 'A policy has to be text.';
+  }
+  // `validatePolicy` refuses a non-number too, but only for an `LLM_POLICY`
+  // rule. A pattern rule carrying `threshold: 'high'` would otherwise reach
+  // Prisma and come back as a driver error rather than a field-level refusal.
+  if (
+    input.threshold != null &&
+    (typeof input.threshold !== 'number' || !Number.isFinite(input.threshold))
+  ) {
+    return 'A threshold has to be a number between 0 and 1.';
   }
   return null;
 }
@@ -233,6 +274,37 @@ function describeFailure(
   }
 }
 
+/**
+ * The two `LLM_POLICY` columns, written only where they mean something.
+ *
+ * Three cases, and the third is the one that bites. For a policy rule they are
+ * the operator's. For any other operator-authored kind they are nulled, so a
+ * rule switched from `LLM_POLICY` to `PATTERN` does not keep prose a later
+ * switch back would silently resurrect — and so a hand-made request cannot
+ * store a policy on a pattern rule. For a **built-in** they are left alone
+ * entirely: `jailbreak-detection` is a scored rule and its `threshold` is its
+ * sensitivity, so writing `null` here would reset a tuned detector to the
+ * default as a side effect of renaming it.
+ */
+function policyColumnsFor(
+  input: GuardrailInput,
+  isBuiltIn: boolean,
+): { policy?: string | null; threshold?: number | null } {
+  if (isBuiltIn) {
+    return {};
+  }
+  if (input.kind !== 'LLM_POLICY') {
+    return { policy: null, threshold: null };
+  }
+  return {
+    policy: input.policy?.trim() || null,
+    // `undefined` and `null` are both "names no threshold", which is what
+    // makes `DEFAULT_POLICY_THRESHOLD` apply. An empty field is a choice to
+    // inherit the default, never a zero — a zero matches every message.
+    threshold: input.threshold ?? null,
+  };
+}
+
 export async function createGuardrailAction(
   input: GuardrailInput,
 ): Promise<GuardrailMutationResult> {
@@ -252,8 +324,9 @@ export async function createGuardrailAction(
       stage: input.stage,
       action: input.action,
       severity: input.severity,
-      pattern: input.pattern ?? null,
-      patternIsRegex: input.patternIsRegex === true,
+      pattern: input.kind === 'PATTERN' ? (input.pattern ?? null) : null,
+      patternIsRegex: input.kind === 'PATTERN' && input.patternIsRegex === true,
+      ...policyColumnsFor(input, false),
       // Observation by default. A rule that starts by blocking is a rule
       // whose false-positive rate nobody has measured.
       enabled: false,
@@ -324,8 +397,9 @@ export async function updateGuardrailAction(
       stage: isBuiltIn ? existing.stage : input.stage,
       action: input.action,
       severity: input.severity,
-      pattern: input.pattern ?? null,
-      patternIsRegex: input.patternIsRegex === true,
+      pattern: input.kind === 'PATTERN' ? (input.pattern ?? null) : null,
+      patternIsRegex: input.kind === 'PATTERN' && input.patternIsRegex === true,
+      ...policyColumnsFor(input, isBuiltIn),
     },
   });
 

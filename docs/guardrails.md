@@ -39,13 +39,18 @@ Two lists, and they are deliberately different questions:
   drops anything else, so an older service meeting a row from a newer one
   treats it as no verdict rather than throwing.
 - **`AUTHORABLE_COMBINATIONS`** — what an operator may create:
-  `PATTERN`/`INPUT` alone. A built-in is _seeded_, identified by a `key` the
-  code knows; one somebody typed would have no detector behind it. A policy
-  rule is evaluable but not yet authorable: the form has no field for the
-  prose, so a rule created as one would be saved with no policy — the shape
-  the resolver drops. The policy editor is the phase after this one, and the
-  admin action validates against this list rather than the one above, because
-  a Server Action is a public endpoint.
+  `PATTERN`/`INPUT` and `LLM_POLICY`/`INPUT`. A built-in is _seeded_,
+  identified by a `key` the code knows; one somebody typed would have no
+  detector behind it, so it stays off this list however many detectors exist.
+  The admin action validates against this list rather than the one above,
+  because a Server Action is a public endpoint.
+
+  `LLM_POLICY` was evaluable from C1 and authorable only from C3, and the gap
+  was the point. A policy rule saved before the form had a prose field would
+  have been written with no `policy` — the row the resolver drops, on a page
+  showing it enabled. **A kind joins this list in the same change that gives
+  the form a field for everything that kind needs**, which is the same rule
+  `SUPPORTED_COMBINATIONS` states for evaluators, applied to authoring.
 
 Support for a built-in is **per key, not per kind**, and both seeded detectors
 are now evaluated (`EVALUABLE_BUILT_IN_KEYS`). A key gains its evaluator and
@@ -111,6 +116,49 @@ the question an operator asks precisely about the expensive kind of rule. A
 timed-out judge records nothing — there is no usage to record — which the
 provider may still bill for; that is the honest limit of measuring this from
 the client side.
+
+### Writing one, and trying it before you turn it on
+
+The rule form takes the prose and the threshold, states the cap where you meet
+it, and carries a **"test this policy"** box: paste a message, and it comes
+back with the score, the threshold that was applied, and whether the rule would
+have fired.
+
+Three things about that box are worth knowing, because each of them is a way it
+could have been misleading:
+
+- **It runs the judge in `apps/web`, not in the panel.** The panel posts to
+  `/api/internal/guardrails/judge-policy` with the shared internal secret, and
+  that endpoint re-reads the named administrator from the database and checks
+  the platform role again — the secret alone would let anything holding it
+  spend money on a judge model. `apps/web` is a runtime that serves chat, so a
+  trial exercises the binding real traffic passes through. A judge in the panel
+  would be a third binding, with its own model id and its own timeout, and you
+  would tune a threshold against a number no turn ever produces.
+  `guardrails-are-not-recopied` asserts there are exactly two judge bindings;
+  that assertion is the record of this decision.
+- **It masks the text first, when this installation masks.** The input stage
+  runs downstream of Presidio, so the judge never sees a phone number. The box
+  shows you what the judge actually read, which is the same caveat as the one
+  under the policy field, in a form you can act on. If masking is on and the
+  analyzer does not answer, the trial is *not run* rather than run against raw
+  text.
+- **It writes no AI-usage row.** `AiUsage.organizationId` is required, and a
+  platform administrator testing a draft has no tenant to bill — inventing one
+  would put a number on some organization's page that nobody in it caused. The
+  provider still bills for these calls, and the only record is the admin audit
+  entry `admin.guardrail.policy_tested`. That is a real limit, and it is why
+  trials are audited at all.
+
+The prose and the pasted message stay out of the audit entry and out of the
+logs: it records the outcome, the threshold and the score. A judge failure is
+described rather than logged whole, for the reason in
+`docs/lessons.md` — a provider error carries the request body, and the request
+body is the customer's message.
+
+**A threshold you leave empty means "the rule names none"**, which is what
+makes the default apply. It is stored as `null` and never as `0` — a threshold
+of zero matches every message.
 
 ## How a rule reaches an organization
 

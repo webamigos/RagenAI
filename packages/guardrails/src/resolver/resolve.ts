@@ -5,6 +5,7 @@ import {
   type GuardrailRule,
   isActionValidForKind,
   isCombinationSupported,
+  isThresholdInRange,
   SUPPORTED_COMBINATIONS,
   isEvaluableBuiltIn,
 } from '../contracts/guardrail';
@@ -288,10 +289,6 @@ function applyOverride(
   }
 
   return { ...rule, enabled, action, threshold, isPlatformRule: true, sources };
-}
-
-function isThresholdInRange(value: number): boolean {
-  return Number.isFinite(value) && value >= 0 && value <= 1;
 }
 
 /** The rules that will actually run: resolved, and switched on. */

@@ -618,8 +618,55 @@ match.
       guardrail events do not escalate; what replaces it is that the rule can
       now **block**, which the classifier never could, and that its severity is
       the operator's to set.
-- [ ] **C3.** The policy editor, with a "test this policy" box that runs the
-      judge against text the operator pastes.
+- [x] **C3.** The policy editor, with a "test this policy" box that runs the
+      judge against text the operator pastes. `LLM_POLICY`/`INPUT` joins
+      `AUTHORABLE_COMBINATIONS` here, in the change that gives the form a field
+      for the prose — the authoring half of the rule the supported list already
+      states for evaluators.
+
+      Four things came out differently from the sketch. **The trial runs in
+      `apps/web`, over an internal endpoint**, rather than in the panel:
+      `apps/web` is a runtime that serves chat, so the trial exercises the
+      binding real traffic passes through. A judge in `apps/admin` would have
+      been a third one — a third model id, a third timeout, a third reading of
+      a provider error — and an operator would tune a threshold against a
+      number no turn produces. It also keeps the panel free of a provider SDK
+      and credentials, and keeps `guardrails-are-not-recopied`'s "exactly two
+      bindings" true.
+
+      **The trial masks its text first.** This is the one way the box could
+      have been worse than no box: the input stage runs downstream of Presidio,
+      so a policy is judged against `<PHONE_NUMBER_1>`, and a trial over raw
+      text would score a string no turn produces. It fails closed when the
+      analyzer does not answer, and returns the masked text so the caveat under
+      the policy field is something an operator sees rather than reads. The
+      chat path's hardcoded `'pl'` became `PII_MASKING_LANGUAGE` in the same
+      change, because two callers naming their own language is a trial that
+      masks differently from the turn it predicts.
+
+      **A trial writes no AI-usage row, and is audited instead.**
+      `AiUsage.organizationId` is required and foreign-keyed; a platform
+      administrator has no tenant to bill, and inventing one would put a number
+      on an organization's page that nobody in it caused. So the record is
+      `admin.guardrail.policy_tested`, which is the only thing standing between
+      a judge model and unattributable spend — the provider bills for these
+      calls and no page in Ragen shows them.
+
+      **`DEFAULT_POLICY_THRESHOLD`, `MAX_ACTIVE_LLM_POLICIES` and the cap
+      notice moved to `contracts`.** The rule form is a `'use client'`
+      component and `contracts` is the only entry point it may import, so a
+      form that could not reach the default would have written `0.7` into a
+      placeholder — the second copy `policyThresholdFor` is a package-only
+      symbol to prevent. `runPolicyRules` also gained `scored` alongside
+      `hits`: a trial that can only say "it did not fire" cannot distinguish a
+      miss at 0.05 from a miss at 0.68, which is the whole of what an operator
+      is tuning.
+
+      One thing deliberately left: **a scored built-in's threshold is still not
+      editable from the panel.** `jailbreak-detection` has one and the resolver
+      reads it, but the form offers no field, so an edit must leave the column
+      untouched rather than writing `null` and resetting a tuned detector as a
+      side effect of a rename. Offering it is its own slice.
 
 ### Phase D — output guardrails
 

@@ -60,6 +60,7 @@ import { isEncryptionEnabled } from '@ragenai/crypto';
 import { recordSecurityEvent } from '@/features/security/services/commands/record-security-event-command';
 import { StreamUnmasker } from '@/libs/pii/stream-unmasker';
 import { anonymizeWithSecurityEvents } from '@/libs/pii/anonymize-with-security-events';
+import { PII_MASKING_LANGUAGE } from '@/libs/pii/masking-language';
 import { applyPiiUnmaskToTools } from '@/libs/mcp/client';
 import { toRetrievalEvent } from '@/features/threads/utils/retrieval-event';
 import { readPublicRuntimeConfig } from '@/config/public-runtime-config';
@@ -781,11 +782,15 @@ export async function streamEvents({
             piiResult,
             entityTypes: piiAliasTypes,
             durationMs: piiMaskingDurationMs,
-          } = await anonymizeWithSecurityEvents(userMessage.prompt, 'pl', {
-            orgId: orgId ?? null,
-            userId: userId ?? null,
-            threadId: threadRecord.id,
-          });
+          } = await anonymizeWithSecurityEvents(
+            userMessage.prompt,
+            PII_MASKING_LANGUAGE,
+            {
+              orgId: orgId ?? null,
+              userId: userId ?? null,
+              threadId: threadRecord.id,
+            },
+          );
           logger.debug(
             {
               aliasCount: Object.keys(piiResult.aliasMap).length,

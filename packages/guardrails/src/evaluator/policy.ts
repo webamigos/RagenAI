@@ -1,4 +1,19 @@
-import type { GuardrailRule } from '../contracts/guardrail';
+import {
+  DEFAULT_POLICY_THRESHOLD,
+  MAX_ACTIVE_LLM_POLICIES,
+  type GuardrailRule,
+} from '../contracts/guardrail';
+
+/**
+ * Both defined in `contracts/guardrail.ts` and re-exported here, as of C3.
+ *
+ * They are read by the rule form, and `contracts` is the only entry point a
+ * `'use client'` component may import — the root barrel pulls in the ReDoS
+ * probe's `node:worker_threads`. Re-exported rather than moved outright so
+ * every existing reader keeps its import, and so this file still reads as the
+ * one place the judge's numbers are stated.
+ */
+export { DEFAULT_POLICY_THRESHOLD, MAX_ACTIVE_LLM_POLICIES };
 
 /**
  * `LLM_POLICY` rules: a policy written in prose, scored 0–1 by a judge model.
@@ -51,15 +66,6 @@ export type JudgeRequest = {
 export type JudgePolicy = (request: JudgeRequest) => Promise<PolicyJudgement>;
 
 /**
- * The score at which a policy counts as matched, when the rule names none.
- *
- * 0.7, the jailbreak classifier's `DEFAULT_THRESHOLD`, so a built-in absorbed
- * into this loop keeps the sensitivity it shipped with rather than acquiring a
- * new one in the change that moves it.
- */
-export const DEFAULT_POLICY_THRESHOLD = 0.7;
-
-/**
  * How long a runtime waits for one judge before treating it as an error.
  *
  * Here rather than in each binding so the two agree, and 3 s because that is
@@ -71,19 +77,6 @@ export const DEFAULT_POLICY_THRESHOLD = 0.7;
  * runtimes read is the half of that which can be true today.
  */
 export const POLICY_JUDGE_TIMEOUT_MS = 3_000;
-
-/**
- * How many policy rules may run on one stage, per organization.
- *
- * Policy rules on a stage run concurrently, so latency stays at the slowest
- * rather than the sum — but **spend is the sum**, and it scales with the rule
- * count while nothing on screen says so. Three to begin with.
- *
- * Enforced here, in the loop, and not only where rules are authored: an
- * authoring check is a check a seed, a migration or a hand-made request walks
- * past, and the thing being bounded is a bill.
- */
-export const MAX_ACTIVE_LLM_POLICIES = 3;
 
 /** The threshold this rule is held to. */
 export function policyThresholdFor(rule: GuardrailRule): number {
@@ -107,7 +100,14 @@ export function policyThresholdFor(rule: GuardrailRule): number {
  * drops such a row so it cannot reach here — this predicate is what it drops
  * on, and the second half of the belt and braces for a row written by hand.
  */
-export function hasEvaluablePolicy(rule: GuardrailRule): boolean {
+export function hasEvaluablePolicy(rule: {
+  // Widened from `GuardrailRule` in C3 so the authoring gate can ask the same
+  // question of a draft that has no `publicId` yet. It only ever read this
+  // field; taking the whole rule made the predicate look like it considered
+  // more than it does, and forced a cast at the one call site that has a
+  // half-built rule in hand.
+  policy?: string | null;
+}): boolean {
   return typeof rule.policy === 'string' && rule.policy.trim().length > 0;
 }
 
@@ -119,6 +119,21 @@ export type PolicyHit = {
 export type PolicyRunResult = {
   /** Rules whose score reached their threshold. */
   readonly hits: readonly PolicyHit[];
+  /**
+   * Every rule the judge answered for, hit or not, with its score.
+   *
+   * A superset of `hits`, and added in C3 for the rule form's trial box: an
+   * operator tuning a threshold needs to see that a message scored 0.62
+   * against a threshold of 0.7, not merely that it did not hit. Returning the
+   * score the loop already has is the alternative to asking the judge a second
+   * time, which would be a second bill and, at temperature 0 but not
+   * determinism, possibly a second answer.
+   *
+   * The turn itself ignores this. It is deliberately not the thing a hit is
+   * read from — `hits` stays the answer to "what fired" — because a list that
+   * contains misses is one a future caller could loop over and refuse on.
+   */
+  readonly scored: readonly PolicyHit[];
   /**
    * Rules not run because the cap was reached.
    *
@@ -168,6 +183,7 @@ export async function runPolicyRules(
   const skipped = policies.slice(Math.max(0, cap));
 
   const hits: PolicyHit[] = [];
+  const scored: PolicyHit[] = [];
   const errors: { rule: GuardrailRule; reason: string }[] = [];
 
   const judged = await Promise.all(
@@ -205,12 +221,13 @@ export async function runPolicyRules(
       errors.push({ rule, reason: judgement.reason });
       continue;
     }
+    scored.push({ rule, score: judgement.score });
     if (judgement.score >= policyThresholdFor(rule)) {
       hits.push({ rule, score: judgement.score });
     }
   }
 
-  return { hits, skipped, errors };
+  return { hits, scored, skipped, errors };
 }
 
 /**

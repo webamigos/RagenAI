@@ -188,9 +188,21 @@ export const SUPPORTED_COMBINATIONS: readonly GuardrailCombination[] =
  * The two were one constant until Phase B, when they stopped meaning the same
  * thing. Collapsing them again would reintroduce one of the two failures
  * described above, depending on which way it was collapsed.
+ *
+ * `LLM_POLICY`/`INPUT` joins in Phase C3, and the gap between it becoming
+ * *supported* in C1 and *authorable* here is the point rather than a delay.
+ * A judge existed from C1, so the resolver was right to keep such a row; the
+ * form had no field for the prose, so a rule authored through this panel
+ * would have been written with no `policy` — and `hasEvaluablePolicy` drops
+ * exactly that row, leaving a rule the page shows as enabled and the runtime
+ * never runs. The field and the entry arrive together, which is the same rule
+ * `SUPPORTED_COMBINATIONS` states for evaluators, applied to authoring.
  */
 export const AUTHORABLE_COMBINATIONS: readonly GuardrailCombination[] =
-  Object.freeze([Object.freeze({ kind: 'PATTERN', stage: 'INPUT' })] as const);
+  Object.freeze([
+    Object.freeze({ kind: 'PATTERN', stage: 'INPUT' }),
+    Object.freeze({ kind: 'LLM_POLICY', stage: 'INPUT' }),
+  ] as const);
 
 /**
  * `BOTH` is shorthand for two stages, not a third one, so a rule carrying it
@@ -313,3 +325,67 @@ export const GUARDRAIL_SECURITY_EVENT_TYPES = [
 
 export type GuardrailSecurityEventType =
   (typeof GUARDRAIL_SECURITY_EVENT_TYPES)[number];
+
+/**
+ * The score at which a policy counts as matched, when the rule names none.
+ *
+ * 0.7, the jailbreak classifier's `DEFAULT_THRESHOLD`, so a built-in absorbed
+ * into the judge loop keeps the sensitivity it shipped with rather than
+ * acquiring a new one in the change that moved it.
+ *
+ * **In the contracts rather than beside the judge, as of C3**, and the move is
+ * not tidying. `contracts` is the only entry point a `'use client'` component
+ * may import — the root barrel re-exports the ReDoS probe and its
+ * `node:worker_threads` — so a rule form that could not reach this number
+ * would have written `0.7` into a placeholder. `policyThresholdFor` is a
+ * package-only symbol precisely because a second copy of that number is a rule
+ * more sensitive on one surface than another, and a form is a surface. The
+ * judge re-exports it, so there is still one definition.
+ */
+export const DEFAULT_POLICY_THRESHOLD = 0.7;
+
+/**
+ * How many operator-authored policy rules may run on one stage, per
+ * organization.
+ *
+ * Policy rules on a stage run concurrently, so latency stays at the slowest
+ * rather than the sum — but **spend is the sum**, and it scales with the rule
+ * count while nothing on screen says so. Three to begin with.
+ *
+ * Here for the same reason as the threshold above: the rule form states the
+ * cap where an operator meets it rather than in a runbook, and a form cannot
+ * import the judge. It is enforced in the loop, not at authoring time — an
+ * authoring check is one a seed, a migration or a hand-made request walks
+ * past, and the thing being bounded is a bill.
+ */
+export const MAX_ACTIVE_LLM_POLICIES = 3;
+
+/**
+ * Whether a threshold is a score at all.
+ *
+ * One definition, read by the resolver when it validates an override, by the
+ * admin panel when it saves a rule, and by nothing else. It was private to the
+ * resolver until C3 made thresholds authorable, and a second copy in the
+ * authoring path is how a rule gets written that the resolver then refuses —
+ * visible to nobody, because the row is simply dropped.
+ */
+export function isThresholdInRange(value: number): boolean {
+  return Number.isFinite(value) && value >= 0 && value <= 1;
+}
+
+/**
+ * The sentence the rule form puts next to the policy field.
+ *
+ * Here so the cap and the wording that explains it cannot come apart — and in
+ * `contracts` rather than beside the validator because the form is a
+ * `'use client'` component, which may import this entry point and no other.
+ *
+ * It says the thing an operator will otherwise get wrong. A platform policy is
+ * authored once, on one page, and then counts against *every* organization's
+ * allowance — so three platform policies leave a tenant no room for one of
+ * their own, and the rules past the cap do not run rather than queueing.
+ */
+export const POLICY_CAP_NOTICE =
+  `Each organization may run ${MAX_ACTIVE_LLM_POLICIES} policy rules at ` +
+  'once on a stage. A platform policy counts against that allowance in ' +
+  'every organization, and rules past the cap do not run.';
