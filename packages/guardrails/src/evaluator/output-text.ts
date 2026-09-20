@@ -129,9 +129,33 @@ export async function evaluateOutputText(
     deps.onBudgetExhausted(skipped.map(resolve), elapsedMs);
   }
 
+  /**
+   * Every pattern rule that matched but did not stop the turn.
+   *
+   * Called before each of the three exits rather than at the tail alone. A
+   * `MASK` or `LOG` rule that matched the same answer as a blocking one still
+   * fired, and dropping it would make the hit counts on the guardrails page
+   * describe only the answers nobody blocked. The window mode records these
+   * the same way, and the two modes not agreeing about what "fired" means
+   * would be a hit count that changes with the rule set rather than with the
+   * rules.
+   *
+   * No guard against running twice, because nothing can: each of the three
+   * exits returns. A flag here would read as protection and be unreachable —
+   * a sabotage of it changed no test, which is how it was found.
+   */
+  const recordNonBlocking = (): void => {
+    for (const hit of hits) {
+      if (hit.rule.action !== 'BLOCK') {
+        deps.record({ rule: resolve(hit.rule), matchCount: hit.spans.length });
+      }
+    }
+  };
+
   const blockingPattern = hits.find((hit) => hit.rule.action === 'BLOCK');
   if (blockingPattern) {
     const rule = resolve(blockingPattern.rule);
+    recordNonBlocking();
     deps.record({ rule });
     return { text, blockedBy: rule };
   }
@@ -155,6 +179,7 @@ export async function evaluateOutputText(
 
     const blockingPolicy = run.hits.find((hit) => hit.rule.action === 'BLOCK');
     if (blockingPolicy) {
+      recordNonBlocking();
       return { text, blockedBy: resolve(blockingPolicy.rule) };
     }
   }
@@ -162,9 +187,7 @@ export async function evaluateOutputText(
   const maskHits: PatternHit[] = hits.filter(
     (hit) => hit.rule.action === 'MASK',
   );
-  for (const hit of hits.filter((h) => h.rule.action !== 'BLOCK')) {
-    deps.record({ rule: resolve(hit.rule), matchCount: hit.spans.length });
-  }
+  recordNonBlocking();
 
   return { text: maskHits.length > 0 ? applyMask(text, maskHits) : text };
 }

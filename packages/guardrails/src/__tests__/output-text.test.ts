@@ -210,7 +210,9 @@ describe('evaluateOutputText', () => {
 
   it('records a LOG rule that fired on the same answer as a blocking policy', async () => {
     // Recorded before the block returns, so the hit counts describe the rules
-    // that fired rather than only the turns nobody blocked.
+    // that fired rather than only the answers nobody blocked. The window mode
+    // does the same, and the two disagreeing would make a hit count depend on
+    // whether the organization also happens to have a policy.
     judge.mockResolvedValue({ outcome: 'scored', score: 1 });
 
     await evaluateOutputText(
@@ -220,8 +222,40 @@ describe('evaluateOutputText', () => {
     );
 
     expect(record).toHaveBeenCalledWith({
+      rule: expect.objectContaining({ publicId: 'rule-1' }),
+      matchCount: 1,
+    });
+    expect(record).toHaveBeenCalledWith({
       rule: expect.objectContaining({ publicId: 'policy-1' }),
       score: 1,
     });
+  });
+
+  it('records a LOG rule that fired on the same answer as a blocking pattern', async () => {
+    // The other early return, and the one the first version of this dropped.
+    await evaluateOutputText(
+      [
+        rule({ publicId: 'log-1', action: 'LOG', pattern: 'door' }),
+        rule({ publicId: 'block-1', action: 'BLOCK' }),
+      ],
+      ANSWER,
+      deps,
+    );
+
+    expect(record).toHaveBeenCalledWith({
+      rule: expect.objectContaining({ publicId: 'log-1' }),
+      matchCount: 1,
+    });
+    expect(record).toHaveBeenCalledWith({
+      rule: expect.objectContaining({ publicId: 'block-1' }),
+    });
+  });
+
+  it('files each rule once on an answer nothing blocked', async () => {
+    // The counterweight: recording before every exit must not mean recording
+    // twice on the path that reaches the end.
+    await evaluateOutputText([rule({ action: 'LOG' })], ANSWER, deps);
+
+    expect(record).toHaveBeenCalledTimes(1);
   });
 });
