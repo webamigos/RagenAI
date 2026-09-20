@@ -14,6 +14,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { logger } from '@/app/lib/utils/logger';
 import type {
   ConnectorDto,
   PublicProviderDto,
@@ -220,14 +221,24 @@ export function ConnectorCard({ provider, connector }: ConnectorCardProps) {
       const result = await initiateConnection(provider.provider);
 
       const callbackUrl = `${window.location.origin}/api/connectors/external/callback?provider=${provider.provider}`;
+      // `provider` is the name the route reads, and it carries a catalogue
+      // slug — the same value the callback URL above sends. Renaming the key
+      // here would 400 every connect, with the response body never read.
       const params = new URLSearchParams({
-        providerSlug: provider.provider,
+        provider: provider.provider,
         callback_url: callbackUrl,
       });
       const response = await fetch(
         `/api/connectors/external/connect?${params.toString()}`,
       );
       if (!response.ok) {
+        // Left with no trace, a rejected connect looks like a button that
+        // does nothing — which is how the wrong query-parameter name above
+        // survived. The body carries the route's own reason.
+        logger.error(
+          { provider: provider.provider, status: response.status },
+          'External MCP connect was rejected',
+        );
         setLoading(false);
         return;
       }

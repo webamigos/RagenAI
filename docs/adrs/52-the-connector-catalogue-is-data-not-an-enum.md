@@ -116,6 +116,15 @@ token-refresh cycle.
   have kept working through the public API — an entry that is off everywhere
   except one path is not off — and an operator's typed URL would have been
   dialled there with no address check, because that app's guard covered only
-  the shop-URL shape. What it does *not* yet do is read a catalogue entry's
-  vault-held OAuth credentials, so an `EXTERNAL_MCP` entry an operator created
-  authorizes from the app and not from the API.
+  the shop-URL shape. It reads a catalogue entry's vault-held OAuth
+  credentials too (`connectors/connector-credentials.ts`, the sibling of
+  apps/web's `get-connector-credentials-query.ts`), which an operator-created
+  `EXTERNAL_MCP` entry needs in order to refresh a token at all.
+
+  The two clients are copies, and that is the repository's most-repeated bug
+  source: apps/api's `external_mcp` branch kept a bare client for a while after
+  apps/web's had moved onto the guarded transport, with both apps compiling and
+  both suites green. `connect-is-guarded` now exists on both sides — it asserts
+  that every branch which opens a session goes through the address policy when
+  the definition carries a guard — because a rule neither suite checked is a
+  rule that only production enforces.

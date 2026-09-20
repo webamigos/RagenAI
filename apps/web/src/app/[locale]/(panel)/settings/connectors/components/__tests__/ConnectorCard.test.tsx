@@ -159,3 +159,42 @@ describe('ConnectorCard custom-header auth', () => {
     );
   });
 });
+
+describe('ConnectorCard external MCP auth', () => {
+  const externalProvider = {
+    provider: 'notion',
+    name: 'Notion',
+    authType: 'external_mcp',
+    scopes: [],
+  } as unknown as PublicProviderDto;
+
+  it('names the query parameter the connect route reads', async () => {
+    // The route reads `provider`. Sending `providerSlug` 400s every connect,
+    // and the card never reads the response body — so the button did nothing
+    // and said nothing.
+    const { initiateConnection } = await import('../../actions');
+    vi.mocked(initiateConnection).mockResolvedValue({
+      id: 'conn-1',
+    } as never);
+
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(JSON.stringify({ status: 'already_authorized' }), {
+        status: 200,
+      }),
+    );
+
+    const user = userEvent.setup();
+    renderCard(true, externalProvider);
+    await user.click(screen.getByRole('button', { name: t.connect }));
+
+    const requested = new URL(
+      String(fetchSpy.mock.calls[0]?.[0]),
+      'http://localhost',
+    );
+    expect(requested.pathname).toBe('/api/connectors/external/connect');
+    expect(requested.searchParams.get('provider')).toBe('notion');
+    expect(requested.searchParams.has('providerSlug')).toBe(false);
+
+    fetchSpy.mockRestore();
+  });
+});

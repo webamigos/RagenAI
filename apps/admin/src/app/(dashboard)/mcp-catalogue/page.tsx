@@ -133,6 +133,9 @@ export default async function McpCataloguePage() {
               <th className="px-4 py-3 text-left font-medium">Origin</th>
               <th className="px-4 py-3 text-left font-medium">Status</th>
               <th className="px-4 py-3 text-left font-medium">Available to</th>
+              {/* The row-actions column. Named by nothing, but it still has
+                  to be declared or every heading sits over the wrong cell. */}
+              <th className="w-10 px-4 py-3"></th>
             </tr>
           </thead>
           <tbody>

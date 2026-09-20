@@ -140,3 +140,29 @@ export function validateEntry(
 
   return null;
 }
+
+/**
+ * The values after a change of authentication type.
+ *
+ * Scopes and `useUserScope` belong to an OAuth authorization request, and
+ * `validateEntry` refuses them on anything else. The form only renders those
+ * fields inside its `EXTERNAL_MCP` block, so a scope typed and then left
+ * behind by switching type failed the save with its message attached to a
+ * field nobody could see — a Save button that did nothing and said nothing.
+ *
+ * Clearing them here means the rule cannot be broken from the form at all.
+ * `validateEntry` stays as the guard for the action, which a form is not the
+ * only way to reach.
+ */
+export function valuesForAuthType(
+  current: CatalogueEntryInput,
+  authType: string,
+): CatalogueEntryInput {
+  const isOAuth = authType === 'EXTERNAL_MCP';
+  return {
+    ...current,
+    authType,
+    scopes: isOAuth ? current.scopes : [],
+    useUserScope: isOAuth ? current.useUserScope : false,
+  };
+}

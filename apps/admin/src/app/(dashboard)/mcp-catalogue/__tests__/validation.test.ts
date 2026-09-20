@@ -4,6 +4,7 @@ import {
   CREATABLE_AUTH_TYPES,
   serverUrlFailure,
   validateEntry,
+  valuesForAuthType,
   type CatalogueEntryInput,
 } from '../validation';
 
@@ -99,5 +100,40 @@ describe('the address check at save time', () => {
   it('refuses something that is not a URL, and a scheme that is not HTTP', () => {
     expect(serverUrlFailure('mcp.notion.com', false)).toMatch(/full URL/);
     expect(serverUrlFailure('file:///etc/passwd', false)).toMatch(/http/);
+  });
+});
+
+describe('valuesForAuthType', () => {
+  const withScopes = input({
+    authType: 'EXTERNAL_MCP',
+    scopes: ['read', 'write'],
+    useUserScope: true,
+  });
+
+  it('drops scopes when the type stops being an OAuth one', () => {
+    // Left behind, they failed the save with the message attached to a field
+    // the form no longer renders — a Save that did nothing and said nothing.
+    const next = valuesForAuthType(withScopes, 'API_KEY_BEARER');
+
+    expect(next.authType).toBe('API_KEY_BEARER');
+    expect(next.scopes).toEqual([]);
+    expect(next.useUserScope).toBe(false);
+    expect(validateEntry(next)).toBeNull();
+  });
+
+  it('keeps them while the type is still EXTERNAL_MCP', () => {
+    const next = valuesForAuthType(withScopes, 'EXTERNAL_MCP');
+
+    expect(next.scopes).toEqual(['read', 'write']);
+    expect(next.useUserScope).toBe(true);
+  });
+
+  it('leaves every other field alone', () => {
+    const next = valuesForAuthType(withScopes, 'API_KEY_BEARER');
+
+    expect(next.slug).toBe(withScopes.slug);
+    expect(next.label).toBe(withScopes.label);
+    expect(next.mcpServerUrl).toBe(withScopes.mcpServerUrl);
+    expect(next.allowsPrivateAddress).toBe(withScopes.allowsPrivateAddress);
   });
 });

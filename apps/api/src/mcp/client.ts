@@ -1,6 +1,6 @@
 import { Logger } from '@nestjs/common';
 import { createMCPClient, type MCPClient } from '@ai-sdk/mcp';
-import { getProviderDefinition } from '../connectors/provider-definition.js';
+import { getConnectorOAuthCredentials } from '../connectors/connector-credentials.js';
 import {
   createGuardedMcpTransport,
   isBlockedAddress,
@@ -357,8 +357,8 @@ export function wrapToolsForConnector(
  */
 export async function createMcpToolsFromConnectors(
   connectors: McpConnectorInfo[],
-  recordSecurityEvent?: RecordSecurityEvent,
-  definitions?: Record<string, ProviderDefinition>,
+  recordSecurityEvent: RecordSecurityEvent | undefined,
+  definitions: Record<string, ProviderDefinition>,
 ) {
   const clients: MCPClient[] = [];
   // Dispatchers owned by the guarded transports below; closed alongside the
@@ -381,15 +381,19 @@ export async function createMcpToolsFromConnectors(
     url: string,
     definition: ProviderDefinition | undefined,
     headers: Record<string, string>,
+    authProvider?: RagenAuthOAuthClientProvider,
   ): Promise<MCPClient> => {
     const guard = definition?.addressGuard;
     if (!guard) {
-      return createMCPClient({ transport: { type: 'http', url, headers } });
+      return createMCPClient({
+        transport: { type: 'http', url, headers, authProvider },
+      });
     }
 
     const guarded = createGuardedMcpTransport(url, headers, {
       isBlockedAddress: (address) =>
         isBlockedAddress(address, { allowPrivate: guard.allowPrivate }),
+      authProvider,
     });
     guards.push(guarded.close);
     return createMCPClient({ transport: guarded.transport });
@@ -397,13 +401,13 @@ export async function createMcpToolsFromConnectors(
 
   for (const connector of connectors) {
     try {
-      // The catalogue when the caller resolved it, the compiled-in manifests
-      // otherwise. A connector an operator added has no manifest at all, so
-      // without the catalogue this path would dial its URL with no definition
-      // — and with no address guard.
-      const providerDef =
-        definitions?.[connector.provider] ??
-        getProviderDefinition(connector.provider);
+      // The catalogue, and only the catalogue. A manifest fallback used to
+      // stand behind this, which read as belt and braces and was the opposite:
+      // a manifest carries no `addressGuard`, so falling back turned the
+      // address policy off for exactly the connectors that need it — the ones
+      // whose URL somebody typed. `definitions` is required for the same
+      // reason, in apps/web's shape.
+      const providerDef = definitions[connector.provider];
 
       // Resolve the MCP server URL at tool-load time rather than trusting
       // the value snapshotted on the connector row at connect time.
@@ -455,21 +459,23 @@ export async function createMcpToolsFromConnectors(
           [providerDef.headerName]: tokenData.accessToken,
         });
       } else if (providerDef?.authType === 'external_mcp') {
+        // Environment for a built-in, ragen-token-vault for an entry an
+        // operator created. A refresh needs the client credentials, so this
+        // runs per connector rather than at authorization time only.
+        const credentials = await getConnectorOAuthCredentials(providerDef);
+
         const authProvider = new RagenAuthOAuthClientProvider({
           orgId: connector.organizationId,
           userId: connector.userId,
           provider: connector.provider,
           callbackUrl: '', // No redirect needed for runtime token injection
-          fixedClientId: providerDef.oauthClientId,
-          fixedClientSecret: providerDef.oauthClientSecret,
+          fixedClientId: credentials.clientId,
+          fixedClientSecret: credentials.clientSecret,
         });
-        client = await createMCPClient({
-          transport: {
-            type: 'http',
-            url: resolvedUrl,
-            authProvider,
-          },
-        });
+        // Through `connect`, not a bare client: an operator's URL is one
+        // somebody typed, so it goes past the address policy like every
+        // other branch here. Going direct was the one hole left in it.
+        client = await connect(resolvedUrl, providerDef, {}, authProvider);
       } else {
         client = await connect(resolvedUrl, providerDef, {
           'x-customer-id': connector.customerId,
@@ -511,7 +517,7 @@ export async function createMcpToolsFromConnectors(
           mcpServerUrlStored: connector.mcpServerUrl,
           mcpServerUrlTried: resolveMcpServerUrl(
             connector,
-            getProviderDefinition(connector.provider),
+            definitions[connector.provider],
           ),
         },
         error,

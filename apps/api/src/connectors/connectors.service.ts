@@ -5,7 +5,7 @@ import { PrismaService } from '../prisma/prisma.service.js';
 import { AuditLogService } from '../audit-logs/audit-log.service.js';
 import { SubscriptionsService } from '../subscriptions/subscriptions.service.js';
 import { ragenAuthClient } from '../ragen-vault/index.js';
-import { getProviderDefinition } from './provider-definition.js';
+import { CatalogueService } from './catalogue.service.js';
 import { fetchWithTimeout } from './fetch-with-timeout.js';
 import { normalizeSiteUrl } from './site-url.js';
 import {
@@ -53,6 +53,11 @@ export class ConnectorsService {
     private readonly prisma: PrismaService,
     private readonly auditLog: AuditLogService,
     private readonly subscriptions: SubscriptionsService,
+    // The catalogue, not the compiled-in manifests. Resolving from manifests
+    // meant an entry an operator added threw `Unknown provider` and could
+    // never be connected through the public API, and a disabled entry kept
+    // working there.
+    private readonly catalogue: CatalogueService,
   ) {}
 
   async createConnector(
@@ -70,7 +75,7 @@ export class ConnectorsService {
       );
     }
 
-    const providerDef = getProviderDefinition(provider);
+    const providerDef = await this.catalogue.resolve(provider);
     if (!providerDef) {
       throw new Error(`Unknown provider: ${provider}`);
     }
@@ -230,7 +235,7 @@ export class ConnectorsService {
     provider: string,
     apiKey: string,
   ) {
-    const providerDef = getProviderDefinition(provider);
+    const providerDef = await this.catalogue.resolve(provider);
     if (
       !providerDef ||
       providerDef.authType !== 'api_key' ||
@@ -301,7 +306,7 @@ export class ConnectorsService {
     provider: string,
     apiKey: string,
   ) {
-    const providerDef = getProviderDefinition(provider);
+    const providerDef = await this.catalogue.resolve(provider);
     if (!providerDef || providerDef.authType !== 'api_key_bearer') {
       throw new Error(`Invalid provider for API key bearer auth: ${provider}`);
     }
@@ -361,7 +366,7 @@ export class ConnectorsService {
     provider: string,
     credentials: CustomHeaderCredentials,
   ) {
-    const providerDef = getProviderDefinition(provider);
+    const providerDef = await this.catalogue.resolve(provider);
     if (
       !providerDef ||
       providerDef.authType !== 'api_key_custom_header' ||
@@ -446,7 +451,7 @@ export class ConnectorsService {
     provider: string,
     credentials: CustomHeaderCredentials,
   ): Promise<TestConnectionResult> {
-    const providerDef = getProviderDefinition(provider);
+    const providerDef = await this.catalogue.resolve(provider);
     if (
       !providerDef ||
       providerDef.authType !== 'api_key_custom_header' ||
@@ -564,7 +569,7 @@ export class ConnectorsService {
       return null;
     }
 
-    const providerDef = getProviderDefinition(provider);
+    const providerDef = await this.catalogue.resolve(provider);
     const baseUrl =
       providerDef?.authBaseUrl || connector.mcpServerUrl.replace(/\/mcp$/, '');
 

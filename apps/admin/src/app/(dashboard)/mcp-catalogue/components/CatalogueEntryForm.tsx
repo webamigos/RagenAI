@@ -10,7 +10,11 @@ import {
   updateCatalogueEntryAction,
   type ConnectionTestResult,
 } from '../actions';
-import { CREATABLE_AUTH_TYPES, type CatalogueEntryInput } from '../validation';
+import {
+  CREATABLE_AUTH_TYPES,
+  valuesForAuthType,
+  type CatalogueEntryInput,
+} from '../validation';
 
 const AUTH_TYPE_LABELS: Record<string, string> = {
   SERVER_SIDE:
@@ -56,6 +60,10 @@ export function CatalogueEntryForm({ entry, onDone }: CatalogueEntryFormProps) {
     value: CatalogueEntryInput[K],
   ) => {
     setValues((current) => ({ ...current, [key]: value }));
+  };
+
+  const setAuthType = (authType: string) => {
+    setValues((current) => valuesForAuthType(current, authType));
   };
 
   const test = async () => {
@@ -158,7 +166,7 @@ export function CatalogueEntryForm({ entry, onDone }: CatalogueEntryFormProps) {
           <select
             className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
             value={values.authType}
-            onChange={(event) => set('authType', event.target.value)}
+            onChange={(event) => setAuthType(event.target.value)}
           >
             {CREATABLE_AUTH_TYPES.map((authType) => (
               <option key={authType} value={authType}>

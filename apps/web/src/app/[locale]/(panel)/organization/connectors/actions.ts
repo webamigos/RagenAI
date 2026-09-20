@@ -6,8 +6,7 @@ import {
   saveAllowedConnectors,
   getDefaultAllowedConnectors,
 } from '@/features/organizations/services/organization-settings';
-import { CONNECTOR_PROVIDERS } from '@/features/connectors/constants/providers';
-import { PROVIDER_ICON_PATHS } from '@/features/connectors/utils/provider-icons';
+import { getConnectorDefinitionsQuery } from '@/features/connectors/services/queries/get-connector-definitions-query';
 import { logger } from '@/app/lib/utils/logger';
 
 export type AvailableConnectorInfo = {
@@ -26,16 +25,20 @@ export async function getOrgConnectorSettingsAction(): Promise<{
 }> {
   const orgId = await getOrgIdFromAuthOrThrow();
 
-  const [appDefaults, orgEnabled] = await Promise.all([
+  // The catalogue, not the compiled-in eleven: a connector a platform
+  // administrator added is offered here too, and a disabled one stops being
+  // offered. Reading the manifests instead left an added connector invisible
+  // on this page *and* unsaveable once it had been granted at the app level.
+  const [appDefaults, orgEnabled, definitions] = await Promise.all([
     getDefaultAllowedConnectors(),
     getAllowedConnectors(orgId),
+    getConnectorDefinitionsQuery(),
   ]);
 
-  // Filter CONNECTOR_PROVIDERS by app-level defaults
-  let available = CONNECTOR_PROVIDERS.map((p) => ({
-    provider: p.provider,
-    name: p.name,
-    icon: PROVIDER_ICON_PATHS[p.provider] ?? '',
+  let available = definitions.map((definition) => ({
+    provider: definition.provider,
+    name: definition.name,
+    icon: definition.iconUrl ?? '',
   }));
 
   if (appDefaults.length > 0) {
@@ -45,23 +48,32 @@ export async function getOrgConnectorSettingsAction(): Promise<{
   return { available, orgEnabled };
 }
 
-const VALID_PROVIDERS = new Set<string>(
-  CONNECTOR_PROVIDERS.map((p) => p.provider),
-);
-
 export async function saveOrgConnectorsAction(
   connectors: string[],
 ): Promise<{ success: boolean }> {
   try {
+    // The session first: everything below reads the database, and none of it
+    // is an anonymous caller's to reach.
+    const orgId = await getOrgIdFromAuthOrThrow();
+
     if (
       !Array.isArray(connectors) ||
-      !connectors.every((c) => typeof c === 'string' && VALID_PROVIDERS.has(c))
+      connectors.some((c) => typeof c !== 'string')
     ) {
       logger.error('Invalid connector values in saveOrgConnectorsAction');
       return { success: false };
     }
 
-    const orgId = await getOrgIdFromAuthOrThrow();
+    // Validated against the catalogue for the same reason the list above is
+    // read from it: a slug an operator added is a real connector, and a
+    // hard-coded set would reject it.
+    const definitions = await getConnectorDefinitionsQuery();
+    const validProviders = new Set(definitions.map((d) => d.provider));
+    if (!connectors.every((c) => validProviders.has(c))) {
+      logger.error('Invalid connector values in saveOrgConnectorsAction');
+      return { success: false };
+    }
+
     await saveAllowedConnectors(orgId, connectors);
     return { success: true };
   } catch (error) {
