@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
+import { OUTPUT_WINDOW_CHARS } from '../contracts/guardrail';
 import {
   adversarialFixtures,
   maxMatchWidth,
-  OUTPUT_WINDOW_CHARS,
+  usesStringAnchors,
   REDOS_BUDGET_MS,
   REDOS_FIXTURE_CHARS,
   validatePattern,
@@ -229,5 +230,51 @@ describe('estimating the widest possible match', () => {
 
   it('does not count an optional atom as more than it can be', () => {
     expect(maxMatchWidth('ab?c')).toBeLessThanOrEqual(3);
+  });
+});
+
+describe('string anchors on an output rule', () => {
+  const asOutput = (pattern: string) =>
+    validatePatternShape({ pattern, patternIsRegex: true, stage: 'OUTPUT' });
+  const asInput = (pattern: string) =>
+    validatePatternShape({ pattern, patternIsRegex: true, stage: 'INPUT' });
+
+  it('refuses a pattern anchored to the end of the string', () => {
+    // On output the string is the window's buffer, so `$` means "the end of
+    // whatever the provider happened to send". `foo$` blocks the moment a
+    // delta ends in `foo`, even though the sentence carries on.
+    const result = asOutput('foo$');
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.failure.code).toBe('string-anchor-on-output');
+    }
+  });
+
+  it('refuses one anchored to the start', () => {
+    expect(asOutput('^foo').ok).toBe(false);
+  });
+
+  it('refuses it on BOTH, which runs on output as well', () => {
+    expect(
+      validatePatternShape({
+        pattern: '^foo',
+        patternIsRegex: true,
+        stage: 'BOTH',
+      }).ok,
+    ).toBe(false);
+  });
+
+  it('allows them on input, where the message arrives whole', () => {
+    expect(asInput('^foo$').ok).toBe(true);
+  });
+
+  it('allows an escaped one and one inside a class', () => {
+    // `\$` is a dollar sign and `[$]` is a class containing one — refusing
+    // either would rule out matching a price. `[^…]` is negation, not an
+    // anchor, for the same reason.
+    expect(usesStringAnchors('\\$[0-9]{1,6}')).toBe(false);
+    expect(usesStringAnchors('[$]')).toBe(false);
+    expect(usesStringAnchors('[^a-z]{1,4}')).toBe(false);
+    expect(usesStringAnchors('a$')).toBe(true);
   });
 });
