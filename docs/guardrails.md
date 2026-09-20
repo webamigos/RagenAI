@@ -160,6 +160,23 @@ body is the customer's message.
 makes the default apply. It is stored as `null` and never as `0` — a threshold
 of zero matches every message.
 
+### Tuning a built-in detector
+
+`jailbreak-detection` is judged by a model like a policy is, so it has a
+threshold too, and the rule form offers it. What you cannot change is the
+question: a built-in's prompt is fixed in code, and only how sure it has to be
+is yours. Until this shipped the column existed, the resolver read it, and
+nothing but SQL could set it — the detector ran at whatever the migration
+seeded.
+
+`content-moderation` has no such field, and that is not an omission. It asks a
+provider endpoint that answers with a flag rather than a score, so a threshold
+on it would be a number you could set and nothing would read. **Which built-ins
+are scored is a list of keys** (`SCORED_BUILT_IN_KEYS`), not a property of the
+kind — the same per-key distinction `EVALUABLE_BUILT_IN_KEYS` exists for, and
+for the same reason: two built-ins of the same kind differ in how their verdict
+arrives.
+
 ## How a rule reaches an organization
 
 ```
@@ -180,20 +197,22 @@ an operator who cannot see _why_ a rule is on is not in control of it.
 An override whose target is not a platform rule is incoherent. It is refused
 twice: the admin action will not write one, and the resolver drops it.
 
-**Three of these values the resolver reads and no page can yet write.** An
+**Two of these values the resolver reads and no page can yet write.** An
 override's `action` and `threshold` are both honoured — validated, with their
 own `dropped` reasons when they are out of range or incoherent — but
-`setGuardrailOverrideAction` writes `enabled` and nothing else. The same goes
-for a scored built-in's own `threshold` on the platform rule: `policyThresholdFor`
-reads it and the form offers no field, so `jailbreak-detection` runs at whatever
-sensitivity the migration seeded.
+`setGuardrailOverrideAction` writes `enabled` and nothing else.
 
 This is the *opposite* of the failure the rest of this page is about. Nothing
 is silently unenforced — the code is a knob with no handle, and it reads as
 though the feature is there. "Keep the platform's rule, but only log it for us"
 is the thing an override exists for and the panel cannot express it yet. It is
-C4 in the spec, and it is called out here rather than left for somebody to
+C4b in the spec, and it is called out here rather than left for somebody to
 deduce from a schema.
+
+A third one is now closed: a scored built-in's own `threshold` on the platform
+rule — see [Tuning a built-in detector](#tuning-a-built-in-detector) above. A
+link rather than a direction, because that section sits earlier on the page and
+"below" was already wrong the day it was written.
 
 **One override origin is special.** Rows marked `legacy_on_premise` were seeded
 by the migration from `OrganizationSettings.contentModerationEnabled`, and are

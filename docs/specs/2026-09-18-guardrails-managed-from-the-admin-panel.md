@@ -667,8 +667,9 @@ match.
       reads it, but the form offers no field, so an edit must leave the column
       untouched rather than writing `null` and resetting a tuned detector as a
       side effect of a rename. That is C4.
-- [ ] **C4.** The three tuning values the resolver already reads and nothing
-      can write.
+- [x] **C4a.** A scored built-in's `threshold`, on the platform rule — the
+      first of the three tuning values the resolver already reads and nothing
+      could write.
 
       This is the mirror image of the failure this spec keeps guarding against,
       and it is worth naming as its own shape. Everywhere else the danger is a
@@ -680,54 +681,73 @@ match.
       though the feature exists. Found while writing C3, in the change that had
       to work around the first of them.
 
-      Three of them, and they are not one change because two are on different
-      pages:
+      Three of them, on two different pages, so C4a is the platform rule and
+      C4b is the override page.
 
-      1. **A scored built-in's `threshold`, on the platform rule.**
-         `jailbreak-detection` is judged 0–1 and `policyThresholdFor` reads its
-         column; the form offers no field, so the sensitivity the whole
-         detector turns on is whatever the migration seeded. C3's
-         `policyColumnsFor` leaves the column untouched for a built-in
-         precisely because there is no field — the moment there is one, that
-         branch changes rather than being worked around again.
-      2. **`GuardrailOrgOverride.threshold`.** The resolver validates its range
-         and records `override-threshold-out-of-range` when it fails.
-         `setGuardrailOverrideAction` writes `enabled` and nothing else.
-      3. **`GuardrailOrgOverride.action`.** Same: the resolver honours it,
-         refuses `MASK` on a built-in or a policy with a documented fallback,
-         and files `override-action-invalid-for-kind`. Also unwritable. This is
-         the one an organization is most likely to want — "keep the platform's
-         rule, but only log it for us" is the whole point of an override and
-         the panel cannot express it.
+      **C4a, here:** `jailbreak-detection` is judged 0–1 and
+      `policyThresholdFor` reads its column; the form offered no field, so the
+      sensitivity the whole detector turns on was whatever the migration
+      seeded. C3's `policyColumnsFor` left the column untouched for a built-in
+      precisely because there was no field — that branch is now gone rather
+      than worked around again.
 
-      Two things it must get right, both of which C3 either set up or walked
-      around:
+      Three things it had to get right, and one of them was nearly got wrong.
 
-      **The threshold field is offered per *key*, not per kind.**
-      `content-moderation` is a `BUILT_IN` too and its provider returns a flag,
-      not a score — a threshold on it would be a field that changes nothing.
-      This is the same per-key distinction `EVALUABLE_BUILT_IN_KEYS` exists for,
-      and conflating the two has already been a bug in this file in both
-      directions. The predicate cannot be `isJudgedRule`: that is a
-      package-only symbol, and an app importing it is the first line of writing
-      the loop again. So C4 adds an authoring-side predicate to `contracts` —
-      the shape `validatePolicy` established in C3, a package decision exposed
-      for the panel rather than re-read by it.
+      **The field is offered per *key*, not per kind.** `content-moderation` is
+      a `BUILT_IN` too and its provider returns a flag, not a score — a
+      threshold on it would be a field that changes nothing, next to a number
+      an operator would reasonably believe they had tuned. `SCORED_BUILT_IN_KEYS`
+      is the same per-key distinction `EVALUABLE_BUILT_IN_KEYS` exists for, and
+      conflating the two has been a bug in that file in both directions.
 
-      **Every one of the three is a number or an enum an operator can get
-      wrong, on a public endpoint.** The resolver's response to a bad value is
-      to drop it and carry on, which is correct at runtime and useless at
-      authoring time — an override saved with `threshold: 2` would report
-      success and then be ignored for ever. The validation belongs in the
-      action, against the same `isThresholdInRange` the resolver uses, for the
-      reason C3 moved that function to `contracts` in the first place.
+      **The predicate could not be `isJudgedRule`**, which is package-only — an
+      app importing it is the first line of writing the loop again — and is
+      also the *wrong question*. `isJudgedRule` additionally requires a policy
+      to carry prose, so a form using it would hide the threshold field exactly
+      while the operator was filling the policy in. So `isScoredRule` went into
+      `contracts` and `isJudgedRule` is now **defined in terms of it**, which
+      is what stops the panel and the runtime coming to disagree about which
+      rules are scored. `JAILBREAK_GUARDRAIL_KEY` reads from the same list
+      rather than spelling the key again.
 
-      Worth doing in the same slice, because it is the reason the gap survived:
-      **an architecture guard that a resolver branch has a writer.** The
-      existing guards all run the other way — they catch a rule that is
+      **`undefined` and `null` are not the same instruction, and the difference
+      is a tuned detector.** `null` is an operator clearing the field, which
+      means "use the default" — never a zero, which matches every message.
+      `undefined` is the key not being in the request at all: a stale tab, or a
+      hand-made one. The first draft wrote `null` for both, and what caught it
+      was C3's own test asserting that renaming `jailbreak-detection` must not
+      reset it. On a **create** there is no prior value to protect, so an
+      absent key there does mean `null`.
+
+      Range is validated on the way in, against the same `isThresholdInRange`
+      the resolver uses. The resolver's answer to a bad value is to drop it and
+      carry on — right at runtime, useless at authoring time, because the save
+      reports success and the number is then ignored for ever.
+- [ ] **C4b.** The two override values, on the organization page.
+
+  1. **`GuardrailOrgOverride.threshold`.** The resolver validates its range
+     and records `override-threshold-out-of-range` when it fails.
+  2. **`GuardrailOrgOverride.action`.** The resolver honours it, refuses
+     `MASK` on a built-in or a policy with a documented fallback, and files
+     `override-action-invalid-for-kind`. This is the one an organization is
+     most likely to want — "keep the platform's rule, but only log it for
+     us" is the whole point of an override, and the panel cannot express
+     it.
+
+      `setGuardrailOverrideAction` writes `enabled` and nothing else, and the
+      shape of that action is the trap. **`enabled: null` currently deletes the
+      row**, because inherit is the absence of a row rather than a row full of
+      nulls — which is right, and stops being a single condition the moment
+      there are three fields. Deleting on `enabled: null` alone would discard
+      an organization's tuned threshold the first time somebody set its
+      enabled state back to inherit. The row goes when *all three* are null.
+
+      Worth doing in the same slice, because it is the reason this whole gap
+      survived: **an architecture guard that a resolver branch has a writer.**
+      Every existing guard runs the other way — they catch a rule that is
       authorable and unenforced. Nothing catches the opposite, and the opposite
       is what happens when a schema is designed ahead of its panel, which is
-      how this whole feature was built on purpose.
+      how this feature was built, on purpose.
 
 ### Phase D — output guardrails
 

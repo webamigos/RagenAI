@@ -10,6 +10,8 @@ import {
   describePolicyFailure,
   isActionValidForKind,
   isCombinationSupported,
+  isScoredRule,
+  isThresholdInRange,
   type GuardrailAction,
   type GuardrailKind,
   type GuardrailSeverity,
@@ -94,9 +96,20 @@ export type GuardrailInput = {
   /** LLM_POLICY only — the prose the judge model is given. */
   policy?: string;
   /**
-   * LLM_POLICY only. `undefined` and `null` both mean "the rule names none",
-   * which is how `DEFAULT_POLICY_THRESHOLD` comes to apply — an empty field is
-   * a choice to inherit, not a zero.
+   * The score a **scored** rule fires at — a policy, or a built-in whose
+   * detector is a judge. `isScoredRule` is the question; the kind alone is not.
+   *
+   * `undefined` and `null` are different instructions, and this comment said
+   * otherwise until C4 gave the field to built-ins. On an **update**,
+   * `undefined` is the key not being in the request — a stale tab, or a
+   * hand-made one — and the stored value is left alone, because writing over
+   * it resets a tuned detector as a side effect of some other edit. `null` is
+   * an operator clearing the field: the rule then names no threshold and
+   * `DEFAULT_POLICY_THRESHOLD` applies. Never a zero, which matches every
+   * message.
+   *
+   * On a **create** there is no prior value to protect, so both are stored as
+   * `null`. `policyColumnsFor` is where all of this happens.
    */
   threshold?: number | null;
 };
@@ -229,12 +242,17 @@ function validateShape(input: GuardrailInput): string | null {
   if (input.policy != null && typeof input.policy !== 'string') {
     return 'A policy has to be text.';
   }
-  // `validatePolicy` refuses a non-number too, but only for an `LLM_POLICY`
-  // rule. A pattern rule carrying `threshold: 'high'` would otherwise reach
-  // Prisma and come back as a driver error rather than a field-level refusal.
+  // Checked here rather than only in `validatePolicy`, which runs for an
+  // `LLM_POLICY` alone. As of C4 a scored **built-in** carries a threshold
+  // too, and without this its range is checked by nothing on the way in: the
+  // resolver's `isThresholdInRange` runs at read time and its answer to a bad
+  // value is to drop it and carry on — correct at runtime, and useless at
+  // authoring time, because the save reports success and the number is then
+  // ignored for ever.
   if (
     input.threshold != null &&
-    (typeof input.threshold !== 'number' || !Number.isFinite(input.threshold))
+    (typeof input.threshold !== 'number' ||
+      !isThresholdInRange(input.threshold))
   ) {
     return 'A threshold has to be a number between 0 and 1.';
   }
@@ -275,34 +293,76 @@ function describeFailure(
 }
 
 /**
- * The two `LLM_POLICY` columns, written only where they mean something.
+ * The two judged columns, written only where they mean something.
  *
- * Three cases, and the third is the one that bites. For a policy rule they are
- * the operator's. For any other operator-authored kind they are nulled, so a
- * rule switched from `LLM_POLICY` to `PATTERN` does not keep prose a later
- * switch back would silently resurrect — and so a hand-made request cannot
- * store a policy on a pattern rule. For a **built-in** they are left alone
- * entirely: `jailbreak-detection` is a scored rule and its `threshold` is its
- * sensitivity, so writing `null` here would reset a tuned detector to the
- * default as a side effect of renaming it.
+ * They are two separate questions and C4 is what separated them.
+ *
+ * **`policy` is the operator's question**, so it belongs to an `LLM_POLICY`
+ * and to nothing else. A built-in's question is fixed in code; writing prose
+ * onto one would store text no judge is ever given. It is nulled for every
+ * other operator-authored kind, so a rule switched from `LLM_POLICY` to
+ * `PATTERN` does not keep prose a later switch back would silently resurrect,
+ * and so a hand-made request cannot put a policy on a pattern rule.
+ *
+ * **`threshold` is the operator's sensitivity**, so it belongs to anything
+ * *scored* — which is a policy and also `jailbreak-detection`, whose detector
+ * is a judge. Until C4 this function returned `{}` for every built-in, because
+ * the form had no field and a blind `null` would have reset a tuned detector
+ * as a side effect of a rename. Now there is a field, so there is a value, and
+ * the special case is gone rather than worked around again.
+ *
+ * `content-moderation` is still left alone: it is a `BUILT_IN` whose provider
+ * answers with a flag, so `isScoredRule` is false for it and its threshold is
+ * a column nothing reads.
  */
 function policyColumnsFor(
   input: GuardrailInput,
-  isBuiltIn: boolean,
+  existing: { kind: GuardrailKind; key: string | null } | null,
 ): { policy?: string | null; threshold?: number | null } {
-  if (isBuiltIn) {
-    return {};
+  // **Whose answer scored-ness is depends on who owns the kind.** A built-in's
+  // kind and key are the platform's and cannot be edited, so it is read off
+  // the stored row — a hand-made request naming `kind: 'LLM_POLICY'` against
+  // `jailbreak-detection` decides nothing. For an operator-authored rule the
+  // kind is exactly what they are choosing, so it is read off the request:
+  // reading the stored row there made a rule switched from `LLM_POLICY` to
+  // `PATTERN` still count as scored, and its old sensitivity was left behind
+  // for a switch back to resurrect.
+  const scored =
+    existing?.key != null
+      ? isScoredRule(existing)
+      : isScoredRule({ kind: input.kind, key: null });
+
+  const columns: { policy?: string | null; threshold?: number | null } = {};
+
+  if (existing?.key == null) {
+    columns.policy =
+      input.kind === 'LLM_POLICY' ? input.policy?.trim() || null : null;
   }
-  if (input.kind !== 'LLM_POLICY') {
-    return { policy: null, threshold: null };
+
+  if (scored) {
+    // **`undefined` and `null` are not the same thing here, and the difference
+    // is a tuned detector.** `null` is an operator clearing the field, which
+    // means "use the default" — never a zero, which would match every
+    // message. `undefined` is the key not being in the request at all: a
+    // stale tab from before this field existed, or a hand-made request. C3's
+    // version of this function wrote `null` for both, and the test that
+    // caught it was the one asserting a rename must not reset
+    // `jailbreak-detection` to the default as a side effect.
+    //
+    // On a **create** there is no prior value to protect, so an absent key
+    // there means "names no threshold" and is written as `null`. The
+    // distinction only exists against a row that already holds something.
+    if (existing === null || input.threshold !== undefined) {
+      columns.threshold = input.threshold ?? null;
+    }
+  } else if (existing?.key == null) {
+    // Cleared rather than inherited, because this is a rule that stopped
+    // being scored — a switch from `LLM_POLICY` to `PATTERN` leaving its old
+    // sensitivity behind is state a switch back would silently resurrect.
+    columns.threshold = null;
   }
-  return {
-    policy: input.policy?.trim() || null,
-    // `undefined` and `null` are both "names no threshold", which is what
-    // makes `DEFAULT_POLICY_THRESHOLD` apply. An empty field is a choice to
-    // inherit the default, never a zero — a zero matches every message.
-    threshold: input.threshold ?? null,
-  };
+
+  return columns;
 }
 
 export async function createGuardrailAction(
@@ -326,7 +386,7 @@ export async function createGuardrailAction(
       severity: input.severity,
       pattern: input.kind === 'PATTERN' ? (input.pattern ?? null) : null,
       patternIsRegex: input.kind === 'PATTERN' && input.patternIsRegex === true,
-      ...policyColumnsFor(input, false),
+      ...policyColumnsFor(input, null),
       // Observation by default. A rule that starts by blocking is a rule
       // whose false-positive rate nobody has measured.
       enabled: false,
@@ -399,7 +459,10 @@ export async function updateGuardrailAction(
       severity: input.severity,
       pattern: input.kind === 'PATTERN' ? (input.pattern ?? null) : null,
       patternIsRegex: input.kind === 'PATTERN' && input.patternIsRegex === true,
-      ...policyColumnsFor(input, isBuiltIn),
+      ...policyColumnsFor(input, {
+        kind: existing.kind as GuardrailKind,
+        key: existing.key,
+      }),
     },
   });
 

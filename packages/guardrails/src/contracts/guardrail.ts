@@ -92,6 +92,52 @@ export function isEvaluableBuiltIn(key: string | null): boolean {
   );
 }
 
+/**
+ * The built-ins a judge model scores 0–1, rather than a provider flagging.
+ *
+ * **Support is per key here for the same reason it is in
+ * `EVALUABLE_BUILT_IN_KEYS`**, and conflating the two has already been a bug
+ * in this file in both directions. `content-moderation` is a `BUILT_IN` too,
+ * and its provider answers with a flag: a threshold on it would be a field
+ * that changes nothing, offered on a form, next to a number an operator would
+ * reasonably believe they had tuned.
+ *
+ * A kind × key pair cannot be inferred from the kind, so the identifier is the
+ * unit — the same shape, and the same argument, as the evaluable list above.
+ */
+export const SCORED_BUILT_IN_KEYS = ['jailbreak-detection'] as const;
+
+/**
+ * Whether this rule's verdict is a **score**, and therefore whether its
+ * `threshold` means anything.
+ *
+ * The authoring-side half of `isJudgedRule`, which is a package-only symbol an
+ * app may not import — a binding that could ask "is this judged" is a binding
+ * that could write the loop again. This asks the narrower question a form
+ * needs: should there be a threshold field at all.
+ *
+ * The two are **not** two readings of the same thing. `isJudgedRule` is the
+ * stricter one: it additionally requires an `LLM_POLICY` to carry prose,
+ * because a judge cannot score a message against nothing. A rule being drafted
+ * has no prose yet and still needs its threshold field, so the form would be
+ * empty exactly while it is being filled in. `isJudgedRule` is defined in
+ * terms of this function rather than beside it, so the runtime and the panel
+ * cannot come to disagree about which rules are scored.
+ */
+export function isScoredRule(rule: {
+  kind: GuardrailKind;
+  key?: string | null;
+}): boolean {
+  if (rule.kind === 'LLM_POLICY') {
+    return true;
+  }
+  return (
+    rule.kind === 'BUILT_IN' &&
+    rule.key != null &&
+    (SCORED_BUILT_IN_KEYS as readonly string[]).includes(rule.key)
+  );
+}
+
 export const BUILT_IN_GUARDRAIL_LABELS: Readonly<
   Record<BuiltInGuardrailKey, string>
 > = Object.freeze({

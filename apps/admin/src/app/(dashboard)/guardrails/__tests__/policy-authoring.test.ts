@@ -176,24 +176,108 @@ describe('editing a built-in', () => {
     });
   });
 
+  const RENAME = {
+    name: 'Jailbreak detection (tuned)',
+    kind: 'BUILT_IN' as const,
+    stage: 'INPUT' as const,
+    action: 'BLOCK' as const,
+    severity: 'critical' as const,
+  };
+
   /**
-   * `jailbreak-detection` is a *scored* built-in: `threshold` is its
-   * sensitivity, and the resolver reads it. The form has no field for it, so
-   * an edit sends nothing — and a write of `null` here would reset a tuned
-   * detector to the default as a side effect of renaming it.
+   * `jailbreak-detection` is a *scored* built-in, and as of C4 its
+   * `threshold` is the operator's to set — the column the resolver has always
+   * read and nothing could write.
    */
-  it('leaves a scored built-in’s threshold alone', async () => {
+  it('tunes a scored built-in’s threshold', async () => {
     const result = await updateGuardrailAction('gr-builtin', {
-      name: 'Jailbreak detection (tuned)',
-      kind: 'BUILT_IN',
-      stage: 'INPUT',
-      action: 'BLOCK',
-      severity: 'critical',
+      ...RENAME,
+      threshold: 0.55,
     });
 
     expect(result).toEqual({ ok: true });
-    const data = dataOf(update);
-    expect(data).not.toHaveProperty('threshold');
-    expect(data).not.toHaveProperty('policy');
+    expect(dataOf(update)).toMatchObject({ threshold: 0.55 });
+  });
+
+  /**
+   * The half C4 must not break, and nearly did. `undefined` is the key not
+   * being in the request — a stale tab, or a hand-made one — and writing
+   * `null` for it resets a tuned detector to the default as a side effect of
+   * renaming it. `null` is an operator clearing the field on purpose, which
+   * is a different instruction and stored as such.
+   */
+  it('leaves the threshold alone when the request does not carry one', async () => {
+    await updateGuardrailAction('gr-builtin', RENAME);
+
+    expect(dataOf(update)).not.toHaveProperty('threshold');
+  });
+
+  it('clears the threshold to the default when one is explicitly cleared', async () => {
+    await updateGuardrailAction('gr-builtin', { ...RENAME, threshold: null });
+
+    expect(dataOf(update)).toMatchObject({ threshold: null });
+  });
+
+  /**
+   * A built-in's question is fixed in code. Storing prose on one would keep
+   * text no judge is ever handed, on a row an operator would then believe
+   * they had written.
+   */
+  it('never writes prose onto a built-in', async () => {
+    await updateGuardrailAction('gr-builtin', {
+      ...RENAME,
+      policy: 'something an operator typed',
+    });
+
+    expect(dataOf(update)).not.toHaveProperty('policy');
+  });
+
+  it('refuses a threshold outside 0–1 rather than letting the resolver drop it', async () => {
+    // The resolver's answer to a bad value is to ignore it and carry on —
+    // right at runtime, useless at authoring time, because the save would
+    // report success and the number would never apply.
+    const result = await updateGuardrailAction('gr-builtin', {
+      ...RENAME,
+      threshold: 1.5,
+    });
+
+    expect(result.ok).toBe(false);
+    expect(update).not.toHaveBeenCalled();
+  });
+});
+
+describe('a built-in whose verdict is not a score', () => {
+  beforeEach(() => {
+    findFirst.mockResolvedValue({
+      id: 3,
+      publicId: 'gr-moderation',
+      key: 'content-moderation',
+      kind: 'BUILT_IN',
+      stage: 'INPUT',
+      name: 'Content moderation',
+      action: 'BLOCK',
+      pattern: null,
+      enabled: true,
+    });
+  });
+
+  /**
+   * Support is per **key**, not per kind, and conflating the two has been a
+   * bug in `contracts/guardrail.ts` in both directions. `content-moderation`
+   * asks a provider endpoint that answers with a flag — a threshold on it is
+   * a column nothing reads, and a field for it would be a number an operator
+   * would reasonably believe they had tuned.
+   */
+  it('is not given a threshold, even when a request carries one', async () => {
+    await updateGuardrailAction('gr-moderation', {
+      name: 'Content moderation',
+      kind: 'BUILT_IN',
+      stage: 'INPUT',
+      action: 'BLOCK',
+      severity: 'warn',
+      threshold: 0.4,
+    });
+
+    expect(dataOf(update)).not.toHaveProperty('threshold');
   });
 });
