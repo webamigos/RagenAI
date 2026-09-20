@@ -1,4 +1,7 @@
-import type { ResolvedGuardrail } from '@ragenai/guardrails';
+import {
+  securityEventTypeFor,
+  type ResolvedGuardrail,
+} from '@ragenai/guardrails';
 
 import { recordSecurityEvent } from '@/features/security/services/commands/record-security-event-command';
 import type {
@@ -39,18 +42,14 @@ export type GuardrailHit = {
 };
 
 /**
- * `BLOCK` is the only action that stops a turn, so it is the only one that
- * files a `GUARDRAIL_BLOCKED`.
+ * The action-to-event mapping is the package's, not this app's.
  *
- * `MASK` is deliberately `FLAGGED` rather than a third member: something was
- * found and the turn continued, which is the same story a `LOG` rule tells.
- * Giving masking its own event type would have meant a schema change every
- * time an action is added, and the action is already on the event.
+ * It was written here and again in apps/api, and two copies drift into the
+ * same hit being filed under different event types depending on which surface
+ * it arrived through.
  */
 export function eventTypeFor(rule: ResolvedGuardrail): SecurityEventType {
-  return rule.action === 'BLOCK'
-    ? ('GUARDRAIL_BLOCKED' as SecurityEventType)
-    : ('GUARDRAIL_FLAGGED' as SecurityEventType);
+  return securityEventTypeFor(rule) as SecurityEventType;
 }
 
 /**

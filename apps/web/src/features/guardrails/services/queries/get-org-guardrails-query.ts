@@ -1,5 +1,6 @@
 import { guardrailsDisabled, isOnPremise } from '@ragenai/env';
 import {
+  hasTransformingRule,
   resolveGuardrails,
   type GuardrailAction,
   type GuardrailKind,
@@ -131,7 +132,7 @@ function shape(
   return {
     input,
     output: atStage('OUTPUT'),
-    hasTransformingInputRule: input.some((rule) => rule.action === 'MASK'),
+    hasTransformingInputRule: hasTransformingRule(input),
   };
 }
 

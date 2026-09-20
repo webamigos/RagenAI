@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { guardrailsDisabled, isOnPremise } from '@ragenai/env';
 import {
+  hasTransformingRule,
   resolveGuardrails,
   type GuardrailAction,
   type GuardrailKind,
@@ -173,7 +174,7 @@ export class GuardrailsService {
       const value: OrgGuardrails = {
         input,
         output: atStage('OUTPUT'),
-        hasTransformingInputRule: input.some((rule) => rule.action === 'MASK'),
+        hasTransformingInputRule: hasTransformingRule(input),
         degraded: false,
       };
 

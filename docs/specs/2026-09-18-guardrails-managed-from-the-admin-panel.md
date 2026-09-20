@@ -641,8 +641,26 @@ rule produces the localized refusal and persists no assistant message; a `LOG`
 rule leaves the answer untouched. Anything left at `p1`–`p3` will not block the
 PR that breaks it.
 
-**Not automated, and said out loud**: the false-positive rate. That is what
-`LOG` mode and E1's hit counts are for.
+**Not automated, and said out loud**: two things.
+
+The false-positive rate. That is what `LOG` mode and E1's hit counts are for.
+
+And **the cache window**. `p0-29` asserts that an enabled rule refuses a turn,
+against a server that started moments earlier — so it exercises a cold cache
+every time and says nothing about the 60 s one. A rule switched on in the panel
+takes up to a minute to apply, and a rule switched *off* takes up to a minute to
+stop applying; both are real properties of the product and neither is covered.
+
+Rejected two ways of covering it, and the reasoning is worth keeping. A spec
+that waits out the window takes a minute to run and becomes the first candidate
+for deletion the next time the suite is slow — a test nobody runs protects
+nothing, which is this feature's own failure mode. Exposing a cache-clearing
+seam to the test would assert that the seam works, not that the window does.
+What would genuinely cover it is a unit test over the loader with fake timers,
+which exists (`the cache` in `get-org-guardrails-query.test.ts`), plus knowing
+that the number in `GUARDRAIL_CACHE_TTL_MS` is the one the runbook quotes. The
+gap is that nothing ties the documented minute to the constant; if that matters
+later, assert the constant from the docs rather than sleeping in an e2e.
 
 ## Rollout and rollback
 

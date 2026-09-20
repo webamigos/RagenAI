@@ -78,6 +78,43 @@ export function isModerationRule(rule: ResolvedGuardrail): boolean {
   return rule.kind === 'BUILT_IN' && rule.key === MODERATION_GUARDRAIL_KEY;
 }
 
+/**
+ * Whether a rule set makes the input stage blocking.
+ *
+ * One function because it was two: both loaders wrote
+ * `rules.some(r => r.action === 'MASK')` for themselves. That is the decision
+ * that splits the input stage from `rephraseAndExpand`, and two copies of it
+ * can drift into one runtime running the stage concurrently while the other
+ * does not — a latency difference nobody would notice and a correctness
+ * difference nobody would look for, since a mask applied after the retrieval
+ * query is built protects nothing.
+ */
+export function hasTransformingRule(
+  rules: readonly ResolvedGuardrail[],
+): boolean {
+  return rules.some((rule) => rule.action === 'MASK');
+}
+
+/**
+ * Which security event a hit is filed under.
+ *
+ * Also one function because it was two, once per runtime. `BLOCK` is the only
+ * action that stops a turn, so the only one filed as blocked; `MASK` shares
+ * `GUARDRAIL_FLAGGED` with `LOG` because something was found and the turn
+ * continued, which is the same story. Two copies drift into the same hit being
+ * filed differently depending on which surface it arrived through — and the
+ * incidents page would then under-report blocks from one of them.
+ *
+ * Returns the literals rather than importing Prisma's enum: this package has
+ * no database, and the two members have existed in `SecurityEventType` since
+ * Phase A specifically so every reader had them before a writer appeared.
+ */
+export function securityEventTypeFor(
+  rule: ResolvedGuardrail,
+): 'GUARDRAIL_BLOCKED' | 'GUARDRAIL_FLAGGED' {
+  return rule.action === 'BLOCK' ? 'GUARDRAIL_BLOCKED' : 'GUARDRAIL_FLAGGED';
+}
+
 export async function evaluateInputStage(
   rules: readonly ResolvedGuardrail[],
   input: InputStageInput,

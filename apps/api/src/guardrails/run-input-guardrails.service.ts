@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import {
   evaluateInputStage,
+  securityEventTypeFor,
   type ModerationVerdict,
   type ResolvedGuardrail,
 } from '@ragenai/guardrails';
@@ -99,16 +100,11 @@ export class RunInputGuardrailsService {
     matchCount?: number,
   ): void {
     this.securityEvents.record({
-      // No cast: `SecurityEventType` already carries both members — Phase A
-      // added them to the enum with no writer precisely so every reader would
-      // have them before the first one appeared. `eslint --fix` removed the
-      // cast this line used to have, which is the proof.
-      //
-      // `BLOCK` is the only action that stops a turn, so the only one filed as
-      // blocked. `MASK` shares `FLAGGED` with `LOG`: something was found and
-      // the turn continued, which is the same story.
-      eventType:
-        rule.action === 'BLOCK' ? 'GUARDRAIL_BLOCKED' : 'GUARDRAIL_FLAGGED',
+      // The mapping is the package's, so this runtime and apps/web cannot file
+      // the same hit differently. No cast is needed: `SecurityEventType` has
+      // carried both members since Phase A, which added them to the enum with
+      // no writer precisely so every reader would have them first.
+      eventType: securityEventTypeFor(rule),
       // The rule's own severity, not a constant: an operator who set a rule to
       // `info` said it was noise, and overriding that makes the alerting
       // threshold unreachable.
