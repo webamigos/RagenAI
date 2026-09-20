@@ -11,7 +11,13 @@ import { ADMIN_ACTIONS, recordAdminAction } from '@/lib/audit';
 import { requireAdmin } from '@/lib/auth-guard';
 import { prisma } from '@/lib/db';
 
-import { validateEntry, type CatalogueEntryInput } from './validation';
+import { probeMcpServer } from '@ragenai/connector-guard';
+
+import {
+  serverUrlFailure,
+  validateEntry,
+  type CatalogueEntryInput,
+} from './validation';
 
 import {
   toCatalogueEntryView,
@@ -388,4 +394,50 @@ async function purgeFromPlatformDefaults(slug: string): Promise<void> {
     where: { key: DEFAULT_ALLOWED_CONNECTORS_KEY },
     data: { value: JSON.stringify(defaults.filter((entry) => entry !== slug)) },
   });
+}
+
+export type ConnectionTestResult =
+  { ok: true; toolNames: string[] } | { ok: false; reason: string };
+
+/**
+ * Open an MCP session against a URL the administrator has typed and list its
+ * tools.
+ *
+ * It is the only way to tell a working endpoint from a typo before a customer
+ * does, and it is offered rather than required: a server that is temporarily
+ * down should not block creating its entry.
+ *
+ * Audited, like the guardrail policy trial and for the same reason — it is an
+ * outbound request from the platform to an address somebody just typed, and
+ * this entry is the only record it leaves.
+ */
+export async function testCatalogueConnectionAction(
+  url: string,
+  allowsPrivateAddress: boolean,
+): Promise<ConnectionTestResult> {
+  const admin = await requireAdmin();
+
+  // The same save-time refusal, before anything is dialled: a check offered
+  // on a form must not be the one path that reaches an address the form would
+  // refuse to store.
+  const refusal = serverUrlFailure(url.trim(), allowsPrivateAddress);
+  if (refusal) {
+    return { ok: false, reason: refusal };
+  }
+
+  const result = await probeMcpServer(url.trim(), {
+    allowPrivate: allowsPrivateAddress,
+  });
+
+  await recordAdminAction({
+    admin,
+    action: ADMIN_ACTIONS.catalogueConnectionTested,
+    entityType: 'mcp_catalogue_entry',
+    entityId: url.trim(),
+    after: result.ok
+      ? { ok: true, tools: result.toolNames.length }
+      : { ok: false, reason: result.reason },
+  });
+
+  return result;
 }

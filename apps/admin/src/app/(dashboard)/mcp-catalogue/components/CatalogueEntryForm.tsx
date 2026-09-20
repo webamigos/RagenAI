@@ -5,7 +5,9 @@ import { toast } from 'sonner';
 
 import {
   createCatalogueEntryAction,
+  testCatalogueConnectionAction,
   updateCatalogueEntryAction,
+  type ConnectionTestResult,
 } from '../actions';
 import { CREATABLE_AUTH_TYPES, type CatalogueEntryInput } from '../validation';
 
@@ -40,12 +42,31 @@ export function CatalogueEntryForm({ entry, onDone }: CatalogueEntryFormProps) {
     message: string;
   } | null>(null);
   const [pending, startTransition] = useTransition();
+  const [testing, setTesting] = useState(false);
+  const [testResult, setTestResult] = useState<ConnectionTestResult | null>(
+    null,
+  );
 
   const set = <K extends keyof CatalogueEntryInput>(
     key: K,
     value: CatalogueEntryInput[K],
   ) => {
     setValues((current) => ({ ...current, [key]: value }));
+  };
+
+  const test = async () => {
+    setTesting(true);
+    setTestResult(null);
+    try {
+      setTestResult(
+        await testCatalogueConnectionAction(
+          values.mcpServerUrl,
+          values.allowsPrivateAddress,
+        ),
+      );
+    } finally {
+      setTesting(false);
+    }
   };
 
   const submit = (event: React.FormEvent) => {
@@ -201,7 +222,40 @@ export function CatalogueEntryForm({ entry, onDone }: CatalogueEntryFormProps) {
         <p className="text-sm text-destructive">{problem.message}</p>
       ) : null}
 
+      {testResult ? (
+        <div
+          className={
+            testResult.ok
+              ? 'rounded-lg border border-border bg-muted/40 p-3 text-sm'
+              : 'rounded-lg border border-destructive/40 bg-destructive/5 p-3 text-sm'
+          }
+        >
+          {testResult.ok ? (
+            <>
+              <p className="font-medium">
+                The server answered, and it speaks MCP.
+              </p>
+              <p className="mt-1 text-muted-foreground">
+                {testResult.toolNames.length === 0
+                  ? 'It exposes no tools, which an assistant would have nothing to call.'
+                  : `${testResult.toolNames.length} tools: ${testResult.toolNames.slice(0, 12).join(', ')}${testResult.toolNames.length > 12 ? '…' : ''}`}
+              </p>
+            </>
+          ) : (
+            <p className="text-destructive">{testResult.reason}</p>
+          )}
+        </div>
+      ) : null}
+
       <div className="flex gap-2">
+        <button
+          type="button"
+          onClick={test}
+          disabled={testing || values.mcpServerUrl.trim().length === 0}
+          className="rounded-md border border-border px-4 py-2 text-sm disabled:opacity-60"
+        >
+          {testing ? 'Testing…' : 'Test connection'}
+        </button>
         <button
           type="submit"
           disabled={pending}

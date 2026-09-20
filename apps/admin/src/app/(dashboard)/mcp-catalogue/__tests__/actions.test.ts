@@ -14,13 +14,21 @@ const settingsFindUnique = vi.fn();
 const settingsUpdate = vi.fn();
 const transaction = vi.fn();
 const recordAdminAction = vi.fn();
+const probeMcpServer = vi.fn();
 
 vi.mock('@/lib/auth-guard', () => ({
   requireAdmin: () => Promise.resolve(admin),
 }));
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }));
+// Partial: `validation.ts` uses the real `isBlockedHost`, which is the
+// behaviour these tests are checking. Only the outbound probe is stubbed.
+vi.mock('@ragenai/connector-guard', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@ragenai/connector-guard')>()),
+  probeMcpServer: (...args: unknown[]) => probeMcpServer(...args),
+}));
 vi.mock('@/lib/audit', () => ({
   ADMIN_ACTIONS: {
+    catalogueConnectionTested: 'admin.mcp_catalogue.connection_tested',
     catalogueEntryCreated: 'admin.mcp_catalogue.created',
     catalogueEntryUpdated: 'admin.mcp_catalogue.updated',
     catalogueEntryToggled: 'admin.mcp_catalogue.toggled',
@@ -56,6 +64,7 @@ vi.mock('@/lib/db', () => ({
 import {
   createCatalogueEntryAction,
   deleteCatalogueEntryAction,
+  testCatalogueConnectionAction,
   updateCatalogueEntryAction,
 } from '../actions';
 import type { CatalogueEntryInput } from '../validation';
@@ -241,5 +250,48 @@ describe('deleting a connector', () => {
 
     expect(result.ok).toBe(false);
     expect(result.message).toMatch(/Disable it instead/);
+  });
+});
+
+describe('testing a connection', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    probeMcpServer.mockResolvedValue({ ok: true, toolNames: ['search'] });
+  });
+
+  it('lists the tools, and records that it reached out', async () => {
+    const result = await testCatalogueConnectionAction(
+      'https://mcp.notion.com/mcp',
+      false,
+    );
+
+    expect(result).toEqual({ ok: true, toolNames: ['search'] });
+    // The audit entry is the only record a probe leaves: it is an outbound
+    // request from the platform to an address somebody just typed.
+    expect(recordAdminAction).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: 'admin.mcp_catalogue.connection_tested',
+      }),
+    );
+  });
+
+  it('refuses an address the form would refuse to save, before dialling', async () => {
+    const result = await testCatalogueConnectionAction(
+      'http://169.254.169.254/latest/',
+      true,
+    );
+
+    expect(result.ok).toBe(false);
+    // A check offered on a form must not be the one path that reaches an
+    // address the form itself would not store.
+    expect(probeMcpServer).not.toHaveBeenCalled();
+  });
+
+  it('passes the entry’s opt-out through to the policy', async () => {
+    await testCatalogueConnectionAction('http://10.0.0.5/mcp', true);
+
+    expect(probeMcpServer).toHaveBeenCalledWith('http://10.0.0.5/mcp', {
+      allowPrivate: true,
+    });
   });
 });

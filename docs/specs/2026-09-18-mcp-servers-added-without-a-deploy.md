@@ -538,7 +538,7 @@ step — not B4.
       `apps/admin/.../connectors/actions.ts` asks the catalogue instead of
       `isConnectorProvider`. Without this a new entry cannot be granted to any
       organization.
-- [ ] **C5.** Test connection — opens an MCP session, lists tool names, renders
+- [x] **C5.** Test connection — opens an MCP session, lists tool names, renders
       failures the way `lastError` / `lastErrorAt` already do.
 
 ### Phase D — OAuth entries

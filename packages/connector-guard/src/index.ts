@@ -46,3 +46,9 @@ export {
   isInsecureProtocolError,
   type GuardedMcpTransportOptions,
 } from './guarded-mcp-transport';
+
+export {
+  probeMcpServer,
+  type McpProbeOptions,
+  type McpProbeResult,
+} from './probe';
