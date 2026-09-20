@@ -5,6 +5,7 @@ import {
   getCurrentUserId,
 } from '@/app/lib/utils/auth-helpers';
 import { resolveConnectorDefinitionQuery } from '@/features/connectors/services/queries/get-connector-definitions-query';
+import { blockedAddressReason } from '@/features/connectors/utils/refuse-blocked-address';
 import { RagenAuthOAuthClientProvider } from '@/libs/ragen-vault';
 import { logger } from '@/app/lib/utils/logger';
 import { readPublicRuntimeConfig } from '@/config/public-runtime-config';
@@ -46,6 +47,18 @@ export async function GET(request: NextRequest) {
   const providerDef = await resolveConnectorDefinitionQuery(provider);
   if (!providerDef || providerDef.authType !== 'external_mcp') {
     return NextResponse.json({ error: 'Invalid provider' }, { status: 400 });
+  }
+
+  // The first outbound request a catalogue entry causes is `mcpAuth`'s
+  // discovery, before any MCP session exists and so before the guarded
+  // transport is in the path.
+  const blocked = blockedAddressReason(providerDef, providerDef.mcpServerUrl);
+  if (blocked) {
+    logger.warn(
+      { provider, reason: blocked },
+      'Refusing to start OAuth against a blocked connector address',
+    );
+    return NextResponse.json({ error: blocked }, { status: 400 });
   }
 
   try {

@@ -1,3 +1,5 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
 import http from 'node:http';
 import type { AddressInfo } from 'node:net';
 import {
@@ -6,7 +8,7 @@ import {
   createGuardedFetch,
   createGuardedLookup,
   InsecureProtocolError,
-} from './guarded-fetch.js';
+} from '../guarded-fetch';
 
 /**
  * Build a resolver stub standing in for DNS, so a "public" hostname can be

@@ -93,6 +93,15 @@ export type ProviderDefinition = {
    * like Google Calendar).
    */
   systemPromptFragment?: SystemPromptFragment;
+  /**
+   * Set when this connector's address is one somebody typed — a catalogue row
+   * an operator created, or the shop URL a user supplies at connect time —
+   * and must therefore pass the SSRF policy at connect time and on every tool
+   * call after it. Absent for a built-in whose URL comes from
+   * `MCP_*_SERVER_URL`, which is deployer-controlled and may legitimately be
+   * loopback: that is the exemption `packages/connector-guard` documents.
+   */
+  addressGuard?: { allowPrivate: boolean };
 };
 
 /**

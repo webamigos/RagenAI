@@ -1,7 +1,9 @@
+import { describe, expect, it } from 'vitest';
+
 import {
   isPrivateOrLoopbackAddress,
   isPrivateOrLoopbackHost,
-} from './private-address.js';
+} from '../private-address';
 
 describe('isPrivateOrLoopbackAddress', () => {
   it.each([

@@ -24,8 +24,8 @@ vi.mock('@ai-sdk/mcp', () => ({
 // `isBlockedAddressError` stays real — the error mapping below depends on it.
 const mockCreateGuardedMcpTransport = vi.fn();
 const mockGuardedClose = vi.fn();
-vi.mock('./guarded-mcp-transport.js', async () => {
-  const actual = await vi.importActual('./guarded-mcp-transport.js');
+vi.mock('@ragenai/connector-guard', async () => {
+  const actual = await vi.importActual('@ragenai/connector-guard');
   return {
     ...actual,
     createGuardedMcpTransport: (...args: unknown[]) =>
@@ -35,7 +35,7 @@ vi.mock('./guarded-mcp-transport.js', async () => {
 
 import type { Mock } from 'vitest';
 import { ConnectorsService } from './connectors.service.js';
-import { BlockedAddressError } from './guarded-fetch.js';
+import { BlockedAddressError } from '@ragenai/connector-guard';
 import { type PrismaService } from '../prisma/prisma.service.js';
 import { type AuditLogService } from '../audit-logs/audit-log.service.js';
 import { type SubscriptionsService } from '../subscriptions/subscriptions.service.js';

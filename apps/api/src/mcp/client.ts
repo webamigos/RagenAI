@@ -1,7 +1,7 @@
 import { Logger } from '@nestjs/common';
 import { createMCPClient, type MCPClient } from '@ai-sdk/mcp';
 import { getProviderDefinition } from '../connectors/provider-definition.js';
-import { createGuardedMcpTransport } from '../connectors/guarded-mcp-transport.js';
+import { createGuardedMcpTransport } from '@ragenai/connector-guard';
 import type { ProviderDefinition } from '../connectors/types.js';
 import {
   RagenAuthOAuthClientProvider,

@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
+    "@ragenai/connector-guard": "*",
     "@ragenai/db": "*",
     "@ragenai/env": "*",
     "@ragenai/guardrails": "*",

@@ -1,7 +1,7 @@
 import { lookup as systemLookup, type LookupAddress } from 'node:dns';
 import { isIP } from 'node:net';
 import { Agent, buildConnector } from 'undici';
-import { isPrivateOrLoopbackAddress } from './private-address.js';
+import { isPrivateOrLoopbackAddress } from './private-address';
 
 /**
  * Outbound guard for user-supplied connector URLs (DNS rebinding / SSRF).
@@ -208,12 +208,17 @@ export function createGuardedFetch(options: GuardedFetchOptions = {}): {
   return {
     fetch: (url, init) => {
       // `dispatcher` is undici's own extension to RequestInit; Node's global
-      // fetch honours it at runtime but the DOM lib type does not declare it,
-      // so it is attached through a widened local type rather than inline.
-      const guardedInit: RequestInit & { dispatcher: Agent } = {
+      // fetch honours it at runtime but the DOM lib type does not declare it.
+      //
+      // It is attached through a cast rather than a widened local type
+      // because two views of undici's `Dispatcher` are in scope in this
+      // package — `undici`'s own and the `undici-types` copy bundled with
+      // `@types/node` — and they are structurally identical but nominally
+      // distinct. The cast asserts the shape the runtime actually reads.
+      const guardedInit = {
         ...init,
         dispatcher: agent,
-      };
+      } as unknown as RequestInit;
       return fetch(url, guardedInit);
     },
     close: () => agent.close(),

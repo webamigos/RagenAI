@@ -1,11 +1,13 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
 import http from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { createMCPClient } from '@ai-sdk/mcp';
 import {
   createGuardedMcpTransport,
   isBlockedAddressError,
-} from './guarded-mcp-transport.js';
-import { BlockedAddressError } from './guarded-fetch.js';
+} from '../guarded-mcp-transport';
+import { BlockedAddressError } from '../guarded-fetch';
 
 function stubLookup(address: string) {
   return ((_hostname: string, _options: unknown, callback: any) =>

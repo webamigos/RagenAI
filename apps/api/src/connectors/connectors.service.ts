@@ -12,7 +12,7 @@ import {
   createGuardedMcpTransport,
   isBlockedAddressError,
   isInsecureProtocolError,
-} from './guarded-mcp-transport.js';
+} from '@ragenai/connector-guard';
 import { McpConnectorStatus } from '../generated/prisma/client.js';
 import { type ConnectorDto, type CustomHeaderCredentials } from './types.js';
 

@@ -56,5 +56,31 @@ export function definitionFromEntry(
     // Text on the row, or a fragment that must compute. Never both, and never
     // a second branch elsewhere.
     systemPromptFragment: entry.systemPrompt ?? pack?.systemPromptFragment,
+    addressGuard: addressGuardFor(entry),
   };
+}
+
+/**
+ * Which connectors get the SSRF policy, and under which setting.
+ *
+ * The exemption in `packages/connector-guard` is for *deployer-controlled*
+ * URLs — `MCP_*_SERVER_URL`, which may legitimately be loopback because
+ * apps/api talks to services on the same host. A built-in resolves its
+ * address from there and keeps the exemption.
+ *
+ * Everything else is an address somebody typed: a catalogue row an operator
+ * created, or the shop URL a user supplies at connect time for the two
+ * custom-header connectors. Those are checked, with `allowsPrivateAddress`
+ * deciding whether RFC 1918 space is admitted — and nothing else is, whatever
+ * that flag says.
+ */
+function addressGuardFor(
+  entry: McpCatalogEntryDto,
+): { allowPrivate: boolean } | undefined {
+  const addressIsTyped =
+    entry.mcpServerUrl !== null || entry.authType === 'API_KEY_CUSTOM_HEADER';
+
+  return addressIsTyped
+    ? { allowPrivate: entry.allowsPrivateAddress }
+    : undefined;
 }

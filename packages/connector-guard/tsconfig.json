@@ -1,0 +1,24 @@
+{
+  // Copied from packages/platform-contracts, deliberately unmodified: that
+  // package is already consumed by apps/web (Next's bundler), apps/api
+  // (NestJS, nodenext) and apps/worker (CJS under ts-jest), so its shape is
+  // the one known to work across all three module systems.
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "types": ["node"],
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules", "dist", "src/**/__tests__/**"]
+}

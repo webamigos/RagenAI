@@ -7,6 +7,7 @@ import {
   getCurrentUserId,
 } from '@/app/lib/utils/auth-helpers';
 import { resolveConnectorDefinitionQuery } from '@/features/connectors/services/queries/get-connector-definitions-query';
+import { blockedAddressReason } from '@/features/connectors/utils/refuse-blocked-address';
 import { RagenAuthOAuthClientProvider } from '@/libs/ragen-vault';
 import { logger } from '@/app/lib/utils/logger';
 import { recordConnectorFailureCommand } from '@/features/connectors/services/commands/record-connector-failure-command';
@@ -84,6 +85,17 @@ export async function GET(request: NextRequest) {
 
   const providerDef = await resolveConnectorDefinitionQuery(provider);
   if (!providerDef || providerDef.authType !== 'external_mcp') {
+    return redirectWithStatus(request, 'error');
+  }
+
+  // Again on the callback: the entry's URL can have changed between the two
+  // hops, and this one exchanges a code against it.
+  const blocked = blockedAddressReason(providerDef, providerDef.mcpServerUrl);
+  if (blocked) {
+    logger.warn(
+      { provider, reason: blocked },
+      'Refusing to complete OAuth against a blocked connector address',
+    );
     return redirectWithStatus(request, 'error');
   }
 
