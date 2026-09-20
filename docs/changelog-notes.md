@@ -625,10 +625,15 @@ archive is the blog.
   now run on the answer as well — or on both sides — and catch something the
   model itself produced: a phrase nobody is supposed to put in writing, a
   format that should never leave the building, a policy the answer breaks.
-  Three things are worth knowing before turning one on. A blocking rule takes
-  the answer back rather than showing a shortened one, and the thread keeps
-  the notice instead of the text that was stopped — so the thing the rule
-  exists to withhold does not end up sitting in the conversation history. A
+  Three things are worth knowing before turning one on. A blocking rule stores
+  the notice instead of the text that was stopped, so the thing the rule exists
+  to withhold does not end up sitting in the conversation history — and in the
+  panel and the chat widget it also takes back what was already on screen. A
+  caller of the OpenAI-compatible API is a different matter: that format has no
+  way to unsend what it has already streamed, so the answer ends with
+  `finish_reason: "content_filter"` and a client that ignores it keeps what it
+  received. If the text must never reach a caller at all, the rule belongs on
+  the question rather than on the answer. A
   rule judged by a model delays the whole answer, which then appears at once
   rather than word by word, because a judge has to read the finished answer
   before any of it can be shown; the form says so where you choose the stage.

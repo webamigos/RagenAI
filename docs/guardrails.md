@@ -88,11 +88,24 @@ change to how chat feels rather than to what it allows, and it is the kind of
 thing that comes back as "chat got slow" from somebody who never opened this
 page.
 
-A `BLOCK` on output stops the stream, replaces what the reader has seen with a
-notice in their own language, and stores that notice as the assistant message —
-**never the withheld text**. On the OpenAI-compatible API the stream ends with
-`finish_reason: "content_filter"`, which is what that format has for exactly
-this.
+A `BLOCK` on output stops the stream and stores a notice as the assistant
+message — **never the withheld text**. That part holds everywhere, and it is
+the half that outlives the request.
+
+**What the reader is left looking at depends on the surface, and the difference
+is worth knowing before you rely on it.** The panel and the embedded widget
+take back what they have already rendered and show the notice in the reader's
+own language, because both are told to replace rather than append. An
+OpenAI-compatible client cannot be: chunks already on the wire cannot be
+retracted, so the stream ends with `finish_reason: "content_filter"` — which is
+what that format has for exactly this, and which says the answer was stopped
+rather than unsending it. A caller that ignores the finish reason keeps
+whatever it had already received.
+
+So an output `BLOCK` is a guarantee about what is **stored and shown by our own
+surfaces**, and a signal to everyone else. If the text must never reach a
+caller at all, the rule belongs on the input side, or the answer must not be
+streamed to that caller in the first place.
 
 ### Policies judged by a model
 

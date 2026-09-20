@@ -52,9 +52,22 @@ async function withPrisma<T>(fn: (prisma: any) => Promise<T>): Promise<T> {
   }
 }
 
+/**
+ * How many blocks this fixture has caused, not how many exist.
+ *
+ * `p0-29` blocks on the *input* side several times in the same run, so a count
+ * over the event type alone would rise without this rule having fired at all —
+ * and the poll below would be satisfied by somebody else's row while the
+ * output funnel did nothing.
+ */
 async function blockedEventCount(): Promise<number> {
   return withPrisma((prisma) =>
-    prisma.securityEvent.count({ where: { eventType: 'GUARDRAIL_BLOCKED' } }),
+    prisma.securityEvent.count({
+      where: {
+        eventType: 'GUARDRAIL_BLOCKED',
+        metadata: { path: ['rule'], equals: OUTPUT_FIXTURE_NAME },
+      },
+    }),
   );
 }
 
