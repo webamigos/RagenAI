@@ -464,19 +464,19 @@ Each phase leaves the application working.
 
 ### Phase A — the catalogue exists, and nothing reads it
 
-- [ ] **A1.** `McpCatalogEntry` + `McpAuthType`, migration, the case-insensitive
+- [x] **A1.** `McpCatalogEntry` + `McpAuthType`, migration, the case-insensitive
       slug index, and the seed of the eleven — slugs equal to the current enum
       values, `isBuiltIn = true`, `mcpServerUrl` null. The seed is a script that
       imports `apps/web`'s `PROVIDER_LIST`, because that is the only place the
       full manifest exists.
-- [ ] **A2.** Contracts (`McpCatalogEntryDto`, the slug validator, the
+- [x] **A2.** Contracts (`McpCatalogEntryDto`, the slug validator, the
       behaviour-pack resolver) in `packages/platform-contracts`, and the Prisma
       loader as a **thin per-app binding** — the split `tenant-scope` already
       uses, and the only one available: `platform-contracts` is imported by
       `'use client'` components and is policed by
       `client-bundles-stay-browser-safe.test.ts`, so a Prisma query cannot live
       there.
-- [ ] **A3.** `apps/admin` → `/mcp-catalogue`, **read-only**: the list, each
+- [x] **A3.** `apps/admin` → `/mcp-catalogue`, **read-only**: the list, each
       entry's auth type, resolved server URL and which organizations may use
       it. An operator sees the catalogue before they can change it, and nothing
       on the page claims an effect it does not have.
