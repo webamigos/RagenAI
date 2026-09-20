@@ -151,9 +151,29 @@ export type StreamedMessageDto = {
   isReasoning?: boolean;
 };
 
+/**
+ * Why an assistant message holds a refusal instead of an answer.
+ *
+ * Present only on a message an `OUTPUT` guardrail stopped. The panel renders
+ * the localized sentence off this rather than off `content`, which carries an
+ * English fallback for readers with no locale — an export, the public API.
+ *
+ * The rule's identity, never the matched text: the text is what the rule
+ * exists to withhold, and this object is serialized into a JSON column the
+ * admin panel renders.
+ */
+export type GuardrailBlockedMetadata = {
+  /** The rule's `publicId`, so a hit can be traced to the row that caused it. */
+  guardrail: string;
+  /** The built-in's key, or the operator's name for a rule they wrote. */
+  rule: string;
+};
+
 export type MessageMetadata = {
   /** Accumulated `reasoning_content` from a "Deep thinking" turn. */
   reasoningContent?: string;
+  /** Set when an output guardrail refused this answer. See the type above. */
+  guardrailBlocked?: GuardrailBlockedMetadata;
   /** The `reasoning_effort` used for this turn (low/medium/high). */
   reasoningEffort?: 'low' | 'medium' | 'high' | null;
   /** The model that produced this message (post-rewrite — what actually ran). */

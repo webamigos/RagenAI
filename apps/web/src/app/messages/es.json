@@ -460,7 +460,8 @@
       "thinking": "Pensando",
       "regenerate": "Regenerar respuesta",
       "regenerate-error": "Error al regenerar la respuesta. Inténtalo de nuevo.",
-      "read-only-banner": "Estás viendo el hilo de otro usuario. No puedes enviar mensajes en este hilo."
+      "read-only-banner": "Estás viendo el hilo de otro usuario. No puedes enviar mensajes en este hilo.",
+      "guardrail-blocked-answer": "La respuesta se retuvo porque coincide con una regla establecida por el administrador de tu organización."
     }
   },
   "assistant-settings": {

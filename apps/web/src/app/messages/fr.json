@@ -460,7 +460,8 @@
       "thinking": "Réflexion en cours",
       "regenerate": "Régénérer la réponse",
       "regenerate-error": "Échec de la régénération de la réponse. Veuillez réessayer.",
-      "read-only-banner": "Tu consultes le fil d'un autre utilisateur. Tu ne peux pas envoyer de messages dans ce fil."
+      "read-only-banner": "Tu consultes le fil d'un autre utilisateur. Tu ne peux pas envoyer de messages dans ce fil.",
+      "guardrail-blocked-answer": "La réponse a été retenue car elle correspond à une règle définie par l'administrateur de votre organisation."
     }
   },
   "assistant-settings": {

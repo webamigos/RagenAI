@@ -4,6 +4,7 @@ import db from '@ragenai/prisma-client';
 import { AiUsageStep } from '@/generated/prisma/client';
 import { initializeRagChain } from '@/app/api/threads/services/initializeBasicRag';
 import { getAllSettings } from '@/features/organizations/services/organization-settings';
+import { OUTPUT_GUARDRAIL_REFUSAL } from '@/features/guardrails/constants';
 import { logger } from '@/app/lib/utils/logger';
 import { trackAiUsage } from '@/features/ai-usage/services/commands/create-ai-usage-command';
 import {
@@ -223,6 +224,21 @@ export async function POST(request: NextRequest) {
                   controller.enqueue(
                     encoder.encode(
                       `data: ${JSON.stringify({ text: part.textDelta })}\n\n`,
+                    ),
+                  );
+                } else if (part.type === 'guardrail-violation') {
+                  // The window stopped the answer, so what has been sent is
+                  // withheld: `replace` tells the caller to drop it, and the
+                  // refusal is what gets saved. Without this branch the part
+                  // would be ignored and the partial answer stored — the one
+                  // outcome the rule exists to prevent.
+                  fullText = OUTPUT_GUARDRAIL_REFUSAL;
+                  controller.enqueue(
+                    encoder.encode(
+                      `data: ${JSON.stringify({
+                        text: OUTPUT_GUARDRAIL_REFUSAL,
+                        replace: true,
+                      })}\n\n`,
                     ),
                   );
                 } else if (part.type === 'reasoning-delta') {

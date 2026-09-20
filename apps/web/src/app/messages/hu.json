@@ -460,7 +460,8 @@
       "thinking": "Gondolkodom",
       "regenerate": "Válasz újragenerálása",
       "regenerate-error": "A válasz újragenerálása sikertelen. Próbáld újra.",
-      "read-only-banner": "Egy másik felhasználó beszélgetését nézed. Ebben a beszélgetésben nem küldhetsz üzenetet."
+      "read-only-banner": "Egy másik felhasználó beszélgetését nézed. Ebben a beszélgetésben nem küldhetsz üzenetet.",
+      "guardrail-blocked-answer": "A választ visszatartottuk, mert megfelel a szervezete rendszergazdája által beállított szabálynak."
     }
   },
   "assistant-settings": {

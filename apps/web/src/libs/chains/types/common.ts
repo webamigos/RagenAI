@@ -238,6 +238,23 @@ export type ChainStreamPart =
       toolName: string;
       args: unknown;
     }
+  /**
+   * An `OUTPUT` guardrail refused the answer mid-stream.
+   *
+   * The stream ends here: nothing after this part is emitted, and every
+   * consumer treats the text it has accumulated as withheld rather than as a
+   * partial answer. Persisting that prefix would store exactly the text the
+   * rule exists to suppress, which is why stopping the stream and deciding
+   * what is stored are one change and not two.
+   *
+   * Carries the rule's identity and not the matched text — the same rule as
+   * `GuardrailError`, and for the same reason: this object reaches logs.
+   */
+  | {
+      type: 'guardrail-violation';
+      guardrailPublicId: string;
+      guardrailName: string;
+    }
   | { type: 'other'; [key: string]: unknown };
 
 export interface BaseChatChainOutput {

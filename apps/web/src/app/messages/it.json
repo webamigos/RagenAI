@@ -460,7 +460,8 @@
       "thinking": "Sto pensando",
       "regenerate": "Rigenera risposta",
       "regenerate-error": "Impossibile rigenerare la risposta. Riprova.",
-      "read-only-banner": "Stai visualizzando la conversazione di un altro utente. Non puoi inviare messaggi in questa conversazione."
+      "read-only-banner": "Stai visualizzando la conversazione di un altro utente. Non puoi inviare messaggi in questa conversazione.",
+      "guardrail-blocked-answer": "La risposta è stata trattenuta perché corrisponde a una regola impostata dall'amministratore della tua organizzazione."
     }
   },
   "assistant-settings": {

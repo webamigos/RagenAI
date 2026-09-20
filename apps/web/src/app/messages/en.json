@@ -460,7 +460,8 @@
       "thinking": "Thinking",
       "regenerate": "Regenerate response",
       "regenerate-error": "Failed to regenerate response. Please try again.",
-      "read-only-banner": "You are viewing another user's thread. You cannot send messages in this thread."
+      "read-only-banner": "You are viewing another user's thread. You cannot send messages in this thread.",
+      "guardrail-blocked-answer": "The answer was withheld because it matched a rule set by your organization's administrator."
     }
   },
   "assistant-settings": {

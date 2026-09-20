@@ -460,7 +460,8 @@
       "thinking": "Tænker",
       "regenerate": "Generer svar igen",
       "regenerate-error": "Kunne ikke generere svaret igen. Prøv igen.",
-      "read-only-banner": "Du ser en anden brugers samtale. Du kan ikke sende beskeder i denne samtale."
+      "read-only-banner": "Du ser en anden brugers samtale. Du kan ikke sende beskeder i denne samtale.",
+      "guardrail-blocked-answer": "Svaret blev tilbageholdt, fordi det matcher en regel, som din organisations administrator har oprettet."
     }
   },
   "assistant-settings": {

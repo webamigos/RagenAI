@@ -460,7 +460,8 @@
       "thinking": "Denkt nach",
       "regenerate": "Antwort neu generieren",
       "regenerate-error": "Die Antwort konnte nicht neu generiert werden. Bitte versuche es erneut.",
-      "read-only-banner": "Du siehst den Thread eines anderen Nutzers an. Du kannst in diesem Thread keine Nachrichten senden."
+      "read-only-banner": "Du siehst den Thread eines anderen Nutzers an. Du kannst in diesem Thread keine Nachrichten senden.",
+      "guardrail-blocked-answer": "Die Antwort wurde zurückgehalten, da sie einer von Ihrer Organisation festgelegten Regel entspricht."
     }
   },
   "assistant-settings": {

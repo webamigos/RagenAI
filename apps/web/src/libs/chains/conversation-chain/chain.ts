@@ -1,6 +1,7 @@
 import { streamText, stepCountIs } from 'ai';
 import { buildToolApprovalConfig } from '@/libs/mcp/client';
 import { getOrgGuardrailsQuery } from '@/features/guardrails/services/queries/get-org-guardrails-query';
+import { createOutputGuardrailsCommand } from '@/features/guardrails/services/commands/create-output-guardrails-command';
 import { runInputGuardrailsCommand } from '@/features/guardrails/services/commands/run-input-guardrails-command';
 import type { ToolGatingContext } from '@/libs/security/tool-gating-context';
 import {
@@ -43,8 +44,15 @@ export const conversationChain = async ({
       // rephrase call to run beside, so the `MASK` split that `basic-rag`
       // needs does not arise here.
       let guardedInput = sanitizedInput;
+      // Declared out here because the output window needs the same resolved
+      // set further down. Loading it twice would be a second query per turn
+      // and, worse, two sets that a cache expiry between them could make
+      // disagree — the input stage refusing under one rule set while the
+      // answer is checked against another.
+      let guardrails:
+        Awaited<ReturnType<typeof getOrgGuardrailsQuery>> | undefined;
       if (config?.tracking?.organizationId) {
-        const guardrails = await getOrgGuardrailsQuery(
+        guardrails = await getOrgGuardrailsQuery(
           config.tracking.organizationId,
         );
         const { question, chatHistory } = await runInputGuardrailsCommand({
@@ -134,7 +142,18 @@ export const conversationChain = async ({
       return {
         textStream: result.textStream,
         text: result.text,
-        fullStream: mapFullStream(result.fullStream),
+        // The output window, or nothing. `mapFullStream` returns its own
+        // iterator unwrapped when there is no stage, so an organization with
+        // no output rules is not buffered.
+        fullStream: mapFullStream(
+          result.fullStream,
+          createOutputGuardrailsCommand({
+            guardrails,
+            organizationId: config?.tracking?.organizationId,
+            userId: config?.tracking?.userId,
+            source: config?.guardrailSource ?? 'chat',
+          }),
+        ),
         reasoningText: result.reasoningText,
         // Every step, not just the last — the value the monthly cost and
         // token ceilings aggregate.
