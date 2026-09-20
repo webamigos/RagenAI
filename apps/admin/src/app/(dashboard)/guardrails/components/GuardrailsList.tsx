@@ -1,6 +1,9 @@
 'use client';
 
-import { BUILT_IN_GUARDRAIL_LABELS } from '@ragenai/guardrails/contracts';
+import {
+  BUILT_IN_GUARDRAIL_LABELS,
+  DEFAULT_POLICY_THRESHOLD,
+} from '@ragenai/guardrails/contracts';
 import { useState, useTransition } from 'react';
 import { toast } from 'sonner';
 
@@ -111,14 +114,20 @@ export function GuardrailsList({
                   ) : null}
                 </td>
                 <td className="px-4 py-3 text-muted-foreground">
-                  {rule.kind === 'PATTERN' && rule.pattern ? (
-                    <code className="rounded bg-muted px-1.5 py-0.5 text-xs">
-                      {rule.pattern}
-                    </code>
-                  ) : (
-                    <span className="text-xs">{rule.kind}</span>
-                  )}
-                  <div className="mt-1 text-xs">{rule.stage}</div>
+                  <RuleSubstance rule={rule} />
+                  <div className="mt-1 text-xs">
+                    {rule.stage}
+                    {/* The threshold beside the stage, and only where it means
+                        something. It is the tuning knob for a scored rule, and
+                        "which of my three policies is set to 0.5" is otherwise
+                        a question you answer by opening each of them. */}
+                    {rule.kind === 'LLM_POLICY' ? (
+                      <>
+                        {' '}
+                        · fires at {rule.threshold ?? DEFAULT_POLICY_THRESHOLD}
+                      </>
+                    ) : null}
+                  </div>
                 </td>
                 <td className="px-4 py-3 text-muted-foreground">
                   {ACTION_DESCRIPTIONS[rule.action] ?? rule.action}
@@ -217,4 +226,43 @@ export function GuardrailsList({
       ) : null}
     </>
   );
+}
+
+/**
+ * What the rule actually says, in the column where a pattern rule shows its
+ * pattern.
+ *
+ * A policy rule used to render the word `LLM_POLICY` here, which names the
+ * kind and tells an operator nothing — and a policy rule is precisely the one
+ * whose substance is prose rather than a name. With three of them allowed per
+ * organization, a list that does not show which is which is a list you read by
+ * opening every row.
+ */
+const POLICY_PREVIEW_CHARS = 90;
+
+function RuleSubstance({
+  rule,
+}: {
+  rule: Pick<GuardrailRow, 'kind' | 'pattern' | 'policy'>;
+}) {
+  if (rule.kind === 'PATTERN' && rule.pattern) {
+    return (
+      <code className="rounded bg-muted px-1.5 py-0.5 text-xs">
+        {rule.pattern}
+      </code>
+    );
+  }
+
+  if (rule.kind === 'LLM_POLICY' && rule.policy) {
+    const preview = rule.policy.trim();
+    return (
+      <span className="text-xs italic" title={preview}>
+        {preview.length > POLICY_PREVIEW_CHARS
+          ? `${preview.slice(0, POLICY_PREVIEW_CHARS)}…`
+          : preview}
+      </span>
+    );
+  }
+
+  return <span className="text-xs">{rule.kind}</span>;
 }

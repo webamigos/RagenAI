@@ -2,8 +2,10 @@
 
 import {
   ACTIONS_BY_KIND,
+  DEFAULT_POLICY_THRESHOLD,
   GUARDRAIL_SEVERITIES,
   AUTHORABLE_COMBINATIONS,
+  POLICY_CAP_NOTICE,
   type GuardrailAction,
   type GuardrailCombination,
   type GuardrailKind,
@@ -18,6 +20,7 @@ import {
   updateGuardrailAction,
   type GuardrailRow,
 } from '../actions';
+import { PolicyTrial } from './PolicyTrial';
 
 /**
  * The kinds this build can evaluate, and the stages each can run at.
@@ -112,11 +115,29 @@ export function GuardrailForm({
   const [patternIsRegex, setPatternIsRegex] = useState(
     rule?.patternIsRegex ?? false,
   );
+  const [policy, setPolicy] = useState(rule?.policy ?? '');
+  // Held as the string the operator typed, not as a number. An empty field
+  // means "no threshold named", which is what makes the default apply — and
+  // `Number('')` is 0, a threshold that matches every message.
+  const [threshold, setThreshold] = useState(
+    rule?.threshold != null ? String(rule.threshold) : '',
+  );
   const [isPending, startTransition] = useTransition();
 
   const isBuiltIn = rule?.key != null;
   const stages = offered.get(kind) ?? [];
   const actions = ACTIONS_BY_KIND[kind] ?? [];
+
+  /**
+   * The typed threshold as a number, or `null` for "use the default".
+   *
+   * `null` rather than `undefined` for an unparseable string on purpose: it is
+   * refused by the action, where the operator gets a message. Silently falling
+   * back to the default would save a rule at a sensitivity they did not
+   * choose and did not see.
+   */
+  const parsedThreshold =
+    threshold.trim() === '' ? null : (Number(threshold) as number);
 
   const submit = () => {
     startTransition(async () => {
@@ -129,6 +150,8 @@ export function GuardrailForm({
         severity,
         pattern: kind === 'PATTERN' ? pattern : undefined,
         patternIsRegex: kind === 'PATTERN' ? patternIsRegex : undefined,
+        policy: kind === 'LLM_POLICY' ? policy : undefined,
+        threshold: kind === 'LLM_POLICY' ? parsedThreshold : undefined,
       };
 
       try {
@@ -289,6 +312,51 @@ export function GuardrailForm({
               />
               Treat as a regular expression
             </label>
+          </>
+        ) : null}
+
+        {kind === 'LLM_POLICY' ? (
+          <>
+            <Field
+              htmlFor="guardrail-policy"
+              label="Policy"
+              hint="Written for a judge model, not for a person: it is asked how strongly a message violates this, and answers with a score. The message it reads has already had personal data replaced with placeholders such as <PERSON_1>, so a policy about phone numbers will be judging <PHONE_NUMBER_1> rather than a number."
+            >
+              <textarea
+                id="guardrail-policy"
+                rows={5}
+                value={policy}
+                onChange={(e) => setPolicy(e.target.value)}
+                className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
+              />
+            </Field>
+
+            <Field
+              htmlFor="guardrail-threshold"
+              label="Score at which it fires"
+              hint={`Between 0 and 1. Leave it empty for ${DEFAULT_POLICY_THRESHOLD}. A lower number fires more often, on weaker evidence.`}
+            >
+              <input
+                id="guardrail-threshold"
+                type="number"
+                min={0}
+                max={1}
+                step={0.05}
+                value={threshold}
+                placeholder={String(DEFAULT_POLICY_THRESHOLD)}
+                onChange={(e) => setThreshold(e.target.value)}
+                className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
+              />
+            </Field>
+
+            {/* Where the operator meets the cap, rather than in a runbook. A
+                platform policy is the case they will get wrong: it is written
+                once here and then spends against every organization. */}
+            <p className="rounded-md border border-border bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
+              {POLICY_CAP_NOTICE}
+            </p>
+
+            <PolicyTrial policy={policy} threshold={parsedThreshold} />
           </>
         ) : null}
       </div>

@@ -46,7 +46,13 @@ const actionFiles = walk(SRC).filter((f) =>
  * named here, which is a smaller mistake than a new writer slipping through.
  */
 const MUTATING =
-  /^(save|create|update|add|set|apply|delete|deactivate|toggle|ban|unban|rename|change|assign|remove|revoke|force|resend|sync|resolve|reactivate|cancel)/i;
+  // `test` is here, against the reading that a trial changes nothing. It
+  // changes no row, and it spends money: `testPolicyAction` calls a judge
+  // model, and writes no AI-usage record because a platform administrator has
+  // no tenant to bill. Its audit entry is therefore the *only* trace it
+  // leaves, which is exactly what the rule below enforces — so classifying it
+  // as read-only would exempt the one action whose audit entry is load-bearing.
+  /^(save|create|update|add|set|apply|delete|deactivate|toggle|ban|unban|rename|change|assign|remove|revoke|force|resend|sync|resolve|reactivate|cancel|test)/i;
 
 /** Verbs that only read. Exempt from the audit rule, by name. */
 const READ_ONLY = /^(get|list|fetch|load|search|count|check)/i;

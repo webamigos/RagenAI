@@ -83,6 +83,30 @@ const PACKAGE_ONLY_SYMBOLS = [
 ];
 
 /**
+ * Symbols an app is *meant* to call, listed so nobody adds them above.
+ *
+ * `runPolicyTrial` is the one C3 introduces, and it looks exactly like a
+ * primitive: it takes a judge and returns a score. It is not one. It is the
+ * "test this policy" operation, owned by the package for the same reason
+ * `evaluateInputStage` is — an operator tunes a threshold against what it
+ * returns and then switches the rule on, so a panel that assembled the trial
+ * itself could apply a different default, or read a judge error as a zero,
+ * and the number they tuned against would not be the number that blocks a
+ * customer.
+ *
+ * `validatePolicy` likewise: it is the resolver's own drop predicate, reached
+ * through a gate that returns a message instead of a boolean. `validatePattern`
+ * is the precedent for that shape.
+ */
+const APP_CALLABLE_SYMBOLS = [
+  'evaluateInputStage',
+  'securityEventTypeFor',
+  'runPolicyTrial',
+  'validatePattern',
+  'validatePolicy',
+];
+
+/**
  * Decisions that must exist once.
  *
  * Matched as source text rather than through the type system, because the
@@ -158,6 +182,29 @@ describe('guardrails are not recopied', () => {
     }
   });
 
+  it('keeps the two lists disjoint', () => {
+    // Without this, adding a symbol to both lists would read as a deliberate
+    // decision and be enforced as a ban — apps would stop being able to call
+    // the operation this file's own comments tell them to call.
+    expect(
+      APP_CALLABLE_SYMBOLS.filter((s) => PACKAGE_ONLY_SYMBOLS.includes(s)),
+    ).toEqual([]);
+  });
+
+  it.each(APP_CALLABLE_SYMBOLS)('the package still exports %s', (symbol) => {
+    const sources = [
+      ...sourceFiles(join(REPO_ROOT, 'packages', 'guardrails', 'src')),
+    ]
+      .map((file) => readFileSync(file, 'utf8'))
+      .join('\n');
+
+    expect(
+      new RegExp(`export (async )?(function|const) ${symbol}\\b`).test(sources),
+      `${symbol} is what apps are told to call instead of a primitive. If it ` +
+        'was renamed, every redirect in this file points at nothing.',
+    ).toBe(true);
+  });
+
   it.each(PACKAGE_ONLY_SYMBOLS)('no app imports %s directly', (symbol) => {
     const offenders = appFiles.filter((file) => {
       const code = stripComments(readFileSync(file, 'utf8'));
@@ -218,7 +265,38 @@ describe('guardrails are not recopied', () => {
     expect(policy).toContain('export const POLICY_JUDGE_MODEL');
     expect(policy).toContain('export const POLICY_JUDGE_SYSTEM_PROMPT');
     expect(policy).toContain('export function policyJudgePrompt');
-    expect(policy).toContain('export const DEFAULT_POLICY_THRESHOLD');
+
+    // The judge's two numbers moved to `contracts` in C3 and the judge
+    // re-exports them. They had to move: `contracts` is the only entry point
+    // a `'use client'` component may import — the barrel pulls in the ReDoS
+    // probe's `node:worker_threads` — and the rule form states the cap and
+    // the default threshold where an operator meets them.
+    //
+    // So the assertion is the same one in a different file: **defined once**.
+    // A form that could not import the default would have written `0.7` into
+    // a placeholder, which is the second copy `policyThresholdFor` is a
+    // package-only symbol to prevent — a rule more sensitive on one surface
+    // than another, invisible until somebody compares two incident lists.
+    const contracts = readFileSync(
+      join(REPO_ROOT, PACKAGE_SRC, 'contracts', 'guardrail.ts'),
+      'utf8',
+    );
+    for (const symbol of [
+      'DEFAULT_POLICY_THRESHOLD',
+      'MAX_ACTIVE_LLM_POLICIES',
+      'POLICY_CAP_NOTICE',
+    ]) {
+      expect(
+        contracts,
+        `${symbol} is read by the rule form, so it must be defined in the ` +
+          'browser-safe entry point rather than beside the judge.',
+      ).toContain(`export const ${symbol}`);
+      expect(
+        stripComments(policy),
+        `${symbol} is defined in contracts and re-exported by the judge. A ` +
+          'second `const` here is the drift this whole file exists to stop.',
+      ).not.toMatch(new RegExp(`export const ${symbol}\\s*=`));
+    }
   });
 
   it('every judge binding reads its model, its prompt and its step', () => {

@@ -137,6 +137,12 @@ export const ADMIN_ACTIONS = {
   guardrailToggled: 'admin.guardrail.toggled',
   guardrailDeleted: 'admin.guardrail.deleted',
   guardrailOverrideChanged: 'admin.guardrail.override_changed',
+  /**
+   * A policy trial from the rule form. Audited because it is the only record
+   * one leaves: a trial calls a judge model and writes no AI-usage row, since
+   * a platform administrator testing a draft has no organization to bill.
+   */
+  guardrailPolicyTested: 'admin.guardrail.policy_tested',
   registrationToggled: 'admin.registration.toggled',
 } as const;
 

@@ -618,8 +618,116 @@ match.
       guardrail events do not escalate; what replaces it is that the rule can
       now **block**, which the classifier never could, and that its severity is
       the operator's to set.
-- [ ] **C3.** The policy editor, with a "test this policy" box that runs the
-      judge against text the operator pastes.
+- [x] **C3.** The policy editor, with a "test this policy" box that runs the
+      judge against text the operator pastes. `LLM_POLICY`/`INPUT` joins
+      `AUTHORABLE_COMBINATIONS` here, in the change that gives the form a field
+      for the prose — the authoring half of the rule the supported list already
+      states for evaluators.
+
+      Four things came out differently from the sketch. **The trial runs in
+      `apps/web`, over an internal endpoint**, rather than in the panel:
+      `apps/web` is a runtime that serves chat, so the trial exercises the
+      binding real traffic passes through. A judge in `apps/admin` would have
+      been a third one — a third model id, a third timeout, a third reading of
+      a provider error — and an operator would tune a threshold against a
+      number no turn produces. It also keeps the panel free of a provider SDK
+      and credentials, and keeps `guardrails-are-not-recopied`'s "exactly two
+      bindings" true.
+
+      **The trial masks its text first.** This is the one way the box could
+      have been worse than no box: the input stage runs downstream of Presidio,
+      so a policy is judged against `<PHONE_NUMBER_1>`, and a trial over raw
+      text would score a string no turn produces. It fails closed when the
+      analyzer does not answer, and returns the masked text so the caveat under
+      the policy field is something an operator sees rather than reads. The
+      chat path's hardcoded `'pl'` became `PII_MASKING_LANGUAGE` in the same
+      change, because two callers naming their own language is a trial that
+      masks differently from the turn it predicts.
+
+      **A trial writes no AI-usage row, and is audited instead.**
+      `AiUsage.organizationId` is required and foreign-keyed; a platform
+      administrator has no tenant to bill, and inventing one would put a number
+      on an organization's page that nobody in it caused. So the record is
+      `admin.guardrail.policy_tested`, which is the only thing standing between
+      a judge model and unattributable spend — the provider bills for these
+      calls and no page in Ragen shows them.
+
+      **`DEFAULT_POLICY_THRESHOLD`, `MAX_ACTIVE_LLM_POLICIES` and the cap
+      notice moved to `contracts`.** The rule form is a `'use client'`
+      component and `contracts` is the only entry point it may import, so a
+      form that could not reach the default would have written `0.7` into a
+      placeholder — the second copy `policyThresholdFor` is a package-only
+      symbol to prevent. `runPolicyRules` also gained `scored` alongside
+      `hits`: a trial that can only say "it did not fire" cannot distinguish a
+      miss at 0.05 from a miss at 0.68, which is the whole of what an operator
+      is tuning.
+
+      One thing deliberately left: **a scored built-in's threshold is still not
+      editable from the panel.** `jailbreak-detection` has one and the resolver
+      reads it, but the form offers no field, so an edit must leave the column
+      untouched rather than writing `null` and resetting a tuned detector as a
+      side effect of a rename. That is C4.
+- [ ] **C4.** The three tuning values the resolver already reads and nothing
+      can write.
+
+      This is the mirror image of the failure this spec keeps guarding against,
+      and it is worth naming as its own shape. Everywhere else the danger is a
+      row an operator can author that no evaluator reads — `LLM_POLICY` before
+      C3, `content-moderation` before B, `jailbreak-detection` before C2. Here
+      the resolver has a branch, a validation and a `dropped` reason for a
+      value **no surface in the product can produce**. Nothing is silently
+      unenforced; there is simply a knob with no handle, and the code reads as
+      though the feature exists. Found while writing C3, in the change that had
+      to work around the first of them.
+
+      Three of them, and they are not one change because two are on different
+      pages:
+
+      1. **A scored built-in's `threshold`, on the platform rule.**
+         `jailbreak-detection` is judged 0–1 and `policyThresholdFor` reads its
+         column; the form offers no field, so the sensitivity the whole
+         detector turns on is whatever the migration seeded. C3's
+         `policyColumnsFor` leaves the column untouched for a built-in
+         precisely because there is no field — the moment there is one, that
+         branch changes rather than being worked around again.
+      2. **`GuardrailOrgOverride.threshold`.** The resolver validates its range
+         and records `override-threshold-out-of-range` when it fails.
+         `setGuardrailOverrideAction` writes `enabled` and nothing else.
+      3. **`GuardrailOrgOverride.action`.** Same: the resolver honours it,
+         refuses `MASK` on a built-in or a policy with a documented fallback,
+         and files `override-action-invalid-for-kind`. Also unwritable. This is
+         the one an organization is most likely to want — "keep the platform's
+         rule, but only log it for us" is the whole point of an override and
+         the panel cannot express it.
+
+      Two things it must get right, both of which C3 either set up or walked
+      around:
+
+      **The threshold field is offered per *key*, not per kind.**
+      `content-moderation` is a `BUILT_IN` too and its provider returns a flag,
+      not a score — a threshold on it would be a field that changes nothing.
+      This is the same per-key distinction `EVALUABLE_BUILT_IN_KEYS` exists for,
+      and conflating the two has already been a bug in this file in both
+      directions. The predicate cannot be `isJudgedRule`: that is a
+      package-only symbol, and an app importing it is the first line of writing
+      the loop again. So C4 adds an authoring-side predicate to `contracts` —
+      the shape `validatePolicy` established in C3, a package decision exposed
+      for the panel rather than re-read by it.
+
+      **Every one of the three is a number or an enum an operator can get
+      wrong, on a public endpoint.** The resolver's response to a bad value is
+      to drop it and carry on, which is correct at runtime and useless at
+      authoring time — an override saved with `threshold: 2` would report
+      success and then be ignored for ever. The validation belongs in the
+      action, against the same `isThresholdInRange` the resolver uses, for the
+      reason C3 moved that function to `contracts` in the first place.
+
+      Worth doing in the same slice, because it is the reason the gap survived:
+      **an architecture guard that a resolver branch has a writer.** The
+      existing guards all run the other way — they catch a rule that is
+      authorable and unenforced. Nothing catches the opposite, and the opposite
+      is what happens when a schema is designed ahead of its panel, which is
+      how this whole feature was built on purpose.
 
 ### Phase D — output guardrails
 

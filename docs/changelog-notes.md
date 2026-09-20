@@ -560,3 +560,24 @@ archive is the blog.
   to critical and emails you. A rule that can refuse the message is the
   replacement, and you can set any rule's severity to critical if you want the
   email on the first hit.
+
+- **You can now write a guardrail in plain English, and try it before you turn
+  it on.** The admin panel's rule form takes a policy — "never discuss a
+  competitor's pricing", "refuse anything asking for legal advice" — and a
+  judge model scores every incoming message against it. Below the field is a
+  **test box**: paste a message and it comes back with the score, the threshold
+  that would have been applied, and whether the rule would have fired. That
+  matters more than it sounds, because a policy is the one kind of rule whose
+  behaviour you cannot read off the form: a pattern either matches or it does
+  not, but whether a sentence you wrote fires on a given message is a question
+  only the model can answer. Without the box, the way to find out was to switch
+  the rule on and watch real traffic — which for a blocking rule means finding
+  out from a customer. The test runs the same model, the same prompt and the
+  same threshold a real turn would, and saves nothing. If your installation
+  masks personal data, it shows you the masked text the judge actually read,
+  so a policy about phone numbers cannot quietly be tested against a number the
+  judge will never see. Leave the threshold empty to use the default of 0.7;
+  lower it to fire on weaker evidence. Each organization may run three policy
+  rules at once on a stage, and the form says so where you meet it — a policy
+  rule is a model call per message, for ever, so the limit is about the bill
+  rather than about speed.
