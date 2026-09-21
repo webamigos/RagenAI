@@ -60,9 +60,52 @@ non-deterministic, which is true and not the cause.
 - **Give back the number, not the verdict.** Anything an operator tunes needs
   the value and the boundary, together.
 
+## It happened again, in a feature that had never heard of guardrails
+
+The MCP catalogue's **Test connection** button (ADR-52) is the same shape, and
+it failed the same way within days of merging — which is the evidence that this
+is a rule and not a guardrails anecdote.
+
+The button opens an MCP session against the URL an operator just typed and
+lists the tool names. `probeMcpServer` builds its transport with
+`allowedProtocols: [parsed.protocol]`, and a comment says why: an internal
+server on somebody's own network often has no certificate, and the *address*
+policy decides what may be reached, not the scheme. The three runtime call
+sites built the same transport and passed **no** `allowedProtocols`, so they
+kept the guard's https-only default.
+
+So a plain-`http` entry was accepted by the form, confirmed working by the
+button — tool names and all — and refused by every tool load with
+`InsecureProtocolError: only https is allowed`. The one check that exists to
+tell a working endpoint from a typo *before a customer does* was reporting on a
+request nobody would ever send.
+
+Two things generalise past the specific bug:
+
+- **The divergence was one option, not one path.** The probe and the runtime
+  called the same function in the same package; the preview was faithful in
+  every respect except the argument that decided the outcome. "Run the
+  production path" is not enough on its own — it has to be run with the
+  production *configuration*, and a shared helper with a permissive default is
+  exactly where that slips.
+- **A default that is right for a redirect is wrong for a first hop.**
+  `allowedProtocols` defaulted to https so a `302` could not downgrade a
+  connector mid-flight, which is correct — and the same value, applied to the
+  connector's own address, refused an address the product had just told the
+  operator was fine.
+
+The fix threads the entry's own scheme (`protocolsFor`) to the call sites that
+dial a catalogue entry, and the guard is a case in `connect-is-guarded` on both
+apps — those two clients are copies and have drifted before.
+
 ## Where this applies next
 
 Phase D adds output rules and will want the same box. Output is a *stream*
 evaluated through a sliding window, so a trial that scores a whole string is
 already a different path from the one it claims to preview — the window is the
 part that decides whether a rule fires at all.
+
+More generally: whenever a **Test / Preview / Try it** control exists, diff the
+options it passes against the options the real call site passes, not just the
+function both reach. A shared helper makes the two look identical at the call
+site and behave differently at the default.

@@ -8,6 +8,7 @@ import {
   createGuardedFetch,
   createGuardedLookup,
   InsecureProtocolError,
+  protocolsFor,
 } from '../guarded-fetch';
 
 /**
@@ -434,5 +435,134 @@ describe('createGuardedConnector', () => {
       hostname: 'shop.example.com',
       protocol: 'http:',
     });
+  });
+});
+
+describe('protocolsFor', () => {
+  it('keeps an https entry on https, so a redirect cannot downgrade it', () => {
+    expect(protocolsFor('https://mcp.example.com/mcp')).toEqual(['https:']);
+  });
+
+  it('lets an http entry stay http, and be redirected up to https', () => {
+    // Up is not a downgrade, and it is what a server that has just been put
+    // behind TLS does.
+    expect(protocolsFor('http://10.0.0.5:9005/mcp')).toEqual([
+      'http:',
+      'https:',
+    ]);
+  });
+
+  it('refuses http for a credentialed entry nobody vouched for', () => {
+    // `api_key_bearer` sends the customer's own third-party key and
+    // `external_mcp` an OAuth token. Admitting http on a public address would
+    // put either on the wire in clear text.
+    expect(
+      protocolsFor('http://mcp.example.com/mcp', { credentialed: true }),
+    ).toEqual(['https:']);
+  });
+
+  it('admits http for a credentialed entry declared to be on the operator network', () => {
+    // `allowsPrivateAddress` is a platform-admin decision, audited where it is
+    // set, and it is the entry that exists because an internal server has no
+    // certificate.
+    expect(
+      protocolsFor('http://10.0.0.5:9005/mcp', {
+        credentialed: true,
+        allowPrivate: true,
+      }),
+    ).toEqual(['http:', 'https:']);
+  });
+
+  it('admits http for a server_side entry, which carries no credential', () => {
+    expect(
+      protocolsFor('http://mcp.example.com/mcp', { credentialed: false }),
+    ).toEqual(['http:', 'https:']);
+  });
+
+  it('never widens an https entry, whatever the credential policy says', () => {
+    for (const policy of [
+      {},
+      { credentialed: true },
+      { credentialed: false, allowPrivate: true },
+      { credentialed: true, allowPrivate: true },
+    ]) {
+      expect(protocolsFor('https://mcp.example.com/mcp', policy)).toEqual([
+        'https:',
+      ]);
+    }
+  });
+
+  it('keeps the strict default for something that is not a URL', () => {
+    // Unparseable here means unconnectable later; widening on an input
+    // nothing validated would be the wrong direction to fail.
+    expect(protocolsFor('not a url')).toEqual(['https:']);
+    expect(protocolsFor('')).toEqual(['https:']);
+  });
+
+  it('does not widen for a scheme that is neither http nor https', () => {
+    expect(protocolsFor('ftp://files.example.com')).toEqual(['https:']);
+    expect(protocolsFor('file:///etc/passwd')).toEqual(['https:']);
+  });
+
+  it('admits an http first hop, reaching a server that has no certificate', async () => {
+    // The regression this exists for: the runtime call sites kept the
+    // https-only default, so every `http://` catalogue entry was refused —
+    // after the form had accepted it and Test connection had reported it
+    // working, tool names and all.
+    //
+    // A real local server, not a stubbed connect: the protocol check happens
+    // before the socket, so a test that only asserts "no InsecureProtocolError"
+    // would pass even if nothing could ever be reached.
+    const server = http.createServer((_req, res) => {
+      res.writeHead(200, { 'content-type': 'text/plain' });
+      res.end('reached');
+    });
+    await new Promise<void>((resolve) =>
+      server.listen(0, '127.0.0.1', resolve),
+    );
+    const port = (server.address() as AddressInfo).port;
+
+    const guarded = createGuardedFetch({
+      lookup: stubLookup({ 'mcp.example.com': [['127.0.0.1', 4]] }),
+      // The address policy is not what is under test here; loopback is
+      // refused by the real one whatever `allowPrivate` says.
+      isBlockedAddress: () => false,
+      allowedProtocols: protocolsFor(`http://mcp.example.com:${port}/mcp`),
+    });
+
+    try {
+      const response = await guarded.fetch(
+        `http://mcp.example.com:${port}/mcp`,
+      );
+      expect(response.status).toBe(200);
+      await expect(response.text()).resolves.toBe('reached');
+    } finally {
+      await guarded.close();
+      await new Promise<void>((resolve) => server.close(() => resolve()));
+    }
+  });
+
+  it('still refuses http when the entry was saved as https', async () => {
+    const connector = createGuardedConnector({
+      lookup: stubLookup({ 'mcp.example.com': [['93.184.216.34', 4]] }),
+      allowedProtocols: protocolsFor('https://mcp.example.com/mcp'),
+    });
+
+    const error = await new Promise<Error | null>((resolve) => {
+      connector(
+        {
+          hostname: 'mcp.example.com',
+          host: 'mcp.example.com',
+          protocol: 'http:',
+          port: '80',
+        },
+        (err, socket) => {
+          socket?.destroy();
+          resolve(err);
+        },
+      );
+    });
+
+    expect(error).toBeInstanceOf(InsecureProtocolError);
   });
 });

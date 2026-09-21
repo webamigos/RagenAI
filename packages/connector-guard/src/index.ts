@@ -36,6 +36,7 @@ export {
   createGuardedConnector,
   createGuardedFetch,
   createGuardedLookup,
+  protocolsFor,
   type GuardedFetch,
   type GuardedFetchOptions,
 } from './guarded-fetch';

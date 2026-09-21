@@ -14,6 +14,27 @@ Long-form detail split out of `AGENTS.md`, which has a hard 32,768-byte budget (
 
 ## Playwright / E2E
 
+### Naming, and what it decides
+
+`{priority}-{##}-{name}.spec.ts`:
+
+| Prefix | For |
+|---|---|
+| `smoke-01..06` | unauthenticated |
+| `smoke-07+` | authenticated |
+| `p0-*` | critical |
+| `p1-*` | high |
+| `p2-*` | medium |
+| `p3-*` | low, admin, edge cases |
+
+**The prefix decides when CI runs it.** A pull request runs only `smoke-*` and
+`p0-*` (82 of 175 tests); the full suite runs on push to `main` and nightly. So
+a `p1`–`p3` test does not gate the pull request that breaks it — anything that
+must block a merge goes in `smoke-*` or `p0-*`.
+
+Everything: `npm run web:e2e`. The fast tier, as CI runs it on a PR:
+`npx playwright test "(smoke|p0)-"` from `apps/web`.
+
 ### What is where
 
 - `e2e/constants.ts` — test user and org ids, credentials

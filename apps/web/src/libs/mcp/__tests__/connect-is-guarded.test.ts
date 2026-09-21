@@ -142,3 +142,100 @@ describe('opening a session against an operator-typed address', () => {
     expect(mockCreateMCPClient).toHaveBeenCalledTimes(1);
   });
 });
+
+describe('the scheme a session is opened with', () => {
+  beforeEach(() => {
+    mockCreateMCPClient.mockReset().mockResolvedValue({
+      tools: vi.fn().mockResolvedValue({}),
+      close: vi.fn(),
+    });
+    mockCreateGuardedMcpTransport.mockReset().mockReturnValue({
+      transport: { __guarded: true },
+      close: mockGuardedClose,
+    });
+    mockGetToken.mockReset().mockResolvedValue({ accessToken: 'token' });
+  });
+
+  function httpEntry() {
+    return {
+      notion: {
+        provider: 'notion',
+        name: 'Notion',
+        authType: 'api_key_bearer',
+        // What an operator types for their own MCP server on an internal
+        // network: no certificate, so no https.
+        mcpServerUrl: 'http://10.0.0.5:9005/mcp',
+        addressGuard: { allowPrivate: true },
+      },
+    } as never;
+  }
+
+  it('admits http when that is the scheme the entry was saved with', async () => {
+    // The regression: the call site passed no `allowedProtocols`, so the
+    // guard's https-only default refused every `http://` catalogue entry —
+    // after `/mcp-catalogue`'s form had accepted it and Test connection had
+    // reported it working, tool names and all. `probeMcpServer` passes the
+    // URL's own scheme; this had to as well or the button was reporting on a
+    // different request than the one that runs.
+    await createMcpToolsFromConnectors(
+      [{ ...connector, mcpServerUrl: 'http://10.0.0.5:9005/mcp' }],
+      httpEntry(),
+    );
+
+    const options = mockCreateGuardedMcpTransport.mock.calls[0]?.[2];
+    expect(options.allowedProtocols).toEqual(['http:', 'https:']);
+  });
+
+  it('keeps an https entry on https, so a redirect cannot downgrade it', async () => {
+    await createMcpToolsFromConnectors(
+      [connector],
+      definitions('api_key_bearer'),
+    );
+
+    const options = mockCreateGuardedMcpTransport.mock.calls[0]?.[2];
+    expect(options.allowedProtocols).toEqual(['https:']);
+  });
+
+  it('refuses http for a credentialed entry on an address nobody vouched for', async () => {
+    // The customer's own third-party key would otherwise go over the wire in
+    // clear text. `allowPrivate` is off here: the entry claims a public
+    // server, and a public server can have a certificate.
+    const publicHttp = {
+      notion: {
+        provider: 'notion',
+        name: 'Notion',
+        authType: 'api_key_bearer',
+        mcpServerUrl: 'http://mcp.example.test/mcp',
+        addressGuard: { allowPrivate: false },
+      },
+    } as never;
+
+    await createMcpToolsFromConnectors(
+      [{ ...connector, mcpServerUrl: 'http://mcp.example.test/mcp' }],
+      publicHttp,
+    );
+
+    const options = mockCreateGuardedMcpTransport.mock.calls[0]?.[2];
+    expect(options.allowedProtocols).toEqual(['https:']);
+  });
+
+  it('treats server_side as the one shape that carries no credential', async () => {
+    const serverSide = {
+      notion: {
+        provider: 'notion',
+        name: 'Notion',
+        authType: 'server_side',
+        mcpServerUrl: 'http://mcp.example.test/mcp',
+        addressGuard: { allowPrivate: false },
+      },
+    } as never;
+
+    await createMcpToolsFromConnectors(
+      [{ ...connector, mcpServerUrl: 'http://mcp.example.test/mcp' }],
+      serverSide,
+    );
+
+    const options = mockCreateGuardedMcpTransport.mock.calls[0]?.[2];
+    expect(options.allowedProtocols).toEqual(['http:', 'https:']);
+  });
+});

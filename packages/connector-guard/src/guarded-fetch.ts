@@ -79,11 +79,86 @@ export interface GuardedFetchOptions {
   /** Address policy. Injected by tests; defaults to the real policy. */
   isBlockedAddress?: (address: string) => boolean;
   /**
-   * Schemes a hop may use. Defaults to https only — connector URLs are https
-   * at registration and a redirect must not downgrade that. Tests that speak
-   * plain http to a local server pass `['http:']` explicitly.
+   * Schemes a hop may use. Defaults to https only — a redirect must not
+   * downgrade the scheme a connector was registered with. Callers that dial a
+   * URL somebody typed pass `protocolsFor(url)`; tests that speak plain http
+   * to a local server pass `['http:']` explicitly.
    */
   allowedProtocols?: string[];
+}
+
+/**
+ * The schemes a connector's own URL may use, given the scheme it was saved
+ * with.
+ *
+ * The https-only default is right for a *redirect* and wrong for the *first
+ * hop*. Both `/mcp-catalogue`'s form and `probeMcpServer` deliberately accept
+ * `http://` — an operator's MCP server on their own network often has no
+ * certificate, and the address policy, not the scheme, is what decides whether
+ * it may be reached.
+ *
+ * Without this the three runtime call sites kept the default and so refused
+ * what the form had accepted and **Test connection had just reported
+ * working**, naming the server's tools as it did so. That is that button's
+ * purpose exactly inverted: it exists so an operator can tell a working
+ * endpoint from a typo before a customer does.
+ *
+ * An https entry still gets https alone, so a redirect cannot downgrade it.
+ * An http entry may be redirected *up* to https — not a downgrade, and what a
+ * server that has just been put behind TLS does.
+ */
+export type ProtocolPolicy = {
+  /**
+   * The session carries a credential — a bearer token, an OAuth access token,
+   * or a custom header holding an API key. Only `server_side` connectors do
+   * not.
+   */
+  credentialed?: boolean;
+  /**
+   * The entry is declared to live on the operator's own network
+   * (`allowsPrivateAddress`), which is a platform-admin decision and audited
+   * where it is set.
+   */
+  allowPrivate?: boolean;
+};
+
+export function protocolsFor(
+  url: string,
+  policy: ProtocolPolicy = {},
+): string[] {
+  let protocol: string;
+  try {
+    protocol = new URL(url).protocol;
+  } catch {
+    // Unparseable here means unconnectable later. Keep the strict default
+    // rather than widening on an input nothing validated.
+    return ['https:'];
+  }
+
+  if (protocol !== 'http:') {
+    return ['https:'];
+  }
+
+  /**
+   * A credential does not travel in clear text to an address the operator has
+   * not vouched for.
+   *
+   * `api_key_bearer` sends the *customer's own* third-party key, and
+   * `external_mcp` sends an OAuth access token. Admitting http for those on a
+   * public address would put either on the wire — and the reason the first
+   * hop may be http at all is the internal server with no certificate, which
+   * is exactly the entry that carries `allowsPrivateAddress`.
+   *
+   * So: no credential, http is fine (the address policy still decides what may
+   * be reached). A credential, and the entry is declared internal, http is the
+   * operator's informed choice. A credential to an address nobody vouched for
+   * is refused, and the operator's remedy is TLS.
+   */
+  if (policy.credentialed && !policy.allowPrivate) {
+    return ['https:'];
+  }
+
+  return ['http:', 'https:'];
 }
 
 /**

@@ -1,6 +1,6 @@
 # AI Models Configuration
 
-Ragen uses AI models in four distinct areas. This document describes each, how to
+Ragen uses AI models in six distinct areas. This document describes each, how to
 configure it, and the caveats that bite.
 
 **`infra/llm-gateway/routes.yaml` is the source of truth for which models exist.**
@@ -21,6 +21,7 @@ npm run gateway:preflight -- --probe
 | **Reranking** | Scaleway `/v1/rerank` (direct) | `RERANK_PROVIDER`, `RERANK_MODEL` | Scaleway + `qwen3-embedding-8b` |
 | **Rephrasing** | the route table | `REPHRASE_MODEL` | `gemini-2.5-flash` |
 | **Answer generation** | the route table | `DEFAULT_MODEL`, per-org override | `gemini-3-flash-preview` |
+| **Document analysis** (`apps/worker`) | the route table | `SUMMARY_MODEL` | `gemini-2.5-flash` |
 | **Moderation** | OpenAI direct | `OPENAI_MODERATION_KEY` | fixed endpoint |
 
 Everything except moderation and reranking resolves through the route table
@@ -81,14 +82,47 @@ The final user-facing answer, generated over the retrieved context.
 
 - `DEFAULT_MODEL_PROVIDER=litellm` (the pricing namespace, not a gateway),
   `DEFAULT_MODEL` — the fallback when an
-  organization has no preference
+  organization has no preference. With neither set, the compiled-in fallback is
+  `defaultOrganizationSettings.model`.
 - Per-organization selection happens in the app UI, constrained by
   `OrganizationSettings.allowedModels` (empty = no restriction)
+
+`gpt-5.4` is provisioned and is **not** the default — a route existing is not
+the same as a model being chosen, and the two are easy to confuse when reading
+`routes.yaml`.
 
 Code: `src/app/lib/services/llm.ts`,
 `src/app/lib/actions/checkAvailableProviders.ts`.
 
-## 5. Moderation
+## 5. Document analysis in the worker
+
+`SUMMARY_MODEL` names one model for **four** worker activities, not just the
+summary its name suggests:
+
+| Activity | What it does |
+|---|---|
+| `generate-document-summary` | a 1–2 paragraph summary at ingest ([ADR-16](adrs/16-document-summaries-at-ingest.md)), so retrieval has something document-level to match against rather than chunks alone |
+| `score-document-for-rag` | scores how well a document suits retrieval |
+| `optimize-document-suggestions` | proposes edits that would make it retrieve better |
+| `evaluate-suggestion-dimensions` | grades those suggestions |
+
+Changing the variable moves all four at once — which is the point (they are the
+same kind of call on the same kind of input) and is worth knowing before
+tuning it for one of them.
+
+- `SUMMARY_MODEL` — default `gemini-2.5-flash`, set in
+  `apps/worker/src/consts.ts`
+
+**Why not a smaller model.** `gemini-2.5-flash` beat `gpt-5.4-nano` here on the
+two things this call actually needs: it is faster for short outputs, and its
+Polish is stronger. A summary is written once per document and read on every
+retrieval against it, so the quality is worth more than the token price — the
+opposite of the rephrase call two sections above, which runs on every question.
+
+This one runs in `apps/worker`, not `apps/web`, which is why changing it means
+redeploying the worker.
+
+## 6. Moderation
 
 Checks user messages for harmful content before processing. **Not routed through
 the gateway** — it calls OpenAI's Moderation API directly, which is a different
@@ -137,6 +171,8 @@ DEFAULT_MODEL=gemini-3-flash-preview
 
 REPHRASE_MODEL=gemini-2.5-flash
 REPHRASE_TEMPERATURE=0.5
+
+SUMMARY_MODEL=gemini-2.5-flash   # apps/worker, ADR-16
 
 EMBEDDINGS_MODEL=bge-multilingual-gemma2
 # VECTOR_SIZE=3584            # must match EMBEDDINGS_MODEL

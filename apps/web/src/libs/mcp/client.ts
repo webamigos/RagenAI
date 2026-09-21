@@ -2,6 +2,7 @@ import { createMCPClient, type MCPClient } from '@ai-sdk/mcp';
 import {
   createGuardedMcpTransport,
   isBlockedAddress,
+  protocolsFor,
 } from '@ragenai/connector-guard';
 import { logger } from '@/app/lib/utils/logger';
 import { getConnectorOAuthCredentialsQuery } from '@/features/connectors/services/queries/get-connector-credentials-query';
@@ -400,6 +401,19 @@ export async function createMcpToolsFromConnectors(
     const guarded = createGuardedMcpTransport(url, headers, {
       isBlockedAddress: (address) =>
         isBlockedAddress(address, { allowPrivate: guard.allowPrivate }),
+      // The scheme this entry was saved with. Without it the guard's
+      // https-only default refused every `http://` catalogue entry — which
+      // the form accepts and Test connection reports as working, tool names
+      // and all.
+      //
+      // `server_side` is the only shape that carries no credential. Every
+      // other one puts a bearer token, an OAuth token or an API-key header on
+      // this transport, and those do not travel in clear text to an address
+      // nobody vouched for.
+      allowedProtocols: protocolsFor(url, {
+        credentialed: definition?.authType !== 'server_side',
+        allowPrivate: guard.allowPrivate,
+      }),
       authProvider,
     });
     guards.push(guarded.close);

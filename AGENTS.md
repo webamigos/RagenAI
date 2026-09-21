@@ -162,13 +162,11 @@ DEFAULT_MODEL=gpt-4o-mini        # plus OPENAI_API_KEY and a route for it
 **No bare `PORT` in the root `.env.local`** — three services read it, so one
 value moves all three. Use `RAGEN_API_PORT` / `RAGEN_MCP_PORT`.
 
-**Postgres 55432 and Redis 56379 are on non-standard ports on purpose.** A bare
-`prisma migrate` loads no `.env.local` — `prisma.config.ts` reads
-`process.env.DATABASE_URL` and nothing else — so it uses whatever that variable
-holds in the shell, or fails on an empty one. A stale value naming 5432 reaches
-a native Postgres rather than the container and migrates *that*, reporting
-success — twice now. Check which server answered before believing a schema
-problem. See [`docs/lessons.md`](docs/lessons.md).
+**Postgres 55432 and Redis 56379 are on non-standard ports on purpose**, and a
+bare `prisma migrate` reads only `process.env.DATABASE_URL` — a stale value
+naming 5432 migrates a native Postgres instead of the container and reports
+success. Twice now. **Check which server answered before believing a schema
+problem**: [`docs/lessons.md`](docs/lessons.md).
 
 Every port, Compose's container names, why two checkouts named `ragen` share
 volumes, and the observability profile:
@@ -290,16 +288,6 @@ adapter, the paths, why the guard only warns:
 Sixteen modules. What each is for, and the two that carry a warning:
 [`docs/architecture.md`](docs/architecture.md).
 
-### Knowledge Base, Document Processing, Thread Encryption, Vector Store, MCP, Settings
-
-Each has its own doc, reached from the Task Router:
-[`knowledge-base`](docs/knowledge-base.md),
-[`document-processing`](docs/document-processing.md),
-[`thread-encryption`](docs/thread-encryption.md),
-[`vector-store`](docs/vector-store.md),
-[`mcp-integrations`](docs/mcp-integrations.md),
-[`settings-pages`](docs/settings-pages.md).
-
 ### Document Versions & RAG Optimization
 
 Moved to [`docs/document-versioning.md`](docs/document-versioning.md) — see the Task Router.
@@ -354,11 +342,13 @@ the previous chunks first.
 
 ## Model Defaults
 
-- **Chat**: env `DEFAULT_MODEL`, falling back to `gemini-3-flash-preview` (`defaultOrganizationSettings.model`). `gpt-5.4` is provisioned but not the default.
-- **Rephrase / multi-query expansion**: `gemini-2.5-flash` — do not upgrade without explicit approval
-- **Summary** (worker, ADR-16): `gemini-2.5-flash` — faster than `gpt-5.4-nano` for short outputs, strong Polish. Set via `SUMMARY_MODEL` in `apps/worker/src/consts.ts`.
-- Always verify against `infra/llm-gateway/routes.yaml`, and that the credentials exist: `npm run gateway:preflight -- --probe` makes one real call per configured model.
-- **Per-org restriction**: `OrganizationSettings.allowedModels`, empty = no restriction. The filter, the platform defaults and the admin UI: [`docs/ai-models.md`](docs/ai-models.md).
+All six areas, their env vars, defaults and the reasoning behind each:
+[`docs/ai-models.md`](docs/ai-models.md). The rules that do not survive being
+looked up later:
+
+- **`infra/llm-gateway/routes.yaml` is the source of truth for which models exist**, and a route is not enough on its own — the credentials have to be there too. `npm run gateway:preflight -- --probe` checks both with one real call per configured model.
+- **Do not upgrade the rephrase model without explicit approval.** It runs on every question and cost matters.
+- **Per-org restriction**: `OrganizationSettings.allowedModels`, empty = no restriction.
 
 ## Testing Requirements
 
@@ -386,11 +376,10 @@ Live in `e2e/`, against a seeded local database with a pre-authenticated test
 user. What each file there is for:
 [`docs/testing-conventions.md`](docs/testing-conventions.md).
 
-**Naming**: `{priority}-{##}-{name}.spec.ts` where priority is `smoke-01..06` (unauth), `smoke-07+` (auth), `p0-*` (critical), `p1-*` (high), `p2-*` (medium), `p3-*` (low/admin/edge cases).
-
-**The prefix decides when CI runs it.** A PR runs only `smoke-*` and `p0-*` (82 of 175 tests); the full suite runs on push to `main` and nightly. So a `p1`–`p3` test will not gate the PR that breaks it — put anything that must block a merge in `smoke-*` or `p0-*`. Run everything with `npm run web:e2e`; the fast tier is `npx playwright test "(smoke|p0)-"` in `apps/web`.
-
-**Conventions**: see [`docs/testing-conventions.md`](docs/testing-conventions.md).
+**A test's prefix decides when CI runs it.** A PR runs only `smoke-*` and
+`p0-*`, so a `p1`–`p3` test does not gate the PR that breaks it — **anything
+that must block a merge goes in `smoke-*` or `p0-*`.** The full naming scheme,
+the tiers and how to run each: [`docs/testing-conventions.md`](docs/testing-conventions.md).
 
 ### Manual Regression Checklist
 
