@@ -62,6 +62,32 @@ export const ProjectInstructionForm = ({
   // in-flight load has nothing left to say.
   const submitSupersedesInitialLoad = useRef(false);
 
+  /**
+   * Whether the operator has typed into the box since it was opened.
+   *
+   * The same problem one step earlier, and the one `p0-22-projects` actually
+   * fails on. The box opens empty and the GET is still in flight, so the
+   * ordinary sequence is: start typing, load answers, save. `reset()` on that
+   * answer returns the field to the *stored* value — `null` for a project with
+   * no instruction yet — and the submit that follows carries an empty string.
+   * The endpoint reports success on it, so the toast says saved and
+   * `project_settings.instructions` stays empty.
+   *
+   * Guarding on the submit alone could not catch it: at the moment the load
+   * lands, nothing has been submitted. What has happened is that the operator
+   * typed, and their text outranks a value that was already stale when it was
+   * requested.
+   *
+   * A ref rather than `formState.isDirty` because the effect below reads it,
+   * and a `formState` read inside an effect keyed on `projectId` is the value
+   * from the render that created the closure.
+   */
+  const operatorHasTyped = useRef(false);
+
+  // Registered once and spread below so the component's own `onChange` can run
+  // before react-hook-form's, rather than replacing it.
+  const descriptionField = register('description');
+
   const onSubmit = async (data: ProjectInstructionFormData) => {
     submitSupersedesInitialLoad.current = true;
 
@@ -100,11 +126,16 @@ export const ProjectInstructionForm = ({
 
   useEffect(() => {
     submitSupersedesInitialLoad.current = false;
+    operatorHasTyped.current = false;
     let abandoned = false;
 
     const fetchInstruction = async () => {
       const result = await getProjectInstructionAction(projectId);
-      if (abandoned || submitSupersedesInitialLoad.current) {
+      if (
+        abandoned ||
+        submitSupersedesInitialLoad.current ||
+        operatorHasTyped.current
+      ) {
         return;
       }
       if (result.success) {
@@ -127,7 +158,11 @@ export const ProjectInstructionForm = ({
           <span className="text-destructive">*</span>
         </label>
         <textarea
-          {...register('description')}
+          {...descriptionField}
+          onChange={(event) => {
+            operatorHasTyped.current = true;
+            return descriptionField.onChange(event);
+          }}
           rows={6}
           placeholder={t('placeholder')}
           className="block w-full rounded-md border border-border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring resize-none"
