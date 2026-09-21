@@ -112,10 +112,15 @@ Two sets of mocking idioms, two config surfaces to carry across a TypeScript or
 Node bump, and one directory where a contributor's `vi.mock` would have done
 nothing at all.
 
-The migration was the rename this ADR predicted and nothing else — `jest.fn`,
-`jest.mock`, `jest.resetModules`, and the `jest.Mock` / `jest.Mocked` /
-`jest.MockedFunction` types, which come from `vitest` as an ordinary type
-import. None of the five traps in the table above fired: no factory closes over
+The migration was the rename this ADR predicted — `jest.fn`, `jest.mock`,
+`jest.resetModules` — plus the `import type` line the mock *types* need, in
+the seven suites of twelve that use them. `jest.Mock`, `jest.Mocked` and
+`jest.MockedFunction` were ambient under jest and are exports of `vitest`, so
+the Decision's "no import line added to 96 files" describes the injected
+globals and not the types: `apps/worker` and `apps/api` carry the same import
+in 31 and 48 files respectively.
+
+None of the five traps in the table above fired: no factory closes over
 a `mock*` const, no mocked constructor, no default-import interop, and the one
 module-load-time read (`TARGET_ENV`, in what is now `vitest.setup.ts`) was
 already in a setup file rather than a top-level statement. `jest.config.ts`'s
