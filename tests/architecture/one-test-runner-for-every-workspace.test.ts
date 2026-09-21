@@ -47,17 +47,33 @@ const NOT_THE_RUNNER = new Set([
   '@types/jest-axe',
 ]);
 
+/**
+ * Matched on the name without its scope, so a scope cannot hide the runner.
+ *
+ * The first version of this tested the whole name: `-jest$` caught `ts-jest`
+ * and `babel-jest` and missed `@swc/jest` — the transformer a TypeScript
+ * project is most likely to reach for — along with every scoped plugin shaped
+ * like `@<scope>/jest-<thing>`. Dropping the scope first turns those into one
+ * rule; `@jest/*` is checked before it, because that scope *is* the runner and
+ * dropping it leaves names like `globals` that match nothing.
+ */
 function isJestPackage(name: string): boolean {
   if (NOT_THE_RUNNER.has(name)) {
     return false;
   }
+  // @jest/globals, @jest/types — the runner publishes under its own scope.
+  if (name.startsWith('@jest/')) {
+    return true;
+  }
+  const unscoped = name.startsWith('@')
+    ? name.slice(name.indexOf('/') + 1)
+    : name;
   return (
-    name === 'jest' ||
-    name === '@types/jest' ||
-    name.startsWith('jest-') ||
-    name.startsWith('@jest/') ||
-    // ts-jest, babel-jest, and anything else shaped like a jest transform.
-    /-jest$/.test(name)
+    unscoped === 'jest' ||
+    // jest-environment-jsdom, @quramy/jest-prisma, …
+    unscoped.startsWith('jest-') ||
+    // ts-jest, babel-jest, @swc/jest is the `=== 'jest'` case above.
+    unscoped.endsWith('-jest')
   );
 }
 
