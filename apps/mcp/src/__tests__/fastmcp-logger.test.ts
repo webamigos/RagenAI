@@ -1,20 +1,22 @@
+import type { Mock } from 'vitest';
+
 import { logger } from '../logger.js';
 import { fastmcpLogger } from '../fastmcp-logger.js';
 
-jest.mock('../logger.js', () => ({
+vi.mock('../logger.js', () => ({
   logger: {
-    debug: jest.fn(),
-    info: jest.fn(),
-    warn: jest.fn(),
-    error: jest.fn(),
+    debug: vi.fn(),
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
   },
 }));
 
 const mockLogger = logger as unknown as {
-  debug: jest.Mock;
-  info: jest.Mock;
-  warn: jest.Mock;
-  error: jest.Mock;
+  debug: Mock;
+  info: Mock;
+  warn: Mock;
+  error: Mock;
 };
 
 describe('fastmcpLogger', () => {

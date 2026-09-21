@@ -1,6 +1,8 @@
 # ADR-48: The Worker and API Test Suites Run on Vitest
 
-**Status:** Accepted. Executed for `apps/worker` and `apps/api`.
+**Status:** Accepted. Executed for `apps/worker` and `apps/api`, and extended to
+`apps/mcp` on 2026-09-21 — see the update at the end. No workspace runs jest any
+more.
 **Date:** 2026-09-14
 
 ## Context
@@ -91,3 +93,59 @@ e2e spec was already red under jest — nothing in CI runs it — for two reason
 `ConfigModule` looks for an env file beside the app while the monorepo keeps one
 at the root, and `createNestApplication()` does not replay `main.ts`'s
 `setGlobalPrefix('v1')`, so every request 404'd. Both are fixed.
+
+## Update: `apps/mcp` followed, and jest is gone from the repository
+
+**Date:** 2026-09-21.
+
+This ADR's title states its scope, and `apps/mcp` was outside it: the app is
+self-contained, does not touch the AI SDK, and so had none of the forcing
+function above. It kept jest — and then kept it long enough to be the only
+workspace in the monorepo running a second framework.
+
+What made it worth finishing was not the runner. `ci.yml` runs
+`turbo run test`, which picks up any workspace declaring a `test` script, so
+jest and its transform chain were installed and executed on every pull request
+for one workspace — while `turbo run test:coverage` never saw it, so its
+coverage was counted nowhere and repo-wide vitest config changes skipped it.
+Two sets of mocking idioms, two config surfaces to carry across a TypeScript or
+Node bump, and one directory where a contributor's `vi.mock` would have done
+nothing at all.
+
+The migration was the rename this ADR predicted — `jest.fn`, `jest.mock`,
+`jest.resetModules` — plus the `import type` line the mock *types* need, in
+the seven suites of twelve that use them. `jest.Mock`, `jest.Mocked` and
+`jest.MockedFunction` were ambient under jest and are exports of `vitest`, so
+the Decision's "no import line added to 96 files" describes the injected
+globals and not the types: `apps/worker` and `apps/api` carry the same import
+in 31 and 48 files respectively.
+
+None of the five traps in the table above fired: no factory closes over
+a `mock*` const, no mocked constructor, no default-import interop, and the one
+module-load-time read (`TARGET_ENV`, in what is now `vitest.setup.ts`) was
+already in a setup file rather than a top-level statement. `jest.config.ts`'s
+`moduleNameMapper` — stripping the `.js` from Node16 import specifiers so
+ts-jest's CommonJS transform could resolve them — has no equivalent and needs
+none: Vite resolves a `.js` specifier from a TypeScript importer to the `.ts`
+file itself.
+
+Not one `describe`, `it` or `it.each` line changed in the port — the diff is
+the mocking API and the imports it needs — and the suite reports 12 files and
+79 tests passing. That is the parity claim this section makes: the same set of
+test declarations, rather than two totals compared after the fact.
+
+No `vite-tsconfig-paths` here, unlike `apps/web` and `apps/admin` — this
+workspace's tsconfig declares no `paths`, so the plugin would have nothing to
+read.
+
+Two things beyond the app came with it:
+
+- **`tests/architecture/one-test-runner-for-every-workspace.test.ts`** fails
+  when any manifest declares part of jest, when a `test*` script invokes it, or
+  when a `jest.config.*` is left behind. `@testing-library/jest-dom` and
+  `jest-axe` are named exemptions — matcher libraries with a Vitest entry
+  point, which `apps/web` uses under Vitest.
+- **`tsconfig-types-are-installable`** now checks `apps/mcp`. Its Dockerfile
+  has always installed scoped, so the app was always in that guard's scope and
+  was never in its candidate list — and this change is exactly the edit the
+  guard exists for: `"jest"` out of `types`, `"vitest/globals"` in.

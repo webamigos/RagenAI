@@ -1,11 +1,11 @@
 import { createOtelLogger } from '@ragenai/observability';
 
-jest.mock('@ragenai/observability', () => ({
-  createOtelLogger: jest.fn(() => ({
-    debug: jest.fn(),
-    info: jest.fn(),
-    warn: jest.fn(),
-    error: jest.fn(),
+vi.mock('@ragenai/observability', () => ({
+  createOtelLogger: vi.fn(() => ({
+    debug: vi.fn(),
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
   })),
 }));
 

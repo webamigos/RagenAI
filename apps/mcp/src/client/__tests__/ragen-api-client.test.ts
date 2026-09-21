@@ -4,7 +4,7 @@ import {
   searchKnowledgeBase,
 } from '../ragen-api-client.js';
 
-const mockFetch = jest.fn();
+const mockFetch = vi.fn();
 global.fetch = mockFetch as unknown as typeof fetch;
 
 describe('chat', () => {

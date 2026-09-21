@@ -1,20 +1,21 @@
+import type { Mock } from 'vitest';
 import { SpanStatusCode } from '@ragenai/observability';
 
 import { tracer } from '../telemetry.js';
 import { withToolSpan } from '../with-tool-span.js';
 
-jest.mock('../telemetry.js', () => ({
-  tracer: { startActiveSpan: jest.fn() },
+vi.mock('../telemetry.js', () => ({
+  tracer: { startActiveSpan: vi.fn() },
 }));
 
 type FakeSpan = {
-  setAttributes: jest.Mock;
-  setStatus: jest.Mock;
-  recordException: jest.Mock;
-  end: jest.Mock;
+  setAttributes: Mock;
+  setStatus: Mock;
+  recordException: Mock;
+  end: Mock;
 };
 
-const mockStartActiveSpan = tracer.startActiveSpan as unknown as jest.Mock;
+const mockStartActiveSpan = tracer.startActiveSpan as unknown as Mock;
 
 function armTracer(): {
   span: FakeSpan;
@@ -24,10 +25,10 @@ function armTracer(): {
   };
 } {
   const span: FakeSpan = {
-    setAttributes: jest.fn(),
-    setStatus: jest.fn(),
-    recordException: jest.fn(),
-    end: jest.fn(),
+    setAttributes: vi.fn(),
+    setStatus: vi.fn(),
+    recordException: vi.fn(),
+    end: vi.fn(),
   };
   const captured: {
     name?: string;

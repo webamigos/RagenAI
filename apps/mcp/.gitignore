@@ -3,6 +3,10 @@
 /node_modules
 *.tsbuildinfo
 
+# Tests
+/coverage
+/.nyc_output
+
 # dotenv environment variable files
 .env
 .env.local
