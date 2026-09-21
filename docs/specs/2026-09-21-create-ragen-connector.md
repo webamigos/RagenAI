@@ -267,7 +267,7 @@ ADR-52 having landed first:
 | `packages/platform-contracts` | **none**; its slug rule is *read* by a new test | `slug-rule-matches-the-catalogue.test.ts` |
 | `packages/connector-guard` | **none** | — |
 | `docs/mcp-integrations.md` | one paragraph pointing at the scaffolder | review |
-| `apps/web/e2e/` | one `p0` test: a catalogue entry against a stub MCP server serves a tool to a chat turn | it is the gate — see [Testing](#testing) |
+| `apps/web/e2e/` | one `p0` test: a catalogue entry that is only a row is offered, connects, and stops being offered when disabled | it is the gate — see [Testing](#testing) |
 
 In **`ragen-connectors`** (the implementation):
 
@@ -404,9 +404,12 @@ Per the Testing Requirements in `AGENTS.md`, and with the level named:
 - **Unit** (`ragen-app`): `slug-rule-matches-the-catalogue.test.ts` — the
   scaffolder's regex against `CATALOG_SLUG_PATTERN`. It lives here because this
   is where the rule can change.
-- **e2e** (`ragen-app`, `p0-*`): the wire contract, end to end. It must be
-  `p0` and not `p1`–`p3`: a PR runs only `smoke-*` and `p0-*`, so anything
-  lower would not gate the change that breaks it.
+- **e2e** (`ragen-app`, `p0-*`): a connector that is only a row — offered,
+  connected, and withdrawn when the entry is disabled. It does **not** open an
+  MCP session; the session policy is covered by `connect-is-guarded` in both
+  apps and by `packages/connector-guard`, where it can be deterministic. It
+  must be `p0` and not `p1`–`p3`: a PR runs only `smoke-*` and `p0-*`, so
+  anything lower would not gate the change that breaks it.
 - **Manual, once**: C2. A local Ragen, a real browser, a real chat turn. The
   e2e test is a stub by construction; this is the only step that proves a
   process started by the generated `npm run dev` is reachable by the real
@@ -435,6 +438,22 @@ Not in this spec; recorded because it found them.
   Docker" is a normal small installation and it has no route through the form.
   A `RAGEN_TRUSTED_MCP_HOSTS` allowlist read from the environment would fit the
   existing exemption for deployer-controlled addresses. Needs its own spec.
+- **A credentialed connector cannot use `http`, even on an internal network.**
+  `api_key_bearer` and `external_mcp` are held to https, because the only
+  signal available at the point the scheme is decided is
+  `allowsPrivateAddress` — and that flag *widens* the address policy to admit
+  RFC 1918 rather than *confining* the entry to it. A public hostname still
+  resolves and connects with the flag on, so resting the exception on it would
+  leak a customer's own API key to a public host while claiming not to. (It
+  did, in the first version of this change; two reviews found it.)
+
+  Confining it properly means judging the **resolved** address, which is known
+  only inside `createGuardedConnector` after the lookup — the same place DNS
+  rebinding is caught. A connector that refused a credentialed http hop unless
+  the pinned address classified as `private` would restore the internal-server
+  case without the hole. Worth doing; it belongs with the resolver, not with a
+  flag.
+
 - **`--register`**, once an authenticated admin API for catalogue entries
   exists in `ragen-app`.
 - **A row's URL and the connector's stored URL disagree by `/mcp`** when an

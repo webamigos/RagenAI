@@ -140,21 +140,29 @@ export function protocolsFor(
   }
 
   /**
-   * A credential does not travel in clear text to an address the operator has
-   * not vouched for.
+   * A credential never travels in clear text.
    *
-   * `api_key_bearer` sends the *customer's own* third-party key, and
-   * `external_mcp` sends an OAuth access token. Admitting http for those on a
-   * public address would put either on the wire — and the reason the first
-   * hop may be http at all is the internal server with no certificate, which
-   * is exactly the entry that carries `allowsPrivateAddress`.
+   * `api_key_bearer` sends the *customer's own* third-party key and
+   * `external_mcp` sends an OAuth access token, so http for either puts a
+   * secret on the wire.
    *
-   * So: no credential, http is fine (the address policy still decides what may
-   * be reached). A credential, and the entry is declared internal, http is the
-   * operator's informed choice. A credential to an address nobody vouched for
-   * is refused, and the operator's remedy is TLS.
+   * **`allowPrivate` is deliberately not an exception here**, and the reason
+   * is worth stating because the first version of this made it one.
+   * `allowPrivate` *widens* the address policy to admit RFC 1918 — it does not
+   * *confine* the entry to it. A public hostname still resolves and connects
+   * with the flag on, so "the operator declared this internal" is not evidence
+   * that the hop is internal, and a policy resting on it would leak a
+   * customer's key to a public host while claiming not to.
+   *
+   * Confining it properly means judging the *resolved* address, which is known
+   * only inside the connector below, after the lookup. Until that exists, a
+   * credentialed connector needs TLS — see the follow-up in
+   * docs/specs/2026-09-21-create-ragen-connector.md.
+   *
+   * `server_side` carries no credential and is unaffected, which is the shape
+   * ADR-52 names as the reason an operator's own http server matters.
    */
-  if (policy.credentialed && !policy.allowPrivate) {
+  if (policy.credentialed) {
     return ['https:'];
   }
 
