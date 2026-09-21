@@ -195,4 +195,47 @@ describe('the scheme a session is opened with', () => {
     const options = mockCreateGuardedMcpTransport.mock.calls[0]?.[2];
     expect(options.allowedProtocols).toEqual(['https:']);
   });
+
+  it('refuses http for a credentialed entry on an address nobody vouched for', async () => {
+    // The customer's own third-party key would otherwise go over the wire in
+    // clear text. `allowPrivate` is off here: the entry claims a public
+    // server, and a public server can have a certificate.
+    const publicHttp = {
+      notion: {
+        provider: 'notion',
+        name: 'Notion',
+        authType: 'api_key_bearer',
+        mcpServerUrl: 'http://mcp.example.test/mcp',
+        addressGuard: { allowPrivate: false },
+      },
+    } as never;
+
+    await createMcpToolsFromConnectors(
+      [{ ...connector, mcpServerUrl: 'http://mcp.example.test/mcp' }],
+      publicHttp,
+    );
+
+    const options = mockCreateGuardedMcpTransport.mock.calls[0]?.[2];
+    expect(options.allowedProtocols).toEqual(['https:']);
+  });
+
+  it('treats server_side as the one shape that carries no credential', async () => {
+    const serverSide = {
+      notion: {
+        provider: 'notion',
+        name: 'Notion',
+        authType: 'server_side',
+        mcpServerUrl: 'http://mcp.example.test/mcp',
+        addressGuard: { allowPrivate: false },
+      },
+    } as never;
+
+    await createMcpToolsFromConnectors(
+      [{ ...connector, mcpServerUrl: 'http://mcp.example.test/mcp' }],
+      serverSide,
+    );
+
+    const options = mockCreateGuardedMcpTransport.mock.calls[0]?.[2];
+    expect(options.allowedProtocols).toEqual(['http:', 'https:']);
+  });
 });

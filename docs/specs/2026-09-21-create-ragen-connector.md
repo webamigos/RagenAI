@@ -324,70 +324,70 @@ Each phase leaves both repositories working.
 ### Phase A — the CLI, with one target
 
 - [x] **A1.** `packages/create-ragen-connector` with `args.ts` + tests: flag
-      parsing, slug validation against the catalogue's rule, refusal messages.
-      No file writing yet. Runs in the root `npm test`.
+  parsing, slug validation against the catalogue's rule, refusal messages.
+  No file writing yet. Runs in the root `npm test`.
 - [x] **A2.** Workspace detection and port allocation, as pure functions over a
-      parsed port table. Tested against the real `AGENTS.md`.
+  parsed port table. Tested against the real `AGENTS.md`.
 - [x] **A3.** The workspace target renders: `services/<name>/` with `index.ts`,
-      one example tool, `__tests__`, `.env.example`, `Dockerfile`,
-      `docker-compose.yml`, `tsconfig*.json`, `README.md`. Both port tables
-      updated. Verified by generating into a temp dir and running the
-      repository's own gate over it.
+  one example tool, `__tests__`, `.env.example`, `Dockerfile`,
+  `docker-compose.yml`, `tsconfig*.json`, `README.md`. Both port tables
+  updated. Verified by generating into a temp dir and running the
+  repository's own gate over it.
 - [x] **A4.** `ragen-connector.json` and the printed summary.
 
 ### Phase B — the second target
 
 - [x] **B1.** `src/runtime/` vendored from core, with
-      `vendored-runtime-is-current.test.ts` asserting the copies match their
-      sources byte for byte.
+  `vendored-runtime-is-current.test.ts` asserting the copies match their
+  sources byte for byte.
 - [x] **B2.** The standalone target renders, including `git init` and a
-      Dockerfile whose build context is the project itself rather than a
-      monorepo root.
+  Dockerfile whose build context is the project itself rather than a
+  monorepo root.
 - [x] **B3.** `templates-differ-only-where-they-must.test.ts`.
 
 ### Phase C — the proof
 
 - [x] **C1.** Generate the demo connector with the scaffolder — no hand-editing
-      of anything the template wrote — and commit it as
-      `services/<demo>`. Two tools over a keyless public API, `server_side`.
+  of anything the template wrote — and commit it as
+  `services/<demo>`. Two tools over a keyless public API, `server_side`.
 - [x] **C2.** Run it and verify the halves meet. Done in the parts that can be
-      verified deterministically, and the parts that cannot are named rather
-      than faked: Ragen's own `probeMcpServer` opens a session against the
-      generated connector and lists both its tools, and the runtime transport
-      now reaches the same URL — it did not, and that is the third follow-up
-      below, found here and fixed.
+  verified deterministically, and the parts that cannot are named rather
+  than faked: Ragen's own `probeMcpServer` opens a session against the
+  generated connector and lists both its tools, and the runtime transport
+  now reaches the same URL — it did not, and that is the third follow-up
+  below, found here and fixed.
 
-      The chat turn itself was **not** driven through a browser against the
-      live connector, and deliberately is not pretended otherwise: the address
-      policy refuses loopback whatever `allowsPrivateAddress` says, and this
-      machine resets inbound connections on its own LAN address (macOS
-      local-network privacy), so the RFC 1918 route would need both apps
-      containerised. C3 covers the same ground without depending on a host's
-      network.
+  The chat turn itself was **not** driven through a browser against the
+  live connector, and deliberately is not pretended otherwise: the address
+  policy refuses loopback whatever `allowsPrivateAddress` says, and this
+  machine resets inbound connections on its own LAN address (macOS
+  local-network privacy), so the RFC 1918 route would need both apps
+  containerised. C3 covers the same ground without depending on a host's
+  network.
 - [x] **C3.** `p0` e2e in `ragen-app`:
-      `apps/web/e2e/p0-31-catalogue-entry-connects.spec.ts`. An entry that is
-      only a row — no manifest, no behaviour pack — is offered, connects from
-      the card, produces the right `customerId` and URL, and is withdrawn the
-      moment the entry is disabled.
+  `apps/web/e2e/p0-31-catalogue-entry-connects.spec.ts`. An entry that is
+  only a row — no manifest, no behaviour pack — is offered, connects from
+  the card, produces the right `customerId` and URL, and is withdrawn the
+  moment the entry is disabled.
 
-      It does **not** open an MCP session, and says why in its own header: a
-      stub on loopback is unreachable to the app by construction, and one on
-      the machine's LAN address makes a `p0` depend on the host's network. The
-      two halves that can be pinned down deterministically are, elsewhere —
-      the scheme in `connect-is-guarded` on both apps, the policy in
-      `packages/connector-guard`. Naming that in the spec and in the test is
-      the point: the alternative is a flaky gate that gets disabled and then
-      believed.
+  It does **not** open an MCP session, and says why in its own header: a
+  stub on loopback is unreachable to the app by construction, and one on
+  the machine's LAN address makes a `p0` depend on the host's network. The
+  two halves that can be pinned down deterministically are, elsewhere —
+  the scheme in `connect-is-guarded` on both apps, the policy in
+  `packages/connector-guard`. Naming that in the spec and in the test is
+  the point: the alternative is a flaky gate that gets disabled and then
+  believed.
 
 ### Phase D — replace the checklist
 
 - [x] **D1.** Rewrite `.claude/skills/connectors-add-service` around the
-      scaffolder, keeping what a template cannot decide (the credential model,
-      ADR-04's obligations when per-customer auth is impossible).
+  scaffolder, keeping what a template cannot decide (the credential model,
+  ADR-04's obligations when per-customer auth is impossible).
 - [x] **D2.** `docs/mcp-integrations.md` in this repository gains the paragraph
-      linking the two halves.
+  linking the two halves.
 - [ ] **D3.** Publish `create-ragen-connector@0.1.0`. The name is free on npm.
-      Not done — publishing is outward-facing and is the owner's call.
+  Not done — publishing is outward-facing and is the owner's call.
 
 ## Testing
 

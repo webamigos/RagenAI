@@ -107,7 +107,25 @@ export interface GuardedFetchOptions {
  * An http entry may be redirected *up* to https — not a downgrade, and what a
  * server that has just been put behind TLS does.
  */
-export function protocolsFor(url: string): string[] {
+export type ProtocolPolicy = {
+  /**
+   * The session carries a credential — a bearer token, an OAuth access token,
+   * or a custom header holding an API key. Only `server_side` connectors do
+   * not.
+   */
+  credentialed?: boolean;
+  /**
+   * The entry is declared to live on the operator's own network
+   * (`allowsPrivateAddress`), which is a platform-admin decision and audited
+   * where it is set.
+   */
+  allowPrivate?: boolean;
+};
+
+export function protocolsFor(
+  url: string,
+  policy: ProtocolPolicy = {},
+): string[] {
   let protocol: string;
   try {
     protocol = new URL(url).protocol;
@@ -116,7 +134,31 @@ export function protocolsFor(url: string): string[] {
     // rather than widening on an input nothing validated.
     return ['https:'];
   }
-  return protocol === 'http:' ? ['http:', 'https:'] : ['https:'];
+
+  if (protocol !== 'http:') {
+    return ['https:'];
+  }
+
+  /**
+   * A credential does not travel in clear text to an address the operator has
+   * not vouched for.
+   *
+   * `api_key_bearer` sends the *customer's own* third-party key, and
+   * `external_mcp` sends an OAuth access token. Admitting http for those on a
+   * public address would put either on the wire — and the reason the first
+   * hop may be http at all is the internal server with no certificate, which
+   * is exactly the entry that carries `allowsPrivateAddress`.
+   *
+   * So: no credential, http is fine (the address policy still decides what may
+   * be reached). A credential, and the entry is declared internal, http is the
+   * operator's informed choice. A credential to an address nobody vouched for
+   * is refused, and the operator's remedy is TLS.
+   */
+  if (policy.credentialed && !policy.allowPrivate) {
+    return ['https:'];
+  }
+
+  return ['http:', 'https:'];
 }
 
 /**

@@ -21,7 +21,7 @@ npm run gateway:preflight -- --probe
 | **Reranking** | Scaleway `/v1/rerank` (direct) | `RERANK_PROVIDER`, `RERANK_MODEL` | Scaleway + `qwen3-embedding-8b` |
 | **Rephrasing** | the route table | `REPHRASE_MODEL` | `gemini-2.5-flash` |
 | **Answer generation** | the route table | `DEFAULT_MODEL`, per-org override | `gemini-3-flash-preview` |
-| **Summarization** (ingest, in `apps/worker`) | the route table | `SUMMARY_MODEL` | `gemini-2.5-flash` |
+| **Document analysis** (`apps/worker`) | the route table | `SUMMARY_MODEL` | `gemini-2.5-flash` |
 | **Moderation** | OpenAI direct | `OPENAI_MODERATION_KEY` | fixed endpoint |
 
 Everything except moderation and reranking resolves through the route table
@@ -94,11 +94,21 @@ the same as a model being chosen, and the two are easy to confuse when reading
 Code: `src/app/lib/services/llm.ts`,
 `src/app/lib/actions/checkAvailableProviders.ts`.
 
-## 5. Summarization at ingest
+## 5. Document analysis in the worker
 
-A one-paragraph summary written for every document as it is ingested
-([ADR-16](adrs/16-document-summaries-at-ingest.md)), so retrieval has something
-document-level to match against rather than chunks alone.
+`SUMMARY_MODEL` names one model for **four** worker activities, not just the
+summary its name suggests:
+
+| Activity | What it does |
+|---|---|
+| `generate-document-summary` | a 1–2 paragraph summary at ingest ([ADR-16](adrs/16-document-summaries-at-ingest.md)), so retrieval has something document-level to match against rather than chunks alone |
+| `score-document-for-rag` | scores how well a document suits retrieval |
+| `optimize-document-suggestions` | proposes edits that would make it retrieve better |
+| `evaluate-suggestion-dimensions` | grades those suggestions |
+
+Changing the variable moves all four at once — which is the point (they are the
+same kind of call on the same kind of input) and is worth knowing before
+tuning it for one of them.
 
 - `SUMMARY_MODEL` — default `gemini-2.5-flash`, set in
   `apps/worker/src/consts.ts`

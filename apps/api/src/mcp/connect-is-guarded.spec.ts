@@ -197,4 +197,29 @@ describe('the scheme a session is opened with', () => {
     };
     expect(options.allowedProtocols).toEqual(['https:']);
   });
+
+  it('refuses http for a credentialed entry on an address nobody vouched for', async () => {
+    // The sibling of apps/web's case of the same name. The customer's own
+    // key would otherwise travel in clear text to a public host.
+    const publicHttp = {
+      notion: {
+        provider: 'notion',
+        name: 'Notion',
+        authType: 'api_key_bearer',
+        mcpServerUrl: 'http://mcp.example.test/mcp',
+        addressGuard: { allowPrivate: false },
+      },
+    } as never;
+
+    await createMcpToolsFromConnectors(
+      [{ ...connector, mcpServerUrl: 'http://mcp.example.test/mcp' }],
+      undefined,
+      publicHttp,
+    );
+
+    const options = mockCreateGuardedMcpTransport.mock.calls[0]?.[2] as {
+      allowedProtocols?: string[];
+    };
+    expect(options.allowedProtocols).toEqual(['https:']);
+  });
 });

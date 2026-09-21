@@ -405,7 +405,15 @@ export async function createMcpToolsFromConnectors(
       // https-only default refused every `http://` catalogue entry — which
       // the form accepts and Test connection reports as working, tool names
       // and all.
-      allowedProtocols: protocolsFor(url),
+      //
+      // `server_side` is the only shape that carries no credential. Every
+      // other one puts a bearer token, an OAuth token or an API-key header on
+      // this transport, and those do not travel in clear text to an address
+      // nobody vouched for.
+      allowedProtocols: protocolsFor(url, {
+        credentialed: definition?.authType !== 'server_side',
+        allowPrivate: guard.allowPrivate,
+      }),
       authProvider,
     });
     guards.push(guarded.close);

@@ -452,6 +452,46 @@ describe('protocolsFor', () => {
     ]);
   });
 
+  it('refuses http for a credentialed entry nobody vouched for', () => {
+    // `api_key_bearer` sends the customer's own third-party key and
+    // `external_mcp` an OAuth token. Admitting http on a public address would
+    // put either on the wire in clear text.
+    expect(
+      protocolsFor('http://mcp.example.com/mcp', { credentialed: true }),
+    ).toEqual(['https:']);
+  });
+
+  it('admits http for a credentialed entry declared to be on the operator network', () => {
+    // `allowsPrivateAddress` is a platform-admin decision, audited where it is
+    // set, and it is the entry that exists because an internal server has no
+    // certificate.
+    expect(
+      protocolsFor('http://10.0.0.5:9005/mcp', {
+        credentialed: true,
+        allowPrivate: true,
+      }),
+    ).toEqual(['http:', 'https:']);
+  });
+
+  it('admits http for a server_side entry, which carries no credential', () => {
+    expect(
+      protocolsFor('http://mcp.example.com/mcp', { credentialed: false }),
+    ).toEqual(['http:', 'https:']);
+  });
+
+  it('never widens an https entry, whatever the credential policy says', () => {
+    for (const policy of [
+      {},
+      { credentialed: true },
+      { credentialed: false, allowPrivate: true },
+      { credentialed: true, allowPrivate: true },
+    ]) {
+      expect(protocolsFor('https://mcp.example.com/mcp', policy)).toEqual([
+        'https:',
+      ]);
+    }
+  });
+
   it('keeps the strict default for something that is not a URL', () => {
     // Unparseable here means unconnectable later; widening on an input
     // nothing validated would be the wrong direction to fail.
