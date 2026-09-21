@@ -23,6 +23,13 @@ export const LOCAL_ADMIN_ORIGIN = 'http://localhost:3200';
 /** Comma- or space-separated extra origins, for a deployment behind a proxy. */
 const EXTRA_ORIGINS_VAR = 'ADMIN_TRUSTED_ORIGINS';
 
+/**
+ * The origin of a configured url, or nothing if it is not a url.
+ *
+ * Reduced to the origin so a variable carrying a path — `.../api/auth`, which
+ * is a natural thing to paste — still matches the browser's `Origin` header,
+ * which never has one.
+ */
 function originOf(value: string | undefined): string | undefined {
   const trimmed = value?.trim();
   if (!trimmed) {
@@ -38,6 +45,12 @@ function originOf(value: string | undefined): string | undefined {
   }
 }
 
+/**
+ * Every origin this app will accept an auth request from.
+ *
+ * Order is not significant; duplicates are removed so a deployment that sets
+ * the same host in two variables does not list it twice.
+ */
 export function adminTrustedOrigins(
   env: Record<string, string | undefined> = process.env,
 ): string[] {

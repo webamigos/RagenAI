@@ -307,6 +307,7 @@
     "conversation": "tudásbázis és más források"
   },
   "text-area": {
+    "stop-recording": "Felvétel leállítása",
     "send-message": "Üzenet küldése",
     "voice-input": "Hangbevitel",
     "add-attachment": "Melléklet hozzáadása",

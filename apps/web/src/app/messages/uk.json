@@ -307,6 +307,7 @@
     "conversation": "база знань та інші джерела"
   },
   "text-area": {
+    "stop-recording": "Зупинити запис",
     "send-message": "Надіслати повідомлення",
     "voice-input": "Голосове введення",
     "add-attachment": "Додати вкладення",

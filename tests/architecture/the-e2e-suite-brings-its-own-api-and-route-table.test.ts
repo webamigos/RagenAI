@@ -27,6 +27,7 @@ import { describe, it, expect } from 'vitest';
  */
 const REPO_ROOT = join(import.meta.dirname, '..', '..');
 
+/** Source of a repository file, read as text rather than imported. */
 function read(relativePath: string): string {
   return readFileSync(join(REPO_ROOT, relativePath), 'utf8');
 }
@@ -57,6 +58,21 @@ describe('the e2e suite brings its own apps/api', () => {
 
   it('stops only a process it started', () => {
     expect(teardown).toContain('__appsApiProcess');
+  });
+
+  it('checks the port can be bound, not only that an apps/api answers', () => {
+    // `apiAnswers()` recognises an apps/api and nothing else. Something else on
+    // the port leaves it false, the spawn dies of EADDRINUSE at once, and the
+    // wait loop then spends a minute blaming the healthcheck — the same
+    // misleading-message shape this file exists to remove.
+    expect(setup).toContain('portIsFree');
+    expect(setup).toContain('node:net');
+  });
+
+  it('gives up as soon as the process exits, rather than after the timeout', () => {
+    // A boot that fails on a missing variable exits in under a second. The exit
+    // code is the real message; a healthcheck timeout is not.
+    expect(setup).toMatch(/proc\.once\('exit'/);
   });
 });
 

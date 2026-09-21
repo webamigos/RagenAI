@@ -307,6 +307,7 @@
     "conversation": "база от знания и други източници"
   },
   "text-area": {
+    "stop-recording": "Спри записа",
     "send-message": "Изпрати съобщение",
     "voice-input": "Гласово въвеждане",
     "add-attachment": "Добави прикачен файл",

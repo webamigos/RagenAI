@@ -157,7 +157,6 @@ export const Textarea = forwardRef(
     // Resolved here rather than as destructuring defaults, which cannot call a
     // hook. A caller's own label still wins.
     const resolvedSendLabel = sendLabel ?? t('send-message');
-    const resolvedVoiceLabel = voiceLabel ?? t('voice-input');
     const resolvedAttachmentLabel = attachmentLabel ?? t('add-attachment');
     const [isDragOver, setIsDragOver] = useState(false);
 
@@ -196,6 +195,17 @@ export const Textarea = forwardRef(
         applyValue(newValue);
       },
     });
+
+    /**
+     * One button, two actions — so two names.
+     *
+     * While recording, this button stops the recording, and its icon is a stop
+     * square that is `aria-hidden` like the rest. Leaving the name at "voice
+     * input" tells a screen reader user the opposite of what pressing it does,
+     * which is worse than the nameless button this replaced.
+     */
+    const resolvedVoiceLabel =
+      voiceLabel ?? (isRecording ? t('stop-recording') : t('voice-input'));
 
     const handleStartListening = () => {
       startListening();

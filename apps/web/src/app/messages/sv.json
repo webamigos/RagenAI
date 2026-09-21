@@ -307,6 +307,7 @@
     "conversation": "kunskapsbas och andra källor"
   },
   "text-area": {
+    "stop-recording": "Stoppa inspelningen",
     "send-message": "Skicka meddelande",
     "voice-input": "Röstinmatning",
     "add-attachment": "Lägg till bilaga",

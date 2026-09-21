@@ -307,6 +307,7 @@
     "conversation": "tietopankki ja muut lähteet"
   },
   "text-area": {
+    "stop-recording": "Lopeta nauhoitus",
     "send-message": "Lähetä viesti",
     "voice-input": "Puhesyöte",
     "add-attachment": "Lisää liite",

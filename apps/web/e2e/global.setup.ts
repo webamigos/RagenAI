@@ -17,6 +17,43 @@ function apiBaseUrl(): string {
   return process.env.RAGEN_API_INTERNAL_URL ?? 'http://localhost:3001';
 }
 
+/**
+ * The port apps/api must bind, taken from the same url the app will call.
+ *
+ * Derived rather than configured separately: a second variable is a second
+ * thing to get out of step, and the failure when they disagree is a suite that
+ * starts an apps/api nothing talks to.
+ */
+function apiPort(): string {
+  return new URL(apiBaseUrl()).port || '3001';
+}
+
+/**
+ * Whether anything at all holds the port, healthcheck or not.
+ *
+ * `apiAnswers()` below only recognises an apps/api. Something else on the port
+ * — another app's dev server, a tunnel — leaves it `false`, and the spawn that
+ * follows dies of `EADDRINUSE` immediately while the wait loop keeps polling
+ * for a full minute and then blames the healthcheck. That is the same shape of
+ * misleading message this whole function exists to remove, so the port is
+ * checked by binding it: the one question with an unambiguous answer.
+ */
+async function portIsFree(port: string): Promise<boolean> {
+  const { createServer } = await import('node:net');
+  return new Promise((resolve) => {
+    const probe = createServer();
+    probe.once('error', () => resolve(false));
+    probe.once('listening', () => probe.close(() => resolve(true)));
+    probe.listen(Number(port), '0.0.0.0');
+  });
+}
+
+/**
+ * Whether an **apps/api** is on the port — not whether anything is.
+ *
+ * `/v1/healthcheck` is the route CI waits for, so this recognises the service
+ * and nothing else. `portIsFree` below answers the other half of the question.
+ */
 async function apiAnswers(): Promise<boolean> {
   try {
     const response = await fetch(`${apiBaseUrl()}/v1/healthcheck`, {
@@ -68,10 +105,23 @@ async function startAppsApi(): Promise<void> {
     );
   }
 
+  const port = apiPort();
+  if (!(await portIsFree(port))) {
+    throw new Error(
+      [
+        `Port ${port} is taken by something that is not an apps/api — it did`,
+        'not answer /v1/healthcheck. Whatever it is, apps/api cannot bind the',
+        'port, so this run has nowhere to send the Server Actions that go',
+        'through it.',
+        '',
+        `Find it and stop it:  lsof -nP -iTCP:${port} -sTCP:LISTEN`,
+      ].join('\n'),
+    );
+  }
+
   console.log('[global-setup] Building apps/api (turbo caches this)...');
   execSync('npm run api:build', { stdio: 'inherit', cwd: REPO_ROOT });
 
-  const port = new URL(apiBaseUrl()).port || '3001';
   console.log(`[global-setup] Starting apps/api on port ${port}...`);
   const proc = spawn('node', ['apps/api/dist/main.js'], {
     cwd: REPO_ROOT,
@@ -84,10 +134,23 @@ async function startAppsApi(): Promise<void> {
   );
   globalThis.__appsApiProcess = proc;
 
+  // A boot that fails — a missing variable, a database that refuses — exits in
+  // under a second, and without this the loop below spends a minute proving it
+  // and then reports a healthcheck timeout. The exit code is the real message.
+  let exited: number | null = null;
+  proc.once('exit', (code) => {
+    exited = code;
+  });
+
   for (let attempt = 0; attempt < 30; attempt += 1) {
     if (await apiAnswers()) {
       console.log('[global-setup] apps/api is up.');
       return;
+    }
+    if (exited !== null) {
+      throw new Error(
+        `apps/api exited with code ${exited} before answering. Its stderr is above.`,
+      );
     }
     await new Promise((resolve) => setTimeout(resolve, 2_000));
   }

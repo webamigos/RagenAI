@@ -307,6 +307,7 @@
     "conversation": "videnbase og andre kilder"
   },
   "text-area": {
+    "stop-recording": "Stop optagelse",
     "send-message": "Send besked",
     "voice-input": "Taleindtastning",
     "add-attachment": "Tilføj vedhæftning",

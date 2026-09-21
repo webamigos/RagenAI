@@ -307,6 +307,7 @@
     "conversation": "base di conoscenza e altre fonti"
   },
   "text-area": {
+    "stop-recording": "Interrompi la registrazione",
     "send-message": "Invia messaggio",
     "voice-input": "Input vocale",
     "add-attachment": "Aggiungi allegato",

@@ -307,6 +307,7 @@
     "conversation": "znalostní báze a další zdroje"
   },
   "text-area": {
+    "stop-recording": "Zastavit nahrávání",
     "send-message": "Odeslat zprávu",
     "voice-input": "Hlasový vstup",
     "add-attachment": "Přidat přílohu",

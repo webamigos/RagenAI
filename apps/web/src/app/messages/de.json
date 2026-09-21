@@ -307,6 +307,7 @@
     "conversation": "Wissensdatenbank und andere Quellen"
   },
   "text-area": {
+    "stop-recording": "Aufnahme beenden",
     "send-message": "Nachricht senden",
     "voice-input": "Spracheingabe",
     "add-attachment": "Anhang hinzufügen",
