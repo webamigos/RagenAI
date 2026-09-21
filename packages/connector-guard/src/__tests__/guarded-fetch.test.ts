@@ -461,16 +461,19 @@ describe('protocolsFor', () => {
     ).toEqual(['https:']);
   });
 
-  it('admits http for a credentialed entry declared to be on the operator network', () => {
-    // `allowsPrivateAddress` is a platform-admin decision, audited where it is
-    // set, and it is the entry that exists because an internal server has no
-    // certificate.
+  it('refuses http for a credentialed entry even when private addresses are allowed', () => {
+    // The first version of this made `allowPrivate` an exception, on the
+    // reading that the operator had declared the server internal. The flag
+    // *widens* the address policy to admit RFC 1918; it does not *confine* the
+    // entry to it — a public hostname still resolves and connects with the
+    // flag on. So the exception would have leaked a customer's key to a public
+    // host while claiming not to.
     expect(
       protocolsFor('http://10.0.0.5:9005/mcp', {
         credentialed: true,
         allowPrivate: true,
       }),
-    ).toEqual(['http:', 'https:']);
+    ).toEqual(['https:']);
   });
 
   it('admits http for a server_side entry, which carries no credential', () => {
