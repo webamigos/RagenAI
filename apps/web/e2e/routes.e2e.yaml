@@ -5,12 +5,40 @@
 # whose credentials come from LLM_MOCK_BASE_URL and LLM_MOCK_API_KEY. It used
 # to be wired as LITELLM_PROXY_URL, which stopped existing with the proxy.
 #
-# The mock answers 200 to anything that is not /v1/chat/completions, so one
-# entry covers the embedding path too.
+# **Every model the chat path can resolve needs an entry, not every model it
+# usually resolves.** `resolveModel` throws `UnknownModelError` — a plain
+# Error, which the SSE filter reports as `unknown-error` because it is not a
+# `ChainError` — so a model that turns up only sometimes takes the turn down
+# only sometimes, which reads as flakiness rather than as configuration.
+#
+# That is exactly how it presented: `mock-model` is the seeded organization's
+# setting and wins almost always, and two turns out of six in one run resolved
+# the *platform* default instead and produced no answer at all. One entry was
+# enough for a suite that only ever asserted refusals; it is not enough for one
+# that asserts an answer.
 version: 1
 
 routes:
+  # The organization's setting, seeded by `e2e-seed.ts`.
   mock-model:
+    provider: openai-compatible
+    connection: mock
+    model: mock-model
+
+  # `defaultOrganizationSettings.model`, which serves any turn whose
+  # organization settings are missing or have not been read yet. Pointed at the
+  # mock rather than at Google: what this suite tests is the chain, and a route
+  # is the only thing standing between a fallback and a dead turn.
+  gemini-3-flash-preview:
+    provider: openai-compatible
+    connection: mock
+    model: mock-model
+
+  # The embeddings model. It is resolved whether or not retrieval runs — an
+  # unhandled `UnknownModelError` appeared five times in a run whose every turn
+  # skipped the knowledge base — so it needs an entry even while this job has
+  # no vector store for retrieval to reach.
+  bge-multilingual-gemma2:
     provider: openai-compatible
     connection: mock
     model: mock-model
