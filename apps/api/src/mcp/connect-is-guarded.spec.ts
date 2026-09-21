@@ -165,7 +165,9 @@ describe('the scheme a session is opened with', () => {
       notion: {
         provider: 'notion',
         name: 'Notion',
-        authType: 'api_key_bearer',
+        // `server_side` deliberately: the shape that carries no credential,
+        // and so the only one that may speak plain http at all.
+        authType: 'server_side',
         // An operator's own MCP server on an internal network: no
         // certificate, so no https.
         mcpServerUrl: 'http://10.0.0.5:9005/mcp',

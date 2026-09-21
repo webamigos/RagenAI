@@ -11,8 +11,13 @@ adrs: [02, 32, 35, 38, 52]
 > lives here because the spec process does ([`README.md`](README.md)) and
 > because the acceptance criterion is a scaffolded connector answering a real
 > chat turn in `ragen-app`. Everything this changes in *this* repository is
-> named in [Core surfaces touched](#core-surfaces-touched) — and it is a
-> documentation line and one e2e test, nothing else.
+> named in [Core surfaces touched](#core-surfaces-touched).
+>
+> That section was written expecting a documentation line and one e2e test.
+> Building against the catalogue found a defect in it, so the branch also
+> carries a fix in `packages/connector-guard` and its two consumers — which is
+> the spec doing its job rather than the scope slipping, and is why the table
+> below says so.
 
 ## TLDR
 
@@ -265,9 +270,10 @@ ADR-52 having landed first:
 |---|---|---|
 | `prisma/schema.prisma` | **none** | — |
 | `packages/platform-contracts` | **none**; its slug rule is *read* by a new test | `slug-rule-matches-the-catalogue.test.ts` |
-| `packages/connector-guard` | **none** | — |
+| `packages/connector-guard` | `protocolsFor` — the scheme, and whether the session carries a credential. Not planned; a defect this work found | its own tests, plus `connect-is-guarded` in **both** apps |
+| `apps/web` + `apps/api` MCP clients | each passes `protocolsFor(url, …)` at the one place it dials a catalogue entry | `connect-is-guarded` on both — the pair exists because these two are copies and have drifted |
 | `docs/mcp-integrations.md` | one paragraph pointing at the scaffolder | review |
-| `apps/web/e2e/` | one `p0` test: a catalogue entry against a stub MCP server serves a tool to a chat turn | it is the gate — see [Testing](#testing) |
+| `apps/web/e2e/` | one `p0` test: a catalogue entry that is only a row is offered, connects, and stops being offered when disabled | it is the gate — see [Testing](#testing) |
 
 In **`ragen-connectors`** (the implementation):
 
@@ -404,9 +410,12 @@ Per the Testing Requirements in `AGENTS.md`, and with the level named:
 - **Unit** (`ragen-app`): `slug-rule-matches-the-catalogue.test.ts` — the
   scaffolder's regex against `CATALOG_SLUG_PATTERN`. It lives here because this
   is where the rule can change.
-- **e2e** (`ragen-app`, `p0-*`): the wire contract, end to end. It must be
-  `p0` and not `p1`–`p3`: a PR runs only `smoke-*` and `p0-*`, so anything
-  lower would not gate the change that breaks it.
+- **e2e** (`ragen-app`, `p0-*`): a connector that is only a row — offered,
+  connected, and withdrawn when the entry is disabled. It does **not** open an
+  MCP session; the session policy is covered by `connect-is-guarded` in both
+  apps and by `packages/connector-guard`, where it can be deterministic. It
+  must be `p0` and not `p1`–`p3`: a PR runs only `smoke-*` and `p0-*`, so
+  anything lower would not gate the change that breaks it.
 - **Manual, once**: C2. A local Ragen, a real browser, a real chat turn. The
   e2e test is a stub by construction; this is the only step that proves a
   process started by the generated `npm run dev` is reachable by the real
@@ -435,6 +444,22 @@ Not in this spec; recorded because it found them.
   Docker" is a normal small installation and it has no route through the form.
   A `RAGEN_TRUSTED_MCP_HOSTS` allowlist read from the environment would fit the
   existing exemption for deployer-controlled addresses. Needs its own spec.
+- **A credentialed connector cannot use `http`, even on an internal network.**
+  `api_key_bearer` and `external_mcp` are held to https, because the only
+  signal available at the point the scheme is decided is
+  `allowsPrivateAddress` — and that flag *widens* the address policy to admit
+  RFC 1918 rather than *confining* the entry to it. A public hostname still
+  resolves and connects with the flag on, so resting the exception on it would
+  leak a customer's own API key to a public host while claiming not to. (It
+  did, in the first version of this change; two reviews found it.)
+
+  Confining it properly means judging the **resolved** address, which is known
+  only inside `createGuardedConnector` after the lookup — the same place DNS
+  rebinding is caught. A connector that refused a credentialed http hop unless
+  the pinned address classified as `private` would restore the internal-server
+  case without the hole. Worth doing; it belongs with the resolver, not with a
+  flag.
+
 - **`--register`**, once an authenticated admin API for catalogue entries
   exists in `ragen-app`.
 - **A row's URL and the connector's stored URL disagree by `/mcp`** when an
@@ -456,14 +481,28 @@ Not in this spec; recorded because it found them.
   That is this button's purpose exactly inverted — it exists so an operator can
   tell a working endpoint from a typo before a customer does.
 
-  **Resolved as (a)**, the option that matches the intent the form and the
-  probe already state: `protocolsFor(url)` in `packages/connector-guard`,
-  threaded to the two runtime call sites that dial a catalogue entry —
-  `['http:', 'https:']` for an http entry, `['https:']` for an https one, so a
-  redirect still cannot downgrade. The third call site,
-  `connectors.service.ts`, was checked and left alone: `normalizeSiteUrl`
-  enforces https, so its URL is never http and widening it would have been a
-  change with a false comment attached.
+  **Resolved as (a), then narrowed.** `protocolsFor` lives in
+  `packages/connector-guard` and is threaded to the two runtime call sites that
+  dial a catalogue entry. What it returns depends on the *credential*, not on
+  the scheme alone:
+
+  | Entry | Allowed | Why |
+  |---|---|---|
+  | `https`, any shape | `['https:']` | a redirect cannot downgrade it |
+  | `http`, `server_side` | `['http:', 'https:']` | no credential to expose; the address policy still decides what may be reached, and an upgrade to https is not a downgrade |
+  | `http`, credentialed | `['https:']` | the customer's own API key or an OAuth token would otherwise travel in clear text |
+
+  The first version of the narrowing made `allowsPrivateAddress` an exception
+  for a credentialed entry, reading it as "the operator declared this server
+  internal". It is not: the flag **widens** the address policy to admit
+  RFC 1918 and does not **confine** the entry to it, so a public hostname still
+  resolves and connects with the flag on. Two reviews caught it; see the
+  follow-up below for the version that would confine it properly, which needs
+  the resolved address rather than a flag.
+
+  The third call site, `connectors.service.ts`, was checked and left alone:
+  `normalizeSiteUrl` enforces https, so its URL is never http and widening it
+  would have been a change with a false comment attached.
 
   The rejected option was (b): require https of operator-created entries and
   have the form say so. It is defensible, and it takes away the case ADR-52
