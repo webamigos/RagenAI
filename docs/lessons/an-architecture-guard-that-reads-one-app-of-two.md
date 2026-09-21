@@ -71,3 +71,59 @@ spec's table, whose comment says it covers "every page the sidebar links to".
 **Applies to**: any `'use client'` file in `apps/web` or `apps/admin`; any
 workspace package under `packages/` that mixes pure contracts with code that
 touches `node:*`; every guard in `tests/architecture/` that names a single app.
+
+---
+
+## It happened again, four days later, in the app the guard had just been taught to read
+
+**Context**: the 2026-09-21 regression pass opened `/mcp-catalogue` — the one
+screen ADR-52 exists to provide — and got `This page couldn't load`. Same app,
+same failure, same week.
+
+**Problem**: `CatalogueEntryForm` is `'use client'` and imported two constants
+and a type from `../validation`. That module imports `isBlockedHost` from
+`@ragenai/connector-guard`, whose barrel re-exports the guarded fetch and
+transport, which open with `import { isIP } from 'node:net'`. Verbatim the
+earlier shape, with `node:net` for `node:worker_threads`:
+
+```
+Cannot find module 'node:net': Unsupported external type Url for commonjs reference
+```
+
+By then the guard *did* scan `apps/admin`, and rule 1 above had been applied.
+It still missed this, because `SERVER_ONLY` is a **denylist of specifier
+strings** — `@/generated/prisma/client`, `@ragenai/prisma-client`,
+`@ragenai/guardrails`, `serverLogger`. Each entry was added by whoever debugged
+the leak it names. `@ragenai/connector-guard` is a package created *after* the
+previous entry was written, so nothing matched it. A denylist of four names
+cannot fail on the fifth.
+
+`resolveSpecifier` compounds it: it returns `null` for any bare specifier, so
+the walk never enters `packages/*/src` at all. The denylist is not a shortcut
+to the real check — it is the only check there is.
+
+Two things then hid it for a further four days:
+
+- **The previous pass screenshotted the error and filed the page as healthy.**
+  Its method was "request every page, assert the status is 200" — and a
+  client-side error boundary *is* a 200. `admin-04-mcp-catalogue.png` in
+  `docs/screenshots/2026-09-21-guardrails-regression/` is the error screen, in
+  a report whose own words are "none showed an error screen". The screenshots
+  were taken and never looked at.
+- **The page's own suite was green and could not have been otherwise.** It
+  tests the Server Actions as functions; nothing in it bundles a client
+  component.
+
+**Rule**: two more, and they supersede rather than repeat the three above.
+
+4. **State the rule, not the names that have broken it.** "No `node:` builtin
+   is reachable from a `'use client'` file" is the invariant; a list of the
+   four packages that have violated it is a changelog. Follow bare
+   `@ragenai/*` specifiers into `packages/*/src` and fail on the *builtin*, so
+   the next package is covered before it exists. Keep the named entries for
+   their messages, which say which safe entry point to use instead.
+5. **A page check that reads a status code cannot see a hydration failure.**
+   Render the page and look at what is on it — `This page couldn't load` is the
+   whole tell, and it costs one `innerText`. A screenshot only helps if
+   something asserts on it; 48 PNGs nobody opened is not evidence, and citing
+   them as evidence is worse than not taking them.

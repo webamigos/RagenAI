@@ -90,6 +90,42 @@ archive is the blog.
   the main app, so the panel refused its own sign-in form with "Invalid origin"
   — on the one surface that has no other way in.
 
+- `[brief]` **You can get into the admin panel on your own machine.** Signing
+  in worked under `admin:dev` and not under the built panel, with the same
+  "Invalid origin" and no hint that the mode was the difference — both scripts
+  name their own origin now. Separately, there was no way to *become* an
+  administrator twice: the first-run screen promotes one account once and then
+  refuses for ever, so a development database a week old had no account anyone
+  could sign in as. `npm run local:admin -- --email you@example.com` grants the
+  role and sets a password, and refuses outright unless the database is on your
+  own machine.
+
+- `[major]` **The MCP catalogue opens.** The screen a platform administrator
+  adds a connector from rendered nothing but "This page couldn't load", in
+  every build. Its form imported the URL validator for two constants, and the
+  validator reaches the address policy, which imports `node:net` — a module a
+  browser has no version of. The page server-rendered, hydrated, threw and
+  replaced itself with the error boundary, and because the document itself was
+  a perfectly good 200 the failure was invisible to anything that checked
+  status codes.
+
+- `[major]` **Adding a connector no longer ends on an error page.** Every
+  mutation on the catalogue — add, edit, enable, disable, delete — wrote its
+  row and then failed, because recording the action needs either an
+  organization or a security event and the catalogue belongs to no
+  organization. The administrator saw a server error over a change that had in
+  fact been made, and the list still showed the old state until they reloaded.
+  All five are recorded as platform configuration changes now, and appear in
+  the incidents view.
+
+- `[brief]` **A connector that carries a credential is held to https when you
+  save it.** The rule already applied when the connection was opened, so an
+  entry typed as `http://` saved, switched itself on, and then failed every
+  connection with nothing having said why. The form refuses it at the point of
+  saving instead. A server-side connector sends no credential of its own and
+  may still use plain http, which is the case an MCP server on your own network
+  is for.
+
 ### Thread: connectors are added from the panel, not from a release
 
 - `[major]` **A platform administrator can add an MCP connector without a
