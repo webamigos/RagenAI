@@ -29,6 +29,7 @@ npm run ragen:up:everything  # Everything in containers, apps included
 npm run generate:types   # Prisma client for every app (root owns the schema)
 npm run web:e2e          # Playwright E2E tests (requires ragen_e2e DB)
 npm run db:seed          # Seed database (uses .env.local)
+npm run local:admin -- --list   # platform admins; --email <e> grants+sets a password
 npm run worker:dev       # Background-job worker (apps/worker) in watch mode
 npm run worker:test      # Worker Vitest suite
 npm run worker:test:jobs # Job-runtime integration suite (needs Redis) — the BullMQ gate

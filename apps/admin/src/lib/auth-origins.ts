@@ -17,7 +17,20 @@
  * for a redirect or an e-mail link.
  */
 
-/** Where `npm run admin:dev` and `npm run admin:start` serve this app. */
+/**
+ * Where `npm run admin:dev` and this workspace's `start` serve this app.
+ *
+ * Trusted below only outside production — and `next start` *is* production, so
+ * running the built panel locally was still refused, with the same message and
+ * for the same reason, after the dev case was fixed. Rather than widen the
+ * policy (a real deployment serves nothing from localhost, and the exclusion is
+ * right), both scripts in `apps/admin/package.json` set
+ * `ADMIN_TRUSTED_ORIGINS` to this value. They only ever serve this port, and
+ * the image starts the app with `node apps/admin/server.js`, so neither line
+ * reaches a deployment. `apps/admin/playwright.config.ts` runs `npm run start`
+ * and inherits it, which is why the suite no longer needs the variable set by
+ * hand.
+ */
 export const LOCAL_ADMIN_ORIGIN = 'http://localhost:3200';
 
 /** Comma- or space-separated extra origins, for a deployment behind a proxy. */
