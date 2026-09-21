@@ -68,6 +68,28 @@ archive is the blog.
 
 ## Unreleased
 
+### Thread: what a regression pass turned up
+
+- `[major]` **An assistant's instruction is saved now.** Typing an instruction
+  into an assistant, pressing save and getting the confirmation toast did not
+  store it: the box is empty while the current value is still loading, and when
+  that load answered it reset the field under you, so the save that followed
+  sent an empty string. The endpoint reported success on it, which is why the
+  toast was honest and the setting was gone. Reopening the dialog was the only
+  way to find out.
+
+- `[brief]` **The composer's icon buttons have names.** Send, voice input and
+  attachment are icons, and the icons are hidden from assistive technology on
+  purpose, so a screen reader announced the product's primary action as
+  "button". All three read from the translations now, in all fifteen
+  languages — the attachment label was missing from every one of them, which
+  the browser console had been saying on every render.
+
+- `[brief]` **The admin panel signs in on a fresh checkout.** It trusted only
+  the origin in `BETTER_AUTH_URL`, which the shared root `.env.local` points at
+  the main app, so the panel refused its own sign-in form with "Invalid origin"
+  — on the one surface that has no other way in.
+
 ### Thread: connectors are added from the panel, not from a release
 
 - `[major]` **A platform administrator can add an MCP connector without a
