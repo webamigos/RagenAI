@@ -4,6 +4,36 @@ import { useState, useEffect, useRef } from 'react';
 import { saveOrgAllowedConnectorsAction } from './actions';
 import { grantable, type GrantableConnector } from './DefaultConnectorsForm';
 
+/**
+ * The bulk checkbox does what ticking every visible box by hand does — and
+ * nothing more.
+ *
+ * `availableConnectors` is the catalogue narrowed to the app-level defaults,
+ * so an organization can hold a grant that is in the catalogue but not in
+ * those defaults: valid, saveable, and rendered by no checkbox here. Replacing
+ * the whole set on a bulk toggle dropped it silently. It has no effect while
+ * it sits outside the app defaults — availability is the intersection of the
+ * two lists — but it takes effect again the moment a platform administrator
+ * puts the connector back, so rewriting it away is a loss.
+ */
+export function withVisibleToggled(
+  selected: Set<string>,
+  visible: string[],
+  select: boolean,
+): Set<string> {
+  const next = new Set(selected);
+
+  for (const value of visible) {
+    if (select) {
+      next.add(value);
+    } else {
+      next.delete(value);
+    }
+  }
+
+  return next;
+}
+
 export function OrgConnectorsForm({
   orgId,
   current,
@@ -60,11 +90,13 @@ export function OrgConnectorsForm({
   };
 
   const toggleAll = () => {
-    if (allSelected) {
-      setSelected(new Set());
-    } else {
-      setSelected(new Set(availableConnectors.map((c) => c.value)));
-    }
+    setSelected((prev) =>
+      withVisibleToggled(
+        prev,
+        availableConnectors.map((c) => c.value),
+        !allSelected,
+      ),
+    );
   };
 
   const handleSubmit = async (e: React.FormEvent) => {

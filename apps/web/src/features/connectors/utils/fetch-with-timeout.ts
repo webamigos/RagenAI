@@ -41,10 +41,11 @@ export async function fetchWithTimeout(
 
   try {
     const send = guarded?.fetch ?? fetch;
-    return await send(url, {
+    const response = await send(url, {
       ...fetchOptions,
       signal: controller.signal,
     });
+    return guarded ? await bufferBody(response) : response;
   } catch (error) {
     if (error instanceof DOMException && error.name === 'AbortError') {
       throw new Error(`Request timed out after ${timeoutMs}ms: ${url}`);
@@ -55,4 +56,36 @@ export async function fetchWithTimeout(
     // The dispatcher owns sockets; leaving it open leaks one per call.
     await guarded?.close();
   }
+}
+
+/** Statuses the `Response` constructor refuses to attach a body to. */
+const NULL_BODY_STATUSES = new Set([101, 103, 204, 205, 304]);
+
+/**
+ * Read the body here, while the dispatcher is still open.
+ *
+ * `fetch` resolves at the headers, so the body is still on the wire when the
+ * `finally` above runs — and `Agent.close()` waits for the request to
+ * *finish*, which it cannot do while the body sits unread behind
+ * backpressure. Awaiting the close before the caller has the response
+ * therefore hangs on any body larger than the socket buffer. Measured against
+ * undici 7.29: a 1 MB body never resolves `close()`, a 16 KB one does, which
+ * is why the two small-JSON callers never saw it.
+ *
+ * Buffering keeps the `Promise<Response>` contract those callers are written
+ * against, and the abort signal still covers the read, so a body that never
+ * ends is cut off at `timeoutMs` rather than held open.
+ */
+async function bufferBody(response: Response): Promise<Response> {
+  if (!response.body || NULL_BODY_STATUSES.has(response.status)) {
+    return response;
+  }
+
+  const body = await response.arrayBuffer();
+
+  return new Response(body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers: response.headers,
+  });
 }

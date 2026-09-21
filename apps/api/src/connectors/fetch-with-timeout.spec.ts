@@ -1,9 +1,8 @@
 /**
- * The address policy reaches the API-key registration POST.
- *
- * That request carries the user's key to a URL assembled from a catalogue
- * row, and it went through the global `fetch` with no check at all — the one
- * remaining path where an operator-typed address was dialled unguarded.
+ * Mirrors apps/web's
+ * src/features/connectors/utils/__tests__/fetch-with-timeout.test.ts, because
+ * the helper itself is a 1:1 port (ADR-21) and the copy here is the one the
+ * public API dials an operator's URL through.
  */
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -19,7 +18,7 @@ vi.mock('@ragenai/connector-guard', async (importOriginal) => {
   };
 });
 
-const { fetchWithTimeout } = await import('../fetch-with-timeout');
+const { fetchWithTimeout } = await import('./fetch-with-timeout.js');
 
 describe('fetchWithTimeout', () => {
   beforeEach(() => {
