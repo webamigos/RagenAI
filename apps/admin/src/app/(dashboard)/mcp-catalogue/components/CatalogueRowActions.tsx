@@ -7,7 +7,7 @@ import {
   deleteCatalogueEntryAction,
   setCatalogueEntryEnabledAction,
 } from '../actions';
-import type { CatalogueEntryInput } from '../validation';
+import type { CatalogueEntryInput } from '../validation-shape';
 import { CatalogueEntryForm } from './CatalogueEntryForm';
 
 export type CatalogueRowActionsProps = {

@@ -10,11 +10,14 @@ import {
   updateCatalogueEntryAction,
   type ConnectionTestResult,
 } from '../actions';
+// `../validation` and not `../validation-shape` would reach
+// `@ragenai/connector-guard`, whose barrel imports `node:net` — see the comment
+// in `validation-shape.ts`.
 import {
   CREATABLE_AUTH_TYPES,
   valuesForAuthType,
   type CatalogueEntryInput,
-} from '../validation';
+} from '../validation-shape';
 
 const AUTH_TYPE_LABELS: Record<string, string> = {
   SERVER_SIDE:
@@ -74,6 +77,7 @@ export function CatalogueEntryForm({ entry, onDone }: CatalogueEntryFormProps) {
         await testCatalogueConnectionAction(
           values.mcpServerUrl,
           values.allowsPrivateAddress,
+          values.authType,
         ),
       );
     } finally {

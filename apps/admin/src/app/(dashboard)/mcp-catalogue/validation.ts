@@ -1,9 +1,12 @@
-import {
-  OPERATOR_CREATABLE_AUTH_TYPES,
-  catalogSlugError,
-  type McpAuthType,
-} from '@ragenai/platform-contracts';
+import { catalogSlugError } from '@ragenai/platform-contracts';
 import { isBlockedHost } from '@ragenai/connector-guard';
+
+import {
+  CREATABLE_AUTH_TYPES,
+  isCreatableAuthType,
+  type CatalogueEntryInput,
+  type ValidationFailure,
+} from './validation-shape';
 
 /**
  * What a platform administrator may type, and what it must satisfy before it
@@ -11,47 +14,23 @@ import { isBlockedHost } from '@ragenai/connector-guard';
  *
  * Pure, so it can be tested as itself — and because the same rules have to
  * hold for a create and for an edit, which are two actions.
- */
-export type CatalogueEntryInput = {
-  slug: string;
-  label: string;
-  description: string;
-  mcpServerUrl: string;
-  authType: string;
-  icon: string;
-  lucideIcon: string;
-  systemPrompt: string;
-  allowsPrivateAddress: boolean;
-  /** `EXTERNAL_MCP` only: what the authorization request asks for. */
-  scopes: string[];
-  /**
-   * `EXTERNAL_MCP` only: rewrite `scope` to `user_scope` in the authorization
-   * URL. Slack requires it; nothing else here does.
-   */
-  useUserScope: boolean;
-};
-
-/**
- * The shapes this panel can create. The other three are seeded only:
- * `API_KEY_CUSTOM_HEADER` assembles its URL from a shop address the *user*
- * types, which is code, and `OAUTH`/`API_KEY` predate the manifest shapes
- * that replaced them.
  *
- * `EXTERNAL_MCP` joined the list in Phase D, with the vault-held client
- * credentials it needs — an entry saved without them is saved and cannot be
- * connected, which the form says rather than refusing the save: the
- * credentials are a second step against a row that must exist first.
+ * **Server only, and not by convention.** `isBlockedHost` comes from the
+ * `@ragenai/connector-guard` barrel, which re-exports the guarded fetch and
+ * transport; those import `node:net` and `node:dns` at module scope, and
+ * Turbopack cannot put a node builtin in a client chunk. The form takes its
+ * constants and its types from `./validation-shape` for that reason — see the
+ * comment there. Re-exported below so a server caller still has one import.
  */
-export const CREATABLE_AUTH_TYPES = OPERATOR_CREATABLE_AUTH_TYPES;
-
-export type ValidationFailure = {
-  field: keyof CatalogueEntryInput;
-  message: string;
-};
-
-export function isCreatableAuthType(value: string): value is McpAuthType {
-  return (CREATABLE_AUTH_TYPES as readonly string[]).includes(value);
-}
+export {
+  CREATABLE_AUTH_TYPES,
+  isCreatableAuthType,
+  valuesForAuthType,
+} from './validation-shape';
+export type {
+  CatalogueEntryInput,
+  ValidationFailure,
+} from './validation-shape';
 
 /**
  * The address check at save time — one of the three moments the policy runs
@@ -66,6 +45,7 @@ export function isCreatableAuthType(value: string): value is McpAuthType {
 export function serverUrlFailure(
   url: string,
   allowsPrivateAddress: boolean,
+  authType?: string,
 ): string | null {
   let parsed: URL;
   try {
@@ -76,6 +56,18 @@ export function serverUrlFailure(
 
   if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') {
     return 'The URL must be http:// or https://.';
+  }
+
+  // The same rule `protocolsFor` applies when the session is opened, applied
+  // here so the operator learns it at the form rather than from a connector
+  // that saves, enables and then fails every connection. Everything but
+  // `SERVER_SIDE` puts a credential on the wire, and `allowsPrivateAddress`
+  // does not excuse it: that flag widens which addresses may be dialled, and a
+  // public hostname still resolves with it set.
+  if (authType !== undefined && authType !== 'SERVER_SIDE') {
+    if (parsed.protocol !== 'https:') {
+      return 'A connector that carries a credential needs https. Only a server-side connector, which sends no credential of its own, may use http.';
+    }
   }
 
   if (isBlockedHost(parsed.hostname, { allowPrivate: allowsPrivateAddress })) {
@@ -115,6 +107,7 @@ export function validateEntry(
   const urlProblem = serverUrlFailure(
     input.mcpServerUrl.trim(),
     input.allowsPrivateAddress,
+    input.authType,
   );
   if (urlProblem) {
     return { field: 'mcpServerUrl', message: urlProblem };
@@ -139,30 +132,4 @@ export function validateEntry(
   }
 
   return null;
-}
-
-/**
- * The values after a change of authentication type.
- *
- * Scopes and `useUserScope` belong to an OAuth authorization request, and
- * `validateEntry` refuses them on anything else. The form only renders those
- * fields inside its `EXTERNAL_MCP` block, so a scope typed and then left
- * behind by switching type failed the save with its message attached to a
- * field nobody could see — a Save button that did nothing and said nothing.
- *
- * Clearing them here means the rule cannot be broken from the form at all.
- * `validateEntry` stays as the guard for the action, which a form is not the
- * only way to reach.
- */
-export function valuesForAuthType(
-  current: CatalogueEntryInput,
-  authType: string,
-): CatalogueEntryInput {
-  const isOAuth = authType === 'EXTERNAL_MCP';
-  return {
-    ...current,
-    authType,
-    scopes: isOAuth ? current.scopes : [],
-    useUserScope: isOAuth ? current.useUserScope : false,
-  };
 }

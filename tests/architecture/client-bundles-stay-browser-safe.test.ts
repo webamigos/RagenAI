@@ -234,6 +234,46 @@ function valueImports(source: string): string[] {
   return specifiers;
 }
 
+/**
+ * Where a `@ragenai/<name>` specifier's source lives, when it is one of this
+ * repo's own workspace packages.
+ *
+ * Resolving these is what turns the denylist below from a list of names into a
+ * rule. `@ragenai/connector-guard` was not on that list — it was created after
+ * the last entry was added — and its barrel imports `node:net`, so
+ * `/mcp-catalogue` shipped broken in exactly the shape the guardrails page had
+ * shipped broken four days earlier. A denylist of four names cannot fail on
+ * the fifth; walking into the package and looking for the builtin can.
+ *
+ * Only `@ragenai/*`, and only into `packages/<name>/src`: following anything
+ * from `node_modules` would make this a bundler rather than a test. Two
+ * aliases do not follow that pattern and stay with the named entries —
+ * `@ragenai/prisma-client` is an alias for `apps/web/src/libs/db`, and
+ * `@ragenai/common-ui` for a directory inside apps/web.
+ */
+const WORKSPACE_SCOPE = '@ragenai/';
+const PACKAGES = join(REPO_ROOT, 'packages');
+
+function workspacePackageEntry(specifier: string): string | null {
+  if (!specifier.startsWith(WORKSPACE_SCOPE)) {
+    return null;
+  }
+  const withoutScope = specifier.slice(WORKSPACE_SCOPE.length);
+  const [name, ...subpath] = withoutScope.split('/');
+  const base = join(PACKAGES, name, 'src', ...subpath);
+  for (const candidate of [
+    `${base}.ts`,
+    join(base, 'index.ts'),
+    `${base}.tsx`,
+    join(base, 'index.tsx'),
+  ]) {
+    if (existsSync(candidate) && statSync(candidate).isFile()) {
+      return candidate;
+    }
+  }
+  return null;
+}
+
 function resolveSpecifier(specifier: string, fromFile: string): string | null {
   let base: string;
   if (specifier.startsWith('@/')) {
@@ -241,10 +281,11 @@ function resolveSpecifier(specifier: string, fromFile: string): string | null {
   } else if (specifier.startsWith('.')) {
     base = resolve(dirname(fromFile), specifier);
   } else {
-    // A bare package specifier. `@ragenai/prisma-client` is one, but it is
-    // caught by the substring match before resolution ever gets here, and
-    // following node_modules would make this a bundler rather than a test.
-    return null;
+    // A bare specifier. One of this repo's own packages resolves into
+    // `packages/<name>/src`; anything else is a real dependency and stops here,
+    // because following node_modules would make this a bundler rather than a
+    // test.
+    return workspacePackageEntry(specifier);
   }
   for (const candidate of [
     base,
@@ -348,6 +389,56 @@ describe('client bundles stay browser-safe', () => {
         `A client component reaches ${specifier}, which is server-only: ${because}\n\n${report}\n\n` +
           `Turbopack fails this build with a panic that names neither the file ` +
           `nor the import, which is why this test exists.`,
+      ).toEqual([]);
+    },
+    WALK_TIMEOUT_MS,
+  );
+
+  /**
+   * The rule the named entries above are examples of.
+   *
+   * Every leak this file has caught was ultimately a `node:` builtin in a
+   * client chunk — `node:worker_threads` through `@ragenai/guardrails`,
+   * `node:net` through `@ragenai/connector-guard`, `node:process` and friends
+   * through Prisma's server client. Each was found by a person and then added
+   * here by name, which means the guard was always one package behind. This
+   * asserts the invariant instead, so a package written next month is covered
+   * before anyone imports it wrongly.
+   *
+   * `node:` only, and not the extensionless spellings (`fs`, `path`): those
+   * are also real package names, and a client component importing a
+   * `path`-named dependency is not a defect. Everything in this repo uses the
+   * prefixed form, which ESLint enforces.
+   */
+  it(
+    'no client component can reach a node: builtin',
+    () => {
+      const offenders = clientEntryPoints
+        .map((entry) => pathToServerOnly(entry, 'node:'))
+        .filter((trail): trail is string[] => trail !== null);
+
+      const report = offenders
+        .map(
+          (trail) =>
+            `  ${trail
+              .map((step) =>
+                step.startsWith('/') ? relative(REPO_ROOT, step) : step,
+              )
+              .join('\n    -> ')}`,
+        )
+        .join('\n\n');
+
+      expect(
+        offenders,
+        'A client component reaches a Node builtin. Turbopack cannot put one ' +
+          'in a browser chunk, so the page server-renders, hydrates, throws ' +
+          '`Cannot find module` and replaces itself with the error boundary — ' +
+          'a green build and a 200 over a blank page.\n\n' +
+          `${report}\n\n` +
+          'The fix is a browser-safe entry point holding the types and ' +
+          'constants the component actually wanted, with the Node-only code ' +
+          'left in the barrel. See `@ragenai/guardrails/contracts` and ' +
+          '`mcp-catalogue/validation-shape.ts` for the two shapes this takes.',
       ).toEqual([]);
     },
     WALK_TIMEOUT_MS,

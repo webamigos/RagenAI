@@ -141,9 +141,16 @@ describe('adding a connector', () => {
     expect(create).not.toHaveBeenCalled();
   });
 
+  /**
+   * `SERVER_SIDE` throughout, because it is the only shape that may speak
+   * plain http at all — a credentialed entry is held to https whatever the
+   * address policy says. Using the helper's `API_KEY_BEARER` default made the
+   * accepting half of this pass for the wrong reason, and is what let the
+   * missing TLS check reach a release.
+   */
   it('refuses a private address unless the entry opts in', async () => {
     const refused = await createCatalogueEntryAction(
-      input({ mcpServerUrl: 'http://10.0.0.5/mcp' }),
+      input({ mcpServerUrl: 'http://10.0.0.5/mcp', authType: 'SERVER_SIDE' }),
     );
     expect(refused.ok).toBe(false);
     expect(refused.field).toBe('mcpServerUrl');
@@ -152,10 +159,24 @@ describe('adding a connector', () => {
     const allowed = await createCatalogueEntryAction(
       input({
         mcpServerUrl: 'http://10.0.0.5/mcp',
+        authType: 'SERVER_SIDE',
         allowsPrivateAddress: true,
       }),
     );
     expect(allowed.ok).toBe(true);
+  });
+
+  it('refuses http for a credentialed entry even when private is allowed', async () => {
+    const result = await createCatalogueEntryAction(
+      input({
+        mcpServerUrl: 'http://10.0.0.5/mcp',
+        authType: 'API_KEY_BEARER',
+        allowsPrivateAddress: true,
+      }),
+    );
+    expect(result.ok).toBe(false);
+    expect(result.field).toBe('mcpServerUrl');
+    expect(create).not.toHaveBeenCalled();
   });
 
   it('refuses the metadata address even with the opt-in ticked', async () => {
