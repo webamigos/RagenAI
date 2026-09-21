@@ -105,9 +105,13 @@ test.describe('the seeded fixtures are what this spec assumes', () => {
     // means no refusal, which is what three of these tests assert the absence
     // of.
     type Fixture = { action: string; enabled: boolean; pattern: string };
+    // Scoped to the input stage rather than to the name prefix. The seed grew
+    // an `OUTPUT` fixture for `p0-32`, which shares the prefix and would
+    // otherwise fail the count below — a guard that breaks when a *different*
+    // stage gains a rule is asserting something it does not mean.
     const rules = await withPrisma<Fixture[]>((prisma) =>
       prisma.guardrail.findMany({
-        where: { name: { startsWith: 'E2E guardrail' } },
+        where: { name: { startsWith: 'E2E guardrail' }, stage: 'INPUT' },
         select: { action: true, enabled: true, pattern: true },
       }),
     );

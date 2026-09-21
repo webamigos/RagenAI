@@ -159,6 +159,49 @@ describe('ProjectInstructionForm', () => {
     expect(textarea).toHaveValue(INSTRUCTION);
   });
 
+  it('keeps what the operator typed when the initial load answers before they save', async () => {
+    // The race `p0-22-projects` fails on, and the one the test above does not
+    // cover: there, the load lands *after* the save. Here it lands between the
+    // typing and the click, which is the ordinary case — the box is empty when
+    // the dialog opens, so the operator starts typing immediately while the
+    // GET is still in flight, and it answers a few hundred milliseconds later.
+    //
+    // `reset()` then returns the field to the stored value, which is `null`,
+    // and the submit that follows carries an empty string. The endpoint
+    // reports success and `project_settings.instructions` stays empty, so the
+    // toast says saved and nothing was.
+    const user = userEvent.setup();
+    let resolveInitialLoad: (value: {
+      success: boolean;
+      instruction: string | null;
+    }) => void;
+    mockGetProjectInstruction.mockReturnValue(
+      new Promise((resolve) => {
+        resolveInitialLoad = resolve;
+      }),
+    );
+
+    renderForm();
+
+    const textarea = screen.getByRole('textbox');
+    await user.type(textarea, INSTRUCTION);
+
+    await act(async () => {
+      resolveInitialLoad({ success: true, instruction: null });
+    });
+
+    expect(textarea).toHaveValue(INSTRUCTION);
+
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+
+    await waitFor(() =>
+      expect(mockSaveProjectInstruction).toHaveBeenCalledWith(
+        'proj-1',
+        INSTRUCTION,
+      ),
+    );
+  });
+
   it('does not submit a non-empty instruction shorter than ten characters', async () => {
     const user = userEvent.setup();
     renderForm();

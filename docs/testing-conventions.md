@@ -50,13 +50,28 @@ data. Once: `createdb ragen_e2e`, run the migrations against it, then create
 `.env.e2e.local` overriding `DATABASE_URL` and `DATABASE_DIRECT_URL`.
 
 That file only redirects `apps/web` — `playwright.config.ts` loads it and hands
-it to the web server it starts. **`apps/api` has to be pointed at `ragen_e2e`
-on its own command line**, or it falls through to the repository root's
-`.env.local` and answers from your dev database. It is the sidebar's thread
-list, the knowledge base's folders and the versioning fixtures, so getting this
-wrong fails about thirty `p0` tests with assertions that look nothing like a
-database problem. `.claude/skills/ragen-e2e-triage/SKILL.md` has the command
-and the symptoms.
+it to the web server it starts. **`global.setup.ts` now starts `apps/api`
+itself**, with the same environment, so it reads `ragen_e2e` like everything
+else; `global.teardown.ts` stops the one it started.
+
+It used to be your job to point apps/api at `ragen_e2e` on its own command
+line, and nothing checked that you had. An apps/api left running from an
+earlier session answers perfectly well from *its* database — normally the
+development one — and it serves the sidebar's thread list, the knowledge base's
+folders and the versioning fixtures. `smoke-11` and `smoke-12` then fail as if
+the seeded project and thread were missing, and because the `authenticated`
+project depends on `smoke-auth`, **two reds like that stop 160 p0–p3 tests from
+running at all** under a summary that says `2 failed`. So the setup refuses a
+port it did not open: if something already answers on `RAGEN_API_INTERNAL_URL`,
+you get a message telling you to stop it, rather than a suite that trusts it.
+`.claude/skills/ragen-e2e-triage/SKILL.md` has the symptoms.
+
+`playwright.config.ts` also pins the gateway at the mock — `LLM_ROUTES_PATH`,
+`LLM_MOCK_BASE_URL`, `LLM_MOCK_API_KEY`, `DEFAULT_MODEL` and `REPHRASE_MODEL`,
+assigned only when your shell has not already set them. Without that the
+gateway falls back to the production `infra/llm-gateway/routes.yaml` and the
+credentials in your root `.env.local`: `mock-model` fails to resolve, and the
+turns that *do* resolve go to a real provider and bill you.
 
 **There is no root `build` or `test:e2e` script**, and both were documented
 here until they cost somebody a triage cycle. The root delegates per app:

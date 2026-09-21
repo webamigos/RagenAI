@@ -307,6 +307,10 @@
     "conversation": "kunskapsbas och andra källor"
   },
   "text-area": {
+    "stop-recording": "Stoppa inspelningen",
+    "send-message": "Skicka meddelande",
+    "voice-input": "Röstinmatning",
+    "add-attachment": "Lägg till bilaga",
     "placeholder": "Skriv din fråga..."
   },
   "success-toast": {
@@ -1068,6 +1072,8 @@
     "drop-to-project": "Släpp filerna här för att lägga till dem i projektets kunskap"
   },
   "prompt-attachments": {
+    "send-message": "Skicka meddelande",
+    "add-attachment": "Lägg till bilaga",
     "upload-file": "Ladda upp fil",
     "from-knowledge-base": "Från kunskapsbasen",
     "from-google-drive": "Från Google Drive",

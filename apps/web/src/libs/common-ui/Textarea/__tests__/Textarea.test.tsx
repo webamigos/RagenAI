@@ -5,19 +5,27 @@ import { NextIntlClientProvider } from 'next-intl';
 import { Textarea } from '../Textarea';
 import { createRef } from 'react';
 
-// Mock voice input hook
+// Mock voice input hook. A `vi.fn()` rather than a fixed factory so a single
+// test can put the component into the recording state, which changes both what
+// the button does and what it should be called.
+const mockUseVoiceInput = vi.fn(() => ({
+  startListening: vi.fn(),
+  stopListening: vi.fn(),
+  isRecording: false,
+  error: null,
+}));
+
 vi.mock('@/app/hooks/useAudioRecording', () => ({
-  useVoiceInput: () => ({
-    startListening: vi.fn(),
-    stopListening: vi.fn(),
-    isRecording: false,
-    error: null,
-  }),
+  useVoiceInput: () => mockUseVoiceInput(),
 }));
 
 const messages = {
   'text-area': {
     placeholder: 'Type your question...',
+    'send-message': 'Send message',
+    'voice-input': 'Voice input',
+    'stop-recording': 'Stop recording',
+    'add-attachment': 'Add attachment',
   },
 };
 
@@ -32,6 +40,70 @@ const renderTextarea = (props = {}) => {
 describe('Textarea', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // `clearAllMocks` clears calls, not implementations, so a test that puts
+    // the hook into the recording state would leak it into every test after
+    // it. Reset the default here rather than relying on ordering.
+    mockUseVoiceInput.mockReturnValue({
+      startListening: vi.fn(),
+      stopListening: vi.fn(),
+      isRecording: false,
+      error: null,
+    });
+  });
+
+  describe('the action bar buttons have accessible names', () => {
+    // Each of the three icons is `aria-hidden` — correctly, they are
+    // decorative — and nothing else named the buttons, so a screen reader
+    // announced the product's primary action as "button". Asserted by role and
+    // name, which is what an assistive technology actually resolves.
+    it('names the send button', () => {
+      renderTextarea({ value: 'a question' });
+      expect(
+        screen.getByRole('button', { name: 'Send message' }),
+      ).toBeInTheDocument();
+    });
+
+    it('names the voice button', () => {
+      renderTextarea({ showVoiceInput: true });
+      expect(
+        screen.getByRole('button', { name: 'Voice input' }),
+      ).toBeInTheDocument();
+    });
+
+    it('names the attachment button', () => {
+      renderTextarea({ showFileAttachment: true });
+      expect(
+        screen.getByRole('button', { name: 'Add attachment' }),
+      ).toBeInTheDocument();
+    });
+
+    it('names the same button for what it does while recording', () => {
+      // One button, two actions. The stop icon is `aria-hidden` like the rest,
+      // so leaving the name at "voice input" would tell a screen reader user
+      // the opposite of what pressing it does.
+      mockUseVoiceInput.mockReturnValue({
+        startListening: vi.fn(),
+        stopListening: vi.fn(),
+        isRecording: true,
+        error: null,
+      });
+
+      renderTextarea({ showVoiceInput: true });
+
+      expect(
+        screen.getByRole('button', { name: 'Stop recording' }),
+      ).toBeInTheDocument();
+      expect(
+        screen.queryByRole('button', { name: 'Voice input' }),
+      ).not.toBeInTheDocument();
+    });
+
+    it('lets a caller override a name where its button means something else', () => {
+      renderTextarea({ value: 'a question', sendLabel: 'Ask the assistant' });
+      expect(
+        screen.getByRole('button', { name: 'Ask the assistant' }),
+      ).toBeInTheDocument();
+    });
   });
 
   describe('rendering', () => {

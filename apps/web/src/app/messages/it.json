@@ -307,6 +307,10 @@
     "conversation": "base di conoscenza e altre fonti"
   },
   "text-area": {
+    "stop-recording": "Interrompi la registrazione",
+    "send-message": "Invia messaggio",
+    "voice-input": "Input vocale",
+    "add-attachment": "Aggiungi allegato",
     "placeholder": "Scrivi la tua domanda..."
   },
   "success-toast": {
@@ -1068,6 +1072,8 @@
     "drop-to-project": "Rilascia i file qui per aggiungerli alla conoscenza del progetto"
   },
   "prompt-attachments": {
+    "send-message": "Invia messaggio",
+    "add-attachment": "Aggiungi allegato",
     "upload-file": "Carica file",
     "from-knowledge-base": "Dalla base di conoscenza",
     "from-google-drive": "Da Google Drive",

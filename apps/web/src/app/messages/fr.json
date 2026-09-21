@@ -307,6 +307,10 @@
     "conversation": "base de connaissances et autres sources"
   },
   "text-area": {
+    "stop-recording": "Arrêter l'enregistrement",
+    "send-message": "Envoyer le message",
+    "voice-input": "Saisie vocale",
+    "add-attachment": "Ajouter une pièce jointe",
     "placeholder": "Tape ta question..."
   },
   "success-toast": {
@@ -1068,6 +1072,8 @@
     "drop-to-project": "Dépose les fichiers ici pour les ajouter aux connaissances du projet"
   },
   "prompt-attachments": {
+    "send-message": "Envoyer le message",
+    "add-attachment": "Ajouter une pièce jointe",
     "upload-file": "Téléverser un fichier",
     "from-knowledge-base": "Depuis la base de connaissances",
     "from-google-drive": "Depuis Google Drive",

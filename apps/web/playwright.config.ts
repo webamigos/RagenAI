@@ -19,6 +19,44 @@ dotenv.config({
 // This must be set here (not in global.setup) so the webServer process inherits it.
 process.env.LITELLM_PROXY_URL = 'http://localhost:4100';
 
+/**
+ * The gateway's half of "point LLM calls at the mock", which used to be true of
+ * `LITELLM_PROXY_URL` above and has not been since the proxy went (ADR-49).
+ *
+ * `e2e.yml` sets all five of these; nothing set them locally, and both halves
+ * of that fail open. `routeTableFromEnv` falls back to
+ * `infra/llm-gateway/routes.yaml` — the production table, with whatever
+ * credentials `.env.local` holds — so a local run resolved `mock-model` to
+ * `UnknownModelError` *and* sent the turns it could resolve to a real provider.
+ * One run reached `mistral-small-3.2-24b-instruct-2506` and came back with
+ * `total_tokens: 249`; the mock reports 20. A test suite that bills the
+ * operator and ships them the question text is worse than one that fails.
+ *
+ * Assigned only when absent, so CI's explicit values win and an operator can
+ * still point a single run somewhere else from their shell. That works because
+ * this process does not load the root `.env.local` — only `.env.e2e.local`
+ * above — so "absent here" really does mean "nobody asked for one".
+ *
+ * **The path has to be absolute.** `routeTableFromEnv` joins a relative one
+ * onto `process.cwd()` and does not walk up, and the two processes that read it
+ * have different working directories.
+ */
+const E2E_LLM_ENV = {
+  LLM_ROUTES_PATH: path.join(__dirname, 'e2e', 'routes.e2e.yaml'),
+  LLM_MOCK_BASE_URL: 'http://localhost:4100/v1',
+  LLM_MOCK_API_KEY: 'sk-mock-e2e',
+  // Both, and for the reason `routes.e2e.yaml` documents: the answer model
+  // comes from the seeded organization and the rephraser from the environment,
+  // so pinning one leaves the other resolving against a table that does not
+  // describe it.
+  DEFAULT_MODEL: 'mock-model',
+  REPHRASE_MODEL: 'mock-model',
+} as const;
+
+for (const [name, value] of Object.entries(E2E_LLM_ENV)) {
+  process.env[name] ??= value;
+}
+
 // Mark runtime as e2e test environment so optional secrets skip validation.
 process.env.TARGET_ENV = 'test';
 // Provide a deterministic secret for public link HMAC signing in e2e tests.

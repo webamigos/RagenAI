@@ -1,6 +1,7 @@
 import { betterAuth } from 'better-auth';
 import { prismaAdapter } from 'better-auth/adapters/prisma';
 import { prisma } from './db';
+import { adminTrustedOrigins } from './auth-origins';
 import { getGoogleCredentials } from './social-providers';
 
 /**
@@ -23,6 +24,13 @@ export const auth = betterAuth({
   database: prismaAdapter(prisma, {
     provider: 'postgresql',
   }),
+  /**
+   * This app's own origin, in addition to whatever `BETTER_AUTH_URL` names.
+   * Without it a shared root `.env.local` — which AGENTS.md prescribes — points
+   * the check at apps/web on `:3000` and the panel refuses its own sign-in form
+   * with "Invalid origin". See `auth-origins.ts`.
+   */
+  trustedOrigins: adminTrustedOrigins(),
   /**
    * Password sign-in shares `users` and `accounts` with apps/web, so the
    * platform administrator created by the first-run screen there can sign in

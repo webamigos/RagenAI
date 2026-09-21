@@ -307,6 +307,10 @@
     "conversation": "knowledge base and other sources"
   },
   "text-area": {
+    "stop-recording": "Stop recording",
+    "send-message": "Send message",
+    "voice-input": "Voice input",
+    "add-attachment": "Add attachment",
     "placeholder": "Type your question..."
   },
   "success-toast": {
@@ -1068,6 +1072,8 @@
     "drop-to-project": "Drop files here to add to project knowledge"
   },
   "prompt-attachments": {
+    "send-message": "Send message",
+    "add-attachment": "Add attachment",
     "upload-file": "Upload file",
     "from-knowledge-base": "From Knowledge Base",
     "from-google-drive": "From Google Drive",

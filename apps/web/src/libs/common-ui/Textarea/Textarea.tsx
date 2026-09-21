@@ -56,6 +56,18 @@ type Props = {
   leftAddonPosition?: 'center' | 'bottom';
   onPasteIntercept?: (e: React.ClipboardEvent<HTMLTextAreaElement>) => void;
   charLimit?: number;
+  /**
+   * Accessible names for the three icon buttons in the action bar.
+   *
+   * Every one of those icons is `aria-hidden` — correctly, they are decorative
+   * — and nothing else named the buttons, so a screen reader announced the
+   * product's primary action as "button". Each falls back to the `text-area`
+   * namespace, which this component already reads, so a caller only passes one
+   * when its button means something more specific than "send".
+   */
+  sendLabel?: string;
+  voiceLabel?: string;
+  attachmentLabel?: string;
 } & ComponentPropsWithRef<'textarea'>;
 
 function CharCounter({ count, limit }: { count: number; limit: number }) {
@@ -122,6 +134,9 @@ export const Textarea = forwardRef(
       leftAddonPosition = 'center',
       onPasteIntercept,
       charLimit,
+      sendLabel,
+      voiceLabel,
+      attachmentLabel,
       ...rest
     }: Props,
     ref: ForwardedRef<HTMLTextAreaElement>,
@@ -139,6 +154,10 @@ export const Textarea = forwardRef(
     // Text that existed before recording started — preserved as prefix
     const prefixTextRef = useRef('');
     const t = useTranslations('text-area');
+    // Resolved here rather than as destructuring defaults, which cannot call a
+    // hook. A caller's own label still wins.
+    const resolvedSendLabel = sendLabel ?? t('send-message');
+    const resolvedAttachmentLabel = attachmentLabel ?? t('add-attachment');
     const [isDragOver, setIsDragOver] = useState(false);
 
     useEffect(() => {
@@ -176,6 +195,17 @@ export const Textarea = forwardRef(
         applyValue(newValue);
       },
     });
+
+    /**
+     * One button, two actions — so two names.
+     *
+     * While recording, this button stops the recording, and its icon is a stop
+     * square that is `aria-hidden` like the rest. Leaving the name at "voice
+     * input" tells a screen reader user the opposite of what pressing it does,
+     * which is worse than the nameless button this replaced.
+     */
+    const resolvedVoiceLabel =
+      voiceLabel ?? (isRecording ? t('stop-recording') : t('voice-input'));
 
     const handleStartListening = () => {
       startListening();
@@ -454,6 +484,7 @@ export const Textarea = forwardRef(
                   {attachmentIcon && (
                     <button
                       type="button"
+                      aria-label={resolvedAttachmentLabel}
                       onClick={onFileIconClick || handleFileIconClick}
                       className="relative flex items-center"
                     >
@@ -471,6 +502,7 @@ export const Textarea = forwardRef(
                   {voiceIcon && (
                     <button
                       type="button"
+                      aria-label={resolvedVoiceLabel}
                       onClick={voiceOnClick}
                       className="relative flex items-center"
                     >
@@ -480,6 +512,7 @@ export const Textarea = forwardRef(
                   {sendIcon && !isRecording && (
                     <button
                       type="button"
+                      aria-label={resolvedSendLabel}
                       onClick={sendOnClick}
                       disabled={disabled || !sendOnClick}
                       aria-busy={disabled}
