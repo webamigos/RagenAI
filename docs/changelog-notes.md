@@ -68,6 +68,34 @@ archive is the blog.
 
 ## Unreleased
 
+### Thread: connectors are added from the panel, not from a release
+
+- `[major]` **A platform administrator can add an MCP connector without a
+  deploy.** Which services Ragen could connect to used to be a Postgres enum
+  with eleven members, so adding a twelfth meant a migration, two manifests,
+  two icons, a handful of environment variables and a coordinated release of
+  three services. It is a row now, edited at **MCP Catalogue** in the admin
+  panel: paste the server URL, pick how it authenticates, press **Test
+  connection** to see the tools it exposes, and grant it to the organizations
+  that should have it. A self-hosted installation whose team lives in Notion no
+  longer waits for an upstream release, and a company's own internal MCP server
+  can be connected at all — which it previously could not, at any price,
+  without forking.
+
+- `[minor]` **An internal MCP server can be reached, and cloud metadata still
+  cannot.** A catalogue URL is checked against the same address policy that
+  protects the shop-URL connectors — at save time, at connect time and on every
+  tool call. An entry may tick *allow a private address* for a server on the
+  operator's own network; that admits 10.x, 172.16–31.x and 192.168.x and
+  nothing else, so `169.254.169.254` stays refused with the box ticked. The
+  check also reached `apps/web` for the first time: it had been opening
+  connector sessions with no address check at all.
+
+- `[minor]` **Disabling a connector for the whole installation is now a
+  switch.** A built-in can be switched off from the same page, which hides it
+  from every organization's gallery and stops new connections while the
+  connectors people already have keep working.
+
 ### Thread: guardrails, authored in the panel
 
 - `[major]` **A guardrail written in the admin panel now applies to the chat.**

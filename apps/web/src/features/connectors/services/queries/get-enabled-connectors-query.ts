@@ -1,5 +1,6 @@
 'use server';
 
+import { connectorSlug } from '@ragenai/platform-contracts';
 import db from '@ragenai/prisma-client';
 import { McpConnectorStatus } from '@/generated/prisma/client';
 import { logger } from '@/app/lib/utils/logger';
@@ -31,7 +32,7 @@ export const getEnabledConnectorsQuery = async (
   );
 
   try {
-    return await db.mcpConnector.findMany({
+    const rows = await db.mcpConnector.findMany({
       where: {
         organizationId: organizationId,
         userId: userId,
@@ -49,7 +50,7 @@ export const getEnabledConnectorsQuery = async (
       },
       select: {
         id: true,
-        provider: true,
+        providerSlug: true,
         mcpServerUrl: true,
         customerId: true,
         organizationId: true,
@@ -60,6 +61,12 @@ export const getEnabledConnectorsQuery = async (
         status: true,
       },
     });
+
+    // The seam where the column name stops being visible. Downstream — the
+    // allowlist filter, the project filter, the tool loader — sees one
+    // `provider`, and it is the catalogue slug off `provider_slug`. The enum
+    // column is not selected at all since B3.
+    return rows.map((row) => ({ ...row, provider: connectorSlug(row) }));
   } catch (error) {
     logger.error({ err: error }, 'Error fetching enabled connectors');
     throw error;

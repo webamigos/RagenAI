@@ -811,28 +811,32 @@ model DocumentPermission {
 }
 
 model McpConnector {
-  id             String               @id @default(uuid()) @db.Uuid
-  organizationId String               @map("organization_id")
-  userId         String               @map("user_id")
-  provider       McpConnectorProvider
-  mcpServerUrl   String               @map("mcp_server_url")
-  customerId     String               @map("customer_id")
-  enabled        Boolean              @default(true)
-  status         McpConnectorStatus   @default(PENDING)
-  connectedAt    DateTime?            @map("connected_at") @db.Timestamptz
+  id             String             @id @default(uuid()) @db.Uuid
+  organizationId String             @map("organization_id")
+  userId         String             @map("user_id")
+  /// The catalogue slug this connector resolves through — a row in
+  /// `McpCatalogEntry`. It replaced an `McpConnectorProvider` enum column in
+  /// docs/specs/2026-09-18-mcp-servers-added-without-a-deploy.md, and it
+  /// carries the composite uniqueness the enum used to.
+  providerSlug   String             @map("provider_slug")
+  mcpServerUrl   String             @map("mcp_server_url")
+  customerId     String             @map("customer_id")
+  enabled        Boolean            @default(true)
+  status         McpConnectorStatus @default(PENDING)
+  connectedAt    DateTime?          @map("connected_at") @db.Timestamptz
   /// Why this connector last failed, and when. Written by
   /// `recordConnectorFailureCommand` and cleared on the next success, so a
   /// stale reason cannot outlive the fault it describes. `status` alone said
   /// only that something broke; support needs the sentence.
-  lastError      String?              @map("last_error")
-  lastErrorAt    DateTime?            @map("last_error_at") @db.Timestamptz
-  createdAt      DateTime             @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt      DateTime             @updatedAt @map("updated_at") @db.Timestamptz
+  lastError      String?            @map("last_error")
+  lastErrorAt    DateTime?          @map("last_error_at") @db.Timestamptz
+  createdAt      DateTime           @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime           @updatedAt @map("updated_at") @db.Timestamptz
 
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([organizationId, userId, provider])
+  @@unique([organizationId, userId, providerSlug])
   @@index([organizationId])
   @@index([userId])
   @@index([status])
@@ -840,26 +844,102 @@ model McpConnector {
 }
 
 model McpOAuthToken {
-  id             String               @id @default(uuid()) @db.Uuid
-  organizationId String               @map("organization_id")
-  userId         String               @map("user_id")
-  provider       McpConnectorProvider
-  accessToken    String               @map("access_token")
-  refreshToken   String?              @map("refresh_token")
-  expiresAt      DateTime?            @map("expires_at") @db.Timestamptz
-  tokenType      String               @default("Bearer") @map("token_type")
-  clientId       String?              @map("client_id")
-  clientSecret   String?              @map("client_secret")
-  codeVerifier   String?              @map("code_verifier")
-  createdAt      DateTime             @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt      DateTime             @updatedAt @map("updated_at") @db.Timestamptz
+  id             String    @id @default(uuid()) @db.Uuid
+  organizationId String    @map("organization_id")
+  userId         String    @map("user_id")
+  /// The catalogue slug these tokens belong to. A token row is keyed by
+  /// connector too, so it moved in step with `McpConnector.providerSlug` —
+  /// otherwise a connector would resolve to a catalogue entry whose tokens it
+  /// cannot find.
+  providerSlug   String    @map("provider_slug")
+  accessToken    String    @map("access_token")
+  refreshToken   String?   @map("refresh_token")
+  expiresAt      DateTime? @map("expires_at") @db.Timestamptz
+  tokenType      String    @default("Bearer") @map("token_type")
+  clientId       String?   @map("client_id")
+  clientSecret   String?   @map("client_secret")
+  codeVerifier   String?   @map("code_verifier")
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime  @updatedAt @map("updated_at") @db.Timestamptz
 
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([organizationId, userId, provider])
+  @@unique([organizationId, userId, providerSlug])
   @@index([organizationId, userId])
   @@map("mcp_oauth_tokens")
+}
+
+/// The catalogue of connectable MCP services. Rows, not an enum: a platform
+/// administrator adds Notion by writing one of these, with no migration and no
+/// deploy. The eleven that predate this table are seeded with `isBuiltIn` and
+/// keep their old `McpConnectorProvider` names as slugs.
+model McpCatalogEntry {
+  id                     Int         @id @default(autoincrement())
+  publicId               String      @unique @default(uuid()) @map("public_id")
+  /// Stable identifier. For the eleven seeded entries this is the OLD
+  /// `McpConnectorProvider` value, verbatim — vault token paths, customerIds
+  /// and every `allowedConnectors` array already hold that string, and
+  /// renaming them in step would orphan live OAuth tokens. New entries use
+  /// lowercase-kebab. Immutable after creation, and unique case-INSENSITIVELY:
+  /// `customerId` is `{orgId}:{userId}:{slug.toLowerCase()}`, so a slug `slack`
+  /// beside the built-in `SLACK` would send both connectors the same
+  /// `x-customer-id`. Postgres `@unique` is case-sensitive, so the migration
+  /// adds `CREATE UNIQUE INDEX … ON mcp_catalog_entries (lower(slug))`.
+  slug                   String      @unique
+  label                  String
+  description            String?
+  /// Brand asset: a path under each app's `public/`, or an uploaded asset's
+  /// URL. Distinct from `lucideIcon` — the two `icon` fields in today's code
+  /// are different things and collapsing them loses one.
+  icon                   String?
+  /// A lucide icon name (`message-square`), which is what
+  /// `ProviderDefinition.icon` holds and what the connector gallery renders
+  /// when there is no brand asset.
+  lucideIcon             String?     @map("lucide_icon")
+  /// Null for `isBuiltIn` rows, whose URL is resolved from the environment by
+  /// their behaviour pack; required for every row an operator creates. Seeding
+  /// the environment's current value here would mean a database promoted
+  /// between environments silently points Google at the wrong host.
+  mcpServerUrl           String?     @map("mcp_server_url")
+  /// Required here, although `ProviderDefinition.authType` is optional and
+  /// several paths branch on it being undefined. A manifest with no authType
+  /// seeds to `OAUTH` — stated rather than inherited, because "unset" is not
+  /// an auth shape. Not `SERVER_SIDE`, which the spec first called for: unset
+  /// matches none of `ConnectorCard`'s branches and falls through to the popup
+  /// at `authBaseUrl + authPath`, which is what the five Google entries do,
+  /// while `server_side` skips authorization altogether. See
+  /// docs/lessons/an-unset-auth-type-is-oauth-not-server-side.md.
+  authType               McpAuthType @map("auth_type")
+  /// Null for `isBuiltIn` rows for the same reason as `mcpServerUrl`: the five
+  /// Google entries read it from `MCP_GOOGLE_AUTH_URL` at module load.
+  authBaseUrl            String?     @map("auth_base_url")
+  authPath               String?     @map("auth_path")
+  scopes                 String[]    @default([])
+  useUserScope           Boolean     @default(false) @map("use_user_scope")
+  /// Set once the admin has stored client id + secret in ragen-token-vault.
+  /// The credentials themselves are never columns (ADR-32).
+  oauthCredentialsStored Boolean     @default(false) @map("oauth_credentials_stored")
+  /// Appended to the system prompt when this connector is enabled in a chat.
+  /// Text only — a fragment that must compute (Google Calendar's timezone one)
+  /// stays a behaviour pack in code, and seeds null here.
+  systemPrompt           String?     @map("system_prompt")
+  /// Off by default. On, this entry's URL may resolve to a private address —
+  /// for an operator's own MCP server on an internal network. Platform admin
+  /// only, audited, and stated on the form. It never admits link-local,
+  /// loopback or the cloud metadata addresses.
+  allowsPrivateAddress   Boolean     @default(false) @map("allows_private_address")
+  /// Seeded by the migration rather than created by an operator. Drives
+  /// whether the row may be deleted and whether env-held OAuth secrets and
+  /// server URLs are still consulted.
+  isBuiltIn              Boolean     @default(false) @map("is_built_in")
+  enabled                Boolean     @default(true)
+  createdBy              String?     @map("created_by")
+  createdAt              DateTime    @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt              DateTime    @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@index([enabled])
+  @@map("mcp_catalog_entries")
 }
 
 model AiUsage {
@@ -996,18 +1076,19 @@ enum McpConnectorStatus {
   ERROR
 }
 
-enum McpConnectorProvider {
-  GOOGLE_CALENDAR
-  GOOGLE_ANALYTICS
-  GOOGLE_ADS
-  GOOGLE_DRIVE
-  GMAIL
-  CLICKUP
-  HUBSPOT
-  FIREFLIES
-  SLACK
-  WOOCOMMERCE
-  OPEN_MERCATO
+/// The *shapes* of authentication a catalogue entry can use. This stays a
+/// Postgres enum while the catalogue of services becomes rows, and the
+/// distinction is the one the whole catalogue turns on: the set of auth shapes
+/// changes when code changes, the set of services does not.
+enum McpAuthType {
+  SERVER_SIDE
+  API_KEY_BEARER
+  EXTERNAL_MCP
+  /// Seeded only; not offered when creating an entry — the WooCommerce /
+  /// Open Mercato shape, where the user supplies a shop URL at connect time.
+  API_KEY_CUSTOM_HEADER
+  OAUTH
+  API_KEY
 }
 
 enum PiiPolicy {

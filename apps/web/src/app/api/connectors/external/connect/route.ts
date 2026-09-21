@@ -1,11 +1,13 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { auth as mcpAuth } from '@ai-sdk/mcp';
-import { type McpConnectorProvider } from '@/generated/prisma/client';
 import {
   getOrgIdFromAuthOrThrow,
   getCurrentUserId,
 } from '@/app/lib/utils/auth-helpers';
-import { getProviderDefinition } from '@/features/connectors/constants/providers';
+import { resolveConnectorDefinitionQuery } from '@/features/connectors/services/queries/get-connector-definitions-query';
+import { getConnectorOAuthCredentialsQuery } from '@/features/connectors/services/queries/get-connector-credentials-query';
+import { blockedAddressReason } from '@/features/connectors/utils/refuse-blocked-address';
+import { guardedAuthFetch } from '@/features/connectors/utils/guarded-auth-fetch';
 import { RagenAuthOAuthClientProvider } from '@/libs/ragen-vault';
 import { logger } from '@/app/lib/utils/logger';
 import { readPublicRuntimeConfig } from '@/config/public-runtime-config';
@@ -13,9 +15,9 @@ import { readPublicRuntimeConfig } from '@/config/public-runtime-config';
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
-  const provider = request.nextUrl.searchParams.get(
-    'provider',
-  ) as McpConnectorProvider | null;
+  // A catalogue slug. Validated by `getProviderDefinition` below — an unknown
+  // one gets a 400, as an unknown enum value did.
+  const provider = request.nextUrl.searchParams.get('provider');
   const callbackUrl = request.nextUrl.searchParams.get('callback_url');
 
   if (!provider || !callbackUrl) {
@@ -44,25 +46,44 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const providerDef = getProviderDefinition(provider);
-  if (!providerDef || providerDef.authType !== 'external_mcp') {
-    return NextResponse.json({ error: 'Invalid provider' }, { status: 400 });
-  }
-
   try {
+    // Inside the boundary: resolving a slug is a database read since B4, and
+    // a read can fail. Outside it, that failure left the route with no log and
+    // an uncontrolled 500.
+    const providerDef = await resolveConnectorDefinitionQuery(provider);
+    if (!providerDef || providerDef.authType !== 'external_mcp') {
+      return NextResponse.json({ error: 'Invalid provider' }, { status: 400 });
+    }
+
+    // The first outbound request a catalogue entry causes is `mcpAuth`'s
+    // discovery, before any MCP session exists and so before the guarded
+    // transport is in the path.
+    const blocked = blockedAddressReason(providerDef, providerDef.mcpServerUrl);
+    if (blocked) {
+      logger.warn(
+        { provider, reason: blocked },
+        'Refusing to start OAuth against a blocked connector address',
+      );
+      return NextResponse.json({ error: blocked }, { status: 400 });
+    }
+
     const orgId = await getOrgIdFromAuthOrThrow();
     const userId = await getCurrentUserId();
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    // Environment for a built-in, ragen-token-vault for an entry an operator
+    // created. One `if`, in one place — see the query.
+    const credentials = await getConnectorOAuthCredentialsQuery(providerDef);
+
     const oauthProvider = new RagenAuthOAuthClientProvider({
       orgId,
       userId,
       provider,
       callbackUrl,
-      fixedClientId: providerDef.oauthClientId,
-      fixedClientSecret: providerDef.oauthClientSecret,
+      fixedClientId: credentials.clientId,
+      fixedClientSecret: credentials.clientSecret,
       useUserScope: providerDef.useUserScope,
     });
     const scope = providerDef.scopes?.length
@@ -79,10 +100,19 @@ export async function GET(request: NextRequest) {
       'External MCP OAuth connect: starting auth',
     );
 
-    const result = await mcpAuth(oauthProvider, {
-      serverUrl: providerDef.mcpServerUrl,
-      ...(scope && { scope }),
-    });
+    // Discovery and the token request are the two hops no transport covers,
+    // so the policy is handed to `mcpAuth` itself.
+    const guarded = guardedAuthFetch(providerDef);
+    let result;
+    try {
+      result = await mcpAuth(oauthProvider, {
+        serverUrl: providerDef.mcpServerUrl,
+        ...(scope && { scope }),
+        ...(guarded.fetchFn && { fetchFn: guarded.fetchFn }),
+      });
+    } finally {
+      await guarded.close();
+    }
 
     if (result === 'AUTHORIZED') {
       return NextResponse.json({ status: 'already_authorized' });

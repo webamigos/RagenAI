@@ -1,8 +1,10 @@
 import { Logger } from '@nestjs/common';
 import { createMCPClient, type MCPClient } from '@ai-sdk/mcp';
-import type { McpConnectorProvider } from '../generated/prisma/client.js';
-import { getProviderDefinition } from '../connectors/provider-definition.js';
-import { createGuardedMcpTransport } from '../connectors/guarded-mcp-transport.js';
+import { getConnectorOAuthCredentials } from '../connectors/connector-credentials.js';
+import {
+  createGuardedMcpTransport,
+  isBlockedAddress,
+} from '@ragenai/connector-guard';
 import type { ProviderDefinition } from '../connectors/types.js';
 import {
   RagenAuthOAuthClientProvider,
@@ -355,7 +357,8 @@ export function wrapToolsForConnector(
  */
 export async function createMcpToolsFromConnectors(
   connectors: McpConnectorInfo[],
-  recordSecurityEvent?: RecordSecurityEvent,
+  recordSecurityEvent: RecordSecurityEvent | undefined,
+  definitions: Record<string, ProviderDefinition>,
 ) {
   const clients: MCPClient[] = [];
   // Dispatchers owned by the guarded transports below; closed alongside the
@@ -365,11 +368,46 @@ export async function createMcpToolsFromConnectors(
   const mergedTools: Record<string, any> = {};
   const loadedProviders: string[] = [];
 
+  /**
+   * Open a session, through the SSRF-guarded transport when the address is one
+   * somebody typed — a catalogue row an operator created, or the shop URL a
+   * user supplies at connect time. A built-in resolved from
+   * `MCP_*_SERVER_URL` keeps the documented exemption: apps/api legitimately
+   * talks to services on loopback.
+   *
+   * Sibling of apps/web's helper of the same name.
+   */
+  const connect = async (
+    url: string,
+    definition: ProviderDefinition | undefined,
+    headers: Record<string, string>,
+    authProvider?: RagenAuthOAuthClientProvider,
+  ): Promise<MCPClient> => {
+    const guard = definition?.addressGuard;
+    if (!guard) {
+      return createMCPClient({
+        transport: { type: 'http', url, headers, authProvider },
+      });
+    }
+
+    const guarded = createGuardedMcpTransport(url, headers, {
+      isBlockedAddress: (address) =>
+        isBlockedAddress(address, { allowPrivate: guard.allowPrivate }),
+      authProvider,
+    });
+    guards.push(guarded.close);
+    return createMCPClient({ transport: guarded.transport });
+  };
+
   for (const connector of connectors) {
     try {
-      const providerDef = getProviderDefinition(
-        connector.provider as McpConnectorProvider,
-      );
+      // The catalogue, and only the catalogue. A manifest fallback used to
+      // stand behind this, which read as belt and braces and was the opposite:
+      // a manifest carries no `addressGuard`, so falling back turned the
+      // address policy off for exactly the connectors that need it — the ones
+      // whose URL somebody typed. `definitions` is required for the same
+      // reason, in apps/web's shape.
+      const providerDef = definitions[connector.provider];
 
       // Resolve the MCP server URL at tool-load time rather than trusting
       // the value snapshotted on the connector row at connect time.
@@ -399,14 +437,8 @@ export async function createMcpToolsFromConnectors(
           throw new Error(`No API key found for ${connector.provider}`);
         }
 
-        client = await createMCPClient({
-          transport: {
-            type: 'http',
-            url: resolvedUrl,
-            headers: {
-              Authorization: `Bearer ${tokenData.accessToken}`,
-            },
-          },
+        client = await connect(resolvedUrl, providerDef, {
+          Authorization: `Bearer ${tokenData.accessToken}`,
         });
       } else if (providerDef?.authType === 'api_key_custom_header') {
         // Read combined `${consumerKey}:${consumerSecret}` from the vault
@@ -423,42 +455,30 @@ export async function createMcpToolsFromConnectors(
           throw new Error(`No API key found for ${connector.provider}`);
         }
 
-        // `resolveMcpServerUrl` returns the stored, user-supplied URL for
-        // this auth type (a customer's own shop address), so this request
-        // goes through the SSRF-guarded dispatcher: the resolved address is
-        // re-checked at connect time and pinned for the request. The other
-        // branches use deployer-controlled `MCP_*_SERVER_URL` endpoints,
-        // which may legitimately be loopback.
-        const guarded = createGuardedMcpTransport(resolvedUrl, {
+        client = await connect(resolvedUrl, providerDef, {
           [providerDef.headerName]: tokenData.accessToken,
         });
-        guards.push(guarded.close);
-        client = await createMCPClient({ transport: guarded.transport });
       } else if (providerDef?.authType === 'external_mcp') {
+        // Environment for a built-in, ragen-token-vault for an entry an
+        // operator created. A refresh needs the client credentials, so this
+        // runs per connector rather than at authorization time only.
+        const credentials = await getConnectorOAuthCredentials(providerDef);
+
         const authProvider = new RagenAuthOAuthClientProvider({
           orgId: connector.organizationId,
           userId: connector.userId,
-          provider: connector.provider as McpConnectorProvider,
+          provider: connector.provider,
           callbackUrl: '', // No redirect needed for runtime token injection
-          fixedClientId: providerDef.oauthClientId,
-          fixedClientSecret: providerDef.oauthClientSecret,
+          fixedClientId: credentials.clientId,
+          fixedClientSecret: credentials.clientSecret,
         });
-        client = await createMCPClient({
-          transport: {
-            type: 'http',
-            url: resolvedUrl,
-            authProvider,
-          },
-        });
+        // Through `connect`, not a bare client: an operator's URL is one
+        // somebody typed, so it goes past the address policy like every
+        // other branch here. Going direct was the one hole left in it.
+        client = await connect(resolvedUrl, providerDef, {}, authProvider);
       } else {
-        client = await createMCPClient({
-          transport: {
-            type: 'http',
-            url: resolvedUrl,
-            headers: {
-              'x-customer-id': connector.customerId,
-            },
-          },
+        client = await connect(resolvedUrl, providerDef, {
+          'x-customer-id': connector.customerId,
         });
       }
 
@@ -497,7 +517,7 @@ export async function createMcpToolsFromConnectors(
           mcpServerUrlStored: connector.mcpServerUrl,
           mcpServerUrlTried: resolveMcpServerUrl(
             connector,
-            getProviderDefinition(connector.provider as McpConnectorProvider),
+            definitions[connector.provider],
           ),
         },
         error,

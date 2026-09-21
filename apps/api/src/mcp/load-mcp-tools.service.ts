@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { CatalogueService } from '../connectors/catalogue.service.js';
 import { GetEnabledConnectorsService } from '../connectors/get-enabled-connectors.service.js';
 import { GetAvailableConnectorsService } from '../connectors/get-available-connectors.service.js';
 import { GetProjectMcpProvidersService } from '../projects/get-project-mcp-providers.service.js';
@@ -40,6 +41,7 @@ export class LoadMcpToolsService {
     private readonly getAvailableConnectors: GetAvailableConnectorsService,
     private readonly getProjectMcpProviders: GetProjectMcpProvidersService,
     private readonly securityEvents: SecurityEventService,
+    private readonly catalogue: CatalogueService,
   ) {}
 
   async loadMcpToolsForApiRequest({
@@ -79,10 +81,15 @@ export class LoadMcpToolsService {
         };
       }
 
+      // One resolution of the catalogue for the whole turn: the tool loader
+      // and the prompt builder both need it, and it reads the database.
+      const definitions = await this.catalogue.getDefinitionsBySlug();
+
       const { tools, loadedProviders, closeAll } =
         await createMcpToolsFromConnectors(
           connectors,
           this.securityEvents.record.bind(this.securityEvents),
+          definitions,
         );
 
       const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -95,6 +102,7 @@ export class LoadMcpToolsService {
         loadedProviders,
         timeZone,
         currentDateTime,
+        definitions,
       );
 
       this.logger.log('MCP tools loaded for API request', {

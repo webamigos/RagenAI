@@ -1,9 +1,8 @@
-import { McpConnectorProvider } from '../../generated/prisma/client.js';
 import type { ProviderDefinition } from '../types.js';
 import { MCP_GOOGLE_AUTH_URL, MCP_GOOGLE_SERVER_URL } from './shared-config.js';
 
 export const GOOGLE_CALENDAR_PROVIDER: ProviderDefinition = {
-  provider: McpConnectorProvider.GOOGLE_CALENDAR,
+  provider: 'GOOGLE_CALENDAR',
   name: 'Google Calendar',
   description: 'View calendar events and check availability.',
   icon: 'calendar',

@@ -1,9 +1,8 @@
-import { McpConnectorProvider } from '@/generated/prisma/client';
 import type { ProviderDefinition } from '../contracts/connector.types';
 import { MCP_SLACK_SERVER_URL } from './shared-config';
 
 export const SLACK_PROVIDER: ProviderDefinition = {
-  provider: McpConnectorProvider.SLACK,
+  provider: 'SLACK',
   name: 'Slack',
   description: 'Search messages, channels, and send messages.',
   icon: 'message-square',

@@ -1,12 +1,9 @@
 'use server';
 
 import db from '@ragenai/prisma-client';
-import {
-  type McpConnectorProvider,
-  McpConnectorStatus,
-} from '@/generated/prisma/client';
+import { McpConnectorStatus } from '@/generated/prisma/client';
 import { logger } from '@/app/lib/utils/logger';
-import { getProviderDefinition } from '../../constants/providers';
+import { resolveConnectorDefinitionQuery } from '../queries/get-connector-definitions-query';
 import { ragenAuthClient } from '@/libs/ragen-vault';
 
 /**
@@ -17,10 +14,10 @@ import { ragenAuthClient } from '@/libs/ragen-vault';
 export const registerApiKeyBearerCommand = async (
   organizationId: string,
   userId: string,
-  provider: McpConnectorProvider,
+  provider: string,
   apiKey: string,
 ) => {
-  const providerDef = getProviderDefinition(provider);
+  const providerDef = await resolveConnectorDefinitionQuery(provider);
   if (!providerDef || providerDef.authType !== 'api_key_bearer') {
     throw new Error(`Invalid provider for API key bearer auth: ${provider}`);
   }
@@ -37,10 +34,10 @@ export const registerApiKeyBearerCommand = async (
     // Create/update the connector and mark as connected
     return await db.mcpConnector.upsert({
       where: {
-        organizationId_userId_provider: {
+        organizationId_userId_providerSlug: {
           organizationId: organizationId,
           userId: userId,
-          provider,
+          providerSlug: provider,
         },
       },
       update: {
@@ -52,7 +49,7 @@ export const registerApiKeyBearerCommand = async (
       create: {
         organizationId: organizationId,
         userId: userId,
-        provider,
+        providerSlug: provider,
         mcpServerUrl: providerDef.mcpServerUrl,
         customerId: customerId,
         status: McpConnectorStatus.CONNECTED,

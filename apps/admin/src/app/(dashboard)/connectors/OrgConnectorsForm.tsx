@@ -2,18 +2,56 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { saveOrgAllowedConnectorsAction } from './actions';
-import { allConnectors } from './connectors-config';
+import { grantable, type GrantableConnector } from './DefaultConnectorsForm';
+
+/**
+ * The bulk checkbox does what ticking every visible box by hand does — and
+ * nothing more.
+ *
+ * `availableConnectors` is the catalogue narrowed to the app-level defaults,
+ * so an organization can hold a grant that is in the catalogue but not in
+ * those defaults: valid, saveable, and rendered by no checkbox here. Replacing
+ * the whole set on a bulk toggle dropped it silently. It has no effect while
+ * it sits outside the app defaults — availability is the intersection of the
+ * two lists — but it takes effect again the moment a platform administrator
+ * puts the connector back, so rewriting it away is a loss.
+ */
+export function withVisibleToggled(
+  selected: Set<string>,
+  visible: string[],
+  select: boolean,
+): Set<string> {
+  const next = new Set(selected);
+
+  for (const value of visible) {
+    if (select) {
+      next.add(value);
+    } else {
+      next.delete(value);
+    }
+  }
+
+  return next;
+}
 
 export function OrgConnectorsForm({
   orgId,
   current,
   appDefaults,
+  allConnectors,
 }: {
   orgId: string;
   current: string[];
   appDefaults: string[];
+  /** The catalogue, so an entry added from /mcp-catalogue can be granted. */
+  allConnectors: GrantableConnector[];
 }) {
-  const [selected, setSelected] = useState<Set<string>>(new Set(current));
+  // Same narrowing as DefaultConnectorsForm, for the same reason: a stored
+  // slug the catalogue no longer carries renders no control here either, so
+  // it could not be cleared and every save was rejected because of it.
+  const [selected, setSelected] = useState<Set<string>>(
+    () => new Set(current.filter((value) => grantable(allConnectors, value))),
+  );
   const [loading, setLoading] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState('');
@@ -52,11 +90,13 @@ export function OrgConnectorsForm({
   };
 
   const toggleAll = () => {
-    if (allSelected) {
-      setSelected(new Set());
-    } else {
-      setSelected(new Set(availableConnectors.map((c) => c.value)));
-    }
+    setSelected((prev) =>
+      withVisibleToggled(
+        prev,
+        availableConnectors.map((c) => c.value),
+        !allSelected,
+      ),
+    );
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -104,8 +144,21 @@ export function OrgConnectorsForm({
               onChange={() => toggleConnector(connector.value)}
               className="h-4 w-4 rounded border-input"
             />
-            <img src={connector.icon} alt="" className="size-5 shrink-0" />
-            <span className="text-sm">{connector.label}</span>
+            {connector.icon ? (
+              <img src={connector.icon} alt="" className="size-5 shrink-0" />
+            ) : (
+              // An entry an operator added may have no brand asset; an
+              // `<img>` with no `src` renders as a broken image.
+              <span className="size-5 shrink-0 rounded bg-muted" aria-hidden />
+            )}
+            <span className="text-sm">
+              {connector.label}
+              {connector.enabled ? null : (
+                <span className="ml-2 text-xs text-muted-foreground">
+                  disabled in the catalogue
+                </span>
+              )}
+            </span>
           </label>
         ))}
       </div>

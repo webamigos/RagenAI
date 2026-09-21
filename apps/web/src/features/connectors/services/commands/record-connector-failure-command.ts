@@ -1,5 +1,4 @@
 import { McpConnectorStatus } from '@/generated/prisma/client';
-import type { McpConnectorProvider } from '@/generated/prisma/client';
 import { logger } from '@/app/lib/utils/logger';
 import { recordSecurityEvent } from '@/features/security/services/commands/record-security-event-command';
 import db from '@ragenai/prisma-client';
@@ -55,7 +54,8 @@ export type ConnectorFailureSource = 'oauth_callback' | 'runtime_init';
 type RecordConnectorFailureInput = {
   organizationId: string;
   userId: string;
-  provider: McpConnectorProvider;
+  /** A catalogue slug. */
+  provider: string;
   /** Used only when the row does not exist yet — a first connect that failed. */
   mcpServerUrl?: string;
   /** The error as thrown. Normalised and truncated here, not by callers. */
@@ -105,7 +105,7 @@ export async function recordConnectorFailureCommand({
       where: {
         organizationId,
         userId,
-        provider,
+        providerSlug: provider,
         OR: [
           { status: { not: McpConnectorStatus.ERROR } },
           { lastError: { not: reason } },
@@ -125,7 +125,11 @@ export async function recordConnectorFailureCommand({
       // URL, since `mcpServerUrl` and `customerId` are required columns.
       const existing = await db.mcpConnector.findUnique({
         where: {
-          organizationId_userId_provider: { organizationId, userId, provider },
+          organizationId_userId_providerSlug: {
+            organizationId,
+            userId,
+            providerSlug: provider,
+          },
         },
         select: { id: true },
       });
@@ -135,7 +139,7 @@ export async function recordConnectorFailureCommand({
           data: {
             organizationId,
             userId,
-            provider,
+            providerSlug: provider,
             mcpServerUrl,
             customerId: `${organizationId}:${userId}:${provider.toLowerCase()}`,
             status: McpConnectorStatus.ERROR,
@@ -195,14 +199,15 @@ export async function clearConnectorFailureCommand({
 }: {
   organizationId: string;
   userId: string;
-  provider: McpConnectorProvider;
+  /** A catalogue slug. */
+  provider: string;
 }): Promise<void> {
   try {
     await db.mcpConnector.updateMany({
       where: {
         organizationId,
         userId,
-        provider,
+        providerSlug: provider,
         OR: [
           { status: McpConnectorStatus.ERROR },
           { lastError: { not: null } },

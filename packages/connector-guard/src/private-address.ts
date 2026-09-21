@@ -1,7 +1,7 @@
 import { isIP, isIPv4, isIPv6 } from 'node:net';
 
 /**
- * The SSRF address policy for user-supplied connector URLs.
+ * The SSRF address policy for connector URLs.
  *
  * It runs at two points, and both are needed:
  *
@@ -18,10 +18,24 @@ import { isIP, isIPv4, isIPv6 } from 'node:net';
  * Deliberately *not* applied to the fixed, deployer-controlled MCP URLs read
  * from `MCP_*_SERVER_URL`: apps/api legitimately talks to LiteLLM on 4000,
  * ragen-token-vault on 3100 and apps/web's internal API over loopback.
+ *
+ * A catalogue entry is the case that exemption was not written for: a
+ * platform administrator types the URL into a web form, and it is
+ * deployer-controlled *and* user-supplied. The policy applies to it, and an
+ * entry may opt out with `allowPrivate` — see `AddressPolicy` below, and
+ * docs/specs/2026-09-18-mcp-servers-added-without-a-deploy.md for why that
+ * opt-out stops well short of "off".
  */
 
 /** Hostnames that never name a host outside the local network. */
 const PRIVATE_HOST_NAMES = new Set(['localhost', 'local']);
+
+/**
+ * The subset that stays refused even with `allowPrivate` on: these name this
+ * machine or its link, never an operator's server elsewhere on their network.
+ */
+const LOOPBACK_HOST_NAMES = new Set(['localhost', 'local']);
+const LOOPBACK_HOST_SUFFIXES = ['.localhost', '.local'];
 
 /** Suffixes reserved for local/private naming (RFC 6761/8375, cloud internal DNS). */
 const PRIVATE_HOST_SUFFIXES = [
@@ -227,6 +241,159 @@ function isPrivateIpv6(groups: number[]): boolean {
 }
 
 /**
+ * What kind of address this is, at the granularity the opt-out needs.
+ *
+ * `private` is RFC 1918 space and nothing else: it is where an operator's own
+ * MCP server lives, and it is the only category `allowPrivate` admits.
+ * Everything else stays refused with the flag on, and the reason is the
+ * address this feature would otherwise reach — cloud metadata lives on
+ * link-local `169.254.169.254` (and `fd00:ec2::254`, which is unique-local),
+ * and nothing an operator legitimately self-hosts is there. A flag that
+ * permitted every range the guard was written for would be a rename of "off".
+ */
+export type AddressKind =
+  | 'public'
+  | 'private'
+  | 'loopback'
+  | 'link-local'
+  | 'unique-local'
+  | 'reserved';
+
+/** What an entry is allowed to reach. */
+export type AddressPolicy = {
+  /**
+   * Admit RFC 1918 addresses — for an operator's own MCP server on an
+   * internal network. Off by default, platform-admin only, and audited where
+   * it is set. It never admits loopback, link-local, unique-local or any
+   * other reserved range.
+   */
+  allowPrivate?: boolean;
+};
+
+function classifyIpv4(octets: number[]): AddressKind {
+  const [a, b] = octets;
+  if (a === 127) {
+    return 'loopback';
+  }
+  if (a === 169 && b === 254) {
+    return 'link-local';
+  }
+  if (
+    a === 10 ||
+    (a === 172 && b >= 16 && b <= 31) ||
+    (a === 192 && b === 168)
+  ) {
+    return 'private';
+  }
+  return isPrivateIpv4(octets) ? 'reserved' : 'public';
+}
+
+function classifyIpv6(groups: number[]): AddressKind {
+  const [g0, g1, g2, g3, g4, g5, g6, g7] = groups;
+
+  // ::1 and the unspecified address.
+  if (
+    g0 === 0 &&
+    g1 === 0 &&
+    g2 === 0 &&
+    g3 === 0 &&
+    g4 === 0 &&
+    g5 === 0 &&
+    g6 === 0
+  ) {
+    return g7 === 1 || g7 === 0 ? 'loopback' : 'reserved';
+  }
+  // IPv4-mapped and NAT64 carry an IPv4 address: judge it as that address.
+  if (g0 === 0 && g1 === 0 && g2 === 0 && g3 === 0 && g4 === 0) {
+    if (g5 === 0xffff) {
+      return classifyIpv4(embeddedIpv4(g6, g7));
+    }
+    if (g5 === 0) {
+      return 'reserved';
+    }
+  }
+  if (
+    g0 === 0x64 &&
+    g1 === 0xff9b &&
+    g2 === 0 &&
+    g3 === 0 &&
+    g4 === 0 &&
+    g5 === 0
+  ) {
+    return classifyIpv4(embeddedIpv4(g6, g7));
+  }
+  if (g0 === 0x2002) {
+    return classifyIpv4(embeddedIpv4(g1, g2));
+  }
+  if ((g0 & 0xffc0) === 0xfe80) {
+    return 'link-local';
+  }
+  // fc00::/7. Refused even with the flag on: `fd00:ec2::254` is EC2's IMDS.
+  if ((g0 & 0xfe00) === 0xfc00) {
+    return 'unique-local';
+  }
+  return isPrivateIpv6(groups) ? 'reserved' : 'public';
+}
+
+/**
+ * Which category an IP literal falls into. A string that is not an IP is
+ * `public` here — a hostname says nothing about the address it resolves to,
+ * and that is what the connect-time check is for.
+ */
+export function classifyAddress(address: string): AddressKind {
+  const bare = stripZoneId(address.trim());
+  if (isIPv4(bare)) {
+    const octets = parseIpv4(bare);
+    return octets ? classifyIpv4(octets) : 'reserved';
+  }
+  const groups = expandIpv6(bare);
+  return groups ? classifyIpv6(groups) : 'public';
+}
+
+/**
+ * The policy decision for one address: may this connector dial it?
+ */
+export function isBlockedAddress(
+  address: string,
+  policy: AddressPolicy = {},
+): boolean {
+  const kind = classifyAddress(address);
+  if (kind === 'public') {
+    return false;
+  }
+  return !(policy.allowPrivate === true && kind === 'private');
+}
+
+/**
+ * The same decision for a `URL.hostname`, which may be a name. A name that
+ * resolves to a refused address is caught later, by the guarded fetch.
+ */
+export function isBlockedHost(
+  host: string,
+  policy: AddressPolicy = {},
+): boolean {
+  if (!policy.allowPrivate) {
+    return isPrivateOrLoopbackHost(host);
+  }
+
+  const normalized = normalizeHost(host);
+  if (!normalized) {
+    return true;
+  }
+  if (isIP(stripZoneId(normalized))) {
+    return isBlockedAddress(normalized, policy);
+  }
+  // With the flag on, an internal *name* is admitted here and judged by what
+  // it resolves to — `.internal` and `.home.arpa` are how an operator's own
+  // server is usually named. The loopback names are not: `localhost` and
+  // `.local` (mDNS) never name a host on another machine.
+  return (
+    LOOPBACK_HOST_NAMES.has(normalized) ||
+    LOOPBACK_HOST_SUFFIXES.some((suffix) => normalized.endsWith(suffix))
+  );
+}
+
+/**
  * True when `address` is an IP literal that points somewhere inside the
  * local host or a private network. A non-IP string is never "private" here —
  * use `isPrivateOrLoopbackHost` for hostnames.
@@ -249,18 +416,7 @@ export function isPrivateOrLoopbackAddress(address: string): boolean {
  * to a private address gets caught later, by the guarded fetch.
  */
 export function isPrivateOrLoopbackHost(host: string): boolean {
-  // `URL.hostname` keeps the brackets on an IPv6 literal (`[::1]`), which
-  // `net.isIP()` does not recognise. A trailing dot is the DNS root and
-  // resolves the same as without it, so `localhost.` reaches the loopback
-  // while comparing unequal to `localhost` — `URL` keeps it on a name (it
-  // drops it from an IPv4 literal itself) and accepts more than one, so the
-  // whole run has to go before classifying.
-  const normalized = host
-    .trim()
-    .toLowerCase()
-    .replace(/^\[/, '')
-    .replace(/\]$/, '')
-    .replace(/\.+$/, '');
+  const normalized = normalizeHost(host);
 
   if (!normalized) {
     return true;
@@ -272,4 +428,19 @@ export function isPrivateOrLoopbackHost(host: string): boolean {
     return true;
   }
   return PRIVATE_HOST_SUFFIXES.some((suffix) => normalized.endsWith(suffix));
+}
+
+function normalizeHost(host: string): string {
+  // `URL.hostname` keeps the brackets on an IPv6 literal (`[::1]`), which
+  // `net.isIP()` does not recognise. A trailing dot is the DNS root and
+  // resolves the same as without it, so `localhost.` reaches the loopback
+  // while comparing unequal to `localhost` — `URL` keeps it on a name (it
+  // drops it from an IPv4 literal itself) and accepts more than one, so the
+  // whole run has to go before classifying.
+  return host
+    .trim()
+    .toLowerCase()
+    .replace(/^\[/, '')
+    .replace(/\]$/, '')
+    .replace(/\.+$/, '');
 }

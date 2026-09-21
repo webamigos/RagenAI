@@ -2,8 +2,11 @@ import { prisma } from '@/lib/db';
 import { SearchableSelect } from '@/app/components/SearchableSelect';
 import { DefaultConnectorsForm } from './DefaultConnectorsForm';
 import { OrgConnectorsForm } from './OrgConnectorsForm';
-import { getDefaultAllowedConnectorsAction } from './actions';
-import { allConnectors } from './connectors-config';
+import {
+  getDefaultAllowedConnectorsAction,
+  listGrantableConnectorsAction,
+} from './actions';
+import type { GrantableConnector } from './DefaultConnectorsForm';
 
 export const dynamic = 'force-dynamic';
 
@@ -27,13 +30,18 @@ async function getOrgsWithConnectors() {
   });
 }
 
-function formatAllowedConnectors(allowed: string[] | undefined): string {
+function formatAllowedConnectors(
+  allowed: string[] | undefined,
+  catalogue: GrantableConnector[],
+): string {
   if (!allowed || allowed.length === 0) {
     return 'All (inherited)';
   }
   const labels = allowed.map((value) => {
-    const conn = allConnectors.find((c) => c.value === value);
-    return conn?.label ?? value;
+    const conn = catalogue.find((c) => c.value === value);
+    // A slug the catalogue no longer carries is shown as itself rather than
+    // dropped: silently hiding it would make a stale allowlist look correct.
+    return conn ? conn.label : `${value} (no longer in the catalogue)`;
   });
   if (labels.length <= 3) {
     return labels.join(', ');
@@ -47,9 +55,10 @@ export default async function ConnectorsPage({
   searchParams: Promise<SearchParams>;
 }) {
   const params = await searchParams;
-  const [orgs, defaults] = await Promise.all([
+  const [orgs, defaults, catalogue] = await Promise.all([
     getOrgsWithConnectors(),
     getDefaultAllowedConnectorsAction(),
+    listGrantableConnectorsAction(),
   ]);
 
   const selectedOrg = params.orgId
@@ -65,7 +74,7 @@ export default async function ConnectorsPage({
         <h2 className="mb-4 text-xl font-semibold">
           Default Allowed Connectors (for new organizations)
         </h2>
-        <DefaultConnectorsForm defaults={defaults} />
+        <DefaultConnectorsForm defaults={defaults} allConnectors={catalogue} />
       </div>
 
       {/* Per-org Allowed Connectors */}
@@ -101,6 +110,7 @@ export default async function ConnectorsPage({
                 Current:{' '}
                 {formatAllowedConnectors(
                   selectedOrg.settings?.allowedConnectors,
+                  catalogue,
                 )}
               </span>
             </div>
@@ -108,6 +118,7 @@ export default async function ConnectorsPage({
               orgId={selectedOrg.id}
               current={selectedOrg.settings?.allowedConnectors ?? []}
               appDefaults={defaults}
+              allConnectors={catalogue}
             />
           </>
         )}
@@ -156,7 +167,10 @@ export default async function ConnectorsPage({
                     {org._count.members}
                   </td>
                   <td className="px-4 py-3 text-muted-foreground">
-                    {formatAllowedConnectors(org.settings?.allowedConnectors)}
+                    {formatAllowedConnectors(
+                      org.settings?.allowedConnectors,
+                      catalogue,
+                    )}
                   </td>
                   <td className="px-4 py-3">
                     <a

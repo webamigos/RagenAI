@@ -6,12 +6,19 @@ import {
 } from '@/app/lib/utils/auth-helpers';
 import { McpConnectorStatus } from '@/generated/prisma/client';
 import db from '@ragenai/prisma-client';
-import { getAvailableConnectorProvidersForOrg } from '@/features/connectors/services/queries/get-available-connectors-query';
+import { getAvailableConnectorsForOrg } from '@/features/connectors/services/queries/get-available-connectors-query';
 import { logger } from '@/app/lib/utils/logger';
 import { ragenApiRequest } from '@/libs/ragen-api-client/client';
 
 export type ConnectedProvider = {
   provider: string;
+  /**
+   * The catalogue entry's label, for a connector whose slug no message key
+   * covers. Every built-in has a `settings-page.connectors.providers.*.name`
+   * key; an entry an operator added has none, and rendering the slug — or the
+   * key path next-intl falls back to — is what the catalogue's own `label`
+   * exists to prevent.
+   */
   name: string;
 };
 
@@ -34,17 +41,24 @@ export async function getConnectedProvidersAction(): Promise<
         userId,
         status: McpConnectorStatus.CONNECTED,
       },
-      select: { provider: true },
-      orderBy: { provider: 'asc' },
+      select: { providerSlug: true },
+      orderBy: { providerSlug: 'asc' },
     }),
-    getAvailableConnectorProvidersForOrg(orgId),
+    getAvailableConnectorsForOrg(orgId),
   ]);
 
+  const labels = new Map(
+    availableProviders.map((definition) => [
+      definition.provider,
+      definition.name,
+    ]),
+  );
+
   return connectors
-    .filter((c) => availableProviders.includes(c.provider))
+    .filter((c) => labels.has(c.providerSlug))
     .map((c) => ({
-      provider: c.provider,
-      name: c.provider,
+      provider: c.providerSlug,
+      name: labels.get(c.providerSlug) ?? c.providerSlug,
     }));
 }
 

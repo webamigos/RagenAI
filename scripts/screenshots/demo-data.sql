@@ -52,14 +52,17 @@ UNION ALL SELECT
 -- and switched off by its user.
 DELETE FROM mcp_connectors;
 
+-- `provider_slug` is a catalogue slug: the `McpConnectorProvider` enum column
+-- these rows used to carry was dropped in
+-- docs/specs/2026-09-18-mcp-servers-added-without-a-deploy.md.
 INSERT INTO mcp_connectors (
-  id, organization_id, user_id, provider, mcp_server_url, customer_id,
-  enabled, status, connected_at, created_at, updated_at, last_error,
-  last_error_at
+  id, organization_id, user_id, provider_slug, mcp_server_url,
+  customer_id, enabled, status, connected_at, created_at, updated_at,
+  last_error, last_error_at
 )
 SELECT
   gen_random_uuid(), 'e2e-test-org-00000-0000-0001', u.id,
-  'SLACK'::"McpConnectorProvider", 'https://mcp.slack.com/mcp',
+  'SLACK', 'https://mcp.slack.com/mcp',
   'e2e-test-org-00000-0000-0001:' || u.id || ':slack',
   true, 'ERROR'::"McpConnectorStatus",
   now() - interval '60 days', now() - interval '60 days', now(),
@@ -68,7 +71,7 @@ SELECT
 FROM users u WHERE u.email = 'e2e-test@ragen.ai'
 UNION ALL SELECT
   gen_random_uuid(), 'e2e-test-org-00000-0000-0001', u.id,
-  'CLICKUP'::"McpConnectorProvider", 'https://mcp.clickup.com/mcp',
+  'CLICKUP', 'https://mcp.clickup.com/mcp',
   'e2e-test-org-00000-0000-0001:' || u.id || ':clickup',
   true, 'ERROR'::"McpConnectorStatus",
   now() - interval '10 days', now() - interval '10 days', now(),
@@ -76,14 +79,14 @@ UNION ALL SELECT
 FROM users u WHERE u.email = 'e2e-other@ragen.ai'
 UNION ALL SELECT
   gen_random_uuid(), 'e2e-test-org-00000-0000-0001', u.id,
-  'HUBSPOT'::"McpConnectorProvider", 'https://mcp.hubspot.com/mcp',
+  'HUBSPOT', 'https://mcp.hubspot.com/mcp',
   'e2e-test-org-00000-0000-0001:' || u.id || ':hubspot',
   true, 'CONNECTED'::"McpConnectorStatus",
   now() - interval '2 days', now() - interval '2 days', now(), NULL, NULL
 FROM users u WHERE u.email = 'e2e-test@ragen.ai'
 UNION ALL SELECT
   gen_random_uuid(), 'e2e-test-org-00000-0000-0001', u.id,
-  'FIREFLIES'::"McpConnectorProvider", 'https://mcp.fireflies.ai/mcp',
+  'FIREFLIES', 'https://mcp.fireflies.ai/mcp',
   'e2e-test-org-00000-0000-0001:' || u.id || ':fireflies',
   false, 'PENDING'::"McpConnectorStatus",
   NULL, now() - interval '1 day', now(), NULL, NULL

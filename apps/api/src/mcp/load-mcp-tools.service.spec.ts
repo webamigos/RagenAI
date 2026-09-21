@@ -11,6 +11,7 @@ import { type GetEnabledConnectorsService } from '../connectors/get-enabled-conn
 import { type GetAvailableConnectorsService } from '../connectors/get-available-connectors.service.js';
 import { type GetProjectMcpProvidersService } from '../projects/get-project-mcp-providers.service.js';
 import { type SecurityEventService } from '../security/security-event.service.js';
+import { type CatalogueService } from '../connectors/catalogue.service.js';
 import { createMcpToolsFromConnectors } from './client.js';
 
 function makeService(overrides: {
@@ -34,12 +35,18 @@ function makeService(overrides: {
   const securityEvents = {
     record: vi.fn(),
   } as unknown as SecurityEventService;
+  // The resolved catalogue: rows merged with their behaviour packs, which the
+  // loader passes to both the tool loader and the prompt builder.
+  const catalogue = {
+    getDefinitionsBySlug: vi.fn().mockResolvedValue({}),
+  } as unknown as CatalogueService;
 
   return new LoadMcpToolsService(
     getEnabledConnectors,
     getAvailableConnectors,
     getProjectMcpProviders,
     securityEvents,
+    catalogue,
   );
 }
 
@@ -88,6 +95,9 @@ describe('LoadMcpToolsService', () => {
     expect(createMcpToolsFromConnectors).toHaveBeenCalledWith(
       [connectors[0]],
       expect.any(Function),
+      // The resolved catalogue, so a connector an operator added has a
+      // definition here and its address reaches the policy.
+      {},
     );
     expect(result.mcpTools).toEqual({ clickup__search: {} });
     expect(result.mcpContext).toBe('mcp context');
@@ -102,6 +112,7 @@ describe('LoadMcpToolsService', () => {
       {} as GetAvailableConnectorsService,
       {} as GetProjectMcpProvidersService,
       { record: vi.fn() } as unknown as SecurityEventService,
+      {} as CatalogueService,
     );
 
     const result = await service.loadMcpToolsForApiRequest({

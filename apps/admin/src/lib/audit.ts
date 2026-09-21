@@ -143,6 +143,17 @@ export const ADMIN_ACTIONS = {
    * a platform administrator testing a draft has no organization to bill.
    */
   guardrailPolicyTested: 'admin.guardrail.policy_tested',
+  catalogueEntryCreated: 'admin.mcp_catalogue.created',
+  catalogueEntryUpdated: 'admin.mcp_catalogue.updated',
+  catalogueEntryToggled: 'admin.mcp_catalogue.toggled',
+  catalogueEntryDeleted: 'admin.mcp_catalogue.deleted',
+  /**
+   * A connection test from the catalogue form. Audited because it is an
+   * outbound request from the platform to an address an administrator just
+   * typed, and this entry is the only record it leaves.
+   */
+  catalogueConnectionTested: 'admin.mcp_catalogue.connection_tested',
+  catalogueCredentialsStored: 'admin.mcp_catalogue.credentials_stored',
   registrationToggled: 'admin.registration.toggled',
 } as const;
 

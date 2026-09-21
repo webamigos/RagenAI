@@ -39,15 +39,33 @@ const API_SERVICE = join(
   'apps/api/src/connectors/connectors.service.ts',
 );
 
-/** The field names inside `export type ConnectorDto = Pick<McpConnector, …>`. */
+/**
+ * Every field `ConnectorDto` promises, from both halves of it.
+ *
+ * The declaration is no longer a bare `Pick`: `provider` left the Pick when it
+ * stopped being the enum, and `providerSlug` joined it in an intersection —
+ * see docs/specs/2026-09-18-mcp-servers-added-without-a-deploy.md. Reading only
+ * the Pick would have quietly stopped checking the two fields the migration is
+ * about, which is the failure this whole test exists to catch.
+ */
 function pickedFields(source: string): string[] {
-  const block = source.match(
-    /export type ConnectorDto = Pick<\s*McpConnector,([\s\S]*?)>;/,
-  )?.[1];
-  if (!block) {
+  const declaration = source.match(
+    /export type ConnectorDto = Pick<\s*McpConnector,([\s\S]*?)>\s*(&\s*\{([\s\S]*?)\n\};|;)/,
+  );
+  if (!declaration) {
     return [];
   }
-  return [...block.matchAll(/'([A-Za-z0-9_]+)'/g)].map((match) => match[1]!);
+
+  const picked = [...declaration[1].matchAll(/'([A-Za-z0-9_]+)'/g)].map(
+    (match) => match[1]!,
+  );
+  const intersected = declaration[3]
+    ? [...declaration[3].matchAll(/^\s{2}([A-Za-z0-9_]+)\??:/gm)].map(
+        (match) => match[1]!,
+      )
+    : [];
+
+  return [...picked, ...intersected];
 }
 
 /** The keys of the `select` in `getUserConnectors`. */
@@ -67,6 +85,18 @@ describe('ConnectorDto', () => {
   const web = pickedFields(readFileSync(WEB_TYPES, 'utf8'));
   const api = pickedFields(readFileSync(API_TYPES, 'utf8'));
   const selected = selectedFields(readFileSync(API_SERVICE, 'utf8'));
+
+  it('still names the column the expand/contract landed on', () => {
+    // `providerSlug` is declared outside the Pick, because it is a `string`
+    // here rather than the enum the column used to be. A reader that lost
+    // track of it would leave the API free to stop sending the one field that
+    // says which connector a row is.
+    expect(web).toContain('providerSlug');
+    expect(api).toContain('providerSlug');
+    // And the enum column is off the wire entirely since B3.
+    expect(web).not.toContain('provider');
+    expect(api).not.toContain('provider');
+  });
 
   it('is declared in both workspaces', () => {
     expect(web.length, 'apps/web ConnectorDto not found').toBeGreaterThan(0);

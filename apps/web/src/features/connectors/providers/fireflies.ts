@@ -1,9 +1,8 @@
-import { McpConnectorProvider } from '@/generated/prisma/client';
 import type { ProviderDefinition } from '../contracts/connector.types';
 import { MCP_FIREFLIES_SERVER_URL } from './shared-config';
 
 export const FIREFLIES_PROVIDER: ProviderDefinition = {
-  provider: McpConnectorProvider.FIREFLIES,
+  provider: 'FIREFLIES',
   name: 'Fireflies.ai',
   description: 'Search meeting transcripts, summaries, and action items.',
   icon: 'mic',

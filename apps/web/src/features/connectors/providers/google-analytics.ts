@@ -1,9 +1,8 @@
-import { McpConnectorProvider } from '@/generated/prisma/client';
 import type { ProviderDefinition } from '../contracts/connector.types';
 import { MCP_GOOGLE_AUTH_URL, MCP_GOOGLE_SERVER_URL } from './shared-config';
 
 export const GOOGLE_ANALYTICS_PROVIDER: ProviderDefinition = {
-  provider: McpConnectorProvider.GOOGLE_ANALYTICS,
+  provider: 'GOOGLE_ANALYTICS',
   name: 'Google Analytics',
   description: 'Access traffic reports, conversions, and audience insights.',
   icon: 'chart-bar',

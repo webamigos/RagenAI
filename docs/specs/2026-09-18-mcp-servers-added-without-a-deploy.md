@@ -378,8 +378,20 @@ model McpCatalogEntry {
   mcpServerUrl String? @map("mcp_server_url")
   /// Required here, although `ProviderDefinition.authType` is optional and
   /// several paths branch on it being undefined. A manifest with no authType
-  /// seeds to `SERVER_SIDE`, which is what those paths already do in effect —
-  /// stated rather than inherited, because "unset" is not an auth shape.
+  /// seeds to `OAUTH` — stated rather than inherited, because "unset" is not
+  /// an auth shape.
+  ///
+  /// **Corrected during B4.** This said `SERVER_SIDE`, on the reading that it
+  /// is "what those paths already do in effect". It is not: a manifest with no
+  /// `authType` falls through every branch in `ConnectorCard` to the popup at
+  /// `authBaseUrl + authPath`, which is how the five Google connectors reach
+  /// `/auth/google`. `server_side` is the opposite branch — the MCP service
+  /// already holds the credential, so the card skips the popup and flips the
+  /// connector straight to CONNECTED. Seeded that way, those five would have
+  /// claimed to be connected without ever authorizing. `OAUTH` is right
+  /// because nothing in either app branches on `'oauth'`, so every path takes
+  /// the turn it takes for `undefined` today. See
+  /// docs/lessons/an-unset-auth-type-is-oauth-not-server-side.md.
   authType    McpAuthType @map("auth_type")
   authBaseUrl String?  @map("auth_base_url")
   authPath    String?  @map("auth_path")
@@ -464,19 +476,19 @@ Each phase leaves the application working.
 
 ### Phase A — the catalogue exists, and nothing reads it
 
-- [ ] **A1.** `McpCatalogEntry` + `McpAuthType`, migration, the case-insensitive
+- [x] **A1.** `McpCatalogEntry` + `McpAuthType`, migration, the case-insensitive
       slug index, and the seed of the eleven — slugs equal to the current enum
       values, `isBuiltIn = true`, `mcpServerUrl` null. The seed is a script that
       imports `apps/web`'s `PROVIDER_LIST`, because that is the only place the
       full manifest exists.
-- [ ] **A2.** Contracts (`McpCatalogEntryDto`, the slug validator, the
+- [x] **A2.** Contracts (`McpCatalogEntryDto`, the slug validator, the
       behaviour-pack resolver) in `packages/platform-contracts`, and the Prisma
       loader as a **thin per-app binding** — the split `tenant-scope` already
       uses, and the only one available: `platform-contracts` is imported by
       `'use client'` components and is policed by
       `client-bundles-stay-browser-safe.test.ts`, so a Prisma query cannot live
       there.
-- [ ] **A3.** `apps/admin` → `/mcp-catalogue`, **read-only**: the list, each
+- [x] **A3.** `apps/admin` → `/mcp-catalogue`, **read-only**: the list, each
       entry's auth type, resolved server URL and which organizations may use
       it. An operator sees the catalogue before they can change it, and nothing
       on the page claims an effect it does not have.
@@ -486,64 +498,67 @@ Each phase leaves the application working.
 Expand and contract. This is the phase to rehearse on demo, and B2 is the large
 step — not B4.
 
-- [ ] **B1.** Add `providerSlug String?` to `McpConnector` and `McpOAuthToken`;
+- [x] **B1.** Add `providerSlug String?` to `McpConnector` and `McpOAuthToken`;
       backfill from `provider::text`; write both columns everywhere. Additive,
       no reader changes.
-- [ ] **B2.** Every reader reads `providerSlug ?? provider`. **This is where the
+- [x] **B2.** Every reader reads `providerSlug ?? provider`. **This is where the
       57 sites stop typechecking**, because the expression widens to `string`:
       annotations, DTOs, function signatures and the two `packages/` files all
       change here, plus the four enum casts in
       `scripts/screenshots/demo-data.sql`. Behaviour is unchanged; the diff is
       not small.
-- [ ] **B3.** `providerSlug` `NOT NULL`, uniqueness moved to it, writes to
+- [x] **B3.** `providerSlug` `NOT NULL`, uniqueness moved to it, writes to
       `provider` stopped.
-- [ ] **B4.** Replace `PROVIDER_REGISTRY`'s `Record<McpConnectorProvider, …>`
+- [x] **B4.** Replace `PROVIDER_REGISTRY`'s `Record<McpConnectorProvider, …>`
       with the runtime resolver, and add
       `tests/architecture/every-seeded-connector-resolves.test.ts` — **while the
       enum still exists**, so this step is deployable and reversible on its own.
-- [ ] **B5.** Drop `provider` and the `McpConnectorProvider` type; update
+- [x] **B5.** Drop `provider` and the `McpConnectorProvider` type; update
       `packages/platform-contracts/src/__tests__/connectors.test.ts`, which
       parses that enum out of `schema.prisma` and fails the moment it is gone.
       Nothing else ships in this release.
 
 ### Phase C — an operator can add one
 
-- [ ] **C1.** Move `private-address.ts`, `guarded-fetch.ts` and
+- [x] **C1.** Move `private-address.ts`, `guarded-fetch.ts` and
       `guarded-mcp-transport.ts` into `packages/connector-guard`; wire
       `apps/web`'s MCP client and connect/callback routes through it. This
       lands **before** anything can save a URL, and it closes a gap that
       predates this spec: `apps/web` has never checked connector addresses.
-- [ ] **C2.** `/mcp-catalogue` becomes writable for `SERVER_SIDE` and
+- [x] **C2.** `/mcp-catalogue` becomes writable for `SERVER_SIDE` and
       `API_KEY_BEARER` entries — create, edit, enable, disable,
       delete-when-unused — **with the address policy and `allowsPrivateAddress`
       in the same step**. A form that saves a URL and a check on that URL are
       one change: shipping the first alone hands a platform admin an
       unvalidated endpoint the server will open a session against.
-- [ ] **C3.** Icon handling — a brand asset URL or an upload through the
+- [x] **C3.** Icon handling — a brand asset URL or an upload through the
       storage abstraction (ADR-27), plus the lucide fallback — before entries
       can be created, so none is created without one.
-- [ ] **C4.** The allowlist validator in
+- [x] **C4.** The allowlist validator in
       `apps/admin/.../connectors/actions.ts` asks the catalogue instead of
       `isConnectorProvider`. Without this a new entry cannot be granted to any
       organization.
-- [ ] **C5.** Test connection — opens an MCP session, lists tool names, renders
+- [x] **C5.** Test connection — opens an MCP session, lists tool names, renders
       failures the way `lastError` / `lastErrorAt` already do.
 
 ### Phase D — OAuth entries
 
-- [ ] **D1.** Catalogue-scoped credential storage in ragen-token-vault;
+- [x] **D1.** Catalogue-scoped credential storage in ragen-token-vault;
       `oauthCredentialsStored` written only after the vault confirms.
-- [ ] **D2.** `connect/route.ts` and the API counterpart read credentials from
+- [x] **D2.** `connect/route.ts` and the API counterpart read credentials from
       the vault for row-defined entries, env for built-ins.
-- [ ] **D3.** `EXTERNAL_MCP` offered in the entry form, with scopes and
-      `useUserScope`. End-to-end proof: add Notion from the panel and connect
-      it as a user, on demo, before this phase is called done.
+- [~] **D3.** `EXTERNAL_MCP` offered in the entry form, with scopes and
+      `useUserScope`. **Code is in; the proof is not.** The end-to-end run —
+      add Notion from the panel and connect it as a user, on demo — needs a
+      running vault and a real Notion OAuth app, and this phase is not done
+      until somebody has done it. See "Manual, and named because nothing else
+      covers it" under Testing.
 
 ### Phase E — the seams that outlive it
 
-- [ ] **E1.** `docs/mcp-integrations.md` rewritten around rows; a Task Router
+- [x] **E1.** `docs/mcp-integrations.md` rewritten around rows; a Task Router
       row; an ADR for "the connector catalogue is data, not an enum".
-- [ ] **E2.** `packages/create-ragen-app`: a fresh install gets the seeded
+- [x] **E2.** `packages/create-ragen-app`: a fresh install gets the seeded
       catalogue and no per-connector environment variables beyond those a
       built-in still needs.
 

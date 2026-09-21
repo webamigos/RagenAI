@@ -1,15 +1,15 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { auth as mcpAuth } from '@ai-sdk/mcp';
-import {
-  type McpConnectorProvider,
-  McpConnectorStatus,
-} from '@/generated/prisma/client';
+import { McpConnectorStatus } from '@/generated/prisma/client';
 import db from '@ragenai/prisma-client';
 import {
   getOrgIdFromAuthOrThrow,
   getCurrentUserId,
 } from '@/app/lib/utils/auth-helpers';
-import { getProviderDefinition } from '@/features/connectors/constants/providers';
+import { resolveConnectorDefinitionQuery } from '@/features/connectors/services/queries/get-connector-definitions-query';
+import { getConnectorOAuthCredentialsQuery } from '@/features/connectors/services/queries/get-connector-credentials-query';
+import { blockedAddressReason } from '@/features/connectors/utils/refuse-blocked-address';
+import { guardedAuthFetch } from '@/features/connectors/utils/guarded-auth-fetch';
 import { RagenAuthOAuthClientProvider } from '@/libs/ragen-vault';
 import { logger } from '@/app/lib/utils/logger';
 import { recordConnectorFailureCommand } from '@/features/connectors/services/commands/record-connector-failure-command';
@@ -78,23 +78,40 @@ async function exchangeSlackToken(
 
 export async function GET(request: NextRequest) {
   const code = request.nextUrl.searchParams.get('code');
-  const provider = request.nextUrl.searchParams.get(
-    'provider',
-  ) as McpConnectorProvider | null;
+  // A catalogue slug, validated by `getProviderDefinition` below.
+  const provider = request.nextUrl.searchParams.get('provider');
 
   if (!code || !provider) {
     return redirectWithStatus(request, 'error');
   }
 
-  const providerDef = getProviderDefinition(provider);
-  if (!providerDef || providerDef.authType !== 'external_mcp') {
-    return redirectWithStatus(request, 'error');
-  }
-
   let orgId: string | null = null;
   let userId: string | null = null;
+  // Declared out here so the catch can still name the server the failure was
+  // against; assigned inside, because the read that produces it can fail.
+  let providerDef: Awaited<ReturnType<typeof resolveConnectorDefinitionQuery>> =
+    undefined;
 
   try {
+    // Inside the boundary: resolving a slug is a database read since B4. A
+    // failure outside it returned a raw 500 to somebody mid-way through an
+    // OAuth round trip, instead of putting them back on connector settings.
+    providerDef = await resolveConnectorDefinitionQuery(provider);
+    if (!providerDef || providerDef.authType !== 'external_mcp') {
+      return redirectWithStatus(request, 'error');
+    }
+
+    // Again on the callback: the entry's URL can have changed between the two
+    // hops, and this one exchanges a code against it.
+    const blocked = blockedAddressReason(providerDef, providerDef.mcpServerUrl);
+    if (blocked) {
+      logger.warn(
+        { provider, reason: blocked },
+        'Refusing to complete OAuth against a blocked connector address',
+      );
+      return redirectWithStatus(request, 'error');
+    }
+
     orgId = await getOrgIdFromAuthOrThrow();
     userId = await getCurrentUserId();
     if (!userId) {
@@ -107,13 +124,15 @@ export async function GET(request: NextRequest) {
       : request.nextUrl.origin;
     const callbackUrl = `${appOrigin}/api/connectors/external/callback?provider=${provider}`;
 
+    const credentials = await getConnectorOAuthCredentialsQuery(providerDef);
+
     const oauthProvider = new RagenAuthOAuthClientProvider({
       orgId,
       userId,
       provider,
       callbackUrl,
-      fixedClientId: providerDef.oauthClientId,
-      fixedClientSecret: providerDef.oauthClientSecret,
+      fixedClientId: credentials.clientId,
+      fixedClientSecret: credentials.clientSecret,
     });
 
     // Slack uses a non-standard token response (nested under authed_user),
@@ -127,10 +146,19 @@ export async function GET(request: NextRequest) {
         providerDef.oauthClientSecret!,
       );
     } else {
-      const result = await mcpAuth(oauthProvider, {
-        serverUrl: providerDef.mcpServerUrl,
-        authorizationCode: code,
-      });
+      // The code exchange is the same unguarded hop as discovery on the way
+      // out, and this one carries the authorization code.
+      const guarded = guardedAuthFetch(providerDef);
+      let result;
+      try {
+        result = await mcpAuth(oauthProvider, {
+          serverUrl: providerDef.mcpServerUrl,
+          authorizationCode: code,
+          ...(guarded.fetchFn && { fetchFn: guarded.fetchFn }),
+        });
+      } finally {
+        await guarded.close();
+      }
 
       if (result !== 'AUTHORIZED') {
         await recordConnectorFailureCommand({
@@ -150,10 +178,10 @@ export async function GET(request: NextRequest) {
     // Mark the connector as connected
     await db.mcpConnector.upsert({
       where: {
-        organizationId_userId_provider: {
+        organizationId_userId_providerSlug: {
           organizationId: orgId,
           userId: userId,
-          provider,
+          providerSlug: provider,
         },
       },
       update: {
@@ -163,7 +191,7 @@ export async function GET(request: NextRequest) {
       create: {
         organizationId: orgId,
         userId: userId,
-        provider,
+        providerSlug: provider,
         mcpServerUrl: providerDef.mcpServerUrl,
         customerId: `${orgId}:${userId}:${provider.toLowerCase()}`,
         status: McpConnectorStatus.CONNECTED,
@@ -175,10 +203,11 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     logger.error({ err: error, provider }, 'External MCP OAuth callback error');
 
-    // Only when the identity resolved. If `getOrgIdFromAuthOrThrow` was what
-    // threw there is no connector to attribute this to, and guessing one
-    // would write a fault against the wrong row.
-    if (orgId && userId) {
+    // Only when the identity and the entry resolved. If
+    // `getOrgIdFromAuthOrThrow` or the catalogue read was what threw there is
+    // no connector to attribute this to, and guessing one would write a fault
+    // against the wrong row.
+    if (orgId && userId && providerDef) {
       await recordConnectorFailureCommand({
         organizationId: orgId,
         userId,

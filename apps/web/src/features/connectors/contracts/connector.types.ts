@@ -1,13 +1,11 @@
 import type {
   McpConnector,
-  McpConnectorProvider,
   McpConnectorStatus,
 } from '@/generated/prisma/client';
 
 export type ConnectorDto = Pick<
   McpConnector,
   | 'id'
-  | 'provider'
   | 'mcpServerUrl'
   | 'customerId'
   | 'enabled'
@@ -18,7 +16,15 @@ export type ConnectorDto = Pick<
   // a connector that looks merely disconnected and has no idea it broke.
   | 'lastError'
   | 'lastErrorAt'
->;
+> & {
+  /**
+   * The catalogue slug. Authoritative since B3 of
+   * docs/specs/2026-09-18-mcp-servers-added-without-a-deploy.md: the enum
+   * column is neither written nor read any more, so it is not on the wire
+   * either. Read it through `connectorSlug()` rather than by name.
+   */
+  providerSlug: string;
+};
 
 export type SystemPromptContext = {
   timeZone: string;
@@ -28,7 +34,13 @@ export type SystemPromptFragment =
   string | ((ctx: SystemPromptContext) => string);
 
 export type ProviderDefinition = {
-  provider: McpConnectorProvider;
+  /**
+   * A catalogue slug — a row in `McpCatalogEntry`. The eleven built-ins keep
+   * the SHOUTING names they had as enum members, because vault token paths and
+   * `customerId`s already hold those strings; an entry added from the panel is
+   * lowercase-kebab.
+   */
+  provider: string;
   name: string;
   description: string;
   icon: string;
@@ -60,8 +72,21 @@ export type ProviderDefinition = {
   scopes?: string[];
   oauthClientId?: string;
   oauthClientSecret?: string;
+  /**
+   * True when this entry's OAuth client credentials are in ragen-token-vault
+   * rather than in the environment — an entry an operator created. The values
+   * are never columns (ADR-32), so this boolean is what a caller has before it
+   * asks the vault for them.
+   */
+  oauthCredentialsStored?: boolean;
   /** If true, rewrites `scope` → `user_scope` in the OAuth authorization URL (required by Slack). */
   useUserScope?: boolean;
+  /**
+   * The brand asset for this connector, when it has one: a path under each
+   * app's `public/` for a built-in, or whatever URL an operator gave their
+   * entry. Distinct from `icon`, which is a lucide name.
+   */
+  iconUrl?: string | null;
   /** For `api_key_custom_header`: HTTP header name (e.g. `X-MCP-API-Key`). */
   headerName?: string;
   /** For `api_key_custom_header`: path appended to the user-supplied site URL (e.g. `/wp-json/woocommerce/mcp`). */
@@ -81,6 +106,15 @@ export type ProviderDefinition = {
    * like Google Calendar).
    */
   systemPromptFragment?: SystemPromptFragment;
+  /**
+   * Set when this connector's address is one somebody typed — a catalogue row
+   * an operator created, or the shop URL a user supplies at connect time —
+   * and must therefore pass the SSRF policy at connect time and on every tool
+   * call after it. Absent for a built-in whose URL comes from
+   * `MCP_*_SERVER_URL`, which is deployer-controlled and may legitimately be
+   * loopback: that is the exemption `packages/connector-guard` documents.
+   */
+  addressGuard?: { allowPrivate: boolean };
 };
 
 /**
@@ -93,10 +127,18 @@ export type ProviderDefinition = {
  * Only fields the Connectors UI actually needs are exposed.
  */
 export type PublicProviderDto = {
-  provider: McpConnectorProvider;
+  provider: string;
   name: string;
   description: string;
+  /** A lucide icon name — the fallback when there is no brand asset. */
   icon: string;
+  /**
+   * The brand asset, from the catalogue row. A connector an operator added has
+   * no file under `public/assets/connectors/`, so the map keyed by slug cannot
+   * answer for it — and an `<img>` with no `src` renders as a broken image on
+   * the card, which is what happens if this is forgotten.
+   */
+  iconUrl?: string | null;
   mcpServerUrl: string;
   authBaseUrl?: string;
   authPath?: string;
@@ -119,4 +161,4 @@ export type CustomHeaderCredentials = {
   consumerSecret?: string;
 };
 
-export type { McpConnectorProvider, McpConnectorStatus };
+export type { McpConnectorStatus };

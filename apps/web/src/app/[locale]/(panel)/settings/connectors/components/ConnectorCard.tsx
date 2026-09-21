@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/routing';
-import { Loader2Icon } from 'lucide-react';
+import { Loader2Icon, Plug } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
@@ -14,6 +14,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { logger } from '@/app/lib/utils/logger';
 import type {
   ConnectorDto,
   PublicProviderDto,
@@ -69,6 +70,17 @@ export function ConnectorCard({ provider, connector }: ConnectorCardProps) {
   const isExternalMcp = provider.authType === 'external_mcp';
   const isCustomHeaderAuth = provider.authType === 'api_key_custom_header';
   const isServerSide = provider.authType === 'server_side';
+
+  // The eleven built-ins are translated; an entry an operator added is not,
+  // and `t()` on a missing key renders the key path. Its label and
+  // description are on its row, which is where its language lives now.
+  const nameKey = `providers.${provider.provider}.name` as never;
+  const descriptionKey = `providers.${provider.provider}.description` as never;
+  const name = t.has(nameKey) ? t(nameKey) : provider.name;
+  const description = t.has(descriptionKey)
+    ? t(descriptionKey)
+    : provider.description;
+  const brandAsset = provider.iconUrl ?? providerIcons[provider.provider];
 
   const [customHeaderDialogOpen, setCustomHeaderDialogOpen] = useState(false);
   const [siteUrl, setSiteUrl] = useState('');
@@ -135,7 +147,7 @@ export function ConnectorCard({ provider, connector }: ConnectorCardProps) {
       setCurrentConnector({
         ...currentConnector,
         id: updated.id,
-        provider: provider.provider,
+        providerSlug: provider.provider,
         mcpServerUrl: provider.mcpServerUrl,
         customerId: '',
         status: updated.status,
@@ -179,7 +191,7 @@ export function ConnectorCard({ provider, connector }: ConnectorCardProps) {
       setCurrentConnector({
         ...currentConnector,
         id: updated.id,
-        provider: provider.provider,
+        providerSlug: provider.provider,
         mcpServerUrl: provider.mcpServerUrl,
         customerId: '',
         status: updated.status,
@@ -209,6 +221,9 @@ export function ConnectorCard({ provider, connector }: ConnectorCardProps) {
       const result = await initiateConnection(provider.provider);
 
       const callbackUrl = `${window.location.origin}/api/connectors/external/callback?provider=${provider.provider}`;
+      // `provider` is the name the route reads, and it carries a catalogue
+      // slug — the same value the callback URL above sends. Renaming the key
+      // here would 400 every connect, with the response body never read.
       const params = new URLSearchParams({
         provider: provider.provider,
         callback_url: callbackUrl,
@@ -217,6 +232,13 @@ export function ConnectorCard({ provider, connector }: ConnectorCardProps) {
         `/api/connectors/external/connect?${params.toString()}`,
       );
       if (!response.ok) {
+        // Left with no trace, a rejected connect looks like a button that
+        // does nothing — which is how the wrong query-parameter name above
+        // survived. The body carries the route's own reason.
+        logger.error(
+          { provider: provider.provider, status: response.status },
+          'External MCP connect was rejected',
+        );
         setLoading(false);
         return;
       }
@@ -367,7 +389,7 @@ export function ConnectorCard({ provider, connector }: ConnectorCardProps) {
       setCurrentConnector({
         ...currentConnector,
         id: connectorId,
-        provider: provider.provider,
+        providerSlug: provider.provider,
         mcpServerUrl: provider.mcpServerUrl,
         customerId: '',
         status: updated.status,
@@ -418,24 +440,24 @@ export function ConnectorCard({ provider, connector }: ConnectorCardProps) {
     <div className="flex flex-col gap-4 rounded-lg border border-border p-4 sm:flex-row sm:items-center">
       <div className="flex items-center gap-3 sm:contents">
         <div className="flex size-10 shrink-0 items-center justify-center rounded-lg">
-          <img
-            src={providerIcons[provider.provider]}
-            alt={provider.name}
-            className="size-6"
-          />
+          {brandAsset ? (
+            <img src={brandAsset} alt={provider.name} className="size-6" />
+          ) : (
+            // A connector an operator added has no file under
+            // `public/assets/connectors/`. An `<img>` with no `src` renders
+            // as a broken image, so the lucide fallback is what the row's
+            // `lucideIcon` is for.
+            <Plug className="size-6 text-muted-foreground" aria-hidden />
+          )}
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <h3 className="text-sm font-medium text-foreground">
-              {t(`providers.${provider.provider}.name`)}
-            </h3>
+            <h3 className="text-sm font-medium text-foreground">{name}</h3>
             {isConnected && <Badge variant="ready">{t('connected')}</Badge>}
             {isPending && <Badge variant="pending">{t('pending')}</Badge>}
             {isFailing && <Badge variant="destructive">{t('failing')}</Badge>}
           </div>
-          <p className="mt-0.5 text-sm text-muted-foreground">
-            {t(`providers.${provider.provider}.description`)}
-          </p>
+          <p className="mt-0.5 text-sm text-muted-foreground">{description}</p>
           {isFailing && (
             <div className="mt-1.5 text-sm text-destructive">
               <p>
@@ -504,7 +526,7 @@ export function ConnectorCard({ provider, connector }: ConnectorCardProps) {
             <DialogHeader>
               <DialogTitle>
                 {t('custom-header-title', {
-                  provider: t(`providers.${provider.provider}.name`),
+                  provider: name,
                 })}
               </DialogTitle>
             </DialogHeader>
@@ -514,7 +536,7 @@ export function ConnectorCard({ provider, connector }: ConnectorCardProps) {
                   isSingleTokenAuth
                     ? 'custom-header-instance-description'
                     : 'custom-header-description',
-                  { provider: t(`providers.${provider.provider}.name`) },
+                  { provider: name },
                 )}
                 {provider.apiKeyHelpUrl && (
                   <>
@@ -632,14 +654,14 @@ export function ConnectorCard({ provider, connector }: ConnectorCardProps) {
             <DialogHeader>
               <DialogTitle>
                 {t('api-key-title', {
-                  provider: t(`providers.${provider.provider}.name`),
+                  provider: name,
                 })}
               </DialogTitle>
             </DialogHeader>
             <div className="flex flex-col gap-3">
               <p className="text-sm text-muted-foreground">
                 {t('api-key-description', {
-                  provider: t(`providers.${provider.provider}.name`),
+                  provider: name,
                 })}
                 {provider.apiKeyHelpUrl && (
                   <>

@@ -1,9 +1,7 @@
 /* eslint-disable @typescript-eslint/unbound-method */
-const mockGetProviderDefinition = vi.fn();
-vi.mock('./provider-definition.js', () => ({
-  getProviderDefinition: (...args: unknown[]) =>
-    mockGetProviderDefinition(...args),
-}));
+// The service resolves connectors through the catalogue now, so this stands
+// in for `CatalogueService.resolve` rather than for a compiled-in manifest.
+const mockResolveFromCatalogue = vi.fn();
 
 const mockStoreToken = vi.fn();
 const mockDeleteToken = vi.fn();
@@ -24,8 +22,8 @@ vi.mock('@ai-sdk/mcp', () => ({
 // `isBlockedAddressError` stays real — the error mapping below depends on it.
 const mockCreateGuardedMcpTransport = vi.fn();
 const mockGuardedClose = vi.fn();
-vi.mock('./guarded-mcp-transport.js', async () => {
-  const actual = await vi.importActual('./guarded-mcp-transport.js');
+vi.mock('@ragenai/connector-guard', async () => {
+  const actual = await vi.importActual('@ragenai/connector-guard');
   return {
     ...actual,
     createGuardedMcpTransport: (...args: unknown[]) =>
@@ -35,7 +33,8 @@ vi.mock('./guarded-mcp-transport.js', async () => {
 
 import type { Mock } from 'vitest';
 import { ConnectorsService } from './connectors.service.js';
-import { BlockedAddressError } from './guarded-fetch.js';
+import { type CatalogueService } from './catalogue.service.js';
+import { BlockedAddressError } from '@ragenai/connector-guard';
 import { type PrismaService } from '../prisma/prisma.service.js';
 import { type AuditLogService } from '../audit-logs/audit-log.service.js';
 import { type SubscriptionsService } from '../subscriptions/subscriptions.service.js';
@@ -66,14 +65,23 @@ describe('ConnectorsService', () => {
       isFeatureEnabled:
         overrides.isFeatureEnabled ?? vi.fn().mockResolvedValue(true),
     } as unknown as SubscriptionsService;
+    const catalogue = {
+      resolve: (slug: string) =>
+        Promise.resolve(mockResolveFromCatalogue(slug)),
+    } as unknown as CatalogueService;
     return {
-      service: new ConnectorsService(prisma, auditLog, subscriptions),
+      service: new ConnectorsService(
+        prisma,
+        auditLog,
+        subscriptions,
+        catalogue,
+      ),
       auditLog,
     };
   }
 
   beforeEach(() => {
-    mockGetProviderDefinition.mockReset();
+    mockResolveFromCatalogue.mockReset();
     mockStoreToken.mockReset().mockResolvedValue(undefined);
     mockDeleteToken.mockReset().mockResolvedValue(undefined);
     mockCreateMCPClient.mockReset();
@@ -96,7 +104,7 @@ describe('ConnectorsService', () => {
     });
 
     it('throws for an unknown provider', async () => {
-      mockGetProviderDefinition.mockReturnValue(undefined);
+      mockResolveFromCatalogue.mockReturnValue(undefined);
       const { service } = makeService({});
 
       await expect(
@@ -105,7 +113,7 @@ describe('ConnectorsService', () => {
     });
 
     it('upserts the connector and audit-logs the connection', async () => {
-      mockGetProviderDefinition.mockReturnValue({
+      mockResolveFromCatalogue.mockReturnValue({
         mcpServerUrl: 'https://example.com',
         authType: 'external_mcp',
       });
@@ -128,10 +136,10 @@ describe('ConnectorsService', () => {
       expect(upsert).toHaveBeenCalledWith(
         expect.objectContaining({
           where: {
-            organizationId_userId_provider: {
+            organizationId_userId_providerSlug: {
               organizationId: 'org-1',
               userId: 'user-1',
-              provider: 'CLICKUP',
+              providerSlug: 'CLICKUP',
             },
           },
         }),
@@ -146,7 +154,7 @@ describe('ConnectorsService', () => {
     });
 
     it('appends /mcp when the base URL does not already end with it', async () => {
-      mockGetProviderDefinition.mockReturnValue({
+      mockResolveFromCatalogue.mockReturnValue({
         mcpServerUrl: 'https://example.com/',
         authType: 'oauth',
       });
@@ -179,7 +187,7 @@ describe('ConnectorsService', () => {
     it('deletes the vault token and the DB row, then audit-logs it', async () => {
       const findUnique = vi
         .fn()
-        .mockResolvedValue({ provider: 'CLICKUP', customerId: 'cust-1' });
+        .mockResolvedValue({ providerSlug: 'CLICKUP', customerId: 'cust-1' });
       const del = vi.fn().mockResolvedValue({ id: 'conn-1' });
       const { service, auditLog } = makeService({
         findUnique,
@@ -200,7 +208,7 @@ describe('ConnectorsService', () => {
     it('still deletes the DB row when the vault token delete fails', async () => {
       const findUnique = vi
         .fn()
-        .mockResolvedValue({ provider: 'CLICKUP', customerId: 'cust-1' });
+        .mockResolvedValue({ providerSlug: 'CLICKUP', customerId: 'cust-1' });
       const del = vi.fn().mockResolvedValue({ id: 'conn-1' });
       mockDeleteToken.mockRejectedValue(new Error('vault down'));
       const { service } = makeService({ findUnique, delete: del });
@@ -244,7 +252,7 @@ describe('ConnectorsService', () => {
 
   describe('registerApiKey', () => {
     it('rejects a provider that does not support api_key auth', async () => {
-      mockGetProviderDefinition.mockReturnValue({
+      mockResolveFromCatalogue.mockReturnValue({
         authType: 'external_mcp',
       });
       const { service } = makeService({});
@@ -255,7 +263,7 @@ describe('ConnectorsService', () => {
     });
 
     it('creates the connector, registers with the external service, and marks connected', async () => {
-      mockGetProviderDefinition.mockReturnValue({
+      mockResolveFromCatalogue.mockReturnValue({
         authType: 'api_key',
         authPath: '/register',
         authBaseUrl: 'https://mcp.example.com',
@@ -294,7 +302,7 @@ describe('ConnectorsService', () => {
     });
 
     it('throws when the external registration call fails', async () => {
-      mockGetProviderDefinition.mockReturnValue({
+      mockResolveFromCatalogue.mockReturnValue({
         authType: 'api_key',
         authPath: '/register',
         authBaseUrl: 'https://mcp.example.com',
@@ -318,7 +326,7 @@ describe('ConnectorsService', () => {
 
   describe('registerApiKeyBearer', () => {
     it('rejects a provider that does not support bearer auth', async () => {
-      mockGetProviderDefinition.mockReturnValue({ authType: 'oauth' });
+      mockResolveFromCatalogue.mockReturnValue({ authType: 'oauth' });
       const { service } = makeService({});
 
       await expect(
@@ -327,7 +335,7 @@ describe('ConnectorsService', () => {
     });
 
     it('stores the token in the vault and upserts a CONNECTED connector', async () => {
-      mockGetProviderDefinition.mockReturnValue({
+      mockResolveFromCatalogue.mockReturnValue({
         authType: 'api_key_bearer',
         mcpServerUrl: 'https://fireflies.example.com/mcp',
       });
@@ -367,7 +375,7 @@ describe('ConnectorsService', () => {
     };
 
     it('rejects a provider that does not support custom-header auth', async () => {
-      mockGetProviderDefinition.mockReturnValue({ authType: 'oauth' });
+      mockResolveFromCatalogue.mockReturnValue({ authType: 'oauth' });
       const { service } = makeService({});
 
       await expect(
@@ -381,7 +389,7 @@ describe('ConnectorsService', () => {
     });
 
     it('rejects missing consumer key/secret', async () => {
-      mockGetProviderDefinition.mockReturnValue({
+      mockResolveFromCatalogue.mockReturnValue({
         authType: 'api_key_custom_header',
         mcpServerUrlPath: '/mcp',
         headerName: 'X-MCP-Key',
@@ -397,7 +405,7 @@ describe('ConnectorsService', () => {
     });
 
     it('stores the combined token and upserts the connector', async () => {
-      mockGetProviderDefinition.mockReturnValue({
+      mockResolveFromCatalogue.mockReturnValue({
         authType: 'api_key_custom_header',
         mcpServerUrlPath: '/wp-json/mcp',
         headerName: 'X-MCP-Key',
@@ -427,7 +435,7 @@ describe('ConnectorsService', () => {
     });
 
     it('rolls back the vault token when the DB upsert fails', async () => {
-      mockGetProviderDefinition.mockReturnValue({
+      mockResolveFromCatalogue.mockReturnValue({
         authType: 'api_key_custom_header',
         mcpServerUrlPath: '/wp-json/mcp',
         headerName: 'X-MCP-Key',
@@ -452,7 +460,7 @@ describe('ConnectorsService', () => {
 
     describe('singleTokenAuth providers (e.g. Open Mercato)', () => {
       it('rejects a missing key even though no secret is required', async () => {
-        mockGetProviderDefinition.mockReturnValue({
+        mockResolveFromCatalogue.mockReturnValue({
           authType: 'api_key_custom_header',
           mcpServerUrlPath: '/mcp',
           headerName: 'x-api-key',
@@ -471,7 +479,7 @@ describe('ConnectorsService', () => {
       });
 
       it('stores the bare key (not joined with a secret) and upserts the connector', async () => {
-        mockGetProviderDefinition.mockReturnValue({
+        mockResolveFromCatalogue.mockReturnValue({
           authType: 'api_key_custom_header',
           mcpServerUrlPath: '/mcp',
           headerName: 'x-api-key',
@@ -505,7 +513,7 @@ describe('ConnectorsService', () => {
 
   describe('testCustomHeaderConnection', () => {
     it('returns ok:false for an unsupported provider', async () => {
-      mockGetProviderDefinition.mockReturnValue({ authType: 'oauth' });
+      mockResolveFromCatalogue.mockReturnValue({ authType: 'oauth' });
       const { service } = makeService({});
 
       const result = await service.testCustomHeaderConnection('WOOCOMMERCE', {
@@ -521,7 +529,7 @@ describe('ConnectorsService', () => {
     });
 
     it('returns the tool count on a successful connection', async () => {
-      mockGetProviderDefinition.mockReturnValue({
+      mockResolveFromCatalogue.mockReturnValue({
         authType: 'api_key_custom_header',
         mcpServerUrlPath: '/wp-json/mcp',
         headerName: 'X-MCP-Key',
@@ -550,7 +558,7 @@ describe('ConnectorsService', () => {
     });
 
     it('returns a generic error when the connection fails', async () => {
-      mockGetProviderDefinition.mockReturnValue({
+      mockResolveFromCatalogue.mockReturnValue({
         authType: 'api_key_custom_header',
         mcpServerUrlPath: '/wp-json/mcp',
         headerName: 'X-MCP-Key',
@@ -569,7 +577,7 @@ describe('ConnectorsService', () => {
     });
 
     it('says so when the site URL resolves to a private address', async () => {
-      mockGetProviderDefinition.mockReturnValue({
+      mockResolveFromCatalogue.mockReturnValue({
         authType: 'api_key_custom_header',
         mcpServerUrlPath: '/wp-json/mcp',
         headerName: 'X-MCP-Key',
@@ -596,7 +604,7 @@ describe('ConnectorsService', () => {
     });
 
     it('accepts a single key with no secret for singleTokenAuth providers', async () => {
-      mockGetProviderDefinition.mockReturnValue({
+      mockResolveFromCatalogue.mockReturnValue({
         authType: 'api_key_custom_header',
         mcpServerUrlPath: '/mcp',
         headerName: 'x-api-key',
@@ -625,7 +633,7 @@ describe('ConnectorsService', () => {
     });
 
     it('rejects a missing key for singleTokenAuth providers without calling the MCP endpoint', async () => {
-      mockGetProviderDefinition.mockReturnValue({
+      mockResolveFromCatalogue.mockReturnValue({
         authType: 'api_key_custom_header',
         mcpServerUrlPath: '/mcp',
         headerName: 'x-api-key',
@@ -670,7 +678,7 @@ describe('ConnectorsService', () => {
     });
 
     it('returns the lookup result, preferring authBaseUrl for baseUrl', async () => {
-      mockGetProviderDefinition.mockReturnValue({
+      mockResolveFromCatalogue.mockReturnValue({
         authBaseUrl: 'https://api.example.com',
       });
       const { service } = makeService({

@@ -126,6 +126,22 @@ producers; a mismatch means nothing consumes the queue. See
 - [ ] Register Fireflies API key — transcripts accessible
 - [ ] Disconnect connector — tools no longer available in chat
 
+#### The catalogue (admin panel → MCP Catalogue)
+
+- [ ] Add an entry with an API-key server URL → it appears in an organization's
+      connector list once its allowlist permits it
+- [ ] **Test connection** on a working endpoint lists its tools; on a typo it
+      says why, and the request does not hang
+- [ ] Save an entry pointing at `http://10.0.0.5/mcp` → refused, and accepted
+      once *allow a private address* is ticked
+- [ ] With that box ticked, `http://169.254.169.254/` is **still** refused
+- [ ] Disable a built-in → it disappears from the connector gallery, and a
+      user who had already connected it keeps working until the next turn
+- [ ] Delete an entry that has connectors → refused, with the count; delete an
+      unused one → gone, and its slug is out of every allowlist
+- [ ] **The manual proof Phase D needs**: add Notion from the panel, store its
+      OAuth credentials, and connect it as a real user on demo
+
 ---
 
 ## P2 — Medium Priority

@@ -24,6 +24,7 @@ const workspaces = {
   'apps/api': '@ragenai/api',
   'apps/worker': '@ragenai/worker',
   'apps/mcp': '@ragenai/mcp',
+  'packages/connector-guard': '@ragenai/connector-guard',
   'packages/create-ragen-app': 'create-ragen-app',
   'packages/crypto': '@ragenai/crypto',
   'packages/db': '@ragenai/db',

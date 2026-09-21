@@ -1,4 +1,5 @@
 import { formatDistanceToNow } from 'date-fns';
+import { connectorSlug } from '@ragenai/platform-contracts';
 
 import { ExportButton } from '@/app/components/ExportButton';
 import { Pagination } from '@/app/components/Pagination';
@@ -50,7 +51,7 @@ async function getConnectors(params: SearchParams) {
     where.status = params.status;
   }
   if (params.provider) {
-    where.provider = params.provider;
+    where.providerSlug = params.provider;
   }
 
   const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
@@ -79,8 +80,8 @@ async function getConnectors(params: SearchParams) {
         orderBy: { name: 'asc' },
       }),
       prisma.mcpConnector
-        .groupBy({ by: ['provider'], _count: true })
-        .then((rows) => rows.map((row) => row.provider).sort()),
+        .groupBy({ by: ['providerSlug'], _count: true })
+        .then((rows) => rows.map((row) => row.providerSlug).sort()),
       // Platform-wide rather than filtered: this strip answers "is anything
       // wrong right now", which must not change when a filter is applied.
       Promise.all([
@@ -249,7 +250,7 @@ export default async function ConnectorHealthPage({
                 >
                   <td className="px-4 py-3">
                     <span className="font-medium">
-                      {connector.provider.toLowerCase()}
+                      {connectorSlug(connector).toLowerCase()}
                     </span>
                     {!connector.enabled && (
                       <span className="block text-xs text-muted-foreground">
@@ -307,7 +308,7 @@ export default async function ConnectorHealthPage({
                   <td className="px-4 py-3">
                     <ConnectorHealthActions
                       connectorId={connector.id}
-                      provider={connector.provider.toLowerCase()}
+                      provider={connectorSlug(connector).toLowerCase()}
                       userLabel={userLabel}
                       vaultConfigured={vaultConfigured}
                     />

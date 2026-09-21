@@ -30,8 +30,12 @@ vi.mock(
   }),
 );
 
-vi.mock('../../constants/providers', () => ({
-  getProviderDefinition: (...args: unknown[]) => mockGetProviderDef(...args),
+// The command resolves its definition from the catalogue now — a row merged
+// with its optional behaviour pack — rather than from the compiled-in
+// manifests.
+vi.mock('../../queries/get-connector-definitions-query', () => ({
+  resolveConnectorDefinitionQuery: (...args: unknown[]) =>
+    mockGetProviderDef(...args),
 }));
 
 import { createConnectorCommand } from '../create-connector-command';
@@ -62,7 +66,9 @@ describe('createConnectorCommand feature gate', () => {
     mockIsFeatureEnabled.mockResolvedValue(true);
     mockUpsert.mockResolvedValue({
       id: 'conn-1',
-      provider: 'CLICKUP',
+      // What the command actually selects. Returning `provider` here left the
+      // audit event with an undefined slug while the test still passed.
+      providerSlug: 'CLICKUP',
       customerId: `${ORG}:${USER}:clickup`,
       mcpServerUrl: 'https://example.com/mcp',
       status: 'PENDING',
@@ -75,13 +81,37 @@ describe('createConnectorCommand feature gate', () => {
     expect(mockUpsert).toHaveBeenCalledWith(
       expect.objectContaining({
         where: {
-          organizationId_userId_provider: {
+          organizationId_userId_providerSlug: {
             organizationId: ORG,
             userId: USER,
-            provider: 'CLICKUP',
+            providerSlug: 'CLICKUP',
           },
         },
       }),
     );
+  });
+
+  it('writes the slug, and no longer the enum column', async () => {
+    // Expand/contract, step 3: `provider_slug` is NOT NULL and carries the
+    // uniqueness, and `provider` is nullable and written by nobody. A writer
+    // that still filled it would be keeping a column alive that B5 drops.
+    mockIsFeatureEnabled.mockResolvedValue(true);
+    mockUpsert.mockResolvedValue({
+      id: 'conn-1',
+      provider: 'CLICKUP',
+      customerId: `${ORG}:${USER}:clickup`,
+      mcpServerUrl: 'https://example.com/mcp',
+      status: 'PENDING',
+    });
+
+    await createConnectorCommand(ORG, USER, 'CLICKUP' as any);
+
+    const args = mockUpsert.mock.calls[0][0] as {
+      create: Record<string, unknown>;
+      update: Record<string, unknown>;
+    };
+    expect(args.create.providerSlug).toBe('CLICKUP');
+    expect(args.create.provider).toBeUndefined();
+    expect(args.update.provider).toBeUndefined();
   });
 });

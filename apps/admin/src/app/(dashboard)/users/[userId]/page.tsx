@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/db';
+import { connectorSlug } from '@ragenai/platform-contracts';
 import { notFound } from 'next/navigation';
 import { formatDateTime } from '@/lib/format';
 import { formatDistanceToNow } from 'date-fns';
@@ -67,7 +68,7 @@ async function getUserDetails(userId: string) {
     prisma.mcpConnector.findMany({
       where: { userId: user.id },
       select: {
-        provider: true,
+        providerSlug: true,
         status: true,
         enabled: true,
         connectedAt: true,
@@ -260,7 +261,7 @@ export default async function UserDetailPage({
                 {connectors.map((c, i) => (
                   <tr key={i} className="border-b border-border last:border-0">
                     <td className="px-4 py-3 font-medium">
-                      {c.provider.replace(/_/g, ' ')}
+                      {connectorSlug(c).replace(/_/g, ' ')}
                     </td>
                     <td className="px-4 py-3 text-muted-foreground">
                       {c.organization.name}

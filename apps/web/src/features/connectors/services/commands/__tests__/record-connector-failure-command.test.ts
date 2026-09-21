@@ -108,7 +108,7 @@ describe('recordConnectorFailureCommand', () => {
       where: expect.objectContaining({
         organizationId: 'org-1',
         userId: 'user-1',
-        provider: 'SLACK',
+        providerSlug: 'SLACK',
       }),
       data: expect.objectContaining({
         status: 'ERROR',
@@ -166,7 +166,8 @@ describe('recordConnectorFailureCommand', () => {
       data: expect.objectContaining({
         organizationId: 'org-1',
         userId: 'user-1',
-        provider: 'SLACK',
+        // The enum column is neither written nor required since B3.
+        providerSlug: 'SLACK',
         mcpServerUrl: 'https://mcp.example/mcp',
         customerId: 'org-1:user-1:slack',
         status: 'ERROR',

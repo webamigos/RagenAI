@@ -52,7 +52,7 @@ const MUTATING =
   // no tenant to bill. Its audit entry is therefore the *only* trace it
   // leaves, which is exactly what the rule below enforces — so classifying it
   // as read-only would exempt the one action whose audit entry is load-bearing.
-  /^(save|create|update|add|set|apply|delete|deactivate|toggle|ban|unban|rename|change|assign|remove|revoke|force|resend|sync|resolve|reactivate|cancel|test)/i;
+  /^(save|create|update|add|set|apply|delete|deactivate|toggle|ban|unban|rename|change|assign|remove|revoke|force|resend|sync|resolve|reactivate|cancel|test|store)/i;
 
 /** Verbs that only read. Exempt from the audit rule, by name. */
 const READ_ONLY = /^(get|list|fetch|load|search|count|check)/i;

@@ -1,9 +1,8 @@
-import { McpConnectorProvider } from '@/generated/prisma/client';
 import type { ProviderDefinition } from '../contracts/connector.types';
 import { MCP_CLICKUP_SERVER_URL } from './shared-config';
 
 export const CLICKUP_PROVIDER: ProviderDefinition = {
-  provider: McpConnectorProvider.CLICKUP,
+  provider: 'CLICKUP',
   name: 'ClickUp',
   description: 'Manage tasks, projects, and workspaces.',
   icon: 'check-square',

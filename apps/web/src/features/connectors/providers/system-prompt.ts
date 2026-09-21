@@ -1,14 +1,16 @@
-import { type McpConnectorProvider } from '@/generated/prisma/client';
-import { PROVIDER_REGISTRY } from './registry';
+import type { ProviderDefinition } from '../contracts/connector.types';
 
-function isKnownProvider(value: string): value is McpConnectorProvider {
-  return value in PROVIDER_REGISTRY;
-}
-
+/**
+ * `definitions` is the resolved catalogue keyed by slug — a row merged with
+ * its behaviour pack. It is passed in rather than read from the registry
+ * because the prompt fragment for a connector an operator added lives on its
+ * row, and the registry only knows the eleven that ship with Ragen.
+ */
 export function buildMcpContext(
   connectorProviders: string[],
   timeZone: string,
   currentDateTime: string,
+  definitions: Record<string, ProviderDefinition> = {},
 ): string {
   const header = `You have access to external tools via connected integrations (${connectorProviders.join(', ')}). Authentication is handled automatically — just call the tools directly without any credentials.
 
@@ -17,10 +19,7 @@ Current date and time: ${currentDateTime} (timezone: ${timeZone}). Use this to r
   const sections: string[] = [header];
 
   for (const providerId of connectorProviders) {
-    if (!isKnownProvider(providerId)) {
-      continue;
-    }
-    const fragment = PROVIDER_REGISTRY[providerId].systemPromptFragment;
+    const fragment = definitions[providerId]?.systemPromptFragment;
     if (!fragment) {
       continue;
     }

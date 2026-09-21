@@ -1,8 +1,7 @@
-import { McpConnectorProvider } from '@/generated/prisma/client';
 import type { ProviderDefinition } from '../contracts/connector.types';
 
 export const WOOCOMMERCE_PROVIDER: ProviderDefinition = {
-  provider: McpConnectorProvider.WOOCOMMERCE,
+  provider: 'WOOCOMMERCE',
   name: 'WooCommerce',
   description: 'Manage products and orders from your WooCommerce store.',
   icon: 'shopping-cart',

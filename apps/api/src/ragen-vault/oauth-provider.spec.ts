@@ -7,7 +7,6 @@ vi.mock('./client.js', () => ({
 }));
 
 import { RagenAuthOAuthClientProvider } from './oauth-provider.js';
-import { McpConnectorProvider } from '../generated/prisma/client.js';
 
 const baseOpts = {
   orgId: 'org-1',
@@ -24,7 +23,7 @@ describe('RagenAuthOAuthClientProvider.redirectToAuthorization', () => {
     it('leaves the HubSpot MCP gateway URL untouched', async () => {
       const provider = new RagenAuthOAuthClientProvider({
         ...baseOpts,
-        provider: McpConnectorProvider.HUBSPOT,
+        provider: 'HUBSPOT',
       });
 
       const mcpUrl = new URL(
@@ -41,7 +40,7 @@ describe('RagenAuthOAuthClientProvider.redirectToAuthorization', () => {
     it('moves scope → user_scope on the v2 endpoint', async () => {
       const provider = new RagenAuthOAuthClientProvider({
         ...baseOpts,
-        provider: McpConnectorProvider.SLACK,
+        provider: 'SLACK',
         useUserScope: true,
       });
 
@@ -62,7 +61,7 @@ describe('RagenAuthOAuthClientProvider.redirectToAuthorization', () => {
     it('leaves the URL untouched for providers without rewrite rules', async () => {
       const provider = new RagenAuthOAuthClientProvider({
         ...baseOpts,
-        provider: McpConnectorProvider.CLICKUP,
+        provider: 'CLICKUP',
       });
 
       const original = new URL(

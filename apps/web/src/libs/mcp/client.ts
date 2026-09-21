@@ -1,7 +1,10 @@
 import { createMCPClient, type MCPClient } from '@ai-sdk/mcp';
-import type { McpConnectorProvider } from '@/generated/prisma/client';
+import {
+  createGuardedMcpTransport,
+  isBlockedAddress,
+} from '@ragenai/connector-guard';
 import { logger } from '@/app/lib/utils/logger';
-import { getProviderDefinition } from '@/features/connectors/constants/providers';
+import { getConnectorOAuthCredentialsQuery } from '@/features/connectors/services/queries/get-connector-credentials-query';
 import type { ProviderDefinition } from '@/features/connectors/contracts/connector.types';
 import {
   RagenAuthOAuthClientProvider,
@@ -350,19 +353,65 @@ export function wrapToolsForConnector(
 /**
  * Create MCP clients for a list of connectors and gather their tools.
  * Returns merged tools and a cleanup function to close all clients.
+ *
+ * `definitions` is the resolved catalogue, keyed by slug — rows merged with
+ * their behaviour packs. It is passed in rather than looked up here because
+ * resolving it reads the database, and this function is called once per turn
+ * with the connectors already loaded: one query for the set beats one per
+ * connector. A connector whose slug the catalogue no longer carries resolves
+ * to `undefined` and is skipped with its reason recorded, exactly as an
+ * unknown provider always was.
  */
 export async function createMcpToolsFromConnectors(
   connectors: McpConnectorInfo[],
+  definitions: Record<string, ProviderDefinition> = {},
 ) {
   const clients: MCPClient[] = [];
+  /** Dispatchers owned by guarded transports; they hold sockets. */
+  const guards: Array<() => Promise<void>> = [];
+
+  /**
+   * Open a session, through the SSRF-guarded transport when the address is
+   * one somebody typed.
+   *
+   * `apps/web` has never checked connector addresses — it opened every
+   * session with `@ai-sdk/mcp`'s shorthand transport, which calls global
+   * `fetch`. That was survivable while every URL came from
+   * `MCP_*_SERVER_URL`; it stops being survivable the moment a catalogue row
+   * carries one, which is what
+   * docs/specs/2026-09-18-mcp-servers-added-without-a-deploy.md adds.
+   *
+   * A built-in resolved from the environment keeps the documented exemption:
+   * those endpoints are deployer-controlled and may legitimately be loopback.
+   */
+  const connect = async (
+    url: string,
+    definition: ProviderDefinition | undefined,
+    headers: Record<string, string>,
+    authProvider?: RagenAuthOAuthClientProvider,
+  ): Promise<MCPClient> => {
+    const guard = definition?.addressGuard;
+    if (!guard) {
+      return createMCPClient({
+        transport: { type: 'http', url, headers, authProvider },
+      });
+    }
+
+    const guarded = createGuardedMcpTransport(url, headers, {
+      isBlockedAddress: (address) =>
+        isBlockedAddress(address, { allowPrivate: guard.allowPrivate }),
+      authProvider,
+    });
+    guards.push(guarded.close);
+    return createMCPClient({ transport: guarded.transport });
+  };
+
   const mergedTools: Record<string, any> = {};
   const loadedProviders: string[] = [];
 
   for (const connector of connectors) {
     try {
-      const providerDef = getProviderDefinition(
-        connector.provider as McpConnectorProvider,
-      );
+      const providerDef = definitions[connector.provider];
 
       // Resolve the MCP server URL at tool-load time rather than trusting
       // the value snapshotted on the connector row at connect time.
@@ -392,14 +441,8 @@ export async function createMcpToolsFromConnectors(
           throw new Error(`No API key found for ${connector.provider}`);
         }
 
-        client = await createMCPClient({
-          transport: {
-            type: 'http',
-            url: resolvedUrl,
-            headers: {
-              Authorization: `Bearer ${tokenData.accessToken}`,
-            },
-          },
+        client = await connect(resolvedUrl, providerDef, {
+          Authorization: `Bearer ${tokenData.accessToken}`,
         });
       } else if (providerDef?.authType === 'api_key_custom_header') {
         // Read combined `${consumerKey}:${consumerSecret}` from the vault
@@ -416,40 +459,28 @@ export async function createMcpToolsFromConnectors(
           throw new Error(`No API key found for ${connector.provider}`);
         }
 
-        client = await createMCPClient({
-          transport: {
-            type: 'http',
-            url: resolvedUrl,
-            headers: {
-              [providerDef.headerName]: tokenData.accessToken,
-            },
-          },
+        client = await connect(resolvedUrl, providerDef, {
+          [providerDef.headerName]: tokenData.accessToken,
         });
       } else if (providerDef?.authType === 'external_mcp') {
+        // Environment for a built-in, ragen-token-vault for an entry an
+        // operator created. A refresh needs the client credentials, so this
+        // runs per connector rather than at authorization time only.
+        const credentials =
+          await getConnectorOAuthCredentialsQuery(providerDef);
+
         const authProvider = new RagenAuthOAuthClientProvider({
           orgId: connector.organizationId,
           userId: connector.userId,
-          provider: connector.provider as McpConnectorProvider,
+          provider: connector.provider,
           callbackUrl: '', // No redirect needed for runtime token injection
-          fixedClientId: providerDef.oauthClientId,
-          fixedClientSecret: providerDef.oauthClientSecret,
+          fixedClientId: credentials.clientId,
+          fixedClientSecret: credentials.clientSecret,
         });
-        client = await createMCPClient({
-          transport: {
-            type: 'http',
-            url: resolvedUrl,
-            authProvider,
-          },
-        });
+        client = await connect(resolvedUrl, providerDef, {}, authProvider);
       } else {
-        client = await createMCPClient({
-          transport: {
-            type: 'http',
-            url: resolvedUrl,
-            headers: {
-              'x-customer-id': connector.customerId,
-            },
-          },
+        client = await connect(resolvedUrl, providerDef, {
+          'x-customer-id': connector.customerId,
         });
       }
 
@@ -471,7 +502,7 @@ export async function createMcpToolsFromConnectors(
         await clearConnectorFailureCommand({
           organizationId: connector.organizationId,
           userId: connector.userId,
-          provider: connector.provider as McpConnectorProvider,
+          provider: connector.provider,
         });
       }
 
@@ -496,7 +527,7 @@ export async function createMcpToolsFromConnectors(
           mcpServerUrlStored: connector.mcpServerUrl,
           mcpServerUrlTried: resolveMcpServerUrl(
             connector,
-            getProviderDefinition(connector.provider as McpConnectorProvider),
+            definitions[connector.provider],
           ),
         },
         'Failed to initialize MCP connector, skipping',
@@ -508,7 +539,7 @@ export async function createMcpToolsFromConnectors(
       await recordConnectorFailureCommand({
         organizationId: connector.organizationId,
         userId: connector.userId,
-        provider: connector.provider as McpConnectorProvider,
+        provider: connector.provider,
         mcpServerUrl: connector.mcpServerUrl,
         error,
         source: 'runtime_init',
@@ -522,6 +553,15 @@ export async function createMcpToolsFromConnectors(
         await client.close();
       } catch (error) {
         logger.error({ err: error }, 'Error closing MCP client');
+      }
+    }
+    // The guarded transports own an undici dispatcher each, and a dispatcher
+    // that is never closed keeps its sockets.
+    for (const closeGuard of guards) {
+      try {
+        await closeGuard();
+      } catch (error) {
+        logger.error({ err: error }, 'Error closing guarded MCP dispatcher');
       }
     }
   };

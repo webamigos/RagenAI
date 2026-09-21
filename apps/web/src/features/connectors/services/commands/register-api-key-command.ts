@@ -1,6 +1,5 @@
-import { type McpConnectorProvider } from '@/generated/prisma/client';
 import { logger } from '@/app/lib/utils/logger';
-import { getProviderDefinition } from '../../constants/providers';
+import { resolveConnectorDefinitionQuery } from '../queries/get-connector-definitions-query';
 import { createConnectorCommand } from './create-connector-command';
 import { markConnectorConnectedCommand } from './mark-connector-connected-command';
 import { fetchWithTimeout } from '../../utils/fetch-with-timeout';
@@ -12,10 +11,10 @@ import { fetchWithTimeout } from '../../utils/fetch-with-timeout';
 export const registerApiKeyCommand = async (
   organizationId: string,
   userId: string,
-  provider: McpConnectorProvider,
+  provider: string,
   apiKey: string,
 ) => {
-  const providerDef = getProviderDefinition(provider);
+  const providerDef = await resolveConnectorDefinitionQuery(provider);
   if (
     !providerDef ||
     providerDef.authType !== 'api_key' ||
@@ -42,6 +41,9 @@ export const registerApiKeyCommand = async (
       baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`,
     );
 
+    // This POST carries the user's API key. The address it goes to comes from
+    // a catalogue row, so it is one somebody typed — the same class of URL
+    // `connect` guards, and it gets the same policy here.
     const response = await fetchWithTimeout(url.toString(), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -49,6 +51,7 @@ export const registerApiKeyCommand = async (
         customerId: connector.customerId,
         api_key: apiKey,
       }),
+      addressGuard: providerDef.addressGuard,
     });
 
     if (!response.ok) {

@@ -1,4 +1,4 @@
-import { isPrivateOrLoopbackHost } from './private-address.js';
+import { isPrivateOrLoopbackHost } from '@ragenai/connector-guard';
 
 /**
  * Ported from apps/web's src/features/connectors/utils/site-url.ts, which was

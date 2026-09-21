@@ -15,7 +15,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { PROVIDER_ICON_PATHS } from '@/features/connectors/utils/provider-icons';
-import type { McpConnectorProvider } from '@/generated/prisma/client';
+import { connectorDisplayName } from '@/features/connectors/utils/connector-display-name';
 import { logger } from '@/app/lib/utils/logger';
 import { statusToast } from '@/app/lib/utils/toast';
 import { PROJECT_MCP_PROVIDERS_CHANGED_EVENT } from '@/features/projects/contracts/events';
@@ -159,9 +159,8 @@ export function IntegrationsOnboardingDialog({ projectId }: Props) {
         </div>
 
         <div className="space-y-2 max-h-72 overflow-y-auto">
-          {connected.map(({ provider }) => {
-            const iconPath =
-              PROVIDER_ICON_PATHS[provider as McpConnectorProvider];
+          {connected.map(({ provider, name }) => {
+            const iconPath = PROVIDER_ICON_PATHS[provider];
             return (
               <label
                 key={provider}
@@ -181,7 +180,12 @@ export function IntegrationsOnboardingDialog({ projectId }: Props) {
                   <img src={iconPath} alt="" className="size-4 shrink-0" />
                 ) : null}
                 <span className="text-sm text-foreground truncate">
-                  {tProviders(`${provider}.name`)}
+                  {connectorDisplayName(
+                    (key) => tProviders.has(key as never),
+                    (key) => tProviders(key as never),
+                    provider,
+                    name,
+                  )}
                 </span>
               </label>
             );

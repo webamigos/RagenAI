@@ -1,0 +1,32 @@
+{
+  "name": "@ragenai/connector-guard",
+  "version": "1.0.0",
+  "private": true,
+  "description": "The SSRF address policy for connector URLs \u2014 the classification, the guarded fetch and the guarded MCP transport \u2014 shared by apps/web, apps/api and apps/admin",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "clean": "rm -rf dist",
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit --incremental --tsBuildInfoFile ./typecheck.tsbuildinfo"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.27.1",
+    "undici": "^7.29.1"
+  },
+  "devDependencies": {
+    "@ragenai/eslint-config": "*",
+    "@types/node": "^22.0.0",
+    "eslint": "^9.39.5",
+    "typescript": "~5.7.0",
+    "@ai-sdk/mcp": "^2.0.49",
+    "vitest": "^4.0.0"
+  },
+  "engines": {
+    "node": "^24.15.0 || >=26.0.0"
+  }
+}

@@ -43,7 +43,7 @@ describe('resolveMcpServerUrl', () => {
     const url = resolveMcpServerUrl(
       connector({ mcpServerUrl: stored, provider: 'WOOCOMMERCE' }),
       providerDef({
-        provider: 'WOOCOMMERCE' as ProviderDefinition['provider'],
+        provider: 'WOOCOMMERCE',
         authType: 'api_key_custom_header',
         headerName: 'X-MCP-API-Key',
       }),

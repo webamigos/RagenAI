@@ -1,4 +1,3 @@
-import type { McpConnectorProvider } from '@/generated/prisma/client';
 import type { ProviderDefinition } from '../contracts/connector.types';
 import { PROVIDER_LIST, getProvider } from '../providers/registry';
 
@@ -6,12 +5,13 @@ import { PROVIDER_LIST, getProvider } from '../providers/registry';
 export const CONNECTOR_PROVIDERS: readonly ProviderDefinition[] = PROVIDER_LIST;
 
 /**
- * Returns the manifest for a given provider, or `undefined` when the
- * value is not a recognised `McpConnectorProvider`. Kept returning
- * `undefined` instead of throwing to preserve legacy caller behaviour.
+ * Returns the manifest for a catalogue slug, or `undefined` when no manifest
+ * carries that slug — a connector added from the admin panel has none, and for
+ * the length of the expand/contract a row can still name a slug this build has
+ * never heard of. `undefined` rather than a throw, as it always was.
  */
 export const getProviderDefinition = (
-  provider: McpConnectorProvider,
+  provider: string,
 ): ProviderDefinition | undefined => {
   return getProvider(provider);
 };

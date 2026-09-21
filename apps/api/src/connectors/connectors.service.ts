@@ -1,21 +1,19 @@
 import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { createMCPClient } from '@ai-sdk/mcp';
+import { connectorSlug } from '@ragenai/platform-contracts';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { AuditLogService } from '../audit-logs/audit-log.service.js';
 import { SubscriptionsService } from '../subscriptions/subscriptions.service.js';
 import { ragenAuthClient } from '../ragen-vault/index.js';
-import { getProviderDefinition } from './provider-definition.js';
+import { CatalogueService } from './catalogue.service.js';
 import { fetchWithTimeout } from './fetch-with-timeout.js';
 import { normalizeSiteUrl } from './site-url.js';
 import {
   createGuardedMcpTransport,
   isBlockedAddressError,
   isInsecureProtocolError,
-} from './guarded-mcp-transport.js';
-import {
-  McpConnectorStatus,
-  type McpConnectorProvider,
-} from '../generated/prisma/client.js';
+} from '@ragenai/connector-guard';
+import { McpConnectorStatus } from '../generated/prisma/client.js';
 import { type ConnectorDto, type CustomHeaderCredentials } from './types.js';
 
 export type ConnectorLookupResult = {
@@ -55,12 +53,17 @@ export class ConnectorsService {
     private readonly prisma: PrismaService,
     private readonly auditLog: AuditLogService,
     private readonly subscriptions: SubscriptionsService,
+    // The catalogue, not the compiled-in manifests. Resolving from manifests
+    // meant an entry an operator added threw `Unknown provider` and could
+    // never be connected through the public API, and a disabled entry kept
+    // working there.
+    private readonly catalogue: CatalogueService,
   ) {}
 
   async createConnector(
     organizationId: string,
     userId: string,
-    provider: McpConnectorProvider,
+    provider: string,
   ) {
     const canConnect = await this.subscriptions.isFeatureEnabled(
       organizationId,
@@ -72,7 +75,7 @@ export class ConnectorsService {
       );
     }
 
-    const providerDef = getProviderDefinition(provider);
+    const providerDef = await this.catalogue.resolve(provider);
     if (!providerDef) {
       throw new Error(`Unknown provider: ${provider}`);
     }
@@ -94,10 +97,10 @@ export class ConnectorsService {
     try {
       const connector = await this.prisma.client.mcpConnector.upsert({
         where: {
-          organizationId_userId_provider: {
+          organizationId_userId_providerSlug: {
             organizationId,
             userId,
-            provider,
+            providerSlug: provider,
           },
         },
         update: {
@@ -108,14 +111,14 @@ export class ConnectorsService {
         create: {
           organizationId,
           userId,
-          provider,
+          providerSlug: provider,
           mcpServerUrl,
           customerId,
           status: McpConnectorStatus.PENDING,
         },
         select: {
           id: true,
-          provider: true,
+          providerSlug: true,
           customerId: true,
           mcpServerUrl: true,
           status: true,
@@ -128,7 +131,7 @@ export class ConnectorsService {
         action: 'connector.connected',
         entityType: 'connector',
         entityId: connector.id,
-        newData: { provider: connector.provider },
+        newData: { provider: connectorSlug(connector) },
       });
 
       return connector;
@@ -146,7 +149,7 @@ export class ConnectorsService {
     try {
       const connector = await this.prisma.client.mcpConnector.findUnique({
         where: { id: connectorId, organizationId, userId },
-        select: { provider: true, customerId: true },
+        select: { providerSlug: true, customerId: true },
       });
 
       if (!connector) {
@@ -156,11 +159,11 @@ export class ConnectorsService {
       try {
         await ragenAuthClient.deleteToken(
           connector.customerId,
-          connector.provider,
+          connectorSlug(connector),
         );
       } catch (error) {
         this.logger.warn(
-          `Failed to delete token from ragen-vault (may not exist), provider=${connector.provider}`,
+          `Failed to delete token from ragen-vault (may not exist), provider=${connectorSlug(connector)}`,
           error,
         );
       }
@@ -175,7 +178,7 @@ export class ConnectorsService {
         action: 'connector.disconnected',
         entityType: 'connector',
         entityId: connectorId,
-        oldData: { provider: connector.provider },
+        oldData: { provider: connectorSlug(connector) },
       });
 
       return deleted;
@@ -229,10 +232,10 @@ export class ConnectorsService {
   async registerApiKey(
     organizationId: string,
     userId: string,
-    provider: McpConnectorProvider,
+    provider: string,
     apiKey: string,
   ) {
-    const providerDef = getProviderDefinition(provider);
+    const providerDef = await this.catalogue.resolve(provider);
     if (
       !providerDef ||
       providerDef.authType !== 'api_key' ||
@@ -257,6 +260,9 @@ export class ConnectorsService {
         baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`,
       );
 
+      // This POST carries the user's API key. The address it goes to comes
+      // from a catalogue row, so it is one somebody typed — the same class of
+      // URL `connect` guards, and it gets the same policy here.
       const response = await fetchWithTimeout(url.toString(), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -264,6 +270,7 @@ export class ConnectorsService {
           customerId: connector.customerId,
           api_key: apiKey,
         }),
+        addressGuard: providerDef.addressGuard,
       });
 
       if (!response.ok) {
@@ -300,10 +307,10 @@ export class ConnectorsService {
   async registerApiKeyBearer(
     organizationId: string,
     userId: string,
-    provider: McpConnectorProvider,
+    provider: string,
     apiKey: string,
   ) {
-    const providerDef = getProviderDefinition(provider);
+    const providerDef = await this.catalogue.resolve(provider);
     if (!providerDef || providerDef.authType !== 'api_key_bearer') {
       throw new Error(`Invalid provider for API key bearer auth: ${provider}`);
     }
@@ -318,10 +325,10 @@ export class ConnectorsService {
 
       return await this.prisma.client.mcpConnector.upsert({
         where: {
-          organizationId_userId_provider: {
+          organizationId_userId_providerSlug: {
             organizationId,
             userId,
-            provider,
+            providerSlug: provider,
           },
         },
         update: {
@@ -333,7 +340,7 @@ export class ConnectorsService {
         create: {
           organizationId,
           userId,
-          provider,
+          providerSlug: provider,
           mcpServerUrl: providerDef.mcpServerUrl,
           customerId,
           status: McpConnectorStatus.CONNECTED,
@@ -360,10 +367,10 @@ export class ConnectorsService {
   async registerApiKeyCustomHeader(
     organizationId: string,
     userId: string,
-    provider: McpConnectorProvider,
+    provider: string,
     credentials: CustomHeaderCredentials,
   ) {
-    const providerDef = getProviderDefinition(provider);
+    const providerDef = await this.catalogue.resolve(provider);
     if (
       !providerDef ||
       providerDef.authType !== 'api_key_custom_header' ||
@@ -399,10 +406,10 @@ export class ConnectorsService {
     try {
       return await this.prisma.client.mcpConnector.upsert({
         where: {
-          organizationId_userId_provider: {
+          organizationId_userId_providerSlug: {
             organizationId,
             userId,
-            provider,
+            providerSlug: provider,
           },
         },
         update: {
@@ -414,7 +421,7 @@ export class ConnectorsService {
         create: {
           organizationId,
           userId,
-          provider,
+          providerSlug: provider,
           mcpServerUrl,
           customerId,
           status: McpConnectorStatus.CONNECTED,
@@ -445,10 +452,10 @@ export class ConnectorsService {
    * generic so we don't leak upstream error shapes to the client.
    */
   async testCustomHeaderConnection(
-    provider: McpConnectorProvider,
+    provider: string,
     credentials: CustomHeaderCredentials,
   ): Promise<TestConnectionResult> {
-    const providerDef = getProviderDefinition(provider);
+    const providerDef = await this.catalogue.resolve(provider);
     if (
       !providerDef ||
       providerDef.authType !== 'api_key_custom_header' ||
@@ -538,11 +545,15 @@ export class ConnectorsService {
   async getConnector(
     organizationId: string,
     userId: string,
-    provider: McpConnectorProvider,
+    provider: string,
   ): Promise<ConnectorLookupResult> {
     const connector = await this.prisma.client.mcpConnector.findUnique({
       where: {
-        organizationId_userId_provider: { organizationId, userId, provider },
+        organizationId_userId_providerSlug: {
+          organizationId,
+          userId,
+          providerSlug: provider,
+        },
       },
       select: {
         mcpServerUrl: true,
@@ -562,9 +573,16 @@ export class ConnectorsService {
       return null;
     }
 
-    const providerDef = getProviderDefinition(provider);
+    // A disabled entry, or one no longer in the catalogue, resolves to nothing
+    // — and that ends the lookup rather than falling through to the stored
+    // row. Sibling of apps/web's `getConnectorQuery`.
+    const providerDef = await this.catalogue.resolve(provider);
+    if (!providerDef) {
+      return null;
+    }
+
     const baseUrl =
-      providerDef?.authBaseUrl || connector.mcpServerUrl.replace(/\/mcp$/, '');
+      providerDef.authBaseUrl || connector.mcpServerUrl.replace(/\/mcp$/, '');
 
     return {
       mcpServerUrl: connector.mcpServerUrl,
@@ -582,7 +600,7 @@ export class ConnectorsService {
         where: { organizationId, userId },
         select: {
           id: true,
-          provider: true,
+          providerSlug: true,
           mcpServerUrl: true,
           customerId: true,
           enabled: true,

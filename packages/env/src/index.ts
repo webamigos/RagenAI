@@ -78,3 +78,12 @@ export {
   isPiiMaskingMisconfigured,
   PII_MASKING_MISCONFIGURED_MESSAGE,
 } from './pii';
+
+export {
+  BUILT_IN_MCP_SERVERS,
+  MCP_GOOGLE_AUTH_VARIABLE,
+  isBuiltInMcpSlug,
+  resolveBuiltInMcpAuthUrl,
+  resolveBuiltInMcpServerUrl,
+  type BuiltInMcpSlug,
+} from './mcp-servers';

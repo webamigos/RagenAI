@@ -40,7 +40,7 @@ import { getEnabledConnectorsQuery } from '@/features/connectors/services/querie
 import { createMcpToolsFromConnectors } from '@/libs/mcp/client';
 import { buildMcpContext } from '@/libs/mcp/provider-instructions';
 import { getProjectMcpProvidersQuery } from '@/features/projects/services/queries/get-project-mcp-providers-query';
-import { getAvailableConnectorProvidersForOrg } from '@/features/connectors/services/queries/get-available-connectors-query';
+import { getAvailableConnectorsForOrg } from '@/features/connectors/services/queries/get-available-connectors-query';
 import { observe, updateActiveTrace } from '@langfuse/tracing';
 import { checkUsageLimitsQuery } from '@/features/ai-usage/services/queries/check-usage-limits-query';
 import {
@@ -494,12 +494,17 @@ export async function streamEvents({
             try {
               let connectors = await getEnabledConnectorsQuery(orgId, userId);
 
-              // Org-level filtering: only keep connectors allowed by app + org settings
-              const orgAllowedProviders =
-                await getAvailableConnectorProvidersForOrg(orgId);
-              connectors = connectors.filter((c) =>
-                orgAllowedProviders.includes(c.provider),
+              // Org-level filtering, from the catalogue: one resolution for
+              // the whole turn, giving both the allowlist and the definitions
+              // the tool loader and the prompt builder need.
+              const available = await getAvailableConnectorsForOrg(orgId);
+              const definitions = Object.fromEntries(
+                available.map((definition) => [
+                  definition.provider,
+                  definition,
+                ]),
               );
+              connectors = connectors.filter((c) => c.provider in definitions);
 
               const effectiveProjectId = projectResult.projectId;
               if (effectiveProjectId && connectors.length > 0) {
@@ -512,7 +517,7 @@ export async function streamEvents({
 
               if (connectors.length > 0) {
                 const { tools, loadedProviders, closeAll } =
-                  await createMcpToolsFromConnectors(connectors);
+                  await createMcpToolsFromConnectors(connectors, definitions);
                 mcpTools = tools;
                 closeMcpClients = closeAll;
 
@@ -528,6 +533,7 @@ export async function streamEvents({
                   connectorProviders,
                   timeZone,
                   currentDateTime,
+                  definitions,
                 );
 
                 logger.info(

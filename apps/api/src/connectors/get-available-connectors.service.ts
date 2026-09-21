@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { OrganizationSettingsService } from '../organizations/organization-settings.service.js';
-import { CONNECTOR_PROVIDERS } from './provider-definition.js';
+import { CatalogueService } from './catalogue.service.js';
 import type { ProviderDefinition } from './types.js';
 
 /**
@@ -17,6 +17,7 @@ import type { ProviderDefinition } from './types.js';
 export class GetAvailableConnectorsService {
   constructor(
     private readonly organizationSettings: OrganizationSettingsService,
+    private readonly catalogue: CatalogueService,
   ) {}
 
   async getAvailableConnectorsForOrg(
@@ -27,7 +28,10 @@ export class GetAvailableConnectorsService {
       this.organizationSettings.getAllowedConnectors(orgId),
     ]);
 
-    let providers = [...CONNECTOR_PROVIDERS];
+    // The catalogue, not the compiled-in eleven: an entry a platform
+    // administrator added has to be offered here too, and a disabled one has
+    // to stop being offered — including through the public API.
+    let providers = await this.catalogue.getDefinitions();
 
     if (appAllowed.length > 0) {
       providers = providers.filter((p) => appAllowed.includes(p.provider));

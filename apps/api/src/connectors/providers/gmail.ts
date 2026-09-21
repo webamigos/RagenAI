@@ -1,9 +1,8 @@
-import { McpConnectorProvider } from '../../generated/prisma/client.js';
 import type { ProviderDefinition } from '../types.js';
 import { MCP_GOOGLE_AUTH_URL, MCP_GOOGLE_SERVER_URL } from './shared-config.js';
 
 export const GMAIL_PROVIDER: ProviderDefinition = {
-  provider: McpConnectorProvider.GMAIL,
+  provider: 'GMAIL',
   name: 'Gmail',
   description: 'Search emails and read messages.',
   icon: 'mail',

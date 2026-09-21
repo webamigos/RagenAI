@@ -1,3 +1,4 @@
+import type { OAuthClientProvider } from '@modelcontextprotocol/sdk/client/auth.js';
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
 import {
   BLOCKED_ADDRESS_ERROR_NAME,
@@ -6,7 +7,7 @@ import {
   INSECURE_PROTOCOL_ERROR_NAME,
   InsecureProtocolError,
   type GuardedFetchOptions,
-} from './guarded-fetch.js';
+} from './guarded-fetch';
 
 /**
  * An MCP transport for a **user-supplied** server URL, connected through the
@@ -33,21 +34,34 @@ import {
 export function createGuardedMcpTransport(
   url: string,
   headers: Record<string, string>,
-  options: GuardedFetchOptions = {},
+  options: GuardedMcpTransportOptions = {},
 ): {
   transport: StreamableHTTPClientTransport;
   close: () => Promise<void>;
 } {
-  const guarded = createGuardedFetch(options);
+  const { authProvider, ...fetchOptions } = options;
+  const guarded = createGuardedFetch(fetchOptions);
 
   return {
     transport: new StreamableHTTPClientTransport(new URL(url), {
       fetch: guarded.fetch,
       requestInit: { headers },
+      authProvider,
     }),
     close: guarded.close,
   };
 }
+
+export type GuardedMcpTransportOptions = GuardedFetchOptions & {
+  /**
+   * An OAuth provider for `external_mcp` connectors. It is carried here
+   * rather than left to the `{ type: 'http', url, authProvider }` shorthand
+   * because that shorthand builds `@ai-sdk/mcp`'s own transport, which calls
+   * global `fetch` — so an OAuth connector using it would be the one shape
+   * that bypassed the address policy.
+   */
+  authProvider?: OAuthClientProvider;
+};
 
 /**
  * True when `error` (or anything in its `cause` chain) is the guard refusing

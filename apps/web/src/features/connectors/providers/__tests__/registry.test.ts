@@ -1,5 +1,7 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
 import { describe, expect, it } from 'vitest';
-import { McpConnectorProvider } from '@/generated/prisma/client';
 import {
   PROVIDER_LIST,
   PROVIDER_REGISTRY,
@@ -9,11 +11,32 @@ import {
 } from '../registry';
 import { buildMcpContext } from '../system-prompt';
 
+/**
+ * The eleven built-ins, read from the projection the seed and the migration
+ * write. It is the catalogue's own list of what ships with Ragen, and it
+ * replaced the enum this file used to compare against.
+ */
+const BUILT_IN_SLUGS: string[] = (
+  JSON.parse(
+    readFileSync(
+      join(
+        import.meta.dirname,
+        '../../../../../../../prisma/catalog/built-in-connectors.json',
+      ),
+      'utf8',
+    ),
+  ) as { slug: string }[]
+).map((entry) => entry.slug);
+
 describe('PROVIDER_REGISTRY', () => {
-  it('covers every McpConnectorProvider enum value', () => {
-    const enumValues = Object.values(McpConnectorProvider).sort();
+  it('covers every built-in the catalogue is seeded with', () => {
+    // Not every catalogue entry — an entry an operator adds has no pack at
+    // all, which is the point of the catalogue. The eleven that ship with
+    // Ragen still do, and `every-seeded-connector-resolves.test.ts` is the
+    // guard that says so across both apps.
+    const seeded = BUILT_IN_SLUGS.sort();
     const registryKeys = Object.keys(PROVIDER_REGISTRY).sort();
-    expect(registryKeys).toEqual(enumValues);
+    expect(registryKeys).toEqual(seeded);
   });
 
   it('exposes PROVIDER_LIST with one entry per registry key', () => {
@@ -22,13 +45,21 @@ describe('PROVIDER_REGISTRY', () => {
     expect(listProviders).toEqual(Object.keys(PROVIDER_REGISTRY).sort());
   });
 
-  it('returns the manifest for every enum value via getProvider', () => {
-    for (const enumValue of Object.values(McpConnectorProvider)) {
-      const manifest = getProvider(enumValue);
-      expect(manifest.provider).toBe(enumValue);
-      expect(manifest.name).toBeTruthy();
-      expect(manifest.description).toBeTruthy();
+  it('returns the pack for every built-in slug via getProvider', () => {
+    for (const slug of BUILT_IN_SLUGS) {
+      const manifest = getProvider(slug);
+      expect(manifest).toBeDefined();
+      expect(manifest?.provider).toBe(slug);
+      expect(manifest?.name).toBeTruthy();
+      expect(manifest?.description).toBeTruthy();
     }
+  });
+
+  it('answers undefined for a slug no manifest carries', () => {
+    // A connector added from the admin panel has no manifest at all, and a
+    // row can name a slug this build has never heard of. That is a supported
+    // state, not a crash — see the B4 resolver.
+    expect(getProvider('notion')).toBeUndefined();
   });
 
   it('uses stable string identifiers matching enum values', () => {
@@ -49,29 +80,66 @@ describe('buildMcpContext', () => {
     expect(output).toContain(now);
   });
 
-  it('appends each known providers system prompt fragment', () => {
-    const output = buildMcpContext(['CLICKUP', 'FIREFLIES'], timeZone, now);
+  // The fragments arrive as resolved definitions — a catalogue row merged
+  // with its behaviour pack — rather than being looked up here, because a
+  // connector an operator added carries its prompt on its row and the registry
+  // only knows the eleven that ship with Ragen. The packs are what a built-in
+  // resolves to, so passing them is the built-in case.
+  it('appends each connectors system prompt fragment', () => {
+    const output = buildMcpContext(
+      ['CLICKUP', 'FIREFLIES'],
+      timeZone,
+      now,
+      PROVIDER_REGISTRY,
+    );
     expect(output).toContain('For ClickUp:');
     expect(output).toContain('For Fireflies.ai');
   });
 
   it('injects the caller timezone into function-style fragments', () => {
-    const output = buildMcpContext(['GOOGLE_CALENDAR'], timeZone, now);
+    const output = buildMcpContext(
+      ['GOOGLE_CALENDAR'],
+      timeZone,
+      now,
+      PROVIDER_REGISTRY,
+    );
     expect(output).toContain(`timeZone="${timeZone}"`);
   });
 
-  it('skips unknown providers without throwing', () => {
+  it('skips a connector nothing resolved, without throwing', () => {
     const output = buildMcpContext(
       ['HUBSPOT', 'NOT_A_REAL_PROVIDER'],
       timeZone,
       now,
+      PROVIDER_REGISTRY,
     );
     expect(output).toContain('For HubSpot');
     expect(output).not.toContain('NOT_A_REAL_PROVIDER:');
   });
 
+  it('takes a prompt off a row with no behaviour pack at all', () => {
+    // The whole point of the catalogue: Notion is a row, and its prompt is
+    // text on that row.
+    const output = buildMcpContext(['notion'], timeZone, now, {
+      notion: {
+        provider: 'notion',
+        name: 'Notion',
+        description: 'Search pages.',
+        icon: 'notebook',
+        mcpServerUrl: 'https://mcp.notion.com/mcp',
+        systemPromptFragment: 'For Notion: search before you answer.',
+      },
+    });
+    expect(output).toContain('For Notion: search before you answer.');
+  });
+
   it('includes the fragment for providers that define one', () => {
-    const output = buildMcpContext(['WOOCOMMERCE'], timeZone, now);
+    const output = buildMcpContext(
+      ['WOOCOMMERCE'],
+      timeZone,
+      now,
+      PROVIDER_REGISTRY,
+    );
     expect(output).toContain('For WooCommerce');
   });
 });
