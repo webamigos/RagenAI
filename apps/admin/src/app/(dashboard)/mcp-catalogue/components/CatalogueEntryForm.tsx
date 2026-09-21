@@ -398,19 +398,28 @@ function OAuthCredentials({ publicId }: { publicId: string }) {
     <div className="space-y-2">
       <div className="text-sm font-medium">OAuth client credentials</div>
       <div className="flex flex-wrap gap-2">
-        <input
-          className="min-w-48 flex-1 rounded-md border border-border bg-background px-3 py-2 text-sm"
-          value={clientId}
-          placeholder="Client id"
-          onChange={(event) => setClientId(event.target.value)}
-        />
-        <input
-          className="min-w-48 flex-1 rounded-md border border-border bg-background px-3 py-2 text-sm"
-          value={clientSecret}
-          type="password"
-          placeholder="Client secret"
-          onChange={(event) => setClientSecret(event.target.value)}
-        />
+        {/* A placeholder is not an accessible name — it is a hint that
+            disappears the moment anything is typed. These two sit outside
+            `Field`, so they carry their own. */}
+        <label className="min-w-48 flex-1">
+          <span className="sr-only">OAuth client id</span>
+          <input
+            className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
+            value={clientId}
+            placeholder="Client id"
+            onChange={(event) => setClientId(event.target.value)}
+          />
+        </label>
+        <label className="min-w-48 flex-1">
+          <span className="sr-only">OAuth client secret</span>
+          <input
+            className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
+            value={clientSecret}
+            type="password"
+            placeholder="Client secret"
+            onChange={(event) => setClientSecret(event.target.value)}
+          />
+        </label>
         <button
           type="button"
           onClick={store}
