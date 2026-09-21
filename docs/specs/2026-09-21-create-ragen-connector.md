@@ -1,6 +1,6 @@
 ---
 title: create-ragen-connector — scaffolding an MCP server Ragen can connect to
-status: draft
+status: in-progress
 areas: [connectors, admin, api]
 adrs: [02, 32, 35, 38, 52]
 ---
@@ -323,46 +323,51 @@ Each phase leaves both repositories working.
 
 ### Phase A — the CLI, with one target
 
-- [ ] **A1.** `packages/create-ragen-connector` with `args.ts` + tests: flag
+- [x] **A1.** `packages/create-ragen-connector` with `args.ts` + tests: flag
       parsing, slug validation against the catalogue's rule, refusal messages.
       No file writing yet. Runs in the root `npm test`.
-- [ ] **A2.** Workspace detection and port allocation, as pure functions over a
+- [x] **A2.** Workspace detection and port allocation, as pure functions over a
       parsed port table. Tested against the real `AGENTS.md`.
-- [ ] **A3.** The workspace target renders: `services/<name>/` with `index.ts`,
+- [x] **A3.** The workspace target renders: `services/<name>/` with `index.ts`,
       one example tool, `__tests__`, `.env.example`, `Dockerfile`,
       `docker-compose.yml`, `tsconfig*.json`, `README.md`. Both port tables
       updated. Verified by generating into a temp dir and running the
       repository's own gate over it.
-- [ ] **A4.** `ragen-connector.json` and the printed summary.
+- [x] **A4.** `ragen-connector.json` and the printed summary.
 
 ### Phase B — the second target
 
-- [ ] **B1.** `src/runtime/` vendored from core, with
+- [x] **B1.** `src/runtime/` vendored from core, with
       `vendored-runtime-is-current.test.ts` asserting the copies match their
       sources byte for byte.
-- [ ] **B2.** The standalone target renders, including `git init` and a
+- [x] **B2.** The standalone target renders, including `git init` and a
       Dockerfile whose build context is the project itself rather than a
       monorepo root.
-- [ ] **B3.** `templates-differ-only-where-they-must.test.ts`.
+- [x] **B3.** `templates-differ-only-where-they-must.test.ts`.
 
 ### Phase C — the proof
 
-- [ ] **C1.** Generate the demo connector with the scaffolder — no hand-editing
+- [x] **C1.** Generate the demo connector with the scaffolder — no hand-editing
       of anything the template wrote — and commit it as
       `services/<demo>`. Two tools over a keyless public API, `server_side`.
 - [ ] **C2.** Run it, add it to a local Ragen through `/mcp-catalogue` with the
       RFC 1918 address, connect it, and get a chat turn that calls a tool.
-      Record what actually happened, including anything the spec got wrong.
+      **Blocked on the finding below**, and on a local constraint:
+      Ragen's own `probeMcpServer` lists both of the generated connector's
+      tools, and the runtime transport then refuses the same URL because it is
+      `http://`. Separately, this machine resets inbound connections on its own
+      LAN address (macOS local-network privacy), so the RFC 1918 route needs
+      both apps containerised here.
 - [ ] **C3.** `p0` e2e in `ragen-app`: a catalogue entry pointed at a stub MCP
       server in-process, connected, and a chat turn that resolves its tool.
       This is the regression gate for the wire contract.
 
 ### Phase D — replace the checklist
 
-- [ ] **D1.** Rewrite `.claude/skills/connectors-add-service` around the
+- [x] **D1.** Rewrite `.claude/skills/connectors-add-service` around the
       scaffolder, keeping what a template cannot decide (the credential model,
       ADR-04's obligations when per-customer auth is impossible).
-- [ ] **D2.** `docs/mcp-integrations.md` in this repository gains the paragraph
+- [x] **D2.** `docs/mcp-integrations.md` in this repository gains the paragraph
       linking the two halves.
 - [ ] **D3.** Publish `create-ragen-connector@0.1.0`. The name is free on npm.
 
@@ -418,3 +423,24 @@ Not in this spec; recorded because it found them.
   operator omits the suffix. Test connection catches it, so it is a usability
   defect rather than a live bug; normalising the suffix in one place would close
   it.
+- **An `http://` catalogue entry passes Test connection and can never load a
+  tool.** Found by C2, and the most serious of the three. `createGuardedConnector`
+  defaults `allowedProtocols` to `['https:']`; `probeMcpServer` overrides it with
+  `[parsed.protocol]` and says so in a comment about internal servers that
+  legitimately have no certificate; the three runtime call sites
+  (`apps/web/src/libs/mcp/client.ts:400`, `apps/api/src/mcp/client.ts:393`,
+  `apps/api/src/connectors/connectors.service.ts:493`) pass nothing. So the form
+  accepts `http://`, Test connection reports `{ok: true}` and names the tools,
+  and every tool load then fails with
+  `InsecureProtocolError: only https is allowed`. Measured at one address with
+  the address policy held constant, so the scheme is the only variable.
+
+  That is this button's purpose exactly inverted — it exists so an operator can
+  tell a working endpoint from a typo before a customer does.
+
+  Two legitimate resolutions, and it is a product decision which:
+  **(a)** thread the entry's own scheme to the runtime call sites as the probe
+  already does — `['http:', 'https:']` for an http entry, `['https:']` for an
+  https one, so a redirect still cannot downgrade; or **(b)** require https of
+  operator-created entries, and make the form and the probe refuse `http://`
+  rather than accept it. What cannot stand is the two halves disagreeing.
