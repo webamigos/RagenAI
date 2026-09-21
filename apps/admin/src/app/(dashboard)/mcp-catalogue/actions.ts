@@ -184,6 +184,10 @@ export async function createCatalogueEntryAction(
       // one field on this form with a security consequence.
       allowsPrivateAddress: input.allowsPrivateAddress,
     },
+    // The catalogue is platform configuration and belongs to no organization, so
+    // `AuditLog` cannot hold the row — see `lib/audit.ts`. Without this the call
+    // throws and the mutation ends on an error page having already written.
+    securityEvent: { eventType: 'ADMIN_SETTINGS_CHANGED' },
   });
 
   revalidatePath('/mcp-catalogue');
@@ -259,6 +263,7 @@ export async function updateCatalogueEntryAction(
       mcpServerUrl: input.mcpServerUrl.trim(),
       allowsPrivateAddress: input.allowsPrivateAddress,
     },
+    securityEvent: { eventType: 'ADMIN_SETTINGS_CHANGED' },
   });
 
   revalidatePath('/mcp-catalogue');
@@ -298,6 +303,7 @@ export async function setCatalogueEntryEnabledAction(
     entityId: publicId,
     before: { slug: existing.slug, enabled: existing.enabled },
     after: { slug: existing.slug, enabled },
+    securityEvent: { eventType: 'ADMIN_SETTINGS_CHANGED' },
   });
 
   revalidatePath('/mcp-catalogue');
@@ -383,6 +389,7 @@ export async function deleteCatalogueEntryAction(
       allowlistsPurged: organizations.length,
     },
     after: { deleted: true },
+    securityEvent: { eventType: 'ADMIN_SETTINGS_CHANGED' },
   });
 
   revalidatePath('/mcp-catalogue');
@@ -420,13 +427,16 @@ export type ConnectionTestResult =
 export async function testCatalogueConnectionAction(
   url: string,
   allowsPrivateAddress: boolean,
+  authType?: string,
 ): Promise<ConnectionTestResult> {
   const admin = await requireAdmin();
 
   // The same save-time refusal, before anything is dialled: a check offered
   // on a form must not be the one path that reaches an address the form would
-  // refuse to store.
-  const refusal = serverUrlFailure(url.trim(), allowsPrivateAddress);
+  // refuse to store. The auth type travels with it for the same reason — a
+  // test that passes on http for a credentialed entry the save would refuse is
+  // the disagreement this comment exists to prevent.
+  const refusal = serverUrlFailure(url.trim(), allowsPrivateAddress, authType);
   if (refusal) {
     return { ok: false, reason: refusal };
   }
@@ -443,6 +453,7 @@ export async function testCatalogueConnectionAction(
     after: result.ok
       ? { ok: true, tools: result.toolNames.length }
       : { ok: false, reason: result.reason },
+    securityEvent: { eventType: 'ADMIN_SETTINGS_CHANGED' },
   });
 
   return result;
@@ -541,6 +552,7 @@ export async function storeCatalogueOAuthCredentialsAction(
     // The slug and the fact, never the values: this feed is exactly what
     // ADR-32 keeps a secret out of.
     after: { slug: entry.slug, oauthCredentialsStored: true },
+    securityEvent: { eventType: 'ADMIN_SETTINGS_CHANGED' },
   });
 
   revalidatePath('/mcp-catalogue');

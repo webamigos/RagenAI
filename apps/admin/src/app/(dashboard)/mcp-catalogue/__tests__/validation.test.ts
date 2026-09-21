@@ -101,6 +101,49 @@ describe('the address check at save time', () => {
     expect(serverUrlFailure('mcp.notion.com', false)).toMatch(/full URL/);
     expect(serverUrlFailure('file:///etc/passwd', false)).toMatch(/http/);
   });
+
+  /**
+   * `protocolsFor` holds a credentialed connector to https when the session is
+   * opened, which left the form accepting one over http: it saved, enabled,
+   * and then failed every connection with nothing on the form having said so.
+   * A private address does not excuse it — that flag widens which addresses
+   * may be dialled, and a public hostname still resolves with it set.
+   */
+  it('refuses http for a credentialed entry, private address or not', () => {
+    for (const allowPrivate of [false, true]) {
+      expect(
+        serverUrlFailure(
+          'http://mcp.example.com/mcp',
+          allowPrivate,
+          'API_KEY_BEARER',
+        ),
+      ).toMatch(/needs https/);
+      expect(
+        serverUrlFailure('http://10.0.0.5/mcp', allowPrivate, 'EXTERNAL_MCP'),
+      ).not.toBeNull();
+    }
+  });
+
+  it('lets a server-side entry speak http, which is the shape ADR-52 is for', () => {
+    expect(
+      serverUrlFailure('http://10.0.0.5/mcp', true, 'SERVER_SIDE'),
+    ).toBeNull();
+  });
+
+  it('holds a credentialed entry to https through validateEntry too', () => {
+    expect(
+      validateEntry(
+        input({
+          mcpServerUrl: 'http://10.0.0.5/mcp',
+          authType: 'API_KEY_BEARER',
+          allowsPrivateAddress: true,
+        }),
+      ),
+    ).toEqual({
+      field: 'mcpServerUrl',
+      message: expect.stringMatching(/needs https/),
+    });
+  });
 });
 
 describe('valuesForAuthType', () => {
