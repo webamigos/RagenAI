@@ -96,6 +96,22 @@ archive is the blog.
   from every organization's gallery and stops new connections while the
   connectors people already have keep working.
 
+- `[minor]` **An MCP server on `http://` now works, instead of passing the test
+  and then failing quietly.** The form accepted a plain-`http` address and
+  **Test connection** confirmed it, tool names and all — and then every tool
+  call refused it, because the outbound guard allowed https only. That is the
+  test button's whole purpose inverted. An entry now dials the scheme it was
+  saved with, so an internal server without a certificate works; an `https`
+  entry is still held to https, so a redirect cannot quietly downgrade it.
+
+- `[brief]` **Writing the MCP server itself is one command.**
+  `npx create-ragen-connector` scaffolds a server Ragen can connect to — the
+  two listeners, the Dockerfile, the tests, and the three places Ragen's client
+  departs from the MCP specification, which nobody could previously learn
+  without reading Ragen's source. It prints the catalogue row to paste into the
+  admin panel. Lives in
+  [`ragen-connectors`](https://github.com/webamigos/ragen-connectors/pull/45).
+
 ### Thread: guardrails, authored in the panel
 
 - `[major]` **A guardrail written in the admin panel now applies to the chat.**
