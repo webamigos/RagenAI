@@ -11,8 +11,13 @@ adrs: [02, 32, 35, 38, 52]
 > lives here because the spec process does ([`README.md`](README.md)) and
 > because the acceptance criterion is a scaffolded connector answering a real
 > chat turn in `ragen-app`. Everything this changes in *this* repository is
-> named in [Core surfaces touched](#core-surfaces-touched) — and it is a
-> documentation line and one e2e test, nothing else.
+> named in [Core surfaces touched](#core-surfaces-touched).
+>
+> That section was written expecting a documentation line and one e2e test.
+> Building against the catalogue found a defect in it, so the branch also
+> carries a fix in `packages/connector-guard` and its two consumers — which is
+> the spec doing its job rather than the scope slipping, and is why the table
+> below says so.
 
 ## TLDR
 
@@ -265,7 +270,8 @@ ADR-52 having landed first:
 |---|---|---|
 | `prisma/schema.prisma` | **none** | — |
 | `packages/platform-contracts` | **none**; its slug rule is *read* by a new test | `slug-rule-matches-the-catalogue.test.ts` |
-| `packages/connector-guard` | **none** | — |
+| `packages/connector-guard` | `protocolsFor` — the scheme, and whether the session carries a credential. Not planned; a defect this work found | its own tests, plus `connect-is-guarded` in **both** apps |
+| `apps/web` + `apps/api` MCP clients | each passes `protocolsFor(url, …)` at the one place it dials a catalogue entry | `connect-is-guarded` on both — the pair exists because these two are copies and have drifted |
 | `docs/mcp-integrations.md` | one paragraph pointing at the scaffolder | review |
 | `apps/web/e2e/` | one `p0` test: a catalogue entry that is only a row is offered, connects, and stops being offered when disabled | it is the gate — see [Testing](#testing) |
 
