@@ -67,6 +67,15 @@ export async function fetchWithTimeout(
 const NULL_BODY_STATUSES = new Set([101, 103, 204, 205, 304]);
 
 /**
+ * How much of a guarded response is worth reading.
+ *
+ * Both callers parse one small JSON object. The address behind a guarded URL
+ * is one somebody typed, so the endpoint is not necessarily friendly, and the
+ * timeout bounds how *long* it can answer for and not how *much* it can send.
+ */
+const MAX_BUFFERED_BYTES = 1024 * 1024;
+
+/**
  * Read the body here, while the dispatcher is still open.
  *
  * `fetch` resolves at the headers, so the body is still on the wire when the
@@ -78,15 +87,45 @@ const NULL_BODY_STATUSES = new Set([101, 103, 204, 205, 304]);
  * is why the two small-JSON callers never saw it.
  *
  * Buffering keeps the `Promise<Response>` contract those callers are written
- * against, and the abort signal still covers the read, so a body that never
- * ends is cut off at `timeoutMs` rather than held open.
+ * against. The read is bounded rather than an `arrayBuffer()`: the abort
+ * signal caps the time an endpoint has, not the bytes it sends in that time,
+ * and `Content-Length` is a claim the sender makes rather than a limit it is
+ * held to. Reading the stream and counting is the only figure that is true.
  */
 async function bufferBody(response: Response): Promise<Response> {
   if (!response.body || NULL_BODY_STATUSES.has(response.status)) {
     return response;
   }
 
-  const body = await response.arrayBuffer();
+  const reader = response.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let size = 0;
+
+  try {
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) {
+        break;
+      }
+      size += value.byteLength;
+      if (size > MAX_BUFFERED_BYTES) {
+        await reader.cancel();
+        throw new Error(
+          `Response body exceeded ${MAX_BUFFERED_BYTES} bytes: ${response.url}`,
+        );
+      }
+      chunks.push(value);
+    }
+  } finally {
+    reader.releaseLock();
+  }
+
+  const body = new Uint8Array(size);
+  let offset = 0;
+  for (const chunk of chunks) {
+    body.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
 
   return new Response(body, {
     status: response.status,

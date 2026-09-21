@@ -9,6 +9,7 @@ import {
 import { resolveConnectorDefinitionQuery } from '@/features/connectors/services/queries/get-connector-definitions-query';
 import { getConnectorOAuthCredentialsQuery } from '@/features/connectors/services/queries/get-connector-credentials-query';
 import { blockedAddressReason } from '@/features/connectors/utils/refuse-blocked-address';
+import { guardedAuthFetch } from '@/features/connectors/utils/guarded-auth-fetch';
 import { RagenAuthOAuthClientProvider } from '@/libs/ragen-vault';
 import { logger } from '@/app/lib/utils/logger';
 import { recordConnectorFailureCommand } from '@/features/connectors/services/commands/record-connector-failure-command';
@@ -145,10 +146,19 @@ export async function GET(request: NextRequest) {
         providerDef.oauthClientSecret!,
       );
     } else {
-      const result = await mcpAuth(oauthProvider, {
-        serverUrl: providerDef.mcpServerUrl,
-        authorizationCode: code,
-      });
+      // The code exchange is the same unguarded hop as discovery on the way
+      // out, and this one carries the authorization code.
+      const guarded = guardedAuthFetch(providerDef);
+      let result;
+      try {
+        result = await mcpAuth(oauthProvider, {
+          serverUrl: providerDef.mcpServerUrl,
+          authorizationCode: code,
+          ...(guarded.fetchFn && { fetchFn: guarded.fetchFn }),
+        });
+      } finally {
+        await guarded.close();
+      }
 
       if (result !== 'AUTHORIZED') {
         await recordConnectorFailureCommand({

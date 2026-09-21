@@ -7,6 +7,7 @@ import {
 import { resolveConnectorDefinitionQuery } from '@/features/connectors/services/queries/get-connector-definitions-query';
 import { getConnectorOAuthCredentialsQuery } from '@/features/connectors/services/queries/get-connector-credentials-query';
 import { blockedAddressReason } from '@/features/connectors/utils/refuse-blocked-address';
+import { guardedAuthFetch } from '@/features/connectors/utils/guarded-auth-fetch';
 import { RagenAuthOAuthClientProvider } from '@/libs/ragen-vault';
 import { logger } from '@/app/lib/utils/logger';
 import { readPublicRuntimeConfig } from '@/config/public-runtime-config';
@@ -99,10 +100,19 @@ export async function GET(request: NextRequest) {
       'External MCP OAuth connect: starting auth',
     );
 
-    const result = await mcpAuth(oauthProvider, {
-      serverUrl: providerDef.mcpServerUrl,
-      ...(scope && { scope }),
-    });
+    // Discovery and the token request are the two hops no transport covers,
+    // so the policy is handed to `mcpAuth` itself.
+    const guarded = guardedAuthFetch(providerDef);
+    let result;
+    try {
+      result = await mcpAuth(oauthProvider, {
+        serverUrl: providerDef.mcpServerUrl,
+        ...(scope && { scope }),
+        ...(guarded.fetchFn && { fetchFn: guarded.fetchFn }),
+      });
+    } finally {
+      await guarded.close();
+    }
 
     if (result === 'AUTHORIZED') {
       return NextResponse.json({ status: 'already_authorized' });

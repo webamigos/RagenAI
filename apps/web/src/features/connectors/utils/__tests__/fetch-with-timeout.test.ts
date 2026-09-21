@@ -134,6 +134,56 @@ describe('fetchWithTimeout', () => {
     expect(mockClose).toHaveBeenCalledTimes(1);
   });
 
+  it('refuses a body past the buffering limit rather than holding it', async () => {
+    // The timeout caps how long an endpoint may answer for, not how much it
+    // sends in that time, so the read counts bytes itself.
+    const chunk = new Uint8Array(256 * 1024);
+    let sent = 0;
+    mockGuardedFetch.mockResolvedValue(
+      new Response(
+        new ReadableStream({
+          pull(controller) {
+            if (sent >= 8) {
+              controller.close();
+              return;
+            }
+            sent += 1;
+            controller.enqueue(chunk);
+          },
+        }),
+      ),
+    );
+
+    await expect(
+      fetchWithTimeout('https://typed.example.test/register', {
+        addressGuard: { allowPrivate: false },
+      }),
+    ).rejects.toThrow(/exceeded 1048576 bytes/);
+    expect(mockClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('reads a body that fits, across several chunks', async () => {
+    const encoder = new TextEncoder();
+    mockGuardedFetch.mockResolvedValue(
+      new Response(
+        new ReadableStream({
+          start(controller) {
+            controller.enqueue(encoder.encode('{"status":'));
+            controller.enqueue(encoder.encode('"ok"}'));
+            controller.close();
+          },
+        }),
+      ),
+    );
+
+    const response = await fetchWithTimeout(
+      'https://typed.example.test/register',
+      { addressGuard: { allowPrivate: false } },
+    );
+
+    await expect(response.json()).resolves.toEqual({ status: 'ok' });
+  });
+
   it('leaves a deployer-controlled URL on the plain fetch', async () => {
     const globalFetch = vi
       .spyOn(globalThis, 'fetch')
