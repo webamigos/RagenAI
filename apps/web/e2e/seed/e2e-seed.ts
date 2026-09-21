@@ -589,27 +589,9 @@ async function seed() {
         pattern: 'zzqx-logged-token',
         patternIsRegex: false,
       },
-      {
-        organizationId: null,
-        name: 'E2E guardrail OUTPUT BLOCK',
-        description: 'Fixture for p0-30. Withholds an answer that matches.',
-        kind: 'PATTERN',
-        // The one fixture that reads the answer rather than the question. It
-        // matches only what the mock LLM echoes back when a prompt asks for
-        // it, so no other spec's turn can trip it — a rule matching the mock's
-        // ordinary sentence would refuse every chat test in the suite.
-        stage: 'OUTPUT',
-        action: 'BLOCK',
-        enabled: true,
-        severity: 'warn',
-        pattern: 'zzqx-echo-withheld',
-        patternIsRegex: false,
-      },
     ],
   });
-  console.log(
-    'Created guardrail fixtures: BLOCK and LOG on input, BLOCK on output',
-  );
+  console.log('Created guardrail fixtures: one BLOCK, one LOG');
 
   console.log('E2E seed complete.');
 }

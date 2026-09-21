@@ -878,13 +878,36 @@ If it slips, A–C and E still ship a complete capability.
       scoring an attempt to override instructions — and neither is a question
       about an answer.
 
-      `p0-30` covers a withheld answer end to end. Its fixture matches what
-      `mock-llm-server.ts` echoes back when a prompt asks for a token, not
-      what the mock always says: a rule matching the ordinary answer would
-      refuse every chat spec in the suite. It asserts the stored refusal
-      **positively** — "the content does not contain the token" is true of
-      ciphertext too, so on an install with thread encryption on it would pass
-      while proving nothing.
+      **The `p0-` e2e this item asked for is not here, and that is a
+      correction rather than a shortcut.** It was written, it ran, and it
+      turned up something bigger than itself: the e2e suite has never carried
+      a turn through a real chain to an answer. There is no Qdrant service in
+      the job — `e2e.yml` says so in a comment — `routes.e2e.yaml` has no
+      embedding route, the answer model races the organization's setting
+      because the suite enables the model picker, and the rephraser does not
+      speak the mock's shape. Nothing noticed, because every chat spec either
+      routes the threads endpoint to a canned response (`p0-23`, `p0-24`) or
+      asserts a refusal and an absence (`p0-27`, `p0-29`), and all of those
+      survive a turn that never answers.
+
+      So the spec is deferred to the change that makes the harness able to
+      answer, and it is filed rather than skipped. Ticking D4 without it is a
+      deliberate call: a guardrail e2e that is really a harness project is
+      work about the harness, and holding a finished phase behind it buys
+      nothing. What covers the behaviour meanwhile: the window and the
+      buffered pass in `packages/guardrails` (278 tests), the funnel in both
+      apps including a block ending the stream, `answerToPersist` for what a
+      refused turn stores, and `a-supported-combination-is-evaluable` for the
+      two entries this item adds.
+
+      Three things learned while proving it, kept because the next attempt
+      will meet them: the assertion that no part of the withheld answer is on
+      screen cannot be written over the token — the token is in the question
+      the reader typed; a database assertion has to be scoped to the turn's
+      own thread, or Playwright's retry satisfies it from the previous
+      attempt's row, in 1.4 seconds; and a local run without `LLM_ROUTES_PATH`
+      and the mock's credentials talks to real providers, which makes it
+      useless as evidence about CI.
 
 ### Phase E — seeing what it did
 
