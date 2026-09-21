@@ -307,6 +307,9 @@
     "conversation": "base de conocimiento y otras fuentes"
   },
   "text-area": {
+    "send-message": "Enviar mensaje",
+    "voice-input": "Entrada de voz",
+    "add-attachment": "Añadir adjunto",
     "placeholder": "Escribe tu pregunta..."
   },
   "success-toast": {
@@ -1068,6 +1071,8 @@
     "drop-to-project": "Suelta los archivos aquí para añadirlos al conocimiento del proyecto"
   },
   "prompt-attachments": {
+    "send-message": "Enviar mensaje",
+    "add-attachment": "Añadir adjunto",
     "upload-file": "Subir archivo",
     "from-knowledge-base": "Desde la base de conocimiento",
     "from-google-drive": "Desde Google Drive",

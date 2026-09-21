@@ -307,6 +307,9 @@
     "conversation": "baza wiedzy i inne źródła"
   },
   "text-area": {
+    "send-message": "Wyślij wiadomość",
+    "voice-input": "Wprowadzanie głosowe",
+    "add-attachment": "Dodaj załącznik",
     "placeholder": "Wpisz swoje pytanie..."
   },
   "success-toast": {
@@ -1068,6 +1071,8 @@
     "drop-to-project": "Upuść pliki, aby dodać do bazy wiedzy projektu"
   },
   "prompt-attachments": {
+    "send-message": "Wyślij wiadomość",
+    "add-attachment": "Dodaj załącznik",
     "upload-file": "Wgraj plik",
     "from-knowledge-base": "Z Bazy Wiedzy",
     "from-google-drive": "Z Google Drive",

@@ -307,6 +307,9 @@
     "conversation": "znalostná báza a ďalšie zdroje"
   },
   "text-area": {
+    "send-message": "Odoslať správu",
+    "voice-input": "Hlasový vstup",
+    "add-attachment": "Pridať prílohu",
     "placeholder": "Napíšte svoju otázku..."
   },
   "success-toast": {
@@ -1068,6 +1071,8 @@
     "drop-to-project": "Pustite súbory sem na ich pridanie do znalostí projektu"
   },
   "prompt-attachments": {
+    "send-message": "Odoslať správu",
+    "add-attachment": "Pridať prílohu",
     "upload-file": "Nahrať súbor",
     "from-knowledge-base": "Zo znalostnej bázy",
     "from-google-drive": "Z Google Drive",

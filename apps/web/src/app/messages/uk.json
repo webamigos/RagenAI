@@ -307,6 +307,9 @@
     "conversation": "база знань та інші джерела"
   },
   "text-area": {
+    "send-message": "Надіслати повідомлення",
+    "voice-input": "Голосове введення",
+    "add-attachment": "Додати вкладення",
     "placeholder": "Введи своє запитання..."
   },
   "success-toast": {
@@ -1068,6 +1071,8 @@
     "drop-to-project": "Відпусти файли тут, щоб додати їх до знань проєкту"
   },
   "prompt-attachments": {
+    "send-message": "Надіслати повідомлення",
+    "add-attachment": "Додати вкладення",
     "upload-file": "Завантажити файл",
     "from-knowledge-base": "З бази знань",
     "from-google-drive": "З Google Drive",

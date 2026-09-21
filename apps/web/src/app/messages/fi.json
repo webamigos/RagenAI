@@ -307,6 +307,9 @@
     "conversation": "tietopankki ja muut lähteet"
   },
   "text-area": {
+    "send-message": "Lähetä viesti",
+    "voice-input": "Puhesyöte",
+    "add-attachment": "Lisää liite",
     "placeholder": "Kirjoita kysymyksesi..."
   },
   "success-toast": {
@@ -1068,6 +1071,8 @@
     "drop-to-project": "Pudota tiedostot tähän lisätäksesi ne projektin tietämykseen"
   },
   "prompt-attachments": {
+    "send-message": "Lähetä viesti",
+    "add-attachment": "Lisää liite",
     "upload-file": "Lataa tiedosto",
     "from-knowledge-base": "Tietopankista",
     "from-google-drive": "Google Drivesta",

@@ -307,6 +307,9 @@
     "conversation": "videnbase og andre kilder"
   },
   "text-area": {
+    "send-message": "Send besked",
+    "voice-input": "Taleindtastning",
+    "add-attachment": "Tilføj vedhæftning",
     "placeholder": "Skriv dit spørgsmål..."
   },
   "success-toast": {
@@ -1068,6 +1071,8 @@
     "drop-to-project": "Slip filerne her for at tilføje dem til projektets viden"
   },
   "prompt-attachments": {
+    "send-message": "Send besked",
+    "add-attachment": "Tilføj vedhæftning",
     "upload-file": "Upload fil",
     "from-knowledge-base": "Fra videnbasen",
     "from-google-drive": "Fra Google Drive",

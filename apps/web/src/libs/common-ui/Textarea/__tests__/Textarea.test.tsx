@@ -18,6 +18,9 @@ vi.mock('@/app/hooks/useAudioRecording', () => ({
 const messages = {
   'text-area': {
     placeholder: 'Type your question...',
+    'send-message': 'Send message',
+    'voice-input': 'Voice input',
+    'add-attachment': 'Add attachment',
   },
 };
 
@@ -32,6 +35,40 @@ const renderTextarea = (props = {}) => {
 describe('Textarea', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  describe('the action bar buttons have accessible names', () => {
+    // Each of the three icons is `aria-hidden` — correctly, they are
+    // decorative — and nothing else named the buttons, so a screen reader
+    // announced the product's primary action as "button". Asserted by role and
+    // name, which is what an assistive technology actually resolves.
+    it('names the send button', () => {
+      renderTextarea({ value: 'a question' });
+      expect(
+        screen.getByRole('button', { name: 'Send message' }),
+      ).toBeInTheDocument();
+    });
+
+    it('names the voice button', () => {
+      renderTextarea({ showVoiceInput: true });
+      expect(
+        screen.getByRole('button', { name: 'Voice input' }),
+      ).toBeInTheDocument();
+    });
+
+    it('names the attachment button', () => {
+      renderTextarea({ showFileAttachment: true });
+      expect(
+        screen.getByRole('button', { name: 'Add attachment' }),
+      ).toBeInTheDocument();
+    });
+
+    it('lets a caller override a name where its button means something else', () => {
+      renderTextarea({ value: 'a question', sendLabel: 'Ask the assistant' });
+      expect(
+        screen.getByRole('button', { name: 'Ask the assistant' }),
+      ).toBeInTheDocument();
+    });
   });
 
   describe('rendering', () => {

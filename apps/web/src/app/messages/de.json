@@ -307,6 +307,9 @@
     "conversation": "Wissensdatenbank und andere Quellen"
   },
   "text-area": {
+    "send-message": "Nachricht senden",
+    "voice-input": "Spracheingabe",
+    "add-attachment": "Anhang hinzufügen",
     "placeholder": "Gib deine Frage ein..."
   },
   "success-toast": {
@@ -1068,6 +1071,8 @@
     "drop-to-project": "Dateien hier ablegen, um sie zum Projektwissen hinzuzufügen"
   },
   "prompt-attachments": {
+    "send-message": "Nachricht senden",
+    "add-attachment": "Anhang hinzufügen",
     "upload-file": "Datei hochladen",
     "from-knowledge-base": "Aus Wissensdatenbank",
     "from-google-drive": "Aus Google Drive",
