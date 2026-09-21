@@ -168,6 +168,7 @@ jobs:
           --filter='!@ragenai/api'
           --filter='!@ragenai/admin'
           --filter='!@ragenai/worker'
+          --filter='!@ragenai/mcp'
 
   # The gate for the worker runtime, and the only job in this repository that
   # runs a queue. No e2e test can cover this: `e2e.yml` builds and starts

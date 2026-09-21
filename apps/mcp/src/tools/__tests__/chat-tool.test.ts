@@ -1,14 +1,15 @@
+import type { MockedFunction } from 'vitest';
 import type { FastMCP } from 'fastmcp';
 
 import { chat } from '../../client/ragen-api-client.js';
 import type { RagenSession } from '../../auth.js';
 import { registerChatTool } from '../chat-tool.js';
 
-jest.mock('../../client/ragen-api-client.js', () => ({
-  chat: jest.fn(),
+vi.mock('../../client/ragen-api-client.js', () => ({
+  chat: vi.fn(),
 }));
 
-const mockChat = chat as jest.MockedFunction<typeof chat>;
+const mockChat = chat as MockedFunction<typeof chat>;
 
 type ExecuteArgs = {
   assistant_id?: string;

@@ -19,6 +19,12 @@ import { describe, expect, it } from 'vitest';
  * A day of green checks, then a broken deploy. The gap between "the root has
  * it" and "this workspace declares it" is what this closes.
  *
+ * `apps/mcp` was missing from the list below for as long as the list existed —
+ * its Dockerfile has always installed scoped, so it was always in scope and
+ * never checked. It surfaced when that app moved off jest and swapped
+ * `"jest"` for `"vitest/globals"` in its `types`: the same edit, in the same
+ * shape, as the one this file was written for.
+ *
  * Workspaces whose Dockerfile installs from the root are deliberately not
  * checked: hoisting is how they are built, so a missing declaration there is
  * untidy rather than broken, and a guard that fails on untidy gets disabled.
@@ -27,7 +33,13 @@ const REPO_ROOT = join(import.meta.dirname, '..', '..');
 
 /** Discovered rather than listed, so a new scoped Dockerfile is covered. */
 function workspacesInstalledScoped(): string[] {
-  const candidates = ['apps/web', 'apps/api', 'apps/admin', 'apps/worker'];
+  const candidates = [
+    'apps/web',
+    'apps/api',
+    'apps/admin',
+    'apps/worker',
+    'apps/mcp',
+  ];
   return candidates.filter((workspace) => {
     try {
       const dockerfile = readFileSync(

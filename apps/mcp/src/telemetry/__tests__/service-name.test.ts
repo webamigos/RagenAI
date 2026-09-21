@@ -1,7 +1,7 @@
 const ORIGINAL_ENV = process.env.OTEL_SERVICE_NAME;
 
 async function loadResolveServiceName(): Promise<() => string> {
-  jest.resetModules();
+  vi.resetModules();
   const mod = await import('../service-name.js');
   return mod.resolveServiceName;
 }

@@ -1,14 +1,15 @@
+import type { MockedFunction } from 'vitest';
 import type { FastMCP } from 'fastmcp';
 
 import { listAssistants } from '../../client/ragen-api-client.js';
 import type { RagenSession } from '../../auth.js';
 import { registerListAssistantsTool } from '../list-assistants-tool.js';
 
-jest.mock('../../client/ragen-api-client.js', () => ({
-  listAssistants: jest.fn(),
+vi.mock('../../client/ragen-api-client.js', () => ({
+  listAssistants: vi.fn(),
 }));
 
-const mockListAssistants = listAssistants as jest.MockedFunction<
+const mockListAssistants = listAssistants as MockedFunction<
   typeof listAssistants
 >;
 

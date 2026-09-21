@@ -1,16 +1,18 @@
+import type { Mocked } from 'vitest';
+
 import { otelLogger } from '../telemetry/otel-logger.js';
 import { logger } from '../logger.js';
 
-jest.mock('../telemetry/otel-logger.js', () => ({
+vi.mock('../telemetry/otel-logger.js', () => ({
   otelLogger: {
-    debug: jest.fn(),
-    info: jest.fn(),
-    warn: jest.fn(),
-    error: jest.fn(),
+    debug: vi.fn(),
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
   },
 }));
 
-const mockOtelLogger = otelLogger as jest.Mocked<typeof otelLogger>;
+const mockOtelLogger = otelLogger as Mocked<typeof otelLogger>;
 
 describe('logger', () => {
   it('mirrors an info line to the OTel logs bridge', () => {

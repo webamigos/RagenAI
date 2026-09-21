@@ -1,14 +1,16 @@
 import type { IncomingMessage } from 'node:http';
 
+import type { Mock } from 'vitest';
+
 import { logger } from '../logger.js';
 import { authenticate } from '../auth.js';
 
-jest.mock('../logger.js', () => ({
+vi.mock('../logger.js', () => ({
   logger: {
-    debug: jest.fn(),
-    info: jest.fn(),
-    warn: jest.fn(),
-    error: jest.fn(),
+    debug: vi.fn(),
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
   },
 }));
 
@@ -61,7 +63,7 @@ describe('authenticate', () => {
     );
     // The point of the assertion: a malformed value is still a credential
     // someone typed, so it must not reach the logs.
-    const logged = JSON.stringify((logger.warn as jest.Mock).mock.calls);
+    const logged = JSON.stringify((logger.warn as Mock).mock.calls);
     expect(logged).not.toContain('dXNlcjpwYXNz');
   });
 

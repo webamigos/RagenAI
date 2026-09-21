@@ -1,14 +1,15 @@
+import type { MockedFunction } from 'vitest';
 import type { FastMCP } from 'fastmcp';
 
 import { searchKnowledgeBase } from '../../client/ragen-api-client.js';
 import type { RagenSession } from '../../auth.js';
 import { registerSearchKnowledgeBaseTool } from '../search-knowledge-base-tool.js';
 
-jest.mock('../../client/ragen-api-client.js', () => ({
-  searchKnowledgeBase: jest.fn(),
+vi.mock('../../client/ragen-api-client.js', () => ({
+  searchKnowledgeBase: vi.fn(),
 }));
 
-const mockSearchKnowledgeBase = searchKnowledgeBase as jest.MockedFunction<
+const mockSearchKnowledgeBase = searchKnowledgeBase as MockedFunction<
   typeof searchKnowledgeBase
 >;
 
