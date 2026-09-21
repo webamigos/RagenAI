@@ -589,9 +589,35 @@ async function seed() {
         pattern: 'zzqx-logged-token',
         patternIsRegex: false,
       },
+      {
+        // The output stage's fixture, and the one that was missing.
+        //
+        // `p0-32-output-guardrail-refusal` was written against a rule created
+        // by hand during phase D — the `security_events` rows from that session
+        // still name it — and the `deleteMany` above then removed it on the
+        // next seed. So the spec asserted against a rule that existed on one
+        // machine for one evening.
+        //
+        // Matches an answer rather than a question, which is why it is safe to
+        // seed globally: the mock answers every prompt with one fixed sentence
+        // and only echoes `zzqx-echo-*` back when a prompt asks it to, so no
+        // other spec's turn can produce this text.
+        organizationId: null,
+        name: 'E2E guardrail OUTPUT BLOCK',
+        description: 'Fixture for p0-32. Withholds the answer.',
+        kind: 'PATTERN',
+        stage: 'OUTPUT',
+        action: 'BLOCK',
+        enabled: true,
+        severity: 'warn',
+        pattern: 'zzqx-echo-withheld',
+        patternIsRegex: false,
+      },
     ],
   });
-  console.log('Created guardrail fixtures: one BLOCK, one LOG');
+  console.log(
+    'Created guardrail fixtures: one INPUT BLOCK, one INPUT LOG, one OUTPUT BLOCK',
+  );
 
   console.log('E2E seed complete.');
 }
