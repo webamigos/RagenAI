@@ -481,14 +481,28 @@ Not in this spec; recorded because it found them.
   That is this button's purpose exactly inverted — it exists so an operator can
   tell a working endpoint from a typo before a customer does.
 
-  **Resolved as (a)**, the option that matches the intent the form and the
-  probe already state: `protocolsFor(url)` in `packages/connector-guard`,
-  threaded to the two runtime call sites that dial a catalogue entry —
-  `['http:', 'https:']` for an http entry, `['https:']` for an https one, so a
-  redirect still cannot downgrade. The third call site,
-  `connectors.service.ts`, was checked and left alone: `normalizeSiteUrl`
-  enforces https, so its URL is never http and widening it would have been a
-  change with a false comment attached.
+  **Resolved as (a), then narrowed.** `protocolsFor` lives in
+  `packages/connector-guard` and is threaded to the two runtime call sites that
+  dial a catalogue entry. What it returns depends on the *credential*, not on
+  the scheme alone:
+
+  | Entry | Allowed | Why |
+  |---|---|---|
+  | `https`, any shape | `['https:']` | a redirect cannot downgrade it |
+  | `http`, `server_side` | `['http:', 'https:']` | no credential to expose; the address policy still decides what may be reached, and an upgrade to https is not a downgrade |
+  | `http`, credentialed | `['https:']` | the customer's own API key or an OAuth token would otherwise travel in clear text |
+
+  The first version of the narrowing made `allowsPrivateAddress` an exception
+  for a credentialed entry, reading it as "the operator declared this server
+  internal". It is not: the flag **widens** the address policy to admit
+  RFC 1918 and does not **confine** the entry to it, so a public hostname still
+  resolves and connects with the flag on. Two reviews caught it; see the
+  follow-up below for the version that would confine it properly, which needs
+  the resolved address rather than a flag.
+
+  The third call site, `connectors.service.ts`, was checked and left alone:
+  `normalizeSiteUrl` enforces https, so its URL is never http and widening it
+  would have been a change with a false comment attached.
 
   The rejected option was (b): require https of operator-created entries and
   have the form say so. It is defensible, and it takes away the case ADR-52
