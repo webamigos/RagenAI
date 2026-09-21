@@ -35,11 +35,11 @@ the authority, and the admin form offers only what it allows.
 Two lists, and they are deliberately different questions:
 
 - **`SUPPORTED_COMBINATIONS`** — what the package can evaluate:
-  `PATTERN`/`INPUT`, `BUILT_IN`/`INPUT` and `LLM_POLICY`/`INPUT`. The resolver
-  drops anything else, so an older service meeting a row from a newer one
-  treats it as no verdict rather than throwing.
-- **`AUTHORABLE_COMBINATIONS`** — what an operator may create:
-  `PATTERN`/`INPUT` and `LLM_POLICY`/`INPUT`. A built-in is _seeded_,
+  `PATTERN` and `LLM_POLICY` at either stage, plus `BUILT_IN`/`INPUT`. The
+  resolver drops anything else, so an older service meeting a row from a newer
+  one treats it as no verdict rather than throwing.
+- **`AUTHORABLE_COMBINATIONS`** — what an operator may create: `PATTERN` and
+  `LLM_POLICY`, on `INPUT`, `OUTPUT` or `BOTH`. A built-in is _seeded_,
   identified by a `key` the code knows; one somebody typed would have no
   detector behind it, so it stays off this list however many detectors exist.
   The admin action validates against this list rather than the one above,
@@ -62,8 +62,50 @@ They are evaluated differently, which is the point of the per-key list:
 `jailbreak-detection` asks a judge model, which returns a score. The second
 therefore shares the policy loop below rather than the moderation branch.
 
-The `OUTPUT` stage is not shipped. It is in the schema and in the vocabulary so
-that every reader had it before a writer appeared.
+**No built-in runs on output.** Both seeded detectors ask a question about the
+_user's_ message — a moderation endpoint about it, or a classifier scoring an
+attempt to override instructions — and neither is a question about an answer.
+One that belonged there would arrive with its own evaluator and its own key.
+
+### Rules that read the answer
+
+An output rule is evaluated on the model's text on its way to the reader, and
+the two kinds get there differently.
+
+A **`PATTERN`** rule runs on a sliding window: the answer streams as it always
+did, except for the last 256 characters, which are held back so a match
+spanning two chunks is still caught. This is why an output pattern may not use
+`^`, `$` or a match wider than the window — the string a rule is run against is
+the window's buffer, not the answer, so an anchor would mean "the end of
+whatever the model happened to send". The rule form refuses such a pattern when
+you save it and says why.
+
+A **`LLM_POLICY`** rule cannot stream at all: the judge scores a finished
+answer, so nothing can be shown until the last token has landed. One judged
+output rule therefore turns the whole turn buffered and **the answer appears at
+once instead of word by word**. The form says so next to the field. It is a
+change to how chat feels rather than to what it allows, and it is the kind of
+thing that comes back as "chat got slow" from somebody who never opened this
+page.
+
+A `BLOCK` on output stops the stream and stores a notice as the assistant
+message — **never the withheld text**. That part holds everywhere, and it is
+the half that outlives the request.
+
+**What the reader is left looking at depends on the surface, and the difference
+is worth knowing before you rely on it.** The panel and the embedded widget
+take back what they have already rendered and show the notice in the reader's
+own language, because both are told to replace rather than append. An
+OpenAI-compatible client cannot be: chunks already on the wire cannot be
+retracted, so the stream ends with `finish_reason: "content_filter"` — which is
+what that format has for exactly this, and which says the answer was stopped
+rather than unsending it. A caller that ignores the finish reason keeps
+whatever it had already received.
+
+So an output `BLOCK` is a guarantee about what is **stored and shown by our own
+surfaces**, and a signal to everyone else. If the text must never reach a
+caller at all, the rule belongs on the input side, or the answer must not be
+streamed to that caller in the first place.
 
 ### Policies judged by a model
 
@@ -256,9 +298,18 @@ surfaces, so a hit from the widget filed as `chat` is a hit an operator cannot
 find when they filter the incidents page by the surface they are worried
 about.
 
+On the output side the same three chains carry it, and **every way text leaves
+a chain goes through the same funnel**: `fullStream` and `textStream` are one
+mapped stream and a view of it. They used not to be, and an output rule then
+applied to the panel and the widget and to none of the five call sites reading
+a chain's text the other way.
+`tests/architecture/a-chain-hands-out-guarded-text.test.ts` is what keeps them
+derived.
+
 What differs per runtime — reaching a database, recording an event, which error
-class is thrown — is injected. What a rule _means_ is
-`evaluateInputStage()`, once, for both. A masking rule that covered chat
+class is thrown — is injected. What a rule _means_ is `evaluateInputStage()`
+or, on the other side, `createOutputStage()` / `evaluateOutputText()`, once,
+for both. A masking rule that covered chat
 history in one runtime and not the other would be two products, and the public
 API is the one nobody would notice was wrong;
 `tests/architecture/guardrails-are-not-recopied.test.ts` is the tripwire.

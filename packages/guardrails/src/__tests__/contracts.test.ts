@@ -65,14 +65,20 @@ describe('which actions a kind can carry out', () => {
 describe('supported combinations', () => {
   it('reports what the package evaluates, and nothing beyond it', () => {
     // `PATTERN`/`INPUT` is `evaluator/pattern.ts`; `BUILT_IN`/`INPUT` is the
-    // moderation branch of `evaluator/input-stage.ts`, which arrived in Phase
-    // B. OUTPUT is absent for both because evaluating a whole string is not
-    // the same problem as evaluating a stream — that needs Phase D's sliding
-    // window.
+    // moderation branch of `evaluator/input-stage.ts`, from Phase B. The two
+    // `OUTPUT` entries are D4, and each has an evaluator: the sliding window
+    // for a pattern, and the buffered pass for a judged rule — which are two
+    // evaluators rather than one, because a judge needs the finished answer.
+    //
+    // `BUILT_IN`/`OUTPUT` is deliberately absent. Both seeded detectors ask a
+    // question about the *user's* message, and neither is a question about an
+    // answer.
     expect(SUPPORTED_COMBINATIONS).toEqual([
       { kind: 'PATTERN', stage: 'INPUT' },
       { kind: 'BUILT_IN', stage: 'INPUT' },
       { kind: 'LLM_POLICY', stage: 'INPUT' },
+      { kind: 'PATTERN', stage: 'OUTPUT' },
+      { kind: 'LLM_POLICY', stage: 'OUTPUT' },
     ]);
   });
 

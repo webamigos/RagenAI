@@ -93,7 +93,7 @@ Before starting a nontrivial task, match it against this table and read the link
 | A side-effect on a lifecycle event (welcome email, signup) | [`docs/event-bus.md`](docs/event-bus.md) |
 | Unit/component tests | this file's "Testing Requirements" section |
 | E2E tests, regression sweep before a release | this file's "E2E Tests" section, [`docs/regression-checklist.md`](docs/regression-checklist.md) |
-| Guardrail rules — what a turn must pass, per org | [`docs/guardrails.md`](docs/guardrails.md) — one package, three call sites; they run *downstream* of PII masking, so a pattern never sees a phone number |
+| Guardrail rules — what a turn must pass, per org | [`docs/guardrails.md`](docs/guardrails.md) — one package, both stages. Input runs *downstream* of PII masking, so a pattern never sees a phone number; output runs in the stream funnel, and a chain's `textStream` is a view of it rather than the SDK's — adding a fourth way for text to leave a chain leaves it unguarded |
 | Security incidents, PII alerting | [`docs/security-monitoring.md`](docs/security-monitoring.md) |
 | Docling version upgrades | [`docs/runbooks/docling-upgrade.md`](docs/runbooks/docling-upgrade.md) |
 | Presidio version upgrades, PII test scenarios | [`docs/runbooks/presidio-upgrade.md`](docs/runbooks/presidio-upgrade.md) |

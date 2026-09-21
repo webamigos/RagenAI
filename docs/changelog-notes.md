@@ -619,3 +619,25 @@ archive is the blog.
   verdict is actually a score, and an action is refused when the rule cannot
   carry it out, so you find out at the point of saving rather than from a rule
   that quietly keeps doing what it did before.
+
+- **Guardrails now read the assistant's answer, not just the question.** Until
+  now a rule could only be checked against what the customer typed. A rule can
+  now run on the answer as well — or on both sides — and catch something the
+  model itself produced: a phrase nobody is supposed to put in writing, a
+  format that should never leave the building, a policy the answer breaks.
+  Three things are worth knowing before turning one on. A blocking rule stores
+  the notice instead of the text that was stopped, so the thing the rule exists
+  to withhold does not end up sitting in the conversation history — and in the
+  panel and the chat widget it also takes back what was already on screen. A
+  caller of the OpenAI-compatible API is a different matter: that format has no
+  way to unsend what it has already streamed, so the answer ends with
+  `finish_reason: "content_filter"` and a client that ignores it keeps what it
+  received. If the text must never reach a caller at all, the rule belongs on
+  the question rather than on the answer. A
+  rule judged by a model delays the whole answer, which then appears at once
+  rather than word by word, because a judge has to read the finished answer
+  before any of it can be shown; the form says so where you choose the stage.
+  And a pattern on the answer cannot be anchored to the start or the end of it
+  — answers arrive in pieces, so those would mean "the end of whatever the
+  model happened to send" — which the form refuses at the point of saving
+  rather than leaving you with a rule that quietly never fires.

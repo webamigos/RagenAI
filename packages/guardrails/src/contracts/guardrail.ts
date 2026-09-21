@@ -164,14 +164,15 @@ export function isBuiltInGuardrailKey(
 /**
  * Which kind × stage combinations *this build* can evaluate.
  *
- * Phases C and D are unshipped, so a rule the panel happily accepts today
- * would be enforced by nothing. The admin form reads this and offers only what
- * is here; the resolver drops rows outside it, so an older service that meets
- * a row from a newer one evaluates it as "no verdict" rather than throwing.
+ * A rule the panel accepts and nothing evaluates is enforced by nothing, and
+ * looks from every screen exactly like one that works. The admin form reads
+ * this and offers only what is here; the resolver drops rows outside it, so an
+ * older service that meets a row from a newer one evaluates it as "no verdict"
+ * rather than throwing — which is what makes a rolling deploy safe.
  *
- * A single "not enforced yet" banner was the alternative, and it starts lying
- * the moment the first combination works — which is the release after this
- * one. This is a list precisely so that each entry can arrive on its own.
+ * A single "not enforced yet" banner was the alternative, and it would have
+ * started lying the moment the first combination worked. A list is what let
+ * each entry arrive on its own, across four phases.
  *
  * **It answers what this package can evaluate, not what any app has wired up.**
  * The two are different questions and only the first belongs here. A rule kind
@@ -181,10 +182,13 @@ export function isBuiltInGuardrailKey(
  * and it is what "Phase A ends with rules an operator can create and nothing
  * reading them" describes.
  *
- * So: `PATTERN`/`INPUT`, which `evaluator/pattern.ts` implements. `OUTPUT`
- * waits for the sliding-window transform in Phase D — evaluating a whole
- * string is not the same problem as evaluating a stream — `BUILT_IN` for the
- * detectors to be absorbed in B and C, and `LLM_POLICY` for the judge in C.
+ * Every combination below now has an evaluator, and each arrived with one:
+ * `PATTERN`/`INPUT` is `evaluator/pattern.ts`, `BUILT_IN`/`INPUT` the
+ * moderation branch of `evaluator/input-stage.ts`, `LLM_POLICY`/`INPUT` the
+ * judge, and the two `OUTPUT` entries have *two* — `createOutputStage` for a
+ * stream and `evaluateOutputText` for an answer a judge has to read whole,
+ * because evaluating a complete string is not the same problem as evaluating
+ * a stream.
  */
 export type GuardrailCombination = {
   kind: GuardrailKind;
@@ -219,6 +223,26 @@ export const SUPPORTED_COMBINATIONS: readonly GuardrailCombination[] =
     Object.freeze({ kind: 'PATTERN', stage: 'INPUT' }),
     Object.freeze({ kind: 'BUILT_IN', stage: 'INPUT' }),
     Object.freeze({ kind: 'LLM_POLICY', stage: 'INPUT' }),
+    // D4, and the phase's only switch. Everything D1–D3 built resolved to
+    // nothing until these two lines: the resolver drops a combination it does
+    // not find here, so an output rule could be written, listed and enabled
+    // and still be dropped before any evaluator saw it.
+    //
+    // Added last on purpose, and after *every* surface was covered rather
+    // than after the first one. D1c found three call sites reading a chain's
+    // text through an accessor the funnel never touched; opening the stage
+    // then would have enforced an output rule in the panel and the widget and
+    // nowhere else, which is the failure this constant exists to prevent
+    // arriving through the constant itself — as it already did once in Phase
+    // B.
+    //
+    // No `BUILT_IN`/`OUTPUT`: both seeded detectors read the *user's*
+    // message. `content-moderation` asks a provider endpoint about it and
+    // `jailbreak-detection` scores an attempt to override instructions, and
+    // neither is a question about an answer. A built-in that belongs on the
+    // output side would arrive with its own evaluator and its own key.
+    Object.freeze({ kind: 'PATTERN', stage: 'OUTPUT' }),
+    Object.freeze({ kind: 'LLM_POLICY', stage: 'OUTPUT' }),
   ] as const);
 
 /**
@@ -248,6 +272,15 @@ export const AUTHORABLE_COMBINATIONS: readonly GuardrailCombination[] =
   Object.freeze([
     Object.freeze({ kind: 'PATTERN', stage: 'INPUT' }),
     Object.freeze({ kind: 'LLM_POLICY', stage: 'INPUT' }),
+    // Authorable in the same change that makes them evaluable, because for
+    // these two the gap would be the harmful direction: a stage the runtime
+    // enforces and the form does not offer is a capability nobody can reach,
+    // and the reverse — offered and unenforced — is what the split between
+    // these lists exists to prevent. `isCombinationSupported` derives `BOTH`
+    // from the pair, so a rule running at both stages becomes authorable here
+    // too, for these kinds and not for `BUILT_IN`.
+    Object.freeze({ kind: 'PATTERN', stage: 'OUTPUT' }),
+    Object.freeze({ kind: 'LLM_POLICY', stage: 'OUTPUT' }),
   ] as const);
 
 /**

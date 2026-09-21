@@ -859,19 +859,55 @@ If it slips, A–C and E still ship a complete capability.
       it would be false. It is tested in both directions — never shown and
       always shown both fail — because a notice that is always there is as
       wrong as one that is never there, and only one of those is visible.
-- [ ] **D4.** `SUPPORTED_COMBINATIONS` opens the `OUTPUT` stage; the admin form
+- [x] **D4.** `SUPPORTED_COMBINATIONS` opens the `OUTPUT` stage; the admin form
       starts offering it. Blocked on D1c and D2: the constant is what makes an
       output rule resolve at all, so opening it while a surface is uncovered
       is the "reads as enabled, enforced by nothing" failure arriving through
       the constant meant to prevent it — which has already happened once, in
       Phase B.
 
-      `a-supported-combination-is-evaluable` is already written over the
-      constant rather than over the input stage, so it checks the new entry in
-      the change that adds it. `docs/guardrails.md`, the changelog note and a
-      `p0-` e2e covering a blocked answer belong here too, for the reason they
-      do not belong earlier: until this item there is nothing an operator can
-      turn on.
+      `a-supported-combination-is-evaluable` was already written over the
+      constant, so it checked the new entries in the change that added them —
+      and it failed, which is the point: its `OUTPUT` driver knew the window
+      and not the buffered pass, so `LLM_POLICY`/`OUTPUT` resolved to a
+      combination nothing acted on. The driver now picks the mode the way a
+      binding does.
+
+      Two `OUTPUT` entries and not three. A `BUILT_IN` asks a question about
+      the *user's* message — a moderation endpoint about it, a classifier
+      scoring an attempt to override instructions — and neither is a question
+      about an answer.
+
+      **The `p0-` e2e this item asked for is not here, and that is a
+      correction rather than a shortcut.** It was written, it ran, and it
+      turned up something bigger than itself: the e2e suite has never carried
+      a turn through a real chain to an answer. There is no Qdrant service in
+      the job — `e2e.yml` says so in a comment — `routes.e2e.yaml` has no
+      embedding route, the answer model races the organization's setting
+      because the suite enables the model picker, and the rephraser does not
+      speak the mock's shape. Nothing noticed, because every chat spec either
+      routes the threads endpoint to a canned response (`p0-23`, `p0-24`) or
+      asserts a refusal and an absence (`p0-27`, `p0-29`), and all of those
+      survive a turn that never answers.
+
+      So the spec is deferred to the change that makes the harness able to
+      answer, and it is filed rather than skipped. Ticking D4 without it is a
+      deliberate call: a guardrail e2e that is really a harness project is
+      work about the harness, and holding a finished phase behind it buys
+      nothing. What covers the behaviour meanwhile: the window and the
+      buffered pass in `packages/guardrails` (278 tests), the funnel in both
+      apps including a block ending the stream, `answerToPersist` for what a
+      refused turn stores, and `a-supported-combination-is-evaluable` for the
+      two entries this item adds.
+
+      Three things learned while proving it, kept because the next attempt
+      will meet them: the assertion that no part of the withheld answer is on
+      screen cannot be written over the token — the token is in the question
+      the reader typed; a database assertion has to be scoped to the turn's
+      own thread, or Playwright's retry satisfies it from the previous
+      attempt's row, in 1.4 seconds; and a local run without `LLM_ROUTES_PATH`
+      and the mock's credentials talks to real providers, which makes it
+      useless as evidence about CI.
 
 ### Phase E — seeing what it did
 
