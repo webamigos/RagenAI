@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { PuzzlePieceIcon } from '@heroicons/react/24/outline';
 import { Checkbox } from '@/components/ui/checkbox';
 import { PROVIDER_ICON_PATHS } from '@/features/connectors/utils/provider-icons';
+import { connectorDisplayName } from '@/features/connectors/utils/connector-display-name';
 import { PROJECT_MCP_PROVIDERS_CHANGED_EVENT } from '@/features/projects/contracts/events';
 import { logger } from '@/app/lib/utils/logger';
 import {
@@ -123,7 +124,7 @@ export function ProjectMcpProviders({ projectId }: ProjectMcpProvidersProps) {
         </p>
       ) : (
         <div className="space-y-2">
-          {connectedProviders.map(({ provider }) => {
+          {connectedProviders.map(({ provider, name }) => {
             const iconPath = PROVIDER_ICON_PATHS[provider];
             return (
               <label
@@ -140,7 +141,12 @@ export function ProjectMcpProviders({ projectId }: ProjectMcpProvidersProps) {
                   <img src={iconPath} alt="" className="size-4 shrink-0" />
                 ) : null}
                 <span className="text-sm text-foreground truncate">
-                  {tProviders(`${provider}.name`)}
+                  {connectorDisplayName(
+                    (key) => tProviders.has(key as never),
+                    (key) => tProviders(key as never),
+                    provider,
+                    name,
+                  )}
                 </span>
               </label>
             );

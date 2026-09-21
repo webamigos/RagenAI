@@ -904,8 +904,12 @@ model McpCatalogEntry {
   mcpServerUrl           String?     @map("mcp_server_url")
   /// Required here, although `ProviderDefinition.authType` is optional and
   /// several paths branch on it being undefined. A manifest with no authType
-  /// seeds to `SERVER_SIDE`, which is what those paths already do in effect —
-  /// stated rather than inherited, because "unset" is not an auth shape.
+  /// seeds to `OAUTH` — stated rather than inherited, because "unset" is not
+  /// an auth shape. Not `SERVER_SIDE`, which the spec first called for: unset
+  /// matches none of `ConnectorCard`'s branches and falls through to the popup
+  /// at `authBaseUrl + authPath`, which is what the five Google entries do,
+  /// while `server_side` skips authorization altogether. See
+  /// docs/lessons/an-unset-auth-type-is-oauth-not-server-side.md.
   authType               McpAuthType @map("auth_type")
   /// Null for `isBuiltIn` rows for the same reason as `mcpServerUrl`: the five
   /// Google entries read it from `MCP_GOOGLE_AUTH_URL` at module load.

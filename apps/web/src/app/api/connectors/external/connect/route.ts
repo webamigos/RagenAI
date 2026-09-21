@@ -45,24 +45,27 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const providerDef = await resolveConnectorDefinitionQuery(provider);
-  if (!providerDef || providerDef.authType !== 'external_mcp') {
-    return NextResponse.json({ error: 'Invalid provider' }, { status: 400 });
-  }
-
-  // The first outbound request a catalogue entry causes is `mcpAuth`'s
-  // discovery, before any MCP session exists and so before the guarded
-  // transport is in the path.
-  const blocked = blockedAddressReason(providerDef, providerDef.mcpServerUrl);
-  if (blocked) {
-    logger.warn(
-      { provider, reason: blocked },
-      'Refusing to start OAuth against a blocked connector address',
-    );
-    return NextResponse.json({ error: blocked }, { status: 400 });
-  }
-
   try {
+    // Inside the boundary: resolving a slug is a database read since B4, and
+    // a read can fail. Outside it, that failure left the route with no log and
+    // an uncontrolled 500.
+    const providerDef = await resolveConnectorDefinitionQuery(provider);
+    if (!providerDef || providerDef.authType !== 'external_mcp') {
+      return NextResponse.json({ error: 'Invalid provider' }, { status: 400 });
+    }
+
+    // The first outbound request a catalogue entry causes is `mcpAuth`'s
+    // discovery, before any MCP session exists and so before the guarded
+    // transport is in the path.
+    const blocked = blockedAddressReason(providerDef, providerDef.mcpServerUrl);
+    if (blocked) {
+      logger.warn(
+        { provider, reason: blocked },
+        'Refusing to start OAuth against a blocked connector address',
+      );
+      return NextResponse.json({ error: blocked }, { status: 400 });
+    }
+
     const orgId = await getOrgIdFromAuthOrThrow();
     const userId = await getCurrentUserId();
     if (!userId) {

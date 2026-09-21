@@ -36,6 +36,24 @@ const COMING_SOON_PROVIDERS = [
   },
 ];
 
+/**
+ * The teaser cards are static, and the catalogue is not: a platform
+ * administrator can now add Notion as a row, which is the whole point of the
+ * catalogue. The card above it would then say the connector is coming while
+ * the card below it offers to connect, so a slug the catalogue carries drops
+ * out of this list. Compared case-insensitively, because a teaser key is an
+ * old enum member and an operator's slug is whatever they typed.
+ */
+export function comingSoon(
+  providers: readonly PublicProviderDto[],
+): typeof COMING_SOON_PROVIDERS {
+  const live = new Set(providers.map((p) => p.provider.toLowerCase()));
+
+  return COMING_SOON_PROVIDERS.filter(
+    (teaser) => !live.has(teaser.key.toLowerCase()),
+  );
+}
+
 export function ConnectorsList({ providers, connectors }: ConnectorsListProps) {
   const t = useTranslations('settings-page.connectors');
   const connectorsEnabled = useOrgFeature('mcpConnectors');
@@ -59,7 +77,7 @@ export function ConnectorsList({ providers, connectors }: ConnectorsListProps) {
           />
         );
       })}
-      {COMING_SOON_PROVIDERS.map((provider) => (
+      {comingSoon(providers).map((provider) => (
         <div
           key={provider.key}
           className="flex items-start gap-4 rounded-lg border border-border p-4"

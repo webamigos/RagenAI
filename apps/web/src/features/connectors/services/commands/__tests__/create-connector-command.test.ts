@@ -66,7 +66,9 @@ describe('createConnectorCommand feature gate', () => {
     mockIsFeatureEnabled.mockResolvedValue(true);
     mockUpsert.mockResolvedValue({
       id: 'conn-1',
-      provider: 'CLICKUP',
+      // What the command actually selects. Returning `provider` here left the
+      // audit event with an undefined slug while the test still passed.
+      providerSlug: 'CLICKUP',
       customerId: `${ORG}:${USER}:clickup`,
       mcpServerUrl: 'https://example.com/mcp',
       status: 'PENDING',

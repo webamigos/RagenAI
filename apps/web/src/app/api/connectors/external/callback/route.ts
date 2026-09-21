@@ -84,26 +84,33 @@ export async function GET(request: NextRequest) {
     return redirectWithStatus(request, 'error');
   }
 
-  const providerDef = await resolveConnectorDefinitionQuery(provider);
-  if (!providerDef || providerDef.authType !== 'external_mcp') {
-    return redirectWithStatus(request, 'error');
-  }
-
-  // Again on the callback: the entry's URL can have changed between the two
-  // hops, and this one exchanges a code against it.
-  const blocked = blockedAddressReason(providerDef, providerDef.mcpServerUrl);
-  if (blocked) {
-    logger.warn(
-      { provider, reason: blocked },
-      'Refusing to complete OAuth against a blocked connector address',
-    );
-    return redirectWithStatus(request, 'error');
-  }
-
   let orgId: string | null = null;
   let userId: string | null = null;
+  // Declared out here so the catch can still name the server the failure was
+  // against; assigned inside, because the read that produces it can fail.
+  let providerDef: Awaited<ReturnType<typeof resolveConnectorDefinitionQuery>> =
+    undefined;
 
   try {
+    // Inside the boundary: resolving a slug is a database read since B4. A
+    // failure outside it returned a raw 500 to somebody mid-way through an
+    // OAuth round trip, instead of putting them back on connector settings.
+    providerDef = await resolveConnectorDefinitionQuery(provider);
+    if (!providerDef || providerDef.authType !== 'external_mcp') {
+      return redirectWithStatus(request, 'error');
+    }
+
+    // Again on the callback: the entry's URL can have changed between the two
+    // hops, and this one exchanges a code against it.
+    const blocked = blockedAddressReason(providerDef, providerDef.mcpServerUrl);
+    if (blocked) {
+      logger.warn(
+        { provider, reason: blocked },
+        'Refusing to complete OAuth against a blocked connector address',
+      );
+      return redirectWithStatus(request, 'error');
+    }
+
     orgId = await getOrgIdFromAuthOrThrow();
     userId = await getCurrentUserId();
     if (!userId) {
@@ -186,10 +193,11 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     logger.error({ err: error, provider }, 'External MCP OAuth callback error');
 
-    // Only when the identity resolved. If `getOrgIdFromAuthOrThrow` was what
-    // threw there is no connector to attribute this to, and guessing one
-    // would write a fault against the wrong row.
-    if (orgId && userId) {
+    // Only when the identity and the entry resolved. If
+    // `getOrgIdFromAuthOrThrow` or the catalogue read was what threw there is
+    // no connector to attribute this to, and guessing one would write a fault
+    // against the wrong row.
+    if (orgId && userId && providerDef) {
       await recordConnectorFailureCommand({
         organizationId: orgId,
         userId,

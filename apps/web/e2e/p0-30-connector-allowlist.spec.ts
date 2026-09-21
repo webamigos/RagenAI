@@ -38,6 +38,15 @@ const ALLOWED_SLUG = 'SLACK';
 const WITHHELD_SLUG = 'CLICKUP';
 
 let previousAllowed: string[] = [];
+/**
+ * Whether this organization had a settings row at all before the suite ran.
+ *
+ * `upsert` will create one, and putting it back with `update` would leave it
+ * behind — a row the next spec sees and the one before it did not. The whole
+ * suite shares one seeded database, and a leftover row from an earlier spec is
+ * what made `p0-03-guardrails` fail on this branch once already.
+ */
+let settingsExisted = false;
 
 test.beforeAll(async () => {
   await withPrisma(async (prisma) => {
@@ -45,6 +54,7 @@ test.beforeAll(async () => {
       where: { organizationId: TEST_ORG_ID },
       select: { allowedConnectors: true },
     });
+    settingsExisted = settings !== null;
     previousAllowed = settings?.allowedConnectors ?? [];
 
     await prisma.organizationSettings.upsert({
@@ -60,6 +70,13 @@ test.beforeAll(async () => {
 
 test.afterAll(async () => {
   await withPrisma(async (prisma) => {
+    if (!settingsExisted) {
+      await prisma.organizationSettings.delete({
+        where: { organizationId: TEST_ORG_ID },
+      });
+      return;
+    }
+
     await prisma.organizationSettings.update({
       where: { organizationId: TEST_ORG_ID },
       data: { allowedConnectors: previousAllowed },
@@ -95,7 +112,19 @@ test.describe('the connector allowlist', () => {
     // Disabling is the switch an operator has instead of a feature flag, and
     // it has to beat the allowlist: an entry that is off is off for the
     // organizations that were granted it too.
+    //
+    // Read the entry's own state rather than assuming it: the catalogue is a
+    // shared table now, and restoring it to `true` unconditionally would turn
+    // on a connector somebody else's spec had switched off.
+    let wasEnabled = true;
+
     await withPrisma(async (prisma) => {
+      const entry = await prisma.mcpCatalogEntry.findUnique({
+        where: { slug: WITHHELD_SLUG },
+        select: { enabled: true },
+      });
+      wasEnabled = entry?.enabled ?? true;
+
       await prisma.organizationSettings.update({
         where: { organizationId: TEST_ORG_ID },
         data: { allowedConnectors: [ALLOWED_SLUG, WITHHELD_SLUG] },
@@ -123,7 +152,7 @@ test.describe('the connector allowlist', () => {
       await withPrisma(async (prisma) => {
         await prisma.mcpCatalogEntry.update({
           where: { slug: WITHHELD_SLUG },
-          data: { enabled: true },
+          data: { enabled: wasEnabled },
         });
         await prisma.organizationSettings.update({
           where: { organizationId: TEST_ORG_ID },
