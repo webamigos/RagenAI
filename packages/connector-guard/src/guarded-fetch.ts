@@ -79,11 +79,44 @@ export interface GuardedFetchOptions {
   /** Address policy. Injected by tests; defaults to the real policy. */
   isBlockedAddress?: (address: string) => boolean;
   /**
-   * Schemes a hop may use. Defaults to https only — connector URLs are https
-   * at registration and a redirect must not downgrade that. Tests that speak
-   * plain http to a local server pass `['http:']` explicitly.
+   * Schemes a hop may use. Defaults to https only — a redirect must not
+   * downgrade the scheme a connector was registered with. Callers that dial a
+   * URL somebody typed pass `protocolsFor(url)`; tests that speak plain http
+   * to a local server pass `['http:']` explicitly.
    */
   allowedProtocols?: string[];
+}
+
+/**
+ * The schemes a connector's own URL may use, given the scheme it was saved
+ * with.
+ *
+ * The https-only default is right for a *redirect* and wrong for the *first
+ * hop*. Both `/mcp-catalogue`'s form and `probeMcpServer` deliberately accept
+ * `http://` — an operator's MCP server on their own network often has no
+ * certificate, and the address policy, not the scheme, is what decides whether
+ * it may be reached.
+ *
+ * Without this the three runtime call sites kept the default and so refused
+ * what the form had accepted and **Test connection had just reported
+ * working**, naming the server's tools as it did so. That is that button's
+ * purpose exactly inverted: it exists so an operator can tell a working
+ * endpoint from a typo before a customer does.
+ *
+ * An https entry still gets https alone, so a redirect cannot downgrade it.
+ * An http entry may be redirected *up* to https — not a downgrade, and what a
+ * server that has just been put behind TLS does.
+ */
+export function protocolsFor(url: string): string[] {
+  let protocol: string;
+  try {
+    protocol = new URL(url).protocol;
+  } catch {
+    // Unparseable here means unconnectable later. Keep the strict default
+    // rather than widening on an input nothing validated.
+    return ['https:'];
+  }
+  return protocol === 'http:' ? ['http:', 'https:'] : ['https:'];
 }
 
 /**

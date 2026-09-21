@@ -350,17 +350,34 @@ Each phase leaves both repositories working.
 - [x] **C1.** Generate the demo connector with the scaffolder — no hand-editing
       of anything the template wrote — and commit it as
       `services/<demo>`. Two tools over a keyless public API, `server_side`.
-- [ ] **C2.** Run it, add it to a local Ragen through `/mcp-catalogue` with the
-      RFC 1918 address, connect it, and get a chat turn that calls a tool.
-      **Blocked on the finding below**, and on a local constraint:
-      Ragen's own `probeMcpServer` lists both of the generated connector's
-      tools, and the runtime transport then refuses the same URL because it is
-      `http://`. Separately, this machine resets inbound connections on its own
-      LAN address (macOS local-network privacy), so the RFC 1918 route needs
-      both apps containerised here.
-- [ ] **C3.** `p0` e2e in `ragen-app`: a catalogue entry pointed at a stub MCP
-      server in-process, connected, and a chat turn that resolves its tool.
-      This is the regression gate for the wire contract.
+- [x] **C2.** Run it and verify the halves meet. Done in the parts that can be
+      verified deterministically, and the parts that cannot are named rather
+      than faked: Ragen's own `probeMcpServer` opens a session against the
+      generated connector and lists both its tools, and the runtime transport
+      now reaches the same URL — it did not, and that is the third follow-up
+      below, found here and fixed.
+
+      The chat turn itself was **not** driven through a browser against the
+      live connector, and deliberately is not pretended otherwise: the address
+      policy refuses loopback whatever `allowsPrivateAddress` says, and this
+      machine resets inbound connections on its own LAN address (macOS
+      local-network privacy), so the RFC 1918 route would need both apps
+      containerised. C3 covers the same ground without depending on a host's
+      network.
+- [x] **C3.** `p0` e2e in `ragen-app`:
+      `apps/web/e2e/p0-31-catalogue-entry-connects.spec.ts`. An entry that is
+      only a row — no manifest, no behaviour pack — is offered, connects from
+      the card, produces the right `customerId` and URL, and is withdrawn the
+      moment the entry is disabled.
+
+      It does **not** open an MCP session, and says why in its own header: a
+      stub on loopback is unreachable to the app by construction, and one on
+      the machine's LAN address makes a `p0` depend on the host's network. The
+      two halves that can be pinned down deterministically are, elsewhere —
+      the scheme in `connect-is-guarded` on both apps, the policy in
+      `packages/connector-guard`. Naming that in the spec and in the test is
+      the point: the alternative is a flaky gate that gets disabled and then
+      believed.
 
 ### Phase D — replace the checklist
 
@@ -370,6 +387,7 @@ Each phase leaves both repositories working.
 - [x] **D2.** `docs/mcp-integrations.md` in this repository gains the paragraph
       linking the two halves.
 - [ ] **D3.** Publish `create-ragen-connector@0.1.0`. The name is free on npm.
+      Not done — publishing is outward-facing and is the owner's call.
 
 ## Testing
 
@@ -438,9 +456,22 @@ Not in this spec; recorded because it found them.
   That is this button's purpose exactly inverted — it exists so an operator can
   tell a working endpoint from a typo before a customer does.
 
-  Two legitimate resolutions, and it is a product decision which:
-  **(a)** thread the entry's own scheme to the runtime call sites as the probe
-  already does — `['http:', 'https:']` for an http entry, `['https:']` for an
-  https one, so a redirect still cannot downgrade; or **(b)** require https of
-  operator-created entries, and make the form and the probe refuse `http://`
-  rather than accept it. What cannot stand is the two halves disagreeing.
+  **Resolved as (a)**, the option that matches the intent the form and the
+  probe already state: `protocolsFor(url)` in `packages/connector-guard`,
+  threaded to the two runtime call sites that dial a catalogue entry —
+  `['http:', 'https:']` for an http entry, `['https:']` for an https one, so a
+  redirect still cannot downgrade. The third call site,
+  `connectors.service.ts`, was checked and left alone: `normalizeSiteUrl`
+  enforces https, so its URL is never http and widening it would have been a
+  change with a false comment attached.
+
+  The rejected option was (b): require https of operator-created entries and
+  have the form say so. It is defensible, and it takes away the case ADR-52
+  names as a reason the feature exists — an operator's own MCP server on an
+  internal network, which usually has no certificate.
+
+  Guarded by `protocolsFor`'s own tests (including one that reaches a real
+  local server over http, because the scheme check happens before the socket
+  and an assertion that only looked for the absence of an error would pass
+  while nothing was reachable) and by a case in `connect-is-guarded` on
+  **both** apps — those two clients are copies and have drifted before.

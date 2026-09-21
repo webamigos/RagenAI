@@ -4,6 +4,7 @@ import { getConnectorOAuthCredentials } from '../connectors/connector-credential
 import {
   createGuardedMcpTransport,
   isBlockedAddress,
+  protocolsFor,
 } from '@ragenai/connector-guard';
 import type { ProviderDefinition } from '../connectors/types.js';
 import {
@@ -393,6 +394,11 @@ export async function createMcpToolsFromConnectors(
     const guarded = createGuardedMcpTransport(url, headers, {
       isBlockedAddress: (address) =>
         isBlockedAddress(address, { allowPrivate: guard.allowPrivate }),
+      // The scheme this entry was saved with. Without it the guard's
+      // https-only default refused every `http://` catalogue entry — which
+      // the form accepts and Test connection reports as working, tool names
+      // and all.
+      allowedProtocols: protocolsFor(url),
       authProvider,
     });
     guards.push(guarded.close);
