@@ -48,14 +48,20 @@ export function definitionFromEntry(
     authPath: entry.authPath ?? pack?.authPath,
     authType: AUTH_TYPE_FROM_ROW[entry.authType],
     apiKeyHelpUrl: pack?.apiKeyHelpUrl,
-    scopes: entry.scopes.length > 0 ? entry.scopes : pack?.scopes,
+    // The row, not the pack, and deliberately with no fallback: an empty
+    // list is an operator clearing the scopes, and falling back would make
+    // that impossible to express. Every built-in that needs scopes carries
+    // them on its seeded row, so nothing loses them.
+    scopes: entry.scopes,
     // Credentials never become columns (ADR-32). A built-in reads them from
     // the environment through its pack; an operator's entry stores them in
     // ragen-token-vault, which Phase D wires in.
     oauthClientId: pack?.oauthClientId,
     oauthClientSecret: pack?.oauthClientSecret,
     oauthCredentialsStored: entry.oauthCredentialsStored,
-    useUserScope: entry.useUserScope || pack?.useUserScope,
+    // Same reason as `scopes` above: `false` is an answer, not an absence.
+    // Slack's row is seeded with it set, so turning it off is now possible.
+    useUserScope: entry.useUserScope,
     headerName: pack?.headerName,
     mcpServerUrlPath: pack?.mcpServerUrlPath,
     singleTokenAuth: pack?.singleTokenAuth,

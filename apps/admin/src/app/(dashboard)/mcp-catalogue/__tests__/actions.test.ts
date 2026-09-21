@@ -61,9 +61,19 @@ vi.mock('@/lib/db', () => ({
   },
 }));
 
+const isVaultConfigured = vi.fn(() => true);
+const storeToken = vi.fn();
+vi.mock('@/lib/vault', () => ({
+  isVaultConfigured: () => isVaultConfigured(),
+  getVaultClient: () => ({
+    storeToken: (...a: unknown[]) => storeToken(...a),
+  }),
+}));
+
 import {
   createCatalogueEntryAction,
   deleteCatalogueEntryAction,
+  storeCatalogueOAuthCredentialsAction,
   testCatalogueConnectionAction,
   updateCatalogueEntryAction,
 } from '../actions';
@@ -332,5 +342,55 @@ describe('an OAuth entry', () => {
     const written = create.mock.calls[0][0].data as Record<string, unknown>;
     expect(Object.keys(written)).not.toContain('oauthClientSecret');
     expect(Object.keys(written)).not.toContain('oauthClientId');
+  });
+});
+
+describe('storing an OAuth client secret', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    isVaultConfigured.mockReturnValue(true);
+    storeToken.mockResolvedValue(undefined);
+  });
+
+  it('refuses an entry whose persisted auth type is not EXTERNAL_MCP', async () => {
+    // The form hides the control for anything else, but the action is
+    // reachable without it — and the form used to render the control the
+    // moment EXTERNAL_MCP was *selected*, before any save. A secret stored
+    // then belongs to an entry that may never become an OAuth one, and
+    // nothing would read it or clear it.
+    findUnique.mockResolvedValue({
+      id: 1,
+      slug: 'notion',
+      isBuiltIn: false,
+      authType: 'API_KEY_BEARER',
+    });
+
+    const result = await storeCatalogueOAuthCredentialsAction(
+      'pub-1',
+      'client-id',
+      'client-secret',
+    );
+
+    expect(result.ok).toBe(false);
+    expect(result.message).toMatch(/authentication type/i);
+  });
+
+  it('refuses an entry that is no longer in the catalogue', async () => {
+    findUnique.mockResolvedValue(null);
+
+    const result = await storeCatalogueOAuthCredentialsAction(
+      'pub-1',
+      'client-id',
+      'client-secret',
+    );
+
+    expect(result.ok).toBe(false);
+  });
+
+  it('refuses both fields empty before it reads anything', async () => {
+    const result = await storeCatalogueOAuthCredentialsAction('pub-1', ' ', '');
+
+    expect(result.ok).toBe(false);
+    expect(findUnique).not.toHaveBeenCalled();
   });
 });

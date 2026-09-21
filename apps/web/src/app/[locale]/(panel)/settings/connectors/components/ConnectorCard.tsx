@@ -526,7 +526,7 @@ export function ConnectorCard({ provider, connector }: ConnectorCardProps) {
             <DialogHeader>
               <DialogTitle>
                 {t('custom-header-title', {
-                  provider: t(`providers.${provider.provider}.name`),
+                  provider: name,
                 })}
               </DialogTitle>
             </DialogHeader>
@@ -536,7 +536,7 @@ export function ConnectorCard({ provider, connector }: ConnectorCardProps) {
                   isSingleTokenAuth
                     ? 'custom-header-instance-description'
                     : 'custom-header-description',
-                  { provider: t(`providers.${provider.provider}.name`) },
+                  { provider: name },
                 )}
                 {provider.apiKeyHelpUrl && (
                   <>
@@ -654,14 +654,14 @@ export function ConnectorCard({ provider, connector }: ConnectorCardProps) {
             <DialogHeader>
               <DialogTitle>
                 {t('api-key-title', {
-                  provider: t(`providers.${provider.provider}.name`),
+                  provider: name,
                 })}
               </DialogTitle>
             </DialogHeader>
             <div className="flex flex-col gap-3">
               <p className="text-sm text-muted-foreground">
                 {t('api-key-description', {
-                  provider: t(`providers.${provider.provider}.name`),
+                  provider: name,
                 })}
                 {provider.apiKeyHelpUrl && (
                   <>

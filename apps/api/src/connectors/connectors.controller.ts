@@ -10,7 +10,7 @@ import {
 import { ApiExcludeController } from '@nestjs/swagger';
 import { ConnectorsService } from './connectors.service.js';
 import { GetAvailableConnectorsService } from './get-available-connectors.service.js';
-import { getProviderDefinition } from './provider-definition.js';
+import { CatalogueService } from './catalogue.service.js';
 import { RegisterApiKeyDto } from './dto/register-api-key.dto.js';
 import { CustomHeaderCredentialsDto } from './dto/custom-header-credentials.dto.js';
 import { ToggleConnectorDto } from './dto/toggle-connector.dto.js';
@@ -49,6 +49,10 @@ export class ConnectorsController {
   constructor(
     private readonly connectors: ConnectorsService,
     private readonly availableConnectors: GetAvailableConnectorsService,
+    // The catalogue, for the same reason `ConnectorsService` takes it: an
+    // entry an operator added has no compiled manifest, so resolving from
+    // those would send it down the wrong branch below and then throw.
+    private readonly catalogue: CatalogueService,
   ) {}
 
   @Get()
@@ -118,12 +122,12 @@ export class ConnectorsController {
    * branch, here.
    */
   @Post(':provider/api-key')
-  registerApiKey(
+  async registerApiKey(
     @Param('provider') provider: string,
     @Body() dto: RegisterApiKeyDto,
     @GetSessionAuthContext() context: SessionAuthContext,
   ) {
-    const providerDef = getProviderDefinition(provider);
+    const providerDef = await this.catalogue.resolve(provider);
     if (providerDef?.authType === 'api_key_bearer') {
       return this.connectors.registerApiKeyBearer(
         context.orgId,

@@ -171,3 +171,46 @@ describe('the icon a card renders', () => {
     expect(definition.icon).toBe('notebook');
   });
 });
+
+describe('the row is the whole answer for scopes and user-scope', () => {
+  const SLACK_PACK = {
+    ...GOOGLE_PACK,
+    provider: 'SLACK',
+    scopes: ['search:read.public', 'channels:history'],
+    useUserScope: true,
+  } as unknown as ProviderDefinition;
+
+  it('lets an operator clear the scopes a built-in ships with', () => {
+    // Falling back to the pack on an empty list made this impossible to say:
+    // "no scopes" and "I did not set scopes" were the same value.
+    const definition = definitionFromEntry(
+      entry({ slug: 'SLACK', scopes: [] }),
+      SLACK_PACK,
+    );
+
+    expect(definition.scopes).toEqual([]);
+  });
+
+  it('lets an operator turn off the Slack user_scope rewrite', () => {
+    const definition = definitionFromEntry(
+      entry({ slug: 'SLACK', useUserScope: false }),
+      SLACK_PACK,
+    );
+
+    expect(definition.useUserScope).toBe(false);
+  });
+
+  it('still carries what the seeded row does hold', () => {
+    const definition = definitionFromEntry(
+      entry({
+        slug: 'SLACK',
+        scopes: ['search:read.public'],
+        useUserScope: true,
+      }),
+      SLACK_PACK,
+    );
+
+    expect(definition.scopes).toEqual(['search:read.public']);
+    expect(definition.useUserScope).toBe(true);
+  });
+});

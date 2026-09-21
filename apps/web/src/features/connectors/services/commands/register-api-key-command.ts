@@ -41,6 +41,9 @@ export const registerApiKeyCommand = async (
       baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`,
     );
 
+    // This POST carries the user's API key. The address it goes to comes from
+    // a catalogue row, so it is one somebody typed — the same class of URL
+    // `connect` guards, and it gets the same policy here.
     const response = await fetchWithTimeout(url.toString(), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -48,6 +51,7 @@ export const registerApiKeyCommand = async (
         customerId: connector.customerId,
         api_key: apiKey,
       }),
+      addressGuard: providerDef.addressGuard,
     });
 
     if (!response.ok) {

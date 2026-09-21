@@ -176,26 +176,41 @@ export function CatalogueEntryForm({ entry, onDone }: CatalogueEntryFormProps) {
           </select>
         </Field>
 
-        <Field
-          label="Icon"
-          hint="A lucide icon name, or a path under public/ for a brand asset."
-          error={fieldError('icon') ?? fieldError('lucideIcon')}
-        >
+        {/* Two controls, so two labels — `Field`'s implicit association would
+            name only the first of them, leaving the brand-asset box unnamed
+            while appearing to be handled. */}
+        <div className="space-y-1">
+          <span className="block text-sm font-medium">Icon</span>
           <div className="flex gap-2">
-            <input
-              className="w-1/2 rounded-md border border-border bg-background px-3 py-2 text-sm"
-              value={values.lucideIcon}
-              placeholder="plug"
-              onChange={(event) => set('lucideIcon', event.target.value)}
-            />
-            <input
-              className="w-1/2 rounded-md border border-border bg-background px-3 py-2 text-sm"
-              value={values.icon}
-              placeholder="/assets/connectors/notion.svg"
-              onChange={(event) => set('icon', event.target.value)}
-            />
+            <label className="w-1/2">
+              <span className="sr-only">Lucide icon name</span>
+              <input
+                className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
+                value={values.lucideIcon}
+                placeholder="plug"
+                onChange={(event) => set('lucideIcon', event.target.value)}
+              />
+            </label>
+            <label className="w-1/2">
+              <span className="sr-only">Brand asset path</span>
+              <input
+                className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
+                value={values.icon}
+                placeholder="/assets/connectors/notion.svg"
+                onChange={(event) => set('icon', event.target.value)}
+              />
+            </label>
           </div>
-        </Field>
+          {(fieldError('icon') ?? fieldError('lucideIcon')) ? (
+            <p className="text-sm text-destructive">
+              {fieldError('icon') ?? fieldError('lucideIcon')}
+            </p>
+          ) : (
+            <p className="text-xs text-muted-foreground">
+              A lucide icon name, or a path under public/ for a brand asset.
+            </p>
+          )}
+        </div>
       </div>
 
       <Field
@@ -249,7 +264,12 @@ export function CatalogueEntryForm({ entry, onDone }: CatalogueEntryFormProps) {
             </span>
           </label>
 
-          {entry ? (
+          {/* The *persisted* auth type, not the one selected a moment ago.
+              This block renders as soon as EXTERNAL_MCP is chosen, so keying
+              it on `entry` alone offered to store a client secret against an
+              entry that is still, say, API_KEY_BEARER — and would stay that
+              way if the save then failed or was abandoned. */}
+          {entry?.authType === 'EXTERNAL_MCP' ? (
             <OAuthCredentials publicId={entry.publicId} />
           ) : (
             <p className="text-sm text-muted-foreground">
@@ -420,13 +440,21 @@ function Field({
   children: React.ReactNode;
 }) {
   return (
-    <div className="space-y-1">
-      <div className="text-sm font-medium">{label}</div>
+    // A `<label>` rather than a `<div>`: the name was rendered as plain text,
+    // so every control here — Name, Description, Authentication, System
+    // prompt — reached assistive technology unnamed. Wrapping associates them
+    // implicitly, with no id to keep unique across a form that renders twice
+    // on the same page (the add form and a row's edit form).
+    //
+    // Implicit association names the *first* control inside, which is why the
+    // Icon pair below does not use this component.
+    <label className="block space-y-1">
+      <span className="block text-sm font-medium">{label}</span>
       {children}
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
       {!error && hint ? (
         <p className="text-xs text-muted-foreground">{hint}</p>
       ) : null}
-    </div>
+    </label>
   );
 }

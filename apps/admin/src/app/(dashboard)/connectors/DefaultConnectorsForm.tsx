@@ -10,6 +10,21 @@ export type GrantableConnector = {
   enabled: boolean;
 };
 
+/**
+ * Whether the catalogue still carries this slug.
+ *
+ * Shared by both forms on this page, because both seed their selection from
+ * stored values and both render controls from the catalogue — so both had the
+ * same trap: a slug in one and not the other stays selected, invisible, and
+ * fails the save.
+ */
+export function grantable(
+  catalogue: GrantableConnector[],
+  value: string,
+): boolean {
+  return catalogue.some((connector) => connector.value === value);
+}
+
 export function DefaultConnectorsForm({
   defaults,
   allConnectors,
@@ -18,7 +33,13 @@ export function DefaultConnectorsForm({
   /** The catalogue, so an entry added from /mcp-catalogue can be granted. */
   allConnectors: GrantableConnector[];
 }) {
-  const [selected, setSelected] = useState<Set<string>>(new Set(defaults));
+  // Narrowed to what the catalogue still carries. A stored slug whose entry
+  // was deleted renders no control, so it could be neither seen nor cleared —
+  // and the save action validates against the catalogue, so it silently
+  // rejected every submission from this form until the row came back.
+  const [selected, setSelected] = useState<Set<string>>(
+    () => new Set(defaults.filter((value) => grantable(allConnectors, value))),
+  );
   const [loading, setLoading] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState('');

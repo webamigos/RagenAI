@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { saveOrgAllowedConnectorsAction } from './actions';
-import type { GrantableConnector } from './DefaultConnectorsForm';
+import { grantable, type GrantableConnector } from './DefaultConnectorsForm';
 
 export function OrgConnectorsForm({
   orgId,
@@ -16,7 +16,12 @@ export function OrgConnectorsForm({
   /** The catalogue, so an entry added from /mcp-catalogue can be granted. */
   allConnectors: GrantableConnector[];
 }) {
-  const [selected, setSelected] = useState<Set<string>>(new Set(current));
+  // Same narrowing as DefaultConnectorsForm, for the same reason: a stored
+  // slug the catalogue no longer carries renders no control here either, so
+  // it could not be cleared and every save was rejected because of it.
+  const [selected, setSelected] = useState<Set<string>>(
+    () => new Set(current.filter((value) => grantable(allConnectors, value))),
+  );
   const [loading, setLoading] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState('');

@@ -484,10 +484,21 @@ export async function storeCatalogueOAuthCredentialsAction(
 
   const entry = await prisma.mcpCatalogEntry.findUnique({
     where: { publicId },
-    select: { id: true, slug: true, isBuiltIn: true },
+    select: { id: true, slug: true, isBuiltIn: true, authType: true },
   });
   if (!entry) {
     return { ok: false, message: 'That entry is no longer in the catalogue.' };
+  }
+  // The persisted auth type decides, not what the form had selected. The
+  // panel hides this control for anything else, but the action is reachable
+  // without it — and a secret stored against an entry that never becomes an
+  // OAuth one is a credential nothing will ever read and nothing will clear.
+  if (entry.authType !== 'EXTERNAL_MCP') {
+    return {
+      ok: false,
+      message:
+        'OAuth client credentials belong to an external MCP entry. Save the authentication type first.',
+    };
   }
   if (entry.isBuiltIn) {
     return {
