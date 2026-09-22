@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Dialog, DialogTitle } from '@ragenai/common-ui/Dialog';
 import { Button } from '@ragenai/common-ui/Button';
 import { Input } from '@ragenai/common-ui/Input';
@@ -31,6 +32,8 @@ export function CreateFolderDialog({
   parentId,
   parentName,
 }: Props) {
+  const t = useTranslations('folders.create-dialog');
+  const tPii = useTranslations('pii-policy');
   const { successToast, errorToast } = statusToast();
   const inputRef = useRef<HTMLInputElement>(null);
   const [name, setName] = useState('');
@@ -59,14 +62,14 @@ export function CreateFolderDialog({
         parentId ?? null,
         piiPolicy as any,
       );
-      successToast({ message: 'Folder created' });
+      successToast({ message: t('success') });
       setName('');
       setTeamId('');
       setPiiPolicy('TOXIC_ONLY');
       onClose();
       onCreated();
     } catch {
-      errorToast({ message: 'Failed to create folder' });
+      errorToast({ message: t('error') });
     } finally {
       setIsSubmitting(false);
     }
@@ -82,7 +85,7 @@ export function CreateFolderDialog({
   return (
     <Dialog open={isOpen} onClose={handleClose} size="md">
       <DialogTitle>
-        {parentName ? `Create Subfolder in "${parentName}"` : 'Create Folder'}
+        {parentName ? t('subfolder-title', { name: parentName }) : t('title')}
       </DialogTitle>
 
       <form onSubmit={handleSubmit} className="space-y-6 mt-6">
@@ -91,12 +94,12 @@ export function CreateFolderDialog({
             htmlFor="folder-name"
             className="block text-sm font-medium mb-2 text-foreground"
           >
-            Folder Name
+            {t('name-label')}
           </label>
           <Input
             id="folder-name"
             type="text"
-            placeholder="e.g. HR Documents, Product Specs"
+            placeholder={t('name-placeholder')}
             ref={inputRef}
             value={name}
             onChange={(e) => setName(e.target.value)}
@@ -109,7 +112,7 @@ export function CreateFolderDialog({
             htmlFor="folder-team"
             className="block text-sm font-medium mb-2 text-foreground"
           >
-            Restrict to Team (optional)
+            {t('team-label')}
           </label>
           <select
             id="folder-team"
@@ -118,16 +121,14 @@ export function CreateFolderDialog({
             disabled={isSubmitting}
             className="w-full rounded-md border border-border px-3 py-2 dark:bg-muted dark:text-foreground focus:border-brand-600 focus:ring-brand-600"
           >
-            <option value="">Organization-wide (visible to all)</option>
+            <option value="">{t('organization-wide')}</option>
             {teams.map((team) => (
               <option key={team.id} value={team.id}>
                 {team.name}
               </option>
             ))}
           </select>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Team-restricted folders are only visible to team members.
-          </p>
+          <p className="mt-1 text-xs text-muted-foreground">{t('team-hint')}</p>
         </div>
 
         <div>
@@ -135,7 +136,7 @@ export function CreateFolderDialog({
             htmlFor="folder-pii-policy"
             className="block text-sm font-medium mb-2 text-foreground"
           >
-            PII Masking Policy
+            {tPii('label')}
           </label>
           <PiiPolicySelect
             id="folder-pii-policy"
@@ -153,10 +154,10 @@ export function CreateFolderDialog({
             disabled={isSubmitting}
             className="bg-paper-200 text-foreground hover:bg-paper-300 dark:bg-paper-700 dark:hover:bg-paper-600"
           >
-            Cancel
+            {t('cancel')}
           </Button>
           <Button isSubmit={true} disabled={isSubmitting || !name.trim()}>
-            {isSubmitting ? 'Creating...' : 'Create Folder'}
+            {isSubmitting ? t('creating') : t('create')}
           </Button>
         </div>
       </form>
