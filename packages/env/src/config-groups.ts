@@ -176,8 +176,15 @@ export const TOKEN_VAULT_GROUP = {
       label: 'The vault',
     },
   ],
+  // Two paragraphs, and the second one is the point: these four are `optional`
+  // in the only sense the schema can express — Ragen boots without them — while
+  // connecting a connector and creating an API key both fail once you try,
+  // because the secret has nowhere to go. A reader who takes "optional" at face
+  // value finds that out from a 401 weeks later. The prose lived in the
+  // generated page for one release, where the next regeneration would have
+  // deleted it silently; it belongs here, with the table it qualifies.
   summary:
-    'Connector OAuth tokens and API keys (ADR-32). Each URL and its secret are all-or-nothing: a URL without its secret produces 401s rather than a legible error.',
+    'Connector OAuth tokens and API keys (ADR-32), held by a separate service — see [Token vault](/configuration/token-vault). Each URL and its secret are all-or-nothing: a URL without its secret produces 401s rather than a legible error.\n\nOptional here means Ragen starts without them. Connectors and API keys do not work without them, and they fail when you use the feature rather than at startup.',
 } as const satisfies FieldGroup;
 
 export const FIELD_GROUPS = [
