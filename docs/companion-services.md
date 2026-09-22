@@ -221,10 +221,9 @@ instrumentation is a no-op. See
 ### Running Everything Locally
 
 ```bash
-# 1. Start infrastructure (from the repo root) — pick one:
-npm run ragen:up:full            # Full stack: Postgres, Qdrant, Redis, Docling
+# 1. Start infrastructure (from the repo root)
+npm run ragen:up:full            # Postgres, Qdrant, Redis, Docling
 #                                  (PII masking adds Presidio: --profile pii)
-npm run ragen:up:app             # App-only:  Postgres, Qdrant (no document processing)
 
 # 2. Start apps/web
 npm run dev                      # http://localhost:3000
@@ -241,17 +240,23 @@ cd ../ragen-connectors && npm run dev:google     # http://localhost:8001
 # 6. Start admin (separate terminal, needed for platform admin)
 cd apps/admin && npm run dev              # http://localhost:3200
 
-# 7. Start API (separate terminal, needed for public API)
+# 7. Start API (separate terminal — apps/web needs it too, not just the public API)
 npm run api:dev                           # http://localhost:3001
 
 # 8. Start the MCP server (separate terminal, needed to expose chat via MCP)
 cd apps/mcp && npm run dev                # :3300
 ```
 
-**Minimum for chat only** (no document ingestion): Steps 1 (`ragen:up:app`) + 2.
-**Minimum with document processing**: Steps 1 (`ragen:up:full`) + 2 + 3.
-**For public API**: Also need steps 4 (token vault) + 7 (apps/api).
-**For the MCP server**: Also need steps 4, 7, and 8 (it calls apps/api, which needs the token vault).
+**Minimum for chat only** (no document ingestion): Steps 1 + 2 + 7.
+**Minimum with document processing**: Steps 1 + 2 + 7 + 3.
+**For public API**: Also need step 4 (token vault).
+**For the MCP server**: Also need steps 4 and 8 (it calls apps/api, which needs the token vault).
+
+**There is no chat-only stack without Redis.** `ragen:up:app` brings up
+Postgres and Qdrant only, which worked while Redis was merely a cache; under
+BullMQ (ADR-44) it is not a smaller stack but a broken one — `apps/api` exits
+naming `REDIS_URL` and `apps/web` serves its setup page, because both are queue
+producers before they are anything else.
 
 | Service                       | Port      | When needed                                     |
 | ----------------------------- | --------- | ----------------------------------------------- |

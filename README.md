@@ -260,9 +260,12 @@ Redis is not optional under the default runtime — it holds the ingest queue,
 and rate limiting rides along on it. The four applications run on top of all
 this and are not in the table.
 
-`npm run ragen:up:app` runs a smaller set — Postgres and Qdrant, no
-document processing — when you only want to try the chat. Sizing guidance for
-larger installs is in
+`npm run ragen:up:app` is **not** a smaller way to run Ragen any more: it
+brings up Postgres and Qdrant without Redis, which was a working chat-only
+stack while Redis was merely a cache. Under BullMQ (ADR-44) it is not —
+`apps/web` and `apps/api` validate `REDIS_URL` at boot whether or not you ever
+upload a document, because a producer that cannot reach the queue cannot
+enqueue at all. Use `ragen:up:full`. Sizing guidance for larger installs is in
 [Self-hosting](https://docs.ragen.ai/docs/self-hosting).
 
 For development, `npm run ragen:up:full` runs the dependencies in containers and
