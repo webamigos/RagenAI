@@ -58,7 +58,6 @@
     "@ragenai/guardrails": "*",
     "@ragenai/jobs": "*",
     "@ragenai/jobs-bullmq": "*",
-    "@ragenai/litellm-client": "*",
     "@ragenai/llm-gateway": "*",
     "@ragenai/observability": "*",
     "@ragenai/platform-contracts": "*",

@@ -48,9 +48,11 @@ next-env.d.ts
 e2e/.auth/
 /ctrf
 /dist
-# Package build output. Not root-anchored above, so it was not covered:
-# packages/litellm-client/dist is tracked on main for exactly that reason,
-# left behind when its source was deleted.
+# Package build output. `/dist` above is root-anchored, so it never covered a
+# package's own — which is how `packages/litellm-client/dist` came to be
+# tracked, and how twenty compiled files outlived the deletion of their source
+# by a week (#1194 removed the package; this rule arrived in #1201 and an
+# ignore rule does not untrack what is already tracked).
 packages/*/dist
 node_modules/
 
