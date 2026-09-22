@@ -110,18 +110,21 @@ screen was a retrieval-frequency table.
 - **Reranker** (when enabled): over-retrieves 3x and falls back to the fused
   hybrid results on a provider error. `RERANK_PROVIDER` selects the backend —
   unset (the default) uses Scaleway `/v1/rerank` with `qwen3-embedding-8b`;
-  `cohere` opts back into Bedrock Cohere Rerank v3.5 through LiteLLM, which
-  needs AWS credentials and `cohere-rerank-v3-5` re-enabled in
-  `infra/litellm/config.yaml`.
+  `cohere` opts back into Cohere Rerank v3.5, which needs
+  `RERANK_COHERE_BASE_URL` pointed at an endpoint speaking Cohere's rerank
+  shape and `RERANK_COHERE_API_KEY` to authenticate to it. AWS credentials are
+  that endpoint's problem, not the app's, when it is one fronting Bedrock. The
+  gateway route table carries no rerank model — `/rerank` is not a chat
+  completion, so it never went through `infra/llm-gateway/routes.yaml`.
 - **Flags**:
   - `FEATURE_FLAG_RERANKING` — **off** unless set to `1`, and reranking also
     needs provider credentials: `SCW_API_BASE` + `SCW_API_KEY` for Scaleway
-    (the default), or for `cohere` — AWS credentials with the `bedrock:Rerank`
-    IAM permission (see the `BedrockRerank` statement in
-    [`docs/aws-iam-policy.json`](aws-iam-policy.json)), and
-    `cohere-rerank-v3-5` uncommented in `infra/litellm/config.yaml`
-    (commented out today). Both halves are checked in `isRerankingEnabled()`,
-    so the default install reranks nothing.
+    (the default), or for `cohere` — `RERANK_COHERE_BASE_URL` naming an
+    endpoint that serves `cohere-rerank-v3-5`, plus `RERANK_COHERE_API_KEY`.
+    If that endpoint fronts Bedrock, it in turn needs AWS credentials with the
+    `bedrock:Rerank` IAM permission (see the `BedrockRerank` statement in
+    [`docs/aws-iam-policy.json`](aws-iam-policy.json)). Both halves are checked
+    in `isRerankingEnabled()`, so the default install reranks nothing.
   - `FEATURE_FLAG_DOC_SUMMARIES` — on unless `0`/`false`. Read by the worker
     activity, so ingest-time summaries are on by default.
   - There is **no** `FEATURE_FLAG_MULTI_QUERY`. Any doc still listing it is

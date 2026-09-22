@@ -15,10 +15,10 @@ export class MissingCredentialsError extends Error {
 }
 
 /**
- * Environment-variable names are the ones `infra/litellm/config.yaml` already
- * uses, so a deployment that runs the proxy today needs no new secrets to run
- * the gateway — the two read the same variables and can be compared directly
- * while the flag still chooses between them.
+ * Environment-variable names are the ones the retired LiteLLM proxy config
+ * used, so a deployment upgrading across B6 (ADR-49) needs no new secrets: the
+ * gateway reads the variables that were already set. That is why the names
+ * here look nothing like the provider SDKs' own conventions.
  */
 const REQUIRED: Record<Exclude<ProviderId, 'openai-compatible'>, string[]> = {
   azure: ['AZURE_API_KEY', 'AZURE_API_BASE'],

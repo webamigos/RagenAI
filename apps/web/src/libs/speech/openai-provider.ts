@@ -10,9 +10,9 @@ const DEFAULT_BASE_URL = 'https://api.openai.com';
  *
  * Until B3 this read `LITELLM_PROXY_URL` and `LITELLM_MASTER_KEY`, preferring
  * them over OpenAI's own endpoint. That was not merely indirect — it was
- * broken: `infra/litellm/config.yaml` registers no audio route, and never has,
- * so any deployment with a proxy URL set (which is all of them; the variable is
- * required) and `SPEECH_PROVIDER=openai` sent every synthesis and every
+ * broken: the proxy config registered no audio route, and never had,
+ * so any deployment with a proxy URL set (which was all of them; the variable
+ * was required then) and `SPEECH_PROVIDER=openai` sent every synthesis and every
  * transcription to an endpoint that 404s. The fallback to `api.openai.com` was
  * unreachable for exactly the deployments that needed it.
  *

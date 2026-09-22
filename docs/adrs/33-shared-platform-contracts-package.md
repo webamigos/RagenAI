@@ -78,10 +78,11 @@ resolves, and roughly forty call sites were untouched.
 
 ### What deliberately stays out
 
-- **Which models a deployment serves.** That is `infra/litellm/config.yaml`,
-  read at runtime from the proxy's `/v1/models`. The package holds only how a
-  model is *presented* — label, grouping, visibility. Putting the served list in
-  a package would recreate the same drift one level up.
+- **Which models a deployment serves.** That is the route table —
+  `infra/litellm/config.yaml` when this was written, `infra/llm-gateway/routes.yaml`
+  since ADR-49. The package holds only how a model is *presented* — label,
+  grouping, visibility. Putting the served list in a package would recreate the
+  same drift one level up.
 - **`Prisma.defineExtension`.** It needs a *generated* client, and web and api
   each generate their own from the shared schema. The package owns the model map
   and the predicate; each app wraps them in its own extension with its own
@@ -126,9 +127,10 @@ written to make someone stop and think about.
   package) is covered by the package's own test against `schema.prisma`.
 - The package tests check each contract against its **real** source of truth
   rather than against another copy: connectors and the tenant-scope map against
-  `prisma/schema.prisma`, the model catalogue against
-  `infra/litellm/config.yaml`. That is strictly stronger than agreement between
-  two hand-written lists, both of which can be wrong together.
+  `prisma/schema.prisma`, the model catalogue against the route table — then
+  `infra/litellm/config.yaml`, now `infra/llm-gateway/routes.yaml`. That is
+  strictly stronger than agreement between two hand-written lists, both of which
+  can be wrong together.
 - `apps/api/docs/ported-libs.md` shrinks by two entries. `ai-pricing.ts` and the
   organization contract types are still duplicated — they were out of scope here
   and are the obvious next candidates.

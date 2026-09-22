@@ -32,11 +32,9 @@ For real retrieval — a PDF ingested through Temporal and answered from Qdrant 
 
 ## Running
 
-Only a LiteLLM proxy is needed — the chain **and** the grader both go through it, so no separate provider key:
+The chain **and** the grader both go through the gateway the application uses, so all either needs is the route table and the credentials behind it — the same `.env.local` that runs the app:
 
 ```bash
-export LITELLM_PROXY_URL=http://localhost:4000
-export LITELLM_MASTER_KEY=...          # from .env.local
 npm run eval                            # root promptfooconfig.yaml (rag-quality)
 npm run eval:ci                         # the CI gate subset
 
@@ -45,10 +43,10 @@ npx promptfoo eval -c evals/configs/red-team.yaml --no-cache
 
 ### Models
 
-Every `model:` in a config must be a `model_name` from `infra/litellm/config.yaml`. A name that isn't provisioned doesn't degrade — it errors every row. Check what's live before changing one:
+Every `model:` in a config must be a route id from `infra/llm-gateway/routes.yaml`. A name with no route doesn't degrade — it errors every row. Check what this deployment can actually reach before changing one:
 
 ```bash
-curl -s localhost:4000/v1/models -H "Authorization: Bearer $LITELLM_MASTER_KEY"
+npm run gateway:preflight -- --probe
 ```
 
 The default (`DEFAULT_EVAL_MODEL` in `providers/shared.ts`) is `gemini-2.5-flash`: fast and cheap, which keeps the `ci-gate` subset worth re-running by hand on every chain change — roughly 15–20 short calls, well under a cent.

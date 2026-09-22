@@ -23,8 +23,10 @@ export type AvailableModel = {
   supportsReasoningEffort?: boolean;
 };
 
-// Static fallback list — the real model list is fetched dynamically from LiteLLM /models endpoint.
-// These are used when LiteLLM is unreachable and must match model_name values in infra/litellm/config.yaml.
+// The full catalogue the picker knows about. `gatewayModels()` narrows it to
+// the routes this deployment can actually serve, and falls back to this whole
+// list when the route table cannot be read — so an entry here that names no
+// route in infra/llm-gateway/routes.yaml is offerable and fails on first click.
 // Only includes visible (user-facing) models.
 export const availableModels: AvailableModel[] = Object.entries(MODEL_REGISTRY)
   .filter(([, entry]) => entry.visible)

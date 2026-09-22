@@ -45,8 +45,8 @@ export async function generateDocumentContent(
   const model = await getChatModelForOrg(
     params.orgId,
     // gemini-3-flash-preview, matching defaultOrganizationSettings and
-    // infra/litellm/config.yaml. The previous fallback was gpt-4o, which
-    // that config has not provisioned for some time.
+    // infra/llm-gateway/routes.yaml. The previous fallback was gpt-4o, which
+    // no route table has named for some time.
     process.env.DEFAULT_MODEL || 'gemini-3-flash-preview',
   );
 

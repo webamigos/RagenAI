@@ -233,8 +233,16 @@ export const storage = z.object({
  * because nothing declared them.
  *
  * All optional, and deliberately not enums. The catalogue lives in
- * `infra/litellm/config.yaml` and `@ragenai/platform-contracts`; pinning model
- * names here would mean a schema change every time a model is provisioned.
+ * `infra/llm-gateway/routes.yaml` — which model ids resolve to an upstream —
+ * and `@ragenai/platform-contracts`, which says how each one is presented.
+ * Pinning model names here would mean a schema change every time a model is
+ * provisioned.
+ *
+ * This comment named the retired proxy config until #1297, a week after ADR-49
+ * deleted it, and this is the documented entry point for adding a model — so
+ * the pointer sent people to edit a file nothing reads. Keep it pointing at
+ * whatever the route table is; `an-infra-path-that-is-cited-exists` now fails
+ * if it names something that is not in the tree.
  *
  * `EMBEDDINGS_MODEL` and `VECTOR_SIZE` are optional here and required in
  * apps/worker, which extends over them — its ingest cannot guess either.

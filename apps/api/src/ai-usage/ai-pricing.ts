@@ -42,10 +42,21 @@ const PRICING: Record<string, Record<string, ModelPricing>> = {
     'amazon.titan-embed-text-v1': { input: 0.1, output: 0 },
     'cohere.embed-multilingual-v3': { input: 0.1, output: 0 },
   },
-  // LiteLLM is the unified gateway — `AiUsageService.track()` stores
-  // `provider: 'litellm'` when the caller can't map the model back to its
-  // upstream. Keep model IDs here in sync with `infra/litellm/config.yaml` (the
-  // source of truth) and with apps/web's copy of this file.
+  // `AiUsageService.track()` stores `provider: 'litellm'` when the caller
+  // can't map the model back to its upstream. The name outlived the proxy
+  // (ADR-49) and stays because it is a value in `ai_usage` rows going back
+  // months.
+  //
+  // This is not a mirror of `infra/llm-gateway/routes.yaml` and must not be
+  // pruned to match it. That file says which models can be *called* today;
+  // this one has to price every model that was ever called, because the AI
+  // Usage screen reads it to cost historical rows. Four keys below have no
+  // route (`gpt-5.3-chat`, `claude-opus-4-6`, `cohere-embed-multilingual-v3`,
+  // `cohere-rerank-v3-5`) and are load-bearing for exactly that reason —
+  // deleting one silently zeroes the cost of past usage rather than erroring.
+  //
+  // Adding a route is the direction that needs action here: a model with no
+  // entry prices at nothing. Keep this file in sync with apps/web's copy.
   litellm: {
     'gpt-5.4': { input: 2.0, output: 8.0 },
     'gpt-5.4-nano': { input: 0.1, output: 0.4 },
