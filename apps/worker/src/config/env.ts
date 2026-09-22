@@ -63,11 +63,11 @@ export const workerEnvSchema = fragments.targetEnvRequired
     MEILISEARCH_URL: z.string().url().optional(),
     MEILISEARCH_API_KEY: z.string().optional(),
 
-    // Scaleway Generative APIs (used by LiteLLM)
+    // Scaleway Generative APIs (the `scaleway` connection in the route table)
     SCW_API_BASE: z.string().url(),
     SCW_API_KEY: z.string().min(1),
 
-    // Embeddings model name (must match infra/litellm/config.yaml model_name)
+    // Embeddings model name (must match a route id in infra/llm-gateway/routes.yaml)
     EMBEDDINGS_MODEL: z.string(),
 
     // Pusher (optional — not needed for on-premise SSE mode)

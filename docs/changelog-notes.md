@@ -398,6 +398,15 @@ archive is the blog.
 
 ### Thread: the application calls model providers itself (continued)
 
+- `[brief]` **Adding a model points at the file that adds a model.** The docs
+  and code comments a contributor reads first — the environment reference, the
+  RAG pipeline page, the evals README, the PDF processing notes — still named
+  the retired LiteLLM proxy config as the model catalogue, a week after it was
+  deleted. They name `infra/llm-gateway/routes.yaml` now, and a guard fails the
+  build if any of them starts naming a file that is not there. `infra/temporal/`
+  gets a header explaining why it is still in the tree when nothing reads it
+  ([#1297](https://github.com/webamigos/RagenAI/issues/1297)).
+
 - `[major]` **An Anthropic key now works on its own.** `anthropic` is a provider
   in the route table, so a deployment holding a plain Anthropic key uses it
   directly instead of needing Bedrock or Vertex access to reach the same

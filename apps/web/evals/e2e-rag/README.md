@@ -101,8 +101,9 @@ check there first if that case fails.
 Use a scratch database (the seeded `ragen_e2e` works well) rather than your dev
 one — the script creates and then deletes a file record.
 
-`PDF_MODEL` must be a model that LiteLLM can actually reach. Check
-`infra/litellm/config.yaml` and verify with `curl localhost:4000/v1/models`.
+`PDF_MODEL` must name a route this deployment can actually reach. Check
+`infra/llm-gateway/routes.yaml` and verify with
+`npm run gateway:preflight -- --probe`, which makes one real call per route.
 
 ## Running
 

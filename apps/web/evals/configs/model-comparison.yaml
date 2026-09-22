@@ -1,7 +1,7 @@
 description: 'Cross-model answer quality comparison for the RAG chain'
 
-# Each entry must be a model_name from infra/litellm/config.yaml. Swap these when the
-# provisioned set changes — a name that isn't provisioned errors every row.
+# Each entry must be a route id from infra/llm-gateway/routes.yaml. Swap these when
+# the provisioned set changes — a name with no route errors every row.
 providers:
   - id: 'file://../providers/rag-chain.provider.ts'
     label: 'gemini-2.5-flash'

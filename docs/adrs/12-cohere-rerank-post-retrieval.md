@@ -94,8 +94,9 @@ improvements "all default to on" is describing three of the four.
 Two further changes to the decision as written:
 
 - **Scaleway is the default provider.** `RERANK_PROVIDER` unset means Scaleway
-  `qwen3-embedding-8b`; `cohere` opts back into Bedrock Cohere Rerank v3.5 and
-  needs `cohere-rerank-v3-5` uncommented in `infra/litellm/config.yaml`. The
+  `qwen3-embedding-8b`; `cohere` opts back into Cohere Rerank v3.5 and needs
+  `RERANK_COHERE_BASE_URL` naming an endpoint that serves it — the proxy entry
+  this used to name went with B6 (ADR-49), and there is no fallback. The
   Scaleway model is a bi-encoder, so the "true cross-encoder" quality argument
   above applies to the opt-in path, not the default one.
 - **A per-org `rerankingEnabled` setting** (default on) gates it further. It can

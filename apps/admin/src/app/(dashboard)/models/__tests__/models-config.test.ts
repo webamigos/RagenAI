@@ -11,7 +11,7 @@ import {
 /**
  * The catalogue's own invariants — no provider prefix, every ID known, every
  * served model offerable — are tested in `@ragenai/platform-contracts`, against
- * `infra/litellm/config.yaml` directly. What is left for this file is this
+ * `infra/llm-gateway/routes.yaml` directly. What is left for this file is this
  * app's *derivation* of it: the page turns the catalogue into checkboxes
  * grouped by origin, and a mistake there drops a group silently rather than
  * failing.

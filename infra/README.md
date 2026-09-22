@@ -8,7 +8,17 @@ maintain around them — and not `packages/`, because nothing imports them.
 |---|---|---|
 | `docling/` | IBM Docling parser used by the ingest worker (`DOCUMENT_PARSER=docling`, the default) | its own Railway service |
 | `presidio/analyzer/` | Presidio analyzer with Polish recognizers, for optional PII masking (ADR-24) | its own Railway service |
+| `llm-gateway/` | `routes.yaml`, the source of truth for which models exist (ADR-49) | mounted read-only into every app container (`docker-compose.fullapp.yml`) |
 | `otel/` | OpenTelemetry Collector config for the optional local observability stack | local only |
+| `temporal/` | Dynamic config for a Temporal server — **read by nothing here**; see its [README](temporal/README.md) | nothing, today |
+
+Not every directory here is a service. `llm-gateway/` is a file the
+applications read, and `temporal/` is kept for a runtime that lives in
+`webamigos/ragen-enterprise`. `infra/litellm/` used to sit alongside them and is
+gone: ADR-49 removed the code that read it, so there was nothing left for it to
+configure. That is the test for anything here — a directory stays while
+something can still read it, and a directory that cannot says so in a README
+rather than waiting to mislead someone.
 
 The first two each have their own Railway service. **If you move a directory
 here, the matching service's Dockerfile path has to change with it** — and that

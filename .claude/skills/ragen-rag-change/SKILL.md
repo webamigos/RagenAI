@@ -99,5 +99,5 @@ of ADR-20.
 `defaultOrganizationSettings.model`) — `gpt-5.4` is provisioned but not the
 default. AGENTS.md says do not upgrade the rephrase model without explicit
 approval; it is load-bearing for retrieval and cheap to break. Verify anything
-you rely on against `infra/litellm/config.yaml` — docs have referenced models
-that are no longer provisioned.
+you rely on against `infra/llm-gateway/routes.yaml` — docs have referenced
+models that are no longer provisioned.

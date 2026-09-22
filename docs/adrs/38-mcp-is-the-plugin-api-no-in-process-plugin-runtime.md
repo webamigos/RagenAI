@@ -35,7 +35,7 @@ Verified in the tree, not assumed:
 |---|---|---|
 | MCP tools | A separate service speaking MCP | `apps/web/src/libs/mcp/client.ts`, ADR-05 |
 | Assistant templates | A database row | `AssistantTemplate`, `OrganizationSettings.allowedTemplates` |
-| Models | Proxy config plus a catalogue entry | `infra/litellm/config.yaml`, `MODEL_REGISTRY` |
+| Models | A route plus a catalogue entry | `infra/llm-gateway/routes.yaml`, `MODEL_REGISTRY` |
 | Public API, SDK, MCP server | Build alongside, no fork | `apps/api`, `apps/mcp`, `@webamigos/ragen-sdk-ts` |
 | Built-in chat tools | A rebuild — already a `Record<string, Tool>` registry | `apps/web/src/libs/tools/index.ts` |
 | Lifecycle side-effects | A rebuild — one file plus one registration line | `apps/web/src/libs/events/subscribers/` |

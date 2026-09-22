@@ -5,7 +5,7 @@ Split out of `AGENTS.md` to keep it under Codex's 32,768-byte `project_doc_max_b
 Upload → S3 → the ingest job in `apps/worker` → parse → embed → store in Qdrant. Status via `ParsingStatus`/`EmbeddingStatus` enums.
 
 **File types** (`FileType` enum: `PDF`, `EPUB`, `DOCX`, `SRT`, `TEXT`, `MARKDOWN`, `URL`, `IMAGE`, `CSV`, `XLSX`):
-- **PDF**: worker uses Claude native PDF (base64 to Claude in single call). `PDF_PROCESSOR=claude|vision`, `PDF_MODEL`. **`claude-haiku-4-5` is commented out in `infra/litellm/config.yaml`** — pointing `PDF_MODEL` at it 404s at the proxy. Use an enabled model or re-enable it there first. Chat: attached as binary data URL.
+- **PDF**: worker uses Claude native PDF (base64 to Claude in single call). `PDF_PROCESSOR=claude|vision`, `PDF_MODEL`. **`PDF_MODEL` must name a route in `infra/llm-gateway/routes.yaml`** — a model with no route resolves to nothing and every PDF fails. `claude-haiku-4-5`, the default, has one. Chat: attached as binary data URL.
 - **DOCX**: `mammoth` (client-side in chat, worker-side for KB).
 - **Image** (jpg/png/webp/gif): chat uses multimodal vision LLMs w/ lightbox; KB describes via vision LLM then embeds.
 - **XLSX/XLS**: SheetJS → CSV (client for chat, worker for KB).

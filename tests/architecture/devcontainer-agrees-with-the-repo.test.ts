@@ -87,7 +87,7 @@ describe('devcontainer.json agrees with the repository', () => {
   it('layers the repository docker-compose.yml rather than copying services', () => {
     expect(
       config.dockerComposeFile[0],
-      "The repository compose file must come first: Compose resolves every relative path in every layer against the *first* file's directory, and docker-compose.yml uses paths like ./infra/litellm relative to the repository root.",
+      "The repository compose file must come first: Compose resolves every relative path in every layer against the *first* file's directory, and docker-compose.yml uses paths like ./infra/otel relative to the repository root.",
     ).toBe('../docker-compose.yml');
   });
 

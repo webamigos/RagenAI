@@ -4,8 +4,8 @@
  * This is *presentation* metadata, not the list of models a deployment serves.
  * Which models a deployment can serve is `infra/llm-gateway/routes.yaml`, read
  * through `gatewayFromEnv().availableModels()` — there is no proxy to ask any
- * more, and `infra/litellm/config.yaml`, which this comment used to name, was
- * deleted with it (ADR-49). This module supplies the label, grouping and
+ * more, and the config this comment used to name was deleted with it
+ * (ADR-49). This module supplies the label, grouping and
  * visibility for the IDs a route table offers, and the set of IDs an
  * administrator may put on an organization's allowlist. `GET /v1/models` in
  * apps/api is the intersection of the three.
@@ -66,7 +66,8 @@ export const MODEL_REGISTRY: Record<string, ModelRegistryEntry> = {
     origin: 'openai',
     // Assumed to reason automatically server-side, same as the Claude/Gemini
     // reasoning entries below (no supportsReasoningEffort) — unconfirmed,
-    // this model is untested end to end (see infra/litellm/config.yaml).
+    // this model is untested end to end (it has a route in
+    // infra/llm-gateway/routes.yaml; nothing has called it).
     // Revisit once real Azure access lets a live call settle it.
     reasoning: true,
   },
@@ -117,10 +118,10 @@ export const MODEL_REGISTRY: Record<string, ModelRegistryEntry> = {
     displayName: 'Claude Sonnet 5',
     // Hidden from the model picker: live-tested 2026-09-05 against this
     // account's real Bedrock access and it returned "not available for this
-    // account" (see infra/litellm/config.yaml) — the route stays configured
-    // in LiteLLM so it's ready to go, but exposing it to users today would
-    // just mean every request to it fails. Flip to true once the AWS Bedrock
-    // console has granted access and a live call has been re-confirmed.
+    // account". The route stays configured in infra/llm-gateway/routes.yaml so
+    // it's ready to go, but exposing it to users today would just mean every
+    // request to it fails. Flip to true once the AWS Bedrock console has
+    // granted access and a live call has been re-confirmed.
     visible: false,
     origin: 'anthropic',
     reasoning: true,
@@ -128,7 +129,7 @@ export const MODEL_REGISTRY: Record<string, ModelRegistryEntry> = {
   'claude-opus-5': {
     displayName: 'Claude Opus 5',
     // Same Bedrock-access gate as claude-sonnet-5 above — not yet available
-    // on this account, see infra/litellm/config.yaml.
+    // on this account. Routed in infra/llm-gateway/routes.yaml all the same.
     visible: false,
     origin: 'anthropic',
     reasoning: true,

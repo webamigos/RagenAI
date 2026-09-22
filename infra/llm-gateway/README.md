@@ -115,10 +115,10 @@ connection that exists today keeps working with no change to any environment.
 
 ## Credentials for the other providers
 
-The names are the ones `infra/litellm/config.yaml` already uses, so a deployment
-running the proxy today needs no new secrets to run the gateway — which is what
-lets the two be compared directly while `LLM_GATEWAY` still chooses between
-them.
+The names are the ones the retired `infra/litellm/config.yaml` used, so a
+deployment upgrading across B6 needs no new secrets: the gateway reads the
+variables that were already set. That is why they look nothing like the
+provider SDKs' own conventions.
 
 | provider    | variables                                                       |
 | ----------- | --------------------------------------------------------------- |
@@ -135,39 +135,27 @@ models are also reachable through `bedrock` (`eu.anthropic.*`) and `vertex`;
 which one a deployment uses is a routing decision, which is why it lives in the
 table.
 
-## Turning it on
+## There is nothing to turn on
 
-```text
-LLM_GATEWAY=native
-```
+There was a flag — `LLM_GATEWAY=litellm|native` — while the two paths were
+measured against each other. B6 deleted the proxy path and the flag with it
+(ADR-49), so this is how `apps/web`, `apps/api` and `apps/worker` reach a model:
+chat, embeddings, and the worker's PDF extraction. `apps/admin` makes no model
+calls. `LITELLM_PROXY_URL` and `LITELLM_MASTER_KEY` are gone from the env
+schema; nothing reads them.
 
-`native` is the default as of 2026-09-15; `litellm` keeps a proxy in front and
-is the documented rollback. Anything else is refused at boot
-rather than treated as the default — a typo that fell back would run the proxy
-arm while reporting the gateway's, and the only evidence would be a comparison
-that found no difference, which is also what a clean cutover looks like.
+One thing to know before reading a result: **a chat model resolves on its first
+call, not when it is built.** The multimodal swap chooses between models based
+on what the turn contains, so the decision cannot be made before the messages
+exist. One model instance can therefore call two different upstreams across a
+conversation.
 
-Switched: `apps/web`, `apps/api` and `apps/worker` — chat, embeddings, and the
-worker's PDF extraction. `apps/admin` has no model calls to switch.
-
-Two things to know before reading a result:
-
-- **A chat model resolves on its first call, not when it is built.** The
-  multimodal swap chooses between models based on what the turn contains, so the
-  decision cannot be made before the messages exist. One model instance can
-  therefore call two different upstreams across a conversation.
-- **`LITELLM_PROXY_URL` is still required**, under either value, until B4. The
-  gateway path never reads it; the env schema has not been relaxed yet, because
-  both arms are measured on one machine with the proxy running anyway.
-  `LITELLM_MASTER_KEY` is the exception — the worker stops demanding it under
-  `native`, because its boot check would otherwise refuse to start over a
-  credential nothing on that path uses.
-- **Three model ids the apps hard-code are served by neither path.**
-  `PDF_MODEL`'s default `claude-haiku-4-5`, and `gpt-5.4-mini` / `gpt-5.4-nano`
-  in the worker's image and PDF chains. They are commented out in the proxy
-  config and absent here, so those paths fail either way — the gateway just
-  says so earlier, with `UnknownModelError`. Only the worker's non-Docling
-  fallback reaches them.
+The route table is the whole answer to "which models exist", and a model id
+absent from it fails with `UnknownModelError` at the first call rather than
+somewhere inside a provider SDK. B4 found three ids the apps hard-code that no
+route named — `PDF_MODEL`'s default `claude-haiku-4-5`, and `gpt-5.4-mini` /
+`gpt-5.4-nano` in the worker's image and PDF chains. All three have routes now;
+the shape of that hole is the reason `gateway:preflight` exists.
 
 ## Later
 

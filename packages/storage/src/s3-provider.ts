@@ -45,11 +45,12 @@ function isNotFound(err: unknown): boolean {
  * Every var here uses an `S3_` prefix, not `AWS_`: the AWS KMS encryption
  * provider reads `AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY`/
  * `AWS_ENDPOINT_URL`/`AWS_DEFAULT_REGION` for real AWS credentials, and
- * `infra/litellm/config.yaml`'s Bedrock entries read the two credential names
- * too — a deployment running this store against a non-AWS provider (Scaleway,
- * in every deployment today) alongside either of those would have one
- * silently clobber the other's config, not just its credentials: KMS would
- * try to reach Scaleway's endpoint/region as if it were AWS's.
+ * the gateway's Bedrock routes (`infra/llm-gateway/routes.yaml`) read the two
+ * credential names too — a deployment running this store against a non-AWS
+ * provider (Scaleway, in every deployment today) alongside either of those
+ * would have one silently clobber the other's config, not just its
+ * credentials: KMS would try to reach Scaleway's endpoint/region as if it
+ * were AWS's.
  * See docs/adrs/27-storage-abstraction-local-by-default.md's Update section.
  */
 function createS3Client(): S3Client {

@@ -42,10 +42,12 @@ const PRICING: Record<string, Record<string, ModelPricing>> = {
     'amazon.titan-embed-text-v1': { input: 0.1, output: 0 },
     'cohere.embed-multilingual-v3': { input: 0.1, output: 0 },
   },
-  // LiteLLM is the unified gateway — `AiUsageService.track()` stores
-  // `provider: 'litellm'` when the caller can't map the model back to its
-  // upstream. Keep model IDs here in sync with `infra/litellm/config.yaml` (the
-  // source of truth) and with apps/web's copy of this file.
+  // `AiUsageService.track()` stores `provider: 'litellm'` when the caller
+  // can't map the model back to its upstream. The name outlived the proxy
+  // (ADR-49) and stays because it is a value in `ai_usage` rows going back
+  // months. Keep model IDs here in sync with `infra/llm-gateway/routes.yaml`
+  // (the source of truth for which models exist) and with apps/web's copy of
+  // this file.
   litellm: {
     'gpt-5.4': { input: 2.0, output: 8.0 },
     'gpt-5.4-nano': { input: 0.1, output: 0.4 },
