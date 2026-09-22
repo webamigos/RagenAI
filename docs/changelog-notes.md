@@ -410,6 +410,14 @@ archive is the blog.
   and sets `LLM_GATEWAY=native`. It still writes the proxy config, so switching
   to `litellm` is a rollback rather than a second setup.
 
+- `[brief]` **A package that was retired is actually gone.** Retiring the
+  LiteLLM path deleted `packages/litellm-client`'s source but left its compiled
+  output tracked, its dependency line in three apps and its entry in
+  `package-lock.json`. Every install since has been putting a broken symlink
+  into `node_modules` — installed, unimportable, and silent about it, because
+  nothing happened to import it. Gone now, with a guard that fails the build if
+  a manifest or the lockfile names a workspace that is not in the tree.
+
 ### Thread: a misconfiguration that says so
 
 - `[brief]` **A deployment whose encryption key does not work now says so at

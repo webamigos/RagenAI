@@ -20,7 +20,6 @@
     "@ragenai/db": "*",
     "@ragenai/env": "*",
     "@ragenai/guardrails": "*",
-    "@ragenai/litellm-client": "*",
     "@ragenai/platform-contracts": "*",
     "@ragenai/vault-client": "*",
     "better-auth": "^1.7.2",
