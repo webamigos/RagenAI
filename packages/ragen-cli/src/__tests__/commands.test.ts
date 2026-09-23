@@ -12,7 +12,10 @@ describe('the command table', () => {
     // Without this a planned command prints "waiting on work that has not
     // started", which tells the reader nothing they can act on.
     for (const command of COMMANDS.filter((c) => c.status === 'planned')) {
-      expect(command.blockedBy, `${command.name} has no blockedBy`).toBeTruthy();
+      expect(
+        command.blockedBy,
+        `${command.name} has no blockedBy`,
+      ).toBeTruthy();
     }
   });
 

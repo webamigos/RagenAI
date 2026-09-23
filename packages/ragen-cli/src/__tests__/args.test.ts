@@ -19,11 +19,12 @@ describe('parseArgs', () => {
   it('passes everything after the command through untouched', () => {
     // The order and the flags both matter: create-ragen-app parses these, and
     // this CLI must not normalise them on the way.
-    expect(parseArgs(['create', './app', '--skip-docker', '--ref=main']).rest)
-      .toEqual(['./app', '--skip-docker', '--ref=main']);
+    expect(
+      parseArgs(['create', './app', '--skip-docker', '--ref=main']).rest,
+    ).toEqual(['./app', '--skip-docker', '--ref=main']);
   });
 
-  it('treats --help after a command as the command\'s, not ours', () => {
+  it("treats --help after a command as the command's, not ours", () => {
     const args = parseArgs(['create', '--help']);
     expect(args.help).toBe(false);
     expect(args.rest).toEqual(['--help']);

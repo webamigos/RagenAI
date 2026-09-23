@@ -7,10 +7,12 @@ function harness(overrides: Partial<RunOptions> = {}) {
   const out: string[] = [];
   const err: string[] = [];
   const create = vi.fn(() => 0);
+  const brain = vi.fn(() => Promise.resolve(0));
 
   const options: RunOptions = {
     version: '1.2.3',
     create,
+    brain,
     out: (message) => out.push(message),
     err: (message) => err.push(message),
     ...overrides,
@@ -18,6 +20,7 @@ function harness(overrides: Partial<RunOptions> = {}) {
 
   return {
     create,
+    brain,
     out,
     err,
     run: (argv: string[]) => run(argv, options),
@@ -81,4 +84,12 @@ describe('run', () => {
       expect(cli.err.join('\n')).not.toContain('listed but not wired up');
     },
   );
+});
+
+describe('run brain', () => {
+  it('hands everything after `brain` to the brain command', async () => {
+    const cli = harness();
+    await expect(cli.run(['brain', 'next', '--json'])).resolves.toBe(0);
+    expect(cli.brain).toHaveBeenCalledWith(['next', '--json']);
+  });
 });
