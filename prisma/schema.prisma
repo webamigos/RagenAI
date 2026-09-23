@@ -1605,7 +1605,13 @@ model KnowledgePageSource {
   /// The version the curator read — the citation's anchor. Plain for the same
   /// reason: a version is cascade-deleted with its document.
   documentVersionId String    @map("document_version_id") @db.Uuid
+  /// A reader's pointer — "p.4 §2", a heading. Never the anchor.
   span              String
+  /// The cited words, verbatim from the version the curator read. Kept, not
+  /// only hashed: the STALE check asks whether these words still occur in a
+  /// newer version, and a hash cannot be searched for.
+  quote             String
+  /// sha256 of the normalised quote — the cheap equality check.
   hash              String
   sourceDeletedAt   DateTime? @map("source_deleted_at") @db.Timestamptz
   createdAt         DateTime  @default(now()) @map("created_at") @db.Timestamptz

@@ -23,6 +23,8 @@ export const pageSourceSchema = z.object({
   fileId: z.uuid(),
   documentVersionId: z.uuid(),
   span: z.string().trim().min(1),
+  /** The cited words, verbatim. What a reader checks the source against. */
+  quote: z.string().trim().min(1),
   hash: contentHashSchema,
   sourceDeletedAt: z.iso.datetime({ offset: true }).nullable().default(null),
 });

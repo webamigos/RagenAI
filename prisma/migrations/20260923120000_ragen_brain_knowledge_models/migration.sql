@@ -72,6 +72,7 @@ CREATE TABLE "knowledge_page_sources" (
     "file_id" UUID NOT NULL,
     "document_version_id" UUID NOT NULL,
     "span" TEXT NOT NULL,
+    "quote" TEXT NOT NULL,
     "hash" TEXT NOT NULL,
     "source_deleted_at" TIMESTAMPTZ,
     "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,

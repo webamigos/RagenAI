@@ -620,6 +620,10 @@ Phase D, so every phase before it is invisible to existing users.
 - **A finding's subject is checked per type** in the database: `CONTRADICTION`
   two or more pages and no file, `EXTRACTION_FAILED` a file and no page, every
   other type exactly one page.
+- **`KnowledgePageSource` keeps the `quote`**, the cited words verbatim, beside
+  `span` and `hash`. The spec had only `span` and `hash`, and a hash cannot be
+  searched for: C2's "did the active version move on" check asks whether the
+  cited words still occur in the new text, and a citation has to show them.
 - **`KnowledgeFinding.severity`** is its own enum (`LOW | MEDIUM | HIGH`), not
   `SecurityEventSeverity`.
 

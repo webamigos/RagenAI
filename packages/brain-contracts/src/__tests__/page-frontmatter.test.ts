@@ -24,6 +24,7 @@ const valid = () => ({
       fileId: '0b8e7a2c-1d3f-4e5a-9b6c-7d8e9f0a1b2c',
       documentVersionId: '1c9f8b3d-2e4a-4f6b-8c7d-8e9f0a1b2c3d',
       span: 'p.4 §2',
+      quote: 'Nowy pracownik otrzymuje dostęp do systemów w pierwszym dniu.',
       hash: HASH,
     },
   ],
@@ -119,6 +120,14 @@ describe('pageFrontmatterSchema', () => {
   it('refuses a source without the version the curator read', () => {
     const page = valid();
     const { documentVersionId: _d, ...source } = page.sources[0]!;
+    expect(
+      pageFrontmatterSchema.safeParse({ ...page, sources: [source] }).success,
+    ).toBe(false);
+  });
+
+  it('refuses a source without the words it cites', () => {
+    const page = valid();
+    const { quote: _q, ...source } = page.sources[0]!;
     expect(
       pageFrontmatterSchema.safeParse({ ...page, sources: [source] }).success,
     ).toBe(false);
