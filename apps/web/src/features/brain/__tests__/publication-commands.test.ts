@@ -50,6 +50,7 @@ function givenPage(over: Record<string, unknown> = {}) {
   tx.knowledgePage.findFirst.mockResolvedValue({
     id: 7,
     slug: 'urlop',
+    title: 'Urlop wypoczynkowy',
     status: 'APPROVED',
     content: '# Urlop\n',
     contentHash: HASH,
@@ -87,7 +88,7 @@ describe('publishKnowledgePageCommand', () => {
     const file = tx.userFile.create.mock.calls[0][0].data;
     expect(file).toMatchObject({
       organizationId: ORG,
-      fileName: 'urlop.md',
+      fileName: 'Urlop wypoczynkowy',
       fileType: 'MARKDOWN',
       ownerId: 'u-owner',
       isOrgWide: false,
@@ -299,5 +300,14 @@ describe('unpublishKnowledgePageCommand', () => {
       error: 'invalid-status',
     });
     expect(vectors.deleteFileFromVectorStore).not.toHaveBeenCalled();
+  });
+});
+
+describe('vehicleFileName', () => {
+  it('names the file after the page, safe for a file name', async () => {
+    const { vehicleFileName } =
+      await import('../services/commands/publish-knowledge-page-command');
+    expect(vehicleFileName('Urlop / zasady\n2026')).toBe('Urlop zasady 2026');
+    expect(vehicleFileName('   ')).toBe('Brain');
   });
 });
