@@ -172,6 +172,25 @@ describe('extractDocumentCandidates', () => {
     expect(generateObject).toHaveBeenCalledTimes(2);
   });
 
+  it('tells the retry which fields the refused answer got wrong, not "(root)"', async () => {
+    generateObject
+      .mockRejectedValueOnce(
+        new NoObjectGeneratedError({
+          message: 'no object',
+          // JSON, but claims is the wrong type.
+          text: JSON.stringify({ entities: [], claims: 'none', relations: [] }),
+          response: { id: 'r', timestamp: new Date(), modelId: 'm' },
+          usage: { inputTokens: 1, outputTokens: 1, totalTokens: 2 } as never,
+          finishReason: 'stop',
+        } as never),
+      )
+      .mockResolvedValueOnce({ object: ANSWER, usage: USAGE });
+    await extractDocumentCandidates(INPUT);
+    const retryPrompt = generateObject.mock.calls[1]![0].prompt as string;
+    expect(retryPrompt).toContain('claims');
+    expect(retryPrompt).not.toContain('(root)');
+  });
+
   it('raises a finding carrying no document text when both attempts fail', async () => {
     generateObject.mockResolvedValue({
       object: { entities: TEXT },

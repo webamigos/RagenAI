@@ -83,10 +83,12 @@ export async function brainExtract(
   let attempted = 0;
   let exhausted = false;
   const extractedFileIds: string[] = [];
+  const notReached: string[] = [];
   for (const fileId of fileIds) {
     const tokensLeft = run.maxTokens - result.tokens;
     if (exhausted || attempted >= run.maxDocuments || tokensLeft <= 0) {
       result.notAttempted += 1;
+      notReached.push(fileId);
       continue;
     }
     attempted += 1;
@@ -125,8 +127,22 @@ export async function brainExtract(
     } else {
       // Half a document is not returned, so this one counts as not attempted.
       result.notAttempted += 1;
+      notReached.push(fileId);
       exhausted = true;
     }
+  }
+
+  // A document the run's limits stopped before is said where a person looks:
+  // as that document's finding, with the retry the panel already offers. In
+  // the job result alone it stayed "Not extracted" while the start toast had
+  // promised candidates.
+  for (const fileId of notReached) {
+    await recordExtractionStepFailed({
+      orgId: payload.orgId,
+      fileId,
+      runId: ctx.runId,
+      reason: `the run reached its limit (${run.maxDocuments} documents, ${run.maxTokens} tokens) before this document — extract it again`,
+    });
   }
 
   const tokensLeft = run.maxTokens - result.tokens;
