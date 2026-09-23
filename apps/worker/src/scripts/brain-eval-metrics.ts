@@ -1,5 +1,6 @@
 import {
   assembleGraph,
+  compatibilityFold,
   findTables,
   normalizeForQuoteMatch,
   type AssembledCandidates,
@@ -148,12 +149,10 @@ export function tableCoverage(
   );
   let rows = 0;
   let cited = 0;
-  for (const table of findTables(text.normalize('NFKC'))) {
-    const lines = text
-      .normalize('NFKC')
-      .slice(table.start, table.end)
-      .split('\n')
-      .slice(2);
+  // The same fold assembly applies to the source, so row offsets agree.
+  const folded = compatibilityFold(text);
+  for (const table of findTables(folded)) {
+    const lines = folded.slice(table.start, table.end).split('\n').slice(2);
     for (const line of lines) {
       if (line.trim() === '') {
         continue;
