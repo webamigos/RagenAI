@@ -55,9 +55,11 @@
     "@ragenai/storage": "*",
     "@ragenai/vault-client": "*",
     "ai": "^7.0.99",
+    "fflate": "^0.8.2",
     "graphology": "^0.26.0",
     "graphology-layout-forceatlas2": "^0.10.1",
-    "sigma": "^3.0.3"
+    "sigma": "^3.0.3",
+    "yaml": "^2.9.0"
   },
   "engines": {
     "node": "^24.15.0 || >=26.0.0"

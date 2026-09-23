@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { bundlePathSchema, contentHashSchema } from './primitives';
+import { bundlePathSchema, contentHashSchema, uuidSchema } from './primitives';
 
 /**
  * The format version this package writes and reads. A bundle is kept by the
@@ -11,7 +11,7 @@ export const BUNDLE_FORMAT_VERSION = 1;
 
 export const bundlePageEntrySchema = z.object({
   /** The page's `publicId`, equal to the `id` in its frontmatter. */
-  id: z.uuid(),
+  id: uuidSchema,
   path: bundlePathSchema.refine((p) => p.endsWith('.md'), {
     message: 'a page is a markdown file',
   }),

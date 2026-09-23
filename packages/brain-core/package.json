@@ -19,6 +19,7 @@
     "graphology": "^0.26.0",
     "graphology-communities-louvain": "^2.0.2",
     "graphology-types": "^0.24.8",
+    "yaml": "^2.9.0",
     "zod": "^4.3.6"
   },
   "devDependencies": {

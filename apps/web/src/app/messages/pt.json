@@ -2633,6 +2633,18 @@
         "INFERRED": "Inferida pelo modelo",
         "AMBIGUOUS": "Incerta"
       }
+    },
+    "export": {
+      "ready": "Prontas para exportar: {count} páginas",
+      "download": "Descarregar pacote (.zip)",
+      "none": "Aprove uma página com responsável para a exportar",
+      "skipped": {
+        "not-approved": "Não aprovadas: {count}",
+        "no-owner": "Sem responsável: {count}",
+        "no-access": "Abertas a ninguém: {count}",
+        "no-sources": "Sem fontes: {count}",
+        "invalid": "Dados incompletos: {count}"
+      }
     }
   }
 }

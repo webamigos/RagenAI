@@ -97,3 +97,12 @@ export {
   type GraphView,
   type GraphViewOptions,
 } from './graph/select-view';
+export {
+  buildBundle,
+  GRAPH_PATH,
+  MANIFEST_PATH,
+  type Bundle,
+  type BundleEdgeInput,
+  type BundlePageInput,
+  type BundleSkipReason,
+} from './export/build-bundle';

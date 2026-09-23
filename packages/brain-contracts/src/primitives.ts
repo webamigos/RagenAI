@@ -62,3 +62,17 @@ export const bundlePathSchema = z
   .refine((p) => p.split('/').every((part) => part !== '.'), {
     message: 'a bundle path has no "." segments',
   });
+
+/**
+ * A UUID's shape, as Postgres' `uuid` type accepts it. Not `z.uuid()`, which
+ * also demands an RFC version and variant: every id here is a database key,
+ * and a row minted outside `gen_random_uuid()` — a seed, an import — is still
+ * the same row. Refusing it for its version nibble would drop a real page
+ * from an export while every screen still showed it.
+ */
+export const uuidSchema = z
+  .string()
+  .regex(
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
+    'a UUID',
+  );

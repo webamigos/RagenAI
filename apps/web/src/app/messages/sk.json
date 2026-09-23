@@ -2633,6 +2633,18 @@
         "INFERRED": "Odvodené modelom",
         "AMBIGUOUS": "Neisté"
       }
+    },
+    "export": {
+      "ready": "Pripravené na export: {count} stránok",
+      "download": "Stiahnuť balík (.zip)",
+      "none": "Schváľte stránku s vlastníkom, aby ste ju mohli exportovať",
+      "skipped": {
+        "not-approved": "Neschválené: {count}",
+        "no-owner": "Bez vlastníka: {count}",
+        "no-access": "Neprístupné nikomu: {count}",
+        "no-sources": "Bez zdrojov: {count}",
+        "invalid": "Neúplné údaje: {count}"
+      }
     }
   }
 }

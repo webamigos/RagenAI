@@ -2633,6 +2633,18 @@
         "INFERRED": "Härledd av modellen",
         "AMBIGUOUS": "Osäker"
       }
+    },
+    "export": {
+      "ready": "Redo att exportera: {count} sidor",
+      "download": "Ladda ned paket (.zip)",
+      "none": "Godkänn en sida med ägare för att exportera den",
+      "skipped": {
+        "not-approved": "Inte godkända: {count}",
+        "no-owner": "Utan ägare: {count}",
+        "no-access": "Öppna för ingen: {count}",
+        "no-sources": "Utan källor: {count}",
+        "invalid": "Ofullständiga data: {count}"
+      }
     }
   }
 }

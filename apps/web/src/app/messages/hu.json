@@ -2633,6 +2633,18 @@
         "INFERRED": "A modell következtette ki",
         "AMBIGUOUS": "Bizonytalan"
       }
+    },
+    "export": {
+      "ready": "Exportálásra kész: {count} oldal",
+      "download": "Csomag letöltése (.zip)",
+      "none": "Hagyjon jóvá egy felelőssel rendelkező oldalt az exportáláshoz",
+      "skipped": {
+        "not-approved": "Nincs jóváhagyva: {count}",
+        "no-owner": "Nincs felelős: {count}",
+        "no-access": "Senki számára nem elérhető: {count}",
+        "no-sources": "Nincs forrás: {count}",
+        "invalid": "Hiányos adatok: {count}"
+      }
     }
   }
 }

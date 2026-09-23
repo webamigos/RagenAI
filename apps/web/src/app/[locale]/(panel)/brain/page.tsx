@@ -13,6 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { PAGE_STATUS_FILTERS } from '@/features/brain/constants';
 import type { KnowledgePageStatus } from '@/features/brain/contracts/brain.types';
 import { getBrainAccessQuery } from '@/features/brain/services/queries/get-brain-access-query';
+import { getBrainExportSummaryQuery } from '@/features/brain/services/queries/get-brain-export-summary-query';
 import { getKnowledgePagesQuery } from '@/features/brain/services/queries/get-knowledge-pages-query';
 import { listRange, parseListPage } from '@/features/brain/utils/list-page';
 import { Link } from '@/i18n/routing';
@@ -45,11 +46,16 @@ export default async function BrainPagesPage({ searchParams }: Props) {
     ? (value as KnowledgePageStatus)
     : null;
 
-  const [t, format, { items, total }] = await Promise.all([
+  const [t, format, { items, total }, exportSummary] = await Promise.all([
     getTranslations('brain'),
     getFormatter(),
     getKnowledgePagesQuery(access.orgId, status, listPage),
+    getBrainExportSummaryQuery(access.orgId),
   ]);
+  const skippedReasons = Object.entries(exportSummary.skipped) as [
+    string,
+    number,
+  ][];
 
   return (
     <section>
@@ -71,6 +77,33 @@ export default async function BrainPagesPage({ searchParams }: Props) {
           })),
         ]}
       />
+
+      <div
+        className="mb-4 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-[6px] border border-border bg-background px-3 py-2 text-xs"
+        data-testid="brain-export"
+      >
+        <span className="font-medium text-foreground">
+          {t('export.ready', { count: exportSummary.pages })}
+        </span>
+        {skippedReasons.map(([reason, count]) => (
+          <span key={reason} className="text-muted-foreground">
+            {t(`export.skipped.${reason}`, { count })}
+          </span>
+        ))}
+        {exportSummary.pages > 0 ? (
+          <a
+            href="/api/brain/export"
+            download
+            className="ml-auto text-primary underline-offset-4 hover:underline"
+          >
+            {t('export.download')}
+          </a>
+        ) : (
+          <span className="ml-auto text-muted-foreground">
+            {t('export.none')}
+          </span>
+        )}
+      </div>
 
       {items.length === 0 && listPage === 1 ? (
         <BrainEmpty

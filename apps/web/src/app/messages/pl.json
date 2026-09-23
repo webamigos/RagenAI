@@ -2633,6 +2633,18 @@
         "INFERRED": "Wywnioskowane przez model",
         "AMBIGUOUS": "Niepewne"
       }
+    },
+    "export": {
+      "ready": "Gotowe do eksportu: {count} stron",
+      "download": "Pobierz paczkę (.zip)",
+      "none": "Zatwierdź stronę z właścicielem, żeby ją wyeksportować",
+      "skipped": {
+        "not-approved": "Niezatwierdzone: {count}",
+        "no-owner": "Bez właściciela: {count}",
+        "no-access": "Dostępne dla nikogo: {count}",
+        "no-sources": "Bez źródeł: {count}",
+        "invalid": "Niepełne dane: {count}"
+      }
     }
   }
 }

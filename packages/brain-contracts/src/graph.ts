@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import { uuidSchema } from './primitives';
+
 import {
   KNOWLEDGE_EDGE_ORIGINS,
   KNOWLEDGE_PAGE_STATUSES,
@@ -11,7 +13,7 @@ export const GRAPH_FORMAT_VERSION = 1;
 
 export const graphNodeSchema = z.object({
   /** The page's `publicId` — the same id as its frontmatter and manifest entry. */
-  id: z.uuid(),
+  id: uuidSchema,
   title: z.string().trim().min(1),
   type: z.enum(KNOWLEDGE_PAGE_TYPES),
   status: z.enum(KNOWLEDGE_PAGE_STATUSES),
@@ -29,8 +31,8 @@ export type GraphNode = z.infer<typeof graphNodeSchema>;
  * know which of the two it is looking at.
  */
 export const graphEdgeSchema = z.object({
-  from: z.uuid(),
-  to: z.uuid(),
+  from: uuidSchema,
+  to: uuidSchema,
   kind: z.string().trim().min(1),
   origin: z.enum(KNOWLEDGE_EDGE_ORIGINS),
   confidence: z.number().min(0).max(1).nullable(),

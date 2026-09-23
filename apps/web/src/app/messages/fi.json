@@ -2633,6 +2633,18 @@
         "INFERRED": "Mallin päättelemä",
         "AMBIGUOUS": "Epävarma"
       }
+    },
+    "export": {
+      "ready": "Valmiina vientiin: {count} sivua",
+      "download": "Lataa paketti (.zip)",
+      "none": "Hyväksy sivu, jolla on omistaja, viedäksesi sen",
+      "skipped": {
+        "not-approved": "Ei hyväksytty: {count}",
+        "no-owner": "Ei omistajaa: {count}",
+        "no-access": "Ei kenenkään käytettävissä: {count}",
+        "no-sources": "Ei lähteitä: {count}",
+        "invalid": "Puutteelliset tiedot: {count}"
+      }
     }
   }
 }
