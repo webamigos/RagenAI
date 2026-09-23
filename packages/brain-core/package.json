@@ -1,0 +1,30 @@
+{
+  "name": "@ragenai/brain-core",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Ragen Brain's domain logic — extraction with verified span citations, the access intersection rule, and candidate assembly. Pure: the model call is injected, so apps/worker owns the gateway and this package owns the rules",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "clean": "rm -rf dist",
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit --incremental --tsBuildInfoFile ./typecheck.tsbuildinfo"
+  },
+  "dependencies": {
+    "@ragenai/brain-contracts": "*",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@ragenai/eslint-config": "*",
+    "@types/node": "^22.0.0",
+    "eslint": "^9.39.5",
+    "typescript": "~5.7.0"
+  },
+  "engines": {
+    "node": "^24.15.0 || >=26.0.0"
+  }
+}
