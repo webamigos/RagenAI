@@ -25,6 +25,7 @@ const workspaces = {
   'apps/worker': '@ragenai/worker',
   'apps/mcp': '@ragenai/mcp',
   'packages/brain-contracts': '@ragenai/brain-contracts',
+  'packages/brain-core': '@ragenai/brain-core',
   'packages/connector-guard': '@ragenai/connector-guard',
   'packages/create-ragen-app': 'create-ragen-app',
   'packages/crypto': '@ragenai/crypto',

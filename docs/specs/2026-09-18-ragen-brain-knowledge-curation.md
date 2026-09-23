@@ -629,17 +629,47 @@ Phase D, so every phase before it is invisible to existing users.
 
 ### Phase B — Extraction, no interface
 
-- [ ] **B1.** `packages/brain-core`: extraction of entities, facts and claims
+- [x] **B1.** `packages/brain-core`: extraction of entities, facts and claims
       with span citations, as a structured-output call through the gateway.
       Unit tests against fixture documents.
-- [ ] **B2.** The intersection rule for `accessibleBy`, as a pure function with
+- [x] **B2.** The intersection rule for `accessibleBy`, as a pure function with
       its own tests, including the case where the sources share no principal.
       Written before anything can call it wrongly.
 - [ ] **B3.** `packages/jobs`: `brainExtract` + payload. `apps/worker` handler
       writing `CANDIDATE` pages, sources and edges. Job-runtime test.
 - [ ] **B4.** A per-run extraction budget, enforced at the call site.
+      _The budget and its enforcement are in `brain-core` (`ExtractionBudget`,
+      checked by `extractDocument` before every model call and before each
+      document); where the limits come from lands with B3's handler._
 - [ ] **B5.** A script that runs extraction over one project and prints what it
       produced — enough to judge quality on our own documents before any UI.
+
+**What B1 and B2 settled:**
+
+- **The model call is injected.** `brain-core` owns the prompt, the schema,
+  the retry and the rules; `apps/worker` binds `generate` to the gateway. So
+  the package has no `ai` dependency and its tests need no model.
+- **Every claim carries a verbatim quote, and a quote that does not occur in
+  the source is dropped** — checked against the whole document, tolerant of
+  whitespace, typography, case and soft hyphens, and of nothing else. An
+  entity left with no verified claim is not a page. This is the mechanism
+  behind "citations back to the exact source span": the citation is checked,
+  not asserted.
+- **An edge's origin is earned**: a relation whose quote verifies is
+  `EXTRACTED`, one whose quote does not is `AMBIGUOUS`, one offered without a
+  quote is `INFERRED`.
+- **A failed extraction's reason carries no document text.** Schema issues are
+  reduced to paths and codes, a thrown error to its class name — the reason is
+  fed back to the model and stored in an `EXTRACTION_FAILED` finding people
+  read, and the AI SDK's errors carry the request body.
+- **The intersection is conservative about teams.** A source reachable at
+  `org:` constrains nothing; among the rest, a principal survives only if every
+  source lists it verbatim — `user:u` and `team:hr` intersect to nobody even
+  when u is in hr, because proving otherwise needs a membership lookup and
+  being wrong is a leak. A source with no principals empties the result.
+- **A document that hits the budget part-way returns nothing**, not the
+  windows it finished: half a policy extracted is a confident summary of half
+  a policy.
 
 ### Phase C — Findings and graph
 

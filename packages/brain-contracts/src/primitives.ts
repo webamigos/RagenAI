@@ -55,4 +55,10 @@ export const bundlePathSchema = z
   })
   .refine((p) => p.split('/').every((part) => part !== '..' && part !== ''), {
     message: 'a bundle path does not climb out of the bundle',
+  })
+  // `pages/./item.md` names the file `pages/item.md` names, and the
+  // manifest's uniqueness check compares strings: allowed, the two would be
+  // two pages written to one file. One spelling per file.
+  .refine((p) => p.split('/').every((part) => part !== '.'), {
+    message: 'a bundle path has no "." segments',
   });
