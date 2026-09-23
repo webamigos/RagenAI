@@ -1290,7 +1290,11 @@
     "filter-clear": "Clear {filter} filter",
     "filter-pii-policy": "Policy",
     "filter-pii-policy-all": "All",
-    "status-withdrawn": "Out of retrieval"
+    "status-withdrawn": "Out of retrieval",
+    "status-staged": "In Brain",
+    "staged-send": "Index it",
+    "staged-sent": "Sent to the knowledge base — it will be searchable once processed",
+    "staged-send-failed": "Could not send it — reload the page and try again."
   },
   "folders": {
     "title": "Folders",
@@ -2689,7 +2693,8 @@
         "in": "Searchable",
         "withdrawn": "Taken out of retrieval",
         "processing": "Being processed",
-        "failed": "Failed"
+        "failed": "Failed",
+        "staged": "In Brain — not searchable"
       },
       "withdraw": "Take out of retrieval",
       "restore": "Put back",
@@ -2705,7 +2710,13 @@
         "invalid-status": "The document is not in the state this action needs — reload the page.",
         "index-unavailable": "The index could not be changed — nothing changed; try again.",
         "failed-to-start": "Re-processing could not start — try again in a moment."
-      }
+      },
+      "send": "Send to knowledge base",
+      "sent": "Sent to the knowledge base",
+      "upload": "Upload into Brain",
+      "uploaded": "Uploaded into Brain: {count} — stored and parsed, not searchable",
+      "upload-failed": "The upload failed — check the file and try again.",
+      "staged-summary": "Staged in Brain, not searchable: {count} documents, {uncurated} without an approved page yet."
     },
     "publish-all": {
       "button": "Publish approved ({count})",

@@ -1290,7 +1290,11 @@
     "filter-clear": "Borrar el filtro {filter}",
     "filter-pii-policy": "Política",
     "filter-pii-policy-all": "Todos",
-    "status-withdrawn": "Retirado de la búsqueda"
+    "status-withdrawn": "Retirado de la búsqueda",
+    "status-staged": "En Brain",
+    "staged-send": "Indexar",
+    "staged-sent": "Enviado a la base de conocimiento: será consultable cuando se procese",
+    "staged-send-failed": "No se pudo enviar: recarga la página e inténtalo de nuevo."
   },
   "folders": {
     "title": "Carpetas",
@@ -2689,7 +2693,8 @@
         "in": "Consultable",
         "withdrawn": "Retirado de la búsqueda",
         "processing": "En proceso",
-        "failed": "Error"
+        "failed": "Error",
+        "staged": "En Brain — no consultable"
       },
       "withdraw": "Retirar de la búsqueda",
       "restore": "Volver a poner",
@@ -2705,7 +2710,13 @@
         "invalid-status": "El documento no está en el estado necesario: recarga la página.",
         "index-unavailable": "No se pudo cambiar el índice: no cambió nada; inténtalo de nuevo.",
         "failed-to-start": "No se pudo iniciar el reprocesamiento: inténtalo de nuevo en un momento."
-      }
+      },
+      "send": "Enviar a la base de conocimiento",
+      "sent": "Enviado a la base de conocimiento",
+      "upload": "Subir a Brain",
+      "uploaded": "Subidos a Brain: {count} — guardados y analizados, no consultables",
+      "upload-failed": "La subida falló: revisa el archivo e inténtalo de nuevo.",
+      "staged-summary": "En Brain, no consultables: {count} documentos, {uncurated} todavía sin página aprobada."
     },
     "publish-all": {
       "button": "Publicar aprobadas ({count})",

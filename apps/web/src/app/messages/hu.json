@@ -1290,7 +1290,11 @@
     "filter-clear": "{filter} szűrő törlése",
     "filter-pii-policy": "Szabály",
     "filter-pii-policy-all": "Mind",
-    "status-withdrawn": "Kivéve a keresésből"
+    "status-withdrawn": "Kivéve a keresésből",
+    "status-staged": "Brainben",
+    "staged-send": "Indexelés",
+    "staged-sent": "Elküldve a tudásbázisba — feldolgozás után kereshető lesz",
+    "staged-send-failed": "A küldés nem sikerült — töltse újra az oldalt, és próbálja újra."
   },
   "folders": {
     "title": "Mappák",
@@ -2689,7 +2693,8 @@
         "in": "Kereshető",
         "withdrawn": "Kivéve a keresésből",
         "processing": "Feldolgozás alatt",
-        "failed": "Hiba"
+        "failed": "Hiba",
+        "staged": "A Brainben — nem kereshető"
       },
       "withdraw": "Kivétel a keresésből",
       "restore": "Visszatétel",
@@ -2705,7 +2710,13 @@
         "invalid-status": "A dokumentum nincs a szükséges állapotban — töltse újra az oldalt.",
         "index-unavailable": "Az indexet nem sikerült módosítani — semmi sem változott; próbálja újra.",
         "failed-to-start": "Az újrafeldolgozás nem indult el — próbálja újra egy pillanat múlva."
-      }
+      },
+      "send": "Küldés a tudásbázisba",
+      "sent": "Elküldve a tudásbázisba",
+      "upload": "Feltöltés a Brainbe",
+      "uploaded": "Feltöltve a Brainbe: {count} — tárolva és feldolgozva, nem kereshető",
+      "upload-failed": "A feltöltés nem sikerült — ellenőrizze a fájlt, és próbálja újra.",
+      "staged-summary": "A Brainben, nem kereshető: {count} dokumentum, ebből {uncurated} még jóváhagyott oldal nélkül."
     },
     "publish-all": {
       "button": "Jóváhagyottak közzététele ({count})",

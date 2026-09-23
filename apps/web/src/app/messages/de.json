@@ -1290,7 +1290,11 @@
     "filter-clear": "Filter {filter} zurücksetzen",
     "filter-pii-policy": "Richtlinie",
     "filter-pii-policy-all": "Alle",
-    "status-withdrawn": "Aus der Suche genommen"
+    "status-withdrawn": "Aus der Suche genommen",
+    "status-staged": "In Brain",
+    "staged-send": "Indexieren",
+    "staged-sent": "An die Wissensdatenbank gesendet — nach der Verarbeitung durchsuchbar",
+    "staged-send-failed": "Senden fehlgeschlagen — laden Sie die Seite neu und versuchen Sie es erneut."
   },
   "folders": {
     "title": "Ordner",
@@ -2689,7 +2693,8 @@
         "in": "Durchsuchbar",
         "withdrawn": "Aus der Suche genommen",
         "processing": "Wird verarbeitet",
-        "failed": "Fehlgeschlagen"
+        "failed": "Fehlgeschlagen",
+        "staged": "In Brain — nicht durchsuchbar"
       },
       "withdraw": "Aus der Suche nehmen",
       "restore": "Zurückholen",
@@ -2705,7 +2710,13 @@
         "invalid-status": "Das Dokument ist nicht im nötigen Zustand — laden Sie die Seite neu.",
         "index-unavailable": "Der Index konnte nicht geändert werden — nichts wurde geändert; versuchen Sie es erneut.",
         "failed-to-start": "Die erneute Verarbeitung konnte nicht starten — versuchen Sie es gleich noch einmal."
-      }
+      },
+      "send": "An die Wissensdatenbank senden",
+      "sent": "An die Wissensdatenbank gesendet",
+      "upload": "In Brain hochladen",
+      "uploaded": "In Brain hochgeladen: {count} — gespeichert und verarbeitet, nicht durchsuchbar",
+      "upload-failed": "Das Hochladen ist fehlgeschlagen — prüfen Sie die Datei und versuchen Sie es erneut.",
+      "staged-summary": "In Brain, nicht durchsuchbar: {count} Dokumente, davon {uncurated} noch ohne freigegebene Seite."
     },
     "publish-all": {
       "button": "Freigegebene veröffentlichen ({count})",

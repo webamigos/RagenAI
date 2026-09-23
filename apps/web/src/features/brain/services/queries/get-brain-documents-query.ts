@@ -56,6 +56,9 @@ function retrievalState(status: string): BrainDocument['retrieval'] {
   if (status === 'WITHDRAWN') {
     return 'withdrawn';
   }
+  if (status === 'STAGED') {
+    return 'staged';
+  }
   if (status === 'FAILED' || status === 'CANCELLED') {
     return 'failed';
   }

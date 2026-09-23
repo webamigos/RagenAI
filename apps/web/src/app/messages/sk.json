@@ -1290,7 +1290,11 @@
     "filter-clear": "Vymazať filter {filter}",
     "filter-pii-policy": "Zásada",
     "filter-pii-policy-all": "Všetko",
-    "status-withdrawn": "Vyradený z vyhľadávania"
+    "status-withdrawn": "Vyradený z vyhľadávania",
+    "status-staged": "V Braine",
+    "staged-send": "Indexovať",
+    "staged-sent": "Odoslané do znalostnej bázy — po spracovaní bude vyhľadateľné",
+    "staged-send-failed": "Odoslanie zlyhalo — načítajte stránku znova a skúste to znova."
   },
   "folders": {
     "title": "Priečinky",
@@ -2689,7 +2693,8 @@
         "in": "Vyhľadateľný",
         "withdrawn": "Vyradený z vyhľadávania",
         "processing": "Spracúva sa",
-        "failed": "Chyba"
+        "failed": "Chyba",
+        "staged": "V Braine — nevyhľadateľné"
       },
       "withdraw": "Vyradiť z vyhľadávania",
       "restore": "Vrátiť",
@@ -2705,7 +2710,13 @@
         "invalid-status": "Dokument nie je v požadovanom stave — načítajte stránku znova.",
         "index-unavailable": "Index sa nepodarilo zmeniť — nič sa nezmenilo; skúste to znova.",
         "failed-to-start": "Opätovné spracovanie sa nepodarilo spustiť — skúste to o chvíľu."
-      }
+      },
+      "send": "Odoslať do znalostnej bázy",
+      "sent": "Odoslané do znalostnej bázy",
+      "upload": "Nahrať do Brainu",
+      "uploaded": "Nahrané do Brainu: {count} — uložené a spracované, nevyhľadateľné",
+      "upload-failed": "Nahrávanie zlyhalo — skontrolujte súbor a skúste to znova.",
+      "staged-summary": "V Braine, nevyhľadateľné: {count} dokumentov, z toho {uncurated} zatiaľ bez schválenej stránky."
     },
     "publish-all": {
       "button": "Zverejniť schválené ({count})",

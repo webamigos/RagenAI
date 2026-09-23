@@ -1290,7 +1290,11 @@
     "filter-clear": "Vymazat filtr {filter}",
     "filter-pii-policy": "Zásada",
     "filter-pii-policy-all": "Vše",
-    "status-withdrawn": "Vyřazen z vyhledávání"
+    "status-withdrawn": "Vyřazen z vyhledávání",
+    "status-staged": "V Brainu",
+    "staged-send": "Indexovat",
+    "staged-sent": "Odesláno do znalostní báze — po zpracování bude vyhledatelné",
+    "staged-send-failed": "Odeslání se nezdařilo — načtěte stránku znovu a zkuste to znovu."
   },
   "folders": {
     "title": "Složky",
@@ -2689,7 +2693,8 @@
         "in": "Vyhledatelný",
         "withdrawn": "Vyřazen z vyhledávání",
         "processing": "Zpracovává se",
-        "failed": "Chyba"
+        "failed": "Chyba",
+        "staged": "V Brainu — nevyhledatelné"
       },
       "withdraw": "Vyřadit z vyhledávání",
       "restore": "Vrátit",
@@ -2705,7 +2710,13 @@
         "invalid-status": "Dokument není v požadovaném stavu — načtěte stránku znovu.",
         "index-unavailable": "Index se nepodařilo změnit — nic se nezměnilo; zkuste to znovu.",
         "failed-to-start": "Opětovné zpracování se nepodařilo spustit — zkuste to za chvíli."
-      }
+      },
+      "send": "Odeslat do znalostní báze",
+      "sent": "Odesláno do znalostní báze",
+      "upload": "Nahrát do Brainu",
+      "uploaded": "Nahráno do Brainu: {count} — uloženo a zpracováno, nevyhledatelné",
+      "upload-failed": "Nahrání se nezdařilo — zkontrolujte soubor a zkuste to znovu.",
+      "staged-summary": "V Brainu, nevyhledatelné: {count} dokumentů, z toho {uncurated} zatím bez schválené stránky."
     },
     "publish-all": {
       "button": "Zveřejnit schválené ({count})",

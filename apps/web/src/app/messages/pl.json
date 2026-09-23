@@ -1290,7 +1290,11 @@
     "filter-clear": "Wyczyść filtr {filter}",
     "filter-pii-policy": "Polityka",
     "filter-pii-policy-all": "Wszystkie",
-    "status-withdrawn": "Wyłączony z wyszukiwania"
+    "status-withdrawn": "Wyłączony z wyszukiwania",
+    "status-staged": "W Brain",
+    "staged-send": "Zaindeksuj",
+    "staged-sent": "Wysłano do bazy wiedzy — będzie wyszukiwalny po przetworzeniu",
+    "staged-send-failed": "Nie udało się wysłać — odśwież stronę i spróbuj ponownie."
   },
   "folders": {
     "title": "Foldery",
@@ -2689,7 +2693,8 @@
         "in": "W wyszukiwaniu",
         "withdrawn": "Wyłączony z wyszukiwania",
         "processing": "W przetwarzaniu",
-        "failed": "Błąd"
+        "failed": "Błąd",
+        "staged": "W Brain — poza wyszukiwaniem"
       },
       "withdraw": "Wyłącz z wyszukiwania",
       "restore": "Przywróć",
@@ -2705,7 +2710,13 @@
         "invalid-status": "Dokument nie jest w stanie wymaganym przez tę akcję — odśwież stronę.",
         "index-unavailable": "Nie udało się zmienić indeksu — nic się nie zmieniło; spróbuj ponownie.",
         "failed-to-start": "Ponowne przetwarzanie nie ruszyło — spróbuj za chwilę."
-      }
+      },
+      "send": "Wyślij do bazy wiedzy",
+      "sent": "Wysłano do bazy wiedzy",
+      "upload": "Wgraj do Brain",
+      "uploaded": "Wgrano do Brain: {count} — zapisane i przetworzone, poza wyszukiwaniem",
+      "upload-failed": "Wgrywanie się nie powiodło — sprawdź plik i spróbuj ponownie.",
+      "staged-summary": "W Brain, poza wyszukiwaniem: {count} dokumentów, z czego {uncurated} bez zatwierdzonej strony."
     },
     "publish-all": {
       "button": "Opublikuj zatwierdzone ({count})",

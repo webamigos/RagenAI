@@ -1290,7 +1290,11 @@
     "filter-clear": "Ryd filteret {filter}",
     "filter-pii-policy": "Politik",
     "filter-pii-policy-all": "Alle",
-    "status-withdrawn": "Taget ud af søgningen"
+    "status-withdrawn": "Taget ud af søgningen",
+    "status-staged": "I Brain",
+    "staged-send": "Indekser",
+    "staged-sent": "Sendt til vidensbasen — bliver søgbart, når det er behandlet",
+    "staged-send-failed": "Kunne ikke sende — genindlæs siden, og prøv igen."
   },
   "folders": {
     "title": "Mapper",
@@ -2689,7 +2693,8 @@
         "in": "Søgbart",
         "withdrawn": "Taget ud af søgningen",
         "processing": "Behandles",
-        "failed": "Fejl"
+        "failed": "Fejl",
+        "staged": "I Brain — ikke søgbart"
       },
       "withdraw": "Tag ud af søgningen",
       "restore": "Sæt tilbage",
@@ -2705,7 +2710,13 @@
         "invalid-status": "Dokumentet er ikke i den nødvendige tilstand — genindlæs siden.",
         "index-unavailable": "Indekset kunne ikke ændres — intet ændrede sig; prøv igen.",
         "failed-to-start": "Genbehandlingen kunne ikke starte — prøv igen om lidt."
-      }
+      },
+      "send": "Send til vidensbasen",
+      "sent": "Sendt til vidensbasen",
+      "upload": "Upload til Brain",
+      "uploaded": "Uploadet til Brain: {count} — gemt og fortolket, ikke søgbart",
+      "upload-failed": "Uploaden mislykkedes — tjek filen, og prøv igen.",
+      "staged-summary": "I Brain, ikke søgbare: {count} dokumenter, heraf {uncurated} endnu uden godkendt side."
     },
     "publish-all": {
       "button": "Udgiv godkendte ({count})",

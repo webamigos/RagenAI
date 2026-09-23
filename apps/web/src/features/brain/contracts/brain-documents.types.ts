@@ -9,11 +9,12 @@ export type BrainDocument = {
   approvedPages: number;
   candidatePages: number;
   /**
-   * `in` — searchable; `withdrawn` — taken out of retrieval on purpose, its
-   * knowledge served by Brain's pages; `processing` — ingest running or
+   * `in` — searchable; `staged` — uploaded into Brain, parsed and stored,
+   * never indexed (spec F); `withdrawn` — taken out of retrieval on purpose,
+   * its knowledge served by Brain's pages; `processing` — ingest running or
    * queued; `failed` — ingest failed or was cancelled.
    */
-  retrieval: 'in' | 'withdrawn' | 'processing' | 'failed';
+  retrieval: 'in' | 'staged' | 'withdrawn' | 'processing' | 'failed';
 };
 
 export const sourceDocumentInputSchema = z.object({ fileId: dbUuid });

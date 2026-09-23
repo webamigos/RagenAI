@@ -49,6 +49,14 @@ export type UploadFileParams = {
   folderId?: string | null;
   piiPolicy?: PiiPolicy | null;
   /**
+   * Where the upload goes (Ragen Brain, spec F1). `knowledge-base`, the
+   * default, is today's path: parsed and indexed. `brain` is staged intake:
+   * parsed and stored, **not** indexed, until a curated page is published or
+   * someone sends the document to the knowledge base (F5). Written to the row
+   * before the ingest is queued, because the ingest reads the row.
+   */
+  intake?: 'knowledge-base' | 'brain';
+  /**
    * Pre-fetched usage totals to avoid an extra round-trip when the
    * caller is looping over multiple files. If omitted the command
    * fetches its own. Supply running totals that include previously
@@ -221,6 +229,7 @@ export async function uploadFileCommand(
       isUploaded: true,
       uploadedAt: new Date(),
       piiPolicy: resolvedPiiPolicy,
+      ...(params.intake === 'brain' ? { metadata: { intake: 'brain' } } : {}),
     },
   });
 

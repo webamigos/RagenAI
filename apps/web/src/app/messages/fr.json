@@ -1290,7 +1290,11 @@
     "filter-clear": "Effacer le filtre {filter}",
     "filter-pii-policy": "Politique",
     "filter-pii-policy-all": "Tous",
-    "status-withdrawn": "Retiré de la recherche"
+    "status-withdrawn": "Retiré de la recherche",
+    "status-staged": "Dans Brain",
+    "staged-send": "Indexer",
+    "staged-sent": "Envoyé à la base de connaissances — consultable une fois traité",
+    "staged-send-failed": "Envoi impossible — rechargez la page et réessayez."
   },
   "folders": {
     "title": "Dossiers",
@@ -2689,7 +2693,8 @@
         "in": "Consultable",
         "withdrawn": "Retiré de la recherche",
         "processing": "En traitement",
-        "failed": "Échec"
+        "failed": "Échec",
+        "staged": "Dans Brain — non consultable"
       },
       "withdraw": "Retirer de la recherche",
       "restore": "Remettre",
@@ -2705,7 +2710,13 @@
         "invalid-status": "Le document n’est pas dans l’état requis — rechargez la page.",
         "index-unavailable": "L’index n’a pas pu être modifié — rien n’a changé ; réessayez.",
         "failed-to-start": "Le retraitement n’a pas pu démarrer — réessayez dans un instant."
-      }
+      },
+      "send": "Envoyer à la base de connaissances",
+      "sent": "Envoyé à la base de connaissances",
+      "upload": "Téléverser dans Brain",
+      "uploaded": "Téléversés dans Brain : {count} — stockés et analysés, non consultables",
+      "upload-failed": "Le téléversement a échoué — vérifiez le fichier et réessayez.",
+      "staged-summary": "Dans Brain, non consultables : {count} documents, dont {uncurated} sans page approuvée."
     },
     "publish-all": {
       "button": "Publier les approuvées ({count})",

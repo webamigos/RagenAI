@@ -1290,7 +1290,11 @@
     "filter-clear": "Cancella il filtro {filter}",
     "filter-pii-policy": "Criterio",
     "filter-pii-policy-all": "Tutti",
-    "status-withdrawn": "Tolto dalla ricerca"
+    "status-withdrawn": "Tolto dalla ricerca",
+    "status-staged": "In Brain",
+    "staged-send": "Indicizza",
+    "staged-sent": "Inviato alla base di conoscenza: sarà ricercabile dopo l’elaborazione",
+    "staged-send-failed": "Invio non riuscito: ricarica la pagina e riprova."
   },
   "folders": {
     "title": "Cartelle",
@@ -2689,7 +2693,8 @@
         "in": "Ricercabile",
         "withdrawn": "Tolto dalla ricerca",
         "processing": "In elaborazione",
-        "failed": "Errore"
+        "failed": "Errore",
+        "staged": "In Brain — non ricercabile"
       },
       "withdraw": "Togli dalla ricerca",
       "restore": "Rimetti",
@@ -2705,7 +2710,13 @@
         "invalid-status": "Il documento non è nello stato richiesto: ricarica la pagina.",
         "index-unavailable": "Impossibile modificare l’indice: nulla è cambiato; riprova.",
         "failed-to-start": "Impossibile avviare la rielaborazione: riprova tra un momento."
-      }
+      },
+      "send": "Invia alla base di conoscenza",
+      "sent": "Inviato alla base di conoscenza",
+      "upload": "Carica in Brain",
+      "uploaded": "Caricati in Brain: {count} — salvati ed elaborati, non ricercabili",
+      "upload-failed": "Caricamento non riuscito: controlla il file e riprova.",
+      "staged-summary": "In Brain, non ricercabili: {count} documenti, {uncurated} ancora senza pagina approvata."
     },
     "publish-all": {
       "button": "Pubblica approvate ({count})",

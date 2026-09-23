@@ -9,6 +9,8 @@ import { Button } from '@/components/ui/button';
 import type { BrainDocument } from '@/features/brain/contracts/brain-documents.types';
 import { useRouter } from '@/i18n/routing';
 
+import { sendStagedToKnowledgeBaseAction } from '@/app/actions/bulk-documents';
+
 import {
   restoreSourceDocumentAction,
   withdrawSourceDocumentAction,
@@ -47,6 +49,28 @@ export function DocumentRetrievalActions({
       toast.error(t(`errors.${result.error}`));
     });
 
+  if (retrieval === 'staged') {
+    return (
+      <Button
+        size="sm"
+        variant="outline"
+        disabled={pending}
+        onClick={() =>
+          startTransition(async () => {
+            const result = await sendStagedToKnowledgeBaseAction([fileId]);
+            if (result.sent.length > 0) {
+              toast.success(t('sent'));
+              router.refresh();
+              return;
+            }
+            toast.error(t('errors.failed-to-start'));
+          })
+        }
+      >
+        {t('send')}
+      </Button>
+    );
+  }
   if (retrieval === 'withdrawn') {
     return (
       <Button

@@ -1290,7 +1290,11 @@
     "filter-clear": "Rensa filtret {filter}",
     "filter-pii-policy": "Policy",
     "filter-pii-policy-all": "Alla",
-    "status-withdrawn": "Uttaget ur sökningen"
+    "status-withdrawn": "Uttaget ur sökningen",
+    "status-staged": "I Brain",
+    "staged-send": "Indexera",
+    "staged-sent": "Skickat till kunskapsbasen — blir sökbart när det har bearbetats",
+    "staged-send-failed": "Det gick inte att skicka — ladda om sidan och försök igen."
   },
   "folders": {
     "title": "Mappar",
@@ -2689,7 +2693,8 @@
         "in": "Sökbart",
         "withdrawn": "Uttaget ur sökningen",
         "processing": "Bearbetas",
-        "failed": "Misslyckades"
+        "failed": "Misslyckades",
+        "staged": "I Brain — inte sökbart"
       },
       "withdraw": "Ta ut ur sökningen",
       "restore": "Lägg tillbaka",
@@ -2705,7 +2710,13 @@
         "invalid-status": "Dokumentet har inte det tillstånd som krävs — ladda om sidan.",
         "index-unavailable": "Indexet kunde inte ändras — inget ändrades; försök igen.",
         "failed-to-start": "Ombearbetningen kunde inte starta — försök igen om en stund."
-      }
+      },
+      "send": "Skicka till kunskapsbasen",
+      "sent": "Skickat till kunskapsbasen",
+      "upload": "Ladda upp till Brain",
+      "uploaded": "Uppladdat till Brain: {count} — lagrat och tolkat, inte sökbart",
+      "upload-failed": "Uppladdningen misslyckades — kontrollera filen och försök igen.",
+      "staged-summary": "I Brain, inte sökbara: {count} dokument, varav {uncurated} ännu utan godkänd sida."
     },
     "publish-all": {
       "button": "Publicera godkända ({count})",

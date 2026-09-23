@@ -20,6 +20,10 @@ import type { PermissionLevel } from '@/features/documents/contracts/permission.
 import { logger } from '@/app/lib/utils/logger';
 import { UnauthorizedException } from '@/libs/utils/errors';
 import { ragenApiRequest } from '@/libs/ragen-api-client/client';
+import {
+  sendStagedToKnowledgeBaseCommand,
+  type SendStagedResult,
+} from '@/features/documents/services/commands/send-staged-to-knowledge-base-command';
 
 type OperationResult = { success: true } | { success: false; error: string };
 
@@ -343,4 +347,19 @@ export async function bulkUpdatePiiPolicyAction(
   }
 
   return { succeeded, failed };
+}
+
+/**
+ * Send documents staged into Ragen Brain to the knowledge base (spec F5).
+ * The organization comes from the session; the command selects this
+ * organization's `STAGED` files and nothing else.
+ */
+export async function sendStagedToKnowledgeBaseAction(
+  fileIds: string[],
+): Promise<SendStagedResult> {
+  const organizationId = await getOrgIdFromAuthOrThrow();
+  return sendStagedToKnowledgeBaseCommand({
+    organizationId,
+    fileIds: fileIds.slice(0, 500),
+  });
 }
