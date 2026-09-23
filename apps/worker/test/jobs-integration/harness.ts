@@ -54,7 +54,7 @@ export interface JobRuntimeHarness {
   listScheduleIds(): Promise<string[]>;
 
   /** Begin consuming. Called for you unless the harness was started paused. */
-  startConsuming(): void;
+  startConsuming(): Promise<void>;
 
   /** Stop consuming without tearing the queues down, so state stays readable. */
   stopConsuming(): Promise<void>;

@@ -10,6 +10,7 @@ import {
 } from '@ragenai/jobs-bullmq';
 
 import * as activities from './activities/index.js';
+import { BRAIN_EXTRACT_CONCURRENCY } from './consts.js';
 import { db } from './services/db/index.js';
 import { logger } from './services/logger.js';
 
@@ -89,6 +90,9 @@ export async function startBullMqWorker(): Promise<RunningBullMq> {
       typeof createBullWorkers
     >[0]['activities'],
     concurrency: resolveConcurrency(),
+    // Brain extraction calls a rate-limited provider several times per
+    // document; the ceiling holds across replicas (see `jobConcurrency`).
+    jobConcurrency: { brainExtract: BRAIN_EXTRACT_CONCURRENCY },
     log: logger,
     // The read is injected because the adapter has no database. On Temporal
     // the same read is an activity, since a workflow sandbox has no I/O.
@@ -110,7 +114,14 @@ export async function startBullMqWorker(): Promise<RunningBullMq> {
     throw error;
   }
 
-  startBullWorkers(workers);
+  try {
+    await startBullWorkers(workers);
+  } catch (error) {
+    // Setting a ceiling failed before any worker ran. Close and fail the
+    // boot, rather than run a queue without the limit it was given.
+    await closeBullWorkers(workers).catch(() => undefined);
+    throw error;
+  }
 
   // After the workers, and deliberately incapable of stopping them:
   // `startQueueDashboard` returns `null` on any failure rather than throwing,

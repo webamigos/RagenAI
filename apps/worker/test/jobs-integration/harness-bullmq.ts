@@ -119,15 +119,15 @@ export async function startBullMqHarness(
   });
 
   let consuming = false;
-  const startConsuming = (): void => {
+  const startConsuming = async (): Promise<void> => {
     if (!consuming) {
-      startBullWorkers(workers);
       consuming = true;
+      await startBullWorkers(workers);
     }
   };
 
   if (options.consume !== false) {
-    startConsuming();
+    await startConsuming();
   }
 
   return {

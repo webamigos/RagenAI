@@ -100,7 +100,11 @@ from documents' active versions, behind the `brain` flag, which the job
 checks when it runs. Its rules are in `packages/brain-core`; the handler
 enforces the run's document ceiling and the activity its tokens.
 `BRAIN_EXTRACT_MODEL` (defaults to `SUMMARY_MODEL`),
-`BRAIN_EXTRACT_MAX_DOCUMENTS` and `BRAIN_EXTRACT_MAX_TOKENS` configure it.
+`BRAIN_EXTRACT_MAX_DOCUMENTS` and `BRAIN_EXTRACT_MAX_TOKENS` configure it, and
+`BRAIN_EXTRACT_CONCURRENCY` (default 1) caps how many runs execute at once
+**across every replica** — BullMQ's global concurrency on the queue, set by
+`startBullWorkers` from the `jobConcurrency` option before any worker
+consumes. Temporal installs need their own limit; the adapter has none.
 
 **runFileEmbeddings flow:**
 

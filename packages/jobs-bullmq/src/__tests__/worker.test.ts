@@ -24,10 +24,25 @@ class FakeWorker {
 
 class FakeUnrecoverableError extends Error {}
 
+/** Every call a queue received, in order across queues, with `run()`s too. */
+const timeline: string[] = [];
+const queueFails = { value: false };
+
+class FakeQueue {
+  constructor(public name: string) {}
+  setGlobalConcurrency = vi.fn(async (n: number) => {
+    if (queueFails.value) {
+      throw new Error('redis down');
+    }
+    timeline.push(`global ${this.name} ${n}`);
+  });
+  close = vi.fn(async () => undefined);
+}
+
 vi.mock('bullmq', () => ({
   Worker: FakeWorker,
   UnrecoverableError: FakeUnrecoverableError,
-  Queue: class {},
+  Queue: FakeQueue,
   Job: { fromId: vi.fn() },
 }));
 
@@ -46,6 +61,8 @@ const build = () =>
 
 beforeEach(() => {
   constructed.length = 0;
+  timeline.length = 0;
+  queueFails.value = false;
   vi.clearAllMocks();
 });
 
@@ -161,11 +178,11 @@ describe('createBullWorkers', () => {
 });
 
 describe('startBullWorkers', () => {
-  it('starts every worker, and only when asked', () => {
+  it('starts every worker, and only when asked', async () => {
     const workers = build();
     expect(constructed.every((w) => w.run.mock.calls.length === 0)).toBe(true);
 
-    startBullWorkers(workers);
+    await startBullWorkers(workers);
 
     expect(constructed.every((w) => w.run.mock.calls.length === 1)).toBe(true);
   });
@@ -179,6 +196,70 @@ describe('closeBullWorkers', () => {
 
     expect(constructed.every((w) => w.close.mock.calls.length === 1)).toBe(
       true,
+    );
+  });
+});
+
+describe('a per-job concurrency ceiling', () => {
+  const withCeiling = (jobConcurrency: Record<string, number>) =>
+    createBullWorkers({
+      handlers: {} as never,
+      activities: {},
+      log,
+      isCancelled: async () => false,
+      jobConcurrency,
+    });
+
+  // Vertex answered 429 at two concurrent Brain extractions.
+  it('holds that queue per replica, and leaves the others at the default', () => {
+    withCeiling({ brainExtract: 1 });
+
+    const brain = constructed.find((w) => w.name === 'brainExtract')!;
+    expect(brain.opts.concurrency).toBe(1);
+    expect(
+      constructed.find((w) => w.name === 'runFileEmbeddings')!.opts.concurrency,
+    ).toBe(20);
+  });
+
+  it('never raises a queue above the worker default', () => {
+    withCeiling({ brainExtract: 50 });
+
+    expect(
+      constructed.find((w) => w.name === 'brainExtract')!.opts.concurrency,
+    ).toBe(20);
+  });
+
+  // Per replica is not a limit on a deployment: two replicas at 1 run 2.
+  it('sets the ceiling on the queue, across replicas, before any worker runs', async () => {
+    const workers = withCeiling({ brainExtract: 2 });
+    for (const worker of constructed) {
+      worker.run.mockImplementation(async () => {
+        timeline.push(`run ${worker.name}`);
+      });
+    }
+
+    await startBullWorkers(workers);
+
+    expect(timeline[0]).toBe('global brainExtract 2');
+    expect(timeline.filter((t) => t.startsWith('global'))).toEqual([
+      'global brainExtract 2',
+    ]);
+    expect(timeline.filter((t) => t.startsWith('run'))).toHaveLength(
+      QUEUE_NAMES.length,
+    );
+  });
+
+  it('starts nothing when setting the ceiling fails', async () => {
+    const workers = withCeiling({ brainExtract: 1 });
+    queueFails.value = true;
+
+    await expect(startBullWorkers(workers)).rejects.toThrow('redis down');
+    expect(constructed.every((w) => w.run.mock.calls.length === 0)).toBe(true);
+  });
+
+  it.each([0, -1, 1.5])('refuses the ceiling %s', (limit) => {
+    expect(() => withCeiling({ brainExtract: limit })).toThrow(
+      'positive integer',
     );
   });
 });

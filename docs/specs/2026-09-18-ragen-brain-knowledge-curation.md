@@ -766,9 +766,15 @@ What did it, and what the measurement found that B5 had not:
   kinds of relation it wants, and the count did not move beyond run-to-run
   variance — it is kept for its wording, not on evidence. C4 is where to
   measure it properly.
-- **Vertex rate-limits two concurrent extractions** (429 during the eval). The
-  worker runs twenty jobs at a time; a bulk run will need its own concurrency
-  or a backoff before D5 turns the flag on for anyone.
+- **Vertex rate-limits two concurrent extractions** (429 during the eval).
+  Now limited: `BRAIN_EXTRACT_CONCURRENCY` (default 1) caps `brainExtract`
+  runs across every replica, through a `jobConcurrency` option in
+  `@ragenai/jobs-bullmq` that sets BullMQ's global concurrency on the queue
+  before any worker consumes, and the model call retries four times with the
+  SDK's backoff instead of two. Proven against a real Redis: two replicas at
+  a ceiling of 1 never ran two at once, and with the global setting removed
+  they did. **The Temporal adapter has no equivalent** — it lives in
+  `ragen-enterprise`, and a Temporal install limits this on its task queue.
 
 ### Phase C — Findings and graph
 

@@ -106,6 +106,8 @@ describe('extractDocumentCandidates', () => {
       vertex: { thinkingConfig: { thinkingBudget: 2048 } },
     });
     expect(call.maxOutputTokens).toBe(16_000);
+    // A 429 needs longer than the SDK's default two retries give it.
+    expect(call.maxRetries).toBe(4);
   });
 
   it('names the document language to the model', async () => {
