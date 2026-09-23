@@ -635,12 +635,13 @@ Phase D, so every phase before it is invisible to existing users.
 - [x] **B2.** The intersection rule for `accessibleBy`, as a pure function with
       its own tests, including the case where the sources share no principal.
       Written before anything can call it wrongly.
-- [ ] **B3.** `packages/jobs`: `brainExtract` + payload. `apps/worker` handler
+- [x] **B3.** `packages/jobs`: `brainExtract` + payload. `apps/worker` handler
       writing `CANDIDATE` pages, sources and edges. Job-runtime test.
-- [ ] **B4.** A per-run extraction budget, enforced at the call site.
-      _The budget and its enforcement are in `brain-core` (`ExtractionBudget`,
-      checked by `extractDocument` before every model call and before each
-      document); where the limits come from lands with B3's handler._
+- [x] **B4.** A per-run extraction budget, enforced at the call site.
+      _Two call sites: the handler counts documents before starting each one,
+      and `extractDocument` checks the tokens left before every model call.
+      Limits: `BRAIN_EXTRACT_MAX_DOCUMENTS` (200) and `BRAIN_EXTRACT_MAX_TOKENS`
+      (2,000,000), read by an activity when the run starts._
 - [ ] **B5.** A script that runs extraction over one project and prints what it
       produced — enough to judge quality on our own documents before any UI.
 
@@ -670,6 +671,31 @@ Phase D, so every phase before it is invisible to existing users.
 - **A document that hits the budget part-way returns nothing**, not the
   windows it finished: half a policy extracted is a confident summary of half
   a policy.
+
+**What B3 settled:**
+
+- **The flag is checked when the job runs**, not only when it is queued, by
+  an activity feeding the same `resolveFeatures` apps/web gates on. That
+  needed `pickBestSubscription`, which web, api and admin each carry a copy
+  of; it now also lives in `platform-contracts`, and the worker uses that one.
+  Folding the three older copies into it is its own change.
+- **The text extracted is the active `DocumentVersion`'s**, and so is the id
+  each source is pinned to — never `UserDocument.content` beside a version id
+  read separately.
+- **A re-run converges.** Extracting a document again replaces the candidates
+  an earlier run of the same document left, but only those nobody has
+  touched: a `CANDIDATE` whose every source is that file and which has no
+  decision. A page someone set an owner on stays, and the fresh candidate gets
+  a suffixed slug beside it for the review queue to merge. This is also what
+  makes a BullMQ redelivery harmless.
+- **A provider outage on both attempts is a failed document, not a failed
+  step.** It raises `EXTRACTION_FAILED` like a bad answer does, and D3's retry
+  is the way back — the run carries on with the next document.
+- **One open `EXTRACTION_FAILED` per document.** A second failure refreshes the
+  first; a success resolves it.
+- **Usage is recorded as `CHAT_COMPLETION`** with `metadata.kind:
+  brain_extract`, as the RAG scorer does. A step of its own on the AI-usage
+  page is a separate decision.
 
 ### Phase C — Findings and graph
 

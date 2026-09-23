@@ -103,6 +103,13 @@ export const workerEnvSchema = fragments.targetEnvRequired
     // makes on purpose.
     ANALYTICS_RETENTION_DAYS: z.coerce.number().positive().optional(),
 
+    // Ragen Brain extraction (consts.ts). All optional: the model falls back
+    // to SUMMARY_MODEL and the two per-run ceilings to 200 documents and two
+    // million tokens. Declared so a typo is refused rather than stripped.
+    BRAIN_EXTRACT_MODEL: z.string().min(1).optional(),
+    BRAIN_EXTRACT_MAX_DOCUMENTS: z.coerce.number().int().positive().optional(),
+    BRAIN_EXTRACT_MAX_TOKENS: z.coerce.number().int().positive().optional(),
+
     /**
      * Table chunking, under measurement (ADR-43). `'1'` turns it on.
      *

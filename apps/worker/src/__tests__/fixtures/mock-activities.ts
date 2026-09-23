@@ -224,6 +224,17 @@ export function createMockActivities() {
       retrievalsDeleted: 11,
       olderThan: '2026-06-18T00:00:00.000Z',
     }),
+    // Brain on by default here, so a suite running the handler exercises the
+    // extraction rather than the "flag is off" early return.
+    startBrainExtractRun: vi
+      .fn()
+      .mockResolvedValue({ enabled: true, maxDocuments: 10, maxTokens: 1e6 }),
+    extractDocumentCandidates: vi.fn().mockResolvedValue({
+      status: 'extracted',
+      pagesCreated: 2,
+      unverifiedClaims: 0,
+      tokens: 1200,
+    }),
   };
 }
 

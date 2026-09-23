@@ -186,3 +186,44 @@ export const ANALYTICS_RETENTION_DAYS = (() => {
   }
   return parsed;
 })();
+
+/**
+ * Ragen Brain's extraction model (spec B1/B3). Falls back to SUMMARY_MODEL,
+ * the cheap multilingual model ingest already uses: extraction runs several
+ * calls per document, and "do not upgrade a per-document model without
+ * explicit approval" applies to it for the same reason it applies there.
+ */
+export const BRAIN_EXTRACT_MODEL =
+  process.env.BRAIN_EXTRACT_MODEL?.trim() || SUMMARY_MODEL;
+
+/**
+ * Per-run ceilings for Brain extraction (spec B4). A run is one
+ * `brainExtract` job; both limits apply to the whole of it. Deliberately
+ * modest: a 40k-document pilot started by accident is the failure these exist
+ * for, and a real bulk run is something an operator raises them for.
+ */
+export const BRAIN_EXTRACT_MAX_DOCUMENTS = positiveIntFromEnv(
+  'BRAIN_EXTRACT_MAX_DOCUMENTS',
+  200,
+);
+export const BRAIN_EXTRACT_MAX_TOKENS = positiveIntFromEnv(
+  'BRAIN_EXTRACT_MAX_TOKENS',
+  2_000_000,
+);
+
+/**
+ * Same defensive parse as the retention settings above: a malformed value
+ * falls back to the default rather than becoming 0, which here would mean a
+ * run that refuses every document and reports it as a budget.
+ */
+function positiveIntFromEnv(name: string, fallback: number): number {
+  const raw = process.env[name]?.trim();
+  if (!raw) {
+    return fallback;
+  }
+  const parsed = Number(raw);
+  if (!Number.isInteger(parsed) || parsed <= 0) {
+    return fallback;
+  }
+  return parsed;
+}

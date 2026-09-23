@@ -75,6 +75,8 @@
     "@prisma/adapter-pg": "^7.0.0",
     "@prisma/client": "^7.0.0",
     "@qdrant/js-client-rest": "^1.17.0",
+    "@ragenai/brain-contracts": "*",
+    "@ragenai/brain-core": "*",
     "@ragenai/crypto": "*",
     "@ragenai/env": "*",
     "@ragenai/jobs": "*",

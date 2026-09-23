@@ -77,6 +77,7 @@ const PAYLOADS: { [N in JobName]: JobPayloads[N] } = {
   },
   cleanupDemoThreads: undefined,
   pruneAnalyticsRetrievals: undefined,
+  brainExtract: { orgId: 'org-1', fileIds: ['file-1'], userId: 'user-1' },
 };
 
 /** The activity that proves the pipeline ran, not merely that the job did. */
@@ -89,6 +90,7 @@ const EVIDENCE: Record<JobName, string> = {
   scoreDocument: 'scoreDocumentForRag',
   cleanupDemoThreads: 'deleteStaleDemoThreads',
   pruneAnalyticsRetrievals: 'pruneDocumentRetrievals',
+  brainExtract: 'extractDocumentCandidates',
 };
 
 describe('every job runs', () => {

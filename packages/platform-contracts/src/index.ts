@@ -168,3 +168,10 @@ export {
   scopeRetrieves,
 } from './retrieval/knowledge-scope';
 export type { KnowledgeScope } from './retrieval/knowledge-scope';
+
+export {
+  TRIAL_PLAN_NAME,
+  pickBestSubscription,
+  subscriptionGrantsPlanFeatures,
+} from './subscriptions/pick-best-subscription';
+export type { SubscriptionCandidate } from './subscriptions/pick-best-subscription';

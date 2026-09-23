@@ -6,3 +6,4 @@ export * from './optimize-document.js';
 export * from './score-document.js';
 export * from './cleanup-demo-threads.js';
 export * from './prune-analytics-retrievals.js';
+export * from './brain-extract.js';
