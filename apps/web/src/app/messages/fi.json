@@ -2669,7 +2669,8 @@
         "none": "Ei tietopankissa",
         "publishing": "Kirjoitetaan tietopankkiin…",
         "published": "Tietopankissa — vastaukset voivat lainata sitä",
-        "withdrawn": "Vedetty pois tietopankista"
+        "withdrawn": "Vedetty pois tietopankista",
+        "failed": "Tietopankkiin kirjoittaminen epäonnistui – julkaise uudelleen"
       },
       "outdated": "Sivu on muuttunut julkaisun jälkeen — julkaise uudelleen päivittääksesi tietopankin.",
       "publish": "Julkaise tietopankkiin",

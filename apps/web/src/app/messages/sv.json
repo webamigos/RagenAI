@@ -2669,7 +2669,8 @@
         "none": "Inte i kunskapsbasen",
         "publishing": "Skrivs till kunskapsbasen…",
         "published": "I kunskapsbasen — svar kan citera den",
-        "withdrawn": "Tillbakadragen från kunskapsbasen"
+        "withdrawn": "Tillbakadragen från kunskapsbasen",
+        "failed": "Skrivningen till kunskapsbasen misslyckades – publicera igen"
       },
       "outdated": "Sidan har ändrats sedan den publicerades — publicera igen för att uppdatera kunskapsbasen.",
       "publish": "Publicera i kunskapsbasen",

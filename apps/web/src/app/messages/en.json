@@ -2669,7 +2669,8 @@
         "none": "Not in the knowledge base",
         "publishing": "Being written to the knowledge base…",
         "published": "In the knowledge base — answers can cite it",
-        "withdrawn": "Withdrawn from the knowledge base"
+        "withdrawn": "Withdrawn from the knowledge base",
+        "failed": "Writing to the knowledge base failed — publish it again"
       },
       "outdated": "The page changed since it was published — republish to update the knowledge base.",
       "publish": "Publish to knowledge base",

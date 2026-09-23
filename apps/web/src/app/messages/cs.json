@@ -2669,7 +2669,8 @@
         "none": "Mimo znalostní bázi",
         "publishing": "Zapisuje se do znalostní báze…",
         "published": "Ve znalostní bázi — odpovědi ji mohou citovat",
-        "withdrawn": "Stažena ze znalostní báze"
+        "withdrawn": "Stažena ze znalostní báze",
+        "failed": "Zápis do znalostní báze selhal – publikujte znovu"
       },
       "outdated": "Stránka se od zveřejnění změnila — zveřejněte ji znovu, aby se znalostní báze aktualizovala.",
       "publish": "Zveřejnit ve znalostní bázi",

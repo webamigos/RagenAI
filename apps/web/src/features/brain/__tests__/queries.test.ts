@@ -364,3 +364,17 @@ describe('getKnowledgeFindingsQuery', () => {
     expect(db.knowledgePage.findMany).not.toHaveBeenCalled();
   });
 });
+
+describe('publicationState', () => {
+  it('says what the row and the file say together', async () => {
+    const { publicationState } =
+      await import('../services/queries/get-knowledge-page-query');
+    const at = new Date();
+    expect(publicationState(null, null)).toBe('none');
+    expect(publicationState(at, 'STARTED')).toBe('publishing');
+    expect(publicationState(at, 'COMPLETED')).toBe('published');
+    // A run that gave up is not "being written" — nothing is.
+    expect(publicationState(at, 'FAILED')).toBe('failed');
+    expect(publicationState(null, 'WITHDRAWN')).toBe('withdrawn');
+  });
+});

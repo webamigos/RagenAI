@@ -2669,7 +2669,8 @@
         "none": "Nincs a tudásbázisban",
         "publishing": "Írás a tudásbázisba…",
         "published": "A tudásbázisban — a válaszok idézhetik",
-        "withdrawn": "Visszavonva a tudásbázisból"
+        "withdrawn": "Visszavonva a tudásbázisból",
+        "failed": "A tudásbázisba írás nem sikerült – tegye közzé újra"
       },
       "outdated": "Az oldal megváltozott a közzététel óta — tegye közzé újra a tudásbázis frissítéséhez.",
       "publish": "Közzététel a tudásbázisban",

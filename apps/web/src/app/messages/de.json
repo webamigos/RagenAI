@@ -2669,7 +2669,8 @@
         "none": "Nicht in der Wissensdatenbank",
         "publishing": "Wird in die Wissensdatenbank geschrieben…",
         "published": "In der Wissensdatenbank — Antworten können sie zitieren",
-        "withdrawn": "Aus der Wissensdatenbank zurückgezogen"
+        "withdrawn": "Aus der Wissensdatenbank zurückgezogen",
+        "failed": "Das Schreiben in die Wissensdatenbank ist fehlgeschlagen – erneut veröffentlichen"
       },
       "outdated": "Die Seite hat sich seit der Veröffentlichung geändert — erneut veröffentlichen, um die Wissensdatenbank zu aktualisieren.",
       "publish": "In der Wissensdatenbank veröffentlichen",

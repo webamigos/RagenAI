@@ -2669,7 +2669,8 @@
         "none": "Poza bazą wiedzy",
         "publishing": "Zapisywanie do bazy wiedzy…",
         "published": "W bazie wiedzy — odpowiedzi mogą ją cytować",
-        "withdrawn": "Wycofana z bazy wiedzy"
+        "withdrawn": "Wycofana z bazy wiedzy",
+        "failed": "Zapis do bazy wiedzy się nie powiódł — opublikuj ponownie"
       },
       "outdated": "Strona zmieniła się od publikacji — opublikuj ponownie, żeby zaktualizować bazę wiedzy.",
       "publish": "Opublikuj w bazie wiedzy",

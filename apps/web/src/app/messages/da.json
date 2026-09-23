@@ -2669,7 +2669,8 @@
         "none": "Ikke i vidensbasen",
         "publishing": "Skrives til vidensbasen…",
         "published": "I vidensbasen — svar kan citere den",
-        "withdrawn": "Trukket tilbage fra vidensbasen"
+        "withdrawn": "Trukket tilbage fra vidensbasen",
+        "failed": "Skrivningen til vidensbasen mislykkedes – udgiv igen"
       },
       "outdated": "Siden er ændret, siden den blev udgivet — udgiv igen for at opdatere vidensbasen.",
       "publish": "Udgiv i vidensbasen",

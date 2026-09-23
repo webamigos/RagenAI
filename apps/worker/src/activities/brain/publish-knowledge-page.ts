@@ -7,6 +7,7 @@ import {
   completePublication,
   currentPublicationGeneration,
   getPageForPublication,
+  markPublicationFailed as markFailed,
 } from '../../services/db/brain-publication.js';
 import { addDocumentsToVectorStore } from '../meilisearch/add-documents-to-vector-store.js';
 import { prepareMetadata } from '../embeddings/prepare-metadata.js';
@@ -139,4 +140,22 @@ export async function publishKnowledgePage(input: {
     'brain publish: page is in the index',
   );
   return { status: 'published', chunks: prepared.length };
+}
+
+/**
+ * Record that a page's publication gave up after its retries, so the panel
+ * says so and offers to publish again. Its own step: the handler calls it
+ * once `publishKnowledgePage` has failed for the last time.
+ */
+export async function markPublicationFailed(input: {
+  orgId: string;
+  pageId: string;
+  generation: number;
+}): Promise<{ marked: boolean }> {
+  const marked = await markFailed({
+    orgId: input.orgId,
+    pagePublicId: input.pageId,
+    generation: input.generation,
+  });
+  return { marked };
 }

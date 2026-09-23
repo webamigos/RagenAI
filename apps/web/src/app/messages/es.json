@@ -2669,7 +2669,8 @@
         "none": "Fuera de la base de conocimiento",
         "publishing": "Escribiendo en la base de conocimiento…",
         "published": "En la base de conocimiento: las respuestas pueden citarla",
-        "withdrawn": "Retirada de la base de conocimiento"
+        "withdrawn": "Retirada de la base de conocimiento",
+        "failed": "La escritura en la base de conocimiento falló: vuelve a publicarla"
       },
       "outdated": "La página cambió desde que se publicó: vuelve a publicarla para actualizar la base de conocimiento.",
       "publish": "Publicar en la base de conocimiento",
