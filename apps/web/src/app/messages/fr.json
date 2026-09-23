@@ -2706,6 +2706,14 @@
         "index-unavailable": "L’index n’a pas pu être modifié — rien n’a changé ; réessayez.",
         "failed-to-start": "Le retraitement n’a pas pu démarrer — réessayez dans un instant."
       }
+    },
+    "publish-all": {
+      "button": "Publier les approuvées ({count})",
+      "confirm-title": "Publier toutes les pages approuvées ?",
+      "confirm-description": "Les pages qui servent déjà leur texte actuel restent telles quelles ; les pages modifiées sont republiées, les nouvelles publiées. Chaque publication est enregistrée sous votre nom. Les pages sans responsable ou ouvertes à personne sont ignorées.",
+      "confirm": "Publier",
+      "done": "En file : {queued} · inchangées : {unchanged} · ignorées : {refused}",
+      "failed": "La publication n’a pas pu démarrer — rechargez la page et réessayez."
     }
   }
 }

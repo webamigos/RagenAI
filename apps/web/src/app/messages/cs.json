@@ -2706,6 +2706,14 @@
         "index-unavailable": "Index se nepodařilo změnit — nic se nezměnilo; zkuste to znovu.",
         "failed-to-start": "Opětovné zpracování se nepodařilo spustit — zkuste to za chvíli."
       }
+    },
+    "publish-all": {
+      "button": "Zveřejnit schválené ({count})",
+      "confirm-title": "Zveřejnit všechny schválené stránky?",
+      "confirm-description": "Stránky, které už poskytují aktuální text, zůstanou beze změny; změněné se zveřejní znovu, nové poprvé. Každé zveřejnění se zaznamená pod vaším jménem. Stránky bez vlastníka nebo nepřístupné nikomu se přeskočí.",
+      "confirm": "Zveřejnit",
+      "done": "Ve frontě: {queued} · beze změny: {unchanged} · přeskočeno: {refused}",
+      "failed": "Zveřejnění se nepodařilo spustit — načtěte stránku znovu a zkuste to znovu."
     }
   }
 }

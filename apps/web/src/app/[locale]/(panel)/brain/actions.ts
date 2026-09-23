@@ -19,6 +19,10 @@ import { setKnowledgePageAccessCommand } from '@/features/brain/services/command
 import { setKnowledgePageOwnerCommand } from '@/features/brain/services/commands/set-knowledge-page-owner-command';
 import { getBrainAccessQuery } from '@/features/brain/services/queries/get-brain-access-query';
 import {
+  publishAllApprovedCommand,
+  type PublishAllResult,
+} from '@/features/brain/services/commands/publish-all-approved-command';
+import {
   sourceDocumentInputSchema,
   type SourceDocumentResult,
 } from '@/features/brain/contracts/brain-documents.types';
@@ -192,4 +196,15 @@ export async function restoreSourceDocumentAction(
     orgId: who.orgId,
     fileId: parsed.data.fileId,
   });
+}
+
+/** Publish every approved page whose content is not already serving (spec E7). */
+export async function publishAllApprovedAction(): Promise<
+  PublishAllResult | { error: 'not-found' }
+> {
+  const who = await reviewer();
+  if (!who) {
+    return { error: 'not-found' };
+  }
+  return publishAllApprovedCommand(who);
 }

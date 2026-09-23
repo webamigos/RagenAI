@@ -2706,6 +2706,14 @@
         "index-unavailable": "Impossibile modificare l’indice: nulla è cambiato; riprova.",
         "failed-to-start": "Impossibile avviare la rielaborazione: riprova tra un momento."
       }
+    },
+    "publish-all": {
+      "button": "Pubblica approvate ({count})",
+      "confirm-title": "Pubblicare tutte le pagine approvate?",
+      "confirm-description": "Le pagine che servono già il testo attuale restano invariate; quelle modificate vengono ripubblicate, le nuove pubblicate. Ogni pubblicazione è registrata a tuo nome. Le pagine senza responsabile o aperte a nessuno vengono saltate.",
+      "confirm": "Pubblica",
+      "done": "In coda: {queued} · invariate: {unchanged} · saltate: {refused}",
+      "failed": "Impossibile avviare la pubblicazione: ricarica la pagina e riprova."
     }
   }
 }

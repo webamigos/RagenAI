@@ -2706,6 +2706,14 @@
         "index-unavailable": "Não foi possível alterar o índice — nada mudou; tente novamente.",
         "failed-to-start": "Não foi possível iniciar o reprocessamento — tente novamente daqui a pouco."
       }
+    },
+    "publish-all": {
+      "button": "Publicar aprovadas ({count})",
+      "confirm-title": "Publicar todas as páginas aprovadas?",
+      "confirm-description": "As páginas que já servem o texto atual ficam como estão; as alteradas são publicadas de novo e as novas publicadas. Cada publicação fica registada em seu nome. As páginas sem responsável ou abertas a ninguém são ignoradas.",
+      "confirm": "Publicar",
+      "done": "Em fila: {queued} · sem alterações: {unchanged} · ignoradas: {refused}",
+      "failed": "Não foi possível iniciar a publicação — recarregue a página e tente novamente."
     }
   }
 }
