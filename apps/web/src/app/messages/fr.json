@@ -2605,7 +2605,7 @@
       "none": "Aucun document à extraire — ajoutez d’abord des documents à la base de connaissances.",
       "not-extracted": "Non extrait",
       "pages": "Pages : {count}",
-      "too-many": "Au plus {max} documents par exécution.",
+      "too-many": "Documents par exécution, au plus : {max}.",
       "cancel": "Annuler",
       "start": "Lancer l’extraction ({count})",
       "started": "Extraction lancée — documents : {count}. Les candidates apparaissent à mesure que chacun se termine.",
@@ -2632,8 +2632,8 @@
       "inferred": "Relations inférées",
       "inferred-hidden": "Masquées",
       "inferred-shown": "Affichées ({count})",
-      "shown": "{nodes} pages sur {totalNodes} et {edges} relations sur {totalEdges} affichées",
-      "canvas-label": "Graphe de {nodes} pages et {edges} relations",
+      "shown": "Pages : {nodes} sur {totalNodes} · relations : {edges} sur {totalEdges}",
+      "canvas-label": "Graphe — pages : {nodes}, relations : {edges}",
       "failed": "Le graphe n’a pas pu être dessiné dans ce navigateur — les onglets pages et constats montrent les mêmes données.",
       "open-findings": "Constats ouverts : {count}",
       "open-page": "Ouvrir la page",
@@ -2653,7 +2653,7 @@
       }
     },
     "export": {
-      "ready": "Prêtes à exporter : {count} pages",
+      "ready": "Prêtes à exporter : {count}",
       "download": "Télécharger le paquet (.zip)",
       "none": "Approuvez une page avec un responsable pour l’exporter",
       "skipped": {
@@ -2720,7 +2720,7 @@
       "upload": "Téléverser dans Brain",
       "uploaded": "Téléversés dans Brain : {count} — stockés et analysés, non consultables",
       "upload-failed": "Le téléversement a échoué — vérifiez le fichier et réessayez.",
-      "staged-summary": "Dans Brain, non consultables : {count} documents, dont {uncurated} sans page approuvée.",
+      "staged-summary": "Dans Brain, hors recherche : {count} · sans page approuvée : {uncurated}",
       "uploaded-partly": "{uploaded} sur {total} importés dans Brain ; les autres ont échoué"
     },
     "publish-all": {

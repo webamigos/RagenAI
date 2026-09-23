@@ -2605,7 +2605,7 @@
       "none": "Brak dokumentów do wyodrębnienia — najpierw dodaj dokumenty do bazy wiedzy.",
       "not-extracted": "Nie wyodrębniono",
       "pages": "Strony: {count}",
-      "too-many": "Najwyżej {max} dokumentów w jednym przebiegu.",
+      "too-many": "Dokumentów w jednym przebiegu najwyżej: {max}.",
       "cancel": "Anuluj",
       "start": "Rozpocznij ({count})",
       "started": "Wyodrębnianie rozpoczęte — dokumenty: {count}. Kandydaci pojawią się, gdy każdy się skończy.",
@@ -2632,8 +2632,8 @@
       "inferred": "Powiązania wnioskowane",
       "inferred-hidden": "Ukryte",
       "inferred-shown": "Widoczne ({count})",
-      "shown": "Wyświetlono {nodes} z {totalNodes} stron i {edges} z {totalEdges} powiązań",
-      "canvas-label": "Graf {nodes} stron i {edges} powiązań",
+      "shown": "Strony: {nodes} z {totalNodes} · powiązania: {edges} z {totalEdges}",
+      "canvas-label": "Graf — strony: {nodes}, powiązania: {edges}",
       "failed": "Nie udało się narysować grafu w tej przeglądarce — te same dane są w zakładkach stron i wykryć.",
       "open-findings": "Otwarte wykrycia: {count}",
       "open-page": "Otwórz stronę",
@@ -2653,7 +2653,7 @@
       }
     },
     "export": {
-      "ready": "Gotowe do eksportu: {count} stron",
+      "ready": "Gotowe do eksportu: {count}",
       "download": "Pobierz paczkę (.zip)",
       "none": "Zatwierdź stronę z właścicielem, żeby ją wyeksportować",
       "skipped": {
@@ -2720,7 +2720,7 @@
       "upload": "Wgraj do Brain",
       "uploaded": "Wgrano do Brain: {count} — zapisane i przetworzone, poza wyszukiwaniem",
       "upload-failed": "Wgrywanie się nie powiodło — sprawdź plik i spróbuj ponownie.",
-      "staged-summary": "W Brain, poza wyszukiwaniem: {count} dokumentów, z czego {uncurated} bez zatwierdzonej strony.",
+      "staged-summary": "W Brain, poza wyszukiwaniem: {count} · bez zatwierdzonej strony: {uncurated}",
       "uploaded-partly": "Wgrano do Brain {uploaded} z {total}; pozostałe się nie powiodły"
     },
     "publish-all": {

@@ -2605,7 +2605,7 @@
       "none": "Nincs kinyerhető dokumentum — először adjon dokumentumokat a tudásbázishoz.",
       "not-extracted": "Nincs kinyerve",
       "pages": "Oldalak: {count}",
-      "too-many": "Egy futásban legfeljebb {max} dokumentum.",
+      "too-many": "Dokumentumok egy futásban, legfeljebb: {max}.",
       "cancel": "Mégse",
       "start": "Kinyerés indítása ({count})",
       "started": "Kinyerés elindítva — dokumentumok: {count}. A jelöltek akkor jelennek meg, amikor egy-egy dokumentum elkészül.",
@@ -2632,8 +2632,8 @@
       "inferred": "Kikövetkeztetett kapcsolatok",
       "inferred-hidden": "Elrejtve",
       "inferred-shown": "Megjelenítve ({count})",
-      "shown": "{nodes} / {totalNodes} oldal és {edges} / {totalEdges} kapcsolat látható",
-      "canvas-label": "{nodes} oldal és {edges} kapcsolat gráfja",
+      "shown": "Oldalak: {nodes}/{totalNodes} · kapcsolatok: {edges}/{totalEdges}",
+      "canvas-label": "Gráf — oldalak: {nodes}, kapcsolatok: {edges}",
       "failed": "A gráfot nem sikerült megrajzolni ebben a böngészőben — ugyanezek az adatok az oldalak és megállapítások lapon vannak.",
       "open-findings": "Nyitott megállapítások: {count}",
       "open-page": "Oldal megnyitása",
@@ -2653,7 +2653,7 @@
       }
     },
     "export": {
-      "ready": "Exportálásra kész: {count} oldal",
+      "ready": "Exportálásra kész: {count}",
       "download": "Csomag letöltése (.zip)",
       "none": "Hagyjon jóvá egy felelőssel rendelkező oldalt az exportáláshoz",
       "skipped": {
@@ -2720,7 +2720,7 @@
       "upload": "Feltöltés a Brainbe",
       "uploaded": "Feltöltve a Brainbe: {count} — tárolva és feldolgozva, nem kereshető",
       "upload-failed": "A feltöltés nem sikerült — ellenőrizze a fájlt, és próbálja újra.",
-      "staged-summary": "A Brainben, nem kereshető: {count} dokumentum, ebből {uncurated} még jóváhagyott oldal nélkül.",
+      "staged-summary": "A Brainben, keresésen kívül: {count} · jóváhagyott oldal nélkül: {uncurated}",
       "uploaded-partly": "{uploaded}/{total} feltöltve a Brainbe; a többi sikertelen"
     },
     "publish-all": {

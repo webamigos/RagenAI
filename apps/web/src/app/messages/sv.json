@@ -2605,7 +2605,7 @@
       "none": "Inga dokument att extrahera från — lägg först till dokument i kunskapsbasen.",
       "not-extracted": "Inte extraherat",
       "pages": "Sidor: {count}",
-      "too-many": "Högst {max} dokument per körning.",
+      "too-many": "Dokument per körning, högst: {max}.",
       "cancel": "Avbryt",
       "start": "Starta extraktion ({count})",
       "started": "Extraktion startad — dokument: {count}. Kandidater visas allt eftersom varje blir klart.",
@@ -2632,8 +2632,8 @@
       "inferred": "Härledda relationer",
       "inferred-hidden": "Dolda",
       "inferred-shown": "Visade ({count})",
-      "shown": "Visar {nodes} av {totalNodes} sidor och {edges} av {totalEdges} relationer",
-      "canvas-label": "Graf med {nodes} sidor och {edges} relationer",
+      "shown": "Sidor: {nodes} av {totalNodes} · relationer: {edges} av {totalEdges}",
+      "canvas-label": "Graf — sidor: {nodes}, relationer: {edges}",
       "failed": "Grafen kunde inte ritas i den här webbläsaren — samma data finns under flikarna sidor och fynd.",
       "open-findings": "Öppna fynd: {count}",
       "open-page": "Öppna sidan",
@@ -2653,7 +2653,7 @@
       }
     },
     "export": {
-      "ready": "Redo att exportera: {count} sidor",
+      "ready": "Redo att exportera: {count}",
       "download": "Ladda ned paket (.zip)",
       "none": "Godkänn en sida med ägare för att exportera den",
       "skipped": {
@@ -2720,7 +2720,7 @@
       "upload": "Ladda upp till Brain",
       "uploaded": "Uppladdat till Brain: {count} — lagrat och tolkat, inte sökbart",
       "upload-failed": "Uppladdningen misslyckades — kontrollera filen och försök igen.",
-      "staged-summary": "I Brain, inte sökbara: {count} dokument, varav {uncurated} ännu utan godkänd sida.",
+      "staged-summary": "I Brain, utanför sökningen: {count} · utan godkänd sida: {uncurated}",
       "uploaded-partly": "{uploaded} av {total} uppladdade till Brain; resten misslyckades"
     },
     "publish-all": {

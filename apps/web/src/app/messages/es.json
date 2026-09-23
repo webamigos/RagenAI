@@ -2605,7 +2605,7 @@
       "none": "No hay documentos que extraer: primero añade documentos a la base de conocimiento.",
       "not-extracted": "Sin extraer",
       "pages": "Páginas: {count}",
-      "too-many": "Como máximo {max} documentos por ejecución.",
+      "too-many": "Documentos por ejecución, como máximo: {max}.",
       "cancel": "Cancelar",
       "start": "Iniciar extracción ({count})",
       "started": "Extracción iniciada — documentos: {count}. Las candidatas aparecen a medida que termina cada uno.",
@@ -2632,8 +2632,8 @@
       "inferred": "Relaciones inferidas",
       "inferred-hidden": "Ocultas",
       "inferred-shown": "Visibles ({count})",
-      "shown": "Se muestran {nodes} de {totalNodes} páginas y {edges} de {totalEdges} relaciones",
-      "canvas-label": "Grafo de {nodes} páginas y {edges} relaciones",
+      "shown": "Páginas: {nodes} de {totalNodes} · relaciones: {edges} de {totalEdges}",
+      "canvas-label": "Grafo — páginas: {nodes}, relaciones: {edges}",
       "failed": "No se pudo dibujar el grafo en este navegador: las pestañas de páginas y hallazgos muestran los mismos datos.",
       "open-findings": "Hallazgos abiertos: {count}",
       "open-page": "Abrir página",
@@ -2653,7 +2653,7 @@
       }
     },
     "export": {
-      "ready": "Listas para exportar: {count} páginas",
+      "ready": "Listas para exportar: {count}",
       "download": "Descargar paquete (.zip)",
       "none": "Aprueba una página con responsable para exportarla",
       "skipped": {
@@ -2720,7 +2720,7 @@
       "upload": "Subir a Brain",
       "uploaded": "Subidos a Brain: {count} — guardados y analizados, no consultables",
       "upload-failed": "La subida falló: revisa el archivo e inténtalo de nuevo.",
-      "staged-summary": "En Brain, no consultables: {count} documentos, {uncurated} todavía sin página aprobada.",
+      "staged-summary": "En Brain, fuera de la búsqueda: {count} · sin página aprobada: {uncurated}",
       "uploaded-partly": "Subidos a Brain {uploaded} de {total}; el resto falló"
     },
     "publish-all": {

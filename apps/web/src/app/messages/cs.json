@@ -2605,7 +2605,7 @@
       "none": "Žádné dokumenty k extrakci — nejprve přidejte dokumenty do znalostní báze.",
       "not-extracted": "Neextrahováno",
       "pages": "Stránky: {count}",
-      "too-many": "Nejvýše {max} dokumentů v jednom běhu.",
+      "too-many": "Dokumentů v jednom běhu nejvýše: {max}.",
       "cancel": "Zrušit",
       "start": "Spustit extrakci ({count})",
       "started": "Extrakce spuštěna — dokumenty: {count}. Kandidáti se objeví, jakmile každý doběhne.",
@@ -2632,8 +2632,8 @@
       "inferred": "Odvozené vztahy",
       "inferred-hidden": "Skryté",
       "inferred-shown": "Zobrazené ({count})",
-      "shown": "Zobrazeno {nodes} z {totalNodes} stránek a {edges} z {totalEdges} vztahů",
-      "canvas-label": "Graf {nodes} stránek a {edges} vztahů",
+      "shown": "Stránky: {nodes} z {totalNodes} · vazby: {edges} z {totalEdges}",
+      "canvas-label": "Graf — stránky: {nodes}, vazby: {edges}",
       "failed": "Graf se v tomto prohlížeči nepodařilo vykreslit — stejná data jsou na kartách stránek a zjištění.",
       "open-findings": "Otevřená zjištění: {count}",
       "open-page": "Otevřít stránku",
@@ -2653,7 +2653,7 @@
       }
     },
     "export": {
-      "ready": "Připraveno k exportu: {count} stránek",
+      "ready": "Připraveno k exportu: {count}",
       "download": "Stáhnout balíček (.zip)",
       "none": "Schvalte stránku s vlastníkem, abyste ji mohli exportovat",
       "skipped": {
@@ -2720,7 +2720,7 @@
       "upload": "Nahrát do Brainu",
       "uploaded": "Nahráno do Brainu: {count} — uloženo a zpracováno, nevyhledatelné",
       "upload-failed": "Nahrání se nezdařilo — zkontrolujte soubor a zkuste to znovu.",
-      "staged-summary": "V Brainu, nevyhledatelné: {count} dokumentů, z toho {uncurated} zatím bez schválené stránky.",
+      "staged-summary": "V Brain, mimo vyhledávání: {count} · bez schválené stránky: {uncurated}",
       "uploaded-partly": "Nahráno do Brain {uploaded} z {total}; zbytek selhal"
     },
     "publish-all": {

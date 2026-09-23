@@ -2605,7 +2605,7 @@
       "none": "Nessun documento da estrarre: aggiungi prima documenti alla base di conoscenza.",
       "not-extracted": "Non estratto",
       "pages": "Pagine: {count}",
-      "too-many": "Al massimo {max} documenti per esecuzione.",
+      "too-many": "Documenti per esecuzione, al massimo: {max}.",
       "cancel": "Annulla",
       "start": "Avvia estrazione ({count})",
       "started": "Estrazione avviata — documenti: {count}. Le candidate compaiono man mano che ciascuno termina.",
@@ -2632,8 +2632,8 @@
       "inferred": "Relazioni dedotte",
       "inferred-hidden": "Nascoste",
       "inferred-shown": "Visibili ({count})",
-      "shown": "Visualizzate {nodes} di {totalNodes} pagine e {edges} di {totalEdges} relazioni",
-      "canvas-label": "Grafo di {nodes} pagine e {edges} relazioni",
+      "shown": "Pagine: {nodes} di {totalNodes} · relazioni: {edges} di {totalEdges}",
+      "canvas-label": "Grafo — pagine: {nodes}, relazioni: {edges}",
       "failed": "Impossibile disegnare il grafo in questo browser: le schede pagine e segnalazioni mostrano gli stessi dati.",
       "open-findings": "Segnalazioni aperte: {count}",
       "open-page": "Apri pagina",
@@ -2653,7 +2653,7 @@
       }
     },
     "export": {
-      "ready": "Pronte per l’esportazione: {count} pagine",
+      "ready": "Pronte per l’esportazione: {count}",
       "download": "Scarica pacchetto (.zip)",
       "none": "Approva una pagina con un responsabile per esportarla",
       "skipped": {
@@ -2720,7 +2720,7 @@
       "upload": "Carica in Brain",
       "uploaded": "Caricati in Brain: {count} — salvati ed elaborati, non ricercabili",
       "upload-failed": "Caricamento non riuscito: controlla il file e riprova.",
-      "staged-summary": "In Brain, non ricercabili: {count} documenti, {uncurated} ancora senza pagina approvata.",
+      "staged-summary": "In Brain, fuori dalla ricerca: {count} · senza pagina approvata: {uncurated}",
       "uploaded-partly": "Caricati in Brain {uploaded} di {total}; gli altri non sono riusciti"
     },
     "publish-all": {

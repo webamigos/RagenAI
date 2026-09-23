@@ -2605,7 +2605,7 @@
       "none": "Žiadne dokumenty na extrakciu — najprv pridajte dokumenty do znalostnej bázy.",
       "not-extracted": "Neextrahované",
       "pages": "Stránky: {count}",
-      "too-many": "Najviac {max} dokumentov v jednom behu.",
+      "too-many": "Dokumentov v jednom behu najviac: {max}.",
       "cancel": "Zrušiť",
       "start": "Spustiť extrakciu ({count})",
       "started": "Extrakcia spustená — dokumenty: {count}. Kandidáti sa objavia, keď každý dobehne.",
@@ -2632,8 +2632,8 @@
       "inferred": "Odvodené vzťahy",
       "inferred-hidden": "Skryté",
       "inferred-shown": "Zobrazené ({count})",
-      "shown": "Zobrazených {nodes} z {totalNodes} stránok a {edges} z {totalEdges} vzťahov",
-      "canvas-label": "Graf {nodes} stránok a {edges} vzťahov",
+      "shown": "Strany: {nodes} z {totalNodes} · väzby: {edges} z {totalEdges}",
+      "canvas-label": "Graf — strany: {nodes}, väzby: {edges}",
       "failed": "Graf sa v tomto prehliadači nepodarilo vykresliť — rovnaké údaje sú na kartách stránok a zistení.",
       "open-findings": "Otvorené zistenia: {count}",
       "open-page": "Otvoriť stránku",
@@ -2653,7 +2653,7 @@
       }
     },
     "export": {
-      "ready": "Pripravené na export: {count} stránok",
+      "ready": "Pripravené na export: {count}",
       "download": "Stiahnuť balík (.zip)",
       "none": "Schváľte stránku s vlastníkom, aby ste ju mohli exportovať",
       "skipped": {
@@ -2720,7 +2720,7 @@
       "upload": "Nahrať do Brainu",
       "uploaded": "Nahrané do Brainu: {count} — uložené a spracované, nevyhľadateľné",
       "upload-failed": "Nahrávanie zlyhalo — skontrolujte súbor a skúste to znova.",
-      "staged-summary": "V Braine, nevyhľadateľné: {count} dokumentov, z toho {uncurated} zatiaľ bez schválenej stránky.",
+      "staged-summary": "V Brain, mimo vyhľadávania: {count} · bez schválenej strany: {uncurated}",
       "uploaded-partly": "Nahraté do Brain {uploaded} z {total}; zvyšok zlyhal"
     },
     "publish-all": {
