@@ -2507,6 +2507,12 @@
       "EXTRACTED": "от цитат",
       "INFERRED": "изведена",
       "AMBIGUOUS": "непотвърдена"
+    },
+    "pager": {
+      "label": "Страници на списъка",
+      "previous": "Предишни",
+      "next": "Следващи",
+      "position": "{page} от {pages}"
     }
   }
 }

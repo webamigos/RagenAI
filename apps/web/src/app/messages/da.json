@@ -2507,6 +2507,12 @@
       "EXTRACTED": "citeret",
       "INFERRED": "udledt",
       "AMBIGUOUS": "ubekræftet"
+    },
+    "pager": {
+      "label": "Listens sider",
+      "previous": "Forrige",
+      "next": "Næste",
+      "position": "{page} af {pages}"
     }
   }
 }

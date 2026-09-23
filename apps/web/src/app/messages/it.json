@@ -2507,6 +2507,12 @@
       "EXTRACTED": "citata",
       "INFERRED": "dedotta",
       "AMBIGUOUS": "non confermata"
+    },
+    "pager": {
+      "label": "Pagine dell’elenco",
+      "previous": "Precedente",
+      "next": "Successivo",
+      "position": "{page} di {pages}"
     }
   }
 }

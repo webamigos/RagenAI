@@ -2507,6 +2507,12 @@
       "EXTRACTED": "idézett",
       "INFERRED": "következtetett",
       "AMBIGUOUS": "megerősítetlen"
+    },
+    "pager": {
+      "label": "A lista oldalai",
+      "previous": "Előző",
+      "next": "Következő",
+      "position": "{page}/{pages}"
     }
   }
 }

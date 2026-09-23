@@ -1,7 +1,6 @@
 /**
- * Rows a Brain list shows before saying how many there are in all. A
- * curation queue longer than this is filtered, not scrolled; D2 adds the
- * filters that make that practical.
+ * Rows in one batch of a Brain list. A longer list is paged (`?page=`), and
+ * the status filters narrow it first.
  */
 export const BRAIN_LIST_LIMIT = 200;
 

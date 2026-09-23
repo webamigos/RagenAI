@@ -2507,6 +2507,12 @@
       "EXTRACTED": "quoted",
       "INFERRED": "inferred",
       "AMBIGUOUS": "unconfirmed"
+    },
+    "pager": {
+      "label": "Pages of the list",
+      "previous": "Previous",
+      "next": "Next",
+      "position": "{page} of {pages}"
     }
   }
 }

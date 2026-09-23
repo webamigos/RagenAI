@@ -2507,6 +2507,12 @@
       "EXTRACTED": "citované",
       "INFERRED": "odvodené",
       "AMBIGUOUS": "nepotvrdené"
+    },
+    "pager": {
+      "label": "Strany zoznamu",
+      "previous": "Predchádzajúce",
+      "next": "Ďalšie",
+      "position": "{page} z {pages}"
     }
   }
 }

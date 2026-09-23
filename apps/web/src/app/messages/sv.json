@@ -2507,6 +2507,12 @@
       "EXTRACTED": "citerad",
       "INFERRED": "härledd",
       "AMBIGUOUS": "obekräftad"
+    },
+    "pager": {
+      "label": "Listans sidor",
+      "previous": "Föregående",
+      "next": "Nästa",
+      "position": "{page} av {pages}"
     }
   }
 }

@@ -2507,6 +2507,12 @@
       "EXTRACTED": "lainattu",
       "INFERRED": "päätelty",
       "AMBIGUOUS": "vahvistamaton"
+    },
+    "pager": {
+      "label": "Luettelon sivut",
+      "previous": "Edellinen",
+      "next": "Seuraava",
+      "position": "{page}/{pages}"
     }
   }
 }

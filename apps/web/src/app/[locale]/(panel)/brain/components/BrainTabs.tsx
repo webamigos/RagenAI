@@ -3,7 +3,7 @@
 import { Tab, TabList, Tabs } from '@ragenai/common-ui/Tabs';
 import { useTranslations } from 'next-intl';
 
-import { usePathname, useRouter } from '@/i18n/routing';
+import { usePathname } from '@/i18n/routing';
 
 const TABS = [
   { key: 'pages', path: '/brain' },
@@ -12,11 +12,12 @@ const TABS = [
 
 export function BrainTabs() {
   const t = useTranslations('brain.tabs');
-  const router = useRouter();
   const pathname = usePathname();
   // `/brain/pages/…` is a page's detail, which belongs to the pages tab.
   const active = pathname.startsWith('/brain/findings') ? 1 : 0;
-  const go = (index: number) => router.push(TABS[index]!.path);
+  // Each tab is a link and navigates on its own. Pushing here as well moved
+  // the current tab on a Ctrl/Cmd-click that asked for a new one.
+  const go = () => {};
 
   return (
     <Tabs className="mb-4 mt-3 w-full" activeTab={active} setActiveTab={go}>

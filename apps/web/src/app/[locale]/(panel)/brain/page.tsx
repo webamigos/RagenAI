@@ -14,22 +14,31 @@ import { PAGE_STATUS_FILTERS } from '@/features/brain/constants';
 import type { KnowledgePageStatus } from '@/features/brain/contracts/brain.types';
 import { getBrainAccessQuery } from '@/features/brain/services/queries/get-brain-access-query';
 import { getKnowledgePagesQuery } from '@/features/brain/services/queries/get-knowledge-pages-query';
+import { listRange, parseListPage } from '@/features/brain/utils/list-page';
 import { Link } from '@/i18n/routing';
 
 import { BrainEmpty } from './components/BrainEmpty';
+import { BrainPager } from './components/BrainPager';
 import { FilterChips } from './components/FilterChips';
 
 export const dynamic = 'force-dynamic';
 
-type Props = { searchParams: Promise<{ status?: string | string[] }> };
+type Props = {
+  searchParams: Promise<{
+    status?: string | string[];
+    page?: string | string[];
+  }>;
+};
 
 export default async function BrainPagesPage({ searchParams }: Props) {
   const access = await getBrainAccessQuery();
   if (!access) {
     notFound();
   }
-  const raw = (await searchParams).status;
+  const params = await searchParams;
+  const raw = params.status;
   const value = Array.isArray(raw) ? raw[0] : raw;
+  const listPage = parseListPage(params.page);
   const status = (PAGE_STATUS_FILTERS as readonly string[]).includes(
     value ?? '',
   )
@@ -39,7 +48,7 @@ export default async function BrainPagesPage({ searchParams }: Props) {
   const [t, format, { items, total }] = await Promise.all([
     getTranslations('brain'),
     getFormatter(),
-    getKnowledgePagesQuery(access.orgId, status),
+    getKnowledgePagesQuery(access.orgId, status, listPage),
   ]);
 
   return (
@@ -63,7 +72,7 @@ export default async function BrainPagesPage({ searchParams }: Props) {
         ]}
       />
 
-      {items.length === 0 ? (
+      {items.length === 0 && listPage === 1 ? (
         <BrainEmpty
           title={t('pages.empty-title')}
           description={t('pages.empty-description')}
@@ -71,7 +80,10 @@ export default async function BrainPagesPage({ searchParams }: Props) {
       ) : (
         <>
           <p className="mb-2 text-xs text-muted-foreground">
-            {t('pages.count', { shown: items.length, total })}
+            {t('pages.count', {
+              shown: listRange(listPage, items.length),
+              total,
+            })}
           </p>
           <div className="overflow-x-auto">
             <Table dense>
@@ -143,6 +155,16 @@ export default async function BrainPagesPage({ searchParams }: Props) {
               </TableBody>
             </Table>
           </div>
+          <BrainPager
+            page={listPage}
+            total={total}
+            hrefFor={(n) =>
+              `/brain?${new URLSearchParams({
+                ...(status ? { status } : {}),
+                page: String(n),
+              })}`
+            }
+          />
         </>
       )}
     </section>

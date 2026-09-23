@@ -1,6 +1,7 @@
 import db from '@ragenai/prisma-client';
 
 import { BRAIN_LIST_LIMIT } from '../../constants';
+import { listSkip } from '../../utils/list-page';
 import type {
   KnowledgeFindingList,
   KnowledgeFindingListItem,
@@ -43,12 +44,14 @@ const FINDING_SELECT = {
 export async function getKnowledgeFindingsQuery(
   orgId: string,
   status: KnowledgeFindingStatus,
+  page = 1,
 ): Promise<KnowledgeFindingList> {
   const where = { organizationId: orgId, status };
   const [rows, total] = await Promise.all([
     db.knowledgeFinding.findMany({
       where,
-      orderBy: [{ severity: 'desc' }, { detectedAt: 'desc' }],
+      orderBy: [{ severity: 'desc' }, { detectedAt: 'desc' }, { id: 'desc' }],
+      skip: listSkip(page),
       take: BRAIN_LIST_LIMIT,
       select: FINDING_SELECT,
     }),

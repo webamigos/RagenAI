@@ -54,6 +54,13 @@ describe('getKnowledgePagesQuery', () => {
     });
   });
 
+  it('reads a later batch when asked, never the first again', async () => {
+    await getKnowledgePagesQuery(ORG, null, 3);
+    const call = db.knowledgePage.findMany.mock.calls[0][0];
+    expect(call.skip).toBe(2 * call.take);
+    expect(call.orderBy).toEqual([{ updatedAt: 'desc' }, { id: 'desc' }]);
+  });
+
   it('filters by one status when asked', async () => {
     await getKnowledgePagesQuery(ORG, 'REJECTED');
     expect(db.knowledgePage.findMany.mock.calls[0][0].where.status).toBe(
@@ -280,10 +287,13 @@ describe('getKnowledgeFindingsQuery', () => {
     const list = await getKnowledgeFindingsQuery(ORG, 'OPEN');
     const call = db.knowledgeFinding.findMany.mock.calls[0][0];
     expect(call.where).toEqual({ organizationId: ORG, status: 'OPEN' });
+    // `id` last: an offset over a tied order would repeat or skip rows.
     expect(call.orderBy).toEqual([
       { severity: 'desc' },
       { detectedAt: 'desc' },
+      { id: 'desc' },
     ]);
+    expect(call.skip).toBe(0);
     // Page 99 no longer exists and is left out; the missing quote is null.
     expect(list.items[0]).toMatchObject({
       pages: [{ publicId: 'p1', title: 'Urlop' }],
