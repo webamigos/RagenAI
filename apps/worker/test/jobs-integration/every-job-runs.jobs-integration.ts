@@ -79,6 +79,7 @@ const PAYLOADS: { [N in JobName]: JobPayloads[N] } = {
   pruneAnalyticsRetrievals: undefined,
   brainExtract: { orgId: 'org-1', fileIds: ['file-1'], userId: 'user-1' },
   brainReconcileFindings: { orgId: 'org-1' },
+  brainPublishPage: { orgId: 'org-1', pageId: 'page-1', generation: 1 },
 };
 
 /** The activity that proves the pipeline ran, not merely that the job did. */
@@ -93,6 +94,7 @@ const EVIDENCE: Record<JobName, string> = {
   pruneAnalyticsRetrievals: 'pruneDocumentRetrievals',
   brainExtract: 'extractDocumentCandidates',
   brainReconcileFindings: 'reconcileBrainFindings',
+  brainPublishPage: 'publishKnowledgePage',
 };
 
 describe('every job runs', () => {

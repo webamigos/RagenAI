@@ -2506,7 +2506,13 @@
       },
       "history": "Historia",
       "merge": "Yhdistäminen",
-      "superseded-by": "Yhdistetty sivuun"
+      "superseded-by": "Yhdistetty sivuun",
+      "publication": "Tietopankki",
+      "publish-blocker": {
+        "status": "Vain hyväksytyn sivun voi julkaista",
+        "owner": "Nimeä ensin omistaja",
+        "access": "Valitse ensin, kenelle sivu on avoin"
+      }
     },
     "origin": {
       "EXTRACTED": "lainattu",
@@ -2553,7 +2559,10 @@
         "invalid-access": "Joku valituista henkilöistä tai tiimeistä ei enää kuulu organisaatioon — lataa uudelleen ja valitse uudelleen.",
         "published": "Tämä sivu on julkaistu — sen käyttöoikeutta ei voi vielä muuttaa.",
         "confirm-widening": "Tämä muutos laajentaa käyttöoikeutta, ja se on vahvistettava.",
-        "unmergeable": "Sivun teksti ei ole muodossa, jonka voi yhdistää — yhdistä se käsin tai hylkää se."
+        "unmergeable": "Sivun teksti ei ole muodossa, jonka voi yhdistää — yhdistä se käsin tai hylkää se.",
+        "no-access": "Tämä sivu ei ole kenenkään käytettävissä — valitse ennen julkaisua, kuka saa lukea sen.",
+        "failed-to-start": "Julkaisu on kirjattu, mutta kirjoitus tietopankkiin ei käynnistynyt — julkaise uudelleen jatkaaksesi.",
+        "index-unavailable": "Tietopankkia ei voitu muuttaa — mitään ei kirjattu; yritä uudelleen."
       },
       "merge-label": "Yhdistä sivuun",
       "merge-placeholder": "Valitse sivu, johon yhdistetään",
@@ -2645,6 +2654,22 @@
         "no-sources": "Ei lähteitä: {count}",
         "invalid": "Puutteelliset tiedot: {count}"
       }
+    },
+    "publication": {
+      "state": {
+        "none": "Ei tietopankissa",
+        "publishing": "Kirjoitetaan tietopankkiin…",
+        "published": "Tietopankissa — vastaukset voivat lainata sitä",
+        "withdrawn": "Vedetty pois tietopankista"
+      },
+      "outdated": "Sivu on muuttunut julkaisun jälkeen — julkaise uudelleen päivittääksesi tietopankin.",
+      "publish": "Julkaise tietopankkiin",
+      "republish": "Julkaise uudelleen",
+      "withdraw": "Vedä pois",
+      "published": "Julkaisu aloitettu",
+      "withdrawn": "Sivu vedetty pois",
+      "withdraw-title": "Vedetäänkö tämä sivu pois tietopankista?",
+      "withdraw-description": "Vastaukset lakkaavat lainaamasta sitä heti poisvedon jälkeen. Sivu pysyy hyväksyttynä ja sen voi julkaista uudelleen; aiemmat vastaukset säilyttävät lainauksensa."
     }
   }
 }

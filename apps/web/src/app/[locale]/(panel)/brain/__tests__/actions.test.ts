@@ -14,6 +14,8 @@ const commands = vi.hoisted(() => ({
   owner: vi.fn(),
   access: vi.fn(),
   merge: vi.fn(),
+  publish: vi.fn(),
+  unpublish: vi.fn(),
 }));
 
 vi.mock(
@@ -24,6 +26,14 @@ vi.mock('@/app/lib/utils/auth-helpers', () => auth);
 vi.mock(
   '@/features/brain/services/commands/approve-knowledge-page-command',
   () => ({ approveKnowledgePageCommand: commands.approve }),
+);
+vi.mock(
+  '@/features/brain/services/commands/publish-knowledge-page-command',
+  () => ({ publishKnowledgePageCommand: commands.publish }),
+);
+vi.mock(
+  '@/features/brain/services/commands/unpublish-knowledge-page-command',
+  () => ({ unpublishKnowledgePageCommand: commands.unpublish }),
 );
 vi.mock(
   '@/features/brain/services/commands/merge-knowledge-pages-command',
@@ -79,6 +89,8 @@ describe('Brain review actions', () => {
       () => actions.rejectKnowledgePageAction(ref),
       () => actions.setKnowledgePageOwnerAction({ ...ref, ownerId: 'u1' }),
       () => actions.setKnowledgePageAccessAction({ ...ref, principals: [] }),
+      () => actions.publishKnowledgePageAction(ref),
+      () => actions.unpublishKnowledgePageAction(ref),
       () =>
         actions.mergeKnowledgePagesAction({
           ...ref,

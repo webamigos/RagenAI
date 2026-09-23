@@ -16,6 +16,7 @@ import { logger } from './services/logger.js';
 
 import { brainExtract } from './handlers/brain-extract.js';
 import { brainReconcileFindings } from './handlers/brain-reconcile-findings.js';
+import { brainPublishPage } from './handlers/brain-publish-page.js';
 import { cleanupDemoThreads } from './handlers/cleanup-demo-threads.js';
 import { generateDocument } from './handlers/generate-document.js';
 import { optimizeDocument } from './handlers/optimize-document.js';
@@ -51,6 +52,7 @@ const handlers: JobHandlers = {
   pruneAnalyticsRetrievals,
   brainExtract,
   brainReconcileFindings,
+  brainPublishPage,
 };
 
 /**

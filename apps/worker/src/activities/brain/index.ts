@@ -12,3 +12,7 @@ export {
   detectContradictions,
   type DetectContradictionsResult,
 } from './detect-contradictions.js';
+export {
+  publishKnowledgePage,
+  type PublishKnowledgePageResult,
+} from './publish-knowledge-page.js';

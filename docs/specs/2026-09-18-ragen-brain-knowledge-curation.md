@@ -1129,20 +1129,35 @@ baseline without the outlier (edges 72.7 % `EXTRACTED` against 70.3 %,
       stale. Pages left out are counted by reason on the pages list ("no
       owner: 9"). Contract ids are checked for a UUID's shape, not its RFC
       version, so a seeded or imported row is not silently dropped._
-- [ ] **E2.** Publish: an approved page becomes a `UserFile` carrying
+- [x] **E2.** Publish: an approved page becomes a `UserFile` carrying
       `metadata.brain.pageId`, ingested with predefined chunk boundaries and the
       curated `accessible_by` — never the source file's. The generation bump,
       `publishedAt` and the `PUBLISH` decision go in one transaction before the
       chunks are written, the file ends `COMPLETED` (including on a republish
       out of `WITHDRAWN`), and the page's publication generation is checked at
       each step.
-- [ ] **E3.** Unpublish: delete the page's chunks, set the file to
+      _Web transaction + `brainPublishPage` job (worker `publishKnowledgePage`):
+      chunks carry the page's `accessibleBy` verbatim, never the vehicle file's
+      computed principals; the generation is checked before and after the
+      write and a run that went stale removes its chunks; `completePublication`
+      marks the file `COMPLETED` in one statement conditional on the
+      generation. A retry of an unfinished publication re-queues at the same
+      generation with no second decision. Verified against a real worker and
+      Qdrant: one chunk, exact principals, section path = title._
+- [x] **E3.** Unpublish: delete the page's chunks, set the file to
       `WITHDRAWN`, clear `publishedAt`, keep the page approved and its
       `UserFile`, record the `UNPUBLISH` decision — the last four in one
       transaction. Each step idempotent, in that order, so any interruption
       leaves a state a retry finishes. Tests that publish and unpublish cannot
       interleave into chunks-without-publication, and that a retried
       publication writes exactly one decision row.
+      _Order as specified, with one refinement: the generation is bumped in its
+      own transaction **before** the delete, so a publication still writing
+      removes its own chunks and cannot land after the delete. If the delete
+      fails nothing is recorded (`index-unavailable`); if someone published
+      again in between, the unpublish records nothing (`conflict`). Verified:
+      0 points after withdrawal, file `WITHDRAWN`, ledger PUBLISH(1) →
+      UNPUBLISH(2)._
 - [ ] **E4.** An access change on a published page reaches its chunks, through
       the existing vector-permission sync. Narrowing writes the chunks first,
       widening writes the page first, so neither leaves retrieval more

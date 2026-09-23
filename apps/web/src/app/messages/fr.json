@@ -2506,7 +2506,13 @@
       },
       "history": "Historique",
       "merge": "Fusion",
-      "superseded-by": "Fusionnée avec"
+      "superseded-by": "Fusionnée avec",
+      "publication": "Base de connaissances",
+      "publish-blocker": {
+        "status": "Seule une page approuvée peut être publiée",
+        "owner": "Désignez d’abord un responsable",
+        "access": "Choisissez d’abord à qui la page est ouverte"
+      }
     },
     "origin": {
       "EXTRACTED": "citée",
@@ -2553,7 +2559,10 @@
         "invalid-access": "Une des personnes ou équipes choisies ne fait plus partie de l’organisation — rechargez et choisissez à nouveau.",
         "published": "Cette page est publiée — la modification de son accès n’est pas encore disponible.",
         "confirm-widening": "Cette modification élargit l’accès et doit être confirmée.",
-        "unmergeable": "Le texte d’une page n’a pas une forme qui peut être fusionnée — fusionnez-la à la main ou rejetez-la."
+        "unmergeable": "Le texte d’une page n’a pas une forme qui peut être fusionnée — fusionnez-la à la main ou rejetez-la.",
+        "no-access": "Cette page n’est ouverte à personne — choisissez qui peut la lire avant de publier.",
+        "failed-to-start": "La publication est enregistrée, mais l’écriture dans la base de connaissances n’a pas pu démarrer — publiez à nouveau pour reprendre.",
+        "index-unavailable": "La base de connaissances n’a pas pu être modifiée — rien n’a été enregistré ; réessayez."
       },
       "merge-label": "Fusionner avec",
       "merge-placeholder": "Choisir une page avec laquelle fusionner",
@@ -2645,6 +2654,22 @@
         "no-sources": "Sans sources : {count}",
         "invalid": "Données incomplètes : {count}"
       }
+    },
+    "publication": {
+      "state": {
+        "none": "Hors de la base de connaissances",
+        "publishing": "Écriture dans la base de connaissances…",
+        "published": "Dans la base de connaissances — les réponses peuvent la citer",
+        "withdrawn": "Retirée de la base de connaissances"
+      },
+      "outdated": "La page a changé depuis sa publication — republiez pour mettre à jour la base de connaissances.",
+      "publish": "Publier dans la base de connaissances",
+      "republish": "Republier",
+      "withdraw": "Retirer",
+      "published": "Publication lancée",
+      "withdrawn": "Page retirée",
+      "withdraw-title": "Retirer cette page de la base de connaissances ?",
+      "withdraw-description": "Les réponses cessent de la citer dès son retrait. La page reste approuvée et peut être republiée ; les réponses passées gardent leurs citations."
     }
   }
 }

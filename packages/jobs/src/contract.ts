@@ -76,6 +76,7 @@ export const JOB_NAMES = [
   'pruneAnalyticsRetrievals',
   'brainExtract',
   'brainReconcileFindings',
+  'brainPublishPage',
 ] as const;
 
 export type JobName = (typeof JOB_NAMES)[number];
@@ -238,6 +239,24 @@ export interface BrainReconcileFindingsResult {
   resolved: number;
 }
 
+/**
+ * Write one knowledge page's chunks into the index (spec E2). Started by the
+ * web after its transaction has bumped the page's publication generation;
+ * the handler writes only while that generation is current, so a publish and
+ * an unpublish never interleave into chunks of an unpublished page.
+ */
+export interface BrainPublishPagePayload {
+  orgId: string;
+  /** The page's `publicId`. */
+  pageId: string;
+  generation: number;
+}
+
+export interface BrainPublishPageResult {
+  status: 'published' | 'stale' | 'missing';
+  chunks: number;
+}
+
 export interface BrainExtractResult {
   /** `disabled` when the organization's `brain` flag is off at run time. */
   skipped: 'disabled' | null;
@@ -284,6 +303,7 @@ export interface JobPayloads {
   pruneAnalyticsRetrievals: void;
   brainExtract: BrainExtractPayload;
   brainReconcileFindings: BrainReconcileFindingsPayload;
+  brainPublishPage: BrainPublishPagePayload;
 }
 
 /**
@@ -304,4 +324,5 @@ export interface JobResults {
   pruneAnalyticsRetrievals: PruneAnalyticsRetrievalsResult;
   brainExtract: BrainExtractResult;
   brainReconcileFindings: BrainReconcileFindingsResult;
+  brainPublishPage: BrainPublishPageResult;
 }

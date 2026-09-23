@@ -2506,7 +2506,13 @@
       },
       "history": "Előzmények",
       "merge": "Egyesítés",
-      "superseded-by": "Egyesítve ezzel"
+      "superseded-by": "Egyesítve ezzel",
+      "publication": "Tudásbázis",
+      "publish-blocker": {
+        "status": "Csak jóváhagyott oldal tehető közzé",
+        "owner": "Előbb jelöljön ki felelőst",
+        "access": "Előbb válassza ki, kinek érhető el az oldal"
+      }
     },
     "origin": {
       "EXTRACTED": "idézett",
@@ -2553,7 +2559,10 @@
         "invalid-access": "A kiválasztott személyek vagy csapatok egyike már nem tagja a szervezetnek — töltse újra, és válasszon újra.",
         "published": "Ez az oldal közzé van téve — a hozzáférése egyelőre nem módosítható.",
         "confirm-widening": "Ez a módosítás bővíti a hozzáférést, és meg kell erősíteni.",
-        "unmergeable": "Az oldal szövege nem egyesíthető formájú — egyesítse kézzel, vagy utasítsa el."
+        "unmergeable": "Az oldal szövege nem egyesíthető formájú — egyesítse kézzel, vagy utasítsa el.",
+        "no-access": "Ez az oldal senki számára nem elérhető — közzététel előtt válassza ki, ki olvashatja.",
+        "failed-to-start": "A közzététel rögzítve, de a tudásbázisba írás nem indult el — tegye közzé újra a folytatáshoz.",
+        "index-unavailable": "A tudásbázist nem sikerült módosítani — semmi sem lett rögzítve; próbálja újra."
       },
       "merge-label": "Egyesítés ezzel",
       "merge-placeholder": "Válassza ki, melyik oldallal egyesíti",
@@ -2645,6 +2654,22 @@
         "no-sources": "Nincs forrás: {count}",
         "invalid": "Hiányos adatok: {count}"
       }
+    },
+    "publication": {
+      "state": {
+        "none": "Nincs a tudásbázisban",
+        "publishing": "Írás a tudásbázisba…",
+        "published": "A tudásbázisban — a válaszok idézhetik",
+        "withdrawn": "Visszavonva a tudásbázisból"
+      },
+      "outdated": "Az oldal megváltozott a közzététel óta — tegye közzé újra a tudásbázis frissítéséhez.",
+      "publish": "Közzététel a tudásbázisban",
+      "republish": "Újbóli közzététel",
+      "withdraw": "Visszavonás",
+      "published": "A közzététel elindult",
+      "withdrawn": "Oldal visszavonva",
+      "withdraw-title": "Visszavonja ezt az oldalt a tudásbázisból?",
+      "withdraw-description": "A válaszok a visszavonás után azonnal nem idézik. Az oldal jóváhagyott marad, és újra közzétehető; a korábbi válaszok megtartják az idézeteiket."
     }
   }
 }

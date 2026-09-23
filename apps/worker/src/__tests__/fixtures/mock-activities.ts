@@ -249,7 +249,11 @@ export function createMockActivities() {
       updated: 0,
       resolved: 0,
       holding: 0,
+      sweptSources: 0,
     }),
+    publishKnowledgePage: vi
+      .fn()
+      .mockResolvedValue({ status: 'published', chunks: 1 }),
   };
 }
 
