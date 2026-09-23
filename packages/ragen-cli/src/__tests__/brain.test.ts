@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import { runBrain, type BrainDeps } from '../brain';
+import { embedJson, renderGraphHtml } from '../graph-html';
 
 function deps(responses: Record<string, { status?: number; body: unknown }>) {
   const out: string[] = [];
@@ -130,5 +131,96 @@ describe('ragen brain', () => {
     await expect(runBrain(['export', 'out'], d)).resolves.toBe(1);
     expect(err[0]).toMatch(/outside the target directory/);
     expect(written.size).toBe(0);
+  });
+
+  it('writes the graph as a page when asked for --html', async () => {
+    const view = {
+      nodes: [
+        { id: 'a', title: 'Urlop', community: 0, degree: 1, openFindings: 1 },
+        { id: 'b', title: 'Kadry', community: 0, degree: 1 },
+      ],
+      edges: [{ from: 'a', to: 'b', kind: 'part_of', origin: 'EXTRACTED' }],
+      shown: { nodes: 2, edges: 1 },
+      total: { nodes: 2, edges: 1 },
+      communities: [],
+      hiddenInferred: 0,
+      focus: null,
+    };
+    const { d, out, written } = deps({ graph: { body: view } });
+    await expect(
+      runBrain(['graph', '--html', 'brain.html', '--budget', '300'], d),
+    ).resolves.toBe(0);
+    const html = written.get('brain.html')!;
+    expect(html).toContain('<script type="application/json" id="view">');
+    expect(html).toContain('"Urlop"');
+    expect(out.join('\n')).toContain('Wrote brain.html');
+  });
+
+  it('asks a question through chat, with the assistant from the environment', async () => {
+    const { d, out, fetchMock } = deps({
+      '/v1/chat': { body: { text: 'Tak, praca zdalna wymaga zgody.' } },
+    });
+    d.env.RAGEN_ASSISTANT_ID = 'asst-1';
+    await expect(
+      runBrain(['query', 'Czy', 'praca', 'zdalna', 'wymaga', 'zgody?'], d),
+    ).resolves.toBe(0);
+    const [url, init] = fetchMock.mock.calls[0] as unknown as [
+      string,
+      RequestInit,
+    ];
+    expect(url).toBe('https://api.example.com/v1/chat');
+    expect(init.method).toBe('POST');
+    expect(JSON.parse(init.body as string)).toEqual({
+      content: 'Czy praca zdalna wymaga zgody?',
+      stream: false,
+      assistant_id: 'asst-1',
+    });
+    expect(out.join('\n')).toBe('Tak, praca zdalna wymaga zgody.');
+  });
+
+  it('explains an unknown assistant instead of printing a status code', async () => {
+    const { d, err } = deps({ '/v1/chat': { status: 404, body: {} } });
+    await expect(
+      runBrain(['query', 'x', '--assistant', 'nope'], d),
+    ).resolves.toBe(1);
+    expect(err.join('\n')).toContain('No such assistant');
+  });
+
+  it('refuses an empty question', async () => {
+    const { d, err, fetchMock } = deps({});
+    await expect(runBrain(['query'], d)).resolves.toBe(1);
+    expect(err.join('\n')).toContain('Ask something');
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+});
+
+describe('graph html', () => {
+  it('cannot be closed early by a page title', () => {
+    const html = renderGraphHtml(
+      {
+        nodes: [
+          {
+            id: 'a',
+            title: '</script><img src=x onerror=alert(1)>',
+            community: 0,
+            degree: 0,
+          },
+        ],
+        edges: [],
+        shown: { nodes: 1, edges: 0 },
+        total: { nodes: 1, edges: 0 },
+      },
+      'Brain <graph>',
+    );
+    const embedded = html.split('id="view">')[1]!.split('</script>')[0]!;
+    expect(embedded).not.toContain('<');
+    expect(JSON.parse(embedded).nodes[0].title).toBe(
+      '</script><img src=x onerror=alert(1)>',
+    );
+    expect(html).toContain('<title>Brain &#60;graph&#62;</title>');
+  });
+
+  it('escapes the line separators JSON allows and JavaScript once did not', () => {
+    expect(embedJson('a\u2028b')).toBe('"a\\u2028b"');
   });
 });

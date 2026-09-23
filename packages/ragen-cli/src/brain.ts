@@ -1,5 +1,7 @@
 import { dirname, isAbsolute, join, normalize, sep } from 'node:path';
 
+import { renderGraphHtml, type GraphHtmlView } from './graph-html';
+
 /**
  * `ragen brain …` — Ragen Brain from the terminal, read-only.
  *
@@ -29,6 +31,8 @@ const USAGE = [
   '  findings              open findings, most severe first (--status RESOLVED|DISMISSED)',
   '  pages [search]        knowledge pages, optionally searched (--status CANDIDATE|APPROVED|STALE|REJECTED)',
   '  graph                 the pages as a graph (--focus <page-id> --hops 1|2 --budget 150|300|600|1000 --inferred)',
+  '                        --html <file> writes it as a page to open in a browser',
+  '  query <question>      ask the knowledge base, as chat does (--assistant <id> or RAGEN_ASSISTANT_ID)',
   '  export <dir>          write the curated bundle: markdown, graph.json, manifest.json',
   '',
   'Options',
@@ -50,6 +54,8 @@ const VALUE_FLAGS = new Set([
   '--focus',
   '--hops',
   '--budget',
+  '--html',
+  '--assistant',
 ]);
 
 function parse(args: string[]): Flags {
@@ -152,18 +158,36 @@ export async function runBrain(
           json,
           pagesTable,
         );
-      case 'graph':
-        return print(
-          deps,
-          await get('graph', {
-            focus: flags.values.get('--focus'),
-            hops: flags.values.get('--hops'),
-            budget: flags.values.get('--budget'),
-            inferred: flags.switches.has('--inferred') ? '1' : undefined,
-          }),
-          json,
-          graphSummary,
-        );
+      case 'graph': {
+        const view = await get('graph', {
+          focus: flags.values.get('--focus'),
+          hops: flags.values.get('--hops'),
+          budget: flags.values.get('--budget'),
+          inferred: flags.switches.has('--inferred') ? '1' : undefined,
+        });
+        const html = flags.values.get('--html');
+        if (html) {
+          await deps.writeFile(
+            html,
+            renderGraphHtml(view as GraphHtmlView, 'Ragen Brain — graph'),
+          );
+          deps.out(`Wrote ${html}. Open it in a browser.`);
+          return 0;
+        }
+        return print(deps, view, json, graphSummary);
+      }
+      case 'query': {
+        const question = flags.positional.join(' ').trim();
+        const assistant =
+          flags.values.get('--assistant') ?? deps.env.RAGEN_ASSISTANT_ID;
+        if (!question) {
+          deps.err(
+            'Ask something: ragen brain query "What is our leave policy?"',
+          );
+          return 1;
+        }
+        return await query(deps, url, key, question, assistant, json);
+      }
       case 'export': {
         const dir = flags.positional[0];
         if (!dir) {
@@ -180,6 +204,52 @@ export async function runBrain(
     deps.err(error instanceof Error ? error.message : String(error));
     return 1;
   }
+}
+
+/**
+ * One question through `POST /v1/chat` — the same retrieval chat uses, so a
+ * published page answers here exactly when it answers in the panel, under
+ * the key's user's access. Not a Brain-only search: Brain's pages are part of
+ * the knowledge base once published, and asking about them is asking it.
+ */
+async function query(
+  deps: BrainDeps,
+  url: string,
+  key: string,
+  question: string,
+  assistant: string | undefined,
+  json: boolean,
+): Promise<number> {
+  const res = await deps.fetch(`${url}/v1/chat`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${key}`,
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      content: question,
+      stream: false,
+      ...(assistant ? { assistant_id: assistant } : {}),
+    }),
+  });
+  if (res.status === 404) {
+    throw new Error(
+      'No such assistant for this key. Pass --assistant <id> or set RAGEN_ASSISTANT_ID.',
+    );
+  }
+  if (res.status === 401 || res.status === 403) {
+    throw new Error('The API key was refused.');
+  }
+  if (res.status === 429) {
+    throw new Error('The organization is over its request limit.');
+  }
+  if (!res.ok) {
+    throw new Error(`The API answered ${res.status}.`);
+  }
+  const body = (await res.json()) as { text?: string };
+  deps.out(json ? JSON.stringify(body, null, 2) : (body.text ?? ''));
+  return 0;
 }
 
 function print(
