@@ -2502,7 +2502,9 @@
         "out": "{kind} →",
         "in": "← {kind}"
       },
-      "history": "History"
+      "history": "History",
+      "merge": "Merge",
+      "superseded-by": "Merged into"
     },
     "origin": {
       "EXTRACTED": "quoted",
@@ -2548,8 +2550,18 @@
         "owner-not-member": "That person is not a member of this organization — choose someone else.",
         "invalid-access": "One of the selected people or teams is no longer in this organization — reload and choose again.",
         "published": "This page is published — changing its access is not available yet.",
-        "confirm-widening": "This change widens access and has to be confirmed."
-      }
+        "confirm-widening": "This change widens access and has to be confirmed.",
+        "unmergeable": "A page’s text is not in a shape that can be merged — merge it by hand, or reject it."
+      },
+      "merge-label": "Merge into",
+      "merge-placeholder": "Choose a page to merge into",
+      "merge-suggested": "Looks like the same subject",
+      "merge-others": "Other pages",
+      "merge-submit": "Merge into this page",
+      "merge-none": "No other page to merge into",
+      "merge-confirm-title": "Merge this page?",
+      "merge-confirm-description": "Its statements and sources move to “{target}”, which keeps its title, takes the narrower access of the two and returns to review. This page is marked rejected and points to it.",
+      "merged": "Pages merged"
     },
     "history": {
       "empty": "No decisions yet",

@@ -274,13 +274,23 @@ describe('brainExtract', () => {
       });
       activities.detectContradictions.mockImplementation(async () => {
         order.push('contradictions');
-        return { pairs: 0, raised: 0, cleared: 0, failed: 0, notJudged: 0, tokens: 0 };
+        return {
+          pairs: 0,
+          raised: 0,
+          cleared: 0,
+          failed: 0,
+          notJudged: 0,
+          tokens: 0,
+        };
       });
       activities.reconcileBrainFindings.mockImplementation(async () => {
         order.push('reconcile');
         return { created: 0, updated: 0, resolved: 0, holding: 0 };
       });
-      await brainExtract({ orgId: 'org-1', fileIds: ['a'] }, context(activities));
+      await brainExtract(
+        { orgId: 'org-1', fileIds: ['a'] },
+        context(activities),
+      );
       expect(order).toEqual(['extract', 'contradictions', 'reconcile']);
     });
 
@@ -308,7 +318,10 @@ describe('brainExtract', () => {
         maxTokens: 100,
       });
       activities.extractDocumentCandidates.mockResolvedValue(extracted(100));
-      await brainExtract({ orgId: 'org-1', fileIds: ['a'] }, context(activities));
+      await brainExtract(
+        { orgId: 'org-1', fileIds: ['a'] },
+        context(activities),
+      );
       expect(activities.detectContradictions).not.toHaveBeenCalled();
     });
 

@@ -2502,7 +2502,9 @@
         "out": "{kind} →",
         "in": "← {kind}"
       },
-      "history": "Előzmények"
+      "history": "Előzmények",
+      "merge": "Egyesítés",
+      "superseded-by": "Egyesítve ezzel"
     },
     "origin": {
       "EXTRACTED": "idézett",
@@ -2548,8 +2550,18 @@
         "owner-not-member": "Ez a személy nem tagja a szervezetnek — válasszon valaki mást.",
         "invalid-access": "A kiválasztott személyek vagy csapatok egyike már nem tagja a szervezetnek — töltse újra, és válasszon újra.",
         "published": "Ez az oldal közzé van téve — a hozzáférése egyelőre nem módosítható.",
-        "confirm-widening": "Ez a módosítás bővíti a hozzáférést, és meg kell erősíteni."
-      }
+        "confirm-widening": "Ez a módosítás bővíti a hozzáférést, és meg kell erősíteni.",
+        "unmergeable": "Az oldal szövege nem egyesíthető formájú — egyesítse kézzel, vagy utasítsa el."
+      },
+      "merge-label": "Egyesítés ezzel",
+      "merge-placeholder": "Válassza ki, melyik oldallal egyesíti",
+      "merge-suggested": "Ugyanannak a témának tűnik",
+      "merge-others": "További oldalak",
+      "merge-submit": "Egyesítés ezzel az oldallal",
+      "merge-none": "Nincs másik oldal, amellyel egyesíthető",
+      "merge-confirm-title": "Egyesíti ezt az oldalt?",
+      "merge-confirm-description": "Állításai és forrásai átkerülnek ide: „{target}”, amely megtartja a címét, a kettő közül a szűkebb hozzáférést kapja, és újra bírálatra kerül. Ez az oldal elutasítottként jelölődik, és rá hivatkozik.",
+      "merged": "Oldalak egyesítve"
     },
     "history": {
       "empty": "Még nincs döntés",

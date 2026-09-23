@@ -9,8 +9,9 @@ const actions = vi.hoisted(() => ({
   rejectKnowledgePageAction: vi.fn(),
   setKnowledgePageOwnerAction: vi.fn(),
   setKnowledgePageAccessAction: vi.fn(),
+  mergeKnowledgePagesAction: vi.fn(),
 }));
-const router = vi.hoisted(() => ({ refresh: vi.fn() }));
+const router = vi.hoisted(() => ({ refresh: vi.fn(), push: vi.fn() }));
 const toast = vi.hoisted(() => ({ success: vi.fn(), error: vi.fn() }));
 
 vi.mock('../actions', () => actions);
@@ -19,6 +20,7 @@ vi.mock('sonner', () => ({ toast }));
 
 const { ReviewActions } = await import('../components/ReviewActions');
 const { AccessEditor } = await import('../components/AccessEditor');
+const { MergePicker } = await import('../components/MergePicker');
 
 const PUBLIC_ID = '11111111-2222-4333-8444-555555555555';
 const UPDATED = '2026-09-23T10:00:00.000Z';
@@ -168,5 +170,56 @@ describe('AccessEditor', () => {
     open();
     fireEvent.click(screen.getByLabelText('Anna'));
     expect(screen.getByText(/open to no one/)).toBeVisible();
+  });
+});
+
+describe('MergePicker', () => {
+  const TARGET = '66666666-7777-4888-9999-aaaaaaaaaaaa';
+
+  it('says so when there is nothing to merge into', () => {
+    wrap(<MergePicker publicId={PUBLIC_ID} updatedAt={UPDATED} targets={[]} />);
+    expect(screen.getByText('No other page to merge into')).toBeVisible();
+  });
+
+  it('merges after confirmation and lands on the page that stayed', async () => {
+    actions.mergeKnowledgePagesAction.mockResolvedValue({
+      success: true,
+      changed: true,
+    });
+    wrap(
+      <MergePicker
+        publicId={PUBLIC_ID}
+        updatedAt={UPDATED}
+        targets={[
+          {
+            publicId: TARGET,
+            title: 'Urlop',
+            status: 'APPROVED',
+            suggested: true,
+          },
+        ]}
+      />,
+    );
+    fireEvent.click(screen.getByRole('combobox', { name: 'Merge into' }));
+    fireEvent.click(await screen.findByRole('option', { name: 'Urlop' }));
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Merge into this page' }),
+    );
+    const dialog = await screen.findByRole('alertdialog');
+    expect(dialog).toHaveTextContent('“Urlop”');
+    expect(actions.mergeKnowledgePagesAction).not.toHaveBeenCalled();
+    fireEvent.click(
+      Array.from(dialog.querySelectorAll('button')).find(
+        (b) => b.textContent === 'Merge into this page',
+      )!,
+    );
+    await waitFor(() =>
+      expect(router.push).toHaveBeenCalledWith(`/brain/pages/${TARGET}`),
+    );
+    expect(actions.mergeKnowledgePagesAction).toHaveBeenCalledWith({
+      publicId: PUBLIC_ID,
+      expectedUpdatedAt: UPDATED,
+      targetPublicId: TARGET,
+    });
   });
 });

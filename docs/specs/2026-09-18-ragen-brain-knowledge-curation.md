@@ -981,14 +981,15 @@ baseline without the outlier (edges 72.7 % `EXTRACTED` against 70.3 %,
       view with its sources, findings list. Read-only.
       _`/brain`, `/brain/pages/[publicId]`, `/brain/findings`; queries in
       `apps/web/src/features/brain`; `smoke-15-brain` gates it._
-- [ ] **D2.** The review queue: merge candidates, set owner, set access,
+- [x] **D2.** The review queue: merge candidates, set owner, set access,
       approve, reject — every action writing `KnowledgeDecision`. Widening
       access is a distinct action with its own confirmation.
       _Split in two. **D2a (done):** set owner, set access / widen access,
       approve, reject, on the page view, with the page's ledger listed under
       History; commands in `apps/web/src/features/brain/services/commands`,
-      `p0-33-brain-review` gates it. **D2b (next):** merge, and re-running
-      the computed findings after a decision._
+      `p0-33-brain-review` gates it. **D2b (done):** merge, and the
+      `brainReconcileFindings` job the panel starts after every decision;
+      `p0-34-brain-merge` gates it._
 - [ ] **D3.** Retry an `EXTRACTION_FAILED` document from the findings list:
       re-runs `brainExtract` for that document alone and resolves the finding on
       success.
@@ -1069,6 +1070,36 @@ baseline without the outlier (edges 72.7 % `EXTRACTED` against 70.3 %,
   `UNOWNED` finding stays open until the next run. D2b adds a job for it; the
   panel does not write computed findings itself, because a second writer is
   how the view and the rows would drift.
+
+**What D2b settled:**
+
+- **A merge folds a candidate into another page; the target stays.** It keeps
+  its title and gains the absorbed page's claims and sources, renumbered so
+  each `[n]` still names its quote (`mergePageContent` in brain-core). A claim
+  whose quote the target already cites — same file, version and quote — is
+  dropped, because re-extraction produces exactly those.
+- **Only the shape `renderPage` writes is merged.** Anything else is refused
+  as `unmergeable` rather than guessed at: the numbering is what a reviewer
+  checks, and a merge that shifted it would point claims at the wrong quotes.
+  The test builds its pages with `assembleCandidates`, so a renderer change the
+  merge cannot read fails there.
+- **The target's access becomes the narrower of the two**
+  (`intersectPrincipals`), and **an approved target returns to `CANDIDATE`** —
+  it now says things nobody approved. A merge never widens access.
+- **The absorbed page is rejected and superseded by the target**, not
+  deleted, and both get a `MERGE` row. Its page view links to the target.
+  Relations move to the target; the one between the two is dropped, and where
+  both had a relation the stronger origin wins.
+- **Suggestions are same title or same slug without its numeric suffix** —
+  the suffix `replaceCandidatesFromFile` gives a fresh candidate it will not
+  put over curated work. Two names for one subject are not found, the same
+  limit C1 has; embeddings are the next step for both.
+- **Computed findings are re-run after every decision** by
+  `brainReconcileFindings`, started after the commit. A failed enqueue is
+  logged and does not fail the decision; the next extraction reconciles
+  anyway. The panel still never writes computed findings itself.
+- Contradiction findings naming a merged-away page are left as they are: a
+  person reads them, and C1's next run judges the merged page again.
 
 ### Phase E — Publication, withdrawal, export
 

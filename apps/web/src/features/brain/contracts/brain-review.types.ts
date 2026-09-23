@@ -39,6 +39,14 @@ export const setAccessInputSchema = z.object({
 });
 export type SetAccessInput = z.input<typeof setAccessInputSchema>;
 
+export const mergeInputSchema = z.object({
+  /** The page being folded away — the one the reviewer is looking at. */
+  ...pageRef,
+  /** The page that absorbs it and stays. */
+  targetPublicId: z.string().uuid(),
+});
+export type MergeInput = z.infer<typeof mergeInputSchema>;
+
 /**
  * Why a decision was not recorded. Codes rather than sentences: the panel
  * renders them in fifteen languages.
@@ -53,6 +61,8 @@ export type SetAccessInput = z.input<typeof setAccessInputSchema>;
  * - `published` — the page is in the index; changing its access must reach
  *   its chunks, which is Phase E's (E4), so it is refused until then.
  * - `confirm-widening` — the change widens access and was not confirmed.
+ * - `unmergeable` — a page's text is not in the shape a merge can renumber
+ *   (see `mergePageContent`), or a page was merged into itself.
  */
 export type ReviewError =
   | 'invalid-input'
@@ -63,7 +73,8 @@ export type ReviewError =
   | 'owner-not-member'
   | 'invalid-access'
   | 'published'
-  | 'confirm-widening';
+  | 'confirm-widening'
+  | 'unmergeable';
 
 /**
  * `changed: false` is a request that asked for what the page already is — no
@@ -71,6 +82,14 @@ export type ReviewError =
  */
 export type ReviewResult =
   { success: true; changed: boolean } | { success: false; error: ReviewError };
+
+/** A page this one may be merged into; `suggested` when it looks like the same subject. */
+export type MergeTarget = {
+  publicId: string;
+  title: string;
+  status: 'CANDIDATE' | 'APPROVED' | 'STALE';
+  suggested: boolean;
+};
 
 /** Who a reviewer may name as owner, or grant access to. */
 export type ReviewOptions = {

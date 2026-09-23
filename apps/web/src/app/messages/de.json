@@ -2502,7 +2502,9 @@
         "out": "{kind} →",
         "in": "← {kind}"
       },
-      "history": "Verlauf"
+      "history": "Verlauf",
+      "merge": "Zusammenführen",
+      "superseded-by": "Zusammengeführt mit"
     },
     "origin": {
       "EXTRACTED": "zitiert",
@@ -2548,8 +2550,18 @@
         "owner-not-member": "Diese Person ist kein Mitglied der Organisation — wählen Sie jemand anderen.",
         "invalid-access": "Eine der gewählten Personen oder Teams gehört nicht mehr zur Organisation — neu laden und erneut wählen.",
         "published": "Diese Seite ist veröffentlicht — ihren Zugriff zu ändern ist noch nicht möglich.",
-        "confirm-widening": "Diese Änderung erweitert den Zugriff und muss bestätigt werden."
-      }
+        "confirm-widening": "Diese Änderung erweitert den Zugriff und muss bestätigt werden.",
+        "unmergeable": "Der Text einer Seite hat keine Form, die sich zusammenführen lässt — führen Sie sie von Hand zusammen oder lehnen Sie sie ab."
+      },
+      "merge-label": "Zusammenführen mit",
+      "merge-placeholder": "Seite zum Zusammenführen wählen",
+      "merge-suggested": "Scheint dasselbe Thema",
+      "merge-others": "Andere Seiten",
+      "merge-submit": "Mit dieser Seite zusammenführen",
+      "merge-none": "Keine andere Seite zum Zusammenführen",
+      "merge-confirm-title": "Diese Seite zusammenführen?",
+      "merge-confirm-description": "Ihre Aussagen und Quellen gehen an „{target}“, die ihren Titel behält, den engeren der beiden Zugriffe übernimmt und wieder zur Prüfung geht. Diese Seite wird als abgelehnt markiert und verweist darauf.",
+      "merged": "Seiten zusammengeführt"
     },
     "history": {
       "empty": "Noch keine Entscheidungen",

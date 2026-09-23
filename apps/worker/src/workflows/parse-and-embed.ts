@@ -17,6 +17,8 @@ import { runOnTemporal } from './temporal-context.js';
  * ten-minute Docling parse, an embedding call — runs to completion, because
  * neither heartbeats.
  */
-export async function runFileEmbeddings(payload: RunFileEmbeddingsPayload): Promise<string> {
+export async function runFileEmbeddings(
+  payload: RunFileEmbeddingsPayload,
+): Promise<string> {
   return runOnTemporal(handler, payload);
 }

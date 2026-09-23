@@ -2502,7 +2502,9 @@
         "out": "{kind} →",
         "in": "← {kind}"
       },
-      "history": "Historik"
+      "history": "Historik",
+      "merge": "Sammanslagning",
+      "superseded-by": "Sammanslagen med"
     },
     "origin": {
       "EXTRACTED": "citerad",
@@ -2548,8 +2550,18 @@
         "owner-not-member": "Personen är inte medlem i organisationen — välj någon annan.",
         "invalid-access": "En av de valda personerna eller teamen tillhör inte längre organisationen — ladda om och välj igen.",
         "published": "Den här sidan är publicerad — det går ännu inte att ändra dess åtkomst.",
-        "confirm-widening": "Den här ändringen utökar åtkomsten och måste bekräftas."
-      }
+        "confirm-widening": "Den här ändringen utökar åtkomsten och måste bekräftas.",
+        "unmergeable": "En sidas text har inte en form som kan slås samman — slå samman den för hand eller avvisa den."
+      },
+      "merge-label": "Slå samman med",
+      "merge-placeholder": "Välj en sida att slå samman med",
+      "merge-suggested": "Ser ut som samma ämne",
+      "merge-others": "Andra sidor",
+      "merge-submit": "Slå samman med den här sidan",
+      "merge-none": "Ingen annan sida att slå samman med",
+      "merge-confirm-title": "Slå samman den här sidan?",
+      "merge-confirm-description": "Dess påståenden och källor flyttas till ”{target}”, som behåller sin titel, får den snävare av de två åtkomsterna och går tillbaka till granskning. Den här sidan markeras som avvisad och pekar dit.",
+      "merged": "Sidorna sammanslagna"
     },
     "history": {
       "empty": "Inga beslut än",

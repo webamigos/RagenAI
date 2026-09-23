@@ -2502,7 +2502,9 @@
         "out": "{kind} →",
         "in": "← {kind}"
       },
-      "history": "Historie"
+      "history": "Historie",
+      "merge": "Sloučení",
+      "superseded-by": "Sloučeno se stránkou"
     },
     "origin": {
       "EXTRACTED": "citováno",
@@ -2548,8 +2550,18 @@
         "owner-not-member": "Tato osoba není členem organizace — vyberte někoho jiného.",
         "invalid-access": "Jedna z vybraných osob nebo týmů už do organizace nepatří — načtěte znovu a vyberte znovu.",
         "published": "Tato stránka je zveřejněná — změna jejího přístupu zatím není k dispozici.",
-        "confirm-widening": "Tato změna rozšiřuje přístup a musí být potvrzena."
-      }
+        "confirm-widening": "Tato změna rozšiřuje přístup a musí být potvrzena.",
+        "unmergeable": "Text stránky nemá tvar, který lze sloučit — slučte ji ručně, nebo ji zamítněte."
+      },
+      "merge-label": "Sloučit se stránkou",
+      "merge-placeholder": "Vyberte stránku ke sloučení",
+      "merge-suggested": "Vypadá jako stejné téma",
+      "merge-others": "Ostatní stránky",
+      "merge-submit": "Sloučit s touto stránkou",
+      "merge-none": "Žádná jiná stránka ke sloučení",
+      "merge-confirm-title": "Sloučit tuto stránku?",
+      "merge-confirm-description": "Její tvrzení a zdroje přejdou do „{target}“, která si ponechá název, převezme užší z obou přístupů a vrátí se k posouzení. Tato stránka bude označena jako zamítnutá a bude na ni odkazovat.",
+      "merged": "Stránky sloučeny"
     },
     "history": {
       "empty": "Zatím žádná rozhodnutí",

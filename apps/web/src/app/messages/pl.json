@@ -2502,7 +2502,9 @@
         "out": "{kind} →",
         "in": "← {kind}"
       },
-      "history": "Historia"
+      "history": "Historia",
+      "merge": "Scalanie",
+      "superseded-by": "Scalona ze stroną"
     },
     "origin": {
       "EXTRACTED": "z cytatu",
@@ -2548,8 +2550,18 @@
         "owner-not-member": "Ta osoba nie należy do organizacji — wybierz kogoś innego.",
         "invalid-access": "Jedna z wybranych osób lub zespołów nie należy już do organizacji — odśwież i wybierz ponownie.",
         "published": "Ta strona jest opublikowana — zmiana jej dostępu nie jest jeszcze dostępna.",
-        "confirm-widening": "Ta zmiana poszerza dostęp i wymaga potwierdzenia."
-      }
+        "confirm-widening": "Ta zmiana poszerza dostęp i wymaga potwierdzenia.",
+        "unmergeable": "Tekst strony nie ma kształtu, który da się scalić — scal ją ręcznie albo odrzuć."
+      },
+      "merge-label": "Scal ze stroną",
+      "merge-placeholder": "Wybierz stronę do scalenia",
+      "merge-suggested": "Wygląda na ten sam temat",
+      "merge-others": "Pozostałe strony",
+      "merge-submit": "Scal z tą stroną",
+      "merge-none": "Nie ma innej strony do scalenia",
+      "merge-confirm-title": "Scalić tę stronę?",
+      "merge-confirm-description": "Jej stwierdzenia i źródła trafią do „{target}”, która zachowa tytuł, przyjmie węższy z dwóch dostępów i wróci do recenzji. Ta strona zostanie oznaczona jako odrzucona i będzie do niej odsyłać.",
+      "merged": "Strony scalone"
     },
     "history": {
       "empty": "Na razie bez decyzji",

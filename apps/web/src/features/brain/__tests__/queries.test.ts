@@ -177,6 +177,7 @@ describe('getKnowledgePageQuery', () => {
     ],
     edgesTo: [],
     decisions: [],
+    supersededBy: null,
   };
 
   it('answers null for a malformed id without asking the database', async () => {

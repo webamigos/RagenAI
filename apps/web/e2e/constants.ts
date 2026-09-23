@@ -106,3 +106,19 @@ export const TEST_BRAIN_SOURCE_QUOTE = TEST_DOCUMENT_V1_CONTENT;
 export const TEST_BRAIN_REVIEW_PAGE_PUBLIC_ID =
   'e2e00000-0000-4000-8000-00e2e0000b02';
 export const TEST_BRAIN_REVIEW_PAGE_TITLE = 'E2E Brain: strona do recenzji';
+
+/**
+ * Two pages about one subject, for p0-34's merge (spec D2b): an approved
+ * page, and the fresh candidate a later extraction wrote beside it under a
+ * suffixed slug. Both are in the shape `renderPage` writes, which is the only
+ * shape a merge renumbers.
+ */
+export const TEST_BRAIN_MERGE_TARGET_PUBLIC_ID =
+  'e2e00000-0000-4000-8000-00e2e0000b03';
+export const TEST_BRAIN_MERGE_SOURCE_PUBLIC_ID =
+  'e2e00000-0000-4000-8000-00e2e0000b04';
+export const TEST_BRAIN_MERGE_TITLE = 'E2E Brain: praca zdalna';
+export const TEST_BRAIN_MERGE_TARGET_CLAIM =
+  'Praca zdalna wymaga zgody przełożonego.';
+export const TEST_BRAIN_MERGE_SOURCE_CLAIM =
+  'Sprzęt do pracy zdalnej zapewnia firma.';

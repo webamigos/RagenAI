@@ -75,6 +75,7 @@ export const JOB_NAMES = [
   'cleanupDemoThreads',
   'pruneAnalyticsRetrievals',
   'brainExtract',
+  'brainReconcileFindings',
 ] as const;
 
 export type JobName = (typeof JOB_NAMES)[number];
@@ -217,6 +218,26 @@ export interface BrainExtractPayload {
   userId?: string | null;
 }
 
+/**
+ * Re-run Brain's computed findings (GAP, ORPHAN, STALE, UNOWNED) for one
+ * organization, outside an extraction run (spec D2b). Started after a review
+ * decision — a new owner, an approval — changes what those findings say, so
+ * the inbox does not keep showing a problem someone just fixed until the next
+ * extraction. The findings are a view the worker owns; the panel starts this
+ * rather than writing them itself.
+ */
+export interface BrainReconcileFindingsPayload {
+  orgId: string;
+}
+
+export interface BrainReconcileFindingsResult {
+  /** `disabled` when the organization's `brain` flag is off at run time. */
+  skipped: 'disabled' | null;
+  created: number;
+  updated: number;
+  resolved: number;
+}
+
 export interface BrainExtractResult {
   /** `disabled` when the organization's `brain` flag is off at run time. */
   skipped: 'disabled' | null;
@@ -262,6 +283,7 @@ export interface JobPayloads {
   cleanupDemoThreads: void;
   pruneAnalyticsRetrievals: void;
   brainExtract: BrainExtractPayload;
+  brainReconcileFindings: BrainReconcileFindingsPayload;
 }
 
 /**
@@ -281,4 +303,5 @@ export interface JobResults {
   cleanupDemoThreads: CleanupDemoThreadsResult;
   pruneAnalyticsRetrievals: PruneAnalyticsRetrievalsResult;
   brainExtract: BrainExtractResult;
+  brainReconcileFindings: BrainReconcileFindingsResult;
 }

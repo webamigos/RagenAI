@@ -94,10 +94,15 @@ export type KnowledgeDecisionView = {
 };
 
 export type KnowledgePageDetail = PageRef & {
+  /** Internal id and slug, for server-side lookups only (the merge picker). */
+  id: number;
+  slug: string;
   type: KnowledgePageType;
   status: KnowledgePageStatus;
   content: string;
   ownerId: string | null;
+  /** The page this one was merged into, or that replaced it. */
+  supersededBy: PageRef | null;
   ownerName: string | null;
   /** `accessibleBy` as stored — what the access editor starts from. */
   principals: string[];

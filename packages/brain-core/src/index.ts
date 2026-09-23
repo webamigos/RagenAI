@@ -84,3 +84,9 @@ export {
   type JudgedPage,
   type JudgeOutcome,
 } from './contradictions/judge';
+export {
+  mergePageContent,
+  type MergeablePage,
+  type MergedContent,
+  type MergeSource,
+} from './review/merge-pages';

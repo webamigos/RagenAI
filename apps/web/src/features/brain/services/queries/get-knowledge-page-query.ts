@@ -36,6 +36,7 @@ export async function getKnowledgePageQuery(
       id: true,
       publicId: true,
       title: true,
+      slug: true,
       type: true,
       status: true,
       content: true,
@@ -45,6 +46,7 @@ export async function getKnowledgePageQuery(
       verifyEvery: true,
       updatedAt: true,
       ownerId: true,
+      supersededBy: { select: { publicId: true, title: true } },
       owner: { select: { name: true, email: true } },
       sources: {
         where: { organizationId: orgId },
@@ -207,12 +209,15 @@ export async function getKnowledgePageQuery(
   }));
 
   return {
+    id: page.id,
+    slug: page.slug,
     publicId: page.publicId,
     title: page.title,
     type: page.type,
     status: page.status,
     content: page.content,
     ownerId: page.ownerId,
+    supersededBy: page.supersededBy,
     ownerName: page.owner ? (page.owner.name ?? page.owner.email) : null,
     principals: page.accessibleBy,
     access: accessEntries(orgId, page.accessibleBy, {

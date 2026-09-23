@@ -11,6 +11,7 @@ import type {
   ReviewError,
   ReviewResult,
 } from '../../contracts/brain-review.types';
+import { startFindingsReconcile } from './start-findings-reconcile';
 
 /**
  * The transaction handle of this app's client. Not `Prisma.TransactionClient`:
@@ -60,6 +61,10 @@ type Decide = (
  * that" — which writes nothing, because the ledger records acts, not clicks.
  * Publication actions are not decisions of this kind: they carry a
  * generation and a Qdrant step outside the transaction, and are Phase E's.
+ *
+ * A decision that changed something then asks the worker to re-run the
+ * computed findings (D2b) — after the commit, so the job reads what was
+ * decided.
  */
 export async function decideOnKnowledgePage(
   input: {
@@ -71,7 +76,7 @@ export async function decideOnKnowledgePage(
   decide: Decide,
 ): Promise<ReviewResult> {
   const { orgId, actorId, publicId, expectedUpdatedAt } = input;
-  return db.$transaction(async (tx) => {
+  const result = await db.$transaction(async (tx): Promise<ReviewResult> => {
     const locked = await tx.$queryRaw<{ id: number }[]>`
       SELECT id FROM knowledge_pages
       WHERE public_id = ${publicId}::uuid AND organization_id = ${orgId}
@@ -128,6 +133,10 @@ export async function decideOnKnowledgePage(
     });
     return { success: true, changed: true };
   });
+  if (result.success && result.changed) {
+    await startFindingsReconcile(orgId);
+  }
+  return result;
 }
 
 /** Whether `userId` is a member of the organization now. */

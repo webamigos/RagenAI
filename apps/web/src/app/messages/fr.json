@@ -2502,7 +2502,9 @@
         "out": "{kind} →",
         "in": "← {kind}"
       },
-      "history": "Historique"
+      "history": "Historique",
+      "merge": "Fusion",
+      "superseded-by": "Fusionnée avec"
     },
     "origin": {
       "EXTRACTED": "citée",
@@ -2548,8 +2550,18 @@
         "owner-not-member": "Cette personne n’est pas membre de l’organisation — choisissez quelqu’un d’autre.",
         "invalid-access": "Une des personnes ou équipes choisies ne fait plus partie de l’organisation — rechargez et choisissez à nouveau.",
         "published": "Cette page est publiée — la modification de son accès n’est pas encore disponible.",
-        "confirm-widening": "Cette modification élargit l’accès et doit être confirmée."
-      }
+        "confirm-widening": "Cette modification élargit l’accès et doit être confirmée.",
+        "unmergeable": "Le texte d’une page n’a pas une forme qui peut être fusionnée — fusionnez-la à la main ou rejetez-la."
+      },
+      "merge-label": "Fusionner avec",
+      "merge-placeholder": "Choisir une page avec laquelle fusionner",
+      "merge-suggested": "Semble être le même sujet",
+      "merge-others": "Autres pages",
+      "merge-submit": "Fusionner avec cette page",
+      "merge-none": "Aucune autre page avec laquelle fusionner",
+      "merge-confirm-title": "Fusionner cette page ?",
+      "merge-confirm-description": "Ses affirmations et ses sources passent dans « {target} », qui garde son titre, prend l’accès le plus restreint des deux et repart en révision. Cette page est marquée rejetée et renvoie vers elle.",
+      "merged": "Pages fusionnées"
     },
     "history": {
       "empty": "Aucune décision pour l’instant",
