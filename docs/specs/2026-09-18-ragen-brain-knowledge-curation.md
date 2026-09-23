@@ -1208,9 +1208,16 @@ baseline without the outlier (edges 72.7 % `EXTRACTED` against 70.3 %,
       reads "Urlop wypoczynkowy", not a slug, and the chunk carries the
       page's numbered evidence — the verbatim quote and its locator — so the
       reader sees what the statement rests on. Verified in the browser: a
-      real model answered from a published page and cited it by title. Still
-      open: the second level, linking each quote to its source document
-      under `fileAccessWhere`._
+      real model answered from a published page and cited it by title.
+      Second level in `apps/web`: a cited file that is a published page gets
+      a line under its source card — "Brain page · based on: a.pdf (§1)" —
+      from `getBrainCitationsQuery`. The page is shown by its own
+      `accessibleBy` (the rule retrieval used), each source by
+      `fileAccessWhere`; a reader who may see the page and none of its
+      sources is told so, never shown their names. Read when rendered, so a
+      reopened thread shows the page as it is now; off on a public share or
+      guest thread. Verified live, live turn and reopened thread. Still open:
+      `apps/api`, whose chat responses carry no source list to extend._
 - [x] **E9.** Take a curated source document out of retrieval — per document,
       human-triggered, reversible by re-running ingest. Mode 1's path to a clean
       index, and never automatic.

@@ -2387,7 +2387,10 @@
     "open-rail": "Kilder",
     "cited-none": "Svaret citerede ingen af dem",
     "show-more": "{count, plural, one {Vis # kilde mere} other {Vis # kilder mere}}",
-    "open-source": "Åbn {name}"
+    "open-source": "Åbn {name}",
+    "brain-page": "Brain-side",
+    "brain-based-on": "baseret på: {sources}",
+    "brain-no-visible-sources": "ingen af dens kilder er synlige for dig"
   },
   "brain": {
     "title": "Ragen Brain",

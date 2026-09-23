@@ -2387,7 +2387,10 @@
     "open-rail": "Lähteet",
     "cited-none": "Vastaus ei viitannut yhteenkään niistä",
     "show-more": "Näytä {count} lisälähdettä",
-    "open-source": "Avaa {name}"
+    "open-source": "Avaa {name}",
+    "brain-page": "Brain-sivu",
+    "brain-based-on": "perustuu: {sources}",
+    "brain-no-visible-sources": "mikään sen lähteistä ei näy sinulle"
   },
   "brain": {
     "title": "Ragen Brain",

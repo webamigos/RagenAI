@@ -2387,7 +2387,10 @@
     "open-rail": "Források",
     "cited-none": "A válasz egyikre sem hivatkozott",
     "show-more": "További {count} forrás megjelenítése",
-    "open-source": "{name} megnyitása"
+    "open-source": "{name} megnyitása",
+    "brain-page": "Brain-oldal",
+    "brain-based-on": "forrásai: {sources}",
+    "brain-no-visible-sources": "egyik forrása sem látható az Ön számára"
   },
   "brain": {
     "title": "Ragen Brain",
