@@ -1,0 +1,29 @@
+{
+  "name": "@ragenai/brain-contracts",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Ragen Brain's exchange contracts — knowledge-page frontmatter, the bundle manifest and the published-file metadata — shared by apps/web and apps/worker so the bundle a customer keeps and the page Ragen indexes cannot disagree",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "clean": "rm -rf dist",
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit --incremental --tsBuildInfoFile ./typecheck.tsbuildinfo"
+  },
+  "dependencies": {
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@ragenai/eslint-config": "*",
+    "@types/node": "^22.0.0",
+    "eslint": "^9.39.5",
+    "typescript": "~5.7.0"
+  },
+  "engines": {
+    "node": "^24.15.0 || >=26.0.0"
+  }
+}
