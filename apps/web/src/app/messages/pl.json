@@ -2577,6 +2577,27 @@
         "UNPUBLISH": "Wycofano",
         "VERIFY": "Zweryfikowano"
       }
+    },
+    "extract": {
+      "open": "Wyodrębnij z dokumentów",
+      "title": "Wyodrębnij wiedzę z dokumentów",
+      "description": "Brain przeczyta wybrane dokumenty i zapisze strony-kandydatów do recenzji. Zaznaczone są dokumenty, których nie cytuje jeszcze żadna strona. Przebieg działa w tle.",
+      "none": "Brak dokumentów do wyodrębnienia — najpierw dodaj dokumenty do bazy wiedzy.",
+      "not-extracted": "Nie wyodrębniono",
+      "pages": "Strony: {count}",
+      "too-many": "Najwyżej {max} dokumentów w jednym przebiegu.",
+      "cancel": "Anuluj",
+      "start": "Rozpocznij ({count})",
+      "started": "Wyodrębnianie rozpoczęte — dokumenty: {count}. Kandydaci pojawią się, gdy każdy się skończy.",
+      "retry": "Ponów",
+      "retry-queued": "Ponowienie w kolejce",
+      "retry-started": "Wyodrębnianie tego dokumentu ponownie w kolejce",
+      "errors": {
+        "invalid-input": "Nie udało się odczytać żądania — odśwież stronę i spróbuj ponownie.",
+        "not-found": "To zgłoszenie jest zamknięte albo już nie istnieje.",
+        "no-documents": "Żadnego z wybranych dokumentów nie da się tu wyodrębnić.",
+        "failed-to-start": "Nie udało się uruchomić wyodrębniania — spróbuj za chwilę."
+      }
     }
   }
 }

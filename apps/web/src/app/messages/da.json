@@ -2577,6 +2577,27 @@
         "UNPUBLISH": "Trukket tilbage",
         "VERIFY": "Verificeret"
       }
+    },
+    "extract": {
+      "open": "Udtræk fra dokumenter",
+      "title": "Udtræk viden fra dokumenter",
+      "description": "Brain læser de valgte dokumenter og skriver kandidatsider til gennemgang. Dokumenter, som ingen side citerer endnu, er valgt. Kørslen sker i baggrunden.",
+      "none": "Ingen dokumenter at udtrække fra — tilføj først dokumenter til vidensbasen.",
+      "not-extracted": "Ikke udtrukket",
+      "pages": "Sider: {count}",
+      "too-many": "Højst {max} dokumenter pr. kørsel.",
+      "cancel": "Annuller",
+      "start": "Start udtrækning ({count})",
+      "started": "Udtrækning startet — dokumenter: {count}. Kandidater vises, efterhånden som hvert bliver færdigt.",
+      "retry": "Prøv igen",
+      "retry-queued": "Nyt forsøg i kø",
+      "retry-started": "Udtrækning af dokumentet er i kø igen",
+      "errors": {
+        "invalid-input": "Anmodningen blev ikke forstået — genindlæs siden, og prøv igen.",
+        "not-found": "Dette fund er lukket eller findes ikke længere.",
+        "no-documents": "Ingen af de valgte dokumenter kan udtrækkes her.",
+        "failed-to-start": "Udtrækningen kunne ikke startes — prøv igen om lidt."
+      }
     }
   }
 }

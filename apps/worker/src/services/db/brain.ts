@@ -56,15 +56,23 @@ export async function getExtractionSource(fileId: string, orgId: string) {
   // warns on every call and teaches the reader to ignore the guard.
   const file = await getPrisma().userFile.findFirst({
     where: { id: fileId, organizationId: orgId },
-    select: { fileName: true, documentId: true, language: true },
+    select: {
+      fileName: true,
+      documentId: true,
+      language: true,
+      document: { select: { id: true } },
+    },
   });
-  if (!file?.documentId) {
+  // The relation first: `UserFile.documentId` is a copy ingest writes after
+  // binding, and a file can have its document without it (spec D1).
+  const documentId = file?.document?.id ?? file?.documentId;
+  if (!file || !documentId) {
     return null;
   }
   const version = await getPrisma().documentVersion.findFirst({
     where: {
       organizationId: orgId,
-      documentId: file.documentId,
+      documentId,
       isActive: true,
     },
     select: { id: true, content: true },

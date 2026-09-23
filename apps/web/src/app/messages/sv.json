@@ -2577,6 +2577,27 @@
         "UNPUBLISH": "Tillbakadragen",
         "VERIFY": "Verifierad"
       }
+    },
+    "extract": {
+      "open": "Extrahera från dokument",
+      "title": "Extrahera kunskap från dokument",
+      "description": "Brain läser de valda dokumenten och skriver kandidatsidor för granskning. Dokument som ingen sida citerar än är valda. Körningen sker i bakgrunden.",
+      "none": "Inga dokument att extrahera från — lägg först till dokument i kunskapsbasen.",
+      "not-extracted": "Inte extraherat",
+      "pages": "Sidor: {count}",
+      "too-many": "Högst {max} dokument per körning.",
+      "cancel": "Avbryt",
+      "start": "Starta extraktion ({count})",
+      "started": "Extraktion startad — dokument: {count}. Kandidater visas allt eftersom varje blir klart.",
+      "retry": "Försök igen",
+      "retry-queued": "Nytt försök i kö",
+      "retry-started": "Extraktionen av dokumentet ligger i kö igen",
+      "errors": {
+        "invalid-input": "Begäran förstods inte — ladda om sidan och försök igen.",
+        "not-found": "Det här fyndet är stängt eller finns inte längre.",
+        "no-documents": "Inget av de valda dokumenten kan extraheras här.",
+        "failed-to-start": "Extraktionen kunde inte startas — försök igen om en stund."
+      }
     }
   }
 }

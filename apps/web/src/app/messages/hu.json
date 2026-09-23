@@ -2577,6 +2577,27 @@
         "UNPUBLISH": "Visszavonva",
         "VERIFY": "Ellenőrizve"
       }
+    },
+    "extract": {
+      "open": "Kinyerés dokumentumokból",
+      "title": "Tudás kinyerése dokumentumokból",
+      "description": "A Brain elolvassa a kiválasztott dokumentumokat, és bírálandó jelölt oldalakat ír. Azok a dokumentumok vannak kijelölve, amelyeket még egyik oldal sem idéz. A futás a háttérben zajlik.",
+      "none": "Nincs kinyerhető dokumentum — először adjon dokumentumokat a tudásbázishoz.",
+      "not-extracted": "Nincs kinyerve",
+      "pages": "Oldalak: {count}",
+      "too-many": "Egy futásban legfeljebb {max} dokumentum.",
+      "cancel": "Mégse",
+      "start": "Kinyerés indítása ({count})",
+      "started": "Kinyerés elindítva — dokumentumok: {count}. A jelöltek akkor jelennek meg, amikor egy-egy dokumentum elkészül.",
+      "retry": "Újra",
+      "retry-queued": "Újrapróbálás sorban",
+      "retry-started": "A dokumentum kinyerése ismét sorban áll",
+      "errors": {
+        "invalid-input": "A kérés nem értelmezhető — töltse újra az oldalt, és próbálja újra.",
+        "not-found": "Ez a megállapítás lezárult vagy már nem létezik.",
+        "no-documents": "A kiválasztott dokumentumok egyike sem nyerhető ki itt.",
+        "failed-to-start": "A kinyerést nem sikerült elindítani — próbálja újra egy pillanat múlva."
+      }
     }
   }
 }

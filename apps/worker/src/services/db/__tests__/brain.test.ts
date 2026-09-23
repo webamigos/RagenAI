@@ -232,6 +232,23 @@ describe('getExtractionSource', () => {
     });
   });
 
+  it('finds the document through the relation when the copy column is empty', async () => {
+    prisma.userFile.findFirst.mockResolvedValue({
+      fileName: 'a.pdf',
+      documentId: null,
+      language: null,
+      document: { id: 'doc-rel' },
+    });
+    prisma.documentVersion.findFirst.mockResolvedValue({
+      id: 'v-1',
+      content: 'text',
+    });
+    await getExtractionSource('file-1', 'org-1');
+    expect(
+      prisma.documentVersion.findFirst.mock.calls[0]![0].where.documentId,
+    ).toBe('doc-rel');
+  });
+
   it('answers null for a file that was never parsed', async () => {
     prisma.userFile.findFirst.mockResolvedValue({
       fileName: 'a.pdf',

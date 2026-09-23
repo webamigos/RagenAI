@@ -2577,6 +2577,27 @@
         "UNPUBLISH": "Vedetty pois",
         "VERIFY": "Tarkistettu"
       }
+    },
+    "extract": {
+      "open": "Poimi asiakirjoista",
+      "title": "Poimi tietoa asiakirjoista",
+      "description": "Brain lukee valitut asiakirjat ja kirjoittaa arvioitavat ehdotussivut. Valittuina ovat asiakirjat, joita mikään sivu ei vielä lainaa. Ajo tapahtuu taustalla.",
+      "none": "Ei poimittavia asiakirjoja — lisää ensin asiakirjoja tietopankkiin.",
+      "not-extracted": "Ei poimittu",
+      "pages": "Sivuja: {count}",
+      "too-many": "Enintään {max} asiakirjaa yhdessä ajossa.",
+      "cancel": "Peruuta",
+      "start": "Aloita poiminta ({count})",
+      "started": "Poiminta aloitettu — asiakirjoja: {count}. Ehdotukset näkyvät sitä mukaa kuin kukin valmistuu.",
+      "retry": "Yritä uudelleen",
+      "retry-queued": "Uusintayritys jonossa",
+      "retry-started": "Tämän asiakirjan poiminta jonossa uudelleen",
+      "errors": {
+        "invalid-input": "Pyyntöä ei ymmärretty — lataa sivu uudelleen ja yritä uudelleen.",
+        "not-found": "Tämä havainto on suljettu tai sitä ei enää ole.",
+        "no-documents": "Mitään valituista asiakirjoista ei voi poimia täällä.",
+        "failed-to-start": "Poimintaa ei voitu aloittaa — yritä hetken kuluttua uudelleen."
+      }
     }
   }
 }

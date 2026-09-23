@@ -2577,6 +2577,27 @@
         "UNPUBLISH": "Zurückgezogen",
         "VERIFY": "Geprüft"
       }
+    },
+    "extract": {
+      "open": "Aus Dokumenten extrahieren",
+      "title": "Wissen aus Dokumenten extrahieren",
+      "description": "Brain liest die gewählten Dokumente und schreibt Kandidatenseiten zur Prüfung. Dokumente, die noch keine Seite zitiert, sind ausgewählt. Der Lauf erfolgt im Hintergrund.",
+      "none": "Keine Dokumente zum Extrahieren — fügen Sie zuerst Dokumente zur Wissensdatenbank hinzu.",
+      "not-extracted": "Nicht extrahiert",
+      "pages": "Seiten: {count}",
+      "too-many": "Höchstens {max} Dokumente pro Lauf.",
+      "cancel": "Abbrechen",
+      "start": "Extraktion starten ({count})",
+      "started": "Extraktion gestartet — Dokumente: {count}. Kandidaten erscheinen, sobald jedes fertig ist.",
+      "retry": "Erneut versuchen",
+      "retry-queued": "Wiederholung eingereiht",
+      "retry-started": "Extraktion dieses Dokuments erneut eingereiht",
+      "errors": {
+        "invalid-input": "Die Anfrage wurde nicht verstanden — laden Sie die Seite neu und versuchen Sie es erneut.",
+        "not-found": "Dieser Befund ist geschlossen oder existiert nicht mehr.",
+        "no-documents": "Keines der gewählten Dokumente kann hier extrahiert werden.",
+        "failed-to-start": "Die Extraktion konnte nicht gestartet werden — versuchen Sie es gleich noch einmal."
+      }
     }
   }
 }
