@@ -17,10 +17,13 @@ export async function BrainPager({
   total: number;
   hrefFor: (page: number) => string;
 }) {
-  const pages = Math.ceil(total / BRAIN_LIST_LIMIT);
-  if (pages <= 1) {
+  const pages = Math.max(1, Math.ceil(total / BRAIN_LIST_LIMIT));
+  // A page past the end (a stale link, a list that shrank) still gets a way
+  // back, straight to the last page rather than one step at a time.
+  if (pages <= 1 && page <= 1) {
     return null;
   }
+  const previous = page > pages ? pages : page - 1;
   const t = await getTranslations('brain.pager');
   const linkClass = 'text-primary underline-offset-4 hover:underline';
   return (
@@ -30,7 +33,7 @@ export async function BrainPager({
       data-testid="brain-pager"
     >
       {page > 1 ? (
-        <Link href={hrefFor(page - 1)} className={linkClass}>
+        <Link href={hrefFor(previous)} className={linkClass}>
           {t('previous')}
         </Link>
       ) : (
