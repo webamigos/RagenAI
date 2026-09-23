@@ -654,8 +654,10 @@ Phase D, so every phase before it is invisible to existing users.
 
 ### Phase D — Review interface
 
-- [ ] **D1.** `apps/web` panel routes behind the `brain` flag: page list, page
+- [x] **D1.** `apps/web` panel routes behind the `brain` flag: page list, page
       view with its sources, findings list. Read-only.
+      _`/brain`, `/brain/pages/[publicId]`, `/brain/findings`; queries in
+      `apps/web/src/features/brain`; `smoke-15-brain` gates it._
 - [ ] **D2.** The review queue: merge candidates, set owner, set access,
       approve, reject — every action writing `KnowledgeDecision`. Widening
       access is a distinct action with its own confirmation.
@@ -666,6 +668,41 @@ Phase D, so every phase before it is invisible to existing users.
       neighbourhood — a graph that hangs the tab on a real corpus is a demo that
       fails at the customer's data volume.
 - [ ] **D5.** Flag on for our own organization. The first phase a user can see.
+
+**What D1 settled:**
+
+- **Owners and admins only** (decided 2026-09-23). Brain is a curation tool,
+  and an organization manager's visibility (`orgVisibilityScope` =
+  `organization`) already covers every document a page came from, so the
+  panel needs no per-page filter to be correct — which also closes C1's open
+  question of who may see a contradiction's explanation. Members reach
+  curated knowledge through retrieval once it is published (E), with the
+  page's `accessible_by` on its chunks. A platform admin is **not** let in by
+  that role: this is the customer's knowledge.
+- **Every route answers 404 otherwise**, flag off included, so a member
+  cannot tell a disabled feature from a missing one; the layout asks, and so
+  does each page, because a layout does not guard its segments. The sidebar
+  link answers the same predicate (`canUseBrain`), not `userIsOrgAdmin`,
+  which would show a platform admin a link to a 404.
+- **A source's state is read, not stored**: `current`, `newer-version` (the
+  document's active version is past the pin — the quote shown is still the
+  pinned text), `deleted` (`sourceDeletedAt`, or no file row). **The document
+  is found through `UserDocument.fileId`**, the relation; `UserFile.documentId`
+  is a copy ingest writes afterwards, and the e2e seed — like any file whose
+  bind step did not run — has the document without it. The worker's
+  `getExtractionSource` still reads the copy; worth moving to the relation
+  before D3 retries files in bulk.
+- **Access is shown exactly** (`docs/panel-ux-rules.md` rule 22): one line per
+  principal, named; another organization's `org:` or a malformed string is
+  "nobody"; an empty list says a decision is needed. Nothing rounded up.
+- **Findings' `detail` is read tolerantly** — a Zod schema per type, and a
+  shape it does not know renders as "no detail" rather than an error page —
+  because the panel reads rows several worker versions may have written.
+- **i18n**: 85 keys in 15 locales. The repository's parity guard reads only
+  client `useTranslations` and only en/pl, and these are mostly server
+  components, so `features/brain/__tests__/brain-messages.test.ts` checks that
+  every key the Brain routes use exists and that every locale has the same
+  set.
 
 ### Phase E — Publication, withdrawal, export
 

@@ -53,6 +53,9 @@ import {
   TEST_PRIVATE_DOCUMENT_ID,
   TEST_PRIVATE_VERSION_ID,
   TEST_PRIVATE_CONTENT,
+  TEST_BRAIN_PAGE_PUBLIC_ID,
+  TEST_BRAIN_PAGE_TITLE,
+  TEST_BRAIN_SOURCE_QUOTE,
 } from '../constants.js';
 
 const connectionString = process.env.DATABASE_URL;
@@ -96,6 +99,8 @@ const MOCK_MODEL = 'mock-model';
 const TEST_ORG_FEATURE_OVERRIDES: FeatureOverrides = {
   publicChatbot: true,
   publicThreadLinks: true,
+  // smoke-15 opens the Brain panel, which 404s with the flag off.
+  brain: true,
 };
 
 async function cleanup() {
@@ -117,6 +122,18 @@ async function cleanup() {
     where: { organizationId: { in: orgIds } },
   });
   await prisma.aiUsage.deleteMany({
+    where: { organizationId: { in: orgIds } },
+  });
+  // Brain's rows cascade from the organization, but a published page's file
+  // is a NO ACTION reference and files are deleted before organizations here,
+  // so the pages go first (spec E10). Decisions are NO ACTION on the page.
+  await prisma.knowledgeFinding.deleteMany({
+    where: { organizationId: { in: orgIds } },
+  });
+  await prisma.knowledgeDecision.deleteMany({
+    where: { organizationId: { in: orgIds } },
+  });
+  await prisma.knowledgePage.deleteMany({
     where: { organizationId: { in: orgIds } },
   });
   // Versions cascade from the document, but the document has to go before the
@@ -617,6 +634,60 @@ async function seed() {
   });
   console.log(
     'Created guardrail fixtures: one INPUT BLOCK, one INPUT LOG, one OUTPUT BLOCK',
+  );
+
+  // Ragen Brain (smoke-15). A candidate page citing the seeded document's
+  // first version, which is no longer the active one.
+  const brainPage = await prisma.knowledgePage.create({
+    data: {
+      publicId: TEST_BRAIN_PAGE_PUBLIC_ID,
+      organizationId: TEST_ORG_ID,
+      title: TEST_BRAIN_PAGE_TITLE,
+      slug: 'e2e-brain-zasady-urlopow',
+      type: 'POLICY',
+      content: `# ${TEST_BRAIN_PAGE_TITLE}\n\nStrona z seeda e2e.\n\n- Pierwsza wersja dokumentu [1]\n`,
+      contentHash: `sha256:${'0'.repeat(64)}`,
+      accessibleBy: [`org:${TEST_ORG_ID}`],
+    },
+    select: { id: true },
+  });
+  const brainSource = await prisma.knowledgePageSource.create({
+    data: {
+      organizationId: TEST_ORG_ID,
+      pageId: brainPage.id,
+      fileId: TEST_FILE_ID,
+      documentVersionId: TEST_DOCUMENT_V1_ID,
+      span: '§1',
+      quote: TEST_BRAIN_SOURCE_QUOTE,
+      hash: `sha256:${'1'.repeat(64)}`,
+    },
+    select: { id: true },
+  });
+  await prisma.knowledgeFinding.createMany({
+    data: [
+      {
+        organizationId: TEST_ORG_ID,
+        type: 'ORPHAN',
+        severity: 'LOW',
+        pageIds: [brainPage.id],
+        detail: { rule: 'no_links', fingerprint: 'no_links' },
+      },
+      {
+        organizationId: TEST_ORG_ID,
+        type: 'EXTRACTION_FAILED',
+        severity: 'MEDIUM',
+        fileId: TEST_FILE_ID,
+        pageIds: [],
+        detail: {
+          reason: 'the call failed (TypeError)',
+          windowIndex: 0,
+          runId: 'e2e',
+        },
+      },
+    ],
+  });
+  console.log(
+    `Created Brain fixtures: page ${brainPage.id}, source ${brainSource.id}, two findings`,
   );
 
   console.log('E2E seed complete.');

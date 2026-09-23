@@ -1019,7 +1019,8 @@
       "library": "Bibliotek",
       "assistants": "Assistenter",
       "chatbots": "Chattbotar",
-      "organization": "Organisation"
+      "organization": "Organisation",
+      "brain": "Brain"
     },
     "starred": {
       "title": "Favoriter"
@@ -2382,5 +2383,130 @@
     "cited-none": "Svaret citerade ingen av dem",
     "show-more": "{count, plural, one {Visa # källa till} other {Visa # källor till}}",
     "open-source": "Öppna {name}"
+  },
+  "brain": {
+    "title": "Ragen Brain",
+    "tabs": {
+      "pages": "Kunskapssidor",
+      "findings": "Fynd"
+    },
+    "filters": {
+      "status": "Status",
+      "all-but-rejected": "Alla utom avvisade"
+    },
+    "page-status": {
+      "CANDIDATE": "Kandidat",
+      "APPROVED": "Godkänd",
+      "REJECTED": "Avvisad",
+      "STALE": "Inaktuell"
+    },
+    "page-type": {
+      "PROCESS": "Process",
+      "ENTITY": "Entitet",
+      "POLICY": "Regel",
+      "PRODUCT": "Produkt",
+      "ROLE": "Roll"
+    },
+    "pages": {
+      "empty-title": "Inga kunskapssidor ännu",
+      "empty-description": "Sidor visas när Brain har bearbetat dina dokument; varje sida citerar de passager den kommer från.",
+      "count": "Sidor: {shown} av {total}",
+      "published": "Publicerad",
+      "no-owner": "Ingen ansvarig",
+      "columns": {
+        "title": "Titel",
+        "type": "Typ",
+        "status": "Status",
+        "owner": "Ansvarig",
+        "documents": "Dokument",
+        "findings": "Öppna fynd",
+        "updated": "Ändrad"
+      }
+    },
+    "findings": {
+      "columns": {
+        "type": "Fynd",
+        "subject": "Gäller",
+        "detail": "Detaljer",
+        "severity": "Allvar",
+        "detected": "Upptäckt"
+      },
+      "status": {
+        "OPEN": "Öppna",
+        "RESOLVED": "Lösta",
+        "DISMISSED": "Avfärdade"
+      },
+      "type": {
+        "CONTRADICTION": "Motsägelse",
+        "GAP": "Lucka",
+        "STALE": "Inaktuell",
+        "ORPHAN": "Utan kopplingar",
+        "UNOWNED": "Utan ansvarig",
+        "EXTRACTION_FAILED": "Utvinning misslyckades"
+      },
+      "severity": {
+        "LOW": "Låg",
+        "MEDIUM": "Medel",
+        "HIGH": "Hög"
+      },
+      "empty-title": "Inga fynd med den här statusen",
+      "empty-description": "Efter varje utvinning visar Brain här motsägelser, luckor, inaktuella källor och sidor utan ansvarig.",
+      "count": "Fynd: {shown} av {total}",
+      "summary": {
+        "unknown-file": "ett okänt dokument",
+        "verification-due": "Kontrollen skulle ha gjorts {date}",
+        "source-deleted": "En källa har tagits bort: {file}",
+        "quote-gone": "De citerade orden finns inte längre i den aktuella versionen av {file}",
+        "owner-left": "Den ansvarige är inte längre medlem i organisationen",
+        "no-owner": "Ingen går i god för den här sidan",
+        "orphan": "Inte kopplad till någon annan sida",
+        "gap": "En process utan kopplad roll",
+        "extraction-failed": "Dokumentet kunde inte bearbetas",
+        "unknown": "Inga detaljer"
+      }
+    },
+    "page": {
+      "back": "Kunskapssidor",
+      "owner": "Ansvarig",
+      "verification": "Kontroll",
+      "last-verified": "Senast kontrollerad {date}",
+      "never-verified": "Aldrig kontrollerad",
+      "verify-every": "Kontrollintervall: {every}",
+      "sources": {
+        "title": "Källor ({count})",
+        "unknown-file": "Borttaget dokument",
+        "version": "version {n}",
+        "state": {
+          "newer-version": "Dokumentet har en nyare version",
+          "deleted": "Källan borttagen"
+        }
+      },
+      "findings": {
+        "title": "Öppna fynd",
+        "empty-title": "Inget öppet på den här sidan",
+        "empty-description": "Fynd om den här sidan visas här när Brain rapporterar dem."
+      },
+      "access": {
+        "title": "Tillgänglig för",
+        "nobody": "Ingen ännu — kräver ett beslut",
+        "organization": "Hela organisationen",
+        "user": "{name}",
+        "user-gone": "En person som har lämnat organisationen",
+        "team": "Team {name}",
+        "team-gone": "Ett borttaget team",
+        "unmatched": "Ingen (en behörighet utanför den här organisationen)"
+      },
+      "relations": {
+        "title": "Relationer",
+        "empty": "Inga relationer",
+        "out": "{kind} →",
+        "in": "← {kind}"
+      }
+    },
+    "origin": {
+      "EXTRACTED": "citerad",
+      "INFERRED": "härledd",
+      "AMBIGUOUS": "obekräftad"
+    }
   }
 }

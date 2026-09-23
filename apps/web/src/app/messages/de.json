@@ -1019,7 +1019,8 @@
       "library": "Bibliothek",
       "assistants": "Assistenten",
       "chatbots": "Chatbots",
-      "organization": "Organisation"
+      "organization": "Organisation",
+      "brain": "Brain"
     },
     "starred": {
       "title": "Markiert"
@@ -2382,5 +2383,130 @@
     "cited-none": "Die Antwort hat keine davon zitiert",
     "show-more": "{count, plural, one {# weitere Quelle anzeigen} other {# weitere Quellen anzeigen}}",
     "open-source": "{name} öffnen"
+  },
+  "brain": {
+    "title": "Ragen Brain",
+    "tabs": {
+      "pages": "Wissensseiten",
+      "findings": "Befunde"
+    },
+    "filters": {
+      "status": "Status",
+      "all-but-rejected": "Alle außer abgelehnten"
+    },
+    "page-status": {
+      "CANDIDATE": "Kandidat",
+      "APPROVED": "Freigegeben",
+      "REJECTED": "Abgelehnt",
+      "STALE": "Veraltet"
+    },
+    "page-type": {
+      "PROCESS": "Prozess",
+      "ENTITY": "Entität",
+      "POLICY": "Richtlinie",
+      "PRODUCT": "Produkt",
+      "ROLE": "Rolle"
+    },
+    "pages": {
+      "empty-title": "Noch keine Wissensseiten",
+      "empty-description": "Seiten erscheinen, sobald Brain Ihre Dokumente verarbeitet hat; jede zitiert die Passagen, aus denen sie stammt.",
+      "count": "Seiten: {shown} von {total}",
+      "published": "Veröffentlicht",
+      "no-owner": "Kein Verantwortlicher",
+      "columns": {
+        "title": "Titel",
+        "type": "Typ",
+        "status": "Status",
+        "owner": "Verantwortlich",
+        "documents": "Dokumente",
+        "findings": "Offene Befunde",
+        "updated": "Geändert"
+      }
+    },
+    "findings": {
+      "columns": {
+        "type": "Befund",
+        "subject": "Betrifft",
+        "detail": "Details",
+        "severity": "Schwere",
+        "detected": "Erkannt"
+      },
+      "status": {
+        "OPEN": "Offen",
+        "RESOLVED": "Gelöst",
+        "DISMISSED": "Verworfen"
+      },
+      "type": {
+        "CONTRADICTION": "Widerspruch",
+        "GAP": "Lücke",
+        "STALE": "Veraltet",
+        "ORPHAN": "Ohne Verknüpfung",
+        "UNOWNED": "Ohne Verantwortlichen",
+        "EXTRACTION_FAILED": "Extraktion fehlgeschlagen"
+      },
+      "severity": {
+        "LOW": "Niedrig",
+        "MEDIUM": "Mittel",
+        "HIGH": "Hoch"
+      },
+      "empty-title": "Keine Befunde mit diesem Status",
+      "empty-description": "Nach jeder Extraktion zeigt Brain hier Widersprüche, Lücken, veraltete Quellen und Seiten ohne Verantwortlichen.",
+      "count": "Befunde: {shown} von {total}",
+      "summary": {
+        "unknown-file": "ein unbekanntes Dokument",
+        "verification-due": "Die Prüfung war am {date} fällig",
+        "source-deleted": "Eine Quelle wurde gelöscht: {file}",
+        "quote-gone": "Die zitierten Worte stehen nicht mehr in der aktuellen Version von {file}",
+        "owner-left": "Der Verantwortliche ist nicht mehr Mitglied der Organisation",
+        "no-owner": "Niemand steht für diese Seite ein",
+        "orphan": "Mit keiner anderen Seite verknüpft",
+        "gap": "Ein Prozess ohne zugeordnete Rolle",
+        "extraction-failed": "Das Dokument konnte nicht verarbeitet werden",
+        "unknown": "Keine Details"
+      }
+    },
+    "page": {
+      "back": "Wissensseiten",
+      "owner": "Verantwortlich",
+      "verification": "Prüfung",
+      "last-verified": "Zuletzt geprüft am {date}",
+      "never-verified": "Nie geprüft",
+      "verify-every": "Prüfintervall: {every}",
+      "sources": {
+        "title": "Quellen ({count})",
+        "unknown-file": "Gelöschtes Dokument",
+        "version": "Version {n}",
+        "state": {
+          "newer-version": "Dokument hat eine neuere Version",
+          "deleted": "Quelle gelöscht"
+        }
+      },
+      "findings": {
+        "title": "Offene Befunde",
+        "empty-title": "Nichts offen auf dieser Seite",
+        "empty-description": "Befunde zu dieser Seite erscheinen hier, sobald Brain sie meldet."
+      },
+      "access": {
+        "title": "Zugänglich für",
+        "nobody": "Noch niemanden — Entscheidung nötig",
+        "organization": "Die ganze Organisation",
+        "user": "{name}",
+        "user-gone": "Eine Person, die die Organisation verlassen hat",
+        "team": "Team {name}",
+        "team-gone": "Ein gelöschtes Team",
+        "unmatched": "Niemanden (eine Berechtigung außerhalb dieser Organisation)"
+      },
+      "relations": {
+        "title": "Beziehungen",
+        "empty": "Keine Beziehungen",
+        "out": "{kind} →",
+        "in": "← {kind}"
+      }
+    },
+    "origin": {
+      "EXTRACTED": "zitiert",
+      "INFERRED": "abgeleitet",
+      "AMBIGUOUS": "unbestätigt"
+    }
   }
 }
