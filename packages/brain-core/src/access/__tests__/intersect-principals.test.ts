@@ -53,6 +53,15 @@ describe('intersectPrincipals', () => {
     expect(intersectPrincipals(ORG, [['team:hr'], []])).toEqual([]);
   });
 
+  // A result nobody here matches must be empty, or publication and export
+  // are unblocked for a page no reader can see.
+  it('answers nobody for a source reachable only by another organization', () => {
+    expect(intersectPrincipals(ORG, [['org:o2']])).toEqual([]);
+    expect(
+      intersectPrincipals(ORG, [['org:o2', 'user:u1'], ['user:u1']]),
+    ).toEqual(['user:u1']);
+  });
+
   it('does not read another organization as everyone', () => {
     expect(intersectPrincipals(ORG, [['org:o2'], ['team:hr']])).toEqual([]);
   });

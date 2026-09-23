@@ -55,6 +55,9 @@ describe('bundleManifestSchema', () => {
     'C:/pages/a.md',
     'pages\\a.md',
     'pages//a.md',
+    // Another spelling of pages/a.md: two page ids would share one file.
+    'pages/./a.md',
+    './pages/a.md',
   ])('refuses the page path %j', (path) => {
     const manifest = valid();
     manifest.pages[0]!.path = path;

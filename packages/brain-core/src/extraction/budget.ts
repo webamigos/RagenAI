@@ -52,6 +52,16 @@ export class ExtractionBudget {
   }
 
   charge(usage: TokenUsage): void {
+    // A usage the provider did not report as a finite number is not zero
+    // tokens: `NaN` would make every later comparison false and switch the
+    // ceiling off for the rest of the run. Unknown spend ends the run.
+    if (
+      !Number.isFinite(usage.inputTokens) ||
+      !Number.isFinite(usage.outputTokens)
+    ) {
+      this.tokens = Number.POSITIVE_INFINITY;
+      return;
+    }
     this.tokens +=
       Math.max(0, usage.inputTokens) + Math.max(0, usage.outputTokens);
   }

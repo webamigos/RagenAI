@@ -160,6 +160,19 @@ describe('ExtractionBudget', () => {
     expect(() => new ExtractionBudget(limits)).toThrow(RangeError);
   });
 
+  // `NaN` would make every later comparison false and switch the ceiling off.
+  it.each([
+    [{ inputTokens: Number.NaN, outputTokens: 10 }],
+    [{ inputTokens: 10, outputTokens: undefined as unknown as number }],
+    [{ inputTokens: Number.POSITIVE_INFINITY, outputTokens: 0 }],
+  ])('ends the run on a usage it cannot count: %j', (usage) => {
+    const budget = new ExtractionBudget({ maxDocuments: 10, maxTokens: 1e6 });
+    budget.charge(usage);
+    expect(budget.exhausted()).toBe(true);
+    expect(budget.allowsCall()).toBe(false);
+    expect(budget.admitDocument()).toBe(false);
+  });
+
   it('admits nothing with a zero budget', () => {
     expect(
       new ExtractionBudget({ maxDocuments: 0, maxTokens: 10 }).admitDocument(),

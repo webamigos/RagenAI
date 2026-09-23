@@ -9,8 +9,10 @@
  * the same claims twice.
  */
 export function splitIntoWindows(text: string, maxChars: number): string[] {
-  if (maxChars < 1) {
-    throw new RangeError('maxChars must be positive');
+  // `NaN` and `Infinity` fail every comparison below, which would return
+  // the whole document as one window — an oversized prompt, not an error.
+  if (!Number.isInteger(maxChars) || maxChars < 1) {
+    throw new RangeError('maxChars must be a positive integer');
   }
   const trimmed = text.trim();
   if (trimmed.length === 0) {

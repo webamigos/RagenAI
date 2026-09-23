@@ -41,7 +41,14 @@ export function intersectPrincipals(
 
   let narrowing: Set<string> | null = null;
   for (const source of sources) {
-    const valid = source.filter((p) => principalSchema.safeParse(p).success);
+    // A principal naming another organization matches nobody here, so it
+    // is dropped with the malformed ones: kept, it would make a source
+    // readable by nobody look like one readable by someone.
+    const valid = source.filter(
+      (p) =>
+        principalSchema.safeParse(p).success &&
+        (!p.startsWith('org:') || p === orgWide),
+    );
     if (valid.includes(orgWide)) {
       continue;
     }

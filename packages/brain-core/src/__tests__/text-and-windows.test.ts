@@ -12,8 +12,34 @@ describe('slugify', () => {
     ['Żółć i gęślą jaźń', 'zolc-i-gesla-jazn'],
     ['  --Dział IT!!  ', 'dzial-it'],
     ['???', 'page'],
+    ['Straße', 'strasse'],
   ])('%j → %j', (input, slug) => {
     expect(slugify(input)).toBe(slug);
+  });
+
+  // Assembly merges entities on the slug: two subjects must not meet.
+  it('keeps titles in an untransliterated script apart', () => {
+    const pay = slugify('Зарплата');
+    const leave = slugify('Отпуск');
+    expect(pay).not.toBe(leave);
+    expect(pay).toMatch(/^page-[0-9a-f]{8}$/);
+    // …while the same title still gives the same slug, across windows.
+    expect(slugify(' зарплата ')).toBe(pay);
+    expect(slugify('Zarplata 2024')).not.toBe(slugify('Зарплата 2024'));
+    expect(slugify('Зарплата 2024')).toMatch(/^2024-[0-9a-f]{8}$/);
+  });
+
+  it('gives a slug the frontmatter accepts, in any script', () => {
+    for (const title of [
+      'Зарплата',
+      'Λογαριασμός',
+      '休假政策',
+      'x'.repeat(100) + ' Отпуск',
+    ]) {
+      const slug = slugify(title);
+      expect(slug.length).toBeLessThanOrEqual(80);
+      expect(slug).toMatch(/^[a-z0-9]+(-[a-z0-9]+)*$/);
+    }
   });
 
   it('stays within 80 characters and does not end on a hyphen', () => {
@@ -85,5 +111,10 @@ describe('splitIntoWindows', () => {
 
   it('refuses a non-positive window', () => {
     expect(() => splitIntoWindows('x', 0)).toThrow(RangeError);
+    // Each of these fails every size comparison, and would send the whole
+    // document as one window.
+    for (const bad of [Number.NaN, Number.POSITIVE_INFINITY, 1.5]) {
+      expect(() => splitIntoWindows('x', bad)).toThrow(RangeError);
+    }
   });
 });
