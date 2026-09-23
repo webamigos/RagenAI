@@ -54,6 +54,11 @@ describe('searchDocumentsQuery', () => {
     });
   });
 
+  it('leaves out the files of published Brain pages', async () => {
+    await searchDocumentsQuery('org-1', 'Urlop');
+    expect(whereOf().publishedPages).toEqual({ none: {} });
+  });
+
   it('does not query at all for an empty or blank search', async () => {
     // A palette calls this on every keystroke, including the one that clears
     // the box.

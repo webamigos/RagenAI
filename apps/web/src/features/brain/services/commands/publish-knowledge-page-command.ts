@@ -168,6 +168,11 @@ export async function publishKnowledgePageCommand(
           data: {
             fileName: vehicleFileName(page.title),
             fileSize: Buffer.byteLength(page.content, 'utf8'),
+            // The file's sharing follows the page on every publication, not
+            // only the first: a page withdrawn, narrowed and published again
+            // otherwise kept an org-wide file, and a former owner kept it too.
+            ownerId: page.ownerId,
+            isOrgWide: page.accessibleBy.includes(`org:${orgId}`),
             embeddingStatus: 'STARTED',
             metadata,
           },

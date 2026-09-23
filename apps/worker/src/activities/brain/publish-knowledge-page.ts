@@ -31,8 +31,10 @@ export type PublishKnowledgePageResult =
  *   generation is stale writes nothing; one that went stale while writing
  *   deletes what it wrote. Either way retrieval can never hold chunks of a
  *   page its own row says is not published — the order the spec requires.
- * - **Idempotent**: the file's previous chunks are deleted first, so a retry
- *   or a republish converges on exactly one set.
+ * - **Idempotent**: the file's chunks of this and older generations are
+ *   deleted first, so a retry or a republish converges on exactly one set.
+ *   Every chunk carries `brain_generation`, and every delete here is scoped
+ *   by it, so a stale run never removes what a newer one wrote.
  *
  * Chunk boundaries are decided here, not by ingest: one section per page,
  * titled with the page's title, split only if it outgrows the markdown chunk
@@ -48,12 +50,28 @@ export async function publishKnowledgePage(input: {
   if (!page || !page.publishedFileId) {
     return { status: 'missing', chunks: 0 };
   }
-  if (!page.publishedAt || page.publicationGeneration !== generation) {
+  const fileId = page.publishedFileId;
+  if (!page.publishedAt) {
+    // Withdrawn since this run was queued. Nothing of this file belongs in
+    // the index, and an earlier attempt of this same run may have written
+    // before failing — take it all out rather than leave it retrievable.
+    await qdrantService.deleteByFileId({ orgId, fileId });
     return { status: 'stale', chunks: 0 };
   }
-  const fileId = page.publishedFileId;
+  if (page.publicationGeneration !== generation) {
+    // A newer run owns the file now; touching its chunks is its business.
+    return { status: 'stale', chunks: 0 };
+  }
 
-  await qdrantService.deleteByFileId({ orgId, fileId });
+  // Clear this generation's and older chunks, never a newer run's: an
+  // access change can bump the generation and its run can write between
+  // the check above and this line.
+  await qdrantService.deleteBrainChunks({
+    orgId,
+    fileId,
+    generation,
+    scope: 'upTo',
+  });
 
   const settings = CHUNK_SETTINGS[FileType.MARKDOWN];
   const docs = splitPdfDocuments(
@@ -77,12 +95,24 @@ export async function publishKnowledgePage(input: {
     fileType: FileType.MARKDOWN,
     splitterSettings: settings,
   });
-  await addDocumentsToVectorStore({ orgId, projectId: null, docs: prepared });
+  // Stamped with the generation, so a rollback below removes exactly these.
+  const stamped = prepared.map((doc) => ({
+    ...doc,
+    metadata: { ...doc.metadata, brain_generation: generation },
+  }));
+  await addDocumentsToVectorStore({ orgId, projectId: null, docs: stamped });
 
   const still = await currentPublicationGeneration(orgId, page.id);
   if (still !== generation) {
-    // Lost the race after writing: take back what this run put in.
-    await qdrantService.deleteByFileId({ orgId, fileId });
+    // Lost the race after writing: take back what this run put in — only
+    // that. Deleting by file removed the newer run's chunks too, leaving a
+    // page marked published and complete with nothing in the index.
+    await qdrantService.deleteBrainChunks({
+      orgId,
+      fileId,
+      generation,
+      scope: 'only',
+    });
     logger.info(
       { orgId, pageId: page.publicId, generation, current: still },
       'brain publish: generation moved on while writing; chunks removed',
@@ -96,7 +126,12 @@ export async function publishKnowledgePage(input: {
     generation,
   });
   if (!completed) {
-    await qdrantService.deleteByFileId({ orgId, fileId });
+    await qdrantService.deleteBrainChunks({
+      orgId,
+      fileId,
+      generation,
+      scope: 'only',
+    });
     return { status: 'stale', chunks: 0 };
   }
   logger.info(

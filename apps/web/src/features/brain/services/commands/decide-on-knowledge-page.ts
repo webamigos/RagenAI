@@ -29,6 +29,7 @@ export type PageUnderReview = {
   ownerId: string | null;
   accessibleBy: string[];
   publishedAt: Date | null;
+  publishedFileId: string | null;
 };
 
 /** What a decision changes, and how the ledger names the change. */
@@ -94,6 +95,7 @@ export async function decideOnKnowledgePage(
         ownerId: true,
         accessibleBy: true,
         publishedAt: true,
+        publishedFileId: true,
         updatedAt: true,
       },
     });

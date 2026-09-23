@@ -5,6 +5,7 @@ import {
 } from '@ragenai/jobs';
 
 import type * as activities from '../activities/index.js';
+import { isStagedIntake } from './parse-and-embed.js';
 import { type Document } from '../types/Document.js';
 import { EmbeddingStatus, FileType } from '../types/UserFile.js';
 import { CHUNK_SETTINGS } from '../utils/splitters.js';
@@ -37,6 +38,7 @@ export async function reindexDocumentVersion(
     addDocumentsToVectorStore,
     deleteDocumentVectors,
     getDocumentContent,
+    getFileRecord,
     splitText,
   } = ctx.steps<typeof activities>({
     retry: {
@@ -62,6 +64,26 @@ export async function reindexDocumentVersion(
     throw JobFailure.nonRetryable(
       `Refusing to re-index file ${fileId} with empty content — this would leave the document unsearchable. Document ${documentId} is ${document ? 'empty' : 'missing'}.`,
     );
+  }
+
+  // A version change never decides whether a file is searchable. A file
+  // staged into Ragen Brain (spec F2) or withdrawn from retrieval (E9) stays
+  // out of the index through a rollback or an applied suggestion — this was a
+  // second write path into the vector store, and it indexed both, undoing a
+  // person's decision as a side effect of editing the text.
+  const file = await getFileRecord(fileId, orgId);
+  if (file && isStagedIntake(file.metadata)) {
+    await deleteDocumentVectors({ orgId, fileId });
+    await updateEmbeddingStatus({
+      fileId,
+      orgId,
+      status: EmbeddingStatus.STAGED,
+    });
+    return fileId;
+  }
+  if (file && file.embeddingStatus === EmbeddingStatus.WITHDRAWN) {
+    await deleteDocumentVectors({ orgId, fileId });
+    return fileId;
   }
 
   // Treated as Markdown regardless of the original file type: the version text

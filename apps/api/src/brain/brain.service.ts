@@ -62,9 +62,26 @@ export class BrainService {
     return this.prisma.client;
   }
 
-  /** Throws 404 unless the key's user may use Brain in the key's organization. */
+  /**
+   * Throws 404 unless the key's user may use Brain in the key's organization
+   * **and the key itself reaches that far**.
+   *
+   * Brain is organization-wide: its export carries every exportable page and
+   * the verbatim quotes behind it, and its search reads all page content. A
+   * key scoped to one assistant or to the model alone is a boundary the
+   * files API already honours (`FilesService.visibleFiles`); an admin's key
+   * made for a narrow integration must not read the whole curated corpus
+   * because its creator could. Only a knowledge-base key — or a
+   * session context with no key scope and no project — passes.
+   */
   async assertAccess(context: ApiContext): Promise<string> {
     const orgId = context.orgId as string;
+    const orgWide =
+      context.knowledgeScope === 'KNOWLEDGE_BASE' ||
+      (context.knowledgeScope === undefined && !context.projectId);
+    if (!orgWide) {
+      throw new NotFoundException('Not found');
+    }
     const [member, enabled] = await Promise.all([
       this.db.member.findFirst({
         where: { organizationId: orgId, userId: context.userId as string },

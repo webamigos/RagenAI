@@ -2,7 +2,12 @@ import { NotFoundException } from '@nestjs/common';
 
 import { BrainService } from './brain.service.js';
 import { type ApiContext } from '../common/types/api-context.js';
-import { type OrgId, type UserId, type KeyId } from '../common/types/brand.js';
+import {
+  type OrgId,
+  type UserId,
+  type KeyId,
+  type ProjectId,
+} from '../common/types/brand.js';
 import { type PrismaService } from '../prisma/prisma.service.js';
 import { type SubscriptionsService } from '../subscriptions/subscriptions.service.js';
 
@@ -70,6 +75,29 @@ describe('BrainService', () => {
       await expect(service.health(CONTEXT)).rejects.toBeInstanceOf(
         NotFoundException,
       );
+    });
+
+    it.each([
+      ['an assistant-scoped key', { knowledgeScope: 'ASSISTANT' as const }],
+      ['a model-only key', { knowledgeScope: 'MODEL_ONLY' as const }],
+      [
+        'an unscoped context confined to a project',
+        { projectId: 'p-1' as ProjectId },
+      ],
+    ])('answers 404 to %s, before reading anything', async (_, scope) => {
+      const { service, db, isFeatureEnabled } = makeService();
+      await expect(
+        service.exportBundle({ ...CONTEXT, ...scope }),
+      ).rejects.toBeInstanceOf(NotFoundException);
+      expect(db.member.findFirst).not.toHaveBeenCalled();
+      expect(isFeatureEnabled).not.toHaveBeenCalled();
+    });
+
+    it('serves a knowledge-base key', async () => {
+      const { service } = makeService();
+      await expect(
+        service.next({ ...CONTEXT, knowledgeScope: 'KNOWLEDGE_BASE' }),
+      ).resolves.toBeDefined();
     });
 
     it('asks about the key’s own organization and user', async () => {

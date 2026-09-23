@@ -28,6 +28,9 @@ export const getAllOrgFilesQuery = async (
       organizationId,
       embeddingStatus: 'COMPLETED',
       ...accessFilter,
+      // Not a document — a published Brain page's file; see
+      // `searchDocumentsQuery` and the knowledge base listing.
+      publishedPages: { none: {} },
     },
     select: {
       id: true,

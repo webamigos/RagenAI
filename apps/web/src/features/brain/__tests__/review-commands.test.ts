@@ -209,6 +209,15 @@ describe('setKnowledgePageOwnerCommand', () => {
     });
   });
 
+  it('moves the published file to the new owner as well', async () => {
+    givenPage({ ownerId: 'u-old', publishedFileId: 'file-9' });
+    await setKnowledgePageOwnerCommand({ ...base, ownerId: 'u-new' });
+    expect(tx.userFile.updateMany).toHaveBeenCalledWith({
+      where: { organizationId: 'org-1', id: 'file-9' },
+      data: { ownerId: 'u-new' },
+    });
+  });
+
   it('refuses someone who is not a member', async () => {
     givenPage();
     tx.member.findFirst.mockResolvedValue(null);

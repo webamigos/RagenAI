@@ -1062,6 +1062,40 @@ describe('reindexDocumentVersion workflow', () => {
     );
   });
 
+  it('keeps a file staged into Brain out of the index through a rollback', async () => {
+    const activities = createMockActivities();
+    activities.getFileRecord.mockResolvedValue({
+      id: 'file-1',
+      organizationId: 'org-1',
+      metadata: { intake: 'brain' },
+      embeddingStatus: 'STAGED',
+    });
+
+    await runWorkflow('reindexDocumentVersion', [payload], activities);
+
+    expect(activities.addDocumentsToVectorStore).not.toHaveBeenCalled();
+    expect(activities.updateEmbeddingStatus).toHaveBeenLastCalledWith({
+      fileId: 'file-1',
+      orgId: 'org-1',
+      status: 'STAGED',
+    });
+  });
+
+  it('keeps a file withdrawn from retrieval out of the index through a rollback', async () => {
+    const activities = createMockActivities();
+    activities.getFileRecord.mockResolvedValue({
+      id: 'file-1',
+      organizationId: 'org-1',
+      metadata: {},
+      embeddingStatus: 'WITHDRAWN',
+    });
+
+    await runWorkflow('reindexDocumentVersion', [payload], activities);
+
+    expect(activities.addDocumentsToVectorStore).not.toHaveBeenCalled();
+    expect(activities.updateEmbeddingStatus).not.toHaveBeenCalled();
+  });
+
   it('embeds the document’s current text and never reads the stored file', async () => {
     const activities = createMockActivities();
     activities.getDocumentContent.mockResolvedValue({

@@ -259,4 +259,53 @@ const deleteByFileId = async ({
   logger.info({ fileId, collection: orgId }, 'Deleted file chunks from Qdrant');
 };
 
-export const qdrantService = { addDocuments, deleteByFileId };
+/**
+ * Remove a published Brain page's chunks by publication generation
+ * (`metadata.brain_generation`), so one publish run never deletes another's.
+ *
+ * - `only`: exactly this generation's chunks — a run that lost the race
+ *   taking back what it wrote, and nothing a newer run wrote after it.
+ * - `upTo`: this generation's and every older one's, plus chunks with no
+ *   generation at all (written before the stamp existed) — a run clearing
+ *   the way before it writes, leaving a newer run's chunks alone.
+ */
+const deleteBrainChunks = async ({
+  orgId,
+  fileId,
+  generation,
+  scope,
+}: {
+  orgId: string;
+  fileId: string;
+  generation: number;
+  scope: 'only' | 'upTo';
+}): Promise<void> => {
+  const qdrant = await getClient();
+  await ensureCollection(orgId);
+  const byFile = { key: 'metadata.file_id', match: { value: fileId } };
+  const filter =
+    scope === 'only'
+      ? {
+          must: [
+            byFile,
+            { key: 'metadata.brain_generation', match: { value: generation } },
+          ],
+        }
+      : {
+          must: [byFile],
+          must_not: [
+            { key: 'metadata.brain_generation', range: { gt: generation } },
+          ],
+        };
+  await qdrant.delete(orgId, { filter, wait: true });
+  logger.info(
+    { fileId, collection: orgId, generation, scope },
+    'Deleted Brain page chunks from Qdrant',
+  );
+};
+
+export const qdrantService = {
+  addDocuments,
+  deleteByFileId,
+  deleteBrainChunks,
+};
