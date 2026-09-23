@@ -789,8 +789,11 @@ What did it, and what the measurement found that B5 had not:
       document, carrying the error. _B3 raised it for every failure the
       activity sees; C3 added the one it cannot — a step that throws through
       its retries — so no document fails the run._
-- [ ] **C4.** Graph assembly (`graphology`, Louvain communities) with
+- [x] **C4.** Graph assembly (`graphology`, Louvain communities) with
       `EXTRACTED` / `INFERRED` / `AMBIGUOUS` kept distinct.
+      _`assembleGraph` in `packages/brain-core/src/graph`; the `graph.json`
+      contract is `knowledgeGraphSchema` in `brain-contracts`. No consumer
+      yet — D4's view and E1's export are the two._
 
 **What C2 and C3 settled:**
 
@@ -837,6 +840,46 @@ What did it, and what the measurement found that B5 had not:
   against mocks: five findings from a seeded organization, none on the second
   run, and dismissal, an owner rejoining and a new `ROLE` edge each resolving
   or holding as above.
+
+**What C4 settled:**
+
+- **Two structures, on purpose.** The output keeps **every edge as
+  extracted**, so the same pair related by a quoted sentence and by a guess
+  is two edges. Communities are found on a collapsed, undirected, weighted
+  copy, because Louvain takes no multigraph: a pair weighs the sum of its
+  edges, **`EXTRACTED` 1, `INFERRED` 0.5, `AMBIGUOUS` 0.25**. A test proves
+  the weights change the grouping (four guesses do not pull a page away from
+  one stated link), and sabotage with uniform weights fails it.
+- **Deterministic.** Louvain is randomised; a seeded PRNG makes the graph a
+  function of its pages, so a view does not regroup on reload and two exports
+  of the same pages are byte-identical. The test uses a ring, which has
+  several equally good partitions, because a clear two-cluster graph came out
+  the same under `Math.random` too and proved nothing.
+- **A subset drops its edges.** An edge naming a page not given is dropped,
+  and the contract refuses one: an export of approved pages must not name the
+  candidates it left out.
+- **Measured** (2026-09-23, `brain-extract-eval.ts`, same 13 fixtures × 2,
+  `gemini-2.5-flash`), with the graph metrics added to the eval:
+
+  | | all runs | without the one outlier run |
+  | --- | --- | --- |
+  | pages | 166 | 127 |
+  | edges per document | 4.96 | 3.64 |
+  | share `EXTRACTED` | 49.6 % | 70.3 % |
+  | pages with no edge | 11.4 % | 15.0 % |
+  | pages per community | 3.02 | 2.35 |
+  | documents with no edge at all | 2 / 26 | 2 / 25 |
+
+  There is a graph to draw: every document but two has edges, and 85–89 % of
+  pages have at least one. English documents are sparser (21 % isolated
+  against 6 % for Polish).
+- **The outlier is the table problem coming back.** One of the two runs of
+  `pl-02-stawki-serwisowe` made every price-list row its own entity again —
+  39 pages and 38 edges, **all `INFERRED`** — the shape B's prompt change
+  fixed on the runs it measured. It recurs about one run in two on that
+  document, so it is variance the prompt has not removed, not a closed gap.
+  It is also the case for keeping origins apart: those 38 guesses would
+  otherwise read like structure. To settle before D, per ADR-20.
 
 ### Phase D — Review interface
 

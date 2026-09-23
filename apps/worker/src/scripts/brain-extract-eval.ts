@@ -162,7 +162,8 @@ async function main() {
       console.log(
         `${repeat} ${basename(doc.path)}: ${metrics.pages} pages, ${metrics.claims} claims, ` +
           `${metrics.descriptionsInOtherLanguage}/${metrics.descriptions} wrong-language, ` +
-          `${metrics.shortQuotes} short, ${metrics.edges} edges (${metrics.edgesExtracted} extracted)`,
+          `${metrics.shortQuotes} short, ${metrics.edges} edges (${metrics.edgesExtracted} extracted), ` +
+          `${metrics.isolatedPages} isolated, ${metrics.communities} communities`,
       );
     }
   }
@@ -182,7 +183,8 @@ async function main() {
       `${label.padEnd(4)} failed ${s.failed}/${s.documents} · pages ${s.pages} · claims ${s.claims} · ` +
         `drop ${pct(s.dropRate)} · wrong-language ${pct(s.wrongLanguageRate)} · ` +
         `short quotes ${pct(s.shortQuoteRate)} · edges/doc ${s.edgesPerDocument.toFixed(2)} ` +
-        `(extracted ${pct(s.extractedEdgeShare)}) · tokens ${s.tokens}`,
+        `(extracted ${pct(s.extractedEdgeShare)}) · isolated ${pct(s.isolatedPageShare)} · ` +
+        `pages/community ${s.pagesPerCommunity?.toFixed(2) ?? '—'} · tokens ${s.tokens}`,
     );
   }
 

@@ -56,3 +56,10 @@ export {
   type FindingsPlan,
   type FindingStatus,
 } from './findings/reconcile';
+export {
+  assembleGraph,
+  ORIGIN_WEIGHT,
+  type GraphEdgeInput,
+  type GraphPageInput,
+  type GraphStats,
+} from './graph/assemble-graph';
