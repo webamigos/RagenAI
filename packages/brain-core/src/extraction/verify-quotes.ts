@@ -11,12 +11,34 @@
  * those words there.
  */
 
+/**
+ * Characters NFKC would fold into something that reads differently:
+ * superscripts and subscripts (`10²` → `102`, `H₂O` → `H2O`) and the
+ * ordinal indicators `ª` `º`. Folding them would let a quote with a
+ * different number verify against the source, so they are kept as written.
+ */
+const SUPER_OR_SUBSCRIPT =
+  /([\u00aa\u00b2\u00b3\u00b9\u00ba\u02b0-\u02b8\u02e0-\u02e4\u1d2c-\u1d6a\u1d78\u1d9b-\u1dbf\u2070-\u209c\u2c7c\u2c7d\ua69c\ua69d\ua770\uab5c-\uab5f]+)/u;
+
+/**
+ * NFKC — ligatures, full-width forms, compatibility spaces fold as they
+ * should — except for superscripts and subscripts, which pass through. The
+ * text between them is normalised as a whole, so combining sequences still
+ * compose.
+ */
+export function compatibilityFold(text: string): string {
+  return text
+    .split(SUPER_OR_SUBSCRIPT)
+    .map((part, i) => (i % 2 === 1 ? part : part.normalize('NFKC')))
+    .join('');
+}
+
 const SINGLE_QUOTES = /[\u2018\u2019\u201a\u201b\u2032]/;
 const DOUBLE_QUOTES = /[\u201c\u201d\u201e\u201f\u2033\u00ab\u00bb]/;
 const DASHES = /[\u2010-\u2015\u2212]/;
 
 /**
- * The normalised form of `text` (already NFKC), with, for every character of
+ * The normalised form of `text` (already `compatibilityFold`ed), with, for every character of
  * it, the index in `text` it came from. The map is what lets a match found in
  * the normalised haystack be cut back out of the source as the source wrote
  * it.
@@ -62,7 +84,7 @@ function normalizeWithMap(text: string): { norm: string; map: number[] } {
 }
 
 export function normalizeForQuoteMatch(text: string): string {
-  return normalizeWithMap(text.normalize('NFKC')).norm;
+  return normalizeWithMap(compatibilityFold(text)).norm;
 }
 
 /** Where a quote sits in the source: `source.slice(start, end)`. */
@@ -72,7 +94,7 @@ export type QuoteLocation = { start: number; end: number };
  * A source text prepared once, so checking two hundred claims does not
  * normalise a sixty-page document two hundred times.
  *
- * `source` is the text in NFKC, which is what locations index into and what
+ * `source` is the text after `compatibilityFold`, which is what locations index into and what
  * `expandToSentence` cuts from — so a quote returned from here is the
  * source's own words, in the source's own case and punctuation.
  */
@@ -82,7 +104,7 @@ export class QuoteIndex {
   private readonly map: number[];
 
   constructor(sourceText: string) {
-    this.source = sourceText.normalize('NFKC');
+    this.source = compatibilityFold(sourceText);
     const { norm, map } = normalizeWithMap(this.source);
     this.norm = norm;
     this.map = map;
