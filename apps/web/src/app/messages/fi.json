@@ -2501,7 +2501,8 @@
         "empty": "Ei yhteyksiä",
         "out": "{kind} →",
         "in": "← {kind}"
-      }
+      },
+      "history": "Historia"
     },
     "origin": {
       "EXTRACTED": "lainattu",
@@ -2513,6 +2514,57 @@
       "previous": "Edellinen",
       "next": "Seuraava",
       "position": "{page}/{pages}"
+    },
+    "review": {
+      "approve": "Hyväksy sivu",
+      "reject": "Hylkää sivu",
+      "approve-needs-owner": "Nimeä omistaja ennen hyväksymistä — henkilö, joka vastaa sivusta.",
+      "reject-confirm-title": "Hylätäänkö tämä sivu?",
+      "reject-confirm-description": "Sivu jää Brainiin hylättynä, eikä saman asiakirjan myöhempi poiminta tarjoa sitä uudelleen. Sitä ei voi palauttaa täältä.",
+      "approved": "Sivu hyväksytty",
+      "rejected": "Sivu hylätty",
+      "owner-label": "Omistaja",
+      "owner-placeholder": "Valitse omistaja",
+      "owner-save": "Tallenna omistaja",
+      "owner-saved": "Omistaja tallennettu",
+      "access-edit": "Muuta käyttöoikeutta",
+      "access-organization": "Koko organisaatio",
+      "access-teams": "Tiimit",
+      "access-people": "Henkilöt",
+      "access-save": "Tallenna käyttöoikeus",
+      "access-cancel": "Peruuta",
+      "access-saved": "Käyttöoikeus tallennettu",
+      "access-none-hint": "Ketään ei ole valittu — sivu ei ole kenenkään käytettävissä ennen kuin joku lisätään.",
+      "widen-title": "Laajennetaanko tämän sivun käyttöoikeutta?",
+      "widen-description": "{names} — he voivat lukea sivun, kun se on julkaistu. Muutos kirjataan käyttöoikeuden laajennukseksi sinun nimelläsi.",
+      "widen-confirm": "Laajenna käyttöoikeutta",
+      "unchanged": "Mikään ei muuttunut — sivulla oli jo tämä asetus",
+      "errors": {
+        "invalid-input": "Pyyntöä ei ymmärretty — lataa sivu uudelleen ja yritä uudelleen.",
+        "not-found": "Tätä sivua ei enää ole, tai et voi arvioida sitä.",
+        "conflict": "Joku muutti sivua sen jälkeen, kun avasit sen — se on ladattu uudelleen; tarkista se ja yritä uudelleen.",
+        "invalid-status": "Tämä toiminto ei koske sivua sen nykyisessä tilassa.",
+        "owner-required": "Nimeä sivulle omistaja ennen hyväksymistä.",
+        "owner-not-member": "Tämä henkilö ei ole organisaation jäsen — valitse joku muu.",
+        "invalid-access": "Joku valituista henkilöistä tai tiimeistä ei enää kuulu organisaatioon — lataa uudelleen ja valitse uudelleen.",
+        "published": "Tämä sivu on julkaistu — sen käyttöoikeutta ei voi vielä muuttaa.",
+        "confirm-widening": "Tämä muutos laajentaa käyttöoikeutta, ja se on vahvistettava."
+      }
+    },
+    "history": {
+      "empty": "Ei vielä päätöksiä",
+      "unknown-actor": "Poistettu käyttäjä",
+      "action": {
+        "APPROVE": "Hyväksytty",
+        "REJECT": "Hylätty",
+        "MERGE": "Yhdistetty",
+        "SET_OWNER": "Omistaja nimetty",
+        "SET_ACCESS": "Käyttöoikeutta muutettu",
+        "WIDEN_ACCESS": "Käyttöoikeutta laajennettu",
+        "PUBLISH": "Julkaistu",
+        "UNPUBLISH": "Vedetty pois",
+        "VERIFY": "Tarkistettu"
+      }
     }
   }
 }

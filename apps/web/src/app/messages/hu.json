@@ -2501,7 +2501,8 @@
         "empty": "Nincsenek kapcsolatok",
         "out": "{kind} →",
         "in": "← {kind}"
-      }
+      },
+      "history": "Előzmények"
     },
     "origin": {
       "EXTRACTED": "idézett",
@@ -2513,6 +2514,57 @@
       "previous": "Előző",
       "next": "Következő",
       "position": "{page}/{pages}"
+    },
+    "review": {
+      "approve": "Oldal jóváhagyása",
+      "reject": "Oldal elutasítása",
+      "approve-needs-owner": "Jóváhagyás előtt jelöljön ki felelőst — azt a személyt, aki kezeskedik az oldalért.",
+      "reject-confirm-title": "Elutasítja ezt az oldalt?",
+      "reject-confirm-description": "Az oldal elutasítottként a Brainben marad, és ugyanannak a dokumentumnak egy későbbi kinyerése nem ajánlja fel újra. Innen nem állítható vissza.",
+      "approved": "Oldal jóváhagyva",
+      "rejected": "Oldal elutasítva",
+      "owner-label": "Felelős",
+      "owner-placeholder": "Felelős kiválasztása",
+      "owner-save": "Felelős mentése",
+      "owner-saved": "Felelős mentve",
+      "access-edit": "Hozzáférés módosítása",
+      "access-organization": "A teljes szervezet",
+      "access-teams": "Csapatok",
+      "access-people": "Személyek",
+      "access-save": "Hozzáférés mentése",
+      "access-cancel": "Mégse",
+      "access-saved": "Hozzáférés mentve",
+      "access-none-hint": "Senki nincs kiválasztva — az oldal senki számára nem lesz elérhető, amíg valakit hozzá nem ad.",
+      "widen-title": "Kibővíti a hozzáférést ehhez az oldalhoz?",
+      "widen-description": "{names} — ők olvashatják az oldalt, amint közzéteszik. A módosítás az Ön nevén a hozzáférés bővítéseként kerül rögzítésre.",
+      "widen-confirm": "Hozzáférés bővítése",
+      "unchanged": "Semmi sem változott — az oldalnak már ez volt a beállítása",
+      "errors": {
+        "invalid-input": "A kérés nem értelmezhető — töltse újra az oldalt, és próbálja újra.",
+        "not-found": "Ez az oldal már nem létezik, vagy nem bírálhatja el.",
+        "conflict": "Valaki módosította az oldalt, miután megnyitotta — újratöltöttük; ellenőrizze, és próbálja újra.",
+        "invalid-status": "Ez a művelet nem vonatkozik az oldal jelenlegi állapotára.",
+        "owner-required": "Jóváhagyás előtt jelöljön ki felelőst az oldalhoz.",
+        "owner-not-member": "Ez a személy nem tagja a szervezetnek — válasszon valaki mást.",
+        "invalid-access": "A kiválasztott személyek vagy csapatok egyike már nem tagja a szervezetnek — töltse újra, és válasszon újra.",
+        "published": "Ez az oldal közzé van téve — a hozzáférése egyelőre nem módosítható.",
+        "confirm-widening": "Ez a módosítás bővíti a hozzáférést, és meg kell erősíteni."
+      }
+    },
+    "history": {
+      "empty": "Még nincs döntés",
+      "unknown-actor": "Törölt felhasználó",
+      "action": {
+        "APPROVE": "Jóváhagyva",
+        "REJECT": "Elutasítva",
+        "MERGE": "Egyesítve",
+        "SET_OWNER": "Felelős kijelölve",
+        "SET_ACCESS": "Hozzáférés módosítva",
+        "WIDEN_ACCESS": "Hozzáférés bővítve",
+        "PUBLISH": "Közzétéve",
+        "UNPUBLISH": "Visszavonva",
+        "VERIFY": "Ellenőrizve"
+      }
     }
   }
 }

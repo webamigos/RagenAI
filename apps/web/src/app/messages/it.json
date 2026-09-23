@@ -2501,7 +2501,8 @@
         "empty": "Nessuna relazione",
         "out": "{kind} →",
         "in": "← {kind}"
-      }
+      },
+      "history": "Cronologia"
     },
     "origin": {
       "EXTRACTED": "citata",
@@ -2513,6 +2514,57 @@
       "previous": "Precedente",
       "next": "Successivo",
       "position": "{page} di {pages}"
+    },
+    "review": {
+      "approve": "Approva pagina",
+      "reject": "Rifiuta pagina",
+      "approve-needs-owner": "Imposta un responsabile prima di approvare: la persona che garantisce per questa pagina.",
+      "reject-confirm-title": "Rifiutare questa pagina?",
+      "reject-confirm-description": "La pagina resta in Brain come rifiutata e un’estrazione successiva dello stesso documento non la riproporrà. Non può essere ripristinata da qui.",
+      "approved": "Pagina approvata",
+      "rejected": "Pagina rifiutata",
+      "owner-label": "Responsabile",
+      "owner-placeholder": "Scegli un responsabile",
+      "owner-save": "Salva responsabile",
+      "owner-saved": "Responsabile salvato",
+      "access-edit": "Modifica accesso",
+      "access-organization": "Tutta l’organizzazione",
+      "access-teams": "Team",
+      "access-people": "Persone",
+      "access-save": "Salva accesso",
+      "access-cancel": "Annulla",
+      "access-saved": "Accesso salvato",
+      "access-none-hint": "Nessuno selezionato: la pagina non sarà aperta a nessuno finché qualcuno non viene aggiunto.",
+      "widen-title": "Ampliare l’accesso a questa pagina?",
+      "widen-description": "{names}: queste persone potranno leggere la pagina una volta pubblicata. La modifica viene registrata come ampliamento dell’accesso, a tuo nome.",
+      "widen-confirm": "Amplia accesso",
+      "unchanged": "Nulla è cambiato: la pagina aveva già questa impostazione",
+      "errors": {
+        "invalid-input": "La richiesta non è stata compresa: ricarica la pagina e riprova.",
+        "not-found": "Questa pagina non esiste più oppure non puoi revisionarla.",
+        "conflict": "Qualcuno ha modificato questa pagina dopo che l’hai aperta: è stata ricaricata; controllala e riprova.",
+        "invalid-status": "Questa azione non si applica a una pagina nel suo stato attuale.",
+        "owner-required": "Imposta un responsabile prima di approvare questa pagina.",
+        "owner-not-member": "Questa persona non fa parte dell’organizzazione: scegli qualcun altro.",
+        "invalid-access": "Una delle persone o dei team scelti non fa più parte dell’organizzazione: ricarica e scegli di nuovo.",
+        "published": "Questa pagina è pubblicata: la modifica del suo accesso non è ancora disponibile.",
+        "confirm-widening": "Questa modifica amplia l’accesso e deve essere confermata."
+      }
+    },
+    "history": {
+      "empty": "Ancora nessuna decisione",
+      "unknown-actor": "Un utente eliminato",
+      "action": {
+        "APPROVE": "Approvata",
+        "REJECT": "Rifiutata",
+        "MERGE": "Unita",
+        "SET_OWNER": "Responsabile impostato",
+        "SET_ACCESS": "Accesso modificato",
+        "WIDEN_ACCESS": "Accesso ampliato",
+        "PUBLISH": "Pubblicata",
+        "UNPUBLISH": "Ritirata",
+        "VERIFY": "Verificata"
+      }
     }
   }
 }

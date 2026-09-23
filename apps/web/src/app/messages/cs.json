@@ -2501,7 +2501,8 @@
         "empty": "Žádné vztahy",
         "out": "{kind} →",
         "in": "← {kind}"
-      }
+      },
+      "history": "Historie"
     },
     "origin": {
       "EXTRACTED": "citováno",
@@ -2513,6 +2514,57 @@
       "previous": "Předchozí",
       "next": "Další",
       "position": "{page} z {pages}"
+    },
+    "review": {
+      "approve": "Schválit stránku",
+      "reject": "Zamítnout stránku",
+      "approve-needs-owner": "Před schválením určete vlastníka — osobu, která za stránku ručí.",
+      "reject-confirm-title": "Zamítnout tuto stránku?",
+      "reject-confirm-description": "Stránka zůstane v Brain jako zamítnutá a pozdější extrakce téhož dokumentu ji znovu nenabídne. Odsud ji nelze obnovit.",
+      "approved": "Stránka schválena",
+      "rejected": "Stránka zamítnuta",
+      "owner-label": "Vlastník",
+      "owner-placeholder": "Vyberte vlastníka",
+      "owner-save": "Uložit vlastníka",
+      "owner-saved": "Vlastník uložen",
+      "access-edit": "Změnit přístup",
+      "access-organization": "Celá organizace",
+      "access-teams": "Týmy",
+      "access-people": "Lidé",
+      "access-save": "Uložit přístup",
+      "access-cancel": "Zrušit",
+      "access-saved": "Přístup uložen",
+      "access-none-hint": "Nikdo není vybrán — stránka nebude nikomu přístupná, dokud někoho nepřidáte.",
+      "widen-title": "Rozšířit přístup k této stránce?",
+      "widen-description": "{names} — tito lidé budou moci stránku číst, jakmile bude zveřejněna. Změna se zaznamená jako rozšíření přístupu pod vaším jménem.",
+      "widen-confirm": "Rozšířit přístup",
+      "unchanged": "Nic se nezměnilo — stránka už toto nastavení měla",
+      "errors": {
+        "invalid-input": "Požadavku nebylo rozumět — načtěte stránku znovu a zkuste to znovu.",
+        "not-found": "Tato stránka už neexistuje, nebo ji nemůžete posuzovat.",
+        "conflict": "Někdo stránku po jejím otevření změnil — byla znovu načtena; zkontrolujte ji a zkuste to znovu.",
+        "invalid-status": "Tato akce se na stránku v aktuálním stavu nevztahuje.",
+        "owner-required": "Před schválením stránky určete vlastníka.",
+        "owner-not-member": "Tato osoba není členem organizace — vyberte někoho jiného.",
+        "invalid-access": "Jedna z vybraných osob nebo týmů už do organizace nepatří — načtěte znovu a vyberte znovu.",
+        "published": "Tato stránka je zveřejněná — změna jejího přístupu zatím není k dispozici.",
+        "confirm-widening": "Tato změna rozšiřuje přístup a musí být potvrzena."
+      }
+    },
+    "history": {
+      "empty": "Zatím žádná rozhodnutí",
+      "unknown-actor": "Smazaný uživatel",
+      "action": {
+        "APPROVE": "Schváleno",
+        "REJECT": "Zamítnuto",
+        "MERGE": "Sloučeno",
+        "SET_OWNER": "Určen vlastník",
+        "SET_ACCESS": "Přístup změněn",
+        "WIDEN_ACCESS": "Přístup rozšířen",
+        "PUBLISH": "Zveřejněno",
+        "UNPUBLISH": "Staženo",
+        "VERIFY": "Ověřeno"
+      }
     }
   }
 }

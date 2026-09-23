@@ -2501,7 +2501,8 @@
         "empty": "Inga relationer",
         "out": "{kind} →",
         "in": "← {kind}"
-      }
+      },
+      "history": "Historik"
     },
     "origin": {
       "EXTRACTED": "citerad",
@@ -2513,6 +2514,57 @@
       "previous": "Föregående",
       "next": "Nästa",
       "position": "{page} av {pages}"
+    },
+    "review": {
+      "approve": "Godkänn sidan",
+      "reject": "Avvisa sidan",
+      "approve-needs-owner": "Ange en ägare innan du godkänner — personen som går i god för sidan.",
+      "reject-confirm-title": "Avvisa den här sidan?",
+      "reject-confirm-description": "Sidan finns kvar i Brain som avvisad, och en senare extraktion av samma dokument föreslår den inte igen. Den kan inte återställas härifrån.",
+      "approved": "Sidan godkänd",
+      "rejected": "Sidan avvisad",
+      "owner-label": "Ägare",
+      "owner-placeholder": "Välj en ägare",
+      "owner-save": "Spara ägare",
+      "owner-saved": "Ägare sparad",
+      "access-edit": "Ändra åtkomst",
+      "access-organization": "Hela organisationen",
+      "access-teams": "Team",
+      "access-people": "Personer",
+      "access-save": "Spara åtkomst",
+      "access-cancel": "Avbryt",
+      "access-saved": "Åtkomst sparad",
+      "access-none-hint": "Ingen vald — sidan är inte öppen för någon förrän någon läggs till.",
+      "widen-title": "Utöka åtkomsten till den här sidan?",
+      "widen-description": "{names} — de kommer att kunna läsa sidan när den publiceras. Ändringen registreras som en utökad åtkomst, i ditt namn.",
+      "widen-confirm": "Utöka åtkomst",
+      "unchanged": "Inget ändrades — sidan hade redan den inställningen",
+      "errors": {
+        "invalid-input": "Begäran förstods inte — ladda om sidan och försök igen.",
+        "not-found": "Den här sidan finns inte längre, eller så får du inte granska den.",
+        "conflict": "Någon ändrade sidan efter att du öppnade den — den har laddats om; kontrollera den och försök igen.",
+        "invalid-status": "Den här åtgärden gäller inte en sida med nuvarande status.",
+        "owner-required": "Ange en ägare innan du godkänner sidan.",
+        "owner-not-member": "Personen är inte medlem i organisationen — välj någon annan.",
+        "invalid-access": "En av de valda personerna eller teamen tillhör inte längre organisationen — ladda om och välj igen.",
+        "published": "Den här sidan är publicerad — det går ännu inte att ändra dess åtkomst.",
+        "confirm-widening": "Den här ändringen utökar åtkomsten och måste bekräftas."
+      }
+    },
+    "history": {
+      "empty": "Inga beslut än",
+      "unknown-actor": "En borttagen användare",
+      "action": {
+        "APPROVE": "Godkänd",
+        "REJECT": "Avvisad",
+        "MERGE": "Sammanslagen",
+        "SET_OWNER": "Ägare angiven",
+        "SET_ACCESS": "Åtkomst ändrad",
+        "WIDEN_ACCESS": "Åtkomst utökad",
+        "PUBLISH": "Publicerad",
+        "UNPUBLISH": "Tillbakadragen",
+        "VERIFY": "Verifierad"
+      }
     }
   }
 }

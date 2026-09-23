@@ -1,6 +1,7 @@
 import db from '@ragenai/prisma-client';
 
 import type {
+  KnowledgeDecisionView,
   KnowledgeEdgeView,
   KnowledgePageDetail,
   KnowledgePageSourceView,
@@ -12,7 +13,7 @@ import { getPageFindingsQuery } from './get-knowledge-findings-query';
 /**
  * One knowledge page as a curator reviews it (spec D1): the page, who it is
  * open to, every source it cites with the state of that source now, its
- * relations, and its open findings.
+ * relations, its open findings, and its ledger (D2).
  *
  * `publicId` is the URL's; the page is looked up with the organization in the
  * same `where`, so another organization's id answers null, not a page.
@@ -43,6 +44,7 @@ export async function getKnowledgePageQuery(
       lastVerifiedAt: true,
       verifyEvery: true,
       updatedAt: true,
+      ownerId: true,
       owner: { select: { name: true, email: true } },
       sources: {
         where: { organizationId: orgId },
@@ -72,6 +74,12 @@ export async function getKnowledgePageQuery(
           fromPage: { select: { publicId: true, title: true } },
         },
       },
+      decisions: {
+        where: { organizationId: orgId },
+        orderBy: { id: 'desc' },
+        take: DECISIONS_SHOWN,
+        select: { action: true, actorId: true, createdAt: true },
+      },
     },
   });
   if (!page) {
@@ -81,8 +89,9 @@ export async function getKnowledgePageQuery(
   const fileIds = [...new Set(page.sources.map((s) => s.fileId))];
   const pinnedIds = [...new Set(page.sources.map((s) => s.documentVersionId))];
   const { userIds, teamIds } = principalIds(page.accessibleBy);
+  const actorIds = [...new Set(page.decisions.map((d) => d.actorId))];
 
-  const [files, pinned, users, teams, findings] = await Promise.all([
+  const [files, pinned, users, teams, findings, actors] = await Promise.all([
     fileIds.length
       ? db.userFile.findMany({
           where: { organizationId: orgId, id: { in: fileIds } },
@@ -116,6 +125,14 @@ export async function getKnowledgePageQuery(
         })
       : [],
     getPageFindingsQuery(orgId, page.id),
+    // Users, not members: the ledger names who acted after they have left,
+    // and a former member's name is still the answer to "who approved this".
+    actorIds.length
+      ? db.user.findMany({
+          where: { id: { in: actorIds } },
+          select: { id: true, name: true, email: true },
+        })
+      : [],
   ]);
 
   // The document is the one whose `fileId` is this file — the relation.
@@ -182,13 +199,22 @@ export async function getKnowledgePageQuery(
     })),
   ];
 
+  const actorName = new Map(actors.map((u) => [u.id, u.name || u.email]));
+  const decisions: KnowledgeDecisionView[] = page.decisions.map((d) => ({
+    action: d.action,
+    actorName: actorName.get(d.actorId) ?? null,
+    createdAt: d.createdAt.toISOString(),
+  }));
+
   return {
     publicId: page.publicId,
     title: page.title,
     type: page.type,
     status: page.status,
     content: page.content,
+    ownerId: page.ownerId,
     ownerName: page.owner ? (page.owner.name ?? page.owner.email) : null,
+    principals: page.accessibleBy,
     access: accessEntries(orgId, page.accessibleBy, {
       users: new Map(users.map((m) => [m.userId, m.user.name ?? m.user.email])),
       teams: new Map(teams.map((t) => [t.id, t.name])),
@@ -200,5 +226,9 @@ export async function getKnowledgePageQuery(
     sources,
     edges,
     findings,
+    decisions,
   };
 }
+
+/** The ledger rows the page view shows; the rest are in the database. */
+const DECISIONS_SHOWN = 20;

@@ -2501,7 +2501,8 @@
         "empty": "Sem relações",
         "out": "{kind} →",
         "in": "← {kind}"
-      }
+      },
+      "history": "Histórico"
     },
     "origin": {
       "EXTRACTED": "citada",
@@ -2513,6 +2514,57 @@
       "previous": "Anterior",
       "next": "Seguinte",
       "position": "{page} de {pages}"
+    },
+    "review": {
+      "approve": "Aprovar página",
+      "reject": "Rejeitar página",
+      "approve-needs-owner": "Defina um responsável antes de aprovar — a pessoa que responde por esta página.",
+      "reject-confirm-title": "Rejeitar esta página?",
+      "reject-confirm-description": "A página fica no Brain como rejeitada e uma extração posterior do mesmo documento não a voltará a propor. Não pode ser restaurada aqui.",
+      "approved": "Página aprovada",
+      "rejected": "Página rejeitada",
+      "owner-label": "Responsável",
+      "owner-placeholder": "Escolher um responsável",
+      "owner-save": "Guardar responsável",
+      "owner-saved": "Responsável guardado",
+      "access-edit": "Alterar acesso",
+      "access-organization": "Toda a organização",
+      "access-teams": "Equipas",
+      "access-people": "Pessoas",
+      "access-save": "Guardar acesso",
+      "access-cancel": "Cancelar",
+      "access-saved": "Acesso guardado",
+      "access-none-hint": "Ninguém selecionado — a página não estará aberta a ninguém até alguém ser adicionado.",
+      "widen-title": "Alargar o acesso a esta página?",
+      "widen-description": "{names} — estas pessoas poderão ler a página quando for publicada. A alteração fica registada como um alargamento do acesso, em seu nome.",
+      "widen-confirm": "Alargar acesso",
+      "unchanged": "Nada mudou — a página já tinha essa definição",
+      "errors": {
+        "invalid-input": "O pedido não foi compreendido — recarregue a página e tente novamente.",
+        "not-found": "Esta página já não existe ou não a pode rever.",
+        "conflict": "Alguém alterou esta página depois de a abrir — foi recarregada; verifique-a e tente novamente.",
+        "invalid-status": "Esta ação não se aplica a uma página no estado atual.",
+        "owner-required": "Defina um responsável antes de aprovar esta página.",
+        "owner-not-member": "Essa pessoa não é membro da organização — escolha outra.",
+        "invalid-access": "Uma das pessoas ou equipas escolhidas já não pertence à organização — recarregue e escolha de novo.",
+        "published": "Esta página está publicada — ainda não é possível alterar o seu acesso.",
+        "confirm-widening": "Esta alteração alarga o acesso e tem de ser confirmada."
+      }
+    },
+    "history": {
+      "empty": "Ainda sem decisões",
+      "unknown-actor": "Um utilizador eliminado",
+      "action": {
+        "APPROVE": "Aprovada",
+        "REJECT": "Rejeitada",
+        "MERGE": "Fundida",
+        "SET_OWNER": "Responsável definido",
+        "SET_ACCESS": "Acesso alterado",
+        "WIDEN_ACCESS": "Acesso alargado",
+        "PUBLISH": "Publicada",
+        "UNPUBLISH": "Retirada",
+        "VERIFY": "Verificada"
+      }
     }
   }
 }

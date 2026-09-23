@@ -55,6 +55,8 @@ import {
   TEST_PRIVATE_CONTENT,
   TEST_BRAIN_PAGE_PUBLIC_ID,
   TEST_BRAIN_PAGE_TITLE,
+  TEST_BRAIN_REVIEW_PAGE_PUBLIC_ID,
+  TEST_BRAIN_REVIEW_PAGE_TITLE,
   TEST_BRAIN_SOURCE_QUOTE,
 } from '../constants.js';
 
@@ -685,6 +687,19 @@ async function seed() {
         },
       },
     ],
+  });
+  // p0-33's page: a candidate nobody owns yet, open to the test user alone.
+  await prisma.knowledgePage.create({
+    data: {
+      publicId: TEST_BRAIN_REVIEW_PAGE_PUBLIC_ID,
+      organizationId: TEST_ORG_ID,
+      title: TEST_BRAIN_REVIEW_PAGE_TITLE,
+      slug: 'e2e-brain-strona-do-recenzji',
+      type: 'PROCESS',
+      content: `# ${TEST_BRAIN_REVIEW_PAGE_TITLE}\n\nStrona z seeda e2e do recenzji.\n`,
+      contentHash: `sha256:${'2'.repeat(64)}`,
+      accessibleBy: [`user:${TEST_USER_ID}`],
+    },
   });
   console.log(
     `Created Brain fixtures: page ${brainPage.id}, source ${brainSource.id}, two findings`,

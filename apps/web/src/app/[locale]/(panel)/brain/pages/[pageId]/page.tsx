@@ -6,12 +6,17 @@ import ReactMarkdown from 'react-markdown';
 import '@/app/components/Assistant/ChatOutput/chat-response.css';
 import { Badge } from '@/components/ui/badge';
 import { getBrainAccessQuery } from '@/features/brain/services/queries/get-brain-access-query';
+import { getBrainReviewOptionsQuery } from '@/features/brain/services/queries/get-brain-review-options-query';
 import { getKnowledgePageQuery } from '@/features/brain/services/queries/get-knowledge-page-query';
 import { Link } from '@/i18n/routing';
 
+import { AccessEditor } from '../../components/AccessEditor';
 import { AccessList } from '../../components/AccessList';
 import { BrainEmpty } from '../../components/BrainEmpty';
+import { DecisionHistory } from '../../components/DecisionHistory';
 import { FindingsTable } from '../../components/FindingsTable';
+import { OwnerPicker } from '../../components/OwnerPicker';
+import { ReviewActions } from '../../components/ReviewActions';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,7 +25,9 @@ type Props = { params: Promise<{ pageId: string }> };
 /**
  * One knowledge page as a curator reviews it (spec D1): the statements and
  * their evidence, who it is open to, the state of every source it cites, its
- * relations, and what is wrong with it. Read-only — the actions are D2's.
+ * relations, and what is wrong with it — and, since D2, the decisions: set
+ * the owner and the access, approve or reject, each one a ledger row listed
+ * under History.
  */
 export default async function BrainPageDetail({ params }: Props) {
   const access = await getBrainAccessQuery();
@@ -32,10 +39,12 @@ export default async function BrainPageDetail({ params }: Props) {
   if (!page) {
     notFound();
   }
-  const [t, format] = await Promise.all([
+  const [t, format, options] = await Promise.all([
     getTranslations('brain'),
     getFormatter(),
+    getBrainReviewOptionsQuery(access.orgId),
   ]);
+  const curated = page.status !== 'REJECTED';
   const date = (iso: string) =>
     format.dateTime(new Date(iso), {
       day: 'numeric',
@@ -62,6 +71,15 @@ export default async function BrainPageDetail({ params }: Props) {
         <Badge variant="outline">{t(`page-type.${page.type}`)}</Badge>
         {page.published && (
           <Badge variant="outline">{t('pages.published')}</Badge>
+        )}
+        {page.status === 'CANDIDATE' && (
+          <div className="ml-auto">
+            <ReviewActions
+              publicId={page.publicId}
+              updatedAt={page.updatedAt}
+              hasOwner={page.ownerId !== null}
+            />
+          </div>
         )}
       </header>
 
@@ -142,12 +160,31 @@ export default async function BrainPageDetail({ params }: Props) {
               {t('page.owner')}
             </h3>
             <p>{page.ownerName ?? t('pages.no-owner')}</p>
+            {curated && (
+              <div className="mt-2">
+                <OwnerPicker
+                  publicId={page.publicId}
+                  updatedAt={page.updatedAt}
+                  ownerId={page.ownerId}
+                  members={options.members}
+                />
+              </div>
+            )}
           </div>
           <div>
             <h3 className="mb-1 text-xs font-medium uppercase text-muted-foreground">
               {t('page.access.title')}
             </h3>
             <AccessList entries={page.access} />
+            {curated && !page.published && (
+              <AccessEditor
+                publicId={page.publicId}
+                updatedAt={page.updatedAt}
+                orgId={access.orgId}
+                principals={page.principals}
+                options={options}
+              />
+            )}
           </div>
           <div>
             <h3 className="mb-1 text-xs font-medium uppercase text-muted-foreground">
@@ -194,6 +231,12 @@ export default async function BrainPageDetail({ params }: Props) {
                 ))}
               </ul>
             )}
+          </div>
+          <div>
+            <h3 className="mb-1 text-xs font-medium uppercase text-muted-foreground">
+              {t('page.history')}
+            </h3>
+            <DecisionHistory decisions={page.decisions} />
           </div>
         </aside>
       </div>

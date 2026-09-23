@@ -8,6 +8,8 @@ const db = vi.hoisted(() => ({
   documentVersion: { findMany: vi.fn() },
   member: { findMany: vi.fn() },
   team: { findMany: vi.fn() },
+  // Not tenant-scoped: the ledger names actors who may have left.
+  user: { findMany: vi.fn() },
 }));
 vi.mock('@ragenai/prisma-client', () => ({ default: db }));
 
@@ -22,9 +24,14 @@ const ORG = 'org-1';
 const PUBLIC_ID = '11111111-2222-4333-8444-555555555555';
 const NOW = new Date('2026-09-23T10:00:00Z');
 
-/** Every `where` a mock was called with, to assert the organization scope. */
+/**
+ * Every `where` a mock was called with, to assert the organization scope —
+ * except `user`, which has no organization: the ledger's actors are looked
+ * up there by the ids its scoped rows named.
+ */
 function wheres() {
-  return Object.values(db).flatMap((model) =>
+  const { user: _unscoped, ...scoped } = db;
+  return Object.values(scoped).flatMap((model) =>
     Object.values(model).flatMap((fn) =>
       (fn as ReturnType<typeof vi.fn>).mock.calls.map(
         ([args]) => (args as { where?: Record<string, unknown> })?.where,
@@ -169,6 +176,7 @@ describe('getKnowledgePageQuery', () => {
       },
     ],
     edgesTo: [],
+    decisions: [],
   };
 
   it('answers null for a malformed id without asking the database', async () => {
@@ -243,6 +251,40 @@ describe('getKnowledgePageQuery', () => {
     for (const where of wheres()) {
       expect(where?.organizationId).toBe(ORG);
     }
+  });
+
+  it('lists the ledger newest first, naming actors who have left', async () => {
+    db.knowledgePage.findFirst.mockResolvedValue({
+      ...page,
+      ownerId: 'u-owner',
+      decisions: [
+        { action: 'APPROVE', actorId: 'u-admin', createdAt: NOW },
+        { action: 'SET_OWNER', actorId: 'u-deleted', createdAt: NOW },
+      ],
+    });
+    db.user.findMany.mockResolvedValue([
+      { id: 'u-admin', name: '', email: 'admin@example.com' },
+    ]);
+
+    const detail = await getKnowledgePageQuery(ORG, PUBLIC_ID);
+    const query = db.knowledgePage.findFirst.mock.calls[0][0];
+    expect(query.select.decisions).toMatchObject({
+      where: { organizationId: ORG },
+      orderBy: { id: 'desc' },
+    });
+    expect(db.user.findMany.mock.calls[0][0].where).toEqual({
+      id: { in: ['u-admin', 'u-deleted'] },
+    });
+    expect(detail!.decisions).toEqual([
+      {
+        action: 'APPROVE',
+        actorName: 'admin@example.com',
+        createdAt: NOW.toISOString(),
+      },
+      { action: 'SET_OWNER', actorName: null, createdAt: NOW.toISOString() },
+    ]);
+    expect(detail!.ownerId).toBe('u-owner');
+    expect(detail!.principals).toEqual(page.accessibleBy);
   });
 });
 
