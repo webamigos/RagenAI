@@ -2388,7 +2388,8 @@
     "title": "Ragen Brain",
     "tabs": {
       "pages": "Páginas de conocimiento",
-      "findings": "Hallazgos"
+      "findings": "Hallazgos",
+      "graph": "Grafo"
     },
     "filters": {
       "status": "Estado",
@@ -2500,7 +2501,8 @@
         "title": "Relaciones",
         "empty": "Sin relaciones",
         "out": "{kind} →",
-        "in": "← {kind}"
+        "in": "← {kind}",
+        "show-in-graph": "Mostrar en el grafo"
       },
       "history": "Historial",
       "merge": "Fusionar",
@@ -2597,6 +2599,39 @@
         "not-found": "Este hallazgo está cerrado o ya no existe.",
         "no-documents": "Ninguno de los documentos elegidos se puede extraer aquí.",
         "failed-to-start": "No se pudo iniciar la extracción: inténtalo de nuevo en un momento."
+      }
+    },
+    "graph": {
+      "title": "Grafo de conocimiento — Ragen Brain",
+      "empty-title": "Todavía no hay páginas que dibujar",
+      "empty-description": "El grafo aparece cuando Brain ha extraído páginas de tus documentos.",
+      "focus": "Vecindad de «{title}»",
+      "back-to-overview": "Volver a la vista general",
+      "hops": "Alcance",
+      "hops-1": "1 paso",
+      "hops-2": "2 pasos",
+      "budget": "Páginas",
+      "inferred": "Relaciones inferidas",
+      "inferred-hidden": "Ocultas",
+      "inferred-shown": "Visibles ({count})",
+      "shown": "Se muestran {nodes} de {totalNodes} páginas y {edges} de {totalEdges} relaciones",
+      "canvas-label": "Grafo de {nodes} páginas y {edges} relaciones",
+      "failed": "No se pudo dibujar el grafo en este navegador: las pestañas de páginas y hallazgos muestran los mismos datos.",
+      "open-findings": "Hallazgos abiertos: {count}",
+      "open-page": "Abrir página",
+      "show-neighbourhood": "Mostrar vecindad",
+      "select-hint": "Haz clic en una página para ver sus relaciones.",
+      "legend-title": "Leyenda",
+      "legend-extracted": "Línea gruesa: indicada en una fuente (una cita la respalda)",
+      "legend-ambiguous": "Más fina, ámbar: incierta; nombrada, pero la cita no la confirma",
+      "legend-inferred": "La más fina, tenue: inferida por el modelo; oculta salvo que se muestre",
+      "legend-findings": "Más grande, siempre rotulada: una página con un hallazgo abierto",
+      "communities-title": "Grupos",
+      "community": "{label} y relacionadas ({size})",
+      "origin": {
+        "EXTRACTED": "Indicada en una fuente",
+        "INFERRED": "Inferida por el modelo",
+        "AMBIGUOUS": "Incierta"
       }
     }
   }

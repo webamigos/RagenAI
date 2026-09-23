@@ -2388,7 +2388,8 @@
     "title": "Ragen Brain",
     "tabs": {
       "pages": "Knowledge pages",
-      "findings": "Findings"
+      "findings": "Findings",
+      "graph": "Graph"
     },
     "filters": {
       "status": "Status",
@@ -2500,7 +2501,8 @@
         "title": "Relations",
         "empty": "No relations",
         "out": "{kind} →",
-        "in": "← {kind}"
+        "in": "← {kind}",
+        "show-in-graph": "Show in graph"
       },
       "history": "History",
       "merge": "Merge",
@@ -2597,6 +2599,39 @@
         "not-found": "This finding is closed or no longer exists.",
         "no-documents": "None of the chosen documents can be extracted here.",
         "failed-to-start": "The extraction could not be started — try again in a moment."
+      }
+    },
+    "graph": {
+      "title": "Knowledge graph — Ragen Brain",
+      "empty-title": "No pages to draw yet",
+      "empty-description": "The graph appears once Brain has extracted pages from your documents.",
+      "focus": "Neighbourhood of “{title}”",
+      "back-to-overview": "Back to the overview",
+      "hops": "Reach",
+      "hops-1": "1 step",
+      "hops-2": "2 steps",
+      "budget": "Pages",
+      "inferred": "Inferred relations",
+      "inferred-hidden": "Hidden",
+      "inferred-shown": "Shown ({count})",
+      "shown": "Showing {nodes} of {totalNodes} pages and {edges} of {totalEdges} relations",
+      "canvas-label": "Graph of {nodes} pages and {edges} relations",
+      "failed": "The graph could not be drawn in this browser — the pages and findings tabs show the same data.",
+      "open-findings": "Open findings: {count}",
+      "open-page": "Open page",
+      "show-neighbourhood": "Show neighbourhood",
+      "select-hint": "Click a page to see its relations.",
+      "legend-title": "Legend",
+      "legend-extracted": "Thick line — stated in a source (a quote supports it)",
+      "legend-ambiguous": "Thinner line, amber — uncertain: named, but the quote does not confirm it",
+      "legend-inferred": "Thinnest, faint — inferred by the model; hidden unless shown",
+      "legend-findings": "Larger, always labelled — a page with an open finding",
+      "communities-title": "Groups",
+      "community": "{label} and related ({size})",
+      "origin": {
+        "EXTRACTED": "Stated in a source",
+        "INFERRED": "Inferred by the model",
+        "AMBIGUOUS": "Uncertain"
       }
     }
   }

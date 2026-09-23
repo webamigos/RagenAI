@@ -222,6 +222,12 @@ export default async function BrainPageDetail({ params }: Props) {
             <h3 className="mb-1 text-xs font-medium uppercase text-muted-foreground">
               {t('page.relations.title')}
             </h3>
+            <Link
+              href={`/brain/graph?focus=${page.publicId}`}
+              className="mb-1 inline-block text-xs text-primary underline-offset-4 hover:underline"
+            >
+              {t('page.relations.show-in-graph')}
+            </Link>
             {page.edges.length === 0 ? (
               <p className="text-muted-foreground">
                 {t('page.relations.empty')}

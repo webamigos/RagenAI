@@ -998,9 +998,20 @@ baseline without the outlier (edges 72.7 % `EXTRACTED` against 70.3 %,
       page cites preselected). Before this a run could only be started from
       the preview script. The worker's `getExtractionSource` now finds the
       document through the relation, as D1 asked._
-- [ ] **D4.** Graph view (Sigma.js or react-force-graph), scoped to a
+- [x] **D4.** Graph view (Sigma.js or react-force-graph), scoped to a
       neighbourhood — a graph that hangs the tab on a real corpus is a demo that
       fails at the customer's data volume.
+      _`/brain/graph`: sigma v3 on graphology, laid out by ForceAtlas2 in the
+      browser. Never the whole graph — an overview (pages with open findings
+      pinned, then the most connected) or one page's neighbourhood at 1 or 2
+      hops, within a budget of 150/300/600/1000 nodes the server clamps
+      (`selectGraphView` in brain-core). The count says "X of Y" under the same
+      edge filter as the drawing. INFERRED edges are hidden unless asked for;
+      origin is shown by width and colour and named in the legend and the node
+      card. Colour is the Louvain community, from chart tokens resolved to RGB
+      in the browser, never the signal crimson. The layout draws on
+      SwarmVault's and Utopia's graph views (budgeted overview, neighbourhood
+      fetch, "X of Y")._
 - [ ] **D5.** Flag on for our own organization. The first phase a user can see.
 
 **What D1 settled:**

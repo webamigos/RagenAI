@@ -2388,7 +2388,8 @@
     "title": "Ragen Brain",
     "tabs": {
       "pages": "Znalostné stránky",
-      "findings": "Zistenia"
+      "findings": "Zistenia",
+      "graph": "Graf"
     },
     "filters": {
       "status": "Stav",
@@ -2500,7 +2501,8 @@
         "title": "Vzťahy",
         "empty": "Žiadne vzťahy",
         "out": "{kind} →",
-        "in": "← {kind}"
+        "in": "← {kind}",
+        "show-in-graph": "Zobraziť v grafe"
       },
       "history": "História",
       "merge": "Zlúčenie",
@@ -2597,6 +2599,39 @@
         "not-found": "Toto zistenie je uzavreté alebo už neexistuje.",
         "no-documents": "Žiadny z vybraných dokumentov tu nemožno extrahovať.",
         "failed-to-start": "Extrakciu sa nepodarilo spustiť — skúste to o chvíľu."
+      }
+    },
+    "graph": {
+      "title": "Graf znalostí — Ragen Brain",
+      "empty-title": "Zatiaľ nie je čo kresliť",
+      "empty-description": "Graf sa objaví, keď Brain extrahuje stránky z vašich dokumentov.",
+      "focus": "Okolie „{title}“",
+      "back-to-overview": "Späť na prehľad",
+      "hops": "Dosah",
+      "hops-1": "1 krok",
+      "hops-2": "2 kroky",
+      "budget": "Stránok",
+      "inferred": "Odvodené vzťahy",
+      "inferred-hidden": "Skryté",
+      "inferred-shown": "Zobrazené ({count})",
+      "shown": "Zobrazených {nodes} z {totalNodes} stránok a {edges} z {totalEdges} vzťahov",
+      "canvas-label": "Graf {nodes} stránok a {edges} vzťahov",
+      "failed": "Graf sa v tomto prehliadači nepodarilo vykresliť — rovnaké údaje sú na kartách stránok a zistení.",
+      "open-findings": "Otvorené zistenia: {count}",
+      "open-page": "Otvoriť stránku",
+      "show-neighbourhood": "Zobraziť okolie",
+      "select-hint": "Kliknite na stránku a uvidíte jej vzťahy.",
+      "legend-title": "Legenda",
+      "legend-extracted": "Hrubá čiara — uvedené v zdroji (podporuje to citácia)",
+      "legend-ambiguous": "Tenšia, jantárová — neisté: spomenuté, ale citácia to nepotvrdzuje",
+      "legend-inferred": "Najtenšia, bledá — odvodené modelom; skryté, ak ich nezobrazíte",
+      "legend-findings": "Väčšia, vždy popísaná — stránka s otvoreným zistením",
+      "communities-title": "Skupiny",
+      "community": "{label} a súvisiace ({size})",
+      "origin": {
+        "EXTRACTED": "Uvedené v zdroji",
+        "INFERRED": "Odvodené modelom",
+        "AMBIGUOUS": "Neisté"
       }
     }
   }

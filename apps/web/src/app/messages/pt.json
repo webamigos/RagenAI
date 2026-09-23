@@ -2388,7 +2388,8 @@
     "title": "Ragen Brain",
     "tabs": {
       "pages": "Páginas de conhecimento",
-      "findings": "Constatações"
+      "findings": "Constatações",
+      "graph": "Grafo"
     },
     "filters": {
       "status": "Estado",
@@ -2500,7 +2501,8 @@
         "title": "Relações",
         "empty": "Sem relações",
         "out": "{kind} →",
-        "in": "← {kind}"
+        "in": "← {kind}",
+        "show-in-graph": "Mostrar no grafo"
       },
       "history": "Histórico",
       "merge": "Fundir",
@@ -2597,6 +2599,39 @@
         "not-found": "Esta ocorrência está fechada ou já não existe.",
         "no-documents": "Nenhum dos documentos escolhidos pode ser extraído aqui.",
         "failed-to-start": "Não foi possível iniciar a extração — tente novamente daqui a pouco."
+      }
+    },
+    "graph": {
+      "title": "Grafo de conhecimento — Ragen Brain",
+      "empty-title": "Ainda não há páginas para desenhar",
+      "empty-description": "O grafo aparece quando o Brain tiver extraído páginas dos seus documentos.",
+      "focus": "Vizinhança de «{title}»",
+      "back-to-overview": "Voltar à visão geral",
+      "hops": "Alcance",
+      "hops-1": "1 passo",
+      "hops-2": "2 passos",
+      "budget": "Páginas",
+      "inferred": "Relações inferidas",
+      "inferred-hidden": "Ocultas",
+      "inferred-shown": "Visíveis ({count})",
+      "shown": "A mostrar {nodes} de {totalNodes} páginas e {edges} de {totalEdges} relações",
+      "canvas-label": "Grafo de {nodes} páginas e {edges} relações",
+      "failed": "Não foi possível desenhar o grafo neste navegador — os separadores de páginas e ocorrências mostram os mesmos dados.",
+      "open-findings": "Ocorrências abertas: {count}",
+      "open-page": "Abrir página",
+      "show-neighbourhood": "Mostrar vizinhança",
+      "select-hint": "Clique numa página para ver as suas relações.",
+      "legend-title": "Legenda",
+      "legend-extracted": "Linha grossa — afirmada numa fonte (uma citação apoia-a)",
+      "legend-ambiguous": "Mais fina, âmbar — incerta: nomeada, mas a citação não a confirma",
+      "legend-inferred": "A mais fina, ténue — inferida pelo modelo; oculta a menos que mostrada",
+      "legend-findings": "Maior, sempre rotulada — uma página com uma ocorrência aberta",
+      "communities-title": "Grupos",
+      "community": "{label} e relacionadas ({size})",
+      "origin": {
+        "EXTRACTED": "Afirmada numa fonte",
+        "INFERRED": "Inferida pelo modelo",
+        "AMBIGUOUS": "Incerta"
       }
     }
   }

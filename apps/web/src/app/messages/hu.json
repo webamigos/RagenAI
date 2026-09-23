@@ -2388,7 +2388,8 @@
     "title": "Ragen Brain",
     "tabs": {
       "pages": "Tudásoldalak",
-      "findings": "Észrevételek"
+      "findings": "Észrevételek",
+      "graph": "Gráf"
     },
     "filters": {
       "status": "Állapot",
@@ -2500,7 +2501,8 @@
         "title": "Kapcsolatok",
         "empty": "Nincsenek kapcsolatok",
         "out": "{kind} →",
-        "in": "← {kind}"
+        "in": "← {kind}",
+        "show-in-graph": "Megjelenítés a gráfon"
       },
       "history": "Előzmények",
       "merge": "Egyesítés",
@@ -2597,6 +2599,39 @@
         "not-found": "Ez a megállapítás lezárult vagy már nem létezik.",
         "no-documents": "A kiválasztott dokumentumok egyike sem nyerhető ki itt.",
         "failed-to-start": "A kinyerést nem sikerült elindítani — próbálja újra egy pillanat múlva."
+      }
+    },
+    "graph": {
+      "title": "Tudásgráf — Ragen Brain",
+      "empty-title": "Még nincs mit rajzolni",
+      "empty-description": "A gráf akkor jelenik meg, amikor a Brain oldalakat nyert ki a dokumentumaiból.",
+      "focus": "„{title}” környezete",
+      "back-to-overview": "Vissza az áttekintéshez",
+      "hops": "Hatókör",
+      "hops-1": "1 lépés",
+      "hops-2": "2 lépés",
+      "budget": "Oldal",
+      "inferred": "Kikövetkeztetett kapcsolatok",
+      "inferred-hidden": "Elrejtve",
+      "inferred-shown": "Megjelenítve ({count})",
+      "shown": "{nodes} / {totalNodes} oldal és {edges} / {totalEdges} kapcsolat látható",
+      "canvas-label": "{nodes} oldal és {edges} kapcsolat gráfja",
+      "failed": "A gráfot nem sikerült megrajzolni ebben a böngészőben — ugyanezek az adatok az oldalak és megállapítások lapon vannak.",
+      "open-findings": "Nyitott megállapítások: {count}",
+      "open-page": "Oldal megnyitása",
+      "show-neighbourhood": "Környezet megjelenítése",
+      "select-hint": "Kattintson egy oldalra a kapcsolatai megtekintéséhez.",
+      "legend-title": "Jelmagyarázat",
+      "legend-extracted": "Vastag vonal — forrásban szerepel (idézet támasztja alá)",
+      "legend-ambiguous": "Vékonyabb, borostyán — bizonytalan: megnevezve, de az idézet nem erősíti meg",
+      "legend-inferred": "A legvékonyabb, halvány — a modell következtette ki; rejtett, hacsak meg nem jeleníti",
+      "legend-findings": "Nagyobb, mindig feliratozva — nyitott megállapítással rendelkező oldal",
+      "communities-title": "Csoportok",
+      "community": "{label} és kapcsolódók ({size})",
+      "origin": {
+        "EXTRACTED": "Forrásban szerepel",
+        "INFERRED": "A modell következtette ki",
+        "AMBIGUOUS": "Bizonytalan"
       }
     }
   }

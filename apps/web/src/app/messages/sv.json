@@ -2388,7 +2388,8 @@
     "title": "Ragen Brain",
     "tabs": {
       "pages": "Kunskapssidor",
-      "findings": "Fynd"
+      "findings": "Fynd",
+      "graph": "Graf"
     },
     "filters": {
       "status": "Status",
@@ -2500,7 +2501,8 @@
         "title": "Relationer",
         "empty": "Inga relationer",
         "out": "{kind} →",
-        "in": "← {kind}"
+        "in": "← {kind}",
+        "show-in-graph": "Visa i grafen"
       },
       "history": "Historik",
       "merge": "Sammanslagning",
@@ -2597,6 +2599,39 @@
         "not-found": "Det här fyndet är stängt eller finns inte längre.",
         "no-documents": "Inget av de valda dokumenten kan extraheras här.",
         "failed-to-start": "Extraktionen kunde inte startas — försök igen om en stund."
+      }
+    },
+    "graph": {
+      "title": "Kunskapsgraf — Ragen Brain",
+      "empty-title": "Inga sidor att rita än",
+      "empty-description": "Grafen visas när Brain har extraherat sidor ur dina dokument.",
+      "focus": "Omgivningen kring ”{title}”",
+      "back-to-overview": "Tillbaka till översikten",
+      "hops": "Räckvidd",
+      "hops-1": "1 steg",
+      "hops-2": "2 steg",
+      "budget": "Sidor",
+      "inferred": "Härledda relationer",
+      "inferred-hidden": "Dolda",
+      "inferred-shown": "Visade ({count})",
+      "shown": "Visar {nodes} av {totalNodes} sidor och {edges} av {totalEdges} relationer",
+      "canvas-label": "Graf med {nodes} sidor och {edges} relationer",
+      "failed": "Grafen kunde inte ritas i den här webbläsaren — samma data finns under flikarna sidor och fynd.",
+      "open-findings": "Öppna fynd: {count}",
+      "open-page": "Öppna sidan",
+      "show-neighbourhood": "Visa omgivning",
+      "select-hint": "Klicka på en sida för att se dess relationer.",
+      "legend-title": "Förklaring",
+      "legend-extracted": "Tjock linje — anges i en källa (ett citat stöder den)",
+      "legend-ambiguous": "Tunnare, bärnstensfärgad — osäker: nämnd, men citatet bekräftar den inte",
+      "legend-inferred": "Tunnast, blek — härledd av modellen; dold om den inte visas",
+      "legend-findings": "Större, alltid märkt — en sida med ett öppet fynd",
+      "communities-title": "Grupper",
+      "community": "{label} och relaterade ({size})",
+      "origin": {
+        "EXTRACTED": "Anges i en källa",
+        "INFERRED": "Härledd av modellen",
+        "AMBIGUOUS": "Osäker"
       }
     }
   }

@@ -2388,7 +2388,8 @@
     "title": "Ragen Brain",
     "tabs": {
       "pages": "Tietosivut",
-      "findings": "Havainnot"
+      "findings": "Havainnot",
+      "graph": "Graafi"
     },
     "filters": {
       "status": "Tila",
@@ -2500,7 +2501,8 @@
         "title": "Yhteydet",
         "empty": "Ei yhteyksiä",
         "out": "{kind} →",
-        "in": "← {kind}"
+        "in": "← {kind}",
+        "show-in-graph": "Näytä graafissa"
       },
       "history": "Historia",
       "merge": "Yhdistäminen",
@@ -2597,6 +2599,39 @@
         "not-found": "Tämä havainto on suljettu tai sitä ei enää ole.",
         "no-documents": "Mitään valituista asiakirjoista ei voi poimia täällä.",
         "failed-to-start": "Poimintaa ei voitu aloittaa — yritä hetken kuluttua uudelleen."
+      }
+    },
+    "graph": {
+      "title": "Tietograafi — Ragen Brain",
+      "empty-title": "Ei vielä piirrettäviä sivuja",
+      "empty-description": "Graafi näkyy, kun Brain on poiminut sivuja asiakirjoistasi.",
+      "focus": "Sivun ”{title}” ympäristö",
+      "back-to-overview": "Takaisin yleiskuvaan",
+      "hops": "Ulottuvuus",
+      "hops-1": "1 askel",
+      "hops-2": "2 askelta",
+      "budget": "Sivuja",
+      "inferred": "Päätellyt suhteet",
+      "inferred-hidden": "Piilotettu",
+      "inferred-shown": "Näytetty ({count})",
+      "shown": "Näytetään {nodes}/{totalNodes} sivua ja {edges}/{totalEdges} suhdetta",
+      "canvas-label": "Graafi, jossa {nodes} sivua ja {edges} suhdetta",
+      "failed": "Graafia ei voitu piirtää tässä selaimessa — samat tiedot ovat sivujen ja havaintojen välilehdillä.",
+      "open-findings": "Avoimet havainnot: {count}",
+      "open-page": "Avaa sivu",
+      "show-neighbourhood": "Näytä ympäristö",
+      "select-hint": "Napsauta sivua nähdäksesi sen suhteet.",
+      "legend-title": "Selite",
+      "legend-extracted": "Paksu viiva — todettu lähteessä (lainaus tukee sitä)",
+      "legend-ambiguous": "Ohuempi, meripihkainen — epävarma: mainittu, mutta lainaus ei vahvista sitä",
+      "legend-inferred": "Ohuin, haalea — mallin päättelemä; piilotettu, ellei näytetä",
+      "legend-findings": "Suurempi, aina nimetty — sivu, jolla on avoin havainto",
+      "communities-title": "Ryhmät",
+      "community": "{label} ja liittyvät ({size})",
+      "origin": {
+        "EXTRACTED": "Todettu lähteessä",
+        "INFERRED": "Mallin päättelemä",
+        "AMBIGUOUS": "Epävarma"
       }
     }
   }
