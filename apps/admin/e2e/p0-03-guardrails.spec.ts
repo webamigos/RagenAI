@@ -38,6 +38,37 @@ const onHitAfterReload = async (page: Page) => {
   return orgCard(page).getByLabel(`On a hit for ${RENAMED}`, { exact: true });
 };
 
+/**
+ * Choose an option and wait for the save it triggers to answer.
+ *
+ * The override is written by a Server Action — a POST carrying a
+ * `next-action` header — started from the select's change handler. Reloading
+ * straight after `selectOption` cancels that request if it is still in
+ * flight: the server logs "The destination stream closed early", nothing is
+ * stored, and the value read back is the old one. That is how this suite
+ * failed on a PR that touched neither guardrails nor the admin panel, and
+ * why the delete test after it failed too — the override it could not clear
+ * was still hanging off the rule. Waiting for the response is what makes the
+ * reload a read of the stored value rather than a race with storing it.
+ *
+ * Reproduced by delaying the action 1.5 s: the previous version of this file
+ * failed exactly as CI did (`Received: "inherit"`), and this one passes.
+ */
+async function selectAndWaitForSave(
+  page: Page,
+  select: ReturnType<Page['getByLabel']>,
+  value: string,
+) {
+  const saved = page.waitForResponse(
+    (response) =>
+      response.request().method() === 'POST' &&
+      response.request().headers()['next-action'] !== undefined,
+    { timeout: 20_000 },
+  );
+  await select.selectOption(value);
+  await saved;
+}
+
 const escapeForRegExp = (value: string): string =>
   value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
@@ -202,7 +233,7 @@ test.describe.serial('platform guardrails', () => {
     // saves have happened — the toasts stack, so `getByText('Override saved')`
     // matches more than one and asserts nothing useful either. The value
     // surviving a round trip is the only part that means the write landed.
-    await onHit.selectOption('LOG');
+    await selectAndWaitForSave(page, onHit, 'LOG');
     await expect(await onHitAfterReload(page)).toHaveValue('LOG', {
       timeout: 20_000,
     });
@@ -213,16 +244,27 @@ test.describe.serial('platform guardrails', () => {
     // clearing the state while an action is still set leaves the row in place
     // — that is the behaviour C4b introduced, and it is why this order
     // matters rather than being incidental.
-    await onHit.selectOption('inherit');
+    await selectAndWaitForSave(
+      page,
+      orgCard(page).getByLabel(`On a hit for ${RENAMED}`, { exact: true }),
+      'inherit',
+    );
     await expect(await onHitAfterReload(page)).toHaveValue('inherit', {
       timeout: 20_000,
     });
 
-    await orgCard(page)
-      .getByLabel(`State for ${RENAMED}`, { exact: true })
-      .selectOption('inherit');
+    // Waited on like the two above. The card says "from the platform rule" as
+    // soon as the select changes, before the save answers, so the text alone
+    // let this test end mid-write — and closing the page then cancelled the
+    // request, leaving the override behind for the delete test to trip on.
+    await selectAndWaitForSave(
+      page,
+      orgCard(page).getByLabel(`State for ${RENAMED}`, { exact: true }),
+      'inherit',
+    );
 
     // Back to inheriting everything, which is the state with no row at all.
+    await page.reload();
     await expect(orgCard(page)).toContainText('from the platform rule', {
       timeout: 20_000,
     });
