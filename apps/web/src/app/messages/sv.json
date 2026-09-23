@@ -2719,7 +2719,8 @@
       "upload": "Ladda upp till Brain",
       "uploaded": "Uppladdat till Brain: {count} — lagrat och tolkat, inte sökbart",
       "upload-failed": "Uppladdningen misslyckades — kontrollera filen och försök igen.",
-      "staged-summary": "I Brain, inte sökbara: {count} dokument, varav {uncurated} ännu utan godkänd sida."
+      "staged-summary": "I Brain, inte sökbara: {count} dokument, varav {uncurated} ännu utan godkänd sida.",
+      "uploaded-partly": "{uploaded} av {total} uppladdade till Brain; resten misslyckades"
     },
     "publish-all": {
       "button": "Publicera godkända ({count})",
@@ -2727,7 +2728,8 @@
       "confirm-description": "Sidor som redan serverar sin aktuella text lämnas orörda; ändrade publiceras igen, nya för första gången. Varje publicering registreras i ditt namn. Sidor utan ägare eller öppna för ingen hoppas över.",
       "confirm": "Publicera",
       "done": "I kö: {queued} · oförändrade: {unchanged} · överhoppade: {refused}",
-      "failed": "Publiceringen kunde inte starta — ladda om sidan och försök igen."
+      "failed": "Publiceringen kunde inte starta — ladda om sidan och försök igen.",
+      "not-written": "{count, plural, one {# sida registrerades som publicerad men skrevs inte till indexet – kör igen} other {# sidor registrerades som publicerade men skrevs inte till indexet – kör igen}}"
     }
   }
 }

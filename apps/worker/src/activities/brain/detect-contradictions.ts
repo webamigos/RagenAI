@@ -102,7 +102,12 @@ export async function detectContradictions(input: {
       if (outcome.status === 'failed') {
         result.failed += 1;
         logger.warn(
-          { orgId: input.orgId, runId: input.runId, pageIds: [aId, bId] },
+          {
+            orgId: input.orgId,
+            runId: input.runId,
+            pageIds: [aId, bId],
+            reason: outcome.reason,
+          },
           'brain contradictions: pair not judged',
         );
         continue;

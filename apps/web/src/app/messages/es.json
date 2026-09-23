@@ -2719,7 +2719,8 @@
       "upload": "Subir a Brain",
       "uploaded": "Subidos a Brain: {count} — guardados y analizados, no consultables",
       "upload-failed": "La subida falló: revisa el archivo e inténtalo de nuevo.",
-      "staged-summary": "En Brain, no consultables: {count} documentos, {uncurated} todavía sin página aprobada."
+      "staged-summary": "En Brain, no consultables: {count} documentos, {uncurated} todavía sin página aprobada.",
+      "uploaded-partly": "Subidos a Brain {uploaded} de {total}; el resto falló"
     },
     "publish-all": {
       "button": "Publicar aprobadas ({count})",
@@ -2727,7 +2728,8 @@
       "confirm-description": "Las páginas que ya sirven su texto actual no se tocan; las modificadas se vuelven a publicar y las nuevas se publican. Cada publicación queda registrada a tu nombre. Se omiten las páginas sin responsable o abiertas a nadie.",
       "confirm": "Publicar",
       "done": "En cola: {queued} · sin cambios: {unchanged} · omitidas: {refused}",
-      "failed": "No se pudo iniciar la publicación: recarga la página e inténtalo de nuevo."
+      "failed": "No se pudo iniciar la publicación: recarga la página e inténtalo de nuevo.",
+      "not-written": "{count, plural, one {# página registrada como publicada pero no escrita en el índice: vuelve a ejecutarlo} other {# páginas registradas como publicadas pero no escritas en el índice: vuelve a ejecutarlo}}"
     }
   }
 }

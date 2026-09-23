@@ -2719,7 +2719,8 @@
       "upload": "Nahrát do Brainu",
       "uploaded": "Nahráno do Brainu: {count} — uloženo a zpracováno, nevyhledatelné",
       "upload-failed": "Nahrání se nezdařilo — zkontrolujte soubor a zkuste to znovu.",
-      "staged-summary": "V Brainu, nevyhledatelné: {count} dokumentů, z toho {uncurated} zatím bez schválené stránky."
+      "staged-summary": "V Brainu, nevyhledatelné: {count} dokumentů, z toho {uncurated} zatím bez schválené stránky.",
+      "uploaded-partly": "Nahráno do Brain {uploaded} z {total}; zbytek selhal"
     },
     "publish-all": {
       "button": "Zveřejnit schválené ({count})",
@@ -2727,7 +2728,8 @@
       "confirm-description": "Stránky, které už poskytují aktuální text, zůstanou beze změny; změněné se zveřejní znovu, nové poprvé. Každé zveřejnění se zaznamená pod vaším jménem. Stránky bez vlastníka nebo nepřístupné nikomu se přeskočí.",
       "confirm": "Zveřejnit",
       "done": "Ve frontě: {queued} · beze změny: {unchanged} · přeskočeno: {refused}",
-      "failed": "Zveřejnění se nepodařilo spustit — načtěte stránku znovu a zkuste to znovu."
+      "failed": "Zveřejnění se nepodařilo spustit — načtěte stránku znovu a zkuste to znovu.",
+      "not-written": "{count, plural, one {# stránka byla zaznamenána jako publikovaná, ale nezapsána do indexu – spusťte znovu} few {# stránky byly zaznamenány jako publikované, ale nezapsány do indexu – spusťte znovu} many {# stránek bylo zaznamenáno jako publikované, ale nezapsáno do indexu – spusťte znovu} other {# stránek bylo zaznamenáno jako publikované, ale nezapsáno do indexu – spusťte znovu}}"
     }
   }
 }

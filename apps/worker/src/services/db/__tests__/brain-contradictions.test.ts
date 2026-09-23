@@ -194,6 +194,18 @@ describe('recordContradictionJudgement', () => {
     });
   });
 
+  it('never clears an open finding from a judgement that saw only part of the pages', async () => {
+    prisma.knowledgeFinding.findMany.mockResolvedValue([
+      { id: 3, status: 'OPEN', detail: { fingerprint: FINGERPRINT } },
+    ]);
+    await expect(
+      recordContradictionJudgement(
+        input({ contradictions: [], truncated: true }),
+      ),
+    ).resolves.toBe('unchanged');
+    expect(prisma.knowledgeFinding.updateMany).not.toHaveBeenCalled();
+  });
+
   it('writes nothing for a clean pair with nothing open', async () => {
     prisma.knowledgeFinding.findMany.mockResolvedValue([]);
     await expect(

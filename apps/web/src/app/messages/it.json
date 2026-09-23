@@ -2719,7 +2719,8 @@
       "upload": "Carica in Brain",
       "uploaded": "Caricati in Brain: {count} — salvati ed elaborati, non ricercabili",
       "upload-failed": "Caricamento non riuscito: controlla il file e riprova.",
-      "staged-summary": "In Brain, non ricercabili: {count} documenti, {uncurated} ancora senza pagina approvata."
+      "staged-summary": "In Brain, non ricercabili: {count} documenti, {uncurated} ancora senza pagina approvata.",
+      "uploaded-partly": "Caricati in Brain {uploaded} di {total}; gli altri non sono riusciti"
     },
     "publish-all": {
       "button": "Pubblica approvate ({count})",
@@ -2727,7 +2728,8 @@
       "confirm-description": "Le pagine che servono già il testo attuale restano invariate; quelle modificate vengono ripubblicate, le nuove pubblicate. Ogni pubblicazione è registrata a tuo nome. Le pagine senza responsabile o aperte a nessuno vengono saltate.",
       "confirm": "Pubblica",
       "done": "In coda: {queued} · invariate: {unchanged} · saltate: {refused}",
-      "failed": "Impossibile avviare la pubblicazione: ricarica la pagina e riprova."
+      "failed": "Impossibile avviare la pubblicazione: ricarica la pagina e riprova.",
+      "not-written": "{count, plural, one {# pagina registrata come pubblicata ma non scritta nell’indice: esegui di nuovo} other {# pagine registrate come pubblicate ma non scritte nell’indice: esegui di nuovo}}"
     }
   }
 }

@@ -127,6 +127,23 @@ describe('restoreSourceDocumentCommand', () => {
     });
     expect(reembed.reembedFileCommand).not.toHaveBeenCalled();
   });
+
+  it('puts a document back to WITHDRAWN when its ingest could not start, so restoring again works', async () => {
+    db.userFile.findFirst.mockResolvedValue({
+      id: 'f1',
+      embeddingStatus: 'WITHDRAWN',
+    });
+    reembed.reembedFileCommand.mockRejectedValue(new Error('redis down'));
+    await expect(restoreSourceDocumentCommand(input)).resolves.toEqual({
+      success: false,
+      error: 'failed-to-start',
+    });
+    expect(db.userFile.updateMany).toHaveBeenCalledWith({
+      // Only if no run has claimed the file since the reset.
+      where: { organizationId: ORG, id: 'f1', embeddingStatus: 'NOT_STARTED' },
+      data: { embeddingStatus: 'WITHDRAWN' },
+    });
+  });
 });
 
 describe('getBrainDocumentsQuery', () => {

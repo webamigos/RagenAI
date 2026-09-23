@@ -219,6 +219,44 @@ describe('extractDocumentCandidates', () => {
     }
   });
 
+  it('treats an answer whose every claim failed its quote check as a failure, keeping earlier candidates', async () => {
+    generateObject.mockResolvedValue({
+      object: {
+        ...ANSWER,
+        claims: [
+          { ...ANSWER.claims[0], quote: 'Tego zdania nie ma w dokumencie.' },
+        ],
+      },
+      usage: USAGE,
+    });
+    const result = await extractDocumentCandidates(INPUT);
+    expect(result.status).toBe('failed');
+    // An earlier good run's candidates survive, and the failure stays open.
+    expect(brainDb.replaceCandidatesFromFile).not.toHaveBeenCalled();
+    expect(brainDb.resolveExtractionFailed).not.toHaveBeenCalled();
+    expect(brainDb.recordExtractionFailed).toHaveBeenCalledWith(
+      expect.objectContaining({
+        detail: expect.objectContaining({
+          reason: expect.stringContaining('nothing usable'),
+        }),
+      }),
+    );
+  });
+
+  it('still reads a document with genuinely nothing to extract as a success', async () => {
+    generateObject.mockResolvedValue({
+      object: { entities: [], claims: [], relations: [] },
+      usage: USAGE,
+    });
+    brainDb.replaceCandidatesFromFile.mockResolvedValue({
+      pagesCreated: 0,
+      pagesReplaced: 0,
+    });
+    const result = await extractDocumentCandidates(INPUT);
+    expect(result.status).toBe('extracted');
+    expect(brainDb.recordExtractionFailed).not.toHaveBeenCalled();
+  });
+
   it('returns budget_exhausted and writes nothing when no tokens are left', async () => {
     const result = await extractDocumentCandidates({ ...INPUT, maxTokens: 0 });
     expect(result.status).toBe('budget_exhausted');

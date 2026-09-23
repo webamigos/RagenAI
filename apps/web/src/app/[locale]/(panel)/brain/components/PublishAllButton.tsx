@@ -36,13 +36,20 @@ export function PublishAllButton({ approved }: { approved: number }) {
         (a, b) => a + (b ?? 0),
         0,
       );
-      toast.success(
-        t('done', {
-          queued: result.queued,
-          unchanged: result.unchanged,
-          refused,
-        }),
-      );
+      const summary = t('done', {
+        queued: result.queued,
+        unchanged: result.unchanged,
+        refused,
+      });
+      // A page recorded as published whose index write never queued is not
+      // a success, whatever the other numbers say.
+      if (result.notWritten > 0) {
+        toast.error(t('not-written', { count: result.notWritten }), {
+          description: summary,
+        });
+      } else {
+        toast.success(summary);
+      }
       router.refresh();
     });
 

@@ -2719,7 +2719,8 @@
       "upload": "Upload til Brain",
       "uploaded": "Uploadet til Brain: {count} — gemt og fortolket, ikke søgbart",
       "upload-failed": "Uploaden mislykkedes — tjek filen, og prøv igen.",
-      "staged-summary": "I Brain, ikke søgbare: {count} dokumenter, heraf {uncurated} endnu uden godkendt side."
+      "staged-summary": "I Brain, ikke søgbare: {count} dokumenter, heraf {uncurated} endnu uden godkendt side.",
+      "uploaded-partly": "{uploaded} af {total} uploadet til Brain; resten mislykkedes"
     },
     "publish-all": {
       "button": "Udgiv godkendte ({count})",
@@ -2727,7 +2728,8 @@
       "confirm-description": "Sider, der allerede serverer deres aktuelle tekst, forbliver uændrede; ændrede udgives igen, nye for første gang. Hver udgivelse registreres i dit navn. Sider uden ejer eller åbne for ingen springes over.",
       "confirm": "Udgiv",
       "done": "I kø: {queued} · uændrede: {unchanged} · sprunget over: {refused}",
-      "failed": "Udgivelsen kunne ikke starte — genindlæs siden, og prøv igen."
+      "failed": "Udgivelsen kunne ikke starte — genindlæs siden, og prøv igen.",
+      "not-written": "{count, plural, one {# side blev registreret som publiceret men ikke skrevet til indekset – kør igen} other {# sider blev registreret som publiceret men ikke skrevet til indekset – kør igen}}"
     }
   }
 }

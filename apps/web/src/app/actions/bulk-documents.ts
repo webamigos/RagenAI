@@ -351,15 +351,22 @@ export async function bulkUpdatePiiPolicyAction(
 
 /**
  * Send documents staged into Ragen Brain to the knowledge base (spec F5).
- * The organization comes from the session; the command selects this
- * organization's `STAGED` files and nothing else.
+ * The organization and the caller come from the session: a manager sends
+ * any staged file of the organization, anyone else only their own.
  */
 export async function sendStagedToKnowledgeBaseAction(
   fileIds: string[],
 ): Promise<SendStagedResult> {
   const organizationId = await getOrgIdFromAuthOrThrow();
+  const userId = await getCurrentUserId();
+  const member = await getActiveMember(organizationId).catch(() => null);
+  const admin = member ? canManageOrg(member.role) : false;
+  if (!member || !userId) {
+    return { sent: [], skipped: fileIds.slice(0, 500) };
+  }
   return sendStagedToKnowledgeBaseCommand({
     organizationId,
     fileIds: fileIds.slice(0, 500),
+    onlyOwnedBy: admin ? null : userId,
   });
 }

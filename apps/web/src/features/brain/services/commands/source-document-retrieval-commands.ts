@@ -99,6 +99,18 @@ export async function restoreSourceDocumentCommand(input: {
       },
       'brain: could not queue a source document back into retrieval',
     );
+    // The re-embed reset the status before its job failed to start. Left
+    // there, the file reads "processing" for good, and neither restore nor
+    // withdraw accepts it — so the "try again" the error promises could not
+    // happen. Put it back, only if no run has claimed it since.
+    await db.userFile.updateMany({
+      where: {
+        organizationId: orgId,
+        id: fileId,
+        embeddingStatus: 'NOT_STARTED',
+      },
+      data: { embeddingStatus: 'WITHDRAWN' },
+    });
     return { success: false, error: 'failed-to-start' };
   }
   trackAudit({

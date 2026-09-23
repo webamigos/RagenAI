@@ -2719,7 +2719,8 @@
       "upload": "Carregar no Brain",
       "uploaded": "Carregados no Brain: {count} — guardados e analisados, não pesquisáveis",
       "upload-failed": "O carregamento falhou — verifique o ficheiro e tente novamente.",
-      "staged-summary": "No Brain, não pesquisáveis: {count} documentos, {uncurated} ainda sem página aprovada."
+      "staged-summary": "No Brain, não pesquisáveis: {count} documentos, {uncurated} ainda sem página aprovada.",
+      "uploaded-partly": "Carregados no Brain {uploaded} de {total}; os restantes falharam"
     },
     "publish-all": {
       "button": "Publicar aprovadas ({count})",
@@ -2727,7 +2728,8 @@
       "confirm-description": "As páginas que já servem o texto atual ficam como estão; as alteradas são publicadas de novo e as novas publicadas. Cada publicação fica registada em seu nome. As páginas sem responsável ou abertas a ninguém são ignoradas.",
       "confirm": "Publicar",
       "done": "Em fila: {queued} · sem alterações: {unchanged} · ignoradas: {refused}",
-      "failed": "Não foi possível iniciar a publicação — recarregue a página e tente novamente."
+      "failed": "Não foi possível iniciar a publicação — recarregue a página e tente novamente.",
+      "not-written": "{count, plural, one {# página registada como publicada mas não escrita no índice — execute novamente} other {# páginas registadas como publicadas mas não escritas no índice — execute novamente}}"
     }
   }
 }

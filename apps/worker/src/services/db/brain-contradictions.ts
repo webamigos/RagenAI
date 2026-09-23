@@ -141,6 +141,12 @@ export async function recordContradictionJudgement(input: {
     if (!open) {
       return 'none';
     }
+    // The judge saw only the first passages of a longer page. The conflict
+    // an earlier run found may sit in the part it was not shown, so silence
+    // here is not evidence that it is gone.
+    if (input.truncated) {
+      return 'unchanged';
+    }
     await prisma.knowledgeFinding.updateMany({
       where: { organizationId: input.orgId, id: open.id, status: 'OPEN' },
       data: { status: 'RESOLVED', resolvedAt: new Date() },

@@ -2719,7 +2719,8 @@
       "upload": "Feltöltés a Brainbe",
       "uploaded": "Feltöltve a Brainbe: {count} — tárolva és feldolgozva, nem kereshető",
       "upload-failed": "A feltöltés nem sikerült — ellenőrizze a fájlt, és próbálja újra.",
-      "staged-summary": "A Brainben, nem kereshető: {count} dokumentum, ebből {uncurated} még jóváhagyott oldal nélkül."
+      "staged-summary": "A Brainben, nem kereshető: {count} dokumentum, ebből {uncurated} még jóváhagyott oldal nélkül.",
+      "uploaded-partly": "{uploaded}/{total} feltöltve a Brainbe; a többi sikertelen"
     },
     "publish-all": {
       "button": "Jóváhagyottak közzététele ({count})",
@@ -2727,7 +2728,8 @@
       "confirm-description": "A már aktuális szövegüket kiszolgáló oldalak változatlanok maradnak; a módosultak újra, az újak először kerülnek közzétételre. Minden közzététel az Ön nevén kerül rögzítésre. A felelős nélküli vagy senki számára nem elérhető oldalak kimaradnak.",
       "confirm": "Közzététel",
       "done": "Sorban: {queued} · változatlan: {unchanged} · kihagyva: {refused}",
-      "failed": "A közzététel nem indult el — töltse újra az oldalt, és próbálja újra."
+      "failed": "A közzététel nem indult el — töltse újra az oldalt, és próbálja újra.",
+      "not-written": "{count} oldal közzétettként rögzült, de nem került az indexbe – futtassa újra"
     }
   }
 }

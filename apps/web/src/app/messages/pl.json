@@ -2719,7 +2719,8 @@
       "upload": "Wgraj do Brain",
       "uploaded": "Wgrano do Brain: {count} — zapisane i przetworzone, poza wyszukiwaniem",
       "upload-failed": "Wgrywanie się nie powiodło — sprawdź plik i spróbuj ponownie.",
-      "staged-summary": "W Brain, poza wyszukiwaniem: {count} dokumentów, z czego {uncurated} bez zatwierdzonej strony."
+      "staged-summary": "W Brain, poza wyszukiwaniem: {count} dokumentów, z czego {uncurated} bez zatwierdzonej strony.",
+      "uploaded-partly": "Wgrano do Brain {uploaded} z {total}; pozostałe się nie powiodły"
     },
     "publish-all": {
       "button": "Opublikuj zatwierdzone ({count})",
@@ -2727,7 +2728,8 @@
       "confirm-description": "Strony, które już serwują aktualną treść, zostają bez zmian; zmienione są publikowane ponownie, nowe — po raz pierwszy. Każda publikacja jest zapisywana pod Twoim nazwiskiem. Strony bez właściciela lub niedostępne dla nikogo są pomijane.",
       "confirm": "Opublikuj",
       "done": "W kolejce: {queued} · bez zmian: {unchanged} · pominięte: {refused}",
-      "failed": "Publikacja nie ruszyła — odśwież stronę i spróbuj ponownie."
+      "failed": "Publikacja nie ruszyła — odśwież stronę i spróbuj ponownie.",
+      "not-written": "{count, plural, one {# strona została zapisana jako opublikowana, ale nie trafiła do indeksu — uruchom ponownie} few {# strony zostały zapisane jako opublikowane, ale nie trafiły do indeksu — uruchom ponownie} many {# stron zostało zapisanych jako opublikowane, ale nie trafiło do indeksu — uruchom ponownie} other {# strony zostały zapisane jako opublikowane, ale nie trafiły do indeksu — uruchom ponownie}}"
     }
   }
 }

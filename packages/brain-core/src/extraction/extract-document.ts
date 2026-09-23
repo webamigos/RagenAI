@@ -164,7 +164,8 @@ export function describeIssues(error: z.ZodError): string {
 }
 
 /**
- * A thrown error reduced to its class name.
+ * A thrown error reduced to its class name, plus the HTTP status and
+ * retryability when the error carries them.
  *
  * Deliberately not `error.message`, and never the error object itself: the
  * AI SDK's errors carry `requestBodyValues`, and a provider's message can
@@ -175,8 +176,23 @@ export function describeIssues(error: z.ZodError): string {
  * is enough for the model to try again.
  */
 export function describeFailure(error: unknown): string {
-  if (error instanceof Error && error.name) {
-    return `the call failed (${error.name})`;
+  if (!(error instanceof Error && error.name)) {
+    return 'the call failed';
   }
-  return 'the call failed';
+  // The HTTP status and retryability, when the provider error carries them:
+  // they tell an expired key (401) from a rate limit (429) from an outage,
+  // and neither is customer content. Read by shape, so this package needs
+  // no provider SDK.
+  const { statusCode, isRetryable } = error as {
+    statusCode?: unknown;
+    isRetryable?: unknown;
+  };
+  const facts = [
+    error.name,
+    ...(typeof statusCode === 'number' ? [`HTTP ${statusCode}`] : []),
+    ...(typeof isRetryable === 'boolean'
+      ? [isRetryable ? 'retryable' : 'not retryable']
+      : []),
+  ];
+  return `the call failed (${facts.join(', ')})`;
 }

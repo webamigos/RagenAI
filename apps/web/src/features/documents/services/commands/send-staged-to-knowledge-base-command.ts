@@ -22,10 +22,17 @@ export type SendStagedResult = { sent: string[]; skipped: string[] };
  * later turns Brain off must still be able to get its documents indexed.
  * Idempotent — a file already sent is no longer `STAGED`, so a second click
  * skips it.
+ *
+ * **Who may send is the caller's answer, passed as `onlyOwnedBy`**: an
+ * organization manager sends any staged file (`null`), anyone else only
+ * the ones they uploaded — the rule the neighbouring bulk delete and move
+ * follow. Staging is a deliberate "not yet"; a member must not be able to
+ * push someone else's staged document into retrieval.
  */
 export async function sendStagedToKnowledgeBaseCommand(input: {
   organizationId: string;
   fileIds: string[];
+  onlyOwnedBy: string | null;
 }): Promise<SendStagedResult> {
   const { organizationId } = input;
   await assertCanManageDocuments(organizationId);
@@ -36,6 +43,7 @@ export async function sendStagedToKnowledgeBaseCommand(input: {
       id: { in: ids },
       embeddingStatus: 'STAGED',
       publishedPages: { none: {} },
+      ...(input.onlyOwnedBy === null ? {} : { ownerId: input.onlyOwnedBy }),
     },
     select: { id: true, metadata: true },
   });
@@ -64,6 +72,34 @@ export async function sendStagedToKnowledgeBaseCommand(input: {
         },
         'Could not send a staged document to the knowledge base',
       );
+      // Back to staged, so sending it again works: the destination was
+      // rewritten and the status reset before the job failed to start, and
+      // a file in that state is neither staged nor on its way anywhere.
+      await db.userFile
+        .updateMany({
+          where: {
+            organizationId,
+            id: file.id,
+            embeddingStatus: { in: ['STAGED', 'NOT_STARTED'] },
+          },
+          data: {
+            embeddingStatus: 'STAGED',
+            metadata: { ...metadata, intake: 'brain' } as object,
+          },
+        })
+        .catch((restoreError: unknown) => {
+          logger.error(
+            {
+              organizationId,
+              fileId: file.id,
+              error:
+                restoreError instanceof Error
+                  ? restoreError.message
+                  : String(restoreError),
+            },
+            'Could not put a staged document back after a failed send',
+          );
+        });
     }
   }
   const sentSet = new Set(sent);

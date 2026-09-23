@@ -2719,7 +2719,8 @@
       "upload": "Téléverser dans Brain",
       "uploaded": "Téléversés dans Brain : {count} — stockés et analysés, non consultables",
       "upload-failed": "Le téléversement a échoué — vérifiez le fichier et réessayez.",
-      "staged-summary": "Dans Brain, non consultables : {count} documents, dont {uncurated} sans page approuvée."
+      "staged-summary": "Dans Brain, non consultables : {count} documents, dont {uncurated} sans page approuvée.",
+      "uploaded-partly": "{uploaded} sur {total} importés dans Brain ; les autres ont échoué"
     },
     "publish-all": {
       "button": "Publier les approuvées ({count})",
@@ -2727,7 +2728,8 @@
       "confirm-description": "Les pages qui servent déjà leur texte actuel restent telles quelles ; les pages modifiées sont republiées, les nouvelles publiées. Chaque publication est enregistrée sous votre nom. Les pages sans responsable ou ouvertes à personne sont ignorées.",
       "confirm": "Publier",
       "done": "En file : {queued} · inchangées : {unchanged} · ignorées : {refused}",
-      "failed": "La publication n’a pas pu démarrer — rechargez la page et réessayez."
+      "failed": "La publication n’a pas pu démarrer — rechargez la page et réessayez.",
+      "not-written": "{count, plural, one {# page enregistrée comme publiée mais non écrite dans l’index — relancez} other {# pages enregistrées comme publiées mais non écrites dans l’index — relancez}}"
     }
   }
 }
