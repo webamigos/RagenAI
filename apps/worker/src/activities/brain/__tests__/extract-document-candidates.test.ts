@@ -63,6 +63,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   brainDb.getExtractionSource.mockResolvedValue({
     fileName: 'regulamin.pdf',
+    language: 'pol',
     documentVersionId: '1c9f8b3d-2e4a-4f6b-8c7d-8e9f0a1b2c3d',
     text: TEXT,
   });
@@ -93,6 +94,25 @@ describe('extractDocumentCandidates', () => {
         }),
       ],
     });
+  });
+
+  // Unbounded, Gemini's thinking ate the output cap and truncated the JSON:
+  // 12 of 26 eval extractions failed that way.
+  it('bounds the thinking a Gemini model may spend, under both namespaces', async () => {
+    await extractDocumentCandidates(INPUT);
+    const call = generateObject.mock.calls[0]![0];
+    expect(call.providerOptions).toEqual({
+      google: { thinkingConfig: { thinkingBudget: 2048 } },
+      vertex: { thinkingConfig: { thinkingBudget: 2048 } },
+    });
+    expect(call.maxOutputTokens).toBe(16_000);
+  });
+
+  it('names the document language to the model', async () => {
+    await extractDocumentCandidates(INPUT);
+    expect(generateObject.mock.calls[0]![0].prompt).toContain(
+      'Language: Polish.',
+    );
   });
 
   // D3: retrying a document resolves its finding on success.

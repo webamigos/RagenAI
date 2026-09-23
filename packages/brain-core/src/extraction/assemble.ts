@@ -7,7 +7,11 @@ import type {
 import { intersectPrincipals } from '../access/intersect-principals';
 import { quoteHash, sha256, slugify } from '../text';
 import type { ExtractionResult } from './schema';
-import { QuoteIndex } from './verify-quotes';
+import {
+  expandToSentence,
+  QuoteIndex,
+  type QuoteLocation,
+} from './verify-quotes';
 
 /** The document the windows came from, as curation will cite it. */
 export type ExtractionSource = {
@@ -105,7 +109,12 @@ export function assembleCandidates(
     title: string;
     type: KnowledgePageType;
     description: string;
-    claims: { statement: string; quote: string; locator: string }[];
+    claims: {
+      statement: string;
+      quote: string;
+      locator: string;
+      cited: string;
+    }[];
   };
   const drafts = new Map<string, Draft>();
   const edges = new Map<string, CandidateEdge>();
@@ -132,7 +141,8 @@ export function assembleCandidates(
       if (!draft) {
         continue;
       }
-      if (!index.contains(claim.quote)) {
+      const location = index.locate(claim.quote);
+      if (location === null) {
         unverified.push({
           entityTitle: draft.title,
           statement: claim.statement,
@@ -141,9 +151,16 @@ export function assembleCandidates(
         });
         continue;
       }
-      const hash = quoteHash(claim.quote);
-      if (!draft.claims.some((c) => quoteHash(c.quote) === hash)) {
-        draft.claims.push(claim);
+      // Keyed on the passage the model cited, before widening: the same
+      // passage twice (from two windows, say) is one claim, while two
+      // passages that widen to one sentence are two facts.
+      const cited = quoteHash(claim.quote);
+      if (!draft.claims.some((c) => c.cited === cited)) {
+        draft.claims.push({
+          ...claim,
+          quote: anchoredQuote(index, claim.quote, location),
+          cited,
+        });
       }
     }
 
@@ -199,6 +216,34 @@ export function assembleCandidates(
     unverifiedClaims: unverified.length,
     unverified,
   };
+}
+
+/** Below this, a verified quote is widened to its sentence. */
+export const MIN_ANCHOR_CHARS = 40;
+/** A widened quote longer than this is not used; the model's stays. */
+const MAX_ANCHOR_CHARS = 400;
+
+/**
+ * The quote a source keeps: the model's, or — when that is shorter than
+ * `MIN_ANCHOR_CHARS` or occurs more than once in the document — the sentence
+ * around it, cut from the source. Both are verbatim; the second is one a
+ * reader can find and place. See `expandToSentence`.
+ */
+function anchoredQuote(
+  index: QuoteIndex,
+  quote: string,
+  location: QuoteLocation,
+): string {
+  if (
+    quote.trim().length >= MIN_ANCHOR_CHARS &&
+    index.occurrences(quote) === 1
+  ) {
+    return quote;
+  }
+  const sentence = expandToSentence(index.source, location, MAX_ANCHOR_CHARS);
+  return sentence !== null && sentence.length > quote.trim().length
+    ? sentence
+    : quote;
 }
 
 function rank(origin: KnowledgeEdgeOrigin): number {

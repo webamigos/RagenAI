@@ -724,6 +724,52 @@ Vertex, one 1,240-character Polish terms-of-service document):
 - **A transient provider error on both attempts becomes EXTRACTION_FAILED**,
   as designed — seen once (`AI_RetryError`), and the retry after succeeded.
 
+**The three gaps, measured and closed (2026-09-23).** `brain-extract-eval.ts`
+runs the job's extraction over the 13 text fixtures already in the repository
+(`kolej-bilingual-v1`, `tabele-bilingual-v1`, `regulamin-wilczy-mlyn`; 7 Polish,
+6 English), twice each, and measures the gaps. Same model, same corpus, before
+and after:
+
+| | before | after |
+| --- | --- | --- |
+| documents that failed | **12 / 26** | **0 / 26** |
+| claims dropped by the quote check | 9.2 % | 0.6 % |
+| descriptions in the wrong language (Polish documents) | 32.2 % | 0 % |
+| quotes under 30 characters | 13.1 % | 1.6 % |
+| claims (all runs) | 268 | 708 |
+| edges per document (share `EXTRACTED`) | 4.36 (95 %) | 3.62 (75 %) |
+| tokens | 358,038 | 198,097 |
+
+What did it, and what the measurement found that B5 had not:
+
+- **The worst gap was not one of the three.** Nearly half the extractions
+  failed: Gemini's thinking and the answer share `maxOutputTokens`, the JSON
+  was cut off, and the SDK had no object. Fixed by bounding thinking
+  (`thinkingBudget` 2,048, sent under both the `google` and `vertex`
+  namespaces) and raising the cap to 16,000.
+- **Tables were the rest of it.** Asked for whole sentences, the model split
+  a price list into a claim per cell (14,600 output tokens for 3,400
+  characters); told one claim per row, it made every row its own entity (39
+  candidates from one table). The prompt now says a table is one entity and
+  its rows are claims.
+- **Language:** named outright from `UserFile.language` rather than "the
+  language of the excerpt".
+- **Short quotes** are widened deterministically to the sentence, list item
+  or table row they sit in, cut from the source (`expandToSentence`) — still
+  verbatim, and not something the prompt has to win. It knows Polish
+  abbreviations ("sp. z o.o.", "ul.", "art.").
+- **Markdown emphasis was the largest cause of dropped claims.** Docling writes
+  `**EUR 44**`, a model quoting the sentence writes `EUR 44`; the quote check
+  now ignores `*` and backticks, as it already ignored typography.
+- **Relations were not a gap.** The baseline already had 4.36 per document;
+  B5's single document with none was that document. The prompt now names the
+  kinds of relation it wants, and the count did not move beyond run-to-run
+  variance — it is kept for its wording, not on evidence. C4 is where to
+  measure it properly.
+- **Vertex rate-limits two concurrent extractions** (429 during the eval). The
+  worker runs twenty jobs at a time; a bulk run will need its own concurrency
+  or a backoff before D5 turns the flag on for anyone.
+
 ### Phase C — Findings and graph
 
 - [ ] **C1.** Contradiction detection over extracted claims → `KnowledgeFinding`.
