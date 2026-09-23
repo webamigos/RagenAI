@@ -237,3 +237,31 @@ export async function persistExtraction(
     tokens: result.tokens,
   };
 }
+
+/**
+ * Raise `EXTRACTION_FAILED` for a document whose extraction *step* failed —
+ * threw through all of its retries, as opposed to returning `failed`.
+ *
+ * `extractDocumentCandidates` turns every failure it can see into a finding,
+ * but some happen before it can: no route for the extraction model, the
+ * database refusing a read. Without this the handler would rethrow, and one
+ * such document would fail the whole run — the one thing the spec says a
+ * document's failure never does. `reason` is the handler's reduction of the
+ * error to its class name, for the same reason `describeFailure` gives.
+ */
+export async function recordExtractionStepFailed(input: {
+  orgId: string;
+  fileId: string;
+  runId: string;
+  reason: string;
+}): Promise<void> {
+  await recordExtractionFailed({
+    orgId: input.orgId,
+    fileId: input.fileId,
+    detail: { reason: input.reason, windowIndex: null, runId: input.runId },
+  });
+  logger.warn(
+    { orgId: input.orgId, fileId: input.fileId, runId: input.runId },
+    'brain extract: extraction step failed, finding raised',
+  );
+}

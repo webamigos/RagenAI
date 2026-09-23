@@ -235,6 +235,13 @@ export function createMockActivities() {
       unverifiedClaims: 0,
       tokens: 1200,
     }),
+    recordExtractionStepFailed: vi.fn().mockResolvedValue(undefined),
+    reconcileBrainFindings: vi.fn().mockResolvedValue({
+      created: 0,
+      updated: 0,
+      resolved: 0,
+      holding: 0,
+    }),
   };
 }
 

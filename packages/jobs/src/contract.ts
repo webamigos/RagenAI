@@ -227,6 +227,11 @@ export interface BrainExtractResult {
   pagesCreated: number;
   unverifiedClaims: number;
   tokens: number;
+  /**
+   * What reconciling the computed findings wrote at the end of the run
+   * (spec C2); null when it failed, which does not fail the run.
+   */
+  findings: { created: number; updated: number; resolved: number } | null;
 }
 
 /**

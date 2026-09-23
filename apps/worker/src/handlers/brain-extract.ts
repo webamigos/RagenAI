@@ -17,17 +17,27 @@ import type * as activities from '../activities/index.js';
  * document's.
  *
  * A document that fails does not fail the run — it raises its own finding and
- * the next document is tried. Only an exhausted budget stops early, and the
- * documents it never reached are counted, so a run that stopped is
- * distinguishable from one that finished.
+ * the next document is tried. That holds for a step that throws through its
+ * retries too (spec C3): the error is reduced to its class name and recorded
+ * as the document's `EXTRACTION_FAILED`. Only an exhausted budget stops
+ * early, and the documents it never reached are counted, so a run that
+ * stopped is distinguishable from one that finished.
+ *
+ * The run ends by reconciling the organization's computed findings (spec
+ * C2) — new pages change what is orphaned and unowned. A failure there is
+ * logged and reported as `findings: null`, never a failed run: the
+ * candidates are written by then, and the next run reconciles again.
  */
 export async function brainExtract(
   payload: BrainExtractPayload,
   ctx: JobContext,
 ): Promise<BrainExtractResult> {
-  const { startBrainExtractRun, extractDocumentCandidates } = ctx.steps<
-    typeof activities
-  >({
+  const {
+    startBrainExtractRun,
+    extractDocumentCandidates,
+    recordExtractionStepFailed,
+    reconcileBrainFindings,
+  } = ctx.steps<typeof activities>({
     retry: {
       initialInterval: '5 seconds',
       maximumInterval: '1 minute',
@@ -45,6 +55,7 @@ export async function brainExtract(
     pagesCreated: 0,
     unverifiedClaims: 0,
     tokens: 0,
+    findings: null,
   };
 
   const fileIds = [...new Set(payload.fileIds)];
@@ -65,13 +76,27 @@ export async function brainExtract(
     attempted += 1;
     ctx.progress(`extracting ${attempted} of ${fileIds.length}`);
 
-    const outcome = await extractDocumentCandidates({
-      orgId: payload.orgId,
-      fileId,
-      userId: payload.userId ?? null,
-      maxTokens: tokensLeft,
-      runId: ctx.runId,
-    });
+    let outcome: Awaited<ReturnType<typeof extractDocumentCandidates>>;
+    try {
+      outcome = await extractDocumentCandidates({
+        orgId: payload.orgId,
+        fileId,
+        userId: payload.userId ?? null,
+        maxTokens: tokensLeft,
+        runId: ctx.runId,
+      });
+    } catch (error) {
+      // What the step spent before it threw is not known here, so it is not
+      // charged — the AI-usage rows it wrote are the record of it.
+      await recordExtractionStepFailed({
+        orgId: payload.orgId,
+        fileId,
+        runId: ctx.runId,
+        reason: stepFailureReason(error),
+      });
+      result.failed += 1;
+      continue;
+    }
     result.tokens += outcome.tokens;
     result.unverifiedClaims += outcome.unverifiedClaims;
 
@@ -87,10 +112,34 @@ export async function brainExtract(
     }
   }
 
+  try {
+    const { created, updated, resolved } = await reconcileBrainFindings({
+      orgId: payload.orgId,
+    });
+    result.findings = { created, updated, resolved };
+  } catch (error) {
+    ctx.log.warn(
+      `brain findings for ${payload.orgId} not reconciled: ${stepFailureReason(error)}`,
+    );
+  }
+
   ctx.log.info(
     `brain extract for ${payload.orgId}: ${result.extracted} extracted, ` +
       `${result.failed} failed, ${result.notAttempted} not attempted, ` +
       `${result.pagesCreated} candidate pages, ${result.tokens} tokens`,
   );
   return result;
+}
+
+/**
+ * A failed step, as a finding may carry it: the class name and nothing else.
+ * An error from a model call carries the request — the document — in its
+ * message and its properties, and a finding is read by people. Inline rather
+ * than `brain-core`'s `describeFailure` because this module is workflow code
+ * on Temporal, where that package's `node:crypto` import is not allowed.
+ */
+function stepFailureReason(error: unknown): string {
+  const name =
+    error instanceof Error && error.name ? error.name : 'unknown error';
+  return `the extraction step failed (${name})`;
 }

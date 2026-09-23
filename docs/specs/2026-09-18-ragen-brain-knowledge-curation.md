@@ -779,13 +779,64 @@ What did it, and what the measurement found that B5 had not:
 ### Phase C — Findings and graph
 
 - [ ] **C1.** Contradiction detection over extracted claims → `KnowledgeFinding`.
-- [ ] **C2.** Gap, orphan, stale and unowned findings as queries over the pages'
+- [x] **C2.** Gap, orphan, stale and unowned findings as queries over the pages'
       own fields. `STALE` covers both a deleted source (`sourceDeletedAt`) and a
       source whose active `DocumentVersion` moved past the pinned one.
-- [ ] **C3.** `EXTRACTION_FAILED` findings raised by the extract handler, per
-      document, carrying the error.
+      _Rules: `packages/brain-core/src/findings`; reads and writes:
+      `apps/worker/src/services/db/brain-findings.ts`; run by
+      `reconcileBrainFindings` at the end of every `brainExtract`._
+- [x] **C3.** `EXTRACTION_FAILED` findings raised by the extract handler, per
+      document, carrying the error. _B3 raised it for every failure the
+      activity sees; C3 added the one it cannot — a step that throws through
+      its retries — so no document fails the run._
 - [ ] **C4.** Graph assembly (`graphology`, Louvain communities) with
       `EXTRACTED` / `INFERRED` / `AMBIGUOUS` kept distinct.
+
+**What C2 and C3 settled:**
+
+- **The four rules judge curated pages only** (`APPROVED`, `STALE`). Every
+  candidate is unowned and most are unlinked by construction; run over
+  candidates, the rules would bury the findings that matter under hundreds
+  saying "not reviewed yet". The review queue is how a candidate is judged.
+- **UNOWNED includes an owner who has left** — `ownerId` set to someone no
+  longer a member. A null check alone reports that page as owned.
+- **STALE from a source is two conditions, not one.** A deleted source
+  (`sourceDeletedAt`, *or* no file row at all — E5 writes the column, and the
+  rule does not wait for it), or an active version that moved past the pin
+  **and no longer contains the cited words**. A moved version that still
+  contains them is not stale: re-ingesting the same PDF mints a new version
+  with the same text, and flagging each one would train people to dismiss
+  the finding. A file with no active version is not checked rather than
+  guessed at. `verifyEvery` elapsed is the third reason, counted from
+  `lastVerifiedAt`, or from the latest `APPROVE` decision if never verified;
+  a value that is not an ISO-8601 duration never comes due.
+- **GAP is one rule: a `PROCESS` page with no edge to any `ROLE` page** — a
+  process nobody is named as performing. It is the completeness check the
+  data supports today; "an entity mentioned and never described" would need
+  the relations extraction currently drops, and is the natural second rule.
+- **ORPHAN is no edge to or from any non-rejected page**; an edge to a
+  candidate counts, a self-loop does not.
+- **One finding per page per type**; a page stale for three reasons has one
+  `STALE` listing them. **The finding carries no document text** — source
+  ids, version ids, a date.
+- **Findings are a view, stored as a diff.** `reconcileFindings` compares
+  what holds now with the stored rows: an open row whose condition is gone is
+  resolved, one whose reasons changed is updated in place (its id survives),
+  and a **dismissal stands for as long as the problem is the same** — a
+  `fingerprint` of the reasons, so a second deleted source on a page
+  dismissed for the first is raised again. Writes are conditioned on
+  `status = OPEN`, so a dismissal made mid-run has the last word.
+  `CONTRADICTION` and `EXTRACTION_FAILED` are never touched by it.
+- **Severity**: `HIGH` when the page is serving in the index (`publishedAt`)
+  and the problem is its owner or its sources; `LOW` for ORPHAN and GAP.
+- **When it runs**: at the end of every extraction run, and a failure there
+  is `findings: null` in the run's result, never a failed run. A
+  `verifyEvery` that comes due between runs is found at the next one;
+  scheduling is G1's.
+- **Verified against a real Postgres** with the migration applied, not only
+  against mocks: five findings from a seeded organization, none on the second
+  run, and dismissal, an owner rejoining and a new `ROLE` edge each resolving
+  or holding as above.
 
 ### Phase D — Review interface
 

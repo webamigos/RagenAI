@@ -34,3 +34,25 @@ export { EXTRACTION_SYSTEM_PROMPT, languageName } from './extraction/prompt';
 export { QuoteIndex, normalizeForQuoteMatch } from './extraction/verify-quotes';
 export { splitIntoWindows } from './extraction/windows';
 export { quoteHash, sha256, slugify } from './text';
+export { addIsoDuration } from './findings/duration';
+export {
+  COMPUTED_FINDING_TYPES,
+  CURATED_PAGE_STATUSES,
+  detectPageFindings,
+  verificationDue,
+  type ComputedFindingType,
+  type DesiredFinding,
+  type FindingDetail,
+  type FindingSeverity,
+  type FindingsSnapshot,
+  type SnapshotFile,
+  type SnapshotPage,
+  type SnapshotSource,
+  type StaleReason,
+} from './findings/page-findings';
+export {
+  reconcileFindings,
+  type ExistingFinding,
+  type FindingsPlan,
+  type FindingStatus,
+} from './findings/reconcile';
