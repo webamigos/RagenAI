@@ -86,7 +86,12 @@ describe('DeleteFileService', () => {
     });
 
     expect(findFirst).toHaveBeenCalledWith({
-      where: { id: 'file-1', organizationId: 'org-1', projectId: 'proj-1' },
+      where: {
+        id: 'file-1',
+        organizationId: 'org-1',
+        projectId: 'proj-1',
+        publishedPages: { none: {} },
+      },
     });
   });
 

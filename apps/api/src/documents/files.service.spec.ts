@@ -268,7 +268,11 @@ describe('FilesService', () => {
 
       expect(result).toEqual({ count: 1 });
       expect(deleteMany).toHaveBeenCalledWith({
-        where: { id: 'file-1', organizationId: 'org-1' },
+        where: {
+          id: 'file-1',
+          organizationId: 'org-1',
+          publishedPages: { none: {} },
+        },
       });
       expect(auditLog.track).toHaveBeenCalledWith(
         expect.objectContaining({

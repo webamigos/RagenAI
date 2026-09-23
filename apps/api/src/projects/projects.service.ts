@@ -614,7 +614,11 @@ export class ProjectsService {
 
         await tx.thread.deleteMany({ where: { projectId } });
         await tx.userDocument.deleteMany({ where: { projectId } });
-        await tx.userFile.deleteMany({ where: { projectId } });
+        // A published Brain page's file carries no project, and is excluded
+        // regardless should one be moved into it (spec E10).
+        await tx.userFile.deleteMany({
+          where: { projectId, publishedPages: { none: {} } },
+        });
 
         await tx.project.delete({ where: { id: projectId } });
       });

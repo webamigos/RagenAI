@@ -211,7 +211,12 @@ export class FilesService {
 
   async deleteFileFromDb(fileId: string, orgId: string) {
     const result = await this.prisma.client.userFile.deleteMany({
-      where: { id: fileId, organizationId: orgId },
+      // Never a published Brain page's file (spec E10).
+      where: {
+        id: fileId,
+        organizationId: orgId,
+        publishedPages: { none: {} },
+      },
     });
 
     this.auditLog.track({
@@ -230,7 +235,12 @@ export class FilesService {
     orgId: string,
   ) {
     return this.prisma.client.userFile.deleteMany({
-      where: { id: fileId, organizationId: orgId, projectId },
+      where: {
+        id: fileId,
+        organizationId: orgId,
+        projectId,
+        publishedPages: { none: {} },
+      },
     });
   }
 
