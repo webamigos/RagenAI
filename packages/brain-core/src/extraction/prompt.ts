@@ -20,6 +20,9 @@ import { KNOWLEDGE_PAGE_TYPES } from '@ragenai/brain-contracts';
  * A table is one entity: told only that, the model made every row its own
  * page — 39 candidates from one price list, each with one claim and an
  * inferred "belongs to" edge, which is a curation queue nobody works through.
+ * With the rule it still does so on some runs (2 of 4 on one English price
+ * list), so the prompt is not what enforces it: `consolidateTableRows` folds
+ * row-entities back into their table after the answer.
  */
 export const EXTRACTION_SYSTEM_PROMPT = `You extract curated company knowledge from one excerpt of a document.
 

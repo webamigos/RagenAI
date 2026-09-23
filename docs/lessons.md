@@ -166,6 +166,8 @@ After a nontrivial correction or a non-obvious gotcha (see `AGENTS.md`'s "Post-T
 
 ### rag
 
+- [A prompt rule the model follows most of the time is not a rule, and two repeats cannot tell you which it is](lessons/a-prompt-rule-the-model-mostly-follows-is-not-enforced.md) — area:rag,testing; module:brain-core,worker; topic:llm,prompt,evals,adr-20,variance,tables. Brain's "a table is one entity" rule was recorded as closed on 13 fixtures × 2; a 4-run probe found another document splitting its price list into 39 pages on 2 of 4 runs, and those runs silently dropped 15 of 54 rows. Enforce a checkable rule after the answer, in code; repeat the failing case, not the corpus; measure coverage of the source, not only what came back.
+
 - [A packer that measures one row through a header-aware renderer charges every row for a separator no chunk contains](lessons/measuring-a-row-through-a-header-aware-renderer-halves-the-budget.md) — area:rag,architecture; module:worker; topic:chunking,tables,packrows,markdown,budget,silent-mis-sizing,adr-43,adr-20. `packRows` measures a row by calling the caller's `render` with a one-row array — exact for CSV, wrong for markdown tables, where `renderPipes` adds an `| --- |` line under the first row it sees. Measured 106 against a rendered 63, so table chunks packed to half the budget; the caption prepended after packing was not charged at all. Every test stayed green because they assert `toBeGreaterThan` on chunk counts. Assert that measured size _equals_ the rendered length, in every header configuration.
 
 ### testing

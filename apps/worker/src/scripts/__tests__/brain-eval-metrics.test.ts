@@ -1,7 +1,12 @@
 import type { AssembledCandidates } from '@ragenai/brain-core';
 import { describe, expect, it } from 'vitest';
 
-import { languageOf, measure, summarize } from '../brain-eval-metrics.js';
+import {
+  languageOf,
+  measure,
+  summarize,
+  tableCoverage,
+} from '../brain-eval-metrics.js';
 
 const HASH = `sha256:${'a'.repeat(64)}`;
 
@@ -50,6 +55,8 @@ describe('measure', () => {
     ],
     unverifiedClaims: 1,
     unverified: [],
+    foldedTableRows: 0,
+    completedTableRows: 0,
   };
 
   it('counts a description in the other language as the failure', () => {
@@ -88,6 +95,8 @@ describe('measure, the graph', () => {
         ],
         unverifiedClaims: 0,
         unverified: [],
+        foldedTableRows: 0,
+        completedTableRows: 0,
       },
       'pl',
     );
@@ -113,6 +122,8 @@ describe('summarize', () => {
         edges: [],
         unverifiedClaims: 1,
         unverified: [],
+        foldedTableRows: 0,
+        completedTableRows: 0,
       },
       'pl',
     );
@@ -131,5 +142,35 @@ describe('summarize', () => {
       extractedEdgeShare: null,
       tokens: 150,
     });
+  });
+});
+
+describe('tableCoverage', () => {
+  const text =
+    'Cennik.\n\n| Kod | Stawka |\n| --- | --- |\n| A-1 | 10 zł |\n| A-2 | 20 zł |\n| A-3 | 30 zł |\n';
+  it('counts data rows, and the ones a kept claim quotes', () => {
+    const assembled = {
+      pages: [page('Cennik.', ['| A-1 | 10 zł |', 'A-3 | 30 zł'], 'cennik')],
+      edges: [],
+      unverifiedClaims: 0,
+      unverified: [],
+      foldedTableRows: 0,
+      completedTableRows: 0,
+    };
+    // Header and separator are not rows; a quote of part of a row counts.
+    expect(tableCoverage(text, assembled)).toEqual({ rows: 3, cited: 2 });
+  });
+
+  it('is nothing for a document without tables', () => {
+    expect(
+      tableCoverage('Tylko tekst.', {
+        pages: [],
+        edges: [],
+        unverifiedClaims: 0,
+        unverified: [],
+        foldedTableRows: 0,
+        completedTableRows: 0,
+      }),
+    ).toEqual({ rows: 0, cited: 0 });
   });
 });

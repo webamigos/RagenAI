@@ -55,6 +55,8 @@ const extracted: PreviewRow = {
         },
       ],
       unverifiedClaims: 2,
+      foldedTableRows: 0,
+      completedTableRows: 0,
       unverified: [
         {
           entityTitle: 'Wdrożenie',

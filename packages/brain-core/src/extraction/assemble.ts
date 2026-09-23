@@ -7,6 +7,7 @@ import type {
 import { intersectPrincipals } from '../access/intersect-principals';
 import { quoteHash, sha256, slugify } from '../text';
 import type { ExtractionResult } from './schema';
+import { consolidateTableRows, findTables } from './tables';
 import {
   expandToSentence,
   QuoteIndex,
@@ -69,6 +70,14 @@ export type AssembledCandidates = {
    * quote, two passages joined — rather than only how many. Never persisted.
    */
   unverified: UnverifiedClaim[];
+  /**
+   * Entities folded into their table because every claim they had was a row
+   * of it (`consolidateTableRows`). Counted so a measurement can see how
+   * often the model split a table the prompt told it not to.
+   */
+  foldedTableRows: number;
+  /** Rows of a folded table the model never returned, added from the table. */
+  completedTableRows: number;
 };
 
 /**
@@ -84,6 +93,10 @@ export type AssembledCandidates = {
  * 3. **An edge's origin is earned.** A relation whose quote verifies is
  *    `EXTRACTED`; one the model says is stated but whose quote does not verify
  *    is `AMBIGUOUS`; one offered without a quote is `INFERRED`.
+ *
+ * 4. **A table is one entity.** Entities whose every claim is a row of the
+ *    same table are folded into one (`consolidateTableRows`) — the prompt
+ *    asks for that, and the model does not always do it.
  *
  * Entities from different windows merge on the slug of their title, because
  * the model invents its `key` per call and two windows about the same process
@@ -114,6 +127,8 @@ export function assembleCandidates(
       quote: string;
       locator: string;
       cited: string;
+      /** Where the cited passage starts in the source. */
+      at: number;
     }[];
   };
   const drafts = new Map<string, Draft>();
@@ -160,6 +175,7 @@ export function assembleCandidates(
           ...claim,
           quote: anchoredQuote(index, claim.quote, location),
           cited,
+          at: location.start,
         });
       }
     }
@@ -183,8 +199,38 @@ export function assembleCandidates(
     }
   }
 
+  const consolidated = consolidateTableRows(
+    [...drafts.values()],
+    findTables(index.source),
+    {
+      source: index.source,
+      claimFor: (row) => ({
+        statement: row.statement,
+        quote: row.text,
+        locator: '',
+        cited: quoteHash(row.text),
+        at: row.at,
+      }),
+    },
+  );
+  const follow = (slug: string) => consolidated.renamed.get(slug) ?? slug;
+  const followed = new Map<string, CandidateEdge>();
+  for (const edge of edges.values()) {
+    const fromSlug = follow(edge.fromSlug);
+    const toSlug = follow(edge.toSlug);
+    if (fromSlug === toSlug) {
+      // Two rows of one table related to each other: now one page.
+      continue;
+    }
+    const key = `${fromSlug}\u0000${toSlug}\u0000${edge.kind}`;
+    const existing = followed.get(key);
+    if (!existing || rank(edge.origin) > rank(existing.origin)) {
+      followed.set(key, { ...edge, fromSlug, toSlug });
+    }
+  }
+
   const pages: CandidatePage[] = [];
-  for (const draft of drafts.values()) {
+  for (const draft of consolidated.drafts) {
     if (draft.claims.length === 0) {
       continue;
     }
@@ -210,11 +256,13 @@ export function assembleCandidates(
   const slugs = new Set(pages.map((p) => p.slug));
   return {
     pages,
-    edges: [...edges.values()].filter(
+    edges: [...followed.values()].filter(
       (e) => slugs.has(e.fromSlug) && slugs.has(e.toSlug),
     ),
     unverifiedClaims: unverified.length,
     unverified,
+    foldedTableRows: consolidated.folded,
+    completedTableRows: consolidated.completed,
   };
 }
 
