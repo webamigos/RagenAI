@@ -2728,6 +2728,12 @@
       "confirm": "Julkaise",
       "done": "Jonossa: {queued} · ennallaan: {unchanged} · ohitettu: {refused}",
       "failed": "Julkaisua ei voitu aloittaa — lataa sivu uudelleen ja yritä uudelleen."
+    },
+    "pager": {
+      "label": "Luettelon sivut",
+      "previous": "Edellinen",
+      "next": "Seuraava",
+      "position": "{page}/{pages}"
     }
   }
 }

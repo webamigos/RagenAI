@@ -2728,6 +2728,12 @@
       "confirm": "Publicar",
       "done": "En cola: {queued} · sin cambios: {unchanged} · omitidas: {refused}",
       "failed": "No se pudo iniciar la publicación: recarga la página e inténtalo de nuevo."
+    },
+    "pager": {
+      "label": "Páginas de la lista",
+      "previous": "Anterior",
+      "next": "Siguiente",
+      "position": "{page} de {pages}"
     }
   }
 }

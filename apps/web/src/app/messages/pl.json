@@ -2728,6 +2728,12 @@
       "confirm": "Opublikuj",
       "done": "W kolejce: {queued} · bez zmian: {unchanged} · pominięte: {refused}",
       "failed": "Publikacja nie ruszyła — odśwież stronę i spróbuj ponownie."
+    },
+    "pager": {
+      "label": "Strony listy",
+      "previous": "Poprzednie",
+      "next": "Następne",
+      "position": "{page} z {pages}"
     }
   }
 }

@@ -2728,6 +2728,12 @@
       "confirm": "Veröffentlichen",
       "done": "Eingereiht: {queued} · unverändert: {unchanged} · übersprungen: {refused}",
       "failed": "Die Veröffentlichung konnte nicht starten — laden Sie die Seite neu und versuchen Sie es erneut."
+    },
+    "pager": {
+      "label": "Seiten der Liste",
+      "previous": "Zurück",
+      "next": "Weiter",
+      "position": "{page} von {pages}"
     }
   }
 }

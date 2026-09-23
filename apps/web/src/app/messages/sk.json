@@ -2728,6 +2728,12 @@
       "confirm": "Zverejniť",
       "done": "V rade: {queued} · bez zmeny: {unchanged} · preskočené: {refused}",
       "failed": "Zverejnenie sa nepodarilo spustiť — načítajte stránku znova a skúste to znova."
+    },
+    "pager": {
+      "label": "Strany zoznamu",
+      "previous": "Predchádzajúce",
+      "next": "Ďalšie",
+      "position": "{page} z {pages}"
     }
   }
 }

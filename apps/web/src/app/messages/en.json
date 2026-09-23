@@ -2728,6 +2728,12 @@
       "confirm": "Publish",
       "done": "Queued: {queued} · unchanged: {unchanged} · skipped: {refused}",
       "failed": "Publishing could not start — reload the page and try again."
+    },
+    "pager": {
+      "label": "Pages of the list",
+      "previous": "Previous",
+      "next": "Next",
+      "position": "{page} of {pages}"
     }
   }
 }

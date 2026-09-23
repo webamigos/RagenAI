@@ -2728,6 +2728,12 @@
       "confirm": "Publicera",
       "done": "I kö: {queued} · oförändrade: {unchanged} · överhoppade: {refused}",
       "failed": "Publiceringen kunde inte starta — ladda om sidan och försök igen."
+    },
+    "pager": {
+      "label": "Listans sidor",
+      "previous": "Föregående",
+      "next": "Nästa",
+      "position": "{page} av {pages}"
     }
   }
 }
