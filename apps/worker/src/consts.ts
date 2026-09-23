@@ -212,6 +212,14 @@ export const BRAIN_EXTRACT_MAX_TOKENS = positiveIntFromEnv(
 );
 
 /**
+ * Page pairs a run's contradiction check may judge (spec C1) — one model call
+ * each. A constant, not a setting: the run's token ceiling already bounds the
+ * cost, and this bounds the case that ceiling would not, a corpus where one
+ * subject appears in fifty documents and every pair of them is compared.
+ */
+export const BRAIN_CONTRADICTION_MAX_PAIRS = 100;
+
+/**
  * How many `brainExtract` runs may execute at once across the whole
  * deployment, whatever `WORKER_CONCURRENCY` says.
  *

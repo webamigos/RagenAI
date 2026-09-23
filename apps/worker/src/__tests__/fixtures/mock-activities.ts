@@ -236,6 +236,14 @@ export function createMockActivities() {
       tokens: 1200,
     }),
     recordExtractionStepFailed: vi.fn().mockResolvedValue(undefined),
+    detectContradictions: vi.fn().mockResolvedValue({
+      pairs: 0,
+      raised: 0,
+      cleared: 0,
+      failed: 0,
+      notJudged: 0,
+      tokens: 0,
+    }),
     reconcileBrainFindings: vi.fn().mockResolvedValue({
       created: 0,
       updated: 0,

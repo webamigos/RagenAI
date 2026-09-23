@@ -219,4 +219,108 @@ describe('brainExtract', () => {
     await brainExtract({ orgId: 'org-1', fileIds: ['a'] }, context(activities));
     expect(activities.reconcileBrainFindings).not.toHaveBeenCalled();
   });
+
+  describe('the contradiction check (C1)', () => {
+    it('compares the documents that extracted, on the tokens left', async () => {
+      const activities = createMockActivities();
+      activities.startBrainExtractRun.mockResolvedValue({
+        enabled: true,
+        maxDocuments: 10,
+        maxTokens: 1000,
+      });
+      activities.extractDocumentCandidates
+        .mockResolvedValueOnce(extracted(300))
+        .mockResolvedValueOnce({
+          status: 'failed',
+          pagesCreated: 0,
+          unverifiedClaims: 0,
+          tokens: 100,
+        });
+      activities.detectContradictions.mockResolvedValue({
+        pairs: 3,
+        raised: 1,
+        cleared: 0,
+        failed: 0,
+        notJudged: 0,
+        tokens: 50,
+      });
+      const result = await brainExtract(
+        { orgId: 'org-1', fileIds: ['a', 'b'], userId: 'user-1' },
+        context(activities),
+      );
+      expect(activities.detectContradictions).toHaveBeenCalledWith({
+        orgId: 'org-1',
+        fileIds: ['a'],
+        userId: 'user-1',
+        maxTokens: 600,
+        runId: 'run-1',
+      });
+      expect(result.tokens).toBe(450);
+      expect(result.contradictions).toEqual({
+        pairs: 3,
+        raised: 1,
+        cleared: 0,
+        failed: 0,
+        notJudged: 0,
+      });
+    });
+
+    it('runs between extraction and reconciliation', async () => {
+      const activities = createMockActivities();
+      const order: string[] = [];
+      activities.extractDocumentCandidates.mockImplementation(async () => {
+        order.push('extract');
+        return extracted(10);
+      });
+      activities.detectContradictions.mockImplementation(async () => {
+        order.push('contradictions');
+        return { pairs: 0, raised: 0, cleared: 0, failed: 0, notJudged: 0, tokens: 0 };
+      });
+      activities.reconcileBrainFindings.mockImplementation(async () => {
+        order.push('reconcile');
+        return { created: 0, updated: 0, resolved: 0, holding: 0 };
+      });
+      await brainExtract({ orgId: 'org-1', fileIds: ['a'] }, context(activities));
+      expect(order).toEqual(['extract', 'contradictions', 'reconcile']);
+    });
+
+    it('does not run when nothing was extracted', async () => {
+      const activities = createMockActivities();
+      activities.extractDocumentCandidates.mockResolvedValue({
+        status: 'failed',
+        pagesCreated: 0,
+        unverifiedClaims: 0,
+        tokens: 10,
+      });
+      const result = await brainExtract(
+        { orgId: 'org-1', fileIds: ['a'] },
+        context(activities),
+      );
+      expect(activities.detectContradictions).not.toHaveBeenCalled();
+      expect(result.contradictions).toBeNull();
+    });
+
+    it('does not run when extraction spent the run tokens', async () => {
+      const activities = createMockActivities();
+      activities.startBrainExtractRun.mockResolvedValue({
+        enabled: true,
+        maxDocuments: 10,
+        maxTokens: 100,
+      });
+      activities.extractDocumentCandidates.mockResolvedValue(extracted(100));
+      await brainExtract({ orgId: 'org-1', fileIds: ['a'] }, context(activities));
+      expect(activities.detectContradictions).not.toHaveBeenCalled();
+    });
+
+    it('reports null, and still reconciles, when the check fails', async () => {
+      const activities = createMockActivities();
+      activities.detectContradictions.mockRejectedValue(new Error('provider'));
+      const result = await brainExtract(
+        { orgId: 'org-1', fileIds: ['a'] },
+        context(activities),
+      );
+      expect(result.contradictions).toBeNull();
+      expect(activities.reconcileBrainFindings).toHaveBeenCalled();
+    });
+  });
 });

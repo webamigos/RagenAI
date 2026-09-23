@@ -93,6 +93,8 @@ export async function getExtractionSource(fileId: string, orgId: string) {
  * page with a decision could not be deleted anyway — the ledger's foreign key
  * is NO ACTION — so the filter is also what keeps this from failing.
  *
+ * Open findings naming a replaced page are resolved in the same transaction.
+ *
  * Pages, sources and edges go in one transaction: a half-written candidate
  * with no sources would be a page with nothing behind it, the one shape
  * assembly refuses to produce.
@@ -105,14 +107,36 @@ export async function replaceCandidatesFromFile(input: {
 }): Promise<{ pagesCreated: number; pagesReplaced: number }> {
   const { orgId, fileId } = input;
   return getPrisma().$transaction(async (tx) => {
-    const replaced = await tx.knowledgePage.deleteMany({
+    const stale = await tx.knowledgePage.findMany({
       where: {
         organizationId: orgId,
         status: 'CANDIDATE',
         sources: { some: { fileId }, every: { fileId } },
         decisions: { none: {} },
       },
+      select: { id: true },
     });
+    const staleIds = stale.map((p) => p.id);
+    const replaced =
+      staleIds.length > 0
+        ? await tx.knowledgePage.deleteMany({
+            where: { organizationId: orgId, id: { in: staleIds } },
+          })
+        : { count: 0 };
+    if (staleIds.length > 0) {
+      // A finding naming a page that no longer exists is one nobody can act
+      // on — a contradiction between a candidate and something else, found
+      // by an earlier run. The fresh candidates are judged again by this
+      // run's contradiction pass.
+      await tx.knowledgeFinding.updateMany({
+        where: {
+          organizationId: orgId,
+          status: 'OPEN',
+          pageIds: { hasSome: staleIds },
+        },
+        data: { status: 'RESOLVED', resolvedAt: new Date() },
+      });
+    }
 
     const taken = new Set(
       (

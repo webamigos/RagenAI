@@ -23,10 +23,12 @@ import type * as activities from '../activities/index.js';
  * early, and the documents it never reached are counted, so a run that
  * stopped is distinguishable from one that finished.
  *
- * The run ends by reconciling the organization's computed findings (spec
- * C2) — new pages change what is orphaned and unowned. A failure there is
- * logged and reported as `findings: null`, never a failed run: the
- * candidates are written by then, and the next run reconciles again.
+ * The run ends with two passes over the whole organization. The pages this
+ * run wrote are compared with every other page on the same subject (spec
+ * C1), on what is left of the run's tokens; then the computed findings are
+ * reconciled (C2) — new pages change what is orphaned and unowned. A failure
+ * in either is logged and reported as `null`, never a failed run: the
+ * candidates are written by then, and the next run tries again.
  */
 export async function brainExtract(
   payload: BrainExtractPayload,
@@ -36,6 +38,7 @@ export async function brainExtract(
     startBrainExtractRun,
     extractDocumentCandidates,
     recordExtractionStepFailed,
+    detectContradictions,
     reconcileBrainFindings,
   } = ctx.steps<typeof activities>({
     retry: {
@@ -55,6 +58,7 @@ export async function brainExtract(
     pagesCreated: 0,
     unverifiedClaims: 0,
     tokens: 0,
+    contradictions: null,
     findings: null,
   };
 
@@ -67,6 +71,7 @@ export async function brainExtract(
 
   let attempted = 0;
   let exhausted = false;
+  const extractedFileIds: string[] = [];
   for (const fileId of fileIds) {
     const tokensLeft = run.maxTokens - result.tokens;
     if (exhausted || attempted >= run.maxDocuments || tokensLeft <= 0) {
@@ -102,6 +107,7 @@ export async function brainExtract(
 
     if (outcome.status === 'extracted') {
       result.extracted += 1;
+      extractedFileIds.push(fileId);
       result.pagesCreated += outcome.pagesCreated;
     } else if (outcome.status === 'failed') {
       result.failed += 1;
@@ -109,6 +115,25 @@ export async function brainExtract(
       // Half a document is not returned, so this one counts as not attempted.
       result.notAttempted += 1;
       exhausted = true;
+    }
+  }
+
+  const tokensLeft = run.maxTokens - result.tokens;
+  if (extractedFileIds.length > 0 && tokensLeft > 0) {
+    try {
+      const { tokens, ...counts } = await detectContradictions({
+        orgId: payload.orgId,
+        fileIds: extractedFileIds,
+        userId: payload.userId ?? null,
+        maxTokens: tokensLeft,
+        runId: ctx.runId,
+      });
+      result.tokens += tokens;
+      result.contradictions = counts;
+    } catch (error) {
+      ctx.log.warn(
+        `brain contradictions for ${payload.orgId} not checked: ${stepFailureReason(error)}`,
+      );
     }
   }
 

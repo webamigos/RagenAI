@@ -8,6 +8,7 @@ const tx = vi.hoisted(() => ({
   },
   knowledgePageSource: { createMany: vi.fn() },
   knowledgeEdge: { createMany: vi.fn() },
+  knowledgeFinding: { updateMany: vi.fn() },
 }));
 const prisma = vi.hoisted(() => ({
   $transaction: vi.fn(),
@@ -65,14 +66,43 @@ describe('replaceCandidatesFromFile', () => {
       pages: [page('a')],
       edges: [],
     });
-    expect(tx.knowledgePage.deleteMany).toHaveBeenCalledWith({
+    expect(tx.knowledgePage.findMany.mock.calls[0]![0]).toEqual({
       where: {
         organizationId: 'org-1',
         status: 'CANDIDATE',
         sources: { some: { fileId: 'file-1' }, every: { fileId: 'file-1' } },
         decisions: { none: {} },
       },
+      select: { id: true },
     });
+    // Nothing to replace: no delete, and no findings touched.
+    expect(tx.knowledgePage.deleteMany).not.toHaveBeenCalled();
+    expect(tx.knowledgeFinding.updateMany).not.toHaveBeenCalled();
+  });
+
+  // A contradiction naming a page that is about to be deleted is one nobody
+  // can act on; the fresh candidate is judged again by this run.
+  it('deletes the replaced pages by id and resolves the findings naming them', async () => {
+    tx.knowledgePage.findMany.mockResolvedValueOnce([{ id: 7 }, { id: 8 }]);
+    tx.knowledgePage.deleteMany.mockResolvedValueOnce({ count: 2 });
+    const written = await replaceCandidatesFromFile({
+      orgId: 'org-1',
+      fileId: 'file-1',
+      pages: [page('a')],
+      edges: [],
+    });
+    expect(tx.knowledgePage.deleteMany).toHaveBeenCalledWith({
+      where: { organizationId: 'org-1', id: { in: [7, 8] } },
+    });
+    expect(tx.knowledgeFinding.updateMany).toHaveBeenCalledWith({
+      where: {
+        organizationId: 'org-1',
+        status: 'OPEN',
+        pageIds: { hasSome: [7, 8] },
+      },
+      data: { status: 'RESOLVED', resolvedAt: expect.any(Date) },
+    });
+    expect(written.pagesReplaced).toBe(2);
   });
 
   it('writes every row with its organization', async () => {
@@ -113,6 +143,7 @@ describe('replaceCandidatesFromFile', () => {
   // A page someone has worked on stays; the fresh candidate sits beside it.
   it('suffixes a slug that is still taken after the replacement', async () => {
     tx.knowledgePage.findMany
+      .mockResolvedValueOnce([])
       .mockResolvedValueOnce([{ slug: 'a' }])
       .mockResolvedValueOnce([{ slug: 'a-2' }]);
     await replaceCandidatesFromFile({
