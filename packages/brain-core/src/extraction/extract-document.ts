@@ -6,7 +6,11 @@ import {
   extractionUserPrompt,
   retryUserPrompt,
 } from './prompt';
-import { extractionResultSchema, type ExtractionResult } from './schema';
+import {
+  extractionProviderSchema,
+  parseExtraction,
+  type ExtractionResult,
+} from './schema';
 import { splitIntoWindows } from './windows';
 
 /**
@@ -22,7 +26,7 @@ import { splitIntoWindows } from './windows';
 export type GenerateStructured = (request: {
   system: string;
   prompt: string;
-  schema: typeof extractionResultSchema;
+  schema: typeof extractionProviderSchema;
 }) => Promise<{ object: unknown; usage: TokenUsage }>;
 
 export type ExtractDocumentInput = {
@@ -39,6 +43,8 @@ export type ExtractDocumentOutcome =
       status: 'extracted';
       /** One result per window, in order — merging is `assembleCandidates`'s. */
       windows: ExtractionResult[];
+      /** Items dropped for failing their limits or the per-window caps. */
+      rejectedItems: number;
       usage: TokenUsage;
     }
   | {
@@ -72,6 +78,7 @@ export async function extractDocument(
   );
   const usage: TokenUsage = { inputTokens: 0, outputTokens: 0 };
   const results: ExtractionResult[] = [];
+  let rejectedItems = 0;
   // Admission lives here rather than with the caller so a handler cannot
   // forget it: every document that reaches a model call has been counted.
   if (!input.budget.admitDocument()) {
@@ -96,15 +103,16 @@ export async function extractDocument(
         const answer = await input.generate({
           system: EXTRACTION_SYSTEM_PROMPT,
           prompt: problem === null ? prompt : retryUserPrompt(prompt, problem),
-          schema: extractionResultSchema,
+          schema: extractionProviderSchema,
         });
         usage.inputTokens += answer.usage.inputTokens;
         usage.outputTokens += answer.usage.outputTokens;
         input.budget.charge(answer.usage);
 
-        const parsed = extractionResultSchema.safeParse(answer.object);
-        if (parsed.success) {
-          result = parsed.data;
+        const parsed = parseExtraction(answer.object);
+        if (parsed.ok) {
+          result = parsed.result;
+          rejectedItems += parsed.rejectedItems;
         } else {
           problem = describeIssues(parsed.error);
         }
@@ -124,7 +132,7 @@ export async function extractDocument(
     results.push(result);
   }
 
-  return { status: 'extracted', windows: results, usage };
+  return { status: 'extracted', windows: results, rejectedItems, usage };
 }
 
 /**

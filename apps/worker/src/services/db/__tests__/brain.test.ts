@@ -16,7 +16,7 @@ const prisma = vi.hoisted(() => ({
     updateMany: vi.fn(),
     create: vi.fn(),
   },
-  userFile: { findUnique: vi.fn() },
+  userFile: { findFirst: vi.fn() },
   documentVersion: { findFirst: vi.fn() },
 }));
 
@@ -175,7 +175,7 @@ describe('the EXTRACTION_FAILED finding', () => {
 
 describe('getExtractionSource', () => {
   it('reads the active version, scoped to the organization', async () => {
-    prisma.userFile.findUnique.mockResolvedValue({
+    prisma.userFile.findFirst.mockResolvedValue({
       fileName: 'a.pdf',
       documentId: 'doc-1',
     });
@@ -188,6 +188,10 @@ describe('getExtractionSource', () => {
       documentVersionId: 'v-1',
       text: 'text',
     });
+    expect(prisma.userFile.findFirst.mock.calls[0]![0].where).toEqual({
+      id: 'file-1',
+      organizationId: 'org-1',
+    });
     expect(prisma.documentVersion.findFirst.mock.calls[0]![0].where).toEqual({
       organizationId: 'org-1',
       documentId: 'doc-1',
@@ -196,7 +200,7 @@ describe('getExtractionSource', () => {
   });
 
   it('answers null for a file that was never parsed', async () => {
-    prisma.userFile.findUnique.mockResolvedValue({
+    prisma.userFile.findFirst.mockResolvedValue({
       fileName: 'a.pdf',
       documentId: null,
     });

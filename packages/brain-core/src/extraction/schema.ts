@@ -11,8 +11,14 @@ import { z } from 'zod';
  * `locator` is the model's human-readable pointer ("§2", "p. 4", a heading) —
  * useful to a reader, never trusted as the anchor.
  *
- * Bounded everywhere: an unbounded array in a structured-output schema is an
- * invitation to a response that costs more than the document did.
+ * Two schemas, for two jobs. The **provider schema** is the shape and nothing
+ * else — it is what the model is constrained to. Vertex compiles a response
+ * schema into a state machine and refuses one with too many states ("too many
+ * states for serving"), which is exactly what length limits and array bounds
+ * produce; the first real run of this extraction failed on that. The
+ * **item schemas** carry the limits and are applied by `parseExtraction`
+ * afterwards, per item, so one over-long quote drops one claim rather than
+ * failing the window and paying for a retry.
  */
 export const extractedEntitySchema = z.object({
   /** Stable within one extraction; claims and relations refer to it. */
@@ -41,11 +47,98 @@ export const extractedRelationSchema = z.object({
   quote: z.string().trim().min(8).max(600).nullable().default(null),
 });
 
-export const extractionResultSchema = z.object({
-  entities: z.array(extractedEntitySchema).max(40),
-  claims: z.array(extractedClaimSchema).max(200),
-  relations: z.array(extractedRelationSchema).max(80),
+/** Per-window caps, applied after parsing. They bound cost, not validity. */
+export const EXTRACTION_LIMITS = {
+  entities: 40,
+  claims: 200,
+  relations: 80,
+} as const;
+
+/** What the model must return: the shape, with no limits (see above). */
+export const extractionProviderSchema = z.object({
+  entities: z.array(
+    z.object({
+      key: z.string(),
+      title: z.string(),
+      type: z.enum(KNOWLEDGE_PAGE_TYPES),
+      description: z.string(),
+    }),
+  ),
+  claims: z.array(
+    z.object({
+      entityKey: z.string(),
+      statement: z.string(),
+      quote: z.string(),
+      locator: z.string(),
+    }),
+  ),
+  relations: z.array(
+    z.object({
+      from: z.string(),
+      to: z.string(),
+      kind: z.string(),
+      quote: z.string().nullable(),
+    }),
+  ),
 });
+
+/** One window's validated result. */
+export const extractionResultSchema = z.object({
+  entities: z.array(extractedEntitySchema),
+  claims: z.array(extractedClaimSchema),
+  relations: z.array(extractedRelationSchema),
+});
+
+export type ParsedExtraction =
+  | { ok: true; result: ExtractionResult; rejectedItems: number }
+  | { ok: false; error: z.ZodError };
+
+/**
+ * Validate an answer: the shape as a whole, then each item on its own.
+ *
+ * A wrong shape is a failed answer and earns the retry. A right shape with a
+ * bad item — a quote under eight characters, a title of two hundred — keeps
+ * everything else and counts what it dropped, so the loss is reported rather
+ * than silent. The caps apply last.
+ */
+export function parseExtraction(raw: unknown): ParsedExtraction {
+  const shape = extractionProviderSchema.safeParse(raw);
+  if (!shape.success) {
+    return { ok: false, error: shape.error };
+  }
+  let rejectedItems = 0;
+  const keep = <T>(items: unknown[], schema: z.ZodType<T>, cap: number) => {
+    const out: T[] = [];
+    for (const item of items) {
+      const parsed = schema.safeParse(item);
+      if (parsed.success) {
+        out.push(parsed.data);
+      } else {
+        rejectedItems += 1;
+      }
+    }
+    rejectedItems += Math.max(0, out.length - cap);
+    return out.slice(0, cap);
+  };
+  const result: ExtractionResult = {
+    entities: keep(
+      shape.data.entities,
+      extractedEntitySchema,
+      EXTRACTION_LIMITS.entities,
+    ),
+    claims: keep(
+      shape.data.claims,
+      extractedClaimSchema,
+      EXTRACTION_LIMITS.claims,
+    ),
+    relations: keep(
+      shape.data.relations,
+      extractedRelationSchema,
+      EXTRACTION_LIMITS.relations,
+    ),
+  };
+  return { ok: true, result, rejectedItems };
+}
 
 export type ExtractedEntity = z.infer<typeof extractedEntitySchema>;
 export type ExtractedClaim = z.infer<typeof extractedClaimSchema>;

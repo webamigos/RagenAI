@@ -100,6 +100,14 @@ describe('assembleCandidates', () => {
 
   it('drops a claim whose quote is not in the source — invented or paraphrased', () => {
     expect(result.unverifiedClaims).toBe(2);
+    expect(result.unverified.map((c) => c.quote)).toEqual([
+      'Premie wypłaca się na koniec każdego kwartału.',
+      'za plan wdrożenia odpowiada bezpośredni przełożony',
+    ]);
+    expect(result.unverified[1]).toMatchObject({
+      entityTitle: 'Wdrożenie nowego pracownika',
+      locator: '§2',
+    });
     expect(bySlug.get('wdrozenie-nowego-pracownika')!.content).not.toContain(
       'Plan wdrożenia',
     );

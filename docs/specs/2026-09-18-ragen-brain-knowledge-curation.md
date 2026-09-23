@@ -642,8 +642,10 @@ Phase D, so every phase before it is invisible to existing users.
       and `extractDocument` checks the tokens left before every model call.
       Limits: `BRAIN_EXTRACT_MAX_DOCUMENTS` (200) and `BRAIN_EXTRACT_MAX_TOKENS`
       (2,000,000), read by an activity when the run starts._
-- [ ] **B5.** A script that runs extraction over one project and prints what it
+- [x] **B5.** A script that runs extraction over one project and prints what it
       produced — enough to judge quality on our own documents before any UI.
+      _`apps/worker/src/scripts/brain-extract-preview.ts`; dry run by default,
+      `--write` persists through the job's own code and needs the flag._
 
 **What B1 and B2 settled:**
 
@@ -696,6 +698,31 @@ Phase D, so every phase before it is invisible to existing users.
 - **Usage is recorded as `CHAT_COMPLETION`** with `metadata.kind:
   brain_extract`, as the RAG scorer does. A step of its own on the AI-usage
   page is a separate decision.
+
+**What B5 found on its first real run** (2026-09-23, `gemini-2.5-flash` on
+Vertex, one 1,240-character Polish terms-of-service document):
+
+- **The first run failed before extracting anything.** Vertex refuses a
+  response schema whose length limits and array bounds compile to too many
+  states. The model is now constrained to the shape alone
+  (`extractionProviderSchema`), and the limits are applied afterwards, per
+  item (`parseExtraction`), so one over-long quote drops one claim, counted as
+  malformed, instead of failing the window. Nothing but a real call would have
+  found this: every unit test hands `generate` a fixture.
+- **Result:** 8 candidate pages, 18 claims, **0 dropped by the quote check**,
+  0 malformed, 7,441 tokens. Access was the uploader's private principal,
+  which is the intersection working as designed.
+- **Three quality gaps to settle before D, each a prompt question to measure
+  rather than guess (ADR-20):**
+  - page descriptions came back in English while the statements were Polish;
+  - some quotes are very short ("NIP 7412998301"), true but weak anchors;
+  - the model returned **no relations** for a document with obvious ones
+    (plans ↔ payments), so the graph (C4) has nothing to draw yet.
+- **Output tokens include thinking.** 2,525 of one call's 4,971 output tokens
+  were Gemini's reasoning, and they count against `maxOutputTokens` (8,000)
+  and the run budget alike.
+- **A transient provider error on both attempts becomes EXTRACTION_FAILED**,
+  as designed — seen once (`AI_RetryError`), and the retry after succeeded.
 
 ### Phase C — Findings and graph
 

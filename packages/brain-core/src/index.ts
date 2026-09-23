@@ -20,10 +20,15 @@ export {
   type CandidatePage,
   type CandidateSource,
   type ExtractionSource,
+  type UnverifiedClaim,
 } from './extraction/assemble';
 export {
+  EXTRACTION_LIMITS,
+  extractionProviderSchema,
   extractionResultSchema,
+  parseExtraction,
   type ExtractionResult,
+  type ParsedExtraction,
 } from './extraction/schema';
 export { EXTRACTION_SYSTEM_PROMPT } from './extraction/prompt';
 export { QuoteIndex, normalizeForQuoteMatch } from './extraction/verify-quotes';
