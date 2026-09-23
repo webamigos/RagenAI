@@ -4,6 +4,10 @@ import { requireAdmin } from '@/lib/auth-guard';
 import { ADMIN_ACTIONS, recordAdminAction } from '@/lib/audit';
 
 import { prisma } from '@/lib/db';
+import {
+  pickBestSubscription,
+  subscriptionGrantsPlanFeatures,
+} from '@ragenai/platform-contracts';
 import { revalidatePath } from 'next/cache';
 import {
   FEATURE_KEYS,
@@ -223,22 +227,24 @@ export async function getOrgFeatureResolutionAction(
     }),
     prisma.subscription.findMany({
       where: { referenceId: orgId },
-      select: { plan: true, status: true },
+      select: { plan: true, status: true, periodStart: true },
     }),
     getPlatformFeatureDefaultsAction(),
   ]);
 
-  // Simpler than apps/web's `pickBestSubscription`, and deliberately so: this
-  // is a diagnostic view, and an organization with several overlapping rows
-  // is itself worth seeing rather than silently reduced to one.
-  const active = subscriptions.find(
-    (row) => row.status === 'active' || row.status === 'trialing',
-  );
+  // The same row apps/web gates on, chosen by the same function. This used to
+  // be `subscriptions.find(active || trialing)`, justified as a diagnostic that
+  // should show overlapping rows rather than reduce them to one — but `find`
+  // reduced them to one as well, just to whichever row the database returned
+  // first. An organization with a Trial beside a paid plan could be shown the
+  // Trial's features while apps/web served the paid plan's, which is the
+  // disagreement this view exists to rule out (ADR-35).
+  const subscription = pickBestSubscription(subscriptions);
 
   let planFeatures: Record<string, unknown> | null = null;
-  if (active?.plan) {
+  if (subscriptionGrantsPlanFeatures(subscription)) {
     const plan = await prisma.subscriptionPlan.findFirst({
-      where: { name: active.plan },
+      where: { name: subscription.plan },
       select: { features: true },
     });
     planFeatures = (plan?.features ?? null) as Record<string, unknown> | null;
