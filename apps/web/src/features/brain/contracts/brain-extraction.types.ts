@@ -1,15 +1,17 @@
 import { z } from 'zod';
 
+import { dbUuid } from './brain-review.types';
+
 /** At most this many documents in one run a person starts from the panel. */
 export const MAX_DOCUMENTS_PER_RUN = 200;
 
 export const startExtractionInputSchema = z.object({
-  fileIds: z.array(z.string().uuid()).min(1).max(MAX_DOCUMENTS_PER_RUN),
+  fileIds: z.array(dbUuid).min(1).max(MAX_DOCUMENTS_PER_RUN),
 });
 export type StartExtractionInput = z.infer<typeof startExtractionInputSchema>;
 
 export const retryExtractionInputSchema = z.object({
-  findingPublicId: z.string().uuid(),
+  findingPublicId: dbUuid,
 });
 export type RetryExtractionInput = z.infer<typeof retryExtractionInputSchema>;
 
