@@ -4,6 +4,7 @@ const db = vi.hoisted(() => ({
   loadFindingsSnapshot: vi.fn(),
   loadComputedFindings: vi.fn(),
   applyFindingsPlan: vi.fn(),
+  markSourcesOfDeletedFiles: vi.fn(),
 }));
 vi.mock('../../../services/db/brain-findings.js', () => db);
 
@@ -37,6 +38,24 @@ beforeEach(() => {
 });
 
 describe('reconcileBrainFindings', () => {
+  it('sweeps sources of deleted files before reading the snapshot (E5)', async () => {
+    const order: string[] = [];
+    db.markSourcesOfDeletedFiles.mockImplementationOnce(async () => {
+      order.push('sweep');
+      return 2;
+    });
+    const snapshot = await db.loadFindingsSnapshot();
+    db.loadFindingsSnapshot.mockImplementationOnce(async () => {
+      order.push('snapshot');
+      return snapshot;
+    });
+    db.loadComputedFindings.mockResolvedValueOnce([]);
+    const result = await reconcileBrainFindings({ orgId: 'org-1' });
+    expect(db.markSourcesOfDeletedFiles).toHaveBeenCalledWith('org-1');
+    expect(order).toEqual(['sweep', 'snapshot']);
+    expect(result.sweptSources).toBe(2);
+  });
+
   // The binding: the rules' output reaches the write, diffed against the rows.
   it('writes what the rules find, minus what is already open', async () => {
     db.loadComputedFindings.mockResolvedValue([

@@ -5,6 +5,7 @@ const tx = vi.hoisted(() => ({
 }));
 const prisma = vi.hoisted(() => ({
   $transaction: vi.fn(),
+  $executeRaw: vi.fn(),
   knowledgePage: { findMany: vi.fn() },
   knowledgeEdge: { findMany: vi.fn() },
   knowledgePageSource: { findMany: vi.fn() },
@@ -20,6 +21,7 @@ import {
   applyFindingsPlan,
   loadComputedFindings,
   loadFindingsSnapshot,
+  markSourcesOfDeletedFiles,
 } from '../brain-findings.js';
 
 const APPROVED_AT = new Date('2026-09-01T00:00:00Z');
@@ -214,5 +216,20 @@ describe('applyFindingsPlan', () => {
       { organizationId: 'org-1', id: 5, status: 'OPEN' },
       { organizationId: 'org-1', id: { in: [6] }, status: 'OPEN' },
     ]);
+  });
+});
+
+describe('markSourcesOfDeletedFiles', () => {
+  it('marks only this organization’s unmarked sources whose file is gone', async () => {
+    prisma.$executeRaw.mockResolvedValue(3);
+    await expect(markSourcesOfDeletedFiles('org-1')).resolves.toBe(3);
+    const [strings, ...values] = prisma.$executeRaw.mock.calls[0]!;
+    const sql = (strings as string[]).join('?');
+    expect(sql).toMatch(/s\.organization_id = \?/);
+    expect(sql).toMatch(/source_deleted_at IS NULL/);
+    expect(sql).toMatch(
+      /NOT EXISTS \(SELECT 1 FROM user_files f WHERE f\.id = s\.file_id\)/,
+    );
+    expect(values).toEqual(['org-1']);
   });
 });
