@@ -201,8 +201,21 @@ describe('extractDocumentCandidates', () => {
   it('never hands the logger an error object', async () => {
     generateObject.mockRejectedValue(new Error(TEXT));
     await extractDocumentCandidates(INPUT);
-    for (const call of [...logger.info.mock.calls, ...logger.warn.mock.calls]) {
-      expect(JSON.stringify(call)).not.toContain('Nowy pracownik');
+    const calls = Object.values(logger).flatMap((fn) =>
+      typeof fn === 'function' && 'mock' in fn
+        ? (fn as { mock: { calls: unknown[][] } }).mock.calls
+        : [],
+    );
+    for (const call of calls) {
+      // An Error is caught wherever it sits, not only at the top: pino
+      // serializes `{ err }` with its message, which carries the request —
+      // the document. Plain JSON.stringify would print `{}` for it and pass.
+      expect(findError(call)).toBeNull();
+      expect(
+        JSON.stringify(call, (_, v) =>
+          v instanceof Error ? { message: v.message, stack: v.stack } : v,
+        ),
+      ).not.toContain('Nowy pracownik');
     }
   });
 
@@ -214,3 +227,21 @@ describe('extractDocumentCandidates', () => {
     expect(brainDb.recordExtractionFailed).not.toHaveBeenCalled();
   });
 });
+
+/** The first Error anywhere inside a logger call's arguments, or null. */
+function findError(value: unknown, seen = new Set<unknown>()): Error | null {
+  if (value instanceof Error) {
+    return value;
+  }
+  if (value === null || typeof value !== 'object' || seen.has(value)) {
+    return null;
+  }
+  seen.add(value);
+  for (const child of Object.values(value)) {
+    const found = findError(child, seen);
+    if (found) {
+      return found;
+    }
+  }
+  return null;
+}

@@ -1,5 +1,6 @@
 import {
   allOrNone,
+  blankAsUndefined,
   encryptionRules,
   fragments,
   parseEnv,
@@ -106,11 +107,19 @@ export const workerEnvSchema = fragments.targetEnvRequired
     // Ragen Brain extraction (consts.ts). All optional: the model falls back
     // to SUMMARY_MODEL and the two per-run ceilings to 200 documents and two
     // million tokens. Declared so a typo is refused rather than stripped.
-    BRAIN_EXTRACT_MODEL: z.string().min(1).optional(),
-    BRAIN_EXTRACT_MAX_DOCUMENTS: z.coerce.number().int().positive().optional(),
-    BRAIN_EXTRACT_MAX_TOKENS: z.coerce.number().int().positive().optional(),
+    // A blank value (`BRAIN_EXTRACT_MAX_TOKENS=` in a compose file) is unset,
+    // as `consts.ts` reads it — not 0, which would refuse to boot.
+    BRAIN_EXTRACT_MODEL: blankAsUndefined(z.string().min(1).optional()),
+    BRAIN_EXTRACT_MAX_DOCUMENTS: blankAsUndefined(
+      z.coerce.number().int().positive().optional(),
+    ),
+    BRAIN_EXTRACT_MAX_TOKENS: blankAsUndefined(
+      z.coerce.number().int().positive().optional(),
+    ),
     // Runs at once across every replica (consts.ts). Unset means one.
-    BRAIN_EXTRACT_CONCURRENCY: z.coerce.number().int().positive().optional(),
+    BRAIN_EXTRACT_CONCURRENCY: blankAsUndefined(
+      z.coerce.number().int().positive().optional(),
+    ),
 
     /**
      * Table chunking, under measurement (ADR-43). `'1'` turns it on.

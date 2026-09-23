@@ -61,6 +61,18 @@ describe('parseWorkerEnv', () => {
     expect(withEnv({ WORKER_RUNTIME: 'bullmq' }).ok).toBe(true);
   });
 
+  it('reads a blank Brain setting as unset, as consts.ts does, and still boots', () => {
+    expect(
+      withEnv({
+        BRAIN_EXTRACT_MODEL: '',
+        BRAIN_EXTRACT_MAX_DOCUMENTS: '',
+        BRAIN_EXTRACT_MAX_TOKENS: '',
+        BRAIN_EXTRACT_CONCURRENCY: '',
+      }).ok,
+    ).toBe(true);
+    expect(withEnv({ BRAIN_EXTRACT_MAX_TOKENS: '0' }).ok).toBe(false);
+  });
+
   it('demands TARGET_ENV rather than defaulting it', () => {
     // A deployed worker with no TARGET_ENV would otherwise read as "local"
     // and skip every staging/production rule below.
