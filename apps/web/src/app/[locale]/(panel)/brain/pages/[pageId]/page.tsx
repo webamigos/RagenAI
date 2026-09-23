@@ -218,7 +218,7 @@ export default async function BrainPageDetail({ params }: Props) {
               {t('page.access.title')}
             </h3>
             <AccessList entries={page.access} />
-            {curated && !page.published && (
+            {curated && (
               <AccessEditor
                 publicId={page.publicId}
                 updatedAt={page.updatedAt}

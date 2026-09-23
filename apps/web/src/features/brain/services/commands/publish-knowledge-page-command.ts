@@ -1,5 +1,7 @@
 import 'server-only';
 
+import { randomUUID } from 'node:crypto';
+
 import { PUBLISHED_FILE_METADATA_KEY } from '@ragenai/brain-contracts';
 import db from '@ragenai/prisma-client';
 
@@ -197,10 +199,14 @@ export async function publishKnowledgePageCommand(
   }
   if (outcome.queue) {
     try {
-      // One run id per generation: a double click queues one write.
+      // A fresh run id every time. A queue remembers ids it has finished
+      // (BullMQ skips a job whose id it has seen), so a deterministic id
+      // silently dropped a publication once the same generation came round
+      // again — after a database reset. Duplicates are harmless: the worker
+      // writes only while its generation is current.
       await jobs().start(
         'brainPublishPage',
-        `brain-publish-${publicId}-${outcome.generation}`,
+        `brain-publish-${publicId}-${outcome.generation}-${randomUUID()}`,
         { orgId, pageId: publicId, generation: outcome.generation },
       );
     } catch (error) {
