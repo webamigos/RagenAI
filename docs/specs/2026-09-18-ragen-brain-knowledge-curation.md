@@ -363,14 +363,14 @@ narrowing is the one a customer will actually audit.
 `UserFile` like any other, so retrieval, `DocumentCitation`, `DocumentRetrieval`
 and the analytics built on them keep working untouched. The second citation
 level — "knowledge page _Onboarding_, based on `regulamin-pracy.pdf` p. 4 §2" —
-is a render-time lookup: the published file carries `metadata.brainPageId`, and
+is a render-time lookup: the published file carries `metadata.brain.pageId`, and
 the renderer joins it to `KnowledgePageSource`. A `layer` field on the chunk
 payload would only be needed for two-stage retrieval, which D9 rules out.
 
 **That lookup is an authorization boundary, not a join.** A person may widen a
 page's `accessibleBy` beyond the intersection of its sources, so a reader can
 legitimately retrieve a page while having no right to any of the documents
-behind it. Resolving `brainPageId` → `KnowledgePageSource` → source documents
+behind it. Resolving `brain.pageId` → `KnowledgePageSource` → source documents
 with a plain join would then hand them a filename and a span from a file they
 cannot open — a leak through the citation footer, with retrieval itself
 perfectly correct. **Every source resolved for rendering passes the same file
@@ -585,14 +585,47 @@ Phase D, so every phase before it is invisible to existing users.
 
 ### Phase A — Contracts and schema
 
-- [ ] **A1.** `packages/brain-contracts`: Zod schemas for the page frontmatter
+- [x] **A1.** `packages/brain-contracts`: Zod schemas for the page frontmatter
       and the bundle manifest (§18 of the research), plus the published-file
       metadata shape. Tests for valid and invalid input.
-- [ ] **A2.** Prisma: the five models, the `STAGED` and `WITHDRAWN` enum members, and the
+- [x] **A2.** Prisma: the five models, the `STAGED` and `WITHDRAWN` enum members, and the
       migration. `npm run verify` green, no behaviour change.
-- [ ] **A3.** The five models into `TENANT_SCOPED_MODELS`; `brain` into
+- [x] **A3.** The five models into `TENANT_SCOPED_MODELS`; `brain` into
       `FEATURE_KEYS`, code default `false`.
-- [ ] **A4.** `lint-staged.config.mjs` entries for the new workspaces.
+- [x] **A4.** `lint-staged.config.mjs` entries for the new workspaces.
+
+**What Phase A settled that the text above left open:**
+
+- **Every model carries `organizationId`**, not only `KnowledgePage` — A3 puts
+  all five in `TENANT_SCOPED_MODELS`, and the guard can only see a direct
+  column. The children reference their page through `(pageId, organizationId)`,
+  so a source, edge or decision cannot point at another organization's page;
+  `publishedFileId` and `supersededById` are composite for the same reason.
+- **The bundle vocabulary is the schema's, spelled the same** (`PROCESS`, not
+  `process`); `brain-vocabularies-match-the-schema.test.ts` keeps them equal.
+  An export carries `APPROVED` and `STALE` pages only.
+- **The published-file metadata is nested** as `metadata.brain` —
+  `{ pageId, contentHash, publicationGeneration }` — because `metadata` already
+  holds parser output. The text above was changed from `brainPageId` to match.
+- **Three guarantees live in the database**, in the migration: a finding has a
+  subject; a publication generation appears on `PUBLISH`/`UNPUBLISH` and
+  nowhere else; `knowledge_decisions` refuses `UPDATE` (a trigger — `DELETE`
+  stays possible so an organization can be deleted).
+- **Deletion is refused where history would be lost.** A page with decisions
+  is a `NO ACTION` foreign key: a plain delete fails, and deleting the
+  organization, which cascades to both sides in one statement, still works —
+  `RESTRICT` would have made organizations undeletable. The published file is
+  `NO ACTION` too, but `user_files` has **no** foreign key to `organizations`,
+  so that one only refuses a direct delete of the file; see E10.
+- **A finding's subject is checked per type** in the database: `CONTRADICTION`
+  two or more pages and no file, `EXTRACTION_FAILED` a file and no page, every
+  other type exactly one page.
+- **`KnowledgePageSource` keeps the `quote`**, the cited words verbatim, beside
+  `span` and `hash`. The spec had only `span` and `hash`, and a hash cannot be
+  searched for: C2's "did the active version move on" check asks whether the
+  cited words still occur in the new text, and a citation has to show them.
+- **`KnowledgeFinding.severity`** is its own enum (`LOW | MEDIUM | HIGH`), not
+  `SecurityEventSeverity`.
 
 ### Phase B — Extraction, no interface
 
@@ -640,7 +673,7 @@ Phase D, so every phase before it is invisible to existing users.
       manifest, written through `packages/storage`, downloadable. Approved pages
       with an owner only.
 - [ ] **E2.** Publish: an approved page becomes a `UserFile` carrying
-      `metadata.brainPageId`, ingested with predefined chunk boundaries and the
+      `metadata.brain.pageId`, ingested with predefined chunk boundaries and the
       curated `accessible_by` — never the source file's. The generation bump,
       `publishedAt` and the `PUBLISH` decision go in one transaction before the
       chunks are written, the file ends `COMPLETED` (including on a republish
@@ -667,7 +700,7 @@ Phase D, so every phase before it is invisible to existing users.
 - [ ] **E7.** Re-publication by diff: `contentHash` per page, re-embed only what
       changed, delete what was removed.
 - [ ] **E8.** Two-level citation rendering in `apps/web` and `apps/api`:
-      `metadata.brainPageId` → `KnowledgePageSource` → source documents,
+      `metadata.brain.pageId` → `KnowledgePageSource` → source documents,
       resolved against the pinned `documentVersionId` and filtered by the same
       file predicate as any other read (`fileAccessWhere`). A test that a reader
       who may see a widened page but not its sources gets the page and no source
@@ -675,6 +708,18 @@ Phase D, so every phase before it is invisible to existing users.
 - [ ] **E9.** Take a curated source document out of retrieval — per document,
       human-triggered, reversible by re-running ingest. Mode 1's path to a clean
       index, and never automatic.
+- [ ] **E10.** Every path that deletes `UserFile` rows excludes or refuses a
+      published page's file **before any side effect runs** — found in Phase
+      A's review, because the foreign key alone refuses the delete only at the
+      final transaction. Today that is `delete-folder-command.ts` (storage,
+      vectors and audit entries already gone by then, so one published file in
+      a folder leaves the rest half-deleted), `delete-file-command.ts`, the
+      project delete in `apps/api/src/projects/projects.service.ts`, and
+      `apps/api/src/documents/files.service.ts` — the last three answer with a
+      raw P2003 instead of a refusal a person can read. Decide in the same step
+      whether a published file carries a `folderId` / `projectId` at all. The
+      e2e and perf seeds delete files before organizations, so they delete the
+      organization's knowledge pages first.
 
 ### Phase F — Staged intake (mode 2)
 

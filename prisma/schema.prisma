@@ -240,6 +240,7 @@ model UserFile {
   permissions          DocumentPermission[]
   documentCitations    DocumentCitation[]
   documentRetrievals   DocumentRetrieval[]
+  publishedPages       KnowledgePage[]
 
   @@unique([id, organizationId])
   @@index([organizationId])
@@ -561,6 +562,7 @@ model User {
   ownedFolders       DocumentFolder[]
   createdPublicLinks ThreadPublicLink[] @relation("CreatedPublicLinks")
   documentVersions   DocumentVersion[]
+  ownedKnowledge     KnowledgePage[]
 
   @@map("users")
 }
@@ -645,6 +647,11 @@ model Organization {
   securityEvents     SecurityEvent[]
   guardrails         Guardrail[]
   guardrailOverrides GuardrailOrgOverride[]
+  knowledgePages     KnowledgePage[]
+  knowledgeSources   KnowledgePageSource[]
+  knowledgeEdges     KnowledgeEdge[]
+  knowledgeFindings  KnowledgeFinding[]
+  knowledgeDecisions KnowledgeDecision[]
 
   @@map("organizations")
 }
@@ -1013,6 +1020,13 @@ enum EmbeddingStatus {
   COMPLETED
   FAILED
   CANCELLED
+  /// Parsed and deliberately not embedded: uploaded to Ragen Brain alone,
+  /// awaiting curation. Not in the index, and not on its way there.
+  STAGED
+  /// A published knowledge page's file after an unpublish. Its own value, not
+  /// STAGED: "send to the knowledge base" promotes STAGED, and a withdrawn page
+  /// must return to the index only through publish, which sets `publishedAt`.
+  WITHDRAWN
 }
 
 enum ParsingStatus {
@@ -1441,4 +1455,250 @@ model Notification {
   @@index([userId, organizationId, isRead])
   @@index([userId, organizationId, createdAt(sort: Desc)])
   @@map("notifications")
+}
+
+// ---------------------------------------------------------------------------
+// Ragen Brain — curated knowledge.
+// docs/specs/2026-09-18-ragen-brain-knowledge-curation.md is the design; the
+// comments below say only what the schema alone cannot.
+//
+// Every model carries its own organizationId, including the three reachable
+// through a page: tenant-scope-guard.ts checks a direct column or nothing, and
+// the children reference their page through (pageId, organizationId) so the
+// two cannot drift apart — the DocumentVersion arrangement.
+// ---------------------------------------------------------------------------
+
+enum KnowledgePageType {
+  PROCESS
+  ENTITY
+  POLICY
+  PRODUCT
+  ROLE
+}
+
+enum KnowledgePageStatus {
+  CANDIDATE
+  APPROVED
+  REJECTED
+  STALE
+}
+
+enum KnowledgeEdgeOrigin {
+  EXTRACTED
+  INFERRED
+  AMBIGUOUS
+}
+
+enum KnowledgeFindingType {
+  CONTRADICTION
+  GAP
+  STALE
+  ORPHAN
+  UNOWNED
+  EXTRACTION_FAILED
+}
+
+enum KnowledgeFindingSeverity {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum KnowledgeFindingStatus {
+  OPEN
+  RESOLVED
+  DISMISSED
+}
+
+enum KnowledgeDecisionAction {
+  APPROVE
+  REJECT
+  MERGE
+  SET_OWNER
+  SET_ACCESS
+  WIDEN_ACCESS
+  PUBLISH
+  UNPUBLISH
+  VERIFY
+}
+
+/// A knowledge page. `status` and publication are independent axes:
+/// `publishedAt` is whether the page is in the index right now, and an
+/// approved page that was withdrawn is APPROVED with `publishedAt` null.
+model KnowledgePage {
+  id                    Int                 @id @default(autoincrement())
+  publicId              String              @unique @default(uuid()) @map("public_id") @db.Uuid
+  organizationId        String              @map("organization_id")
+  title                 String
+  slug                  String
+  type                  KnowledgePageType
+  content               String
+  contentHash           String              @map("content_hash")
+  status                KnowledgePageStatus @default(CANDIDATE)
+  /// Who vouches for the page — not who uploaded a source. Null is UNOWNED,
+  /// and an unowned page is neither exported nor published.
+  ownerId               String?             @map("owner_id")
+  /// `org:` / `user:` / `team:` principals. Defaults to the intersection of
+  /// the sources' principals; only a WIDEN_ACCESS decision may widen it.
+  accessibleBy          String[]            @default([]) @map("accessible_by")
+  validFrom             DateTime?           @map("valid_from") @db.Date
+  supersededById        Int?                @map("superseded_by_id")
+  /// ISO-8601 duration, e.g. P3M.
+  verifyEvery           String?             @map("verify_every")
+  lastVerifiedAt        DateTime?           @map("last_verified_at") @db.Timestamptz
+  /// A plain column, like KnowledgeDecision.actorId: who verified a page is an
+  /// audit attribute and outlives the user.
+  lastVerifiedBy        String?             @map("last_verified_by")
+  /// The page's publication vehicle. Set on first publication and never
+  /// cleared — `publishedAt` is the column that answers "is it serving".
+  publishedFileId       String?             @map("published_file_id") @db.Uuid
+  publishedAt           DateTime?           @map("published_at") @db.Timestamptz
+  /// Bumped by every publish and unpublish; a step carrying a stale value
+  /// aborts, which is what stops the two interleaving.
+  publicationGeneration Int                 @default(0) @map("publication_generation")
+  createdAt             DateTime            @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt             DateTime            @updatedAt @map("updated_at") @db.Timestamptz
+
+  organization  Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  owner         User?           @relation(fields: [ownerId], references: [id], onDelete: SetNull)
+  /// Composite so a page cannot be superseded by another organization's.
+  /// NoAction rather than SetNull: SetNull on a composite key would null
+  /// organizationId as well, and a successor is not deleted out from under
+  /// the page it replaced any more than a page with a history is.
+  supersededBy  KnowledgePage?  @relation("KnowledgePageSupersession", fields: [supersededById, organizationId], references: [id, organizationId], onDelete: NoAction)
+  supersedes    KnowledgePage[] @relation("KnowledgePageSupersession")
+  /// NoAction, not SetNull. The published file is never deleted —
+  /// DocumentCitation and DocumentRetrieval cascade from UserFile, so deleting
+  /// it would erase every past answer that cited the page — and this refuses
+  /// a direct delete of it. It is not an organization-deletion question:
+  /// user_files has no foreign key to organizations, so teardown that deletes
+  /// files before the organization (the e2e and perf seeds do) must delete
+  /// the organization's knowledge pages first. The delete paths that remove
+  /// files in bulk must exclude or refuse a published file before any side
+  /// effect runs; that is Phase E's, and listed there.
+  publishedFile UserFile?       @relation(fields: [publishedFileId, organizationId], references: [id, organizationId], onDelete: NoAction)
+
+  sources   KnowledgePageSource[]
+  edgesFrom KnowledgeEdge[]       @relation("KnowledgeEdgeFrom")
+  edgesTo   KnowledgeEdge[]       @relation("KnowledgeEdgeTo")
+  decisions KnowledgeDecision[]
+
+  @@unique([id, organizationId])
+  @@unique([organizationId, slug])
+  @@unique([publishedFileId])
+  @@index([organizationId, status])
+  @@index([ownerId])
+  @@map("knowledge_pages")
+}
+
+/// One span of one document version that a page cites.
+model KnowledgePageSource {
+  id                Int       @id @default(autoincrement())
+  organizationId    String    @map("organization_id")
+  pageId            Int       @map("page_id")
+  /// No foreign key, deliberately, for the reason UserDocument.ownerId gives:
+  /// Cascade would delete curated provenance with the file, SetNull would
+  /// erase which file it was, Restrict would block deleting the file.
+  /// `sourceDeletedAt` is the dangling state, written by the delete path and
+  /// by a reconciliation sweep.
+  fileId            String    @map("file_id") @db.Uuid
+  /// The version the curator read — the citation's anchor. Plain for the same
+  /// reason: a version is cascade-deleted with its document.
+  documentVersionId String    @map("document_version_id") @db.Uuid
+  /// A reader's pointer — "p.4 §2", a heading. Never the anchor.
+  span              String
+  /// The cited words, verbatim from the version the curator read. Kept, not
+  /// only hashed: the STALE check asks whether these words still occur in a
+  /// newer version, and a hash cannot be searched for.
+  quote             String
+  /// sha256 of the normalised quote — the cheap equality check.
+  hash              String
+  sourceDeletedAt   DateTime? @map("source_deleted_at") @db.Timestamptz
+  createdAt         DateTime  @default(now()) @map("created_at") @db.Timestamptz
+
+  organization Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  page         KnowledgePage @relation(fields: [pageId, organizationId], references: [id, organizationId], onDelete: Cascade)
+
+  @@index([pageId])
+  @@index([organizationId, fileId])
+  @@map("knowledge_page_sources")
+}
+
+model KnowledgeEdge {
+  id             Int                 @id @default(autoincrement())
+  organizationId String              @map("organization_id")
+  fromPageId     Int                 @map("from_page_id")
+  toPageId       Int                 @map("to_page_id")
+  kind           String
+  /// EXTRACTED is stated in a source, INFERRED is the model's, AMBIGUOUS is
+  /// neither settled. Kept apart so the graph never presents a guess as a
+  /// citation.
+  origin         KnowledgeEdgeOrigin
+  confidence     Float?
+  createdAt      DateTime            @default(now()) @map("created_at") @db.Timestamptz
+
+  organization Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  fromPage     KnowledgePage @relation("KnowledgeEdgeFrom", fields: [fromPageId, organizationId], references: [id, organizationId], onDelete: Cascade)
+  toPage       KnowledgePage @relation("KnowledgeEdgeTo", fields: [toPageId, organizationId], references: [id, organizationId], onDelete: Cascade)
+
+  @@unique([fromPageId, toPageId, kind])
+  @@index([organizationId])
+  @@index([toPageId])
+  @@map("knowledge_edges")
+}
+
+/// What curation has to look at. The shape of the subject depends on the
+/// type, and the migration's CHECK enforces it: CONTRADICTION names two or
+/// more pages and no file, EXTRACTION_FAILED names a file and no page, every
+/// other type names exactly one page (and may name the file it is about).
+model KnowledgeFinding {
+  id             Int                      @id @default(autoincrement())
+  publicId       String                   @unique @default(uuid()) @map("public_id") @db.Uuid
+  organizationId String                   @map("organization_id")
+  type           KnowledgeFindingType
+  severity       KnowledgeFindingSeverity @default(MEDIUM)
+  /// KnowledgePage ids. Empty rather than null, so a reader never has to tell
+  /// the two apart.
+  pageIds        Int[]                    @default([]) @map("page_ids")
+  /// Plain, like KnowledgePageSource.fileId: the finding is about a document
+  /// and must survive it.
+  fileId         String?                  @map("file_id") @db.Uuid
+  detail         Json?
+  status         KnowledgeFindingStatus   @default(OPEN)
+  detectedAt     DateTime                 @default(now()) @map("detected_at") @db.Timestamptz
+  resolvedAt     DateTime?                @map("resolved_at") @db.Timestamptz
+  updatedAt      DateTime                 @updatedAt @map("updated_at") @db.Timestamptz
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, status, type])
+  @@index([organizationId, fileId])
+  @@map("knowledge_findings")
+}
+
+/// The append-only ledger. The migration installs a trigger refusing UPDATE;
+/// DELETE stays possible only so an organization can be deleted.
+model KnowledgeDecision {
+  id                    Int                     @id @default(autoincrement())
+  organizationId        String                  @map("organization_id")
+  pageId                Int                     @map("page_id")
+  /// Plain column: the ledger has to name who acted after they have left.
+  actorId               String                  @map("actor_id")
+  action                KnowledgeDecisionAction
+  /// Set for PUBLISH and UNPUBLISH, null for every other action (a CHECK in
+  /// the migration). Null is what lets a page be approved twice: Postgres
+  /// treats nulls as distinct, so the unique below binds publications only.
+  publicationGeneration Int?                    @map("publication_generation")
+  before                Json?
+  after                 Json?
+  createdAt             DateTime                @default(now()) @map("created_at") @db.Timestamptz
+
+  organization Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  /// NoAction: a page with a history cannot be deleted out from under it.
+  /// Rejection is a status, not a delete.
+  page         KnowledgePage @relation(fields: [pageId, organizationId], references: [id, organizationId], onDelete: NoAction)
+
+  @@unique([pageId, action, publicationGeneration])
+  @@index([organizationId, createdAt])
+  @@map("knowledge_decisions")
 }

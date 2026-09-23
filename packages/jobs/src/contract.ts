@@ -44,7 +44,13 @@ export type ParsingStatus =
   'NOT_STARTED' | 'STARTED' | 'COMPLETED' | 'FAILED' | 'CANCELLED';
 
 export type EmbeddingStatus =
-  'NOT_STARTED' | 'STARTED' | 'COMPLETED' | 'FAILED' | 'CANCELLED';
+  | 'NOT_STARTED'
+  | 'STARTED'
+  | 'COMPLETED'
+  | 'FAILED'
+  | 'CANCELLED'
+  | 'STAGED'
+  | 'WITHDRAWN';
 
 export type PiiPolicy = 'NONE' | 'TOXIC_ONLY' | 'STRICT';
 

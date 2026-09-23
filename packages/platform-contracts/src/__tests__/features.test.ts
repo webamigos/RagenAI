@@ -48,6 +48,9 @@ describe('the feature key set', () => {
     ['publicChatbot'],
     ['voiceInput'],
     ['publicThreadLinks'],
+    // Built across several releases behind this key (ADR-50); true before the
+    // review interface exists would expose half a feature.
+    ['brain'],
   ] as const)('keeps %s opt-in', (key) => {
     expect(DEFAULT_FEATURES[key]).toBe(false);
   });

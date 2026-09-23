@@ -31,6 +31,7 @@ export const FEATURE_KEYS = [
   'manageDocuments',
   'manageProjects',
   'manageOrganizationSettings',
+  'brain',
 ] as const;
 
 export type FeatureKey = (typeof FEATURE_KEYS)[number];
@@ -68,6 +69,11 @@ export type FeatureOverrides = Partial<Record<FeatureKey, boolean | null>>;
  * leaving chat working — a showcase tenant is the case that prompted them,
  * but "this client may read and ask, not restructure" is an ordinary
  * self-hosted arrangement (ADR-35).
+ *
+ * `brain` defaults to false: Ragen Brain is built across several releases
+ * behind this key (ADR-50), and every Brain route and job checks it — with the
+ * one exception its spec states, "send to the knowledge base" on a staged
+ * file, which must keep working after the flag is turned off.
  */
 export const DEFAULT_FEATURES: FeatureFlags = {
   inviteMembers: false,
@@ -80,6 +86,7 @@ export const DEFAULT_FEATURES: FeatureFlags = {
   manageDocuments: true,
   manageProjects: true,
   manageOrganizationSettings: true,
+  brain: false,
 };
 
 /** Human-readable names, shared so the admin panel and the app cannot disagree. */
@@ -94,6 +101,7 @@ export const FEATURE_LABELS: Record<FeatureKey, string> = {
   manageDocuments: 'Add and remove documents',
   manageProjects: 'Create and delete projects',
   manageOrganizationSettings: 'Change organization settings',
+  brain: 'Ragen Brain',
 };
 
 /**

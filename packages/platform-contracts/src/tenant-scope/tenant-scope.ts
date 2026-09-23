@@ -54,6 +54,14 @@ export const TENANT_SCOPED_MODELS: Record<string, string> = {
   // asks for `organizationId: null`, which is a scope, not the absence of one.
   Guardrail: 'organizationId',
   GuardrailOrgOverride: 'organizationId',
+  // Ragen Brain. The three reachable through a page carry the column anyway —
+  // denormalised on purpose, as DocumentVersion is, because a model the guard
+  // cannot see is a model whose missing scope nothing reports.
+  KnowledgePage: 'organizationId',
+  KnowledgePageSource: 'organizationId',
+  KnowledgeEdge: 'organizationId',
+  KnowledgeFinding: 'organizationId',
+  KnowledgeDecision: 'organizationId',
 };
 
 /**
