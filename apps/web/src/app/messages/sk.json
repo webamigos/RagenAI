@@ -1289,7 +1289,8 @@
     "sort-dir-desc": "Zostupne",
     "filter-clear": "Vymazať filter {filter}",
     "filter-pii-policy": "Zásada",
-    "filter-pii-policy-all": "Všetko"
+    "filter-pii-policy-all": "Všetko",
+    "status-withdrawn": "Vyradený z vyhľadávania"
   },
   "folders": {
     "title": "Priečinky",
@@ -2389,7 +2390,8 @@
     "tabs": {
       "pages": "Znalostné stránky",
       "findings": "Zistenia",
-      "graph": "Graf"
+      "graph": "Graf",
+      "documents": "Dokumenty"
     },
     "filters": {
       "status": "Stav",
@@ -2670,6 +2672,40 @@
       "withdrawn": "Stránka stiahnutá",
       "withdraw-title": "Stiahnuť túto stránku zo znalostnej bázy?",
       "withdraw-description": "Odpovede ju prestanú citovať hneď po stiahnutí. Stránka zostáva schválená a dá sa znova zverejniť; skoršie odpovede si citácie ponechajú."
+    },
+    "documents": {
+      "title": "Dokumenty — Ragen Brain",
+      "intro": "Keď sú znalosti z dokumentu v schválených stránkach, môžete samotný dokument vyradiť z vyhľadávania — odpovede potom budú čerpať len z posúdených stránok. Nič sa nemaže a kedykoľvek ho možno vrátiť.",
+      "empty-title": "Zatiaľ žiadne dokumenty",
+      "empty-description": "Dokumenty sa tu objavia, keď budú v znalostnej báze.",
+      "columns": {
+        "document": "Dokument",
+        "approved": "Schválené stránky",
+        "candidates": "Kandidáti",
+        "retrieval": "Vyhľadávanie",
+        "actions": "Akcie"
+      },
+      "retrieval": {
+        "in": "Vyhľadateľný",
+        "withdrawn": "Vyradený z vyhľadávania",
+        "processing": "Spracúva sa",
+        "failed": "Chyba"
+      },
+      "withdraw": "Vyradiť z vyhľadávania",
+      "restore": "Vrátiť",
+      "withdrawn": "Dokument vyradený z vyhľadávania",
+      "restored": "Dokument sa vracia do vyhľadávania",
+      "needs-approved": "Najprv schváľte stránku, ktorá tento dokument cituje",
+      "withdraw-title": "Vyradiť tento dokument z vyhľadávania?",
+      "withdraw-description": "Odpovede prestanú priamo čerpať z „{name}“ a použijú z neho vytvorené schválené stránky. Dokument, jeho verzie aj všetky citácie zostávajú; kedykoľvek ho môžete vrátiť.",
+      "errors": {
+        "invalid-input": "Požiadavke sa nepodarilo porozumieť — načítajte stránku znova a skúste to znova.",
+        "not-found": "Tento dokument už neexistuje alebo patrí Brainu.",
+        "not-curated": "Tento dokument zatiaľ necituje žiadna schválená stránka — najprv nejakú schváľte.",
+        "invalid-status": "Dokument nie je v požadovanom stave — načítajte stránku znova.",
+        "index-unavailable": "Index sa nepodarilo zmeniť — nič sa nezmenilo; skúste to znova.",
+        "failed-to-start": "Opätovné spracovanie sa nepodarilo spustiť — skúste to o chvíľu."
+      }
     }
   }
 }

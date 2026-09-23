@@ -19,6 +19,14 @@ import { setKnowledgePageAccessCommand } from '@/features/brain/services/command
 import { setKnowledgePageOwnerCommand } from '@/features/brain/services/commands/set-knowledge-page-owner-command';
 import { getBrainAccessQuery } from '@/features/brain/services/queries/get-brain-access-query';
 import {
+  sourceDocumentInputSchema,
+  type SourceDocumentResult,
+} from '@/features/brain/contracts/brain-documents.types';
+import {
+  restoreSourceDocumentCommand,
+  withdrawSourceDocumentCommand,
+} from '@/features/brain/services/commands/source-document-retrieval-commands';
+import {
   retryExtractionInputSchema,
   startExtractionInputSchema,
   type ExtractionStartResult,
@@ -148,4 +156,40 @@ export async function unpublishKnowledgePageAction(
   input: unknown,
 ): Promise<ReviewResult> {
   return run(pageDecisionInputSchema, input, unpublishKnowledgePageCommand);
+}
+
+/** Take a curated source document out of retrieval (spec E9). */
+export async function withdrawSourceDocumentAction(
+  input: unknown,
+): Promise<SourceDocumentResult> {
+  const parsed = sourceDocumentInputSchema.safeParse(input);
+  if (!parsed.success) {
+    return { success: false, error: 'invalid-input' };
+  }
+  const who = await reviewer();
+  if (!who) {
+    return { success: false, error: 'not-found' };
+  }
+  return withdrawSourceDocumentCommand({
+    orgId: who.orgId,
+    fileId: parsed.data.fileId,
+  });
+}
+
+/** Put a withdrawn source document back into retrieval (spec E9). */
+export async function restoreSourceDocumentAction(
+  input: unknown,
+): Promise<SourceDocumentResult> {
+  const parsed = sourceDocumentInputSchema.safeParse(input);
+  if (!parsed.success) {
+    return { success: false, error: 'invalid-input' };
+  }
+  const who = await reviewer();
+  if (!who) {
+    return { success: false, error: 'not-found' };
+  }
+  return restoreSourceDocumentCommand({
+    orgId: who.orgId,
+    fileId: parsed.data.fileId,
+  });
 }

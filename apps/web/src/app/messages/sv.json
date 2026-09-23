@@ -1289,7 +1289,8 @@
     "sort-dir-desc": "Fallande",
     "filter-clear": "Rensa filtret {filter}",
     "filter-pii-policy": "Policy",
-    "filter-pii-policy-all": "Alla"
+    "filter-pii-policy-all": "Alla",
+    "status-withdrawn": "Uttaget ur sökningen"
   },
   "folders": {
     "title": "Mappar",
@@ -2389,7 +2390,8 @@
     "tabs": {
       "pages": "Kunskapssidor",
       "findings": "Fynd",
-      "graph": "Graf"
+      "graph": "Graf",
+      "documents": "Dokument"
     },
     "filters": {
       "status": "Status",
@@ -2670,6 +2672,40 @@
       "withdrawn": "Sidan har dragits tillbaka",
       "withdraw-title": "Dra tillbaka den här sidan från kunskapsbasen?",
       "withdraw-description": "Svar slutar citera den så snart den dras tillbaka. Sidan förblir godkänd och kan publiceras igen; tidigare svar behåller sina citat."
+    },
+    "documents": {
+      "title": "Dokument — Ragen Brain",
+      "intro": "När ett dokuments kunskap finns i godkända sidor kan du ta ut själva dokumentet ur sökningen — svaren bygger då bara på de granskade sidorna. Inget raderas och det kan läggas tillbaka när som helst.",
+      "empty-title": "Inga dokument än",
+      "empty-description": "Dokument visas här när de finns i kunskapsbasen.",
+      "columns": {
+        "document": "Dokument",
+        "approved": "Godkända sidor",
+        "candidates": "Kandidater",
+        "retrieval": "Sökning",
+        "actions": "Åtgärder"
+      },
+      "retrieval": {
+        "in": "Sökbart",
+        "withdrawn": "Uttaget ur sökningen",
+        "processing": "Bearbetas",
+        "failed": "Misslyckades"
+      },
+      "withdraw": "Ta ut ur sökningen",
+      "restore": "Lägg tillbaka",
+      "withdrawn": "Dokumentet har tagits ut ur sökningen",
+      "restored": "Dokumentet läggs tillbaka i sökningen",
+      "needs-approved": "Godkänn först en sida som citerar dokumentet",
+      "withdraw-title": "Ta ut det här dokumentet ur sökningen?",
+      "withdraw-description": "Svaren slutar bygga direkt på ”{name}” och använder de godkända sidor som gjorts av det. Dokumentet, dess versioner och alla citat finns kvar; du kan lägga tillbaka det när som helst.",
+      "errors": {
+        "invalid-input": "Begäran förstods inte — ladda om sidan och försök igen.",
+        "not-found": "Dokumentet finns inte längre eller tillhör Brain.",
+        "not-curated": "Ingen godkänd sida citerar dokumentet än — godkänn en först.",
+        "invalid-status": "Dokumentet har inte det tillstånd som krävs — ladda om sidan.",
+        "index-unavailable": "Indexet kunde inte ändras — inget ändrades; försök igen.",
+        "failed-to-start": "Ombearbetningen kunde inte starta — försök igen om en stund."
+      }
     }
   }
 }

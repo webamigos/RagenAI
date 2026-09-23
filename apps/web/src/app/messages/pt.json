@@ -1289,7 +1289,8 @@
     "sort-dir-desc": "Decrescente",
     "filter-clear": "Limpar o filtro {filter}",
     "filter-pii-policy": "Política",
-    "filter-pii-policy-all": "Todos"
+    "filter-pii-policy-all": "Todos",
+    "status-withdrawn": "Retirado da pesquisa"
   },
   "folders": {
     "title": "Pastas",
@@ -2389,7 +2390,8 @@
     "tabs": {
       "pages": "Páginas de conhecimento",
       "findings": "Constatações",
-      "graph": "Grafo"
+      "graph": "Grafo",
+      "documents": "Documentos"
     },
     "filters": {
       "status": "Estado",
@@ -2670,6 +2672,40 @@
       "withdrawn": "Página retirada",
       "withdraw-title": "Retirar esta página da base de conhecimento?",
       "withdraw-description": "As respostas deixam de a citar assim que é retirada. A página continua aprovada e pode ser publicada de novo; as respostas anteriores mantêm as citações."
+    },
+    "documents": {
+      "title": "Documentos — Ragen Brain",
+      "intro": "Quando o conhecimento de um documento já está em páginas aprovadas, pode retirar o próprio documento da pesquisa — as respostas passam a usar só as páginas revistas. Nada é apagado e pode voltar a pô-lo a qualquer momento.",
+      "empty-title": "Ainda sem documentos",
+      "empty-description": "Os documentos aparecem aqui quando estão na base de conhecimento.",
+      "columns": {
+        "document": "Documento",
+        "approved": "Páginas aprovadas",
+        "candidates": "Candidatas",
+        "retrieval": "Pesquisa",
+        "actions": "Ações"
+      },
+      "retrieval": {
+        "in": "Pesquisável",
+        "withdrawn": "Retirado da pesquisa",
+        "processing": "Em processamento",
+        "failed": "Falhou"
+      },
+      "withdraw": "Retirar da pesquisa",
+      "restore": "Repor",
+      "withdrawn": "Documento retirado da pesquisa",
+      "restored": "Documento de volta à pesquisa",
+      "needs-approved": "Aprove primeiro uma página que cite este documento",
+      "withdraw-title": "Retirar este documento da pesquisa?",
+      "withdraw-description": "As respostas deixam de usar diretamente «{name}» e passam a usar as páginas aprovadas criadas a partir dele. O documento, as versões e todas as citações ficam; pode repô-lo a qualquer momento.",
+      "errors": {
+        "invalid-input": "O pedido não foi compreendido — recarregue a página e tente novamente.",
+        "not-found": "Este documento já não existe ou pertence ao Brain.",
+        "not-curated": "Nenhuma página aprovada cita ainda este documento — aprove uma primeiro.",
+        "invalid-status": "O documento não está no estado necessário — recarregue a página.",
+        "index-unavailable": "Não foi possível alterar o índice — nada mudou; tente novamente.",
+        "failed-to-start": "Não foi possível iniciar o reprocessamento — tente novamente daqui a pouco."
+      }
     }
   }
 }

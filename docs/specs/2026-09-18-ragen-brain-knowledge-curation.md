@@ -1204,9 +1204,16 @@ baseline without the outlier (edges 72.7 % `EXTRACTED` against 70.3 %,
       real model answered from a published page and cited it by title. Still
       open: the second level, linking each quote to its source document
       under `fileAccessWhere`._
-- [ ] **E9.** Take a curated source document out of retrieval — per document,
+- [x] **E9.** Take a curated source document out of retrieval — per document,
       human-triggered, reversible by re-running ingest. Mode 1's path to a clean
       index, and never automatic.
+      _A "Documents" tab: each document with its approved and candidate pages
+      and its retrieval state. "Take out of retrieval" is offered once an
+      approved page cites the document, asks first, deletes the chunks and
+      then marks the file `WITHDRAWN` (a failed delete changes nothing).
+      "Put back" re-runs the knowledge base's own re-embed. Both are audited.
+      The knowledge base labels such a file "out of retrieval" rather than
+      "queued"._
 - [x] **E10.** Every path that deletes `UserFile` rows excludes or refuses a
       published page's file **before any side effect runs** — found in Phase
       A's review, because the foreign key alone refuses the delete only at the

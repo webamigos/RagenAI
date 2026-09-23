@@ -1289,7 +1289,8 @@
     "sort-dir-desc": "Faldende",
     "filter-clear": "Ryd filteret {filter}",
     "filter-pii-policy": "Politik",
-    "filter-pii-policy-all": "Alle"
+    "filter-pii-policy-all": "Alle",
+    "status-withdrawn": "Taget ud af søgningen"
   },
   "folders": {
     "title": "Mapper",
@@ -2389,7 +2390,8 @@
     "tabs": {
       "pages": "Vidensider",
       "findings": "Fund",
-      "graph": "Graf"
+      "graph": "Graf",
+      "documents": "Dokumenter"
     },
     "filters": {
       "status": "Status",
@@ -2670,6 +2672,40 @@
       "withdrawn": "Siden er trukket tilbage",
       "withdraw-title": "Træk denne side tilbage fra vidensbasen?",
       "withdraw-description": "Svar holder op med at citere den, så snart den trækkes tilbage. Siden forbliver godkendt og kan udgives igen; tidligere svar beholder deres citater."
+    },
+    "documents": {
+      "title": "Dokumenter — Ragen Brain",
+      "intro": "Når et dokuments viden findes i godkendte sider, kan du tage selve dokumentet ud af søgningen — svarene bygger så kun på de gennemgåede sider. Intet slettes, og det kan sættes tilbage når som helst.",
+      "empty-title": "Ingen dokumenter endnu",
+      "empty-description": "Dokumenter vises her, når de er i vidensbasen.",
+      "columns": {
+        "document": "Dokument",
+        "approved": "Godkendte sider",
+        "candidates": "Kandidater",
+        "retrieval": "Søgning",
+        "actions": "Handlinger"
+      },
+      "retrieval": {
+        "in": "Søgbart",
+        "withdrawn": "Taget ud af søgningen",
+        "processing": "Behandles",
+        "failed": "Fejl"
+      },
+      "withdraw": "Tag ud af søgningen",
+      "restore": "Sæt tilbage",
+      "withdrawn": "Dokumentet er taget ud af søgningen",
+      "restored": "Dokumentet sættes tilbage i søgningen",
+      "needs-approved": "Godkend først en side, der citerer dokumentet",
+      "withdraw-title": "Tag dette dokument ud af søgningen?",
+      "withdraw-description": "Svarene holder op med at bygge direkte på “{name}” og bruger de godkendte sider, der er lavet ud fra det. Dokumentet, dets versioner og alle citater bliver; du kan sætte det tilbage når som helst.",
+      "errors": {
+        "invalid-input": "Anmodningen blev ikke forstået — genindlæs siden, og prøv igen.",
+        "not-found": "Dokumentet findes ikke længere eller tilhører Brain.",
+        "not-curated": "Ingen godkendt side citerer dokumentet endnu — godkend én først.",
+        "invalid-status": "Dokumentet er ikke i den nødvendige tilstand — genindlæs siden.",
+        "index-unavailable": "Indekset kunne ikke ændres — intet ændrede sig; prøv igen.",
+        "failed-to-start": "Genbehandlingen kunne ikke starte — prøv igen om lidt."
+      }
     }
   }
 }

@@ -1289,7 +1289,8 @@
     "sort-dir-desc": "Descending",
     "filter-clear": "Clear {filter} filter",
     "filter-pii-policy": "Policy",
-    "filter-pii-policy-all": "All"
+    "filter-pii-policy-all": "All",
+    "status-withdrawn": "Out of retrieval"
   },
   "folders": {
     "title": "Folders",
@@ -2389,7 +2390,8 @@
     "tabs": {
       "pages": "Knowledge pages",
       "findings": "Findings",
-      "graph": "Graph"
+      "graph": "Graph",
+      "documents": "Documents"
     },
     "filters": {
       "status": "Status",
@@ -2670,6 +2672,40 @@
       "withdrawn": "Page withdrawn",
       "withdraw-title": "Withdraw this page from the knowledge base?",
       "withdraw-description": "Answers stop citing it as soon as it is withdrawn. The page stays approved and can be published again; past answers that cited it keep their citations."
+    },
+    "documents": {
+      "title": "Documents — Ragen Brain",
+      "intro": "Once a document’s knowledge lives in approved pages, you can take the document itself out of retrieval, so answers come from the reviewed pages alone. Nothing is deleted, and it can be put back at any time.",
+      "empty-title": "No documents yet",
+      "empty-description": "Documents appear here once they are in the knowledge base.",
+      "columns": {
+        "document": "Document",
+        "approved": "Approved pages",
+        "candidates": "Candidates",
+        "retrieval": "Retrieval",
+        "actions": "Actions"
+      },
+      "retrieval": {
+        "in": "Searchable",
+        "withdrawn": "Taken out of retrieval",
+        "processing": "Being processed",
+        "failed": "Failed"
+      },
+      "withdraw": "Take out of retrieval",
+      "restore": "Put back",
+      "withdrawn": "Document taken out of retrieval",
+      "restored": "Document queued back into retrieval",
+      "needs-approved": "Approve a page that cites this document first",
+      "withdraw-title": "Take this document out of retrieval?",
+      "withdraw-description": "Answers will stop drawing on “{name}” directly and use the approved pages built from it. The document, its versions and every citation stay; you can put it back at any time.",
+      "errors": {
+        "invalid-input": "The request was not understood — reload the page and try again.",
+        "not-found": "This document no longer exists, or it is Brain’s own.",
+        "not-curated": "No approved page cites this document yet — approve one first.",
+        "invalid-status": "The document is not in the state this action needs — reload the page.",
+        "index-unavailable": "The index could not be changed — nothing changed; try again.",
+        "failed-to-start": "Re-processing could not start — try again in a moment."
+      }
     }
   }
 }
