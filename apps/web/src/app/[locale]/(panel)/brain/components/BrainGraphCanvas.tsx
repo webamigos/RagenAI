@@ -22,6 +22,9 @@ const COMMUNITY_TOKENS = [
   '--chart-5',
 ] as const;
 
+/** Up to this many pages, every page is labelled. */
+const SMALL_GRAPH = 60;
+
 /** Width carries the origin too, so it is never told by colour alone. */
 const EDGE_SIZE = { EXTRACTED: 1.6, AMBIGUOUS: 1, INFERRED: 0.6 } as const;
 
@@ -75,6 +78,10 @@ export function BrainGraphCanvas({ view }: { view: BrainGraphView }) {
         }
         const palette = tokenColours(container.current);
         const graph = new MultiDirectedGraph();
+        // A small graph is read page by page, so every page is named; the
+        // size threshold that keeps a thousand labels apart would otherwise
+        // leave a handful of unconnected pages as unnamed dots.
+        const labelAll = view.nodes.length <= SMALL_GRAPH;
         const communities = Math.max(1, view.communities.length);
         view.nodes.forEach((node, i) => {
           // Start each community on its own arc, so the layout settles into
@@ -86,10 +93,11 @@ export function BrainGraphCanvas({ view }: { view: BrainGraphView }) {
             x: Math.cos(angle) * radius + (i % 3),
             y: Math.sin(angle) * radius + (i % 5),
             size:
-              4 + Math.sqrt(node.degree) * 2 + (node.openFindings > 0 ? 4 : 0),
+              6 + Math.sqrt(node.degree) * 2 + (node.openFindings > 0 ? 4 : 0),
             label: node.title,
             color: palette.community[node.community % palette.community.length],
-            forceLabel: node.openFindings > 0 || node.id === view.focus,
+            forceLabel:
+              labelAll || node.openFindings > 0 || node.id === view.focus,
           });
         });
         for (const edge of view.edges) {
