@@ -319,7 +319,10 @@ API is the one nobody would notice was wrong;
 By the time a rule sees a turn, Presidio has already replaced personal data
 with placeholders. A pattern like `\d{11}` will **not** match a national ID —
 it sees `<PESEL_1>`. On output, rules read the model's text before
-`StreamUnmasker` puts the personal data back.
+`StreamUnmasker` puts the personal data back. A placeholder the unmasker has no
+value for — one the model invented — is rewritten to "[redacted …]" there
+rather than shown raw, and the model is told about placeholders only on a turn
+where something was actually masked.
 
 This is a division of labour, not an oversight: PII is the
 [PII policy's](document-processing.md) job, on a path that also covers ingest.
