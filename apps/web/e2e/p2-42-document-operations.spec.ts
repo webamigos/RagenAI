@@ -115,7 +115,7 @@ test.describe('Document Operations P2', () => {
     await page.waitForLoadState('domcontentloaded');
 
     // Check if there are any files in the list
-    const actionsButtons = page.locator('button[aria-label="Actions"]');
+    const actionsButtons = page.locator('[data-testid="row-actions"]');
     const fileCount = await actionsButtons.count();
 
     if (fileCount > 0) {

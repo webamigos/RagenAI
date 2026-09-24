@@ -71,6 +71,7 @@ export const ToolbarActions = ({
         <Button
           variant="ghost"
           aria-label={t('row-actions', { name: fileName })}
+          data-testid="row-actions"
           className="!p-1.5 !rounded-md"
         >
           <EllipsisVerticalIcon className="size-5 text-muted-foreground" />
