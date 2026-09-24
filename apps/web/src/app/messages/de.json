@@ -960,6 +960,8 @@
     "settings-save-error": "Fehler beim Aktualisieren der Teameinstellungen"
   },
   "sidebar": {
+    "open-navigation": "Navigation öffnen",
+    "close-navigation": "Navigation schließen",
     "profile": "Profil",
     "security": "Sicherheit",
     "create-organization": "Organisation erstellen",
@@ -1129,6 +1131,7 @@
     "close": "Schließen"
   },
   "thread-actions": {
+    "menu": "Thread-Aktionen",
     "star": "Markieren",
     "unstar": "Markierung entfernen",
     "rename": "Umbenennen",
@@ -1240,6 +1243,8 @@
     "ask-about": "Frage zu „{query}“"
   },
   "files-table": {
+    "pagination-page": "Seite {page}",
+    "row-actions": "Aktionen für {name}",
     "title": "Dateiliste",
     "delete": "Löschen",
     "edit": "Bearbeiten",
@@ -1718,7 +1723,8 @@
       "creation-failed": "Fehler beim Erstellen des Assistenten",
       "loading-files": "Fehler beim Laden der Assistentendateien",
       "file-delete": "Fehler beim Löschen der Datei",
-      "fetching-error": "Beim Abrufen der Dateien des Assistenten ist ein Fehler aufgetreten"
+      "fetching-error": "Beim Abrufen der Dateien des Assistenten ist ein Fehler aufgetreten",
+      "not-found": "Dieser Assistent existiert nicht, oder Sie haben keinen Zugriff darauf."
     },
     "project-view": {
       "all-projects": "Alle Assistenten",
@@ -2809,5 +2815,11 @@
     "indicator-assistant-scope": "Wissensdatenbank und Anweisungen",
     "indicator-organization-context": "Organisationskontext:",
     "indicator-organization-defaults": "Standardanweisungen"
+  },
+  "panel-error": {
+    "title": "Etwas ist schiefgelaufen",
+    "description": "Diese Seite konnte nicht angezeigt werden. Versuchen Sie es erneut oder starten Sie einen neuen Chat – nichts Gespeichertes geht verloren.",
+    "retry": "Erneut versuchen",
+    "new-chat": "Neuer Chat"
   }
 }

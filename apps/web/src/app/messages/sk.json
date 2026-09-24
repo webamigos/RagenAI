@@ -960,6 +960,8 @@
     "settings-save-error": "Nastavenia tímu sa nepodarilo aktualizovať"
   },
   "sidebar": {
+    "open-navigation": "Otvoriť navigáciu",
+    "close-navigation": "Zavrieť navigáciu",
     "profile": "Profil",
     "security": "Bezpečnosť",
     "create-organization": "Vytvoriť organizáciu",
@@ -1129,6 +1131,7 @@
     "close": "Zavrieť"
   },
   "thread-actions": {
+    "menu": "Akcie vlákna",
     "star": "Pridať do obľúbených",
     "unstar": "Odobrať z obľúbených",
     "rename": "Premenovať",
@@ -1240,6 +1243,8 @@
     "ask-about": "Opýtať sa na „{query}“"
   },
   "files-table": {
+    "pagination-page": "Strana {page}",
+    "row-actions": "Akcie pre {name}",
     "title": "Zoznam súborov",
     "delete": "Odstrániť",
     "edit": "Upraviť",
@@ -1718,7 +1723,8 @@
       "creation-failed": "Asistenta sa nepodarilo vytvoriť",
       "loading-files": "Súbory asistenta sa nepodarilo načítať",
       "file-delete": "Súbor sa nepodarilo odstrániť",
-      "fetching-error": "Pri načítaní súborov asistenta došlo k chybe"
+      "fetching-error": "Pri načítaní súborov asistenta došlo k chybe",
+      "not-found": "Tento asistent neexistuje alebo k nemu nemáte prístup."
     },
     "project-view": {
       "all-projects": "Všetci asistenti",
@@ -2809,5 +2815,11 @@
     "indicator-assistant-scope": "Databáza znalostí a pokyny",
     "indicator-organization-context": "Kontext organizácie:",
     "indicator-organization-defaults": "Predvolené pokyny"
+  },
+  "panel-error": {
+    "title": "Niečo sa pokazilo",
+    "description": "Túto stránku sa nepodarilo zobraziť. Skúste to znova alebo začnite nový chat – nič uložené sa nestratilo.",
+    "retry": "Skúsiť znova",
+    "new-chat": "Nový chat"
   }
 }

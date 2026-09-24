@@ -1,5 +1,6 @@
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
+import { isUuid } from '@/libs/utils/is-uuid';
 
 import { Assistant } from '../../../../components/Assistant';
 
@@ -20,7 +21,7 @@ export async function generateMetadata({ params }: Props) {
 
 export default async function ChatPage({ params }: Props) {
   const { locale, threadId } = await params;
-  if (!threadId) {
+  if (!isUuid(threadId)) {
     notFound();
   }
 

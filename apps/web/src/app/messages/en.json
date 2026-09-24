@@ -960,6 +960,8 @@
     "settings-save-error": "Failed to update team settings"
   },
   "sidebar": {
+    "open-navigation": "Open navigation",
+    "close-navigation": "Close navigation",
     "profile": "Profile",
     "security": "Security",
     "create-organization": "Create organization",
@@ -1129,6 +1131,7 @@
     "close": "Close"
   },
   "thread-actions": {
+    "menu": "Thread actions",
     "star": "Star",
     "unstar": "Unstar",
     "rename": "Rename",
@@ -1240,6 +1243,8 @@
     "ask-about": "Ask about “{query}”"
   },
   "files-table": {
+    "pagination-page": "Page {page}",
+    "row-actions": "Actions for {name}",
     "title": "File list",
     "delete": "Delete",
     "edit": "Edit",
@@ -1718,7 +1723,8 @@
       "creation-failed": "Failed to create assistant",
       "loading-files": "Failed to load assistant files",
       "file-delete": "Failed to delete file",
-      "fetching-error": "An error occurred while fetching the assistant's files"
+      "fetching-error": "An error occurred while fetching the assistant's files",
+      "not-found": "This assistant does not exist, or you do not have access to it."
     },
     "project-view": {
       "all-projects": "All assistants",
@@ -2809,5 +2815,11 @@
     "indicator-assistant-scope": "Knowledge base and instructions",
     "indicator-organization-context": "Organization context:",
     "indicator-organization-defaults": "Default instructions"
+  },
+  "panel-error": {
+    "title": "Something went wrong",
+    "description": "This page could not be shown. Try again, or start a new chat — nothing you saved is lost.",
+    "retry": "Try again",
+    "new-chat": "New chat"
   }
 }

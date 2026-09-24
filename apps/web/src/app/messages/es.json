@@ -960,6 +960,8 @@
     "settings-save-error": "Error al actualizar la configuración del equipo"
   },
   "sidebar": {
+    "open-navigation": "Abrir navegación",
+    "close-navigation": "Cerrar navegación",
     "profile": "Perfil",
     "security": "Seguridad",
     "create-organization": "Crear organización",
@@ -1129,6 +1131,7 @@
     "close": "Cerrar"
   },
   "thread-actions": {
+    "menu": "Acciones de la conversación",
     "star": "Destacar",
     "unstar": "Quitar destacado",
     "rename": "Renombrar",
@@ -1240,6 +1243,8 @@
     "ask-about": "Preguntar sobre «{query}»"
   },
   "files-table": {
+    "pagination-page": "Página {page}",
+    "row-actions": "Acciones para {name}",
     "title": "Lista de archivos",
     "delete": "Eliminar",
     "edit": "Editar",
@@ -1718,7 +1723,8 @@
       "creation-failed": "Error al crear el asistente",
       "loading-files": "Error al cargar los archivos del asistente",
       "file-delete": "Error al eliminar el archivo",
-      "fetching-error": "Ha ocurrido un error al obtener los archivos del asistente"
+      "fetching-error": "Ha ocurrido un error al obtener los archivos del asistente",
+      "not-found": "Este asistente no existe o no tienes acceso a él."
     },
     "project-view": {
       "all-projects": "Todos los asistentes",
@@ -2809,5 +2815,11 @@
     "indicator-assistant-scope": "Base de conocimiento e instrucciones",
     "indicator-organization-context": "Contexto de la organización:",
     "indicator-organization-defaults": "Instrucciones predeterminadas"
+  },
+  "panel-error": {
+    "title": "Algo salió mal",
+    "description": "No se pudo mostrar esta página. Inténtalo de nuevo o empieza un chat nuevo: no se ha perdido nada de lo guardado.",
+    "retry": "Reintentar",
+    "new-chat": "Nuevo chat"
   }
 }

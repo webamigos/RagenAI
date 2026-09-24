@@ -960,6 +960,8 @@
     "settings-save-error": "Tiimin asetusten päivittäminen epäonnistui"
   },
   "sidebar": {
+    "open-navigation": "Avaa navigointi",
+    "close-navigation": "Sulje navigointi",
     "profile": "Profiili",
     "security": "Tietoturva",
     "create-organization": "Luo organisaatio",
@@ -1129,6 +1131,7 @@
     "close": "Sulje"
   },
   "thread-actions": {
+    "menu": "Keskustelun toiminnot",
     "star": "Lisää suosikkeihin",
     "unstar": "Poista suosikeista",
     "rename": "Nimeä uudelleen",
@@ -1240,6 +1243,8 @@
     "ask-about": "Kysy aiheesta ”{query}”"
   },
   "files-table": {
+    "pagination-page": "Sivu {page}",
+    "row-actions": "Toiminnot: {name}",
     "title": "Tiedostoluettelo",
     "delete": "Poista",
     "edit": "Muokkaa",
@@ -1718,7 +1723,8 @@
       "creation-failed": "Assistentin luominen epäonnistui",
       "loading-files": "Assistentin tiedostojen lataaminen epäonnistui",
       "file-delete": "Tiedoston poistaminen epäonnistui",
-      "fetching-error": "Assistentin tiedostojen hakemisessa tapahtui virhe"
+      "fetching-error": "Assistentin tiedostojen hakemisessa tapahtui virhe",
+      "not-found": "Tätä avustajaa ei ole olemassa, tai sinulla ei ole siihen pääsyä."
     },
     "project-view": {
       "all-projects": "Kaikki assistentit",
@@ -2809,5 +2815,11 @@
     "indicator-assistant-scope": "Tietopankki ja ohjeet",
     "indicator-organization-context": "Organisaation konteksti:",
     "indicator-organization-defaults": "Oletusohjeet"
+  },
+  "panel-error": {
+    "title": "Jokin meni vikaan",
+    "description": "Tätä sivua ei voitu näyttää. Yritä uudelleen tai aloita uusi keskustelu – mitään tallennettua ei menetetty.",
+    "retry": "Yritä uudelleen",
+    "new-chat": "Uusi keskustelu"
   }
 }

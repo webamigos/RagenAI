@@ -40,6 +40,11 @@ type ToolbarActionsProps = {
   onChangePolicy?: (fileId: string) => void;
   isScoringLoading?: boolean;
   isLoading: boolean;
+  /**
+   * False where the organization may not remove documents (the demo). The
+   * delete item is then absent rather than offered and refused by the server.
+   */
+  canDelete?: boolean;
 };
 
 export const ToolbarActions = ({
@@ -53,6 +58,7 @@ export const ToolbarActions = ({
   onChangePolicy,
   isScoringLoading,
   isLoading,
+  canDelete = true,
 }: ToolbarActionsProps) => {
   const t = useTranslations('files-table');
   const router = useRouter();
@@ -64,7 +70,7 @@ export const ToolbarActions = ({
             background the old classes were adding by hand. */}
         <Button
           variant="ghost"
-          aria-label="Actions"
+          aria-label={t('row-actions', { name: fileName })}
           className="!p-1.5 !rounded-md"
         >
           <EllipsisVerticalIcon className="size-5 text-muted-foreground" />
@@ -160,9 +166,9 @@ export const ToolbarActions = ({
           </DropdownMenuItem>
         )}
 
-        {fileId && <DropdownMenuSeparator />}
+        {fileId && canDelete && <DropdownMenuSeparator />}
 
-        {fileId && (
+        {fileId && canDelete && (
           <DropdownMenuItem
             onClick={() => toggleModal(fileId)}
             disabled={isLoading}

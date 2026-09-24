@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
 import db from '@ragenai/prisma-client';
+import { isUuid } from '@/libs/utils/is-uuid';
 import { Link } from '@/i18n/routing';
 import { DocumentDetailTabs } from '@/app/components/ManageKnowledge/DocumentDetail/DocumentDetailTabs';
 import { ArrowLeftCircleIcon } from '@heroicons/react/24/outline';
@@ -11,6 +12,9 @@ type Props = {
 
 export default async function DocumentDetailPage({ params }: Props) {
   const { id } = await params;
+  if (!isUuid(id)) {
+    notFound();
+  }
 
   let orgId: string;
   try {

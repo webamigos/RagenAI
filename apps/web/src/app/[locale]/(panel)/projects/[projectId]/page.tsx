@@ -1,4 +1,6 @@
+import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
+import { isUuid } from '@/libs/utils/is-uuid';
 import { ProjectComponent } from './ProjectComponent';
 
 type Props = {
@@ -11,11 +13,14 @@ type Props = {
 export async function generateMetadata({ params }: Props) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'Metadata' });
-  return { title: t('project-detail.title', { title: 'Project' }) };
+  return { title: t('projects.title') };
 }
 
 export default async function ProjectPage({ params }: Props) {
   const { projectId } = await params;
+  if (!isUuid(projectId)) {
+    notFound();
+  }
 
   return <ProjectComponent projectId={projectId} />;
 }

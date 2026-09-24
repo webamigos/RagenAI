@@ -460,7 +460,13 @@ describe('runFileEmbeddings workflow', () => {
     const prepareCallArgs = activities.prepareMetadata.mock.calls[0][0];
     expect(prepareCallArgs.docs[0].metadata?.chunk_type).toBeUndefined();
 
-    expect(activities.mergeFileMetadata).not.toHaveBeenCalled();
+    // No summary write. The RAG-score step still merges (it clears a stale
+    // score when none is computed), so the assertion is about the key.
+    expect(
+      activities.mergeFileMetadata.mock.calls.some(
+        ([arg]) => 'summary' in (arg as { patch: object }).patch,
+      ),
+    ).toBe(false);
   });
 
   it('continues ingest when generateDocumentSummary throws (defense-in-depth)', async () => {
@@ -488,7 +494,13 @@ describe('runFileEmbeddings workflow', () => {
     // metadata merge
     const prepareCallArgs = activities.prepareMetadata.mock.calls[0][0];
     expect(prepareCallArgs.docs[0].metadata?.chunk_type).toBeUndefined();
-    expect(activities.mergeFileMetadata).not.toHaveBeenCalled();
+    // No summary write. The RAG-score step still merges (it clears a stale
+    // score when none is computed), so the assertion is about the key.
+    expect(
+      activities.mergeFileMetadata.mock.calls.some(
+        ([arg]) => 'summary' in (arg as { patch: object }).patch,
+      ),
+    ).toBe(false);
   });
 
   it('fails on unsupported MIME type', async () => {

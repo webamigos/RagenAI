@@ -960,6 +960,8 @@
     "settings-save-error": "Échec de la mise à jour des paramètres de l'équipe"
   },
   "sidebar": {
+    "open-navigation": "Ouvrir la navigation",
+    "close-navigation": "Fermer la navigation",
     "profile": "Profil",
     "security": "Sécurité",
     "create-organization": "Créer une organisation",
@@ -1129,6 +1131,7 @@
     "close": "Fermer"
   },
   "thread-actions": {
+    "menu": "Actions de la conversation",
     "star": "Ajouter aux favoris",
     "unstar": "Retirer des favoris",
     "rename": "Renommer",
@@ -1240,6 +1243,8 @@
     "ask-about": "Poser une question sur « {query} »"
   },
   "files-table": {
+    "pagination-page": "Page {page}",
+    "row-actions": "Actions pour {name}",
     "title": "Liste des fichiers",
     "delete": "Supprimer",
     "edit": "Modifier",
@@ -1718,7 +1723,8 @@
       "creation-failed": "Échec de la création de l'assistant",
       "loading-files": "Échec du chargement des fichiers de l'assistant",
       "file-delete": "Échec de la suppression du fichier",
-      "fetching-error": "Une erreur s'est produite lors de la récupération des fichiers de l'assistant"
+      "fetching-error": "Une erreur s'est produite lors de la récupération des fichiers de l'assistant",
+      "not-found": "Cet assistant n'existe pas, ou vous n'y avez pas accès."
     },
     "project-view": {
       "all-projects": "Tous les assistants",
@@ -2809,5 +2815,11 @@
     "indicator-assistant-scope": "Base de connaissances et instructions",
     "indicator-organization-context": "Contexte de l’organisation :",
     "indicator-organization-defaults": "Instructions par défaut"
+  },
+  "panel-error": {
+    "title": "Une erreur est survenue",
+    "description": "Cette page n'a pas pu être affichée. Réessayez ou démarrez une nouvelle discussion — rien de ce que vous avez enregistré n'est perdu.",
+    "retry": "Réessayer",
+    "new-chat": "Nouvelle discussion"
   }
 }

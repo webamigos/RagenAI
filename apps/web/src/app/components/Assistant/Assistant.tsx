@@ -97,6 +97,7 @@ export const Assistant = ({ threadId }: Props) => {
   >(null);
   const [isContentPanelOpen, setIsContentPanelOpen] = useState(false);
   const tSources = useTranslations('sources');
+  const tThreadActions = useTranslations('thread-actions');
   // The rail describes one turn — the newest that searched. `undefined` means
   // no turn in this thread did, and the toggle is not offered at all rather
   // than opening an empty panel.
@@ -279,7 +280,8 @@ export const Assistant = ({ threadId }: Props) => {
                 type="button"
                 onClick={() => setIsShareOpen(true)}
                 className="p-1.5 rounded-md border border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
-                title="Share"
+                title={tThreadActions('share')}
+                aria-label={tThreadActions('share')}
               >
                 <ArrowUpTrayIcon className="size-4" />
               </button>
@@ -290,7 +292,8 @@ export const Assistant = ({ threadId }: Props) => {
                 data-testid="thread-public-share-btn"
                 onClick={() => setIsPublicShareOpen(true)}
                 className="p-1.5 rounded-md border border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
-                title="Share publicly"
+                title={tThreadActions('share-public')}
+                aria-label={tThreadActions('share-public')}
               >
                 <GlobeAltIcon className="size-4" />
               </button>

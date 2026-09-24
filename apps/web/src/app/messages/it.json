@@ -960,6 +960,8 @@
     "settings-save-error": "Impossibile aggiornare le impostazioni del team"
   },
   "sidebar": {
+    "open-navigation": "Apri navigazione",
+    "close-navigation": "Chiudi navigazione",
     "profile": "Profilo",
     "security": "Sicurezza",
     "create-organization": "Crea organizzazione",
@@ -1129,6 +1131,7 @@
     "close": "Chiudi"
   },
   "thread-actions": {
+    "menu": "Azioni conversazione",
     "star": "Aggiungi ai preferiti",
     "unstar": "Rimuovi dai preferiti",
     "rename": "Rinomina",
@@ -1240,6 +1243,8 @@
     "ask-about": "Chiedi informazioni su «{query}»"
   },
   "files-table": {
+    "pagination-page": "Pagina {page}",
+    "row-actions": "Azioni per {name}",
     "title": "Elenco dei file",
     "delete": "Elimina",
     "edit": "Modifica",
@@ -1718,7 +1723,8 @@
       "creation-failed": "Impossibile creare l'assistente",
       "loading-files": "Impossibile caricare i file dell'assistente",
       "file-delete": "Impossibile eliminare il file",
-      "fetching-error": "Si è verificato un errore durante il recupero dei file dell'assistente"
+      "fetching-error": "Si è verificato un errore durante il recupero dei file dell'assistente",
+      "not-found": "Questo assistente non esiste oppure non hai accesso."
     },
     "project-view": {
       "all-projects": "Tutti gli assistenti",
@@ -2809,5 +2815,11 @@
     "indicator-assistant-scope": "Knowledge base e istruzioni",
     "indicator-organization-context": "Contesto dell’organizzazione:",
     "indicator-organization-defaults": "Istruzioni predefinite"
+  },
+  "panel-error": {
+    "title": "Qualcosa è andato storto",
+    "description": "Impossibile mostrare questa pagina. Riprova o avvia una nuova chat: nulla di ciò che hai salvato è andato perso.",
+    "retry": "Riprova",
+    "new-chat": "Nuova chat"
   }
 }

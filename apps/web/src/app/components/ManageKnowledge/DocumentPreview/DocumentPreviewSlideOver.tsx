@@ -8,6 +8,7 @@ import { useDocumentPreview } from './hooks/useDocumentPreview';
 import { DocumentPreviewHeader } from './DocumentPreviewHeader';
 import { DocumentPreviewMetadata } from './DocumentPreviewMetadata';
 import { ViewerForType } from './viewers/ViewerForType';
+import { fileTypeFromName } from './viewers/file-type-from-name';
 import {
   PREVIEW_WIDTH,
   PreviewWidthToggle,
@@ -21,7 +22,8 @@ type Props = {
   isOpen: boolean;
   onClose: () => void;
   onFileChange: (file: UserFileTypeSafe, index: number) => void;
-  onDelete: (fileId: string) => void;
+  /** Absent where documents may not be removed; the action is then hidden. */
+  onDelete?: (fileId: string) => void;
   onShare: (fileId: string) => void;
   onMove: (fileId: string) => void;
 };
@@ -64,6 +66,13 @@ export function DocumentPreviewSlideOver({
     return null;
   }
 
+  // `fileType` buckets several extensions into one value — a spreadsheet
+  // uploaded through some paths is stored as TEXT — so the header showed a
+  // markdown icon over a spreadsheet. The extension says what the file is;
+  // the stored type is the fallback for a name that has none, like a URL.
+  const nameType = fileTypeFromName(file.fileName);
+  const displayType = nameType === 'UNKNOWN' ? file.fileType : nameType;
+
   const handleDownload = () => {
     const link = document.createElement('a');
     link.href = `/api/files/${file.id}`;
@@ -91,7 +100,7 @@ export function DocumentPreviewSlideOver({
         {/* Header */}
         <DocumentPreviewHeader
           fileName={file.fileName}
-          fileType={file.fileType}
+          fileType={displayType}
           canGoPrev={canGoPrev}
           canGoNext={canGoNext}
           onPrev={goPrev}
@@ -121,7 +130,7 @@ export function DocumentPreviewSlideOver({
               onDownload={handleDownload}
               onShare={() => onShare(file.id)}
               onMove={() => onMove(file.id)}
-              onDelete={() => onDelete(file.id)}
+              onDelete={onDelete ? () => onDelete(file.id) : undefined}
             />
           </div>
         </div>

@@ -95,6 +95,8 @@ type CommonProps = {
     fileId: UserFile['id'],
     fileName: UserFile['fileName'],
   ) => void;
+  /** See `UserFilesTable`'s `canDelete`. */
+  canDelete?: boolean;
   isSelected?: (id: string) => boolean;
   isAllSelected?: (ids: string[]) => boolean;
   isIndeterminate?: (ids: string[]) => boolean;
@@ -363,6 +365,7 @@ function FiltersBar({
                     key={p}
                     href={pageHref(p)}
                     current={p === result.page}
+                    label={t('pagination-page', { page: p })}
                   >
                     {p}
                   </PaginationPage>
@@ -404,6 +407,7 @@ export function DocumentsTableWithFilters({
   addFile,
   removeFile,
   handleDelete,
+  canDelete = true,
   isSelected,
   isAllSelected,
   isIndeterminate,
@@ -517,6 +521,7 @@ export function DocumentsTableWithFilters({
         onAddFile={addFile}
         onRemoveFile={removeFile}
         handleDelete={handleDelete}
+        canDelete={canDelete}
         isSelected={isSelected}
         isAllSelected={isAllSelected}
         isIndeterminate={isIndeterminate}

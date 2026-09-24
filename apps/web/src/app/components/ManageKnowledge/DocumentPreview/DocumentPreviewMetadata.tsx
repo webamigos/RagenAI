@@ -12,6 +12,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { EmbeddingStatus } from '@/generated/prisma/browser';
 import { useRouter } from '@/i18n/routing';
+import { getFileLabel } from '@ragenai/common-ui/utils/file-helpers';
 import type { UserFileTypeSafe } from '../UserFiles/FileList/UserFilesTable';
 
 type Props = {
@@ -19,7 +20,12 @@ type Props = {
   onDownload: () => void;
   onShare: () => void;
   onMove: () => void;
-  onDelete: () => void;
+  /**
+   * Absent where the organization may not remove documents — the demo, for
+   * one. The server refuses the delete either way; offering it only to have
+   * it fail is a promise the button cannot keep.
+   */
+  onDelete?: () => void;
 };
 
 function MetaRow({ label, value }: { label: string; value: React.ReactNode }) {
@@ -76,7 +82,12 @@ export function DocumentPreviewMetadata({
         </p>
         <MetaRow label={t('meta-name')} value={file.fileName} />
         <MetaRow label={t('meta-size')} value={prettyBytes(file.fileSize)} />
-        <MetaRow label={t('meta-type')} value={file.fileType} />
+        {/*
+          The extension, as the file table tags it. The stored `fileType`
+          buckets extensions — a spreadsheet can be stored as TEXT — and
+          printed raw it contradicted the tag the reader just clicked.
+        */}
+        <MetaRow label={t('meta-type')} value={getFileLabel(file.fileName)} />
         <MetaRow label={t('meta-created')} value={createdAt} />
         <MetaRow
           label={t('meta-status')}
@@ -124,13 +135,15 @@ export function DocumentPreviewMetadata({
               {t('action-optimize')}
             </button>
           )}
-          <button
-            onClick={onDelete}
-            className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-destructive hover:bg-crimson-50 dark:hover:bg-crimson-950/20"
-          >
-            <TrashIcon className="size-4" />
-            {t('action-delete')}
-          </button>
+          {onDelete && (
+            <button
+              onClick={onDelete}
+              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-destructive hover:bg-crimson-50 dark:hover:bg-crimson-950/20"
+            >
+              <TrashIcon className="size-4" />
+              {t('action-delete')}
+            </button>
+          )}
         </div>
       </div>
     </div>
