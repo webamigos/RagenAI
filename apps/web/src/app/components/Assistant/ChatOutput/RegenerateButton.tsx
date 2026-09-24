@@ -36,6 +36,7 @@ export const RegenerateButton = ({ onRegenerate, disabled }: Props) => {
         onClick={handleClick}
         disabled={disabled || isLoading}
         data-testid="regenerate-button"
+        aria-label={t('regenerate')}
         className={ACTION_BUTTON_CLS}
       >
         <ArrowPathIcon

@@ -84,3 +84,38 @@ describe('DocumentPreviewMetadata actions', () => {
     expect(screen.getByText('Download')).toBeInTheDocument();
   });
 });
+
+describe('DocumentPreviewMetadata details', () => {
+  it('names the type by the extension, not the stored bucket', () => {
+    // A spreadsheet uploaded through some paths is stored as TEXT; the panel
+    // printed "TEXT" under the XLSX tag the reader had just clicked.
+    show({ fileName: 'stock-report-2026-03.xlsx', fileType: 'TEXT' as never });
+
+    expect(screen.getByText('XLSX')).toBeInTheDocument();
+    expect(screen.queryByText('TEXT')).not.toBeInTheDocument();
+  });
+
+  it('offers no delete where the organization may not remove documents', () => {
+    render(
+      <NextIntlClientProvider locale="en" messages={messages}>
+        <DocumentPreviewMetadata
+          file={file}
+          onDownload={vi.fn()}
+          onShare={vi.fn()}
+          onMove={vi.fn()}
+        />
+      </NextIntlClientProvider>,
+    );
+
+    expect(
+      screen.queryByRole('button', {
+        name: messages['document-preview']['action-delete'],
+      }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole('button', {
+        name: messages['document-preview']['action-download'],
+      }),
+    ).toBeInTheDocument();
+  });
+});

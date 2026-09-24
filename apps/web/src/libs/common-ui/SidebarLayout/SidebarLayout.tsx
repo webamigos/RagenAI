@@ -86,8 +86,13 @@ function SidebarToggleIcon() {
 function MobileSidebar({
   open,
   close,
+  closeLabel,
   children,
-}: React.PropsWithChildren<{ open: boolean; close: () => void }>) {
+}: React.PropsWithChildren<{
+  open: boolean;
+  close: () => void;
+  closeLabel: string;
+}>) {
   return (
     <Dialog open={open} onClose={close} className="lg:hidden">
       <DialogBackdrop
@@ -107,7 +112,7 @@ function MobileSidebar({
               written out — the same change the sidebar primitives made to
               `SidebarItem` in #930.
             */}
-            <NavbarItem onClick={close} aria-label="Close navigation">
+            <NavbarItem onClick={close} aria-label={closeLabel}>
               <CloseMenuIcon />
             </NavbarItem>
           </div>
@@ -122,11 +127,16 @@ export function SidebarLayout({
   navbar,
   sidebar,
   collapsedSidebar,
+  openNavigationLabel = 'Open navigation',
+  closeNavigationLabel = 'Close navigation',
   children,
 }: React.PropsWithChildren<{
   navbar: React.ReactNode;
   sidebar: React.ReactNode;
   collapsedSidebar?: React.ReactNode;
+  /** Accessible names for the mobile menu buttons; pass translated ones. */
+  openNavigationLabel?: string;
+  closeNavigationLabel?: string;
 }>) {
   const [showSidebar, setShowSidebar] = useState(false);
 
@@ -179,14 +189,21 @@ export function SidebarLayout({
           )}
 
           {/* Sidebar on mobile */}
-          <MobileSidebar open={showSidebar} close={closeSidebar}>
+          <MobileSidebar
+            open={showSidebar}
+            close={closeSidebar}
+            closeLabel={closeNavigationLabel}
+          >
             {sidebar}
           </MobileSidebar>
 
           {/* Navbar on mobile */}
           <header className="flex items-center px-4 border-b border-sidebar-border lg:hidden">
             <div className="py-2.5">
-              <NavbarItem onClick={openSidebar} aria-label="Open navigation">
+              <NavbarItem
+                onClick={openSidebar}
+                aria-label={openNavigationLabel}
+              >
                 <OpenMenuIcon />
               </NavbarItem>
             </div>

@@ -706,13 +706,19 @@ export async function runFileEmbeddings(
       fileName,
     });
 
-    if (ragScore) {
-      await mergeFileMetadata({
-        fileId,
-        orgId,
-        patch: { ragScore, ragScoredAt: new Date().toISOString() },
-      });
-    }
+    // Written on a miss too. A re-run replaces the text the old score was
+    // about, so keeping it would describe a document that no longer exists:
+    // DOCX files first parsed as raw bytes scored 0, were re-processed into
+    // readable text, and went on showing "RAG: 0" because the new scoring
+    // call failed and left the old value standing. No score is the honest
+    // badge for text nobody has scored.
+    await mergeFileMetadata({
+      fileId,
+      orgId,
+      patch: ragScore
+        ? { ragScore, ragScoredAt: new Date().toISOString() }
+        : { ragScore: null, ragScoredAt: null },
+    });
   } catch (scoreError) {
     ctx.log.warn(
       `RAG scoring failed for file ${fileId}: ${scoreError instanceof Error ? scoreError.message : String(scoreError)}`,

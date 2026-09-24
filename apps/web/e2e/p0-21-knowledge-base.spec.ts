@@ -220,7 +220,7 @@ test.describe('Knowledge Base P0', () => {
       .first();
     await expect(row).toBeVisible({ timeout: 10_000 });
 
-    const actionsButton = row.locator('button[aria-label="Actions"]').first();
+    const actionsButton = row.locator('[data-testid="row-actions"]').first();
     await expect(actionsButton).toBeVisible({ timeout: 5_000 });
 
     await actionsButton.click();

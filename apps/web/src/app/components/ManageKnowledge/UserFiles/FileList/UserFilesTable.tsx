@@ -157,6 +157,11 @@ type Props = {
   onDragFiles?: (fileId: string) => string[];
   /** See `FileRowProps.onChangeRowPolicy`. */
   onChangeRowPolicy?: (fileId: string) => void;
+  /**
+   * False where the organization may not remove documents (the demo). The
+   * delete item is then absent rather than offered and refused by the server.
+   */
+  canDelete?: boolean;
 } & SelectionProps;
 
 export type UserFileTypeSafe = UserFileType & {
@@ -174,6 +179,7 @@ type FileRowProps = {
   handleDelete: (fileId: UserFile['id'], fileName: string) => void;
   toggleModal: (fileId: UserFile['id'] | null) => void;
   onRemoveFile: (fileId: UserFile['id']) => void;
+  canDelete?: boolean;
   isSelected?: boolean;
   onToggleFile?: (id: string) => void;
   onPreviewFile?: (file: UserFileTypeSafe) => void;
@@ -249,6 +255,7 @@ const FileRow = ({
   file,
   showModal,
   deleteLoading,
+  canDelete = true,
   toggleModal,
   handleDelete,
   isSelected,
@@ -496,6 +503,7 @@ const FileRow = ({
             documentId={file.document?.id}
             fileName={fileName}
             toggleModal={toggleModal}
+            canDelete={canDelete}
             isLoading={isLoading}
             onScore={
               embeddingStatus === EmbeddingStatus.COMPLETED
@@ -517,6 +525,7 @@ export const UserFilesTable = ({
   onNavigateFolder,
   showModal,
   deleteLoading,
+  canDelete = true,
   toggleModal,
   handleDelete,
   onRemoveFile,
@@ -809,6 +818,7 @@ export const UserFilesTable = ({
               file={file}
               showModal={showModal}
               toggleModal={toggleModal}
+              canDelete={canDelete}
               handleDelete={handleDelete}
               onRemoveFile={onRemoveFile}
               isSelected={isSelected ? isSelected(file.id) : undefined}

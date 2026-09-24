@@ -29,6 +29,8 @@ type Props = {
   onScore?: (fileId: string) => void;
   isScoringLoading?: boolean;
   canManageOrg?: boolean;
+  /** See `UserFilesTable`'s `canDelete`. */
+  canDelete?: boolean;
 };
 
 export const FileCard = ({
@@ -36,6 +38,7 @@ export const FileCard = ({
   isLoading,
   deleteLoading,
   toggleModal,
+  canDelete = true,
   isSelected,
   onToggleFile,
   onPreviewFile,
@@ -174,6 +177,7 @@ export const FileCard = ({
             documentId={document?.id}
             fileName={fileName}
             toggleModal={toggleModal}
+            canDelete={canDelete}
             isLoading={deleteLoading ?? isLoading}
             onMove={onMove}
             onShare={onShare}

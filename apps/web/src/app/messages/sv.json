@@ -960,6 +960,8 @@
     "settings-save-error": "Det gick inte att uppdatera teaminställningarna"
   },
   "sidebar": {
+    "open-navigation": "Öppna navigering",
+    "close-navigation": "Stäng navigering",
     "profile": "Profil",
     "security": "Säkerhet",
     "create-organization": "Skapa organisation",
@@ -1129,6 +1131,7 @@
     "close": "Stäng"
   },
   "thread-actions": {
+    "menu": "Åtgärder för tråden",
     "star": "Lägg till i favoriter",
     "unstar": "Ta bort från favoriter",
     "rename": "Byt namn",
@@ -1240,6 +1243,8 @@
     "ask-about": "Fråga om ”{query}”"
   },
   "files-table": {
+    "pagination-page": "Sida {page}",
+    "row-actions": "Åtgärder för {name}",
     "title": "Fillista",
     "delete": "Ta bort",
     "edit": "Redigera",
@@ -1718,7 +1723,8 @@
       "creation-failed": "Det gick inte att skapa assistenten",
       "loading-files": "Det gick inte att ladda assistentens filer",
       "file-delete": "Det gick inte att ta bort filen",
-      "fetching-error": "Ett fel uppstod vid hämtning av assistentens filer"
+      "fetching-error": "Ett fel uppstod vid hämtning av assistentens filer",
+      "not-found": "Den här assistenten finns inte, eller så har du inte åtkomst till den."
     },
     "project-view": {
       "all-projects": "Alla assistenter",
@@ -2809,5 +2815,11 @@
     "indicator-assistant-scope": "Kunskapsbas och instruktioner",
     "indicator-organization-context": "Organisationskontext:",
     "indicator-organization-defaults": "Standardinstruktioner"
+  },
+  "panel-error": {
+    "title": "Något gick fel",
+    "description": "Sidan kunde inte visas. Försök igen eller starta en ny chatt – inget du sparat har gått förlorat.",
+    "retry": "Försök igen",
+    "new-chat": "Ny chatt"
   }
 }

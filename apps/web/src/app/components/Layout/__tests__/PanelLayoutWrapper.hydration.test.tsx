@@ -9,6 +9,7 @@ vi.mock('@/app/hooks/use-auth', () => ({
   useUser: () => ({ isLoaded: true, isSignedIn: true }),
 }));
 vi.mock('@/app/hooks/use-better-auth', () => ({ signOut: vi.fn() }));
+vi.mock('next-intl', () => ({ useTranslations: () => (key: string) => key }));
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ replace: vi.fn() }),
   useParams: () => ({ locale: 'en' }),

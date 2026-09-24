@@ -960,6 +960,8 @@
     "settings-save-error": "A csapat beállításainak frissítése sikertelen"
   },
   "sidebar": {
+    "open-navigation": "Navigáció megnyitása",
+    "close-navigation": "Navigáció bezárása",
     "profile": "Profil",
     "security": "Biztonság",
     "create-organization": "Szervezet létrehozása",
@@ -1129,6 +1131,7 @@
     "close": "Bezárás"
   },
   "thread-actions": {
+    "menu": "Beszélgetés műveletei",
     "star": "Hozzáadás a kedvencekhez",
     "unstar": "Eltávolítás a kedvencekből",
     "rename": "Átnevezés",
@@ -1240,6 +1243,8 @@
     "ask-about": "Kérdés erről: „{query}”"
   },
   "files-table": {
+    "pagination-page": "{page}. oldal",
+    "row-actions": "Műveletek: {name}",
     "title": "Fájlok listája",
     "delete": "Törlés",
     "edit": "Szerkesztés",
@@ -1718,7 +1723,8 @@
       "creation-failed": "Az asszisztens létrehozása sikertelen",
       "loading-files": "Az asszisztens fájljainak betöltése sikertelen",
       "file-delete": "A fájl törlése sikertelen",
-      "fetching-error": "Hiba történt az asszisztens fájljainak betöltése közben"
+      "fetching-error": "Hiba történt az asszisztens fájljainak betöltése közben",
+      "not-found": "Ez az asszisztens nem létezik, vagy nincs hozzá hozzáférésed."
     },
     "project-view": {
       "all-projects": "Minden asszisztens",
@@ -2809,5 +2815,11 @@
     "indicator-assistant-scope": "Tudásbázis és utasítások",
     "indicator-organization-context": "Szervezet környezete:",
     "indicator-organization-defaults": "Alapértelmezett utasítások"
+  },
+  "panel-error": {
+    "title": "Hiba történt",
+    "description": "Ezt az oldalt nem sikerült megjeleníteni. Próbáld újra, vagy kezdj új csevegést – semmi mentett nem veszett el.",
+    "retry": "Újra",
+    "new-chat": "Új csevegés"
   }
 }

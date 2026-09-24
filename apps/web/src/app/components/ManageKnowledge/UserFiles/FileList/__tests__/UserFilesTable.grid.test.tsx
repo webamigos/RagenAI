@@ -60,6 +60,7 @@ vi.mock('@/app/[locale]/(panel)/knowledge/optimize-document/actions', () => ({
 
 const messages = {
   'files-table': {
+    'row-actions': 'Actions for {name}',
     'sort-file-name': 'File name',
     'sort-file-size': 'Size',
     'sort-created': 'Added',
@@ -396,7 +397,9 @@ describe('UserFilesTable — the PII policy column', () => {
     const onChangeRowPolicy = vi.fn();
     renderTable({ canManageOrg: true, onChangeRowPolicy });
 
-    await user.click(screen.getAllByRole('button', { name: 'Actions' })[0]);
+    await user.click(
+      screen.getAllByRole('button', { name: /^Actions for / })[0],
+    );
     await user.click(
       await screen.findByRole('menuitem', { name: /Change PII policy/i }),
     );
@@ -411,7 +414,9 @@ describe('UserFilesTable — the PII policy column', () => {
     const user = userEvent.setup();
     renderTable({ canManageOrg: true });
 
-    await user.click(screen.getAllByRole('button', { name: 'Actions' })[0]);
+    await user.click(
+      screen.getAllByRole('button', { name: /^Actions for / })[0],
+    );
 
     expect(
       screen.queryByRole('menuitem', { name: /Change PII policy/i }),

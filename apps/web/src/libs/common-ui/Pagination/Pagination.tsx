@@ -176,16 +176,19 @@ export function PaginationPage({
   href,
   className,
   current = false,
+  label,
   children,
 }: React.PropsWithChildren<{
   href: string;
   className?: string;
   current?: boolean;
+  /** The accessible name; pass a translated one, like the step controls. */
+  label?: string;
 }>) {
   return (
     <Link
       href={href}
-      aria-label={`Page ${children}`}
+      aria-label={label ?? `Page ${children}`}
       aria-current={current ? 'page' : undefined}
       className={clsx(
         controlBase,

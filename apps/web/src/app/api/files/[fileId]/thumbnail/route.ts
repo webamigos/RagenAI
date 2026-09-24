@@ -5,6 +5,7 @@ import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
 import { getDocumentActor } from '@/features/documents/services/queries/get-document-actor';
 import { fileAccessWhere } from '@/features/documents/services/queries/document-access';
 import { logger } from '@/app/lib/utils/logger';
+import { isUuid } from '@/libs/utils/is-uuid';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,6 +14,9 @@ export async function GET(
   { params }: { params: Promise<{ fileId: string }> },
 ) {
   const { fileId } = await params;
+  if (!isUuid(fileId)) {
+    return NextResponse.json({ error: 'File not found' }, { status: 404 });
+  }
 
   let orgId: string;
   try {

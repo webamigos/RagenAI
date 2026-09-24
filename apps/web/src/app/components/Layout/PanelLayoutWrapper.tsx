@@ -7,6 +7,7 @@ import { CollapsedSidebarRail } from '@/app/components/Sidebar/CollapsedSidebarR
 import { ImpersonationBanner } from '@/app/components/ImpersonationBanner';
 import { useRouter, useParams } from 'next/navigation';
 import { useEffect, useRef, useSyncExternalStore } from 'react';
+import { useTranslations } from 'next-intl';
 
 const subscribeNever = () => () => {};
 
@@ -34,6 +35,7 @@ type Props = {
 
 export const PanelLayoutWrapper = ({ navbar, sidebar, children }: Props) => {
   const { isLoaded, isSignedIn } = useUser();
+  const t = useTranslations('sidebar');
   const router = useRouter();
   const params = useParams();
   const locale = params?.locale || 'pl';
@@ -67,6 +69,8 @@ export const PanelLayoutWrapper = ({ navbar, sidebar, children }: Props) => {
         navbar={navbar}
         sidebar={sidebar}
         collapsedSidebar={<CollapsedSidebarRail />}
+        openNavigationLabel={t('open-navigation')}
+        closeNavigationLabel={t('close-navigation')}
       >
         {children}
       </SidebarLayout>

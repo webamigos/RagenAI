@@ -182,6 +182,29 @@ archive is the blog.
   way: with the apps running in containers (`ragen:up:everything`), S3 storage
   could not work at all — the containers were never given the S3 settings.
 
+### Thread: a bug hunt through the panel
+
+- `[brief]` **A wrong link no longer takes the whole app down.** Opening a
+  document, thread or assistant through a mistyped address used to replace the
+  window with "Application error". It now shows "not found", and any page that
+  fails keeps the sidebar and offers "Try again" and "New chat".
+- `[brief]` **An assistant that does not exist says so,** instead of a loading
+  skeleton that never finished and a toast blaming "the assistant's files".
+- `[brief]` **A re-processed document drops a score that no longer applies.**
+  Word files first read as raw bytes kept showing "RAG: 0" after they were
+  fixed; when a new score cannot be computed the old one is now cleared rather
+  than left describing text that is gone.
+- `[brief]` **A spreadsheet's preview says it is a spreadsheet.** The preview
+  header and its "Type" field showed a Markdown icon and "TEXT" for some
+  Excel and Word files; both now follow the file's extension, like the list.
+- `[brief]` **No delete button where deleting is not allowed.** In an
+  organization that may not remove documents — the demo — the preview, the
+  row menu and the selection bar no longer offer a delete the server refuses.
+- `[brief]` **More of the panel speaks your language.** The share buttons, the
+  mobile menu, the document row menu and the page numbers were English in
+  every locale; the thread menu and "regenerate" had no name for a screen
+  reader at all.
+
 ### Thread: what a regression pass turned up
 
 - `[brief]` **Chat answers no longer show `<PL_PHONE_1>` instead of a phone

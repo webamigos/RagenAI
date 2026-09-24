@@ -125,4 +125,13 @@ describe('BulkActionBar', () => {
     await userEvent.click(button);
     expect(onSendStaged).toHaveBeenCalledOnce();
   });
+
+  it('hides delete where documents may not be removed', () => {
+    renderBar({ onDelete: undefined });
+
+    expect(screen.queryByTestId('bulk-delete')).not.toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /Move to folder/ }),
+    ).toBeInTheDocument();
+  });
 });

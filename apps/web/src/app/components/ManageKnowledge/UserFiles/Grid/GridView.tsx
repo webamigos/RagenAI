@@ -56,6 +56,8 @@ type GridViewProps = {
   isFilteredEmpty?: boolean;
   onResetFilters?: () => void;
   canManageOrg?: boolean;
+  /** See `UserFilesTable`'s `canDelete`. */
+  canDelete?: boolean;
 };
 
 export const GridView = ({
@@ -69,6 +71,7 @@ export const GridView = ({
   showModal,
   handleDelete,
   toggleModal,
+  canDelete = true,
   isSelected,
   isAllSelected,
   isIndeterminate,
@@ -214,6 +217,7 @@ export const GridView = ({
             isLoading={isLoading}
             deleteLoading={deleteLoading}
             toggleModal={toggleModal}
+            canDelete={canDelete}
             isSelected={isSelected ? isSelected(file.id) : undefined}
             onToggleFile={onToggleFile}
             onPreviewFile={onPreviewFile}

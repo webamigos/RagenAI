@@ -15,7 +15,8 @@ import { Button } from '@/components/ui/button';
 type Props = {
   selectedCount: number;
   onClear: () => void;
-  onDelete: () => void;
+  /** Absent where documents may not be removed; the button is then hidden. */
+  onDelete?: () => void;
   onMove: () => void;
   onShare: () => void;
   onChangePolicy: () => void;
@@ -155,17 +156,19 @@ export const BulkActionBar = ({
         that rations the colour. Ordering it last also stops a mis-click on
         the way to Move from being the irreversible one.
       */}
-      <Button
-        variant="destructive"
-        size="sm"
-        onClick={onDelete}
-        disabled={isLoading}
-        data-testid="bulk-delete"
-        className="gap-1.5"
-      >
-        <Trash2 className="size-3.5" />
-        {t('delete')}
-      </Button>
+      {onDelete && (
+        <Button
+          variant="destructive"
+          size="sm"
+          onClick={onDelete}
+          disabled={isLoading}
+          data-testid="bulk-delete"
+          className="gap-1.5"
+        >
+          <Trash2 className="size-3.5" />
+          {t('delete')}
+        </Button>
+      )}
     </div>
   );
 };

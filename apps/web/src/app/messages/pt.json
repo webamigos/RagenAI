@@ -960,6 +960,8 @@
     "settings-save-error": "Falha ao atualizar as configurações da equipe"
   },
   "sidebar": {
+    "open-navigation": "Abrir navegação",
+    "close-navigation": "Fechar navegação",
     "profile": "Perfil",
     "security": "Segurança",
     "create-organization": "Criar organização",
@@ -1129,6 +1131,7 @@
     "close": "Fechar"
   },
   "thread-actions": {
+    "menu": "Ações da conversa",
     "star": "Adicionar aos favoritos",
     "unstar": "Remover dos favoritos",
     "rename": "Renomear",
@@ -1240,6 +1243,8 @@
     "ask-about": "Perguntar sobre «{query}»"
   },
   "files-table": {
+    "pagination-page": "Página {page}",
+    "row-actions": "Ações para {name}",
     "title": "Lista de arquivos",
     "delete": "Excluir",
     "edit": "Editar",
@@ -1718,7 +1723,8 @@
       "creation-failed": "Falha ao criar o assistente",
       "loading-files": "Falha ao carregar os arquivos do assistente",
       "file-delete": "Falha ao excluir o arquivo",
-      "fetching-error": "Ocorreu um erro ao buscar os arquivos do assistente"
+      "fetching-error": "Ocorreu um erro ao buscar os arquivos do assistente",
+      "not-found": "Este assistente não existe ou você não tem acesso a ele."
     },
     "project-view": {
       "all-projects": "Todos os assistentes",
@@ -2809,5 +2815,11 @@
     "indicator-assistant-scope": "Base de conhecimento e instruções",
     "indicator-organization-context": "Contexto da organização:",
     "indicator-organization-defaults": "Instruções predefinidas"
+  },
+  "panel-error": {
+    "title": "Algo deu errado",
+    "description": "Não foi possível mostrar esta página. Tente novamente ou inicie um novo chat — nada do que foi salvo se perdeu.",
+    "retry": "Tentar novamente",
+    "new-chat": "Novo chat"
   }
 }

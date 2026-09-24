@@ -151,6 +151,7 @@ export const ThreadDropdownMenu = ({
           <button
             type="button"
             data-testid="thread-menu-trigger"
+            aria-label={t('menu')}
             className={
               triggerClassName ??
               'p-1 rounded hover:bg-paper-200 dark:hover:bg-paper-700 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100'

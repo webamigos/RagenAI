@@ -744,7 +744,9 @@ export const FileListWrapperWithData = ({
     <BulkActionBar
       selectedCount={bulk.selectedCount}
       onClear={bulk.clearAll}
-      onDelete={() => setIsBulkDeleteOpen(true)}
+      onDelete={
+        canManageDocuments ? () => setIsBulkDeleteOpen(true) : undefined
+      }
       onMove={() => setIsBulkMoveOpen(true)}
       onShare={() => setIsBulkShareOpen(true)}
       onChangePolicy={() => setIsBulkPolicyOpen(true)}
@@ -942,6 +944,7 @@ export const FileListWrapperWithData = ({
                 onDragFiles={handleDragFiles}
                 toggleModal={toggleModal}
                 handleDelete={handleDelete}
+                canDelete={canManageDocuments}
                 isSelected={bulk.isSelected}
                 isAllSelected={bulk.isAllSelected}
                 isIndeterminate={bulk.isIndeterminate}
@@ -1004,6 +1007,7 @@ export const FileListWrapperWithData = ({
             addFile={addFile}
             removeFile={removeFile}
             handleDelete={handleDelete}
+            canDelete={canManageDocuments}
             isSelected={bulk.isSelected}
             isAllSelected={bulk.isAllSelected}
             isIndeterminate={bulk.isIndeterminate}
@@ -1036,10 +1040,14 @@ export const FileListWrapperWithData = ({
           setPreviewFile(f);
           setPreviewIndex(i);
         }}
-        onDelete={(fileId) => {
-          toggleModal(fileId);
-          setPreviewFile(null);
-        }}
+        onDelete={
+          canManageDocuments
+            ? (fileId) => {
+                toggleModal(fileId);
+                setPreviewFile(null);
+              }
+            : undefined
+        }
         onShare={(fileId) => {
           const f = filteredFiles.find((x) => x.id === fileId);
           setPreviewFile(null);

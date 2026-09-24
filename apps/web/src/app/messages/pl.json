@@ -960,6 +960,8 @@
     "settings-save-error": "Nie udało się zaktualizować ustawień zespołu"
   },
   "sidebar": {
+    "open-navigation": "Otwórz nawigację",
+    "close-navigation": "Zamknij nawigację",
     "profile": "Profil",
     "security": "Bezpieczeństwo",
     "create-organization": "Stwórz organizację",
@@ -1129,6 +1131,7 @@
     "close": "Zamknij"
   },
   "thread-actions": {
+    "menu": "Akcje wątku",
     "star": "Przypnij",
     "unstar": "Odepnij",
     "rename": "Zmień nazwę",
@@ -1240,6 +1243,8 @@
     "ask-about": "Zapytaj o „{query}”"
   },
   "files-table": {
+    "pagination-page": "Strona {page}",
+    "row-actions": "Akcje dla {name}",
     "title": "Lista plików",
     "delete": "Usuń",
     "edit": "Edytuj",
@@ -1762,7 +1767,8 @@
       "creation-failed": "Nie udało się stowrzyć asystenta",
       "loading-files": "Nie udało się załadować plików asystenta",
       "file-delete": "Nie udało się usunąć pliku",
-      "fetching-error": "Wystąpił błąd podczas pobierania plików asystenta"
+      "fetching-error": "Wystąpił błąd podczas pobierania plików asystenta",
+      "not-found": "Ten asystent nie istnieje albo nie masz do niego dostępu."
     },
     "project-instructions": {
       "title": "Instrukcje asystenta",
@@ -2809,5 +2815,11 @@
     "indicator-assistant-scope": "Baza wiedzy i instrukcje",
     "indicator-organization-context": "Kontekst organizacji:",
     "indicator-organization-defaults": "Domyślne instrukcje"
+  },
+  "panel-error": {
+    "title": "Coś poszło nie tak",
+    "description": "Nie udało się wyświetlić tej strony. Spróbuj ponownie albo zacznij nowy czat — nic, co zapisano, nie zginęło.",
+    "retry": "Spróbuj ponownie",
+    "new-chat": "Nowy czat"
   }
 }

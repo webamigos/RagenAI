@@ -960,6 +960,8 @@
     "settings-save-error": "Nastavení týmu se nepodařilo aktualizovat"
   },
   "sidebar": {
+    "open-navigation": "Otevřít navigaci",
+    "close-navigation": "Zavřít navigaci",
     "profile": "Profil",
     "security": "Zabezpečení",
     "create-organization": "Vytvořit organizaci",
@@ -1129,6 +1131,7 @@
     "close": "Zavřít"
   },
   "thread-actions": {
+    "menu": "Akce vlákna",
     "star": "Přidat do oblíbených",
     "unstar": "Odebrat z oblíbených",
     "rename": "Přejmenovat",
@@ -1240,6 +1243,8 @@
     "ask-about": "Zeptat se na „{query}“"
   },
   "files-table": {
+    "pagination-page": "Strana {page}",
+    "row-actions": "Akce pro {name}",
     "title": "Seznam souborů",
     "delete": "Odstranit",
     "edit": "Upravit",
@@ -1718,7 +1723,8 @@
       "creation-failed": "Asistenta se nepodařilo vytvořit",
       "loading-files": "Soubory asistenta se nepodařilo načíst",
       "file-delete": "Soubor se nepodařilo odstranit",
-      "fetching-error": "Při načítání souborů asistenta došlo k chybě"
+      "fetching-error": "Při načítání souborů asistenta došlo k chybě",
+      "not-found": "Tento asistent neexistuje, nebo k němu nemáte přístup."
     },
     "project-view": {
       "all-projects": "Všichni asistenti",
@@ -2809,5 +2815,11 @@
     "indicator-assistant-scope": "Znalostní báze a pokyny",
     "indicator-organization-context": "Kontext organizace:",
     "indicator-organization-defaults": "Výchozí pokyny"
+  },
+  "panel-error": {
+    "title": "Něco se pokazilo",
+    "description": "Tuto stránku se nepodařilo zobrazit. Zkuste to znovu nebo začněte nový chat – nic uloženého se neztratilo.",
+    "retry": "Zkusit znovu",
+    "new-chat": "Nový chat"
   }
 }

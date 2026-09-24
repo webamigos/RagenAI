@@ -135,6 +135,7 @@ export function ProjectComponent({ projectId }: Props) {
   const router = useRouter();
   const [project, setProject] = useState<Project | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadFailed, setLoadFailed] = useState(false);
   const [showInstructions, setShowInstructions] = useState(false);
   const [instructionText, setInstructionText] = useState<string | null>(null);
 
@@ -292,7 +293,11 @@ export function ProjectComponent({ projectId }: Props) {
         });
       } catch (error) {
         logger.error('Error loading project:', { error: error });
-        errorToast({ message: t('error.fetching-error') });
+        // Not a toast over a skeleton: the skeleton never resolved, so the
+        // page promised content that was not coming. An unknown or foreign
+        // id and a failed request both end here, and both leave nothing to
+        // show but the way back.
+        setLoadFailed(true);
       } finally {
         setIsLoading(false);
       }
@@ -531,6 +536,23 @@ export function ProjectComponent({ projectId }: Props) {
   const handleDeleted = () => {
     router.push('/projects');
   };
+
+  if (loadFailed) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-3 py-24 text-center">
+        <p className="text-sm font-medium text-foreground">
+          {t('error.not-found')}
+        </p>
+        <Link
+          href="/projects"
+          className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <ArrowLeftIcon className="size-3" />
+          {t('project-view.all-projects')}
+        </Link>
+      </div>
+    );
+  }
 
   if (isLoading || !project || !isReady) {
     return (
