@@ -111,5 +111,8 @@ export const PROVIDER_FACTORIES: Record<
       // Applied after the bearer token, so a connection can add routing or
       // attribution headers without displacing its own authentication.
       headers: credentials.headers,
+      // Without it the SDK sends JSON mode and no schema. See
+      // `Route.structuredOutputs`.
+      supportsStructuredOutputs: route.structuredOutputs ?? false,
     })(route.model),
 };

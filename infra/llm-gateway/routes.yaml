@@ -85,6 +85,10 @@ routes:
     connection: scaleway
     # Scaleway carries the full version suffix; the application does not.
     model: mistral-small-3.2-24b-instruct-2506
+    # Scaleway takes a JSON Schema response format for this model. Without
+    # this line the schema is never sent and structured calls (Brain
+    # extraction, RAG scoring) get a guessed shape back.
+    structuredOutputs: true
   bge-multilingual-gemma2:
     provider: openai-compatible
     connection: scaleway

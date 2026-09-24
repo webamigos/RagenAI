@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { LLM_PROVIDERS, resolveLlmProviderChoice } from '../llm-provider';
+import { renderRouteTable } from '../route-table';
 
 describe('resolveLlmProviderChoice', () => {
   it('wires OpenAI: chat, rephrasing and embeddings off one key', () => {
@@ -111,6 +112,28 @@ describe('resolveLlmProviderChoice — one key, a working install', () => {
       resolveLlmProviderChoice('scaleway', 'k', 'https://x/v1').envUpdates
         .VECTOR_SIZE,
     ).toBe('3584');
+  });
+
+  it('turns on structured outputs for the Scaleway chat route, and only that one', () => {
+    // Without it the gateway sends no JSON Schema and Mistral guesses the
+    // shape — every Brain extraction failed validation on the demo.
+    const result = resolveLlmProviderChoice(
+      'scaleway',
+      'scw-key',
+      'https://api.scaleway.ai/project/v1',
+    );
+    const [chat, embeddings] = result.routes;
+
+    expect(chat?.structuredOutputs).toBe(true);
+    expect(embeddings?.structuredOutputs).toBeUndefined();
+    expect(renderRouteTable(result.routes)).toContain(
+      '    model: mistral-small-3.2-24b-instruct-2506\n    structuredOutputs: true\n',
+    );
+  });
+
+  it('writes no structured-outputs line for a provider that does not need one', () => {
+    const result = resolveLlmProviderChoice('openrouter', 'k');
+    expect(renderRouteTable(result.routes)).not.toContain('structuredOutputs');
   });
 
   it('carries the connection on a Scaleway route, without which it reads the wrong credentials', () => {

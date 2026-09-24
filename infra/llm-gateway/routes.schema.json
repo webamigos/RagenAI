@@ -39,6 +39,9 @@
           "location": {
             "type": "string",
             "minLength": 1
+          },
+          "structuredOutputs": {
+            "type": "boolean"
           }
         },
         "required": ["provider", "model"],

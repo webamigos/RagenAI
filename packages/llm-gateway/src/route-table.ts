@@ -39,6 +39,7 @@ const routeSchema = z.object({
   model: z.string().min(1),
   connection: z.string().min(1).optional(),
   location: z.string().min(1).optional(),
+  structuredOutputs: z.boolean().optional(),
 });
 
 /**

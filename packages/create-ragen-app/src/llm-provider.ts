@@ -43,6 +43,8 @@ export interface LlmProviderConfig {
   gatewayProvider: string;
   /** Passed through to the route, for an `openai-compatible` upstream. */
   connection?: string;
+  /** The chat route's upstream takes a JSON Schema response format. */
+  structuredOutputs?: boolean;
   /**
    * A second value the provider cannot work without, asked for after the key.
    *
@@ -93,6 +95,9 @@ export const LLM_PROVIDERS: Record<LlmProviderChoice, LlmProviderConfig> = {
     modelName: 'mistral-small-3.2',
     gatewayProvider: 'openai-compatible',
     connection: 'scaleway',
+    // Scaleway serves a JSON Schema response format for this model; without
+    // the flag every Brain extraction failed validation on the demo.
+    structuredOutputs: true,
     upstreamModel: 'mistral-small-3.2-24b-instruct-2506',
     embeddings: {
       modelName: 'bge-multilingual-gemma2',
@@ -177,6 +182,7 @@ export function resolveLlmProviderChoice(
       provider: config.gatewayProvider,
       model: config.upstreamModel,
       ...(config.connection ? { connection: config.connection } : {}),
+      ...(config.structuredOutputs ? { structuredOutputs: true } : {}),
     },
   ];
 
