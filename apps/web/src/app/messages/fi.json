@@ -2744,6 +2744,9 @@
       "done": "Jonossa: {queued} · ennallaan: {unchanged} · ohitettu: {refused}",
       "failed": "Julkaisua ei voitu aloittaa — lataa sivu uudelleen ja yritä uudelleen.",
       "not-written": "{count} sivua kirjattiin julkaistuksi, mutta niitä ei kirjoitettu hakemistoon – suorita uudelleen"
+    },
+    "read-only": {
+      "notice": "Vain luku -esikatselu — voit selata Ragen Brainia, mutta täällä ei voi muuttaa mitään."
     }
   },
   "project-context-manager": {

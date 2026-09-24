@@ -6,7 +6,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
  * is `features/brain/__tests__/review-commands.test.ts`'s.
  */
 
-const access = vi.hoisted(() => ({ getBrainAccessQuery: vi.fn() }));
+const access = vi.hoisted(() => ({ getBrainWriteAccessQuery: vi.fn() }));
 const auth = vi.hoisted(() => ({ getCurrentUserId: vi.fn() }));
 const commands = vi.hoisted(() => ({
   approve: vi.fn(),
@@ -61,7 +61,7 @@ const ref = {
 
 beforeEach(() => {
   vi.clearAllMocks();
-  access.getBrainAccessQuery.mockResolvedValue({ orgId: 'org-session' });
+  access.getBrainWriteAccessQuery.mockResolvedValue({ orgId: 'org-session' });
   auth.getCurrentUserId.mockResolvedValue('u-session');
   for (const command of Object.values(commands)) {
     command.mockResolvedValue({ success: true, changed: true });
@@ -83,7 +83,7 @@ describe('Brain review actions', () => {
   });
 
   it('answers not-found to anyone Brain’s routes would 404', async () => {
-    access.getBrainAccessQuery.mockResolvedValue(null);
+    access.getBrainWriteAccessQuery.mockResolvedValue(null);
     for (const call of [
       () => actions.approveKnowledgePageAction(ref),
       () => actions.rejectKnowledgePageAction(ref),
@@ -111,7 +111,7 @@ describe('Brain review actions', () => {
     await expect(
       actions.rejectKnowledgePageAction({ publicId: 'x' }),
     ).resolves.toEqual({ success: false, error: 'invalid-input' });
-    expect(access.getBrainAccessQuery).not.toHaveBeenCalled();
+    expect(access.getBrainWriteAccessQuery).not.toHaveBeenCalled();
   });
 
   it('hands the access command an explicit confirmWidening', async () => {

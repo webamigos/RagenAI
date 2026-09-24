@@ -2744,6 +2744,9 @@
       "done": "In coda: {queued} · invariate: {unchanged} · saltate: {refused}",
       "failed": "Impossibile avviare la pubblicazione: ricarica la pagina e riprova.",
       "not-written": "{count, plural, one {# pagina registrata come pubblicata ma non scritta nell’indice: esegui di nuovo} other {# pagine registrate come pubblicate ma non scritte nell’indice: esegui di nuovo}}"
+    },
+    "read-only": {
+      "notice": "Anteprima in sola lettura: puoi esplorare Ragen Brain, ma qui non è possibile modificare nulla."
     }
   },
   "project-context-manager": {

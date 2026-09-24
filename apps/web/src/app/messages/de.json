@@ -2744,6 +2744,9 @@
       "done": "Eingereiht: {queued} · unverändert: {unchanged} · übersprungen: {refused}",
       "failed": "Die Veröffentlichung konnte nicht starten — laden Sie die Seite neu und versuchen Sie es erneut.",
       "not-written": "{count, plural, one {# Seite wurde als veröffentlicht erfasst, aber nicht in den Index geschrieben – erneut ausführen} other {# Seiten wurden als veröffentlicht erfasst, aber nicht in den Index geschrieben – erneut ausführen}}"
+    },
+    "read-only": {
+      "notice": "Nur-Lese-Vorschau — Sie können Ragen Brain durchsuchen, aber hier nichts ändern."
     }
   },
   "project-context-manager": {

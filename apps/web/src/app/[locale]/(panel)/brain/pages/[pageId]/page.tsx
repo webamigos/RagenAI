@@ -48,7 +48,7 @@ export default async function BrainPageDetail({ params }: Props) {
     getFormatter(),
     getLocale(),
     getBrainReviewOptionsQuery(access.orgId),
-    page.status === 'CANDIDATE'
+    access.canWrite && page.status === 'CANDIDATE'
       ? getMergeTargetsQuery(access.orgId, page)
       : Promise.resolve([]),
   ]);
@@ -80,7 +80,7 @@ export default async function BrainPageDetail({ params }: Props) {
         {page.published && (
           <Badge variant="outline">{t('pages.published')}</Badge>
         )}
-        {page.status === 'CANDIDATE' && (
+        {access.canWrite && page.status === 'CANDIDATE' && (
           <div className="ml-auto">
             <ReviewActions
               publicId={page.publicId}
@@ -180,7 +180,7 @@ export default async function BrainPageDetail({ params }: Props) {
               {t('page.owner')}
             </h3>
             <p>{page.ownerName ?? t('pages.no-owner')}</p>
-            {curated && (
+            {access.canWrite && curated && (
               <div className="mt-2">
                 <OwnerPicker
                   publicId={page.publicId}
@@ -196,23 +196,33 @@ export default async function BrainPageDetail({ params }: Props) {
               <h3 className="mb-1 text-xs font-medium uppercase text-muted-foreground">
                 {t('page.publication')}
               </h3>
-              <PublicationControls
-                publicId={page.publicId}
-                updatedAt={page.updatedAt}
-                state={page.publication}
-                outdated={page.publicationOutdated}
-                blockers={[
-                  ...(page.status !== 'APPROVED'
-                    ? [t('page.publish-blocker.status')]
-                    : []),
-                  ...(page.ownerId === null
-                    ? [t('page.publish-blocker.owner')]
-                    : []),
-                  ...(page.principals.length === 0
-                    ? [t('page.publish-blocker.access')]
-                    : []),
-                ]}
-              />
+              {/*
+                A reader gets the state in words, the same sentence the
+                controls lead with, and none of the buttons.
+              */}
+              {!access.canWrite ? (
+                <p className="text-foreground">
+                  {t(`publication.state.${page.publication}`)}
+                </p>
+              ) : (
+                <PublicationControls
+                  publicId={page.publicId}
+                  updatedAt={page.updatedAt}
+                  state={page.publication}
+                  outdated={page.publicationOutdated}
+                  blockers={[
+                    ...(page.status !== 'APPROVED'
+                      ? [t('page.publish-blocker.status')]
+                      : []),
+                    ...(page.ownerId === null
+                      ? [t('page.publish-blocker.owner')]
+                      : []),
+                    ...(page.principals.length === 0
+                      ? [t('page.publish-blocker.access')]
+                      : []),
+                  ]}
+                />
+              )}
             </div>
           )}
           <div>
@@ -220,7 +230,7 @@ export default async function BrainPageDetail({ params }: Props) {
               {t('page.access.title')}
             </h3>
             <AccessList entries={page.access} />
-            {curated && (
+            {access.canWrite && curated && (
               <AccessEditor
                 publicId={page.publicId}
                 updatedAt={page.updatedAt}
@@ -284,7 +294,7 @@ export default async function BrainPageDetail({ params }: Props) {
               </ul>
             )}
           </div>
-          {page.status === 'CANDIDATE' && (
+          {access.canWrite && page.status === 'CANDIDATE' && (
             <div>
               <h3 className="mb-1 text-xs font-medium uppercase text-muted-foreground">
                 {t('page.merge')}

@@ -23,9 +23,12 @@ import { RetryExtractionButton } from './RetryExtractionButton';
 export async function FindingsTable({
   items,
   showSubject = true,
+  canWrite = true,
 }: {
   items: KnowledgeFindingListItem[];
   showSubject?: boolean;
+  /** False in read-only mode: the retry control is a curator's. */
+  canWrite?: boolean;
 }) {
   const [t, format] = await Promise.all([
     getTranslations('brain.findings'),
@@ -84,7 +87,8 @@ export async function FindingsTable({
               )}
               <TableCell className="max-w-[480px] align-top whitespace-normal">
                 <FindingSummaryView summary={item.summary} />
-                {item.type === 'EXTRACTION_FAILED' &&
+                {canWrite &&
+                  item.type === 'EXTRACTION_FAILED' &&
                   item.status === 'OPEN' && (
                     <div className="mt-1.5">
                       <RetryExtractionButton findingPublicId={item.publicId} />

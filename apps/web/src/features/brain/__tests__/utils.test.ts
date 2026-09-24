@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { accessEntries, principalIds } from '../utils/access-entries';
-import { canUseBrain } from '../utils/can-use-brain';
+import { brainAccess, canUseBrain } from '../utils/can-use-brain';
 import {
   contradictionSourceIds,
   staleFileIds,
@@ -11,6 +11,15 @@ import {
 const ORG = 'org-1';
 const noNames = { users: new Map(), teams: new Map() };
 
+const flags = (
+  over: Partial<Parameters<typeof brainAccess>[0]['flags']> = {},
+) => ({
+  brain: true,
+  manageBrain: true,
+  brainForMembers: false,
+  ...over,
+});
+
 describe('canUseBrain', () => {
   it.each([
     ['owner', true, true],
@@ -19,7 +28,49 @@ describe('canUseBrain', () => {
     [null, true, false],
     ['owner', false, false],
   ])('%s with the flag %s → %s', (role, enabled, allowed) => {
-    expect(canUseBrain({ role, enabled })).toBe(allowed);
+    expect(canUseBrain({ role, flags: flags({ brain: enabled }) })).toBe(
+      allowed,
+    );
+  });
+});
+
+describe('brainAccess', () => {
+  it('lets owners and admins curate by default, and nobody else in', () => {
+    expect(brainAccess({ role: 'owner', flags: flags() })).toBe('write');
+    expect(brainAccess({ role: 'admin', flags: flags() })).toBe('write');
+    expect(brainAccess({ role: 'member', flags: flags() })).toBeNull();
+  });
+
+  // The showcase: an operator turns writing off to freeze what visitors see.
+  it('freezes Brain for managers too when manageBrain is off', () => {
+    expect(
+      brainAccess({ role: 'owner', flags: flags({ manageBrain: false }) }),
+    ).toBe('read');
+  });
+
+  it('lets members browse, and only browse, when brainForMembers is on', () => {
+    expect(
+      brainAccess({ role: 'member', flags: flags({ brainForMembers: true }) }),
+    ).toBe('read');
+    // Writing stays a manager's, whatever manageBrain says.
+    expect(
+      brainAccess({
+        role: 'member',
+        flags: flags({ brainForMembers: true, manageBrain: true }),
+      }),
+    ).toBe('read');
+  });
+
+  it('lets nobody in while the feature itself is off', () => {
+    const off = flags({ brain: false, brainForMembers: true });
+    expect(brainAccess({ role: 'owner', flags: off })).toBeNull();
+    expect(brainAccess({ role: 'member', flags: off })).toBeNull();
+  });
+
+  it('never lets someone with no membership in', () => {
+    expect(
+      brainAccess({ role: null, flags: flags({ brainForMembers: true }) }),
+    ).toBeNull();
   });
 });
 

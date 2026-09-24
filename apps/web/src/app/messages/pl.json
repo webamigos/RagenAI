@@ -2744,6 +2744,9 @@
       "done": "W kolejce: {queued} · bez zmian: {unchanged} · pominięte: {refused}",
       "failed": "Publikacja nie ruszyła — odśwież stronę i spróbuj ponownie.",
       "not-written": "{count, plural, one {# strona została zapisana jako opublikowana, ale nie trafiła do indeksu — uruchom ponownie} few {# strony zostały zapisane jako opublikowane, ale nie trafiły do indeksu — uruchom ponownie} many {# stron zostało zapisanych jako opublikowane, ale nie trafiło do indeksu — uruchom ponownie} other {# strony zostały zapisane jako opublikowane, ale nie trafiły do indeksu — uruchom ponownie}}"
+    },
+    "read-only": {
+      "notice": "Podgląd tylko do odczytu — możesz przeglądać Ragen Brain, ale niczego tu nie zmienisz."
     }
   },
   "project-context-manager": {

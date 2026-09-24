@@ -2744,6 +2744,9 @@
       "done": "V rade: {queued} · bez zmeny: {unchanged} · preskočené: {refused}",
       "failed": "Zverejnenie sa nepodarilo spustiť — načítajte stránku znova a skúste to znova.",
       "not-written": "{count, plural, one {# stránka bola zaznamenaná ako publikovaná, ale nezapísaná do indexu – spustite znova} few {# stránky boli zaznamenané ako publikované, ale nezapísané do indexu – spustite znova} many {# stránok bolo zaznamenaných ako publikované, ale nezapísaných do indexu – spustite znova} other {# stránok bolo zaznamenaných ako publikované, ale nezapísaných do indexu – spustite znova}}"
+    },
+    "read-only": {
+      "notice": "Náhľad len na čítanie — Ragen Brain môžete prezerať, ale nič tu nemožno zmeniť."
     }
   },
   "project-context-manager": {

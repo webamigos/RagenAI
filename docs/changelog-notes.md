@@ -68,6 +68,20 @@ archive is the blog.
 
 ## Unreleased
 
+### Thread: Ragen Brain for a showcase
+
+- `[brief]` **Ragen Brain can be shown read-only.** Two new per-organization
+  switches in the admin panel's Features page:
+  - **Ragen Brain: curate** (on by default): turn it off to freeze Brain
+    for everyone, so no extraction, review, publishing or upload into Brain;
+  - **Ragen Brain: members may browse** (off by default): lets every member
+    look around Brain, read-only.
+
+  Brain then shows a "read-only preview" notice and hides every control. The
+  server refuses the changes too; hiding the buttons is not what keeps people
+  out. Meant for a demo organization: a member who browses Brain sees every
+  page, including text drawn from documents they could not open themselves.
+
 ### Thread: the panel speaks your language
 
 - `[brief]` **Fewer English words on Polish pages, and the reverse.** Several
