@@ -130,6 +130,17 @@ is decided:
 
 ![Application settings](docs/img/web/settings-general.png)
 
+Ragen Brain turns the documents into knowledge pages people review and own,
+and draws how they relate. The graph is where a curator sees what the
+corpus actually says, what depends on what, and where the gaps are:
+
+![Ragen Brain graph](docs/img/brain/graph.webp)
+
+A knowledge page: the claims, each with the quoted passage it came from,
+its owner, who may read it, and whether it is in the knowledge base yet:
+
+![Ragen Brain knowledge page](docs/img/brain/knowledge-page.webp)
+
 The platform admin panel — one installation, every organization in it. This is
 the operator's surface and a separate app; the per-organization settings a
 customer's own owners and admins use live in the main app, and neither is a
