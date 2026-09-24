@@ -1,5 +1,9 @@
 import type { LanguageModelV4 } from '@ai-sdk/provider';
-import { MAX_SOURCE_REGIONS, type SourceRegion } from '@ragenai/rag-core';
+import {
+  isUndecodableText,
+  MAX_SOURCE_REGIONS,
+  type SourceRegion,
+} from '@ragenai/rag-core';
 import type { ModelMessage } from 'ai';
 import { generateObject, generateText } from 'ai';
 import { z } from 'zod';
@@ -475,6 +479,13 @@ const SNIPPET_MAX_CHARS = 2000;
  * glyph in the quote.
  */
 function truncateSnippet(text: string): string {
+  // A chunk that is a binary file read as text — the worker indexed Word
+  // files' ZIP bytes that way before it refused them — has nothing to quote.
+  // Returning nothing drops the snippet from the source rather than showing
+  // the reader a line of replacement glyphs; the source itself still lists.
+  if (isUndecodableText(text)) {
+    return '';
+  }
   if (text.length <= SNIPPET_MAX_CHARS) {
     return text;
   }

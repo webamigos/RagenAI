@@ -542,6 +542,105 @@ describe('runFileEmbeddings workflow', () => {
     );
   });
 
+  describe('a Word file when Docling is down', () => {
+    // On demo, three .docx files were indexed as their raw ZIP bytes. The
+    // binary check answered "text" from the extension alone, so the file was
+    // recorded as TEXT and Docling's outage fallback was `loadText`. This
+    // suite could not see it: `checkIsBinaryFile` is a mock here, and every
+    // test that needed a binary said so by hand. The detection itself is
+    // tested against real bytes in `activities/files/__tests__/`; what is
+    // asserted here is the dispatch once detection is right.
+    const DOCX_MIME =
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+
+    const docxWithDoclingDown = () => {
+      const activities = createMockActivities();
+      activities.checkIsBinaryFile.mockResolvedValue(true);
+      activities.checkMimeType.mockResolvedValue({
+        mime: DOCX_MIME,
+        ext: 'docx',
+      });
+      activities.getDocumentParser.mockResolvedValue({
+        parser: 'docling',
+        strict: false,
+      });
+      activities.loadDocling.mockRejectedValue(new Error('ECONNREFUSED'));
+      return activities;
+    };
+
+    it('falls back to the DOCX loader, never the text loader', async () => {
+      const activities = docxWithDoclingDown();
+
+      await runIngest<string>(
+        makeUserFile({ fileName: 'umowa.docx', fileType: FileType.DOCX }),
+        activities,
+      );
+
+      expect(activities.checkMimeType).toHaveBeenCalled();
+      expect(activities.updateFileType).toHaveBeenCalledWith(
+        expect.objectContaining({ type: FileType.DOCX }),
+      );
+      expect(activities.loadDocling).toHaveBeenCalled();
+      expect(activities.loadDocx).toHaveBeenCalled();
+      expect(activities.loadText).not.toHaveBeenCalled();
+      expect(activities.addDocumentsToVectorStore).toHaveBeenCalled();
+    });
+
+    it('refuses text that is a ZIP read as UTF-8, and writes nothing to the vector store', async () => {
+      // The net behind the classification: whatever route a binary takes to a
+      // text-producing loader, what comes out is not indexed.
+      const activities = docxWithDoclingDown();
+      const zipAsText = Buffer.concat([
+        Buffer.from([0x50, 0x4b, 0x03, 0x04, 0x14, 0x00, 0x06, 0x00]),
+        Buffer.from([0x08, 0x00, 0x00, 0x00, 0x21, 0x00, 0xdf, 0xa4, 0xd2]),
+      ]).toString('utf-8');
+      activities.loadDocx.mockResolvedValue([
+        { pageContent: zipAsText + '\uFFFD'.repeat(40), metadata: {} },
+      ]);
+
+      try {
+        await runIngest(
+          makeUserFile({ fileName: 'umowa.docx', fileType: FileType.DOCX }),
+          activities,
+        );
+        expect.fail('Expected workflow to throw');
+      } catch (err) {
+        expect(getWorkflowFailureCause(err)).toContain(
+          'undecodable binary for umowa.docx',
+        );
+        expect(getWorkflowFailureNonRetryable(err)).toBe(true);
+      }
+
+      expect(activities.updateParsingStatus).toHaveBeenCalledWith(
+        expect.objectContaining({ status: ParsingStatus.FAILED }),
+      );
+      expect(activities.sanitizeDocuments).not.toHaveBeenCalled();
+      expect(activities.splitText).not.toHaveBeenCalled();
+      expect(activities.addDocumentsToVectorStore).not.toHaveBeenCalled();
+      // Not even cleared: the previous, readable index of this file — if it
+      // had one — is left alone by a run that produced nothing to replace it.
+      expect(activities.deleteDocumentVectors).not.toHaveBeenCalled();
+    });
+
+    it('refuses the same bytes from the text loader on a file detected as text', async () => {
+      const activities = createMockActivities();
+      activities.loadText.mockResolvedValue([
+        {
+          pageContent: Buffer.from(
+            Array.from({ length: 512 }, (_, i) => (i * 37) & 0xff),
+          ).toString('utf-8'),
+          metadata: {},
+        },
+      ]);
+
+      await expect(
+        runIngest(makeUserFile({ fileName: 'notes.txt' }), activities),
+      ).rejects.toThrow(WorkflowFailedError);
+
+      expect(activities.addDocumentsToVectorStore).not.toHaveBeenCalled();
+    });
+  });
+
   it('passes pre-masking originalDocs and masked maskedDocs to applyDualContentMode', async () => {
     const activities = createMockActivities();
 

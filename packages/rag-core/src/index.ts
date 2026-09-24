@@ -42,3 +42,9 @@ export {
   type DocumentAccessGrant,
   type DocumentAccessInput,
 } from './document-access';
+
+export {
+  findUndecodableText,
+  isUndecodableText,
+  type UndecodableTextReason,
+} from './undecodable-text';
