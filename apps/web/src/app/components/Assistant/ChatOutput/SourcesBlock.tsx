@@ -12,6 +12,7 @@ import type {
   MessageRetrieval,
   RetrievalSource,
 } from '@/store/assistant/assistantSlice';
+import { snippetToPlainText } from './snippet-text';
 
 /**
  * What the answer was grounded in.
@@ -160,7 +161,12 @@ const SourceCard = ({
       */}
       {source.snippet ? (
         <blockquote className="mt-1 border-l-2 border-border pl-2 text-[11px] leading-snug text-muted-foreground line-clamp-3">
-          {source.snippet}
+          {/*
+            As plain text: chunks keep the parser's Markdown, and a quote
+            reading "### How long…" or "| Refund | 14 days |" is syntax, not
+            a passage.
+          */}
+          {snippetToPlainText(source.snippet)}
         </blockquote>
       ) : null}
     </>

@@ -68,6 +68,17 @@ archive is the blog.
 
 ## Unreleased
 
+### Thread: sources you can read
+
+- `[brief]` **A source's quote reads as text.** The passage under each source
+  used to show the parser's formatting: "### How long…" for a heading,
+  "| Refund | 14 days |" for a table row. It now shows the words, with table
+  cells separated by " · ".
+- `[brief]` **A tidier chat frame.** The conversation bar and the sources
+  panel's header now sit on one line; the sources panel reaches the bottom
+  of the frame; the frame keeps its rounded corner under the bar; and the
+  line across the top of the message box is gone.
+
 ### Thread: the assistants grid tells the truth
 
 - `[brief]` **The assistants grid counts threads the way the assistant's page

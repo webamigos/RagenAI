@@ -10,6 +10,7 @@ import type {
   RetrievalSource,
 } from '@/store/assistant/assistantSlice';
 import { RelevanceBar } from './RelevanceBar';
+import { CHAT_BAR_HEIGHT } from '../chat-bar';
 
 /**
  * What the last answer was grounded in, as a panel beside the conversation.
@@ -77,9 +78,16 @@ export const SourcesRail = ({ retrieval, onClose }: Props) => {
   return (
     <aside
       aria-label={t('heading')}
-      className="hidden w-[296px] shrink-0 flex-col overflow-y-auto border-l border-border/40 bg-muted/20 lg:flex"
+      className="hidden w-[296px] shrink-0 flex-col overflow-y-auto border-l border-border/40 bg-muted/20 lg:flex lg:rounded-r-lg"
     >
-      <div className="sticky top-0 z-10 flex items-center gap-2 border-b border-border/40 bg-background/80 px-4 py-2.5 backdrop-blur-md">
+      {/*
+        The same height as the chat's own bar (`CHAT_BAR_HEIGHT`), so "Sources"
+        sits on the line of the breadcrumb beside it rather than a few pixels
+        above it.
+      */}
+      <div
+        className={`sticky top-0 z-10 flex ${CHAT_BAR_HEIGHT} shrink-0 items-center gap-2 border-b border-border/40 bg-background/80 px-4 backdrop-blur-md lg:rounded-tr-lg`}
+      >
         <h2 className="text-sm font-semibold text-foreground">
           {t('heading')}
         </h2>

@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { NextIntlClientProvider } from 'next-intl';
 
 import { SourcesRail } from '../SourcesRail';
+import { CHAT_BAR_HEIGHT } from '../../chat-bar';
 import messages from '@/app/messages/en.json';
 import type { MessageRetrieval } from '@/store/assistant/assistantSlice';
 
@@ -30,6 +31,14 @@ const card = (name: string) =>
   screen.getByText(name).closest('li') as HTMLElement;
 
 describe('SourcesRail', () => {
+  // "Sources" sat a few pixels off the breadcrumb beside it: each bar sized
+  // itself from its own padding. Both now take the one shared height.
+  it('puts its header on the chat bar’s line', () => {
+    show();
+    const heading = screen.getByRole('heading', { name: 'Sources' });
+    expect(heading.parentElement).toHaveClass(CHAT_BAR_HEIGHT);
+  });
+
   it('numbers the cards in rank order, the same numbers the answer cites', () => {
     show({
       sources: [

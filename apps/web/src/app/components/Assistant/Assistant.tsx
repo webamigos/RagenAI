@@ -45,6 +45,7 @@ import { type RootState } from '@/store';
 import { getProjects } from '@/app/components/Sidebar/Projects/actions';
 import { getOrganizationSettings } from '@/app/lib/actions/getOrganizationSettings';
 import { getThreadDetailsAction } from '@/app/lib/actions/threads-actions';
+import { CHAT_BAR_HEIGHT } from './chat-bar';
 
 type ProjectForContext = {
   id: string;
@@ -238,10 +239,21 @@ export const Assistant = ({ threadId }: Props) => {
   };
 
   return (
-    <div className="flex min-h-[calc(100vh-7rem)] lg:min-h-[calc(100vh-3rem)] -m-6 lg:-m-10">
+    // `lg:min-h` is the panel shell's own (100vh-1rem), because `-m-10` undoes
+    // its whole `p-10`: at 100vh-3rem the sources rail stopped 2rem short of
+    // the shell's bottom edge.
+    <div className="flex min-h-[calc(100vh-7rem)] lg:min-h-[calc(100vh-1rem)] -m-6 lg:-m-10">
       <PageDropOverlay visible={isDragging} zones={dropZones} />
       <div className="flex flex-1 min-w-0 flex-col font-sans">
-        <div className="sticky top-0 z-40 flex items-center justify-between gap-2 border-b border-border/40 bg-background/80 backdrop-blur-md px-4 py-2.5">
+        {/*
+          `CHAT_BAR_HEIGHT` is shared with the sources rail's header, so the
+          two read as one bar. The rounded top-left corner is the panel
+          shell's: this bar paints a background over it, and the shell cannot
+          clip it without breaking `sticky`.
+        */}
+        <div
+          className={`sticky top-0 z-40 flex ${CHAT_BAR_HEIGHT} shrink-0 items-center justify-between gap-2 border-b border-border/40 bg-background/80 backdrop-blur-md px-4 lg:rounded-tl-lg`}
+        >
           <BreadcrumbNavigation threadId={threadId} className="flex-1" />
           <div className="flex min-w-0 items-center gap-2">
             <ProjectContextIndicator
@@ -383,10 +395,14 @@ export const Assistant = ({ threadId }: Props) => {
           put an off-white strip across the bottom of a white surface, with a
           border and a gradient drawing attention to the seam rather than
           hiding it. The dock is part of the panel and takes the panel's
-          colour; the border alone is enough to separate it from the
-          transcript.
+          colour.
+
+          No rule above it either. The composer is its own bordered box, so a
+          full-width line over it drew a second edge that cut the panel in two
+          and took a strip of height from the transcript; the transcript
+          scrolling under an opaque dock is separation enough.
         */}
-        <div className="sticky bottom-0 border-t border-border/40 bg-card">
+        <div className="sticky bottom-0 bg-card lg:rounded-b-lg">
           {isLimitLock && !isSignedIn && <LimitReached />}
           {isReadOnly && <ReadOnlyBanner />}
           {!isLocked() && !isReadOnly && threadId && (

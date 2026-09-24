@@ -174,6 +174,26 @@ describe('SourcesBlock', () => {
     ).toBeInTheDocument();
   });
 
+  // Chunks keep the parser's Markdown; the quote shows the words.
+  it('quotes the passage as plain text, without Markdown syntax', () => {
+    show({
+      sources: [
+        {
+          fileId: 'a',
+          fileName: 'sales-faq.docx',
+          chunkCount: 1,
+          snippet: '### How long? 14 days. | Refund | finance |',
+        },
+      ],
+      citedFileIds: ['a'],
+    });
+
+    expect(
+      screen.getByText('How long? 14 days. · Refund · finance'),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/###/)).not.toBeInTheDocument();
+  });
+
   it('marks neither of two identically named files', () => {
     // The decision in `attributable-citations.ts`, reaching the screen: a
     // missing mark is a smaller lie than one pointing at a document the answer
