@@ -231,6 +231,7 @@ export function CitedSourcePreview({ source, onClose }: Props) {
                 : undefined
             }
             highlights={source.sourceRegions}
+            passage={source.snippet}
           />
         </div>
       </div>

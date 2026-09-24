@@ -1,10 +1,14 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import type { WorkBook, WorkSheet } from 'xlsx';
 
 import { cn } from '@/lib/utils';
+
+import { findMatchingRows } from '../passage/find-passage';
+import { scrollPassageIntoView } from '../passage/highlight-in-element';
+import { PassageNotFoundHint } from '../passage/PassageNotFoundHint';
 
 /**
  * The most rows a sheet renders.
@@ -25,6 +29,24 @@ type Props = {
    * which under coverage outran the suite's 5 s timeout in CI.
    */
   maxRows?: number;
+  /**
+   * The passage a citation quoted — a chunk of rows, as CSV lines or Markdown
+   * table rows. The viewer opens on the sheet that holds them and marks them.
+   */
+  passage?: string;
+};
+
+/** Where a quoted chunk of rows sits in a workbook. */
+type CitedRows = {
+  sheetIndex: number;
+  /** Indices into the parsed sheet's `rows`. */
+  rows: Set<number>;
+  /**
+   * The row to scroll to: the first match that is not the sheet's first row,
+   * when there is one. Every spreadsheet chunk repeats the header, so the
+   * header always matches, and scrolling to it would be scrolling to the top.
+   */
+  scrollRow: number;
 };
 
 type ParsedSheet = {
@@ -84,9 +106,40 @@ function parseSheet(
   };
 }
 
+/**
+ * Finds the sheet a snippet came from and the rows it quoted.
+ *
+ * Every sheet is searched, and the one with the most matching rows wins. The
+ * chunk's `sheet_name` is not on the retrieved source, and does not need to
+ * be: the rows identify the sheet, and a sheet renamed since ingest would have
+ * sent a name lookup to the wrong place.
+ */
+function locateRows(
+  XLSX: SheetJs,
+  workbook: WorkBook,
+  passage: string,
+  maxRows: number,
+): CitedRows | null {
+  let best: CitedRows | null = null;
+  workbook.SheetNames.forEach((name, sheetIndex) => {
+    const { rows } = parseSheet(XLSX, workbook.Sheets[name], maxRows);
+    const matched = findMatchingRows(rows, passage);
+    if (matched.length === 0 || (best && best.rows.size >= matched.length)) {
+      return;
+    }
+    best = {
+      sheetIndex,
+      rows: new Set(matched),
+      scrollRow: matched.find((row) => row > 0) ?? matched[0],
+    };
+  });
+  return best;
+}
+
 export function XlsxViewer({
   contentUrl,
   maxRows = XLSX_PREVIEW_MAX_ROWS,
+  passage,
 }: Props) {
   const t = useTranslations('document-preview');
   // Every result is tagged with the URL it came from, and anything tagged with
@@ -98,8 +151,11 @@ export function XlsxViewer({
     | { url: string; error: true }
     | null
   >(null);
+  // Starts as "nothing chosen" — an empty url matches no file — so the sheet
+  // shown first is the cited one, and becomes the reader's choice only once
+  // they click a tab.
   const [selected, setSelected] = useState<{ url: string; index: number }>({
-    url: contentUrl,
+    url: '',
     index: 0,
   });
 
@@ -144,12 +200,35 @@ export function XlsxViewer({
   const current = result?.url === contentUrl ? result : null;
   const loaded = current && 'workbook' in current ? current : null;
   const error = current !== null && 'error' in current;
-  const activeSheet = selected.url === contentUrl ? selected.index : 0;
+
+  const cited = useMemo(
+    () =>
+      loaded && passage
+        ? locateRows(loaded.XLSX, loaded.workbook, passage, maxRows)
+        : null,
+    [loaded, passage, maxRows],
+  );
+
+  // Until the reader picks a sheet, the one the citation came from is shown.
+  const activeSheet =
+    selected.url === contentUrl ? selected.index : (cited?.sheetIndex ?? 0);
   const setActiveSheet = (index: number) =>
     setSelected({ url: contentUrl, index });
 
   const sheetNames = loaded?.workbook.SheetNames ?? [];
   const sheetName = sheetNames[activeSheet];
+
+  const citedRows = cited && cited.sheetIndex === activeSheet ? cited : null;
+
+  const tableRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!citedRows) {
+      return;
+    }
+    scrollPassageIntoView(
+      tableRef.current?.querySelector('[data-cited-scroll]') ?? null,
+    );
+  }, [citedRows]);
 
   const sheet = useMemo(
     () =>
@@ -176,6 +255,9 @@ export function XlsxViewer({
   }
 
   const truncated = sheet.totalRows > sheet.rows.length;
+  // Said once, for the workbook: a passage found on another sheet than the
+  // one the reader switched to is still found.
+  const passageMissing = Boolean(passage) && cited === null;
 
   return (
     <div className="flex h-full flex-col">
@@ -208,6 +290,8 @@ export function XlsxViewer({
         </div>
       )}
 
+      {passageMissing ? <PassageNotFoundHint /> : null}
+
       {truncated && (
         <p
           role="status"
@@ -225,7 +309,7 @@ export function XlsxViewer({
           {t('xlsx-empty-sheet')}
         </div>
       ) : (
-        <div className="min-h-0 flex-1 overflow-auto">
+        <div ref={tableRef} className="min-h-0 flex-1 overflow-auto">
           <table className="border-separate border-spacing-0 text-xs text-foreground">
             <thead>
               <tr>
@@ -243,25 +327,39 @@ export function XlsxViewer({
               </tr>
             </thead>
             <tbody>
-              {sheet.rows.map((row, rowIndex) => (
-                <tr key={sheet.rowNumbers[rowIndex]}>
-                  <th
-                    scope="row"
-                    className="sticky left-0 z-10 border-r border-b border-border bg-muted px-2 py-1 text-right font-medium text-muted-foreground"
+              {sheet.rows.map((row, rowIndex) => {
+                const isCited = citedRows?.rows.has(rowIndex) ?? false;
+                return (
+                  <tr
+                    key={sheet.rowNumbers[rowIndex]}
+                    data-cited-row={isCited ? '' : undefined}
+                    data-cited-scroll={
+                      citedRows?.scrollRow === rowIndex ? '' : undefined
+                    }
                   >
-                    {sheet.rowNumbers[rowIndex]}
-                  </th>
-                  {sheet.columns.map((column, columnIndex) => (
-                    <td
-                      key={column}
-                      className="max-w-80 truncate border-r border-b border-border bg-background px-2 py-1"
-                      title={row[columnIndex] || undefined}
+                    <th
+                      scope="row"
+                      className="sticky left-0 z-10 border-r border-b border-border bg-muted px-2 py-1 text-right font-medium text-muted-foreground"
                     >
-                      {row[columnIndex] ?? ''}
-                    </td>
-                  ))}
-                </tr>
-              ))}
+                      {sheet.rowNumbers[rowIndex]}
+                    </th>
+                    {sheet.columns.map((column, columnIndex) => (
+                      <td
+                        key={column}
+                        className={cn(
+                          'max-w-80 truncate border-r border-b border-border px-2 py-1',
+                          isCited
+                            ? 'bg-highlight text-highlight-foreground'
+                            : 'bg-background',
+                        )}
+                        title={row[columnIndex] || undefined}
+                      >
+                        {row[columnIndex] ?? ''}
+                      </td>
+                    ))}
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

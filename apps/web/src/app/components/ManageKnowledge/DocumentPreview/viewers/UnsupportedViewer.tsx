@@ -3,12 +3,20 @@
 import { useTranslations } from 'next-intl';
 import { ArrowDownTrayIcon, DocumentIcon } from '@heroicons/react/24/outline';
 
+import { CitedPassageQuote } from './CitedPassageQuote';
+
 type Props = {
   fileId: string;
   fileName: string;
+  /**
+   * The passage a citation quoted. A format with no preview can still show
+   * the words the answer relied on, which is most of what a reader opening
+   * a source wants.
+   */
+  passage?: string;
 };
 
-export function UnsupportedViewer({ fileId, fileName }: Props) {
+export function UnsupportedViewer({ fileId, fileName, passage }: Props) {
   const t = useTranslations('document-preview');
 
   return (
@@ -30,6 +38,7 @@ export function UnsupportedViewer({ fileId, fileName }: Props) {
         <ArrowDownTrayIcon className="size-4" />
         {t('download')}
       </a>
+      {passage ? <CitedPassageQuote passage={passage} /> : null}
     </div>
   );
 }

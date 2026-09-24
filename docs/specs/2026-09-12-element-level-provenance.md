@@ -105,8 +105,14 @@ over-scoping — in its own demo `hierarchy_level` is `-1` on all 27 headers and
 - **An element-browser panel.** Needs the parse persisted per file; highlighting
   does not, because the boxes ride the chunks that were retrieved.
 - **Replacing Docling.** `DOCUMENT_PARSER` and ADR-27 untouched.
-- **Highlighting non-PDF formats.** DOCX and XLSX carry boxes where a page
-  exists, but there is no page raster to draw on.
+- **Highlighting non-PDF formats _with boxes_.** DOCX and XLSX carry boxes
+  where a page exists, but there is no page raster to draw on. **Delivered
+  since by other means** (2026-09-24): every text viewer — DOCX, Markdown,
+  TXT/CSV, XLSX — now marks the cited passage by matching the chunk's text in
+  the rendered document (`DocumentPreview/passage/find-passage.ts`), and the
+  PDF viewer adds the same word-level mark in its text layer on top of these
+  boxes. Boxes stay the PDF-only fallback for a passage the text search
+  cannot find.
 - **The thread-documents ingest path**
   (`apps/web/src/app/api/threads/services/saveDataInVectorTable.ts`) — a
   separate Qdrant write path for files dropped into a chat. Same carve-out the
