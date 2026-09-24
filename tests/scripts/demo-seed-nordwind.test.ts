@@ -15,6 +15,7 @@ import { contentEn } from '../../scripts/demo/nordwind/content-en';
 import { contentPl } from '../../scripts/demo/nordwind/content-pl';
 import { PAGES } from '../../scripts/demo/nordwind/structure';
 import {
+  agoFrom,
   assertDemoDatabase,
   firstParagraph,
   parseLocales,
@@ -224,5 +225,28 @@ describe('assertDemoDatabase', () => {
       assertDemoDatabase(dsn('db.example.com:5432', 'ragen_demo')),
     ).toThrow(/Refusing/);
     expect(() => assertDemoDatabase(undefined)).toThrow(/not set/);
+  });
+});
+
+describe('agoFrom', () => {
+  // 07:30 local time: most of "today" at a fixed hour is still ahead.
+  const now = new Date(2026, 8, 24, 7, 30).getTime();
+
+  it('never puts a past or present offset after now', () => {
+    for (let hour = 0; hour < 24; hour += 1) {
+      expect(agoFrom(now, 0, hour).getTime()).toBeLessThanOrEqual(now);
+    }
+  });
+
+  it('moves a time later today back to the same time yesterday', () => {
+    expect(agoFrom(now, 0, 16, 5)).toEqual(new Date(2026, 8, 23, 16, 5));
+  });
+
+  it('keeps a time earlier today on today', () => {
+    expect(agoFrom(now, 0, 7, 0)).toEqual(new Date(2026, 8, 24, 7, 0));
+  });
+
+  it('leaves a negative offset in the future, for expiry dates', () => {
+    expect(agoFrom(now, -30).getTime()).toBeGreaterThan(now);
   });
 });

@@ -218,11 +218,29 @@ interface Ctx {
   counts: Record<string, number>;
 }
 
-const ago = (ctx: Ctx, days: number, hour = 10, minute = 0): Date => {
-  const d = new Date(ctx.now - days * DAY);
+/**
+ * `days` before `now`, at a fixed wall-clock time. A non-negative offset never
+ * lands after `now`: "today at 16:00" seeded at 07:30 would be activity that
+ * has not happened yet, which the usage charts show and queries bounded by
+ * `now` leave out. Such a time moves back one day. A negative offset is a
+ * deliberate future date (`expiresAt`, `periodEnd`) and is left alone.
+ */
+export function agoFrom(
+  now: number,
+  days: number,
+  hour = 10,
+  minute = 0,
+): Date {
+  const d = new Date(now - days * DAY);
   d.setHours(hour, minute, 0, 0);
+  if (days >= 0 && d.getTime() > now) {
+    d.setDate(d.getDate() - 1);
+  }
   return d;
-};
+}
+
+const ago = (ctx: Ctx, days: number, hour = 10, minute = 0): Date =>
+  agoFrom(ctx.now, days, hour, minute);
 
 const bump = (ctx: Ctx, table: string, n = 1): void => {
   ctx.counts[table] = (ctx.counts[table] ?? 0) + n;
