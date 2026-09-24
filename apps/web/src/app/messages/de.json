@@ -1378,7 +1378,9 @@
     "reembed-error": "Fehler bei der erneuten Verarbeitung",
     "policy-all": "Richtlinie geändert: {count, plural, one {# Datei} other {# Dateien}}",
     "policy-partial": "Richtlinie für {succeeded} von {total} Dateien geändert",
-    "policy-error": "Fehler beim Ändern der Richtlinie"
+    "policy-error": "Fehler beim Ändern der Richtlinie",
+    "staged-sent": "An die Wissensdatenbank gesendet: {sent} von {total}",
+    "staged-send-error": "Die Dokumente aus Brain konnten nicht gesendet werden – erneut versuchen."
   },
   "bulk-action-bar": {
     "aria-label": "Massen-Dateioperationen",
@@ -1390,7 +1392,8 @@
     "move": "In Ordner verschieben",
     "share": "Teilen",
     "change-policy": "Richtlinie ändern",
-    "reembed": "Neu verarbeiten"
+    "reembed": "Neu verarbeiten",
+    "send-staged": "Aus Brain indexieren ({count})"
   },
   "share-dialog": {
     "bulk-title": "{count, plural, one {# Datei} other {# Dateien}} teilen",

@@ -1378,7 +1378,9 @@
     "reembed-error": "Virhe uudelleenkäsittelyssä",
     "policy-all": "Käytäntö vaihdettu: {count, plural, one {# tiedosto} other {# tiedostoa}}",
     "policy-partial": "Käytäntö vaihdettu: {succeeded} / {total} tiedostoa",
-    "policy-error": "Virhe käytännön vaihtamisessa"
+    "policy-error": "Virhe käytännön vaihtamisessa",
+    "staged-sent": "Lähetetty tietopankkiin: {sent}/{total}",
+    "staged-send-error": "Brainin asiakirjoja ei voitu lähettää – yritä uudelleen."
   },
   "bulk-action-bar": {
     "aria-label": "Tiedostojen joukkotoiminnot",
@@ -1390,7 +1392,8 @@
     "move": "Siirrä kansioon",
     "share": "Jaa",
     "change-policy": "Vaihda käytäntö",
-    "reembed": "Käsittele uudelleen"
+    "reembed": "Käsittele uudelleen",
+    "send-staged": "Indeksoi Brainista ({count})"
   },
   "share-dialog": {
     "bulk-title": "Jaa {count, plural, one {# tiedosto} other {# tiedostoa}}",

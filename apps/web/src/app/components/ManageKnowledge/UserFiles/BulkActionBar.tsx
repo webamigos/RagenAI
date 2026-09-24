@@ -8,6 +8,7 @@ import {
   Share2,
   RefreshCw,
   ShieldCheck,
+  DatabaseZap,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -26,6 +27,13 @@ type Props = {
    * button here for a member would be an offer the panel cannot keep.
    */
   canChangePolicy?: boolean;
+  /**
+   * Selected files staged into Ragen Brain (spec F5). Reprocessing keeps a
+   * staged file staged, so sending it on is its own action, offered only
+   * when the selection holds one.
+   */
+  stagedCount?: number;
+  onSendStaged?: () => void;
 };
 
 export const BulkActionBar = ({
@@ -38,6 +46,8 @@ export const BulkActionBar = ({
   onReembed,
   isLoading,
   canChangePolicy = false,
+  stagedCount = 0,
+  onSendStaged,
 }: Props) => {
   const t = useTranslations('bulk-action-bar');
 
@@ -111,6 +121,20 @@ export const BulkActionBar = ({
         >
           <ShieldCheck className="size-3.5" />
           {t('change-policy')}
+        </Button>
+      )}
+
+      {stagedCount > 0 && onSendStaged && (
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={onSendStaged}
+          disabled={isLoading}
+          data-testid="bulk-send-staged"
+          className="gap-1.5"
+        >
+          <DatabaseZap className="size-3.5" />
+          {t('send-staged', { count: stagedCount })}
         </Button>
       )}
 

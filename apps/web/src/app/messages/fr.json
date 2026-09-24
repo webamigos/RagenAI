@@ -1378,7 +1378,9 @@
     "reembed-error": "Erreur lors du retraitement",
     "policy-all": "Politique modifiée : {count, plural, one {# fichier} other {# fichiers}}",
     "policy-partial": "Politique modifiée sur {succeeded} fichiers sur {total}",
-    "policy-error": "Erreur lors du changement de politique"
+    "policy-error": "Erreur lors du changement de politique",
+    "staged-sent": "Envoyés à la base de connaissances : {sent} sur {total}",
+    "staged-send-error": "Les documents de Brain n’ont pas pu être envoyés — réessayez."
   },
   "bulk-action-bar": {
     "aria-label": "Opérations groupées sur les fichiers",
@@ -1390,7 +1392,8 @@
     "move": "Déplacer vers un dossier",
     "share": "Partager",
     "change-policy": "Changer la politique",
-    "reembed": "Retraiter"
+    "reembed": "Retraiter",
+    "send-staged": "Indexer depuis Brain ({count})"
   },
   "share-dialog": {
     "bulk-title": "Partager {count, plural, one {# fichier} other {# fichiers}}",

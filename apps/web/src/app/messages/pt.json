@@ -1378,7 +1378,9 @@
     "reembed-error": "Erro ao reprocessar",
     "policy-all": "Política alterada: {count, plural, one {# arquivo} other {# arquivos}}",
     "policy-partial": "Política alterada em {succeeded} de {total} arquivos",
-    "policy-error": "Erro ao alterar a política"
+    "policy-error": "Erro ao alterar a política",
+    "staged-sent": "Enviados para a base de conhecimento: {sent} de {total}",
+    "staged-send-error": "Não foi possível enviar os documentos do Brain — tente novamente."
   },
   "bulk-action-bar": {
     "aria-label": "Operações em lote de arquivos",
@@ -1390,7 +1392,8 @@
     "move": "Mover para pasta",
     "share": "Compartilhar",
     "change-policy": "Alterar política",
-    "reembed": "Reprocessar"
+    "reembed": "Reprocessar",
+    "send-staged": "Indexar do Brain ({count})"
   },
   "share-dialog": {
     "bulk-title": "Compartilhar {count, plural, one {# arquivo} other {# arquivos}}",

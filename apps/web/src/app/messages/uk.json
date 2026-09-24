@@ -1378,7 +1378,9 @@
     "reembed-error": "Помилка під час повторної обробки",
     "policy-all": "Політику змінено: {count, plural, one {# файл} few {# файли} many {# файлів} other {# файлів}}",
     "policy-partial": "Політику змінено для {succeeded} з {total} файлів",
-    "policy-error": "Помилка під час зміни політики"
+    "policy-error": "Помилка під час зміни політики",
+    "staged-sent": "Надіслано до бази знань: {sent} з {total}",
+    "staged-send-error": "Не вдалося надіслати документи з Brain — спробуйте ще раз."
   },
   "bulk-action-bar": {
     "aria-label": "Групові операції з файлами",
@@ -1390,7 +1392,8 @@
     "move": "Перемістити до теки",
     "share": "Поділитися",
     "change-policy": "Змінити політику",
-    "reembed": "Обробити знову"
+    "reembed": "Обробити знову",
+    "send-staged": "Індексувати з Brain ({count})"
   },
   "share-dialog": {
     "bulk-title": "Поділитися {count, plural, one {# файлом} few {# файлами} many {# файлами} other {# файлами}}",

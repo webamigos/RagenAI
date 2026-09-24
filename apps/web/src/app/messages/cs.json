@@ -1378,7 +1378,9 @@
     "reembed-error": "Chyba při opětovném zpracování",
     "policy-all": "Politika změněna: {count, plural, one {# soubor} few {# soubory} other {# souborů}}",
     "policy-partial": "Politika změněna u {succeeded} z {total} souborů",
-    "policy-error": "Chyba při změně politiky"
+    "policy-error": "Chyba při změně politiky",
+    "staged-sent": "Odesláno do znalostní báze: {sent} z {total}",
+    "staged-send-error": "Dokumenty z Brain se nepodařilo odeslat – zkuste to znovu."
   },
   "bulk-action-bar": {
     "aria-label": "Hromadné operace se soubory",
@@ -1390,7 +1392,8 @@
     "move": "Přesunout do složky",
     "share": "Sdílet",
     "change-policy": "Změnit politiku",
-    "reembed": "Zpracovat znovu"
+    "reembed": "Zpracovat znovu",
+    "send-staged": "Indexovat z Brain ({count})"
   },
   "share-dialog": {
     "bulk-title": "Sdílet {count, plural, one {# soubor} few {# soubory} other {# souborů}}",

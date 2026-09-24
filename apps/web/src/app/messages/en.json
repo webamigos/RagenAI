@@ -1378,7 +1378,9 @@
     "reembed-error": "Error during re-embedding",
     "policy-all": "Policy changed: {count, plural, one {# file} other {# files}}",
     "policy-partial": "Policy changed on {succeeded} of {total} files",
-    "policy-error": "Error while changing the policy"
+    "policy-error": "Error while changing the policy",
+    "staged-sent": "Sent to the knowledge base: {sent} of {total}",
+    "staged-send-error": "Staged documents could not be sent — try again."
   },
   "bulk-action-bar": {
     "aria-label": "Bulk file operations",
@@ -1390,7 +1392,8 @@
     "move": "Move to folder",
     "share": "Share",
     "change-policy": "Change policy",
-    "reembed": "Reprocess"
+    "reembed": "Reprocess",
+    "send-staged": "Index staged ({count})"
   },
   "share-dialog": {
     "bulk-title": "Share {count, plural, one {# file} other {# files}}",

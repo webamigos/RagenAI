@@ -1378,7 +1378,9 @@
     "reembed-error": "Fel vid ombearbetning",
     "policy-all": "Policy ändrad: {count, plural, one {# fil} other {# filer}}",
     "policy-partial": "Policy ändrad för {succeeded} av {total} filer",
-    "policy-error": "Fel vid ändring av policy"
+    "policy-error": "Fel vid ändring av policy",
+    "staged-sent": "Skickade till kunskapsbasen: {sent} av {total}",
+    "staged-send-error": "Dokumenten från Brain kunde inte skickas – försök igen."
   },
   "bulk-action-bar": {
     "aria-label": "Massåtgärder på filer",
@@ -1390,7 +1392,8 @@
     "move": "Flytta till mapp",
     "share": "Dela",
     "change-policy": "Ändra policy",
-    "reembed": "Bearbeta igen"
+    "reembed": "Bearbeta igen",
+    "send-staged": "Indexera från Brain ({count})"
   },
   "share-dialog": {
     "bulk-title": "Dela {count, plural, one {# fil} other {# filer}}",

@@ -1378,7 +1378,9 @@
     "reembed-error": "Błąd podczas ponownej embeddacji",
     "policy-all": "Zmieniono politykę: {count, plural, one {# plik} few {# pliki} many {# plików} other {# pliki}}",
     "policy-partial": "Zmieniono politykę: {succeeded} z {total} plików",
-    "policy-error": "Błąd podczas zmiany polityki"
+    "policy-error": "Błąd podczas zmiany polityki",
+    "staged-sent": "Wysłano do bazy wiedzy: {sent} z {total}",
+    "staged-send-error": "Nie udało się wysłać dokumentów z Brain — spróbuj ponownie."
   },
   "bulk-action-bar": {
     "aria-label": "Masowe operacje na plikach",
@@ -1390,7 +1392,8 @@
     "move": "Przenieś do folderu",
     "share": "Udostępnij",
     "change-policy": "Zmień politykę",
-    "reembed": "Przetwórz ponownie"
+    "reembed": "Przetwórz ponownie",
+    "send-staged": "Zaindeksuj z Brain ({count})"
   },
   "share-dialog": {
     "bulk-title": "Udostępnij {count, plural, one {# plik} few {# pliki} many {# plików} other {# pliki}}",

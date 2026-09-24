@@ -31,6 +31,7 @@ import {
   bulkDeleteFilesAction,
   bulkReembedFilesAction,
   bulkUpdatePiiPolicyAction,
+  sendStagedToKnowledgeBaseAction,
 } from '@/app/actions/bulk-documents';
 import { useRouter, usePathname } from '@/i18n/routing';
 import {
@@ -476,6 +477,39 @@ export const FileListWrapperWithData = ({
 
   const handleBulkReembed = () => runBulkReembed(fileIds);
 
+  // Staged into Ragen Brain (spec F5): what "Index staged" would send.
+  const stagedSelectedIds = useMemo(
+    () =>
+      filteredFiles
+        .filter(
+          (f) => bulk.selectedIds.has(f.id) && f.embeddingStatus === 'STAGED',
+        )
+        .map((f) => f.id),
+    [filteredFiles, bulk.selectedIds],
+  );
+
+  const handleBulkSendStaged = async () => {
+    setIsBulkLoading(true);
+    try {
+      const result = await sendStagedToKnowledgeBaseAction(stagedSelectedIds);
+      const message = tBulk('staged-sent', {
+        sent: result.sent.length,
+        total: stagedSelectedIds.length,
+      });
+      if (result.skipped.length > 0) {
+        warningToast({ message });
+      } else {
+        successToast({ message });
+      }
+      bulk.clearAll();
+      router.refresh();
+    } catch {
+      errorToast({ message: tBulk('staged-send-error') });
+    } finally {
+      setIsBulkLoading(false);
+    }
+  };
+
   const handleBulkChangePolicy = async (
     policy: PiiPolicyValue,
     reprocess: boolean,
@@ -716,6 +750,8 @@ export const FileListWrapperWithData = ({
       onChangePolicy={() => setIsBulkPolicyOpen(true)}
       canChangePolicy={canManageOrg === true}
       onReembed={handleBulkReembed}
+      stagedCount={stagedSelectedIds.length}
+      onSendStaged={handleBulkSendStaged}
       isLoading={isBulkLoading}
     />
   );

@@ -1378,7 +1378,9 @@
     "reembed-error": "Грешка при повторната обработка",
     "policy-all": "Политиката е сменена: {count, plural, one {# файл} other {# файла}}",
     "policy-partial": "Политиката е сменена за {succeeded} от {total} файла",
-    "policy-error": "Грешка при смяна на политиката"
+    "policy-error": "Грешка при смяна на политиката",
+    "staged-sent": "Изпратени към базата знания: {sent} от {total}",
+    "staged-send-error": "Документите от Brain не можаха да бъдат изпратени – опитайте отново."
   },
   "bulk-action-bar": {
     "aria-label": "Групови операции с файлове",
@@ -1390,7 +1392,8 @@
     "move": "Премести в папка",
     "share": "Сподели",
     "change-policy": "Смени политиката",
-    "reembed": "Обработи отново"
+    "reembed": "Обработи отново",
+    "send-staged": "Индексирай от Brain ({count})"
   },
   "share-dialog": {
     "bulk-title": "Сподели {count, plural, one {# файл} other {# файла}}",

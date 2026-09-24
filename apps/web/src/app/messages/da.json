@@ -1378,7 +1378,9 @@
     "reembed-error": "Fejl under genbehandling",
     "policy-all": "Politik ændret: {count, plural, one {# fil} other {# filer}}",
     "policy-partial": "Politik ændret for {succeeded} af {total} filer",
-    "policy-error": "Fejl ved ændring af politik"
+    "policy-error": "Fejl ved ændring af politik",
+    "staged-sent": "Sendt til vidensbasen: {sent} af {total}",
+    "staged-send-error": "Dokumenterne fra Brain kunne ikke sendes – prøv igen."
   },
   "bulk-action-bar": {
     "aria-label": "Massehandlinger på filer",
@@ -1390,7 +1392,8 @@
     "move": "Flyt til mappe",
     "share": "Del",
     "change-policy": "Skift politik",
-    "reembed": "Behandl igen"
+    "reembed": "Behandl igen",
+    "send-staged": "Indeksér fra Brain ({count})"
   },
   "share-dialog": {
     "bulk-title": "Del {count, plural, one {# fil} other {# filer}}",

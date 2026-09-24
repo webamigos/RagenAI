@@ -1378,7 +1378,9 @@
     "reembed-error": "Errore durante la rielaborazione",
     "policy-all": "Criterio modificato: {count, plural, one {# file} other {# file}}",
     "policy-partial": "Criterio modificato su {succeeded} di {total} file",
-    "policy-error": "Errore durante la modifica del criterio"
+    "policy-error": "Errore durante la modifica del criterio",
+    "staged-sent": "Inviati alla base di conoscenza: {sent} di {total}",
+    "staged-send-error": "Impossibile inviare i documenti da Brain: riprova."
   },
   "bulk-action-bar": {
     "aria-label": "Operazioni in blocco sui file",
@@ -1390,7 +1392,8 @@
     "move": "Sposta nella cartella",
     "share": "Condividi",
     "change-policy": "Cambia criterio",
-    "reembed": "Rielabora"
+    "reembed": "Rielabora",
+    "send-staged": "Indicizza da Brain ({count})"
   },
   "share-dialog": {
     "bulk-title": "Condividi {count, plural, one {# file} other {# file}}",

@@ -1277,10 +1277,11 @@ baseline without the outlier (edges 72.7 % `EXTRACTED` against 70.3 %,
       _`sendStagedToKnowledgeBaseCommand` in the documents feature, not gated
       on the flag: selects `STAGED` only (a `WITHDRAWN` file is skipped), switches
       the destination on the row, then re-runs ingest. Verified: 0 points while
-      staged, `COMPLETED` and 2 points after sending. The command takes a
-      selection (the action accepts up to 500 ids), but the panel offers it
-      per file only — a multi-select in the knowledge base table is not
-      built. A member sends only the files they uploaded; a manager any._
+      staged, `COMPLETED` and 2 points after sending. Per file on the row, and
+      over a selection from the knowledge base table's bulk bar ("Index
+      staged (n)", shown only when the selection holds a staged file;
+      verified in the browser). A member sends only the files they uploaded;
+      a manager any._
 - [ ] **F6.** A `p0-*` e2e asserting a staged document is not retrievable —
       through chat, through the API, and at every knowledge scope.
       _Not as a Playwright spec: CI's e2e job runs no worker, so it cannot
@@ -1306,8 +1307,6 @@ left, on purpose or for later:
   Deliberate, and a departure from "a clean judgement resolves": silence
   about passages the judge was not shown is not evidence the conflict is
   gone.
-- **Send to the knowledge base over a selection (F5)** exists in the command,
-  not in the panel.
 - **E8's `apps/api` half and F6** — see their items.
 
 ### Phase G — Verification loop _(v1.1, listed so it is designed for, not built)_

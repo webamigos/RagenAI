@@ -1378,7 +1378,9 @@
     "reembed-error": "Hiba történt az újrafeldolgozás közben",
     "policy-all": "Szabály módosítva: {count, plural, one {# fájl} other {# fájl}}",
     "policy-partial": "Szabály módosítva: {succeeded} / {total} fájl",
-    "policy-error": "Hiba a szabály módosításakor"
+    "policy-error": "Hiba a szabály módosításakor",
+    "staged-sent": "Tudásbázisba küldve: {sent}/{total}",
+    "staged-send-error": "A Brain dokumentumait nem sikerült elküldeni – próbálja újra."
   },
   "bulk-action-bar": {
     "aria-label": "Tömeges fájlműveletek",
@@ -1390,7 +1392,8 @@
     "move": "Áthelyezés mappába",
     "share": "Megosztás",
     "change-policy": "Szabály módosítása",
-    "reembed": "Újrafeldolgozás"
+    "reembed": "Újrafeldolgozás",
+    "send-staged": "Indexelés a Brainből ({count})"
   },
   "share-dialog": {
     "bulk-title": "{count, plural, one {# fájl} other {# fájl}} megosztása",
