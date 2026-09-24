@@ -25,7 +25,7 @@ const MAX_SUSPECT_RATIO = 0.01;
 
 /**
  * The fewest suspect characters that can condemn a string. Without it a short
- * chunk with one mis-encoded letter ("Caf�") would cross the ratio on its
+ * chunk with one mis-encoded letter ("Caf\uFFFD") would cross the ratio on its
  * own and be thrown away, though a reader would still understand it.
  */
 const MIN_SUSPECT_COUNT = 4;
@@ -67,7 +67,7 @@ export function findUndecodableText(
   }
 
   // A leading BOM or whitespace does not make a ZIP a text file.
-  const head = text.replace(/^[﻿\s]+/, '');
+  const head = text.replace(/^[\uFEFF\s]+/, '');
   if (CONTAINER_SIGNATURES.some((signature) => head.startsWith(signature))) {
     return 'container-signature';
   }

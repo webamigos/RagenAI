@@ -35,14 +35,14 @@ describe('findUndecodableText', () => {
   });
 
   it('accepts a long text with a single mis-encoded character', () => {
-    expect(findUndecodableText(`Caf� au lait. ${'a'.repeat(50)}`)).toBe(
+    expect(findUndecodableText(`Caf\uFFFD au lait. ${'a'.repeat(50)}`)).toBe(
       null,
     );
   });
 
   it('accepts a short chunk whose only flaw is one bad character', () => {
     // Over the ratio, under the count: still readable, so still shown.
-    expect(findUndecodableText('Caf�')).toBeNull();
+    expect(findUndecodableText('Caf\uFFFD')).toBeNull();
   });
 
   it('refuses the bytes of a real ZIP read as UTF-8', () => {
@@ -59,7 +59,7 @@ describe('findUndecodableText', () => {
   });
 
   it('refuses a PDF read as text, even behind a BOM', () => {
-    expect(findUndecodableText('﻿%PDF-1.7\n%âãÏÓ\n1 0 obj')).toBe(
+    expect(findUndecodableText('\uFEFF%PDF-1.7\n%âãÏÓ\n1 0 obj')).toBe(
       'container-signature',
     );
   });

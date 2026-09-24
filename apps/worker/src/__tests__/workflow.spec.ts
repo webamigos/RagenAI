@@ -595,7 +595,7 @@ describe('runFileEmbeddings workflow', () => {
         Buffer.from([0x08, 0x00, 0x00, 0x00, 0x21, 0x00, 0xdf, 0xa4, 0xd2]),
       ]).toString('utf-8');
       activities.loadDocx.mockResolvedValue([
-        { pageContent: zipAsText + '�'.repeat(40), metadata: {} },
+        { pageContent: zipAsText + '\uFFFD'.repeat(40), metadata: {} },
       ]);
 
       try {
