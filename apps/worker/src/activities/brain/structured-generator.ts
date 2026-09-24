@@ -21,6 +21,16 @@ export const THINKING_BUDGET_TOKENS = 2_048;
  * provider ignores a namespace it does not own — so one object serves the
  * route table whichever provider it names.
  */
+/**
+ * The SDK's own retries for a failed call, with its exponential backoff
+ * (2 s, 4 s, 8 s, 16 s). Two, the default, give up about six seconds after a
+ * 429 — long enough to fail and too short for a rate limit to lift, and a
+ * document that fails both attempts becomes an EXTRACTION_FAILED finding
+ * somebody has to retry by hand. The run's concurrency ceiling is the first
+ * defence (`BRAIN_EXTRACT_CONCURRENCY`); this is the second.
+ */
+export const MAX_RETRIES = 4;
+
 const PROVIDER_OPTIONS = {
   google: { thinkingConfig: { thinkingBudget: THINKING_BUDGET_TOKENS } },
   vertex: { thinkingConfig: { thinkingBudget: THINKING_BUDGET_TOKENS } },
@@ -44,6 +54,7 @@ export function structuredGenerator(
         system,
         prompt,
         maxOutputTokens: MAX_OUTPUT_TOKENS,
+        maxRetries: MAX_RETRIES,
         providerOptions: PROVIDER_OPTIONS,
         experimental_telemetry: { isEnabled: true },
       });

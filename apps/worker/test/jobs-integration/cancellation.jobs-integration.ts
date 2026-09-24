@@ -37,7 +37,7 @@ describe('cancellation', () => {
     await harness.jobs.start('runFileEmbeddings', 'cancel-queued', INGEST);
     await harness.jobs.requestCancel('cancel-queued');
 
-    harness.startConsuming();
+    await harness.startConsuming();
     await new Promise((resolve) => setTimeout(resolve, 1_000));
 
     expect(harness.activities.getFileRecord).not.toHaveBeenCalled();

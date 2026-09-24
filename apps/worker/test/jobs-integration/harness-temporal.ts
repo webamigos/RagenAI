@@ -169,12 +169,12 @@ export async function startTemporalHarness(
   });
 
   let running: Promise<void> | undefined;
-  const startConsuming = (): void => {
+  const startConsuming = async (): Promise<void> => {
     running ??= worker.run();
   };
 
   if (options.consume !== false) {
-    startConsuming();
+    await startConsuming();
   }
 
   const stopConsuming = async (): Promise<void> => {

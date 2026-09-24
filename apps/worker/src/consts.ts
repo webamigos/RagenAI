@@ -212,6 +212,21 @@ export const BRAIN_EXTRACT_MAX_TOKENS = positiveIntFromEnv(
 );
 
 /**
+ * How many `brainExtract` runs may execute at once across the whole
+ * deployment, whatever `WORKER_CONCURRENCY` says.
+ *
+ * One by default. Each run calls the model once per window, one document at
+ * a time, and Vertex answered 429 with two such runs in flight during the
+ * extraction eval (2026-09-23). A run is minutes of background work nobody
+ * waits on, so queueing is the cheap side of the trade; raise it with a
+ * provider quota that has been measured to take it.
+ */
+export const BRAIN_EXTRACT_CONCURRENCY = positiveIntFromEnv(
+  'BRAIN_EXTRACT_CONCURRENCY',
+  1,
+);
+
+/**
  * Same defensive parse as the retention settings above: a malformed value
  * falls back to the default rather than becoming 0, which here would mean a
  * run that refuses every document and reports it as a budget.

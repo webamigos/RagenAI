@@ -109,6 +109,8 @@ export const workerEnvSchema = fragments.targetEnvRequired
     BRAIN_EXTRACT_MODEL: z.string().min(1).optional(),
     BRAIN_EXTRACT_MAX_DOCUMENTS: z.coerce.number().int().positive().optional(),
     BRAIN_EXTRACT_MAX_TOKENS: z.coerce.number().int().positive().optional(),
+    // Runs at once across every replica (consts.ts). Unset means one.
+    BRAIN_EXTRACT_CONCURRENCY: z.coerce.number().int().positive().optional(),
 
     /**
      * Table chunking, under measurement (ADR-43). `'1'` turns it on.

@@ -1,4 +1,9 @@
-import { UnrecoverableError, Worker, type ConnectionOptions } from 'bullmq';
+import {
+  Queue,
+  UnrecoverableError,
+  Worker,
+  type ConnectionOptions,
+} from 'bullmq';
 import {
   JOB_NAMES,
   type JobName,
@@ -99,6 +104,19 @@ export interface CreateWorkersOptions extends Omit<
   activities: JobContextDeps['activities'];
   connection?: ConnectionOptions;
   concurrency?: number;
+  /**
+   * A ceiling on how many jobs of a name may run at once, **across every
+   * replica**, below `concurrency`.
+   *
+   * `concurrency` is per `Worker` instance, so two replicas at 20 run 40. A
+   * job whose cost is a rate-limited provider — Brain extraction against
+   * Vertex answered 429 at two concurrent calls — needs a number that holds
+   * for the deployment, which is BullMQ's global concurrency on the queue.
+   * `startBullWorkers` sets it before any worker consumes; the per-worker
+   * value is lowered to match so one replica never fetches more than the
+   * deployment may run.
+   */
+  jobConcurrency?: Partial<Record<JobName, number>>;
   log: JobLogger;
   /**
    * How long a job may hold its lock, and how often stalled jobs are swept up.
@@ -163,6 +181,16 @@ function asEngineFailure(error: unknown): unknown {
  */
 export type BullWorkers = Worker[];
 
+/**
+ * The global ceiling each worker's queue must carry, recorded at construction
+ * and applied by `startBullWorkers` — kept beside the worker rather than
+ * passed again, so the ceiling cannot be forgotten between the two calls.
+ */
+const ceilings = new WeakMap<
+  Worker,
+  { limit: number; connection: ConnectionOptions }
+>();
+
 export function createBullWorkers(options: CreateWorkersOptions): BullWorkers {
   const connection: ConnectionOptions = {
     ...(options.connection ?? { url: process.env.REDIS_URL }),
@@ -173,8 +201,26 @@ export function createBullWorkers(options: CreateWorkersOptions): BullWorkers {
 
   return QUEUE_NAMES.map((queueName) => {
     const names = JOB_NAMES.filter((job) => queueNameFor(job) === queueName);
+    const limits = names
+      .map((job) => options.jobConcurrency?.[job])
+      .filter((n): n is number => n !== undefined);
+    for (const limit of limits) {
+      if (!Number.isInteger(limit) || limit < 1) {
+        throw new Error(
+          `a job concurrency ceiling must be a positive integer, got ${limit} for queue "${queueName}"`,
+        );
+      }
+    }
+    const ceiling = limits.length > 0 ? Math.min(...limits) : undefined;
 
-    return new Worker(
+    let workerConcurrency = concurrency;
+    if (queueName === MAINTENANCE_QUEUE) {
+      workerConcurrency = 1;
+    } else if (ceiling !== undefined) {
+      workerConcurrency = Math.min(concurrency, ceiling);
+    }
+
+    const worker = new Worker(
       queueName,
       async (job) => {
         const name = job.name as JobName;
@@ -209,8 +255,9 @@ export function createBullWorkers(options: CreateWorkersOptions): BullWorkers {
         autorun: false,
         // The maintenance queue runs the two nightly jobs, which must not
         // overlap. Its ceiling is set globally by `upsertSchedule`; this keeps
-        // a single replica from running both at once as well.
-        concurrency: queueName === MAINTENANCE_QUEUE ? 1 : concurrency,
+        // a single replica from running both at once as well. A queue with a
+        // `jobConcurrency` ceiling is held to it per replica too.
+        concurrency: workerConcurrency,
         lockDuration: options.lockDuration ?? LOCK_DURATION_MS,
         ...(options.stalledInterval === undefined
           ? {}
@@ -218,6 +265,10 @@ export function createBullWorkers(options: CreateWorkersOptions): BullWorkers {
         maxStalledCount: MAX_STALLED_COUNT,
       },
     );
+    if (ceiling !== undefined) {
+      ceilings.set(worker, { limit: ceiling, connection });
+    }
+    return worker;
   });
 }
 
@@ -260,8 +311,25 @@ export async function assertQueueRedisHealthy(
  * Separate from construction because everything that must happen first — the
  * eviction check, installing the shutdown task — needs the workers to exist
  * and needs them not to be running yet.
+ *
+ * Async because it also sets each `jobConcurrency` ceiling on its queue
+ * before that queue's worker runs. It is here rather than a step of its own
+ * so no caller can start a worker whose ceiling was never applied.
  */
-export function startBullWorkers(workers: BullWorkers): void {
+export async function startBullWorkers(workers: BullWorkers): Promise<void> {
+  // Global ceilings first: a worker that consumed before its queue carried
+  // the ceiling could take jobs the deployment is not allowed to run.
+  for (const worker of workers) {
+    const ceiling = ceilings.get(worker);
+    if (ceiling) {
+      const queue = new Queue(worker.name, { connection: ceiling.connection });
+      try {
+        await queue.setGlobalConcurrency(ceiling.limit);
+      } finally {
+        await queue.close();
+      }
+    }
+  }
   for (const worker of workers) {
     void worker.run();
   }
