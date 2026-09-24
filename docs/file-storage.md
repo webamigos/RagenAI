@@ -74,6 +74,7 @@ docker compose --profile s3 up -d
 
   ```bash
   docker compose --profile s3 up -d rustfs-bucket-init
+  set -a; . ./.env; set +a       # your install's RUSTFS_* keys, if it has them
   S3_INTEGRATION_ENDPOINT=http://localhost:59000 npx vitest run \
     packages/storage/src/__tests__/s3-provider.integration.test.ts
   ```

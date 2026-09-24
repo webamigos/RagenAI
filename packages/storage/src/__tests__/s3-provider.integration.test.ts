@@ -17,10 +17,14 @@ import { StorageNotFoundError } from '../errors';
  * container. To run it:
  *
  *   docker compose --profile s3 up -d rustfs-bucket-init
+ *   set -a; . ./.env; set +a      # the keys the store was started with
  *   S3_INTEGRATION_ENDPOINT=http://localhost:59000 npx vitest run \
  *     packages/storage/src/__tests__/s3-provider.integration.test.ts
  *
- * The keys default to the compose file's local-trial ones.
+ * It reads RUSTFS_ACCESS_KEY / RUSTFS_SECRET_KEY from the environment, which
+ * is why `.env` is sourced first: an install made by create-ragen-app has its
+ * own keys there. Without it the compose file's local-trial defaults are used,
+ * which only a store started without `.env` keys accepts.
  */
 const endpoint = process.env.S3_INTEGRATION_ENDPOINT;
 
@@ -38,6 +42,13 @@ describe.skipIf(!endpoint)('S3StorageProvider against RustFS', () => {
   const prefix = `integration/${randomUUID()}`;
   let provider: import('../s3-provider').S3StorageProvider;
   let tmpDir: string;
+  // Every key a test uploads, deleted in afterAll whatever the tests did —
+  // the bucket outlives the run, and a failed assertion must not leave data.
+  const written = new Set<string>();
+  const upload = async (key: string, content: Buffer) => {
+    written.add(key);
+    await provider.upload(key, content);
+  };
 
   beforeAll(async () => {
     for (const [key, value] of Object.entries(vars)) {
@@ -51,6 +62,9 @@ describe.skipIf(!endpoint)('S3StorageProvider against RustFS', () => {
   });
 
   afterAll(async () => {
+    for (const key of written) {
+      await provider?.delete(key).catch(() => undefined);
+    }
     for (const [key, value] of Object.entries(saved)) {
       if (value === undefined) {
         delete process.env[key];
@@ -64,7 +78,7 @@ describe.skipIf(!endpoint)('S3StorageProvider against RustFS', () => {
   it('stores a document and gives back the same bytes', async () => {
     const key = `${prefix}/umowa.pdf`;
     const content = Buffer.from('%PDF-1.7\nzażółć gęślą jaźń\n');
-    await provider.upload(key, content);
+    await upload(key, content);
     await expect(provider.download(key)).resolves.toEqual(content);
   });
 
@@ -74,12 +88,12 @@ describe.skipIf(!endpoint)('S3StorageProvider against RustFS', () => {
     // stores.
     const key = `${prefix}/large.bin`;
     const content = Buffer.alloc(6 * 1024 * 1024, 7);
-    await provider.upload(key, content);
+    await upload(key, content);
     const dest = path.join(tmpDir, 'large.bin');
     await provider.downloadToFile(key, dest);
-    const written = await fs.readFile(dest);
-    expect(written.length).toBe(content.length);
-    expect(written.equals(content)).toBe(true);
+    const onDisk = await fs.readFile(dest);
+    expect(onDisk.length).toBe(content.length);
+    expect(onDisk.equals(content)).toBe(true);
   });
 
   it('reports a missing key as StorageNotFoundError, not a 500', async () => {
@@ -90,7 +104,7 @@ describe.skipIf(!endpoint)('S3StorageProvider against RustFS', () => {
 
   it('deletes, after which the key is missing', async () => {
     const key = `${prefix}/to-delete.txt`;
-    await provider.upload(key, Buffer.from('bye'));
+    await upload(key, Buffer.from('bye'));
     await provider.delete(key);
     await expect(provider.download(key)).rejects.toBeInstanceOf(
       StorageNotFoundError,

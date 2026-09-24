@@ -241,11 +241,21 @@ services:
       - ragen-network
 
   # RustFS runs as UID 10001 and a fresh named volume belongs to root, so the
-  # server cannot write its first object without this. Runs once and exits.
+  # server cannot write its first object without this. It exits, and a later
+  # `up` starts it again — so the recursive chown runs only on a volume that
+  # has never been through it, marked by a file it leaves behind. Everything
+  # written after that is written by RustFS, as 10001; walking a store of any
+  # size on every start would make startup grow with the data.
   rustfs-volume-init:
     profiles: ['s3']
     image: busybox:1.37.0
-    command: ["sh", "-c", "chown -R 10001:10001 /data"]
+    command:
+      - sh
+      - -c
+      - >-
+        [ -f /data/.ragen-volume-owned ]
+        || { chown -R 10001:10001 /data && touch /data/.ragen-volume-owned
+        && chown 10001:10001 /data/.ragen-volume-owned; }
     volumes:
       - rustfs_data:/data
 

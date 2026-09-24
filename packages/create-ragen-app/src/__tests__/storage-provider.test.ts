@@ -142,10 +142,31 @@ describe('rustfs storage', () => {
     // on the first upload.
     const selection = resolveStorageSelection('rustfs', undefined, KEYS);
 
-    expect(selection.composeEnv).toEqual({
+    expect(selection.composeEnv).toMatchObject({
       RUSTFS_ACCESS_KEY: selection.envUpdates.S3_ACCESS_KEY_ID,
       RUSTFS_SECRET_KEY: selection.envUpdates.S3_SECRET_ACCESS_KEY,
     });
+  });
+
+  it('gives compose the whole S3 config, so apps in containers use RustFS too', () => {
+    // `ragen:up:everything` reads only `.env`. Without these the containers
+    // would store to the local volume while the host apps used RustFS; with
+    // the host endpoint they would fail, `localhost` being the container.
+    const selection = resolveStorageSelection('rustfs', undefined, KEYS);
+
+    expect(selection.composeEnv).toEqual({
+      RUSTFS_ACCESS_KEY: KEYS.accessKey,
+      RUSTFS_SECRET_KEY: KEYS.secretKey,
+      STORAGE_PROVIDER: 's3',
+      S3_CONTAINER_ENDPOINT_URL: 'http://rustfs:9000',
+      S3_FORCE_PATH_STYLE: 'true',
+      S3_REGION: RUSTFS_REGION,
+      S3_BUCKET_NAME: RUSTFS_BUCKET,
+      S3_ACCESS_KEY_ID: KEYS.accessKey,
+      S3_SECRET_ACCESS_KEY: KEYS.secretKey,
+    });
+    // The host endpoint stays in `.env.local` only.
+    expect(selection.composeEnv).not.toHaveProperty('S3_ENDPOINT_URL');
   });
 
   it('asks compose for the s3 profile, so choosing it starts it', () => {
@@ -205,9 +226,11 @@ describe('withExistingRustfsKeys', () => {
       RUSTFS_SECRET_KEY: 'existing-secret',
     });
 
-    expect(reused.composeEnv).toEqual({
+    expect(reused.composeEnv).toMatchObject({
       RUSTFS_ACCESS_KEY: 'EXISTING',
       RUSTFS_SECRET_KEY: 'existing-secret',
+      S3_ACCESS_KEY_ID: 'EXISTING',
+      S3_SECRET_ACCESS_KEY: 'existing-secret',
     });
     expect(reused.envUpdates.S3_ACCESS_KEY_ID).toBe('EXISTING');
     expect(reused.envUpdates.S3_SECRET_ACCESS_KEY).toBe('existing-secret');

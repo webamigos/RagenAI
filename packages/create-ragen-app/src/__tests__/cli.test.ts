@@ -892,10 +892,18 @@ describe('choosing RustFS', () => {
     expect(local.S3_ACCESS_KEY_ID).toBe('EXISTINGACCESSKEY');
     expect(local.S3_SECRET_ACCESS_KEY).toBe('existing-secret-key');
 
-    // Nothing missing, so `.env` is neither rewritten nor appended to, and the
-    // project name is not asked for again.
+    // The keys stay; only the container-side S3 settings an older install
+    // lacked are appended — built from the kept keys, never new ones — and
+    // the project name is not asked for again.
     expect(writtenTo('/.env')).toBeUndefined();
-    expect(appendFileSync).not.toHaveBeenCalled();
+    const appended = parseDotenv(
+      String(vi.mocked(appendFileSync).mock.calls[0]?.[1] ?? ''),
+    );
+    expect(appended).not.toHaveProperty('RUSTFS_ACCESS_KEY');
+    expect(appended).not.toHaveProperty('RUSTFS_SECRET_KEY');
+    expect(appended.S3_ACCESS_KEY_ID).toBe('EXISTINGACCESSKEY');
+    expect(appended.S3_SECRET_ACCESS_KEY).toBe('existing-secret-key');
+    expect(appended.S3_CONTAINER_ENDPOINT_URL).toBe('http://rustfs:9000');
     expect(resolveComposeProjectName).not.toHaveBeenCalled();
     expect(clack.log.info).toHaveBeenCalledWith(
       expect.stringContaining('Kept the RustFS keys already in .env'),
@@ -925,8 +933,14 @@ describe('choosing RustFS', () => {
     expect(String(appended).startsWith('\n')).toBe(true);
 
     const added = parseDotenv(String(appended));
-    expect(Object.keys(added)).toEqual(['RUSTFS_SECRET_KEY']);
+    // Everything but the lines already there: the kept access key is not
+    // written again.
+    expect(Object.keys(added)).not.toContain('RUSTFS_ACCESS_KEY');
+    expect(Object.keys(added)).not.toContain('COMPOSE_PROJECT_NAME');
     expect(added.RUSTFS_SECRET_KEY).toMatch(/^[0-9a-f]{40}$/);
+    // The container-side copy of the pair `.env` now holds.
+    expect(added.S3_ACCESS_KEY_ID).toBe('EXISTINGACCESSKEY');
+    expect(added.S3_SECRET_ACCESS_KEY).toBe(added.RUSTFS_SECRET_KEY);
 
     // The apps get the kept access key and the new secret — the pair `.env`
     // now holds.

@@ -64,6 +64,14 @@ export const RUSTFS_COMPOSE_PROFILE = 's3';
  */
 export const RUSTFS_ENDPOINT_URL = 'http://localhost:59000';
 
+/**
+ * Where RustFS answers from *inside* the compose network — for the apps when
+ * they run as containers (`npm run ragen:up:everything`), where `localhost` is
+ * the container itself. `docker-compose.fullapp.yml` prefers
+ * `S3_CONTAINER_ENDPOINT_URL` over `S3_ENDPOINT_URL` for exactly this.
+ */
+export const RUSTFS_CONTAINER_ENDPOINT_URL = 'http://rustfs:9000';
+
 /** The web console, printed at the end so someone can look inside the store. */
 export const RUSTFS_CONSOLE_URL = 'http://localhost:59001';
 
@@ -193,9 +201,24 @@ function rustfsSelection(keys: RustfsKeys): StorageSelection {
     ...s3,
     choice: 'rustfs',
     composeProfiles: [RUSTFS_COMPOSE_PROFILE],
+    // `.env` is the only file Compose reads, and it serves two readers: the
+    // RustFS server (its root keys) and, with the apps in containers
+    // (`ragen:up:everything`), the apps themselves — which otherwise never see
+    // `.env.local` and would quietly store to the local volume instead. So the
+    // S3 settings go here too, derived from the same pair of keys, with the
+    // container-side endpoint. The host apps are unaffected: `.env.local`
+    // holds the same values and wins over `.env`, and nothing on the host
+    // reads S3_CONTAINER_ENDPOINT_URL.
     composeEnv: {
       RUSTFS_ACCESS_KEY: keys.accessKey,
       RUSTFS_SECRET_KEY: keys.secretKey,
+      STORAGE_PROVIDER: 's3',
+      S3_CONTAINER_ENDPOINT_URL: RUSTFS_CONTAINER_ENDPOINT_URL,
+      S3_FORCE_PATH_STYLE: 'true',
+      S3_REGION: RUSTFS_REGION,
+      S3_BUCKET_NAME: RUSTFS_BUCKET,
+      S3_ACCESS_KEY_ID: keys.accessKey,
+      S3_SECRET_ACCESS_KEY: keys.secretKey,
     },
   };
 }
