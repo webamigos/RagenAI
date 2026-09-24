@@ -112,6 +112,15 @@ archive is the blog.
   header no longer pushes the assistant selector off the edge. Brain's tables
   fit their page instead of hiding the last column.
 
+### Thread: seeing what you uploaded
+
+- `[brief]` **Spreadsheets have a preview.** An `.xlsx` or legacy `.xls` file
+  opens in the knowledge base's preview as a readable sheet, with a tab for
+  each sheet in the workbook, instead of "Preview unavailable". The same
+  preview opens when a chat answer cites a spreadsheet. A very long sheet shows
+  its first 1,000 rows and says so; the download link has the rest.
+  ([#1268](https://github.com/webamigos/RagenAI/issues/1268))
+
 ### Thread: self-hosting without a cloud account
 
 - `[brief]` **Object storage you run yourself.** `create-ragen-app` now offers

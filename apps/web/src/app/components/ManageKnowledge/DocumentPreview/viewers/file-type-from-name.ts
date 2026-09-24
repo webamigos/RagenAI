@@ -27,6 +27,9 @@ const EXTENSIONS: Record<string, FileType> = {
   txt: 'TEXT',
   csv: 'CSV',
   xlsx: 'XLSX',
+  // SheetJS reads the legacy binary format too, and the uploader already
+  // stores an `.xls` as `XLSX` (`getFileType`, the worker's mime table).
+  xls: 'XLSX',
   epub: 'EPUB',
   srt: 'SRT',
   pptx: 'PPTX',
