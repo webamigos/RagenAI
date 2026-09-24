@@ -5,9 +5,9 @@ import { languageOf, measure, summarize } from '../brain-eval-metrics.js';
 
 const HASH = `sha256:${'a'.repeat(64)}`;
 
-function page(description: string, quotes: string[]) {
+function page(description: string, quotes: string[], slug = 's') {
   return {
-    slug: 's',
+    slug,
     title: 'T',
     type: 'PROCESS' as const,
     content: `# T\n\n${description}\n\n- a statement [1]\n`,
@@ -67,6 +67,36 @@ describe('measure', () => {
       edges: 2,
       edgesExtracted: 1,
       dropped: 1,
+    });
+  });
+});
+
+describe('measure, the graph', () => {
+  it('counts pages with no edge and the communities the graph finds', () => {
+    const quote = ['a quote that is long enough to count'];
+    const metrics = measure(
+      {
+        pages: [
+          page('Zasady.', quote, 'a'),
+          page('Zasady.', quote, 'b'),
+          page('Zasady.', quote, 'c'),
+          page('Zasady.', quote, 'alone'),
+        ],
+        edges: [
+          { fromSlug: 'a', toSlug: 'b', kind: 'k', origin: 'EXTRACTED' },
+          { fromSlug: 'b', toSlug: 'c', kind: 'k', origin: 'INFERRED' },
+        ],
+        unverifiedClaims: 0,
+        unverified: [],
+      },
+      'pl',
+    );
+    expect(metrics.isolatedPages).toBe(1);
+    // The chain, and the page on its own.
+    expect(metrics.communities).toBe(2);
+    expect(summarize([{ metrics, tokens: 0 }])).toMatchObject({
+      isolatedPageShare: 0.25,
+      pagesPerCommunity: 2,
     });
   });
 });

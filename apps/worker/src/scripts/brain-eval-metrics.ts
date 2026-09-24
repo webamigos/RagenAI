@@ -1,4 +1,4 @@
-import type { AssembledCandidates } from '@ragenai/brain-core';
+import { assembleGraph, type AssembledCandidates } from '@ragenai/brain-core';
 
 /**
  * The measurements behind `brain-extract-eval.ts`, pure so they are tested
@@ -8,6 +8,11 @@ import type { AssembledCandidates } from '@ragenai/brain-core';
  *   Polish document;
  * - **short quotes** — true but weak anchors ("NIP 7412998301");
  * - **edges** — none at all, on a document with obvious relations.
+ *
+ * And one C4 added, because edges per document does not say whether there is
+ * a graph to draw: **isolated pages** (no edge at all, the population ORPHAN
+ * would flag once approved) and **communities**, from the same
+ * `assembleGraph` the graph view and the export use.
  */
 
 export type EvalLanguage = 'pl' | 'en';
@@ -106,6 +111,10 @@ export type DocMetrics = {
   shortQuotes: number;
   edges: number;
   edgesExtracted: number;
+  /** Pages with no edge to any other page of the document. */
+  isolatedPages: number;
+  /** Louvain communities over the document's pages, isolated pages included. */
+  communities: number;
 };
 
 /** Read a page's description back out of its rendered content. */
@@ -136,6 +145,21 @@ export function measure(
       }
     }
   }
+  const { stats: graph } = assembleGraph(
+    assembled.pages.map((page) => ({
+      id: page.slug,
+      title: page.title,
+      type: page.type,
+      status: 'CANDIDATE' as const,
+    })),
+    assembled.edges.map((edge) => ({
+      from: edge.fromSlug,
+      to: edge.toSlug,
+      kind: edge.kind,
+      origin: edge.origin,
+      confidence: null,
+    })),
+  );
   return {
     pages: assembled.pages.length,
     claims,
@@ -147,6 +171,8 @@ export function measure(
     edges: assembled.edges.length,
     edgesExtracted: assembled.edges.filter((e) => e.origin === 'EXTRACTED')
       .length,
+    isolatedPages: graph.isolated,
+    communities: graph.communities,
   };
 }
 
@@ -161,6 +187,10 @@ export type ArmSummary = {
   shortQuoteRate: number | null;
   edgesPerDocument: number;
   extractedEdgeShare: number | null;
+  /** Share of pages with no edge — what the graph cannot place. */
+  isolatedPageShare: number | null;
+  /** Pages per community, isolated pages counting as their own. */
+  pagesPerCommunity: number | null;
   tokens: number;
 };
 
@@ -195,6 +225,14 @@ export function summarize(
     extractedEdgeShare: ratio(
       sum((m) => m.edgesExtracted),
       edges,
+    ),
+    isolatedPageShare: ratio(
+      sum((m) => m.isolatedPages),
+      sum((m) => m.pages),
+    ),
+    pagesPerCommunity: ratio(
+      sum((m) => m.pages),
+      sum((m) => m.communities),
     ),
     tokens: runs.reduce((n, r) => n + r.tokens, 0),
   };
