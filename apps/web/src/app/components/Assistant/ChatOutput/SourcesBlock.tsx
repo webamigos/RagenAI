@@ -5,7 +5,9 @@ import { DocumentTextIcon } from '@heroicons/react/24/outline';
 
 import { cn } from '@/lib/utils';
 import { attributableCitations } from '@/features/documents/utils/attributable-citations';
+import type { BrainCitation } from '@/features/brain/contracts/brain-citations.types';
 import { RelevanceBar } from './RelevanceBar';
+import { useBrainCitations } from './useBrainCitations';
 import type {
   MessageRetrieval,
   RetrievalSource,
@@ -67,11 +69,13 @@ const SourceCard = ({
   idPrefix,
   isCited = false,
   onActivate,
+  brain,
 }: {
   source: NumberedSource;
   idPrefix: string;
   isCited?: boolean;
   onActivate?: (source: RetrievalSource) => void;
+  brain?: BrainCitation;
 }) => {
   const t = useTranslations('sources');
 
@@ -187,7 +191,35 @@ const SourceCard = ({
       ) : (
         <div className="p-2">{body}</div>
       )}
+      {brain ? <BrainSources brain={brain} /> : null}
     </li>
+  );
+};
+
+/**
+ * The second level of a Brain citation (spec E8): the cited file is a curated
+ * page, and this names what it was built from. Outside the card's button, so
+ * the row stays one target. A reader who may see the page but none of its
+ * sources is told so rather than shown an empty list — the page is still the
+ * source, and the names of documents they cannot open are not theirs to read.
+ */
+const BrainSources = ({ brain }: { brain: BrainCitation }) => {
+  const t = useTranslations('sources');
+  return (
+    <p
+      className="border-t border-border px-2 py-1.5 text-[11px] text-muted-foreground"
+      data-testid="brain-citation"
+    >
+      <span className="font-medium text-foreground">{t('brain-page')}</span>
+      {' · '}
+      {brain.sources.length > 0
+        ? t('brain-based-on', {
+            sources: brain.sources
+              .map((s) => (s.span ? `${s.fileName} (${s.span})` : s.fileName))
+              .join(', '),
+          })
+        : t('brain-no-visible-sources')}
+    </p>
   );
 };
 
@@ -202,6 +234,12 @@ export const SourcesBlock = ({
 }: Props) => {
   const t = useTranslations('sources');
   const { sources, chunkCount, durationMs, citedFileIds } = retrieval;
+  // Only where a source can be opened: the read-only rendering is a public
+  // share or a guest thread, whose reader has no session to check against.
+  const brain = useBrainCitations(
+    sources.map((s) => s.fileId),
+    onActivate !== undefined,
+  );
 
   const cited = attributableCitations(sources, citedFileIds);
   // Numbered before the split, so a collapsed source keeps the number its
@@ -278,6 +316,7 @@ export const SourcesBlock = ({
                   source={source}
                   idPrefix={idPrefix}
                   onActivate={onActivate}
+                  brain={brain[source.fileId]}
                   isCited
                 />
               ))}
@@ -309,6 +348,7 @@ export const SourcesBlock = ({
                     source={source}
                     idPrefix={idPrefix}
                     onActivate={onActivate}
+                    brain={brain[source.fileId]}
                   />
                 ))}
               </ul>

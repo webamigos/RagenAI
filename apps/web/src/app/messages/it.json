@@ -2387,7 +2387,10 @@
     "open-rail": "Fonti",
     "cited-none": "La risposta non ne ha citata nessuna",
     "show-more": "{count, plural, one {Mostra # altra fonte} other {Mostra # altre fonti}}",
-    "open-source": "Apri {name}"
+    "open-source": "Apri {name}",
+    "brain-page": "Pagina Brain",
+    "brain-based-on": "basata su: {sources}",
+    "brain-no-visible-sources": "nessuna delle sue fonti è visibile per te"
   },
   "brain": {
     "title": "Ragen Brain",

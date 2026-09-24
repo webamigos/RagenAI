@@ -2387,7 +2387,10 @@
     "open-rail": "Източници",
     "cited-none": "Отговорът не цитира нито един от тях",
     "show-more": "{count, plural, one {Показване на още # източник} other {Показване на още # източника}}",
-    "open-source": "Отваряне на {name}"
+    "open-source": "Отваряне на {name}",
+    "brain-page": "Страница в Brain",
+    "brain-based-on": "въз основа на: {sources}",
+    "brain-no-visible-sources": "нито един от източниците ѝ не е видим за вас"
   },
   "brain": {
     "title": "Ragen Brain",

@@ -1,7 +1,12 @@
-import { describe, it, expect, vi } from 'vitest';
+import { beforeEach, describe, it, expect, vi } from 'vitest';
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { NextIntlClientProvider } from 'next-intl';
+
+const getBrainCitations = vi.hoisted(() => vi.fn());
+vi.mock('@/app/actions/brain-citations', () => ({
+  getBrainCitationsAction: getBrainCitations,
+}));
 
 import { SourcesBlock } from '../SourcesBlock';
 import messages from '@/app/messages/en.json';
@@ -29,6 +34,11 @@ const show = (
       />
     </NextIntlClientProvider>,
   );
+
+beforeEach(() => {
+  getBrainCitations.mockReset();
+  getBrainCitations.mockResolvedValue({});
+});
 
 const row = (name: string) =>
   screen.getByText(name).closest('li') as HTMLElement;
@@ -492,5 +502,37 @@ describe('SourcesBlock — activating a source', () => {
     expect(onActivate).toHaveBeenCalledWith(
       expect.objectContaining({ fileId: 'orphan-id' }),
     );
+  });
+});
+
+describe('SourcesBlock — Brain citations (spec E8)', () => {
+  it('names the sources behind a cited Brain page', async () => {
+    getBrainCitations.mockResolvedValue({
+      a: {
+        pageTitle: 'Urlop',
+        sources: [{ fileName: 'kadry.pdf', documentId: 'd', span: '§1' }],
+      },
+    });
+    show({}, () => {});
+    expect(await screen.findByTestId('brain-citation')).toHaveTextContent(
+      'Brain page · based on: kadry.pdf (§1)',
+    );
+    expect(getBrainCitations).toHaveBeenCalledWith(['a']);
+  });
+
+  it('says the sources are hidden rather than listing none', async () => {
+    getBrainCitations.mockResolvedValue({
+      a: { pageTitle: 'Urlop', sources: [] },
+    });
+    show({}, () => {});
+    expect(await screen.findByTestId('brain-citation')).toHaveTextContent(
+      'none of its sources are visible to you',
+    );
+  });
+
+  it('does not ask on a read-only rendering — a share or a guest thread', () => {
+    show();
+    expect(getBrainCitations).not.toHaveBeenCalled();
+    expect(screen.queryByTestId('brain-citation')).toBeNull();
   });
 });

@@ -2387,7 +2387,10 @@
     "open-rail": "Zdroje",
     "cited-none": "Odpověď z nich necitovala žádný",
     "show-more": "{count, plural, one {Zobrazit # další zdroj} few {Zobrazit # další zdroje} other {Zobrazit # dalších zdrojů}}",
-    "open-source": "Otevřít {name}"
+    "open-source": "Otevřít {name}",
+    "brain-page": "Stránka Brain",
+    "brain-based-on": "na základě: {sources}",
+    "brain-no-visible-sources": "žádný z jejích zdrojů pro vás není viditelný"
   },
   "brain": {
     "title": "Ragen Brain",

@@ -2387,7 +2387,10 @@
     "open-rail": "Källor",
     "cited-none": "Svaret citerade ingen av dem",
     "show-more": "{count, plural, one {Visa # källa till} other {Visa # källor till}}",
-    "open-source": "Öppna {name}"
+    "open-source": "Öppna {name}",
+    "brain-page": "Brain-sida",
+    "brain-based-on": "baserad på: {sources}",
+    "brain-no-visible-sources": "ingen av dess källor är synlig för dig"
   },
   "brain": {
     "title": "Ragen Brain",
