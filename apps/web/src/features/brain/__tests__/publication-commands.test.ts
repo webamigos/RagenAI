@@ -130,6 +130,12 @@ describe('publishKnowledgePageCommand', () => {
       organizationId: ORG,
       id: 'file-9',
     });
+    // The file's sharing follows the page on a republish too, so a page
+    // narrowed while withdrawn does not come back on an org-wide file.
+    expect(tx.userFile.updateMany.mock.calls[0][0].data).toMatchObject({
+      ownerId: 'u-owner',
+      isOrgWide: false,
+    });
   });
 
   it('re-queues an unfinished publication at its generation, with no new decision', async () => {

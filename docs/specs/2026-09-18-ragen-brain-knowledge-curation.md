@@ -1269,7 +1269,7 @@ baseline without the outlier (edges 72.7 % `EXTRACTED` against 70.3 %,
 - [x] **F4.** The Brain inbox: what is staged, how old, how much of it is still
       uncurated.
       _The Documents tab: staged documents, how many still have no approved
-      page. Age is not shown yet._
+      page, and how long ago the oldest was uploaded._
 - [x] **F5.** _Send to the knowledge base_ on a staged file: `runFileEmbeddings`
       with the knowledge-base destination, per file and over a selection,
       idempotent, and not gated on the `brain` flag. It selects `STAGED` only —
@@ -1277,12 +1277,33 @@ baseline without the outlier (edges 72.7 % `EXTRACTED` against 70.3 %,
       _`sendStagedToKnowledgeBaseCommand` in the documents feature, not gated
       on the flag: selects `STAGED` only (a `WITHDRAWN` file is skipped), switches
       the destination on the row, then re-runs ingest. Verified: 0 points while
-      staged, `COMPLETED` and 2 points after sending._
+      staged, `COMPLETED` and 2 points after sending. Per file on the row, and
+      over a selection from the knowledge base table's bulk bar ("Index
+      staged (n)", shown only when the selection holds a staged file;
+      verified in the browser). A member sends only the files they uploaded;
+      a manager any._
 - [ ] **F6.** A `p0-*` e2e asserting a staged document is not retrievable —
       through chat, through the API, and at every knowledge scope.
       _Not as a Playwright spec: CI's e2e job runs no worker, so it cannot
       ingest. Pinned instead by the ingest workflow spec (a staged file never
       reaches `addDocumentsToVectorStore`) and by a live run against Qdrant._
+
+### Known limits after the 2026-09-24 review
+
+Two review passes over the stack's whole diff and an audit of every ticked
+item against the code closed what they found — B3's "one open finding per
+document" is now a partial unique index rather than a check-then-create;
+these are what they found and left, on purpose or for later:
+
+- **A step that throws after spending tokens is not charged to the run
+  (B4).** Its AI-usage rows record the spend, but the next document is handed
+  the full remainder, so a persistent database fault is bounded by the
+  document ceiling, not the token ceiling.
+- **A contradiction judged clean on truncated passages is left open (C1).**
+  Deliberate, and a departure from "a clean judgement resolves": silence
+  about passages the judge was not shown is not evidence the conflict is
+  gone.
+- **E8's `apps/api` half and F6** — see their items.
 
 ### Phase G — Verification loop _(v1.1, listed so it is designed for, not built)_
 

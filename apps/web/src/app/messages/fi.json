@@ -1378,7 +1378,9 @@
     "reembed-error": "Virhe uudelleenkäsittelyssä",
     "policy-all": "Käytäntö vaihdettu: {count, plural, one {# tiedosto} other {# tiedostoa}}",
     "policy-partial": "Käytäntö vaihdettu: {succeeded} / {total} tiedostoa",
-    "policy-error": "Virhe käytännön vaihtamisessa"
+    "policy-error": "Virhe käytännön vaihtamisessa",
+    "staged-sent": "Lähetetty tietopankkiin: {sent}/{total}",
+    "staged-send-error": "Brainin asiakirjoja ei voitu lähettää – yritä uudelleen."
   },
   "bulk-action-bar": {
     "aria-label": "Tiedostojen joukkotoiminnot",
@@ -1390,7 +1392,8 @@
     "move": "Siirrä kansioon",
     "share": "Jaa",
     "change-policy": "Vaihda käytäntö",
-    "reembed": "Käsittele uudelleen"
+    "reembed": "Käsittele uudelleen",
+    "send-staged": "Indeksoi Brainista ({count})"
   },
   "share-dialog": {
     "bulk-title": "Jaa {count, plural, one {# tiedosto} other {# tiedostoa}}",
@@ -2605,7 +2608,7 @@
       "none": "Ei poimittavia asiakirjoja — lisää ensin asiakirjoja tietopankkiin.",
       "not-extracted": "Ei poimittu",
       "pages": "Sivuja: {count}",
-      "too-many": "Enintään {max} asiakirjaa yhdessä ajossa.",
+      "too-many": "Asiakirjoja yhdessä ajossa enintään: {max}.",
       "cancel": "Peruuta",
       "start": "Aloita poiminta ({count})",
       "started": "Poiminta aloitettu — asiakirjoja: {count}. Ehdotukset näkyvät sitä mukaa kuin kukin valmistuu.",
@@ -2632,8 +2635,8 @@
       "inferred": "Päätellyt suhteet",
       "inferred-hidden": "Piilotettu",
       "inferred-shown": "Näytetty ({count})",
-      "shown": "Näytetään {nodes}/{totalNodes} sivua ja {edges}/{totalEdges} suhdetta",
-      "canvas-label": "Graafi, jossa {nodes} sivua ja {edges} suhdetta",
+      "shown": "Sivut: {nodes}/{totalNodes} · yhteydet: {edges}/{totalEdges}",
+      "canvas-label": "Graafi — sivut: {nodes}, yhteydet: {edges}",
       "failed": "Graafia ei voitu piirtää tässä selaimessa — samat tiedot ovat sivujen ja havaintojen välilehdillä.",
       "open-findings": "Avoimet havainnot: {count}",
       "open-page": "Avaa sivu",
@@ -2653,7 +2656,7 @@
       }
     },
     "export": {
-      "ready": "Valmiina vientiin: {count} sivua",
+      "ready": "Valmiina vientiin: {count}",
       "download": "Lataa paketti (.zip)",
       "none": "Hyväksy sivu, jolla on omistaja, viedäksesi sen",
       "skipped": {
@@ -2669,7 +2672,8 @@
         "none": "Ei tietopankissa",
         "publishing": "Kirjoitetaan tietopankkiin…",
         "published": "Tietopankissa — vastaukset voivat lainata sitä",
-        "withdrawn": "Vedetty pois tietopankista"
+        "withdrawn": "Vedetty pois tietopankista",
+        "failed": "Tietopankkiin kirjoittaminen epäonnistui – julkaise uudelleen"
       },
       "outdated": "Sivu on muuttunut julkaisun jälkeen — julkaise uudelleen päivittääksesi tietopankin.",
       "publish": "Julkaise tietopankkiin",
@@ -2719,15 +2723,18 @@
       "upload": "Lataa Brainiin",
       "uploaded": "Ladattu Brainiin: {count} — tallennettu ja käsitelty, ei haettavissa",
       "upload-failed": "Lataus epäonnistui — tarkista tiedosto ja yritä uudelleen.",
-      "staged-summary": "Brainissa, ei haettavissa: {count} asiakirjaa, joista {uncurated} vielä ilman hyväksyttyä sivua."
+      "staged-summary": "Brainissa, haun ulkopuolella: {count} · ilman hyväksyttyä sivua: {uncurated}",
+      "uploaded-partly": "Brainiin ladattiin {uploaded}/{total}; loput epäonnistuivat",
+      "staged-oldest": "vanhin ladattu {when}"
     },
     "publish-all": {
       "button": "Julkaise hyväksytyt ({count})",
       "confirm-title": "Julkaistaanko kaikki hyväksytyt sivut?",
-      "confirm-description": "Sivut, jotka jo tarjoavat nykyisen tekstinsä, jäävät ennalleen; muuttuneet julkaistaan uudelleen, uudet ensimmäistä kertaa. Jokainen julkaisu kirjataan nimelläsi. Sivut, joilla ei ole omistajaa tai jotka eivät ole kenenkään käytettävissä, ohitetaan.",
+      "confirm-description": "Sivut, jotka jo tarjoavat nykyisen tekstinsä, jäävät ennalleen; muuttuneet julkaistaan uudelleen, uudet ensimmäistä kertaa. Jokainen julkaisu kirjataan nimelläsi. Sivut, joilla ei ole omistajaa tai jotka eivät ole kenenkään käytettävissä, ohitetaan. Vedetyt sivut pysyvät vedettyinä.",
       "confirm": "Julkaise",
       "done": "Jonossa: {queued} · ennallaan: {unchanged} · ohitettu: {refused}",
-      "failed": "Julkaisua ei voitu aloittaa — lataa sivu uudelleen ja yritä uudelleen."
+      "failed": "Julkaisua ei voitu aloittaa — lataa sivu uudelleen ja yritä uudelleen.",
+      "not-written": "{count} sivua kirjattiin julkaistuksi, mutta niitä ei kirjoitettu hakemistoon – suorita uudelleen"
     }
   }
 }

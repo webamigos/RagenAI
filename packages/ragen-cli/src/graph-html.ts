@@ -73,9 +73,9 @@ view.nodes.forEach((n, i) => {
   const a = (2 * Math.PI * n.community) / groups + i * 0.001;
   graph.addNode(n.id, {
     x: Math.cos(a) * (10 + (i % 7)), y: Math.sin(a) * (10 + (i % 7)),
-    size: 4 + Math.sqrt(n.degree) * 2 + ((n.openFindings ?? 0) > 0 ? 4 : 0),
+    size: 6 + Math.sqrt(n.degree) * 2 + ((n.openFindings ?? 0) > 0 ? 4 : 0),
     label: n.title, color: palette[n.community % palette.length],
-    forceLabel: (n.openFindings ?? 0) > 0,
+    forceLabel: view.nodes.length <= 60 || (n.openFindings ?? 0) > 0,
   });
 });
 for (const e of view.edges) {

@@ -71,6 +71,35 @@ describe('judgeContradictions', () => {
     }
   });
 
+  // "No contradiction" and "no usable answer" must not look alike: the first
+  // clears an open finding, and the second must not.
+  it('retries an answer whose every item was rejected, then fails instead of judging', async () => {
+    const generate = answering({
+      contradictions: [{ a: 0, b: 0, explanation: 'zero-based' }],
+    });
+    const outcome = await judgeContradictions({
+      a: A,
+      b: B,
+      generate,
+      budget: budget(),
+    });
+    expect(generate).toHaveBeenCalledTimes(2);
+    expect(generate.mock.calls[1]![0].prompt).toContain(
+      'named a passage number that was not shown',
+    );
+    expect(outcome.status).toBe('failed');
+  });
+
+  it('still judges an answer that is empty on purpose', async () => {
+    const outcome = await judgeContradictions({
+      a: A,
+      b: B,
+      generate: answering({ contradictions: [] }),
+      budget: budget(),
+    });
+    expect(outcome).toMatchObject({ status: 'judged', contradictions: [] });
+  });
+
   it('retries once with the problem fed back, then fails', async () => {
     const generate = answering({ nope: true });
     const outcome = await judgeContradictions({

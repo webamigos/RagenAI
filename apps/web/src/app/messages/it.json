@@ -1378,7 +1378,9 @@
     "reembed-error": "Errore durante la rielaborazione",
     "policy-all": "Criterio modificato: {count, plural, one {# file} other {# file}}",
     "policy-partial": "Criterio modificato su {succeeded} di {total} file",
-    "policy-error": "Errore durante la modifica del criterio"
+    "policy-error": "Errore durante la modifica del criterio",
+    "staged-sent": "Inviati alla base di conoscenza: {sent} di {total}",
+    "staged-send-error": "Impossibile inviare i documenti da Brain: riprova."
   },
   "bulk-action-bar": {
     "aria-label": "Operazioni in blocco sui file",
@@ -1390,7 +1392,8 @@
     "move": "Sposta nella cartella",
     "share": "Condividi",
     "change-policy": "Cambia criterio",
-    "reembed": "Rielabora"
+    "reembed": "Rielabora",
+    "send-staged": "Indicizza da Brain ({count})"
   },
   "share-dialog": {
     "bulk-title": "Condividi {count, plural, one {# file} other {# file}}",
@@ -2605,7 +2608,7 @@
       "none": "Nessun documento da estrarre: aggiungi prima documenti alla base di conoscenza.",
       "not-extracted": "Non estratto",
       "pages": "Pagine: {count}",
-      "too-many": "Al massimo {max} documenti per esecuzione.",
+      "too-many": "Documenti per esecuzione, al massimo: {max}.",
       "cancel": "Annulla",
       "start": "Avvia estrazione ({count})",
       "started": "Estrazione avviata — documenti: {count}. Le candidate compaiono man mano che ciascuno termina.",
@@ -2632,8 +2635,8 @@
       "inferred": "Relazioni dedotte",
       "inferred-hidden": "Nascoste",
       "inferred-shown": "Visibili ({count})",
-      "shown": "Visualizzate {nodes} di {totalNodes} pagine e {edges} di {totalEdges} relazioni",
-      "canvas-label": "Grafo di {nodes} pagine e {edges} relazioni",
+      "shown": "Pagine: {nodes} di {totalNodes} · relazioni: {edges} di {totalEdges}",
+      "canvas-label": "Grafo — pagine: {nodes}, relazioni: {edges}",
       "failed": "Impossibile disegnare il grafo in questo browser: le schede pagine e segnalazioni mostrano gli stessi dati.",
       "open-findings": "Segnalazioni aperte: {count}",
       "open-page": "Apri pagina",
@@ -2653,7 +2656,7 @@
       }
     },
     "export": {
-      "ready": "Pronte per l’esportazione: {count} pagine",
+      "ready": "Pronte per l’esportazione: {count}",
       "download": "Scarica pacchetto (.zip)",
       "none": "Approva una pagina con un responsabile per esportarla",
       "skipped": {
@@ -2669,7 +2672,8 @@
         "none": "Fuori dalla base di conoscenza",
         "publishing": "Scrittura nella base di conoscenza…",
         "published": "Nella base di conoscenza: le risposte possono citarla",
-        "withdrawn": "Ritirata dalla base di conoscenza"
+        "withdrawn": "Ritirata dalla base di conoscenza",
+        "failed": "La scrittura nella base di conoscenza non è riuscita: pubblica di nuovo"
       },
       "outdated": "La pagina è cambiata dalla pubblicazione: ripubblicala per aggiornare la base di conoscenza.",
       "publish": "Pubblica nella base di conoscenza",
@@ -2719,15 +2723,18 @@
       "upload": "Carica in Brain",
       "uploaded": "Caricati in Brain: {count} — salvati ed elaborati, non ricercabili",
       "upload-failed": "Caricamento non riuscito: controlla il file e riprova.",
-      "staged-summary": "In Brain, non ricercabili: {count} documenti, {uncurated} ancora senza pagina approvata."
+      "staged-summary": "In Brain, fuori dalla ricerca: {count} · senza pagina approvata: {uncurated}",
+      "uploaded-partly": "Caricati in Brain {uploaded} di {total}; gli altri non sono riusciti",
+      "staged-oldest": "il più vecchio caricato {when}"
     },
     "publish-all": {
       "button": "Pubblica approvate ({count})",
       "confirm-title": "Pubblicare tutte le pagine approvate?",
-      "confirm-description": "Le pagine che servono già il testo attuale restano invariate; quelle modificate vengono ripubblicate, le nuove pubblicate. Ogni pubblicazione è registrata a tuo nome. Le pagine senza responsabile o aperte a nessuno vengono saltate.",
+      "confirm-description": "Le pagine che servono già il testo attuale restano invariate; quelle modificate vengono ripubblicate, le nuove pubblicate. Ogni pubblicazione è registrata a tuo nome. Le pagine senza responsabile o aperte a nessuno vengono saltate. Le pagine ritirate restano ritirate.",
       "confirm": "Pubblica",
       "done": "In coda: {queued} · invariate: {unchanged} · saltate: {refused}",
-      "failed": "Impossibile avviare la pubblicazione: ricarica la pagina e riprova."
+      "failed": "Impossibile avviare la pubblicazione: ricarica la pagina e riprova.",
+      "not-written": "{count, plural, one {# pagina registrata come pubblicata ma non scritta nell’indice: esegui di nuovo} other {# pagine registrate come pubblicate ma non scritte nell’indice: esegui di nuovo}}"
     }
   }
 }

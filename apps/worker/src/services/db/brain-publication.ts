@@ -83,3 +83,32 @@ export async function completePublication(input: {
   `;
   return updated === 1;
 }
+
+/**
+ * A publication that gave up: its file reads `FAILED` — but only while the
+ * page is still published at the generation that failed, so a newer run or
+ * a withdrawal is never overwritten by an old run's death. Without this a
+ * dead run left the file `STARTED` and the panel said "being written" for
+ * good.
+ */
+export async function markPublicationFailed(input: {
+  orgId: string;
+  pagePublicId: string;
+  generation: number;
+}): Promise<boolean> {
+  const updated = await getPrisma().$executeRaw`
+    UPDATE user_files AS f
+       SET embedding_status = 'FAILED'
+     WHERE f.organization_id = ${input.orgId}
+       AND f.embedding_status <> 'COMPLETED'
+       AND EXISTS (
+         SELECT 1 FROM knowledge_pages p
+          WHERE p.public_id = ${input.pagePublicId}::uuid
+            AND p.organization_id = ${input.orgId}
+            AND p.published_file_id = f.id
+            AND p.published_at IS NOT NULL
+            AND p.publication_generation = ${input.generation}
+       )
+  `;
+  return updated === 1;
+}

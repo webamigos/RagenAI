@@ -24,6 +24,7 @@ describe('sendStagedToKnowledgeBaseCommand', () => {
     await sendStagedToKnowledgeBaseCommand({
       organizationId: 'org-1',
       fileIds: ['a', 'a', 'b'],
+      onlyOwnedBy: null,
     });
     expect(db.userFile.findMany.mock.calls[0][0].where).toEqual({
       organizationId: 'org-1',
@@ -42,6 +43,7 @@ describe('sendStagedToKnowledgeBaseCommand', () => {
       sendStagedToKnowledgeBaseCommand({
         organizationId: 'org-1',
         fileIds: ['a', 'withdrawn'],
+        onlyOwnedBy: null,
       }),
     ).resolves.toEqual({ sent: ['a'], skipped: ['withdrawn'] });
     expect(db.userFile.updateMany).toHaveBeenCalledWith({
@@ -52,5 +54,41 @@ describe('sendStagedToKnowledgeBaseCommand', () => {
     expect(db.userFile.updateMany.mock.invocationCallOrder[0]).toBeLessThan(
       reembed.reembedFileCommand.mock.invocationCallOrder[0]!,
     );
+  });
+
+  it('lets a member send only the staged files they uploaded', async () => {
+    db.userFile.findMany.mockResolvedValue([]);
+    await sendStagedToKnowledgeBaseCommand({
+      organizationId: 'org-1',
+      fileIds: ['a'],
+      onlyOwnedBy: 'u-7',
+    });
+    expect(db.userFile.findMany.mock.calls[0][0].where.ownerId).toBe('u-7');
+  });
+
+  it('puts a file back to staged when its ingest could not start, so sending again works', async () => {
+    db.userFile.findMany.mockResolvedValue([
+      { id: 'a', metadata: { intake: 'brain', summary: 's' } },
+    ]);
+    db.userFile.updateMany.mockResolvedValue({ count: 1 });
+    reembed.reembedFileCommand.mockRejectedValue(new Error('redis down'));
+    await expect(
+      sendStagedToKnowledgeBaseCommand({
+        organizationId: 'org-1',
+        fileIds: ['a'],
+        onlyOwnedBy: null,
+      }),
+    ).resolves.toEqual({ sent: [], skipped: ['a'] });
+    expect(db.userFile.updateMany).toHaveBeenLastCalledWith({
+      where: {
+        organizationId: 'org-1',
+        id: 'a',
+        embeddingStatus: { in: ['STAGED', 'NOT_STARTED'] },
+      },
+      data: {
+        embeddingStatus: 'STAGED',
+        metadata: { intake: 'brain', summary: 's' },
+      },
+    });
   });
 });

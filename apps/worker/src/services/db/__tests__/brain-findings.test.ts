@@ -127,6 +127,22 @@ describe('loadFindingsSnapshot', () => {
     expect(snapshot.files.has('f-gone')).toBe(false);
   });
 
+  it('finds a moved version through the document relation when the file’s copy is empty', async () => {
+    prisma.userFile.findMany.mockReset().mockResolvedValue([
+      { id: 'f-same', documentId: 'd-same', document: { id: 'd-same' } },
+      // documentId not written yet; the relation still names the document.
+      { id: 'f-moved', documentId: null, document: { id: 'd-moved' } },
+    ]);
+    const snapshot = await loadFindingsSnapshot('org-1');
+    expect(
+      prisma.documentVersion.findMany.mock.calls[0][0].where.documentId,
+    ).toEqual({ in: ['d-same', 'd-moved'] });
+    expect(snapshot.files.get('f-moved')).toEqual({
+      activeVersionId: 'v2-new',
+      activeText: 'the new text',
+    });
+  });
+
   it('reads no text at all when nothing moved', async () => {
     prisma.userFile.findMany.mockResolvedValue([
       { id: 'f-same', documentId: 'd-same' },

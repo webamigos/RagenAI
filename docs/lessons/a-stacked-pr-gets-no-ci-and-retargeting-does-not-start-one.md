@@ -72,3 +72,25 @@ in the interface distinguishes them. Green is only evidence when something ran
 migrations were both done as stacks, and the remaining ADR-32 absorptions will
 be. Also to anyone reading `mergeStateStatus` programmatically to decide
 whether to merge: it answers a different question than the one being asked.
+
+## The review is missing too, and it costs more than the tests
+
+CodeRabbit does not review a PR whose base is another PR either, and its check
+still reports `pass`. The Ragen Brain stack (2026-09-23/24) ran to thirty PRs
+with one review — the first, based on `main`. Everything above it had green
+local gates (`npm run verify` 71/71) and live runs against a real worker and
+Qdrant, and was still carrying fifteen defects that two review passes over
+`git diff origin/main...HEAD` found in one sitting: an assistant-scoped API key
+reading the whole curated corpus; a second vector-write path (version rollback)
+that indexed files the stack had just taught ingest to keep out; a stale
+publish run deleting a newer run's chunks by file id; retries that turned an
+unusable model answer into "no contradiction" and closed open findings. None
+of these is visible to a test the author writes, because each is a path the
+author did not think of — which is exactly what review is for.
+
+**Rule, added**: a stack gets a review of its cumulative diff before its first
+merge, not one per PR as it lands. Run it as review agents over
+`origin/main...<stack tip>` split by concern (tenant scope and access; silent
+failures), fix what they confirm at the top of the stack, and only then start
+merging from the bottom. Rebasing onto `main` later triggers CodeRabbit per PR,
+but by then the defects are spread across a dozen merges.

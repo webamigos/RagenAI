@@ -159,12 +159,35 @@ describe('recordContradictionJudgement', () => {
 
   it('leaves an open finding with the same passages alone', async () => {
     prisma.knowledgeFinding.findMany.mockResolvedValue([
-      { id: 3, status: 'OPEN', detail: { fingerprint: FINGERPRINT } },
+      {
+        id: 3,
+        status: 'OPEN',
+        severity: 'MEDIUM',
+        detail: { fingerprint: FINGERPRINT },
+      },
     ]);
     await expect(recordContradictionJudgement(input())).resolves.toBe(
       'unchanged',
     );
     expect(prisma.knowledgeFinding.updateMany).not.toHaveBeenCalled();
+  });
+
+  it('re-grades an open finding with the same passages once a page is serving', async () => {
+    prisma.knowledgeFinding.findMany.mockResolvedValue([
+      {
+        id: 3,
+        status: 'OPEN',
+        severity: 'MEDIUM',
+        detail: { fingerprint: FINGERPRINT },
+      },
+    ]);
+    await expect(
+      recordContradictionJudgement(input({ published: true })),
+    ).resolves.toBe('updated');
+    expect(prisma.knowledgeFinding.updateMany).toHaveBeenCalledWith({
+      where: { organizationId: 'org-1', id: 3, status: 'OPEN' },
+      data: { severity: 'HIGH' },
+    });
   });
 
   it('updates an open finding in place when the passages changed', async () => {
@@ -192,6 +215,18 @@ describe('recordContradictionJudgement', () => {
       where: { organizationId: 'org-1', id: 3, status: 'OPEN' },
       data: { status: 'RESOLVED', resolvedAt: expect.any(Date) },
     });
+  });
+
+  it('never clears an open finding from a judgement that saw only part of the pages', async () => {
+    prisma.knowledgeFinding.findMany.mockResolvedValue([
+      { id: 3, status: 'OPEN', detail: { fingerprint: FINGERPRINT } },
+    ]);
+    await expect(
+      recordContradictionJudgement(
+        input({ contradictions: [], truncated: true }),
+      ),
+    ).resolves.toBe('unchanged');
+    expect(prisma.knowledgeFinding.updateMany).not.toHaveBeenCalled();
   });
 
   it('writes nothing for a clean pair with nothing open', async () => {

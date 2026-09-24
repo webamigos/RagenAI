@@ -314,6 +314,10 @@ describe('bulkReembedFilesAction', () => {
 
     expect(result.succeeded).toEqual(['file-1']);
     expect(result.failed).toHaveLength(0);
+    // A published Brain page's file is never re-ingested from here.
+    expect(mockFindMany.mock.calls[0][0].where.publishedPages).toEqual({
+      none: {},
+    });
     expect(mockJobStart).toHaveBeenCalledTimes(1);
     expect(mockUpdate).toHaveBeenCalledWith(
       expect.objectContaining({

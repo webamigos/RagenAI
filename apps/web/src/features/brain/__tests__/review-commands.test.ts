@@ -209,6 +209,15 @@ describe('setKnowledgePageOwnerCommand', () => {
     });
   });
 
+  it('moves the published file to the new owner as well', async () => {
+    givenPage({ ownerId: 'u-old', publishedFileId: 'file-9' });
+    await setKnowledgePageOwnerCommand({ ...base, ownerId: 'u-new' });
+    expect(tx.userFile.updateMany).toHaveBeenCalledWith({
+      where: { organizationId: 'org-1', id: 'file-9' },
+      data: { ownerId: 'u-new' },
+    });
+  });
+
   it('refuses someone who is not a member', async () => {
     givenPage();
     tx.member.findFirst.mockResolvedValue(null);
@@ -398,6 +407,41 @@ describe('setKnowledgePageAccessCommand', () => {
         }),
       ).resolves.toEqual({ success: false, error: 'confirm-widening' });
       expect(vectors.deleteFileFromVectorStore).not.toHaveBeenCalled();
+    });
+
+    it('widens a published page once confirmed: same order, recorded as WIDEN_ACCESS', async () => {
+      givenPublished(['user:u1']);
+      members('u1', 'u2');
+      vectors.deleteFileFromVectorStore.mockResolvedValue(undefined);
+      runtime.start.mockResolvedValue(undefined);
+      await expect(
+        setKnowledgePageAccessCommand({
+          ...base,
+          principals: ['user:u1', 'user:u2'],
+          confirmWidening: true,
+        }),
+      ).resolves.toEqual({ success: true, changed: true });
+      const writes = tx.knowledgePage.updateMany.mock.calls.map(
+        ([a]) => a.data,
+      );
+      expect(writes).toEqual([
+        { publicationGeneration: 6 },
+        { accessibleBy: ['user:u1', 'user:u2'] },
+      ]);
+      // The page answers nobody between the delete and the republish, so the
+      // new readers are never served before the ledger says they may be.
+      expect(
+        vectors.deleteFileFromVectorStore.mock.invocationCallOrder[0],
+      ).toBeLessThan(tx.knowledgePage.updateMany.mock.invocationCallOrder[1]!);
+      expect(recorded().decisions[0]).toMatchObject({
+        action: 'WIDEN_ACCESS',
+        after: { accessibleBy: ['user:u1', 'user:u2'], republished: true },
+      });
+      expect(runtime.start).toHaveBeenCalledWith(
+        'brainPublishPage',
+        expect.stringContaining('-6'),
+        { orgId: ORG, pageId: base.publicId, generation: 6 },
+      );
     });
 
     it('will not leave a published page open to nobody', async () => {

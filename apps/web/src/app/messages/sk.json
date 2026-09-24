@@ -1378,7 +1378,9 @@
     "reembed-error": "Chyba pri opätovnom spracovaní",
     "policy-all": "Politika zmenená: {count, plural, one {# súbor} few {# súbory} other {# súborov}}",
     "policy-partial": "Politika zmenená pre {succeeded} z {total} súborov",
-    "policy-error": "Chyba pri zmene politiky"
+    "policy-error": "Chyba pri zmene politiky",
+    "staged-sent": "Odoslané do znalostnej bázy: {sent} z {total}",
+    "staged-send-error": "Dokumenty z Brain sa nepodarilo odoslať – skúste to znova."
   },
   "bulk-action-bar": {
     "aria-label": "Hromadné operácie so súbormi",
@@ -1390,7 +1392,8 @@
     "move": "Presunúť do priečinka",
     "share": "Zdieľať",
     "change-policy": "Zmeniť politiku",
-    "reembed": "Spracovať znova"
+    "reembed": "Spracovať znova",
+    "send-staged": "Indexovať z Brain ({count})"
   },
   "share-dialog": {
     "bulk-title": "Zdieľať {count, plural, one {# súbor} few {# súbory} other {# súborov}}",
@@ -2605,7 +2608,7 @@
       "none": "Žiadne dokumenty na extrakciu — najprv pridajte dokumenty do znalostnej bázy.",
       "not-extracted": "Neextrahované",
       "pages": "Stránky: {count}",
-      "too-many": "Najviac {max} dokumentov v jednom behu.",
+      "too-many": "Dokumentov v jednom behu najviac: {max}.",
       "cancel": "Zrušiť",
       "start": "Spustiť extrakciu ({count})",
       "started": "Extrakcia spustená — dokumenty: {count}. Kandidáti sa objavia, keď každý dobehne.",
@@ -2632,8 +2635,8 @@
       "inferred": "Odvodené vzťahy",
       "inferred-hidden": "Skryté",
       "inferred-shown": "Zobrazené ({count})",
-      "shown": "Zobrazených {nodes} z {totalNodes} stránok a {edges} z {totalEdges} vzťahov",
-      "canvas-label": "Graf {nodes} stránok a {edges} vzťahov",
+      "shown": "Strany: {nodes} z {totalNodes} · väzby: {edges} z {totalEdges}",
+      "canvas-label": "Graf — strany: {nodes}, väzby: {edges}",
       "failed": "Graf sa v tomto prehliadači nepodarilo vykresliť — rovnaké údaje sú na kartách stránok a zistení.",
       "open-findings": "Otvorené zistenia: {count}",
       "open-page": "Otvoriť stránku",
@@ -2653,7 +2656,7 @@
       }
     },
     "export": {
-      "ready": "Pripravené na export: {count} stránok",
+      "ready": "Pripravené na export: {count}",
       "download": "Stiahnuť balík (.zip)",
       "none": "Schváľte stránku s vlastníkom, aby ste ju mohli exportovať",
       "skipped": {
@@ -2669,7 +2672,8 @@
         "none": "Mimo znalostnej bázy",
         "publishing": "Zapisuje sa do znalostnej bázy…",
         "published": "Vo znalostnej báze — odpovede ju môžu citovať",
-        "withdrawn": "Stiahnutá zo znalostnej bázy"
+        "withdrawn": "Stiahnutá zo znalostnej bázy",
+        "failed": "Zápis do znalostnej bázy zlyhal – publikujte znova"
       },
       "outdated": "Stránka sa od zverejnenia zmenila — zverejnite ju znova, aby sa znalostná báza aktualizovala.",
       "publish": "Zverejniť vo znalostnej báze",
@@ -2719,15 +2723,18 @@
       "upload": "Nahrať do Brainu",
       "uploaded": "Nahrané do Brainu: {count} — uložené a spracované, nevyhľadateľné",
       "upload-failed": "Nahrávanie zlyhalo — skontrolujte súbor a skúste to znova.",
-      "staged-summary": "V Braine, nevyhľadateľné: {count} dokumentov, z toho {uncurated} zatiaľ bez schválenej stránky."
+      "staged-summary": "V Brain, mimo vyhľadávania: {count} · bez schválenej strany: {uncurated}",
+      "uploaded-partly": "Nahraté do Brain {uploaded} z {total}; zvyšok zlyhal",
+      "staged-oldest": "najstarší nahraný {when}"
     },
     "publish-all": {
       "button": "Zverejniť schválené ({count})",
       "confirm-title": "Zverejniť všetky schválené stránky?",
-      "confirm-description": "Stránky, ktoré už poskytujú aktuálny text, zostanú bez zmeny; zmenené sa zverejnia znova, nové prvýkrát. Každé zverejnenie sa zaznamená pod vaším menom. Stránky bez vlastníka alebo neprístupné nikomu sa preskočia.",
+      "confirm-description": "Stránky, ktoré už poskytujú aktuálny text, zostanú bez zmeny; zmenené sa zverejnia znova, nové prvýkrát. Každé zverejnenie sa zaznamená pod vaším menom. Stránky bez vlastníka alebo neprístupné nikomu sa preskočia. Stiahnuté strany zostanú stiahnuté.",
       "confirm": "Zverejniť",
       "done": "V rade: {queued} · bez zmeny: {unchanged} · preskočené: {refused}",
-      "failed": "Zverejnenie sa nepodarilo spustiť — načítajte stránku znova a skúste to znova."
+      "failed": "Zverejnenie sa nepodarilo spustiť — načítajte stránku znova a skúste to znova.",
+      "not-written": "{count, plural, one {# stránka bola zaznamenaná ako publikovaná, ale nezapísaná do indexu – spustite znova} few {# stránky boli zaznamenané ako publikované, ale nezapísané do indexu – spustite znova} many {# stránok bolo zaznamenaných ako publikované, ale nezapísaných do indexu – spustite znova} other {# stránok bolo zaznamenaných ako publikované, ale nezapísaných do indexu – spustite znova}}"
     }
   }
 }

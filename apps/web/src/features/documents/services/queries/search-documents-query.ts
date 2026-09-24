@@ -43,6 +43,10 @@ export async function searchDocumentsQuery(
       organizationId,
       fileName: { contains: trimmed, mode: 'insensitive' },
       ...fileAccessWhere(actor),
+      // A published Brain page's file is not a document: its readers are the
+      // page's `accessibleBy`, which the file's sharing only approximates,
+      // and the knowledge base's own listing leaves it out for that reason.
+      publishedPages: { none: {} },
     },
     select: { id: true, fileName: true },
     orderBy: { createdAt: 'desc' },

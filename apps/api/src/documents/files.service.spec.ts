@@ -285,6 +285,17 @@ describe('FilesService', () => {
   });
 
   describe('moveFileToFolder', () => {
+    it('never finds a published Brain page’s file to move', async () => {
+      const findFirst = vi.fn().mockResolvedValue(null);
+      const { service } = makeService({ userFile: { findFirst } });
+      await service.moveFileToFolder('file-1', 'folder-1', 'org-1');
+      expect(findFirst.mock.calls[0][0].where).toEqual({
+        id: 'file-1',
+        organizationId: 'org-1',
+        publishedPages: { none: {} },
+      });
+    });
+
     it('returns failure when the file is not found', async () => {
       const { service } = makeService({
         userFile: { findFirst: vi.fn().mockResolvedValue(null) },
@@ -488,6 +499,8 @@ describe('FilesService', () => {
         where: expect.objectContaining({
           organizationId: 'org-1',
           ownerId: 'user-1',
+          // Published Brain pages' files are not documents (spec E10).
+          publishedPages: { none: {} },
         }),
       });
     });

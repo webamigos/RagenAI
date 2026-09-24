@@ -40,7 +40,8 @@ export function PublicationControls({
   const { pending, run } = useReviewAction();
   const [confirmWithdraw, setConfirmWithdraw] = useState(false);
   const ref = { publicId, expectedUpdatedAt: updatedAt };
-  const live = state === 'published' || state === 'publishing';
+  const live =
+    state === 'published' || state === 'publishing' || state === 'failed';
 
   return (
     <div className="space-y-2" data-testid="brain-publication">
@@ -56,7 +57,10 @@ export function PublicationControls({
         </ul>
       )}
       <div className="flex flex-wrap gap-2">
-        {(!live || outdated || state === 'publishing') && (
+        {(!live ||
+          outdated ||
+          state === 'publishing' ||
+          state === 'failed') && (
           <Button
             size="sm"
             disabled={pending || (blockers.length > 0 && !live)}

@@ -10,6 +10,7 @@ import { uploadToS3WithOrg } from '@/app/lib/services/storage';
 import { jobs } from '@/libs/jobs';
 import { Workflow } from '@/features/documents/contracts/document.types';
 import { assertCanManageDocuments } from '@/features/subscriptions/services/feature-guards';
+import { curationMarkers } from '@/features/documents/utils/curation-markers';
 
 const MAX_SYNC_FILES = 200;
 const SYNC_BATCH_SIZE = 5;
@@ -188,6 +189,11 @@ export const syncDriveFolderCommand = async (
               ? driveFile.name
               : `${driveFile.name}.md`,
             metadata: {
+              // A person's decisions about where the file goes survive a
+              // content change: staged into Brain (`intake`) or taken out of
+              // retrieval (`retrieval`). Rewriting the metadata wholesale
+              // dropped them, and the re-ingest below indexed the file.
+              ...curationMarkers(existingMeta),
               driveFileId: driveFile.id,
               driveFolderId: syncRecord.driveFolderId,
               driveModifiedTime: driveFile.modified_time,

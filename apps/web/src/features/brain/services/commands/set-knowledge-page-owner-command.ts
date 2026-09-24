@@ -28,6 +28,14 @@ export async function setKnowledgePageOwnerCommand(
     if (page.ownerId === input.ownerId) {
       return null;
     }
+    // The page's file carries the owner too, and `fileAccessWhere` reads it:
+    // left behind, a former owner would keep finding the file.
+    if (page.publishedFileId) {
+      await tx.userFile.updateMany({
+        where: { organizationId: input.orgId, id: page.publishedFileId },
+        data: { ownerId: input.ownerId },
+      });
+    }
     return {
       action: 'SET_OWNER',
       data: { ownerId: input.ownerId },

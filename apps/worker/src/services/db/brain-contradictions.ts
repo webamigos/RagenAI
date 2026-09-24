@@ -132,7 +132,7 @@ export async function recordContradictionJudgement(input: {
       pageIds: { equals: pageIds },
       status: { in: ['OPEN', 'DISMISSED'] },
     },
-    select: { id: true, status: true, detail: true },
+    select: { id: true, status: true, detail: true, severity: true },
     orderBy: { id: 'asc' },
   });
   const open = existing.find((f) => f.status === 'OPEN');
@@ -140,6 +140,12 @@ export async function recordContradictionJudgement(input: {
   if (input.contradictions.length === 0) {
     if (!open) {
       return 'none';
+    }
+    // The judge saw only the first passages of a longer page. The conflict
+    // an earlier run found may sit in the part it was not shown, so silence
+    // here is not evidence that it is gone.
+    if (input.truncated) {
+      return 'unchanged';
     }
     await prisma.knowledgeFinding.updateMany({
       where: { organizationId: input.orgId, id: open.id, status: 'OPEN' },
@@ -162,6 +168,15 @@ export async function recordContradictionJudgement(input: {
 
   if (open) {
     if (fingerprintOf(open.detail) === fingerprint) {
+      // The same passages — but a page may have started or stopped serving
+      // in the index since, and the severity says which (spec C1).
+      if (open.severity !== severity) {
+        await prisma.knowledgeFinding.updateMany({
+          where: { organizationId: input.orgId, id: open.id, status: 'OPEN' },
+          data: { severity },
+        });
+        return 'updated';
+      }
       return 'unchanged';
     }
     await prisma.knowledgeFinding.updateMany({

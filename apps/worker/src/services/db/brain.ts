@@ -244,6 +244,44 @@ export async function recordExtractionFailed(input: {
 }): Promise<void> {
   const prisma = getPrisma();
   const detail = input.detail as unknown as Prisma.InputJsonValue;
+  const refreshed = await refreshOpenExtractionFailure(
+    input.orgId,
+    input.fileId,
+    detail,
+  );
+  if (refreshed) {
+    return;
+  }
+  try {
+    await prisma.knowledgeFinding.create({
+      data: {
+        organizationId: input.orgId,
+        type: 'EXTRACTION_FAILED',
+        severity: 'MEDIUM',
+        fileId: input.fileId,
+        pageIds: [],
+        detail,
+      },
+    });
+  } catch (error) {
+    // Another run opened it between the read and this insert; the partial
+    // unique index refused the second (spec B3). Refresh that one instead.
+    if (isUniqueViolation(error)) {
+      await refreshOpenExtractionFailure(input.orgId, input.fileId, detail);
+      return;
+    }
+    throw error;
+  }
+}
+
+/** Update the document's open finding, if it has one. */
+async function refreshOpenExtractionFailure(
+  orgId: string,
+  fileId: string,
+  detail: Prisma.InputJsonValue,
+): Promise<boolean> {
+  const prisma = getPrisma();
+  const input = { orgId, fileId };
   const open = await prisma.knowledgeFinding.findFirst({
     where: {
       organizationId: input.orgId,
@@ -253,23 +291,18 @@ export async function recordExtractionFailed(input: {
     },
     select: { id: true },
   });
-  if (open) {
-    await prisma.knowledgeFinding.updateMany({
-      where: { organizationId: input.orgId, id: open.id },
-      data: { detail, detectedAt: new Date() },
-    });
-    return;
+  if (!open) {
+    return false;
   }
-  await prisma.knowledgeFinding.create({
-    data: {
-      organizationId: input.orgId,
-      type: 'EXTRACTION_FAILED',
-      severity: 'MEDIUM',
-      fileId: input.fileId,
-      pageIds: [],
-      detail,
-    },
+  await prisma.knowledgeFinding.updateMany({
+    where: { organizationId: input.orgId, id: open.id },
+    data: { detail, detectedAt: new Date() },
   });
+  return true;
+}
+
+function isUniqueViolation(error: unknown): boolean {
+  return (error as { code?: unknown } | null)?.code === 'P2002';
 }
 
 /** Close the document's open `EXTRACTION_FAILED` finding after a success. */

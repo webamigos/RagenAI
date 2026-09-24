@@ -27,11 +27,35 @@ export function BrainUploadButton() {
       }
       form.append('intake', 'brain');
       const res = await fetch('/api/upload', { method: 'POST', body: form });
-      if (res.ok) {
-        toast.success(t('uploaded', { count: files.length }));
+      const body = (await res.json().catch(() => null)) as {
+        message?: string;
+        failedFiles?: { fileName: string; error: string }[];
+      } | null;
+      const failed = body?.failedFiles ?? [];
+      if (!res.ok) {
+        // The server's reason — a quota, staging not available here — says
+        // what to do next; a generic "failed" does not.
+        toast.error(t('upload-failed'), {
+          description: failed.length
+            ? failed.map((f) => `${f.fileName}: ${f.error}`).join('\n')
+            : body?.message,
+        });
+      } else if (failed.length > 0) {
+        toast.warning(
+          t('uploaded-partly', {
+            uploaded: files.length - failed.length,
+            total: files.length,
+          }),
+          {
+            description: failed
+              .map((f) => `${f.fileName}: ${f.error}`)
+              .join('\n'),
+          },
+        );
         router.refresh();
       } else {
-        toast.error(t('upload-failed'));
+        toast.success(t('uploaded', { count: files.length }));
+        router.refresh();
       }
       if (input.current) {
         input.current.value = '';

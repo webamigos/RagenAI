@@ -76,12 +76,22 @@ export async function loadFindingsSnapshot(
   const files = fileIds.length
     ? await prisma.userFile.findMany({
         where: { organizationId: orgId, id: { in: fileIds } },
-        select: { id: true, documentId: true },
+        select: {
+          id: true,
+          documentId: true,
+          document: { select: { id: true } },
+        },
       })
     : [];
-  const documentIds = files.flatMap((f) =>
-    f.documentId ? [f.documentId] : [],
-  );
+  // The relation first, as the page view and extraction read it (spec D1):
+  // `UserFile.documentId` is a copy ingest writes after binding, and a file
+  // whose copy is empty still has a document whose version can move.
+  const documentOf = (f: (typeof files)[number]) =>
+    f.document?.id ?? f.documentId ?? null;
+  const documentIds = files.flatMap((f) => {
+    const id = documentOf(f);
+    return id ? [id] : [];
+  });
   const active = documentIds.length
     ? await prisma.documentVersion.findMany({
         where: {
@@ -102,9 +112,8 @@ export async function loadFindingsSnapshot(
   }
   const moved = new Map<string, string>();
   for (const file of files) {
-    const versionId = file.documentId
-      ? activeByDocument.get(file.documentId)
-      : undefined;
+    const documentId = documentOf(file);
+    const versionId = documentId ? activeByDocument.get(documentId) : undefined;
     if (
       versionId &&
       [...(pinnedByFile.get(file.id) ?? [])].some((v) => v !== versionId)
@@ -122,8 +131,9 @@ export async function loadFindingsSnapshot(
 
   const fileStates = new Map<string, SnapshotFile>();
   for (const file of files) {
-    const versionId = file.documentId
-      ? (activeByDocument.get(file.documentId) ?? null)
+    const documentId = documentOf(file);
+    const versionId = documentId
+      ? (activeByDocument.get(documentId) ?? null)
       : null;
     fileStates.set(file.id, {
       activeVersionId: versionId,
@@ -152,7 +162,14 @@ export async function loadComputedFindings(
       organizationId: orgId,
       type: { in: [...COMPUTED_FINDING_TYPES] },
     },
-    select: { id: true, type: true, status: true, pageIds: true, detail: true },
+    select: {
+      id: true,
+      type: true,
+      status: true,
+      pageIds: true,
+      detail: true,
+      severity: true,
+    },
   });
 }
 

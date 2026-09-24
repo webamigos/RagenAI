@@ -111,6 +111,40 @@ describe('BrainGraphCanvas', () => {
     ).toBeVisible();
   });
 
+  it('names every page of a small graph, and only the flagged ones of a large one', async () => {
+    const big = {
+      ...view,
+      nodes: Array.from({ length: 61 }, (_, i) => ({
+        ...view.nodes[1]!,
+        id: `00000000-0000-4000-8000-${String(i).padStart(12, '0')}`,
+        title: `Strona ${i}`,
+      })),
+      edges: [],
+    };
+    const { unmount } = render(
+      <NextIntlClientProvider locale="en" messages={messages}>
+        <BrainGraphCanvas view={view} />
+      </NextIntlClientProvider>,
+    );
+    await waitFor(() => expect(sigma.instances).toHaveLength(1));
+    type G = { getNodeAttributes: (id: string) => { forceLabel: boolean } };
+    // B has no open finding, and is named anyway: the graph is small.
+    expect(
+      (sigma.instances[0]!.graph as G).getNodeAttributes(B).forceLabel,
+    ).toBe(true);
+    unmount();
+    render(
+      <NextIntlClientProvider locale="en" messages={messages}>
+        <BrainGraphCanvas view={big} />
+      </NextIntlClientProvider>,
+    );
+    await waitFor(() => expect(sigma.instances).toHaveLength(2));
+    expect(
+      (sigma.instances[1]!.graph as G).getNodeAttributes(big.nodes[0]!.id)
+        .forceLabel,
+    ).toBe(false);
+  });
+
   it('opens a card with the relation’s origin in words and the two links', async () => {
     render(
       <NextIntlClientProvider locale="en" messages={messages}>

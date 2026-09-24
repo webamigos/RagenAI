@@ -93,6 +93,33 @@ describe('assembleCandidates', () => {
   const result = assembleCandidates(SOURCE, [WINDOW]);
   const bySlug = new Map(result.pages.map((p) => [p.slug, p]));
 
+  it('stores the document’s own words, not the model’s rendering of them', () => {
+    const text =
+      'Opłata miesięczna wynosi **EUR 44** i jest pobierana z góry „za cały miesiąc”.';
+    const result = assembleCandidates({ ...SOURCE, text }, [
+      {
+        entities: [
+          { key: 'e', title: 'Opłata', type: 'POLICY', description: 'd' },
+        ],
+        claims: [
+          {
+            entityKey: 'e',
+            statement: 'Opłata to 44 EUR.',
+            // Markdown dropped and the quotation marks straightened: the
+            // match forgives both, the stored quote must not.
+            quote:
+              'opłata miesięczna wynosi EUR 44 i jest pobierana z góry "za cały miesiąc"',
+            locator: '§1',
+          },
+        ],
+        relations: [],
+      },
+    ]);
+    expect(result.pages[0]!.sources[0]!.quote).toBe(
+      'Opłata miesięczna wynosi **EUR 44** i jest pobierana z góry „za cały miesiąc”',
+    );
+  });
+
   it('keeps a claim whose quote is in the source, across a line break', () => {
     const page = bySlug.get('wdrozenie-nowego-pracownika');
     expect(page?.sources.map((s) => s.span)).toEqual(['§2']);

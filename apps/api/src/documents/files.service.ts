@@ -249,8 +249,10 @@ export class FilesService {
     folderId: string | null,
     organizationId: string,
   ): Promise<OperationResult> {
+    // A published Brain page's file carries no folder (spec E10): a folder
+    // would give it a team, and its readers are the page's, not a folder's.
     const file = await this.prisma.client.userFile.findFirst({
-      where: { id: fileId, organizationId },
+      where: { id: fileId, organizationId, publishedPages: { none: {} } },
       select: { id: true },
     });
 
@@ -295,8 +297,14 @@ export class FilesService {
       );
     }
 
+    // Not a published Brain page's file: it belongs to no project (E10), and
+    // a copy would carry its `brain` metadata into one.
     const sourceFile = await this.prisma.client.userFile.findFirst({
-      where: { id: sourceFileId, organizationId: orgId },
+      where: {
+        id: sourceFileId,
+        organizationId: orgId,
+        publishedPages: { none: {} },
+      },
     });
 
     if (!sourceFile) {
@@ -412,7 +420,12 @@ export class FilesService {
       embeddingStatus = [],
     } = options ?? {};
 
-    const baseWhere: Record<string, unknown> = { organizationId };
+    // Published Brain pages' files are not documents; the web listing
+    // (`buildUserFilesWhere`) leaves them out too (spec E10).
+    const baseWhere: Record<string, unknown> = {
+      organizationId,
+      publishedPages: { none: {} },
+    };
 
     if (folderId !== undefined) {
       baseWhere.folderId = folderId;

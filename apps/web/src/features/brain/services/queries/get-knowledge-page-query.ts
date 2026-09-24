@@ -246,12 +246,17 @@ export async function getKnowledgePageQuery(
   };
 }
 
-function publicationState(
+export function publicationState(
   publishedAt: Date | null,
   fileStatus: string | null,
 ): KnowledgePageDetail['publication'] {
   if (publishedAt) {
-    return fileStatus === 'COMPLETED' ? 'published' : 'publishing';
+    if (fileStatus === 'COMPLETED') {
+      return 'published';
+    }
+    // The worker gave up after its retries. Not "being written": nothing is,
+    // and saying so is what lets a person publish again.
+    return fileStatus === 'FAILED' ? 'failed' : 'publishing';
   }
   return fileStatus === null ? 'none' : 'withdrawn';
 }

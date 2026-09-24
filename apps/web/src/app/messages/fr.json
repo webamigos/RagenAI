@@ -1378,7 +1378,9 @@
     "reembed-error": "Erreur lors du retraitement",
     "policy-all": "Politique modifiée : {count, plural, one {# fichier} other {# fichiers}}",
     "policy-partial": "Politique modifiée sur {succeeded} fichiers sur {total}",
-    "policy-error": "Erreur lors du changement de politique"
+    "policy-error": "Erreur lors du changement de politique",
+    "staged-sent": "Envoyés à la base de connaissances : {sent} sur {total}",
+    "staged-send-error": "Les documents de Brain n’ont pas pu être envoyés — réessayez."
   },
   "bulk-action-bar": {
     "aria-label": "Opérations groupées sur les fichiers",
@@ -1390,7 +1392,8 @@
     "move": "Déplacer vers un dossier",
     "share": "Partager",
     "change-policy": "Changer la politique",
-    "reembed": "Retraiter"
+    "reembed": "Retraiter",
+    "send-staged": "Indexer depuis Brain ({count})"
   },
   "share-dialog": {
     "bulk-title": "Partager {count, plural, one {# fichier} other {# fichiers}}",
@@ -2605,7 +2608,7 @@
       "none": "Aucun document à extraire — ajoutez d’abord des documents à la base de connaissances.",
       "not-extracted": "Non extrait",
       "pages": "Pages : {count}",
-      "too-many": "Au plus {max} documents par exécution.",
+      "too-many": "Documents par exécution, au plus : {max}.",
       "cancel": "Annuler",
       "start": "Lancer l’extraction ({count})",
       "started": "Extraction lancée — documents : {count}. Les candidates apparaissent à mesure que chacun se termine.",
@@ -2632,8 +2635,8 @@
       "inferred": "Relations inférées",
       "inferred-hidden": "Masquées",
       "inferred-shown": "Affichées ({count})",
-      "shown": "{nodes} pages sur {totalNodes} et {edges} relations sur {totalEdges} affichées",
-      "canvas-label": "Graphe de {nodes} pages et {edges} relations",
+      "shown": "Pages : {nodes} sur {totalNodes} · relations : {edges} sur {totalEdges}",
+      "canvas-label": "Graphe — pages : {nodes}, relations : {edges}",
       "failed": "Le graphe n’a pas pu être dessiné dans ce navigateur — les onglets pages et constats montrent les mêmes données.",
       "open-findings": "Constats ouverts : {count}",
       "open-page": "Ouvrir la page",
@@ -2653,7 +2656,7 @@
       }
     },
     "export": {
-      "ready": "Prêtes à exporter : {count} pages",
+      "ready": "Prêtes à exporter : {count}",
       "download": "Télécharger le paquet (.zip)",
       "none": "Approuvez une page avec un responsable pour l’exporter",
       "skipped": {
@@ -2669,7 +2672,8 @@
         "none": "Hors de la base de connaissances",
         "publishing": "Écriture dans la base de connaissances…",
         "published": "Dans la base de connaissances — les réponses peuvent la citer",
-        "withdrawn": "Retirée de la base de connaissances"
+        "withdrawn": "Retirée de la base de connaissances",
+        "failed": "L’écriture dans la base de connaissances a échoué — publiez à nouveau"
       },
       "outdated": "La page a changé depuis sa publication — republiez pour mettre à jour la base de connaissances.",
       "publish": "Publier dans la base de connaissances",
@@ -2719,15 +2723,18 @@
       "upload": "Téléverser dans Brain",
       "uploaded": "Téléversés dans Brain : {count} — stockés et analysés, non consultables",
       "upload-failed": "Le téléversement a échoué — vérifiez le fichier et réessayez.",
-      "staged-summary": "Dans Brain, non consultables : {count} documents, dont {uncurated} sans page approuvée."
+      "staged-summary": "Dans Brain, hors recherche : {count} · sans page approuvée : {uncurated}",
+      "uploaded-partly": "{uploaded} sur {total} importés dans Brain ; les autres ont échoué",
+      "staged-oldest": "le plus ancien importé {when}"
     },
     "publish-all": {
       "button": "Publier les approuvées ({count})",
       "confirm-title": "Publier toutes les pages approuvées ?",
-      "confirm-description": "Les pages qui servent déjà leur texte actuel restent telles quelles ; les pages modifiées sont republiées, les nouvelles publiées. Chaque publication est enregistrée sous votre nom. Les pages sans responsable ou ouvertes à personne sont ignorées.",
+      "confirm-description": "Les pages qui servent déjà leur texte actuel restent telles quelles ; les pages modifiées sont republiées, les nouvelles publiées. Chaque publication est enregistrée sous votre nom. Les pages sans responsable ou ouvertes à personne sont ignorées. Les pages retirées le restent.",
       "confirm": "Publier",
       "done": "En file : {queued} · inchangées : {unchanged} · ignorées : {refused}",
-      "failed": "La publication n’a pas pu démarrer — rechargez la page et réessayez."
+      "failed": "La publication n’a pas pu démarrer — rechargez la page et réessayez.",
+      "not-written": "{count, plural, one {# page enregistrée comme publiée mais non écrite dans l’index — relancez} other {# pages enregistrées comme publiées mais non écrites dans l’index — relancez}}"
     }
   }
 }

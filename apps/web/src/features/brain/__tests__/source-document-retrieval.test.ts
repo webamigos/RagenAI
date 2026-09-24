@@ -40,6 +40,7 @@ describe('withdrawSourceDocumentCommand', () => {
     db.userFile.findFirst.mockResolvedValue({
       id: 'f1',
       embeddingStatus: 'COMPLETED',
+      metadata: { summary: 's' },
     });
     db.knowledgePageSource.findFirst.mockResolvedValue({ id: 1 });
     await expect(withdrawSourceDocumentCommand(input)).resolves.toEqual({
@@ -58,7 +59,12 @@ describe('withdrawSourceDocumentCommand', () => {
     expect(vectors.deleteFileFromVectorStore).toHaveBeenCalledWith('f1', ORG);
     expect(db.userFile.updateMany).toHaveBeenCalledWith({
       where: { organizationId: ORG, id: 'f1' },
-      data: { embeddingStatus: 'WITHDRAWN' },
+      // The marker outlives any producer that resets the status and
+      // re-ingests (Drive sync, a folder's PII change, bulk re-embed).
+      data: {
+        embeddingStatus: 'WITHDRAWN',
+        metadata: { summary: 's', retrieval: 'withdrawn' },
+      },
     });
     expect(
       vectors.deleteFileFromVectorStore.mock.invocationCallOrder[0],
@@ -127,13 +133,60 @@ describe('restoreSourceDocumentCommand', () => {
     });
     expect(reembed.reembedFileCommand).not.toHaveBeenCalled();
   });
+
+  it('clears the marker before re-running ingest, so the worker indexes it', async () => {
+    db.userFile.findFirst.mockResolvedValue({
+      id: 'f1',
+      embeddingStatus: 'WITHDRAWN',
+      metadata: { summary: 's', retrieval: 'withdrawn' },
+    });
+    await restoreSourceDocumentCommand(input);
+    expect(db.userFile.updateMany).toHaveBeenCalledWith({
+      where: { organizationId: ORG, id: 'f1', embeddingStatus: 'WITHDRAWN' },
+      data: { metadata: { summary: 's' } },
+    });
+    expect(db.userFile.updateMany.mock.invocationCallOrder[0]).toBeLessThan(
+      reembed.reembedFileCommand.mock.invocationCallOrder[0]!,
+    );
+  });
+
+  it('puts a document back to WITHDRAWN, marker and all, when its ingest could not start', async () => {
+    db.userFile.findFirst.mockResolvedValue({
+      id: 'f1',
+      embeddingStatus: 'WITHDRAWN',
+      metadata: { retrieval: 'withdrawn' },
+    });
+    reembed.reembedFileCommand.mockRejectedValue(new Error('redis down'));
+    await expect(restoreSourceDocumentCommand(input)).resolves.toEqual({
+      success: false,
+      error: 'failed-to-start',
+    });
+    expect(db.userFile.updateMany).toHaveBeenLastCalledWith({
+      // Only if no run has claimed the file since the reset.
+      where: { organizationId: ORG, id: 'f1', embeddingStatus: 'NOT_STARTED' },
+      data: {
+        embeddingStatus: 'WITHDRAWN',
+        metadata: { retrieval: 'withdrawn' },
+      },
+    });
+  });
 });
 
 describe('getBrainDocumentsQuery', () => {
   it('counts approved and candidate pages per document and reads its retrieval state', async () => {
     db.userFile.findMany.mockResolvedValue([
-      { id: 'f1', fileName: 'a.pdf', embeddingStatus: 'COMPLETED' },
-      { id: 'f2', fileName: 'b.pdf', embeddingStatus: 'WITHDRAWN' },
+      {
+        id: 'f1',
+        fileName: 'a.pdf',
+        embeddingStatus: 'COMPLETED',
+        createdAt: new Date('2026-09-01T10:00:00.000Z'),
+      },
+      {
+        id: 'f2',
+        fileName: 'b.pdf',
+        embeddingStatus: 'WITHDRAWN',
+        createdAt: null,
+      },
     ]);
     db.knowledgePageSource.groupBy
       .mockResolvedValueOnce([{ fileId: 'f1', _count: { pageId: 2 } }])
@@ -145,6 +198,7 @@ describe('getBrainDocumentsQuery', () => {
         approvedPages: 2,
         candidatePages: 0,
         retrieval: 'in',
+        uploadedAt: '2026-09-01T10:00:00.000Z',
       },
       {
         fileId: 'f2',
@@ -152,6 +206,7 @@ describe('getBrainDocumentsQuery', () => {
         approvedPages: 0,
         candidatePages: 1,
         retrieval: 'withdrawn',
+        uploadedAt: null,
       },
     ]);
   });

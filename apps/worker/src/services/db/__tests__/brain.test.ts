@@ -192,6 +192,24 @@ describe('the EXTRACTION_FAILED finding', () => {
     });
   });
 
+  // Two runs racing on one document: the partial unique index refuses the
+  // second insert, and the loser refreshes the winner's row (spec B3).
+  it('refreshes the other run’s finding when the index refuses a second', async () => {
+    prisma.knowledgeFinding.findFirst
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce({ id: 9 });
+    prisma.knowledgeFinding.create.mockRejectedValueOnce(
+      Object.assign(new Error('Unique constraint failed'), { code: 'P2002' }),
+    );
+    await expect(
+      recordExtractionFailed({ orgId: 'org-1', fileId: 'file-1', detail }),
+    ).resolves.toBeUndefined();
+    expect(prisma.knowledgeFinding.updateMany).toHaveBeenCalledWith({
+      where: { organizationId: 'org-1', id: 9 },
+      data: expect.objectContaining({ detail }),
+    });
+  });
+
   it('is resolved within the organization only', async () => {
     prisma.knowledgeFinding.updateMany.mockResolvedValue({ count: 1 });
     await resolveExtractionFailed({ orgId: 'org-1', fileId: 'file-1' });

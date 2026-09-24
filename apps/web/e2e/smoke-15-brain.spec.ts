@@ -53,7 +53,7 @@ test.describe('Ragen Brain panel (smoke)', () => {
   test('offers the bundle and serves it as a zip', async ({ page }) => {
     await page.goto('/pl/brain');
     const bar = page.getByTestId('brain-export');
-    await expect(bar).toContainText(/Gotowe do eksportu: \d+ stron/, {
+    await expect(bar).toContainText(/Gotowe do eksportu: \d+/, {
       timeout: 15000,
     });
     const res = await page.request.get('/api/brain/export');
@@ -66,7 +66,7 @@ test.describe('Ragen Brain panel (smoke)', () => {
   test('draws the graph with an honest count', async ({ page }) => {
     await page.goto('/pl/brain/graph');
     await expect(page.getByTestId('brain-graph-count')).toContainText(
-      /Wyświetlono \d+ z \d+ stron/,
+      /Strony: \d+ z \d+/,
       { timeout: 15000 },
     );
     await expect(page.getByTestId('brain-graph')).toBeVisible();

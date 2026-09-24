@@ -12,6 +12,7 @@ const db = vi.hoisted(() => ({
 }));
 const qdrant = vi.hoisted(() => ({
   deleteByFileId: vi.fn(),
+  deleteBrainChunks: vi.fn(),
   addDocuments: vi.fn(),
 }));
 const vectors = vi.hoisted(() => ({ addDocumentsToVectorStore: vi.fn() }));
@@ -51,10 +52,14 @@ describe('publishKnowledgePage', () => {
       status: 'published',
       chunks: 1,
     });
-    expect(qdrant.deleteByFileId).toHaveBeenCalledWith({
+    // This generation and older, never a newer run's chunks.
+    expect(qdrant.deleteBrainChunks).toHaveBeenCalledWith({
       orgId: 'org-1',
       fileId: 'file-7',
+      generation: 3,
+      scope: 'upTo',
     });
+    expect(qdrant.deleteByFileId).not.toHaveBeenCalled();
     const { docs, orgId, projectId } =
       vectors.addDocumentsToVectorStore.mock.calls[0]![0];
     expect({ orgId, projectId }).toEqual({ orgId: 'org-1', projectId: null });
@@ -63,6 +68,7 @@ describe('publishKnowledgePage', () => {
       organization_id: 'org-1',
       accessible_by: ['team:hr', 'user:anna'],
       section_path: 'Urlop',
+      brain_generation: 3,
     });
     expect(docs[0].pageContent).toContain('Przysługuje 26 dni');
     expect(db.completePublication).toHaveBeenCalledWith({
@@ -72,7 +78,7 @@ describe('publishKnowledgePage', () => {
       generation: 3,
     });
     // Delete strictly before the write.
-    expect(qdrant.deleteByFileId.mock.invocationCallOrder[0]).toBeLessThan(
+    expect(qdrant.deleteBrainChunks.mock.invocationCallOrder[0]).toBeLessThan(
       vectors.addDocumentsToVectorStore.mock.invocationCallOrder[0]!,
     );
   });
@@ -87,23 +93,36 @@ describe('publishKnowledgePage', () => {
       chunks: 0,
     });
     expect(vectors.addDocumentsToVectorStore).not.toHaveBeenCalled();
+    // The newer run owns the file; nothing of it is touched.
     expect(qdrant.deleteByFileId).not.toHaveBeenCalled();
+    expect(qdrant.deleteBrainChunks).not.toHaveBeenCalled();
   });
 
-  it('writes nothing for a page that was withdrawn', async () => {
+  it('writes nothing for a page that was withdrawn, and clears what an earlier attempt left', async () => {
     db.getPageForPublication.mockResolvedValue({ ...PAGE, publishedAt: null });
     await expect(publishKnowledgePage(input)).resolves.toMatchObject({
       status: 'stale',
     });
     expect(vectors.addDocumentsToVectorStore).not.toHaveBeenCalled();
+    expect(qdrant.deleteByFileId).toHaveBeenCalledWith({
+      orgId: 'org-1',
+      fileId: 'file-7',
+    });
   });
 
-  it('takes its chunks back when an unpublish lands while it writes', async () => {
+  it('takes back only its own chunks when a newer publication lands while it writes', async () => {
     db.currentPublicationGeneration.mockResolvedValue(4);
     await expect(publishKnowledgePage(input)).resolves.toMatchObject({
       status: 'stale',
     });
-    expect(qdrant.deleteByFileId).toHaveBeenCalledTimes(2);
+    // By generation, not by file: generation 4's chunks are the page's now.
+    expect(qdrant.deleteBrainChunks).toHaveBeenLastCalledWith({
+      orgId: 'org-1',
+      fileId: 'file-7',
+      generation: 3,
+      scope: 'only',
+    });
+    expect(qdrant.deleteByFileId).not.toHaveBeenCalled();
     expect(db.completePublication).not.toHaveBeenCalled();
   });
 
@@ -112,7 +131,9 @@ describe('publishKnowledgePage', () => {
     await expect(publishKnowledgePage(input)).resolves.toMatchObject({
       status: 'stale',
     });
-    expect(qdrant.deleteByFileId).toHaveBeenCalledTimes(2);
+    expect(qdrant.deleteBrainChunks).toHaveBeenLastCalledWith(
+      expect.objectContaining({ generation: 3, scope: 'only' }),
+    );
   });
 
   it('answers missing for a page with no publication file', async () => {

@@ -1378,7 +1378,9 @@
     "reembed-error": "Hiba történt az újrafeldolgozás közben",
     "policy-all": "Szabály módosítva: {count, plural, one {# fájl} other {# fájl}}",
     "policy-partial": "Szabály módosítva: {succeeded} / {total} fájl",
-    "policy-error": "Hiba a szabály módosításakor"
+    "policy-error": "Hiba a szabály módosításakor",
+    "staged-sent": "Tudásbázisba küldve: {sent}/{total}",
+    "staged-send-error": "A Brain dokumentumait nem sikerült elküldeni – próbálja újra."
   },
   "bulk-action-bar": {
     "aria-label": "Tömeges fájlműveletek",
@@ -1390,7 +1392,8 @@
     "move": "Áthelyezés mappába",
     "share": "Megosztás",
     "change-policy": "Szabály módosítása",
-    "reembed": "Újrafeldolgozás"
+    "reembed": "Újrafeldolgozás",
+    "send-staged": "Indexelés a Brainből ({count})"
   },
   "share-dialog": {
     "bulk-title": "{count, plural, one {# fájl} other {# fájl}} megosztása",
@@ -2605,7 +2608,7 @@
       "none": "Nincs kinyerhető dokumentum — először adjon dokumentumokat a tudásbázishoz.",
       "not-extracted": "Nincs kinyerve",
       "pages": "Oldalak: {count}",
-      "too-many": "Egy futásban legfeljebb {max} dokumentum.",
+      "too-many": "Dokumentumok egy futásban, legfeljebb: {max}.",
       "cancel": "Mégse",
       "start": "Kinyerés indítása ({count})",
       "started": "Kinyerés elindítva — dokumentumok: {count}. A jelöltek akkor jelennek meg, amikor egy-egy dokumentum elkészül.",
@@ -2632,8 +2635,8 @@
       "inferred": "Kikövetkeztetett kapcsolatok",
       "inferred-hidden": "Elrejtve",
       "inferred-shown": "Megjelenítve ({count})",
-      "shown": "{nodes} / {totalNodes} oldal és {edges} / {totalEdges} kapcsolat látható",
-      "canvas-label": "{nodes} oldal és {edges} kapcsolat gráfja",
+      "shown": "Oldalak: {nodes}/{totalNodes} · kapcsolatok: {edges}/{totalEdges}",
+      "canvas-label": "Gráf — oldalak: {nodes}, kapcsolatok: {edges}",
       "failed": "A gráfot nem sikerült megrajzolni ebben a böngészőben — ugyanezek az adatok az oldalak és megállapítások lapon vannak.",
       "open-findings": "Nyitott megállapítások: {count}",
       "open-page": "Oldal megnyitása",
@@ -2653,7 +2656,7 @@
       }
     },
     "export": {
-      "ready": "Exportálásra kész: {count} oldal",
+      "ready": "Exportálásra kész: {count}",
       "download": "Csomag letöltése (.zip)",
       "none": "Hagyjon jóvá egy felelőssel rendelkező oldalt az exportáláshoz",
       "skipped": {
@@ -2669,7 +2672,8 @@
         "none": "Nincs a tudásbázisban",
         "publishing": "Írás a tudásbázisba…",
         "published": "A tudásbázisban — a válaszok idézhetik",
-        "withdrawn": "Visszavonva a tudásbázisból"
+        "withdrawn": "Visszavonva a tudásbázisból",
+        "failed": "A tudásbázisba írás nem sikerült – tegye közzé újra"
       },
       "outdated": "Az oldal megváltozott a közzététel óta — tegye közzé újra a tudásbázis frissítéséhez.",
       "publish": "Közzététel a tudásbázisban",
@@ -2719,15 +2723,18 @@
       "upload": "Feltöltés a Brainbe",
       "uploaded": "Feltöltve a Brainbe: {count} — tárolva és feldolgozva, nem kereshető",
       "upload-failed": "A feltöltés nem sikerült — ellenőrizze a fájlt, és próbálja újra.",
-      "staged-summary": "A Brainben, nem kereshető: {count} dokumentum, ebből {uncurated} még jóváhagyott oldal nélkül."
+      "staged-summary": "A Brainben, keresésen kívül: {count} · jóváhagyott oldal nélkül: {uncurated}",
+      "uploaded-partly": "{uploaded}/{total} feltöltve a Brainbe; a többi sikertelen",
+      "staged-oldest": "a legrégebbi feltöltve: {when}"
     },
     "publish-all": {
       "button": "Jóváhagyottak közzététele ({count})",
       "confirm-title": "Közzéteszi az összes jóváhagyott oldalt?",
-      "confirm-description": "A már aktuális szövegüket kiszolgáló oldalak változatlanok maradnak; a módosultak újra, az újak először kerülnek közzétételre. Minden közzététel az Ön nevén kerül rögzítésre. A felelős nélküli vagy senki számára nem elérhető oldalak kimaradnak.",
+      "confirm-description": "A már aktuális szövegüket kiszolgáló oldalak változatlanok maradnak; a módosultak újra, az újak először kerülnek közzétételre. Minden közzététel az Ön nevén kerül rögzítésre. A felelős nélküli vagy senki számára nem elérhető oldalak kimaradnak. A visszavont oldalak visszavonva maradnak.",
       "confirm": "Közzététel",
       "done": "Sorban: {queued} · változatlan: {unchanged} · kihagyva: {refused}",
-      "failed": "A közzététel nem indult el — töltse újra az oldalt, és próbálja újra."
+      "failed": "A közzététel nem indult el — töltse újra az oldalt, és próbálja újra.",
+      "not-written": "{count} oldal közzétettként rögzült, de nem került az indexbe – futtassa újra"
     }
   }
 }

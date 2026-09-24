@@ -172,6 +172,13 @@ export async function judgeContradictions(input: {
         a,
         b,
       );
+      // An answer whose every item named a passage that was not shown is
+      // not "no contradiction" — it is no usable answer. Read as judged, it
+      // would clear an open finding the model never actually looked at.
+      if (contradictions.length === 0 && rejectedItems > 0) {
+        problem = `${rejectedItems} item(s) named a passage number that was not shown`;
+        continue;
+      }
       return {
         status: 'judged',
         contradictions,

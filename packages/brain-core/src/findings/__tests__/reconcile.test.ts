@@ -62,6 +62,14 @@ describe('reconcileFindings', () => {
     expect(plan.create).toEqual([]);
   });
 
+  it('re-grades an open finding whose page started serving, keeping its id', () => {
+    const wanted = { ...want('STALE', 1), severity: 'HIGH' as const };
+    const stored = { ...row(9, 'STALE', 1), severity: 'MEDIUM' };
+    expect(reconcileFindings([wanted], [stored]).update).toEqual([
+      { id: 9, finding: wanted },
+    ]);
+  });
+
   it('resolves an open finding whose condition is gone', () => {
     expect(reconcileFindings([], [row(5, 'UNOWNED', 1)]).resolve).toEqual([5]);
   });

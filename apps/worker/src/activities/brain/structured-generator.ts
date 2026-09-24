@@ -67,12 +67,15 @@ export function structuredGenerator(
       };
     } catch (error) {
       // The SDK refused an answer that did not match the schema. Returned
-      // rather than thrown so the tokens it cost are charged to the budget,
-      // and so the retry is told which fields were wrong; the answer itself
-      // is dropped, since it is the model's rendering of the document.
+      // rather than thrown so the tokens it cost are charged to the budget.
+      // The raw answer is handed back when it is at least JSON, so the
+      // caller's own parse names the fields that were wrong — `null` made
+      // every retry read "(root): invalid_type", which tells the model
+      // nothing. Only the caller's field paths ever leave: the answer is the
+      // model's rendering of the document and is never logged.
       if (NoObjectGeneratedError.isInstance(error)) {
         return {
-          object: null,
+          object: parseLoosely(error.text),
           usage: {
             inputTokens: error.usage?.inputTokens ?? 0,
             outputTokens: error.usage?.outputTokens ?? 0,
@@ -82,4 +85,16 @@ export function structuredGenerator(
       throw error;
     }
   };
+}
+
+/** The model's raw text as JSON, or `null` when it is not (cut off, prose). */
+export function parseLoosely(text: string | undefined): unknown {
+  if (!text) {
+    return null;
+  }
+  try {
+    return JSON.parse(text) as unknown;
+  } catch {
+    return null;
+  }
 }

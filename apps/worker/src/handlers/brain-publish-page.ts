@@ -27,7 +27,31 @@ export async function brainPublishPage(
     },
     startToCloseTimeout: '10 minutes',
   });
-  const result = await publishKnowledgePage(payload);
+  const { markPublicationFailed } = ctx.steps<typeof activities>({
+    retry: { initialInterval: '1 second', maximumAttempts: 2 },
+    startToCloseTimeout: '1 minute',
+  });
+  let result: BrainPublishPageResult;
+  try {
+    result = await publishKnowledgePage(payload);
+  } catch (error) {
+    // Out of retries. Said where a person looks — the file reads FAILED and
+    // the panel offers to publish again — and in the log, which the job
+    // runtime's own final failure never reached. The error's class only:
+    // an embedding call's error can carry the text it was sent.
+    const kind = error instanceof Error ? error.name : 'unknown error';
+    ctx.log.error(
+      `brain publish ${payload.pageId} (generation ${payload.generation}) gave up: ${kind}`,
+    );
+    try {
+      await markPublicationFailed(payload);
+    } catch {
+      ctx.log.error(
+        `brain publish ${payload.pageId}: could not record the failure either`,
+      );
+    }
+    throw error;
+  }
   ctx.log.info(
     `brain publish ${payload.pageId} (generation ${payload.generation}): ${result.status}, ${result.chunks} chunks`,
   );

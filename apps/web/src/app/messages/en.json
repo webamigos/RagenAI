@@ -1378,7 +1378,9 @@
     "reembed-error": "Error during re-embedding",
     "policy-all": "Policy changed: {count, plural, one {# file} other {# files}}",
     "policy-partial": "Policy changed on {succeeded} of {total} files",
-    "policy-error": "Error while changing the policy"
+    "policy-error": "Error while changing the policy",
+    "staged-sent": "Sent to the knowledge base: {sent} of {total}",
+    "staged-send-error": "Staged documents could not be sent — try again."
   },
   "bulk-action-bar": {
     "aria-label": "Bulk file operations",
@@ -1390,7 +1392,8 @@
     "move": "Move to folder",
     "share": "Share",
     "change-policy": "Change policy",
-    "reembed": "Reprocess"
+    "reembed": "Reprocess",
+    "send-staged": "Index staged ({count})"
   },
   "share-dialog": {
     "bulk-title": "Share {count, plural, one {# file} other {# files}}",
@@ -2605,7 +2608,7 @@
       "none": "No documents to extract from — add documents to the knowledge base first.",
       "not-extracted": "Not extracted",
       "pages": "Pages: {count}",
-      "too-many": "At most {max} documents in one run.",
+      "too-many": "Documents in one run, at most: {max}.",
       "cancel": "Cancel",
       "start": "Start extraction ({count})",
       "started": "Extraction started — documents: {count}. Candidates appear as each one finishes.",
@@ -2632,8 +2635,8 @@
       "inferred": "Inferred relations",
       "inferred-hidden": "Hidden",
       "inferred-shown": "Shown ({count})",
-      "shown": "Showing {nodes} of {totalNodes} pages and {edges} of {totalEdges} relations",
-      "canvas-label": "Graph of {nodes} pages and {edges} relations",
+      "shown": "Pages: {nodes} of {totalNodes} · relations: {edges} of {totalEdges}",
+      "canvas-label": "Graph — pages: {nodes}, relations: {edges}",
       "failed": "The graph could not be drawn in this browser — the pages and findings tabs show the same data.",
       "open-findings": "Open findings: {count}",
       "open-page": "Open page",
@@ -2653,7 +2656,7 @@
       }
     },
     "export": {
-      "ready": "Ready to export: {count} pages",
+      "ready": "Ready to export: {count}",
       "download": "Download bundle (.zip)",
       "none": "Approve a page with an owner to export it",
       "skipped": {
@@ -2669,7 +2672,8 @@
         "none": "Not in the knowledge base",
         "publishing": "Being written to the knowledge base…",
         "published": "In the knowledge base — answers can cite it",
-        "withdrawn": "Withdrawn from the knowledge base"
+        "withdrawn": "Withdrawn from the knowledge base",
+        "failed": "Writing to the knowledge base failed — publish it again"
       },
       "outdated": "The page changed since it was published — republish to update the knowledge base.",
       "publish": "Publish to knowledge base",
@@ -2719,15 +2723,18 @@
       "upload": "Upload into Brain",
       "uploaded": "Uploaded into Brain: {count} — stored and parsed, not searchable",
       "upload-failed": "The upload failed — check the file and try again.",
-      "staged-summary": "Staged in Brain, not searchable: {count} documents, {uncurated} without an approved page yet."
+      "staged-summary": "Staged in Brain, not searchable: {count} · without an approved page yet: {uncurated}",
+      "uploaded-partly": "Uploaded {uploaded} of {total} into Brain; the rest failed",
+      "staged-oldest": "oldest uploaded {when}"
     },
     "publish-all": {
       "button": "Publish approved ({count})",
       "confirm-title": "Publish every approved page?",
-      "confirm-description": "Pages that already serve their current text are left alone; changed pages are re-published, new ones published. Each is recorded under your name. Pages without an owner or open to nobody are skipped.",
+      "confirm-description": "Pages that already serve their current text are left alone; changed pages are re-published, new ones published. Each is recorded under your name. Pages without an owner or open to nobody are skipped. Withdrawn pages stay withdrawn.",
       "confirm": "Publish",
       "done": "Queued: {queued} · unchanged: {unchanged} · skipped: {refused}",
-      "failed": "Publishing could not start — reload the page and try again."
+      "failed": "Publishing could not start — reload the page and try again.",
+      "not-written": "{count, plural, one {# page was recorded as published but not written to the index — run it again} other {# pages were recorded as published but not written to the index — run it again}}"
     }
   }
 }

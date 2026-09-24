@@ -13,6 +13,7 @@ export {
   type DetectContradictionsResult,
 } from './detect-contradictions.js';
 export {
+  markPublicationFailed,
   publishKnowledgePage,
   type PublishKnowledgePageResult,
 } from './publish-knowledge-page.js';

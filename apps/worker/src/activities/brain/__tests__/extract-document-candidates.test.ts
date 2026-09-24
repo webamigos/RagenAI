@@ -172,6 +172,25 @@ describe('extractDocumentCandidates', () => {
     expect(generateObject).toHaveBeenCalledTimes(2);
   });
 
+  it('tells the retry which fields the refused answer got wrong, not "(root)"', async () => {
+    generateObject
+      .mockRejectedValueOnce(
+        new NoObjectGeneratedError({
+          message: 'no object',
+          // JSON, but claims is the wrong type.
+          text: JSON.stringify({ entities: [], claims: 'none', relations: [] }),
+          response: { id: 'r', timestamp: new Date(), modelId: 'm' },
+          usage: { inputTokens: 1, outputTokens: 1, totalTokens: 2 } as never,
+          finishReason: 'stop',
+        } as never),
+      )
+      .mockResolvedValueOnce({ object: ANSWER, usage: USAGE });
+    await extractDocumentCandidates(INPUT);
+    const retryPrompt = generateObject.mock.calls[1]![0].prompt as string;
+    expect(retryPrompt).toContain('claims');
+    expect(retryPrompt).not.toContain('(root)');
+  });
+
   it('raises a finding carrying no document text when both attempts fail', async () => {
     generateObject.mockResolvedValue({
       object: { entities: TEXT },
@@ -217,6 +236,44 @@ describe('extractDocumentCandidates', () => {
         ),
       ).not.toContain('Nowy pracownik');
     }
+  });
+
+  it('treats an answer whose every claim failed its quote check as a failure, keeping earlier candidates', async () => {
+    generateObject.mockResolvedValue({
+      object: {
+        ...ANSWER,
+        claims: [
+          { ...ANSWER.claims[0], quote: 'Tego zdania nie ma w dokumencie.' },
+        ],
+      },
+      usage: USAGE,
+    });
+    const result = await extractDocumentCandidates(INPUT);
+    expect(result.status).toBe('failed');
+    // An earlier good run's candidates survive, and the failure stays open.
+    expect(brainDb.replaceCandidatesFromFile).not.toHaveBeenCalled();
+    expect(brainDb.resolveExtractionFailed).not.toHaveBeenCalled();
+    expect(brainDb.recordExtractionFailed).toHaveBeenCalledWith(
+      expect.objectContaining({
+        detail: expect.objectContaining({
+          reason: expect.stringContaining('nothing usable'),
+        }),
+      }),
+    );
+  });
+
+  it('still reads a document with genuinely nothing to extract as a success', async () => {
+    generateObject.mockResolvedValue({
+      object: { entities: [], claims: [], relations: [] },
+      usage: USAGE,
+    });
+    brainDb.replaceCandidatesFromFile.mockResolvedValue({
+      pagesCreated: 0,
+      pagesReplaced: 0,
+    });
+    const result = await extractDocumentCandidates(INPUT);
+    expect(result.status).toBe('extracted');
+    expect(brainDb.recordExtractionFailed).not.toHaveBeenCalled();
   });
 
   it('returns budget_exhausted and writes nothing when no tokens are left', async () => {

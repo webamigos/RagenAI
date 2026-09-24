@@ -1378,7 +1378,9 @@
     "reembed-error": "Fehler bei der erneuten Verarbeitung",
     "policy-all": "Richtlinie geändert: {count, plural, one {# Datei} other {# Dateien}}",
     "policy-partial": "Richtlinie für {succeeded} von {total} Dateien geändert",
-    "policy-error": "Fehler beim Ändern der Richtlinie"
+    "policy-error": "Fehler beim Ändern der Richtlinie",
+    "staged-sent": "An die Wissensdatenbank gesendet: {sent} von {total}",
+    "staged-send-error": "Die Dokumente aus Brain konnten nicht gesendet werden – erneut versuchen."
   },
   "bulk-action-bar": {
     "aria-label": "Massen-Dateioperationen",
@@ -1390,7 +1392,8 @@
     "move": "In Ordner verschieben",
     "share": "Teilen",
     "change-policy": "Richtlinie ändern",
-    "reembed": "Neu verarbeiten"
+    "reembed": "Neu verarbeiten",
+    "send-staged": "Aus Brain indexieren ({count})"
   },
   "share-dialog": {
     "bulk-title": "{count, plural, one {# Datei} other {# Dateien}} teilen",
@@ -2605,7 +2608,7 @@
       "none": "Keine Dokumente zum Extrahieren — fügen Sie zuerst Dokumente zur Wissensdatenbank hinzu.",
       "not-extracted": "Nicht extrahiert",
       "pages": "Seiten: {count}",
-      "too-many": "Höchstens {max} Dokumente pro Lauf.",
+      "too-many": "Dokumente pro Durchlauf, höchstens: {max}.",
       "cancel": "Abbrechen",
       "start": "Extraktion starten ({count})",
       "started": "Extraktion gestartet — Dokumente: {count}. Kandidaten erscheinen, sobald jedes fertig ist.",
@@ -2632,8 +2635,8 @@
       "inferred": "Abgeleitete Beziehungen",
       "inferred-hidden": "Ausgeblendet",
       "inferred-shown": "Eingeblendet ({count})",
-      "shown": "{nodes} von {totalNodes} Seiten und {edges} von {totalEdges} Beziehungen angezeigt",
-      "canvas-label": "Graph mit {nodes} Seiten und {edges} Beziehungen",
+      "shown": "Seiten: {nodes} von {totalNodes} · Beziehungen: {edges} von {totalEdges}",
+      "canvas-label": "Graph – Seiten: {nodes}, Beziehungen: {edges}",
       "failed": "Der Graph konnte in diesem Browser nicht gezeichnet werden — die Tabs Seiten und Befunde zeigen dieselben Daten.",
       "open-findings": "Offene Befunde: {count}",
       "open-page": "Seite öffnen",
@@ -2653,7 +2656,7 @@
       }
     },
     "export": {
-      "ready": "Bereit zum Export: {count} Seiten",
+      "ready": "Bereit zum Export: {count}",
       "download": "Paket herunterladen (.zip)",
       "none": "Geben Sie eine Seite mit Verantwortlichem frei, um sie zu exportieren",
       "skipped": {
@@ -2669,7 +2672,8 @@
         "none": "Nicht in der Wissensdatenbank",
         "publishing": "Wird in die Wissensdatenbank geschrieben…",
         "published": "In der Wissensdatenbank — Antworten können sie zitieren",
-        "withdrawn": "Aus der Wissensdatenbank zurückgezogen"
+        "withdrawn": "Aus der Wissensdatenbank zurückgezogen",
+        "failed": "Das Schreiben in die Wissensdatenbank ist fehlgeschlagen – erneut veröffentlichen"
       },
       "outdated": "Die Seite hat sich seit der Veröffentlichung geändert — erneut veröffentlichen, um die Wissensdatenbank zu aktualisieren.",
       "publish": "In der Wissensdatenbank veröffentlichen",
@@ -2719,15 +2723,18 @@
       "upload": "In Brain hochladen",
       "uploaded": "In Brain hochgeladen: {count} — gespeichert und verarbeitet, nicht durchsuchbar",
       "upload-failed": "Das Hochladen ist fehlgeschlagen — prüfen Sie die Datei und versuchen Sie es erneut.",
-      "staged-summary": "In Brain, nicht durchsuchbar: {count} Dokumente, davon {uncurated} noch ohne freigegebene Seite."
+      "staged-summary": "In Brain, nicht durchsuchbar: {count} · noch ohne freigegebene Seite: {uncurated}",
+      "uploaded-partly": "{uploaded} von {total} in Brain hochgeladen; der Rest ist fehlgeschlagen",
+      "staged-oldest": "ältestes hochgeladen {when}"
     },
     "publish-all": {
       "button": "Freigegebene veröffentlichen ({count})",
       "confirm-title": "Alle freigegebenen Seiten veröffentlichen?",
-      "confirm-description": "Seiten, die ihren aktuellen Text schon ausliefern, bleiben unverändert; geänderte werden neu veröffentlicht, neue erstmals. Jede Veröffentlichung wird unter Ihrem Namen erfasst. Seiten ohne Verantwortlichen oder für niemanden zugänglich werden übersprungen.",
+      "confirm-description": "Seiten, die ihren aktuellen Text schon ausliefern, bleiben unverändert; geänderte werden neu veröffentlicht, neue erstmals. Jede Veröffentlichung wird unter Ihrem Namen erfasst. Seiten ohne Verantwortlichen oder für niemanden zugänglich werden übersprungen. Zurückgezogene Seiten bleiben zurückgezogen.",
       "confirm": "Veröffentlichen",
       "done": "Eingereiht: {queued} · unverändert: {unchanged} · übersprungen: {refused}",
-      "failed": "Die Veröffentlichung konnte nicht starten — laden Sie die Seite neu und versuchen Sie es erneut."
+      "failed": "Die Veröffentlichung konnte nicht starten — laden Sie die Seite neu und versuchen Sie es erneut.",
+      "not-written": "{count, plural, one {# Seite wurde als veröffentlicht erfasst, aber nicht in den Index geschrieben – erneut ausführen} other {# Seiten wurden als veröffentlicht erfasst, aber nicht in den Index geschrieben – erneut ausführen}}"
     }
   }
 }

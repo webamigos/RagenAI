@@ -109,7 +109,7 @@ export type KnowledgePageDetail = PageRef & {
    * says, the chunks still being written; `published` — serving;
    * `withdrawn` — taken out, the file kept.
    */
-  publication: 'none' | 'publishing' | 'published' | 'withdrawn';
+  publication: 'none' | 'publishing' | 'published' | 'failed' | 'withdrawn';
   /** Published, but its text changed since — a republish would update it. */
   publicationOutdated: boolean;
   /** `accessibleBy` as stored — what the access editor starts from. */

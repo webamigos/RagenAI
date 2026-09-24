@@ -1378,7 +1378,9 @@
     "reembed-error": "Błąd podczas ponownej embeddacji",
     "policy-all": "Zmieniono politykę: {count, plural, one {# plik} few {# pliki} many {# plików} other {# pliki}}",
     "policy-partial": "Zmieniono politykę: {succeeded} z {total} plików",
-    "policy-error": "Błąd podczas zmiany polityki"
+    "policy-error": "Błąd podczas zmiany polityki",
+    "staged-sent": "Wysłano do bazy wiedzy: {sent} z {total}",
+    "staged-send-error": "Nie udało się wysłać dokumentów z Brain — spróbuj ponownie."
   },
   "bulk-action-bar": {
     "aria-label": "Masowe operacje na plikach",
@@ -1390,7 +1392,8 @@
     "move": "Przenieś do folderu",
     "share": "Udostępnij",
     "change-policy": "Zmień politykę",
-    "reembed": "Przetwórz ponownie"
+    "reembed": "Przetwórz ponownie",
+    "send-staged": "Zaindeksuj z Brain ({count})"
   },
   "share-dialog": {
     "bulk-title": "Udostępnij {count, plural, one {# plik} few {# pliki} many {# plików} other {# pliki}}",
@@ -2605,7 +2608,7 @@
       "none": "Brak dokumentów do wyodrębnienia — najpierw dodaj dokumenty do bazy wiedzy.",
       "not-extracted": "Nie wyodrębniono",
       "pages": "Strony: {count}",
-      "too-many": "Najwyżej {max} dokumentów w jednym przebiegu.",
+      "too-many": "Dokumentów w jednym przebiegu najwyżej: {max}.",
       "cancel": "Anuluj",
       "start": "Rozpocznij ({count})",
       "started": "Wyodrębnianie rozpoczęte — dokumenty: {count}. Kandydaci pojawią się, gdy każdy się skończy.",
@@ -2632,8 +2635,8 @@
       "inferred": "Powiązania wnioskowane",
       "inferred-hidden": "Ukryte",
       "inferred-shown": "Widoczne ({count})",
-      "shown": "Wyświetlono {nodes} z {totalNodes} stron i {edges} z {totalEdges} powiązań",
-      "canvas-label": "Graf {nodes} stron i {edges} powiązań",
+      "shown": "Strony: {nodes} z {totalNodes} · powiązania: {edges} z {totalEdges}",
+      "canvas-label": "Graf — strony: {nodes}, powiązania: {edges}",
       "failed": "Nie udało się narysować grafu w tej przeglądarce — te same dane są w zakładkach stron i wykryć.",
       "open-findings": "Otwarte wykrycia: {count}",
       "open-page": "Otwórz stronę",
@@ -2653,7 +2656,7 @@
       }
     },
     "export": {
-      "ready": "Gotowe do eksportu: {count} stron",
+      "ready": "Gotowe do eksportu: {count}",
       "download": "Pobierz paczkę (.zip)",
       "none": "Zatwierdź stronę z właścicielem, żeby ją wyeksportować",
       "skipped": {
@@ -2669,7 +2672,8 @@
         "none": "Poza bazą wiedzy",
         "publishing": "Zapisywanie do bazy wiedzy…",
         "published": "W bazie wiedzy — odpowiedzi mogą ją cytować",
-        "withdrawn": "Wycofana z bazy wiedzy"
+        "withdrawn": "Wycofana z bazy wiedzy",
+        "failed": "Zapis do bazy wiedzy się nie powiódł — opublikuj ponownie"
       },
       "outdated": "Strona zmieniła się od publikacji — opublikuj ponownie, żeby zaktualizować bazę wiedzy.",
       "publish": "Opublikuj w bazie wiedzy",
@@ -2719,15 +2723,18 @@
       "upload": "Wgraj do Brain",
       "uploaded": "Wgrano do Brain: {count} — zapisane i przetworzone, poza wyszukiwaniem",
       "upload-failed": "Wgrywanie się nie powiodło — sprawdź plik i spróbuj ponownie.",
-      "staged-summary": "W Brain, poza wyszukiwaniem: {count} dokumentów, z czego {uncurated} bez zatwierdzonej strony."
+      "staged-summary": "W Brain, poza wyszukiwaniem: {count} · bez zatwierdzonej strony: {uncurated}",
+      "uploaded-partly": "Wgrano do Brain {uploaded} z {total}; pozostałe się nie powiodły",
+      "staged-oldest": "najstarszy wgrany {when}"
     },
     "publish-all": {
       "button": "Opublikuj zatwierdzone ({count})",
       "confirm-title": "Opublikować wszystkie zatwierdzone strony?",
-      "confirm-description": "Strony, które już serwują aktualną treść, zostają bez zmian; zmienione są publikowane ponownie, nowe — po raz pierwszy. Każda publikacja jest zapisywana pod Twoim nazwiskiem. Strony bez właściciela lub niedostępne dla nikogo są pomijane.",
+      "confirm-description": "Strony, które już serwują aktualną treść, zostają bez zmian; zmienione są publikowane ponownie, nowe — po raz pierwszy. Każda publikacja jest zapisywana pod Twoim nazwiskiem. Strony bez właściciela lub niedostępne dla nikogo są pomijane. Wycofane strony pozostają wycofane.",
       "confirm": "Opublikuj",
       "done": "W kolejce: {queued} · bez zmian: {unchanged} · pominięte: {refused}",
-      "failed": "Publikacja nie ruszyła — odśwież stronę i spróbuj ponownie."
+      "failed": "Publikacja nie ruszyła — odśwież stronę i spróbuj ponownie.",
+      "not-written": "{count, plural, one {# strona została zapisana jako opublikowana, ale nie trafiła do indeksu — uruchom ponownie} few {# strony zostały zapisane jako opublikowane, ale nie trafiły do indeksu — uruchom ponownie} many {# stron zostało zapisanych jako opublikowane, ale nie trafiło do indeksu — uruchom ponownie} other {# strony zostały zapisane jako opublikowane, ale nie trafiły do indeksu — uruchom ponownie}}"
     }
   }
 }

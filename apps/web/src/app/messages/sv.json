@@ -1378,7 +1378,9 @@
     "reembed-error": "Fel vid ombearbetning",
     "policy-all": "Policy ändrad: {count, plural, one {# fil} other {# filer}}",
     "policy-partial": "Policy ändrad för {succeeded} av {total} filer",
-    "policy-error": "Fel vid ändring av policy"
+    "policy-error": "Fel vid ändring av policy",
+    "staged-sent": "Skickade till kunskapsbasen: {sent} av {total}",
+    "staged-send-error": "Dokumenten från Brain kunde inte skickas – försök igen."
   },
   "bulk-action-bar": {
     "aria-label": "Massåtgärder på filer",
@@ -1390,7 +1392,8 @@
     "move": "Flytta till mapp",
     "share": "Dela",
     "change-policy": "Ändra policy",
-    "reembed": "Bearbeta igen"
+    "reembed": "Bearbeta igen",
+    "send-staged": "Indexera från Brain ({count})"
   },
   "share-dialog": {
     "bulk-title": "Dela {count, plural, one {# fil} other {# filer}}",
@@ -2605,7 +2608,7 @@
       "none": "Inga dokument att extrahera från — lägg först till dokument i kunskapsbasen.",
       "not-extracted": "Inte extraherat",
       "pages": "Sidor: {count}",
-      "too-many": "Högst {max} dokument per körning.",
+      "too-many": "Dokument per körning, högst: {max}.",
       "cancel": "Avbryt",
       "start": "Starta extraktion ({count})",
       "started": "Extraktion startad — dokument: {count}. Kandidater visas allt eftersom varje blir klart.",
@@ -2632,8 +2635,8 @@
       "inferred": "Härledda relationer",
       "inferred-hidden": "Dolda",
       "inferred-shown": "Visade ({count})",
-      "shown": "Visar {nodes} av {totalNodes} sidor och {edges} av {totalEdges} relationer",
-      "canvas-label": "Graf med {nodes} sidor och {edges} relationer",
+      "shown": "Sidor: {nodes} av {totalNodes} · relationer: {edges} av {totalEdges}",
+      "canvas-label": "Graf — sidor: {nodes}, relationer: {edges}",
       "failed": "Grafen kunde inte ritas i den här webbläsaren — samma data finns under flikarna sidor och fynd.",
       "open-findings": "Öppna fynd: {count}",
       "open-page": "Öppna sidan",
@@ -2653,7 +2656,7 @@
       }
     },
     "export": {
-      "ready": "Redo att exportera: {count} sidor",
+      "ready": "Redo att exportera: {count}",
       "download": "Ladda ned paket (.zip)",
       "none": "Godkänn en sida med ägare för att exportera den",
       "skipped": {
@@ -2669,7 +2672,8 @@
         "none": "Inte i kunskapsbasen",
         "publishing": "Skrivs till kunskapsbasen…",
         "published": "I kunskapsbasen — svar kan citera den",
-        "withdrawn": "Tillbakadragen från kunskapsbasen"
+        "withdrawn": "Tillbakadragen från kunskapsbasen",
+        "failed": "Skrivningen till kunskapsbasen misslyckades – publicera igen"
       },
       "outdated": "Sidan har ändrats sedan den publicerades — publicera igen för att uppdatera kunskapsbasen.",
       "publish": "Publicera i kunskapsbasen",
@@ -2719,15 +2723,18 @@
       "upload": "Ladda upp till Brain",
       "uploaded": "Uppladdat till Brain: {count} — lagrat och tolkat, inte sökbart",
       "upload-failed": "Uppladdningen misslyckades — kontrollera filen och försök igen.",
-      "staged-summary": "I Brain, inte sökbara: {count} dokument, varav {uncurated} ännu utan godkänd sida."
+      "staged-summary": "I Brain, utanför sökningen: {count} · utan godkänd sida: {uncurated}",
+      "uploaded-partly": "{uploaded} av {total} uppladdade till Brain; resten misslyckades",
+      "staged-oldest": "äldsta uppladdad {when}"
     },
     "publish-all": {
       "button": "Publicera godkända ({count})",
       "confirm-title": "Publicera alla godkända sidor?",
-      "confirm-description": "Sidor som redan serverar sin aktuella text lämnas orörda; ändrade publiceras igen, nya för första gången. Varje publicering registreras i ditt namn. Sidor utan ägare eller öppna för ingen hoppas över.",
+      "confirm-description": "Sidor som redan serverar sin aktuella text lämnas orörda; ändrade publiceras igen, nya för första gången. Varje publicering registreras i ditt namn. Sidor utan ägare eller öppna för ingen hoppas över. Tillbakadragna sidor förblir tillbakadragna.",
       "confirm": "Publicera",
       "done": "I kö: {queued} · oförändrade: {unchanged} · överhoppade: {refused}",
-      "failed": "Publiceringen kunde inte starta — ladda om sidan och försök igen."
+      "failed": "Publiceringen kunde inte starta — ladda om sidan och försök igen.",
+      "not-written": "{count, plural, one {# sida registrerades som publicerad men skrevs inte till indexet – kör igen} other {# sidor registrerades som publicerade men skrevs inte till indexet – kör igen}}"
     }
   }
 }

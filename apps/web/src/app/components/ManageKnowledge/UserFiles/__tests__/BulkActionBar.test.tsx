@@ -16,6 +16,7 @@ const messages = {
     share: 'Share',
     'change-policy': 'Change policy',
     reembed: 'Reprocess',
+    'send-staged': 'Index staged ({count})',
   },
 };
 
@@ -109,5 +110,19 @@ describe('BulkActionBar', () => {
     ]) {
       expect(screen.getByTestId(id)).toBeDisabled();
     }
+  });
+
+  it('offers to index staged files only when the selection holds some', async () => {
+    renderBar({});
+    expect(screen.queryByTestId('bulk-send-staged')).not.toBeInTheDocument();
+  });
+
+  it('sends the staged files in the selection', async () => {
+    const onSendStaged = vi.fn();
+    renderBar({ stagedCount: 3, onSendStaged });
+    const button = screen.getByTestId('bulk-send-staged');
+    expect(button).toHaveTextContent('Index staged (3)');
+    await userEvent.click(button);
+    expect(onSendStaged).toHaveBeenCalledOnce();
   });
 });

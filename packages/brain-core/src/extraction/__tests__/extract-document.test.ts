@@ -146,6 +146,21 @@ describe('describeFailure', () => {
     );
   });
 
+  it('adds the HTTP status and retryability of a provider error, never its message', () => {
+    const error = Object.assign(
+      new Error('Your key sk-live-123 is invalid: "tekst"'),
+      {
+        name: 'AI_APICallError',
+        statusCode: 401,
+        isRetryable: false,
+        requestBodyValues: { messages: ['dokument'] },
+      },
+    );
+    expect(describeFailure(error)).toBe(
+      'the call failed (AI_APICallError, HTTP 401, not retryable)',
+    );
+  });
+
   it('copes with a thrown non-error', () => {
     expect(describeFailure('secret text')).toBe('the call failed');
   });

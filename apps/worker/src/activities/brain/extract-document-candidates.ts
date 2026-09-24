@@ -200,13 +200,50 @@ export async function persistExtraction(
       },
     });
     logger.warn(
-      { orgId, fileId, runId, windowIndex: result.windowIndex },
+      {
+        orgId,
+        fileId,
+        runId,
+        windowIndex: result.windowIndex,
+        reason: result.reason,
+      },
       'brain extract: document failed, finding raised',
     );
     return {
       status: 'failed',
       pagesCreated: 0,
       unverifiedClaims: 0,
+      tokens: result.tokens,
+    };
+  }
+
+  // Nothing survived, and something was thrown away: every item failed its
+  // limits, or every claim failed its quote check. That is the model or the
+  // route misbehaving, not a document with nothing in it — and read as a
+  // success it would delete the candidates an earlier good run wrote and
+  // resolve the finding that says something is wrong.
+  const discarded = result.rejectedItems + result.assembled.unverifiedClaims;
+  if (result.assembled.pages.length === 0 && discarded > 0) {
+    const reason = `nothing usable in the answer: ${result.rejectedItems} malformed item(s), ${result.assembled.unverifiedClaims} claim(s) whose quote was not in the document`;
+    await recordExtractionFailed({
+      orgId,
+      fileId,
+      detail: { reason, windowIndex: null, runId },
+    });
+    logger.warn(
+      {
+        orgId,
+        fileId,
+        runId,
+        rejectedItems: result.rejectedItems,
+        unverifiedClaims: result.assembled.unverifiedClaims,
+      },
+      'brain extract: answer discarded entirely, finding raised',
+    );
+    return {
+      status: 'failed',
+      pagesCreated: 0,
+      unverifiedClaims: result.assembled.unverifiedClaims,
       tokens: result.tokens,
     };
   }
@@ -227,6 +264,7 @@ export async function persistExtraction(
       pagesCreated: written.pagesCreated,
       pagesReplaced: written.pagesReplaced,
       unverifiedClaims: result.assembled.unverifiedClaims,
+      rejectedItems: result.rejectedItems,
     },
     'brain extract: candidates written',
   );

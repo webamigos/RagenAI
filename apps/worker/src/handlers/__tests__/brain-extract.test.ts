@@ -87,6 +87,12 @@ describe('brainExtract', () => {
     );
     expect(activities.extractDocumentCandidates).toHaveBeenCalledTimes(2);
     expect(result).toMatchObject({ extracted: 2, notAttempted: 2 });
+    // Each document the ceiling stopped gets a finding the panel can retry.
+    const noted = activities.recordExtractionStepFailed.mock.calls.map(
+      ([input]) => input as { fileId: string; reason: string },
+    );
+    expect(noted.map((n) => n.fileId)).toEqual(['c', 'd']);
+    expect(noted[0]!.reason).toContain('reached its limit');
   });
 
   // The token ceiling is the run's: each document gets what is left.
@@ -127,6 +133,11 @@ describe('brainExtract', () => {
     );
     expect(activities.extractDocumentCandidates).toHaveBeenCalledTimes(2);
     expect(result).toMatchObject({ extracted: 1, notAttempted: 2 });
+    expect(
+      activities.recordExtractionStepFailed.mock.calls.map(
+        ([input]) => (input as { fileId: string }).fileId,
+      ),
+    ).toEqual(['b', 'c']);
   });
 
   it('passes the run id and the starter to each document', async () => {

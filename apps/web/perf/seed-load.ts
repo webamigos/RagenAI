@@ -82,6 +82,14 @@ async function wipe() {
     where: { thread: { organizationId: orgs } },
   });
   await prisma.thread.deleteMany({ where: { organizationId: orgs } });
+  // A published Brain page holds its file (published_file_id is Restrict),
+  // so the pages go before the files, as the e2e seed does (spec E10).
+  // Decisions are NO ACTION on the page, findings reference it by id.
+  await prisma.knowledgeFinding.deleteMany({ where: { organizationId: orgs } });
+  await prisma.knowledgeDecision.deleteMany({
+    where: { organizationId: orgs },
+  });
+  await prisma.knowledgePage.deleteMany({ where: { organizationId: orgs } });
   await prisma.documentVersion.deleteMany({ where: { organizationId: orgs } });
   await prisma.userDocument.deleteMany({ where: { organizationId: orgs } });
   await prisma.userFile.deleteMany({ where: { organizationId: orgs } });

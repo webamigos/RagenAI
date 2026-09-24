@@ -254,6 +254,7 @@ export function createMockActivities() {
     publishKnowledgePage: vi
       .fn()
       .mockResolvedValue({ status: 'published', chunks: 1 }),
+    markPublicationFailed: vi.fn().mockResolvedValue({ marked: true }),
   };
 }
 
