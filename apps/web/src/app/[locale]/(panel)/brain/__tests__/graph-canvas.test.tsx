@@ -154,6 +154,44 @@ describe('BrainGraphCanvas', () => {
     ).toBe(false);
   });
 
+  it('does not force the names of flagged pages in a medium graph', async () => {
+    // Forced labels are exempt from Sigma's collision grid; forty of them
+    // drew on top of each other. Past SMALL_GRAPH the grid decides, even for
+    // a page with an open finding, whose node is still drawn larger.
+    const medium = {
+      ...view,
+      nodes: Array.from({ length: 21 }, (_, i) => ({
+        ...view.nodes[0]!,
+        id: `00000000-0000-4000-8000-${String(i).padStart(12, '0')}`,
+        title: `Strona ${i}`,
+        openFindings: 1,
+      })),
+      edges: [],
+    };
+    render(
+      <NextIntlClientProvider locale="en" messages={messages}>
+        <BrainGraphCanvas view={medium} />
+      </NextIntlClientProvider>,
+    );
+    await waitFor(() => expect(sigma.instances).toHaveLength(1));
+    type G = { getNodeAttributes: (id: string) => { forceLabel: boolean } };
+    expect(
+      (sigma.instances[0]!.graph as G).getNodeAttributes(medium.nodes[0]!.id)
+        .forceLabel,
+    ).toBe(false);
+  });
+
+  it('takes the height of the window, never less than 600px', () => {
+    render(
+      <NextIntlClientProvider locale="en" messages={messages}>
+        <BrainGraphCanvas view={view} />
+      </NextIntlClientProvider>,
+    );
+    const canvas = screen.getByTestId('brain-graph');
+    expect(canvas.className).toContain('min-h-[600px]');
+    expect(canvas.className).toContain('h-[calc(100svh-15rem)]');
+  });
+
   it('opens a card with the relation’s origin in words and the two links', async () => {
     render(
       <NextIntlClientProvider locale="en" messages={messages}>

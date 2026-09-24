@@ -191,6 +191,14 @@ archive is the blog.
   `routes.yaml`); the shipped Mistral route and the installer's Scaleway
   option both do. Failed findings can be retried with "Ponów" once this is deployed.
 
+### Thread: Ragen Brain fills the screen
+
+- `[brief]` **Ragen Brain uses the whole window.** Its pages were capped at
+  1120px and the graph at 600px tall, which left half of a wide screen
+  empty. The graph now takes the width and the height of the window, and in
+  a graph of more than twenty pages names no longer pile on top of each
+  other — a name that would collide appears when you hover or zoom.
+
 ### Thread: a bug hunt through the panel
 
 - `[brief]` **A wrong link no longer takes the whole app down.** Opening a
