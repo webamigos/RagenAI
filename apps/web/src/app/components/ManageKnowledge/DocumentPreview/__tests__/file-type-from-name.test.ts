@@ -18,6 +18,9 @@ describe('fileTypeFromName', () => {
     ['notatki.markdown', 'MARKDOWN'],
     ['dane.csv', 'CSV'],
     ['dane.xlsx', 'XLSX'],
+    // #1268: SheetJS reads the legacy format, and the uploader already stores
+    // an .xls as XLSX — so the preview opens it too.
+    ['stare-dane.xls', 'XLSX'],
     ['opis.txt', 'TEXT'],
     ['ksiazka.epub', 'EPUB'],
     ['napisy.srt', 'SRT'],

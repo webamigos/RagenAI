@@ -166,12 +166,44 @@ async function generateTextThumbnail(filePath: string): Promise<Buffer> {
   return Buffer.from(pngData.asPng());
 }
 
+/**
+ * The types this worker deliberately renders no thumbnail for.
+ *
+ * DOCX and XLSX are binary document formats with no renderer here. That is a
+ * decision, known statically from the `FileType`, not a failure — so it is a
+ * normal `null` return, and the caller skips it without a word. It used to be
+ * a throw, which the caller's best-effort `catch` turned into a `warn` on every
+ * DOCX and XLSX ingest, drowning the warnings that do mean something (#1299).
+ *
+ * Whoever adds a renderer for one of these deletes it from this set.
+ */
+const NO_THUMBNAIL_TYPES: ReadonlySet<FileType> = new Set([
+  FileType.XLSX,
+  FileType.DOCX,
+]);
+
+/**
+ * Renders a thumbnail and uploads it, returning its storage key — or `null`
+ * for a type in `NO_THUMBNAIL_TYPES`, which gets no thumbnail by design.
+ *
+ * Everything else that goes wrong throws: a storage failure, a `sharp` or
+ * PDFium error, a missing font, and a `FileType` this switch does not know,
+ * which is a bug when it fires.
+ */
 export async function generateAndUploadThumbnail({
   orgId,
   fileId,
   fileName,
   fileType,
-}: GenerateAndUploadThumbnailParams): Promise<string> {
+}: GenerateAndUploadThumbnailParams): Promise<string | null> {
+  // Checked before the file is fetched: there is nothing to render it with.
+  if (NO_THUMBNAIL_TYPES.has(fileType)) {
+    logger.debug(
+      `No thumbnail for file ${fileId}: ${fileType} has no renderer`,
+    );
+    return null;
+  }
+
   logger.info(`Generating thumbnail for file ${fileId} (type: ${fileType})`);
 
   const filePath = await ensureLocalFile({ orgId, fileId, fileName });
@@ -189,13 +221,6 @@ export async function generateAndUploadThumbnail({
     case FileType.CSV:
       thumbnailBuffer = await generateTextThumbnail(filePath);
       break;
-
-    case FileType.XLSX:
-    case FileType.DOCX:
-      // Binary document formats — no text preview available
-      throw new Error(
-        `Thumbnail generation not supported for ${fileType} files`,
-      );
 
     case FileType.IMAGE:
       thumbnailBuffer = await sharp(filePath)

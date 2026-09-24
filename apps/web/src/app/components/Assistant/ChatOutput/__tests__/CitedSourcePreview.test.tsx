@@ -118,6 +118,19 @@ describe('CitedSourcePreview', () => {
     );
   });
 
+  // #1268: a cited spreadsheet opens the spreadsheet viewer, not the
+  // unsupported placeholder — including a legacy `.xls`.
+  it.each(['cennik.xlsx', 'stary-cennik.xls'])(
+    'hands a cited spreadsheet (%s) to the viewer as XLSX',
+    (fileName) => {
+      show(source({ fileName }));
+
+      expect(viewerSpy).toHaveBeenCalledWith(
+        expect.objectContaining({ fileType: 'XLSX' }),
+      );
+    },
+  );
+
   it('falls back to the id when the file name was never stored', () => {
     show(source({ fileName: null }));
 

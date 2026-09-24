@@ -5,6 +5,7 @@ import type { SourceRegion } from '@ragenai/rag-core';
 import type { FileType } from '@/generated/prisma/browser';
 import { PdfViewer } from './PdfViewer';
 import { DocxViewer } from './DocxViewer';
+import { XlsxViewer } from './XlsxViewer';
 import { MarkdownViewer } from './MarkdownViewer';
 import { PlainTextViewer } from './PlainTextViewer';
 import { ImageViewer } from './ImageViewer';
@@ -49,6 +50,9 @@ export function ViewerForType({
   if (fileType === 'DOCX') {
     return <DocxViewer contentUrl={contentUrl} />;
   }
+  if (fileType === 'XLSX') {
+    return <XlsxViewer contentUrl={contentUrl} />;
+  }
   if (fileType === 'MARKDOWN') {
     return <MarkdownViewer contentUrl={contentUrl} />;
   }
@@ -56,6 +60,9 @@ export function ViewerForType({
     const lowerName = fileName.toLowerCase();
     if (lowerName.endsWith('.docx') || lowerName.endsWith('.doc')) {
       return <DocxViewer contentUrl={contentUrl} />;
+    }
+    if (lowerName.endsWith('.xlsx') || lowerName.endsWith('.xls')) {
+      return <XlsxViewer contentUrl={contentUrl} />;
     }
     if (lowerName.endsWith('.md') || lowerName.endsWith('.markdown')) {
       return <MarkdownViewer contentUrl={contentUrl} />;

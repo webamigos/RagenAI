@@ -515,11 +515,16 @@ export async function runFileEmbeddings(
       fileType,
     });
 
-    await updateThumbnailKey({
-      fileId,
-      orgId,
-      thumbnailS3Key,
-    });
+    // `null` is a type with no renderer (DOCX, XLSX) — a decision, not a
+    // failure, so it is skipped here without a log line. The `catch` below is
+    // left for real failures, where a warning then means something (#1299).
+    if (thumbnailS3Key !== null) {
+      await updateThumbnailKey({
+        fileId,
+        orgId,
+        thumbnailS3Key,
+      });
+    }
   } catch (thumbnailError) {
     // Thumbnail generation is best-effort — log but don't fail the workflow
     ctx.log.warn(
