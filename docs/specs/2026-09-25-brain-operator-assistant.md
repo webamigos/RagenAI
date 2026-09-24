@@ -1,6 +1,6 @@
 ---
 title: A knowledge operator's assistant beside Ragen Brain
-status: draft
+status: approved
 areas: [brain, rag, guardrails, auth, knowledge-base]
 adrs: [33, 39, 42, 49, 50]
 ---
@@ -19,40 +19,26 @@ is a proposal the operator applies with one click through the same command a
 button would run, so the decision ledger still names a person and the
 assistant cannot widen access or publish on its own.
 
-## Open Questions
+## Decisions
 
-<!--
-While this block is here the spec is not ready to implement.
--->
+Answered by the product owner on 2026-09-25, before any code:
 
-- **Q1. Proposals, or read-only first?** Recommended: proposals from the first
-  release (§ Proposed solution, "Acting"), because most of the time an
-  operator saves is in *doing* the triage, not reading about it. The
-  alternative ships read-only (explain, compare, find) and adds proposals in a
-  second release.
-- **Q2. Where do conversations live?** (a) as ordinary `Thread`s with a
-  `kind` of `BRAIN_OPERATOR` — encrypted through the one function ADR-42
-  requires, listed nowhere in the chat sidebar; (b) ephemeral, in memory for
-  the session only, as company-budget-app does. Recommended (a): an operator
-  resolving a contradiction over two days wants the reasoning back, and a
-  conversation that quotes source spans is thread-derived content ADR-42 was
-  written for.
-- **Q3. Which model?** The brief says `DEFAULT_MODEL`. Recommended: the
-  organization's default model (`DEFAULT_MODEL`, or the org override the chat
-  already honours), respecting `OrganizationSettings.allowedModels`, with no
-  model picker in the panel. The alternative is a fixed deployment-level
-  `BRAIN_ASSISTANT_MODEL`, which would let a deployment keep this cheaper than
-  chat — but adds a variable nobody has asked for yet.
-- **Q4. Its own feature key?** Recommended: yes, `brainAssistant`, default
-  `false` (ADR-50: a large feature ships dark), requiring `brain` on. Folding
-  it into `brain` would switch a paid, model-backed surface on for every
-  organization that has Brain.
-- **Q5. What can it read?** Recommended: Brain's own tables (pages, sources
-  with their verbatim quotes, edges, findings, decisions) and the *text of the
-  source documents* those pages cite — but **not** open retrieval over the
-  whole knowledge base. Operator questions are about the curated set and its
-  sources; general retrieval is what the chat is for, and mixing the two makes
-  "where did this come from" ambiguous.
+- **Proposals from the first release.** The assistant suggests changes as
+  proposal cards the operator applies (§ "Acting"); read-only is not a
+  separate release.
+- **Conversations are kept.** Stored as `Thread`s with `kind: BRAIN_OPERATOR`,
+  encrypted through the one function ADR-42 requires and never listed in the
+  chat sidebar. An operator resolving a contradiction over two days gets the
+  reasoning back, and a conversation quoting source spans is thread-derived
+  content ADR-42 exists for.
+- **The organization's default model.** `DEFAULT_MODEL`, or the org override
+  the chat already honours, subject to `OrganizationSettings.allowedModels`.
+  No picker in the panel and no new environment variable.
+- **Its own feature key.** `brainAssistant`, default `false` (ADR-50), and
+  only effective when `brain` is on.
+- **Brain only.** It reads Brain's tables and the text of the source spans
+  pages cite — never open retrieval over the knowledge base. General
+  questions about documents stay with the chat.
 
 ## Problem
 
@@ -109,9 +95,9 @@ set; a use case not here is out of scope for the first release.
 
 - **The assistant writing anything on its own.** No tool changes a row. See
   "Acting".
-- **General retrieval over the knowledge base** (Q5). The chat already answers
+- **General retrieval over the knowledge base.** The chat already answers
   questions about documents; this answers questions about curation.
-- **A model picker in the panel** (Q3).
+- **A model picker in the panel**, or a model of its own.
 - **Members without write access proposing changes.** A read-only Brain
   visitor (`brainForMembers`) gets the read tools only; every proposal
   requires `manageBrain` and the operator's own write access, checked when the
@@ -222,7 +208,7 @@ the confirmation, and it is rendered by the application.
 ### Model, cost, guardrails
 
 - **Model**: the organization's default model through `packages/llm-gateway`
-  (ADR-49), subject to `allowedModels` (Q3). Tool calling is required; a route
+  (ADR-49), subject to `allowedModels`. Tool calling is required; a route
   whose model cannot call tools makes the panel say so rather than answer
   without tools.
 - **Cost**: the chat's monthly ceilings apply — `assert-within-usage-limits.ts`
@@ -255,8 +241,8 @@ the confirmation, and it is rendered by the application.
 | Surface | Change | What catches a mistake |
 |---|---|---|
 | `packages/platform-contracts` | `brainAssistant` feature key, label | package tests, `shared-contracts-are-not-recopied` |
-| `prisma/schema.prisma` | Q2(a): a `kind` on `Thread` (or a nullable `brainContext`) | migration + `npm run verify` |
-| `packages/crypto` | none if Q2(a) reuses the thread path | `encryption-lives-in-one-package` |
+| `prisma/schema.prisma` | a `kind` on `Thread` | migration + `npm run verify` |
+| `packages/crypto` | none — messages reuse the thread encryption path | `encryption-lives-in-one-package`, ADR-42 |
 | guardrails funnel | a new chain routed through it | guardrail tests; a test that a blocked output never reaches the panel |
 | usage ceilings | a new call site | a test that a turn over the ceiling is refused |
 | auth / tenant scoping | read tools wrap existing scoped queries | tenant-scope guard warnings; access tests per tool |
@@ -264,14 +250,12 @@ the confirmation, and it is rendered by the application.
 
 ## Data model
 
-With Q2(a): `Thread` gains `kind` (`CHAT` default, `BRAIN_OPERATOR`), and the
-chat's thread lists filter to `CHAT`. Rows written before the change are
+`Thread` gains `kind` (`CHAT` default, `BRAIN_OPERATOR`), and every chat thread
+list, search and export filters to `CHAT`. Rows written before the change are
 `CHAT`. Messages and proposals are stored through the existing encrypted
 message path; a proposal is a message part with its applied/dismissed state
 and the decision id it produced, so a reopened conversation shows what was
 done.
-
-With Q2(b): no schema change.
 
 ## Failure modes
 
@@ -298,6 +282,9 @@ With Q2(b): no schema change.
 ## Phases
 
 Each phase ships behind `brainAssistant` (default off) and leaves Brain working.
+Phase A is a build step, not a release: proposals ship in the first release
+(Decisions), so the flag is turned on for an organization only once Phase B
+is merged.
 
 ### Phase A — Panel and read-only answers
 
@@ -322,7 +309,7 @@ Each phase ships behind `brainAssistant` (default off) and leaves Brain working.
   explained (U8).
 - [ ] **B3.** Batches (U12): one card, per-page results.
 
-### Phase C — Memory (only with Q2(a))
+### Phase C — Memory
 
 - [ ] **C1.** Conversations persisted as `BRAIN_OPERATOR` threads, a short
   history list in the panel, proposals' applied state restored on reopen.
@@ -343,6 +330,7 @@ Each phase ships behind `brainAssistant` (default off) and leaves Brain working.
 ## Rollout and rollback
 
 Shipped dark behind `brainAssistant`; turned on for the demo organization
-first, then per organization by a platform admin. Rollback is the flag. With
-Q2(a) the migration only adds a column with a default, so it needs no
-backfill and is left in place if the feature is switched off.
+first, then per organization by a platform admin. Rollback is the flag. The
+migration only adds `Thread.kind` with a default, so it needs no backfill and
+is left in place if the feature is switched off; `BRAIN_OPERATOR` threads stay
+encrypted and invisible to the chat either way.
