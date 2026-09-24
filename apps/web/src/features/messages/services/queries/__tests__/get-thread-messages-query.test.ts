@@ -103,6 +103,39 @@ describe('getThreadMessagesQuery — persisted retrieval', () => {
     });
   });
 
+  // Answers stored before #1347 kept the raw bytes of a DOCX, read as UTF-8,
+  // as their quote. The thread showed a line of replacement glyphs for ever.
+  it('drops a stored quote that is undecodable bytes, and keeps the source', async () => {
+    const garbage =
+      'T\uFFFD[EK:K P\uFFFD\uFFFDoE/5w\uFFFD^\uFFFD\uFFFD\uFFFDE\uFFFDp\uFFFD\uFFFD\uFFFDF\uFFFD?\uFFFD';
+    mockMessageFindMany.mockResolvedValue([
+      answer({
+        documentRetrievals: [
+          {
+            fileId: 'a',
+            rank: 1,
+            snippet: garbage,
+            file: { fileName: 'protokol-zarzadu-2026-02.docx' },
+          },
+          {
+            fileId: 'b',
+            rank: 2,
+            snippet: 'A readable quote.',
+            file: { fileName: 'polityka.pdf' },
+          },
+        ],
+        documentCitations: [],
+      }),
+    ]);
+
+    const { messages } = await run();
+
+    expect(messages[0].retrieval?.sources).toEqual([
+      { fileId: 'a', fileName: 'protokol-zarzadu-2026-02.docx' },
+      { fileId: 'b', fileName: 'polityka.pdf', snippet: 'A readable quote.' },
+    ]);
+  });
+
   it('reads back the page and regions, so a reopened source opens where the live one did', async () => {
     const region = { page: 4, x: 0.1, y: 0.3, w: 0.8, h: 0.05 };
     mockMessageFindMany.mockResolvedValue([

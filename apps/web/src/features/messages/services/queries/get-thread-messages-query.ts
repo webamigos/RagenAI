@@ -10,6 +10,7 @@ import type {
 } from '../../contracts/message.types';
 import { decryptMessageContents } from '@ragenai/crypto';
 import { readSourceRegions, type SourceRegion } from '@ragenai/rag-core';
+import { isUndecodableText } from '@ragenai/rag-core/undecodable-text';
 
 export const getThreadMessagesQuery = async (
   threadId: Thread['id'],
@@ -292,7 +293,16 @@ async function decryptRetrievalSnippets(
     }),
   );
 
-  const byFileId = new Map(decrypted);
+  // A quote stored before ingest refused undecodable text (#1347) can be the
+  // raw bytes of a DOCX read as UTF-8 — a line of replacement glyphs. New
+  // answers never store one (`truncateSnippet` drops it), but old ones did,
+  // and the thread would show them for ever. Drop the quote, keep the source.
+  const byFileId = new Map(
+    decrypted.map(([fileId, content]) => [
+      fileId,
+      content !== null && isUndecodableText(content) ? null : content,
+    ]),
+  );
 
   return retrievals.map((row) =>
     byFileId.has(row.fileId)
