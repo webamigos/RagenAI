@@ -68,6 +68,16 @@ archive is the blog.
 
 ## Unreleased
 
+### Thread: self-hosting without a cloud account
+
+- `[brief]` **Object storage you run yourself.** `create-ragen-app` now offers
+  RustFS as a third answer to "where should documents be stored?", next to the
+  local disk and an S3 account: it generates the keys, starts RustFS with the
+  rest of the stack (`docker compose --profile s3`) and creates the bucket. CI
+  runs Ragen's storage against a real RustFS on every change. Also fixed on the
+  way: with the apps running in containers (`ragen:up:everything`), S3 storage
+  could not work at all — the containers were never given the S3 settings.
+
 ### Thread: what a regression pass turned up
 
 - `[major]` **An assistant's instruction is saved now.** Typing an instruction

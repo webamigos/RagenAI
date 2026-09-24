@@ -100,6 +100,30 @@ describe('renderRagenConfig', () => {
     expect(rendered).toContain('process.env.S3_SECRET_ACCESS_KEY');
   });
 
+  it('writes RustFS as the s3 provider it is to the apps, keys only by name', () => {
+    // `provider: 'rustfs'` would not compile against the seam's config type,
+    // and the generated keys belong in .env.local, never in this file.
+    const storage = resolveStorageSelection('rustfs', undefined, {
+      accessKey: 'KEYID-SENTINEL',
+      secretKey: 'SECRET-SENTINEL',
+    });
+    const rendered = renderRagenConfig(
+      storage,
+      resolveEncryptionSelection('none'),
+    );
+
+    expect(rendered).toContain("provider: 's3',");
+    expect(rendered).not.toContain("provider: 'rustfs'");
+    expect(rendered).toContain("bucketName: process.env.S3_BUCKET_NAME ?? ''");
+    expect(rendered).toContain('endpoint: process.env.S3_ENDPOINT_URL,');
+    expect(rendered).toContain(
+      'forcePathStyle: process.env.S3_FORCE_PATH_STYLE,',
+    );
+    expect(rendered).toContain('RustFS');
+    expect(rendered).not.toContain('KEYID-SENTINEL');
+    expect(rendered).not.toContain('SECRET-SENTINEL');
+  });
+
   it('renders a file that is closed and importable', () => {
     const rendered = renderRagenConfig(
       resolveStorageSelection('s3', S3),

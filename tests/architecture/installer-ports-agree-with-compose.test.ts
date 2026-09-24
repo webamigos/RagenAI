@@ -29,10 +29,12 @@ const REPO_ROOT = join(import.meta.dirname, '..', '..');
  *
  * Profiles matter: `observability` publishes three more ports, and a plain
  * `docker compose up` starts none of them — so warning about them would be a
- * warning about a stack nobody asked for. `pii` is included because the wizard
- * checks those two when, and only when, masking was chosen.
+ * warning about a stack nobody asked for. `pii` and `s3` are included because
+ * the wizard starts them — and checks their ports — when, and only when,
+ * masking or RustFS storage was chosen (`PROFILE_PUBLISHED_PORTS` in
+ * `tasks.ts`).
  */
-const PROFILES_THE_WIZARD_MAY_START = new Set(['pii']);
+const PROFILES_THE_WIZARD_MAY_START = new Set(['pii', 's3']);
 
 function publishedPortsFromCompose(): Map<string, number> {
   const compose = parse(

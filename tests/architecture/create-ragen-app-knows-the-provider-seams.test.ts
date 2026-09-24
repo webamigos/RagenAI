@@ -14,6 +14,7 @@ import {
 import {
   resolveStorageSelection,
   STORAGE_LABELS,
+  type StorageChoice,
 } from '../../packages/create-ragen-app/src/storage-provider';
 import {
   resolveWorkerRuntimeSelection,
@@ -39,14 +40,24 @@ import {
  * else's first install, which is the worst place to find them.
  */
 
+/**
+ * `aliases` are answers the installer offers that are not variants of their
+ * own, mapped to the variant they write. RustFS is the one: a store this
+ * install starts, which the apps reach as plain `s3`. It is checked against
+ * that variant like any other answer — the same required variables, the same
+ * field names — and it is not allowed to be a variant the seam lacks, which
+ * is what "offers no variant the seam does not have" would otherwise say
+ * about it.
+ */
 const SEAMS = [
   {
     name: 'storage',
     seam: STORAGE_SEAM,
     labels: STORAGE_LABELS as Record<string, string>,
+    aliases: { rustfs: 's3' } as Record<string, string>,
     // The installer offers the same variants the seam declares.
     select: (variant: string) =>
-      resolveStorageSelection(variant as 'local' | 's3', {
+      resolveStorageSelection(variant as StorageChoice, {
         bucket: 'b',
         region: 'r',
         endpoint: '',
@@ -58,6 +69,7 @@ const SEAMS = [
     name: 'encryption',
     seam: ENCRYPTION_SEAM,
     labels: ENCRYPTION_LABELS as Record<string, string>,
+    aliases: {} as Record<string, string>,
     select: (variant: string) =>
       resolveEncryptionSelection(variant as EncryptionChoice, {
         keyId: 'id',
@@ -80,6 +92,7 @@ const SEAMS = [
     name: 'worker runtime',
     seam: WORKER_RUNTIME_SEAM,
     labels: WORKER_RUNTIME_LABELS as Record<string, string>,
+    aliases: {} as Record<string, string>,
     select: (variant: string) => ({
       ...resolveWorkerRuntimeSelection(variant as WorkerRuntimeChoice, {
         temporalServerAddress: 'temporal.internal:7233',
@@ -88,6 +101,19 @@ const SEAMS = [
     }),
   },
 ] as const;
+
+/** Every answer the installer offers, with the seam variant it writes. */
+function answers(
+  seam: (typeof SEAMS)[number]['seam'],
+  aliases: Record<string, string>,
+): Array<[answer: string, variant: string]> {
+  return [
+    ...Object.keys(seam.variants).map(
+      (variant) => [variant, variant] as [string, string],
+    ),
+    ...Object.entries(aliases),
+  ];
+}
 
 describe('the installer knows the same provider seams', () => {
   it.each(SEAMS)('offers every $name variant', ({ seam, labels }) => {
@@ -102,9 +128,14 @@ describe('the installer knows the same provider seams', () => {
 
   it.each(SEAMS)(
     'offers no $name variant the seam does not have',
-    ({ seam, labels }) => {
+    ({ seam, labels, aliases }) => {
       // `none` is the installer's own: it means "write nothing", not a provider.
-      const declared = [...Object.keys(seam.variants), 'none'];
+      // An alias is an answer the seam knows under another name.
+      const declared = [
+        ...Object.keys(seam.variants),
+        'none',
+        ...Object.keys(aliases),
+      ];
 
       expect(Object.keys(labels).filter((v) => !declared.includes(v))).toEqual(
         [],
@@ -114,34 +145,43 @@ describe('the installer knows the same provider seams', () => {
 
   it.each(SEAMS)(
     'writes only variables the $name seam names',
-    ({ seam, select }) => {
-      for (const [variant, spec] of Object.entries(seam.variants)) {
+    ({ seam, select, aliases }) => {
+      for (const [answer, variant] of answers(seam, aliases)) {
+        const spec = seam.variants[variant as keyof typeof seam.variants] as {
+          required: readonly string[];
+          optional?: readonly string[];
+        };
         const known = [
           seam.discriminant,
           ...spec.required,
           ...(spec.optional ?? []),
         ];
-        const written = Object.keys(select(variant).envUpdates);
+        const { envUpdates } = select(answer);
 
         expect(
-          written.filter((name) => !known.includes(name)),
-          `${seam.discriminant}=${variant}`,
+          Object.keys(envUpdates).filter((name) => !known.includes(name)),
+          `${answer}: ${seam.discriminant}=${variant}`,
         ).toEqual([]);
+        // An alias must write the variant it stands for, not its own name.
+        expect(envUpdates[seam.discriminant], answer).toBe(variant);
       }
     },
   );
 
   it.each(SEAMS)(
     'writes every variable the $name seam requires',
-    ({ seam, select }) => {
+    ({ seam, select, aliases }) => {
       // The one that matters most: a credential the seam made mandatory and
       // the wizard does not ask for produces an install that cannot boot.
-      for (const [variant, spec] of Object.entries(seam.variants)) {
-        const written = Object.keys(select(variant).envUpdates);
+      for (const [answer, variant] of answers(seam, aliases)) {
+        const spec = seam.variants[variant as keyof typeof seam.variants] as {
+          required: readonly string[];
+        };
+        const names = Object.keys(select(answer).envUpdates);
 
         expect(
-          [...spec.required].filter((name) => !written.includes(name)),
-          `${seam.discriminant}=${variant} is missing a required variable`,
+          [...spec.required].filter((name) => !names.includes(name)),
+          `${answer}: ${seam.discriminant}=${variant} is missing a required variable`,
         ).toEqual([]);
       }
     },
@@ -149,10 +189,13 @@ describe('the installer knows the same provider seams', () => {
 
   it.each(SEAMS)(
     'agrees with the $name seam on field names and requiredness',
-    ({ seam, select }) => {
-      for (const [variant, spec] of Object.entries(seam.variants)) {
-        for (const { field, envVar, required } of select(variant)
-          .configFields) {
+    ({ seam, select, aliases }) => {
+      for (const [answer, variant] of answers(seam, aliases)) {
+        const spec = seam.variants[variant as keyof typeof seam.variants] as {
+          required: readonly string[];
+          fields?: Record<string, string>;
+        };
+        for (const { field, envVar, required } of select(answer).configFields) {
           expect(
             spec.fields?.[envVar],
             `${envVar} is written as "${field}"`,

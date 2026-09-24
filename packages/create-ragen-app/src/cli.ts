@@ -1,4 +1,6 @@
 import {
+  appendFileSync,
+  chmodSync,
   existsSync,
   readdirSync,
   readFileSync,
@@ -43,7 +45,10 @@ import {
 import { generateSecret } from './secrets';
 import {
   resolveStorageSelection,
+  RUSTFS_COMPOSE_PROFILE,
+  RUSTFS_CONSOLE_URL,
   STORAGE_LABELS,
+  withExistingRustfsKeys,
   type StorageSelection,
 } from './storage-provider';
 import {
@@ -53,16 +58,17 @@ import {
   type WorkerRuntimeSelection,
 } from './worker-runtime';
 import {
+  composeUpCommand,
   generatePrismaClient,
   installDependencies,
   isDockerAvailable,
   migrateDatabase,
-  PII_PUBLISHED_PORTS,
-  PUBLISHED_PORTS,
   busyPublishedPorts,
+  publishedPortsFor,
   resolveComposeProjectName,
   seedDatabase,
   startDockerServices,
+  type ComposeProjectName,
 } from './tasks';
 
 /** Written into the new install whenever a model still has to be wired by hand. */
@@ -157,6 +163,16 @@ export async function run(argv: string[]): Promise<boolean> {
     return false;
   }
 
+  // Read before `.env.local` is written, not after: RustFS keys the directory
+  // already has must reach `.env.local` too, or the apps would present keys
+  // the store was never started with. On a fresh clone there is no `.env` and
+  // this changes nothing.
+  const existingComposeEnv = readComposeEnv(targetDir).values;
+  const storage = withExistingRustfsKeys(
+    storagePrompt.selection,
+    existingComposeEnv,
+  );
+
   const encryptionPrompt = await resolveEncryption(args);
   if (encryptionPrompt.cancelled) {
     clack.cancel('Cancelled.');
@@ -183,8 +199,15 @@ export async function run(argv: string[]): Promise<boolean> {
   const workerRuntime = runtimePrompt.selection;
   Object.assign(rootOverrides, workerRuntime.envUpdates);
 
-  const storage = storagePrompt.selection;
   const encryption = encryptionPrompt.selection;
+
+  // Every profile any answer asked for, once each. Two sources today (PII
+  // masking and RustFS), and a union rather than whichever came last: an
+  // install that chose both needs both, and dropping either starts a stack
+  // missing services whose URLs `.env.local` already names.
+  const composeProfiles = [
+    ...new Set([...piiMasking.composeProfiles, ...storage.composeProfiles]),
+  ];
 
   Object.assign(rootOverrides, storage.envUpdates, encryption.envUpdates);
 
@@ -206,7 +229,22 @@ export async function run(argv: string[]): Promise<boolean> {
   // Two installs whose directories share a basename would otherwise share the
   // project — and therefore the containers and volumes — and a *stopped* first
   // stack makes that silent: no port is held, so nothing refuses.
-  await writeComposeProjectName(targetDir);
+  //
+  // The same file carries RustFS's keys when that was the answer: Compose
+  // hands them to the store, and the apps read the same pair from `.env.local`.
+  const composeEnvWritten = await writeComposeEnv(
+    targetDir,
+    storage.composeEnv,
+  );
+
+  if (storage.choice === 'rustfs' && composeEnvWritten) {
+    const kept = Object.keys(storage.composeEnv).some((key) =>
+      existingComposeEnv[key]?.trim(),
+    );
+    clack.log.info(
+      `${kept ? 'Kept the RustFS keys already in .env' : 'Generated RustFS keys into .env'} (RUSTFS_ACCESS_KEY/RUSTFS_SECRET_KEY, which Compose starts the store with) and wrote the same pair to .env.local as S3_ACCESS_KEY_ID/S3_SECRET_ACCESS_KEY — change both files or neither.`,
+    );
+  }
 
   // After the env write, so a run that stops on drifted keys has not already
   // rewritten a file in the clone.
@@ -281,7 +319,7 @@ export async function run(argv: string[]): Promise<boolean> {
     ({ failed: dockerFailed } = await maybeStartDocker(
       targetDir,
       args.yes,
-      piiMasking.composeProfiles,
+      composeProfiles,
     ));
   }
 
@@ -306,14 +344,30 @@ export async function run(argv: string[]): Promise<boolean> {
 
   // Printed before the outro, and printed at all because it is the only time
   // this value is readable: it is written to .env.local and never shown again.
+  //
+  // The command in both notes is the whole one, every profile included: a
+  // note about Presidio that printed `--profile pii` alone would, followed
+  // literally, start a stack without the object store this install writes to.
   if (piiMasking.enabled) {
     clack.log.info(
       "PII masking is on. Presidio sits behind compose's `" +
         PII_COMPOSE_PROFILE +
-        '` profile, so start the stack with `docker compose --profile ' +
-        PII_COMPOSE_PROFILE +
-        ' up -d` — a plain `up` skips those two containers and the app would ' +
+        '` profile, so start the stack with `' +
+        composeUpCommand(composeProfiles) +
+        '` — a plain `up` skips those two containers and the app would ' +
         'point at services nobody started.',
+    );
+  }
+
+  if (storage.choice === 'rustfs') {
+    clack.log.info(
+      "Documents are stored in RustFS, behind compose's `" +
+        RUSTFS_COMPOSE_PROFILE +
+        '` profile — start the stack with `' +
+        composeUpCommand(composeProfiles) +
+        '`, or uploads fail against a store nobody started. Console: ' +
+        RUSTFS_CONSOLE_URL +
+        ', signed in with RUSTFS_ACCESS_KEY / RUSTFS_SECRET_KEY from .env.',
     );
   }
 
@@ -353,8 +407,8 @@ export async function run(argv: string[]): Promise<boolean> {
       'API:   http://localhost:3001',
       'Admin: http://localhost:3200  (npm run admin:dev)',
       '',
-      'Anything skipped above (S3 storage, encryption, Stripe, email, MCP',
-      'connectors) is documented in docs/self-hosting.',
+      'Anything the wizard did not ask about (Stripe, email, MCP connectors)',
+      'is documented in docs/self-hosting.',
     ].join('\n'),
   );
 
@@ -430,68 +484,117 @@ function overridesForTarget(
 }
 
 /**
- * Writes `COMPOSE_PROJECT_NAME` into the new tree's `.env`.
+ * Writes `COMPOSE_PROJECT_NAME`, and any `composeEnv` lines an answer needs,
+ * into the new tree's `.env`.
  *
  * `.env`, not `.env.local`, and the distinction is the point: Compose reads
  * `.env` from the project directory by itself, so every later `docker compose`
  * the caller runs — days after this wizard exited — uses the same name. A
  * value passed only in the installer's own environment would name one project
  * here and a different one afterwards, which is the empty-database failure
- * rather than a fix for it.
+ * rather than a fix for it. RustFS's keys are there for the same reason: the
+ * store reads them on every `up`, not just the one this wizard runs.
  *
  * Safe to sit beside the install's own config: `scripts/load-root-env.mjs`
- * reads `.env` last, `.env.local` wins over it, nothing in the apps reads this
- * variable, and `.env` is gitignored.
+ * reads `.env` last, `.env.local` wins over it, nothing in the apps reads
+ * these variables, and `.env` is gitignored.
  *
- * Failure here is a warning, not an abort. The files are correct and Compose
- * still works — it simply falls back to the basename, which is where this
- * started.
+ * **Missing lines are appended; nothing already there is rewritten.** An
+ * existing value wins over anything resolved here, and this is not politeness
+ * — it is what makes the mechanism stable. Re-running the wizard over a tree
+ * that already has a stack must not rename its project (the new name would
+ * address empty volumes and abandon the database the first run migrated), and
+ * must not rotate the keys of a store that already holds files. The rule is
+ * "whatever this directory already decided", not "whatever we would decide
+ * again" — the first run may have decided while Docker was up, and this one
+ * cannot reach it.
+ *
+ * Failure here is a warning, not an abort — but returned, because it is not
+ * harmless for RustFS: the store would start with compose's public default
+ * keys while `.env.local` holds generated ones.
  */
-async function writeComposeProjectName(targetDir: string): Promise<void> {
-  // An existing value wins over anything resolved here, and this is not
-  // politeness — it is what makes the mechanism stable. Re-running the wizard
-  // over a tree that already has a stack must not rename its project: the new
-  // name would address empty volumes and abandon the database the first run
-  // migrated. That can happen for an innocent reason too — the first run
-  // decided while Docker was up, this one cannot reach it — so the rule is
-  // "whatever this directory already decided", not "whatever we would decide
-  // again".
-  const existing = readComposeProjectName(targetDir);
-  if (existing) {
+async function writeComposeEnv(
+  targetDir: string,
+  composeEnv: Record<string, string>,
+): Promise<boolean> {
+  const path = join(targetDir, '.env');
+  const file = readComposeEnv(targetDir);
+  const blocks: string[][] = [];
+
+  let project: ComposeProjectName | undefined;
+  const existingName = file.values.COMPOSE_PROJECT_NAME?.trim();
+  if (existingName) {
     clack.log.info(
-      `Keeping this directory's Compose project name: ${existing} (from .env).`,
+      `Keeping this directory's Compose project name: ${existingName} (from .env).`,
     );
-    return;
+  } else {
+    project = await resolveComposeProjectName(targetDir);
+    blocks.push([
+      "# Read by docker compose, not by the apps. It scopes this install's",
+      '# containers, volumes and network, so a second Ragen checkout cannot',
+      '# reuse them — which it would if both directories had the same name,',
+      '# since that basename is what Compose uses when this is unset.',
+      `COMPOSE_PROJECT_NAME=${project.name}`,
+    ]);
   }
 
-  const project = await resolveComposeProjectName(targetDir);
+  const missing = Object.entries(composeEnv).filter(
+    ([key]) => !file.values[key]?.trim(),
+  );
+  if (missing.length > 0) {
+    blocks.push([
+      '# RustFS starts with these keys (compose profile `s3`). The apps present',
+      '# the same pair from .env.local as S3_ACCESS_KEY_ID / S3_SECRET_ACCESS_KEY,',
+      '# so change both files or neither.',
+      ...missing.map(([key, value]) => `${key}=${value}`),
+    ]);
+  }
+
+  if (blocks.length === 0) {
+    return true;
+  }
+
+  const text = `${blocks.map((block) => block.join('\n')).join('\n\n')}\n`;
 
   try {
-    writeFileSync(
-      join(targetDir, '.env'),
-      [
-        "# Read by docker compose, not by the apps. It scopes this install's",
-        '# containers, volumes and network, so a second Ragen checkout cannot',
-        '# reuse them — which it would if both directories had the same name,',
-        '# since that basename is what Compose uses when this is unset.',
-        `COMPOSE_PROJECT_NAME=${project.name}`,
-        '',
-      ].join('\n'),
-      { mode: 0o600 },
-    );
+    if (file.content === undefined) {
+      writeFileSync(path, text, { mode: 0o600 });
+    } else {
+      // A separating newline only when the file does not end in one, so an
+      // appended key never runs on from someone's last line.
+      const separator =
+        file.content === '' || file.content.endsWith('\n') ? '' : '\n';
+      appendFileSync(path, `${separator}${text}`);
+      // `mode` applies only when a file is created, and this one may now hold
+      // a credential it did not before.
+      chmodSync(path, 0o600);
+    }
   } catch (error) {
     clack.log.warn(
       [
-        `Could not write .env with COMPOSE_PROJECT_NAME: ${String(error)}`,
-        "Compose will fall back to this directory's name, which another",
-        `install in a directory called "${basename(resolve(targetDir))}" would`,
-        'share — add the line by hand if you have one.',
+        `Could not write .env: ${String(error)}`,
+        ...(project
+          ? [
+              "Without COMPOSE_PROJECT_NAME, Compose falls back to this directory's",
+              `name, which another install in a directory called "${basename(resolve(targetDir))}"`,
+              'would share.',
+            ]
+          : []),
+        ...(missing.length > 0
+          ? [
+              'Without RUSTFS_ACCESS_KEY / RUSTFS_SECRET_KEY, RustFS starts with',
+              "compose's public defaults and refuses the keys in .env.local —",
+              'copy S3_ACCESS_KEY_ID / S3_SECRET_ACCESS_KEY from there into .env',
+              'under those two names.',
+            ]
+          : []),
+        'Add the lines by hand before starting the stack.',
       ].join('\n'),
     );
-    return;
+    return false;
   }
 
-  if (project.daemonUnreachable) {
+  if (project?.daemonUnreachable) {
     // Not a collision — a question that could not be asked. Said plainly, or
     // the hashed name in `docker ps` looks like something went wrong.
     clack.log.info(
@@ -502,10 +605,7 @@ async function writeComposeProjectName(targetDir: string): Promise<void> {
         'name would have reused them.',
       ].join(' '),
     );
-    return;
-  }
-
-  if (project.disambiguated) {
+  } else if (project?.disambiguated) {
     clack.log.warn(
       [
         `This machine already runs a Compose project called "${basename(resolve(targetDir))}"`,
@@ -519,21 +619,26 @@ async function writeComposeProjectName(targetDir: string): Promise<void> {
       ].join(' '),
     );
   }
+
+  return true;
+}
+
+interface ComposeEnvFile {
+  /** Undefined when there is no `.env` — the normal case on a fresh clone. */
+  content: string | undefined;
+  values: Record<string, string>;
 }
 
 /**
- * Reads `COMPOSE_PROJECT_NAME` back out of an install's `.env`, or undefined
- * when there is no such file or no such line. Parsed with dotenv rather than a
- * regex so a quoted value reads the same way Compose reads it.
+ * Reads an install's `.env`. Parsed with dotenv rather than a regex so a
+ * quoted value reads the same way Compose reads it.
  */
-function readComposeProjectName(targetDir: string): string | undefined {
+function readComposeEnv(targetDir: string): ComposeEnvFile {
   try {
-    const parsed = parseDotenv(readFileSync(join(targetDir, '.env'), 'utf8'));
-    const name = parsed.COMPOSE_PROJECT_NAME?.trim();
-    return name === undefined || name === '' ? undefined : name;
+    const content = readFileSync(join(targetDir, '.env'), 'utf8');
+    return { content, values: parseDotenv(content) };
   } catch {
-    // No `.env` is the normal case on a fresh clone.
-    return undefined;
+    return { content: undefined, values: {} };
   }
 }
 
@@ -718,7 +823,7 @@ async function promptWorkerRuntime(): Promise<WorkerRuntimePromptResult> {
 async function promptStorage(): Promise<StoragePromptResult> {
   const choice = await clack.select({
     message: 'Where should uploaded documents be stored?',
-    options: (['local', 's3'] as const).map((value) => ({
+    options: (['local', 's3', 'rustfs'] as const).map((value) => ({
       value,
       label: STORAGE_LABELS[value],
     })),
@@ -729,6 +834,14 @@ async function promptStorage(): Promise<StoragePromptResult> {
   }
   if (choice === 'local') {
     return { cancelled: false, selection: resolveStorageSelection('local') };
+  }
+
+  // Nothing to ask: the bucket, region and endpoint are the ones compose's `s3`
+  // profile creates, and the keys are generated — a store this install runs
+  // itself has no account for anyone to paste credentials from. `run` says
+  // where they were written once they are.
+  if (choice === 'rustfs') {
+    return { cancelled: false, selection: resolveStorageSelection('rustfs') };
   }
 
   const bucket = await clack.text({
@@ -1027,7 +1140,7 @@ async function maybeStartDocker(
   yes: boolean,
   profiles: string[] = [],
 ): Promise<{ failed: boolean }> {
-  const withPii = profiles.includes(PII_COMPOSE_PROFILE);
+  const composeUp = composeUpCommand(profiles);
 
   // Before the confirm, not after: starting a stack onto ports something else
   // already answers on is the kind of thing to decline, and you can only
@@ -1038,10 +1151,7 @@ async function maybeStartDocker(
   // longer pins them, so containers, volumes and the network are scoped to the
   // project directory and two installs coexist. Ports are the half that
   // prefixing cannot fix: a published port is a host port either way.
-  const candidates = withPii
-    ? [...PUBLISHED_PORTS, ...PII_PUBLISHED_PORTS]
-    : PUBLISHED_PORTS;
-  const busy = await busyPublishedPorts(candidates);
+  const busy = await busyPublishedPorts(publishedPortsFor(profiles));
 
   if (busy.length > 0) {
     clack.log.warn(
@@ -1064,17 +1174,13 @@ async function maybeStartDocker(
         `  cd ${targetDir} \\`,
         `    && ${busy.map(({ variable, port }) => `${variable}=${port + 100}`).join(' ')} \\`,
         // Built from what this install actually chose. A command that omits
-        // the profile starts a stack without the services whose urls were just
+        // a profile starts a stack without the services whose urls were just
         // written — which is the same half-configuration the profile exists to
         // prevent, only printed instead of executed.
-        ...(withPii
-          ? [`       docker compose --profile ${PII_COMPOSE_PROFILE} up -d`]
-          : ['       docker compose up -d']),
+        `       ${composeUp}`,
         '',
-        'Then update .env.local to match: DATABASE_URL, QDRANT_URL, REDIS_URL',
-        withPii
-          ? 'DOCLING_URL and the two PRESIDIO_* URLs all name a host port.'
-          : 'and DOCLING_URL all name a host port.',
+        `Then update .env.local to match: ${hostPortVariables(profiles)}`,
+        'all name a host port.',
         '',
         // Not a compose port: the worker serves it itself, so two workers on
         // one machine collide on it without docker-compose having an opinion.
@@ -1094,7 +1200,7 @@ async function maybeStartDocker(
 
   if (!(await isDockerAvailable())) {
     clack.log.warn(
-      'Docker does not seem to be available — skipping. Install Docker and run `docker compose up -d` yourself.',
+      `Docker does not seem to be available — skipping. Install Docker and run \`${composeUp}\` yourself.`,
     );
     return { failed: false };
   }
@@ -1131,6 +1237,26 @@ async function maybeStartDocker(
   }
 
   return { failed: false };
+}
+
+/**
+ * The `.env.local` variables that name a host port of this stack, for the hint
+ * after a port collision. Per profile, like the ports themselves: moving
+ * RustFS to 59100 and not `S3_ENDPOINT_URL` sends every upload to the other
+ * install's store — which, unlike a database, answers with a plausible 403.
+ */
+function hostPortVariables(profiles: readonly string[]): string {
+  const variables = [
+    'DATABASE_URL',
+    'QDRANT_URL',
+    'REDIS_URL',
+    'DOCLING_URL',
+    ...(profiles.includes(PII_COMPOSE_PROFILE)
+      ? ['PRESIDIO_ANALYZER_URL', 'PRESIDIO_ANONYMIZER_URL']
+      : []),
+    ...(profiles.includes(RUSTFS_COMPOSE_PROFILE) ? ['S3_ENDPOINT_URL'] : []),
+  ];
+  return `${variables.slice(0, -1).join(', ')} and ${variables.at(-1)}`;
 }
 
 /**

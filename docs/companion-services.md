@@ -223,7 +223,8 @@ instrumentation is a no-op. See
 ```bash
 # 1. Start infrastructure (from the repo root)
 npm run ragen:up:full            # Postgres, Qdrant, Redis, Docling
-#                                  (PII masking adds Presidio: --profile pii)
+#                                  (PII masking adds Presidio: --profile pii;
+#                                   self-hosted object storage adds RustFS: --profile s3)
 
 # 2. Start apps/web
 npm run dev                      # http://localhost:3000
@@ -273,6 +274,8 @@ producers before they are anything else.
 | Postgres                      | **55432** | Always (published port; 5432 inside the network) |
 | Redis                         | **56379** | Always (published port; 6379 inside the network) |
 | Qdrant                        | 6333      | Always                                          |
+| RustFS (S3 API)               | **59000** | `--profile s3` (9000 inside the network)        |
+| RustFS console                | **59001** | `--profile s3` (9001 inside the network)        |
 
 Every published port is overridable — `POSTGRES_PORT`, `REDIS_PORT` and so on —
 and only the *published* mapping moved: inside the Compose network each service

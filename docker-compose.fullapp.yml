@@ -49,6 +49,19 @@ services:
       # the documents the worker ingests — the exact failure ADR-27 describes.
       STORAGE_PROVIDER: ${STORAGE_PROVIDER:-local}
       STORAGE_LOCAL_PATH: /data/storage
+      # S3-compatible storage (STORAGE_PROVIDER=s3), from this directory's
+      # `.env`. Without these the containers could never use S3 at all, only
+      # the local volume. S3_CONTAINER_ENDPOINT_URL wins over S3_ENDPOINT_URL
+      # because the two differ for a store in this stack: the apps on the host
+      # reach RustFS at http://localhost:59000, these containers at
+      # http://rustfs:9000. For AWS, R2 or Scaleway leave it unset.
+      S3_ENDPOINT_URL: ${S3_CONTAINER_ENDPOINT_URL:-${S3_ENDPOINT_URL:-}}
+      S3_FORCE_PATH_STYLE: ${S3_FORCE_PATH_STYLE:-}
+      S3_REGION: ${S3_REGION:-}
+      S3_BUCKET_NAME: ${S3_BUCKET_NAME:-}
+      S3_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID:-}
+      S3_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY:-}
+      S3_SESSION_TOKEN: ${S3_SESSION_TOKEN:-}
     volumes:
       - storage_data:/data/storage
       # The LLM route table, mounted rather than baked in — the same shape as
@@ -82,6 +95,19 @@ services:
       # the documents the worker ingests — the exact failure ADR-27 describes.
       STORAGE_PROVIDER: ${STORAGE_PROVIDER:-local}
       STORAGE_LOCAL_PATH: /data/storage
+      # S3-compatible storage (STORAGE_PROVIDER=s3), from this directory's
+      # `.env`. Without these the containers could never use S3 at all, only
+      # the local volume. S3_CONTAINER_ENDPOINT_URL wins over S3_ENDPOINT_URL
+      # because the two differ for a store in this stack: the apps on the host
+      # reach RustFS at http://localhost:59000, these containers at
+      # http://rustfs:9000. For AWS, R2 or Scaleway leave it unset.
+      S3_ENDPOINT_URL: ${S3_CONTAINER_ENDPOINT_URL:-${S3_ENDPOINT_URL:-}}
+      S3_FORCE_PATH_STYLE: ${S3_FORCE_PATH_STYLE:-}
+      S3_REGION: ${S3_REGION:-}
+      S3_BUCKET_NAME: ${S3_BUCKET_NAME:-}
+      S3_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID:-}
+      S3_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY:-}
+      S3_SESSION_TOKEN: ${S3_SESSION_TOKEN:-}
     volumes:
       - storage_data:/data/storage
       # The LLM route table, mounted rather than baked in — the same shape as
@@ -125,6 +151,19 @@ services:
       # app cannot read — see ADR-27.
       STORAGE_PROVIDER: ${STORAGE_PROVIDER:-local}
       STORAGE_LOCAL_PATH: /data/storage
+      # S3-compatible storage (STORAGE_PROVIDER=s3), from this directory's
+      # `.env`. Without these the containers could never use S3 at all, only
+      # the local volume. S3_CONTAINER_ENDPOINT_URL wins over S3_ENDPOINT_URL
+      # because the two differ for a store in this stack: the apps on the host
+      # reach RustFS at http://localhost:59000, these containers at
+      # http://rustfs:9000. For AWS, R2 or Scaleway leave it unset.
+      S3_ENDPOINT_URL: ${S3_CONTAINER_ENDPOINT_URL:-${S3_ENDPOINT_URL:-}}
+      S3_FORCE_PATH_STYLE: ${S3_FORCE_PATH_STYLE:-}
+      S3_REGION: ${S3_REGION:-}
+      S3_BUCKET_NAME: ${S3_BUCKET_NAME:-}
+      S3_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID:-}
+      S3_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY:-}
+      S3_SESSION_TOKEN: ${S3_SESSION_TOKEN:-}
     volumes:
       - storage_data:/data/storage
       # The LLM route table, mounted rather than baked in — the same shape as

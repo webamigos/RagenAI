@@ -31,6 +31,17 @@ starts (ADR-44). Temporal is still selectable and is no longer a service this
 install runs, so choosing it asks for the address of the server you run
 yourself.
 
+Uploaded documents go to the local filesystem by default. The storage question
+also offers an S3-compatible store you already have, and **RustFS** — an
+object store the install runs itself, behind compose's opt-in `s3` profile.
+Choosing RustFS asks nothing further: it generates the store's keys and writes
+them twice, to `.env` as `RUSTFS_ACCESS_KEY`/`RUSTFS_SECRET_KEY` (Compose
+starts the store with them) and to `.env.local` as the `S3_*` variables the
+apps read, pointed at `http://localhost:59000`. Keys already in `.env` are kept,
+never rotated. Start that stack with `docker compose --profile s3 up -d` — the
+wizard does so itself when it starts Docker — and the console is at
+`http://localhost:59001`.
+
 ## Node version
 
 A Ragen installation runs on `^24.15.0 || >=26.0.0`, and the wizard refuses
@@ -86,6 +97,7 @@ What counts as install-affecting:
 | A new first-run step (migration, seed, generate)                                  | `src/tasks.ts` and `maybeRunFirstTimeSetup`                                                                                                                                                                     |
 | A new connector                                                                   | nothing here. The catalogue is rows (ADR-52): the migration that creates `mcp_catalog_entries` seeds the eleven built-ins, `npm run db:seed` keeps them current, and a twelfth is added from the admin panel    |
 | A `docker-compose.yml` service or published port change                           | `PUBLISHED_PORTS` in `src/tasks.ts` — the wizard probes those ports before starting the stack, and `tests/architecture/installer-ports-agree-with-compose.test.ts` fails when the two tables disagree            |
+| A published port behind a profile the wizard starts (`pii`, `s3`)                 | `PROFILE_PUBLISHED_PORTS` in `src/tasks.ts`, and `PROFILES_THE_WIZARD_MAY_START` in that same architecture test — a profile missing from either is ports the wizard starts and never probes                      |
 | A change to how Compose scopes its resources                                      | `resolveComposeProjectName` in `src/tasks.ts` — it writes `COMPOSE_PROJECT_NAME` into the install's `.env`, which is the only thing keeping two installs in same-named directories apart                          |
 | A gate that a brand-new install cannot pass (registration, licensing, onboarding) | usually the app, not this package — a fresh install must be able to reach a working chat without an administrator who does not exist yet                                                                        |
 
@@ -104,8 +116,8 @@ about — has no textual signal, which is why the rule above is a rule.
 | `--yes`                        | Accept every default without prompting                                            |
 | `--provider=openai\|anthropic` | Take the API key from `OPENAI_API_KEY` / `ANTHROPIC_API_KEY` instead of prompting |
 
-Anything the wizard doesn't ask about (S3 storage, encryption at rest,
-Stripe, email, MCP connectors) ships exactly as documented in the repo's own
+Anything the wizard doesn't ask about (Stripe, email, MCP connectors) ships
+exactly as documented in the repo's own
 `.env.example` files — see
 [docs/self-hosting](https://docs.ragen.ai/docs/self-hosting).
 

@@ -4,6 +4,9 @@ import { basename, isAbsolute, relative, resolve } from 'node:path';
 
 import { execa } from 'execa';
 
+import { PII_COMPOSE_PROFILE } from './pii-masking';
+import { RUSTFS_COMPOSE_PROFILE } from './storage-provider';
+
 export interface RunOptions {
   cwd: string;
   /**
@@ -191,10 +194,65 @@ export const PII_PUBLISHED_PORTS = [
   },
 ] as const;
 
+/**
+ * The two more, behind the `s3` profile, that only a RustFS install starts:
+ * the S3 API the apps talk to, and the web console.
+ */
+export const RUSTFS_PUBLISHED_PORTS = [
+  { service: 'RustFS (S3 API)', variable: 'RUSTFS_PORT', port: 59000 },
+  {
+    service: 'RustFS console',
+    variable: 'RUSTFS_CONSOLE_PORT',
+    port: 59001,
+  },
+] as const;
+
 export interface PublishedPort {
   service: string;
   variable: string;
   port: number;
+}
+
+/**
+ * The extra ports each optional profile publishes, keyed by profile name.
+ *
+ * One table rather than a branch per profile, because the port probe, the
+ * recovery command and the "update .env.local" hint all have to agree on what
+ * a profile starts — and with two profiles the branch-per-profile version was
+ * already printing a command that named only one of them.
+ */
+export const PROFILE_PUBLISHED_PORTS: Record<string, readonly PublishedPort[]> =
+  {
+    [PII_COMPOSE_PROFILE]: PII_PUBLISHED_PORTS,
+    [RUSTFS_COMPOSE_PROFILE]: RUSTFS_PUBLISHED_PORTS,
+  };
+
+/** Every port a `docker compose up` with these profiles publishes. */
+export function publishedPortsFor(
+  profiles: readonly string[],
+): PublishedPort[] {
+  return [
+    ...PUBLISHED_PORTS,
+    ...profiles.flatMap((profile) => PROFILE_PUBLISHED_PORTS[profile] ?? []),
+  ];
+}
+
+/**
+ * The `docker compose up` a person should type to get the stack this install
+ * configured, profiles included.
+ *
+ * Built from the same list `startDockerServices` is given, so a printed
+ * command cannot drift from an executed one. A command that drops a profile
+ * starts a stack without the services whose URLs were just written to
+ * `.env.local` — the half-configuration the profiles exist to prevent, only
+ * printed instead of executed.
+ */
+export function composeUpCommand(profiles: readonly string[] = []): string {
+  return [
+    'docker compose',
+    ...profiles.map((profile) => `--profile ${profile}`),
+    'up -d',
+  ].join(' ');
 }
 
 /**
@@ -255,6 +313,8 @@ function isPortInUse(port: number): Promise<boolean> {
  * Without it, choosing PII masking would write the two Presidio URLs and start
  * nothing behind them: those services sit behind compose's `pii` profile, so a
  * plain `up -d` skips them and the app would point at containers nobody ran.
+ * RustFS is the same shape behind `s3` — the apps would be configured for an
+ * object store on 59000 that nothing started, and fail at the first upload.
  */
 export async function startDockerServices({
   cwd,

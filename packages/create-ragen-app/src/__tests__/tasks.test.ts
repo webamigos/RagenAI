@@ -6,7 +6,10 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   PII_PUBLISHED_PORTS,
   PUBLISHED_PORTS,
+  RUSTFS_PUBLISHED_PORTS,
   busyPublishedPorts,
+  composeUpCommand,
+  publishedPortsFor,
   normalizeComposeProjectName,
   resolveComposeProjectName,
   generatePrismaClient,
@@ -39,6 +42,54 @@ describe('startDockerServices', () => {
         stdio: 'inherit',
       },
     );
+  });
+
+  it('adds a --profile per profile, before `up`', async () => {
+    mockedExeca.mockResolvedValueOnce({} as never);
+
+    await startDockerServices({ cwd: '/tmp/app', profiles: ['pii', 's3'] });
+
+    expect(mockedExeca).toHaveBeenCalledWith(
+      'docker',
+      ['compose', '--profile', 'pii', '--profile', 's3', 'up', '-d'],
+      { cwd: '/tmp/app', stdio: 'inherit' },
+    );
+  });
+});
+
+describe('composeUpCommand', () => {
+  it('is a plain `up` with no profile', () => {
+    expect(composeUpCommand()).toBe('docker compose up -d');
+  });
+
+  it('names every profile the install chose, not just the first', () => {
+    // Followed literally, a command missing `s3` starts a stack without the
+    // object store `.env.local` was just pointed at.
+    expect(composeUpCommand(['pii', 's3'])).toBe(
+      'docker compose --profile pii --profile s3 up -d',
+    );
+  });
+});
+
+describe('publishedPortsFor', () => {
+  it('is the default ports when no profile is chosen', () => {
+    expect(publishedPortsFor([])).toEqual([...PUBLISHED_PORTS]);
+  });
+
+  it('adds each chosen profile’s ports', () => {
+    expect(publishedPortsFor(['s3'])).toEqual([
+      ...PUBLISHED_PORTS,
+      ...RUSTFS_PUBLISHED_PORTS,
+    ]);
+    expect(publishedPortsFor(['pii', 's3'])).toEqual([
+      ...PUBLISHED_PORTS,
+      ...PII_PUBLISHED_PORTS,
+      ...RUSTFS_PUBLISHED_PORTS,
+    ]);
+  });
+
+  it('ignores a profile that publishes nothing it knows of', () => {
+    expect(publishedPortsFor(['observability'])).toEqual([...PUBLISHED_PORTS]);
   });
 });
 
@@ -258,6 +309,9 @@ describe('busyPublishedPorts', () => {
     // silently check nothing.
     expect(PUBLISHED_PORTS.length).toBe(5);
     expect(PII_PUBLISHED_PORTS.length).toBe(2);
+    expect(RUSTFS_PUBLISHED_PORTS.map(({ port }) => port)).toEqual([
+      59000, 59001,
+    ]);
   });
 });
 

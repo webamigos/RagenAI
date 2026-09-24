@@ -13,6 +13,16 @@
  * by `tests/architecture/create-ragen-app-knows-the-provider-seams.test.ts` —
  * the same arrangement `manifest.ts` already has with the `.env.example`
  * files.
+ *
+ * **Three answers, two providers.** The third answer, RustFS, is not a third
+ * provider: to the apps it is plain S3 on `localhost:59000`, and the seam has
+ * no variant for it and should not grow one. What makes it an answer of its
+ * own is everything *around* the app config — it is a service this install
+ * starts (compose's `s3` profile), and the store's keys have to be known to
+ * two files that are read by two different programs: Compose reads `.env` to
+ * give RustFS its keys, the apps read `.env.local` to present them. So a
+ * selection carries `composeProfiles` and `composeEnv` beside `envUpdates`,
+ * and `provider` stays what the config and the seam understand.
  */
 
 /**
@@ -30,7 +40,58 @@ export interface ConfigField {
   required: boolean;
 }
 
-export type StorageChoice = 'local' | 's3';
+import { generateS3AccessKeyId, generateS3SecretAccessKey } from './secrets';
+
+/** What the wizard offers. */
+export type StorageChoice = 'local' | 's3' | 'rustfs';
+
+/**
+ * What the app sees — `STORAGE_PROVIDER` and `ragen.config.ts`'s `provider`.
+ * Kept separate from `StorageChoice` so that `'rustfs'` cannot reach either:
+ * the seam would refuse it at boot, and the typed config would not compile.
+ */
+export type StorageProvider = 'local' | 's3';
+
+/** The compose profile RustFS and its two init containers sit behind. */
+export const RUSTFS_COMPOSE_PROFILE = 's3';
+
+/**
+ * Where the apps reach RustFS. The apps run on the host (compose runs only the
+ * backing services), so this is the published port, not `rustfs:9000` — that
+ * name resolves only inside the compose network. The defaults mirror
+ * `docker-compose.yml`, and `RUSTFS_PUBLISHED_PORTS` in `tasks.ts` is held to
+ * that file by `installer-ports-agree-with-compose.test.ts`.
+ */
+export const RUSTFS_ENDPOINT_URL = 'http://localhost:59000';
+
+/** The web console, printed at the end so someone can look inside the store. */
+export const RUSTFS_CONSOLE_URL = 'http://localhost:59001';
+
+/** The bucket `rustfs-bucket-init` creates on every `up`. */
+export const RUSTFS_BUCKET = 'ragen';
+
+/**
+ * RustFS ignores the region, but the AWS SDK refuses to sign a request without
+ * one and the seam requires `S3_REGION`. `us-east-1` is what every
+ * S3-compatible server answers to, and what the bucket init uses.
+ */
+export const RUSTFS_REGION = 'us-east-1';
+
+/**
+ * The keys RustFS is started with. Generated per install rather than using
+ * compose's `ragen-local` defaults, which are printed in a public file.
+ */
+export interface RustfsKeys {
+  accessKey: string;
+  secretKey: string;
+}
+
+export function generateRustfsKeys(): RustfsKeys {
+  return {
+    accessKey: generateS3AccessKeyId(),
+    secretKey: generateS3SecretAccessKey(),
+  };
+}
 
 export interface S3Answers {
   bucket: string;
@@ -42,16 +103,27 @@ export interface S3Answers {
 }
 
 export interface StorageSelection {
-  provider: StorageChoice;
+  /** The answer, so later steps can tell RustFS from an S3 someone else runs. */
+  choice: StorageChoice;
+  provider: StorageProvider;
   /** Written to the root `.env.local` — credentials never go in the config. */
   envUpdates: Record<string, string>;
   /** The config fields, already named as the config names them. */
   configFields: ConfigField[];
+  /** Passed to `docker compose --profile …`, so choosing it starts it. */
+  composeProfiles: string[];
+  /**
+   * Lines for the install's `.env`, which Compose reads and the apps do not.
+   * Written only where the file has no value yet — see `writeComposeEnv` in
+   * `cli.ts` for why an existing value wins.
+   */
+  composeEnv: Record<string, string>;
 }
 
 export const STORAGE_LABELS: Record<StorageChoice, string> = {
   local: 'Local filesystem (default — no cloud account needed)',
   s3: 'S3-compatible (AWS, Cloudflare R2, Scaleway, MinIO, Ceph)',
+  rustfs: 'RustFS — self-hosted object storage, started with the stack',
 };
 
 /**
@@ -70,20 +142,98 @@ function needsPathStyle(endpoint: string): boolean {
   );
 }
 
+/**
+ * `answers` is read for `s3`, `rustfsKeys` for `rustfs`. RustFS generates its
+ * keys when none are given; the wizard passes them only when the install's
+ * `.env` already holds keys the store was started with (see
+ * `withExistingRustfsKeys`).
+ */
 export function resolveStorageSelection(
-  provider: StorageChoice,
+  choice: StorageChoice,
   answers?: S3Answers,
+  rustfsKeys?: RustfsKeys,
 ): StorageSelection {
-  if (provider === 'local' || !answers) {
+  if (choice === 'rustfs') {
+    return rustfsSelection(rustfsKeys ?? generateRustfsKeys());
+  }
+
+  if (choice === 'local' || !answers) {
     return {
+      choice: 'local',
       provider: 'local',
       envUpdates: { STORAGE_PROVIDER: 'local' },
       configFields: [
         { field: 'path', envVar: 'STORAGE_LOCAL_PATH', required: false },
       ],
+      composeProfiles: [],
+      composeEnv: {},
     };
   }
 
+  return s3Selection(answers);
+}
+
+/**
+ * RustFS through the S3 path, not beside it: the same five variables and the
+ * same config fields an S3 answer pointed at `localhost:59000` would produce.
+ * A second hand-written list is how the two would drift, and the apps cannot
+ * tell them apart anyway. Path-style comes from `needsPathStyle` like it does
+ * for MinIO — a `localhost` host has no bucket subdomains to resolve.
+ */
+function rustfsSelection(keys: RustfsKeys): StorageSelection {
+  const s3 = s3Selection({
+    bucket: RUSTFS_BUCKET,
+    region: RUSTFS_REGION,
+    endpoint: RUSTFS_ENDPOINT_URL,
+    accessKeyId: keys.accessKey,
+    secretAccessKey: keys.secretKey,
+  });
+
+  return {
+    ...s3,
+    choice: 'rustfs',
+    composeProfiles: [RUSTFS_COMPOSE_PROFILE],
+    composeEnv: {
+      RUSTFS_ACCESS_KEY: keys.accessKey,
+      RUSTFS_SECRET_KEY: keys.secretKey,
+    },
+  };
+}
+
+/**
+ * The same selection, with any RustFS key the install's `.env` already has
+ * taking the place of the generated one.
+ *
+ * `.env` wins because it is what the store was *started* with: RustFS takes
+ * its root keys from its environment on every boot, and rotating them in
+ * `.env.local` alone would leave the apps presenting keys the running store
+ * does not know. Rotating both would be worse on a store that already holds
+ * files — the new keys would work, and nothing would say the old ones were
+ * someone's only record. Reusing them keeps `.env` and `.env.local` agreeing,
+ * which is the invariant that matters: one pair of keys, written twice.
+ *
+ * Per key, not all-or-nothing, because the `.env` merge is per line too: a
+ * file with only one of the two keeps it and gets the other appended.
+ */
+export function withExistingRustfsKeys(
+  selection: StorageSelection,
+  existing: Record<string, string | undefined>,
+): StorageSelection {
+  if (selection.choice !== 'rustfs') {
+    return selection;
+  }
+
+  const accessKey =
+    existing.RUSTFS_ACCESS_KEY?.trim() ||
+    selection.composeEnv.RUSTFS_ACCESS_KEY;
+  const secretKey =
+    existing.RUSTFS_SECRET_KEY?.trim() ||
+    selection.composeEnv.RUSTFS_SECRET_KEY;
+
+  return rustfsSelection({ accessKey, secretKey });
+}
+
+function s3Selection(answers: S3Answers): StorageSelection {
   const endpoint = answers.endpoint.trim();
 
   const envUpdates: Record<string, string> = {
@@ -123,5 +273,12 @@ export function resolveStorageSelection(
     }
   }
 
-  return { provider: 's3', envUpdates, configFields };
+  return {
+    choice: 's3',
+    provider: 's3',
+    envUpdates,
+    configFields,
+    composeProfiles: [],
+    composeEnv: {},
+  };
 }
