@@ -36,7 +36,7 @@
   },
   "Breadcrumbs": {
     "assistants": "Assistants",
-    "projects": "Projects",
+    "projects": "Assistants",
     "mainThreads": "Main Threads",
     "conversation": "Conversation",
     "unknownProject": "Unknown Project"
@@ -1045,7 +1045,8 @@
       "ai-usage": "AI Usage",
       "disk-usage": "Disk Usage",
       "audit-logs": "Audit Logs",
-      "knowledge-analytics": "Knowledge Analytics"
+      "knowledge-analytics": "Knowledge Analytics",
+      "role-org-owner": "Owner"
     }
   },
   "chats-page": {
@@ -1294,7 +1295,12 @@
     "status-staged": "In Brain",
     "staged-send": "Index it",
     "staged-sent": "Sent to the knowledge base — it will be searchable once processed",
-    "staged-send-failed": "Could not send it — reload the page and try again."
+    "staged-send-failed": "Could not send it — reload the page and try again.",
+    "pagination-previous": "Previous",
+    "pagination-next": "Next",
+    "pagination-previous-page": "Previous page",
+    "pagination-next-page": "Next page",
+    "pagination-label": "Page navigation"
   },
   "folders": {
     "title": "Folders",
@@ -1397,7 +1403,9 @@
   },
   "share-dialog": {
     "bulk-title": "Share {count, plural, one {# file} other {# files}}",
-    "single-title": "Share \"{resourceName}\""
+    "single-title": "Share \"{resourceName}\"",
+    "copy-link": "Copy link",
+    "link-copied": "Link copied"
   },
   "bulk-progress-banner": {
     "running": "{operation} in progress: {total, plural, one {# file} other {# files}}…",
@@ -2475,7 +2483,8 @@
         "orphan": "Not linked to any other page",
         "gap": "A process with no role linked to it",
         "extraction-failed": "The document could not be extracted",
-        "unknown": "No detail"
+        "unknown": "No detail",
+        "technical-details": "Technical details"
       }
     },
     "page": {
@@ -2736,5 +2745,21 @@
       "failed": "Publishing could not start — reload the page and try again.",
       "not-written": "{count, plural, one {# page was recorded as published but not written to the index — run it again} other {# pages were recorded as published but not written to the index — run it again}}"
     }
+  },
+  "project-context-manager": {
+    "label-assistant": "Assistant: {title}",
+    "organization-instructions": "Organization instructions",
+    "organization-defaults": "Organization defaults",
+    "subtitle-mentioned": "Mentioned assistant (@)",
+    "subtitle-thread-default": "Thread's assistant (default)",
+    "empty": "No assistants available",
+    "toast-switched": "Context switched to assistant: {title}",
+    "toast-organization": "Using organization instructions",
+    "toast-failed": "Couldn't change the assistant context",
+    "toast-error": "Something went wrong while changing the context",
+    "indicator-assistant-context": "Assistant context:",
+    "indicator-assistant-scope": "Knowledge base and instructions",
+    "indicator-organization-context": "Organization context:",
+    "indicator-organization-defaults": "Default instructions"
   }
 }

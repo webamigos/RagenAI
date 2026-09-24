@@ -32,6 +32,8 @@ import type { KbViewMode } from '@/context/FilesContext';
 type Props = {
   result: PaginatedUserFilesResult;
   scopeCounts: Record<ViewMode, ScopeTotals>;
+  /** The open folder's own totals; null at a scope's root. */
+  folderTotals?: ScopeTotals | null;
   sort: UserFilesSort;
   dir: UserFilesSortDir;
   selectedFileTypes: FileType[];
@@ -51,6 +53,7 @@ const SCOPE_LABEL_KEY: Record<ViewMode, string> = {
 export function DocumentsListContent({
   result,
   scopeCounts,
+  folderTotals = null,
   sort,
   dir,
   selectedFileTypes,
@@ -150,7 +153,11 @@ export function DocumentsListContent({
     [setFolder, router, pathname],
   );
 
-  const scopeTotals = scopeCounts[viewMode] ?? { files: 0, pages: 0 };
+  // The title line counts the place you stand: the open folder when there is
+  // one (it used to show the scope's total inside every folder), otherwise
+  // the scope.
+  const scopeTotals = folderTotals ??
+    scopeCounts[viewMode] ?? { files: 0, pages: 0 };
 
   /**
    * The folders directly inside the one being shown — and deliberately none

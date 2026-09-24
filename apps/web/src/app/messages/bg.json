@@ -36,7 +36,7 @@
   },
   "Breadcrumbs": {
     "assistants": "Асистенти",
-    "projects": "Проекти",
+    "projects": "Асистенти",
     "mainThreads": "Основни разговори",
     "conversation": "Разговор",
     "unknownProject": "Непознат проект"
@@ -1045,7 +1045,8 @@
       "ai-usage": "Използване на ИИ",
       "disk-usage": "Използване на диска",
       "audit-logs": "Одитни логове",
-      "knowledge-analytics": "Анализ на знанията"
+      "knowledge-analytics": "Анализ на знанията",
+      "role-org-owner": "Собственик"
     }
   },
   "chats-page": {
@@ -1294,7 +1295,12 @@
     "status-staged": "В Brain",
     "staged-send": "Индексирай",
     "staged-sent": "Изпратено към базата знания — ще може да се търси след обработка",
-    "staged-send-failed": "Изпращането не бе успешно — презаредете страницата и опитайте отново."
+    "staged-send-failed": "Изпращането не бе успешно — презаредете страницата и опитайте отново.",
+    "pagination-previous": "Предишна",
+    "pagination-next": "Следваща",
+    "pagination-previous-page": "Предишна страница",
+    "pagination-next-page": "Следваща страница",
+    "pagination-label": "Навигация по страниците"
   },
   "folders": {
     "title": "Папки",
@@ -1397,7 +1403,9 @@
   },
   "share-dialog": {
     "bulk-title": "Сподели {count, plural, one {# файл} other {# файла}}",
-    "single-title": "Сподели „{resourceName}“"
+    "single-title": "Сподели „{resourceName}“",
+    "copy-link": "Копиране на връзката",
+    "link-copied": "Връзката е копирана"
   },
   "bulk-progress-banner": {
     "running": "{operation} в процес: {total, plural, one {# файл} other {# файла}}…",
@@ -2475,7 +2483,8 @@
         "orphan": "Не е свързана с никоя друга страница",
         "gap": "Процес без свързана роля",
         "extraction-failed": "Документът не можа да бъде обработен",
-        "unknown": "Няма подробности"
+        "unknown": "Няма подробности",
+        "technical-details": "Технически подробности"
       }
     },
     "page": {
@@ -2736,5 +2745,21 @@
       "failed": "Публикуването не можа да започне — презаредете страницата и опитайте отново.",
       "not-written": "{count, plural, one {# страница е записана като публикувана, но не е записана в индекса – изпълнете отново} other {# страници са записани като публикувани, но не са записани в индекса – изпълнете отново}}"
     }
+  },
+  "project-context-manager": {
+    "label-assistant": "Асистент: {title}",
+    "organization-instructions": "Инструкции на организацията",
+    "organization-defaults": "Настройки по подразбиране на организацията",
+    "subtitle-mentioned": "Споменат асистент (@)",
+    "subtitle-thread-default": "Асистент на нишката (по подразбиране)",
+    "empty": "Няма налични асистенти",
+    "toast-switched": "Контекстът е сменен на асистент: {title}",
+    "toast-organization": "Използват се инструкциите на организацията",
+    "toast-failed": "Контекстът на асистента не можа да бъде сменен",
+    "toast-error": "Възникна грешка при смяна на контекста",
+    "indicator-assistant-context": "Контекст на асистента:",
+    "indicator-assistant-scope": "База знания и инструкции",
+    "indicator-organization-context": "Контекст на организацията:",
+    "indicator-organization-defaults": "Инструкции по подразбиране"
   }
 }

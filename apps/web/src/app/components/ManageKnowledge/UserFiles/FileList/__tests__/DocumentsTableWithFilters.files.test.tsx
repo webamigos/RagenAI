@@ -80,6 +80,11 @@ const messages = {
     move: 'Move',
     share: 'Share',
     'pagination-range': '{from}-{to} of {total}',
+    'pagination-previous': 'Previous',
+    'pagination-next': 'Next',
+    'pagination-previous-page': 'Previous page',
+    'pagination-next-page': 'Next page',
+    'pagination-label': 'Page navigation',
     'clear-all-filters': 'Clear all',
   },
   'bulk-action-bar': {

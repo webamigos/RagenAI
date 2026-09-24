@@ -99,7 +99,20 @@ export default async function BrainDocumentsPage() {
             <TableBody>
               {documents.map((d) => (
                 <TableRow key={d.fileId} data-testid="brain-document-row">
-                  <TableCell className="font-medium">{d.fileName}</TableCell>
+                  <TableCell className="font-medium">
+                    {/*
+                      Truncated, with the full name in `title`: the table is
+                      `whitespace-nowrap`, so one long file name widened the
+                      whole table past the 1072px the layout gives it and
+                      pushed the actions column out of view.
+                    */}
+                    <span
+                      className="block max-w-[320px] truncate"
+                      title={d.fileName}
+                    >
+                      {d.fileName}
+                    </span>
+                  </TableCell>
                   <TableCell className="text-right tabular-nums">
                     {d.approvedPages}
                   </TableCell>

@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import clsx from 'clsx';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -25,19 +26,35 @@ export const BreadcrumbNavigation = ({
   }
 
   return (
-    <div className={className}>
-      <Breadcrumb>
-        {breadcrumbs.map((item, index) => (
-          <React.Fragment key={index}>
-            <BreadcrumbItem>
-              <BreadcrumbLink href={item.href} current={item.current}>
-                {item.label}
-              </BreadcrumbLink>
-            </BreadcrumbItem>
+    <div className={clsx('min-w-0', className)}>
+      {/*
+        Below `sm` only the last crumb is shown, truncated. The trail shares a
+        row with the assistant selector and the header's buttons, and at 375px
+        the full "Assistants › name › Conversation" pushed the selector off
+        the edge. The sidebar already says where you are; the selector is the
+        control you came for.
+      */}
+      <Breadcrumb className="min-w-0">
+        {breadcrumbs.map((item, index) => {
+          const isLast = index === breadcrumbs.length - 1;
+          return (
+            <React.Fragment key={index}>
+              <BreadcrumbItem
+                className={isLast ? 'min-w-0' : 'shrink-0 max-sm:hidden'}
+              >
+                <BreadcrumbLink
+                  href={item.href}
+                  current={item.current}
+                  className={isLast ? 'truncate' : undefined}
+                >
+                  {item.label}
+                </BreadcrumbLink>
+              </BreadcrumbItem>
 
-            {index < breadcrumbs.length - 1 && <BreadcrumbSeparator />}
-          </React.Fragment>
-        ))}
+              {!isLast && <BreadcrumbSeparator className="max-sm:hidden" />}
+            </React.Fragment>
+          );
+        })}
       </Breadcrumb>
     </div>
   );

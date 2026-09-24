@@ -122,10 +122,16 @@ export function PaginationPrevious({
   href = null,
   className,
   children = 'Previous',
-}: React.PropsWithChildren<{ href?: string | null; className?: string }>) {
+  label = 'Previous page',
+}: React.PropsWithChildren<{
+  href?: string | null;
+  className?: string;
+  /** The accessible name; pass a translated one, like `children`. */
+  label?: string;
+}>) {
   return (
     <span className={clsx(className, 'grow basis-0')}>
-      <Step href={href} label="Previous page">
+      <Step href={href} label={label}>
         <ArrowLeft />
         {children}
       </Step>
@@ -137,10 +143,16 @@ export function PaginationNext({
   href = null,
   className,
   children = 'Next',
-}: React.PropsWithChildren<{ href?: string | null; className?: string }>) {
+  label = 'Next page',
+}: React.PropsWithChildren<{
+  href?: string | null;
+  className?: string;
+  /** The accessible name; pass a translated one, like `children`. */
+  label?: string;
+}>) {
   return (
     <span className={clsx(className, 'flex grow basis-0 justify-end')}>
-      <Step href={href} label="Next page">
+      <Step href={href} label={label}>
         {children}
         <ArrowRight />
       </Step>

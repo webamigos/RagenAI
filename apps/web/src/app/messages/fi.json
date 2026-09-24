@@ -36,7 +36,7 @@
   },
   "Breadcrumbs": {
     "assistants": "Assistentit",
-    "projects": "Projektit",
+    "projects": "Assistentit",
     "mainThreads": "Pääkeskustelut",
     "conversation": "Keskustelu",
     "unknownProject": "Tuntematon projekti"
@@ -1045,7 +1045,8 @@
       "ai-usage": "Tekoälyn käyttö",
       "disk-usage": "Levytilan käyttö",
       "audit-logs": "Tarkastuslokit",
-      "knowledge-analytics": "Tietämysanalytiikka"
+      "knowledge-analytics": "Tietämysanalytiikka",
+      "role-org-owner": "Omistaja"
     }
   },
   "chats-page": {
@@ -1294,7 +1295,12 @@
     "status-staged": "Brainissa",
     "staged-send": "Indeksoi",
     "staged-sent": "Lähetetty tietopankkiin — haettavissa käsittelyn jälkeen",
-    "staged-send-failed": "Lähetys epäonnistui — lataa sivu uudelleen ja yritä uudelleen."
+    "staged-send-failed": "Lähetys epäonnistui — lataa sivu uudelleen ja yritä uudelleen.",
+    "pagination-previous": "Edellinen",
+    "pagination-next": "Seuraava",
+    "pagination-previous-page": "Edellinen sivu",
+    "pagination-next-page": "Seuraava sivu",
+    "pagination-label": "Sivunavigointi"
   },
   "folders": {
     "title": "Kansiot",
@@ -1397,7 +1403,9 @@
   },
   "share-dialog": {
     "bulk-title": "Jaa {count, plural, one {# tiedosto} other {# tiedostoa}}",
-    "single-title": "Jaa \"{resourceName}\""
+    "single-title": "Jaa \"{resourceName}\"",
+    "copy-link": "Kopioi linkki",
+    "link-copied": "Linkki kopioitu"
   },
   "bulk-progress-banner": {
     "running": "{operation} käynnissä: {total, plural, one {# tiedosto} other {# tiedostoa}}…",
@@ -2475,7 +2483,8 @@
         "orphan": "Ei yhteyttä mihinkään toiseen sivuun",
         "gap": "Prosessi ilman liitettyä roolia",
         "extraction-failed": "Asiakirjaa ei voitu käsitellä",
-        "unknown": "Ei tietoja"
+        "unknown": "Ei tietoja",
+        "technical-details": "Tekniset tiedot"
       }
     },
     "page": {
@@ -2736,5 +2745,21 @@
       "failed": "Julkaisua ei voitu aloittaa — lataa sivu uudelleen ja yritä uudelleen.",
       "not-written": "{count} sivua kirjattiin julkaistuksi, mutta niitä ei kirjoitettu hakemistoon – suorita uudelleen"
     }
+  },
+  "project-context-manager": {
+    "label-assistant": "Avustaja: {title}",
+    "organization-instructions": "Organisaation ohjeet",
+    "organization-defaults": "Organisaation oletusasetukset",
+    "subtitle-mentioned": "Mainittu avustaja (@)",
+    "subtitle-thread-default": "Keskustelun avustaja (oletus)",
+    "empty": "Avustajia ei ole saatavilla",
+    "toast-switched": "Konteksti vaihdettu avustajaan: {title}",
+    "toast-organization": "Käytössä ovat organisaation ohjeet",
+    "toast-failed": "Avustajan kontekstia ei voitu vaihtaa",
+    "toast-error": "Kontekstin vaihtamisessa tapahtui virhe",
+    "indicator-assistant-context": "Avustajan konteksti:",
+    "indicator-assistant-scope": "Tietopankki ja ohjeet",
+    "indicator-organization-context": "Organisaation konteksti:",
+    "indicator-organization-defaults": "Oletusohjeet"
   }
 }

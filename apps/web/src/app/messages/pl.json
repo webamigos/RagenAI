@@ -1045,7 +1045,8 @@
       "ai-usage": "Użycie AI",
       "disk-usage": "Użycie dysku",
       "audit-logs": "Dziennik zdarzeń",
-      "knowledge-analytics": "Analityka wiedzy"
+      "knowledge-analytics": "Analityka wiedzy",
+      "role-org-owner": "Właściciel"
     }
   },
   "chats-page": {
@@ -1294,7 +1295,12 @@
     "status-staged": "W Brain",
     "staged-send": "Zaindeksuj",
     "staged-sent": "Wysłano do bazy wiedzy — będzie wyszukiwalny po przetworzeniu",
-    "staged-send-failed": "Nie udało się wysłać — odśwież stronę i spróbuj ponownie."
+    "staged-send-failed": "Nie udało się wysłać — odśwież stronę i spróbuj ponownie.",
+    "pagination-previous": "Poprzednia",
+    "pagination-next": "Następna",
+    "pagination-previous-page": "Poprzednia strona",
+    "pagination-next-page": "Następna strona",
+    "pagination-label": "Nawigacja po stronach"
   },
   "folders": {
     "title": "Foldery",
@@ -1397,7 +1403,9 @@
   },
   "share-dialog": {
     "bulk-title": "Udostępnij {count, plural, one {# plik} few {# pliki} many {# plików} other {# pliki}}",
-    "single-title": "Udostępnij \"{resourceName}\""
+    "single-title": "Udostępnij \"{resourceName}\"",
+    "copy-link": "Kopiuj link",
+    "link-copied": "Skopiowano link"
   },
   "bulk-progress-banner": {
     "running": "Trwa {operation}: {total, plural, one {# plik} few {# pliki} many {# plików} other {# pliki}}…",
@@ -2475,7 +2483,8 @@
         "orphan": "Strona nie jest powiązana z żadną inną",
         "gap": "Proces bez przypisanej roli",
         "extraction-failed": "Nie udało się przetworzyć dokumentu",
-        "unknown": "Brak szczegółów"
+        "unknown": "Brak szczegółów",
+        "technical-details": "Szczegóły techniczne"
       }
     },
     "page": {
@@ -2736,5 +2745,21 @@
       "failed": "Publikacja nie ruszyła — odśwież stronę i spróbuj ponownie.",
       "not-written": "{count, plural, one {# strona została zapisana jako opublikowana, ale nie trafiła do indeksu — uruchom ponownie} few {# strony zostały zapisane jako opublikowane, ale nie trafiły do indeksu — uruchom ponownie} many {# stron zostało zapisanych jako opublikowane, ale nie trafiło do indeksu — uruchom ponownie} other {# strony zostały zapisane jako opublikowane, ale nie trafiły do indeksu — uruchom ponownie}}"
     }
+  },
+  "project-context-manager": {
+    "label-assistant": "Asystent: {title}",
+    "organization-instructions": "Instrukcje organizacji",
+    "organization-defaults": "Domyślne ustawienia organizacji",
+    "subtitle-mentioned": "Wymieniony asystent (@)",
+    "subtitle-thread-default": "Asystent wątku (domyślny)",
+    "empty": "Brak dostępnych asystentów",
+    "toast-switched": "Kontekst zmieniony na asystenta: {title}",
+    "toast-organization": "Używane są instrukcje organizacji",
+    "toast-failed": "Nie udało się zmienić kontekstu asystenta",
+    "toast-error": "Wystąpił błąd podczas zmiany kontekstu",
+    "indicator-assistant-context": "Kontekst asystenta:",
+    "indicator-assistant-scope": "Baza wiedzy i instrukcje",
+    "indicator-organization-context": "Kontekst organizacji:",
+    "indicator-organization-defaults": "Domyślne instrukcje"
   }
 }

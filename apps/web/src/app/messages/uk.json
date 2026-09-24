@@ -36,7 +36,7 @@
   },
   "Breadcrumbs": {
     "assistants": "Асистенти",
-    "projects": "Проєкти",
+    "projects": "Асистенти",
     "mainThreads": "Основні розмови",
     "conversation": "Розмова",
     "unknownProject": "Невідомий проєкт"
@@ -1045,7 +1045,8 @@
       "ai-usage": "Використання ШІ",
       "disk-usage": "Використання диска",
       "audit-logs": "Журнали аудиту",
-      "knowledge-analytics": "Аналітика знань"
+      "knowledge-analytics": "Аналітика знань",
+      "role-org-owner": "Власник"
     }
   },
   "chats-page": {
@@ -1294,7 +1295,12 @@
     "status-staged": "У Brain",
     "staged-send": "Індексувати",
     "staged-sent": "Надіслано до бази знань — після обробки стане доступним для пошуку",
-    "staged-send-failed": "Не вдалося надіслати — оновіть сторінку й спробуйте ще раз."
+    "staged-send-failed": "Не вдалося надіслати — оновіть сторінку й спробуйте ще раз.",
+    "pagination-previous": "Попередня",
+    "pagination-next": "Наступна",
+    "pagination-previous-page": "Попередня сторінка",
+    "pagination-next-page": "Наступна сторінка",
+    "pagination-label": "Навігація сторінками"
   },
   "folders": {
     "title": "Папки",
@@ -1397,7 +1403,9 @@
   },
   "share-dialog": {
     "bulk-title": "Поділитися {count, plural, one {# файлом} few {# файлами} many {# файлами} other {# файлами}}",
-    "single-title": "Поділитися «{resourceName}»"
+    "single-title": "Поділитися «{resourceName}»",
+    "copy-link": "Копіювати посилання",
+    "link-copied": "Посилання скопійовано"
   },
   "bulk-progress-banner": {
     "running": "Виконується {operation}: {total, plural, one {# файл} few {# файли} many {# файлів} other {# файлів}}…",
@@ -2475,7 +2483,8 @@
         "orphan": "Не пов’язана з жодною іншою сторінкою",
         "gap": "Процес без призначеної ролі",
         "extraction-failed": "Не вдалося опрацювати документ",
-        "unknown": "Без деталей"
+        "unknown": "Без деталей",
+        "technical-details": "Технічні подробиці"
       }
     },
     "page": {
@@ -2736,5 +2745,21 @@
       "failed": "Публікація не розпочалася — оновіть сторінку й спробуйте ще раз.",
       "not-written": "{count, plural, one {# сторінку записано як опубліковану, але не додано до індексу — запустіть ще раз} few {# сторінки записано як опубліковані, але не додано до індексу — запустіть ще раз} many {# сторінок записано як опубліковані, але не додано до індексу — запустіть ще раз} other {# сторінки записано як опубліковані, але не додано до індексу — запустіть ще раз}}"
     }
+  },
+  "project-context-manager": {
+    "label-assistant": "Асистент: {title}",
+    "organization-instructions": "Інструкції організації",
+    "organization-defaults": "Налаштування організації за замовчуванням",
+    "subtitle-mentioned": "Згаданий асистент (@)",
+    "subtitle-thread-default": "Асистент треду (за замовчуванням)",
+    "empty": "Немає доступних асистентів",
+    "toast-switched": "Контекст змінено на асистента: {title}",
+    "toast-organization": "Використовуються інструкції організації",
+    "toast-failed": "Не вдалося змінити контекст асистента",
+    "toast-error": "Під час зміни контексту сталася помилка",
+    "indicator-assistant-context": "Контекст асистента:",
+    "indicator-assistant-scope": "База знань та інструкції",
+    "indicator-organization-context": "Контекст організації:",
+    "indicator-organization-defaults": "Інструкції за замовчуванням"
   }
 }

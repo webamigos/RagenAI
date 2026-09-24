@@ -36,7 +36,7 @@
   },
   "Breadcrumbs": {
     "assistants": "Assistenten",
-    "projects": "Projekte",
+    "projects": "Assistenten",
     "mainThreads": "Haupt-Threads",
     "conversation": "Unterhaltung",
     "unknownProject": "Unbekanntes Projekt"
@@ -1045,7 +1045,8 @@
       "ai-usage": "KI-Nutzung",
       "disk-usage": "Speichernutzung",
       "audit-logs": "Audit-Protokolle",
-      "knowledge-analytics": "Wissensanalyse"
+      "knowledge-analytics": "Wissensanalyse",
+      "role-org-owner": "Eigentümer"
     }
   },
   "chats-page": {
@@ -1294,7 +1295,12 @@
     "status-staged": "In Brain",
     "staged-send": "Indexieren",
     "staged-sent": "An die Wissensdatenbank gesendet — nach der Verarbeitung durchsuchbar",
-    "staged-send-failed": "Senden fehlgeschlagen — laden Sie die Seite neu und versuchen Sie es erneut."
+    "staged-send-failed": "Senden fehlgeschlagen — laden Sie die Seite neu und versuchen Sie es erneut.",
+    "pagination-previous": "Zurück",
+    "pagination-next": "Weiter",
+    "pagination-previous-page": "Vorherige Seite",
+    "pagination-next-page": "Nächste Seite",
+    "pagination-label": "Seitennavigation"
   },
   "folders": {
     "title": "Ordner",
@@ -1397,7 +1403,9 @@
   },
   "share-dialog": {
     "bulk-title": "{count, plural, one {# Datei} other {# Dateien}} teilen",
-    "single-title": "\"{resourceName}\" teilen"
+    "single-title": "\"{resourceName}\" teilen",
+    "copy-link": "Link kopieren",
+    "link-copied": "Link kopiert"
   },
   "bulk-progress-banner": {
     "running": "{operation} läuft: {total, plural, one {# Datei} other {# Dateien}}…",
@@ -2475,7 +2483,8 @@
         "orphan": "Mit keiner anderen Seite verknüpft",
         "gap": "Ein Prozess ohne zugeordnete Rolle",
         "extraction-failed": "Das Dokument konnte nicht verarbeitet werden",
-        "unknown": "Keine Details"
+        "unknown": "Keine Details",
+        "technical-details": "Technische Details"
       }
     },
     "page": {
@@ -2736,5 +2745,21 @@
       "failed": "Die Veröffentlichung konnte nicht starten — laden Sie die Seite neu und versuchen Sie es erneut.",
       "not-written": "{count, plural, one {# Seite wurde als veröffentlicht erfasst, aber nicht in den Index geschrieben – erneut ausführen} other {# Seiten wurden als veröffentlicht erfasst, aber nicht in den Index geschrieben – erneut ausführen}}"
     }
+  },
+  "project-context-manager": {
+    "label-assistant": "Assistent: {title}",
+    "organization-instructions": "Anweisungen der Organisation",
+    "organization-defaults": "Standardeinstellungen der Organisation",
+    "subtitle-mentioned": "Erwähnter Assistent (@)",
+    "subtitle-thread-default": "Assistent des Threads (Standard)",
+    "empty": "Keine Assistenten verfügbar",
+    "toast-switched": "Kontext gewechselt zum Assistenten: {title}",
+    "toast-organization": "Anweisungen der Organisation werden verwendet",
+    "toast-failed": "Der Assistentenkontext konnte nicht geändert werden",
+    "toast-error": "Beim Ändern des Kontexts ist ein Fehler aufgetreten",
+    "indicator-assistant-context": "Assistentenkontext:",
+    "indicator-assistant-scope": "Wissensdatenbank und Anweisungen",
+    "indicator-organization-context": "Organisationskontext:",
+    "indicator-organization-defaults": "Standardanweisungen"
   }
 }

@@ -1,6 +1,9 @@
 import { getTranslations } from 'next-intl/server';
 import { getUserFilesQuery } from '@/features/documents/services/queries/get-user-files-query';
-import { getFileScopeCountsQuery } from '@/features/documents/services/queries/get-file-scope-counts-query';
+import {
+  getFileScopeCountsQuery,
+  getFolderTotalsQuery,
+} from '@/features/documents/services/queries/get-file-scope-counts-query';
 import type { FileViewMode } from '@/features/documents/services/queries/get-user-files-query';
 import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
 import { getCurrentUser } from '@/app/lib/utils/auth-helpers';
@@ -120,7 +123,7 @@ const UploadedListPage = async ({ searchParams }: Props) => {
   // the same access question the list does, and a client fetch would make the
   // rail's number and the table's number two independent reads of one
   // predicate.
-  const [result, scopeCounts] = await Promise.all([
+  const [result, scopeCounts, folderTotals] = await Promise.all([
     getUserFilesQuery(orgId, teamIds, {
       userId: userId ?? undefined,
       scope,
@@ -148,12 +151,21 @@ const UploadedListPage = async ({ searchParams }: Props) => {
       userId: userId ?? undefined,
       scope,
     }),
+    folderId
+      ? getFolderTotalsQuery(orgId, teamIds, {
+          folderId,
+          viewMode,
+          userId: userId ?? undefined,
+          scope,
+        })
+      : Promise.resolve(null),
   ]);
 
   return (
     <DocumentsListContent
       result={result}
       scopeCounts={scopeCounts}
+      folderTotals={folderTotals}
       sort={sort}
       dir={dir}
       selectedFileTypes={selectedFileTypes}

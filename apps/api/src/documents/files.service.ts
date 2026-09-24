@@ -420,11 +420,13 @@ export class FilesService {
       embeddingStatus = [],
     } = options ?? {};
 
-    // Published Brain pages' files are not documents; the web listing
-    // (`buildUserFilesWhere`) leaves them out too (spec E10).
+    // Published Brain pages' files are not documents, and an assistant's
+    // import (`sourceFileId` set) is a second row for the same document; the
+    // web listing (`buildUserFilesWhere`) leaves both out too (spec E10).
     const baseWhere: Record<string, unknown> = {
       organizationId,
       publishedPages: { none: {} },
+      sourceFileId: null,
     };
 
     if (folderId !== undefined) {

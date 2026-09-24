@@ -459,12 +459,19 @@ export function FoldersList({
               at — a row reading "HR ..." beside a legible policy is the wrong
               half to keep. The tag truncates with its full text in `title`.
 
+              "Takes" is done with shrink factors, not with `flex-1` on the
+              name: `flex-1` sets the name's basis to 0, so the tag was sized
+              first and the name got whatever was left — "Płace" became
+              "Pł…" beside a legible "Wszystkie". Now both start at their
+              content width, the tag shrinks 999 times faster, and `ml-auto`
+              keeps it on the right.
+
               The per-folder file count that used to sit here is gone with it.
               It was the third thing competing for the same 160px, it is not in
               the phase 7 rail, and unlike the scope counts above it answers
               nothing you would act on: opening the folder shows you.
             */}
-            <span className="min-w-0 flex-1 truncate">{folder.name}</span>
+            <span className="min-w-0 truncate">{folder.name}</span>
             {/*
               A folder carries a policy only when it overrides the default, so
               the tag's presence *is* the override — which is why it renders on
@@ -473,7 +480,7 @@ export function FoldersList({
               right edge on hover.
             */}
             {folder.piiPolicy && (
-              <span className="mr-5 min-w-0 max-w-[88px] shrink">
+              <span className="mr-5 ml-auto min-w-0 max-w-[88px] shrink-[999]">
                 <PiiPolicyBadge piiPolicy={folder.piiPolicy} compact />
               </span>
             )}

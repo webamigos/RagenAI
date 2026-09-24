@@ -347,10 +347,13 @@ function FiltersBar({
               total: result.totalCount,
             })}
           </span>
-          <Pagination aria-label="Page navigation">
+          <Pagination aria-label={t('pagination-label')}>
             <PaginationPrevious
               href={result.page > 1 ? pageHref(result.page - 1) : null}
-            />
+              label={t('pagination-previous-page')}
+            >
+              {t('pagination-previous')}
+            </PaginationPrevious>
             <PaginationList>
               {visiblePages.map((p, i) =>
                 p === null ? (
@@ -372,7 +375,10 @@ function FiltersBar({
                   ? pageHref(result.page + 1)
                   : null
               }
-            />
+              label={t('pagination-next-page')}
+            >
+              {t('pagination-next')}
+            </PaginationNext>
           </Pagination>
         </div>
       )}

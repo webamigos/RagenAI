@@ -1,5 +1,6 @@
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
-import { getFormatter, getTranslations } from 'next-intl/server';
+import { getFormatter, getLocale, getTranslations } from 'next-intl/server';
+import { formatIsoDuration } from '@/features/brain/utils/format-iso-duration';
 import { notFound } from 'next/navigation';
 import ReactMarkdown from 'react-markdown';
 
@@ -42,9 +43,10 @@ export default async function BrainPageDetail({ params }: Props) {
   if (!page) {
     notFound();
   }
-  const [t, format, options, mergeTargets] = await Promise.all([
+  const [t, format, locale, options, mergeTargets] = await Promise.all([
     getTranslations('brain'),
     getFormatter(),
+    getLocale(),
     getBrainReviewOptionsQuery(access.orgId),
     page.status === 'CANDIDATE'
       ? getMergeTargetsQuery(access.orgId, page)
@@ -239,7 +241,9 @@ export default async function BrainPageDetail({ params }: Props) {
             </p>
             {page.verifyEvery && (
               <p className="text-muted-foreground">
-                {t('page.verify-every', { every: page.verifyEvery })}
+                {t('page.verify-every', {
+                  every: formatIsoDuration(page.verifyEvery, locale),
+                })}
               </p>
             )}
           </div>

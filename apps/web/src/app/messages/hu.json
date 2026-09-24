@@ -36,7 +36,7 @@
   },
   "Breadcrumbs": {
     "assistants": "Asszisztensek",
-    "projects": "Projektek",
+    "projects": "Asszisztensek",
     "mainThreads": "Fő beszélgetések",
     "conversation": "Beszélgetés",
     "unknownProject": "Ismeretlen projekt"
@@ -1045,7 +1045,8 @@
       "ai-usage": "AI-használat",
       "disk-usage": "Lemezhasználat",
       "audit-logs": "Naplók",
-      "knowledge-analytics": "Tudásbázis-elemzés"
+      "knowledge-analytics": "Tudásbázis-elemzés",
+      "role-org-owner": "Tulajdonos"
     }
   },
   "chats-page": {
@@ -1294,7 +1295,12 @@
     "status-staged": "Brainben",
     "staged-send": "Indexelés",
     "staged-sent": "Elküldve a tudásbázisba — feldolgozás után kereshető lesz",
-    "staged-send-failed": "A küldés nem sikerült — töltse újra az oldalt, és próbálja újra."
+    "staged-send-failed": "A küldés nem sikerült — töltse újra az oldalt, és próbálja újra.",
+    "pagination-previous": "Előző",
+    "pagination-next": "Következő",
+    "pagination-previous-page": "Előző oldal",
+    "pagination-next-page": "Következő oldal",
+    "pagination-label": "Oldalnavigáció"
   },
   "folders": {
     "title": "Mappák",
@@ -1397,7 +1403,9 @@
   },
   "share-dialog": {
     "bulk-title": "{count, plural, one {# fájl} other {# fájl}} megosztása",
-    "single-title": "\"{resourceName}\" megosztása"
+    "single-title": "\"{resourceName}\" megosztása",
+    "copy-link": "Link másolása",
+    "link-copied": "Link másolva"
   },
   "bulk-progress-banner": {
     "running": "{operation} folyamatban: {total, plural, one {# fájl} other {# fájl}}…",
@@ -2475,7 +2483,8 @@
         "orphan": "Semmilyen más oldalhoz nem kapcsolódik",
         "gap": "Folyamat hozzárendelt szerepkör nélkül",
         "extraction-failed": "A dokumentumot nem sikerült feldolgozni",
-        "unknown": "Nincsenek részletek"
+        "unknown": "Nincsenek részletek",
+        "technical-details": "Technikai részletek"
       }
     },
     "page": {
@@ -2736,5 +2745,21 @@
       "failed": "A közzététel nem indult el — töltse újra az oldalt, és próbálja újra.",
       "not-written": "{count} oldal közzétettként rögzült, de nem került az indexbe – futtassa újra"
     }
+  },
+  "project-context-manager": {
+    "label-assistant": "Asszisztens: {title}",
+    "organization-instructions": "A szervezet utasításai",
+    "organization-defaults": "A szervezet alapbeállításai",
+    "subtitle-mentioned": "Említett asszisztens (@)",
+    "subtitle-thread-default": "A szál asszisztense (alapértelmezett)",
+    "empty": "Nincs elérhető asszisztens",
+    "toast-switched": "Környezet átváltva erre az asszisztensre: {title}",
+    "toast-organization": "A szervezet utasításai vannak használatban",
+    "toast-failed": "Nem sikerült módosítani az asszisztens környezetét",
+    "toast-error": "Hiba történt a környezet módosítása közben",
+    "indicator-assistant-context": "Asszisztens környezete:",
+    "indicator-assistant-scope": "Tudásbázis és utasítások",
+    "indicator-organization-context": "Szervezet környezete:",
+    "indicator-organization-defaults": "Alapértelmezett utasítások"
   }
 }

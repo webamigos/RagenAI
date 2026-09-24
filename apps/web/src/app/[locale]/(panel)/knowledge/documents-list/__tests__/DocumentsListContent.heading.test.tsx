@@ -88,6 +88,7 @@ const result: PaginatedUserFilesResult = {
 
 function renderContent(
   scopeCounts: Record<string, { files: number; pages: number }>,
+  folderTotals: { files: number; pages: number } | null = null,
 ) {
   render(
     <NextIntlClientProvider locale="en" messages={messages}>
@@ -98,6 +99,7 @@ function renderContent(
             typeof DocumentsListContent
           >['scopeCounts']
         }
+        folderTotals={folderTotals}
         sort="createdAt"
         dir="desc"
         selectedFileTypes={[]}
@@ -173,5 +175,14 @@ describe('DocumentsListContent — the scope heading', () => {
     expect(screen.getByText('My files')).toBeInTheDocument();
     expect(screen.getByText('38 documents · ~700 pages')).toBeInTheDocument();
     mockViewMode.current = 'all';
+  });
+
+  // Inside a folder the line counts the folder. It used to repeat the scope
+  // total, so an open "Payroll" holding four files said "26 documents".
+  it('counts the open folder, not the scope around it', () => {
+    renderContent(counts(26, 400), { files: 4, pages: 0 });
+
+    expect(screen.getByText('4 documents')).toBeInTheDocument();
+    expect(screen.queryByText(/26 documents/)).not.toBeInTheDocument();
   });
 });

@@ -242,16 +242,25 @@ export const Assistant = ({ threadId }: Props) => {
       <PageDropOverlay visible={isDragging} zones={dropZones} />
       <div className="flex flex-1 min-w-0 flex-col font-sans">
         <div className="sticky top-0 z-40 flex items-center justify-between gap-2 border-b border-border/40 bg-background/80 backdrop-blur-md px-4 py-2.5">
-          <BreadcrumbNavigation threadId={threadId} />
-          <div className="flex items-center gap-2">
+          <BreadcrumbNavigation threadId={threadId} className="flex-1" />
+          <div className="flex min-w-0 items-center gap-2">
             <ProjectContextIndicator
               threadId={threadId}
               availableProjects={availableProjects}
             />
+            {/*
+              Not below `sm`: at 375px the model name wrapped to three lines
+              and pushed the share buttons past the screen edge. It is a
+              label, not a control — a thread's model is fixed — so on a
+              phone the row's width goes to the assistant selector and the
+              buttons, which are.
+            */}
             {!isPublicAccess && (
-              <ThreadModelLabel
-                model={currentThreadModel || organizationDefaultModel}
-              />
+              <span className="max-sm:hidden">
+                <ThreadModelLabel
+                  model={currentThreadModel || organizationDefaultModel}
+                />
+              </span>
             )}
             {!isPublicAccess && (
               <button

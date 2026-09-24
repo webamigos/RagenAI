@@ -188,6 +188,24 @@ describe('folder PII policy tag', () => {
     const row = screen.getByText('Contracts').closest('button')!;
     expect(row.className).toContain('text-left');
   });
+
+  /**
+   * jsdom has no layout, so this pins the mechanism rather than the pixels.
+   * `flex-1` on the name made its basis 0: the tag was sized first and
+   * "Płace" became "Pł…" beside a legible "All PII". The name now starts at
+   * its content width, and the tag gives way first.
+   */
+  it('sizes the name before the tag, and shrinks the tag first', () => {
+    renderList([makeFolder({ name: 'Płace', piiPolicy: 'STRICT' })]);
+
+    const name = screen.getByText('Płace');
+    expect(name.className).not.toContain('flex-1');
+    const tagSlot = screen.getByTestId(
+      'pii-policy-badge-strict',
+    ).parentElement!;
+    expect(tagSlot.className).toContain('shrink-[999]');
+    expect(tagSlot.className).toContain('ml-auto');
+  });
 });
 
 describe('scope counts', () => {

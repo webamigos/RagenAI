@@ -36,7 +36,7 @@
   },
   "Breadcrumbs": {
     "assistants": "Assistenti",
-    "projects": "Progetti",
+    "projects": "Assistenti",
     "mainThreads": "Conversazioni principali",
     "conversation": "Conversazione",
     "unknownProject": "Progetto sconosciuto"
@@ -1045,7 +1045,8 @@
       "ai-usage": "Utilizzo IA",
       "disk-usage": "Utilizzo disco",
       "audit-logs": "Registri di controllo",
-      "knowledge-analytics": "Analisi della conoscenza"
+      "knowledge-analytics": "Analisi della conoscenza",
+      "role-org-owner": "Proprietario"
     }
   },
   "chats-page": {
@@ -1294,7 +1295,12 @@
     "status-staged": "In Brain",
     "staged-send": "Indicizza",
     "staged-sent": "Inviato alla base di conoscenza: sarà ricercabile dopo l’elaborazione",
-    "staged-send-failed": "Invio non riuscito: ricarica la pagina e riprova."
+    "staged-send-failed": "Invio non riuscito: ricarica la pagina e riprova.",
+    "pagination-previous": "Precedente",
+    "pagination-next": "Successivo",
+    "pagination-previous-page": "Pagina precedente",
+    "pagination-next-page": "Pagina successiva",
+    "pagination-label": "Navigazione pagine"
   },
   "folders": {
     "title": "Cartelle",
@@ -1397,7 +1403,9 @@
   },
   "share-dialog": {
     "bulk-title": "Condividi {count, plural, one {# file} other {# file}}",
-    "single-title": "Condividi \"{resourceName}\""
+    "single-title": "Condividi \"{resourceName}\"",
+    "copy-link": "Copia link",
+    "link-copied": "Link copiato"
   },
   "bulk-progress-banner": {
     "running": "{operation} in corso: {total, plural, one {# file} other {# file}}…",
@@ -2475,7 +2483,8 @@
         "orphan": "Non collegata a nessun’altra pagina",
         "gap": "Un processo senza alcun ruolo collegato",
         "extraction-failed": "Non è stato possibile elaborare il documento",
-        "unknown": "Nessun dettaglio"
+        "unknown": "Nessun dettaglio",
+        "technical-details": "Dettagli tecnici"
       }
     },
     "page": {
@@ -2736,5 +2745,21 @@
       "failed": "Impossibile avviare la pubblicazione: ricarica la pagina e riprova.",
       "not-written": "{count, plural, one {# pagina registrata come pubblicata ma non scritta nell’indice: esegui di nuovo} other {# pagine registrate come pubblicate ma non scritte nell’indice: esegui di nuovo}}"
     }
+  },
+  "project-context-manager": {
+    "label-assistant": "Assistente: {title}",
+    "organization-instructions": "Istruzioni dell’organizzazione",
+    "organization-defaults": "Impostazioni predefinite dell’organizzazione",
+    "subtitle-mentioned": "Assistente menzionato (@)",
+    "subtitle-thread-default": "Assistente della conversazione (predefinito)",
+    "empty": "Nessun assistente disponibile",
+    "toast-switched": "Contesto cambiato all’assistente: {title}",
+    "toast-organization": "Vengono usate le istruzioni dell’organizzazione",
+    "toast-failed": "Impossibile cambiare il contesto dell’assistente",
+    "toast-error": "Si è verificato un errore durante il cambio di contesto",
+    "indicator-assistant-context": "Contesto dell’assistente:",
+    "indicator-assistant-scope": "Knowledge base e istruzioni",
+    "indicator-organization-context": "Contesto dell’organizzazione:",
+    "indicator-organization-defaults": "Istruzioni predefinite"
   }
 }

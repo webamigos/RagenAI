@@ -505,6 +505,23 @@ describe('FilesService', () => {
       });
     });
 
+    // An assistant's import is a second row for the same document; listing
+    // it returned every imported file twice, and counted it twice.
+    it('leaves assistant imports out of the list and its count', async () => {
+      const findMany = vi.fn().mockResolvedValue([]);
+      const count = vi.fn().mockResolvedValue(0);
+      const { service } = makeService({ userFile: { findMany, count } });
+
+      await service.getUserFiles('org-1', [], { userId: 'user-1' });
+
+      expect(count.mock.calls[0][0].where).toMatchObject({
+        sourceFileId: null,
+      });
+      expect(findMany.mock.calls[0][0].where).toMatchObject({
+        sourceFileId: null,
+      });
+    });
+
     it('paginates and returns totalPages', async () => {
       const findMany = vi.fn().mockResolvedValue([]);
       const count = vi.fn().mockResolvedValue(51);

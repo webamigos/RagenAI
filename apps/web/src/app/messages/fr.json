@@ -36,7 +36,7 @@
   },
   "Breadcrumbs": {
     "assistants": "Assistants",
-    "projects": "Projets",
+    "projects": "Assistants",
     "mainThreads": "Fils principaux",
     "conversation": "Conversation",
     "unknownProject": "Projet inconnu"
@@ -1045,7 +1045,8 @@
       "ai-usage": "Utilisation de l'IA",
       "disk-usage": "Utilisation du disque",
       "audit-logs": "Journaux d'audit",
-      "knowledge-analytics": "Analyse des connaissances"
+      "knowledge-analytics": "Analyse des connaissances",
+      "role-org-owner": "Propriétaire"
     }
   },
   "chats-page": {
@@ -1294,7 +1295,12 @@
     "status-staged": "Dans Brain",
     "staged-send": "Indexer",
     "staged-sent": "Envoyé à la base de connaissances — consultable une fois traité",
-    "staged-send-failed": "Envoi impossible — rechargez la page et réessayez."
+    "staged-send-failed": "Envoi impossible — rechargez la page et réessayez.",
+    "pagination-previous": "Précédent",
+    "pagination-next": "Suivant",
+    "pagination-previous-page": "Page précédente",
+    "pagination-next-page": "Page suivante",
+    "pagination-label": "Navigation des pages"
   },
   "folders": {
     "title": "Dossiers",
@@ -1397,7 +1403,9 @@
   },
   "share-dialog": {
     "bulk-title": "Partager {count, plural, one {# fichier} other {# fichiers}}",
-    "single-title": "Partager \"{resourceName}\""
+    "single-title": "Partager \"{resourceName}\"",
+    "copy-link": "Copier le lien",
+    "link-copied": "Lien copié"
   },
   "bulk-progress-banner": {
     "running": "{operation} en cours : {total, plural, one {# fichier} other {# fichiers}}…",
@@ -2475,7 +2483,8 @@
         "orphan": "Liée à aucune autre page",
         "gap": "Un processus sans rôle associé",
         "extraction-failed": "Le document n’a pas pu être traité",
-        "unknown": "Aucun détail"
+        "unknown": "Aucun détail",
+        "technical-details": "Détails techniques"
       }
     },
     "page": {
@@ -2736,5 +2745,21 @@
       "failed": "La publication n’a pas pu démarrer — rechargez la page et réessayez.",
       "not-written": "{count, plural, one {# page enregistrée comme publiée mais non écrite dans l’index — relancez} other {# pages enregistrées comme publiées mais non écrites dans l’index — relancez}}"
     }
+  },
+  "project-context-manager": {
+    "label-assistant": "Assistant : {title}",
+    "organization-instructions": "Instructions de l’organisation",
+    "organization-defaults": "Paramètres par défaut de l’organisation",
+    "subtitle-mentioned": "Assistant mentionné (@)",
+    "subtitle-thread-default": "Assistant du fil (par défaut)",
+    "empty": "Aucun assistant disponible",
+    "toast-switched": "Contexte changé pour l’assistant : {title}",
+    "toast-organization": "Les instructions de l’organisation sont utilisées",
+    "toast-failed": "Impossible de changer le contexte de l’assistant",
+    "toast-error": "Une erreur s’est produite lors du changement de contexte",
+    "indicator-assistant-context": "Contexte de l’assistant :",
+    "indicator-assistant-scope": "Base de connaissances et instructions",
+    "indicator-organization-context": "Contexte de l’organisation :",
+    "indicator-organization-defaults": "Instructions par défaut"
   }
 }

@@ -51,7 +51,7 @@ export const SidebarFooterMenu = ({
   above?: React.ReactNode;
 } = {}) => {
   const { user, isAppAdmin } = useUser();
-  const { canManageOrg } = useOrganization();
+  const { canManageOrg, canOwnOrg } = useOrganization();
   const t = useTranslations('sidebar.footer');
   const locale = useLocale();
   const { closeSidebar } = useMobileSidebar();
@@ -60,9 +60,13 @@ export const SidebarFooterMenu = ({
   const initials = getInitials(userName);
   const showAdminTools = isAppAdmin || canManageOrg;
 
+  // Most specific first. An owner can also manage the org, so asking
+  // `canManageOrg` alone labelled every owner "Org admin".
   let roleLabel = t('role-user');
   if (isAppAdmin) {
     roleLabel = t('role-app-admin');
+  } else if (canOwnOrg) {
+    roleLabel = t('role-org-owner');
   } else if (canManageOrg) {
     roleLabel = t('role-org-admin');
   }

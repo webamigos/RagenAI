@@ -68,9 +68,14 @@ export function buildUserFilesWhere(
   }
 
   // A published Brain page's file is Brain's, managed there (spec E10).
+  // An import is an assistant's copy of a knowledge-base file
+  // (`importFileToProject`): same owner, same access, searched through the
+  // original's embeddings. Listing it put every imported document in the
+  // table twice, and counted it twice in every total built from this.
   const baseWhere: Record<string, unknown> = {
     organizationId,
     publishedPages: { none: {} },
+    sourceFileId: null,
   };
 
   if (folderId !== undefined) {

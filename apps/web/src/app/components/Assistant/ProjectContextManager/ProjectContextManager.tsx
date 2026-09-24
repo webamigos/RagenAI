@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { useDispatch, useSelector } from 'react-redux';
 import { type RootState } from '@/store';
 import {
@@ -34,6 +35,7 @@ export const ProjectContextManager = ({
   const [isOpen, setIsOpen] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const { successToast, errorToast } = statusToast();
+  const t = useTranslations('project-context-manager');
 
   const currentMentionedProject = threadContext?.mentionedProject;
   const currentProject = threadContext?.project;
@@ -67,23 +69,22 @@ export const ProjectContextManager = ({
 
         if (project) {
           successToast({
-            message: `Kontekst zmieniony na projekt: ${project.title}`,
+            message: t('toast-switched', { title: project.title }),
           });
         } else {
           successToast({
-            message: 'Używane są instrukcje organizacji',
+            message: t('toast-organization'),
           });
         }
 
         setIsOpen(false);
       } else {
         errorToast({
-          message:
-            result.errorMessage || 'Nie udało się zmienić kontekstu projektu',
+          message: result.errorMessage || t('toast-failed'),
         });
       }
     } catch (error) {
-      errorToast({ message: 'Wystąpił błąd podczas zmiany kontekstu' });
+      errorToast({ message: t('toast-error') });
     } finally {
       setIsUpdating(false);
     }
@@ -110,12 +111,12 @@ export const ProjectContextManager = ({
 
   const getCurrentLabel = () => {
     if (currentMentionedProject) {
-      return `Projekt: ${currentMentionedProject.title}`;
+      return t('label-assistant', { title: currentMentionedProject.title });
     }
     if (currentProject) {
-      return `Asystent: ${currentProject.title}`;
+      return t('label-assistant', { title: currentProject.title });
     }
-    return 'Instrukcje organizacji';
+    return t('organization-instructions');
   };
 
   const getCurrentIcon = () => {
@@ -154,10 +155,10 @@ export const ProjectContextManager = ({
             <BuildingOfficeIcon className="h-4 w-4 text-muted-foreground flex-shrink-0" />
             <div className="flex-1 min-w-0">
               <div className="text-sm font-medium text-foreground">
-                Instrukcje organizacji
+                {t('organization-instructions')}
               </div>
               <div className="text-xs text-muted-foreground">
-                Domyślne ustawienia organizacji
+                {t('organization-defaults')}
               </div>
             </div>
             {!currentMentionedProject && !currentProject && (
@@ -178,10 +179,10 @@ export const ProjectContextManager = ({
 
             const subtitle = (() => {
               if (isSelected) {
-                return 'Wymieniony projekt (@)';
+                return t('subtitle-mentioned');
               }
               if (isCurrentThreadProject) {
-                return 'Projekt wątku (domyślny)';
+                return t('subtitle-thread-default');
               }
               return null;
             })();
@@ -220,7 +221,7 @@ export const ProjectContextManager = ({
 
           {availableProjects.length === 0 && (
             <div className="px-3 py-2 text-sm text-muted-foreground">
-              Brak dostępnych projektów
+              {t('empty')}
             </div>
           )}
         </div>

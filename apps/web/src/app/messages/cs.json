@@ -36,7 +36,7 @@
   },
   "Breadcrumbs": {
     "assistants": "Asistenti",
-    "projects": "Projekty",
+    "projects": "Asistenti",
     "mainThreads": "Hlavní konverzace",
     "conversation": "Konverzace",
     "unknownProject": "Neznámý projekt"
@@ -1045,7 +1045,8 @@
       "ai-usage": "Využití AI",
       "disk-usage": "Využití disku",
       "audit-logs": "Auditní protokoly",
-      "knowledge-analytics": "Analýza znalostí"
+      "knowledge-analytics": "Analýza znalostí",
+      "role-org-owner": "Vlastník"
     }
   },
   "chats-page": {
@@ -1294,7 +1295,12 @@
     "status-staged": "V Brainu",
     "staged-send": "Indexovat",
     "staged-sent": "Odesláno do znalostní báze — po zpracování bude vyhledatelné",
-    "staged-send-failed": "Odeslání se nezdařilo — načtěte stránku znovu a zkuste to znovu."
+    "staged-send-failed": "Odeslání se nezdařilo — načtěte stránku znovu a zkuste to znovu.",
+    "pagination-previous": "Předchozí",
+    "pagination-next": "Další",
+    "pagination-previous-page": "Předchozí stránka",
+    "pagination-next-page": "Další stránka",
+    "pagination-label": "Navigace stránek"
   },
   "folders": {
     "title": "Složky",
@@ -1397,7 +1403,9 @@
   },
   "share-dialog": {
     "bulk-title": "Sdílet {count, plural, one {# soubor} few {# soubory} other {# souborů}}",
-    "single-title": "Sdílet „{resourceName}“"
+    "single-title": "Sdílet „{resourceName}“",
+    "copy-link": "Kopírovat odkaz",
+    "link-copied": "Odkaz zkopírován"
   },
   "bulk-progress-banner": {
     "running": "{operation} probíhá: {total, plural, one {# soubor} few {# soubory} other {# souborů}}…",
@@ -2475,7 +2483,8 @@
         "orphan": "Není propojena s žádnou jinou stránkou",
         "gap": "Proces bez přiřazené role",
         "extraction-failed": "Dokument se nepodařilo zpracovat",
-        "unknown": "Bez podrobností"
+        "unknown": "Bez podrobností",
+        "technical-details": "Technické podrobnosti"
       }
     },
     "page": {
@@ -2736,5 +2745,21 @@
       "failed": "Zveřejnění se nepodařilo spustit — načtěte stránku znovu a zkuste to znovu.",
       "not-written": "{count, plural, one {# stránka byla zaznamenána jako publikovaná, ale nezapsána do indexu – spusťte znovu} few {# stránky byly zaznamenány jako publikované, ale nezapsány do indexu – spusťte znovu} many {# stránek bylo zaznamenáno jako publikované, ale nezapsáno do indexu – spusťte znovu} other {# stránek bylo zaznamenáno jako publikované, ale nezapsáno do indexu – spusťte znovu}}"
     }
+  },
+  "project-context-manager": {
+    "label-assistant": "Asistent: {title}",
+    "organization-instructions": "Pokyny organizace",
+    "organization-defaults": "Výchozí nastavení organizace",
+    "subtitle-mentioned": "Zmíněný asistent (@)",
+    "subtitle-thread-default": "Asistent vlákna (výchozí)",
+    "empty": "Žádní dostupní asistenti",
+    "toast-switched": "Kontext změněn na asistenta: {title}",
+    "toast-organization": "Používají se pokyny organizace",
+    "toast-failed": "Kontext asistenta se nepodařilo změnit",
+    "toast-error": "Při změně kontextu došlo k chybě",
+    "indicator-assistant-context": "Kontext asistenta:",
+    "indicator-assistant-scope": "Znalostní báze a pokyny",
+    "indicator-organization-context": "Kontext organizace:",
+    "indicator-organization-defaults": "Výchozí pokyny"
   }
 }

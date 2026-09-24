@@ -17,7 +17,10 @@ const totals = (files: number, pages: number | null = 0) => ({
   _sum: { pageCount: pages },
 });
 
-import { getFileScopeCountsQuery } from '../get-file-scope-counts-query';
+import {
+  getFileScopeCountsQuery,
+  getFolderTotalsQuery,
+} from '../get-file-scope-counts-query';
 
 const ORG_ID = 'org-1';
 const USER_ID = 'user-1';
@@ -132,5 +135,35 @@ describe('getFileScopeCountsQuery', () => {
     expect(counts['my-files']).toEqual({ files: 0, pages: 0 });
     expect(counts['shared-with-me']).toEqual({ files: 0, pages: 0 });
     expect(mockAggregate).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('getFolderTotalsQuery', () => {
+  it('counts the open folder, not the whole scope', async () => {
+    mockAggregate.mockResolvedValueOnce(totals(4, 31));
+
+    const result = await getFolderTotalsQuery(ORG_ID, [], {
+      folderId: 'folder-payroll',
+      userId: USER_ID,
+      scope: 'organization',
+    });
+
+    expect(result).toEqual({ files: 4, pages: 31 });
+    expect(mockAggregate).toHaveBeenCalledTimes(1);
+    expect(whereClauses()[0]).toMatchObject({
+      organizationId: ORG_ID,
+      folderId: 'folder-payroll',
+    });
+  });
+
+  it('asks nothing for a caller who can see nothing', async () => {
+    const result = await getFolderTotalsQuery(ORG_ID, [], {
+      folderId: 'folder-payroll',
+      userId: USER_ID,
+      scope: 'none',
+    });
+
+    expect(result).toEqual({ files: 0, pages: 0 });
+    expect(mockAggregate).not.toHaveBeenCalled();
   });
 });
