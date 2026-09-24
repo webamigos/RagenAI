@@ -1148,11 +1148,18 @@ baseline without the outlier (edges 72.7 % `EXTRACTED` against 70.3 %,
       widening writes the page first, so neither leaves retrieval more
       permissive than the decision. Tests both directions; narrowing is the one
       a customer audits.
-- [ ] **E5.** Deleting a source document sets `sourceDeletedAt` on every
+- [x] **E5.** Deleting a source document sets `sourceDeletedAt` on every
       `KnowledgePageSource` naming it, in the delete's own transaction, and
       raises the owner's `STALE` finding. Plus the reconciliation sweep for
       sources whose file is gone and whose timestamp is not set — both
       idempotent, both tested.
+      _A trigger on `user_files` (`AFTER DELETE`) marks the sources, in the
+      delete's own transaction, for every path — the web's file and folder
+      deletes and apps/api's file and project deletes — instead of five copies
+      of one update. The sweep runs first in `reconcileBrainFindings`. The
+      `STALE` finding is raised by that reconciliation (after the next
+      extraction or review decision), not inside the delete: the delete path
+      belongs to documents, and the findings view has one writer._
 - [x] **E6.** `tests/architecture/brain-export-never-widens-access.test.ts`.
       _A property over 300 random pages: every exported page lists exactly its
       own principals, and a page with none is not exported._

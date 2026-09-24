@@ -4,6 +4,7 @@ import {
   applyFindingsPlan,
   loadComputedFindings,
   loadFindingsSnapshot,
+  markSourcesOfDeletedFiles,
 } from '../../services/db/brain-findings.js';
 
 export type ReconcileBrainFindingsResult = {
@@ -12,6 +13,8 @@ export type ReconcileBrainFindingsResult = {
   resolved: number;
   /** The computed findings that hold now, dismissed ones included. */
   holding: number;
+  /** Sources the sweep found pointing at a deleted file (spec E5). */
+  sweptSources: number;
 };
 
 /**
@@ -32,6 +35,9 @@ export async function reconcileBrainFindings({
 }: {
   orgId: string;
 }): Promise<ReconcileBrainFindingsResult> {
+  // First the sweep, so a source whose file is gone is marked before the
+  // STALE rule reads it.
+  const sweptSources = await markSourcesOfDeletedFiles(orgId);
   const [snapshot, existing] = await Promise.all([
     loadFindingsSnapshot(orgId),
     loadComputedFindings(orgId),
@@ -41,5 +47,5 @@ export async function reconcileBrainFindings({
     orgId,
     reconcileFindings(desired, existing),
   );
-  return { ...written, holding: desired.length };
+  return { ...written, holding: desired.length, sweptSources };
 }

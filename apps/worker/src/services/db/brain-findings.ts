@@ -213,3 +213,24 @@ export async function applyFindingsPlan(
     return { created, updated, resolved };
   });
 }
+
+/**
+ * The reconciliation sweep (spec E5): mark every source of this organization
+ * whose file no longer exists, and that nothing has marked yet.
+ *
+ * The delete path marks sources itself — a trigger on `user_files` does, in
+ * the delete's own transaction — so this is the safety net the spec says is
+ * not optional: files deleted before that trigger existed, and any path that
+ * got round it. Idempotent: a marked source is left with its first timestamp.
+ */
+export async function markSourcesOfDeletedFiles(
+  orgId: string,
+): Promise<number> {
+  return getPrisma().$executeRaw`
+    UPDATE knowledge_page_sources AS s
+       SET source_deleted_at = now()
+     WHERE s.organization_id = ${orgId}
+       AND s.source_deleted_at IS NULL
+       AND NOT EXISTS (SELECT 1 FROM user_files f WHERE f.id = s.file_id)
+  `;
+}
