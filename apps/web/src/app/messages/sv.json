@@ -2684,6 +2684,12 @@
       }
     },
     "graph": {
+      "search-placeholder": "Hitta en sida…",
+      "search-empty": "Ingen sida matchar.",
+      "zoom-in": "Zooma in",
+      "zoom-out": "Zooma ut",
+      "zoom-fit": "Visa hela grafen",
+      "show-all-groups": "Visa alla grupper",
       "title": "Kunskapsgraf — Ragen Brain",
       "empty-title": "Inga sidor att rita än",
       "empty-description": "Grafen visas när Brain har extraherat sidor ur dina dokument.",

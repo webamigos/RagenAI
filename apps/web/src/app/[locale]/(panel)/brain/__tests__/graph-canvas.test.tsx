@@ -1,4 +1,10 @@
-import { act, render, screen, waitFor } from '@testing-library/react';
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from '@testing-library/react';
 import { NextIntlClientProvider } from 'next-intl';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -15,20 +21,42 @@ const sigma = vi.hoisted(() => ({
     graph: unknown;
     handlers: Record<string, (e: unknown) => void>;
     cameraStates: Record<string, number>[];
+    cameraCalls: string[];
+    settings: {
+      nodeReducer?: (
+        id: string,
+        d: Record<string, unknown>,
+      ) => Record<string, unknown>;
+    };
   }[],
 }));
 vi.mock('sigma', () => ({
   default: class {
     handlers: Record<string, (e: unknown) => void> = {};
     cameraStates: Record<string, number>[] = [];
-    constructor(public graph: unknown) {
+    cameraCalls: string[] = [];
+    constructor(
+      public graph: unknown,
+      _container: unknown,
+      public settings: Record<string, unknown> = {},
+    ) {
       sigma.instances.push(this as never);
     }
     getCamera() {
+      const record = (name: string) => async () => {
+        this.cameraCalls.push(name);
+      };
       return {
         setState: (state: Record<string, number>) =>
           this.cameraStates.push(state),
+        animate: record('animate'),
+        animatedZoom: record('zoom-in'),
+        animatedUnzoom: record('zoom-out'),
+        animatedReset: record('fit'),
       };
+    }
+    getNodeDisplayData() {
+      return { x: 0.5, y: 0.5 };
     }
     on(event: string, fn: (e: unknown) => void) {
       this.handlers[event] = fn;
@@ -298,5 +326,86 @@ describe('BrainGraphCanvas legend', () => {
       messages.brain.graph['legend-extracted'],
     );
     expect(items[0]).not.toHaveTextContent(/thick/i);
+  });
+
+  it('finds a page by name, opens its card and flies the camera to it', async () => {
+    render(
+      <NextIntlClientProvider locale="en" messages={messages}>
+        <BrainGraphCanvas view={view} />
+      </NextIntlClientProvider>,
+    );
+    await waitFor(() => expect(sigma.instances).toHaveLength(1));
+
+    fireEvent.change(screen.getByTestId('brain-graph-search'), {
+      target: { value: 'kad' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Kadry' }));
+
+    expect(screen.getByTestId('brain-graph-card')).toHaveTextContent('Kadry');
+    expect(sigma.instances[0]!.cameraCalls).toContain('animate');
+    expect(screen.getByTestId('brain-graph-search')).toHaveValue('');
+  });
+
+  it('says so when no page matches', async () => {
+    render(
+      <NextIntlClientProvider locale="en" messages={messages}>
+        <BrainGraphCanvas view={view} />
+      </NextIntlClientProvider>,
+    );
+    fireEvent.change(screen.getByTestId('brain-graph-search'), {
+      target: { value: 'zzz' },
+    });
+    expect(
+      screen.getByText(messages.brain.graph['search-empty']),
+    ).toBeInTheDocument();
+  });
+
+  it('zooms in, out and back to the whole graph', async () => {
+    render(
+      <NextIntlClientProvider locale="en" messages={messages}>
+        <BrainGraphCanvas view={view} />
+      </NextIntlClientProvider>,
+    );
+    await waitFor(() => expect(sigma.instances).toHaveLength(1));
+    const g = messages.brain.graph;
+    fireEvent.click(screen.getByRole('button', { name: g['zoom-in'] }));
+    fireEvent.click(screen.getByRole('button', { name: g['zoom-out'] }));
+    fireEvent.click(screen.getByRole('button', { name: g['zoom-fit'] }));
+    expect(sigma.instances[0]!.cameraCalls).toEqual([
+      'zoom-in',
+      'zoom-out',
+      'fit',
+    ]);
+  });
+
+  it('dims the pages outside a group picked in the legend, and brings them back', async () => {
+    const twoGroups = {
+      ...view,
+      nodes: [
+        { ...view.nodes[0]!, community: 0 },
+        { ...view.nodes[1]!, community: 1 },
+      ],
+      communities: [
+        { id: 0, size: 2, label: 'Urlop' },
+        { id: 1, size: 2, label: 'Kadry' },
+      ],
+    };
+    render(
+      <NextIntlClientProvider locale="en" messages={messages}>
+        <BrainGraphCanvas view={twoGroups} />
+      </NextIntlClientProvider>,
+    );
+    await waitFor(() => expect(sigma.instances).toHaveLength(1));
+    const reduce = (id: string) =>
+      sigma.instances[0]!.settings.nodeReducer!(id, { label: id, color: 'x' });
+
+    const urlop = screen.getByRole('button', { name: /Urlop/ });
+    fireEvent.click(urlop);
+    expect(urlop).toHaveAttribute('aria-pressed', 'true');
+    await waitFor(() => expect(reduce(B).label).toBe(''));
+    expect(reduce(A).label).toBe(A);
+
+    fireEvent.click(urlop);
+    await waitFor(() => expect(reduce(B).label).toBe(B));
   });
 });

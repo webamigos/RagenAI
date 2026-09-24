@@ -1,10 +1,17 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import {
+  ArrowsPointingOutIcon,
+  MagnifyingGlassMinusIcon,
+  MagnifyingGlassPlusIcon,
+} from '@heroicons/react/24/outline';
+import type Sigma from 'sigma';
 
 import type { BrainGraphView } from '@/features/brain/contracts/brain-graph.types';
 import { Link } from '@/i18n/routing';
+import { canvasLabel, LABEL_SIZE_PX, separateLabels } from './separate-labels';
 
 type Node = BrainGraphView['nodes'][number];
 
@@ -156,6 +163,13 @@ export function BrainGraphCanvas({ view }: { view: BrainGraphView }) {
     () => view.nodes.find((n) => n.id === view.focus) ?? null,
   );
   const [failed, setFailed] = useState(false);
+  const renderer = useRef<Sigma | null>(null);
+  // Read by the reducers inside the effect, which outlive a render; a state
+  // change pokes the renderer to redraw rather than rebuilding the graph.
+  const selectedId = useRef<string | null>(selected?.id ?? null);
+  const [communityFilter, setCommunityFilter] = useState<number | null>(null);
+  const filterRef = useRef<number | null>(null);
+  const [query, setQuery] = useState('');
 
   // A new view is a new picture: the card follows the focus, or closes.
   // Adjusted while rendering, as React recommends for state derived from a
@@ -164,7 +178,14 @@ export function BrainGraphCanvas({ view }: { view: BrainGraphView }) {
   if (shownView !== view) {
     setShownView(view);
     setSelected(view.nodes.find((n) => n.id === view.focus) ?? null);
+    setCommunityFilter(null);
   }
+
+  useEffect(() => {
+    selectedId.current = selected?.id ?? null;
+    filterRef.current = communityFilter;
+    renderer.current?.refresh();
+  }, [selected, communityFilter]);
 
   useEffect(() => {
     let disposed = false;
@@ -202,8 +223,12 @@ export function BrainGraphCanvas({ view }: { view: BrainGraphView }) {
             y: Math.sin(angle) * radius + (i % 5),
             size:
               6 + Math.sqrt(node.degree) * 2 + (node.openFindings > 0 ? 4 : 0),
-            label: node.title,
+            // Shortened on the canvas so forty names fit; the whole title is
+            // `title`, shown on hover, in the card and in search.
+            label: canvasLabel(node.title),
+            title: node.title,
             color: palette.community(node.community),
+            community: node.community,
             // An open finding is marked by the node's size and ring; forcing
             // its name too put a dozen unmovable labels in the densest part
             // of a medium graph. Its name shows on hover like any other.
@@ -232,16 +257,8 @@ export function BrainGraphCanvas({ view }: { view: BrainGraphView }) {
               // Nodes repel by their drawn size, not as points, so two pages
               // never sit on top of each other with their labels crossed.
               adjustSizes: true,
-              // A neighbourhood is read label by label: give it room. The
-              // inferred ratio suits hundreds of nodes and packed a
-              // seven-page neighbourhood so tight that labels ran into the
-              // next node.
-              // Every page of a labelled graph (up to SMALL_GRAPH) has its
-              // name drawn, and forty names at the inferred ratio ran into
-              // each other. Spread those out too, less than a neighbourhood.
-              // A graph up to a few hundred pages is read by name; the
-              // inferred ratio packed forty names into each other. The
-              // canvas now takes the height of the window, so spend it.
+              // The inferred ratio suits thousands of nodes and packs a graph
+              // that is read by name too tight. See `spreadFor`.
               scalingRatio: spreadFor(
                 graph.order,
                 roomy,
@@ -249,44 +266,82 @@ export function BrainGraphCanvas({ view }: { view: BrainGraphView }) {
               ),
             },
           });
+          // ForceAtlas2 keeps the dots apart; this keeps the names apart.
+          // Past MEDIUM_GRAPH most names are hidden by the label grid anyway,
+          // and the pass would cost more than it shows.
+          if (graph.order <= MEDIUM_GRAPH) {
+            separateLabels(graph, {
+              width: container.current.clientWidth,
+              height: container.current.clientHeight,
+            });
+          }
         }
 
         let hovered: string | null = null;
-        const renderer = new Sigma(graph, container.current, {
+        // Hover wins; otherwise the page picked by a click or a search stays
+        // lit with its neighbours, and a picked group dims the rest.
+        const emphasised = () => hovered ?? selectedId.current;
+        const sigmaRenderer = new Sigma(graph, container.current, {
           renderEdgeLabels: false,
           // Room for the labels of nodes laid out on the edge of the stage.
           stagePadding: 60,
           labelRenderedSizeThreshold: 8,
+          labelSize: LABEL_SIZE_PX,
           // Denser than the default grid would hide: a label is the only way
           // to tell pages apart, so keep as many as fit without touching.
           labelDensity: 1.2,
           labelGridCellSize: 90,
           labelColor: { color: palette.label },
           nodeReducer: (id, data) => {
-            if (!hovered || id === hovered || graph.areNeighbors(id, hovered)) {
-              return data;
+            const filter = filterRef.current;
+            if (
+              filter !== null &&
+              graph.getNodeAttribute(id, 'community') !== filter
+            ) {
+              return { ...data, color: palette.dim, label: '' };
+            }
+            const focus = emphasised();
+            if (!focus || id === focus || graph.areNeighbors(id, focus)) {
+              // The page under the cursor or picked is named in full.
+              return focus === id
+                ? {
+                    ...data,
+                    forceLabel: true,
+                    label: graph.getNodeAttribute(id, 'title') as string,
+                  }
+                : data;
             }
             return { ...data, color: palette.dim, label: '' };
           },
           edgeReducer: (id, data) => {
-            if (!hovered || graph.hasExtremity(id, hovered)) {
+            const filter = filterRef.current;
+            if (
+              filter !== null &&
+              graph
+                .extremities(id)
+                .some((n) => graph.getNodeAttribute(n, 'community') !== filter)
+            ) {
+              return { ...data, hidden: true };
+            }
+            const focus = emphasised();
+            if (!focus || graph.hasExtremity(id, focus)) {
               return data;
             }
             return { ...data, hidden: true };
           },
         });
-        renderer.on('enterNode', ({ node }) => {
+        sigmaRenderer.on('enterNode', ({ node }) => {
           hovered = node;
-          renderer.refresh();
+          sigmaRenderer.refresh();
         });
-        renderer.on('leaveNode', () => {
+        sigmaRenderer.on('leaveNode', () => {
           hovered = null;
-          renderer.refresh();
+          sigmaRenderer.refresh();
         });
-        renderer.on('clickNode', ({ node }) => {
+        sigmaRenderer.on('clickNode', ({ node }) => {
           setSelected(view.nodes.find((n) => n.id === node) ?? null);
         });
-        renderer.on('clickStage', () => setSelected(null));
+        sigmaRenderer.on('clickStage', () => setSelected(null));
         // Sigma fits the camera to the nodes, not to their labels, and a
         // label is drawn to the right of its node — so the rightmost page's
         // name ran off the canvas ("Zgłaszani…"). Zoom out a little and shift
@@ -294,9 +349,13 @@ export function BrainGraphCanvas({ view }: { view: BrainGraphView }) {
         // the side the labels grow into. A larger graph keeps the tight fit:
         // zoomed out, it only got smaller and its labels ran together.
         if (roomy) {
-          renderer.getCamera().setState({ x: 0.62, y: 0.5, ratio: 1.32 });
+          sigmaRenderer.getCamera().setState({ x: 0.62, y: 0.5, ratio: 1.32 });
         }
-        kill = () => renderer.kill();
+        renderer.current = sigmaRenderer;
+        kill = () => {
+          renderer.current = null;
+          sigmaRenderer.kill();
+        };
       } catch {
         setFailed(true);
       }
@@ -306,6 +365,35 @@ export function BrainGraphCanvas({ view }: { view: BrainGraphView }) {
       kill?.();
     };
   }, [view]);
+
+  const matches = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (q.length < 2) {
+      return [];
+    }
+    return view.nodes
+      .filter((n) => n.title.toLowerCase().includes(q))
+      .slice(0, 8);
+  }, [query, view.nodes]);
+
+  /** Select a page and move the camera onto it — search's way in. */
+  const flyTo = (node: Node) => {
+    setSelected(node);
+    setQuery('');
+    const sigma = renderer.current;
+    const display = sigma?.getNodeDisplayData(node.id);
+    if (sigma && display) {
+      void sigma
+        .getCamera()
+        .animate(
+          { x: display.x, y: display.y, ratio: 0.35 },
+          { duration: 400 },
+        );
+    }
+  };
+
+  const controlClass =
+    'rounded-md border border-border bg-card p-1.5 text-muted-foreground shadow-sm hover:bg-muted hover:text-foreground';
 
   const relations = selected
     ? view.edges
@@ -337,6 +425,99 @@ export function BrainGraphCanvas({ view }: { view: BrainGraphView }) {
           <p className="absolute inset-x-0 top-4 text-center text-sm text-muted-foreground">
             {t('failed')}
           </p>
+        )}
+        {!failed && (
+          <>
+            {/*
+              Finding one page among forty by eye was the slowest thing on
+              this screen. Type part of a title; picking a result selects the
+              page and flies the camera to it.
+            */}
+            <div className="absolute left-3 top-3 w-72">
+              <input
+                type="search"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && matches[0]) {
+                    flyTo(matches[0]);
+                  }
+                  if (e.key === 'Escape') {
+                    setQuery('');
+                  }
+                }}
+                placeholder={t('search-placeholder')}
+                aria-label={t('search-placeholder')}
+                data-testid="brain-graph-search"
+                className="w-full rounded-md border border-border bg-card px-3 py-1.5 text-sm text-foreground shadow-sm placeholder:text-muted-foreground"
+              />
+              {query.trim().length >= 2 && (
+                <ul
+                  className="mt-1 max-h-72 overflow-y-auto rounded-md border border-border bg-card py-1 text-sm shadow-md"
+                  data-testid="brain-graph-search-results"
+                >
+                  {matches.length === 0 ? (
+                    <li className="px-3 py-1.5 text-muted-foreground">
+                      {t('search-empty')}
+                    </li>
+                  ) : (
+                    matches.map((node) => (
+                      <li key={node.id}>
+                        <button
+                          type="button"
+                          onClick={() => flyTo(node)}
+                          className="w-full truncate px-3 py-1.5 text-left text-foreground hover:bg-muted"
+                        >
+                          {node.title}
+                        </button>
+                      </li>
+                    ))
+                  )}
+                </ul>
+              )}
+            </div>
+            <div className="absolute right-3 top-3 flex flex-col gap-1">
+              <button
+                type="button"
+                className={controlClass}
+                aria-label={t('zoom-in')}
+                title={t('zoom-in')}
+                onClick={() =>
+                  void renderer.current
+                    ?.getCamera()
+                    .animatedZoom({ duration: 200 })
+                }
+              >
+                <MagnifyingGlassPlusIcon className="size-4" />
+              </button>
+              <button
+                type="button"
+                className={controlClass}
+                aria-label={t('zoom-out')}
+                title={t('zoom-out')}
+                onClick={() =>
+                  void renderer.current
+                    ?.getCamera()
+                    .animatedUnzoom({ duration: 200 })
+                }
+              >
+                <MagnifyingGlassMinusIcon className="size-4" />
+              </button>
+              <button
+                type="button"
+                className={controlClass}
+                aria-label={t('zoom-fit')}
+                title={t('zoom-fit')}
+                onClick={() =>
+                  void renderer.current
+                    ?.getCamera()
+                    .animatedReset({ duration: 300 })
+                }
+              >
+                <ArrowsPointingOutIcon className="size-4" />
+              </button>
+            </div>
+          </>
         )}
       </div>
       <aside className="space-y-4 text-sm">
@@ -412,28 +593,56 @@ export function BrainGraphCanvas({ view }: { view: BrainGraphView }) {
             <h3 className="mb-1 text-xs font-medium uppercase text-muted-foreground">
               {t('communities-title')}
             </h3>
+            {/*
+              A group is a filter: picking one dims every page outside it,
+              picking it again brings them back.
+            */}
             <ul className="space-y-0.5 text-xs text-muted-foreground">
               {view.communities
                 .filter((c) => c.size > 1)
                 .slice(0, 8)
                 .map((c) => (
-                  <li key={c.id} className="flex items-center gap-1.5">
-                    <span
-                      aria-hidden="true"
-                      className="inline-block size-2 shrink-0 rounded-full"
-                      style={{
-                        background: (() => {
-                          const { token, alpha } = communityColour(c.id);
-                          return alpha === 1
-                            ? `var(${token})`
-                            : `color-mix(in srgb, var(${token}) ${alpha * 100}%, var(--background))`;
-                        })(),
-                      }}
-                    />
-                    {t('community', { label: c.label, size: c.size })}
+                  <li key={c.id}>
+                    <button
+                      type="button"
+                      aria-pressed={communityFilter === c.id}
+                      onClick={() =>
+                        setCommunityFilter((current) =>
+                          current === c.id ? null : c.id,
+                        )
+                      }
+                      className={`flex w-full items-center gap-1.5 rounded px-1 py-0.5 text-left hover:bg-muted hover:text-foreground ${
+                        communityFilter === c.id
+                          ? 'bg-muted font-medium text-foreground'
+                          : ''
+                      }`}
+                    >
+                      <span
+                        aria-hidden="true"
+                        className="inline-block size-2 shrink-0 rounded-full"
+                        style={{
+                          background: (() => {
+                            const { token, alpha } = communityColour(c.id);
+                            return alpha === 1
+                              ? `var(${token})`
+                              : `color-mix(in srgb, var(${token}) ${alpha * 100}%, var(--background))`;
+                          })(),
+                        }}
+                      />
+                      {t('community', { label: c.label, size: c.size })}
+                    </button>
                   </li>
                 ))}
             </ul>
+            {communityFilter !== null && (
+              <button
+                type="button"
+                onClick={() => setCommunityFilter(null)}
+                className="mt-1 px-1 text-xs text-primary underline-offset-4 hover:underline"
+              >
+                {t('show-all-groups')}
+              </button>
+            )}
           </div>
         )}
       </aside>

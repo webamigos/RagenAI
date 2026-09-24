@@ -216,6 +216,13 @@ archive is the blog.
   a graph of more than twenty pages names no longer pile on top of each
   other — a name that would collide appears when you hover or zoom.
 
+- `[major]` **The Brain graph reads by name.** Names no longer pile on top of
+  each other: pages are spread until their titles fit, and a very long title
+  is shortened on the canvas and shown whole on hover. Find a page by typing
+  part of its name — the graph flies to it and opens its card. Zoom in, out
+  and back to the whole graph with the buttons in the corner, and click a
+  group in the legend to dim everything outside it.
+
 ### Thread: a bug hunt through the panel
 
 - `[brief]` **A wrong link no longer takes the whole app down.** Opening a

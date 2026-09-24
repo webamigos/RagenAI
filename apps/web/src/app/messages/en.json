@@ -2684,6 +2684,12 @@
       }
     },
     "graph": {
+      "search-placeholder": "Find a page…",
+      "search-empty": "No page matches.",
+      "zoom-in": "Zoom in",
+      "zoom-out": "Zoom out",
+      "zoom-fit": "Fit the whole graph",
+      "show-all-groups": "Show all groups",
       "title": "Knowledge graph — Ragen Brain",
       "empty-title": "No pages to draw yet",
       "empty-description": "The graph appears once Brain has extracted pages from your documents.",

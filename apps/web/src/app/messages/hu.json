@@ -2684,6 +2684,12 @@
       }
     },
     "graph": {
+      "search-placeholder": "Oldal keresése…",
+      "search-empty": "Nincs egyező oldal.",
+      "zoom-in": "Nagyítás",
+      "zoom-out": "Kicsinyítés",
+      "zoom-fit": "Teljes gráf",
+      "show-all-groups": "Minden csoport",
       "title": "Tudásgráf — Ragen Brain",
       "empty-title": "Még nincs mit rajzolni",
       "empty-description": "A gráf akkor jelenik meg, amikor a Brain oldalakat nyert ki a dokumentumaiból.",
