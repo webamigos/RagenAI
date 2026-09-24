@@ -175,3 +175,21 @@ export {
   subscriptionGrantsPlanFeatures,
 } from './subscriptions/pick-best-subscription';
 export type { SubscriptionCandidate } from './subscriptions/pick-best-subscription';
+
+export {
+  NOTIFICATION_TYPES,
+  isNotificationType,
+  notificationDetails,
+  parseNotificationDetails,
+} from './notifications/notification-details';
+export type {
+  DocumentEmbeddedDetails,
+  DocumentExpiringDetails,
+  DocumentSharedDetails,
+  DriveImportCompletedDetails,
+  NotificationContent,
+  NotificationDetailsByType,
+  NotificationTypeName,
+  ProjectSharedDetails,
+  ThreadSharedDetails,
+} from './notifications/notification-details';

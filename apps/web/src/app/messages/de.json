@@ -1889,7 +1889,35 @@
     "load-error": "Benachrichtigungen konnten nicht geladen werden",
     "load-error-description": "Prüfe deine Verbindung und versuche es erneut.",
     "retry": "Erneut versuchen",
-    "mark-read-error": "Benachrichtigungen konnten nicht als gelesen markiert werden. Versuche es erneut."
+    "mark-read-error": "Benachrichtigungen konnten nicht als gelesen markiert werden. Versuche es erneut.",
+    "content": {
+      "document-shared": {
+        "title": "Ein Dokument wurde mit dir geteilt",
+        "title-by": "{name} hat ein Dokument mit dir geteilt"
+      },
+      "folder-shared": {
+        "title": "Ein Ordner wurde mit dir geteilt",
+        "title-by": "{name} hat einen Ordner mit dir geteilt"
+      },
+      "project-shared": {
+        "title": "Ein Assistent wurde mit dir geteilt",
+        "title-by": "{name} hat einen Assistenten mit dir geteilt"
+      },
+      "thread-shared": {
+        "title": "Ein Thread wurde mit dir geteilt",
+        "title-by": "{name} hat einen Thread mit dir geteilt"
+      },
+      "drive-import": {
+        "title": "Google-Drive-Import abgeschlossen",
+        "body": "{count, plural, one {# Datei aus „{folder}“ importiert} other {# Dateien aus „{folder}“ importiert}}"
+      },
+      "document-embedded": {
+        "title": "„{name}“ ist bereit für die Suche"
+      },
+      "document-expiring": {
+        "title": "„{name}“ läuft {days, plural, =0 {heute} =1 {morgen} other {in # Tagen}} ab"
+      }
+    }
   },
   "organization": {
     "tabs": {

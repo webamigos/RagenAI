@@ -93,6 +93,7 @@ describe('ProjectsService', () => {
 
     const notifications = {
       create: overrides.notificationsCreate ?? vi.fn().mockResolvedValue({}),
+      memberDisplayName: vi.fn().mockResolvedValue('Grace Granter'),
     } as unknown as NotificationsService;
 
     const subscriptions = {
@@ -641,8 +642,17 @@ describe('ProjectsService', () => {
           userId: 'user-2',
           organizationId: ORG,
           type: 'PROJECT_SHARED',
+          title: 'An assistant was shared with you',
           body: 'My project',
+          metadata: {
+            projectName: 'My project',
+            sharedByName: 'Grace Granter',
+          },
         }),
+      );
+      expect(notifications.memberDisplayName).toHaveBeenCalledWith(
+        GRANTER_ID,
+        ORG,
       );
     });
 

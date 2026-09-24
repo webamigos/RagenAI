@@ -1889,7 +1889,35 @@
     "load-error": "Notifikationerne kunne ikke indlæses",
     "load-error-description": "Tjek din forbindelse, og prøv igen.",
     "retry": "Prøv igen",
-    "mark-read-error": "Notifikationerne kunne ikke markeres som læst. Prøv igen."
+    "mark-read-error": "Notifikationerne kunne ikke markeres som læst. Prøv igen.",
+    "content": {
+      "document-shared": {
+        "title": "Et dokument er blevet delt med dig",
+        "title-by": "{name} har delt et dokument med dig"
+      },
+      "folder-shared": {
+        "title": "En mappe er blevet delt med dig",
+        "title-by": "{name} har delt en mappe med dig"
+      },
+      "project-shared": {
+        "title": "En assistent er blevet delt med dig",
+        "title-by": "{name} har delt en assistent med dig"
+      },
+      "thread-shared": {
+        "title": "En samtale er blevet delt med dig",
+        "title-by": "{name} har delt en samtale med dig"
+      },
+      "drive-import": {
+        "title": "Google Drive-import fuldført",
+        "body": "{count, plural, one {# fil importeret fra “{folder}”} other {# filer importeret fra “{folder}”}}"
+      },
+      "document-embedded": {
+        "title": "“{name}” er klar til søgning"
+      },
+      "document-expiring": {
+        "title": "“{name}” udløber {days, plural, =0 {i dag} =1 {i morgen} other {om # dage}}"
+      }
+    }
   },
   "organization": {
     "tabs": {

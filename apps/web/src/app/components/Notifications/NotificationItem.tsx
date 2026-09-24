@@ -7,6 +7,7 @@ import {
   ChatBubbleLeftRightIcon,
   CheckCircleIcon,
   FolderIcon,
+  BellIcon,
 } from '@heroicons/react/24/outline';
 import { useFormatter, useNow, useTranslations } from 'next-intl';
 import { Link } from '@/i18n/routing';
@@ -15,6 +16,10 @@ import type {
   NotificationDto,
   NotificationType,
 } from '@/features/notifications/contracts/notification.types';
+import {
+  notificationText,
+  type NotificationContentTranslator,
+} from './notification-text';
 
 const ICONS: Record<NotificationType, React.ElementType> = {
   DOCUMENT_SHARED: DocumentArrowUpIcon,
@@ -51,6 +56,7 @@ type Props = {
 
 export function NotificationItem({ notification, onRead }: Props) {
   const t = useTranslations('notifications');
+  const tContent = useTranslations('notifications.content');
   const format = useFormatter();
   // `useNow` rather than `Date.now()` in render: it ticks, so "5 min ago" does
   // not freeze while the page stays open, and it is the value next-intl's
@@ -59,7 +65,12 @@ export function NotificationItem({ notification, onRead }: Props) {
   // the server renders with, so server and client print the same string
   // (`toLocaleString` without a `timeZone` used the browser's zone).
   const now = useNow({ updateInterval: MINUTE });
-  const Icon = ICONS[notification.type];
+  // An unknown type (a newer producer than this build) still gets an icon.
+  const Icon = ICONS[notification.type] ?? BellIcon;
+  const text = notificationText(
+    notification,
+    tContent as unknown as NotificationContentTranslator,
+  );
   const createdAt = new Date(notification.createdAt);
   const age = now.getTime() - createdAt.getTime();
   const absolute = format.dateTime(createdAt, {
@@ -106,11 +117,14 @@ export function NotificationItem({ notification, onRead }: Props) {
             unread ? 'font-semibold' : 'font-normal',
           )}
         >
-          {notification.title}
+          {text.title}
         </span>
-        {notification.body && (
-          <span className="mt-0.5 block text-xs text-muted-foreground sm:truncate">
-            {notification.body}
+        {text.body && (
+          <span
+            data-testid="notification-body"
+            className="mt-0.5 block text-xs text-muted-foreground sm:truncate"
+          >
+            {text.body}
           </span>
         )}
         <time

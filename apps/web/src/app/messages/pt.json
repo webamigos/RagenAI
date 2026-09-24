@@ -1889,7 +1889,35 @@
     "load-error": "Não foi possível carregar as notificações",
     "load-error-description": "Verifique sua conexão e tente novamente.",
     "retry": "Tentar novamente",
-    "mark-read-error": "Não foi possível marcar as notificações como lidas. Tente novamente."
+    "mark-read-error": "Não foi possível marcar as notificações como lidas. Tente novamente.",
+    "content": {
+      "document-shared": {
+        "title": "Um documento foi compartilhado com você",
+        "title-by": "{name} compartilhou um documento com você"
+      },
+      "folder-shared": {
+        "title": "Uma pasta foi compartilhada com você",
+        "title-by": "{name} compartilhou uma pasta com você"
+      },
+      "project-shared": {
+        "title": "Um assistente foi compartilhado com você",
+        "title-by": "{name} compartilhou um assistente com você"
+      },
+      "thread-shared": {
+        "title": "Uma conversa foi compartilhada com você",
+        "title-by": "{name} compartilhou uma conversa com você"
+      },
+      "drive-import": {
+        "title": "Importação do Google Drive concluída",
+        "body": "{count, plural, one {# arquivo importado de “{folder}”} other {# arquivos importados de “{folder}”}}"
+      },
+      "document-embedded": {
+        "title": "“{name}” já pode ser pesquisado"
+      },
+      "document-expiring": {
+        "title": "“{name}” expira {days, plural, =0 {hoje} =1 {amanhã} other {em # dias}}"
+      }
+    }
   },
   "organization": {
     "tabs": {

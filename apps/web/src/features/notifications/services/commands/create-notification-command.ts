@@ -12,6 +12,7 @@ const SELECT = {
   title: true,
   body: true,
   resourceUrl: true,
+  metadata: true,
   createdAt: true,
 } as const;
 

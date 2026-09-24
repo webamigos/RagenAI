@@ -2,7 +2,9 @@
 
 import db from '@ragenai/prisma-client';
 import { logger } from '@/app/lib/utils/logger';
+import { notificationDetails } from '@ragenai/platform-contracts';
 import { sendNotificationToUser } from '@/features/notifications/utils/send-notification-to-user';
+import { getMemberDisplayNameQuery } from '@/features/notifications/services/queries/get-member-display-name-query';
 import type {
   ProjectGranteeType,
   ProjectPermissionLevel,
@@ -80,10 +82,20 @@ export async function shareProjectCommand(
   });
 
   if (granteeType === 'user') {
+    const sharedByName = await getMemberDisplayNameQuery(
+      grantedBy,
+      organizationId,
+    );
+    // `title`/`body` are the English fallback; the notifications page renders
+    // the reader's locale from `metadata`.
     sendNotificationToUser(granteeId, organizationId, 'PROJECT_SHARED', {
-      title: 'Udostępniono Ci projekt',
+      title: 'An assistant was shared with you',
       body: project.title,
       resourceUrl: `/projects/${projectId}`,
+      metadata: notificationDetails('PROJECT_SHARED', {
+        projectName: project.title,
+        sharedByName,
+      }),
     }).catch((err) =>
       logger.error(
         { err, granteeId, organizationId, projectId },

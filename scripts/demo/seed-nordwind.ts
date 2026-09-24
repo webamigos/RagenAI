@@ -20,7 +20,10 @@
 import { pathToFileURL } from 'node:url';
 
 import { PrismaPg } from '@prisma/adapter-pg';
-import type { FeatureOverrides } from '@ragenai/platform-contracts';
+import {
+  notificationDetails,
+  type FeatureOverrides,
+} from '@ragenai/platform-contracts';
 import { hashPassword } from 'better-auth/crypto';
 
 import {
@@ -1927,76 +1930,95 @@ async function seedAdminData(ctx: Ctx): Promise<void> {
   });
   bump(ctx, 'api_keys', 2);
 
-  const notifications: {
-    user: PersonKey;
-    type: 'DOCUMENT_SHARED' | 'DOCUMENT_EMBEDDED' | 'PROJECT_SHARED';
-    title: string;
-    days: number;
-    read: boolean;
-  }[] =
-    locale === 'pl'
-      ? [
-          {
-            user: 'anna',
-            type: 'DOCUMENT_EMBEDDED',
-            title: 'Dokument „Zwroty i reklamacje” jest gotowy do wyszukiwania',
-            days: 20,
-            read: true,
-          },
-          {
-            user: 'anna',
-            type: 'PROJECT_SHARED',
-            title:
-              'Piotr Zieliński udostępnił Ci asystenta „Asystent Sprzedaży”',
-            days: 26,
-            read: true,
-          },
-          {
-            user: 'anna',
-            type: 'DOCUMENT_SHARED',
-            title:
-              'Magdalena Wiśniewska udostępniła folder „HR” zespołowi Compliance',
-            days: 1,
-            read: false,
-          },
-        ]
-      : [
-          {
-            user: 'anna',
-            type: 'DOCUMENT_EMBEDDED',
-            title: '"Returns and Claims" is ready to search',
-            days: 20,
-            read: true,
-          },
-          {
-            user: 'anna',
-            type: 'PROJECT_SHARED',
-            title: 'Peter Hughes shared the "Sales Assistant" with you',
-            days: 26,
-            read: true,
-          },
-          {
-            user: 'anna',
-            type: 'DOCUMENT_SHARED',
-            title:
-              'Megan Wilson shared the "HR" folder with the Compliance team',
-            days: 1,
-            read: false,
-          },
-        ];
-  for (const n of notifications) {
+  for (const n of demoNotifications(locale)) {
     await prisma.notification.create({
       data: {
         userId: ctx.uid(n.user),
         organizationId: orgId,
         type: n.type,
         title: n.title,
+        body: n.body,
+        metadata: n.metadata as Prisma.InputJsonValue,
         isRead: n.read,
         createdAt: ago(ctx, n.days, 12),
       },
     });
     bump(ctx, 'notifications');
   }
+}
+
+export type DemoNotification = {
+  user: PersonKey;
+  type: 'DOCUMENT_SHARED' | 'DOCUMENT_EMBEDDED' | 'PROJECT_SHARED';
+  /** The English fallback, as a producer writes it. */
+  title: string;
+  body: string | null;
+  /** What the notifications page renders from, in the reader's locale. */
+  metadata: Record<string, unknown>;
+  days: number;
+  read: boolean;
+};
+
+/**
+ * The demo's notifications, in the shape producers write: a type, structured
+ * details and an English fallback. The page renders the reader's locale from
+ * the details, so only the names in them differ per locale — a Polish demo
+ * has Polish people and document names, whichever language it is viewed in.
+ */
+export function demoNotifications(locale: Locale): DemoNotification[] {
+  const pl = locale === 'pl';
+  const doc = pl ? 'Zwroty i reklamacje' : 'Returns and Claims';
+  const assistant = pl ? 'Asystent Sprzedaży' : 'Sales Assistant';
+  return [
+    {
+      user: 'anna',
+      type: 'DOCUMENT_EMBEDDED',
+      title: `"${doc}" is ready to search`,
+      body: null,
+      metadata: requireDetails(
+        notificationDetails('DOCUMENT_EMBEDDED', { documentName: doc }),
+      ),
+      days: 20,
+      read: true,
+    },
+    {
+      user: 'anna',
+      type: 'PROJECT_SHARED',
+      title: 'An assistant was shared with you',
+      body: assistant,
+      metadata: requireDetails(
+        notificationDetails('PROJECT_SHARED', {
+          projectName: assistant,
+          sharedByName: pl ? 'Piotr Zieliński' : 'Peter Hughes',
+        }),
+      ),
+      days: 26,
+      read: true,
+    },
+    {
+      user: 'anna',
+      type: 'DOCUMENT_SHARED',
+      title: 'A folder was shared with you',
+      body: 'HR',
+      metadata: requireDetails(
+        notificationDetails('DOCUMENT_SHARED', {
+          resourceName: 'HR',
+          resourceKind: 'folder',
+          sharedByName: pl ? 'Magdalena Wiśniewska' : 'Megan Wilson',
+        }),
+      ),
+      days: 1,
+      read: false,
+    },
+  ];
+}
+
+/** A seed writes fixed data, so details that do not validate are a bug here. */
+function requireDetails<T>(details: T | undefined): T {
+  if (!details) {
+    throw new Error('demo notification details do not match their type');
+  }
+  return details;
 }
 
 /** Platform-wide rows, shared by both locales: the apps/admin login and defaults. */

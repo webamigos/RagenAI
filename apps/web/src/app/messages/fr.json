@@ -1889,7 +1889,35 @@
     "load-error": "Impossible de charger les notifications",
     "load-error-description": "Vérifie ta connexion et réessaie.",
     "retry": "Réessayer",
-    "mark-read-error": "Impossible de marquer les notifications comme lues. Réessaie."
+    "mark-read-error": "Impossible de marquer les notifications comme lues. Réessaie.",
+    "content": {
+      "document-shared": {
+        "title": "Un document a été partagé avec toi",
+        "title-by": "{name} a partagé un document avec toi"
+      },
+      "folder-shared": {
+        "title": "Un dossier a été partagé avec toi",
+        "title-by": "{name} a partagé un dossier avec toi"
+      },
+      "project-shared": {
+        "title": "Un assistant a été partagé avec toi",
+        "title-by": "{name} a partagé un assistant avec toi"
+      },
+      "thread-shared": {
+        "title": "Un fil a été partagé avec toi",
+        "title-by": "{name} a partagé un fil avec toi"
+      },
+      "drive-import": {
+        "title": "Import Google Drive terminé",
+        "body": "{count, plural, one {# fichier importé depuis « {folder} »} other {# fichiers importés depuis « {folder} »}}"
+      },
+      "document-embedded": {
+        "title": "« {name} » est prêt pour la recherche"
+      },
+      "document-expiring": {
+        "title": "« {name} » expire {days, plural, =0 {aujourd’hui} =1 {demain} other {dans # jours}}"
+      }
+    }
   },
   "organization": {
     "tabs": {

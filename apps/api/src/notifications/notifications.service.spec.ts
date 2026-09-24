@@ -10,9 +10,11 @@ describe('NotificationsService', () => {
     updateMany?: Mock;
     findMany?: Mock;
     findFirst?: Mock;
+    memberFindFirst?: Mock;
   }) {
     const prisma = {
       client: {
+        member: { findFirst: overrides.memberFindFirst ?? vi.fn() },
         notification: {
           create: overrides.create ?? vi.fn(),
           updateMany: overrides.updateMany ?? vi.fn(),
@@ -58,6 +60,68 @@ describe('NotificationsService', () => {
       });
       expect(result.publicId).toBe('pub-1');
       expect(result.isRead).toBe(false);
+    });
+  });
+
+  describe('create with details', () => {
+    it('writes the metadata and selects it back', async () => {
+      const create = vi.fn().mockResolvedValue(makeNotif());
+      const service = makeService({ create });
+
+      await service.create({
+        userId: 'user-1',
+        organizationId: 'org-1',
+        type: 'PROJECT_SHARED',
+        title: 'An assistant was shared with you',
+        metadata: { projectName: 'Sales' },
+      });
+
+      expect(create).toHaveBeenCalledWith({
+        data: expect.objectContaining({ metadata: { projectName: 'Sales' } }),
+        select: expect.objectContaining({ metadata: true }),
+      });
+    });
+  });
+
+  describe('memberDisplayName', () => {
+    it('reads the name through the membership of that organization', async () => {
+      const memberFindFirst = vi
+        .fn()
+        .mockResolvedValue({ user: { name: '  Ann  ' } });
+      const service = makeService({ memberFindFirst });
+
+      await expect(service.memberDisplayName('u1', 'org-1')).resolves.toBe(
+        'Ann',
+      );
+      expect(memberFindFirst).toHaveBeenCalledWith({
+        where: { userId: 'u1', organizationId: 'org-1' },
+        select: { user: { select: { name: true } } },
+      });
+    });
+
+    it('returns undefined for a non-member or an empty name', async () => {
+      const service = makeService({
+        memberFindFirst: vi.fn().mockResolvedValue(null),
+      });
+      await expect(
+        service.memberDisplayName('u1', 'org-1'),
+      ).resolves.toBeUndefined();
+
+      const blank = makeService({
+        memberFindFirst: vi.fn().mockResolvedValue({ user: { name: ' ' } }),
+      });
+      await expect(
+        blank.memberDisplayName('u1', 'org-1'),
+      ).resolves.toBeUndefined();
+    });
+
+    it('returns undefined rather than throwing when the read fails', async () => {
+      const service = makeService({
+        memberFindFirst: vi.fn().mockRejectedValue(new Error('db down')),
+      });
+      await expect(
+        service.memberDisplayName('u1', 'org-1'),
+      ).resolves.toBeUndefined();
     });
   });
 

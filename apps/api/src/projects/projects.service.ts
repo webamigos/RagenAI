@@ -9,6 +9,7 @@ import { canManageOrg } from '@ragenai/platform-contracts';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { Source, type Project } from '../generated/prisma/client.js';
 import { AuditLogService } from '../audit-logs/audit-log.service.js';
+import { notificationDetails } from '@ragenai/platform-contracts';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { SubscriptionsService } from '../subscriptions/subscriptions.service.js';
 import { GetProjectMcpProvidersService } from './get-project-mcp-providers.service.js';
@@ -877,14 +878,24 @@ export class ProjectsService {
     });
 
     if (granteeType === 'user') {
+      const sharedByName = await this.notifications.memberDisplayName(
+        grantedBy,
+        organizationId,
+      );
+      // `title`/`body` are the English fallback; apps/web renders the
+      // reader's locale from `metadata`.
       this.notifications
         .create({
           userId: granteeId,
           organizationId,
           type: 'PROJECT_SHARED',
-          title: 'Udostępniono Ci projekt',
+          title: 'An assistant was shared with you',
           body: project.title,
           resourceUrl: `/projects/${projectId}`,
+          metadata: notificationDetails('PROJECT_SHARED', {
+            projectName: project.title,
+            sharedByName,
+          }),
         })
         .catch((err: unknown) => {
           this.logger.error(

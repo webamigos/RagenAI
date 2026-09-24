@@ -1889,7 +1889,35 @@
     "load-error": "Oznámení se nepodařilo načíst",
     "load-error-description": "Zkontrolujte připojení a zkuste to znovu.",
     "retry": "Zkusit znovu",
-    "mark-read-error": "Oznámení se nepodařilo označit jako přečtená. Zkuste to znovu."
+    "mark-read-error": "Oznámení se nepodařilo označit jako přečtená. Zkuste to znovu.",
+    "content": {
+      "document-shared": {
+        "title": "Byl s vámi sdílen dokument",
+        "title-by": "{name} s vámi sdílí dokument"
+      },
+      "folder-shared": {
+        "title": "Byla s vámi sdílena složka",
+        "title-by": "{name} s vámi sdílí složku"
+      },
+      "project-shared": {
+        "title": "Byl s vámi sdílen asistent",
+        "title-by": "{name} s vámi sdílí asistenta"
+      },
+      "thread-shared": {
+        "title": "Byla s vámi sdílena konverzace",
+        "title-by": "{name} s vámi sdílí konverzaci"
+      },
+      "drive-import": {
+        "title": "Import z Google Drive dokončen",
+        "body": "{count, plural, one {Importován # soubor ze složky „{folder}“} few {Importovány # soubory ze složky „{folder}“} many {Importováno # souboru ze složky „{folder}“} other {Importováno # souborů ze složky „{folder}“}}"
+      },
+      "document-embedded": {
+        "title": "Dokument „{name}“ je připraven k vyhledávání"
+      },
+      "document-expiring": {
+        "title": "Dokument „{name}“ vyprší {days, plural, =0 {dnes} =1 {zítra} few {za # dny} many {za # dne} other {za # dní}}"
+      }
+    }
   },
   "organization": {
     "tabs": {

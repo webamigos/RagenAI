@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { notificationDetails } from '@ragenai/platform-contracts';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { SubscriptionsService } from '../subscriptions/subscriptions.service.js';
 import { decryptMessageContents } from '@ragenai/crypto';
@@ -127,15 +128,26 @@ export class ThreadSharingService {
     });
 
     if (result.success && filteredRecipients.length > 0) {
+      const sharedByName = await this.notifications.memberDisplayName(
+        currentUserId,
+        organizationId,
+      );
+      const metadata = notificationDetails('THREAD_SHARED_NEW_MESSAGE', {
+        threadTitle: thread.title?.trim() || undefined,
+        sharedByName,
+      });
+      // `title`/`body` are the English fallback; apps/web renders the
+      // reader's locale from `metadata`.
       await Promise.allSettled(
         filteredRecipients.map((recipientId) =>
           this.notifications.create({
             userId: recipientId,
             organizationId,
             type: 'THREAD_SHARED_NEW_MESSAGE',
-            title: 'Nowa wiadomość w udostępnionym wątku',
+            title: 'A thread was shared with you',
             body: thread.title ?? undefined,
             resourceUrl: `/threads/${threadId}`,
+            metadata,
           }),
         ),
       );

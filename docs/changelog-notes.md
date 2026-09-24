@@ -68,6 +68,15 @@ archive is the blog.
 
 ## Unreleased
 
+### Notifications in your language
+
+- `[brief]` **Notifications speak your language.** A shared document,
+  assistant or thread, or a finished Google Drive import, used to arrive in
+  Polish whatever language you use Ragen in. The notifications page now
+  writes each one in yours, names who shared it, and counts files properly
+  ("1 file", "3 files"). Notifications sent before this change keep their
+  original wording.
+
 ### Thread: sources you can read
 
 - `[brief]` **A source's quote reads as text.** The passage under each source

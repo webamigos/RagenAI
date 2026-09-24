@@ -58,6 +58,10 @@ describe('the public entry point', () => {
     ['hasOrgRole', 'function'],
     ['isOrgRole', 'function'],
     ['isAppAdmin', 'function'],
+    ['NOTIFICATION_TYPES', 'object'],
+    ['isNotificationType', 'function'],
+    ['parseNotificationDetails', 'function'],
+    ['notificationDetails', 'function'],
   ])('exports %s as a %s', (name, kind) => {
     expect(name in contracts).toBe(true);
     expect(typeof (contracts as Record<string, unknown>)[name]).toBe(kind);
