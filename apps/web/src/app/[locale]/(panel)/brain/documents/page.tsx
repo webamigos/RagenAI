@@ -6,7 +6,7 @@ import {
   TableHeader,
   TableRow,
 } from '@ragenai/common-ui/Table';
-import { getTranslations } from 'next-intl/server';
+import { getFormatter, getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
 import { getBrainAccessQuery } from '@/features/brain/services/queries/get-brain-access-query';
@@ -29,11 +29,21 @@ export default async function BrainDocumentsPage() {
   if (!access) {
     notFound();
   }
-  const [t, documents] = await Promise.all([
+  const [t, format, documents] = await Promise.all([
     getTranslations('brain.documents'),
+    getFormatter(),
     getBrainDocumentsQuery(access.orgId),
   ]);
   const staged = documents.filter((d) => d.retrieval === 'staged');
+  // How long the oldest has waited (spec F4): staging is a "not yet", and a
+  // "not yet" of three months is a decision nobody made.
+  const oldestStaged = staged.reduce<string | null>(
+    (oldest, d) =>
+      d.uploadedAt && (oldest === null || d.uploadedAt < oldest)
+        ? d.uploadedAt
+        : oldest,
+    null,
+  );
 
   return (
     <section>
@@ -53,6 +63,14 @@ export default async function BrainDocumentsPage() {
             count: staged.length,
             uncurated: staged.filter((d) => d.approvedPages === 0).length,
           })}
+          {oldestStaged && (
+            <span className="text-muted-foreground">
+              {' · '}
+              {t('staged-oldest', {
+                when: format.relativeTime(new Date(oldestStaged)),
+              })}
+            </span>
+          )}
         </p>
       )}
       {documents.length === 0 ? (

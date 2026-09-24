@@ -2721,7 +2721,8 @@
       "uploaded": "Завантажено в Brain: {count} — збережено й оброблено, поза пошуком",
       "upload-failed": "Завантаження не вдалося — перевірте файл і спробуйте ще раз.",
       "staged-summary": "У Brain, поза пошуком: {count} · без затвердженої сторінки: {uncurated}",
-      "uploaded-partly": "Завантажено до Brain {uploaded} з {total}; решта не вдалася"
+      "uploaded-partly": "Завантажено до Brain {uploaded} з {total}; решта не вдалася",
+      "staged-oldest": "найстаріший завантажено {when}"
     },
     "publish-all": {
       "button": "Опублікувати затверджені ({count})",

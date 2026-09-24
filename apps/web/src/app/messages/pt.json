@@ -2721,7 +2721,8 @@
       "uploaded": "Carregados no Brain: {count} — guardados e analisados, não pesquisáveis",
       "upload-failed": "O carregamento falhou — verifique o ficheiro e tente novamente.",
       "staged-summary": "No Brain, fora da pesquisa: {count} · sem página aprovada: {uncurated}",
-      "uploaded-partly": "Carregados no Brain {uploaded} de {total}; os restantes falharam"
+      "uploaded-partly": "Carregados no Brain {uploaded} de {total}; os restantes falharam",
+      "staged-oldest": "o mais antigo carregado {when}"
     },
     "publish-all": {
       "button": "Publicar aprovadas ({count})",

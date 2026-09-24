@@ -2721,7 +2721,8 @@
       "uploaded": "Subidos a Brain: {count} — guardados y analizados, no consultables",
       "upload-failed": "La subida falló: revisa el archivo e inténtalo de nuevo.",
       "staged-summary": "En Brain, fuera de la búsqueda: {count} · sin página aprobada: {uncurated}",
-      "uploaded-partly": "Subidos a Brain {uploaded} de {total}; el resto falló"
+      "uploaded-partly": "Subidos a Brain {uploaded} de {total}; el resto falló",
+      "staged-oldest": "el más antiguo subido {when}"
     },
     "publish-all": {
       "button": "Publicar aprobadas ({count})",

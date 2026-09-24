@@ -2721,7 +2721,8 @@
       "uploaded": "Ladattu Brainiin: {count} — tallennettu ja käsitelty, ei haettavissa",
       "upload-failed": "Lataus epäonnistui — tarkista tiedosto ja yritä uudelleen.",
       "staged-summary": "Brainissa, haun ulkopuolella: {count} · ilman hyväksyttyä sivua: {uncurated}",
-      "uploaded-partly": "Brainiin ladattiin {uploaded}/{total}; loput epäonnistuivat"
+      "uploaded-partly": "Brainiin ladattiin {uploaded}/{total}; loput epäonnistuivat",
+      "staged-oldest": "vanhin ladattu {when}"
     },
     "publish-all": {
       "button": "Julkaise hyväksytyt ({count})",

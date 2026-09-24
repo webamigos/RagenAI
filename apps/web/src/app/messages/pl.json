@@ -2721,7 +2721,8 @@
       "uploaded": "Wgrano do Brain: {count} — zapisane i przetworzone, poza wyszukiwaniem",
       "upload-failed": "Wgrywanie się nie powiodło — sprawdź plik i spróbuj ponownie.",
       "staged-summary": "W Brain, poza wyszukiwaniem: {count} · bez zatwierdzonej strony: {uncurated}",
-      "uploaded-partly": "Wgrano do Brain {uploaded} z {total}; pozostałe się nie powiodły"
+      "uploaded-partly": "Wgrano do Brain {uploaded} z {total}; pozostałe się nie powiodły",
+      "staged-oldest": "najstarszy wgrany {when}"
     },
     "publish-all": {
       "button": "Opublikuj zatwierdzone ({count})",

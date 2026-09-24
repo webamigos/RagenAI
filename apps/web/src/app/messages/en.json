@@ -2721,7 +2721,8 @@
       "uploaded": "Uploaded into Brain: {count} — stored and parsed, not searchable",
       "upload-failed": "The upload failed — check the file and try again.",
       "staged-summary": "Staged in Brain, not searchable: {count} · without an approved page yet: {uncurated}",
-      "uploaded-partly": "Uploaded {uploaded} of {total} into Brain; the rest failed"
+      "uploaded-partly": "Uploaded {uploaded} of {total} into Brain; the rest failed",
+      "staged-oldest": "oldest uploaded {when}"
     },
     "publish-all": {
       "button": "Publish approved ({count})",

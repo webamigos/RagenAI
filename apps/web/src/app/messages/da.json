@@ -2721,7 +2721,8 @@
       "uploaded": "Uploadet til Brain: {count} — gemt og fortolket, ikke søgbart",
       "upload-failed": "Uploaden mislykkedes — tjek filen, og prøv igen.",
       "staged-summary": "I Brain, uden for søgning: {count} · uden godkendt side: {uncurated}",
-      "uploaded-partly": "{uploaded} af {total} uploadet til Brain; resten mislykkedes"
+      "uploaded-partly": "{uploaded} af {total} uploadet til Brain; resten mislykkedes",
+      "staged-oldest": "ældste uploadet {when}"
     },
     "publish-all": {
       "button": "Udgiv godkendte ({count})",

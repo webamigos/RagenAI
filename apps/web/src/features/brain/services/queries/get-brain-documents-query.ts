@@ -15,7 +15,12 @@ export async function getBrainDocumentsQuery(
 ): Promise<BrainDocument[]> {
   const files = await db.userFile.findMany({
     where: extractableFilesWhere(orgId),
-    select: { id: true, fileName: true, embeddingStatus: true },
+    select: {
+      id: true,
+      fileName: true,
+      embeddingStatus: true,
+      createdAt: true,
+    },
     orderBy: { fileName: 'asc' },
     take: 1000,
   });
@@ -46,6 +51,7 @@ export async function getBrainDocumentsQuery(
     approvedPages: approvedBy.get(f.id) ?? 0,
     candidatePages: candidatesBy.get(f.id) ?? 0,
     retrieval: retrievalState(f.embeddingStatus),
+    uploadedAt: f.createdAt?.toISOString() ?? null,
   }));
 }
 

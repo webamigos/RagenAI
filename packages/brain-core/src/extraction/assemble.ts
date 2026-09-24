@@ -272,10 +272,10 @@ export const MIN_ANCHOR_CHARS = 40;
 const MAX_ANCHOR_CHARS = 400;
 
 /**
- * The quote a source keeps: the model's, or — when that is shorter than
- * `MIN_ANCHOR_CHARS` or occurs more than once in the document — the sentence
- * around it, cut from the source. Both are verbatim; the second is one a
- * reader can find and place. See `expandToSentence`.
+ * The quote a source keeps: the matched words cut from the source, or — when
+ * the quote is shorter than `MIN_ANCHOR_CHARS` or occurs more than once in
+ * the document — the sentence around it. Both are the document's own words;
+ * the second is one a reader can find and place. See `expandToSentence`.
  */
 function anchoredQuote(
   index: QuoteIndex,
@@ -286,7 +286,11 @@ function anchoredQuote(
     quote.trim().length >= MIN_ANCHOR_CHARS &&
     index.occurrences(quote) === 1
   ) {
-    return quote;
+    // The document's own words at the place the match found, not the
+    // model's rendering of them: the match forgives case, typography and
+    // markdown, so the model's string can read "EUR 44" where the document
+    // has "**EUR 44**" — and the source keeps the words verbatim (spec A).
+    return index.source.slice(location.start, location.end).trim() || quote;
   }
   const sentence = expandToSentence(index.source, location, MAX_ANCHOR_CHARS);
   return sentence !== null && sentence.length > quote.trim().length

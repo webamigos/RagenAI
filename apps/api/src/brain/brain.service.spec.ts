@@ -234,5 +234,40 @@ describe('BrainService', () => {
         },
       ]);
     });
+
+    it('does not count an owner who has left the organization', async () => {
+      const findMany = vi.fn().mockResolvedValue([
+        {
+          id: 1,
+          publicId: '00000000-0000-4000-8000-000000000002',
+          slug: 'kadry',
+          title: 'Kadry',
+          type: 'POLICY',
+          status: 'APPROVED',
+          content: '# Kadry\n',
+          contentHash: `sha256:${'b'.repeat(64)}`,
+          accessibleBy: ['org:org-1'],
+          validFrom: null,
+          verifyEvery: null,
+          lastVerifiedAt: null,
+          lastVerifiedBy: null,
+          // The user row survives leaving; the membership does not.
+          owner: { email: 'left@example.com', members: [] },
+          supersededBy: null,
+          sources: [],
+        },
+      ]);
+      const { service } = makeService({
+        knowledgePage: { count: vi.fn(), findMany },
+      });
+      const result = await service.exportBundle(CONTEXT);
+      expect(result.skipped[0]).toMatchObject({ reason: 'no-owner' });
+      const args = findMany.mock.calls[0][0] as {
+        select: { owner: { select: { members: { where: unknown } } } };
+      };
+      expect(args.select.owner.select.members.where).toEqual({
+        organizationId: 'org-1',
+      });
+    });
   });
 });

@@ -2721,7 +2721,8 @@
       "uploaded": "Téléversés dans Brain : {count} — stockés et analysés, non consultables",
       "upload-failed": "Le téléversement a échoué — vérifiez le fichier et réessayez.",
       "staged-summary": "Dans Brain, hors recherche : {count} · sans page approuvée : {uncurated}",
-      "uploaded-partly": "{uploaded} sur {total} importés dans Brain ; les autres ont échoué"
+      "uploaded-partly": "{uploaded} sur {total} importés dans Brain ; les autres ont échoué",
+      "staged-oldest": "le plus ancien importé {when}"
     },
     "publish-all": {
       "button": "Publier les approuvées ({count})",

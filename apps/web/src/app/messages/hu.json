@@ -2721,7 +2721,8 @@
       "uploaded": "Feltöltve a Brainbe: {count} — tárolva és feldolgozva, nem kereshető",
       "upload-failed": "A feltöltés nem sikerült — ellenőrizze a fájlt, és próbálja újra.",
       "staged-summary": "A Brainben, keresésen kívül: {count} · jóváhagyott oldal nélkül: {uncurated}",
-      "uploaded-partly": "{uploaded}/{total} feltöltve a Brainbe; a többi sikertelen"
+      "uploaded-partly": "{uploaded}/{total} feltöltve a Brainbe; a többi sikertelen",
+      "staged-oldest": "a legrégebbi feltöltve: {when}"
     },
     "publish-all": {
       "button": "Jóváhagyottak közzététele ({count})",

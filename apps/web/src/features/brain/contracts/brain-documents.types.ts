@@ -15,6 +15,8 @@ export type BrainDocument = {
    * queued; `failed` — ingest failed or was cancelled.
    */
   retrieval: 'in' | 'staged' | 'withdrawn' | 'processing' | 'failed';
+  /** When the file was uploaded (ISO) — how long a staged one has waited. */
+  uploadedAt: string | null;
 };
 
 export const sourceDocumentInputSchema = z.object({ fileId: dbUuid });

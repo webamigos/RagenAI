@@ -2721,7 +2721,8 @@
       "uploaded": "Nahrané do Brainu: {count} — uložené a spracované, nevyhľadateľné",
       "upload-failed": "Nahrávanie zlyhalo — skontrolujte súbor a skúste to znova.",
       "staged-summary": "V Brain, mimo vyhľadávania: {count} · bez schválenej strany: {uncurated}",
-      "uploaded-partly": "Nahraté do Brain {uploaded} z {total}; zvyšok zlyhal"
+      "uploaded-partly": "Nahraté do Brain {uploaded} z {total}; zvyšok zlyhal",
+      "staged-oldest": "najstarší nahraný {when}"
     },
     "publish-all": {
       "button": "Zverejniť schválené ({count})",

@@ -2721,7 +2721,8 @@
       "uploaded": "Качени в Brain: {count} — съхранени и обработени, не се търсят",
       "upload-failed": "Качването не бе успешно — проверете файла и опитайте отново.",
       "staged-summary": "В Brain, извън търсенето: {count} · без одобрена страница: {uncurated}",
-      "uploaded-partly": "Качени в Brain {uploaded} от {total}; останалите се провалиха"
+      "uploaded-partly": "Качени в Brain {uploaded} от {total}; останалите се провалиха",
+      "staged-oldest": "най-старият качен {when}"
     },
     "publish-all": {
       "button": "Публикувай одобрените ({count})",

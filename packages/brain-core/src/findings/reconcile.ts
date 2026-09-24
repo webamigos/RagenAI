@@ -13,6 +13,8 @@ export type ExistingFinding = {
   status: FindingStatus;
   pageIds: ReadonlyArray<number>;
   detail: unknown;
+  /** Read so a page that started or stopped serving re-grades its finding. */
+  severity?: string;
 };
 
 export type FindingsPlan = {
@@ -84,7 +86,12 @@ export function reconcileFindings(
     const finding = want.get(key);
     if (!finding) {
       plan.resolve.push(row.id);
-    } else if (fingerprintOf(row.detail) !== finding.detail.fingerprint) {
+    } else if (
+      fingerprintOf(row.detail) !== finding.detail.fingerprint ||
+      (row.severity !== undefined && row.severity !== finding.severity)
+    ) {
+      // Same problem, read differently — or the same problem on a page that
+      // is now serving in the index (or no longer is), whose weight changed.
       plan.update.push({ id: row.id, finding });
     }
   }

@@ -2721,7 +2721,8 @@
       "uploaded": "Uppladdat till Brain: {count} — lagrat och tolkat, inte sökbart",
       "upload-failed": "Uppladdningen misslyckades — kontrollera filen och försök igen.",
       "staged-summary": "I Brain, utanför sökningen: {count} · utan godkänd sida: {uncurated}",
-      "uploaded-partly": "{uploaded} av {total} uppladdade till Brain; resten misslyckades"
+      "uploaded-partly": "{uploaded} av {total} uppladdade till Brain; resten misslyckades",
+      "staged-oldest": "äldsta uppladdad {when}"
     },
     "publish-all": {
       "button": "Publicera godkända ({count})",

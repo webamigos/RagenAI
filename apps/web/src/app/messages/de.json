@@ -2721,7 +2721,8 @@
       "uploaded": "In Brain hochgeladen: {count} — gespeichert und verarbeitet, nicht durchsuchbar",
       "upload-failed": "Das Hochladen ist fehlgeschlagen — prüfen Sie die Datei und versuchen Sie es erneut.",
       "staged-summary": "In Brain, nicht durchsuchbar: {count} · noch ohne freigegebene Seite: {uncurated}",
-      "uploaded-partly": "{uploaded} von {total} in Brain hochgeladen; der Rest ist fehlgeschlagen"
+      "uploaded-partly": "{uploaded} von {total} in Brain hochgeladen; der Rest ist fehlgeschlagen",
+      "staged-oldest": "ältestes hochgeladen {when}"
     },
     "publish-all": {
       "button": "Freigegebene veröffentlichen ({count})",

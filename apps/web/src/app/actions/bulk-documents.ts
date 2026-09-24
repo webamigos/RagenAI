@@ -230,8 +230,15 @@ export async function bulkReembedFilesAction(
 ): Promise<BulkActionResult> {
   const orgId = await getOrgIdFromAuthOrThrow();
 
+  // Not a published Brain page's file: it has no stored upload to parse, and
+  // resetting it would take a serving page out of the index. Its chunks are
+  // written by publishing (spec E10).
   const fileRecords = await db.userFile.findMany({
-    where: { id: { in: fileIds }, organizationId: orgId },
+    where: {
+      id: { in: fileIds },
+      organizationId: orgId,
+      publishedPages: { none: {} },
+    },
   });
 
   const succeeded: string[] = [];

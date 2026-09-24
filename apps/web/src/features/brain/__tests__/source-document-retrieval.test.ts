@@ -175,8 +175,18 @@ describe('restoreSourceDocumentCommand', () => {
 describe('getBrainDocumentsQuery', () => {
   it('counts approved and candidate pages per document and reads its retrieval state', async () => {
     db.userFile.findMany.mockResolvedValue([
-      { id: 'f1', fileName: 'a.pdf', embeddingStatus: 'COMPLETED' },
-      { id: 'f2', fileName: 'b.pdf', embeddingStatus: 'WITHDRAWN' },
+      {
+        id: 'f1',
+        fileName: 'a.pdf',
+        embeddingStatus: 'COMPLETED',
+        createdAt: new Date('2026-09-01T10:00:00.000Z'),
+      },
+      {
+        id: 'f2',
+        fileName: 'b.pdf',
+        embeddingStatus: 'WITHDRAWN',
+        createdAt: null,
+      },
     ]);
     db.knowledgePageSource.groupBy
       .mockResolvedValueOnce([{ fileId: 'f1', _count: { pageId: 2 } }])
@@ -188,6 +198,7 @@ describe('getBrainDocumentsQuery', () => {
         approvedPages: 2,
         candidatePages: 0,
         retrieval: 'in',
+        uploadedAt: '2026-09-01T10:00:00.000Z',
       },
       {
         fileId: 'f2',
@@ -195,6 +206,7 @@ describe('getBrainDocumentsQuery', () => {
         approvedPages: 0,
         candidatePages: 1,
         retrieval: 'withdrawn',
+        uploadedAt: null,
       },
     ]);
   });

@@ -2721,7 +2721,8 @@
       "uploaded": "Caricati in Brain: {count} — salvati ed elaborati, non ricercabili",
       "upload-failed": "Caricamento non riuscito: controlla il file e riprova.",
       "staged-summary": "In Brain, fuori dalla ricerca: {count} · senza pagina approvata: {uncurated}",
-      "uploaded-partly": "Caricati in Brain {uploaded} di {total}; gli altri non sono riusciti"
+      "uploaded-partly": "Caricati in Brain {uploaded} di {total}; gli altri non sono riusciti",
+      "staged-oldest": "il più vecchio caricato {when}"
     },
     "publish-all": {
       "button": "Pubblica approvate ({count})",

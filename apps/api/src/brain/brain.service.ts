@@ -482,7 +482,17 @@ export class BrainService {
           verifyEvery: true,
           lastVerifiedAt: true,
           lastVerifiedBy: true,
-          owner: { select: { email: true } },
+          owner: {
+            select: {
+              email: true,
+              // An owner who left is no owner: the export needs one (C2).
+              members: {
+                where: { organizationId: orgId },
+                select: { id: true },
+                take: 1,
+              },
+            },
+          },
           supersededBy: { select: { publicId: true } },
           sources: {
             where: { organizationId: orgId },
@@ -521,7 +531,7 @@ export class BrainService {
         status: p.status,
         content: p.content,
         contentHash: p.contentHash,
-        owner: p.owner?.email ?? null,
+        owner: p.owner && p.owner.members.length > 0 ? p.owner.email : null,
         accessibleBy: p.accessibleBy,
         validFrom: p.validFrom ? p.validFrom.toISOString().slice(0, 10) : null,
         supersededBy: p.supersededBy?.publicId ?? null,

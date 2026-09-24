@@ -159,12 +159,35 @@ describe('recordContradictionJudgement', () => {
 
   it('leaves an open finding with the same passages alone', async () => {
     prisma.knowledgeFinding.findMany.mockResolvedValue([
-      { id: 3, status: 'OPEN', detail: { fingerprint: FINGERPRINT } },
+      {
+        id: 3,
+        status: 'OPEN',
+        severity: 'MEDIUM',
+        detail: { fingerprint: FINGERPRINT },
+      },
     ]);
     await expect(recordContradictionJudgement(input())).resolves.toBe(
       'unchanged',
     );
     expect(prisma.knowledgeFinding.updateMany).not.toHaveBeenCalled();
+  });
+
+  it('re-grades an open finding with the same passages once a page is serving', async () => {
+    prisma.knowledgeFinding.findMany.mockResolvedValue([
+      {
+        id: 3,
+        status: 'OPEN',
+        severity: 'MEDIUM',
+        detail: { fingerprint: FINGERPRINT },
+      },
+    ]);
+    await expect(
+      recordContradictionJudgement(input({ published: true })),
+    ).resolves.toBe('updated');
+    expect(prisma.knowledgeFinding.updateMany).toHaveBeenCalledWith({
+      where: { organizationId: 'org-1', id: 3, status: 'OPEN' },
+      data: { severity: 'HIGH' },
+    });
   });
 
   it('updates an open finding in place when the passages changed', async () => {
