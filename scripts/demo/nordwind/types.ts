@@ -107,7 +107,19 @@ export interface DemoThread {
 }
 
 export interface DemoContent {
+  /**
+   * Distinct per locale: both organizations share one platform, and the
+   * admin panel lists them side by side — two identical names read as a
+   * duplicate row.
+   */
   orgName: string;
+  /** The team `finalizeOnboardingCommand` creates, in the org's language. */
+  generalTeam: string;
+  /**
+   * The organization's hidden main assistant. The grid does not show it, but
+   * a thread in it names it in the chat header's assistant selector.
+   */
+  defaultAssistantTitle: string;
   people: Record<PersonKey, DemoPerson>;
   teams: Record<TeamKey, string>;
   folders: Record<FolderKey, string>;

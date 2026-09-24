@@ -165,3 +165,22 @@ describe('BrainGraphCanvas', () => {
     ).toHaveAttribute('href', `/brain/graph?focus=${A}&budget=150`);
   });
 });
+
+describe('communityColour', () => {
+  // Five tokens and `id % 5` gave the sixth community the first one's colour.
+  it('gives the first ten communities ten different swatches', async () => {
+    const { communityColour } = await import('../components/BrainGraphCanvas');
+    const swatches = Array.from({ length: 10 }, (_, id) => {
+      const { token, alpha } = communityColour(id);
+      return `${token}@${alpha}`;
+    });
+    expect(new Set(swatches).size).toBe(10);
+  });
+
+  it('never uses the rationed crimson', async () => {
+    const { communityColour } = await import('../components/BrainGraphCanvas');
+    for (let id = 0; id < 20; id += 1) {
+      expect(communityColour(id).token).not.toBe('--chart-4');
+    }
+  });
+});

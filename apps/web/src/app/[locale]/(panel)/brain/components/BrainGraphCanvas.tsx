@@ -22,6 +22,30 @@ const COMMUNITY_TOKENS = [
   '--chart-5',
 ] as const;
 
+/**
+ * A community's colour: a token, and how opaque to draw it.
+ *
+ * Five tokens and a plain `id % 5` gave the sixth community the first one's
+ * colour, so two unrelated groups read as one. The second lap draws the same
+ * tokens mixed half-and-half with the background — ten distinct swatches
+ * before anything repeats, without borrowing the rationed crimson. Past ten
+ * the cycle wraps; the legend lists at most eight.
+ *
+ * Mixed to an opaque colour, not drawn at half opacity: Sigma composites with
+ * `ONE, ONE_MINUS_SRC_ALPHA`, which expects premultiplied colour, and it does
+ * not premultiply what it is given — a translucent node came out brighter
+ * than the legend's swatch for the same community. `alpha` here is the share
+ * of the token in the mix.
+ */
+export function communityColour(id: number): {
+  token: (typeof COMMUNITY_TOKENS)[number];
+  alpha: number;
+} {
+  const n = COMMUNITY_TOKENS.length;
+  const slot = ((id % (n * 2)) + n * 2) % (n * 2);
+  return { token: COMMUNITY_TOKENS[slot % n], alpha: slot < n ? 1 : 0.5 };
+}
+
 /** Up to this many pages, every page is labelled. */
 const SMALL_GRAPH = 60;
 
@@ -95,7 +119,7 @@ export function BrainGraphCanvas({ view }: { view: BrainGraphView }) {
             size:
               6 + Math.sqrt(node.degree) * 2 + (node.openFindings > 0 ? 4 : 0),
             label: node.title,
-            color: palette.community[node.community % palette.community.length],
+            color: palette.community(node.community),
             forceLabel:
               labelAll || node.openFindings > 0 || node.id === view.focus,
           });
@@ -256,7 +280,12 @@ export function BrainGraphCanvas({ view }: { view: BrainGraphView }) {
                       aria-hidden="true"
                       className="inline-block size-2 shrink-0 rounded-full"
                       style={{
-                        background: `var(${COMMUNITY_TOKENS[c.id % COMMUNITY_TOKENS.length]})`,
+                        background: (() => {
+                          const { token, alpha } = communityColour(c.id);
+                          return alpha === 1
+                            ? `var(${token})`
+                            : `color-mix(in srgb, var(${token}) ${alpha * 100}%, var(--background))`;
+                        })(),
                       }}
                     />
                     {t('community', { label: c.label, size: c.size })}
@@ -292,8 +321,30 @@ function tokenColours(el: HTMLElement) {
     const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data;
     return `rgba(${r},${g},${b},${alpha})`;
   };
+  // `token` over the page background at `share`, read back as one opaque
+  // colour — see `communityColour` for why Sigma must not get a translucent one.
+  const mixed = (token: string, share: number) => {
+    const value = style.getPropertyValue(token).trim();
+    const background = style.getPropertyValue('--background').trim();
+    if (!ctx || !value || !background) {
+      return rgb(token);
+    }
+    ctx.clearRect(0, 0, 1, 1);
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = background;
+    ctx.fillRect(0, 0, 1, 1);
+    ctx.globalAlpha = share;
+    ctx.fillStyle = value;
+    ctx.fillRect(0, 0, 1, 1);
+    ctx.globalAlpha = 1;
+    const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data;
+    return `rgba(${r},${g},${b},1)`;
+  };
   return {
-    community: COMMUNITY_TOKENS.map((c) => rgb(c)),
+    community: (id: number) => {
+      const { token, alpha } = communityColour(id);
+      return alpha === 1 ? rgb(token) : mixed(token, alpha);
+    },
     edge: {
       EXTRACTED: rgb('--muted-foreground', 0.7),
       AMBIGUOUS: rgb('--chart-3', 0.8),

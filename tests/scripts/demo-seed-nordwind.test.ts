@@ -15,6 +15,7 @@ import { contentEn } from '../../scripts/demo/nordwind/content-en';
 import { contentPl } from '../../scripts/demo/nordwind/content-pl';
 import { PAGES } from '../../scripts/demo/nordwind/structure';
 import {
+  DERIVED_MARGIN_MS,
   agoFrom,
   assertDemoDatabase,
   firstParagraph,
@@ -91,6 +92,26 @@ describe('the two locales', () => {
         Object.keys(contentPl[key]).sort(),
       );
     }
+  });
+
+  // The admin panel lists both organizations side by side; two identical
+  // names read as a duplicate row.
+  it('name the two organizations differently', () => {
+    expect(contentPl.orgName).not.toBe(contentEn.orgName);
+    for (const c of [contentPl, contentEn]) {
+      expect(c.orgName).toContain('Nordwind Logistics');
+    }
+  });
+
+  // The Polish org had an English "General" team and an English "Default
+  // Assistant", which the chat header's selector showed on Polish pages.
+  it('name the general team and the main assistant in the org’s language', () => {
+    expect(contentPl.generalTeam).not.toBe('General');
+    expect(contentPl.defaultAssistantTitle).not.toMatch(/Default Assistant/);
+    expect(contentEn.defaultAssistantTitle).not.toMatch(/Default Assistant/);
+    expect(contentPl.defaultAssistantTitle).not.toBe(
+      contentEn.defaultAssistantTitle,
+    );
   });
 });
 
@@ -235,6 +256,16 @@ describe('agoFrom', () => {
   it('never puts a past or present offset after now', () => {
     for (let hour = 0; hour < 24; hour += 1) {
       expect(agoFrom(now, 0, hour).getTime()).toBeLessThanOrEqual(now);
+    }
+  });
+
+  // Callers add seconds or minutes to these (an answer after its question),
+  // so the result keeps a margin before now for those to fit in.
+  it('leaves room before now for times derived from it', () => {
+    for (let minute = 0; minute < 60; minute += 1) {
+      expect(agoFrom(now, 0, 7, minute).getTime()).toBeLessThanOrEqual(
+        now - DERIVED_MARGIN_MS,
+      );
     }
   });
 
