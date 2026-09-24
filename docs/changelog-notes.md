@@ -191,6 +191,15 @@ archive is the blog.
   `routes.yaml`); the shipped Mistral route and the installer's Scaleway
   option both do. Failed findings can be retried with "Ponów" once this is deployed.
 
+### Thread: connectors on your own network
+
+- `[brief]` **A connector on the deployment's private network can be added
+  from the admin panel.** Set `CONNECTOR_TRUSTED_HOSTS` to the hosts you
+  vouch for, and a catalogue entry pointing at one connects like a built-in.
+  Needed on Railway, whose private names also resolve to IPv6 addresses the
+  address guard refuses. The admin form itself still cannot reach a private
+  address the deployment did not list.
+
 ### Thread: a bug hunt through the panel
 
 - `[brief]` **A wrong link no longer takes the whole app down.** Opening a

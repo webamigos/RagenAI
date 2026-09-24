@@ -26,9 +26,10 @@ export type McpProbeResult =
 export type McpProbeOptions = AddressPolicy & {
   headers?: Record<string, string>;
   /**
-   * Address policy. Injected by tests, and by nothing else — the same seam
-   * `GuardedFetchOptions` carries, for the same reason: a test's server is on
-   * loopback, which the real policy refuses whatever `allowPrivate` says.
+   * Address policy. Injected by tests — a test's server is on loopback,
+   * which the real policy refuses whatever `allowPrivate` says — and by the
+   * admin's Test connection for a host in `CONNECTOR_TRUSTED_HOSTS`, which
+   * the apps connect to without the policy (see `trusted-hosts.ts`).
    */
   isBlockedAddress?: (address: string) => boolean;
   /** Per-phase deadline. Two phases, so the worst case is twice this. */

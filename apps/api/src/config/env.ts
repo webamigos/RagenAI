@@ -35,6 +35,7 @@ export const apiEnvSchema = fragments.targetEnvRequired
   .merge(fragments.redis)
   .merge(fragments.qdrant)
   .merge(fragments.observability)
+  .merge(fragments.connectorGuard)
   .merge(fragments.tokenVault)
   .merge(fragments.encryption)
   .extend({

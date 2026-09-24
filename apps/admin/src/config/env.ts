@@ -37,6 +37,7 @@ import { z } from 'zod';
 export const adminEnvSchema = fragments.targetEnv
   .merge(fragments.database)
   .merge(fragments.llmGateway)
+  .merge(fragments.connectorGuard)
   .merge(fragments.tokenVault)
   .extend({
     /**

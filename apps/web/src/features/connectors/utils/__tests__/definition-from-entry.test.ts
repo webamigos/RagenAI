@@ -214,3 +214,53 @@ describe('the row is the whole answer for scopes and user-scope', () => {
     expect(definition.useUserScope).toBe(true);
   });
 });
+
+describe('definitionFromEntry — a deployer-trusted host', () => {
+  const RAILWAY = 'http://ragen-mcp-rejestrio.railway.internal:9080/mcp';
+  const withTrusted = (value: string | undefined, run: () => void) => {
+    const before = process.env.CONNECTOR_TRUSTED_HOSTS;
+    if (value === undefined) {
+      delete process.env.CONNECTOR_TRUSTED_HOSTS;
+    } else {
+      process.env.CONNECTOR_TRUSTED_HOSTS = value;
+    }
+    try {
+      run();
+    } finally {
+      if (before === undefined) {
+        delete process.env.CONNECTOR_TRUSTED_HOSTS;
+      } else {
+        process.env.CONNECTOR_TRUSTED_HOSTS = before;
+      }
+    }
+  };
+
+  it('is connected without the address guard, like a built-in', () => {
+    withTrusted('ragen-mcp-rejestrio.railway.internal', () => {
+      const definition = definitionFromEntry(
+        entry({
+          slug: 'rejestrio',
+          authType: 'SERVER_SIDE',
+          mcpServerUrl: RAILWAY,
+        }),
+        undefined,
+      );
+      expect(definition.addressGuard).toBeUndefined();
+    });
+  });
+
+  it('keeps the guard for the same URL when the deployment trusts nothing', () => {
+    withTrusted(undefined, () => {
+      const definition = definitionFromEntry(
+        entry({
+          slug: 'rejestrio',
+          authType: 'SERVER_SIDE',
+          mcpServerUrl: RAILWAY,
+          allowsPrivateAddress: true,
+        }),
+        undefined,
+      );
+      expect(definition.addressGuard).toEqual({ allowPrivate: true });
+    });
+  });
+});

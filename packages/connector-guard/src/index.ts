@@ -53,3 +53,8 @@ export {
   type McpProbeOptions,
   type McpProbeResult,
 } from './probe';
+export {
+  isDeployerTrustedUrl,
+  parseTrustedHosts,
+  TRUSTED_HOSTS_ENV,
+} from './trusted-hosts';

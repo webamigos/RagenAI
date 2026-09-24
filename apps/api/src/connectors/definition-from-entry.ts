@@ -1,3 +1,4 @@
+import { isDeployerTrustedUrl } from '@ragenai/connector-guard';
 import {
   CONNECTOR_ICON_PATHS,
   type McpCatalogEntryDto,
@@ -96,6 +97,12 @@ function addressGuardFor(
 ): { allowPrivate: boolean } | undefined {
   const addressIsTyped =
     entry.mcpServerUrl !== null || entry.authType === 'API_KEY_CUSTOM_HEADER';
+
+  // A host the deployment itself vouches for (`CONNECTOR_TRUSTED_HOSTS`) is
+  // connected like a built-in's `MCP_*_SERVER_URL`. See `trusted-hosts.ts`.
+  if (isDeployerTrustedUrl(entry.mcpServerUrl)) {
+    return undefined;
+  }
 
   return addressIsTyped
     ? { allowPrivate: entry.allowsPrivateAddress }

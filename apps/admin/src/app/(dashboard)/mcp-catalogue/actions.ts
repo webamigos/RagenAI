@@ -13,7 +13,7 @@ import { requireAdmin } from '@/lib/auth-guard';
 import { prisma } from '@/lib/db';
 import { getVaultClient, isVaultConfigured } from '@/lib/vault';
 
-import { probeMcpServer } from '@ragenai/connector-guard';
+import { isDeployerTrustedUrl, probeMcpServer } from '@ragenai/connector-guard';
 
 import {
   serverUrlFailure,
@@ -441,8 +441,13 @@ export async function testCatalogueConnectionAction(
     return { ok: false, reason: refusal };
   }
 
+  // A deployer-trusted host is probed the way the apps will connect to it —
+  // without the address policy — or Test connection would refuse what the
+  // runtime accepts.
+  const trusted = isDeployerTrustedUrl(url.trim());
   const result = await probeMcpServer(url.trim(), {
     allowPrivate: allowsPrivateAddress,
+    ...(trusted ? { isBlockedAddress: () => false } : {}),
   });
 
   await recordAdminAction({
