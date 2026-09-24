@@ -99,13 +99,13 @@ model DocumentCitation {
 /// Deliberately the same shape as DocumentCitation apart from `rank`, so one
 /// query shape serves both.
 model DocumentRetrieval {
-  id        Int      @id @default(autoincrement())
-  messageId String   @map("message_id") @db.Uuid
-  fileId    String   @map("file_id") @db.Uuid
-  orgId     String   @map("org_id")
+  id            Int      @id @default(autoincrement())
+  messageId     String   @map("message_id") @db.Uuid
+  fileId        String   @map("file_id") @db.Uuid
+  orgId         String   @map("org_id")
   /// 1-based position after dedupe and rerank. Free to record here, and
   /// unrecoverable afterwards.
-  rank      Int
+  rank          Int
   /// The text of the chunk this file contributed, so a reopened thread can
   /// still quote its sources. Qdrant chunk ids are not a usable reference —
   /// they do not survive a re-index, which is what ruled out storing one.
@@ -116,8 +116,26 @@ model DocumentRetrieval {
   /// function the message uses, so the two cannot diverge.
   ///
   /// Null on rows written before gap 5, and whenever the chunk had no text.
-  snippet   String?
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  snippet       String?
+  /// Where that chunk sits in the document, so a reopened thread opens the
+  /// source at the cited page with the cited paragraphs outlined — the same
+  /// view the live turn gave. The 1-based page of the chunk, and its regions
+  /// as `SourceRegion[]` (top-left fractions of the page box, at most
+  /// `MAX_SOURCE_REGIONS`), exactly as the retrieved source carried them.
+  ///
+  /// Plaintext, unlike `snippet`, and deliberately: ADR-42 covers text that
+  /// quotes, summarises or extracts from a thread, and a page number and a
+  /// handful of rectangles are neither — they are coordinates in a document
+  /// the organization already stores, the same values the Qdrant payload
+  /// holds in the clear. Encrypting them would buy no confidentiality and
+  /// make them the one per-turn column a reader cannot validate in SQL.
+  ///
+  /// Null on rows written before they existed, and for any chunk the parser
+  /// gave no page or no box. The viewers then find the passage from
+  /// `snippet` instead.
+  sourcePage    Int?     @map("source_page")
+  sourceRegions Json?    @map("source_regions")
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz
 
   message Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
   file    UserFile @relation(fields: [fileId], references: [id], onDelete: Cascade)

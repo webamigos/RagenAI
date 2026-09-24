@@ -31,6 +31,79 @@ export type SourceRegion = {
 export const MAX_SOURCE_REGIONS = 32;
 
 /**
+ * Reads a list of regions off an untyped value, dropping anything malformed.
+ *
+ * Two readers: the chat reads `source_regions` off a Qdrant payload, and a
+ * reopened thread reads the copy `document_retrievals` kept of it — a JSON
+ * column, so just as untyped. Lived in `apps/web`'s `operations.ts` until the
+ * second reader needed it.
+ *
+ * Validated rather than cast. The payload is schemaless and the value comes
+ * back as whatever some version of the worker wrote, so a single bad entry
+ * would otherwise reach a viewer as `left: NaN%` — a rectangle at no position,
+ * on a page it cannot be traced back to. Coordinates outside 0–1 are dropped
+ * for the same reason: the contract is a fraction of the page box, and a value
+ * that is not one is not a box that was drawn wrong, it is one that was never
+ * a box.
+ */
+export function readSourceRegions(value: unknown): SourceRegion[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+  const regions: SourceRegion[] = [];
+  for (const entry of value) {
+    const region = entry as Partial<SourceRegion> | null;
+    if (!region || typeof region !== 'object') {
+      continue;
+    }
+    const { page, x, y, w, h } = region;
+    if (typeof page !== 'number' || !Number.isInteger(page) || page < 1) {
+      continue;
+    }
+    const inUnitRange = (n: unknown): n is number =>
+      typeof n === 'number' && Number.isFinite(n) && n >= 0 && n <= 1;
+    // Checked one at a time rather than with `every`: a type predicate on an
+    // array narrows the array, not the destructured values, and the arithmetic
+    // below needs them to be numbers. Narrowing here is also what lets the
+    // push be a plain object instead of an `as SourceRegion` cast — the cast
+    // was quietly asserting exactly what this validates.
+    if (
+      !inUnitRange(x) ||
+      !inUnitRange(y) ||
+      !inUnitRange(w) ||
+      !inUnitRange(h)
+    ) {
+      continue;
+    }
+    // And the box has to *fit* on the page, not merely start and measure
+    // inside it. `x: 0.9, w: 0.9` passes every check above and draws a
+    // rectangle running off the right edge. The worker clamps width and
+    // height against the origin so it never writes one, but this reads back
+    // whatever some version of it wrote.
+    //
+    // The tolerance is for float addition, not for slack: `0.0271 + 0.9729`
+    // is exactly 1 here, but a sum of two decimals is not guaranteed to be,
+    // and a full-width box rejected by one ulp would be a worse bug than the
+    // one this prevents.
+    const FITS_TOLERANCE = 1e-6;
+    if (x + w > 1 + FITS_TOLERANCE || y + h > 1 + FITS_TOLERANCE) {
+      continue;
+    }
+    regions.push({ page, x, y, w, h });
+    // The cap is the writer's contract, enforced again here for the same
+    // reason every field above is validated rather than trusted: the payload
+    // is whatever some version of the worker wrote, and a chunk written
+    // before the cap existed would otherwise hand the overlay an unbounded
+    // list. Stopping on accept rather than truncating afterwards keeps the
+    // kept entries the first valid ones, in reading order.
+    if (regions.length === MAX_SOURCE_REGIONS) {
+      break;
+    }
+  }
+  return regions;
+}
+
+/**
  * The Qdrant chunk payload, shared by apps/web, apps/api and apps/worker.
  *
  * The worker writes this shape; the app and the api read it. It lived as two

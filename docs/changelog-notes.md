@@ -79,6 +79,11 @@ archive is the blog.
 
 ### Thread: sources you can read
 
+- `[brief]` **A reopened thread's sources open where they did live.** A PDF
+  cited in an answer now opens at the cited page with its paragraphs outlined
+  when you come back to the conversation later, not only while the answer is
+  fresh. Answers written before this update have no stored page: the viewer looks for the passage instead, and opens at the first page only when it cannot find it.
+
 - `[major]` **Clicking a source takes you to the passage.** The document
   opens at the cited place with the passage marked in yellow — word for word
   in a PDF (and at the right page even for older answers that never stored

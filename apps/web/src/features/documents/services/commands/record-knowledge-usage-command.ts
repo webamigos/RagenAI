@@ -79,12 +79,21 @@ export async function recordKnowledgeUsageCommand(
       // after dedupe and rerank (see `retrieveRelevantDocumentsWithIds`), so
       // the index is the rank. It is free to record now and unrecoverable
       // afterwards.
-      data: retrieved.map(({ fileId }, index) => ({
+      data: retrieved.map(({ fileId, sourcePage, sourceRegions }, index) => ({
         messageId,
         fileId,
         orgId,
         rank: index + 1,
         snippet: snippets[index],
+        // Where the quoted chunk sits, so a reopened thread opens the source
+        // at the same page with the same outline. Not encrypted: coordinates
+        // are not content (see the column's note in schema.prisma). Omitted,
+        // not zeroed, when the parser gave none — absence is what the reader
+        // falls back on.
+        ...(sourcePage !== undefined ? { sourcePage } : {}),
+        ...(sourceRegions !== undefined && sourceRegions.length > 0
+          ? { sourceRegions: sourceRegions.map((region) => ({ ...region })) }
+          : {}),
       })),
       skipDuplicates: true,
     }),

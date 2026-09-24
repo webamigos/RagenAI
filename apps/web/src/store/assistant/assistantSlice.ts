@@ -89,8 +89,8 @@ export type RetrievalSource = {
   pages?: number[];
   /**
    * Where on its page the quoted passage sits, for the highlight overlay.
-   * Absent on a restored turn: regions are not persisted, and absent on any
-   * document the parser gave no box for.
+   * Absent on any document the parser gave no box for, and on a restored turn
+   * recorded before regions were stored with the retrieval.
    */
   sourceRegions?: SourceRegion[];
   /** The passage the model read, quoted on the source card. */
