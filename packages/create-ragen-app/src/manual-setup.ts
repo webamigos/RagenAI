@@ -40,6 +40,7 @@ function providerSection(choice: LlmProviderChoice): string[] {
     `    provider: ${config.gatewayProvider}`,
     ...connectionLine,
     `    model: ${config.upstreamModel}`,
+    ...(config.structuredOutputs ? ['    structuredOutputs: true'] : []),
   ];
 
   if (config.embeddings) {

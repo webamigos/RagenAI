@@ -21,6 +21,13 @@ export interface RouteTableEntry {
    * reaches the wrong upstream.
    */
   connection?: string;
+  /**
+   * The chat route's upstream accepts a JSON Schema response format. Without
+   * it the gateway sends no schema, and structured calls — Brain extraction,
+   * RAG scoring — get a shape the model guessed. See the gateway's
+   * `Route.structuredOutputs`.
+   */
+  structuredOutputs?: boolean;
 }
 
 /**
@@ -42,10 +49,11 @@ export interface RouteTableEntry {
 export function renderRouteTable(entries: readonly RouteTableEntry[]): string {
   const routes = entries
     .map(
-      ({ modelName, provider, model, connection }) =>
+      ({ modelName, provider, model, connection, structuredOutputs }) =>
         `  ${modelName}:\n    provider: ${provider}\n` +
         (connection ? `    connection: ${connection}\n` : '') +
-        `    model: ${model}\n`,
+        `    model: ${model}\n` +
+        (structuredOutputs ? `    structuredOutputs: true\n` : ''),
     )
     .join('');
 

@@ -182,6 +182,15 @@ archive is the blog.
   way: with the apps running in containers (`ragen:up:everything`), S3 storage
   could not work at all — the containers were never given the S3 settings.
 
+### Thread: Ragen Brain on any OpenAI-compatible model
+
+- `[brief]` **Brain extraction works on Mistral (Scaleway).** Every document
+  failed with "Nie udało się przetworzyć dokumentu": the model was never sent
+  the answer's schema and guessed its own field names. A route can now say its
+  upstream supports structured outputs (`structuredOutputs: true` in
+  `routes.yaml`); the shipped Mistral route and the installer's Scaleway
+  option both do. Failed findings can be retried with "Ponów" once this is deployed.
+
 ### Thread: a bug hunt through the panel
 
 - `[brief]` **A wrong link no longer takes the whole app down.** Opening a

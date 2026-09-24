@@ -52,6 +52,19 @@ export type Route = {
    * installation it replaces.
    */
   readonly location?: string;
+  /**
+   * `openai-compatible` only: the upstream accepts a JSON Schema as the
+   * response format (`response_format: { type: "json_schema" }`).
+   *
+   * Off by default, because the AI SDK cannot ask and an endpoint that does
+   * not understand the field may reject the call. But with it off, the SDK
+   * drops the schema and sends plain JSON mode — it only warns — and the
+   * model guesses the shape. Mistral on Scaleway did exactly that: it wrote
+   * `source`/`target` for `from`/`to`, left out `title` and `entityKey`, and
+   * every Brain extraction on the demo failed validation. Turn it on for a
+   * route whose upstream supports structured outputs.
+   */
+  readonly structuredOutputs?: boolean;
 };
 
 export type RouteTable = Readonly<Record<string, Route>>;
