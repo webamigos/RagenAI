@@ -339,6 +339,11 @@ export class ProjectsService {
         grants.filter((g) => g.permission === 'full').map((g) => g.projectId),
       );
 
+      // The organization's main assistant, which the grid hides. Said here
+      // rather than left to the client: the Redux field the grid filtered on
+      // was never set by anything, so the default showed as an extra card.
+      const defaultProjectId = await this.getDefaultProjectId(organizationId);
+
       const projects = await this.prisma.client.project.findMany({
         where: {
           organizationId,
@@ -380,6 +385,7 @@ export class ProjectsService {
       // threads they created.
       return projects.map((project) => ({
         ...project,
+        isDefault: project.id === defaultProjectId,
         isOwned: project.ownerId === userId,
         isShared: project.ownerId !== userId,
         createdAt: project.createdAt.toISOString(),

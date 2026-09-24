@@ -15,6 +15,15 @@ export const TEST_MEMBER_ID = 'e2e-test-member-000-0000-0001';
 export const TEST_ACCOUNT_ID = 'e2e-test-account-00-0000-0001';
 export const TEST_PROJECT_TITLE = 'E2E Test Project';
 export const TEST_PROJECT_ID = 'e2e00000-0000-0000-0000-00e2e0000001';
+/**
+ * The organization's default project — its oldest, as the signup hook makes
+ * it for every real organization. The assistants grid hides it, so the test
+ * project has to be a *different* one: while it was the org's only project it
+ * was the default too, and hiding the default hid the project every spec
+ * clicks.
+ */
+export const TEST_DEFAULT_PROJECT_ID = 'e2e00000-0000-0000-0000-00e2e0000000';
+export const TEST_DEFAULT_PROJECT_TITLE = 'Default Assistant';
 
 export const TEST_THREAD_ID = 'e2e00000-0000-0000-0000-00e2e0000010';
 export const TEST_THREAD_TITLE = 'E2E Seeded Thread';

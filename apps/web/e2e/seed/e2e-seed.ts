@@ -22,6 +22,8 @@ import {
   TEST_ACCOUNT_ID,
   TEST_PROJECT_TITLE,
   TEST_PROJECT_ID,
+  TEST_DEFAULT_PROJECT_ID,
+  TEST_DEFAULT_PROJECT_TITLE,
   TEST_THREAD_ID,
   TEST_THREAD_TITLE,
   TEST_MESSAGE_USER_ID,
@@ -311,13 +313,29 @@ async function seed() {
   });
   console.log('Created Trial subscription');
 
-  // 8. Create project
+  // 8. Create projects. First the default — the organization's oldest
+  // project, which the signup hook creates for every real organization and
+  // the assistants grid hides — then the test project the specs open. The
+  // seeded thread and documents stay in the test project: the sidebar lists a
+  // user's threads whatever their project, and the project specs assert on
+  // what the test project holds.
+  const seededAt = Date.now();
+  await prisma.project.create({
+    data: {
+      id: TEST_DEFAULT_PROJECT_ID,
+      title: TEST_DEFAULT_PROJECT_TITLE,
+      organizationId: TEST_ORG_ID,
+      ownerId: TEST_USER_ID,
+      createdAt: new Date(seededAt - 24 * 60 * 60 * 1000),
+    },
+  });
   await prisma.project.create({
     data: {
       id: TEST_PROJECT_ID,
       title: TEST_PROJECT_TITLE,
       organizationId: TEST_ORG_ID,
       ownerId: TEST_USER_ID,
+      createdAt: new Date(seededAt),
     },
   });
   console.log(`Created project: ${TEST_PROJECT_TITLE}`);
