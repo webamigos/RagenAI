@@ -526,4 +526,639 @@ async function main(): Promise<void> {
   }
 }
 
-await main();
+// ---------------------------------------------------------------------------
+// Demo mode: marketing screenshots from the Nordwind Logistics seed
+// ---------------------------------------------------------------------------
+//
+//   npx tsx scripts/screenshots/capture.mts demo --locale pl [--out <dir>] [shot...]
+//   npx tsx scripts/screenshots/capture.mts demo --locale en [--out <dir>] [shot...]
+//   npx tsx scripts/screenshots/capture.mts demo-admin [--out <dir>] [shot...]
+//
+// The documentation shots above are clipped to `<main>` and sized to their
+// content. These are for the marketing site, so they are the opposite: the
+// whole window, sidebar included, at a fixed viewport, captured at
+// deviceScaleFactor 2 and then resized to an exact target in pixels with
+// sharp. Each shot is written twice — `<name>.png` (lossless, at the target
+// size) and `<name>.webp` (quality 82) — into `<out>/<locale>/`.
+//
+// ## What it runs against
+//
+// The `ragen_demo` database, seeded by `scripts/demo/seed-nordwind.ts` (read
+// `scripts/demo/README.md` first). Production builds, not dev servers:
+//
+//   DATABASE_URL=…/ragen_demo DATABASE_DIRECT_URL=…/ragen_demo \
+//     next start --port 3000                       # apps/web
+//   DATABASE_URL=…/ragen_demo DATABASE_DIRECT_URL=…/ragen_demo PORT=3001 \
+//     node apps/api/dist/main.js                    # the thread sidebar and analytics
+//   ADMIN_TRUSTED_ORIGINS=http://localhost:3200 BETTER_AUTH_URL=http://localhost:3200 \
+//     DATABASE_URL=…/ragen_demo next start --port 3200   # apps/admin
+//
+// apps/api must be given `ragen_demo` explicitly: started bare it falls
+// through to the root `.env.local` and answers from the development database
+// (see `.claude/skills/ragen-e2e-triage/SKILL.md`).
+//
+// ## Credentials
+//
+// `SCREENSHOT_EMAIL` / `SCREENSHOT_PASSWORD`, as for the documentation shots.
+// Unset, each locale signs in as its organization's owner — Anna, who owns
+// every showcase thread — with the password the seed gives every account.
+// These are fixtures committed in `scripts/demo/README.md`, not secrets.
+//
+// ## Ids
+//
+// The seed derives every id from a stable key (`stableUuid`), so a thread, a
+// Brain page or a document version keeps its URL across re-seeds. That is
+// what makes it safe to name them here. If a re-seed ever changes one, the
+// shot fails on its `requires` text instead of photographing the wrong page.
+
+const DEMO_PASSWORD = 'NordwindDemo2026!';
+
+type DemoLocale = 'pl' | 'en';
+
+/** Stable seed ids, per locale. See "Ids" above. */
+const DEMO_IDS: Record<
+  DemoLocale,
+  {
+    leaveThread: string;
+    supportThread: string;
+    salesAssistant: string;
+    hrFolder: string;
+    remoteWorkDoc: string;
+    remoteWorkV1: string;
+    remoteWorkV2: string;
+    annualLeavePage: string;
+  }
+> = {
+  pl: {
+    leaveThread: 'f8e09b91-c34c-43c2-ae12-631deb68b6b8',
+    supportThread: 'c1b689ba-0415-4f05-ae55-aee600933e1a',
+    salesAssistant: '84895fda-58d5-4f81-9990-f09a844bb37b',
+    hrFolder: '4785e839-b212-4a02-ba49-f4a00799309c',
+    remoteWorkDoc: '3f22f6dd-8d38-4e60-ab0a-1e6fceb2ea37',
+    remoteWorkV1: '344c0281-5c63-40ab-9a0c-bab90b9d9ace',
+    remoteWorkV2: '977d88b0-f86c-4666-b7f4-8dde151dd8cc',
+    annualLeavePage: 'ca0cbd71-d8a7-4845-a737-baa00de7a3ce',
+  },
+  en: {
+    leaveThread: '3c48d0fa-a91a-42e9-8fdb-7c6861923a4a',
+    supportThread: 'ebb30d12-2c2d-46e6-92fb-2efb1614ff65',
+    salesAssistant: '24d35460-8400-4a4e-ad1b-c3a17d7ec46a',
+    hrFolder: 'bd9c34d6-3459-4376-abd5-b9ff52106b58',
+    remoteWorkDoc: '71ad4c58-c1c7-4b74-b4c1-dced98464f90',
+    remoteWorkV1: 'b54da094-c68b-4eab-a5f3-33d1aac595e0',
+    remoteWorkV2: '2c993b37-a6fe-43d0-961d-75825ba7c254',
+    annualLeavePage: 'bc13dcca-2f80-4ef7-9b7a-340ffdaae24d',
+  },
+};
+
+/** UI strings the shots click or wait for, in each locale. */
+const DEMO_TEXT: Record<
+  DemoLocale,
+  {
+    sources: string;
+    instructions: string;
+    extract: string;
+    brainPage: string;
+    payroll: string;
+    staged: string;
+    analytics: string;
+    findings: string;
+  }
+> = {
+  pl: {
+    sources: 'Źródła',
+    instructions: 'Instrukcje',
+    extract: 'Wyodrębnij z dokumentów',
+    brainPage: 'Strona Brain',
+    payroll: 'Płace',
+    staged: 'Instrukcja_ADR_projekt.docx',
+    analytics: 'Analityka wiedzy',
+    findings: 'Sprzeczność',
+  },
+  en: {
+    sources: 'Sources',
+    instructions: 'Instructions',
+    extract: 'Extract from documents',
+    brainPage: 'Brain page',
+    payroll: 'Payroll',
+    staged: 'ADR_Dangerous_Goods_Draft.docx',
+    analytics: 'Knowledge analytics',
+    findings: 'Contradiction',
+  },
+};
+
+type Size = { width: number; height: number };
+
+type DemoShot = {
+  name: string;
+  path: (locale: DemoLocale) => string;
+  /** CSS viewport. */
+  viewport: Size;
+  /** Final pixels, after the deviceScaleFactor-2 capture is resized. */
+  target: Size;
+  /** A phone: touch, mobile user agent. */
+  mobile?: boolean;
+  /** Text that must be visible before the shutter opens. */
+  requires?: (locale: DemoLocale) => string;
+  prepare?: (page: Page, locale: DemoLocale) => Promise<void>;
+};
+
+const DESKTOP = { width: 1440, height: 960 };
+const DESKTOP_WIDE = { width: 1440, height: 900 };
+const TARGET = { width: 2000, height: 1334 };
+const TARGET_WIDE = { width: 2400, height: 1500 };
+
+/**
+ * The sources rail follows the newest answer and remembers whether it was
+ * open, so a fresh browser context can find it either way. Open it.
+ */
+async function openSourcesRail(page: Page, locale: DemoLocale): Promise<void> {
+  const rail = page.locator(`aside[aria-label="${DEMO_TEXT[locale].sources}"]`);
+  if (!(await rail.isVisible().catch(() => false))) {
+    await page.locator('button[aria-pressed]').first().click();
+  }
+  await rail.waitFor({ state: 'visible', timeout: 15_000 });
+}
+
+async function closeSourcesRail(page: Page, locale: DemoLocale): Promise<void> {
+  const rail = page.locator(`aside[aria-label="${DEMO_TEXT[locale].sources}"]`);
+  if (await rail.isVisible().catch(() => false)) {
+    await rail.locator('button').first().click();
+    await rail.waitFor({ state: 'hidden', timeout: 5_000 });
+  }
+}
+
+/**
+ * Selects a row in the knowledge base table by its file name. The checkbox is
+ * a Radix `button[role=checkbox]` in some builds and a native input in others.
+ */
+async function tickRow(page: Page, fileName: string): Promise<void> {
+  await page
+    .locator('tr', { hasText: fileName })
+    .first()
+    .locator('button[role=checkbox], input[type=checkbox]')
+    .first()
+    .click();
+}
+
+/**
+ * Scrolls the conversation so the element holding `text` sits at `ratio` of
+ * its scroll container's height. Not `scrollIntoView`: that scrolls every
+ * ancestor, the document included, and pushed the app's header off the top
+ * of the frame.
+ */
+async function scrollIntoViewWithin(
+  page: Page,
+  text: string,
+  ratio: number,
+): Promise<void> {
+  await page
+    .getByText(text, { exact: false })
+    .first()
+    .evaluate((el, r) => {
+      let box: HTMLElement | null = el.parentElement;
+      while (box) {
+        const style = getComputedStyle(box);
+        if (/(auto|scroll)/.test(style.overflowY) && box.scrollHeight > box.clientHeight) {
+          break;
+        }
+        box = box.parentElement;
+      }
+      if (!box) {
+        return;
+      }
+      const offset =
+        el.getBoundingClientRect().top - box.getBoundingClientRect().top;
+      box.scrollTop += offset - box.clientHeight * r;
+      window.scrollTo(0, 0);
+    }, ratio);
+}
+
+const DEMO_SHOTS: DemoShot[] = [
+  {
+    name: 'hero-chat-citations',
+    path: (l) => `/${l}/chats/${DEMO_IDS[l].leaveThread}`,
+    viewport: DESKTOP_WIDE,
+    target: TARGET_WIDE,
+    requires: (l) => DEMO_TEXT[l].brainPage,
+    prepare: openSourcesRail,
+  },
+  {
+    // No showcase thread carries a connector answer — connectors are seeded
+    // without tokens — so this is the support thread: three citations, one of
+    // them a web page and one a Brain page.
+    name: 'assistant-chat',
+    path: (l) => `/${l}/chats/${DEMO_IDS[l].supportThread}`,
+    viewport: DESKTOP,
+    target: TARGET,
+    requires: (l) => DEMO_TEXT[l].brainPage,
+    prepare: openSourcesRail,
+  },
+  {
+    name: 'assistants',
+    path: (l) => `/${l}/assistants`,
+    viewport: DESKTOP,
+    target: TARGET,
+  },
+  {
+    // There is no sharing dialog for a folder: `ShareDialog` accepts
+    // `resourceType: 'folder'` but nothing opens it, and a folder's team is
+    // chosen only when it is created. What the product shows of the HR ▸
+    // Payroll restriction is the team badge on the folder row, so that is
+    // the shot.
+    name: 'kb-permissions',
+    path: (l) =>
+      `/${l}/knowledge/documents-list?folderId=${DEMO_IDS[l].hrFolder}&viewMode=all&page=1`,
+    viewport: DESKTOP,
+    target: TARGET,
+    requires: (l) => DEMO_TEXT[l].payroll,
+  },
+  {
+    name: 'assistant-settings',
+    path: (l) => `/${l}/projects/${DEMO_IDS[l].salesAssistant}`,
+    viewport: DESKTOP,
+    target: TARGET,
+    prepare: async (page, l) => {
+      await page.locator(`[aria-label="${DEMO_TEXT[l].instructions}"]`).first().click();
+      const dialog = page.getByRole('dialog');
+      await dialog.waitFor({ state: 'visible' });
+      // The instruction loads after the dialog opens.
+      await dialog
+        .locator('textarea')
+        .filter({ hasText: /\S/ })
+        .or(dialog.locator('textarea:not(:placeholder-shown)'))
+        .first()
+        .waitFor({ state: 'visible', timeout: 10_000 });
+    },
+  },
+  {
+    name: 'kb-documents',
+    path: (l) => `/${l}/knowledge/documents-list`,
+    viewport: DESKTOP,
+    target: TARGET,
+  },
+  {
+    // The optimize tab has nothing to show until a model has produced
+    // suggestions, and the seed records none; the version diff is the part of
+    // document versioning that the seeded data does carry.
+    name: 'kb-optimize',
+    path: (l) =>
+      `/${l}/knowledge/documents/${DEMO_IDS[l].remoteWorkDoc}/diff?v1=${DEMO_IDS[l].remoteWorkV1}&v2=${DEMO_IDS[l].remoteWorkV2}`,
+    viewport: DESKTOP,
+    target: TARGET,
+  },
+  {
+    name: 'kb-analytics',
+    path: (l) => `/${l}/settings/knowledge-analytics`,
+    viewport: DESKTOP,
+    target: TARGET,
+    requires: (l) => DEMO_TEXT[l].analytics,
+    prepare: async (page) => {
+      // Recharts draws after layout; the line path is what matters.
+      await page
+        .locator('.recharts-area-area, .recharts-line-curve, .recharts-surface')
+        .first()
+        .waitFor({ state: 'visible', timeout: 15_000 });
+    },
+  },
+  {
+    name: 'mobile-chat',
+    path: (l) => `/${l}/chats/${DEMO_IDS[l].leaveThread}`,
+    viewport: { width: 390, height: 844 },
+    target: { width: 780, height: 1688 },
+    mobile: true,
+    prepare: async (page, l) => {
+      // Bring the answer's end and its sources into view: the first screen
+      // is the question and the first paragraph, which says less.
+      await scrollIntoViewWithin(page, DEMO_TEXT[l].brainPage, 0.62);
+    },
+  },
+  {
+    name: 'brain-pages',
+    path: (l) => `/${l}/brain`,
+    viewport: DESKTOP_WIDE,
+    target: TARGET_WIDE,
+  },
+  {
+    name: 'brain-page',
+    path: (l) => `/${l}/brain/pages/${DEMO_IDS[l].annualLeavePage}`,
+    viewport: DESKTOP,
+    target: TARGET,
+  },
+  {
+    name: 'brain-findings',
+    path: (l) => `/${l}/brain/findings`,
+    viewport: DESKTOP,
+    target: TARGET,
+    requires: (l) => DEMO_TEXT[l].findings,
+  },
+  {
+    // ForceAtlas2 runs synchronously before Sigma's first frame, so once the
+    // canvas has painted the layout is final; the wait is for WebGL.
+    name: 'brain-graph',
+    path: (l) => `/${l}/brain/graph`,
+    viewport: DESKTOP_WIDE,
+    target: TARGET_WIDE,
+    prepare: async (page) => {
+      await page.getByTestId('brain-graph').locator('canvas').first().waitFor();
+      await page.waitForTimeout(2_000);
+    },
+  },
+  {
+    // The same graph around one page, with its card open: every name legible,
+    // which the whole-graph view at 46 pages is not.
+    name: 'brain-graph-focus',
+    path: (l) => `/${l}/brain/graph?focus=${DEMO_IDS[l].annualLeavePage}&hops=2`,
+    viewport: DESKTOP_WIDE,
+    target: TARGET_WIDE,
+    prepare: async (page) => {
+      await page.getByTestId('brain-graph').locator('canvas').first().waitFor();
+      await page.getByTestId('brain-graph-card').waitFor();
+      await page.waitForTimeout(2_000);
+    },
+  },
+  {
+    name: 'brain-documents',
+    path: (l) => `/${l}/brain/documents`,
+    viewport: DESKTOP,
+    target: TARGET,
+    requires: (l) => DEMO_TEXT[l].staged,
+  },
+  {
+    name: 'brain-extract',
+    path: (l) => `/${l}/brain`,
+    viewport: DESKTOP,
+    target: TARGET,
+    prepare: async (page, l) => {
+      await page.getByRole('button', { name: DEMO_TEXT[l].extract }).click();
+      const dialog = page.getByRole('dialog');
+      await dialog.waitFor({ state: 'visible' });
+      // The dialog pre-ticks the documents no page cites yet; add two that
+      // are already extracted, so it reads as a choice rather than a default.
+      // Positions differ per locale (the list is alphabetical), so pick by
+      // state rather than by index: the 1st and 8th boxes still unticked.
+      const unticked = dialog.locator(
+        'button[role=checkbox][aria-checked=false], input[type=checkbox]:not(:checked)',
+      );
+      await unticked.nth(7).click();
+      await unticked.nth(0).click();
+    },
+  },
+  {
+    name: 'chat-brain-citation',
+    path: (l) => `/${l}/chats/${DEMO_IDS[l].leaveThread}`,
+    viewport: DESKTOP,
+    target: TARGET,
+    requires: (l) => DEMO_TEXT[l].brainPage,
+    prepare: async (page, l) => {
+      await closeSourcesRail(page, l);
+      await scrollIntoViewWithin(page, DEMO_TEXT[l].brainPage, 0.55);
+    },
+  },
+  {
+    name: 'kb-staged',
+    path: (l) => `/${l}/knowledge/documents-list`,
+    viewport: DESKTOP,
+    target: TARGET,
+    requires: (l) => DEMO_TEXT[l].staged,
+    prepare: (page, l) => tickRow(page, DEMO_TEXT[l].staged),
+  },
+];
+
+const ADMIN_VIEWPORT = { width: 1600, height: 1000 };
+
+/** apps/admin is English-only: captured once, copied into every locale. */
+const DEMO_ADMIN_SHOTS: DemoShot[] = [
+  { name: 'admin-usage', path: () => '/ai-usage' },
+  { name: 'admin-models', path: () => '/models' },
+  { name: 'admin-users', path: () => '/users' },
+  { name: 'admin-limits', path: () => '/limits' },
+  { name: 'admin-guardrails', path: () => '/guardrails' },
+  { name: 'admin-audit', path: () => '/activity-log' },
+].map((shot) => ({ ...shot, viewport: ADMIN_VIEWPORT, target: TARGET_WIDE }));
+
+/**
+ * Hidden on every demo shot. None of it is product: Next's dev indicator, the
+ * toast region (a "signed in" toast would otherwise sit in the corner of the
+ * first shot), and the text caret in whichever field has focus.
+ */
+const DEMO_HIDE = `
+  nextjs-portal,
+  [data-sonner-toaster],
+  section[aria-label^="Notifications"] { display: none !important; }
+  * { caret-color: transparent !important; }
+`;
+
+function flag(name: string): string | undefined {
+  const index = process.argv.indexOf(`--${name}`);
+  return index > 0 ? process.argv[index + 1] : undefined;
+}
+
+/** Positional shot names after the mode, with `--flag value` pairs removed. */
+function demoShotNames(): string[] {
+  const names: string[] = [];
+  for (let i = 3; i < process.argv.length; i += 1) {
+    if (process.argv[i].startsWith('--')) {
+      i += 1;
+      continue;
+    }
+    names.push(process.argv[i]);
+  }
+  return names;
+}
+
+function pickDemoShots(all: DemoShot[]): DemoShot[] {
+  const names = demoShotNames();
+  if (names.length === 0) {
+    return all;
+  }
+  const unknown = names.filter((n) => !all.some((s) => s.name === n));
+  if (unknown.length > 0) {
+    throw new Error(
+      `Unknown demo shot(s): ${unknown.join(', ')}. Known: ${all.map((s) => s.name).join(', ')}.`,
+    );
+  }
+  return all.filter((s) => names.includes(s.name));
+}
+
+/** Waits for the page to stop moving: network, skeletons, spinners, fonts. */
+async function settle(page: Page): Promise<void> {
+  await page.waitForLoadState('networkidle', { timeout: 60_000 }).catch(() => {});
+  await page
+    .waitForFunction(
+      () =>
+        [...document.querySelectorAll('.animate-pulse, .animate-spin, [aria-busy="true"]')].every(
+          (el) => {
+            const box = el.getBoundingClientRect();
+            return box.width === 0 || box.height === 0;
+          },
+        ),
+      undefined,
+      { timeout: 20_000 },
+    )
+    .catch(() => {
+      console.warn('    (a skeleton or spinner was still visible after 20s)');
+    });
+  await page.evaluate(() => document.fonts.ready);
+}
+
+async function writeDemoImage(
+  png: Buffer,
+  target: Size,
+  dirs: string[],
+  name: string,
+): Promise<void> {
+  const { default: sharp } = await import('sharp');
+  const resized = sharp(png).resize(target.width, target.height, {
+    fit: 'cover',
+    position: 'top',
+    kernel: 'lanczos3',
+  });
+  const master = await resized.clone().png({ compressionLevel: 9 }).toBuffer();
+  const webp = await sharp(master).webp({ quality: 82 }).toBuffer();
+  const { writeFileSync } = await import('node:fs');
+  for (const dir of dirs) {
+    mkdirSync(dir, { recursive: true });
+    writeFileSync(join(dir, `${name}.png`), master);
+    writeFileSync(join(dir, `${name}.webp`), webp);
+  }
+}
+
+async function demoMain(): Promise<void> {
+  const admin = process.argv[2] === 'demo-admin';
+  const locale = (flag('locale') ?? 'pl') as DemoLocale;
+  if (!admin && locale !== 'pl' && locale !== 'en') {
+    throw new Error(`--locale must be pl or en, not "${locale}".`);
+  }
+  const out = flag('out') ?? join(import.meta.dirname, '..', '..', 'screens-out');
+  const shots = pickDemoShots(admin ? DEMO_ADMIN_SHOTS : DEMO_SHOTS);
+
+  const baseUrl = admin
+    ? (process.env.ADMIN_URL ?? 'http://localhost:3200')
+    : (process.env.WEB_URL ?? 'http://localhost:3000');
+  const email =
+    process.env.SCREENSHOT_EMAIL ??
+    (admin
+      ? 'platform-admin@nordwind-logistics.example'
+      : locale === 'pl'
+        ? 'anna.kowalska@nordwind-logistics.example'
+        : 'anna.walker@nordwind-logistics.example');
+  const password = process.env.SCREENSHOT_PASSWORD ?? DEMO_PASSWORD;
+  const dirs = admin ? [join(out, 'en'), join(out, 'pl')] : [join(out, locale)];
+
+  const browser = await chromium.launch();
+  const failed: string[] = [];
+  try {
+    // One signed-in session, reused by the phone context through its cookies.
+    const base = await browser.newContext({
+      viewport: DESKTOP,
+      deviceScaleFactor: 2,
+      colorScheme: 'light',
+      locale: locale === 'pl' && !admin ? 'pl-PL' : 'en-GB',
+      timezoneId: 'Europe/Warsaw',
+    });
+    const signInPage = await base.newPage();
+    await signInPage.goto(`${baseUrl}${admin ? '/login' : `/${locale}/sign-in`}`, {
+      waitUntil: 'domcontentloaded',
+    });
+    await signInPage.locator('input[type="email"]').fill(email);
+    await signInPage.locator('input[type="password"]').fill(password);
+    await signInPage.locator('button[type="submit"]').click();
+    await signInPage.waitForURL(
+      (url) => !url.pathname.includes('sign-in') && !url.pathname.startsWith('/login'),
+      { timeout: 120_000 },
+    );
+    const storageState = await base.storageState();
+    await signInPage.close();
+    console.log(`[demo${admin ? '-admin' : ` ${locale}`}] signed in as ${email}. Writing to ${dirs.join(', ')}:`);
+
+    for (const shot of shots) {
+      const context = shot.mobile
+        ? await browser.newContext({
+            viewport: shot.viewport,
+            deviceScaleFactor: 2,
+            isMobile: true,
+            hasTouch: true,
+            colorScheme: 'light',
+            locale: locale === 'pl' ? 'pl-PL' : 'en-GB',
+            timezoneId: 'Europe/Warsaw',
+            storageState,
+          })
+        : base;
+      const page = await context.newPage();
+      await page.setViewportSize(shot.viewport);
+      try {
+        await page.goto(`${baseUrl}${shot.path(locale)}`, {
+          waitUntil: 'networkidle',
+          timeout: 120_000,
+        });
+        await page.addStyleTag({ content: DEMO_HIDE });
+        await settle(page);
+
+        const failure = await page
+          .getByText(/failed to load|something went wrong|nie udało się załadować|coś poszło nie tak/i)
+          .first()
+          .isVisible()
+          .catch(() => false);
+        if (failure) {
+          throw new Error('page rendered an error state — is apps/api up, on ragen_demo?');
+        }
+        if (shot.requires) {
+          const text = shot.requires(locale);
+          await page
+            .getByText(text, { exact: false })
+            .first()
+            .waitFor({ state: 'visible', timeout: 30_000 })
+            .catch(() => {
+              throw new Error(`"${text}" never appeared — wrong org, or a re-seed moved an id?`);
+            });
+        }
+        // The sidebar's recent threads come from apps/api. A throttled
+        // (429) or misconfigured apps/api renders them as an empty state,
+        // which photographs as an account with no history.
+        const noThreads = await page
+          .getByText(/^(Brak wątków|No threads)$/)
+          .first()
+          .isVisible()
+          .catch(() => false);
+        if (noThreads) {
+          throw new Error(
+            'the sidebar rendered no threads — apps/api throttled (start it with TARGET_ENV=test) or on the wrong database',
+          );
+        }
+        await shot.prepare?.(page, locale);
+        await settle(page);
+        // Nothing hovered, nothing focused: a hover card or a focus ring is a
+        // state of this run, not of the product.
+        await page.mouse.move(0, shot.viewport.height - 1);
+        await page.waitForTimeout(700);
+
+        const png = await page.screenshot({ type: 'png' });
+        await writeDemoImage(png, shot.target, dirs, shot.name);
+        console.log(`  ${shot.name} ${shot.target.width}×${shot.target.height}`);
+      } catch (error) {
+        failed.push(shot.name);
+        const reason = error instanceof Error ? error.message : String(error);
+        console.warn(`  ${shot.name} SKIPPED: ${reason.split('\n')[0]}`);
+      } finally {
+        await page.close();
+        if (context !== base) {
+          await context.close();
+        }
+      }
+    }
+    await base.close();
+  } finally {
+    await browser.close();
+  }
+  if (failed.length > 0) {
+    console.warn(`${failed.length} not captured: ${failed.join(', ')}`);
+    process.exitCode = 1;
+  }
+}
+
+if (process.argv[2] === 'demo' || process.argv[2] === 'demo-admin') {
+  await demoMain();
+} else {
+  await main();
+}
