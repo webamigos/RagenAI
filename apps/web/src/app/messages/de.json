@@ -2684,6 +2684,12 @@
       }
     },
     "graph": {
+      "search-placeholder": "Seite finden…",
+      "search-empty": "Keine passende Seite.",
+      "zoom-in": "Vergrößern",
+      "zoom-out": "Verkleinern",
+      "zoom-fit": "Ganzen Graphen zeigen",
+      "show-all-groups": "Alle Gruppen zeigen",
       "title": "Wissensgraph — Ragen Brain",
       "empty-title": "Noch keine Seiten zum Zeichnen",
       "empty-description": "Der Graph erscheint, sobald Brain Seiten aus Ihren Dokumenten extrahiert hat.",

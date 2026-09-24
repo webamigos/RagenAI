@@ -2684,6 +2684,12 @@
       }
     },
     "graph": {
+      "search-placeholder": "Znajdź stronę…",
+      "search-empty": "Żadna strona nie pasuje.",
+      "zoom-in": "Przybliż",
+      "zoom-out": "Oddal",
+      "zoom-fit": "Pokaż cały graf",
+      "show-all-groups": "Pokaż wszystkie grupy",
       "title": "Graf wiedzy — Ragen Brain",
       "empty-title": "Na razie nie ma czego narysować",
       "empty-description": "Graf pojawi się, gdy Brain wyodrębni strony z Twoich dokumentów.",

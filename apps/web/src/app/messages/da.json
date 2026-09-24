@@ -2684,6 +2684,12 @@
       }
     },
     "graph": {
+      "search-placeholder": "Find en side…",
+      "search-empty": "Ingen side matcher.",
+      "zoom-in": "Zoom ind",
+      "zoom-out": "Zoom ud",
+      "zoom-fit": "Vis hele grafen",
+      "show-all-groups": "Vis alle grupper",
       "title": "Vidensgraf — Ragen Brain",
       "empty-title": "Ingen sider at tegne endnu",
       "empty-description": "Grafen vises, når Brain har udtrukket sider fra dine dokumenter.",

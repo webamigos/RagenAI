@@ -2684,6 +2684,12 @@
       }
     },
     "graph": {
+      "search-placeholder": "Etsi sivu…",
+      "search-empty": "Ei osuvia sivuja.",
+      "zoom-in": "Lähennä",
+      "zoom-out": "Loitonna",
+      "zoom-fit": "Näytä koko graafi",
+      "show-all-groups": "Näytä kaikki ryhmät",
       "title": "Tietograafi — Ragen Brain",
       "empty-title": "Ei vielä piirrettäviä sivuja",
       "empty-description": "Graafi näkyy, kun Brain on poiminut sivuja asiakirjoistasi.",

@@ -2684,6 +2684,12 @@
       }
     },
     "graph": {
+      "search-placeholder": "Nájsť stránku…",
+      "search-empty": "Žiadna stránka nevyhovuje.",
+      "zoom-in": "Priblížiť",
+      "zoom-out": "Oddialiť",
+      "zoom-fit": "Zobraziť celý graf",
+      "show-all-groups": "Zobraziť všetky skupiny",
       "title": "Graf znalostí — Ragen Brain",
       "empty-title": "Zatiaľ nie je čo kresliť",
       "empty-description": "Graf sa objaví, keď Brain extrahuje stránky z vašich dokumentov.",

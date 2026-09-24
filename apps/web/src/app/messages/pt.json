@@ -2684,6 +2684,12 @@
       }
     },
     "graph": {
+      "search-placeholder": "Encontrar uma página…",
+      "search-empty": "Nenhuma página corresponde.",
+      "zoom-in": "Aproximar",
+      "zoom-out": "Afastar",
+      "zoom-fit": "Mostrar o grafo inteiro",
+      "show-all-groups": "Mostrar todos os grupos",
       "title": "Grafo de conhecimento — Ragen Brain",
       "empty-title": "Ainda não há páginas para desenhar",
       "empty-description": "O grafo aparece quando o Brain tiver extraído páginas dos seus documentos.",
