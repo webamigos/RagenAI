@@ -1478,6 +1478,8 @@
     "close": "Sulje",
     "prev-document": "Edellinen asiakirja",
     "next-document": "Seuraava asiakirja",
+    "expand-width": "Koko leveys",
+    "collapse-width": "Normaali leveys",
     "prev-page": "Edellinen sivu",
     "next-page": "Seuraava sivu",
     "metadata-title": "Tiedot",

@@ -164,6 +164,21 @@ describe('CitedSourcePreview', () => {
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
+  it('widens to the whole window and back', async () => {
+    window.localStorage.removeItem('ragen.preview.expanded');
+    show(source());
+    const dialog = screen.getByRole('dialog');
+    expect(dialog).toHaveAttribute('data-expanded', 'false');
+
+    await userEvent.click(screen.getByRole('button', { name: 'Full width' }));
+    expect(dialog).toHaveAttribute('data-expanded', 'true');
+    expect(dialog.className).toContain('w-screen');
+
+    await userEvent.click(screen.getByRole('button', { name: 'Normal width' }));
+    expect(dialog).toHaveAttribute('data-expanded', 'false');
+    window.localStorage.removeItem('ragen.preview.expanded');
+  });
+
   it('closes on the overlay', async () => {
     const onClose = show(source());
 
@@ -263,8 +278,8 @@ describe('CitedSourcePreview — keyboard access', () => {
 
     await userEvent.tab();
 
-    // The close button is the only Tab stop the mocked viewer leaves, so
-    // wrapping lands back on it rather than escaping to the page behind.
+    // The close button is the last Tab stop in the panel, so wrapping lands
+    // back inside it rather than escaping to the page behind.
     expect(dialog.contains(document.activeElement)).toBe(true);
   });
 

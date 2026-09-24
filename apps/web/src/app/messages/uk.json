@@ -1478,6 +1478,8 @@
     "close": "Закрити",
     "prev-document": "Попередній документ",
     "next-document": "Наступний документ",
+    "expand-width": "На всю ширину",
+    "collapse-width": "Звичайна ширина",
     "prev-page": "Попередня сторінка",
     "next-page": "Наступна сторінка",
     "metadata-title": "Деталі",

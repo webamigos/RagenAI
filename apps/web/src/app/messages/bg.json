@@ -1478,6 +1478,8 @@
     "close": "Затвори",
     "prev-document": "Предишен документ",
     "next-document": "Следващ документ",
+    "expand-width": "Пълна ширина",
+    "collapse-width": "Нормална ширина",
     "prev-page": "Предишна страница",
     "next-page": "Следваща страница",
     "metadata-title": "Детайли",

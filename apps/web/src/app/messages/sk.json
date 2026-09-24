@@ -1478,6 +1478,8 @@
     "close": "Zavrieť",
     "prev-document": "Predchádzajúci dokument",
     "next-document": "Ďalší dokument",
+    "expand-width": "Plná šírka",
+    "collapse-width": "Bežná šírka",
     "prev-page": "Predchádzajúca strana",
     "next-page": "Ďalšia strana",
     "metadata-title": "Detaily",

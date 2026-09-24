@@ -1,5 +1,6 @@
 'use client';
 
+import type { ReactNode } from 'react';
 import { useTranslations } from 'next-intl';
 import {
   ChevronLeftIcon,
@@ -17,6 +18,7 @@ type Props = {
   onPrev: () => void;
   onNext: () => void;
   onClose: () => void;
+  widthToggle?: ReactNode;
 };
 
 export function DocumentPreviewHeader({
@@ -27,6 +29,7 @@ export function DocumentPreviewHeader({
   onPrev,
   onNext,
   onClose,
+  widthToggle,
 }: Props) {
   const t = useTranslations('document-preview');
   const icon = getFileIcon(fileType);
@@ -59,6 +62,8 @@ export function DocumentPreviewHeader({
           <ChevronRightIcon className="size-4" />
         </button>
       </div>
+
+      {widthToggle}
 
       <button
         onClick={onClose}
