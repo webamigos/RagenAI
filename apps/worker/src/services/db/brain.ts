@@ -56,7 +56,7 @@ export async function getExtractionSource(fileId: string, orgId: string) {
   // warns on every call and teaches the reader to ignore the guard.
   const file = await getPrisma().userFile.findFirst({
     where: { id: fileId, organizationId: orgId },
-    select: { fileName: true, documentId: true },
+    select: { fileName: true, documentId: true, language: true },
   });
   if (!file?.documentId) {
     return null;
@@ -74,6 +74,8 @@ export async function getExtractionSource(fileId: string, orgId: string) {
   }
   return {
     fileName: file.fileName,
+    /** ISO 639-3, as ingest detected it; null when it could not tell. */
+    language: file.language,
     documentVersionId: version.id,
     text: version.content,
   };

@@ -178,6 +178,7 @@ describe('getExtractionSource', () => {
     prisma.userFile.findFirst.mockResolvedValue({
       fileName: 'a.pdf',
       documentId: 'doc-1',
+      language: 'pol',
     });
     prisma.documentVersion.findFirst.mockResolvedValue({
       id: 'v-1',
@@ -185,6 +186,7 @@ describe('getExtractionSource', () => {
     });
     expect(await getExtractionSource('file-1', 'org-1')).toEqual({
       fileName: 'a.pdf',
+      language: 'pol',
       documentVersionId: 'v-1',
       text: 'text',
     });

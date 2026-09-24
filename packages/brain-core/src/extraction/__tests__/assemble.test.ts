@@ -218,6 +218,49 @@ describe('assembleCandidates', () => {
     expect(pages[0]!.content).toContain('Jak nowa osoba zaczyna pracę.');
   });
 
+  // A short verified quote is widened to its sentence; a long one is kept.
+  it('widens a short quote to its sentence, in the source’s words', () => {
+    const window: ExtractionResult = {
+      entities: [{ key: 'a', title: 'IT', type: 'ENTITY', description: 'd' }],
+      claims: [
+        {
+          entityKey: 'a',
+          statement: 'IT przygotowuje stanowisko.',
+          quote: 'odpowiada dział IT',
+          locator: '§2',
+        },
+      ],
+      relations: [],
+    };
+    const [page] = assembleCandidates(SOURCE, [window]).pages;
+    expect(page!.sources[0]!.quote).toBe(
+      'Za przygotowanie stanowiska odpowiada dział IT, a za plan wdrożenia —\nbezpośredni przełożony.',
+    );
+  });
+
+  it('keeps two facts that one sentence states', () => {
+    const window: ExtractionResult = {
+      entities: [{ key: 'a', title: 'IT', type: 'ENTITY', description: 'd' }],
+      claims: [
+        {
+          entityKey: 'a',
+          statement: 'IT przygotowuje stanowisko.',
+          quote: 'odpowiada dział IT',
+          locator: '',
+        },
+        {
+          entityKey: 'a',
+          statement: 'Plan wdrożenia robi przełożony.',
+          quote: 'bezpośredni przełożony',
+          locator: '',
+        },
+      ],
+      relations: [],
+    };
+    const [page] = assembleCandidates(SOURCE, [window]).pages;
+    expect(page!.sources).toHaveLength(2);
+  });
+
   it('gives a source with no locator a visible placeholder, never an empty span', () => {
     const window: ExtractionResult = {
       entities: [

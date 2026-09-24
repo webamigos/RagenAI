@@ -30,7 +30,7 @@ export {
   type ExtractionResult,
   type ParsedExtraction,
 } from './extraction/schema';
-export { EXTRACTION_SYSTEM_PROMPT } from './extraction/prompt';
+export { EXTRACTION_SYSTEM_PROMPT, languageName } from './extraction/prompt';
 export { QuoteIndex, normalizeForQuoteMatch } from './extraction/verify-quotes';
 export { splitIntoWindows } from './extraction/windows';
 export { quoteHash, sha256, slugify } from './text';

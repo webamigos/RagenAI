@@ -3,9 +3,7 @@ import {
   ExtractionBudget,
   extractDocument,
   type AssembledCandidates,
-  type GenerateStructured,
 } from '@ragenai/brain-core';
-import { generateObject, NoObjectGeneratedError, zodSchema } from 'ai';
 
 import { BRAIN_EXTRACT_MODEL } from '../../consts.js';
 import {
@@ -18,9 +16,7 @@ import { db } from '../../services/db/db.js';
 import { getChatModelForOrg } from '../../services/llm/provider.js';
 import { logger } from '../../services/logger.js';
 import { computeFileAccessPrincipals } from '../db/compute-file-access-principals.js';
-
-/** Output cap per call — also what bounds a run's overshoot of its budget. */
-const MAX_OUTPUT_TOKENS = 8_000;
+import { structuredGenerator } from './structured-generator.js';
 
 export type ExtractDocumentCandidatesResult = {
   status: 'extracted' | 'failed' | 'budget_exhausted';
@@ -80,46 +76,15 @@ export async function extractFile({
     };
   }
 
-  const model = await getChatModelForOrg(orgId, BRAIN_EXTRACT_MODEL);
-  const generate: GenerateStructured = async ({ system, prompt, schema }) => {
-    try {
-      const result = await generateObject({
-        model,
-        schema: zodSchema(schema),
-        system,
-        prompt,
-        maxOutputTokens: MAX_OUTPUT_TOKENS,
-        experimental_telemetry: { isEnabled: true },
-      });
-      return {
-        object: result.object,
-        usage: {
-          inputTokens: result.usage?.inputTokens ?? 0,
-          outputTokens: result.usage?.outputTokens ?? 0,
-        },
-      };
-    } catch (error) {
-      // The SDK refused an answer that did not match the schema. Returned
-      // rather than thrown so the tokens it cost are charged to the budget,
-      // and so the retry is told which fields were wrong; the answer itself
-      // is dropped, since it is the model's rendering of the document.
-      if (NoObjectGeneratedError.isInstance(error)) {
-        return {
-          object: null,
-          usage: {
-            inputTokens: error.usage?.inputTokens ?? 0,
-            outputTokens: error.usage?.outputTokens ?? 0,
-          },
-        };
-      }
-      throw error;
-    }
-  };
+  const generate = structuredGenerator(
+    await getChatModelForOrg(orgId, BRAIN_EXTRACT_MODEL),
+  );
 
   const startedAt = Date.now();
   const outcome = await extractDocument({
     fileName: source.fileName,
     text: source.text,
+    language: source.language,
     generate,
     budget: new ExtractionBudget({ maxDocuments: 1, maxTokens }),
   });

@@ -36,6 +36,11 @@ export type ExtractDocumentInput = {
   budget: ExtractionBudget;
   /** Characters per model call. */
   maxWindowChars?: number;
+  /**
+   * The document's language, ISO 639-3 (`UserFile.language`). Named to the
+   * model when known; see `EXTRACTION_SYSTEM_PROMPT`.
+   */
+  language?: string | null;
 };
 
 export type ExtractDocumentOutcome =
@@ -91,6 +96,7 @@ export async function extractDocument(
       window,
       windowIndex,
       windowCount: windows.length,
+      language: input.language,
     });
 
     let problem: string | null = null;

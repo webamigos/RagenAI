@@ -72,6 +72,19 @@ describe('QuoteIndex', () => {
     ).toBe(true);
   });
 
+  // Docling's markdown bolds figures; a model quoting the sentence does not.
+  it('finds a quote across markdown emphasis', () => {
+    const bold = new QuoteIndex(
+      'The Board approved **"Cockatrice"** at **EUR 2 740 000** for 2026.',
+    );
+    expect(
+      bold.contains(
+        'The Board approved "Cockatrice" at EUR 2 740 000 for 2026.',
+      ),
+    ).toBe(true);
+    expect(bold.contains('approved `Cockatrice`')).toBe(false);
+  });
+
   it('does not find a quote with one word changed', () => {
     expect(index.contains('co najmniej 7 dni przed planowanym urlopem')).toBe(
       false,
