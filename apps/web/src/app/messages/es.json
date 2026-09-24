@@ -2706,6 +2706,14 @@
         "index-unavailable": "No se pudo cambiar el índice: no cambió nada; inténtalo de nuevo.",
         "failed-to-start": "No se pudo iniciar el reprocesamiento: inténtalo de nuevo en un momento."
       }
+    },
+    "publish-all": {
+      "button": "Publicar aprobadas ({count})",
+      "confirm-title": "¿Publicar todas las páginas aprobadas?",
+      "confirm-description": "Las páginas que ya sirven su texto actual no se tocan; las modificadas se vuelven a publicar y las nuevas se publican. Cada publicación queda registrada a tu nombre. Se omiten las páginas sin responsable o abiertas a nadie.",
+      "confirm": "Publicar",
+      "done": "En cola: {queued} · sin cambios: {unchanged} · omitidas: {refused}",
+      "failed": "No se pudo iniciar la publicación: recarga la página e inténtalo de nuevo."
     }
   }
 }

@@ -15,12 +15,14 @@ import type { KnowledgePageStatus } from '@/features/brain/contracts/brain.types
 import { getBrainAccessQuery } from '@/features/brain/services/queries/get-brain-access-query';
 import { getBrainExportSummaryQuery } from '@/features/brain/services/queries/get-brain-export-summary-query';
 import { getKnowledgePagesQuery } from '@/features/brain/services/queries/get-knowledge-pages-query';
+import { getApprovedPageCountQuery } from '@/features/brain/services/queries/get-approved-page-count-query';
 import { listRange, parseListPage } from '@/features/brain/utils/list-page';
 import { Link } from '@/i18n/routing';
 
 import { BrainEmpty } from './components/BrainEmpty';
 import { BrainPager } from './components/BrainPager';
 import { FilterChips } from './components/FilterChips';
+import { PublishAllButton } from './components/PublishAllButton';
 
 export const dynamic = 'force-dynamic';
 
@@ -46,12 +48,14 @@ export default async function BrainPagesPage({ searchParams }: Props) {
     ? (value as KnowledgePageStatus)
     : null;
 
-  const [t, format, { items, total }, exportSummary] = await Promise.all([
-    getTranslations('brain'),
-    getFormatter(),
-    getKnowledgePagesQuery(access.orgId, status, listPage),
-    getBrainExportSummaryQuery(access.orgId),
-  ]);
+  const [t, format, { items, total }, exportSummary, approved] =
+    await Promise.all([
+      getTranslations('brain'),
+      getFormatter(),
+      getKnowledgePagesQuery(access.orgId, status, listPage),
+      getBrainExportSummaryQuery(access.orgId),
+      getApprovedPageCountQuery(access.orgId),
+    ]);
   const skippedReasons = Object.entries(exportSummary.skipped) as [
     string,
     number,
@@ -90,18 +94,18 @@ export default async function BrainPagesPage({ searchParams }: Props) {
             {t(`export.skipped.${reason}`, { count })}
           </span>
         ))}
+        <span className="ml-auto" />
+        <PublishAllButton approved={approved} />
         {exportSummary.pages > 0 ? (
           <a
             href="/api/brain/export"
             download
-            className="ml-auto text-primary underline-offset-4 hover:underline"
+            className="text-primary underline-offset-4 hover:underline"
           >
             {t('export.download')}
           </a>
         ) : (
-          <span className="ml-auto text-muted-foreground">
-            {t('export.none')}
-          </span>
+          <span className="text-muted-foreground">{t('export.none')}</span>
         )}
       </div>
 

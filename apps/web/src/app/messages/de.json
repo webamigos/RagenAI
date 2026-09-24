@@ -2706,6 +2706,14 @@
         "index-unavailable": "Der Index konnte nicht geändert werden — nichts wurde geändert; versuchen Sie es erneut.",
         "failed-to-start": "Die erneute Verarbeitung konnte nicht starten — versuchen Sie es gleich noch einmal."
       }
+    },
+    "publish-all": {
+      "button": "Freigegebene veröffentlichen ({count})",
+      "confirm-title": "Alle freigegebenen Seiten veröffentlichen?",
+      "confirm-description": "Seiten, die ihren aktuellen Text schon ausliefern, bleiben unverändert; geänderte werden neu veröffentlicht, neue erstmals. Jede Veröffentlichung wird unter Ihrem Namen erfasst. Seiten ohne Verantwortlichen oder für niemanden zugänglich werden übersprungen.",
+      "confirm": "Veröffentlichen",
+      "done": "Eingereiht: {queued} · unverändert: {unchanged} · übersprungen: {refused}",
+      "failed": "Die Veröffentlichung konnte nicht starten — laden Sie die Seite neu und versuchen Sie es erneut."
     }
   }
 }

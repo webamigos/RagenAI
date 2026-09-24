@@ -1189,8 +1189,15 @@ baseline without the outlier (edges 72.7 % `EXTRACTED` against 70.3 %,
 - [x] **E6.** `tests/architecture/brain-export-never-widens-access.test.ts`.
       _A property over 300 random pages: every exported page lists exactly its
       own principals, and a page with none is not exported._
-- [ ] **E7.** Re-publication by diff: `contentHash` per page, re-embed only what
+- [x] **E7.** Re-publication by diff: `contentHash` per page, re-embed only what
       changed, delete what was removed.
+      _"Publish approved" on the pages list loops over approved pages through
+      `publishKnowledgePageCommand` — one publication path, not two — so a
+      page serving its current `contentHash` writes nothing, a changed one is
+      re-embedded and a new one published; refusals are counted by reason.
+      "Delete what was removed" is deliberately not a side effect of a bulk
+      run: a page leaves the index by a person withdrawing it. Verified: first
+      run queued 1, second run 1 unchanged._
 - [ ] **E8.** Two-level citation rendering in `apps/web` and `apps/api`:
       `metadata.brain.pageId` → `KnowledgePageSource` → source documents,
       resolved against the pinned `documentVersionId` and filtered by the same

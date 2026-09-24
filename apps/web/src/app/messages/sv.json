@@ -2706,6 +2706,14 @@
         "index-unavailable": "Indexet kunde inte ändras — inget ändrades; försök igen.",
         "failed-to-start": "Ombearbetningen kunde inte starta — försök igen om en stund."
       }
+    },
+    "publish-all": {
+      "button": "Publicera godkända ({count})",
+      "confirm-title": "Publicera alla godkända sidor?",
+      "confirm-description": "Sidor som redan serverar sin aktuella text lämnas orörda; ändrade publiceras igen, nya för första gången. Varje publicering registreras i ditt namn. Sidor utan ägare eller öppna för ingen hoppas över.",
+      "confirm": "Publicera",
+      "done": "I kö: {queued} · oförändrade: {unchanged} · överhoppade: {refused}",
+      "failed": "Publiceringen kunde inte starta — ladda om sidan och försök igen."
     }
   }
 }
