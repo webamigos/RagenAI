@@ -87,3 +87,13 @@ export const TEST_DISPOSABLE_FILE_ID = 'e2e00000-0000-0000-0000-00e2e0000060';
 export const TEST_DISPOSABLE_FILE_NAME = 'e2e-disposable-document.txt';
 
 export const AUTH_FILE = path.join(__dirname, '.auth', 'user.json');
+
+/**
+ * Ragen Brain (spec D1): one candidate page in the active org, citing the
+ * seeded document's *first* version — which is no longer active, so the
+ * panel shows the citation as pinned to an older version — plus an open
+ * ORPHAN finding on it and an EXTRACTION_FAILED on the seeded file.
+ */
+export const TEST_BRAIN_PAGE_PUBLIC_ID = 'e2e00000-0000-4000-8000-00e2e0000b01';
+export const TEST_BRAIN_PAGE_TITLE = 'E2E Brain: zasady urlopów';
+export const TEST_BRAIN_SOURCE_QUOTE = TEST_DOCUMENT_V1_CONTENT;

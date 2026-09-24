@@ -1019,7 +1019,8 @@
       "library": "Library",
       "assistants": "Assistants",
       "chatbots": "Chatbots",
-      "organization": "Organization"
+      "organization": "Organization",
+      "brain": "Brain"
     },
     "starred": {
       "title": "Starred"
@@ -2382,5 +2383,136 @@
     "cited-none": "The answer did not cite any of them",
     "show-more": "{count, plural, one {Show # more source} other {Show # more sources}}",
     "open-source": "Open {name}"
+  },
+  "brain": {
+    "title": "Ragen Brain",
+    "tabs": {
+      "pages": "Knowledge pages",
+      "findings": "Findings"
+    },
+    "filters": {
+      "status": "Status",
+      "all-but-rejected": "All except rejected"
+    },
+    "page-status": {
+      "CANDIDATE": "Candidate",
+      "APPROVED": "Approved",
+      "REJECTED": "Rejected",
+      "STALE": "Stale"
+    },
+    "page-type": {
+      "PROCESS": "Process",
+      "ENTITY": "Entity",
+      "POLICY": "Policy",
+      "PRODUCT": "Product",
+      "ROLE": "Role"
+    },
+    "pages": {
+      "empty-title": "No knowledge pages here yet",
+      "empty-description": "Pages appear once Brain extracts your documents; each one cites the passages it came from.",
+      "count": "Pages: {shown} of {total}",
+      "published": "Published",
+      "no-owner": "No owner",
+      "columns": {
+        "title": "Title",
+        "type": "Type",
+        "status": "Status",
+        "owner": "Owner",
+        "documents": "Documents",
+        "findings": "Open findings",
+        "updated": "Updated"
+      }
+    },
+    "findings": {
+      "columns": {
+        "type": "Finding",
+        "subject": "Concerns",
+        "detail": "Detail",
+        "severity": "Severity",
+        "detected": "Detected"
+      },
+      "status": {
+        "OPEN": "Open",
+        "RESOLVED": "Resolved",
+        "DISMISSED": "Dismissed"
+      },
+      "type": {
+        "CONTRADICTION": "Contradiction",
+        "GAP": "Gap",
+        "STALE": "Stale",
+        "ORPHAN": "Unlinked",
+        "UNOWNED": "No owner",
+        "EXTRACTION_FAILED": "Extraction failed"
+      },
+      "severity": {
+        "LOW": "Low",
+        "MEDIUM": "Medium",
+        "HIGH": "High"
+      },
+      "empty-title": "No findings with this status",
+      "empty-description": "Brain reports contradictions, gaps, stale sources and pages without an owner here after each extraction.",
+      "count": "Findings: {shown} of {total}",
+      "summary": {
+        "unknown-file": "an unknown document",
+        "verification-due": "Verification was due on {date}",
+        "source-deleted": "A source was deleted: {file}",
+        "quote-gone": "The cited words are no longer in the current version of {file}",
+        "owner-left": "The owner is no longer a member of the organization",
+        "no-owner": "Nobody vouches for this page",
+        "orphan": "Not linked to any other page",
+        "gap": "A process with no role linked to it",
+        "extraction-failed": "The document could not be extracted",
+        "unknown": "No detail"
+      }
+    },
+    "page": {
+      "back": "Knowledge pages",
+      "owner": "Owner",
+      "verification": "Verification",
+      "last-verified": "Last verified {date}",
+      "never-verified": "Never verified",
+      "verify-every": "Verification interval: {every}",
+      "sources": {
+        "title": "Sources ({count})",
+        "unknown-file": "Deleted document",
+        "version": "version {n}",
+        "state": {
+          "newer-version": "Document has a newer version",
+          "deleted": "Source deleted"
+        }
+      },
+      "findings": {
+        "title": "Open findings",
+        "empty-title": "Nothing open on this page",
+        "empty-description": "Findings about this page appear here when Brain raises them."
+      },
+      "access": {
+        "title": "Open to",
+        "nobody": "Nobody yet — needs a decision",
+        "organization": "The whole organization",
+        "user": "{name}",
+        "user-gone": "A person who has left the organization",
+        "team": "Team {name}",
+        "team-gone": "A deleted team",
+        "unmatched": "Nobody (a principal from outside this organization)"
+      },
+      "relations": {
+        "title": "Relations",
+        "empty": "No relations",
+        "out": "{kind} →",
+        "in": "← {kind}"
+      }
+    },
+    "origin": {
+      "EXTRACTED": "quoted",
+      "INFERRED": "inferred",
+      "AMBIGUOUS": "unconfirmed"
+    },
+    "pager": {
+      "label": "Pages of the list",
+      "previous": "Previous",
+      "next": "Next",
+      "position": "{page} of {pages}"
+    }
   }
 }

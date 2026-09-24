@@ -15,6 +15,7 @@ import {
   BookOpenIcon as BookOpenIconOutline,
   ChatBubbleLeftIcon as ChatBubbleLeftIconOutline,
   FolderIcon as FolderIconOutline,
+  LightBulbIcon as LightBulbIconOutline,
 } from '@heroicons/react/24/outline';
 import { MainSidebarBody } from '@/app/components/Sidebar/SidebarContent/MainSidebarBody';
 import { SidebarFooterMenu } from '@/app/components/Sidebar/SidebarContent/SidebarFooterMenu';
@@ -35,6 +36,7 @@ import { ensureOnboardingComplete } from '@/features/onboarding/services/command
 import { OrgFeaturesProvider } from '@/context/OrgFeaturesContext';
 import { getEffectiveFeaturesQuery } from '@/features/subscriptions/services/queries/get-effective-features-query';
 import { DEFAULT_FEATURES } from '@/features/subscriptions/contracts/features.types';
+import { canUseBrain } from '@/features/brain/utils/can-use-brain';
 
 type Props = Readonly<{
   children: React.ReactNode;
@@ -159,6 +161,20 @@ export default async function PanelLayout({ children }: Props) {
               {t('nav.assistants')}
             </SidebarLabel>
           </SidebarItem>
+          {/*
+            Brain answers to the same test its routes do — the flag, and an
+            owner or admin of this organization. Not `userIsOrgAdmin`, which
+            also lets a platform admin through: this is the customer's
+            knowledge, and a link to a page that 404s is worse than none.
+          */}
+          {canUseBrain({ role: member?.role, enabled: features.brain }) && (
+            <SidebarItem href="/brain">
+              <LightBulbIconOutline className="size-5 shrink-0 stroke-muted-foreground" />
+              <SidebarLabel className="font-normal">
+                {t('nav.brain')}
+              </SidebarLabel>
+            </SidebarItem>
+          )}
           {userIsOrgAdmin && (
             <SidebarItem href="/knowledge/documents-list">
               <BookOpenIconOutline className="size-5 shrink-0 stroke-muted-foreground" />

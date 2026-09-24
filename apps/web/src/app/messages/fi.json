@@ -1019,7 +1019,8 @@
       "library": "Kirjasto",
       "assistants": "Assistentit",
       "chatbots": "Chatbotit",
-      "organization": "Organisaatio"
+      "organization": "Organisaatio",
+      "brain": "Brain"
     },
     "starred": {
       "title": "Suosikit"
@@ -2382,5 +2383,136 @@
     "cited-none": "Vastaus ei viitannut yhteenkään niistä",
     "show-more": "Näytä {count} lisälähdettä",
     "open-source": "Avaa {name}"
+  },
+  "brain": {
+    "title": "Ragen Brain",
+    "tabs": {
+      "pages": "Tietosivut",
+      "findings": "Havainnot"
+    },
+    "filters": {
+      "status": "Tila",
+      "all-but-rejected": "Kaikki paitsi hylätyt"
+    },
+    "page-status": {
+      "CANDIDATE": "Ehdokas",
+      "APPROVED": "Hyväksytty",
+      "REJECTED": "Hylätty",
+      "STALE": "Vanhentunut"
+    },
+    "page-type": {
+      "PROCESS": "Prosessi",
+      "ENTITY": "Kohde",
+      "POLICY": "Sääntö",
+      "PRODUCT": "Tuote",
+      "ROLE": "Rooli"
+    },
+    "pages": {
+      "empty-title": "Tietosivuja ei vielä ole",
+      "empty-description": "Sivut ilmestyvät, kun Brain on käsitellyt asiakirjasi; jokainen sivu lainaa kohdat, joista se on koottu.",
+      "count": "Sivut: {shown}/{total}",
+      "published": "Julkaistu",
+      "no-owner": "Ei vastuuhenkilöä",
+      "columns": {
+        "title": "Otsikko",
+        "type": "Tyyppi",
+        "status": "Tila",
+        "owner": "Vastuuhenkilö",
+        "documents": "Asiakirjat",
+        "findings": "Avoimet havainnot",
+        "updated": "Muutettu"
+      }
+    },
+    "findings": {
+      "columns": {
+        "type": "Havainto",
+        "subject": "Koskee",
+        "detail": "Tiedot",
+        "severity": "Vakavuus",
+        "detected": "Havaittu"
+      },
+      "status": {
+        "OPEN": "Avoimet",
+        "RESOLVED": "Ratkaistut",
+        "DISMISSED": "Hylätyt"
+      },
+      "type": {
+        "CONTRADICTION": "Ristiriita",
+        "GAP": "Aukko",
+        "STALE": "Vanhentunut",
+        "ORPHAN": "Ei yhteyksiä",
+        "UNOWNED": "Ei vastuuhenkilöä",
+        "EXTRACTION_FAILED": "Käsittely epäonnistui"
+      },
+      "severity": {
+        "LOW": "Matala",
+        "MEDIUM": "Keskitaso",
+        "HIGH": "Korkea"
+      },
+      "empty-title": "Ei havaintoja tällä tilalla",
+      "empty-description": "Jokaisen käsittelyn jälkeen Brain näyttää tässä ristiriidat, aukot, vanhentuneet lähteet ja sivut ilman vastuuhenkilöä.",
+      "count": "Havainnot: {shown}/{total}",
+      "summary": {
+        "unknown-file": "tuntematon asiakirja",
+        "verification-due": "Tarkistus erääntyi {date}",
+        "source-deleted": "Lähde on poistettu: {file}",
+        "quote-gone": "Lainattuja sanoja ei enää ole asiakirjan {file} nykyisessä versiossa",
+        "owner-left": "Vastuuhenkilö ei ole enää organisaation jäsen",
+        "no-owner": "Kukaan ei vastaa tästä sivusta",
+        "orphan": "Ei yhteyttä mihinkään toiseen sivuun",
+        "gap": "Prosessi ilman liitettyä roolia",
+        "extraction-failed": "Asiakirjaa ei voitu käsitellä",
+        "unknown": "Ei tietoja"
+      }
+    },
+    "page": {
+      "back": "Tietosivut",
+      "owner": "Vastuuhenkilö",
+      "verification": "Tarkistus",
+      "last-verified": "Viimeksi tarkistettu {date}",
+      "never-verified": "Ei koskaan tarkistettu",
+      "verify-every": "Tarkistusväli: {every}",
+      "sources": {
+        "title": "Lähteet ({count})",
+        "unknown-file": "Poistettu asiakirja",
+        "version": "versio {n}",
+        "state": {
+          "newer-version": "Asiakirjasta on uudempi versio",
+          "deleted": "Lähde poistettu"
+        }
+      },
+      "findings": {
+        "title": "Avoimet havainnot",
+        "empty-title": "Tällä sivulla ei ole mitään avoinna",
+        "empty-description": "Tätä sivua koskevat havainnot näkyvät tässä, kun Brain ilmoittaa niistä."
+      },
+      "access": {
+        "title": "Käytettävissä",
+        "nobody": "Ei vielä kenellekään — vaatii päätöksen",
+        "organization": "Koko organisaatio",
+        "user": "{name}",
+        "user-gone": "Organisaatiosta lähtenyt henkilö",
+        "team": "Tiimi {name}",
+        "team-gone": "Poistettu tiimi",
+        "unmatched": "Ei kenellekään (tämän organisaation ulkopuolinen oikeus)"
+      },
+      "relations": {
+        "title": "Yhteydet",
+        "empty": "Ei yhteyksiä",
+        "out": "{kind} →",
+        "in": "← {kind}"
+      }
+    },
+    "origin": {
+      "EXTRACTED": "lainattu",
+      "INFERRED": "päätelty",
+      "AMBIGUOUS": "vahvistamaton"
+    },
+    "pager": {
+      "label": "Luettelon sivut",
+      "previous": "Edellinen",
+      "next": "Seuraava",
+      "position": "{page}/{pages}"
+    }
   }
 }

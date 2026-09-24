@@ -1019,7 +1019,8 @@
       "library": "Knihovna",
       "assistants": "Asistenti",
       "chatbots": "Chatboti",
-      "organization": "Organizace"
+      "organization": "Organizace",
+      "brain": "Brain"
     },
     "starred": {
       "title": "Oblíbené"
@@ -2382,5 +2383,136 @@
     "cited-none": "Odpověď z nich necitovala žádný",
     "show-more": "{count, plural, one {Zobrazit # další zdroj} few {Zobrazit # další zdroje} other {Zobrazit # dalších zdrojů}}",
     "open-source": "Otevřít {name}"
+  },
+  "brain": {
+    "title": "Ragen Brain",
+    "tabs": {
+      "pages": "Znalostní stránky",
+      "findings": "Zjištění"
+    },
+    "filters": {
+      "status": "Stav",
+      "all-but-rejected": "Všechny kromě zamítnutých"
+    },
+    "page-status": {
+      "CANDIDATE": "Kandidát",
+      "APPROVED": "Schválená",
+      "REJECTED": "Zamítnutá",
+      "STALE": "Zastaralá"
+    },
+    "page-type": {
+      "PROCESS": "Proces",
+      "ENTITY": "Entita",
+      "POLICY": "Pravidlo",
+      "PRODUCT": "Produkt",
+      "ROLE": "Role"
+    },
+    "pages": {
+      "empty-title": "Zatím žádné znalostní stránky",
+      "empty-description": "Stránky se objeví, jakmile Brain zpracuje vaše dokumenty; každá cituje pasáže, ze kterých vznikla.",
+      "count": "Stránky: {shown} z {total}",
+      "published": "Publikovaná",
+      "no-owner": "Bez vlastníka",
+      "columns": {
+        "title": "Název",
+        "type": "Typ",
+        "status": "Stav",
+        "owner": "Vlastník",
+        "documents": "Dokumenty",
+        "findings": "Otevřená zjištění",
+        "updated": "Změněno"
+      }
+    },
+    "findings": {
+      "columns": {
+        "type": "Zjištění",
+        "subject": "Týká se",
+        "detail": "Podrobnosti",
+        "severity": "Závažnost",
+        "detected": "Zjištěno"
+      },
+      "status": {
+        "OPEN": "Otevřená",
+        "RESOLVED": "Vyřešená",
+        "DISMISSED": "Zamítnutá"
+      },
+      "type": {
+        "CONTRADICTION": "Rozpor",
+        "GAP": "Mezera",
+        "STALE": "Zastaralé",
+        "ORPHAN": "Bez propojení",
+        "UNOWNED": "Bez vlastníka",
+        "EXTRACTION_FAILED": "Extrakce selhala"
+      },
+      "severity": {
+        "LOW": "Nízká",
+        "MEDIUM": "Střední",
+        "HIGH": "Vysoká"
+      },
+      "empty-title": "Žádná zjištění s tímto stavem",
+      "empty-description": "Po každé extrakci zde Brain ukazuje rozpory, mezery, zastaralé zdroje a stránky bez vlastníka.",
+      "count": "Zjištění: {shown} z {total}",
+      "summary": {
+        "unknown-file": "neznámý dokument",
+        "verification-due": "Ověření mělo proběhnout {date}",
+        "source-deleted": "Zdroj byl smazán: {file}",
+        "quote-gone": "Citovaná slova už nejsou v aktuální verzi dokumentu {file}",
+        "owner-left": "Vlastník už není členem organizace",
+        "no-owner": "Za tuto stránku nikdo neručí",
+        "orphan": "Není propojena s žádnou jinou stránkou",
+        "gap": "Proces bez přiřazené role",
+        "extraction-failed": "Dokument se nepodařilo zpracovat",
+        "unknown": "Bez podrobností"
+      }
+    },
+    "page": {
+      "back": "Znalostní stránky",
+      "owner": "Vlastník",
+      "verification": "Ověření",
+      "last-verified": "Naposledy ověřeno {date}",
+      "never-verified": "Nikdy neověřeno",
+      "verify-every": "Interval ověření: {every}",
+      "sources": {
+        "title": "Zdroje ({count})",
+        "unknown-file": "Smazaný dokument",
+        "version": "verze {n}",
+        "state": {
+          "newer-version": "Dokument má novější verzi",
+          "deleted": "Zdroj smazán"
+        }
+      },
+      "findings": {
+        "title": "Otevřená zjištění",
+        "empty-title": "Na této stránce není nic otevřeného",
+        "empty-description": "Zjištění o této stránce se zde objeví, jakmile je Brain nahlásí."
+      },
+      "access": {
+        "title": "Přístupná pro",
+        "nobody": "Zatím nikoho — vyžaduje rozhodnutí",
+        "organization": "Celou organizaci",
+        "user": "{name}",
+        "user-gone": "Osobu, která organizaci opustila",
+        "team": "Tým {name}",
+        "team-gone": "Smazaný tým",
+        "unmatched": "Nikoho (oprávnění mimo tuto organizaci)"
+      },
+      "relations": {
+        "title": "Vztahy",
+        "empty": "Žádné vztahy",
+        "out": "{kind} →",
+        "in": "← {kind}"
+      }
+    },
+    "origin": {
+      "EXTRACTED": "citováno",
+      "INFERRED": "odvozeno",
+      "AMBIGUOUS": "nepotvrzeno"
+    },
+    "pager": {
+      "label": "Stránky seznamu",
+      "previous": "Předchozí",
+      "next": "Další",
+      "position": "{page} z {pages}"
+    }
   }
 }

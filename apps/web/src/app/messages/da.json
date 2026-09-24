@@ -1019,7 +1019,8 @@
       "library": "Bibliotek",
       "assistants": "Assistenter",
       "chatbots": "Chatbots",
-      "organization": "Organisation"
+      "organization": "Organisation",
+      "brain": "Brain"
     },
     "starred": {
       "title": "Favoritter"
@@ -2382,5 +2383,136 @@
     "cited-none": "Svaret citerede ingen af dem",
     "show-more": "{count, plural, one {Vis # kilde mere} other {Vis # kilder mere}}",
     "open-source": "Åbn {name}"
+  },
+  "brain": {
+    "title": "Ragen Brain",
+    "tabs": {
+      "pages": "Vidensider",
+      "findings": "Fund"
+    },
+    "filters": {
+      "status": "Status",
+      "all-but-rejected": "Alle undtagen afviste"
+    },
+    "page-status": {
+      "CANDIDATE": "Kandidat",
+      "APPROVED": "Godkendt",
+      "REJECTED": "Afvist",
+      "STALE": "Forældet"
+    },
+    "page-type": {
+      "PROCESS": "Proces",
+      "ENTITY": "Enhed",
+      "POLICY": "Regel",
+      "PRODUCT": "Produkt",
+      "ROLE": "Rolle"
+    },
+    "pages": {
+      "empty-title": "Ingen vidensider endnu",
+      "empty-description": "Sider vises, når Brain har behandlet dine dokumenter; hver side citerer de passager, den stammer fra.",
+      "count": "Sider: {shown} af {total}",
+      "published": "Publiceret",
+      "no-owner": "Ingen ansvarlig",
+      "columns": {
+        "title": "Titel",
+        "type": "Type",
+        "status": "Status",
+        "owner": "Ansvarlig",
+        "documents": "Dokumenter",
+        "findings": "Åbne fund",
+        "updated": "Ændret"
+      }
+    },
+    "findings": {
+      "columns": {
+        "type": "Fund",
+        "subject": "Vedrører",
+        "detail": "Detaljer",
+        "severity": "Alvor",
+        "detected": "Fundet"
+      },
+      "status": {
+        "OPEN": "Åbne",
+        "RESOLVED": "Løste",
+        "DISMISSED": "Afviste"
+      },
+      "type": {
+        "CONTRADICTION": "Modstrid",
+        "GAP": "Hul",
+        "STALE": "Forældet",
+        "ORPHAN": "Uden forbindelser",
+        "UNOWNED": "Uden ansvarlig",
+        "EXTRACTION_FAILED": "Udtræk mislykkedes"
+      },
+      "severity": {
+        "LOW": "Lav",
+        "MEDIUM": "Middel",
+        "HIGH": "Høj"
+      },
+      "empty-title": "Ingen fund med denne status",
+      "empty-description": "Efter hvert udtræk viser Brain her modstrid, huller, forældede kilder og sider uden ansvarlig.",
+      "count": "Fund: {shown} af {total}",
+      "summary": {
+        "unknown-file": "et ukendt dokument",
+        "verification-due": "Kontrollen skulle være sket {date}",
+        "source-deleted": "En kilde er slettet: {file}",
+        "quote-gone": "De citerede ord findes ikke længere i den aktuelle version af {file}",
+        "owner-left": "Den ansvarlige er ikke længere medlem af organisationen",
+        "no-owner": "Ingen står inde for denne side",
+        "orphan": "Ikke forbundet med nogen anden side",
+        "gap": "En proces uden tilknyttet rolle",
+        "extraction-failed": "Dokumentet kunne ikke behandles",
+        "unknown": "Ingen detaljer"
+      }
+    },
+    "page": {
+      "back": "Vidensider",
+      "owner": "Ansvarlig",
+      "verification": "Kontrol",
+      "last-verified": "Senest kontrolleret {date}",
+      "never-verified": "Aldrig kontrolleret",
+      "verify-every": "Kontrolinterval: {every}",
+      "sources": {
+        "title": "Kilder ({count})",
+        "unknown-file": "Slettet dokument",
+        "version": "version {n}",
+        "state": {
+          "newer-version": "Dokumentet har en nyere version",
+          "deleted": "Kilde slettet"
+        }
+      },
+      "findings": {
+        "title": "Åbne fund",
+        "empty-title": "Intet åbent på denne side",
+        "empty-description": "Fund om denne side vises her, når Brain rapporterer dem."
+      },
+      "access": {
+        "title": "Tilgængelig for",
+        "nobody": "Ingen endnu — kræver en beslutning",
+        "organization": "Hele organisationen",
+        "user": "{name}",
+        "user-gone": "En person, der har forladt organisationen",
+        "team": "Team {name}",
+        "team-gone": "Et slettet team",
+        "unmatched": "Ingen (en tilladelse uden for denne organisation)"
+      },
+      "relations": {
+        "title": "Relationer",
+        "empty": "Ingen relationer",
+        "out": "{kind} →",
+        "in": "← {kind}"
+      }
+    },
+    "origin": {
+      "EXTRACTED": "citeret",
+      "INFERRED": "udledt",
+      "AMBIGUOUS": "ubekræftet"
+    },
+    "pager": {
+      "label": "Listens sider",
+      "previous": "Forrige",
+      "next": "Næste",
+      "position": "{page} af {pages}"
+    }
   }
 }

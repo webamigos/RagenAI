@@ -1019,7 +1019,8 @@
       "library": "Bibliothèque",
       "assistants": "Assistants",
       "chatbots": "Chatbots",
-      "organization": "Organisation"
+      "organization": "Organisation",
+      "brain": "Brain"
     },
     "starred": {
       "title": "Favoris"
@@ -2382,5 +2383,136 @@
     "cited-none": "La réponse n'en a cité aucune",
     "show-more": "{count, plural, one {Afficher # source de plus} other {Afficher # sources de plus}}",
     "open-source": "Ouvrir {name}"
+  },
+  "brain": {
+    "title": "Ragen Brain",
+    "tabs": {
+      "pages": "Pages de connaissances",
+      "findings": "Constats"
+    },
+    "filters": {
+      "status": "Statut",
+      "all-but-rejected": "Toutes sauf rejetées"
+    },
+    "page-status": {
+      "CANDIDATE": "Candidate",
+      "APPROVED": "Approuvée",
+      "REJECTED": "Rejetée",
+      "STALE": "Obsolète"
+    },
+    "page-type": {
+      "PROCESS": "Processus",
+      "ENTITY": "Entité",
+      "POLICY": "Règle",
+      "PRODUCT": "Produit",
+      "ROLE": "Rôle"
+    },
+    "pages": {
+      "empty-title": "Aucune page de connaissances pour l’instant",
+      "empty-description": "Les pages apparaissent une fois vos documents traités par Brain ; chacune cite les passages dont elle provient.",
+      "count": "Pages : {shown} sur {total}",
+      "published": "Publiée",
+      "no-owner": "Aucun responsable",
+      "columns": {
+        "title": "Titre",
+        "type": "Type",
+        "status": "Statut",
+        "owner": "Responsable",
+        "documents": "Documents",
+        "findings": "Constats ouverts",
+        "updated": "Modifiée"
+      }
+    },
+    "findings": {
+      "columns": {
+        "type": "Constat",
+        "subject": "Concerne",
+        "detail": "Détail",
+        "severity": "Gravité",
+        "detected": "Détecté"
+      },
+      "status": {
+        "OPEN": "Ouverts",
+        "RESOLVED": "Résolus",
+        "DISMISSED": "Écartés"
+      },
+      "type": {
+        "CONTRADICTION": "Contradiction",
+        "GAP": "Lacune",
+        "STALE": "Obsolète",
+        "ORPHAN": "Sans lien",
+        "UNOWNED": "Sans responsable",
+        "EXTRACTION_FAILED": "Échec de l’extraction"
+      },
+      "severity": {
+        "LOW": "Faible",
+        "MEDIUM": "Moyenne",
+        "HIGH": "Élevée"
+      },
+      "empty-title": "Aucun constat avec ce statut",
+      "empty-description": "Après chaque extraction, Brain signale ici les contradictions, lacunes, sources obsolètes et pages sans responsable.",
+      "count": "Constats : {shown} sur {total}",
+      "summary": {
+        "unknown-file": "un document inconnu",
+        "verification-due": "La vérification était due le {date}",
+        "source-deleted": "Une source a été supprimée : {file}",
+        "quote-gone": "Les mots cités ne figurent plus dans la version actuelle de {file}",
+        "owner-left": "Le responsable ne fait plus partie de l’organisation",
+        "no-owner": "Personne ne répond de cette page",
+        "orphan": "Liée à aucune autre page",
+        "gap": "Un processus sans rôle associé",
+        "extraction-failed": "Le document n’a pas pu être traité",
+        "unknown": "Aucun détail"
+      }
+    },
+    "page": {
+      "back": "Pages de connaissances",
+      "owner": "Responsable",
+      "verification": "Vérification",
+      "last-verified": "Vérifiée le {date}",
+      "never-verified": "Jamais vérifiée",
+      "verify-every": "Intervalle de vérification : {every}",
+      "sources": {
+        "title": "Sources ({count})",
+        "unknown-file": "Document supprimé",
+        "version": "version {n}",
+        "state": {
+          "newer-version": "Le document a une version plus récente",
+          "deleted": "Source supprimée"
+        }
+      },
+      "findings": {
+        "title": "Constats ouverts",
+        "empty-title": "Rien d’ouvert sur cette page",
+        "empty-description": "Les constats sur cette page apparaîtront ici lorsque Brain les signalera."
+      },
+      "access": {
+        "title": "Accessible à",
+        "nobody": "Personne pour l’instant — décision requise",
+        "organization": "Toute l’organisation",
+        "user": "{name}",
+        "user-gone": "Une personne qui a quitté l’organisation",
+        "team": "Équipe {name}",
+        "team-gone": "Une équipe supprimée",
+        "unmatched": "Personne (une autorisation extérieure à cette organisation)"
+      },
+      "relations": {
+        "title": "Relations",
+        "empty": "Aucune relation",
+        "out": "{kind} →",
+        "in": "← {kind}"
+      }
+    },
+    "origin": {
+      "EXTRACTED": "citée",
+      "INFERRED": "déduite",
+      "AMBIGUOUS": "non confirmée"
+    },
+    "pager": {
+      "label": "Pages de la liste",
+      "previous": "Précédent",
+      "next": "Suivant",
+      "position": "{page} sur {pages}"
+    }
   }
 }

@@ -1019,7 +1019,8 @@
       "library": "Biblioteka",
       "assistants": "Asystenci",
       "chatbots": "Chatboty",
-      "organization": "Organizacja"
+      "organization": "Organizacja",
+      "brain": "Brain"
     },
     "starred": {
       "title": "Przypięte"
@@ -2382,5 +2383,136 @@
     "cited-none": "Odpowiedź nie powołała się na żadne z nich",
     "show-more": "{count, plural, one {Pokaż jeszcze # źródło} few {Pokaż jeszcze # źródła} many {Pokaż jeszcze # źródeł} other {Pokaż jeszcze # źródeł}}",
     "open-source": "Otwórz {name}"
+  },
+  "brain": {
+    "title": "Ragen Brain",
+    "tabs": {
+      "pages": "Strony wiedzy",
+      "findings": "Wykrycia"
+    },
+    "filters": {
+      "status": "Status",
+      "all-but-rejected": "Wszystkie oprócz odrzuconych"
+    },
+    "page-status": {
+      "CANDIDATE": "Kandydat",
+      "APPROVED": "Zatwierdzona",
+      "REJECTED": "Odrzucona",
+      "STALE": "Nieaktualna"
+    },
+    "page-type": {
+      "PROCESS": "Proces",
+      "ENTITY": "Byt",
+      "POLICY": "Zasada",
+      "PRODUCT": "Produkt",
+      "ROLE": "Rola"
+    },
+    "pages": {
+      "empty-title": "Nie ma tu jeszcze stron wiedzy",
+      "empty-description": "Strony pojawiają się, gdy Brain przetworzy Twoje dokumenty; każda cytuje fragmenty, z których powstała.",
+      "count": "Strony: {shown} z {total}",
+      "published": "Opublikowana",
+      "no-owner": "Brak właściciela",
+      "columns": {
+        "title": "Tytuł",
+        "type": "Typ",
+        "status": "Status",
+        "owner": "Właściciel",
+        "documents": "Dokumenty",
+        "findings": "Otwarte wykrycia",
+        "updated": "Zmieniona"
+      }
+    },
+    "findings": {
+      "columns": {
+        "type": "Wykrycie",
+        "subject": "Dotyczy",
+        "detail": "Szczegóły",
+        "severity": "Waga",
+        "detected": "Wykryto"
+      },
+      "status": {
+        "OPEN": "Otwarte",
+        "RESOLVED": "Rozwiązane",
+        "DISMISSED": "Odrzucone"
+      },
+      "type": {
+        "CONTRADICTION": "Sprzeczność",
+        "GAP": "Luka",
+        "STALE": "Nieaktualne",
+        "ORPHAN": "Bez powiązań",
+        "UNOWNED": "Bez właściciela",
+        "EXTRACTION_FAILED": "Nieudana ekstrakcja"
+      },
+      "severity": {
+        "LOW": "Niska",
+        "MEDIUM": "Średnia",
+        "HIGH": "Wysoka"
+      },
+      "empty-title": "Brak wykryć o tym statusie",
+      "empty-description": "Po każdej ekstrakcji Brain pokazuje tu sprzeczności, luki, nieaktualne źródła i strony bez właściciela.",
+      "count": "Wykrycia: {shown} z {total}",
+      "summary": {
+        "unknown-file": "nieznany dokument",
+        "verification-due": "Termin weryfikacji minął {date}",
+        "source-deleted": "Usunięto źródło: {file}",
+        "quote-gone": "Cytowanych słów nie ma już w aktualnej wersji dokumentu {file}",
+        "owner-left": "Właściciel nie należy już do organizacji",
+        "no-owner": "Nikt nie odpowiada za tę stronę",
+        "orphan": "Strona nie jest powiązana z żadną inną",
+        "gap": "Proces bez przypisanej roli",
+        "extraction-failed": "Nie udało się przetworzyć dokumentu",
+        "unknown": "Brak szczegółów"
+      }
+    },
+    "page": {
+      "back": "Strony wiedzy",
+      "owner": "Właściciel",
+      "verification": "Weryfikacja",
+      "last-verified": "Ostatnio zweryfikowana {date}",
+      "never-verified": "Nigdy nie zweryfikowana",
+      "verify-every": "Interwał weryfikacji: {every}",
+      "sources": {
+        "title": "Źródła ({count})",
+        "unknown-file": "Usunięty dokument",
+        "version": "wersja {n}",
+        "state": {
+          "newer-version": "Dokument ma nowszą wersję",
+          "deleted": "Źródło usunięte"
+        }
+      },
+      "findings": {
+        "title": "Otwarte wykrycia",
+        "empty-title": "Nic otwartego na tej stronie",
+        "empty-description": "Wykrycia dotyczące tej strony pojawią się tutaj, gdy Brain je zgłosi."
+      },
+      "access": {
+        "title": "Dostępna dla",
+        "nobody": "Na razie nikogo — wymaga decyzji",
+        "organization": "Cała organizacja",
+        "user": "{name}",
+        "user-gone": "Osoba, która odeszła z organizacji",
+        "team": "Zespół {name}",
+        "team-gone": "Usunięty zespół",
+        "unmatched": "Nikogo (uprawnienie spoza tej organizacji)"
+      },
+      "relations": {
+        "title": "Powiązania",
+        "empty": "Brak powiązań",
+        "out": "{kind} →",
+        "in": "← {kind}"
+      }
+    },
+    "origin": {
+      "EXTRACTED": "z cytatu",
+      "INFERRED": "wywnioskowane",
+      "AMBIGUOUS": "niepotwierdzone"
+    },
+    "pager": {
+      "label": "Strony listy",
+      "previous": "Poprzednie",
+      "next": "Następne",
+      "position": "{page} z {pages}"
+    }
   }
 }

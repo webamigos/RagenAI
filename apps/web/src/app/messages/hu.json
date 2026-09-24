@@ -1019,7 +1019,8 @@
       "library": "Könyvtár",
       "assistants": "Asszisztensek",
       "chatbots": "Chatbotok",
-      "organization": "Szervezet"
+      "organization": "Szervezet",
+      "brain": "Brain"
     },
     "starred": {
       "title": "Kedvencek"
@@ -2382,5 +2383,136 @@
     "cited-none": "A válasz egyikre sem hivatkozott",
     "show-more": "További {count} forrás megjelenítése",
     "open-source": "{name} megnyitása"
+  },
+  "brain": {
+    "title": "Ragen Brain",
+    "tabs": {
+      "pages": "Tudásoldalak",
+      "findings": "Észrevételek"
+    },
+    "filters": {
+      "status": "Állapot",
+      "all-but-rejected": "Mind, az elutasítottak kivételével"
+    },
+    "page-status": {
+      "CANDIDATE": "Jelölt",
+      "APPROVED": "Jóváhagyott",
+      "REJECTED": "Elutasított",
+      "STALE": "Elavult"
+    },
+    "page-type": {
+      "PROCESS": "Folyamat",
+      "ENTITY": "Entitás",
+      "POLICY": "Szabály",
+      "PRODUCT": "Termék",
+      "ROLE": "Szerepkör"
+    },
+    "pages": {
+      "empty-title": "Még nincsenek tudásoldalak",
+      "empty-description": "Az oldalak akkor jelennek meg, amikor a Brain feldolgozta a dokumentumait; mindegyik idézi a részleteket, amelyekből készült.",
+      "count": "Oldalak: {shown} / {total}",
+      "published": "Közzétéve",
+      "no-owner": "Nincs felelős",
+      "columns": {
+        "title": "Cím",
+        "type": "Típus",
+        "status": "Állapot",
+        "owner": "Felelős",
+        "documents": "Dokumentumok",
+        "findings": "Nyitott észrevételek",
+        "updated": "Módosítva"
+      }
+    },
+    "findings": {
+      "columns": {
+        "type": "Észrevétel",
+        "subject": "Érinti",
+        "detail": "Részletek",
+        "severity": "Súlyosság",
+        "detected": "Észlelve"
+      },
+      "status": {
+        "OPEN": "Nyitott",
+        "RESOLVED": "Megoldott",
+        "DISMISSED": "Elvetett"
+      },
+      "type": {
+        "CONTRADICTION": "Ellentmondás",
+        "GAP": "Hiány",
+        "STALE": "Elavult",
+        "ORPHAN": "Kapcsolat nélkül",
+        "UNOWNED": "Felelős nélkül",
+        "EXTRACTION_FAILED": "Sikertelen feldolgozás"
+      },
+      "severity": {
+        "LOW": "Alacsony",
+        "MEDIUM": "Közepes",
+        "HIGH": "Magas"
+      },
+      "empty-title": "Nincs ilyen állapotú észrevétel",
+      "empty-description": "Minden feldolgozás után a Brain itt mutatja az ellentmondásokat, hiányokat, elavult forrásokat és a felelős nélküli oldalakat.",
+      "count": "Észrevételek: {shown} / {total}",
+      "summary": {
+        "unknown-file": "ismeretlen dokumentum",
+        "verification-due": "Az ellenőrzés esedékes volt: {date}",
+        "source-deleted": "Egy forrást töröltek: {file}",
+        "quote-gone": "Az idézett szavak már nincsenek benne a(z) {file} aktuális verziójában",
+        "owner-left": "A felelős már nem tagja a szervezetnek",
+        "no-owner": "Senki sem felel ezért az oldalért",
+        "orphan": "Semmilyen más oldalhoz nem kapcsolódik",
+        "gap": "Folyamat hozzárendelt szerepkör nélkül",
+        "extraction-failed": "A dokumentumot nem sikerült feldolgozni",
+        "unknown": "Nincsenek részletek"
+      }
+    },
+    "page": {
+      "back": "Tudásoldalak",
+      "owner": "Felelős",
+      "verification": "Ellenőrzés",
+      "last-verified": "Utoljára ellenőrizve: {date}",
+      "never-verified": "Még nem ellenőrizték",
+      "verify-every": "Ellenőrzési időköz: {every}",
+      "sources": {
+        "title": "Források ({count})",
+        "unknown-file": "Törölt dokumentum",
+        "version": "{n}. verzió",
+        "state": {
+          "newer-version": "A dokumentumnak van újabb verziója",
+          "deleted": "A forrást törölték"
+        }
+      },
+      "findings": {
+        "title": "Nyitott észrevételek",
+        "empty-title": "Ezen az oldalon nincs nyitott tétel",
+        "empty-description": "Az oldallal kapcsolatos észrevételek itt jelennek meg, amikor a Brain jelzi őket."
+      },
+      "access": {
+        "title": "Hozzáférés",
+        "nobody": "Egyelőre senki — döntés szükséges",
+        "organization": "Az egész szervezet",
+        "user": "{name}",
+        "user-gone": "A szervezetet elhagyó személy",
+        "team": "{name} csapat",
+        "team-gone": "Törölt csapat",
+        "unmatched": "Senki (a szervezeten kívüli jogosultság)"
+      },
+      "relations": {
+        "title": "Kapcsolatok",
+        "empty": "Nincsenek kapcsolatok",
+        "out": "{kind} →",
+        "in": "← {kind}"
+      }
+    },
+    "origin": {
+      "EXTRACTED": "idézett",
+      "INFERRED": "következtetett",
+      "AMBIGUOUS": "megerősítetlen"
+    },
+    "pager": {
+      "label": "A lista oldalai",
+      "previous": "Előző",
+      "next": "Következő",
+      "position": "{page}/{pages}"
+    }
   }
 }
