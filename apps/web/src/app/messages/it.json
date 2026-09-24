@@ -2728,12 +2728,6 @@
       "confirm": "Pubblica",
       "done": "In coda: {queued} · invariate: {unchanged} · saltate: {refused}",
       "failed": "Impossibile avviare la pubblicazione: ricarica la pagina e riprova."
-    },
-    "pager": {
-      "label": "Pagine dell’elenco",
-      "previous": "Precedente",
-      "next": "Successivo",
-      "position": "{page} di {pages}"
     }
   }
 }

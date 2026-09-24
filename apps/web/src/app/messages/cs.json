@@ -2728,12 +2728,6 @@
       "confirm": "Zveřejnit",
       "done": "Ve frontě: {queued} · beze změny: {unchanged} · přeskočeno: {refused}",
       "failed": "Zveřejnění se nepodařilo spustit — načtěte stránku znovu a zkuste to znovu."
-    },
-    "pager": {
-      "label": "Stránky seznamu",
-      "previous": "Předchozí",
-      "next": "Další",
-      "position": "{page} z {pages}"
     }
   }
 }

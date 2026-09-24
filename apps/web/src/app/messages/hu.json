@@ -2728,12 +2728,6 @@
       "confirm": "Közzététel",
       "done": "Sorban: {queued} · változatlan: {unchanged} · kihagyva: {refused}",
       "failed": "A közzététel nem indult el — töltse újra az oldalt, és próbálja újra."
-    },
-    "pager": {
-      "label": "A lista oldalai",
-      "previous": "Előző",
-      "next": "Következő",
-      "position": "{page}/{pages}"
     }
   }
 }

@@ -2728,12 +2728,6 @@
       "confirm": "Udgiv",
       "done": "I kø: {queued} · uændrede: {unchanged} · sprunget over: {refused}",
       "failed": "Udgivelsen kunne ikke starte — genindlæs siden, og prøv igen."
-    },
-    "pager": {
-      "label": "Listens sider",
-      "previous": "Forrige",
-      "next": "Næste",
-      "position": "{page} af {pages}"
     }
   }
 }
