@@ -1478,6 +1478,8 @@
     "close": "Stäng",
     "prev-document": "Föregående dokument",
     "next-document": "Nästa dokument",
+    "expand-width": "Full bredd",
+    "collapse-width": "Normal bredd",
     "prev-page": "Föregående sida",
     "next-page": "Nästa sida",
     "metadata-title": "Detaljer",

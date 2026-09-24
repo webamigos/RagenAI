@@ -1478,6 +1478,8 @@
     "close": "Fechar",
     "prev-document": "Documento anterior",
     "next-document": "Próximo documento",
+    "expand-width": "Largura total",
+    "collapse-width": "Largura normal",
     "prev-page": "Página anterior",
     "next-page": "Próxima página",
     "metadata-title": "Detalhes",

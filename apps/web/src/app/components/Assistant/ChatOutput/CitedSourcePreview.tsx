@@ -9,6 +9,11 @@ import { XMarkIcon } from '@heroicons/react/24/outline';
 import { Scrim } from '@/components/ui/scrim';
 import { getFileIcon } from '@/app/lib/constants/fileIcons';
 import { fileTypeFromName } from '@/app/components/ManageKnowledge/DocumentPreview/viewers/file-type-from-name';
+import {
+  PREVIEW_WIDTH,
+  PreviewWidthToggle,
+  usePreviewExpanded,
+} from '@/app/components/ManageKnowledge/DocumentPreview/PreviewWidthToggle';
 import type { RetrievalSource } from '@/store/assistant/assistantSlice';
 
 /**
@@ -77,6 +82,7 @@ const FOCUSABLE =
 
 export function CitedSourcePreview({ source, onClose }: Props) {
   const t = useTranslations('document-preview');
+  const { expanded, toggle } = usePreviewExpanded();
   const panelRef = useRef<HTMLDivElement>(null);
   /** The control that opened the panel, so closing can hand focus back. */
   const triggerRef = useRef<HTMLElement | null>(null);
@@ -190,7 +196,12 @@ export function CitedSourcePreview({ source, onClose }: Props) {
         role="dialog"
         aria-modal="true"
         aria-label={fileName}
-        className="relative flex h-full w-[90vw] max-w-4xl flex-col bg-card shadow-2xl outline-none dark:bg-muted"
+        data-expanded={expanded}
+        className={`relative flex h-full flex-col bg-card shadow-2xl outline-none dark:bg-muted ${
+          expanded
+            ? PREVIEW_WIDTH.expanded
+            : `${PREVIEW_WIDTH.normal} max-w-4xl`
+        }`}
       >
         <div className="flex shrink-0 items-center gap-3 border-b border-border px-4 py-3">
           <span className="inline-flex size-6 shrink-0 items-center">
@@ -202,6 +213,7 @@ export function CitedSourcePreview({ source, onClose }: Props) {
           >
             {fileName}
           </span>
+          <PreviewWidthToggle expanded={expanded} onToggle={toggle} />
           <button
             onClick={onClose}
             aria-label={t('close')}

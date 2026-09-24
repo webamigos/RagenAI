@@ -35,6 +35,8 @@ const messages = {
     'action-delete': 'Usuń',
     'prev-page': 'Poprzednia strona',
     'next-page': 'Następna strona',
+    'expand-width': 'Pełna szerokość',
+    'collapse-width': 'Zwykła szerokość',
   },
   'files-table': {
     'status-ready': 'Gotowy',
@@ -145,5 +147,41 @@ describe('DocumentPreviewSlideOver', () => {
     );
     fireEvent.click(screen.getByTestId('preview-overlay'));
     expect(onClose).toHaveBeenCalledOnce();
+  });
+
+  it('rozszerza panel na pełną szerokość okna i zapamiętuje wybór', () => {
+    window.localStorage.removeItem('ragen.preview.expanded');
+    const props = {
+      file: makeFile({ fileName: 'a.xlsx', fileType: 'XLSX' as const }),
+      files: [makeFile()],
+      initialIndex: 0,
+      isOpen: true,
+      onClose: vi.fn(),
+      onFileChange: vi.fn(),
+      onDelete: vi.fn(),
+      onShare: vi.fn(),
+      onMove: vi.fn(),
+    };
+    const { unmount } = render(wrap(<DocumentPreviewSlideOver {...props} />));
+
+    const panel = screen.getByTestId('preview-panel');
+    expect(panel.className).toContain('max-w-5xl');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Pełna szerokość' }));
+    expect(panel).toHaveAttribute('data-expanded', 'true');
+    expect(panel.className).toContain('w-screen');
+    expect(panel.className).not.toContain('max-w-5xl');
+    expect(
+      screen.getByRole('button', { name: 'Zwykła szerokość' }),
+    ).toHaveAttribute('aria-pressed', 'true');
+
+    // Reopening the drawer keeps the width the reader chose.
+    unmount();
+    render(wrap(<DocumentPreviewSlideOver {...props} />));
+    expect(screen.getByTestId('preview-panel')).toHaveAttribute(
+      'data-expanded',
+      'true',
+    );
+    window.localStorage.removeItem('ragen.preview.expanded');
   });
 });

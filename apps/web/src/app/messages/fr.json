@@ -1478,6 +1478,8 @@
     "close": "Fermer",
     "prev-document": "Document précédent",
     "next-document": "Document suivant",
+    "expand-width": "Pleine largeur",
+    "collapse-width": "Largeur normale",
     "prev-page": "Page précédente",
     "next-page": "Page suivante",
     "metadata-title": "Détails",

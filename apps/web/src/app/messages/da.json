@@ -1478,6 +1478,8 @@
     "close": "Luk",
     "prev-document": "Forrige dokument",
     "next-document": "Næste dokument",
+    "expand-width": "Fuld bredde",
+    "collapse-width": "Normal bredde",
     "prev-page": "Forrige side",
     "next-page": "Næste side",
     "metadata-title": "Detaljer",

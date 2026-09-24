@@ -1478,6 +1478,8 @@
     "close": "Bezárás",
     "prev-document": "Előző dokumentum",
     "next-document": "Következő dokumentum",
+    "expand-width": "Teljes szélesség",
+    "collapse-width": "Normál szélesség",
     "prev-page": "Előző oldal",
     "next-page": "Következő oldal",
     "metadata-title": "Részletek",

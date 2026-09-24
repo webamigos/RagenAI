@@ -8,6 +8,11 @@ import { useDocumentPreview } from './hooks/useDocumentPreview';
 import { DocumentPreviewHeader } from './DocumentPreviewHeader';
 import { DocumentPreviewMetadata } from './DocumentPreviewMetadata';
 import { ViewerForType } from './viewers/ViewerForType';
+import {
+  PREVIEW_WIDTH,
+  PreviewWidthToggle,
+  usePreviewExpanded,
+} from './PreviewWidthToggle';
 
 type Props = {
   file: UserFileTypeSafe | null;
@@ -40,6 +45,7 @@ export function DocumentPreviewSlideOver({
       isOpen,
       onFileChange,
     });
+  const { expanded, toggle } = usePreviewExpanded();
 
   useEffect(() => {
     if (!isOpen) {
@@ -73,7 +79,15 @@ export function DocumentPreviewSlideOver({
       <Scrim data-testid="preview-overlay" onClick={onClose} />
 
       {/* Panel */}
-      <div className="relative flex h-full w-[90vw] max-w-5xl flex-col bg-card shadow-2xl dark:bg-muted">
+      <div
+        data-testid="preview-panel"
+        data-expanded={expanded}
+        className={`relative flex h-full flex-col bg-card shadow-2xl dark:bg-muted ${
+          expanded
+            ? PREVIEW_WIDTH.expanded
+            : `${PREVIEW_WIDTH.normal} max-w-5xl`
+        }`}
+      >
         {/* Header */}
         <DocumentPreviewHeader
           fileName={file.fileName}
@@ -83,6 +97,9 @@ export function DocumentPreviewSlideOver({
           onPrev={goPrev}
           onNext={goNext}
           onClose={onClose}
+          widthToggle={
+            <PreviewWidthToggle expanded={expanded} onToggle={toggle} />
+          }
         />
 
         {/* Body: viewer 70% + metadata 30% */}

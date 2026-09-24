@@ -100,6 +100,10 @@ archive is the blog.
   panel's header now sit on one line; the sources panel reaches the bottom
   of the frame; the frame keeps its rounded corner under the bar; and the
   line across the top of the message box is gone.
+- `[brief]` **Document previews can fill the window.** A new button next to
+  close widens the preview to the whole window — useful for a spreadsheet with
+  more columns than the side panel shows. It works for a cited source in a
+  thread too, and the preview remembers the width you chose.
 
 ### Thread: the assistants grid tells the truth
 
