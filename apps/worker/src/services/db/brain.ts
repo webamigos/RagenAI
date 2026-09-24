@@ -50,8 +50,12 @@ export async function getPlanFeatures(planName: string) {
  * version whose text nobody checked.
  */
 export async function getExtractionSource(fileId: string, orgId: string) {
-  const file = await getPrisma().userFile.findUnique({
-    where: { id_organizationId: { id: fileId, organizationId: orgId } },
+  // `findFirst` on the two columns rather than `findUnique` on the compound
+  // key: the tenant-scope guard reads a top-level `organizationId` and does
+  // not see one inside `id_organizationId`, so the stricter-looking form
+  // warns on every call and teaches the reader to ignore the guard.
+  const file = await getPrisma().userFile.findFirst({
+    where: { id: fileId, organizationId: orgId },
     select: { fileName: true, documentId: true },
   });
   if (!file?.documentId) {

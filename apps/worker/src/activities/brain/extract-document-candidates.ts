@@ -2,6 +2,7 @@ import {
   assembleCandidates,
   ExtractionBudget,
   extractDocument,
+  type AssembledCandidates,
   type GenerateStructured,
 } from '@ragenai/brain-core';
 import { generateObject, NoObjectGeneratedError, zodSchema } from 'ai';
@@ -29,24 +30,34 @@ export type ExtractDocumentCandidatesResult = {
 };
 
 /**
- * Extract one document into candidate pages (spec B3).
+ * The first half of `extractDocumentCandidates`, with no writes: read the
+ * document's active version, run extraction through the gateway, record the
+ * usage, assemble candidates.
  *
- * The rules are `brain-core`'s; this binds them to the gateway, the database
- * and the finding a failure raises. What it adds:
- *
- * - **The text is the active version's**, and so is the id every source is
- *   pinned to — see `getExtractionSource`.
- * - **A failure is a finding, never a failed run.** One document's bad answer
- *   raises `EXTRACTION_FAILED` for that document and the run carries on; a
- *   failed job run is not somewhere a curator looks. A success resolves the
- *   document's open finding, which is D3's "retry resolves it".
- * - **Nothing is logged with an error object.** An AI SDK error carries
- *   `requestBodyValues` — the document — and a structured logger copies it.
- *
- * `maxTokens` is what is left of the run's budget; the run's document count
- * is the handler's to enforce.
+ * Split out so B5's preview script runs **this** — the path the job runs —
+ * rather than a lookalike. A preview that exercises a different path than
+ * production has no oracle, and a wrong answer from it gets blamed on the
+ * model. Returns the candidates in memory; they carry document text, so they
+ * never leave the process as a step result.
  */
-export async function extractDocumentCandidates({
+export type ExtractFileResult =
+  | {
+      status: 'extracted';
+      tokens: number;
+      source: { fileName: string; documentVersionId: string };
+      assembled: AssembledCandidates;
+      /** Items the model returned that failed their limits. */
+      rejectedItems: number;
+    }
+  | {
+      status: 'failed';
+      tokens: number;
+      reason: string;
+      windowIndex: number | null;
+    }
+  | { status: 'budget_exhausted'; tokens: number };
+
+export async function extractFile({
   orgId,
   fileId,
   userId,
@@ -58,23 +69,14 @@ export async function extractDocumentCandidates({
   userId?: string | null;
   maxTokens: number;
   runId: string;
-}): Promise<ExtractDocumentCandidatesResult> {
+}): Promise<ExtractFileResult> {
   const source = await getExtractionSource(fileId, orgId);
   if (!source) {
-    await recordExtractionFailed({
-      orgId,
-      fileId,
-      detail: {
-        reason: 'the document has no parsed text to extract from',
-        windowIndex: null,
-        runId,
-      },
-    });
     return {
       status: 'failed',
-      pagesCreated: 0,
-      unverifiedClaims: 0,
       tokens: 0,
+      reason: 'the document has no parsed text to extract from',
+      windowIndex: null,
     };
   }
 
@@ -139,30 +141,15 @@ export async function extractDocumentCandidates({
   }
 
   if (outcome.status === 'budget_exhausted') {
-    logger.info({ orgId, fileId, runId }, 'brain extract: run budget reached');
-    return {
-      status: 'budget_exhausted',
-      pagesCreated: 0,
-      unverifiedClaims: 0,
-      tokens,
-    };
+    return { status: 'budget_exhausted', tokens };
   }
-
   if (outcome.status === 'failed') {
-    await recordExtractionFailed({
-      orgId,
-      fileId,
-      detail: {
-        reason: outcome.reason,
-        windowIndex: outcome.windowIndex,
-        runId,
-      },
-    });
-    logger.warn(
-      { orgId, fileId, runId, windowIndex: outcome.windowIndex },
-      'brain extract: document failed, finding raised',
-    );
-    return { status: 'failed', pagesCreated: 0, unverifiedClaims: 0, tokens };
+    return {
+      status: 'failed',
+      tokens,
+      reason: outcome.reason,
+      windowIndex: outcome.windowIndex,
+    };
   }
 
   const principals = await computeFileAccessPrincipals(fileId, orgId);
@@ -176,11 +163,94 @@ export async function extractDocumentCandidates({
     },
     outcome.windows,
   );
+  return {
+    status: 'extracted',
+    tokens,
+    source: {
+      fileName: source.fileName,
+      documentVersionId: source.documentVersionId,
+    },
+    assembled,
+    rejectedItems: outcome.rejectedItems,
+  };
+}
+
+/**
+ * Extract one document into candidate pages (spec B3).
+ *
+ * The rules are `brain-core`'s; `extractFile` binds them to the gateway, and
+ * this adds the writes and the finding a failure raises:
+ *
+ * - **The text is the active version's**, and so is the id every source is
+ *   pinned to — see `getExtractionSource`.
+ * - **A failure is a finding, never a failed run.** One document's bad answer
+ *   raises `EXTRACTION_FAILED` for that document and the run carries on; a
+ *   failed job run is not somewhere a curator looks. A success resolves the
+ *   document's open finding, which is D3's "retry resolves it".
+ * - **Nothing is logged with an error object.** An AI SDK error carries
+ *   `requestBodyValues` — the document — and a structured logger copies it.
+ * - **Only counts leave.** The result crosses the job runtime (Redis, or
+ *   Temporal history); the candidates carry document text and stay here.
+ *
+ * `maxTokens` is what is left of the run's budget; the run's document count
+ * is the handler's to enforce.
+ */
+export async function extractDocumentCandidates(input: {
+  orgId: string;
+  fileId: string;
+  userId?: string | null;
+  maxTokens: number;
+  runId: string;
+}): Promise<ExtractDocumentCandidatesResult> {
+  return persistExtraction(input, await extractFile(input));
+}
+
+/**
+ * The second half: what `extractFile`'s result does to the database — the
+ * candidates written, or the finding raised. Exported for the preview
+ * script's `--write`, so it persists by the job's code rather than its own.
+ */
+export async function persistExtraction(
+  { orgId, fileId, runId }: { orgId: string; fileId: string; runId: string },
+  result: ExtractFileResult,
+): Promise<ExtractDocumentCandidatesResult> {
+  if (result.status === 'budget_exhausted') {
+    logger.info({ orgId, fileId, runId }, 'brain extract: run budget reached');
+    return {
+      status: 'budget_exhausted',
+      pagesCreated: 0,
+      unverifiedClaims: 0,
+      tokens: result.tokens,
+    };
+  }
+
+  if (result.status === 'failed') {
+    await recordExtractionFailed({
+      orgId,
+      fileId,
+      detail: {
+        reason: result.reason,
+        windowIndex: result.windowIndex,
+        runId,
+      },
+    });
+    logger.warn(
+      { orgId, fileId, runId, windowIndex: result.windowIndex },
+      'brain extract: document failed, finding raised',
+    );
+    return {
+      status: 'failed',
+      pagesCreated: 0,
+      unverifiedClaims: 0,
+      tokens: result.tokens,
+    };
+  }
+
   const written = await replaceCandidatesFromFile({
     orgId,
     fileId,
-    pages: assembled.pages,
-    edges: assembled.edges,
+    pages: result.assembled.pages,
+    edges: result.assembled.edges,
   });
   await resolveExtractionFailed({ orgId, fileId });
 
@@ -191,14 +261,14 @@ export async function extractDocumentCandidates({
       runId,
       pagesCreated: written.pagesCreated,
       pagesReplaced: written.pagesReplaced,
-      unverifiedClaims: assembled.unverifiedClaims,
+      unverifiedClaims: result.assembled.unverifiedClaims,
     },
     'brain extract: candidates written',
   );
   return {
     status: 'extracted',
     pagesCreated: written.pagesCreated,
-    unverifiedClaims: assembled.unverifiedClaims,
-    tokens,
+    unverifiedClaims: result.assembled.unverifiedClaims,
+    tokens: result.tokens,
   };
 }

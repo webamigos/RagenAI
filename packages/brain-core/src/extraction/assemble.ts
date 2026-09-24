@@ -46,11 +46,25 @@ export type CandidateEdge = {
   origin: KnowledgeEdgeOrigin;
 };
 
+/** A claim dropped because its quote does not occur in the source. */
+export type UnverifiedClaim = {
+  entityTitle: string;
+  statement: string;
+  quote: string;
+  locator: string;
+};
+
 export type AssembledCandidates = {
   pages: CandidatePage[];
   edges: CandidateEdge[];
-  /** Claims dropped because their quote is not in the source. Reported, so B5 can show the rate. */
+  /** `unverified.length` — kept as a number for callers that only count. */
   unverifiedClaims: number;
+  /**
+   * The dropped claims themselves, so a person judging extraction quality
+   * (B5's preview) can see *why* they went — a paraphrase, a translated
+   * quote, two passages joined — rather than only how many. Never persisted.
+   */
+  unverified: UnverifiedClaim[];
 };
 
 /**
@@ -95,7 +109,7 @@ export function assembleCandidates(
   };
   const drafts = new Map<string, Draft>();
   const edges = new Map<string, CandidateEdge>();
-  let unverifiedClaims = 0;
+  const unverified: UnverifiedClaim[] = [];
 
   for (const window of windows) {
     const slugByKey = new Map<string, string>();
@@ -119,7 +133,12 @@ export function assembleCandidates(
         continue;
       }
       if (!index.contains(claim.quote)) {
-        unverifiedClaims += 1;
+        unverified.push({
+          entityTitle: draft.title,
+          statement: claim.statement,
+          quote: claim.quote,
+          locator: claim.locator,
+        });
         continue;
       }
       const hash = quoteHash(claim.quote);
@@ -177,7 +196,8 @@ export function assembleCandidates(
     edges: [...edges.values()].filter(
       (e) => slugs.has(e.fromSlug) && slugs.has(e.toSlug),
     ),
-    unverifiedClaims,
+    unverifiedClaims: unverified.length,
+    unverified,
   };
 }
 
