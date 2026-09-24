@@ -5,6 +5,17 @@
   "description": "Vector-store contract shared by apps/web, apps/api and apps/worker (ADR-26)",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "//exports": "Two entry points, because one consumer runs in a sandbox. The root barrel loads `vector-contract`, which reads `process.env` at module scope, and a Temporal workflow bundle has no `process` — importing the barrel from `apps/worker/src/handlers/` fails every workflow task with `process is not defined`. `./undecodable-text` imports nothing and reads no environment, which is what makes it safe to say so here.",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./undecodable-text": {
+      "types": "./dist/undecodable-text.d.ts",
+      "default": "./dist/undecodable-text.js"
+    }
+  },
   "files": [
     "dist"
   ],

@@ -3,6 +3,10 @@ import {
   type JobContext,
   type RunFileEmbeddingsPayload,
 } from '@ragenai/jobs';
+// The subpath, never the barrel: this module is bundled into Temporal's
+// workflow sandbox, which has no `process`, and the barrel's `vector-contract`
+// reads `process.env` as it loads. See `//exports` in rag-core's package.json.
+import { findUndecodableText } from '@ragenai/rag-core/undecodable-text';
 
 import { type Document } from '../types/Document.js';
 
@@ -353,6 +357,24 @@ export async function runFileEmbeddings(
         default:
           throw JobFailure.nonRetryable('Unsupported loader');
       }
+    }
+
+    // ==== REFUSE UNDECODABLE BINARY
+    // Before the sanitizer, which strips control characters and would hide
+    // exactly the evidence this reads. A loader that was handed a binary —
+    // the text fallback reading a DOCX's ZIP bytes as UTF-8 was the case that
+    // reached production — produces a string of U+FFFD and NULs, and every
+    // step below would chunk, embed and index it without complaint. Failing
+    // here records FAILED and writes nothing to the vector store.
+    const undecodable = findUndecodableText(
+      rawDocs.map((d) => d.pageContent).join('\n'),
+    );
+    if (undecodable) {
+      throw JobFailure.nonRetryable(
+        `The ${fileType} loader returned undecodable binary for ${fileName} ` +
+          `(${undecodable}) — refusing to index it. The file's type was ` +
+          `probably misdetected, or it is corrupt.`,
+      );
     }
 
     // Phase 4b — ingest sanitizer. Strip invisible payloads (zero-

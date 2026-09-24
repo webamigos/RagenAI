@@ -191,6 +191,26 @@ describe('retrieveRelevantDocumentsWithIds telemetry', () => {
     expect(snippet).toEqual(snippet.normalize('NFC'));
   });
 
+  it('quotes nothing from a chunk that is a binary file read as text', async () => {
+    // Chunks the worker indexed from Word files' raw ZIP bytes, before it
+    // refused them. The source is still listed; there is just no quote.
+    const store = makeVectorStore();
+    const zipAsText =
+      'PK\u0003\u0004\u0014\u0000\u0006\u0000' + '�\u0000'.repeat(60);
+    store.similaritySearch = vi.fn().mockResolvedValue([
+      {
+        pageContent: zipAsText,
+        metadata: { file_id: 'f1', file_name: 'umowa.docx' },
+      },
+    ]);
+
+    const result = await retrieveRelevantDocumentsWithIds(store, ['q'], 4);
+
+    expect(result.sources).toHaveLength(1);
+    expect(result.sources[0].fileName).toBe('umowa.docx');
+    expect(result.sources[0]).not.toHaveProperty('snippet');
+  });
+
   it('carries the chunk text, so the answer can be quoted later', async () => {
     // Taken here because this is where it still exists: the reduction to
     // `RetrievedSource` drops `pageContent`, and Qdrant chunk ids do not

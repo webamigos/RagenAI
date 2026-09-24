@@ -80,6 +80,16 @@ archive is the blog.
 
 ### Thread: what a regression pass turned up
 
+- `[brief]` **Word, Excel and PowerPoint files are read, not indexed as
+  bytes.** Uploaded while Docling was unavailable, a `.docx`, `.xlsx` or
+  `.pptx` (and an `.epub` even with Docling up) was mistaken for plain text by
+  its name, and its raw compressed bytes were chunked and indexed — the chat
+  then quoted lines of `�` as a source. They are now detected from their
+  content and parsed by their own loader, or the upload fails with a clear
+  reason; nothing unreadable reaches the index, and a quote from a chunk
+  indexed before the fix is no longer shown. **Files already affected need
+  re-processing.**
+
 - `[major]` **An assistant's instruction is saved now.** Typing an instruction
   into an assistant, pressing save and getting the confirmation toast did not
   store it: the box is empty while the current value is still loading, and when
