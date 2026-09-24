@@ -99,9 +99,12 @@ set; a use case not here is out of scope for the first release.
   questions about documents; this answers questions about curation.
 - **A model picker in the panel**, or a model of its own.
 - **Members without write access proposing changes.** A read-only Brain
-  visitor (`brainForMembers`) gets the read tools only; every proposal
-  requires `manageBrain` and the operator's own write access, checked when the
-  proposal is applied, not when it is shown.
+  visitor (`brainForMembers`) gets the read tools only: the server does not
+  offer the proposal tool to an actor without `manageBrain`, and drops any
+  proposal part before it reaches such an actor's panel, so a proposal is
+  neither generated nor shown to them. Apply checks `manageBrain` and the
+  operator's own write access again, because access can change between the
+  moment a card is shown and the moment it is applied.
 - **Editing claim text in place** beyond a draft the operator accepts. Brain
   has no claim editor today; U3's "edit a claim" produces a suggested text the
   operator pastes or applies through whatever editor exists by then.
@@ -282,9 +285,9 @@ done.
 ## Phases
 
 Each phase ships behind `brainAssistant` (default off) and leaves Brain working.
-Phase A is a build step, not a release: proposals ship in the first release
-(Decisions), so the flag is turned on for an organization only once Phase B
-is merged.
+Phases A and B are build steps, not releases: proposals and kept
+conversations both ship in the first release (Decisions), so the flag is
+turned on for an organization only once Phase C is merged.
 
 ### Phase A — Panel and read-only answers
 
@@ -317,7 +320,8 @@ is merged.
 ## Testing
 
 - **Unit**: each read tool returns only what the actor can see (owner, admin,
-  member with and without `brainForMembers`); proposal schema valid/invalid;
+  member with and without `brainForMembers`); a read-only visitor is offered
+  no proposal tool and receives no proposal part; proposal schema valid/invalid;
   Apply routes each action to the right command and surfaces its refusal.
 - **Integration**: a turn over the usage ceiling is refused before the model is
   called; a guardrail-blocked output never reaches the panel; a source document
@@ -329,8 +333,8 @@ is merged.
 
 ## Rollout and rollback
 
-Shipped dark behind `brainAssistant`; turned on for the demo organization
-first, then per organization by a platform admin. Rollback is the flag. The
+Shipped dark behind `brainAssistant`; turned on — once Phase C is merged —
+for the demo organization first, then per organization by a platform admin. Rollback is the flag. The
 migration only adds `Thread.kind` with a default, so it needs no backfill and
 is left in place if the feature is switched off; `BRAIN_OPERATOR` threads stay
 encrypted and invisible to the chat either way.
