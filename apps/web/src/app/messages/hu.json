@@ -1889,7 +1889,35 @@
     "load-error": "Az értesítéseket nem sikerült betölteni",
     "load-error-description": "Ellenőrizd a kapcsolatot, és próbáld újra.",
     "retry": "Újrapróbálás",
-    "mark-read-error": "Az értesítéseket nem sikerült olvasottnak jelölni. Próbáld újra."
+    "mark-read-error": "Az értesítéseket nem sikerült olvasottnak jelölni. Próbáld újra.",
+    "content": {
+      "document-shared": {
+        "title": "Megosztottak veled egy dokumentumot",
+        "title-by": "{name} megosztott veled egy dokumentumot"
+      },
+      "folder-shared": {
+        "title": "Megosztottak veled egy mappát",
+        "title-by": "{name} megosztott veled egy mappát"
+      },
+      "project-shared": {
+        "title": "Megosztottak veled egy asszisztenst",
+        "title-by": "{name} megosztott veled egy asszisztenst"
+      },
+      "thread-shared": {
+        "title": "Megosztottak veled egy beszélgetést",
+        "title-by": "{name} megosztott veled egy beszélgetést"
+      },
+      "drive-import": {
+        "title": "A Google Drive-importálás befejeződött",
+        "body": "{count, plural, one {# fájl importálva innen: „{folder}”} other {# fájl importálva innen: „{folder}”}}"
+      },
+      "document-embedded": {
+        "title": "„{name}” készen áll a keresésre"
+      },
+      "document-expiring": {
+        "title": "„{name}” {days, plural, =0 {ma jár le} =1 {holnap jár le} other {# nap múlva jár le}}"
+      }
+    }
   },
   "organization": {
     "tabs": {

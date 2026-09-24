@@ -1,4 +1,7 @@
-import { type NotificationType } from '../generated/prisma/client.js';
+import {
+  type NotificationType,
+  type Prisma,
+} from '../generated/prisma/client.js';
 
 /**
  * Ported from apps/web's
@@ -17,6 +20,12 @@ export type NotificationDto = {
   title: string;
   body: string | null;
   resourceUrl: string | null;
+  /**
+   * The structured details apps/web renders the text from — see
+   * `parseNotificationDetails` in `@ragenai/platform-contracts`. `null` on
+   * rows written before that contract; `title`/`body` are the fallback.
+   */
+  metadata: Prisma.JsonValue | null;
   createdAt: Date;
 };
 
@@ -27,6 +36,7 @@ export type CreateNotificationInput = {
   title: string;
   body?: string;
   resourceUrl?: string;
+  /** The type's details, built with `notificationDetails()`. */
   metadata?: Record<string, unknown>;
 };
 

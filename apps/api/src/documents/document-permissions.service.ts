@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { notificationDetails } from '@ragenai/platform-contracts';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import type {
   DocumentPermissionItem,
@@ -79,7 +80,7 @@ export class DocumentPermissionsService {
       }
     }
 
-    let resourceName: string | undefined;
+    let resourceName: string;
     if (resourceType === 'file') {
       const file = await this.prisma.client.userFile.findFirst({
         where: { id: params.fileId, organizationId },
@@ -141,15 +142,31 @@ export class DocumentPermissionsService {
         resourceType === 'file'
           ? `/knowledge/documents-list?fileId=${params.fileId}`
           : `/knowledge/documents-list`;
+      // Awaited, not chained: it never throws, and reading it first keeps the
+      // notification a single fire-and-forget call below.
+      const sharedByName = await this.notifications.memberDisplayName(
+        grantedBy,
+        organizationId,
+      );
 
+      // `title`/`body` are the English fallback for rows a client cannot
+      // render; apps/web renders the reader's locale from `metadata`.
       this.notifications
         .create({
           userId: granteeId,
           organizationId,
           type: 'DOCUMENT_SHARED',
-          title: 'Udostępniono Ci dokument',
+          title:
+            resourceType === 'file'
+              ? 'A document was shared with you'
+              : 'A folder was shared with you',
           body: resourceName,
           resourceUrl,
+          metadata: notificationDetails('DOCUMENT_SHARED', {
+            resourceName,
+            resourceKind: resourceType,
+            sharedByName,
+          }),
         })
         .catch((err: unknown) => {
           this.logger.error(

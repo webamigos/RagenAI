@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { parseNotificationDetails } from '@ragenai/platform-contracts';
 
 import {
   assertQuoteIn,
@@ -18,6 +19,7 @@ import {
   DERIVED_MARGIN_MS,
   agoFrom,
   assertDemoDatabase,
+  demoNotifications,
   firstParagraph,
   parseLocales,
 } from '../../scripts/demo/seed-nordwind';
@@ -279,5 +281,27 @@ describe('agoFrom', () => {
 
   it('leaves a negative offset in the future, for expiry dates', () => {
     expect(agoFrom(now, -30).getTime()).toBeGreaterThan(now);
+  });
+});
+
+describe.each(['pl', 'en'] as const)('%s demo notifications', (locale) => {
+  const rows = demoNotifications(locale);
+
+  it('carry details the notifications page can render', () => {
+    for (const n of rows) {
+      expect(parseNotificationDetails(n.type, n.metadata)).not.toBeNull();
+    }
+  });
+
+  it('keep an English fallback title, never a Polish one', () => {
+    for (const n of rows) {
+      expect(n.title).not.toMatch(/[ąćęłńóśźż„]/i);
+    }
+  });
+
+  it('names the people of its own locale', () => {
+    const sharer = rows.find((n) => n.type === 'PROJECT_SHARED')?.metadata
+      .sharedByName;
+    expect(sharer).toBe(locale === 'pl' ? 'Piotr Zieliński' : 'Peter Hughes');
   });
 });

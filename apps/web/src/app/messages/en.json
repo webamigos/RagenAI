@@ -1889,7 +1889,35 @@
     "load-error": "Notifications could not be loaded",
     "load-error-description": "Check your connection and try again.",
     "retry": "Try again",
-    "mark-read-error": "Notifications could not be marked as read. Try again."
+    "mark-read-error": "Notifications could not be marked as read. Try again.",
+    "content": {
+      "document-shared": {
+        "title": "A document was shared with you",
+        "title-by": "{name} shared a document with you"
+      },
+      "folder-shared": {
+        "title": "A folder was shared with you",
+        "title-by": "{name} shared a folder with you"
+      },
+      "project-shared": {
+        "title": "An assistant was shared with you",
+        "title-by": "{name} shared an assistant with you"
+      },
+      "thread-shared": {
+        "title": "A thread was shared with you",
+        "title-by": "{name} shared a thread with you"
+      },
+      "drive-import": {
+        "title": "Google Drive import finished",
+        "body": "{count, plural, one {Imported # file from “{folder}”} other {Imported # files from “{folder}”}}"
+      },
+      "document-embedded": {
+        "title": "“{name}” is ready to search"
+      },
+      "document-expiring": {
+        "title": "“{name}” expires {days, plural, =0 {today} =1 {tomorrow} other {in # days}}"
+      }
+    }
   },
   "organization": {
     "tabs": {

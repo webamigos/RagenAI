@@ -1889,7 +1889,35 @@
     "load-error": "Известията не можаха да се заредят",
     "load-error-description": "Провери връзката си и опитай отново.",
     "retry": "Опитай отново",
-    "mark-read-error": "Известията не можаха да се маркират като прочетени. Опитай отново."
+    "mark-read-error": "Известията не можаха да се маркират като прочетени. Опитай отново.",
+    "content": {
+      "document-shared": {
+        "title": "Споделен е документ с теб",
+        "title-by": "{name} сподели документ с теб"
+      },
+      "folder-shared": {
+        "title": "Споделена е папка с теб",
+        "title-by": "{name} сподели папка с теб"
+      },
+      "project-shared": {
+        "title": "Споделен е асистент с теб",
+        "title-by": "{name} сподели асистент с теб"
+      },
+      "thread-shared": {
+        "title": "Споделен е разговор с теб",
+        "title-by": "{name} сподели разговор с теб"
+      },
+      "drive-import": {
+        "title": "Импортът от Google Drive завърши",
+        "body": "{count, plural, one {Импортиран е # файл от „{folder}“} other {Импортирани са # файла от „{folder}“}}"
+      },
+      "document-embedded": {
+        "title": "„{name}“ е готов за търсене"
+      },
+      "document-expiring": {
+        "title": "„{name}“ изтича {days, plural, =0 {днес} =1 {утре} other {след # дни}}"
+      }
+    }
   },
   "organization": {
     "tabs": {

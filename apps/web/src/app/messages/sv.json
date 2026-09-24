@@ -1889,7 +1889,35 @@
     "load-error": "Notiserna kunde inte läsas in",
     "load-error-description": "Kontrollera anslutningen och försök igen.",
     "retry": "Försök igen",
-    "mark-read-error": "Notiserna kunde inte markeras som lästa. Försök igen."
+    "mark-read-error": "Notiserna kunde inte markeras som lästa. Försök igen.",
+    "content": {
+      "document-shared": {
+        "title": "Ett dokument har delats med dig",
+        "title-by": "{name} har delat ett dokument med dig"
+      },
+      "folder-shared": {
+        "title": "En mapp har delats med dig",
+        "title-by": "{name} har delat en mapp med dig"
+      },
+      "project-shared": {
+        "title": "En assistent har delats med dig",
+        "title-by": "{name} har delat en assistent med dig"
+      },
+      "thread-shared": {
+        "title": "En konversation har delats med dig",
+        "title-by": "{name} har delat en konversation med dig"
+      },
+      "drive-import": {
+        "title": "Google Drive-import slutförd",
+        "body": "{count, plural, one {# fil importerades från ”{folder}”} other {# filer importerades från ”{folder}”}}"
+      },
+      "document-embedded": {
+        "title": "”{name}” är redo att sökas i"
+      },
+      "document-expiring": {
+        "title": "”{name}” upphör {days, plural, =0 {i dag} =1 {i morgon} other {om # dagar}}"
+      }
+    }
   },
   "organization": {
     "tabs": {

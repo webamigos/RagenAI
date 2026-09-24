@@ -14,6 +14,15 @@ vi.mock('@/features/notifications/utils/send-notification-to-user', () => ({
   sendNotificationToUser: (...args: unknown[]) => mockSendNotification(...args),
 }));
 
+const mockMemberDisplayName = vi.fn().mockResolvedValue('Grace Granter');
+vi.mock(
+  '@/features/notifications/services/queries/get-member-display-name-query',
+  () => ({
+    getMemberDisplayNameQuery: (...args: unknown[]) =>
+      mockMemberDisplayName(...args),
+  }),
+);
+
 vi.mock('@ragenai/prisma-client', () => ({
   default: {
     project: {
@@ -153,8 +162,14 @@ describe('shareProjectCommand', () => {
       'user-2',
       ORG_ID,
       'PROJECT_SHARED',
-      expect.objectContaining({ body: 'My project' }),
+      expect.objectContaining({
+        title: 'An assistant was shared with you',
+        body: 'My project',
+        resourceUrl: `/projects/${PROJECT_ID}`,
+        metadata: { projectName: 'My project', sharedByName: 'Grace Granter' },
+      }),
     );
+    expect(mockMemberDisplayName).toHaveBeenCalledWith(GRANTER_ID, ORG_ID);
   });
 
   it('does not notify when sharing with a team', async () => {

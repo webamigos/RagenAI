@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { type Prisma } from '../generated/prisma/client.js';
 import {
@@ -16,6 +16,7 @@ const SELECT = {
   title: true,
   body: true,
   resourceUrl: true,
+  metadata: true,
   createdAt: true,
 } as const;
 
@@ -35,7 +36,35 @@ const SELECT = {
  */
 @Injectable()
 export class NotificationsService {
+  private readonly logger = new Logger(NotificationsService.name);
+
   constructor(private readonly prisma: PrismaService) {}
+
+  /**
+   * The display name of a member of `organizationId`, for a notification's
+   * "{name} shared …" sentence. Read through the membership, so a user id
+   * from another organization yields nothing. Never throws and never blocks
+   * the share it decorates: a failed read returns `undefined` and the
+   * sentence is rendered without a name.
+   */
+  async memberDisplayName(
+    userId: string,
+    organizationId: string,
+  ): Promise<string | undefined> {
+    try {
+      const member = await this.prisma.client.member.findFirst({
+        where: { userId, organizationId },
+        select: { user: { select: { name: true } } },
+      });
+      const name = member?.user.name?.trim();
+      return name ? name : undefined;
+    } catch (err: unknown) {
+      this.logger.warn(
+        `Could not read a sharer's name for a notification (organizationId=${organizationId}): ${err instanceof Error ? err.message : String(err)}`,
+      );
+      return undefined;
+    }
+  }
 
   async create(input: CreateNotificationInput): Promise<NotificationDto> {
     return this.prisma.client.notification.create({

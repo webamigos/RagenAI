@@ -1889,7 +1889,35 @@
     "load-error": "Oznámenia sa nepodarilo načítať",
     "load-error-description": "Skontrolujte pripojenie a skúste to znova.",
     "retry": "Skúsiť znova",
-    "mark-read-error": "Oznámenia sa nepodarilo označiť ako prečítané. Skúste to znova."
+    "mark-read-error": "Oznámenia sa nepodarilo označiť ako prečítané. Skúste to znova.",
+    "content": {
+      "document-shared": {
+        "title": "Bol s vami zdieľaný dokument",
+        "title-by": "{name} s vami zdieľa dokument"
+      },
+      "folder-shared": {
+        "title": "Bol s vami zdieľaný priečinok",
+        "title-by": "{name} s vami zdieľa priečinok"
+      },
+      "project-shared": {
+        "title": "Bol s vami zdieľaný asistent",
+        "title-by": "{name} s vami zdieľa asistenta"
+      },
+      "thread-shared": {
+        "title": "Bola s vami zdieľaná konverzácia",
+        "title-by": "{name} s vami zdieľa konverzáciu"
+      },
+      "drive-import": {
+        "title": "Import z Google Drive dokončený",
+        "body": "{count, plural, one {Importovaný # súbor z priečinka „{folder}“} few {Importované # súbory z priečinka „{folder}“} many {Importovaného # súboru z priečinka „{folder}“} other {Importovaných # súborov z priečinka „{folder}“}}"
+      },
+      "document-embedded": {
+        "title": "Dokument „{name}“ je pripravený na vyhľadávanie"
+      },
+      "document-expiring": {
+        "title": "Dokument „{name}“ vyprší {days, plural, =0 {dnes} =1 {zajtra} few {o # dni} many {o # dňa} other {o # dní}}"
+      }
+    }
   },
   "organization": {
     "tabs": {

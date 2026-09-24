@@ -68,6 +68,7 @@ describe('ThreadSharingService', () => {
 
     const notifications = {
       create: vi.fn(),
+      memberDisplayName: vi.fn().mockResolvedValue('Ann Owner'),
     } as unknown as NotificationsService;
 
     const subscriptions = {
@@ -153,6 +154,46 @@ describe('ThreadSharingService', () => {
         expect.objectContaining({
           userId: 'u2',
           type: 'THREAD_SHARED_NEW_MESSAGE',
+          title: 'A thread was shared with you',
+          body: 'Hi',
+          metadata: { threadTitle: 'Hi', sharedByName: 'Ann Owner' },
+        }),
+      );
+      expect(notifications.memberDisplayName).toHaveBeenCalledWith(
+        'u1',
+        'org-1',
+      );
+    });
+
+    it('writes no thread title into the details when the thread has none', async () => {
+      const tx = {
+        member: { count: vi.fn().mockResolvedValue(1) },
+        threadShare: {
+          deleteMany: vi.fn(),
+          findMany: vi.fn().mockResolvedValue([]),
+          createMany: vi.fn(),
+        },
+      };
+      const { service, notifications } = makeService({
+        thread: {
+          findFirst: vi
+            .fn()
+            .mockResolvedValue({ id: 't1', visitorId: 'u1', title: null }),
+        } as never,
+        tx,
+      });
+
+      await service.shareThread({
+        threadId: 't1',
+        recipientUserIds: ['u2'],
+        organizationId: 'org-1',
+        currentUserId: 'u1',
+      });
+
+      expect(notifications.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'THREAD_SHARED_NEW_MESSAGE',
+          metadata: { sharedByName: 'Ann Owner' },
         }),
       );
     });

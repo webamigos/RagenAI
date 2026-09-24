@@ -1889,7 +1889,35 @@
     "load-error": "Ilmoituksia ei voitu ladata",
     "load-error-description": "Tarkista yhteys ja yritä uudelleen.",
     "retry": "Yritä uudelleen",
-    "mark-read-error": "Ilmoituksia ei voitu merkitä luetuiksi. Yritä uudelleen."
+    "mark-read-error": "Ilmoituksia ei voitu merkitä luetuiksi. Yritä uudelleen.",
+    "content": {
+      "document-shared": {
+        "title": "Kanssasi jaettiin asiakirja",
+        "title-by": "{name} jakoi kanssasi asiakirjan"
+      },
+      "folder-shared": {
+        "title": "Kanssasi jaettiin kansio",
+        "title-by": "{name} jakoi kanssasi kansion"
+      },
+      "project-shared": {
+        "title": "Kanssasi jaettiin avustaja",
+        "title-by": "{name} jakoi kanssasi avustajan"
+      },
+      "thread-shared": {
+        "title": "Kanssasi jaettiin keskustelu",
+        "title-by": "{name} jakoi kanssasi keskustelun"
+      },
+      "drive-import": {
+        "title": "Google Drive -tuonti valmis",
+        "body": "{count, plural, one {# tiedosto tuotiin kansiosta ”{folder}”} other {# tiedostoa tuotiin kansiosta ”{folder}”}}"
+      },
+      "document-embedded": {
+        "title": "”{name}” on valmis haettavaksi"
+      },
+      "document-expiring": {
+        "title": "”{name}” vanhenee {days, plural, =0 {tänään} =1 {huomenna} other {# päivän kuluttua}}"
+      }
+    }
   },
   "organization": {
     "tabs": {

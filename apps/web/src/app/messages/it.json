@@ -1889,7 +1889,35 @@
     "load-error": "Impossibile caricare le notifiche",
     "load-error-description": "Controlla la connessione e riprova.",
     "retry": "Riprova",
-    "mark-read-error": "Impossibile segnare le notifiche come lette. Riprova."
+    "mark-read-error": "Impossibile segnare le notifiche come lette. Riprova.",
+    "content": {
+      "document-shared": {
+        "title": "Un documento è stato condiviso con te",
+        "title-by": "{name} ha condiviso un documento con te"
+      },
+      "folder-shared": {
+        "title": "Una cartella è stata condivisa con te",
+        "title-by": "{name} ha condiviso una cartella con te"
+      },
+      "project-shared": {
+        "title": "Un assistente è stato condiviso con te",
+        "title-by": "{name} ha condiviso un assistente con te"
+      },
+      "thread-shared": {
+        "title": "Una conversazione è stata condivisa con te",
+        "title-by": "{name} ha condiviso una conversazione con te"
+      },
+      "drive-import": {
+        "title": "Importazione da Google Drive completata",
+        "body": "{count, plural, one {# file importato da “{folder}”} other {# file importati da “{folder}”}}"
+      },
+      "document-embedded": {
+        "title": "“{name}” è pronto per la ricerca"
+      },
+      "document-expiring": {
+        "title": "“{name}” scade {days, plural, =0 {oggi} =1 {domani} other {tra # giorni}}"
+      }
+    }
   },
   "organization": {
     "tabs": {

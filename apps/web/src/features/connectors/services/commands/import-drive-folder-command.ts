@@ -2,6 +2,7 @@
 
 import { nanoid } from 'nanoid';
 import db from '@ragenai/prisma-client';
+import { notificationDetails } from '@ragenai/platform-contracts';
 import { sendNotificationToUser } from '@/features/notifications/utils/send-notification-to-user';
 import { FileType } from '@/generated/prisma/client';
 import { logger } from '@/app/lib/utils/logger';
@@ -241,10 +242,18 @@ export const importDriveFolderCommand = async (
   }
 
   try {
+    // `title`/`body` are the English fallback; the notifications page renders
+    // the reader's locale, with a plural, from `metadata`.
     await sendNotificationToUser(userId, orgId, 'DRIVE_IMPORT_COMPLETED', {
-      title: 'Import Google Drive zakończony',
-      body: `Zaimportowano ${importedCount} plików z folderu "${folderName}"`,
+      title: 'Google Drive import finished',
+      body: `Imported ${importedCount} ${importedCount === 1 ? 'file' : 'files'} from "${folderName}"`,
       resourceUrl: `/knowledge/documents-list`,
+      metadata: notificationDetails('DRIVE_IMPORT_COMPLETED', {
+        folderName,
+        importedCount,
+        skippedCount,
+        failedCount,
+      }),
     });
   } catch (err) {
     logger.error(

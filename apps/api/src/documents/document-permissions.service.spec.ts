@@ -12,6 +12,7 @@ describe('DocumentPermissionsService', () => {
     documentPermission?: Partial<Record<string, Mock>>;
     user?: Partial<Record<string, Mock>>;
     notificationsCreate?: Mock;
+    sharedByName?: string;
   }) {
     const prisma = {
       client: {
@@ -32,6 +33,11 @@ describe('DocumentPermissionsService', () => {
 
     const notifications = {
       create: overrides.notificationsCreate ?? vi.fn().mockResolvedValue({}),
+      memberDisplayName: vi
+        .fn()
+        .mockResolvedValue(
+          'sharedByName' in overrides ? overrides.sharedByName : 'Ann Sharer',
+        ),
     } as unknown as NotificationsService;
 
     return {
@@ -165,6 +171,43 @@ describe('DocumentPermissionsService', () => {
           userId: 'user-2',
           organizationId: 'org-1',
           type: 'DOCUMENT_SHARED',
+          title: 'A document was shared with you',
+          body: 'doc.pdf',
+          metadata: {
+            resourceName: 'doc.pdf',
+            resourceKind: 'file',
+            sharedByName: 'Ann Sharer',
+          },
+        }),
+      );
+    });
+
+    it('writes folder details, without a name the sharer lookup did not find', async () => {
+      const notificationsCreate = vi.fn().mockResolvedValue({});
+      const { service } = makeService({
+        member: { findFirst: vi.fn().mockResolvedValue({ id: 'm-1' }) },
+        documentFolder: {
+          findFirst: vi.fn().mockResolvedValue({ id: 'folder-1', name: 'HR' }),
+        },
+        notificationsCreate,
+        sharedByName: undefined,
+      });
+
+      await service.shareResource({
+        resourceType: 'folder',
+        folderId: 'folder-1',
+        organizationId: 'org-1',
+        granteeType: 'user',
+        granteeId: 'user-2',
+        permission: 'view',
+        grantedBy: 'user-1',
+      });
+
+      expect(notificationsCreate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'DOCUMENT_SHARED',
+          title: 'A folder was shared with you',
+          metadata: { resourceName: 'HR', resourceKind: 'folder' },
         }),
       );
     });

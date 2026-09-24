@@ -1889,7 +1889,35 @@
     "load-error": "Nie udało się wczytać powiadomień",
     "load-error-description": "Sprawdź połączenie i spróbuj ponownie.",
     "retry": "Spróbuj ponownie",
-    "mark-read-error": "Nie udało się oznaczyć powiadomień jako przeczytanych. Spróbuj ponownie."
+    "mark-read-error": "Nie udało się oznaczyć powiadomień jako przeczytanych. Spróbuj ponownie.",
+    "content": {
+      "document-shared": {
+        "title": "Udostępniono Ci dokument",
+        "title-by": "{name} udostępnia Ci dokument"
+      },
+      "folder-shared": {
+        "title": "Udostępniono Ci folder",
+        "title-by": "{name} udostępnia Ci folder"
+      },
+      "project-shared": {
+        "title": "Udostępniono Ci asystenta",
+        "title-by": "{name} udostępnia Ci asystenta"
+      },
+      "thread-shared": {
+        "title": "Udostępniono Ci wątek",
+        "title-by": "{name} udostępnia Ci wątek"
+      },
+      "drive-import": {
+        "title": "Import z Google Drive zakończony",
+        "body": "{count, plural, one {Zaimportowano # plik z folderu „{folder}”} few {Zaimportowano # pliki z folderu „{folder}”} many {Zaimportowano # plików z folderu „{folder}”} other {Zaimportowano # pliku z folderu „{folder}”}}"
+      },
+      "document-embedded": {
+        "title": "Dokument „{name}” jest gotowy do wyszukiwania"
+      },
+      "document-expiring": {
+        "title": "Dokument „{name}” wygasa {days, plural, =0 {dziś} =1 {jutro} few {za # dni} many {za # dni} other {za # dnia}}"
+      }
+    }
   },
   "organization": {
     "tabs": {
