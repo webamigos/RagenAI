@@ -151,3 +151,27 @@ Deliberate states to photograph:
   and the findings the product's own rules would compute.
 - `tests/scripts/demo-seed-nordwind.test.ts`: fails if an edit breaks a quote,
   a citation marker, or one of the deliberate states above.
+
+## The documents as files
+
+The seed stores each document's text in the database; no file exists. To put the
+same corpus on an environment the seed will not touch — demo.ragen.ai — export it
+as real files and upload them there, so that environment's own worker ingests them:
+
+```bash
+npm run demo:export-documents -- --locale pl --out ./nordwind-documents
+```
+
+Without `--locale` it writes both. Per locale you get:
+
+- one folder per knowledge-base folder, with "Płace" / "Payroll" inside "HR" as
+  in the seed;
+- `_brain-only/`: the files the seed stages in Brain. Upload these through
+  Brain → Documents → **Upload into Brain**;
+- `_older-versions/`: earlier versions. Upload the `__v1` file first, then the
+  active one as a new version, to show a diff;
+- `MANIFEST.md`: which file goes where, and its owner.
+
+PDFs are printed by headless Chromium (Playwright); DOCX and XLSX use the same
+`docx` and `xlsx` packages the worker reads them with. A web-page document is
+written as Markdown, because its address is on a domain that does not exist.

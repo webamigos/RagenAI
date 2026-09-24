@@ -11,6 +11,7 @@
     "prepare": "husky",
     "db:seed": "tsx --env-file=.env.local ./prisma/seed.ts",
     "demo:seed": "tsx scripts/demo/seed-nordwind.ts",
+    "demo:export-documents": "tsx scripts/demo/export-nordwind-documents.ts",
     "local:admin": "node --env-file-if-exists=.env.local --import tsx scripts/local-admin.mts",
     "ragen:up:full": "docker compose up",
     "ragen:up:app": "docker compose -f docker-compose.app.yml up",
