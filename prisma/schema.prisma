@@ -169,6 +169,8 @@ model Thread {
   // with nothing on screen saying so, is unreadable. See gap 10 in
   // docs/specs/2026-09-09-design-system-v2-functional-gaps.md.
   knowledgeScope             KnowledgeScope          @default(KNOWLEDGE_BASE) @map("knowledge_scope")
+  /// Every chat list, search and export filters to `CHAT`; see `ThreadKind`.
+  kind                       ThreadKind              @default(CHAT)
   source                     Source                  @default(UI)
   project                    Project?                @relation(fields: [projectId], references: [id])
   projectId                  String?                 @map("project_id") @db.Uuid
@@ -190,6 +192,7 @@ model Thread {
   @@index([visitorId, isStarred, createdAt])
   @@index([teamId])
   @@index([chatbotId])
+  @@index([visitorId, kind, createdAt])
   @@map("threads")
 }
 
@@ -1069,6 +1072,14 @@ enum SubscriptionPlanStatus {
 enum ThreadCommunicationType {
   TEXT
   VOICE
+}
+
+/// What a thread is. `CHAT` is every conversation the chat lists, searches
+/// and exports; `BRAIN_OPERATOR` is a conversation with the assistant beside
+/// Ragen Brain, kept (encrypted like any thread) and never shown by the chat.
+enum ThreadKind {
+  CHAT
+  BRAIN_OPERATOR
 }
 
 /// How much a thread may retrieve. The member names are also the wire values

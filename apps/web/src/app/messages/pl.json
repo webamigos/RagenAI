@@ -2537,7 +2537,8 @@
         "extraction-failed": "Nie udało się przetworzyć dokumentu",
         "unknown": "Brak szczegółów",
         "technical-details": "Szczegóły techniczne"
-      }
+      },
+      "discuss": "Zapytaj asystenta o to"
     },
     "page": {
       "back": "Strony wiedzy",
@@ -2805,6 +2806,88 @@
     },
     "read-only": {
       "notice": "Podgląd tylko do odczytu — możesz przeglądać Ragen Brain, ale niczego tu nie zmienisz."
+    },
+    "assistant": {
+      "toggle": "Asystent",
+      "title": "Asystent Brain",
+      "history": "Wcześniejsze rozmowy",
+      "new": "Nowa rozmowa",
+      "close": "Zamknij asystenta",
+      "resize": "Zmień szerokość panelu asystenta",
+      "placeholder": "Zapytaj o to, co widzisz na ekranie…",
+      "send": "Wyślij",
+      "stop": "Zatrzymaj",
+      "footnote": "Czyta tylko Brain. Proponowane zmiany czekają, aż je zastosujesz.",
+      "footnote-read-only": "Czyta tylko Brain. Możesz przeglądać Brain, więc asystent odpowiada na pytania i nie proponuje zmian.",
+      "thinking": "Czytam Brain…",
+      "read": "{count, plural, one {Przeczytano # element z Brain} few {Przeczytano # elementy z Brain} many {Przeczytano # elementów z Brain} other {Przeczytano # elementu z Brain}}",
+      "proposal-dropped": "Nie udało się pokazać jednej propozycji.",
+      "empty-title": "Zapytaj o to, na co patrzysz",
+      "empty-description": "Asystent czyta ten ekran, strony, ich cytaty i ustalenia, a odpowiada cytatami, na których się opiera.",
+      "history-empty": "Nie ma jeszcze wcześniejszych rozmów.",
+      "untitled": "Rozmowa bez tytułu",
+      "prompts": {
+        "what-first": "Czym zająć się najpierw?",
+        "duplicates": "Które strony wyglądają na duplikaty?",
+        "week": "Podsumuj, co zdecydowano w tym tygodniu",
+        "contradictions": "Wyjaśnij otwarte sprzeczności",
+        "failed": "Dlaczego niektóre dokumenty nic nie dały?",
+        "disagree": "W którym miejscu dokładnie te strony się różnią?",
+        "what-to-do": "Co zrobić z tym ustaleniem?",
+        "why-failed": "Dlaczego ten dokument nic nie dał i co z tym zrobić?",
+        "is-right": "Czy ta strona jest poprawna? Sprawdź każde twierdzenie z jego cytatem",
+        "owner": "Kto powinien być właścicielem tej strony?",
+        "why-stale": "Dlaczego ta strona jest nieaktualna i co się zmieniło?",
+        "depends": "Co zależy od tej strony?",
+        "expose": "Co ujawni publikacja tej strony i komu?",
+        "depends-selected": "Co zależy od zaznaczonej strony?",
+        "isolated": "Które strony nie są z niczym powiązane?",
+        "uncurated": "Które dokumenty nie mają jeszcze zatwierdzonych stron?"
+      },
+      "errors": {
+        "usage-limit": "Organizacja osiągnęła miesięczny limit użycia AI. Reszta Brain działa jak zwykle.",
+        "rate-limit": "Za dużo zapytań w tej minucie — spróbuj za chwilę.",
+        "guardrail": "Ta odpowiedź została wstrzymana przez jedną z reguł organizacji.",
+        "model-unavailable": "Model nie mógł teraz odpowiedzieć. Reszta Brain działa jak zwykle; spróbuj za chwilę.",
+        "no-tools": "Model organizacji nie potrafi czytać danych Brain (nie obsługuje narzędzi). Wybierz inny model w ustawieniach organizacji.",
+        "not-found": "Ta rozmowa nie jest już dostępna. Zacznij nową.",
+        "unknown": "Coś poszło nie tak. Spróbuj ponownie."
+      },
+      "proposal": {
+        "title": "Proponowana zmiana",
+        "action": {
+          "APPROVE": "{count, plural, one {Zatwierdź tę stronę} few {Zatwierdź # strony} many {Zatwierdź # stron} other {Zatwierdź # strony}}",
+          "REJECT": "{count, plural, one {Odrzuć tę stronę} few {Odrzuć # strony} many {Odrzuć # stron} other {Odrzuć # strony}}",
+          "PUBLISH": "{count, plural, one {Opublikuj tę stronę} few {Opublikuj # strony} many {Opublikuj # stron} other {Opublikuj # strony}}",
+          "UNPUBLISH": "{count, plural, one {Wycofaj tę stronę z wyszukiwania} few {Wycofaj # strony z wyszukiwania} many {Wycofaj # stron z wyszukiwania} other {Wycofaj # strony z wyszukiwania}}",
+          "MERGE": "Scal dwie strony",
+          "SET_OWNER": "Wskaż właściciela",
+          "SET_ACCESS": "Zmień, kto może czytać stronę",
+          "RETRY_EXTRACTION": "Ponów ekstrakcję"
+        },
+        "apply": "Zastosuj",
+        "dismiss": "Odrzuć propozycję",
+        "not-stored": "Nie udało się zapisać tej rozmowy, więc propozycji nie można stąd zastosować.",
+        "merge-from": "Scal",
+        "merge-into": "z",
+        "merge-access": "Scalona strona będzie dostępna dla:",
+        "access-before": "Teraz",
+        "access-after": "Po zmianie",
+        "widens": "To poszerza dostęp: ktoś, kto teraz nie może czytać strony, będzie mógł.",
+        "unknown-document": "Dokument, który już nie istnieje",
+        "dismissed": "Odrzucono — nic się nie zmieniło.",
+        "applied": "Zastosowano. Zapisano w historii strony pod Twoim nazwiskiem.",
+        "applied-partly": "Zastosowano dla {ok} z {total}. Pozostałe odmówiono:",
+        "step-failed": "odmowa",
+        "widen-description": "Ktoś, kto teraz nie może czytać tej strony, będzie mógł po jej publikacji. Zostanie to zapisane jako poszerzenie dostępu, pod Twoim nazwiskiem.",
+        "errors": {
+          "invalid-input": "Nie zrozumiano propozycji — odśwież stronę i spróbuj ponownie.",
+          "not-found": "Ta propozycja nie jest już dostępna.",
+          "already-decided": "Ta propozycja została już zastosowana lub odrzucona.",
+          "read-only": "Możesz przeglądać Brain, ale nie zmieniać go, więc tej propozycji nie można zastosować."
+        },
+        "publish-audience": "Po publikacji będą ją mogli wyszukać:"
+      }
     }
   },
   "project-context-manager": {

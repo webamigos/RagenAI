@@ -2537,7 +2537,8 @@
         "extraction-failed": "Das Dokument konnte nicht verarbeitet werden",
         "unknown": "Keine Details",
         "technical-details": "Technische Details"
-      }
+      },
+      "discuss": "Den Assistenten dazu fragen"
     },
     "page": {
       "back": "Wissensseiten",
@@ -2805,6 +2806,88 @@
     },
     "read-only": {
       "notice": "Nur-Lese-Vorschau — Sie können Ragen Brain durchsuchen, aber hier nichts ändern."
+    },
+    "assistant": {
+      "toggle": "Assistent",
+      "title": "Brain-Assistent",
+      "history": "Frühere Unterhaltungen",
+      "new": "Neue Unterhaltung",
+      "close": "Assistenten schließen",
+      "resize": "Größe des Assistentenbereichs ändern",
+      "placeholder": "Fragen Sie zu dem, was auf dem Bildschirm ist…",
+      "send": "Senden",
+      "stop": "Stoppen",
+      "footnote": "Liest nur Brain. Vorgeschlagene Änderungen warten, bis Sie sie anwenden.",
+      "footnote-read-only": "Liest nur Brain. Sie können Brain ansehen, daher beantwortet der Assistent Fragen und schlägt keine Änderungen vor.",
+      "thinking": "Brain wird gelesen…",
+      "read": "{count, plural, one {# Element aus Brain gelesen} other {# Elemente aus Brain gelesen}}",
+      "proposal-dropped": "Ein Vorschlag konnte nicht angezeigt werden.",
+      "empty-title": "Fragen Sie zu dem, was Sie gerade sehen",
+      "empty-description": "Der Assistent liest diesen Bildschirm, die Seiten, ihre Zitate und die Befunde und antwortet mit den Zitaten, auf die er sich stützt.",
+      "history-empty": "Noch keine früheren Unterhaltungen.",
+      "untitled": "Unterhaltung ohne Titel",
+      "prompts": {
+        "what-first": "Was sollte ich mir zuerst ansehen?",
+        "duplicates": "Welche Seiten sehen nach Duplikaten aus?",
+        "week": "Fassen Sie zusammen, was diese Woche entschieden wurde",
+        "contradictions": "Erklären Sie die offenen Widersprüche",
+        "failed": "Warum haben einige Dokumente nichts ergeben?",
+        "disagree": "Wo genau widersprechen sich diese Seiten?",
+        "what-to-do": "Was sollte ich mit diesem Befund tun?",
+        "why-failed": "Warum hat dieses Dokument nichts ergeben, und was sollte ich tun?",
+        "is-right": "Ist diese Seite korrekt? Prüfen Sie jede Aussage anhand ihres Zitats",
+        "owner": "Wer sollte für diese Seite verantwortlich sein?",
+        "why-stale": "Warum ist das veraltet, und was hat sich geändert?",
+        "depends": "Was hängt von dieser Seite ab?",
+        "expose": "Was macht die Veröffentlichung sichtbar, und für wen?",
+        "depends-selected": "Was hängt von der ausgewählten Seite ab?",
+        "isolated": "Welche Seiten sind mit nichts verbunden?",
+        "uncurated": "Welche Dokumente haben noch keine freigegebenen Seiten?"
+      },
+      "errors": {
+        "usage-limit": "Die Organisation hat ihr monatliches KI-Nutzungslimit erreicht. Der Rest von Brain funktioniert wie gewohnt.",
+        "rate-limit": "Zu viele Anfragen in dieser Minute — versuchen Sie es gleich noch einmal.",
+        "guardrail": "Diese Antwort wurde durch eine der Regeln der Organisation zurückgehalten.",
+        "model-unavailable": "Das Modell konnte gerade nicht antworten. Der Rest von Brain funktioniert wie gewohnt; versuchen Sie es gleich noch einmal.",
+        "no-tools": "Das Modell der Organisation kann die Daten von Brain nicht lesen (es unterstützt keine Tools). Wählen Sie in den Organisationseinstellungen ein anderes Modell.",
+        "not-found": "Diese Unterhaltung ist nicht mehr verfügbar. Beginnen Sie eine neue.",
+        "unknown": "Etwas ist schiefgelaufen. Versuchen Sie es erneut."
+      },
+      "proposal": {
+        "title": "Vorgeschlagene Änderung",
+        "action": {
+          "APPROVE": "{count, plural, one {Diese Seite freigeben} other {# Seiten freigeben}}",
+          "REJECT": "{count, plural, one {Diese Seite ablehnen} other {# Seiten ablehnen}}",
+          "PUBLISH": "{count, plural, one {Diese Seite veröffentlichen} other {# Seiten veröffentlichen}}",
+          "UNPUBLISH": "{count, plural, one {Diese Seite aus der Suche zurückziehen} other {# Seiten aus der Suche zurückziehen}}",
+          "MERGE": "Zwei Seiten zusammenführen",
+          "SET_OWNER": "Verantwortliche Person festlegen",
+          "SET_ACCESS": "Ändern, wer die Seite lesen kann",
+          "RETRY_EXTRACTION": "Extraktion wiederholen"
+        },
+        "apply": "Anwenden",
+        "dismiss": "Verwerfen",
+        "not-stored": "Diese Unterhaltung konnte nicht gespeichert werden, daher kann der Vorschlag hier nicht angewendet werden.",
+        "merge-from": "Zusammenführen:",
+        "merge-into": "in",
+        "merge-access": "Die zusammengeführte Seite wird zugänglich sein für:",
+        "access-before": "Jetzt",
+        "access-after": "Danach",
+        "widens": "Dies erweitert den Zugriff: Wer die Seite jetzt nicht lesen kann, wird es können.",
+        "unknown-document": "Ein Dokument, das nicht mehr existiert",
+        "dismissed": "Verworfen — nichts wurde geändert.",
+        "applied": "Angewendet. Es ist im Seitenverlauf unter Ihrem Namen vermerkt.",
+        "applied-partly": "Auf {ok} von {total} angewendet. Der Rest wurde abgelehnt:",
+        "step-failed": "abgelehnt",
+        "widen-description": "Wer diese Seite jetzt nicht lesen kann, wird es nach der Veröffentlichung können. Dies wird als Erweiterung des Zugriffs unter Ihrem Namen vermerkt.",
+        "errors": {
+          "invalid-input": "Der Vorschlag wurde nicht verstanden — laden Sie die Seite neu und versuchen Sie es erneut.",
+          "not-found": "Dieser Vorschlag ist nicht mehr verfügbar.",
+          "already-decided": "Dieser Vorschlag wurde bereits angewendet oder verworfen.",
+          "read-only": "Sie können Brain ansehen, aber nicht ändern, daher kann dies nicht angewendet werden."
+        },
+        "publish-audience": "Nach der Veröffentlichung auffindbar für:"
+      }
     }
   },
   "project-context-manager": {

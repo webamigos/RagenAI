@@ -2537,7 +2537,8 @@
         "extraction-failed": "No se pudo procesar el documento",
         "unknown": "Sin detalles",
         "technical-details": "Detalles técnicos"
-      }
+      },
+      "discuss": "Preguntar al asistente sobre esto"
     },
     "page": {
       "back": "Páginas de conocimiento",
@@ -2805,6 +2806,88 @@
     },
     "read-only": {
       "notice": "Vista previa de solo lectura: puedes explorar Ragen Brain, pero aquí no se puede cambiar nada."
+    },
+    "assistant": {
+      "toggle": "Asistente",
+      "title": "Asistente de Brain",
+      "history": "Conversaciones anteriores",
+      "new": "Nueva conversación",
+      "close": "Cerrar el asistente",
+      "resize": "Cambiar el tamaño del panel del asistente",
+      "placeholder": "Pregunta sobre lo que hay en pantalla…",
+      "send": "Enviar",
+      "stop": "Detener",
+      "footnote": "Solo lee Brain. Los cambios sugeridos esperan a que los apliques.",
+      "footnote-read-only": "Solo lee Brain. Puedes consultar Brain, así que el asistente responde preguntas y no sugiere cambios.",
+      "thinking": "Leyendo Brain…",
+      "read": "{count, plural, one {Leído # elemento de Brain} other {Leídos # elementos de Brain}}",
+      "proposal-dropped": "No se pudo mostrar una sugerencia.",
+      "empty-title": "Pregunta sobre lo que estás viendo",
+      "empty-description": "El asistente lee esta pantalla, las páginas, sus citas y los hallazgos, y responde con las citas en las que se basa.",
+      "history-empty": "Aún no hay conversaciones anteriores.",
+      "untitled": "Conversación sin título",
+      "prompts": {
+        "what-first": "¿Qué debería revisar primero?",
+        "duplicates": "¿Qué páginas parecen duplicadas?",
+        "week": "Resume lo que se decidió esta semana",
+        "contradictions": "Explica las contradicciones abiertas",
+        "failed": "¿Por qué algunos documentos no produjeron nada?",
+        "disagree": "¿En qué punto exacto discrepan estas páginas?",
+        "what-to-do": "¿Qué debo hacer con este hallazgo?",
+        "why-failed": "¿Por qué este documento no produjo nada y qué debo hacer?",
+        "is-right": "¿Es correcta esta página? Comprueba cada afirmación con su cita",
+        "owner": "¿Quién debería ser responsable de esta página?",
+        "why-stale": "¿Por qué está desactualizado y qué ha cambiado?",
+        "depends": "¿Qué depende de esta página?",
+        "expose": "¿Qué expondrá esta publicación y a quién?",
+        "depends-selected": "¿Qué depende de la página seleccionada?",
+        "isolated": "¿Qué páginas no están conectadas con nada?",
+        "uncurated": "¿Qué documentos aún no tienen páginas aprobadas?"
+      },
+      "errors": {
+        "usage-limit": "La organización ha alcanzado su límite mensual de uso de IA. El resto de Brain funciona con normalidad.",
+        "rate-limit": "Demasiadas solicitudes en este minuto — inténtalo de nuevo en breve.",
+        "guardrail": "Esta respuesta fue retenida por una de las reglas de la organización.",
+        "model-unavailable": "El modelo no pudo responder ahora mismo. El resto de Brain funciona con normalidad; inténtalo de nuevo en un momento.",
+        "no-tools": "El modelo de la organización no puede leer los datos de Brain (no admite herramientas). Elige otro modelo en la configuración de la organización.",
+        "not-found": "Esta conversación ya no está disponible. Empieza una nueva.",
+        "unknown": "Algo salió mal. Inténtalo de nuevo."
+      },
+      "proposal": {
+        "title": "Cambio sugerido",
+        "action": {
+          "APPROVE": "{count, plural, one {Aprobar esta página} other {Aprobar # páginas}}",
+          "REJECT": "{count, plural, one {Rechazar esta página} other {Rechazar # páginas}}",
+          "PUBLISH": "{count, plural, one {Publicar esta página} other {Publicar # páginas}}",
+          "UNPUBLISH": "{count, plural, one {Retirar esta página de la búsqueda} other {Retirar # páginas de la búsqueda}}",
+          "MERGE": "Fusionar dos páginas",
+          "SET_OWNER": "Asignar responsable",
+          "SET_ACCESS": "Cambiar quién puede leer la página",
+          "RETRY_EXTRACTION": "Reintentar la extracción"
+        },
+        "apply": "Aplicar",
+        "dismiss": "Descartar",
+        "not-stored": "No se pudo guardar esta conversación, así que la sugerencia no se puede aplicar desde aquí.",
+        "merge-from": "Fusionar",
+        "merge-into": "en",
+        "merge-access": "La página fusionada estará abierta a:",
+        "access-before": "Ahora",
+        "access-after": "Después",
+        "widens": "Esto amplía el acceso: alguien que ahora no puede leer la página podrá hacerlo.",
+        "unknown-document": "Un documento que ya no existe",
+        "dismissed": "Descartada — no ha cambiado nada.",
+        "applied": "Aplicada. Queda registrada en el historial de la página a tu nombre.",
+        "applied-partly": "Aplicada a {ok} de {total}. El resto se rechazó:",
+        "step-failed": "rechazado",
+        "widen-description": "Alguien que ahora no puede leer esta página podrá hacerlo una vez publicada. Queda registrado como una ampliación del acceso, a tu nombre.",
+        "errors": {
+          "invalid-input": "No se entendió la sugerencia — recarga la página e inténtalo de nuevo.",
+          "not-found": "Esta sugerencia ya no está disponible.",
+          "already-decided": "Esta sugerencia ya se aplicó o se descartó.",
+          "read-only": "Puedes consultar Brain pero no modificarlo, así que esto no se puede aplicar."
+        },
+        "publish-audience": "Una vez publicada, podrán recuperarla:"
+      }
     }
   },
   "project-context-manager": {

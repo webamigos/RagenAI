@@ -29,6 +29,7 @@ export const getUserThreadsQuery = async (
     where: {
       visitorId: visitorId,
       projectId: defaultProjectId,
+      kind: 'CHAT',
       messages: query
         ? {
             some: {

@@ -1,6 +1,6 @@
 ---
 title: A knowledge operator's assistant beside Ragen Brain
-status: approved
+status: implemented
 areas: [brain, rag, guardrails, auth, knowledge-base]
 adrs: [33, 39, 42, 49, 50]
 ---
@@ -291,12 +291,12 @@ turned on for an organization only once Phase C is merged.
 
 ### Phase A — Panel and read-only answers
 
-- [ ] **A1.** `brainAssistant` feature key (contracts, admin toggle), off by
+- [x] **A1.** `brainAssistant` feature key (contracts, admin toggle), off by
   default; the panel toggle renders only when it and `brain` are on.
-- [ ] **A2.** The panel shell in the Brain layout: open/close, resize, persist,
+- [x] **A2.** The panel shell in the Brain layout: open/close, resize, persist,
   narrow-screen sheet, screen-specific empty-state prompts; `BrainScreenContext`
   provided by each Brain view. No model yet.
-- [ ] **A3.** The chain: default model via the gateway, the read tools (U1, U2,
+- [x] **A3.** The chain: default model via the gateway, the read tools (U1, U2,
   U6, U7, U9, U11), usage ceiling call site, guardrail funnel, PII policy,
   streaming into the panel. Answers link pages and cite quotes.
 - [ ] **A4.** Evals: a small promptfoo set over the demo corpus — "cites a
@@ -305,17 +305,62 @@ turned on for an organization only once Phase C is merged.
 
 ### Phase B — Proposals
 
-- [ ] **B1.** The proposal schema and card; Apply routes to the existing
+- [x] **B1.** The proposal schema and card; Apply routes to the existing
   server actions; single-page actions (APPROVE, REJECT, SET_OWNER, VERIFY,
   RESOLVE/DISMISS, RETRY_EXTRACTION) — U3, U5, U6, U7.
-- [ ] **B2.** Previews: MERGE (U4) and PUBLISH/SET_ACCESS with the widening
+- [x] **B2.** Previews: MERGE (U4) and PUBLISH/SET_ACCESS with the widening
   explained (U8).
-- [ ] **B3.** Batches (U12): one card, per-page results.
+- [x] **B3.** Batches (U12): one card, per-page results.
 
 ### Phase C — Memory
 
-- [ ] **C1.** Conversations persisted as `BRAIN_OPERATOR` threads, a short
+- [x] **C1.** Conversations persisted as `BRAIN_OPERATOR` threads, a short
   history list in the panel, proposals' applied state restored on reopen.
+
+## Implementation notes
+
+Built as specified, with these differences — each one because the
+specification's own rule ("nothing new writes Brain rows") or the code as it
+is decided it:
+
+- **Proposals are limited to what a Brain button already does**: APPROVE,
+  REJECT, PUBLISH, UNPUBLISH (all four batchable), MERGE, SET_OWNER,
+  SET_ACCESS and RETRY_EXTRACTION. Brain has no command for VERIFY or for
+  resolving or dismissing a finding by hand, and adding one would be a new
+  write path, so the schema refuses those actions. RETRY_EXTRACTION names the
+  finding (`findingId`), because that is what Brain's retry action takes.
+- **The ledger row is the command's own.** Apply calls the unchanged server
+  action, so `KnowledgeDecision.after` holds what the button writes; the
+  proposal's reason and the per-page result are kept with the proposal in the
+  conversation, which is where a reopened card reads them.
+- **Apply runs on the server** (`applyBrainProposalAction`): it reads the
+  proposal back from the stored conversation — never from the request — and
+  calls the Brain actions in sequence. SET_ACCESS that widens is answered
+  `confirm-widening` and recorded only once the operator confirms on the card.
+- **Screen context** adds a `pages` view (the list) to the five in the union,
+  and the `finding` view is the findings inbox with `?finding=<id>`: Brain has
+  no finding page, so a row's "Ask the assistant about this" link puts that
+  finding on screen and marks its row.
+- **Citations** are `brain:source/<pageId>/<sourceId>` markers that open the
+  page at the cited source (`#source-<id>`), not the chat's citation
+  component: that component resolves files, and a Brain quote is a page's
+  source row. Links use a `brain:` scheme the panel resolves; any other link
+  the model writes is rendered as text.
+- **PII** follows the chat exactly: the question is masked before the input
+  guardrails and the model, and the answer is unmasked on the way out. Tool
+  results reach the model as the chat's retrieved context does.
+- **A model that cannot call tools** is recognised by the provider refusing
+  the request over its tools (a 400 naming tools or functions); the panel
+  says so. There is no tool-capability flag in the model catalogue to check
+  beforehand.
+- **A4 (evals) is not built yet.** The unit and integration suites pin the
+  three rules A4 names at the call sites that enforce them (quotes are
+  linked, ids outside the organization answer "not found", nothing changes
+  without Apply); the promptfoo set over the demo corpus that measures how
+  often the model follows them is still to write, and runs manually either
+  way (ADR-20).
+- **Conversation titles are encrypted** under the thread's key, like the
+  messages (ADR-42) — unlike the chat's titles, which are plaintext.
 
 ## Testing
 

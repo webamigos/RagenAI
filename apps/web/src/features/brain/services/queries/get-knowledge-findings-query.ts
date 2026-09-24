@@ -74,6 +74,28 @@ export async function getPageFindingsQuery(
 }
 
 /**
+ * One finding by its `publicId`, looked up inside the organization — another
+ * organization's id answers null, the way a page's does.
+ */
+export async function getKnowledgeFindingQuery(
+  orgId: string,
+  publicId: string,
+): Promise<KnowledgeFindingListItem | null> {
+  if (!/^[0-9a-f-]{36}$/i.test(publicId)) {
+    return null;
+  }
+  const row = await db.knowledgeFinding.findFirst({
+    where: { organizationId: orgId, publicId },
+    select: FINDING_SELECT,
+  });
+  if (!row) {
+    return null;
+  }
+  const [item] = await describeFindings(orgId, [row as FindingRow]);
+  return item ?? null;
+}
+
+/**
  * Resolve what finding rows name — pages, files, cited passages — in one
  * query per kind, all scoped to the organization. A page, file or passage
  * that no longer exists is left out rather than shown as a broken link.

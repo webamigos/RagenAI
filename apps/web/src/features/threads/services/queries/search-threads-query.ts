@@ -17,6 +17,7 @@ export async function searchThreadsQuery(
     where: {
       organizationId: orgId,
       visitorId,
+      kind: 'CHAT',
       messages: { some: {} },
       title: { contains: query.trim(), mode: 'insensitive' },
     },

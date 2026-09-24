@@ -2537,7 +2537,8 @@
         "extraction-failed": "The document could not be extracted",
         "unknown": "No detail",
         "technical-details": "Technical details"
-      }
+      },
+      "discuss": "Ask the assistant about this"
     },
     "page": {
       "back": "Knowledge pages",
@@ -2805,6 +2806,88 @@
     },
     "read-only": {
       "notice": "Read-only preview — you can browse Ragen Brain, but nothing here can be changed."
+    },
+    "assistant": {
+      "toggle": "Assistant",
+      "title": "Brain assistant",
+      "history": "Earlier conversations",
+      "new": "New conversation",
+      "close": "Close the assistant",
+      "resize": "Resize the assistant panel",
+      "placeholder": "Ask about what is on screen…",
+      "send": "Send",
+      "stop": "Stop",
+      "footnote": "Reads Brain only. Suggested changes wait for you to apply them.",
+      "footnote-read-only": "Reads Brain only. You can browse Brain, so it answers questions and suggests no changes.",
+      "thinking": "Reading Brain…",
+      "read": "{count, plural, one {Read # item from Brain} other {Read # items from Brain}}",
+      "proposal-dropped": "A suggestion could not be shown.",
+      "empty-title": "Ask about what you are looking at",
+      "empty-description": "The assistant reads this screen, the pages, their quotes and the findings, and answers with the quotes it rests on.",
+      "history-empty": "No earlier conversations yet.",
+      "untitled": "Untitled conversation",
+      "prompts": {
+        "what-first": "What should I look at first?",
+        "duplicates": "Which pages look like duplicates?",
+        "week": "Summarise what was decided this week",
+        "contradictions": "Explain the open contradictions",
+        "failed": "Why did some documents produce nothing?",
+        "disagree": "Where exactly do these pages disagree?",
+        "what-to-do": "What should I do about this finding?",
+        "why-failed": "Why did this document produce nothing, and what should I do?",
+        "is-right": "Is this page right? Check each claim against its quote",
+        "owner": "Who should own this page?",
+        "why-stale": "Why is this stale, and what changed?",
+        "depends": "What depends on this page?",
+        "expose": "What will publishing this expose, and to whom?",
+        "depends-selected": "What depends on the selected page?",
+        "isolated": "Which pages are not connected to anything?",
+        "uncurated": "Which documents have no approved pages yet?"
+      },
+      "errors": {
+        "usage-limit": "The organization has reached its monthly AI usage limit. The rest of Brain works as usual.",
+        "rate-limit": "Too many requests this minute — try again shortly.",
+        "guardrail": "This answer was withheld by one of the organization's rules.",
+        "model-unavailable": "The model could not answer just now. The rest of Brain works as usual; try again in a moment.",
+        "no-tools": "The organization's model cannot read Brain's data (it does not support tools). Choose another model in the organization settings.",
+        "not-found": "This conversation is no longer available. Start a new one.",
+        "unknown": "Something went wrong. Try again."
+      },
+      "proposal": {
+        "title": "Suggested change",
+        "action": {
+          "APPROVE": "{count, plural, one {Approve this page} other {Approve # pages}}",
+          "REJECT": "{count, plural, one {Reject this page} other {Reject # pages}}",
+          "PUBLISH": "{count, plural, one {Publish this page} other {Publish # pages}}",
+          "UNPUBLISH": "{count, plural, one {Withdraw this page from retrieval} other {Withdraw # pages from retrieval}}",
+          "MERGE": "Merge two pages",
+          "SET_OWNER": "Set the owner",
+          "SET_ACCESS": "Change who can read the page",
+          "RETRY_EXTRACTION": "Retry the extraction"
+        },
+        "apply": "Apply",
+        "dismiss": "Dismiss",
+        "not-stored": "This conversation could not be saved, so the suggestion cannot be applied from here.",
+        "merge-from": "Fold",
+        "merge-into": "into",
+        "merge-access": "The merged page will be open to:",
+        "access-before": "Now",
+        "access-after": "After",
+        "widens": "This widens access: someone who cannot read the page now will be able to.",
+        "unknown-document": "A document that no longer exists",
+        "dismissed": "Dismissed — nothing changed.",
+        "applied": "Applied. It is recorded in the page history under your name.",
+        "applied-partly": "Applied to {ok} of {total}. The rest were refused:",
+        "step-failed": "refused",
+        "widen-description": "Someone who cannot read this page now will be able to once it is published. This is recorded as a widening of access, under your name.",
+        "errors": {
+          "invalid-input": "The suggestion was not understood — reload the page and try again.",
+          "not-found": "This suggestion is no longer available.",
+          "already-decided": "This suggestion was already applied or dismissed.",
+          "read-only": "You can browse Brain but not change it, so this cannot be applied."
+        },
+        "publish-audience": "Once published, it can be retrieved by:"
+      }
     }
   },
   "project-context-manager": {

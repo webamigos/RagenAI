@@ -2537,7 +2537,8 @@
         "extraction-failed": "Dokument se nepodařilo zpracovat",
         "unknown": "Bez podrobností",
         "technical-details": "Technické podrobnosti"
-      }
+      },
+      "discuss": "Zeptej se na to asistenta"
     },
     "page": {
       "back": "Znalostní stránky",
@@ -2805,6 +2806,88 @@
     },
     "read-only": {
       "notice": "Náhled jen pro čtení — Ragen Brain můžete procházet, ale nic zde nelze změnit."
+    },
+    "assistant": {
+      "toggle": "Asistent",
+      "title": "Asistent Brain",
+      "history": "Dřívější konverzace",
+      "new": "Nová konverzace",
+      "close": "Zavřít asistenta",
+      "resize": "Změnit velikost panelu asistenta",
+      "placeholder": "Zeptej se na to, co je na obrazovce…",
+      "send": "Odeslat",
+      "stop": "Zastavit",
+      "footnote": "Čte jen Brain. Navržené změny počkají, až je použiješ.",
+      "footnote-read-only": "Čte jen Brain. Brain můžeš procházet, takže asistent odpovídá na otázky a nenavrhuje změny.",
+      "thinking": "Čtu Brain…",
+      "read": "{count, plural, one {Přečtena # položka z Brain} few {Přečteny # položky z Brain} many {Přečteno # položky z Brain} other {Přečteno # položek z Brain}}",
+      "proposal-dropped": "Jeden návrh se nepodařilo zobrazit.",
+      "empty-title": "Zeptej se na to, co právě vidíš",
+      "empty-description": "Asistent čte tuto obrazovku, stránky, jejich citace a zjištění a odpovídá citacemi, o které se opírá.",
+      "history-empty": "Zatím žádné dřívější konverzace.",
+      "untitled": "Konverzace bez názvu",
+      "prompts": {
+        "what-first": "Na co se mám podívat nejdřív?",
+        "duplicates": "Které stránky vypadají jako duplikáty?",
+        "week": "Shrň, co se tento týden rozhodlo",
+        "contradictions": "Vysvětli otevřené rozpory",
+        "failed": "Proč některé dokumenty nic nepřinesly?",
+        "disagree": "Kde přesně se tyto stránky rozcházejí?",
+        "what-to-do": "Co mám s tímto zjištěním udělat?",
+        "why-failed": "Proč tento dokument nic nepřinesl a co mám udělat?",
+        "is-right": "Je tato stránka správná? Ověř každé tvrzení podle jeho citace",
+        "owner": "Kdo by měl být vlastníkem této stránky?",
+        "why-stale": "Proč je to zastaralé a co se změnilo?",
+        "depends": "Co závisí na této stránce?",
+        "expose": "Co zveřejnění odhalí a komu?",
+        "depends-selected": "Co závisí na vybrané stránce?",
+        "isolated": "Které stránky nejsou s ničím propojené?",
+        "uncurated": "Které dokumenty zatím nemají žádné schválené stránky?"
+      },
+      "errors": {
+        "usage-limit": "Organizace dosáhla měsíčního limitu využití AI. Zbytek Brain funguje jako obvykle.",
+        "rate-limit": "Příliš mnoho požadavků za tuto minutu — zkus to za chvíli znovu.",
+        "guardrail": "Tuto odpověď zadrželo jedno z pravidel organizace.",
+        "model-unavailable": "Model teď nemohl odpovědět. Zbytek Brain funguje jako obvykle; zkus to za chvíli znovu.",
+        "no-tools": "Model organizace neumí číst data Brain (nepodporuje nástroje). Vyber jiný model v nastavení organizace.",
+        "not-found": "Tato konverzace už není dostupná. Začni novou.",
+        "unknown": "Něco se pokazilo. Zkus to znovu."
+      },
+      "proposal": {
+        "title": "Navržená změna",
+        "action": {
+          "APPROVE": "{count, plural, one {Schválit tuto stránku} few {Schválit # stránky} many {Schválit # stránky} other {Schválit # stránek}}",
+          "REJECT": "{count, plural, one {Zamítnout tuto stránku} few {Zamítnout # stránky} many {Zamítnout # stránky} other {Zamítnout # stránek}}",
+          "PUBLISH": "{count, plural, one {Publikovat tuto stránku} few {Publikovat # stránky} many {Publikovat # stránky} other {Publikovat # stránek}}",
+          "UNPUBLISH": "{count, plural, one {Stáhnout tuto stránku z vyhledávání} few {Stáhnout # stránky z vyhledávání} many {Stáhnout # stránky z vyhledávání} other {Stáhnout # stránek z vyhledávání}}",
+          "MERGE": "Sloučit dvě stránky",
+          "SET_OWNER": "Nastavit vlastníka",
+          "SET_ACCESS": "Změnit, kdo může stránku číst",
+          "RETRY_EXTRACTION": "Zopakovat extrakci"
+        },
+        "apply": "Použít",
+        "dismiss": "Zahodit",
+        "not-stored": "Tuto konverzaci se nepodařilo uložit, takže návrh odtud nelze použít.",
+        "merge-from": "Sloučit",
+        "merge-into": "do",
+        "merge-access": "Sloučená stránka bude přístupná pro:",
+        "access-before": "Nyní",
+        "access-after": "Potom",
+        "widens": "Tím se rozšíří přístup: kdo teď stránku číst nemůže, bude moci.",
+        "unknown-document": "Dokument, který už neexistuje",
+        "dismissed": "Zahozeno — nic se nezměnilo.",
+        "applied": "Použito. Je to zaznamenáno v historii stránky pod tvým jménem.",
+        "applied-partly": "Použito na {ok} z {total}. Zbytek byl odmítnut:",
+        "step-failed": "odmítnuto",
+        "widen-description": "Kdo teď tuto stránku číst nemůže, bude moci po jejím zveřejnění. Zaznamená se to jako rozšíření přístupu, pod tvým jménem.",
+        "errors": {
+          "invalid-input": "Návrhu se nepodařilo porozumět — obnov stránku a zkus to znovu.",
+          "not-found": "Tento návrh už není dostupný.",
+          "already-decided": "Tento návrh už byl použit nebo zahozen.",
+          "read-only": "Brain můžeš procházet, ale ne měnit, takže toto nelze použít."
+        },
+        "publish-audience": "Po zveřejnění ji budou moci vyhledat:"
+      }
     }
   },
   "project-context-manager": {

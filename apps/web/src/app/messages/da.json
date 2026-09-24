@@ -2537,7 +2537,8 @@
         "extraction-failed": "Dokumentet kunne ikke behandles",
         "unknown": "Ingen detaljer",
         "technical-details": "Tekniske detaljer"
-      }
+      },
+      "discuss": "Spørg assistenten om dette"
     },
     "page": {
       "back": "Vidensider",
@@ -2805,6 +2806,88 @@
     },
     "read-only": {
       "notice": "Skrivebeskyttet forhåndsvisning — du kan gennemse Ragen Brain, men intet her kan ændres."
+    },
+    "assistant": {
+      "toggle": "Assistent",
+      "title": "Brain-assistent",
+      "history": "Tidligere samtaler",
+      "new": "Ny samtale",
+      "close": "Luk assistenten",
+      "resize": "Tilpas størrelsen på assistentpanelet",
+      "placeholder": "Spørg om det, der er på skærmen…",
+      "send": "Send",
+      "stop": "Stop",
+      "footnote": "Læser kun Brain. Foreslåede ændringer venter på, at du anvender dem.",
+      "footnote-read-only": "Læser kun Brain. Du kan se Brain, så assistenten besvarer spørgsmål og foreslår ingen ændringer.",
+      "thinking": "Læser Brain…",
+      "read": "{count, plural, one {Læste # element fra Brain} other {Læste # elementer fra Brain}}",
+      "proposal-dropped": "Et forslag kunne ikke vises.",
+      "empty-title": "Spørg om det, du kigger på",
+      "empty-description": "Assistenten læser denne skærm, siderne, deres citater og fundene, og svarer med de citater, svaret bygger på.",
+      "history-empty": "Ingen tidligere samtaler endnu.",
+      "untitled": "Samtale uden titel",
+      "prompts": {
+        "what-first": "Hvad skal jeg kigge på først?",
+        "duplicates": "Hvilke sider ligner dubletter?",
+        "week": "Opsummer, hvad der blev besluttet i denne uge",
+        "contradictions": "Forklar de åbne modsigelser",
+        "failed": "Hvorfor gav nogle dokumenter ingenting?",
+        "disagree": "Hvor præcis er disse sider uenige?",
+        "what-to-do": "Hvad skal jeg gøre ved dette fund?",
+        "why-failed": "Hvorfor gav dette dokument ingenting, og hvad skal jeg gøre?",
+        "is-right": "Er denne side korrekt? Tjek hver påstand mod dens citat",
+        "owner": "Hvem bør eje denne side?",
+        "why-stale": "Hvorfor er dette forældet, og hvad har ændret sig?",
+        "depends": "Hvad afhænger af denne side?",
+        "expose": "Hvad vil en udgivelse afsløre, og for hvem?",
+        "depends-selected": "Hvad afhænger af den valgte side?",
+        "isolated": "Hvilke sider er ikke forbundet med noget?",
+        "uncurated": "Hvilke dokumenter har endnu ingen godkendte sider?"
+      },
+      "errors": {
+        "usage-limit": "Organisationen har nået sin månedlige grænse for AI-forbrug. Resten af Brain fungerer som normalt.",
+        "rate-limit": "For mange forespørgsler i dette minut — prøv igen om lidt.",
+        "guardrail": "Dette svar blev tilbageholdt af en af organisationens regler.",
+        "model-unavailable": "Modellen kunne ikke svare lige nu. Resten af Brain fungerer som normalt; prøv igen om et øjeblik.",
+        "no-tools": "Organisationens model kan ikke læse Brains data (den understøtter ikke værktøjer). Vælg en anden model i organisationens indstillinger.",
+        "not-found": "Denne samtale er ikke længere tilgængelig. Start en ny.",
+        "unknown": "Noget gik galt. Prøv igen."
+      },
+      "proposal": {
+        "title": "Foreslået ændring",
+        "action": {
+          "APPROVE": "{count, plural, one {Godkend denne side} other {Godkend # sider}}",
+          "REJECT": "{count, plural, one {Afvis denne side} other {Afvis # sider}}",
+          "PUBLISH": "{count, plural, one {Udgiv denne side} other {Udgiv # sider}}",
+          "UNPUBLISH": "{count, plural, one {Træk denne side tilbage fra søgning} other {Træk # sider tilbage fra søgning}}",
+          "MERGE": "Flet to sider",
+          "SET_OWNER": "Angiv ejeren",
+          "SET_ACCESS": "Skift, hvem der kan læse siden",
+          "RETRY_EXTRACTION": "Prøv udtrækningen igen"
+        },
+        "apply": "Anvend",
+        "dismiss": "Afvis",
+        "not-stored": "Denne samtale kunne ikke gemmes, så forslaget kan ikke anvendes herfra.",
+        "merge-from": "Flet",
+        "merge-into": "ind i",
+        "merge-access": "Den flettede side vil være åben for:",
+        "access-before": "Nu",
+        "access-after": "Bagefter",
+        "widens": "Dette udvider adgangen: En person, der ikke kan læse siden nu, vil kunne det.",
+        "unknown-document": "Et dokument, der ikke længere findes",
+        "dismissed": "Afvist — intet blev ændret.",
+        "applied": "Anvendt. Det er registreret i sidens historik under dit navn.",
+        "applied-partly": "Anvendt på {ok} af {total}. Resten blev afvist:",
+        "step-failed": "afvist",
+        "widen-description": "En person, der ikke kan læse denne side nu, vil kunne det, når den er udgivet. Det registreres som en udvidelse af adgangen under dit navn.",
+        "errors": {
+          "invalid-input": "Forslaget blev ikke forstået — genindlæs siden, og prøv igen.",
+          "not-found": "Dette forslag er ikke længere tilgængeligt.",
+          "already-decided": "Dette forslag er allerede anvendt eller afvist.",
+          "read-only": "Du kan se Brain, men ikke ændre det, så dette kan ikke anvendes."
+        },
+        "publish-audience": "Når den er udgivet, kan den findes af:"
+      }
     }
   },
   "project-context-manager": {

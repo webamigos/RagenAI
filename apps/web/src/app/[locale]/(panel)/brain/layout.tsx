@@ -6,6 +6,11 @@ import { getExtractableDocumentsQuery } from '@/features/brain/services/queries/
 
 import { BrainTabs } from './components/BrainTabs';
 import { ExtractDialog } from './components/ExtractDialog';
+import { BrainScreenProvider } from './components/assistant/BrainAssistantContext';
+import {
+  BrainAssistantShell,
+  BrainAssistantToggle,
+} from './components/assistant/BrainAssistantShell';
 
 export const dynamic = 'force-dynamic';
 
@@ -32,29 +37,48 @@ export default async function BrainLayout({
   ]);
 
   return (
-    // The full width of the panel. Capped at 1120px it left half of a wide
-    // screen empty beside a graph that needed the room.
-    <div className="w-full px-6 py-6">
-      <div className="flex items-center justify-between gap-3">
-        <h1 className="text-lg font-semibold text-foreground">{t('title')}</h1>
-        {access.canWrite && <ExtractDialog documents={documents} />}
-      </div>
+    <BrainScreenProvider>
       {/*
-        Read-only mode says so once, at the top, rather than leaving a reader
-        to wonder where the buttons went. Every page below hides its controls
-        on `canWrite`, and every action refuses on its own check.
+        The operator's assistant sits beside every Brain view when the
+        `brainAssistant` key is on (spec 2026-09-25-brain-operator-assistant),
+        and the content keeps its full width when it is off.
       */}
-      {!access.canWrite && (
-        <p
-          role="status"
-          data-testid="brain-read-only"
-          className="mt-3 rounded-[6px] border border-border bg-muted px-3 py-2 text-xs text-muted-foreground"
-        >
-          {t('read-only.notice')}
-        </p>
-      )}
-      <BrainTabs />
-      {children}
-    </div>
+      <BrainAssistantShell
+        enabled={access.assistant}
+        canWrite={access.canWrite}
+      >
+        {/*
+          The full width of the panel. Capped at 1120px it left half of a wide
+          screen empty beside a graph that needed the room.
+        */}
+        <div className="w-full px-6 py-6">
+          <div className="flex items-center justify-between gap-3">
+            <h1 className="text-lg font-semibold text-foreground">
+              {t('title')}
+            </h1>
+            <div className="flex items-center gap-2">
+              <BrainAssistantToggle />
+              {access.canWrite && <ExtractDialog documents={documents} />}
+            </div>
+          </div>
+          {/*
+            Read-only mode says so once, at the top, rather than leaving a
+            reader to wonder where the buttons went. Every page below hides its
+            controls on `canWrite`, and every action refuses on its own check.
+          */}
+          {!access.canWrite && (
+            <p
+              role="status"
+              data-testid="brain-read-only"
+              className="mt-3 rounded-[6px] border border-border bg-muted px-3 py-2 text-xs text-muted-foreground"
+            >
+              {t('read-only.notice')}
+            </p>
+          )}
+          <BrainTabs />
+          {children}
+        </div>
+      </BrainAssistantShell>
+    </BrainScreenProvider>
   );
 }

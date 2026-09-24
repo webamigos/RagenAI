@@ -34,7 +34,8 @@ export class ThreadsService {
       : undefined;
 
     const rows = await this.prisma.client.thread.findMany({
-      where: { organizationId: context.orgId },
+      // A Brain assistant conversation is not the API's to list.
+      where: { organizationId: context.orgId, kind: 'CHAT' },
       orderBy: { createdAt: order },
       take: limit,
       ...(cursorId ? { skip: 1, cursor: { id: cursorId } } : {}),
@@ -137,6 +138,7 @@ export class ThreadsService {
       where: {
         id: rawId,
         organizationId: context.orgId,
+        kind: 'CHAT',
       },
       select: this.threadSelect(),
     });

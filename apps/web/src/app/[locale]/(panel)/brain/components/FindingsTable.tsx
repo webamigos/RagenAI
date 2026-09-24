@@ -24,11 +24,17 @@ export async function FindingsTable({
   items,
   showSubject = true,
   canWrite = true,
+  focusedId = null,
+  assistant = false,
 }: {
   items: KnowledgeFindingListItem[];
   showSubject?: boolean;
   /** False in read-only mode: the retry control is a curator's. */
   canWrite?: boolean;
+  /** The finding on the assistant's screen, marked as the current row. */
+  focusedId?: string | null;
+  /** The assistant is on: each row can be put on its screen. */
+  assistant?: boolean;
 }) {
   const [t, format] = await Promise.all([
     getTranslations('brain.findings'),
@@ -51,7 +57,13 @@ export async function FindingsTable({
         </TableHead>
         <TableBody>
           {items.map((item) => (
-            <TableRow key={item.publicId} data-testid="brain-finding-row">
+            <TableRow
+              key={item.publicId}
+              id={`finding-${item.publicId}`}
+              data-testid="brain-finding-row"
+              aria-current={item.publicId === focusedId ? 'true' : undefined}
+              className={item.publicId === focusedId ? 'bg-muted' : undefined}
+            >
               <TableCell className="align-top font-medium">
                 {t(`type.${item.type}`)}
               </TableCell>
@@ -87,6 +99,15 @@ export async function FindingsTable({
               )}
               <TableCell className="max-w-[480px] align-top whitespace-normal">
                 <FindingSummaryView summary={item.summary} />
+                {assistant && item.publicId !== focusedId && (
+                  <Link
+                    href={`/brain/findings?finding=${item.publicId}#finding-${item.publicId}`}
+                    data-testid="brain-finding-discuss"
+                    className="mt-1.5 inline-block text-xs text-primary underline-offset-4 hover:underline"
+                  >
+                    {t('discuss')}
+                  </Link>
+                )}
                 {canWrite &&
                   item.type === 'EXTRACTION_FAILED' &&
                   item.status === 'OPEN' && (

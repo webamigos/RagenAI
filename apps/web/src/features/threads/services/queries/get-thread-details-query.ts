@@ -14,6 +14,9 @@ export const getThreadDetailsQuery = async (
       where: {
         id: publicThreadId,
         organizationId: orgId,
+        // The chat's own threads only: a Brain assistant conversation opened
+        // by id is not a chat thread, and the chat would append to it.
+        kind: 'CHAT',
       },
       select: {
         id: true,

@@ -117,6 +117,17 @@ export const TEST_BRAIN_REVIEW_PAGE_PUBLIC_ID =
 export const TEST_BRAIN_REVIEW_PAGE_TITLE = 'E2E Brain: strona do recenzji';
 
 /**
+ * A candidate the operator's assistant proposes to approve in smoke-15
+ * (spec 2026-09-25-brain-operator-assistant): owned by the test user, so the
+ * approval Apply runs is one the command accepts, and a page of its own so
+ * the review and merge specs never meet it.
+ */
+export const TEST_BRAIN_ASSISTANT_PAGE_PUBLIC_ID =
+  'e2e00000-0000-4000-8000-00e2e0000b05';
+export const TEST_BRAIN_ASSISTANT_PAGE_TITLE =
+  'E2E Brain: strona dla asystenta';
+
+/**
  * Two pages about one subject, for p0-34's merge (spec D2b): an approved
  * page, and the fresh candidate a later extraction wrote beside it under a
  * suffixed slug. Both are in the shape `renderPage` writes, which is the only

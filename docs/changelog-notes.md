@@ -68,6 +68,18 @@ archive is the blog.
 
 ## Unreleased
 
+### Ragen Brain: an assistant beside the inbox
+
+- `[major]` **Brain has an assistant for the person curating it.** A panel
+  beside every Brain screen answers questions about what is on it — where two
+  pages disagree, whether a candidate's claims match their quotes, who should
+  own a page, what publishing it will expose — citing the quotes it rests on
+  and linking every page it names. It never changes anything itself: an
+  approval, merge, owner or publication it suggests is a card the operator
+  applies, recorded under their name. Off by default behind a new
+  `brainAssistant` feature key; conversations are kept, encrypted like chat
+  threads, and never appear in the chat.
+
 ### Notifications in your language
 
 - `[brief]` **Notifications speak your language.** A shared document,

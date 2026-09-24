@@ -1,9 +1,12 @@
 import { expect, test } from '@playwright/test';
 
 import {
+  TEST_BRAIN_ASSISTANT_PAGE_PUBLIC_ID,
+  TEST_BRAIN_ASSISTANT_PAGE_TITLE,
   TEST_BRAIN_PAGE_TITLE,
   TEST_BRAIN_SOURCE_QUOTE,
   TEST_FILE_NAME,
+  TEST_USER_NAME,
 } from './constants';
 
 /**
@@ -89,5 +92,56 @@ test.describe('Ragen Brain panel (smoke)', () => {
       page.getByText('Nie udało się przetworzyć dokumentu'),
     ).toBeVisible();
     await expect(page.getByText(/something went wrong/i)).not.toBeVisible();
+  });
+
+  /**
+   * The operator's assistant (spec 2026-09-25-brain-operator-assistant), over
+   * the mock model's one scripted turn: it proposes approving the page on
+   * screen and links it; the card's Apply records the approval as the
+   * signed-in person. Here, in `smoke-`, because a panel that answers but
+   * cannot apply — or applies as someone else — must block the merge.
+   *
+   * It approves its own seeded page, which the seed recreates on every run.
+   */
+  test('the assistant proposes a change, and Apply records it as the operator', async ({
+    page,
+  }) => {
+    await page.goto(`/pl/brain/pages/${TEST_BRAIN_ASSISTANT_PAGE_PUBLIC_ID}`);
+    await expect(
+      page.getByRole('heading', {
+        name: TEST_BRAIN_ASSISTANT_PAGE_TITLE,
+        level: 2,
+      }),
+    ).toBeVisible({ timeout: 15000 });
+
+    await page.getByTestId('brain-assistant-toggle').click();
+    const panel = page.getByTestId('brain-assistant-panel');
+    await expect(
+      panel.getByTestId('brain-assistant-prompt').first(),
+    ).toBeVisible();
+
+    await panel
+      .getByTestId('brain-assistant-input')
+      .fill('Czy tę stronę można zatwierdzić? zzqx-brain-propose');
+    await panel.getByRole('button', { name: 'Wyślij' }).click();
+
+    const card = panel.getByTestId('brain-proposal');
+    await expect(card).toContainText('Zatwierdź tę stronę', { timeout: 30000 });
+    await expect(panel.getByTestId('brain-assistant-link')).toHaveAttribute(
+      'href',
+      new RegExp(`/brain/pages/${TEST_BRAIN_ASSISTANT_PAGE_PUBLIC_ID}$`),
+    );
+
+    await card.getByRole('button', { name: 'Zastosuj' }).click();
+    await expect(card.getByTestId('brain-proposal-outcome')).toContainText(
+      'Zastosowano',
+      { timeout: 15000 },
+    );
+    await expect(page.getByText('Zatwierdzona', { exact: true })).toBeVisible({
+      timeout: 15000,
+    });
+    const history = page.getByTestId('brain-decisions');
+    await expect(history).toContainText('Zatwierdzono');
+    await expect(history).toContainText(TEST_USER_NAME);
   });
 });

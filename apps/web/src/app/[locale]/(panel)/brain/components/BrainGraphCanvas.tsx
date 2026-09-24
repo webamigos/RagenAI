@@ -12,6 +12,7 @@ import type Sigma from 'sigma';
 import type { BrainGraphView } from '@/features/brain/contracts/brain-graph.types';
 import { Link } from '@/i18n/routing';
 import { canvasLabel, LABEL_SIZE_PX, separateLabels } from './separate-labels';
+import { BrainScreen } from './assistant/BrainAssistantContext';
 
 type Node = BrainGraphView['nodes'][number];
 
@@ -419,6 +420,15 @@ export function BrainGraphCanvas({ view }: { view: BrainGraphView }) {
 
   return (
     <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
+      {/* What the assistant beside Brain is told the operator is looking at. */}
+      <BrainScreen
+        context={{
+          view: 'graph',
+          ...(view.focus ? { focusPageId: view.focus } : {}),
+          ...(selected ? { selectedPageId: selected.id } : {}),
+          ...(communityFilter !== null ? { communityFilter } : {}),
+        }}
+      />
       <div className="relative">
         <div
           ref={container}

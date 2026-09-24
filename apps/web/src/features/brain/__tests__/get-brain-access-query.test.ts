@@ -37,6 +37,7 @@ describe('getBrainAccessQuery', () => {
       orgId: 'org-1',
       access: 'write',
       canWrite: true,
+      assistant: false,
     });
     expect(deps.getEffectiveFeaturesQuery).toHaveBeenCalledWith('org-1');
     expect(deps.getActiveMember).toHaveBeenCalledWith('org-1');
@@ -56,7 +57,19 @@ describe('getBrainAccessQuery', () => {
       orgId: 'org-1',
       access: 'read',
       canWrite: false,
+      assistant: false,
     });
+  });
+
+  it('turns the assistant on only with its key, and never for someone kept out', async () => {
+    deps.getEffectiveFeaturesQuery.mockResolvedValue(
+      flags({ brainAssistant: true }),
+    );
+    await expect(getBrainAccessQuery()).resolves.toMatchObject({
+      assistant: true,
+    });
+    deps.getActiveMember.mockResolvedValue({ role: 'member' });
+    await expect(getBrainAccessQuery()).resolves.toBeNull();
   });
 
   it('keeps everyone out while the flag is off', async () => {
