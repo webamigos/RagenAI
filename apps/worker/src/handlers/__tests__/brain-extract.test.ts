@@ -337,3 +337,30 @@ describe('brainExtract', () => {
     });
   });
 });
+
+describe('brainExtract step retries', () => {
+  it('runs the steps that call the model once, and the rest with retries', async () => {
+    const activities = createMockActivities();
+    const asked: { names: string[]; attempts: number | undefined }[] = [];
+    const ctx: JobContext = {
+      ...context(activities),
+      steps: <A>(options: { retry?: { maximumAttempts?: number } }) =>
+        new Proxy(activities, {
+          get(target, name: string) {
+            asked.push({
+              names: [name],
+              attempts: options.retry?.maximumAttempts,
+            });
+            return (target as Record<string, unknown>)[name];
+          },
+        }) as unknown as A,
+    };
+    await brainExtract({ orgId: 'org-1', fileIds: ['a'] }, ctx);
+    const attemptsOf = (name: string) =>
+      asked.find((a) => a.names.includes(name))?.attempts;
+    // A retry would re-run every model call, outside the run's token budget.
+    expect(attemptsOf('extractDocumentCandidates')).toBe(1);
+    expect(attemptsOf('detectContradictions')).toBe(1);
+    expect(attemptsOf('reconcileBrainFindings')).toBe(3);
+  });
+});

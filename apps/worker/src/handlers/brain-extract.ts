@@ -36,9 +36,7 @@ export async function brainExtract(
 ): Promise<BrainExtractResult> {
   const {
     startBrainExtractRun,
-    extractDocumentCandidates,
     recordExtractionStepFailed,
-    detectContradictions,
     reconcileBrainFindings,
   } = ctx.steps<typeof activities>({
     retry: {
@@ -47,6 +45,19 @@ export async function brainExtract(
       backoffCoefficient: 2,
       maximumAttempts: 3,
     },
+    startToCloseTimeout: '20 minutes',
+  });
+  // The two steps that call the model run once. A retry would re-run every
+  // call from the start with the same `maxTokens`, and what the failed
+  // attempt spent never reaches `result.tokens` — so one document could cost
+  // three times its share, outside the run's ceiling. Provider errors are
+  // already a `failed` document inside the step; a step that still throws is
+  // recorded as the document's EXTRACTION_FAILED below, and D3's retry is the
+  // person's way to try again.
+  const { extractDocumentCandidates, detectContradictions } = ctx.steps<
+    typeof activities
+  >({
+    retry: { maximumAttempts: 1 },
     startToCloseTimeout: '20 minutes',
   });
 
