@@ -10,6 +10,9 @@ export {
   DEFAULT_FEATURES,
   FEATURE_KEYS,
   FEATURE_LABELS,
+  PLATFORM_FEATURE_DEFAULTS_KEY,
+  flattenFeatures,
+  resolveFeatures,
   sanitizeFeatureOverrides,
 } from '@ragenai/platform-contracts';
 

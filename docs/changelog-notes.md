@@ -126,6 +126,15 @@ archive is the blog.
   may still use plain http, which is the case an MCP server on your own network
   is for.
 
+- `[brief]` **A platform-wide feature default now applies to the public API
+  too.** A default a platform administrator set in the admin panel — say,
+  freezing uploads with *Add and remove documents* off — was honoured in the
+  app and ignored by `/v1`, which read only the organization override and the
+  plan. The API resolves all four layers now, the same way the app does. And
+  the panel's "which layer decided this" view picks the same subscription the
+  app gates on; with a Trial beside a paid plan it could show the Trial's
+  features. (#1310, and the PR stacked on it)
+
 ### Thread: connectors are added from the panel, not from a release
 
 - `[major]` **A platform administrator can add an MCP connector without a

@@ -5,58 +5,41 @@ import {
 } from '@ragenai/platform-contracts';
 import { PrismaService } from '../prisma/prisma.service.js';
 import {
-  DEFAULT_FEATURES,
-  FEATURE_KEYS,
+  PLATFORM_FEATURE_DEFAULTS_KEY,
+  flattenFeatures,
+  resolveFeatures,
+  sanitizeFeatureOverrides,
   type FeatureFlags,
   type FeatureKey,
   type FeatureOverrides,
 } from './types.js';
 
-function coerceBoolean(v: unknown): boolean | null {
-  if (v === true || v === false) {
-    return v;
-  }
-  return null;
-}
-
-function parseFlagMap(
-  source: unknown,
-): Partial<Record<FeatureKey, boolean | null>> {
-  if (!source || typeof source !== 'object') {
-    return {};
-  }
-  const record = source as Record<string, unknown>;
-  const out: Partial<Record<FeatureKey, boolean | null>> = {};
-  for (const key of FEATURE_KEYS) {
-    if (key in record) {
-      out[key] = coerceBoolean(record[key]);
-    }
-  }
-  return out;
-}
-
 /**
  * Ported from apps/web's get-effective-features-query.ts — only the read path
- * `toggle-chatbot-command` needs. NOT a port of the full `subscriptions`
+ * the public API's feature gates need. NOT a port of the full `subscriptions`
  * feature (no billing, no Stripe, no plan CRUD). See
  * docs/adrs/21-monorepo-and-api-decoupling.md.
  *
- * Which subscription row decides the plan is `pickBestSubscription` from
- * `@ragenai/platform-contracts`; this file carried its own copy until the
- * worker needed a third and the rule moved there (ADR-33).
+ * Which subscription row decides the plan is `pickBestSubscription`, and the
+ * precedence is `resolveFeatures`, both from `@ragenai/platform-contracts`
+ * (ADR-33) — so this answers exactly what apps/web and apps/worker answer.
  */
 @Injectable()
 export class SubscriptionsService {
   constructor(private readonly prisma: PrismaService) {}
 
   /**
-   * Resolution chain for each feature flag:
-   *   org override (true/false) > plan.features (true/false) > code default
+   * org override > plan.features > platform default > code default, with
+   * `null` or a missing key at any layer meaning "inherit".
    *
-   * `null` in either source means "inherit" (skip this layer).
+   * The platform-default layer is what a platform administrator edits in
+   * apps/admin (ADR-35). This used to stop at the plan, so a default set
+   * there reached apps/web and not the public API: an operator who froze
+   * uploads platform-wide with `manageDocuments: false` still had them
+   * accepted through `/v1`.
    */
   async getEffectiveFeatures(organizationId: string): Promise<FeatureFlags> {
-    const [settings, candidates] = await Promise.all([
+    const [settings, candidates, platformDefaults] = await Promise.all([
       this.prisma.client.organizationSettings.findUnique({
         where: { organizationId },
         select: { featureOverrides: true },
@@ -65,38 +48,49 @@ export class SubscriptionsService {
         where: { referenceId: organizationId },
         select: { plan: true, status: true, periodStart: true },
       }),
+      this.readPlatformDefaults(),
     ]);
 
     const subscription = pickBestSubscription(candidates);
 
     // Trialing subscriptions get the same plan features as paid (Stripe trial).
-    let planFeatures: Partial<Record<FeatureKey, boolean | null>> = {};
+    let planFeatures: unknown = null;
     if (subscriptionGrantsPlanFeatures(subscription)) {
       const plan = await this.prisma.client.subscriptionPlan.findFirst({
         where: { name: subscription.plan },
         select: { features: true },
       });
-      planFeatures = parseFlagMap(plan?.features);
+      planFeatures = plan?.features ?? null;
     }
 
-    const overrides: FeatureOverrides = parseFlagMap(
-      settings?.featureOverrides,
+    return flattenFeatures(
+      resolveFeatures({
+        orgOverrides: asOverrides(settings?.featureOverrides),
+        planFeatures: asOverrides(planFeatures),
+        platformDefaults,
+      }),
     );
+  }
 
-    const resolved: FeatureFlags = { ...DEFAULT_FEATURES };
-    for (const key of FEATURE_KEYS) {
-      const override = overrides[key];
-      if (override === true || override === false) {
-        resolved[key] = override;
-        continue;
-      }
-      const planValue = planFeatures[key];
-      if (planValue === true || planValue === false) {
-        resolved[key] = planValue;
-      }
+  /**
+   * `Settings.default_features`, a tri-state map stored as a JSON string. A
+   * missing row means every key inherits. A row that will not parse must not
+   * decide a gate either way, so it also inherits — landing on the code
+   * defaults, as apps/web's `readPlatformDefaults` does.
+   */
+  private async readPlatformDefaults(): Promise<FeatureOverrides> {
+    const row = await this.prisma.client.settings.findUnique({
+      where: { key: PLATFORM_FEATURE_DEFAULTS_KEY },
+      select: { value: true },
+    });
+    if (!row) {
+      return {};
     }
-
-    return resolved;
+    try {
+      return asOverrides(JSON.parse(row.value));
+    } catch {
+      return {};
+    }
   }
 
   async isFeatureEnabled(
@@ -106,4 +100,13 @@ export class SubscriptionsService {
     const flags = await this.getEffectiveFeatures(organizationId);
     return flags[feature];
   }
+}
+
+/** An untyped JSON column, reduced to recognised keys with boolean or null. */
+function asOverrides(value: unknown): FeatureOverrides {
+  return sanitizeFeatureOverrides(
+    value && typeof value === 'object' && !Array.isArray(value)
+      ? (value as Record<string, unknown>)
+      : null,
+  );
 }

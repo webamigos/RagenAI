@@ -8,6 +8,7 @@ describe('SubscriptionsService', () => {
     settingsFindUnique?: Mock;
     subscriptionFindMany?: Mock;
     planFindFirst?: Mock;
+    platformSettingsFindUnique?: Mock;
   }) {
     const settingsFindUnique =
       overrides.settingsFindUnique ?? vi.fn().mockResolvedValue(null);
@@ -15,11 +16,14 @@ describe('SubscriptionsService', () => {
       overrides.subscriptionFindMany ?? vi.fn().mockResolvedValue([]);
     const planFindFirst =
       overrides.planFindFirst ?? vi.fn().mockResolvedValue(null);
+    const platformSettingsFindUnique =
+      overrides.platformSettingsFindUnique ?? vi.fn().mockResolvedValue(null);
     const prisma = {
       client: {
         organizationSettings: { findUnique: settingsFindUnique },
         subscription: { findMany: subscriptionFindMany },
         subscriptionPlan: { findFirst: planFindFirst },
+        settings: { findUnique: platformSettingsFindUnique },
       },
     } as unknown as PrismaService;
     return {
@@ -27,6 +31,7 @@ describe('SubscriptionsService', () => {
       settingsFindUnique,
       subscriptionFindMany,
       planFindFirst,
+      platformSettingsFindUnique,
     };
   }
 
@@ -166,6 +171,86 @@ describe('SubscriptionsService', () => {
         expect.objectContaining({ where: { name: 'Ragen Business' } }),
       );
     });
+  });
+
+  // The layer this service did not read. A platform administrator sets it in
+  // apps/admin, apps/web honoured it, and the public API gated on the code
+  // default instead.
+  describe('the platform default', () => {
+    const platformDefault = (value: string) =>
+      vi.fn().mockResolvedValue({ key: 'default_features', value });
+
+    it('decides a key nothing above it sets', async () => {
+      const { service, platformSettingsFindUnique } = makeService({
+        platformSettingsFindUnique: platformDefault(
+          '{"manageDocuments":false,"voiceInput":true}',
+        ),
+      });
+
+      const result = await service.getEffectiveFeatures(ORG);
+
+      expect(result.manageDocuments).toBe(false);
+      expect(result.voiceInput).toBe(true);
+      expect(result.apiAccess).toBe(DEFAULT_FEATURES.apiAccess);
+      expect(platformSettingsFindUnique).toHaveBeenCalledWith(
+        expect.objectContaining({ where: { key: 'default_features' } }),
+      );
+    });
+
+    it('loses to the plan', async () => {
+      const { service } = makeService({
+        platformSettingsFindUnique: platformDefault('{"inviteMembers":false}'),
+        subscriptionFindMany: vi
+          .fn()
+          .mockResolvedValue([
+            { plan: 'Pro', status: 'active', periodStart: new Date() },
+          ]),
+        planFindFirst: vi
+          .fn()
+          .mockResolvedValue({ features: { inviteMembers: true } }),
+      });
+
+      expect((await service.getEffectiveFeatures(ORG)).inviteMembers).toBe(
+        true,
+      );
+    });
+
+    it('loses to an organization override', async () => {
+      const { service } = makeService({
+        platformSettingsFindUnique: platformDefault('{"publicChatbot":true}'),
+        settingsFindUnique: vi
+          .fn()
+          .mockResolvedValue({ featureOverrides: { publicChatbot: false } }),
+      });
+
+      expect((await service.getEffectiveFeatures(ORG)).publicChatbot).toBe(
+        false,
+      );
+    });
+
+    it('lets a null key inherit the code default', async () => {
+      const { service } = makeService({
+        platformSettingsFindUnique: platformDefault('{"manageDocuments":null}'),
+      });
+
+      expect((await service.getEffectiveFeatures(ORG)).manageDocuments).toBe(
+        DEFAULT_FEATURES.manageDocuments,
+      );
+    });
+
+    // A hand-edited row that will not parse must not decide a gate.
+    it.each(['{not json', '["manageDocuments"]', '"false"', 'null'])(
+      'is ignored when the row reads %j',
+      async (value) => {
+        const { service } = makeService({
+          platformSettingsFindUnique: platformDefault(value),
+        });
+
+        expect(await service.getEffectiveFeatures(ORG)).toEqual(
+          DEFAULT_FEATURES,
+        );
+      },
+    );
   });
 
   describe('isFeatureEnabled', () => {
