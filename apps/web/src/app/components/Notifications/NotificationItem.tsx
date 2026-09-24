@@ -8,8 +8,9 @@ import {
   CheckCircleIcon,
   FolderIcon,
 } from '@heroicons/react/24/outline';
-import { useRouter } from '@/i18n/routing';
-import { useTranslations, useLocale } from 'next-intl';
+import { useFormatter, useNow, useTranslations } from 'next-intl';
+import { Link } from '@/i18n/routing';
+import { cn } from '@/lib/utils';
 import type {
   NotificationDto,
   NotificationType,
@@ -24,31 +25,23 @@ const ICONS: Record<NotificationType, React.ElementType> = {
   PROJECT_SHARED: FolderIcon,
 };
 
-type TimeTranslator = (key: any, values?: any) => string;
+const MINUTE = 60_000;
+const DAY = 24 * 60 * MINUTE;
 
-const LOCALE_MAP: Record<string, string> = { pl: 'pl-PL', en: 'en-GB' };
-
-function relativeTime(date: Date, t: TimeTranslator, locale: string): string {
-  const d = new Date(date);
-  const diff = Date.now() - d.getTime();
-  const minutes = Math.floor(diff / 60_000);
-  if (minutes < 1) {
-    return t('time.just-now');
+/**
+ * Only an in-app path is followed. `resourceUrl` is written by the producers
+ * (and by the secret-protected `user-push` route), so it is trusted today, but
+ * an absolute or protocol-relative value would make a notification a way off
+ * the site — and the row is a link a user clicks without reading the target.
+ */
+export function internalHref(resourceUrl: string | null): string | null {
+  if (!resourceUrl) {
+    return null;
   }
-  if (minutes < 60) {
-    return t('time.minutes-ago', { count: minutes });
+  if (!resourceUrl.startsWith('/') || resourceUrl.startsWith('//')) {
+    return null;
   }
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) {
-    return t('time.hours-ago', { count: hours });
-  }
-  const resolvedLocale = LOCALE_MAP[locale] ?? locale;
-  return d.toLocaleString(resolvedLocale, {
-    day: 'numeric',
-    month: 'short',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
+  return resourceUrl;
 }
 
 type Props = {
@@ -57,61 +50,117 @@ type Props = {
 };
 
 export function NotificationItem({ notification, onRead }: Props) {
-  const router = useRouter();
   const t = useTranslations('notifications');
-  const locale = useLocale();
+  const format = useFormatter();
+  // `useNow` rather than `Date.now()` in render: it ticks, so "5 min ago" does
+  // not freeze while the page stays open, and it is the value next-intl's
+  // formatter compares against. The absolute date below goes through the
+  // formatter too, which applies the configured `timeZone` — the same zone
+  // the server renders with, so server and client print the same string
+  // (`toLocaleString` without a `timeZone` used the browser's zone).
+  const now = useNow({ updateInterval: MINUTE });
   const Icon = ICONS[notification.type];
+  const createdAt = new Date(notification.createdAt);
+  const age = now.getTime() - createdAt.getTime();
+  const absolute = format.dateTime(createdAt, {
+    day: 'numeric',
+    month: 'short',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+  let when: string;
+  if (age < MINUTE) {
+    when = t('time.just-now');
+  } else if (age < DAY) {
+    when = format.relativeTime(createdAt, now);
+  } else {
+    when = absolute;
+  }
 
+  const unread = !notification.isRead;
+  const href = internalHref(notification.resourceUrl);
   const handleClick = () => {
-    onRead(notification.publicId);
-    if (notification.resourceUrl) {
-      router.push(
-        notification.resourceUrl as Parameters<typeof router.push>[0],
-      );
+    if (unread) {
+      onRead(notification.publicId);
     }
   };
 
-  return (
-    <button
-      type="button"
-      onClick={handleClick}
-      className="flex w-full items-start gap-3 rounded-lg px-3 py-2 text-left transition-colors hover:bg-muted"
-      data-testid="notification-item"
-    >
+  const content = (
+    <>
       <span
-        className={[
-          'mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full transition-colors',
-          notification.isRead ? 'bg-ready-tint dark:bg-ready/40' : 'bg-primary',
-        ].join(' ')}
+        aria-hidden="true"
+        className={cn(
+          'mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full',
+          unread
+            ? 'bg-accent text-accent-foreground'
+            : 'bg-muted text-muted-foreground',
+        )}
       >
-        <Icon
-          className={[
-            'size-4',
-            notification.isRead ? 'text-ready' : 'text-primary-foreground',
-          ].join(' ')}
-        />
+        <Icon className="size-4" />
       </span>
       <span className="min-w-0 flex-1">
-        <span className="flex items-center gap-2">
-          <span className="truncate text-sm font-medium text-foreground">
-            {notification.title}
-          </span>
-          {!notification.isRead && (
-            <span
-              className="size-2 shrink-0 rounded-full bg-crimson-600"
-              aria-label={t('unread-aria')}
-            />
+        <span
+          data-testid="notification-title"
+          className={cn(
+            'block text-sm text-foreground sm:truncate',
+            unread ? 'font-semibold' : 'font-normal',
           )}
+        >
+          {notification.title}
         </span>
         {notification.body && (
-          <span className="mt-0.5 block truncate text-xs text-muted-foreground">
+          <span className="mt-0.5 block text-xs text-muted-foreground sm:truncate">
             {notification.body}
           </span>
         )}
-        <span className="mt-0.5 block text-xs text-muted-foreground">
-          {relativeTime(notification.createdAt, t, locale)}
-        </span>
+        <time
+          dateTime={createdAt.toISOString()}
+          title={absolute}
+          className="mt-1 block text-xs tabular-nums text-muted-foreground"
+          suppressHydrationWarning
+        >
+          {when}
+        </time>
       </span>
+      {/*
+        Unread is a word, not only a dot (panel-ux-rules 27). It used to be a
+        crimson dot with an `aria-label` on a bare <span>, which a screen
+        reader does not announce, and crimson is not an unread colour
+        (rule 16). Navy fill plus the label, and the bolder title above.
+      */}
+      {unread && (
+        <span
+          data-testid="notification-unread"
+          className="mt-0.5 inline-flex h-5 shrink-0 items-center rounded-md bg-primary px-2 text-xs font-medium text-primary-foreground"
+        >
+          {t('unread-badge')}
+        </span>
+      )}
+    </>
+  );
+
+  const rowClass =
+    'flex w-full items-start gap-3 px-4 py-3 text-left transition-colors hover:bg-accent/60 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-ring';
+
+  return href ? (
+    <Link
+      href={href as Parameters<typeof Link>[0]['href']}
+      onClick={handleClick}
+      className={rowClass}
+      data-testid="notification-item"
+      data-unread={unread || undefined}
+    >
+      {content}
+    </Link>
+  ) : (
+    <button
+      type="button"
+      onClick={handleClick}
+      className={rowClass}
+      data-testid="notification-item"
+      data-unread={unread || undefined}
+    >
+      {content}
     </button>
   );
 }

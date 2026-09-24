@@ -1867,11 +1867,8 @@
     "show-all": "Alle anzeigen",
     "load-more": "Mehr laden",
     "label": "Benachrichtigungen",
-    "unread-aria": "ungelesen",
     "time": {
-      "just-now": "gerade eben",
-      "minutes-ago": "vor {count} Min.",
-      "hours-ago": "vor {count} Std."
+      "just-now": "gerade eben"
     },
     "filters": {
       "all": "Alle",
@@ -1879,8 +1876,20 @@
       "drive-import": "Google-Drive-Importe",
       "document-expiring": "Ablaufende Dokumente",
       "thread-shared": "Geteilte Threads",
-      "document-embedded": "Verarbeitete Dokumente"
-    }
+      "document-embedded": "Verarbeitete Dokumente",
+      "label": "Nach Typ filtern",
+      "project-shared": "Geteilte Assistenten"
+    },
+    "unread-badge": "Neu",
+    "unread-count": "Ungelesen: {count}",
+    "label-with-unread": "Benachrichtigungen, ungelesen: {count}",
+    "empty-description": "Hier erscheinen Dokumente, Assistenten und Threads, die mit dir geteilt werden, sowie abgeschlossene Importe.",
+    "empty-filtered": "Keine Benachrichtigungen dieses Typs",
+    "empty-filtered-description": "Wähle einen anderen Filter oder zeige alle Benachrichtigungen an.",
+    "load-error": "Benachrichtigungen konnten nicht geladen werden",
+    "load-error-description": "Prüfe deine Verbindung und versuche es erneut.",
+    "retry": "Erneut versuchen",
+    "mark-read-error": "Benachrichtigungen konnten nicht als gelesen markiert werden. Versuche es erneut."
   },
   "organization": {
     "tabs": {

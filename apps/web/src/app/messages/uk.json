@@ -1867,11 +1867,8 @@
     "show-all": "Показати все",
     "load-more": "Завантажити більше",
     "label": "Сповіщення",
-    "unread-aria": "непрочитане",
     "time": {
-      "just-now": "щойно",
-      "minutes-ago": "{count} хв тому",
-      "hours-ago": "{count} год тому"
+      "just-now": "щойно"
     },
     "filters": {
       "all": "Усі",
@@ -1879,8 +1876,20 @@
       "drive-import": "Імпорти з Google Drive",
       "document-expiring": "Документи, термін дії яких незабаром закінчується",
       "thread-shared": "Спільні розмови",
-      "document-embedded": "Оброблені документи"
-    }
+      "document-embedded": "Оброблені документи",
+      "label": "Фільтрувати за типом",
+      "project-shared": "Спільні асистенти"
+    },
+    "unread-badge": "Нове",
+    "unread-count": "Непрочитані: {count}",
+    "label-with-unread": "Сповіщення, непрочитані: {count}",
+    "empty-description": "Тут з’являтимуться документи, асистенти й треди, якими з тобою поділилися, а також завершені імпорти.",
+    "empty-filtered": "Немає сповіщень цього типу",
+    "empty-filtered-description": "Вибери інший фільтр або покажи всі сповіщення.",
+    "load-error": "Не вдалося завантажити сповіщення",
+    "load-error-description": "Перевір з’єднання і спробуй ще раз.",
+    "retry": "Спробувати ще раз",
+    "mark-read-error": "Не вдалося позначити сповіщення як прочитані. Спробуй ще раз."
   },
   "organization": {
     "tabs": {

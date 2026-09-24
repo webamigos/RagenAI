@@ -122,6 +122,13 @@ archive is the blog.
 - `[brief]` **Tidier on small screens and wide tables.** On a phone, the chat
   header no longer pushes the assistant selector off the edge. Brain's tables
   fit their page instead of hiding the last column.
+- `[brief]` **The notifications page uses the whole panel.** It was a narrow
+  centred column that cut off the type filters and scrolled sideways on a
+  phone. Now every filter is visible (shared assistants got one), unread items
+  say "New" instead of relying on a red dot, "Mark all as read" is a real
+  button that appears only when something is unread, and an empty or failed
+  list says which it is. Dates use the panel's configured time zone, and the
+  sidebar's unread count stays right after you mark things read.
 
 ### Thread: seeing what you uploaded
 

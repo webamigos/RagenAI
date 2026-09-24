@@ -1867,11 +1867,8 @@
     "show-all": "Mostrar todo",
     "load-more": "Cargar más",
     "label": "Notificaciones",
-    "unread-aria": "sin leer",
     "time": {
-      "just-now": "ahora mismo",
-      "minutes-ago": "hace {count} min",
-      "hours-ago": "hace {count} h"
+      "just-now": "ahora mismo"
     },
     "filters": {
       "all": "Todo",
@@ -1879,8 +1876,20 @@
       "drive-import": "Importaciones de Google Drive",
       "document-expiring": "Documentos por caducar",
       "thread-shared": "Hilos compartidos",
-      "document-embedded": "Documentos procesados"
-    }
+      "document-embedded": "Documentos procesados",
+      "label": "Filtrar por tipo",
+      "project-shared": "Asistentes compartidos"
+    },
+    "unread-badge": "Nuevo",
+    "unread-count": "Sin leer: {count}",
+    "label-with-unread": "Notificaciones, sin leer: {count}",
+    "empty-description": "Aquí aparecerán los documentos, asistentes e hilos compartidos contigo y las importaciones finalizadas.",
+    "empty-filtered": "No hay notificaciones de este tipo",
+    "empty-filtered-description": "Elige otro filtro o muestra todas las notificaciones.",
+    "load-error": "No se pudieron cargar las notificaciones",
+    "load-error-description": "Comprueba tu conexión e inténtalo de nuevo.",
+    "retry": "Reintentar",
+    "mark-read-error": "No se pudieron marcar las notificaciones como leídas. Inténtalo de nuevo."
   },
   "organization": {
     "tabs": {

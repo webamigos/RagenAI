@@ -1867,11 +1867,8 @@
     "show-all": "Show all",
     "load-more": "Load more",
     "label": "Notifications",
-    "unread-aria": "unread",
     "time": {
-      "just-now": "just now",
-      "minutes-ago": "{count} min ago",
-      "hours-ago": "{count} h ago"
+      "just-now": "just now"
     },
     "filters": {
       "all": "All",
@@ -1879,8 +1876,20 @@
       "drive-import": "Google Drive imports",
       "document-expiring": "Expiring documents",
       "thread-shared": "Shared threads",
-      "document-embedded": "Processed documents"
-    }
+      "document-embedded": "Processed documents",
+      "label": "Filter by type",
+      "project-shared": "Shared assistants"
+    },
+    "unread-badge": "New",
+    "unread-count": "{count} unread",
+    "label-with-unread": "Notifications, {count} unread",
+    "empty-description": "Documents, assistants and threads shared with you, and finished imports, appear here.",
+    "empty-filtered": "No notifications of this type",
+    "empty-filtered-description": "Pick another filter or show all notifications.",
+    "load-error": "Notifications could not be loaded",
+    "load-error-description": "Check your connection and try again.",
+    "retry": "Try again",
+    "mark-read-error": "Notifications could not be marked as read. Try again."
   },
   "organization": {
     "tabs": {

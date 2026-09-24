@@ -319,7 +319,7 @@ export async function getNotificationsAction(params: {
     getOrgIdFromAuth(),
   ]);
   if (!user || !orgId) {
-    return { items: [], nextCursor: null };
+    return { items: [], nextCursor: null, failed: false };
   }
   try {
     const result = await ragenApiRequest<{
@@ -338,10 +338,13 @@ export async function getNotificationsAction(params: {
         createdAt: new Date(item.createdAt),
       })),
       nextCursor: result.nextCursor,
+      failed: false,
     };
   } catch (err) {
     logger.error({ err }, 'Failed to fetch notifications from apps/api');
-    return { items: [], nextCursor: null };
+    // `failed` so the page can say the list did not load. An empty list
+    // alone read as "You have no notifications" when apps/api was down.
+    return { items: [], nextCursor: null, failed: true };
   }
 }
 
