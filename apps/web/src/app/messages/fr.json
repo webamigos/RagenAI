@@ -1131,6 +1131,7 @@
     "close": "Fermer"
   },
   "thread-actions": {
+    "delete-error": "Impossible de supprimer la conversation.",
     "menu": "Actions de la conversation",
     "star": "Ajouter aux favoris",
     "unstar": "Retirer des favoris",

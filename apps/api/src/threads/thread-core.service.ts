@@ -4,6 +4,7 @@ import { PrismaService } from '../prisma/prisma.service.js';
 import { AuditLogService } from '../audit-logs/audit-log.service.js';
 import { ProjectsService } from '../projects/projects.service.js';
 import { MessagesService } from '../messages/messages.service.js';
+import { SubscriptionsService } from '../subscriptions/subscriptions.service.js';
 import {
   createMessageSchema,
   type CreateMessageDto,
@@ -58,6 +59,7 @@ export class ThreadsCoreService {
     private readonly auditLog: AuditLogService,
     private readonly projects: ProjectsService,
     private readonly messages: MessagesService,
+    private readonly subscriptions: SubscriptionsService,
   ) {}
 
   // ---- Commands ----
@@ -283,6 +285,14 @@ export class ThreadsCoreService {
     threadId: string,
     orgId: string,
   ): Promise<{ success: true } | { success: false; errorMessage: string }> {
+    // Here rather than in a controller, so the public `DELETE /v1/threads/:id`
+    // and the internal route apps/web calls are gated by the same line.
+    if (!(await this.subscriptions.isFeatureEnabled(orgId, 'deleteThreads'))) {
+      return {
+        success: false,
+        errorMessage: 'This organization cannot delete threads',
+      };
+    }
     try {
       const thread = await this.prisma.client.thread.findFirst({
         where: { id: threadId, organizationId: orgId },

@@ -1131,6 +1131,7 @@
     "close": "Stäng"
   },
   "thread-actions": {
+    "delete-error": "Det gick inte att ta bort tråden.",
     "menu": "Åtgärder för tråden",
     "star": "Lägg till i favoriter",
     "unstar": "Ta bort från favoriter",

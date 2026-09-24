@@ -1131,6 +1131,7 @@
     "close": "Luk"
   },
   "thread-actions": {
+    "delete-error": "Tråden kunne ikke slettes.",
     "menu": "Handlinger for tråden",
     "star": "Tilføj til favoritter",
     "unstar": "Fjern fra favoritter",

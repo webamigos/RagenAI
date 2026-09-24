@@ -80,6 +80,7 @@ export const ThreadDropdownMenu = ({
 }: Props) => {
   const t = useTranslations('thread-actions');
   const publicThreadLinksEnabled = useOrgFeature('publicThreadLinks');
+  const canDeleteThreads = useOrgFeature('deleteThreads');
   const [isRenameOpen, setIsRenameOpen] = useState(false);
   const [renameValue, setRenameValue] = useState('');
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
@@ -113,8 +114,15 @@ export const ThreadDropdownMenu = ({
 
   const handleDelete = async () => {
     setIsDeleteOpen(false);
-    onDeleted?.(thread.id);
-    await deleteThread(thread.id);
+    // Removed from the list only once the server agrees. Optimistically, a
+    // refused delete left the thread missing from the sidebar until reload
+    // while it still existed.
+    const result = await deleteThread(thread.id);
+    if (result.success) {
+      onDeleted?.(thread.id);
+    } else {
+      statusToast().errorToast({ message: t('delete-error') });
+    }
   };
 
   const handleExport = async (format: 'md' | 'pdf') => {
@@ -200,14 +208,18 @@ export const ThreadDropdownMenu = ({
                   </DropdownMenuItem>
                 </DropdownMenuSubContent>
               </DropdownMenuSub>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                variant="destructive"
-                onClick={() => setIsDeleteOpen(true)}
-              >
-                <TrashIcon className="size-4" />
-                {t('delete')}
-              </DropdownMenuItem>
+              {canDeleteThreads && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    variant="destructive"
+                    onClick={() => setIsDeleteOpen(true)}
+                  >
+                    <TrashIcon className="size-4" />
+                    {t('delete')}
+                  </DropdownMenuItem>
+                </>
+              )}
             </>
           )}
         </DropdownMenuContent>

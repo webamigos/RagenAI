@@ -1131,6 +1131,7 @@
     "close": "Schließen"
   },
   "thread-actions": {
+    "delete-error": "Thread konnte nicht gelöscht werden.",
     "menu": "Thread-Aktionen",
     "star": "Markieren",
     "unstar": "Markierung entfernen",

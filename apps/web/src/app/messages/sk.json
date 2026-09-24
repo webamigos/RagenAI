@@ -1131,6 +1131,7 @@
     "close": "Zavrieť"
   },
   "thread-actions": {
+    "delete-error": "Vlákno sa nepodarilo odstrániť.",
     "menu": "Akcie vlákna",
     "star": "Pridať do obľúbených",
     "unstar": "Odobrať z obľúbených",

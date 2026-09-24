@@ -1131,6 +1131,7 @@
     "close": "Zamknij"
   },
   "thread-actions": {
+    "delete-error": "Nie udało się usunąć wątku.",
     "menu": "Akcje wątku",
     "star": "Przypnij",
     "unstar": "Odepnij",
