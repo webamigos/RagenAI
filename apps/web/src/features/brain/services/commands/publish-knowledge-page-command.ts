@@ -63,6 +63,7 @@ export async function publishKnowledgePageCommand(
         select: {
           id: true,
           slug: true,
+          title: true,
           status: true,
           content: true,
           contentHash: true,
@@ -147,7 +148,7 @@ export async function publishKnowledgePageCommand(
         const file = await tx.userFile.create({
           data: {
             organizationId: orgId,
-            fileName: `${page.slug}.md`,
+            fileName: vehicleFileName(page.title),
             fileSize: Buffer.byteLength(page.content, 'utf8'),
             fileType: 'MARKDOWN',
             isBinaryFile: false,
@@ -165,6 +166,7 @@ export async function publishKnowledgePageCommand(
         await tx.userFile.updateMany({
           where: { organizationId: orgId, id: fileId },
           data: {
+            fileName: vehicleFileName(page.title),
             fileSize: Buffer.byteLength(page.content, 'utf8'),
             embeddingStatus: 'STARTED',
             metadata,
@@ -225,6 +227,21 @@ export async function publishKnowledgePageCommand(
     await startFindingsReconcile(orgId);
   }
   return { success: true, changed: outcome.changed || outcome.queue };
+}
+
+/**
+ * The name a reader sees when an answer cites the page: its title, not its
+ * slug. The file's name is copied onto every chunk (`file_name`), and the
+ * chat's source list shows exactly that.
+ */
+export function vehicleFileName(title: string): string {
+  return (
+    title
+      .replace(/[\p{Cc}/\\]+/gu, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .slice(0, 200) || 'Brain'
+  );
 }
 
 function publishedHash(metadata: unknown): string | null {

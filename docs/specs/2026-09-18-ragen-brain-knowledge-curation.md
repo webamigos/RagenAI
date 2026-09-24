@@ -1197,6 +1197,13 @@ baseline without the outlier (edges 72.7 % `EXTRACTED` against 70.3 %,
       file predicate as any other read (`fileAccessWhere`). A test that a reader
       who may see a widened page but not its sources gets the page and no source
       list.
+      _Partly: the page's file is named after its title, so a chat source
+      reads "Urlop wypoczynkowy", not a slug, and the chunk carries the
+      page's numbered evidence — the verbatim quote and its locator — so the
+      reader sees what the statement rests on. Verified in the browser: a
+      real model answered from a published page and cited it by title. Still
+      open: the second level, linking each quote to its source document
+      under `fileAccessWhere`._
 - [ ] **E9.** Take a curated source document out of retrieval — per document,
       human-triggered, reversible by re-running ingest. Mode 1's path to a clean
       index, and never automatic.
