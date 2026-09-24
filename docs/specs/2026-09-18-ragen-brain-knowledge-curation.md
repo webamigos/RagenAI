@@ -882,7 +882,42 @@ What did it, and what the measurement found that B5 had not:
   fixed on the runs it measured. It recurs about one run in two on that
   document, so it is variance the prompt has not removed, not a closed gap.
   It is also the case for keeping origins apart: those 38 guesses would
-  otherwise read like structure. To settle before D, per ADR-20.
+  otherwise read like structure.
+
+**The table split, settled (2026-09-23).** A four-run probe of the three
+table documents found it on the *English* price list, 2 runs of 4 — so it
+was variance across documents, and two repeats had been too few to see it.
+It also found a second loss nothing had counted: a split run **stops
+part-way**, 39 claims where the good runs have 54, so fifteen rows never
+reached curation.
+
+Fixed after the answer rather than in the prompt, as B did short quotes
+(`consolidateTableRows`, `packages/brain-core/src/extraction/tables.ts`):
+
+- **An entity whose every verified claim sits inside one markdown table is a
+  row**, and two or more rows of one table fold into one page — the entity
+  the heading above the table names, when the model made one; else a
+  row-entity already holding most of the table (two claims at least, more
+  than half); else a page titled by the heading and described by the first
+  sentence of prose above the table, verbatim. An entity with any claim
+  outside the table is described in prose, is the prompt's own exception,
+  and stays its own page. Edges follow the fold; ones between two rows of the
+  same table become loops and go.
+- **A folded table's uncited rows are added from the table**: the row
+  verbatim as the quote, its cells under the table's own column names as the
+  statement ("Kod usługi: SR-201; Nazwa usługi: Toczenie CNC; …"), so in the
+  document's language with no model writing it. Only for a folded table — a
+  table the model used in part on purpose is not one it split.
+- The eval now reports **table-row coverage** (data rows some kept claim
+  cites) and the runs that needed folding.
+
+Measured: on the probe's twelve saved answers, the two split runs went from
+39 pages and 39 claims to **4 pages and 54 claims** — the good runs' shape —
+and the ten good runs did not change. The full eval (13 fixtures × 2) then
+split once, on the same document, and folded it the same way: table-row
+coverage **100 %**, no run failed, and every other metric within C4's
+baseline without the outlier (edges 72.7 % `EXTRACTED` against 70.3 %,
+14.3 % of pages isolated against 15.0 %).
 
 **What C1 settled:**
 

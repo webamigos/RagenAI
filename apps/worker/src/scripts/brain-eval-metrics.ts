@@ -1,4 +1,10 @@
-import { assembleGraph, type AssembledCandidates } from '@ragenai/brain-core';
+import {
+  assembleGraph,
+  compatibilityFold,
+  findTables,
+  normalizeForQuoteMatch,
+  type AssembledCandidates,
+} from '@ragenai/brain-core';
 
 /**
  * The measurements behind `brain-extract-eval.ts`, pure so they are tested
@@ -115,6 +121,11 @@ export type DocMetrics = {
   isolatedPages: number;
   /** Louvain communities over the document's pages, isolated pages included. */
   communities: number;
+  /** Entities folded into their table by assembly — the model split it. */
+  foldedTableRows: number;
+  /** Data rows of the document's tables, and how many some claim cites. */
+  tableRows: number;
+  tableRowsCited: number;
 };
 
 /** Read a page's description back out of its rendered content. */
@@ -123,9 +134,43 @@ function descriptionOf(content: string): string {
   return content.split('\n')[2] ?? '';
 }
 
+/**
+ * Data rows of the text's tables — header and separator excluded — and how
+ * many of them a kept claim quotes. A table the model split into rows and
+ * then stopped part-way through loses rows, and folding cannot bring back
+ * what was never returned; this is what shows it.
+ */
+export function tableCoverage(
+  text: string,
+  assembled: AssembledCandidates,
+): { rows: number; cited: number } {
+  const quotes = assembled.pages.flatMap((p) =>
+    p.sources.map((s) => normalizeForQuoteMatch(s.quote)),
+  );
+  let rows = 0;
+  let cited = 0;
+  // The same fold assembly applies to the source, so row offsets agree.
+  const folded = compatibilityFold(text);
+  for (const table of findTables(folded)) {
+    const lines = folded.slice(table.start, table.end).split('\n').slice(2);
+    for (const line of lines) {
+      if (line.trim() === '') {
+        continue;
+      }
+      rows += 1;
+      const row = normalizeForQuoteMatch(line);
+      if (quotes.some((q) => q.includes(row) || row.includes(q))) {
+        cited += 1;
+      }
+    }
+  }
+  return { rows, cited };
+}
+
 export function measure(
   assembled: AssembledCandidates,
   language: EvalLanguage,
+  text = '',
 ): DocMetrics {
   let inLanguage = 0;
   let otherLanguage = 0;
@@ -160,6 +205,7 @@ export function measure(
       confidence: null,
     })),
   );
+  const coverage = tableCoverage(text, assembled);
   return {
     pages: assembled.pages.length,
     claims,
@@ -173,6 +219,9 @@ export function measure(
       .length,
     isolatedPages: graph.isolated,
     communities: graph.communities,
+    foldedTableRows: assembled.foldedTableRows,
+    tableRows: coverage.rows,
+    tableRowsCited: coverage.cited,
   };
 }
 
@@ -191,6 +240,10 @@ export type ArmSummary = {
   isolatedPageShare: number | null;
   /** Pages per community, isolated pages counting as their own. */
   pagesPerCommunity: number | null;
+  /** Runs in which assembly had to fold a split table back together. */
+  runsWithFoldedTables: number;
+  /** Share of table data rows some kept claim cites. */
+  tableRowCoverage: number | null;
   tokens: number;
 };
 
@@ -233,6 +286,11 @@ export function summarize(
     pagesPerCommunity: ratio(
       sum((m) => m.pages),
       sum((m) => m.communities),
+    ),
+    runsWithFoldedTables: ok.filter((m) => m.foldedTableRows > 0).length,
+    tableRowCoverage: ratio(
+      sum((m) => m.tableRowsCited),
+      sum((m) => m.tableRows),
     ),
     tokens: runs.reduce((n, r) => n + r.tokens, 0),
   };

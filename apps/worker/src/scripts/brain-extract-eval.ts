@@ -148,7 +148,7 @@ async function main() {
         },
         outcome.windows,
       );
-      const metrics = measure(assembled, doc.language);
+      const metrics = measure(assembled, doc.language, text);
       runs.push({
         doc: basename(doc.path),
         repeat,
@@ -163,7 +163,10 @@ async function main() {
         `${repeat} ${basename(doc.path)}: ${metrics.pages} pages, ${metrics.claims} claims, ` +
           `${metrics.descriptionsInOtherLanguage}/${metrics.descriptions} wrong-language, ` +
           `${metrics.shortQuotes} short, ${metrics.edges} edges (${metrics.edgesExtracted} extracted), ` +
-          `${metrics.isolatedPages} isolated, ${metrics.communities} communities`,
+          `${metrics.isolatedPages} isolated, ${metrics.communities} communities` +
+          (metrics.tableRows > 0
+            ? `, table rows ${metrics.tableRowsCited}/${metrics.tableRows}, folded ${metrics.foldedTableRows}`
+            : ''),
       );
     }
   }
@@ -184,7 +187,8 @@ async function main() {
         `drop ${pct(s.dropRate)} · wrong-language ${pct(s.wrongLanguageRate)} · ` +
         `short quotes ${pct(s.shortQuoteRate)} · edges/doc ${s.edgesPerDocument.toFixed(2)} ` +
         `(extracted ${pct(s.extractedEdgeShare)}) · isolated ${pct(s.isolatedPageShare)} · ` +
-        `pages/community ${s.pagesPerCommunity?.toFixed(2) ?? '—'} · tokens ${s.tokens}`,
+        `pages/community ${s.pagesPerCommunity?.toFixed(2) ?? '—'} · ` +
+        `table rows ${pct(s.tableRowCoverage)} · folded in ${s.runsWithFoldedTables} runs · tokens ${s.tokens}`,
     );
   }
 
