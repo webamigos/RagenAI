@@ -162,12 +162,13 @@ export default async function PanelLayout({ children }: Props) {
             </SidebarLabel>
           </SidebarItem>
           {/*
-            Brain answers to the same test its routes do — the flag, and an
-            owner or admin of this organization. Not `userIsOrgAdmin`, which
+            Brain answers to the same test its routes do — the flags, and an
+            owner or admin of this organization (or any member, while
+            `brainForMembers` is on). Not `userIsOrgAdmin`, which
             also lets a platform admin through: this is the customer's
             knowledge, and a link to a page that 404s is worse than none.
           */}
-          {canUseBrain({ role: member?.role, enabled: features.brain }) && (
+          {canUseBrain({ role: member?.role, flags: features }) && (
             <SidebarItem href="/brain">
               <LightBulbIconOutline className="size-5 shrink-0 stroke-muted-foreground" />
               <SidebarLabel className="font-normal">

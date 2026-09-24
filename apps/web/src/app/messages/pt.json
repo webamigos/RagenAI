@@ -2744,6 +2744,9 @@
       "done": "Em fila: {queued} · sem alterações: {unchanged} · ignoradas: {refused}",
       "failed": "Não foi possível iniciar a publicação — recarregue a página e tente novamente.",
       "not-written": "{count, plural, one {# página registada como publicada mas não escrita no índice — execute novamente} other {# páginas registadas como publicadas mas não escritas no índice — execute novamente}}"
+    },
+    "read-only": {
+      "notice": "Pré-visualização só de leitura — pode explorar o Ragen Brain, mas nada aqui pode ser alterado."
     }
   },
   "project-context-manager": {

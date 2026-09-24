@@ -26,15 +26,31 @@ export default async function BrainLayout({
   }
   const [t, documents] = await Promise.all([
     getTranslations('brain'),
-    getExtractableDocumentsQuery(access.orgId),
+    access.canWrite
+      ? getExtractableDocumentsQuery(access.orgId)
+      : Promise.resolve([]),
   ]);
 
   return (
     <div className="w-full max-w-[1120px] px-6 py-6">
       <div className="flex items-center justify-between gap-3">
         <h1 className="text-lg font-semibold text-foreground">{t('title')}</h1>
-        <ExtractDialog documents={documents} />
+        {access.canWrite && <ExtractDialog documents={documents} />}
       </div>
+      {/*
+        Read-only mode says so once, at the top, rather than leaving a reader
+        to wonder where the buttons went. Every page below hides its controls
+        on `canWrite`, and every action refuses on its own check.
+      */}
+      {!access.canWrite && (
+        <p
+          role="status"
+          data-testid="brain-read-only"
+          className="mt-3 rounded-[6px] border border-border bg-muted px-3 py-2 text-xs text-muted-foreground"
+        >
+          {t('read-only.notice')}
+        </p>
+      )}
       <BrainTabs />
       {children}
     </div>

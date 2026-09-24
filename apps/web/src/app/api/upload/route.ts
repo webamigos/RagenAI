@@ -17,7 +17,7 @@ import {
 } from '@/features/organizations/services/queries/get-storage-usage-query';
 import { type PiiPolicy } from '@/generated/prisma/client';
 import { piiPolicySchema } from './pii-policy-schema';
-import { getBrainAccessQuery } from '@/features/brain/services/queries/get-brain-access-query';
+import { getBrainWriteAccessQuery } from '@/features/brain/services/queries/get-brain-access-query';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -52,14 +52,15 @@ export async function POST(request: NextRequest) {
     const folderId = formData.get('folderId')?.toString() || null;
     const rawPiiPolicy = formData.get('pii_policy')?.toString() ?? null;
     // Staged intake (Ragen Brain, spec F1) is Brain's, so it takes Brain's
-    // gate: an owner or admin with the flag on. Anyone else asking for it is
+    // write gate: an owner or admin with the flag on and Brain not frozen
+    // (`manageBrain`). Anyone else asking for it is
     // refused rather than silently indexed — an upload meant to stay out of
     // retrieval must not land in it because the caller could not stage.
     const intake =
       formData.get('intake')?.toString() === 'brain'
         ? 'brain'
         : 'knowledge-base';
-    if (intake === 'brain' && !(await getBrainAccessQuery())) {
+    if (intake === 'brain' && !(await getBrainWriteAccessQuery())) {
       return NextResponse.json(
         { message: 'Staging into Brain is not available here' },
         { status: 403 },

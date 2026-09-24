@@ -32,6 +32,8 @@ export const FEATURE_KEYS = [
   'manageProjects',
   'manageOrganizationSettings',
   'brain',
+  'manageBrain',
+  'brainForMembers',
 ] as const;
 
 export type FeatureKey = (typeof FEATURE_KEYS)[number];
@@ -74,6 +76,18 @@ export type FeatureOverrides = Partial<Record<FeatureKey, boolean | null>>;
  * behind this key (ADR-50), and every Brain route and job checks it — with the
  * one exception its spec states, "send to the knowledge base" on a staged
  * file, which must keep working after the flag is turned off.
+ *
+ * `manageBrain` is Brain's write side, like the `manage…` keys above, and
+ * defaults to `true` for the same reason. Off, Brain is read-only for
+ * everyone: no extraction, review, publication or upload into Brain, and no
+ * bundle export. An operator turns it on to curate and off again to freeze.
+ *
+ * `brainForMembers` lets every member of the organization *browse* Brain,
+ * read-only; without it only owners and admins get in. It defaults to
+ * `false` and is a disclosure decision, not a convenience: a Brain page
+ * carries what its source documents say, and a member shown every page sees
+ * text from documents their own access would not open. It is meant for a
+ * showcase organization whose corpus everyone may read.
  */
 export const DEFAULT_FEATURES: FeatureFlags = {
   inviteMembers: false,
@@ -87,6 +101,8 @@ export const DEFAULT_FEATURES: FeatureFlags = {
   manageProjects: true,
   manageOrganizationSettings: true,
   brain: false,
+  manageBrain: true,
+  brainForMembers: false,
 };
 
 /** Human-readable names, shared so the admin panel and the app cannot disagree. */
@@ -102,6 +118,9 @@ export const FEATURE_LABELS: Record<FeatureKey, string> = {
   manageProjects: 'Create and delete projects',
   manageOrganizationSettings: 'Change organization settings',
   brain: 'Ragen Brain',
+  manageBrain: 'Ragen Brain: curate (extract, review, publish)',
+  brainForMembers:
+    'Ragen Brain: members may browse (read-only, sees every page)',
 };
 
 /**

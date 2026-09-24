@@ -2,7 +2,7 @@ import { strToU8, zipSync } from 'fflate';
 import { NextResponse } from 'next/server';
 
 import { logger } from '@/app/lib/utils/logger';
-import { getBrainAccessQuery } from '@/features/brain/services/queries/get-brain-access-query';
+import { getBrainWriteAccessQuery } from '@/features/brain/services/queries/get-brain-access-query';
 import { getBrainBundleQuery } from '@/features/brain/services/queries/get-brain-bundle-query';
 
 export const dynamic = 'force-dynamic';
@@ -16,7 +16,10 @@ export const dynamic = 'force-dynamic';
  * caller that is not the panel.
  */
 export async function GET() {
-  const access = await getBrainAccessQuery();
+  // A curator's, not a reader's: the bundle is every page at once, and read-
+  // only mode exists to show Brain to people who should browse it, not take
+  // the whole of it away.
+  const access = await getBrainWriteAccessQuery();
   if (!access) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 });
   }

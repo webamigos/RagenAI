@@ -2744,6 +2744,9 @@
       "done": "Sorban: {queued} · változatlan: {unchanged} · kihagyva: {refused}",
       "failed": "A közzététel nem indult el — töltse újra az oldalt, és próbálja újra.",
       "not-written": "{count} oldal közzétettként rögzült, de nem került az indexbe – futtassa újra"
+    },
+    "read-only": {
+      "notice": "Csak olvasható előnézet — böngészheti a Ragen Braint, de itt semmit sem lehet módosítani."
     }
   },
   "project-context-manager": {

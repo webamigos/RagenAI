@@ -2744,6 +2744,9 @@
       "done": "Ve frontě: {queued} · beze změny: {unchanged} · přeskočeno: {refused}",
       "failed": "Zveřejnění se nepodařilo spustit — načtěte stránku znovu a zkuste to znovu.",
       "not-written": "{count, plural, one {# stránka byla zaznamenána jako publikovaná, ale nezapsána do indexu – spusťte znovu} few {# stránky byly zaznamenány jako publikované, ale nezapsány do indexu – spusťte znovu} many {# stránek bylo zaznamenáno jako publikované, ale nezapsáno do indexu – spusťte znovu} other {# stránek bylo zaznamenáno jako publikované, ale nezapsáno do indexu – spusťte znovu}}"
+    },
+    "read-only": {
+      "notice": "Náhled jen pro čtení — Ragen Brain můžete procházet, ale nic zde nelze změnit."
     }
   },
   "project-context-manager": {

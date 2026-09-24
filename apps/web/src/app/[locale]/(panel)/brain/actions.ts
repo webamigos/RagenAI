@@ -17,7 +17,7 @@ import { unpublishKnowledgePageCommand } from '@/features/brain/services/command
 import { rejectKnowledgePageCommand } from '@/features/brain/services/commands/reject-knowledge-page-command';
 import { setKnowledgePageAccessCommand } from '@/features/brain/services/commands/set-knowledge-page-access-command';
 import { setKnowledgePageOwnerCommand } from '@/features/brain/services/commands/set-knowledge-page-owner-command';
-import { getBrainAccessQuery } from '@/features/brain/services/queries/get-brain-access-query';
+import { getBrainWriteAccessQuery } from '@/features/brain/services/queries/get-brain-access-query';
 import {
   publishAllApprovedCommand,
   type PublishAllResult,
@@ -43,16 +43,18 @@ import {
 /**
  * The review actions of Brain's panel (spec D2).
  *
- * Each one asks the same question the routes ask — `getBrainAccessQuery`:
- * an owner or admin of an organization with the flag on — and answers
+ * Each one asks `getBrainWriteAccessQuery` — an owner or admin of an
+ * organization with Brain on and `manageBrain` not switched off — and answers
  * `not-found` otherwise, as the routes answer 404, so an action cannot tell a
- * member more than the page could. The organization and the actor come from
+ * member more than the page could. Read-only mode (a frozen Brain, or a
+ * member let in by `brainForMembers`) hides the controls too, but this is the
+ * check that holds: a hidden button is not a permission. The organization and the actor come from
  * the session, never from the request: the input names a page by `publicId`,
  * and the command looks it up inside that organization only.
  */
 
 async function reviewer(): Promise<{ orgId: string; actorId: string } | null> {
-  const access = await getBrainAccessQuery();
+  const access = await getBrainWriteAccessQuery();
   if (!access) {
     return null;
   }

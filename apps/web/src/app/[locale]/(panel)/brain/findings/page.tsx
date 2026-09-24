@@ -67,7 +67,7 @@ export default async function BrainFindingsPage({ searchParams }: Props) {
               total,
             })}
           </p>
-          <FindingsTable items={items} />
+          <FindingsTable items={items} canWrite={access.canWrite} />
           <BrainPager
             page={listPage}
             total={total}

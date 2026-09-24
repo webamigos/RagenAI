@@ -2744,6 +2744,9 @@
       "done": "En cola: {queued} · sin cambios: {unchanged} · omitidas: {refused}",
       "failed": "No se pudo iniciar la publicación: recarga la página e inténtalo de nuevo.",
       "not-written": "{count, plural, one {# página registrada como publicada pero no escrita en el índice: vuelve a ejecutarlo} other {# páginas registradas como publicadas pero no escritas en el índice: vuelve a ejecutarlo}}"
+    },
+    "read-only": {
+      "notice": "Vista previa de solo lectura: puedes explorar Ragen Brain, pero aquí no se puede cambiar nada."
     }
   },
   "project-context-manager": {

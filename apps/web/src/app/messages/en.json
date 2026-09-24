@@ -2744,6 +2744,9 @@
       "done": "Queued: {queued} · unchanged: {unchanged} · skipped: {refused}",
       "failed": "Publishing could not start — reload the page and try again.",
       "not-written": "{count, plural, one {# page was recorded as published but not written to the index — run it again} other {# pages were recorded as published but not written to the index — run it again}}"
+    },
+    "read-only": {
+      "notice": "Read-only preview — you can browse Ragen Brain, but nothing here can be changed."
     }
   },
   "project-context-manager": {

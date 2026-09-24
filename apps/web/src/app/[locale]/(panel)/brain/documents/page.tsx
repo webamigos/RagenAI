@@ -52,7 +52,7 @@ export default async function BrainDocumentsPage() {
         <p className="max-w-[720px] text-xs text-muted-foreground">
           {t('intro')}
         </p>
-        <BrainUploadButton />
+        {access.canWrite && <BrainUploadButton />}
       </div>
       {staged.length > 0 && (
         <p
@@ -91,9 +91,11 @@ export default async function BrainDocumentsPage() {
                   {t('columns.candidates')}
                 </TableHeader>
                 <TableHeader>{t('columns.retrieval')}</TableHeader>
-                <TableHeader className="text-right">
-                  {t('columns.actions')}
-                </TableHeader>
+                {access.canWrite && (
+                  <TableHeader className="text-right">
+                    {t('columns.actions')}
+                  </TableHeader>
+                )}
               </TableRow>
             </TableHead>
             <TableBody>
@@ -120,14 +122,16 @@ export default async function BrainDocumentsPage() {
                     {d.candidatePages}
                   </TableCell>
                   <TableCell>{t(`retrieval.${d.retrieval}`)}</TableCell>
-                  <TableCell className="text-right">
-                    <DocumentRetrievalActions
-                      fileId={d.fileId}
-                      fileName={d.fileName}
-                      retrieval={d.retrieval}
-                      curated={d.approvedPages > 0}
-                    />
-                  </TableCell>
+                  {access.canWrite && (
+                    <TableCell className="text-right">
+                      <DocumentRetrievalActions
+                        fileId={d.fileId}
+                        fileName={d.fileName}
+                        retrieval={d.retrieval}
+                        curated={d.approvedPages > 0}
+                      />
+                    </TableCell>
+                  )}
                 </TableRow>
               ))}
             </TableBody>

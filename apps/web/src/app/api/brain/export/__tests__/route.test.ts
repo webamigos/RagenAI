@@ -1,7 +1,7 @@
 import { strFromU8, unzipSync } from 'fflate';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const access = vi.hoisted(() => ({ getBrainAccessQuery: vi.fn() }));
+const access = vi.hoisted(() => ({ getBrainWriteAccessQuery: vi.fn() }));
 const bundle = vi.hoisted(() => ({ getBrainBundleQuery: vi.fn() }));
 vi.mock(
   '@/features/brain/services/queries/get-brain-access-query',
@@ -19,14 +19,14 @@ beforeEach(() => vi.clearAllMocks());
 
 describe('GET /api/brain/export', () => {
   it('answers 404 to anyone the panel would 404, building nothing', async () => {
-    access.getBrainAccessQuery.mockResolvedValue(null);
+    access.getBrainWriteAccessQuery.mockResolvedValue(null);
     const res = await GET();
     expect(res.status).toBe(404);
     expect(bundle.getBrainBundleQuery).not.toHaveBeenCalled();
   });
 
   it('zips the bundle for the session’s organization', async () => {
-    access.getBrainAccessQuery.mockResolvedValue({ orgId: 'org-1' });
+    access.getBrainWriteAccessQuery.mockResolvedValue({ orgId: 'org-1' });
     bundle.getBrainBundleQuery.mockResolvedValue({
       files: new Map([
         ['pages/a.md', '---\nid: x\n---\n\n# A\n'],

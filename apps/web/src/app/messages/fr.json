@@ -2744,6 +2744,9 @@
       "done": "En file : {queued} · inchangées : {unchanged} · ignorées : {refused}",
       "failed": "La publication n’a pas pu démarrer — rechargez la page et réessayez.",
       "not-written": "{count, plural, one {# page enregistrée comme publiée mais non écrite dans l’index — relancez} other {# pages enregistrées comme publiées mais non écrites dans l’index — relancez}}"
+    },
+    "read-only": {
+      "notice": "Aperçu en lecture seule — vous pouvez parcourir Ragen Brain, mais rien ne peut être modifié ici."
     }
   },
   "project-context-manager": {

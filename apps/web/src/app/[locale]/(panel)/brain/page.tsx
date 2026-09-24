@@ -82,32 +82,35 @@ export default async function BrainPagesPage({ searchParams }: Props) {
         ]}
       />
 
-      <div
-        className="mb-4 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-[6px] border border-border bg-background px-3 py-2 text-xs"
-        data-testid="brain-export"
-      >
-        <span className="font-medium text-foreground">
-          {t('export.ready', { count: exportSummary.pages })}
-        </span>
-        {skippedReasons.map(([reason, count]) => (
-          <span key={reason} className="text-muted-foreground">
-            {t(`export.skipped.${reason}`, { count })}
+      {/* Publishing and the bundle are a curator's; a reader sees neither. */}
+      {access.canWrite && (
+        <div
+          className="mb-4 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-[6px] border border-border bg-background px-3 py-2 text-xs"
+          data-testid="brain-export"
+        >
+          <span className="font-medium text-foreground">
+            {t('export.ready', { count: exportSummary.pages })}
           </span>
-        ))}
-        <span className="ml-auto" />
-        <PublishAllButton approved={approved} />
-        {exportSummary.pages > 0 ? (
-          <a
-            href="/api/brain/export"
-            download
-            className="text-primary underline-offset-4 hover:underline"
-          >
-            {t('export.download')}
-          </a>
-        ) : (
-          <span className="text-muted-foreground">{t('export.none')}</span>
-        )}
-      </div>
+          {skippedReasons.map(([reason, count]) => (
+            <span key={reason} className="text-muted-foreground">
+              {t(`export.skipped.${reason}`, { count })}
+            </span>
+          ))}
+          <span className="ml-auto" />
+          <PublishAllButton approved={approved} />
+          {exportSummary.pages > 0 ? (
+            <a
+              href="/api/brain/export"
+              download
+              className="text-primary underline-offset-4 hover:underline"
+            >
+              {t('export.download')}
+            </a>
+          ) : (
+            <span className="text-muted-foreground">{t('export.none')}</span>
+          )}
+        </div>
+      )}
 
       {items.length === 0 && listPage === 1 ? (
         <BrainEmpty
