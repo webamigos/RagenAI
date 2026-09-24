@@ -266,6 +266,32 @@ describe('uploadFileCommand', () => {
     expect(mockGetFolderPiiPolicy).not.toHaveBeenCalled();
   });
 
+  // Ragen Brain's staged intake (spec F1): the destination is on the row the
+  // ingest reads, before the job starts.
+  it('writes a Brain destination to the row, before the job starts', async () => {
+    await uploadFileCommand({
+      file: makeFile(100),
+      organizationId: 'org-1',
+      organizationSlug: 'o',
+      projectId: null,
+      intake: 'brain',
+    });
+    expect(policyWrittenToRow().data.metadata).toEqual({ intake: 'brain' });
+    expect(mockUserFileUpdate.mock.invocationCallOrder[0]).toBeLessThan(
+      mockJobStart.mock.invocationCallOrder[0],
+    );
+  });
+
+  it('writes no destination for an ordinary upload', async () => {
+    await uploadFileCommand({
+      file: makeFile(100),
+      organizationId: 'org-1',
+      organizationSlug: 'o',
+      projectId: null,
+    });
+    expect(policyWrittenToRow().data).not.toHaveProperty('metadata');
+  });
+
   it('writes TOXIC_ONLY when nothing says otherwise', async () => {
     await uploadFileCommand({
       file: makeFile(100),

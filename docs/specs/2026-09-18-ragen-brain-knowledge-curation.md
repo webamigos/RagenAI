@@ -1242,22 +1242,40 @@ baseline without the outlier (edges 72.7 % `EXTRACTED` against 70.3 %,
 
 ### Phase F — Staged intake (mode 2)
 
-- [ ] **F1.** A destination on upload: knowledge base (today's path, default) or
+- [x] **F1.** A destination on upload: knowledge base (today's path, default) or
       Brain. Carried on the ingest payload.
-- [ ] **F2.** The worker handler skips `addDocumentsToVectorStore` for a staged
+      _The destination is written to the row (`UserFile.metadata.intake =
+      'brain'`) before the ingest is queued, not carried on the payload: the
+      payload became identifiers-only and the ingest reads the row (see
+      `RunFileEmbeddingsPayload`). `/api/upload` takes `intake=brain` behind
+      Brain's own gate; the Documents tab has "Upload into Brain"._
+- [x] **F2.** The worker handler skips `addDocumentsToVectorStore` for a staged
       file and records `EmbeddingStatus.STAGED`; everything else — parsing, the
       persisted markdown, the document version, PII policy, language, page count
       — runs unchanged.
-- [ ] **F3.** The document list shows the staged state plainly: present,
+      _`isStagedIntake` in `parse-and-embed`: previous chunks are cleared, the
+      vector write skipped, `STAGED` recorded. Verified against a real worker:
+      parsed, summarised, 0 points in Qdrant._
+- [x] **F3.** The document list shows the staged state plainly: present,
       openable, not searchable.
-- [ ] **F4.** The Brain inbox: what is staged, how old, how much of it is still
+      _"In Brain" with an "Index it" link on the row._
+- [x] **F4.** The Brain inbox: what is staged, how old, how much of it is still
       uncurated.
-- [ ] **F5.** _Send to the knowledge base_ on a staged file: `runFileEmbeddings`
+      _The Documents tab: staged documents, how many still have no approved
+      page. Age is not shown yet._
+- [x] **F5.** _Send to the knowledge base_ on a staged file: `runFileEmbeddings`
       with the knowledge-base destination, per file and over a selection,
       idempotent, and not gated on the `brain` flag. It selects `STAGED` only —
       a `WITHDRAWN` page's file is not promotable, and a test says so.
+      _`sendStagedToKnowledgeBaseCommand` in the documents feature, not gated
+      on the flag: selects `STAGED` only (a `WITHDRAWN` file is skipped), switches
+      the destination on the row, then re-runs ingest. Verified: 0 points while
+      staged, `COMPLETED` and 2 points after sending._
 - [ ] **F6.** A `p0-*` e2e asserting a staged document is not retrievable —
       through chat, through the API, and at every knowledge scope.
+      _Not as a Playwright spec: CI's e2e job runs no worker, so it cannot
+      ingest. Pinned instead by the ingest workflow spec (a staged file never
+      reaches `addDocumentsToVectorStore`) and by a live run against Qdrant._
 
 ### Phase G — Verification loop _(v1.1, listed so it is designed for, not built)_
 

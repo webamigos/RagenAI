@@ -1290,7 +1290,11 @@
     "filter-clear": "Limpar o filtro {filter}",
     "filter-pii-policy": "Política",
     "filter-pii-policy-all": "Todos",
-    "status-withdrawn": "Retirado da pesquisa"
+    "status-withdrawn": "Retirado da pesquisa",
+    "status-staged": "No Brain",
+    "staged-send": "Indexar",
+    "staged-sent": "Enviado para a base de conhecimento — ficará pesquisável depois de processado",
+    "staged-send-failed": "Não foi possível enviar — recarregue a página e tente novamente."
   },
   "folders": {
     "title": "Pastas",
@@ -2689,7 +2693,8 @@
         "in": "Pesquisável",
         "withdrawn": "Retirado da pesquisa",
         "processing": "Em processamento",
-        "failed": "Falhou"
+        "failed": "Falhou",
+        "staged": "No Brain — não pesquisável"
       },
       "withdraw": "Retirar da pesquisa",
       "restore": "Repor",
@@ -2705,7 +2710,13 @@
         "invalid-status": "O documento não está no estado necessário — recarregue a página.",
         "index-unavailable": "Não foi possível alterar o índice — nada mudou; tente novamente.",
         "failed-to-start": "Não foi possível iniciar o reprocessamento — tente novamente daqui a pouco."
-      }
+      },
+      "send": "Enviar para a base de conhecimento",
+      "sent": "Enviado para a base de conhecimento",
+      "upload": "Carregar no Brain",
+      "uploaded": "Carregados no Brain: {count} — guardados e analisados, não pesquisáveis",
+      "upload-failed": "O carregamento falhou — verifique o ficheiro e tente novamente.",
+      "staged-summary": "No Brain, não pesquisáveis: {count} documentos, {uncurated} ainda sem página aprovada."
     },
     "publish-all": {
       "button": "Publicar aprovadas ({count})",

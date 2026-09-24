@@ -1290,7 +1290,11 @@
     "filter-clear": "Tyhjennä suodatin {filter}",
     "filter-pii-policy": "Käytäntö",
     "filter-pii-policy-all": "Kaikki",
-    "status-withdrawn": "Poistettu hausta"
+    "status-withdrawn": "Poistettu hausta",
+    "status-staged": "Brainissa",
+    "staged-send": "Indeksoi",
+    "staged-sent": "Lähetetty tietopankkiin — haettavissa käsittelyn jälkeen",
+    "staged-send-failed": "Lähetys epäonnistui — lataa sivu uudelleen ja yritä uudelleen."
   },
   "folders": {
     "title": "Kansiot",
@@ -2689,7 +2693,8 @@
         "in": "Haettavissa",
         "withdrawn": "Poistettu hausta",
         "processing": "Käsitellään",
-        "failed": "Virhe"
+        "failed": "Virhe",
+        "staged": "Brainissa — ei haettavissa"
       },
       "withdraw": "Poista hausta",
       "restore": "Palauta",
@@ -2705,7 +2710,13 @@
         "invalid-status": "Asiakirja ei ole tarvittavassa tilassa — lataa sivu uudelleen.",
         "index-unavailable": "Indeksiä ei voitu muuttaa — mikään ei muuttunut; yritä uudelleen.",
         "failed-to-start": "Uudelleenkäsittelyä ei voitu aloittaa — yritä hetken kuluttua uudelleen."
-      }
+      },
+      "send": "Lähetä tietopankkiin",
+      "sent": "Lähetetty tietopankkiin",
+      "upload": "Lataa Brainiin",
+      "uploaded": "Ladattu Brainiin: {count} — tallennettu ja käsitelty, ei haettavissa",
+      "upload-failed": "Lataus epäonnistui — tarkista tiedosto ja yritä uudelleen.",
+      "staged-summary": "Brainissa, ei haettavissa: {count} asiakirjaa, joista {uncurated} vielä ilman hyväksyttyä sivua."
     },
     "publish-all": {
       "button": "Julkaise hyväksytyt ({count})",

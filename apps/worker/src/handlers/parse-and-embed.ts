@@ -593,18 +593,32 @@ export async function runFileEmbeddings(
     // as `reindexDocumentVersion`, which made the same call.
     await deleteDocumentVectors({ orgId, fileId });
 
-    await addDocumentsToVectorStore({
-      orgId,
-      projectId,
-      userId: ownerId,
-      docs: updatedDocs,
-    });
+    if (isStagedIntake(file.metadata)) {
+      // Ragen Brain's staged intake (spec F2): everything above ran — the
+      // parse, the persisted markdown, the document version, PII policy,
+      // language, page count — and the one vector write is skipped. The file
+      // is in the system and not in the index, and its status says exactly
+      // that; only a published knowledge page, or sending the document to
+      // the knowledge base, puts its content where retrieval can reach it.
+      await updateEmbeddingStatus({
+        fileId,
+        orgId,
+        status: EmbeddingStatus.STAGED,
+      });
+    } else {
+      await addDocumentsToVectorStore({
+        orgId,
+        projectId,
+        userId: ownerId,
+        docs: updatedDocs,
+      });
 
-    await updateEmbeddingStatus({
-      fileId,
-      orgId,
-      status: EmbeddingStatus.COMPLETED,
-    });
+      await updateEmbeddingStatus({
+        fileId,
+        orgId,
+        status: EmbeddingStatus.COMPLETED,
+      });
+    }
   } catch (embeddingError) {
     // See the parsing catch above for why cancellation and other
     // nonRetryable failures are rethrown unchanged rather than rewrapped.
@@ -778,4 +792,18 @@ export async function runFileEmbeddings(
   await deleteFileFromTmp(locator);
 
   return `success! ${fileId}, ${fileName}`;
+}
+
+/**
+ * Whether the upload named Brain as its destination (spec F1): written to
+ * `UserFile.metadata.intake` by the producer before the ingest was queued.
+ * Anything else — no metadata, another value — is the knowledge base, so a
+ * row this code does not understand is indexed as it always was.
+ */
+export function isStagedIntake(metadata: unknown): boolean {
+  return (
+    metadata !== null &&
+    typeof metadata === 'object' &&
+    (metadata as Record<string, unknown>).intake === 'brain'
+  );
 }

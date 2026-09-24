@@ -174,6 +174,47 @@ describe('runFileEmbeddings workflow', () => {
     );
   });
 
+  // Ragen Brain's staged intake (spec F2, F6): parsed, stored, versioned —
+  // and never written to the vector store.
+  it('stages a file uploaded into Brain: everything runs but the vector write', async () => {
+    const activities = createMockActivities();
+    const payload = makeUserFile({
+      fileName: 'readme.txt',
+      metadata: { intake: 'brain' },
+    });
+
+    await runIngest<string>(payload, activities);
+
+    expect(activities.createMarkdownDocument).toHaveBeenCalled();
+    expect(activities.updateParsingStatus).toHaveBeenCalledWith(
+      expect.objectContaining({ status: ParsingStatus.COMPLETED }),
+    );
+    expect(activities.addDocumentsToVectorStore).not.toHaveBeenCalled();
+    // Previous chunks, from before it was staged, are still cleared.
+    expect(activities.deleteDocumentVectors).toHaveBeenCalled();
+    expect(activities.updateEmbeddingStatus).toHaveBeenCalledWith(
+      expect.objectContaining({ status: EmbeddingStatus.STAGED }),
+    );
+    expect(activities.updateEmbeddingStatus).not.toHaveBeenCalledWith(
+      expect.objectContaining({ status: EmbeddingStatus.COMPLETED }),
+    );
+  });
+
+  it('indexes a file whose destination is the knowledge base, or unknown', async () => {
+    for (const metadata of [
+      { intake: 'knowledge-base' },
+      { intake: 'elsewhere' },
+      null,
+    ]) {
+      const activities = createMockActivities();
+      await runIngest<string>(
+        makeUserFile({ fileName: 'readme.txt', metadata }),
+        activities,
+      );
+      expect(activities.addDocumentsToVectorStore).toHaveBeenCalled();
+    }
+  });
+
   it('processes a PDF file with binary detection', async () => {
     const activities = createMockActivities();
     activities.checkIsBinaryFile.mockResolvedValue(true);

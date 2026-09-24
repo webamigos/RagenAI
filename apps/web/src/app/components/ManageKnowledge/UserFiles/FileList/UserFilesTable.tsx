@@ -28,6 +28,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { SuspiciousContentBadge } from './SuspiciousContentBadge';
 import { RagScoreBadge } from './RagScoreBadge';
+import { SendStagedButton } from './SendStagedButton';
 import { PiiPolicyBadge } from '../../PiiPolicyBadge';
 import { Tooltip } from '@ragenai/common-ui/Tooltip';
 import { EmptyState } from '@ragenai/common-ui/EmptyState';
@@ -216,6 +217,12 @@ function FileStatusBadge({
   // style only says nothing is wrong.
   if (embeddingStatus === EmbeddingStatus.WITHDRAWN) {
     return <StatusBadge state="queued" label={t('status-withdrawn')} />;
+  }
+
+  // Staged into Brain (spec F3): stored, parsed and openable, deliberately
+  // not searchable until it is curated or sent to the knowledge base.
+  if (embeddingStatus === EmbeddingStatus.STAGED) {
+    return <StatusBadge state="queued" label={t('status-staged')} />;
   }
 
   if (
@@ -446,10 +453,16 @@ const FileRow = ({
           {formattedCreatedAt}
         </Td>
         <Td>
-          <FileStatusBadge
-            embeddingStatus={file.embeddingStatus}
-            parsingStatus={file.parsingStatus}
-          />
+          <div className="flex flex-col items-start gap-1">
+            <FileStatusBadge
+              embeddingStatus={file.embeddingStatus}
+              parsingStatus={file.parsingStatus}
+            />
+            {canManageOrg === true &&
+              file.embeddingStatus === EmbeddingStatus.STAGED && (
+                <SendStagedButton fileId={file.id} />
+              )}
+          </div>
         </Td>
         {canManageOrg === true && (
           /*

@@ -13,6 +13,7 @@ import { getBrainAccessQuery } from '@/features/brain/services/queries/get-brain
 import { getBrainDocumentsQuery } from '@/features/brain/services/queries/get-brain-documents-query';
 
 import { BrainEmpty } from '../components/BrainEmpty';
+import { BrainUploadButton } from '../components/BrainUploadButton';
 import { DocumentRetrievalActions } from '../components/DocumentRetrievalActions';
 
 export const dynamic = 'force-dynamic';
@@ -32,13 +33,28 @@ export default async function BrainDocumentsPage() {
     getTranslations('brain.documents'),
     getBrainDocumentsQuery(access.orgId),
   ]);
+  const staged = documents.filter((d) => d.retrieval === 'staged');
 
   return (
     <section>
       <title>{t('title')}</title>
-      <p className="mb-3 max-w-[720px] text-xs text-muted-foreground">
-        {t('intro')}
-      </p>
+      <div className="mb-3 flex flex-wrap items-start justify-between gap-3">
+        <p className="max-w-[720px] text-xs text-muted-foreground">
+          {t('intro')}
+        </p>
+        <BrainUploadButton />
+      </div>
+      {staged.length > 0 && (
+        <p
+          className="mb-3 text-xs text-foreground"
+          data-testid="brain-staged-summary"
+        >
+          {t('staged-summary', {
+            count: staged.length,
+            uncurated: staged.filter((d) => d.approvedPages === 0).length,
+          })}
+        </p>
+      )}
       {documents.length === 0 ? (
         <BrainEmpty
           title={t('empty-title')}
