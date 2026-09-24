@@ -7,8 +7,19 @@ import { z } from 'zod';
  * someone else has changed since is refused rather than applied on top.
  */
 
+/**
+ * A UUID's shape, as Postgres' `uuid` type accepts it — not Zod's
+ * `.uuid()`, which since Zod 4 also demands an RFC version and variant. Ids
+ * are looked up in the database, which is what decides whether one exists;
+ * refusing a well-formed id for its version nibble turned a real file into
+ * `invalid-input` (the e2e seed's ids, and any row not minted as v4).
+ */
+export const dbUuid = z
+  .string()
+  .regex(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
+
 const pageRef = {
-  publicId: z.string().uuid(),
+  publicId: dbUuid,
   /** The page's `updatedAt` as the reviewer's screen showed it (ISO). */
   expectedUpdatedAt: z.string().datetime(),
 };
@@ -43,7 +54,7 @@ export const mergeInputSchema = z.object({
   /** The page being folded away — the one the reviewer is looking at. */
   ...pageRef,
   /** The page that absorbs it and stays. */
-  targetPublicId: z.string().uuid(),
+  targetPublicId: dbUuid,
 });
 export type MergeInput = z.infer<typeof mergeInputSchema>;
 

@@ -16,6 +16,15 @@ import { rejectKnowledgePageCommand } from '@/features/brain/services/commands/r
 import { setKnowledgePageAccessCommand } from '@/features/brain/services/commands/set-knowledge-page-access-command';
 import { setKnowledgePageOwnerCommand } from '@/features/brain/services/commands/set-knowledge-page-owner-command';
 import { getBrainAccessQuery } from '@/features/brain/services/queries/get-brain-access-query';
+import {
+  retryExtractionInputSchema,
+  startExtractionInputSchema,
+  type ExtractionStartResult,
+} from '@/features/brain/contracts/brain-extraction.types';
+import {
+  retryExtractionFindingCommand,
+  startBrainExtractionCommand,
+} from '@/features/brain/services/commands/start-brain-extraction-command';
 
 /**
  * The review actions of Brain's panel (spec D2).
@@ -83,4 +92,46 @@ export async function mergeKnowledgePagesAction(
   input: unknown,
 ): Promise<ReviewResult> {
   return run(mergeInputSchema, input, mergeKnowledgePagesCommand);
+}
+
+/**
+ * Start an extraction run over the documents a reviewer chose (spec D3).
+ * The same gate as every review action; the ids are filtered to this
+ * organization inside the command.
+ */
+export async function startBrainExtractionAction(
+  input: unknown,
+): Promise<ExtractionStartResult> {
+  const parsed = startExtractionInputSchema.safeParse(input);
+  if (!parsed.success) {
+    return { success: false, error: 'invalid-input' };
+  }
+  const who = await reviewer();
+  if (!who) {
+    return { success: false, error: 'not-found' };
+  }
+  return startBrainExtractionCommand({
+    orgId: who.orgId,
+    userId: who.actorId,
+    fileIds: parsed.data.fileIds,
+  });
+}
+
+/** Retry the document an open EXTRACTION_FAILED finding names (spec D3). */
+export async function retryExtractionFindingAction(
+  input: unknown,
+): Promise<ExtractionStartResult> {
+  const parsed = retryExtractionInputSchema.safeParse(input);
+  if (!parsed.success) {
+    return { success: false, error: 'invalid-input' };
+  }
+  const who = await reviewer();
+  if (!who) {
+    return { success: false, error: 'not-found' };
+  }
+  return retryExtractionFindingCommand({
+    orgId: who.orgId,
+    userId: who.actorId,
+    findingPublicId: parsed.data.findingPublicId,
+  });
 }

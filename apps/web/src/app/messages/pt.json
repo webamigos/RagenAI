@@ -2577,6 +2577,27 @@
         "UNPUBLISH": "Retirada",
         "VERIFY": "Verificada"
       }
+    },
+    "extract": {
+      "open": "Extrair de documentos",
+      "title": "Extrair conhecimento de documentos",
+      "description": "O Brain lê os documentos escolhidos e escreve páginas candidatas para revisão. Estão selecionados os documentos que nenhuma página cita ainda. A execução decorre em segundo plano.",
+      "none": "Não há documentos para extrair — adicione primeiro documentos à base de conhecimento.",
+      "not-extracted": "Não extraído",
+      "pages": "Páginas: {count}",
+      "too-many": "No máximo {max} documentos por execução.",
+      "cancel": "Cancelar",
+      "start": "Iniciar extração ({count})",
+      "started": "Extração iniciada — documentos: {count}. As candidatas aparecem à medida que cada um termina.",
+      "retry": "Tentar novamente",
+      "retry-queued": "Nova tentativa em fila",
+      "retry-started": "Extração deste documento novamente em fila",
+      "errors": {
+        "invalid-input": "O pedido não foi compreendido — recarregue a página e tente novamente.",
+        "not-found": "Esta ocorrência está fechada ou já não existe.",
+        "no-documents": "Nenhum dos documentos escolhidos pode ser extraído aqui.",
+        "failed-to-start": "Não foi possível iniciar a extração — tente novamente daqui a pouco."
+      }
     }
   }
 }

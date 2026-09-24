@@ -36,7 +36,7 @@ export function ReviewActions({
   const ref = { publicId, expectedUpdatedAt: updatedAt };
 
   return (
-    <div className="flex flex-wrap items-center gap-2">
+    <div className="flex flex-wrap items-center justify-end gap-2">
       <Button
         size="sm"
         disabled={pending || !hasOwner}
@@ -56,7 +56,7 @@ export function ReviewActions({
         {t('reject')}
       </Button>
       {!hasOwner && (
-        <p className="w-full text-xs text-muted-foreground">
+        <p className="w-full text-right text-xs text-muted-foreground">
           {t('approve-needs-owner')}
         </p>
       )}

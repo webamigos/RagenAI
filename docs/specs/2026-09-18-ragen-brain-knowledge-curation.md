@@ -990,9 +990,14 @@ baseline without the outlier (edges 72.7 % `EXTRACTED` against 70.3 %,
       `p0-33-brain-review` gates it. **D2b (done):** merge, and the
       `brainReconcileFindings` job the panel starts after every decision;
       `p0-34-brain-merge` gates it._
-- [ ] **D3.** Retry an `EXTRACTION_FAILED` document from the findings list:
+- [x] **D3.** Retry an `EXTRACTION_FAILED` document from the findings list:
       re-runs `brainExtract` for that document alone and resolves the finding on
       success.
+      _Plus the panel's way to start a run at all: "Extract from documents"
+      in the Brain header, over chosen documents (up to 200 per run, ones no
+      page cites preselected). Before this a run could only be started from
+      the preview script. The worker's `getExtractionSource` now finds the
+      document through the relation, as D1 asked._
 - [ ] **D4.** Graph view (Sigma.js or react-force-graph), scoped to a
       neighbourhood — a graph that hangs the tab on a real corpus is a demo that
       fails at the customer's data volume.

@@ -47,3 +47,20 @@ describe('review input schemas', () => {
     ).toBe(false);
   });
 });
+
+describe('ids', () => {
+  it('accept any well-formed UUID, not only an RFC v4 one', async () => {
+    const { startExtractionInputSchema } =
+      await import('../contracts/brain-extraction.types');
+    const seeded = 'e2e00000-0000-0000-0000-00e2e0000060';
+    expect(
+      startExtractionInputSchema.safeParse({ fileIds: [seeded] }).success,
+    ).toBe(true);
+    expect(
+      pageDecisionInputSchema.safeParse({ ...ref, publicId: seeded }).success,
+    ).toBe(true);
+    expect(
+      startExtractionInputSchema.safeParse({ fileIds: ['not-a-uuid'] }).success,
+    ).toBe(false);
+  });
+});

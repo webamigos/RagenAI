@@ -2577,6 +2577,27 @@
         "UNPUBLISH": "Retirée",
         "VERIFY": "Vérifiée"
       }
+    },
+    "extract": {
+      "open": "Extraire des documents",
+      "title": "Extraire la connaissance des documents",
+      "description": "Brain lit les documents choisis et rédige des pages candidates à réviser. Les documents qu’aucune page ne cite encore sont sélectionnés. L’exécution se fait en arrière-plan.",
+      "none": "Aucun document à extraire — ajoutez d’abord des documents à la base de connaissances.",
+      "not-extracted": "Non extrait",
+      "pages": "Pages : {count}",
+      "too-many": "Au plus {max} documents par exécution.",
+      "cancel": "Annuler",
+      "start": "Lancer l’extraction ({count})",
+      "started": "Extraction lancée — documents : {count}. Les candidates apparaissent à mesure que chacun se termine.",
+      "retry": "Réessayer",
+      "retry-queued": "Nouvel essai en file",
+      "retry-started": "Extraction de ce document remise en file",
+      "errors": {
+        "invalid-input": "La requête n’a pas été comprise — rechargez la page et réessayez.",
+        "not-found": "Ce constat est clos ou n’existe plus.",
+        "no-documents": "Aucun des documents choisis ne peut être extrait ici.",
+        "failed-to-start": "L’extraction n’a pas pu démarrer — réessayez dans un instant."
+      }
     }
   }
 }

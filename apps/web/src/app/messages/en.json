@@ -2577,6 +2577,27 @@
         "UNPUBLISH": "Withdrawn",
         "VERIFY": "Verified"
       }
+    },
+    "extract": {
+      "open": "Extract from documents",
+      "title": "Extract knowledge from documents",
+      "description": "Brain reads the chosen documents and writes candidate pages for review. Documents no page cites yet are selected. The run happens in the background.",
+      "none": "No documents to extract from — add documents to the knowledge base first.",
+      "not-extracted": "Not extracted",
+      "pages": "Pages: {count}",
+      "too-many": "At most {max} documents in one run.",
+      "cancel": "Cancel",
+      "start": "Start extraction ({count})",
+      "started": "Extraction started — documents: {count}. Candidates appear as each one finishes.",
+      "retry": "Retry",
+      "retry-queued": "Retry queued",
+      "retry-started": "Extraction queued again for this document",
+      "errors": {
+        "invalid-input": "The request was not understood — reload the page and try again.",
+        "not-found": "This finding is closed or no longer exists.",
+        "no-documents": "None of the chosen documents can be extracted here.",
+        "failed-to-start": "The extraction could not be started — try again in a moment."
+      }
     }
   }
 }

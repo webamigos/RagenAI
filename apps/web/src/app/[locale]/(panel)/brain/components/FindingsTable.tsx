@@ -13,6 +13,7 @@ import type { KnowledgeFindingListItem } from '@/features/brain/contracts/brain.
 import { Link } from '@/i18n/routing';
 
 import { FindingSummaryView } from './FindingSummaryView';
+import { RetryExtractionButton } from './RetryExtractionButton';
 
 /**
  * Findings as rows. The row is not a link: a contradiction names two pages,
@@ -83,6 +84,12 @@ export async function FindingsTable({
               )}
               <TableCell className="max-w-[480px] align-top whitespace-normal">
                 <FindingSummaryView summary={item.summary} />
+                {item.type === 'EXTRACTION_FAILED' &&
+                  item.status === 'OPEN' && (
+                    <div className="mt-1.5">
+                      <RetryExtractionButton findingPublicId={item.publicId} />
+                    </div>
+                  )}
               </TableCell>
               <TableCell className="align-top">
                 <Badge variant="outline">

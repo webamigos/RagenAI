@@ -2577,6 +2577,27 @@
         "UNPUBLISH": "Staženo",
         "VERIFY": "Ověřeno"
       }
+    },
+    "extract": {
+      "open": "Extrahovat z dokumentů",
+      "title": "Extrahovat znalosti z dokumentů",
+      "description": "Brain přečte vybrané dokumenty a zapíše kandidátní stránky k posouzení. Vybrány jsou dokumenty, které zatím žádná stránka necituje. Běh probíhá na pozadí.",
+      "none": "Žádné dokumenty k extrakci — nejprve přidejte dokumenty do znalostní báze.",
+      "not-extracted": "Neextrahováno",
+      "pages": "Stránky: {count}",
+      "too-many": "Nejvýše {max} dokumentů v jednom běhu.",
+      "cancel": "Zrušit",
+      "start": "Spustit extrakci ({count})",
+      "started": "Extrakce spuštěna — dokumenty: {count}. Kandidáti se objeví, jakmile každý doběhne.",
+      "retry": "Zkusit znovu",
+      "retry-queued": "Opakování ve frontě",
+      "retry-started": "Extrakce tohoto dokumentu znovu ve frontě",
+      "errors": {
+        "invalid-input": "Požadavku nebylo rozumět — načtěte stránku znovu a zkuste to znovu.",
+        "not-found": "Toto zjištění je uzavřené nebo už neexistuje.",
+        "no-documents": "Žádný z vybraných dokumentů zde nelze extrahovat.",
+        "failed-to-start": "Extrakci se nepodařilo spustit — zkuste to za chvíli."
+      }
     }
   }
 }
