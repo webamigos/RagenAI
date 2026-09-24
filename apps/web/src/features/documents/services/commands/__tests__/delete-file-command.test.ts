@@ -103,6 +103,22 @@ describe('deleteFileCommand', () => {
     });
   });
 
+  // Spec E10: a published Brain page's file is never a document to delete.
+  it('never starts on a published Brain page’s file', async () => {
+    mockFindFirst.mockResolvedValue(null);
+    const result = await deleteFileCommand({
+      fileId: 'vehicle',
+      organizationId: 'org-1',
+    });
+    expect(mockFindFirst.mock.calls[0][0].where).toMatchObject({
+      publishedPages: { none: {} },
+    });
+    expect(result.deleted).toBe(false);
+    expect(mockDeleteMany).not.toHaveBeenCalled();
+    expect(mockDeleteFromVectorStore).not.toHaveBeenCalled();
+    expect(mockDeleteFromS3).not.toHaveBeenCalled();
+  });
+
   it('deletes DB + S3 + vectors + thumbnail when present', async () => {
     mockFindFirst.mockResolvedValue({
       id: 'file-1',
@@ -124,7 +140,11 @@ describe('deleteFileCommand', () => {
       fileName: 'doc.pdf',
     });
     expect(mockDeleteMany).toHaveBeenCalledWith({
-      where: { id: 'file-1', organizationId: 'org-1' },
+      where: {
+        id: 'file-1',
+        organizationId: 'org-1',
+        publishedPages: { none: {} },
+      },
     });
     expect(mockDeleteFromS3).toHaveBeenCalledWith('file-1.pdf');
     expect(mockDeleteFromS3ByKey).toHaveBeenCalledWith('org-1/thumbs/doc.pdf');

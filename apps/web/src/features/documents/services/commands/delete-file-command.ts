@@ -7,6 +7,8 @@ import { trackAudit } from '@/features/audit-logs/services/commands/create-audit
 import { logger } from '@/app/lib/utils/logger';
 import { assertCanManageDocuments } from '@/features/subscriptions/services/feature-guards';
 
+import { NOT_A_BRAIN_VEHICLE } from './not-a-brain-vehicle';
+
 export type DeleteFileParams = {
   fileId: string;
   organizationId: string;
@@ -51,6 +53,11 @@ export async function deleteFileCommand(
       id: fileId,
       organizationId,
       ...(projectId !== undefined ? { projectId } : {}),
+      // A published Brain page's file is not a document to delete (spec
+      // E10): it is the page's publication vehicle, and every citation of
+      // the page cascades from it. Found as "no such file", so nothing below
+      // — storage, vectors, the audit entry — runs for it.
+      ...NOT_A_BRAIN_VEHICLE,
     },
   });
 
@@ -59,7 +66,7 @@ export async function deleteFileCommand(
   }
 
   const { count } = await db.userFile.deleteMany({
-    where: { id: fileRecord.id, organizationId },
+    where: { id: fileRecord.id, organizationId, ...NOT_A_BRAIN_VEHICLE },
   });
 
   if (count === 0) {

@@ -1,6 +1,7 @@
 'use server';
 
 import db from '@ragenai/prisma-client';
+import { NOT_A_BRAIN_VEHICLE } from './not-a-brain-vehicle';
 import { deleteFromS3, deleteFromS3ByKey } from '@/app/lib/services/storage';
 import { deleteFileFromVectorStore } from '@/app/api/upload/services/TableService';
 import { deleteDocumentFromDbCommand as deleteDocumentFromDb } from '@/features/documents/services/commands/update-document-command';
@@ -43,7 +44,7 @@ export async function deleteFolderCommand(
 
     // Find all files in the folder tree
     const files = await db.userFile.findMany({
-      where: { folderId: { in: allFolderIds } },
+      where: { folderId: { in: allFolderIds }, ...NOT_A_BRAIN_VEHICLE },
       select: {
         id: true,
         fileName: true,
@@ -115,7 +116,7 @@ export async function deleteFolderCommand(
       // Delete files from DB
       if (files.length > 0) {
         await tx.userFile.deleteMany({
-          where: { folderId: { in: allFolderIds } },
+          where: { folderId: { in: allFolderIds }, ...NOT_A_BRAIN_VEHICLE },
         });
       }
 

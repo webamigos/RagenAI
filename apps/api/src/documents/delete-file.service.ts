@@ -75,6 +75,10 @@ export class DeleteFileService {
         id: fileId,
         organizationId,
         ...(projectId !== undefined ? { projectId } : {}),
+        // A published Brain page's file is never deleted here (spec E10):
+        // citations cascade from it. Found as "no such file", so no side
+        // effect below runs for it.
+        publishedPages: { none: {} },
       },
     });
 

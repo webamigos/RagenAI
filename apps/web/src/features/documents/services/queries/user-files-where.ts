@@ -67,7 +67,11 @@ export function buildUserFilesWhere(
     return null;
   }
 
-  const baseWhere: Record<string, unknown> = { organizationId };
+  // A published Brain page's file is Brain's, managed there (spec E10).
+  const baseWhere: Record<string, unknown> = {
+    organizationId,
+    publishedPages: { none: {} },
+  };
 
   if (folderId !== undefined) {
     baseWhere.folderId = folderId;

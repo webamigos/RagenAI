@@ -1189,7 +1189,7 @@ baseline without the outlier (edges 72.7 % `EXTRACTED` against 70.3 %,
 - [ ] **E9.** Take a curated source document out of retrieval — per document,
       human-triggered, reversible by re-running ingest. Mode 1's path to a clean
       index, and never automatic.
-- [ ] **E10.** Every path that deletes `UserFile` rows excludes or refuses a
+- [x] **E10.** Every path that deletes `UserFile` rows excludes or refuses a
       published page's file **before any side effect runs** — found in Phase
       A's review, because the foreign key alone refuses the delete only at the
       final transaction. Today that is `delete-folder-command.ts` (storage,
@@ -1201,6 +1201,12 @@ baseline without the outlier (edges 72.7 % `EXTRACTED` against 70.3 %,
       whether a published file carries a `folderId` / `projectId` at all. The
       e2e and perf seeds delete files before organizations, so they delete the
       organization's knowledge pages first.
+      _Decided: a published file carries no folder and no project. Every
+      delete lookup — web file, bulk and folder deletes, apps/api file,
+      project-file and project deletes — filters it out
+      (`publishedPages: { none: {} }`), so it is found as "no such file" and
+      no side effect starts; `buildUserFilesWhere` keeps it out of every
+      knowledge-base listing. The page is withdrawn from Brain instead._
 
 ### Phase F — Staged intake (mode 2)
 
