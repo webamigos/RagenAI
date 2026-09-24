@@ -1864,11 +1864,8 @@
     "show-all": "Zobrazit vše",
     "load-more": "Načíst další",
     "label": "Oznámení",
-    "unread-aria": "nepřečtené",
     "time": {
-      "just-now": "právě teď",
-      "minutes-ago": "před {count} min",
-      "hours-ago": "před {count} h"
+      "just-now": "právě teď"
     },
     "filters": {
       "all": "Vše",
@@ -1876,8 +1873,20 @@
       "drive-import": "Importy z Google Drive",
       "document-expiring": "Brzy vypršující dokumenty",
       "thread-shared": "Sdílené konverzace",
-      "document-embedded": "Zpracované dokumenty"
-    }
+      "document-embedded": "Zpracované dokumenty",
+      "label": "Filtrovat podle typu",
+      "project-shared": "Sdílení asistenti"
+    },
+    "unread-badge": "Nové",
+    "unread-count": "Nepřečtené: {count}",
+    "label-with-unread": "Oznámení, nepřečtené: {count}",
+    "empty-description": "Zobrazí se tu dokumenty, asistenti a vlákna sdílené s vámi a dokončené importy.",
+    "empty-filtered": "Žádná oznámení tohoto typu",
+    "empty-filtered-description": "Vyberte jiný filtr nebo zobrazte všechna oznámení.",
+    "load-error": "Oznámení se nepodařilo načíst",
+    "load-error-description": "Zkontrolujte připojení a zkuste to znovu.",
+    "retry": "Zkusit znovu",
+    "mark-read-error": "Oznámení se nepodařilo označit jako přečtená. Zkuste to znovu."
   },
   "organization": {
     "tabs": {

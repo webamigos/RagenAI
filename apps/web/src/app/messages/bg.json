@@ -1864,11 +1864,8 @@
     "show-all": "Покажи всички",
     "load-more": "Зареди още",
     "label": "Известия",
-    "unread-aria": "непрочетено",
     "time": {
-      "just-now": "току-що",
-      "minutes-ago": "преди {count} мин",
-      "hours-ago": "преди {count} ч"
+      "just-now": "току-що"
     },
     "filters": {
       "all": "Всички",
@@ -1876,8 +1873,20 @@
       "drive-import": "Импорти от Google Drive",
       "document-expiring": "Документи, изтичащи скоро",
       "thread-shared": "Споделени разговори",
-      "document-embedded": "Обработени документи"
-    }
+      "document-embedded": "Обработени документи",
+      "label": "Филтрирай по тип",
+      "project-shared": "Споделени асистенти"
+    },
+    "unread-badge": "Ново",
+    "unread-count": "Непрочетени: {count}",
+    "label-with-unread": "Известия, непрочетени: {count}",
+    "empty-description": "Тук ще се появят споделени с теб документи, асистенти и нишки, както и завършени импорти.",
+    "empty-filtered": "Няма известия от този тип",
+    "empty-filtered-description": "Избери друг филтър или покажи всички известия.",
+    "load-error": "Известията не можаха да се заредят",
+    "load-error-description": "Провери връзката си и опитай отново.",
+    "retry": "Опитай отново",
+    "mark-read-error": "Известията не можаха да се маркират като прочетени. Опитай отново."
   },
   "organization": {
     "tabs": {

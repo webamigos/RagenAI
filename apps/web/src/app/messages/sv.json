@@ -1864,11 +1864,8 @@
     "show-all": "Visa alla",
     "load-more": "Ladda fler",
     "label": "Notiser",
-    "unread-aria": "oläst",
     "time": {
-      "just-now": "just nu",
-      "minutes-ago": "för {count} min sedan",
-      "hours-ago": "för {count} tim sedan"
+      "just-now": "just nu"
     },
     "filters": {
       "all": "Alla",
@@ -1876,8 +1873,20 @@
       "drive-import": "Google Drive-importer",
       "document-expiring": "Dokument som snart upphör",
       "thread-shared": "Delade konversationer",
-      "document-embedded": "Bearbetade dokument"
-    }
+      "document-embedded": "Bearbetade dokument",
+      "label": "Filtrera efter typ",
+      "project-shared": "Delade assistenter"
+    },
+    "unread-badge": "Ny",
+    "unread-count": "Olästa: {count}",
+    "label-with-unread": "Notiser, olästa: {count}",
+    "empty-description": "Dokument, assistenter och trådar som delas med dig, och slutförda importer, visas här.",
+    "empty-filtered": "Inga notiser av den här typen",
+    "empty-filtered-description": "Välj ett annat filter eller visa alla notiser.",
+    "load-error": "Notiserna kunde inte läsas in",
+    "load-error-description": "Kontrollera anslutningen och försök igen.",
+    "retry": "Försök igen",
+    "mark-read-error": "Notiserna kunde inte markeras som lästa. Försök igen."
   },
   "organization": {
     "tabs": {

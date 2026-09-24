@@ -15,3 +15,11 @@ export type NotificationMessage = {
 };
 
 export const NOTIFICATION_EVENT = 'notification';
+
+/**
+ * A same-tab DOM event the notifications page fires after it marks something
+ * read, so the sidebar bell re-reads its unread count. The bell used to zero
+ * itself while `/notifications` was open and never learn the truth again: it
+ * showed 0 after you left with notifications still unread.
+ */
+export const NOTIFICATIONS_READ_EVENT = 'ragen:notifications-read';

@@ -1864,11 +1864,8 @@
     "show-all": "Zobraziť všetko",
     "load-more": "Načítať ďalšie",
     "label": "Oznámenia",
-    "unread-aria": "neprečítané",
     "time": {
-      "just-now": "práve teraz",
-      "minutes-ago": "pred {count} min",
-      "hours-ago": "pred {count} h"
+      "just-now": "práve teraz"
     },
     "filters": {
       "all": "Všetko",
@@ -1876,8 +1873,20 @@
       "drive-import": "Importy z Google Drive",
       "document-expiring": "Čoskoro vypršiavajúce dokumenty",
       "thread-shared": "Zdieľané konverzácie",
-      "document-embedded": "Spracované dokumenty"
-    }
+      "document-embedded": "Spracované dokumenty",
+      "label": "Filtrovať podľa typu",
+      "project-shared": "Zdieľaní asistenti"
+    },
+    "unread-badge": "Nové",
+    "unread-count": "Neprečítané: {count}",
+    "label-with-unread": "Oznámenia, neprečítané: {count}",
+    "empty-description": "Zobrazia sa tu dokumenty, asistenti a vlákna zdieľané s vami a dokončené importy.",
+    "empty-filtered": "Žiadne oznámenia tohto typu",
+    "empty-filtered-description": "Vyberte iný filter alebo zobrazte všetky oznámenia.",
+    "load-error": "Oznámenia sa nepodarilo načítať",
+    "load-error-description": "Skontrolujte pripojenie a skúste to znova.",
+    "retry": "Skúsiť znova",
+    "mark-read-error": "Oznámenia sa nepodarilo označiť ako prečítané. Skúste to znova."
   },
   "organization": {
     "tabs": {

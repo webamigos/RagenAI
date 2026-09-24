@@ -1864,11 +1864,8 @@
     "show-all": "Összes megjelenítése",
     "load-more": "Továbbiak betöltése",
     "label": "Értesítések",
-    "unread-aria": "olvasatlan",
     "time": {
-      "just-now": "épp most",
-      "minutes-ago": "{count} perce",
-      "hours-ago": "{count} órája"
+      "just-now": "épp most"
     },
     "filters": {
       "all": "Összes",
@@ -1876,8 +1873,20 @@
       "drive-import": "Google Drive importok",
       "document-expiring": "Hamarosan lejáró dokumentumok",
       "thread-shared": "Megosztott beszélgetések",
-      "document-embedded": "Feldolgozott dokumentumok"
-    }
+      "document-embedded": "Feldolgozott dokumentumok",
+      "label": "Szűrés típus szerint",
+      "project-shared": "Megosztott asszisztensek"
+    },
+    "unread-badge": "Új",
+    "unread-count": "Olvasatlan: {count}",
+    "label-with-unread": "Értesítések, olvasatlan: {count}",
+    "empty-description": "Itt jelennek meg a veled megosztott dokumentumok, asszisztensek és szálak, valamint a befejezett importálások.",
+    "empty-filtered": "Nincs ilyen típusú értesítés",
+    "empty-filtered-description": "Válassz másik szűrőt, vagy jelenítsd meg az összes értesítést.",
+    "load-error": "Az értesítéseket nem sikerült betölteni",
+    "load-error-description": "Ellenőrizd a kapcsolatot, és próbáld újra.",
+    "retry": "Újrapróbálás",
+    "mark-read-error": "Az értesítéseket nem sikerült olvasottnak jelölni. Próbáld újra."
   },
   "organization": {
     "tabs": {

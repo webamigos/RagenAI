@@ -1864,11 +1864,8 @@
     "show-all": "Pokaż wszystkie",
     "load-more": "Załaduj więcej",
     "label": "Powiadomienia",
-    "unread-aria": "nieprzeczytane",
     "time": {
-      "just-now": "przed chwilą",
-      "minutes-ago": "{count} min temu",
-      "hours-ago": "{count} godz. temu"
+      "just-now": "przed chwilą"
     },
     "filters": {
       "all": "Wszystkie",
@@ -1876,8 +1873,20 @@
       "drive-import": "Importy Google Drive",
       "document-expiring": "Wygasające dokumenty",
       "thread-shared": "Udostępnione wątki",
-      "document-embedded": "Przetworzone dokumenty"
-    }
+      "document-embedded": "Przetworzone dokumenty",
+      "label": "Filtruj według typu",
+      "project-shared": "Udostępnieni asystenci"
+    },
+    "unread-badge": "Nowe",
+    "unread-count": "Nieprzeczytane: {count}",
+    "label-with-unread": "Powiadomienia, nieprzeczytane: {count}",
+    "empty-description": "Pojawią się tu udostępnione Ci dokumenty, asystenci i wątki oraz zakończone importy.",
+    "empty-filtered": "Brak powiadomień tego typu",
+    "empty-filtered-description": "Wybierz inny filtr albo pokaż wszystkie powiadomienia.",
+    "load-error": "Nie udało się wczytać powiadomień",
+    "load-error-description": "Sprawdź połączenie i spróbuj ponownie.",
+    "retry": "Spróbuj ponownie",
+    "mark-read-error": "Nie udało się oznaczyć powiadomień jako przeczytanych. Spróbuj ponownie."
   },
   "organization": {
     "tabs": {

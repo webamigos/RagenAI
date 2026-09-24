@@ -1864,11 +1864,8 @@
     "show-all": "Näytä kaikki",
     "load-more": "Lataa lisää",
     "label": "Ilmoitukset",
-    "unread-aria": "lukematon",
     "time": {
-      "just-now": "juuri nyt",
-      "minutes-ago": "{count} min sitten",
-      "hours-ago": "{count} t sitten"
+      "just-now": "juuri nyt"
     },
     "filters": {
       "all": "Kaikki",
@@ -1876,8 +1873,20 @@
       "drive-import": "Google Drive -tuonnit",
       "document-expiring": "Pian vanhenevat asiakirjat",
       "thread-shared": "Jaetut keskustelut",
-      "document-embedded": "Käsitellyt asiakirjat"
-    }
+      "document-embedded": "Käsitellyt asiakirjat",
+      "label": "Suodata tyypin mukaan",
+      "project-shared": "Jaetut avustajat"
+    },
+    "unread-badge": "Uusi",
+    "unread-count": "Lukemattomia: {count}",
+    "label-with-unread": "Ilmoitukset, lukemattomia: {count}",
+    "empty-description": "Tänne tulevat kanssasi jaetut dokumentit, avustajat ja keskustelut sekä valmistuneet tuonnit.",
+    "empty-filtered": "Ei tämän tyypin ilmoituksia",
+    "empty-filtered-description": "Valitse toinen suodatin tai näytä kaikki ilmoitukset.",
+    "load-error": "Ilmoituksia ei voitu ladata",
+    "load-error-description": "Tarkista yhteys ja yritä uudelleen.",
+    "retry": "Yritä uudelleen",
+    "mark-read-error": "Ilmoituksia ei voitu merkitä luetuiksi. Yritä uudelleen."
   },
   "organization": {
     "tabs": {

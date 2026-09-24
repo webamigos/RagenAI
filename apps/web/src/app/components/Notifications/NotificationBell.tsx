@@ -8,41 +8,65 @@ import { NavbarItem } from '@ragenai/common-ui/Navbar';
 import { useMobileSidebar } from '@ragenai/common-ui/SidebarLayout';
 import { usePathname } from '@/i18n/routing';
 import { useTranslations } from 'next-intl';
-import { NOTIFICATION_EVENT } from '@/app/lib/services/notifications/types';
+import {
+  NOTIFICATION_EVENT,
+  NOTIFICATIONS_READ_EVENT,
+} from '@/app/lib/services/notifications/types';
 import { getNotificationsAction } from '@/app/actions';
 
 type Props = {
   variant: 'navbar' | 'sidebar';
 };
 
+/** One page of unread items is the count; past it the badge says "50+". */
+const UNREAD_PAGE = 50;
+
 export function NotificationBell({ variant }: Props) {
-  const [unreadCount, setUnreadCount] = useState(0);
-  const setUnreadRef = useRef(setUnreadCount);
-  setUnreadRef.current = setUnreadCount;
+  const [unread, setUnread] = useState({ count: 0, more: false });
+  const setUnreadRef = useRef(setUnread);
+  setUnreadRef.current = setUnread;
   const pathname = usePathname();
   const isActive = pathname === '/notifications';
   const t = useTranslations('notifications');
   const { closeSidebar } = useMobileSidebar();
 
   useEffect(() => {
-    getNotificationsAction({ isRead: false, limit: 50 })
-      .then((data) => setUnreadCount(data.items.length))
-      .catch(() => {});
+    const refresh = () => {
+      getNotificationsAction({ isRead: false, limit: UNREAD_PAGE })
+        .then((data) => {
+          if (!data.failed) {
+            setUnreadRef.current({
+              count: data.items.length,
+              more: data.nextCursor !== null,
+            });
+          }
+        })
+        .catch(() => {});
+    };
+    refresh();
 
+    // The page marks rows read; re-read the count rather than zeroing it on
+    // arrival, which left the badge at 0 after leaving with rows unread.
+    window.addEventListener(NOTIFICATIONS_READ_EVENT, refresh);
     const es = new EventSource('/api/notifications/stream');
     es.addEventListener(NOTIFICATION_EVENT, () => {
-      setUnreadRef.current((prev) => prev + 1);
+      setUnreadRef.current((prev) => ({ ...prev, count: prev.count + 1 }));
     });
-    return () => es.close();
+    return () => {
+      window.removeEventListener(NOTIFICATIONS_READ_EVENT, refresh);
+      es.close();
+    };
   }, []);
 
-  useEffect(() => {
-    if (isActive) {
-      setUnreadCount(0);
-    }
-  }, [isActive]);
-
-  const badgeLabel = unreadCount > 99 ? '99+' : String(unreadCount);
+  const unreadCount = unread.count;
+  const badgeLabel = unread.more ? `${unreadCount}+` : String(unreadCount);
+  // The link's own name carries the count. The badge's `aria-label` sat on a
+  // bare <span> inside a link that already had an `aria-label`, so a screen
+  // reader heard "Notifications" and never the number.
+  const linkLabel =
+    unreadCount > 0
+      ? t('label-with-unread', { count: badgeLabel })
+      : t('label');
   const Icon = isActive ? BellIconSolid : BellIcon;
   // Every other icon in the sidebar is `stroke-muted-foreground`; this one
   // inherited the row's text colour and came out near-black beside them.
@@ -55,7 +79,7 @@ export function NotificationBell({ variant }: Props) {
           href="/notifications"
           data-testid="notification-bell"
           onClick={closeSidebar}
-          aria-label={t('label')}
+          aria-label={linkLabel}
         >
           {icon}
         </NavbarItem>
@@ -64,17 +88,22 @@ export function NotificationBell({ variant }: Props) {
           href="/notifications"
           data-testid="notification-bell"
           onClick={closeSidebar}
-          aria-label={t('label')}
+          aria-label={linkLabel}
         >
           {icon}
           <SidebarLabel className="font-normal">{t('label')}</SidebarLabel>
         </SidebarItem>
       )}
+      {/*
+        Navy, not crimson: crimson is rationed to destructive actions, the
+        marker hairline, citations, Failed and the logo (panel-ux-rules 16),
+        and an unread count is none of them.
+      */}
       {unreadCount > 0 && (
         <span
-          className="pointer-events-none absolute left-[16px] top-[3px] flex min-w-[14px] h-[14px] items-center justify-center rounded-full bg-crimson-600 px-[3px] text-[8px] font-bold leading-none text-primary-foreground"
+          className="pointer-events-none absolute left-[15px] top-[2px] flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] tabular-nums font-bold leading-none text-primary-foreground"
           data-testid="unread-badge"
-          aria-label={`${unreadCount} ${t('unread-aria')}`}
+          aria-hidden="true"
         >
           {badgeLabel}
         </span>

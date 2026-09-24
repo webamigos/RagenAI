@@ -1864,11 +1864,8 @@
     "show-all": "Tout afficher",
     "load-more": "Charger plus",
     "label": "Notifications",
-    "unread-aria": "non lu",
     "time": {
-      "just-now": "à l'instant",
-      "minutes-ago": "il y a {count} min",
-      "hours-ago": "il y a {count} h"
+      "just-now": "à l'instant"
     },
     "filters": {
       "all": "Tout",
@@ -1876,8 +1873,20 @@
       "drive-import": "Imports Google Drive",
       "document-expiring": "Documents expirant bientôt",
       "thread-shared": "Fils partagés",
-      "document-embedded": "Documents traités"
-    }
+      "document-embedded": "Documents traités",
+      "label": "Filtrer par type",
+      "project-shared": "Assistants partagés"
+    },
+    "unread-badge": "Nouveau",
+    "unread-count": "Non lues : {count}",
+    "label-with-unread": "Notifications, non lues : {count}",
+    "empty-description": "Les documents, assistants et fils partagés avec toi, ainsi que les imports terminés, apparaissent ici.",
+    "empty-filtered": "Aucune notification de ce type",
+    "empty-filtered-description": "Choisis un autre filtre ou affiche toutes les notifications.",
+    "load-error": "Impossible de charger les notifications",
+    "load-error-description": "Vérifie ta connexion et réessaie.",
+    "retry": "Réessayer",
+    "mark-read-error": "Impossible de marquer les notifications comme lues. Réessaie."
   },
   "organization": {
     "tabs": {

@@ -1864,11 +1864,8 @@
     "show-all": "Vis alle",
     "load-more": "Indlæs flere",
     "label": "Notifikationer",
-    "unread-aria": "ulæst",
     "time": {
-      "just-now": "lige nu",
-      "minutes-ago": "for {count} min. siden",
-      "hours-ago": "for {count} timer siden"
+      "just-now": "lige nu"
     },
     "filters": {
       "all": "Alle",
@@ -1876,8 +1873,20 @@
       "drive-import": "Google Drive-importer",
       "document-expiring": "Dokumenter, der snart udløber",
       "thread-shared": "Delte samtaler",
-      "document-embedded": "Behandlede dokumenter"
-    }
+      "document-embedded": "Behandlede dokumenter",
+      "label": "Filtrér efter type",
+      "project-shared": "Delte assistenter"
+    },
+    "unread-badge": "Ny",
+    "unread-count": "Ulæste: {count}",
+    "label-with-unread": "Notifikationer, ulæste: {count}",
+    "empty-description": "Dokumenter, assistenter og tråde, der deles med dig, og færdige importer vises her.",
+    "empty-filtered": "Ingen notifikationer af denne type",
+    "empty-filtered-description": "Vælg et andet filter, eller vis alle notifikationer.",
+    "load-error": "Notifikationerne kunne ikke indlæses",
+    "load-error-description": "Tjek din forbindelse, og prøv igen.",
+    "retry": "Prøv igen",
+    "mark-read-error": "Notifikationerne kunne ikke markeres som læst. Prøv igen."
   },
   "organization": {
     "tabs": {

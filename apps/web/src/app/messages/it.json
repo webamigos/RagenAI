@@ -1864,11 +1864,8 @@
     "show-all": "Mostra tutto",
     "load-more": "Carica altro",
     "label": "Notifiche",
-    "unread-aria": "non letta",
     "time": {
-      "just-now": "adesso",
-      "minutes-ago": "{count} min fa",
-      "hours-ago": "{count} h fa"
+      "just-now": "adesso"
     },
     "filters": {
       "all": "Tutto",
@@ -1876,8 +1873,20 @@
       "drive-import": "Importazioni da Google Drive",
       "document-expiring": "Documenti in scadenza a breve",
       "thread-shared": "Conversazioni condivise",
-      "document-embedded": "Documenti elaborati"
-    }
+      "document-embedded": "Documenti elaborati",
+      "label": "Filtra per tipo",
+      "project-shared": "Assistenti condivisi"
+    },
+    "unread-badge": "Nuovo",
+    "unread-count": "Non lette: {count}",
+    "label-with-unread": "Notifiche, non lette: {count}",
+    "empty-description": "Qui compaiono documenti, assistenti e thread condivisi con te e le importazioni completate.",
+    "empty-filtered": "Nessuna notifica di questo tipo",
+    "empty-filtered-description": "Scegli un altro filtro o mostra tutte le notifiche.",
+    "load-error": "Impossibile caricare le notifiche",
+    "load-error-description": "Controlla la connessione e riprova.",
+    "retry": "Riprova",
+    "mark-read-error": "Impossibile segnare le notifiche come lette. Riprova."
   },
   "organization": {
     "tabs": {
