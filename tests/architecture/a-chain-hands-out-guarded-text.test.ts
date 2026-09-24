@@ -100,6 +100,16 @@ describe('the resolved text is read only where a refusal is checked', () => {
     ).toMatch(/if \(!fullMessage && !guardrailBlocked\)/);
   });
 
+  it('passes that fallback through the same unmasker as the deltas', () => {
+    const source = read(ASSISTANT_STREAM);
+
+    expect(
+      source,
+      "the fallback stores the model's own text; without the unmasker a " +
+        'placeholder the model invented is persisted as `<PL_PHONE_1>`',
+    ).toMatch(/streamUnmasker\.process\(resolvedText\)/);
+  });
+
   it('is absent from the API chain, which has no reader for it', () => {
     const source = read('apps/api/src/chains/basic-rag/chain.ts');
 

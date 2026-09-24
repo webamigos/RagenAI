@@ -60,6 +60,7 @@ import { isEncryptionEnabled } from '@ragenai/crypto';
 import { recordSecurityEvent } from '@/features/security/services/commands/record-security-event-command';
 import { answerToPersist } from '@/features/guardrails/utils/answer-to-persist';
 import { StreamUnmasker } from '@/libs/pii/stream-unmasker';
+import { withPiiSystemInstruction } from '@/libs/pii/pii-system-instruction';
 import { anonymizeWithSecurityEvents } from '@/libs/pii/anonymize-with-security-events';
 import { PII_MASKING_LANGUAGE } from '@/libs/pii/masking-language';
 import { applyPiiUnmaskToTools } from '@/libs/mcp/client';
@@ -425,13 +426,6 @@ export async function streamEvents({
             voiceId: rawSettings.voiceId,
           };
 
-          const piiSystemInstruction =
-            'Niektóre dane wrażliwe w wiadomości użytkownika zostały zastąpione placeholderami w formacie <ENTITY_N>, np. <PL_NIP_1>, <PL_PESEL_1>, <PL_REGON_1>, <PL_IBAN_1>, <PL_ID_CARD_1>, <PL_PHONE_1>, <EMAIL_ADDRESS_1>, <CREDIT_CARD_1>. Gdy używasz tych tokenów w odpowiedzi lub argumentach narzędzi, przepisuj je dokładnie bez żadnych zmian — nie parafrazuj, nie opisuj słownie, nie zastępuj innym tekstem.';
-
-          const effectivePromptWithPii = effectiveSettings.prompt
-            ? `${effectiveSettings.prompt}\n\n${piiSystemInstruction}`
-            : piiSystemInstruction;
-
           // Build conversation history from thread record (no separate DB query needed)
           const conv_history =
             'messages' in threadRecord && Array.isArray(threadRecord.messages)
@@ -590,6 +584,39 @@ export async function streamEvents({
             instruction: projectInstruction,
             projectId: effectiveProjectId,
           } = projectResult;
+
+          // Masked before any chain is built, not after: the prompt depends on
+          // the result. The PII instruction is sent only when this turn has
+          // placeholders in it — sent on every turn, it taught the model to
+          // write `<PL_PHONE_1>` for a phone number it could read in the
+          // context. Nothing persisted or logged changes with the order: the
+          // stored user message is the raw prompt, saved above, and only the
+          // counts below are logged, never the text.
+          const {
+            piiResult,
+            entityTypes: piiAliasTypes,
+            durationMs: piiMaskingDurationMs,
+          } = await anonymizeWithSecurityEvents(
+            userMessage.prompt,
+            PII_MASKING_LANGUAGE,
+            {
+              orgId: orgId ?? null,
+              userId: userId ?? null,
+              threadId: threadRecord.id,
+            },
+          );
+          logger.debug(
+            {
+              aliasCount: Object.keys(piiResult.aliasMap).length,
+              aliasTypes: piiAliasTypes,
+            },
+            'PII masked prompt before LLM',
+          );
+
+          const effectivePromptWithPii = withPiiSystemInstruction(
+            effectiveSettings.prompt,
+            piiResult.aliasMap,
+          );
 
           // Phase 3: Usage limits are now enforced by LiteLLM budget on the team's virtual key.
           // LiteLLM returns a 400 error when budget is exceeded, which is caught in the
@@ -784,27 +811,6 @@ export async function streamEvents({
 
           // Phase 4: Run chain with streaming
           sendApiEvent(controller, 'start_lmm');
-
-          const {
-            piiResult,
-            entityTypes: piiAliasTypes,
-            durationMs: piiMaskingDurationMs,
-          } = await anonymizeWithSecurityEvents(
-            userMessage.prompt,
-            PII_MASKING_LANGUAGE,
-            {
-              orgId: orgId ?? null,
-              userId: userId ?? null,
-              threadId: threadRecord.id,
-            },
-          );
-          logger.debug(
-            {
-              aliasCount: Object.keys(piiResult.aliasMap).length,
-              aliasTypes: piiAliasTypes,
-            },
-            'PII masked prompt before LLM',
-          );
 
           // Jailbreak classification used to run here, fire-and-forget, gated
           // on `JAILBREAK_DETECTION_ENABLED`. It is a guardrail rule now —
@@ -1002,7 +1008,11 @@ export async function streamEvents({
             try {
               const resolvedText = (await streamResult.text) || '';
               if (resolvedText) {
-                fullMessage = resolvedText;
+                // Through the same unmasker as the deltas: this is the
+                // model's own text, so it carries the same placeholders, and
+                // an unmapped one must not be stored as `<PL_PHONE_1>`.
+                fullMessage =
+                  streamUnmasker.process(resolvedText) + streamUnmasker.flush();
               }
             } catch {
               // text promise may reject
