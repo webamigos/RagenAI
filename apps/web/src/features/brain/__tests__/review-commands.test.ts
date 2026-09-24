@@ -13,6 +13,7 @@ const tx = vi.hoisted(() => ({
   knowledgeDecision: { create: vi.fn() },
   member: { findFirst: vi.fn(), findMany: vi.fn() },
   team: { findMany: vi.fn() },
+  userFile: { updateMany: vi.fn() },
 }));
 const db = vi.hoisted(() => ({
   $transaction: vi.fn(async (fn: (t: typeof tx) => unknown) => fn(tx)),
@@ -20,6 +21,13 @@ const db = vi.hoisted(() => ({
 vi.mock('@ragenai/prisma-client', () => ({ default: db }));
 const reconcile = vi.hoisted(() => ({ startFindingsReconcile: vi.fn() }));
 vi.mock('../services/commands/start-findings-reconcile', () => reconcile);
+const vectors = vi.hoisted(() => ({ deleteFileFromVectorStore: vi.fn() }));
+vi.mock('@/app/api/upload/services/TableService', () => vectors);
+const runtime = vi.hoisted(() => ({ start: vi.fn() }));
+vi.mock('@/libs/jobs', () => ({ jobs: () => runtime }));
+vi.mock('@/app/lib/utils/logger', () => ({
+  logger: { info: vi.fn(), error: vi.fn(), warn: vi.fn() },
+}));
 
 const { approveKnowledgePageCommand } =
   await import('../services/commands/approve-knowledge-page-command');
@@ -61,6 +69,8 @@ function recorded() {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  // clearAllMocks keeps queued `…Once` values across tests.
+  tx.knowledgePage.findFirst.mockReset();
   tx.member.findFirst.mockResolvedValue({ id: 'm' });
   tx.member.findMany.mockResolvedValue([]);
   tx.team.findMany.mockResolvedValue([]);
@@ -297,11 +307,105 @@ describe('setKnowledgePageAccessCommand', () => {
     });
   });
 
-  it('refuses a published page until the change can reach its chunks', async () => {
-    givenPage({ publishedAt: new Date(), status: 'APPROVED' });
-    await expect(
-      setKnowledgePageAccessCommand({ ...base, principals: [] }),
-    ).resolves.toEqual({ success: false, error: 'published' });
+  describe('on a published page (E4)', () => {
+    function givenPublished(accessibleBy: string[], generationAtEnd = 6) {
+      tx.$queryRaw.mockResolvedValue([{ id: 7 }]);
+      tx.knowledgePage.findFirst.mockReset();
+      // decideOnKnowledgePage's read, the published path's read, the final check.
+      tx.knowledgePage.findFirst
+        .mockResolvedValueOnce({
+          id: 7,
+          status: 'APPROVED',
+          ownerId: 'u1',
+          accessibleBy,
+          publishedAt: new Date(),
+          updatedAt: SEEN,
+        })
+        .mockResolvedValueOnce({
+          id: 7,
+          accessibleBy,
+          publishedAt: new Date(),
+          publishedFileId: 'file-7',
+          publicationGeneration: 5,
+          updatedAt: SEEN,
+        })
+        .mockResolvedValueOnce({
+          publicationGeneration: generationAtEnd,
+          publishedAt: new Date(),
+        });
+    }
+
+    it('narrows the index before the row: bump, delete, record, republish', async () => {
+      givenPublished(['user:u1', 'user:u2']);
+      members('u1');
+      vectors.deleteFileFromVectorStore.mockResolvedValue(undefined);
+      runtime.start.mockResolvedValue(undefined);
+      await expect(
+        setKnowledgePageAccessCommand({ ...base, principals: ['user:u1'] }),
+      ).resolves.toEqual({ success: true, changed: true });
+
+      const writes = tx.knowledgePage.updateMany.mock.calls.map(
+        ([a]) => a.data,
+      );
+      expect(writes).toEqual([
+        { publicationGeneration: 6 },
+        { accessibleBy: ['user:u1'] },
+      ]);
+      expect(vectors.deleteFileFromVectorStore).toHaveBeenCalledWith(
+        'file-7',
+        ORG,
+      );
+      // The delete sits between the bump and the new access.
+      expect(
+        tx.knowledgePage.updateMany.mock.invocationCallOrder[0],
+      ).toBeLessThan(
+        vectors.deleteFileFromVectorStore.mock.invocationCallOrder[0]!,
+      );
+      expect(
+        vectors.deleteFileFromVectorStore.mock.invocationCallOrder[0],
+      ).toBeLessThan(tx.knowledgePage.updateMany.mock.invocationCallOrder[1]!);
+      expect(recorded().decisions[0]).toMatchObject({
+        action: 'SET_ACCESS',
+        after: { accessibleBy: ['user:u1'], republished: true },
+      });
+      expect(runtime.start).toHaveBeenCalledWith(
+        'brainPublishPage',
+        expect.stringContaining('-6'),
+        { orgId: ORG, pageId: base.publicId, generation: 6 },
+      );
+    });
+
+    it('changes nothing recorded when the index cannot be cleared', async () => {
+      givenPublished(['user:u1', 'user:u2']);
+      members('u1');
+      vectors.deleteFileFromVectorStore.mockRejectedValue(
+        new Error('qdrant down'),
+      );
+      await expect(
+        setKnowledgePageAccessCommand({ ...base, principals: ['user:u1'] }),
+      ).resolves.toEqual({ success: false, error: 'index-unavailable' });
+      expect(recorded().decisions).toEqual([]);
+      expect(tx.knowledgePage.updateMany).toHaveBeenCalledTimes(1);
+    });
+
+    it('still asks before widening a published page', async () => {
+      givenPublished(['user:u1']);
+      members('u1', 'u2');
+      await expect(
+        setKnowledgePageAccessCommand({
+          ...base,
+          principals: ['user:u1', 'user:u2'],
+        }),
+      ).resolves.toEqual({ success: false, error: 'confirm-widening' });
+      expect(vectors.deleteFileFromVectorStore).not.toHaveBeenCalled();
+    });
+
+    it('will not leave a published page open to nobody', async () => {
+      givenPublished(['user:u1']);
+      await expect(
+        setKnowledgePageAccessCommand({ ...base, principals: [] }),
+      ).resolves.toEqual({ success: false, error: 'no-access' });
+    });
   });
 
   it('writes nothing when the set is the same in another order', async () => {

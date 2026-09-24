@@ -109,7 +109,7 @@ describe('publishKnowledgePageCommand', () => {
     });
     expect(runtime.start).toHaveBeenCalledWith(
       'brainPublishPage',
-      `brain-publish-${PUBLIC_ID}-3`,
+      expect.stringMatching(new RegExp(`^brain-publish-${PUBLIC_ID}-3-`)),
       { orgId: ORG, pageId: PUBLIC_ID, generation: 3 },
     );
   });

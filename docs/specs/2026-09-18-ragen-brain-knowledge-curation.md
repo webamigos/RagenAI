@@ -1158,11 +1158,22 @@ baseline without the outlier (edges 72.7 % `EXTRACTED` against 70.3 %,
       again in between, the unpublish records nothing (`conflict`). Verified:
       0 points after withdrawal, file `WITHDRAWN`, ledger PUBLISH(1) →
       UNPUBLISH(2)._
-- [ ] **E4.** An access change on a published page reaches its chunks, through
+- [x] **E4.** An access change on a published page reaches its chunks, through
       the existing vector-permission sync. Narrowing writes the chunks first,
       widening writes the page first, so neither leaves retrieval more
       permissive than the decision. Tests both directions; narrowing is the one
       a customer audits.
+      _Not through the vector-permission sync: nothing calls it today, and its
+      dotted `setPayload` key is suspected of writing a top-level field
+      instead of the nested one (issue #1245). A published page takes the
+      withdrawal's route and comes back instead: bump the generation, delete
+      the chunks, record the new access, then re-queue the write at that
+      generation. The window between is **stricter than both the old and the
+      new access** (the page answers nothing), so one order serves both
+      directions. Verified against Qdrant: `org:` → `user:` on the chunk after
+      a narrowing. Publication run ids carry a random suffix: BullMQ skips an
+      id it has already finished, which silently dropped a publication once a
+      generation number came round again after a database reset._
 - [x] **E5.** Deleting a source document sets `sourceDeletedAt` on every
       `KnowledgePageSource` naming it, in the delete's own transaction, and
       raises the owner's `STALE` finding. Plus the reconciliation sweep for
