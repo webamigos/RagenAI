@@ -121,6 +121,21 @@ export default defineConfig({
 
 `;
 
+/**
+ * RustFS renders as the `s3` provider it is to the apps, so without a comment
+ * the file would give no hint that the store is one `docker compose --profile
+ * s3` starts — and whoever edits it next would go looking for an S3 account.
+ */
+function storageComment(storage: StorageSelection): string | undefined {
+  if (storage.provider === 'local') {
+    return 'ADR-27: local by default, so a fresh clone runs without a cloud account.';
+  }
+  if (storage.choice === 'rustfs') {
+    return "RustFS, started with the stack by compose's `s3` profile.";
+  }
+  return undefined;
+}
+
 export function renderRagenConfig(
   storage: StorageSelection,
   encryption: EncryptionSelection,
@@ -130,9 +145,7 @@ export function renderRagenConfig(
       'storage',
       storage.provider,
       storage.configFields,
-      storage.provider === 'local'
-        ? 'ADR-27: local by default, so a fresh clone runs without a cloud account.'
-        : undefined,
+      storageComment(storage),
     ),
   ];
 

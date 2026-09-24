@@ -1,4 +1,6 @@
 import {
+  appendFileSync,
+  chmodSync,
   existsSync,
   readdirSync,
   readFileSync,
@@ -7,6 +9,7 @@ import {
 } from 'node:fs';
 
 import * as clack from '@clack/prompts';
+import { parse as parseDotenv } from 'dotenv';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { cloneRagenApp } from '../clone';
@@ -24,6 +27,8 @@ import {
 const { CANCEL_TOKEN } = vi.hoisted(() => ({ CANCEL_TOKEN: Symbol('cancel') }));
 
 vi.mock('node:fs', () => ({
+  appendFileSync: vi.fn(),
+  chmodSync: vi.fn(),
   existsSync: vi.fn(),
   readdirSync: vi.fn(),
   readFileSync: vi.fn(),
@@ -148,9 +153,20 @@ const CONFIG_TEMPLATE = [
   '',
 ].join('\n');
 
-function mockTemplates(rootTemplate = ROOT_TEMPLATE): void {
+/**
+ * `dotEnv` is the install's `.env` as it stands before the wizard runs;
+ * undefined means there is none, which is what a fresh clone has — and what
+ * `readFileSync` throwing reports.
+ */
+function mockTemplates(
+  rootTemplate = ROOT_TEMPLATE,
+  dotEnv: string | undefined = undefined,
+): void {
   vi.mocked(readFileSync).mockImplementation((path) => {
     const p = String(path);
+    if (p.endsWith('/.env') && dotEnv !== undefined) {
+      return dotEnv;
+    }
     if (p.endsWith('apps/admin/.env.example')) {
       return ADMIN_TEMPLATE;
     }
@@ -728,5 +744,226 @@ describe('a docker start that fails', () => {
     expect(clack.log.warn).toHaveBeenCalledWith(
       expect.stringContaining('npx prisma migrate deploy'),
     );
+  });
+});
+
+describe('choosing RustFS', () => {
+  /**
+   * The third storage answer: an object store this install starts itself.
+   * To the apps it is plain S3; what is its own is that its keys live in two
+   * files read by two programs — Compose reads `.env`, the apps `.env.local` —
+   * and that choosing it has to start it.
+   */
+  function chooseRustfs(): void {
+    vi.mocked(clack.select)
+      .mockResolvedValueOnce('skip' as never)
+      .mockResolvedValueOnce('rustfs' as never);
+  }
+
+  function writtenTo(suffix: string): string | undefined {
+    const call = vi
+      .mocked(writeFileSync)
+      .mock.calls.find(([path]) => String(path).endsWith(suffix));
+    return call ? String(call[1]) : undefined;
+  }
+
+  it('asks nothing further and writes the same keys to both files', async () => {
+    chooseRustfs();
+    vi.mocked(clack.confirm).mockResolvedValue(false as never);
+
+    await expect(run(['/tmp/ragen-test'])).resolves.toBe(true);
+
+    // No bucket, region, endpoint or key prompts: nothing to paste.
+    expect(clack.text).not.toHaveBeenCalled();
+    expect(clack.password).not.toHaveBeenCalled();
+
+    const local = parseDotenv(writtenTo('/.env.local') ?? '');
+    expect(local).toMatchObject({
+      STORAGE_PROVIDER: 's3',
+      S3_ENDPOINT_URL: 'http://localhost:59000',
+      S3_FORCE_PATH_STYLE: 'true',
+      S3_REGION: 'us-east-1',
+      S3_BUCKET_NAME: 'ragen',
+    });
+    expect(local.S3_ACCESS_KEY_ID).toMatch(/^[0-9A-F]{20}$/);
+
+    const compose = parseDotenv(writtenTo('/.env') ?? '');
+    expect(compose.COMPOSE_PROJECT_NAME).toBe('ragen-test');
+    expect(compose.RUSTFS_ACCESS_KEY).toBe(local.S3_ACCESS_KEY_ID);
+    expect(compose.RUSTFS_SECRET_KEY).toBe(local.S3_SECRET_ACCESS_KEY);
+
+    // One line saying where the keys went, since nothing was asked.
+    expect(clack.log.info).toHaveBeenCalledWith(
+      expect.stringContaining('Generated RustFS keys into .env'),
+    );
+  });
+
+  it('writes the typed config as the s3 provider', async () => {
+    chooseRustfs();
+    vi.mocked(clack.confirm).mockResolvedValue(false as never);
+
+    await run(['/tmp/ragen-test']);
+
+    const config = writtenTo('ragen.config.ts');
+    expect(config).toContain("provider: 's3',");
+    expect(config).toContain('endpoint: process.env.S3_ENDPOINT_URL,');
+    expect(config).toContain(
+      'forcePathStyle: process.env.S3_FORCE_PATH_STYLE,',
+    );
+  });
+
+  it('starts the s3 profile together with pii, not instead of it', async () => {
+    chooseRustfs();
+    // Yes to PII masking, to starting Docker and to the first-time setup.
+    vi.mocked(clack.confirm).mockResolvedValue(true as never);
+
+    await run(['/tmp/ragen-test']);
+
+    expect(startDockerServices).toHaveBeenCalledWith({
+      cwd: '/tmp/ragen-test',
+      profiles: ['pii', 's3'],
+    });
+    // And the closing note prints the whole command, console included.
+    const notes = vi
+      .mocked(clack.log.info)
+      .mock.calls.map(([message]) => String(message));
+    const rustfsNote = notes.find((message) =>
+      message.includes('Documents are stored in RustFS'),
+    );
+    expect(rustfsNote).toContain(
+      'docker compose --profile pii --profile s3 up -d',
+    );
+    expect(rustfsNote).toContain('http://localhost:59001');
+  });
+
+  it('probes RustFS’s ports and prints a recovery command naming both profiles', async () => {
+    vi.mocked(busyPublishedPorts).mockResolvedValueOnce([
+      { service: 'RustFS (S3 API)', variable: 'RUSTFS_PORT', port: 59000 },
+    ]);
+    chooseRustfs();
+    // PII yes, Docker no — the warning is what is under test.
+    vi.mocked(clack.confirm)
+      .mockResolvedValueOnce(true as never)
+      .mockResolvedValue(false as never);
+
+    await run(['/tmp/ragen-test']);
+
+    const probed = vi.mocked(busyPublishedPorts).mock.calls[0]?.[0] ?? [];
+    expect(probed.map(({ variable }) => variable)).toEqual(
+      expect.arrayContaining([
+        'POSTGRES_PORT',
+        'PRESIDIO_ANALYZER_PORT',
+        'RUSTFS_PORT',
+        'RUSTFS_CONSOLE_PORT',
+      ]),
+    );
+
+    const warning = vi
+      .mocked(clack.log.warn)
+      .mock.calls.map(([message]) => String(message))
+      .find((message) => message.includes('RUSTFS_PORT'));
+    expect(warning, 'no warning named the busy port').toBeDefined();
+    expect(warning).toContain('RUSTFS_PORT=59100');
+    expect(warning).toContain(
+      'docker compose --profile pii --profile s3 up -d',
+    );
+    // Moving the port and not the endpoint would send uploads to the other
+    // install's store.
+    expect(warning).toContain('S3_ENDPOINT_URL');
+    expect(warning).toContain('PRESIDIO_ANONYMIZER_URL');
+  });
+
+  it('never rotates keys the directory already has, and reuses them for the apps', async () => {
+    mockTemplates(
+      ROOT_TEMPLATE,
+      [
+        'COMPOSE_PROJECT_NAME=chosen-earlier',
+        'RUSTFS_ACCESS_KEY=EXISTINGACCESSKEY',
+        'RUSTFS_SECRET_KEY=existing-secret-key',
+        '',
+      ].join('\n'),
+    );
+    chooseRustfs();
+    vi.mocked(clack.confirm).mockResolvedValue(false as never);
+
+    await run(['/tmp/ragen-test']);
+
+    const local = parseDotenv(writtenTo('/.env.local') ?? '');
+    expect(local.S3_ACCESS_KEY_ID).toBe('EXISTINGACCESSKEY');
+    expect(local.S3_SECRET_ACCESS_KEY).toBe('existing-secret-key');
+
+    // The keys stay; only the container-side S3 settings an older install
+    // lacked are appended — built from the kept keys, never new ones — and
+    // the project name is not asked for again.
+    expect(writtenTo('/.env')).toBeUndefined();
+    const appended = parseDotenv(
+      String(vi.mocked(appendFileSync).mock.calls[0]?.[1] ?? ''),
+    );
+    expect(appended).not.toHaveProperty('RUSTFS_ACCESS_KEY');
+    expect(appended).not.toHaveProperty('RUSTFS_SECRET_KEY');
+    expect(appended.S3_ACCESS_KEY_ID).toBe('EXISTINGACCESSKEY');
+    expect(appended.S3_SECRET_ACCESS_KEY).toBe('existing-secret-key');
+    expect(appended.S3_CONTAINER_ENDPOINT_URL).toBe('http://rustfs:9000');
+    expect(resolveComposeProjectName).not.toHaveBeenCalled();
+    expect(clack.log.info).toHaveBeenCalledWith(
+      expect.stringContaining('Kept the RustFS keys already in .env'),
+    );
+  });
+
+  it('appends only the missing lines to an existing .env', async () => {
+    mockTemplates(
+      ROOT_TEMPLATE,
+      [
+        '# something the operator wrote',
+        'COMPOSE_PROJECT_NAME=chosen-earlier',
+        'RUSTFS_ACCESS_KEY=EXISTINGACCESSKEY',
+      ].join('\n'),
+    );
+    chooseRustfs();
+    vi.mocked(clack.confirm).mockResolvedValue(false as never);
+
+    await run(['/tmp/ragen-test']);
+
+    // Appended, never rewritten: the operator's line survives by construction.
+    expect(writtenTo('/.env')).toBeUndefined();
+    expect(appendFileSync).toHaveBeenCalledOnce();
+    const [path, appended] = vi.mocked(appendFileSync).mock.calls[0] ?? [];
+    expect(String(path)).toBe('/tmp/ragen-test/.env');
+    // The file had no trailing newline, so the key does not run on from it.
+    expect(String(appended).startsWith('\n')).toBe(true);
+
+    const added = parseDotenv(String(appended));
+    // Everything but the lines already there: the kept access key is not
+    // written again.
+    expect(Object.keys(added)).not.toContain('RUSTFS_ACCESS_KEY');
+    expect(Object.keys(added)).not.toContain('COMPOSE_PROJECT_NAME');
+    expect(added.RUSTFS_SECRET_KEY).toMatch(/^[0-9a-f]{40}$/);
+    // The container-side copy of the pair `.env` now holds.
+    expect(added.S3_ACCESS_KEY_ID).toBe('EXISTINGACCESSKEY');
+    expect(added.S3_SECRET_ACCESS_KEY).toBe(added.RUSTFS_SECRET_KEY);
+
+    // The apps get the kept access key and the new secret — the pair `.env`
+    // now holds.
+    const local = parseDotenv(writtenTo('/.env.local') ?? '');
+    expect(local.S3_ACCESS_KEY_ID).toBe('EXISTINGACCESSKEY');
+    expect(local.S3_SECRET_ACCESS_KEY).toBe(added.RUSTFS_SECRET_KEY);
+
+    // It now holds a credential, whatever mode it was created with.
+    expect(chmodSync).toHaveBeenCalledWith('/tmp/ragen-test/.env', 0o600);
+    expect(resolveComposeProjectName).not.toHaveBeenCalled();
+  });
+
+  it('writes nothing about RustFS for another answer', async () => {
+    vi.mocked(clack.select).mockResolvedValueOnce('skip' as never);
+    vi.mocked(clack.confirm).mockResolvedValue(true as never);
+
+    await run(['/tmp/ragen-test']);
+
+    expect(writtenTo('/.env')).not.toContain('RUSTFS_');
+    // PII alone: the profile list is exactly what was chosen.
+    expect(startDockerServices).toHaveBeenCalledWith({
+      cwd: '/tmp/ragen-test',
+      profiles: ['pii'],
+    });
   });
 });

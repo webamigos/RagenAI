@@ -28,7 +28,7 @@
 # port, so two stacks both publishing 55432 still collide — set POSTGRES_PORT,
 # QDRANT_PORT, QDRANT_GRPC_PORT, DOCLING_PORT and REDIS_PORT on the second one,
 # plus PRESIDIO_ANALYZER_PORT and PRESIDIO_ANONYMIZER_PORT if it runs
-# `--profile pii`. (The observability profile publishes three more —
+# `--profile pii`, and RUSTFS_PORT and RUSTFS_CONSOLE_PORT with `--profile s3`. (The observability profile publishes three more —
 # OTEL_COLLECTOR_GRPC_PORT, OTEL_COLLECTOR_HTTP_PORT, JAEGER_UI_PORT — and a
 # plain `up` starts none of them.) create-ragen-app probes the ports it is
 # about to publish and names the taken ones before it starts anything.
@@ -192,6 +192,93 @@ services:
     networks:
       - ragen-network
 
+  # --- S3-compatible object storage (opt-in) ------------------------------
+  # RustFS, for installs that want files in an object store they run
+  # themselves instead of the local filesystem (ADR-27). Not started by
+  # default; enable with:
+  #   docker compose --profile s3 up -d
+  # and point the apps at it (create-ragen-app writes these when you choose
+  # "RustFS"):
+  #   STORAGE_PROVIDER=s3
+  #   S3_ENDPOINT_URL=http://localhost:59000   (http://rustfs:9000 from a container)
+  #   S3_FORCE_PATH_STYLE=true
+  #   S3_BUCKET_NAME=ragen   S3_REGION=us-east-1
+  #   S3_ACCESS_KEY_ID / S3_SECRET_ACCESS_KEY = RUSTFS_ACCESS_KEY / RUSTFS_SECRET_KEY
+  # The keys come from this directory's `.env` (Compose reads it; the apps read
+  # `.env.local`). The defaults below are for a local trial only — anyone can
+  # read them here, so set your own before this stack holds real documents.
+  rustfs:
+    profiles: ['s3']
+    # Pinned rather than :latest, like everything else in this file.
+    image: rustfs/rustfs:1.0.0
+    restart: unless-stopped
+    depends_on:
+      rustfs-volume-init:
+        condition: service_completed_successfully
+    security_opt:
+      - "no-new-privileges:true"
+    environment:
+      RUSTFS_VOLUMES: /data
+      RUSTFS_ADDRESS: 0.0.0.0:9000
+      RUSTFS_CONSOLE_ENABLE: "true"
+      RUSTFS_CONSOLE_ADDRESS: 0.0.0.0:9001
+      RUSTFS_ACCESS_KEY: ${RUSTFS_ACCESS_KEY:-ragen-local}
+      RUSTFS_SECRET_KEY: ${RUSTFS_SECRET_KEY:-ragen-local-secret}
+    ports:
+      # 59000/59001, not 9000/9001: the same reason Postgres is on 55432 —
+      # a developer machine often already has something on the default.
+      - "${RAGEN_BIND_ADDR:-127.0.0.1}:${RUSTFS_PORT:-59000}:9000"
+      - "${RAGEN_BIND_ADDR:-127.0.0.1}:${RUSTFS_CONSOLE_PORT:-59001}:9001"
+    volumes:
+      - rustfs_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:9000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    networks:
+      - ragen-network
+
+  # RustFS runs as UID 10001 and a fresh named volume belongs to root, so the
+  # server cannot write its first object without this. It exits, and a later
+  # `up` starts it again — so the recursive chown runs only on a volume that
+  # has never been through it, marked by a file it leaves behind. Everything
+  # written after that is written by RustFS, as 10001; walking a store of any
+  # size on every start would make startup grow with the data.
+  rustfs-volume-init:
+    profiles: ['s3']
+    image: busybox:1.37.0
+    command:
+      - sh
+      - -c
+      - >-
+        [ -f /data/.ragen-volume-owned ]
+        || { chown -R 10001:10001 /data && touch /data/.ragen-volume-owned
+        && chown 10001:10001 /data/.ragen-volume-owned; }
+    volumes:
+      - rustfs_data:/data
+
+  # Creates the bucket the apps write to, so a first upload does not fail on
+  # a store that is up but empty. Idempotent: an existing bucket is left alone.
+  rustfs-bucket-init:
+    profiles: ['s3']
+    image: amazon/aws-cli:2.37.1
+    depends_on:
+      rustfs:
+        condition: service_healthy
+    environment:
+      AWS_ACCESS_KEY_ID: ${RUSTFS_ACCESS_KEY:-ragen-local}
+      AWS_SECRET_ACCESS_KEY: ${RUSTFS_SECRET_KEY:-ragen-local-secret}
+      AWS_DEFAULT_REGION: us-east-1
+    entrypoint: ["sh", "-c"]
+    command:
+      - >-
+        aws --endpoint-url http://rustfs:9000 s3api head-bucket --bucket "$${S3_BUCKET:-ragen}" 2>/dev/null
+        || aws --endpoint-url http://rustfs:9000 s3api create-bucket --bucket "$${S3_BUCKET:-ragen}"
+    networks:
+      - ragen-network
+
   # --- Observability (opt-in) -------------------------------------------
   # Not started by default so `docker compose up` stays lean. Enable with:
   #   docker compose --profile observability up -d
@@ -224,6 +311,7 @@ volumes:
   postgres_data:
   redis_data:
   qdrant_data:
+  rustfs_data:
 networks:
   # The key is the name services reference; Compose publishes it as
   # `<project>_ragen-network`. No `name:` here, deliberately — a fixed one is
