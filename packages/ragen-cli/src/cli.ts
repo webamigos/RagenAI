@@ -6,6 +6,8 @@ export interface RunOptions {
   version: string;
   /** Injected so the router is testable without spawning anything. */
   create: (args: string[]) => number;
+  /** `ragen brain …`, which talks to the API and so is asynchronous. */
+  brain: (args: string[]) => Promise<number>;
   /**
    * Required, not defaulted to `console`: the router does no I/O of its own,
    * which is what lets a test read its output instead of capturing a stream.
@@ -21,7 +23,10 @@ export interface RunOptions {
  * (reading the version, setting an exit code, catching a throw) live in
  * index.ts and nowhere else.
  */
-export function run(argv: string[], options: RunOptions): number {
+export function run(
+  argv: string[],
+  options: RunOptions,
+): number | Promise<number> {
   const { out, err } = options;
 
   const args = parseArgs(argv);
@@ -57,6 +62,8 @@ export function run(argv: string[], options: RunOptions): number {
   switch (command.name) {
     case 'create':
       return options.create(args.rest);
+    case 'brain':
+      return options.brain(args.rest);
     case 'help':
       out(helpText(options.version));
       return 0;

@@ -28,6 +28,11 @@ export const COMMANDS: readonly CommandSpec[] = [
     status: 'available',
   },
   {
+    name: 'brain',
+    summary: 'curated knowledge: next, doctor, findings, graph, export',
+    status: 'available',
+  },
+  {
     name: 'help',
     summary: 'show this message',
     status: 'available',
@@ -61,7 +66,8 @@ export const COMMANDS: readonly CommandSpec[] = [
     status: 'planned',
     // ADR-38 sanctions MCP as the extension API and records that none of it is
     // implemented. Naming the ADR here keeps the CLI honest about why.
-    blockedBy: 'custom MCP connectors (ADR-38 Tier 1), which are designed but not built',
+    blockedBy:
+      'custom MCP connectors (ADR-38 Tier 1), which are designed but not built',
   },
 ];
 

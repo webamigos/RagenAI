@@ -21,7 +21,9 @@ describe('helpText', () => {
 
   it('separates what works from what does not', () => {
     expect(text).toContain('Not built yet');
-    expect(text.indexOf('Commands')).toBeLessThan(text.indexOf('Not built yet'));
+    expect(text.indexOf('Commands')).toBeLessThan(
+      text.indexOf('Not built yet'),
+    );
   });
 });
 
