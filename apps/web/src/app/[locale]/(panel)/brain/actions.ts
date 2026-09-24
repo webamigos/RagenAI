@@ -12,6 +12,8 @@ import {
 } from '@/features/brain/contracts/brain-review.types';
 import { approveKnowledgePageCommand } from '@/features/brain/services/commands/approve-knowledge-page-command';
 import { mergeKnowledgePagesCommand } from '@/features/brain/services/commands/merge-knowledge-pages-command';
+import { publishKnowledgePageCommand } from '@/features/brain/services/commands/publish-knowledge-page-command';
+import { unpublishKnowledgePageCommand } from '@/features/brain/services/commands/unpublish-knowledge-page-command';
 import { rejectKnowledgePageCommand } from '@/features/brain/services/commands/reject-knowledge-page-command';
 import { setKnowledgePageAccessCommand } from '@/features/brain/services/commands/set-knowledge-page-access-command';
 import { setKnowledgePageOwnerCommand } from '@/features/brain/services/commands/set-knowledge-page-owner-command';
@@ -134,4 +136,16 @@ export async function retryExtractionFindingAction(
     userId: who.actorId,
     findingPublicId: parsed.data.findingPublicId,
   });
+}
+
+export async function publishKnowledgePageAction(
+  input: unknown,
+): Promise<ReviewResult> {
+  return run(pageDecisionInputSchema, input, publishKnowledgePageCommand);
+}
+
+export async function unpublishKnowledgePageAction(
+  input: unknown,
+): Promise<ReviewResult> {
+  return run(pageDecisionInputSchema, input, unpublishKnowledgePageCommand);
 }

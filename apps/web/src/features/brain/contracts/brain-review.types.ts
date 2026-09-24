@@ -74,6 +74,12 @@ export type MergeInput = z.infer<typeof mergeInputSchema>;
  * - `confirm-widening` — the change widens access and was not confirmed.
  * - `unmergeable` — a page's text is not in the shape a merge can renumber
  *   (see `mergePageContent`), or a page was merged into itself.
+ * - `no-access` — the page is open to nobody; publishing it would put text in
+ *   the index that no reader can retrieve, so the reviewer decides first.
+ * - `failed-to-start` — the decision is recorded but the index write could
+ *   not be queued; publishing again resumes it.
+ * - `index-unavailable` — the index could not be changed; nothing was
+ *   recorded, and trying again is safe.
  */
 export type ReviewError =
   | 'invalid-input'
@@ -85,7 +91,10 @@ export type ReviewError =
   | 'invalid-access'
   | 'published'
   | 'confirm-widening'
-  | 'unmergeable';
+  | 'unmergeable'
+  | 'no-access'
+  | 'failed-to-start'
+  | 'index-unavailable';
 
 /**
  * `changed: false` is a request that asked for what the page already is — no

@@ -2506,7 +2506,13 @@
       },
       "history": "History",
       "merge": "Merge",
-      "superseded-by": "Merged into"
+      "superseded-by": "Merged into",
+      "publication": "Knowledge base",
+      "publish-blocker": {
+        "status": "Only an approved page can be published",
+        "owner": "Set an owner first",
+        "access": "Choose who the page is open to first"
+      }
     },
     "origin": {
       "EXTRACTED": "quoted",
@@ -2553,7 +2559,10 @@
         "invalid-access": "One of the selected people or teams is no longer in this organization — reload and choose again.",
         "published": "This page is published — changing its access is not available yet.",
         "confirm-widening": "This change widens access and has to be confirmed.",
-        "unmergeable": "A page’s text is not in a shape that can be merged — merge it by hand, or reject it."
+        "unmergeable": "A page’s text is not in a shape that can be merged — merge it by hand, or reject it.",
+        "no-access": "This page is open to nobody — choose who may read it before publishing.",
+        "failed-to-start": "Publication is recorded, but writing to the knowledge base could not start — publish again to resume.",
+        "index-unavailable": "The knowledge base could not be changed — nothing was recorded; try again."
       },
       "merge-label": "Merge into",
       "merge-placeholder": "Choose a page to merge into",
@@ -2645,6 +2654,22 @@
         "no-sources": "No sources: {count}",
         "invalid": "Incomplete data: {count}"
       }
+    },
+    "publication": {
+      "state": {
+        "none": "Not in the knowledge base",
+        "publishing": "Being written to the knowledge base…",
+        "published": "In the knowledge base — answers can cite it",
+        "withdrawn": "Withdrawn from the knowledge base"
+      },
+      "outdated": "The page changed since it was published — republish to update the knowledge base.",
+      "publish": "Publish to knowledge base",
+      "republish": "Republish",
+      "withdraw": "Withdraw",
+      "published": "Publication started",
+      "withdrawn": "Page withdrawn",
+      "withdraw-title": "Withdraw this page from the knowledge base?",
+      "withdraw-description": "Answers stop citing it as soon as it is withdrawn. The page stays approved and can be published again; past answers that cited it keep their citations."
     }
   }
 }

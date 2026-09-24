@@ -21,6 +21,8 @@ export {
   type BrainExtractResult,
   type BrainReconcileFindingsPayload,
   type BrainReconcileFindingsResult,
+  type BrainPublishPagePayload,
+  type BrainPublishPageResult,
 } from './contract';
 
 export {

@@ -2506,7 +2506,13 @@
       },
       "history": "Verlauf",
       "merge": "Zusammenführen",
-      "superseded-by": "Zusammengeführt mit"
+      "superseded-by": "Zusammengeführt mit",
+      "publication": "Wissensdatenbank",
+      "publish-blocker": {
+        "status": "Nur eine freigegebene Seite kann veröffentlicht werden",
+        "owner": "Legen Sie zuerst einen Verantwortlichen fest",
+        "access": "Wählen Sie zuerst, für wen die Seite zugänglich ist"
+      }
     },
     "origin": {
       "EXTRACTED": "zitiert",
@@ -2553,7 +2559,10 @@
         "invalid-access": "Eine der gewählten Personen oder Teams gehört nicht mehr zur Organisation — neu laden und erneut wählen.",
         "published": "Diese Seite ist veröffentlicht — ihren Zugriff zu ändern ist noch nicht möglich.",
         "confirm-widening": "Diese Änderung erweitert den Zugriff und muss bestätigt werden.",
-        "unmergeable": "Der Text einer Seite hat keine Form, die sich zusammenführen lässt — führen Sie sie von Hand zusammen oder lehnen Sie sie ab."
+        "unmergeable": "Der Text einer Seite hat keine Form, die sich zusammenführen lässt — führen Sie sie von Hand zusammen oder lehnen Sie sie ab.",
+        "no-access": "Diese Seite ist für niemanden zugänglich — wählen Sie vor der Veröffentlichung, wer sie lesen darf.",
+        "failed-to-start": "Die Veröffentlichung ist erfasst, aber das Schreiben in die Wissensdatenbank konnte nicht starten — veröffentlichen Sie erneut, um fortzufahren.",
+        "index-unavailable": "Die Wissensdatenbank konnte nicht geändert werden — nichts wurde erfasst; versuchen Sie es erneut."
       },
       "merge-label": "Zusammenführen mit",
       "merge-placeholder": "Seite zum Zusammenführen wählen",
@@ -2645,6 +2654,22 @@
         "no-sources": "Ohne Quellen: {count}",
         "invalid": "Unvollständige Daten: {count}"
       }
+    },
+    "publication": {
+      "state": {
+        "none": "Nicht in der Wissensdatenbank",
+        "publishing": "Wird in die Wissensdatenbank geschrieben…",
+        "published": "In der Wissensdatenbank — Antworten können sie zitieren",
+        "withdrawn": "Aus der Wissensdatenbank zurückgezogen"
+      },
+      "outdated": "Die Seite hat sich seit der Veröffentlichung geändert — erneut veröffentlichen, um die Wissensdatenbank zu aktualisieren.",
+      "publish": "In der Wissensdatenbank veröffentlichen",
+      "republish": "Erneut veröffentlichen",
+      "withdraw": "Zurückziehen",
+      "published": "Veröffentlichung gestartet",
+      "withdrawn": "Seite zurückgezogen",
+      "withdraw-title": "Diese Seite aus der Wissensdatenbank zurückziehen?",
+      "withdraw-description": "Antworten zitieren sie nicht mehr, sobald sie zurückgezogen ist. Die Seite bleibt freigegeben und kann erneut veröffentlicht werden; frühere Antworten behalten ihre Zitate."
     }
   }
 }

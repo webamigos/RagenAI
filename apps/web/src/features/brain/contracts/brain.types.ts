@@ -104,6 +104,14 @@ export type KnowledgePageDetail = PageRef & {
   /** The page this one was merged into, or that replaced it. */
   supersededBy: PageRef | null;
   ownerName: string | null;
+  /**
+   * `none` — never published; `publishing` — in the index as far as the row
+   * says, the chunks still being written; `published` — serving;
+   * `withdrawn` — taken out, the file kept.
+   */
+  publication: 'none' | 'publishing' | 'published' | 'withdrawn';
+  /** Published, but its text changed since — a republish would update it. */
+  publicationOutdated: boolean;
   /** `accessibleBy` as stored — what the access editor starts from. */
   principals: string[];
   access: AccessEntry[];

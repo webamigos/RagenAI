@@ -2506,7 +2506,13 @@
       },
       "history": "Historial",
       "merge": "Fusionar",
-      "superseded-by": "Fusionada con"
+      "superseded-by": "Fusionada con",
+      "publication": "Base de conocimiento",
+      "publish-blocker": {
+        "status": "Solo se puede publicar una página aprobada",
+        "owner": "Asigna primero un responsable",
+        "access": "Elige primero para quién está abierta la página"
+      }
     },
     "origin": {
       "EXTRACTED": "citada",
@@ -2553,7 +2559,10 @@
         "invalid-access": "Una de las personas o equipos elegidos ya no está en la organización: recarga y elige de nuevo.",
         "published": "Esta página está publicada: todavía no se puede cambiar su acceso.",
         "confirm-widening": "Este cambio amplía el acceso y debe confirmarse.",
-        "unmergeable": "El texto de una página no tiene una forma que se pueda fusionar: fusiónala a mano o recházala."
+        "unmergeable": "El texto de una página no tiene una forma que se pueda fusionar: fusiónala a mano o recházala.",
+        "no-access": "Esta página no está abierta a nadie: elige quién puede leerla antes de publicarla.",
+        "failed-to-start": "La publicación está registrada, pero no se pudo iniciar la escritura en la base de conocimiento: vuelve a publicar para reanudarla.",
+        "index-unavailable": "No se pudo cambiar la base de conocimiento: no se registró nada; inténtalo de nuevo."
       },
       "merge-label": "Fusionar con",
       "merge-placeholder": "Elige una página con la que fusionar",
@@ -2645,6 +2654,22 @@
         "no-sources": "Sin fuentes: {count}",
         "invalid": "Datos incompletos: {count}"
       }
+    },
+    "publication": {
+      "state": {
+        "none": "Fuera de la base de conocimiento",
+        "publishing": "Escribiendo en la base de conocimiento…",
+        "published": "En la base de conocimiento: las respuestas pueden citarla",
+        "withdrawn": "Retirada de la base de conocimiento"
+      },
+      "outdated": "La página cambió desde que se publicó: vuelve a publicarla para actualizar la base de conocimiento.",
+      "publish": "Publicar en la base de conocimiento",
+      "republish": "Volver a publicar",
+      "withdraw": "Retirar",
+      "published": "Publicación iniciada",
+      "withdrawn": "Página retirada",
+      "withdraw-title": "¿Retirar esta página de la base de conocimiento?",
+      "withdraw-description": "Las respuestas dejan de citarla en cuanto se retira. La página sigue aprobada y se puede volver a publicar; las respuestas anteriores conservan sus citas."
     }
   }
 }

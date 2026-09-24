@@ -1,3 +1,4 @@
+import { readPublishedFileMetadata } from '@ragenai/brain-contracts';
 import db from '@ragenai/prisma-client';
 
 import type {
@@ -42,6 +43,8 @@ export async function getKnowledgePageQuery(
       content: true,
       accessibleBy: true,
       publishedAt: true,
+      contentHash: true,
+      publishedFile: { select: { embeddingStatus: true, metadata: true } },
       lastVerifiedAt: true,
       verifyEvery: true,
       updatedAt: true,
@@ -218,6 +221,14 @@ export async function getKnowledgePageQuery(
     content: page.content,
     ownerId: page.ownerId,
     supersededBy: page.supersededBy,
+    publication: publicationState(
+      page.publishedAt,
+      page.publishedFile?.embeddingStatus ?? null,
+    ),
+    publicationOutdated:
+      page.publishedAt !== null &&
+      readPublishedFileMetadata(page.publishedFile?.metadata)?.contentHash !==
+        page.contentHash,
     ownerName: page.owner ? (page.owner.name ?? page.owner.email) : null,
     principals: page.accessibleBy,
     access: accessEntries(orgId, page.accessibleBy, {
@@ -233,6 +244,16 @@ export async function getKnowledgePageQuery(
     findings,
     decisions,
   };
+}
+
+function publicationState(
+  publishedAt: Date | null,
+  fileStatus: string | null,
+): KnowledgePageDetail['publication'] {
+  if (publishedAt) {
+    return fileStatus === 'COMPLETED' ? 'published' : 'publishing';
+  }
+  return fileStatus === null ? 'none' : 'withdrawn';
 }
 
 /** The ledger rows the page view shows; the rest are in the database. */

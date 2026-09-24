@@ -2506,7 +2506,13 @@
       },
       "history": "Historik",
       "merge": "Fletning",
-      "superseded-by": "Flettet med"
+      "superseded-by": "Flettet med",
+      "publication": "Vidensbase",
+      "publish-blocker": {
+        "status": "Kun en godkendt side kan udgives",
+        "owner": "Angiv først en ejer",
+        "access": "Vælg først, hvem siden er åben for"
+      }
     },
     "origin": {
       "EXTRACTED": "citeret",
@@ -2553,7 +2559,10 @@
         "invalid-access": "En af de valgte personer eller teams hører ikke længere til organisationen — genindlæs, og vælg igen.",
         "published": "Denne side er udgivet — det er endnu ikke muligt at ændre dens adgang.",
         "confirm-widening": "Denne ændring udvider adgangen og skal bekræftes.",
-        "unmergeable": "En sides tekst har ikke en form, der kan flettes — flet den i hånden, eller afvis den."
+        "unmergeable": "En sides tekst har ikke en form, der kan flettes — flet den i hånden, eller afvis den.",
+        "no-access": "Denne side er åben for ingen — vælg, hvem der må læse den, før du udgiver.",
+        "failed-to-start": "Udgivelsen er registreret, men skrivningen til vidensbasen kunne ikke starte — udgiv igen for at fortsætte.",
+        "index-unavailable": "Vidensbasen kunne ikke ændres — intet blev registreret; prøv igen."
       },
       "merge-label": "Flet med",
       "merge-placeholder": "Vælg en side at flette med",
@@ -2645,6 +2654,22 @@
         "no-sources": "Uden kilder: {count}",
         "invalid": "Ufuldstændige data: {count}"
       }
+    },
+    "publication": {
+      "state": {
+        "none": "Ikke i vidensbasen",
+        "publishing": "Skrives til vidensbasen…",
+        "published": "I vidensbasen — svar kan citere den",
+        "withdrawn": "Trukket tilbage fra vidensbasen"
+      },
+      "outdated": "Siden er ændret, siden den blev udgivet — udgiv igen for at opdatere vidensbasen.",
+      "publish": "Udgiv i vidensbasen",
+      "republish": "Udgiv igen",
+      "withdraw": "Træk tilbage",
+      "published": "Udgivelsen er startet",
+      "withdrawn": "Siden er trukket tilbage",
+      "withdraw-title": "Træk denne side tilbage fra vidensbasen?",
+      "withdraw-description": "Svar holder op med at citere den, så snart den trækkes tilbage. Siden forbliver godkendt og kan udgives igen; tidligere svar beholder deres citater."
     }
   }
 }

@@ -2506,7 +2506,13 @@
       },
       "history": "Historie",
       "merge": "Sloučení",
-      "superseded-by": "Sloučeno se stránkou"
+      "superseded-by": "Sloučeno se stránkou",
+      "publication": "Znalostní báze",
+      "publish-blocker": {
+        "status": "Zveřejnit lze jen schválenou stránku",
+        "owner": "Nejprve určete vlastníka",
+        "access": "Nejprve vyberte, komu je stránka přístupná"
+      }
     },
     "origin": {
       "EXTRACTED": "citováno",
@@ -2553,7 +2559,10 @@
         "invalid-access": "Jedna z vybraných osob nebo týmů už do organizace nepatří — načtěte znovu a vyberte znovu.",
         "published": "Tato stránka je zveřejněná — změna jejího přístupu zatím není k dispozici.",
         "confirm-widening": "Tato změna rozšiřuje přístup a musí být potvrzena.",
-        "unmergeable": "Text stránky nemá tvar, který lze sloučit — slučte ji ručně, nebo ji zamítněte."
+        "unmergeable": "Text stránky nemá tvar, který lze sloučit — slučte ji ručně, nebo ji zamítněte.",
+        "no-access": "Tato stránka není přístupná nikomu — před zveřejněním vyberte, kdo ji může číst.",
+        "failed-to-start": "Zveřejnění je zaznamenáno, ale zápis do znalostní báze se nespustil — zveřejněte znovu a bude pokračovat.",
+        "index-unavailable": "Znalostní bázi se nepodařilo změnit — nic nebylo zaznamenáno; zkuste to znovu."
       },
       "merge-label": "Sloučit se stránkou",
       "merge-placeholder": "Vyberte stránku ke sloučení",
@@ -2645,6 +2654,22 @@
         "no-sources": "Bez zdrojů: {count}",
         "invalid": "Neúplná data: {count}"
       }
+    },
+    "publication": {
+      "state": {
+        "none": "Mimo znalostní bázi",
+        "publishing": "Zapisuje se do znalostní báze…",
+        "published": "Ve znalostní bázi — odpovědi ji mohou citovat",
+        "withdrawn": "Stažena ze znalostní báze"
+      },
+      "outdated": "Stránka se od zveřejnění změnila — zveřejněte ji znovu, aby se znalostní báze aktualizovala.",
+      "publish": "Zveřejnit ve znalostní bázi",
+      "republish": "Zveřejnit znovu",
+      "withdraw": "Stáhnout",
+      "published": "Zveřejňování zahájeno",
+      "withdrawn": "Stránka stažena",
+      "withdraw-title": "Stáhnout tuto stránku ze znalostní báze?",
+      "withdraw-description": "Odpovědi ji přestanou citovat hned po stažení. Stránka zůstává schválená a lze ji znovu zveřejnit; dřívější odpovědi si citace ponechají."
     }
   }
 }

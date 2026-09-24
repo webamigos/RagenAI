@@ -2506,7 +2506,13 @@
       },
       "history": "Historik",
       "merge": "Sammanslagning",
-      "superseded-by": "Sammanslagen med"
+      "superseded-by": "Sammanslagen med",
+      "publication": "Kunskapsbas",
+      "publish-blocker": {
+        "status": "Bara en godkänd sida kan publiceras",
+        "owner": "Ange först en ägare",
+        "access": "Välj först vem sidan är öppen för"
+      }
     },
     "origin": {
       "EXTRACTED": "citerad",
@@ -2553,7 +2559,10 @@
         "invalid-access": "En av de valda personerna eller teamen tillhör inte längre organisationen — ladda om och välj igen.",
         "published": "Den här sidan är publicerad — det går ännu inte att ändra dess åtkomst.",
         "confirm-widening": "Den här ändringen utökar åtkomsten och måste bekräftas.",
-        "unmergeable": "En sidas text har inte en form som kan slås samman — slå samman den för hand eller avvisa den."
+        "unmergeable": "En sidas text har inte en form som kan slås samman — slå samman den för hand eller avvisa den.",
+        "no-access": "Den här sidan är öppen för ingen — välj vem som får läsa den innan du publicerar.",
+        "failed-to-start": "Publiceringen är registrerad, men skrivningen till kunskapsbasen kunde inte starta — publicera igen för att fortsätta.",
+        "index-unavailable": "Kunskapsbasen kunde inte ändras — inget registrerades; försök igen."
       },
       "merge-label": "Slå samman med",
       "merge-placeholder": "Välj en sida att slå samman med",
@@ -2645,6 +2654,22 @@
         "no-sources": "Utan källor: {count}",
         "invalid": "Ofullständiga data: {count}"
       }
+    },
+    "publication": {
+      "state": {
+        "none": "Inte i kunskapsbasen",
+        "publishing": "Skrivs till kunskapsbasen…",
+        "published": "I kunskapsbasen — svar kan citera den",
+        "withdrawn": "Tillbakadragen från kunskapsbasen"
+      },
+      "outdated": "Sidan har ändrats sedan den publicerades — publicera igen för att uppdatera kunskapsbasen.",
+      "publish": "Publicera i kunskapsbasen",
+      "republish": "Publicera igen",
+      "withdraw": "Dra tillbaka",
+      "published": "Publiceringen har startat",
+      "withdrawn": "Sidan har dragits tillbaka",
+      "withdraw-title": "Dra tillbaka den här sidan från kunskapsbasen?",
+      "withdraw-description": "Svar slutar citera den så snart den dras tillbaka. Sidan förblir godkänd och kan publiceras igen; tidigare svar behåller sina citat."
     }
   }
 }

@@ -18,6 +18,7 @@ import { DecisionHistory } from '../../components/DecisionHistory';
 import { FindingsTable } from '../../components/FindingsTable';
 import { MergePicker } from '../../components/MergePicker';
 import { OwnerPicker } from '../../components/OwnerPicker';
+import { PublicationControls } from '../../components/PublicationControls';
 import { ReviewActions } from '../../components/ReviewActions';
 
 export const dynamic = 'force-dynamic';
@@ -188,6 +189,30 @@ export default async function BrainPageDetail({ params }: Props) {
               </div>
             )}
           </div>
+          {(page.status === 'APPROVED' || page.publication !== 'none') && (
+            <div>
+              <h3 className="mb-1 text-xs font-medium uppercase text-muted-foreground">
+                {t('page.publication')}
+              </h3>
+              <PublicationControls
+                publicId={page.publicId}
+                updatedAt={page.updatedAt}
+                state={page.publication}
+                outdated={page.publicationOutdated}
+                blockers={[
+                  ...(page.status !== 'APPROVED'
+                    ? [t('page.publish-blocker.status')]
+                    : []),
+                  ...(page.ownerId === null
+                    ? [t('page.publish-blocker.owner')]
+                    : []),
+                  ...(page.principals.length === 0
+                    ? [t('page.publish-blocker.access')]
+                    : []),
+                ]}
+              />
+            </div>
+          )}
           <div>
             <h3 className="mb-1 text-xs font-medium uppercase text-muted-foreground">
               {t('page.access.title')}
