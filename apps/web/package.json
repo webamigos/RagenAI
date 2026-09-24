@@ -54,7 +54,10 @@
     "@ragenai/rag-core": "*",
     "@ragenai/storage": "*",
     "@ragenai/vault-client": "*",
-    "ai": "^7.0.99"
+    "ai": "^7.0.99",
+    "graphology": "^0.26.0",
+    "graphology-layout-forceatlas2": "^0.10.1",
+    "sigma": "^3.0.3"
   },
   "engines": {
     "node": "^24.15.0 || >=26.0.0"

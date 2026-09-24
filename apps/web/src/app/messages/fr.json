@@ -2388,7 +2388,8 @@
     "title": "Ragen Brain",
     "tabs": {
       "pages": "Pages de connaissances",
-      "findings": "Constats"
+      "findings": "Constats",
+      "graph": "Graphe"
     },
     "filters": {
       "status": "Statut",
@@ -2500,7 +2501,8 @@
         "title": "Relations",
         "empty": "Aucune relation",
         "out": "{kind} →",
-        "in": "← {kind}"
+        "in": "← {kind}",
+        "show-in-graph": "Afficher dans le graphe"
       },
       "history": "Historique",
       "merge": "Fusion",
@@ -2597,6 +2599,39 @@
         "not-found": "Ce constat est clos ou n’existe plus.",
         "no-documents": "Aucun des documents choisis ne peut être extrait ici.",
         "failed-to-start": "L’extraction n’a pas pu démarrer — réessayez dans un instant."
+      }
+    },
+    "graph": {
+      "title": "Graphe de connaissances — Ragen Brain",
+      "empty-title": "Aucune page à dessiner pour l’instant",
+      "empty-description": "Le graphe apparaît dès que Brain a extrait des pages de vos documents.",
+      "focus": "Voisinage de « {title} »",
+      "back-to-overview": "Retour à la vue d’ensemble",
+      "hops": "Portée",
+      "hops-1": "1 étape",
+      "hops-2": "2 étapes",
+      "budget": "Pages",
+      "inferred": "Relations inférées",
+      "inferred-hidden": "Masquées",
+      "inferred-shown": "Affichées ({count})",
+      "shown": "{nodes} pages sur {totalNodes} et {edges} relations sur {totalEdges} affichées",
+      "canvas-label": "Graphe de {nodes} pages et {edges} relations",
+      "failed": "Le graphe n’a pas pu être dessiné dans ce navigateur — les onglets pages et constats montrent les mêmes données.",
+      "open-findings": "Constats ouverts : {count}",
+      "open-page": "Ouvrir la page",
+      "show-neighbourhood": "Afficher le voisinage",
+      "select-hint": "Cliquez sur une page pour voir ses relations.",
+      "legend-title": "Légende",
+      "legend-extracted": "Trait épais — énoncé dans une source (une citation l’appuie)",
+      "legend-ambiguous": "Plus fin, ambre — incertain : nommé, mais la citation ne le confirme pas",
+      "legend-inferred": "Le plus fin, pâle — inféré par le modèle ; masqué sauf si affiché",
+      "legend-findings": "Plus grand, toujours étiqueté — une page avec un constat ouvert",
+      "communities-title": "Groupes",
+      "community": "{label} et liées ({size})",
+      "origin": {
+        "EXTRACTED": "Énoncé dans une source",
+        "INFERRED": "Inféré par le modèle",
+        "AMBIGUOUS": "Incertain"
       }
     }
   }

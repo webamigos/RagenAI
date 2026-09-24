@@ -10,7 +10,8 @@ import {
  * Ragen Brain's read-only panel (spec D1), as the seeded owner with the
  * `brain` flag on for the test org. `smoke-` so it gates the PR that breaks
  * it. What it pins: the sidebar link, the three pages rendering real rows,
- * and a citation showing that its document moved on since it was read.
+ * a citation showing that its document moved on since it was read, and the
+ * graph drawing (D4).
  */
 test.describe('Ragen Brain panel (smoke)', () => {
   test('the sidebar links to Brain', async ({ page }) => {
@@ -47,6 +48,21 @@ test.describe('Ragen Brain panel (smoke)', () => {
     await expect(
       page.getByText('Strona nie jest powiązana z żadną inną'),
     ).toBeVisible();
+  });
+
+  test('draws the graph with an honest count', async ({ page }) => {
+    await page.goto('/pl/brain/graph');
+    await expect(page.getByTestId('brain-graph-count')).toContainText(
+      /Wyświetlono \d+ z \d+ stron/,
+      { timeout: 15000 },
+    );
+    await expect(page.getByTestId('brain-graph')).toBeVisible();
+    // Sigma mounts its canvases into the container once WebGL is up.
+    await expect(
+      page.getByTestId('brain-graph').locator('canvas').first(),
+    ).toBeAttached({
+      timeout: 15000,
+    });
   });
 
   test('lists open findings, including a failed extraction', async ({

@@ -2388,7 +2388,8 @@
     "title": "Ragen Brain",
     "tabs": {
       "pages": "Wissensseiten",
-      "findings": "Befunde"
+      "findings": "Befunde",
+      "graph": "Graph"
     },
     "filters": {
       "status": "Status",
@@ -2500,7 +2501,8 @@
         "title": "Beziehungen",
         "empty": "Keine Beziehungen",
         "out": "{kind} →",
-        "in": "← {kind}"
+        "in": "← {kind}",
+        "show-in-graph": "Im Graph zeigen"
       },
       "history": "Verlauf",
       "merge": "Zusammenführen",
@@ -2597,6 +2599,39 @@
         "not-found": "Dieser Befund ist geschlossen oder existiert nicht mehr.",
         "no-documents": "Keines der gewählten Dokumente kann hier extrahiert werden.",
         "failed-to-start": "Die Extraktion konnte nicht gestartet werden — versuchen Sie es gleich noch einmal."
+      }
+    },
+    "graph": {
+      "title": "Wissensgraph — Ragen Brain",
+      "empty-title": "Noch keine Seiten zum Zeichnen",
+      "empty-description": "Der Graph erscheint, sobald Brain Seiten aus Ihren Dokumenten extrahiert hat.",
+      "focus": "Umgebung von „{title}“",
+      "back-to-overview": "Zurück zur Übersicht",
+      "hops": "Reichweite",
+      "hops-1": "1 Schritt",
+      "hops-2": "2 Schritte",
+      "budget": "Seiten",
+      "inferred": "Abgeleitete Beziehungen",
+      "inferred-hidden": "Ausgeblendet",
+      "inferred-shown": "Eingeblendet ({count})",
+      "shown": "{nodes} von {totalNodes} Seiten und {edges} von {totalEdges} Beziehungen angezeigt",
+      "canvas-label": "Graph mit {nodes} Seiten und {edges} Beziehungen",
+      "failed": "Der Graph konnte in diesem Browser nicht gezeichnet werden — die Tabs Seiten und Befunde zeigen dieselben Daten.",
+      "open-findings": "Offene Befunde: {count}",
+      "open-page": "Seite öffnen",
+      "show-neighbourhood": "Umgebung zeigen",
+      "select-hint": "Klicken Sie auf eine Seite, um ihre Beziehungen zu sehen.",
+      "legend-title": "Legende",
+      "legend-extracted": "Dicke Linie — in einer Quelle belegt (ein Zitat stützt sie)",
+      "legend-ambiguous": "Dünner, bernsteinfarben — unsicher: genannt, aber das Zitat bestätigt es nicht",
+      "legend-inferred": "Am dünnsten, blass — vom Modell abgeleitet; ausgeblendet, sofern nicht eingeblendet",
+      "legend-findings": "Größer, immer beschriftet — eine Seite mit offenem Befund",
+      "communities-title": "Gruppen",
+      "community": "{label} und verwandte ({size})",
+      "origin": {
+        "EXTRACTED": "In einer Quelle belegt",
+        "INFERRED": "Vom Modell abgeleitet",
+        "AMBIGUOUS": "Unsicher"
       }
     }
   }

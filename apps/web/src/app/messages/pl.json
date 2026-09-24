@@ -2388,7 +2388,8 @@
     "title": "Ragen Brain",
     "tabs": {
       "pages": "Strony wiedzy",
-      "findings": "Wykrycia"
+      "findings": "Wykrycia",
+      "graph": "Graf"
     },
     "filters": {
       "status": "Status",
@@ -2500,7 +2501,8 @@
         "title": "Powiązania",
         "empty": "Brak powiązań",
         "out": "{kind} →",
-        "in": "← {kind}"
+        "in": "← {kind}",
+        "show-in-graph": "Pokaż w grafie"
       },
       "history": "Historia",
       "merge": "Scalanie",
@@ -2597,6 +2599,39 @@
         "not-found": "To zgłoszenie jest zamknięte albo już nie istnieje.",
         "no-documents": "Żadnego z wybranych dokumentów nie da się tu wyodrębnić.",
         "failed-to-start": "Nie udało się uruchomić wyodrębniania — spróbuj za chwilę."
+      }
+    },
+    "graph": {
+      "title": "Graf wiedzy — Ragen Brain",
+      "empty-title": "Na razie nie ma czego narysować",
+      "empty-description": "Graf pojawi się, gdy Brain wyodrębni strony z Twoich dokumentów.",
+      "focus": "Sąsiedztwo „{title}”",
+      "back-to-overview": "Wróć do całości",
+      "hops": "Zasięg",
+      "hops-1": "1 krok",
+      "hops-2": "2 kroki",
+      "budget": "Stron",
+      "inferred": "Powiązania wnioskowane",
+      "inferred-hidden": "Ukryte",
+      "inferred-shown": "Widoczne ({count})",
+      "shown": "Wyświetlono {nodes} z {totalNodes} stron i {edges} z {totalEdges} powiązań",
+      "canvas-label": "Graf {nodes} stron i {edges} powiązań",
+      "failed": "Nie udało się narysować grafu w tej przeglądarce — te same dane są w zakładkach stron i wykryć.",
+      "open-findings": "Otwarte wykrycia: {count}",
+      "open-page": "Otwórz stronę",
+      "show-neighbourhood": "Pokaż sąsiedztwo",
+      "select-hint": "Kliknij stronę, żeby zobaczyć jej powiązania.",
+      "legend-title": "Legenda",
+      "legend-extracted": "Gruba linia — potwierdzone w źródle (cytat to wspiera)",
+      "legend-ambiguous": "Cieńsza, bursztynowa — niepewne: wskazane, ale cytat tego nie potwierdza",
+      "legend-inferred": "Najcieńsza, blada — wywnioskowane przez model; ukryte, chyba że je pokażesz",
+      "legend-findings": "Większa, zawsze podpisana — strona z otwartym wykryciem",
+      "communities-title": "Grupy",
+      "community": "{label} i powiązane ({size})",
+      "origin": {
+        "EXTRACTED": "Potwierdzone w źródle",
+        "INFERRED": "Wywnioskowane przez model",
+        "AMBIGUOUS": "Niepewne"
       }
     }
   }

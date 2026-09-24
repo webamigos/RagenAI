@@ -2388,7 +2388,8 @@
     "title": "Ragen Brain",
     "tabs": {
       "pages": "Pagine di conoscenza",
-      "findings": "Rilevazioni"
+      "findings": "Rilevazioni",
+      "graph": "Grafo"
     },
     "filters": {
       "status": "Stato",
@@ -2500,7 +2501,8 @@
         "title": "Relazioni",
         "empty": "Nessuna relazione",
         "out": "{kind} →",
-        "in": "← {kind}"
+        "in": "← {kind}",
+        "show-in-graph": "Mostra nel grafo"
       },
       "history": "Cronologia",
       "merge": "Unisci",
@@ -2597,6 +2599,39 @@
         "not-found": "Questa segnalazione è chiusa o non esiste più.",
         "no-documents": "Nessuno dei documenti scelti può essere estratto qui.",
         "failed-to-start": "Impossibile avviare l’estrazione: riprova tra un momento."
+      }
+    },
+    "graph": {
+      "title": "Grafo della conoscenza — Ragen Brain",
+      "empty-title": "Ancora nessuna pagina da disegnare",
+      "empty-description": "Il grafo compare quando Brain ha estratto pagine dai tuoi documenti.",
+      "focus": "Vicinato di «{title}»",
+      "back-to-overview": "Torna alla panoramica",
+      "hops": "Portata",
+      "hops-1": "1 passo",
+      "hops-2": "2 passi",
+      "budget": "Pagine",
+      "inferred": "Relazioni dedotte",
+      "inferred-hidden": "Nascoste",
+      "inferred-shown": "Visibili ({count})",
+      "shown": "Visualizzate {nodes} di {totalNodes} pagine e {edges} di {totalEdges} relazioni",
+      "canvas-label": "Grafo di {nodes} pagine e {edges} relazioni",
+      "failed": "Impossibile disegnare il grafo in questo browser: le schede pagine e segnalazioni mostrano gli stessi dati.",
+      "open-findings": "Segnalazioni aperte: {count}",
+      "open-page": "Apri pagina",
+      "show-neighbourhood": "Mostra vicinato",
+      "select-hint": "Fai clic su una pagina per vederne le relazioni.",
+      "legend-title": "Legenda",
+      "legend-extracted": "Linea spessa — dichiarata in una fonte (una citazione la supporta)",
+      "legend-ambiguous": "Più sottile, ambra — incerta: nominata, ma la citazione non la conferma",
+      "legend-inferred": "La più sottile, tenue — dedotta dal modello; nascosta se non mostrata",
+      "legend-findings": "Più grande, sempre etichettata — una pagina con una segnalazione aperta",
+      "communities-title": "Gruppi",
+      "community": "{label} e collegate ({size})",
+      "origin": {
+        "EXTRACTED": "Dichiarata in una fonte",
+        "INFERRED": "Dedotta dal modello",
+        "AMBIGUOUS": "Incerta"
       }
     }
   }

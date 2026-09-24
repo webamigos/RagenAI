@@ -2388,7 +2388,8 @@
     "title": "Ragen Brain",
     "tabs": {
       "pages": "Vidensider",
-      "findings": "Fund"
+      "findings": "Fund",
+      "graph": "Graf"
     },
     "filters": {
       "status": "Status",
@@ -2500,7 +2501,8 @@
         "title": "Relationer",
         "empty": "Ingen relationer",
         "out": "{kind} →",
-        "in": "← {kind}"
+        "in": "← {kind}",
+        "show-in-graph": "Vis i grafen"
       },
       "history": "Historik",
       "merge": "Fletning",
@@ -2597,6 +2599,39 @@
         "not-found": "Dette fund er lukket eller findes ikke længere.",
         "no-documents": "Ingen af de valgte dokumenter kan udtrækkes her.",
         "failed-to-start": "Udtrækningen kunne ikke startes — prøv igen om lidt."
+      }
+    },
+    "graph": {
+      "title": "Vidensgraf — Ragen Brain",
+      "empty-title": "Ingen sider at tegne endnu",
+      "empty-description": "Grafen vises, når Brain har udtrukket sider fra dine dokumenter.",
+      "focus": "Omegnen af “{title}”",
+      "back-to-overview": "Tilbage til overblikket",
+      "hops": "Rækkevidde",
+      "hops-1": "1 trin",
+      "hops-2": "2 trin",
+      "budget": "Sider",
+      "inferred": "Udledte relationer",
+      "inferred-hidden": "Skjult",
+      "inferred-shown": "Vist ({count})",
+      "shown": "Viser {nodes} af {totalNodes} sider og {edges} af {totalEdges} relationer",
+      "canvas-label": "Graf med {nodes} sider og {edges} relationer",
+      "failed": "Grafen kunne ikke tegnes i denne browser — de samme data findes under fanerne sider og fund.",
+      "open-findings": "Åbne fund: {count}",
+      "open-page": "Åbn siden",
+      "show-neighbourhood": "Vis omegn",
+      "select-hint": "Klik på en side for at se dens relationer.",
+      "legend-title": "Signaturforklaring",
+      "legend-extracted": "Tyk streg — angivet i en kilde (et citat understøtter den)",
+      "legend-ambiguous": "Tyndere, ravfarvet — usikker: nævnt, men citatet bekræfter den ikke",
+      "legend-inferred": "Tyndest, bleg — udledt af modellen; skjult, medmindre den vises",
+      "legend-findings": "Større, altid mærket — en side med et åbent fund",
+      "communities-title": "Grupper",
+      "community": "{label} og relaterede ({size})",
+      "origin": {
+        "EXTRACTED": "Angivet i en kilde",
+        "INFERRED": "Udledt af modellen",
+        "AMBIGUOUS": "Usikker"
       }
     }
   }
