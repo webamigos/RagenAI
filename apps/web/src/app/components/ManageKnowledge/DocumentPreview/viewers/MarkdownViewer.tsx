@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import ReactMarkdown from 'react-markdown';
 
@@ -12,14 +12,38 @@ import ReactMarkdown from 'react-markdown';
 */
 import '@/app/components/Assistant/ChatOutput/chat-response.css';
 
+import { usePassageHighlight } from '../passage/use-passage-highlight';
+import { PassageNotFoundHint } from '../passage/PassageNotFoundHint';
+
 type Props = {
   contentUrl: string;
+  /** The passage a citation quoted, to mark and scroll to. */
+  passage?: string;
 };
 
-export function MarkdownViewer({ contentUrl }: Props) {
+export function MarkdownViewer({ contentUrl, passage }: Props) {
   const t = useTranslations('document-preview');
   const [content, setContent] = useState<string | null>(null);
   const [error, setError] = useState(false);
+  const bodyRef = useRef<HTMLDivElement>(null);
+  // Marked after React has rendered the Markdown, in the rendered text: the
+  // source's `**` and `#` are exactly what the reader does not see.
+  const status = usePassageHighlight(bodyRef, passage, content);
+
+  // Memoised so a re-render — the highlight's own "found" state is one —
+  // leaves the rendered Markdown, and the marks inside it, alone.
+  const body = useMemo(
+    () =>
+      content === null ? null : (
+        <div
+          ref={bodyRef}
+          className="chat-response min-h-0 flex-1 overflow-auto p-6"
+        >
+          <ReactMarkdown>{content}</ReactMarkdown>
+        </div>
+      ),
+    [content],
+  );
 
   useEffect(() => {
     if (!contentUrl) {
@@ -55,8 +79,9 @@ export function MarkdownViewer({ contentUrl }: Props) {
   }
 
   return (
-    <div className="chat-response h-full overflow-auto p-6">
-      <ReactMarkdown>{content}</ReactMarkdown>
+    <div className="flex h-full flex-col">
+      {status === 'not-found' ? <PassageNotFoundHint /> : null}
+      {body}
     </div>
   );
 }

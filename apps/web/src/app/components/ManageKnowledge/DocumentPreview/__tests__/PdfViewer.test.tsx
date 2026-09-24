@@ -1,6 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { NextIntlClientProvider } from 'next-intl';
 import { useEffect } from 'react';
 
@@ -23,9 +23,15 @@ import { useEffect } from 'react';
  * mock is deliberately close to the real API so a react-pdf upgrade that
  * changes the props this component passes shows up here.
  */
-const { pageSpy, documentSpy } = vi.hoisted(() => ({
+const { pageSpy, documentSpy, pageText } = vi.hoisted(() => ({
   pageSpy: vi.fn(),
   documentSpy: vi.fn(),
+  /**
+   * Each page's text items, as pdf.js reports them. Pages not listed have
+   * no text. The mock `Document` also serves these through `getPage`, which
+   * is how the page-less citation search reads them.
+   */
+  pageText: { current: {} as Record<number, string[]> },
 }));
 
 vi.mock('react-pdf', () => ({
@@ -39,7 +45,12 @@ vi.mock('react-pdf', () => ({
   }: {
     children?: React.ReactNode;
     file: string;
-    onLoadSuccess?: (info: { numPages: number }) => void;
+    onLoadSuccess?: (info: {
+      numPages: number;
+      getPage: (n: number) => Promise<{
+        getTextContent: () => Promise<{ items: { str: string }[] }>;
+      }>;
+    }) => void;
     onLoadError?: (error: Error) => void;
     loading?: React.ReactNode;
   }) => {
@@ -52,7 +63,14 @@ vi.mock('react-pdf', () => ({
       if (broken) {
         onLoadError?.(new Error('boom'));
       } else {
-        onLoadSuccess?.({ numPages: 12 });
+        onLoadSuccess?.({
+          numPages: 12,
+          getPage: async (n: number) => ({
+            getTextContent: async () => ({
+              items: (pageText.current[n] ?? []).map((str) => ({ str })),
+            }),
+          }),
+        });
       }
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [file]);
@@ -64,9 +82,58 @@ vi.mock('react-pdf', () => ({
       <div data-testid="pdf-document">{children}</div>
     );
   },
-  Page: (props: { pageNumber: number; scale: number }) => {
+  Page: (props: {
+    pageNumber: number;
+    scale: number;
+    onRenderSuccess?: () => void;
+    onRenderTextLayerSuccess?: () => void;
+    onGetTextSuccess?: (content: { items: { str: string }[] }) => void;
+    customTextRenderer?: (item: { str: string; itemIndex: number }) => string;
+  }) => {
     pageSpy(props);
-    return <div data-testid="pdf-page">page {props.pageNumber}</div>;
+    const items = pageText.current[props.pageNumber] ?? [];
+    const {
+      pageNumber,
+      scale,
+      onRenderSuccess,
+      onRenderTextLayerSuccess,
+      onGetTextSuccess,
+      customTextRenderer,
+    } = props;
+    // The order react-pdf keeps: text content is read once per page, the
+    // canvas renders on every page or zoom change, and the text layer
+    // re-renders when the renderer changes too.
+    useEffect(() => {
+      onGetTextSuccess?.({ items: items.map((str) => ({ str })) });
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [pageNumber]);
+    useEffect(() => {
+      onRenderSuccess?.();
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [pageNumber, scale]);
+    useEffect(() => {
+      onRenderTextLayerSuccess?.();
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [pageNumber, scale, customTextRenderer]);
+    return (
+      <div data-testid="pdf-page">
+        page {pageNumber}
+        <div data-testid="pdf-text-layer">
+          {items.map((str, itemIndex) =>
+            customTextRenderer ? (
+              <span
+                key={itemIndex}
+                dangerouslySetInnerHTML={{
+                  __html: customTextRenderer({ str, itemIndex }),
+                }}
+              />
+            ) : (
+              <span key={itemIndex}>{str}</span>
+            ),
+          )}
+        </div>
+      </div>
+    );
   },
 }));
 
@@ -86,6 +153,7 @@ const messages = {
     'zoom-in': 'Powiększ',
     'zoom-out': 'Pomniejsz',
     'highlight-legend': 'Podświetlono: akapit, z którego pochodzi ten fragment',
+    'passage-not-found': 'Nie udało się odnaleźć dokładnego fragmentu.',
   },
 };
 
@@ -96,8 +164,17 @@ const renderViewer = (props: React.ComponentProps<typeof PdfViewer>) =>
     </NextIntlClientProvider>,
   );
 
+let scrollSpy: ReturnType<typeof vi.fn>;
+
 beforeEach(() => {
   vi.clearAllMocks();
+  pageText.current = {};
+  scrollSpy = vi.fn();
+  Element.prototype.scrollIntoView = scrollSpy as never;
+});
+
+afterEach(() => {
+  delete (Element.prototype as { scrollIntoView?: unknown }).scrollIntoView;
 });
 
 describe('PdfViewer', () => {
@@ -342,5 +419,156 @@ describe('PdfViewer — highlights', () => {
       'aria-hidden',
       'true',
     );
+  });
+});
+
+describe('PdfViewer — jumping to the cited passage', () => {
+  const onPageTwo = { page: 2, x: 0.05, y: 0.25, w: 0.9, h: 0.08 };
+  const PASSAGE =
+    'Klient może zwrócić towar w ciągu 14 dni od dnia doręczenia, bez podawania przyczyny.';
+
+  it('scrolls the first box into view once the page renders', async () => {
+    renderViewer({
+      contentUrl: '/api/files/abc',
+      initialPage: 2,
+      highlights: [onPageTwo],
+    });
+    await screen.findByTestId('pdf-page');
+
+    await waitFor(() => expect(scrollSpy).toHaveBeenCalled());
+    expect(scrollSpy.mock.contexts[0]).toBe(
+      screen.getByTestId('pdf-highlights').firstElementChild,
+    );
+    expect(scrollSpy).toHaveBeenCalledWith(
+      expect.objectContaining({ block: 'center' }),
+    );
+  });
+
+  it('scrolls to it again after a zoom', async () => {
+    const user = userEvent.setup();
+    renderViewer({
+      contentUrl: '/api/files/abc',
+      initialPage: 2,
+      highlights: [onPageTwo],
+    });
+    await screen.findByTestId('pdf-page');
+    await waitFor(() => expect(scrollSpy).toHaveBeenCalled());
+    const before = scrollSpy.mock.calls.length;
+
+    await user.click(screen.getByRole('button', { name: 'Powiększ' }));
+
+    await waitFor(() =>
+      expect(scrollSpy.mock.calls.length).toBeGreaterThan(before),
+    );
+  });
+
+  it('draws the boxes in the highlight colour, not the action colour', async () => {
+    renderViewer({
+      contentUrl: '/api/files/abc',
+      initialPage: 2,
+      highlights: [onPageTwo],
+    });
+    await screen.findByTestId('pdf-page');
+
+    const box = screen.getByTestId('pdf-highlights').firstElementChild!;
+    expect(box.className).toContain('bg-highlight');
+    expect(box.className).not.toContain('bg-primary');
+  });
+
+  it('marks the passage word for word in the text layer, and scrolls to the mark', async () => {
+    pageText.current = {
+      2: [
+        'Regulamin zwrotów ',
+        'Klient może zwrócić towar w ciągu 14 dni ',
+        'od dnia doręczenia, bez podawania przyczyny.',
+        ' Stopka strony',
+      ],
+    };
+    renderViewer({
+      contentUrl: '/api/files/abc',
+      initialPage: 2,
+      highlights: [onPageTwo],
+      passage: PASSAGE,
+    });
+
+    const layer = await screen.findByTestId('pdf-text-layer');
+    await waitFor(() => expect(layer.querySelectorAll('mark')).toHaveLength(2));
+    const marks = Array.from(layer.querySelectorAll('mark'));
+    expect(marks.map((mark) => mark.textContent).join('')).toBe(
+      'Klient może zwrócić towar w ciągu 14 dni od dnia doręczenia, bez podawania przyczyny.',
+    );
+    // The mark, not the box: it is the more precise of the two.
+    await waitFor(() => expect(scrollSpy.mock.contexts.at(-1)).toBe(marks[0]));
+    expect(screen.queryByTestId('passage-not-found')).not.toBeInTheDocument();
+  });
+
+  it('escapes the page text it renders around a mark', async () => {
+    pageText.current = {
+      1: ['<img src=x onerror=alert(1)> ' + PASSAGE],
+    };
+    renderViewer({
+      contentUrl: '/api/files/abc',
+      initialPage: 1,
+      passage: PASSAGE,
+    });
+
+    const layer = await screen.findByTestId('pdf-text-layer');
+    await waitFor(() => expect(layer.querySelector('mark')).not.toBeNull());
+    expect(layer.querySelector('img')).toBeNull();
+    expect(layer.textContent).toContain('<img src=x onerror=alert(1)>');
+  });
+
+  it('keeps the boxes and says nothing when the text layer has no match', async () => {
+    pageText.current = { 2: ['Zupełnie inny tekst na tej stronie dokumentu.'] };
+    renderViewer({
+      contentUrl: '/api/files/abc',
+      initialPage: 2,
+      highlights: [onPageTwo],
+      passage: PASSAGE,
+    });
+    await screen.findByTestId('pdf-page');
+
+    await waitFor(() => expect(scrollSpy).toHaveBeenCalled());
+    expect(screen.getByTestId('pdf-highlights')).toBeInTheDocument();
+    expect(screen.queryByTestId('passage-not-found')).not.toBeInTheDocument();
+  });
+
+  it('says so when neither a box nor the text marks anything', async () => {
+    pageText.current = { 2: ['Zupełnie inny tekst na tej stronie dokumentu.'] };
+    renderViewer({
+      contentUrl: '/api/files/abc',
+      initialPage: 2,
+      passage: PASSAGE,
+    });
+
+    expect(await screen.findByTestId('passage-not-found')).toBeInTheDocument();
+  });
+
+  it('finds the page from the passage when the citation has none', async () => {
+    // A thread reopened from before pages were stored: a snippet, no page.
+    pageText.current = {
+      1: ['Spis treści'],
+      2: ['Wstęp do regulaminu sklepu internetowego.'],
+      3: [PASSAGE],
+    };
+    renderViewer({ contentUrl: '/api/files/abc', passage: PASSAGE });
+
+    expect(await screen.findByText(/Strona 3 z 12/)).toBeInTheDocument();
+    const layer = screen.getByTestId('pdf-text-layer');
+    await waitFor(() => expect(layer.querySelector('mark')).not.toBeNull());
+  });
+
+  it('does not search for a page when the citation already names one', async () => {
+    pageText.current = { 3: [PASSAGE] };
+    renderViewer({
+      contentUrl: '/api/files/abc',
+      initialPage: 5,
+      passage: PASSAGE,
+    });
+
+    await screen.findByTestId('pdf-page');
+    // Give a stray search the chance to land before asserting it did not.
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    expect(screen.getByText(/Strona 5 z 12/)).toBeInTheDocument();
   });
 });

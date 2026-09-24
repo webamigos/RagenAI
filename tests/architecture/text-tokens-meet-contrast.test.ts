@@ -154,6 +154,9 @@ const PAIRS: ReadonlyArray<readonly [string, string]> = [
   // accent that appears as small text and has to be checked as text.
   ['marker', 'card'],
   ['marker', 'muted'],
+  // The cited passage where a source opens. A fill carrying its own text
+  // colour, so the pair is what a reader actually sees.
+  ['highlight-foreground', 'highlight'],
 ];
 
 describe.each([

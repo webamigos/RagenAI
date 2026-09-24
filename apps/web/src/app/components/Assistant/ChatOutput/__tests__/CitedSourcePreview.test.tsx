@@ -85,6 +85,16 @@ describe('CitedSourcePreview', () => {
     );
   });
 
+  it('hands the viewer the quoted passage, so it can mark it', () => {
+    show(source({ snippet: 'Klient może zwrócić towar w ciągu 14 dni.' }));
+
+    expect(viewerSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        passage: 'Klient może zwrócić towar w ciągu 14 dni.',
+      }),
+    );
+  });
+
   it('opens at the beginning when the parser knew no page', () => {
     // Every legacy loader and every unpaginated format. Defaulting to 1 here
     // would be indistinguishable from a real page 1, which is the whole reason

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
@@ -12,6 +12,16 @@ import {
   MagnifyingGlassPlusIcon,
   MagnifyingGlassMinusIcon,
 } from '@heroicons/react/24/outline';
+
+import {
+  findPassagePage,
+  passageRangesInItems,
+  renderMarkedItem,
+  type ItemRanges,
+  type PdfTextSource,
+} from '../passage/pdf-passage';
+import { scrollPassageIntoView } from '../passage/highlight-in-element';
+import { PassageNotFoundHint } from '../passage/PassageNotFoundHint';
 
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   'pdfjs-dist/build/pdf.worker.min.mjs',
@@ -40,13 +50,31 @@ type Props = {
    * exactly as before, which is what every existing caller gets.
    */
   highlights?: SourceRegion[];
+  /**
+   * The passage a citation quoted. Marked word for word in the page's text
+   * layer where it can be found there, which is more precise than a
+   * paragraph box and works for a PDF the parser gave no boxes for. With no
+   * `initialPage`, it is also how the viewer finds the page to open at.
+   */
+  passage?: string;
 };
+
+/**
+ * The passage as found in one page's text layer. `ranges` is `null` when the
+ * page was searched and the passage is not on it.
+ */
+type TextMatch = { page: number; ranges: ItemRanges | null };
 
 /** Keeps a requested page inside a document that may have been re-indexed. */
 const clampPage = (page: number, numPages: number) =>
   numPages > 0 ? Math.min(Math.max(page, 1), numPages) : Math.max(page, 1);
 
-export function PdfViewer({ contentUrl, initialPage, highlights }: Props) {
+export function PdfViewer({
+  contentUrl,
+  initialPage,
+  highlights,
+  passage,
+}: Props) {
   const t = useTranslations('document-preview');
   const [numPages, setNumPages] = useState<number>(0);
   /**
@@ -62,15 +90,94 @@ export function PdfViewer({ contentUrl, initialPage, highlights }: Props) {
   const [scale, setScale] = useState(1.0);
   const [error, setError] = useState(false);
 
+  const [textMatch, setTextMatch] = useState<TextMatch | null>(null);
+  /** The rendered page, which is what a scroll to the passage looks inside. */
+  const pageRef = useRef<HTMLDivElement>(null);
+  /**
+   * Set once the reader turns a page themselves, so a page search still
+   * running for a page-less citation does not yank them back.
+   */
+  const readerMovedRef = useRef(false);
+
   const pageNumber = clampPage(requestedPage, numPages);
 
+  const turnTo = (page: number) => {
+    readerMovedRef.current = true;
+    setRequestedPage(page);
+  };
+
   const onDocumentLoadSuccess = useCallback(
-    ({ numPages: n }: { numPages: number }) => {
-      setNumPages(n);
+    (pdf: { numPages: number } & Partial<PdfTextSource>) => {
+      setNumPages(pdf.numPages);
       setRequestedPage(initialPage ?? 1);
       setScale(1.0);
+      readerMovedRef.current = false;
+      if (initialPage !== undefined || !passage || !pdf.getPage) {
+        return;
+      }
+      // No page on the citation — a thread from before pages were stored, a
+      // document no box was parsed for. The quote finds the page instead.
+      findPassagePage(
+        pdf as PdfTextSource,
+        passage,
+        () => readerMovedRef.current,
+      )
+        .then((found) => {
+          if (found !== null && !readerMovedRef.current) {
+            setRequestedPage(found);
+          }
+        })
+        .catch(() => {
+          // A page that cannot be read is a page not searched; the document
+          // is still open at its first page, which is where it would be.
+        });
     },
-    [initialPage],
+    [initialPage, passage],
+  );
+
+  /**
+   * Brings the cited passage into view: the word-level mark when the text
+   * layer has one, else the first paragraph box.
+   *
+   * Called after the canvas renders and after the text layer does, so it
+   * runs again on every zoom — a zoom re-renders both, and the passage the
+   * reader was looking at should not drift off screen because the page grew.
+   */
+  const scrollToCitation = useCallback(() => {
+    const page = pageRef.current;
+    if (!page) {
+      return;
+    }
+    scrollPassageIntoView(
+      page.querySelector('mark[data-cited-passage]') ??
+        page.querySelector('[data-cited-region]'),
+    );
+  }, []);
+
+  const onGetTextSuccess = useCallback(
+    ({ items }: { items: readonly object[] }) => {
+      if (!passage) {
+        return;
+      }
+      setTextMatch({
+        page: pageNumber,
+        ranges: passageRangesInItems(items, passage),
+      });
+    },
+    [passage, pageNumber],
+  );
+
+  const currentRanges =
+    passage && textMatch?.page === pageNumber ? textMatch.ranges : null;
+
+  /**
+   * Stable while the ranges are, because react-pdf re-renders the whole
+   * text layer whenever this function changes identity.
+   */
+  const customTextRenderer = useCallback(
+    ({ str, itemIndex }: { str: string; itemIndex: number }) =>
+      renderMarkedItem(str, currentRanges?.get(itemIndex)),
+    [currentRanges],
   );
 
   // A different source was activated while the viewer stayed open. Following
@@ -90,6 +197,14 @@ export function PdfViewer({ contentUrl, initialPage, highlights }: Props) {
     (region) => region.page === pageNumber,
   );
 
+  // Only once this page's text has been searched, and only when neither the
+  // text nor a box marks anything: a paragraph box is a found passage too.
+  const passageMissing =
+    Boolean(passage) &&
+    textMatch?.page === pageNumber &&
+    textMatch.ranges === null &&
+    pageHighlights.length === 0;
+
   if (error) {
     return (
       <div className="flex h-full items-center justify-center p-8 text-sm text-destructive">
@@ -103,7 +218,7 @@ export function PdfViewer({ contentUrl, initialPage, highlights }: Props) {
       <div className="flex shrink-0 items-center justify-between border-b border-border bg-muted px-4 py-2">
         <div className="flex items-center gap-2">
           <button
-            onClick={() => setRequestedPage(Math.max(1, pageNumber - 1))}
+            onClick={() => turnTo(Math.max(1, pageNumber - 1))}
             disabled={pageNumber <= 1}
             aria-label={t('prev-page')}
             className="rounded p-1 hover:bg-paper-200 disabled:opacity-40 dark:hover:bg-paper-700"
@@ -114,7 +229,7 @@ export function PdfViewer({ contentUrl, initialPage, highlights }: Props) {
             {t('page')} {pageNumber} {t('of')} {numPages}
           </span>
           <button
-            onClick={() => setRequestedPage(Math.min(numPages, pageNumber + 1))}
+            onClick={() => turnTo(Math.min(numPages, pageNumber + 1))}
             disabled={pageNumber >= numPages}
             aria-label={t('next-page')}
             className="rounded p-1 hover:bg-paper-200 disabled:opacity-40 dark:hover:bg-paper-700"
@@ -151,6 +266,8 @@ export function PdfViewer({ contentUrl, initialPage, highlights }: Props) {
         </div>
       </div>
 
+      {passageMissing ? <PassageNotFoundHint /> : null}
+
       <div className="flex-1 overflow-auto bg-muted dark:bg-card">
         <div className="flex justify-center p-4">
           <Document
@@ -171,8 +288,17 @@ export function PdfViewer({ contentUrl, initialPage, highlights }: Props) {
               without the component knowing the page size or the parser's
               coordinate origin.
             */}
-            <div className="relative inline-block shadow-lg">
-              <Page pageNumber={pageNumber} scale={scale} />
+            <div ref={pageRef} className="relative inline-block shadow-lg">
+              <Page
+                pageNumber={pageNumber}
+                scale={scale}
+                onRenderSuccess={scrollToCitation}
+                onRenderTextLayerSuccess={scrollToCitation}
+                onGetTextSuccess={passage ? onGetTextSuccess : undefined}
+                customTextRenderer={
+                  currentRanges ? customTextRenderer : undefined
+                }
+              />
               {pageHighlights.length > 0 ? (
                 <div
                   // Decorative: the legend above carries the meaning, and a
@@ -185,7 +311,10 @@ export function PdfViewer({ contentUrl, initialPage, highlights }: Props) {
                   {pageHighlights.map((region, index) => (
                     <div
                       key={`${region.page}-${region.x}-${region.y}-${index}`}
-                      className="absolute rounded-xs bg-primary/20 ring-1 ring-primary/50"
+                      data-cited-region=""
+                      // Multiplied, like a highlighter on paper: the page
+                      // under it stays legible instead of being tinted over.
+                      className="absolute rounded-xs bg-highlight/50 ring-1 ring-highlight mix-blend-multiply"
                       style={{
                         left: `${region.x * 100}%`,
                         top: `${region.y * 100}%`,

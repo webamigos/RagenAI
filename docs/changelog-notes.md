@@ -79,6 +79,14 @@ archive is the blog.
 
 ### Thread: sources you can read
 
+- `[major]` **Clicking a source takes you to the passage.** The document
+  opens at the cited place with the passage marked in yellow — word for word
+  in a PDF (and at the right page even for older answers that never stored
+  one), and in Word, Markdown, text, CSV and spreadsheet files too, where it
+  used to open at the top. A spreadsheet opens on the sheet the rows came
+  from. When the exact passage can't be found — the file was replaced since —
+  the document still opens, with a short note saying so. A cited web page now
+  shows its passage and a link to the page instead of "Preview unavailable".
 - `[brief]` **A source's quote reads as text.** The passage under each source
   used to show the parser's formatting: "### How long…" for a heading,
   "| Refund | 14 days |" for a table row. It now shows the words, with table

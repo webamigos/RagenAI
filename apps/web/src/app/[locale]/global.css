@@ -275,6 +275,8 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
   --color-marker: var(--marker);
+  --color-highlight: var(--highlight);
+  --color-highlight-foreground: var(--highlight-foreground);
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
@@ -325,6 +327,16 @@
      marker. 2px of it per screen, roughly. */
   --marker: var(--color-crimson-600);
 
+  /* The cited passage, marked where a source opens: a reader's highlighter,
+     not an accent. Yellow because that is what a marked passage looks like
+     on paper, and because every colour the panel already uses means
+     something else — navy is an action, crimson is rationed, green and amber
+     are document state. It is a fill with its own text colour, never a text
+     colour on its own. `text-tokens-meet-contrast.test.ts` measures the
+     pair in both themes. */
+  --highlight: oklch(0.92 0.13 98);
+  --highlight-foreground: var(--color-paper-950);
+
   --sidebar: var(--color-paper-50);
   --sidebar-foreground: var(--color-paper-950);
   --sidebar-primary: var(--color-ink);
@@ -366,6 +378,10 @@
   --input: oklch(1 0 0 / 18%);
   --ring: var(--color-brand-400);
   --marker: var(--color-crimson-400);
+  /* Lower and a touch warmer than the light one, so a marked line does not
+     glare off a dark card; the text on it stays dark either way. */
+  --highlight: oklch(0.84 0.14 92);
+  --highlight-foreground: var(--color-paper-950);
 
   --sidebar: oklch(0.175 0.02 273);
   --sidebar-foreground: var(--color-paper-50);
@@ -423,4 +439,15 @@
   .panel-content-shell:has([data-panel-fullwidth]) > .panel-content-wrapper {
     min-height: 0;
   }
+}
+
+/* A cited passage marked in a PDF's text layer (`PDF_PASSAGE_MARK_CLASS`).
+   pdf.js gives the text layer its own stacking context (`z-index`), so a
+   `mix-blend-mode` on the mark alone blends with the layer's transparent
+   backdrop, not with the canvas — the yellow then sits *over* the glyphs and
+   washes them out. Multiplying the whole layer is what lets the ink show
+   through, the way a highlighter works on paper. The layer's own text is
+   transparent, so nothing else in it changes. */
+.react-pdf__Page__textContent:has(mark[data-cited-passage]) {
+  mix-blend-mode: multiply;
 }
