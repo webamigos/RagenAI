@@ -1,4 +1,5 @@
 export * from './aws/index.js';
+export * from './brain/index.js';
 export * from './config/index.js';
 export * from './db/index.js';
 export * from './documents/index.js';

@@ -87,14 +87,20 @@ half — a three-line wrapper per handler plus `temporal-context.ts`, where
 concerns in the runtime: anything that reaches for `@temporalio/*` or `bullmq`
 from `src/handlers/` has undone the seam both runtimes stand on.
 
-Eight pipelines. The two ingest paths:
+Nine pipelines. The two ingest paths:
 
 - **`runFileEmbeddings`** (`src/handlers/parse-and-embed.ts`) - Main pipeline: download file from S3 → detect type → parse document → split into chunks → generate summary → prepend synthetic summary chunk → hybrid-embed (dense + sparse) → store in Qdrant → merge `UserFile.metadata.summary`
 - **`scrapeWebsite`** (`src/handlers/scrape-website.ts`) - Scrape website via FireCrawl → create document → generate embeddings → store in Qdrant
 
-and six more in the same shape: `generateDocument`, `optimizeDocument`,
-`scoreDocument`, `reindexDocumentVersion`, and the two scheduled ones,
-`cleanupDemoThreads` and `pruneAnalyticsRetrievals`.
+and seven more in the same shape: `generateDocument`, `optimizeDocument`,
+`scoreDocument`, `reindexDocumentVersion`, the two scheduled ones,
+`cleanupDemoThreads` and `pruneAnalyticsRetrievals`, and Ragen Brain's
+`brainExtract` (`src/handlers/brain-extract.ts`) — candidate knowledge pages
+from documents' active versions, behind the `brain` flag, which the job
+checks when it runs. Its rules are in `packages/brain-core`; the handler
+enforces the run's document ceiling and the activity its tokens.
+`BRAIN_EXTRACT_MODEL` (defaults to `SUMMARY_MODEL`),
+`BRAIN_EXTRACT_MAX_DOCUMENTS` and `BRAIN_EXTRACT_MAX_TOKENS` configure it.
 
 **runFileEmbeddings flow:**
 

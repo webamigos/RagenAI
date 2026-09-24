@@ -74,6 +74,7 @@ export const JOB_NAMES = [
   'scoreDocument',
   'cleanupDemoThreads',
   'pruneAnalyticsRetrievals',
+  'brainExtract',
 ] as const;
 
 export type JobName = (typeof JOB_NAMES)[number];
@@ -200,6 +201,35 @@ export interface PruneAnalyticsRetrievalsResult {
 }
 
 /**
+ * Ragen Brain's extraction run: candidate pages from one or more documents
+ * (docs/specs/2026-09-18-ragen-brain-knowledge-curation.md, B3).
+ *
+ * Identifiers only, for the reason `ReindexDocumentVersionPayload` gives: the
+ * handler reads each document's active version when it runs, so the payload
+ * never holds document text in Redis. One file is the retry of an
+ * `EXTRACTION_FAILED` finding (D3); many is a run over a selection, and the
+ * run's budget applies to the whole of it.
+ */
+export interface BrainExtractPayload {
+  orgId: string;
+  fileIds: string[];
+  /** Who started the run, for the AI-usage row. Null for a system start. */
+  userId?: string | null;
+}
+
+export interface BrainExtractResult {
+  /** `disabled` when the organization's `brain` flag is off at run time. */
+  skipped: 'disabled' | null;
+  extracted: number;
+  failed: number;
+  /** Documents never attempted because the run's budget ran out. */
+  notAttempted: number;
+  pagesCreated: number;
+  unverifiedClaims: number;
+  tokens: number;
+}
+
+/**
  * What each job is handed.
  *
  * The two scheduled jobs take nothing: they are started by a schedule rather
@@ -214,6 +244,7 @@ export interface JobPayloads {
   scoreDocument: ScoreDocumentPayload;
   cleanupDemoThreads: void;
   pruneAnalyticsRetrievals: void;
+  brainExtract: BrainExtractPayload;
 }
 
 /**
@@ -232,4 +263,5 @@ export interface JobResults {
   scoreDocument: void;
   cleanupDemoThreads: CleanupDemoThreadsResult;
   pruneAnalyticsRetrievals: PruneAnalyticsRetrievalsResult;
+  brainExtract: BrainExtractResult;
 }

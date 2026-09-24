@@ -11,6 +11,7 @@ import {
 } from '@ragenai/jobs-bullmq';
 
 import { createMockActivities } from '../../src/__tests__/fixtures/mock-activities.js';
+import { brainExtract } from '../../src/handlers/brain-extract.js';
 import { cleanupDemoThreads } from '../../src/handlers/cleanup-demo-threads.js';
 import { generateDocument } from '../../src/handlers/generate-document.js';
 import { optimizeDocument } from '../../src/handlers/optimize-document.js';
@@ -94,6 +95,7 @@ export async function startBullMqHarness(
     scoreDocument,
     cleanupDemoThreads,
     pruneAnalyticsRetrievals,
+    brainExtract,
     ...options.handlerOverrides,
   };
 

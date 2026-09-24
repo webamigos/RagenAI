@@ -17,6 +17,8 @@ export {
   type ScoreDocumentPayload,
   type CleanupDemoThreadsResult,
   type PruneAnalyticsRetrievalsResult,
+  type BrainExtractPayload,
+  type BrainExtractResult,
 } from './contract';
 
 export {

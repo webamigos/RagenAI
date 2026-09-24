@@ -13,6 +13,7 @@ import * as activities from './activities/index.js';
 import { db } from './services/db/index.js';
 import { logger } from './services/logger.js';
 
+import { brainExtract } from './handlers/brain-extract.js';
 import { cleanupDemoThreads } from './handlers/cleanup-demo-threads.js';
 import { generateDocument } from './handlers/generate-document.js';
 import { optimizeDocument } from './handlers/optimize-document.js';
@@ -46,6 +47,7 @@ const handlers: JobHandlers = {
   scoreDocument,
   cleanupDemoThreads,
   pruneAnalyticsRetrievals,
+  brainExtract,
 };
 
 /**

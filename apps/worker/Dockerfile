@@ -30,6 +30,8 @@ COPY packages/platform-contracts/package.json packages/platform-contracts/
 COPY packages/jobs/package.json packages/jobs/
 COPY packages/jobs-bullmq/package.json packages/jobs-bullmq/
 COPY packages/llm-gateway/package.json packages/llm-gateway/
+COPY packages/brain-contracts/package.json packages/brain-contracts/
+COPY packages/brain-core/package.json packages/brain-core/
 
 # --ignore-scripts stays: it stops every other package's install script from
 # running, including the root's prisma-generate postinstall, which has no
@@ -55,6 +57,8 @@ RUN npm ci --workspace=@ragenai/worker \
     --workspace=@ragenai/jobs \
     --workspace=@ragenai/jobs-bullmq \
     --workspace=@ragenai/llm-gateway \
+    --workspace=@ragenai/brain-contracts \
+    --workspace=@ragenai/brain-core \
     --ignore-scripts
 RUN mkdir -p /app/apps/worker/node_modules
 
@@ -94,6 +98,8 @@ RUN npm ci --workspace=@ragenai/worker \
     --workspace=@ragenai/jobs \
     --workspace=@ragenai/jobs-bullmq \
     --workspace=@ragenai/llm-gateway \
+    --workspace=@ragenai/brain-contracts \
+    --workspace=@ragenai/brain-core \
     --omit=dev --ignore-scripts
 # Guarantee the nested workspace node_modules exists so the runner's COPY of it
 # never fails on a tree where npm happened to hoist everything.
@@ -141,7 +147,9 @@ RUN npm run build --workspace=@ragenai/env \
     && npm run build --workspace=@ragenai/rag-core \
     && npm run build --workspace=@ragenai/observability \
     && npm run build --workspace=@ragenai/storage \
-    && npm run build --workspace=@ragenai/llm-gateway
+    && npm run build --workspace=@ragenai/llm-gateway \
+    && npm run build --workspace=@ragenai/brain-contracts \
+    && npm run build --workspace=@ragenai/brain-core
 # Generated from the monorepo's single shared schema via the `workerClient`
 # generator block (ADR-40). `npm ci --ignore-scripts` above skipped the root's
 # prisma-generate postinstall, so this is explicit — the same reason
