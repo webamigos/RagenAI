@@ -68,6 +68,28 @@ archive is the blog.
 
 ## Unreleased
 
+### Thread: the panel speaks your language
+
+- `[brief]` **Fewer English words on Polish pages, and the reverse.** Several
+  labels were hard-coded in one language:
+  - the assistant selector in a chat (it said "Asystent:" on English pages);
+  - the knowledge base's pagination and share dialog;
+  - Brain's verification interval, which printed "P6M" and now says
+    "6 months" / "6 miesięcy";
+  - an extraction failure, which showed the worker's raw English error. It now
+    reads as a sentence in your language, with the technical detail folded away.
+
+  Also: the sidebar calls an organization's owner "Owner" rather than
+  "Org admin". ([#TBD])
+- `[brief]` **The knowledge base lists each document once.** A document imported
+  into an assistant appeared twice, once for the original and once for the
+  assistant's copy, and was counted twice in every total. Inside a folder, the
+  line under the title now counts that folder rather than the whole
+  organization. Web pages get a "URL" tag instead of a scrap of their address.
+- `[brief]` **Tidier on small screens and wide tables.** On a phone, the chat
+  header no longer pushes the assistant selector off the edge. Brain's tables
+  fit their page instead of hiding the last column.
+
 ### Thread: self-hosting without a cloud account
 
 - `[brief]` **Object storage you run yourself.** `create-ragen-app` now offers

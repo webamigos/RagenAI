@@ -76,22 +76,7 @@ export async function getFileScopeCountsQuery(
         return [viewMode, NONE] as const;
       }
 
-      // One aggregate rather than a count and a sum: both answer the same
-      // `where`, and issuing them separately is a second pass over the same
-      // access-scoped join for a number rendered on the same line.
-      const totals = await db.userFile.aggregate({
-        where,
-        _count: { _all: true },
-        _sum: { pageCount: true },
-      });
-
-      return [
-        viewMode,
-        {
-          files: totals._count._all,
-          pages: totals._sum.pageCount ?? 0,
-        },
-      ] as const;
+      return [viewMode, await aggregateTotals(where)] as const;
     }),
   );
 
@@ -99,4 +84,53 @@ export async function getFileScopeCountsQuery(
     (acc, [viewMode, totals]) => ({ ...acc, [viewMode]: totals }),
     EMPTY,
   );
+}
+
+/**
+ * What one folder holds, as the current scope sees it — the line under the
+ * title while a folder is open.
+ *
+ * The scope counts above deliberately ignore the folder, because they
+ * describe the scope you would switch *to*. The title line describes where you
+ * stand, so inside "Płace" it has to count Płace: it used to reuse the scope
+ * total and said "26 documents" over a folder holding four. Filters are still
+ * ignored, for the reason the table's own "1-5 of N" already covers them.
+ */
+export async function getFolderTotalsQuery(
+  organizationId: string,
+  userTeamIds: string[] = [],
+  options: {
+    folderId: string;
+    viewMode?: FileViewMode;
+    userId?: string;
+    scope?: OrgVisibilityScope;
+  },
+): Promise<FileScopeTotals> {
+  const { folderId, viewMode = 'all', userId, scope = 'member' } = options;
+  const where = buildUserFilesWhere({
+    organizationId,
+    userId,
+    scope,
+    teamIds: userTeamIds,
+    viewMode,
+    folderId,
+  });
+  return where === null ? NONE : aggregateTotals(where);
+}
+
+// One aggregate rather than a count and a sum: both answer the same `where`,
+// and issuing them separately is a second pass over the same access-scoped
+// join for a number rendered on the same line.
+async function aggregateTotals(
+  where: NonNullable<ReturnType<typeof buildUserFilesWhere>>,
+): Promise<FileScopeTotals> {
+  const totals = await db.userFile.aggregate({
+    where,
+    _count: { _all: true },
+    _sum: { pageCount: true },
+  });
+  return {
+    files: totals._count._all,
+    pages: totals._sum.pageCount ?? 0,
+  };
 }

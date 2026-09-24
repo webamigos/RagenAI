@@ -2,6 +2,9 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 const mockGetUserFilesQuery = vi.hoisted(() => vi.fn());
 const mockGetFileScopeCountsQuery = vi.hoisted(() => vi.fn());
+const mockGetFolderTotalsQuery = vi.hoisted(() =>
+  vi.fn(async () => ({ files: 0, pages: 0 })),
+);
 
 vi.mock('@/features/documents/services/queries/get-user-files-query', () => ({
   getUserFilesQuery: (...args: unknown[]) => mockGetUserFilesQuery(...args),
@@ -12,6 +15,8 @@ vi.mock(
   () => ({
     getFileScopeCountsQuery: (...args: unknown[]) =>
       mockGetFileScopeCountsQuery(...args),
+    getFolderTotalsQuery: (...args: unknown[]) =>
+      mockGetFolderTotalsQuery(...(args as [])),
   }),
 );
 
@@ -106,5 +111,25 @@ describe('the knowledge base list, and what a folder narrows', () => {
       Record<string, unknown>,
     ];
     expect(options).not.toHaveProperty('folderId');
+  });
+
+  // The title line is the other half: it describes where you stand, so it
+  // does take the folder — through its own query, leaving the rail's alone.
+  it('counts the open folder for the title line', async () => {
+    await render({ folderId: 'folder-7' });
+
+    expect(mockGetFolderTotalsQuery).toHaveBeenCalledTimes(1);
+    const [, , options] = mockGetFolderTotalsQuery.mock.calls[0] as unknown as [
+      string,
+      string[],
+      Record<string, unknown>,
+    ];
+    expect(options).toMatchObject({ folderId: 'folder-7' });
+  });
+
+  it('asks for no folder totals at a scope root', async () => {
+    await render({});
+
+    expect(mockGetFolderTotalsQuery).not.toHaveBeenCalled();
   });
 });

@@ -1,6 +1,7 @@
 'use client';
 
 import { useSelector } from 'react-redux';
+import { useTranslations } from 'next-intl';
 import { type RootState } from '@/store';
 import { FolderIcon } from '@heroicons/react/20/solid';
 import { ProjectContextManager } from '../ProjectContextManager';
@@ -22,6 +23,7 @@ export const ProjectContextIndicator = ({
   availableProjects = [],
 }: ProjectContextIndicatorProps) => {
   const { threadContext } = useSelector((state: RootState) => state.assistant);
+  const t = useTranslations('project-context-manager');
 
   // Show organization fallback indicator if no mentioned project but threadContext exists
   const showOrgFallback = threadContext && !threadContext.mentionedProject;
@@ -51,14 +53,14 @@ export const ProjectContextIndicator = ({
       <div className="flex items-center gap-2 px-3 py-2 bg-accent dark:bg-primary/20 border border-primary/40 rounded-lg mb-4">
         <FolderIcon className="h-4 w-4 text-primary flex-shrink-0" />
         <span className="text-sm text-primary font-medium">
-          Kontekst projektu:
+          {t('indicator-assistant-context')}
         </span>
         <span className="text-sm text-primary truncate">
           {threadContext.mentionedProject.title}
         </span>
         <div className="flex-1" />
         <span className="text-xs text-primary bg-accent dark:bg-primary/15 px-2 py-1 rounded">
-          Baza wiedzy i instrukcje
+          {t('indicator-assistant-scope')}
         </span>
       </div>
     );
@@ -70,12 +72,14 @@ export const ProjectContextIndicator = ({
       <div className="flex items-center gap-2 px-3 py-2 bg-muted dark:bg-card/20 border border-border rounded-lg mb-4">
         <FolderIcon className="h-4 w-4 text-muted-foreground flex-shrink-0" />
         <span className="text-sm text-foreground font-medium">
-          Kontekst organizacji:
+          {t('indicator-organization-context')}
         </span>
-        <span className="text-sm text-foreground">Instrukcje organizacji</span>
+        <span className="text-sm text-foreground">
+          {t('organization-instructions')}
+        </span>
         <div className="flex-1" />
         <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
-          Domyślne instrukcje
+          {t('indicator-organization-defaults')}
         </span>
       </div>
     );

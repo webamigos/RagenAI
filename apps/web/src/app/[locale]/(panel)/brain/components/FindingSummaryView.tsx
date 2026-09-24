@@ -68,14 +68,23 @@ export async function FindingSummaryView({
       return <p className="text-sm">{t('gap')}</p>;
     case 'extraction_failed':
       return (
-        <p className="text-sm">
-          {t('extraction-failed')}
+        <div className="text-sm">
+          <p>{t('extraction-failed')}</p>
+          {/*
+            The reason is the worker's own text, in English whatever the
+            reader's language, and written for whoever runs the worker. It
+            used to follow the sentence in brackets; it is kept, because it is
+            what a retry decision or a support ticket needs, but folded away.
+          */}
           {summary.reason && (
-            <span className="ml-1 text-xs text-muted-foreground">
-              ({summary.reason})
-            </span>
+            <details className="mt-1 text-xs text-muted-foreground">
+              <summary className="cursor-pointer select-none">
+                {t('technical-details')}
+              </summary>
+              <p className="mt-1 break-words font-mono">{summary.reason}</p>
+            </details>
           )}
-        </p>
+        </div>
       );
     default:
       return <p className="text-sm text-muted-foreground">{t('unknown')}</p>;

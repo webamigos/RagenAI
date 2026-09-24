@@ -36,7 +36,7 @@
   },
   "Breadcrumbs": {
     "assistants": "Assistenter",
-    "projects": "Projekt",
+    "projects": "Assistenter",
     "mainThreads": "Huvudkonversationer",
     "conversation": "Konversation",
     "unknownProject": "Okänt projekt"
@@ -1045,7 +1045,8 @@
       "ai-usage": "AI-användning",
       "disk-usage": "Diskanvändning",
       "audit-logs": "Granskningsloggar",
-      "knowledge-analytics": "Kunskapsanalys"
+      "knowledge-analytics": "Kunskapsanalys",
+      "role-org-owner": "Ägare"
     }
   },
   "chats-page": {
@@ -1294,7 +1295,12 @@
     "status-staged": "I Brain",
     "staged-send": "Indexera",
     "staged-sent": "Skickat till kunskapsbasen — blir sökbart när det har bearbetats",
-    "staged-send-failed": "Det gick inte att skicka — ladda om sidan och försök igen."
+    "staged-send-failed": "Det gick inte att skicka — ladda om sidan och försök igen.",
+    "pagination-previous": "Föregående",
+    "pagination-next": "Nästa",
+    "pagination-previous-page": "Föregående sida",
+    "pagination-next-page": "Nästa sida",
+    "pagination-label": "Sidnavigering"
   },
   "folders": {
     "title": "Mappar",
@@ -1397,7 +1403,9 @@
   },
   "share-dialog": {
     "bulk-title": "Dela {count, plural, one {# fil} other {# filer}}",
-    "single-title": "Dela \"{resourceName}\""
+    "single-title": "Dela \"{resourceName}\"",
+    "copy-link": "Kopiera länk",
+    "link-copied": "Länk kopierad"
   },
   "bulk-progress-banner": {
     "running": "{operation} pågår: {total, plural, one {# fil} other {# filer}}…",
@@ -2475,7 +2483,8 @@
         "orphan": "Inte kopplad till någon annan sida",
         "gap": "En process utan kopplad roll",
         "extraction-failed": "Dokumentet kunde inte bearbetas",
-        "unknown": "Inga detaljer"
+        "unknown": "Inga detaljer",
+        "technical-details": "Tekniska detaljer"
       }
     },
     "page": {
@@ -2736,5 +2745,21 @@
       "failed": "Publiceringen kunde inte starta — ladda om sidan och försök igen.",
       "not-written": "{count, plural, one {# sida registrerades som publicerad men skrevs inte till indexet – kör igen} other {# sidor registrerades som publicerade men skrevs inte till indexet – kör igen}}"
     }
+  },
+  "project-context-manager": {
+    "label-assistant": "Assistent: {title}",
+    "organization-instructions": "Organisationens instruktioner",
+    "organization-defaults": "Organisationens standardinställningar",
+    "subtitle-mentioned": "Nämnd assistent (@)",
+    "subtitle-thread-default": "Trådens assistent (standard)",
+    "empty": "Inga tillgängliga assistenter",
+    "toast-switched": "Kontext bytt till assistent: {title}",
+    "toast-organization": "Organisationens instruktioner används",
+    "toast-failed": "Det gick inte att ändra assistentkontexten",
+    "toast-error": "Ett fel uppstod när kontexten ändrades",
+    "indicator-assistant-context": "Assistentkontext:",
+    "indicator-assistant-scope": "Kunskapsbas och instruktioner",
+    "indicator-organization-context": "Organisationskontext:",
+    "indicator-organization-defaults": "Standardinstruktioner"
   }
 }

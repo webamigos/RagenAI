@@ -50,6 +50,9 @@ export function ShareDialog(props: Props) {
   const { isOpen, onClose, orgMembers, orgTeams } = props;
   const isBulk = props.mode === 'bulk';
   const t = useTranslations('share-dialog');
+  // The project share dialog already says all of this, translated; the
+  // knowledge-base one hard-coded it in English on every locale.
+  const tAccess = useTranslations('share-access-dialog');
 
   const { successToast, errorToast } = statusToast();
   const [permissions, setPermissions] = useState<DocumentPermissionItem[]>([]);
@@ -134,16 +137,16 @@ export function ShareDialog(props: Props) {
             );
 
       if (result.success) {
-        successToast({ message: 'Shared successfully' });
+        successToast({ message: tAccess('shared-success') });
         loadPermissions();
         setSearchQuery('');
       } else {
         errorToast({
-          message: result.error || 'Failed to share',
+          message: result.error || tAccess('share-failed'),
         });
       }
     } catch {
-      errorToast({ message: 'Failed to share' });
+      errorToast({ message: tAccess('share-failed') });
     } finally {
       setIsSubmitting(false);
     }
@@ -153,20 +156,20 @@ export function ShareDialog(props: Props) {
     try {
       const result = await revokeShare(parseInt(permissionId, 10));
       if (result.success) {
-        successToast({ message: 'Access revoked' });
+        successToast({ message: tAccess('revoke-success') });
         loadPermissions();
       } else {
-        errorToast({ message: result.error || 'Failed to revoke' });
+        errorToast({ message: result.error || tAccess('revoke-failed') });
       }
     } catch {
-      errorToast({ message: 'Failed to revoke access' });
+      errorToast({ message: tAccess('revoke-failed') });
     }
   };
 
   const handleCopyLink = () => {
     const url = `${window.location.origin}${window.location.pathname}`;
     navigator.clipboard.writeText(url);
-    successToast({ message: 'Link copied' });
+    successToast({ message: t('link-copied') });
   };
 
   return (
@@ -185,7 +188,7 @@ export function ShareDialog(props: Props) {
           <div className="flex-1">
             <Input
               type="text"
-              placeholder="Enter name or email"
+              placeholder={tAccess('search-placeholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -197,8 +200,8 @@ export function ShareDialog(props: Props) {
             }
             className="rounded-md border border-border px-3 py-2 text-sm dark:bg-muted dark:text-foreground"
           >
-            <option value="full">Full access</option>
-            <option value="view">View only</option>
+            <option value="full">{tAccess('permission-full')}</option>
+            <option value="view">{tAccess('permission-view')}</option>
           </select>
         </div>
 
@@ -218,7 +221,9 @@ export function ShareDialog(props: Props) {
                 </span>
                 <div className="text-left">
                   <div className="font-medium text-foreground">{team.name}</div>
-                  <div className="text-xs text-muted-foreground">Team</div>
+                  <div className="text-xs text-muted-foreground">
+                    {tAccess('team-badge')}
+                  </div>
                 </div>
               </button>
             ))}
@@ -250,7 +255,7 @@ export function ShareDialog(props: Props) {
         {!isBulk && (
           <div>
             <h4 className="text-sm font-medium text-foreground mb-2">
-              Who has access
+              {tAccess('who-has-access')}
             </h4>
             <div className="space-y-2">
               {!isBulk &&
@@ -268,12 +273,12 @@ export function ShareDialog(props: Props) {
                             {ownerName}
                           </div>
                           <div className="text-xs text-muted-foreground">
-                            Owner
+                            {tAccess('owner')}
                           </div>
                         </div>
                       </div>
                       <span className="text-xs text-muted-foreground">
-                        Full access
+                        {tAccess('permission-full')}
                       </span>
                     </div>
                   );
@@ -309,13 +314,15 @@ export function ShareDialog(props: Props) {
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-xs text-muted-foreground">
-                      {perm.permission === 'full' ? 'Full access' : 'View only'}
+                      {perm.permission === 'full'
+                        ? tAccess('permission-full')
+                        : tAccess('permission-view')}
                     </span>
                     <button
                       onClick={() => handleRevoke(perm.id)}
                       className="text-destructive hover:text-destructive/90 text-xs"
                     >
-                      Remove
+                      {tAccess('remove')}
                     </button>
                   </div>
                 </div>
@@ -332,11 +339,11 @@ export function ShareDialog(props: Props) {
               onClick={handleCopyLink}
               className="text-sm text-brand-600 hover:text-brand-700 dark:text-brand-400"
             >
-              Copy link
+              {t('copy-link')}
             </button>
           )}
           <Button type="button" onClick={onClose}>
-            Done
+            {tAccess('done')}
           </Button>
         </div>
       </div>

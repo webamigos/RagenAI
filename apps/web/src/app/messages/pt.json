@@ -36,7 +36,7 @@
   },
   "Breadcrumbs": {
     "assistants": "Assistentes",
-    "projects": "Projetos",
+    "projects": "Assistentes",
     "mainThreads": "Conversas principais",
     "conversation": "Conversa",
     "unknownProject": "Projeto desconhecido"
@@ -1045,7 +1045,8 @@
       "ai-usage": "Uso de IA",
       "disk-usage": "Uso de disco",
       "audit-logs": "Registros de auditoria",
-      "knowledge-analytics": "Análise de conhecimento"
+      "knowledge-analytics": "Análise de conhecimento",
+      "role-org-owner": "Proprietário"
     }
   },
   "chats-page": {
@@ -1294,7 +1295,12 @@
     "status-staged": "No Brain",
     "staged-send": "Indexar",
     "staged-sent": "Enviado para a base de conhecimento — ficará pesquisável depois de processado",
-    "staged-send-failed": "Não foi possível enviar — recarregue a página e tente novamente."
+    "staged-send-failed": "Não foi possível enviar — recarregue a página e tente novamente.",
+    "pagination-previous": "Anterior",
+    "pagination-next": "Próximo",
+    "pagination-previous-page": "Página anterior",
+    "pagination-next-page": "Página seguinte",
+    "pagination-label": "Navegação de páginas"
   },
   "folders": {
     "title": "Pastas",
@@ -1397,7 +1403,9 @@
   },
   "share-dialog": {
     "bulk-title": "Compartilhar {count, plural, one {# arquivo} other {# arquivos}}",
-    "single-title": "Compartilhar \"{resourceName}\""
+    "single-title": "Compartilhar \"{resourceName}\"",
+    "copy-link": "Copiar link",
+    "link-copied": "Link copiado"
   },
   "bulk-progress-banner": {
     "running": "{operation} em andamento: {total, plural, one {# arquivo} other {# arquivos}}…",
@@ -2475,7 +2483,8 @@
         "orphan": "Não está ligada a nenhuma outra página",
         "gap": "Um processo sem nenhuma função associada",
         "extraction-failed": "Não foi possível processar o documento",
-        "unknown": "Sem detalhes"
+        "unknown": "Sem detalhes",
+        "technical-details": "Detalhes técnicos"
       }
     },
     "page": {
@@ -2736,5 +2745,21 @@
       "failed": "Não foi possível iniciar a publicação — recarregue a página e tente novamente.",
       "not-written": "{count, plural, one {# página registada como publicada mas não escrita no índice — execute novamente} other {# páginas registadas como publicadas mas não escritas no índice — execute novamente}}"
     }
+  },
+  "project-context-manager": {
+    "label-assistant": "Assistente: {title}",
+    "organization-instructions": "Instruções da organização",
+    "organization-defaults": "Predefinições da organização",
+    "subtitle-mentioned": "Assistente mencionado (@)",
+    "subtitle-thread-default": "Assistente da conversa (predefinido)",
+    "empty": "Nenhum assistente disponível",
+    "toast-switched": "Contexto alterado para o assistente: {title}",
+    "toast-organization": "A usar as instruções da organização",
+    "toast-failed": "Não foi possível alterar o contexto do assistente",
+    "toast-error": "Ocorreu um erro ao alterar o contexto",
+    "indicator-assistant-context": "Contexto do assistente:",
+    "indicator-assistant-scope": "Base de conhecimento e instruções",
+    "indicator-organization-context": "Contexto da organização:",
+    "indicator-organization-defaults": "Instruções predefinidas"
   }
 }

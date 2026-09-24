@@ -36,7 +36,7 @@
   },
   "Breadcrumbs": {
     "assistants": "Assistenter",
-    "projects": "Projekter",
+    "projects": "Assistenter",
     "mainThreads": "Hovedsamtaler",
     "conversation": "Samtale",
     "unknownProject": "Ukendt projekt"
@@ -1045,7 +1045,8 @@
       "ai-usage": "AI-forbrug",
       "disk-usage": "Diskforbrug",
       "audit-logs": "Revisionslogs",
-      "knowledge-analytics": "Videnanalyse"
+      "knowledge-analytics": "Videnanalyse",
+      "role-org-owner": "Ejer"
     }
   },
   "chats-page": {
@@ -1294,7 +1295,12 @@
     "status-staged": "I Brain",
     "staged-send": "Indekser",
     "staged-sent": "Sendt til vidensbasen — bliver søgbart, når det er behandlet",
-    "staged-send-failed": "Kunne ikke sende — genindlæs siden, og prøv igen."
+    "staged-send-failed": "Kunne ikke sende — genindlæs siden, og prøv igen.",
+    "pagination-previous": "Forrige",
+    "pagination-next": "Næste",
+    "pagination-previous-page": "Forrige side",
+    "pagination-next-page": "Næste side",
+    "pagination-label": "Sidenavigation"
   },
   "folders": {
     "title": "Mapper",
@@ -1397,7 +1403,9 @@
   },
   "share-dialog": {
     "bulk-title": "Del {count, plural, one {# fil} other {# filer}}",
-    "single-title": "Del \"{resourceName}\""
+    "single-title": "Del \"{resourceName}\"",
+    "copy-link": "Kopiér link",
+    "link-copied": "Link kopieret"
   },
   "bulk-progress-banner": {
     "running": "{operation} i gang: {total, plural, one {# fil} other {# filer}}…",
@@ -2475,7 +2483,8 @@
         "orphan": "Ikke forbundet med nogen anden side",
         "gap": "En proces uden tilknyttet rolle",
         "extraction-failed": "Dokumentet kunne ikke behandles",
-        "unknown": "Ingen detaljer"
+        "unknown": "Ingen detaljer",
+        "technical-details": "Tekniske detaljer"
       }
     },
     "page": {
@@ -2736,5 +2745,21 @@
       "failed": "Udgivelsen kunne ikke starte — genindlæs siden, og prøv igen.",
       "not-written": "{count, plural, one {# side blev registreret som publiceret men ikke skrevet til indekset – kør igen} other {# sider blev registreret som publiceret men ikke skrevet til indekset – kør igen}}"
     }
+  },
+  "project-context-manager": {
+    "label-assistant": "Assistent: {title}",
+    "organization-instructions": "Organisationens instruktioner",
+    "organization-defaults": "Organisationens standardindstillinger",
+    "subtitle-mentioned": "Nævnt assistent (@)",
+    "subtitle-thread-default": "Trådens assistent (standard)",
+    "empty": "Ingen tilgængelige assistenter",
+    "toast-switched": "Kontekst skiftet til assistent: {title}",
+    "toast-organization": "Organisationens instruktioner bruges",
+    "toast-failed": "Assistentkonteksten kunne ikke ændres",
+    "toast-error": "Der opstod en fejl under ændring af konteksten",
+    "indicator-assistant-context": "Assistentkontekst:",
+    "indicator-assistant-scope": "Vidensbase og instruktioner",
+    "indicator-organization-context": "Organisationskontekst:",
+    "indicator-organization-defaults": "Standardinstruktioner"
   }
 }

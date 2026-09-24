@@ -18,4 +18,20 @@ describe('buildUserFilesWhere', () => {
       expect(JSON.stringify(where)).toContain('"publishedPages":{"none":{}}');
     },
   );
+
+  // An assistant's import of a knowledge-base file is a second row for the
+  // same document, with the same owner and access. It was listed, and
+  // counted, beside its original.
+  it.each(['all', 'my-files', 'shared-with-me'] as const)(
+    'keeps assistant imports out of the %s view',
+    (viewMode) => {
+      const where = buildUserFilesWhere({
+        organizationId: 'org-1',
+        userId: 'u1',
+        scope: 'organization',
+        viewMode,
+      });
+      expect(where).toMatchObject({ sourceFileId: null });
+    },
+  );
 });

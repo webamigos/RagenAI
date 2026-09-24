@@ -149,7 +149,13 @@ export default async function BrainPagesPage({ searchParams }: Props) {
                   // why a long title spilled over the next column.
                   <TableRow key={item.publicId}>
                     <TableCell className="font-medium">
-                      <span className="flex max-w-[360px] items-center gap-2">
+                      {/*
+                        270px, not 360: with seven columns the table needed
+                        1105px of the layout's 1072, and `whitespace-nowrap`
+                        pushed "Updated" out of view on every width. The
+                        title truncates with its full text in `title`.
+                      */}
+                      <span className="flex max-w-[270px] items-center gap-2">
                         <Link
                           href={`/brain/pages/${item.publicId}`}
                           className="truncate text-primary underline-offset-4 hover:underline"
@@ -171,7 +177,12 @@ export default async function BrainPagesPage({ searchParams }: Props) {
                       </Badge>
                     </TableCell>
                     <TableCell className="text-muted-foreground">
-                      {item.ownerName ?? t('pages.no-owner')}
+                      <span
+                        className="block max-w-[140px] truncate"
+                        title={item.ownerName ?? undefined}
+                      >
+                        {item.ownerName ?? t('pages.no-owner')}
+                      </span>
                     </TableCell>
                     <TableCell className="text-right tabular-nums">
                       {item.documents}

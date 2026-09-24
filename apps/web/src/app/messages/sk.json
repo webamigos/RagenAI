@@ -36,7 +36,7 @@
   },
   "Breadcrumbs": {
     "assistants": "Asistenti",
-    "projects": "Projekty",
+    "projects": "Asistenti",
     "mainThreads": "Hlavné konverzácie",
     "conversation": "Konverzácia",
     "unknownProject": "Neznámy projekt"
@@ -1045,7 +1045,8 @@
       "ai-usage": "Využitie AI",
       "disk-usage": "Využitie disku",
       "audit-logs": "Audítorské protokoly",
-      "knowledge-analytics": "Analýza znalostí"
+      "knowledge-analytics": "Analýza znalostí",
+      "role-org-owner": "Vlastník"
     }
   },
   "chats-page": {
@@ -1294,7 +1295,12 @@
     "status-staged": "V Braine",
     "staged-send": "Indexovať",
     "staged-sent": "Odoslané do znalostnej bázy — po spracovaní bude vyhľadateľné",
-    "staged-send-failed": "Odoslanie zlyhalo — načítajte stránku znova a skúste to znova."
+    "staged-send-failed": "Odoslanie zlyhalo — načítajte stránku znova a skúste to znova.",
+    "pagination-previous": "Predchádzajúca",
+    "pagination-next": "Ďalšia",
+    "pagination-previous-page": "Predchádzajúca stránka",
+    "pagination-next-page": "Ďalšia stránka",
+    "pagination-label": "Navigácia stránok"
   },
   "folders": {
     "title": "Priečinky",
@@ -1397,7 +1403,9 @@
   },
   "share-dialog": {
     "bulk-title": "Zdieľať {count, plural, one {# súbor} few {# súbory} other {# súborov}}",
-    "single-title": "Zdieľať „{resourceName}“"
+    "single-title": "Zdieľať „{resourceName}“",
+    "copy-link": "Kopírovať odkaz",
+    "link-copied": "Odkaz skopírovaný"
   },
   "bulk-progress-banner": {
     "running": "{operation} prebieha: {total, plural, one {# súbor} few {# súbory} other {# súborov}}…",
@@ -2475,7 +2483,8 @@
         "orphan": "Nie je prepojená so žiadnou inou stránkou",
         "gap": "Proces bez priradenej roly",
         "extraction-failed": "Dokument sa nepodarilo spracovať",
-        "unknown": "Bez podrobností"
+        "unknown": "Bez podrobností",
+        "technical-details": "Technické podrobnosti"
       }
     },
     "page": {
@@ -2736,5 +2745,21 @@
       "failed": "Zverejnenie sa nepodarilo spustiť — načítajte stránku znova a skúste to znova.",
       "not-written": "{count, plural, one {# stránka bola zaznamenaná ako publikovaná, ale nezapísaná do indexu – spustite znova} few {# stránky boli zaznamenané ako publikované, ale nezapísané do indexu – spustite znova} many {# stránok bolo zaznamenaných ako publikované, ale nezapísaných do indexu – spustite znova} other {# stránok bolo zaznamenaných ako publikované, ale nezapísaných do indexu – spustite znova}}"
     }
+  },
+  "project-context-manager": {
+    "label-assistant": "Asistent: {title}",
+    "organization-instructions": "Pokyny organizácie",
+    "organization-defaults": "Predvolené nastavenia organizácie",
+    "subtitle-mentioned": "Spomenutý asistent (@)",
+    "subtitle-thread-default": "Asistent vlákna (predvolený)",
+    "empty": "Žiadni dostupní asistenti",
+    "toast-switched": "Kontext zmenený na asistenta: {title}",
+    "toast-organization": "Používajú sa pokyny organizácie",
+    "toast-failed": "Kontext asistenta sa nepodarilo zmeniť",
+    "toast-error": "Pri zmene kontextu nastala chyba",
+    "indicator-assistant-context": "Kontext asistenta:",
+    "indicator-assistant-scope": "Databáza znalostí a pokyny",
+    "indicator-organization-context": "Kontext organizácie:",
+    "indicator-organization-defaults": "Predvolené pokyny"
   }
 }
