@@ -270,10 +270,18 @@ export function BrainGraphCanvas({ view }: { view: BrainGraphView }) {
           // Past MEDIUM_GRAPH most names are hidden by the label grid anyway,
           // and the pass would cost more than it shows.
           if (graph.order <= MEDIUM_GRAPH) {
-            separateLabels(graph, {
-              width: container.current.clientWidth,
-              height: container.current.clientHeight,
-            });
+            // Quadratic per pass and run before the first frame. A dense graph
+            // near MEDIUM_GRAPH could spend the full budget colliding (~48M
+            // pair checks), so past 80 pages it gets a smaller one; what
+            // overlap remains is left to Sigma's label grid.
+            separateLabels(
+              graph,
+              {
+                width: container.current.clientWidth,
+                height: container.current.clientHeight,
+              },
+              graph.order > 80 ? { rounds: 4, iterations: 60 } : undefined,
+            );
           }
         }
 
@@ -294,13 +302,16 @@ export function BrainGraphCanvas({ view }: { view: BrainGraphView }) {
           labelColor: { color: palette.label },
           nodeReducer: (id, data) => {
             const filter = filterRef.current;
+            const focus = emphasised();
+            // The page just picked — by search, from another group — stays
+            // visible and named; otherwise the camera landed on a grey dot.
             if (
               filter !== null &&
+              id !== focus &&
               graph.getNodeAttribute(id, 'community') !== filter
             ) {
               return { ...data, color: palette.dim, label: '' };
             }
-            const focus = emphasised();
             if (!focus || id === focus || graph.areNeighbors(id, focus)) {
               // The page under the cursor or picked is named in full.
               return focus === id

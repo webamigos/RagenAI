@@ -4,6 +4,7 @@ import {
   render,
   screen,
   waitFor,
+  within,
 } from '@testing-library/react';
 import { NextIntlClientProvider } from 'next-intl';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -407,5 +408,43 @@ describe('BrainGraphCanvas legend', () => {
 
     fireEvent.click(urlop);
     await waitFor(() => expect(reduce(B).label).toBe(B));
+  });
+
+  it('keeps a page picked from another group visible while a group filter is on', async () => {
+    const twoGroups = {
+      ...view,
+      nodes: [
+        { ...view.nodes[0]!, community: 0 },
+        { ...view.nodes[1]!, community: 1 },
+      ],
+      communities: [
+        { id: 0, size: 2, label: 'Urlop' },
+        { id: 1, size: 2, label: 'Kadry' },
+      ],
+    };
+    render(
+      <NextIntlClientProvider locale="en" messages={messages}>
+        <BrainGraphCanvas view={twoGroups} />
+      </NextIntlClientProvider>,
+    );
+    await waitFor(() => expect(sigma.instances).toHaveLength(1));
+    const reduce = (id: string) =>
+      sigma.instances[0]!.settings.nodeReducer!(id, { label: id, color: 'x' });
+
+    fireEvent.click(screen.getByRole('button', { name: /Urlop/ }));
+    await waitFor(() => expect(reduce(B).label).toBe(''));
+
+    // B is in the other group; picking it from search must not leave the
+    // camera on a grey, unnamed dot.
+    fireEvent.change(screen.getByTestId('brain-graph-search'), {
+      target: { value: 'kad' },
+    });
+    fireEvent.click(
+      within(screen.getByTestId('brain-graph-search-results')).getByRole(
+        'button',
+        { name: 'Kadry' },
+      ),
+    );
+    await waitFor(() => expect(reduce(B).label).not.toBe(''));
   });
 });
