@@ -32,6 +32,8 @@ type RetrievalFixture = {
   fileId: string;
   rank: number;
   snippet: string | null;
+  sourcePage?: number | null;
+  sourceRegions?: unknown;
   file: { fileName: string | null } | null;
 };
 
@@ -99,6 +101,87 @@ describe('getThreadMessagesQuery — persisted retrieval', () => {
       ],
       citedFileIds: ['a'],
     });
+  });
+
+  it('reads back the page and regions, so a reopened source opens where the live one did', async () => {
+    const region = { page: 4, x: 0.1, y: 0.3, w: 0.8, h: 0.05 };
+    mockMessageFindMany.mockResolvedValue([
+      answer({
+        documentRetrievals: [
+          {
+            fileId: 'a',
+            rank: 1,
+            snippet: 'quote',
+            sourcePage: 4,
+            sourceRegions: [region],
+            file: { fileName: 'umowa.pdf' },
+          },
+        ],
+        documentCitations: [],
+      }),
+    ]);
+
+    const { messages } = await run();
+
+    expect(messages[0].retrieval?.sources[0]).toEqual({
+      fileId: 'a',
+      fileName: 'umowa.pdf',
+      snippet: 'quote',
+      sourcePage: 4,
+      sourceRegions: [region],
+    });
+  });
+
+  it('asks the database for the two columns', async () => {
+    mockMessageFindMany.mockResolvedValue([]);
+    await run();
+
+    const select =
+      mockMessageFindMany.mock.calls[0][0].select.documentRetrievals.select;
+    expect(select).toMatchObject({ sourcePage: true, sourceRegions: true });
+  });
+
+  it('drops a stored page or region that is not one, rather than passing it on', async () => {
+    // A JSON column is as untyped as the payload it was copied from.
+    mockMessageFindMany.mockResolvedValue([
+      answer({
+        documentRetrievals: [
+          {
+            fileId: 'a',
+            rank: 1,
+            snippet: null,
+            sourcePage: 0,
+            sourceRegions: [
+              { page: 2, x: 'left', y: 0, w: 1, h: 1 },
+              { page: 2, x: 0.9, y: 0, w: 0.9, h: 0.1 },
+              { page: 2, x: 0, y: 0, w: 1, h: 0.1 },
+            ],
+            file: { fileName: 'umowa.pdf' },
+          },
+          {
+            fileId: 'b',
+            rank: 2,
+            snippet: null,
+            sourcePage: null,
+            sourceRegions: { not: 'an array' },
+            file: { fileName: 'b.pdf' },
+          },
+        ],
+        documentCitations: [],
+      }),
+    ]);
+
+    const { messages } = await run();
+
+    expect(messages[0].retrieval?.sources).toEqual([
+      {
+        fileId: 'a',
+        fileName: 'umowa.pdf',
+        sourceRegions: [{ page: 2, x: 0, y: 0, w: 1, h: 0.1 }],
+      },
+      // An older row: neither key, so the viewer finds the passage by text.
+      { fileId: 'b', fileName: 'b.pdf' },
+    ]);
   });
 
   it('keeps rank order, because it is the numbering the answer cites', async () => {

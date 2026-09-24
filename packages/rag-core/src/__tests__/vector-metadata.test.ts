@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { MAX_SOURCE_REGIONS } from '../index';
+import { MAX_SOURCE_REGIONS, readSourceRegions } from '../index';
 import type {
   SourceRegion,
   VectorStoreDocumentMetadata,
@@ -103,5 +103,42 @@ describe('VectorStoreDocumentMetadata', () => {
   it('filters by any subset of the payload', () => {
     const filter: VectorStoreMetadataFilter = { organization_id: 'org-1' };
     expect(filter).toEqual({ organization_id: 'org-1' });
+  });
+});
+
+describe('readSourceRegions', () => {
+  const box = { page: 2, x: 0.1, y: 0.2, w: 0.5, h: 0.1 };
+
+  it('keeps well-formed regions, in order', () => {
+    expect(readSourceRegions([box, { ...box, page: 3 }])).toEqual([
+      box,
+      { ...box, page: 3 },
+    ]);
+  });
+
+  it('reads nothing from a value that is not a list', () => {
+    expect(readSourceRegions(null)).toEqual([]);
+    expect(readSourceRegions({ page: 1 })).toEqual([]);
+    expect(readSourceRegions('[]')).toEqual([]);
+  });
+
+  it('drops a region with a bad page, a coordinate outside 0-1, or one off the page', () => {
+    expect(
+      readSourceRegions([
+        { ...box, page: 0 },
+        { ...box, page: 1.5 },
+        { ...box, x: -0.1 },
+        { ...box, h: Number.NaN },
+        { ...box, x: 0.9, w: 0.9 },
+        null,
+        'box',
+        box,
+      ]),
+    ).toEqual([box]);
+  });
+
+  it('stops at the cap', () => {
+    const many = Array.from({ length: MAX_SOURCE_REGIONS + 5 }, () => box);
+    expect(readSourceRegions(many)).toHaveLength(MAX_SOURCE_REGIONS);
   });
 });

@@ -9,6 +9,7 @@ import type {
   PersistedMessageRetrieval,
 } from '../../contracts/message.types';
 import { decryptMessageContents } from '@ragenai/crypto';
+import { readSourceRegions, type SourceRegion } from '@ragenai/rag-core';
 
 export const getThreadMessagesQuery = async (
   threadId: Thread['id'],
@@ -56,6 +57,8 @@ export const getThreadMessagesQuery = async (
             fileId: true,
             rank: true,
             snippet: true,
+            sourcePage: true,
+            sourceRegions: true,
             file: { select: { fileName: true } },
           },
           orderBy: { rank: 'asc' as const },
@@ -197,6 +200,7 @@ function toPersistedRetrieval(
       // block had nothing to quote on a reopened thread even though the
       // passage had been stored, encrypted and read back for it.
       ...(row.snippet !== null ? { snippet: row.snippet } : {}),
+      ...toSourceLocation(row),
     })),
     // Intersected with what was retrieved. The sources block can only mark a
     // row it renders, and a citation whose file is no longer in the retrieved
@@ -212,8 +216,34 @@ type RetrievalRow = {
   fileId: string;
   rank: number;
   snippet: string | null;
+  sourcePage?: number | null;
+  sourceRegions?: unknown;
   file: { fileName: string | null } | null;
 };
+
+/**
+ * The page and regions a row kept, in the shape the live turn sends.
+ *
+ * Validated on the way out, not trusted: the regions are a JSON column, as
+ * untyped as the Qdrant payload they were copied from, and the same reader
+ * guards both. A page that is not a positive integer is dropped — the viewer
+ * would otherwise be asked to open page 0. Each field is omitted rather than
+ * nulled when there is nothing, because absence is what the viewer reads as
+ * "find the passage from the snippet".
+ */
+function toSourceLocation(row: RetrievalRow): {
+  sourcePage?: number;
+  sourceRegions?: SourceRegion[];
+} {
+  const page = row.sourcePage;
+  const regions = readSourceRegions(row.sourceRegions);
+  return {
+    ...(typeof page === 'number' && Number.isInteger(page) && page >= 1
+      ? { sourcePage: page }
+      : {}),
+    ...(regions.length > 0 ? { sourceRegions: regions } : {}),
+  };
+}
 
 /**
  * Decrypts the quotes on one message's retrievals.

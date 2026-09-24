@@ -32,6 +32,7 @@ export {
 
 export {
   MAX_SOURCE_REGIONS,
+  readSourceRegions,
   type SourceRegion,
   type VectorStoreDocumentMetadata,
   type VectorStoreMetadataFilter,

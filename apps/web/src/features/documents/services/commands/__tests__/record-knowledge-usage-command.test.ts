@@ -114,6 +114,70 @@ describe('recordKnowledgeUsageCommand', () => {
     ]);
   });
 
+  describe('where the chunk sits', () => {
+    const region = { page: 3, x: 0.05, y: 0.2, w: 0.9, h: 0.06 };
+
+    it('stores the page and regions, so a reopened thread opens there', async () => {
+      await recordKnowledgeUsageCommand(
+        MESSAGE_ID,
+        ORG_ID,
+        [{ ...HANDBOOK, sourcePage: 3, sourceRegions: [region] }],
+        'See employee-handbook.pdf.',
+        'thread-1',
+      );
+
+      expect(retrievalRows().data[0]).toMatchObject({
+        sourcePage: 3,
+        sourceRegions: [region],
+      });
+    });
+
+    it('writes a copy of the regions, not the chain’s own array', async () => {
+      const regions = [{ ...region }];
+      await recordKnowledgeUsageCommand(
+        MESSAGE_ID,
+        ORG_ID,
+        [{ ...HANDBOOK, sourcePage: 3, sourceRegions: regions }],
+        '',
+        'thread-1',
+      );
+
+      const stored = (
+        retrievalRows().data[0] as unknown as { sourceRegions: unknown[] }
+      ).sourceRegions;
+      expect(stored).toEqual(regions);
+      expect(stored).not.toBe(regions);
+      expect(stored[0]).not.toBe(regions[0]);
+    });
+
+    it('omits both when the parser gave neither, rather than storing zeros', async () => {
+      await recordKnowledgeUsageCommand(
+        MESSAGE_ID,
+        ORG_ID,
+        [{ ...FAQ, sourceRegions: [] }],
+        '',
+        'thread-1',
+      );
+
+      expect(retrievalRows().data[0]).not.toHaveProperty('sourcePage');
+      expect(retrievalRows().data[0]).not.toHaveProperty('sourceRegions');
+    });
+
+    it('does not encrypt them: coordinates are not content', async () => {
+      await recordKnowledgeUsageCommand(
+        MESSAGE_ID,
+        ORG_ID,
+        [{ ...FAQ, sourcePage: 2, sourceRegions: [region] }],
+        '',
+        'thread-1',
+      );
+
+      // FAQ has no snippet, so nothing on this row is encrypted at all.
+      expect(mockEncrypt).not.toHaveBeenCalled();
+      expect(retrievalRows().data[0]).toMatchObject({ sourcePage: 2 });
+    });
+  });
+
   describe('the snippet', () => {
     it('goes through the same encryptor the message went through', () => {
       // The guarantee gap 5 asks for is not "encrypted" but "encrypted the

@@ -1,3 +1,4 @@
+import type { SourceRegion } from '@ragenai/rag-core';
 import { z } from 'zod';
 import {
   type Role,
@@ -89,10 +90,11 @@ export type MessageAttachment = {
  * `durationMs` and `relevanceScore` measure a run that has finished and
  * nothing records them, so a reopened thread gets the half that survives
  * rather than a defaulted number wearing the clothes of a measurement.
- * `sourceRegions` is in the same group for a different reason: the boxes live
- * on the chunk in Qdrant, not on the retrieval row, so a restored turn has no
- * way to know which chunk it quoted. It stays absent rather than being
- * re-derived from a search that might land on a different chunk.
+ * `sourcePage` and `sourceRegions` are stored per row since they became
+ * columns, so a reopened thread opens a source where the live turn did. Rows
+ * written before that carry neither, and the viewer finds the passage from
+ * `snippet` instead — never from a new search, which might land on a
+ * different chunk.
  *
  * Structurally a `MessageRetrieval`, which is what lets the sources block
  * take either one without a translation step between them.
@@ -110,6 +112,10 @@ export type PersistedMessageRetrieval = {
      * Absent on a row written before gap 5 and on a chunk that had no text.
      */
     snippet?: string;
+    /** The chunk's 1-based page. Absent on older rows and unpaginated files. */
+    sourcePage?: number;
+    /** The chunk's boxes on that page, validated on the way out of the row. */
+    sourceRegions?: SourceRegion[];
   }[];
   citedFileIds: string[];
 };
