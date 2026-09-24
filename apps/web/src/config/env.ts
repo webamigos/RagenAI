@@ -63,6 +63,7 @@ export const webEnvSchema = fragments.targetEnv
   .merge(fragments.redis)
   .merge(fragments.qdrant)
   .merge(fragments.observability)
+  .merge(fragments.connectorGuard)
   .merge(fragments.storage)
   .merge(fragments.tokenVault)
   .merge(fragments.encryption)

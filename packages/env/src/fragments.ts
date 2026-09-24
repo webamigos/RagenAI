@@ -185,6 +185,17 @@ export const llmGateway = z.object({
   LLM_ROUTES_PATH: z.string().optional(),
 });
 
+/**
+ * Hosts the deployment vouches for: a catalogue connector pointing at one is
+ * connected without the address policy, like a built-in `MCP_*_SERVER_URL`.
+ * Comma-separated; `.suffix` matches subdomains. Read by apps/web and
+ * apps/api when they connect, and by apps/admin's Test connection — see
+ * `packages/connector-guard/src/trusted-hosts.ts`.
+ */
+export const connectorGuard = z.object({
+  CONNECTOR_TRUSTED_HOSTS: z.string().optional(),
+});
+
 export const qdrant = z.object({
   QDRANT_URL: httpUrl().optional(),
   QDRANT_API_KEY: z.string().optional(),
