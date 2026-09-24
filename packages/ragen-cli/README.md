@@ -29,7 +29,7 @@ binary it finds on `PATH` before it fetches anything.)
 
 ```
 ragen create [dir]   scaffold a self-hosted Ragen installation
-ragen brain <cmd>    Ragen Brain: next, doctor, findings, pages, graph, export
+ragen brain <cmd>    Ragen Brain: next, doctor, findings, pages, graph, query, export
 ragen help
 ragen version
 ```
@@ -66,12 +66,15 @@ ragen brain doctor               # exits 1 if a check fails
 ragen brain findings             # contradictions, stale, unowned…
 ragen brain pages "urlop"        # search pages (--status CANDIDATE|APPROVED|STALE|REJECTED)
 ragen brain graph --focus <id>   # a page's neighbourhood; --json for nodes and edges
+ragen brain graph --html g.html  # the graph as a page to open in a browser
+ragen brain query "urlop?"       # ask as chat does (--assistant <id> or RAGEN_ASSISTANT_ID)
 ragen brain export ./brain       # markdown + graph.json + manifest.json
 ```
 
 The command set borrows SwarmVault's (`next`, `doctor`, `graph`), but not
 its storage. Brain's source of truth is the installation's database and its
-decision ledger, so every command reads `/v1/brain/*` and none writes.
+decision ledger, so every command reads `/v1/brain/*` and none writes —
+except `query`, which asks `/v1/chat` exactly as a chat turn would.
 Approving, merging and publishing stay in the panel, because they need the
 sources and the access list in front of the person deciding. `export`
 refuses a bundle path that would land outside the target directory.

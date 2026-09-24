@@ -29,7 +29,7 @@ export const COMMANDS: readonly CommandSpec[] = [
   },
   {
     name: 'brain',
-    summary: 'curated knowledge: next, doctor, findings, graph, export',
+    summary: 'curated knowledge: next, doctor, graph, query, export',
     status: 'available',
   },
   {
