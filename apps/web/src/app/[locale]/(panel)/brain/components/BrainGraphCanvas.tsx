@@ -49,8 +49,64 @@ export function communityColour(id: number): {
 /** Up to this many pages, every page is labelled. */
 const SMALL_GRAPH = 60;
 
+/** Up to this many pages, the layout spreads out and the camera leaves label room. */
+export const ROOMY_GRAPH = 15;
+
 /** Width carries the origin too, so it is never told by colour alone. */
 const EDGE_SIZE = { EXTRACTED: 1.6, AMBIGUOUS: 1, INFERRED: 0.6 } as const;
+
+/**
+ * How each kind of relation is drawn — the canvas and the legend's swatches
+ * both read this, so the legend cannot describe a line the graph no longer
+ * draws.
+ */
+const EDGE_STYLE = {
+  EXTRACTED: { token: '--muted-foreground', alpha: 0.7 },
+  AMBIGUOUS: { token: '--chart-3', alpha: 0.8 },
+  INFERRED: { token: '--muted-foreground', alpha: 0.3 },
+} as const;
+
+type EdgeOrigin = keyof typeof EDGE_SIZE;
+
+/**
+ * A short line drawn the way the graph draws `origin`. The widths are the
+ * canvas's, scaled up so a 0.6 line is still visible at legend size.
+ */
+function EdgeSwatch({ origin }: { origin: EdgeOrigin }) {
+  const { token, alpha } = EDGE_STYLE[origin];
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 28 10"
+      className="mt-1 h-2.5 w-7 shrink-0"
+    >
+      <line
+        x1="1"
+        y1="5"
+        x2="27"
+        y2="5"
+        stroke={`var(${token})`}
+        strokeOpacity={alpha}
+        strokeWidth={EDGE_SIZE[origin] * 2}
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+/** An ordinary page beside a larger one — the size a finding gives a page. Neutral grey: colour on the canvas means the community, and the swatch is about size. */
+function FindingSwatch() {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 28 10"
+      className="mt-1 h-2.5 w-7 shrink-0"
+    >
+      <circle cx="6" cy="5" r="2.5" fill="var(--muted-foreground)" />
+      <circle cx="18" cy="5" r="4.5" fill="var(--muted-foreground)" />
+    </svg>
+  );
+}
 
 /**
  * The graph itself (spec D4), drawn with sigma on WebGL over graphology.
@@ -106,6 +162,10 @@ export function BrainGraphCanvas({ view }: { view: BrainGraphView }) {
         // size threshold that keeps a thousand labels apart would otherwise
         // leave a handful of unconnected pages as unnamed dots.
         const labelAll = view.nodes.length <= SMALL_GRAPH;
+        // A neighbourhood-sized view: few enough pages that spreading them out
+        // and leaving room for the right-hand labels costs nothing. Past this
+        // the whole graph needs the space, and zooming out only shrinks it.
+        const roomy = view.nodes.length <= ROOMY_GRAPH;
         const communities = Math.max(1, view.communities.length);
         view.nodes.forEach((node, i) => {
           // Start each community on its own arc, so the layout settles into
@@ -135,9 +195,22 @@ export function BrainGraphCanvas({ view }: { view: BrainGraphView }) {
           });
         }
         if (graph.order > 1) {
+          const inferred = fa2.default.inferSettings(graph);
           fa2.default.assign(graph, {
             iterations: graph.order > 600 ? 80 : 150,
-            settings: fa2.default.inferSettings(graph),
+            settings: {
+              ...inferred,
+              // Nodes repel by their drawn size, not as points, so two pages
+              // never sit on top of each other with their labels crossed.
+              adjustSizes: true,
+              // A neighbourhood is read label by label: give it room. The
+              // inferred ratio suits hundreds of nodes and packed a
+              // seven-page neighbourhood so tight that labels ran into the
+              // next node.
+              scalingRatio: roomy
+                ? Math.max(inferred.scalingRatio ?? 1, 12)
+                : inferred.scalingRatio,
+            },
           });
         }
 
@@ -173,6 +246,15 @@ export function BrainGraphCanvas({ view }: { view: BrainGraphView }) {
           setSelected(view.nodes.find((n) => n.id === node) ?? null);
         });
         renderer.on('clickStage', () => setSelected(null));
+        // Sigma fits the camera to the nodes, not to their labels, and a
+        // label is drawn to the right of its node — so the rightmost page's
+        // name ran off the canvas ("Zgłaszani…"). Zoom out a little and shift
+        // the view right by the same share, which leaves the extra room on
+        // the side the labels grow into. A larger graph keeps the tight fit:
+        // zoomed out, it only got smaller and its labels ran together.
+        if (roomy) {
+          renderer.getCamera().setState({ x: 0.62, y: 0.5, ratio: 1.32 });
+        }
         kill = () => renderer.kill();
       } catch {
         setFailed(true);
@@ -258,11 +340,28 @@ export function BrainGraphCanvas({ view }: { view: BrainGraphView }) {
           <h3 className="mb-1 text-xs font-medium uppercase text-muted-foreground">
             {t('legend-title')}
           </h3>
-          <ul className="space-y-1 text-xs">
-            <li>{t('legend-extracted')}</li>
-            <li>{t('legend-ambiguous')}</li>
-            <li>{t('legend-inferred')}</li>
-            <li>{t('legend-findings')}</li>
+          {/*
+            Each line is shown, not described: the swatch is drawn from the
+            same width and colour as the canvas, and the text says only what
+            the line means.
+          */}
+          <ul className="space-y-1.5 text-xs" data-testid="brain-graph-legend">
+            {(
+              [
+                ['EXTRACTED', 'legend-extracted'],
+                ['AMBIGUOUS', 'legend-ambiguous'],
+                ['INFERRED', 'legend-inferred'],
+              ] as const
+            ).map(([origin, key]) => (
+              <li key={origin} className="flex items-start gap-2">
+                <EdgeSwatch origin={origin} />
+                <span>{t(key)}</span>
+              </li>
+            ))}
+            <li className="flex items-start gap-2">
+              <FindingSwatch />
+              <span>{t('legend-findings')}</span>
+            </li>
           </ul>
         </div>
         {view.communities.some((c) => c.size > 1) && (
@@ -346,9 +445,9 @@ function tokenColours(el: HTMLElement) {
       return alpha === 1 ? rgb(token) : mixed(token, alpha);
     },
     edge: {
-      EXTRACTED: rgb('--muted-foreground', 0.7),
-      AMBIGUOUS: rgb('--chart-3', 0.8),
-      INFERRED: rgb('--muted-foreground', 0.3),
+      EXTRACTED: rgb(EDGE_STYLE.EXTRACTED.token, EDGE_STYLE.EXTRACTED.alpha),
+      AMBIGUOUS: rgb(EDGE_STYLE.AMBIGUOUS.token, EDGE_STYLE.AMBIGUOUS.alpha),
+      INFERRED: rgb(EDGE_STYLE.INFERRED.token, EDGE_STYLE.INFERRED.alpha),
     },
     dim: rgb('--border'),
     label: rgb('--foreground'),
