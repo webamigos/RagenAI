@@ -8,7 +8,7 @@
 -- ## Run it against the e2e database, never a real one
 --
 --   psql "postgresql://postgres:pass123@localhost:55432/ragen_e2e" \
---     -f apps/docs/screenshots/demo-data.sql
+--     -f scripts/screenshots/demo-data.sql
 --
 -- It DELETEs from api_keys and mcp_connectors and overwrites three `settings`
 -- rows, so it is destructive by design. `ragen_e2e` is rebuilt by
@@ -16,7 +16,7 @@
 -- The seeded e2e user (e2e-test@ragen.ai) must already exist.
 --
 -- Regenerate the images with:
---   npx tsx apps/docs/screenshots/capture.mts
+--   npx tsx scripts/screenshots/capture.mts
 
 BEGIN;
 
@@ -251,9 +251,14 @@ INSERT INTO document_folders (
   id, name, organization_id, parent_id, path, owner_id, created_at, updated_at,
   pii_policy, is_org_wide
 )
+-- `path` holds ancestor *ids*, not names: '/' for a root folder, and
+-- `${parent.path}${parent.id}/` below it (FoldersService.createFolder). The
+-- breadcrumb splits it on '/' and looks each piece up as a folder id, so a
+-- name here broke every breadcrumb and failed the lookup on a uuid column.
+-- All three are roots.
 SELECT
   ('00000000-0000-4000-8000-00000000000' || f.n)::uuid, f.name,
-  'e2e-test-org-00000-0000-0001', NULL, '/' || f.name,
+  'e2e-test-org-00000-0000-0001', NULL, '/',
   (SELECT id FROM users WHERE email = 'e2e-test@ragen.ai'),
   now() - interval '90 days', now(), f.policy::"PiiPolicy", true
 FROM (VALUES
