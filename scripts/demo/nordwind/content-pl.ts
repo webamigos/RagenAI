@@ -413,7 +413,9 @@ Firma wyznacza doradcę do spraw bezpieczeństwa przewozu towarów niebezpieczny
 `;
 
 export const contentPl: DemoContent = {
-  orgName: 'Nordwind Logistics',
+  orgName: 'Nordwind Logistics sp. z o.o.',
+  generalTeam: 'Ogólny',
+  defaultAssistantTitle: 'Asystent główny',
   people: {
     anna: {
       name: 'Anna Kowalska',

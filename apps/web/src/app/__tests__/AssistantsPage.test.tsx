@@ -52,6 +52,7 @@ vi.mock('@/app/components/Sidebar/Projects/actions', () => ({
         title: 'Default',
         createdAt: new Date(),
         threads: [],
+        isDefault: true,
       },
     ],
   }),
@@ -105,7 +106,7 @@ const messages = {
 };
 
 // Create a minimal Redux store
-const createTestStore = (defaultProjectId = 'default-proj') =>
+const createTestStore = (defaultProjectId: string | null = 'default-proj') =>
   configureStore({
     reducer: {
       threads: () => ({ defaultProjectId }),
@@ -157,6 +158,18 @@ describe('AssistantsPage', () => {
 
     it('excludes default project from the list', async () => {
       renderAssistantsPage();
+      await waitFor(() => {
+        expect(screen.getByText('Marketing Bot')).toBeInTheDocument();
+      });
+      expect(screen.queryByText('Default')).not.toBeInTheDocument();
+    });
+
+    // Nothing in the app sets the Redux `defaultProjectId` — the test above
+    // injects it, which is how the default assistant came to show as a card in
+    // production while this suite stayed green. apps/api's `isDefault` is what
+    // the grid can rely on.
+    it('excludes the default project when only the API marks it', async () => {
+      renderAssistantsPage(createTestStore(null));
       await waitFor(() => {
         expect(screen.getByText('Marketing Bot')).toBeInTheDocument();
       });

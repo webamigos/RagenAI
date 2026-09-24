@@ -90,13 +90,13 @@ npm run admin:dev      # apps/admin on :3200
 
 | Area | Rows |
 |---|---|
-| People | 8 members (1 owner, 2 admins, 5 members) + 1 former employee; 5 teams (General, HR, Sales, Support, Compliance); 1 pending invitation |
+| People | 8 members (1 owner, 2 admins, 5 members) + 1 former employee; 5 teams (a general team — Ogólny / General — plus HR, Sales, Support, Compliance); 1 pending invitation |
 | Knowledge base | 6 folders (HR ▸ Payroll restricted to team HR; Sales, Support, Compliance, Operations); 15 documents: PDF, DOCX, XLSX, a web page URL and Markdown, all `COMPLETED` apart from one `STAGED`; 16 versions |
-| Assistants | a hidden default ("main") assistant + HR, Sales, Support and Compliance assistants, each with instructions, team and user grants, and its primary folder's files |
-| Showcase threads | 4 in the main assistant (one with a follow-up turn) + 1 in Sales + 1 in Support, all Anna's, with retrievals, snippets and citations |
+| Assistants | a hidden default ("main") assistant — *Asystent główny* / *Main assistant*, marked `isDefault` by apps/api so the grid leaves it out — + HR, Sales, Support and Compliance assistants, each with instructions, team and user grants, and its primary folder's files |
+| Showcase threads | 4 in the HR assistant (one with a follow-up turn) + 1 in Sales + 1 in Support, all Anna's, with retrievals, snippets and citations |
 | Analytics history | 432 more threads over 30 days from the other members, with citations and 👍/👎 ratings; 5 of the 25 questions go unanswered |
 | Brain | 47 pages (30 approved, 13 candidates, 3 stale, 1 rejected), 74 sources quoting their documents verbatim, 51 edges of all three origins in 6 communities plus 1 orphan, 6 findings, 43 decisions, 7 published pages |
-| Usage & admin | ~1,970 `ai_usage` rows over 30 days across 6 models (≈ $9); limits; 1 guardrail with 3 hits this week; 15 audit-log entries; 5 security events; 2 API keys; 3 notifications; the `default_organization_limits` setting |
+| Usage & admin | ~1,970 `ai_usage` rows over 30 days across 6 models (≈ $9); limits; 1 guardrail of the organization's own with 3 blocks this week, plus the built-in jailbreak detector switched on for the organization (LOG) with 2 flags — the latter is what gives the admin panel's platform Guardrails list hits (an organization's own rule shows only under *One organization*); 15 audit-log entries; 7 security events; 2 API keys; 3 notifications; the `default_organization_limits` setting |
 | Connectors | Anna: Slack, HubSpot, Google Calendar and Google Drive connected. Peter/Piotr: HubSpot. Kate/Katarzyna: Slack in error |
 
 Deliberate states to photograph:

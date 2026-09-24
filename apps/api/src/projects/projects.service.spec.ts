@@ -864,6 +864,82 @@ describe('ProjectsService', () => {
       expect(result[0].threads).toHaveLength(0);
       expect(result[0].isOwned).toBe(false);
     });
+
+    const twoThreadProject = () => ({
+      id: PROJECT,
+      title: 'P',
+      createdAt: new Date('2026-01-01'),
+      organizationId: ORG,
+      ownerId: 'owner-1',
+      isStarred: false,
+      isArchived: false,
+      threads: ['owner-1', 'someone-else'].map((visitorId, i) => ({
+        id: `t${i}`,
+        createdAt: new Date('2026-01-02'),
+        visitorId,
+        preferredCommunicationType: null,
+        projectId: PROJECT,
+        messages: [],
+      })),
+    });
+
+    // The card must count what the project page lists: its `canManage` rule
+    // shows every thread to an org manager. The card said "0 threads" to an
+    // admin over a page listing dozens.
+    it('counts every thread for an org manager, as the project page lists them', async () => {
+      const { service, projectOps } = makeService({
+        member: { findFirst: vi.fn().mockResolvedValue({ role: 'admin' }) },
+      });
+      projectOps.findMany.mockResolvedValue([twoThreadProject()]);
+
+      const result = await service.getUserProjects(ORG, 'admin-1');
+      expect(result[0].threads).toHaveLength(2);
+    });
+
+    it('counts every thread for a full grant', async () => {
+      const { service, projectOps } = makeService({
+        projectPermission: {
+          findMany: vi
+            .fn()
+            .mockResolvedValue([{ projectId: PROJECT, permission: 'full' }]),
+        },
+      });
+      projectOps.findMany.mockResolvedValue([twoThreadProject()]);
+
+      const result = await service.getUserProjects(ORG, 'grantee-1');
+      expect(result[0].threads).toHaveLength(2);
+    });
+
+    it('still counts only their own threads for a view-only grant', async () => {
+      const { service, projectOps } = makeService({
+        projectPermission: {
+          findMany: vi
+            .fn()
+            .mockResolvedValue([{ projectId: PROJECT, permission: 'view' }]),
+        },
+      });
+      projectOps.findMany.mockResolvedValue([twoThreadProject()]);
+
+      const result = await service.getUserProjects(ORG, 'someone-else');
+      expect(result[0].threads.map((t) => t.id)).toEqual(['t1']);
+    });
+
+    // The grid hides the organization's main assistant. The Redux field it
+    // filtered on was never set, so the default showed as an extra card.
+    it('marks the organization default project', async () => {
+      const { service, projectOps } = makeService();
+      projectOps.findFirst.mockResolvedValue({ id: PROJECT });
+      projectOps.findMany.mockResolvedValue([
+        twoThreadProject(),
+        { ...twoThreadProject(), id: 'other-project', threads: [] },
+      ]);
+
+      const result = await service.getUserProjects(ORG, 'owner-1');
+      expect(result.map((p) => [p.id, p.isDefault])).toEqual([
+        [PROJECT, true],
+        ['other-project', false],
+      ]);
+    });
   });
 
   describe('getProjectInstruction', () => {

@@ -22,6 +22,24 @@ const COMMUNITY_TOKENS = [
   '--chart-5',
 ] as const;
 
+/**
+ * A community's colour: a token, and how opaque to draw it.
+ *
+ * Five tokens and a plain `id % 5` gave the sixth community the first one's
+ * colour, so two unrelated groups read as one. The second lap draws the same
+ * tokens at half opacity — ten distinct swatches before anything repeats,
+ * without borrowing the rationed crimson. Past ten the cycle wraps; the
+ * legend lists at most eight.
+ */
+export function communityColour(id: number): {
+  token: (typeof COMMUNITY_TOKENS)[number];
+  alpha: number;
+} {
+  const n = COMMUNITY_TOKENS.length;
+  const slot = ((id % (n * 2)) + n * 2) % (n * 2);
+  return { token: COMMUNITY_TOKENS[slot % n], alpha: slot < n ? 1 : 0.5 };
+}
+
 /** Up to this many pages, every page is labelled. */
 const SMALL_GRAPH = 60;
 
@@ -95,7 +113,7 @@ export function BrainGraphCanvas({ view }: { view: BrainGraphView }) {
             size:
               6 + Math.sqrt(node.degree) * 2 + (node.openFindings > 0 ? 4 : 0),
             label: node.title,
-            color: palette.community[node.community % palette.community.length],
+            color: palette.community(node.community),
             forceLabel:
               labelAll || node.openFindings > 0 || node.id === view.focus,
           });
@@ -256,7 +274,12 @@ export function BrainGraphCanvas({ view }: { view: BrainGraphView }) {
                       aria-hidden="true"
                       className="inline-block size-2 shrink-0 rounded-full"
                       style={{
-                        background: `var(${COMMUNITY_TOKENS[c.id % COMMUNITY_TOKENS.length]})`,
+                        background: (() => {
+                          const { token, alpha } = communityColour(c.id);
+                          return alpha === 1
+                            ? `var(${token})`
+                            : `color-mix(in srgb, var(${token}) ${alpha * 100}%, transparent)`;
+                        })(),
                       }}
                     />
                     {t('community', { label: c.label, size: c.size })}
@@ -293,7 +316,10 @@ function tokenColours(el: HTMLElement) {
     return `rgba(${r},${g},${b},${alpha})`;
   };
   return {
-    community: COMMUNITY_TOKENS.map((c) => rgb(c)),
+    community: (id: number) => {
+      const { token, alpha } = communityColour(id);
+      return rgb(token, alpha);
+    },
     edge: {
       EXTRACTED: rgb('--muted-foreground', 0.7),
       AMBIGUOUS: rgb('--chart-3', 0.8),

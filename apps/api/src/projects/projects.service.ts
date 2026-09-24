@@ -311,8 +311,8 @@ export class ProjectsService {
         })
       ).map((t) => t.teamId);
 
-      const sharedProjectIds = (
-        await this.prisma.client.projectPermission.findMany({
+      const [grants, member, defaultProjectId] = await Promise.all([
+        this.prisma.client.projectPermission.findMany({
           where: {
             project: { organizationId },
             OR: [
@@ -322,9 +322,23 @@ export class ProjectsService {
                 : []),
             ],
           },
-          select: { projectId: true },
-        })
-      ).map((p) => p.projectId);
+          select: { projectId: true, permission: true },
+        }),
+        this.prisma.client.member
+          .findFirst({ where: { organizationId, userId } })
+          .catch(() => null),
+        this.getDefaultProjectId(organizationId),
+      ]);
+      const sharedProjectIds = grants.map((p) => p.projectId);
+      // Who sees every thread of a project is the same rule the project page
+      // applies (`getEffectiveProjectPermission`'s `canManage`): its owner, an
+      // org manager, or a `full` grant. The card used to count all threads for
+      // the owner only, so an admin's grid said "0 threads" over a page that
+      // listed dozens.
+      const managesOrg = canManageOrg(member?.role);
+      const fullGrantIds = new Set(
+        grants.filter((g) => g.permission === 'full').map((g) => g.projectId),
+      );
 
       const projects = await this.prisma.client.project.findMany({
         where: {
@@ -363,16 +377,24 @@ export class ProjectsService {
         },
       });
 
-      // Visitor-scoped threads: each user only sees threads they created.
+      // Visitor-scoped threads: without manage rights a user only sees the
+      // threads they created.
       return projects.map((project) => ({
         ...project,
+        // The organization's main assistant, which the grid hides. Said here
+        // rather than left to the client: the Redux field the grid filtered on
+        // was never set by anything, so the default showed as a fifth card.
+        isDefault: project.id === defaultProjectId,
         isOwned: project.ownerId === userId,
         isShared: project.ownerId !== userId,
         createdAt: project.createdAt.toISOString(),
         threads: project.threads
           .filter(
             (thread) =>
-              project.ownerId === userId || thread.visitorId === userId,
+              project.ownerId === userId ||
+              managesOrg ||
+              fullGrantIds.has(project.id) ||
+              thread.visitorId === userId,
           )
           .map((thread) => ({
             ...thread,

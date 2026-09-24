@@ -413,7 +413,9 @@ The company appoints a dangerous goods safety adviser, who prepares an annual re
 `;
 
 export const contentEn: DemoContent = {
-  orgName: 'Nordwind Logistics',
+  orgName: 'Nordwind Logistics Ltd',
+  generalTeam: 'General',
+  defaultAssistantTitle: 'Main assistant',
   people: {
     anna: {
       name: 'Anna Walker',

@@ -186,6 +186,11 @@ async function cleanup(
   });
   await prisma.documentFolder.deleteMany({ where: { organizationId: orgId } });
   await prisma.apiKey.deleteMany({ where: { organizationId: orgId } });
+  // By organization id alone: the platform rule the override points at is
+  // not this seed's to delete.
+  await prisma.guardrailOrgOverride.deleteMany({
+    where: { organizationId: orgId },
+  });
   await prisma.project.deleteMany({ where: { organizationId: orgId } });
   await prisma.subscription.deleteMany({ where: { referenceId: orgId } });
   await prisma.invitation.deleteMany({ where: { organizationId: orgId } });
@@ -224,7 +229,15 @@ interface Ctx {
  * has not happened yet, which the usage charts show and queries bounded by
  * `now` leave out. Such a time moves back one day. A negative offset is a
  * deliberate future date (`expiresAt`, `periodEnd`) and is left alone.
+ *
+ * "After now" includes the last `DERIVED_MARGIN_MS`: callers derive later
+ * times from these by adding seconds or minutes (an answer six seconds after
+ * its question, parsing done 131 s after upload), and one of those must not
+ * cross `now` either.
  */
+/** The most any caller adds to an `agoFrom` time; see its comment. */
+export const DERIVED_MARGIN_MS = 15 * 60_000;
+
 export function agoFrom(
   now: number,
   days: number,
@@ -233,7 +246,7 @@ export function agoFrom(
 ): Date {
   const d = new Date(now - days * DAY);
   d.setHours(hour, minute, 0, 0);
-  if (days >= 0 && d.getTime() > now) {
+  if (days >= 0 && d.getTime() > now - DERIVED_MARGIN_MS) {
     d.setDate(d.getDate() - 1);
   }
   return d;
@@ -415,7 +428,7 @@ async function seedPeopleAndOrg(ctx: Ctx, passwordHash: string): Promise<void> {
   // "General" is the team `finalizeOnboardingCommand` would create on first
   // sign-in; seeding it keeps the teams page from changing under a screenshot.
   const teams: [string, string][] = [
-    [`${orgId}-general`, 'General'],
+    [`${orgId}-general`, c.generalTeam],
     ...(Object.keys(c.teams) as TeamKey[]).map((t): [string, string] => [
       ctx.teamId(t),
       c.teams[t],
@@ -637,7 +650,7 @@ async function seedAssistants(ctx: Ctx): Promise<void> {
   await prisma.project.create({
     data: {
       id: defaultId,
-      title: 'Default Assistant',
+      title: c.defaultAssistantTitle,
       organizationId: orgId,
       ownerId: ctx.uid('anna'),
       createdAt: ago(ctx, 420),
@@ -1271,12 +1284,14 @@ async function writeTurnUsage(
 
 async function seedShowcaseThreads(ctx: Ctx): Promise<void> {
   const { c, locale } = ctx;
-  // The HR questions go to the organization's main (default) assistant, the
-  // rest to their department's; all are the CEO's, so her sidebar has them.
+  // Each question goes to its department's assistant — the hero thread is
+  // photographed with the chat header's assistant selector in view, and a
+  // named assistant is what that selector should show. All are the CEO's, so
+  // her sidebar has them.
   const plan: { assistant: AssistantKey; project: string; model: string }[] = [
     {
       assistant: 'hr',
-      project: ctx.projectIds.default,
+      project: ctx.projectIds.hr,
       model: ASSISTANTS.hr.model,
     },
     {
@@ -1557,8 +1572,49 @@ async function seedAdminData(ctx: Ctx): Promise<void> {
     select: { publicId: true },
   });
   bump(ctx, 'guardrails');
+
+  // The platform's own rules are what the admin panel's Guardrails page lists;
+  // an organization's rule appears only under "One organization". So that the
+  // platform list is not two rows with no hits, this organization switches the
+  // built-in jailbreak detector on for itself (LOG: it flags, never blocks)
+  // and it flagged two questions. Skipped when migrations have not seeded it.
+  const jailbreak = await prisma.guardrail.findFirst({
+    where: { organizationId: null, key: 'jailbreak-detection' },
+    select: { id: true, publicId: true },
+  });
+  if (jailbreak) {
+    await prisma.guardrailOrgOverride.create({
+      data: {
+        guardrailId: jailbreak.id,
+        organizationId: orgId,
+        enabled: true,
+        action: 'LOG',
+      },
+    });
+    bump(ctx, 'guardrail_org_overrides');
+  }
+  const flagged = jailbreak
+    ? (
+        [
+          ['tomasz', 2],
+          ['piotr', 5],
+        ] as const
+      ).map(([user, days]) => ({
+        type: 'GUARDRAIL_FLAGGED' as const,
+        severity: 'info' as const,
+        user: user as PersonKey,
+        days,
+        source: 'chat',
+        metadata: { guardrail: jailbreak.publicId, stage: 'INPUT' },
+      }))
+    : [];
+
   const events: {
-    type: 'GUARDRAIL_BLOCKED' | 'AUTH_LOGIN_FAILED' | 'MCP_OAUTH_FAILED';
+    type:
+      | 'GUARDRAIL_BLOCKED'
+      | 'GUARDRAIL_FLAGGED'
+      | 'AUTH_LOGIN_FAILED'
+      | 'MCP_OAUTH_FAILED';
     severity: 'warn' | 'info';
     user: PersonKey | null;
     days: number;
@@ -1609,6 +1665,7 @@ async function seedAdminData(ctx: Ctx): Promise<void> {
         reason: 'HTTP 401 Unauthorized',
       },
     },
+    ...flagged,
   ];
   for (const e of events) {
     await prisma.securityEvent.create({
