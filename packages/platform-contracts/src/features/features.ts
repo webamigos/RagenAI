@@ -34,6 +34,7 @@ export const FEATURE_KEYS = [
   'brain',
   'manageBrain',
   'brainForMembers',
+  'deleteThreads',
 ] as const;
 
 export type FeatureKey = (typeof FEATURE_KEYS)[number];
@@ -88,6 +89,12 @@ export type FeatureOverrides = Partial<Record<FeatureKey, boolean | null>>;
  * carries what its source documents say, and a member shown every page sees
  * text from documents their own access would not open. It is meant for a
  * showcase organization whose corpus everyone may read.
+ *
+ * `deleteThreads` defaults to `true`, like the `manage…` keys: every install
+ * can delete a conversation today. Off, nobody in the organization can — a
+ * showcase tenant's example threads are part of what it shows, and one shared
+ * account deleting them takes them away from every visitor until the next
+ * seed. Chat itself stays on.
  */
 export const DEFAULT_FEATURES: FeatureFlags = {
   inviteMembers: false,
@@ -103,6 +110,7 @@ export const DEFAULT_FEATURES: FeatureFlags = {
   brain: false,
   manageBrain: true,
   brainForMembers: false,
+  deleteThreads: true,
 };
 
 /** Human-readable names, shared so the admin panel and the app cannot disagree. */
@@ -121,6 +129,7 @@ export const FEATURE_LABELS: Record<FeatureKey, string> = {
   manageBrain: 'Ragen Brain: curate (extract, review, publish)',
   brainForMembers:
     'Ragen Brain: members may browse (read-only, sees every page)',
+  deleteThreads: 'Delete threads',
 };
 
 /**

@@ -1131,6 +1131,7 @@
     "close": "Chiudi"
   },
   "thread-actions": {
+    "delete-error": "Impossibile eliminare la conversazione.",
     "menu": "Azioni conversazione",
     "star": "Aggiungi ai preferiti",
     "unstar": "Rimuovi dai preferiti",

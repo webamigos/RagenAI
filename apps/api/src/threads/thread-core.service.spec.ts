@@ -2,6 +2,7 @@
 import type { Mock } from 'vitest';
 import { NotFoundException } from '@nestjs/common';
 import { ThreadsCoreService } from './thread-core.service.js';
+import type { SubscriptionsService } from '../subscriptions/subscriptions.service.js';
 import { type PrismaService } from '../prisma/prisma.service.js';
 import { type AuditLogService } from '../audit-logs/audit-log.service.js';
 import { type ProjectsService } from '../projects/projects.service.js';
@@ -67,9 +68,19 @@ describe('ThreadsCoreService', () => {
     const messages = {
       createAndStoreMessage: vi.fn(),
     } as unknown as MessagesService;
+    const subscriptions = {
+      isFeatureEnabled: vi.fn().mockResolvedValue(true),
+    } as unknown as SubscriptionsService;
 
     return {
-      service: new ThreadsCoreService(prisma, auditLog, projects, messages),
+      service: new ThreadsCoreService(
+        prisma,
+        auditLog,
+        projects,
+        messages,
+        subscriptions,
+      ),
+      subscriptions,
       prisma,
       auditLog,
       projects,
@@ -225,6 +236,29 @@ describe('ThreadsCoreService', () => {
   });
 
   describe('deleteThread', () => {
+    it('deletes nothing where the organization may not delete threads', async () => {
+      // The demo: one shared account must not remove the example threads.
+      const { service, prisma, subscriptions } = makeService({
+        thread: {
+          findFirst: vi.fn().mockResolvedValue({ id: 't1', title: 'Hi' }),
+        } as never,
+      });
+      vi.mocked(subscriptions.isFeatureEnabled).mockResolvedValue(false);
+
+      const result = await service.deleteThread('t1', 'org-1');
+
+      expect(result).toEqual({
+        success: false,
+        errorMessage: 'This organization cannot delete threads',
+      });
+      expect(subscriptions.isFeatureEnabled).toHaveBeenCalledWith(
+        'org-1',
+        'deleteThreads',
+      );
+      expect(prisma.client.thread.delete).not.toHaveBeenCalled();
+      expect(prisma.client.message.deleteMany).not.toHaveBeenCalled();
+    });
+
     it('returns not found when the thread does not belong to the org', async () => {
       const { service } = makeService({
         thread: { findFirst: vi.fn().mockResolvedValue(null) } as never,

@@ -1131,6 +1131,7 @@
     "close": "Cerrar"
   },
   "thread-actions": {
+    "delete-error": "No se pudo eliminar la conversación.",
     "menu": "Acciones de la conversación",
     "star": "Destacar",
     "unstar": "Quitar destacado",

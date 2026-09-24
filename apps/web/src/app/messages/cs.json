@@ -1131,6 +1131,7 @@
     "close": "Zavřít"
   },
   "thread-actions": {
+    "delete-error": "Vlákno se nepodařilo smazat.",
     "menu": "Akce vlákna",
     "star": "Přidat do oblíbených",
     "unstar": "Odebrat z oblíbených",

@@ -1131,6 +1131,7 @@
     "close": "Sulje"
   },
   "thread-actions": {
+    "delete-error": "Keskustelua ei voitu poistaa.",
     "menu": "Keskustelun toiminnot",
     "star": "Lisää suosikkeihin",
     "unstar": "Poista suosikeista",

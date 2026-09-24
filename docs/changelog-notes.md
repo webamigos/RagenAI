@@ -190,6 +190,14 @@ archive is the blog.
   upstream supports structured outputs (`structuredOutputs: true` in
   `routes.yaml`); the shipped Mistral route and the installer's Scaleway
   option both do. Failed findings can be retried with "Ponów" once this is deployed.
+### Thread: the demo keeps its example conversations
+
+- `[brief]` **An organization can be set so nobody deletes a thread.** A new
+  "Delete threads" switch in the admin panel, on by default. The demo turns it
+  off, so its example conversations stay for every visitor; the thread menu no
+  longer offers "Delete" there, and the server refuses it either way. A thread
+  whose delete fails now stays in the sidebar with an error, instead of
+  vanishing until the page is reloaded.
 
 ### Thread: connectors on your own network
 

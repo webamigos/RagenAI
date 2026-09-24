@@ -1131,6 +1131,7 @@
     "close": "Fechar"
   },
   "thread-actions": {
+    "delete-error": "Não foi possível excluir a conversa.",
     "menu": "Ações da conversa",
     "star": "Adicionar aos favoritos",
     "unstar": "Remover dos favoritos",

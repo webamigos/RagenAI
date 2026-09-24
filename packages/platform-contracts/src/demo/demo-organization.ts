@@ -38,6 +38,12 @@ export const DEMO_FEATURE_OVERRIDES = {
 
   /** API keys minted here outlive the demo and are not revocable per visitor. */
   apiAccess: false,
+
+  /**
+   * The seeded example threads are part of the showcase. One shared account
+   * deleting them removes them for every visitor until the next seed.
+   */
+  deleteThreads: false,
 } as const satisfies FeatureOverrides;
 
 /**

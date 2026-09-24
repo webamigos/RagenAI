@@ -1131,6 +1131,7 @@
     "close": "Bezárás"
   },
   "thread-actions": {
+    "delete-error": "A beszélgetést nem sikerült törölni.",
     "menu": "Beszélgetés műveletei",
     "star": "Hozzáadás a kedvencekhez",
     "unstar": "Eltávolítás a kedvencekből",
