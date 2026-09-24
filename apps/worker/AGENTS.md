@@ -92,7 +92,7 @@ Nine pipelines. The two ingest paths:
 - **`runFileEmbeddings`** (`src/handlers/parse-and-embed.ts`) - Main pipeline: download file from S3 → detect type → parse document → split into chunks → generate summary → prepend synthetic summary chunk → hybrid-embed (dense + sparse) → store in Qdrant → merge `UserFile.metadata.summary`
 - **`scrapeWebsite`** (`src/handlers/scrape-website.ts`) - Scrape website via FireCrawl → create document → generate embeddings → store in Qdrant
 
-and seven more in the same shape: `generateDocument`, `optimizeDocument`,
+and eight more in the same shape: `generateDocument`, `optimizeDocument`,
 `scoreDocument`, `reindexDocumentVersion`, the two scheduled ones,
 `cleanupDemoThreads` and `pruneAnalyticsRetrievals`, and Ragen Brain's
 `brainExtract` (`src/handlers/brain-extract.ts`) — candidate knowledge pages
@@ -105,7 +105,10 @@ passes: `detectContradictions` compares the pages it wrote with every page
 on the same subject from other documents (one model call per pair, on what
 is left of the run's tokens), then `reconcileBrainFindings` brings GAP,
 ORPHAN, STALE and UNOWNED in line with the pages. A failure in either is
-`null` in the result, not a failed run. `brain-contradiction-eval.ts`
+`null` in the result, not a failed run. `brainReconcileFindings` runs that
+last pass alone, for one organization — the panel starts it after a review
+decision, so a fixed problem does not wait for the next extraction to close.
+`brain-contradiction-eval.ts`
 measures the judge; change its prompt against that, per ADR-20.
 `BRAIN_EXTRACT_MODEL` (defaults to `SUMMARY_MODEL`),
 `BRAIN_EXTRACT_MAX_DOCUMENTS` and `BRAIN_EXTRACT_MAX_TOKENS` configure it, and

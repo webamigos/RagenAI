@@ -2502,7 +2502,9 @@
         "out": "{kind} →",
         "in": "← {kind}"
       },
-      "history": "Histórico"
+      "history": "Histórico",
+      "merge": "Fundir",
+      "superseded-by": "Fundida com"
     },
     "origin": {
       "EXTRACTED": "citada",
@@ -2548,8 +2550,18 @@
         "owner-not-member": "Essa pessoa não é membro da organização — escolha outra.",
         "invalid-access": "Uma das pessoas ou equipas escolhidas já não pertence à organização — recarregue e escolha de novo.",
         "published": "Esta página está publicada — ainda não é possível alterar o seu acesso.",
-        "confirm-widening": "Esta alteração alarga o acesso e tem de ser confirmada."
-      }
+        "confirm-widening": "Esta alteração alarga o acesso e tem de ser confirmada.",
+        "unmergeable": "O texto de uma página não tem uma forma que possa ser fundida — funda-a à mão ou rejeite-a."
+      },
+      "merge-label": "Fundir com",
+      "merge-placeholder": "Escolha uma página com a qual fundir",
+      "merge-suggested": "Parece o mesmo assunto",
+      "merge-others": "Outras páginas",
+      "merge-submit": "Fundir com esta página",
+      "merge-none": "Não há outra página com a qual fundir",
+      "merge-confirm-title": "Fundir esta página?",
+      "merge-confirm-description": "As suas afirmações e fontes passam para «{target}», que mantém o título, adota o acesso mais restrito dos dois e volta a revisão. Esta página fica rejeitada e aponta para ela.",
+      "merged": "Páginas fundidas"
     },
     "history": {
       "empty": "Ainda sem decisões",

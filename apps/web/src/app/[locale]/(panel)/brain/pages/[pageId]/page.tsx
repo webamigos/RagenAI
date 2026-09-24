@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { getBrainAccessQuery } from '@/features/brain/services/queries/get-brain-access-query';
 import { getBrainReviewOptionsQuery } from '@/features/brain/services/queries/get-brain-review-options-query';
 import { getKnowledgePageQuery } from '@/features/brain/services/queries/get-knowledge-page-query';
+import { getMergeTargetsQuery } from '@/features/brain/services/queries/get-merge-targets-query';
 import { Link } from '@/i18n/routing';
 
 import { AccessEditor } from '../../components/AccessEditor';
@@ -15,6 +16,7 @@ import { AccessList } from '../../components/AccessList';
 import { BrainEmpty } from '../../components/BrainEmpty';
 import { DecisionHistory } from '../../components/DecisionHistory';
 import { FindingsTable } from '../../components/FindingsTable';
+import { MergePicker } from '../../components/MergePicker';
 import { OwnerPicker } from '../../components/OwnerPicker';
 import { ReviewActions } from '../../components/ReviewActions';
 
@@ -39,10 +41,13 @@ export default async function BrainPageDetail({ params }: Props) {
   if (!page) {
     notFound();
   }
-  const [t, format, options] = await Promise.all([
+  const [t, format, options, mergeTargets] = await Promise.all([
     getTranslations('brain'),
     getFormatter(),
     getBrainReviewOptionsQuery(access.orgId),
+    page.status === 'CANDIDATE'
+      ? getMergeTargetsQuery(access.orgId, page)
+      : Promise.resolve([]),
   ]);
   const curated = page.status !== 'REJECTED';
   const date = (iso: string) =>
@@ -82,6 +87,18 @@ export default async function BrainPageDetail({ params }: Props) {
           </div>
         )}
       </header>
+
+      {page.supersededBy && (
+        <p className="mb-4 rounded-[6px] border border-border bg-background p-3 text-sm">
+          {t('page.superseded-by')}{' '}
+          <Link
+            href={`/brain/pages/${page.supersededBy.publicId}`}
+            className="text-primary underline-offset-4 hover:underline"
+          >
+            {page.supersededBy.title}
+          </Link>
+        </p>
+      )}
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_280px]">
         <div className="min-w-0 space-y-6">
@@ -232,6 +249,18 @@ export default async function BrainPageDetail({ params }: Props) {
               </ul>
             )}
           </div>
+          {page.status === 'CANDIDATE' && (
+            <div>
+              <h3 className="mb-1 text-xs font-medium uppercase text-muted-foreground">
+                {t('page.merge')}
+              </h3>
+              <MergePicker
+                publicId={page.publicId}
+                updatedAt={page.updatedAt}
+                targets={mergeTargets}
+              />
+            </div>
+          )}
           <div>
             <h3 className="mb-1 text-xs font-medium uppercase text-muted-foreground">
               {t('page.history')}

@@ -19,6 +19,8 @@ export type { ScrapeWebsitePayload };
  * ten-minute Docling parse, an embedding call — runs to completion, because
  * neither heartbeats.
  */
-export async function scrapeWebsite(payload: ScrapeWebsitePayload): Promise<string> {
+export async function scrapeWebsite(
+  payload: ScrapeWebsitePayload,
+): Promise<string> {
   return runOnTemporal(handler, payload);
 }

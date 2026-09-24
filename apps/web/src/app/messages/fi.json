@@ -2502,7 +2502,9 @@
         "out": "{kind} →",
         "in": "← {kind}"
       },
-      "history": "Historia"
+      "history": "Historia",
+      "merge": "Yhdistäminen",
+      "superseded-by": "Yhdistetty sivuun"
     },
     "origin": {
       "EXTRACTED": "lainattu",
@@ -2548,8 +2550,18 @@
         "owner-not-member": "Tämä henkilö ei ole organisaation jäsen — valitse joku muu.",
         "invalid-access": "Joku valituista henkilöistä tai tiimeistä ei enää kuulu organisaatioon — lataa uudelleen ja valitse uudelleen.",
         "published": "Tämä sivu on julkaistu — sen käyttöoikeutta ei voi vielä muuttaa.",
-        "confirm-widening": "Tämä muutos laajentaa käyttöoikeutta, ja se on vahvistettava."
-      }
+        "confirm-widening": "Tämä muutos laajentaa käyttöoikeutta, ja se on vahvistettava.",
+        "unmergeable": "Sivun teksti ei ole muodossa, jonka voi yhdistää — yhdistä se käsin tai hylkää se."
+      },
+      "merge-label": "Yhdistä sivuun",
+      "merge-placeholder": "Valitse sivu, johon yhdistetään",
+      "merge-suggested": "Näyttää samalta aiheelta",
+      "merge-others": "Muut sivut",
+      "merge-submit": "Yhdistä tähän sivuun",
+      "merge-none": "Ei muuta sivua, johon yhdistää",
+      "merge-confirm-title": "Yhdistetäänkö tämä sivu?",
+      "merge-confirm-description": "Sen väitteet ja lähteet siirtyvät sivulle ”{target}”, joka säilyttää otsikkonsa, saa kahdesta suppeamman käyttöoikeuden ja palaa arvioitavaksi. Tämä sivu merkitään hylätyksi ja viittaa siihen.",
+      "merged": "Sivut yhdistetty"
     },
     "history": {
       "empty": "Ei vielä päätöksiä",

@@ -4,12 +4,14 @@ import type { z } from 'zod';
 
 import { getCurrentUserId } from '@/app/lib/utils/auth-helpers';
 import {
+  mergeInputSchema,
   pageDecisionInputSchema,
   setAccessInputSchema,
   setOwnerInputSchema,
   type ReviewResult,
 } from '@/features/brain/contracts/brain-review.types';
 import { approveKnowledgePageCommand } from '@/features/brain/services/commands/approve-knowledge-page-command';
+import { mergeKnowledgePagesCommand } from '@/features/brain/services/commands/merge-knowledge-pages-command';
 import { rejectKnowledgePageCommand } from '@/features/brain/services/commands/reject-knowledge-page-command';
 import { setKnowledgePageAccessCommand } from '@/features/brain/services/commands/set-knowledge-page-access-command';
 import { setKnowledgePageOwnerCommand } from '@/features/brain/services/commands/set-knowledge-page-owner-command';
@@ -75,4 +77,10 @@ export async function setKnowledgePageAccessAction(
   input: unknown,
 ): Promise<ReviewResult> {
   return run(setAccessInputSchema, input, setKnowledgePageAccessCommand);
+}
+
+export async function mergeKnowledgePagesAction(
+  input: unknown,
+): Promise<ReviewResult> {
+  return run(mergeInputSchema, input, mergeKnowledgePagesCommand);
 }

@@ -18,6 +18,8 @@ const db = vi.hoisted(() => ({
   $transaction: vi.fn(async (fn: (t: typeof tx) => unknown) => fn(tx)),
 }));
 vi.mock('@ragenai/prisma-client', () => ({ default: db }));
+const reconcile = vi.hoisted(() => ({ startFindingsReconcile: vi.fn() }));
+vi.mock('../services/commands/start-findings-reconcile', () => reconcile);
 
 const { approveKnowledgePageCommand } =
   await import('../services/commands/approve-knowledge-page-command');
@@ -117,6 +119,15 @@ describe('every decision', () => {
       },
     ]);
     expect(db.$transaction).toHaveBeenCalledTimes(1);
+    expect(reconcile.startFindingsReconcile).toHaveBeenCalledWith(ORG);
+  });
+
+  it('re-runs the findings only after a decision that changed something', async () => {
+    givenPage({ updatedAt: new Date(SEEN.getTime() + 1) });
+    await rejectKnowledgePageCommand(base);
+    givenPage({ ownerId: 'u1' });
+    await setKnowledgePageOwnerCommand({ ...base, ownerId: 'u1' });
+    expect(reconcile.startFindingsReconcile).not.toHaveBeenCalled();
   });
 });
 

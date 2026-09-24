@@ -19,6 +19,8 @@ export {
   type PruneAnalyticsRetrievalsResult,
   type BrainExtractPayload,
   type BrainExtractResult,
+  type BrainReconcileFindingsPayload,
+  type BrainReconcileFindingsResult,
 } from './contract';
 
 export {

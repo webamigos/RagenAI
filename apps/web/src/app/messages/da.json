@@ -2502,7 +2502,9 @@
         "out": "{kind} →",
         "in": "← {kind}"
       },
-      "history": "Historik"
+      "history": "Historik",
+      "merge": "Fletning",
+      "superseded-by": "Flettet med"
     },
     "origin": {
       "EXTRACTED": "citeret",
@@ -2548,8 +2550,18 @@
         "owner-not-member": "Personen er ikke medlem af organisationen — vælg en anden.",
         "invalid-access": "En af de valgte personer eller teams hører ikke længere til organisationen — genindlæs, og vælg igen.",
         "published": "Denne side er udgivet — det er endnu ikke muligt at ændre dens adgang.",
-        "confirm-widening": "Denne ændring udvider adgangen og skal bekræftes."
-      }
+        "confirm-widening": "Denne ændring udvider adgangen og skal bekræftes.",
+        "unmergeable": "En sides tekst har ikke en form, der kan flettes — flet den i hånden, eller afvis den."
+      },
+      "merge-label": "Flet med",
+      "merge-placeholder": "Vælg en side at flette med",
+      "merge-suggested": "Ligner samme emne",
+      "merge-others": "Andre sider",
+      "merge-submit": "Flet med denne side",
+      "merge-none": "Ingen anden side at flette med",
+      "merge-confirm-title": "Flet denne side?",
+      "merge-confirm-description": "Dens udsagn og kilder flyttes til “{target}”, som beholder sin titel, får den snævreste af de to adgange og går tilbage til gennemgang. Denne side markeres som afvist og peger derhen.",
+      "merged": "Siderne er flettet"
     },
     "history": {
       "empty": "Ingen beslutninger endnu",

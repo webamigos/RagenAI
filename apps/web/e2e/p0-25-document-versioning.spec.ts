@@ -29,9 +29,9 @@ test.describe('Document versioning', () => {
     expect(response.status()).toBe(200);
 
     const { versions } = await response.json();
-    expect(versions.map((v: { versionNumber: number }) => v.versionNumber)).toEqual([
-      2, 1,
-    ]);
+    expect(
+      versions.map((v: { versionNumber: number }) => v.versionNumber),
+    ).toEqual([2, 1]);
     expect(versions[0]).toMatchObject({
       id: TEST_DOCUMENT_V2_ID,
       changeType: 'MANUAL',
@@ -111,7 +111,9 @@ test.describe('Document versioning', () => {
     const active = await request.get(
       `/api/documents/${TEST_DOCUMENT_ID}/versions/${activeId}`,
     );
-    expect((await active.json()).version.content).toBe(TEST_DOCUMENT_V2_CONTENT);
+    expect((await active.json()).version.content).toBe(
+      TEST_DOCUMENT_V2_CONTENT,
+    );
   });
 
   test('will not read another organization document', async ({ request }) => {

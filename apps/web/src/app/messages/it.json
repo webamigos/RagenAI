@@ -2502,7 +2502,9 @@
         "out": "{kind} →",
         "in": "← {kind}"
       },
-      "history": "Cronologia"
+      "history": "Cronologia",
+      "merge": "Unisci",
+      "superseded-by": "Unita a"
     },
     "origin": {
       "EXTRACTED": "citata",
@@ -2548,8 +2550,18 @@
         "owner-not-member": "Questa persona non fa parte dell’organizzazione: scegli qualcun altro.",
         "invalid-access": "Una delle persone o dei team scelti non fa più parte dell’organizzazione: ricarica e scegli di nuovo.",
         "published": "Questa pagina è pubblicata: la modifica del suo accesso non è ancora disponibile.",
-        "confirm-widening": "Questa modifica amplia l’accesso e deve essere confermata."
-      }
+        "confirm-widening": "Questa modifica amplia l’accesso e deve essere confermata.",
+        "unmergeable": "Il testo di una pagina non ha una forma che si possa unire: uniscila a mano o rifiutala."
+      },
+      "merge-label": "Unisci a",
+      "merge-placeholder": "Scegli una pagina a cui unirla",
+      "merge-suggested": "Sembra lo stesso argomento",
+      "merge-others": "Altre pagine",
+      "merge-submit": "Unisci a questa pagina",
+      "merge-none": "Nessun’altra pagina a cui unirla",
+      "merge-confirm-title": "Unire questa pagina?",
+      "merge-confirm-description": "Le sue affermazioni e fonti passano a «{target}», che mantiene il titolo, prende l’accesso più ristretto dei due e torna in revisione. Questa pagina viene segnata come rifiutata e rimanda a essa.",
+      "merged": "Pagine unite"
     },
     "history": {
       "empty": "Ancora nessuna decisione",

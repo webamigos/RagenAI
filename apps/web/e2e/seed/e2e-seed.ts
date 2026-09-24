@@ -56,6 +56,11 @@ import {
   TEST_BRAIN_PAGE_PUBLIC_ID,
   TEST_BRAIN_PAGE_TITLE,
   TEST_BRAIN_REVIEW_PAGE_PUBLIC_ID,
+  TEST_BRAIN_MERGE_SOURCE_CLAIM,
+  TEST_BRAIN_MERGE_SOURCE_PUBLIC_ID,
+  TEST_BRAIN_MERGE_TARGET_CLAIM,
+  TEST_BRAIN_MERGE_TARGET_PUBLIC_ID,
+  TEST_BRAIN_MERGE_TITLE,
   TEST_BRAIN_REVIEW_PAGE_TITLE,
   TEST_BRAIN_SOURCE_QUOTE,
 } from '../constants.js';
@@ -701,6 +706,52 @@ async function seed() {
       accessibleBy: [`user:${TEST_USER_ID}`],
     },
   });
+  // p0-34's pair: an approved page and a fresh candidate on the same
+  // subject, as `replaceCandidatesFromFile` leaves them (suffixed slug).
+  const rendered = (claim: string) =>
+    `# ${TEST_BRAIN_MERGE_TITLE}\n\nZasady pracy zdalnej.\n\n- ${claim} [1]\n\n---\n\n1. (§1) „${claim}”\n`;
+  for (const [publicId, slug, status, claim] of [
+    [
+      TEST_BRAIN_MERGE_TARGET_PUBLIC_ID,
+      'e2e-brain-praca-zdalna',
+      'APPROVED',
+      TEST_BRAIN_MERGE_TARGET_CLAIM,
+    ],
+    [
+      TEST_BRAIN_MERGE_SOURCE_PUBLIC_ID,
+      'e2e-brain-praca-zdalna-2',
+      'CANDIDATE',
+      TEST_BRAIN_MERGE_SOURCE_CLAIM,
+    ],
+  ] as const) {
+    const merged = await prisma.knowledgePage.create({
+      data: {
+        publicId,
+        organizationId: TEST_ORG_ID,
+        title: TEST_BRAIN_MERGE_TITLE,
+        slug,
+        type: 'POLICY',
+        status,
+        ownerId: TEST_USER_ID,
+        content: rendered(claim),
+        contentHash: `sha256:${(status === 'APPROVED' ? '3' : '4').repeat(64)}`,
+        accessibleBy: [`org:${TEST_ORG_ID}`],
+      },
+      select: { id: true },
+    });
+    await prisma.knowledgePageSource.create({
+      data: {
+        organizationId: TEST_ORG_ID,
+        pageId: merged.id,
+        fileId: TEST_FILE_ID,
+        documentVersionId: TEST_DOCUMENT_V1_ID,
+        span: '§1',
+        quote: claim,
+        hash: `sha256:${(status === 'APPROVED' ? '5' : '6').repeat(64)}`,
+      },
+    });
+  }
+
   console.log(
     `Created Brain fixtures: page ${brainPage.id}, source ${brainSource.id}, two findings`,
   );

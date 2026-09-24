@@ -13,6 +13,7 @@ const commands = vi.hoisted(() => ({
   reject: vi.fn(),
   owner: vi.fn(),
   access: vi.fn(),
+  merge: vi.fn(),
 }));
 
 vi.mock(
@@ -23,6 +24,10 @@ vi.mock('@/app/lib/utils/auth-helpers', () => auth);
 vi.mock(
   '@/features/brain/services/commands/approve-knowledge-page-command',
   () => ({ approveKnowledgePageCommand: commands.approve }),
+);
+vi.mock(
+  '@/features/brain/services/commands/merge-knowledge-pages-command',
+  () => ({ mergeKnowledgePagesCommand: commands.merge }),
 );
 vi.mock(
   '@/features/brain/services/commands/reject-knowledge-page-command',
@@ -74,6 +79,11 @@ describe('Brain review actions', () => {
       () => actions.rejectKnowledgePageAction(ref),
       () => actions.setKnowledgePageOwnerAction({ ...ref, ownerId: 'u1' }),
       () => actions.setKnowledgePageAccessAction({ ...ref, principals: [] }),
+      () =>
+        actions.mergeKnowledgePagesAction({
+          ...ref,
+          targetPublicId: '66666666-7777-4888-9999-aaaaaaaaaaaa',
+        }),
     ]) {
       await expect(call()).resolves.toEqual({
         success: false,
