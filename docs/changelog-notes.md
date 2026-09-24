@@ -80,7 +80,7 @@ archive is the blog.
     reads as a sentence in your language, with the technical detail folded away.
 
   Also: the sidebar calls an organization's owner "Owner" rather than
-  "Org admin". ([#TBD])
+  "Org admin". ([#1345](https://github.com/webamigos/RagenAI/pull/1345))
 - `[brief]` **The knowledge base lists each document once.** A document imported
   into an assistant appeared twice, once for the original and once for the
   assistant's copy, and was counted twice in every total. Inside a folder, the
