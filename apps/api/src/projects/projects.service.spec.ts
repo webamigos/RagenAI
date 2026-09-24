@@ -923,23 +923,6 @@ describe('ProjectsService', () => {
       const result = await service.getUserProjects(ORG, 'someone-else');
       expect(result[0].threads.map((t) => t.id)).toEqual(['t1']);
     });
-
-    // The grid hides the organization's main assistant. The Redux field it
-    // filtered on was never set, so the default showed as an extra card.
-    it('marks the organization default project', async () => {
-      const { service, projectOps } = makeService();
-      projectOps.findFirst.mockResolvedValue({ id: PROJECT });
-      projectOps.findMany.mockResolvedValue([
-        twoThreadProject(),
-        { ...twoThreadProject(), id: 'other-project', threads: [] },
-      ]);
-
-      const result = await service.getUserProjects(ORG, 'owner-1');
-      expect(result.map((p) => [p.id, p.isDefault])).toEqual([
-        [PROJECT, true],
-        ['other-project', false],
-      ]);
-    });
   });
 
   describe('getProjectInstruction', () => {

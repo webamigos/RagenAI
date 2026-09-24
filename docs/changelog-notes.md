@@ -70,10 +70,8 @@ archive is the blog.
 
 ### Thread: the assistants grid tells the truth
 
-- `[brief]` **The assistants grid hides the organization's main assistant
-  again, and counts threads the way the assistant's page does.** The
-  default assistant showed up as an extra card on every organization's grid.
-  An admin also saw "0 threads" on an assistant whose page listed dozens:
+- `[brief]` **The assistants grid counts threads the way the assistant's page
+  does.** An admin saw "0 threads" on an assistant whose page listed dozens:
   the card counted only their own threads, while the page shows admins all
   of them. Also, in Brain's graph the sixth group of pages no longer shares
   the first one's colour.
