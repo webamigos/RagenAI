@@ -89,6 +89,13 @@ archive is the blog.
 
 ### Thread: Ragen Brain for a showcase
 
+- `[brief]` **A readable neighbourhood in Brain's graph.** Opening a page's
+  neighbourhood no longer cuts off the names of pages at the right edge, or
+  lets one page's name run into the next page: small views spread out and
+  leave room for their labels.
+- `[brief]` **The graph's legend shows its lines.** Each entry now draws the
+  line it describes — the thick confirmed one, the amber uncertain one, the
+  faint inferred one — so the words only have to say what it means.
 - `[brief]` **Ragen Brain can be shown read-only.** Two new per-organization
   switches in the admin panel's Features page:
   - **Ragen Brain: curate** (on by default): turn it off to freeze Brain

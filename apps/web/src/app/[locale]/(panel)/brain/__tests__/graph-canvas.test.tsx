@@ -14,13 +14,21 @@ const sigma = vi.hoisted(() => ({
   instances: [] as {
     graph: unknown;
     handlers: Record<string, (e: unknown) => void>;
+    cameraStates: Record<string, number>[];
   }[],
 }));
 vi.mock('sigma', () => ({
   default: class {
     handlers: Record<string, (e: unknown) => void> = {};
+    cameraStates: Record<string, number>[] = [];
     constructor(public graph: unknown) {
       sigma.instances.push(this as never);
+    }
+    getCamera() {
+      return {
+        setState: (state: Record<string, number>) =>
+          this.cameraStates.push(state),
+      };
     }
     on(event: string, fn: (e: unknown) => void) {
       this.handlers[event] = fn;
@@ -35,7 +43,8 @@ vi.mock('@/i18n/routing', () => ({
   ),
 }));
 
-const { BrainGraphCanvas } = await import('../components/BrainGraphCanvas');
+const { BrainGraphCanvas, ROOMY_GRAPH } =
+  await import('../components/BrainGraphCanvas');
 
 const A = '00000000-0000-4000-8000-000000000001';
 const B = '00000000-0000-4000-8000-000000000002';
@@ -182,5 +191,74 @@ describe('communityColour', () => {
     for (let id = 0; id < 20; id += 1) {
       expect(communityColour(id).token).not.toBe('--chart-4');
     }
+  });
+});
+
+describe('BrainGraphCanvas framing', () => {
+  const renderView = (v: typeof view) =>
+    render(
+      <NextIntlClientProvider locale="en" messages={messages}>
+        <BrainGraphCanvas view={v} />
+      </NextIntlClientProvider>,
+    );
+
+  // Sigma fits the camera to nodes, not labels, and labels grow rightwards:
+  // the rightmost page's name ran off the canvas ("Zgłaszani…").
+  it('leaves room for right-hand labels in a neighbourhood-sized view', async () => {
+    renderView(view);
+    await waitFor(() => expect(sigma.instances).toHaveLength(1));
+    const [state] = sigma.instances[0]!.cameraStates;
+    expect(state).toBeDefined();
+    expect(state!.ratio).toBeGreaterThan(1);
+    expect(state!.x).toBeGreaterThan(0.5);
+  });
+
+  // Zoomed out, the whole graph only got smaller and its labels ran together.
+  it('keeps the tight fit for a larger graph', async () => {
+    const nodes = Array.from({ length: ROOMY_GRAPH + 1 }, (_, i) => ({
+      ...view.nodes[1]!,
+      id: `00000000-0000-4000-8000-${String(i).padStart(12, '0')}`,
+      title: `Strona ${i}`,
+    }));
+    renderView({
+      ...view,
+      nodes,
+      edges: [],
+      shown: { nodes: nodes.length, edges: 0 },
+      total: { nodes: nodes.length, edges: 0 },
+    });
+    await waitFor(() => expect(sigma.instances).toHaveLength(1));
+    expect(sigma.instances[0]!.cameraStates).toHaveLength(0);
+  });
+});
+
+describe('BrainGraphCanvas legend', () => {
+  // The legend said "thick line", "thinner, amber" in words only. Each entry
+  // now shows the line, drawn with the widths and colours the canvas uses.
+  it('shows each kind of relation as the line the graph draws', async () => {
+    render(
+      <NextIntlClientProvider locale="en" messages={messages}>
+        <BrainGraphCanvas view={view} />
+      </NextIntlClientProvider>,
+    );
+    const legend = await screen.findByTestId('brain-graph-legend');
+    const items = legend.querySelectorAll('li');
+    expect(items).toHaveLength(4);
+    items.forEach((li) => expect(li.querySelector('svg')).not.toBeNull());
+
+    const width = (i: number) =>
+      Number(items[i]!.querySelector('line')!.getAttribute('stroke-width'));
+    // Stated > uncertain > inferred, as on the canvas.
+    expect(width(0)).toBeGreaterThan(width(1));
+    expect(width(1)).toBeGreaterThan(width(2));
+    // Amber marks the uncertain line.
+    expect(items[1]!.querySelector('line')!.getAttribute('stroke')).toBe(
+      'var(--chart-3)',
+    );
+    // The words say only what the line means.
+    expect(items[0]).toHaveTextContent(
+      messages.brain.graph['legend-extracted'],
+    );
+    expect(items[0]).not.toHaveTextContent(/thick/i);
   });
 });
