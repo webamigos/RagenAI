@@ -22,10 +22,10 @@ const messages = {
   },
 };
 
-function renderViewer(url = '/api/files/xlsx1') {
+function renderViewer(url = '/api/files/xlsx1', maxRows?: number) {
   return render(
     <NextIntlClientProvider locale="en" messages={messages}>
-      <XlsxViewer contentUrl={url} />
+      <XlsxViewer contentUrl={url} maxRows={maxRows} />
     </NextIntlClientProvider>,
   );
 }
@@ -167,26 +167,28 @@ describe('XlsxViewer', () => {
     expect(await screen.findByText('Failed to load file.')).toBeInTheDocument();
   });
 
-  it(`renders at most ${XLSX_PREVIEW_MAX_ROWS} rows, and says so`, async () => {
-    const total = XLSX_PREVIEW_MAX_ROWS + 250;
-    const rows = Array.from({ length: total }, (_, i) => [`wiersz ${i + 1}`]);
+  // Proven on a small cap: a thousand rendered rows outran the 5 s timeout
+  // under CI's coverage run. The production value has its own assertion.
+  it('renders at most the capped number of rows, and says so', async () => {
+    const cap = 20;
+    const rows = Array.from({ length: cap + 5 }, (_, i) => [`wiersz ${i + 1}`]);
     serve(workbook({ Duży: rows }));
-    renderViewer();
+    renderViewer('/api/files/xlsx1', cap);
 
     const table = await screen.findByRole('table');
+    expect(within(table).getByText(`wiersz ${cap}`)).toBeInTheDocument();
     expect(
-      within(table).getByText(`wiersz ${XLSX_PREVIEW_MAX_ROWS}`),
-    ).toBeInTheDocument();
-    expect(
-      within(table).queryByText(`wiersz ${XLSX_PREVIEW_MAX_ROWS + 1}`),
+      within(table).queryByText(`wiersz ${cap + 1}`),
     ).not.toBeInTheDocument();
     // One header row plus the capped body.
-    expect(within(table).getAllByRole('row')).toHaveLength(
-      XLSX_PREVIEW_MAX_ROWS + 1,
-    );
+    expect(within(table).getAllByRole('row')).toHaveLength(cap + 1);
     expect(screen.getByRole('status')).toHaveTextContent(
-      'Showing the first 1,000 of 1,250 rows.',
+      'Showing the first 20 of 25 rows.',
     );
+  });
+
+  it('caps a sheet at 1,000 rows in production', () => {
+    expect(XLSX_PREVIEW_MAX_ROWS).toBe(1000);
   });
 
   it('says nothing about a cap on a sheet that fits under it', async () => {

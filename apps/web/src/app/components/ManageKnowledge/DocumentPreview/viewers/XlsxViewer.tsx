@@ -19,6 +19,12 @@ export const XLSX_PREVIEW_MAX_ROWS = 1000;
 
 type Props = {
   contentUrl: string;
+  /**
+   * Rows rendered per sheet. Production always uses the default; the prop
+   * exists so a test can prove the cap without rendering a thousand rows,
+   * which under coverage outran the suite's 5 s timeout in CI.
+   */
+  maxRows?: number;
 };
 
 type ParsedSheet = {
@@ -41,7 +47,11 @@ type SheetJs = typeof import('xlsx');
  * `raw: false` takes each cell's formatted text — a date reads as a date, not
  * as a serial number — which is what the user sees in their spreadsheet app.
  */
-function parseSheet(XLSX: SheetJs, sheet: WorkSheet | undefined): ParsedSheet {
+function parseSheet(
+  XLSX: SheetJs,
+  sheet: WorkSheet | undefined,
+  maxRows: number,
+): ParsedSheet {
   const ref = sheet?.['!ref'];
   if (!sheet || !ref) {
     return { columns: [], rowNumbers: [], rows: [], totalRows: 0 };
@@ -58,7 +68,7 @@ function parseSheet(XLSX: SheetJs, sheet: WorkSheet | undefined): ParsedSheet {
       defval: '',
       blankrows: true,
     })
-    .slice(0, XLSX_PREVIEW_MAX_ROWS)
+    .slice(0, maxRows)
     .map((row) => row.map((cell) => (cell == null ? '' : String(cell))));
 
   const columns: string[] = [];
@@ -74,7 +84,10 @@ function parseSheet(XLSX: SheetJs, sheet: WorkSheet | undefined): ParsedSheet {
   };
 }
 
-export function XlsxViewer({ contentUrl }: Props) {
+export function XlsxViewer({
+  contentUrl,
+  maxRows = XLSX_PREVIEW_MAX_ROWS,
+}: Props) {
   const t = useTranslations('document-preview');
   // Every result is tagged with the URL it came from, and anything tagged with
   // another URL reads as not loaded yet. That is how a new file resets the
@@ -111,7 +124,7 @@ export function XlsxViewer({ contentUrl }: Props) {
       .then(([XLSX, buffer]) => {
         const workbook = XLSX.read(new Uint8Array(buffer), {
           type: 'array',
-          sheetRows: XLSX_PREVIEW_MAX_ROWS,
+          sheetRows: maxRows,
         });
         if (!cancelled) {
           setResult({ url: contentUrl, XLSX, workbook });
@@ -126,7 +139,7 @@ export function XlsxViewer({ contentUrl }: Props) {
     return () => {
       cancelled = true;
     };
-  }, [contentUrl]);
+  }, [contentUrl, maxRows]);
 
   const current = result?.url === contentUrl ? result : null;
   const loaded = current && 'workbook' in current ? current : null;
@@ -141,9 +154,9 @@ export function XlsxViewer({ contentUrl }: Props) {
   const sheet = useMemo(
     () =>
       loaded && sheetName
-        ? parseSheet(loaded.XLSX, loaded.workbook.Sheets[sheetName])
+        ? parseSheet(loaded.XLSX, loaded.workbook.Sheets[sheetName], maxRows)
         : null,
-    [loaded, sheetName],
+    [loaded, sheetName, maxRows],
   );
 
   if (error) {
