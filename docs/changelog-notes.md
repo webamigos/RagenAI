@@ -68,6 +68,13 @@ archive is the blog.
 
 ## Unreleased
 
+### Thread: sources you can read
+
+- `[brief]` **A source's quote reads as text.** The passage under each source
+  used to show the parser's formatting: "### How long…" for a heading,
+  "| Refund | 14 days |" for a table row. It now shows the words, with table
+  cells separated by " · ".
+
 ### Thread: the assistants grid tells the truth
 
 - `[brief]` **The assistants grid counts threads the way the assistant's page
