@@ -1289,7 +1289,8 @@
     "sort-dir-desc": "Malejąco",
     "filter-clear": "Wyczyść filtr {filter}",
     "filter-pii-policy": "Polityka",
-    "filter-pii-policy-all": "Wszystkie"
+    "filter-pii-policy-all": "Wszystkie",
+    "status-withdrawn": "Wyłączony z wyszukiwania"
   },
   "folders": {
     "title": "Foldery",
@@ -2389,7 +2390,8 @@
     "tabs": {
       "pages": "Strony wiedzy",
       "findings": "Wykrycia",
-      "graph": "Graf"
+      "graph": "Graf",
+      "documents": "Dokumenty"
     },
     "filters": {
       "status": "Status",
@@ -2670,6 +2672,40 @@
       "withdrawn": "Strona wycofana",
       "withdraw-title": "Wycofać tę stronę z bazy wiedzy?",
       "withdraw-description": "Odpowiedzi przestaną ją cytować zaraz po wycofaniu. Strona pozostaje zatwierdzona i można ją opublikować ponownie; wcześniejsze odpowiedzi zachowują swoje cytaty."
+    },
+    "documents": {
+      "title": "Dokumenty — Ragen Brain",
+      "intro": "Gdy wiedza z dokumentu jest już w zatwierdzonych stronach, możesz wyłączyć sam dokument z wyszukiwania — odpowiedzi będą wtedy korzystać tylko ze zrecenzowanych stron. Nic nie jest usuwane i w każdej chwili można go przywrócić.",
+      "empty-title": "Na razie brak dokumentów",
+      "empty-description": "Dokumenty pojawią się tutaj, gdy trafią do bazy wiedzy.",
+      "columns": {
+        "document": "Dokument",
+        "approved": "Zatwierdzone strony",
+        "candidates": "Kandydaci",
+        "retrieval": "Wyszukiwanie",
+        "actions": "Akcje"
+      },
+      "retrieval": {
+        "in": "W wyszukiwaniu",
+        "withdrawn": "Wyłączony z wyszukiwania",
+        "processing": "W przetwarzaniu",
+        "failed": "Błąd"
+      },
+      "withdraw": "Wyłącz z wyszukiwania",
+      "restore": "Przywróć",
+      "withdrawn": "Dokument wyłączony z wyszukiwania",
+      "restored": "Dokument wraca do wyszukiwania",
+      "needs-approved": "Najpierw zatwierdź stronę, która cytuje ten dokument",
+      "withdraw-title": "Wyłączyć ten dokument z wyszukiwania?",
+      "withdraw-description": "Odpowiedzi przestaną korzystać bezpośrednio z „{name}” i użyją zbudowanych z niego zatwierdzonych stron. Dokument, jego wersje i wszystkie cytaty zostają; w każdej chwili możesz go przywrócić.",
+      "errors": {
+        "invalid-input": "Nie udało się odczytać żądania — odśwież stronę i spróbuj ponownie.",
+        "not-found": "Ten dokument już nie istnieje albo należy do Brain.",
+        "not-curated": "Żadna zatwierdzona strona nie cytuje jeszcze tego dokumentu — najpierw zatwierdź stronę.",
+        "invalid-status": "Dokument nie jest w stanie wymaganym przez tę akcję — odśwież stronę.",
+        "index-unavailable": "Nie udało się zmienić indeksu — nic się nie zmieniło; spróbuj ponownie.",
+        "failed-to-start": "Ponowne przetwarzanie nie ruszyło — spróbuj za chwilę."
+      }
     }
   }
 }

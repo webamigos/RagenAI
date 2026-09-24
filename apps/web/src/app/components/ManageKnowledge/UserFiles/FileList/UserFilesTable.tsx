@@ -210,6 +210,14 @@ function FileStatusBadge({
     return <StatusBadge state="ready" label={t('status-ready')} />;
   }
 
+  // Taken out of retrieval on purpose, its knowledge served by Brain's pages
+  // (spec E9). Not "queued": nothing is waiting, and saying so would be the
+  // one thing a status must not do. The word carries the state; the quiet
+  // style only says nothing is wrong.
+  if (embeddingStatus === EmbeddingStatus.WITHDRAWN) {
+    return <StatusBadge state="queued" label={t('status-withdrawn')} />;
+  }
+
   if (
     embeddingStatus === EmbeddingStatus.FAILED ||
     parsingStatus === ParsingStatus.FAILED

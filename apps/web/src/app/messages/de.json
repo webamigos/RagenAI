@@ -1289,7 +1289,8 @@
     "sort-dir-desc": "Absteigend",
     "filter-clear": "Filter {filter} zurücksetzen",
     "filter-pii-policy": "Richtlinie",
-    "filter-pii-policy-all": "Alle"
+    "filter-pii-policy-all": "Alle",
+    "status-withdrawn": "Aus der Suche genommen"
   },
   "folders": {
     "title": "Ordner",
@@ -2389,7 +2390,8 @@
     "tabs": {
       "pages": "Wissensseiten",
       "findings": "Befunde",
-      "graph": "Graph"
+      "graph": "Graph",
+      "documents": "Dokumente"
     },
     "filters": {
       "status": "Status",
@@ -2670,6 +2672,40 @@
       "withdrawn": "Seite zurückgezogen",
       "withdraw-title": "Diese Seite aus der Wissensdatenbank zurückziehen?",
       "withdraw-description": "Antworten zitieren sie nicht mehr, sobald sie zurückgezogen ist. Die Seite bleibt freigegeben und kann erneut veröffentlicht werden; frühere Antworten behalten ihre Zitate."
+    },
+    "documents": {
+      "title": "Dokumente — Ragen Brain",
+      "intro": "Sobald das Wissen eines Dokuments in freigegebenen Seiten steckt, können Sie das Dokument selbst aus der Suche nehmen — Antworten stützen sich dann nur auf die geprüften Seiten. Nichts wird gelöscht, und es lässt sich jederzeit zurückholen.",
+      "empty-title": "Noch keine Dokumente",
+      "empty-description": "Dokumente erscheinen hier, sobald sie in der Wissensdatenbank sind.",
+      "columns": {
+        "document": "Dokument",
+        "approved": "Freigegebene Seiten",
+        "candidates": "Kandidaten",
+        "retrieval": "Suche",
+        "actions": "Aktionen"
+      },
+      "retrieval": {
+        "in": "Durchsuchbar",
+        "withdrawn": "Aus der Suche genommen",
+        "processing": "Wird verarbeitet",
+        "failed": "Fehlgeschlagen"
+      },
+      "withdraw": "Aus der Suche nehmen",
+      "restore": "Zurückholen",
+      "withdrawn": "Dokument aus der Suche genommen",
+      "restored": "Dokument wird wieder in die Suche aufgenommen",
+      "needs-approved": "Geben Sie zuerst eine Seite frei, die dieses Dokument zitiert",
+      "withdraw-title": "Dieses Dokument aus der Suche nehmen?",
+      "withdraw-description": "Antworten stützen sich dann nicht mehr direkt auf „{name}“, sondern auf die daraus erstellten freigegebenen Seiten. Das Dokument, seine Versionen und alle Zitate bleiben; Sie können es jederzeit zurückholen.",
+      "errors": {
+        "invalid-input": "Die Anfrage wurde nicht verstanden — laden Sie die Seite neu und versuchen Sie es erneut.",
+        "not-found": "Dieses Dokument existiert nicht mehr oder gehört Brain.",
+        "not-curated": "Noch keine freigegebene Seite zitiert dieses Dokument — geben Sie zuerst eine frei.",
+        "invalid-status": "Das Dokument ist nicht im nötigen Zustand — laden Sie die Seite neu.",
+        "index-unavailable": "Der Index konnte nicht geändert werden — nichts wurde geändert; versuchen Sie es erneut.",
+        "failed-to-start": "Die erneute Verarbeitung konnte nicht starten — versuchen Sie es gleich noch einmal."
+      }
     }
   }
 }

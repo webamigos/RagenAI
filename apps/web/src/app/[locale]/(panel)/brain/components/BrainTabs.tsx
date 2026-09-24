@@ -9,6 +9,7 @@ const TABS = [
   { key: 'pages', path: '/brain' },
   { key: 'findings', path: '/brain/findings' },
   { key: 'graph', path: '/brain/graph' },
+  { key: 'documents', path: '/brain/documents' },
 ] as const;
 
 export function BrainTabs() {

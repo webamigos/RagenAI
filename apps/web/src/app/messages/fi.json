@@ -1289,7 +1289,8 @@
     "sort-dir-desc": "Laskeva",
     "filter-clear": "Tyhjennä suodatin {filter}",
     "filter-pii-policy": "Käytäntö",
-    "filter-pii-policy-all": "Kaikki"
+    "filter-pii-policy-all": "Kaikki",
+    "status-withdrawn": "Poistettu hausta"
   },
   "folders": {
     "title": "Kansiot",
@@ -2389,7 +2390,8 @@
     "tabs": {
       "pages": "Tietosivut",
       "findings": "Havainnot",
-      "graph": "Graafi"
+      "graph": "Graafi",
+      "documents": "Asiakirjat"
     },
     "filters": {
       "status": "Tila",
@@ -2670,6 +2672,40 @@
       "withdrawn": "Sivu vedetty pois",
       "withdraw-title": "Vedetäänkö tämä sivu pois tietopankista?",
       "withdraw-description": "Vastaukset lakkaavat lainaamasta sitä heti poisvedon jälkeen. Sivu pysyy hyväksyttynä ja sen voi julkaista uudelleen; aiemmat vastaukset säilyttävät lainauksensa."
+    },
+    "documents": {
+      "title": "Asiakirjat — Ragen Brain",
+      "intro": "Kun asiakirjan tieto on jo hyväksytyillä sivuilla, voit poistaa itse asiakirjan hausta — vastaukset käyttävät silloin vain arvioituja sivuja. Mitään ei poisteta, ja sen voi palauttaa milloin tahansa.",
+      "empty-title": "Ei vielä asiakirjoja",
+      "empty-description": "Asiakirjat näkyvät täällä, kun ne ovat tietopankissa.",
+      "columns": {
+        "document": "Asiakirja",
+        "approved": "Hyväksytyt sivut",
+        "candidates": "Ehdotukset",
+        "retrieval": "Haku",
+        "actions": "Toiminnot"
+      },
+      "retrieval": {
+        "in": "Haettavissa",
+        "withdrawn": "Poistettu hausta",
+        "processing": "Käsitellään",
+        "failed": "Virhe"
+      },
+      "withdraw": "Poista hausta",
+      "restore": "Palauta",
+      "withdrawn": "Asiakirja poistettu hausta",
+      "restored": "Asiakirja palaa hakuun",
+      "needs-approved": "Hyväksy ensin sivu, joka lainaa tätä asiakirjaa",
+      "withdraw-title": "Poistetaanko tämä asiakirja hausta?",
+      "withdraw-description": "Vastaukset eivät enää käytä suoraan asiakirjaa ”{name}”, vaan siitä koottuja hyväksyttyjä sivuja. Asiakirja, sen versiot ja kaikki lainaukset säilyvät; voit palauttaa sen milloin tahansa.",
+      "errors": {
+        "invalid-input": "Pyyntöä ei ymmärretty — lataa sivu uudelleen ja yritä uudelleen.",
+        "not-found": "Tätä asiakirjaa ei enää ole, tai se kuuluu Brainille.",
+        "not-curated": "Mikään hyväksytty sivu ei vielä lainaa tätä asiakirjaa — hyväksy ensin yksi.",
+        "invalid-status": "Asiakirja ei ole tarvittavassa tilassa — lataa sivu uudelleen.",
+        "index-unavailable": "Indeksiä ei voitu muuttaa — mikään ei muuttunut; yritä uudelleen.",
+        "failed-to-start": "Uudelleenkäsittelyä ei voitu aloittaa — yritä hetken kuluttua uudelleen."
+      }
     }
   }
 }

@@ -1289,7 +1289,8 @@
     "sort-dir-desc": "Csökkenő",
     "filter-clear": "{filter} szűrő törlése",
     "filter-pii-policy": "Szabály",
-    "filter-pii-policy-all": "Mind"
+    "filter-pii-policy-all": "Mind",
+    "status-withdrawn": "Kivéve a keresésből"
   },
   "folders": {
     "title": "Mappák",
@@ -2389,7 +2390,8 @@
     "tabs": {
       "pages": "Tudásoldalak",
       "findings": "Észrevételek",
-      "graph": "Gráf"
+      "graph": "Gráf",
+      "documents": "Dokumentumok"
     },
     "filters": {
       "status": "Állapot",
@@ -2670,6 +2672,40 @@
       "withdrawn": "Oldal visszavonva",
       "withdraw-title": "Visszavonja ezt az oldalt a tudásbázisból?",
       "withdraw-description": "A válaszok a visszavonás után azonnal nem idézik. Az oldal jóváhagyott marad, és újra közzétehető; a korábbi válaszok megtartják az idézeteiket."
+    },
+    "documents": {
+      "title": "Dokumentumok — Ragen Brain",
+      "intro": "Ha egy dokumentum tudása már jóváhagyott oldalakban él, magát a dokumentumot kiveheti a keresésből — a válaszok ekkor csak az ellenőrzött oldalakra támaszkodnak. Semmi sem törlődik, és bármikor visszatehető.",
+      "empty-title": "Még nincsenek dokumentumok",
+      "empty-description": "A dokumentumok itt jelennek meg, amint a tudásbázisba kerülnek.",
+      "columns": {
+        "document": "Dokumentum",
+        "approved": "Jóváhagyott oldalak",
+        "candidates": "Jelöltek",
+        "retrieval": "Keresés",
+        "actions": "Műveletek"
+      },
+      "retrieval": {
+        "in": "Kereshető",
+        "withdrawn": "Kivéve a keresésből",
+        "processing": "Feldolgozás alatt",
+        "failed": "Hiba"
+      },
+      "withdraw": "Kivétel a keresésből",
+      "restore": "Visszatétel",
+      "withdrawn": "A dokumentum kikerült a keresésből",
+      "restored": "A dokumentum visszakerül a keresésbe",
+      "needs-approved": "Előbb hagyjon jóvá egy oldalt, amely idézi ezt a dokumentumot",
+      "withdraw-title": "Kiveszi ezt a dokumentumot a keresésből?",
+      "withdraw-description": "A válaszok nem közvetlenül a(z) „{name}” dokumentumra, hanem az abból készült jóváhagyott oldalakra támaszkodnak. A dokumentum, a verziói és minden idézet megmarad; bármikor visszateheti.",
+      "errors": {
+        "invalid-input": "A kérés nem értelmezhető — töltse újra az oldalt, és próbálja újra.",
+        "not-found": "Ez a dokumentum már nem létezik, vagy a Brainé.",
+        "not-curated": "Ezt a dokumentumot még egyetlen jóváhagyott oldal sem idézi — előbb hagyjon jóvá egyet.",
+        "invalid-status": "A dokumentum nincs a szükséges állapotban — töltse újra az oldalt.",
+        "index-unavailable": "Az indexet nem sikerült módosítani — semmi sem változott; próbálja újra.",
+        "failed-to-start": "Az újrafeldolgozás nem indult el — próbálja újra egy pillanat múlva."
+      }
     }
   }
 }

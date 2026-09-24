@@ -1289,7 +1289,8 @@
     "sort-dir-desc": "Décroissant",
     "filter-clear": "Effacer le filtre {filter}",
     "filter-pii-policy": "Politique",
-    "filter-pii-policy-all": "Tous"
+    "filter-pii-policy-all": "Tous",
+    "status-withdrawn": "Retiré de la recherche"
   },
   "folders": {
     "title": "Dossiers",
@@ -2389,7 +2390,8 @@
     "tabs": {
       "pages": "Pages de connaissances",
       "findings": "Constats",
-      "graph": "Graphe"
+      "graph": "Graphe",
+      "documents": "Documents"
     },
     "filters": {
       "status": "Statut",
@@ -2670,6 +2672,40 @@
       "withdrawn": "Page retirée",
       "withdraw-title": "Retirer cette page de la base de connaissances ?",
       "withdraw-description": "Les réponses cessent de la citer dès son retrait. La page reste approuvée et peut être republiée ; les réponses passées gardent leurs citations."
+    },
+    "documents": {
+      "title": "Documents — Ragen Brain",
+      "intro": "Une fois la connaissance d’un document portée par des pages approuvées, vous pouvez retirer le document lui-même de la recherche : les réponses s’appuieront alors sur les seules pages révisées. Rien n’est supprimé, et il peut être remis à tout moment.",
+      "empty-title": "Aucun document pour l’instant",
+      "empty-description": "Les documents apparaissent ici dès qu’ils sont dans la base de connaissances.",
+      "columns": {
+        "document": "Document",
+        "approved": "Pages approuvées",
+        "candidates": "Candidates",
+        "retrieval": "Recherche",
+        "actions": "Actions"
+      },
+      "retrieval": {
+        "in": "Consultable",
+        "withdrawn": "Retiré de la recherche",
+        "processing": "En traitement",
+        "failed": "Échec"
+      },
+      "withdraw": "Retirer de la recherche",
+      "restore": "Remettre",
+      "withdrawn": "Document retiré de la recherche",
+      "restored": "Document remis en recherche",
+      "needs-approved": "Approuvez d’abord une page qui cite ce document",
+      "withdraw-title": "Retirer ce document de la recherche ?",
+      "withdraw-description": "Les réponses cesseront de s’appuyer directement sur « {name} » et utiliseront les pages approuvées tirées de lui. Le document, ses versions et toutes les citations restent ; vous pouvez le remettre à tout moment.",
+      "errors": {
+        "invalid-input": "La requête n’a pas été comprise — rechargez la page et réessayez.",
+        "not-found": "Ce document n’existe plus ou appartient à Brain.",
+        "not-curated": "Aucune page approuvée ne cite encore ce document — approuvez-en une d’abord.",
+        "invalid-status": "Le document n’est pas dans l’état requis — rechargez la page.",
+        "index-unavailable": "L’index n’a pas pu être modifié — rien n’a changé ; réessayez.",
+        "failed-to-start": "Le retraitement n’a pas pu démarrer — réessayez dans un instant."
+      }
     }
   }
 }
