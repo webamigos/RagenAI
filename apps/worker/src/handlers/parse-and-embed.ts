@@ -593,7 +593,17 @@ export async function runFileEmbeddings(
     // as `reindexDocumentVersion`, which made the same call.
     await deleteDocumentVectors({ orgId, fileId });
 
-    if (isStagedIntake(file.metadata)) {
+    if (isWithdrawnFromRetrieval(file.metadata)) {
+      // Taken out of retrieval by a person (spec E9), and re-ingested since
+      // by something that does not know it — a Drive sync, a folder's PII
+      // change, a bulk re-embed. The parse above still refreshed the text
+      // Brain reads; the index stays without it until someone restores it.
+      await updateEmbeddingStatus({
+        fileId,
+        orgId,
+        status: EmbeddingStatus.WITHDRAWN,
+      });
+    } else if (isStagedIntake(file.metadata)) {
       // Ragen Brain's staged intake (spec F2): everything above ran — the
       // parse, the persisted markdown, the document version, PII policy,
       // language, page count — and the one vector write is skipped. The file
@@ -805,5 +815,19 @@ export function isStagedIntake(metadata: unknown): boolean {
     metadata !== null &&
     typeof metadata === 'object' &&
     (metadata as Record<string, unknown>).intake === 'brain'
+  );
+}
+
+/**
+ * Whether a person took the file out of retrieval (spec E9). The marker is
+ * `metadata.retrieval = 'withdrawn'`, written by the withdrawal and cleared
+ * by the restore — the status alone does not survive a producer that resets
+ * it before re-ingesting.
+ */
+export function isWithdrawnFromRetrieval(metadata: unknown): boolean {
+  return (
+    metadata !== null &&
+    typeof metadata === 'object' &&
+    (metadata as Record<string, unknown>).retrieval === 'withdrawn'
   );
 }

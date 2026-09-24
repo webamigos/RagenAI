@@ -5,7 +5,7 @@ import {
 } from '@ragenai/jobs';
 
 import type * as activities from '../activities/index.js';
-import { isStagedIntake } from './parse-and-embed.js';
+import { isStagedIntake, isWithdrawnFromRetrieval } from './parse-and-embed.js';
 import { type Document } from '../types/Document.js';
 import { EmbeddingStatus, FileType } from '../types/UserFile.js';
 import { CHUNK_SETTINGS } from '../utils/splitters.js';
@@ -81,7 +81,11 @@ export async function reindexDocumentVersion(
     });
     return fileId;
   }
-  if (file && file.embeddingStatus === EmbeddingStatus.WITHDRAWN) {
+  if (
+    file &&
+    (file.embeddingStatus === EmbeddingStatus.WITHDRAWN ||
+      isWithdrawnFromRetrieval(file.metadata))
+  ) {
     await deleteDocumentVectors({ orgId, fileId });
     return fileId;
   }

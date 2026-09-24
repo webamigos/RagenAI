@@ -2726,7 +2726,7 @@
     "publish-all": {
       "button": "Julkaise hyväksytyt ({count})",
       "confirm-title": "Julkaistaanko kaikki hyväksytyt sivut?",
-      "confirm-description": "Sivut, jotka jo tarjoavat nykyisen tekstinsä, jäävät ennalleen; muuttuneet julkaistaan uudelleen, uudet ensimmäistä kertaa. Jokainen julkaisu kirjataan nimelläsi. Sivut, joilla ei ole omistajaa tai jotka eivät ole kenenkään käytettävissä, ohitetaan.",
+      "confirm-description": "Sivut, jotka jo tarjoavat nykyisen tekstinsä, jäävät ennalleen; muuttuneet julkaistaan uudelleen, uudet ensimmäistä kertaa. Jokainen julkaisu kirjataan nimelläsi. Sivut, joilla ei ole omistajaa tai jotka eivät ole kenenkään käytettävissä, ohitetaan. Vedetyt sivut pysyvät vedettyinä.",
       "confirm": "Julkaise",
       "done": "Jonossa: {queued} · ennallaan: {unchanged} · ohitettu: {refused}",
       "failed": "Julkaisua ei voitu aloittaa — lataa sivu uudelleen ja yritä uudelleen.",

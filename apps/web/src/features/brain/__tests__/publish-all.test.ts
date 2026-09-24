@@ -40,6 +40,8 @@ describe('publishAllApprovedCommand', () => {
       organizationId: 'org-1',
       status: 'APPROVED',
       id: { gt: 0 },
+      // A withdrawn page (file kept, no publishedAt) is left alone.
+      OR: [{ publishedAt: { not: null } }, { publishedFileId: null }],
     });
     expect(publish.publishKnowledgePageCommand).toHaveBeenCalledWith({
       orgId: 'org-1',

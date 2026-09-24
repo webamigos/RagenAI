@@ -2726,7 +2726,7 @@
     "publish-all": {
       "button": "Udgiv godkendte ({count})",
       "confirm-title": "Udgiv alle godkendte sider?",
-      "confirm-description": "Sider, der allerede serverer deres aktuelle tekst, forbliver uændrede; ændrede udgives igen, nye for første gang. Hver udgivelse registreres i dit navn. Sider uden ejer eller åbne for ingen springes over.",
+      "confirm-description": "Sider, der allerede serverer deres aktuelle tekst, forbliver uændrede; ændrede udgives igen, nye for første gang. Hver udgivelse registreres i dit navn. Sider uden ejer eller åbne for ingen springes over. Tilbagetrukne sider forbliver tilbagetrukket.",
       "confirm": "Udgiv",
       "done": "I kø: {queued} · uændrede: {unchanged} · sprunget over: {refused}",
       "failed": "Udgivelsen kunne ikke starte — genindlæs siden, og prøv igen.",

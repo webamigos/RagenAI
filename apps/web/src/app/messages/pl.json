@@ -2726,7 +2726,7 @@
     "publish-all": {
       "button": "Opublikuj zatwierdzone ({count})",
       "confirm-title": "Opublikować wszystkie zatwierdzone strony?",
-      "confirm-description": "Strony, które już serwują aktualną treść, zostają bez zmian; zmienione są publikowane ponownie, nowe — po raz pierwszy. Każda publikacja jest zapisywana pod Twoim nazwiskiem. Strony bez właściciela lub niedostępne dla nikogo są pomijane.",
+      "confirm-description": "Strony, które już serwują aktualną treść, zostają bez zmian; zmienione są publikowane ponownie, nowe — po raz pierwszy. Każda publikacja jest zapisywana pod Twoim nazwiskiem. Strony bez właściciela lub niedostępne dla nikogo są pomijane. Wycofane strony pozostają wycofane.",
       "confirm": "Opublikuj",
       "done": "W kolejce: {queued} · bez zmian: {unchanged} · pominięte: {refused}",
       "failed": "Publikacja nie ruszyła — odśwież stronę i spróbuj ponownie.",

@@ -200,6 +200,26 @@ describe('runFileEmbeddings workflow', () => {
     );
   });
 
+  // Spec E9: a person took the file out of retrieval, and something that
+  // does not know — a Drive sync, a folder's PII change, a bulk re-embed —
+  // reset its status and re-ingested it. The marker keeps it out.
+  it('keeps a file withdrawn from retrieval out of the index through a re-ingest', async () => {
+    const activities = createMockActivities();
+    const payload = makeUserFile({
+      fileName: 'readme.txt',
+      metadata: { retrieval: 'withdrawn' },
+    });
+
+    await runIngest<string>(payload, activities);
+
+    expect(activities.createMarkdownDocument).toHaveBeenCalled();
+    expect(activities.addDocumentsToVectorStore).not.toHaveBeenCalled();
+    expect(activities.deleteDocumentVectors).toHaveBeenCalled();
+    expect(activities.updateEmbeddingStatus).toHaveBeenLastCalledWith(
+      expect.objectContaining({ status: EmbeddingStatus.WITHDRAWN }),
+    );
+  });
+
   it('indexes a file whose destination is the knowledge base, or unknown', async () => {
     for (const metadata of [
       { intake: 'knowledge-base' },

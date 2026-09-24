@@ -28,7 +28,7 @@ export async function withdrawSourceDocumentCommand(input: {
   const { orgId, fileId } = input;
   const file = await db.userFile.findFirst({
     where: { ...extractableFilesWhere(orgId), id: fileId },
-    select: { id: true, embeddingStatus: true },
+    select: { id: true, embeddingStatus: true, metadata: true },
   });
   if (!file) {
     return { success: false, error: 'not-found' };
@@ -56,9 +56,16 @@ export async function withdrawSourceDocumentCommand(input: {
     );
     return { success: false, error: 'index-unavailable' };
   }
+  // The status says it now; the marker says it through every later ingest.
+  // Drive sync, a folder's PII change and bulk re-embed all reset the status
+  // before re-ingesting, so the status alone was undone by any of them — the
+  // worker reads `metadata.retrieval` and keeps the file out.
   await db.userFile.updateMany({
     where: { organizationId: orgId, id: fileId },
-    data: { embeddingStatus: 'WITHDRAWN' },
+    data: {
+      embeddingStatus: 'WITHDRAWN',
+      metadata: { ...asObject(file.metadata), retrieval: 'withdrawn' },
+    },
   });
   trackAudit({
     action: 'document.withdrawn_from_retrieval',
@@ -80,7 +87,7 @@ export async function restoreSourceDocumentCommand(input: {
   const { orgId, fileId } = input;
   const file = await db.userFile.findFirst({
     where: { ...extractableFilesWhere(orgId), id: fileId },
-    select: { id: true, embeddingStatus: true },
+    select: { id: true, embeddingStatus: true, metadata: true },
   });
   if (!file) {
     return { success: false, error: 'not-found' };
@@ -88,6 +95,13 @@ export async function restoreSourceDocumentCommand(input: {
   if (file.embeddingStatus !== 'WITHDRAWN') {
     return { success: false, error: 'invalid-status' };
   }
+  const { retrieval: _marker, ...released } = asObject(file.metadata);
+  // The marker goes first: the worker reads the row, and a run that still
+  // saw it would keep the file out again.
+  await db.userFile.updateMany({
+    where: { organizationId: orgId, id: fileId, embeddingStatus: 'WITHDRAWN' },
+    data: { metadata: released as object },
+  });
   try {
     await reembedFileCommand(fileId, orgId);
   } catch (error) {
@@ -109,7 +123,10 @@ export async function restoreSourceDocumentCommand(input: {
         id: fileId,
         embeddingStatus: 'NOT_STARTED',
       },
-      data: { embeddingStatus: 'WITHDRAWN' },
+      data: {
+        embeddingStatus: 'WITHDRAWN',
+        metadata: { ...released, retrieval: 'withdrawn' },
+      },
     });
     return { success: false, error: 'failed-to-start' };
   }
@@ -119,4 +136,10 @@ export async function restoreSourceDocumentCommand(input: {
     entityId: fileId,
   });
   return { success: true };
+}
+
+function asObject(metadata: unknown): Record<string, unknown> {
+  return metadata && typeof metadata === 'object' && !Array.isArray(metadata)
+    ? { ...(metadata as Record<string, unknown>) }
+    : {};
 }

@@ -2726,7 +2726,7 @@
     "publish-all": {
       "button": "Publish approved ({count})",
       "confirm-title": "Publish every approved page?",
-      "confirm-description": "Pages that already serve their current text are left alone; changed pages are re-published, new ones published. Each is recorded under your name. Pages without an owner or open to nobody are skipped.",
+      "confirm-description": "Pages that already serve their current text are left alone; changed pages are re-published, new ones published. Each is recorded under your name. Pages without an owner or open to nobody are skipped. Withdrawn pages stay withdrawn.",
       "confirm": "Publish",
       "done": "Queued: {queued} · unchanged: {unchanged} · skipped: {refused}",
       "failed": "Publishing could not start — reload the page and try again.",

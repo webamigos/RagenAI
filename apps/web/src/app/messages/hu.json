@@ -2726,7 +2726,7 @@
     "publish-all": {
       "button": "Jóváhagyottak közzététele ({count})",
       "confirm-title": "Közzéteszi az összes jóváhagyott oldalt?",
-      "confirm-description": "A már aktuális szövegüket kiszolgáló oldalak változatlanok maradnak; a módosultak újra, az újak először kerülnek közzétételre. Minden közzététel az Ön nevén kerül rögzítésre. A felelős nélküli vagy senki számára nem elérhető oldalak kimaradnak.",
+      "confirm-description": "A már aktuális szövegüket kiszolgáló oldalak változatlanok maradnak; a módosultak újra, az újak először kerülnek közzétételre. Minden közzététel az Ön nevén kerül rögzítésre. A felelős nélküli vagy senki számára nem elérhető oldalak kimaradnak. A visszavont oldalak visszavonva maradnak.",
       "confirm": "Közzététel",
       "done": "Sorban: {queued} · változatlan: {unchanged} · kihagyva: {refused}",
       "failed": "A közzététel nem indult el — töltse újra az oldalt, és próbálja újra.",

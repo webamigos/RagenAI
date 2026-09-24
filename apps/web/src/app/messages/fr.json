@@ -2726,7 +2726,7 @@
     "publish-all": {
       "button": "Publier les approuvées ({count})",
       "confirm-title": "Publier toutes les pages approuvées ?",
-      "confirm-description": "Les pages qui servent déjà leur texte actuel restent telles quelles ; les pages modifiées sont republiées, les nouvelles publiées. Chaque publication est enregistrée sous votre nom. Les pages sans responsable ou ouvertes à personne sont ignorées.",
+      "confirm-description": "Les pages qui servent déjà leur texte actuel restent telles quelles ; les pages modifiées sont republiées, les nouvelles publiées. Chaque publication est enregistrée sous votre nom. Les pages sans responsable ou ouvertes à personne sont ignorées. Les pages retirées le restent.",
       "confirm": "Publier",
       "done": "En file : {queued} · inchangées : {unchanged} · ignorées : {refused}",
       "failed": "La publication n’a pas pu démarrer — rechargez la page et réessayez.",
