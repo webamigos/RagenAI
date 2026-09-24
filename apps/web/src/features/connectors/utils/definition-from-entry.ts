@@ -95,7 +95,16 @@ function addressGuardFor(
 
   // A host the deployment itself vouches for (`CONNECTOR_TRUSTED_HOSTS`) is
   // connected like a built-in's `MCP_*_SERVER_URL`. See `trusted-hosts.ts`.
-  if (isDeployerTrustedUrl(entry.mcpServerUrl)) {
+  //
+  // Only when every address this connector dials is that host. The guard
+  // covers the whole connector, so trusting it on `mcpServerUrl` alone would
+  // also unguard `authBaseUrl` (where a user's key is registered) and, for
+  // `API_KEY_CUSTOM_HEADER`, the shop URL an org user types.
+  if (
+    entry.authType !== 'API_KEY_CUSTOM_HEADER' &&
+    isDeployerTrustedUrl(entry.mcpServerUrl) &&
+    (entry.authBaseUrl === null || isDeployerTrustedUrl(entry.authBaseUrl))
+  ) {
     return undefined;
   }
 

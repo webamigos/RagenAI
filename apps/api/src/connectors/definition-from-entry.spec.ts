@@ -53,4 +53,25 @@ describe('definitionFromEntry (api) — deployer-trusted hosts', () => {
       allowPrivate: true,
     });
   });
+
+  it('keeps it when the connector also dials an address nobody vouched for', () => {
+    process.env.CONNECTOR_TRUSTED_HOSTS = '.railway.internal';
+    // A key registered at an untrusted authBaseUrl, or a shop URL an org user
+    // types, must stay behind the guard even if the MCP host is trusted.
+    expect(
+      definitionFromEntry(
+        entry({
+          authType: 'API_KEY_BEARER',
+          authBaseUrl: 'https://auth.example.com',
+        }),
+        undefined,
+      ).addressGuard,
+    ).toEqual({ allowPrivate: true });
+    expect(
+      definitionFromEntry(
+        entry({ authType: 'API_KEY_CUSTOM_HEADER' }),
+        undefined,
+      ).addressGuard,
+    ).toEqual({ allowPrivate: true });
+  });
 });
