@@ -63,3 +63,19 @@ export {
   type GraphPageInput,
   type GraphStats,
 } from './graph/assemble-graph';
+export {
+  contradictionPairs,
+  type ContradictionPageInput,
+} from './contradictions/pairs';
+export {
+  CONTRADICTION_SYSTEM_PROMPT,
+  contradictionProviderSchema,
+  contradictionUserPrompt,
+  judgeContradictions,
+  MAX_CLAIMS_PER_SIDE,
+  MAX_CONTRADICTIONS_PER_PAIR,
+  type JudgedClaim,
+  type JudgedContradiction,
+  type JudgedPage,
+  type JudgeOutcome,
+} from './contradictions/judge';

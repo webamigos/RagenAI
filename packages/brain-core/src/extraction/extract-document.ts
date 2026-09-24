@@ -26,7 +26,12 @@ import { splitIntoWindows } from './windows';
 export type GenerateStructured = (request: {
   system: string;
   prompt: string;
-  schema: typeof extractionProviderSchema;
+  /**
+   * The shape to constrain the model to — extraction's, or the contradiction
+   * judge's. Any Zod schema: the answer comes back `unknown` and each caller
+   * parses it again with its own rules, so nothing here depends on which.
+   */
+  schema: z.ZodType;
 }) => Promise<{ object: unknown; usage: TokenUsage }>;
 
 export type ExtractDocumentInput = {

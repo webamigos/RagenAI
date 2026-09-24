@@ -228,6 +228,18 @@ export interface BrainExtractResult {
   unverifiedClaims: number;
   tokens: number;
   /**
+   * The contradiction check over the pages this run wrote (spec C1); null
+   * when it did not run — nothing extracted, no tokens left — or failed.
+   * Its tokens are in `tokens`.
+   */
+  contradictions: {
+    pairs: number;
+    raised: number;
+    cleared: number;
+    failed: number;
+    notJudged: number;
+  } | null;
+  /**
    * What reconciling the computed findings wrote at the end of the run
    * (spec C2); null when it failed, which does not fail the run.
    */

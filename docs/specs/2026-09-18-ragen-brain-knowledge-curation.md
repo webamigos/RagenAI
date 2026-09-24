@@ -778,7 +778,10 @@ What did it, and what the measurement found that B5 had not:
 
 ### Phase C — Findings and graph
 
-- [ ] **C1.** Contradiction detection over extracted claims → `KnowledgeFinding`.
+- [x] **C1.** Contradiction detection over extracted claims → `KnowledgeFinding`.
+      _Pairs and the judge: `packages/brain-core/src/contradictions`; run by
+      `detectContradictions` at the end of every `brainExtract`, on what is
+      left of the run's tokens; measured by `brain-contradiction-eval.ts`._
 - [x] **C2.** Gap, orphan, stale and unowned findings as queries over the pages'
       own fields. `STALE` covers both a deleted source (`sourceDeletedAt`) and a
       source whose active `DocumentVersion` moved past the pinned one.
@@ -880,6 +883,62 @@ What did it, and what the measurement found that B5 had not:
   document, so it is variance the prompt has not removed, not a closed gap.
   It is also the case for keeping origins apart: those 38 guesses would
   otherwise read like structure. To settle before D, per ADR-20.
+
+**What C1 settled:**
+
+- **Which pages are compared**: the same title once normalised (`slugify`,
+  the key extraction merges entities on), **different sets of source
+  files**, and at least one page citing a file this run extracted. A pair of
+  old pages was judged when the second was written; two pages citing the same
+  files are a re-extraction of one document. **Recall is bounded here, not
+  in the judge**: "Urlop" and "Urlop wypoczynkowy" are never compared. That
+  is entity resolution — the review queue's merge (D2) — and an embedding
+  match is the natural next step if it proves to matter.
+- **The judge compares passages, not statements**: the verbatim quotes the
+  pages' sources carry, numbered, so what it weighs is what the documents
+  say rather than the extraction model's rewording. It answers with passage
+  numbers; one naming a passage that was not shown is dropped. A
+  contradiction is therefore **two source ids**, which D2 shows side by side
+  without trusting the model's account of either. Up to 60 passages a side
+  (`truncated` in the finding when cut).
+- **One finding per pair of pages**, `pageIds` sorted. A dismissal stands
+  while the set of contradicting passages is the same (the fingerprint is
+  source-id pairs, so a reworded explanation does not reopen it); a pair
+  judged clean again resolves its open finding; `HIGH` when either page is
+  published. Replacing a candidate on re-extraction resolves open findings
+  naming it, in the same transaction.
+- **The finding's `detail` carries the model's explanation** — one sentence
+  naming both values. That is document-derived text, the same class as a
+  page's content, so D1's findings list must show a finding only to a reader
+  who may see every page it names.
+- **Cost**: one call per pair, on the run's token budget, at most
+  `BRAIN_CONTRADICTION_MAX_PAIRS` (100) a run; usage recorded as
+  `metadata.kind: brain_contradictions`. A pair not reached is judged by the
+  next run touching either page. A failed judgement is counted and logged,
+  not raised — it is not a finding about either page.
+- **Measured** (2026-09-23, `gemini-2.5-flash`, 15 labelled pairs × 3): eight
+  planted contradictions, one of them implicit and one hidden among four
+  passages, and seven traps the prompt names — a paraphrase, the same
+  quantity in other units, an explicit difference of scope, one side more
+  detailed, a translation, a stated change over time, different facts.
+
+  | | v1 | v2 |
+  | --- | --- | --- |
+  | contradictions found (recall) | 24 / 24 | 24 / 24 |
+  | clean pairs reported anyway | 1 / 21 | 0 / 21 |
+  | reported items that were expected | 96.0 % | 100 % |
+  | explanations of Polish pairs in English | 11 / 22 | 0 / 24 |
+  | tokens | 34,198 | 35,071 |
+
+  v2 named the explanation language outright (from the files'
+  `UserFile.language`, as B did for extraction) and added one rule — silence
+  is not disagreement — after v1's one false alarm, on the "more detailed"
+  trap. That one alarm is within noise on 21 runs; the language change is
+  not. The eval's language heuristic flagged one v2 explanation that reads
+  as Polish on inspection (no diacritics, no listed stopword), so it is
+  counted as right. **This is a fixture of written pairs**, which is what a
+  judge can be measured on without a corpus that has planted contradictions;
+  pair selection on real documents is untested by it.
 
 ### Phase D — Review interface
 

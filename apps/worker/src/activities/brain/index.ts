@@ -8,3 +8,7 @@ export {
   reconcileBrainFindings,
   type ReconcileBrainFindingsResult,
 } from './reconcile-brain-findings.js';
+export {
+  detectContradictions,
+  type DetectContradictionsResult,
+} from './detect-contradictions.js';
