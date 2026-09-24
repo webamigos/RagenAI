@@ -2501,7 +2501,8 @@
         "empty": "Aucune relation",
         "out": "{kind} →",
         "in": "← {kind}"
-      }
+      },
+      "history": "Historique"
     },
     "origin": {
       "EXTRACTED": "citée",
@@ -2513,6 +2514,57 @@
       "previous": "Précédent",
       "next": "Suivant",
       "position": "{page} sur {pages}"
+    },
+    "review": {
+      "approve": "Approuver la page",
+      "reject": "Rejeter la page",
+      "approve-needs-owner": "Désignez un responsable avant d’approuver — la personne qui se porte garante de cette page.",
+      "reject-confirm-title": "Rejeter cette page ?",
+      "reject-confirm-description": "La page reste dans Brain comme rejetée, et une extraction ultérieure du même document ne la proposera plus. Elle ne peut pas être restaurée ici.",
+      "approved": "Page approuvée",
+      "rejected": "Page rejetée",
+      "owner-label": "Responsable",
+      "owner-placeholder": "Choisir un responsable",
+      "owner-save": "Enregistrer le responsable",
+      "owner-saved": "Responsable enregistré",
+      "access-edit": "Modifier l’accès",
+      "access-organization": "Toute l’organisation",
+      "access-teams": "Équipes",
+      "access-people": "Personnes",
+      "access-save": "Enregistrer l’accès",
+      "access-cancel": "Annuler",
+      "access-saved": "Accès enregistré",
+      "access-none-hint": "Personne n’est sélectionné — la page ne sera ouverte à personne tant que quelqu’un n’est pas ajouté.",
+      "widen-title": "Élargir l’accès à cette page ?",
+      "widen-description": "{names} — ces personnes pourront lire la page une fois publiée. La modification est enregistrée comme un élargissement de l’accès, sous votre nom.",
+      "widen-confirm": "Élargir l’accès",
+      "unchanged": "Rien n’a changé — la page avait déjà ce réglage",
+      "errors": {
+        "invalid-input": "La requête n’a pas été comprise — rechargez la page et réessayez.",
+        "not-found": "Cette page n’existe plus, ou vous ne pouvez pas la réviser.",
+        "conflict": "Quelqu’un a modifié cette page après son ouverture — elle a été rechargée ; vérifiez-la et réessayez.",
+        "invalid-status": "Cette action ne s’applique pas à une page dans son statut actuel.",
+        "owner-required": "Désignez un responsable avant d’approuver cette page.",
+        "owner-not-member": "Cette personne n’est pas membre de l’organisation — choisissez quelqu’un d’autre.",
+        "invalid-access": "Une des personnes ou équipes choisies ne fait plus partie de l’organisation — rechargez et choisissez à nouveau.",
+        "published": "Cette page est publiée — la modification de son accès n’est pas encore disponible.",
+        "confirm-widening": "Cette modification élargit l’accès et doit être confirmée."
+      }
+    },
+    "history": {
+      "empty": "Aucune décision pour l’instant",
+      "unknown-actor": "Un utilisateur supprimé",
+      "action": {
+        "APPROVE": "Approuvée",
+        "REJECT": "Rejetée",
+        "MERGE": "Fusionnée",
+        "SET_OWNER": "Responsable désigné",
+        "SET_ACCESS": "Accès modifié",
+        "WIDEN_ACCESS": "Accès élargi",
+        "PUBLISH": "Publiée",
+        "UNPUBLISH": "Retirée",
+        "VERIFY": "Vérifiée"
+      }
     }
   }
 }

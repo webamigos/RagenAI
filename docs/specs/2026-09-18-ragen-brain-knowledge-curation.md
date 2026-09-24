@@ -984,6 +984,11 @@ baseline without the outlier (edges 72.7 % `EXTRACTED` against 70.3 %,
 - [ ] **D2.** The review queue: merge candidates, set owner, set access,
       approve, reject — every action writing `KnowledgeDecision`. Widening
       access is a distinct action with its own confirmation.
+      _Split in two. **D2a (done):** set owner, set access / widen access,
+      approve, reject, on the page view, with the page's ledger listed under
+      History; commands in `apps/web/src/features/brain/services/commands`,
+      `p0-33-brain-review` gates it. **D2b (next):** merge, and re-running
+      the computed findings after a decision._
 - [ ] **D3.** Retry an `EXTRACTION_FAILED` document from the findings list:
       re-runs `brainExtract` for that document alone and resolves the finding on
       success.
@@ -1026,6 +1031,44 @@ baseline without the outlier (edges 72.7 % `EXTRACTED` against 70.3 %,
   components, so `features/brain/__tests__/brain-messages.test.ts` checks that
   every key the Brain routes use exists and that every locale has the same
   set.
+
+**What D2a settled:**
+
+- **The page and its ledger row are one transaction**, and the page row is
+  locked (`FOR UPDATE`) while the decision is made. Every action carries the
+  `updatedAt` the reviewer saw; a page changed since is refused as
+  `conflict` rather than decided on top of a state nobody looked at. A
+  request for what the page already is writes nothing — the ledger records
+  acts, not clicks.
+- **Approval needs an owner who is still a member.** The owner is who
+  vouches for the page, and an unowned page can be neither exported nor
+  published, so approving one would create curated knowledge nothing may use
+  and an `UNOWNED` finding at the next reconciliation. Setting the owner is
+  its own decision, before approval. Any member may be named, whatever their
+  role.
+- **Only a `CANDIDATE` is approved or rejected.** Re-approving a `STALE` page
+  means re-pinning its sources to the versions the reviewer now read, and
+  retiring an approved page is withdrawal and supersession (E); neither is
+  built.
+- **The server classifies widening, with `isWidening` from
+  `@ragenai/brain-core`** — the package that computed the narrow default at
+  extraction. A change that adds any reader is `WIDEN_ACCESS`, even if it
+  also removes others, and is refused as `confirm-widening` until the
+  reviewer confirms in a dialog that names who gains access. Anything else is
+  `SET_ACCESS`, saved straight away.
+- **A principal that would match nobody is refused, not dropped** — another
+  organization's `org:`, someone who is not a member, a team that is not this
+  organization's — because it would be shown as access nothing grants.
+  `org:<this org>` is stored alone: it already covers every `user:` and
+  `team:` beside it.
+- **Access on a published page is refused (`published`)** until E4 can carry
+  the change onto its chunks. Nothing is published before E, so today this
+  guards the order the phases land in.
+- **Computed findings are not re-run after a decision yet.** They are a view
+  the worker reconciles at the end of each extraction run, so a new owner's
+  `UNOWNED` finding stays open until the next run. D2b adds a job for it; the
+  panel does not write computed findings itself, because a second writer is
+  how the view and the rows would drift.
 
 ### Phase E — Publication, withdrawal, export
 

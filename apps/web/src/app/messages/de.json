@@ -2501,7 +2501,8 @@
         "empty": "Keine Beziehungen",
         "out": "{kind} →",
         "in": "← {kind}"
-      }
+      },
+      "history": "Verlauf"
     },
     "origin": {
       "EXTRACTED": "zitiert",
@@ -2513,6 +2514,57 @@
       "previous": "Zurück",
       "next": "Weiter",
       "position": "{page} von {pages}"
+    },
+    "review": {
+      "approve": "Seite freigeben",
+      "reject": "Seite ablehnen",
+      "approve-needs-owner": "Legen Sie vor der Freigabe einen Verantwortlichen fest — die Person, die für diese Seite einsteht.",
+      "reject-confirm-title": "Diese Seite ablehnen?",
+      "reject-confirm-description": "Die Seite bleibt als abgelehnt in Brain, und eine spätere Extraktion desselben Dokuments schlägt sie nicht erneut vor. Sie lässt sich hier nicht wiederherstellen.",
+      "approved": "Seite freigegeben",
+      "rejected": "Seite abgelehnt",
+      "owner-label": "Verantwortlich",
+      "owner-placeholder": "Verantwortlichen wählen",
+      "owner-save": "Verantwortlichen speichern",
+      "owner-saved": "Verantwortlicher gespeichert",
+      "access-edit": "Zugriff ändern",
+      "access-organization": "Die ganze Organisation",
+      "access-teams": "Teams",
+      "access-people": "Personen",
+      "access-save": "Zugriff speichern",
+      "access-cancel": "Abbrechen",
+      "access-saved": "Zugriff gespeichert",
+      "access-none-hint": "Niemand ausgewählt — die Seite ist für niemanden zugänglich, bis jemand hinzugefügt wird.",
+      "widen-title": "Zugriff auf diese Seite erweitern?",
+      "widen-description": "{names} — diese Personen können die Seite lesen, sobald sie veröffentlicht ist. Die Änderung wird unter Ihrem Namen als Erweiterung des Zugriffs erfasst.",
+      "widen-confirm": "Zugriff erweitern",
+      "unchanged": "Nichts geändert — die Seite hatte diese Einstellung bereits",
+      "errors": {
+        "invalid-input": "Die Anfrage wurde nicht verstanden — laden Sie die Seite neu und versuchen Sie es erneut.",
+        "not-found": "Diese Seite existiert nicht mehr, oder Sie dürfen sie nicht prüfen.",
+        "conflict": "Jemand hat diese Seite geändert, nachdem Sie sie geöffnet haben — sie wurde neu geladen; prüfen Sie sie und versuchen Sie es erneut.",
+        "invalid-status": "Diese Aktion gilt nicht für eine Seite in ihrem aktuellen Status.",
+        "owner-required": "Legen Sie vor der Freigabe einen Verantwortlichen fest.",
+        "owner-not-member": "Diese Person ist kein Mitglied der Organisation — wählen Sie jemand anderen.",
+        "invalid-access": "Eine der gewählten Personen oder Teams gehört nicht mehr zur Organisation — neu laden und erneut wählen.",
+        "published": "Diese Seite ist veröffentlicht — ihren Zugriff zu ändern ist noch nicht möglich.",
+        "confirm-widening": "Diese Änderung erweitert den Zugriff und muss bestätigt werden."
+      }
+    },
+    "history": {
+      "empty": "Noch keine Entscheidungen",
+      "unknown-actor": "Ein gelöschter Benutzer",
+      "action": {
+        "APPROVE": "Freigegeben",
+        "REJECT": "Abgelehnt",
+        "MERGE": "Zusammengeführt",
+        "SET_OWNER": "Verantwortlicher festgelegt",
+        "SET_ACCESS": "Zugriff geändert",
+        "WIDEN_ACCESS": "Zugriff erweitert",
+        "PUBLISH": "Veröffentlicht",
+        "UNPUBLISH": "Zurückgezogen",
+        "VERIFY": "Geprüft"
+      }
     }
   }
 }

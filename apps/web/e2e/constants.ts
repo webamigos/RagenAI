@@ -97,3 +97,12 @@ export const AUTH_FILE = path.join(__dirname, '.auth', 'user.json');
 export const TEST_BRAIN_PAGE_PUBLIC_ID = 'e2e00000-0000-4000-8000-00e2e0000b01';
 export const TEST_BRAIN_PAGE_TITLE = 'E2E Brain: zasady urlopów';
 export const TEST_BRAIN_SOURCE_QUOTE = TEST_DOCUMENT_V1_CONTENT;
+
+/**
+ * A second candidate, for the review flow (spec D2) — unowned and open only to
+ * the test user, so p0-33 can name an owner, widen access and approve it
+ * without changing the page smoke-15 reads.
+ */
+export const TEST_BRAIN_REVIEW_PAGE_PUBLIC_ID =
+  'e2e00000-0000-4000-8000-00e2e0000b02';
+export const TEST_BRAIN_REVIEW_PAGE_TITLE = 'E2E Brain: strona do recenzji';

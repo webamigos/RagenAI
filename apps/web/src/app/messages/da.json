@@ -2501,7 +2501,8 @@
         "empty": "Ingen relationer",
         "out": "{kind} →",
         "in": "← {kind}"
-      }
+      },
+      "history": "Historik"
     },
     "origin": {
       "EXTRACTED": "citeret",
@@ -2513,6 +2514,57 @@
       "previous": "Forrige",
       "next": "Næste",
       "position": "{page} af {pages}"
+    },
+    "review": {
+      "approve": "Godkend siden",
+      "reject": "Afvis siden",
+      "approve-needs-owner": "Angiv en ejer før godkendelse — den person, der står inde for siden.",
+      "reject-confirm-title": "Afvis denne side?",
+      "reject-confirm-description": "Siden bliver i Brain som afvist, og en senere udtrækning af samme dokument foreslår den ikke igen. Den kan ikke gendannes herfra.",
+      "approved": "Siden er godkendt",
+      "rejected": "Siden er afvist",
+      "owner-label": "Ejer",
+      "owner-placeholder": "Vælg en ejer",
+      "owner-save": "Gem ejer",
+      "owner-saved": "Ejer gemt",
+      "access-edit": "Skift adgang",
+      "access-organization": "Hele organisationen",
+      "access-teams": "Teams",
+      "access-people": "Personer",
+      "access-save": "Gem adgang",
+      "access-cancel": "Annuller",
+      "access-saved": "Adgang gemt",
+      "access-none-hint": "Ingen valgt — siden er ikke åben for nogen, før nogen bliver tilføjet.",
+      "widen-title": "Udvid adgangen til denne side?",
+      "widen-description": "{names} — de vil kunne læse siden, når den er udgivet. Ændringen registreres som en udvidelse af adgangen i dit navn.",
+      "widen-confirm": "Udvid adgang",
+      "unchanged": "Intet ændrede sig — siden havde allerede den indstilling",
+      "errors": {
+        "invalid-input": "Anmodningen blev ikke forstået — genindlæs siden, og prøv igen.",
+        "not-found": "Denne side findes ikke længere, eller du må ikke gennemgå den.",
+        "conflict": "Nogen ændrede siden, efter du åbnede den — den er genindlæst; tjek den, og prøv igen.",
+        "invalid-status": "Denne handling gælder ikke for en side med den nuværende status.",
+        "owner-required": "Angiv en ejer, før du godkender siden.",
+        "owner-not-member": "Personen er ikke medlem af organisationen — vælg en anden.",
+        "invalid-access": "En af de valgte personer eller teams hører ikke længere til organisationen — genindlæs, og vælg igen.",
+        "published": "Denne side er udgivet — det er endnu ikke muligt at ændre dens adgang.",
+        "confirm-widening": "Denne ændring udvider adgangen og skal bekræftes."
+      }
+    },
+    "history": {
+      "empty": "Ingen beslutninger endnu",
+      "unknown-actor": "En slettet bruger",
+      "action": {
+        "APPROVE": "Godkendt",
+        "REJECT": "Afvist",
+        "MERGE": "Flettet",
+        "SET_OWNER": "Ejer angivet",
+        "SET_ACCESS": "Adgang ændret",
+        "WIDEN_ACCESS": "Adgang udvidet",
+        "PUBLISH": "Udgivet",
+        "UNPUBLISH": "Trukket tilbage",
+        "VERIFY": "Verificeret"
+      }
     }
   }
 }

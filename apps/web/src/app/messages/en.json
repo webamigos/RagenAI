@@ -2501,7 +2501,8 @@
         "empty": "No relations",
         "out": "{kind} →",
         "in": "← {kind}"
-      }
+      },
+      "history": "History"
     },
     "origin": {
       "EXTRACTED": "quoted",
@@ -2513,6 +2514,57 @@
       "previous": "Previous",
       "next": "Next",
       "position": "{page} of {pages}"
+    },
+    "review": {
+      "approve": "Approve page",
+      "reject": "Reject page",
+      "approve-needs-owner": "Set an owner before approving — the owner is the person who vouches for this page.",
+      "reject-confirm-title": "Reject this page?",
+      "reject-confirm-description": "The page stays in Brain as rejected, and a later extraction of the same document will not offer it again. It cannot be restored from here.",
+      "approved": "Page approved",
+      "rejected": "Page rejected",
+      "owner-label": "Owner",
+      "owner-placeholder": "Choose an owner",
+      "owner-save": "Save owner",
+      "owner-saved": "Owner saved",
+      "access-edit": "Change access",
+      "access-organization": "The whole organization",
+      "access-teams": "Teams",
+      "access-people": "People",
+      "access-save": "Save access",
+      "access-cancel": "Cancel",
+      "access-saved": "Access saved",
+      "access-none-hint": "Nobody selected — the page will be open to no one until someone is added.",
+      "widen-title": "Widen access to this page?",
+      "widen-description": "{names} will be able to read this page once it is published. This is recorded as a widening of access, under your name.",
+      "widen-confirm": "Widen access",
+      "unchanged": "Nothing changed — the page already had that setting",
+      "errors": {
+        "invalid-input": "The request was not understood — reload the page and try again.",
+        "not-found": "This page no longer exists, or you cannot review it.",
+        "conflict": "Someone changed this page after you opened it — it has been reloaded; check it and try again.",
+        "invalid-status": "This action does not apply to a page in its current status.",
+        "owner-required": "Set an owner before approving this page.",
+        "owner-not-member": "That person is not a member of this organization — choose someone else.",
+        "invalid-access": "One of the selected people or teams is no longer in this organization — reload and choose again.",
+        "published": "This page is published — changing its access is not available yet.",
+        "confirm-widening": "This change widens access and has to be confirmed."
+      }
+    },
+    "history": {
+      "empty": "No decisions yet",
+      "unknown-actor": "A deleted user",
+      "action": {
+        "APPROVE": "Approved",
+        "REJECT": "Rejected",
+        "MERGE": "Merged",
+        "SET_OWNER": "Owner set",
+        "SET_ACCESS": "Access changed",
+        "WIDEN_ACCESS": "Access widened",
+        "PUBLISH": "Published",
+        "UNPUBLISH": "Withdrawn",
+        "VERIFY": "Verified"
+      }
     }
   }
 }

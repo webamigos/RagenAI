@@ -76,11 +76,31 @@ export type KnowledgeEdgeView = {
   page: PageRef;
 };
 
+/** One row of the page's ledger, newest first, as the page view lists it. */
+export type KnowledgeDecisionView = {
+  action:
+    | 'APPROVE'
+    | 'REJECT'
+    | 'MERGE'
+    | 'SET_OWNER'
+    | 'SET_ACCESS'
+    | 'WIDEN_ACCESS'
+    | 'PUBLISH'
+    | 'UNPUBLISH'
+    | 'VERIFY';
+  /** The actor's name, or null when the user no longer exists. */
+  actorName: string | null;
+  createdAt: string;
+};
+
 export type KnowledgePageDetail = PageRef & {
   type: KnowledgePageType;
   status: KnowledgePageStatus;
   content: string;
+  ownerId: string | null;
   ownerName: string | null;
+  /** `accessibleBy` as stored — what the access editor starts from. */
+  principals: string[];
   access: AccessEntry[];
   published: boolean;
   lastVerifiedAt: string | null;
@@ -89,6 +109,7 @@ export type KnowledgePageDetail = PageRef & {
   sources: KnowledgePageSourceView[];
   edges: KnowledgeEdgeView[];
   findings: KnowledgeFindingListItem[];
+  decisions: KnowledgeDecisionView[];
 };
 
 /**

@@ -2501,7 +2501,8 @@
         "empty": "Brak powiązań",
         "out": "{kind} →",
         "in": "← {kind}"
-      }
+      },
+      "history": "Historia"
     },
     "origin": {
       "EXTRACTED": "z cytatu",
@@ -2513,6 +2514,57 @@
       "previous": "Poprzednie",
       "next": "Następne",
       "position": "{page} z {pages}"
+    },
+    "review": {
+      "approve": "Zatwierdź stronę",
+      "reject": "Odrzuć stronę",
+      "approve-needs-owner": "Przed zatwierdzeniem wskaż właściciela — to osoba, która ręczy za tę stronę.",
+      "reject-confirm-title": "Odrzucić tę stronę?",
+      "reject-confirm-description": "Strona zostanie w Brain jako odrzucona, a kolejna ekstrakcja tego samego dokumentu nie zaproponuje jej ponownie. Nie da się jej stąd przywrócić.",
+      "approved": "Strona zatwierdzona",
+      "rejected": "Strona odrzucona",
+      "owner-label": "Właściciel",
+      "owner-placeholder": "Wybierz właściciela",
+      "owner-save": "Zapisz właściciela",
+      "owner-saved": "Właściciel zapisany",
+      "access-edit": "Zmień dostęp",
+      "access-organization": "Cała organizacja",
+      "access-teams": "Zespoły",
+      "access-people": "Osoby",
+      "access-save": "Zapisz dostęp",
+      "access-cancel": "Anuluj",
+      "access-saved": "Dostęp zapisany",
+      "access-none-hint": "Nikogo nie wybrano — strona nie będzie dostępna dla nikogo, dopóki ktoś nie zostanie dodany.",
+      "widen-title": "Poszerzyć dostęp do tej strony?",
+      "widen-description": "{names} — po opublikowaniu strony te osoby będą mogły ją czytać. Zmiana zostanie zapisana jako poszerzenie dostępu, pod Twoim nazwiskiem.",
+      "widen-confirm": "Poszerz dostęp",
+      "unchanged": "Nic się nie zmieniło — strona już tak miała",
+      "errors": {
+        "invalid-input": "Nie udało się odczytać żądania — odśwież stronę i spróbuj ponownie.",
+        "not-found": "Ta strona już nie istnieje albo nie możesz jej recenzować.",
+        "conflict": "Ktoś zmienił tę stronę po jej otwarciu — została odświeżona; sprawdź ją i spróbuj ponownie.",
+        "invalid-status": "Ta akcja nie dotyczy strony w obecnym statusie.",
+        "owner-required": "Przed zatwierdzeniem wskaż właściciela strony.",
+        "owner-not-member": "Ta osoba nie należy do organizacji — wybierz kogoś innego.",
+        "invalid-access": "Jedna z wybranych osób lub zespołów nie należy już do organizacji — odśwież i wybierz ponownie.",
+        "published": "Ta strona jest opublikowana — zmiana jej dostępu nie jest jeszcze dostępna.",
+        "confirm-widening": "Ta zmiana poszerza dostęp i wymaga potwierdzenia."
+      }
+    },
+    "history": {
+      "empty": "Na razie bez decyzji",
+      "unknown-actor": "Usunięty użytkownik",
+      "action": {
+        "APPROVE": "Zatwierdzono",
+        "REJECT": "Odrzucono",
+        "MERGE": "Scalono",
+        "SET_OWNER": "Wskazano właściciela",
+        "SET_ACCESS": "Zmieniono dostęp",
+        "WIDEN_ACCESS": "Poszerzono dostęp",
+        "PUBLISH": "Opublikowano",
+        "UNPUBLISH": "Wycofano",
+        "VERIFY": "Zweryfikowano"
+      }
     }
   }
 }
