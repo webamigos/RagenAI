@@ -76,17 +76,11 @@ export default async function FeaturesPage({
         </p>
       </div>
 
-      <div className="rounded-xl border border-border bg-card p-6">
-        <h2 className="text-xl font-semibold">Platform defaults</h2>
-        <p className="mb-4 mt-1 text-sm text-muted-foreground">
-          What this installation does for every organization that has no
-          override of its own. Set these once instead of repeating an override
-          per organization — and note a plan still wins over them, so an
-          installation that manages no plans is the case they were added for.
-        </p>
-        <PlatformFeaturesForm current={platformDefaults} />
-      </div>
-
+      {/*
+        The organization first. Looking one up is what this page is opened
+        for most often, and with the picker at the bottom its results
+        appeared below a screenful of platform defaults.
+      */}
       <div className="rounded-xl border border-border bg-card p-6">
         <h2 className="mb-4 text-xl font-semibold">Pick organization</h2>
         <form className="flex gap-2">
@@ -198,6 +192,16 @@ export default async function FeaturesPage({
           <OrgFeaturesForm orgId={selectedOrg.id} current={currentOverrides} />
         </div>
       )}
+      <div className="rounded-xl border border-border bg-card p-6">
+        <h2 className="text-xl font-semibold">Platform defaults</h2>
+        <p className="mb-4 mt-1 text-sm text-muted-foreground">
+          What this installation does for every organization that has no
+          override of its own. Set these once instead of repeating an override
+          per organization — and note a plan still wins over them, so an
+          installation that manages no plans is the case they were added for.
+        </p>
+        <PlatformFeaturesForm current={platformDefaults} />
+      </div>
     </div>
   );
 }
