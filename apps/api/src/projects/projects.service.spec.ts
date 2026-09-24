@@ -923,6 +923,39 @@ describe('ProjectsService', () => {
       const result = await service.getUserProjects(ORG, 'someone-else');
       expect(result[0].threads.map((t) => t.id)).toEqual(['t1']);
     });
+
+    // The grid hides the organization's main assistant. The Redux field it
+    // filtered on was never set, so the default showed as an extra card.
+    it('marks the organization default project, and only it', async () => {
+      const { service, projectOps } = makeService();
+      projectOps.findFirst.mockResolvedValue({ id: PROJECT });
+      const base = {
+        title: 'P',
+        createdAt: new Date('2026-01-01'),
+        organizationId: ORG,
+        ownerId: 'owner-1',
+        isStarred: false,
+        isArchived: false,
+        threads: [],
+      };
+      projectOps.findMany.mockResolvedValue([
+        { ...base, id: PROJECT },
+        { ...base, id: 'other-project' },
+      ]);
+
+      const result = await service.getUserProjects(ORG, 'owner-1');
+      expect(result.map((p) => [p.id, p.isDefault])).toEqual([
+        [PROJECT, true],
+        ['other-project', false],
+      ]);
+      // The default is the oldest project of the organization, scoped to it.
+      expect(projectOps.findFirst).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { organizationId: ORG },
+          orderBy: { createdAt: 'asc' },
+        }),
+      );
+    });
   });
 
   describe('getProjectInstruction', () => {

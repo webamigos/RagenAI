@@ -28,6 +28,8 @@ type ProjectItem = {
   isStarred: boolean;
   isArchived: boolean;
   threads: { id: string }[];
+  /** The organization's hidden main assistant (apps/api `getUserProjects`). */
+  isDefault?: boolean;
 };
 
 export const AssistantsPage = () => {
@@ -64,7 +66,11 @@ export const AssistantsPage = () => {
   }, [organization?.id, user?.id]);
 
   const filteredProjects = useMemo(() => {
-    const nonDefault = projects.filter((p) => p.id !== defaultProjectId);
+    // `isDefault` comes from apps/api. The Redux `defaultProjectId` stays as
+    // a second guard, but nothing sets it today.
+    const nonDefault = projects.filter(
+      (p) => !p.isDefault && p.id !== defaultProjectId,
+    );
     if (!searchQuery.trim()) {
       return nonDefault;
     }
