@@ -1672,6 +1672,9 @@ model KnowledgeFinding {
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
   @@index([organizationId, status, type])
+  /// One OPEN `EXTRACTION_FAILED` per document is enforced by a partial
+  /// unique index, `knowledge_findings_one_open_extraction_failure`, in the
+  /// migration of that name — Prisma's schema cannot express the `WHERE`.
   @@index([organizationId, fileId])
   @@map("knowledge_findings")
 }

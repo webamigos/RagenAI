@@ -1291,14 +1291,10 @@ baseline without the outlier (edges 72.7 % `EXTRACTED` against 70.3 %,
 ### Known limits after the 2026-09-24 review
 
 Two review passes over the stack's whole diff and an audit of every ticked
-item against the code closed what they found; these are what they found and
-left, on purpose or for later:
+item against the code closed what they found — B3's "one open finding per
+document" is now a partial unique index rather than a check-then-create;
+these are what they found and left, on purpose or for later:
 
-- **One open `EXTRACTION_FAILED` per document (B3) holds only at
-  `BRAIN_EXTRACT_CONCURRENCY=1`**, the default. The check-then-create has no
-  partial unique index; two concurrent runs over the same document can open
-  two. Reconciliation keeps the lower id for the computed types, not this
-  one. Needs a partial unique index before the concurrency is raised.
 - **A step that throws after spending tokens is not charged to the run
   (B4).** Its AI-usage rows record the spend, but the next document is handed
   the full remainder, so a persistent database fault is bounded by the
