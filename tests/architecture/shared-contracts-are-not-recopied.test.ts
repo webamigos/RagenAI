@@ -90,6 +90,29 @@ const CONTRACTS = [
     name: 'APP_ADMIN_ROLE',
     declaration: /\b(?:const|let|var)\s+APP_ADMIN_ROLE\s*(?::[^=]+)?=/,
   },
+  /**
+   * Which subscription row decides an organization's plan features. apps/web,
+   * apps/api and apps/admin each had their own — admin's a simpler `find`
+   * that could pick a Trial where web picked the paid plan, so the panel
+   * explained a resolution the app did not make. The worker needed a fourth
+   * for Brain's run-time flag check, and the rule moved into the package
+   * instead. Both shapes are refused: a function declaration and an arrow
+   * bound to the name.
+   */
+  {
+    name: 'pickBestSubscription',
+    declaration:
+      /\bfunction\s+pickBestSubscription\b|\b(?:const|let|var)\s+pickBestSubscription\s*(?::[^=]+)?=/,
+  },
+  /**
+   * The plan name `pickBestSubscription` ranks below a paid plan. A copy
+   * spelled differently would make a real trial rank as a paid plan, silently.
+   * A re-export (`export { TRIAL_PLAN_NAME } from …`) is fine.
+   */
+  {
+    name: 'TRIAL_PLAN_NAME',
+    declaration: /\b(?:const|let|var)\s+TRIAL_PLAN_NAME\s*(?::[^=]+)?=/,
+  },
 ] as const;
 
 const SKIP_DIRS = new Set([

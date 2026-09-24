@@ -1,11 +1,12 @@
 /**
  * Which of an organization's subscription rows decides its plan features.
  *
- * Moved here so apps/worker can resolve a feature flag the way apps/web does
- * without writing a fourth copy: apps/web, apps/api and apps/admin each carry
- * their own today (admin's deliberately simpler). Those still have to be
- * migrated onto this one — until then this is the copy the worker reads, and
- * its tests are apps/web's, moved with it.
+ * The one copy. apps/web, apps/api and apps/admin each carried their own —
+ * admin's a `find` that took whichever active row the database returned
+ * first, so the panel could explain a resolution apps/web did not make — and
+ * apps/worker needed one for Brain's run-time flag check. All four read this.
+ * `tests/architecture/shared-contracts-are-not-recopied.test.ts` refuses a
+ * fifth, and a second `TRIAL_PLAN_NAME`.
  *
  * An organization accumulates rows — a legacy trial beside a paid plan, stale
  * trials from invite flows — so the order is: an `active` paid plan, then a

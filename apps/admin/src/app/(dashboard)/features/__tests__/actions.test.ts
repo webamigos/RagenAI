@@ -365,6 +365,42 @@ describe('getOrgFeatureResolutionAction', () => {
    * identical from the panel — an operator could not tell which one was
    * actually deciding.
    */
+  // This view used to take the first active-or-trialing row in database
+  // order, so a Trial returned before the paid plan decided what the panel
+  // showed while apps/web served the paid plan. Both now pick the same row.
+  it('reads the plan apps/web gates on, not the first row returned', async () => {
+    subscriptionFindMany.mockResolvedValue([
+      {
+        plan: 'Trial',
+        status: 'trialing',
+        periodStart: new Date('2026-09-01'),
+      },
+      { plan: 'Pro', status: 'active', periodStart: new Date('2026-06-01') },
+    ]);
+    planFindFirst.mockImplementation(async ({ where }) =>
+      where.name === 'Pro'
+        ? { features: { voiceInput: true } }
+        : { features: { voiceInput: false } },
+    );
+
+    const resolved = await getOrgFeatureResolutionAction(ORG_ID);
+
+    expect(planFindFirst).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { name: 'Pro' } }),
+    );
+    expect(resolved.voiceInput).toEqual({ value: true, source: 'plan' });
+  });
+
+  it('ignores the plan of a canceled subscription', async () => {
+    subscriptionFindMany.mockResolvedValue([
+      { plan: 'Pro', status: 'canceled', periodStart: null },
+    ]);
+
+    await getOrgFeatureResolutionAction(ORG_ID);
+
+    expect(planFindFirst).not.toHaveBeenCalled();
+  });
+
   it('reports the organization override as the decider when it is set', async () => {
     orgSettingsFindUnique.mockResolvedValue({
       featureOverrides: { publicChatbot: true },

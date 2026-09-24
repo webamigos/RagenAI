@@ -19,8 +19,8 @@
  */
 import { PrismaClient } from '../generated/prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
+import { TRIAL_PLAN_NAME } from '@ragenai/platform-contracts';
 
-const TRIAL_PLAN_NAME = 'Trial';
 const PLAN_TIER: Record<string, number> = { [TRIAL_PLAN_NAME]: 0 };
 
 type Row = {

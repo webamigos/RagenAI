@@ -1,4 +1,8 @@
 import { Injectable } from '@nestjs/common';
+import {
+  pickBestSubscription,
+  subscriptionGrantsPlanFeatures,
+} from '@ragenai/platform-contracts';
 import { PrismaService } from '../prisma/prisma.service.js';
 import {
   DEFAULT_FEATURES,
@@ -7,65 +11,6 @@ import {
   type FeatureKey,
   type FeatureOverrides,
 } from './types.js';
-
-/**
- * Ported from apps/web's
- * src/features/subscriptions/services/queries/{get-effective-features-query,
- * pick-best-subscription}.ts — only the read path `toggle-chatbot-command`
- * needs. NOT a port of the full `subscriptions` feature (no billing, no
- * Stripe, no plan CRUD). See docs/adrs/21-monorepo-and-api-decoupling.md.
- */
-type SubscriptionCandidate = {
-  plan: string;
-  status: string;
-  periodStart: Date | null;
-};
-
-// Matches apps/web's src/app/config.ts TRIAL_PLAN_NAME.
-const TRIAL_PLAN_NAME = 'Trial';
-
-const SUBSCRIPTION_TIER_ORDER = {
-  active_paid: 0,
-  trialing_paid: 1,
-  trialing_trial: 2,
-  other: 3,
-} as const;
-
-function tierFor(candidate: SubscriptionCandidate): number {
-  const isTrialPlan = candidate.plan === TRIAL_PLAN_NAME;
-  if (candidate.status === 'active' && !isTrialPlan) {
-    return SUBSCRIPTION_TIER_ORDER.active_paid;
-  }
-  if (candidate.status === 'trialing' && !isTrialPlan) {
-    return SUBSCRIPTION_TIER_ORDER.trialing_paid;
-  }
-  if (candidate.status === 'trialing' && isTrialPlan) {
-    return SUBSCRIPTION_TIER_ORDER.trialing_trial;
-  }
-  return SUBSCRIPTION_TIER_ORDER.other;
-}
-
-/**
- * Pick the "best" subscription for an org from possibly many rows.
- * Active paid > trialing paid > trialing Trial > anything else.
- * Ties broken by most recent periodStart.
- */
-export function pickBestSubscription<T extends SubscriptionCandidate>(
-  candidates: T[],
-): T | null {
-  if (candidates.length === 0) {
-    return null;
-  }
-  return [...candidates].sort((a, b) => {
-    const tierDiff = tierFor(a) - tierFor(b);
-    if (tierDiff !== 0) {
-      return tierDiff;
-    }
-    const aStart = a.periodStart ? a.periodStart.getTime() : 0;
-    const bStart = b.periodStart ? b.periodStart.getTime() : 0;
-    return bStart - aStart;
-  })[0];
-}
 
 function coerceBoolean(v: unknown): boolean | null {
   if (v === true || v === false) {
@@ -90,6 +35,16 @@ function parseFlagMap(
   return out;
 }
 
+/**
+ * Ported from apps/web's get-effective-features-query.ts — only the read path
+ * `toggle-chatbot-command` needs. NOT a port of the full `subscriptions`
+ * feature (no billing, no Stripe, no plan CRUD). See
+ * docs/adrs/21-monorepo-and-api-decoupling.md.
+ *
+ * Which subscription row decides the plan is `pickBestSubscription` from
+ * `@ragenai/platform-contracts`; this file carried its own copy until the
+ * worker needed a third and the rule moved there (ADR-33).
+ */
 @Injectable()
 export class SubscriptionsService {
   constructor(private readonly prisma: PrismaService) {}
@@ -116,10 +71,7 @@ export class SubscriptionsService {
 
     // Trialing subscriptions get the same plan features as paid (Stripe trial).
     let planFeatures: Partial<Record<FeatureKey, boolean | null>> = {};
-    if (
-      subscription?.plan &&
-      (subscription.status === 'active' || subscription.status === 'trialing')
-    ) {
+    if (subscriptionGrantsPlanFeatures(subscription)) {
       const plan = await this.prisma.client.subscriptionPlan.findFirst({
         where: { name: subscription.plan },
         select: { features: true },

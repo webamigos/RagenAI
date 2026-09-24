@@ -2,6 +2,10 @@ import { cache } from 'react';
 
 import db from '@ragenai/prisma-client';
 import {
+  pickBestSubscription,
+  subscriptionGrantsPlanFeatures,
+} from '@ragenai/platform-contracts';
+import {
   PLATFORM_FEATURE_DEFAULTS_KEY,
   flattenFeatures,
   resolveFeatures,
@@ -10,7 +14,6 @@ import {
   type FeatureKey,
   type FeatureResolution,
 } from '../../contracts/features.types';
-import { pickBestSubscription } from './pick-best-subscription';
 
 /**
  * `Settings.default_features` holds a tri-state map, same shape as an
@@ -92,10 +95,7 @@ export const resolveFeaturesForOrgQuery = cache(
 
     // Trialing subscriptions get the same plan features as paid (Stripe trial).
     let planFeatures: Record<string, unknown> | null = null;
-    if (
-      subscription?.plan &&
-      (subscription.status === 'active' || subscription.status === 'trialing')
-    ) {
+    if (subscriptionGrantsPlanFeatures(subscription)) {
       const plan = await db.subscriptionPlan.findFirst({
         where: { name: subscription.plan },
         select: { features: true },
