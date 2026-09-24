@@ -98,7 +98,12 @@ and seven more in the same shape: `generateDocument`, `optimizeDocument`,
 `brainExtract` (`src/handlers/brain-extract.ts`) — candidate knowledge pages
 from documents' active versions, behind the `brain` flag, which the job
 checks when it runs. Its rules are in `packages/brain-core`; the handler
-enforces the run's document ceiling and the activity its tokens.
+enforces the run's document ceiling and the activity its tokens. A document
+whose step throws through its retries becomes that document's
+`EXTRACTION_FAILED` rather than a failed run, and every run ends by
+reconciling the organization's computed findings (GAP, ORPHAN, STALE,
+UNOWNED — `reconcileBrainFindings`); a failure there is `findings: null` in
+the result, not a failed run.
 `BRAIN_EXTRACT_MODEL` (defaults to `SUMMARY_MODEL`),
 `BRAIN_EXTRACT_MAX_DOCUMENTS` and `BRAIN_EXTRACT_MAX_TOKENS` configure it, and
 `BRAIN_EXTRACT_CONCURRENCY` (default 1) caps how many runs execute at once
