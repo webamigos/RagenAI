@@ -208,6 +208,14 @@ archive is the blog.
   address guard refuses. The admin form itself still cannot reach a private
   address the deployment did not list.
 
+### Thread: Ragen Brain fills the screen
+
+- `[brief]` **Ragen Brain uses the whole window.** Its pages were capped at
+  1120px and the graph at 600px tall, which left half of a wide screen
+  empty. The graph now takes the width and the height of the window, and in
+  a graph of more than twenty pages names no longer pile on top of each
+  other — a name that would collide appears when you hover or zoom.
+
 ### Thread: a bug hunt through the panel
 
 - `[brief]` **A wrong link no longer takes the whole app down.** Opening a

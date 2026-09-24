@@ -46,11 +46,35 @@ export function communityColour(id: number): {
   return { token: COMMUNITY_TOKENS[slot % n], alpha: slot < n ? 1 : 0.5 };
 }
 
-/** Up to this many pages, every page is labelled. */
-const SMALL_GRAPH = 60;
+/**
+ * Up to this many pages, every page is labelled.
+ *
+ * Was 60. A forced label is exempt from Sigma's collision grid, so forty-odd
+ * forced names drew on top of each other in the middle of the graph. Past
+ * this size the grid decides, and a hidden name appears on hover or zoom.
+ */
+const SMALL_GRAPH = 20;
+
+/** Up to this many pages the layout is spread for legibility (see `scalingRatio`). */
+const MEDIUM_GRAPH = 200;
 
 /** Up to this many pages, the layout spreads out and the camera leaves label room. */
 export const ROOMY_GRAPH = 15;
+
+/** ForceAtlas2's `scalingRatio` for a graph of `order` pages. */
+function spreadFor(
+  order: number,
+  roomy: boolean,
+  inferred: number | undefined,
+): number | undefined {
+  if (roomy) {
+    return Math.max(inferred ?? 1, 12);
+  }
+  if (order <= MEDIUM_GRAPH) {
+    return Math.max(inferred ?? 1, 10);
+  }
+  return inferred;
+}
 
 /** Width carries the origin too, so it is never told by colour alone. */
 const EDGE_SIZE = { EXTRACTED: 1.6, AMBIGUOUS: 1, INFERRED: 0.6 } as const;
@@ -180,8 +204,13 @@ export function BrainGraphCanvas({ view }: { view: BrainGraphView }) {
               6 + Math.sqrt(node.degree) * 2 + (node.openFindings > 0 ? 4 : 0),
             label: node.title,
             color: palette.community(node.community),
+            // An open finding is marked by the node's size and ring; forcing
+            // its name too put a dozen unmovable labels in the densest part
+            // of a medium graph. Its name shows on hover like any other.
             forceLabel:
-              labelAll || node.openFindings > 0 || node.id === view.focus,
+              labelAll ||
+              node.id === view.focus ||
+              (node.openFindings > 0 && view.nodes.length <= SMALL_GRAPH),
           });
         });
         for (const edge of view.edges) {
@@ -207,9 +236,17 @@ export function BrainGraphCanvas({ view }: { view: BrainGraphView }) {
               // inferred ratio suits hundreds of nodes and packed a
               // seven-page neighbourhood so tight that labels ran into the
               // next node.
-              scalingRatio: roomy
-                ? Math.max(inferred.scalingRatio ?? 1, 12)
-                : inferred.scalingRatio,
+              // Every page of a labelled graph (up to SMALL_GRAPH) has its
+              // name drawn, and forty names at the inferred ratio ran into
+              // each other. Spread those out too, less than a neighbourhood.
+              // A graph up to a few hundred pages is read by name; the
+              // inferred ratio packed forty names into each other. The
+              // canvas now takes the height of the window, so spend it.
+              scalingRatio: spreadFor(
+                graph.order,
+                roomy,
+                inferred.scalingRatio,
+              ),
             },
           });
         }
@@ -220,6 +257,10 @@ export function BrainGraphCanvas({ view }: { view: BrainGraphView }) {
           // Room for the labels of nodes laid out on the edge of the stage.
           stagePadding: 60,
           labelRenderedSizeThreshold: 8,
+          // Denser than the default grid would hide: a label is the only way
+          // to tell pages apart, so keep as many as fit without touching.
+          labelDensity: 1.2,
+          labelGridCellSize: 90,
           labelColor: { color: palette.label },
           nodeReducer: (id, data) => {
             if (!hovered || id === hovered || graph.areNeighbors(id, hovered)) {
@@ -278,7 +319,7 @@ export function BrainGraphCanvas({ view }: { view: BrainGraphView }) {
     : [];
 
   return (
-    <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_280px]">
+    <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
       <div className="relative">
         <div
           ref={container}
@@ -288,7 +329,9 @@ export function BrainGraphCanvas({ view }: { view: BrainGraphView }) {
             nodes: view.shown.nodes,
             edges: view.shown.edges,
           })}
-          className="h-[600px] w-full rounded-[6px] border border-border bg-background"
+          // As tall as the window allows, never under 600px: a fixed height
+          // left a large graph cramped on a tall screen.
+          className="h-[calc(100svh-15rem)] min-h-[600px] w-full rounded-[6px] border border-border bg-background"
         />
         {failed && (
           <p className="absolute inset-x-0 top-4 text-center text-sm text-muted-foreground">

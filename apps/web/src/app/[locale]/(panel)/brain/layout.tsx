@@ -32,7 +32,9 @@ export default async function BrainLayout({
   ]);
 
   return (
-    <div className="w-full max-w-[1120px] px-6 py-6">
+    // The full width of the panel. Capped at 1120px it left half of a wide
+    // screen empty beside a graph that needed the room.
+    <div className="w-full px-6 py-6">
       <div className="flex items-center justify-between gap-3">
         <h1 className="text-lg font-semibold text-foreground">{t('title')}</h1>
         {access.canWrite && <ExtractDialog documents={documents} />}
