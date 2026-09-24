@@ -158,6 +158,16 @@ archive is the blog.
 
 ### Thread: what a regression pass turned up
 
+- `[brief]` **Chat answers no longer show `<PL_PHONE_1>` instead of a phone
+  number.** With nothing personal in the question, an answer could still say
+  "call <PL_PHONE_1>" while the source beneath it showed the real number: the
+  model was told about masking placeholders on every turn and sometimes
+  invented one. The instruction is sent only when something was actually
+  masked now, and a placeholder that cannot be restored is shown as "[redacted
+  phone number]" rather than as a raw token. Organizations without their own
+  prompt also get the default answer instructions again, which that
+  instruction had been displacing.
+
 - `[brief]` **Word, Excel and PowerPoint files are read, not indexed as
   bytes.** Uploaded while Docling was unavailable, a `.docx`, `.xlsx` or
   `.pptx` (and an `.epub` even with Docling up) was mistaken for plain text by

@@ -224,6 +224,25 @@ describe('retrieveRelevantDocumentsWithIds telemetry', () => {
     expect(result.sources[0].snippet).toBe('shared');
   });
 
+  it('redacts ingest placeholders in the snippet, as the context does', async () => {
+    // The quote under an answer must show what the model read. The context
+    // rewrites `<PL_PHONE>` through `redactPiiPlaceholders`; a snippet that
+    // did not would show a raw token the model never saw.
+    const store = makeVectorStore();
+    store.similaritySearch = vi.fn().mockResolvedValue([
+      {
+        pageContent: 'Call <PL_PHONE> or write to <EMAIL_ADDRESS_1>.',
+        metadata: { file_id: 'f1', file_name: 'x.pdf' },
+      },
+    ]);
+
+    const result = await retrieveRelevantDocumentsWithIds(store, ['q'], 4);
+
+    expect(result.sources[0].snippet).toBe(
+      'Call [redacted phone number] or write to [redacted email address].',
+    );
+  });
+
   it('carries the page of the chunk it took the snippet from', async () => {
     const store = makeVectorStore();
     store.similaritySearch = vi.fn().mockResolvedValue([

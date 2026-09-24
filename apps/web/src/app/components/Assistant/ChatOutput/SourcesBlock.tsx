@@ -155,9 +155,12 @@ const SourceCard = ({
         merely named — and it is the half that was stored, encrypted and read
         back for months with nothing rendering it.
 
-        Masked values arrive already masked: PII is replaced at ingestion, so
-        the quote shows `[PESEL]` because that is what the model read, not
-        because anything is hidden here.
+        The quote is the chunk as the model read it. When the document was
+        masked at ingestion, its placeholders are rewritten on the server into
+        "[redacted national ID number]" — in the snippet and in the model's
+        context alike, by one function — so nothing is hidden here. When it
+        was not masked, both hold the real value; the model's answer can only
+        differ from this quote by what the model chose to write.
       */}
       {source.snippet ? (
         <blockquote className="mt-1 border-l-2 border-border pl-2 text-[11px] leading-snug text-muted-foreground line-clamp-3">

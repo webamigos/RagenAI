@@ -30,6 +30,7 @@ import {
   systemTemplates,
 } from './config';
 import { ThreadDocumentRetriever } from '../utils/ThreadDocumentRetriever';
+import { redactPiiPlaceholders } from '@/libs/pii/redact-placeholders';
 import { rerankDocuments, isRerankingEnabled } from '@/libs/reranker';
 import { logger } from '@/app/lib/utils/logger';
 import { withSpan } from '@/libs/monitoring/with-span';
@@ -711,7 +712,14 @@ export async function retrieveRelevantDocumentsWithIds(
           // chunk size is a per-org setting, so there is no fixed length to
           // match — this bounds the pathological case, and an ordinary chunk
           // sits well under it.
-          const snippet = truncateSnippet(doc.pageContent.trim());
+          //
+          // Redacted the way the context is (`renderDocumentChunk`), so the
+          // quote shows what the model read: an ingest-masked `<PL_PHONE>`
+          // becomes "[redacted phone number]" in both, rather than a raw
+          // token under the answer and prose in it.
+          const snippet = truncateSnippet(
+            redactPiiPlaceholders(doc.pageContent.trim()),
+          );
           // The page of *this* chunk, which is the best-ranked one for the
           // file — the same chunk the score and the quote come from, so all
           // three describe one place in one document rather than three.
