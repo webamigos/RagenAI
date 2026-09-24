@@ -2633,6 +2633,18 @@
         "INFERRED": "Inferred by the model",
         "AMBIGUOUS": "Uncertain"
       }
+    },
+    "export": {
+      "ready": "Ready to export: {count} pages",
+      "download": "Download bundle (.zip)",
+      "none": "Approve a page with an owner to export it",
+      "skipped": {
+        "not-approved": "Not approved: {count}",
+        "no-owner": "No owner: {count}",
+        "no-access": "Open to nobody: {count}",
+        "no-sources": "No sources: {count}",
+        "invalid": "Incomplete data: {count}"
+      }
     }
   }
 }

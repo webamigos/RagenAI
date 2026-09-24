@@ -50,6 +50,19 @@ test.describe('Ragen Brain panel (smoke)', () => {
     ).toBeVisible();
   });
 
+  test('offers the bundle and serves it as a zip', async ({ page }) => {
+    await page.goto('/pl/brain');
+    const bar = page.getByTestId('brain-export');
+    await expect(bar).toContainText(/Gotowe do eksportu: \d+ stron/, {
+      timeout: 15000,
+    });
+    const res = await page.request.get('/api/brain/export');
+    expect(res.status()).toBe(200);
+    expect(res.headers()['content-type']).toBe('application/zip');
+    // A zip starts with the local-file-header signature "PK\x03\x04".
+    expect((await res.body()).subarray(0, 2).toString()).toBe('PK');
+  });
+
   test('draws the graph with an honest count', async ({ page }) => {
     await page.goto('/pl/brain/graph');
     await expect(page.getByTestId('brain-graph-count')).toContainText(

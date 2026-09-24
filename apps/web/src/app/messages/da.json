@@ -2633,6 +2633,18 @@
         "INFERRED": "Udledt af modellen",
         "AMBIGUOUS": "Usikker"
       }
+    },
+    "export": {
+      "ready": "Klar til eksport: {count} sider",
+      "download": "Download pakke (.zip)",
+      "none": "Godkend en side med ejer for at eksportere den",
+      "skipped": {
+        "not-approved": "Ikke godkendt: {count}",
+        "no-owner": "Uden ejer: {count}",
+        "no-access": "Åben for ingen: {count}",
+        "no-sources": "Uden kilder: {count}",
+        "invalid": "Ufuldstændige data: {count}"
+      }
     }
   }
 }

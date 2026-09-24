@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { contentHashSchema } from './primitives';
+import { contentHashSchema, uuidSchema } from './primitives';
 
 /**
  * The `brain` key of `UserFile.metadata` on the file a knowledge page is
@@ -22,7 +22,7 @@ import { contentHashSchema } from './primitives';
  * level is one PDF metadata extractor away from a collision.
  */
 export const publishedFileMetadataSchema = z.object({
-  pageId: z.uuid(),
+  pageId: uuidSchema,
   contentHash: contentHashSchema,
   publicationGeneration: z.int().nonnegative(),
 });

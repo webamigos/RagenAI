@@ -4,6 +4,7 @@ import {
   contentHashSchema,
   isoDurationSchema,
   principalSchema,
+  uuidSchema,
 } from './primitives';
 import { EXPORTABLE_PAGE_STATUSES, KNOWLEDGE_PAGE_TYPES } from './vocabulary';
 
@@ -20,8 +21,8 @@ import { EXPORTABLE_PAGE_STATUSES, KNOWLEDGE_PAGE_TYPES } from './vocabulary';
  * rather than attempting a lookup that cannot succeed.
  */
 export const pageSourceSchema = z.object({
-  fileId: z.uuid(),
-  documentVersionId: z.uuid(),
+  fileId: uuidSchema,
+  documentVersionId: uuidSchema,
   span: z.string().trim().min(1),
   /** The cited words, verbatim. What a reader checks the source against. */
   quote: z.string().trim().min(1),
@@ -53,7 +54,7 @@ export type PageSource = z.infer<typeof pageSourceSchema>;
 export const pageFrontmatterSchema = z
   .object({
     /** The page's `publicId` — stable across exports and re-publications. */
-    id: z.uuid(),
+    id: uuidSchema,
     slug: z
       .string()
       .regex(
@@ -68,7 +69,7 @@ export const pageFrontmatterSchema = z
     accessibleBy: z.array(principalSchema).min(1),
     validFrom: z.iso.date().nullable().default(null),
     /** `id` of the page that replaces this one. */
-    supersededBy: z.uuid().nullable().default(null),
+    supersededBy: uuidSchema.nullable().default(null),
     verifyEvery: isoDurationSchema.nullable().default(null),
     lastVerifiedAt: z.iso.datetime({ offset: true }).nullable().default(null),
     lastVerifiedBy: z.string().trim().min(1).nullable().default(null),

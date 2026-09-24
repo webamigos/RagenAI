@@ -1119,9 +1119,16 @@ baseline without the outlier (edges 72.7 % `EXTRACTED` against 70.3 %,
 
 ### Phase E — Publication, withdrawal, export
 
-- [ ] **E1.** Bundle export: markdown with frontmatter + `graph.json` +
+- [x] **E1.** Bundle export: markdown with frontmatter + `graph.json` +
       manifest, written through `packages/storage`, downloadable. Approved pages
       with an owner only.
+      _`GET /api/brain/export` streams a zip built by `buildBundle`
+      (brain-core), every file checked against the Phase A contracts. **Not
+      written through storage**: a bundle is a projection of Postgres and the
+      ledger, so it is generated on each download instead of persisted to go
+      stale. Pages left out are counted by reason on the pages list ("no
+      owner: 9"). Contract ids are checked for a UUID's shape, not its RFC
+      version, so a seeded or imported row is not silently dropped._
 - [ ] **E2.** Publish: an approved page becomes a `UserFile` carrying
       `metadata.brain.pageId`, ingested with predefined chunk boundaries and the
       curated `accessible_by` — never the source file's. The generation bump,
@@ -1146,7 +1153,9 @@ baseline without the outlier (edges 72.7 % `EXTRACTED` against 70.3 %,
       raises the owner's `STALE` finding. Plus the reconciliation sweep for
       sources whose file is gone and whose timestamp is not set — both
       idempotent, both tested.
-- [ ] **E6.** `tests/architecture/brain-export-never-widens-access.test.ts`.
+- [x] **E6.** `tests/architecture/brain-export-never-widens-access.test.ts`.
+      _A property over 300 random pages: every exported page lists exactly its
+      own principals, and a page with none is not exported._
 - [ ] **E7.** Re-publication by diff: `contentHash` per page, re-embed only what
       changed, delete what was removed.
 - [ ] **E8.** Two-level citation rendering in `apps/web` and `apps/api`:
