@@ -41,6 +41,30 @@ describe('shelveIsolated', () => {
     expect(at(graph, 'b')).toMatchObject({ x: 10, y: 10 });
   });
 
+  it('leaves a stray the operator pinned where it was put, and out of the bounds', () => {
+    const graph = graphWith(12);
+    // Far off to the right: counted as connected, it would stretch the box
+    // and push the shelf's rows off the connected pair's height.
+    graph.mergeNodeAttributes('s0', { x: 900, y: 600, fixed: true });
+    expect(shelveIsolated(graph)).toBe(11);
+    expect(at(graph, 's0')).toMatchObject({ x: 900, y: 600 });
+    for (let i = 1; i < 12; i += 1) {
+      const { x, y } = at(graph, `s${i}`);
+      expect(x).toBeLessThan(0);
+      expect(y).toBeGreaterThanOrEqual(0);
+      expect(y).toBeLessThanOrEqual(10);
+    }
+  });
+
+  it('does not count pinned strays as a graph to shelve beside', () => {
+    const graph = new MultiDirectedGraph();
+    for (let i = 0; i < 5; i += 1) {
+      graph.addNode(`s${i}`, { x: i * 3, y: i, fixed: i < 2 });
+    }
+    expect(shelveIsolated(graph)).toBe(0);
+    expect(at(graph, 's4')).toMatchObject({ x: 12, y: 4 });
+  });
+
   it('puts no two strays on the same spot', () => {
     const graph = graphWith(20);
     shelveIsolated(graph);

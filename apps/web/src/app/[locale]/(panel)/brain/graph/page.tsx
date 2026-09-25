@@ -6,6 +6,7 @@ import {
   getBrainGraphQuery,
   parseGraphParams,
 } from '@/features/brain/services/queries/get-brain-graph-query';
+import { getCurrentUserId } from '@/app/lib/utils/auth-helpers';
 import { Link } from '@/i18n/routing';
 
 import { BrainEmpty } from '../components/BrainEmpty';
@@ -43,9 +44,10 @@ export default async function BrainGraphPage({
   const selected = Array.isArray(search.selected)
     ? search.selected[0]
     : search.selected;
-  const [t, view] = await Promise.all([
+  const [t, view, userId] = await Promise.all([
     getTranslations('brain.graph'),
     getBrainGraphQuery(access.orgId, params),
+    getCurrentUserId(),
   ]);
 
   const href = (over: Partial<Record<keyof Search, string | null>>) => {
@@ -141,7 +143,11 @@ export default async function BrainGraphPage({
               totalEdges: view.total.edges,
             })}
           </p>
-          <BrainGraphCanvas view={view} selected={selected} />
+          <BrainGraphCanvas
+            view={view}
+            selected={selected}
+            layoutScope={`${access.orgId}:${userId ?? 'anonymous'}`}
+          />
         </>
       )}
     </section>

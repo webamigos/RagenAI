@@ -35,6 +35,11 @@ export function shelveIsolated(graph: ShelvableGraph): number {
   let maxY = -Infinity;
   let connected = 0;
   graph.forEachNode((key, a) => {
+    // A stray the operator pinned stays where it was put, and is neither
+    // shelved nor part of the connected graph the shelf sits beside.
+    if (graph.degree(key) === 0 && a.fixed === true) {
+      return;
+    }
     if (graph.degree(key) === 0) {
       isolated.push(key);
       return;
