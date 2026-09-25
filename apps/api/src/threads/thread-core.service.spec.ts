@@ -246,7 +246,7 @@ describe('ThreadsCoreService', () => {
       });
       vi.mocked(subscriptions.isFeatureEnabled).mockResolvedValue(false);
 
-      const result = await service.deleteThread('t1', 'org-1');
+      const result = await service.deleteThread('t1', 'org-1', 'user-1');
 
       expect(result).toEqual({
         success: false,
@@ -264,7 +264,7 @@ describe('ThreadsCoreService', () => {
       const { service } = makeService({
         thread: { findFirst: vi.fn().mockResolvedValue(null) } as never,
       });
-      const result = await service.deleteThread('t1', 'org-1');
+      const result = await service.deleteThread('t1', 'org-1', 'user-1');
       expect(result).toEqual({
         success: false,
         errorMessage: 'Thread not found',
@@ -279,7 +279,7 @@ describe('ThreadsCoreService', () => {
         } as never,
       });
 
-      const result = await service.deleteThread('t1', 'org-1');
+      const result = await service.deleteThread('t1', 'org-1', 'user-1');
 
       expect(result).toEqual({ success: true });
       expect(prisma.client.message.deleteMany).toHaveBeenCalledWith({
@@ -294,6 +294,65 @@ describe('ThreadsCoreService', () => {
     });
   });
 
+  describe("another member's thread", () => {
+    // The owner column is `visitorId`; the lookup must carry it, or any member
+    // of the organization could act on any thread in it.
+    const ownThread = {
+      where: { id: 't1', organizationId: 'org-1', visitorId: 'user-1' },
+    };
+
+    it('is not deleted', async () => {
+      const { service, prisma } = makeService({
+        thread: { findFirst: vi.fn().mockResolvedValue(null) } as never,
+      });
+
+      const result = await service.deleteThread('t1', 'org-1', 'user-1');
+
+      expect(prisma.client.thread.findFirst).toHaveBeenCalledWith(ownThread);
+      expect(result).toEqual({
+        success: false,
+        errorMessage: 'Thread not found',
+      });
+      expect(prisma.client.thread.delete).not.toHaveBeenCalled();
+      expect(prisma.client.message.deleteMany).not.toHaveBeenCalled();
+    });
+
+    it('is not renamed', async () => {
+      const { service, prisma } = makeService({
+        thread: { findFirst: vi.fn().mockResolvedValue(null) } as never,
+      });
+
+      const result = await service.renameThread('t1', 'New', 'org-1', 'user-1');
+
+      expect(prisma.client.thread.findFirst).toHaveBeenCalledWith(ownThread);
+      expect(result).toEqual({
+        success: false,
+        errorMessage: 'Thread not found',
+      });
+      expect(prisma.client.thread.update).not.toHaveBeenCalled();
+    });
+
+    it('is not starred', async () => {
+      const { service, prisma } = makeService({
+        thread: { findFirst: vi.fn().mockResolvedValue(null) } as never,
+      });
+
+      const result = await service.toggleThreadStarred(
+        't1',
+        true,
+        'org-1',
+        'user-1',
+      );
+
+      expect(prisma.client.thread.findFirst).toHaveBeenCalledWith(ownThread);
+      expect(result).toEqual({
+        success: false,
+        errorMessage: 'Thread not found',
+      });
+      expect(prisma.client.thread.update).not.toHaveBeenCalled();
+    });
+  });
+
   describe('toggleThreadStarred', () => {
     it('updates isStarred when the thread is found', async () => {
       const { service } = makeService({
@@ -303,7 +362,12 @@ describe('ThreadsCoreService', () => {
         } as never,
       });
 
-      const result = await service.toggleThreadStarred('t1', true, 'org-1');
+      const result = await service.toggleThreadStarred(
+        't1',
+        true,
+        'org-1',
+        'user-1',
+      );
       expect(result).toEqual({ success: true, id: 't1', isStarred: true });
     });
   });

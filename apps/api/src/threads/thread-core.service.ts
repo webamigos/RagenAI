@@ -35,6 +35,20 @@ const ALL_THREADS_SELECT = {
 } as const;
 
 /**
+ * A thread the caller may delete, rename or star: in their organization
+ * **and** theirs. `visitorId` is the owner column (see the schema), and the
+ * panel's lists show a user only the threads it names, so this is the rule the
+ * UI already implies. Another member's thread answers as not found, which is
+ * what it is to this caller.
+ *
+ * Not used by the public `DELETE /v1/threads/:id` (`ThreadsService.remove`):
+ * an API key acts for the organization and carries no user.
+ */
+function ownThreadWhere(threadId: string, orgId: string, userId: string) {
+  return { id: threadId, organizationId: orgId, visitorId: userId };
+}
+
+/**
  * Ported from apps/web's src/features/threads/services/{commands,queries}/*.ts
  * (the panel-UI thread feature — CRUD, listing, search — distinct from this
  * directory's pre-existing `ThreadsService`/`ThreadsController`, which back
@@ -284,6 +298,7 @@ export class ThreadsCoreService {
   async deleteThread(
     threadId: string,
     orgId: string,
+    userId: string,
   ): Promise<{ success: true } | { success: false; errorMessage: string }> {
     // Here rather than in a controller, so the public `DELETE /v1/threads/:id`
     // and the internal route apps/web calls are gated by the same line.
@@ -295,7 +310,7 @@ export class ThreadsCoreService {
     }
     try {
       const thread = await this.prisma.client.thread.findFirst({
-        where: { id: threadId, organizationId: orgId },
+        where: ownThreadWhere(threadId, orgId, userId),
       });
 
       if (!thread) {
@@ -331,12 +346,13 @@ export class ThreadsCoreService {
     threadId: string,
     title: string,
     orgId: string,
+    userId: string,
   ): Promise<
     { success: true; title: string } | { success: false; errorMessage: string }
   > {
     try {
       const thread = await this.prisma.client.thread.findFirst({
-        where: { id: threadId, organizationId: orgId },
+        where: ownThreadWhere(threadId, orgId, userId),
       });
 
       if (!thread) {
@@ -370,10 +386,11 @@ export class ThreadsCoreService {
     threadId: string,
     isStarred: boolean,
     orgId: string,
+    userId: string,
   ): Promise<ToggleStarredResult> {
     try {
       const thread = await this.prisma.client.thread.findFirst({
-        where: { id: threadId, organizationId: orgId },
+        where: ownThreadWhere(threadId, orgId, userId),
       });
 
       if (!thread) {

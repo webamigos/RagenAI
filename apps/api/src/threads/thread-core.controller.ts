@@ -185,7 +185,7 @@ export class ThreadCoreController {
     @Param('id') id: string,
     @GetSessionAuthContext() context: SessionAuthContext,
   ) {
-    return this.threads.deleteThread(id, context.orgId);
+    return this.threads.deleteThread(id, context.orgId, context.userId);
   }
 
   @Put(':id/rename')
@@ -194,7 +194,12 @@ export class ThreadCoreController {
     @Body() dto: RenameThreadDto,
     @GetSessionAuthContext() context: SessionAuthContext,
   ) {
-    return this.threads.renameThread(id, dto.title, context.orgId);
+    return this.threads.renameThread(
+      id,
+      dto.title,
+      context.orgId,
+      context.userId,
+    );
   }
 
   @Post(':id/star')
@@ -202,7 +207,12 @@ export class ThreadCoreController {
     @Param('id') id: string,
     @GetSessionAuthContext() context: SessionAuthContext,
   ) {
-    return this.threads.toggleThreadStarred(id, true, context.orgId);
+    return this.threads.toggleThreadStarred(
+      id,
+      true,
+      context.orgId,
+      context.userId,
+    );
   }
 
   @Post(':id/unstar')
@@ -210,7 +220,12 @@ export class ThreadCoreController {
     @Param('id') id: string,
     @GetSessionAuthContext() context: SessionAuthContext,
   ) {
-    return this.threads.toggleThreadStarred(id, false, context.orgId);
+    return this.threads.toggleThreadStarred(
+      id,
+      false,
+      context.orgId,
+      context.userId,
+    );
   }
 
   @Delete(':id/context')
