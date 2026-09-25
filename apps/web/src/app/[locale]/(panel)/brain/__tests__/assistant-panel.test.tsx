@@ -1,4 +1,5 @@
 import {
+  act,
   fireEvent,
   render,
   screen,
@@ -104,12 +105,30 @@ describe('the assistant panel', () => {
     expect(screen.getByText('content')).toBeVisible();
   });
 
-  it('opens beside the content, remembers it, and offers prompts for the screen', async () => {
+  it('starts closed on every visit, even after it was left open', async () => {
+    // What the panel used to write; it reopened by itself on the next visit.
+    window.localStorage.setItem('ragen.brain-assistant.open', '1');
+    shell();
+    await act(async () => {
+      await Promise.resolve();
+    });
+    expect(screen.queryByTestId('brain-assistant-panel')).toBeNull();
+    expect(screen.getByTestId('brain-assistant-toggle')).toHaveAttribute(
+      'aria-pressed',
+      'false',
+    );
+  });
+
+  it('opens docked to the right, keeps the content clear of it, and offers prompts for the screen', async () => {
     shell();
     fireEvent.click(screen.getByTestId('brain-assistant-toggle'));
     const panel = await screen.findByTestId('brain-assistant-panel');
     expect(screen.getByText('content')).toBeVisible();
-    expect(window.localStorage.getItem('ragen.brain-assistant.open')).toBe('1');
+    expect(panel.className).toContain('lg:right-0');
+    expect(panel.className).toContain('lg:inset-y-0');
+    expect(screen.getByText('content').closest('div')?.className).toContain(
+      'lg:pr-[calc(var(--assistant-width)-1.5rem)]',
+    );
     const prompts = within(panel)
       .getAllByTestId('brain-assistant-prompt')
       .map((b) => b.textContent);
