@@ -134,6 +134,12 @@ archive is the blog.
 - `[brief]` **The graph's legend shows its lines.** Each entry now draws the
   line it describes — the thick confirmed one, the amber uncertain one, the
   faint inferred one — so the words only have to say what it means.
+- `[brief]` **A page opened from Brain's graph opens beside it.** "Open page"
+  shows the page in a drawer over the graph instead of leaving it, so the
+  picked page and anything moved by hand are still there when it closes, and
+  the assistant follows: it talks about the page while the drawer is open and
+  about the graph again once it closes. Back closes the drawer; a reload or a
+  shared link opens the full page.
 - `[brief]` **Ragen Brain can be shown read-only.** Two new per-organization
   switches in the admin panel's Features page:
   - **Ragen Brain: curate** (on by default): turn it off to freeze Brain

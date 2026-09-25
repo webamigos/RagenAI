@@ -3,6 +3,7 @@ import { expect, test } from '@playwright/test';
 import {
   TEST_BRAIN_ASSISTANT_PAGE_PUBLIC_ID,
   TEST_BRAIN_ASSISTANT_PAGE_TITLE,
+  TEST_BRAIN_PAGE_PUBLIC_ID,
   TEST_BRAIN_PAGE_TITLE,
   TEST_BRAIN_SOURCE_QUOTE,
   TEST_FILE_NAME,
@@ -79,6 +80,45 @@ test.describe('Ragen Brain panel (smoke)', () => {
     ).toBeAttached({
       timeout: 15000,
     });
+  });
+
+  /**
+   * "Open page" from the graph opens the page in a drawer over it, so the
+   * graph and what was picked there survive; a reload of the same URL opens
+   * the full page. `?focus=` picks the page without clicking the canvas,
+   * which WebGL makes a guess.
+   */
+  test('opens a page from the graph in a drawer, and closes back to the graph', async ({
+    page,
+  }) => {
+    await page.goto(`/pl/brain/graph?focus=${TEST_BRAIN_PAGE_PUBLIC_ID}`);
+    const card = page.getByTestId('brain-graph-card');
+    await expect(card).toContainText(TEST_BRAIN_PAGE_TITLE, { timeout: 15000 });
+
+    await card.getByRole('link', { name: 'Otwórz stronę' }).click();
+    const drawer = page.getByTestId('brain-page-drawer');
+    await expect(
+      drawer.getByRole('heading', { name: TEST_BRAIN_PAGE_TITLE, level: 2 }),
+    ).toBeVisible({ timeout: 15000 });
+    await expect(page).toHaveURL(
+      new RegExp(`/brain/pages/${TEST_BRAIN_PAGE_PUBLIC_ID}$`),
+    );
+    // The graph is still there under it, with the page still picked.
+    await expect(page.getByTestId('brain-graph')).toBeVisible();
+    await expect(card).toContainText(TEST_BRAIN_PAGE_TITLE);
+
+    await drawer.getByTestId('brain-page-drawer-close').click();
+    await expect(drawer).toBeHidden();
+    await expect(page).toHaveURL(/\/brain\/graph\?focus=/);
+    await expect(card).toContainText(TEST_BRAIN_PAGE_TITLE);
+
+    // A reload of the page's URL is the full page, with no graph behind it.
+    await page.goto(`/pl/brain/pages/${TEST_BRAIN_PAGE_PUBLIC_ID}`);
+    await expect(
+      page.getByRole('heading', { name: TEST_BRAIN_PAGE_TITLE, level: 2 }),
+    ).toBeVisible({ timeout: 15000 });
+    await expect(page.getByTestId('brain-page-drawer')).toHaveCount(0);
+    await expect(page.getByTestId('brain-graph')).toHaveCount(0);
   });
 
   test('lists open findings, including a failed extraction', async ({
