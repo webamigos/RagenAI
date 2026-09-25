@@ -130,6 +130,57 @@ export function countLabelOverlaps(
   return count;
 }
 
+function collides(a: Box, b: Box): boolean {
+  return (
+    Math.abs(a.y - b.y) < LABEL_HEIGHT_PX - 0.5 &&
+    a.x + 0.5 < b.x + b.width &&
+    b.x + 0.5 < a.x + a.width
+  );
+}
+
+/** Rings searched around a stuck page before it is left where it is. */
+const RELOCATE_RINGS = 30;
+/** The search's horizontal step; a label's height is the vertical one. */
+const RELOCATE_STEP_X_PX = 24;
+
+/**
+ * Moves each free box that still collides to the nearest clear spot, searched
+ * ring by ring on a grid a label high. Returns whether any box moved.
+ */
+function relocateStuck(boxes: Box[], fixed: Set<string>): boolean {
+  let any = false;
+  for (const box of boxes) {
+    if (
+      fixed.has(box.id) ||
+      !boxes.some((o) => o !== box && collides(box, o))
+    ) {
+      continue;
+    }
+    const stepY = LABEL_HEIGHT_PX + SEPARATION_SLACK_PX;
+    search: for (let ring = 1; ring <= RELOCATE_RINGS; ring += 1) {
+      for (let dy = -ring; dy <= ring; dy += 1) {
+        for (let dx = -ring; dx <= ring; dx += 1) {
+          if (Math.max(Math.abs(dx), Math.abs(dy)) !== ring) {
+            continue;
+          }
+          const candidate = {
+            ...box,
+            x: box.x + dx * RELOCATE_STEP_X_PX,
+            y: box.y + dy * stepY,
+          };
+          if (!boxes.some((o) => o !== box && collides(candidate, o))) {
+            box.x = candidate.x;
+            box.y = candidate.y;
+            any = true;
+            break search;
+          }
+        }
+      }
+    }
+  }
+  return any;
+}
+
 export function separateLabels(
   graph: LabelledGraph,
   viewport: { width: number; height: number },
@@ -141,6 +192,11 @@ export function separateLabels(
   for (let round = 0; round < rounds; round += 1) {
     const ppu = pixelsPerUnit(graph, viewport);
     const boxes = boxesOf(graph, ppu);
+    const fixed = new Set(
+      boxes
+        .filter((box) => graph.getNodeAttribute(box.id, 'fixed') === true)
+        .map((box) => box.id),
+    );
     let moved = false;
     for (let step = 0; step < iterations; step += 1) {
       let collided = false;
@@ -153,17 +209,33 @@ export function separateLabels(
           if (overlapY <= 0.5 || overlapX <= 0.5) {
             continue;
           }
+          // A page the operator pinned stays put; the other one moves the
+          // whole way. Two pinned pages are left as they were placed.
+          const aFixed = fixed.has(a.id);
+          const bFixed = fixed.has(b.id);
+          if (aFixed && bFixed) {
+            continue;
+          }
           collided = true;
-          // Half each, along the cheaper axis. Two nodes on the same spot
-          // are split by index, so the pair still separates.
+          let aShare = 0.5;
+          if (aFixed) {
+            aShare = 0;
+          } else if (bFixed) {
+            aShare = 1;
+          }
+          const bShare = 1 - aShare;
+          // Along the cheaper axis. Two nodes on the same spot are split by
+          // index, so the pair still separates.
           if (overlapY <= overlapX) {
             const dir = a.y < b.y || (a.y === b.y && i < j) ? -1 : 1;
-            a.y += (dir * (overlapY + SEPARATION_SLACK_PX)) / 2;
-            b.y -= (dir * (overlapY + SEPARATION_SLACK_PX)) / 2;
+            const push = overlapY + SEPARATION_SLACK_PX;
+            a.y += dir * push * aShare;
+            b.y -= dir * push * bShare;
           } else {
             const dir = a.x < b.x ? -1 : 1;
-            a.x += (dir * (overlapX + SEPARATION_SLACK_PX)) / 2;
-            b.x -= (dir * (overlapX + SEPARATION_SLACK_PX)) / 2;
+            const push = overlapX + SEPARATION_SLACK_PX;
+            a.x += dir * push * aShare;
+            b.x -= dir * push * bShare;
           }
         }
       }
@@ -172,10 +244,20 @@ export function separateLabels(
       }
       moved = true;
     }
+    // Pushing cannot free a page wedged between pinned ones: every push
+    // lands it on another. Those few are moved to the nearest spot that is
+    // clear instead. Only with a saved layout — without one nothing is
+    // fixed, and pushing alone clears the graph.
+    if (fixed.size > 0 && relocateStuck(boxes, fixed)) {
+      moved = true;
+    }
     if (!moved) {
       return;
     }
     for (const box of boxes) {
+      if (fixed.has(box.id)) {
+        continue;
+      }
       const size = (graph.getNodeAttribute(box.id, 'size') as number) ?? 0;
       graph.setNodeAttribute(box.id, 'x', (box.x + size) / ppu);
       graph.setNodeAttribute(box.id, 'y', box.y / ppu);

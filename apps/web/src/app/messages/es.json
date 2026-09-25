@@ -2690,6 +2690,7 @@
       "zoom-in": "Acercar",
       "zoom-out": "Alejar",
       "zoom-fit": "Mostrar todo el grafo",
+      "reset-layout": "Restaurar el diseño automático",
       "show-all-groups": "Mostrar todos los grupos",
       "title": "Grafo de conocimiento — Ragen Brain",
       "empty-title": "Todavía no hay páginas que dibujar",

@@ -41,6 +41,13 @@ describe('shelveIsolated', () => {
     expect(at(graph, 'b')).toMatchObject({ x: 10, y: 10 });
   });
 
+  it('leaves a stray the operator pinned where it was put', () => {
+    const graph = graphWith(12);
+    graph.mergeNodeAttributes('s0', { x: 150, y: -80, fixed: true });
+    expect(shelveIsolated(graph)).toBe(11);
+    expect(at(graph, 's0')).toMatchObject({ x: 150, y: -80 });
+  });
+
   it('puts no two strays on the same spot', () => {
     const graph = graphWith(20);
     shelveIsolated(graph);

@@ -2690,6 +2690,7 @@
       "zoom-in": "Zoom in",
       "zoom-out": "Zoom out",
       "zoom-fit": "Fit the whole graph",
+      "reset-layout": "Restore the automatic layout",
       "show-all-groups": "Show all groups",
       "title": "Knowledge graph — Ragen Brain",
       "empty-title": "No pages to draw yet",

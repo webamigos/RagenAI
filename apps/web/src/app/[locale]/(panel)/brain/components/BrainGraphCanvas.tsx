@@ -3,6 +3,7 @@
 import { useTranslations } from 'next-intl';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
+  ArrowUturnLeftIcon,
   ArrowsPointingOutIcon,
   MagnifyingGlassMinusIcon,
   MagnifyingGlassPlusIcon,
@@ -13,6 +14,7 @@ import type { BrainGraphView } from '@/features/brain/contracts/brain-graph.type
 import { Link } from '@/i18n/routing';
 import { makeDrawNodeHover } from './graph-hover';
 import { canvasLabel, LABEL_SIZE_PX, separateLabels } from './separate-labels';
+import { clearLayout, loadLayout, saveLayout, viewKey } from './graph-layouts';
 import { shelveIsolated } from './shelve-isolated';
 import { BrainScreen } from './assistant/BrainAssistantContext';
 
@@ -187,6 +189,10 @@ export function BrainGraphCanvas({
   const [communityFilter, setCommunityFilter] = useState<number | null>(null);
   const filterRef = useRef<number | null>(null);
   const [query, setQuery] = useState('');
+  // Whether this view has a layout the operator arranged (see graph-layouts),
+  // and a counter that lays the view out again once it is forgotten.
+  const [arranged, setArranged] = useState(false);
+  const [layoutRun, setLayoutRun] = useState(0);
 
   // A new view is a new picture: the card follows the focus, or closes.
   // Adjusted while rendering, as React recommends for state derived from a
@@ -278,6 +284,19 @@ export function BrainGraphCanvas({
               (node.openFindings > 0 && view.nodes.length <= SMALL_GRAPH),
           });
         });
+        // The layout the operator left this view in: every page it holds
+        // goes back where it was, `fixed`, so ForceAtlas2 and the passes
+        // after it only place the pages that are new since.
+        const layoutKey = viewKey(view);
+        const saved = loadLayout(layoutKey);
+        let restored = 0;
+        for (const [id, p] of Object.entries(saved)) {
+          if (graph.hasNode(id)) {
+            graph.mergeNodeAttributes(id, { x: p.x, y: p.y, fixed: true });
+            restored += 1;
+          }
+        }
+        setArranged(restored > 0);
         for (const edge of view.edges) {
           if (!graph.hasNode(edge.from) || !graph.hasNode(edge.to)) {
             continue;
@@ -400,8 +419,9 @@ export function BrainGraphCanvas({
           sigmaRenderer.refresh();
         });
         // Drag a page to move it: the layout is a starting point, and a
-        // person untangling a cluster by hand is reading it. Moved pages stay
-        // where they are put for this view; nothing is saved.
+        // person untangling a cluster by hand is reading it. Each drop
+        // saves the whole view as it now stands, in this browser, and the
+        // next visit opens on it.
         let dragged: string | null = null;
         let moved = false;
         let pressedAt: { x: number; y: number } | null = null;
@@ -452,6 +472,14 @@ export function BrainGraphCanvas({
         // the canvas, where Sigma keeps sending moves and the next one would
         // pan the camera instead.
         captor.on('mouseup', () => {
+          if (dragged && moved) {
+            const layout: Record<string, { x: number; y: number }> = {};
+            graph.forEachNode((id, a) => {
+              layout[id] = { x: a.x as number, y: a.y as number };
+            });
+            saveLayout(layoutKey, layout);
+            setArranged(true);
+          }
           dragged = null;
         });
         sigmaRenderer.on('clickNode', ({ node }) => {
@@ -503,7 +531,7 @@ export function BrainGraphCanvas({
       disposed = true;
       kill?.();
     };
-  }, [view]);
+  }, [view, layoutRun]);
 
   const matches = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -668,6 +696,21 @@ export function BrainGraphCanvas({
                 >
                   <ArrowsPointingOutIcon className="size-4" />
                 </button>
+                {arranged && (
+                  <button
+                    type="button"
+                    className={controlClass}
+                    aria-label={t('reset-layout')}
+                    title={t('reset-layout')}
+                    data-testid="brain-graph-reset-layout"
+                    onClick={() => {
+                      clearLayout(viewKey(view));
+                      setLayoutRun((n) => n + 1);
+                    }}
+                  >
+                    <ArrowUturnLeftIcon className="size-4" />
+                  </button>
+                )}
               </div>
             </>
           )}

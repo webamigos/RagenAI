@@ -127,6 +127,10 @@ archive is the blog.
 
 ### Thread: Ragen Brain for a showcase
 
+- `[brief]` **Brain's graph remembers how you arranged it.** Pages dragged
+  into place stay there after a reload, per view and in this browser; pages
+  added since fit in around them, and one button restores the automatic
+  layout.
 - `[brief]` **Brain's graph reads more easily.** Pages with no relation sit
   in a neat block beside the graph instead of a ring of stray dots, so the
   connected part gets the room; two groups no longer share one blue; the

@@ -49,6 +49,35 @@ describe('separateLabels', () => {
     expect(countLabelOverlaps(graph, VIEWPORT)).toBe(0);
   });
 
+  it('leaves an arranged layout where it was, and fits the new pages in around it', () => {
+    // A saved layout comes back with every page `fixed`; only the pages new
+    // since then are free, and they are what must make room.
+    const graph = cluster(46);
+    separateLabels(graph, VIEWPORT);
+    const before = new Map<string, { x: number; y: number }>();
+    graph.forEachNode((id, a) => {
+      before.set(id, { x: a.x as number, y: a.y as number });
+      graph.setNodeAttribute(id, 'fixed', true);
+    });
+    const [x, y] = [before.get('0')!.x, before.get('0')!.y];
+    for (let i = 0; i < 3; i += 1) {
+      graph.addNode(`new-${i}`, {
+        x: x + i * 0.1,
+        y,
+        size: 8,
+        label: 'Nowa strona o długiej nazwie',
+      });
+    }
+    expect(countLabelOverlaps(graph, VIEWPORT)).toBeGreaterThan(0);
+
+    separateLabels(graph, VIEWPORT);
+
+    for (const [id, p] of before) {
+      expect(graph.getNodeAttributes(id)).toMatchObject(p);
+    }
+    expect(countLabelOverlaps(graph, VIEWPORT)).toBe(0);
+  });
+
   it('leaves a graph whose names already have room exactly where it was', () => {
     const graph = new MultiDirectedGraph();
     graph.addNode('a', { x: 0, y: 0, size: 6, label: 'A' });

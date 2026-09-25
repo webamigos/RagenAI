@@ -781,3 +781,119 @@ describe('the picked page in the address', () => {
     }
   });
 });
+
+describe('a layout arranged by hand', () => {
+  beforeEach(() => {
+    window.localStorage.clear();
+  });
+
+  type G = {
+    getNodeAttribute: (id: string, name: string) => unknown;
+  };
+
+  it('comes back where it was left, and only the new pages are laid out', async () => {
+    const { saveLayout, viewKey } = await import('../components/graph-layouts');
+    // B is new since the layout was saved.
+    saveLayout(viewKey(view), { [A]: { x: 42, y: -7 } });
+    render(
+      <NextIntlClientProvider locale="en" messages={messages}>
+        <BrainGraphCanvas view={view} />
+      </NextIntlClientProvider>,
+    );
+    await waitFor(() => expect(sigma.instances).toHaveLength(1));
+    const graph = sigma.instances[0]!.graph as G;
+    expect(graph.getNodeAttribute(A, 'x')).toBe(42);
+    expect(graph.getNodeAttribute(A, 'y')).toBe(-7);
+    expect(graph.getNodeAttribute(A, 'fixed')).toBe(true);
+    expect(graph.getNodeAttribute(B, 'fixed')).toBeUndefined();
+    expect(
+      await screen.findByTestId('brain-graph-reset-layout'),
+    ).toHaveAccessibleName('Restore the automatic layout');
+  });
+
+  it('is saved whole when a page is dropped, and not on a click', async () => {
+    const { loadLayout, viewKey } = await import('../components/graph-layouts');
+    render(
+      <NextIntlClientProvider locale="en" messages={messages}>
+        <BrainGraphCanvas view={view} />
+      </NextIntlClientProvider>,
+    );
+    await waitFor(() => expect(sigma.instances).toHaveLength(1));
+    const s = sigma.instances[0]! as unknown as {
+      handlers: Record<string, (e: unknown) => void>;
+      captorHandlers: Record<string, (e: unknown) => void>;
+      graph: G;
+    };
+    expect(screen.queryByTestId('brain-graph-reset-layout')).toBeNull();
+
+    // A click is not a move.
+    act(() =>
+      s.handlers.downNode!({
+        node: B,
+        event: { x: 0, y: 0, original: { button: 0 } },
+      }),
+    );
+    act(() => s.captorHandlers.mouseup!({}));
+    expect(loadLayout(viewKey(view))).toEqual({});
+
+    act(() =>
+      s.handlers.downNode!({
+        node: A,
+        event: { x: 0, y: 0, original: { button: 0 } },
+      }),
+    );
+    act(() =>
+      s.captorHandlers.mousemovebody!({
+        x: 30,
+        y: 40,
+        preventSigmaDefault: vi.fn(),
+        original: { preventDefault: vi.fn(), stopPropagation: vi.fn() },
+      }),
+    );
+    act(() => s.captorHandlers.mouseup!({}));
+
+    const saved = loadLayout(viewKey(view));
+    // The dropped page where it was dropped, and the rest where they stand.
+    expect(saved[A]).toEqual({ x: 3, y: 4 });
+    expect(saved[B]).toEqual({
+      x: Math.round((s.graph.getNodeAttribute(B, 'x') as number) * 1e4) / 1e4,
+      y: Math.round((s.graph.getNodeAttribute(B, 'y') as number) * 1e4) / 1e4,
+    });
+    expect(await screen.findByTestId('brain-graph-reset-layout')).toBeVisible();
+  });
+
+  it('is forgotten by restoring the layout, which lays the view out again', async () => {
+    const { loadLayout, saveLayout, viewKey } =
+      await import('../components/graph-layouts');
+    saveLayout(viewKey(view), { [A]: { x: 42, y: -7 } });
+    render(
+      <NextIntlClientProvider locale="en" messages={messages}>
+        <BrainGraphCanvas view={view} />
+      </NextIntlClientProvider>,
+    );
+    fireEvent.click(await screen.findByTestId('brain-graph-reset-layout'));
+
+    await waitFor(() => expect(sigma.instances).toHaveLength(2));
+    expect(loadLayout(viewKey(view))).toEqual({});
+    expect(
+      (sigma.instances[1]!.graph as G).getNodeAttribute(A, 'fixed'),
+    ).toBeUndefined();
+    await waitFor(() =>
+      expect(screen.queryByTestId('brain-graph-reset-layout')).toBeNull(),
+    );
+  });
+
+  it('of one view stays out of another', async () => {
+    const { saveLayout, viewKey } = await import('../components/graph-layouts');
+    saveLayout(viewKey({ ...view, budget: 300 }), { [A]: { x: 42, y: -7 } });
+    render(
+      <NextIntlClientProvider locale="en" messages={messages}>
+        <BrainGraphCanvas view={view} />
+      </NextIntlClientProvider>,
+    );
+    await waitFor(() => expect(sigma.instances).toHaveLength(1));
+    expect(
+      (sigma.instances[0]!.graph as G).getNodeAttribute(A, 'fixed'),
+    ).toBeUndefined();
+  });
+});
