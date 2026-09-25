@@ -24,7 +24,7 @@ import {
   getActiveMember,
   requireOrgAdmin,
 } from '@/lib/auth-guards';
-import { orgVisibilityScope } from '@/lib/auth-access-control';
+import { canManageOrg, orgVisibilityScope } from '@/lib/auth-access-control';
 import { getProjectStorageUsageQuery } from '@/features/organizations/services/queries/get-storage-usage-query';
 import {
   getStorageLimits,
@@ -225,6 +225,33 @@ export const deleteProjectFileAction = async (
 export const deleteFileAction = async (fileId: UserFile['id']) => {
   try {
     const orgId = await getOrgIdOrThrow();
+
+    // The rule `bulkDeleteFilesAction` applies: an organization admin, or
+    // the file's owner — and either one a member of the organization.
+    // Anyone else is told what a missing file tells them.
+    const notFound = {
+      error: 'Document not found or user does not have permission to delete it',
+      status: StatusCodes.NOT_FOUND,
+    };
+    const [user, member] = await Promise.all([
+      getCurrentUser(),
+      getActiveMember(orgId).catch(() => null),
+    ]);
+    if (!member) {
+      return notFound;
+    }
+    if (!canManageOrg(member.role)) {
+      const owned = user
+        ? await db.userFile.findFirst({
+            where: { id: fileId, organizationId: orgId, ownerId: user.id },
+            select: { id: true },
+          })
+        : null;
+      if (!owned) {
+        return notFound;
+      }
+    }
+
     const result = await deleteFileCommand({ fileId, organizationId: orgId });
 
     if (!result.deleted) {

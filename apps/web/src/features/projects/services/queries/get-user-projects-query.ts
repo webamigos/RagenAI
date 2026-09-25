@@ -2,6 +2,10 @@
 
 import db from '@ragenai/prisma-client';
 import { logger } from '@/app/lib/utils/logger';
+import {
+  getCurrentUserId,
+  getOrgIdFromAuthOrThrow,
+} from '@/app/lib/utils/auth-helpers';
 
 const projectSelect = {
   id: true,
@@ -27,13 +31,26 @@ const projectSelect = {
   },
 };
 
+/**
+ * The signed-in user's projects in their active organization, with the
+ * threads they may see and those threads' messages.
+ *
+ * This module is `'use server'` and client components import it, so this is
+ * a Server Action: its arguments are whatever the caller posts. The
+ * organization and the user therefore come from the session, never from an
+ * argument.
+ */
 export const getUserProjectsQuery = async (
-  organizationId: string,
-  userId: string,
   options: { includeArchived?: boolean } = {},
 ) => {
   const { includeArchived = false } = options;
   try {
+    const organizationId = await getOrgIdFromAuthOrThrow();
+    const userId = await getCurrentUserId();
+    if (!userId) {
+      throw new Error('Unauthorized');
+    }
+
     const teamIds = (
       await db.teamMember.findMany({
         where: { userId, team: { organizationId } },

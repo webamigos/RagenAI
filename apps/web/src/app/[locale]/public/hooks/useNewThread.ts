@@ -63,12 +63,12 @@ const reducer = (state: StateType, action: ActionType): StateType => {
 
 export const useNewThread = ({
   accessToken,
-  projectId,
-  organizationId,
   widgetMode = false,
 }: {
   accessToken: string;
+  /** Unused: the server resolves the project from `accessToken`. */
   projectId: string;
+  /** Unused: the server resolves the organization from `accessToken`. */
   organizationId?: string;
   widgetMode?: boolean;
 }) => {
@@ -82,7 +82,7 @@ export const useNewThread = ({
   const handleNewThread = useCallback(
     async (
       initialMessage?: string,
-      passedProjectId?: string,
+      _passedProjectId?: string,
       _projectId?: string,
       mentionedProjectId?: string,
       preferredModel?: string,
@@ -92,9 +92,10 @@ export const useNewThread = ({
         handleCloseThread(false);
         reduxDispatch(clearMessages());
 
+        // The organization and the project come from the access token on
+        // the server; a caller-supplied pair would name any tenant.
         const result = await createGuestThreadAction({
-          organizationId,
-          projectId: passedProjectId ?? projectId,
+          accessToken,
           initialMessage,
           mentionedProjectId,
           preferredModel,
@@ -131,8 +132,6 @@ export const useNewThread = ({
       dispatch,
       handleCloseThread,
       reduxDispatch,
-      organizationId,
-      projectId,
       startTransition,
       push,
       accessToken,
