@@ -127,6 +127,10 @@ archive is the blog.
 
 ### Thread: Ragen Brain for a showcase
 
+- `[brief]` **Brain's graph in dark mode dims what it should.** Picking a
+  page or a group lit every other page up in white instead of fading it; the
+  graph also keeps its shape when the assistant opens beside it, and a click
+  that wobbles a pixel opens the page's card rather than counting as a drag.
 - `[brief]` **A readable neighbourhood in Brain's graph.** Opening a page's
   neighbourhood no longer cuts off the names of pages at the right edge, or
   lets one page's name run into the next page: small views spread out and

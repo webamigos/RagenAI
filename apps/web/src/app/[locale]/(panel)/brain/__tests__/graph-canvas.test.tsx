@@ -23,6 +23,7 @@ const sigma = vi.hoisted(() => ({
     handlers: Record<string, (e: unknown) => void>;
     cameraStates: Record<string, number>[];
     cameraCalls: string[];
+    refreshes: number;
     settings: {
       nodeReducer?: (
         id: string,
@@ -83,7 +84,10 @@ vi.mock('sigma', () => ({
     on(event: string, fn: (e: unknown) => void) {
       this.handlers[event] = fn;
     }
-    refresh() {}
+    refreshes = 0;
+    refresh() {
+      this.refreshes += 1;
+    }
     kill() {}
   },
 }));
@@ -93,7 +97,7 @@ vi.mock('@/i18n/routing', () => ({
   ),
 }));
 
-const { BrainGraphCanvas, ROOMY_GRAPH } =
+const { BrainGraphCanvas, DRAG_THRESHOLD_PX, ROOMY_GRAPH } =
   await import('../components/BrainGraphCanvas');
 
 const A = '00000000-0000-4000-8000-000000000001';
@@ -493,7 +497,10 @@ describe('dragging a page', () => {
     const original = { preventDefault: vi.fn(), stopPropagation: vi.fn() };
 
     act(() =>
-      s.handlers.downNode!({ node: A, event: { original: { button: 0 } } }),
+      s.handlers.downNode!({
+        node: A,
+        event: { x: 0, y: 0, original: { button: 0 } },
+      }),
     );
     expect(s.bbox).not.toBeNull();
     act(() =>
@@ -518,7 +525,10 @@ describe('dragging a page', () => {
 
     // A drag whose release lands on the stage does not close the card.
     act(() =>
-      s.handlers.downNode!({ node: A, event: { original: { button: 0 } } }),
+      s.handlers.downNode!({
+        node: A,
+        event: { x: 0, y: 0, original: { button: 0 } },
+      }),
     );
     act(() =>
       s.captorHandlers.mousemovebody!({
@@ -531,6 +541,39 @@ describe('dragging a page', () => {
     act(() => s.captorHandlers.mouseup!({}));
     act(() => s.handlers.clickStage!({}));
     expect(screen.getByTestId('brain-graph-card')).toBeTruthy();
+  });
+
+  it('reads a press that shifts a pixel or two as a click, not a drag', async () => {
+    render(
+      <NextIntlClientProvider locale="en" messages={messages}>
+        <BrainGraphCanvas view={view} />
+      </NextIntlClientProvider>,
+    );
+    await waitFor(() => expect(sigma.instances).toHaveLength(1));
+    const s = sigma.instances[0]! as unknown as {
+      handlers: Record<string, (e: unknown) => void>;
+      captorHandlers: Record<string, (e: unknown) => void>;
+      graph: { getNodeAttribute: (id: string, key: string) => number };
+    };
+    const x = s.graph.getNodeAttribute(A, 'x');
+    act(() =>
+      s.handlers.downNode!({
+        node: A,
+        event: { x: 100, y: 100, original: { button: 0 } },
+      }),
+    );
+    act(() =>
+      s.captorHandlers.mousemovebody!({
+        x: 100 + DRAG_THRESHOLD_PX - 2,
+        y: 101,
+        preventSigmaDefault: vi.fn(),
+        original: { preventDefault: vi.fn(), stopPropagation: vi.fn() },
+      }),
+    );
+    expect(s.graph.getNodeAttribute(A, 'x')).toBe(x);
+    act(() => s.captorHandlers.mouseup!({}));
+    act(() => s.handlers.clickNode!({ node: A }));
+    expect(await screen.findByTestId('brain-graph-card')).toBeTruthy();
   });
 
   it('does not pick a page up on a right-button press', async () => {
@@ -583,5 +626,45 @@ describe('dragging a page', () => {
     );
     expect(s.graph.getNodeAttribute(A, 'x')).toBe(before);
     expect(preventSigmaDefault).not.toHaveBeenCalled();
+  });
+});
+
+describe('a container that changes size', () => {
+  it('redraws the graph at the new size, and stops watching on unmount', async () => {
+    // Opening the assistant narrows the canvas's container without resizing
+    // the window, which is all Sigma listens to on its own.
+    const observers: { fire: () => void; disconnected: boolean }[] = [];
+    vi.stubGlobal(
+      'ResizeObserver',
+      class {
+        disconnected = false;
+        constructor(private callback: () => void) {
+          observers.push(this as never);
+        }
+        fire() {
+          this.callback();
+        }
+        observe() {}
+        disconnect() {
+          this.disconnected = true;
+        }
+      },
+    );
+    try {
+      const { unmount } = render(
+        <NextIntlClientProvider locale="en" messages={messages}>
+          <BrainGraphCanvas view={view} />
+        </NextIntlClientProvider>,
+      );
+      await waitFor(() => expect(sigma.instances).toHaveLength(1));
+      expect(observers).toHaveLength(1);
+      const before = sigma.instances[0]!.refreshes;
+      observers[0]!.fire();
+      expect(sigma.instances[0]!.refreshes).toBe(before + 1);
+      unmount();
+      expect(observers[0]!.disconnected).toBe(true);
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 });
