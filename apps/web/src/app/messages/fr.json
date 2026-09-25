@@ -2494,7 +2494,9 @@
         "documents": "Documents",
         "findings": "Constats ouverts",
         "updated": "Modifiée"
-      }
+      },
+      "empty-in-language-title": "Rien dans cette langue",
+      "empty-in-language-description": "Aucun document dans cette langue, ou aucune page qui en cite un. Choisissez une autre langue, ou toutes."
     },
     "findings": {
       "columns": {
@@ -2538,7 +2540,9 @@
         "unknown": "Aucun détail",
         "technical-details": "Détails techniques"
       },
-      "discuss": "Demander à l'assistant"
+      "discuss": "Demander à l'assistant",
+      "empty-in-language-title": "Rien dans cette langue",
+      "empty-in-language-description": "Aucun constat ne concerne un document dans cette langue ni une page qui en cite un. Choisissez une autre langue, ou toutes."
     },
     "page": {
       "back": "Pages de connaissances",
@@ -2725,7 +2729,9 @@
         "EXTRACTED": "Énoncé dans une source",
         "INFERRED": "Inféré par le modèle",
         "AMBIGUOUS": "Incertain"
-      }
+      },
+      "empty-in-language-title": "Rien dans cette langue",
+      "empty-in-language-description": "Aucun document dans cette langue, ou aucune page qui en cite un. Choisissez une autre langue, ou toutes."
     },
     "export": {
       "ready": "Prêtes à exporter : {count}",
@@ -2766,7 +2772,8 @@
         "approved": "Pages approuvées",
         "candidates": "Candidates",
         "retrieval": "Recherche",
-        "actions": "Actions"
+        "actions": "Actions",
+        "language": "Langue"
       },
       "retrieval": {
         "in": "Consultable",
@@ -2797,7 +2804,10 @@
       "upload-failed": "Le téléversement a échoué — vérifiez le fichier et réessayez.",
       "staged-summary": "Dans Brain, hors recherche : {count} · sans page approuvée : {uncurated}",
       "uploaded-partly": "{uploaded} sur {total} importés dans Brain ; les autres ont échoué",
-      "staged-oldest": "le plus ancien importé {when}"
+      "staged-oldest": "le plus ancien importé {when}",
+      "language-none": "Non détectée",
+      "empty-in-language-title": "Rien dans cette langue",
+      "empty-in-language-description": "Aucun document dans cette langue, ou aucune page qui en cite un. Choisissez une autre langue, ou toutes."
     },
     "publish-all": {
       "button": "Publier les approuvées ({count})",
@@ -2914,6 +2924,12 @@
       "is-part-of": "fait partie de",
       "references": "fait référence à",
       "depends-on": "dépend de"
+    },
+    "language": {
+      "label": "Langue",
+      "all": "Toutes les langues",
+      "none": "Non détectée",
+      "option": "{name} ({count})"
     }
   },
   "project-context-manager": {

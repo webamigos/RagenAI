@@ -82,6 +82,21 @@ describe('getBrainGraphQuery', () => {
     });
   });
 
+  it('draws only the pages in the language filter’s scope', async () => {
+    await getBrainGraphQuery(
+      ORG,
+      { focus: null, hops: 1, budget: 150, includeInferred: false },
+      { fileIds: ['f1'], pageIds: [1, 2] },
+    );
+    // An edge to a page outside the scope has no end to draw; the test
+    // below shows such edges are dropped.
+    expect(db.knowledgePage.findMany.mock.calls[0][0].where).toEqual({
+      organizationId: ORG,
+      status: { not: 'REJECTED' },
+      id: { in: [1, 2] },
+    });
+  });
+
   it('pins pages with open findings first and counts them, dropping edges to missing pages', async () => {
     const view = await getBrainGraphQuery(ORG, {
       focus: null,

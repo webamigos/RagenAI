@@ -22,6 +22,9 @@ import { Link } from '@/i18n/routing';
 
 import { BrainEmpty } from './components/BrainEmpty';
 import { BrainPager } from './components/BrainPager';
+import { parseBrainLanguage } from '@/features/brain/contracts/brain-language.types';
+import { getBrainLanguageScopeQuery } from '@/features/brain/services/queries/brain-language-scope';
+import { withLanguage } from '@/features/brain/utils/with-language';
 import { BrainScreen } from './components/assistant/BrainAssistantContext';
 import { FilterChips } from './components/FilterChips';
 import { PublishAllButton } from './components/PublishAllButton';
@@ -32,6 +35,7 @@ type Props = {
   searchParams: Promise<{
     status?: string | string[];
     page?: string | string[];
+    lang?: string | string[];
   }>;
 };
 
@@ -44,20 +48,24 @@ export default async function BrainPagesPage({ searchParams }: Props) {
   const raw = params.status;
   const value = Array.isArray(raw) ? raw[0] : raw;
   const listPage = parseListPage(params.page);
+  const language = parseBrainLanguage(params.lang);
   const status = (PAGE_STATUS_FILTERS as readonly string[]).includes(
     value ?? '',
   )
     ? (value as KnowledgePageStatus)
     : null;
 
+  // Export and publishing stay organization-wide: the bundle is every
+  // approved page, whatever language the view is filtered to.
+  const scope = await getBrainLanguageScopeQuery(access.orgId, language);
   const [t, format, { items, total }, exportSummary, approved, counts] =
     await Promise.all([
       getTranslations('brain'),
       getFormatter(),
-      getKnowledgePagesQuery(access.orgId, status, listPage),
+      getKnowledgePagesQuery(access.orgId, status, listPage, scope),
       getBrainExportSummaryQuery(access.orgId),
       getApprovedPageCountQuery(access.orgId),
-      getBrainStatusCountsQuery(access.orgId),
+      getBrainStatusCountsQuery(access.orgId, scope),
     ]);
   const skippedReasons = Object.entries(exportSummary.skipped) as [
     string,
@@ -74,7 +82,7 @@ export default async function BrainPagesPage({ searchParams }: Props) {
           {
             key: 'all',
             label: t('filters.all-but-rejected'),
-            href: '/brain',
+            href: withLanguage('/brain', language),
             active: status === null,
             count:
               counts.pages.CANDIDATE +
@@ -84,7 +92,7 @@ export default async function BrainPagesPage({ searchParams }: Props) {
           ...PAGE_STATUS_FILTERS.map((s) => ({
             key: s,
             label: t(`page-status.${s}`),
-            href: `/brain?status=${s}`,
+            href: withLanguage(`/brain?status=${s}`, language),
             active: status === s,
             count: counts.pages[s],
           })),
@@ -123,8 +131,14 @@ export default async function BrainPagesPage({ searchParams }: Props) {
 
       {items.length === 0 && listPage === 1 ? (
         <BrainEmpty
-          title={t('pages.empty-title')}
-          description={t('pages.empty-description')}
+          title={t(
+            language ? 'pages.empty-in-language-title' : 'pages.empty-title',
+          )}
+          description={t(
+            language
+              ? 'pages.empty-in-language-description'
+              : 'pages.empty-description',
+          )}
         />
       ) : (
         <>
@@ -219,10 +233,13 @@ export default async function BrainPagesPage({ searchParams }: Props) {
             page={listPage}
             total={total}
             hrefFor={(n) =>
-              `/brain?${new URLSearchParams({
-                ...(status ? { status } : {}),
-                page: String(n),
-              })}`
+              withLanguage(
+                `/brain?${new URLSearchParams({
+                  ...(status ? { status } : {}),
+                  page: String(n),
+                })}`,
+                language,
+              )
             }
           />
         </>

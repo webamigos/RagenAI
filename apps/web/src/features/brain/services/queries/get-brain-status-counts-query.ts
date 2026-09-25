@@ -1,4 +1,8 @@
 import db from '@ragenai/prisma-client';
+import {
+  findingsInScope,
+  type BrainLanguageScope,
+} from './brain-language-scope';
 
 import type {
   KnowledgeFindingStatus,
@@ -10,19 +14,28 @@ import type {
  * numbers on Brain's filter chips. One `groupBy` per table, each served by
  * the `(organization_id, status…)` index those tables already have.
  */
-export async function getBrainStatusCountsQuery(orgId: string): Promise<{
+export async function getBrainStatusCountsQuery(
+  orgId: string,
+  scope: BrainLanguageScope | null = null,
+): Promise<{
   pages: Record<KnowledgePageStatus, number>;
   findings: Record<KnowledgeFindingStatus, number>;
 }> {
   const [pages, findings] = await Promise.all([
     db.knowledgePage.groupBy({
       by: ['status'],
-      where: { organizationId: orgId },
+      where: {
+        organizationId: orgId,
+        ...(scope ? { id: { in: scope.pageIds } } : {}),
+      },
       _count: { _all: true },
     }),
     db.knowledgeFinding.groupBy({
       by: ['status'],
-      where: { organizationId: orgId },
+      where: {
+        organizationId: orgId,
+        ...(scope ? findingsInScope(scope) : {}),
+      },
       _count: { _all: true },
     }),
   ]);

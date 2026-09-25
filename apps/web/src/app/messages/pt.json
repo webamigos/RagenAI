@@ -2494,7 +2494,9 @@
         "documents": "Documentos",
         "findings": "Constatações abertas",
         "updated": "Alterada"
-      }
+      },
+      "empty-in-language-title": "Nada neste idioma",
+      "empty-in-language-description": "Nenhum documento neste idioma, ou nenhuma página que o cite. Escolha outro idioma ou todos."
     },
     "findings": {
       "columns": {
@@ -2538,7 +2540,9 @@
         "unknown": "Sem detalhes",
         "technical-details": "Detalhes técnicos"
       },
-      "discuss": "Perguntar ao assistente sobre isto"
+      "discuss": "Perguntar ao assistente sobre isto",
+      "empty-in-language-title": "Nada neste idioma",
+      "empty-in-language-description": "Nenhuma deteção diz respeito a um documento neste idioma nem a uma página que o cite. Escolha outro idioma ou todos."
     },
     "page": {
       "back": "Páginas de conhecimento",
@@ -2725,7 +2729,9 @@
         "EXTRACTED": "Afirmada numa fonte",
         "INFERRED": "Inferida pelo modelo",
         "AMBIGUOUS": "Incerta"
-      }
+      },
+      "empty-in-language-title": "Nada neste idioma",
+      "empty-in-language-description": "Nenhum documento neste idioma, ou nenhuma página que o cite. Escolha outro idioma ou todos."
     },
     "export": {
       "ready": "Prontas para exportar: {count}",
@@ -2766,7 +2772,8 @@
         "approved": "Páginas aprovadas",
         "candidates": "Candidatas",
         "retrieval": "Pesquisa",
-        "actions": "Ações"
+        "actions": "Ações",
+        "language": "Idioma"
       },
       "retrieval": {
         "in": "Pesquisável",
@@ -2797,7 +2804,10 @@
       "upload-failed": "O carregamento falhou — verifique o ficheiro e tente novamente.",
       "staged-summary": "No Brain, fora da pesquisa: {count} · sem página aprovada: {uncurated}",
       "uploaded-partly": "Carregados no Brain {uploaded} de {total}; os restantes falharam",
-      "staged-oldest": "o mais antigo carregado {when}"
+      "staged-oldest": "o mais antigo carregado {when}",
+      "language-none": "Não detetado",
+      "empty-in-language-title": "Nada neste idioma",
+      "empty-in-language-description": "Nenhum documento neste idioma, ou nenhuma página que o cite. Escolha outro idioma ou todos."
     },
     "publish-all": {
       "button": "Publicar aprovadas ({count})",
@@ -2914,6 +2924,12 @@
       "is-part-of": "faz parte de",
       "references": "faz referência a",
       "depends-on": "depende de"
+    },
+    "language": {
+      "label": "Idioma",
+      "all": "Todos os idiomas",
+      "none": "Não detetado",
+      "option": "{name} ({count})"
     }
   },
   "project-context-manager": {

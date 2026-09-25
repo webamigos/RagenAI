@@ -2494,7 +2494,9 @@
         "documents": "Asiakirjat",
         "findings": "Avoimet havainnot",
         "updated": "Muutettu"
-      }
+      },
+      "empty-in-language-title": "Ei mitään tällä kielellä",
+      "empty-in-language-description": "Ei asiakirjaa tällä kielellä tai sivua, joka lainaa sitä. Valitse toinen kieli tai kaikki."
     },
     "findings": {
       "columns": {
@@ -2538,7 +2540,9 @@
         "unknown": "Ei tietoja",
         "technical-details": "Tekniset tiedot"
       },
-      "discuss": "Kysy avustajalta tästä"
+      "discuss": "Kysy avustajalta tästä",
+      "empty-in-language-title": "Ei mitään tällä kielellä",
+      "empty-in-language-description": "Mikään havainto ei koske tämänkielistä asiakirjaa tai sivua, joka lainaa sitä. Valitse toinen kieli tai kaikki."
     },
     "page": {
       "back": "Tietosivut",
@@ -2725,7 +2729,9 @@
         "EXTRACTED": "Todettu lähteessä",
         "INFERRED": "Mallin päättelemä",
         "AMBIGUOUS": "Epävarma"
-      }
+      },
+      "empty-in-language-title": "Ei mitään tällä kielellä",
+      "empty-in-language-description": "Ei asiakirjaa tällä kielellä tai sivua, joka lainaa sitä. Valitse toinen kieli tai kaikki."
     },
     "export": {
       "ready": "Valmiina vientiin: {count}",
@@ -2766,7 +2772,8 @@
         "approved": "Hyväksytyt sivut",
         "candidates": "Ehdotukset",
         "retrieval": "Haku",
-        "actions": "Toiminnot"
+        "actions": "Toiminnot",
+        "language": "Kieli"
       },
       "retrieval": {
         "in": "Haettavissa",
@@ -2797,7 +2804,10 @@
       "upload-failed": "Lataus epäonnistui — tarkista tiedosto ja yritä uudelleen.",
       "staged-summary": "Brainissa, haun ulkopuolella: {count} · ilman hyväksyttyä sivua: {uncurated}",
       "uploaded-partly": "Brainiin ladattiin {uploaded}/{total}; loput epäonnistuivat",
-      "staged-oldest": "vanhin ladattu {when}"
+      "staged-oldest": "vanhin ladattu {when}",
+      "language-none": "Tunnistamaton",
+      "empty-in-language-title": "Ei mitään tällä kielellä",
+      "empty-in-language-description": "Ei asiakirjaa tällä kielellä tai sivua, joka lainaa sitä. Valitse toinen kieli tai kaikki."
     },
     "publish-all": {
       "button": "Julkaise hyväksytyt ({count})",
@@ -2914,6 +2924,12 @@
       "is-part-of": "on osa",
       "references": "viittaa",
       "depends-on": "riippuu"
+    },
+    "language": {
+      "label": "Kieli",
+      "all": "Kaikki kielet",
+      "none": "Tunnistamaton",
+      "option": "{name} ({count})"
     }
   },
   "project-context-manager": {

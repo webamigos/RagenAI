@@ -2494,7 +2494,9 @@
         "documents": "Dokumente",
         "findings": "Offene Befunde",
         "updated": "Geändert"
-      }
+      },
+      "empty-in-language-title": "Nichts in dieser Sprache",
+      "empty-in-language-description": "Kein Dokument in dieser Sprache oder keine Seite, die eines zitiert. Wählen Sie eine andere Sprache oder alle."
     },
     "findings": {
       "columns": {
@@ -2538,7 +2540,9 @@
         "unknown": "Keine Details",
         "technical-details": "Technische Details"
       },
-      "discuss": "Den Assistenten dazu fragen"
+      "discuss": "Den Assistenten dazu fragen",
+      "empty-in-language-title": "Nichts in dieser Sprache",
+      "empty-in-language-description": "Kein Befund betrifft ein Dokument in dieser Sprache oder eine Seite, die eines zitiert. Wählen Sie eine andere Sprache oder alle."
     },
     "page": {
       "back": "Wissensseiten",
@@ -2725,7 +2729,9 @@
         "EXTRACTED": "In einer Quelle belegt",
         "INFERRED": "Vom Modell abgeleitet",
         "AMBIGUOUS": "Unsicher"
-      }
+      },
+      "empty-in-language-title": "Nichts in dieser Sprache",
+      "empty-in-language-description": "Kein Dokument in dieser Sprache oder keine Seite, die eines zitiert. Wählen Sie eine andere Sprache oder alle."
     },
     "export": {
       "ready": "Bereit zum Export: {count}",
@@ -2766,7 +2772,8 @@
         "approved": "Freigegebene Seiten",
         "candidates": "Kandidaten",
         "retrieval": "Suche",
-        "actions": "Aktionen"
+        "actions": "Aktionen",
+        "language": "Sprache"
       },
       "retrieval": {
         "in": "Durchsuchbar",
@@ -2797,7 +2804,10 @@
       "upload-failed": "Das Hochladen ist fehlgeschlagen — prüfen Sie die Datei und versuchen Sie es erneut.",
       "staged-summary": "In Brain, nicht durchsuchbar: {count} · noch ohne freigegebene Seite: {uncurated}",
       "uploaded-partly": "{uploaded} von {total} in Brain hochgeladen; der Rest ist fehlgeschlagen",
-      "staged-oldest": "ältestes hochgeladen {when}"
+      "staged-oldest": "ältestes hochgeladen {when}",
+      "language-none": "Nicht erkannt",
+      "empty-in-language-title": "Nichts in dieser Sprache",
+      "empty-in-language-description": "Kein Dokument in dieser Sprache oder keine Seite, die eines zitiert. Wählen Sie eine andere Sprache oder alle."
     },
     "publish-all": {
       "button": "Freigegebene veröffentlichen ({count})",
@@ -2914,6 +2924,12 @@
       "is-part-of": "ist Teil von",
       "references": "verweist auf",
       "depends-on": "hängt ab von"
+    },
+    "language": {
+      "label": "Sprache",
+      "all": "Alle Sprachen",
+      "none": "Nicht erkannt",
+      "option": "{name} ({count})"
     }
   },
   "project-context-manager": {

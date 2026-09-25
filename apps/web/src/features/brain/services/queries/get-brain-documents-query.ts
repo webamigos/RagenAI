@@ -1,7 +1,8 @@
 import db from '@ragenai/prisma-client';
 
 import type { BrainDocument } from '../../contracts/brain-documents.types';
-import { extractableFilesWhere } from './get-extractable-documents-query';
+import type { BrainLanguage } from '../../contracts/brain-language.types';
+import { extractableFilesInLanguage } from './brain-language-scope';
 
 /**
  * The organization's documents as Brain sees them (spec E9): each with how
@@ -12,14 +13,16 @@ import { extractableFilesWhere } from './get-extractable-documents-query';
  */
 export async function getBrainDocumentsQuery(
   orgId: string,
+  language: BrainLanguage | null = null,
 ): Promise<BrainDocument[]> {
   const files = await db.userFile.findMany({
-    where: extractableFilesWhere(orgId),
+    where: extractableFilesInLanguage(orgId, language),
     select: {
       id: true,
       fileName: true,
       embeddingStatus: true,
       createdAt: true,
+      language: true,
     },
     orderBy: { fileName: 'asc' },
     take: 1000,
@@ -52,6 +55,7 @@ export async function getBrainDocumentsQuery(
     candidatePages: candidatesBy.get(f.id) ?? 0,
     retrieval: retrievalState(f.embeddingStatus),
     uploadedAt: f.createdAt?.toISOString() ?? null,
+    language: f.language,
   }));
 }
 

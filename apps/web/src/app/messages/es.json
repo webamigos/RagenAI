@@ -2494,7 +2494,9 @@
         "documents": "Documentos",
         "findings": "Hallazgos abiertos",
         "updated": "Modificada"
-      }
+      },
+      "empty-in-language-title": "Nada en este idioma",
+      "empty-in-language-description": "Ningún documento en este idioma, o ninguna página que lo cite. Elige otro idioma o todos."
     },
     "findings": {
       "columns": {
@@ -2538,7 +2540,9 @@
         "unknown": "Sin detalles",
         "technical-details": "Detalles técnicos"
       },
-      "discuss": "Preguntar al asistente sobre esto"
+      "discuss": "Preguntar al asistente sobre esto",
+      "empty-in-language-title": "Nada en este idioma",
+      "empty-in-language-description": "Ningún hallazgo trata de un documento en este idioma ni de una página que lo cite. Elige otro idioma o todos."
     },
     "page": {
       "back": "Páginas de conocimiento",
@@ -2725,7 +2729,9 @@
         "EXTRACTED": "Indicada en una fuente",
         "INFERRED": "Inferida por el modelo",
         "AMBIGUOUS": "Incierta"
-      }
+      },
+      "empty-in-language-title": "Nada en este idioma",
+      "empty-in-language-description": "Ningún documento en este idioma, o ninguna página que lo cite. Elige otro idioma o todos."
     },
     "export": {
       "ready": "Listas para exportar: {count}",
@@ -2766,7 +2772,8 @@
         "approved": "Páginas aprobadas",
         "candidates": "Candidatas",
         "retrieval": "Búsqueda",
-        "actions": "Acciones"
+        "actions": "Acciones",
+        "language": "Idioma"
       },
       "retrieval": {
         "in": "Consultable",
@@ -2797,7 +2804,10 @@
       "upload-failed": "La subida falló: revisa el archivo e inténtalo de nuevo.",
       "staged-summary": "En Brain, fuera de la búsqueda: {count} · sin página aprobada: {uncurated}",
       "uploaded-partly": "Subidos a Brain {uploaded} de {total}; el resto falló",
-      "staged-oldest": "el más antiguo subido {when}"
+      "staged-oldest": "el más antiguo subido {when}",
+      "language-none": "No detectado",
+      "empty-in-language-title": "Nada en este idioma",
+      "empty-in-language-description": "Ningún documento en este idioma, o ninguna página que lo cite. Elige otro idioma o todos."
     },
     "publish-all": {
       "button": "Publicar aprobadas ({count})",
@@ -2914,6 +2924,12 @@
       "is-part-of": "forma parte de",
       "references": "hace referencia a",
       "depends-on": "depende de"
+    },
+    "language": {
+      "label": "Idioma",
+      "all": "Todos los idiomas",
+      "none": "No detectado",
+      "option": "{name} ({count})"
     }
   },
   "project-context-manager": {

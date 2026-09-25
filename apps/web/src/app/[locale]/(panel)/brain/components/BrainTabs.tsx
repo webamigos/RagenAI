@@ -2,7 +2,10 @@
 
 import { Tab, TabList, Tabs } from '@ragenai/common-ui/Tabs';
 import { useTranslations } from 'next-intl';
-import { useSelectedLayoutSegment } from 'next/navigation';
+import { useSearchParams, useSelectedLayoutSegment } from 'next/navigation';
+import type { ReactNode } from 'react';
+
+import { withLanguage } from '@/features/brain/utils/with-language';
 
 const TABS = [
   { key: 'pages', path: '/brain', segment: null },
@@ -11,13 +14,15 @@ const TABS = [
   { key: 'documents', path: '/brain/documents', segment: 'documents' },
 ] as const;
 
-export function BrainTabs() {
+export function BrainTabs({ aside }: { aside?: ReactNode }) {
   const t = useTranslations('brain');
   // The route segment under /brain, not the address. A page opened in the
   // graph's drawer has the page's address, `/brain/pages/…`, while the graph
   // is still the screen — the address lit the pages tab over the graph.
   // `pages` (a page's detail) and none (`/brain`) are the pages tab.
   const segment = useSelectedLayoutSegment();
+  // The language filter is Brain-wide: switching tabs keeps it.
+  const language = useSearchParams().get('lang');
   const active = TABS.findIndex((tab, i) => i > 0 && tab.segment === segment);
   const current = active === -1 ? 0 : active;
   // Each tab is a link and navigates on its own. Pushing here as well moved
@@ -26,15 +31,18 @@ export function BrainTabs() {
 
   return (
     <div className="mb-4 mt-3">
-      <Tabs className="w-full" activeTab={current} setActiveTab={go}>
-        <TabList activeTab={current} setActiveTab={go}>
-          {TABS.map((tab) => (
-            <Tab key={tab.key} href={tab.path}>
-              {t(`tabs.${tab.key}`)}
-            </Tab>
-          ))}
-        </TabList>
-      </Tabs>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <Tabs className="w-auto" activeTab={current} setActiveTab={go}>
+          <TabList activeTab={current} setActiveTab={go}>
+            {TABS.map((tab) => (
+              <Tab key={tab.key} href={withLanguage(tab.path, language)}>
+                {t(`tabs.${tab.key}`)}
+              </Tab>
+            ))}
+          </TabList>
+        </Tabs>
+        {aside}
+      </div>
       {/*
         What this tab is for, in one line: four tabs over one feature read as
         four names for the same thing until someone says how they differ.
