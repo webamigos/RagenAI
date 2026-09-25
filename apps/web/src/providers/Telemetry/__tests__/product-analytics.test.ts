@@ -123,11 +123,19 @@ describe('productAnalyticsConfig', () => {
     ).toBe('https://ph.example');
   });
 
-  it('sets no cookies, keeps no person profile, and masks typed input', () => {
+  it('stores nothing on the device, keeps no person profile, and masks typed input', () => {
     expect(productAnalyticsConfig({ posthogHost: '' })).toMatchObject({
-      cookieless_mode: 'always',
+      persistence: 'memory',
       person_profiles: 'identified_only',
       session_recording: { maskAllInputs: true },
     });
+  });
+
+  it('does not use cookieless mode, which would switch session replay off', () => {
+    // posthog-js refuses to start its session manager under
+    // cookieless_mode 'always', and replay needs one.
+    expect(productAnalyticsConfig({ posthogHost: '' })).not.toHaveProperty(
+      'cookieless_mode',
+    );
   });
 });
