@@ -73,9 +73,15 @@ tells a self-hoster to set. So the documented install loaded our tag manager on
 every page of an authenticated panel, whose paths carry thread and document
 `publicId`s. Nobody chose that; it was a literal in an Apache-2.0 repository.
 
-`apps/web` and `apps/admin` now contain no analytics, tag manager or product
-telemetry. `tests/architecture/analytics-ids-are-not-hardcoded.test.ts` fails
-the gate if a hardcoded measurement id (`G-`, `GTM-`, `UA-`, `AW-`) or a known
+`apps/web` and `apps/admin` contain no analytics or tag manager that a
+self-hosted install runs. There is one piece of product analytics, and it is
+ours alone: PostHog on our public demo deployment. It starts only when
+`POSTHOG_KEY` is set **and** `TARGET_ENV` is `demo`; the key is a variable on
+our own hosting, never a value in this repository, so an install that has not
+set it — every install but ours — never downloads the SDK and sends nothing.
+`tests/architecture/analytics-ids-are-not-hardcoded.test.ts` fails
+the gate if a hardcoded measurement id (`G-`, `GTM-`, `UA-`, `AW-`, `phc_`), a
+static `posthog-js` import, or a known
 loader (`googletagmanager.com`, `google-analytics.com`, `@next/third-parties`)
 returns — it matches by name, so it is a tripwire for the way this happened
 rather than proof that nothing measures anything. A hand-rolled `fetch` to a
