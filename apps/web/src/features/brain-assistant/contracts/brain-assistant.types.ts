@@ -167,6 +167,12 @@ export type BrainProposal = {
  */
 export type ProposalOutcome =
   | { status: 'dismissed'; at: string }
+  /**
+   * Apply has claimed the card and is running its actions. Written under the
+   * message's row lock before any action runs, so a second tab — or a
+   * dismissal — finds the card taken instead of running it again.
+   */
+  | { status: 'applying'; at: string }
   | {
       status: 'applied';
       at: string;

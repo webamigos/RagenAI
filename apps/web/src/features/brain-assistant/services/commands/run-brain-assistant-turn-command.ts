@@ -282,6 +282,9 @@ export async function* runBrainAssistantTurnCommand(
     }
 
     if (blocked) {
+      // Told first: the usage wait below can take seconds on a stream a
+      // guardrail left unread, and the panel should not sit on a half answer.
+      yield { type: 'error', code: 'guardrail' };
       for (const used of usages) {
         await recordUsage(turn, usageTeamId, threadId, provider, model, used);
       }
@@ -292,7 +295,6 @@ export async function* runBrainAssistantTurnCommand(
         [],
         { refused: true },
       );
-      yield { type: 'error', code: 'guardrail' };
       yield { type: 'done', messageId };
       return;
     }

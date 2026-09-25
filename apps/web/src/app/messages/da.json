@@ -2886,7 +2886,8 @@
           "already-decided": "Dette forslag er allerede anvendt eller afvist.",
           "read-only": "Du kan se Brain, men ikke ændre det, så dette kan ikke anvendes."
         },
-        "publish-audience": "Når den er udgivet, kan den findes af:"
+        "publish-audience": "Når den er udgivet, kan den findes af:",
+        "applying": "Anvendes…"
       }
     }
   },

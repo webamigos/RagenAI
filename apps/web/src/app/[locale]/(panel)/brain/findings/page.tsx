@@ -89,6 +89,13 @@ export default async function BrainFindingsPage({ searchParams }: Props) {
             canWrite={access.canWrite}
             focusedId={focused}
             assistant={access.assistant}
+            discussHref={(publicId) =>
+              `/brain/findings?${new URLSearchParams({
+                ...(status === 'OPEN' ? {} : { status }),
+                ...(listPage > 1 ? { page: String(listPage) } : {}),
+                finding: publicId,
+              })}#finding-${publicId}`
+            }
           />
           <BrainPager
             page={listPage}

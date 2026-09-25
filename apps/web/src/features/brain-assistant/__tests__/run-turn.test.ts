@@ -310,6 +310,17 @@ describe('a Brain assistant turn', () => {
 
     expect(text(events)).not.toContain('salary');
     expect(events).toContainEqual({ type: 'error', code: 'guardrail' });
+    // Sent before anything waits on usage, not after it.
+    m.trackUsage.mockClear();
+    m.model = new MockLanguageModelV4({
+      doStream: textStep('The CEO salary is 1000000 according to the page.'),
+    });
+    for await (const event of runBrainAssistantTurnCommand(turn)) {
+      if (event.type === 'error') {
+        expect(m.trackUsage).not.toHaveBeenCalled();
+        break;
+      }
+    }
     expect(m.storeAnswer).toHaveBeenCalledWith(
       expect.anything(),
       'thread-1',

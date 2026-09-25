@@ -289,6 +289,66 @@ describe('the assistant panel', () => {
   });
 });
 
+describe('the assistant panel, while a turn streams', () => {
+  it('stops the turn when an earlier conversation is opened, and writes nothing into it', async () => {
+    let push: ((line: object) => void) | null = null;
+    const encoder = new TextEncoder();
+    vi.mocked(fetch).mockImplementation(
+      async (_url, init) =>
+        new Response(
+          new ReadableStream({
+            start(controller) {
+              push = (line) =>
+                controller.enqueue(encoder.encode(`${JSON.stringify(line)}\n`));
+              (init as RequestInit).signal?.addEventListener('abort', () =>
+                controller.error(new DOMException('aborted', 'AbortError')),
+              );
+            },
+          }),
+        ),
+    );
+    actions.listBrainAssistantThreadsAction.mockResolvedValue([
+      { id: THREAD, title: 'Leave policy check', createdAt: 'x' },
+    ]);
+    actions.getBrainAssistantThreadAction.mockResolvedValue({
+      id: THREAD,
+      messages: [
+        {
+          id: MSG,
+          role: 'assistant',
+          text: 'Earlier answer',
+          proposals: [],
+          refused: false,
+          createdAt: 'y',
+        },
+      ],
+    });
+    shell();
+    fireEvent.click(screen.getByTestId('brain-assistant-toggle'));
+    fireEvent.change(await screen.findByTestId('brain-assistant-input'), {
+      target: { value: 'q' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Send' }));
+    await waitFor(() => expect(push).not.toBeNull());
+    push!({ type: 'start', threadId: 'other-thread' });
+    push!({ type: 'text', delta: 'streaming…' });
+    await screen.findByText('streaming…');
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Earlier conversations' }),
+    );
+    fireEvent.click(await screen.findByText('Leave policy check'));
+    expect(await screen.findByText('Earlier answer')).toBeVisible();
+
+    const signal = (vi.mocked(fetch).mock.calls[0]![1] as RequestInit).signal!;
+    expect(signal.aborted).toBe(true);
+    expect(screen.queryByText(/streaming/)).toBeNull();
+    expect(screen.getByText('Earlier answer').textContent).toBe(
+      'Earlier answer',
+    );
+  });
+});
+
 describe('ProposalCard', () => {
   it('applies through the assistant action and refreshes the Brain view', async () => {
     const onChange = vi.fn();

@@ -2886,7 +2886,8 @@
           "already-decided": "Tämä ehdotus on jo otettu käyttöön tai hylätty.",
           "read-only": "Voit selata Brainia mutta et muuttaa sitä, joten tätä ei voi ottaa käyttöön."
         },
-        "publish-audience": "Julkaisun jälkeen sen voivat hakea:"
+        "publish-audience": "Julkaisun jälkeen sen voivat hakea:",
+        "applying": "Otetaan käyttöön…"
       }
     }
   },

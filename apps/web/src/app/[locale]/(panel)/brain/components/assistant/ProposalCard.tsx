@@ -264,6 +264,16 @@ function Outcome({ proposal }: { proposal: BrainProposal }) {
   if (!outcome) {
     return null;
   }
+  if (outcome.status === 'applying') {
+    return (
+      <p
+        data-testid="brain-proposal-outcome"
+        className="mt-3 text-xs text-muted-foreground"
+      >
+        {t('assistant.proposal.applying')}
+      </p>
+    );
+  }
   if (outcome.status === 'dismissed') {
     return (
       <p

@@ -11,10 +11,7 @@ import {
   type BrainAssistantThreadSummary,
   type ProposalDecisionResult,
 } from '@/features/brain-assistant/contracts/brain-assistant.types';
-import {
-  readStoredProposalQuery,
-  recordProposalOutcomeCommand,
-} from '@/features/brain-assistant/services/commands/brain-assistant-thread-commands';
+import { transitionProposalCommand } from '@/features/brain-assistant/services/commands/brain-assistant-thread-commands';
 import {
   getBrainAssistantThreadQuery,
   getBrainAssistantThreadsQuery,
@@ -118,38 +115,43 @@ export async function applyBrainProposalAction(
     return { success: false, error: 'read-only' };
   }
   const { threadId, messageId, proposalId, confirmWidening } = parsed.data;
-  const proposal = await readStoredProposalQuery(
-    owner,
-    threadId,
-    messageId,
-    proposalId,
-  );
-  if (!proposal) {
-    return { success: false, error: 'not-found' };
-  }
-  if (proposal.outcome !== null) {
-    return { success: false, error: 'already-decided' };
+  const ref = [owner, threadId, messageId, proposalId] as const;
+
+  // Claimed first, under the message's lock: the actions below have effects
+  // the lock cannot undo, so a second tab — or a dismissal — must find the
+  // card taken before they run, not after.
+  const proposal = await transitionProposalCommand(...ref, 'undecided', {
+    status: 'applying',
+    at: new Date().toISOString(),
+  });
+  if (typeof proposal === 'string') {
+    return { success: false, error: proposal };
   }
 
-  const results = await runProposalSteps(
-    proposalSteps(proposal, REVIEW_ACTIONS, { confirmWidening }),
-  );
-  // Widening is asked about on the card, as the access editor asks — and
-  // nothing is recorded until the operator answers.
+  let results: Awaited<ReturnType<typeof runProposalSteps>>;
+  try {
+    results = await runProposalSteps(
+      proposalSteps(proposal, REVIEW_ACTIONS, { confirmWidening }),
+    );
+  } catch (error) {
+    await transitionProposalCommand(...ref, 'applying', null);
+    throw error;
+  }
+  // Widening is asked about on the card, as the access editor asks — the
+  // claim is released and nothing is recorded until the operator answers.
   if (
     proposal.action === 'SET_ACCESS' &&
     results[0]?.error === 'confirm-widening'
   ) {
+    await transitionProposalCommand(...ref, 'applying', null);
     return { success: false, error: 'confirm-widening' };
   }
 
-  const recorded = await recordProposalOutcomeCommand(
-    owner,
-    threadId,
-    messageId,
-    proposalId,
-    { status: 'applied', at: new Date().toISOString(), results },
-  );
+  const recorded = await transitionProposalCommand(...ref, 'applying', {
+    status: 'applied',
+    at: new Date().toISOString(),
+    results,
+  });
   return typeof recorded === 'string'
     ? { success: false, error: recorded }
     : { success: true, proposal: recorded };
@@ -166,11 +168,12 @@ export async function dismissBrainProposalAction(
   if (!owner) {
     return { success: false, error: 'not-found' };
   }
-  const recorded = await recordProposalOutcomeCommand(
+  const recorded = await transitionProposalCommand(
     owner,
     parsed.data.threadId,
     parsed.data.messageId,
     parsed.data.proposalId,
+    'undecided',
     { status: 'dismissed', at: new Date().toISOString() },
   );
   return typeof recorded === 'string'

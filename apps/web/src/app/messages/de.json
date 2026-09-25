@@ -2886,7 +2886,8 @@
           "already-decided": "Dieser Vorschlag wurde bereits angewendet oder verworfen.",
           "read-only": "Sie können Brain ansehen, aber nicht ändern, daher kann dies nicht angewendet werden."
         },
-        "publish-audience": "Nach der Veröffentlichung auffindbar für:"
+        "publish-audience": "Nach der Veröffentlichung auffindbar für:",
+        "applying": "Wird angewendet…"
       }
     }
   },

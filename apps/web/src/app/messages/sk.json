@@ -2886,7 +2886,8 @@
           "already-decided": "Tento návrh už bol použitý alebo zahodený.",
           "read-only": "Brain môžeš prehliadať, ale nie meniť, takže toto nemožno použiť."
         },
-        "publish-audience": "Po zverejnení ju budú môcť vyhľadať:"
+        "publish-audience": "Po zverejnení ju budú môcť vyhľadať:",
+        "applying": "Prebieha použitie…"
       }
     }
   },

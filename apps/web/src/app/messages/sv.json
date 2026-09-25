@@ -2886,7 +2886,8 @@
           "already-decided": "Det här förslaget har redan tillämpats eller avfärdats.",
           "read-only": "Du kan bläddra i Brain men inte ändra det, så detta kan inte tillämpas."
         },
-        "publish-audience": "När den har publicerats kan den hittas av:"
+        "publish-audience": "När den har publicerats kan den hittas av:",
+        "applying": "Tillämpas…"
       }
     }
   },

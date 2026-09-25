@@ -88,93 +88,117 @@ describe('storing turns', () => {
   });
 });
 
-describe('recordProposalOutcomeCommand', () => {
-  it('records the outcome once, re-encrypting the message', async () => {
+describe('transitionProposalCommand', () => {
+  const NOW = new Date('2026-09-25T10:00:00.000Z');
+  const stored1 = (outcome: object | null) => {
     m.db.$queryRaw.mockResolvedValue([{ id: 'msg-1' }]);
     m.db.thread.findFirst.mockResolvedValue({
       encryptedDek: null,
-      messages: [{ content: stored(proposal) }],
+      messages: [{ content: stored({ ...proposal, outcome }) }],
     });
-    const outcome = { status: 'dismissed' as const, at: 'now' };
-    const result = await commands.recordProposalOutcomeCommand(
+  };
+
+  it('claims an undecided card, re-encrypting the message', async () => {
+    stored1(null);
+    const claim = { status: 'applying' as const, at: NOW.toISOString() };
+    const result = await commands.transitionProposalCommand(
       owner,
       't-1',
       'msg-1',
       'p-1',
-      outcome,
+      'undecided',
+      claim,
+      NOW,
     );
-    expect(result).toMatchObject({ id: 'p-1', outcome });
+    expect(result).toMatchObject({ id: 'p-1', outcome: claim });
     const content = m.encrypt.mock.calls[0]![1];
-    expect(JSON.parse(content).proposals[0].outcome).toEqual(outcome);
+    expect(JSON.parse(content).proposals[0].outcome).toEqual(claim);
     expect(m.db.message.updateMany).toHaveBeenCalledWith({
       where: { id: 'msg-1', threadId: 't-1' },
       data: { content: `enc(${content})` },
     });
   });
 
-  it('refuses a second decision on the same card', async () => {
-    m.db.$queryRaw.mockResolvedValue([{ id: 'msg-1' }]);
-    m.db.thread.findFirst.mockResolvedValue({
-      encryptedDek: null,
-      messages: [
-        {
-          content: stored({
-            ...proposal,
-            outcome: { status: 'dismissed', at: 'x' },
-          }),
-        },
-      ],
+  it('refuses a second claim, and a dismissal, while another Apply holds the card', async () => {
+    stored1({ status: 'applying', at: NOW.toISOString() });
+    for (const next of [
+      { status: 'applying' as const, at: NOW.toISOString() },
+      { status: 'dismissed' as const, at: NOW.toISOString() },
+    ]) {
+      expect(
+        await commands.transitionProposalCommand(
+          owner,
+          't-1',
+          'msg-1',
+          'p-1',
+          'undecided',
+          next,
+          NOW,
+        ),
+      ).toBe('already-decided');
+    }
+    expect(m.db.message.updateMany).not.toHaveBeenCalled();
+  });
+
+  it('takes over a claim old enough to be a dead Apply’s', async () => {
+    stored1({
+      status: 'applying',
+      at: new Date(
+        NOW.getTime() - commands.APPLY_CLAIM_TTL_MS - 1,
+      ).toISOString(),
     });
     expect(
-      await commands.recordProposalOutcomeCommand(
+      await commands.transitionProposalCommand(
         owner,
         't-1',
         'msg-1',
         'p-1',
-        {
-          status: 'dismissed',
-          at: 'y',
-        },
+        'undecided',
+        { status: 'applying', at: NOW.toISOString() },
+        NOW,
+      ),
+    ).toMatchObject({ outcome: { status: 'applying' } });
+  });
+
+  it('finishes or releases only a claimed card', async () => {
+    stored1({ status: 'applying', at: NOW.toISOString() });
+    expect(
+      await commands.transitionProposalCommand(
+        owner,
+        't-1',
+        'msg-1',
+        'p-1',
+        'applying',
+        null,
+        NOW,
+      ),
+    ).toMatchObject({ outcome: null });
+    stored1({ status: 'dismissed', at: 'x' });
+    expect(
+      await commands.transitionProposalCommand(
+        owner,
+        't-1',
+        'msg-1',
+        'p-1',
+        'applying',
+        { status: 'applied', at: 'y', results: [] },
+        NOW,
       ),
     ).toBe('already-decided');
-    expect(m.db.message.updateMany).not.toHaveBeenCalled();
   });
 
   it('finds nothing in someone else’s conversation', async () => {
     m.db.$queryRaw.mockResolvedValue([]);
     expect(
-      await commands.recordProposalOutcomeCommand(
+      await commands.transitionProposalCommand(
         owner,
         't-1',
         'msg-1',
         'p-1',
-        {
-          status: 'dismissed',
-          at: 'y',
-        },
+        'undecided',
+        { status: 'dismissed', at: 'y' },
       ),
     ).toBe('not-found');
     expect(m.db.thread.findFirst).not.toHaveBeenCalled();
-  });
-});
-
-describe('readStoredProposalQuery', () => {
-  it('reads the proposal back only from the person’s own Brain conversation', async () => {
-    m.db.thread.findFirst.mockResolvedValue({
-      encryptedDek: null,
-      messages: [{ content: stored(proposal) }],
-    });
-    expect(
-      await commands.readStoredProposalQuery(owner, 't-1', 'msg-1', 'p-1'),
-    ).toEqual(proposal);
-    expect(m.db.thread.findFirst.mock.calls[0]![0].where).toEqual({
-      id: 't-1',
-      organizationId: 'org-1',
-      visitorId: 'u-1',
-      kind: 'BRAIN_OPERATOR',
-    });
-    expect(
-      await commands.readStoredProposalQuery(owner, 't-1', 'msg-1', 'nope'),
-    ).toBeNull();
   });
 });

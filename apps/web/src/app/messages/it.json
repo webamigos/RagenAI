@@ -2886,7 +2886,8 @@
           "already-decided": "Questo suggerimento è già stato applicato o ignorato.",
           "read-only": "Puoi consultare Brain ma non modificarlo, quindi questo non può essere applicato."
         },
-        "publish-audience": "Una volta pubblicata, potranno recuperarla:"
+        "publish-audience": "Una volta pubblicata, potranno recuperarla:",
+        "applying": "Applicazione in corso…"
       }
     }
   },

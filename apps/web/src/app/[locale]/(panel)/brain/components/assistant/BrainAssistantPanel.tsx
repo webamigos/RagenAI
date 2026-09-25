@@ -104,11 +104,11 @@ export function BrainAssistantPanel({
 
   useEffect(() => () => abort.current?.abort(), []);
 
-  const patchLast = useCallback(
-    (patch: (m: PanelMessage) => PanelMessage) =>
-      setMessages((all) =>
-        all.map((m, i) => (i === all.length - 1 ? patch(m) : m)),
-      ),
+  // Each turn patches its own message by key — never "the last one": the
+  // operator can open another conversation while a turn is still streaming.
+  const patch = useCallback(
+    (key: string, change: (m: PanelMessage) => PanelMessage) =>
+      setMessages((all) => all.map((m) => (m.key === key ? change(m) : m))),
     [],
   );
 
@@ -120,14 +120,10 @@ export function BrainAssistantPanel({
     setDraft('');
     setHistory(null);
     setBusy(true);
-    setMessages((all) => [
-      ...all,
-      {
-        ...blank('user'),
-        text,
-      },
-      { ...blank('assistant'), streaming: true },
-    ]);
+    const answer = { ...blank('assistant'), streaming: true };
+    const patchAnswer = (change: (m: PanelMessage) => PanelMessage) =>
+      patch(answer.key, change);
+    setMessages((all) => [...all, { ...blank('user'), text }, answer]);
     const controller = new AbortController();
     abort.current = controller;
     try {
@@ -142,31 +138,33 @@ export function BrainAssistantPanel({
         signal: controller.signal,
       });
       if (!response.ok || !response.body) {
-        patchLast((m) => ({ ...m, error: 'unknown' }));
+        patchAnswer((m) => ({ ...m, error: 'unknown' }));
         return;
       }
       for await (const event of readEventStream(response.body)) {
         switch (event.type) {
           case 'start':
-            setThreadId(event.threadId);
+            if (!controller.signal.aborted) {
+              setThreadId(event.threadId);
+            }
             break;
           case 'text':
-            patchLast((m) => ({ ...m, text: m.text + event.delta }));
+            patchAnswer((m) => ({ ...m, text: m.text + event.delta }));
             break;
           case 'tool':
-            patchLast((m) => ({ ...m, tools: m.tools + 1 }));
+            patchAnswer((m) => ({ ...m, tools: m.tools + 1 }));
             break;
           case 'proposal':
-            patchLast((m) => ({
+            patchAnswer((m) => ({
               ...m,
               proposals: [...m.proposals, event.proposal],
             }));
             break;
           case 'proposal-dropped':
-            patchLast((m) => ({ ...m, droppedProposal: true }));
+            patchAnswer((m) => ({ ...m, droppedProposal: true }));
             break;
           case 'error':
-            patchLast((m) => ({
+            patchAnswer((m) => ({
               ...m,
               error: event.code,
               ...(event.code === 'guardrail'
@@ -175,16 +173,16 @@ export function BrainAssistantPanel({
             }));
             break;
           case 'done':
-            patchLast((m) => ({ ...m, messageId: event.messageId }));
+            patchAnswer((m) => ({ ...m, messageId: event.messageId }));
             break;
         }
       }
     } catch (error) {
       if (!(error instanceof DOMException && error.name === 'AbortError')) {
-        patchLast((m) => ({ ...m, error: 'unknown' }));
+        patchAnswer((m) => ({ ...m, error: 'unknown' }));
       }
     } finally {
-      patchLast((m) => ({ ...m, streaming: false }));
+      patchAnswer((m) => ({ ...m, streaming: false }));
       abort.current = null;
       setBusy(false);
     }
@@ -210,6 +208,7 @@ export function BrainAssistantPanel({
   }
 
   async function openThread(id: string) {
+    abort.current?.abort();
     const thread = await getBrainAssistantThreadAction(id);
     setHistory(null);
     if (thread) {

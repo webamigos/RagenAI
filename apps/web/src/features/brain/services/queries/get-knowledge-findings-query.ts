@@ -45,8 +45,11 @@ export async function getKnowledgeFindingsQuery(
   orgId: string,
   status: KnowledgeFindingStatus,
   page = 1,
+  type?: KnowledgeFindingType,
 ): Promise<KnowledgeFindingList> {
-  const where = { organizationId: orgId, status };
+  // `type` narrows in the database, so `total` counts every match and not
+  // one page of them.
+  const where = { organizationId: orgId, status, ...(type ? { type } : {}) };
   const [rows, total] = await Promise.all([
     db.knowledgeFinding.findMany({
       where,

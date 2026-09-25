@@ -637,7 +637,7 @@ export class ThreadsCoreService {
     data: CreateMessageDto,
   ) {
     const thread = await this.prisma.client.thread.findFirst({
-      where: { id: threadId, organizationId: orgId },
+      where: { id: threadId, organizationId: orgId, kind: 'CHAT' },
       select: { id: true },
     });
     if (!thread) {
@@ -929,7 +929,7 @@ export class ThreadsCoreService {
   ) {
     try {
       const thread = await this.prisma.client.thread.findFirstOrThrow({
-        where: { id: publicThreadId, organizationId: orgId },
+        where: { id: publicThreadId, organizationId: orgId, kind: 'CHAT' },
         select: {
           id: true,
           createdAt: true,
@@ -985,7 +985,7 @@ export class ThreadsCoreService {
   async getThreadMessagesList(publicThreadId: string, orgId: string) {
     try {
       const thread = await this.prisma.client.thread.findFirst({
-        where: { id: publicThreadId, organizationId: orgId },
+        where: { id: publicThreadId, organizationId: orgId, kind: 'CHAT' },
         select: {
           encryptedDek: true,
           messages: {

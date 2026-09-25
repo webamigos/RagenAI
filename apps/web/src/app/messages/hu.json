@@ -2886,7 +2886,8 @@
           "already-decided": "Ezt a javaslatot már alkalmazták vagy elvetették.",
           "read-only": "Böngészheted a Braint, de nem módosíthatod, így ez nem alkalmazható."
         },
-        "publish-audience": "Közzététel után elérhető lesz a következőknek:"
+        "publish-audience": "Közzététel után elérhető lesz a következőknek:",
+        "applying": "Alkalmazás folyamatban…"
       }
     }
   },

@@ -76,11 +76,15 @@ export function createBrainAssistantTools(context: BrainAssistantToolContext) {
         type: z.enum(FINDING_TYPES).optional(),
       }),
       execute: async ({ status, type }) => {
-        const { items, total } = await getKnowledgeFindingsQuery(orgId, status);
-        const matching = type ? items.filter((f) => f.type === type) : items;
+        const { items, total } = await getKnowledgeFindingsQuery(
+          orgId,
+          status,
+          1,
+          type,
+        );
         return {
-          total: type ? matching.length : total,
-          findings: matching.slice(0, TOOL_LIST_LIMIT).map(compactFinding),
+          total,
+          findings: items.slice(0, TOOL_LIST_LIMIT).map(compactFinding),
         };
       },
     }),

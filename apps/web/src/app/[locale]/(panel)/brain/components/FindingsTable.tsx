@@ -26,6 +26,7 @@ export async function FindingsTable({
   canWrite = true,
   focusedId = null,
   assistant = false,
+  discussHref,
 }: {
   items: KnowledgeFindingListItem[];
   showSubject?: boolean;
@@ -35,6 +36,8 @@ export async function FindingsTable({
   focusedId?: string | null;
   /** The assistant is on: each row can be put on its screen. */
   assistant?: boolean;
+  /** Where "discuss" goes — the list's own filter and page kept. */
+  discussHref?: (publicId: string) => string;
 }) {
   const [t, format] = await Promise.all([
     getTranslations('brain.findings'),
@@ -99,9 +102,9 @@ export async function FindingsTable({
               )}
               <TableCell className="max-w-[480px] align-top whitespace-normal">
                 <FindingSummaryView summary={item.summary} />
-                {assistant && item.publicId !== focusedId && (
+                {assistant && discussHref && item.publicId !== focusedId && (
                   <Link
-                    href={`/brain/findings?finding=${item.publicId}#finding-${item.publicId}`}
+                    href={discussHref(item.publicId)}
                     data-testid="brain-finding-discuss"
                     className="mt-1.5 inline-block text-xs text-primary underline-offset-4 hover:underline"
                   >

@@ -125,4 +125,30 @@ describe('FindingsTable', () => {
       screen.queryByRole('button', { name: 'Retry' }),
     ).not.toBeInTheDocument();
   });
+
+  it('links "discuss" through the builder the list gives it, and marks the focused row', async () => {
+    const other = { ...failed, publicId: 'f-2' };
+    render(
+      await FindingsTable({
+        items: [failed, other],
+        assistant: true,
+        focusedId: 'f-1',
+        discussHref: (id) =>
+          `/brain/findings?status=RESOLVED&page=2&finding=${id}`,
+      }),
+    );
+    // The routing mock renders a bare <a>, so the link is found by its text.
+    const links = screen.getAllByRole('link', {
+      name: 'Ask the assistant about this',
+    });
+    expect(links).toHaveLength(1);
+    expect(links[0]).toHaveAttribute(
+      'href',
+      '/brain/findings?status=RESOLVED&page=2&finding=f-2',
+    );
+    expect(document.getElementById('finding-f-1')).toHaveAttribute(
+      'aria-current',
+      'true',
+    );
+  });
 });

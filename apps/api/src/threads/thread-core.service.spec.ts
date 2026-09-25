@@ -205,7 +205,8 @@ describe('ThreadsCoreService', () => {
         }),
       ).rejects.toThrow(NotFoundException);
       expect(prisma.client.thread.findFirst).toHaveBeenCalledWith({
-        where: { id: 't1', organizationId: 'org-1' },
+        // A Brain assistant conversation is not a chat thread to post into.
+        where: { id: 't1', organizationId: 'org-1', kind: 'CHAT' },
         select: { id: true },
       });
       expect(messages.createAndStoreMessage).not.toHaveBeenCalled();

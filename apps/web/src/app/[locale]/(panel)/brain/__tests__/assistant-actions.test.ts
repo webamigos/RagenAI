@@ -9,8 +9,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const m = vi.hoisted(() => ({
   access: vi.fn(),
   userId: vi.fn(),
-  read: vi.fn(),
-  record: vi.fn(),
+  transition: vi.fn(),
   threads: vi.fn(),
   thread: vi.fn(),
   approve: vi.fn(),
@@ -25,10 +24,7 @@ vi.mock('@/app/lib/utils/auth-helpers', () => ({
 }));
 vi.mock(
   '@/features/brain-assistant/services/commands/brain-assistant-thread-commands',
-  () => ({
-    readStoredProposalQuery: m.read,
-    recordProposalOutcomeCommand: m.record,
-  }),
+  () => ({ transitionProposalCommand: m.transition }),
 );
 vi.mock(
   '@/features/brain-assistant/services/queries/get-brain-assistant-threads-query',
@@ -75,28 +71,43 @@ beforeEach(() => {
     assistant: true,
   });
   m.userId.mockResolvedValue('u-session');
-  m.read.mockResolvedValue(approve);
-  m.record.mockImplementation(async (_o, _t, _m, _p, outcome) => ({
+  m.transition.mockImplementation(async (_o, _t, _m, _p, _from, next) => ({
     ...approve,
-    outcome,
+    outcome: next,
   }));
   m.approve.mockResolvedValue({ success: true, changed: true });
 });
 
+const owner = { orgId: 'org-session', userId: 'u-session', canWrite: true };
+
 describe('applyBrainProposalAction', () => {
-  it('runs Brain’s own action for the stored proposal and records the outcome', async () => {
+  it('claims the stored proposal first, runs Brain’s own action, then records the outcome', async () => {
+    const order: string[] = [];
+    m.transition.mockImplementation(async (_o, _t, _m, _p, from, next) => {
+      order.push(`${from}->${next?.status ?? 'null'}`);
+      return { ...approve, outcome: next };
+    });
+    m.approve.mockImplementation(async () => {
+      order.push('approve');
+      return { success: true, changed: true };
+    });
     const result = await actions.applyBrainProposalAction({
       ...ref,
       // Forged: the proposal is read back from the conversation.
       proposal: { action: 'PUBLISH', pages: [page] },
       orgId: 'org-forged',
     });
-    expect(m.read).toHaveBeenCalledWith(
-      { orgId: 'org-session', userId: 'u-session', canWrite: true },
+    expect(order).toEqual([
+      'undecided->applying',
+      'approve',
+      'applying->applied',
+    ]);
+    expect(m.transition.mock.calls[0]!.slice(0, 4)).toEqual([
+      owner,
       ID,
       MSG,
       'p-1',
-    );
+    ]);
     expect(m.approve).toHaveBeenCalledWith({
       publicId: ID,
       expectedUpdatedAt: page.updatedAt,
@@ -107,6 +118,16 @@ describe('applyBrainProposalAction', () => {
         outcome: { status: 'applied', results: [{ label: 'Leave', ok: true }] },
       },
     });
+  });
+
+  it('runs nothing when the card is already taken — applied, dismissed, or being applied in another tab', async () => {
+    m.transition.mockResolvedValueOnce('already-decided');
+    expect(await actions.applyBrainProposalAction(ref)).toEqual({
+      success: false,
+      error: 'already-decided',
+    });
+    expect(m.approve).not.toHaveBeenCalled();
+    expect(m.transition).toHaveBeenCalledTimes(1);
   });
 
   it('refuses a read-only visitor before anything runs', async () => {
@@ -120,7 +141,7 @@ describe('applyBrainProposalAction', () => {
       success: false,
       error: 'read-only',
     });
-    expect(m.read).not.toHaveBeenCalled();
+    expect(m.transition).not.toHaveBeenCalled();
     expect(m.approve).not.toHaveBeenCalled();
   });
 
@@ -143,26 +164,15 @@ describe('applyBrainProposalAction', () => {
     expect(m.approve).not.toHaveBeenCalled();
   });
 
-  it('does not run a proposal already applied or dismissed', async () => {
-    m.read.mockResolvedValue({
-      ...approve,
-      outcome: { status: 'dismissed', at: 'x' },
-    });
-    expect(await actions.applyBrainProposalAction(ref)).toEqual({
-      success: false,
-      error: 'already-decided',
-    });
-    expect(m.approve).not.toHaveBeenCalled();
-  });
-
   it('records a refused step with the command’s own code', async () => {
     m.approve.mockResolvedValue({ success: false, error: 'owner-required' });
     const result = await actions.applyBrainProposalAction(ref);
-    expect(m.record).toHaveBeenCalledWith(
-      expect.anything(),
+    expect(m.transition).toHaveBeenLastCalledWith(
+      owner,
       ID,
       MSG,
       'p-1',
+      'applying',
       expect.objectContaining({
         status: 'applied',
         results: [{ label: 'Leave', ok: false, error: 'owner-required' }],
@@ -171,8 +181,23 @@ describe('applyBrainProposalAction', () => {
     expect(result.success).toBe(true);
   });
 
-  it('asks before widening access, and records nothing until the operator answers', async () => {
-    m.read.mockResolvedValue({
+  it('releases the claim when an action throws', async () => {
+    m.approve.mockRejectedValue(new Error('db down'));
+    await expect(actions.applyBrainProposalAction(ref)).rejects.toThrow(
+      'db down',
+    );
+    expect(m.transition).toHaveBeenLastCalledWith(
+      owner,
+      ID,
+      MSG,
+      'p-1',
+      'applying',
+      null,
+    );
+  });
+
+  it('asks before widening access, releasing the claim and recording nothing until the operator answers', async () => {
+    const widen = {
       id: 'p-1',
       action: 'SET_ACCESS',
       reason: 'r',
@@ -180,7 +205,11 @@ describe('applyBrainProposalAction', () => {
       page,
       principals: ['org:org-session'],
       preview: { before: [], after: [], widens: true },
-    });
+    };
+    m.transition.mockImplementation(async (_o, _t, _m, _p, _from, next) => ({
+      ...widen,
+      outcome: next,
+    }));
     m.setAccess.mockResolvedValueOnce({
       success: false,
       error: 'confirm-widening',
@@ -189,14 +218,28 @@ describe('applyBrainProposalAction', () => {
       success: false,
       error: 'confirm-widening',
     });
-    expect(m.record).not.toHaveBeenCalled();
+    expect(m.transition).toHaveBeenLastCalledWith(
+      owner,
+      ID,
+      MSG,
+      'p-1',
+      'applying',
+      null,
+    );
 
     m.setAccess.mockResolvedValueOnce({ success: true, changed: true });
     await actions.applyBrainProposalAction({ ...ref, confirmWidening: true });
     expect(m.setAccess).toHaveBeenLastCalledWith(
       expect.objectContaining({ confirmWidening: true }),
     );
-    expect(m.record).toHaveBeenCalledTimes(1);
+    expect(m.transition).toHaveBeenLastCalledWith(
+      owner,
+      ID,
+      MSG,
+      'p-1',
+      'applying',
+      expect.objectContaining({ status: 'applied' }),
+    );
   });
 
   it('refuses malformed input', async () => {
@@ -210,11 +253,12 @@ describe('applyBrainProposalAction', () => {
 describe('dismissBrainProposalAction', () => {
   it('records a dismissal and runs nothing', async () => {
     const result = await actions.dismissBrainProposalAction(ref);
-    expect(m.record).toHaveBeenCalledWith(
-      { orgId: 'org-session', userId: 'u-session', canWrite: true },
+    expect(m.transition).toHaveBeenCalledWith(
+      owner,
       ID,
       MSG,
       'p-1',
+      'undecided',
       expect.objectContaining({ status: 'dismissed' }),
     );
     expect(m.approve).not.toHaveBeenCalled();

@@ -98,33 +98,30 @@ export async function storeBrainAssistantAnswerCommand(
   return message.id;
 }
 
-/**
- * Read one stored proposal, or null when the conversation, the message or the
- * proposal is not this person's.
- */
-export async function readStoredProposalQuery(
-  owner: Owner,
-  threadId: string,
-  messageId: string,
-  proposalId: string,
-): Promise<BrainProposal | null> {
-  const found = await readAssistantMessage(owner, threadId, messageId);
-  return found?.proposals.find((p) => p.id === proposalId) ?? null;
-}
+/** A claim older than this is taken to be from an Apply that died mid-way. */
+export const APPLY_CLAIM_TTL_MS = 5 * 60 * 1000;
 
 /**
- * Record what became of a proposal, so a reopened conversation shows it.
+ * Move a proposal from one state to the next, under the message's row lock.
  *
- * Written only if the proposal is still undecided: two tabs applying the same
- * card record the first outcome, and the second is told `already-decided`.
- * The message is re-encrypted as a whole, through the same function.
+ * - `from: 'undecided'` — the card has no outcome yet (or holds a claim old
+ *   enough to be a dead Apply's). Used to claim it (`applying`) or dismiss it.
+ * - `from: 'applying'` — the card is claimed by the Apply running now. Used to
+ *   record what the actions did, or `null` to release the claim when the
+ *   operator still has to confirm a widening.
+ *
+ * Anything else answers `already-decided`, and nothing is written: two tabs
+ * applying the same card run its actions once, and a card dismissed in one
+ * tab is not applied in another.
  */
-export async function recordProposalOutcomeCommand(
+export async function transitionProposalCommand(
   owner: Owner,
   threadId: string,
   messageId: string,
   proposalId: string,
-  outcome: ProposalOutcome,
+  from: 'undecided' | 'applying',
+  next: ProposalOutcome | null,
+  now: Date = new Date(),
 ): Promise<BrainProposal | 'not-found' | 'already-decided'> {
   return db.$transaction(async (tx) => {
     const locked = await tx.$queryRaw<{ id: string }[]>`
@@ -146,10 +143,10 @@ export async function recordProposalOutcomeCommand(
       return 'not-found' as const;
     }
     const current = found.proposals[index]!;
-    if (current.outcome !== null) {
+    if (!inState(current.outcome, from, now)) {
       return 'already-decided' as const;
     }
-    const updated = { ...current, outcome } as BrainProposal;
+    const updated = { ...current, outcome: next } as BrainProposal;
     const proposals = found.proposals.map((p, i) =>
       i === index ? updated : p,
     );
@@ -163,6 +160,21 @@ export async function recordProposalOutcomeCommand(
     });
     return updated;
   });
+}
+
+function inState(
+  outcome: ProposalOutcome | null,
+  from: 'undecided' | 'applying',
+  now: Date,
+): boolean {
+  const claimed = outcome?.status === 'applying';
+  const stale =
+    claimed &&
+    now.getTime() - new Date(outcome.at).getTime() > APPLY_CLAIM_TTL_MS;
+  if (from === 'applying') {
+    return claimed;
+  }
+  return outcome === null || stale;
 }
 
 type Tx = Parameters<

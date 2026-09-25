@@ -2886,7 +2886,8 @@
           "already-decided": "This suggestion was already applied or dismissed.",
           "read-only": "You can browse Brain but not change it, so this cannot be applied."
         },
-        "publish-audience": "Once published, it can be retrieved by:"
+        "publish-audience": "Once published, it can be retrieved by:",
+        "applying": "Being applied…"
       }
     }
   },

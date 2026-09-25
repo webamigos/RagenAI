@@ -139,11 +139,11 @@ describe('the assistant’s tools', () => {
     });
   });
 
-  it('filters findings by type and pages the list at 30', async () => {
+  it('filters findings by type in the query, so the total counts every match, and pages at 30', async () => {
     const { tools: t } = tools(true);
-    const finding = (type: string, i: number) => ({
+    const finding = (i: number) => ({
       publicId: `${i}`,
-      type,
+      type: 'STALE',
       severity: 'HIGH',
       status: 'OPEN',
       detectedAt: 'd',
@@ -152,24 +152,16 @@ describe('the assistant’s tools', () => {
       summary: { kind: 'gap' },
     });
     q.findings.mockResolvedValue({
-      items: [
-        ...Array.from({ length: 40 }, (_, i) => finding('GAP', i)),
-        finding('STALE', 99),
-      ],
-      total: 41,
+      items: Array.from({ length: 40 }, (_, i) => finding(i)),
+      total: 250,
     });
-    const all = (await run(t.listFindings, { status: 'OPEN' })) as {
-      findings: unknown[];
-      total: number;
-    };
-    expect(all.findings).toHaveLength(30);
-    expect(all.total).toBe(41);
     const stale = (await run(t.listFindings, {
       status: 'OPEN',
       type: 'STALE',
-    })) as { findings: { findingId: string }[]; total: number };
-    expect(stale.total).toBe(1);
-    expect(stale.findings[0]!.findingId).toBe('99');
+    })) as { findings: unknown[]; total: number };
+    expect(q.findings).toHaveBeenCalledWith('org-session', 'OPEN', 1, 'STALE');
+    expect(stale.total).toBe(250);
+    expect(stale.findings).toHaveLength(30);
   });
 
   it('shows a proposal that fits the schema, and tells the model nothing changed', async () => {
