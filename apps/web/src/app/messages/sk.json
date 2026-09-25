@@ -2899,6 +2899,21 @@
       "findings": "Čo si vyžaduje vašu pozornosť: rozpory, medzery, zastarané stránky alebo stránky bez vlastníka a dokumenty, ktoré Brain neprečítal.",
       "graph": "Ako spolu stránky súvisia — ktorý proces vyžaduje ktoré pravidlo a ktoré stránky na seba odkazujú.",
       "documents": "Zdrojové dokumenty, ktoré Brain číta: koľko stránok z každého vzniklo a či ich chat stále prehľadáva."
+    },
+    "relation-kind": {
+      "approves": "schvaľuje",
+      "owns": "vlastní",
+      "is-responsible-for": "zodpovedá za",
+      "applies-to": "sa vzťahuje na",
+      "includes": "zahŕňa",
+      "costs": "stojí",
+      "requires": "vyžaduje",
+      "precedes": "predchádza",
+      "produces": "vytvára",
+      "governs": "upravuje",
+      "is-part-of": "je súčasťou",
+      "references": "odkazuje na",
+      "depends-on": "závisí od"
     }
   },
   "project-context-manager": {

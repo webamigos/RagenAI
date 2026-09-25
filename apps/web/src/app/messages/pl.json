@@ -2899,6 +2899,21 @@
       "findings": "Co wymaga Twojej uwagi: sprzeczności między stronami, luki, nieaktualne lub bezpańskie strony i dokumenty, których Brain nie odczytał.",
       "graph": "Jak strony się łączą — który proces wymaga której zasady i które strony odwołują się do siebie.",
       "documents": "Dokumenty źródłowe, które czyta Brain: ile stron dał każdy z nich i czy czat nadal go przeszukuje."
+    },
+    "relation-kind": {
+      "approves": "zatwierdza",
+      "owns": "jest właścicielem",
+      "is-responsible-for": "odpowiada za",
+      "applies-to": "dotyczy",
+      "includes": "obejmuje",
+      "costs": "kosztuje",
+      "requires": "wymaga",
+      "precedes": "poprzedza",
+      "produces": "wytwarza",
+      "governs": "reguluje",
+      "is-part-of": "jest częścią",
+      "references": "odwołuje się do",
+      "depends-on": "zależy od"
     }
   },
   "project-context-manager": {

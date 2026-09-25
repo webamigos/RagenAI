@@ -2899,6 +2899,21 @@
       "findings": "O que precisa da sua atenção: contradições, lacunas, páginas desatualizadas ou sem responsável e documentos que o Brain não conseguiu ler.",
       "graph": "Como as páginas se conectam — qual processo exige qual política e quais páginas se citam.",
       "documents": "Os documentos de origem que o Brain lê: quantas páginas cada um gerou e se o chat ainda os pesquisa."
+    },
+    "relation-kind": {
+      "approves": "aprova",
+      "owns": "é proprietário de",
+      "is-responsible-for": "é responsável por",
+      "applies-to": "aplica-se a",
+      "includes": "inclui",
+      "costs": "custa",
+      "requires": "exige",
+      "precedes": "precede",
+      "produces": "produz",
+      "governs": "rege",
+      "is-part-of": "faz parte de",
+      "references": "faz referência a",
+      "depends-on": "depende de"
     }
   },
   "project-context-manager": {

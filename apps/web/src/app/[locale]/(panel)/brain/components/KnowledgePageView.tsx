@@ -10,6 +10,7 @@ import { getBrainAccessQuery } from '@/features/brain/services/queries/get-brain
 import { getBrainReviewOptionsQuery } from '@/features/brain/services/queries/get-brain-review-options-query';
 import { getKnowledgePageQuery } from '@/features/brain/services/queries/get-knowledge-page-query';
 import { getMergeTargetsQuery } from '@/features/brain/services/queries/get-merge-targets-query';
+import { relationKindLabel } from '@/features/brain/utils/relation-kind';
 import { Link } from '@/i18n/routing';
 
 import { BrainScreen } from './assistant/BrainAssistantContext';
@@ -286,8 +287,12 @@ export async function KnowledgePageView({
                   <li key={i}>
                     <span className="text-muted-foreground">
                       {edge.direction === 'out'
-                        ? t('page.relations.out', { kind: edge.kind })
-                        : t('page.relations.in', { kind: edge.kind })}{' '}
+                        ? t('page.relations.out', {
+                            kind: relationKindLabel(edge.kind, t),
+                          })
+                        : t('page.relations.in', {
+                            kind: relationKindLabel(edge.kind, t),
+                          })}{' '}
                     </span>
                     <Link
                       href={`/brain/pages/${edge.page.publicId}`}

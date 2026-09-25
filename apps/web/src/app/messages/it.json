@@ -2899,6 +2899,21 @@
       "findings": "Ciò che richiede la tua attenzione: contraddizioni, lacune, pagine obsolete o senza responsabile e documenti che Brain non è riuscito a leggere.",
       "graph": "Come si collegano le pagine: quale processo richiede quale regola e quali pagine si citano a vicenda.",
       "documents": "I documenti di origine letti da Brain: quante pagine ha prodotto ciascuno e se la chat li cerca ancora."
+    },
+    "relation-kind": {
+      "approves": "approva",
+      "owns": "possiede",
+      "is-responsible-for": "è responsabile di",
+      "applies-to": "si applica a",
+      "includes": "include",
+      "costs": "costa",
+      "requires": "richiede",
+      "precedes": "precede",
+      "produces": "produce",
+      "governs": "disciplina",
+      "is-part-of": "fa parte di",
+      "references": "fa riferimento a",
+      "depends-on": "dipende da"
     }
   },
   "project-context-manager": {

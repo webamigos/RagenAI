@@ -2899,6 +2899,21 @@
       "findings": "Det, der kræver din opmærksomhed: modstrid, huller, forældede eller ejerløse sider og dokumenter, Brain ikke kunne læse.",
       "graph": "Hvordan siderne hænger sammen — hvilken proces kræver hvilken politik, og hvilke sider henviser til hinanden.",
       "documents": "Kildedokumenterne, Brain læser: hvor mange sider hvert gav, og om chatten stadig søger i det."
+    },
+    "relation-kind": {
+      "approves": "godkender",
+      "owns": "ejer",
+      "is-responsible-for": "er ansvarlig for",
+      "applies-to": "gælder for",
+      "includes": "omfatter",
+      "costs": "koster",
+      "requires": "kræver",
+      "precedes": "går forud for",
+      "produces": "producerer",
+      "governs": "regulerer",
+      "is-part-of": "er en del af",
+      "references": "henviser til",
+      "depends-on": "afhænger af"
     }
   },
   "project-context-manager": {

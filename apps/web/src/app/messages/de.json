@@ -2899,6 +2899,21 @@
       "findings": "Was Ihre Aufmerksamkeit braucht: Widersprüche, Lücken, veraltete oder besitzerlose Seiten und Dokumente, die Brain nicht lesen konnte.",
       "graph": "Wie Seiten zusammenhängen — welcher Prozess welche Richtlinie erfordert und welche Seiten aufeinander verweisen.",
       "documents": "Die Quelldokumente, die Brain liest: wie viele Seiten jedes ergeben hat und ob der Chat es noch durchsucht."
+    },
+    "relation-kind": {
+      "approves": "genehmigt",
+      "owns": "besitzt",
+      "is-responsible-for": "ist verantwortlich für",
+      "applies-to": "gilt für",
+      "includes": "umfasst",
+      "costs": "kostet",
+      "requires": "erfordert",
+      "precedes": "geht voraus",
+      "produces": "erzeugt",
+      "governs": "regelt",
+      "is-part-of": "ist Teil von",
+      "references": "verweist auf",
+      "depends-on": "hängt ab von"
     }
   },
   "project-context-manager": {
