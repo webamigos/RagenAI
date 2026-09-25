@@ -43,9 +43,13 @@ export function productAnalyticsEnabled(
 /**
  * What the SDK is started with.
  *
- * - `cookieless_mode: 'always'`: no cookies and no local storage, so the demo
- *   needs no consent banner. PostHog ignores these events unless cookieless
- *   mode is also switched on in the project's settings.
+ * - `persistence: 'memory'`: the visitor and session ids live in the tab's
+ *   memory only, never in a cookie or local storage, so the demo needs no
+ *   consent banner. It replaced `cookieless_mode: 'always'`, which gives the
+ *   same guarantee but disables posthog-js's session manager — and with it
+ *   session replay, which is what the demo is measured for. The price: every
+ *   full page load starts a new visitor and a new session, and sign-in ends in
+ *   a hard navigation, so a recording stops at the sign-in form.
  * - `person_profiles: 'identified_only'` and no `identify()` call: the demo is
  *   one shared account, so a person profile would describe every visitor at
  *   once.
@@ -58,7 +62,7 @@ export function productAnalyticsConfig(
   return {
     api_host: config.posthogHost || DEFAULT_POSTHOG_HOST,
     defaults: '2026-08-30',
-    cookieless_mode: 'always',
+    persistence: 'memory',
     person_profiles: 'identified_only',
     capture_pageview: 'history_change',
     session_recording: { maskAllInputs: true },

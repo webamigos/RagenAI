@@ -79,6 +79,8 @@ ours alone: PostHog on our public demo deployment. It starts only when
 `POSTHOG_KEY` is set **and** `TARGET_ENV` is `demo`; the key is a variable on
 our own hosting, never a value in this repository, so an install that has not
 set it — every install but ours — never downloads the SDK and sends nothing.
+On the demo it records sessions, with typed input masked, and keeps its ids in
+the tab's memory rather than in a cookie or local storage.
 `tests/architecture/analytics-ids-are-not-hardcoded.test.ts` fails
 the gate if a hardcoded measurement id (`G-`, `GTM-`, `UA-`, `AW-`, `phc_`), a
 static `posthog-js` import, or a known
