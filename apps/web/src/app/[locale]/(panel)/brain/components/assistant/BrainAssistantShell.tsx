@@ -7,7 +7,6 @@ import {
   useCallback,
   useContext,
   useEffect,
-  useRef,
   useState,
   type ReactNode,
 } from 'react';
@@ -16,7 +15,6 @@ import { Button } from '@/components/ui/button';
 
 import { BrainAssistantPanel } from './BrainAssistantPanel';
 
-const OPEN_KEY = 'ragen.brain-assistant.open';
 const WIDTH_KEY = 'ragen.brain-assistant.width';
 export const PANEL_WIDTH = { min: 320, max: 720, initial: 400 } as const;
 
@@ -54,7 +52,12 @@ export function clampWidth(width: number): number {
  * Brain's content with the assistant beside it (spec "Panel"). The panel
  * pushes the content rather than covering it — company-budget-app's overlay
  * hid the very page it talked about — and becomes a full-height sheet on a
- * narrow screen. Open state and width are remembered per browser.
+ * narrow screen. On a wide one it is docked to the window's right edge, top
+ * to bottom, and the content keeps clear of it.
+ *
+ * Every visit starts with it closed: it used to reopen by itself, taking a
+ * third of the screen from someone who came to look at the pages. Only its
+ * width is remembered, per browser.
  *
  * `enabled` is Brain access plus the `brainAssistant` key, decided by the
  * server layout; without it nothing here renders but the content.
@@ -70,32 +73,21 @@ export function BrainAssistantShell({
 }) {
   const [open, setOpenState] = useState(false);
   const [width, setWidthState] = useState<number>(PANEL_WIDTH.initial);
-  // Set once the person toggles: what storage said must not undo a click
-  // that came before it was read.
-  const touched = useRef(false);
 
-  // What this browser remembered, read once mounted: the server renders the
-  // panel closed, and reading storage while rendering would not match it.
+  // The width this browser remembered, read once mounted: the server renders
+  // the default, and reading storage while rendering would not match it.
   useEffect(() => {
     if (!enabled) {
       return;
     }
     const stored = Number(read(WIDTH_KEY));
-    const remembered = read(OPEN_KEY) === '1';
-    queueMicrotask(() => {
-      if (!touched.current) {
-        setOpenState(remembered);
-      }
-      if (Number.isFinite(stored) && stored > 0) {
-        setWidthState(clampWidth(stored));
-      }
-    });
+    if (Number.isFinite(stored) && stored > 0) {
+      queueMicrotask(() => setWidthState(clampWidth(stored)));
+    }
   }, [enabled]);
 
   const setOpen = useCallback((next: boolean) => {
-    touched.current = true;
     setOpenState(next);
-    write(OPEN_KEY, next ? '1' : '0');
   }, []);
   const setWidth = useCallback((next: number) => {
     const clamped = clampWidth(next);
@@ -105,8 +97,25 @@ export function BrainAssistantShell({
 
   return (
     <UiContext.Provider value={{ enabled, open, setOpen }}>
-      <div className="flex w-full items-start">
-        <div className="min-w-0 flex-1">{children}</div>
+      <div
+        className="w-full"
+        style={{ ['--assistant-width' as string]: `${width}px` }}
+      >
+        {/*
+          The docked panel covers the right of the window, the panel shell's
+          own padding (2.5rem plus its 0.5rem gutter) included. The content
+          keeps clear of it by the panel's width less that padding, plus a
+          1.5rem gap.
+        */}
+        <div
+          className={
+            enabled && open
+              ? 'min-w-0 lg:pr-[calc(var(--assistant-width)-1.5rem)]'
+              : 'min-w-0'
+          }
+        >
+          {children}
+        </div>
         {enabled && open && (
           <BrainAssistantPanel
             canWrite={canWrite}

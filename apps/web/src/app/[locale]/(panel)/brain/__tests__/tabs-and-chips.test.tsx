@@ -4,9 +4,11 @@ import { describe, expect, it, vi } from 'vitest';
 
 import messages from '@/app/messages/en.json';
 
-const path = vi.hoisted(() => ({ current: '/brain' }));
+const segment = vi.hoisted(() => ({ current: null as string | null }));
+vi.mock('next/navigation', () => ({
+  useSelectedLayoutSegment: () => segment.current,
+}));
 vi.mock('@/i18n/routing', () => ({
-  usePathname: () => path.current,
   Link: ({
     href,
     children,
@@ -29,16 +31,30 @@ const wrap = (ui: React.ReactNode) =>
   );
 
 describe('BrainTabs', () => {
+  // The segment under /brain. A page in the graph's drawer is `graph`, as
+  // the graph is what fills the screen; the full page is `pages`.
   it.each([
-    ['/brain', /exact quotes/],
-    ['/brain/pages/x', /A candidate waits for review/],
-    ['/brain/findings', /needs your attention/],
-    ['/brain/graph', /How pages connect/],
-    ['/brain/documents', /source documents/],
-  ])('says what %s is for', (pathname, hint) => {
-    path.current = pathname;
+    [null, /exact quotes/],
+    ['pages', /exact quotes/],
+    ['findings', /needs your attention/],
+    ['graph', /How pages connect/],
+    ['documents', /source documents/],
+  ])('says what %s is for', (current, hint) => {
+    segment.current = current;
     wrap(<BrainTabs />);
     expect(screen.getByTestId('brain-tab-hint')).toHaveTextContent(hint);
+  });
+
+  it('marks the active tab for assistive technology, not only by its look', () => {
+    segment.current = 'graph';
+    wrap(<BrainTabs />);
+    expect(screen.getByRole('link', { name: 'Graph' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
+    expect(
+      screen.getByRole('link', { name: 'Knowledge pages' }),
+    ).not.toHaveAttribute('aria-current');
   });
 });
 

@@ -2,23 +2,23 @@
 
 import { Tab, TabList, Tabs } from '@ragenai/common-ui/Tabs';
 import { useTranslations } from 'next-intl';
-
-import { usePathname } from '@/i18n/routing';
+import { useSelectedLayoutSegment } from 'next/navigation';
 
 const TABS = [
-  { key: 'pages', path: '/brain' },
-  { key: 'findings', path: '/brain/findings' },
-  { key: 'graph', path: '/brain/graph' },
-  { key: 'documents', path: '/brain/documents' },
+  { key: 'pages', path: '/brain', segment: null },
+  { key: 'findings', path: '/brain/findings', segment: 'findings' },
+  { key: 'graph', path: '/brain/graph', segment: 'graph' },
+  { key: 'documents', path: '/brain/documents', segment: 'documents' },
 ] as const;
 
 export function BrainTabs() {
   const t = useTranslations('brain');
-  const pathname = usePathname();
-  // `/brain/pages/…` is a page's detail, which belongs to the pages tab.
-  const active = TABS.findIndex(
-    (tab, i) => i > 0 && pathname.startsWith(tab.path),
-  );
+  // The route segment under /brain, not the address. A page opened in the
+  // graph's drawer has the page's address, `/brain/pages/…`, while the graph
+  // is still the screen — the address lit the pages tab over the graph.
+  // `pages` (a page's detail) and none (`/brain`) are the pages tab.
+  const segment = useSelectedLayoutSegment();
+  const active = TABS.findIndex((tab, i) => i > 0 && tab.segment === segment);
   const current = active === -1 ? 0 : active;
   // Each tab is a link and navigates on its own. Pushing here as well moved
   // the current tab on a Ctrl/Cmd-click that asked for a new one.

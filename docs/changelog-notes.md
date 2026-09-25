@@ -127,6 +127,10 @@ archive is the blog.
 
 ### Thread: Ragen Brain for a showcase
 
+- `[brief]` **Brain's assistant waits to be asked.** It starts closed on
+  every visit instead of reopening by itself, and when opened it is docked to
+  the right edge of the window, top to bottom, with the pages kept clear of
+  it. With a page open over the graph, the tabs still say Graph.
 - `[brief]` **Brain's graph remembers how you arranged it.** Pages dragged
   into place stay there after a reload, per view and in this browser; pages
   added since fit in around them, and one button restores the automatic
