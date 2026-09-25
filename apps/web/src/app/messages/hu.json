@@ -2899,6 +2899,21 @@
       "findings": "Ami figyelmet igényel: ellentmondások, hiányok, elavult vagy gazda nélküli oldalak és dokumentumok, amelyeket a Brain nem tudott elolvasni.",
       "graph": "Hogyan kapcsolódnak az oldalak — melyik folyamat melyik szabályt igényli, és mely oldalak hivatkoznak egymásra.",
       "documents": "A Brain által olvasott forrásdokumentumok: mindegyikből hány oldal lett, és keres-e még bennük a csevegő."
+    },
+    "relation-kind": {
+      "approves": "jóváhagyja",
+      "owns": "birtokolja",
+      "is-responsible-for": "felel érte",
+      "applies-to": "vonatkozik rá",
+      "includes": "tartalmazza",
+      "costs": "kerül",
+      "requires": "megköveteli",
+      "precedes": "megelőzi",
+      "produces": "előállítja",
+      "governs": "szabályozza",
+      "is-part-of": "része",
+      "references": "hivatkozik rá",
+      "depends-on": "függ tőle"
     }
   },
   "project-context-manager": {

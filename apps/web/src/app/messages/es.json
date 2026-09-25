@@ -2899,6 +2899,21 @@
       "findings": "Lo que requiere tu atención: contradicciones entre páginas, lagunas, páginas desactualizadas o sin responsable y documentos que Brain no pudo leer.",
       "graph": "Cómo se relacionan las páginas: qué proceso requiere qué política y qué páginas se citan entre sí.",
       "documents": "Los documentos de origen que lee Brain: cuántas páginas ha dado cada uno y si el chat todavía los busca."
+    },
+    "relation-kind": {
+      "approves": "aprueba",
+      "owns": "es propietario de",
+      "is-responsible-for": "es responsable de",
+      "applies-to": "se aplica a",
+      "includes": "incluye",
+      "costs": "cuesta",
+      "requires": "requiere",
+      "precedes": "precede a",
+      "produces": "produce",
+      "governs": "regula",
+      "is-part-of": "forma parte de",
+      "references": "hace referencia a",
+      "depends-on": "depende de"
     }
   },
   "project-context-manager": {

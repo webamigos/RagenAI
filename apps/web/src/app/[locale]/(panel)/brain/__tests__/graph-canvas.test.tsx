@@ -916,3 +916,29 @@ describe('a layout arranged by hand', () => {
     ).toBeUndefined();
   });
 });
+
+describe('the card in Polish', () => {
+  it('says the relation’s kind in Polish, and marks both links with an icon', async () => {
+    const pl = (await import('@/app/messages/pl.json')).default;
+    render(
+      <NextIntlClientProvider locale="pl" messages={pl}>
+        <BrainGraphCanvas
+          layoutScope={SCOPE}
+          view={{
+            ...view,
+            focus: A,
+            edges: [{ ...view.edges[0]!, kind: 'applies to' }],
+          }}
+        />
+      </NextIntlClientProvider>,
+    );
+    const row = await screen.findByTestId('brain-graph-relation');
+    expect(row).toHaveTextContent('dotyczy →');
+    expect(row).not.toHaveTextContent('applies to');
+    const card = screen.getByTestId('brain-graph-card');
+    for (const name of ['Otwórz stronę', 'Pokaż sąsiedztwo']) {
+      const link = within(card).getByRole('link', { name });
+      expect(link.querySelector('svg[aria-hidden="true"]')).not.toBeNull();
+    }
+  });
+});

@@ -5,14 +5,17 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ArrowUturnLeftIcon,
   ArrowsPointingOutIcon,
+  DocumentTextIcon,
   MagnifyingGlassMinusIcon,
   MagnifyingGlassPlusIcon,
+  ShareIcon,
 } from '@heroicons/react/24/outline';
 import type Sigma from 'sigma';
 
 import type { BrainGraphView } from '@/features/brain/contracts/brain-graph.types';
 import { Link } from '@/i18n/routing';
 import { makeDrawNodeHover } from './graph-hover';
+import { RelationKind } from './RelationKind';
 import { canvasLabel, LABEL_SIZE_PX, separateLabels } from './separate-labels';
 import { clearLayout, loadLayout, saveLayout, viewKey } from './graph-layouts';
 import { shelveIsolated } from './shelve-isolated';
@@ -754,7 +757,15 @@ export function BrainGraphCanvas({
                       </span>
                       <div className="min-w-0">
                         <p className="text-xs text-muted-foreground">
-                          {outgoing ? `${edge.kind} →` : `← ${edge.kind}`}
+                          {outgoing ? (
+                            <>
+                              <RelationKind kind={edge.kind} /> →
+                            </>
+                          ) : (
+                            <>
+                              ← <RelationKind kind={edge.kind} />
+                            </>
+                          )}
                         </p>
                         {other ? (
                           <button
@@ -775,14 +786,22 @@ export function BrainGraphCanvas({
               <div className="mt-3 flex flex-col gap-1">
                 <Link
                   href={`/brain/pages/${selected.id}`}
-                  className="text-primary underline-offset-4 hover:underline"
+                  className="inline-flex items-center gap-1.5 text-primary underline-offset-4 hover:underline"
                 >
+                  <DocumentTextIcon
+                    className="size-4 shrink-0 opacity-70"
+                    aria-hidden="true"
+                  />
                   {t('open-page')}
                 </Link>
                 <Link
                   href={`/brain/graph?focus=${selected.id}&budget=${view.budget}${view.includeInferred ? '&inferred=1' : ''}`}
-                  className="text-primary underline-offset-4 hover:underline"
+                  className="inline-flex items-center gap-1.5 text-primary underline-offset-4 hover:underline"
                 >
+                  <ShareIcon
+                    className="size-4 shrink-0 opacity-70"
+                    aria-hidden="true"
+                  />
                   {t('show-neighbourhood')}
                 </Link>
               </div>

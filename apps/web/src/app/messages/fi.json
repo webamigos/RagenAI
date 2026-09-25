@@ -2899,6 +2899,21 @@
       "findings": "Mikä vaatii huomiotasi: ristiriidat, aukot, vanhentuneet tai omistajattomat sivut ja dokumentit, joita Brain ei pystynyt lukemaan.",
       "graph": "Miten sivut liittyvät toisiinsa — mikä prosessi edellyttää mitäkin käytäntöä ja mitkä sivut viittaavat toisiinsa.",
       "documents": "Lähdedokumentit, joita Brain lukee: kuinka monta sivua kustakin syntyi ja haetaanko sitä yhä chatissa."
+    },
+    "relation-kind": {
+      "approves": "hyväksyy",
+      "owns": "omistaa",
+      "is-responsible-for": "vastaa",
+      "applies-to": "koskee",
+      "includes": "sisältää",
+      "costs": "maksaa",
+      "requires": "edellyttää",
+      "precedes": "edeltää",
+      "produces": "tuottaa",
+      "governs": "sääntelee",
+      "is-part-of": "on osa",
+      "references": "viittaa",
+      "depends-on": "riippuu"
     }
   },
   "project-context-manager": {

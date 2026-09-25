@@ -2899,6 +2899,21 @@
       "findings": "Det som kräver din uppmärksamhet: motsägelser, luckor, inaktuella eller ägarlösa sidor och dokument som Brain inte kunde läsa.",
       "graph": "Hur sidorna hänger ihop — vilken process som kräver vilken policy och vilka sidor som hänvisar till varandra.",
       "documents": "Källdokumenten som Brain läser: hur många sidor varje gav och om chatten fortfarande söker i dem."
+    },
+    "relation-kind": {
+      "approves": "godkänner",
+      "owns": "äger",
+      "is-responsible-for": "ansvarar för",
+      "applies-to": "gäller för",
+      "includes": "omfattar",
+      "costs": "kostar",
+      "requires": "kräver",
+      "precedes": "föregår",
+      "produces": "producerar",
+      "governs": "reglerar",
+      "is-part-of": "är en del av",
+      "references": "hänvisar till",
+      "depends-on": "beror på"
     }
   },
   "project-context-manager": {
