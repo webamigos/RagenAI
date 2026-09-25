@@ -45,8 +45,11 @@ export async function getKnowledgeFindingsQuery(
   orgId: string,
   status: KnowledgeFindingStatus,
   page = 1,
+  type?: KnowledgeFindingType,
 ): Promise<KnowledgeFindingList> {
-  const where = { organizationId: orgId, status };
+  // `type` narrows in the database, so `total` counts every match and not
+  // one page of them.
+  const where = { organizationId: orgId, status, ...(type ? { type } : {}) };
   const [rows, total] = await Promise.all([
     db.knowledgeFinding.findMany({
       where,
@@ -71,6 +74,28 @@ export async function getPageFindingsQuery(
     select: FINDING_SELECT,
   });
   return describeFindings(orgId, rows as FindingRow[]);
+}
+
+/**
+ * One finding by its `publicId`, looked up inside the organization — another
+ * organization's id answers null, the way a page's does.
+ */
+export async function getKnowledgeFindingQuery(
+  orgId: string,
+  publicId: string,
+): Promise<KnowledgeFindingListItem | null> {
+  if (!/^[0-9a-f-]{36}$/i.test(publicId)) {
+    return null;
+  }
+  const row = await db.knowledgeFinding.findFirst({
+    where: { organizationId: orgId, publicId },
+    select: FINDING_SELECT,
+  });
+  if (!row) {
+    return null;
+  }
+  const [item] = await describeFindings(orgId, [row as FindingRow]);
+  return item ?? null;
 }
 
 /**

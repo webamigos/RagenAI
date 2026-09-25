@@ -2537,7 +2537,8 @@
         "extraction-failed": "Asiakirjaa ei voitu käsitellä",
         "unknown": "Ei tietoja",
         "technical-details": "Tekniset tiedot"
-      }
+      },
+      "discuss": "Kysy avustajalta tästä"
     },
     "page": {
       "back": "Tietosivut",
@@ -2805,6 +2806,89 @@
     },
     "read-only": {
       "notice": "Vain luku -esikatselu — voit selata Ragen Brainia, mutta täällä ei voi muuttaa mitään."
+    },
+    "assistant": {
+      "toggle": "Avustaja",
+      "title": "Brain-avustaja",
+      "history": "Aiemmat keskustelut",
+      "new": "Uusi keskustelu",
+      "close": "Sulje avustaja",
+      "resize": "Muuta avustajapaneelin kokoa",
+      "placeholder": "Kysy siitä, mitä näytöllä on…",
+      "send": "Lähetä",
+      "stop": "Pysäytä",
+      "footnote": "Lukee vain Brainia. Ehdotetut muutokset odottavat, että otat ne käyttöön.",
+      "footnote-read-only": "Lukee vain Brainia. Voit selata Brainia, joten avustaja vastaa kysymyksiin eikä ehdota muutoksia.",
+      "thinking": "Luetaan Brainia…",
+      "read": "{count, plural, one {Luettiin # kohde Brainista} other {Luettiin # kohdetta Brainista}}",
+      "proposal-dropped": "Yhtä ehdotusta ei voitu näyttää.",
+      "empty-title": "Kysy siitä, mitä katsot",
+      "empty-description": "Avustaja lukee tämän näkymän, sivut, niiden lainaukset ja havainnot, ja vastaa lainauksilla, joihin vastaus perustuu.",
+      "history-empty": "Ei vielä aiempia keskusteluja.",
+      "untitled": "Nimetön keskustelu",
+      "prompts": {
+        "what-first": "Mitä minun pitäisi katsoa ensin?",
+        "duplicates": "Mitkä sivut näyttävät kaksoiskappaleilta?",
+        "week": "Tiivistä, mitä tällä viikolla päätettiin",
+        "contradictions": "Selitä avoimet ristiriidat",
+        "failed": "Miksi jotkin asiakirjat eivät tuottaneet mitään?",
+        "disagree": "Missä kohdassa nämä sivut ovat eri mieltä?",
+        "what-to-do": "Mitä minun pitäisi tehdä tälle havainnolle?",
+        "why-failed": "Miksi tämä asiakirja ei tuottanut mitään, ja mitä minun pitäisi tehdä?",
+        "is-right": "Onko tämä sivu oikein? Tarkista jokainen väite sen lainausta vasten",
+        "owner": "Kenen pitäisi omistaa tämä sivu?",
+        "why-stale": "Miksi tämä on vanhentunut, ja mikä on muuttunut?",
+        "depends": "Mikä riippuu tästä sivusta?",
+        "expose": "Mitä julkaiseminen paljastaa, ja kenelle?",
+        "depends-selected": "Mikä riippuu valitusta sivusta?",
+        "isolated": "Mitkä sivut eivät liity mihinkään?",
+        "uncurated": "Millä asiakirjoilla ei vielä ole hyväksyttyjä sivuja?"
+      },
+      "errors": {
+        "usage-limit": "Organisaatio on saavuttanut kuukausittaisen tekoälyn käyttörajansa. Muu Brain toimii normaalisti.",
+        "rate-limit": "Liian monta pyyntöä tällä minuutilla — yritä hetken päästä uudelleen.",
+        "guardrail": "Yksi organisaation säännöistä pidätti tämän vastauksen.",
+        "model-unavailable": "Malli ei voinut vastata juuri nyt. Muu Brain toimii normaalisti; yritä hetken kuluttua uudelleen.",
+        "no-tools": "Organisaation malli ei pysty lukemaan Brainin tietoja (se ei tue työkaluja). Valitse toinen malli organisaation asetuksista.",
+        "not-found": "Tämä keskustelu ei ole enää saatavilla. Aloita uusi.",
+        "unknown": "Jokin meni pieleen. Yritä uudelleen."
+      },
+      "proposal": {
+        "title": "Ehdotettu muutos",
+        "action": {
+          "APPROVE": "{count, plural, one {Hyväksy tämä sivu} other {Hyväksy # sivua}}",
+          "REJECT": "{count, plural, one {Hylkää tämä sivu} other {Hylkää # sivua}}",
+          "PUBLISH": "{count, plural, one {Julkaise tämä sivu} other {Julkaise # sivua}}",
+          "UNPUBLISH": "{count, plural, one {Poista tämä sivu hausta} other {Poista # sivua hausta}}",
+          "MERGE": "Yhdistä kaksi sivua",
+          "SET_OWNER": "Aseta omistaja",
+          "SET_ACCESS": "Muuta, kuka voi lukea sivun",
+          "RETRY_EXTRACTION": "Yritä poimintaa uudelleen"
+        },
+        "apply": "Ota käyttöön",
+        "dismiss": "Hylkää",
+        "not-stored": "Tätä keskustelua ei voitu tallentaa, joten ehdotusta ei voi ottaa käyttöön täältä.",
+        "merge-from": "Yhdistä",
+        "merge-into": "kohteeseen",
+        "merge-access": "Yhdistetty sivu on avoinna:",
+        "access-before": "Nyt",
+        "access-after": "Jälkeen",
+        "widens": "Tämä laajentaa pääsyä: joku, joka ei nyt voi lukea sivua, voi lukea sen.",
+        "unknown-document": "Asiakirja, jota ei enää ole",
+        "dismissed": "Hylätty — mitään ei muutettu.",
+        "applied": "Otettu käyttöön. Se on kirjattu sivun historiaan nimelläsi.",
+        "applied-partly": "Otettu käyttöön {ok}/{total}. Loput hylättiin:",
+        "step-failed": "hylätty",
+        "widen-description": "Joku, joka ei nyt voi lukea tätä sivua, voi lukea sen julkaisun jälkeen. Tämä kirjataan pääsyn laajentamiseksi nimelläsi.",
+        "errors": {
+          "invalid-input": "Ehdotusta ei ymmärretty — lataa sivu uudelleen ja yritä uudelleen.",
+          "not-found": "Tämä ehdotus ei ole enää saatavilla.",
+          "already-decided": "Tämä ehdotus on jo otettu käyttöön tai hylätty.",
+          "read-only": "Voit selata Brainia mutta et muuttaa sitä, joten tätä ei voi ottaa käyttöön."
+        },
+        "publish-audience": "Julkaisun jälkeen sen voivat hakea:",
+        "applying": "Otetaan käyttöön…"
+      }
     }
   },
   "project-context-manager": {

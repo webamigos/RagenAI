@@ -7,6 +7,9 @@ import { getBrainAccessQuery } from '@/features/brain/services/queries/get-brain
 import { getKnowledgeFindingsQuery } from '@/features/brain/services/queries/get-knowledge-findings-query';
 import { listRange, parseListPage } from '@/features/brain/utils/list-page';
 
+import { dbUuid } from '@/features/brain/contracts/brain-review.types';
+
+import { BrainScreen } from '../components/assistant/BrainAssistantContext';
 import { FilterChips } from '../components/FilterChips';
 import { BrainEmpty } from '../components/BrainEmpty';
 import { BrainPager } from '../components/BrainPager';
@@ -18,6 +21,8 @@ type Props = {
   searchParams: Promise<{
     status?: string | string[];
     page?: string | string[];
+    /** A finding the assistant linked to, put on screen for it. */
+    finding?: string | string[];
   }>;
 };
 
@@ -36,6 +41,11 @@ export default async function BrainFindingsPage({ searchParams }: Props) {
     ? (value as KnowledgeFindingStatus)
     : 'OPEN';
 
+  const rawFinding = Array.isArray(params.finding)
+    ? params.finding[0]
+    : params.finding;
+  const focused = dbUuid.safeParse(rawFinding).success ? rawFinding! : null;
+
   const [t, { items, total }] = await Promise.all([
     getTranslations('brain'),
     getKnowledgeFindingsQuery(access.orgId, status, listPage),
@@ -44,6 +54,13 @@ export default async function BrainFindingsPage({ searchParams }: Props) {
   return (
     <section>
       <title>{`${t('tabs.findings')} — ${t('title')}`}</title>
+      <BrainScreen
+        context={
+          focused
+            ? { view: 'finding', findingId: focused }
+            : { view: 'inbox', status }
+        }
+      />
       <FilterChips
         label={t('filters.status')}
         options={FINDING_STATUS_FILTERS.map((s) => ({
@@ -67,7 +84,19 @@ export default async function BrainFindingsPage({ searchParams }: Props) {
               total,
             })}
           </p>
-          <FindingsTable items={items} canWrite={access.canWrite} />
+          <FindingsTable
+            items={items}
+            canWrite={access.canWrite}
+            focusedId={focused}
+            assistant={access.assistant}
+            discussHref={(publicId) =>
+              `/brain/findings?${new URLSearchParams({
+                ...(status === 'OPEN' ? {} : { status }),
+                ...(listPage > 1 ? { page: String(listPage) } : {}),
+                finding: publicId,
+              })}#finding-${publicId}`
+            }
+          />
           <BrainPager
             page={listPage}
             total={total}

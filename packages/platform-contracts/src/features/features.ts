@@ -34,6 +34,7 @@ export const FEATURE_KEYS = [
   'brain',
   'manageBrain',
   'brainForMembers',
+  'brainAssistant',
   'deleteThreads',
 ] as const;
 
@@ -90,6 +91,13 @@ export type FeatureOverrides = Partial<Record<FeatureKey, boolean | null>>;
  * text from documents their own access would not open. It is meant for a
  * showcase organization whose corpus everyone may read.
  *
+ * `brainAssistant` is the operator's assistant beside Brain (spec
+ * 2026-09-25-brain-operator-assistant). It defaults to `false`, like `brain`,
+ * because it is built behind this key across several PRs (ADR-50), and it
+ * means nothing on its own: it takes effect only where `brain` is on and the
+ * member may open Brain at all. It reads Brain and never writes — every change
+ * it suggests is applied by a person through Brain's own actions.
+ *
  * `deleteThreads` defaults to `true`, like the `manage…` keys: every install
  * can delete a conversation today. Off, nobody in the organization can — a
  * showcase tenant's example threads are part of what it shows, and one shared
@@ -110,6 +118,7 @@ export const DEFAULT_FEATURES: FeatureFlags = {
   brain: false,
   manageBrain: true,
   brainForMembers: false,
+  brainAssistant: false,
   deleteThreads: true,
 };
 
@@ -129,6 +138,7 @@ export const FEATURE_LABELS: Record<FeatureKey, string> = {
   manageBrain: 'Ragen Brain: curate (extract, review, publish)',
   brainForMembers:
     'Ragen Brain: members may browse (read-only, sees every page)',
+  brainAssistant: "Ragen Brain: the operator's assistant",
   deleteThreads: 'Delete threads',
 };
 

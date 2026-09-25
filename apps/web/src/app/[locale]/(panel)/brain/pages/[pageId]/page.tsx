@@ -12,6 +12,7 @@ import { getKnowledgePageQuery } from '@/features/brain/services/queries/get-kno
 import { getMergeTargetsQuery } from '@/features/brain/services/queries/get-merge-targets-query';
 import { Link } from '@/i18n/routing';
 
+import { BrainScreen } from '../../components/assistant/BrainAssistantContext';
 import { AccessEditor } from '../../components/AccessEditor';
 import { AccessList } from '../../components/AccessList';
 import { BrainEmpty } from '../../components/BrainEmpty';
@@ -63,6 +64,7 @@ export default async function BrainPageDetail({ params }: Props) {
   return (
     <article>
       <title>{`${page.title} — ${t('title')}`}</title>
+      <BrainScreen context={{ view: 'page', pageId: page.publicId }} />
       <Link
         href="/brain"
         className="mb-3 inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
@@ -121,6 +123,7 @@ export default async function BrainPageDetail({ params }: Props) {
               {page.sources.map((source, i) => (
                 <li
                   key={source.id}
+                  id={`source-${source.id}`}
                   data-testid="brain-source"
                   className="rounded-[6px] border border-border bg-background p-3 text-sm"
                 >

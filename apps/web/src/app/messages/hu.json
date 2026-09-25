@@ -2537,7 +2537,8 @@
         "extraction-failed": "A dokumentumot nem sikerült feldolgozni",
         "unknown": "Nincsenek részletek",
         "technical-details": "Technikai részletek"
-      }
+      },
+      "discuss": "Kérdezd erről az asszisztenst"
     },
     "page": {
       "back": "Tudásoldalak",
@@ -2805,6 +2806,89 @@
     },
     "read-only": {
       "notice": "Csak olvasható előnézet — böngészheti a Ragen Braint, de itt semmit sem lehet módosítani."
+    },
+    "assistant": {
+      "toggle": "Asszisztens",
+      "title": "Brain asszisztens",
+      "history": "Korábbi beszélgetések",
+      "new": "Új beszélgetés",
+      "close": "Asszisztens bezárása",
+      "resize": "Az asszisztenspanel átméretezése",
+      "placeholder": "Kérdezz arról, ami a képernyőn van…",
+      "send": "Küldés",
+      "stop": "Leállítás",
+      "footnote": "Csak a Brain adatait olvassa. A javasolt módosítások megvárják, hogy alkalmazd őket.",
+      "footnote-read-only": "Csak a Brain adatait olvassa. Böngészheted a Braint, így az asszisztens válaszol a kérdésekre, de nem javasol módosításokat.",
+      "thinking": "A Brain olvasása…",
+      "read": "{count, plural, one {# elem beolvasva a Brainből} other {# elem beolvasva a Brainből}}",
+      "proposal-dropped": "Egy javaslatot nem sikerült megjeleníteni.",
+      "empty-title": "Kérdezz arról, amit éppen nézel",
+      "empty-description": "Az asszisztens olvassa ezt a képernyőt, az oldalakat, azok idézeteit és a megállapításokat, és azokkal az idézetekkel válaszol, amelyekre támaszkodik.",
+      "history-empty": "Még nincsenek korábbi beszélgetések.",
+      "untitled": "Névtelen beszélgetés",
+      "prompts": {
+        "what-first": "Mit nézzek meg először?",
+        "duplicates": "Mely oldalak tűnnek duplikátumnak?",
+        "week": "Foglald össze, mit döntöttek el ezen a héten",
+        "contradictions": "Magyarázd el a nyitott ellentmondásokat",
+        "failed": "Miért nem adtak eredményt egyes dokumentumok?",
+        "disagree": "Pontosan hol térnek el ezek az oldalak?",
+        "what-to-do": "Mit kezdjek ezzel a megállapítással?",
+        "why-failed": "Miért nem adott eredményt ez a dokumentum, és mit tegyek?",
+        "is-right": "Helyes ez az oldal? Ellenőrizd minden állítását az idézete alapján",
+        "owner": "Ki legyen ennek az oldalnak a gazdája?",
+        "why-stale": "Miért elavult ez, és mi változott?",
+        "depends": "Mi függ ettől az oldaltól?",
+        "expose": "Mit tesz láthatóvá a közzététel, és kinek?",
+        "depends-selected": "Mi függ a kijelölt oldaltól?",
+        "isolated": "Mely oldalak nem kapcsolódnak semmihez?",
+        "uncurated": "Mely dokumentumoknak nincs még jóváhagyott oldaluk?"
+      },
+      "errors": {
+        "usage-limit": "A szervezet elérte a havi MI-használati korlátját. A Brain többi része a szokásos módon működik.",
+        "rate-limit": "Túl sok kérés ebben a percben — próbáld újra hamarosan.",
+        "guardrail": "Ezt a választ a szervezet egyik szabálya visszatartotta.",
+        "model-unavailable": "A modell most nem tudott válaszolni. A Brain többi része a szokásos módon működik; próbáld újra egy pillanat múlva.",
+        "no-tools": "A szervezet modellje nem tudja olvasni a Brain adatait (nem támogatja az eszközöket). Válassz másik modellt a szervezet beállításaiban.",
+        "not-found": "Ez a beszélgetés már nem érhető el. Kezdj egy újat.",
+        "unknown": "Valami hiba történt. Próbáld újra."
+      },
+      "proposal": {
+        "title": "Javasolt módosítás",
+        "action": {
+          "APPROVE": "{count, plural, one {Oldal jóváhagyása} other {# oldal jóváhagyása}}",
+          "REJECT": "{count, plural, one {Oldal elutasítása} other {# oldal elutasítása}}",
+          "PUBLISH": "{count, plural, one {Oldal közzététele} other {# oldal közzététele}}",
+          "UNPUBLISH": "{count, plural, one {Oldal visszavonása a keresésből} other {# oldal visszavonása a keresésből}}",
+          "MERGE": "Két oldal egyesítése",
+          "SET_OWNER": "Gazda beállítása",
+          "SET_ACCESS": "Annak módosítása, ki olvashatja az oldalt",
+          "RETRY_EXTRACTION": "Kinyerés újrapróbálása"
+        },
+        "apply": "Alkalmazás",
+        "dismiss": "Elvetés",
+        "not-stored": "Ezt a beszélgetést nem sikerült menteni, így a javaslat innen nem alkalmazható.",
+        "merge-from": "Egyesítés:",
+        "merge-into": "ebbe:",
+        "merge-access": "Az egyesített oldal elérhető lesz a következők számára:",
+        "access-before": "Most",
+        "access-after": "Utána",
+        "widens": "Ez bővíti a hozzáférést: aki most nem olvashatja az oldalt, olvashatja majd.",
+        "unknown-document": "Egy már nem létező dokumentum",
+        "dismissed": "Elvetve — semmi sem változott.",
+        "applied": "Alkalmazva. Az oldal előzményeiben a neved alatt szerepel.",
+        "applied-partly": "Alkalmazva {ok}/{total} esetben. A többit elutasították:",
+        "step-failed": "elutasítva",
+        "widen-description": "Aki most nem olvashatja ezt az oldalt, a közzététel után olvashatja majd. Ez hozzáférés-bővítésként kerül rögzítésre, a neved alatt.",
+        "errors": {
+          "invalid-input": "A javaslat nem volt értelmezhető — töltsd újra az oldalt, és próbáld újra.",
+          "not-found": "Ez a javaslat már nem érhető el.",
+          "already-decided": "Ezt a javaslatot már alkalmazták vagy elvetették.",
+          "read-only": "Böngészheted a Braint, de nem módosíthatod, így ez nem alkalmazható."
+        },
+        "publish-audience": "Közzététel után elérhető lesz a következőknek:",
+        "applying": "Alkalmazás folyamatban…"
+      }
     }
   },
   "project-context-manager": {

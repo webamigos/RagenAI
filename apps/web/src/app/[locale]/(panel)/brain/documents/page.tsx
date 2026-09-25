@@ -15,6 +15,7 @@ import { getBrainDocumentsQuery } from '@/features/brain/services/queries/get-br
 import { BrainEmpty } from '../components/BrainEmpty';
 import { BrainUploadButton } from '../components/BrainUploadButton';
 import { DocumentRetrievalActions } from '../components/DocumentRetrievalActions';
+import { BrainScreen } from '../components/assistant/BrainAssistantContext';
 
 export const dynamic = 'force-dynamic';
 
@@ -47,6 +48,7 @@ export default async function BrainDocumentsPage() {
 
   return (
     <section>
+      <BrainScreen context={{ view: 'documents', selectedFileIds: [] }} />
       <title>{t('title')}</title>
       <div className="mb-3 flex flex-wrap items-start justify-between gap-3">
         <p className="max-w-[720px] text-xs text-muted-foreground">

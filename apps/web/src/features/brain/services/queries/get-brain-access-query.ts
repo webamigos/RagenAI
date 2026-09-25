@@ -15,11 +15,16 @@ import { brainAccess, type BrainAccess } from '../../utils/can-use-brain';
  * by `brainForMembers`). Pages hide their controls on it; the actions and
  * routes that change anything ask `getBrainWriteAccessQuery` instead, so a
  * hidden button is never the only thing standing in the way.
+ *
+ * `assistant` is whether the operator's assistant is on here (the
+ * `brainAssistant` key). It follows Brain access and never widens it: it is
+ * only ever true for someone this function already let in.
  */
 export async function getBrainAccessQuery(): Promise<{
   orgId: string;
   access: BrainAccess;
   canWrite: boolean;
+  assistant: boolean;
 } | null> {
   const orgId = await getOrgIdFromAuth();
   if (!orgId) {
@@ -30,7 +35,14 @@ export async function getBrainAccessQuery(): Promise<{
     getEffectiveFeaturesQuery(orgId),
   ]);
   const access = brainAccess({ role: member?.role, flags });
-  return access ? { orgId, access, canWrite: access === 'write' } : null;
+  return access
+    ? {
+        orgId,
+        access,
+        canWrite: access === 'write',
+        assistant: flags.brainAssistant === true,
+      }
+    : null;
 }
 
 /**

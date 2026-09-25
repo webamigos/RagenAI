@@ -55,6 +55,8 @@ import {
   TEST_PRIVATE_DOCUMENT_ID,
   TEST_PRIVATE_VERSION_ID,
   TEST_PRIVATE_CONTENT,
+  TEST_BRAIN_ASSISTANT_PAGE_PUBLIC_ID,
+  TEST_BRAIN_ASSISTANT_PAGE_TITLE,
   TEST_BRAIN_PAGE_PUBLIC_ID,
   TEST_BRAIN_PAGE_TITLE,
   TEST_BRAIN_REVIEW_PAGE_PUBLIC_ID,
@@ -110,6 +112,8 @@ const TEST_ORG_FEATURE_OVERRIDES: FeatureOverrides = {
   publicThreadLinks: true,
   // smoke-15 opens the Brain panel, which 404s with the flag off.
   brain: true,
+  // smoke-15 also asks the operator's assistant, which is off by default.
+  brainAssistant: true,
 };
 
 async function cleanup() {
@@ -722,6 +726,21 @@ async function seed() {
       content: `# ${TEST_BRAIN_REVIEW_PAGE_TITLE}\n\nStrona z seeda e2e do recenzji.\n`,
       contentHash: `sha256:${'2'.repeat(64)}`,
       accessibleBy: [`user:${TEST_USER_ID}`],
+    },
+  });
+  // smoke-15's assistant page: a candidate with an owner, so the approval
+  // the assistant proposes is one Apply can actually record.
+  await prisma.knowledgePage.create({
+    data: {
+      publicId: TEST_BRAIN_ASSISTANT_PAGE_PUBLIC_ID,
+      organizationId: TEST_ORG_ID,
+      title: TEST_BRAIN_ASSISTANT_PAGE_TITLE,
+      slug: 'e2e-brain-strona-dla-asystenta',
+      type: 'PROCESS',
+      ownerId: TEST_USER_ID,
+      content: `# ${TEST_BRAIN_ASSISTANT_PAGE_TITLE}\n\nStrona z seeda e2e dla asystenta.\n`,
+      contentHash: `sha256:${'7'.repeat(64)}`,
+      accessibleBy: [`org:${TEST_ORG_ID}`],
     },
   });
   // p0-34's pair: an approved page and a fresh candidate on the same

@@ -2537,7 +2537,8 @@
         "extraction-failed": "Dokumentet kunde inte bearbetas",
         "unknown": "Inga detaljer",
         "technical-details": "Tekniska detaljer"
-      }
+      },
+      "discuss": "Fråga assistenten om detta"
     },
     "page": {
       "back": "Kunskapssidor",
@@ -2805,6 +2806,89 @@
     },
     "read-only": {
       "notice": "Skrivskyddad förhandsvisning – du kan bläddra i Ragen Brain, men inget här kan ändras."
+    },
+    "assistant": {
+      "toggle": "Assistent",
+      "title": "Brain-assistent",
+      "history": "Tidigare konversationer",
+      "new": "Ny konversation",
+      "close": "Stäng assistenten",
+      "resize": "Ändra storlek på assistentpanelen",
+      "placeholder": "Fråga om det som visas på skärmen…",
+      "send": "Skicka",
+      "stop": "Stoppa",
+      "footnote": "Läser bara Brain. Föreslagna ändringar väntar tills du tillämpar dem.",
+      "footnote-read-only": "Läser bara Brain. Du kan bläddra i Brain, så assistenten svarar på frågor och föreslår inga ändringar.",
+      "thinking": "Läser Brain…",
+      "read": "{count, plural, one {Läste # objekt från Brain} other {Läste # objekt från Brain}}",
+      "proposal-dropped": "Ett förslag kunde inte visas.",
+      "empty-title": "Fråga om det du tittar på",
+      "empty-description": "Assistenten läser den här skärmen, sidorna, deras citat och fynden, och svarar med de citat svaret bygger på.",
+      "history-empty": "Inga tidigare konversationer än.",
+      "untitled": "Namnlös konversation",
+      "prompts": {
+        "what-first": "Vad ska jag titta på först?",
+        "duplicates": "Vilka sidor ser ut som dubbletter?",
+        "week": "Sammanfatta vad som beslutades den här veckan",
+        "contradictions": "Förklara de öppna motsägelserna",
+        "failed": "Varför gav vissa dokument ingenting?",
+        "disagree": "Var exakt går dessa sidor isär?",
+        "what-to-do": "Vad ska jag göra åt det här fyndet?",
+        "why-failed": "Varför gav det här dokumentet ingenting, och vad ska jag göra?",
+        "is-right": "Stämmer den här sidan? Kontrollera varje påstående mot sitt citat",
+        "owner": "Vem bör äga den här sidan?",
+        "why-stale": "Varför är detta inaktuellt, och vad har ändrats?",
+        "depends": "Vad är beroende av den här sidan?",
+        "expose": "Vad kommer en publicering att exponera, och för vem?",
+        "depends-selected": "Vad är beroende av den valda sidan?",
+        "isolated": "Vilka sidor är inte kopplade till något?",
+        "uncurated": "Vilka dokument har ännu inga godkända sidor?"
+      },
+      "errors": {
+        "usage-limit": "Organisationen har nått sin månatliga gräns för AI-användning. Resten av Brain fungerar som vanligt.",
+        "rate-limit": "För många förfrågningar den här minuten — försök igen om en stund.",
+        "guardrail": "Svaret hölls tillbaka av en av organisationens regler.",
+        "model-unavailable": "Modellen kunde inte svara just nu. Resten av Brain fungerar som vanligt; försök igen om en stund.",
+        "no-tools": "Organisationens modell kan inte läsa Brains data (den stöder inte verktyg). Välj en annan modell i organisationens inställningar.",
+        "not-found": "Den här konversationen är inte längre tillgänglig. Starta en ny.",
+        "unknown": "Något gick fel. Försök igen."
+      },
+      "proposal": {
+        "title": "Föreslagen ändring",
+        "action": {
+          "APPROVE": "{count, plural, one {Godkänn den här sidan} other {Godkänn # sidor}}",
+          "REJECT": "{count, plural, one {Avvisa den här sidan} other {Avvisa # sidor}}",
+          "PUBLISH": "{count, plural, one {Publicera den här sidan} other {Publicera # sidor}}",
+          "UNPUBLISH": "{count, plural, one {Dra tillbaka den här sidan från sökning} other {Dra tillbaka # sidor från sökning}}",
+          "MERGE": "Slå ihop två sidor",
+          "SET_OWNER": "Ange ägare",
+          "SET_ACCESS": "Ändra vem som kan läsa sidan",
+          "RETRY_EXTRACTION": "Försök extrahera igen"
+        },
+        "apply": "Tillämpa",
+        "dismiss": "Avfärda",
+        "not-stored": "Konversationen kunde inte sparas, så förslaget kan inte tillämpas härifrån.",
+        "merge-from": "Slå ihop",
+        "merge-into": "med",
+        "merge-access": "Den sammanslagna sidan blir tillgänglig för:",
+        "access-before": "Nu",
+        "access-after": "Efter",
+        "widens": "Detta vidgar åtkomsten: någon som inte kan läsa sidan nu kommer att kunna det.",
+        "unknown-document": "Ett dokument som inte längre finns",
+        "dismissed": "Avfärdat — inget ändrades.",
+        "applied": "Tillämpat. Det är registrerat i sidans historik under ditt namn.",
+        "applied-partly": "Tillämpat på {ok} av {total}. Resten avvisades:",
+        "step-failed": "avvisad",
+        "widen-description": "Någon som inte kan läsa den här sidan nu kommer att kunna det när den publiceras. Det registreras som en vidgad åtkomst, under ditt namn.",
+        "errors": {
+          "invalid-input": "Förslaget kunde inte tolkas — ladda om sidan och försök igen.",
+          "not-found": "Det här förslaget är inte längre tillgängligt.",
+          "already-decided": "Det här förslaget har redan tillämpats eller avfärdats.",
+          "read-only": "Du kan bläddra i Brain men inte ändra det, så detta kan inte tillämpas."
+        },
+        "publish-audience": "När den har publicerats kan den hittas av:",
+        "applying": "Tillämpas…"
+      }
     }
   },
   "project-context-manager": {

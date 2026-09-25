@@ -69,6 +69,92 @@ function structuredReply(parsed: {
   });
 }
 
+/**
+ * The Brain assistant's one scripted turn (smoke-15).
+ *
+ * A question carrying `zzqx-brain-propose`, asked with the assistant's tools
+ * on offer, is answered the way a model that decided to suggest an approval
+ * would: first a `proposeChange` call naming the page the screen description
+ * put in the system prompt, then — once the tool's result is in the request —
+ * a sentence linking that page. Anything else falls through to the canned
+ * answer, so no other spec meets a tool call.
+ */
+const BRAIN_PROPOSE = /zzqx-brain-propose/;
+const BRAIN_SCREEN_PAGE =
+  /The knowledge page \\"(.+?)\\" \(pageId ([0-9a-f-]{36})/;
+
+function brainAssistantReply(
+  body: string,
+  parsed: {
+    tools?: { function?: { name?: string } }[];
+    messages?: { role?: string }[];
+  },
+): { toolCall: { name: string; arguments: string } } | { text: string } | null {
+  const offersPropose = (parsed.tools ?? []).some(
+    (t) => t.function?.name === 'proposeChange',
+  );
+  const page = BRAIN_SCREEN_PAGE.exec(body);
+  if (!offersPropose || !BRAIN_PROPOSE.test(body) || !page) {
+    return null;
+  }
+  const [, title, pageId] = page;
+  const answered = (parsed.messages ?? []).some((m) => m.role === 'tool');
+  if (answered) {
+    return {
+      text: `I suggested approving [${title}](brain:page/${pageId}); nothing changes until you apply it.`,
+    };
+  }
+  return {
+    toolCall: {
+      name: 'proposeChange',
+      arguments: JSON.stringify({
+        action: 'APPROVE',
+        pageIds: [pageId],
+        reason: 'Every claim on the page matches its source (e2e).',
+      }),
+    },
+  };
+}
+
+function streamToolCall(
+  res: http.ServerResponse,
+  call: { name: string; arguments: string },
+) {
+  res.writeHead(200, {
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache',
+    Connection: 'keep-alive',
+  });
+  const chunk = (delta: object, finish: string | null) => ({
+    id: 'chatcmpl-mock',
+    object: 'chat.completion.chunk',
+    created: Math.floor(Date.now() / 1000),
+    model: 'mock-model',
+    choices: [{ index: 0, delta, finish_reason: finish }],
+  });
+  res.write(
+    `data: ${JSON.stringify(
+      chunk(
+        {
+          role: 'assistant',
+          tool_calls: [
+            {
+              index: 0,
+              id: 'call_brain_1',
+              type: 'function',
+              function: { name: call.name, arguments: call.arguments },
+            },
+          ],
+        },
+        null,
+      ),
+    )}\n\n`,
+  );
+  res.write(`data: ${JSON.stringify(chunk({}, 'tool_calls'))}\n\n`);
+  res.write('data: [DONE]\n\n');
+  res.end();
+}
+
 function handleChatCompletions(
   req: http.IncomingMessage,
   res: http.ServerResponse,
@@ -81,15 +167,23 @@ function handleChatCompletions(
   req.on('end', () => {
     let stream = true;
     let structured: string | null = null;
+    let brain: ReturnType<typeof brainAssistantReply> = null;
     try {
       const parsed = JSON.parse(body);
       stream = parsed.stream !== false;
       structured = structuredReply(parsed);
+      brain = brainAssistantReply(body, parsed);
     } catch {
       // default to streaming
     }
 
-    const responseText = structured ?? responseFor(body);
+    if (brain && 'toolCall' in brain) {
+      streamToolCall(res, brain.toolCall);
+      return;
+    }
+
+    const responseText =
+      structured ?? (brain && 'text' in brain ? brain.text : responseFor(body));
 
     // **A structured request is never streamed**, whatever `stream` says.
     // `generateObject` sends no `stream` field at all, and the default here is

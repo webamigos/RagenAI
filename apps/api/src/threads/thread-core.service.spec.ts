@@ -205,7 +205,8 @@ describe('ThreadsCoreService', () => {
         }),
       ).rejects.toThrow(NotFoundException);
       expect(prisma.client.thread.findFirst).toHaveBeenCalledWith({
-        where: { id: 't1', organizationId: 'org-1' },
+        // A Brain assistant conversation is not a chat thread to post into.
+        where: { id: 't1', organizationId: 'org-1', kind: 'CHAT' },
         select: { id: true },
       });
       expect(messages.createAndStoreMessage).not.toHaveBeenCalled();
@@ -400,6 +401,41 @@ describe('ThreadsCoreService', () => {
       await expect(service.getUserThreads('v1', 'org-1')).rejects.toThrow(
         'Default project ID does not exist!',
       );
+    });
+  });
+
+  /**
+   * A Brain assistant conversation is a `Thread` of kind `BRAIN_OPERATOR`
+   * (spec 2026-09-25-brain-operator-assistant). Every list the chat reads
+   * filters it out, or the sidebar would show conversations the chat cannot
+   * open.
+   */
+  describe('the chat lists read chat threads only', () => {
+    it('getSidebarThreads, getAllThreads, searchAll, searchThreads and getUserThreads filter to CHAT', async () => {
+      const findMany = vi.fn().mockResolvedValue([]);
+      const { service, prisma, projects } = makeService({
+        thread: { findMany, count: vi.fn().mockResolvedValue(0) },
+        project: { findMany: vi.fn().mockResolvedValue([]) },
+      });
+      (projects.getDefaultProjectId as Mock).mockResolvedValue('p-default');
+
+      await service.getSidebarThreads('v1', 'org-1');
+      await service.getAllThreads('v1', 'org-1');
+      await service.searchAll('v1', 'org-1', 'leave');
+      await service.searchThreads('v1', 'org-1', 'leave');
+      await service.getUserThreads('v1', 'org-1');
+      await service.getSharedThreads('v1', 'org-1');
+
+      type Where = { kind?: string; thread?: { kind?: string } };
+      const calls = findMany.mock.calls as [{ where: Where }][];
+      const wheres = calls.map(([args]) => args.where);
+      expect(wheres.length).toBeGreaterThanOrEqual(6);
+      for (const where of wheres) {
+        expect(where.kind).toBe('CHAT');
+      }
+      const sharedCalls = (prisma.client.threadShare.findMany as Mock).mock
+        .calls as [{ where: Where }][];
+      expect(sharedCalls[0][0].where.thread?.kind).toBe('CHAT');
     });
   });
 

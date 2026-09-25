@@ -73,7 +73,8 @@ describe('ThreadsService', () => {
       after: 'thread-abc',
     });
     const call = threadOps.findMany.mock.calls[0][0];
-    expect(call.where).toEqual({ organizationId: 'org-1' });
+    // A Brain assistant conversation is a thread too, and never the API's.
+    expect(call.where).toEqual({ organizationId: 'org-1', kind: 'CHAT' });
     expect(call.take).toBe(5);
     expect(call.orderBy).toEqual({ createdAt: 'asc' });
     expect(call.cursor).toEqual({ id: 'abc' });

@@ -21,6 +21,7 @@ import { Link } from '@/i18n/routing';
 
 import { BrainEmpty } from './components/BrainEmpty';
 import { BrainPager } from './components/BrainPager';
+import { BrainScreen } from './components/assistant/BrainAssistantContext';
 import { FilterChips } from './components/FilterChips';
 import { PublishAllButton } from './components/PublishAllButton';
 
@@ -64,6 +65,7 @@ export default async function BrainPagesPage({ searchParams }: Props) {
   return (
     <section>
       <title>{`${t('tabs.pages')} — ${t('title')}`}</title>
+      <BrainScreen context={{ view: 'pages', status }} />
       <FilterChips
         label={t('filters.status')}
         options={[

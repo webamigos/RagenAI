@@ -637,7 +637,7 @@ export class ThreadsCoreService {
     data: CreateMessageDto,
   ) {
     const thread = await this.prisma.client.thread.findFirst({
-      where: { id: threadId, organizationId: orgId },
+      where: { id: threadId, organizationId: orgId, kind: 'CHAT' },
       select: { id: true },
     });
     if (!thread) {
@@ -659,6 +659,8 @@ export class ThreadsCoreService {
     const where = {
       organizationId: orgId,
       chatbotId: null,
+      // A Brain assistant conversation is a thread too, and never the chat's.
+      kind: 'CHAT' as const,
       ...(query
         ? { title: { contains: query, mode: 'insensitive' as const } }
         : {}),
@@ -697,7 +699,11 @@ export class ThreadsCoreService {
     const shares = await this.prisma.client.threadShare.findMany({
       where: {
         userId,
-        thread: { organizationId: orgId, messages: { some: {} } },
+        thread: {
+          organizationId: orgId,
+          kind: 'CHAT',
+          messages: { some: {} },
+        },
       },
       orderBy: { createdAt: 'desc' },
       include: {
@@ -730,6 +736,7 @@ export class ThreadsCoreService {
     const baseWhere = {
       organizationId: orgId,
       chatbotId: null,
+      kind: 'CHAT' as const,
       messages: { some: {} },
       OR: [
         { visitorId: visitorId },
@@ -786,6 +793,7 @@ export class ThreadsCoreService {
       where: {
         visitorId: visitorId,
         projectId: defaultProjectId,
+        kind: 'CHAT',
         messages: query
           ? {
               some: {
@@ -855,6 +863,7 @@ export class ThreadsCoreService {
         where: {
           organizationId: orgId,
           visitorId: visitorId,
+          kind: 'CHAT',
           messages: { some: {} },
           title: { contains: trimmed, mode: 'insensitive' },
         },
@@ -898,6 +907,7 @@ export class ThreadsCoreService {
       where: {
         organizationId: orgId,
         visitorId,
+        kind: 'CHAT',
         messages: { some: {} },
         title: { contains: query.trim(), mode: 'insensitive' },
       },
@@ -919,7 +929,7 @@ export class ThreadsCoreService {
   ) {
     try {
       const thread = await this.prisma.client.thread.findFirstOrThrow({
-        where: { id: publicThreadId, organizationId: orgId },
+        where: { id: publicThreadId, organizationId: orgId, kind: 'CHAT' },
         select: {
           id: true,
           createdAt: true,
@@ -975,7 +985,7 @@ export class ThreadsCoreService {
   async getThreadMessagesList(publicThreadId: string, orgId: string) {
     try {
       const thread = await this.prisma.client.thread.findFirst({
-        where: { id: publicThreadId, organizationId: orgId },
+        where: { id: publicThreadId, organizationId: orgId, kind: 'CHAT' },
         select: {
           encryptedDek: true,
           messages: {
