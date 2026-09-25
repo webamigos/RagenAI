@@ -29,6 +29,27 @@ describe('PageSearch', () => {
     );
   });
 
+  it('follows the address when it brings another search — Back, or a link', () => {
+    const { rerender } = wrap(
+      <PageSearch search="urlop" status={null} language={null} />,
+    );
+    fireEvent.change(screen.getByTestId('brain-page-search'), {
+      target: { value: 'urlopy i' },
+    });
+    rerender(
+      <NextIntlClientProvider locale="pl" messages={pl}>
+        <PageSearch search="kadry" status={null} language={null} />
+      </NextIntlClientProvider>,
+    );
+    expect(screen.getByTestId('brain-page-search')).toHaveValue('kadry');
+    rerender(
+      <NextIntlClientProvider locale="pl" messages={pl}>
+        <PageSearch search={null} status={null} language={null} />
+      </NextIntlClientProvider>,
+    );
+    expect(screen.getByTestId('brain-page-search')).toHaveValue('');
+  });
+
   it('offers to clear only a search that is on, and clearing keeps the rest', () => {
     const { unmount } = wrap(
       <PageSearch search={null} status={null} language={null} />,

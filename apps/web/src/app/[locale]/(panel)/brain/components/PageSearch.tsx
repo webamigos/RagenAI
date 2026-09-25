@@ -23,6 +23,14 @@ export function PageSearch({
   const t = useTranslations('brain');
   const router = useRouter();
   const [value, setValue] = useState(search ?? '');
+  // The address is the truth: Back or a chip link brings another `q`, and the
+  // field follows it rather than keeping what was typed before. Adjusted while
+  // rendering, as React recommends for state derived from a prop.
+  const [shownSearch, setShownSearch] = useState(search);
+  if (shownSearch !== search) {
+    setShownSearch(search);
+    setValue(search ?? '');
+  }
 
   const go = (q: string) => {
     const params = new URLSearchParams();
