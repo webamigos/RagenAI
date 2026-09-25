@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { PROVIDER_ICON_PATHS } from '@/features/connectors/utils/provider-icons';
+import { connectorIconUrl } from '@/features/connectors/utils/provider-icons';
 import { connectorDisplayName } from '@/features/connectors/utils/connector-display-name';
 import { logger } from '@/app/lib/utils/logger';
 import { statusToast } from '@/app/lib/utils/toast';
@@ -159,8 +159,8 @@ export function IntegrationsOnboardingDialog({ projectId }: Props) {
         </div>
 
         <div className="space-y-2 max-h-72 overflow-y-auto">
-          {connected.map(({ provider, name }) => {
-            const iconPath = PROVIDER_ICON_PATHS[provider];
+          {connected.map(({ provider, name, iconUrl }) => {
+            const iconPath = connectorIconUrl(provider, iconUrl);
             return (
               <label
                 key={provider}

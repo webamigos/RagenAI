@@ -8,6 +8,7 @@ import { McpConnectorStatus } from '@/generated/prisma/client';
 import db from '@ragenai/prisma-client';
 import { getAvailableConnectorsForOrg } from '@/features/connectors/services/queries/get-available-connectors-query';
 import { logger } from '@/app/lib/utils/logger';
+import { connectorIconUrl } from '@/features/connectors/utils/provider-icons';
 import { ragenApiRequest } from '@/libs/ragen-api-client/client';
 
 export type ConnectedProvider = {
@@ -20,6 +21,13 @@ export type ConnectedProvider = {
    * exists to prevent.
    */
   name: string;
+  /**
+   * The catalogue entry's brand asset, as every other connector view reads
+   * it. The static map in `provider-icons.ts` holds the built-ins only, so a
+   * view that looked there drew no icon for an entry added from the admin
+   * panel (Rejestr.io).
+   */
+  iconUrl: string | null;
 };
 
 const MAX_PROVIDERS = 50;
@@ -47,19 +55,20 @@ export async function getConnectedProvidersAction(): Promise<
     getAvailableConnectorsForOrg(orgId),
   ]);
 
-  const labels = new Map(
-    availableProviders.map((definition) => [
-      definition.provider,
-      definition.name,
-    ]),
+  const definitions = new Map(
+    availableProviders.map((definition) => [definition.provider, definition]),
   );
 
   return connectors
-    .filter((c) => labels.has(c.providerSlug))
-    .map((c) => ({
-      provider: c.providerSlug,
-      name: labels.get(c.providerSlug) ?? c.providerSlug,
-    }));
+    .filter((c) => definitions.has(c.providerSlug))
+    .map((c) => {
+      const definition = definitions.get(c.providerSlug);
+      return {
+        provider: c.providerSlug,
+        name: definition?.name ?? c.providerSlug,
+        iconUrl: connectorIconUrl(c.providerSlug, definition?.iconUrl),
+      };
+    });
 }
 
 export async function getProjectMcpProvidersAction(

@@ -22,6 +22,11 @@ export type ActiveToolCall = {
    * etc.). Used for icon lookup.
    */
   provider: string;
+  /**
+   * The connector's brand asset as the server resolved it from the catalogue.
+   * Absent for an older event; the chip then falls back to the built-in map.
+   */
+  iconUrl?: string | null;
   /** ISO timestamp — render can show "1.4s" elapsed if useful. */
   startedAt: string;
 };

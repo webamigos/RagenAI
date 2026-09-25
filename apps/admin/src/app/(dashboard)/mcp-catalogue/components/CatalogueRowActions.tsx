@@ -4,6 +4,14 @@ import { useState, useTransition } from 'react';
 import { toast } from 'sonner';
 
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+
+import {
   deleteCatalogueEntryAction,
   setCatalogueEntryEnabledAction,
 } from '../actions';
@@ -70,10 +78,10 @@ export function CatalogueRowActions({
           <>
             <button
               type="button"
-              onClick={() => setEditing((open) => !open)}
+              onClick={() => setEditing(true)}
               className="rounded-md border border-border px-2 py-1 text-xs"
             >
-              {editing ? 'Close' : 'Edit'}
+              Edit
             </button>
             {confirmingDelete ? (
               <>
@@ -106,14 +114,49 @@ export function CatalogueRowActions({
         )}
       </div>
 
-      {editing ? (
-        <div className="rounded-lg border border-border p-4">
-          <CatalogueEntryForm
-            entry={{ ...entry, publicId }}
-            onDone={() => setEditing(false)}
-          />
-        </div>
-      ) : null}
+      {/*
+        A dialog rather than a form unfolding inside the actions cell: the
+        cell is a table column, and a dozen fields squeezed into it read as
+        one long ribbon beside rows that no longer line up.
+      */}
+      <CatalogueEntryDialog
+        open={editing}
+        onOpenChange={setEditing}
+        title={`Edit ${entry.label || slug}`}
+        description={`Changes apply to every organization that uses ${slug} as soon as they are saved.`}
+      >
+        <CatalogueEntryForm
+          entry={{ ...entry, publicId }}
+          onDone={() => setEditing(false)}
+        />
+      </CatalogueEntryDialog>
     </div>
+  );
+}
+
+/** The catalogue form in a dialog wide and tall enough for all of it. */
+export function CatalogueEntryDialog({
+  open,
+  onOpenChange,
+  title,
+  description,
+  children,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  title: string;
+  description: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
+        <DialogHeader>
+          <DialogTitle>{title}</DialogTitle>
+          <DialogDescription>{description}</DialogDescription>
+        </DialogHeader>
+        {children}
+      </DialogContent>
+    </Dialog>
   );
 }

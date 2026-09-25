@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import { Spinner } from '@/components/ui/spinner';
-import { iconPathForProvider } from '@/features/connectors/utils/provider-icons';
+import { connectorIconUrl } from '@/features/connectors/utils/provider-icons';
 import { getToolLabel } from '@/features/connectors/utils/tool-labels';
 import type { ActiveToolCall } from '@/store/tool-calls/toolCallsSlice';
 
@@ -25,7 +25,7 @@ type ToolCallChipProps = {
 export function ToolCallChip({ call }: ToolCallChipProps) {
   const t = useTranslations('chat.tool-call');
   const tLabels = useTranslations('tool-labels');
-  const iconPath = iconPathForProvider(call.provider);
+  const iconPath = connectorIconUrl(call.provider, call.iconUrl);
   const toolLabel = getToolLabel(call.toolName, tLabels);
 
   return (

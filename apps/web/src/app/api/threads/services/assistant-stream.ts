@@ -64,6 +64,7 @@ import { withPiiSystemInstruction } from '@/libs/pii/pii-system-instruction';
 import { anonymizeWithSecurityEvents } from '@/libs/pii/anonymize-with-security-events';
 import { PII_MASKING_LANGUAGE } from '@/libs/pii/masking-language';
 import { applyPiiUnmaskToTools } from '@/libs/mcp/client';
+import { connectorIconUrl } from '@/features/connectors/utils/provider-icons';
 import { toRetrievalEvent } from '@/features/threads/utils/retrieval-event';
 import { readPublicRuntimeConfig } from '@/config/public-runtime-config';
 
@@ -336,6 +337,13 @@ export async function streamEvents({
 
         let mcpTools: Record<string, any> = {};
         let mcpContext = '';
+        // Tool-name prefix → the connector it belongs to and its brand asset,
+        // sent with each `tool_call` so the chat's chip can draw the icon of
+        // a catalogue entry the client's built-in map does not know.
+        const toolConnectors = new Map<
+          string,
+          { provider: string; iconUrl: string | null }
+        >();
         let closeMcpClients: (() => Promise<void>) | undefined;
 
         try {
@@ -516,6 +524,15 @@ export async function streamEvents({
                 closeMcpClients = closeAll;
 
                 const connectorProviders = loadedProviders;
+                for (const provider of loadedProviders) {
+                  toolConnectors.set(provider.toLowerCase(), {
+                    provider,
+                    iconUrl: connectorIconUrl(
+                      provider,
+                      definitions[provider]?.iconUrl,
+                    ),
+                  });
+                }
                 const timeZone =
                   Intl.DateTimeFormat().resolvedOptions().timeZone;
                 const currentDateTime = new Date().toLocaleString('en-US', {
@@ -898,6 +915,7 @@ export async function streamEvents({
                 sendApiEvent(controller, 'tool_call', {
                   toolCallId: part.toolCallId,
                   toolName: part.toolName,
+                  ...toolConnectors.get(part.toolName.split('__')[0] ?? ''),
                 });
                 break;
               case 'tool-result':

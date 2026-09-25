@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   PROVIDER_ICON_PATHS,
+  connectorIconUrl,
   iconPathForProvider,
   providerFromToolName,
 } from '../provider-icons';
@@ -44,5 +45,22 @@ describe('PROVIDER_ICON_PATHS coverage', () => {
     // Sanity check — a new connector author should extend this map.
     expect(PROVIDER_ICON_PATHS.GOOGLE_CALENDAR).toBeTruthy();
     expect(PROVIDER_ICON_PATHS.CLICKUP).toBeTruthy();
+  });
+});
+
+describe('connectorIconUrl', () => {
+  it('draws a catalogue entry from its own row, which the built-in map lacks', () => {
+    expect(iconPathForProvider('rejestrio')).toBeNull();
+    expect(
+      connectorIconUrl('rejestrio', '/assets/connectors/rejestrio.svg'),
+    ).toBe('/assets/connectors/rejestrio.svg');
+  });
+
+  it('falls back to the built-in map, then to nothing', () => {
+    expect(connectorIconUrl('CLICKUP', null)).toBe(
+      '/assets/connectors/clickup.svg',
+    );
+    expect(connectorIconUrl('unknown', undefined)).toBeNull();
+    expect(connectorIconUrl(null)).toBeNull();
   });
 });

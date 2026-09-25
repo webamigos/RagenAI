@@ -1,6 +1,7 @@
 'use client';
 
 import type { AiUsageSummary } from '@/features/ai-usage/contracts/ai-usage.types';
+import { formatUsd } from '@/features/ai-usage/utils/format-usd';
 
 type Props = {
   summary: AiUsageSummary;
@@ -18,7 +19,7 @@ function formatTokens(n: number): string {
 }
 
 function formatCost(n: number): string {
-  return `€${n.toFixed(4)}`;
+  return formatUsd(n, 4);
 }
 
 export function AiUsageSummaryCards({ summary, isLoading }: Props) {
@@ -41,7 +42,7 @@ export function AiUsageSummaryCards({ summary, isLoading }: Props) {
       value:
         summary.totalCalls > 0
           ? formatCost(summary.totalCost / summary.totalCalls)
-          : '€0.0000',
+          : formatUsd(0, 4),
     },
   ];
 

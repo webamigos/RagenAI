@@ -173,6 +173,10 @@ export type SseMessageError = {
 export type ApiSseToolCall = {
   toolCallId: string;
   toolName: string;
+  /** The connector the tool belongs to, when the server knows it. */
+  provider?: string;
+  /** Its brand asset — a catalogue entry's, which the client map lacks. */
+  iconUrl?: string | null;
 };
 
 export type ApiSseToolResult = {
