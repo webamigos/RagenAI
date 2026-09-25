@@ -35,6 +35,13 @@ export interface PublicRuntimeConfig {
   readonly hideModelSelector: string;
   readonly demoEmail: string;
   readonly demoPassword: string;
+  /**
+   * The vendor's PostHog project key. Set on the vendor's demo deployment and
+   * nowhere else — see `providers/Telemetry/product-analytics.ts` for the
+   * second condition and why an unset key has to mean "measures nothing".
+   */
+  readonly posthogKey: string;
+  readonly posthogHost: string;
 }
 
 /**
@@ -98,6 +105,11 @@ export function readPublicRuntimeConfig(
     ),
     demoEmail: pick(env, 'DEMO_EMAIL', 'NEXT_PUBLIC_DEMO_EMAIL'),
     demoPassword: pick(env, 'DEMO_PASSWORD', 'NEXT_PUBLIC_DEMO_PASSWORD'),
+    // No NEXT_PUBLIC_ fallback: there is no legacy deployment to keep working,
+    // and a build-time name is the one way a key could end up baked into a
+    // published image.
+    posthogKey: pick(env, 'POSTHOG_KEY'),
+    posthogHost: pick(env, 'POSTHOG_HOST'),
   };
 }
 

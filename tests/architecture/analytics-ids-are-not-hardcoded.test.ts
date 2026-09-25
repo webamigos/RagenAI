@@ -36,6 +36,13 @@ import { describe, expect, it } from 'vitest';
  * `TARGET_ENV` cannot answer "is this the vendor's own deployment".
  *
  * See docs/lessons/a-hardcoded-analytics-id-tracks-every-self-hoster.md.
+ *
+ * **One deliberate exception: PostHog on the vendor's demo deployment.** It is
+ * loaded by exactly one file, `apps/web/src/providers/Telemetry/product-analytics.ts`,
+ * through a dynamic `import()`, and only when `POSTHOG_KEY` is set *and*
+ * `TARGET_ENV` is `demo`. The key is a deployment secret on Railway, never a
+ * literal here — which is what keeps a self-hosted install measuring nobody.
+ * The last `describe` below holds the exception to that shape.
  */
 
 const REPO_ROOT = join(import.meta.dirname, '..', '..');
@@ -46,7 +53,7 @@ const REPO_ROOT = join(import.meta.dirname, '..', '..');
  * property (`UA-`) and a Google Ads conversion account (`AW-`).
  */
 const ANALYTICS_ID =
-  /\b(?:G-[A-Z0-9]{9,}|GTM-[A-Z0-9]{6,}|UA-\d{4,}-\d+|AW-\d{9,})\b/;
+  /\b(?:G-[A-Z0-9]{9,}|GTM-[A-Z0-9]{6,}|UA-\d{4,}-\d+|AW-\d{9,}|phc_[A-Za-z0-9]{20,})\b/;
 
 /**
  * The browser-side entry points that load one, for the case where an id
@@ -156,6 +163,10 @@ describe('the patterns themselves', () => {
     expect(ANALYTICS_ID.test("trackingID: 'G-1A2B3C4D5E'")).toBe(true);
     expect(ANALYTICS_ID.test("'UA-123456-1'")).toBe(true);
     expect(ANALYTICS_ID.test("'AW-123456789'")).toBe(true);
+    // PostHog's project key, the one id the demo exception uses.
+    expect(
+      ANALYTICS_ID.test("'phc_y3WhcSaG5t3MFxjPLJ386JFfjU2Y6dKgbYAJ'"),
+    ).toBe(true);
   });
 
   it('do not match ordinary hyphenated words', () => {
@@ -176,5 +187,75 @@ describe('the patterns themselves', () => {
     // The prose in layout.tsx writes the removed id as `GTM-…`, which must not
     // read as an id — otherwise the explanation would trip the rule.
     expect(ANALYTICS_ID.test('gtmId="GTM-…"')).toBe(false);
+  });
+});
+
+/**
+ * The demo exception, held to its shape. PostHog may reach the product apps
+ * only through the one gated module, and only lazily — a static import would
+ * put the SDK in every install's bundle even while it stayed switched off.
+ */
+const POSTHOG_MODULE = 'apps/web/src/providers/Telemetry/product-analytics.ts';
+const POSTHOG_VALUE_IMPORT =
+  /(?:^|\n)\s*import\s+(?!type\b)[^;]*?from\s+['"]posthog-js(?:\/[^'"]*)?['"]|\brequire\(\s*['"]posthog-js/;
+const POSTHOG_ANY_IMPORT = /['"]posthog-js(?:\/[^'"]*)?['"]/;
+
+describe('PostHog on the demo deployment', () => {
+  it('is imported by one module only', () => {
+    const importers = files
+      .filter(({ code }) => POSTHOG_ANY_IMPORT.test(code))
+      .map(({ path }) => path);
+
+    expect(importers).toEqual([POSTHOG_MODULE]);
+  });
+
+  it('is never a static value import, so other installs never download it', () => {
+    const offenders = files
+      .filter(({ code }) => POSTHOG_VALUE_IMPORT.test(code))
+      .map(({ path }) => path);
+
+    expect(offenders).toEqual([]);
+  });
+
+  it('is gated on both the key and the demo environment', () => {
+    const module = files.find(({ path }) => path === POSTHOG_MODULE);
+
+    expect(module?.code).toMatch(/import\(\s*['"]posthog-js['"]\s*\)/);
+    expect(module?.code).toMatch(/posthogKey !== ''/);
+    expect(module?.code).toMatch(/targetEnv === 'demo'/);
+  });
+
+  it('is a dependency of apps/web alone', () => {
+    const dependents = ['apps', 'packages']
+      .flatMap((root) =>
+        readdirSync(join(REPO_ROOT, root)).map((name) => join(root, name)),
+      )
+      .filter((dir) => {
+        try {
+          const manifest = JSON.parse(
+            readFileSync(join(REPO_ROOT, dir, 'package.json'), 'utf8'),
+          );
+          return Boolean(
+            manifest.dependencies?.['posthog-js'] ??
+              manifest.devDependencies?.['posthog-js'],
+          );
+        } catch {
+          return false;
+        }
+      });
+
+    expect(dependents).toEqual(['apps/web']);
+  });
+
+  it('pattern catches a static import and ignores a type-only one', () => {
+    expect(POSTHOG_VALUE_IMPORT.test("import posthog from 'posthog-js';")).toBe(
+      true,
+    );
+    expect(
+      POSTHOG_VALUE_IMPORT.test("import { PostHogProvider } from 'posthog-js/react';"),
+    ).toBe(true);
+    expect(
+      POSTHOG_VALUE_IMPORT.test("import type { PostHogConfig } from 'posthog-js';"),
+    ).toBe(false);
   });
 });

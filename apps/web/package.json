@@ -58,6 +58,7 @@
     "fflate": "^0.8.2",
     "graphology": "^0.26.0",
     "graphology-layout-forceatlas2": "^0.10.1",
+    "posthog-js": "^1.434.13",
     "sigma": "^3.0.3",
     "yaml": "^2.9.0"
   },

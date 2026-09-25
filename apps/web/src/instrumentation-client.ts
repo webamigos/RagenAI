@@ -19,6 +19,7 @@ import { resourceFromAttributes } from '@opentelemetry/resources';
 import { UserContextSpanProcessor } from '@/libs/monitoring/otel-user-context';
 import { initWebVitals } from '@/providers/Telemetry/web-vitals';
 import { initErrorTracking } from '@/providers/Telemetry/error-tracking';
+import { initProductAnalytics } from '@/providers/Telemetry/product-analytics';
 
 /**
  * Read from the document rather than from the bundle.
@@ -78,6 +79,10 @@ if (COLLECTOR_URL) {
   initWebVitals();
   initErrorTracking();
 }
+
+// Independent of the collector above, and a no-op outside the vendor's demo
+// deployment — the conditions are in product-analytics.ts.
+void initProductAnalytics();
 
 export function onRouterTransitionStart(
   url: string,
