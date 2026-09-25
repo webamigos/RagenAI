@@ -82,6 +82,14 @@ describe('getKnowledgePagesQuery', () => {
     expect(db.knowledgePage.count.mock.calls[0][0].where).toEqual(where);
   });
 
+  it('searches for what was typed, not for a LIKE pattern', async () => {
+    await getKnowledgePagesQuery(ORG, null, 1, null, '50%_off\\');
+    expect(db.knowledgePage.findMany.mock.calls[0][0].where.title).toEqual({
+      contains: '50\\%\\_off\\\\',
+      mode: 'insensitive',
+    });
+  });
+
   it('counts distinct documents and open findings per page', async () => {
     db.knowledgePage.findMany.mockResolvedValue([
       {

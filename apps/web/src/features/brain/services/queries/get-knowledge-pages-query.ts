@@ -28,7 +28,12 @@ export async function getKnowledgePagesQuery(
     ...(scope ? { id: { in: scope.pageIds } } : {}),
     // Part of a title, any case: 126 pages is past reading the list.
     ...(search
-      ? { title: { contains: search, mode: 'insensitive' as const } }
+      ? {
+          title: {
+            contains: likeLiteral(search),
+            mode: 'insensitive' as const,
+          },
+        }
       : {}),
   };
   const [rows, total] = await Promise.all([
@@ -87,4 +92,13 @@ export async function getKnowledgePagesQuery(
       updatedAt: r.updatedAt.toISOString(),
     })),
   };
+}
+
+/**
+ * The search as literal text. Prisma turns `contains` into ILIKE without
+ * escaping, so "50%" would match any title with a 50 in it and "nr_1" any
+ * "nr" followed by a character and a 1. Backslash is ILIKE's default escape.
+ */
+export function likeLiteral(text: string): string {
+  return text.replace(/[\\%_]/g, (c) => `\\${c}`);
 }
