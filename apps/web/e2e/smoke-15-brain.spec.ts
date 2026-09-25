@@ -103,8 +103,12 @@ test.describe('Ragen Brain panel (smoke)', () => {
     await expect(page).toHaveURL(
       new RegExp(`/brain/pages/${TEST_BRAIN_PAGE_PUBLIC_ID}$`),
     );
-    // The graph is still there under it, with the page still picked.
+    // The graph is still there under it, with the page still picked — and
+    // the tabs still say Graph, although the address is the page's.
     await expect(page.getByTestId('brain-graph')).toBeVisible();
+    await expect(
+      page.getByRole('link', { name: 'Graf', exact: true }),
+    ).toHaveAttribute('aria-current', 'page');
     await expect(card).toContainText(TEST_BRAIN_PAGE_TITLE);
 
     await drawer.getByTestId('brain-page-drawer-close').click();

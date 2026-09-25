@@ -111,6 +111,8 @@ const Tab = ({
       className,
     )}
     onClick={onClick}
+    // The active tab says so, not only by its weight and fill.
+    aria-current={isActive ? 'page' : undefined}
     {...props}
   >
     {children}
