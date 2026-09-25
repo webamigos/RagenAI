@@ -207,7 +207,9 @@ archive is the blog.
 - `[brief]` **An organization can be set so nobody deletes a thread.** A new
   "Delete threads" switch in the admin panel, on by default. The demo turns it
   off, so its example conversations stay for every visitor; the thread menu no
-  longer offers "Delete" there, and the server refuses it either way. A thread
+  longer offers "Delete" there, and the server refuses it either way — the
+  public API too, which answers `DELETE /v1/threads/{id}` and deleting a single
+  message with 403. A thread
   whose delete fails now stays in the sidebar with an error, instead of
   vanishing until the page is reloaded.
 
