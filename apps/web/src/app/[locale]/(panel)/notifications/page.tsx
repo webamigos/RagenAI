@@ -143,13 +143,14 @@ export default function NotificationsPage() {
   const isFirstLoad = loading && notifications.length === 0;
 
   return (
-    // `w-full min-w-0`, not `mx-auto max-w-2xl`: the panel caps content at
-    // 1120px and left-aligns it (panel-ux-rules 2). The old centred 672px
-    // column clipped the filter chips; and without `min-w-0` the page, a
-    // flex child, grew to the width of its widest row at 375px and the whole
-    // panel scrolled sideways.
+    // Full width, like the other list screens (`data-panel-fullwidth`, the
+    // shell's opt-in in global.css): capped at 1120px the list sat in the
+    // left half of a wide screen with the rest of it empty. `min-w-0` stays:
+    // without it the page, a flex child, grew to its widest row at 375px and
+    // the whole panel scrolled sideways.
     <div
-      className="w-full min-w-0 max-w-[1120px]"
+      className="w-full min-w-0"
+      data-panel-fullwidth
       data-testid="notifications-page"
     >
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
