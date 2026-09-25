@@ -64,6 +64,9 @@ export function communityColour(id: number): {
  */
 const SMALL_GRAPH = 20;
 
+/** How far the pointer travels, in pixels, before a press on a page is a drag rather than a click. */
+export const DRAG_THRESHOLD_PX = 4;
+
 /** Up to this many pages the layout is spread for legibility (see `scalingRatio`). */
 const MEDIUM_GRAPH = 200;
 
@@ -363,6 +366,7 @@ export function BrainGraphCanvas({ view }: { view: BrainGraphView }) {
         // where they are put for this view; nothing is saved.
         let dragged: string | null = null;
         let moved = false;
+        let pressedAt: { x: number; y: number } | null = null;
         sigmaRenderer.on('downNode', ({ node, event }) => {
           // The primary button only: Sigma emits `downNode` for a right
           // press too but no `mouseup` for it, which left the page stuck to
@@ -373,6 +377,7 @@ export function BrainGraphCanvas({ view }: { view: BrainGraphView }) {
           }
           dragged = node;
           moved = false;
+          pressedAt = { x: event.x, y: event.y };
           // Freeze the frame: without a fixed box Sigma refits the camera to
           // the nodes on every move, and the graph drifts under the cursor.
           if (!sigmaRenderer.getCustomBBox()) {
@@ -382,6 +387,18 @@ export function BrainGraphCanvas({ view }: { view: BrainGraphView }) {
         const captor = sigmaRenderer.getMouseCaptor();
         captor.on('mousemovebody', (event) => {
           if (!dragged) {
+            return;
+          }
+          // A hand that shifts a pixel or two while clicking is clicking:
+          // counting that as a drag swallowed the pick, and the card never
+          // opened. Past the threshold the page follows the pointer.
+          if (
+            !moved &&
+            pressedAt &&
+            Math.hypot(event.x - pressedAt.x, event.y - pressedAt.y) <
+              DRAG_THRESHOLD_PX
+          ) {
+            event.preventSigmaDefault();
             return;
           }
           moved = true;
@@ -425,8 +442,18 @@ export function BrainGraphCanvas({ view }: { view: BrainGraphView }) {
         if (roomy) {
           sigmaRenderer.getCamera().setState({ x: 0.62, y: 0.5, ratio: 1.32 });
         }
+        // Sigma sizes its canvases from the container but only re-reads it on
+        // a window resize. Opening the assistant narrows the container, not
+        // the window, and the canvas kept its old width — drawn over the
+        // legend beside it.
+        const resizes =
+          typeof ResizeObserver === 'undefined'
+            ? null
+            : new ResizeObserver(() => sigmaRenderer.refresh());
+        resizes?.observe(container.current);
         renderer.current = sigmaRenderer;
         kill = () => {
+          resizes?.disconnect();
           renderer.current = null;
           sigmaRenderer.kill();
         };
@@ -481,286 +508,294 @@ export function BrainGraphCanvas({ view }: { view: BrainGraphView }) {
     : [];
 
   return (
-    <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
-      {/* What the assistant beside Brain is told the operator is looking at. */}
-      <BrainScreen
-        context={{
-          view: 'graph',
-          ...(view.focus ? { focusPageId: view.focus } : {}),
-          ...(selected ? { selectedPageId: selected.id } : {}),
-          ...(communityFilter !== null ? { communityFilter } : {}),
-        }}
-      />
-      <div className="relative">
-        <div
-          ref={container}
-          data-testid="brain-graph"
-          role="img"
-          aria-label={t('canvas-label', {
-            nodes: view.shown.nodes,
-            edges: view.shown.edges,
-          })}
-          // As tall as the window allows, never under 600px: a fixed height
-          // left a large graph cramped on a tall screen.
-          className="h-[calc(100svh-15rem)] min-h-[600px] w-full rounded-[6px] border border-border bg-background"
+    // The legend moves beside the canvas by the room this screen has, not the
+    // window's: with the assistant open a wide window still leaves too little
+    // for both columns.
+    <div className="@container">
+      <div className="grid gap-4 @4xl:grid-cols-[minmax(0,1fr)_320px]">
+        {/* What the assistant beside Brain is told the operator is looking at. */}
+        <BrainScreen
+          context={{
+            view: 'graph',
+            ...(view.focus ? { focusPageId: view.focus } : {}),
+            ...(selected ? { selectedPageId: selected.id } : {}),
+            ...(communityFilter !== null ? { communityFilter } : {}),
+          }}
         />
-        {failed && (
-          <p className="absolute inset-x-0 top-4 text-center text-sm text-muted-foreground">
-            {t('failed')}
-          </p>
-        )}
-        {!failed && (
-          <>
-            {/*
+        <div className="relative">
+          <div
+            ref={container}
+            data-testid="brain-graph"
+            role="img"
+            aria-label={t('canvas-label', {
+              nodes: view.shown.nodes,
+              edges: view.shown.edges,
+            })}
+            // As tall as the window allows, never under 600px: a fixed height
+            // left a large graph cramped on a tall screen.
+            className="h-[calc(100svh-15rem)] min-h-[600px] w-full overflow-hidden rounded-[6px] border border-border bg-background"
+          />
+          {failed && (
+            <p className="absolute inset-x-0 top-4 text-center text-sm text-muted-foreground">
+              {t('failed')}
+            </p>
+          )}
+          {!failed && (
+            <>
+              {/*
               Finding one page among forty by eye was the slowest thing on
               this screen. Type part of a title; picking a result selects the
               page and flies the camera to it.
             */}
-            <div className="absolute left-3 top-3 w-72">
-              <input
-                type="search"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && matches[0]) {
-                    flyTo(matches[0]);
-                  }
-                  if (e.key === 'Escape') {
-                    setQuery('');
-                  }
-                }}
-                placeholder={t('search-placeholder')}
-                aria-label={t('search-placeholder')}
-                data-testid="brain-graph-search"
-                className="w-full rounded-md border border-border bg-card px-3 py-1.5 text-sm text-foreground shadow-sm placeholder:text-muted-foreground"
-              />
-              {query.trim().length >= 2 && (
-                <ul
-                  className="mt-1 max-h-72 overflow-y-auto rounded-md border border-border bg-card py-1 text-sm shadow-md"
-                  data-testid="brain-graph-search-results"
-                >
-                  {matches.length === 0 ? (
-                    <li className="px-3 py-1.5 text-muted-foreground">
-                      {t('search-empty')}
-                    </li>
-                  ) : (
-                    matches.map((node) => (
-                      <li key={node.id}>
-                        <button
-                          type="button"
-                          onClick={() => flyTo(node)}
-                          className="w-full truncate px-3 py-1.5 text-left text-foreground hover:bg-muted"
-                        >
-                          {node.title}
-                        </button>
+              <div className="absolute left-3 top-3 w-72">
+                <input
+                  type="search"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && matches[0]) {
+                      flyTo(matches[0]);
+                    }
+                    if (e.key === 'Escape') {
+                      setQuery('');
+                    }
+                  }}
+                  placeholder={t('search-placeholder')}
+                  aria-label={t('search-placeholder')}
+                  data-testid="brain-graph-search"
+                  className="w-full rounded-md border border-border bg-card px-3 py-1.5 text-sm text-foreground shadow-sm placeholder:text-muted-foreground"
+                />
+                {query.trim().length >= 2 && (
+                  <ul
+                    className="mt-1 max-h-72 overflow-y-auto rounded-md border border-border bg-card py-1 text-sm shadow-md"
+                    data-testid="brain-graph-search-results"
+                  >
+                    {matches.length === 0 ? (
+                      <li className="px-3 py-1.5 text-muted-foreground">
+                        {t('search-empty')}
                       </li>
-                    ))
-                  )}
-                </ul>
+                    ) : (
+                      matches.map((node) => (
+                        <li key={node.id}>
+                          <button
+                            type="button"
+                            onClick={() => flyTo(node)}
+                            className="w-full truncate px-3 py-1.5 text-left text-foreground hover:bg-muted"
+                          >
+                            {node.title}
+                          </button>
+                        </li>
+                      ))
+                    )}
+                  </ul>
+                )}
+              </div>
+              <div className="absolute right-3 top-3 flex flex-col gap-1">
+                <button
+                  type="button"
+                  className={controlClass}
+                  aria-label={t('zoom-in')}
+                  title={t('zoom-in')}
+                  onClick={() =>
+                    void renderer.current
+                      ?.getCamera()
+                      .animatedZoom({ duration: 200 })
+                  }
+                >
+                  <MagnifyingGlassPlusIcon className="size-4" />
+                </button>
+                <button
+                  type="button"
+                  className={controlClass}
+                  aria-label={t('zoom-out')}
+                  title={t('zoom-out')}
+                  onClick={() =>
+                    void renderer.current
+                      ?.getCamera()
+                      .animatedUnzoom({ duration: 200 })
+                  }
+                >
+                  <MagnifyingGlassMinusIcon className="size-4" />
+                </button>
+                <button
+                  type="button"
+                  className={controlClass}
+                  aria-label={t('zoom-fit')}
+                  title={t('zoom-fit')}
+                  onClick={() =>
+                    void renderer.current
+                      ?.getCamera()
+                      .animatedReset({ duration: 300 })
+                  }
+                >
+                  <ArrowsPointingOutIcon className="size-4" />
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+        <aside className="space-y-4 text-sm">
+          {selected ? (
+            <div
+              className="rounded-[6px] border border-border p-3"
+              data-testid="brain-graph-card"
+            >
+              <p className="font-medium text-foreground">{selected.title}</p>
+              {selected.openFindings > 0 && (
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {t('open-findings', { count: selected.openFindings })}
+                </p>
               )}
-            </div>
-            <div className="absolute right-3 top-3 flex flex-col gap-1">
-              <button
-                type="button"
-                className={controlClass}
-                aria-label={t('zoom-in')}
-                title={t('zoom-in')}
-                onClick={() =>
-                  void renderer.current
-                    ?.getCamera()
-                    .animatedZoom({ duration: 200 })
-                }
-              >
-                <MagnifyingGlassPlusIcon className="size-4" />
-              </button>
-              <button
-                type="button"
-                className={controlClass}
-                aria-label={t('zoom-out')}
-                title={t('zoom-out')}
-                onClick={() =>
-                  void renderer.current
-                    ?.getCamera()
-                    .animatedUnzoom({ duration: 200 })
-                }
-              >
-                <MagnifyingGlassMinusIcon className="size-4" />
-              </button>
-              <button
-                type="button"
-                className={controlClass}
-                aria-label={t('zoom-fit')}
-                title={t('zoom-fit')}
-                onClick={() =>
-                  void renderer.current
-                    ?.getCamera()
-                    .animatedReset({ duration: 300 })
-                }
-              >
-                <ArrowsPointingOutIcon className="size-4" />
-              </button>
-            </div>
-          </>
-        )}
-      </div>
-      <aside className="space-y-4 text-sm">
-        {selected ? (
-          <div
-            className="rounded-[6px] border border-border p-3"
-            data-testid="brain-graph-card"
-          >
-            <p className="font-medium text-foreground">{selected.title}</p>
-            {selected.openFindings > 0 && (
-              <p className="mt-1 text-xs text-muted-foreground">
-                {t('open-findings', { count: selected.openFindings })}
-              </p>
-            )}
-            <ul className="mt-2 space-y-2 text-sm">
-              {/*
+              <ul className="mt-2 space-y-2 text-sm">
+                {/*
                 One relation per row, read as a sentence: the page it points
                 at first and in full, the kind of relation above it with the
                 direction, and its origin as the legend's line — the words are
                 the line's tooltip and its screen-reader text, not a phrase
                 repeated on every row.
               */}
-              {relations.map(({ edge, other }, i) => {
-                const outgoing = edge.from === selected.id;
-                return (
-                  <li
-                    key={i}
-                    data-testid="brain-graph-relation"
-                    className="flex items-start gap-2"
-                  >
-                    <span title={t(`origin.${edge.origin}`)}>
-                      <EdgeSwatch origin={edge.origin} />
-                      <span className="sr-only">
-                        {t(`origin.${edge.origin}`)}
+                {relations.map(({ edge, other }, i) => {
+                  const outgoing = edge.from === selected.id;
+                  return (
+                    <li
+                      key={i}
+                      data-testid="brain-graph-relation"
+                      className="flex items-start gap-2"
+                    >
+                      <span title={t(`origin.${edge.origin}`)}>
+                        <EdgeSwatch origin={edge.origin} />
+                        <span className="sr-only">
+                          {t(`origin.${edge.origin}`)}
+                        </span>
                       </span>
-                    </span>
-                    <div className="min-w-0">
-                      <p className="text-xs text-muted-foreground">
-                        {outgoing ? `${edge.kind} →` : `← ${edge.kind}`}
-                      </p>
-                      {other ? (
-                        <button
-                          type="button"
-                          onClick={() => flyTo(other)}
-                          className="text-left text-foreground underline-offset-4 hover:underline"
-                        >
-                          {other.title}
-                        </button>
-                      ) : (
-                        <span className="text-muted-foreground">—</span>
-                      )}
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-            <div className="mt-3 flex flex-col gap-1">
-              <Link
-                href={`/brain/pages/${selected.id}`}
-                className="text-primary underline-offset-4 hover:underline"
-              >
-                {t('open-page')}
-              </Link>
-              <Link
-                href={`/brain/graph?focus=${selected.id}&budget=${view.budget}${view.includeInferred ? '&inferred=1' : ''}`}
-                className="text-primary underline-offset-4 hover:underline"
-              >
-                {t('show-neighbourhood')}
-              </Link>
+                      <div className="min-w-0">
+                        <p className="text-xs text-muted-foreground">
+                          {outgoing ? `${edge.kind} →` : `← ${edge.kind}`}
+                        </p>
+                        {other ? (
+                          <button
+                            type="button"
+                            onClick={() => flyTo(other)}
+                            className="text-left text-foreground underline-offset-4 hover:underline"
+                          >
+                            {other.title}
+                          </button>
+                        ) : (
+                          <span className="text-muted-foreground">—</span>
+                        )}
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+              <div className="mt-3 flex flex-col gap-1">
+                <Link
+                  href={`/brain/pages/${selected.id}`}
+                  className="text-primary underline-offset-4 hover:underline"
+                >
+                  {t('open-page')}
+                </Link>
+                <Link
+                  href={`/brain/graph?focus=${selected.id}&budget=${view.budget}${view.includeInferred ? '&inferred=1' : ''}`}
+                  className="text-primary underline-offset-4 hover:underline"
+                >
+                  {t('show-neighbourhood')}
+                </Link>
+              </div>
             </div>
-          </div>
-        ) : (
-          <p className="text-muted-foreground">{t('select-hint')}</p>
-        )}
-        <div>
-          <h3 className="mb-1 text-xs font-medium uppercase text-muted-foreground">
-            {t('legend-title')}
-          </h3>
-          {/*
+          ) : (
+            <p className="text-muted-foreground">{t('select-hint')}</p>
+          )}
+          <div>
+            <h3 className="mb-1 text-xs font-medium uppercase text-muted-foreground">
+              {t('legend-title')}
+            </h3>
+            {/*
             Each line is shown, not described: the swatch is drawn from the
             same width and colour as the canvas, and the text says only what
             the line means.
           */}
-          <ul className="space-y-1.5 text-xs" data-testid="brain-graph-legend">
-            {(
-              [
-                ['EXTRACTED', 'legend-extracted'],
-                ['AMBIGUOUS', 'legend-ambiguous'],
-                ['INFERRED', 'legend-inferred'],
-              ] as const
-            ).map(([origin, key]) => (
-              <li key={origin} className="flex items-start gap-2">
-                <EdgeSwatch origin={origin} />
-                <span>{t(key)}</span>
+            <ul
+              className="space-y-1.5 text-xs"
+              data-testid="brain-graph-legend"
+            >
+              {(
+                [
+                  ['EXTRACTED', 'legend-extracted'],
+                  ['AMBIGUOUS', 'legend-ambiguous'],
+                  ['INFERRED', 'legend-inferred'],
+                ] as const
+              ).map(([origin, key]) => (
+                <li key={origin} className="flex items-start gap-2">
+                  <EdgeSwatch origin={origin} />
+                  <span>{t(key)}</span>
+                </li>
+              ))}
+              <li className="flex items-start gap-2">
+                <FindingSwatch />
+                <span>{t('legend-findings')}</span>
               </li>
-            ))}
-            <li className="flex items-start gap-2">
-              <FindingSwatch />
-              <span>{t('legend-findings')}</span>
-            </li>
-          </ul>
-        </div>
-        {view.communities.some((c) => c.size > 1) && (
-          <div>
-            <h3 className="mb-1 text-xs font-medium uppercase text-muted-foreground">
-              {t('communities-title')}
-            </h3>
-            {/*
+            </ul>
+          </div>
+          {view.communities.some((c) => c.size > 1) && (
+            <div>
+              <h3 className="mb-1 text-xs font-medium uppercase text-muted-foreground">
+                {t('communities-title')}
+              </h3>
+              {/*
               A group is a filter: picking one dims every page outside it,
               picking it again brings them back.
             */}
-            <ul className="space-y-0.5 text-xs text-muted-foreground">
-              {view.communities
-                .filter((c) => c.size > 1)
-                .slice(0, 8)
-                .map((c) => (
-                  <li key={c.id}>
-                    <button
-                      type="button"
-                      aria-pressed={communityFilter === c.id}
-                      onClick={() =>
-                        setCommunityFilter((current) =>
-                          current === c.id ? null : c.id,
-                        )
-                      }
-                      className={`flex w-full items-center gap-1.5 rounded px-1 py-0.5 text-left hover:bg-muted hover:text-foreground ${
-                        communityFilter === c.id
-                          ? 'bg-muted font-medium text-foreground'
-                          : ''
-                      }`}
-                    >
-                      <span
-                        aria-hidden="true"
-                        className="inline-block size-2 shrink-0 rounded-full"
-                        style={{
-                          background: (() => {
-                            const { token, alpha } = communityColour(c.id);
-                            return alpha === 1
-                              ? `var(${token})`
-                              : `color-mix(in srgb, var(${token}) ${alpha * 100}%, var(--background))`;
-                          })(),
-                        }}
-                      />
-                      {t('community', { label: c.label, size: c.size })}
-                    </button>
-                  </li>
-                ))}
-            </ul>
-            {communityFilter !== null && (
-              <button
-                type="button"
-                onClick={() => setCommunityFilter(null)}
-                className="mt-1 px-1 text-xs text-primary underline-offset-4 hover:underline"
-              >
-                {t('show-all-groups')}
-              </button>
-            )}
-          </div>
-        )}
-      </aside>
+              <ul className="space-y-0.5 text-xs text-muted-foreground">
+                {view.communities
+                  .filter((c) => c.size > 1)
+                  .slice(0, 8)
+                  .map((c) => (
+                    <li key={c.id}>
+                      <button
+                        type="button"
+                        aria-pressed={communityFilter === c.id}
+                        onClick={() =>
+                          setCommunityFilter((current) =>
+                            current === c.id ? null : c.id,
+                          )
+                        }
+                        className={`flex w-full items-center gap-1.5 rounded px-1 py-0.5 text-left hover:bg-muted hover:text-foreground ${
+                          communityFilter === c.id
+                            ? 'bg-muted font-medium text-foreground'
+                            : ''
+                        }`}
+                      >
+                        <span
+                          aria-hidden="true"
+                          className="inline-block size-2 shrink-0 rounded-full"
+                          style={{
+                            background: (() => {
+                              const { token, alpha } = communityColour(c.id);
+                              return alpha === 1
+                                ? `var(${token})`
+                                : `color-mix(in srgb, var(${token}) ${alpha * 100}%, var(--background))`;
+                            })(),
+                          }}
+                        />
+                        {t('community', { label: c.label, size: c.size })}
+                      </button>
+                    </li>
+                  ))}
+              </ul>
+              {communityFilter !== null && (
+                <button
+                  type="button"
+                  onClick={() => setCommunityFilter(null)}
+                  className="mt-1 px-1 text-xs text-primary underline-offset-4 hover:underline"
+                >
+                  {t('show-all-groups')}
+                </button>
+              )}
+            </div>
+          )}
+        </aside>
+      </div>
     </div>
   );
 }
@@ -770,7 +805,7 @@ export function BrainGraphCanvas({ view }: { view: BrainGraphView }) {
  * into one pixel and read back, which works for any colour syntax the
  * browser supports — oklch included — without a colour library.
  */
-function tokenColours(el: HTMLElement) {
+export function tokenColours(el: HTMLElement) {
   const style = getComputedStyle(el);
   const canvas = document.createElement('canvas');
   canvas.width = 1;
@@ -782,6 +817,14 @@ function tokenColours(el: HTMLElement) {
       return `rgba(128,128,128,${alpha})`;
     }
     ctx.clearRect(0, 0, 1, 1);
+    // Painted over the page background: a translucent token — dark mode's
+    // `--border` is white at 10% — read back without its alpha is pure
+    // white, and every dimmed page lit up instead of fading.
+    const background = style.getPropertyValue('--background').trim();
+    if (background) {
+      ctx.fillStyle = background;
+      ctx.fillRect(0, 0, 1, 1);
+    }
     ctx.fillStyle = value;
     ctx.fillRect(0, 0, 1, 1);
     const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data;
