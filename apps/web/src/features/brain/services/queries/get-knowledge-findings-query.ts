@@ -1,4 +1,8 @@
 import db from '@ragenai/prisma-client';
+import {
+  findingsInScope,
+  type BrainLanguageScope,
+} from './brain-language-scope';
 
 import { BRAIN_LIST_LIMIT } from '../../constants';
 import { listSkip } from '../../utils/list-page';
@@ -46,10 +50,16 @@ export async function getKnowledgeFindingsQuery(
   status: KnowledgeFindingStatus,
   page = 1,
   type?: KnowledgeFindingType,
+  scope: BrainLanguageScope | null = null,
 ): Promise<KnowledgeFindingList> {
-  // `type` narrows in the database, so `total` counts every match and not
-  // one page of them.
-  const where = { organizationId: orgId, status, ...(type ? { type } : {}) };
+  // `type` and the language narrow in the database, so `total` counts every
+  // match and not one page of them.
+  const where = {
+    organizationId: orgId,
+    status,
+    ...(type ? { type } : {}),
+    ...(scope ? findingsInScope(scope) : {}),
+  };
   const [rows, total] = await Promise.all([
     db.knowledgeFinding.findMany({
       where,

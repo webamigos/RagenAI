@@ -1,11 +1,13 @@
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
+import { getBrainLanguagesQuery } from '@/features/brain/services/queries/brain-language-scope';
 import { getBrainAccessQuery } from '@/features/brain/services/queries/get-brain-access-query';
 import { getExtractableDocumentsQuery } from '@/features/brain/services/queries/get-extractable-documents-query';
 
 import { BrainTabs } from './components/BrainTabs';
 import { ExtractDialog } from './components/ExtractDialog';
+import { LanguageFilter } from './components/LanguageFilter';
 import { BrainScreenProvider } from './components/assistant/BrainAssistantContext';
 import {
   BrainAssistantShell,
@@ -29,11 +31,12 @@ export default async function BrainLayout({
   if (!access) {
     notFound();
   }
-  const [t, documents] = await Promise.all([
+  const [t, documents, languages] = await Promise.all([
     getTranslations('brain'),
     access.canWrite
       ? getExtractableDocumentsQuery(access.orgId)
       : Promise.resolve([]),
+    getBrainLanguagesQuery(access.orgId),
   ]);
 
   return (
@@ -77,7 +80,7 @@ export default async function BrainLayout({
               {t('read-only.notice')}
             </p>
           )}
-          <BrainTabs />
+          <BrainTabs aside={<LanguageFilter languages={languages} />} />
           {children}
         </div>
       </BrainAssistantShell>

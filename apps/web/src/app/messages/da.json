@@ -2494,7 +2494,9 @@
         "documents": "Dokumenter",
         "findings": "Åbne fund",
         "updated": "Ændret"
-      }
+      },
+      "empty-in-language-title": "Intet på dette sprog",
+      "empty-in-language-description": "Intet dokument på dette sprog, eller ingen side, der citerer et. Vælg et andet sprog eller dem alle."
     },
     "findings": {
       "columns": {
@@ -2725,7 +2727,9 @@
         "EXTRACTED": "Angivet i en kilde",
         "INFERRED": "Udledt af modellen",
         "AMBIGUOUS": "Usikker"
-      }
+      },
+      "empty-in-language-title": "Intet på dette sprog",
+      "empty-in-language-description": "Intet dokument på dette sprog, eller ingen side, der citerer et. Vælg et andet sprog eller dem alle."
     },
     "export": {
       "ready": "Klar til eksport: {count}",
@@ -2766,7 +2770,8 @@
         "approved": "Godkendte sider",
         "candidates": "Kandidater",
         "retrieval": "Søgning",
-        "actions": "Handlinger"
+        "actions": "Handlinger",
+        "language": "Sprog"
       },
       "retrieval": {
         "in": "Søgbart",
@@ -2797,7 +2802,10 @@
       "upload-failed": "Uploaden mislykkedes — tjek filen, og prøv igen.",
       "staged-summary": "I Brain, uden for søgning: {count} · uden godkendt side: {uncurated}",
       "uploaded-partly": "{uploaded} af {total} uploadet til Brain; resten mislykkedes",
-      "staged-oldest": "ældste uploadet {when}"
+      "staged-oldest": "ældste uploadet {when}",
+      "language-none": "Ikke genkendt",
+      "empty-in-language-title": "Intet på dette sprog",
+      "empty-in-language-description": "Intet dokument på dette sprog, eller ingen side, der citerer et. Vælg et andet sprog eller dem alle."
     },
     "publish-all": {
       "button": "Udgiv godkendte ({count})",
@@ -2914,6 +2922,12 @@
       "is-part-of": "er en del af",
       "references": "henviser til",
       "depends-on": "afhænger af"
+    },
+    "language": {
+      "label": "Sprog",
+      "all": "Alle sprog",
+      "none": "Ikke genkendt",
+      "option": "{name} ({count})"
     }
   },
   "project-context-manager": {

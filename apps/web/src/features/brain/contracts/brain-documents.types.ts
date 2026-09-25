@@ -17,6 +17,8 @@ export type BrainDocument = {
   retrieval: 'in' | 'staged' | 'withdrawn' | 'processing' | 'failed';
   /** When the file was uploaded (ISO) — how long a staged one has waited. */
   uploadedAt: string | null;
+  /** ISO 639-3, as detected at ingest; null when it could not be told. */
+  language: string | null;
 };
 
 export const sourceDocumentInputSchema = z.object({ fileId: dbUuid });

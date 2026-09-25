@@ -2494,7 +2494,9 @@
         "documents": "Dokument",
         "findings": "Öppna fynd",
         "updated": "Ändrad"
-      }
+      },
+      "empty-in-language-title": "Inget på det här språket",
+      "empty-in-language-description": "Inget dokument på det här språket, eller ingen sida som citerar ett. Välj ett annat språk eller alla."
     },
     "findings": {
       "columns": {
@@ -2725,7 +2727,9 @@
         "EXTRACTED": "Anges i en källa",
         "INFERRED": "Härledd av modellen",
         "AMBIGUOUS": "Osäker"
-      }
+      },
+      "empty-in-language-title": "Inget på det här språket",
+      "empty-in-language-description": "Inget dokument på det här språket, eller ingen sida som citerar ett. Välj ett annat språk eller alla."
     },
     "export": {
       "ready": "Redo att exportera: {count}",
@@ -2766,7 +2770,8 @@
         "approved": "Godkända sidor",
         "candidates": "Kandidater",
         "retrieval": "Sökning",
-        "actions": "Åtgärder"
+        "actions": "Åtgärder",
+        "language": "Språk"
       },
       "retrieval": {
         "in": "Sökbart",
@@ -2797,7 +2802,10 @@
       "upload-failed": "Uppladdningen misslyckades — kontrollera filen och försök igen.",
       "staged-summary": "I Brain, utanför sökningen: {count} · utan godkänd sida: {uncurated}",
       "uploaded-partly": "{uploaded} av {total} uppladdade till Brain; resten misslyckades",
-      "staged-oldest": "äldsta uppladdad {when}"
+      "staged-oldest": "äldsta uppladdad {when}",
+      "language-none": "Inte identifierat",
+      "empty-in-language-title": "Inget på det här språket",
+      "empty-in-language-description": "Inget dokument på det här språket, eller ingen sida som citerar ett. Välj ett annat språk eller alla."
     },
     "publish-all": {
       "button": "Publicera godkända ({count})",
@@ -2914,6 +2922,12 @@
       "is-part-of": "är en del av",
       "references": "hänvisar till",
       "depends-on": "beror på"
+    },
+    "language": {
+      "label": "Språk",
+      "all": "Alla språk",
+      "none": "Inte identifierat",
+      "option": "{name} ({count})"
     }
   },
   "project-context-manager": {

@@ -2494,7 +2494,9 @@
         "documents": "Dokumentumok",
         "findings": "Nyitott észrevételek",
         "updated": "Módosítva"
-      }
+      },
+      "empty-in-language-title": "Semmi ezen a nyelven",
+      "empty-in-language-description": "Nincs dokumentum ezen a nyelven, vagy nincs oldal, amely idézné. Válasszon másik nyelvet vagy az összeset."
     },
     "findings": {
       "columns": {
@@ -2725,7 +2727,9 @@
         "EXTRACTED": "Forrásban szerepel",
         "INFERRED": "A modell következtette ki",
         "AMBIGUOUS": "Bizonytalan"
-      }
+      },
+      "empty-in-language-title": "Semmi ezen a nyelven",
+      "empty-in-language-description": "Nincs dokumentum ezen a nyelven, vagy nincs oldal, amely idézné. Válasszon másik nyelvet vagy az összeset."
     },
     "export": {
       "ready": "Exportálásra kész: {count}",
@@ -2766,7 +2770,8 @@
         "approved": "Jóváhagyott oldalak",
         "candidates": "Jelöltek",
         "retrieval": "Keresés",
-        "actions": "Műveletek"
+        "actions": "Műveletek",
+        "language": "Nyelv"
       },
       "retrieval": {
         "in": "Kereshető",
@@ -2797,7 +2802,10 @@
       "upload-failed": "A feltöltés nem sikerült — ellenőrizze a fájlt, és próbálja újra.",
       "staged-summary": "A Brainben, keresésen kívül: {count} · jóváhagyott oldal nélkül: {uncurated}",
       "uploaded-partly": "{uploaded}/{total} feltöltve a Brainbe; a többi sikertelen",
-      "staged-oldest": "a legrégebbi feltöltve: {when}"
+      "staged-oldest": "a legrégebbi feltöltve: {when}",
+      "language-none": "Nem felismert",
+      "empty-in-language-title": "Semmi ezen a nyelven",
+      "empty-in-language-description": "Nincs dokumentum ezen a nyelven, vagy nincs oldal, amely idézné. Válasszon másik nyelvet vagy az összeset."
     },
     "publish-all": {
       "button": "Jóváhagyottak közzététele ({count})",
@@ -2914,6 +2922,12 @@
       "is-part-of": "része",
       "references": "hivatkozik rá",
       "depends-on": "függ tőle"
+    },
+    "language": {
+      "label": "Nyelv",
+      "all": "Minden nyelv",
+      "none": "Nem felismert",
+      "option": "{name} ({count})"
     }
   },
   "project-context-manager": {

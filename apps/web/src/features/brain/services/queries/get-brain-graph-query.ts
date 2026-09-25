@@ -5,6 +5,7 @@ import {
   type GraphBudget,
 } from '@ragenai/brain-core';
 import db from '@ragenai/prisma-client';
+import type { BrainLanguageScope } from './brain-language-scope';
 
 import type { BrainGraphView } from '../../contracts/brain-graph.types';
 
@@ -27,10 +28,17 @@ export type BrainGraphParams = {
 export async function getBrainGraphQuery(
   orgId: string,
   params: BrainGraphParams,
+  scope: BrainLanguageScope | null = null,
 ): Promise<BrainGraphView> {
   const [pages, edges, findings] = await Promise.all([
     db.knowledgePage.findMany({
-      where: { organizationId: orgId, status: { not: 'REJECTED' } },
+      where: {
+        organizationId: orgId,
+        status: { not: 'REJECTED' },
+        // A language narrows the graph to its pages; an edge to a page
+        // outside it has no end to draw and is left out with it.
+        ...(scope ? { id: { in: scope.pageIds } } : {}),
+      },
       select: {
         id: true,
         publicId: true,

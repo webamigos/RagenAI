@@ -2494,7 +2494,9 @@
         "documents": "Dokumenty",
         "findings": "Otevřená zjištění",
         "updated": "Změněno"
-      }
+      },
+      "empty-in-language-title": "Nic v tomto jazyce",
+      "empty-in-language-description": "Žádný dokument v tomto jazyce ani stránka, která ho cituje. Vyberte jiný jazyk nebo všechny."
     },
     "findings": {
       "columns": {
@@ -2725,7 +2727,9 @@
         "EXTRACTED": "Uvedeno ve zdroji",
         "INFERRED": "Odvozeno modelem",
         "AMBIGUOUS": "Nejisté"
-      }
+      },
+      "empty-in-language-title": "Nic v tomto jazyce",
+      "empty-in-language-description": "Žádný dokument v tomto jazyce ani stránka, která ho cituje. Vyberte jiný jazyk nebo všechny."
     },
     "export": {
       "ready": "Připraveno k exportu: {count}",
@@ -2766,7 +2770,8 @@
         "approved": "Schválené stránky",
         "candidates": "Kandidáti",
         "retrieval": "Vyhledávání",
-        "actions": "Akce"
+        "actions": "Akce",
+        "language": "Jazyk"
       },
       "retrieval": {
         "in": "Vyhledatelný",
@@ -2797,7 +2802,10 @@
       "upload-failed": "Nahrání se nezdařilo — zkontrolujte soubor a zkuste to znovu.",
       "staged-summary": "V Brain, mimo vyhledávání: {count} · bez schválené stránky: {uncurated}",
       "uploaded-partly": "Nahráno do Brain {uploaded} z {total}; zbytek selhal",
-      "staged-oldest": "nejstarší nahrán {when}"
+      "staged-oldest": "nejstarší nahrán {when}",
+      "language-none": "Nerozpoznaný",
+      "empty-in-language-title": "Nic v tomto jazyce",
+      "empty-in-language-description": "Žádný dokument v tomto jazyce ani stránka, která ho cituje. Vyberte jiný jazyk nebo všechny."
     },
     "publish-all": {
       "button": "Zveřejnit schválené ({count})",
@@ -2914,6 +2922,12 @@
       "is-part-of": "je součástí",
       "references": "odkazuje na",
       "depends-on": "závisí na"
+    },
+    "language": {
+      "label": "Jazyk",
+      "all": "Všechny jazyky",
+      "none": "Nerozpoznaný",
+      "option": "{name} ({count})"
     }
   },
   "project-context-manager": {

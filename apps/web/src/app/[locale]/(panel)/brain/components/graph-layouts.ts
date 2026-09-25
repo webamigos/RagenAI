@@ -31,6 +31,8 @@ export type ViewIdentity = {
   hops: number;
   budget: number;
   includeInferred: boolean;
+  /** The language filter, when one is on: a different set of pages. */
+  language?: string | null;
 };
 
 const STORAGE_KEY = 'ragen.brain-graph.layouts';
@@ -58,6 +60,7 @@ export function viewKey(view: ViewIdentity, scope: string): string {
     view.hops,
     view.budget,
     view.includeInferred ? 'inferred' : 'stated',
+    ...(view.language ? [view.language] : []),
   ].join('|');
 }
 

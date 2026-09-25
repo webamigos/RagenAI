@@ -5,8 +5,10 @@ import { describe, expect, it, vi } from 'vitest';
 import messages from '@/app/messages/en.json';
 
 const segment = vi.hoisted(() => ({ current: null as string | null }));
+const search = vi.hoisted(() => ({ current: '' }));
 vi.mock('next/navigation', () => ({
   useSelectedLayoutSegment: () => segment.current,
+  useSearchParams: () => new URLSearchParams(search.current),
 }));
 vi.mock('@/i18n/routing', () => ({
   Link: ({
@@ -43,6 +45,24 @@ describe('BrainTabs', () => {
     segment.current = current;
     wrap(<BrainTabs />);
     expect(screen.getByTestId('brain-tab-hint')).toHaveTextContent(hint);
+  });
+
+  it('keeps the language filter on every tab’s link', () => {
+    segment.current = 'graph';
+    search.current = 'lang=pol&status=APPROVED';
+    try {
+      wrap(<BrainTabs />);
+      // The language is Brain-wide; a tab's own filters are not.
+      expect(screen.getByRole('link', { name: 'Findings' })).toHaveAttribute(
+        'href',
+        '/brain/findings?lang=pol',
+      );
+      expect(
+        screen.getByRole('link', { name: 'Knowledge pages' }),
+      ).toHaveAttribute('href', '/brain?lang=pol');
+    } finally {
+      search.current = '';
+    }
   });
 
   it('marks the active tab for assistive technology, not only by its look', () => {

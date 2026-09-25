@@ -42,6 +42,10 @@ vi.mock('@/i18n/routing', () => ({
   ),
 }));
 vi.mock('../components/BrainTabs', () => ({ BrainTabs: () => null }));
+vi.mock('@/features/brain/services/queries/brain-language-scope', () => ({
+  getBrainLanguagesQuery: async () => [],
+}));
+vi.mock('../components/LanguageFilter', () => ({ LanguageFilter: () => null }));
 vi.mock('../components/ExtractDialog', () => ({
   ExtractDialog: () => <button type="button">Extract from documents</button>,
 }));

@@ -1,4 +1,5 @@
 import db from '@ragenai/prisma-client';
+import type { BrainLanguageScope } from './brain-language-scope';
 
 import { BRAIN_LIST_LIMIT } from '../../constants';
 import { listSkip } from '../../utils/list-page';
@@ -18,10 +19,12 @@ export async function getKnowledgePagesQuery(
   orgId: string,
   status: KnowledgePageStatus | null,
   page = 1,
+  scope: BrainLanguageScope | null = null,
 ): Promise<KnowledgePageList> {
   const where = {
     organizationId: orgId,
     status: status ?? { not: 'REJECTED' as const },
+    ...(scope ? { id: { in: scope.pageIds } } : {}),
   };
   const [rows, total] = await Promise.all([
     db.knowledgePage.findMany({

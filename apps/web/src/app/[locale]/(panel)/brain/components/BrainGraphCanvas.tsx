@@ -13,6 +13,7 @@ import {
 import type Sigma from 'sigma';
 
 import type { BrainGraphView } from '@/features/brain/contracts/brain-graph.types';
+import { withLanguage } from '@/features/brain/utils/with-language';
 import { Link } from '@/i18n/routing';
 import { makeDrawNodeHover } from './graph-hover';
 import { RelationKind } from './RelationKind';
@@ -175,12 +176,15 @@ export function BrainGraphCanvas({
   view,
   selected: selectedInUrl,
   layoutScope,
+  language = null,
 }: {
   view: BrainGraphView;
   /** `?selected=` — the page picked before a reload or a way back here. */
   selected?: string;
   /** Whose saved layouts these are: `orgId:userId`, from the server. */
   layoutScope: string;
+  /** `?lang=`, kept by the links the card offers. */
+  language?: string | null;
 }) {
   const t = useTranslations('brain.graph');
   const container = useRef<HTMLDivElement>(null);
@@ -293,7 +297,7 @@ export function BrainGraphCanvas({
         // The layout the operator left this view in: every page it holds
         // goes back where it was, `fixed`, so ForceAtlas2 and the passes
         // after it only place the pages that are new since.
-        const layoutKey = viewKey(view, layoutScope);
+        const layoutKey = viewKey({ ...view, language }, layoutScope);
         const saved = loadLayout(layoutKey);
         let restored = 0;
         for (const [id, p] of Object.entries(saved)) {
@@ -537,7 +541,7 @@ export function BrainGraphCanvas({
       disposed = true;
       kill?.();
     };
-  }, [view, layoutRun, layoutScope]);
+  }, [view, layoutRun, layoutScope, language]);
 
   const matches = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -710,7 +714,7 @@ export function BrainGraphCanvas({
                     title={t('reset-layout')}
                     data-testid="brain-graph-reset-layout"
                     onClick={() => {
-                      clearLayout(viewKey(view, layoutScope));
+                      clearLayout(viewKey({ ...view, language }, layoutScope));
                       setLayoutRun((n) => n + 1);
                     }}
                   >
@@ -795,7 +799,10 @@ export function BrainGraphCanvas({
                   {t('open-page')}
                 </Link>
                 <Link
-                  href={`/brain/graph?focus=${selected.id}&budget=${view.budget}${view.includeInferred ? '&inferred=1' : ''}`}
+                  href={withLanguage(
+                    `/brain/graph?focus=${selected.id}&budget=${view.budget}${view.includeInferred ? '&inferred=1' : ''}`,
+                    language,
+                  )}
                   className="inline-flex items-center gap-1.5 text-primary underline-offset-4 hover:underline"
                 >
                   <ShareIcon

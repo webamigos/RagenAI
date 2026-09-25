@@ -1,5 +1,7 @@
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
+import { parseBrainLanguage } from '@/features/brain/contracts/brain-language.types';
+import { getBrainLanguageScopeQuery } from '@/features/brain/services/queries/brain-language-scope';
 
 import { getBrainAccessQuery } from '@/features/brain/services/queries/get-brain-access-query';
 import {
@@ -22,6 +24,7 @@ type Search = {
   inferred?: string | string[];
   /** The page picked on the canvas, written back by it; see BrainGraphCanvas. */
   selected?: string | string[];
+  lang?: string | string[];
 };
 
 /**
@@ -44,9 +47,11 @@ export default async function BrainGraphPage({
   const selected = Array.isArray(search.selected)
     ? search.selected[0]
     : search.selected;
+  const language = parseBrainLanguage(search.lang);
+  const scope = await getBrainLanguageScopeQuery(access.orgId, language);
   const [t, view, userId] = await Promise.all([
     getTranslations('brain.graph'),
-    getBrainGraphQuery(access.orgId, params),
+    getBrainGraphQuery(access.orgId, params, scope),
     getCurrentUserId(),
   ]);
 
@@ -57,6 +62,7 @@ export default async function BrainGraphPage({
       hops: view.focus ? String(view.hops) : null,
       budget: String(view.budget),
       inferred: view.includeInferred ? '1' : null,
+      lang: language,
       ...over,
     };
     for (const [k, v] of Object.entries(merged)) {
@@ -73,8 +79,10 @@ export default async function BrainGraphPage({
       <title>{t('title')}</title>
       {view.total.nodes === 0 ? (
         <BrainEmpty
-          title={t('empty-title')}
-          description={t('empty-description')}
+          title={t(language ? 'empty-in-language-title' : 'empty-title')}
+          description={t(
+            language ? 'empty-in-language-description' : 'empty-description',
+          )}
         />
       ) : (
         <>
@@ -147,6 +155,7 @@ export default async function BrainGraphPage({
             view={view}
             selected={selected}
             layoutScope={`${access.orgId}:${userId ?? 'anonymous'}`}
+            language={language}
           />
         </>
       )}

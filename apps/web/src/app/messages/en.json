@@ -2494,7 +2494,9 @@
         "documents": "Documents",
         "findings": "Open findings",
         "updated": "Updated"
-      }
+      },
+      "empty-in-language-title": "Nothing in this language",
+      "empty-in-language-description": "No document in this language, or no page citing one. Pick another language, or all of them."
     },
     "findings": {
       "columns": {
@@ -2725,7 +2727,9 @@
         "EXTRACTED": "Stated in a source",
         "INFERRED": "Inferred by the model",
         "AMBIGUOUS": "Uncertain"
-      }
+      },
+      "empty-in-language-title": "Nothing in this language",
+      "empty-in-language-description": "No document in this language, or no page citing one. Pick another language, or all of them."
     },
     "export": {
       "ready": "Ready to export: {count}",
@@ -2766,7 +2770,8 @@
         "approved": "Approved pages",
         "candidates": "Candidates",
         "retrieval": "Retrieval",
-        "actions": "Actions"
+        "actions": "Actions",
+        "language": "Language"
       },
       "retrieval": {
         "in": "Searchable",
@@ -2797,7 +2802,10 @@
       "upload-failed": "The upload failed — check the file and try again.",
       "staged-summary": "Staged in Brain, not searchable: {count} · without an approved page yet: {uncurated}",
       "uploaded-partly": "Uploaded {uploaded} of {total} into Brain; the rest failed",
-      "staged-oldest": "oldest uploaded {when}"
+      "staged-oldest": "oldest uploaded {when}",
+      "language-none": "Not detected",
+      "empty-in-language-title": "Nothing in this language",
+      "empty-in-language-description": "No document in this language, or no page citing one. Pick another language, or all of them."
     },
     "publish-all": {
       "button": "Publish approved ({count})",
@@ -2914,6 +2922,12 @@
       "is-part-of": "is part of",
       "references": "references",
       "depends-on": "depends on"
+    },
+    "language": {
+      "label": "Language",
+      "all": "All languages",
+      "none": "Not detected",
+      "option": "{name} ({count})"
     }
   },
   "project-context-manager": {

@@ -6,11 +6,13 @@ import {
   TableHeader,
   TableRow,
 } from '@ragenai/common-ui/Table';
-import { getFormatter, getTranslations } from 'next-intl/server';
+import { getFormatter, getLocale, getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
 import { getBrainAccessQuery } from '@/features/brain/services/queries/get-brain-access-query';
+import { parseBrainLanguage } from '@/features/brain/contracts/brain-language.types';
 import { getBrainDocumentsQuery } from '@/features/brain/services/queries/get-brain-documents-query';
+import { languageName } from '@/features/brain/utils/language-name';
 
 import { BrainEmpty } from '../components/BrainEmpty';
 import { BrainUploadButton } from '../components/BrainUploadButton';
@@ -25,15 +27,21 @@ export const dynamic = 'force-dynamic';
  * a document out of retrieval so answers come from the reviewed pages alone.
  * Never automatic, always reversible.
  */
-export default async function BrainDocumentsPage() {
+type Props = {
+  searchParams: Promise<{ lang?: string | string[] }>;
+};
+
+export default async function BrainDocumentsPage({ searchParams }: Props) {
   const access = await getBrainAccessQuery();
   if (!access) {
     notFound();
   }
-  const [t, format, documents] = await Promise.all([
+  const language = parseBrainLanguage((await searchParams).lang);
+  const [t, format, documents, locale] = await Promise.all([
     getTranslations('brain.documents'),
     getFormatter(),
-    getBrainDocumentsQuery(access.orgId),
+    getBrainDocumentsQuery(access.orgId, language),
+    getLocale(),
   ]);
   const staged = documents.filter((d) => d.retrieval === 'staged');
   // How long the oldest has waited (spec F4): staging is a "not yet", and a
@@ -77,8 +85,10 @@ export default async function BrainDocumentsPage() {
       )}
       {documents.length === 0 ? (
         <BrainEmpty
-          title={t('empty-title')}
-          description={t('empty-description')}
+          title={t(language ? 'empty-in-language-title' : 'empty-title')}
+          description={t(
+            language ? 'empty-in-language-description' : 'empty-description',
+          )}
         />
       ) : (
         <div className="overflow-x-auto">
@@ -92,6 +102,7 @@ export default async function BrainDocumentsPage() {
                 <TableHeader className="text-right">
                   {t('columns.candidates')}
                 </TableHeader>
+                <TableHeader>{t('columns.language')}</TableHeader>
                 <TableHeader>{t('columns.retrieval')}</TableHeader>
                 {access.canWrite && (
                   <TableHeader className="text-right">
@@ -122,6 +133,11 @@ export default async function BrainDocumentsPage() {
                   </TableCell>
                   <TableCell className="text-right tabular-nums">
                     {d.candidatePages}
+                  </TableCell>
+                  <TableCell className="text-muted-foreground">
+                    {d.language
+                      ? languageName(d.language, locale)
+                      : t('language-none')}
                   </TableCell>
                   <TableCell>{t(`retrieval.${d.retrieval}`)}</TableCell>
                   {access.canWrite && (

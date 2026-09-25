@@ -131,6 +131,15 @@ archive is the blog.
   kinds the extraction writes in English ("applies to", "requires", "is part
   of") are shown translated on the graph's card and the page's relations,
   and the card's two links carry a small icon.
+- `[brief]` **Brain can be narrowed to one language.** A "Language" select
+  beside the tabs shows only the documents in, say, Polish or English — and
+  the pages, findings and graph that come from them; "Not detected" finds the
+  documents whose language could not be told. The documents tab shows each
+  file's language.
+- `[brief]` **Brain's assistant waits to be asked.** It starts closed on
+  every visit instead of reopening by itself, and when opened it is docked to
+  the right edge of the window, top to bottom, with the pages kept clear of
+  it. With a page open over the graph, the tabs still say Graph.
 - `[brief]` **Brain's graph remembers how you arranged it.** Pages dragged
   into place stay there after a reload, per view and in this browser; pages
   added since fit in around them, and one button restores the automatic

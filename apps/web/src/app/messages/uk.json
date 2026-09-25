@@ -2494,7 +2494,9 @@
         "documents": "Документи",
         "findings": "Відкриті виявлення",
         "updated": "Змінено"
-      }
+      },
+      "empty-in-language-title": "Нічого цією мовою",
+      "empty-in-language-description": "Немає документа цією мовою або сторінки, що його цитує. Виберіть іншу мову або всі."
     },
     "findings": {
       "columns": {
@@ -2725,7 +2727,9 @@
         "EXTRACTED": "Сказано в джерелі",
         "INFERRED": "Виведено моделлю",
         "AMBIGUOUS": "Непевно"
-      }
+      },
+      "empty-in-language-title": "Нічого цією мовою",
+      "empty-in-language-description": "Немає документа цією мовою або сторінки, що його цитує. Виберіть іншу мову або всі."
     },
     "export": {
       "ready": "Готово до експорту: {count}",
@@ -2766,7 +2770,8 @@
         "approved": "Затверджені сторінки",
         "candidates": "Кандидати",
         "retrieval": "Пошук",
-        "actions": "Дії"
+        "actions": "Дії",
+        "language": "Мова"
       },
       "retrieval": {
         "in": "У пошуку",
@@ -2797,7 +2802,10 @@
       "upload-failed": "Завантаження не вдалося — перевірте файл і спробуйте ще раз.",
       "staged-summary": "У Brain, поза пошуком: {count} · без затвердженої сторінки: {uncurated}",
       "uploaded-partly": "Завантажено до Brain {uploaded} з {total}; решта не вдалася",
-      "staged-oldest": "найстаріший завантажено {when}"
+      "staged-oldest": "найстаріший завантажено {when}",
+      "language-none": "Не розпізнано",
+      "empty-in-language-title": "Нічого цією мовою",
+      "empty-in-language-description": "Немає документа цією мовою або сторінки, що його цитує. Виберіть іншу мову або всі."
     },
     "publish-all": {
       "button": "Опублікувати затверджені ({count})",
@@ -2914,6 +2922,12 @@
       "is-part-of": "є частиною",
       "references": "посилається на",
       "depends-on": "залежить від"
+    },
+    "language": {
+      "label": "Мова",
+      "all": "Усі мови",
+      "none": "Не розпізнано",
+      "option": "{name} ({count})"
     }
   },
   "project-context-manager": {

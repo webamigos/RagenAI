@@ -2494,7 +2494,9 @@
         "documents": "Dokumenty",
         "findings": "Otwarte wykrycia",
         "updated": "Zmieniona"
-      }
+      },
+      "empty-in-language-title": "Nic w tym języku",
+      "empty-in-language-description": "Żaden dokument nie jest w tym języku albo żadna strona go nie cytuje. Wybierz inny język albo wszystkie."
     },
     "findings": {
       "columns": {
@@ -2725,7 +2727,9 @@
         "EXTRACTED": "Potwierdzone w źródle",
         "INFERRED": "Wywnioskowane przez model",
         "AMBIGUOUS": "Niepewne"
-      }
+      },
+      "empty-in-language-title": "Nic w tym języku",
+      "empty-in-language-description": "Żaden dokument nie jest w tym języku albo żadna strona go nie cytuje. Wybierz inny język albo wszystkie."
     },
     "export": {
       "ready": "Gotowe do eksportu: {count}",
@@ -2766,7 +2770,8 @@
         "approved": "Zatwierdzone strony",
         "candidates": "Kandydaci",
         "retrieval": "Wyszukiwanie",
-        "actions": "Akcje"
+        "actions": "Akcje",
+        "language": "Język"
       },
       "retrieval": {
         "in": "W wyszukiwaniu",
@@ -2797,7 +2802,10 @@
       "upload-failed": "Wgrywanie się nie powiodło — sprawdź plik i spróbuj ponownie.",
       "staged-summary": "W Brain, poza wyszukiwaniem: {count} · bez zatwierdzonej strony: {uncurated}",
       "uploaded-partly": "Wgrano do Brain {uploaded} z {total}; pozostałe się nie powiodły",
-      "staged-oldest": "najstarszy wgrany {when}"
+      "staged-oldest": "najstarszy wgrany {when}",
+      "language-none": "Nierozpoznany",
+      "empty-in-language-title": "Nic w tym języku",
+      "empty-in-language-description": "Żaden dokument nie jest w tym języku albo żadna strona go nie cytuje. Wybierz inny język albo wszystkie."
     },
     "publish-all": {
       "button": "Opublikuj zatwierdzone ({count})",
@@ -2914,6 +2922,12 @@
       "is-part-of": "jest częścią",
       "references": "odwołuje się do",
       "depends-on": "zależy od"
+    },
+    "language": {
+      "label": "Język",
+      "all": "Wszystkie języki",
+      "none": "Nierozpoznany",
+      "option": "{name} ({count})"
     }
   },
   "project-context-manager": {
