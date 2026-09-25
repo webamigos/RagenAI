@@ -127,6 +127,11 @@ archive is the blog.
 
 ### Thread: Ragen Brain for a showcase
 
+- `[brief]` **Brain's graph reads more easily.** Pages with no relation sit
+  in a neat block beside the graph instead of a ring of stray dots, so the
+  connected part gets the room; two groups no longer share one blue; the
+  picked page survives a reload or a trip to another tab; and the assistant
+  stops offering to explain "the selected page" when none is selected.
 - `[brief]` **Brain's graph in dark mode dims what it should.** Picking a
   page or a group lit every other page up in white instead of fading it; the
   graph also keeps its shape when the assistant opens beside it, and a click

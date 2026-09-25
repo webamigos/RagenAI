@@ -239,6 +239,15 @@ describe('suggested prompts', () => {
     expect(suggestedPromptKeys('page', false)).not.toContain('owner');
     expect(suggestedPromptKeys('finding', false)).not.toContain('what-to-do');
   });
+
+  it('asks about the selected page only once a page is selected', () => {
+    expect(suggestedPromptKeys('graph', true)).not.toContain(
+      'depends-selected',
+    );
+    expect(suggestedPromptKeys('graph', true, true)[0]).toBe(
+      'depends-selected',
+    );
+  });
 });
 
 describe('the system prompt', () => {

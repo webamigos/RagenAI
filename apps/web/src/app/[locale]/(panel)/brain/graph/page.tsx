@@ -19,6 +19,8 @@ type Search = {
   hops?: string | string[];
   budget?: string | string[];
   inferred?: string | string[];
+  /** The page picked on the canvas, written back by it; see BrainGraphCanvas. */
+  selected?: string | string[];
 };
 
 /**
@@ -36,7 +38,11 @@ export default async function BrainGraphPage({
   if (!access) {
     notFound();
   }
-  const params = parseGraphParams(await searchParams);
+  const search = await searchParams;
+  const params = parseGraphParams(search);
+  const selected = Array.isArray(search.selected)
+    ? search.selected[0]
+    : search.selected;
   const [t, view] = await Promise.all([
     getTranslations('brain.graph'),
     getBrainGraphQuery(access.orgId, params),
@@ -135,7 +141,7 @@ export default async function BrainGraphPage({
               totalEdges: view.total.edges,
             })}
           </p>
-          <BrainGraphCanvas view={view} />
+          <BrainGraphCanvas view={view} selected={selected} />
         </>
       )}
     </section>
