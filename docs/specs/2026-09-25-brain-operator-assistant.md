@@ -353,6 +353,12 @@ is decided it:
   the request over its tools (a 400 naming tools or functions); the panel
   says so. There is no tool-capability flag in the model catalogue to check
   beforehand.
+- **A turn always ends in an answer.** Found against the real model, not in
+  a test: Gemini could spend every step reading and ignore `toolChoice:
+  'none'` on the last one, leaving an empty reply. The last step offers no
+  tool, the one before it only `proposeChange`, and if the loop still wrote
+  nothing, one closing call with no tools gets what was read as plain text
+  (docs/lessons: "a tool loop can end without an answer").
 - **A4 (evals) is not built yet.** The unit and integration suites pin the
   three rules A4 names at the call sites that enforce them (quotes are
   linked, ids outside the organization answer "not found", nothing changes

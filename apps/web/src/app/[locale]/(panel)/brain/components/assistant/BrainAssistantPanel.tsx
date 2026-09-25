@@ -245,7 +245,7 @@ export function BrainAssistantPanel({
       aria-label={t('title')}
       data-testid="brain-assistant-panel"
       style={{ ['--panel-width' as string]: `${width}px` }}
-      className="fixed inset-0 z-40 flex flex-col bg-background shadow-lg lg:sticky lg:inset-auto lg:top-0 lg:z-auto lg:h-[100dvh] lg:w-[var(--panel-width)] lg:shrink-0 lg:border-l lg:border-border lg:shadow-none"
+      className="fixed inset-0 z-40 flex flex-col bg-background shadow-lg lg:sticky lg:inset-auto lg:top-4 lg:z-auto lg:h-[calc(100dvh-4rem)] lg:ml-4 lg:w-[var(--panel-width)] lg:shrink-0 lg:rounded-[6px] lg:border lg:border-border lg:shadow-none"
     >
       <ResizeHandle width={width} onResize={onResize} label={t('resize')} />
       <header className="flex items-center gap-1 border-b border-border px-3 py-2">

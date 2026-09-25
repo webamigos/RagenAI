@@ -10,6 +10,7 @@ import {
   threadTitle,
 } from '../utils/stored-message';
 import { suggestedPromptKeys } from '../utils/suggested-prompts';
+import * as STEP from '../utils/step-policy';
 import { buildBrainAssistantSystemPrompt } from '../utils/system-prompt';
 
 const A = '11111111-2222-4333-8444-555555555555';
@@ -302,5 +303,24 @@ describe('readEventStream', () => {
       { type: 'text', delta: 'Hel' },
       { type: 'done', messageId: 'm' },
     ]);
+  });
+});
+
+describe('stepPolicy', () => {
+  it('leaves the early steps alone', () => {
+    const { stepPolicy } = STEP;
+    expect(stepPolicy(0, 10, true)).toBeUndefined();
+    expect(stepPolicy(7, 10, true)).toBeUndefined();
+  });
+
+  it('lets the next-to-last step only propose, and the last only answer', () => {
+    const { stepPolicy } = STEP;
+    expect(stepPolicy(8, 10, true)).toEqual({ activeTools: ['proposeChange'] });
+    expect(stepPolicy(9, 10, true)).toEqual({ toolChoice: 'none' });
+  });
+
+  it('gives a read-only visitor two answering steps, never a proposal', () => {
+    const { stepPolicy } = STEP;
+    expect(stepPolicy(8, 10, false)).toEqual({ toolChoice: 'none' });
   });
 });

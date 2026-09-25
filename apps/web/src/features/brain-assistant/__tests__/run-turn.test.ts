@@ -101,6 +101,15 @@ vi.mock(
 vi.mock('@/features/brain/services/queries/get-knowledge-page-query', () => ({
   getKnowledgePageQuery: m.page,
 }));
+vi.mock(
+  '@/features/brain/services/queries/get-knowledge-findings-query',
+  () => ({
+    getKnowledgeFindingsQuery: vi
+      .fn()
+      .mockResolvedValue({ items: [], total: 0 }),
+    getKnowledgeFindingQuery: vi.fn().mockResolvedValue(null),
+  }),
+);
 vi.mock('../services/queries/build-brain-proposal-query', () => ({
   buildBrainProposalQuery: m.build,
 }));
@@ -110,7 +119,7 @@ vi.mock(
   () => ({ approveKnowledgePageCommand: m.approve }),
 );
 
-const { runBrainAssistantTurnCommand, pickModel } =
+const { runBrainAssistantTurnCommand, pickModel, describeReads } =
   await import('../services/commands/run-brain-assistant-turn-command');
 const { UsageLimitError } =
   await import('@/features/ai-usage/services/queries/assert-within-usage-limits');
@@ -394,6 +403,62 @@ describe('a Brain assistant turn', () => {
     );
   });
 
+  it('ends a turn that keeps reading with an answer, not an empty bubble', async () => {
+    const reads = Array.from({ length: 12 }, () =>
+      toolStep('listFindings', { status: 'OPEN' }),
+    );
+    const model = new MockLanguageModelV4({
+      doStream: async (options) => {
+        // The last step is offered no tool: answer.
+        if (options.toolChoice?.type === 'none') {
+          return textStep('Here is what I found.');
+        }
+        return reads.shift()!;
+      },
+    });
+    m.model = model;
+    const { getKnowledgeFindingsQuery } =
+      await import('@/features/brain/services/queries/get-knowledge-findings-query');
+    void getKnowledgeFindingsQuery;
+    const events = await collect(turn);
+    expect(text(events)).toBe('Here is what I found.');
+    expect(model.doStreamCalls.length).toBeLessThanOrEqual(10);
+  });
+
+  it('asks once more, with no tools, when the model ignores the last step and keeps calling tools', async () => {
+    const model = new MockLanguageModelV4({
+      doStream: async (options) =>
+        (options.tools ?? []).length === 0
+          ? textStep('Answer from what I read.')
+          : toolStep('listFindings', { status: 'OPEN' }),
+    });
+    const { getKnowledgeFindingsQuery } =
+      await import('@/features/brain/services/queries/get-knowledge-findings-query');
+    vi.mocked(getKnowledgeFindingsQuery).mockResolvedValue({
+      items: [],
+      total: 7,
+    });
+    m.model = model;
+    const events = await collect(turn);
+    expect(text(events)).toBe('Answer from what I read.');
+    // Ten steps of the loop, then one closing call offered no tool.
+    expect(model.doStreamCalls).toHaveLength(11);
+    const closing = model.doStreamCalls.at(-1)!;
+    expect(closing.tools ?? []).toEqual([]);
+    // What was read reaches the closing call as text, not as a history of
+    // tool calls for the model to imitate.
+    const prompt = JSON.stringify(closing.prompt);
+    expect(prompt).toContain('listFindings: {\\"total\\":7');
+    expect(closing.prompt.some((m) => m.role === 'tool')).toBe(false);
+    expect(m.trackUsage).toHaveBeenCalledTimes(2);
+    expect(m.storeAnswer).toHaveBeenCalledWith(
+      expect.anything(),
+      'thread-1',
+      'Answer from what I read.',
+      [],
+    );
+  });
+
   it('gives a read-only visitor’s model no proposal tool at all', async () => {
     const model = new MockLanguageModelV4({ doStream: textStep('ok') });
     m.model = model;
@@ -469,5 +534,21 @@ describe('pickModel', () => {
     expect(pickModel('a', [])).toBe('a');
     expect(pickModel('a', ['b', 'a'])).toBe('a');
     expect(pickModel('a', ['b', 'c'])).toBe('b');
+  });
+});
+
+describe('describeReads', () => {
+  it('writes the tool results out within a budget', () => {
+    const steps = [
+      {
+        toolResults: [
+          { toolName: 'getPage', output: { title: 'x'.repeat(50) } },
+        ],
+      },
+      { toolResults: [{ toolName: 'listFindings', output: { total: 2 } }] },
+    ];
+    expect(describeReads(steps)).toContain('- listFindings: {"total":2}');
+    expect(describeReads(steps, 30).length).toBeLessThanOrEqual(31);
+    expect(describeReads([])).toBe('(no tool returned anything)');
   });
 });
