@@ -7,6 +7,8 @@ import {
 } from '../common/utils/openai-format.js';
 import { toOpenAIMessage, type OpenAIMessage } from './messages.mapper.js';
 import { type ApiContext } from '../common/types/api-context.js';
+import { SubscriptionsService } from '../subscriptions/subscriptions.service.js';
+import { assertCanDeleteThreads } from './threads.service.js';
 
 export type CreateMessageInput = {
   role: 'user' | 'assistant';
@@ -21,7 +23,10 @@ export type ListMessagesInput = {
 
 @Injectable()
 export class MessagesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly subscriptions: SubscriptionsService,
+  ) {}
 
   async list(
     threadIdInput: string,
@@ -93,6 +98,7 @@ export class MessagesService {
     messageIdInput: string,
     context: ApiContext,
   ): Promise<{ id: string; object: 'thread.message.deleted'; deleted: true }> {
+    await assertCanDeleteThreads(this.subscriptions, context);
     const thread = await this.resolveThreadOrThrow(threadIdInput, context);
     const rawMsgId = stripPrefix(messageIdInput, 'msg');
 

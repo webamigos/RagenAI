@@ -5,6 +5,7 @@ import { ThreadsService } from './threads.service.js';
 import { type PrismaService } from '../prisma/prisma.service.js';
 import { type ApiContext } from '../common/types/api-context.js';
 import { AssistantScopeService } from '../common/services/assistant-scope.service.js';
+import { type SubscriptionsService } from '../subscriptions/subscriptions.service.js';
 import {
   type OrgId,
   type UserId,
@@ -31,6 +32,7 @@ describe('ThreadsService', () => {
   function makeService(
     overrides: Partial<Record<string, Mock>> = {},
     project: unknown = { id: 'proj-bound' },
+    features: { deleteThreads: boolean } = { deleteThreads: true },
   ) {
     const threadOps = {
       findMany: vi.fn().mockResolvedValue([thread]),
@@ -57,8 +59,19 @@ describe('ThreadsService', () => {
         $transaction: vi.fn((ops: Promise<unknown>[]) => Promise.all(ops)),
       },
     } as unknown as PrismaService;
+    const isFeatureEnabled = vi.fn((_orgId: string, key: string) =>
+      Promise.resolve(key === 'deleteThreads' ? features.deleteThreads : true),
+    );
+    const subscriptions = {
+      isFeatureEnabled,
+    } as unknown as SubscriptionsService;
     return {
-      service: new ThreadsService(prisma, new AssistantScopeService(prisma)),
+      service: new ThreadsService(
+        prisma,
+        new AssistantScopeService(prisma),
+        subscriptions,
+      ),
+      isFeatureEnabled,
       threadOps,
       messageOps,
       projectOps,
@@ -197,5 +210,24 @@ describe('ThreadsService', () => {
       object: 'thread.deleted',
       deleted: true,
     });
+  });
+
+  it("delete: asks deleteThreads for the key's organization", async () => {
+    const { service, isFeatureEnabled } = makeService();
+    await service.remove('thread-t-1', context);
+    expect(isFeatureEnabled).toHaveBeenCalledWith('org-1', 'deleteThreads');
+  });
+
+  it('delete: 403 and nothing deleted when the organization has deleteThreads off', async () => {
+    const { service, threadOps, messageOps } = makeService({}, undefined, {
+      deleteThreads: false,
+    });
+    const attempt = service.remove('thread-t-1', context);
+    await expect(attempt).rejects.toBeInstanceOf(ForbiddenException);
+    await expect(attempt).rejects.toThrow(
+      'This organization cannot delete threads',
+    );
+    expect(messageOps.deleteMany).not.toHaveBeenCalled();
+    expect(threadOps.deleteMany).not.toHaveBeenCalled();
   });
 });
