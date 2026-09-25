@@ -2496,7 +2496,11 @@
         "updated": "Modificada"
       },
       "empty-in-language-title": "Nada en este idioma",
-      "empty-in-language-description": "Ningún documento en este idioma, o ninguna página que lo cite. Elige otro idioma o todos."
+      "empty-in-language-description": "Ningún documento en este idioma, o ninguna página que lo cite. Elige otro idioma o todos.",
+      "search-placeholder": "Buscar páginas por título…",
+      "search-clear": "Borrar la búsqueda",
+      "search-empty-title": "Ninguna página coincide",
+      "search-empty-description": "Ningún título contiene «{search}». Prueba con parte de una palabra o borra la búsqueda."
     },
     "findings": {
       "columns": {
@@ -2786,7 +2790,6 @@
       "restore": "Volver a poner",
       "withdrawn": "Documento retirado de la búsqueda",
       "restored": "Documento de vuelta en la búsqueda",
-      "needs-approved": "Aprueba primero una página que cite este documento",
       "withdraw-title": "¿Retirar este documento de la búsqueda?",
       "withdraw-description": "Las respuestas dejarán de usar directamente «{name}» y usarán las páginas aprobadas creadas a partir de él. El documento, sus versiones y todas las citas se mantienen; puedes volver a ponerlo en cualquier momento.",
       "errors": {

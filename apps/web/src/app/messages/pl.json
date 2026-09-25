@@ -2496,7 +2496,11 @@
         "updated": "Zmieniona"
       },
       "empty-in-language-title": "Nic w tym języku",
-      "empty-in-language-description": "Żaden dokument nie jest w tym języku albo żadna strona go nie cytuje. Wybierz inny język albo wszystkie."
+      "empty-in-language-description": "Żaden dokument nie jest w tym języku albo żadna strona go nie cytuje. Wybierz inny język albo wszystkie.",
+      "search-placeholder": "Szukaj stron po tytule…",
+      "search-clear": "Wyczyść wyszukiwanie",
+      "search-empty-title": "Żadna strona nie pasuje",
+      "search-empty-description": "Żaden tytuł strony nie zawiera „{search}”. Spróbuj fragmentu słowa albo wyczyść wyszukiwanie."
     },
     "findings": {
       "columns": {
@@ -2786,7 +2790,6 @@
       "restore": "Przywróć",
       "withdrawn": "Dokument wyłączony z wyszukiwania",
       "restored": "Dokument wraca do wyszukiwania",
-      "needs-approved": "Najpierw zatwierdź stronę, która cytuje ten dokument",
       "withdraw-title": "Wyłączyć ten dokument z wyszukiwania?",
       "withdraw-description": "Odpowiedzi przestaną korzystać bezpośrednio z „{name}” i użyją zbudowanych z niego zatwierdzonych stron. Dokument, jego wersje i wszystkie cytaty zostają; w każdej chwili możesz go przywrócić.",
       "errors": {

@@ -75,6 +75,13 @@ describe('getKnowledgePagesQuery', () => {
     );
   });
 
+  it('finds pages by part of their title, any case, and counts the same set', async () => {
+    await getKnowledgePagesQuery(ORG, null, 1, null, 'urlop');
+    const where = db.knowledgePage.findMany.mock.calls[0][0].where;
+    expect(where.title).toEqual({ contains: 'urlop', mode: 'insensitive' });
+    expect(db.knowledgePage.count.mock.calls[0][0].where).toEqual(where);
+  });
+
   it('counts distinct documents and open findings per page', async () => {
     db.knowledgePage.findMany.mockResolvedValue([
       {

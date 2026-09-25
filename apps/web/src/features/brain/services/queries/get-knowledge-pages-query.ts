@@ -20,11 +20,16 @@ export async function getKnowledgePagesQuery(
   status: KnowledgePageStatus | null,
   page = 1,
   scope: BrainLanguageScope | null = null,
+  search: string | null = null,
 ): Promise<KnowledgePageList> {
   const where = {
     organizationId: orgId,
     status: status ?? { not: 'REJECTED' as const },
     ...(scope ? { id: { in: scope.pageIds } } : {}),
+    // Part of a title, any case: 126 pages is past reading the list.
+    ...(search
+      ? { title: { contains: search, mode: 'insensitive' as const } }
+      : {}),
   };
   const [rows, total] = await Promise.all([
     db.knowledgePage.findMany({

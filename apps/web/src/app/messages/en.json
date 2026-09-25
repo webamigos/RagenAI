@@ -2496,7 +2496,11 @@
         "updated": "Updated"
       },
       "empty-in-language-title": "Nothing in this language",
-      "empty-in-language-description": "No document in this language, or no page citing one. Pick another language, or all of them."
+      "empty-in-language-description": "No document in this language, or no page citing one. Pick another language, or all of them.",
+      "search-placeholder": "Search pages by title…",
+      "search-clear": "Clear the search",
+      "search-empty-title": "No page matches",
+      "search-empty-description": "No page title contains “{search}”. Try part of a word, or clear the search."
     },
     "findings": {
       "columns": {
@@ -2786,7 +2790,6 @@
       "restore": "Put back",
       "withdrawn": "Document taken out of retrieval",
       "restored": "Document queued back into retrieval",
-      "needs-approved": "Approve a page that cites this document first",
       "withdraw-title": "Take this document out of retrieval?",
       "withdraw-description": "Answers will stop drawing on “{name}” directly and use the approved pages built from it. The document, its versions and every citation stay; you can put it back at any time.",
       "errors": {

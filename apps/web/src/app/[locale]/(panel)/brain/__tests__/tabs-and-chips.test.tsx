@@ -96,7 +96,12 @@ describe('FilterChips', () => {
       />,
     );
     const [candidate, other] = screen.getAllByRole('link');
-    expect(candidate).toHaveTextContent('Candidate (123)');
+    // Label and count are separate items, spaced by the chip's gap — a
+    // leading space in the count was trimmed by flex and read "Candidate123".
+    expect(candidate.children).toHaveLength(1);
+    expect(candidate.children[0]).toHaveTextContent(/^123$/);
+    expect(candidate.className).toContain('gap-1.5');
+    expect(candidate).toHaveTextContent('Candidate');
     expect(other).toHaveTextContent(/^Other$/);
   });
 });

@@ -2496,7 +2496,11 @@
         "updated": "Módosítva"
       },
       "empty-in-language-title": "Semmi ezen a nyelven",
-      "empty-in-language-description": "Nincs dokumentum ezen a nyelven, vagy nincs oldal, amely idézné. Válasszon másik nyelvet vagy az összeset."
+      "empty-in-language-description": "Nincs dokumentum ezen a nyelven, vagy nincs oldal, amely idézné. Válasszon másik nyelvet vagy az összeset.",
+      "search-placeholder": "Oldalak keresése cím szerint…",
+      "search-clear": "Keresés törlése",
+      "search-empty-title": "Nincs egyező oldal",
+      "search-empty-description": "Egyik oldalcím sem tartalmazza: „{search}”. Próbáljon szórészletet, vagy törölje a keresést."
     },
     "findings": {
       "columns": {
@@ -2786,7 +2790,6 @@
       "restore": "Visszatétel",
       "withdrawn": "A dokumentum kikerült a keresésből",
       "restored": "A dokumentum visszakerül a keresésbe",
-      "needs-approved": "Előbb hagyjon jóvá egy oldalt, amely idézi ezt a dokumentumot",
       "withdraw-title": "Kiveszi ezt a dokumentumot a keresésből?",
       "withdraw-description": "A válaszok nem közvetlenül a(z) „{name}” dokumentumra, hanem az abból készült jóváhagyott oldalakra támaszkodnak. A dokumentum, a verziói és minden idézet megmarad; bármikor visszateheti.",
       "errors": {

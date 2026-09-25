@@ -1,4 +1,5 @@
 import { getTranslations } from 'next-intl/server';
+import { XMarkIcon } from '@heroicons/react/24/outline';
 import { notFound } from 'next/navigation';
 import { parseBrainLanguage } from '@/features/brain/contracts/brain-language.types';
 import { getBrainLanguageScopeQuery } from '@/features/brain/services/queries/brain-language-scope';
@@ -87,16 +88,26 @@ export default async function BrainGraphPage({
       ) : (
         <>
           {view.focus ? (
-            <div className="mb-3 flex flex-wrap items-center gap-3 text-sm">
-              <span className="font-medium">
-                {t('focus', { title: focusTitle ?? '' })}
-              </span>
-              <Link
-                href={href({ focus: null, hops: null })}
-                className="text-primary underline-offset-4 hover:underline"
+            // The neighbourhood as an active filter, removed like one: a chip
+            // with the page's name and an × whose name is "back to the
+            // overview". The plain link beside a heading read as text, not as
+            // a way out.
+            <div className="mb-3 flex flex-wrap items-center gap-2 text-sm">
+              <span
+                data-testid="brain-graph-focus"
+                className="inline-flex h-7 items-center gap-1 rounded-[6px] border border-foreground bg-accent pl-2.5 pr-1 text-xs font-medium text-foreground"
               >
-                {t('back-to-overview')}
-              </Link>
+                {t('focus', { title: focusTitle ?? '' })}
+                <Link
+                  href={href({ focus: null, hops: null })}
+                  aria-label={t('back-to-overview')}
+                  title={t('back-to-overview')}
+                  data-testid="brain-graph-focus-clear"
+                  className="rounded p-0.5 text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+                >
+                  <XMarkIcon className="size-3.5" aria-hidden="true" />
+                </Link>
+              </span>
             </div>
           ) : null}
           <div className="flex flex-wrap gap-x-6">

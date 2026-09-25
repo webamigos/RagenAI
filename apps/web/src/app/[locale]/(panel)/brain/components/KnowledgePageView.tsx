@@ -11,6 +11,7 @@ import { getBrainReviewOptionsQuery } from '@/features/brain/services/queries/ge
 import { getKnowledgePageQuery } from '@/features/brain/services/queries/get-knowledge-page-query';
 import { getMergeTargetsQuery } from '@/features/brain/services/queries/get-merge-targets-query';
 import { relationKindLabel } from '@/features/brain/utils/relation-kind';
+import { pageStatusVariant } from '@/features/brain/utils/page-status-variant';
 import { Link } from '@/i18n/routing';
 
 import { BrainScreen } from './assistant/BrainAssistantContext';
@@ -84,7 +85,9 @@ export async function KnowledgePageView({
         <h2 className="text-base font-semibold text-foreground">
           {page.title}
         </h2>
-        <Badge variant="secondary">{t(`page-status.${page.status}`)}</Badge>
+        <Badge variant={pageStatusVariant(page.status)}>
+          {t(`page-status.${page.status}`)}
+        </Badge>
         <Badge variant="outline">{t(`page-type.${page.type}`)}</Badge>
         {page.published && (
           <Badge variant="outline">{t('pages.published')}</Badge>

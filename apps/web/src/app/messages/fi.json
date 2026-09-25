@@ -2496,7 +2496,11 @@
         "updated": "Muutettu"
       },
       "empty-in-language-title": "Ei mitään tällä kielellä",
-      "empty-in-language-description": "Ei asiakirjaa tällä kielellä tai sivua, joka lainaa sitä. Valitse toinen kieli tai kaikki."
+      "empty-in-language-description": "Ei asiakirjaa tällä kielellä tai sivua, joka lainaa sitä. Valitse toinen kieli tai kaikki.",
+      "search-placeholder": "Hae sivuja otsikon mukaan…",
+      "search-clear": "Tyhjennä haku",
+      "search-empty-title": "Yksikään sivu ei vastaa",
+      "search-empty-description": "Mikään sivun otsikko ei sisällä ”{search}”. Kokeile sanan osaa tai tyhjennä haku."
     },
     "findings": {
       "columns": {
@@ -2786,7 +2790,6 @@
       "restore": "Palauta",
       "withdrawn": "Asiakirja poistettu hausta",
       "restored": "Asiakirja palaa hakuun",
-      "needs-approved": "Hyväksy ensin sivu, joka lainaa tätä asiakirjaa",
       "withdraw-title": "Poistetaanko tämä asiakirja hausta?",
       "withdraw-description": "Vastaukset eivät enää käytä suoraan asiakirjaa ”{name}”, vaan siitä koottuja hyväksyttyjä sivuja. Asiakirja, sen versiot ja kaikki lainaukset säilyvät; voit palauttaa sen milloin tahansa.",
       "errors": {
