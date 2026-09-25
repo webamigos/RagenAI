@@ -227,12 +227,20 @@ export const deleteFileAction = async (fileId: UserFile['id']) => {
     const orgId = await getOrgIdOrThrow();
 
     // The rule `bulkDeleteFilesAction` applies: an organization admin, or
-    // the file's owner. Anyone else is told what a missing file tells them.
+    // the file's owner — and either one a member of the organization.
+    // Anyone else is told what a missing file tells them.
+    const notFound = {
+      error: 'Document not found or user does not have permission to delete it',
+      status: StatusCodes.NOT_FOUND,
+    };
     const [user, member] = await Promise.all([
       getCurrentUser(),
       getActiveMember(orgId).catch(() => null),
     ]);
-    if (!member || !canManageOrg(member.role)) {
+    if (!member) {
+      return notFound;
+    }
+    if (!canManageOrg(member.role)) {
       const owned = user
         ? await db.userFile.findFirst({
             where: { id: fileId, organizationId: orgId, ownerId: user.id },
@@ -240,11 +248,7 @@ export const deleteFileAction = async (fileId: UserFile['id']) => {
           })
         : null;
       if (!owned) {
-        return {
-          error:
-            'Document not found or user does not have permission to delete it',
-          status: StatusCodes.NOT_FOUND,
-        };
+        return notFound;
       }
     }
 

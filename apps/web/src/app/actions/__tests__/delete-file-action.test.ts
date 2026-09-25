@@ -111,6 +111,18 @@ describe('deleteFileAction and who may delete', () => {
     expect(result.status).toBe(404);
   });
 
+  it('refuses a user who is not a member, even for a file they own', async () => {
+    // A departed member still owns their files; ownership alone is not enough.
+    mockGetMember.mockResolvedValue(null);
+    mockFindFirst.mockResolvedValue({ id: 'f1' });
+
+    const result = await deleteFileAction('f1');
+
+    expect(mockFindFirst).not.toHaveBeenCalled();
+    expect(mockDelete).not.toHaveBeenCalled();
+    expect(result.status).toBe(404);
+  });
+
   it('lets an organization admin delete any file in the organization', async () => {
     mockGetMember.mockResolvedValue({ role: 'admin' });
 
