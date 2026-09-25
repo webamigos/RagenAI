@@ -3,6 +3,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerGuard } from '@nestjs/throttler';
+import { SessionAuthService } from './common/services/session-auth.service.js';
+import { throttleTracker } from './common/throttle-tracker.js';
 import { PrismaModule } from './prisma/prisma.module.js';
 import { VaultModule } from './vault/vault.module.js';
 import { CommonModule } from './common/common.module.js';
@@ -29,9 +31,12 @@ import { SubscriptionsModule } from './subscriptions/subscriptions.module.js';
       envFilePath: ['.env.local', '.env'],
     }),
     ThrottlerModule.forRootAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: (configService: ConfigService) => {
+      imports: [ConfigModule, CommonModule],
+      inject: [ConfigService, SessionAuthService],
+      useFactory: (
+        configService: ConfigService,
+        sessionAuth: SessionAuthService,
+      ) => {
         const targetEnv = configService.get<string>('TARGET_ENV');
         const isLocal = targetEnv === 'local';
         // The e2e suite drives 150+ specs from a single IP, so production
@@ -58,6 +63,10 @@ import { SubscriptionsModule } from './subscriptions/subscriptions.module.js';
           mult = 1.5;
         }
         return {
+          // Per person for apps/web's server-to-server calls, per IP for the
+          // rest — see `throttleTracker`.
+          getTracker: (req: Record<string, unknown>) =>
+            throttleTracker(req, (t) => sessionAuth.verify(t)),
           throttlers: [
             {
               name: 'cheap',
