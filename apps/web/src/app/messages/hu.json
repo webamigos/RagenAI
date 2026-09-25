@@ -2540,7 +2540,9 @@
         "unknown": "Nincsenek részletek",
         "technical-details": "Technikai részletek"
       },
-      "discuss": "Kérdezd erről az asszisztenst"
+      "discuss": "Kérdezd erről az asszisztenst",
+      "empty-in-language-title": "Semmi ezen a nyelven",
+      "empty-in-language-description": "Egyik megállapítás sem érint ilyen nyelvű dokumentumot vagy azt idéző oldalt. Válasszon másik nyelvet vagy az összeset."
     },
     "page": {
       "back": "Tudásoldalak",

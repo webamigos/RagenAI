@@ -2540,7 +2540,9 @@
         "unknown": "No detail",
         "technical-details": "Technical details"
       },
-      "discuss": "Ask the assistant about this"
+      "discuss": "Ask the assistant about this",
+      "empty-in-language-title": "Nothing in this language",
+      "empty-in-language-description": "No finding is about a document in this language or a page citing one. Pick another language, or all of them."
     },
     "page": {
       "back": "Knowledge pages",

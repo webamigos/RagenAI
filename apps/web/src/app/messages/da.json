@@ -2540,7 +2540,9 @@
         "unknown": "Ingen detaljer",
         "technical-details": "Tekniske detaljer"
       },
-      "discuss": "Spørg assistenten om dette"
+      "discuss": "Spørg assistenten om dette",
+      "empty-in-language-title": "Intet på dette sprog",
+      "empty-in-language-description": "Ingen fund handler om et dokument på dette sprog eller en side, der citerer et. Vælg et andet sprog eller dem alle."
     },
     "page": {
       "back": "Vidensider",

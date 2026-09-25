@@ -2540,7 +2540,9 @@
         "unknown": "Inga detaljer",
         "technical-details": "Tekniska detaljer"
       },
-      "discuss": "Fråga assistenten om detta"
+      "discuss": "Fråga assistenten om detta",
+      "empty-in-language-title": "Inget på det här språket",
+      "empty-in-language-description": "Inget fynd gäller ett dokument på det här språket eller en sida som citerar ett. Välj ett annat språk eller alla."
     },
     "page": {
       "back": "Kunskapssidor",

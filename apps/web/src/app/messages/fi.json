@@ -2540,7 +2540,9 @@
         "unknown": "Ei tietoja",
         "technical-details": "Tekniset tiedot"
       },
-      "discuss": "Kysy avustajalta tästä"
+      "discuss": "Kysy avustajalta tästä",
+      "empty-in-language-title": "Ei mitään tällä kielellä",
+      "empty-in-language-description": "Mikään havainto ei koske tämänkielistä asiakirjaa tai sivua, joka lainaa sitä. Valitse toinen kieli tai kaikki."
     },
     "page": {
       "back": "Tietosivut",

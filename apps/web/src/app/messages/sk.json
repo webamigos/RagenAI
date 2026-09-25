@@ -2540,7 +2540,9 @@
         "unknown": "Bez podrobností",
         "technical-details": "Technické podrobnosti"
       },
-      "discuss": "Opýtaj sa na to asistenta"
+      "discuss": "Opýtaj sa na to asistenta",
+      "empty-in-language-title": "Nič v tomto jazyku",
+      "empty-in-language-description": "Žiadne zistenie sa netýka dokumentu v tomto jazyku ani stránky, ktorá ho cituje. Vyberte iný jazyk alebo všetky."
     },
     "page": {
       "back": "Znalostné stránky",

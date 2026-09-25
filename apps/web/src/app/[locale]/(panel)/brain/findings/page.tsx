@@ -84,8 +84,16 @@ export default async function BrainFindingsPage({ searchParams }: Props) {
       />
       {items.length === 0 && listPage === 1 ? (
         <BrainEmpty
-          title={t('findings.empty-title')}
-          description={t('findings.empty-description')}
+          title={t(
+            language
+              ? 'findings.empty-in-language-title'
+              : 'findings.empty-title',
+          )}
+          description={t(
+            language
+              ? 'findings.empty-in-language-description'
+              : 'findings.empty-description',
+          )}
         />
       ) : (
         <>

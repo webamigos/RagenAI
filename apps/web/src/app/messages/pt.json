@@ -2540,7 +2540,9 @@
         "unknown": "Sem detalhes",
         "technical-details": "Detalhes técnicos"
       },
-      "discuss": "Perguntar ao assistente sobre isto"
+      "discuss": "Perguntar ao assistente sobre isto",
+      "empty-in-language-title": "Nada neste idioma",
+      "empty-in-language-description": "Nenhuma deteção diz respeito a um documento neste idioma nem a uma página que o cite. Escolha outro idioma ou todos."
     },
     "page": {
       "back": "Páginas de conhecimento",
