@@ -1,6 +1,6 @@
 import { listCatalogueEntriesAction } from './actions';
 import type { CatalogueEntryView } from './catalogue-view';
-import { CatalogueEntryForm } from './components/CatalogueEntryForm';
+import { AddCatalogueEntryButton } from './components/AddCatalogueEntryButton';
 import { CatalogueRowActions } from './components/CatalogueRowActions';
 import type { CatalogueEntryInput } from './validation';
 
@@ -109,19 +109,9 @@ export default async function McpCataloguePage() {
         </p>
       </div>
 
-      <details className="rounded-xl border border-border bg-card p-6">
-        <summary className="cursor-pointer text-lg font-semibold">
-          Add a connector
-        </summary>
-        <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
-          The server has to speak MCP over HTTP. Nothing is deployed and no
-          release is needed — the entry is live for the organizations your
-          allowlist permits as soon as it is saved.
-        </p>
-        <div className="mt-4">
-          <CatalogueEntryForm />
-        </div>
-      </details>
+      <div>
+        <AddCatalogueEntryButton />
+      </div>
 
       <div className="rounded-lg border border-border">
         <table className="w-full text-sm">

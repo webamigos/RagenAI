@@ -59,6 +59,27 @@ vi.mock('sigma', () => ({
     getNodeDisplayData() {
       return { x: 0.5, y: 0.5 };
     }
+    captorHandlers: Record<string, (e: unknown) => void> = {};
+    getMouseCaptor() {
+      return {
+        on: (event: string, fn: (e: unknown) => void) => {
+          this.captorHandlers[event] = fn;
+        },
+      };
+    }
+    bbox: unknown = null;
+    getCustomBBox() {
+      return this.bbox;
+    }
+    setCustomBBox(box: unknown) {
+      this.bbox = box;
+    }
+    getBBox() {
+      return { x: [0, 1], y: [0, 1] };
+    }
+    viewportToGraph(e: { x: number; y: number }) {
+      return { x: e.x / 10, y: e.y / 10 };
+    }
     on(event: string, fn: (e: unknown) => void) {
       this.handlers[event] = fn;
     }
@@ -231,7 +252,12 @@ describe('BrainGraphCanvas', () => {
     act(() => sigma.instances[0]!.handlers.clickNode!({ node: A }));
     const card = await screen.findByTestId('brain-graph-card');
     expect(card).toHaveTextContent('Urlop');
-    expect(card).toHaveTextContent('dotyczy · Kadry · Uncertain');
+    const relation = screen.getByTestId('brain-graph-relation');
+    // The page it points at, the kind with its direction, the origin in words
+    // for a screen reader and a tooltip — once, not as a repeated phrase.
+    expect(relation).toHaveTextContent('dotyczy →');
+    expect(relation).toHaveTextContent('Kadry');
+    expect(relation).toHaveTextContent('Uncertain');
     expect(screen.getByRole('link', { name: 'Open page' })).toHaveAttribute(
       'href',
       `/brain/pages/${A}`,
@@ -446,5 +472,116 @@ describe('BrainGraphCanvas legend', () => {
       ),
     );
     await waitFor(() => expect(reduce(B).label).not.toBe(''));
+  });
+});
+
+describe('dragging a page', () => {
+  it('moves the node with the pointer, keeps the camera still, and does not pick it on release', async () => {
+    render(
+      <NextIntlClientProvider locale="en" messages={messages}>
+        <BrainGraphCanvas view={view} />
+      </NextIntlClientProvider>,
+    );
+    await waitFor(() => expect(sigma.instances).toHaveLength(1));
+    const s = sigma.instances[0]! as unknown as {
+      handlers: Record<string, (e: unknown) => void>;
+      captorHandlers: Record<string, (e: unknown) => void>;
+      bbox: unknown;
+      graph: { getNodeAttribute: (id: string, key: string) => number };
+    };
+    const preventSigmaDefault = vi.fn();
+    const original = { preventDefault: vi.fn(), stopPropagation: vi.fn() };
+
+    act(() =>
+      s.handlers.downNode!({ node: A, event: { original: { button: 0 } } }),
+    );
+    expect(s.bbox).not.toBeNull();
+    act(() =>
+      s.captorHandlers.mousemovebody!({
+        x: 30,
+        y: 40,
+        preventSigmaDefault,
+        original,
+      }),
+    );
+    expect(s.graph.getNodeAttribute(A, 'x')).toBe(3);
+    expect(s.graph.getNodeAttribute(A, 'y')).toBe(4);
+    expect(preventSigmaDefault).toHaveBeenCalled();
+
+    act(() => s.captorHandlers.mouseup!({}));
+    act(() => s.handlers.clickNode!({ node: A }));
+    expect(screen.queryByTestId('brain-graph-card')).toBeNull();
+
+    // A plain click, with no drag before it, still picks the page.
+    act(() => s.handlers.clickNode!({ node: A }));
+    expect(await screen.findByTestId('brain-graph-card')).toBeTruthy();
+
+    // A drag whose release lands on the stage does not close the card.
+    act(() =>
+      s.handlers.downNode!({ node: A, event: { original: { button: 0 } } }),
+    );
+    act(() =>
+      s.captorHandlers.mousemovebody!({
+        x: 50,
+        y: 50,
+        preventSigmaDefault,
+        original,
+      }),
+    );
+    act(() => s.captorHandlers.mouseup!({}));
+    act(() => s.handlers.clickStage!({}));
+    expect(screen.getByTestId('brain-graph-card')).toBeTruthy();
+  });
+
+  it('does not pick a page up on a right-button press', async () => {
+    render(
+      <NextIntlClientProvider locale="en" messages={messages}>
+        <BrainGraphCanvas view={view} />
+      </NextIntlClientProvider>,
+    );
+    await waitFor(() => expect(sigma.instances.length).toBeGreaterThan(0));
+    const s = sigma.instances.at(-1)! as unknown as {
+      handlers: Record<string, (e: unknown) => void>;
+      captorHandlers: Record<string, (e: unknown) => void>;
+      graph: { getNodeAttribute: (id: string, key: string) => number };
+    };
+    const before = s.graph.getNodeAttribute(A, 'x');
+    act(() =>
+      s.handlers.downNode!({ node: A, event: { original: { button: 2 } } }),
+    );
+    act(() =>
+      s.captorHandlers.mousemovebody!({
+        x: 70,
+        y: 70,
+        preventSigmaDefault: vi.fn(),
+        original: { preventDefault: vi.fn(), stopPropagation: vi.fn() },
+      }),
+    );
+    expect(s.graph.getNodeAttribute(A, 'x')).toBe(before);
+  });
+
+  it('moves nothing when the pointer moves without a page held', async () => {
+    render(
+      <NextIntlClientProvider locale="en" messages={messages}>
+        <BrainGraphCanvas view={view} />
+      </NextIntlClientProvider>,
+    );
+    await waitFor(() => expect(sigma.instances).toHaveLength(1));
+    const s = sigma.instances.at(-1)! as unknown as {
+      captorHandlers: Record<string, (e: unknown) => void>;
+      graph: { getNodeAttribute: (id: string, key: string) => number };
+    };
+    const before = s.graph.getNodeAttribute(A, 'x');
+    const preventSigmaDefault = vi.fn();
+    act(() =>
+      s.captorHandlers.mousemovebody!({
+        x: 99,
+        y: 99,
+        preventSigmaDefault,
+        original: {},
+      }),
+    );
+    expect(s.graph.getNodeAttribute(A, 'x')).toBe(before);
+    expect(preventSigmaDefault).not.toHaveBeenCalled();
   });
 });

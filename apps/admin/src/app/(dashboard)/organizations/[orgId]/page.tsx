@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { AddMemberForm, MemberRowActions } from './MemberActions';
 import { canOwnOrg } from '@ragenai/platform-contracts';
+import { formatUsd } from '@/lib/format';
 
 export const dynamic = 'force-dynamic';
 
@@ -278,7 +279,7 @@ export default async function OrgDetailPage({
             />
             <Row
               label="Estimated Cost"
-              value={`$${aiUsage.estimatedCost.toFixed(4)}`}
+              value={formatUsd(aiUsage.estimatedCost, 4)}
             />
           </div>
         </div>

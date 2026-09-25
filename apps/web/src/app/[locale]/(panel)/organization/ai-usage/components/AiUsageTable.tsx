@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import type { AiUsageListItem } from '@/features/ai-usage/contracts/ai-usage.types';
+import { formatUsd } from '@/features/ai-usage/utils/format-usd';
 
 type Props = {
   items: AiUsageListItem[];
@@ -137,7 +138,7 @@ export function AiUsageTable({ items }: Props) {
                   {formatTokens(item.totalTokens)}
                 </td>
                 <td className="p-3 text-right font-mono text-xs">
-                  €{item.estimatedCost.toFixed(4)}
+                  {formatUsd(item.estimatedCost, 4)}
                 </td>
                 <td className="p-3 text-right text-xs text-muted-foreground">
                   {item.durationMs != null ? `${item.durationMs}ms` : '—'}

@@ -10,6 +10,7 @@ import { SortableHeader } from '@/app/components/SortableHeader';
 import { Pagination } from '@/app/components/Pagination';
 import { DateFilter } from '@/app/components/DateFilter';
 import { ExportButton } from '@/app/components/ExportButton';
+import { formatUsd } from '@/lib/format';
 
 export const dynamic = 'force-dynamic';
 
@@ -186,7 +187,7 @@ export default async function AiUsagePage({
         <div className="rounded-xl border border-border bg-card p-6">
           <p className="text-sm text-muted-foreground">Estimated Cost</p>
           <p className="mt-2 text-3xl font-bold">
-            €{totals.estimatedCost.toFixed(2)}
+            {formatUsd(totals.estimatedCost)}
           </p>
         </div>
       </div>
@@ -273,7 +274,7 @@ export default async function AiUsagePage({
                   {record.totalTokens.toLocaleString()}
                 </td>
                 <td className="px-4 py-3 text-right text-muted-foreground">
-                  €{record.estimatedCost.toFixed(4)}
+                  {formatUsd(record.estimatedCost, 4)}
                 </td>
               </tr>
             ))}

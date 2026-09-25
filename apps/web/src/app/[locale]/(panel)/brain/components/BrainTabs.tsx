@@ -13,7 +13,7 @@ const TABS = [
 ] as const;
 
 export function BrainTabs() {
-  const t = useTranslations('brain.tabs');
+  const t = useTranslations('brain');
   const pathname = usePathname();
   // `/brain/pages/…` is a page's detail, which belongs to the pages tab.
   const active = TABS.findIndex(
@@ -25,14 +25,26 @@ export function BrainTabs() {
   const go = () => {};
 
   return (
-    <Tabs className="mb-4 mt-3 w-full" activeTab={current} setActiveTab={go}>
-      <TabList activeTab={current} setActiveTab={go}>
-        {TABS.map((tab) => (
-          <Tab key={tab.key} href={tab.path}>
-            {t(tab.key)}
-          </Tab>
-        ))}
-      </TabList>
-    </Tabs>
+    <div className="mb-4 mt-3">
+      <Tabs className="w-full" activeTab={current} setActiveTab={go}>
+        <TabList activeTab={current} setActiveTab={go}>
+          {TABS.map((tab) => (
+            <Tab key={tab.key} href={tab.path}>
+              {t(`tabs.${tab.key}`)}
+            </Tab>
+          ))}
+        </TabList>
+      </Tabs>
+      {/*
+        What this tab is for, in one line: four tabs over one feature read as
+        four names for the same thing until someone says how they differ.
+      */}
+      <p
+        data-testid="brain-tab-hint"
+        className="mt-2 max-w-3xl text-[13px] text-muted-foreground"
+      >
+        {t(`tab-hints.${TABS[current]!.key}`)}
+      </p>
+    </div>
   );
 }

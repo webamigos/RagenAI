@@ -5,7 +5,6 @@ import {
   Sidebar,
   SidebarDivider,
   SidebarHeader,
-  SidebarHeading,
   SidebarItem,
   SidebarLabel,
   SidebarSection,
@@ -109,9 +108,17 @@ export default async function PanelLayout({ children }: Props) {
           point at all. The switcher is in the footer now, beside the user,
           where the two halves of "where am I signed in" belong together.
         */}
-        <div className="mb-2 flex h-12 items-center justify-between gap-1">
+        {/*
+          The bell sits beside the wordmark, as an icon with its count: as a
+          labelled row it cost the sidebar a line, which on a phone is a line
+          of the thread list.
+        */}
+        <div className="mb-2 flex h-12 items-center gap-1">
           <Logo compact />
-          <span className="hidden shrink-0 lg:block">
+          <span className="ml-1 shrink-0">
+            <NotificationBell variant="navbar" />
+          </span>
+          <span className="ml-auto hidden shrink-0 lg:block">
             <SidebarToggleButton />
           </span>
         </div>
@@ -132,13 +139,14 @@ export default async function PanelLayout({ children }: Props) {
             <SidebarLabel className="font-normal">{t('search')}</SidebarLabel>
             <ShortcutHint />
           </SearchButton>
-          <NotificationBell variant="sidebar" />
         </SidebarSection>
 
         <SidebarDivider className="my-2" />
 
         {/*
-          Zone 3 — the library, and the only destinations in the sidebar.
+          Zone 3 — the library, and the only destinations in the sidebar. Not
+          headed: the divider above already separates it from the actions, and
+          the "Library" label cost a line the thread list needs on a phone.
           Chats and Assistants used to sit unlabelled at the top of the thread
           list, where they read as two more threads; Knowledge sat above with
           the actions. Three places you can go, named as such.
@@ -148,7 +156,6 @@ export default async function PanelLayout({ children }: Props) {
           question and not one a redesign gets to answer.
         */}
         <SidebarSection>
-          <SidebarHeading>{t('nav.library')}</SidebarHeading>
           <SidebarItem href="/chats">
             <ChatBubbleLeftIconOutline className="size-5 shrink-0 stroke-muted-foreground" />
             <SidebarLabel className="font-normal">

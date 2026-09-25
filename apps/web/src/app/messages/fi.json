@@ -2889,6 +2889,12 @@
         "publish-audience": "Julkaisun jälkeen sen voivat hakea:",
         "applying": "Otetaan käyttöön…"
       }
+    },
+    "tab-hints": {
+      "pages": "Tietosivut lähteineen: jokainen sivu esittää väitteet lähdedokumenttien sanatarkkoine lainauksineen. Ehdokas odottaa tarkistusta; hyväksy ja julkaise sivu, jotta chat voi vastata sen pohjalta.",
+      "findings": "Mikä vaatii huomiotasi: ristiriidat, aukot, vanhentuneet tai omistajattomat sivut ja dokumentit, joita Brain ei pystynyt lukemaan.",
+      "graph": "Miten sivut liittyvät toisiinsa — mikä prosessi edellyttää mitäkin käytäntöä ja mitkä sivut viittaavat toisiinsa.",
+      "documents": "Lähdedokumentit, joita Brain lukee: kuinka monta sivua kustakin syntyi ja haetaanko sitä yhä chatissa."
     }
   },
   "project-context-manager": {

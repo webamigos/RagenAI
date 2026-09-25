@@ -418,7 +418,10 @@ export const handleAssistantStream = async ({
             // {tool}…" inline in the streaming message.
             if (messageData) {
               const toolCall = messageData as ApiSseToolCall;
-              const provider = providerFromToolName(toolCall.toolName);
+              // The server's answer first: it knows catalogue entries the
+              // built-in map behind `providerFromToolName` does not.
+              const provider =
+                toolCall.provider ?? providerFromToolName(toolCall.toolName);
               reduxDispatch(
                 startToolCall({
                   threadId,
@@ -426,6 +429,7 @@ export const handleAssistantStream = async ({
                     toolCallId: toolCall.toolCallId,
                     toolName: toolCall.toolName,
                     provider: provider ?? '',
+                    iconUrl: toolCall.iconUrl ?? null,
                     startedAt: new Date().toISOString(),
                   },
                 }),

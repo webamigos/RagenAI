@@ -11,6 +11,7 @@ import type Sigma from 'sigma';
 
 import type { BrainGraphView } from '@/features/brain/contracts/brain-graph.types';
 import { Link } from '@/i18n/routing';
+import { makeDrawNodeHover } from './graph-hover';
 import { canvasLabel, LABEL_SIZE_PX, separateLabels } from './separate-labels';
 import { BrainScreen } from './assistant/BrainAssistantContext';
 
@@ -301,6 +302,13 @@ export function BrainGraphCanvas({ view }: { view: BrainGraphView }) {
           labelDensity: 1.2,
           labelGridCellSize: 90,
           labelColor: { color: palette.label },
+          // Sigma's default hover box is white whatever the theme — see
+          // `makeDrawNodeHover`.
+          defaultDrawNodeHover: makeDrawNodeHover({
+            surface: palette.surface,
+            border: palette.border,
+            text: palette.label,
+          }),
           nodeReducer: (id, data) => {
             const filter = filterRef.current;
             const focus = emphasised();
@@ -350,10 +358,64 @@ export function BrainGraphCanvas({ view }: { view: BrainGraphView }) {
           hovered = null;
           sigmaRenderer.refresh();
         });
+        // Drag a page to move it: the layout is a starting point, and a
+        // person untangling a cluster by hand is reading it. Moved pages stay
+        // where they are put for this view; nothing is saved.
+        let dragged: string | null = null;
+        let moved = false;
+        sigmaRenderer.on('downNode', ({ node, event }) => {
+          // The primary button only: Sigma emits `downNode` for a right
+          // press too but no `mouseup` for it, which left the page stuck to
+          // the pointer.
+          const original = event.original as MouseEvent | TouchEvent;
+          if ('button' in original && original.button !== 0) {
+            return;
+          }
+          dragged = node;
+          moved = false;
+          // Freeze the frame: without a fixed box Sigma refits the camera to
+          // the nodes on every move, and the graph drifts under the cursor.
+          if (!sigmaRenderer.getCustomBBox()) {
+            sigmaRenderer.setCustomBBox(sigmaRenderer.getBBox());
+          }
+        });
+        const captor = sigmaRenderer.getMouseCaptor();
+        captor.on('mousemovebody', (event) => {
+          if (!dragged) {
+            return;
+          }
+          moved = true;
+          const position = sigmaRenderer.viewportToGraph(event);
+          graph.setNodeAttribute(dragged, 'x', position.x);
+          graph.setNodeAttribute(dragged, 'y', position.y);
+          // The camera would pan with the same gesture otherwise.
+          event.preventSigmaDefault();
+          event.original.preventDefault();
+          event.original.stopPropagation();
+        });
+        // Released only by the button coming up — not by the pointer leaving
+        // the canvas, where Sigma keeps sending moves and the next one would
+        // pan the camera instead.
+        captor.on('mouseup', () => {
+          dragged = null;
+        });
         sigmaRenderer.on('clickNode', ({ node }) => {
+          // The click that ends a drag is not a pick.
+          if (moved) {
+            moved = false;
+            return;
+          }
           setSelected(view.nodes.find((n) => n.id === node) ?? null);
         });
-        sigmaRenderer.on('clickStage', () => setSelected(null));
+        sigmaRenderer.on('clickStage', () => {
+          // After a drag the picking buffer may not have caught up, and the
+          // release reads as a click on the stage; it must not close the card.
+          if (moved) {
+            moved = false;
+            return;
+          }
+          setSelected(null);
+        });
         // Sigma fits the camera to the nodes, not to their labels, and a
         // label is drawn to the right of its node — so the rightmost page's
         // name ran off the canvas ("Zgłaszani…"). Zoom out a little and shift
@@ -553,15 +615,47 @@ export function BrainGraphCanvas({ view }: { view: BrainGraphView }) {
                 {t('open-findings', { count: selected.openFindings })}
               </p>
             )}
-            <ul className="mt-2 space-y-1 text-xs">
-              {relations.map(({ edge, other }, i) => (
-                <li key={i} className="text-muted-foreground">
-                  {edge.kind} · {other?.title ?? '—'} ·{' '}
-                  <span className="text-foreground">
-                    {t(`origin.${edge.origin}`)}
-                  </span>
-                </li>
-              ))}
+            <ul className="mt-2 space-y-2 text-sm">
+              {/*
+                One relation per row, read as a sentence: the page it points
+                at first and in full, the kind of relation above it with the
+                direction, and its origin as the legend's line — the words are
+                the line's tooltip and its screen-reader text, not a phrase
+                repeated on every row.
+              */}
+              {relations.map(({ edge, other }, i) => {
+                const outgoing = edge.from === selected.id;
+                return (
+                  <li
+                    key={i}
+                    data-testid="brain-graph-relation"
+                    className="flex items-start gap-2"
+                  >
+                    <span title={t(`origin.${edge.origin}`)}>
+                      <EdgeSwatch origin={edge.origin} />
+                      <span className="sr-only">
+                        {t(`origin.${edge.origin}`)}
+                      </span>
+                    </span>
+                    <div className="min-w-0">
+                      <p className="text-xs text-muted-foreground">
+                        {outgoing ? `${edge.kind} →` : `← ${edge.kind}`}
+                      </p>
+                      {other ? (
+                        <button
+                          type="button"
+                          onClick={() => flyTo(other)}
+                          className="text-left text-foreground underline-offset-4 hover:underline"
+                        >
+                          {other.title}
+                        </button>
+                      ) : (
+                        <span className="text-muted-foreground">—</span>
+                      )}
+                    </div>
+                  </li>
+                );
+              })}
             </ul>
             <div className="mt-3 flex flex-col gap-1">
               <Link
@@ -724,5 +818,7 @@ function tokenColours(el: HTMLElement) {
     },
     dim: rgb('--border'),
     label: rgb('--foreground'),
+    surface: rgb('--card'),
+    border: rgb('--border'),
   };
 }

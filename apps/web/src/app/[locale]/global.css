@@ -413,9 +413,15 @@
 
    `:has()` fires for any descendant, so exactly one element per route may
    carry the attribute. */
-.panel-content-wrapper:has([data-panel-fullwidth]) {
+.panel-content-wrapper:has([data-panel-fullwidth]),
+.panel-content-wrapper:has([data-panel-wide]) {
   max-width: none;
 }
+
+/* `[data-panel-wide]` takes the width and nothing else: the page keeps
+   scrolling as a page. For a list that has no scroller of its own —
+   notifications — where `[data-panel-fullwidth]`'s fixed, clipped shell
+   below would cut off the rows and the "load more" under them. */
 
 /* A full-width page owns the panel's *height* as well as its width: its own
    header, toolbar and pagination stay put while only its rows scroll, and

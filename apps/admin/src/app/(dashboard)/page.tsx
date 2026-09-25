@@ -6,6 +6,7 @@ import {
 
 import { prisma } from '@/lib/db';
 import { StatTile } from '@/app/components/StatTile';
+import { formatUsd } from '@/lib/format';
 
 export const dynamic = 'force-dynamic';
 
@@ -68,7 +69,7 @@ export default async function DashboardPage() {
         <StatTile label="Files" value={stats.fileCount.toLocaleString()} />
         <StatTile
           label="AI spend (all-time)"
-          value={`€${stats.aiUsageTotals.estimatedCost.toFixed(2)}`}
+          value={formatUsd(stats.aiUsageTotals.estimatedCost)}
           href="/ai-usage"
         />
         <StatTile

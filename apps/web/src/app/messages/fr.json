@@ -2889,6 +2889,12 @@
         "publish-audience": "Une fois publiée, elle pourra être retrouvée par :",
         "applying": "Application en cours…"
       }
+    },
+    "tab-hints": {
+      "pages": "Pages de connaissances avec leurs sources : chaque page énonce des affirmations avec les citations exactes des documents sources. Un candidat attend une revue ; approuvez puis publiez une page pour que le chat puisse s’en servir.",
+      "findings": "Ce qui demande votre attention : contradictions, lacunes, pages obsolètes ou sans responsable, et documents que Brain n’a pas pu lire.",
+      "graph": "Comment les pages se relient : quel processus exige quelle règle, et quelles pages se citent.",
+      "documents": "Les documents sources lus par Brain : combien de pages chacun a produit et s’il est encore interrogé par le chat."
     }
   },
   "project-context-manager": {

@@ -39,3 +39,18 @@ export function iconPathForProvider(provider: string | null): string | null {
   }
   return PROVIDER_ICON_PATHS[provider] ?? null;
 }
+
+/**
+ * A connector's brand asset: its catalogue row's, else the built-in map's.
+ * The one answer every connector view gives — the row first, because an
+ * entry added from the admin panel exists only there.
+ */
+export function connectorIconUrl(
+  provider: string | null,
+  iconUrl?: string | null,
+): string | null {
+  if (iconUrl) {
+    return iconUrl;
+  }
+  return iconPathForProvider(provider);
+}

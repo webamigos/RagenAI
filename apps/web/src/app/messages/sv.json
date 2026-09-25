@@ -2889,6 +2889,12 @@
         "publish-audience": "När den har publicerats kan den hittas av:",
         "applying": "Tillämpas…"
       }
+    },
+    "tab-hints": {
+      "pages": "Kunskapssidor med källor: varje sida innehåller påståenden med ordagranna citat ur källdokumenten. En kandidat väntar på granskning; godkänn och publicera en sida så att chatten kan svara utifrån den.",
+      "findings": "Det som kräver din uppmärksamhet: motsägelser, luckor, inaktuella eller ägarlösa sidor och dokument som Brain inte kunde läsa.",
+      "graph": "Hur sidorna hänger ihop — vilken process som kräver vilken policy och vilka sidor som hänvisar till varandra.",
+      "documents": "Källdokumenten som Brain läser: hur många sidor varje gav och om chatten fortfarande söker i dem."
     }
   },
   "project-context-manager": {

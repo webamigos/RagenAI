@@ -90,11 +90,16 @@ beforeEach(() => {
 });
 
 describe('NotificationsPage — layout', () => {
-  it('fills the panel up to 1120px, left-aligned, instead of a centred 672px column', async () => {
+  it('fills the whole panel, like the other list screens, instead of a centred column', async () => {
     serve([]);
     renderPage();
     const page = screen.getByTestId('notifications-page');
-    expect(page).toHaveClass('w-full', 'min-w-0', 'max-w-[1120px]');
+    expect(page).toHaveClass('w-full', 'min-w-0');
+    expect(page).not.toHaveClass('max-w-[1120px]');
+    // Wide, not full-width: the full-width shell clips a page with no
+    // scroller of its own.
+    expect(page).toHaveAttribute('data-panel-wide');
+    expect(page).not.toHaveAttribute('data-panel-fullwidth');
     expect(page).not.toHaveClass('mx-auto');
     expect(page).not.toHaveClass('max-w-2xl');
     await screen.findByText(pl.notifications.empty);

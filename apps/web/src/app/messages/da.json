@@ -2889,6 +2889,12 @@
         "publish-audience": "Når den er udgivet, kan den findes af:",
         "applying": "Anvendes…"
       }
+    },
+    "tab-hints": {
+      "pages": "Vidensider med kilder: hver side indeholder udsagn med ordrette citater fra kildedokumenterne. En kandidat venter på gennemgang; godkend og udgiv en side, så chatten kan svare ud fra den.",
+      "findings": "Det, der kræver din opmærksomhed: modstrid, huller, forældede eller ejerløse sider og dokumenter, Brain ikke kunne læse.",
+      "graph": "Hvordan siderne hænger sammen — hvilken proces kræver hvilken politik, og hvilke sider henviser til hinanden.",
+      "documents": "Kildedokumenterne, Brain læser: hvor mange sider hvert gav, og om chatten stadig søger i det."
     }
   },
   "project-context-manager": {

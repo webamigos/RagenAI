@@ -12,7 +12,14 @@ export function FilterChips({
   options,
 }: {
   label: string;
-  options: { key: string; label: string; href: string; active: boolean }[];
+  options: {
+    key: string;
+    label: string;
+    href: string;
+    active: boolean;
+    /** How many rows this value holds; shown after the label when given. */
+    count?: number;
+  }[];
 }) {
   return (
     <nav aria-label={label} className="mb-3 flex flex-wrap items-center gap-2">
@@ -31,6 +38,11 @@ export function FilterChips({
           )}
         >
           {option.label}
+          {option.count !== undefined && (
+            <span className="tabular-nums text-muted-foreground">
+              {` (${option.count})`}
+            </span>
+          )}
         </Link>
       ))}
     </nav>

@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import { PuzzlePieceIcon } from '@heroicons/react/24/outline';
 import { Checkbox } from '@/components/ui/checkbox';
-import { PROVIDER_ICON_PATHS } from '@/features/connectors/utils/provider-icons';
+import { connectorIconUrl } from '@/features/connectors/utils/provider-icons';
 import { connectorDisplayName } from '@/features/connectors/utils/connector-display-name';
 import { PROJECT_MCP_PROVIDERS_CHANGED_EVENT } from '@/features/projects/contracts/events';
 import { logger } from '@/app/lib/utils/logger';
@@ -124,8 +124,8 @@ export function ProjectMcpProviders({ projectId }: ProjectMcpProvidersProps) {
         </p>
       ) : (
         <div className="space-y-2">
-          {connectedProviders.map(({ provider, name }) => {
-            const iconPath = PROVIDER_ICON_PATHS[provider];
+          {connectedProviders.map(({ provider, name, iconUrl }) => {
+            const iconPath = connectorIconUrl(provider, iconUrl);
             return (
               <label
                 key={provider}

@@ -24,7 +24,7 @@ describe('StatTile', () => {
   it('renders as a link to href when one is given', () => {
     const markup = render({
       label: 'AI spend (all-time)',
-      value: '€12.34',
+      value: '$12.34',
       href: '/ai-usage',
     });
 

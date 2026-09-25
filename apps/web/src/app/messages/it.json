@@ -2889,6 +2889,12 @@
         "publish-audience": "Una volta pubblicata, potranno recuperarla:",
         "applying": "Applicazione in corso…"
       }
+    },
+    "tab-hints": {
+      "pages": "Pagine di conoscenza con le loro fonti: ogni pagina riporta affermazioni con le citazioni esatte dei documenti di origine. Un candidato attende la revisione; approva e pubblica una pagina perché la chat possa usarla per rispondere.",
+      "findings": "Ciò che richiede la tua attenzione: contraddizioni, lacune, pagine obsolete o senza responsabile e documenti che Brain non è riuscito a leggere.",
+      "graph": "Come si collegano le pagine: quale processo richiede quale regola e quali pagine si citano a vicenda.",
+      "documents": "I documenti di origine letti da Brain: quante pagine ha prodotto ciascuno e se la chat li cerca ancora."
     }
   },
   "project-context-manager": {

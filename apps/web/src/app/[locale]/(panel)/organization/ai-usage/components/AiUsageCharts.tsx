@@ -16,6 +16,7 @@ import {
 } from 'recharts';
 import type { PieLabelRenderProps } from 'recharts';
 import type { AiUsageChartData } from '@/features/ai-usage/contracts/ai-usage.types';
+import { formatUsd } from '@/features/ai-usage/utils/format-usd';
 
 type Props = {
   charts: AiUsageChartData;
@@ -54,7 +55,7 @@ const STEP_LABELS: Record<string, string> = {
 };
 
 function formatCost(value: number): string {
-  return `€${value.toFixed(4)}`;
+  return formatUsd(value, 4);
 }
 
 function formatTokensShort(n: number): string {
@@ -145,7 +146,7 @@ export function AiUsageCharts({ charts }: Props) {
                   />
                   <YAxis
                     tick={{ fontSize: 11 }}
-                    tickFormatter={(v: number) => `€${v.toFixed(2)}`}
+                    tickFormatter={(v: number) => formatUsd(v)}
                   />
                   <RechartsTooltip
                     formatter={(value) => [formatCost(Number(value)), 'Cost']}
@@ -219,7 +220,7 @@ export function AiUsageCharts({ charts }: Props) {
                   <XAxis
                     type="number"
                     tick={{ fontSize: 11 }}
-                    tickFormatter={(v: number) => `€${v.toFixed(2)}`}
+                    tickFormatter={(v: number) => formatUsd(v)}
                   />
                   <YAxis
                     type="category"
