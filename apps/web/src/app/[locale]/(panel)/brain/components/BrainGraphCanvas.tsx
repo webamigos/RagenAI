@@ -363,7 +363,14 @@ export function BrainGraphCanvas({ view }: { view: BrainGraphView }) {
         // where they are put for this view; nothing is saved.
         let dragged: string | null = null;
         let moved = false;
-        sigmaRenderer.on('downNode', ({ node }) => {
+        sigmaRenderer.on('downNode', ({ node, event }) => {
+          // The primary button only: Sigma emits `downNode` for a right
+          // press too but no `mouseup` for it, which left the page stuck to
+          // the pointer.
+          const original = event.original as MouseEvent | TouchEvent;
+          if ('button' in original && original.button !== 0) {
+            return;
+          }
           dragged = node;
           moved = false;
           // Freeze the frame: without a fixed box Sigma refits the camera to
@@ -386,11 +393,12 @@ export function BrainGraphCanvas({ view }: { view: BrainGraphView }) {
           event.original.preventDefault();
           event.original.stopPropagation();
         });
-        const drop = () => {
+        // Released only by the button coming up — not by the pointer leaving
+        // the canvas, where Sigma keeps sending moves and the next one would
+        // pan the camera instead.
+        captor.on('mouseup', () => {
           dragged = null;
-        };
-        captor.on('mouseup', drop);
-        captor.on('mouseleave', drop);
+        });
         sigmaRenderer.on('clickNode', ({ node }) => {
           // The click that ends a drag is not a pick.
           if (moved) {
@@ -399,7 +407,15 @@ export function BrainGraphCanvas({ view }: { view: BrainGraphView }) {
           }
           setSelected(view.nodes.find((n) => n.id === node) ?? null);
         });
-        sigmaRenderer.on('clickStage', () => setSelected(null));
+        sigmaRenderer.on('clickStage', () => {
+          // After a drag the picking buffer may not have caught up, and the
+          // release reads as a click on the stage; it must not close the card.
+          if (moved) {
+            moved = false;
+            return;
+          }
+          setSelected(null);
+        });
         // Sigma fits the camera to the nodes, not to their labels, and a
         // label is drawn to the right of its node — so the rightmost page's
         // name ran off the canvas ("Zgłaszani…"). Zoom out a little and shift

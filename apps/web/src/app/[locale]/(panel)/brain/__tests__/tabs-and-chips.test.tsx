@@ -31,7 +31,7 @@ const wrap = (ui: React.ReactNode) =>
 describe('BrainTabs', () => {
   it.each([
     ['/brain', /exact quotes/],
-    ['/brain/pages/x', /exact quotes/],
+    ['/brain/pages/x', /A candidate waits for review/],
     ['/brain/findings', /needs your attention/],
     ['/brain/graph', /How pages connect/],
     ['/brain/documents', /source documents/],

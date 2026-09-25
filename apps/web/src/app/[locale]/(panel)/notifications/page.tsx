@@ -143,14 +143,15 @@ export default function NotificationsPage() {
   const isFirstLoad = loading && notifications.length === 0;
 
   return (
-    // Full width, like the other list screens (`data-panel-fullwidth`, the
-    // shell's opt-in in global.css): capped at 1120px the list sat in the
-    // left half of a wide screen with the rest of it empty. `min-w-0` stays:
-    // without it the page, a flex child, grew to its widest row at 375px and
-    // the whole panel scrolled sideways.
+    // Full width (`data-panel-wide`, global.css): capped at 1120px the list
+    // sat in the left half of a wide screen. Not `data-panel-fullwidth`, which
+    // also fixes the shell's height and clips it — this list has no scroller
+    // of its own, so the rows past the fold and "load more" would vanish.
+    // `min-w-0` stays: without it the page, a flex child, grew to its widest
+    // row at 375px and the whole panel scrolled sideways.
     <div
       className="w-full min-w-0"
-      data-panel-fullwidth
+      data-panel-wide
       data-testid="notifications-page"
     >
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">

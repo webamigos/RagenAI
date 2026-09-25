@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { calculateCost } from '../ai-pricing';
+import { calculateCost, EUR_TO_USD } from '../ai-pricing';
 
 vi.mock('@/app/lib/utils/logger', () => ({
   logger: { warn: vi.fn(), error: vi.fn(), info: vi.fn() },
@@ -66,5 +66,19 @@ describe('calculateCost', () => {
     it('returns 0 for unknown model within known provider', () => {
       expect(calculateCost('litellm', 'made-up-model', 1000, 0)).toBe(0);
     });
+  });
+});
+
+describe('Scaleway rates', () => {
+  // Listed in EUR; every other rate and every display is USD, so they are
+  // converted in the table rather than summed as if they were dollars.
+  it('are converted from their EUR list price', () => {
+    expect(calculateCost('litellm', 'gpt-oss-120b', 1_000_000, 0)).toBeCloseTo(
+      0.15 * EUR_TO_USD,
+      4,
+    );
+    expect(
+      calculateCost('litellm', 'mistral-small-3.2', 0, 1_000_000),
+    ).toBeCloseTo(0.35 * EUR_TO_USD, 4);
   });
 });

@@ -1,6 +1,5 @@
 'use client';
 
-import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import { Spinner } from '@/components/ui/spinner';
 import { connectorIconUrl } from '@/features/connectors/utils/provider-icons';
@@ -36,7 +35,10 @@ export function ToolCallChip({ call }: ToolCallChipProps) {
       aria-label={t('running', { tool: toolLabel })}
     >
       {iconPath ? (
-        <Image
+        // A plain <img>, not next/image: a catalogue entry's icon may be an
+        // operator's external URL, which no `images.remotePatterns` lists.
+        // The connector views render these icons the same way.
+        <img
           src={iconPath}
           alt=""
           width={14}

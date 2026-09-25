@@ -5,6 +5,18 @@ type ModelPricing = {
   output: number; // per 1M tokens
 };
 
+/**
+ * EUR → USD for the few providers that price in euros (Scaleway). A fixed
+ * rate, not a live one: these are estimates, and a rate that moved under a
+ * month's totals would make the same usage cost two different amounts.
+ * Revisit when it drifts far enough to matter.
+ */
+export const EUR_TO_USD = 1.1;
+
+function eurToUsd(eur: number): number {
+  return Math.round(eur * EUR_TO_USD * 10_000) / 10_000;
+}
+
 const PRICING: Record<string, Record<string, ModelPricing>> = {
   openai: {
     'gpt-4o': { input: 2.5, output: 10 },
@@ -70,14 +82,14 @@ const PRICING: Record<string, Record<string, ModelPricing>> = {
     // Cohere Rerank bills per search unit, not per token. Zeroed out
     // until we add a per-request cost field to the pricing model.
     'cohere-rerank-v3-5': { input: 0, output: 0 },
-    // Scaleway Generative APIs (EUR per 1M tokens — values stored as the
-    // numeric rate; treated as USD by the AI Usage UI which is currency-
-    // agnostic).
-    'gpt-oss-120b': { input: 0.15, output: 0.6 },
-    'mistral-small-3.2': { input: 0.15, output: 0.35 },
-    'bge-multilingual-gemma2': { input: 0.1, output: 0 },
+    // Scaleway Generative APIs list prices in EUR per 1M tokens; converted
+    // here, because every other rate in this table — and every cost display —
+    // is USD. They used to be stored as the EUR number and summed as dollars.
+    'gpt-oss-120b': { input: eurToUsd(0.15), output: eurToUsd(0.6) },
+    'mistral-small-3.2': { input: eurToUsd(0.15), output: eurToUsd(0.35) },
+    'bge-multilingual-gemma2': { input: eurToUsd(0.1), output: 0 },
     // Scaleway rerank uses qwen3-embedding-8b (bi-encoder via /v1/rerank).
-    'qwen3-embedding-8b': { input: 0.1, output: 0 },
+    'qwen3-embedding-8b': { input: eurToUsd(0.1), output: 0 },
   },
   openrouter: {
     'openai/gpt-4o': { input: 2.5, output: 10 },

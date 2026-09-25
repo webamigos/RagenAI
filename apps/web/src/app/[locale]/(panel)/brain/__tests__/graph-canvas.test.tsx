@@ -492,7 +492,9 @@ describe('dragging a page', () => {
     const preventSigmaDefault = vi.fn();
     const original = { preventDefault: vi.fn(), stopPropagation: vi.fn() };
 
-    act(() => s.handlers.downNode!({ node: A }));
+    act(() =>
+      s.handlers.downNode!({ node: A, event: { original: { button: 0 } } }),
+    );
     expect(s.bbox).not.toBeNull();
     act(() =>
       s.captorHandlers.mousemovebody!({
@@ -513,6 +515,49 @@ describe('dragging a page', () => {
     // A plain click, with no drag before it, still picks the page.
     act(() => s.handlers.clickNode!({ node: A }));
     expect(await screen.findByTestId('brain-graph-card')).toBeTruthy();
+
+    // A drag whose release lands on the stage does not close the card.
+    act(() =>
+      s.handlers.downNode!({ node: A, event: { original: { button: 0 } } }),
+    );
+    act(() =>
+      s.captorHandlers.mousemovebody!({
+        x: 50,
+        y: 50,
+        preventSigmaDefault,
+        original,
+      }),
+    );
+    act(() => s.captorHandlers.mouseup!({}));
+    act(() => s.handlers.clickStage!({}));
+    expect(screen.getByTestId('brain-graph-card')).toBeTruthy();
+  });
+
+  it('does not pick a page up on a right-button press', async () => {
+    render(
+      <NextIntlClientProvider locale="en" messages={messages}>
+        <BrainGraphCanvas view={view} />
+      </NextIntlClientProvider>,
+    );
+    await waitFor(() => expect(sigma.instances.length).toBeGreaterThan(0));
+    const s = sigma.instances.at(-1)! as unknown as {
+      handlers: Record<string, (e: unknown) => void>;
+      captorHandlers: Record<string, (e: unknown) => void>;
+      graph: { getNodeAttribute: (id: string, key: string) => number };
+    };
+    const before = s.graph.getNodeAttribute(A, 'x');
+    act(() =>
+      s.handlers.downNode!({ node: A, event: { original: { button: 2 } } }),
+    );
+    act(() =>
+      s.captorHandlers.mousemovebody!({
+        x: 70,
+        y: 70,
+        preventSigmaDefault: vi.fn(),
+        original: { preventDefault: vi.fn(), stopPropagation: vi.fn() },
+      }),
+    );
+    expect(s.graph.getNodeAttribute(A, 'x')).toBe(before);
   });
 
   it('moves nothing when the pointer moves without a page held', async () => {

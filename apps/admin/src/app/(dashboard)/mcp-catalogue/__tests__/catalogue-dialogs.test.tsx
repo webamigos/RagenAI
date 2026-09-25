@@ -1,5 +1,11 @@
 // @vitest-environment jsdom
-import { fireEvent, render, screen, within } from '@testing-library/react';
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 /**
@@ -47,7 +53,7 @@ const entry = {
 beforeEach(() => vi.clearAllMocks());
 
 describe('the catalogue row', () => {
-  it('opens the edit form in a dialog named for the entry, and closes it on cancel', () => {
+  it('opens the edit form in a dialog named for the entry, and closes it on cancel', async () => {
     render(
       <CatalogueRowActions
         publicId="p-1"
@@ -65,6 +71,12 @@ describe('the catalogue row', () => {
 
     fireEvent.click(within(dialog).getByRole('button', { name: 'Cancel' }));
     expect(screen.queryByRole('dialog')).toBeNull();
+    // Focus goes back to the row's own Edit button, not to the top of the page.
+    await waitFor(() =>
+      expect(document.activeElement).toBe(
+        screen.getByRole('button', { name: 'Edit' }),
+      ),
+    );
   });
 
   it('offers no edit for a built-in entry', () => {

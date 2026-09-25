@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useRef, useState, useTransition, type RefObject } from 'react';
 import { toast } from 'sonner';
 
 import {
@@ -34,6 +34,7 @@ export function CatalogueRowActions({
   entry,
 }: CatalogueRowActionsProps) {
   const [editing, setEditing] = useState(false);
+  const editButton = useRef<HTMLButtonElement>(null);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [pending, startTransition] = useTransition();
 
@@ -77,6 +78,7 @@ export function CatalogueRowActions({
         {isBuiltIn ? null : (
           <>
             <button
+              ref={editButton}
               type="button"
               onClick={() => setEditing(true)}
               className="rounded-md border border-border px-2 py-1 text-xs"
@@ -122,6 +124,7 @@ export function CatalogueRowActions({
       <CatalogueEntryDialog
         open={editing}
         onOpenChange={setEditing}
+        returnFocusTo={editButton}
         title={`Edit ${entry.label || slug}`}
         description={`Changes apply to every organization that uses ${slug} as soon as they are saved.`}
       >
@@ -138,19 +141,32 @@ export function CatalogueRowActions({
 export function CatalogueEntryDialog({
   open,
   onOpenChange,
+  returnFocusTo,
   title,
   description,
   children,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  /**
+   * The button that opened it. Radix returns focus to a `DialogTrigger`, and
+   * these open from ordinary buttons, so without this a keyboard user landed
+   * at the top of the page after closing — lost among the catalogue rows.
+   */
+  returnFocusTo: RefObject<HTMLButtonElement | null>;
   title: string;
   description: string;
   children: React.ReactNode;
 }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
+      <DialogContent
+        className="max-h-[90vh] overflow-y-auto sm:max-w-2xl"
+        onCloseAutoFocus={(event) => {
+          event.preventDefault();
+          returnFocusTo.current?.focus();
+        }}
+      >
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>

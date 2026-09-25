@@ -2891,7 +2891,7 @@
       }
     },
     "tab-hints": {
-      "pages": "Ellenőrzött tudás: minden oldal a forrásdokumentumok szó szerinti idézeteivel alátámasztott állításokat tartalmaz. Hagyja jóvá és tegye közzé az oldalt, hogy a csevegő válaszolhasson belőle.",
+      "pages": "Tudásoldalak forrásokkal: minden oldal a forrásdokumentumok szó szerinti idézeteivel alátámasztott állításokat tartalmaz. A jelölt ellenőrzésre vár; hagyja jóvá és tegye közzé az oldalt, hogy a csevegő válaszolhasson belőle.",
       "findings": "Ami figyelmet igényel: ellentmondások, hiányok, elavult vagy gazda nélküli oldalak és dokumentumok, amelyeket a Brain nem tudott elolvasni.",
       "graph": "Hogyan kapcsolódnak az oldalak — melyik folyamat melyik szabályt igényli, és mely oldalak hivatkoznak egymásra.",
       "documents": "A Brain által olvasott forrásdokumentumok: mindegyikből hány oldal lett, és keres-e még bennük a csevegő."

@@ -2891,7 +2891,7 @@
       }
     },
     "tab-hints": {
-      "pages": "Curated knowledge: each page states claims with the exact quotes from the documents they come from. Approve a page and publish it to make it answerable in chat.",
+      "pages": "Knowledge pages with their sources: each page states claims with the exact quotes from the documents they come from. A candidate waits for review; approve a page and publish it to make it answerable in chat.",
       "findings": "What needs your attention: contradictions between pages, gaps, stale or unowned pages, and documents Brain could not read.",
       "graph": "How pages connect — which process requires which policy, and which pages cite each other.",
       "documents": "The source documents Brain reads, how many pages each one yielded, and whether each is still searched by chat."

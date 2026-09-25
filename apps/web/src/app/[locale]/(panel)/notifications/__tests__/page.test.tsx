@@ -96,7 +96,10 @@ describe('NotificationsPage — layout', () => {
     const page = screen.getByTestId('notifications-page');
     expect(page).toHaveClass('w-full', 'min-w-0');
     expect(page).not.toHaveClass('max-w-[1120px]');
-    expect(page).toHaveAttribute('data-panel-fullwidth');
+    // Wide, not full-width: the full-width shell clips a page with no
+    // scroller of its own.
+    expect(page).toHaveAttribute('data-panel-wide');
+    expect(page).not.toHaveAttribute('data-panel-fullwidth');
     expect(page).not.toHaveClass('mx-auto');
     expect(page).not.toHaveClass('max-w-2xl');
     await screen.findByText(pl.notifications.empty);
