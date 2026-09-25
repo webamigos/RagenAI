@@ -9,12 +9,11 @@ import {
   viewKey,
 } from '../components/graph-layouts';
 
-const overview = viewKey({
-  focus: null,
-  hops: 1,
-  budget: 150,
-  includeInferred: false,
-});
+const SCOPE = 'org-1:user-1';
+const overview = viewKey(
+  { focus: null, hops: 1, budget: 150, includeInferred: false },
+  SCOPE,
+);
 
 beforeEach(() => {
   window.localStorage.clear();
@@ -24,14 +23,25 @@ afterEach(() => {
 });
 
 describe('viewKey', () => {
+  it('tells apart the organization and the operator', () => {
+    const base = { focus: null, hops: 1, budget: 150, includeInferred: false };
+    expect(
+      new Set([
+        viewKey(base, 'org-1:user-1'),
+        viewKey(base, 'org-2:user-1'),
+        viewKey(base, 'org-1:user-2'),
+      ]).size,
+    ).toBe(3);
+  });
+
   it('tells apart every control that picks a different view', () => {
     const base = { focus: null, hops: 1, budget: 150, includeInferred: false };
     const keys = new Set([
-      viewKey(base),
-      viewKey({ ...base, focus: 'p1' }),
-      viewKey({ ...base, focus: 'p1', hops: 2 }),
-      viewKey({ ...base, budget: 300 }),
-      viewKey({ ...base, includeInferred: true }),
+      viewKey(base, SCOPE),
+      viewKey({ ...base, focus: 'p1' }, SCOPE),
+      viewKey({ ...base, focus: 'p1', hops: 2 }, SCOPE),
+      viewKey({ ...base, budget: 300 }, SCOPE),
+      viewKey({ ...base, includeInferred: true }, SCOPE),
     ]);
     expect(keys.size).toBe(5);
   });
@@ -46,7 +56,10 @@ describe('layouts', () => {
     });
     expect(
       loadLayout(
-        viewKey({ focus: 'a', hops: 1, budget: 150, includeInferred: false }),
+        viewKey(
+          { focus: 'a', hops: 1, budget: 150, includeInferred: false },
+          SCOPE,
+        ),
       ),
     ).toEqual({});
   });
@@ -63,12 +76,15 @@ describe('layouts', () => {
   });
 
   it('are forgotten by clearing the view, and only that view', () => {
-    const other = viewKey({
-      focus: null,
-      hops: 1,
-      budget: 300,
-      includeInferred: false,
-    });
+    const other = viewKey(
+      {
+        focus: null,
+        hops: 1,
+        budget: 300,
+        includeInferred: false,
+      },
+      SCOPE,
+    );
     saveLayout(overview, { a: { x: 1, y: 1 } });
     saveLayout(other, { b: { x: 2, y: 2 } });
     clearLayout(overview);
@@ -92,6 +108,24 @@ describe('layouts', () => {
     expect(loadLayout(overview)).toEqual({ a: { x: 1, y: 2 } });
     saveLayout(overview, { d: { x: Number.NaN, y: 0 }, e: { x: 1, y: 1 } });
     expect(loadLayout(overview)).toEqual({ e: { x: 1, y: 1 } });
+  });
+
+  it('drop a damaged view instead of failing the next save', () => {
+    window.localStorage.setItem(
+      'ragen.brain-graph.layouts',
+      JSON.stringify({
+        v: 1,
+        views: {
+          damaged: null,
+          noTime: { nodes: {} },
+          [overview]: { at: 1, nodes: { a: { x: 1, y: 1 } } },
+        },
+      }),
+    );
+    expect(() => saveLayout('other', { b: { x: 2, y: 2 } })).not.toThrow();
+    expect(loadLayout('other')).toEqual({ b: { x: 2, y: 2 } });
+    expect(loadLayout(overview)).toEqual({ a: { x: 1, y: 1 } });
+    expect(loadLayout('damaged')).toEqual({});
   });
 
   it('start over from storage that is not theirs', () => {

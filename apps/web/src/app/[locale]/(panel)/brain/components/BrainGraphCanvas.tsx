@@ -171,10 +171,13 @@ function FindingSwatch() {
 export function BrainGraphCanvas({
   view,
   selected: selectedInUrl,
+  layoutScope,
 }: {
   view: BrainGraphView;
   /** `?selected=` — the page picked before a reload or a way back here. */
   selected?: string;
+  /** Whose saved layouts these are: `orgId:userId`, from the server. */
+  layoutScope: string;
 }) {
   const t = useTranslations('brain.graph');
   const container = useRef<HTMLDivElement>(null);
@@ -287,7 +290,7 @@ export function BrainGraphCanvas({
         // The layout the operator left this view in: every page it holds
         // goes back where it was, `fixed`, so ForceAtlas2 and the passes
         // after it only place the pages that are new since.
-        const layoutKey = viewKey(view);
+        const layoutKey = viewKey(view, layoutScope);
         const saved = loadLayout(layoutKey);
         let restored = 0;
         for (const [id, p] of Object.entries(saved)) {
@@ -531,7 +534,7 @@ export function BrainGraphCanvas({
       disposed = true;
       kill?.();
     };
-  }, [view, layoutRun]);
+  }, [view, layoutRun, layoutScope]);
 
   const matches = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -704,7 +707,7 @@ export function BrainGraphCanvas({
                     title={t('reset-layout')}
                     data-testid="brain-graph-reset-layout"
                     onClick={() => {
-                      clearLayout(viewKey(view));
+                      clearLayout(viewKey(view, layoutScope));
                       setLayoutRun((n) => n + 1);
                     }}
                   >

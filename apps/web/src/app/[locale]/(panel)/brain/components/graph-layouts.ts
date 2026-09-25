@@ -8,6 +8,10 @@
  * picture back exactly; only pages new since it was taken are laid out, around
  * the ones that were already there.
  *
+ * Per operator and organization: one browser can hold several accounts, and
+ * one account several organizations, and the overview's key would otherwise
+ * be the same in all of them — a drag in one would overwrite another's.
+ *
  * Per view: the graph never draws everything, and a layout's coordinates only
  * mean something inside the view they were laid out in — an overview of 150
  * pages and one page's neighbourhood are spread at different scales. So the
@@ -43,8 +47,13 @@ type Stored = {
   views: Record<string, { at: number; nodes: Layout }>;
 };
 
-export function viewKey(view: ViewIdentity): string {
+/**
+ * `scope` is who is looking, and in which organization (`orgId:userId`),
+ * decided by the server; the rest picks the view.
+ */
+export function viewKey(view: ViewIdentity, scope: string): string {
   return [
+    scope,
     view.focus ?? 'overview',
     view.hops,
     view.budget,
@@ -61,12 +70,28 @@ function isPosition(value: unknown): value is Position {
   );
 }
 
+function isStoredView(value: unknown): value is Stored['views'][string] {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    Number.isFinite((value as { at?: unknown }).at) &&
+    typeof (value as { nodes?: unknown }).nodes === 'object' &&
+    (value as { nodes?: unknown }).nodes !== null
+  );
+}
+
 function read(): Stored {
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
     const parsed = raw ? (JSON.parse(raw) as Partial<Stored>) : null;
     if (parsed?.v === 1 && parsed.views && typeof parsed.views === 'object') {
-      return parsed as Stored;
+      // A damaged entry is dropped here, before anything sorts by its `at`.
+      return {
+        v: 1,
+        views: Object.fromEntries(
+          Object.entries(parsed.views).filter(([, view]) => isStoredView(view)),
+        ),
+      };
     }
   } catch {
     // Unavailable or malformed: start over rather than fail the graph.
