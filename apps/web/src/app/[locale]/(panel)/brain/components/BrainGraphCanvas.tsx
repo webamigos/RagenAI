@@ -13,6 +13,7 @@ import type { BrainGraphView } from '@/features/brain/contracts/brain-graph.type
 import { Link } from '@/i18n/routing';
 import { makeDrawNodeHover } from './graph-hover';
 import { canvasLabel, LABEL_SIZE_PX, separateLabels } from './separate-labels';
+import { shelveIsolated } from './shelve-isolated';
 import { BrainScreen } from './assistant/BrainAssistantContext';
 
 type Node = BrainGraphView['nodes'][number];
@@ -22,23 +23,27 @@ type Node = BrainGraphView['nodes'][number];
  * `--chart-4`: that is the signal crimson, rationed to destructive actions
  * and what is wrong (`docs/panel-ux-rules.md` rule 16), and a group of pages
  * is neither.
+ *
+ * Not `--ring` either, which was here: it is the same brand blue as
+ * `--chart-1` in both themes, so the first and fourth groups — the two
+ * largest after the second and third — were drawn in one colour. Four
+ * hues are all the palette has.
  */
-const COMMUNITY_TOKENS = [
+export const COMMUNITY_TOKENS = [
   '--chart-1',
   '--chart-2',
   '--chart-3',
-  '--ring',
   '--chart-5',
 ] as const;
 
 /**
  * A community's colour: a token, and how opaque to draw it.
  *
- * Five tokens and a plain `id % 5` gave the sixth community the first one's
+ * A plain `id % n` gave the group after the last token the first one's
  * colour, so two unrelated groups read as one. The second lap draws the same
- * tokens mixed half-and-half with the background — ten distinct swatches
- * before anything repeats, without borrowing the rationed crimson. Past ten
- * the cycle wraps; the legend lists at most eight.
+ * tokens mixed half-and-half with the background — eight distinct swatches
+ * before anything repeats, without borrowing the rationed crimson, and the
+ * legend lists at most eight. Past that the cycle wraps.
  *
  * Mixed to an opaque colour, not drawn at half opacity: Sigma composites with
  * `ONE, ONE_MINUS_SRC_ALPHA`, which expects premultiplied colour, and it does
@@ -161,11 +166,18 @@ function FindingSwatch() {
  *
  * Sigma is loaded on the client only: it needs WebGL and `window`.
  */
-export function BrainGraphCanvas({ view }: { view: BrainGraphView }) {
+export function BrainGraphCanvas({
+  view,
+  selected: selectedInUrl,
+}: {
+  view: BrainGraphView;
+  /** `?selected=` — the page picked before a reload or a way back here. */
+  selected?: string;
+}) {
   const t = useTranslations('brain.graph');
   const container = useRef<HTMLDivElement>(null);
-  const [selected, setSelected] = useState<Node | null>(
-    () => view.nodes.find((n) => n.id === view.focus) ?? null,
+  const [selected, setSelected] = useState<Node | null>(() =>
+    initialSelection(view, selectedInUrl),
   );
   const [failed, setFailed] = useState(false);
   const renderer = useRef<Sigma | null>(null);
@@ -182,9 +194,32 @@ export function BrainGraphCanvas({ view }: { view: BrainGraphView }) {
   const [shownView, setShownView] = useState(view);
   if (shownView !== view) {
     setShownView(view);
-    setSelected(view.nodes.find((n) => n.id === view.focus) ?? null);
+    setSelected(initialSelection(view, selectedInUrl));
     setCommunityFilter(null);
   }
+
+  // The pick lives in the URL, so coming back to the graph — from the full
+  // page, from another tab, or by a reload — finds the same page picked.
+  // Replaced, not pushed: every click is not a step back. The native history
+  // API updates the address without a server round trip or a new picture.
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    // Only the graph's own address: with a page open over it the address is
+    // that page's, and a pick made meanwhile is not the page's to carry.
+    if (!url.pathname.endsWith('/brain/graph')) {
+      return;
+    }
+    const id = selected && selected.id !== view.focus ? selected.id : null;
+    if ((url.searchParams.get('selected') ?? null) === id) {
+      return;
+    }
+    if (id) {
+      url.searchParams.set('selected', id);
+    } else {
+      url.searchParams.delete('selected');
+    }
+    window.history.replaceState(null, '', url);
+  }, [selected, view.focus]);
 
   useEffect(() => {
     selectedId.current = selected?.id ?? null;
@@ -271,6 +306,9 @@ export function BrainGraphCanvas({ view }: { view: BrainGraphView }) {
               ),
             },
           });
+          // Before the names are spaced: the strays leave the ring they
+          // drifted into, and the connected graph gets the room.
+          shelveIsolated(graph);
           // ForceAtlas2 keeps the dots apart; this keeps the names apart.
           // Past MEDIUM_GRAPH most names are hidden by the label grid anyway,
           // and the pass would cost more than it shows.
@@ -805,6 +843,18 @@ export function BrainGraphCanvas({ view }: { view: BrainGraphView }) {
  * into one pixel and read back, which works for any colour syntax the
  * browser supports — oklch included — without a colour library.
  */
+/** The page picked when a view opens: the URL's, if it is in the view, else the focus. */
+function initialSelection(
+  view: BrainGraphView,
+  selectedInUrl: string | undefined,
+): Node | null {
+  return (
+    view.nodes.find((n) => n.id === selectedInUrl) ??
+    view.nodes.find((n) => n.id === view.focus) ??
+    null
+  );
+}
+
 export function tokenColours(el: HTMLElement) {
   const style = getComputedStyle(el);
   const canvas = document.createElement('canvas');

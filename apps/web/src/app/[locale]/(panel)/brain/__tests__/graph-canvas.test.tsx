@@ -1,3 +1,6 @@
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
+
 import {
   act,
   fireEvent,
@@ -273,20 +276,62 @@ describe('BrainGraphCanvas', () => {
 });
 
 describe('communityColour', () => {
-  // Five tokens and `id % 5` gave the sixth community the first one's colour.
-  it('gives the first ten communities ten different swatches', async () => {
+  // `id % n` gave the group after the last token the first one's colour.
+  it('gives the eight groups the legend lists eight different swatches', async () => {
     const { communityColour } = await import('../components/BrainGraphCanvas');
-    const swatches = Array.from({ length: 10 }, (_, id) => {
+    const swatches = Array.from({ length: 8 }, (_, id) => {
       const { token, alpha } = communityColour(id);
       return `${token}@${alpha}`;
     });
-    expect(new Set(swatches).size).toBe(10);
+    expect(new Set(swatches).size).toBe(8);
   });
 
   it('never uses the rationed crimson', async () => {
     const { communityColour } = await import('../components/BrainGraphCanvas');
     for (let id = 0; id < 20; id += 1) {
       expect(communityColour(id).token).not.toBe('--chart-4');
+    }
+  });
+
+  /**
+   * Distinct names are not distinct colours: `--ring` sat beside `--chart-1`
+   * and is the same brand blue in both themes, and the test above passed.
+   * This one resolves each token through global.css, per theme.
+   */
+  it('draws with tokens that are different colours in both themes', async () => {
+    const { COMMUNITY_TOKENS } = await import('../components/BrainGraphCanvas');
+    const css = readFileSync(
+      path.resolve(__dirname, '../../../global.css'),
+      'utf8',
+    );
+    const block = (selector: string) => {
+      const start = css.indexOf(`${selector} {`);
+      return css.slice(start, css.indexOf('\n}', start));
+    };
+    const declarations = (text: string) =>
+      new Map(
+        [...text.matchAll(/(--[\w-]+):\s*([^;]+);/g)].map((m) => [
+          m[1]!,
+          m[2]!.trim(),
+        ]),
+      );
+    const theme = declarations(css.slice(0, css.indexOf(':root {')));
+    for (const selector of [':root', '.dark']) {
+      const vars = declarations(block(selector));
+      const resolve = (value: string, depth = 0): string => {
+        const ref = /^var\((--[\w-]+)\)$/.exec(value);
+        if (!ref || depth > 10) {
+          return value;
+        }
+        const next = vars.get(ref[1]!) ?? theme.get(ref[1]!);
+        return next ? resolve(next, depth + 1) : value;
+      };
+      const colours = COMMUNITY_TOKENS.map((token) =>
+        resolve(vars.get(token) ?? `missing ${token}`),
+      );
+      expect(new Set(colours).size, `${selector}: ${colours.join(', ')}`).toBe(
+        COMMUNITY_TOKENS.length,
+      );
     }
   });
 });
@@ -665,6 +710,74 @@ describe('a container that changes size', () => {
       expect(observers[0]!.disconnected).toBe(true);
     } finally {
       vi.unstubAllGlobals();
+    }
+  });
+});
+
+describe('the picked page in the address', () => {
+  it('opens with the page the address names, and writes each pick back to it', async () => {
+    window.history.replaceState(null, '', '/pl/brain/graph?budget=150');
+    try {
+      render(
+        <NextIntlClientProvider locale="en" messages={messages}>
+          <BrainGraphCanvas view={view} selected={B} />
+        </NextIntlClientProvider>,
+      );
+      expect(await screen.findByTestId('brain-graph-card')).toHaveTextContent(
+        'Kadry',
+      );
+      await waitFor(() => expect(sigma.instances).toHaveLength(1));
+      const s = sigma.instances[0]!;
+
+      act(() => s.handlers.clickNode!({ node: A }));
+      await waitFor(() =>
+        expect(new URL(window.location.href).searchParams.get('selected')).toBe(
+          A,
+        ),
+      );
+      // The rest of the address is left as it was.
+      expect(new URL(window.location.href).searchParams.get('budget')).toBe(
+        '150',
+      );
+
+      act(() => s.handlers.clickStage!({}));
+      await waitFor(() =>
+        expect(new URL(window.location.href).searchParams.has('selected')).toBe(
+          false,
+        ),
+      );
+    } finally {
+      window.history.replaceState(null, '', '/');
+    }
+  });
+
+  it('ignores an address naming a page that is not in the view', async () => {
+    render(
+      <NextIntlClientProvider locale="en" messages={messages}>
+        <BrainGraphCanvas
+          view={view}
+          selected="00000000-0000-4000-8000-0000000000ff"
+        />
+      </NextIntlClientProvider>,
+    );
+    await waitFor(() => expect(sigma.instances).toHaveLength(1));
+    expect(screen.queryByTestId('brain-graph-card')).toBeNull();
+  });
+
+  it('writes nothing while the address is not the graph’s', async () => {
+    window.history.replaceState(null, '', `/pl/brain/pages/${B}`);
+    try {
+      render(
+        <NextIntlClientProvider locale="en" messages={messages}>
+          <BrainGraphCanvas view={view} />
+        </NextIntlClientProvider>,
+      );
+      await waitFor(() => expect(sigma.instances).toHaveLength(1));
+      act(() => sigma.instances[0]!.handlers.clickNode!({ node: A }));
+      expect(await screen.findByTestId('brain-graph-card')).toBeTruthy();
+      expect(window.location.search).toBe('');
+    } finally {
+      window.history.replaceState(null, '', '/');
     }
   });
 });

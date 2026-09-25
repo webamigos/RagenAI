@@ -284,7 +284,11 @@ export function BrainAssistantPanel({
         )}
         {history === null && messages.length === 0 && (
           <EmptyState
-            prompts={suggestedPromptKeys(screen.view, canWrite)}
+            prompts={suggestedPromptKeys(
+              screen.view,
+              canWrite,
+              screen.view === 'graph' && Boolean(screen.selectedPageId),
+            )}
             onPick={(prompt) => void send(prompt)}
           />
         )}
