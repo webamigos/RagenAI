@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 import {
   buildList,
@@ -15,12 +19,14 @@ import { type CreateThreadDto } from './dto/create-thread.dto.js';
 import { type UpdateThreadDto } from './dto/update-thread.dto.js';
 import { type ListThreadsDto } from './dto/list-threads.dto.js';
 import { AssistantScopeService } from '../common/services/assistant-scope.service.js';
+import { SubscriptionsService } from '../subscriptions/subscriptions.service.js';
 
 @Injectable()
 export class ThreadsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly assistantScope: AssistantScopeService,
+    private readonly subscriptions: SubscriptionsService,
   ) {}
 
   async list(
@@ -111,6 +117,9 @@ export class ThreadsService {
   }
 
   async remove(id: string, context: ApiContext): Promise<OpenAIDeletedThread> {
+    // The panel's delete is gated in ThreadsCoreService; this is the public
+    // path, and it deletes the same rows, so it answers to the same key.
+    await assertCanDeleteThreads(this.subscriptions, context);
     const rawId = stripPrefix(id, 'thread');
     await this.findOrThrow(id, context);
 
@@ -155,5 +164,21 @@ export class ThreadsService {
       createdAt: true,
       projectId: true,
     } as const;
+  }
+}
+
+/**
+ * `deleteThreads` off means nobody in the organization deletes a thread — nor
+ * a message in one, which empties a thread just as well, one call at a time.
+ * 403, not the 401 older gates here throw: the key is valid, the organization
+ * has switched the action off, and a client that reads 401 as "re-authenticate"
+ * would retry something that cannot succeed.
+ */
+export async function assertCanDeleteThreads(
+  subscriptions: SubscriptionsService,
+  context: ApiContext,
+): Promise<void> {
+  if (!(await subscriptions.isFeatureEnabled(context.orgId, 'deleteThreads'))) {
+    throw new ForbiddenException('This organization cannot delete threads');
   }
 }

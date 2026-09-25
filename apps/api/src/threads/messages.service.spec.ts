@@ -1,8 +1,9 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */
-import { NotFoundException } from '@nestjs/common';
+import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { MessagesService } from './messages.service.js';
 import { type PrismaService } from '../prisma/prisma.service.js';
 import { type ApiContext } from '../common/types/api-context.js';
+import { type SubscriptionsService } from '../subscriptions/subscriptions.service.js';
 import {
   type OrgId,
   type UserId,
@@ -32,6 +33,7 @@ describe('MessagesService', () => {
       threadFound?: boolean;
       isEncrypted?: boolean;
       messages?: Array<Record<string, unknown>>;
+      deleteThreads?: boolean;
     } = {},
   ) {
     const threadRow =
@@ -51,7 +53,20 @@ describe('MessagesService', () => {
     const prisma = {
       client: { thread: threadOps, message: messageOps },
     } as unknown as PrismaService;
-    return { service: new MessagesService(prisma), threadOps, messageOps };
+    const isFeatureEnabled = vi.fn((_orgId: string, key: string) =>
+      Promise.resolve(
+        key === 'deleteThreads' ? (opts.deleteThreads ?? true) : true,
+      ),
+    );
+    const subscriptions = {
+      isFeatureEnabled,
+    } as unknown as SubscriptionsService;
+    return {
+      service: new MessagesService(prisma, subscriptions),
+      threadOps,
+      messageOps,
+      isFeatureEnabled,
+    };
   }
 
   it('list: returns OpenAI envelope with msg- prefixed ids', async () => {
@@ -129,5 +144,23 @@ describe('MessagesService', () => {
     await expect(
       svc.remove('thread-t-1', 'msg-ghost', context),
     ).rejects.toBeInstanceOf(NotFoundException);
+  });
+
+  it("remove: asks deleteThreads for the key's organization", async () => {
+    const { service, isFeatureEnabled } = makeService();
+    await service.remove('thread-t-1', 'msg-m-1', context);
+    expect(isFeatureEnabled).toHaveBeenCalledWith('org-1', 'deleteThreads');
+  });
+
+  // Deleting every message empties a thread as surely as deleting it, so the
+  // key that stops one stops the other.
+  it('remove: 403 and nothing deleted when the organization has deleteThreads off', async () => {
+    const { service, messageOps } = makeService({ deleteThreads: false });
+    const attempt = service.remove('thread-t-1', 'msg-m-1', context);
+    await expect(attempt).rejects.toBeInstanceOf(ForbiddenException);
+    await expect(attempt).rejects.toThrow(
+      'This organization cannot delete threads',
+    );
+    expect(messageOps.deleteMany).not.toHaveBeenCalled();
   });
 });
