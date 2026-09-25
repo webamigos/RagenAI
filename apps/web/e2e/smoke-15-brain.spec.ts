@@ -94,6 +94,13 @@ test.describe('Ragen Brain panel (smoke)', () => {
     await page.goto(`/pl/brain/graph?focus=${TEST_BRAIN_PAGE_PUBLIC_ID}`);
     const card = page.getByTestId('brain-graph-card');
     await expect(card).toContainText(TEST_BRAIN_PAGE_TITLE, { timeout: 15000 });
+    // The neighbourhood reads as an active filter with its own way out.
+    await expect(page.getByTestId('brain-graph-focus')).toContainText(
+      TEST_BRAIN_PAGE_TITLE,
+    );
+    await expect(
+      page.getByRole('link', { name: 'Wróć do całości' }),
+    ).toHaveAttribute('data-testid', 'brain-graph-focus-clear');
 
     await card.getByRole('link', { name: 'Otwórz stronę' }).click();
     const drawer = page.getByTestId('brain-page-drawer');

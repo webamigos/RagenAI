@@ -2496,7 +2496,11 @@
         "updated": "Geändert"
       },
       "empty-in-language-title": "Nichts in dieser Sprache",
-      "empty-in-language-description": "Kein Dokument in dieser Sprache oder keine Seite, die eines zitiert. Wählen Sie eine andere Sprache oder alle."
+      "empty-in-language-description": "Kein Dokument in dieser Sprache oder keine Seite, die eines zitiert. Wählen Sie eine andere Sprache oder alle.",
+      "search-placeholder": "Seiten nach Titel suchen…",
+      "search-clear": "Suche löschen",
+      "search-empty-title": "Keine Seite passt",
+      "search-empty-description": "Kein Seitentitel enthält „{search}“. Versuchen Sie einen Wortteil oder löschen Sie die Suche."
     },
     "findings": {
       "columns": {
@@ -2786,7 +2790,6 @@
       "restore": "Zurückholen",
       "withdrawn": "Dokument aus der Suche genommen",
       "restored": "Dokument wird wieder in die Suche aufgenommen",
-      "needs-approved": "Geben Sie zuerst eine Seite frei, die dieses Dokument zitiert",
       "withdraw-title": "Dieses Dokument aus der Suche nehmen?",
       "withdraw-description": "Antworten stützen sich dann nicht mehr direkt auf „{name}“, sondern auf die daraus erstellten freigegebenen Seiten. Das Dokument, seine Versionen und alle Zitate bleiben; Sie können es jederzeit zurückholen.",
       "errors": {

@@ -2496,7 +2496,11 @@
         "updated": "Zmenené"
       },
       "empty-in-language-title": "Nič v tomto jazyku",
-      "empty-in-language-description": "Žiadny dokument v tomto jazyku ani stránka, ktorá ho cituje. Vyberte iný jazyk alebo všetky."
+      "empty-in-language-description": "Žiadny dokument v tomto jazyku ani stránka, ktorá ho cituje. Vyberte iný jazyk alebo všetky.",
+      "search-placeholder": "Hľadať stránky podľa názvu…",
+      "search-clear": "Vymazať hľadanie",
+      "search-empty-title": "Žiadna stránka nevyhovuje",
+      "search-empty-description": "Žiadny názov stránky neobsahuje „{search}“. Skúste časť slova alebo hľadanie vymažte."
     },
     "findings": {
       "columns": {
@@ -2786,7 +2790,6 @@
       "restore": "Vrátiť",
       "withdrawn": "Dokument vyradený z vyhľadávania",
       "restored": "Dokument sa vracia do vyhľadávania",
-      "needs-approved": "Najprv schváľte stránku, ktorá tento dokument cituje",
       "withdraw-title": "Vyradiť tento dokument z vyhľadávania?",
       "withdraw-description": "Odpovede prestanú priamo čerpať z „{name}“ a použijú z neho vytvorené schválené stránky. Dokument, jeho verzie aj všetky citácie zostávajú; kedykoľvek ho môžete vrátiť.",
       "errors": {

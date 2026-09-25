@@ -83,7 +83,11 @@ export function DocumentRetrievalActions({
       </Button>
     );
   }
-  if (retrieval !== 'in') {
+  // Nothing to offer until an approved page covers the document: a disabled
+  // "Take out of search" on every uncurated row was a column of greyed-out
+  // buttons saying the same "not yet" fifteen times. The tab's intro says when
+  // it becomes possible.
+  if (retrieval !== 'in' || !curated) {
     return null;
   }
   return (
@@ -91,8 +95,7 @@ export function DocumentRetrievalActions({
       <Button
         size="sm"
         variant="outline"
-        disabled={pending || !curated}
-        title={curated ? undefined : t('needs-approved')}
+        disabled={pending}
         onClick={() => setConfirming(true)}
       >
         {t('withdraw')}

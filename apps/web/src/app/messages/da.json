@@ -2496,7 +2496,11 @@
         "updated": "Ændret"
       },
       "empty-in-language-title": "Intet på dette sprog",
-      "empty-in-language-description": "Intet dokument på dette sprog, eller ingen side, der citerer et. Vælg et andet sprog eller dem alle."
+      "empty-in-language-description": "Intet dokument på dette sprog, eller ingen side, der citerer et. Vælg et andet sprog eller dem alle.",
+      "search-placeholder": "Søg sider efter titel…",
+      "search-clear": "Ryd søgningen",
+      "search-empty-title": "Ingen side matcher",
+      "search-empty-description": "Ingen sidetitel indeholder “{search}”. Prøv en del af et ord, eller ryd søgningen."
     },
     "findings": {
       "columns": {
@@ -2786,7 +2790,6 @@
       "restore": "Sæt tilbage",
       "withdrawn": "Dokumentet er taget ud af søgningen",
       "restored": "Dokumentet sættes tilbage i søgningen",
-      "needs-approved": "Godkend først en side, der citerer dokumentet",
       "withdraw-title": "Tag dette dokument ud af søgningen?",
       "withdraw-description": "Svarene holder op med at bygge direkte på “{name}” og bruger de godkendte sider, der er lavet ud fra det. Dokumentet, dets versioner og alle citater bliver; du kan sætte det tilbage når som helst.",
       "errors": {

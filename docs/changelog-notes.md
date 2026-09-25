@@ -131,6 +131,11 @@ archive is the blog.
   kinds the extraction writes in English ("applies to", "requires", "is part
   of") are shown translated on the graph's card and the page's relations,
   and the card's two links carry a small icon.
+- `[brief]` **Brain's screens are easier to scan.** Pages can be searched by
+  title; approved pages show green and ones waiting on someone amber; empty
+  owners and zero findings are muted so the real values stand out; a graph
+  neighbourhood is a chip with an × instead of a faint link; and documents
+  offer "take out of search" only where it can be done.
 - `[brief]` **Brain can be narrowed to one language.** A "Language" select
   beside the tabs shows only the documents in, say, Polish or English — and
   the pages, findings and graph that come from them; "Not detected" finds the

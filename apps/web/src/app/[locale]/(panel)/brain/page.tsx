@@ -22,9 +22,12 @@ import { Link } from '@/i18n/routing';
 
 import { BrainEmpty } from './components/BrainEmpty';
 import { BrainPager } from './components/BrainPager';
+import { PageSearch } from './components/PageSearch';
 import { parseBrainLanguage } from '@/features/brain/contracts/brain-language.types';
 import { getBrainLanguageScopeQuery } from '@/features/brain/services/queries/brain-language-scope';
+import { pageStatusVariant } from '@/features/brain/utils/page-status-variant';
 import { withLanguage } from '@/features/brain/utils/with-language';
+import { withSearch } from '@/features/brain/utils/with-search';
 import { BrainScreen } from './components/assistant/BrainAssistantContext';
 import { FilterChips } from './components/FilterChips';
 import { PublishAllButton } from './components/PublishAllButton';
@@ -36,6 +39,7 @@ type Props = {
     status?: string | string[];
     page?: string | string[];
     lang?: string | string[];
+    q?: string | string[];
   }>;
 };
 
@@ -49,6 +53,8 @@ export default async function BrainPagesPage({ searchParams }: Props) {
   const value = Array.isArray(raw) ? raw[0] : raw;
   const listPage = parseListPage(params.page);
   const language = parseBrainLanguage(params.lang);
+  const rawSearch = Array.isArray(params.q) ? params.q[0] : params.q;
+  const search = rawSearch?.trim().slice(0, 200) || null;
   const status = (PAGE_STATUS_FILTERS as readonly string[]).includes(
     value ?? '',
   )
@@ -62,7 +68,7 @@ export default async function BrainPagesPage({ searchParams }: Props) {
     await Promise.all([
       getTranslations('brain'),
       getFormatter(),
-      getKnowledgePagesQuery(access.orgId, status, listPage, scope),
+      getKnowledgePagesQuery(access.orgId, status, listPage, scope, search),
       getBrainExportSummaryQuery(access.orgId),
       getApprovedPageCountQuery(access.orgId),
       getBrainStatusCountsQuery(access.orgId, scope),
@@ -71,6 +77,24 @@ export default async function BrainPagesPage({ searchParams }: Props) {
     string,
     number,
   ][];
+
+  // Why the list is empty decides what it says: nothing matches the search,
+  // nothing is in the language, or there is nothing yet.
+  let empty = {
+    title: t('pages.empty-title'),
+    description: t('pages.empty-description'),
+  };
+  if (search) {
+    empty = {
+      title: t('pages.search-empty-title'),
+      description: t('pages.search-empty-description', { search }),
+    };
+  } else if (language) {
+    empty = {
+      title: t('pages.empty-in-language-title'),
+      description: t('pages.empty-in-language-description'),
+    };
+  }
 
   return (
     <section>
@@ -82,7 +106,7 @@ export default async function BrainPagesPage({ searchParams }: Props) {
           {
             key: 'all',
             label: t('filters.all-but-rejected'),
-            href: withLanguage('/brain', language),
+            href: withLanguage(withSearch('/brain', search), language),
             active: status === null,
             count:
               counts.pages.CANDIDATE +
@@ -92,7 +116,10 @@ export default async function BrainPagesPage({ searchParams }: Props) {
           ...PAGE_STATUS_FILTERS.map((s) => ({
             key: s,
             label: t(`page-status.${s}`),
-            href: withLanguage(`/brain?status=${s}`, language),
+            href: withLanguage(
+              withSearch(`/brain?status=${s}`, search),
+              language,
+            ),
             active: status === s,
             count: counts.pages[s],
           })),
@@ -129,17 +156,10 @@ export default async function BrainPagesPage({ searchParams }: Props) {
         </div>
       )}
 
+      <PageSearch search={search} status={status} language={language} />
+
       {items.length === 0 && listPage === 1 ? (
-        <BrainEmpty
-          title={t(
-            language ? 'pages.empty-in-language-title' : 'pages.empty-title',
-          )}
-          description={t(
-            language
-              ? 'pages.empty-in-language-description'
-              : 'pages.empty-description',
-          )}
-        />
+        <BrainEmpty title={empty.title} description={empty.description} />
       ) : (
         <>
           <p className="mb-2 text-xs text-muted-foreground">
@@ -198,11 +218,20 @@ export default async function BrainPagesPage({ searchParams }: Props) {
                     </TableCell>
                     <TableCell>{t(`page-type.${item.type}`)}</TableCell>
                     <TableCell>
-                      <Badge variant="secondary">
+                      <Badge variant={pageStatusVariant(item.status)}>
                         {t(`page-status.${item.status}`)}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-muted-foreground">
+                    {/*
+                      What is there reads as the data; what is missing or
+                      zero — no owner, no finding — is muted, so a column of
+                      "0" does not weigh as much as the one "1" in it.
+                    */}
+                    <TableCell
+                      className={
+                        item.ownerName ? undefined : 'text-muted-foreground'
+                      }
+                    >
                       <span
                         className="block max-w-[140px] truncate"
                         title={item.ownerName ?? undefined}
@@ -213,7 +242,13 @@ export default async function BrainPagesPage({ searchParams }: Props) {
                     <TableCell className="text-right tabular-nums">
                       {item.documents}
                     </TableCell>
-                    <TableCell className="text-right tabular-nums">
+                    <TableCell
+                      className={
+                        item.openFindings > 0
+                          ? 'text-right font-medium tabular-nums'
+                          : 'text-right tabular-nums text-muted-foreground'
+                      }
+                    >
                       {item.openFindings}
                     </TableCell>
                     <TableCell className="text-right tabular-nums text-muted-foreground">
@@ -236,6 +271,7 @@ export default async function BrainPagesPage({ searchParams }: Props) {
               withLanguage(
                 `/brain?${new URLSearchParams({
                   ...(status ? { status } : {}),
+                  ...(search ? { q: search } : {}),
                   page: String(n),
                 })}`,
                 language,

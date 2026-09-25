@@ -30,7 +30,7 @@ export function FilterChips({
           href={option.href}
           aria-current={option.active ? 'page' : undefined}
           className={cn(
-            'inline-flex h-7 items-center rounded-[6px] border px-2.5 text-xs',
+            'inline-flex h-7 items-center gap-1.5 rounded-[6px] border px-2.5 text-xs',
             'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
             option.active
               ? 'border-foreground bg-accent font-medium text-foreground'
@@ -38,9 +38,13 @@ export function FilterChips({
           )}
         >
           {option.label}
+          {/*
+            Its own flex item, spaced by `gap`: a leading space inside it was
+            trimmed by the flex layout, and the chip read "Open(1)".
+          */}
           {option.count !== undefined && (
             <span className="tabular-nums text-muted-foreground">
-              {` (${option.count})`}
+              {option.count}
             </span>
           )}
         </Link>
