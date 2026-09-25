@@ -4,16 +4,25 @@ import db from '@ragenai/prisma-client';
 import { logger } from '@/app/lib/utils/logger';
 import { getVisitorIdFromCookie } from '@/app/lib/services/cookies';
 import type { ThreadAction } from '../../contracts/thread.types';
+import { getPublicProjectQuery } from '@/features/projects/services/queries/get-project-query';
 
+/**
+ * Create a thread for a visitor with no session — the public assistant page,
+ * or the panel's signed-out fallback.
+ *
+ * A Server Action, callable by anyone, so nothing it is handed may name the
+ * organization. The organization and the project come from the public
+ * access token, resolved the same way the
+ * guest stream route resolves it; a mentioned project is kept only when it
+ * belongs to that organization. Without a token the thread has no
+ * organization and mentions nothing.
+ */
 export const createGuestThreadCommand = async ({
-  organizationId,
-  projectId,
-  initialMessage,
+  accessToken,
   mentionedProjectId,
   preferredModel,
 }: {
-  organizationId?: string;
-  projectId?: string;
+  accessToken?: string;
   initialMessage?: string;
   mentionedProjectId?: string;
   preferredModel?: string;
@@ -21,12 +30,29 @@ export const createGuestThreadCommand = async ({
   try {
     const visitorId = await getVisitorIdFromCookie();
 
+    const publicProject = accessToken
+      ? await getPublicProjectQuery(accessToken)
+      : null;
+    if (accessToken && !publicProject) {
+      return { success: false, errorMessage: 'Cannot create thread' };
+    }
+    const organizationId = publicProject?.organizationId ?? null;
+    const projectId = publicProject?.projectId ?? null;
+
+    const mentioned =
+      organizationId && mentionedProjectId
+        ? await db.project.findFirst({
+            where: { id: mentionedProjectId, organizationId },
+            select: { id: true },
+          })
+        : null;
+
     const threadRecord = await db.thread.create({
       data: {
-        organizationId: organizationId,
+        organizationId,
         visitorId: visitorId,
-        projectId: projectId,
-        mentionedProjectId: mentionedProjectId,
+        projectId,
+        mentionedProjectId: mentioned?.id ?? null,
         preferredModel: preferredModel,
       },
     });
@@ -39,7 +65,7 @@ export const createGuestThreadCommand = async ({
       success: true,
       thread: {
         id: threadRecord.id,
-        projectId: projectId ?? null,
+        projectId,
       },
     };
   } catch (error) {

@@ -5,13 +5,21 @@ import type { ThreadDocumentUI } from '@/features/documents/contracts/document.t
 import type { ThreadAction } from '../../contracts/thread.types';
 import { ragenApiRequest } from '@/libs/ragen-api-client/client';
 import {
+  getCurrentUserId,
+  getOrgIdFromAuth,
+} from '@/app/lib/utils/auth-helpers';
+import {
   DEFAULT_KNOWLEDGE_SCOPE,
   type KnowledgeScope,
 } from '@ragenai/platform-contracts';
 
+/**
+ * A Server Action — the client calls it directly, so nothing it is handed can
+ * name the organization or the user. Both come from the session: the token
+ * minted by `ragenApiRequest` is what apps/api trusts, so it must never carry
+ * an `orgId`/`userId` the browser sent.
+ */
 export const createThreadAction = async (
-  orgId: string,
-  userId: string | undefined,
   projectId?: string,
   mentionedProjectId?: string,
   preferredModel?: string,
@@ -22,7 +30,11 @@ export const createThreadAction = async (
    */
   knowledgeScope?: KnowledgeScope,
 ): Promise<ThreadAction> => {
-  if (!userId) {
+  const [orgId, userId] = await Promise.all([
+    getOrgIdFromAuth(),
+    getCurrentUserId(),
+  ]);
+  if (!orgId || !userId) {
     return { success: false, errorMessage: 'Cannot create thread' };
   }
   try {

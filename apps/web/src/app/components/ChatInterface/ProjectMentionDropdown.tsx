@@ -38,7 +38,7 @@ export const ProjectMentionDropdown: React.FC<ProjectMentionDropdownProps> = ({
 
       try {
         setLoading(true);
-        const userProjects = await fetchProjectsForUser(orgId, userId);
+        const userProjects = await fetchProjectsForUser();
         setProjects(userProjects);
       } catch (error) {
         setProjects([]);

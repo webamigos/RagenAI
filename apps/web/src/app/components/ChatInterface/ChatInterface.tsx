@@ -175,7 +175,7 @@ export const ChatInterface = ({
       return;
     }
     let cancelled = false;
-    getUserProjectsQuery(orgId, user.id)
+    getUserProjectsQuery()
       .then((projects) => {
         if (!cancelled) {
           setHasAssistants(projects.length > 0);

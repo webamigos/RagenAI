@@ -154,8 +154,6 @@ export const useNewThread = () => {
       const result =
         user && orgId
           ? await createThreadAction(
-              orgId,
-              user.id,
               projectId,
               mentionedProjectId,
               preferredModel,
