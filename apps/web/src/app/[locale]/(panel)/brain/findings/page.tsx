@@ -5,6 +5,7 @@ import { FINDING_STATUS_FILTERS } from '@/features/brain/constants';
 import type { KnowledgeFindingStatus } from '@/features/brain/contracts/brain.types';
 import { getBrainAccessQuery } from '@/features/brain/services/queries/get-brain-access-query';
 import { getKnowledgeFindingsQuery } from '@/features/brain/services/queries/get-knowledge-findings-query';
+import { getBrainStatusCountsQuery } from '@/features/brain/services/queries/get-brain-status-counts-query';
 import { listRange, parseListPage } from '@/features/brain/utils/list-page';
 
 import { dbUuid } from '@/features/brain/contracts/brain-review.types';
@@ -46,9 +47,10 @@ export default async function BrainFindingsPage({ searchParams }: Props) {
     : params.finding;
   const focused = dbUuid.safeParse(rawFinding).success ? rawFinding! : null;
 
-  const [t, { items, total }] = await Promise.all([
+  const [t, { items, total }, counts] = await Promise.all([
     getTranslations('brain'),
     getKnowledgeFindingsQuery(access.orgId, status, listPage),
+    getBrainStatusCountsQuery(access.orgId),
   ]);
 
   return (
@@ -69,6 +71,7 @@ export default async function BrainFindingsPage({ searchParams }: Props) {
           href:
             s === 'OPEN' ? '/brain/findings' : `/brain/findings?status=${s}`,
           active: status === s,
+          count: counts.findings[s],
         }))}
       />
       {items.length === 0 && listPage === 1 ? (

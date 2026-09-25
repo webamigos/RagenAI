@@ -2889,6 +2889,12 @@
         "publish-audience": "Depois de publicada, poderá ser encontrada por:",
         "applying": "Aplicando…"
       }
+    },
+    "tab-hints": {
+      "pages": "Conhecimento revisado: cada página traz afirmações com citações exatas dos documentos de origem. Aprove e publique uma página para que o chat possa responder com ela.",
+      "findings": "O que precisa da sua atenção: contradições, lacunas, páginas desatualizadas ou sem responsável e documentos que o Brain não conseguiu ler.",
+      "graph": "Como as páginas se conectam — qual processo exige qual política e quais páginas se citam.",
+      "documents": "Os documentos de origem que o Brain lê: quantas páginas cada um gerou e se o chat ainda os pesquisa."
     }
   },
   "project-context-manager": {

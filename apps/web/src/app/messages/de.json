@@ -2889,6 +2889,12 @@
         "publish-audience": "Nach der Veröffentlichung auffindbar für:",
         "applying": "Wird angewendet…"
       }
+    },
+    "tab-hints": {
+      "pages": "Geprüftes Wissen: Jede Seite enthält Aussagen mit wörtlichen Zitaten aus den Quelldokumenten. Genehmigen und veröffentlichen Sie eine Seite, damit der Chat daraus antworten kann.",
+      "findings": "Was Ihre Aufmerksamkeit braucht: Widersprüche, Lücken, veraltete oder besitzerlose Seiten und Dokumente, die Brain nicht lesen konnte.",
+      "graph": "Wie Seiten zusammenhängen — welcher Prozess welche Richtlinie erfordert und welche Seiten aufeinander verweisen.",
+      "documents": "Die Quelldokumente, die Brain liest: wie viele Seiten jedes ergeben hat und ob der Chat es noch durchsucht."
     }
   },
   "project-context-manager": {

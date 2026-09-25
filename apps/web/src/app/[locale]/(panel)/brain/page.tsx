@@ -15,6 +15,7 @@ import type { KnowledgePageStatus } from '@/features/brain/contracts/brain.types
 import { getBrainAccessQuery } from '@/features/brain/services/queries/get-brain-access-query';
 import { getBrainExportSummaryQuery } from '@/features/brain/services/queries/get-brain-export-summary-query';
 import { getKnowledgePagesQuery } from '@/features/brain/services/queries/get-knowledge-pages-query';
+import { getBrainStatusCountsQuery } from '@/features/brain/services/queries/get-brain-status-counts-query';
 import { getApprovedPageCountQuery } from '@/features/brain/services/queries/get-approved-page-count-query';
 import { listRange, parseListPage } from '@/features/brain/utils/list-page';
 import { Link } from '@/i18n/routing';
@@ -49,13 +50,14 @@ export default async function BrainPagesPage({ searchParams }: Props) {
     ? (value as KnowledgePageStatus)
     : null;
 
-  const [t, format, { items, total }, exportSummary, approved] =
+  const [t, format, { items, total }, exportSummary, approved, counts] =
     await Promise.all([
       getTranslations('brain'),
       getFormatter(),
       getKnowledgePagesQuery(access.orgId, status, listPage),
       getBrainExportSummaryQuery(access.orgId),
       getApprovedPageCountQuery(access.orgId),
+      getBrainStatusCountsQuery(access.orgId),
     ]);
   const skippedReasons = Object.entries(exportSummary.skipped) as [
     string,
@@ -74,12 +76,17 @@ export default async function BrainPagesPage({ searchParams }: Props) {
             label: t('filters.all-but-rejected'),
             href: '/brain',
             active: status === null,
+            count:
+              counts.pages.CANDIDATE +
+              counts.pages.APPROVED +
+              counts.pages.STALE,
           },
           ...PAGE_STATUS_FILTERS.map((s) => ({
             key: s,
             label: t(`page-status.${s}`),
             href: `/brain?status=${s}`,
             active: status === s,
+            count: counts.pages[s],
           })),
         ]}
       />

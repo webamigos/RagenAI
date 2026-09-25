@@ -2889,6 +2889,12 @@
         "publish-audience": "Po zveřejnění ji budou moci vyhledat:",
         "applying": "Probíhá použití…"
       }
+    },
+    "tab-hints": {
+      "pages": "Ověřené znalosti: každá stránka obsahuje tvrzení s doslovnými citacemi ze zdrojových dokumentů. Schvalte a zveřejněte stránku, aby z ní mohl čerpat chat.",
+      "findings": "Co vyžaduje vaši pozornost: rozpory, mezery, zastaralé stránky nebo stránky bez vlastníka a dokumenty, které Brain nepřečetl.",
+      "graph": "Jak spolu stránky souvisejí — který proces vyžaduje které pravidlo a které stránky na sebe odkazují.",
+      "documents": "Zdrojové dokumenty, které Brain čte: kolik stránek z každého vzniklo a zda je chat stále prohledává."
     }
   },
   "project-context-manager": {

@@ -49,11 +49,13 @@ export default async function BrainLayout({
       >
         {/*
           The full width of the panel. Capped at 1120px it left half of a wide
-          screen empty beside a graph that needed the room.
+          screen empty beside a graph that needed the room. No padding of its
+          own: the panel shell already has it, and adding more set Brain's
+          title lower than every other screen's.
         */}
-        <div className="w-full px-6 py-6">
+        <div className="w-full">
           <div className="flex items-center justify-between gap-3">
-            <h1 className="text-lg font-semibold text-foreground">
+            <h1 className="font-display text-xl font-semibold text-foreground">
               {t('title')}
             </h1>
             <div className="flex items-center gap-2">
