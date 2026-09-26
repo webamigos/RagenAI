@@ -106,4 +106,39 @@ describe('runFileEmbeddings — RAG score', () => {
     ).resolves.toBeDefined();
     expect(activities.scoreDocumentForRag).not.toHaveBeenCalled();
   });
+
+  // Spec B2: the button scores the document row's text, so ingest has to
+  // score the same string. It did, give or take the trailing newline the
+  // scorer trims; this keeps it that way. The summary chunk is in neither:
+  // it is retrieval enrichment, not the document.
+  it('scores the same text the document row stores', async () => {
+    const activities = createMockActivities();
+    activities.getFileRecord.mockResolvedValue(
+      makeUserFile({ fileName: 'procedura.docx' }),
+    );
+    activities.splitText.mockResolvedValue([
+      { pageContent: 'Rozdział 1. Zwroty.', metadata: {} },
+      { pageContent: 'Rozdział 2. Reklamacje.', metadata: {} },
+      { pageContent: 'Rozdział 3. Terminy.', metadata: {} },
+    ] as never);
+    activities.generateDocumentSummary.mockResolvedValue(
+      'Regulamin zwrotów i reklamacji.',
+    );
+
+    await runFileEmbeddings(
+      { fileId: 'file-1', orgId: 'org-1' },
+      context(activities),
+    );
+
+    const scored = (
+      activities.scoreDocumentForRag.mock.calls[0][0] as {
+        documentText: string;
+      }
+    ).documentText;
+    const stored = (
+      activities.createMarkdownDocument.mock.calls[0][0] as { content: string }
+    ).content;
+    expect(scored.trim()).toBe(stored.trim());
+    expect(scored).not.toContain('Regulamin zwrotów i reklamacji.');
+  });
 });
