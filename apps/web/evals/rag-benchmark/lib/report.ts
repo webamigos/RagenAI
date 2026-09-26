@@ -1,4 +1,4 @@
-import type { Arm, CaseResult, Report } from './types';
+import type { Arm, CaseResult, DocumentScore, Report } from './types';
 
 export interface Tally {
   passed: number;
@@ -94,6 +94,79 @@ export function crosstab(
   });
 }
 
+export interface DocumentRow {
+  file: string;
+  score: DocumentScore | undefined;
+  byArm: Record<Arm, Tally>;
+}
+
+/**
+ * One row per corpus document: the score ingest gave it beside the pass rate
+ * of the questions it should answer.
+ *
+ * The denominator is `expectedFiles`, never `citedFiles`. A question retrieval
+ * missed cites nothing, so grouping by citation would leave exactly the
+ * failures out of a document's row and make every document look better the
+ * worse retrieval did. A question naming two documents counts toward both.
+ *
+ * Rows come in the order the scores were recorded (the corpus order), then any
+ * document only a question names. A document no question names still gets a
+ * row, with empty tallies, so its score is not silently dropped.
+ */
+export function byDocument(
+  results: CaseResult[],
+  scores: DocumentScore[] = [],
+): DocumentRow[] {
+  const files = [
+    ...new Set([
+      ...scores.map((s) => s.file),
+      ...results.flatMap((r) => r.expectedFiles ?? []),
+    ]),
+  ];
+  return files.map((file) => {
+    const rows = results.filter((r) => r.expectedFiles?.includes(file));
+    const byArm = {} as Record<Arm, Tally>;
+    for (const arm of ARMS) {
+      byArm[arm] = tally(rows.filter((r) => r.arm === arm));
+    }
+    return { file, score: scores.find((s) => s.file === file), byArm };
+  });
+}
+
+export function formatScore(score: DocumentScore | undefined): string {
+  if (!score) {
+    return '—';
+  }
+  switch (score.state) {
+    case 'scored':
+      return String(Math.round(score.total ?? 0));
+    case 'failed':
+      return 'failed';
+    case 'missing':
+      return 'not written';
+  }
+}
+
+function documentTable(rows: DocumentRow[]): string {
+  const lines = [
+    '## By document',
+    '',
+    'Each question counts toward every document that holds its answer, including',
+    'questions that cited nothing; a guard question whose answer is in no document',
+    'is not counted. The RAG score is the one ingest wrote when this run uploaded it.',
+    '',
+    '| document | RAG score | Ragen (RAG) | control (no retrieval) |',
+    '|---|---|---|---|',
+  ];
+  for (const row of rows) {
+    lines.push(
+      `| \`${row.file}\` | ${formatScore(row.score)} | ${formatTally(row.byArm.rag)} | ${formatTally(row.byArm['no-rag'])} |`,
+    );
+  }
+  lines.push('');
+  return lines.join('\n');
+}
+
 function table(
   title: string,
   rows: { key: string; byArm: Record<Arm, Tally> }[],
@@ -168,11 +241,21 @@ export function renderMarkdown(report: Report): string {
       'Question type',
       crosstab(results, (r) => r.type),
     ),
+  ];
+
+  // Only when there is something to put in it: a corpus with no
+  // `expectedFiles` and a run with no scores would render a table of dashes.
+  const documents = byDocument(results, report.documentScores);
+  if (documents.length > 0) {
+    out.push(documentTable(documents));
+  }
+
+  out.push(
     '## Per-case detail (RAG arm)',
     '',
     '| id | lang → doc | type | result | note |',
     '|---|---|---|---|---|',
-  ];
+  );
 
   for (const r of results.filter((x) => x.arm === 'rag')) {
     out.push(

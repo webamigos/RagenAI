@@ -8,6 +8,8 @@ import {
   isUngraded,
   renderMarkdown,
   resultStem,
+  byDocument,
+  formatScore,
 } from '../lib/report';
 import type { CaseResult, Report } from '../lib/types';
 
@@ -346,5 +348,108 @@ describe('resultStem', () => {
     expect(
       resultStem('2026-09-12', 'kolej-bilingual-v1', 1, (s) => taken.has(s)),
     ).toBe('2026-09-12-kolej-bilingual-v1-rev1');
+  });
+});
+
+describe('byDocument', () => {
+  // The whole point of `expectedFiles`: a miss cites nothing, and must still
+  // count against the document that should have been found.
+  it('counts a question that cited nothing against its expected document', () => {
+    const rows = byDocument([
+      result({
+        questionId: 'hit',
+        expectedFiles: ['docs/a.md'],
+        citedFiles: ['a'],
+      }),
+      result({
+        questionId: 'miss',
+        expectedFiles: ['docs/a.md'],
+        citedFiles: [],
+        passed: false,
+        assertionsPassed: false,
+      }),
+    ]);
+    expect(rows).toHaveLength(1);
+    expect(rows[0].byArm.rag).toEqual({ passed: 1, total: 2, ungraded: 0 });
+  });
+
+  it('counts a question naming two documents toward both', () => {
+    const rows = byDocument([
+      result({ expectedFiles: ['docs/a.md', 'docs/b.md'] }),
+    ]);
+    expect(rows.map((r) => [r.file, r.byArm.rag.total])).toEqual([
+      ['docs/a.md', 1],
+      ['docs/b.md', 1],
+    ]);
+  });
+
+  it('leaves out a question with no expected document', () => {
+    expect(byDocument([result({ type: 'guard-hallucination' })])).toEqual([]);
+  });
+
+  it('keeps each arm apart', () => {
+    const rows = byDocument([
+      result({ expectedFiles: ['docs/a.md'] }),
+      result({ arm: 'no-rag', expectedFiles: ['docs/a.md'], passed: false }),
+    ]);
+    expect(rows[0].byArm['no-rag']).toEqual({
+      passed: 0,
+      total: 1,
+      ungraded: 0,
+    });
+  });
+
+  it('keeps a scored document no question names, in score order', () => {
+    const rows = byDocument(
+      [result({ expectedFiles: ['docs/b.md'] })],
+      [
+        { file: 'docs/a.md', state: 'scored', total: 16 },
+        { file: 'docs/b.md', state: 'failed' },
+      ],
+    );
+    expect(
+      rows.map((r) => [r.file, r.score?.state, r.byArm.rag.total]),
+    ).toEqual([
+      ['docs/a.md', 'scored', 0],
+      ['docs/b.md', 'failed', 1],
+    ]);
+  });
+});
+
+describe('formatScore', () => {
+  it('names each state rather than printing a number for it', () => {
+    expect(formatScore({ file: 'a', state: 'scored', total: 15.6 })).toBe('16');
+    expect(formatScore({ file: 'a', state: 'failed' })).toBe('failed');
+    expect(formatScore({ file: 'a', state: 'missing' })).toBe('not written');
+    expect(formatScore(undefined)).toBe('—');
+  });
+});
+
+describe('renderMarkdown — by document', () => {
+  const report = (overrides: Partial<Report>): Report => ({
+    corpus: 'c',
+    corpusVersion: 1,
+    fingerprint: {} as Report['fingerprint'],
+    results: [],
+    ...overrides,
+  });
+
+  it('renders the score beside the pass rate', () => {
+    const md = renderMarkdown(
+      report({
+        results: [result({ expectedFiles: ['docs/a.md'] })],
+        documentScores: [{ file: 'docs/a.md', state: 'scored', total: 42 }],
+      }),
+    );
+    expect(md).toContain('## By document');
+    expect(md).toContain('| `docs/a.md` | 42 | 1/1 (100%) | — |');
+  });
+
+  // An older result file, or a corpus without the field, has nothing to put
+  // in the table.
+  it('omits the section when there is nothing to show', () => {
+    expect(renderMarkdown(report({ results: [result({})] }))).not.toContain(
+      '## By document',
+    );
   });
 });

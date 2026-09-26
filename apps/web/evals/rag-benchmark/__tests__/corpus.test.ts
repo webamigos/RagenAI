@@ -119,4 +119,43 @@ describe('validateCorpus', () => {
       'questions.json declares no questions',
     );
   });
+
+  // A misspelt path puts the question's failures in a per-document row for a
+  // document that was never uploaded.
+  it('rejects an expected file the manifest does not list', () => {
+    expect(
+      validateCorpus(corpus, [question({ expectedFiles: ['docs/c.md'] })]),
+    ).toContain(
+      'question "q1" expects file "docs/c.md", which corpus.json does not list',
+    );
+  });
+
+  it('accepts expected files the manifest lists', () => {
+    expect(
+      validateCorpus(corpus, [
+        question({ expectedFiles: ['docs/a.md', 'docs/b.md'] }),
+      ]),
+    ).toEqual([]);
+  });
+
+  it('rejects an empty expectedFiles', () => {
+    expect(validateCorpus(corpus, [question({ expectedFiles: [] })])).toContain(
+      'question "q1" declares an empty expectedFiles; omit the field instead',
+    );
+  });
+
+  // Its answer is in no document, so naming one would count a correct
+  // refusal as that document's retrieval.
+  it('rejects expected files on a guard-hallucination question', () => {
+    const problems = validateCorpus(corpus, [
+      question({
+        type: 'guard-hallucination',
+        expectAll: undefined,
+        rubric: 'refuses',
+        expectedFiles: ['docs/a.md'],
+      }),
+    ]);
+    expect(problems).toHaveLength(1);
+    expect(problems[0]).toMatch(/guard-hallucination.*declares expectedFiles/);
+  });
 });
