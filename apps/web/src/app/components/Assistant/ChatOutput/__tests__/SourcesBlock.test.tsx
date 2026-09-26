@@ -194,6 +194,78 @@ describe('SourcesBlock', () => {
     expect(screen.queryByText(/###/)).not.toBeInTheDocument();
   });
 
+  // A spreadsheet chunk joined into "North · 1200 · 1350 · South · …" cannot
+  // be read back to its columns; the card draws the rows instead.
+  it('shows a spreadsheet passage as a table under its column names', () => {
+    const onActivate = vi.fn();
+    show(
+      {
+        sources: [
+          {
+            fileId: 'a',
+            fileName: 'sales.xlsx',
+            chunkCount: 1,
+            snippet: [
+              '[Table 1: Sales 2024]',
+              '| Region | Q1 |',
+              '| --- | --- |',
+              '| North | 1200 |',
+              '| South | 980 |',
+              '| East | 870 |',
+              '| West | 640 |',
+              '| Central | 510 |',
+            ].join('\n'),
+          },
+        ],
+        citedFileIds: ['a'],
+      },
+      onActivate,
+    );
+
+    const card = row('sales.xlsx');
+    expect(within(card).getByText('[Table 1: Sales 2024]')).toBeInTheDocument();
+    const table = within(card).getByRole('table');
+    expect(
+      within(table)
+        .getAllByRole('columnheader')
+        .map((th) => th.textContent),
+    ).toEqual(['Region', 'Q1']);
+    // The header and four rows; the ellipsis row is hidden from the
+    // accessibility tree, so it is not counted here.
+    expect(within(table).getAllByRole('row')).toHaveLength(1 + 4);
+    expect(within(table).queryByText('Central')).not.toBeInTheDocument();
+    expect(within(table).getByTestId('snippet-table-more')).toBeInTheDocument();
+    // Figures sit right-aligned, names left.
+    expect(within(table).getByText('1200').closest('td')).toHaveClass(
+      'text-right',
+    );
+    expect(within(table).getByText('North').closest('td')).toHaveClass(
+      'text-left',
+    );
+    // No plain-text run of the same cells alongside it.
+    expect(card.querySelector('blockquote')).toBeNull();
+  });
+
+  it('keeps the plain quote for a CSV-looking passage in a non-spreadsheet', () => {
+    show({
+      sources: [
+        {
+          fileId: 'a',
+          fileName: 'notes.txt',
+          chunkCount: 1,
+          snippet: 'Apples, pears, plums\nRed, green, blue',
+        },
+      ],
+      citedFileIds: ['a'],
+    });
+
+    const card = row('notes.txt');
+    expect(within(card).queryByRole('table')).not.toBeInTheDocument();
+    expect(card.querySelector('blockquote')).toHaveTextContent(
+      'Apples, pears, plums Red, green, blue',
+    );
+  });
+
   it('marks neither of two identically named files', () => {
     // The decision in `attributable-citations.ts`, reaching the screen: a
     // missing mark is a smaller lie than one pointing at a document the answer
