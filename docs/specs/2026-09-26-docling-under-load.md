@@ -1,6 +1,6 @@
 ---
 title: Document ingest that survives a slow, busy or absent Docling
-status: draft
+status: approved
 areas: [worker, knowledge-base, self-hosting]
 adrs: [44, 47, 43]
 ---
@@ -19,45 +19,26 @@ non-obvious part is that the defences exist already — a global ceiling
 mechanism, a health check, retry policies — and none of them is wired to
 Docling.
 
-## Open Questions
+## Decisions
 
-<!--
-Answer these on the PR. While this block is here the spec is not ready to
-implement and no code should be written from it.
--->
+Answered on the spec's PR (#1393), 2026-09-26 — each recommendation accepted.
 
-- **Q1. What does the ceiling cap — the whole ingest job, or only the Docling
-  call?** Capping `runFileEmbeddings` reuses the mechanism `brainExtract`
-  already has (`jobConcurrency` → `queue.setGlobalConcurrency`) and is one
-  line of wiring; it also slows embedding for the few types Docling never sees
-  (SRT, EPUB, URL). Capping only the call needs a Redis semaphore around
-  `convertWithDocling`. *Recommendation: the whole job* — `DOCLING_SUPPORTED_TYPES`
-  covers PDF, DOCX, PPTX, XLSX, CSV, images, Markdown and text, so in practice
-  the two are the same queue, and the semaphore is a second concurrency system
-  to keep correct.
-- **Q2. Default ceiling.** docling-serve runs `DOCLING_SERVE_ENG_LOC_NUM_WORKERS=2`
-  conversions at a time and queues the rest in memory. *Recommendation: 4* —
-  two converting, two waiting inside Docling's own queue so it never idles
-  between jobs — with the variable documented next to Docling's.
-- **Q3. A file waiting for Docling: a new status, or the existing one with a
-  reason?** `ParsingStatus` today is `NOT_STARTED | STARTED | COMPLETED |
-  FAILED | CANCELLED`. A new value (`WAITING_FOR_PARSER`) is honest in the list
-  and filterable, and costs a migration plus every place that switches on the
-  enum. Keeping `NOT_STARTED` and writing the reason into `UserFile.metadata`
-  (JSON, already there) is free and shows "In queue" — which is true.
-  *Recommendation: keep `NOT_STARTED`, reason in `metadata`, shown as the row's
-  tooltip*; revisit if support asks.
-- **Q4. Stay on the sync endpoint, or move to `/v1/convert/source/async` +
-  polling?** Async removes the 504-at-`MAX_SYNC_WAIT` race entirely and lets a
-  400-page PDF take as long as it takes; it is also the larger change and a
-  second code path to test against every Docling upgrade.
-  *Recommendation: not in this spec* — Phase A makes the sync path's timeouts
-  agree, and async becomes a follow-up only if long documents still time out.
-- **Q5. Where does a Docling outage show?** Options: the apps/web setup page
-  (already reports Redis), the per-org admin area, the platform admin
-  (`apps/admin`), a log line only. *Recommendation: setup page + a warning in
-  the knowledge base upload area while it is down*, plus one `error` log per
-  transition, not per file.
+- **D1 (was Q1). The ceiling caps the whole ingest job**, `runFileEmbeddings`,
+  through the existing `jobConcurrency` → `setGlobalConcurrency` wiring.
+  `DOCLING_SUPPORTED_TYPES` covers PDF, DOCX, PPTX, XLSX, CSV, images,
+  Markdown and text, so the job and the Docling call are in practice the same
+  queue; a Redis semaphore around the call would be a second concurrency
+  system to keep correct.
+- **D2 (was Q2). Default ceiling: 4** — docling-serve converts two at a time
+  (`DOCLING_SERVE_ENG_LOC_NUM_WORKERS=2`), so two more wait in its own queue
+  and it never idles between jobs.
+- **D3 (was Q3). A waiting file keeps `NOT_STARTED`**, with the reason in
+  `UserFile.metadata`, shown as the row's tooltip. No new enum value, no
+  migration.
+- **D4 (was Q4). The sync endpoint stays.** Phase A makes its timeouts agree;
+  the async endpoint is a follow-up only if long documents still time out.
+- **D5 (was Q5). An outage shows on the setup page and as a warning in the
+  knowledge base upload area**, with one `error` log per transition.
 
 ## Problem
 
@@ -119,7 +100,7 @@ with small `.txt` files.
 - **Docling's own scaling** — replicas behind a load balancer, the `rq`/`ray`
   engines, GPU images. The ceiling makes one Docling safe; more of them is a
   deployment decision documented, not built, here.
-- **The async endpoint** (Q4), unless the answer is "yes".
+- **The async endpoint** (D4).
 - **The non-strict fallback.** Whether falling back to a loader that sends a PDF
   off-site should be the default is a real question and a separate one; this
   spec only makes the fallback visible when it happens (C1).
@@ -133,7 +114,7 @@ with small `.txt` files.
 Three layers, each useful alone.
 
 **1. A deployment-wide ceiling on conversions** (`DOCLING_MAX_CONCURRENCY`,
-default per Q2) set through the existing `jobConcurrency` wiring, so it holds
+default per D2) set through the existing `jobConcurrency` wiring, so it holds
 across replicas via BullMQ's global concurrency in Redis. Rejected: lowering
 `WORKER_CONCURRENCY` — it caps every queue per replica, so it both slows
 unrelated jobs and still multiplies with replicas. Rejected: a rate limiter
@@ -144,7 +125,7 @@ what it gets back:
 
 | Outcome | Examples | Treatment |
 | --- | --- | --- |
-| transient | `ECONNREFUSED`, `UND_ERR_*`, DNS failure, HTTP 502/503/504, 429 | retryable at the **job** level with long exponential backoff (e.g. 1 → 2 → 4 → 8 → 16 min, 6 attempts); the row stays `NOT_STARTED` with the reason in `metadata` (Q3) |
+| transient | `ECONNREFUSED`, `UND_ERR_*`, DNS failure, HTTP 502/503/504, 429 | retryable at the **job** level with long exponential backoff (e.g. 1 → 2 → 4 → 8 → 16 min, 6 attempts); the row stays `NOT_STARTED` with the reason in `metadata` (D3) |
 | permanent | docling `status: failure`, HTTP 4xx other than 429, empty markdown | non-retryable; `FAILED` with Docling's own message, not the generic wrapper |
 
 The fetch gets an `AbortSignal` wired to the step's timeout, so an abandoned
@@ -157,7 +138,7 @@ backoff — they hold a worker slot and a lock while sleeping, and a restart
 loses them.
 
 **3. An outage is seen.** Docling's health joins the apps/web setup/status
-reporting (Q5); one `error` log on the transition to down and one `info` on
+reporting (D5); one `error` log on the transition to down and one `info` on
 recovery; the knowledge base shows "Parser unavailable — files will be
 processed when it returns" while down. A non-strict fallback logs at `error`
 with the file type, because for a PDF it means the document left the machine.
@@ -169,14 +150,14 @@ with the file type, because for a PDF it means the document left the machine.
 | `packages/jobs-bullmq` | job-level `attempts`/`backoff` for `runFileEmbeddings`; delay-without-attempt on "parser down" | `npm run worker:test:jobs` (real Redis) — the BullMQ gate |
 | `packages/env` | `DOCLING_MAX_CONCURRENCY`, and `DOCLING_SERVE_MAX_SYNC_WAIT` read by the worker | fragment tests + `provider-fragments-carry-their-rules` |
 | `apps/worker` | client error classification, abortable fetch, health gate, message kept | unit tests + `workflow.spec` |
-| `apps/web` setup page, knowledge base | Docling status (Q5) | component tests; `smoke-*` if the upload area changes |
+| `apps/web` setup page, knowledge base | Docling status (D5) | component tests; `smoke-*` if the upload area changes |
 | `packages/create-ragen-app` | writes the ceiling and the sync wait; sizing note | its tests + `create-ragen-app-manifest-is-current` |
 | `deploy/helm`, `docker-compose.yml`, `infra/docling` | `DOCLING_SERVE_MAX_SYNC_WAIT` everywhere, one value | `check:config-paths`; a test reading all three agree |
-| `prisma/schema.prisma` | none if Q3 = keep `NOT_STARTED`; an enum value otherwise | migration + `npm run verify` |
+| `prisma/schema.prisma` | none (D3) | migration + `npm run verify` |
 
 ## Data model
 
-None, if Q3 is answered "keep `NOT_STARTED`": the reason goes in
+None, per D3: the reason goes in
 `UserFile.metadata` under one key (e.g. `waitingFor: { parser: 'docling',
 since, attempts }`), cleared when parsing starts. Rows already `FAILED` by a Docling
 outage are not touched automatically — they are recovered by *Re-process*, as
@@ -193,7 +174,7 @@ today; the release note says so.
 - **A 504 at `MAX_SYNC_WAIT` for a genuinely long document.** Retried — and
   would 504 again. After two consecutive 504s for the same file, the error says
   "document too long for the sync wait; raise `DOCLING_SERVE_MAX_SYNC_WAIT`",
-  and Q4's async path becomes the fix.
+  and D4's async follow-up becomes the fix.
 - **Redis unavailable.** No change: the worker already refuses to run without it.
 - **A misconfigured ceiling** (0, negative, text). `positiveIntFromEnv`
   rejects it at boot, as `BRAIN_EXTRACT_CONCURRENCY` does.
@@ -225,11 +206,11 @@ Each phase leaves the application working.
 - [ ] **B1.** Health gate before sending (cached), delaying the job without
   spending an attempt; `isDoclingAvailable` gets its first caller and tests.
 - [ ] **B2.** The waiting reason on the row and in the knowledge base list
-  (per Q3).
+  (per D3).
 
 ### Phase C — see it, size it
 
-- [ ] **C1.** Docling status on the setup page (per Q5); transition logs;
+- [ ] **C1.** Docling status on the setup page (per D5); transition logs;
   the non-strict PDF fallback logged at `error`.
 - [ ] **C2.** Sizing section in `docs/document-processing.md` and the Docling
   runbook: CPU/RAM per concurrent conversion, `ENG_LOC_NUM_WORKERS`, how the
@@ -254,6 +235,6 @@ Each phase leaves the application working.
 Each phase is its own PR onto `main` (ADR-50). A1's ceiling applies on the
 next worker boot; setting `DOCLING_MAX_CONCURRENCY` high restores today's
 behaviour without a revert. A3/B1 change failure handling only — reverting the
-PR restores the old behaviour, no migration (if Q3 = keep `NOT_STARTED`).
+PR restores the old behaviour, no migration (per D3).
 `create-ragen-app` changes ship with a release note, since they change what a
 fresh install writes.
