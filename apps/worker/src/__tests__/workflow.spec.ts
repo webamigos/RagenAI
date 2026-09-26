@@ -651,6 +651,38 @@ describe('runFileEmbeddings workflow', () => {
 
       expect(activities.addDocumentsToVectorStore).not.toHaveBeenCalled();
     });
+
+    it('refuses a spreadsheet read as its worksheet XML, which is clean ASCII', async () => {
+      // What reached the demo's index for an .xlsx before #1347: no
+      // replacement or control character, so only the markup test sees it.
+      const activities = createMockActivities();
+      activities.loadText.mockResolvedValue([
+        {
+          pageContent:
+            '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+            '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><cols>' +
+            Array.from(
+              { length: 20 },
+              (_, i) =>
+                `<col min="${i}" max="${i}" width="12.83" customWidth="1"/>`,
+            ).join('') +
+            '</cols><sheetData><row r="1"><c r="A1" t="s"><v>0</v></c></row></sheetData></worksheet>',
+          metadata: {},
+        },
+      ]);
+
+      try {
+        await runIngest(makeUserFile({ fileName: 'sheet.txt' }), activities);
+        expect.fail('Expected workflow to throw');
+      } catch (err) {
+        expect(getWorkflowFailureCause(err)).toContain(
+          'raw markup for sheet.txt (markup)',
+        );
+        expect(getWorkflowFailureNonRetryable(err)).toBe(true);
+      }
+
+      expect(activities.addDocumentsToVectorStore).not.toHaveBeenCalled();
+    });
   });
 
   it('passes pre-masking originalDocs and masked maskedDocs to applyDualContentMode', async () => {

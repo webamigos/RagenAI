@@ -211,6 +211,31 @@ describe('retrieveRelevantDocumentsWithIds telemetry', () => {
     expect(result.sources[0]).not.toHaveProperty('snippet');
   });
 
+  it('quotes nothing from a chunk that is a spreadsheet’s raw worksheet XML', async () => {
+    // Clean ASCII, so the binary checks pass it: this is what the demo showed
+    // under an answer for an .xlsx indexed before the worker sniffed content.
+    const store = makeVectorStore();
+    const worksheetXml =
+      'min="7" max="7" width="12.83" customWidth="1"/>' +
+      Array.from(
+        { length: 12 },
+        (_, i) => `<col min="${i}" max="${i}" width="12.83" customWidth="1"/>`,
+      ).join('') +
+      '</cols><sheetData><row r="1"><c r="A1" t="s"><v>0</v></c></row>';
+    store.similaritySearch = vi.fn().mockResolvedValue([
+      {
+        pageContent: worksheetXml,
+        metadata: { file_id: 'f1', file_name: 'cennik.xlsx' },
+      },
+    ]);
+
+    const result = await retrieveRelevantDocumentsWithIds(store, ['q'], 4);
+
+    expect(result.sources).toHaveLength(1);
+    expect(result.sources[0].fileName).toBe('cennik.xlsx');
+    expect(result.sources[0]).not.toHaveProperty('snippet');
+  });
+
   it('carries the chunk text, so the answer can be quoted later', async () => {
     // Taken here because this is where it still exists: the reduction to
     // `RetrievedSource` drops `pageContent`, and Qdrant chunk ids do not

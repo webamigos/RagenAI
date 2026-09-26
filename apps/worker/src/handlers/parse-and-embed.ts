@@ -369,9 +369,13 @@ export async function runFileEmbeddings(
     const undecodable = findUndecodableText(
       rawDocs.map((d) => d.pageContent).join('\n'),
     );
+    // Raw markup is the same failure in ASCII: an OOXML file read as its XML
+    // parts instead of its text, which the checks for binary cannot see.
     if (undecodable) {
+      const what =
+        undecodable === 'markup' ? 'raw markup' : 'undecodable binary';
       throw JobFailure.nonRetryable(
-        `The ${fileType} loader returned undecodable binary for ${fileName} ` +
+        `The ${fileType} loader returned ${what} for ${fileName} ` +
           `(${undecodable}) — refusing to index it. The file's type was ` +
           `probably misdetected, or it is corrupt.`,
       );

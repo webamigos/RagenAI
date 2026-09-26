@@ -477,7 +477,9 @@ const SNIPPET_MAX_CHARS = 2000;
  */
 function truncateSnippet(text: string): string {
   // A chunk that is a binary file read as text — the worker indexed Word
-  // files' ZIP bytes that way before it refused them — has nothing to quote.
+  // files' ZIP bytes that way before it refused them — has nothing to quote,
+  // and neither has one that is a file's raw XML (an .xlsx indexed as its
+  // worksheet part before #1347), which is ASCII but not the file's text.
   // Returning nothing drops the snippet from the source rather than showing
   // the reader a line of replacement glyphs; the source itself still lists.
   if (isUndecodableText(text)) {

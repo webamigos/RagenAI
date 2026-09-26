@@ -88,6 +88,108 @@ describe('findUndecodableText', () => {
   });
 });
 
+describe('findUndecodableText — raw markup', () => {
+  /** A chunk of an .xlsx indexed as its worksheet XML, cut mid-tag both ends. */
+  const WORKSHEET_CHUNK =
+    'min="7" max="7" width="12.83" customWidth="1"/><col min="8" max="8" width="12.83" customWidth="1"/>' +
+    '<col min="9" max="9" width="10" customWidth="1"/></cols><sheetData><row r="1" spans="1:5">' +
+    '<c r="A1" t="s"><v>0</v></c><c r="B1" t="s"><v>1</v></c><c r="C1" s="2"><v>2024</v></c></row>' +
+    '<row r="2" spans="1:5"><c r="A2" t="s"><v>3</v></c><c r="B2"><v>1200.5</v></c></row>' +
+    '</sheetData><pageMargins left="0.7" right="0.7" top="0.75" bott';
+
+  it('refuses a chunk of OOXML worksheet XML', () => {
+    // Clean ASCII: no replacement or control character to find. This is what
+    // the demo quoted under an answer, for an .xlsx indexed before #1347.
+    expect(findUndecodableText(WORKSHEET_CHUNK)).toBe('markup');
+  });
+
+  it('refuses a WordprocessingML body with its declaration and namespaces', () => {
+    const text =
+      '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n' +
+      '<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>' +
+      '<w:p w:rsidR="00A1"><w:pPr><w:jc w:val="left"/></w:pPr><w:r><w:rPr><w:b/></w:rPr><w:t>Umowa</w:t></w:r></w:p>'.repeat(
+        6,
+      ) +
+      '</w:body></w:document>';
+    expect(findUndecodableText(text)).toBe('markup');
+  });
+
+  it('accepts ordinary prose', () => {
+    expect(
+      findUndecodableText(
+        'Trains must be booked in second class. Receipts go to finance within 14 days. '.repeat(
+          20,
+        ),
+      ),
+    ).toBeNull();
+  });
+
+  it('accepts Markdown with inline HTML — <br> in table cells, <sup>', () => {
+    const text = [
+      '| Term | Meaning |',
+      '| --- | --- |',
+      ...Array.from(
+        { length: 12 },
+        (_, i) =>
+          `| Clause ${i}<sup>${i}</sup> | line one<br>line two<br/>line three |`,
+      ),
+    ].join('\n');
+    expect(findUndecodableText(text)).toBeNull();
+  });
+
+  it('accepts a Docling HTML table of figures', () => {
+    // Its tags outweigh its digits, and it is still a real table.
+    const rows = Array.from(
+      { length: 10 },
+      (_, i) => `<tr><td>${i}</td><td>${i * 10}</td></tr>`,
+    ).join('');
+    expect(
+      findUndecodableText(`<table><tbody>${rows}</tbody></table>`),
+    ).toBeNull();
+  });
+
+  it('accepts a document about XML that quotes its elements', () => {
+    const text =
+      'In OOXML a worksheet begins with <cols>, where each <col min="1" max="1" width="12"/> sets one column. ' +
+      'The <sheetData> element holds <row> elements, each with <c> cells and a <v> value. ' +
+      'That is all you need to know to read one by hand, and most people never do. ';
+    expect(findUndecodableText(text.repeat(3))).toBeNull();
+  });
+
+  it('accepts a short unfenced XML sample inside prose', () => {
+    const text =
+      'Add the dependency to your build file and rebuild the project:\n' +
+      '<dependency><groupId>ai.ragen</groupId><artifactId>client</artifactId><version>1.2.0</version></dependency>\n' +
+      'The client reads its endpoint from the environment, so nothing else needs to change. ' +
+      'If the build fails, check that the repository is reachable from your network and that ' +
+      'the version above is one that has been published.';
+    expect(findUndecodableText(text)).toBeNull();
+  });
+
+  it('accepts a chunk that is mostly a fenced XML code sample', () => {
+    // A README quoting a config file is prose about XML, not XML.
+    const text =
+      'Configure the logger:\n```xml\n' +
+      '<configuration><appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender"><encoder><pattern>%d %msg%n</pattern></encoder></appender><root level="info"><appender-ref ref="STDOUT"/></root></configuration>\n'.repeat(
+        4,
+      ) +
+      '```\n';
+    expect(findUndecodableText(text)).toBeNull();
+  });
+
+  it('accepts a chunk cut inside a fenced code block', () => {
+    const text =
+      'Example:\n```xml\n' +
+      '<col min="1" max="1" width="12" customWidth="1"/>\n'.repeat(12);
+    expect(findUndecodableText(text)).toBeNull();
+  });
+
+  it('judges nothing on fewer tags than the floor', () => {
+    // All markup, and still a reasonable thing for a tiny chunk to hold.
+    expect(findUndecodableText('<a:b/><c:d/><e:f/>')).toBeNull();
+  });
+});
+
 describe('isUndecodableText', () => {
   it('is the boolean form of the same test', () => {
     expect(isUndecodableText('plain')).toBe(false);
