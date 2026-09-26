@@ -400,7 +400,7 @@
     "char-limit-warning": "Der Inhalt ist sehr lang — die Generierung kann bis zu 60 Sekunden dauern",
     "char-limit-error": "Inhalt zu lang (max. 100.000 Zeichen)",
     "score-label": "RAG-Bewertung",
-    "badge-label": "RAG: {score}",
+    "badge-label": "RAG {score}/100",
     "score-tooltip": "RAG-Bereitschaft: {score}/100. Wie gut dieses Dokument für die KI-Suche vorbereitet ist - klare Struktur, spezifische Details und in sich geschlossene Antworten.",
     "score-detail-title": "RAG-Bereitschaftsbericht",
     "score-chunk-structure": "Chunk-Struktur",

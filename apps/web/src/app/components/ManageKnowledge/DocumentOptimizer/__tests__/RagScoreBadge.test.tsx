@@ -12,7 +12,7 @@ const messages = {
     'score-label': 'RAG Score',
     'score-tooltip':
       'RAG readiness: {score}/100. How well this document is structured for retrieval.',
-    'badge-label': 'RAG: {score}',
+    'badge-label': 'RAG {score}/100',
   },
 };
 
@@ -40,26 +40,18 @@ describe('RagScoreBadge', () => {
     expect(container.innerHTML).toBe('');
   });
 
-  it('renders green badge for score >= 70', () => {
-    renderBadge({ ragScore: { total: 85 } });
-    const badge = screen.getByTestId('rag-score-badge');
-    expect(badge.textContent).toContain('85');
-    expect(badge.className).toContain('bg-ready-tint');
-  });
-
-  it('renders amber badge for score 40-69', () => {
-    renderBadge({ ragScore: { total: 55 } });
-    const badge = screen.getByTestId('rag-score-badge');
-    expect(badge.textContent).toContain('55');
-    expect(badge.className).toContain('bg-pending-tint');
-  });
-
-  it('renders red badge for score < 40', () => {
-    renderBadge({ ragScore: { total: 20 } });
-    const badge = screen.getByTestId('rag-score-badge');
-    expect(badge.textContent).toContain('20');
-    expect(badge.className).toContain('bg-crimson-50');
-  });
+  // Green, amber and crimson are the document-state vocabulary; a low score in
+  // crimson read as a failed ingest. One neutral colour, the scale in the label.
+  it.each([85, 55, 20])(
+    'renders %i in the same neutral colour, with its scale',
+    (total) => {
+      renderBadge({ ragScore: { total } });
+      const badge = screen.getByTestId('rag-score-badge');
+      expect(badge.textContent).toBe(`RAG ${total}/100`);
+      expect(badge.className).toContain('bg-muted');
+      expect(badge.className).not.toMatch(/ready|pending|crimson|destructive/);
+    },
+  );
 
   it('rounds the score to nearest integer', () => {
     renderBadge({ ragScore: { total: 72.7 } });

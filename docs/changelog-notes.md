@@ -75,6 +75,9 @@ archive is the blog.
   apps/admin → Features, for the whole platform or per organization. With it
   off, uploads make one LLM call fewer and Optimize still works. It stays on by
   default.
+- `[brief]` **A low RAG score no longer looks like a failed upload.** The badge
+  is one neutral colour at every value and reads `RAG 16/100`; crimson stays
+  reserved for the Failed status.
 
 ### Ragen Brain: an assistant beside the inbox
 

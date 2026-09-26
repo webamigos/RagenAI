@@ -400,7 +400,7 @@
     "char-limit-warning": "O conteúdo é muito longo — a geração pode levar até 60 segundos",
     "char-limit-error": "Conteúdo muito longo (máx. 100.000 caracteres)",
     "score-label": "Pontuação RAG",
-    "badge-label": "RAG: {score}",
+    "badge-label": "RAG {score}/100",
     "score-tooltip": "Prontidão RAG: {score}/100. Quão pronto este documento está para busca por IA - estrutura clara, detalhes precisos e respostas autossuficientes.",
     "score-detail-title": "Relatório de prontidão RAG",
     "score-chunk-structure": "Estrutura dos blocos",

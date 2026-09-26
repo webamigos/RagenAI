@@ -400,7 +400,7 @@
     "char-limit-warning": "Obsah je veľmi dlhý — generovanie môže trvať až 60 sekúnd",
     "char-limit-error": "Obsah je príliš dlhý (max. 100 000 znakov)",
     "score-label": "RAG skóre",
-    "badge-label": "RAG: {score}",
+    "badge-label": "RAG {score}/100",
     "score-tooltip": "Pripravenosť na RAG: {score}/100. Nakoľko je tento dokument pripravený na vyhľadávanie pomocou AI - jasná štruktúra, presné detaily a samostatné odpovede.",
     "score-detail-title": "Správa o pripravenosti na RAG",
     "score-chunk-structure": "Štruktúra blokov",

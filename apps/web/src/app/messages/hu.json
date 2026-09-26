@@ -400,7 +400,7 @@
     "char-limit-warning": "A tartalom nagyon hosszú — a generálás akár 60 másodpercig is tarthat",
     "char-limit-error": "A tartalom túl hosszú (max. 100 000 karakter)",
     "score-label": "RAG pontszám",
-    "badge-label": "RAG: {score}",
+    "badge-label": "RAG {score}/100",
     "score-tooltip": "RAG-készültség: {score}/100. Mennyire áll készen ez a dokumentum az AI-alapú keresésre - világos szerkezet, pontos részletek és önmagában értelmezhető válaszok.",
     "score-detail-title": "RAG-készültségi jelentés",
     "score-chunk-structure": "Blokkok szerkezete",
