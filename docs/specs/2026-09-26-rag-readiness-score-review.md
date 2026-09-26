@@ -493,7 +493,7 @@ already claims. B1 and B2 start only after A2's baseline is committed.
   - ingest skips the scorer and makes no model call when the key is off
   - the handler and the command refuse
   - the badge and menu item are absent in both views
-- [ ] **B6.** Stop discarding a score over a suggestion's length. A2 found 25
+- [x] **B6.** Stop discarding a score over a suggestion's length. A2 found 25
   of 69 calls stored nothing: the model returned a complete score and
   `generateObject` rejected it because one `suggestions` string was over the
   schema's 300 characters, a limit the prompt never states. Truncate the

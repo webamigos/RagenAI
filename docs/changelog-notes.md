@@ -83,6 +83,10 @@ archive is the blog.
 - `[brief]` **A low RAG score no longer looks like a failed upload.** The badge
   is one neutral colour at every value and reads `RAG 16/100`; crimson stays
   reserved for the Failed status.
+- `[brief]` **The RAG score stops disappearing.** More than a third of scoring
+  calls stored nothing: the model's score was thrown away when one of its
+  suggestions ran over 300 characters. The score is kept now and the
+  suggestion shortened.
 
 ### Ragen Brain: an assistant beside the inbox
 
