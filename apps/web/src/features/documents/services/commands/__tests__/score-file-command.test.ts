@@ -18,8 +18,9 @@ vi.mock('@/features/documents/contracts/document.types', () => ({
   Workflow: { SCORE_DOCUMENT: 'scoreDocument' },
 }));
 
-vi.mock('@/app/lib/services/storage', () => ({
-  getFileFromS3: vi.fn(),
+const mockDecrypt = vi.fn();
+vi.mock('@ragenai/crypto', () => ({
+  decryptDocumentContent: (...args: unknown[]) => mockDecrypt(...args),
 }));
 
 vi.mock('@/app/lib/utils/logger', () => ({
@@ -42,12 +43,12 @@ describe('scoreFileCommand', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockIsFeatureEnabled.mockResolvedValue(true);
+    mockDecrypt.mockImplementation(async (content: string) => content);
     mockFindFirst.mockResolvedValue({
       id: 'file-1',
       fileName: 'umowa.docx',
-      fileExtension: 'docx',
       projectId: null,
-      document: { id: 'doc-1', content: 'Tekst umowy.' },
+      document: { id: 'doc-1', content: 'Tekst umowy.', encryptedDek: null },
     });
   });
 
@@ -78,6 +79,51 @@ describe('scoreFileCommand', () => {
       'ragReadinessScore',
     );
     expect(mockFindFirst).not.toHaveBeenCalled();
+    expect(mockJobStart).not.toHaveBeenCalled();
+  });
+
+  // With encryption on, `content` is ciphertext. The button sent it as it
+  // was, so the model graded noise.
+  it('scores the decrypted text, not what is stored', async () => {
+    mockFindFirst.mockResolvedValue({
+      id: 'file-1',
+      fileName: 'umowa.docx',
+      projectId: null,
+      document: { id: 'doc-1', content: 'v1:ciphertext', encryptedDek: 'dek' },
+    });
+    mockDecrypt.mockResolvedValue('Tekst umowy.');
+
+    await scoreFileCommand('file-1', 'org-1');
+
+    expect(mockDecrypt).toHaveBeenCalledWith('v1:ciphertext', 'dek');
+    expect(mockJobStart).toHaveBeenCalledWith(
+      'scoreDocument',
+      expect.any(String),
+      expect.objectContaining({ documentText: 'Tekst umowy.' }),
+    );
+  });
+
+  // The raw-file fallback sent unparsed text that had never been masked.
+  it('refuses a file with no document row instead of scoring the raw file', async () => {
+    mockFindFirst.mockResolvedValue({
+      id: 'file-1',
+      fileName: 'notes.md',
+      projectId: null,
+      document: null,
+    });
+
+    await expect(scoreFileCommand('file-1', 'org-1')).rejects.toThrow(
+      /not finished processing/,
+    );
+    expect(mockJobStart).not.toHaveBeenCalled();
+  });
+
+  it('refuses a document whose text is empty', async () => {
+    mockDecrypt.mockResolvedValue('   ');
+
+    await expect(scoreFileCommand('file-1', 'org-1')).rejects.toThrow(
+      /no content/,
+    );
     expect(mockJobStart).not.toHaveBeenCalled();
   });
 });

@@ -83,6 +83,10 @@ archive is the blog.
 - `[brief]` **A low RAG score no longer looks like a failed upload.** The badge
   is one neutral colour at every value and reads `RAG 16/100`; crimson stays
   reserved for the Failed status.
+- `[brief]` **"Score for RAG" works on encrypted documents.** With encryption
+  on, the button graded the encrypted text rather than the document. It now
+  scores what ingest scores, and it refuses a file that has not finished
+  processing instead of grading the raw upload.
 
 ### Ragen Brain: an assistant beside the inbox
 

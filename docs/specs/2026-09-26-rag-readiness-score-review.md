@@ -464,6 +464,15 @@ already claims. B1 and B2 start only after A2's baseline is committed.
   chunks, without duplicated overlap. Raise or remove the 12k truncation, or
   state it on the badge. Test: the same file gives the same input string from
   both paths.
+  *Partly done.* The two paths already sent the same chunk text, give or take
+  a trailing newline, and a test now holds that. What differed was the button's
+  source: it sent `UserDocument.content` undecrypted, which is ciphertext for
+  an organization with encryption on, and it fell back to the raw stored file,
+  unparsed and unmasked, when there was no document row. It decrypts now and
+  refuses instead. *Remaining:* truncation, which needs a field on the score
+  that B6 reshapes, so it waits for B6. The duplicated overlap is in the stored
+  content itself, so removing it changes what `UserDocument.content` holds;
+  that needs a decision rather than a scorer fix.
 - [x] **B3.** Keep the promise the UI makes about scores after "Apply
   suggestions", one way or the other: either `REINDEX_DOCUMENT_VERSION` rescores
   (one call), or `applied-hint` stops promising it and the badge clears. A
