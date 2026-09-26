@@ -21,25 +21,10 @@ outcome: the number comes off the file list and is replaced by deterministic,
 type-aware checks on the chunks retrieval actually indexes. The LLM rubric stays
 only where it helps, as the on-demand driver of "Optymalizuj dla RAG" for prose.
 
-## Open Questions
-
-<!--
-Q1, Q2 and Q4 were answered on 2026-09-26 and are recorded under Decisions.
-The spec is not ready to implement until Q3 and Q5 are answered too.
--->
-
-- **Q3. Should the per-ingest LLM call be removed?** It runs on every upload and
-  every re-process. *Recommended: yes, in Phase D.* Keep scoring on demand, from
-  the Optimize tab only.
-- **Q5. Does this bundle more than one capability?** Yes, three: (a) the defect
-  fixes, (b) the measurement, and (c) the replacement diagnostics. Each is
-  useful without the others. *Recommended:* keep them in one spec, because (c)'s
-  design depends on (b)'s result, but ship them as separate phases and PRs.
-
 ## Decisions
 
-Answered 2026-09-26. The question numbers are kept so earlier references to
-them still resolve.
+All five open questions were answered on 2026-09-26. The question numbers are
+kept so earlier references to them still resolve.
 
 - **Q1. Phase A's measurement is a gate.** Nothing that changes what the badge
   means (Phases C and D) starts until A4 has written its finding into this spec.
@@ -57,6 +42,17 @@ them still resolve.
   are prose edits. On a spreadsheet the right action is to re-parse, not to
   rewrite. The refusal is enforced in the command, not only by hiding the menu
   item.
+- **Q3. The LLM call leaves ingest.** Upload and re-process stop scoring
+  (D1), whatever Phase A finds. The only remaining path is the on-demand score
+  in the Optimize tab, for prose documents (D2). Phase A calls the scorer from
+  the benchmark harness, so it does not need the ingest call. D1 still waits
+  for A4 (Q1), but A's result decides only what D2 does, not whether D1
+  happens.
+- **Q5. One spec, separate deliveries.** The spec bundles three capabilities
+  that are each useful alone: (a) the defect fixes, (b) the measurement and
+  (c) the replacement diagnostics. They stay in one spec because (c)'s design
+  depends on (b)'s result. They ship as separate phases, each in its own PRs:
+  B for (a), A for (b), and C and D for (c).
 
 ## Problem
 
