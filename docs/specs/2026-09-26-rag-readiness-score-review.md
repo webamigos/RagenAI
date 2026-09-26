@@ -28,7 +28,9 @@ kept so earlier references to them still resolve.
 
 - **Q1. Phase A's measurement is a gate.** Nothing that changes what the badge
   means (Phases C and D) starts until A4 has written its finding into this spec.
-  Phase B's defect fixes are independent of the result and may land first.
+  Phase B's defect fixes are independent of the result, but B1 and B2 change
+  the scorer's total and input, so they wait until A2 has committed a baseline
+  run of the unchanged scorer. B3 and B4 may land first.
 - **Q2. The file list shows no number.** This holds whatever Phase A finds. If
   the rubric turns out to predict retrieval for prose, that result can shape the
   Optimize tab (D2), but it does not bring a number back to the list or grid.
@@ -291,8 +293,15 @@ Option 4 drops them.
 The harness exists: `apps/web/evals/rag-benchmark`, run with
 `npm run eval:benchmark`. It has a control arm, and results go to `results/`. It
 measures per-question pass rate, not recall@k, and it does not aggregate per
-document. Every case does record `citedFiles`, so per-document figures can be
-derived from existing output.
+document. Every case records `citedFiles`, but that is what was cited, not what
+should have been: a retrieval miss cites nothing, so grouping by `citedFiles`
+drops exactly the failures from a document's denominator. `Question` carries
+only `docLang`, so nothing in the corpus says which document holds an answer.
+A1 therefore adds an expected-document field to `Question` and fills it for
+both corpora. A document's pass rate is computed over every question mapped to
+it, including those that cited nothing. A multi-hop question counts toward each
+document it names. Guard questions (`guard-hallucination`, `guard-sycophancy`)
+have no expected document and are left out of per-document rates.
 
 **Why correlation alone is weak here.** The two corpora have 13 documents
 between them (8 + 5), and single runs are noisy: `kolej` moved 16/24 → 22/24
@@ -388,34 +397,41 @@ measurement may want.
 
 ## Phases
 
-Each phase leaves the application working. B can land before A finishes; C
-and D do not start until A4 is done (Q1).
+Each phase leaves the application working. B3 and B4 can land before A
+finishes. B1 and B2 wait for A2's baseline, so that A measures the scorer as it
+is today, not a fixed one. C and D do not start until A4 is done (Q1).
 
 ### Phase A — measure the score (no product change)
 
 - [ ] **A0.** Read `metadata.ragScore`, `ragScoredAt` and `UserDocument.content`
   (first 500 characters) for the two `RAG: 0` DOCX files on demo. Record which of
   the three causes applies. This is a read only.
-- [ ] **A1.** Add a `score-documents` mode to `rag-benchmark`. It ingests a corpus
-  through the real worker, runs `scoreDocumentForRag` on the same text ingest
-  passes it, and writes per-document scores next to per-document pass rates
-  derived from `citedFiles`. Three runs, median. The script and its tests live
-  under `apps/web/evals`, not in the product.
+- [ ] **A1.** Add an expected-document field to the benchmark's `Question` and
+  fill it in both corpora (see "How to validate" above). Then add a
+  `score-documents` mode to `rag-benchmark`. It ingests a corpus through the
+  real worker, runs `scoreDocumentForRag` on the same text ingest passes it,
+  and writes per-document scores next to per-document pass rates over the
+  mapped questions. `citedFiles` is reported beside them, not used as the
+  denominator. Three runs, median. The script and its tests live under
+  `apps/web/evals`, not in the product. Tests: a question that cited nothing
+  still counts against its expected document.
 - [ ] **A2.** Run the shape comparison above on `tabele-bilingual-v1` (all four
-  shapes) and `kolej-bilingual-v1` (as written vs optimized). Commit the results
-  under `rag-benchmark/results/`.
+  shapes) and `kolej-bilingual-v1` (as written vs optimized), with the scorer
+  as it is on `main` before any Phase B change. Commit the results under
+  `rag-benchmark/results/`. This is the baseline B1 and B2 wait for.
 - [ ] **A3.** *(optional, recommended)* Port the demo corpus: bring the files
   from `e15d46c10`, turn the README's question table into a `questions.json`,
   and run A2 on it. Separate PR, because it adds binary fixtures.
 - [ ] **A4.** Write the finding into this spec: does the score rank shapes in the
   benchmark's order, for tables and for prose? Also measure run-to-run variance
-  on unchanged text (ten runs, one document). Then decide on option 2 for
-  prose, yes or no.
+  on unchanged text (ten runs, one document). If B1 and B2 have landed by then,
+  rerun A2 with the fixed scorer and report both beside each other. Then decide
+  on option 2 for prose, yes or no.
 
 ### Phase B — defects that are wrong whatever A finds
 
 Each is a `fix`, with no feature key: they correct behaviour to what the code
-already claims.
+already claims. B1 and B2 start only after A2's baseline is committed.
 
 - [ ] **B1.** Recompute `total` from the dimensions in the worker, and set
   `temperature: 0`. Delete the unused apps/web scorer
