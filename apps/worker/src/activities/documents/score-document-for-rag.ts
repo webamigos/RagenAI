@@ -56,9 +56,11 @@ export function computeRagTotal(
  */
 export const ragScoreResponseSchema = z.object({
   ...dimensions,
-  // Asked for, and ignored: `computeRagTotal` sets the stored one. Optional
-  // and unbounded so a wrong sum cannot fail an otherwise valid answer.
-  total: z.number().optional(),
+  // Asked for, and ignored: `computeRagTotal` sets the stored one. Unbounded
+  // so a wrong sum cannot fail an otherwise valid answer, and nullable rather
+  // than optional: OpenAI's strict structured outputs require every property
+  // to be listed as required, so `.optional()` breaks a strict route.
+  total: z.number().nullable(),
   suggestions: z.array(z.string()),
 });
 

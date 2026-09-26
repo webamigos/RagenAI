@@ -222,7 +222,7 @@ describe('computeRagTotal', () => {
 
   // The two demo DOCX files showed RAG: 0; a model's `total: 0` over
   // non-zero dimensions was one way to get there.
-  it('ignores a total the model got wrong, or left out', () => {
+  it('ignores a total the model got wrong, or gave as null', () => {
     const dims = {
       chunkStructure: 2,
       avgChunkSize: 3,
@@ -232,9 +232,31 @@ describe('computeRagTotal', () => {
       suggestions: [],
     };
     expect(normalizeRagScore({ ...dims, total: 0 }).total).toBe(31.5);
-    expect(normalizeRagScore(dims).total).toBe(31.5);
+    expect(normalizeRagScore({ ...dims, total: null }).total).toBe(31.5);
     expect(
       ragScoreResponseSchema.safeParse({ ...dims, total: 250 }).success,
+    ).toBe(true);
+  });
+});
+
+// Strict structured outputs (OpenAI, and an openai-compatible route with
+// `structuredOutputs`) reject a schema whose properties are not all required.
+describe('ragScoreResponseSchema — strict mode', () => {
+  it('lists every property as required, total included', async () => {
+    const { zodSchema } = await import('ai');
+    const json = (await zodSchema(ragScoreResponseSchema).jsonSchema) as {
+      properties: Record<string, unknown>;
+      required: string[];
+    };
+    expect([...json.required].sort()).toEqual(
+      Object.keys(json.properties).sort(),
+    );
+    expect(json.required).toContain('total');
+  });
+
+  it('accepts a null total', () => {
+    expect(
+      ragScoreResponseSchema.safeParse({ ...answer([]), total: null }).success,
     ).toBe(true);
   });
 });
