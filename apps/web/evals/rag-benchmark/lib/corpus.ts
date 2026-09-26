@@ -67,6 +67,7 @@ export function validateCorpus(
     }
   }
 
+  const files = new Set((corpus.documents ?? []).map((d) => d.file));
   const seen = new Set<string>();
   for (const q of questions) {
     if (seen.has(q.id)) {
@@ -82,6 +83,27 @@ export function validateCorpus(
     if (!languages.has(q.docLang)) {
       problems.push(
         `question "${q.id}" points at docLang "${q.docLang}", which corpus.json does not list`,
+      );
+    }
+
+    // A misspelt path would give the question a document that is never
+    // uploaded, and its failures would land in a per-document row nobody can
+    // find — or in none at all.
+    for (const file of q.expectedFiles ?? []) {
+      if (!files.has(file)) {
+        problems.push(
+          `question "${q.id}" expects file "${file}", which corpus.json does not list`,
+        );
+      }
+    }
+    if (q.expectedFiles && q.expectedFiles.length === 0) {
+      problems.push(
+        `question "${q.id}" declares an empty expectedFiles; omit the field instead`,
+      );
+    }
+    if (q.type === 'guard-hallucination' && q.expectedFiles?.length) {
+      problems.push(
+        `question "${q.id}" is a guard-hallucination question, whose answer is in no document, but declares expectedFiles`,
       );
     }
 
