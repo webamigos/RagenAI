@@ -79,7 +79,8 @@ of that document's questions (`expectedFiles`):
 | `legacy` | `en-01-equipment-limits.md` | 42 | 0.40 |
 | `legacy` | `en-02-service-rates.md` | 30 | 1.00 |
 
-**Spearman ρ = 0.20 over these 15 points**: no usable relation. Several cells
+**Spearman ρ ≈ 0.2–0.3 over these 15 points**: no usable relation. It is 0.20
+on the unrounded medians and 0.27 on the rounded values shown. Several cells
 rest on a single stored score, because of Finding 1.
 
 Across shapes the order is closer:
@@ -115,6 +116,28 @@ with table chunks (13 and 14 of 18) and far better than Docling without them
 (7). ADR-43's baseline on 12 September measured Docling without table chunks at
 10. That is a retrieval question, not a scoring one, and per ADR-20 it needs its
 own measurement before anyone acts on it.
+
+## Where the judge alone failed an answer
+
+A case passes only when both the substring assertions and the LLM judge pass.
+These are the RAG cases where the assertions passed and the judge did not:
+
+| Shape | Run | Question | Judge's reason, shortened |
+| --- | --- | --- | --- |
+| `docling` | 1 | `en-heat-charge-mass` | no `kg` unit |
+| `docling` | 2, 3 | `pl-ask-en-microscope-cap` | no GBP currency |
+| `docling-table-chunks` | 2 | `pl-cap-extensometer` | answer *adds* `zł` |
+| `docling-table-chunks` | 3 | `en-extensometer-cap-and-period` | does not name TF-3369 |
+| `legacy` | 1, 2 | `pl-ask-en-microscope-cap` | no GBP currency |
+| `legacy` | 2 | `en-extensometer-cap-and-period` | does not name TF-3369 |
+
+Most follow what the rubric asks for. One is plainly the judge's mistake: the
+`zł` case, where the rubric says the number is enough and the judge failed the
+answer for giving the unit as well. Correcting it would move
+`docling-table-chunks` from a median of 14 to 15 of 18. The totals above are
+left as graded: this protocol has no hand adjudication, and correcting one
+shape's errors while leaving the others would tilt the comparison. None of the
+findings depends on that one case.
 
 ## Conditions a reader should know
 

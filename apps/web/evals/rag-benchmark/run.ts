@@ -373,7 +373,9 @@ async function fingerprint(
   return {
     date: new Date().toISOString().slice(0, 10),
     gitSha,
-    chatModel: process.env.DEFAULT_MODEL ?? '(app default)',
+    // Trimmed as `chatModelToPin` trims it, so the report names exactly the
+    // model the run set on the organization.
+    chatModel: process.env.DEFAULT_MODEL?.trim() || '(app default)',
     judgeModel: JUDGE_MODEL,
     rephraseModel: process.env.REPHRASE_MODEL ?? '(app default)',
     embeddingsModel: process.env.EMBEDDINGS_MODEL ?? '(app default)',
