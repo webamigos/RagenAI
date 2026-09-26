@@ -3,6 +3,8 @@ import { getFileFromS3 } from '@/app/lib/services/storage';
 import { jobs } from '@/libs/jobs';
 import { Workflow } from '@/features/documents/contracts/document.types';
 import { logger } from '@/app/lib/utils/logger';
+import { UnauthorizedException } from '@/libs/utils/errors';
+import { isFeatureEnabledQuery } from '@/features/subscriptions/services/queries/get-effective-features-query';
 
 const TEXT_EXTENSIONS = new Set([
   'txt',
@@ -18,6 +20,15 @@ export async function scoreFileCommand(
   fileId: string,
   orgId: string,
 ): Promise<void> {
+  // The menu item is hidden when the key is off; this is the gate a stale
+  // client, or a direct call to the action, still meets. Spec
+  // 2026-09-26-rag-readiness-score-review, Q6.
+  if (!(await isFeatureEnabledQuery(orgId, 'ragReadinessScore'))) {
+    throw new UnauthorizedException(
+      'Scoring documents for RAG is turned off for this organization',
+    );
+  }
+
   const file = await db.userFile.findFirst({
     where: { id: fileId, organizationId: orgId },
     select: {

@@ -65,4 +65,45 @@ describe('runFileEmbeddings — RAG score', () => {
       { ragScore: null, ragScoredAt: null },
     ]);
   });
+
+  // `ragReadinessScore` off, set in apps/admin: no model call at all, and the
+  // score of the previous text is cleared rather than kept for later.
+  it('makes no scoring call when the organization has scoring off', async () => {
+    const activities = createMockActivities();
+    activities.isRagScoringEnabled.mockResolvedValue(false);
+    activities.getFileRecord.mockResolvedValue(
+      makeUserFile({ fileName: 'procedura.docx' }),
+    );
+
+    await runFileEmbeddings(
+      { fileId: 'file-1', orgId: 'org-1' },
+      context(activities),
+    );
+
+    expect(activities.isRagScoringEnabled).toHaveBeenCalledWith({
+      orgId: 'org-1',
+    });
+    expect(activities.scoreDocumentForRag).not.toHaveBeenCalled();
+    expect(scorePatches(activities)).toEqual([
+      { ragScore: null, ragScoredAt: null },
+    ]);
+  });
+
+  // Reading the key is best-effort like the score itself: an ingest that
+  // cannot read it still finishes, unscored.
+  it('still finishes the ingest when the key cannot be read', async () => {
+    const activities = createMockActivities();
+    activities.isRagScoringEnabled.mockRejectedValue(new Error('db down'));
+    activities.getFileRecord.mockResolvedValue(
+      makeUserFile({ fileName: 'procedura.docx' }),
+    );
+
+    await expect(
+      runFileEmbeddings(
+        { fileId: 'file-1', orgId: 'org-1' },
+        context(activities),
+      ),
+    ).resolves.toBeDefined();
+    expect(activities.scoreDocumentForRag).not.toHaveBeenCalled();
+  });
 });

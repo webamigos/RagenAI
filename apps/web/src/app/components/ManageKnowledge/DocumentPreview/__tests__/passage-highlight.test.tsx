@@ -92,8 +92,12 @@ describe('PlainTextViewer', () => {
     const mark = container.querySelector('mark')!;
     expect(mark.textContent).toBe(PASSAGE);
     expect(mark.className).toContain('bg-highlight');
-    expect(scrollSpy).toHaveBeenCalledWith(
-      expect.objectContaining({ block: 'center' }),
+    // Waited for, not read, as in XlsxViewer below: the mark is in the commit,
+    // the scroll is an effect that can run in a later task.
+    await waitFor(() =>
+      expect(scrollSpy).toHaveBeenCalledWith(
+        expect.objectContaining({ block: 'center' }),
+      ),
     );
     expect(scrollSpy.mock.contexts[0]).toBe(mark);
     expect(screen.queryByTestId('passage-not-found')).toBeNull();
@@ -146,6 +150,7 @@ describe('MarkdownViewer', () => {
     expect(markText(container)).toBe(
       'Zwrot środków następuje na rachunek wskazany przez klienta, najpóźniej w terminie 14 dni.',
     );
+    await waitFor(() => expect(scrollSpy).toHaveBeenCalled());
     expect(scrollSpy.mock.contexts[0]).toBe(container.querySelector('mark'));
   });
 
@@ -178,6 +183,7 @@ describe('DocxViewer', () => {
       'Reklamacje rozpatruje Jan Kowalski, kierownik działu obsługi klienta w Warszawie.',
     );
     expect(container.textContent).toContain('Inny akapit.');
+    await waitFor(() => expect(scrollSpy).toHaveBeenCalled());
     expect(scrollSpy).toHaveBeenCalledTimes(1);
     expect(screen.queryByTestId('passage-not-found')).toBeNull();
   });

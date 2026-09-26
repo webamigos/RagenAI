@@ -68,6 +68,14 @@ archive is the blog.
 
 ## Unreleased
 
+### Knowledge base
+
+- `[brief]` **The RAG readiness score can be turned off.** A platform
+  administrator can switch off the `RAG: NN` badge and its scoring call in
+  apps/admin → Features, for the whole platform or per organization. With it
+  off, uploads make one LLM call fewer and Optimize still works. It stays on by
+  default.
+
 ### Ragen Brain: an assistant beside the inbox
 
 - `[major]` **Brain has an assistant for the person curating it.** A panel

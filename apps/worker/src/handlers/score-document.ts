@@ -7,6 +7,7 @@ export async function scoreDocument(
   ctx: JobContext,
 ): Promise<void> {
   const {
+    isRagScoringEnabled,
     scoreDocumentForRag,
     mergeFileMetadata,
     syncRagScoreToVersion,
@@ -30,6 +31,16 @@ export async function scoreDocument(
     fileName,
     documentText,
   } = payload;
+
+  // The command refuses when the key is off, so this is a job queued before
+  // an operator turned it off. It ends without a model call and without a
+  // "scored" notification, because nothing was scored.
+  if (!(await isRagScoringEnabled({ orgId }))) {
+    ctx.log.info(
+      `RAG scoring is off for organization ${orgId}; file ${fileId} not scored`,
+    );
+    return;
+  }
 
   const ragScore = await scoreDocumentForRag({
     documentText,

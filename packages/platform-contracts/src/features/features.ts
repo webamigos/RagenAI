@@ -36,6 +36,7 @@ export const FEATURE_KEYS = [
   'brainForMembers',
   'brainAssistant',
   'deleteThreads',
+  'ragReadinessScore',
 ] as const;
 
 export type FeatureKey = (typeof FEATURE_KEYS)[number];
@@ -103,6 +104,16 @@ export type FeatureOverrides = Partial<Record<FeatureKey, boolean | null>>;
  * showcase tenant's example threads are part of what it shows, and one shared
  * account deleting them takes them away from every visitor until the next
  * seed. Chat itself stays on.
+ *
+ * `ragReadinessScore` is the "RAG: NN" badge and "Score for RAG": one LLM call
+ * per ingest and re-process, billed to the organization as `rag_scorer`
+ * usage. It defaults to `true` because every install scores today. Off, ingest
+ * does not call the scorer, the on-demand job and command refuse, and the panel
+ * shows no badge or menu item; Optimize still works, without a score. A key
+ * rather than an environment variable because the cost is the organization's
+ * and an operator decides it per client. Whether the default should become
+ * `false` waits on a measurement: spec 2026-09-26-rag-readiness-score-review,
+ * Q6 and D1.
  */
 export const DEFAULT_FEATURES: FeatureFlags = {
   inviteMembers: false,
@@ -120,6 +131,7 @@ export const DEFAULT_FEATURES: FeatureFlags = {
   brainForMembers: false,
   brainAssistant: false,
   deleteThreads: true,
+  ragReadinessScore: true,
 };
 
 /** Human-readable names, shared so the admin panel and the app cannot disagree. */
@@ -140,6 +152,7 @@ export const FEATURE_LABELS: Record<FeatureKey, string> = {
     'Ragen Brain: members may browse (read-only, sees every page)',
   brainAssistant: "Ragen Brain: the operator's assistant",
   deleteThreads: 'Delete threads',
+  ragReadinessScore: 'RAG readiness score (one LLM call per ingest)',
 };
 
 /**

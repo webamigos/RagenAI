@@ -8,6 +8,7 @@ import { useRouter } from '@/i18n/routing';
 import { statusToast } from '@/app/lib/utils/toast';
 import type { DocumentVersionSummary } from '@/features/documents/contracts/document-version.types';
 import { ScoreBadge } from './ScoreBadge';
+import { useOrgFeature } from '@/app/hooks/useOrgFeatures';
 
 type Props = { documentId: string };
 
@@ -24,6 +25,8 @@ const CHANGE_TYPE_COLORS: Record<string, string> = {
 
 export function VersionHistoryTab({ documentId }: Props) {
   const t = useTranslations('document-versions');
+  // Off (`ragReadinessScore`): no score column, not even "no score".
+  const scoringEnabled = useOrgFeature('ragReadinessScore');
   const locale = useLocale();
   const { errorToast, successToast } = statusToast();
   const [versions, setVersions] = useState<DocumentVersionSummary[]>([]);
@@ -176,13 +179,14 @@ export function VersionHistoryTab({ documentId }: Props) {
               {new Date(version.createdAt).toLocaleString(locale)}
             </span>
 
-            {version.ragScore ? (
-              <ScoreBadge total={version.ragScore.total} />
-            ) : (
-              <span className="text-xs text-muted-foreground">
-                {t('no-score')}
-              </span>
-            )}
+            {scoringEnabled &&
+              (version.ragScore ? (
+                <ScoreBadge total={version.ragScore.total} />
+              ) : (
+                <span className="text-xs text-muted-foreground">
+                  {t('no-score')}
+                </span>
+              ))}
           </div>
 
           <div className="flex items-center gap-2">

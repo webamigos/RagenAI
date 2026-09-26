@@ -59,6 +59,7 @@ Before starting a nontrivial task, match it against this table and read the link
 | Knowledge base folders, sharing, permissions, IDOR concerns | [`docs/knowledge-base.md`](docs/knowledge-base.md) |
 | Document versions, diff, rollback, re-indexing after a content change | [`docs/document-versioning.md`](docs/document-versioning.md) |
 | RAG optimization suggestions (Suggest & Accept) | [`docs/document-versioning.md`](docs/document-versioning.md) |
+| The `RAG: NN` badge, "Score for RAG", turning it off | [`docs/rag-readiness-score.md`](docs/rag-readiness-score.md) — feature key `ragReadinessScore`; not yet validated against retrieval |
 | Tenant/org data scoping, cross-org data leaks | [`docs/tenant-scope-guard.md`](docs/tenant-scope-guard.md), this file's "Server Actions — Security" section |
 | Prisma schema changes, migrations | [`docs/prisma.md`](docs/prisma.md), ADR [03](docs/adrs/03-prisma-v7-migration.md) |
 | Auth, RBAC, permissions, adding an org role | this file's "RBAC" section and [ADR-39](docs/adrs/39-org-roles-are-capabilities-not-a-rank.md) — ask a capability, never compare the role string |

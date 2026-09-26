@@ -2,6 +2,8 @@
 
 import { useTranslations } from 'next-intl';
 
+import { useOrgFeature } from '@/app/hooks/useOrgFeatures';
+
 function getScoreColor(total: number) {
   if (total >= 70) {
     return 'bg-ready-tint text-ready dark:bg-ready/30';
@@ -14,8 +16,11 @@ function getScoreColor(total: number) {
 
 export function RagScoreBadge({ metadata }: { metadata?: unknown }) {
   const t = useTranslations('document-optimizer');
+  // Off (`ragReadinessScore`, set in apps/admin): no badge, including a score
+  // stored before the key was turned off.
+  const scoringEnabled = useOrgFeature('ragReadinessScore');
 
-  if (!metadata || typeof metadata !== 'object') {
+  if (!scoringEnabled || !metadata || typeof metadata !== 'object') {
     return null;
   }
 
