@@ -80,6 +80,15 @@ archive is the blog.
   `brainAssistant` feature key; conversations are kept, encrypted like chat
   threads, and never appear in the chat.
 
+### Sources you can read
+
+- `[brief]` **A spreadsheet source reads as a table.** When an answer cites a
+  sheet, CSV or any Markdown table, its source card now shows the first rows
+  under their column names instead of one run of numbers. A source whose
+  stored text is a file's raw XML — an `.xlsx` indexed as its worksheet
+  markup before the worker's content sniffing — no longer shows that markup
+  as its quote, and the worker now refuses to index such text at all.
+
 ### Notifications in your language
 
 - `[brief]` **Notifications speak your language.** A shared document,

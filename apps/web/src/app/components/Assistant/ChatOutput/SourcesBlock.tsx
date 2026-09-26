@@ -13,6 +13,8 @@ import type {
   RetrievalSource,
 } from '@/store/assistant/assistantSlice';
 import { snippetToPlainText } from './snippet-text';
+import { parseSnippetTable } from './snippet-table';
+import { SourceSnippetTable } from './SourceSnippetTable';
 
 /**
  * What the answer was grounded in.
@@ -79,6 +81,11 @@ const SourceCard = ({
   brain?: BrainCitation;
 }) => {
   const t = useTranslations('sources');
+  // A spreadsheet chunk, or any pipe table, reads as a table; everything
+  // else — and anything this cannot read with confidence — as the quote.
+  const table = source.snippet
+    ? parseSnippetTable(source.snippet, source.fileName)
+    : null;
 
   /*
     One target, not two. The card has no other interactive element in it, so
@@ -162,7 +169,8 @@ const SourceCard = ({
         was not masked, both hold the real value; the model's answer can only
         differ from this quote by what the model chose to write.
       */}
-      {source.snippet ? (
+      {table ? <SourceSnippetTable table={table} /> : null}
+      {!table && source.snippet ? (
         <blockquote className="mt-1 border-l-2 border-border pl-2 text-[11px] leading-snug text-muted-foreground line-clamp-3">
           {/*
             As plain text: chunks keep the parser's Markdown, and a quote
