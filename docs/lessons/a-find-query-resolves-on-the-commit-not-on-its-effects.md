@@ -44,3 +44,10 @@ reproduces it.
 **Applies to**: every React Testing Library test that asserts on a side effect
 after awaiting DOM — scroll and focus spies especially, since jsdom has no
 layout and the spy is the only observable.
+
+**Follow-up (2026-09-26)**: #1391 fixed only the XlsxViewer case. The same
+file had the same read in three more places: PlainTextViewer, MarkdownViewer
+and DocxViewer each awaited the `mark` and then read the scroll spy directly.
+PlainTextViewer's copy failed CI on an unrelated PR (#1395) the same day. When
+fixing one instance of this race, grep the file, and its neighbours, for every
+spy read that follows a `findBy`/`waitFor` on the DOM.
