@@ -23,6 +23,7 @@ vi.mock('@qdrant/js-client-rest', () => ({
   }),
 }));
 
+import { QdrantClient } from '@qdrant/js-client-rest';
 import { QdrantVectorStoreClient } from './qdrant-client.js';
 import type { EmbeddingsProvider } from '../llm/types/embeddings.js';
 
@@ -342,5 +343,29 @@ describe('QdrantVectorStoreClient (hybrid search)', () => {
 
       expect(mockCreateCollection).not.toHaveBeenCalled();
     });
+  });
+});
+
+// This class is built per chat turn. With the client's default
+// `checkCompatibility: true` each construction started an un-awaited version
+// request that `console.warn`s when it fails — one extra round trip per turn,
+// and in tests a warning landing after the test had ended, which vitest
+// reported as an EnvironmentTeardownError and failed a green suite.
+describe('QdrantVectorStoreClient (construction)', () => {
+  it('does not ask the server for its version', () => {
+    vi.mocked(QdrantClient).mockClear();
+
+    new QdrantVectorStoreClient(createMockEmbeddings(), {
+      url: 'http://qdrant:6333',
+      apiKey: 'k',
+      collectionName: 'org-1',
+    });
+
+    expect(QdrantClient).toHaveBeenCalledWith(
+      expect.objectContaining({
+        url: 'http://qdrant:6333',
+        checkCompatibility: false,
+      }),
+    );
   });
 });
