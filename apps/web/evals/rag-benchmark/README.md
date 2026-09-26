@@ -138,7 +138,7 @@ A corpus is a directory holding three things:
 ```
 my-docs/
   corpus.json      # documents, their languages, their mime types, a licence
-  questions.json   # questions with lang, docLang, type, expectations, rubric
+  questions.json   # questions with lang, docLang, expectedFiles, type, expectations, rubric
   docs/…           # the files themselves
 ```
 
@@ -198,6 +198,7 @@ DATABASE_URL=postgresql://postgres:pass123@localhost:55432/ragen_e2e \
 | `RAG_EVAL_JUDGE_MODEL` | `gemini-2.5-flash` | The grader |
 | `RAG_EVAL_APP_URL`, `RAG_EVAL_EMAIL`, `RAG_EVAL_PASSWORD`, `RAG_EVAL_PROJECT_ID`, `RAG_EVAL_THREAD_ID` | the e2e seed's values | Running against a different instance or tenant |
 | `RAG_EVAL_TIMEOUT_MS` | `600000` | Ingestion of the whole corpus, not one file |
+| `RAG_EVAL_SCORE_TIMEOUT_MS` | `120000` | How long to wait after indexing for ingest to write the RAG scores. A score that is not written by then is reported as `not written`, not as a failed run |
 | `--arms rag` / `--arms no-rag` | both | Skipping the control halves the cost of a re-run you only want a delta from. An unrecognised arm is an error, not a silently empty column |
 
 `INTERNAL_API_SECRET` is not required but is strongly wanted: cleanup deletes
@@ -214,6 +215,24 @@ before quoting a figure, and treat a single-run delta under about three cases as
 noise. The results in [`results/`](./results) are individual runs: the first of
 a corpus revision is `<date>-<corpus>-rev<n>`, and every run after it gets a
 `-runN` suffix, so collecting three does not mean overwriting two.
+
+## Per document, and the RAG score beside it
+
+`expectedFiles` names the corpus document(s) that hold a question's answer.
+The report's **By document** table counts each question toward every document
+it names, whether or not the answer cited anything, and leaves out a
+`guard-hallucination` question, whose answer is in no document. Grouping by
+`citedFiles` instead would drop every retrieval miss from its document's
+denominator. The loader rejects a path the manifest does not list.
+
+The same table shows the RAG readiness score ("Oceń dla RAG") that ingest wrote
+for each file on this run's upload, read from `UserFile.metadata.ragScore`. It
+is read, not recomputed, because the question is whether the number users see
+tracks retrieval
+([spec](../../../../docs/specs/2026-09-26-rag-readiness-score-review.md),
+Phase A). The score is written after the file is marked indexed, so the run
+waits for it separately. A per-document rate rests on two to five questions,
+so compare the median of three runs, not one.
 
 ## What this does not measure
 

@@ -44,6 +44,15 @@ describe.each(['kolej-bilingual-v1', 'tabele-bilingual-v1'])('%s', (name) => {
     expect([...answered].sort()).toEqual(['en', 'pl']);
   });
 
+  // The per-document rate divides by these. A question without one drops
+  // out of every document's row, which is exactly how a miss would hide.
+  it('names the document for every question that has one', () => {
+    const unmapped = loaded.questions.filter(
+      (q) => q.type !== 'guard-hallucination' && !q.expectedFiles?.length,
+    );
+    expect(unmapped.map((q) => q.id)).toEqual([]);
+  });
+
   it('has at least one cross-lingual case and both guards', () => {
     const types = new Set(loaded.questions.map((q) => q.type));
     expect(types.has('cross-lingual')).toBe(true);

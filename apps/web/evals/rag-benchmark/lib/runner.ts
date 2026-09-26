@@ -1,6 +1,6 @@
 import type { PrismaClient } from '../../../src/generated/prisma/client';
 import { ARMS } from './report';
-import type { Arm } from './types';
+import type { Arm, DocumentScore } from './types';
 
 /**
  * The parts of `run.ts` that are decisions rather than I/O orchestration, kept
@@ -118,4 +118,116 @@ export async function waitForIngest(
   throw new Error(
     `Ingestion did not finish in ${timeoutMs / 1000}s (${lastLine})`,
   );
+}
+
+/**
+ * What ingest left in `UserFile.metadata` for the RAG score.
+ *
+ * The key's presence is the signal, not its value: ingest writes
+ * `ragScore: null` when the scorer ran and failed, and writes nothing at all
+ * until it gets there — which is after the file is already marked
+ * `COMPLETED`, so `waitForIngest` returning says nothing about the score.
+ */
+export function readRagScore(metadata: unknown): Omit<DocumentScore, 'file'> {
+  if (!metadata || typeof metadata !== 'object' || !('ragScore' in metadata)) {
+    return { state: 'missing' };
+  }
+  const score = (metadata as { ragScore: unknown }).ragScore;
+  if (!score || typeof score !== 'object') {
+    return { state: 'failed' };
+  }
+  const record = score as Record<string, unknown>;
+  const total = record.total;
+  if (typeof total !== 'number') {
+    return { state: 'failed' };
+  }
+  // Every other numeric field is a rubric dimension; `suggestions` is not.
+  const dimensions: Record<string, number> = {};
+  for (const [key, value] of Object.entries(record)) {
+    if (key !== 'total' && typeof value === 'number') {
+      dimensions[key] = value;
+    }
+  }
+  return { state: 'scored', total, dimensions };
+}
+
+export interface UploadedDocument {
+  /** `UserFile.id`. */
+  id: string;
+  /** `CorpusDocument.file`. */
+  file: string;
+}
+
+/**
+ * Wait for ingest to write each uploaded file's score, and return them.
+ *
+ * Never throws for a score that did not arrive: a document ingest could not
+ * score is a result, recorded as `missing`, not a reason to lose the run. The
+ * wait is bounded for the same reason — a scorer that threw writes nothing,
+ * so without a deadline one bad call would hang the benchmark.
+ */
+export async function waitForScores(
+  prisma: Pick<PrismaClient, 'userFile'>,
+  uploads: UploadedDocument[],
+  opts: WaitForIngestOptions,
+): Promise<DocumentScore[]> {
+  const { timeoutMs, pollMs = 5_000, log = console.log } = opts;
+  const deadline = Date.now() + timeoutMs;
+  let lastLine = '';
+  let scores: DocumentScore[] = [];
+
+  for (;;) {
+    const rows = await prisma.userFile.findMany({
+      where: { id: { in: uploads.map((u) => u.id) } },
+      select: { id: true, metadata: true },
+    });
+    scores = uploads.map(({ id, file }) => ({
+      file,
+      ...readRagScore(rows.find((r) => r.id === id)?.metadata),
+    }));
+    const written = scores.filter((s) => s.state !== 'missing').length;
+    const line = `${written}/${uploads.length} scores written`;
+    if (line !== lastLine) {
+      log(`  ${line}`);
+      lastLine = line;
+    }
+    if (written === uploads.length || Date.now() >= deadline) {
+      return scores;
+    }
+    await new Promise((r) => setTimeout(r, pollMs));
+  }
+}
+
+/**
+ * Pair the ids the upload returned with the corpus documents they came from,
+ * by file name — the only thing the upload response and the manifest share.
+ *
+ * Two documents with one base name would make that pairing a guess, and an
+ * upload whose stored name matches no document (the app renamed it) would
+ * drop that document's score without a word. Both are refused.
+ */
+export function pairUploads(
+  uploaded: { fileName: string; id: string }[],
+  documents: { file: string }[],
+): UploadedDocument[] {
+  const byName = new Map<string, string>();
+  for (const doc of documents) {
+    const name = doc.file.split('/').pop() ?? doc.file;
+    if (byName.has(name)) {
+      throw new Error(
+        `Two corpus documents share the file name "${name}", so their scores cannot be told apart`,
+      );
+    }
+    byName.set(name, doc.file);
+  }
+  const unmatched = uploaded.filter(({ fileName }) => !byName.has(fileName));
+  if (unmatched.length > 0) {
+    throw new Error(
+      `The upload stored ${unmatched.map((u) => `"${u.fileName}"`).join(', ')} under a name no corpus document has, so its score cannot be attributed`,
+    );
+  }
+  return uploaded.map(({ fileName, id }) => ({
+    id,
+    file: byName.get(fileName) as string,
+  }));
 }

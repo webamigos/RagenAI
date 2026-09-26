@@ -239,6 +239,13 @@ describe('XlsxViewer', () => {
     ]);
     expect(cited[1].querySelector('td')!.className).toContain('bg-highlight');
     // The header matches every chunk; the scroll goes to the first data row.
+    //
+    // Waited for, not read: the rows are marked in the commit that renders
+    // them, but the scroll is a passive effect React may run in a later task.
+    // `findByText` resolves on the commit, so under a loaded full run the spy
+    // was sometimes still empty here — the rows were right and the scroll had
+    // simply not happened yet.
+    await waitFor(() => expect(scrollSpy).toHaveBeenCalled());
     expect(scrollSpy.mock.contexts[0]).toBe(cited[1]);
   });
 

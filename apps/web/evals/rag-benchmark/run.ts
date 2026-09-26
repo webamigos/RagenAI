@@ -27,8 +27,18 @@ import { askRag, askControl } from './lib/arms';
 import { runAssertions, judge } from './lib/grade';
 import { renderMarkdown, resultStem, tally } from './lib/report';
 import { withRetry } from './lib/retry';
-import { parseArgs, waitForIngest } from './lib/runner';
-import type { CaseResult, Report, StackFingerprint } from './lib/types';
+import {
+  pairUploads,
+  parseArgs,
+  waitForIngest,
+  waitForScores,
+} from './lib/runner';
+import type {
+  CaseResult,
+  DocumentScore,
+  Report,
+  StackFingerprint,
+} from './lib/types';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -40,6 +50,13 @@ const PROJECT_ID =
 const THREAD_ID =
   process.env.RAG_EVAL_THREAD_ID ?? 'e2e00000-0000-0000-0000-00e2e0000010';
 const INGEST_TIMEOUT_MS = Number(process.env.RAG_EVAL_TIMEOUT_MS ?? 600_000);
+/**
+ * How long to wait, after indexing, for ingest to write the RAG scores. The
+ * score is written after the file is marked indexed, one LLM call per file.
+ */
+const SCORE_TIMEOUT_MS = Number(
+  process.env.RAG_EVAL_SCORE_TIMEOUT_MS ?? 120_000,
+);
 
 /** The control arm and the judge must be named explicitly, so the report can. */
 const CONTROL_MODEL =
@@ -97,6 +114,8 @@ async function login(): Promise<string> {
 export interface UploadOutcome {
   /** Ids of the files that were actually created. */
   ids: string[];
+  /** The same files with the name each was uploaded under. */
+  files: { fileName: string; id: string }[];
   /** Human-readable reasons for the files that were not, if any. */
   failures: string[];
 }
@@ -142,7 +161,11 @@ async function uploadCorpus(
     files?: { fileName: string; uniqueFileId: string }[];
     failedFiles?: { fileName: string; error: string }[];
   };
-  const ids = (body.files ?? []).map((f) => f.uniqueFileId);
+  const files = (body.files ?? []).map((f) => ({
+    fileName: f.fileName,
+    id: f.uniqueFileId,
+  }));
+  const ids = files.map((f) => f.id);
   const failures = (body.failedFiles ?? []).map(
     (f) => `${f.fileName} (${f.error})`,
   );
@@ -153,7 +176,7 @@ async function uploadCorpus(
       `returned ${ids.length} file id(s) for ${documents.length} document(s)`,
     );
   }
-  return { ids, failures };
+  return { ids, files, failures };
 }
 
 /**
@@ -382,6 +405,7 @@ async function main(): Promise<void> {
   const results: CaseResult[] = [];
   /** Ids of the files this run uploaded — what waiting and cleanup key on. */
   let uploaded: string[] = [];
+  let documentScores: DocumentScore[] | undefined;
   let cookie: string | undefined;
 
   try {
@@ -405,6 +429,15 @@ async function main(): Promise<void> {
       console.log('[3/4] Waiting for ingestion');
       await waitForIngest(prisma, uploaded, { timeoutMs: INGEST_TIMEOUT_MS });
 
+      // The score ingest wrote, beside the pass rate of the questions each
+      // document should answer — see "By document" in the report.
+      console.log('      Reading the RAG scores ingest wrote');
+      documentScores = await waitForScores(
+        prisma,
+        pairUploads(upload.files, corpus.documents),
+        { timeoutMs: SCORE_TIMEOUT_MS },
+      );
+
       console.log('[4/4] Clearing thread history and project instruction');
       await pinProjectInstruction(prisma);
       await clearThread(prisma);
@@ -421,6 +454,7 @@ async function main(): Promise<void> {
           arm,
           lang: q.lang,
           docLang: q.docLang,
+          expectedFiles: q.expectedFiles,
           type: q.type,
           question: q.question,
         };
@@ -552,6 +586,7 @@ async function main(): Promise<void> {
       await settledGatewayMode(startedUnderGateway),
     ),
     results,
+    documentScores,
   };
 
   const outDir = join(__dirname, 'results');
