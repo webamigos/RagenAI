@@ -24,13 +24,14 @@ only where it helps, as the on-demand driver of "Optymalizuj dla RAG" for prose.
 ## Decisions
 
 All five open questions were answered on 2026-09-26. The question numbers are
-kept so earlier references to them still resolve.
+kept so earlier references to them still resolve. Q6 was added the same day,
+and it replaces Q3.
 
 - **Q1. Phase A's measurement is a gate.** Nothing that changes what the badge
   means (Phases C and D) starts until A4 has written its finding into this spec.
   Phase B's defect fixes are independent of the result, but B1 and B2 change
   the scorer's total and input, so they wait until A2 has committed a baseline
-  run of the unchanged scorer. B3 and B4 may land first.
+  run of the unchanged scorer. B3, B4 and B5 may land first.
 - **Q2. The file list shows no number.** This holds whatever Phase A finds. If
   the rubric turns out to predict retrieval for prose, that result can shape the
   Optimize tab (D2), but it does not bring a number back to the list or grid.
@@ -44,12 +45,28 @@ kept so earlier references to them still resolve.
   are prose edits. On a spreadsheet the right action is to re-parse, not to
   rewrite. The refusal is enforced in the command, not only by hiding the menu
   item.
-- **Q3. The LLM call leaves ingest.** Upload and re-process stop scoring
-  (D1), whatever Phase A finds. The only remaining path is the on-demand score
-  in the Optimize tab, for prose documents (D2). Phase A calls the scorer from
-  the benchmark harness, so it does not need the ingest call. D1 still waits
-  for A4 (Q1), but A's result decides only what D2 does, not whether D1
-  happens.
+- **Q3. ~~The LLM call leaves ingest.~~** Replaced by Q6. It said upload and
+  re-process stop scoring (D1) whatever Phase A finds. Q6 makes scoring
+  optional instead of deleting it.
+- **Q6. Scoring is optional, per organization, through a feature key.** The key
+  is `ragReadinessScore` in `@ragenai/platform-contracts`, with code default
+  `true`, so an upgrade changes nothing. A platform administrator sets it in
+  apps/admin, where every feature key already resolves through four layers:
+  organization override, plan, platform default, code default. It is a feature
+  key, not an environment variable: the score is an LLM call per ingest, billed
+  to the organization as `rag_scorer` usage, and an operator decides that per
+  client. `consts.ts` keeps environment variables for installation-wide
+  choices that must be uniform, such as chunking, and this is not one. With the
+  key off:
+  - ingest does not call the scorer
+  - the on-demand job and the command refuse
+  - the list and grid show no badge, and the menu has no "Oceń dla RAG" item
+  - Optimize still works, without a score
+
+  This lands as B5, before A4, because it is independent of what A finds. D1
+  changes from deleting the ingest call to deciding the key's code default
+  after A4. Phase A needs the key on for the benchmark organization, which the
+  default gives it.
 - **Q5. One spec, separate deliveries.** The spec bundles three capabilities
   that are each useful alone: (a) the defect fixes, (b) the measurement and
   (c) the replacement diagnostics. They stay in one spec because (c)'s design
@@ -341,7 +358,7 @@ README requires: invented, and not repeated elsewhere in the same document.
 | Surface | Change | What catches a mistake |
 | --- | --- | --- |
 | `prisma/schema.prisma` | **none** — scores and diagnostics live in `UserFile.metadata` JSONB, as `ragScore` does today | — |
-| `packages/platform-contracts` | Phase C: one feature key, `documentDiagnostics`, default `false` | package tests, `shared-contracts-are-not-recopied.test.ts` |
+| `packages/platform-contracts` | B5: the feature key `ragReadinessScore`, default `true`. Phase C: `documentDiagnostics`, default `false` | package tests, `shared-contracts-are-not-recopied.test.ts` |
 | `packages/jobs` | Phase D may drop `SCORE_DOCUMENT` from ingest only; the job itself stays for on-demand use | `apps/worker` job integration suite (`worker:test:jobs`) — `every-job-runs` names `scoreDocument` |
 | `apps/worker` ingest (`parse-and-embed`) | Phase C adds a pure diagnostics step; Phase D removes one LLM call | worker tests, `parse-and-embed-rag-score.test.ts` rewritten |
 | auth / tenant scoping | none new; the action already derives org from the session and the command scopes by `organizationId` | existing guards |
@@ -400,7 +417,7 @@ measurement may want.
 ## Phases
 
 Each phase leaves the application working. B3 and B4 can land before A
-finishes. B1 and B2 wait for A2's baseline, so that A measures the scorer as it
+finishes, and so can B5. B1 and B2 wait for A2's baseline, so that A measures the scorer as it
 is today, not a fixed one. C and D do not start until A4 is done (Q1).
 
 ### Phase A — measure the score (no product change)
@@ -449,13 +466,26 @@ already claims. B1 and B2 start only after A2's baseline is committed.
   (one call), or `applied-hint` stops promising it and the badge clears. A
   number describing text that no longer exists is the stale-score defect
   `parse-and-embed.ts:713-718` already fixed once, on another path.
-  *Recommendation:* clear it and fix the copy, because Phase D removes automatic
-  scoring anyway.
+  *Recommendation:* clear it and fix the copy, because D1 may turn automatic
+  scoring off by default.
 - [ ] **B4.** Badge colour. Below 40 the badge uses crimson, which panel rule 16
   reserves for the Failed badge, so a low score reads as a failed ingest.
   Rules 11 and 17 reserve green and amber for document and job state. Use a
   neutral token, and put the scale in the label (`RAG 16/100`, rule 23). Test:
   `panel-colours-are-tokens-not-literals` and the badge test.
+- [ ] **B5.** The `ragReadinessScore` feature key (Q6). Add it to
+  `FEATURE_KEYS` with code default `true` and a label, so apps/admin shows it
+  with no admin code. Check it in the worker (`parse-and-embed` and the
+  `scoreDocument` handler, through `resolveFeatures` as Brain does), in
+  `scoreFileCommand`, and in the panel (badge, grid card, menu item, Optimize
+  tab's score). A `feat` with a changelog line: an operator can now turn it
+  off. Documentation lands in the same delivery: `docs/rag-readiness-score.md`
+  in this repository, with a Task Router line, and a page in `ragen-docs`.
+  Tests:
+  - the key's default
+  - ingest skips the scorer and makes no model call when the key is off
+  - the handler and the command refuse
+  - the badge and menu item are absent in both views
 
 ### Phase C — chunk-level diagnostics behind `documentDiagnostics`
 
@@ -486,11 +516,13 @@ already claims. B1 and B2 start only after A2's baseline is committed.
   raise "Parsed as markup". Docling with table chunks on must raise nothing
   about headers when Docling flagged them.
 
-### Phase D — the LLM score leaves ingest
+### Phase D — the LLM score's place after the measurement
 
-- [ ] **D1.** Remove `scoreDocumentForRag` from `parse-and-embed`. That is one
-  LLM call less per ingest and per re-process. Stop rendering `ragScore` in the
-  list and grid when `documentDiagnostics` is on.
+- [ ] **D1.** Decide `ragReadinessScore`'s code default from A4's result (Q6).
+  If the score does not track retrieval, the default becomes `false`: one LLM
+  call less per ingest and per re-process, and an operator can still turn it
+  on. Nothing is deleted. Stop rendering `ragScore` in the list and grid when
+  `documentDiagnostics` is on.
 - [ ] **D2.** Scoring stays on demand in the Optimize tab, as the baseline for
   suggestions. For tabular types (Q4), both the score and the
   `optimizeDocument` job are refused at the command, and the Optimize menu item
@@ -534,9 +566,13 @@ already claims. B1 and B2 start only after A2's baseline is committed.
 - **Phase C** writes new JSON keys and renders only behind `documentDiagnostics`
   (default `false`). Rollback is turning the key off. The written metadata is
   inert.
-- **Phase D** removes an ingest step. Rollback is reverting D1. Scores computed
-  before D1 still exist in metadata, so nothing is lost. Files ingested while D1
-  was live have no score until they are rescored on demand.
+- **B5** is a feature key with code default `true`. Rollback is turning the
+  key back on for the organization or the platform; reverting the PR is
+  needed only if the gate itself is wrong.
+- **Phase D** flips a default, it deletes nothing. Rollback is setting the key
+  back on in apps/admin. Scores computed before D1 still exist in metadata.
+  Files ingested while scoring was off have no score until they are rescored
+  on demand.
 - **Installer.** `create-ragen-app` needs no change, since there is no new env
   var or service. If Phase D makes `SUMMARY_MODEL` less critical, that is noted
   in the PR, not changed.
