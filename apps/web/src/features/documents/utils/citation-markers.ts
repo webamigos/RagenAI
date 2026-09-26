@@ -47,10 +47,14 @@ export type CitationMarkers = {
  * is indistinguishable from a reference link. Matching the whole run and
  * testing only its ends separates them.
  *
+ * The run is also whole: it may not end just before another `[n]`. Without
+ * that, `[1][2]: url` opening a line fails the colon rule as a run and the
+ * engine backtracks to accept `[1]` alone, counting a definition as a citation.
+ *
  * Multiline (`m`), so `^` is the start of a line, not of the answer.
  */
 const MARKER_RUN =
-  /(?<![\]!])(?:\[\d+\])+(?!\()(?!(?<=^ {0,3}(?:\[\d+\])+):)/gm;
+  /(?<![\]!])(?:\[\d+\])+(?!\[\d+\])(?!\()(?!(?<=^ {0,3}(?:\[\d+\])+):)/gm;
 const DIGITS = /\d+/g;
 
 /**

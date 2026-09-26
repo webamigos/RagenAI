@@ -67,6 +67,7 @@ describe('parseCitationMarkers', () => {
     ['an inline link', 'See [1](https://example.com) for more.'],
     ['an image', 'Diagram: ![1](diagram.png)'],
     ['a reference definition', '[1]: https://example.com'],
+    ['a multi-marker run opening a definition line', '[1][2]: details'],
     ['an indented reference definition', 'Tekst.\n   [1]: https://example.com'],
   ])('does not read %s as a citation', (_what, answer) => {
     // A false positive here invents a citation, which is the failure this

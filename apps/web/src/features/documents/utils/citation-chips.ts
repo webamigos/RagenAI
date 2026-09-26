@@ -60,16 +60,73 @@ function chipFor(
  * them. Returns nothing when the node holds no valid marker, so a node that
  * does not need rewriting is left exactly as it was.
  */
+/**
+ * Block-level elements: where markdown can start a line, and so a reference
+ * definition. Inline markup (`<strong>`, `<em>`, `<a>`…) continues the line it
+ * sits on.
+ */
+const BLOCK_ELEMENTS = new Set([
+  'ADDRESS',
+  'ARTICLE',
+  'ASIDE',
+  'BLOCKQUOTE',
+  'DD',
+  'DIV',
+  'DL',
+  'DT',
+  'FIGCAPTION',
+  'FIGURE',
+  'FOOTER',
+  'H1',
+  'H2',
+  'H3',
+  'H4',
+  'H5',
+  'H6',
+  'HEADER',
+  'LI',
+  'MAIN',
+  'NAV',
+  'OL',
+  'P',
+  'PRE',
+  'SECTION',
+  'TABLE',
+  'TD',
+  'TH',
+  'TR',
+  'UL',
+]);
+
+/**
+ * Whether nothing precedes `node` on its line: no earlier sibling at any level
+ * up to the enclosing block. The text inside `<strong>` in
+ * `<p>Intro <strong>[2]: x</strong></p>` has no sibling of its own, but
+ * "Intro " comes before it, so it does not open the line.
+ */
+function opensItsBlock(node: Node): boolean {
+  let current: Node | null = node;
+  while (current) {
+    if (current.previousSibling) {
+      return false;
+    }
+    const parent: Node | null = current.parentNode;
+    if (!parent || BLOCK_ELEMENTS.has(parent.nodeName)) {
+      return true;
+    }
+    current = parent;
+  }
+  return true;
+}
+
 function rewriteTextNode(
   doc: Document,
   node: Text,
   options: CitationChipOptions,
 ): void {
   const text = node.data;
-  // A text node after a sibling element continues that element's line, so it
-  // cannot open a reference definition.
   const runs = findMarkerRuns(text, {
-    opensLine: node.previousSibling === null,
+    opensLine: opensItsBlock(node),
   }).filter((run) =>
     run.markers.some(
       (marker) => marker.value >= 1 && marker.value <= options.sourceCount,
