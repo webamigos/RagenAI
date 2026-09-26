@@ -8,15 +8,65 @@ import { db } from '../../services/db/db.js';
 
 const MAX_INPUT_CHARS = 12_000;
 
-const ragScoreSchema = z.object({
+export const MAX_SUGGESTIONS = 5;
+export const MAX_SUGGESTION_CHARS = 300;
+
+const dimensions = {
   chunkStructure: z.number().min(0).max(10),
   avgChunkSize: z.number().min(0).max(10),
   entityDensity: z.number().min(0).max(10),
   selfContainedness: z.number().min(0).max(10),
   qaAdherence: z.number().min(0).max(10),
   total: z.number().min(0).max(100),
-  suggestions: z.array(z.string().max(300)).max(5),
+};
+
+/**
+ * What the model has to return: the score, strictly, and its suggestions with
+ * no length or count limit.
+ *
+ * The limits used to be here too, and `generateObject` rejects the whole object
+ * when any field fails, so one suggestion of 301 characters threw away a valid
+ * score. The A2 benchmark measured 25 of 69 calls lost that way
+ * (`apps/web/evals/rag-benchmark/results/2026-09-26-rag-score-vs-retrieval.md`,
+ * Finding 1). The suggestions are advisory text; the score is the product.
+ */
+export const ragScoreResponseSchema = z.object({
+  ...dimensions,
+  suggestions: z.array(z.string()),
 });
+
+/** What is stored: the same score, with the suggestions held to their limits. */
+const ragScoreSchema = z.object({
+  ...dimensions,
+  suggestions: z
+    .array(z.string().max(MAX_SUGGESTION_CHARS))
+    .max(MAX_SUGGESTIONS),
+});
+
+export type RagScore = z.infer<typeof ragScoreSchema>;
+
+/**
+ * Hold the suggestions to what the stored shape allows, instead of failing the
+ * score over them: at most five, each cut to 300 characters with an ellipsis.
+ */
+export function normalizeRagScore(
+  raw: z.infer<typeof ragScoreResponseSchema>,
+): RagScore {
+  // Parsed, not cast: the result is checked against the stored shape, so a
+  // change to the limits above cannot drift from what this produces.
+  return ragScoreSchema.parse({
+    ...raw,
+    suggestions: raw.suggestions
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0)
+      .slice(0, MAX_SUGGESTIONS)
+      .map((s) =>
+        s.length > MAX_SUGGESTION_CHARS
+          ? `${s.slice(0, MAX_SUGGESTION_CHARS - 1).trimEnd()}…`
+          : s,
+      ),
+  });
+}
 
 const SYSTEM_PROMPT = `You are a RAG quality evaluator. Analyze the provided document for retrieval-augmented generation readiness.
 
@@ -34,7 +84,7 @@ Score each dimension from 0 to 10:
 
 total (0–100): Weighted overall score. Calculate as: chunkStructure × 2.5 + avgChunkSize × 1.5 + entityDensity × 2 + selfContainedness × 2.5 + qaAdherence × 1.5
 
-suggestions: Up to 5 concrete, actionable improvement suggestions. Be specific about what to change, not vague. Reference specific parts of the document when possible.`;
+suggestions: Up to 5 concrete, actionable improvement suggestions, each at most 300 characters. Be specific about what to change, not vague. Reference specific parts of the document when possible.`;
 
 /**
  * Score a document for RAG readiness at ingest time.
@@ -55,7 +105,7 @@ export async function scoreDocumentForRag({
   projectId?: string | null;
   userId?: string | null;
   fileName?: string;
-}): Promise<z.infer<typeof ragScoreSchema> | null> {
+}): Promise<RagScore | null> {
   const trimmed = documentText.trim();
   if (trimmed.length === 0) {
     return null;
@@ -86,7 +136,7 @@ export async function scoreDocumentForRag({
           // unbounded. npm 11's resolution dedupes them onto zod 4, so the
           // suppression became an error itself — which is exactly how ADR-26
           // said it would announce that it was no longer needed.
-          schema: zodSchema(ragScoreSchema),
+          schema: zodSchema(ragScoreResponseSchema),
           system: SYSTEM_PROMPT,
           messages: [
             {
@@ -112,12 +162,14 @@ export async function scoreDocumentForRag({
       metadata: { kind: 'rag_scorer', fileName },
     });
 
+    const score = normalizeRagScore(result.object);
+
     logger.info(
-      { fileName, orgId, total: result.object.total },
+      { fileName, orgId, total: score.total },
       'Scored document for RAG readiness',
     );
 
-    return result.object;
+    return score;
   } catch (err) {
     logger.warn(
       { err, fileName, orgId },
