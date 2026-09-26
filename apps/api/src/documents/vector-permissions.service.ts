@@ -134,6 +134,9 @@ export class VectorPermissionsService {
       const qdrant = new QdrantClient({
         url: process.env.QDRANT_URL ?? 'http://localhost:6333',
         apiKey: process.env.QDRANT_API_KEY,
+        // See QdrantVectorStoreClient: the check is an un-awaited request
+        // that only warns.
+        checkCompatibility: false,
       });
 
       for (const file of files) {

@@ -59,6 +59,14 @@ export class QdrantVectorStoreClient implements VectorStoreClient {
     this.client = new QdrantClient({
       url: config.url,
       apiKey: config.apiKey,
+      // The default `true` makes the constructor start an un-awaited request
+      // for the server version and `console.warn` if it fails or disagrees.
+      // This class is built per chat turn, so that was one extra round trip
+      // per request, and in tests a warning that arrived after the test had
+      // ended: vitest rejected the pending console call at worker teardown
+      // and failed a green suite (EnvironmentTeardownError). It only warns,
+      // so nothing is lost by not asking.
+      checkCompatibility: false,
     });
     this.collectionName = config.collectionName;
     this.embeddings = embeddings;
