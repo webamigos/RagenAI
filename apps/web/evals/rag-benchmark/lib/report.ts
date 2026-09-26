@@ -210,6 +210,7 @@ export function renderMarkdown(report: Report): string {
     `| embeddings | \`${fingerprint.embeddingsModel}\` (${fingerprint.vectorSize}-dim) |`,
     `| reranking | ${fingerprint.rerankingEnabled} — \`${fingerprint.rerankProvider}\` / \`${fingerprint.rerankModel}\` |`,
     `| multi-query variants | ${fingerprint.multiQueryVariants} |`,
+    `| ingest shape | ${fingerprint.shape ?? '(not named)'} |`,
     // The one line that says which of Phase B's two arms this is. Reported by
     // the app, not by the harness — see `appGatewayMode` in run.ts.
     `| LLM path | \`${fingerprint.llmGateway}\` |`,
@@ -334,8 +335,10 @@ export function resultStem(
   corpusName: string,
   corpusVersion: number,
   exists: (stem: string) => boolean,
+  shape?: string,
 ): string {
-  const base = `${date}-${corpusName}-rev${corpusVersion}`;
+  const base =
+    `${date}-${corpusName}-rev${corpusVersion}` + (shape ? `-${shape}` : '');
   if (!exists(base)) {
     return base;
   }

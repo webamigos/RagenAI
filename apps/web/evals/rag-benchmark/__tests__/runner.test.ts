@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import {
+  chatModelToPin,
   pairUploads,
   parseArgs,
   readRagScore,
@@ -291,5 +292,43 @@ describe('pairUploads', () => {
     expect(() =>
       pairUploads([], [{ file: 'pl/a.md' }, { file: 'en/a.md' }]),
     ).toThrow(/share the file name "a.md"/);
+  });
+});
+
+describe('parseArgs — --shape', () => {
+  it('takes a shape name', () => {
+    expect(
+      parseArgs(['--shape', 'docling-table-chunks'], DEFAULT_DIR).shape,
+    ).toBe('docling-table-chunks');
+  });
+
+  it('leaves the shape out when not given', () => {
+    expect(parseArgs([], DEFAULT_DIR)).not.toHaveProperty('shape');
+  });
+
+  // It becomes part of a file name.
+  it.each([['Docling'], ['raw xml'], ['../up'], ['']])('refuses %j', (bad) => {
+    expect(() => parseArgs(['--shape', bad], DEFAULT_DIR)).toThrow(/--shape/);
+  });
+
+  it('refuses --shape with no value', () => {
+    expect(() => parseArgs(['--shape', '--arms', 'rag'], DEFAULT_DIR)).toThrow(
+      /--shape/,
+    );
+  });
+});
+
+describe('chatModelToPin', () => {
+  it('pins the model the fingerprint reports', () => {
+    expect(chatModelToPin({ DEFAULT_MODEL: 'gemini-3-flash-preview' })).toBe(
+      'gemini-3-flash-preview',
+    );
+  });
+
+  // The seed's `mock-model` is what an unpinned run inherits.
+  it.each([[undefined], [''], ['  ']])('refuses %j', (value) => {
+    expect(() => chatModelToPin({ DEFAULT_MODEL: value })).toThrow(
+      /DEFAULT_MODEL/,
+    );
   });
 });

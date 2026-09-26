@@ -199,6 +199,7 @@ DATABASE_URL=postgresql://postgres:pass123@localhost:55432/ragen_e2e \
 | `RAG_EVAL_APP_URL`, `RAG_EVAL_EMAIL`, `RAG_EVAL_PASSWORD`, `RAG_EVAL_PROJECT_ID`, `RAG_EVAL_THREAD_ID` | the e2e seed's values | Running against a different instance or tenant |
 | `RAG_EVAL_TIMEOUT_MS` | `600000` | Ingestion of the whole corpus, not one file |
 | `RAG_EVAL_SCORE_TIMEOUT_MS` | `120000` | How long to wait after indexing for ingest to write the RAG scores. A score that is not written by then is reported as `not written`, not as a failed run |
+| `--shape <name>` | none | Names the ingest configuration the worker ran (parser, table chunks). The harness cannot see the worker's environment, so you say it; it goes into the result's file name and header |
 | `--arms rag` / `--arms no-rag` | both | Skipping the control halves the cost of a re-run you only want a delta from. An unrecognised arm is an error, not a silently empty column |
 
 `INTERNAL_API_SECRET` is not required but is strongly wanted: cleanup deletes
@@ -215,6 +216,14 @@ before quoting a figure, and treat a single-run delta under about three cases as
 noise. The results in [`results/`](./results) are individual runs: the first of
 a corpus revision is `<date>-<corpus>-rev<n>`, and every run after it gets a
 `-runN` suffix, so collecting three does not mean overwriting two.
+
+## The organization's model is pinned
+
+The e2e seed sets the test organization's chat model to `mock-model`, which only
+the Playwright suite's mock server answers. A run against a freshly seeded
+database would get empty answers and report 0 as though retrieval failed, so the
+run sets the organization's model to `DEFAULT_MODEL` before asking, the value
+the report prints as "chat model", and logs what it replaced.
 
 ## Per document, and the RAG score beside it
 

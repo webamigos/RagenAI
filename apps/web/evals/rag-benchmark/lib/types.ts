@@ -131,6 +131,8 @@ export interface StackFingerprint {
    * Phase B comparison produce indistinguishable reports.
    */
   llmGateway: string;
+  /** `--shape`: the ingest configuration the operator says the worker ran. */
+  shape?: string;
 }
 
 /**

@@ -435,7 +435,10 @@ is today, not a fixed one. C and D do not start until A4 is done (Q1).
   denominator. Three runs, median. The script and its tests live under
   `apps/web/evals`, not in the product. Tests: a question that cited nothing
   still counts against its expected document.
-- [ ] **A2.** Run the shape comparison above on `tabele-bilingual-v1` (all four
+- [x] **A2.** *(baseline done:
+  [`2026-09-26-rag-score-vs-retrieval.md`](../../apps/web/evals/rag-benchmark/results/2026-09-26-rag-score-vs-retrieval.md).
+  Raw XML can no longer be produced, because ingest refuses markup; the prose
+  "after Optimize" shape is left for A4.)* Run the shape comparison above on `tabele-bilingual-v1` (all four
   shapes) and `kolej-bilingual-v1` (as written vs optimized), with the scorer
   as it is on `main` before any Phase B change. Commit the results under
   `rag-benchmark/results/`. This is the baseline B1 and B2 wait for.
@@ -490,6 +493,13 @@ already claims. B1 and B2 start only after A2's baseline is committed.
   - ingest skips the scorer and makes no model call when the key is off
   - the handler and the command refuse
   - the badge and menu item are absent in both views
+- [ ] **B6.** Stop discarding a score over a suggestion's length. A2 found 25
+  of 69 calls stored nothing: the model returned a complete score and
+  `generateObject` rejected it because one `suggestions` string was over the
+  schema's 300 characters, a limit the prompt never states. Truncate the
+  suggestions instead of failing the object (or state and relax the limit).
+  Like B1, this waits for A2's baseline, which is now committed. Test: an
+  over-long suggestion still yields the score.
 
 ### Phase C — chunk-level diagnostics behind `documentDiagnostics`
 
