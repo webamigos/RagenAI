@@ -125,17 +125,23 @@ what it gets back:
 
 | Outcome | Examples | Treatment |
 | --- | --- | --- |
-| transient | `ECONNREFUSED`, `UND_ERR_*`, DNS failure, HTTP 502/503/504, 429 | retryable at the **job** level with long exponential backoff (e.g. 1 → 2 → 4 → 8 → 16 min, 6 attempts); the row stays `NOT_STARTED` with the reason in `metadata` (D3) |
-| permanent | docling `status: failure`, HTTP 4xx other than 429, empty markdown | non-retryable; `FAILED` with Docling's own message, not the generic wrapper |
+| transient | `ECONNREFUSED`, `UND_ERR_*`, DNS failure, our own timeout, HTTP 408/429/502/503/504 | retried by the **step** under a longer policy when `DOCLING_STRICT` is set — 15 s, 30 s, 1, 2, 2 min, six attempts; without strict, the existing short policy and then the fallback, unchanged |
+| permanent | docling `status: failure`, HTTP 4xx other than 408/429, 500, empty markdown | non-retryable; `FAILED` with Docling's own message, not the generic wrapper |
 
 The fetch gets an `AbortSignal` wired to the step's timeout, so an abandoned
 attempt is cancelled on our side, and the timeout is derived from one value:
 `DOCLING_SERVE_MAX_SYNC_WAIT` plus a margin, set explicitly in compose, the
 Railway image **and Helm**. Before sending, the job checks `/health` (cached
 for a few seconds across the process); if Docling is down it re-schedules
-itself without spending an attempt. Rejected: in-process retries with a longer
-backoff — they hold a worker slot and a lock while sleeping, and a restart
-loses them.
+itself without spending an attempt. **A step retry, not a job retry** — corrected
+during implementation. The runtime deliberately retries steps and never
+BullMQ jobs (`runStep`, and `retries.jobs-integration.ts` asserts it), because
+a job retry re-runs every step before the one that failed. A waiting step
+holds its worker slot, and that is the point: with the ceiling from (1) the
+slots are the backpressure, so four files wait and the rest stay in Redis.
+BullMQ renews the job's lock while it runs, so a long wait does not stall it.
+Only the strict path waits long; with a fallback allowed, waiting would only
+delay the same fallback.
 
 **3. An outage is seen.** Docling's health joins the apps/web setup/status
 reporting (D5); one `error` log on the transition to down and one `info` on
@@ -147,8 +153,8 @@ with the file type, because for a PDF it means the document left the machine.
 
 | Surface | Change | What catches a mistake |
 | --- | --- | --- |
-| `packages/jobs-bullmq` | job-level `attempts`/`backoff` for `runFileEmbeddings`; delay-without-attempt on "parser down" | `npm run worker:test:jobs` (real Redis) — the BullMQ gate |
-| `packages/env` | `DOCLING_MAX_CONCURRENCY`, and `DOCLING_SERVE_MAX_SYNC_WAIT` read by the worker | fragment tests + `provider-fragments-carry-their-rules` |
+| `packages/jobs-bullmq` | none in Phase A (the ceiling reuses `jobConcurrency`); delay-without-attempt on "parser down" in B1 | `npm run worker:test:jobs` (real Redis) — the BullMQ gate |
+| `apps/worker` env schema | `DOCLING_MAX_CONCURRENCY`, and `DOCLING_SERVE_MAX_SYNC_WAIT` read by the worker | `config/__tests__/env.spec.ts` |
 | `apps/worker` | client error classification, abortable fetch, health gate, message kept | unit tests + `workflow.spec` |
 | `apps/web` setup page, knowledge base | Docling status (D5) | component tests; `smoke-*` if the upload area changes |
 | `packages/create-ragen-app` | writes the ceiling and the sync wait; sizing note | its tests + `create-ragen-app-manifest-is-current` |
@@ -189,15 +195,16 @@ Each phase leaves the application working.
 
 ### Phase A — stop losing files
 
-- [ ] **A1.** `DOCLING_MAX_CONCURRENCY` in `@ragenai/env`, wired as
+- [ ] **A1.** `DOCLING_MAX_CONCURRENCY` in the worker's own env schema
+  (only the worker reads it — ADR-37 keeps single-app variables there), wired as
   `jobConcurrency: { runFileEmbeddings: … }`. Integration test on real Redis:
   with the ceiling at 2 and two worker instances, never more than 2 jobs run.
 - [ ] **A2.** Docling client: `AbortSignal` from the step timeout; timeout
   derived from `DOCLING_SERVE_MAX_SYNC_WAIT` + margin; the same value set
   explicitly in compose, `infra/docling/Dockerfile` and Helm, with a test that
   the three agree.
-- [ ] **A3.** Error classification (table above); transient → job-level
-  retry with backoff, permanent → non-retryable with Docling's message; the
+- [ ] **A3.** Error classification (table above); transient → the strict
+  step policy, permanent → non-retryable with Docling's message; the
   comment at `parse-and-embed.ts:499` corrected. Unit tests per class; a
   workflow test that a 503 then a success indexes the file.
 
