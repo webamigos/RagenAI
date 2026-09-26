@@ -90,8 +90,10 @@ as the default parser, table chunks (ADR-43) and section-aware context
   kind of change as a retrieval *improvement*, 10/18 → 13/18 on its benchmark.
 - **Long documents are judged on their opening.** Only the first 12,000
   characters are read, about three pages.
-- **The same text can score differently twice.** No temperature is pinned and
-  the model's own total is stored as returned.
+- **The same text could score differently twice.** A2 measured up to 15
+  points between two ingests of one file. The call now runs at temperature 0,
+  and the total is computed from the five dimensions rather than taken from
+  the model.
 - **Do not compare across document types.** A price list and a policy document
   are graded on a prose scale, and nothing supports ranking one against the
   other.

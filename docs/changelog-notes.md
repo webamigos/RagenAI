@@ -87,6 +87,9 @@ archive is the blog.
   calls stored nothing: the model's score was thrown away when one of its
   suggestions ran over 300 characters. The score is kept now and the
   suggestion shortened.
+- `[brief]` **The RAG score is steadier.** Scoring runs at temperature 0 and
+  the total is computed from its five parts instead of trusting the model's
+  sum; a failed scoring call now shows up in AI usage like a successful one.
 
 ### Ragen Brain: an assistant beside the inbox
 

@@ -456,7 +456,7 @@ is today, not a fixed one. C and D do not start until A4 is done (Q1).
 Each is a `fix`, with no feature key: they correct behaviour to what the code
 already claims. B1 and B2 start only after A2's baseline is committed.
 
-- [ ] **B1.** Recompute `total` from the dimensions in the worker, and set
+- [x] **B1.** Recompute `total` from the dimensions in the worker, and set
   `temperature: 0`. Delete the unused apps/web scorer
   (`document-scorer.ts` and its test). Keep one prompt, in the worker. Test:
   the total is always the weighted sum, clamped to 0–100.
