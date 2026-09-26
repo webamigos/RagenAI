@@ -267,6 +267,13 @@ config:
   # Set to 1 so a Docling failure fails the ingest instead of falling back to
   # an external model. See apps/docs/docs/self-hosting.md.
   DOCLING_STRICT: '1'
+  # How long Docling's sync endpoint waits before answering 504. Read by the
+  # Docling pod and by the worker, which gives up 15 s later — one value for
+  # both, so the two cannot disagree.
+  DOCLING_SERVE_MAX_SYNC_WAIT: '300'
+  # Ingests at once across every worker replica, so conversions Docling sees.
+  # Docling converts two at a time; raise both together.
+  DOCLING_MAX_CONCURRENCY: '4'
   STORAGE_PROVIDER: local
   STORAGE_LOCAL_PATH: /data/storage
 

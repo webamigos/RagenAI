@@ -120,6 +120,15 @@ export const workerEnvSchema = fragments.targetEnvRequired
     BRAIN_EXTRACT_CONCURRENCY: blankAsUndefined(
       z.coerce.number().int().positive().optional(),
     ),
+    // Ingests at once across every replica, so conversions Docling sees
+    // (consts.ts). Unset means four. And the server's sync wait, read under
+    // Docling's own name so one value configures both sides; unset means 300.
+    DOCLING_MAX_CONCURRENCY: blankAsUndefined(
+      z.coerce.number().int().positive().optional(),
+    ),
+    DOCLING_SERVE_MAX_SYNC_WAIT: blankAsUndefined(
+      z.coerce.number().int().positive().optional(),
+    ),
 
     /**
      * Table chunking, under measurement (ADR-43). `'1'` turns it on.

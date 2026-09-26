@@ -42,8 +42,15 @@ describe.runIf(resolveWorkerRuntime() === 'bullmq')(
       harness = undefined;
     });
 
-    /** Run `jobs` brainExtract jobs over two replicas; report the peak. */
-    async function peakAcrossTwoReplicas(ceiling: number, jobs: number) {
+    /**
+     * Run `jobs` jobs of one name over two replicas, each allowed twenty, with
+     * a deployment-wide `ceiling`; report the most that ran at once.
+     */
+    async function peakAcrossTwoReplicas(
+      ceiling: number,
+      jobs: number,
+      job: 'brainExtract' | 'runFileEmbeddings' = 'brainExtract',
+    ) {
       // Paused: the harness's own workers must not take these jobs.
       harness = await startHarness({ consume: false });
 
@@ -54,6 +61,9 @@ describe.runIf(resolveWorkerRuntime() === 'bullmq')(
         peak = Math.max(peak, active);
         await sleep(400);
         active -= 1;
+        if (job === 'runFileEmbeddings') {
+          return 'indexed';
+        }
         return {
           skipped: null,
           extracted: 1,
@@ -67,11 +77,11 @@ describe.runIf(resolveWorkerRuntime() === 'bullmq')(
 
       for (let replica = 0; replica < 2; replica++) {
         const workers = createBullWorkers({
-          handlers: { brainExtract: handler } as never,
+          handlers: { [job]: handler } as never,
           activities: {},
           connection: { url: TEST_REDIS_URL },
           concurrency: 20,
-          jobConcurrency: { brainExtract: ceiling },
+          jobConcurrency: { [job]: ceiling },
           log: testLogger(),
           isCancelled: async () => false,
         });
@@ -79,12 +89,19 @@ describe.runIf(resolveWorkerRuntime() === 'bullmq')(
         await startBullWorkers(workers);
       }
 
-      const runIds = Array.from({ length: jobs }, (_, i) => `brain-${i}`);
-      for (const runId of runIds) {
-        await harness.jobs.start('brainExtract', runId, {
-          orgId: 'org-1',
-          fileIds: ['file-1'],
-        });
+      const runIds = Array.from({ length: jobs }, (_, i) => `${job}-${i}`);
+      for (const [i, runId] of runIds.entries()) {
+        if (job === 'runFileEmbeddings') {
+          await harness.jobs.start('runFileEmbeddings', runId, {
+            fileId: `file-${i}`,
+            orgId: 'org-1',
+          });
+        } else {
+          await harness.jobs.start('brainExtract', runId, {
+            orgId: 'org-1',
+            fileIds: ['file-1'],
+          });
+        }
       }
       for (const runId of runIds) {
         expect(await pollUntilTerminal(harness.jobs, runId)).toMatchObject({
@@ -102,6 +119,16 @@ describe.runIf(resolveWorkerRuntime() === 'bullmq')(
     // other reason would pass the assertion above for free.
     it('runs several when the ceiling allows them', async () => {
       expect(await peakAcrossTwoReplicas(3, 6)).toBeGreaterThan(1);
+    }, 30_000);
+
+    // Spec 2026-09-26-docling-under-load, A1: ingest is the queue Docling
+    // sees, so its ceiling is the number of conversions in flight. Two
+    // replicas at twenty each, a ceiling of two: never more than two, and
+    // (the control) more than one, or the ceiling proved nothing.
+    it('holds the ingest ceiling across two replicas', async () => {
+      const peak = await peakAcrossTwoReplicas(2, 6, 'runFileEmbeddings');
+      expect(peak).toBeLessThanOrEqual(2);
+      expect(peak).toBe(2);
     }, 30_000);
   },
 );

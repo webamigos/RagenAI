@@ -1,5 +1,10 @@
+import { JobFailure } from '@ragenai/jobs';
+
 import type { Document } from '../../types/Document.js';
-import { convertWithDocling } from '../../services/docling-client.js';
+import {
+  convertWithDocling,
+  DoclingError,
+} from '../../services/docling-client.js';
 import { logger } from '../../services/logger.js';
 import {
   ensureLocalFile,
@@ -47,6 +52,15 @@ export const loadDocling = async ({
     doOcr: true,
     tableMode: 'accurate',
     imageExportMode: 'placeholder',
+  }).catch((error: unknown) => {
+    // A document Docling refused will be refused again: say so to the step's
+    // retry policy, which otherwise spends every attempt on it — each one a
+    // full conversion. Busy or away stays retryable, and the policy on this
+    // step (parse-and-embed.ts) waits long enough to outlast it.
+    if (error instanceof DoclingError && !error.transient) {
+      throw JobFailure.nonRetryable(error.message);
+    }
+    throw error;
   });
 
   return [

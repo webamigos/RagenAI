@@ -8,6 +8,7 @@ import {
   Worker,
 } from '@temporalio/worker';
 import { WorkflowFailedError } from '@temporalio/client';
+import { ApplicationFailure } from '@temporalio/common';
 import { FileType, EmbeddingStatus, ParsingStatus } from '../types/UserFile.js';
 import type { UserFile } from '../types/UserFile.js';
 import {
@@ -723,6 +724,108 @@ describe('runFileEmbeddings workflow', () => {
     expect(capturedArgs.originalDocs?.[0].pageContent).toBe('original text');
     // maskedDocs must contain the post-masking content
     expect(capturedArgs.maskedDocs?.[0].pageContent).toBe('[MASKED]');
+  });
+
+  describe('a strict deployment when Docling is busy or refuses the file', () => {
+    // DOCLING_STRICT: no fallback, so the step policy is what decides whether
+    // a file survives a Docling that is restarting or saturated (spec
+    // 2026-09-26-docling-under-load, A3). The environment skips time, so the
+    // policy's minutes of backoff cost nothing here.
+    const strictPdf = () => {
+      const activities = createMockActivities();
+      activities.checkIsBinaryFile.mockResolvedValue(true);
+      activities.checkMimeType.mockResolvedValue({
+        mime: 'application/pdf',
+        ext: 'pdf',
+      });
+      activities.getDocumentParser.mockResolvedValue({
+        parser: 'docling',
+        strict: true,
+      });
+      return activities;
+    };
+    const pdf = () =>
+      makeUserFile({ fileName: 'raport.pdf', fileType: FileType.PDF });
+
+    it('waits out a busy Docling and indexes the file', async () => {
+      const activities = strictPdf();
+      activities.loadDocling
+        .mockRejectedValueOnce(
+          new Error('Docling conversion failed (HTTP 503)'),
+        )
+        .mockRejectedValueOnce(new Error('Docling unreachable (ECONNREFUSED)'))
+        .mockResolvedValue([{ pageContent: 'Raport roczny.', metadata: {} }]);
+
+      await runIngest<string>(pdf(), activities);
+
+      expect(activities.loadDocling).toHaveBeenCalledTimes(3);
+      expect(activities.addDocumentsToVectorStore).toHaveBeenCalled();
+      expect(activities.updateParsingStatus).not.toHaveBeenCalledWith(
+        expect.objectContaining({ status: ParsingStatus.FAILED }),
+      );
+      // Strict means strict while waiting too: no legacy loader was tried.
+      expect(activities.loadPdf).not.toHaveBeenCalled();
+    });
+
+    it('fails a file Docling refused after one attempt, with its reason', async () => {
+      const activities = strictPdf();
+      // What `translatingFailures` hands Temporal for `JobFailure.nonRetryable`.
+      activities.loadDocling.mockRejectedValue(
+        ApplicationFailure.nonRetryable(
+          'Docling conversion failure: cannot read page 3',
+          'JobFailure',
+        ),
+      );
+
+      try {
+        await runIngest(pdf(), activities);
+        expect.fail('Expected workflow to throw');
+      } catch (err) {
+        expect(getWorkflowFailureCause(err)).toContain('DOCLING_STRICT');
+        expect(getWorkflowFailureCause(err)).toContain('cannot read page 3');
+        expect(getWorkflowFailureNonRetryable(err)).toBe(true);
+      }
+      expect(activities.loadDocling).toHaveBeenCalledTimes(1);
+      expect(activities.updateParsingStatus).toHaveBeenCalledWith(
+        expect.objectContaining({ status: ParsingStatus.FAILED }),
+      );
+    });
+
+    it('gives up after the strict policy, keeping the reason rather than a generic wrapper', async () => {
+      const activities = strictPdf();
+      activities.loadDocling.mockRejectedValue(
+        new Error('Docling unreachable (ECONNREFUSED)'),
+      );
+
+      try {
+        await runIngest(pdf(), activities);
+        expect.fail('Expected workflow to throw');
+      } catch (err) {
+        expect(getWorkflowFailureCause(err)).toContain('DOCLING_STRICT');
+        expect(getWorkflowFailureCause(err)).toContain('ECONNREFUSED');
+        expect(getWorkflowFailureNonRetryable(err)).toBe(true);
+      }
+      // Six: the strict policy, not the three the fallback path waits.
+      expect(activities.loadDocling).toHaveBeenCalledTimes(6);
+      expect(activities.loadPdf).not.toHaveBeenCalled();
+      expect(activities.addDocumentsToVectorStore).not.toHaveBeenCalled();
+    });
+
+    it('still falls back after the short policy when a fallback is allowed', async () => {
+      const activities = strictPdf();
+      activities.getDocumentParser.mockResolvedValue({
+        parser: 'docling',
+        strict: false,
+      });
+      activities.loadDocling.mockRejectedValue(
+        new Error('Docling unreachable (ECONNREFUSED)'),
+      );
+
+      await runIngest<string>(pdf(), activities);
+
+      expect(activities.loadDocling).toHaveBeenCalledTimes(3);
+      expect(activities.loadPdf).toHaveBeenCalled();
+    });
   });
 
   describe('the language threaded through masking, chunks and the file record', () => {
