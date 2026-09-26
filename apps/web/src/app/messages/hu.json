@@ -2403,7 +2403,7 @@
     "unsupported-file-type": "A RAG-optimalizálás nem támogatja ezt a fájltípust.",
     "current-score": "Jelenlegi pontszám:",
     "applied-title": "A módosítások alkalmazva.",
-    "applied-hint": "A dokumentum újraindexelése és újraértékelése a háttérben folyamatban van. Az új pontszám a befejezés után megjelenik a verzióelőzményekben.",
+    "applied-hint": "A dokumentum újraindexelése a háttérben folyik. A korábbi RAG-pontszám a régi szövegre vonatkozott, ezért törölve lett.",
     "accept-all": "Összes elfogadása",
     "reject-all": "Összes elutasítása",
     "apply-accepted": "Elfogadottak alkalmazása ({count})",

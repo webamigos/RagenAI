@@ -73,9 +73,10 @@ export async function applySuggestionsCommand(
     throw new Error('No suggestions could be applied');
   }
 
-  // No ragScore: the re-index that follows rescores the document, and a number
-  // copied from before the edit would be wrong for exactly as long as anyone
-  // looked at it.
+  // No ragScore: a number copied from before the edit would describe text that
+  // no longer exists, and the re-index that follows does not score (spec
+  // 2026-09-26-rag-readiness-score-review, B3). The version command clears the
+  // file's badge with it; "Score for RAG" scores the new text on request.
   const newVersion = await createDocumentVersionCommand({
     documentId,
     organizationId: orgId,
