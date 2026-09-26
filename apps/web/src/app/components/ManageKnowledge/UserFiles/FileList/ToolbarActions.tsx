@@ -22,6 +22,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
+import { useOrgFeature } from '@/app/hooks/useOrgFeatures';
 
 type ToolbarActionsProps = {
   fileId: string;
@@ -62,6 +63,8 @@ export const ToolbarActions = ({
 }: ToolbarActionsProps) => {
   const t = useTranslations('files-table');
   const router = useRouter();
+  // "Score for RAG" is offered only where the organization scores at all.
+  const scoringEnabled = useOrgFeature('ragReadinessScore');
 
   return (
     <DropdownMenu modal={false}>
@@ -144,7 +147,7 @@ export const ToolbarActions = ({
           </DropdownMenuItem>
         )}
 
-        {fileId && onScore && (
+        {fileId && onScore && scoringEnabled && (
           <DropdownMenuItem
             onClick={() => onScore(fileId)}
             disabled={isScoringLoading}

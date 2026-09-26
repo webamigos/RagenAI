@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { SuggestionCard } from './SuggestionCard';
 import { SuggestionDetailModal } from './SuggestionDetailModal';
 import { ScoreBadge } from './ScoreBadge';
+import { useOrgFeature } from '@/app/hooks/useOrgFeatures';
 import type { OptimizationSuggestion } from '@/features/documents/contracts/optimization-suggestion.types';
 
 type JobStatus = 'pending' | 'processing' | 'done' | 'failed';
@@ -30,6 +31,7 @@ const POLL_INTERVAL_MS = 4_000;
 
 export function OptimizeTab({ documentId, fileType }: Props) {
   const t = useTranslations('document-optimize');
+  const scoringEnabled = useOrgFeature('ragReadinessScore');
   const [job, setJob] = useState<OptimizationJob | null>(null);
   const [fileRagScore, setFileRagScore] = useState<number | null>(null);
   const [acceptedIds, setAcceptedIds] = useState<Set<string>>(new Set());
@@ -200,7 +202,11 @@ export function OptimizeTab({ documentId, fileType }: Props) {
 
   const isRunning = job?.status === 'pending' || job?.status === 'processing';
   const suggestions = job?.status === 'done' ? job.suggestions : [];
-  const displayScore = fileRagScore ?? job?.baseScore ?? null;
+  // With `ragReadinessScore` off the tab still suggests; it shows no score,
+  // including one stored before the key was turned off.
+  const displayScore = scoringEnabled
+    ? (fileRagScore ?? job?.baseScore ?? null)
+    : null;
 
   const generateLabel = () => {
     if (starting) {

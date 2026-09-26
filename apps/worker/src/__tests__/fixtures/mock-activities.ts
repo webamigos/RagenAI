@@ -167,6 +167,9 @@ export function createMockActivities() {
     // default means the workflow's `if (ragScore)` guard skips
     // mergeFileMetadata, so existing tests' assertions are unaffected.
     scoreDocumentForRag: vi.fn().mockResolvedValue(null),
+    // On, as the code default is, so a suite exercises the scorer rather
+    // than the `ragReadinessScore`-is-off branch.
+    isRagScoringEnabled: vi.fn().mockResolvedValue(true),
     updatePageCount: vi.fn().mockResolvedValue(undefined),
     createFileRecord: vi.fn().mockResolvedValue([
       {

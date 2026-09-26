@@ -52,6 +52,7 @@ export async function runFileEmbeddings(
     detectDocumentLanguage,
     generateDocumentSummary,
     scoreDocumentForRag,
+    isRagScoringEnabled,
     sanitizeDocuments,
 
     // activities/config
@@ -702,13 +703,19 @@ export async function runFileEmbeddings(
   // the moment it exists rather than showing "no score" until the next edit.
   let ragScore: Awaited<ReturnType<typeof scoreDocumentForRag>> = null;
   try {
-    ragScore = await scoreDocumentForRag({
-      documentText,
-      orgId,
-      projectId,
-      userId: ownerId,
-      fileName,
-    });
+    // Off (`ragReadinessScore`, set in apps/admin) means no model call. The
+    // metadata write below still runs, so a re-process clears a score that
+    // described the previous text rather than leaving it for the day the key
+    // is turned back on.
+    if (await isRagScoringEnabled({ orgId })) {
+      ragScore = await scoreDocumentForRag({
+        documentText,
+        orgId,
+        projectId,
+        userId: ownerId,
+        fileName,
+      });
+    }
 
     // Written on a miss too. A re-run replaces the text the old score was
     // about, so keeping it would describe a document that no longer exists:

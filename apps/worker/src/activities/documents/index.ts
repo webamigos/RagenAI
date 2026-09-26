@@ -6,6 +6,7 @@ export { createDocxFile } from './create-docx-file.js';
 export { uploadToGoogleDrive } from './upload-to-google-drive.js';
 export { sanitizeDocuments } from './sanitize-documents.js';
 export { scoreDocumentForRag } from './score-document-for-rag.js';
+export { isRagScoringEnabled } from './is-rag-scoring-enabled.js';
 export { maskPii } from './mask-pii.js';
 export { applyDualContentMode } from './apply-dual-content-mode.js';
 export { optimizeDocumentSuggestions } from './optimize-document-suggestions.js';

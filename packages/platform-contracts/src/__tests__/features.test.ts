@@ -217,6 +217,34 @@ describe('resolveFeatures', () => {
   });
 });
 
+/**
+ * Every install scores documents today, so a default of `false` would remove
+ * the badge and an ingest step on upgrade. Whether it should become `false`
+ * is a decision recorded in spec 2026-09-26-rag-readiness-score-review (D1),
+ * not something to change here in passing.
+ */
+describe('ragReadinessScore', () => {
+  it('is on unless an operator turns it off', () => {
+    expect(resolveFeatures({}).ragReadinessScore).toEqual({
+      value: true,
+      source: 'code-default',
+    });
+  });
+
+  it('can be turned off for the whole platform, and back on per organization', () => {
+    const off = { ragReadinessScore: false };
+    expect(
+      resolveFeatures({ platformDefaults: off }).ragReadinessScore.value,
+    ).toBe(false);
+    expect(
+      resolveFeatures({
+        platformDefaults: off,
+        orgOverrides: { ragReadinessScore: true },
+      }).ragReadinessScore,
+    ).toEqual({ value: true, source: 'org-override' });
+  });
+});
+
 describe('flattenFeatures', () => {
   it('drops the sources and keeps the values', () => {
     const flags = flattenFeatures(
