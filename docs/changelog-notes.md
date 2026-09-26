@@ -87,6 +87,10 @@ archive is the blog.
   calls stored nothing: the model's score was thrown away when one of its
   suggestions ran over 300 characters. The score is kept now and the
   suggestion shortened.
+- `[brief]` **"Score for RAG" works on encrypted documents.** With encryption
+  on, the button graded the encrypted text rather than the document. It now
+  scores what ingest scores, and it refuses a file that has not finished
+  processing instead of grading the raw upload.
 
 ### Ragen Brain: an assistant beside the inbox
 

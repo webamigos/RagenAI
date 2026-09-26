@@ -18,8 +18,9 @@ vi.mock('@/features/documents/contracts/document.types', () => ({
   Workflow: { SCORE_DOCUMENT: 'scoreDocument' },
 }));
 
-vi.mock('@/app/lib/services/storage', () => ({
-  getFileFromS3: vi.fn(),
+const mockDecrypt = vi.fn();
+vi.mock('@ragenai/crypto', () => ({
+  decryptDocumentContent: (...args: unknown[]) => mockDecrypt(...args),
 }));
 
 vi.mock('@/app/lib/utils/logger', () => ({
@@ -35,19 +36,32 @@ vi.mock(
   }),
 );
 
+const mockGetActor = vi.fn();
+vi.mock('@/features/documents/services/queries/get-document-actor', () => ({
+  getDocumentActor: (...args: unknown[]) => mockGetActor(...args),
+}));
+
 import { scoreFileCommand } from '../score-file-command';
+import { fileAccessWhere } from '@/features/documents/services/queries/document-access';
 import { UnauthorizedException } from '@/libs/utils/errors';
+
+const member = {
+  userId: 'user-1',
+  teamIds: ['team-1'],
+  scope: 'member' as const,
+};
 
 describe('scoreFileCommand', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockIsFeatureEnabled.mockResolvedValue(true);
+    mockGetActor.mockResolvedValue(member);
+    mockDecrypt.mockImplementation(async (content: string) => content);
     mockFindFirst.mockResolvedValue({
       id: 'file-1',
       fileName: 'umowa.docx',
-      fileExtension: 'docx',
       projectId: null,
-      document: { id: 'doc-1', content: 'Tekst umowy.' },
+      document: { id: 'doc-1', content: 'Tekst umowy.', encryptedDek: null },
     });
   });
 
@@ -56,7 +70,11 @@ describe('scoreFileCommand', () => {
 
     expect(mockFindFirst).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: { id: 'file-1', organizationId: 'org-1' },
+        where: {
+          id: 'file-1',
+          organizationId: 'org-1',
+          ...fileAccessWhere(member),
+        },
       }),
     );
     expect(mockJobStart).toHaveBeenCalledWith(
@@ -78,6 +96,67 @@ describe('scoreFileCommand', () => {
       'ragReadinessScore',
     );
     expect(mockFindFirst).not.toHaveBeenCalled();
+    expect(mockJobStart).not.toHaveBeenCalled();
+  });
+
+  // With encryption on, `content` is ciphertext. The button sent it as it
+  // was, so the model graded noise.
+  it('scores the decrypted text, not what is stored', async () => {
+    mockFindFirst.mockResolvedValue({
+      id: 'file-1',
+      fileName: 'umowa.docx',
+      projectId: null,
+      document: { id: 'doc-1', content: 'v1:ciphertext', encryptedDek: 'dek' },
+    });
+    mockDecrypt.mockResolvedValue('Tekst umowy.');
+
+    await scoreFileCommand('file-1', 'org-1');
+
+    expect(mockDecrypt).toHaveBeenCalledWith('v1:ciphertext', 'dek');
+    expect(mockJobStart).toHaveBeenCalledWith(
+      'scoreDocument',
+      expect.any(String),
+      expect.objectContaining({ documentText: 'Tekst umowy.' }),
+    );
+  });
+
+  // The raw-file fallback sent unparsed text that had never been masked.
+  it('refuses a file with no document row instead of scoring the raw file', async () => {
+    mockFindFirst.mockResolvedValue({
+      id: 'file-1',
+      fileName: 'notes.md',
+      projectId: null,
+      document: null,
+    });
+
+    await expect(scoreFileCommand('file-1', 'org-1')).rejects.toThrow(
+      /not finished processing/,
+    );
+    expect(mockJobStart).not.toHaveBeenCalled();
+  });
+
+  it('refuses a document whose text is empty', async () => {
+    mockDecrypt.mockResolvedValue('   ');
+
+    await expect(scoreFileCommand('file-1', 'org-1')).rejects.toThrow(
+      /no content/,
+    );
+    expect(mockJobStart).not.toHaveBeenCalled();
+  });
+
+  // Organization scope alone let any member send a private document's text
+  // to the model. The member's own access is part of the lookup now, so a
+  // file they may not open is indistinguishable from one that does not exist.
+  it("looks the file up with the member's own access, and refuses one they cannot open", async () => {
+    mockFindFirst.mockResolvedValue(null);
+
+    await expect(scoreFileCommand('file-1', 'org-1')).rejects.toThrow(
+      'File not found',
+    );
+    expect(mockGetActor).toHaveBeenCalledWith('org-1');
+    const where = (mockFindFirst.mock.calls[0][0] as { where: object }).where;
+    expect(where).toMatchObject(fileAccessWhere(member));
+    expect(Object.keys(fileAccessWhere(member)).length).toBeGreaterThan(0);
     expect(mockJobStart).not.toHaveBeenCalled();
   });
 });

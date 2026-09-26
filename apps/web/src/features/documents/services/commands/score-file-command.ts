@@ -1,21 +1,32 @@
 import db from '@ragenai/prisma-client';
-import { getFileFromS3 } from '@/app/lib/services/storage';
+import { decryptDocumentContent } from '@ragenai/crypto';
 import { jobs } from '@/libs/jobs';
 import { Workflow } from '@/features/documents/contracts/document.types';
 import { logger } from '@/app/lib/utils/logger';
 import { UnauthorizedException } from '@/libs/utils/errors';
 import { isFeatureEnabledQuery } from '@/features/subscriptions/services/queries/get-effective-features-query';
+import { getDocumentActor } from '@/features/documents/services/queries/get-document-actor';
+import { fileAccessWhere } from '@/features/documents/services/queries/document-access';
 
-const TEXT_EXTENSIONS = new Set([
-  'txt',
-  'md',
-  'csv',
-  'json',
-  'html',
-  'xml',
-  'srt',
-]);
-
+/**
+ * Start the on-demand "Score for RAG" job for one file.
+ *
+ * It scores the document row's text, decrypted: the same string ingest scores
+ * (the file's chunks, joined, after masking), so a click and an upload grade
+ * the same thing. Spec 2026-09-26-rag-readiness-score-review, B2.
+ *
+ * Two things it used to do and no longer does:
+ * - send `UserDocument.content` as stored, which for an organization with
+ *   encryption on is ciphertext, so the model graded noise;
+ * - fall back to the raw stored file when there was no document row, which
+ *   sent unparsed text that had never been through PII masking. A file with
+ *   no document row has not finished processing, so it is refused instead.
+ *
+ * The file is looked up with the member's own access (`fileAccessWhere`), as
+ * the document queries are: scoping by organization alone let any member
+ * start a job that sent a private document's text to the model. A file the
+ * member may not open reads as not found, like one that does not exist.
+ */
 export async function scoreFileCommand(
   fileId: string,
   orgId: string,
@@ -29,14 +40,14 @@ export async function scoreFileCommand(
     );
   }
 
+  const actor = await getDocumentActor(orgId);
   const file = await db.userFile.findFirst({
-    where: { id: fileId, organizationId: orgId },
+    where: { id: fileId, organizationId: orgId, ...fileAccessWhere(actor) },
     select: {
       id: true,
       fileName: true,
-      fileExtension: true,
       projectId: true,
-      document: { select: { id: true, content: true } },
+      document: { select: { id: true, content: true, encryptedDek: true } },
     },
   });
 
@@ -44,21 +55,16 @@ export async function scoreFileCommand(
     throw new Error('File not found');
   }
 
-  let content: string;
-
-  if (file.document?.content) {
-    content = file.document.content;
-  } else if (
-    file.fileExtension &&
-    TEXT_EXTENSIONS.has(file.fileExtension.toLowerCase())
-  ) {
-    const buffer = await getFileFromS3(`${file.id}.${file.fileExtension}`);
-    content = buffer.toString('utf-8');
-  } else {
+  if (!file.document) {
     throw new Error(
-      'Content not extracted yet — scoring requires a text-based file or a processed document',
+      'This file has not finished processing, so there is no text to score yet',
     );
   }
+
+  const content = await decryptDocumentContent(
+    file.document.content,
+    file.document.encryptedDek,
+  );
 
   if (!content.trim()) {
     throw new Error('File has no content to score');
@@ -66,7 +72,7 @@ export async function scoreFileCommand(
 
   await jobs().start(Workflow.SCORE_DOCUMENT, `score-${fileId}-${Date.now()}`, {
     fileId,
-    documentId: file.document?.id ?? null,
+    documentId: file.document.id,
     orgId,
     projectId: file.projectId ?? null,
     fileName: file.fileName ?? undefined,
