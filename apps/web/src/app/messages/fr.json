@@ -2403,7 +2403,7 @@
     "unsupported-file-type": "L'optimisation RAG ne prend pas en charge ce type de fichier.",
     "current-score": "Score actuel :",
     "applied-title": "Modifications appliquées.",
-    "applied-hint": "Le document est en cours de réindexation et de réévaluation en arrière-plan. Le nouveau score apparaîtra dans l'historique des versions une fois terminé.",
+    "applied-hint": "Le document est en cours de réindexation en arrière-plan. Le score RAG précédent portait sur l'ancien texte ; il a donc été supprimé.",
     "accept-all": "Tout accepter",
     "reject-all": "Tout rejeter",
     "apply-accepted": "Appliquer les acceptées ({count})",

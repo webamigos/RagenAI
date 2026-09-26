@@ -425,7 +425,7 @@ is today, not a fixed one. C and D do not start until A4 is done (Q1).
 - [ ] **A0.** Read `metadata.ragScore`, `ragScoredAt` and `UserDocument.content`
   (first 500 characters) for the two `RAG: 0` DOCX files on demo. Record which of
   the three causes applies. This is a read only.
-- [ ] **A1.** Add an expected-document field to the benchmark's `Question` and
+- [x] **A1.** *(done: #1394)* Add an expected-document field to the benchmark's `Question` and
   fill it in both corpora (see "How to validate" above). Then add a
   per-document table to the `rag-benchmark` report. The corpus is ingested
   through the real worker as today, and the harness reads back the score
@@ -461,19 +461,23 @@ already claims. B1 and B2 start only after A2's baseline is committed.
   chunks, without duplicated overlap. Raise or remove the 12k truncation, or
   state it on the badge. Test: the same file gives the same input string from
   both paths.
-- [ ] **B3.** Keep the promise the UI makes about scores after "Apply
+- [x] **B3.** Keep the promise the UI makes about scores after "Apply
   suggestions", one way or the other: either `REINDEX_DOCUMENT_VERSION` rescores
   (one call), or `applied-hint` stops promising it and the badge clears. A
   number describing text that no longer exists is the stale-score defect
   `parse-and-embed.ts:713-718` already fixed once, on another path.
   *Recommendation:* clear it and fix the copy, because D1 may turn automatic
   scoring off by default.
+  *Done:* cleared, and the copy fixed. The fix lives in
+  `createDocumentVersionCommand`, so it also covers two cases this item did
+  not name: a manual edit left the badge stale the same way, and a rollback
+  carried the target's score onto the version but not the badge.
 - [ ] **B4.** Badge colour. Below 40 the badge uses crimson, which panel rule 16
   reserves for the Failed badge, so a low score reads as a failed ingest.
   Rules 11 and 17 reserve green and amber for document and job state. Use a
   neutral token, and put the scale in the label (`RAG 16/100`, rule 23). Test:
   `panel-colours-are-tokens-not-literals` and the badge test.
-- [ ] **B5.** The `ragReadinessScore` feature key (Q6). Add it to
+- [x] **B5.** *(done: #1395)* The `ragReadinessScore` feature key (Q6). Add it to
   `FEATURE_KEYS` with code default `true` and a label, so apps/admin shows it
   with no admin code. Check it in the worker (`parse-and-embed` and the
   `scoreDocument` handler, through `resolveFeatures` as Brain does), in

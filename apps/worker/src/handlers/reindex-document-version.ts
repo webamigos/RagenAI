@@ -105,8 +105,9 @@ export async function reindexDocumentVersion(
 
   // ==== DETECT DOCUMENT LANGUAGE (best-effort, same pattern as parse-and-embed)
   // Re-run on every reindex so the tag reflects the *current* content —
-  // unlike the summary/RAG score, this has no LLM cost, so there is no
-  // reason to let it go stale the way those two currently do here.
+  // unlike the summary and the RAG score, this has no LLM cost. The summary
+  // goes stale here; the RAG score does not, because apps/web clears the
+  // file's copy when it creates the version this job indexes.
   let language: string | null = null;
   let languageDetectionFailed = false;
   try {

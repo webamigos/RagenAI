@@ -2403,7 +2403,7 @@
     "unsupported-file-type": "RAG optimization does not support this file type.",
     "current-score": "Current score:",
     "applied-title": "Changes applied.",
-    "applied-hint": "The document is being re-indexed and rescored in the background. The new score appears in Version history once that finishes.",
+    "applied-hint": "The document is being re-indexed in the background. Its previous RAG score described the old text, so it has been cleared.",
     "accept-all": "Accept all",
     "reject-all": "Reject all",
     "apply-accepted": "Apply accepted ({count})",

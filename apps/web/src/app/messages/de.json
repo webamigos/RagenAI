@@ -2403,7 +2403,7 @@
     "unsupported-file-type": "Die RAG-Optimierung unterstützt diesen Dateityp nicht.",
     "current-score": "Aktuelle Bewertung:",
     "applied-title": "Änderungen angewendet.",
-    "applied-hint": "Das Dokument wird im Hintergrund neu indiziert und neu bewertet. Die neue Bewertung erscheint im Versionsverlauf, sobald dies abgeschlossen ist.",
+    "applied-hint": "Das Dokument wird im Hintergrund neu indiziert. Die bisherige RAG-Bewertung bezog sich auf den alten Text und wurde daher entfernt.",
     "accept-all": "Alle annehmen",
     "reject-all": "Alle ablehnen",
     "apply-accepted": "Angenommene anwenden ({count})",

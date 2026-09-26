@@ -2403,7 +2403,7 @@
     "unsupported-file-type": "RAG-optimering stöder inte den här filtypen.",
     "current-score": "Nuvarande poäng:",
     "applied-title": "Ändringarna har tillämpats.",
-    "applied-hint": "Dokumentet indexeras och utvärderas om i bakgrunden. Den nya poängen visas i versionshistoriken när det är klart.",
+    "applied-hint": "Dokumentet indexeras om i bakgrunden. Den tidigare RAG-poängen gällde den gamla texten och har därför tagits bort.",
     "accept-all": "Acceptera alla",
     "reject-all": "Avvisa alla",
     "apply-accepted": "Tillämpa accepterade ({count})",

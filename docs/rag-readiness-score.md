@@ -38,8 +38,8 @@ The five dimensions, each scored 0–10 and weighted into the total:
 | --- | --- |
 | Upload, or re-process | yes, automatically, after embedding |
 | "Score for RAG" in the file's menu | yes |
-| Rollback to an earlier version | the old version's score is copied back |
-| "Apply suggestions" in Optimize | no; the new version stays unscored ([spec](specs/2026-09-26-rag-readiness-score-review.md), B3) |
+| Rollback to an earlier version | no; the target version's score is copied to the new version and to the badge |
+| "Apply suggestions", or a manual edit | no; the new version is unscored and the badge is cleared until the file is scored again |
 
 A call that fails writes `null`, so no badge is shown. The previous score is
 not kept, because it would describe text that has since changed.

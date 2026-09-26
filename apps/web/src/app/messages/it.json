@@ -2403,7 +2403,7 @@
     "unsupported-file-type": "L'ottimizzazione RAG non supporta questo tipo di file.",
     "current-score": "Punteggio attuale:",
     "applied-title": "Modifiche applicate.",
-    "applied-hint": "Il documento è in fase di reindicizzazione e rivalutazione in background. Il nuovo punteggio apparirà nella cronologia delle versioni al termine.",
+    "applied-hint": "Il documento è in fase di reindicizzazione in background. Il punteggio RAG precedente si riferiva al vecchio testo, quindi è stato rimosso.",
     "accept-all": "Accetta tutto",
     "reject-all": "Rifiuta tutto",
     "apply-accepted": "Applica accettate ({count})",
