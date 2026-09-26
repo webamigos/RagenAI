@@ -28,6 +28,7 @@ import { runAssertions, judge } from './lib/grade';
 import { renderMarkdown, resultStem, tally } from './lib/report';
 import { withRetry } from './lib/retry';
 import {
+  chatModelToPin,
   pairUploads,
   parseArgs,
   waitForIngest,
@@ -246,6 +247,42 @@ async function pinProjectInstruction(prisma: PrismaClient): Promise<void> {
 }
 
 /**
+ * Pin the organization's chat model to the one the report names.
+ *
+ * The e2e seed sets the test organization's model to `mock-model`, which only
+ * the Playwright suite's mock server answers (#1276). Against a freshly
+ * seeded database every answer came back empty — "no route for model
+ * mock-model" in the app's log — and the run reported 0/18 as though
+ * retrieval had failed. Pinning it here, to the `DEFAULT_MODEL` the
+ * fingerprint records, makes the run say which model answered instead of
+ * inheriting whatever the database holds.
+ */
+async function pinOrganizationModel(prisma: PrismaClient): Promise<void> {
+  const project = await prisma.project.findUnique({
+    where: { id: PROJECT_ID },
+    select: { organizationId: true },
+  });
+  if (!project?.organizationId) {
+    throw new Error(`Project ${PROJECT_ID} has no organization`);
+  }
+  const model = chatModelToPin(process.env);
+  const previous = await prisma.organizationSettings.findUnique({
+    where: { organizationId: project.organizationId },
+    select: { model: true },
+  });
+  if (previous?.model && previous.model !== model) {
+    console.log(
+      `  replaced the organization's model ${JSON.stringify(previous.model)} with ${JSON.stringify(model)}`,
+    );
+  }
+  await prisma.organizationSettings.upsert({
+    where: { organizationId: project.organizationId },
+    update: { model },
+    create: { organizationId: project.organizationId, model },
+  });
+}
+
+/**
  * Delete through the product's own path rather than with `deleteMany`, because
  * that is what removes the Qdrant points too. Leftover points from a previous
  * run would sit in the collection as duplicates and quietly change the next
@@ -320,7 +357,10 @@ async function settledGatewayMode(startedAs: string): Promise<string> {
   return endedAs;
 }
 
-async function fingerprint(llmGateway: string): Promise<StackFingerprint> {
+async function fingerprint(
+  llmGateway: string,
+  shape?: string,
+): Promise<StackFingerprint> {
   let gitSha = 'unknown';
   try {
     gitSha = execSync('git rev-parse --short HEAD', {
@@ -344,6 +384,7 @@ async function fingerprint(llmGateway: string): Promise<StackFingerprint> {
     multiQueryVariants: process.env.MULTI_QUERY_VARIANT_COUNT ?? '1 (default)',
     appUrl: APP_URL,
     llmGateway,
+    shape,
   };
 }
 
@@ -380,10 +421,11 @@ function caseNote(
 }
 
 async function main(): Promise<void> {
-  const { corpus: corpusArg, arms } = parseArgs(
-    process.argv.slice(2),
-    DEFAULT_CORPUS_DIR,
-  );
+  const {
+    corpus: corpusArg,
+    arms,
+    shape,
+  } = parseArgs(process.argv.slice(2), DEFAULT_CORPUS_DIR);
   const dir = resolveCorpusDir(corpusArg, process.cwd());
   const { corpus, questions } = loadCorpus(dir);
 
@@ -391,7 +433,8 @@ async function main(): Promise<void> {
   console.log(
     `  ${corpus.documents.length} documents, ${questions.length} questions`,
   );
-  console.log(`  arms: ${arms.join(', ')}\n`);
+  console.log(`  arms: ${arms.join(', ')}`);
+  console.log(`  shape: ${shape ?? '(not named)'}\n`);
 
   // Read before a single question runs, and compared against the mode at the
   // end — see `settledGatewayMode`. The app answers this from inside its own
@@ -438,8 +481,11 @@ async function main(): Promise<void> {
         { timeoutMs: SCORE_TIMEOUT_MS },
       );
 
-      console.log('[4/4] Clearing thread history and project instruction');
+      console.log(
+        '[4/4] Clearing thread history, project instruction and model',
+      );
       await pinProjectInstruction(prisma);
+      await pinOrganizationModel(prisma);
       await clearThread(prisma);
     }
 
@@ -584,6 +630,7 @@ async function main(): Promise<void> {
     corpusVersion: corpus.version,
     fingerprint: await fingerprint(
       await settledGatewayMode(startedUnderGateway),
+      shape,
     ),
     results,
     documentScores,
@@ -601,6 +648,7 @@ async function main(): Promise<void> {
     corpus.name,
     corpus.version,
     (candidate) => existsSync(join(outDir, `${candidate}.json`)),
+    shape,
   );
   writeFileSync(join(outDir, `${stem}.json`), JSON.stringify(report, null, 2));
   writeFileSync(join(outDir, `${stem}.md`), renderMarkdown(report));

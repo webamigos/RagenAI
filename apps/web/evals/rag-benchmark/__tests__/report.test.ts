@@ -453,3 +453,24 @@ describe('renderMarkdown — by document', () => {
     );
   });
 });
+
+describe('resultStem — shape', () => {
+  it('puts the shape before the run suffix', () => {
+    const taken = new Set(['2026-09-26-tabele-bilingual-v1-rev1-legacy']);
+    expect(
+      resultStem(
+        '2026-09-26',
+        'tabele-bilingual-v1',
+        1,
+        (s) => taken.has(s),
+        'legacy',
+      ),
+    ).toBe('2026-09-26-tabele-bilingual-v1-rev1-legacy-run2');
+  });
+
+  it('is unchanged without a shape', () => {
+    expect(resultStem('2026-09-26', 'c', 1, () => false)).toBe(
+      '2026-09-26-c-rev1',
+    );
+  });
+});

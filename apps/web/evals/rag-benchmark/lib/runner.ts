@@ -11,7 +11,16 @@ import type { Arm, DocumentScore } from './types';
 export interface ParsedArgs {
   corpus: string;
   arms: Arm[];
+  /**
+   * `--shape <name>`: which ingest configuration this run measured (parser,
+   * table chunks). The harness cannot see the worker's environment, so the
+   * operator names it. It goes into the result's file name and header, so
+   * four shapes run on one day do not become `-run2` … `-run12`.
+   */
+  shape?: string;
 }
+
+const SHAPE = /^[a-z0-9][a-z0-9-]{0,39}$/;
 
 /**
  * `--corpus <dir>` and `--arms rag,no-rag`.
@@ -27,9 +36,20 @@ export function parseArgs(
 ): ParsedArgs {
   const corpus = valueOf(argv, '--corpus') ?? defaultCorpusDir;
 
+  // A shape becomes part of a file name, so it is held to one: lower case,
+  // digits and hyphens. A typo'd flag with no value is an error rather than a
+  // run silently filed under no shape.
+  const shape = valueOf(argv, '--shape');
+  if (argv.includes('--shape') && (shape === undefined || !SHAPE.test(shape))) {
+    throw new Error(
+      `--shape: expected a name of lower-case letters, digits and hyphens, got ${JSON.stringify(shape ?? '')}`,
+    );
+  }
+  const withShape = shape ? { shape } : {};
+
   const arms = valueOf(argv, '--arms');
   if (arms === undefined) {
-    return { corpus, arms: [...ARMS] };
+    return { corpus, arms: [...ARMS], ...withShape };
   }
 
   const requested = arms
@@ -45,7 +65,7 @@ export function parseArgs(
   if (requested.length === 0) {
     throw new Error(`--arms: no arms given; expected ${ARMS.join(' and/or ')}`);
   }
-  return { corpus, arms: requested as Arm[] };
+  return { corpus, arms: requested as Arm[], ...withShape };
 }
 
 /**
@@ -230,4 +250,21 @@ export function pairUploads(
     id,
     file: byName.get(fileName) as string,
   }));
+}
+
+/**
+ * The chat model the run pins on the organization: `DEFAULT_MODEL`, which is
+ * what the report's fingerprint prints as "chat model". Refused when unset —
+ * a run that cannot say which model answered measures nothing reproducible.
+ */
+export function chatModelToPin(
+  env: Record<string, string | undefined>,
+): string {
+  const model = env.DEFAULT_MODEL?.trim();
+  if (!model) {
+    throw new Error(
+      'DEFAULT_MODEL is not set, so the run cannot say which model answered. Set it in .env.local or on the command line.',
+    );
+  }
+  return model;
 }
