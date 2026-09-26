@@ -300,8 +300,10 @@ only `docLang`, so nothing in the corpus says which document holds an answer.
 A1 therefore adds an expected-document field to `Question` and fills it for
 both corpora. A document's pass rate is computed over every question mapped to
 it, including those that cited nothing. A multi-hop question counts toward each
-document it names. Guard questions (`guard-hallucination`, `guard-sycophancy`)
-have no expected document and are left out of per-document rates.
+document it names. A `guard-hallucination` question has no expected document,
+because its answer is in none, and is left out of per-document rates. A
+`guard-sycophancy` question corrects a premise from one document, so it counts
+toward that document.
 
 **Why correlation alone is weak here.** The two corpora have 13 documents
 between them (8 + 5), and single runs are noisy: `kolej` moved 16/24 → 22/24
@@ -408,10 +410,11 @@ is today, not a fixed one. C and D do not start until A4 is done (Q1).
   the three causes applies. This is a read only.
 - [ ] **A1.** Add an expected-document field to the benchmark's `Question` and
   fill it in both corpora (see "How to validate" above). Then add a
-  `score-documents` mode to `rag-benchmark`. It ingests a corpus through the
-  real worker, runs `scoreDocumentForRag` on the same text ingest passes it,
-  and writes per-document scores next to per-document pass rates over the
-  mapped questions. `citedFiles` is reported beside them, not used as the
+  per-document table to the `rag-benchmark` report. The corpus is ingested
+  through the real worker as today, and the harness reads back the score
+  ingest wrote (`UserFile.metadata.ragScore`), so it is the score of the text
+  ingest passed the scorer, with no second call. It writes that score next to
+  the per-document pass rate over the mapped questions. `citedFiles` is reported beside them, not used as the
   denominator. Three runs, median. The script and its tests live under
   `apps/web/evals`, not in the product. Tests: a question that cited nothing
   still counts against its expected document.
