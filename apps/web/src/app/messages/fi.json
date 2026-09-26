@@ -2403,7 +2403,7 @@
     "unsupported-file-type": "RAG-optimointi ei tue tätä tiedostotyyppiä.",
     "current-score": "Nykyiset pisteet:",
     "applied-title": "Muutokset sovellettu.",
-    "applied-hint": "Asiakirja indeksoidaan ja arvioidaan uudelleen taustalla. Uudet pisteet näkyvät versiohistoriassa valmistuttuaan.",
+    "applied-hint": "Asiakirja indeksoidaan uudelleen taustalla. Aiempi RAG-pistemäärä koski vanhaa tekstiä, joten se on poistettu.",
     "accept-all": "Hyväksy kaikki",
     "reject-all": "Hylkää kaikki",
     "apply-accepted": "Sovella hyväksytyt ({count})",

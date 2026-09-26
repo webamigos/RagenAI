@@ -2403,7 +2403,7 @@
     "unsupported-file-type": "A otimização RAG não suporta este tipo de arquivo.",
     "current-score": "Pontuação atual:",
     "applied-title": "Alterações aplicadas.",
-    "applied-hint": "O documento está sendo reindexado e reavaliado em segundo plano. A nova pontuação aparecerá no histórico de versões quando concluído.",
+    "applied-hint": "O documento está sendo reindexado em segundo plano. A pontuação RAG anterior se referia ao texto antigo, por isso foi removida.",
     "accept-all": "Aceitar tudo",
     "reject-all": "Rejeitar tudo",
     "apply-accepted": "Aplicar aceitas ({count})",

@@ -75,6 +75,11 @@ archive is the blog.
   apps/admin → Features, for the whole platform or per organization. With it
   off, uploads make one LLM call fewer and Optimize still works. It stays on by
   default.
+- `[brief]` **The `RAG: NN` badge no longer outlives the text it scored.**
+  After applying Optimize suggestions or editing a document, the badge used to
+  keep the old number, and the panel promised a new one that never came. It
+  now clears until the file is scored again, and a rollback brings back the
+  restored version's score.
 - `[brief]` **A low RAG score no longer looks like a failed upload.** The badge
   is one neutral colour at every value and reads `RAG 16/100`; crimson stays
   reserved for the Failed status.

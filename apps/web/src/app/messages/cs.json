@@ -2403,7 +2403,7 @@
     "unsupported-file-type": "RAG optimalizace nepodporuje tento typ souboru.",
     "current-score": "Aktuální skóre:",
     "applied-title": "Změny byly uplatněny.",
-    "applied-hint": "Dokument je na pozadí znovu indexován a přehodnocován. Nové skóre se zobrazí v historii verzí po dokončení.",
+    "applied-hint": "Dokument se na pozadí znovu indexuje. Předchozí skóre RAG se týkalo starého textu, proto bylo odstraněno.",
     "accept-all": "Přijmout vše",
     "reject-all": "Odmítnout vše",
     "apply-accepted": "Uplatnit přijaté ({count})",
