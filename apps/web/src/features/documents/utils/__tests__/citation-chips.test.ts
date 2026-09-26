@@ -28,6 +28,47 @@ describe('markCitationsInHtml', () => {
     expect(html).toContain('href="#src-m1-3"');
   });
 
+  it('chips every marker in a run that ends a sentence with a colon', () => {
+    const html = markCitationsInHtml(
+      '<p>Stany przedstawiają się następująco [1] [2]:</p>',
+      options,
+    );
+
+    expect(html).toContain('href="#src-m1-1"');
+    expect(html).toContain('href="#src-m1-2"');
+    expect(html).not.toContain('[2]');
+  });
+
+  it('chips a marker before a colon that follows inline markup', () => {
+    // The text node starts after `</strong>`, mid-line: not a definition.
+    const html = markCitationsInHtml(
+      '<p><strong>Razem: 600</strong> [2]: zapas minimalny 250</p>',
+      options,
+    );
+
+    expect(html).toContain('href="#src-m1-2"');
+    expect(html).not.toContain('[2]');
+  });
+
+  it('chips a marker before a colon inside inline markup mid-line', () => {
+    // No sibling of its own, but "Intro " precedes it in the paragraph.
+    const html = markCitationsInHtml(
+      '<p>Intro <strong>[2]: details</strong></p>',
+      options,
+    );
+
+    expect(html).toContain('href="#src-m1-2"');
+  });
+
+  it('leaves a definition that opens its block alone, even inside markup', () => {
+    const html = markCitationsInHtml(
+      '<p><strong>[2]: details</strong></p>',
+      options,
+    );
+
+    expect(html).not.toContain('citation-chip');
+  });
+
   it('leaves a number no source could answer for as plain text', () => {
     const html = markCitationsInHtml('<p>Invented [9].</p>', options);
 

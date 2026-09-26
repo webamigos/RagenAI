@@ -91,6 +91,11 @@ archive is the blog.
 
 ### Thread: sources you can read
 
+- `[brief]` **A citation before a colon is a citation.** An answer that
+  introduces a list with "…as follows [1][2]:" now shows both markers as
+  clickable chips; the second one used to stay as a literal `[2]` and its
+  source was not counted as cited.
+
 - `[brief]` **A reopened thread's sources open where they did live.** A PDF
   cited in an answer now opens at the cited page with its paragraphs outlined
   when you come back to the conversation later, not only while the answer is
