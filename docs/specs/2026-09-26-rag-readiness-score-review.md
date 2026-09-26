@@ -472,7 +472,7 @@ already claims. B1 and B2 start only after A2's baseline is committed.
   `createDocumentVersionCommand`, so it also covers two cases this item did
   not name: a manual edit left the badge stale the same way, and a rollback
   carried the target's score onto the version but not the badge.
-- [ ] **B4.** Badge colour. Below 40 the badge uses crimson, which panel rule 16
+- [x] **B4.** Badge colour. Below 40 the badge uses crimson, which panel rule 16
   reserves for the Failed badge, so a low score reads as a failed ingest.
   Rules 11 and 17 reserve green and amber for document and job state. Use a
   neutral token, and put the scale in the label (`RAG 16/100`, rule 23). Test:

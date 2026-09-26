@@ -400,7 +400,7 @@
     "char-limit-warning": "Indholdet er meget langt — genereringen kan tage op til 60 sekunder",
     "char-limit-error": "Indholdet er for langt (maks. 100.000 tegn)",
     "score-label": "RAG-score",
-    "badge-label": "RAG: {score}",
+    "badge-label": "RAG {score}/100",
     "score-tooltip": "RAG-parathed: {score}/100. Hvor klar dette dokument er til AI-søgning - tydelig struktur, præcise detaljer og selvstændige svar.",
     "score-detail-title": "RAG-parathedsrapport",
     "score-chunk-structure": "Blokstruktur",

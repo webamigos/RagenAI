@@ -80,6 +80,9 @@ archive is the blog.
   keep the old number, and the panel promised a new one that never came. It
   now clears until the file is scored again, and a rollback brings back the
   restored version's score.
+- `[brief]` **A low RAG score no longer looks like a failed upload.** The badge
+  is one neutral colour at every value and reads `RAG 16/100`; crimson stays
+  reserved for the Failed status.
 
 ### Ragen Brain: an assistant beside the inbox
 

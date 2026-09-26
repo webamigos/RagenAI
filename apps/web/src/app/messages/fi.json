@@ -400,7 +400,7 @@
     "char-limit-warning": "Sisältö on hyvin pitkä — luominen voi kestää jopa 60 sekuntia",
     "char-limit-error": "Sisältö on liian pitkä (enintään 100 000 merkkiä)",
     "score-label": "RAG-pisteet",
-    "badge-label": "RAG: {score}",
+    "badge-label": "RAG {score}/100",
     "score-tooltip": "RAG-valmius: {score}/100. Kuinka valmis tämä asiakirja on tekoälyhakuun - selkeä rakenne, tarkat yksityiskohdat ja itsenäiset vastaukset.",
     "score-detail-title": "RAG-valmiusraportti",
     "score-chunk-structure": "Lohkorakenne",
