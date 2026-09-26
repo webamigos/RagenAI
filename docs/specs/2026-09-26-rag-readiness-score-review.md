@@ -24,30 +24,39 @@ only where it helps, as the on-demand driver of "Optymalizuj dla RAG" for prose.
 ## Open Questions
 
 <!--
-Every question has a recommended answer, so the spec can be reviewed as
-written. It is not ready to implement until these are answered.
+Q1, Q2 and Q4 were answered on 2026-09-26 and are recorded under Decisions.
+The spec is not ready to implement until Q3 and Q5 are answered too.
 -->
 
-- **Q1. Is Phase A's measurement a gate?** That is: no change to the badge's
-  meaning until the score has been compared with benchmark pass rates.
-  *Recommended: yes*, with one exception. Phase B's defect fixes are
-  independent of the result and can land first.
-- **Q2. Should the file list keep showing a number at all?** *Recommended: no.*
-  Show a worded state only when there is something to act on, for example
-  "Parsed as markup" or "Table without headers", and put detail in the document
-  view. A number invites comparison between a price list and a policy document,
-  and nothing supports that comparison.
 - **Q3. Should the per-ingest LLM call be removed?** It runs on every upload and
   every re-process. *Recommended: yes, in Phase D.* Keep scoring on demand, from
   the Optimize tab only.
-- **Q4. Should "Optymalizuj dla RAG" be offered for tabular documents
-  (XLSX/CSV, and documents that are mostly table chunks)?** *Recommended: no.*
-  Its suggestion types (restructure, pronoun context, Q&A headings) are prose
-  edits. On a spreadsheet the right action is to re-parse, not to rewrite.
 - **Q5. Does this bundle more than one capability?** Yes, three: (a) the defect
   fixes, (b) the measurement, and (c) the replacement diagnostics. Each is
   useful without the others. *Recommended:* keep them in one spec, because (c)'s
   design depends on (b)'s result, but ship them as separate phases and PRs.
+
+## Decisions
+
+Answered 2026-09-26. The question numbers are kept so earlier references to
+them still resolve.
+
+- **Q1. Phase A's measurement is a gate.** Nothing that changes what the badge
+  means (Phases C and D) starts until A4 has written its finding into this spec.
+  Phase B's defect fixes are independent of the result and may land first.
+- **Q2. The file list shows no number.** This holds whatever Phase A finds. If
+  the rubric turns out to predict retrieval for prose, that result can shape the
+  Optimize tab (D2), but it does not bring a number back to the list or grid.
+  The list shows a worded state only when there is something to act on, for
+  example "Parsed as markup" or "Table without headers", and the detail is in
+  the document view. A number invites comparison between a price list and a
+  policy document, and nothing supports that comparison.
+- **Q4. "Optymalizuj dla RAG" is not offered for tabular documents.** That means
+  XLSX and CSV files, and documents that are mostly table chunks; D2 sets the
+  threshold. The suggestion types (restructure, pronoun context, Q&A headings)
+  are prose edits. On a spreadsheet the right action is to re-parse, not to
+  rewrite. The refusal is enforced in the command, not only by hiding the menu
+  item.
 
 ## Problem
 
@@ -270,9 +279,10 @@ Option 4 drops them.
 ### Recommendation
 
 1. **Measure first (Phase A).** Run the existing scorer on the benchmark corpora
-   in several parse shapes and compare it with pass rates. This is a gate: if the
-   score does track retrieval for prose, option 2 becomes a real candidate for
-   prose documents.
+   in several parse shapes and compare it with pass rates. This is a gate (Q1):
+   if the score does track retrieval for prose, option 2 becomes a real
+   candidate for the Optimize tab on prose documents. It never becomes a number
+   on the list again (Q2).
 2. **Fix the defects now (Phase B).** They are wrong regardless of the outcome.
 3. **Replace the list badge with option 3 (Phase C)**, behind a feature key that
    defaults to `false` (ADR-50).
@@ -382,7 +392,8 @@ measurement may want.
 
 ## Phases
 
-Each phase leaves the application working. B can land before A finishes.
+Each phase leaves the application working. B can land before A finishes; C
+and D do not start until A4 is done (Q1).
 
 ### Phase A — measure the score (no product change)
 
@@ -466,8 +477,11 @@ already claims.
   LLM call less per ingest and per re-process. Stop rendering `ragScore` in the
   list and grid when `documentDiagnostics` is on.
 - [ ] **D2.** Scoring stays on demand in the Optimize tab, as the baseline for
-  suggestions. It is refused at the command for tabular types, and the Optimize
-  menu item is hidden for them (Q4). If A4 found the rubric predictive for
+  suggestions. For tabular types (Q4), both the score and the
+  `optimizeDocument` job are refused at the command, and the Optimize menu item
+  and tab are hidden. "Tabular" means XLSX, CSV, or a document whose indexed
+  chunks are mostly `chunk_type: 'table'`; the threshold is set here and tested.
+  If A4 found the rubric predictive for
   prose, apply option 2's prose-only calibration here. If it did not, the
   Optimize tab shows no number, only the suggestions.
 - [ ] **D3.** Remove the "Oceń dla RAG" menu item. Its job becomes the Optimize
