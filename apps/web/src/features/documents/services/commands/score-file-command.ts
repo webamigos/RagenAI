@@ -5,6 +5,8 @@ import { Workflow } from '@/features/documents/contracts/document.types';
 import { logger } from '@/app/lib/utils/logger';
 import { UnauthorizedException } from '@/libs/utils/errors';
 import { isFeatureEnabledQuery } from '@/features/subscriptions/services/queries/get-effective-features-query';
+import { getDocumentActor } from '@/features/documents/services/queries/get-document-actor';
+import { fileAccessWhere } from '@/features/documents/services/queries/document-access';
 
 /**
  * Start the on-demand "Score for RAG" job for one file.
@@ -19,6 +21,11 @@ import { isFeatureEnabledQuery } from '@/features/subscriptions/services/queries
  * - fall back to the raw stored file when there was no document row, which
  *   sent unparsed text that had never been through PII masking. A file with
  *   no document row has not finished processing, so it is refused instead.
+ *
+ * The file is looked up with the member's own access (`fileAccessWhere`), as
+ * the document queries are: scoping by organization alone let any member
+ * start a job that sent a private document's text to the model. A file the
+ * member may not open reads as not found, like one that does not exist.
  */
 export async function scoreFileCommand(
   fileId: string,
@@ -33,8 +40,9 @@ export async function scoreFileCommand(
     );
   }
 
+  const actor = await getDocumentActor(orgId);
   const file = await db.userFile.findFirst({
-    where: { id: fileId, organizationId: orgId },
+    where: { id: fileId, organizationId: orgId, ...fileAccessWhere(actor) },
     select: {
       id: true,
       fileName: true,

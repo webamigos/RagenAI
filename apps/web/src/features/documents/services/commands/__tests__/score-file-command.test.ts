@@ -36,13 +36,26 @@ vi.mock(
   }),
 );
 
+const mockGetActor = vi.fn();
+vi.mock('@/features/documents/services/queries/get-document-actor', () => ({
+  getDocumentActor: (...args: unknown[]) => mockGetActor(...args),
+}));
+
 import { scoreFileCommand } from '../score-file-command';
+import { fileAccessWhere } from '@/features/documents/services/queries/document-access';
 import { UnauthorizedException } from '@/libs/utils/errors';
+
+const member = {
+  userId: 'user-1',
+  teamIds: ['team-1'],
+  scope: 'member' as const,
+};
 
 describe('scoreFileCommand', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockIsFeatureEnabled.mockResolvedValue(true);
+    mockGetActor.mockResolvedValue(member);
     mockDecrypt.mockImplementation(async (content: string) => content);
     mockFindFirst.mockResolvedValue({
       id: 'file-1',
@@ -57,7 +70,11 @@ describe('scoreFileCommand', () => {
 
     expect(mockFindFirst).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: { id: 'file-1', organizationId: 'org-1' },
+        where: {
+          id: 'file-1',
+          organizationId: 'org-1',
+          ...fileAccessWhere(member),
+        },
       }),
     );
     expect(mockJobStart).toHaveBeenCalledWith(
@@ -124,6 +141,22 @@ describe('scoreFileCommand', () => {
     await expect(scoreFileCommand('file-1', 'org-1')).rejects.toThrow(
       /no content/,
     );
+    expect(mockJobStart).not.toHaveBeenCalled();
+  });
+
+  // Organization scope alone let any member send a private document's text
+  // to the model. The member's own access is part of the lookup now, so a
+  // file they may not open is indistinguishable from one that does not exist.
+  it("looks the file up with the member's own access, and refuses one they cannot open", async () => {
+    mockFindFirst.mockResolvedValue(null);
+
+    await expect(scoreFileCommand('file-1', 'org-1')).rejects.toThrow(
+      'File not found',
+    );
+    expect(mockGetActor).toHaveBeenCalledWith('org-1');
+    const where = (mockFindFirst.mock.calls[0][0] as { where: object }).where;
+    expect(where).toMatchObject(fileAccessWhere(member));
+    expect(Object.keys(fileAccessWhere(member)).length).toBeGreaterThan(0);
     expect(mockJobStart).not.toHaveBeenCalled();
   });
 });
