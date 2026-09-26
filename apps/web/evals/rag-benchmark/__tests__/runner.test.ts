@@ -1,5 +1,11 @@
 import { describe, it, expect, vi } from 'vitest';
-import { parseArgs, waitForIngest } from '../lib/runner';
+import {
+  pairUploads,
+  parseArgs,
+  readRagScore,
+  waitForIngest,
+  waitForScores,
+} from '../lib/runner';
 
 const DEFAULT_DIR = '/repo/evals/rag-benchmark/corpora/kolej-bilingual-v1';
 
@@ -172,5 +178,118 @@ describe('waitForIngest', () => {
       '  0/2 indexed, 0 failed',
       '  2/2 indexed, 0 failed',
     ]);
+  });
+});
+
+describe('readRagScore', () => {
+  // Ingest marks the file COMPLETED before it scores it, so an absent key
+  // means "not yet", never "scored nothing".
+  it('reads an absent key as missing', () => {
+    expect(readRagScore({ summary: 'x' })).toEqual({ state: 'missing' });
+    expect(readRagScore(null)).toEqual({ state: 'missing' });
+  });
+
+  it('reads a null score as a failed call', () => {
+    expect(readRagScore({ ragScore: null, ragScoredAt: null })).toEqual({
+      state: 'failed',
+    });
+  });
+
+  it('keeps the total as stored and the numeric dimensions', () => {
+    expect(
+      readRagScore({
+        ragScore: {
+          chunkStructure: 2,
+          avgChunkSize: 5,
+          total: 16,
+          suggestions: ['add headings'],
+        },
+      }),
+    ).toEqual({
+      state: 'scored',
+      total: 16,
+      dimensions: { chunkStructure: 2, avgChunkSize: 5 },
+    });
+  });
+
+  it('reads a score with no numeric total as failed', () => {
+    expect(readRagScore({ ragScore: { chunkStructure: 2 } })).toEqual({
+      state: 'failed',
+    });
+  });
+});
+
+describe('waitForScores', () => {
+  const uploads = [
+    { id: 'f1', file: 'docs/a.md' },
+    { id: 'f2', file: 'docs/b.md' },
+  ];
+
+  it('polls until every file has a score written, then returns them', async () => {
+    const findMany = vi
+      .fn()
+      .mockResolvedValueOnce([
+        { id: 'f1', metadata: { ragScore: { total: 40 } } },
+        { id: 'f2', metadata: {} },
+      ])
+      .mockResolvedValueOnce([
+        { id: 'f1', metadata: { ragScore: { total: 40 } } },
+        { id: 'f2', metadata: { ragScore: null } },
+      ]);
+    const scores = await waitForScores(
+      { userFile: { findMany } } as never,
+      uploads,
+      { timeoutMs: 10_000, pollMs: 1, log: () => undefined },
+    );
+    expect(findMany).toHaveBeenCalledTimes(2);
+    expect(scores).toEqual([
+      { file: 'docs/a.md', state: 'scored', total: 40, dimensions: {} },
+      { file: 'docs/b.md', state: 'failed' },
+    ]);
+  });
+
+  // A scorer that threw writes nothing; the run records that and goes on.
+  it('returns what it has at the deadline instead of throwing', async () => {
+    const findMany = vi
+      .fn()
+      .mockResolvedValue([{ id: 'f1', metadata: { ragScore: { total: 7 } } }]);
+    const scores = await waitForScores(
+      { userFile: { findMany } } as never,
+      uploads,
+      { timeoutMs: 0, pollMs: 1, log: () => undefined },
+    );
+    expect(scores[1]).toEqual({ file: 'docs/b.md', state: 'missing' });
+  });
+});
+
+describe('pairUploads', () => {
+  it('pairs upload ids with corpus files by base name', () => {
+    expect(
+      pairUploads(
+        [
+          { fileName: 'b.md', id: 'f2' },
+          { fileName: 'a.md', id: 'f1' },
+        ],
+        [{ file: 'docs/a.md' }, { file: 'docs/b.md' }],
+      ),
+    ).toEqual([
+      { id: 'f2', file: 'docs/b.md' },
+      { id: 'f1', file: 'docs/a.md' },
+    ]);
+  });
+
+  it('refuses an upload stored under a name no document has', () => {
+    expect(() =>
+      pairUploads(
+        [{ fileName: 'a (1).md', id: 'f1' }],
+        [{ file: 'docs/a.md' }],
+      ),
+    ).toThrow(/"a \(1\).md" under a name no corpus document has/);
+  });
+
+  it('refuses two documents that share a base name', () => {
+    expect(() =>
+      pairUploads([], [{ file: 'pl/a.md' }, { file: 'en/a.md' }]),
+    ).toThrow(/share the file name "a.md"/);
   });
 });

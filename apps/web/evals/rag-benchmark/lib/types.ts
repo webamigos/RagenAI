@@ -36,6 +36,17 @@ export interface Question {
   lang: Lang;
   /** Language of the document holding the answer — differs from `lang` for cross-lingual cases. */
   docLang: Lang;
+  /**
+   * The corpus documents (`CorpusDocument.file`) that hold the answer — more
+   * than one for a question that compares or combines two.
+   *
+   * What *should* be retrieved, as opposed to `CaseResult.citedFiles`, which is
+   * what was. A per-document pass rate needs this as its denominator: a
+   * retrieval miss cites nothing, so grouping by citations drops exactly the
+   * failures. Absent on a `guard-hallucination` question, whose answer is in no
+   * document, and on a corpus written before the field existed.
+   */
+  expectedFiles?: string[];
   type: QuestionType;
   question: string;
   /** Every string must appear in the answer. */
@@ -65,6 +76,8 @@ export interface CaseResult {
   arm: Arm;
   lang: Lang;
   docLang: Lang;
+  /** Copied from the question, so a result file can be sliced on its own. */
+  expectedFiles?: string[];
   type: QuestionType;
   question: string;
   answer: string;
@@ -120,9 +133,35 @@ export interface StackFingerprint {
   llmGateway: string;
 }
 
+/**
+ * The RAG readiness score ingest wrote for one corpus document
+ * (`UserFile.metadata.ragScore`), read back after the run's own upload.
+ *
+ * Read, not recomputed: the question the score has to answer is whether the
+ * number users see tracks retrieval, and that number is the one ingest wrote,
+ * from the text ingest passed it. Scoring again from here would measure a
+ * second call on a different string.
+ */
+export interface DocumentScore {
+  /** `CorpusDocument.file`. */
+  file: string;
+  /**
+   * - `scored` — ingest wrote a score
+   * - `failed` — ingest ran the scorer and wrote `null`
+   * - `missing` — nothing was written before the wait ran out, which is also
+   *   what a scorer that threw leaves behind
+   */
+  state: 'scored' | 'failed' | 'missing';
+  /** The model's `total`, as ingest stored it. */
+  total?: number;
+  dimensions?: Record<string, number>;
+}
+
 export interface Report {
   corpus: string;
   corpusVersion: number;
   fingerprint: StackFingerprint;
   results: CaseResult[];
+  /** Absent on a run that uploaded nothing (`--arms no-rag`), and on older reports. */
+  documentScores?: DocumentScore[];
 }
