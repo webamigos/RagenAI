@@ -34,16 +34,23 @@ export type CitationMarkers = {
  *
  * - `[the docs][1]` — a reference link. Rejected by the preceding `]`.
  *   Matching each bracket separately read it as a citation.
- * - `[1](url)` — an inline link, and `[1]: url` a reference definition.
- *   Rejected by the following `(` or `:`.
+ * - `[1](url)` — an inline link. Rejected by the following `(`.
+ * - `[1]: url` — a reference definition. Rejected by the following `:`, but
+ *   only when the run opens its line (up to three spaces in), which is the
+ *   only place markdown reads a definition. Mid-line, `:` after a run is a
+ *   sentence introducing a list — "przedstawiają się następująco [1][2]:" —
+ *   and rejecting it there left `[2]` as literal text beside the first chip.
  * - `![1](img)` — an image. Rejected by the preceding `!`.
  *
  * The run is what makes the first rule survivable: `[1][3]` is the documented
  * way to cite two sources for one sentence, and by "preceded by `]`" alone it
  * is indistinguishable from a reference link. Matching the whole run and
  * testing only its ends separates them.
+ *
+ * Multiline (`m`), so `^` is the start of a line, not of the answer.
  */
-const MARKER_RUN = /(?<![\]!])(?:\[\d+\])+(?![(:])/g;
+const MARKER_RUN =
+  /(?<![\]!])(?:\[\d+\])+(?!\()(?!(?<=^ {0,3}(?:\[\d+\])+):)/gm;
 const DIGITS = /\d+/g;
 
 /**
@@ -99,16 +106,33 @@ export type MarkerRun = {
  * digit cap the first had dropped, and a case guarding against fabricated
  * citations passed on one.
  */
-export function findMarkerRuns(text: string): MarkerRun[] {
+export function findMarkerRuns(
+  text: string,
+  {
+    opensLine = true,
+  }: {
+    /**
+     * Whether `text` begins a line. A caller holding a fragment that follows
+     * other content on the same line — the text after `<strong>Razem</strong>`
+     * in rendered HTML — passes `false`, so a `[2]:` at its start is not taken
+     * for a reference definition.
+     */
+    opensLine?: boolean;
+  } = {},
+): MarkerRun[] {
+  // One character that is not a space or a newline keeps `^` from matching
+  // the fragment's start, and is subtracted from every index below.
+  const offset = opensLine ? 0 : 1;
+  const scanned = opensLine ? text : `\u200b${text}`;
   const runs: MarkerRun[] = [];
-  for (const match of text.matchAll(MARKER_RUN)) {
+  for (const match of scanned.matchAll(MARKER_RUN)) {
     const markers: Marker[] = [];
     for (const digits of match[0].matchAll(DIGITS)) {
       markers.push({ value: Number(digits[0]), text: `[${digits[0]}]` });
     }
     runs.push({
-      start: match.index,
-      end: match.index + match[0].length,
+      start: match.index - offset,
+      end: match.index - offset + match[0].length,
       markers,
     });
   }

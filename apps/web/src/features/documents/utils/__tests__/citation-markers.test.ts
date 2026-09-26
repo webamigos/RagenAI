@@ -67,11 +67,25 @@ describe('parseCitationMarkers', () => {
     ['an inline link', 'See [1](https://example.com) for more.'],
     ['an image', 'Diagram: ![1](diagram.png)'],
     ['a reference definition', '[1]: https://example.com'],
+    ['an indented reference definition', 'Tekst.\n   [1]: https://example.com'],
   ])('does not read %s as a citation', (_what, answer) => {
     // A false positive here invents a citation, which is the failure this
     // whole feature exists to remove.
     expect(parseCitationMarkers(answer, SOURCES).numbers).toEqual([]);
   });
+
+  it.each([
+    ['a single marker', 'Stany przedstawiają się następująco [1]:', [1]],
+    ['a run', 'Stany przedstawiają się następująco [1][2]:', [1, 2]],
+    ['two runs', 'Stany przedstawiają się następująco [1] [2]:', [1, 2]],
+  ])(
+    'reads %s before a colon mid-line as a citation',
+    (_what, answer, expected) => {
+      // A sentence introducing a list ends in a colon, and the citation sits
+      // right before it. Only a run that opens its line is a definition.
+      expect(parseCitationMarkers(answer, SOURCES).numbers).toEqual(expected);
+    },
+  );
 
   it('flags a marker too large to name any source', () => {
     // No cap on digits. A number this big cannot be a source, but it is
@@ -139,10 +153,19 @@ describe('extractMarkerNumbers', () => {
   });
 
   it('ignores the same markdown this file ignores everywhere else', () => {
-    expect(extractMarkerNumbers('[a][1] [2](u) ![3](i) [4]: u')).toEqual([]);
+    expect(extractMarkerNumbers('[a][1] [2](u) ![3](i)\n[4]: u')).toEqual([]);
   });
 
   describe('findMarkerRuns', () => {
+    it('reads a colon after a leading run as a definition only when the text opens a line', () => {
+      expect(findMarkerRuns('[2]: dalej')).toEqual([]);
+
+      const runs = findMarkerRuns(' [2]: dalej', { opensLine: false });
+      expect(runs).toEqual([
+        { start: 1, end: 4, markers: [{ value: 2, text: '[2]' }] },
+      ]);
+    });
+
     it('reports where a run sits, so a renderer can replace it', () => {
       const runs = findMarkerRuns('See [1][3] for both.');
 

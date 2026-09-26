@@ -66,7 +66,11 @@ function rewriteTextNode(
   options: CitationChipOptions,
 ): void {
   const text = node.data;
-  const runs = findMarkerRuns(text).filter((run) =>
+  // A text node after a sibling element continues that element's line, so it
+  // cannot open a reference definition.
+  const runs = findMarkerRuns(text, {
+    opensLine: node.previousSibling === null,
+  }).filter((run) =>
     run.markers.some(
       (marker) => marker.value >= 1 && marker.value <= options.sourceCount,
     ),
