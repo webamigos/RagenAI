@@ -76,6 +76,47 @@ export type UndecodableTextReason =
 const MIN_MARKUP_RATIO = 0.8;
 
 /**
+ * The lower line for text whose tags are an Office Open XML part's own
+ * vocabulary (see `OOXML_ELEMENTS`). A worksheet written with inline strings —
+ * SheetJS's default, and what the demo's .xlsx was — carries its titles and
+ * column headers as words inside `<v>`, so its first chunk measured 0.77 and
+ * passed the general line above. No document a person writes is made of
+ * `<row>`, `<c>` and `<v>`, so when the tags are those, the text between them
+ * cannot redeem it: at 0.5 it is still half machinery by weight.
+ */
+const MIN_OOXML_MARKUP_RATIO = 0.5;
+
+/**
+ * Element names an OOXML part is built from — the SpreadsheetML worksheet and
+ * shared-strings parts by name, the other parts by namespace prefix.
+ */
+const OOXML_ELEMENTS = new Set([
+  'c',
+  'col',
+  'cols',
+  'f',
+  'is',
+  'mergecell',
+  'mergecells',
+  'pagemargins',
+  'r',
+  'row',
+  'sheetdata',
+  'sheetformatpr',
+  'sheetview',
+  'sheetviews',
+  'si',
+  'sst',
+  't',
+  'v',
+  'worksheet',
+]);
+const OOXML_PREFIX = /^(?:w|a|r|x|p|mc|wp|v|o):/;
+
+/** Share of counted tags that must be OOXML vocabulary to use the lower line. */
+const MIN_OOXML_TAG_SHARE = 0.8;
+
+/**
  * The fewest tags that can condemn a string. A single self-closing tag is
  * all markup and is still a reasonable thing for a short chunk to hold, so
  * nothing is judged on fewer than this.
@@ -172,11 +213,21 @@ function isPredominantlyMarkup(text: string): boolean {
 
   let markupChars = 0;
   let tags = 0;
+  let ooxmlTags = 0;
   rest = rest.replace(TAG, (match: string, name: string | undefined) => {
-    if (name !== undefined && CONTENT_HTML_TAGS.has(name.toLowerCase())) {
+    const lower = name?.toLowerCase();
+    if (lower !== undefined && CONTENT_HTML_TAGS.has(lower)) {
       return ' ';
     }
     tags++;
+    if (
+      lower === undefined ||
+      OOXML_ELEMENTS.has(lower) ||
+      OOXML_PREFIX.test(lower)
+    ) {
+      // `undefined` is an XML declaration or processing instruction.
+      ooxmlTags++;
+    }
     markupChars += nonWhitespaceLength(match);
     return ' ';
   });
@@ -193,7 +244,11 @@ function isPredominantlyMarkup(text: string): boolean {
   }
 
   const total = markupChars + nonWhitespaceLength(rest);
-  return total > 0 && markupChars / total >= MIN_MARKUP_RATIO;
+  const line =
+    ooxmlTags / tags >= MIN_OOXML_TAG_SHARE
+      ? MIN_OOXML_MARKUP_RATIO
+      : MIN_MARKUP_RATIO;
+  return total > 0 && markupChars / total >= line;
 }
 
 /**

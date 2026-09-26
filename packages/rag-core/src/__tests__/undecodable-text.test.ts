@@ -103,6 +103,32 @@ describe('findUndecodableText — raw markup', () => {
     expect(findUndecodableText(WORKSHEET_CHUNK)).toBe('markup');
   });
 
+  it('refuses a worksheet written with inline strings, whose cells are words', () => {
+    // The demo's own chunk: SheetJS writes `t="str"` cells, so the title and
+    // the column headers are text between the tags. It measured 0.77 — under
+    // the general line — and was quoted under an answer.
+    const text =
+      'min="7" max="7" width="12.83203125" customWidth="1"/><col min="8" max="8" width="22.83203125" customWidth="1"/>' +
+      '<col min="9" max="9" width="22.83203125" customWidth="1"/><col min="10" max="10" width="22.83203125" customWidth="1"/></cols>' +
+      '<sheetData><row r="1"><c r="A1" t="str"><v>Stany magazynowe — 1 marca 2026</v></c></row>' +
+      '<row r="2"><c r="A2" t="str"><v>Acme Industries sp. z o.o.. Stan poniżej zapasu minimalnego oznaczony w kolumnie „Status”.</v></c></row>' +
+      '<row r="4"><c r="A4" t="str"><v>SKU</v></c><c r="B4" t="str"><v>Nazwa produktu</v></c><c r="C4" t="str"><v>M1 Poznań</v></c>' +
+      '<c r="D4" t="str"><v>M2 Wrocław</v></c><c r="E4" t="str"><v>M3 Gdańsk</v></c><c r="F4" t="str"><v>Razem</v></c>' +
+      '<c r="G4" t="str"><v>Zapas min.</v></c><c r="H4" t="str"><v>Status</v></c><c r="I4" t="str"><v>Czas';
+    expect(findUndecodableText(text)).toBe('markup');
+  });
+
+  it('holds unknown XML to the general line, not the OOXML one', () => {
+    // About 0.7 tags by weight — over the OOXML line, under the general one —
+    // but not an Office part's vocabulary: a person's data, not this check's
+    // to refuse.
+    const text = Array.from(
+      { length: 10 },
+      (_, i) => `<entry id="${i}"><name>Customer ${i} north</name></entry>`,
+    ).join('');
+    expect(findUndecodableText(text)).toBeNull();
+  });
+
   it('refuses a WordprocessingML body with its declaration and namespaces', () => {
     const text =
       '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n' +
