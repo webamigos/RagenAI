@@ -599,10 +599,18 @@ already claims. B1 and B2 start only after A2's baseline is committed.
 
   Thresholds are named constants at the top of the file, as starting values
   for C4.
-- [ ] **C2.** Call it best-effort in `parse-and-embed` and
+- [x] **C2.** Call it best-effort in `parse-and-embed` and
   `reindex-document-version`, and write `metadata.diagnostics`. The flag does not
   gate the write: it is free, and it lets the data accumulate before the UI
   exists.
+
+  *Done.* Written after the index write and outside its `try`, so neither the
+  checks nor the write can record FAILED on an indexed document. When the
+  checks throw, `diagnostics` is written as `null`: the chunks the previous
+  findings described were just replaced, and null reads as "not computed",
+  like absence. The re-index passes `parser: 'version-text'`, so it never
+  reports a fallback. A file staged into Brain or withdrawn from retrieval is
+  not indexed, and gets no write.
 - [ ] **C3.** Add the key `documentDiagnostics` (default `false`) in
   platform-contracts. With the key on, the list shows a worded badge only when a
   `warn` finding exists (for example "Parsed as markup" or "Table without
