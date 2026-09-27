@@ -6,7 +6,6 @@ import {
 } from '@/app/lib/utils/auth-helpers';
 import { jobs } from '@/libs/jobs';
 import { Workflow } from '@/features/documents/contracts/document.types';
-import { getFileFromS3 } from '@/app/lib/services/storage';
 import db from '@ragenai/prisma-client';
 import {
   getDocumentActor,
@@ -73,22 +72,12 @@ export async function POST(
     );
   }
 
-  let content: string;
-  if (file?.document?.content) {
-    content = file.document.content;
-  } else if (doc.content) {
-    content = doc.content;
-  } else if (file && file.fileExtension) {
-    try {
-      const buffer = await getFileFromS3(`${file.id}.${file.fileExtension}`);
-      content = buffer.toString('utf-8');
-    } catch {
-      return NextResponse.json(
-        { error: 'Failed to extract file content' },
-        { status: 500 },
-      );
-    }
-  } else {
+  // Only a check that there is something to optimize: the worker reads the
+  // document's text itself, decrypted (db.getDocumentContent). This used to
+  // fall back to reading the raw stored file, which is unparsed and was never
+  // masked, and then start a job on a document with no text. A document with
+  // no text has not finished processing, so there is nothing to suggest yet.
+  if (!file?.document?.content && !doc.content) {
     return NextResponse.json(
       { error: 'No content available' },
       { status: 422 },

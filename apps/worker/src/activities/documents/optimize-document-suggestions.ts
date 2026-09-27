@@ -7,6 +7,7 @@ import { withLangfuseTrace } from '../../services/langfuse-trace.js';
 import { logger } from '../../services/logger.js';
 import { SUMMARY_MODEL } from '../../consts.js';
 import { db } from '../../services/db/db.js';
+import { detectDocumentLanguage } from './detect-document-language.js';
 import {
   evaluateSuggestionDimensions,
   type SuggestionDimensions,
@@ -69,7 +70,7 @@ const suggestionsResponseSchema = z.object({
 
 // ── System prompts ─────────────────────────────────────────────────────────
 
-const SUGGESTION_SYSTEM_PROMPT = `Jesteś ekspertem ds. optymalizacji treści pod kątem RAG (Retrieval-Augmented Generation). Analizuj dokument i proponuj konkretne, ukierunkowane ulepszenia. Wszystkie pola tekstowe (rationale, location) wypełniaj wyłącznie w języku polskim.
+const SUGGESTION_SYSTEM_PROMPT = `Jesteś ekspertem ds. optymalizacji treści pod kątem RAG (Retrieval-Augmented Generation). Analizuj dokument i proponuj konkretne, ukierunkowane ulepszenia. Pola rationale i location wypełniaj w języku polskim — to opis dla użytkownika. Pola before i after są treścią dokumentu: pisz je w języku, w którym jest napisany dokument, i nigdy go nie tłumacz.
 
 Dokument jest oceniany według 5 wymiarów (spójnie z systemem scoringu):
 1. STRUKTURA CHUNKÓW (chunkStructure): Nagłówki tworzące naturalne granice podziału dla text splitterów. Każda sekcja powinna mieć 150–380 słów (256–512 tokenów — optimum dla modeli embeddingowych). Sekcje krótsze niż 80 słów są zbyt małe, dłuższe niż 500 słów tracą precyzję retrieval.
@@ -96,9 +97,43 @@ KRYTYCZNE ZASADY dla pól "before" i "after":
 2. Pole "after" to WYŁĄCZNIE zamiennik dla fragmentu z "before" — nie może zawierać niczego spoza zakresu tego fragmentu.
 3. NIGDY nie duplikuj treści: "after" nie może zawierać fragmentów które już istnieją w dokumencie poza zastępowanym blokiem. Jeśli usuwasz duplikat, "before" musi obejmować CAŁY duplikat (oba wystąpienia), a "after" tylko jedno czyste wystąpienie.
 4. Nie używaj pustych pól before/after — każda sugestia musi mieć konkretny fragment.
-5. Jedna sugestia = jedna atomowa zmiana. Nie łącz wielu niezależnych zmian w jedną sugestię.`;
+5. Jedna sugestia = jedna atomowa zmiana. Nie łącz wielu niezależnych zmian w jedną sugestię.
+6. Pole "after" jest w tym samym języku co "before". Dokument angielski pozostaje angielski, polski — polski. Tłumaczenie treści dokumentu nie jest optymalizacją.`;
 
 // ── Helpers ────────────────────────────────────────────────────────────────
+
+/**
+ * Below this, franc's guess is not worth acting on — a heading such as
+ * "## 1. Scope" can read as any language.
+ */
+const MIN_LANGUAGE_SAMPLE_CHARS = 40;
+
+const detectedLanguage = async (text: string): Promise<string | null> =>
+  text.trim().length >= MIN_LANGUAGE_SAMPLE_CHARS
+    ? detectDocumentLanguage({ documentText: text })
+    : null;
+
+/**
+ * Whether a suggestion rewrites the document into another language.
+ *
+ * The prompt says not to, and a prompt is not a guarantee: A4 measured
+ * every English document coming back part-Polish. The replacement is compared
+ * with the text it replaces, or with the whole document when that text is
+ * too short to tell, and a difference drops the suggestion. Too short to tell
+ * on the replacement side keeps it.
+ */
+export async function translatesTheDocument(
+  before: string,
+  after: string,
+  documentLanguage: string | null,
+): Promise<boolean> {
+  const afterLanguage = await detectedLanguage(after);
+  if (!afterLanguage) {
+    return false;
+  }
+  const expected = (await detectedLanguage(before)) ?? documentLanguage;
+  return expected !== null && afterLanguage !== expected;
+}
 
 function applySuggestion(
   content: string,
@@ -215,7 +250,10 @@ export async function optimizeDocumentSuggestions({
           messages: [
             {
               role: 'user',
-              content: `Przeanalizuj ten dokument i zaproponuj konkretne sugestie optymalizacji pod RAG. Wszystkie pola tekstowe wypełnij w języku polskim:\n\n${truncated}`,
+              // "All text fields in Polish" used to be here, and the model
+              // applied it to `after` too: an English document came back
+              // part-Polish (spec 2026-09-26-rag-readiness-score-review, B7).
+              content: `Przeanalizuj ten dokument i zaproponuj konkretne sugestie optymalizacji pod RAG. Pola rationale i location wypełnij po polsku; before i after w języku dokumentu:\n\n${truncated}`,
             },
           ],
           experimental_telemetry: { isEnabled: true },
@@ -234,7 +272,28 @@ export async function optimizeDocumentSuggestions({
 
     // 2. Filter candidates: skip empty before/after and suggestions whose
     //    before text doesn't appear in the document.
-    const candidates = rawSuggestions.filter((suggestion) => {
+    const documentLanguage = await detectedLanguage(documentText);
+    const inTheDocumentsLanguage: typeof rawSuggestions = [];
+    for (const suggestion of rawSuggestions) {
+      if (
+        suggestion.before &&
+        suggestion.after &&
+        (await translatesTheDocument(
+          suggestion.before,
+          suggestion.after,
+          documentLanguage,
+        ))
+      ) {
+        logger.info(
+          { id: suggestion.id },
+          'Suggestion skipped — it translates the document',
+        );
+        continue;
+      }
+      inTheDocumentsLanguage.push(suggestion);
+    }
+
+    const candidates = inTheDocumentsLanguage.filter((suggestion) => {
       if (!suggestion.before || !suggestion.after) {
         logger.info(
           { id: suggestion.id },
