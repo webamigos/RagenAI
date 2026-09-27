@@ -187,25 +187,33 @@ this release.
 
    An operation that violates a bound is dropped on its own, and the rest
    apply. A test covers a 301-character `content`.
-6. **Apply.** First, upsert the profile row, so a user's first two concurrent
-   extractions have a row to lock. Then encrypt every content to be written,
-   before the transaction opens (ADR-42's rule: no lock held across a KMS
-   round-trip). Then open one transaction that holds `SELECT … FOR UPDATE` on
-   the profile row, and **re-check, inside it, that the job is still
-   wanted**. The enqueue-time gate is minutes old by now. If any of these
-   fails, the job writes nothing and rolls back, including the upsert:
+6. **Apply.** Before the transaction, and without writing anything, resolve a
+   key and encrypt every content to be written (ADR-42's rule: no lock held
+   across a KMS round-trip). If the profile exists and has a key, that key is
+   unwrapped. Otherwise a new DEK is generated but not saved. Then open one
+   transaction, and do everything that writes inside it:
+   1. Check that the user is still a member of the org (a read of `members`,
+      never a write).
+   2. Upsert the profile. When the job brings a new DEK, store it with a
+      conditional `encryptedDek IS NULL`. If another writer stored a key first,
+      the job rolls back and retries once, re-encrypting under that key.
+   3. Take `SELECT … FOR UPDATE` on the profile row.
+   4. **Re-check that the job is still wanted.** The enqueue-time gate is
+      minutes old by now.
+
+   Because the upsert is inside the transaction, a failed check rolls it back
+   too, and a queued job cannot recreate a removed member's profile. The
+   checks in step 4 are:
    - `extractionEnabled` is still true;
    - the profile's `epoch` equals the one the job was enqueued with (see
      below);
-   - the user is still a member of the org (a read of `members`, never a
-     write);
    - `personalMemory` is still on for the org.
 
    The `epoch` is an integer on the profile. The web app reads it when it
    enqueues, and puts it in the payload (0 when no profile exists yet).
    "Forget everything" and switching extraction off both increment it, in the
    same transaction as the change. Member removal deletes the profile, and the
-   membership check stops a job for a user with no profile from recreating one.
+   membership check in sub-step 1 stops a job for a removed user from recreating one.
    So a job paused across any of these controls cannot write afterwards.
    Otherwise, the operations are applied:
    - an `UPDATE` or `DELETE` whose row changed since it was read (by
