@@ -195,7 +195,34 @@ export async function optimizeDocumentSuggestions({
   // retention anyone reasons about — and the copy is stale by construction:
   // the producer writes the document first, so what it says now is what should
   // be optimized.
-  const document = await db.getDocumentContent(documentId, orgId);
+  //
+  // The read is the one step before the `try` below that can fail on a row
+  // that exists — decryption, under a key the KMS will not unwrap — and the
+  // route has already written `pending`. Without its own boundary the job
+  // read `pending` for good. The failure is still rethrown, so the step's
+  // retries run; a retry that succeeds writes `processing` over it.
+  let document: Awaited<ReturnType<typeof db.getDocumentContent>>;
+  try {
+    document = await db.getDocumentContent(documentId, orgId);
+  } catch (err) {
+    // Best-effort: a read that failed because the database is unreachable
+    // fails this write too, and it must not replace the error that says why.
+    await markJobFailed({ documentId, orgId, jobId, err }).catch(
+      (writeErr: unknown) =>
+        logger.warn(
+          // Name and code only: a Prisma error can quote the arguments of the
+          // write, and those are this document's suggestions.
+          {
+            errorName: writeErr instanceof Error ? writeErr.name : 'unknown',
+            errorCode: (writeErr as { code?: unknown } | null)?.code,
+            documentId,
+            jobId,
+          },
+          'Could not mark the optimization job failed after its read failed',
+        ),
+    );
+    throw err;
+  }
 
   // The document can be deleted between enqueue and run, which could not
   // happen while the text rode in the payload. Refused before anything else,
@@ -208,6 +235,17 @@ export async function optimizeDocumentSuggestions({
     throw JobFailure.nonRetryable(
       `Document ${documentId} no longer exists — nothing to optimize`,
     );
+  }
+
+  // The route cannot see this on an encrypted installation: it reads the
+  // ciphertext, which is never blank. Only the plaintext says there is
+  // nothing to optimize, and a model given whitespace would invent something.
+  if (document.content.trim() === '') {
+    const refusal = JobFailure.nonRetryable(
+      `Document ${documentId} has no text — nothing to optimize`,
+    );
+    await markJobFailed({ documentId, orgId, jobId, err: refusal });
+    throw refusal;
   }
 
   const documentText = document.content;
@@ -425,21 +463,37 @@ export async function optimizeDocumentSuggestions({
       'Document optimization job failed',
     );
 
-    // Field-wise, not a whole-object replace: mergeDocumentMetadata merges at
-    // the *metadata* level, so writing a full optimizationJob here would drop
-    // the previous run's suggestions and baseScore — the ones the user can
-    // still act on, and which the success path deliberately preserves.
-    await db.updateOptimizationJobFields({
-      documentId,
-      orgId,
-      fields: {
-        id: jobId,
-        status: 'failed',
-        error: err instanceof Error ? err.message : 'Unknown error',
-        completedAt: new Date().toISOString(),
-      },
-    });
+    await markJobFailed({ documentId, orgId, jobId, err });
 
     throw err;
   }
+}
+
+/**
+ * Field-wise, not a whole-object replace: mergeDocumentMetadata merges at the
+ * *metadata* level, so writing a full optimizationJob here would drop the
+ * previous run's suggestions and baseScore — the ones the user can still act
+ * on, and which the success path deliberately preserves.
+ */
+async function markJobFailed({
+  documentId,
+  orgId,
+  jobId,
+  err,
+}: {
+  documentId: string;
+  orgId: string;
+  jobId: string;
+  err: unknown;
+}): Promise<void> {
+  await db.updateOptimizationJobFields({
+    documentId,
+    orgId,
+    fields: {
+      id: jobId,
+      status: 'failed',
+      error: err instanceof Error ? err.message : 'Unknown error',
+      completedAt: new Date().toISOString(),
+    },
+  });
 }

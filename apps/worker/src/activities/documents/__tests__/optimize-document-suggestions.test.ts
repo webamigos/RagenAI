@@ -87,6 +87,55 @@ describe('when the document has gone missing since the job was queued', () => {
   });
 });
 
+describe('when the document cannot be read, or has no text', () => {
+  // The route has already written `pending`; each of these used to leave it
+  // there, because the read ran before the activity's own failure boundary.
+  it('marks the job failed when decryption throws, and rethrows that error', async () => {
+    const decryptError = new Error('KMS refused to unwrap the key');
+    getDocumentContent.mockRejectedValue(decryptError);
+
+    await expect(optimizeDocumentSuggestions(params)).rejects.toBe(
+      decryptError,
+    );
+
+    expect(updateOptimizationJobFields).toHaveBeenCalledTimes(1);
+    expect(updateOptimizationJobFields.mock.calls[0][0]).toMatchObject({
+      documentId: 'doc-1',
+      orgId: 'org-1',
+      fields: {
+        id: 'job-1',
+        status: 'failed',
+        error: 'KMS refused to unwrap the key',
+      },
+    });
+  });
+
+  it('keeps the read error when marking the job failed fails too', async () => {
+    const readError = new Error("Can't reach database server");
+    getDocumentContent.mockRejectedValue(readError);
+    updateOptimizationJobFields.mockRejectedValueOnce(
+      new Error('write failed'),
+    );
+
+    await expect(optimizeDocumentSuggestions(params)).rejects.toBe(readError);
+  });
+
+  it('refuses whitespace non-retryably, marks it failed, and calls no model', async () => {
+    getDocumentContent.mockResolvedValue({ content: '  \n\t \n', title: null });
+
+    await expect(optimizeDocumentSuggestions(params)).rejects.toMatchObject({
+      name: 'JobFailure',
+      retryable: false,
+    });
+
+    expect(generateObject).not.toHaveBeenCalled();
+    expect(updateOptimizationJobFields).toHaveBeenCalledTimes(1);
+    expect(updateOptimizationJobFields.mock.calls[0][0].fields).toMatchObject({
+      status: 'failed',
+    });
+  });
+});
+
 // B7, measured by A4: every English document came back part-Polish, because
 // the prompt asked for "all text fields" in Polish. franc is real here — it is
 // the thing under test.

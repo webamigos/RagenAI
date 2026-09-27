@@ -84,4 +84,25 @@ describe('POST /api/documents/[id]/optimize-suggestions', () => {
     expect(jobStart).not.toHaveBeenCalled();
     expect(executeRaw).not.toHaveBeenCalled();
   });
+
+  it('refuses a document whose text is only whitespace', async () => {
+    const blank = {
+      id: 'doc-1',
+      content: ' \n\t\n ',
+      title: 'R',
+      projectId: null,
+    };
+    fileFindFirst.mockResolvedValue({
+      id: 'file-1',
+      fileType: 'MARKDOWN',
+      fileExtension: 'md',
+      document: blank,
+    });
+    docFindFirst.mockResolvedValue(blank);
+
+    const res = await call();
+
+    expect(res.status).toBe(422);
+    expect(jobStart).not.toHaveBeenCalled();
+  });
 });

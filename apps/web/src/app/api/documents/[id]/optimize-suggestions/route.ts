@@ -77,7 +77,11 @@ export async function POST(
   // fall back to reading the raw stored file, which is unparsed and was never
   // masked, and then start a job on a document with no text. A document with
   // no text has not finished processing, so there is nothing to suggest yet.
-  if (!file?.document?.content && !doc.content) {
+  //
+  // Trimmed, so whitespace is no text either. This reads the column as
+  // stored, which is ciphertext on an encrypted installation — there a blank
+  // document passes, and the worker, which sees the plaintext, refuses it.
+  if (!file?.document?.content?.trim() && !doc.content?.trim()) {
     return NextResponse.json(
       { error: 'No content available' },
       { status: 422 },
