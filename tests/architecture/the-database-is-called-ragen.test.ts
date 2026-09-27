@@ -1,7 +1,9 @@
-import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
+
+import { trackedFiles } from './tracked-files';
 
 /**
  * The database is `ragen`. It was `smart` + `rag` once, and the old name
@@ -64,25 +66,10 @@ const SKIP_DIRS = new Set([
 
 const TEXT_FILE = /\.(ts|tsx|js|mjs|cjs|json|md|ya?ml|env|example|sql|prisma)$/;
 
-function* walk(dir: string): Generator<string> {
-  let entries: string[];
-  try {
-    entries = readdirSync(dir);
-  } catch {
-    return;
-  }
-
-  for (const entry of entries) {
-    if (SKIP_DIRS.has(entry)) {
-      continue;
-    }
-    const full = join(dir, entry);
-    if (statSync(full).isDirectory()) {
-      yield* walk(full);
-    } else if (TEXT_FILE.test(entry)) {
-      yield full;
-    }
-  }
+function walk(dir: string): string[] {
+  return trackedFiles({ under: dir, skipDirs: SKIP_DIRS }).filter((path) =>
+    TEXT_FILE.test(path),
+  );
 }
 
 /**

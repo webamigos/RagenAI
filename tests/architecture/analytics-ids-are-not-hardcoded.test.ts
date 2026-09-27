@@ -1,7 +1,9 @@
-import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
+
+import { trackedFiles } from './tracked-files';
 
 /**
  * No source file carries an analytics or tag-manager id as a literal, and the
@@ -79,13 +81,11 @@ const SKIP_DIRS = new Set([
 const TEST_FILE = /\.(?:test|spec)\.tsx?$/;
 
 function sourceFiles(dir: string): string[] {
-  return readdirSync(dir).flatMap((entry) => {
-    const full = join(dir, entry);
-    if (statSync(full).isDirectory()) {
-      return SKIP_DIRS.has(entry) ? [] : sourceFiles(full);
-    }
-    return /\.tsx?$/.test(entry) && !TEST_FILE.test(entry) ? [full] : [];
-  });
+  return trackedFiles({
+    under: dir,
+    extensions: ['.ts', '.tsx'],
+    skipDirs: SKIP_DIRS,
+  }).filter((path) => !TEST_FILE.test(path));
 }
 
 /**
@@ -98,7 +98,6 @@ function stripComments(source: string): string {
     .replace(/\/\*[\s\S]*?\*\//g, '')
     .replace(/(^|[^:])\/\/.*$/gm, '$1');
 }
-
 
 const files = [
   ...sourceFiles(join(REPO_ROOT, 'apps')),
@@ -237,7 +236,7 @@ describe('PostHog on the demo deployment', () => {
           );
           return Boolean(
             manifest.dependencies?.['posthog-js'] ??
-              manifest.devDependencies?.['posthog-js'],
+            manifest.devDependencies?.['posthog-js'],
           );
         } catch {
           return false;
@@ -252,10 +251,14 @@ describe('PostHog on the demo deployment', () => {
       true,
     );
     expect(
-      POSTHOG_VALUE_IMPORT.test("import { PostHogProvider } from 'posthog-js/react';"),
+      POSTHOG_VALUE_IMPORT.test(
+        "import { PostHogProvider } from 'posthog-js/react';",
+      ),
     ).toBe(true);
     expect(
-      POSTHOG_VALUE_IMPORT.test("import type { PostHogConfig } from 'posthog-js';"),
+      POSTHOG_VALUE_IMPORT.test(
+        "import type { PostHogConfig } from 'posthog-js';",
+      ),
     ).toBe(false);
   });
 });

@@ -1,7 +1,9 @@
-import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { join, relative, sep } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
+
+import { trackedFiles } from './tracked-files';
 
 /**
  * No file in `apps/web` or `packages` paints with a literal colour.
@@ -210,12 +212,10 @@ const SKIP_DIRS = new Set([
 ]);
 
 function sourceFiles(dir: string): string[] {
-  return readdirSync(dir).flatMap((entry) => {
-    const full = join(dir, entry);
-    if (statSync(full).isDirectory()) {
-      return SKIP_DIRS.has(entry) ? [] : sourceFiles(full);
-    }
-    return /\.tsx?$/.test(entry) ? [full] : [];
+  return trackedFiles({
+    under: dir,
+    extensions: ['.ts', '.tsx'],
+    skipDirs: SKIP_DIRS,
   });
 }
 

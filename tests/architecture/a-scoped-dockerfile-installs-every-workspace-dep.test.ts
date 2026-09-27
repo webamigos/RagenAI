@@ -1,7 +1,9 @@
-import { readdirSync, readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
+
+import { trackedFiles } from './tracked-files';
 
 /**
  * An app whose Dockerfile installs with `npm ci --workspace=…` gets exactly the
@@ -78,27 +80,10 @@ function workspaceDeps(app: string): string[] {
 
 /** Every `.ts` file under an app's `src/`, as text. */
 function sourceFiles(app: string): { path: string; source: string }[] {
-  const root = join(REPO_ROOT, 'apps', app, 'src');
-  const found: { path: string; source: string }[] = [];
-
-  const walk = (dir: string): void => {
-    for (const entry of readdirSync(dir, { withFileTypes: true })) {
-      const full = join(dir, entry.name);
-      if (entry.isDirectory()) {
-        walk(full);
-      } else if (/\.tsx?$/.test(entry.name)) {
-        found.push({ path: full, source: readFileSync(full, 'utf8') });
-      }
-    }
-  };
-
-  try {
-    walk(root);
-  } catch {
-    return [];
-  }
-
-  return found;
+  return trackedFiles({
+    under: join(REPO_ROOT, 'apps', app, 'src'),
+    extensions: ['.ts', '.tsx'],
+  }).map((path) => ({ path, source: readFileSync(path, 'utf8') }));
 }
 
 const scoped = APPS.filter((app) => {

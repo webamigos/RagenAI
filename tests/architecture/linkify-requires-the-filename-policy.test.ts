@@ -1,7 +1,9 @@
-import { readFileSync, readdirSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
+
+import { trackedFiles } from './tracked-files';
 
 /**
  * Any markdown renderer with `linkify` on must also apply the filename policy.
@@ -23,12 +25,10 @@ const REPO_ROOT = join(import.meta.dirname, '..', '..');
 const WEB_SRC = join(REPO_ROOT, 'apps', 'web', 'src');
 
 function sourceFiles(dir: string): string[] {
-  return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
-    const full = join(dir, entry.name);
-    if (entry.isDirectory()) {
-      return entry.name === '__tests__' ? [] : sourceFiles(full);
-    }
-    return /\.tsx?$/.test(entry.name) ? [full] : [];
+  return trackedFiles({
+    under: dir,
+    extensions: ['.ts', '.tsx'],
+    skipDirs: ['__tests__'],
   });
 }
 

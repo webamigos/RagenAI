@@ -5,6 +5,8 @@ import { describe, expect, it } from 'vitest';
 
 import { JOB_NAMES } from '@ragenai/jobs';
 
+import { trackedFiles } from './tracked-files';
+
 /**
  * The boundary that makes the job runtime swappable.
  *
@@ -46,21 +48,12 @@ const NOT_SOURCE = new Set([
   'generated',
 ]);
 
-const sourceFiles = (dir: string): string[] => {
-  const out: string[] = [];
-  for (const entry of readdirSync(dir)) {
-    if (NOT_SOURCE.has(entry)) {
-      continue;
-    }
-    const path = join(dir, entry);
-    if (statSync(path).isDirectory()) {
-      out.push(...sourceFiles(path));
-    } else if (/\.(ts|tsx|mts|cts)$/.test(entry)) {
-      out.push(path);
-    }
-  }
-  return out;
-};
+const sourceFiles = (dir: string): string[] =>
+  trackedFiles({
+    under: dir,
+    extensions: ['.ts', '.tsx', '.mts', '.cts'],
+    skipDirs: NOT_SOURCE,
+  });
 
 /**
  * Packages *and* apps, for a rule that has no legitimate exception.

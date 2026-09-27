@@ -1,7 +1,9 @@
-import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
+
+import { trackedFiles } from './tracked-files';
 
 /**
  * No source file outside `@ragenai/platform-contracts` compares a role field
@@ -68,13 +70,11 @@ const SKIP_DIRS = new Set([
 const TEST_FILE = /\.(?:test|spec)\.tsx?$/;
 
 function sourceFiles(dir: string): string[] {
-  return readdirSync(dir).flatMap((entry) => {
-    const full = join(dir, entry);
-    if (statSync(full).isDirectory()) {
-      return SKIP_DIRS.has(entry) ? [] : sourceFiles(full);
-    }
-    return /\.tsx?$/.test(entry) && !TEST_FILE.test(entry) ? [full] : [];
-  });
+  return trackedFiles({
+    under: dir,
+    extensions: ['.ts', '.tsx'],
+    skipDirs: SKIP_DIRS,
+  }).filter((path) => !TEST_FILE.test(path));
 }
 
 /**

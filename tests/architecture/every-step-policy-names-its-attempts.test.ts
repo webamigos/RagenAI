@@ -1,7 +1,9 @@
-import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
+
+import { trackedFiles } from './tracked-files';
 
 /**
  * Every `ctx.steps({...})` must say how many attempts it wants.
@@ -26,13 +28,7 @@ const ROOT = join(import.meta.dirname, '..', '..');
 const HANDLERS = join(ROOT, 'apps', 'worker', 'src', 'handlers');
 
 const handlerFiles = (dir: string): string[] =>
-  readdirSync(dir).flatMap((entry) => {
-    const path = join(dir, entry);
-    if (statSync(path).isDirectory()) {
-      return entry === '__tests__' ? [] : handlerFiles(path);
-    }
-    return /\.ts$/.test(entry) ? [path] : [];
-  });
+  trackedFiles({ under: dir, extensions: ['.ts'], skipDirs: ['__tests__'] });
 
 const STEP = /ctx\s*\.\s*steps\b/g;
 

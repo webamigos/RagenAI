@@ -1,7 +1,9 @@
-import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
+
+import { trackedFiles } from './tracked-files';
 
 /**
  * Per-team `rpm` and `tpm` are enforced by this application.
@@ -29,23 +31,12 @@ function source(relativePath: string): string {
   return readFileSync(join(REPO_ROOT, relativePath), 'utf8');
 }
 
-function* walk(dir: string): Generator<string> {
-  for (const entry of readdirSync(dir)) {
-    if (
-      entry === 'node_modules' ||
-      entry === '.next' ||
-      entry === 'dist' ||
-      entry === 'generated'
-    ) {
-      continue;
-    }
-    const full = join(dir, entry);
-    if (statSync(full).isDirectory()) {
-      yield* walk(full);
-    } else if (/\.tsx?$/.test(full)) {
-      yield full;
-    }
-  }
+function walk(dir: string): string[] {
+  return trackedFiles({
+    under: dir,
+    extensions: ['.ts', '.tsx'],
+    skipDirs: ['node_modules', '.next', 'dist', 'generated'],
+  });
 }
 
 describe('per-team rate limits are enforced by the application', () => {

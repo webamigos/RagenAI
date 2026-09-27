@@ -1,7 +1,9 @@
-import { readFileSync, readdirSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
+
+import { trackedFiles } from './tracked-files';
 
 /**
  * A `data-slot` variant that styles a child must be written `*:data-[…]`, not
@@ -44,12 +46,10 @@ const REVERSED = /data-\[slot=[a-z-]+\]:(?:[a-z-]+:)*\*:/;
 const CORRECT = /\*:data-\[slot=[a-z-]+\]:/;
 
 function sourceFiles(dir: string): string[] {
-  return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
-    const full = join(dir, entry.name);
-    if (entry.isDirectory()) {
-      return entry.name === '__tests__' ? [] : sourceFiles(full);
-    }
-    return /\.tsx?$/.test(entry.name) ? [full] : [];
+  return trackedFiles({
+    under: dir,
+    extensions: ['.ts', '.tsx'],
+    skipDirs: ['__tests__'],
   });
 }
 

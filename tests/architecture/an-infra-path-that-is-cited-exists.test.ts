@@ -1,8 +1,9 @@
-import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
+
+import { REPO_ROOT, trackedPaths } from './tracked-files';
 
 /**
  * A pointer that outlives the thing it points at.
@@ -38,8 +39,6 @@ import { describe, expect, it } from 'vitest';
  * operational docs, skills, evals, `infra/` itself.
  */
 
-const REPO_ROOT = join(import.meta.dirname, '..', '..');
-
 /**
  * The tree this rule is about is the one git tracks — for the files it reads
  * and for the paths it resolves.
@@ -53,17 +52,9 @@ const REPO_ROOT = join(import.meta.dirname, '..', '..');
  * tracked and has to stay current.
  *
  * A file written but not yet `git add`-ed is read from its first commit on —
- * which is where CI reads it.
+ * which is where CI reads it. The list is `./tracked-files`, which every guard
+ * that reads the tree now shares.
  */
-function trackedFiles(): string[] {
-  return execFileSync('git', ['ls-files', '-z'], {
-    cwd: REPO_ROOT,
-    encoding: 'utf8',
-    maxBuffer: 64 * 1024 * 1024,
-  })
-    .split('\0')
-    .filter(Boolean);
-}
 
 /**
  * A cited path resolves when it is a tracked file, or a directory that holds
@@ -209,7 +200,7 @@ function citations(files: readonly string[]): Citation[] {
   return found;
 }
 
-const tracked = trackedFiles();
+const tracked = trackedPaths();
 const resolves = resolvesIn(tracked);
 const cited = citations(tracked);
 

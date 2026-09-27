@@ -1,7 +1,9 @@
-import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
+import { existsSync, readFileSync, statSync } from 'node:fs';
 import { dirname, join, resolve, relative } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
+
+import { trackedFiles } from './tracked-files';
 
 /**
  * Nothing a client component can reach is server-only.
@@ -136,18 +138,11 @@ const SERVER_ONLY: Array<{
 ];
 
 function sourceFiles(dir: string): string[] {
-  const out: string[] = [];
-  for (const entry of readdirSync(dir)) {
-    const path = join(dir, entry);
-    if (statSync(path).isDirectory()) {
-      if (!/(__tests__|__mocks__|generated)$/.test(entry)) {
-        out.push(...sourceFiles(path));
-      }
-    } else if (/\.tsx?$/.test(entry) && !/\.(test|spec)\.tsx?$/.test(entry)) {
-      out.push(path);
-    }
-  }
-  return out;
+  return trackedFiles({
+    under: dir,
+    extensions: ['.ts', '.tsx'],
+    skipDirs: ['__tests__', '__mocks__', 'generated'],
+  }).filter((path) => !/\.(test|spec)\.tsx?$/.test(path));
 }
 
 const read = (file: string): string => {
