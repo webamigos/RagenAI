@@ -94,6 +94,11 @@ archive is the blog.
 - `[brief]` **The RAG score is steadier.** Scoring runs at temperature 0 and
   the total is computed from its five parts instead of trusting the model's
   sum; a failed scoring call now shows up in AI usage like a successful one.
+- `[brief]` **"Optymalizuj dla RAG" no longer translates your document.** On
+  English documents it rewrote parts into Polish; its suggestions now stay in
+  the document's language, and any that do not are dropped. With encryption
+  on, it and re-indexing after an edit read the encrypted text instead of the
+  document; both read it decrypted now.
 
 ### Thread: ingest that survives a busy Docling
 
