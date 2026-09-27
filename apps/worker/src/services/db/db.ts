@@ -20,6 +20,7 @@ import {
   type FileType,
 } from './types/index.js';
 import { type UpdateFileSizeParams } from './types/UpdateFileSizeParams.js';
+import { decryptDocumentContent } from '@ragenai/crypto';
 
 /**
  * On Prisma (ADR-40 step 2).
@@ -310,16 +311,32 @@ const updateParsingStatus = async ({
  * rollbacks in quick succession used to race, and the one whose payload was
  * written first could win.
  */
+/**
+ * A document's text, decrypted.
+ *
+ * With encryption on, `user_documents.content` is ciphertext under the row's
+ * `encryptedDek`, and apps/web decrypts it on every read. This returned it as
+ * stored, so both callers acted on ciphertext: Optimize sent it to the model,
+ * and `reindexDocumentVersion` embedded it into the vector store after every
+ * edit (spec 2026-09-26-rag-readiness-score-review, B7). A row with no key is
+ * returned unchanged, which is every row of an unencrypted installation.
+ */
 const getDocumentContent = async (
   documentId: string,
   orgId: string,
 ): Promise<{ content: string; title: string | null } | null> => {
   const row = await getPrisma().userDocument.findUnique({
     where: { id_organizationId: { id: documentId, organizationId: orgId } },
-    select: { content: true, title: true },
+    select: { content: true, title: true, encryptedDek: true },
   });
 
-  return row ? { content: row.content ?? '', title: row.title } : null;
+  if (!row) {
+    return null;
+  }
+  return {
+    content: await decryptDocumentContent(row.content ?? '', row.encryptedDek),
+    title: row.title,
+  };
 };
 
 const createMarkdownDocument = async ({
