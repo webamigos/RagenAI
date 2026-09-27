@@ -129,7 +129,9 @@ archive is the blog.
   is up and waits for it if it is not, looking again every minute at most,
   instead of spending its retries on a service that is away. A file whose
   Docling stays down longer fails with the time it went down, and one
-  *Re-process* recovers it. A cancelled upload stops waiting.
+  *Re-process* recovers it. A cancelled upload stops waiting. While it waits,
+  the file reads "Waiting for parser" in the knowledge base, with the time the
+  parser went down in its tooltip, instead of "Processing".
 
 ### Ragen Brain: an assistant beside the inbox
 

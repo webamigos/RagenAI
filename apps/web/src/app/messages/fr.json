@@ -1281,6 +1281,8 @@
     "status-ready": "Prêt",
     "status-processing": "En traitement",
     "status-queued": "En file d'attente",
+    "status-waiting-parser": "En attente de l'analyseur",
+    "waiting-parser-tooltip": "L'analyseur de documents est indisponible depuis {since}. Le fichier sera traité dès son retour.",
     "status-failed": "Échoué",
     "status-uploading": "Téléversement en cours",
     "optimize-rag": "Optimiser pour le RAG",

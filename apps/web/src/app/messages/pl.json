@@ -1281,6 +1281,8 @@
     "status-ready": "Gotowy",
     "status-processing": "Przetwarzanie",
     "status-queued": "W kolejce",
+    "status-waiting-parser": "Czeka na parser",
+    "waiting-parser-tooltip": "Parser dokumentów jest niedostępny od {since}. Plik zostanie przetworzony, gdy wróci.",
     "status-failed": "Błąd",
     "status-uploading": "Wysyłanie",
     "optimize-rag": "Optymalizuj dla RAG",

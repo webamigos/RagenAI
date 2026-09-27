@@ -1281,6 +1281,8 @@
     "status-ready": "Готов",
     "status-processing": "Обработва се",
     "status-queued": "На опашка",
+    "status-waiting-parser": "Изчаква анализатора",
+    "waiting-parser-tooltip": "Анализаторът на документи е недостъпен от {since}. Файлът ще бъде обработен, когато той се върне.",
     "status-failed": "Неуспешен",
     "status-uploading": "Качва се",
     "optimize-rag": "Оптимизиране за RAG",

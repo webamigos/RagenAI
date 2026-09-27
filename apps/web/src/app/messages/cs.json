@@ -1281,6 +1281,8 @@
     "status-ready": "Připraveno",
     "status-processing": "Zpracovává se",
     "status-queued": "Ve frontě",
+    "status-waiting-parser": "Čeká na parser",
+    "waiting-parser-tooltip": "Parser dokumentů je nedostupný od {since}. Soubor bude zpracován, až bude opět k dispozici.",
     "status-failed": "Nezdařilo se",
     "status-uploading": "Nahrávání",
     "optimize-rag": "Optimalizovat pro RAG",
