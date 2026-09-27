@@ -445,15 +445,41 @@ is today, not a fixed one. C and D do not start until A4 is done (Q1).
 - [ ] **A3.** *(optional, recommended)* Port the demo corpus: bring the files
   from `e15d46c10`, turn the README's question table into a `questions.json`,
   and run A2 on it. Separate PR, because it adds binary fixtures.
-- [ ] **A4.** *(Input so far: after Phase B the score is deterministic and
-  loses nothing, ranks table parse shapes in retrieval's order, and still
-  predicts a document's retrieval only weakly —
-  [`2026-09-27-rag-score-after-phase-b.md`](../../apps/web/evals/rag-benchmark/results/2026-09-27-rag-score-after-phase-b.md).
-  The prose "after Optimize" shape is still to run.)* Write the finding into this spec: does the score rank shapes in the
+- [x] **A4.** Write the finding into this spec: does the score rank shapes in the
   benchmark's order, for tables and for prose? Also measure run-to-run variance
   on unchanged text (ten runs, one document). If B1 and B2 have landed by then,
   rerun A2 with the fixed scorer and report both beside each other. Then decide
   on option 2 for prose, yes or no.
+
+  **Finding (2026-09-27).** Evidence:
+  [after Phase B](../../apps/web/evals/rag-benchmark/results/2026-09-27-rag-score-after-phase-b.md)
+  and
+  [A4, prose after Optimize](../../apps/web/evals/rag-benchmark/results/2026-09-27-a4-optimized-prose.md).
+  - **Variance.** After B1 the score is deterministic. Ten calls on one
+    unchanged text returned the same 60, and every document × shape cell was
+    identical across three ingests. Before B1 it moved by up to 15.5 points.
+  - **Tables: shapes, yes; documents, weakly.** The score ranks parse shapes in
+    the benchmark's order: 42.9 / 33.2 / 31.5 against pass rates 0.87 / 0.65 /
+    0.44. It predicts one document's retrieval only weakly: ρ 0.40.
+  - **Prose: under a controlled change, yes.** Accepting Optimize's advice
+    raised retrieval from 19 to 22 of 24 and the score from 61 to 80. The
+    gain came from restating entity names and adding question headings,
+    which is what the rubric rewards. Across documents in one shape it is
+    weak: ρ 0.49 over 8.
+  - **Optimize translates.** It rewrote English documents partly into Polish,
+    and that cost one question. See B7.
+
+  **Recommendation on option 2 for prose: no new rubric.** The existing rubric,
+  made deterministic by B1, already tracks retrieval under the change Optimize
+  makes. Its job in D2 is the "before/after" number in the Optimize tab for
+  prose, not a per-document grade to compare. What this leaves for the
+  decisions:
+  - **D1:** the ingest default can go to `false`. The number is useful beside
+    an edit, not on every upload.
+  - **Q2:** it stands. Comparing documents is still unsupported.
+  - **Phase C:** it still replaces the list badge.
+
+  *Decision needed from the owner:* D1's default, and confirming no option 2.
 
 ### Phase B — defects that are wrong whatever A finds
 
@@ -513,6 +539,20 @@ already claims. B1 and B2 start only after A2's baseline is committed.
   suggestions instead of failing the object (or state and relax the limit).
   Like B1, this waits for A2's baseline, which is now committed. Test: an
   over-long suggestion still yields the score.
+
+- [ ] **B7.** Optimize must keep the document's language, and read what the
+  button reads. Found by A4:
+  - `optimize-document-suggestions.ts` asks for "all text fields" in Polish,
+    and the model applies it to `after`, the replacement text, so an English
+    document comes back part-Polish. `rationale` and `location` are for the
+    user and may stay in the UI language; `after` must stay in the document's.
+  - `optimize-suggestions/route.ts` has B2's two defects:
+    - it reads `UserDocument.content` undecrypted, so the model gets
+      ciphertext for an organization with encryption on;
+    - it falls back to the raw stored file, which is unmasked.
+
+  Tests: an English document's suggestions contain no Polish; the route
+  decrypts, and refuses a file with no document row.
 
 ### Phase C — chunk-level diagnostics behind `documentDiagnostics`
 
