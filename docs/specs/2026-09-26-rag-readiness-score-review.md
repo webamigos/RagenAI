@@ -651,8 +651,20 @@ already claims. B1 and B2 start only after A2's baseline is committed.
   reads `metadata.diagnostics.stats` and so waits for C2 and C3 to merge.
   No prose calibration: D1 settled the Optimize tab's score on A4's result
   (it tracked the edit), so the tab keeps its number.
-- [ ] **D3.** Remove the "Oceń dla RAG" menu item. Its job becomes the Optimize
+- [x] **D3.** Remove the "Oceń dla RAG" menu item. Its job becomes the Optimize
   tab's "Analyse" button. Remove `ScoreDetailPanel` unless D2 gives it a home.
+
+  *Done.* The menu item, its server action and `scoreFileCommand` are gone,
+  and so is `ScoreDetailPanel`, which nothing imported. Removing the item
+  alone would have left new documents unscored for good: upload does not
+  score by default (D1), and the Optimize job only carried a score someone
+  else had computed. So `optimizeDocument` now scores a document that has no
+  score before suggesting (`scoreDocumentBaseline`), stores it where the
+  scoring job did — the file and the active version — and uses it as the
+  baseline. An existing score is kept, not recomputed. The step is
+  best-effort, and `ragReadinessScore` off skips it. The `scoreDocument` job
+  itself stays registered with no producer; removing a job name is a
+  `packages/jobs` change of its own.
 - [ ] **D4.** Enable `documentDiagnostics` on demo, and compare it against
   production (not staging, which is retired). Flip the default in a `feat` PR,
   with a `docs/changelog-notes.md` line.

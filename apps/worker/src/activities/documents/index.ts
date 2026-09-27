@@ -10,6 +10,7 @@ export { isRagScoringEnabled } from './is-rag-scoring-enabled.js';
 export { maskPii } from './mask-pii.js';
 export { applyDualContentMode } from './apply-dual-content-mode.js';
 export { optimizeDocumentSuggestions } from './optimize-document-suggestions.js';
+export { scoreDocumentBaseline } from './score-document-baseline.js';
 export { evaluateSuggestionDimensions } from './evaluate-suggestion-dimensions.js';
 export type {
   OptimizationJob,

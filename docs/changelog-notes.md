@@ -109,6 +109,10 @@ archive is the blog.
   paragraphs, and Optimize suggests rewrites. For an XLSX or CSV file the menu
   items and the Optimize tab are gone, and the app refuses them if asked
   directly. A spreadsheet that was read badly is re-processed instead.
+- `[brief]` **"Score for RAG" moved into Optimize.** The menu item is gone; a
+  document is scored when you press "Analyse" in its Optimize tab, which is
+  where the score was useful — as the before of an edit. A document that
+  already has a score keeps it as that baseline.
 
 ### Thread: ingest that survives a busy Docling
 

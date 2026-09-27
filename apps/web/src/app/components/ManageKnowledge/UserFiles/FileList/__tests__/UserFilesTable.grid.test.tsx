@@ -54,10 +54,6 @@ vi.mock('@/app/actions', () => ({
   reembedFile: vi.fn().mockResolvedValue(undefined),
 }));
 
-vi.mock('@/app/[locale]/(panel)/knowledge/optimize-document/actions', () => ({
-  scoreDocumentAction: vi.fn().mockResolvedValue({ total: 80 }),
-}));
-
 const messages = {
   'files-table': {
     'row-actions': 'Actions for {name}',

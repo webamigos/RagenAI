@@ -43,7 +43,7 @@ const DEFAULT_PAGE_SIZE = 25;
  * Not ported (needs S3 and/or Temporal, neither of which exists in
  * apps/api yet): delete-file-command.ts, delete-folder-command.ts,
  * reembed-file-command.ts, reembed-folder-with-policy-command.ts,
- * score-file-command.ts, upload-file-command.ts, rag-optimizer/*,
+ * upload-file-command.ts, rag-optimizer/*,
  * utils/file-parser.ts.
  */
 @Injectable()

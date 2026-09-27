@@ -213,6 +213,7 @@ export function createMockActivities() {
       fileName: 'Acme — Workshop Summary.docx',
     }),
     optimizeDocumentSuggestions: vi.fn().mockResolvedValue(undefined),
+    scoreDocumentBaseline: vi.fn().mockResolvedValue(null),
     syncRagScoreToVersion: vi.fn().mockResolvedValue(undefined),
     deleteStaleDemoThreads: vi.fn().mockResolvedValue({
       skipped: false,
