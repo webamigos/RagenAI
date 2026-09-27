@@ -611,12 +611,24 @@ already claims. B1 and B2 start only after A2's baseline is committed.
   like absence. The re-index passes `parser: 'version-text'`, so it never
   reports a fallback. A file staged into Brain or withdrawn from retrieval is
   not indexed, and gets no write.
-- [ ] **C3.** Add the key `documentDiagnostics` (default `false`) in
+- [x] **C3.** Add the key `documentDiagnostics` (default `false`) in
   platform-contracts. With the key on, the list shows a worded badge only when a
   `warn` finding exists (for example "Parsed as markup" or "Table without
   headers"), and the document view lists findings with what to do. With it off,
   the list is unchanged. The PR is a `chore`, per ADR-50. Tests: component tests
   for both key states, and an e2e check in `p1` (not gating; the key is off).
+
+  *Done.* The metadata shape moved into `@ragenai/rag-core/document-diagnostics`
+  (a sandbox-safe subpath, like `./undecodable-text`), with the reader the panel
+  uses, so the worker and the panel share one declaration of an untyped JSON
+  column. The reader treats a missing key, `null`, an unknown version and a
+  malformed report alike, as "not computed", and drops a finding whose check
+  this release does not know. The badge is neutral with a word and an icon
+  (panel rules 17, 27), names the first warning and counts the rest. The
+  document view's panel lists every finding, warnings first, and renders
+  nothing when there is nothing to report. The page passes the browser that
+  one key, not the file's whole metadata. `p1-04` runs on a seeded report;
+  the seed turns the key on for the test organization only.
 - [ ] **C4.** Validate the checks on the Phase A corpora. The raw-XML shape must
   raise "Parsed as markup". Docling with table chunks on must raise nothing
   about headers when Docling flagged them.

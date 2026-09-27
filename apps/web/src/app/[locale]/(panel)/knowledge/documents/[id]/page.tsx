@@ -29,13 +29,20 @@ export default async function DocumentDetailPage({ params }: Props) {
       id: true,
       title: true,
       content: true,
-      file: { select: { fileType: true } },
+      file: { select: { fileType: true, metadata: true } },
     },
   });
 
   if (!doc) {
     notFound();
   }
+
+  // One key of the file's metadata goes to the browser, not all of it.
+  const metadata = doc.file?.metadata;
+  const diagnostics =
+    metadata && typeof metadata === 'object' && !Array.isArray(metadata)
+      ? (metadata.diagnostics ?? null)
+      : null;
 
   return (
     <div className="flex h-full flex-col">
@@ -50,7 +57,15 @@ export default async function DocumentDetailPage({ params }: Props) {
           {doc.title}
         </h1>
       </div>
-      <DocumentDetailTabs doc={doc} />
+      <DocumentDetailTabs
+        doc={{
+          id: doc.id,
+          title: doc.title,
+          content: doc.content,
+          file: doc.file ? { fileType: doc.file.fileType } : null,
+          diagnostics,
+        }}
+      />
     </div>
   );
 }

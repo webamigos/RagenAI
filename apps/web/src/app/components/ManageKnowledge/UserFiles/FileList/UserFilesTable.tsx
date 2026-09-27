@@ -28,6 +28,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { SuspiciousContentBadge } from './SuspiciousContentBadge';
 import { RagScoreBadge } from './RagScoreBadge';
+import { DiagnosticsBadge } from '../../Diagnostics/DiagnosticsBadge';
 import { SendStagedButton } from './SendStagedButton';
 import { PiiPolicyBadge } from '../../PiiPolicyBadge';
 import { Tooltip } from '@ragenai/common-ui/Tooltip';
@@ -446,6 +447,7 @@ const FileRow = ({
             )}
             <SuspiciousContentBadge metadata={file.metadata} />
             <RagScoreBadge metadata={file.metadata} />
+            <DiagnosticsBadge metadata={file.metadata} />
           </span>
         </Td>
         {/*

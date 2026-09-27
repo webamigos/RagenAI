@@ -95,6 +95,17 @@ export const TEST_PRIVATE_CONTENT = 'Private to the seeded owner.';
 export const TEST_DISPOSABLE_FILE_ID = 'e2e00000-0000-0000-0000-00e2e0000060';
 export const TEST_DISPOSABLE_FILE_NAME = 'e2e-disposable-document.txt';
 
+/**
+ * A file whose stored diagnostics carry a warning, for p1-04. Seeded rather
+ * than produced by an ingest: no worker runs in the e2e job, and what p1-04
+ * checks is the panel reading `metadata.diagnostics`, not the checks that
+ * write it — those have their own tests in apps/worker.
+ */
+export const TEST_DIAGNOSED_FILE_ID = 'e2e00000-0000-0000-0000-00e2e0000070';
+export const TEST_DIAGNOSED_DOCUMENT_ID =
+  'e2e00000-0000-0000-0000-00e2e0000071';
+export const TEST_DIAGNOSED_FILE_NAME = 'e2e-diagnosed-spreadsheet.docx';
+
 export const AUTH_FILE = path.join(__dirname, '.auth', 'user.json');
 
 /**
