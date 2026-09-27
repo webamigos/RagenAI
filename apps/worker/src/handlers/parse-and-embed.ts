@@ -14,6 +14,10 @@ import type * as activities from '../activities/index.js';
 import { EmbeddingStatus, FileType, ParsingStatus } from '../types/UserFile.js';
 import { SUPPORTED_MIME_TYPES } from '../utils/supported-mime-types.js';
 import { CHUNK_SETTINGS } from '../utils/splitters.js';
+import {
+  computeDocumentDiagnostics,
+  type DocumentDiagnostics,
+} from '../services/document-diagnostics.js';
 import { getFileExtension } from '../utils/get-file-extension.js';
 import { DOCLING_SUPPORTED_TYPES } from '../utils/docling.js';
 import {
@@ -301,6 +305,9 @@ export async function runFileEmbeddings(
   let docs: Document[] = [];
   let pageCount = 1;
   let parsedWithDocling = false;
+  // Whether this deployment asked Docling for this type — read by the
+  // diagnostics below, so a fallback is told apart from a deliberate choice.
+  let doclingExpected = false;
   // Declared out here because detection happens inside the parse block (PII
   // masking needs it) while the tag is written to the file record well below.
   //
@@ -325,6 +332,8 @@ export async function runFileEmbeddings(
     // available inside the Temporal workflow sandbox).
     const { parser: documentParser, strict: doclingStrict } =
       await getDocumentParser();
+    doclingExpected =
+      documentParser === 'docling' && DOCLING_SUPPORTED_TYPES.has(fileType);
 
     // Cancellation checkpoint before the expensive parse (Docling can run up
     // to 10 minutes) — safe to throw here because the catch above rethrows a
@@ -638,6 +647,10 @@ export async function runFileEmbeddings(
   // Every path through the catch throws, so it is definitely assigned by the
   // time that step runs.
   let updatedDocs: Awaited<ReturnType<typeof prepareMetadata>>;
+  // Whether these chunks reached the vector store. A withdrawn or staged file
+  // is parsed and not indexed, and what the diagnostics below describe is
+  // what retrieval holds.
+  let indexed = false;
 
   try {
     // Read here rather than from `file` above: ingest can take minutes, and
@@ -710,6 +723,7 @@ export async function runFileEmbeddings(
         userId: ownerId,
         docs: updatedDocs,
       });
+      indexed = true;
 
       await updateEmbeddingStatus({
         fileId,
@@ -752,6 +766,35 @@ export async function runFileEmbeddings(
         `Failed to persist summary metadata for file ${fileId}: ${metadataError instanceof Error ? metadataError.message : String(metadataError)}`,
       );
     }
+  }
+
+  // ==== DOCUMENT DIAGNOSTICS (spec 2026-09-26-rag-readiness-score-review, C2)
+  // Checks over the chunks just indexed, with no model call. Written whatever
+  // `documentDiagnostics` says — the key gates the panel, not the data, so the
+  // data exists by the time the panel does. Written as null when the checks
+  // throw, and when nothing was indexed (a withdrawn or staged file): the
+  // file's previous chunks were deleted above, so the previous findings
+  // describe nothing retrieval holds, and absent-or-null means "not
+  // computed", never "nothing found".
+  let diagnostics: DocumentDiagnostics | null = null;
+  try {
+    if (indexed) {
+      diagnostics = computeDocumentDiagnostics(docs, fileType, {
+        parser: parsedWithDocling ? 'docling' : 'legacy',
+        doclingExpected,
+      });
+    }
+  } catch (diagnosticsError) {
+    ctx.log.warn(
+      `Document diagnostics failed for file ${fileId}: ${diagnosticsError instanceof Error ? diagnosticsError.message : String(diagnosticsError)}`,
+    );
+  }
+  try {
+    await mergeFileMetadata({ fileId, orgId, patch: { diagnostics } });
+  } catch (metadataError) {
+    ctx.log.warn(
+      `Failed to persist diagnostics for file ${fileId}: ${metadataError instanceof Error ? metadataError.message : String(metadataError)}`,
+    );
   }
 
   // ==== SCORE DOCUMENT FOR RAG (best-effort, same pattern as summary)

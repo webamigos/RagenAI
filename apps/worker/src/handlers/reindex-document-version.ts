@@ -9,6 +9,10 @@ import { isStagedIntake, isWithdrawnFromRetrieval } from './parse-and-embed.js';
 import { type Document } from '../types/Document.js';
 import { EmbeddingStatus, FileType } from '../types/UserFile.js';
 import { CHUNK_SETTINGS } from '../utils/splitters.js';
+import {
+  computeDocumentDiagnostics,
+  type DocumentDiagnostics,
+} from '../services/document-diagnostics.js';
 
 /**
  * Re-index a document from the text of its active version.
@@ -39,6 +43,7 @@ export async function reindexDocumentVersion(
     deleteDocumentVectors,
     getDocumentContent,
     getFileRecord,
+    mergeFileMetadata,
     splitText,
   } = ctx.steps<typeof activities>({
     retry: {
@@ -122,11 +127,16 @@ export async function reindexDocumentVersion(
     );
   }
 
+  // Read after the index write, outside its try: a diagnostics failure must
+  // not record FAILED on a document that was indexed.
+  let indexedChunks: Document[] = [];
+
   try {
     await deleteDocumentVectors({ orgId, fileId });
 
     const rawDocs: Document[] = [{ pageContent: content, metadata: {} }];
     const docs = await splitText({ fileType, rawDocs, splitterSettings });
+    indexedChunks = docs;
 
     const accessibleBy = await computeFileAccessPrincipals(fileId, orgId);
 
@@ -179,6 +189,29 @@ export async function reindexDocumentVersion(
       `Re-index failed for file ${fileId}: ${
         error instanceof Error ? error.message : String(error)
       }`,
+    );
+  }
+
+  // ==== DOCUMENT DIAGNOSTICS (best-effort, same pattern as parse-and-embed)
+  // The chunks changed, so the previous findings describe text that is no
+  // longer indexed: replaced, or cleared to null when the checks throw. No
+  // parser ran — this is the version's text — so there is no fallback to see.
+  let diagnostics: DocumentDiagnostics | null = null;
+  try {
+    diagnostics = computeDocumentDiagnostics(indexedChunks, fileType, {
+      parser: 'version-text',
+      doclingExpected: false,
+    });
+  } catch (diagnosticsError) {
+    ctx.log.warn(
+      `Document diagnostics failed for file ${fileId}: ${diagnosticsError instanceof Error ? diagnosticsError.message : String(diagnosticsError)}`,
+    );
+  }
+  try {
+    await mergeFileMetadata({ fileId, orgId, patch: { diagnostics } });
+  } catch (metadataError) {
+    ctx.log.warn(
+      `Failed to persist diagnostics for file ${fileId}: ${metadataError instanceof Error ? metadataError.message : String(metadataError)}`,
     );
   }
 
