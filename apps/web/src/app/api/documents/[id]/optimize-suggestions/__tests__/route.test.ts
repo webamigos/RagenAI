@@ -129,4 +129,38 @@ describe('POST /api/documents/[id]/optimize-suggestions', () => {
       expect(executeRaw).not.toHaveBeenCalled();
     },
   );
+
+  // D2: a PDF whose indexed chunks are mostly tables is refused like a sheet.
+  it('refuses a document that is mostly table chunks', async () => {
+    fileFindFirst.mockResolvedValue({
+      id: 'file-1',
+      fileType: 'PDF',
+      fileExtension: 'pdf',
+      metadata: {
+        diagnostics: {
+          version: 1,
+          computedAt: '2026-09-27T12:00:00.000Z',
+          findings: [],
+          stats: {
+            chunkCount: 7,
+            tableChunkCount: 6,
+            medianChunkChars: 700,
+            sectionPathShare: null,
+            overlapShare: 0,
+          },
+        },
+      },
+      document: {
+        id: 'doc-1',
+        content: '| A | 4.20 |',
+        title: 'Cennik',
+        projectId: null,
+      },
+    });
+
+    const res = await call();
+
+    expect(res.status).toBe(422);
+    expect(jobStart).not.toHaveBeenCalled();
+  });
 });

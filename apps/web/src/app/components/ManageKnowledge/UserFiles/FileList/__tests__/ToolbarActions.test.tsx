@@ -66,7 +66,7 @@ describe('ToolbarActions', () => {
     const scoreLabel = /Score for RAG|Oceń dla RAG/i;
     const optimizeLabel = messages['files-table']['optimize-rag'];
 
-    function showFor(fileType: string) {
+    function showFor(fileType: string, metadata?: unknown) {
       render(
         <NextIntlClientProvider locale="en" messages={messages}>
           <OrgFeaturesProvider
@@ -77,6 +77,7 @@ describe('ToolbarActions', () => {
               documentId="doc-1"
               fileName="cennik"
               fileType={fileType}
+              metadata={metadata}
               toggleModal={vi.fn()}
               isLoading={false}
             />
@@ -122,5 +123,26 @@ describe('ToolbarActions', () => {
         ).not.toBeInTheDocument();
       },
     );
+
+    it('offers no Optimize for a PDF that is mostly table chunks', async () => {
+      showFor('PDF', {
+        diagnostics: {
+          version: 1,
+          computedAt: '2026-09-27T12:00:00.000Z',
+          findings: [],
+          stats: {
+            chunkCount: 7,
+            tableChunkCount: 6,
+            medianChunkChars: 700,
+            sectionPathShare: null,
+            overlapShare: 0,
+          },
+        },
+      });
+      await openMenu();
+      expect(
+        screen.queryByRole('menuitem', { name: optimizeLabel }),
+      ).not.toBeInTheDocument();
+    });
   });
 });

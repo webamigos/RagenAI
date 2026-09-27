@@ -14,7 +14,7 @@ import { EmbeddingStatus } from '@/generated/prisma/browser';
 import { useRouter } from '@/i18n/routing';
 import { getFileLabel } from '@ragenai/common-ui/utils/file-helpers';
 import type { UserFileTypeSafe } from '../UserFiles/FileList/UserFilesTable';
-import { canOptimizeFileType } from '@/features/documents/utils/tabular-documents';
+import { canOptimizeDocument } from '@/features/documents/utils/tabular-documents';
 
 type Props = {
   file: UserFileTypeSafe;
@@ -123,7 +123,7 @@ export function DocumentPreviewMetadata({
             <ArrowRightIcon className="size-4" />
             {t('action-move')}
           </button>
-          {documentId && canOptimizeFileType(file.fileType) && (
+          {documentId && canOptimizeDocument(file) && (
             <button
               onClick={() =>
                 router.push(

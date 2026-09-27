@@ -488,6 +488,7 @@ const FileRow = ({
             documentId={file.document?.id}
             fileName={fileName}
             fileType={file.fileType}
+            metadata={file.metadata}
             toggleModal={toggleModal}
             canDelete={canDelete}
             isLoading={isLoading}

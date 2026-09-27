@@ -7,7 +7,7 @@ import MarkdownIt from 'markdown-it/dist/markdown-it.js';
 import DOMPurify from 'dompurify';
 import { VersionHistoryTab } from './VersionHistoryTab';
 import { OptimizeTab } from './OptimizeTab';
-import { canOptimizeFileType } from '@/features/documents/utils/tabular-documents';
+import { canOptimizeDocument } from '@/features/documents/utils/tabular-documents';
 import { DiagnosticsPanel } from '../Diagnostics/DiagnosticsPanel';
 import '@/app/components/Assistant/ChatOutput/chat-response.css';
 import '@/app/[locale]/(panel)/document/[documentId]/document-preview.css';
@@ -37,7 +37,10 @@ function TabsInner({ doc }: Props) {
   const requested = searchParams.get('tab');
   // No Optimize tab for a spreadsheet or an image (spec Q4, D2), so an old
   // `?tab=optimize` link opens the document instead of a tab that is gone.
-  const tabs = canOptimizeFileType(doc.file?.fileType)
+  const tabs = canOptimizeDocument({
+    fileType: doc.file?.fileType,
+    metadata: { diagnostics: doc.diagnostics },
+  })
     ? ALL_TABS
     : ALL_TABS.filter((tab) => tab !== 'optimize');
   const [activeTab, setActiveTab] = useState<Tab>(
