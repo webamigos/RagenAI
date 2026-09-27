@@ -7,6 +7,7 @@ import { SuggestionDetailModal } from './SuggestionDetailModal';
 import { ScoreBadge } from './ScoreBadge';
 import { useOrgFeature } from '@/app/hooks/useOrgFeatures';
 import type { OptimizationSuggestion } from '@/features/documents/contracts/optimization-suggestion.types';
+import { canOptimizeFileType } from '@/features/documents/utils/tabular-documents';
 
 type JobStatus = 'pending' | 'processing' | 'done' | 'failed';
 
@@ -26,7 +27,6 @@ type Props = {
   fileType: string;
 };
 
-const UNSUPPORTED_TYPES = new Set(['IMAGE', 'XLSX', 'CSV']);
 const POLL_INTERVAL_MS = 4_000;
 
 export function OptimizeTab({ documentId, fileType }: Props) {
@@ -215,7 +215,9 @@ export function OptimizeTab({ documentId, fileType }: Props) {
     return isRunning ? t('analyzing') : t('generate');
   };
 
-  if (UNSUPPORTED_TYPES.has(fileType)) {
+  // The tab is hidden for these (DocumentDetailTabs); this is what an old
+  // `?tab=optimize` link, or any other way in, still meets.
+  if (!canOptimizeFileType(fileType)) {
     return (
       <div className="py-8 text-center text-muted-foreground">
         {t('unsupported-file-type')}

@@ -7,6 +7,7 @@ import MarkdownIt from 'markdown-it/dist/markdown-it.js';
 import DOMPurify from 'dompurify';
 import { VersionHistoryTab } from './VersionHistoryTab';
 import { OptimizeTab } from './OptimizeTab';
+import { canOptimizeFileType } from '@/features/documents/utils/tabular-documents';
 import '@/app/components/Assistant/ChatOutput/chat-response.css';
 import '@/app/[locale]/(panel)/document/[documentId]/document-preview.css';
 
@@ -21,14 +22,19 @@ type Props = { doc: Doc };
 
 type Tab = 'content' | 'history' | 'optimize';
 
-const TABS: Tab[] = ['content', 'history', 'optimize'];
+const ALL_TABS: Tab[] = ['content', 'history', 'optimize'];
 
 function TabsInner({ doc }: Props) {
   const t = useTranslations('document-versions');
   const searchParams = useSearchParams();
   const requested = searchParams.get('tab');
+  // No Optimize tab for a spreadsheet or an image (spec Q4, D2), so an old
+  // `?tab=optimize` link opens the document instead of a tab that is gone.
+  const tabs = canOptimizeFileType(doc.file?.fileType)
+    ? ALL_TABS
+    : ALL_TABS.filter((tab) => tab !== 'optimize');
   const [activeTab, setActiveTab] = useState<Tab>(
-    TABS.includes(requested as Tab) ? (requested as Tab) : 'content',
+    tabs.includes(requested as Tab) ? (requested as Tab) : 'content',
   );
   const md = useMemo(() => new MarkdownIt(), []);
   const renderedContent = useMemo(
@@ -39,7 +45,7 @@ function TabsInner({ doc }: Props) {
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <div role="tablist" className="flex border-b border-border px-6">
-        {TABS.map((tab) => (
+        {tabs.map((tab) => (
           <button
             key={tab}
             role="tab"

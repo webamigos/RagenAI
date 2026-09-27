@@ -12,10 +12,9 @@ import {
   canAccessDocument,
 } from '@/features/documents/services/queries/get-document-actor';
 import { logger } from '@/app/lib/utils/logger';
+import { canOptimizeFileType } from '@/features/documents/utils/tabular-documents';
 
 export const dynamic = 'force-dynamic';
-
-const UNSUPPORTED_TYPES = new Set(['IMAGE', 'XLSX', 'CSV']);
 
 export async function POST(
   _request: NextRequest,
@@ -65,7 +64,7 @@ export async function POST(
     return NextResponse.json({ error: 'Not found' }, { status: 404 });
   }
 
-  if (file && UNSUPPORTED_TYPES.has(file.fileType)) {
+  if (file && !canOptimizeFileType(file.fileType)) {
     return NextResponse.json(
       { error: 'File type not supported for optimization' },
       { status: 422 },

@@ -105,4 +105,68 @@ describe('ToolbarActions', () => {
       ).not.toBeInTheDocument();
     });
   });
+
+  // Q4, D2: Score and Optimize are prose tools.
+  describe('for a spreadsheet or an image', () => {
+    const scoreLabel = messages['files-table']['score-rag'];
+    const optimizeLabel = messages['files-table']['optimize-rag'];
+
+    function showFor(fileType: string) {
+      render(
+        <NextIntlClientProvider locale="en" messages={messages}>
+          <OrgFeaturesProvider features={DEFAULT_FEATURES}>
+            <ToolbarActions
+              fileId="file-1"
+              documentId="doc-1"
+              fileName="cennik"
+              fileType={fileType}
+              toggleModal={vi.fn()}
+              isLoading={false}
+              onScore={vi.fn()}
+            />
+          </OrgFeaturesProvider>
+        </NextIntlClientProvider>,
+      );
+    }
+
+    async function openMenu() {
+      await userEvent.click(
+        screen.getByRole('button', { name: /Actions for/ }),
+      );
+      expect(await screen.findAllByRole('menuitem')).not.toHaveLength(0);
+    }
+
+    it.each(['XLSX', 'CSV'])('offers neither for %s', async (fileType) => {
+      showFor(fileType);
+      await openMenu();
+      expect(
+        screen.queryByRole('menuitem', { name: scoreLabel }),
+      ).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole('menuitem', { name: optimizeLabel }),
+      ).not.toBeInTheDocument();
+    });
+
+    it('offers Score but not Optimize for an image', async () => {
+      showFor('IMAGE');
+      await openMenu();
+      expect(
+        screen.getByRole('menuitem', { name: scoreLabel }),
+      ).toBeInTheDocument();
+      expect(
+        screen.queryByRole('menuitem', { name: optimizeLabel }),
+      ).not.toBeInTheDocument();
+    });
+
+    it('offers both for prose', async () => {
+      showFor('PDF');
+      await openMenu();
+      expect(
+        screen.getByRole('menuitem', { name: scoreLabel }),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole('menuitem', { name: optimizeLabel }),
+      ).toBeInTheDocument();
+    });
+  });
 });

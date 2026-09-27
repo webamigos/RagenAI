@@ -632,6 +632,17 @@ already claims. B1 and B2 start only after A2's baseline is committed.
   If A4 found the rubric predictive for
   prose, apply option 2's prose-only calibration here. If it did not, the
   Optimize tab shows no number, only the suggestions.
+
+  *First half done (file types):* XLSX and CSV are refused by
+  `scoreFileCommand` and by the Optimize route, before any text is decrypted,
+  and the Score and Optimize menu items and the Optimize tab are absent for
+  them (Optimize also for IMAGE, as the route already refused it). One list,
+  `features/documents/utils/tabular-documents.ts`, replaces the route's and the
+  tab's own copies; the score command had none. An old `?tab=optimize` link on
+  a spreadsheet opens the document. *Still open:* "mostly table chunks", which
+  reads `metadata.diagnostics.stats` and so waits for C2 and C3 to merge.
+  No prose calibration: D1 settled the Optimize tab's score on A4's result
+  (it tracked the edit), so the tab keeps its number.
 - [ ] **D3.** Remove the "Oceń dla RAG" menu item. Its job becomes the Optimize
   tab's "Analyse" button. Remove `ScoreDetailPanel` unless D2 gives it a home.
 - [ ] **D4.** Enable `documentDiagnostics` on demo, and compare it against

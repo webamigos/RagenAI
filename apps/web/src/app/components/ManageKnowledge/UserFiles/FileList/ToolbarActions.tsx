@@ -23,11 +23,20 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { useOrgFeature } from '@/app/hooks/useOrgFeatures';
+import {
+  canOptimizeFileType,
+  isTabularFileType,
+} from '@/features/documents/utils/tabular-documents';
 
 type ToolbarActionsProps = {
   fileId: string;
   documentId?: string;
   fileName: string;
+  /**
+   * The stored `fileType`. Score and Optimize are prose tools and are absent
+   * for a spreadsheet (and Optimize for an image) — spec Q4, D2.
+   */
+  fileType?: string;
   folderId?: number | null;
   toggleModal: (fileId: string | null) => void;
   onMove?: (fileId: string) => void;
@@ -52,6 +61,7 @@ export const ToolbarActions = ({
   fileId,
   documentId,
   fileName,
+  fileType,
   toggleModal,
   onMove,
   onShare,
@@ -147,17 +157,20 @@ export const ToolbarActions = ({
           </DropdownMenuItem>
         )}
 
-        {fileId && onScore && scoringEnabled && (
-          <DropdownMenuItem
-            onClick={() => onScore(fileId)}
-            disabled={isScoringLoading}
-          >
-            <ChartBarIcon className="size-4" />
-            {t('score-rag')}
-          </DropdownMenuItem>
-        )}
+        {fileId &&
+          onScore &&
+          scoringEnabled &&
+          !isTabularFileType(fileType) && (
+            <DropdownMenuItem
+              onClick={() => onScore(fileId)}
+              disabled={isScoringLoading}
+            >
+              <ChartBarIcon className="size-4" />
+              {t('score-rag')}
+            </DropdownMenuItem>
+          )}
 
-        {documentId && (
+        {documentId && canOptimizeFileType(fileType) && (
           <DropdownMenuItem
             onClick={() =>
               router.push(

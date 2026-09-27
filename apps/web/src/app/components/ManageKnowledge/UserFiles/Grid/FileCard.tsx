@@ -176,6 +176,7 @@ export const FileCard = ({
             fileId={fileIdVal}
             documentId={document?.id}
             fileName={fileName}
+            fileType={fileType}
             toggleModal={toggleModal}
             canDelete={canDelete}
             isLoading={deleteLoading ?? isLoading}

@@ -159,4 +159,24 @@ describe('scoreFileCommand', () => {
     expect(Object.keys(fileAccessWhere(member)).length).toBeGreaterThan(0);
     expect(mockJobStart).not.toHaveBeenCalled();
   });
+
+  // Q4, D2: refused in the command, whatever the menu shows.
+  it.each(['XLSX', 'CSV'])(
+    'refuses a %s file before reading its text or starting a job',
+    async (fileType) => {
+      mockFindFirst.mockResolvedValue({
+        id: 'file-1',
+        fileName: 'cennik',
+        fileType,
+        projectId: null,
+        document: { id: 'doc-1', content: 'a,b\n1,2', encryptedDek: null },
+      });
+
+      await expect(scoreFileCommand('file-1', 'org-1')).rejects.toThrow(
+        /Spreadsheets are not scored/,
+      );
+      expect(mockDecrypt).not.toHaveBeenCalled();
+      expect(mockJobStart).not.toHaveBeenCalled();
+    },
+  );
 });
