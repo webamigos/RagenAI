@@ -445,7 +445,11 @@ is today, not a fixed one. C and D do not start until A4 is done (Q1).
 - [ ] **A3.** *(optional, recommended)* Port the demo corpus: bring the files
   from `e15d46c10`, turn the README's question table into a `questions.json`,
   and run A2 on it. Separate PR, because it adds binary fixtures.
-- [ ] **A4.** Write the finding into this spec: does the score rank shapes in the
+- [ ] **A4.** *(Input so far: after Phase B the score is deterministic and
+  loses nothing, ranks table parse shapes in retrieval's order, and still
+  predicts a document's retrieval only weakly —
+  [`2026-09-27-rag-score-after-phase-b.md`](../../apps/web/evals/rag-benchmark/results/2026-09-27-rag-score-after-phase-b.md).
+  The prose "after Optimize" shape is still to run.)* Write the finding into this spec: does the score rank shapes in the
   benchmark's order, for tables and for prose? Also measure run-to-run variance
   on unchanged text (ten runs, one document). If B1 and B2 have landed by then,
   rerun A2 with the fixed scorer and report both beside each other. Then decide
