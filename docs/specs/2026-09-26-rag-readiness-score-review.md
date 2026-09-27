@@ -540,8 +540,8 @@ already claims. B1 and B2 start only after A2's baseline is committed.
   Like B1, this waits for A2's baseline, which is now committed. Test: an
   over-long suggestion still yields the score.
 
-- [ ] **B7.** Optimize must keep the document's language, and read what the
-  button reads. Found by A4:
+- [x] **B7.** *(done: #1408)* Optimize must keep the document's language,
+  and read what the button reads. Found by A4:
   - `optimize-document-suggestions.ts` asks for "all text fields" in Polish,
     and the model applies it to `after`, the replacement text, so an English
     document comes back part-Polish. `rationale` and `location` are for the
@@ -553,6 +553,14 @@ already claims. B1 and B2 start only after A2's baseline is committed.
 
   Tests: an English document's suggestions contain no Polish; the route
   decrypts, and refuses a file with no document row.
+
+  How it landed differs from the item in one place: the route no longer reads
+  the text at all, beyond checking there is some. The worker reads it, and the
+  undecrypted read was the worker's `db.getDocumentContent`, which also fed
+  `reindexDocumentVersion` — so every edit had been embedding ciphertext. It
+  decrypts now, for both. The prompt asks for `after` in the document's
+  language, and a franc check drops a suggestion whose replacement is in
+  another one.
 
 ### Phase C — chunk-level diagnostics behind `documentDiagnostics`
 
