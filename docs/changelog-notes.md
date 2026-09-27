@@ -91,6 +91,9 @@ archive is the blog.
   on, the button graded the encrypted text rather than the document. It now
   scores what ingest scores, and it refuses a file that has not finished
   processing instead of grading the raw upload.
+- `[brief]` **The RAG score is steadier.** Scoring runs at temperature 0 and
+  the total is computed from its five parts instead of trusting the model's
+  sum; a failed scoring call now shows up in AI usage like a successful one.
 
 ### Thread: ingest that survives a busy Docling
 

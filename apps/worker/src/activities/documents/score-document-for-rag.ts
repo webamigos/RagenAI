@@ -1,4 +1,4 @@
-import { generateObject, zodSchema } from 'ai';
+import { generateObject, NoObjectGeneratedError, zodSchema } from 'ai';
 import { z } from 'zod';
 import { getChatModelForOrg } from '../../services/llm/provider.js';
 import { withLangfuseTrace } from '../../services/langfuse-trace.js';
@@ -17,8 +17,32 @@ const dimensions = {
   entityDensity: z.number().min(0).max(10),
   selfContainedness: z.number().min(0).max(10),
   qaAdherence: z.number().min(0).max(10),
-  total: z.number().min(0).max(100),
 };
+
+/**
+ * The rubric's weights, the same ones the prompt states. The total is computed
+ * from them here rather than taken from the model: the model's own `total` was
+ * stored as returned, so a model that summed wrongly — or wrote 0 over five
+ * non-zero dimensions — set the badge (spec 2026-09-26-rag-readiness-score-review,
+ * B1).
+ */
+export const RAG_SCORE_WEIGHTS = {
+  chunkStructure: 2.5,
+  avgChunkSize: 1.5,
+  entityDensity: 2,
+  selfContainedness: 2.5,
+  qaAdherence: 1.5,
+} as const;
+
+/** The weighted sum, to one decimal, held to 0–100. */
+export function computeRagTotal(
+  dims: Record<keyof typeof RAG_SCORE_WEIGHTS, number>,
+): number {
+  const sum = (
+    Object.keys(RAG_SCORE_WEIGHTS) as (keyof typeof RAG_SCORE_WEIGHTS)[]
+  ).reduce((acc, key) => acc + dims[key] * RAG_SCORE_WEIGHTS[key], 0);
+  return Math.min(100, Math.max(0, Math.round(sum * 10) / 10));
+}
 
 /**
  * What the model has to return: the score, strictly, and its suggestions with
@@ -32,12 +56,18 @@ const dimensions = {
  */
 export const ragScoreResponseSchema = z.object({
   ...dimensions,
+  // Asked for, and ignored: `computeRagTotal` sets the stored one. Unbounded
+  // so a wrong sum cannot fail an otherwise valid answer, and nullable rather
+  // than optional: OpenAI's strict structured outputs require every property
+  // to be listed as required, so `.optional()` breaks a strict route.
+  total: z.number().nullable(),
   suggestions: z.array(z.string()),
 });
 
 /** What is stored: the same score, with the suggestions held to their limits. */
 const ragScoreSchema = z.object({
   ...dimensions,
+  total: z.number().min(0).max(100),
   suggestions: z
     .array(z.string().max(MAX_SUGGESTION_CHARS))
     .max(MAX_SUGGESTIONS),
@@ -54,8 +84,10 @@ export function normalizeRagScore(
 ): RagScore {
   // Parsed, not cast: the result is checked against the stored shape, so a
   // change to the limits above cannot drift from what this produces.
+  const { total: _modelTotal, ...dims } = raw;
   return ragScoreSchema.parse({
-    ...raw,
+    ...dims,
+    total: computeRagTotal(dims),
     suggestions: raw.suggestions
       .map((s) => s.trim())
       .filter((s) => s.length > 0)
@@ -116,10 +148,33 @@ export async function scoreDocumentForRag({
       ? trimmed.slice(0, MAX_INPUT_CHARS)
       : trimmed;
 
+  // Recorded for a rejected answer too: the tokens were spent either way, and
+  // a failure that costs nothing on the usage page hides what it costs.
+  const trackUsage = (
+    usage:
+      | { inputTokens?: number; outputTokens?: number; totalTokens?: number }
+      | undefined,
+    durationMs: number,
+    outcome: 'scored' | 'rejected',
+  ) =>
+    db.trackAiUsage({
+      organizationId: orgId,
+      projectId: projectId ?? null,
+      userId: userId ?? null,
+      step: 'CHAT_COMPLETION',
+      provider: 'litellm',
+      model: SUMMARY_MODEL,
+      inputTokens: usage?.inputTokens ?? 0,
+      outputTokens: usage?.outputTokens ?? 0,
+      totalTokens: usage?.totalTokens ?? 0,
+      durationMs,
+      metadata: { kind: 'rag_scorer', fileName, outcome },
+    });
+
+  const startedAt = Date.now();
   try {
     const model = await getChatModelForOrg(orgId, SUMMARY_MODEL);
 
-    const startedAt = Date.now();
     const result = await withLangfuseTrace(
       {
         name: 'score-document-for-rag',
@@ -137,6 +192,9 @@ export async function scoreDocumentForRag({
           // suppression became an error itself — which is exactly how ADR-26
           // said it would announce that it was no longer needed.
           schema: zodSchema(ragScoreResponseSchema),
+          // The same text should get the same score. Without it two ingests
+          // of an unchanged file moved by up to 15 points (A2, Finding 2).
+          temperature: 0,
           system: SYSTEM_PROMPT,
           messages: [
             {
@@ -148,19 +206,7 @@ export async function scoreDocumentForRag({
         }),
     );
 
-    await db.trackAiUsage({
-      organizationId: orgId,
-      projectId: projectId ?? null,
-      userId: userId ?? null,
-      step: 'CHAT_COMPLETION',
-      provider: 'litellm',
-      model: SUMMARY_MODEL,
-      inputTokens: result.usage?.inputTokens ?? 0,
-      outputTokens: result.usage?.outputTokens ?? 0,
-      totalTokens: result.usage?.totalTokens ?? 0,
-      durationMs: Date.now() - startedAt,
-      metadata: { kind: 'rag_scorer', fileName },
-    });
+    await trackUsage(result.usage, Date.now() - startedAt, 'scored');
 
     const score = normalizeRagScore(result.object);
 
@@ -171,8 +217,22 @@ export async function scoreDocumentForRag({
 
     return score;
   } catch (err) {
+    if (NoObjectGeneratedError.isInstance(err) && err.usage) {
+      try {
+        await trackUsage(err.usage, Date.now() - startedAt, 'rejected');
+      } catch {
+        // Best-effort, like the score: a usage row that fails to write must
+        // not turn a rejected answer into a thrown one.
+      }
+    }
+    // The error's kind, never the error: a rejected object's message carries
+    // the model's whole answer, and its suggestions quote the document.
     logger.warn(
-      { err, fileName, orgId },
+      {
+        errName: err instanceof Error ? err.name : typeof err,
+        fileName,
+        orgId,
+      },
       'RAG scoring failed, continuing without score',
     );
     return null;
