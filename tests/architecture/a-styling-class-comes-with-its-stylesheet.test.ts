@@ -1,6 +1,8 @@
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { readFileSync, statSync } from 'node:fs';
 import { dirname, join, relative, resolve, sep } from 'node:path';
 import { describe, expect, it } from 'vitest';
+
+import { trackedFiles } from './tracked-files';
 
 /**
  * A component that paints with `chat-response` also imports the stylesheet.
@@ -45,24 +47,11 @@ const STYLING_CLASSES = [
 
 const SKIP_DIRS = new Set(['node_modules', '.next', 'generated', 'coverage']);
 
-function sourceFiles(dir: string): string[] {
-  const found: string[] = [];
-  for (const entry of readdirSync(dir)) {
-    const full = join(dir, entry);
-    if (statSync(full).isDirectory()) {
-      if (!SKIP_DIRS.has(entry)) {
-        found.push(...sourceFiles(full));
-      }
-      continue;
-    }
-    if (entry.endsWith('.tsx') || entry.endsWith('.ts')) {
-      found.push(full);
-    }
-  }
-  return found;
-}
-
-const files = sourceFiles(join(REPO_ROOT, SOURCE_ROOT));
+const files = trackedFiles({
+  under: SOURCE_ROOT,
+  extensions: ['.tsx', '.ts'],
+  skipDirs: SKIP_DIRS,
+});
 
 describe.each(STYLING_CLASSES)(
   '$className',

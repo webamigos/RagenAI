@@ -1,8 +1,10 @@
-import { readdirSync, readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import ts from 'typescript';
 import { describe, expect, it } from 'vitest';
+
+import { trackedFiles } from './tracked-files';
 
 /**
  * `apps/web` reads no `NEXT_PUBLIC_*` variable, and its Dockerfile declares
@@ -38,17 +40,13 @@ const DOCKERFILE = join(REPO_ROOT, 'apps', 'web', 'Dockerfile');
 const READ = /process\.env\.(NEXT_PUBLIC_[A-Z0-9][A-Z0-9_]*)/g;
 
 function sourceFiles(dir: string): string[] {
-  return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
-    const full = join(dir, entry.name);
-    if (entry.isDirectory()) {
-      // Test files name variables they stub, which is not a claim that the
-      // shipped bundle reads them.
-      return entry.name === '__tests__' ? [] : sourceFiles(full);
-    }
-    return /\.tsx?$/.test(entry.name) && !/\.test\.tsx?$/.test(entry.name)
-      ? [full]
-      : [];
-  });
+  // Test files name variables they stub, which is not a claim that the
+  // shipped bundle reads them.
+  return trackedFiles({
+    under: dir,
+    extensions: ['.ts', '.tsx'],
+    skipDirs: ['__tests__'],
+  }).filter((path) => !/\.test\.tsx?$/.test(path));
 }
 
 /**

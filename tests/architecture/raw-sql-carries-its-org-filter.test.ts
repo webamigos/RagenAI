@@ -1,8 +1,10 @@
-import { readFileSync, readdirSync, existsSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { TENANT_SCOPED_MODELS } from '@ragenai/platform-contracts';
 import { describe, expect, it } from 'vitest';
+
+import { trackedFiles } from './tracked-files';
 
 /**
  * A raw SQL statement touching a tenant-scoped table must name its org column.
@@ -98,19 +100,12 @@ function tenantScopedTables(): Set<string> {
 }
 
 function sourceFiles(dir: string): string[] {
-  if (!existsSync(dir)) {
-    return [];
-  }
-  return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
-    const full = join(dir, entry.name);
-    if (entry.isDirectory()) {
-      // Generated clients declare these methods; they do not call them. Tests
-      // assert against the statements rather than issuing them.
-      return entry.name === 'generated' || entry.name === '__tests__'
-        ? []
-        : sourceFiles(full);
-    }
-    return /\.tsx?$/.test(entry.name) ? [full] : [];
+  // Generated clients declare these methods; they do not call them. Tests
+  // assert against the statements rather than issuing them.
+  return trackedFiles({
+    under: dir,
+    extensions: ['.ts', '.tsx'],
+    skipDirs: ['generated', '__tests__'],
   });
 }
 

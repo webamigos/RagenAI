@@ -1,7 +1,9 @@
-import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
+
+import { trackedFiles } from './tracked-files';
 
 /**
  * `IS_ON_PREMISE` is read in one place.
@@ -89,18 +91,12 @@ function stripComments(source: string): string {
     .replace(/(^|[^:])\/\/.*$/gm, '$1');
 }
 
-function* sourceFiles(dir: string): Generator<string> {
-  for (const entry of readdirSync(dir)) {
-    if (SKIP_DIRS.has(entry)) {
-      continue;
-    }
-    const full = join(dir, entry);
-    if (statSync(full).isDirectory()) {
-      yield* sourceFiles(full);
-    } else if (EXTENSIONS.some((ext) => entry.endsWith(ext))) {
-      yield full;
-    }
-  }
+function sourceFiles(dir: string): string[] {
+  return trackedFiles({
+    under: dir,
+    extensions: EXTENSIONS,
+    skipDirs: SKIP_DIRS,
+  });
 }
 
 describe.each(ONE_READING)('$variable', ({ variable, helper }) => {

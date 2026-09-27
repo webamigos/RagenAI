@@ -1,7 +1,9 @@
 import { readdirSync, readFileSync } from 'node:fs';
-import { join, relative, sep } from 'node:path';
+import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
+
+import { trackedFiles } from './tracked-files';
 
 /**
  * Every chain that answers a user reaches the guardrail loader.
@@ -43,42 +45,25 @@ const REPO_ROOT = join(import.meta.dirname, '..', '..');
  * not follow.
  */
 function moderationSites(): string[] {
-  const found: string[] = [];
+  const roots = readdirSync(join(REPO_ROOT, 'apps')).map(
+    (app) => `apps/${app}/src`,
+  );
 
-  const walk = (directory: string): void => {
-    for (const entry of readdirSync(directory, { withFileTypes: true })) {
-      if (entry.name === 'node_modules' || entry.name.startsWith('.')) {
-        continue;
-      }
-      const full = join(directory, entry.name);
-      if (entry.isDirectory()) {
-        if (entry.name !== '__tests__') {
-          walk(full);
-        }
-        continue;
-      }
-      if (
-        !entry.name.endsWith('.ts') ||
-        entry.name.endsWith('.test.ts') ||
-        entry.name.endsWith('.spec.ts')
-      ) {
-        continue;
-      }
-      if (readFileSync(full, 'utf8').includes('contentModerator')) {
-        found.push(relative(REPO_ROOT, full).split(sep).join('/'));
-      }
-    }
-  };
-
-  for (const app of readdirSync(join(REPO_ROOT, 'apps'))) {
-    try {
-      walk(join(REPO_ROOT, 'apps', app, 'src'));
-    } catch {
-      // An app with no `src` — nothing to walk, nothing to guard.
-    }
-  }
-
-  return found;
+  return trackedFiles({
+    under: roots,
+    extensions: ['.ts'],
+    skipDirs: ['node_modules', '__tests__'],
+    relativePaths: true,
+  })
+    .filter(
+      (path) =>
+        !path.endsWith('.test.ts') &&
+        !path.endsWith('.spec.ts') &&
+        !path.split('/').some((name) => name.startsWith('.')),
+    )
+    .filter((path) =>
+      readFileSync(join(REPO_ROOT, path), 'utf8').includes('contentModerator'),
+    );
 }
 
 /**

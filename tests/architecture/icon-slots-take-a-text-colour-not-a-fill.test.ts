@@ -1,7 +1,9 @@
-import { globSync, readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
+
+import { trackedFiles } from './tracked-files';
 
 /**
  * An icon slot gets its colour from `text-*`, never from `fill-*`.
@@ -39,8 +41,16 @@ const FILL_ON_AN_ICON_SLOT =
   /data-\[slot=icon\][^'"`\s]*:fill-(?!none\b)[a-z]/g;
 
 function sourceFiles(): string[] {
-  return globSync('apps/*/src/**/*.{ts,tsx}', { cwd: REPO_ROOT }).filter(
-    (f) => !f.includes('/generated/') && !f.includes('__tests__'),
+  // Tracked `apps/*/src/**/*.{ts,tsx}`, minus generated code and tests.
+  return trackedFiles({
+    under: 'apps',
+    extensions: ['.ts', '.tsx'],
+    relativePaths: true,
+  }).filter(
+    (f) =>
+      f.split('/')[2] === 'src' &&
+      !f.includes('/generated/') &&
+      !f.includes('__tests__'),
   );
 }
 

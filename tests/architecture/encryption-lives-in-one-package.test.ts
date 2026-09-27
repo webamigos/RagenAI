@@ -1,7 +1,9 @@
-import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { join, relative, sep } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
+
+import { trackedFiles } from './tracked-files';
 
 /**
  * Envelope encryption lives once, in `@ragenai/crypto` (ADR-02, ADR-06).
@@ -103,14 +105,12 @@ const SKIP_DIRS = new Set([
 ]);
 
 function sourceFiles(dir: string): string[] {
-  return readdirSync(dir).flatMap((entry) => {
-    const full = join(dir, entry);
-    if (statSync(full).isDirectory()) {
-      return SKIP_DIRS.has(entry) ? [] : sourceFiles(full);
-    }
+  return trackedFiles({
+    under: dir,
     // `.mts`/`.cts` too: the repository already has a `.mts` file, and a
     // copy this sweep does not open is a copy this guard cannot see.
-    return /\.(?:[cm]?ts|tsx)$/.test(entry) ? [full] : [];
+    extensions: ['.ts', '.mts', '.cts', '.tsx'],
+    skipDirs: SKIP_DIRS,
   });
 }
 

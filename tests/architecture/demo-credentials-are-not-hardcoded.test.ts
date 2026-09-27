@@ -1,7 +1,9 @@
-import { globSync, readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
+
+import { trackedFiles } from './tracked-files';
 
 /**
  * A demo password belongs in the environment, never in the repository.
@@ -40,8 +42,13 @@ const DEMO_CREDENTIAL = [
 ];
 
 function sourceFiles(): string[] {
-  return ['apps/*/src/**/*.{ts,tsx}', 'packages/*/src/**/*.{ts,tsx}']
-    .flatMap((pattern) => globSync(pattern, { cwd: REPO_ROOT }))
+  // `apps/*/src/**/*.{ts,tsx}` and `packages/*/src/**/*.{ts,tsx}`.
+  return trackedFiles({
+    under: ['apps', 'packages'],
+    extensions: ['.ts', '.tsx'],
+    relativePaths: true,
+  })
+    .filter((f) => /^(?:apps|packages)\/[^/]+\/src\//.test(f))
     .filter((f) => !f.includes('/generated/'));
 }
 

@@ -1,7 +1,9 @@
-import { readFileSync, existsSync, readdirSync, statSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
+
+import { trackedFiles } from './tracked-files';
 
 /**
  * The jailbreak classifier runs in the loop, and nowhere else.
@@ -41,23 +43,11 @@ function stripComments(source: string): string {
     .replace(/(^|[^:])\/\/.*$/gm, '$1');
 }
 
-function* sourceFiles(dir: string): Generator<string> {
-  for (const entry of readdirSync(dir)) {
-    if (SKIP_DIRS.has(entry)) {
-      continue;
-    }
-    const full = join(dir, entry);
-    if (statSync(full).isDirectory()) {
-      yield* sourceFiles(full);
-    } else if (/\.tsx?$/.test(entry)) {
-      yield full;
-    }
-  }
-}
-
-const appFiles = APP_ROOTS.flatMap((root) => [
-  ...sourceFiles(join(REPO_ROOT, root)),
-]);
+const appFiles = trackedFiles({
+  under: APP_ROOTS,
+  extensions: ['.ts', '.tsx'],
+  skipDirs: SKIP_DIRS,
+});
 
 describe('the jailbreak classifier has no route-level caller', () => {
   it('reads the app trees it claims to check', () => {

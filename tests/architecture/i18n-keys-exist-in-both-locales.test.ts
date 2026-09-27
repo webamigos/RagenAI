@@ -1,8 +1,9 @@
 import { readFileSync } from 'node:fs';
-import { globSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
+
+import { trackedFiles } from './tracked-files';
 
 /**
  * A translation key called in a component but missing from one locale renders
@@ -58,9 +59,11 @@ function localeKeys(locale: string): Set<string> {
 type Call = { key: string; file: string };
 
 function staticallyResolvableCalls(): Call[] {
-  const files = globSync('apps/web/src/**/*.tsx', { cwd: REPO_ROOT }).filter(
-    (path) => !path.includes('/generated/'),
-  );
+  const files = trackedFiles({
+    under: 'apps/web/src',
+    extensions: ['.tsx'],
+    relativePaths: true,
+  }).filter((path) => !path.includes('/generated/'));
 
   const calls: Call[] = [];
   for (const file of files) {

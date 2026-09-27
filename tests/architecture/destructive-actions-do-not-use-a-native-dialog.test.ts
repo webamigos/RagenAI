@@ -1,7 +1,9 @@
-import { globSync, readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
+
+import { trackedFiles } from './tracked-files';
 
 /**
  * `confirm()`, `alert()` and `prompt()` are not part of this interface.
@@ -33,10 +35,7 @@ const REPO_ROOT = join(import.meta.dirname, '..', '..');
 const NATIVE_DIALOG =
   /(?:^|[^.\w$])(?:window\s*\.\s*)?(?:confirm|alert|prompt)\s*\(/;
 
-const APP_SOURCES = [
-  'apps/web/src/**/*.{ts,tsx}',
-  'apps/admin/src/**/*.{ts,tsx}',
-];
+const APP_SOURCES = ['apps/web/src', 'apps/admin/src'];
 
 function stripCommentsAndStrings(source: string): string {
   return source
@@ -48,7 +47,11 @@ function stripCommentsAndStrings(source: string): string {
 }
 
 function sourceFiles(): string[] {
-  return APP_SOURCES.flatMap((pattern) => globSync(pattern, { cwd: REPO_ROOT }))
+  return trackedFiles({
+    under: APP_SOURCES,
+    extensions: ['.ts', '.tsx'],
+    relativePaths: true,
+  })
     .filter((f) => !f.includes('/generated/'))
     .filter((f) => !/\.(?:test|spec)\.tsx?$/.test(f));
 }
@@ -57,7 +60,7 @@ describe('destructive actions do not use a native dialog', () => {
   const files = sourceFiles();
 
   it('finds the source it is meant to police', () => {
-    // Guard on the guard: a glob that matches nothing passes silently.
+    // Guard on the guard: a sweep that matches nothing passes silently.
     expect(files.length).toBeGreaterThan(400);
     expect(files.some((f) => f.includes('ConfirmDialog'))).toBe(true);
   });

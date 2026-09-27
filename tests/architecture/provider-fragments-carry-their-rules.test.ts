@@ -1,7 +1,9 @@
-import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { join, relative, sep } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
+
+import { trackedFiles } from './tracked-files';
 
 /**
  * A provider fragment is meaningless without its rule, so merging one without
@@ -73,27 +75,10 @@ const PAIRINGS = [
   },
 ] as const;
 
-function* walk(dir: string): Generator<string> {
-  for (const entry of readdirSync(dir)) {
-    if (entry === 'node_modules' || entry === '.next' || entry === 'dist') {
-      continue;
-    }
-    const full = join(dir, entry);
-    if (statSync(full).isDirectory()) {
-      yield* walk(full);
-    } else if (/\.tsx?$/.test(full)) {
-      yield full;
-    }
-  }
-}
-
-const sourceFiles = SEARCH_ROOTS.flatMap((root) => {
-  const full = join(REPO_ROOT, root);
-  try {
-    return [...walk(full)];
-  } catch {
-    return [];
-  }
+const sourceFiles = trackedFiles({
+  under: SEARCH_ROOTS,
+  extensions: ['.ts', '.tsx'],
+  skipDirs: ['node_modules', '.next', 'dist'],
 }).filter((file) => {
   const rel = relative(REPO_ROOT, file);
   return !EXEMPT.some((prefix) => rel.startsWith(prefix));

@@ -1,7 +1,9 @@
-import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
+
+import { trackedFiles } from './tracked-files';
 
 /**
  * An ADR that is referenced everywhere and exists nowhere.
@@ -73,28 +75,15 @@ const ADR_PATH = /adrs\/(\d{2}-[a-z0-9-]+\.md)/g;
  */
 const RESERVED = /^\s*\(reserved\b/i;
 
-function walk(dir: string, found: string[] = []): string[] {
-  for (const entry of readdirSync(dir)) {
-    const full = join(dir, entry);
-    if (statSync(full).isDirectory()) {
-      if (!SKIP_DIRS.has(entry)) {
-        walk(full, found);
-      }
-      continue;
-    }
-    if (SEARCHED_EXTENSIONS.some((ext) => entry.endsWith(ext))) {
-      found.push(full);
-    }
-  }
-  return found;
-}
-
 const adrFiles = readdirSync(ADR_DIR).filter((name) =>
   /^\d{2}-.+\.md$/.test(name),
 );
 const numbers = new Set(adrFiles.map((name) => name.slice(0, 2)));
 const slugs = new Set(adrFiles);
-const sourceFiles = walk(REPO_ROOT);
+const sourceFiles = trackedFiles({
+  extensions: SEARCHED_EXTENSIONS,
+  skipDirs: SKIP_DIRS,
+});
 
 describe('an ADR reference resolves', () => {
   it('finds the ADR directory it is guarding', () => {

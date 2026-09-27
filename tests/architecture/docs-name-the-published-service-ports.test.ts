@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { readdirSync, readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { join, basename } from 'node:path';
+
+import { trackedFiles } from './tracked-files';
 
 /**
  * No document hands out a connection string on `localhost:5432` or `:6379`.
@@ -38,7 +40,7 @@ import { join, basename } from 'node:path';
  */
 const REPO_ROOT = join(import.meta.dirname, '..', '..');
 
-/** Directory names never worth walking: build output, dependencies, checkouts. */
+/** Directory names never read: build output, dependencies, checkouts. */
 const SKIP_DIRECTORIES = new Set([
   'node_modules',
   '.git',
@@ -73,25 +75,14 @@ const ALLOWED: string[] = [];
 const SHADOWED =
   /(?:postgres(?:ql)?|redis|rediss):\/\/[^\s"'`]*?(?:localhost|127\.0\.0\.1):(5432|6379)\b/;
 
-function copyPasteSurfaces(directory: string, found: string[] = []): string[] {
-  for (const entry of readdirSync(directory, { withFileTypes: true })) {
-    const path = join(directory, entry.name);
-    if (entry.isDirectory()) {
-      if (!SKIP_DIRECTORIES.has(entry.name)) {
-        copyPasteSurfaces(path, found);
-      }
-    } else if (
-      entry.name.endsWith('.md') ||
-      basename(path) === '.env.example'
-    ) {
-      found.push(path);
-    }
-  }
-  return found;
+function copyPasteSurfaces(): string[] {
+  return trackedFiles({ skipDirs: SKIP_DIRECTORIES }).filter(
+    (path) => path.endsWith('.md') || basename(path) === '.env.example',
+  );
 }
 
 describe('documents name the published service ports', () => {
-  const files = copyPasteSurfaces(REPO_ROOT).filter(
+  const files = copyPasteSurfaces().filter(
     (path) => !ALLOWED.includes(path.slice(REPO_ROOT.length + 1)),
   );
 

@@ -1,7 +1,9 @@
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
+
+import { trackedFiles } from './tracked-files';
 
 /**
  * What a guardrail *does* is decided in one package, not in each runtime.
@@ -143,18 +145,12 @@ const DUPLICATED_DECISIONS: Array<{
   },
 ];
 
-function* sourceFiles(dir: string): Generator<string> {
-  for (const entry of readdirSync(dir)) {
-    if (SKIP_DIRS.has(entry)) {
-      continue;
-    }
-    const full = join(dir, entry);
-    if (statSync(full).isDirectory()) {
-      yield* sourceFiles(full);
-    } else if (/\.tsx?$/.test(entry) && !/\.(test|spec)\.tsx?$/.test(entry)) {
-      yield full;
-    }
-  }
+function sourceFiles(dir: string): string[] {
+  return trackedFiles({
+    under: dir,
+    extensions: ['.ts', '.tsx'],
+    skipDirs: SKIP_DIRS,
+  }).filter((file) => !/\.(test|spec)\.tsx?$/.test(file));
 }
 
 /** Comments first: the files explaining this rule quote what it forbids. */

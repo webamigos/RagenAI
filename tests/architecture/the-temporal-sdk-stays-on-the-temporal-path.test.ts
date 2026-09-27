@@ -1,7 +1,9 @@
-import { readdirSync, readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { join, relative, sep } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
+
+import { trackedFiles } from './tracked-files';
 
 /**
  * The worker image ships one runtime, and nothing on the other one may be
@@ -56,20 +58,9 @@ const TEMPORAL_ONLY = [
  */
 const CARRIES_THE_SDK = /\.\/temporal-failure\.js|\.\.\/temporal-failure\.js/;
 
-function* walk(dir: string): Generator<string> {
-  for (const entry of readdirSync(dir, { withFileTypes: true })) {
-    const full = join(dir, entry.name);
-    if (entry.isDirectory()) {
-      yield* walk(full);
-    } else if (/\.ts$/.test(entry.name)) {
-      yield full;
-    }
-  }
-}
-
 const IS_TEST = /(^|\/)__tests__\//;
 
-const sources = [...walk(WORKER_SRC)]
+const sources = trackedFiles({ under: WORKER_SRC, extensions: ['.ts'] })
   .map((path) => relative(REPO_ROOT, path))
   .filter((path) => !IS_TEST.test(path.split(sep).join('/')));
 

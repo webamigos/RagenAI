@@ -7,6 +7,7 @@ import {
   GUARDRAIL_CACHE_TTL_MS,
   GUARDRAIL_FAILURE_TTL_MS,
 } from '../../packages/guardrails/src/contracts/cache';
+import { trackedFiles } from './tracked-files';
 
 /**
  * The guardrail cache window the documentation promises is the one the code
@@ -128,37 +129,21 @@ describe('a documented window matches its constant', () => {
     // Both were declared twice — exported from apps/web and again as a private
     // const in apps/api's loader. Drift would make the documented sentence
     // true on one surface and false on the other.
-    const { readdirSync, statSync } =
-      require('node:fs') as typeof import('node:fs');
-
-    const offenders: string[] = [];
-    const walk = (dir: string) => {
-      for (const entry of readdirSync(dir)) {
-        if (
-          ['node_modules', 'dist', '.next', '.turbo', 'generated'].includes(
-            entry,
-          )
-        ) {
-          continue;
-        }
-        const full = join(dir, entry);
-        if (statSync(full).isDirectory()) {
-          walk(full);
-        } else if (/\.ts$/.test(entry) && !/\.(test|spec)\.ts$/.test(entry)) {
-          const code = readFileSync(full, 'utf8').replace(
-            /\/\*[\s\S]*?\*\//g,
-            '',
-          );
-          // A literal 60_000 or 5_000 assigned to something cache-shaped.
-          if (/(?:CACHE|TTL)_?[A-Z_]*\s*=\s*(?:60_000|5_000)\b/.test(code)) {
-            offenders.push(full.slice(REPO_ROOT.length + 1));
-          }
-        }
-      }
-    };
-    for (const root of ['apps/web/src', 'apps/api/src', 'apps/admin/src']) {
-      walk(join(REPO_ROOT, root));
-    }
+    const offenders = trackedFiles({
+      under: ['apps/web/src', 'apps/api/src', 'apps/admin/src'],
+      extensions: ['.ts'],
+      skipDirs: ['node_modules', 'dist', '.next', '.turbo', 'generated'],
+      relativePaths: true,
+    })
+      .filter((path) => !/\.(test|spec)\.ts$/.test(path))
+      .filter((path) => {
+        const code = readFileSync(join(REPO_ROOT, path), 'utf8').replace(
+          /\/\*[\s\S]*?\*\//g,
+          '',
+        );
+        // A literal 60_000 or 5_000 assigned to something cache-shaped.
+        return /(?:CACHE|TTL)_?[A-Z_]*\s*=\s*(?:60_000|5_000)\b/.test(code);
+      });
 
     expect(
       offenders,

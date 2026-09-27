@@ -1,7 +1,9 @@
-import { readFileSync, readdirSync, existsSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
+
+import { trackedFiles } from './tracked-files';
 
 /**
  * No app may declare its own copy of an enum the schema already defines.
@@ -41,16 +43,11 @@ function schemaEnums(): Set<string> {
 }
 
 function sourceFiles(dir: string): string[] {
-  if (!existsSync(dir)) {
-    return [];
-  }
-  return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
-    const full = join(dir, entry.name);
-    if (entry.isDirectory()) {
-      // The generated clients declare these on purpose — they are the source.
-      return entry.name === 'generated' ? [] : sourceFiles(full);
-    }
-    return /\.tsx?$/.test(entry.name) ? [full] : [];
+  // The generated clients declare these on purpose — they are the source.
+  return trackedFiles({
+    under: dir,
+    extensions: ['.ts', '.tsx'],
+    skipDirs: ['generated'],
   });
 }
 
