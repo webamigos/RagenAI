@@ -52,7 +52,6 @@ type GridViewProps = {
   onPreviewFile?: (file: UserFileTypeSafe) => void;
   onMove?: (fileId: string) => void;
   onShare?: (fileId: string) => void;
-  onScore?: (fileId: string) => void;
   isFilteredEmpty?: boolean;
   onResetFilters?: () => void;
   canManageOrg?: boolean;
@@ -83,7 +82,6 @@ export const GridView = ({
   onPreviewFile,
   onMove,
   onShare,
-  onScore,
   isFilteredEmpty = false,
   onResetFilters,
   canManageOrg,
@@ -223,7 +221,6 @@ export const GridView = ({
             onPreviewFile={onPreviewFile}
             onMove={onMove}
             onShare={onShare}
-            onScore={onScore}
             canManageOrg={canManageOrg}
             onDragFiles={onDragFiles}
           />

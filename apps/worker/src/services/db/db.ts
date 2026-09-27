@@ -339,6 +339,22 @@ const getDocumentContent = async (
   };
 };
 
+/**
+ * The file a document was parsed from, or `null` for a document written in
+ * the panel. Scoped by organization like every read here: a document id from
+ * a job payload is not trusted to belong to the payload's organization.
+ */
+const getFileIdForDocument = async (
+  documentId: string,
+  orgId: string,
+): Promise<string | null> => {
+  const row = await getPrisma().userFile.findFirst({
+    where: { documentId, organizationId: orgId },
+    select: { id: true },
+  });
+  return row?.id ?? null;
+};
+
 const createMarkdownDocument = async ({
   title,
   content,
@@ -1017,6 +1033,7 @@ export const db = {
   getUserFile,
   getFileAccessRows,
   getDocumentContent,
+  getFileIdForDocument,
   isIngestCancelled,
   createFileDetailsInDB,
   updateFileBinaryInfo,

@@ -34,9 +34,7 @@ import { PiiPolicyBadge } from '../../PiiPolicyBadge';
 import { Tooltip } from '@ragenai/common-ui/Tooltip';
 import { EmptyState } from '@ragenai/common-ui/EmptyState';
 import { setDraggedFileIds } from '@/features/documents/constants/file-drag';
-import { scoreDocumentAction } from '@/app/[locale]/(panel)/knowledge/optimize-document/actions';
 
-import { statusToast } from '@/app/lib/utils/toast';
 import { useRouter } from '@/i18n/routing';
 
 /**
@@ -267,25 +265,10 @@ const FileRow = ({
   onChangeRowPolicy,
 }: FileRowProps) => {
   const [isLoading] = useState(false);
-  const [isScoringLoading, setIsScoringLoading] = useState(false);
   const tBulkBar = useTranslations('bulk-action-bar');
-  const { infoToast, errorToast } = statusToast();
   const router = useRouter();
 
-  const tOptimizer = useTranslations('document-optimizer');
   const format = useFormatter();
-
-  const handleScore = async (fId: string) => {
-    setIsScoringLoading(true);
-    try {
-      await scoreDocumentAction(fId);
-      infoToast({ message: tOptimizer('score-started') });
-    } catch {
-      errorToast({ message: tOptimizer('score-error') });
-    } finally {
-      setIsScoringLoading(false);
-    }
-  };
 
   const {
     createdAt,
@@ -508,12 +491,6 @@ const FileRow = ({
             toggleModal={toggleModal}
             canDelete={canDelete}
             isLoading={isLoading}
-            onScore={
-              embeddingStatus === EmbeddingStatus.COMPLETED
-                ? handleScore
-                : undefined
-            }
-            isScoringLoading={isScoringLoading}
             onChangePolicy={onChangeRowPolicy}
           />
         </Td>

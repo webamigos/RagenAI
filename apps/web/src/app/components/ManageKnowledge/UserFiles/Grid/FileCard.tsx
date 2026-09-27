@@ -27,8 +27,6 @@ type Props = {
   onDragFiles?: (fileId: string) => string[];
   onMove?: (fileId: string) => void;
   onShare?: (fileId: string) => void;
-  onScore?: (fileId: string) => void;
-  isScoringLoading?: boolean;
   canManageOrg?: boolean;
   /** See `UserFilesTable`'s `canDelete`. */
   canDelete?: boolean;
@@ -46,8 +44,6 @@ export const FileCard = ({
   onDragFiles,
   onMove,
   onShare,
-  onScore,
-  isScoringLoading,
   canManageOrg,
 }: Props) => {
   const tBulkBar = useTranslations('bulk-action-bar');
@@ -183,8 +179,6 @@ export const FileCard = ({
             isLoading={deleteLoading ?? isLoading}
             onMove={onMove}
             onShare={onShare}
-            onScore={onScore}
-            isScoringLoading={isScoringLoading}
           />
         </div>
         {documentLink && (

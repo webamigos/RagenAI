@@ -59,62 +59,19 @@ describe('ToolbarActions', () => {
     ).not.toBeInTheDocument();
   });
 
-  describe('Score for RAG', () => {
-    const scoreLabel = messages['files-table']['score-rag'];
-
-    function showWithScoring(ragReadinessScore: boolean) {
-      render(
-        <NextIntlClientProvider locale="en" messages={messages}>
-          <OrgFeaturesProvider
-            features={{ ...DEFAULT_FEATURES, ragReadinessScore }}
-          >
-            <ToolbarActions
-              fileId="file-1"
-              fileName="umowa.pdf"
-              toggleModal={vi.fn()}
-              isLoading={false}
-              onScore={vi.fn()}
-            />
-          </OrgFeaturesProvider>
-        </NextIntlClientProvider>,
-      );
-    }
-
-    it('is offered where the organization scores documents', async () => {
-      showWithScoring(true);
-      await userEvent.click(
-        screen.getByRole('button', { name: /Actions for/ }),
-      );
-
-      expect(
-        await screen.findByRole('menuitem', { name: scoreLabel }),
-      ).toBeInTheDocument();
-    });
-
-    // `ragReadinessScore` off in apps/admin: the command would refuse, so the
-    // menu does not offer it.
-    it('is not offered where scoring is turned off', async () => {
-      showWithScoring(false);
-      await userEvent.click(
-        screen.getByRole('button', { name: /Actions for/ }),
-      );
-
-      expect(await screen.findAllByRole('menuitem')).not.toHaveLength(0);
-      expect(
-        screen.queryByRole('menuitem', { name: scoreLabel }),
-      ).not.toBeInTheDocument();
-    });
-  });
-
-  // Q4, D2: Score and Optimize are prose tools.
-  describe('for a spreadsheet or an image', () => {
-    const scoreLabel = messages['files-table']['score-rag'];
+  // Spec D3: a document is scored by "Analyse" in its Optimize tab. The menu
+  // offers no "Score for RAG" for any file, whatever the organization's key.
+  describe('Score and Optimize', () => {
+    // Its copy is gone with it; the pattern covers both languages it had.
+    const scoreLabel = /Score for RAG|Oceń dla RAG/i;
     const optimizeLabel = messages['files-table']['optimize-rag'];
 
     function showFor(fileType: string) {
       render(
         <NextIntlClientProvider locale="en" messages={messages}>
-          <OrgFeaturesProvider features={DEFAULT_FEATURES}>
+          <OrgFeaturesProvider
+            features={{ ...DEFAULT_FEATURES, ragReadinessScore: true }}
+          >
             <ToolbarActions
               fileId="file-1"
               documentId="doc-1"
@@ -122,7 +79,6 @@ describe('ToolbarActions', () => {
               fileType={fileType}
               toggleModal={vi.fn()}
               isLoading={false}
-              onScore={vi.fn()}
             />
           </OrgFeaturesProvider>
         </NextIntlClientProvider>,
@@ -136,37 +92,35 @@ describe('ToolbarActions', () => {
       expect(await screen.findAllByRole('menuitem')).not.toHaveLength(0);
     }
 
-    it.each(['XLSX', 'CSV'])('offers neither for %s', async (fileType) => {
-      showFor(fileType);
-      await openMenu();
-      expect(
-        screen.queryByRole('menuitem', { name: scoreLabel }),
-      ).not.toBeInTheDocument();
-      expect(
-        screen.queryByRole('menuitem', { name: optimizeLabel }),
-      ).not.toBeInTheDocument();
-    });
+    it.each(['PDF', 'DOCX', 'XLSX', 'IMAGE'])(
+      'offers no Score for RAG for %s',
+      async (fileType) => {
+        showFor(fileType);
+        await openMenu();
+        expect(
+          screen.queryByRole('menuitem', { name: scoreLabel }),
+        ).not.toBeInTheDocument();
+      },
+    );
 
-    it('offers Score but not Optimize for an image', async () => {
-      showFor('IMAGE');
-      await openMenu();
-      expect(
-        screen.getByRole('menuitem', { name: scoreLabel }),
-      ).toBeInTheDocument();
-      expect(
-        screen.queryByRole('menuitem', { name: optimizeLabel }),
-      ).not.toBeInTheDocument();
-    });
-
-    it('offers both for prose', async () => {
+    it('offers Optimize for prose', async () => {
       showFor('PDF');
       await openMenu();
-      expect(
-        screen.getByRole('menuitem', { name: scoreLabel }),
-      ).toBeInTheDocument();
       expect(
         screen.getByRole('menuitem', { name: optimizeLabel }),
       ).toBeInTheDocument();
     });
+
+    // Q4, D2: Optimize is a prose tool.
+    it.each(['XLSX', 'CSV', 'IMAGE'])(
+      'offers no Optimize for %s',
+      async (fileType) => {
+        showFor(fileType);
+        await openMenu();
+        expect(
+          screen.queryByRole('menuitem', { name: optimizeLabel }),
+        ).not.toBeInTheDocument();
+      },
+    );
   });
 });

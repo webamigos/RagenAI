@@ -40,10 +40,6 @@ vi.mock('@/app/actions', () => ({
   updateFilePiiPolicy: vi.fn().mockResolvedValue(undefined),
 }));
 
-vi.mock('@/app/[locale]/(panel)/knowledge/optimize-document/actions', () => ({
-  scoreDocumentAction: vi.fn().mockResolvedValue({ total: 80 }),
-}));
-
 const messages = {
   'files-table': {
     'file-name': 'File Name',
@@ -66,7 +62,6 @@ const messages = {
     'status-processing': 'Processing',
     'status-failed': 'Failed',
     'status-uploading': 'Uploading',
-    'score-rag': 'Score for RAG',
     delete: 'Delete',
     edit: 'Edit',
     view: 'View',

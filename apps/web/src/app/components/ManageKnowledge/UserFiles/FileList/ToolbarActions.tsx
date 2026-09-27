@@ -9,7 +9,6 @@ import {
   TrashIcon,
   ArrowRightIcon,
   ShareIcon,
-  ChartBarIcon,
   SparklesIcon,
   ShieldCheckIcon,
 } from '@heroicons/react/24/outline';
@@ -22,33 +21,27 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { useOrgFeature } from '@/app/hooks/useOrgFeatures';
-import {
-  canOptimizeFileType,
-  isTabularFileType,
-} from '@/features/documents/utils/tabular-documents';
+import { canOptimizeFileType } from '@/features/documents/utils/tabular-documents';
 
 type ToolbarActionsProps = {
   fileId: string;
   documentId?: string;
   fileName: string;
   /**
-   * The stored `fileType`. Score and Optimize are prose tools and are absent
-   * for a spreadsheet (and Optimize for an image) — spec Q4, D2.
+   * The stored `fileType`. Optimize is a prose tool and is absent for a
+   * spreadsheet or an image — spec Q4, D2.
    */
   fileType?: string;
   folderId?: number | null;
   toggleModal: (fileId: string | null) => void;
   onMove?: (fileId: string) => void;
   onShare?: (fileId: string) => void;
-  onScore?: (fileId: string) => void;
   /**
    * Opens the confirmation dialog for this file's PII policy. Passed only to
    * someone who may change it — the item is absent otherwise rather than
    * disabled, because a disabled item in a menu is a promise you cannot keep.
    */
   onChangePolicy?: (fileId: string) => void;
-  isScoringLoading?: boolean;
   isLoading: boolean;
   /**
    * False where the organization may not remove documents (the demo). The
@@ -65,16 +58,12 @@ export const ToolbarActions = ({
   toggleModal,
   onMove,
   onShare,
-  onScore,
   onChangePolicy,
-  isScoringLoading,
   isLoading,
   canDelete = true,
 }: ToolbarActionsProps) => {
   const t = useTranslations('files-table');
   const router = useRouter();
-  // "Score for RAG" is offered only where the organization scores at all.
-  const scoringEnabled = useOrgFeature('ragReadinessScore');
 
   return (
     <DropdownMenu modal={false}>
@@ -157,19 +146,11 @@ export const ToolbarActions = ({
           </DropdownMenuItem>
         )}
 
-        {fileId &&
-          onScore &&
-          scoringEnabled &&
-          !isTabularFileType(fileType) && (
-            <DropdownMenuItem
-              onClick={() => onScore(fileId)}
-              disabled={isScoringLoading}
-            >
-              <ChartBarIcon className="size-4" />
-              {t('score-rag')}
-            </DropdownMenuItem>
-          )}
-
+        {/*
+          No "Score for RAG" here any more (spec D3): a document is scored by
+          "Analyse" in its Optimize tab, where the score is the baseline the
+          suggestions are measured against rather than a grade on its own.
+        */}
         {documentId && canOptimizeFileType(fileType) && (
           <DropdownMenuItem
             onClick={() =>
