@@ -334,12 +334,6 @@ export async function runFileEmbeddings(
   let language: string | null = file.language ?? null;
   let languageDetectionFailed = false;
   try {
-    await updateParsingStatus({
-      fileId,
-      orgId,
-      status: ParsingStatus.STARTED,
-    });
-
     let rawDocs: Document[] = [];
 
     // Resolve the parser setting via an activity (process.env is not
@@ -349,6 +343,38 @@ export async function runFileEmbeddings(
     doclingExpected =
       documentParser === 'docling' && DOCLING_SUPPORTED_TYPES.has(fileType);
 
+    // Under DOCLING_STRICT, a Docling that is down is waited out here —
+    // before the parse, so its step policy's attempts are spent only on a
+    // Docling that answers (spec 2026-09-26-docling-under-load, B1). With a
+    // fallback allowed there is nothing to wait for: the fallback is the
+    // plan either way.
+    //
+    // Before parsing is marked STARTED: a file waiting for its parser has not
+    // started, and the list should not say "Processing" for half an hour
+    // while nothing is (spec D3 — it keeps NOT_STARTED, with the reason in
+    // its metadata). Inside this `try`, so a wait that times out still
+    // records FAILED.
+    if (doclingExpected && doclingStrict) {
+      const gate = await waitForDocling({ fileId, orgId });
+      if (gate.outcome === 'cancelled') {
+        // Records CANCELLED and throws, like every other checkpoint.
+        await checkCancelled();
+      }
+      if (gate.outcome === 'timed-out') {
+        throw JobFailure.nonRetryable(
+          `Docling has been unavailable since ${gate.since}, so ${fileName} ` +
+            `was not parsed, and DOCLING_STRICT does not allow another ` +
+            `parser. Re-process the file once Docling is back.`,
+        );
+      }
+    }
+
+    await updateParsingStatus({
+      fileId,
+      orgId,
+      status: ParsingStatus.STARTED,
+    });
+
     // Cancellation checkpoint before the expensive parse (Docling can run up
     // to 10 minutes) — safe to throw here because the catch above rethrows a
     // non-retryable failure unchanged instead of rewrapping it.
@@ -357,26 +383,7 @@ export async function runFileEmbeddings(
     // Docling is the default: it parses locally, so documents stay on the
     // deployment's own infrastructure. Formats it does not handle (SRT, EPUB)
     // fall through to their legacy loader below.
-    if (documentParser === 'docling' && DOCLING_SUPPORTED_TYPES.has(fileType)) {
-      // Under DOCLING_STRICT, a Docling that is down is waited out here —
-      // before the parse, so its step policy's attempts are spent only on a
-      // Docling that answers (spec 2026-09-26-docling-under-load, B1). With a
-      // fallback allowed there is nothing to wait for: the fallback is the
-      // plan either way.
-      if (doclingStrict) {
-        const gate = await waitForDocling({ fileId, orgId });
-        if (gate.outcome === 'cancelled') {
-          // Records CANCELLED and throws, like every other checkpoint.
-          await checkCancelled();
-        }
-        if (gate.outcome === 'timed-out') {
-          throw JobFailure.nonRetryable(
-            `Docling has been unavailable since ${gate.since}, so ${fileName} ` +
-              `was not parsed, and DOCLING_STRICT does not allow another ` +
-              `parser. Re-process the file once Docling is back.`,
-          );
-        }
-      }
+    if (doclingExpected) {
       try {
         rawDocs = await (doclingStrict ? loadDoclingStrict : loadDocling)({
           ...locator,

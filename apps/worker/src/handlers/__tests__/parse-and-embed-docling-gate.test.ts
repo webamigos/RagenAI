@@ -61,6 +61,26 @@ describe('runFileEmbeddings — the Docling gate', () => {
     expect(parsingStatuses(activities)).toContain('COMPLETED');
   });
 
+  // Spec D3: a file waiting for its parser has not started parsing, so the
+  // list does not call it "Processing" while it waits.
+  it('marks parsing STARTED only after the wait', async () => {
+    const activities = createMockActivities();
+    strictDocling(activities);
+
+    await runFileEmbeddings(
+      { fileId: 'file-1', orgId: 'org-1' },
+      context(activities),
+    );
+
+    const started = activities.updateParsingStatus.mock.calls.findIndex(
+      ([arg]) => (arg as { status: string }).status === 'STARTED',
+    );
+    expect(started).toBeGreaterThanOrEqual(0);
+    expect(activities.waitForDocling.mock.invocationCallOrder[0]).toBeLessThan(
+      activities.updateParsingStatus.mock.invocationCallOrder[started],
+    );
+  });
+
   it('fails the file, non-retryably and without a parse, when Docling never returns', async () => {
     const activities = createMockActivities();
     strictDocling(activities);
