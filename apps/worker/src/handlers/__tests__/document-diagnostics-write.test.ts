@@ -175,6 +175,30 @@ describe('runFileEmbeddings — diagnostics', () => {
   });
 });
 
+describe('runFileEmbeddings — a file kept out of the index', () => {
+  // Parsed, not indexed: the findings would describe chunks retrieval does
+  // not hold. The old ones are cleared — the previous chunks were deleted.
+  it.each([
+    ['staged into Brain', { intake: 'brain' }, 'STAGED'],
+    ['withdrawn from retrieval', { retrieval: 'withdrawn' }, 'WITHDRAWN'],
+  ])('writes no findings for a file %s', async (_, metadata, status) => {
+    const activities = createMockActivities();
+    activities.getFileRecord.mockResolvedValue(
+      makeUserFile({ fileName: 'regulamin.pdf', metadata }),
+    );
+
+    await runFileEmbeddings(
+      { fileId: 'file-1', orgId: 'org-1' },
+      context(activities),
+    );
+
+    expect(activities.addDocumentsToVectorStore).not.toHaveBeenCalled();
+    expect(statusWrites(activities)).toContain(status);
+    expect(computeDocumentDiagnostics).not.toHaveBeenCalled();
+    expect(diagnosticsPatches(activities)).toEqual([null]);
+  });
+});
+
 describe('reindexDocumentVersion — diagnostics', () => {
   const payload = {
     orgId: 'org-1',

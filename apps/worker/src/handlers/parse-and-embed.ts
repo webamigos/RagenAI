@@ -647,6 +647,10 @@ export async function runFileEmbeddings(
   // Every path through the catch throws, so it is definitely assigned by the
   // time that step runs.
   let updatedDocs: Awaited<ReturnType<typeof prepareMetadata>>;
+  // Whether these chunks reached the vector store. A withdrawn or staged file
+  // is parsed and not indexed, and what the diagnostics below describe is
+  // what retrieval holds.
+  let indexed = false;
 
   try {
     // Read here rather than from `file` above: ingest can take minutes, and
@@ -719,6 +723,7 @@ export async function runFileEmbeddings(
         userId: ownerId,
         docs: updatedDocs,
       });
+      indexed = true;
 
       await updateEmbeddingStatus({
         fileId,
@@ -767,14 +772,18 @@ export async function runFileEmbeddings(
   // Checks over the chunks just indexed, with no model call. Written whatever
   // `documentDiagnostics` says — the key gates the panel, not the data, so the
   // data exists by the time the panel does. Written as null when the checks
-  // throw: a re-run replaced the chunks the previous findings were about, and
-  // absent-or-null means "not computed", never "nothing found".
+  // throw, and when nothing was indexed (a withdrawn or staged file): the
+  // file's previous chunks were deleted above, so the previous findings
+  // describe nothing retrieval holds, and absent-or-null means "not
+  // computed", never "nothing found".
   let diagnostics: DocumentDiagnostics | null = null;
   try {
-    diagnostics = computeDocumentDiagnostics(docs, fileType, {
-      parser: parsedWithDocling ? 'docling' : 'legacy',
-      doclingExpected,
-    });
+    if (indexed) {
+      diagnostics = computeDocumentDiagnostics(docs, fileType, {
+        parser: parsedWithDocling ? 'docling' : 'legacy',
+        doclingExpected,
+      });
+    }
   } catch (diagnosticsError) {
     ctx.log.warn(
       `Document diagnostics failed for file ${fileId}: ${diagnosticsError instanceof Error ? diagnosticsError.message : String(diagnosticsError)}`,
