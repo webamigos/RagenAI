@@ -1,5 +1,6 @@
-import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
-import { join, relative } from 'node:path';
+import { execFileSync } from 'node:child_process';
+import { existsSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
@@ -38,6 +39,49 @@ import { describe, expect, it } from 'vitest';
  */
 
 const REPO_ROOT = join(import.meta.dirname, '..', '..');
+
+/**
+ * The tree this rule is about is the one git tracks — for the files it reads
+ * and for the paths it resolves.
+ *
+ * A walk of the working tree gets both wrong on a developer's machine, in the
+ * same direction as the failure above. `.claude/worktrees*` holds untracked
+ * copies of this repository, so their stale citations fail the guard locally
+ * while CI stays green; and an untracked leftover such as
+ * `infra/litellm/config.yaml` makes a retired path look resolved. Skipping
+ * `.claude/` by name would fix the first and drop `.claude/skills/`, which is
+ * tracked and has to stay current.
+ *
+ * A file written but not yet `git add`-ed is read from its first commit on —
+ * which is where CI reads it.
+ */
+function trackedFiles(): string[] {
+  return execFileSync('git', ['ls-files', '-z'], {
+    cwd: REPO_ROOT,
+    encoding: 'utf8',
+    maxBuffer: 64 * 1024 * 1024,
+  })
+    .split('\0')
+    .filter(Boolean);
+}
+
+/**
+ * A cited path resolves when it is a tracked file, or a directory that holds
+ * one — `infra/temporal/` is cited as a directory. Git paths use `/` on every
+ * platform, and so do citations.
+ */
+function resolvesIn(tracked: readonly string[]): (path: string) => boolean {
+  const paths = new Set(tracked);
+  const directories = new Set(
+    tracked.flatMap((file) =>
+      file
+        .split('/')
+        .slice(0, -1)
+        .map((_, index, parts) => parts.slice(0, index + 1).join('/')),
+    ),
+  );
+  return (path) => paths.has(path) || directories.has(path);
+}
 
 /** Directories with nothing hand-written in them. */
 const SKIP_DIRS = new Set([
@@ -118,57 +162,56 @@ function trimPunctuation(path: string): string {
   return path.replace(/[.,;:)\]}'"`*/]+$/, '');
 }
 
-function walk(dir: string, found: string[] = []): string[] {
-  for (const entry of readdirSync(dir)) {
-    const full = join(dir, entry);
-    if (statSync(full).isDirectory()) {
-      if (!SKIP_DIRS.has(entry)) {
-        walk(full, found);
-      }
-      continue;
-    }
-    if (SEARCHED_EXTENSIONS.some((ext) => entry.endsWith(ext))) {
-      found.push(full);
-    }
+function isSearched(trackedPath: string): boolean {
+  const segments = trackedPath.split('/');
+  if (segments.slice(0, -1).some((segment) => SKIP_DIRS.has(segment))) {
+    return false;
   }
-  return found;
+  return SEARCHED_EXTENSIONS.some((ext) => trackedPath.endsWith(ext));
 }
 
-function isExempt(relativePath: string): boolean {
-  if (EXPLAINS_A_RETIREMENT.has(relativePath)) {
+function isExempt(trackedPath: string): boolean {
+  if (EXPLAINS_A_RETIREMENT.has(trackedPath)) {
     return true;
   }
-  if (NAMES_ANOTHER_PROJECTS_TREE.has(relativePath)) {
+  if (NAMES_ANOTHER_PROJECTS_TREE.has(trackedPath)) {
     return true;
   }
-  if (DATED_RECORDS.some((record) => relativePath.startsWith(record))) {
+  if (DATED_RECORDS.some((record) => trackedPath.startsWith(record))) {
     return true;
   }
   // This file names a deleted path to describe the failure it guards against.
-  return relativePath.startsWith(join('tests', 'architecture'));
+  return trackedPath.startsWith(join('tests', 'architecture'));
 }
 
 type Citation = { file: string; path: string };
 
-function citations(): Citation[] {
+function citations(files: readonly string[]): Citation[] {
   const found: Citation[] = [];
 
-  for (const file of walk(REPO_ROOT)) {
-    const relativePath = relative(REPO_ROOT, file);
-    if (isExempt(relativePath)) {
+  for (const file of files) {
+    if (!isSearched(file) || isExempt(file)) {
+      continue;
+    }
+    // Tracked but deleted in the working tree: an uncommitted removal, which
+    // takes its citations with it.
+    const full = join(REPO_ROOT, file);
+    if (!existsSync(full)) {
       continue;
     }
 
-    const text = readFileSync(file, 'utf8');
+    const text = readFileSync(full, 'utf8');
     for (const [match] of text.matchAll(INFRA_PATH)) {
-      found.push({ file: relativePath, path: trimPunctuation(match) });
+      found.push({ file, path: trimPunctuation(match) });
     }
   }
 
   return found;
 }
 
-const cited = citations();
+const tracked = trackedFiles();
+const resolves = resolvesIn(tracked);
+const cited = citations(tracked);
 
 describe('an infra/ path that is cited exists', () => {
   it('finds the citations it is meant to police', () => {
@@ -181,7 +224,7 @@ describe('an infra/ path that is cited exists', () => {
 
   it('resolves every infra/ path named outside a dated record', () => {
     const dangling = cited
-      .filter(({ path }) => !existsSync(join(REPO_ROOT, path)))
+      .filter(({ path }) => !resolves(path))
       .map(({ file, path }) => `${file} names ${path}`);
 
     expect(
@@ -198,12 +241,38 @@ describe('an infra/ path that is cited exists', () => {
   it('fails on a path that does not exist', () => {
     // The mutation the rule exists to catch, run through the same resolution
     // the assertion above uses, so it cannot pass vacuously.
-    expect(existsSync(join(REPO_ROOT, 'infra/litellm/config.yaml'))).toBe(
-      false,
-    );
-    expect(existsSync(join(REPO_ROOT, 'infra/llm-gateway/routes.yaml'))).toBe(
+    expect(resolves('infra/litellm/config.yaml')).toBe(false);
+    expect(resolves('infra/llm-gateway/routes.yaml')).toBe(true);
+    expect(resolves('infra/temporal')).toBe(true);
+  });
+
+  it('does not count an untracked leftover as a path that exists', () => {
+    // The trap from the header: the retired file is still on disk on many
+    // machines. Resolution must not look at the disk at all.
+    const resolvesHere = resolvesIn(['infra/llm-gateway/routes.yaml']);
+    expect(resolvesHere('infra/litellm/config.yaml')).toBe(false);
+    expect(resolvesHere('infra/llm-gateway')).toBe(true);
+    expect(resolvesHere('infra/llm')).toBe(false);
+  });
+
+  it('reads tracked files only, so a worktree copy under .claude/ is not read', () => {
+    const trackedSet = new Set(tracked);
+    expect(cited.every(({ file }) => trackedSet.has(file))).toBe(true);
+    expect(
+      cited.filter(({ file }) => file.startsWith('.claude/worktrees')),
+    ).toEqual([]);
+    // Excluding the copies must not exclude the tracked skills beside them.
+    expect(tracked.some((file) => file.startsWith('.claude/skills/'))).toBe(
       true,
     );
+    expect(isSearched('.claude/skills/ragen-code-review/SKILL.md')).toBe(true);
+  });
+
+  it('skips generated directories and unsearched extensions', () => {
+    expect(isSearched('apps/web/.next/server/app.js')).toBe(false);
+    expect(isSearched('packages/env/dist/index.js')).toBe(false);
+    expect(isSearched('infra/otel/collector-config.yaml')).toBe(true);
+    expect(isSearched('infra/docling/Dockerfile')).toBe(false);
   });
 
   it('strips the punctuation a citation is usually wrapped in', () => {
