@@ -1,0 +1,2056 @@
+[
+  {
+    "file": "docs/pl-04-protokol-zarzadu.md",
+    "suggestions": [
+      {
+        "id": "89b9d7cb-eb6b-4730-bc73-3e08e5956a83",
+        "type": "redundancy",
+        "after": "## Obecni\n\nZarząd w składzie trzyosobowym. Przewodniczyła Prezes Zarządu. Protokołowała sekretarz Zarządu. Nieobecny usprawiedliwiony: członek Zarządu ds. technicznych.",
+        "before": "## Obecni\n\nZarząd w składzie trzyosobowym. Przewodniczyła Prezes Zarządu. Protokołowała sekretarz Zarządu. Nieobecny usprawiedliwiony: członek Zarządu ds. technicznych.\n## Obecni\n\nZarząd w składzie trzyosobowym. Przewodniczyła Prezes Zarządu. Protokołowała sekretarz Zarządu. Nieobecny usprawiedliwiony: członek Zarządu ds. technicznych.",
+        "location": "Sekcja 'Obecni'",
+        "rationale": "Usunięcie zduplikowanej sekcji 'Obecni' w celu zwiększenia gęstości informacji i uniknięcia redundancji, co poprawia efektywność retrievalu.",
+        "dimensions": {
+          "selfContainedness": {
+            "reason": "Wersja AFTER jest bardziej zwięzła, ponieważ usuwa powtórzenie identycznej sekcji, co czyni ją bardziej efektywną i mniej redundantną.",
+            "improved": true,
+            "confidence": "high"
+          }
+        }
+      },
+      {
+        "id": "5409dfec-096b-4ef1-af74-536cdb9ed7a5",
+        "type": "restructure",
+        "after": "## Kto był obecny na posiedzeniu Zarządu Kolei Nadwiślańskiej S.A. w dniu 18 lutego 2026 r.?",
+        "before": "## Obecni",
+        "location": "Sekcja 'Obecni'",
+        "rationale": "Przeformułowanie nagłówka na pytanie poprawia zgodność z formatem Q&A, a także zwiększa samowystarczalność sekcji, jasno wskazując jej zawartość i dodając kluczowe encje.",
+        "dimensions": {
+          "avgChunkSize": {
+            "reason": "Bardziej szczegółowy tytuł w wersji AFTER lepiej określa zakres sekcji, co może prowadzić do bardziej odpowiedniej długości tekstu (80-500 słów) dla modeli osadzających.",
+            "improved": true,
+            "confidence": "medium"
+          },
+          "chunkStructure": {
+            "reason": "Nagłówek w wersji AFTER jest znacznie bardziej szczegółowy i kontekstowy, co ułatwia zrozumienie zakresu informacji w danym fragmencie tekstu.",
+            "improved": true,
+            "confidence": "high"
+          },
+          "selfContainedness": {
+            "reason": "Wersja PO zawiera wszystkie niezbędne informacje kontekstowe (kto, co, gdzie, kiedy) bezpośrednio w nagłówku, dzięki czemu jest zrozumiała sama w sobie, w przeciwieństwie do wersji PRZED, która jest zbyt ogólna.",
+            "improved": true,
+            "confidence": "high"
+          }
+        }
+      },
+      {
+        "id": "ddc43487-cd39-49d6-8a4a-b0655506fc0c",
+        "type": "restructure",
+        "after": "## Uchwała 1/02/2026: Jaki budżet zatwierdzono dla projektu „Bazyliszek” i co obejmuje?",
+        "before": "## Uchwała 1/02/2026 — projekt „Bazyliszek\"",
+        "location": "Sekcja 'Uchwała 1/02/2026 — projekt „Bazyliszek\"'",
+        "rationale": "Przeformułowanie nagłówka na pytanie poprawia zgodność z formatem Q&A i zwiększa samowystarczalność sekcji, jasno wskazując jej zawartość. Dodatkowo, wprowadza kluczowe encje do nagłówka.",
+        "dimensions": {
+          "chunkStructure": {
+            "reason": "Nagłówek w wersji AFTER jest bardziej opisowy i w formie pytania, co lepiej sygnalizuje zawartość następującego po nim bloku tekstu.",
+            "improved": true,
+            "confidence": "high"
+          },
+          "selfContainedness": {
+            "reason": "Wersja AFTER jest bardziej samodzielna, ponieważ tytuł od razu informuje o temacie uchwały (budżet i zakres projektu), podczas gdy wersja BEFORE podaje jedynie identyfikatory.",
+            "improved": true,
+            "confidence": "high"
+          }
+        }
+      },
+      {
+        "id": "e4d7fbd3-4cb7-422a-9d43-62b88108352d",
+        "type": "keywords",
+        "after": "Zarząd Kolei Nadwiślańskiej S.A. zatwierdził budżet projektu modernizacji taboru kolejowego, odnowy floty pociągów pod nazwą roboczą **„Bazyliszek\"** w wysokości **4 180 000 zł** na rok obrotowy 2026.",
+        "before": "Zarząd zatwierdził budżet projektu modernizacji taboru pod nazwą roboczą **„Bazyliszek\"** w wysokości **4 180 000 zł** na rok obrotowy 2026.",
+        "location": "Sekcja 'Uchwała 1/02/2026 — projekt „Bazyliszek\"'",
+        "rationale": "Dodanie synonimów 'modernizacji taboru' (tabor kolejowy, odnowa floty pociągów) zwiększa szanse na odnalezienie tej sekcji przez zapytania używające różnych sformułowań, poprawiając retrieval semantyczny i BM25. Dodano również pełną nazwę spółki dla lepszej samowystarczalności.",
+        "dimensions": {
+          "entityDensity": {
+            "reason": "Wersja AFTER dodaje konkretną nazwę firmy (\"Kolei Nadwiślańskiej S.A.\"), co zwiększa liczbę wyszukiwalnych encji.",
+            "improved": true,
+            "confidence": "high"
+          }
+        }
+      },
+      {
+        "id": "918e9fbc-9d4d-4e42-b7a4-87ddc153bd29",
+        "type": "restructure",
+        "after": "## Uchwała 2/02/2026: Kiedy i dlaczego linia W7 (Nadbrzeże — Kamienna Grobla) zostanie zawieszona oraz jakie są zasady zwrotu biletów?",
+        "before": "## Uchwała 2/02/2026 — linia W7",
+        "location": "Sekcja 'Uchwała 2/02/2026 — linia W7'",
+        "rationale": "Przeformułowanie nagłówka na pytanie poprawia zgodność z formatem Q&A i zwiększa samowystarczalność sekcji, jasno wskazując jej zawartość. Dodatkowo, wprowadza kluczowe encje do nagłówka.",
+        "dimensions": {
+          "chunkStructure": {
+            "reason": "Nagłówek w wersji AFTER jest znacznie bardziej szczegółowy i precyzyjnie określa zakres tematyczny, co ułatwia podział tekstu na logiczne fragmenty.",
+            "improved": true,
+            "confidence": "high"
+          },
+          "selfContainedness": {
+            "reason": "Wersja AFTER zawiera znacznie więcej kluczowych informacji (cel uchwały, szczegóły linii, konsekwencje i zasady zwrotu biletów), dzięki czemu jest zrozumiała bez konieczności czytania dalszych sekcji.",
+            "improved": true,
+            "confidence": "high"
+          }
+        }
+      },
+      {
+        "id": "ec135699-f581-4af2-bdec-9f6255a3faf3",
+        "type": "pronoun_context",
+        "after": "W okresie zawieszenia kursowania linii W7, czyli od 1 czerwca do 31 sierpnia 2026 r., uruchomiona zostanie zastępcza komunikacja autobusowa. Pasażerom Kolei Nadwiślańskiej S.A. posiadającym bilety okresowe na linię W7 przysługuje zwrot proporcjonalny, rozliczany według zasad regulaminu zwrotów, jednak bez potrącenia opłaty manipulacyjnej.",
+        "before": "W okresie zawieszenia uruchomiona zostanie zastępcza komunikacja autobusowa. Pasażerom posiadającym bilety okresowe na linię W7 przysługuje zwrot proporcjonalny, rozliczany według zasad regulaminu zwrotów, jednak bez potrącenia opłaty manipulacyjnej.",
+        "location": "Sekcja 'Uchwała 2/02/2026 — linia W7'",
+        "rationale": "Zastąpienie zaimka 'W okresie zawieszenia' konkretnym okresem oraz dodanie nazwy spółki poprawia samowystarczalność i gęstość encji w sekcji, ułatwiając zrozumienie kontekstu bez odwoływania się do poprzednich zdań.",
+        "dimensions": {
+          "selfContainedness": {
+            "reason": "Wersja AFTER jest bardziej samodzielna, ponieważ precyzuje, co jest zawieszone, w jakim okresie oraz do kogo dokładnie odnosi się informacja o zwrotach.",
+            "improved": true,
+            "confidence": "high"
+          }
+        }
+      },
+      {
+        "id": "cdb5cfd4-dda6-421b-8bc4-e6be0cb5609f",
+        "type": "restructure",
+        "after": "## Uchwała 3/02/2026: Jakie są nowe opłaty za przewóz rowerów w Kolei Nadwiślańskiej S.A. i ile miejsc rowerowych jest w składach EN-44?",
+        "before": "## Uchwała 3/02/2026 — taryfa rowerowa",
+        "location": "Sekcja 'Uchwała 3/02/2026 — taryfa rowerowa'",
+        "rationale": "Przeformułowanie nagłówka na pytanie poprawia zgodność z formatem Q&A i zwiększa samowystarczalność sekcji, jasno wskazując jej zawartość. Dodatkowo, wprowadza kluczowe encje do nagłówka.",
+        "dimensions": {
+          "chunkStructure": {
+            "reason": "Nagłówek w wersji AFTER jest znacznie bardziej szczegółowy i od razu wskazuje na kluczowe tematy, co ułatwia podział tekstu na logiczne fragmenty.",
+            "improved": true,
+            "confidence": "high"
+          },
+          "selfContainedness": {
+            "reason": "Wersja 'AFTER' zawiera znacznie więcej szczegółów dotyczących treści uchwały, takich jak konkretne pytania o opłaty i liczbę miejsc, co czyni ją bardziej samodzielną i informatywną.",
+            "improved": true,
+            "confidence": "high"
+          }
+        }
+      },
+      {
+        "id": "307b0256-a3ae-4351-83d4-5fb5ab4e9cc5",
+        "type": "keywords",
+        "after": "Zarząd Kolei Nadwiślańskiej S.A. przyjął nową taryfę przewozu rowerów, cennik za transport rowerów, ze skutkiem od 1 kwietnia 2026 r. Opłata jednorazowa za przewóz roweru wynosi **9,80 zł** , a bilet miesięczny rowerowy — **74 zł** .",
+        "before": "Zarząd przyjął nową taryfę przewozu rowerów ze skutkiem od 1 kwietnia 2026 r. Opłata jednorazowa za przewóz roweru wynosi **9,80 zł** , a bilet miesięczny rowerowy — **74 zł** .",
+        "location": "Sekcja 'Uchwała 3/02/2026 — taryfa rowerowa'",
+        "rationale": "Dodanie synonimów 'taryfa przewozu rowerów' (cennik za transport rowerów) zwiększa szanse na odnalezienie tej sekcji przez zapytania używające różnych sformułowań, poprawiając retrieval semantyczny i BM25. Dodano również pełną nazwę spółki dla lepszej samowystarczalności.",
+        "dimensions": {
+          "entityDensity": {
+            "reason": "Wersja AFTER zawiera konkretną nazwę własną 'Kolei Nadwiślańskiej S.A.', co zwiększa jej specyficzność i możliwość wyszukiwania.",
+            "improved": true,
+            "confidence": "high"
+          }
+        }
+      },
+      {
+        "id": "3c513b8b-f005-474f-8597-9d1e30648437",
+        "type": "restructure",
+        "after": "## Jaki wzrost wniosków o zwrot biletu odnotowano w Kolei Nadwiślańskiej S.A. i kto ma przygotować analizę przyczyn?",
+        "before": "## Sprawy różne",
+        "location": "Sekcja 'Sprawy różne'",
+        "rationale": "Przeformułowanie nagłówka na pytanie poprawia zgodność z formatem Q&A i zwiększa samowystarczalność sekcji, jasno wskazując jej zawartość. Dodatkowo, wprowadza kluczowe encje do nagłówka.",
+        "dimensions": {
+          "avgChunkSize": {
+            "reason": "Wersja AFTER jest dłuższa niż BEFORE, co jest krokiem w dobrym kierunku, choć nadal jest zbyt krótka dla optymalnego rozmiaru sekcji (80-500 słów).",
+            "improved": true,
+            "confidence": "medium"
+          },
+          "chunkStructure": {
+            "reason": "Nagłówek w wersji AFTER jest znacznie bardziej szczegółowy i informatywny, co ułatwia zrozumienie zakresu treści danego fragmentu tekstu.",
+            "improved": true,
+            "confidence": "high"
+          },
+          "selfContainedness": {
+            "reason": "Wersja AFTER jest znacznie bardziej konkretna i informatywna, jasno określając temat i kluczowe pytania, podczas gdy wersja BEFORE jest całkowicie ogólna i nie dostarcza żadnych szczegółów.",
+            "improved": true,
+            "confidence": "high"
+          }
+        }
+      },
+      {
+        "id": "9300f179-8b6d-4fbc-ba30-5ba5222fea95",
+        "type": "pronoun_context",
+        "after": "Zarząd Kolei Nadwiślańskiej S.A. przyjął do wiadomości informację o wzroście liczby wniosków o zwrot biletu o 31% w styczniu 2026 r. względem stycznia 2025 r. Zarząd Kolei Nadwiślańskiej S.A. zlecił Biuru Obsługi Pasażera przygotowanie analizy przyczyn tego wzrostu w terminie do 15 marca 2026 r.",
+        "before": "Zarząd przyjął do wiadomości informację o wzroście liczby wniosków o zwrot biletu o 31% w styczniu 2026 r. względem stycznia 2025 r. i zlecił Biuru Obsługi Pasażera przygotowanie analizy przyczyn w terminie do 15 marca 2026 r.",
+        "location": "Sekcja 'Sprawy różne'",
+        "rationale": "Dodanie pełnej nazwy spółki 'Kolej Nadwiślańska S.A.' oraz powtórzenie 'Zarząd Kolei Nadwiślańskiej S.A.' zamiast domyślnego podmiotu poprawia gęstość encji i samowystarczalność sekcji, ułatwiając retrieval konkretnych informacji.",
+        "dimensions": {
+          "selfContainedness": {
+            "reason": "Wersja AFTER powtarza podmiot (\"Zarząd Kolei Nadwiślańskiej S.A.\") w drugim zdaniu, co sprawia, że każde zdanie jest bardziej niezależne i zrozumiałe bez konieczności odczytywania poprzedniego.",
+            "improved": true,
+            "confidence": "high"
+          }
+        }
+      }
+    ],
+    "applied": [
+      {
+        "id": "89b9d7cb-eb6b-4730-bc73-3e08e5956a83",
+        "applied": false
+      },
+      {
+        "id": "5409dfec-096b-4ef1-af74-536cdb9ed7a5",
+        "applied": true
+      },
+      {
+        "id": "ddc43487-cd39-49d6-8a4a-b0655506fc0c",
+        "applied": true
+      },
+      {
+        "id": "e4d7fbd3-4cb7-422a-9d43-62b88108352d",
+        "applied": false
+      },
+      {
+        "id": "918e9fbc-9d4d-4e42-b7a4-87ddc153bd29",
+        "applied": true
+      },
+      {
+        "id": "ec135699-f581-4af2-bdec-9f6255a3faf3",
+        "applied": false
+      },
+      {
+        "id": "cdb5cfd4-dda6-421b-8bc4-e6be0cb5609f",
+        "applied": true
+      },
+      {
+        "id": "307b0256-a3ae-4351-83d4-5fb5ab4e9cc5",
+        "applied": false
+      },
+      {
+        "id": "3c513b8b-f005-474f-8597-9d1e30648437",
+        "applied": true
+      },
+      {
+        "id": "9300f179-8b6d-4fbc-ba30-5ba5222fea95",
+        "applied": false
+      }
+    ],
+    "charsBefore": 1903,
+    "charsAfter": 2332
+  },
+  {
+    "file": "docs/pl-03-polityka-opoznien.md",
+    "suggestions": [
+      {
+        "id": "bf503e41-212f-4e4e-b769-c421c3a14899",
+        "type": "restructure",
+        "after": "## 1. Jakie są progi rekompensaty za opóźnienia pociągów Kolei Nadwiślańskiej S.A.?\n\nNiniejsza sekcja określa warunki i progi rekompensaty, czyli odszkodowania lub zwrotu kosztów, przysługujące pasażerom Kolei Nadwiślańskiej S.A. w przypadku opóźnienia pociągu. Rekompensata przysługuje pasażerowi, którego pociąg Kolei Nadwiślańskiej S.A. przyjechał na stację docelową z opóźnieniem liczonym względem rozkładu jazdy obowiązującego w dniu przejazdu:",
+        "before": "## 1. Progi rekompensaty\n\nRekompensata przysługuje pasażerowi, którego pociąg przyjechał na stację docelową z opóźnieniem liczonym względem rozkładu obowiązującego w dniu przejazdu:",
+        "location": "Sekcja 1. Progi rekompensaty",
+        "rationale": "Zmiana nagłówka na pytanie poprawia format Q&A. Dodanie kontekstu o 'Kolei Nadwiślańskiej S.A.' oraz synonimów 'odszkodowania' i 'zwrotu kosztów' zwiększa samowystarczalność chunka i gęstość encji, a także poprawia wyszukiwalność.",
+        "dimensions": {
+          "avgChunkSize": {
+            "reason": "Wersja PO jest dłuższa niż PRZED, co jest krokiem w dobrym kierunku, ale nadal jest zbyt krótka, aby spełnić minimalny próg 80 słów dla modeli osadzających.",
+            "improved": true,
+            "confidence": "medium"
+          },
+          "chunkStructure": {
+            "reason": "Nagłówek w wersji AFTER jest znacznie bardziej szczegółowy i precyzyjnie określa zakres treści, co ułatwia segmentację tekstu.",
+            "improved": true,
+            "confidence": "high"
+          },
+          "selfContainedness": {
+            "reason": "Wersja AFTER jest bardziej samodzielna, ponieważ tytuł i pierwsze zdanie jasno określają, czym jest rekompensata, kogo dotyczy i jakiej firmy dotyczy, co było niejasne w wersji BEFORE.",
+            "improved": true,
+            "confidence": "high"
+          }
+        }
+      },
+      {
+        "id": "c13bc945-0b1e-49f5-b62d-059f943c8367",
+        "type": "restructure",
+        "after": "## 2. Jaki jest minimalny próg wypłaty rekompensaty w Kolei Nadwiślańskiej S.A.?\n\nTa sekcja opisuje minimalną kwotę wypłaty rekompensaty za opóźnienia pociągów Kolei Nadwiślańskiej S.A. Rekompensaty, czyli odszkodowania za opóźnienia, w kwocie niższej niż **31 zł** nie są wypłacane pasażerom Kolei Nadwiślańskiej S.A. Pasażer może jednak zsumować roszczenia z maksymalnie trzech przejazdów Kolei Nadwiślańskiej S.A. odbytych w ciągu jednego miesiąca kalendarzowego i złożyć jeden wniosek zbiorczy o rekompensatę.",
+        "before": "## 2. Próg minimalny wypłaty\n\nRekompensaty w kwocie niższej niż **31 zł** nie są wypłacane. Pasażer może jednak zsumować roszczenia z maksymalnie trzech przejazdów odbytych w ciągu jednego miesiąca kalendarzowego i złożyć jeden wniosek zbiorczy.",
+        "location": "Sekcja 2. Próg minimalny wypłaty",
+        "rationale": "Zmiana nagłówka na pytanie poprawia format Q&A. Dodanie kontekstu o 'Kolei Nadwiślańskiej S.A.' oraz synonimów 'odszkodowania' i 'minimalna kwota wypłaty' zwiększa samowystarczalność chunka i gęstość encji, a także poprawia wyszukiwalność. Powtórzenie 'Kolei Nadwiślańskiej S.A.' przy 'przejazdów' zwiększa gęstość encji.",
+        "dimensions": {
+          "avgChunkSize": {
+            "reason": "Wersja AFTER jest dłuższa i bliższa minimalnej liczbie słów (80) wymaganej dla modeli embeddingowych, choć nadal nie osiąga tego progu.",
+            "improved": true,
+            "confidence": "high"
+          },
+          "chunkStructure": {
+            "reason": "Nagłówek w wersji AFTER jest bardziej szczegółowy i precyzyjnie określa temat sekcji, co ułatwia zrozumienie i chunkowanie tekstu.",
+            "improved": true,
+            "confidence": "high"
+          },
+          "selfContainedness": {
+            "reason": "Wersja AFTER jest bardziej samodzielna, ponieważ jasno określa podmiot (Kolej Nadwiślańska S.A.) i kontekst (rekompensaty za opóźnienia) w tytule i treści, co eliminuje potrzebę odwoływania się do innych sekcji.",
+            "improved": true,
+            "confidence": "high"
+          }
+        }
+      },
+      {
+        "id": "6e8bfa91-04f3-421b-9495-73be603de71a",
+        "type": "restructure",
+        "after": "## 3. Kiedy rekompensata za opóźnienie pociągu Kolei Nadwiślańskiej S.A. nie przysługuje (wyłączenia)?\n\nNiniejsza sekcja określa przypadki, w których rekompensata za opóźnienie pociągu Kolei Nadwiślańskiej S.A. nie przysługuje pasażerom. Rekompensata, czyli odszkodowanie za opóźnienie, nie przysługuje, jeżeli opóźnienie pociągu Kolei Nadwiślańskiej S.A. było skutkiem:\n\n- warunków pogodowych uznanych przez Instytut Meteorologii i Gospodarki Wodnej (IMGW) za ekstremalne,\n- działania osób trzecich na torowisku Kolei Nadwiślańskiej S.A.,\n- strajku niebędącego strajkiem pracowników przewoźnika Kolei Nadwiślańskiej S.A.\n\nCiężar wykazania okoliczności wyłączającej prawo do rekompensaty spoczywa na Kolei Nadwiślańskiej S.A. jako przewoźniku.",
+        "before": "## 3. Wyłączenia\n\nRekompensata nie przysługuje, jeżeli opóźnienie było skutkiem:\n\n- warunków pogodowych uznanych przez IMGW za ekstremalne,\n- działania osób trzecich na torowisku,\n- strajku niebędącego strajkiem pracowników przewoźnika.\n\nCiężar wykazania okoliczności wyłączającej spoczywa na przewoźniku.",
+        "location": "Sekcja 3. Wyłączenia",
+        "rationale": "Zmiana nagłówka na pytanie poprawia format Q&A. Dodanie kontekstu o 'Kolei Nadwiślańskiej S.A.' oraz synonimów 'odszkodowanie' i 'przypadki, w których rekompensata nie przysługuje' zwiększa samowystarczalność chunka i gęstość encji, a także poprawia wyszukiwalność. Rozwinięcie skrótu IMGW i doprecyzowanie 'przewoźnika' do 'Kolei Nadwiślańskiej S.A.' zwiększa gęstość encji i samowystarczalność.",
+        "dimensions": {
+          "avgChunkSize": {
+            "reason": "Wersja AFTER ma 106 słów, co mieści się w zalecanym zakresie 80-500 słów dla modeli osadzających, podczas gdy wersja BEFORE ma tylko 39 słów, co jest zbyt krótkie.",
+            "improved": true,
+            "confidence": "high"
+          },
+          "chunkStructure": {
+            "reason": "Nagłówek w wersji AFTER jest znacznie bardziej opisowy i precyzyjnie określa zawartość sekcji, co ułatwia zrozumienie i chunkowanie tekstu.",
+            "improved": true,
+            "confidence": "high"
+          },
+          "selfContainedness": {
+            "reason": "Wersja AFTER jest znacznie bardziej samodzielna, ponieważ tytuł jest precyzyjny, kluczowe terminy są powtórzone i kontekstualizowane, a nazwa przewoźnika oraz pełna nazwa instytucji (IMGW) są jasno określone w obrębie sekcji.",
+            "improved": true,
+            "confidence": "high"
+          }
+        }
+      },
+      {
+        "id": "29b03cc2-c589-46fe-81a7-7d5267086fe8",
+        "type": "restructure",
+        "after": "## 4. Jaki jest termin rozpatrzenia wniosku o rekompensatę za opóźnienie pociągu Kolei Nadwiślańskiej S.A.?\n\nTa sekcja określa termin rozpatrzenia wniosków o rekompensatę za opóźnienia pociągów Kolei Nadwiślańskiej S.A. Wniosek o rekompensatę, czyli odszkodowanie za opóźnienie, rozpatrywany jest przez Kolej Nadwiślańską S.A. w terminie **21 dni roboczych**. Termin rozpatrzenia wniosku o rekompensatę jest dłuższy niż termin dla zwrotów biletów, ponieważ wymaga potwierdzenia rzeczywistego czasu przejazdu pociągu w systemie ruchu Kolei Nadwiślańskiej S.A.",
+        "before": "## 4. Termin rozpatrzenia\n\nWniosek o rekompensatę rozpatrywany jest w terminie **21 dni roboczych** . Termin ten jest dłuższy niż termin dla zwrotów biletów, ponieważ wymaga potwierdzenia rzeczywistego czasu przejazdu w systemie ruchu.",
+        "location": "Sekcja 4. Termin rozpatrzenia",
+        "rationale": "Zmiana nagłówka na pytanie poprawia format Q&A. Dodanie kontekstu o 'Kolei Nadwiślańskiej S.A.' oraz synonimów 'odszkodowanie' i 'czas oczekiwania na decyzję' zwiększa samowystarczalność chunka i gęstość encji, a także poprawia wyszukiwalność. Zastąpienie zaimka 'ten' bezpośrednim odniesieniem 'Termin rozpatrzenia wniosku o rekompensatę' oraz doprecyzowanie 'systemie ruchu' do 'systemie ruchu Kolei Nadwiślańskiej S.A.' poprawia samowystarczalność i gęstość encji.",
+        "dimensions": {
+          "avgChunkSize": {
+            "reason": "Wersja AFTER jest dłuższa i bliższa minimalnej liczbie 80 słów, choć nadal nie osiąga zalecanego zakresu.",
+            "improved": true,
+            "confidence": "high"
+          },
+          "chunkStructure": {
+            "reason": "Nagłówek w wersji AFTER jest znacznie bardziej szczegółowy i precyzyjnie określa temat sekcji, co ułatwia zrozumienie kontekstu chunków tekstowych.",
+            "improved": true,
+            "confidence": "high"
+          },
+          "selfContainedness": {
+            "reason": "Wersja AFTER jest znacznie bardziej samodzielna, ponieważ tytuł i treść jasno określają, czego dotyczy sekcja (rekompensata za opóźnienie pociągu Kolei Nadwiślańskiej S.A.), bez konieczności odwoływania się do innych części dokumentu.",
+            "improved": true,
+            "confidence": "high"
+          }
+        }
+      },
+      {
+        "id": "07dee01f-0b33-48b5-b2d9-eb5b46c41c2e",
+        "type": "restructure",
+        "after": "## 5. W jakiej formie wypłacana jest rekompensata za opóźnienie pociągu Kolei Nadwiślańskiej S.A.?\n\nNiniejsza sekcja opisuje dostępne formy wypłaty rekompensaty za opóźnienia pociągów Kolei Nadwiślańskiej S.A. Rekompensata, czyli odszkodowanie za opóźnienie, wypłacana jest pasażerom Kolei Nadwiślańskiej S.A. w formie przelewu bankowego albo — na wniosek pasażera — w formie bonu podróżnego Kolei Nadwiślańskiej S.A. o wartości powiększonej o 15%. Bon podróżny Kolei Nadwiślańskiej S.A. jest ważny 12 miesięcy od daty wystawienia i nie podlega wymianie na gotówkę.",
+        "before": "## 5. Forma wypłaty\n\nRekompensata wypłacana jest w formie przelewu albo — na wniosek pasażera — w formie bonu podróżnego o wartości powiększonej o 15%. Bon jest ważny 12 miesięcy od daty wystawienia i nie podlega wymianie na gotówkę.",
+        "location": "Sekcja 5. Forma wypłaty",
+        "rationale": "Zmiana nagłówka na pytanie poprawia format Q&A. Dodanie kontekstu o 'Kolei Nadwiślańskiej S.A.' oraz synonimów 'odszkodowanie' i 'sposoby otrzymania rekompensaty' zwiększa samowystarczalność chunka i gęstość encji, a także poprawia wyszukiwalność. Zastąpienie zaimka 'Bon' bezpośrednim odniesieniem 'Bon podróżny Kolei Nadwiślańskiej S.A.' poprawia samowystarczalność i gęstość encji.",
+        "dimensions": {
+          "avgChunkSize": {
+            "reason": "Wersja AFTER jest znacznie bliżej dolnej granicy zalecanego zakresu 80-500 słów, podczas gdy wersja BEFORE jest za krótka.",
+            "improved": true,
+            "confidence": "high"
+          },
+          "selfContainedness": {
+            "reason": "Wersja AFTER jest znacznie bardziej samodzielna, ponieważ w tytule i treści wielokrotnie powtarza nazwę firmy (\"Koleje Nadwiślańskie S.A.\") oraz precyzuje, że chodzi o rekompensatę za opóźnienie pociągu, co eliminuje potrzebę odwoływania się do wcześniejszych sekcji.",
+            "improved": true,
+            "confidence": "high"
+          }
+        }
+      }
+    ],
+    "applied": [
+      {
+        "id": "bf503e41-212f-4e4e-b769-c421c3a14899",
+        "applied": false
+      },
+      {
+        "id": "c13bc945-0b1e-49f5-b62d-059f943c8367",
+        "applied": false
+      },
+      {
+        "id": "6e8bfa91-04f3-421b-9495-73be603de71a",
+        "applied": true
+      },
+      {
+        "id": "29b03cc2-c589-46fe-81a7-7d5267086fe8",
+        "applied": false
+      },
+      {
+        "id": "07dee01f-0b33-48b5-b2d9-eb5b46c41c2e",
+        "applied": false
+      }
+    ],
+    "charsBefore": 1595,
+    "charsAfter": 2033
+  },
+  {
+    "file": "docs/en-01-refund-policy.md",
+    "suggestions": [
+      {
+        "id": "a2e78d93-426c-48c9-bf91-3d9ccd10195b",
+        "type": "restructure",
+        "after": "## 1. Jakie bilety obejmuje polityka zwrotów Wolfsbane Interurban Rail?\n\nNiniejsza sekcja opisuje zakres zastosowania polityki zwrotów biletów Wolfsbane Interurban Rail, w tym rodzaje biletów i trasy objęte regulacjami.",
+        "before": "## 1. Scope",
+        "location": "Sekcja 1. Scope",
+        "rationale": "Zmiana nagłówka na pytanie poprawia zgodność z formatem Q&A, ułatwiając wyszukiwanie konkretnych informacji. Dodanie zdania wprowadzającego zwiększa samowystarczalność sekcji, dostarczając kontekstu od razu na początku.",
+        "dimensions": {
+          "avgChunkSize": {
+            "reason": "Wersja AFTER, choć nadal za krótka, zawiera więcej treści niż wersja BEFORE, co jest lepsze dla modeli osadzających, dostarczając więcej kontekstu.",
+            "improved": true,
+            "confidence": "medium"
+          },
+          "chunkStructure": {
+            "reason": "Nagłówek w wersji AFTER jest znacznie bardziej szczegółowy i informacyjny, co ułatwia zrozumienie zakresu sekcji i poprawia strukturę tekstu.",
+            "improved": true,
+            "confidence": "high"
+          },
+          "selfContainedness": {
+            "reason": "Wersja AFTER zawiera znacznie bardziej szczegółowy i informacyjny tytuł oraz wstęp, który jasno określa temat i kontekst sekcji, czyniąc ją zrozumiałą bez konieczności czytania innych części dokumentu.",
+            "improved": true,
+            "confidence": "high"
+          }
+        }
+      },
+      {
+        "id": "68e7fc32-e83c-4576-92c4-5269e440fdd0",
+        "type": "pronoun_context",
+        "after": "Bilety sprzedawane przez operatorów partnerskich są rozliczane zgodnie z warunkami własnymi tych operatorów partnerskich.",
+        "before": "Tickets sold by partner operators are settled under those operators' own terms.",
+        "location": "Sekcja 1. Scope",
+        "rationale": "Zastąpienie zaimka 'those' (tych) konkretnym odniesieniem do 'operatorów partnerskich' zwiększa jasność i samowystarczalność zdania, eliminując potrzebę odwoływania się do wcześniejszego kontekstu.",
+        "dimensions": {
+          "selfContainedness": {
+            "reason": "Wersja AFTER powtarza przymiotnik 'partnerskich' w odniesieniu do operatorów, co czyni odniesienie bardziej jednoznacznym i tym samym nieznacznie zwiększa samodzielność zdania.",
+            "improved": true,
+            "confidence": "medium"
+          }
+        }
+      },
+      {
+        "id": "69dd172b-dbcc-4eb3-9f78-fb9265593883",
+        "type": "keywords",
+        "after": "Niniejsza polityka zwrotów biletów (zasady zwrotów biletów, regulamin zwrotów) obejmuje bilety jednorazowe i sezonowe sprzedawane przez Wolfsbane Interurban Rail na trasach B2 (Bridgewell — Otterhaven), B5 (Bridgewell — Marrow Cross) i B9 (Otterhaven — Thistledown).",
+        "before": "This policy covers single and season tickets sold by Wolfsbane Interurban Rail on routes B2 (Bridgewell — Otterhaven), B5 (Bridgewell — Marrow Cross) and B9 (Otterhaven — Thistledown).",
+        "location": "Sekcja 1. Scope",
+        "rationale": "Dodanie synonimów i kluczowych fraz takich jak 'polityka zwrotów biletów', 'zasady zwrotów biletów' oraz 'regulamin zwrotów' zwiększa szanse na odnalezienie tej sekcji przez różne zapytania użytkowników, zarówno w wyszukiwaniu semantycznym, jak i leksykalnym.",
+        "dimensions": {}
+      },
+      {
+        "id": "a4e972a5-1ce4-45d4-ac21-d35b334470d7",
+        "type": "restructure",
+        "after": "## 2. Jaka jest kwota zwrotu za bilet Wolfsbane Interurban Rail i w jakich przypadkach przysługuje pełny zwrot?\n\nTa sekcja szczegółowo określa zasady obliczania kwoty zwrotu za bilety Wolfsbane Interurban Rail oraz warunki uzyskania pełnego zwrotu kosztów.",
+        "before": "## 2. Refund amount",
+        "location": "Sekcja 2. Refund amount",
+        "rationale": "Zmiana nagłówka na pytanie poprawia zgodność z formatem Q&A i ułatwia użytkownikom szybkie znalezienie informacji o kwocie zwrotu. Dodanie zdania wprowadzającego zwiększa samowystarczalność sekcji.",
+        "dimensions": {
+          "chunkStructure": {
+            "reason": "Nagłówek w wersji AFTER jest znacznie bardziej szczegółowy i informatywny, co ułatwia zrozumienie zawartości sekcji i poprawia strukturę dla chunkowania.",
+            "improved": true,
+            "confidence": "high"
+          },
+          "selfContainedness": {
+            "reason": "Wersja PO jest znacznie bardziej samodzielna, ponieważ tytuł i opis jasno określają, czego dotyczy sekcja (bilety Wolfsbane Interurban Rail i warunki zwrotu), bez konieczności odwoływania się do innych części dokumentu.",
+            "improved": true,
+            "confidence": "high"
+          }
+        }
+      },
+      {
+        "id": "0e4cd53f-aeb4-4e9c-bfd9-9833d2678a02",
+        "type": "pronoun_context",
+        "after": "Pozostałe 38% kwoty biletu jest zatrzymywane jako opłata manipulacyjna i nie podlega negocjacjom.",
+        "before": "The remaining 38% is retained as a handling charge and is not negotiable.",
+        "location": "Sekcja 2. Refund amount",
+        "rationale": "Zastąpienie ogólnego 'The remaining 38%' precyzyjnym 'Pozostałe 38% kwoty biletu' zwiększa jasność i samowystarczalność, eliminując niejasności dotyczące tego, czego dotyczy procent.",
+        "dimensions": {
+          "selfContainedness": {
+            "reason": "Wersja \"AFTER\" jest bardziej samodzielna, ponieważ precyzuje, że 38% odnosi się do \"kwoty biletu\", co eliminuje potrzebę domyślania się kontekstu.",
+            "improved": true,
+            "confidence": "high"
+          }
+        }
+      },
+      {
+        "id": "829abf17-4bf1-4a83-ba10-55563235235c",
+        "type": "keywords",
+        "after": "W przypadku, gdy pasażer anuluje bilet (rezygnuje z podróży) przed odjazdem, zwrot kosztów (częściowy zwrot) wynosi **62% ceny biletu** . Pozostałe 38% kwoty biletu jest zatrzymywane jako opłata manipulacyjna i nie podlega negocjacjom.",
+        "before": "Where a passenger cancels before departure, the refund is **62% of the fare** . The remaining 38% is retained as a handling charge and is not negotiable.",
+        "location": "Sekcja 2. Refund amount",
+        "rationale": "Dodanie synonimów takich jak 'anuluje bilet', 'rezygnuje z podróży', 'zwrot kosztów' i 'częściowy zwrot' zwiększa gęstość encji i poprawia wyszukiwalność sekcji dla różnych zapytań.",
+        "dimensions": {}
+      },
+      {
+        "id": "5805fc26-a816-40ca-924d-ff2087cb87cd",
+        "type": "restructure",
+        "after": "## 3. Jaki jest czas przetwarzania wniosku o zwrot kosztów biletu Wolfsbane Interurban Rail?\n\nTa sekcja określa standardowy czas rozpatrywania wniosków o zwrot kosztów biletów Wolfsbane Interurban Rail oraz warunki jego ewentualnego przedłużenia.",
+        "before": "## 3. Processing time",
+        "location": "Sekcja 3. Processing time",
+        "rationale": "Zmiana nagłówka na pytanie poprawia zgodność z formatem Q&A i ułatwia użytkownikom szybkie znalezienie informacji o czasie przetwarzania. Dodanie zdania wprowadzającego zwiększa samowystarczalność sekcji.",
+        "dimensions": {
+          "avgChunkSize": {
+            "reason": "Wersja AFTER zawiera więcej słów i kontekstu niż wersja BEFORE, co jest krokiem w kierunku osiągnięcia minimalnej długości sekcji dla modeli osadzających, choć nadal jest zbyt krótka.",
+            "improved": true,
+            "confidence": "medium"
+          },
+          "chunkStructure": {
+            "reason": "Nagłówek w wersji AFTER jest znacznie bardziej szczegółowy i precyzyjnie określa zawartość sekcji, co ułatwia chunking.",
+            "improved": true,
+            "confidence": "high"
+          },
+          "selfContainedness": {
+            "reason": "Wersja PO jest bardziej samodzielna, ponieważ zarówno tytuł, jak i opis sekcji jasno precyzują, czego dotyczy czas przetwarzania (wnioski o zwrot kosztów biletów Wolfsbane Interurban Rail), eliminując potrzebę odwoływania się do innych części dokumentu.",
+            "improved": true,
+            "confidence": "high"
+          }
+        }
+      },
+      {
+        "id": "0f62fcd0-c11d-41df-986f-85f4fa738a8e",
+        "type": "pronoun_context",
+        "after": "Bieg terminu rozpatrywania wniosku rozpoczyna się w pierwszym dniu roboczym po otrzymaniu wniosku.",
+        "before": "The clock starts on the first business day after the request arrives.",
+        "location": "Sekcja 3. Processing time",
+        "rationale": "Zastąpienie nieformalnego 'The clock starts' precyzyjnym 'Bieg terminu rozpatrywania wniosku rozpoczyna się' zwiększa formalność i jasność, jednocześnie poprawiając samowystarczalność zdania.",
+        "dimensions": {
+          "selfContainedness": {
+            "reason": "Wersja polska precyzuje, że chodzi o termin rozpatrywania wniosku, co czyni ją bardziej kompletną i mniej zależną od domyślnego kontekstu niż ogólne 'the clock' w wersji angielskiej.",
+            "improved": true,
+            "confidence": "high"
+          }
+        }
+      },
+      {
+        "id": "97c95474-7674-4d20-bd32-1ef7f45f75f1",
+        "type": "keywords",
+        "after": "Wniosek o zwrot kosztów (wniosek o refundację, wniosek o zwrot biletu) jest rozpatrywany i decyzja podejmowana jest w ciągu **9 dni roboczych** od dotarcia do Biura Obsługi Pasażera Wolfsbane Interurban Rail.",
+        "before": "A refund request is decided within **9 business days** of reaching the Passenger Services Office.",
+        "location": "Sekcja 3. Processing time",
+        "rationale": "Dodanie synonimów ('wniosek o refundację', 'wniosek o zwrot biletu') oraz pełnej nazwy firmy ('Biura Obsługi Pasażera Wolfsbane Interurban Rail') zwiększa gęstość encji i poprawia wyszukiwalność sekcji.",
+        "dimensions": {
+          "entityDensity": {
+            "reason": "Wersja AFTER zawiera konkretną nazwę instytucji ('Wolfsbane Interurban Rail'), co czyni ją bardziej szczegółową i przeszukiwalną.",
+            "improved": true,
+            "confidence": "high"
+          }
+        }
+      },
+      {
+        "id": "15fa5670-fb68-4780-a8a1-de80e6672899",
+        "type": "restructure",
+        "after": "## 4. Jaki jest próg wartości dla wniosków o zwrot kosztów biletu Wolfsbane Interurban Rail wymagających dodatkowej zgody?\n\nNiniejsza sekcja określa próg wartości wniosków o zwrot kosztów biletów Wolfsbane Interurban Rail, które wymagają dodatkowej akceptacji, oraz zasady wypłaty środków.",
+        "before": "## 4. Value threshold",
+        "location": "Sekcja 4. Value threshold",
+        "rationale": "Zmiana nagłówka na pytanie poprawia zgodność z formatem Q&A i ułatwia użytkownikom szybkie znalezienie informacji o progach wartości. Dodanie zdania wprowadzającego zwiększa samowystarczalność sekcji.",
+        "dimensions": {
+          "chunkStructure": {
+            "reason": "Nagłówek w wersji AFTER jest znacznie bardziej szczegółowy i precyzyjnie opisuje zawartość sekcji, co ułatwia segmentację tekstu.",
+            "improved": true,
+            "confidence": "high"
+          },
+          "selfContainedness": {
+            "reason": "Wersja PO zawiera w tytule i pierwszym zdaniu wszystkie kluczowe informacje (czego dotyczy próg wartości, dla kogo, w jakiej sytuacji), co czyni ją zrozumiałą bez kontekstu innych sekcji.",
+            "improved": true,
+            "confidence": "high"
+          }
+        }
+      },
+      {
+        "id": "0de727c5-8207-4435-8f51-98c7f2f6e8ff",
+        "type": "pronoun_context",
+        "after": "Wnioski o zwrot kosztów poniżej progu wartości 184,00 EUR są rozpatrywane i decyzje podejmowane są wyłącznie przez referenta sprawy.",
+        "before": "Requests below that threshold are decided by the case officer alone.",
+        "location": "Sekcja 4. Value threshold",
+        "rationale": "Zastąpienie zaimka 'that threshold' konkretną wartością 'progu wartości 184,00 EUR' zwiększa jasność i samowystarczalność zdania, eliminując potrzebę odwoływania się do wcześniejszego kontekstu.",
+        "dimensions": {
+          "selfContainedness": {
+            "reason": "Wersja AFTER precyzuje, o jaki próg i o jakie wnioski chodzi, co czyni ją bardziej zrozumiałą bez dodatkowego kontekstu.",
+            "improved": true,
+            "confidence": "high"
+          }
+        }
+      },
+      {
+        "id": "6aa4071f-6627-471e-a256-1f12ebdb1060",
+        "type": "keywords",
+        "after": "Wnioski o zwrot kosztów (refundacje) o wartości **184,00 EUR lub więcej** wymagają dodatkowej zgody (akceptacji) Kierownika Biura Obsługi Pasażera Wolfsbane Interurban Rail.",
+        "before": "Requests for **EUR 184.00 or more** require additional approval from the Head of Passenger Services.",
+        "location": "Sekcja 4. Value threshold",
+        "rationale": "Dodanie synonimów ('refundacje', 'akceptacji') oraz pełnej nazwy stanowiska i firmy ('Kierownika Biura Obsługi Pasażera Wolfsbane Interurban Rail') zwiększa gęstość encji i poprawia wyszukiwalność sekcji.",
+        "dimensions": {
+          "entityDensity": {
+            "reason": "Wersja AFTER zawiera bardziej szczegółową nazwę stanowiska wraz z nazwą organizacji ('Wolfsbane Interurban Rail'), co czyni ją bardziej wyszukiwalną.",
+            "improved": true,
+            "confidence": "high"
+          }
+        }
+      },
+      {
+        "id": "0efd7ef8-9601-45b9-ae03-8a21bc30bc19",
+        "type": "restructure",
+        "after": "## 5. Jak złożyć wniosek o zwrot kosztów biletu Wolfsbane Interurban Rail?\n\nTa sekcja opisuje dostępne metody składania wniosków o zwrot kosztów biletów Wolfsbane Interurban Rail oraz zasady dotyczące numeru referencyjnego.",
+        "before": "## 5. How to file",
+        "location": "Sekcja 5. How to file",
+        "rationale": "Zmiana nagłówka na pytanie poprawia zgodność z formatem Q&A i ułatwia użytkownikom szybkie znalezienie informacji o sposobie składania wniosków. Dodanie zdania wprowadzającego zwiększa samowystarczalność sekcji.",
+        "dimensions": {
+          "avgChunkSize": {
+            "reason": "Wersja AFTER jest nieco dłuższa i bardziej opisowa niż BEFORE, co jest niewielkim krokiem w kierunku lepszego rozmiaru dla modeli osadzających, choć nadal jest zbyt krótka.",
+            "improved": true,
+            "confidence": "medium"
+          },
+          "chunkStructure": {
+            "reason": "Nagłówek w wersji AFTER jest znacznie bardziej szczegółowy i zawiera dodatkowy opis, co ułatwia zrozumienie zakresu sekcji.",
+            "improved": true,
+            "confidence": "high"
+          },
+          "selfContainedness": {
+            "reason": "Wersja PO jest znacznie bardziej samodzielna, ponieważ tytuł i opis jasno określają, czego dotyczy sekcja, bez konieczności odwoływania się do innych części dokumentu.",
+            "improved": true,
+            "confidence": "high"
+          }
+        }
+      },
+      {
+        "id": "b884f7b1-cf5b-4a74-a6fd-3c695942b72e",
+        "type": "pronoun_context",
+        "after": "Numer referencyjny wniosku jest wydawany automatycznie w formacie RF/YYYY/NNNNN i musi być cytowany we wszelkiej dalszej korespondencji dotyczącej tego wniosku.",
+        "before": "A reference number is issued automatically in the format RF/YYYY/NNNNN and must be quoted in all further correspondence.",
+        "location": "Sekcja 5. How to file",
+        "rationale": "Sprecyzowanie 'Numer referencyjny wniosku' oraz dodanie 'dotyczącej tego wniosku' zwiększa jasność i samowystarczalność zdania, eliminując niejasności dotyczące tego, czego dotyczy numer referencyjny.",
+        "dimensions": {
+          "selfContainedness": {
+            "reason": "Wersja AFTER precyzuje, że numer referencyjny dotyczy \"wniosku\" i że korespondencja musi dotyczyć \"tego wniosku\", co czyni ją bardziej kompletną i zrozumiałą bez dodatkowego kontekstu.",
+            "improved": true,
+            "confidence": "high"
+          }
+        }
+      },
+      {
+        "id": "482c7ec6-5a2f-4a02-9228-1eb48e770033",
+        "type": "keywords",
+        "after": "Wnioski o zwrot kosztów (wnioski o refundację, zgłoszenia zwrotu) są składane za pośrednictwem portalu pasażera Wolfsbane Interurban Rail lub pocztą do Biura Obsługi Pasażera Wolfsbane Interurban Rail.",
+        "before": "Requests are filed through the passenger portal or by post to the Passenger Services Office.",
+        "location": "Sekcja 5. How to file",
+        "rationale": "Dodanie synonimów ('wnioski o refundację', 'zgłoszenia zwrotu') oraz pełnej nazwy firmy ('Wolfsbane Interurban Rail') zwiększa gęstość encji i poprawia wyszukiwalność sekcji dla różnych zapytań.",
+        "dimensions": {
+          "entityDensity": {
+            "reason": "Wersja AFTER zawiera konkretną nazwę własną 'Wolfsbane Interurban Rail', co czyni ją bardziej szczegółową i przeszukiwalną.",
+            "improved": true,
+            "confidence": "high"
+          }
+        }
+      }
+    ],
+    "applied": [
+      {
+        "id": "a2e78d93-426c-48c9-bf91-3d9ccd10195b",
+        "applied": true
+      },
+      {
+        "id": "68e7fc32-e83c-4576-92c4-5269e440fdd0",
+        "applied": false
+      },
+      {
+        "id": "69dd172b-dbcc-4eb3-9f78-fb9265593883",
+        "applied": false
+      },
+      {
+        "id": "a4e972a5-1ce4-45d4-ac21-d35b334470d7",
+        "applied": true
+      },
+      {
+        "id": "0e4cd53f-aeb4-4e9c-bfd9-9833d2678a02",
+        "applied": true
+      },
+      {
+        "id": "829abf17-4bf1-4a83-ba10-55563235235c",
+        "applied": false
+      },
+      {
+        "id": "5805fc26-a816-40ca-924d-ff2087cb87cd",
+        "applied": true
+      },
+      {
+        "id": "0f62fcd0-c11d-41df-986f-85f4fa738a8e",
+        "applied": false
+      },
+      {
+        "id": "97c95474-7674-4d20-bd32-1ef7f45f75f1",
+        "applied": false
+      },
+      {
+        "id": "15fa5670-fb68-4780-a8a1-de80e6672899",
+        "applied": true
+      },
+      {
+        "id": "0de727c5-8207-4435-8f51-98c7f2f6e8ff",
+        "applied": false
+      },
+      {
+        "id": "6aa4071f-6627-471e-a256-1f12ebdb1060",
+        "applied": false
+      },
+      {
+        "id": "0efd7ef8-9601-45b9-ae03-8a21bc30bc19",
+        "applied": true
+      },
+      {
+        "id": "b884f7b1-cf5b-4a74-a6fd-3c695942b72e",
+        "applied": false
+      },
+      {
+        "id": "482c7ec6-5a2f-4a02-9228-1eb48e770033",
+        "applied": false
+      }
+    ],
+    "charsBefore": 1818,
+    "charsAfter": 2986
+  },
+  {
+    "file": "docs/en-02-baggage-policy.md",
+    "suggestions": [
+      {
+        "id": "92b79ee0-b1a4-4ed4-bdbf-d712ff9016ac",
+        "type": "restructure",
+        "after": "1. Jaki jest limit bezpłatnego bagażu w Wolfsbane Interurban Rail?",
+        "before": "1. Free allowance",
+        "location": "Nagłówek sekcji 1",
+        "rationale": "Zmiana nagłówka na pytanie poprawia zgodność z formatem Q&A, co zwiększa skuteczność retrieval. Dodanie nazwy operatora zwiększa gęstość encji i samowystarczalność.",
+        "dimensions": {
+          "avgChunkSize": {
+            "reason": "Wersja PO jest dłuższa i zawiera więcej kontekstu, co jest korzystniejsze dla modeli osadzania, mimo że nadal jest znacznie poniżej zalecanego limitu słów.",
+            "improved": true,
+            "confidence": "low"
+          },
+          "chunkStructure": {
+            "reason": "Wersja AFTER jest lepsza, ponieważ nagłówek jest bardziej szczegółowy i sformułowany jako pytanie, co precyzyjniej określa zawartość sekcji.",
+            "improved": true,
+            "confidence": "high"
+          },
+          "selfContainedness": {
+            "reason": "Wersja PO jest bardziej samodzielna, ponieważ precyzuje, czego dotyczy limit (bagaż) i dla jakiej usługi (Wolfsbane Interurban Rail), co czyni ją zrozumiałą bez dodatkowego kontekstu.",
+            "improved": true,
+            "confidence": "high"
+          }
+        }
+      },
+      {
+        "id": "d51d3fa8-2ab4-44ed-9c4c-35683b1ec9a3",
+        "type": "pronoun_context",
+        "after": "Zgodnie z polityką bagażową Wolfsbane Interurban Rail, każdy pasażer posiadający ważny bilet na przejazd pociągiem Wolfsbane Interurban Rail może przewieźć jedną sztukę bagażu rejestrowanego bezpłatnie, o wadze do **18 kg** i łącznych wymiarach (długość + szerokość + wysokość) do **147 cm**. Dodatkowo, pasażerowie Wolfsbane Interurban Rail mogą przewieźć bagaż podręczny.",
+        "before": "Every passenger holding a valid ticket may carry one item of baggage free of charge, up to **18 kg** in weight and **147 cm** in total dimensions (length + width + height).",
+        "location": "Sekcja 1, pierwsze zdanie",
+        "rationale": "Dodanie kontekstu na początku sekcji zwiększa jej samowystarczalność i gęstość encji poprzez powtórzenie nazwy operatora ('Wolfsbane Interurban Rail') oraz doprecyzowanie typu bagażu ('bagażu rejestrowanego', 'bagaż podręczny'), co poprawia wyszukiwalność.",
+        "dimensions": {
+          "selfContainedness": {
+            "reason": "Wersja AFTER jest bardziej samodzielna, ponieważ jasno określa, której firmy dotyczy polityka bagażowa, co eliminuje potrzebę szukania tej informacji w innych częściach dokumentu.",
+            "improved": true,
+            "confidence": "high"
+          }
+        }
+      },
+      {
+        "id": "c4f19ec5-2e6f-412d-84d9-a96b2fcf685b",
+        "type": "pronoun_context",
+        "after": "Jedna sztuka bagażu podręcznego jest przewożona dodatkowo, bezpłatnie, pod warunkiem, że bagaż podręczny zmieści się pod siedzeniem lub na półce nad miejscem pasażera i waży nie więcej niż 6 kg.",
+        "before": "One piece of hand baggage is carried in addition, free of charge, provided it fits under the seat or on the rack above the passenger's place and weighs no more than 6 kg.",
+        "location": "Sekcja 1, drugie zdanie",
+        "rationale": "Zastąpienie zaimka 'it' bezpośrednim odniesieniem do 'bagażu podręcznego' zwiększa gęstość encji i poprawia samowystarczalność sekcji, ułatwiając zrozumienie kontekstu bez odwoływania się do poprzednich zdań.",
+        "dimensions": {
+          "selfContainedness": {
+            "reason": "Wersja po polsku powtarza kluczowe odniesienie ('bagaż podręczny'), co czyni ją minimalnie bardziej samodzielną niż wersja angielska używająca zaimka.",
+            "improved": true,
+            "confidence": "medium"
+          }
+        }
+      },
+      {
+        "id": "29928d25-2264-4d8b-a29d-fd428559e7bf",
+        "type": "restructure",
+        "after": "2. Jaka jest opłata za nadbagaż w Wolfsbane Interurban Rail?",
+        "before": "2. Excess baggage",
+        "location": "Nagłówek sekcji 2",
+        "rationale": "Zmiana nagłówka na pytanie poprawia zgodność z formatem Q&A, co zwiększa skuteczność retrieval. Dodanie nazwy operatora zwiększa gęstość encji i samowystarczalność.",
+        "dimensions": {
+          "chunkStructure": {
+            "reason": "Nagłówek w wersji AFTER jest bardziej szczegółowy i zadaje konkretne pytanie, co ułatwia zrozumienie zawartości sekcji i chunkowanie tekstu.",
+            "improved": true,
+            "confidence": "high"
+          },
+          "selfContainedness": {
+            "reason": "Wersja AFTER jest pełnym pytaniem, które zawiera wszystkie niezbędne informacje, podczas gdy wersja BEFORE to tylko ogólny temat.",
+            "improved": true,
+            "confidence": "high"
+          }
+        }
+      },
+      {
+        "id": "21f50b96-fb9b-4087-befe-ed2216e830f5",
+        "type": "pronoun_context",
+        "after": "W przypadku przewozu nadbagażu w Wolfsbane Interurban Rail, każda dodatkowa sztuka bagażu rejestrowanego, przekraczająca limit bezpłatnego bagażu, jest objęta opłatą w wysokości **EUR 44**. Opłata za nadbagaż jest naliczana za sztukę, a nie za kilogram, i nie jest proporcjonalnie zmniejszana.",
+        "before": "Each additional item is charged at **EUR 44** . The charge is per item, not per kilogram, and is not reduced pro rata.",
+        "location": "Sekcja 2, pierwsze zdanie",
+        "rationale": "Dodanie kontekstu na początku sekcji zwiększa jej samowystarczalność i gęstość encji poprzez powtórzenie nazwy operatora ('Wolfsbane Interurban Rail') oraz doprecyzowanie typu bagażu ('bagażu rejestrowanego', 'limit bezpłatnego bagażu'), co poprawia wyszukiwalność.",
+        "dimensions": {
+          "selfContainedness": {
+            "reason": "Wersja AFTER jest bardziej samodzielna, ponieważ jasno określa kontekst (przewóz nadbagażu w Wolfsbane Interurban Rail) oraz precyzuje, czym jest 'dodatkowa sztuka', co eliminuje potrzebę odwoływania się do innych sekcji.",
+            "improved": true,
+            "confidence": "high"
+          }
+        }
+      },
+      {
+        "id": "36b82812-9531-4d53-b779-cc4e0b56fac5",
+        "type": "pronoun_context",
+        "after": "Przedmioty ważące ponad 28 kg nie są akceptowane do przewozu w Wolfsbane Interurban Rail w ramach żadnego rodzaju biletu. Konduktor jest zobowiązany odmówić przyjęcia do przewozu przedmiotu ważącego ponad 28 kg.",
+        "before": "Items over 28 kg are not accepted for carriage under any fare type. The conductor is required to refuse such an item.",
+        "location": "Sekcja 2, drugie zdanie",
+        "rationale": "Zastąpienie zaimka 'such an item' bezpośrednim odniesieniem do 'przedmiotu ważącego ponad 28 kg' oraz dodanie nazwy operatora ('Wolfsbane Interurban Rail') zwiększa gęstość encji i poprawia samowystarczalność sekcji.",
+        "dimensions": {
+          "selfContainedness": {
+            "reason": "Wersja AFTER jest bardziej samodzielna, ponieważ precyzuje kontekst (Wolfsbane Interurban Rail) i powtarza kluczowe odniesienie do przedmiotu, zamiast używać zaimka.",
+            "improved": true,
+            "confidence": "high"
+          }
+        }
+      },
+      {
+        "id": "7291486a-0d82-46fd-94b9-b56c281fd485",
+        "type": "restructure",
+        "after": "3. Jakie przedmioty są wyłączone z przewozu w Wolfsbane Interurban Rail?",
+        "before": "3. Items excluded from carriage",
+        "location": "Nagłówek sekcji 3",
+        "rationale": "Zmiana nagłówka na pytanie poprawia zgodność z formatem Q&A, co zwiększa skuteczność retrieval. Dodanie nazwy operatora zwiększa gęstość encji i samowystarczalność.",
+        "dimensions": {
+          "chunkStructure": {
+            "reason": "Wersja PO jest bardziej szczegółowa i zadaje pytanie, co może ułatwić zrozumienie zakresu sekcji.",
+            "improved": true,
+            "confidence": "medium"
+          },
+          "selfContainedness": {
+            "reason": "Wersja AFTER jest bardziej samodzielna, ponieważ zawiera nazwę konkretnej firmy (\"Wolfsbane Interurban Rail\"), do której odnosi się wyłączenie przedmiotów z przewozu, co eliminuje potrzebę szukania tej informacji w innych sekcjach.",
+            "improved": true,
+            "confidence": "high"
+          }
+        }
+      },
+      {
+        "id": "387f3c53-ec74-4854-9388-26335acc88ec",
+        "type": "pronoun_context",
+        "after": "Zgodnie z polityką bagażową Wolfsbane Interurban Rail, następujące przedmioty są wyłączone z przewozu pociągami Wolfsbane Interurban Rail: materiały łatwopalne, butle gazowe o pojemności powyżej 4 litrów, broń palna bez zezwolenia oraz przedmioty o ostrych krawędziach, które nie są trwale zabezpieczone. Pasażerowie nie mogą przewozić tych przedmiotów.",
+        "before": "Flammable materials, gas cylinders over 4 litres, firearms without a permit, and sharp-edged objects that are not permanently secured are excluded from carriage.",
+        "location": "Sekcja 3, treść",
+        "rationale": "Dodanie kontekstu na początku sekcji zwiększa jej samowystarczalność i gęstość encji poprzez powtórzenie nazwy operatora ('Wolfsbane Interurban Rail') oraz doprecyzowanie, że pasażerowie nie mogą przewozić tych przedmiotów, co poprawia wyszukiwalność.",
+        "dimensions": {
+          "selfContainedness": {
+            "reason": "Wersja PO jest bardziej samodzielna, ponieważ zawiera kontekst (kto i gdzie), którego brakuje w wersji PRZED, co sprawia, że informacja jest kompletna.",
+            "improved": true,
+            "confidence": "high"
+          }
+        }
+      },
+      {
+        "id": "5e7a7df0-641f-4717-9b03-94c9cdee1ee4",
+        "type": "restructure",
+        "after": "4. Jaka jest odpowiedzialność Wolfsbane Interurban Rail za utratę lub uszkodzenie bagażu?",
+        "before": "4. Operator liability",
+        "location": "Nagłówek sekcji 4",
+        "rationale": "Zmiana nagłówka na pytanie poprawia zgodność z formatem Q&A, co zwiększa skuteczność retrieval. Dodanie nazwy operatora zwiększa gęstość encji i samowystarczalność.",
+        "dimensions": {
+          "chunkStructure": {
+            "reason": "Wersja PO jest pytaniem, co lepiej definiuje zakres sekcji i ułatwia zrozumienie jej treści, co jest korzystne dla chunkingu.",
+            "improved": true,
+            "confidence": "high"
+          },
+          "selfContainedness": {
+            "reason": "Wersja PO jest znacznie bardziej samodzielna, ponieważ precyzuje, kto jest operatorem i czego dotyczy odpowiedzialność, co eliminuje potrzebę szukania tych informacji w innych sekcjach.",
+            "improved": true,
+            "confidence": "high"
+          }
+        }
+      },
+      {
+        "id": "d4d17e6d-2159-42a0-8757-f800f3520a45",
+        "type": "pronoun_context",
+        "after": "Odpowiedzialność operatora Wolfsbane Interurban Rail za utratę lub uszkodzenie bagażu pasażerów jest ograniczona do kwoty **EUR 890** za jedną sztukę bagażu. To ograniczenie odpowiedzialności dotyczy bagażu przewożonego przez Wolfsbane Interurban Rail.",
+        "before": "Liability of Wolfsbane Interurban Rail for loss of or damage to baggage is limited to **EUR 890** per item.",
+        "location": "Sekcja 4, pierwsze zdanie",
+        "rationale": "Dodanie kontekstu na początku sekcji zwiększa jej samowystarczalność i gęstość encji poprzez powtórzenie nazwy operatora ('Wolfsbane Interurban Rail') oraz doprecyzowanie, że chodzi o bagaż pasażerów, co poprawia wyszukiwalność.",
+        "dimensions": {
+          "selfContainedness": {
+            "reason": "Wersja AFTER jest bardziej precyzyjna, ponieważ wyraźnie określa, że ograniczenie odpowiedzialności dotyczy bagażu przewożonego przez operatora, co eliminuje potencjalne niejasności.",
+            "improved": true,
+            "confidence": "medium"
+          }
+        }
+      },
+      {
+        "id": "e851aa67-4570-462c-b971-383cb526bf12",
+        "type": "pronoun_context",
+        "after": "Ograniczenie odpowiedzialności do **EUR 890** nie ma zastosowania, jeśli utrata lub uszkodzenie bagażu zostało spowodowane umyślnym działaniem pracownika operatora Wolfsbane Interurban Rail.",
+        "before": "The limit does not apply where the loss was caused by wilful misconduct of an employee of the operator.",
+        "location": "Sekcja 4, drugie zdanie",
+        "rationale": "Zastąpienie zaimka 'The limit' bezpośrednim odniesieniem do 'Ograniczenia odpowiedzialności do EUR 890' oraz dodanie nazwy operatora ('Wolfsbane Interurban Rail') zwiększa gęstość encji i poprawia samowystarczalność sekcji.",
+        "dimensions": {
+          "selfContainedness": {
+            "reason": "Wersja AFTER precyzuje, o jakie ograniczenie, stratę i operatora chodzi, co czyni ją bardziej zrozumiałą bez dodatkowego kontekstu.",
+            "improved": true,
+            "confidence": "high"
+          }
+        }
+      },
+      {
+        "id": "60396865-4d12-4b60-aa65-3faf0b061244",
+        "type": "pronoun_context",
+        "after": "Roszczenie dotyczące bagażu musi zostać złożone w ciągu 10 dni kalendarzowych od zakończenia podróży. Roszczenia złożone po upływie 10 dni kalendarzowych od zakończenia podróży nie będą rozpatrywane przez Wolfsbane Interurban Rail.",
+        "before": "A baggage claim must be filed within 10 calendar days of the end of the journey. Claims filed after that period are not considered.",
+        "location": "Sekcja 4, trzecie zdanie",
+        "rationale": "Zastąpienie zaimka 'that period' bezpośrednim odniesieniem do '10 dni kalendarzowych od zakończenia podróży' oraz dodanie nazwy operatora ('Wolfsbane Interurban Rail') zwiększa gęstość encji i poprawia samowystarczalność sekcji.",
+        "dimensions": {
+          "selfContainedness": {
+            "reason": "Wersja PO jest bardziej samodzielna, ponieważ powtarza kluczowy termin \"10 dni kalendarzowych od zakończenia podróży\" w drugim zdaniu i dodaje nazwę podmiotu \"Wolfsbane Interurban Rail\", co czyni ją bardziej kompletną.",
+            "improved": true,
+            "confidence": "high"
+          }
+        }
+      },
+      {
+        "id": "78e39c14-5f60-44bf-ab9a-46cd41da4a95",
+        "type": "restructure",
+        "after": "5. Co dzieje się z mieniem pozostawionym w pociągach Wolfsbane Interurban Rail?",
+        "before": "5. Left property",
+        "location": "Nagłówek sekcji 5",
+        "rationale": "Zmiana nagłówka na pytanie poprawia zgodność z formatem Q&A, co zwiększa skuteczność retrieval. Dodanie nazwy operatora zwiększa gęstość encji i samowystarczalność.",
+        "dimensions": {
+          "chunkStructure": {
+            "reason": "Wersja AFTER jest lepsza, ponieważ nagłówek w formie pytania jest bardziej opisowy i jasno określa zawartość sekcji.",
+            "improved": true,
+            "confidence": "high"
+          },
+          "selfContainedness": {
+            "reason": "Wersja PO jest pełnym pytaniem, które zawiera wszystkie niezbędne informacje kontekstowe, w przeciwieństwie do ogólnego nagłówka w wersji PRZED.",
+            "improved": true,
+            "confidence": "high"
+          }
+        }
+      },
+      {
+        "id": "bb99a6e2-2e5d-4913-b5f5-4121ffc9212c",
+        "type": "pronoun_context",
+        "after": "Mienie pozostawione na pokładzie pociągów Wolfsbane Interurban Rail jest przechowywane w Biurze Rzeczy Znalezionych w Bridgewell przez okres 120 dni kalendarzowych. Po upływie tego okresu, mienie pozostawione w pociągach Wolfsbane Interurban Rail jest utylizowane zgodnie z procedurą WIR/PROC/2025/08. Biuro Rzeczy Znalezionych Wolfsbane Interurban Rail znajduje się w Bridgewell.",
+        "before": "Property left on board is held at the Lost Property Office in Bridgewell for 120 calendar days and is then disposed of under procedure WIR/PROC/2025/08.",
+        "location": "Sekcja 5, treść",
+        "rationale": "Dodanie kontekstu na początku sekcji zwiększa jej samowystarczalność i gęstość encji poprzez powtórzenie nazwy operatora ('Wolfsbane Interurban Rail') oraz doprecyzowanie lokalizacji Biura Rzeczy Znalezionych, co poprawia wyszukiwalność.",
+        "dimensions": {
+          "selfContainedness": {
+            "reason": "Wersja AFTER jest bardziej samodzielna, ponieważ wyraźnie określa podmiot (Wolfsbane Interurban Rail), którego dotyczy informacja, co eliminuje potrzebę zewnętrznego kontekstu, mimo pewnych powtórzeń.",
+            "improved": true,
+            "confidence": "medium"
+          }
+        }
+      }
+    ],
+    "applied": [
+      {
+        "id": "92b79ee0-b1a4-4ed4-bdbf-d712ff9016ac",
+        "applied": true
+      },
+      {
+        "id": "d51d3fa8-2ab4-44ed-9c4c-35683b1ec9a3",
+        "applied": false
+      },
+      {
+        "id": "c4f19ec5-2e6f-412d-84d9-a96b2fcf685b",
+        "applied": false
+      },
+      {
+        "id": "29928d25-2264-4d8b-a29d-fd428559e7bf",
+        "applied": true
+      },
+      {
+        "id": "21f50b96-fb9b-4087-befe-ed2216e830f5",
+        "applied": false
+      },
+      {
+        "id": "36b82812-9531-4d53-b779-cc4e0b56fac5",
+        "applied": false
+      },
+      {
+        "id": "7291486a-0d82-46fd-94b9-b56c281fd485",
+        "applied": true
+      },
+      {
+        "id": "387f3c53-ec74-4854-9388-26335acc88ec",
+        "applied": false
+      },
+      {
+        "id": "5e7a7df0-641f-4717-9b03-94c9cdee1ee4",
+        "applied": true
+      },
+      {
+        "id": "d4d17e6d-2159-42a0-8757-f800f3520a45",
+        "applied": false
+      },
+      {
+        "id": "e851aa67-4570-462c-b971-383cb526bf12",
+        "applied": false
+      },
+      {
+        "id": "60396865-4d12-4b60-aa65-3faf0b061244",
+        "applied": false
+      },
+      {
+        "id": "78e39c14-5f60-44bf-ab9a-46cd41da4a95",
+        "applied": true
+      },
+      {
+        "id": "bb99a6e2-2e5d-4913-b5f5-4121ffc9212c",
+        "applied": false
+      }
+    ],
+    "charsBefore": 1479,
+    "charsAfter": 1743
+  },
+  {
+    "file": "docs/en-03-delay-compensation.md",
+    "suggestions": [
+      {
+        "id": "a89fc965-b868-4c7c-838f-08f75455c679",
+        "type": "keywords",
+        "after": "# Polityka Odszkodowań za Opóźnienia Pociągów — Wolfsbane Interurban Rail (WIR)\n\nWewnętrzny dokument WIR/POL/2026/03. Obowiązuje od 1 marca 2026 roku. Niniejsza polityka określa zasady przyznawania rekompensat za opóźnienia pociągów przewoźnika Wolfsbane Interurban Rail (WIR).",
+        "before": "# Delay Compensation Policy — Wolfsbane Interurban Rail\n\nInternal document WIR/POL/2026/03. Effective 1 March 2026.",
+        "location": "Nagłówek dokumentu",
+        "rationale": "Dodano polskie tłumaczenie tytułu, pełną nazwę podmiotu (WIR) oraz kontekst wprowadzający, co zwiększa gęstość encji i poprawia wyszukiwalność dokumentu jako całości.",
+        "dimensions": {
+          "entityDensity": {
+            "reason": "Wersja AFTER wprowadza akronim 'WIR' w nawiasie, co czyni go nowym, konkretnym i wyszukiwalnym elementem.",
+            "improved": true,
+            "confidence": "high"
+          }
+        }
+      },
+      {
+        "id": "f9b046e3-ab5d-48b6-8a86-44abe1ec279b",
+        "type": "restructure",
+        "after": "## 1. Kiedy przysługuje odszkodowanie za opóźnienie pociągu i w jakiej wysokości?",
+        "before": "## 1. Compensation thresholds",
+        "location": "Nagłówek sekcji 1",
+        "rationale": "Zmieniono nagłówek sekcji na pytanie, co poprawia format Q&A i zwiększa wyszukiwalność treści. Dodano słowa kluczowe 'odszkodowanie za opóźnienie pociągu' dla lepszego dopasowania do zapytań użytkowników.",
+        "dimensions": {
+          "chunkStructure": {
+            "reason": "Nagłówek w wersji AFTER jest bardziej szczegółowy i w formie pytania, co lepiej określa zakres treści i ułatwia segmentację tekstu.",
+            "improved": true,
+            "confidence": "high"
+          },
+          "selfContainedness": {
+            "reason": "Wersja AFTER jest bardziej samodzielna, ponieważ jasno określa temat sekcji (odszkodowanie za opóźnienie pociągu, kiedy i w jakiej wysokości), podczas gdy wersja BEFORE jest zbyt ogólna i wymaga dodatkowego kontekstu.",
+            "improved": true,
+            "confidence": "high"
+          }
+        }
+      },
+      {
+        "id": "0dfffa98-18c0-4158-9eeb-e5b45751b2f6",
+        "type": "restructure",
+        "after": "Zgodnie z polityką Wolfsbane Interurban Rail (WIR), odszkodowanie za opóźnienie pociągu przysługuje pasażerowi, którego pociąg dotarł do stacji docelowej z opóźnieniem, mierzonym względem rozkładu jazdy obowiązującego w dniu podróży. Poniższa tabela przedstawia progi opóźnień i odpowiadające im kwoty rekompensaty:",
+        "before": "Compensation is due to a passenger whose train reached the destination station late, measured against the timetable in force on the day of travel:",
+        "location": "Początek sekcji 1",
+        "rationale": "Dodano kontekst wprowadzający, w tym pełną nazwę podmiotu (Wolfsbane Interurban Rail, WIR) oraz słowa kluczowe takie jak 'polityka', 'odszkodowanie za opóźnienie pociągu' i 'rekompensata', co zwiększa samowystarczalność i gęstość encji w sekcji.",
+        "dimensions": {}
+      },
+      {
+        "id": "24f67f57-1b67-4527-b79e-3ec18b573e0e",
+        "type": "restructure",
+        "after": "## 2. Jaka jest minimalna kwota wypłacanego odszkodowania za opóźnienie pociągu?",
+        "before": "## 2. Minimum payable amount",
+        "location": "Nagłówek sekcji 2",
+        "rationale": "Zmieniono nagłówek sekcji na pytanie, co poprawia format Q&A i zwiększa wyszukiwalność treści. Dodano słowa kluczowe 'odszkodowanie za opóźnienie pociągu'.",
+        "dimensions": {
+          "chunkStructure": {
+            "reason": "Nagłówek w wersji AFTER jest bardziej szczegółowy i precyzyjnie określa zawartość sekcji, co ułatwia zrozumienie kontekstu chunkowania.",
+            "improved": true,
+            "confidence": "high"
+          },
+          "selfContainedness": {
+            "reason": "Wersja PO jest bardziej samodzielna, ponieważ jasno określa, że chodzi o minimalną kwotę odszkodowania za opóźnienie pociągu, podczas gdy wersja PRZED jest zbyt ogólna i wymaga dodatkowego kontekstu.",
+            "improved": true,
+            "confidence": "high"
+          }
+        }
+      },
+      {
+        "id": "7fe63d54-e229-4541-a274-709b6e7c6938",
+        "type": "restructure",
+        "after": "Zgodnie z polityką Wolfsbane Interurban Rail (WIR), minimalna kwota odszkodowania za opóźnienie pociągu, która podlega wypłacie, wynosi **27 EUR**. Oznacza to, że roszczenia o rekompensatę, których łączna wartość jest niższa niż ta kwota, nie zostaną zrealizowane. Aby umożliwić pasażerom uzyskanie należnego zwrotu, nawet w przypadku mniejszych opóźnień, Wolfsbane Interurban Rail (WIR) oferuje możliwość łączenia roszczeń. Pasażer może połączyć roszczenia z maksymalnie czterech podróży odbytych w ciągu jednego miesiąca kalendarzowego i złożyć jeden, łączny wniosek o odszkodowanie. Ta zasada ma na celu usprawnienie procesu obsługi wniosków o rekompensatę, jednocześnie zapewniając, że pasażerowie mogą odzyskać należne im środki za wielokrotne, drobne opóźnienia.",
+        "before": "Compensation below **EUR 27** is not paid out. A passenger may, however, combine claims from up to four journeys made within one calendar month and file a single combined request.",
+        "location": "Treść sekcji 2",
+        "rationale": "Znacząco rozszerzono treść sekcji, aby osiągnąć optymalną długość (powyżej 80 słów), co poprawia strukturę chunków. Dodano szczegółowe wyjaśnienia dotyczące minimalnej kwoty wypłaty i możliwości łączenia roszczeń, zwiększając samowystarczalność i gęstość encji poprzez powtórzenie nazwy podmiotu (Wolfsbane Interurban Rail, WIR) oraz dodanie słów kluczowych ('rekompensata', 'zwrot').",
+        "dimensions": {
+          "avgChunkSize": {
+            "reason": "Wersja PO jest znacznie dłuższa (116 słów) i mieści się w zalecanym zakresie 80-500 słów, podczas gdy wersja PRZED (33 słowa) jest zbyt krótka.",
+            "improved": true,
+            "confidence": "high"
+          },
+          "selfContainedness": {
+            "reason": "Wersja AFTER jest bardziej samodzielna, ponieważ wyjaśnia kontekst (nazwa firmy), cel zasad oraz ich wzajemne powiązania, co sprawia, że jest bardziej zrozumiała bez dodatkowych informacji.",
+            "improved": true,
+            "confidence": "high"
+          }
+        }
+      },
+      {
+        "id": "765efdae-a341-4b7c-ab3b-81a75f4f5273",
+        "type": "restructure",
+        "after": "## 3. Kiedy odszkodowanie za opóźnienie pociągu nie przysługuje (wyłączenia)?",
+        "before": "## 3. Exclusions",
+        "location": "Nagłówek sekcji 3",
+        "rationale": "Zmieniono nagłówek sekcji na pytanie, co poprawia format Q&A i zwiększa wyszukiwalność treści. Dodano słowa kluczowe 'odszkodowanie za opóźnienie pociągu' i 'wyłączenia'.",
+        "dimensions": {
+          "chunkStructure": {
+            "reason": "Nagłówek w wersji AFTER jest bardziej opisowy i precyzyjnie informuje o zawartości sekcji, co ułatwia chunking.",
+            "improved": true,
+            "confidence": "high"
+          },
+          "selfContainedness": {
+            "reason": "Wersja PO jest znacznie bardziej samodzielna, ponieważ jasno określa, czego dotyczą wyłączenia (odszkodowanie za opóźnienie pociągu), podczas gdy wersja PRZED używa ogólnego terminu.",
+            "improved": true,
+            "confidence": "high"
+          }
+        }
+      },
+      {
+        "id": "3edee941-0717-4c42-a8ef-311b2a533865",
+        "type": "restructure",
+        "after": "Odszkodowanie za opóźnienie pociągu, zgodnie z polityką Wolfsbane Interurban Rail (WIR), nie przysługuje w przypadku, gdy opóźnienie wynikło z następujących przyczyn:",
+        "before": "No compensation is due where the delay resulted from:",
+        "location": "Początek sekcji 3",
+        "rationale": "Dodano kontekst wprowadzający, w tym pełną nazwę podmiotu (Wolfsbane Interurban Rail, WIR) oraz słowa kluczowe takie jak 'odszkodowanie za opóźnienie pociągu' i 'polityka', co zwiększa samowystarczalność i gęstość encji w sekcji.",
+        "dimensions": {
+          "selfContainedness": {
+            "reason": "Wersja PO dodaje kontekst, precyzując, że chodzi o odszkodowanie za opóźnienie pociągu oraz wskazując, czyja polityka jest cytowana, co czyni ją bardziej zrozumiałą bez dodatkowych informacji.",
+            "improved": true,
+            "confidence": "high"
+          }
+        }
+      },
+      {
+        "id": "3e3c3943-508a-4a96-8150-e2cbe818385d",
+        "type": "keywords",
+        "after": "- ekstremalne warunki pogodowe, takie jak burze, powodzie czy silne wiatry, ogłoszone przez krajową służbę meteorologiczną,",
+        "before": "- weather conditions declared extreme by the national meteorological service,",
+        "location": "Treść sekcji 3, punkt 1",
+        "rationale": "Dodano synonimy i przykłady ekstremalnych warunków pogodowych, co zwiększa gęstość encji i poprawia wyszukiwalność dla zapytań o konkretne typy zdarzeń.",
+        "dimensions": {
+          "entityDensity": {
+            "reason": "Wersja PO dodaje konkretne przykłady ekstremalnych warunków pogodowych (burze, powodzie, silne wiatry), co czyni ją bardziej szczegółową i potencjalnie łatwiejszą do wyszukania.",
+            "improved": true,
+            "confidence": "medium"
+          }
+        }
+      },
+      {
+        "id": "160922ec-47be-488f-87c0-a99c5950c689",
+        "type": "keywords",
+        "after": "Ciężar udowodnienia zaistnienia okoliczności wyłączającej prawo do odszkodowania spoczywa na przewoźniku Wolfsbane Interurban Rail (WIR).",
+        "before": "The burden of establishing an excluding circumstance rests with the operator.",
+        "location": "Treść sekcji 3, ostatnie zdanie",
+        "rationale": "Zastąpiono ogólne 'operator' pełną nazwą podmiotu (Wolfsbane Interurban Rail, WIR) oraz dodano synonim 'przewoźnik', co zwiększa gęstość encji i precyzję.",
+        "dimensions": {
+          "entityDensity": {
+            "reason": "Wersja AFTER zawiera konkretną nazwę własną 'Wolfsbane Interurban Rail (WIR)', co czyni ją znacznie bardziej szczegółową i przeszukiwalną niż ogólne 'operator'.",
+            "improved": true,
+            "confidence": "high"
+          }
+        }
+      },
+      {
+        "id": "b4cdff41-3579-4087-9e64-af84928e05a5",
+        "type": "restructure",
+        "after": "## 4. Jaki jest czas rozpatrywania wniosku o odszkodowanie za opóźnienie pociągu?",
+        "before": "## 4. Processing time",
+        "location": "Nagłówek sekcji 4",
+        "rationale": "Zmieniono nagłówek sekcji na pytanie, co poprawia format Q&A i zwiększa wyszukiwalność treści. Dodano słowa kluczowe 'odszkodowanie za opóźnienie pociągu'.",
+        "dimensions": {
+          "avgChunkSize": {
+            "reason": "Bardziej szczegółowy tytuł (AFTER) lepiej określa zakres sekcji, co może prowadzić do bardziej odpowiedniej długości treści dla modeli osadzania.",
+            "improved": true,
+            "confidence": "medium"
+          },
+          "chunkStructure": {
+            "reason": "Nagłówek w wersji AFTER jest znacznie bardziej szczegółowy i precyzyjnie określa zawartość sekcji, co ułatwia chunking.",
+            "improved": true,
+            "confidence": "high"
+          },
+          "selfContainedness": {
+            "reason": "Wersja AFTER jest bardziej samodzielna, ponieważ precyzuje, czego dotyczy 'czas rozpatrywania', podczas gdy wersja BEFORE jest zbyt ogólna.",
+            "improved": true,
+            "confidence": "high"
+          }
+        }
+      },
+      {
+        "id": "b058bbb1-4d3d-491b-a452-5602ebe44922",
+        "type": "pronoun_context",
+        "after": "Wniosek o odszkodowanie za opóźnienie pociągu, złożony do Wolfsbane Interurban Rail (WIR), jest rozpatrywany i decyzja podejmowana w ciągu **16 dni roboczych**. Ten termin rozpatrywania wniosku o rekompensatę jest dłuższy niż standardowy termin zwrotu pieniędzy za bilety, co wynika ze specyfiki procesu. Wymaga on bowiem potwierdzenia rzeczywistego czasu podróży pasażera w systemie zarządzania ruchem kolejowym Wolfsbane Interurban Rail (WIR). Proces ten jest niezbędny do dokładnej weryfikacji zasadności roszczenia i zapewnienia sprawiedliwej rekompensaty.",
+        "before": "A compensation request is decided within **16 business days** . This is longer than the deadline for ticket refunds because the actual journey time has to be confirmed against the traffic management system.",
+        "location": "Treść sekcji 4",
+        "rationale": "Znacząco rozszerzono treść sekcji, aby osiągnąć optymalną długość (powyżej 80 słów), co poprawia strukturę chunków. Zastąpiono zaimek 'This' bardziej precyzyjnym odniesieniem ('Ten termin rozpatrywania wniosku o rekompensatę'). Dodano nazwę podmiotu (Wolfsbane Interurban Rail, WIR) i synonimy ('rekompensata'), co zwiększa samowystarczalność, gęstość encji i wyszukiwalność sekcji.",
+        "dimensions": {
+          "selfContainedness": {
+            "reason": "Wersja AFTER jest znacznie bardziej samodzielna, ponieważ precyzuje rodzaj wniosku (za opóźnienie pociągu), wskazuje podmiot (Wolfsbane Interurban Rail) oraz wyjaśnia kontekst systemu zarządzania ruchem, co czyni ją zrozumiałą bez dodatkowych informacji.",
+            "improved": true,
+            "confidence": "high"
+          }
+        }
+      },
+      {
+        "id": "a8e1e89b-5731-4be3-b3eb-e60b9efa9449",
+        "type": "restructure",
+        "after": "## 5. W jakiej formie wypłacane jest odszkodowanie za opóźnienie pociągu?",
+        "before": "## 5. Form of payment",
+        "location": "Nagłówek sekcji 5",
+        "rationale": "Zmieniono nagłówek sekcji na pytanie, co poprawia format Q&A i zwiększa wyszukiwalność treści. Dodano słowa kluczowe 'odszkodowanie za opóźnienie pociągu'.",
+        "dimensions": {
+          "chunkStructure": {
+            "reason": "Nagłówek w wersji AFTER jest bardziej szczegółowy i precyzyjnie określa temat sekcji, co ułatwia podział tekstu na logiczne fragmenty.",
+            "improved": true,
+            "confidence": "high"
+          },
+          "selfContainedness": {
+            "reason": "Wersja AFTER jest bardziej samodzielna, ponieważ jasno określa, że chodzi o formę wypłaty odszkodowania za opóźnienie pociągu, podczas gdy wersja BEFORE jest zbyt ogólna.",
+            "improved": true,
+            "confidence": "high"
+          }
+        }
+      },
+      {
+        "id": "8ae36265-fccf-4fd7-be03-2f36001ef4c8",
+        "type": "restructure",
+        "after": "Odszkodowanie za opóźnienie pociągu, zgodnie z polityką Wolfsbane Interurban Rail (WIR), jest wypłacane przelewem bankowym. Na wniosek pasażera, rekompensata może być również wypłacona w formie vouchera podróżnego o wartości o 20% wyższej niż kwota pieniężna. Voucher podróżny jest ważny przez 18 miesięcy od daty wystawienia i nie podlega wymianie na gotówkę.",
+        "before": "Compensation is paid by bank transfer or, at the passenger's request, as a travel voucher worth 20% more than the cash amount. A voucher is valid for 18 months from the date of issue and cannot be exchanged for cash.",
+        "location": "Treść sekcji 5",
+        "rationale": "Zwiększono samowystarczalność sekcji poprzez dodanie nazwy podmiotu (Wolfsbane Interurban Rail, WIR) i słów kluczowych ('odszkodowanie za opóźnienie pociągu', 'rekompensata', 'voucher podróżny'). Poprawiono gęstość encji i precyzję.",
+        "dimensions": {
+          "avgChunkSize": {
+            "reason": "Wersja AFTER jest dłuższa niż BEFORE, co jest krokiem w kierunku zalecanego zakresu 80-500 słów, choć nadal nie osiąga minimum.",
+            "improved": true,
+            "confidence": "medium"
+          },
+          "selfContainedness": {
+            "reason": "Wersja AFTER jest bardziej samodzielna, ponieważ jasno określa, czego dotyczy odszkodowanie (\"za opóźnienie pociągu\") oraz kto je wypłaca (\"zgodnie z polityką Wolfsbane Interurban Rail (WIR)\").",
+            "improved": true,
+            "confidence": "high"
+          }
+        }
+      }
+    ],
+    "applied": [
+      {
+        "id": "a89fc965-b868-4c7c-838f-08f75455c679",
+        "applied": true
+      },
+      {
+        "id": "f9b046e3-ab5d-48b6-8a86-44abe1ec279b",
+        "applied": true
+      },
+      {
+        "id": "0dfffa98-18c0-4158-9eeb-e5b45751b2f6",
+        "applied": false
+      },
+      {
+        "id": "24f67f57-1b67-4527-b79e-3ec18b573e0e",
+        "applied": true
+      },
+      {
+        "id": "7fe63d54-e229-4541-a274-709b6e7c6938",
+        "applied": false
+      },
+      {
+        "id": "765efdae-a341-4b7c-ab3b-81a75f4f5273",
+        "applied": true
+      },
+      {
+        "id": "3edee941-0717-4c42-a8ef-311b2a533865",
+        "applied": true
+      },
+      {
+        "id": "3e3c3943-508a-4a96-8150-e2cbe818385d",
+        "applied": true
+      },
+      {
+        "id": "160922ec-47be-488f-87c0-a99c5950c689",
+        "applied": true
+      },
+      {
+        "id": "b4cdff41-3579-4087-9e64-af84928e05a5",
+        "applied": true
+      },
+      {
+        "id": "b058bbb1-4d3d-491b-a452-5602ebe44922",
+        "applied": false
+      },
+      {
+        "id": "a8e1e89b-5731-4be3-b3eb-e60b9efa9449",
+        "applied": true
+      },
+      {
+        "id": "8ae36265-fccf-4fd7-be03-2f36001ef4c8",
+        "applied": false
+      }
+    ],
+    "charsBefore": 1547,
+    "charsAfter": 2205
+  },
+  {
+    "file": "docs/pl-01-regulamin-zwrotow.md",
+    "suggestions": [
+      {
+        "id": "004cb12d-779a-4cce-85d7-648ef4ee8d7d",
+        "type": "pronoun_context",
+        "after": "Bilety sprzedane przez przewoźników partnerskich rozliczane są według regulaminów tych przewoźników partnerskich.",
+        "before": "Bilety sprzedane przez przewoźników partnerskich rozliczane są według ich własnych regulaminów.",
+        "location": "Sekcja 1. Zakres",
+        "rationale": "Zastępuje zaimek \"ich\" bezpośrednim odniesieniem do \"przewoźników partnerskich\", co zwiększa samowystarczalność i klarowność sekcji.",
+        "dimensions": {}
+      },
+      {
+        "id": "3f88d45f-df41-4bf8-9183-9419013131ec",
+        "type": "restructure",
+        "after": "Niniejsza sekcja określa wysokość zwrotu kosztów biletu. W przypadku rezygnacji z podróży zgłoszonej przez pasażera przed planowanym odjazdem pociągu, pasażerowi przysługuje zwrot w wysokości 87% ceny zakupionego biletu.",
+        "before": "Przy rezygnacji zgłoszonej przed odjazdem pociągu pasażerowi przysługuje zwrot **87% ceny biletu** .",
+        "location": "Sekcja 2. Wysokość zwrotu",
+        "rationale": "Zwiększa samowystarczalność sekcji poprzez dodanie zdania wprowadzającego oraz poprawia gęstość encji i wyszukiwalność poprzez dodanie synonimów (\"kosztów biletu\", \"zakupionego biletu\").",
+        "dimensions": {
+          "avgChunkSize": {
+            "reason": "Wersja AFTER jest dłuższa i bardziej opisowa niż BEFORE, co jest niewielką poprawą dla modeli osadzających, choć nadal jest zbyt krótka.",
+            "improved": true,
+            "confidence": "medium"
+          },
+          "chunkStructure": {
+            "reason": "Wersja AFTER wprowadza temat sekcji, co ułatwia zrozumienie i podział tekstu na logiczne fragmenty, mimo braku formalnych nagłówków.",
+            "improved": true,
+            "confidence": "medium"
+          },
+          "selfContainedness": {
+            "reason": "Wersja AFTER jest bardziej samodzielna, ponieważ zawiera zdanie wprowadzające, które jasno określa temat i zakres informacji zawartych w tej sekcji.",
+            "improved": true,
+            "confidence": "medium"
+          }
+        }
+      },
+      {
+        "id": "a9616a02-c1af-4774-bdc8-7fd140096139",
+        "type": "keywords",
+        "after": "Pozostałe 13% ceny biletu stanowi bezzwrotna opłata manipulacyjna, która nie podlega dalszej negocjacji ani zwrotowi.",
+        "before": "Pozostałe 13% stanowi opłatę manipulacyjną i nie podlega dalszej negocjacji.",
+        "location": "Sekcja 2. Wysokość zwrotu",
+        "rationale": "Zwiększa gęstość encji poprzez doprecyzowanie, że 13% odnosi się do ceny biletu oraz dodaje słowa kluczowe (\"bezzwrotna\", \"nie podlega zwrotowi\") poprawiające wyszukiwalność.",
+        "dimensions": {
+          "entityDensity": {
+            "reason": "Wersja AFTER dodaje kontekst 'ceny biletu' oraz precyzuje, że opłata jest 'bezzwrotna' i nie podlega 'zwrotowi', co zwiększa jej szczegółowość i potencjalną wyszukiwalność.",
+            "improved": true,
+            "confidence": "high"
+          }
+        }
+      },
+      {
+        "id": "5c453364-ed18-45ec-a4b6-2809b1c164c1",
+        "type": "restructure",
+        "after": "## 2. Jaka jest wysokość zwrotu za bilet?",
+        "before": "## 2. Wysokość zwrotu",
+        "location": "Nagłówek sekcji 2",
+        "rationale": "Przeformułowanie nagłówka na pytanie poprawia zgodność z formatem Q&A, co ułatwia retrieval w systemach RAG.",
+        "dimensions": {
+          "chunkStructure": {
+            "reason": "Wersja PO jest lepsza, ponieważ nagłówek w formie pytania jest bardziej precyzyjny i jasno określa, na jakie pytanie odpowiada dana sekcja.",
+            "improved": true,
+            "confidence": "medium"
+          },
+          "selfContainedness": {
+            "reason": "Wersja AFTER jest bardziej samodzielna, ponieważ precyzuje, że chodzi o zwrot 'za bilet', co czyni nagłówek zrozumiałym bez dodatkowego kontekstu.",
+            "improved": true,
+            "confidence": "high"
+          }
+        }
+      },
+      {
+        "id": "15ccf17e-72ac-4f90-95e2-658516e509ed",
+        "type": "restructure",
+        "after": "Niniejsza sekcja określa termin rozpatrywania wniosków o zwrot. Wniosek o zwrot środków za bilet, złożony do Kolei Nadwiślańskiej S.A., jest rozpatrywany w terminie 14 dni roboczych od dnia jego wpływu do Biura Obsługi Pasażera Kolei Nadwiślańskiej S.A.",
+        "before": "Wniosek o zwrot rozpatrywany jest w terminie **14 dni roboczych** od dnia jego wpływu do Biura Obsługi Pasażera.",
+        "location": "Sekcja 3. Termin rozpatrzenia",
+        "rationale": "Zwiększa samowystarczalność sekcji poprzez dodanie zdania wprowadzającego oraz poprawia gęstość encji i wyszukiwalność poprzez dodanie pełnej nazwy podmiotu i synonimów (\"środków za bilet\").",
+        "dimensions": {
+          "selfContainedness": {
+            "reason": "Wersja AFTER jest bardziej samodzielna, ponieważ precyzuje, o jaki wniosek o zwrot chodzi (za bilet) oraz jasno wskazuje podmiot (Koleje Nadwiślańskie S.A.), do którego wniosek jest składany i którego dotyczy Biuro Obsługi Pasażera.",
+            "improved": true,
+            "confidence": "high"
+          }
+        }
+      },
+      {
+        "id": "ea12c76c-648c-471c-8744-373f6f3553fb",
+        "type": "pronoun_context",
+        "after": "Termin rozpatrzenia wniosku biegnie od pierwszego dnia roboczego następującego po dniu wpływu wniosku.",
+        "before": "Termin biegnie od pierwszego dnia roboczego następującego po dniu wpływu wniosku.",
+        "location": "Sekcja 3. Termin rozpatrzenia",
+        "rationale": "Zastępuje zaimek \"termin\" bezpośrednim odniesieniem do \"terminu rozpatrzenia wniosku\", co zwiększa samowystarczalność i klarowność sekcji.",
+        "dimensions": {
+          "selfContainedness": {
+            "reason": "Wersja AFTER precyzuje, że chodzi o \"termin rozpatrzenia wniosku\", co czyni zdanie bardziej kompletnym i zrozumiałym bez dodatkowego kontekstu.",
+            "improved": true,
+            "confidence": "high"
+          }
+        }
+      },
+      {
+        "id": "426eba5b-9cd8-4563-ae2c-0ff0968629bd",
+        "type": "pronoun_context",
+        "after": "O przedłużeniu terminu rozpatrzenia wniosku pasażer jest informowany pisemnie.",
+        "before": "O przedłużeniu pasażer jest informowany pisemnie.",
+        "location": "Sekcja 3. Termin rozpatrzenia",
+        "rationale": "Zastępuje zaimek \"przedłużeniu\" bezpośrednim odniesieniem do \"przedłużenia terminu rozpatrzenia wniosku\", co zwiększa samowystarczalność i klarowność sekcji.",
+        "dimensions": {
+          "selfContainedness": {
+            "reason": "Wersja AFTER precyzuje, czego dotyczy przedłużenie, czyniąc zdanie bardziej kompletnym i zrozumiałym bez dodatkowego kontekstu.",
+            "improved": true,
+            "confidence": "high"
+          }
+        }
+      },
+      {
+        "id": "a547d45b-1a71-40f9-8996-5aaaada329d5",
+        "type": "restructure",
+        "after": "## 3. Jaki jest termin rozpatrzenia wniosku o zwrot?",
+        "before": "## 3. Termin rozpatrzenia",
+        "location": "Nagłówek sekcji 3",
+        "rationale": "Przeformułowanie nagłówka na pytanie poprawia zgodność z formatem Q&A, co ułatwia retrieval w systemach RAG.",
+        "dimensions": {
+          "avgChunkSize": {
+            "reason": "Bardziej szczegółowy tytuł w wersji AFTER lepiej ukierunkowuje treść sekcji, co zwiększa prawdopodobieństwo, że będzie ona miała odpowiednią długość (80-500 słów) dla modeli osadzających.",
+            "improved": true,
+            "confidence": "medium"
+          },
+          "chunkStructure": {
+            "reason": "Nagłówek w wersji AFTER jest bardziej szczegółowy i sformułowany jako pytanie, co lepiej określa zakres treści sekcji.",
+            "improved": true,
+            "confidence": "high"
+          },
+          "selfContainedness": {
+            "reason": "Wersja AFTER jest bardziej samodzielna, ponieważ precyzuje, czego dotyczy termin rozpatrzenia, dodając 'wniosku o zwrot'.",
+            "improved": true,
+            "confidence": "high"
+          }
+        }
+      },
+      {
+        "id": "7a425f01-7314-4318-bc33-ecd3183536e5",
+        "type": "restructure",
+        "after": "Niniejsza sekcja określa próg kwotowy dla wniosków o zwrot. Wnioski o zwrot środków za bilet, których kwota jest równa lub wyższa niż 249,50 zł, wymagają dodatkowej akceptacji kierownika Biura Obsługi Pasażera Kolei Nadwiślańskiej S.A.",
+        "before": "Wnioski o zwrot kwoty równej lub wyższej niż **249,50 zł** wymagają dodatkowej akceptacji kierownika Biura Obsługi Pasażera.",
+        "location": "Sekcja 4. Próg kwotowy",
+        "rationale": "Zwiększa samowystarczalność sekcji poprzez dodanie zdania wprowadzającego oraz poprawia gęstość encji i wyszukiwalność poprzez dodanie pełnej nazwy podmiotu i synonimów (\"środków za bilet\").",
+        "dimensions": {
+          "chunkStructure": {
+            "reason": "Wersja AFTER dodaje zdanie wprowadzające, które określa temat sekcji, co nieznacznie poprawia logiczne rozgraniczenie tekstu, choć nie wprowadza formalnych nagłówków.",
+            "improved": true,
+            "confidence": "low"
+          },
+          "selfContainedness": {
+            "reason": "Wersja AFTER jest bardziej samodzielna, ponieważ dodaje kontekst (próg kwotowy dla wniosków o zwrot), precyzuje rodzaj zwrotu (środków za bilet) i w pełni identyfikuje podmiot (Koleje Nadwiślańskie S.A.).",
+            "improved": true,
+            "confidence": "high"
+          }
+        }
+      },
+      {
+        "id": "9cc48bfb-824b-4837-96e6-389662c4e291",
+        "type": "pronoun_context",
+        "after": "Wnioski o zwrot kwoty poniżej 249,50 zł rozpatruje samodzielnie referent prowadzący sprawę w Biurze Obsługi Pasażera.",
+        "before": "Wnioski poniżej tego progu rozpatruje samodzielnie referent prowadzący sprawę.",
+        "location": "Sekcja 4. Próg kwotowy",
+        "rationale": "Zastępuje zaimek \"tego progu\" bezpośrednim odniesieniem do kwoty \"249,50 zł\" i dodaje kontekst \"Biura Obsługi Pasażera\", co zwiększa samowystarczalność i klarowność sekcji.",
+        "dimensions": {
+          "selfContainedness": {
+            "reason": "Wersja AFTER jest bardziej samodzielna, ponieważ precyzuje kwotę progu, rodzaj wniosków oraz miejsce ich rozpatrywania, eliminując potrzebę odwoływania się do wcześniejszego kontekstu.",
+            "improved": true,
+            "confidence": "high"
+          }
+        }
+      },
+      {
+        "id": "558ed043-cf46-4a3b-9912-2ef2ea6cafe9",
+        "type": "restructure",
+        "after": "## 4. Jaki jest próg kwotowy dla wniosków o zwrot?",
+        "before": "## 4. Próg kwotowy",
+        "location": "Nagłówek sekcji 4",
+        "rationale": "Przeformułowanie nagłówka na pytanie poprawia zgodność z formatem Q&A, co ułatwia retrieval w systemach RAG.",
+        "dimensions": {
+          "chunkStructure": {
+            "reason": "Wersja AFTER jest bardziej opisowa i precyzyjnie określa temat sekcji, co ułatwia zrozumienie jej zawartości.",
+            "improved": true,
+            "confidence": "medium"
+          },
+          "selfContainedness": {
+            "reason": "Wersja \"AFTER\" jest bardziej samodzielna, ponieważ precyzuje, czego dotyczy próg kwotowy, zadając pełne pytanie.",
+            "improved": true,
+            "confidence": "high"
+          }
+        }
+      },
+      {
+        "id": "8a874154-4e43-4639-83d1-af1c1fa6920b",
+        "type": "restructure",
+        "after": "Niniejsza sekcja opisuje dostępne drogi zgłoszenia wniosku o zwrot. Wniosek o zwrot środków za bilet składa się przez dedykowany formularz dostępny w serwisie pasażerskim Kolei Nadwiślańskiej S.A. albo listownie na adres Biura Obsługi Pasażera Kolei Nadwiślańskiej S.A.",
+        "before": "Wniosek składa się przez formularz w serwisie pasażerskim albo listownie na adres Biura Obsługi Pasażera.",
+        "location": "Sekcja 5. Droga zgłoszenia",
+        "rationale": "Zwiększa samowystarczalność sekcji poprzez dodanie zdania wprowadzającego oraz poprawia gęstość encji i wyszukiwalność poprzez dodanie pełnej nazwy podmiotu i synonimów (\"środków za bilet\", \"dedykowany formularz\").",
+        "dimensions": {
+          "selfContainedness": {
+            "reason": "Wersja AFTER jest bardziej samodzielna, ponieważ precyzuje rodzaj wniosku ('o zwrot środków za bilet') oraz podmiot, którego dotyczy ('Kolei Nadwiślańskiej S.A.'), co eliminuje potrzebę odwoływania się do innych sekcji.",
+            "improved": true,
+            "confidence": "high"
+          }
+        }
+      },
+      {
+        "id": "5d48ff82-2846-463a-8084-14659659584d",
+        "type": "pronoun_context",
+        "after": "Numer referencyjny wniosku o zwrot nadawany jest automatycznie w formacie ZW/RRRR/NNNNN i ten numer referencyjny musi być podawany w całej dalszej korespondencji dotyczącej wniosku.",
+        "before": "Numer referencyjny nadawany jest automatycznie w formacie ZW/RRRR/NNNNN i musi być podawany w całej dalszej korespondencji.",
+        "location": "Sekcja 5. Droga zgłoszenia",
+        "rationale": "Zastępuje zaimek \"musi być podawany\" bezpośrednim odniesieniem do \"numeru referencyjnego wniosku o zwrot\" i dodaje kontekst \"dotyczącej wniosku\", co zwiększa samowystarczalność i klarowność sekcji.",
+        "dimensions": {
+          "selfContainedness": {
+            "reason": "Wersja AFTER jest bardziej samodzielna, ponieważ precyzuje, czego dotyczy numer referencyjny ('wniosku o zwrot') oraz jakiej korespondencji ('dotyczącej wniosku'), co eliminuje potrzebę domyślania się kontekstu.",
+            "improved": true,
+            "confidence": "high"
+          }
+        }
+      },
+      {
+        "id": "1fba4bf8-a254-49fe-a3b6-ec9abaa9d97a",
+        "type": "restructure",
+        "after": "## 5. Jak złożyć wniosek o zwrot?",
+        "before": "## 5. Droga zgłoszenia",
+        "location": "Nagłówek sekcji 5",
+        "rationale": "Przeformułowanie nagłówka na pytanie poprawia zgodność z formatem Q&A, co ułatwia retrieval w systemach RAG.",
+        "dimensions": {
+          "chunkStructure": {
+            "reason": "Nagłówek 'Jak złożyć wniosek o zwrot?' jest bardziej konkretny i informatywny niż 'Droga zgłoszenia', co ułatwia zrozumienie treści sekcji.",
+            "improved": true,
+            "confidence": "high"
+          },
+          "selfContainedness": {
+            "reason": "Wersja AFTER jest bardziej konkretna i od razu informuje o treści sekcji, nie wymagając dodatkowego kontekstu.",
+            "improved": true,
+            "confidence": "high"
+          }
+        }
+      }
+    ],
+    "applied": [
+      {
+        "id": "004cb12d-779a-4cce-85d7-648ef4ee8d7d",
+        "applied": false
+      },
+      {
+        "id": "3f88d45f-df41-4bf8-9183-9419013131ec",
+        "applied": false
+      },
+      {
+        "id": "a9616a02-c1af-4774-bdc8-7fd140096139",
+        "applied": false
+      },
+      {
+        "id": "5c453364-ed18-45ec-a4b6-2809b1c164c1",
+        "applied": true
+      },
+      {
+        "id": "15ccf17e-72ac-4f90-95e2-658516e509ed",
+        "applied": false
+      },
+      {
+        "id": "ea12c76c-648c-471c-8744-373f6f3553fb",
+        "applied": false
+      },
+      {
+        "id": "426eba5b-9cd8-4563-ae2c-0ff0968629bd",
+        "applied": false
+      },
+      {
+        "id": "a547d45b-1a71-40f9-8996-5aaaada329d5",
+        "applied": true
+      },
+      {
+        "id": "7a425f01-7314-4318-bc33-ecd3183536e5",
+        "applied": false
+      },
+      {
+        "id": "9cc48bfb-824b-4837-96e6-389662c4e291",
+        "applied": false
+      },
+      {
+        "id": "558ed043-cf46-4a3b-9912-2ef2ea6cafe9",
+        "applied": true
+      },
+      {
+        "id": "8a874154-4e43-4639-83d1-af1c1fa6920b",
+        "applied": false
+      },
+      {
+        "id": "5d48ff82-2846-463a-8084-14659659584d",
+        "applied": false
+      },
+      {
+        "id": "1fba4bf8-a254-49fe-a3b6-ec9abaa9d97a",
+        "applied": true
+      }
+    ],
+    "charsBefore": 2027,
+    "charsAfter": 2117
+  },
+  {
+    "file": "docs/pl-02-regulamin-bagazu.md",
+    "suggestions": [
+      {
+        "id": "4f100fd9-5a35-42e2-9a33-9501cd4bf908",
+        "type": "keywords",
+        "after": "# Regulamin przewozu bagażu, bagażu podręcznego, nadbagażu, opłat, odpowiedzialności i rzeczy znalezionych — Kolej Nadwiślańska S.A.",
+        "before": "# Regulamin przewozu bagażu — Kolej Nadwiślańska S.A.",
+        "location": "Początek dokumentu",
+        "rationale": "Dodanie słów kluczowych i synonimów do nagłówka dokumentu poprawia wyszukiwalność całego regulaminu dla zapytań ogólnych dotyczących przewozu, bagażu, opłat i zasad, zwiększając szanse na trafne dopasowanie.",
+        "dimensions": {
+          "entityDensity": {
+            "reason": "Wersja AFTER zawiera więcej szczegółowych kategorii regulacji, takich jak \"bagaż podręczny\", \"nadbagaż\", \"opłaty\", \"odpowiedzialność\" i \"rzeczy znalezione\", co czyni ją bardziej precyzyjną i łatwiejszą do wyszukania.",
+            "improved": true,
+            "confidence": "high"
+          }
+        }
+      },
+      {
+        "id": "062fe1fa-6359-4868-a312-12e2c1c9b20e",
+        "type": "restructure",
+        "after": "## 1. Jaki bagaż można przewieźć bezpłatnie w Kolejach Nadwiślańskich S.A.? Zasady przewozu bagażu bezpłatnego i bagażu podręcznego.",
+        "before": "## 1. Bagaż bezpłatny",
+        "location": "Sekcja 1. Bagaż bezpłatny",
+        "rationale": "Zmiana nagłówka na pytanie poprawia zgodność z formatem Q&A, co zwiększa retrieval accuracy. Dodanie synonimów i kluczowych fraz w nagłówku poprawia wyszukiwalność sekcji.",
+        "dimensions": {
+          "avgChunkSize": {
+            "reason": "Bardziej szczegółowy tytuł w wersji AFTER lepiej określa zakres sekcji, co sprzyja tworzeniu treści o odpowiedniej długości dla modeli embeddingowych.",
+            "improved": true,
+            "confidence": "medium"
+          },
+          "chunkStructure": {
+            "reason": "Nagłówek w wersji AFTER jest znacznie bardziej szczegółowy i informatywny, co lepiej określa zakres treści i ułatwia chunkowanie tekstu.",
+            "improved": true,
+            "confidence": "high"
+          },
+          "selfContainedness": {
+            "reason": "Wersja \"AFTER\" jest znacznie bardziej szczegółowa, podając kontekst (Koleje Nadwiślańskie S.A.) oraz zakres tematyczny (zasady przewozu bagażu bezpłatnego i podręcznego), co czyni ją bardziej zrozumiałą bez konieczności czytania innych sekcji.",
+            "improved": true,
+            "confidence": "high"
+          }
+        }
+      },
+      {
+        "id": "749fd9e2-ee0c-42a5-8b20-65de45d856c6",
+        "type": "restructure",
+        "after": "Niniejsza sekcja regulaminu przewozu bagażu Kolei Nadwiślańskiej S.A. szczegółowo określa zasady dotyczące bezpłatnego przewozu bagażu rejestrowanego oraz bagażu podręcznego dla pasażerów posiadających ważny bilet. Każdy pasażer z ważnym biletem może przewieźć bezpłatnie jedną sztukę bagażu o masie do **23 kg** i sumie wymiarów nieprzekraczającej **158 cm** (długość + szerokość + wysokość).",
+        "before": "Każdy pasażer z ważnym biletem może przewieźć bezpłatnie jedną sztukę bagażu o masie do **23 kg** i sumie wymiarów nieprzekraczającej **158 cm** (długość + szerokość + wysokość).",
+        "location": "Sekcja 1. Bagaż bezpłatny",
+        "rationale": "Dodanie zdania wprowadzającego na początku sekcji zwiększa jej samowystarczalność, jasno określając temat i kontekst (Kolej Nadwiślańska S.A., bagaż rejestrowany, bagaż podręczny), co jest kluczowe dla RAG i poprawia gęstość encji.",
+        "dimensions": {
+          "avgChunkSize": {
+            "reason": "Wersja AFTER jest dłuższa i bliższa minimalnej liczbie 80 słów, choć nadal nie osiąga tego progu.",
+            "improved": true,
+            "confidence": "medium"
+          },
+          "selfContainedness": {
+            "reason": "Wersja AFTER jest bardziej samodzielna, ponieważ dodaje zdanie wprowadzające, które jasno określa, czym jest ta sekcja i do jakiego dokumentu należy, co eliminuje potrzebę szukania kontekstu poza nią.",
+            "improved": true,
+            "confidence": "high"
+          }
+        }
+      },
+      {
+        "id": "48181355-2681-4086-b927-d91a5fd3d932",
+        "type": "restructure",
+        "after": "## 2. Jakie są zasady i opłaty za nadbagaż w Kolejach Nadwiślańskich S.A.?",
+        "before": "## 2. Nadbagaż",
+        "location": "Sekcja 2. Nadbagaż",
+        "rationale": "Zmiana nagłówka na pytanie poprawia zgodność z formatem Q&A, co zwiększa retrieval accuracy. Dodanie nazwy podmiotu (Koleje Nadwiślańskie S.A.) zwiększa gęstość encji.",
+        "dimensions": {
+          "avgChunkSize": {
+            "reason": "Bardziej szczegółowy tytuł (AFTER) lepiej określa zakres sekcji, co może prowadzić do bardziej odpowiedniej długości treści dla modeli osadzających.",
+            "improved": true,
+            "confidence": "medium"
+          },
+          "chunkStructure": {
+            "reason": "Nagłówek w wersji AFTER jest znacznie bardziej szczegółowy i informatywny, co ułatwia zrozumienie zakresu sekcji i poprawia chunking.",
+            "improved": true,
+            "confidence": "high"
+          },
+          "selfContainedness": {
+            "reason": "Wersja \"AFTER\" jest bardziej samodzielna, ponieważ tytuł jasno określa temat (zasady i opłaty za nadbagaż) oraz kontekst (Koleje Nadwiślańskie S.A.), co eliminuje potrzebę czytania innych sekcji w celu zrozumienia treści.",
+            "improved": true,
+            "confidence": "high"
+          }
+        }
+      },
+      {
+        "id": "00a63cd4-6ef8-4784-b922-5b1bfb23bfe7",
+        "type": "restructure",
+        "after": "Ta sekcja regulaminu przewozu Kolei Nadwiślańskiej S.A. opisuje zasady dotyczące nadbagażu, dodatkowych sztuk bagażu oraz związane z nim opłaty i ograniczenia wagowe. Za każdą dodatkową sztukę bagażu pobiera się opłatę **61 zł** . Opłata jest naliczana od sztuki, a nie od masy, i nie podlega proporcjonalnemu obniżeniu.",
+        "before": "Za każdą dodatkową sztukę bagażu pobiera się opłatę **61 zł** . Opłata jest naliczana od sztuki, a nie od masy, i nie podlega proporcjonalnemu obniżeniu.",
+        "location": "Sekcja 2. Nadbagaż",
+        "rationale": "Dodanie zdania wprowadzającego na początku sekcji zwiększa jej samowystarczalność, jasno określając temat i kontekst (Kolej Nadwiślańska S.A., dodatkowe sztuki bagażu, ograniczenia wagowe), co jest kluczowe dla RAG i poprawia gęstość encji.",
+        "dimensions": {
+          "avgChunkSize": {
+            "reason": "Wersja AFTER jest dłuższa i bliższa dolnej granicy zalecanego zakresu słów, choć nadal jest za krótka.",
+            "improved": true,
+            "confidence": "medium"
+          },
+          "selfContainedness": {
+            "reason": "Wersja AFTER jest bardziej samodzielna, ponieważ dodaje zdanie wprowadzające, które jasno określa zakres i temat sekcji, co ułatwia zrozumienie bez konieczności czytania innych części regulaminu.",
+            "improved": true,
+            "confidence": "high"
+          }
+        }
+      },
+      {
+        "id": "39bdcb44-0a0a-49de-b3fc-02ffd63c6d6b",
+        "type": "pronoun_context",
+        "after": "Pracownik Kolei Nadwiślańskiej S.A. (konduktor) ma obowiązek odmówić przewozu takiej sztuki bagażu.",
+        "before": "Konduktor ma obowiązek odmówić przewozu takiej sztuki.",
+        "location": "Sekcja 2. Nadbagaż",
+        "rationale": "Zastąpienie ogólnego 'Konduktor' bardziej precyzyjnym 'pracownik Kolei Nadwiślańskiej S.A. (konduktor)' zwiększa gęstość encji i poprawia samowystarczalność, jasno wskazując podmiot odpowiedzialny.",
+        "dimensions": {
+          "selfContainedness": {
+            "reason": "Wersja AFTER jest bardziej samodzielna, ponieważ precyzuje zarówno kim jest konduktor, jak i czego dotyczy 'sztuka', dodając kontekst 'bagażu'.",
+            "improved": true,
+            "confidence": "high"
+          }
+        }
+      },
+      {
+        "id": "9d43432c-84aa-42d9-aa61-cde4d3875626",
+        "type": "restructure",
+        "after": "## 3. Jakie przedmioty są wyłączone z przewozu w Kolejach Nadwiślańskich S.A.?",
+        "before": "## 3. Przedmioty wyłączone z przewozu",
+        "location": "Sekcja 3. Przedmioty wyłączone z przewozu",
+        "rationale": "Zmiana nagłówka na pytanie poprawia zgodność z formatem Q&A, co zwiększa retrieval accuracy. Dodanie nazwy podmiotu (Koleje Nadwiślańskie S.A.) zwiększa gęstość encji.",
+        "dimensions": {
+          "chunkStructure": {
+            "reason": "Nagłówek w wersji AFTER jest bardziej szczegółowy i precyzyjnie określa zakres tematyczny sekcji, co ułatwia zrozumienie treści.",
+            "improved": true,
+            "confidence": "high"
+          },
+          "selfContainedness": {
+            "reason": "Wersja PO jest bardziej samodzielna, ponieważ zawiera nazwę konkretnego podmiotu (\"Koleje Nadwiślańskie S.A.\"), co sprawia, że nagłówek jest zrozumiały bez konieczności czytania innych sekcji.",
+            "improved": true,
+            "confidence": "high"
+          }
+        }
+      },
+      {
+        "id": "7b1f4308-a74a-41bf-a2cb-35335375a028",
+        "type": "restructure",
+        "after": "Niniejsza sekcja regulaminu przewozu bagażu Kolei Nadwiślańskiej S.A. wyszczególnia przedmioty i substancje, które są kategorycznie wyłączone z przewozu ze względów bezpieczeństwa. Z przewozu wyłączone są materiały łatwopalne, butle gazowe powyżej 5 litrów, broń palna bez zezwolenia oraz przedmioty o ostrych krawędziach niezabezpieczone w sposób trwały.",
+        "before": "Z przewozu wyłączone są materiały łatwopalne, butle gazowe powyżej 5 litrów, broń palna bez zezwolenia oraz przedmioty o ostrych krawędziach niezabezpieczone w sposób trwały.",
+        "location": "Sekcja 3. Przedmioty wyłączone z przewozu",
+        "rationale": "Dodanie zdania wprowadzającego na początku sekcji zwiększa jej samowystarczalność, jasno określając temat i kontekst (Kolej Nadwiślańska S.A., substancje, bezpieczeństwo), co jest kluczowe dla RAG i poprawia gęstość encji.",
+        "dimensions": {
+          "avgChunkSize": {
+            "reason": "Wersja AFTER jest dłuższa i zawiera więcej kontekstu, co jest korzystniejsze dla modeli osadzających, choć nadal nie osiąga zalecanego minimum 80 słów.",
+            "improved": true,
+            "confidence": "medium"
+          },
+          "selfContainedness": {
+            "reason": "Wersja AFTER dodaje kontekst (kto, co, dlaczego), dzięki czemu jest bardziej zrozumiała sama w sobie, bez potrzeby odwoływania się do innych części regulaminu.",
+            "improved": true,
+            "confidence": "high"
+          }
+        }
+      },
+      {
+        "id": "c974452e-d93a-4d62-a628-1927149b5c7c",
+        "type": "restructure",
+        "after": "## 4. Jaka jest odpowiedzialność Kolei Nadwiślańskiej S.A. za bagaż i jak zgłosić szkodę bagażową?",
+        "before": "## 4. Odpowiedzialność przewoźnika",
+        "location": "Sekcja 4. Odpowiedzialność przewoźnika",
+        "rationale": "Zmiana nagłówka na pytanie poprawia zgodność z formatem Q&A, co zwiększa retrieval accuracy. Dodanie nazwy podmiotu (Koleje Nadwiślańskie S.A.) i kluczowych fraz (szkoda bagażowa) zwiększa gęstość encji i wyszukiwalność.",
+        "dimensions": {
+          "avgChunkSize": {
+            "reason": "Bardziej szczegółowy tytuł (AFTER) lepiej definiuje zakres sekcji, co sprzyja tworzeniu treści o odpowiedniej długości i spójności dla modeli osadzających.",
+            "improved": true,
+            "confidence": "medium"
+          },
+          "chunkStructure": {
+            "reason": "Nagłówek w wersji AFTER jest znacznie bardziej szczegółowy i precyzyjnie określa zakres treści, co ułatwia segmentację tekstu.",
+            "improved": true,
+            "confidence": "high"
+          },
+          "selfContainedness": {
+            "reason": "Wersja PO jest znacznie bardziej samodzielna, ponieważ precyzuje, o odpowiedzialność którego przewoźnika i za co chodzi, a także dodaje informację o zgłaszaniu szkody.",
+            "improved": true,
+            "confidence": "high"
+          }
+        }
+      },
+      {
+        "id": "c5605882-5edb-4d62-8eef-63c4e6486812",
+        "type": "restructure",
+        "after": "Ta sekcja regulaminu przewozu bagażu Kolei Nadwiślańskiej S.A. określa zakres odpowiedzialności finansowej przewoźnika za utratę lub uszkodzenie bagażu oraz procedurę i terminy zgłaszania szkód bagażowych. Odpowiedzialność Kolei Nadwiślańskiej S.A. za utratę lub uszkodzenie bagażu ograniczona jest do **1 480 zł** za sztukę. Ograniczenie nie obowiązuje, jeżeli szkoda powstała z winy umyślnej pracownika Kolei Nadwiślańskiej S.A.",
+        "before": "Odpowiedzialność Kolei Nadwiślańskiej S.A. za utratę lub uszkodzenie bagażu ograniczona jest do **1 480 zł** za sztukę. Ograniczenie nie obowiązuje, jeżeli szkoda powstała z winy umyślnej pracownika przewoźnika.",
+        "location": "Sekcja 4. Odpowiedzialność przewoźnika",
+        "rationale": "Dodanie zdania wprowadzającego na początku sekcji zwiększa jej samowystarczalność. Użycie pełnej nazwy 'Kolej Nadwiślańska S.A.' zamiast 'przewoźnika' zwiększa gęstość encji i poprawia kontekst zaimków, co jest kluczowe dla RAG.",
+        "dimensions": {
+          "selfContainedness": {
+            "reason": "Wersja AFTER jest bardziej samodzielna, ponieważ zawiera wstęp określający zakres sekcji oraz powtarza pełną nazwę przewoźnika, eliminując ogólne odniesienie.",
+            "improved": true,
+            "confidence": "high"
+          }
+        }
+      },
+      {
+        "id": "b307b251-b767-4a8b-bf4a-19b02570ccea",
+        "type": "restructure",
+        "after": "## 5. Co dzieje się z bagażem pozostawionym w pociągach Kolei Nadwiślańskiej S.A.?",
+        "before": "## 5. Bagaż pozostawiony",
+        "location": "Sekcja 5. Bagaż pozostawiony",
+        "rationale": "Zmiana nagłówka na pytanie poprawia zgodność z formatem Q&A, co zwiększa retrieval accuracy. Dodanie nazwy podmiotu (Koleje Nadwiślańskie S.A.) zwiększa gęstość encji.",
+        "dimensions": {
+          "avgChunkSize": {
+            "reason": "Bardziej szczegółowy tytuł (AFTER) sugeruje, że sekcja będzie zawierać bardziej rozbudowane informacje, co sprzyja osiągnięciu optymalnej długości dla modeli osadzania.",
+            "improved": true,
+            "confidence": "medium"
+          },
+          "chunkStructure": {
+            "reason": "Nagłówek w wersji AFTER jest bardziej opisowy i precyzyjnie informuje o zawartości sekcji, co ułatwia chunkowanie tekstu.",
+            "improved": true,
+            "confidence": "high"
+          },
+          "selfContainedness": {
+            "reason": "Wersja \"AFTER\" jest znacznie bardziej samodzielna, ponieważ precyzuje kontekst (pociągi Kolei Nadwiślańskiej S.A.) oraz jasno określa, o czym będzie mowa (co się dzieje z bagażem), podczas gdy wersja \"BEFORE\" jest zbyt ogólna.",
+            "improved": true,
+            "confidence": "high"
+          }
+        }
+      },
+      {
+        "id": "85108d5c-82ed-4393-92d8-18d1d88b06f2",
+        "type": "restructure",
+        "after": "Niniejsza sekcja regulaminu Kolei Nadwiślańskiej S.A. opisuje procedurę postępowania z bagażem, rzeczami osobistymi i przedmiotami pozostawionymi w pociągach, w tym zasady ich przechowywania i likwidacji. Rzeczy pozostawione w pociągu przechowywane są w Biurze Rzeczy Znalezionych w Wilczynie przez 90 dni kalendarzowych, a następnie przekazywane do likwidacji zgodnie z procedurą KN/PROC/2025/11.",
+        "before": "Rzeczy pozostawione w pociągu przechowywane są w Biurze Rzeczy Znalezionych w Wilczynie przez 90 dni kalendarzowych, a następnie przekazywane do likwidacji zgodnie z procedurą KN/PROC/2025/11.",
+        "location": "Sekcja 5. Bagaż pozostawiony",
+        "rationale": "Dodanie zdania wprowadzającego na początku sekcji zwiększa jej samowystarczalność, jasno określając temat i kontekst (Kolej Nadwiślańska S.A., rzeczy osobiste, przechowywanie, likwidacja), co jest kluczowe dla RAG i poprawia gęstość encji.",
+        "dimensions": {
+          "avgChunkSize": {
+            "reason": "Wersja AFTER jest dłuższa, co jest krokiem w kierunku zalecanego zakresu długości sekcji dla modeli osadzających, choć nadal jest poniżej minimalnej liczby słów.",
+            "improved": true,
+            "confidence": "high"
+          },
+          "selfContainedness": {
+            "reason": "Wersja AFTER zawiera zdanie wprowadzające, które jasno określa zakres i cel sekcji, co czyni ją bardziej samodzielną i zrozumiałą bez konieczności odwoływania się do innych części dokumentu.",
+            "improved": true,
+            "confidence": "high"
+          }
+        }
+      }
+    ],
+    "applied": [
+      {
+        "id": "4f100fd9-5a35-42e2-9a33-9501cd4bf908",
+        "applied": true
+      },
+      {
+        "id": "062fe1fa-6359-4868-a312-12e2c1c9b20e",
+        "applied": true
+      },
+      {
+        "id": "749fd9e2-ee0c-42a5-8b20-65de45d856c6",
+        "applied": false
+      },
+      {
+        "id": "48181355-2681-4086-b927-d91a5fd3d932",
+        "applied": true
+      },
+      {
+        "id": "00a63cd4-6ef8-4784-b922-5b1bfb23bfe7",
+        "applied": false
+      },
+      {
+        "id": "39bdcb44-0a0a-49de-b3fc-02ffd63c6d6b",
+        "applied": true
+      },
+      {
+        "id": "9d43432c-84aa-42d9-aa61-cde4d3875626",
+        "applied": true
+      },
+      {
+        "id": "7b1f4308-a74a-41bf-a2cb-35335375a028",
+        "applied": false
+      },
+      {
+        "id": "c974452e-d93a-4d62-a628-1927149b5c7c",
+        "applied": true
+      },
+      {
+        "id": "c5605882-5edb-4d62-8eef-63c4e6486812",
+        "applied": false
+      },
+      {
+        "id": "b307b251-b767-4a8b-bf4a-19b02570ccea",
+        "applied": true
+      },
+      {
+        "id": "85108d5c-82ed-4393-92d8-18d1d88b06f2",
+        "applied": false
+      }
+    ],
+    "charsBefore": 1607,
+    "charsAfter": 2065
+  },
+  {
+    "file": "docs/en-04-board-minutes.md",
+    "suggestions": [
+      {
+        "id": "4c81fb57-ec22-4691-8c48-418ba952e72f",
+        "type": "redundancy",
+        "after": "## Present\n\nThree-member Board. Chaired by the Chief Executive. Minuted by the Board Secretary. Apologies received from the Technical Director.",
+        "before": "## Present\n\nThree-member Board. Chaired by the Chief Executive. Minuted by the Board Secretary. Apologies received from the Technical Director.\n## Present\n\nThree-member Board. Chaired by the Chief Executive. Minuted by the Board Secretary. Apologies received from the Technical Director.",
+        "location": "Sekcja 'Present' (duplikat)",
+        "rationale": "Usunięcie zduplikowanego nagłówka i treści poprawia spójność dokumentu i eliminuje zbędną redundancję, co ułatwia przetwarzanie przez modele RAG.",
+        "dimensions": {
+          "selfContainedness": {
+            "reason": "Wersja AFTER jest lepsza, ponieważ usuwa zbędne powtórzenie tej samej sekcji, co czyni ją bardziej zwięzłą i efektywną.",
+            "improved": true,
+            "confidence": "high"
+          }
+        }
+      },
+      {
+        "id": "0fe80545-1ca2-4df8-912b-8fc674fe4989",
+        "type": "restructure",
+        "after": "# Protokół Posiedzenia Zarządu — Wolfsbane Interurban Rail\n\n## Informacje Ogólne o Posiedzeniu Zarządu WIR/BOARD/2026/04\n\nNiniejszy protokół WIR/BOARD/2026/04 dotyczy posiedzenia Zarządu Wolfsbane Interurban Rail, które odbyło się 20 lutego 2026 roku w siedzibie spółki w Bridgewell. W posiedzeniu uczestniczył trzyosobowy Zarząd, któremu przewodniczył Prezes Zarządu. Protokół sporządził Sekretarz Zarządu. Nieobecność usprawiedliwił Dyrektor Techniczny.",
+        "before": "# Board Meeting Minutes — Wolfsbane Interurban Rail\n\nMinutes WIR/BOARD/2026/04 of the meeting held on 20 February 2026 at the company's registered office in Bridgewell.\n\n## Present\n\nThree-member Board. Chaired by the Chief Executive. Minuted by the Board Secretary. Apologies received from the Technical Director.",
+        "location": "Początek dokumentu, nagłówek 'Present'",
+        "rationale": "Zmiana nagłówka na bardziej opisowy i połączenie informacji wstępnych w jeden spójny chunk poprawia samowystarczalność i strukturę, ułatwiając modelom RAG zrozumienie kontekstu posiedzenia. Dodanie pełnej nazwy firmy 'Wolfsbane Interurban Rail' zwiększa gęstość encji.",
+        "dimensions": {
+          "avgChunkSize": {
+            "reason": "Wersja AFTER łączy krótkie sekcje w jedną, co jest lepsze dla modeli osadzających, choć nadal jest zbyt krótka i nie spełnia kryterium minimalnej długości 80 słów.",
+            "improved": true,
+            "confidence": "low"
+          },
+          "chunkStructure": {
+            "reason": "Wersja AFTER wprowadza nagłówek dla ogólnych informacji o posiedzeniu, co sprawia, że cały blok wprowadzający jest jasno zdefiniowaną sekcją, w przeciwieństwie do wersji BEFORE, gdzie część informacji jest w akapicie bez nagłówka.",
+            "improved": true,
+            "confidence": "high"
+          },
+          "selfContainedness": {
+            "reason": "Wersja AFTER jest bardziej samodzielna, ponieważ wszystkie kluczowe informacje dotyczące posiedzenia (identyfikator, data, miejsce, uczestnicy, przewodniczący, protokołujący, usprawiedliwione nieobecności) zostały skonsolidowane w jednej sekcji, co eliminuje konieczność odwoływania się do innych części dokumentu w celu zrozumienia kontekstu.",
+            "improved": true,
+            "confidence": "high"
+          }
+        }
+      },
+      {
+        "id": "b6fe1ecb-e1a9-4668-9646-b1571afd5e9a",
+        "type": "keywords",
+        "after": "## Uchwała 1/02/2026 — Program Modernizacji Taboru \"Cockatrice\"\n\nZarząd Wolfsbane Interurban Rail zatwierdził budżet na program modernizacji taboru kolejowego, znany pod nazwą roboczą **\"Cockatrice\"**, w wysokości **2 740 000 EUR** na rok finansowy 2026. Program \"Cockatrice\" obejmuje wymianę zespołów hamulcowych w 9 jednostkach floty klasy RX-60 oraz modernizację (retrofit) systemu informacji pasażerskiej. Pierwszy etap tego programu ma zostać ukończony do **31 października 2026** roku. Za realizację programu \"Cockatrice\" odpowiada Dyrektor ds. Utrzymania Floty. Postępy w realizacji programu są raportowane Zarządowi na piśmie co trzy tygodnie.",
+        "before": "## Resolution 1/02/2026 — the \"Cockatrice\" programme\n\nThe Board approved the budget for the rolling-stock modernisation programme under the working name **\"Cockatrice\"** at **EUR 2 740 000** for financial year 2026.\n\nThe programme covers replacement of brake assemblies on 9 units of the class RX-60 fleet and a retrofit of the passenger information system. The first stage is to complete by **31 October 2026** .\n\nThe Director of Fleet Maintenance is accountable for delivery. Progress is reported to the Board in writing once every three weeks.",
+        "location": "Sekcja 'Resolution 1/02/2026 — the \"Cockatrice\" programme'",
+        "rationale": "Dodanie pełnej nazwy firmy, powtórzenie nazwy programu 'Cockatrice' oraz wprowadzenie synonimów ('modernizacja taboru kolejowego') zwiększa gęstość encji i poprawia samowystarczalność chunka. Zastąpienie zaimka 'The programme' przez 'Program \"Cockatrice\"' poprawia kontekst zaimków.",
+        "dimensions": {
+          "entityDensity": {
+            "reason": "Wersja AFTER zawiera bardziej szczegółową nazwę własną podmiotu: 'Wolfsbane Interurban Rail', co zwiększa jej przeszukiwalność.",
+            "improved": true,
+            "confidence": "high"
+          }
+        }
+      },
+      {
+        "id": "a01d4ac2-e295-4388-94e0-286def48ecd7",
+        "type": "keywords",
+        "after": "## Uchwała 2/02/2026 — Zawieszenie Trasy B9\n\nZarząd Wolfsbane Interurban Rail podjął decyzję o **zawieszeniu trasy B9** (Otterhaven — Thistledown) w okresie od 15 czerwca do 15 września 2026 roku. Zawieszenie trasy B9 jest spowodowane przebudową wiaduktu w Thistledown. Na czas zawieszenia trasy B9 zostanie uruchomiona zastępcza komunikacja autobusowa. Pasażerowie posiadający bilety sezonowe na trasę B9 są uprawnieni do proporcjonalnego zwrotu kosztów, który zostanie rozliczony zgodnie z polityką zwrotów, bez potrącania opłat manipulacyjnych.",
+        "before": "## Resolution 2/02/2026 — route B9\n\nThe Board resolved to **suspend route B9** (Otterhaven — Thistledown) from 15 June to 15 September 2026 while the Thistledown viaduct is rebuilt.\n\nA replacement bus service will run for the duration of the suspension. Passengers holding season tickets for route B9 are entitled to a pro-rata refund, settled under the refund policy but with no handling charge deducted.",
+        "location": "Sekcja 'Resolution 2/02/2026 — route B9'",
+        "rationale": "Dodanie pełnej nazwy firmy, powtórzenie nazwy trasy B9 oraz wprowadzenie synonimów ('zawieszenie trasy', 'zastępcza komunikacja autobusowa') zwiększa gęstość encji i poprawia samowystarczalność chunka. Zastąpienie zaimka 'A replacement bus service' przez 'Na czas zawieszenia trasy B9 zostanie uruchomiona zastępcza komunikacja autobusowa' poprawia kontekst zaimków.",
+        "dimensions": {
+          "entityDensity": {
+            "reason": "Wersja AFTER zawiera dodatkową nazwę własną organizacji ('Wolfsbane Interurban Rail'), co zwiększa jej specyficzność i możliwość wyszukiwania.",
+            "improved": true,
+            "confidence": "high"
+          }
+        }
+      },
+      {
+        "id": "1a373af5-c65e-4f8f-91ab-fd5d39bf744f",
+        "type": "keywords",
+        "after": "## Uchwała 3/02/2026 — Nowa Taryfa Przewozu Rowerów\n\nZarząd Wolfsbane Interurban Rail przyjął nową taryfę przewozu rowerów, która wchodzi w życie z dniem 1 kwietnia 2026 roku. Zgodnie z nową taryfą, opłata za jednorazowy przewóz roweru wynosi **3,40 EUR**, natomiast miesięczny bilet na przewóz roweru kosztuje **26 EUR**. Liczba miejsc przeznaczonych na rowery w jednostkach klasy RX-60 pozostaje bez zmian i wynosi **4 miejsca** na jednostkę.",
+        "before": "## Resolution 3/02/2026 — bicycle tariff\n\nThe Board adopted a new bicycle carriage tariff with effect from 1 April 2026. The single bicycle fare is **EUR 3.40** and the monthly bicycle pass is **EUR 26** .\n\nThe number of bicycle spaces on a class RX-60 unit is unchanged at **4 spaces** per unit.",
+        "location": "Sekcja 'Resolution 3/02/2026 — bicycle tariff'",
+        "rationale": "Dodanie pełnej nazwy firmy, powtórzenie kontekstu 'nowa taryfa przewozu rowerów' oraz wprowadzenie synonimów ('opłata za jednorazowy przewóz roweru', 'miesięczny bilet na przewóz roweru') zwiększa gęstość encji i poprawia samowystarczalność chunka.",
+        "dimensions": {
+          "entityDensity": {
+            "reason": "Wersja AFTER zawiera dodatkową, konkretną nazwę własną 'Wolfsbane Interurban Rail', co zwiększa jej szczegółowość i możliwość wyszukiwania.",
+            "improved": true,
+            "confidence": "high"
+          }
+        }
+      },
+      {
+        "id": "13f9e9d0-bb5d-48d7-b8b7-f9362e9423fa",
+        "type": "restructure",
+        "after": "## Inne Sprawy — Analiza Wzrostu Zwrotów Biletów\n\nZarząd Wolfsbane Interurban Rail odnotował 17% wzrost liczby wniosków o zwrot biletów w styczniu 2026 roku w porównaniu do stycznia 2025 roku. W związku z tym, Zarząd zlecił Działowi Obsługi Pasażerów (Passenger Services) przygotowanie analizy przyczyn tego wzrostu do 20 marca 2026 roku.\n\nPosiedzenie Zarządu zostało zakończone, a protokół podpisano.",
+        "before": "## Any other business\n\nThe Board noted a 17% increase in refund requests in January 2026 against January 2025 and asked Passenger Services to produce an analysis of the causes by 20 March 2026.\n\nThe meeting closed and the minutes were signed.",
+        "location": "Sekcja 'Any other business'",
+        "rationale": "Zmiana nagłówka na bardziej opisowy, dodanie pełnej nazwy firmy 'Wolfsbane Interurban Rail' oraz doprecyzowanie 'Działu Obsługi Pasażerów' zwiększa gęstość encji i poprawia samowystarczalność chunka. Dodanie synonimów ('wniosków o zwrot biletów') poprawia wyszukiwalność.",
+        "dimensions": {
+          "avgChunkSize": {
+            "reason": "Wersja AFTER jest dłuższa niż BEFORE, co sprawia, że jest bliżej minimalnego progu 80 słów, choć nadal go nie osiąga.",
+            "improved": true,
+            "confidence": "high"
+          },
+          "chunkStructure": {
+            "reason": "Nagłówek w wersji AFTER jest bardziej szczegółowy i bezpośrednio odnosi się do głównego tematu omawianego w sekcji, co ułatwia zrozumienie zawartości bloku tekstu.",
+            "improved": true,
+            "confidence": "medium"
+          },
+          "selfContainedness": {
+            "reason": "Wersja AFTER jest bardziej samodzielna, ponieważ precyzuje, o który Zarząd i który Dział Obsługi Pasażerów chodzi, podając nazwę organizacji.",
+            "improved": true,
+            "confidence": "high"
+          }
+        }
+      }
+    ],
+    "applied": [
+      {
+        "id": "4c81fb57-ec22-4691-8c48-418ba952e72f",
+        "applied": false
+      },
+      {
+        "id": "0fe80545-1ca2-4df8-912b-8fc674fe4989",
+        "applied": false
+      },
+      {
+        "id": "b6fe1ecb-e1a9-4668-9646-b1571afd5e9a",
+        "applied": false
+      },
+      {
+        "id": "a01d4ac2-e295-4388-94e0-286def48ecd7",
+        "applied": false
+      },
+      {
+        "id": "1a373af5-c65e-4f8f-91ab-fd5d39bf744f",
+        "applied": false
+      },
+      {
+        "id": "13f9e9d0-bb5d-48d7-b8b7-f9362e9423fa",
+        "applied": false
+      }
+    ],
+    "charsBefore": 1809,
+    "charsAfter": 1809
+  }
+]
