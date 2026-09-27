@@ -516,7 +516,7 @@ already claims. B1 and B2 start only after A2's baseline is committed.
 
 ### Phase C — chunk-level diagnostics behind `documentDiagnostics`
 
-- [ ] **C1.** Add `computeDocumentDiagnostics(chunks, fileType, parseInfo)`: a
+- [x] **C1.** Add `computeDocumentDiagnostics(chunks, fileType, parseInfo)`: a
   pure function in `apps/worker/src/services/`, with unit tests per check. Its
   first checks:
   - text that looks like markup (XML/HTML tags as a large share of the text)
@@ -529,6 +529,28 @@ already claims. B1 and B2 start only after A2's baseline is committed.
   - fallback parser used where Docling was expected
 
   Every check says which types it applies to.
+
+  *Done* (`apps/worker/src/services/document-diagnostics.ts`). Three things
+  found while writing it, which C2 and C4 need:
+  - **Docling's prose chunks carry no `section_path`.** Only its table chunks
+    do, and only the legacy DOCX and PDF splitters set one on prose. The check
+    therefore applies to the legacy path alone, and the stat is `null` for a
+    Docling parse rather than a 0 that would blame the document. It also means
+    ADR-19's section context has nothing to render for most documents today;
+    that is a retrieval change and needs its own measurement.
+  - **The markup check is per chunk.** Ingest already refuses a document whose
+    text as a whole is markup (`findUndecodableText`), so the raw-XML shape
+    never reaches the index through `parse-and-embed`. The check reuses the
+    same function on each chunk, which catches the part of a document that is
+    markup, and a re-indexed version text, which that refusal does not cover.
+    C4's "raw-XML shape must raise it" is therefore tested on chunks, not on
+    an ingest.
+  - **A CSV always repeats its first row**, so "no repeated header" cannot
+    happen there. The check asks whether that row is data instead (mostly
+    numbers).
+
+  Thresholds are named constants at the top of the file, as starting values
+  for C4.
 - [ ] **C2.** Call it best-effort in `parse-and-embed` and
   `reindex-document-version`, and write `metadata.diagnostics`. The flag does not
   gate the write: it is free, and it lets the data accumulate before the UI
