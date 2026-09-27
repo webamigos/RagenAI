@@ -425,6 +425,41 @@ describe('computeDocumentDiagnostics', () => {
     });
   });
 
+  // A backfill from stored chunks does not know how they were parsed.
+  describe('an unknown parser', () => {
+    const UNKNOWN: DiagnosticsParse = {
+      parser: 'unknown',
+      doclingExpected: true,
+    };
+
+    it('reports no fallback and no section-path share', () => {
+      const result = computeDocumentDiagnostics(
+        [
+          prose(PARAGRAPH),
+          prose(PARAGRAPH),
+          prose(PARAGRAPH),
+          prose(PARAGRAPH),
+        ],
+        FileType.DOCX,
+        UNKNOWN,
+        NOW,
+      );
+      expect(checks(result)).not.toContain('fallback-parser');
+      expect(checks(result)).not.toContain('few-section-paths');
+      expect(result.stats.sectionPathShare).toBeNull();
+    });
+
+    it('still runs the checks that read only the chunks', () => {
+      const result = computeDocumentDiagnostics(
+        [...doclingProse(), prose('<!-- image -->')],
+        FileType.PDF,
+        UNKNOWN,
+        NOW,
+      );
+      expect(checks(result)).toContain('empty-chunks');
+    });
+  });
+
   describe('what it does not judge', () => {
     it('gives an unknown type no findings, even on chunks that would warn', () => {
       const result = computeDocumentDiagnostics(
