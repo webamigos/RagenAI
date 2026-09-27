@@ -7,6 +7,7 @@ import { UnauthorizedException } from '@/libs/utils/errors';
 import { isFeatureEnabledQuery } from '@/features/subscriptions/services/queries/get-effective-features-query';
 import { getDocumentActor } from '@/features/documents/services/queries/get-document-actor';
 import { fileAccessWhere } from '@/features/documents/services/queries/document-access';
+import { isTabularFileType } from '@/features/documents/utils/tabular-documents';
 
 /**
  * Start the on-demand "Score for RAG" job for one file.
@@ -46,6 +47,7 @@ export async function scoreFileCommand(
     select: {
       id: true,
       fileName: true,
+      fileType: true,
       projectId: true,
       document: { select: { id: true, content: true, encryptedDek: true } },
     },
@@ -53,6 +55,16 @@ export async function scoreFileCommand(
 
   if (!file) {
     throw new Error('File not found');
+  }
+
+  // Q4: the rubric grades prose, and Phase A measured it at its least
+  // meaningful on a spreadsheet. Refused here, not only by hiding the menu
+  // item, so a stale client or a direct call to the action meets it too —
+  // and before the text is decrypted, which this answer does not need.
+  if (isTabularFileType(file.fileType)) {
+    throw new Error(
+      'Spreadsheets are not scored for RAG: the score grades prose. Re-process the file instead if its tables were read badly',
+    );
   }
 
   if (!file.document) {

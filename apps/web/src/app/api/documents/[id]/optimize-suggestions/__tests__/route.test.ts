@@ -105,4 +105,28 @@ describe('POST /api/documents/[id]/optimize-suggestions', () => {
     expect(res.status).toBe(422);
     expect(jobStart).not.toHaveBeenCalled();
   });
+
+  // Q4, D2: Optimize suggests prose edits; a spreadsheet is re-parsed instead.
+  it.each(['XLSX', 'CSV', 'IMAGE'])(
+    'refuses a %s file with text, and starts nothing',
+    async (fileType) => {
+      fileFindFirst.mockResolvedValue({
+        id: 'file-1',
+        fileType,
+        fileExtension: fileType.toLowerCase(),
+        document: {
+          id: 'doc-1',
+          content: 'a,b\n1,2',
+          title: 'R',
+          projectId: null,
+        },
+      });
+
+      const res = await call();
+
+      expect(res.status).toBe(422);
+      expect(jobStart).not.toHaveBeenCalled();
+      expect(executeRaw).not.toHaveBeenCalled();
+    },
+  );
 });

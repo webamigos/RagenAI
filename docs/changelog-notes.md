@@ -104,6 +104,11 @@ archive is the blog.
   the document's language, and any that do not are dropped. With encryption
   on, it and re-indexing after an edit read the encrypted text instead of the
   document; both read it decrypted now.
+- `[brief]` **Spreadsheets are no longer offered "Score for RAG" or "Optymalizuj
+  dla RAG".** Both are made for prose: the score grades headings and
+  paragraphs, and Optimize suggests rewrites. For an XLSX or CSV file the menu
+  items and the Optimize tab are gone, and the app refuses them if asked
+  directly. A spreadsheet that was read badly is re-processed instead.
 
 ### Thread: ingest that survives a busy Docling
 
