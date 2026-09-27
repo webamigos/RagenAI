@@ -23,6 +23,32 @@ import {
   type EmbeddingStage,
 } from './ingest-cancellation.js';
 
+/**
+ * The message of the failure that actually happened.
+ *
+ * On Temporal an activity's error reaches the handler as an `ActivityFailure`
+ * reading "Activity task failed", with the real one as its `cause`; on BullMQ
+ * it arrives as itself. The DOCLING_STRICT message is what the file's row and
+ * the log keep, so it has to carry the innermost reason — "ECONNREFUSED", "the
+ * conversion outlasted DOCLING_SERVE_MAX_SYNC_WAIT" — on either engine.
+ */
+const innermostMessage = (error: unknown): string => {
+  let current: unknown = error;
+  for (let depth = 0; depth < 10; depth++) {
+    // Read by hand: the worker compiles against a `lib` older than ES2022,
+    // where `Error.cause` is not typed, though Node has set it for years.
+    const cause =
+      current instanceof Error
+        ? (current as { cause?: unknown }).cause
+        : undefined;
+    if (!(cause instanceof Error)) {
+      break;
+    }
+    current = cause;
+  }
+  return current instanceof Error ? current.message : String(current);
+};
+
 export async function runFileEmbeddings(
   payload: RunFileEmbeddingsPayload,
   ctx: JobContext,
@@ -111,6 +137,9 @@ export async function runFileEmbeddings(
 
   // PDF loading gets extended timeout — Claude native PDF can take 30-60s for large documents.
   // Docling gets the same extended timeout — CPU-based parsing can be slow for large docs.
+  // With a fallback to go to, a Docling that does not answer is given about
+  // six seconds before the legacy loader takes over — unchanged by the strict
+  // policy below, because waiting longer would only delay the same fallback.
   const { loadPdf, loadDocling } = ctx.steps<typeof activities>({
     retry: {
       initialInterval: '2 seconds',
@@ -119,6 +148,28 @@ export async function runFileEmbeddings(
       maximumAttempts: 3,
     },
     startToCloseTimeout: '10 minutes',
+  });
+
+  // Under DOCLING_STRICT there is no fallback, so a Docling that is busy,
+  // restarting or away is waited out instead of failing the file: 15 s, 30 s,
+  // 1 min, 2 min, 2 min — about six minutes across six attempts (spec
+  // 2026-09-26-docling-under-load, A3). Permanent failures skip the wait:
+  // `loadDocling` marks them non-retryable. A step, not a job retry, because a
+  // job retry re-runs every step before this one (`runStep`); the slot it holds
+  // while waiting is bounded by DOCLING_MAX_CONCURRENCY, which is what stops
+  // the waiting files from piling onto Docling when it returns.
+  //
+  // Six minutes per attempt: over the worker's own Docling timeout, which is
+  // DOCLING_SERVE_MAX_SYNC_WAIT (300 s by default) + 15 s — a literal because
+  // this module also runs in Temporal's sandbox, where `consts.ts` cannot load.
+  const { loadDocling: loadDoclingStrict } = ctx.steps<typeof activities>({
+    retry: {
+      initialInterval: '15 seconds',
+      maximumInterval: '2 minutes',
+      backoffCoefficient: 2,
+      maximumAttempts: 6,
+    },
+    startToCloseTimeout: '6 minutes',
   });
 
   const { fileId, orgId } = payload;
@@ -285,21 +336,26 @@ export async function runFileEmbeddings(
     // fall through to their legacy loader below.
     if (documentParser === 'docling' && DOCLING_SUPPORTED_TYPES.has(fileType)) {
       try {
-        rawDocs = await loadDocling({ ...locator, fileType });
+        rawDocs = await (doclingStrict ? loadDoclingStrict : loadDocling)({
+          ...locator,
+          fileType,
+        });
         parsedWithDocling = true;
         ctx.log.info(`Parsed ${fileName} with Docling`);
       } catch (doclingError) {
-        const reason =
-          doclingError instanceof Error
-            ? doclingError.message
-            : String(doclingError);
+        const reason = innermostMessage(doclingError);
 
         // The legacy PDF path sends the document to an external model. Falling
         // back to it on a Docling outage would ship the document off-site
         // exactly when local parsing is unavailable, so a deployment that must
         // not do that opts out with DOCLING_STRICT=1 and fails instead.
+        //
+        // Non-retryable: the strict step policy has already spent its attempts
+        // waiting Docling out, and this is the message the file's row and the
+        // log keep — the rethrow below passes a non-retryable failure through
+        // unchanged instead of wrapping it.
         if (doclingStrict) {
-          throw new JobFailure(
+          throw JobFailure.nonRetryable(
             `Docling parsing failed for ${fileName} and DOCLING_STRICT is set, ` +
               `so the ingest was not allowed to fall back to a loader that may ` +
               `send the document to an external model: ${reason}`,

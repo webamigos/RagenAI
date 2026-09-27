@@ -55,6 +55,12 @@ spec:
               value: {{ $cfg.port | quote }}
             - name: DOCLING_SERVE_LOAD_MODELS_AT_BOOT
               value: 'true'
+            # The sync endpoint's wait before it answers 504. Unset, upstream
+            # waits 120 s while compose and the Railway image wait 300 — and the
+            # worker's own timeout is derived from this number, read from the
+            # shared config under the same name. One value for both sides.
+            - name: DOCLING_SERVE_MAX_SYNC_WAIT
+              value: {{ $.Values.config.DOCLING_SERVE_MAX_SYNC_WAIT | default "300" | quote }}
           {{- end }}
           {{- if eq $name "presidio-analyzer" }}
           env:

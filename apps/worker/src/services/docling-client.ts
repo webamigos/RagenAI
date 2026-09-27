@@ -2,7 +2,12 @@ import { readFile } from 'fs/promises';
 
 import { type SourceRegion } from '@ragenai/rag-core';
 
-import { DOCLING_URL, TABLE_CHUNKS_ENABLED } from '../consts.js';
+import {
+  DOCLING_REQUEST_TIMEOUT_MS,
+  DOCLING_SYNC_WAIT_SECONDS,
+  DOCLING_URL,
+  TABLE_CHUNKS_ENABLED,
+} from '../consts.js';
 import {
   exciseTables,
   type ExcisionOutcome,
@@ -531,6 +536,45 @@ function readPageCount(
   return count > 0 ? count : null;
 }
 
+/**
+ * A Docling call that did not produce a document, and whether trying again
+ * could change that.
+ *
+ * `transient` is the distinction the ingest acts on (spec
+ * 2026-09-26-docling-under-load, A3). Docling busy, restarting or away — a
+ * refused connection, a timeout, 502/503/504, 429 — is worth waiting out: the
+ * same file will parse once it is back. A conversion Docling itself reported as
+ * failed, a 4xx, or an empty document will fail the same way every time, and
+ * retrying it only spends the next caller's slot.
+ */
+export class DoclingError extends Error {
+  override readonly name = 'DoclingError';
+
+  constructor(
+    message: string,
+    readonly transient: boolean,
+  ) {
+    super(message);
+  }
+}
+
+/** Busy or away, not wrong: the statuses a retry can outlast. */
+const TRANSIENT_STATUSES = new Set([408, 429, 502, 503, 504]);
+
+/**
+ * What `fetch` throws is never Docling's verdict on the document: a refused or
+ * reset connection, DNS, or our own timeout. All transient.
+ */
+const describeFetchFailure = (error: unknown): string => {
+  if (error instanceof Error && error.name === 'TimeoutError') {
+    return `no answer within ${DOCLING_REQUEST_TIMEOUT_MS / 1000}s`;
+  }
+  // `Error.cause` by hand: the worker's `lib` predates ES2022's typing of it.
+  const inner = (error as { cause?: unknown } | null)?.cause;
+  const cause = inner instanceof Error ? `: ${inner.message}` : '';
+  return `${error instanceof Error ? error.message : String(error)}${cause}`;
+};
+
 type DoclingOptions = {
   /** Output formats to request. Defaults to markdown only. */
   toFormats?: string[];
@@ -582,39 +626,64 @@ export const convertWithDocling = async (
     'Sending file to Docling for conversion',
   );
 
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      options: {
-        to_formats: toFormats,
-        do_ocr: doOcr,
-        table_mode: tableMode,
-        image_export_mode: imageExportMode,
-        do_table_structure: true,
-      },
-      sources: [
-        {
-          kind: 'file',
-          base64_string: base64String,
-          filename: fileName,
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      // An attempt the worker has given up on stops waiting here too. Without
+      // a signal the request stayed open after the step moved on, holding a
+      // socket and a base64 copy of the file per abandoned attempt. It does
+      // not stop the conversion: docling-serve finishes what it started, which
+      // is why the ingest ceiling (DOCLING_MAX_CONCURRENCY) bounds how many
+      // there can be.
+      signal: AbortSignal.timeout(DOCLING_REQUEST_TIMEOUT_MS),
+      body: JSON.stringify({
+        options: {
+          to_formats: toFormats,
+          do_ocr: doOcr,
+          table_mode: tableMode,
+          image_export_mode: imageExportMode,
+          do_table_structure: true,
         },
-      ],
-    }),
-  });
+        sources: [
+          {
+            kind: 'file',
+            base64_string: base64String,
+            filename: fileName,
+          },
+        ],
+      }),
+    });
+  } catch (error) {
+    throw new DoclingError(
+      `Docling unreachable at ${url} (${describeFetchFailure(error)})`,
+      true,
+    );
+  }
 
   if (!response.ok) {
     const errorText = await response.text().catch(() => 'unknown error');
-    throw new Error(
-      `Docling conversion failed (HTTP ${response.status}): ${errorText}`,
+    const transient = TRANSIENT_STATUSES.has(response.status);
+    // A 504 is docling-serve's own sync wait running out. For a busy server a
+    // retry succeeds; for a document that genuinely takes longer it will not,
+    // and the message says which knob that is.
+    const hint =
+      response.status === 504
+        ? ` — the conversion outlasted DOCLING_SERVE_MAX_SYNC_WAIT (${DOCLING_SYNC_WAIT_SECONDS}s); raise it on both Docling and the worker if this document is simply long`
+        : '';
+    throw new DoclingError(
+      `Docling conversion failed (HTTP ${response.status}): ${errorText}${hint}`,
+      transient,
     );
   }
 
   const result = (await response.json()) as DoclingConvertResponse;
 
   if (result.status === 'failure' || result.status === 'skipped') {
-    throw new Error(
+    throw new DoclingError(
       `Docling conversion ${result.status}: ${result.errors?.join(', ') || 'unknown error'}`,
+      false,
     );
   }
 
@@ -628,7 +697,7 @@ export const convertWithDocling = async (
   const markdown = result.document?.md_content;
 
   if (!markdown || markdown.trim().length === 0) {
-    throw new Error('Docling returned empty markdown content');
+    throw new DoclingError('Docling returned empty markdown content', false);
   }
 
   const parsed = parseJsonContent(result.document?.json_content);

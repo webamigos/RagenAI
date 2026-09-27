@@ -53,6 +53,40 @@ export const DOCUMENT_PARSER = process.env.DOCUMENT_PARSER || 'docling';
 export const DOCLING_URL = process.env.DOCLING_URL || 'http://localhost:5001';
 
 /**
+ * How many ingests may run at once across the whole deployment, whatever
+ * `WORKER_CONCURRENCY` says — and so how many conversions Docling sees.
+ *
+ * The ceiling is on `runFileEmbeddings`, not on the Docling call alone:
+ * Docling parses every type but SRT, EPUB and URLs, so the two are the same
+ * queue in practice (spec 2026-09-26-docling-under-load, D1). Four by default:
+ * docling-serve converts two at a time (`DOCLING_SERVE_ENG_LOC_NUM_WORKERS=2`)
+ * and holds the rest in memory, so two converting and two waiting keep it busy
+ * without a queue inside Docling that the worker cannot see (D2). Before this
+ * a burst of uploads sent 20 per worker replica at once.
+ */
+export const DOCLING_MAX_CONCURRENCY = positiveIntFromEnv(
+  'DOCLING_MAX_CONCURRENCY',
+  4,
+);
+
+/**
+ * How long docling-serve's sync endpoint waits before answering 504 — the
+ * server's `DOCLING_SERVE_MAX_SYNC_WAIT`, read under the same name so one value
+ * configures both sides. 300 is what compose, the Railway image and Helm set.
+ *
+ * The worker gives up fifteen seconds after that: late enough to receive the
+ * server's own 504, which says what happened, rather than race it. Node's
+ * fetch also stops waiting for headers at 300 s, so a sync wait above that is
+ * cut there instead — either way the attempt is transient and retried.
+ */
+export const DOCLING_SYNC_WAIT_SECONDS = positiveIntFromEnv(
+  'DOCLING_SERVE_MAX_SYNC_WAIT',
+  300,
+);
+export const DOCLING_REQUEST_TIMEOUT_MS =
+  (DOCLING_SYNC_WAIT_SECONDS + 15) * 1000;
+
+/**
  * Whether a Docling failure may fall back to the legacy loaders.
  *
  * Default `true` — a Docling outage degrades to legacy parsing rather than

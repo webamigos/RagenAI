@@ -10,7 +10,7 @@ import {
 } from '@ragenai/jobs-bullmq';
 
 import * as activities from './activities/index.js';
-import { BRAIN_EXTRACT_CONCURRENCY } from './consts.js';
+import { jobConcurrencyCeilings } from './job-ceilings.js';
 import { db } from './services/db/index.js';
 import { logger } from './services/logger.js';
 
@@ -94,9 +94,9 @@ export async function startBullMqWorker(): Promise<RunningBullMq> {
       typeof createBullWorkers
     >[0]['activities'],
     concurrency: resolveConcurrency(),
-    // Brain extraction calls a rate-limited provider several times per
-    // document; the ceiling holds across replicas (see `jobConcurrency`).
-    jobConcurrency: { brainExtract: BRAIN_EXTRACT_CONCURRENCY },
+    // Deployment-wide ceilings for jobs whose dependency has less capacity
+    // than the worker — Brain's model provider, Docling (job-ceilings.ts).
+    jobConcurrency: jobConcurrencyCeilings(),
     log: logger,
     // The read is injected because the adapter has no database. On Temporal
     // the same read is an activity, since a workflow sandbox has no I/O.

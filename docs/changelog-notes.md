@@ -92,6 +92,17 @@ archive is the blog.
   scores what ingest scores, and it refuses a file that has not finished
   processing instead of grading the raw upload.
 
+### Thread: ingest that survives a busy Docling
+
+- `[brief]` **A burst of uploads no longer overwhelms Docling, and a busy one
+  no longer loses files.** At most four documents are parsed at once across
+  the whole deployment (`DOCLING_MAX_CONCURRENCY`), instead of twenty per
+  worker. With `DOCLING_STRICT=1`, a Docling that is restarting or saturated is
+  now waited out for about six minutes before a file fails, where it used to
+  fail after six seconds; a document Docling genuinely cannot read fails at
+  once, with Docling's own reason. Helm now sets `DOCLING_SERVE_MAX_SYNC_WAIT`
+  (300 s) like compose, instead of upstream's 120 s.
+
 ### Ragen Brain: an assistant beside the inbox
 
 - `[major]` **Brain has an assistant for the person curating it.** A panel

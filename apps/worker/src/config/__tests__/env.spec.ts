@@ -73,6 +73,17 @@ describe('parseWorkerEnv', () => {
     expect(withEnv({ BRAIN_EXTRACT_MAX_TOKENS: '0' }).ok).toBe(false);
   });
 
+  it('reads a blank Docling setting as unset, and refuses a ceiling of zero', () => {
+    // Zero would be a worker that takes no ingest at all and says nothing.
+    expect(
+      withEnv({ DOCLING_MAX_CONCURRENCY: '', DOCLING_SERVE_MAX_SYNC_WAIT: '' })
+        .ok,
+    ).toBe(true);
+    expect(withEnv({ DOCLING_MAX_CONCURRENCY: '4' }).ok).toBe(true);
+    expect(withEnv({ DOCLING_MAX_CONCURRENCY: '0' }).ok).toBe(false);
+    expect(withEnv({ DOCLING_SERVE_MAX_SYNC_WAIT: 'five' }).ok).toBe(false);
+  });
+
   it('demands TARGET_ENV rather than defaulting it', () => {
     // A deployed worker with no TARGET_ENV would otherwise read as "local"
     // and skip every staging/production rule below.
