@@ -8,3 +8,4 @@ export * from './load-xlsx.js';
 export * from './load-srt.js';
 export * from './load-text.js';
 export * from './load-website.js';
+export * from './wait-for-docling.js';

@@ -20,6 +20,7 @@ import {
 } from '../services/document-diagnostics.js';
 import { getFileExtension } from '../utils/get-file-extension.js';
 import { DOCLING_SUPPORTED_TYPES } from '../utils/docling.js';
+import { DOCLING_GATE_STEP_TIMEOUT } from '../utils/docling-gate.js';
 import {
   INGEST_CANCELLED_FAILURE_TYPE,
   isIngestCancellation,
@@ -174,6 +175,19 @@ export async function runFileEmbeddings(
       maximumAttempts: 6,
     },
     startToCloseTimeout: '6 minutes',
+  });
+
+  // The strict path's wait for a Docling that is down (spec B1). One attempt
+  // plus one for a crash: the step itself retries nothing — it waits, and
+  // returns what it saw. Its timeout outlasts the wait by construction.
+  const { waitForDocling } = ctx.steps<typeof activities>({
+    retry: {
+      initialInterval: '5 seconds',
+      maximumInterval: '30 seconds',
+      backoffCoefficient: 2,
+      maximumAttempts: 2,
+    },
+    startToCloseTimeout: DOCLING_GATE_STEP_TIMEOUT,
   });
 
   const { fileId, orgId } = payload;
@@ -344,6 +358,25 @@ export async function runFileEmbeddings(
     // deployment's own infrastructure. Formats it does not handle (SRT, EPUB)
     // fall through to their legacy loader below.
     if (documentParser === 'docling' && DOCLING_SUPPORTED_TYPES.has(fileType)) {
+      // Under DOCLING_STRICT, a Docling that is down is waited out here —
+      // before the parse, so its step policy's attempts are spent only on a
+      // Docling that answers (spec 2026-09-26-docling-under-load, B1). With a
+      // fallback allowed there is nothing to wait for: the fallback is the
+      // plan either way.
+      if (doclingStrict) {
+        const gate = await waitForDocling({ fileId, orgId });
+        if (gate.outcome === 'cancelled') {
+          // Records CANCELLED and throws, like every other checkpoint.
+          await checkCancelled();
+        }
+        if (gate.outcome === 'timed-out') {
+          throw JobFailure.nonRetryable(
+            `Docling has been unavailable since ${gate.since}, so ${fileName} ` +
+              `was not parsed, and DOCLING_STRICT does not allow another ` +
+              `parser. Re-process the file once Docling is back.`,
+          );
+        }
+      }
       try {
         rawDocs = await (doclingStrict ? loadDoclingStrict : loadDocling)({
           ...locator,
