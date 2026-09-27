@@ -38,6 +38,9 @@ import {
   TEST_ORG2_DOCUMENT_ID,
   TEST_ORG2_DOCUMENT_V1_ID,
   TEST_ORG2_SLUG,
+  TEST_DIAGNOSED_FILE_ID,
+  TEST_DIAGNOSED_DOCUMENT_ID,
+  TEST_DIAGNOSED_FILE_NAME,
   TEST_ORG2_NAME,
   TEST_MEMBER2_ID,
   TEST_FILE_ID,
@@ -114,6 +117,9 @@ const TEST_ORG_FEATURE_OVERRIDES: FeatureOverrides = {
   brain: true,
   // smoke-15 also asks the operator's assistant, which is off by default.
   brainAssistant: true,
+  // p1-04 reads the diagnostics panel, off by default until D4. No other
+  // seeded file carries diagnostics, so no other spec sees a difference.
+  documentDiagnostics: true,
 };
 
 async function cleanup() {
@@ -591,6 +597,60 @@ async function seed() {
     },
   });
   console.log(`Created disposable file: ${TEST_DISPOSABLE_FILE_NAME}`);
+
+  // 18. A file with stored diagnostics, for p1-04: one warning the list's
+  // badge names, and one piece of information only the document view shows.
+  await prisma.userFile.create({
+    data: {
+      id: TEST_DIAGNOSED_FILE_ID,
+      organizationId: TEST_ORG_ID,
+      fileName: TEST_DIAGNOSED_FILE_NAME,
+      fileSize: 2048,
+      fileType: 'DOCX',
+      isUploaded: true,
+      embeddingStatus: 'COMPLETED',
+      parsingStatus: 'COMPLETED',
+      ownerId: TEST_USER_ID,
+      fileExtension: 'docx',
+      fileMimeType:
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      metadata: {
+        diagnostics: {
+          version: 1,
+          computedAt: new Date(seededAt).toISOString(),
+          findings: [
+            {
+              check: 'table-without-header',
+              severity: 'warn',
+              detail: { chunks: 4, source: 'docling' },
+            },
+            {
+              check: 'overlap-duplication',
+              severity: 'info',
+              detail: { share: 0.45 },
+            },
+          ],
+          stats: {
+            chunkCount: 12,
+            tableChunkCount: 4,
+            medianChunkChars: 640,
+            sectionPathShare: null,
+            overlapShare: 0.45,
+          },
+        },
+      },
+    },
+  });
+  await prisma.userDocument.create({
+    data: {
+      id: TEST_DIAGNOSED_DOCUMENT_ID,
+      organizationId: TEST_ORG_ID,
+      title: 'E2E Diagnosed Spreadsheet',
+      content: '# Fares\n\n| A | 4.20 |\n| B | 5.80 |',
+      fileId: TEST_DIAGNOSED_FILE_ID,
+    },
+  });
+  console.log(`Created diagnosed file: ${TEST_DIAGNOSED_FILE_NAME}`);
 
   // Guardrail fixtures, seeded rather than created by the spec that uses them.
   //

@@ -8,6 +8,7 @@ import DOMPurify from 'dompurify';
 import { VersionHistoryTab } from './VersionHistoryTab';
 import { OptimizeTab } from './OptimizeTab';
 import { canOptimizeFileType } from '@/features/documents/utils/tabular-documents';
+import { DiagnosticsPanel } from '../Diagnostics/DiagnosticsPanel';
 import '@/app/components/Assistant/ChatOutput/chat-response.css';
 import '@/app/[locale]/(panel)/document/[documentId]/document-preview.css';
 
@@ -16,6 +17,12 @@ type Doc = {
   title: string;
   content: string;
   file: { fileType: string } | null;
+  /**
+   * `UserFile.metadata.diagnostics` alone, as stored. The page passes this
+   * one key rather than the file's whole metadata, which also holds the
+   * summary and the score and has no business in the browser here.
+   */
+  diagnostics?: unknown;
 };
 
 type Props = { doc: Doc };
@@ -63,10 +70,13 @@ function TabsInner({ doc }: Props) {
       </div>
       <div className="min-h-0 flex-1 overflow-auto p-6">
         {activeTab === 'content' && (
-          <div
-            className="chat-response document-preview max-w-5xl"
-            dangerouslySetInnerHTML={{ __html: renderedContent }}
-          />
+          <>
+            <DiagnosticsPanel metadata={{ diagnostics: doc.diagnostics }} />
+            <div
+              className="chat-response document-preview max-w-5xl"
+              dangerouslySetInnerHTML={{ __html: renderedContent }}
+            />
+          </>
         )}
         {activeTab === 'history' && <VersionHistoryTab documentId={doc.id} />}
         {activeTab === 'optimize' && (

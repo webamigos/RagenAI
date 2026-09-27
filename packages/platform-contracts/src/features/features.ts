@@ -38,6 +38,7 @@ export const FEATURE_KEYS = [
   'deleteThreads',
   'ragReadinessScore',
   'ragScoreOnIngest',
+  'documentDiagnostics',
 ] as const;
 
 export type FeatureKey = (typeof FEATURE_KEYS)[number];
@@ -121,6 +122,15 @@ export type FeatureOverrides = Partial<Record<FeatureKey, boolean | null>>;
  * every upload, where it costs one model call per file and predicts a single
  * document's retrieval only weakly. It narrows `ragReadinessScore` and never
  * widens it: with that key off, nothing scores.
+ *
+ * `documentDiagnostics` shows the checks the worker runs on a document's
+ * indexed chunks — parsed as markup, a table without headers, a Docling
+ * fallback — as a worded badge in the list and a list of findings in the
+ * document view. It defaults to `false` because it is built across several
+ * PRs behind this key (ADR-50; spec 2026-09-26-rag-readiness-score-review,
+ * C3), and D4 flips it after a comparison on demo. It gates only what the
+ * panel shows: the worker computes and stores the findings either way, at no
+ * model cost, so they exist by the time the key is on.
  */
 export const DEFAULT_FEATURES: FeatureFlags = {
   inviteMembers: false,
@@ -140,6 +150,7 @@ export const DEFAULT_FEATURES: FeatureFlags = {
   deleteThreads: true,
   ragReadinessScore: true,
   ragScoreOnIngest: false,
+  documentDiagnostics: false,
 };
 
 /** Human-readable names, shared so the admin panel and the app cannot disagree. */
@@ -163,6 +174,7 @@ export const FEATURE_LABELS: Record<FeatureKey, string> = {
   ragReadinessScore: 'RAG readiness score (badge, Score for RAG, Optimize)',
   ragScoreOnIngest:
     'RAG readiness score: score every upload (one LLM call per file)',
+  documentDiagnostics: 'Document diagnostics (indexing problems, no LLM call)',
 };
 
 /**

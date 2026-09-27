@@ -1,3 +1,9 @@
+import {
+  DIAGNOSTICS_VERSION,
+  type DiagnosticCheck,
+  type DiagnosticFinding,
+  type DocumentDiagnostics,
+} from '@ragenai/rag-core/document-diagnostics';
 import { findUndecodableText } from '@ragenai/rag-core/undecodable-text';
 
 import type { Document } from '../types/Document.js';
@@ -22,46 +28,16 @@ import { CHUNK_SETTINGS } from '../utils/splitters.js';
  *
  * Every threshold below is a starting value. C4 calibrates them on the Phase A
  * corpora; they are named so that calibration is a diff of constants.
+ *
+ * The shape it returns is `@ragenai/rag-core/document-diagnostics`, which the
+ * panel reads — one declaration for both sides of an untyped JSON column.
  */
 
-export const DIAGNOSTICS_VERSION = 1;
-
-export type DiagnosticCheck =
-  | 'markup'
-  | 'table-without-header'
-  | 'over-budget'
-  | 'few-section-paths'
-  | 'overlap-duplication'
-  | 'empty-chunks'
-  | 'fallback-parser';
-
-export type DiagnosticFinding = {
-  /** Stable, and the i18n key the panel renders it under (C3). */
-  check: DiagnosticCheck;
-  /** `warn` is what the list's badge shows; `info` appears only in detail. */
-  severity: 'info' | 'warn';
-  detail?: Record<string, number | string>;
-};
-
-export type DiagnosticStats = {
-  chunkCount: number;
-  tableChunkCount: number;
-  medianChunkChars: number;
-  /**
-   * Share of prose chunks carrying a `sectionPath`, or `null` where the parse
-   * path produces none — Docling's prose chunks never do, so a 0 there would
-   * be a fact about the splitter, not the document.
-   */
-  sectionPathShare: number | null;
-  /** Characters repeated from the previous chunk, over all prose characters. */
-  overlapShare: number;
-};
-
-export type DocumentDiagnostics = {
-  version: typeof DIAGNOSTICS_VERSION;
-  computedAt: string;
-  findings: DiagnosticFinding[];
-  stats: DiagnosticStats;
+export {
+  DIAGNOSTICS_VERSION,
+  type DiagnosticCheck,
+  type DiagnosticFinding,
+  type DocumentDiagnostics,
 };
 
 export type DiagnosticsParse = {

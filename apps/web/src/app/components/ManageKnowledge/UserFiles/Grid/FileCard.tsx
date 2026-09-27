@@ -11,6 +11,7 @@ import { Link } from '@/i18n/routing';
 
 import type { UserFileTypeSafe } from '../FileList/UserFilesTable';
 import { RagScoreBadge } from '../FileList/RagScoreBadge';
+import { DiagnosticsBadge } from '../../Diagnostics/DiagnosticsBadge';
 import { ToolbarActions } from '../FileList/ToolbarActions';
 import { PiiPolicyBadge } from '../../PiiPolicyBadge';
 
@@ -199,6 +200,7 @@ export const FileCard = ({
         <span className="flex items-center gap-1">
           {formattedCreatedAt}
           <RagScoreBadge metadata={file.metadata} />
+          <DiagnosticsBadge metadata={file.metadata} />
           {canManageOrg && <PiiPolicyBadge piiPolicy={file.piiPolicy} />}
         </span>
         <span>{prettyBytes(fileSize)}</span>
