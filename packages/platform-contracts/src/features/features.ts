@@ -37,6 +37,7 @@ export const FEATURE_KEYS = [
   'brainAssistant',
   'deleteThreads',
   'ragReadinessScore',
+  'ragScoreOnIngest',
 ] as const;
 
 export type FeatureKey = (typeof FEATURE_KEYS)[number];
@@ -111,9 +112,15 @@ export type FeatureOverrides = Partial<Record<FeatureKey, boolean | null>>;
  * does not call the scorer, the on-demand job and command refuse, and the panel
  * shows no badge or menu item; Optimize still works, without a score. A key
  * rather than an environment variable because the cost is the organization's
- * and an operator decides it per client. Whether the default should become
- * `false` waits on a measurement: spec 2026-09-26-rag-readiness-score-review,
- * Q6 and D1.
+ * and an operator decides it per client.
+ *
+ * `ragScoreOnIngest` is whether upload and re-process score automatically, and
+ * it defaults to `false` (spec 2026-09-26-rag-readiness-score-review, D1,
+ * decided 2026-09-27). The A2 and A4 measurements found the score useful
+ * beside an edit, as the Optimize tab's before and after, and not as a grade on
+ * every upload, where it costs one model call per file and predicts a single
+ * document's retrieval only weakly. It narrows `ragReadinessScore` and never
+ * widens it: with that key off, nothing scores.
  */
 export const DEFAULT_FEATURES: FeatureFlags = {
   inviteMembers: false,
@@ -132,6 +139,7 @@ export const DEFAULT_FEATURES: FeatureFlags = {
   brainAssistant: false,
   deleteThreads: true,
   ragReadinessScore: true,
+  ragScoreOnIngest: false,
 };
 
 /** Human-readable names, shared so the admin panel and the app cannot disagree. */
@@ -152,7 +160,9 @@ export const FEATURE_LABELS: Record<FeatureKey, string> = {
     'Ragen Brain: members may browse (read-only, sees every page)',
   brainAssistant: "Ragen Brain: the operator's assistant",
   deleteThreads: 'Delete threads',
-  ragReadinessScore: 'RAG readiness score (one LLM call per ingest)',
+  ragReadinessScore: 'RAG readiness score (badge, Score for RAG, Optimize)',
+  ragScoreOnIngest:
+    'RAG readiness score: score every upload (one LLM call per file)',
 };
 
 /**

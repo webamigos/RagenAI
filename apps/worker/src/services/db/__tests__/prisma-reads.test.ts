@@ -24,6 +24,12 @@ vi.mock('../prisma.js', () => {
   };
 });
 
+const decryptDocumentContent = vi.hoisted(() => vi.fn());
+vi.mock('@ragenai/crypto', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@ragenai/crypto')>()),
+  decryptDocumentContent,
+}));
+
 import type { Mock } from 'vitest';
 import { db } from '../db.js';
 
@@ -31,6 +37,7 @@ beforeEach(() => {
   mockUserFileFindUnique.mockReset();
   mockUserDocumentFindUnique.mockReset();
   mockOrgSettingsFindUnique.mockReset();
+  decryptDocumentContent.mockReset();
 });
 
 describe('getUserFile', () => {
@@ -94,5 +101,36 @@ describe('getOptimizationJobSuggestions', () => {
       where: { id_organizationId: { id: 'doc-1', organizationId: 'org-1' } },
       select: { metadata: true },
     });
+  });
+});
+
+// B7: both callers — Optimize and reindexDocumentVersion — acted on the
+// stored ciphertext for an organization with encryption on.
+describe('getDocumentContent', () => {
+  it('decrypts the content with the row key, scoped by (id, organizationId)', async () => {
+    mockUserDocumentFindUnique.mockResolvedValue({
+      content: 'v1:ciphertext',
+      title: 'Regulamin',
+      encryptedDek: 'dek',
+    });
+    decryptDocumentContent.mockResolvedValue('Regulamin zwrotów.');
+
+    await expect(db.getDocumentContent('doc-1', 'org-1')).resolves.toEqual({
+      content: 'Regulamin zwrotów.',
+      title: 'Regulamin',
+    });
+    expect(decryptDocumentContent).toHaveBeenCalledWith('v1:ciphertext', 'dek');
+    expect(mockUserDocumentFindUnique).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id_organizationId: { id: 'doc-1', organizationId: 'org-1' } },
+        select: expect.objectContaining({ encryptedDek: true }),
+      }),
+    );
+  });
+
+  it('returns null for a document that does not exist', async () => {
+    mockUserDocumentFindUnique.mockResolvedValue(null);
+    await expect(db.getDocumentContent('doc-1', 'org-1')).resolves.toBeNull();
+    expect(decryptDocumentContent).not.toHaveBeenCalled();
   });
 });
