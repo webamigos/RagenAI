@@ -219,6 +219,17 @@ Each phase leaves the application working.
 
 - [ ] **C1.** Docling status on the setup page (per D5); transition logs;
   the non-strict PDF fallback logged at `error`.
+
+  *Worker half done (C1a).* apps/web cannot probe Docling itself — `DOCLING_URL`
+  is a worker variable, and the worker's view of the network is the one that
+  matters — so the worker probes `/health` every 30 s and publishes
+  `{ up, since, checkedAt }` to Redis under `DOCLING_STATUS_KEY`
+  (`@ragenai/platform-contracts`), with a 90 s expiry so a stopped worker
+  reads as unknown, not as its last answer. One `error` on going down and one
+  `info` on recovery, not a line per probe. The non-strict fallback logs at
+  `error` for a PDF (it goes to an external model) and `warn` otherwise.
+  *Still open (C1b):* the setup page and the knowledge base warning, reading
+  that key.
 - [ ] **C2.** Sizing section in `docs/document-processing.md` and the Docling
   runbook: CPU/RAM per concurrent conversion, `ENG_LOC_NUM_WORKERS`, how the
   ceiling relates to it; `create-ragen-app` writes the ceiling and says why.

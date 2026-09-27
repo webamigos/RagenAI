@@ -371,11 +371,20 @@ export async function runFileEmbeddings(
           );
         }
 
-        ctx.log.warn(
-          `Docling parsing failed for ${fileName}, falling back to legacy loader. ` +
-            `NOTE: for PDFs the legacy loader sends the document to an external ` +
-            `model — set DOCLING_STRICT=1 to fail instead. Reason: ${reason}`,
-        );
+        // An error for a PDF, a warning for anything else (spec C1): the
+        // legacy PDF loader sends the document to an external model, so a
+        // fallback on a PDF means the document left this deployment — the
+        // one thing an operator must be able to find in the log.
+        const fallbackMessage =
+          `Docling parsing failed for ${fileName} (${fileType}), falling back ` +
+          `to the legacy loader. NOTE: for PDFs the legacy loader sends the ` +
+          `document to an external model — set DOCLING_STRICT=1 to fail ` +
+          `instead. Reason: ${reason}`;
+        if (fileType === FileType.PDF) {
+          ctx.log.error(fallbackMessage);
+        } else {
+          ctx.log.warn(fallbackMessage);
+        }
       }
     }
 

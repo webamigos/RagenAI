@@ -124,6 +124,11 @@ archive is the blog.
   fail after six seconds; a document Docling genuinely cannot read fails at
   once, with Docling's own reason. Helm now sets `DOCLING_SERVE_MAX_SYNC_WAIT`
   (300 s) like compose, instead of upstream's 120 s.
+- `[brief]` **A Docling outage is two lines in the worker's log.** The worker
+  now checks Docling every 30 seconds and logs one error when it goes down and
+  one line when it comes back, instead of nothing until a file failed. A PDF
+  that falls back to the external parser is logged as an error, since it left
+  the deployment.
 
 ### Ragen Brain: an assistant beside the inbox
 
