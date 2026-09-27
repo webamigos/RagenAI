@@ -167,3 +167,20 @@ export function renderReport(
   lines.push('');
   return lines.join('\n');
 }
+
+/**
+ * The `corpus/shape` keys a set of rows is missing.
+ *
+ * `judge` judges only the shapes that ran, which is right for one run — the
+ * table-chunks shape is a separate process, since the flag is read at load.
+ * A *final* report is different: fed the first run's output alone, it would
+ * leave out the table-chunks expectation, one of the two C4 is judged on, and
+ * still read as a pass. So the report asks for every shape first.
+ */
+export function missingShapes(
+  rows: readonly ShapeRow[],
+  expected: readonly string[],
+): string[] {
+  const present = new Set(rows.map((row) => `${row.corpus}/${row.shape}`));
+  return expected.filter((key) => !present.has(key));
+}

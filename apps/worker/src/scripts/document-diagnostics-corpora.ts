@@ -46,7 +46,11 @@ import type { Document } from '../types/Document.js';
 import { FileType } from '../types/UserFile.js';
 import { TMP_DIR } from '../utils/cleanup-tmp.js';
 import { CHUNK_SETTINGS } from '../utils/splitters.js';
-import { renderReport, type ShapeRow } from './document-diagnostics-report.js';
+import {
+  missingShapes,
+  renderReport,
+  type ShapeRow,
+} from './document-diagnostics-report.js';
 
 const REPO_ROOT = path.resolve(import.meta.dirname, '../../../..');
 const BENCHMARK = path.join(REPO_ROOT, 'apps/web/evals/rag-benchmark');
@@ -210,6 +214,14 @@ async function main() {
     const rows = reportInputs.flatMap(
       (input) => JSON.parse(readFileSync(input, 'utf8')) as ShapeRow[],
     );
+    // A final report covers every shape, or it is not one (see missingShapes).
+    const missing = missingShapes(rows, ALL_SHAPES);
+    if (missing.length > 0) {
+      throw new Error(
+        `The report is missing ${missing.join(', ')}. Run the table-chunks ` +
+          `shape with FEATURE_FLAG_TABLE_CHUNKS=1 and pass both JSON files.`,
+      );
+    }
     const commit = execSync('git rev-parse --short HEAD', { cwd: REPO_ROOT })
       .toString()
       .trim();

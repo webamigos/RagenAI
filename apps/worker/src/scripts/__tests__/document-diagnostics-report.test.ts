@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   judge,
+  missingShapes,
   renderReport,
   type ShapeRow,
 } from '../document-diagnostics-report.js';
@@ -113,5 +114,24 @@ describe('renderReport', () => {
       { date: '2026-09-27', commit: 'abc123' },
     );
     expect(refused).toContain('| sheet.xlsx | markup |');
+  });
+});
+
+describe('missingShapes', () => {
+  const expected = ['tabele/docling', 'tabele/docling-table-chunks'];
+
+  it('names a shape the rows do not cover', () => {
+    expect(missingShapes([row('docling', 'a.md')], expected)).toEqual([
+      'tabele/docling-table-chunks',
+    ]);
+  });
+
+  it('is empty when every shape is there', () => {
+    expect(
+      missingShapes(
+        [row('docling', 'a.md'), row('docling-table-chunks', 'a.md')],
+        expected,
+      ),
+    ).toEqual([]);
   });
 });
