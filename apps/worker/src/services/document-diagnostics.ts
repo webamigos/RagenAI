@@ -67,9 +67,12 @@ export type DocumentDiagnostics = {
 export type DiagnosticsParse = {
   /**
    * How the text reached the splitter. `version-text` is a re-index of a
-   * document version's stored text, which has no parser at all.
+   * document version's stored text, which has no parser at all. `unknown` is
+   * a backfill from stored chunks, which do not record their parser: the
+   * checks that depend on it — the fallback and the section-path share —
+   * then say nothing rather than guess.
    */
-  parser: 'docling' | 'legacy' | 'version-text';
+  parser: 'docling' | 'legacy' | 'version-text' | 'unknown';
   /** Whether the deployment asked for Docling on a type it supports. */
   doclingExpected: boolean;
 };
