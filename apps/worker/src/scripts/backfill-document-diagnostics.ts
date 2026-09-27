@@ -31,18 +31,16 @@ import { computeDocumentDiagnostics } from '../services/document-diagnostics.js'
 import type { FileType } from '../types/UserFile.js';
 import {
   chunksFromPoints,
+  parseBackfillArgs,
   renderSummary,
   summariseByType,
   type BackfillRow,
   type StoredPoint,
 } from './document-diagnostics-backfill.js';
 
-function option(flag: string): string | undefined {
-  const i = process.argv.indexOf(flag);
-  return i === -1 ? undefined : process.argv[i + 1];
-}
-
 const PAGE = 256;
+/** Files read from the database at a time, so `--limit 1` reads one page. */
+const FILE_PAGE = 100;
 
 async function pointsOf(
   qdrant: QdrantClient,
@@ -76,15 +74,10 @@ function hasDiagnostics(metadata: unknown): boolean {
 }
 
 async function main() {
-  const orgId = option('--org');
-  if (!orgId) {
-    throw new Error(
-      '--org <organizationId> is required: one organization at a time',
-    );
-  }
-  const dryRun = process.argv.includes('--dry-run');
-  const force = process.argv.includes('--force');
-  const limit = Number(option('--limit') ?? Infinity);
+  // Validated before any read, let alone a write.
+  const { orgId, dryRun, force, limit } = parseBackfillArgs(
+    process.argv.slice(2),
+  );
 
   const qdrant = new QdrantClient({
     url: process.env.QDRANT_URL || 'http://localhost:6333',
@@ -95,41 +88,57 @@ async function main() {
     return;
   }
 
-  // Indexed files only: a staged, withdrawn or failed file has no chunks
-  // retrieval holds, and ingest writes no findings for it either.
-  const files = await getPrisma().userFile.findMany({
-    where: { organizationId: orgId, embeddingStatus: 'COMPLETED' },
-    select: { id: true, fileType: true, metadata: true },
-    orderBy: { createdAt: 'asc' },
-  });
-
   const rows: BackfillRow[] = [];
   let skipped = 0;
   let empty = 0;
-  for (const file of files) {
-    if (rows.length >= limit) {
+  let cursor: string | undefined;
+
+  // Page by page, so a bounded trial reads about as many rows as it reports
+  // on rather than the whole organization. Ordered by creation, with the id
+  // as the tie-break the cursor needs.
+  pages: while (rows.length < limit) {
+    // Indexed files only: a staged, withdrawn or failed file has no chunks
+    // retrieval holds, and ingest writes no findings for it either.
+    const files = await getPrisma().userFile.findMany({
+      where: { organizationId: orgId, embeddingStatus: 'COMPLETED' },
+      select: { id: true, fileType: true, metadata: true },
+      orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
+      take: FILE_PAGE,
+      ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
+    });
+    if (files.length === 0) {
       break;
     }
-    if (!force && hasDiagnostics(file.metadata)) {
-      skipped += 1;
-      continue;
+    cursor = files[files.length - 1].id;
+
+    for (const file of files) {
+      if (rows.length >= limit) {
+        break pages;
+      }
+      if (!force && hasDiagnostics(file.metadata)) {
+        skipped += 1;
+        continue;
+      }
+      const chunks = chunksFromPoints(await pointsOf(qdrant, orgId, file.id));
+      if (chunks.length === 0) {
+        empty += 1;
+        continue;
+      }
+      const diagnostics = computeDocumentDiagnostics(
+        chunks,
+        file.fileType as FileType,
+        { parser: 'unknown', doclingExpected: false },
+      );
+      rows.push({ fileId: file.id, fileType: file.fileType, diagnostics });
+      if (!dryRun) {
+        await db.mergeFileMetadata({
+          where: { fileId: file.id, orgId },
+          patch: { diagnostics },
+        });
+      }
     }
-    const chunks = chunksFromPoints(await pointsOf(qdrant, orgId, file.id));
-    if (chunks.length === 0) {
-      empty += 1;
-      continue;
-    }
-    const diagnostics = computeDocumentDiagnostics(
-      chunks,
-      file.fileType as FileType,
-      { parser: 'unknown', doclingExpected: false },
-    );
-    rows.push({ fileId: file.id, fileType: file.fileType, diagnostics });
-    if (!dryRun) {
-      await db.mergeFileMetadata({
-        where: { fileId: file.id, orgId },
-        patch: { diagnostics },
-      });
+    if (files.length < FILE_PAGE) {
+      break;
     }
   }
 

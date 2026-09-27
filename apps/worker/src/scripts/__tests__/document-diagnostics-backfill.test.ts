@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   chunksFromPoints,
+  parseBackfillArgs,
   renderSummary,
   summariseByType,
   type BackfillRow,
@@ -121,5 +122,48 @@ describe('summariseByType', () => {
       '| --- | --- | --- |',
       '| PDF | 1 | 0 |',
     ]);
+  });
+});
+
+describe('parseBackfillArgs', () => {
+  it('reads an organization, the two switches, and a limit', () => {
+    expect(
+      parseBackfillArgs(['--org', 'org-1', '--dry-run', '--limit', '5']),
+    ).toEqual({ orgId: 'org-1', dryRun: true, force: false, limit: 5 });
+  });
+
+  it('has no limit when --limit is absent', () => {
+    expect(parseBackfillArgs(['--org', 'org-1', '--force'])).toEqual({
+      orgId: 'org-1',
+      dryRun: false,
+      force: true,
+      limit: Infinity,
+    });
+  });
+
+  // The case that made a limited trial an unlimited forced overwrite.
+  it('refuses a flag where a value belongs', () => {
+    expect(() =>
+      parseBackfillArgs(['--org', 'org-1', '--limit', '--force']),
+    ).toThrow('--limit needs a value');
+    expect(() => parseBackfillArgs(['--org', '--dry-run'])).toThrow(
+      '--org needs a value',
+    );
+  });
+
+  it.each(['0', '-3', '2.5', 'ten', String(Number.MAX_SAFE_INTEGER + 2)])(
+    'refuses --limit %s',
+    (value) => {
+      expect(() =>
+        parseBackfillArgs(['--org', 'org-1', '--limit', value]),
+      ).toThrow('--limit must be a positive whole number');
+    },
+  );
+
+  it('refuses a missing organization, and a trailing flag with no value', () => {
+    expect(() => parseBackfillArgs(['--dry-run'])).toThrow('--org');
+    expect(() => parseBackfillArgs(['--org', 'org-1', '--limit'])).toThrow(
+      '--limit needs a value',
+    );
   });
 });
