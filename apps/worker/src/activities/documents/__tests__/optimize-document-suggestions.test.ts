@@ -8,7 +8,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const getDocumentContent = vi.hoisted(() => vi.fn());
 const updateOptimizationJobFields = vi.hoisted(() =>
-  vi.fn(async () => undefined),
+  vi.fn(
+    async (_args: {
+      fields: { suggestions?: { after: string }[] };
+    }): Promise<void> => undefined,
+  ),
 );
 
 const trackAiUsage = vi.hoisted(() => vi.fn(async () => undefined));
@@ -158,11 +162,7 @@ describe('suggestions that translate the document', () => {
 
     expect(evaluateSuggestionDimensions).toHaveBeenCalledTimes(1);
     const saved = updateOptimizationJobFields.mock.calls
-      .map(
-        (c) =>
-          (c[0] as { fields: { suggestions?: { after: string }[] } }).fields
-            .suggestions,
-      )
+      .map(([args]) => args.fields.suggestions)
       .find(Boolean)!;
     expect(saved).toHaveLength(1);
     expect(saved[0].after).toContain('Wolfsbane Interurban Rail');
