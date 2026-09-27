@@ -76,7 +76,7 @@ export async function applySuggestionsCommand(
   // No ragScore: a number copied from before the edit would describe text that
   // no longer exists, and the re-index that follows does not score (spec
   // 2026-09-26-rag-readiness-score-review, B3). The version command clears the
-  // file's badge with it; "Score for RAG" scores the new text on request.
+  // file's badge with it; Optimize's "Analyse" scores the new text when asked.
   const newVersion = await createDocumentVersionCommand({
     documentId,
     organizationId: orgId,

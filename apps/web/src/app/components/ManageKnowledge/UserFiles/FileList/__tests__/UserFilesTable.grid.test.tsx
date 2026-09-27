@@ -73,7 +73,6 @@ const messages = {
     download: 'Download',
     move: 'Move',
     share: 'Share',
-    'score-rag': 'Score for RAG',
     'change-pii-policy': 'Change PII policy',
   },
   'bulk-action-bar': {

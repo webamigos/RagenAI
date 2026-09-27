@@ -106,11 +106,13 @@ export type FeatureOverrides = Partial<Record<FeatureKey, boolean | null>>;
  * account deleting them takes them away from every visitor until the next
  * seed. Chat itself stays on.
  *
- * `ragReadinessScore` is the "RAG: NN" badge and "Score for RAG": one LLM call
- * per ingest and re-process, billed to the organization as `rag_scorer`
- * usage. It defaults to `true` because every install scores today. Off, ingest
- * does not call the scorer, the on-demand job and command refuse, and the panel
- * shows no badge or menu item; Optimize still works, without a score. A key
+ * `ragReadinessScore` is the "RAG NN/100" badge and the Optimize tab's score:
+ * one LLM call per scored document, billed to the organization as
+ * `rag_scorer` usage. A document is scored by Optimize's "Analyse" when it has
+ * no score yet (spec D3), or at upload where `ragScoreOnIngest` is on. It
+ * defaults to `true` because every install scores today. Off, nothing calls
+ * the scorer and the panel shows no score anywhere; Optimize still works,
+ * without one. A key
  * rather than an environment variable because the cost is the organization's
  * and an operator decides it per client.
  *
@@ -160,7 +162,7 @@ export const FEATURE_LABELS: Record<FeatureKey, string> = {
     'Ragen Brain: members may browse (read-only, sees every page)',
   brainAssistant: "Ragen Brain: the operator's assistant",
   deleteThreads: 'Delete threads',
-  ragReadinessScore: 'RAG readiness score (badge, Score for RAG, Optimize)',
+  ragReadinessScore: 'RAG readiness score (badge, Optimize)',
   ragScoreOnIngest:
     'RAG readiness score: score every upload (one LLM call per file)',
 };

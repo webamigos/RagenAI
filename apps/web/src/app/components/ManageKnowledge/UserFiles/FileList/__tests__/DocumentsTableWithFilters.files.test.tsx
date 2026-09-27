@@ -71,7 +71,6 @@ const messages = {
     'status-processing': 'Processing',
     'status-failed': 'Failed',
     'status-uploading': 'Uploading',
-    'score-rag': 'Score for RAG',
     delete: 'Delete',
     edit: 'Edit',
     view: 'View',
