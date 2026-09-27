@@ -67,9 +67,19 @@ export const MAX_OVERLAP_SHARE = 0.4;
 export const MIN_CONTENT_CHARS = 3;
 /** Share of a CSV header row's cells that are numbers, at or above which it is data. */
 export const NUMERIC_HEADER_SHARE = 0.5;
+/**
+ * Table rows a prose chunk must hold, with no header row among them, to count
+ * as a table the splitter cut (C4). Two rows can be a short quoted table;
+ * three with no header are the tail of a longer one.
+ */
+export const MIN_SPLIT_TABLE_ROWS = 3;
 
 /** Docling's image stand-in and the table stand-ins `table-chunks.ts` writes. */
 const PLACEHOLDERS = [/<!--\s*image\s*-->/gi, /\[Table \d+(?::[^\]\n]*)?\]/g];
+const TABLE_PLACEHOLDER = /\[Table \d+(?::[^\]\n]*)?\]/g;
+
+/** A markdown table row: a line that opens with a pipe. */
+const PIPE_ROW = /^\|.*\|\s*$/gm;
 
 /** The line `renderPipes` writes under a header, and only under one. */
 const ALIGNMENT_ROW = /^\|(?:\s*:?-+:?\s*\|)+\s*$/m;
@@ -182,6 +192,20 @@ function sectionPathShare(context: Context): number | null {
   return withPath / context.prose.length;
 }
 
+/** Rows of a markdown table with no header row among them. */
+function isSplitTableTail(chunk: Document): boolean {
+  const rows = chunk.pageContent.match(PIPE_ROW) ?? [];
+  return (
+    rows.length >= MIN_SPLIT_TABLE_ROWS &&
+    !ALIGNMENT_ROW.test(chunk.pageContent)
+  );
+}
+
+/** A CSV row group, not a markdown table Docling wrote for a spreadsheet. */
+function isCsvChunk(chunk: Document): boolean {
+  return !chunk.pageContent.trimStart().startsWith('|');
+}
+
 /** The first line of a CSV chunk is the row `packRows` repeats as its header. */
 function csvHeaderLooksLikeData(chunk: Document): boolean {
   const header = chunk.pageContent.split('\n', 1)[0] ?? '';
@@ -219,28 +243,38 @@ const CHECKS: Check[] = [
     // question there is whether that row is a header at all.
     check: 'table-without-header',
     appliesTo: TEXT_TYPES,
-    run: ({ chunks, tables, fileType }) => {
-      if (TABULAR_FILE_TYPES.has(fileType) && tables.length === 0) {
-        const rows = chunks.filter((chunk) => !isTable(chunk));
-        const headerless = rows.filter(csvHeaderLooksLikeData).length;
-        return headerless > 0
-          ? {
-              check: 'table-without-header',
-              severity: 'warn',
-              detail: { chunks: headerless, source: 'csv' },
-            }
-          : null;
+    run: ({ prose, tables, fileType }) => {
+      // Three ways a chunk holds rows without their column names, counted
+      // together because the reader's remedy is the same.
+      const sources: Record<string, number> = {
+        // A Docling table chunk with no header row flagged.
+        docling: tables.filter(
+          (chunk) => !ALIGNMENT_ROW.test(chunk.pageContent),
+        ).length,
+        // A markdown table the splitter cut: the rows after the cut carry no
+        // header (ADR-43, found missing by C4 — the one mechanism the table
+        // benchmark measured, 10/18 → 13/18, and C1 did not look for).
+        split: prose.filter(isSplitTableTail).length,
+        // A CSV row group whose repeated first row is data.
+        csv:
+          TABULAR_FILE_TYPES.has(fileType) && tables.length === 0
+            ? prose.filter(isCsvChunk).filter(csvHeaderLooksLikeData).length
+            : 0,
+      };
+      const headerless = Object.values(sources).reduce((a, b) => a + b, 0);
+      if (headerless === 0) {
+        return null;
       }
-      const headerless = tables.filter(
-        (chunk) => !ALIGNMENT_ROW.test(chunk.pageContent),
-      ).length;
-      return headerless > 0
-        ? {
-            check: 'table-without-header',
-            severity: 'warn',
-            detail: { chunks: headerless, source: 'docling' },
-          }
-        : null;
+      return {
+        check: 'table-without-header',
+        severity: 'warn',
+        detail: {
+          chunks: headerless,
+          source: Object.keys(sources)
+            .filter((key) => sources[key] > 0)
+            .join('+'),
+        },
+      };
     },
   },
   {
@@ -307,9 +341,29 @@ const CHECKS: Check[] = [
   {
     check: 'empty-chunks',
     appliesTo: TEXT_TYPES,
-    run: ({ chunks }) => {
+    run: ({ chunks, tables }) => {
+      // The placeholder an excised table leaves in the prose is its pointer,
+      // kept on purpose (`table-chunks.ts`), and the table's figures are in
+      // its own chunks. C4 found a Docling spreadsheet's whole prose is that
+      // pointer, so counting it would badge every such file with advice
+      // nobody can follow. A placeholder with no table chunk behind it still
+      // counts.
+      const excised = new Set(
+        tables.map((chunk) => chunk.pageContent.split('\n', 1)[0].trim()),
+      );
+      const isPointer = (text: string) => {
+        const placeholders = text.match(TABLE_PLACEHOLDER) ?? [];
+        return (
+          placeholders.length > 0 &&
+          placeholders.every((p) => excised.has(p)) &&
+          contentChars(text) < MIN_CONTENT_CHARS
+        );
+      };
       const empty = chunks.filter(
-        (chunk) => contentChars(chunk.pageContent) < MIN_CONTENT_CHARS,
+        (chunk) =>
+          !isTable(chunk) &&
+          contentChars(chunk.pageContent) < MIN_CONTENT_CHARS &&
+          !isPointer(chunk.pageContent),
       ).length;
       return empty > 0
         ? { check: 'empty-chunks', severity: 'warn', detail: { chunks: empty } }
