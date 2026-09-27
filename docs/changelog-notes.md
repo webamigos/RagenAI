@@ -94,6 +94,11 @@ archive is the blog.
 - `[brief]` **The RAG score is steadier.** Scoring runs at temperature 0 and
   the total is computed from its five parts instead of trusting the model's
   sum; a failed scoring call now shows up in AI usage like a successful one.
+- `[brief]` **Uploads no longer score every document by default.** The RAG
+  readiness score is now computed when someone asks for it ("Score for RAG",
+  Optimize), not on every upload, which saves one AI call per file. An
+  administrator can switch per-upload scoring back on in apps/admin →
+  Features (`ragScoreOnIngest`).
 
 ### Thread: ingest that survives a busy Docling
 
