@@ -759,11 +759,11 @@ export async function runFileEmbeddings(
   // the moment it exists rather than showing "no score" until the next edit.
   let ragScore: Awaited<ReturnType<typeof scoreDocumentForRag>> = null;
   try {
-    // Off (`ragReadinessScore`, set in apps/admin) means no model call. The
-    // metadata write below still runs, so a re-process clears a score that
-    // described the previous text rather than leaving it for the day the key
-    // is turned back on.
-    if (await isRagScoringEnabled({ orgId })) {
+    // Scoring on upload is opt-in (`ragScoreOnIngest`, off by default, spec D1;
+    // and nothing scores with `ragReadinessScore` off). Skipped, the metadata
+    // write below still runs, so a re-process clears a score that described
+    // the previous text: new text has no score until someone asks for one.
+    if (await isRagScoringEnabled({ orgId, stage: 'ingest' })) {
       ragScore = await scoreDocumentForRag({
         documentText,
         orgId,

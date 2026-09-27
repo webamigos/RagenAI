@@ -50,4 +50,33 @@ describe('isRagScoringEnabled', () => {
     );
     await expect(isRagScoringEnabled({ orgId: 'org-1' })).resolves.toBe(true);
   });
+
+  // D1: upload does not score unless an operator opts in.
+  it('does not score on ingest by default', async () => {
+    brainDb.getFeatureLayers.mockResolvedValue(layers());
+    await expect(
+      isRagScoringEnabled({ orgId: 'org-1', stage: 'ingest' }),
+    ).resolves.toBe(false);
+  });
+
+  it('scores on ingest when the organization opts in', async () => {
+    brainDb.getFeatureLayers.mockResolvedValue(
+      layers({ orgOverrides: { ragScoreOnIngest: true } }),
+    );
+    await expect(
+      isRagScoringEnabled({ orgId: 'org-1', stage: 'ingest' }),
+    ).resolves.toBe(true);
+  });
+
+  // It narrows the main key, never widens it.
+  it('does not score on ingest when scoring is off, whatever the ingest key says', async () => {
+    brainDb.getFeatureLayers.mockResolvedValue(
+      layers({
+        orgOverrides: { ragScoreOnIngest: true, ragReadinessScore: false },
+      }),
+    );
+    await expect(
+      isRagScoringEnabled({ orgId: 'org-1', stage: 'ingest' }),
+    ).resolves.toBe(false);
+  });
 });

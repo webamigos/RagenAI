@@ -36,7 +36,7 @@ The five dimensions, each scored 0–10 and weighted into the total:
 
 | Event | Scored? |
 | --- | --- |
-| Upload, or re-process | yes, automatically, after embedding |
+| Upload, or re-process | only where `ragScoreOnIngest` is on (off by default) |
 | "Score for RAG" in the file's menu | yes |
 | Rollback to an earlier version | no; the target version's score is copied to the new version and to the badge |
 | "Apply suggestions", or a manual edit | no; the new version is unscored and the badge is cleared until the file is scored again |
@@ -44,21 +44,29 @@ The five dimensions, each scored 0–10 and weighted into the total:
 A call that fails writes `null`, so no badge is shown. The previous score is
 not kept, because it would describe text that has since changed.
 
-## Turning it off
+## Turning it on and off
 
-The score is the feature key **`ragReadinessScore`** in
-`@ragenai/platform-contracts`, and its code default is **on**. A platform
-administrator changes it in **apps/admin → Features**, at any of the usual
-layers:
+Two feature keys in `@ragenai/platform-contracts`:
+
+- **`ragReadinessScore`**, **on** by default: the score at all, meaning the
+  badge, "Score for RAG" and the Optimize tab's score.
+- **`ragScoreOnIngest`**, **off** by default: whether every upload and
+  re-process scores automatically, one model call per file. It only narrows
+  the first key; with `ragReadinessScore` off, nothing scores.
+
+The ingest default went to off on 2026-09-27 (spec D1). The measurements
+found the score useful beside an edit, as Optimize's before and after, and
+not as a grade on every file. A platform administrator changes either key in
+**apps/admin → Features**, at any of the usual layers:
 
 - **platform default**, for every organization on the installation
 - **plan**, under Features → Subscription Plans
 - **organization override**, for one organization
 
-The first layer that sets the key decides it: override, then plan, then
+The first layer that sets a key decides it: override, then plan, then
 platform default, then the code default.
 
-With the key off, for that organization:
+With `ragReadinessScore` off, for that organization:
 
 - ingest makes no scoring call, and a re-process clears the stored score
 - a scoring job queued before the change ends without a model call

@@ -82,6 +82,7 @@ describe('runFileEmbeddings — RAG score', () => {
 
     expect(activities.isRagScoringEnabled).toHaveBeenCalledWith({
       orgId: 'org-1',
+      stage: 'ingest',
     });
     expect(activities.scoreDocumentForRag).not.toHaveBeenCalled();
     expect(scorePatches(activities)).toEqual([

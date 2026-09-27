@@ -245,6 +245,24 @@ describe('ragReadinessScore', () => {
   });
 });
 
+// D1: scoring every upload is opt-in; the score on request stays on.
+describe('ragScoreOnIngest', () => {
+  it('is off unless an operator turns it on', () => {
+    expect(resolveFeatures({}).ragScoreOnIngest).toEqual({
+      value: false,
+      source: 'code-default',
+    });
+    expect(resolveFeatures({}).ragReadinessScore.value).toBe(true);
+  });
+
+  it('can be turned on per organization', () => {
+    expect(
+      resolveFeatures({ orgOverrides: { ragScoreOnIngest: true } })
+        .ragScoreOnIngest.value,
+    ).toBe(true);
+  });
+});
+
 describe('flattenFeatures', () => {
   it('drops the sources and keeps the values', () => {
     const flags = flattenFeatures(

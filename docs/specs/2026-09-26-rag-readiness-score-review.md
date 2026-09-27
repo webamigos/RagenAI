@@ -545,7 +545,11 @@ already claims. B1 and B2 start only after A2's baseline is committed.
 
 ### Phase D — the LLM score's place after the measurement
 
-- [ ] **D1.** Decide `ragReadinessScore`'s code default from A4's result (Q6).
+- [x] **D1.** *(Decided 2026-09-27: scoring on upload is off by default. It is
+  a second key, `ragScoreOnIngest` (default `false`), rather than flipping
+  `ragReadinessScore`, which would also have removed the Optimize tab's score
+  that A4 found useful. The list and grid rendering is left to Phase C.)*
+  Decide `ragReadinessScore`'s code default from A4's result (Q6).
   If the score does not track retrieval, the default becomes `false`: one LLM
   call less per ingest and per re-process, and an operator can still turn it
   on. Nothing is deleted. Stop rendering `ragScore` in the list and grid when
