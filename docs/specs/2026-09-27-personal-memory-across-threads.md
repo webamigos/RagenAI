@@ -165,7 +165,13 @@ this release.
 4. **Check the ceiling.** Before calling a model, the handler checks the org's
    monthly usage ceiling (B1). An org over its ceiling gets no extraction, and
    the skip is logged. "A limit is a call site" (AGENTS.md) is why this is a
-   step and not a note.
+   step and not a note. The check and the usage record are not atomic, so jobs
+   in flight at the moment an org crosses its ceiling can overshoot it by at
+   most one extraction call each. That is the same check-then-record semantics
+   the chat surfaces have today (`assert-within-usage-limits.ts`), and a
+   reservation scheme for the cheapest call in a turn would be stricter than
+   the chat call it follows. If ceilings ever become hard limits, they become
+   hard everywhere, and not here first.
 5. **Extract.** One model call on `MEMORY_EXTRACT_MODEL`, which falls back to
    `SUMMARY_MODEL` as `BRAIN_EXTRACT_MODEL` does (`apps/worker/src/consts.ts`).
    The call goes through `getChatModelForOrg`. The input is:
@@ -174,12 +180,34 @@ this release.
 
    The output is a structured list of operations: `ADD { content }`,
    `UPDATE { id, content }`, `DELETE { id }`. It is parsed with a Zod schema,
-   and an unparseable answer is a no-op, not a retry.
+   and an unparseable answer is a no-op, not a retry. The schema enforces the
+   bounds rather than trusting the prompt with them:
+   - `content` is 1–300 characters after trimming;
+   - at most 10 operations per answer.
+
+   An operation that violates a bound is dropped on its own, and the rest
+   apply. A test covers a 301-character `content`.
 6. **Apply.** First, upsert the profile row, so a user's first two concurrent
    extractions have a row to lock. Then encrypt every content to be written,
    before the transaction opens (ADR-42's rule: no lock held across a KMS
-   round-trip). Then apply the operations in one transaction that holds
-   `SELECT … FOR UPDATE` on the profile row:
+   round-trip). Then open one transaction that holds `SELECT … FOR UPDATE` on
+   the profile row, and **re-check, inside it, that the job is still
+   wanted**. The enqueue-time gate is minutes old by now. If any of these
+   fails, the job writes nothing and rolls back, including the upsert:
+   - `extractionEnabled` is still true;
+   - the profile's `epoch` equals the one the job was enqueued with (see
+     below);
+   - the user is still a member of the org (a read of `members`, never a
+     write);
+   - `personalMemory` is still on for the org.
+
+   The `epoch` is an integer on the profile. The web app reads it when it
+   enqueues, and puts it in the payload (0 when no profile exists yet).
+   "Forget everything" and switching extraction off both increment it, in the
+   same transaction as the change. Member removal deletes the profile, and the
+   membership check stops a job for a user with no profile from recreating one.
+   So a job paused across any of these controls cannot write afterwards.
+   Otherwise, the operations are applied:
    - an `UPDATE` or `DELETE` whose row changed since it was read (by
      `updatedAt`) is skipped, so a user's edit made mid-job wins;
    - an `ADD` identical to an existing statement after normalisation is
@@ -316,9 +344,18 @@ feature depends on. So:
   `MemoryOwner` built only from the session (`getOrgIdFromAuthOrThrow()`,
   `getCurrentUserId()`), never from arguments.
 - In apps/worker, the models are touched only in the memory activity module.
+- The org admin's "delete all members' memories" is the one operation that is
+  not per user. It gets a second, separate scope in the same module: an
+  `OrgMemoryAdmin` built only from the session's org, and only after
+  `canManageOrg()` passes. That scope exposes a single function,
+  `deleteAllOrgMemories`. It has no read, and it takes no user id, so no
+  admin path can list or load a member's memory. Its authorization test
+  asserts that a member without `canManageOrg()` gets `Unauthorized`, and
+  that another org's rows are untouched.
 - A new architecture test,
   `tests/architecture/memory-rows-are-read-through-one-module.test.ts`, fails
-  on a reference to those three Prisma models anywhere else.
+  on a reference to those three Prisma models anywhere else. It also fails if
+  `OrgMemoryAdmin` gains any function that selects `content`.
 - The models are also added to `TENANT_SCOPED_MODELS`, which covers the org
   half of the boundary.
 
@@ -340,7 +377,17 @@ feature depends on. So:
 - **In the thread.** After a turn that changed memory, a line under the answer:
   "Remembered: prefers bullet points · Undo". It is read from
   `UserMemoryChange` by `messageId`. Undo reverts that one change: an `ADD` is
-  deleted, and an `UPDATE` or `DELETE` restores the previous content. The
+  deleted, and an `UPDATE` or `DELETE` restores the previous content. **An
+  undo is refused when it is stale.** Every write to a memory increments
+  `UserMemory.version`, and each change row stores the version it produced
+  (`resultVersion`):
+  - for an `ADD` or `UPDATE`, undo requires the memory's current `version` to
+    equal `resultVersion`;
+  - for a `DELETE`, undo requires that no memory with that `publicId` exists.
+
+  A later extraction or a settings edit therefore cannot be overwritten or
+  deleted by an older undo. The line then shows "changed since, edit it in
+  settings" instead of the undo button. The
   unused `status-searching-memories` key is reused if the stream shows a
   loading status for memory, and deleted otherwise.
 - **For an org admin.** "Delete all members' memories" in organization
@@ -401,6 +448,9 @@ model UserMemoryProfile {
   userId            String             @map("user_id")
   encryptedDek      String?            @map("encrypted_dek")
   extractionEnabled Boolean            @default(true) @map("extraction_enabled")
+  /// Incremented by "forget everything" and by switching extraction off. A
+  /// job enqueued under an older epoch writes nothing.
+  epoch             Int                @default(0)
   createdAt         DateTime           @default(now()) @map("created_at") @db.Timestamptz
   updatedAt         DateTime           @updatedAt @map("updated_at") @db.Timestamptz
   memories          UserMemory[]
@@ -419,6 +469,8 @@ model UserMemory {
   profile        UserMemoryProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
   content        String
   isEncrypted    Boolean           @map("is_encrypted")
+  /// Incremented on every write; what a stale undo is detected by.
+  version        Int               @default(1)
   /// The thread that last wrote this row. Deleting it deletes the row.
   sourceThreadId String?           @map("source_thread_id") @db.Uuid
   sourceThread   Thread?           @relation(fields: [sourceThreadId], references: [id], onDelete: Cascade)
@@ -452,6 +504,8 @@ model UserMemoryChange {
   previousContent String?              @map("previous_content")
   newContent      String?              @map("new_content")
   isEncrypted     Boolean              @map("is_encrypted")
+  /// The memory's version after this change; null for a DELETE.
+  resultVersion   Int?                 @map("result_version")
   undoneAt        DateTime?            @map("undone_at") @db.Timestamptz
   createdAt       DateTime             @default(now()) @map("created_at") @db.Timestamptz
 
@@ -518,6 +572,13 @@ enum UserMemoryOperation {
   differently worded duplicate is merged by the next extraction.
 - **The user edits a memory while a job is running.** The job's `UPDATE`/`DELETE`
   checks `updatedAt`, so the user's edit wins.
+- **A job is still queued when the user forgets everything, opts out, is
+  removed, or the org turns the key off.** The apply re-checks all four inside
+  the profile lock (epoch, switch, membership, feature) and writes nothing.
+- **An old undo after a newer change.** Refused by the `version` check; the
+  line says the memory changed since.
+- **The model returns an over-long or oversized answer.** The schema drops the
+  offending operations (over 300 characters, or past the tenth).
 - **Encryption is on and the key cannot be obtained.** Write path: the memory is
   not written, and a warning is logged. Read path: the turn runs without
   memory. The thread path's downgrade logging is unaffected.
@@ -593,8 +654,10 @@ shape an answer before it has been measured.
   off. It gets a registry entry in the `you` group, and i18n in all 15 locale
   files, regenerated from a key list rather than hand-merged. With nothing yet
   writing memories, the page shows its empty state.
-- [ ] **B3.** The org-admin "delete all members' memories" action, guarded by
-  `canManageOrg()`, with a test that it reads no content.
+- [ ] **B3.** The org-admin "delete all members' memories" action through the
+  separate `OrgMemoryAdmin` scope, guarded by `canManageOrg()`. Tests: it reads
+  no content, a member without the capability is refused, and another org's
+  rows are untouched.
 
 ### Phase C — extraction
 
@@ -607,7 +670,11 @@ shape an answer before it has been measured.
   - `MEMORY_MAX_ENTRIES`;
   - the `updatedAt` check;
   - the duplicate skip;
-  - the placeholder filter.
+  - the placeholder filter;
+  - the length and count bounds in the schema;
+  - the in-transaction re-check: a job enqueued before "forget everything",
+    before opting out, before member removal, and before the key is turned off
+    writes nothing in each case.
 - [ ] **C2.** The extraction prompt, with a promptfoo suite
   `evals/configs/memory-extraction.yaml`. Its dataset has at least 40 user
   messages, covering:
@@ -632,7 +699,9 @@ shape an answer before it has been measured.
   when memories exist, absent otherwise, absent in a shared or team thread,
   and never inside `{context}`.
 - [ ] **D2.** The "Remembered: … · Undo" line under an answer, read from
-  `UserMemoryChange`, and the undo command.
+  `UserMemoryChange`, and the undo command with its `version` check. Tests: an
+  undo after a later extraction, and after a settings edit, is refused for each
+  of `ADD`, `UPDATE` and `DELETE`.
 - [ ] **D3.** E2E `p0-35-personal-memory.spec.ts` (see "Testing").
 
 ### Phase E — measure, then turn it on
@@ -654,7 +723,9 @@ shape an answer before it has been measured.
   - the operation apply, the placeholder filter, and the Zod schema of the
     extraction output (valid and invalid);
   - every function in `memory-scope.ts`, including the IDOR cases;
-  - forget-everything keeping the switch;
+  - forget-everything keeping the switch and incrementing the epoch;
+  - the `OrgMemoryAdmin` scope's authorization;
+  - the stale-undo refusal;
   - the member-removal hook.
 - **Architecture:** `memory-rows-are-read-through-one-module.test.ts`, and the
   updated `encryption-lives-in-one-package.test.ts`.
@@ -662,6 +733,8 @@ shape an answer before it has been measured.
   - two concurrent applies for the same new user, against Postgres: the same
     statement produces one row and one profile;
   - a user's edit made during a job survives;
+  - a job paused across "forget everything" writes nothing and does not
+    recreate rows;
   - the handler end to end in `npm run worker:test:jobs`, with the model
     stubbed;
   - deleting a thread through `thread-core.service` removes the memories and
