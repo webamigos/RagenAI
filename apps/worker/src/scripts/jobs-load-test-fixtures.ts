@@ -87,3 +87,22 @@ export function storageKey(fileId: string, fileName: string): string {
   const ext = getFileExtension(fileName);
   return ext ? `${fileId}.${ext}` : fileId;
 }
+
+/**
+ * `--files <dir>`, or `undefined` when the flag is absent.
+ *
+ * A trailing `--files`, or one followed by another flag, is refused: reading
+ * it as "no directory" would fall back to synthetic text and measure the
+ * wrong thing in a real organization, with nothing in the output to say so.
+ */
+export function filesOption(argv: readonly string[]): string | undefined {
+  const index = argv.indexOf('--files');
+  if (index === -1) {
+    return undefined;
+  }
+  const dir = argv[index + 1];
+  if (!dir || dir.startsWith('--') || dir.trim() === '') {
+    throw new Error('--files takes a directory');
+  }
+  return dir;
+}

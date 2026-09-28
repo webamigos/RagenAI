@@ -59,10 +59,15 @@ export async function writeResults(
   results: readonly unknown[],
   complete: boolean,
 ): Promise<void> {
-  const { writeFile } = await import('node:fs/promises');
+  // Written beside the report and renamed over it: `writeFile` can take
+  // several writes, so a run stopped mid-write would otherwise leave a
+  // truncated file in place of the repetitions it was meant to keep.
+  const { rename, writeFile } = await import('node:fs/promises');
+  const partial = `${path}.partial`;
   await writeFile(
-    path,
+    partial,
     JSON.stringify({ runtime, complete, results }, null, 2),
     'utf8',
   );
+  await rename(partial, path);
 }

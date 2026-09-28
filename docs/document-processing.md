@@ -58,7 +58,7 @@ Medians per file, both repetitions:
 | 8 | 292 s, 266 s | 3.3, 3.6 | 29 s, 35 s | 135 s, 106 s | 0 of 32 |
 
 Four is the fastest of the three, and eight is slower than four: past twice
-`ENG_LOC_NUM_WORKERS` the wait does not go away, it moves — queue wait falls
+`DOCLING_SERVE_ENG_LOC_NUM_WORKERS` the wait does not go away, it moves — queue wait falls
 from ~100 s to ~30 s while parse time doubles, because the extra requests
 queue inside docling-serve and share the same five cores. Docling's peak
 memory was 3.7–3.9 GiB at every ceiling, and no request timed out. Embedding
@@ -70,16 +70,16 @@ size: re-measure on yours before raising the ceiling.
 What follows from it:
 
 - **One conversion uses about `DOCLING_NUM_THREADS` cores.** Two run side by
-  side only on roughly `ENG_LOC_NUM_WORKERS × DOCLING_NUM_THREADS` cores — 8 at
+  side only on roughly `DOCLING_SERVE_ENG_LOC_NUM_WORKERS × DOCLING_NUM_THREADS` cores — 8 at
   the defaults. On fewer, the second one halves the speed of the first and
   throughput stays where it was: above, two at once took twice as long as
-  one, in every run. Raising `ENG_LOC_NUM_WORKERS` without the cores adds nothing.
+  one, in every run. Raising `DOCLING_SERVE_ENG_LOC_NUM_WORKERS` without the cores adds nothing.
 - **Memory: plan 4 GiB for the defaults**, and budget 1 GiB more per extra
-  `ENG_LOC_NUM_WORKERS` — each worker loads its own copy of the models
+  `DOCLING_SERVE_ENG_LOC_NUM_WORKERS` — each worker loads its own copy of the models
   (`DOCLING_SERVE_ENG_LOC_SHARE_MODELS` is off upstream). Measured, a
   converting document added about 0.5 GiB; the rest is headroom for longer
   ones, not a number anyone has taken.
-- **On BullMQ, keep `DOCLING_MAX_CONCURRENCY` at about twice `ENG_LOC_NUM_WORKERS`**
+- **On BullMQ, keep `DOCLING_MAX_CONCURRENCY` at about twice `DOCLING_SERVE_ENG_LOC_NUM_WORKERS`**
   (times the number of Docling replicas, if you run several behind a load
   balancer). Two per worker keeps Docling busy between documents. More than
   that only moves the queue from Redis, where the worker can see it, into

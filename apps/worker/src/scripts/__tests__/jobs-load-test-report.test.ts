@@ -1,4 +1,4 @@
-import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { mkdtemp, readFile, readdir, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 
@@ -78,5 +78,14 @@ describe('writeResults', () => {
     const final = JSON.parse(await readFile(file, 'utf8'));
     expect(final.complete).toBe(true);
     expect(final.results).toHaveLength(2);
+  });
+
+  it('replaces the report by rename, leaving no partial file behind', async () => {
+    const file = path.join(dir, 'result.json');
+
+    await writeResults(file, 'bullmq', [run()], false);
+    await writeResults(file, 'bullmq', [run(), run()], false);
+
+    expect(await readdir(dir)).toEqual(['result.json']);
   });
 });

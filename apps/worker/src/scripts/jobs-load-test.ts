@@ -63,6 +63,7 @@ import { jobs } from '../jobs.js';
 import { FileType } from '../types/UserFile.js';
 
 import {
+  filesOption,
   fixtureFor,
   loadFixtures,
   storageKey,
@@ -190,7 +191,7 @@ function parseOptions(argv: string[]): Options {
     levels,
     repetitions,
     words,
-    files: value('--files'),
+    files: filesOption(argv),
     json: value('--json'),
     keep: argv.includes('--keep'),
   };
@@ -515,12 +516,16 @@ async function main(): Promise<void> {
         results.push(result);
         // Printed as it lands, for the same reason `writeResults` runs here.
         console.log(`${TABLE_HEADER}\n${tableRow(result)}`);
-        if (options.json) {
-          await writeResults(options.json, runtime, results, false);
-        }
-
-        if (!options.keep) {
-          await cleanup(orgId, result.created);
+        try {
+          if (options.json) {
+            await writeResults(options.json, runtime, results, false);
+          }
+        } finally {
+          // The run finished, so its jobs are done and its files are safe to
+          // remove — whether or not the report could be written.
+          if (!options.keep) {
+            await cleanup(orgId, result.created);
+          }
         }
       }
     }

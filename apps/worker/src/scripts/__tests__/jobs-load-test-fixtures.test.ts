@@ -7,6 +7,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { FileType } from '../../types/UserFile.js';
 import { localPathFor } from '../../services/ensure-local-file.js';
 import {
+  filesOption,
   fixtureFor,
   loadFixtures,
   storageKey,
@@ -95,5 +96,26 @@ describe('storageKey', () => {
 
   it('has no extension when the name has none', () => {
     expect(storageKey('id', 'README')).toBe('id');
+  });
+});
+
+describe('filesOption', () => {
+  it('is undefined without the flag, so the run uses synthetic text', () => {
+    expect(filesOption(['--levels', '16'])).toBeUndefined();
+  });
+
+  it('reads the directory after the flag', () => {
+    expect(filesOption(['--files', '/corpus/pdfs', '--levels', '16'])).toBe(
+      '/corpus/pdfs',
+    );
+  });
+
+  it('refuses a trailing flag, or one followed by another flag', () => {
+    expect(() => filesOption(['--levels', '16', '--files'])).toThrow(
+      /--files takes a directory/,
+    );
+    expect(() => filesOption(['--files', '--levels', '16'])).toThrow(
+      /--files takes a directory/,
+    );
   });
 });

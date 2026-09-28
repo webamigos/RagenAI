@@ -262,7 +262,7 @@ Each phase leaves the application working.
   take longer. The wording holds whether or not the worker runs strict,
   which apps/web cannot see: strict files wait, others fall back.
 - [x] **C2.** Sizing section in `docs/document-processing.md` and the Docling
-  runbook: CPU/RAM per concurrent conversion, `ENG_LOC_NUM_WORKERS`, how the
+  runbook: CPU/RAM per concurrent conversion, `DOCLING_SERVE_ENG_LOC_NUM_WORKERS`, how the
   ceiling relates to it; `create-ragen-app` writes the ceiling and says why.
   *Done.* Measured on the local Docling (2–4-page PDFs, 5 CPUs): one
   conversion takes ~`DOCLING_NUM_THREADS` cores, so two side by side need ~8
@@ -282,7 +282,7 @@ Each phase leaves the application working.
   its defaults. Files per minute: 2.5/3.0 at 2, **3.9/4.4 at 4**, 3.3/3.6 at
   8; 0 failures in 96 ingests, no timeouts, peak memory 3.9 GiB. Eight is
   slower than four — the queue moves from Redis into docling-serve and parse
-  time doubles — which is C2's "about twice `ENG_LOC_NUM_WORKERS`" measured.
+  time doubles — which is C2's "about twice `DOCLING_SERVE_ENG_LOC_NUM_WORKERS`" measured.
   The default of 4 stays. Table in "Sizing Docling" in
   `docs/document-processing.md`.
 
