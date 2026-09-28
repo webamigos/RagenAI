@@ -273,9 +273,18 @@ Each phase leaves the application working.
   write `DOCLING_SERVE_MAX_SYNC_WAIT`: compose sets the Docling side as a
   literal, so a line in `.env` would move the worker and not the server —
   the disagreement A2 removed.
-- [ ] **C3.** Measure: the jobs load test run with PDFs through a real Docling
+- [x] **C3.** Measure: the jobs load test run with PDFs through a real Docling
   (the demo corpus, `e15d46c10:scripts/demo-corpus/files`) at ceilings 2/4/8,
   recording throughput and failures — the number the default rests on.
+
+  *Done (2026-09-28).* `jobs-load-test.ts --files` uploads real PDFs; 16 at
+  once, two repetitions per ceiling, `DOCLING_STRICT=1`, 5 CPUs, Docling at
+  its defaults. Files per minute: 2.5/3.0 at 2, **3.9/4.4 at 4**, 3.3/3.6 at
+  8; 0 failures in 96 ingests, no timeouts, peak memory 3.9 GiB. Eight is
+  slower than four — the queue moves from Redis into docling-serve and parse
+  time doubles — which is C2's "about twice `ENG_LOC_NUM_WORKERS`" measured.
+  The default of 4 stays. Table in "Sizing Docling" in
+  `docs/document-processing.md`.
 
 ## Testing
 

@@ -42,8 +42,30 @@ ratio did not — two at once always took about twice as long as one. The
 first conversion on each Docling worker was three to four times slower
 (46 s) — models load on first use per worker even with
 `DOCLING_SERVE_LOAD_MODELS_AT_BOOT`. These are small documents; a long scan
-takes more of both. C3 of the spec measures the ceiling itself, at 2/4/8 on
-the demo corpus through the whole ingest.
+takes more of both.
+
+**The ceiling itself, measured 2026-09-28** (spec C3) on the same host and
+Docling, through the whole ingest: 16 PDFs at once (the demo corpus's eight,
+twice), `DOCLING_STRICT=1`, `WORKER_RUNTIME=bullmq`, the worker restarted for
+each `DOCLING_MAX_CONCURRENCY`, two repetitions each, with
+`jobs-load-test.ts --files` ([runbook](runbooks/worker-runtime-load-test.md)).
+Medians per file, both repetitions:
+
+| `DOCLING_MAX_CONCURRENCY` | Batch wall time | Files per minute | Queue wait | Parse | Failures |
+| --- | --- | --- | --- | --- | --- |
+| 2 | 388 s, 324 s | 2.5, 3.0 | 202 s, 151 s | 38 s, 22 s | 0 of 32 |
+| **4** (default) | 244 s, 216 s | **3.9, 4.4** | 123 s, 87 s | 68 s, 44 s | 0 of 32 |
+| 8 | 292 s, 266 s | 3.3, 3.6 | 29 s, 35 s | 135 s, 106 s | 0 of 32 |
+
+Four is the fastest of the three, and eight is slower than four: past twice
+`ENG_LOC_NUM_WORKERS` the wait does not go away, it moves — queue wait falls
+from ~100 s to ~30 s while parse time doubles, because the extra requests
+queue inside docling-serve and share the same five cores. Docling's peak
+memory was 3.7–3.9 GiB at every ceiling, and no request timed out. Embedding
+took under a second a file, so the parser is the whole cost. The second
+repetition was faster at every ceiling (the ceilings ran in the order 2, 4,
+8), so compare within a column, not only across it. One host, one document
+size: re-measure on yours before raising the ceiling.
 
 What follows from it:
 
