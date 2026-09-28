@@ -41,6 +41,7 @@ export async function reindexDocumentVersion(
     prepareMetadata,
     addDocumentsToVectorStore,
     deleteDocumentVectors,
+    generateDocumentSummary,
     getDocumentContent,
     getFileRecord,
     mergeFileMetadata,
@@ -122,9 +123,9 @@ export async function reindexDocumentVersion(
 
   // ==== DETECT DOCUMENT LANGUAGE (best-effort, same pattern as parse-and-embed)
   // Re-run on every reindex so the tag reflects the *current* content —
-  // unlike the summary and the RAG score, this has no LLM cost. The summary
-  // goes stale here; the RAG score does not, because apps/web clears the
-  // file's copy when it creates the version this job indexes.
+  // unlike the summary, this has no LLM cost. The RAG score is not
+  // recomputed either: apps/web clears the file's copy when it creates the
+  // version this job indexes.
   let language: string | null = null;
   let languageDetectionFailed = false;
   try {
@@ -142,6 +143,7 @@ export async function reindexDocumentVersion(
   // Read after the index write, outside its try: a diagnostics failure must
   // not record FAILED on a document that was indexed.
   let indexedChunks: Document[] = [];
+  let newSummary = '';
 
   try {
     await deleteDocumentVectors({ orgId, fileId });
@@ -175,10 +177,39 @@ export async function reindexDocumentVersion(
     });
     indexedChunks = docs;
 
+    // ==== SUMMARY CHUNK (ADR-16), from the masked version text
+    // The delete above removed the file's summary chunk with everything else,
+    // and nothing put it back: an edited document lost its summary from
+    // retrieval for good, and `UserFile.metadata.summary` kept describing the
+    // text before the edit. Regenerated here as ingest does it — best-effort,
+    // so a failed summary leaves the version indexed without one.
+    let summary = '';
+    try {
+      summary = await generateDocumentSummary({
+        documentText: docs.map((d) => d.pageContent).join('\n'),
+        orgId,
+        projectId,
+        userId: file?.ownerId ?? null,
+        fileName,
+      });
+    } catch (summaryError) {
+      ctx.log.warn(
+        `Summary generation failed for file ${fileId}: ${summaryError instanceof Error ? summaryError.message : String(summaryError)}`,
+      );
+    }
+    newSummary = summary;
+    const docsWithSummary: Document[] =
+      summary.length > 0
+        ? [
+            { pageContent: summary, metadata: { chunk_type: 'summary' } },
+            ...docs,
+          ]
+        : docs;
+
     const accessibleBy = await computeFileAccessPrincipals(fileId, orgId);
 
     const updatedDocs = await prepareMetadata({
-      docs,
+      docs: docsWithSummary,
       fileRecord: {
         id: fileId,
         fileName,
@@ -228,6 +259,22 @@ export async function reindexDocumentVersion(
         error instanceof Error ? error.message : String(error)
       }`,
     );
+  }
+
+  // Outside the index try, as ingest does it: a metadata write that fails
+  // must not record FAILED on a version that was indexed.
+  if (newSummary.length > 0) {
+    try {
+      await mergeFileMetadata({
+        fileId,
+        orgId,
+        patch: { summary: newSummary },
+      });
+    } catch (metadataError) {
+      ctx.log.warn(
+        `Failed to persist summary metadata for file ${fileId}: ${metadataError instanceof Error ? metadataError.message : String(metadataError)}`,
+      );
+    }
   }
 
   // ==== DOCUMENT DIAGNOSTICS (best-effort, same pattern as parse-and-embed)
