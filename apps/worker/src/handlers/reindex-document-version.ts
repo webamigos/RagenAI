@@ -55,6 +55,18 @@ export async function reindexDocumentVersion(
     startToCloseTimeout: '10 minutes',
   });
 
+  // The same masking steps, with the same policy, as `runFileEmbeddings`:
+  // Presidio may be briefly away, and a re-index is an ingest of new text.
+  const { maskPii, applyDualContentMode } = ctx.steps<typeof activities>({
+    retry: {
+      initialInterval: '5 seconds',
+      maximumInterval: '2 minutes',
+      backoffCoefficient: 6,
+      maximumAttempts: 3,
+    },
+    startToCloseTimeout: '5 minutes',
+  });
+
   const { orgId, fileId, fileName, projectId, documentId } = payload;
 
   // Read rather than received. Every producer persists the document before it
@@ -135,7 +147,32 @@ export async function reindexDocumentVersion(
     await deleteDocumentVectors({ orgId, fileId });
 
     const rawDocs: Document[] = [{ pageContent: content, metadata: {} }];
-    const docs = await splitText({ fileType, rawDocs, splitterSettings });
+    const chunks = await splitText({ fileType, rawDocs, splitterSettings });
+
+    // Masked like an upload, on the chunks. A version's text is new text: an
+    // edit or an applied suggestion can hold a name or a PESEL the original
+    // never had, and this path used to index it as written — whatever the
+    // file's policy said. The file's own policy decides, and it is also what
+    // the chunks now carry as `pii_policy` rather than the default.
+    const piiPolicy = file?.piiPolicy ?? 'TOXIC_ONLY';
+    const chunksBeforeMasking = chunks.map((d) => ({
+      ...d,
+      metadata: { ...d.metadata },
+    }));
+    const maskedChunks = await maskPii({
+      docs: chunks,
+      piiPolicy,
+      language,
+      fileId,
+      organizationId: orgId,
+      userId: file?.ownerId ?? null,
+      requestId: ctx.runId,
+    });
+    const docs = await applyDualContentMode({
+      originalDocs: chunksBeforeMasking,
+      maskedDocs: maskedChunks,
+      orgId,
+    });
     indexedChunks = docs;
 
     const accessibleBy = await computeFileAccessPrincipals(fileId, orgId);
@@ -149,6 +186,7 @@ export async function reindexDocumentVersion(
         projectId,
         language,
         accessibleBy,
+        piiPolicy,
       },
       fileType,
       splitterSettings,
