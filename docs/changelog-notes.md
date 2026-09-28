@@ -131,7 +131,7 @@ archive is the blog.
   Docling stays down longer fails with the time it went down, and one
   *Re-process* recovers it. A cancelled upload stops waiting. While it waits,
   the file reads "Waiting for parser" in the knowledge base, with the time the
-  parser went down in its tooltip, instead of "Processing".
+  parser went down in its tooltip, instead of looking like any queued upload.
   *Re-process* recovers it. A cancelled upload stops waiting.
 - `[brief]` **A Docling outage is two lines in the worker's log.** The worker
   now checks Docling every 30 seconds and logs one error when it goes down and
