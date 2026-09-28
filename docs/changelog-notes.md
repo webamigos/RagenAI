@@ -70,6 +70,13 @@ archive is the blog.
 
 ### Knowledge base
 
+- `[brief]` **With PII masking on, tables are masked too.** Docling's table
+  chunks skipped masking and reached the index, the summary and the stored
+  document with names and numbers intact. In the encrypted `dual_content`
+  mode, every chunk used to carry the whole document as its original, which
+  weakened search and gave the answer model the whole file in place of each
+  chunk. Masking now runs on each chunk. Re-process documents uploaded with
+  masking on to apply it.
 - `[brief]` **The RAG readiness score can be turned off.** A platform
   administrator can switch off the `RAG: NN` badge and its scoring call in
   apps/admin → Features, for the whole platform or per organization. With it
