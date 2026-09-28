@@ -2,9 +2,11 @@ import { describe, expect, it } from 'vitest';
 
 import {
   DEFAULT_ADMIN_USER,
+  DEFAULT_DOCLING_MAX_CONCURRENCY,
   DEFAULT_REDIS_URL,
   DEFAULT_TEMPORAL_SERVER_ADDRESS,
   DEFAULT_WORKER_CONCURRENCY,
+  doclingCeilingEnvUpdates,
   generateAdminPassword,
   resolveWorkerRuntimeSelection,
 } from '../worker-runtime';
@@ -142,5 +144,28 @@ describe('resolveWorkerRuntimeSelection', () => {
     expect(password.length).toBeLessThanOrEqual(24);
     // base64url, so no characters that need escaping in a shell or a .env line.
     expect(password).toMatch(/^[A-Za-z0-9_-]+$/);
+  });
+});
+
+describe('doclingCeilingEnvUpdates', () => {
+  /**
+   * The ceiling binds before `WORKER_CONCURRENCY` does — twenty slots, four
+   * conversions — so an operator chasing slow ingests has to find it in the
+   * file, next to the knob they will try first.
+   */
+  it('writes the docling ceiling for bullmq', () => {
+    expect(doclingCeilingEnvUpdates('bullmq')).toEqual({
+      DOCLING_MAX_CONCURRENCY: DEFAULT_DOCLING_MAX_CONCURRENCY,
+    });
+  });
+
+  it('writes nothing for temporal, which does not read it', () => {
+    expect(doclingCeilingEnvUpdates('temporal')).toEqual({});
+  });
+
+  it('is not part of the runtime selection, which writes only seam variables', () => {
+    expect(
+      resolveWorkerRuntimeSelection('bullmq').envUpdates,
+    ).not.toHaveProperty('DOCLING_MAX_CONCURRENCY');
   });
 });

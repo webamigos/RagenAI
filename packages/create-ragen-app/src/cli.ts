@@ -53,6 +53,7 @@ import {
 } from './storage-provider';
 import {
   DEFAULT_TEMPORAL_SERVER_ADDRESS,
+  doclingCeilingEnvUpdates,
   resolveWorkerRuntimeSelection,
   WORKER_RUNTIME_LABELS,
   type WorkerRuntimeSelection,
@@ -197,7 +198,11 @@ export async function run(argv: string[]): Promise<boolean> {
     return false;
   }
   const workerRuntime = runtimePrompt.selection;
-  Object.assign(rootOverrides, workerRuntime.envUpdates);
+  Object.assign(
+    rootOverrides,
+    workerRuntime.envUpdates,
+    doclingCeilingEnvUpdates(workerRuntime.choice),
+  );
 
   const encryption = encryptionPrompt.selection;
 

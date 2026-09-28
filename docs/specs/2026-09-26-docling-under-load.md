@@ -219,9 +219,18 @@ Each phase leaves the application working.
 
 - [ ] **C1.** Docling status on the setup page (per D5); transition logs;
   the non-strict PDF fallback logged at `error`.
-- [ ] **C2.** Sizing section in `docs/document-processing.md` and the Docling
+- [x] **C2.** Sizing section in `docs/document-processing.md` and the Docling
   runbook: CPU/RAM per concurrent conversion, `ENG_LOC_NUM_WORKERS`, how the
   ceiling relates to it; `create-ragen-app` writes the ceiling and says why.
+  *Done.* Measured on the local Docling (2–4-page PDFs, 5 CPUs): one
+  conversion takes ~`DOCLING_NUM_THREADS` cores, so two side by side need ~8
+  and on fewer they halve each other's speed; 1.5 GiB idle, ~0.5 GiB per
+  conversion. The installer writes `DOCLING_MAX_CONCURRENCY=4` under BullMQ
+  only, outside the runtime seam; `docling-ceiling-agrees` holds the worker,
+  Helm, `.env.example` and the installer to one default. It does **not**
+  write `DOCLING_SERVE_MAX_SYNC_WAIT`: compose sets the Docling side as a
+  literal, so a line in `.env` would move the worker and not the server —
+  the disagreement A2 removed.
 - [ ] **C3.** Measure: the jobs load test run with PDFs through a real Docling
   (the demo corpus, `e15d46c10:scripts/demo-corpus/files`) at ceilings 2/4/8,
   recording throughput and failures — the number the default rests on.

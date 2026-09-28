@@ -90,6 +90,30 @@ export const DEFAULT_ADMIN_USER = 'admin';
  */
 export const DEFAULT_WORKER_CONCURRENCY = '20';
 
+/**
+ * How many ingests the whole deployment runs at once — and so how many
+ * conversions Docling sees — whatever `WORKER_CONCURRENCY` allows.
+ *
+ * It matches the worker's own default (`DOCLING_MAX_CONCURRENCY` in
+ * `apps/worker/src/consts.ts`, spec 2026-09-26-docling-under-load, D2):
+ * docling-serve converts two at a time, so four keeps two converting and two
+ * waiting in its queue. Without a ceiling, a first bulk import sent twenty per
+ * worker replica to a Docling that could answer two, and under
+ * `DOCLING_STRICT` the ones it could not answer in time failed.
+ *
+ * **Written for the reason `WORKER_CONCURRENCY` is.** An install that meets
+ * slow ingests looks at `WORKER_CONCURRENCY` first, and raising that does
+ * nothing while this ceiling holds, so the knob that actually binds has to be
+ * in the file. It is also the one to change when Docling gets more CPU:
+ * raise it together with Docling's `DOCLING_SERVE_ENG_LOC_NUM_WORKERS`, never
+ * on its own (`docs/document-processing.md`, "Sizing Docling").
+ *
+ * **A constant, not a guess from the machine**, although here cores do
+ * matter: they are the cores of the Docling host, which this installer does
+ * not see and which is often not the machine it runs on.
+ */
+export const DEFAULT_DOCLING_MAX_CONCURRENCY = '4';
+
 export interface WorkerRuntimeAnswers {
   /** Blank takes `DEFAULT_TEMPORAL_SERVER_ADDRESS`. */
   temporalServerAddress: string;
@@ -146,4 +170,26 @@ export function resolveWorkerRuntimeSelection(
     },
     dashboard: { user: DEFAULT_ADMIN_USER, password, port },
   };
+}
+
+/**
+ * The Docling ceiling for the runtime chosen — written beside the runtime's own
+ * variables, but not by `resolveWorkerRuntimeSelection`.
+ *
+ * Kept out of that selection on purpose: the selection writes only what
+ * `WORKER_RUNTIME_SEAM` names, and `create-ragen-app-knows-the-provider-seams`
+ * holds it to that. The ceiling is a worker setting about Docling, not part of
+ * choosing a runtime, and adding it to the seam would give `ragen.config.ts` a
+ * field that has nothing to do with the queue.
+ *
+ * BullMQ only: the ceiling is BullMQ's global concurrency on the ingest job,
+ * and Temporal counts activities, so under Temporal the variable does nothing
+ * and writing it would be a knob that moves nothing.
+ */
+export function doclingCeilingEnvUpdates(
+  choice: WorkerRuntimeChoice,
+): Record<string, string> {
+  return choice === 'bullmq'
+    ? { DOCLING_MAX_CONCURRENCY: DEFAULT_DOCLING_MAX_CONCURRENCY }
+    : {};
 }

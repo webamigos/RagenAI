@@ -124,6 +124,13 @@ archive is the blog.
   fail after six seconds; a document Docling genuinely cannot read fails at
   once, with Docling's own reason. Helm now sets `DOCLING_SERVE_MAX_SYNC_WAIT`
   (300 s) like compose, instead of upstream's 120 s.
+- **Self-hosters get a sizing guide for Docling, and a fresh install writes
+  the parsing ceiling into `.env`.** One conversion uses about four cores, so
+  a second one in parallel only helps on a machine with eight; the guide says
+  how much CPU and memory Docling needs and which three settings to raise
+  together. `npm create ragen-app` now writes `DOCLING_MAX_CONCURRENCY=4`,
+  so the setting that actually limits ingest is in the file next to
+  `WORKER_CONCURRENCY`.
 
 ### Ragen Brain: an assistant beside the inbox
 
