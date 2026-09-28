@@ -152,6 +152,56 @@ describe('computeDocumentDiagnostics', () => {
   });
 
   describe('table-without-header', () => {
+    /** A sixty-row price table, as Markdown — tabele-bilingual-v1's shape. */
+    const priceTable = () =>
+      [
+        '# Service rates',
+        '',
+        '| Code | Service | Rate |',
+        '| --- | --- | --- |',
+        ...Array.from(
+          { length: 60 },
+          (_, i) =>
+            `| S-${100 + i} | Inspection of line ${i + 1} | ${40 + i}.00 |`,
+        ),
+      ].join('\n');
+
+    // C4: the mechanism ADR-43 measured, which C1 did not look for.
+    it('warns on the rows of a Markdown table the splitter cut from its header', () => {
+      const chunks = splitMarkdownDocuments([prose(priceTable())], {
+        chunkSize: 800,
+        chunkOverlap: 200,
+        keepSeparator: true,
+      });
+      const result = computeDocumentDiagnostics(
+        chunks,
+        FileType.MARKDOWN,
+        LEGACY,
+        NOW,
+      );
+      expect(chunks.length).toBeGreaterThan(2);
+      expect(finding(result, 'table-without-header')).toEqual({
+        check: 'table-without-header',
+        severity: 'warn',
+        // The heading lands in a chunk of its own and the first table chunk
+        // opens with the header: the three after it carry rows alone.
+        detail: { chunks: 3, source: 'split' },
+      });
+    });
+
+    it('does not mistake a short table, or one kept whole, for a cut one', () => {
+      const short =
+        '| Zone | Fare |\n| --- | --- |\n| A | 4.20 |\n| B | 5.80 |';
+      const twoRows = 'See below.\n| A | 4.20 |\n| B | 5.80 |';
+      const result = computeDocumentDiagnostics(
+        [prose(short), prose(twoRows)],
+        FileType.MARKDOWN,
+        LEGACY,
+        NOW,
+      );
+      expect(checks(result)).not.toContain('table-without-header');
+    });
+
     it('warns on a Docling table chunk with no flagged header row', () => {
       const tables = buildTableChunks(doclingTable(FARES, 0), 0, {
         budget: 1000,
@@ -352,6 +402,21 @@ describe('computeDocumentDiagnostics', () => {
   });
 
   describe('empty-chunks', () => {
+    // C4: a Docling spreadsheet's prose, once its table is excised, is only
+    // the pointer to the table chunk. By design, and nothing a person can fix.
+    it('does not count the pointer an excised table leaves behind', () => {
+      const tables = buildTableChunks(doclingTable(FARES, 1), 0, {
+        budget: 1000,
+      });
+      const result = computeDocumentDiagnostics(
+        [prose('[Table 1]'), ...tables],
+        FileType.XLSX,
+        DOCLING,
+        NOW,
+      );
+      expect(checks(result)).not.toContain('empty-chunks');
+    });
+
     it('warns on chunks that hold only a placeholder or whitespace', () => {
       const result = computeDocumentDiagnostics(
         [

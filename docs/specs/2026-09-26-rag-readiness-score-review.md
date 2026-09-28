@@ -629,9 +629,21 @@ already claims. B1 and B2 start only after A2's baseline is committed.
   nothing when there is nothing to report. The page passes the browser that
   one key, not the file's whole metadata. `p1-04` runs on a seeded report;
   the seed turns the key on for the test organization only.
-- [ ] **C4.** Validate the checks on the Phase A corpora. The raw-XML shape must
+- [x] **C4.** Validate the checks on the Phase A corpora. The raw-XML shape must
   raise "Parsed as markup". Docling with table chunks on must raise nothing
   about headers when Docling flagged them.
+
+  *Done:* `apps/web/evals/rag-benchmark/results/2026-09-27-document-diagnostics-on-the-phase-a-corpora.md`,
+  from `apps/worker/src/scripts/document-diagnostics-corpora.ts` — the
+  worker's own loaders and splitter, no model call, so it costs nothing to
+  re-run. Both requirements hold. The run found two defects in C1 and fixed
+  them: `table-without-header` did not look at a Markdown table the splitter
+  cut (ADR-43's mechanism, the one the table benchmark measured), and
+  `empty-chunks` counted the pointer an excised table leaves, which would
+  have badged every Docling spreadsheet. With both fixed, on the 15 table
+  points the check fires on 9 with a mean pass rate of 0.50 and is silent on
+  6 at 0.88; prose produces no finding in any shape. D4's comparison on demo
+  is what decides the default.
 
 ### Phase D — the LLM score's place after the measurement
 
