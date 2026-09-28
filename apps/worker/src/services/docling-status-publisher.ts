@@ -18,7 +18,27 @@ type Dependencies = {
   write: (value: string, ttlSeconds: number) => Promise<void>;
   log: Log;
   now?: () => Date;
+  /**
+   * Ask again before calling Docling down. One failed look is not an outage:
+   * the first probe runs while the worker is still importing its modules,
+   * and a blocked event loop lets `isDoclingAvailable`'s 5 s timeout fire on
+   * a Docling that answered. At boot that logged "Docling is unavailable"
+   * and published "down" for up to 30 s — 2 of 5 local starts on 2026-09-28,
+   * with Docling healthy — which the setup page would have shown as an
+   * outage. Off unless given, so a probe stays one look in its own tests.
+   */
+  confirmDown?: { delayMs: number; sleep?: (ms: number) => Promise<void> };
 };
+
+/**
+ * How long the publisher waits before asking again, when a look says Docling
+ * is down. Long enough for a worker to finish booting; short against the 30 s
+ * between probes, so a real outage is still reported on the probe that saw it.
+ */
+export const DOCLING_STATUS_CONFIRM_DELAY_MS = 5_000;
+
+const defaultSleep = (ms: number) =>
+  new Promise<void>((resolve) => setTimeout(resolve, ms));
 
 /**
  * One probe of Docling, published for apps/web, and logged when — only when —
@@ -37,11 +57,18 @@ export function createDoclingStatusProbe({
   write,
   log,
   now = () => new Date(),
+  confirmDown,
 }: Dependencies): () => Promise<DoclingStatus> {
   let last: DoclingStatus | null = null;
 
+  const look = () => check().catch(() => false);
+
   return async () => {
-    const up = await check().catch(() => false);
+    let up = await look();
+    if (!up && confirmDown) {
+      await (confirmDown.sleep ?? defaultSleep)(confirmDown.delayMs);
+      up = await look();
+    }
     const at = now().toISOString();
 
     if (last === null) {
@@ -85,11 +112,13 @@ export async function startDoclingStatusPublisher({
   log,
   check = isDoclingAvailable,
   intervalMs = DOCLING_STATUS_INTERVAL_MS,
+  confirmDelayMs = DOCLING_STATUS_CONFIRM_DELAY_MS,
 }: {
   redisUrl: string;
   log: Log;
   check?: () => Promise<boolean>;
   intervalMs?: number;
+  confirmDelayMs?: number;
 }): Promise<() => Promise<void>> {
   const { Redis } = await import('ioredis');
   const redis = new Redis(redisUrl, {
@@ -107,6 +136,7 @@ export async function startDoclingStatusPublisher({
       await redis.set(DOCLING_STATUS_KEY, value, 'EX', ttl);
     },
     log,
+    confirmDown: { delayMs: confirmDelayMs },
   });
 
   void probe();
