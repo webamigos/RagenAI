@@ -656,7 +656,7 @@ already claims. B1 and B2 start only after A2's baseline is committed.
   call less per ingest and per re-process, and an operator can still turn it
   on. Nothing is deleted. Stop rendering `ragScore` in the list and grid when
   `documentDiagnostics` is on.
-- [ ] **D2.** Scoring stays on demand in the Optimize tab, as the baseline for
+- [x] **D2.** Scoring stays on demand in the Optimize tab, as the baseline for
   suggestions. For tabular types (Q4), both the score and the
   `optimizeDocument` job are refused at the command, and the Optimize menu item
   and tab are hidden. "Tabular" means XLSX, CSV, or a document whose indexed
@@ -671,8 +671,21 @@ already claims. B1 and B2 start only after A2's baseline is committed.
   them (Optimize also for IMAGE, as the route already refused it). One list,
   `features/documents/utils/tabular-documents.ts`, replaces the route's and the
   tab's own copies; the score command had none. An old `?tab=optimize` link on
-  a spreadsheet opens the document. *Still open:* "mostly table chunks", which
-  reads `metadata.diagnostics.stats` and so waits for C2 and C3 to merge.
+  a spreadsheet opens the document.
+
+  *Second half done ("mostly table chunks"):* a document whose indexed chunks
+  are more than half table chunks (`MOSTLY_TABLE_SHARE = 0.5`, by
+  `metadata.diagnostics.stats`) is refused and hidden like a spreadsheet —
+  `canOptimizeDocument` in the same file, read by the route, both menus, the
+  preview and the tab. The Phase A table documents with table chunks on sit
+  at 0.83–0.86 and prose at 0, so nothing is near the line. No diagnostics
+  means "not computed" and the file type alone decides. The limit that
+  matters: table chunks exist only with `FEATURE_FLAG_TABLE_CHUNKS` on, so
+  without it a PDF price list keeps its tables inside prose chunks and is not
+  recognised. Not gated by `documentDiagnostics`: that key decides what the
+  panel shows, this is Q4's rule. The score command it would also have
+  refused is gone (D3), and Optimize's scoring step is reached only through
+  the route this refuses.
   No prose calibration: D1 settled the Optimize tab's score on A4's result
   (it tracked the edit), so the tab keeps its number.
 - [x] **D3.** Remove the "Oceń dla RAG" menu item. Its job becomes the Optimize

@@ -7,7 +7,7 @@ import { SuggestionDetailModal } from './SuggestionDetailModal';
 import { ScoreBadge } from './ScoreBadge';
 import { useOrgFeature } from '@/app/hooks/useOrgFeatures';
 import type { OptimizationSuggestion } from '@/features/documents/contracts/optimization-suggestion.types';
-import { canOptimizeFileType } from '@/features/documents/utils/tabular-documents';
+import { canOptimizeDocument } from '@/features/documents/utils/tabular-documents';
 
 type JobStatus = 'pending' | 'processing' | 'done' | 'failed';
 
@@ -217,7 +217,7 @@ export function OptimizeTab({ documentId, fileType }: Props) {
 
   // The tab is hidden for these (DocumentDetailTabs); this is what an old
   // `?tab=optimize` link, or any other way in, still meets.
-  if (!canOptimizeFileType(fileType)) {
+  if (!canOptimizeDocument({ fileType })) {
     return (
       <div className="py-8 text-center text-muted-foreground">
         {t('unsupported-file-type')}

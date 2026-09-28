@@ -108,7 +108,9 @@ archive is the blog.
   dla RAG".** Both are made for prose: the score grades headings and
   paragraphs, and Optimize suggests rewrites. For an XLSX or CSV file the menu
   items and the Optimize tab are gone, and the app refuses them if asked
-  directly. A spreadsheet that was read badly is re-processed instead.
+  directly. A spreadsheet that was read badly is re-processed instead. The
+  same goes for a document that is mostly tables once indexed, such as a PDF
+  price list, where tables are indexed as tables.
 - `[brief]` **"Score for RAG" moved into Optimize.** The menu item is gone; a
   document is scored when you press "Analyse" in its Optimize tab, which is
   where the score was useful — as the before of an edit. A document that

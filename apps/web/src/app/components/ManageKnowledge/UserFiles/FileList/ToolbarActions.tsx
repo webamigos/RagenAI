@@ -21,7 +21,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { canOptimizeFileType } from '@/features/documents/utils/tabular-documents';
+import { canOptimizeDocument } from '@/features/documents/utils/tabular-documents';
 
 type ToolbarActionsProps = {
   fileId: string;
@@ -32,6 +32,11 @@ type ToolbarActionsProps = {
    * spreadsheet or an image — spec Q4, D2.
    */
   fileType?: string;
+  /**
+   * The file's metadata, for its diagnostics: a document that is mostly table
+   * chunks is not offered Optimize either (spec D2).
+   */
+  metadata?: unknown;
   folderId?: number | null;
   toggleModal: (fileId: string | null) => void;
   onMove?: (fileId: string) => void;
@@ -55,6 +60,7 @@ export const ToolbarActions = ({
   documentId,
   fileName,
   fileType,
+  metadata,
   toggleModal,
   onMove,
   onShare,
@@ -151,7 +157,7 @@ export const ToolbarActions = ({
           "Analyse" in its Optimize tab, where the score is the baseline the
           suggestions are measured against rather than a grade on its own.
         */}
-        {documentId && canOptimizeFileType(fileType) && (
+        {documentId && canOptimizeDocument({ fileType, metadata }) && (
           <DropdownMenuItem
             onClick={() =>
               router.push(
