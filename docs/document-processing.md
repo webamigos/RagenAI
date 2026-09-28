@@ -24,7 +24,7 @@ decide it, and they have to be set together
 | --- | --- | --- | --- |
 | `DOCLING_SERVE_ENG_LOC_NUM_WORKERS` | the Docling service | `2` (upstream; nothing here sets it) | conversions docling-serve runs at once; the rest wait in its own queue |
 | `DOCLING_NUM_THREADS` (`OMP_NUM_THREADS`) | the Docling service | `4` (compose, `infra/docling/Dockerfile`) | CPU threads one conversion uses |
-| `DOCLING_MAX_CONCURRENCY` | apps/worker | `4` (worker, Helm, `create-ragen-app`) | ingests the whole deployment runs at once, across every worker replica — so conversions Docling is sent at once |
+| `DOCLING_MAX_CONCURRENCY` | apps/worker, BullMQ runtime only | `4` (worker, Helm, `create-ragen-app`) | ingests the whole deployment runs at once, across every worker replica — so conversions Docling is sent at once. Temporal counts activities, not jobs, and does not read it |
 
 **Measured, 2026-09-28**, on docling-serve-cpu `v1.32.0` in a Docker VM with 5
 CPUs and 8 GiB, with the options the worker sends (OCR on, `table_mode:
@@ -57,7 +57,7 @@ What follows from it:
   (`DOCLING_SERVE_ENG_LOC_SHARE_MODELS` is off upstream). Measured, a
   converting document added about 0.5 GiB; the rest is headroom for longer
   ones, not a number anyone has taken.
-- **Keep `DOCLING_MAX_CONCURRENCY` at about twice `ENG_LOC_NUM_WORKERS`**
+- **On BullMQ, keep `DOCLING_MAX_CONCURRENCY` at about twice `ENG_LOC_NUM_WORKERS`**
   (times the number of Docling replicas, if you run several behind a load
   balancer). Two per worker keeps Docling busy between documents. More than
   that only moves the queue from Redis, where the worker can see it, into
@@ -69,6 +69,6 @@ What follows from it:
   mean four conversions.
 
 To add capacity, give Docling cores first, then raise
-`DOCLING_SERVE_ENG_LOC_NUM_WORKERS` and `DOCLING_MAX_CONCURRENCY` in the same
-change. To measure a machine of your own, see "Capacity" in
+`DOCLING_SERVE_ENG_LOC_NUM_WORKERS` and (on BullMQ) `DOCLING_MAX_CONCURRENCY`
+in the same change. To measure a machine of your own, see "Capacity" in
 [`runbooks/docling-upgrade.md`](runbooks/docling-upgrade.md).

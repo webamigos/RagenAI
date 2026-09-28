@@ -76,17 +76,20 @@ measurement is there too.
 docker stats --format '{{.CPUPerc}} {{.MemUsage}}' <docling-container>
 
 # In another shell: N conversions at once, with the options apps/worker sends
+N=2   # the number in flight: run with 1, 2 and 4
 python3 -c "import base64,json,sys;print(json.dumps({'options':{'to_formats':['md','json'],'do_ocr':True,'table_mode':'accurate','image_export_mode':'placeholder','do_table_structure':True},'sources':[{'kind':'file','base64_string':base64.b64encode(open(sys.argv[1],'rb').read()).decode(),'filename':'test.pdf'}]}))" /path/to/a/test.pdf > body.json
-for i in 1 2; do
+for i in $(seq "$N"); do
   curl -s -o /dev/null -w "%{http_code} %{time_total}s\n" -X POST http://localhost:5001/v1/convert/source \
     -H "Content-Type: application/json" --data-binary @body.json &
 done; wait
 ```
 
-Run it once and discard the result: the first conversion on each Docling worker
-loads its models and is several times slower. Then 1, 2 and 4 at once. If two
-take twice as long as one, the host has no cores for a second worker and
-raising the ceiling will not help.
+Warm up first and discard the result: the first conversion on each Docling
+worker loads its models and is several times slower, so run it once with `N`
+at least `DOCLING_SERVE_ENG_LOC_NUM_WORKERS` and wait until every request has
+returned. Then measure with `N=1`, `N=2` and `N=4`. If two take twice as long
+as one, the host has no cores for a second worker and raising the ceiling will
+not help.
 
 ## Rollback
 
