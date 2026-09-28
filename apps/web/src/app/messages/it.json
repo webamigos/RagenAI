@@ -364,7 +364,8 @@
     "supported-formats": "Compatibile con",
     "send-and-process": "Invia ed elabora",
     "drop-to-upload": "Rilascia i file per caricarli",
-    "remove-file": "Rimuovi {name}"
+    "remove-file": "Rimuovi {name}",
+    "parser-unavailable": "Il parser dei documenti non è disponibile dalle {since}. L'elaborazione dei file caricati potrebbe richiedere più tempo."
   },
   "create-document": {
     "title": "Crea documento",
@@ -2363,7 +2364,8 @@
       "target-env": "Assegna un nome all'implementazione. Se non è impostata, le tracce e le metriche non riportano alcun ambiente e i link email non hanno un valore predefinito locale.",
       "message-encryption": "I messaggi delle conversazioni vengono archiviati in testo semplice. Questo va bene in locale; imposta uno di questi valori prima che vi entrino conversazioni reali.",
       "embeddings-dimension-mismatch": "EMBEDDINGS_MODEL={model} produce vettori con {expected} dimensioni, ma VECTOR_SIZE è {configured}. Qdrant rifiuta ogni upsert, quindi nessun documento diventa ricercabile.",
-      "object-storage-credentials": "STORAGE_PROVIDER=s3 è impostato, ma parte della sua configurazione è mancante. I caricamenti e i download non riescono finché questi valori non vengono impostati — usa il prefisso S3_ (S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY, S3_REGION), non AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY / AWS_DEFAULT_REGION, che sono riservati ad AWS Bedrock e AWS KMS."
+      "object-storage-credentials": "STORAGE_PROVIDER=s3 è impostato, ma parte della sua configurazione è mancante. I caricamenti e i download non riescono finché questi valori non vengono impostati — usa il prefisso S3_ (S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY, S3_REGION), non AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY / AWS_DEFAULT_REGION, che sono riservati ad AWS Bedrock e AWS KMS.",
+      "docling-unavailable": "Il parser dei documenti (Docling) non è raggiungibile dalle {since, time, short}. I caricamenti lo attendono o usano il parser di riserva: verifica che il suo container sia in esecuzione."
     },
     "database-unreachable-see-logs": "I dettagli si trovano nel log del server."
   },

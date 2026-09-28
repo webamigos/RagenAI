@@ -364,7 +364,8 @@
     "supported-formats": "Compatible avec",
     "send-and-process": "Envoyer et traiter",
     "drop-to-upload": "Dépose les fichiers pour les téléverser",
-    "remove-file": "Supprimer {name}"
+    "remove-file": "Supprimer {name}",
+    "parser-unavailable": "L'analyseur de documents est indisponible depuis {since}. Le traitement des fichiers envoyés peut prendre plus de temps."
   },
   "create-document": {
     "title": "Créer un document",
@@ -2363,7 +2364,8 @@
       "target-env": "Nomme le déploiement. Si elle n'est pas définie, les traces et métriques ne rapportent aucun environnement, et les liens e-mail n'ont pas de repli local.",
       "message-encryption": "Les messages des fils sont stockés en texte clair. C'est correct en local ; définis l'une de ces valeurs avant que de vraies conversations n'y entrent.",
       "embeddings-dimension-mismatch": "EMBEDDINGS_MODEL={model} produit des vecteurs à {expected} dimensions, mais VECTOR_SIZE est {configured}. Qdrant rejette chaque upsert, donc aucun document ne devient consultable.",
-      "object-storage-credentials": "STORAGE_PROVIDER=s3 est défini, mais une partie de sa configuration est manquante. Les téléversements et téléchargements échouent tant que ces valeurs ne sont pas définies — utilise le préfixe S3_ (S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY, S3_REGION), pas AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY / AWS_DEFAULT_REGION, qui sont réservés à AWS Bedrock et AWS KMS."
+      "object-storage-credentials": "STORAGE_PROVIDER=s3 est défini, mais une partie de sa configuration est manquante. Les téléversements et téléchargements échouent tant que ces valeurs ne sont pas définies — utilise le préfixe S3_ (S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY, S3_REGION), pas AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY / AWS_DEFAULT_REGION, qui sont réservés à AWS Bedrock et AWS KMS.",
+      "docling-unavailable": "L'analyseur de documents (Docling) est injoignable depuis {since, time, short}. Les fichiers envoyés l'attendent ou passent par l'analyseur de secours : vérifiez que son conteneur tourne."
     },
     "database-unreachable-see-logs": "Les détails se trouvent dans le journal du serveur."
   },

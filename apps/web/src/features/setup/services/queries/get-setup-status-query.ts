@@ -5,6 +5,7 @@ import { logger } from '@/app/lib/utils/logger';
 
 import type { DatabaseProbe, SetupStatus } from '../../contracts/types';
 import { inspectEnvironment } from './inspect-environment';
+import { getParserStatusQuery } from '@/features/parsing/services/queries/get-parser-status-query';
 import { backfillClaimIfAdminExists, isInstallClaimed } from '../install-claim';
 
 /**
@@ -48,6 +49,23 @@ export async function getSetupStatusQuery(): Promise<SetupStatus> {
       reachable: false,
       message: process.env.NODE_ENV === 'production' ? undefined : detail,
     };
+  }
+
+  // Docling's outage, as the worker last saw it (Docling spec C1, D5). A
+  // runtime state rather than a configuration mistake, so it is only ever
+  // `recommended`: sign-in works without it, uploads wait or fall back. No
+  // address or detail, because this page is shown before anyone signs in.
+  const parser = await getParserStatusQuery();
+  if (parser.state === 'down') {
+    report.findings.push({
+      id: 'docling-unavailable',
+      severity: 'recommended',
+      vars: ['DOCLING_URL'],
+      // A timestamp, formatted by the message (`{since, time, short}`): this
+      // runs on the server, which does not know the reader's locale.
+      values: { since: Date.parse(parser.since) },
+      example: 'docker compose ps docling',
+    });
   }
 
   return { report, database, adminExists, claimed };

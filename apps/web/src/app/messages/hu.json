@@ -364,7 +364,8 @@
     "supported-formats": "Kompatibilis a következőkkel",
     "send-and-process": "Küldés és feldolgozás",
     "drop-to-upload": "Engedd el a fájlokat a feltöltéshez",
-    "remove-file": "{name} eltávolítása"
+    "remove-file": "{name} eltávolítása",
+    "parser-unavailable": "A dokumentumelemző {since} óta nem érhető el. A feltöltött fájlok feldolgozása tovább tarthat."
   },
   "create-document": {
     "title": "Dokumentum létrehozása",
@@ -2363,7 +2364,8 @@
       "target-env": "Elnevezi a telepítést. Ha nincs beállítva, a nyomkövetések és metrikák nem jelentenek környezetet, és az e-mail linkeknek nincs helyi alapértelmezésük.",
       "message-encryption": "A beszélgetések üzenetei egyszerű szövegként tárolódnak. Ez helyileg rendben van; állítsd be az egyiket ezek közül, mielőtt valódi beszélgetések kerülnének bele.",
       "embeddings-dimension-mismatch": "Az EMBEDDINGS_MODEL={model} {expected} dimenziójú vektorokat állít elő, de a VECTOR_SIZE {configured}. A Qdrant elutasít minden upsertet, így egyetlen dokumentum sem válik kereshetővé.",
-      "object-storage-credentials": "A STORAGE_PROVIDER=s3 be van állítva, de a konfigurációjának egy része hiányzik. A feltöltések és letöltések addig sikertelenek, amíg ezeket az értékeket be nem állítod — használd az S3_ előtagot (S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY, S3_REGION), ne az AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY / AWS_DEFAULT_REGION-t, amelyek az AWS Bedrocknak és az AWS KMS-nek vannak fenntartva."
+      "object-storage-credentials": "A STORAGE_PROVIDER=s3 be van állítva, de a konfigurációjának egy része hiányzik. A feltöltések és letöltések addig sikertelenek, amíg ezeket az értékeket be nem állítod — használd az S3_ előtagot (S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY, S3_REGION), ne az AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY / AWS_DEFAULT_REGION-t, amelyek az AWS Bedrocknak és az AWS KMS-nek vannak fenntartva.",
+      "docling-unavailable": "A dokumentumelemző (Docling) {since, time, short} óta nem érhető el. A feltöltések rá várnak vagy a tartalék elemzőt használják, ezért ellenőrizze, hogy fut-e a konténere."
     },
     "database-unreachable-see-logs": "A részletek a szerver naplójában találhatók."
   },

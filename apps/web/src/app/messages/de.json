@@ -364,7 +364,8 @@
     "supported-formats": "Unterstützt",
     "send-and-process": "Senden und verarbeiten",
     "drop-to-upload": "Dateien zum Hochladen ablegen",
-    "remove-file": "{name} entfernen"
+    "remove-file": "{name} entfernen",
+    "parser-unavailable": "Der Dokumentparser ist seit {since} nicht verfügbar. Die Verarbeitung hochgeladener Dateien kann länger dauern."
   },
   "create-document": {
     "title": "Dokument erstellen",
@@ -2363,7 +2364,8 @@
       "target-env": "Benennt die Bereitstellung. Ohne Festlegung melden Traces und Metriken keine Umgebung, und E-Mail-Links haben keinen lokalen Fallback.",
       "message-encryption": "Nachrichten in Threads werden als Klartext gespeichert. Lokal in Ordnung; lege einen dieser Werte fest, bevor echte Unterhaltungen stattfinden.",
       "embeddings-dimension-mismatch": "EMBEDDINGS_MODEL={model} erzeugt {expected}-dimensionale Vektoren, aber VECTOR_SIZE ist {configured}. Qdrant lehnt jeden Upsert ab, sodass kein Dokument durchsuchbar wird.",
-      "object-storage-credentials": "STORAGE_PROVIDER=s3 ist festgelegt, aber ein Teil der Konfiguration fehlt. Uploads und Downloads schlagen fehl, bis diese festgelegt sind — verwende das S3_-Präfix (S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY, S3_REGION), nicht AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY / AWS_DEFAULT_REGION, die für AWS Bedrock und AWS KMS reserviert sind."
+      "object-storage-credentials": "STORAGE_PROVIDER=s3 ist festgelegt, aber ein Teil der Konfiguration fehlt. Uploads und Downloads schlagen fehl, bis diese festgelegt sind — verwende das S3_-Präfix (S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY, S3_REGION), nicht AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY / AWS_DEFAULT_REGION, die für AWS Bedrock und AWS KMS reserviert sind.",
+      "docling-unavailable": "Der Dokumentparser (Docling) ist seit {since, time, short} nicht erreichbar. Uploads warten auf ihn oder nutzen den Ersatzparser – prüfen Sie, ob sein Container läuft."
     },
     "database-unreachable-see-logs": "Die Details stehen im Server-Log."
   },

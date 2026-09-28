@@ -364,7 +364,8 @@
     "supported-formats": "Kompatibel med",
     "send-and-process": "Send og behandl",
     "drop-to-upload": "Slip filerne for at uploade dem",
-    "remove-file": "Fjern {name}"
+    "remove-file": "Fjern {name}",
+    "parser-unavailable": "Dokumentparseren har været utilgængelig siden {since}. Det kan tage længere tid at behandle uploadede filer."
   },
   "create-document": {
     "title": "Opret dokument",
@@ -2363,7 +2364,8 @@
       "target-env": "Navngiver udrulningen. Hvis den ikke er angivet, rapporterer spor og målinger intet miljø, og e-maillinks har ingen lokal standardværdi.",
       "message-encryption": "Beskeder i samtaler gemmes som klartekst. Det er fint lokalt; angiv en af disse værdier, før rigtige samtaler kommer ind der.",
       "embeddings-dimension-mismatch": "EMBEDDINGS_MODEL={model} producerer vektorer med {expected} dimensioner, men VECTOR_SIZE er {configured}. Qdrant afviser hver upsert, så intet dokument bliver søgbart.",
-      "object-storage-credentials": "STORAGE_PROVIDER=s3 er angivet, men en del af dens konfiguration mangler. Uploads og downloads mislykkes, indtil disse værdier er angivet — brug S3_-præfikset (S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY, S3_REGION), ikke AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY / AWS_DEFAULT_REGION, som er reserveret til AWS Bedrock og AWS KMS."
+      "object-storage-credentials": "STORAGE_PROVIDER=s3 er angivet, men en del af dens konfiguration mangler. Uploads og downloads mislykkes, indtil disse værdier er angivet — brug S3_-præfikset (S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY, S3_REGION), ikke AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY / AWS_DEFAULT_REGION, som er reserveret til AWS Bedrock og AWS KMS.",
+      "docling-unavailable": "Dokumentparseren (Docling) har ikke kunnet nås siden {since, time, short}. Uploads venter på den eller bruger reserveparseren, så kontrollér, at dens container kører."
     },
     "database-unreachable-see-logs": "Detaljerne findes i serverens log."
   },

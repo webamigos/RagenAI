@@ -130,6 +130,10 @@ archive is the blog.
   instead of spending its retries on a service that is away. A file whose
   Docling stays down longer fails with the time it went down, and one
   *Re-process* recovers it. A cancelled upload stops waiting.
+- `[brief]` **You can see when the document parser is down.** While Docling
+  is unavailable, the upload dialog says since when and that files may take
+  longer, and the setup page lists it as something to check. Nothing is shown
+  when the state is not known.
 - `[brief]` **A Docling outage is two lines in the worker's log.** The worker
   now checks Docling every 30 seconds and logs one error when it goes down and
   one line when it comes back, instead of nothing until a file failed. A PDF
