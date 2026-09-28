@@ -1281,6 +1281,8 @@
     "status-ready": "Klar",
     "status-processing": "Bearbetas",
     "status-queued": "I kö",
+    "status-waiting-parser": "Väntar på parser",
+    "waiting-parser-tooltip": "Dokumentparsern har varit otillgänglig sedan {since}. Filen bearbetas när den är tillbaka.",
     "status-failed": "Misslyckades",
     "status-uploading": "Laddar upp",
     "optimize-rag": "Optimera för RAG",

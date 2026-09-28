@@ -150,4 +150,62 @@ describe('UserFilesTable — the columns phase 7 names', () => {
     const nameCell = screen.getByText('legacy-import-notes.txt').closest('td')!;
     expect(nameCell.querySelectorAll('svg')).toHaveLength(0);
   });
+
+  // Docling spec B2: a file waiting for its parser says so, and why.
+  describe('a file waiting for its parser', () => {
+    const waiting = (metadata: unknown) =>
+      makeFile({
+        embeddingStatus: EmbeddingStatus.NOT_STARTED,
+        metadata,
+      } as Partial<UserFileTypeSafe>);
+
+    it('reads "Waiting for parser", with since when in its tooltip', () => {
+      renderTable({
+        files: [
+          waiting({
+            waitingFor: {
+              parser: 'docling',
+              since: '2026-09-28T07:15:00.000Z',
+            },
+          }),
+        ],
+      });
+      const badge = screen.getByTestId('status-waiting-parser');
+      expect(badge).toHaveTextContent('Waiting for parser');
+      expect(badge.getAttribute('title')).toMatch(/unavailable since .*09:15/);
+    });
+
+    it.each([
+      ['no reason', {}],
+      ['a reason the worker cleared', { waitingFor: null }],
+      [
+        'a reason about another parser',
+        { waitingFor: { parser: 'x', since: '2026-09-28T07:15:00.000Z' } },
+      ],
+    ])('is plainly queued with %s', (_, metadata) => {
+      renderTable({ files: [waiting(metadata)] });
+      expect(
+        screen.queryByTestId('status-waiting-parser'),
+      ).not.toBeInTheDocument();
+      expect(screen.getByText('Queued')).toBeInTheDocument();
+    });
+
+    it('does not override a finished file', () => {
+      renderTable({
+        files: [
+          makeFile({
+            metadata: {
+              waitingFor: {
+                parser: 'docling',
+                since: '2026-09-28T07:15:00.000Z',
+              },
+            },
+          } as Partial<UserFileTypeSafe>),
+        ],
+      });
+      expect(
+        screen.queryByTestId('status-waiting-parser'),
+      ).not.toBeInTheDocument();
+    });
+  });
 });

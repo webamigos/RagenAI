@@ -1281,6 +1281,8 @@
     "status-ready": "Kész",
     "status-processing": "Feldolgozás alatt",
     "status-queued": "Sorban áll",
+    "status-waiting-parser": "Elemzőre vár",
+    "waiting-parser-tooltip": "A dokumentumelemző {since} óta nem érhető el. A fájl feldolgozása akkor történik meg, amikor ismét elérhető.",
     "status-failed": "Sikertelen",
     "status-uploading": "Feltöltés folyamatban",
     "optimize-rag": "Optimalizálás RAG-hoz",

@@ -1281,6 +1281,8 @@
     "status-ready": "Valmis",
     "status-processing": "Käsitellään",
     "status-queued": "Jonossa",
+    "status-waiting-parser": "Odottaa jäsennintä",
+    "waiting-parser-tooltip": "Asiakirjojen jäsennin on ollut poissa käytöstä klo {since} alkaen. Tiedosto käsitellään, kun se palaa.",
     "status-failed": "Epäonnistui",
     "status-uploading": "Ladataan",
     "optimize-rag": "Optimoi RAG:ia varten",

@@ -1281,6 +1281,8 @@
     "status-ready": "Готово",
     "status-processing": "Обробляється",
     "status-queued": "У черзі",
+    "status-waiting-parser": "Очікує на парсер",
+    "waiting-parser-tooltip": "Парсер документів недоступний з {since}. Файл буде оброблено, коли він повернеться.",
     "status-failed": "Не вдалося",
     "status-uploading": "Завантажується",
     "optimize-rag": "Оптимізувати для RAG",

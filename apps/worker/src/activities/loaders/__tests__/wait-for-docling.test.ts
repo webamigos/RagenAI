@@ -1,16 +1,24 @@
 import { describe, expect, it, vi } from 'vitest';
 
-vi.mock('../../../services/db/index.js', () => ({
-  db: { isIngestCancelled: vi.fn() },
+const db = vi.hoisted(() => ({
+  isIngestCancelled: vi.fn(async () => false),
+  mergeFileMetadata: vi.fn(
+    async (_args: {
+      where: { fileId: string; orgId: string };
+      patch: Record<string, unknown>;
+    }) => 1,
+  ),
 }));
-vi.mock('../../../services/docling-health.js', () => ({
-  isDoclingUp: vi.fn(),
-}));
+const isDoclingUp = vi.hoisted(() => vi.fn(async () => true));
+
+vi.mock('../../../services/db/index.js', () => ({ db }));
+vi.mock('../../../services/docling-health.js', () => ({ isDoclingUp }));
 vi.mock('../../../services/logger.js', () => ({
   logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() },
 }));
 
-const { waitForDoclingWith } = await import('../wait-for-docling.js');
+const { waitForDocling, waitForDoclingWith } =
+  await import('../wait-for-docling.js');
 
 /** A fake clock that `sleep` moves, so no test waits for real. */
 function harness(upAfter: number | null, cancelAfter: number | null = null) {
@@ -68,5 +76,70 @@ describe('waitForDoclingWith (spec B1)', () => {
     });
     // The last pause is cut to the limit rather than overshooting it.
     expect(sleeps.reduce((a, b) => a + b, 0)).toBe(5 * 60_000);
+  });
+});
+
+describe('waitForDoclingWith — onWaiting', () => {
+  it('reports the wait once, with when it began, and not at all when Docling is up', async () => {
+    const up = harness(0);
+    const onUp = vi.fn(async () => undefined);
+    await waitForDoclingWith({ ...up.deps, onWaiting: onUp });
+    expect(onUp).not.toHaveBeenCalled();
+
+    const down = harness(3);
+    const onDown = vi.fn(async () => undefined);
+    await waitForDoclingWith({ ...down.deps, onWaiting: onDown });
+    expect(onDown).toHaveBeenCalledTimes(1);
+    expect(onDown).toHaveBeenCalledWith(new Date(0).toISOString());
+  });
+});
+
+// Spec B2: the reason is on the row while the file waits, and gone after.
+describe('waitForDocling — the reason on the row', () => {
+  it('writes nothing when Docling is up', async () => {
+    db.mergeFileMetadata.mockClear();
+    isDoclingUp.mockResolvedValue(true);
+
+    await waitForDocling({ fileId: 'file-1', orgId: 'org-1' });
+
+    expect(db.mergeFileMetadata).not.toHaveBeenCalled();
+  });
+
+  it('records what the file waits for, then clears it when the wait ends', async () => {
+    vi.useFakeTimers();
+    try {
+      db.mergeFileMetadata.mockClear();
+      isDoclingUp.mockResolvedValueOnce(false).mockResolvedValue(true);
+
+      const done = waitForDocling({ fileId: 'file-1', orgId: 'org-1' });
+      await vi.advanceTimersByTimeAsync(5_000);
+      await expect(done).resolves.toMatchObject({ outcome: 'available' });
+
+      const patches = db.mergeFileMetadata.mock.calls.map(([arg]) => arg.patch);
+      expect(patches).toEqual([
+        { waitingFor: { parser: 'docling', since: expect.any(String) } },
+        { waitingFor: null },
+      ]);
+      expect(db.mergeFileMetadata.mock.calls[0][0]).toMatchObject({
+        where: { fileId: 'file-1', orgId: 'org-1' },
+      });
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('keeps waiting when the reason cannot be written', async () => {
+    vi.useFakeTimers();
+    try {
+      db.mergeFileMetadata.mockRejectedValue(new Error('db down'));
+      isDoclingUp.mockResolvedValueOnce(false).mockResolvedValue(true);
+
+      const done = waitForDocling({ fileId: 'file-1', orgId: 'org-1' });
+      await vi.advanceTimersByTimeAsync(5_000);
+      await expect(done).resolves.toMatchObject({ outcome: 'available' });
+    } finally {
+      vi.useRealTimers();
+      db.mergeFileMetadata.mockResolvedValue(1);
+    }
   });
 });

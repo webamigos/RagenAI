@@ -51,6 +51,8 @@ type Props = {
   state: StatusBadgeState;
   /** Always a word. The caller translates it; this component never does. */
   label: string;
+  /** Why the row is in this state, as a tooltip. Optional; the word is the state. */
+  title?: string;
   className?: string;
   'data-testid'?: string;
 };
@@ -58,6 +60,7 @@ type Props = {
 export function StatusBadge({
   state,
   label,
+  title,
   className,
   'data-testid': testId,
 }: Props) {
@@ -69,6 +72,7 @@ export function StatusBadge({
       // is a property of the row, not an event, so it is read as text.
       data-state={state}
       data-testid={testId}
+      title={title}
       className={cn(
         'inline-flex h-5 items-center gap-1.5 rounded-[4px] px-2 text-[11px] font-medium',
         styles.pill,

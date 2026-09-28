@@ -1281,6 +1281,8 @@
     "status-ready": "Pripravené",
     "status-processing": "Spracúva sa",
     "status-queued": "V poradí",
+    "status-waiting-parser": "Čaká na parser",
+    "waiting-parser-tooltip": "Parser dokumentov je nedostupný od {since}. Súbor sa spracuje, keď bude opäť k dispozícii.",
     "status-failed": "Zlyhalo",
     "status-uploading": "Nahrávanie",
     "optimize-rag": "Optimalizovať pre RAG",

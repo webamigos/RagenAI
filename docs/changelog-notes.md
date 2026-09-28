@@ -131,6 +131,9 @@ archive is the blog.
   is up and waits for it if it is not, looking again every minute at most,
   instead of spending its retries on a service that is away. A file whose
   Docling stays down longer fails with the time it went down, and one
+  *Re-process* recovers it. A cancelled upload stops waiting. While it waits,
+  the file reads "Waiting for parser" in the knowledge base, with the time the
+  parser went down in its tooltip, instead of looking like any queued upload.
   *Re-process* recovers it. A cancelled upload stops waiting.
 - **Self-hosters get a sizing guide for Docling, and a fresh install writes
   the parsing ceiling into `.env`.** One conversion uses about four cores, so

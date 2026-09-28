@@ -203,14 +203,34 @@ export type ModalStateProps = {
   fileId: UserFile['id'] | null;
 };
 
+/**
+ * `UserFile.metadata.waitingFor`, written by the worker while a strict ingest
+ * waits for its parser to come back (spec 2026-09-26-docling-under-load, B2).
+ * The status stays NOT_STARTED (D3), so this is the only place the reason is.
+ */
+function waitingForParserSince(metadata: unknown): string | null {
+  if (!metadata || typeof metadata !== 'object') {
+    return null;
+  }
+  const waiting = (metadata as { waitingFor?: unknown }).waitingFor;
+  if (!waiting || typeof waiting !== 'object') {
+    return null;
+  }
+  const { parser, since } = waiting as { parser?: unknown; since?: unknown };
+  return parser === 'docling' && typeof since === 'string' ? since : null;
+}
+
 function FileStatusBadge({
   embeddingStatus,
   parsingStatus,
+  metadata,
 }: {
   embeddingStatus?: EmbeddingStatus;
   parsingStatus?: ParsingStatus;
+  metadata?: unknown;
 }) {
   const t = useTranslations('files-table');
+  const format = useFormatter();
 
   if (embeddingStatus === EmbeddingStatus.COMPLETED) {
     return <StatusBadge state="ready" label={t('status-ready')} />;
@@ -242,6 +262,32 @@ function FileStatusBadge({
     parsingStatus === ParsingStatus.STARTED
   ) {
     return <StatusBadge state="processing" label={t('status-processing')} />;
+  }
+
+  // Picked up, and waiting for a parser that is down. Still `queued` — nothing
+  // is being processed, and amber would say the file is at fault — with the
+  // word and the tooltip carrying why (panel rule 27).
+  const waitingSince = waitingForParserSince(metadata);
+  if (waitingSince) {
+    const since = new Date(waitingSince);
+    return (
+      <StatusBadge
+        state="queued"
+        label={t('status-waiting-parser')}
+        title={t('waiting-parser-tooltip', {
+          since: Number.isNaN(since.getTime())
+            ? waitingSince
+            : // 24-hour, like the date column beside it and the rest of
+              // the panel.
+              format.dateTime(since, {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false,
+              }),
+        })}
+        data-testid="status-waiting-parser"
+      />
+    );
   }
 
   // NOT_STARTED — uploaded, waiting for a worker to pick it up. This used to
@@ -449,6 +495,7 @@ const FileRow = ({
             <FileStatusBadge
               embeddingStatus={file.embeddingStatus}
               parsingStatus={file.parsingStatus}
+              metadata={file.metadata}
             />
             {canManageOrg === true &&
               file.embeddingStatus === EmbeddingStatus.STAGED && (

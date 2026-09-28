@@ -226,8 +226,18 @@ Each phase leaves the application working.
   with "Docling has been unavailable since …". A constant, not an
   environment variable, until someone needs another value. Phases A1–A3 were
   delivered in #1403.
-- [ ] **B2.** The waiting reason on the row and in the knowledge base list
+- [x] **B2.** The waiting reason on the row and in the knowledge base list
   (per D3).
+
+  *Done.* `waitForDocling` writes `metadata.waitingFor = { parser: 'docling',
+  since }` the first time it sees Docling down, and clears it to `null`
+  however the wait ends; both writes are best-effort, so a database hiccup
+  cannot turn a wait into a failure. The status stays `NOT_STARTED` — B1's
+  follow-up moved the gate before parsing is marked `STARTED` for exactly
+  this — and the list's badge reads "Waiting for parser", neutral like
+  "Queued", with "unavailable since HH:MM" as its tooltip. The spec's
+  `attempts` counter is left out: the time the wait began is what a person
+  can act on.
 
 ### Phase C — see it, size it
 
