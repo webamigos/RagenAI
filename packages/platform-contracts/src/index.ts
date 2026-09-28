@@ -193,3 +193,11 @@ export type {
   ProjectSharedDetails,
   ThreadSharedDetails,
 } from './notifications/notification-details';
+
+export {
+  DOCLING_STATUS_INTERVAL_MS,
+  DOCLING_STATUS_KEY,
+  DOCLING_STATUS_TTL_SECONDS,
+  readDoclingStatus,
+} from './parsing/docling-status';
+export type { DoclingStatus } from './parsing/docling-status';

@@ -85,6 +85,8 @@ async function run() {
   const runtime = resolveWorkerRuntime();
   logger.info({ runtime }, 'starting worker');
 
+  await startDoclingStatus();
+
   if (runtime === 'bullmq') {
     await runBullMq();
     return;
@@ -122,6 +124,33 @@ async function run() {
     },
   );
   await runTemporal();
+}
+
+/**
+ * Docling's health, probed and published for apps/web's setup page and
+ * knowledge base (spec 2026-09-26-docling-under-load, C1). Both runtimes,
+ * since both parse with Docling; only where Docling is the parser and there
+ * is a Redis to publish to. Never fatal: a view for the panel must not stop
+ * a worker from starting.
+ */
+async function startDoclingStatus(): Promise<void> {
+  const { DOCUMENT_PARSER } = await import('./consts.js');
+  const redisUrl = process.env.REDIS_URL;
+  if (DOCUMENT_PARSER !== 'docling' || !redisUrl) {
+    return;
+  }
+  try {
+    const { startDoclingStatusPublisher } =
+      await import('./services/docling-status-publisher.js');
+    const { registerShutdownTask } = await import('./instrument.js');
+    const stop = await startDoclingStatusPublisher({ redisUrl, log: logger });
+    registerShutdownTask(stop);
+  } catch (error) {
+    logger.warn(
+      { errorName: (error as Error)?.name },
+      'Docling status is not published; the panel will show it as unknown',
+    );
+  }
 }
 
 run().catch((err) => {

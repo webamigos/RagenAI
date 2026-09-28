@@ -130,6 +130,11 @@ archive is the blog.
   instead of spending its retries on a service that is away. A file whose
   Docling stays down longer fails with the time it went down, and one
   *Re-process* recovers it. A cancelled upload stops waiting.
+- `[brief]` **A Docling outage is two lines in the worker's log.** The worker
+  now checks Docling every 30 seconds and logs one error when it goes down and
+  one line when it comes back, instead of nothing until a file failed. A PDF
+  that falls back to the external parser is logged as an error, since it left
+  the deployment.
 
 ### Ragen Brain: an assistant beside the inbox
 
