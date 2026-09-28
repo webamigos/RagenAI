@@ -141,6 +141,14 @@ cloned repo's own `.env.example` already has it. See the file's own comments
 for the sharing rules (some secrets are the same value in two files, most are
 independent).
 
+Under BullMQ it also writes two worker ceilings explicitly, although both equal
+the code's defaults: `WORKER_CONCURRENCY=20` and `DOCLING_MAX_CONCURRENCY=4`
+(`src/worker-runtime.ts`). The second is the one that binds ingest — twenty
+worker slots still send Docling four documents at a time — so it has to be in
+the file where an operator looks first. How to size it against Docling's CPU
+and memory: "Sizing Docling" in the app repository's
+`docs/document-processing.md`.
+
 ## Testing a change before publishing
 
 `npm pack` reproduces exactly what npm would serve — it honours `files`,

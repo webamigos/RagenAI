@@ -174,6 +174,7 @@ export const FileCard = ({
             documentId={document?.id}
             fileName={fileName}
             fileType={fileType}
+            metadata={file.metadata}
             toggleModal={toggleModal}
             canDelete={canDelete}
             isLoading={deleteLoading ?? isLoading}

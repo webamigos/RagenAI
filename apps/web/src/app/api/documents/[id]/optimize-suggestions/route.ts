@@ -12,7 +12,7 @@ import {
   canAccessDocument,
 } from '@/features/documents/services/queries/get-document-actor';
 import { logger } from '@/app/lib/utils/logger';
-import { canOptimizeFileType } from '@/features/documents/utils/tabular-documents';
+import { canOptimizeDocument } from '@/features/documents/utils/tabular-documents';
 
 export const dynamic = 'force-dynamic';
 
@@ -47,6 +47,9 @@ export async function POST(
       id: true,
       fileType: true,
       fileExtension: true,
+      // For the diagnostics' stats: a document that is mostly table chunks
+      // is refused like a spreadsheet (spec D2).
+      metadata: true,
       document: {
         select: { id: true, content: true, title: true, projectId: true },
       },
@@ -64,7 +67,10 @@ export async function POST(
     return NextResponse.json({ error: 'Not found' }, { status: 404 });
   }
 
-  if (file && !canOptimizeFileType(file.fileType)) {
+  if (
+    file &&
+    !canOptimizeDocument({ fileType: file.fileType, metadata: file.metadata })
+  ) {
     return NextResponse.json(
       { error: 'File type not supported for optimization' },
       { status: 422 },

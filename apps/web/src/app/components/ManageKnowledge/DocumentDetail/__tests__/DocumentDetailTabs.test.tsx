@@ -21,7 +21,7 @@ import { DocumentDetailTabs } from '../DocumentDetailTabs';
 
 const t = messages['document-versions'];
 
-function show(fileType: string | null) {
+function show(fileType: string | null, diagnostics?: unknown) {
   render(
     <NextIntlClientProvider locale="en" messages={messages}>
       <DocumentDetailTabs
@@ -30,6 +30,7 @@ function show(fileType: string | null) {
           title: 'Cennik',
           content: '| A | 4.20 |',
           file: fileType ? { fileType } : null,
+          diagnostics,
         }}
       />
     </NextIntlClientProvider>,
@@ -63,5 +64,30 @@ describe('DocumentDetailTabs — Optimize (spec Q4, D2)', () => {
     searchParams.tab = 'optimize';
     show(type);
     expect(screen.getByTestId('optimize-tab')).toBeInTheDocument();
+  });
+
+  it('has no Optimize tab for a PDF that is mostly table chunks', () => {
+    searchParams.tab = 'optimize';
+    show(
+      'PDF',
+      {
+        diagnostics: {
+          version: 1,
+          computedAt: '2026-09-27T12:00:00.000Z',
+          findings: [],
+          stats: {
+            chunkCount: 7,
+            tableChunkCount: 6,
+            medianChunkChars: 700,
+            sectionPathShare: null,
+            overlapShare: 0,
+          },
+        },
+      }.diagnostics,
+    );
+    expect(screen.queryByTestId('optimize-tab')).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('tab', { name: t['tab-optimize'] }),
+    ).not.toBeInTheDocument();
   });
 });

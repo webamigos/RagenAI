@@ -108,7 +108,9 @@ archive is the blog.
   dla RAG".** Both are made for prose: the score grades headings and
   paragraphs, and Optimize suggests rewrites. For an XLSX or CSV file the menu
   items and the Optimize tab are gone, and the app refuses them if asked
-  directly. A spreadsheet that was read badly is re-processed instead.
+  directly. A spreadsheet that was read badly is re-processed instead. The
+  same goes for a document that is mostly tables once indexed, such as a PDF
+  price list, where tables are indexed as tables.
 - `[brief]` **"Score for RAG" moved into Optimize.** The menu item is gone; a
   document is scored when you press "Analyse" in its Optimize tab, which is
   where the score was useful — as the before of an edit. A document that
@@ -134,6 +136,14 @@ archive is the blog.
   is unavailable, the upload dialog says since when and that files may take
   longer, and the setup page lists it as something to check. Nothing is shown
   when the state is not known.
+- **Self-hosters get a sizing guide for Docling, and a fresh install writes
+  the parsing ceiling into `.env`.** One conversion uses about four cores, so
+  a second one in parallel only helps on a machine with eight; the guide says
+  how much CPU and memory Docling needs and which three settings to raise
+  together. On the BullMQ runtime, `npm create ragen-app` now writes
+  `DOCLING_MAX_CONCURRENCY=4`, so the setting that actually limits ingest is
+  in the file next to `WORKER_CONCURRENCY`; a Temporal install gets nothing,
+  because Temporal does not read it.
 - `[brief]` **A Docling outage is two lines in the worker's log.** The worker
   now checks Docling every 30 seconds and logs one error when it goes down and
   one line when it comes back, instead of nothing until a file failed. A PDF
