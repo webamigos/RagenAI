@@ -12,6 +12,12 @@ import {
   resolveLlmProviderChoice,
   type LlmProviderChoice,
 } from '../../packages/create-ragen-app/src/llm-provider';
+import {
+  doclingCeilingEnvUpdates,
+  WORKER_RUNTIME_LABELS,
+  resolveWorkerRuntimeSelection,
+  type WorkerRuntimeChoice,
+} from '../../packages/create-ragen-app/src/worker-runtime';
 
 /**
  * `packages/create-ragen-app` writes generated secrets and corrected local
@@ -90,6 +96,29 @@ describe('create-ragen-app manifest stays current', () => {
       expect(
         keysByTarget.root.has(key),
         `packages/create-ragen-app/src/llm-provider.ts writes ${key} into the root .env.local, but the root .env.example has no such line. applyEnvOverrides treats that as a missing key and stops the install.`,
+      ).toBe(true);
+    },
+  );
+
+  // The worker-runtime step is the same shape: its keys bypass MANIFEST and a
+  // missing line stops the install. `DOCLING_MAX_CONCURRENCY` is the one most
+  // likely to go, since the template carries it commented out.
+  const workerRuntimeKeys = (
+    Object.keys(WORKER_RUNTIME_LABELS) as WorkerRuntimeChoice[]
+  ).flatMap((choice) =>
+    Object.keys({
+      ...resolveWorkerRuntimeSelection(choice, { temporalServerAddress: '' })
+        .envUpdates,
+      ...doclingCeilingEnvUpdates(choice),
+    }).map((key) => [choice, key] as const),
+  );
+
+  it.each(workerRuntimeKeys)(
+    'the %s runtime writes %s, which the root .env.example still has',
+    (_choice, key) => {
+      expect(
+        keysByTarget.root.has(key),
+        `packages/create-ragen-app/src/worker-runtime.ts writes ${key} into the root .env.local, but the root .env.example has no such line. applyEnvOverrides treats that as a missing key and stops the install.`,
       ).toBe(true);
     },
   );

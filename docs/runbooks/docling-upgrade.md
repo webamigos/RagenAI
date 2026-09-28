@@ -19,7 +19,7 @@ step, and no schema-migration risk.
 ## Pre-upgrade
 
 1. **Pin the target tag and check it exists**: `docker manifest inspect ghcr.io/docling-project/docling-serve-cpu:<tag>` before writing it anywhere.
-2. **Read the changelog** (`https://github.com/docling-project/docling-serve/blob/main/CHANGELOG.md`) for every version between current and target. Flag anything touching `/v1/convert/source`, `/health`, or the env vars this repo sets (`DOCLING_SERVE_MAX_SYNC_WAIT`, `DOCLING_SERVE_LOAD_MODELS_AT_BOOT`, `DOCLING_SERVE_ENABLE_UI`, `DOCLING_NUM_THREADS`) — everything else is noise for our usage.
+2. **Read the changelog** (`https://github.com/docling-project/docling-serve/blob/main/CHANGELOG.md`) for every version between current and target. Flag anything touching `/v1/convert/source`, `/health`, or the env vars this repo sets or depends on (`DOCLING_SERVE_MAX_SYNC_WAIT`, `DOCLING_SERVE_LOAD_MODELS_AT_BOOT`, `DOCLING_SERVE_ENABLE_UI`, `DOCLING_NUM_THREADS`, and the upstream default of `DOCLING_SERVE_ENG_LOC_NUM_WORKERS`, which `DOCLING_MAX_CONCURRENCY` is sized against) — everything else is noise for our usage.
 3. **Cross-check the client** in `apps/worker/src/services/docling-client.ts` and `apps/worker/src/utils/docling.ts` against the target version's API docs.
 4. **Announce** the upgrade window if this is staging/production — Docling reloads its models at boot (`DOCLING_SERVE_LOAD_MODELS_AT_BOOT=true`), so the container takes noticeably longer than LiteLLM to report healthy (budget minutes, not seconds).
 
@@ -61,6 +61,35 @@ curl -s -X POST http://localhost:5001/v1/convert/source \
 ```
 
 Then run an actual document ingest through the worker (upload a real file in a local org) and confirm parsing succeeds end to end — `apps/worker/src/activities/loaders/load-docling.ts` is the code path this exercises.
+
+## Capacity
+
+An upgrade can change how much CPU and memory one conversion takes, so
+re-measure after one, and on any new Docling host. What the numbers mean for
+`DOCLING_SERVE_ENG_LOC_NUM_WORKERS`, `DOCLING_NUM_THREADS` and the worker's
+`DOCLING_MAX_CONCURRENCY` is in "Sizing Docling" in
+[`../document-processing.md`](../document-processing.md); the last recorded
+measurement is there too.
+
+```bash
+# Sample the container while conversions run (Ctrl-C to stop)
+docker stats --format '{{.CPUPerc}} {{.MemUsage}}' <docling-container>
+
+# In another shell: N conversions at once, with the options apps/worker sends
+N=2   # the number in flight: run with 1, 2 and 4
+python3 -c "import base64,json,sys;print(json.dumps({'options':{'to_formats':['md','json'],'do_ocr':True,'table_mode':'accurate','image_export_mode':'placeholder','do_table_structure':True},'sources':[{'kind':'file','base64_string':base64.b64encode(open(sys.argv[1],'rb').read()).decode(),'filename':'test.pdf'}]}))" /path/to/a/test.pdf > body.json
+for i in $(seq "$N"); do
+  curl -s -o /dev/null -w "%{http_code} %{time_total}s\n" -X POST http://localhost:5001/v1/convert/source \
+    -H "Content-Type: application/json" --data-binary @body.json &
+done; wait
+```
+
+Warm up first and discard the result: the first conversion on each Docling
+worker loads its models and is several times slower, so run it once with `N`
+at least `DOCLING_SERVE_ENG_LOC_NUM_WORKERS` and wait until every request has
+returned. Then measure with `N=1`, `N=2` and `N=4`. If two take twice as long
+as one, the host has no cores for a second worker and raising the ceiling will
+not help.
 
 ## Rollback
 

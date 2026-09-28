@@ -119,6 +119,7 @@ const ROOT_TEMPLATE = [
   'WORKER_RUNTIME=bullmq',
   'REDIS_URL=redis://localhost:56379',
   'WORKER_CONCURRENCY=',
+  '# DOCLING_MAX_CONCURRENCY=',
   'TEMPORAL_SERVER_ADDRESS=',
   '# WORKER_ADMIN_PORT=',
   '# WORKER_ADMIN_USER=',
@@ -380,6 +381,8 @@ describe('run', () => {
 
     expect(String(rootEnv?.[1])).toContain('WORKER_RUNTIME=bullmq');
     expect(String(rootEnv?.[1])).toContain('REDIS_URL=redis://localhost:56379');
+    // Uncommented from the template's `# DOCLING_MAX_CONCURRENCY=` line.
+    expect(String(rootEnv?.[1])).toContain('DOCLING_MAX_CONCURRENCY=4');
     // Unattended answers the shipped default rather than asking, so nothing
     // above prompted for it.
     expect(clack.select).not.toHaveBeenCalled();
@@ -412,6 +415,7 @@ describe('run', () => {
     expect(String(rootEnv?.[1])).toContain(
       'TEMPORAL_SERVER_ADDRESS=temporal.internal:7233',
     );
+    expect(String(rootEnv?.[1])).toContain('# DOCLING_MAX_CONCURRENCY=');
     expect(clack.log.warn).toHaveBeenCalledWith(
       expect.stringContaining('docker-compose.yml'),
     );

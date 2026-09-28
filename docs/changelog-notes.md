@@ -132,6 +132,14 @@ archive is the blog.
   instead of spending its retries on a service that is away. A file whose
   Docling stays down longer fails with the time it went down, and one
   *Re-process* recovers it. A cancelled upload stops waiting.
+- **Self-hosters get a sizing guide for Docling, and a fresh install writes
+  the parsing ceiling into `.env`.** One conversion uses about four cores, so
+  a second one in parallel only helps on a machine with eight; the guide says
+  how much CPU and memory Docling needs and which three settings to raise
+  together. On the BullMQ runtime, `npm create ragen-app` now writes
+  `DOCLING_MAX_CONCURRENCY=4`, so the setting that actually limits ingest is
+  in the file next to `WORKER_CONCURRENCY`; a Temporal install gets nothing,
+  because Temporal does not read it.
 - `[brief]` **A Docling outage is two lines in the worker's log.** The worker
   now checks Docling every 30 seconds and logs one error when it goes down and
   one line when it comes back, instead of nothing until a file failed. A PDF
