@@ -364,7 +364,8 @@
     "supported-formats": "Compatible con",
     "send-and-process": "Enviar y procesar",
     "drop-to-upload": "Suelta los archivos para subirlos",
-    "remove-file": "Eliminar {name}"
+    "remove-file": "Eliminar {name}",
+    "parser-unavailable": "El analizador de documentos no está disponible desde las {since}. Los archivos subidos pueden tardar más en procesarse."
   },
   "create-document": {
     "title": "Crear documento",
@@ -2365,7 +2366,8 @@
       "target-env": "Nombra el despliegue. Si no se establece, las trazas y métricas no reportan ningún entorno, y los enlaces de correo no tienen un valor local de reserva al que recurrir.",
       "message-encryption": "Los mensajes de los hilos se almacenan en texto plano. Está bien localmente; establece uno de estos antes de que entren conversaciones reales.",
       "embeddings-dimension-mismatch": "EMBEDDINGS_MODEL={model} produce vectores de {expected} dimensiones, pero VECTOR_SIZE es {configured}. Qdrant rechaza cada inserción, así que ningún documento se vuelve buscable.",
-      "object-storage-credentials": "STORAGE_PROVIDER=s3 está establecido, pero falta parte de su configuración. Las subidas y descargas fallan hasta que se establezcan estos valores — usa el prefijo S3_ (S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY, S3_REGION), no AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY / AWS_DEFAULT_REGION, que están reservados para AWS Bedrock y AWS KMS."
+      "object-storage-credentials": "STORAGE_PROVIDER=s3 está establecido, pero falta parte de su configuración. Las subidas y descargas fallan hasta que se establezcan estos valores — usa el prefijo S3_ (S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY, S3_REGION), no AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY / AWS_DEFAULT_REGION, que están reservados para AWS Bedrock y AWS KMS.",
+      "docling-unavailable": "El analizador de documentos (Docling) no responde desde las {since, time, short}. Las subidas lo esperan o usan el analizador alternativo; comprueba que su contenedor esté en marcha."
     },
     "database-unreachable-see-logs": "Los detalles están en el registro del servidor."
   },

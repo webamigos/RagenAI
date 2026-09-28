@@ -364,7 +364,8 @@
     "supported-formats": "Compatível com",
     "send-and-process": "Enviar e processar",
     "drop-to-upload": "Solte os arquivos para enviá-los",
-    "remove-file": "Remover {name}"
+    "remove-file": "Remover {name}",
+    "parser-unavailable": "O analisador de documentos está indisponível desde {since}. Os arquivos enviados podem demorar mais para ser processados."
   },
   "create-document": {
     "title": "Criar documento",
@@ -2365,7 +2366,8 @@
       "target-env": "Nomeia a implantação. Se não estiver definida, os traces e métricas não relatam nenhum ambiente, e os links de e-mail não têm um padrão local.",
       "message-encryption": "As mensagens das conversas são armazenadas em texto simples. Isso é aceitável localmente; defina um desses valores antes que conversas reais entrem nele.",
       "embeddings-dimension-mismatch": "EMBEDDINGS_MODEL={model} produz vetores com {expected} dimensões, mas VECTOR_SIZE é {configured}. O Qdrant rejeita cada upsert, então nenhum documento se torna pesquisável.",
-      "object-storage-credentials": "STORAGE_PROVIDER=s3 está definido, mas parte da sua configuração está ausente. Os envios e downloads falham até que esses valores sejam definidos — use o prefixo S3_ (S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY, S3_REGION), não AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY / AWS_DEFAULT_REGION, que são reservados para AWS Bedrock e AWS KMS."
+      "object-storage-credentials": "STORAGE_PROVIDER=s3 está definido, mas parte da sua configuração está ausente. Os envios e downloads falham até que esses valores sejam definidos — use o prefixo S3_ (S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY, S3_REGION), não AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY / AWS_DEFAULT_REGION, que são reservados para AWS Bedrock e AWS KMS.",
+      "docling-unavailable": "O analisador de documentos (Docling) está inacessível desde {since, time, short}. Os envios aguardam por ele ou usam o analisador alternativo; verifique se o contêiner dele está em execução."
     },
     "database-unreachable-see-logs": "Os detalhes estão no log do servidor."
   },

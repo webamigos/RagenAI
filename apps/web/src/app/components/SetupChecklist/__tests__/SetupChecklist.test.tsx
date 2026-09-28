@@ -125,4 +125,24 @@ describe('SetupChecklist', () => {
     );
     expect(screen.getByText(messages.setup.title)).toBeInTheDocument();
   });
+
+  // Docling spec C1: the outage's time comes as a timestamp and is formatted
+  // by the message itself, in the reader's locale.
+  it('renders a Docling outage with the time it began', () => {
+    renderChecklist({
+      hasBlockingIssues: false,
+      findings: [
+        {
+          id: 'docling-unavailable',
+          severity: 'recommended',
+          vars: ['DOCLING_URL'],
+          values: { since: Date.parse('2026-09-28T07:15:00.000Z') },
+          example: 'docker compose ps docling',
+        },
+      ],
+    });
+    expect(
+      screen.getByTestId('setup-finding-docling-unavailable'),
+    ).toHaveTextContent(/not been reachable since \d{1,2}:\d{2}/);
+  });
 });

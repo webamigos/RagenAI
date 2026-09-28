@@ -364,7 +364,8 @@
     "supported-formats": "Kompatibel med",
     "send-and-process": "Skicka och bearbeta",
     "drop-to-upload": "Släpp filerna för att ladda upp dem",
-    "remove-file": "Ta bort {name}"
+    "remove-file": "Ta bort {name}",
+    "parser-unavailable": "Dokumentparsern har varit otillgänglig sedan {since}. Det kan ta längre tid att bearbeta uppladdade filer."
   },
   "create-document": {
     "title": "Skapa dokument",
@@ -2365,7 +2366,8 @@
       "target-env": "Namnger driftsättningen. Om den inte är angiven rapporterar spårningar och mätvärden ingen miljö, och e-postlänkar har inget lokalt standardvärde.",
       "message-encryption": "Meddelanden i konversationer lagras som vanlig text. Det är okej lokalt; ange ett av dessa värden innan riktiga konversationer hamnar där.",
       "embeddings-dimension-mismatch": "EMBEDDINGS_MODEL={model} producerar vektorer med {expected} dimensioner, men VECTOR_SIZE är {configured}. Qdrant avvisar varje upsert, så inget dokument blir sökbart.",
-      "object-storage-credentials": "STORAGE_PROVIDER=s3 är angiven, men en del av dess konfiguration saknas. Uppladdningar och nedladdningar misslyckas tills dessa värden är angivna — använd prefixet S3_ (S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY, S3_REGION), inte AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY / AWS_DEFAULT_REGION, som är reserverade för AWS Bedrock och AWS KMS."
+      "object-storage-credentials": "STORAGE_PROVIDER=s3 är angiven, men en del av dess konfiguration saknas. Uppladdningar och nedladdningar misslyckas tills dessa värden är angivna — använd prefixet S3_ (S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY, S3_REGION), inte AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY / AWS_DEFAULT_REGION, som är reserverade för AWS Bedrock och AWS KMS.",
+      "docling-unavailable": "Dokumentparsern (Docling) har inte gått att nå sedan {since, time, short}. Uppladdningar väntar på den eller använder reservparsern, så kontrollera att dess container körs."
     },
     "database-unreachable-see-logs": "Detaljerna finns i serverns logg."
   },

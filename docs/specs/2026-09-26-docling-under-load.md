@@ -241,7 +241,7 @@ Each phase leaves the application working.
 
 ### Phase C — see it, size it
 
-- [ ] **C1.** Docling status on the setup page (per D5); transition logs;
+- [x] **C1.** Docling status on the setup page (per D5); transition logs;
   the non-strict PDF fallback logged at `error`.
 
   *Worker half done (C1a).* apps/web cannot probe Docling itself — `DOCLING_URL`
@@ -252,8 +252,15 @@ Each phase leaves the application working.
   reads as unknown, not as its last answer. One `error` on going down and one
   `info` on recovery, not a line per probe. The non-strict fallback logs at
   `error` for a PDF (it goes to an external model) and `warn` otherwise.
-  *Still open (C1b):* the setup page and the knowledge base warning, reading
-  that key.
+  *Panel half done (C1b).* `getParserStatusQuery` reads that key and answers
+  `up`, `down` with its `since`, or `unknown` — no Redis, nothing published,
+  stale, malformed, or a failed read — and `unknown` shows nothing anywhere.
+  The setup page adds a `recommended` finding, `docling-unavailable`, with the
+  time and no address or detail, since it renders before sign-in. The upload
+  dialog asks when it opens (a signed-in server action) and, while Docling is
+  down, says the parser has been unavailable since HH:MM and that files may
+  take longer. The wording holds whether or not the worker runs strict,
+  which apps/web cannot see: strict files wait, others fall back.
 - [x] **C2.** Sizing section in `docs/document-processing.md` and the Docling
   runbook: CPU/RAM per concurrent conversion, `ENG_LOC_NUM_WORKERS`, how the
   ceiling relates to it; `create-ragen-app` writes the ceiling and says why.

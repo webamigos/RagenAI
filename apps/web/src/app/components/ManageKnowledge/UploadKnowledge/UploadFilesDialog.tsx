@@ -1,13 +1,15 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useTranslations } from 'next-intl';
+import { useFormatter, useTranslations } from 'next-intl';
 import { Dialog, DialogTitle } from '@ragenai/common-ui/Dialog';
 import { Button } from '@ragenai/common-ui/Button';
 import { XMarkIcon, DocumentIcon } from '@heroicons/react/24/outline';
 import prettyBytes from 'pretty-bytes';
 import { PiiPolicySelect, type PiiPolicyValue } from '../PiiPolicySelect';
 import { useOrganization } from '@/app/hooks/use-auth';
+import { getParserStatusAction } from '@/app/actions';
+import type { ParserStatus } from '@/features/parsing/services/queries/get-parser-status-query';
 
 type Props = {
   isOpen: boolean;
@@ -35,10 +37,32 @@ export function UploadFilesDialog({
   const tFolders = useTranslations('folders');
   const { canManageOrg } = useOrganization();
   const [piiPolicy, setPiiPolicy] = useState<PiiPolicyValue>(initialPiiPolicy);
+  const [parser, setParser] = useState<ParserStatus>({ state: 'unknown' });
+  const format = useFormatter();
 
   useEffect(() => {
     setPiiPolicy(initialPiiPolicy);
   }, [initialPiiPolicy, isOpen]);
+
+  // Read when the dialog opens, which is when an outage matters to the person
+  // about to upload (Docling spec C1, D5). A failed read leaves it unknown,
+  // and unknown shows nothing.
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+    let active = true;
+    getParserStatusAction()
+      .then((status) => {
+        if (active) {
+          setParser(status);
+        }
+      })
+      .catch(() => undefined);
+    return () => {
+      active = false;
+    };
+  }, [isOpen]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -75,6 +99,22 @@ export function UploadFilesDialog({
             </li>
           ))}
         </ul>
+
+        {parser.state === 'down' && (
+          <p
+            role="status"
+            data-testid="parser-unavailable"
+            className="rounded-md bg-pending-tint px-3 py-2 text-xs text-pending dark:bg-pending/30"
+          >
+            {t('parser-unavailable', {
+              since: format.dateTime(new Date(parser.since), {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false,
+              }),
+            })}
+          </p>
+        )}
 
         <div>
           {isDualContent && (

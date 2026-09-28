@@ -15,6 +15,10 @@ import { reembedFileCommand } from '@/features/documents/services/commands/reemb
 import { cancelFileEmbeddingCommand } from '@/features/documents/services/commands/cancel-file-embedding-command';
 import type { RegenerateData } from '@/features/messages/services/commands/regenerate-assistant-message-command';
 import type { OperationResult } from '@/types/common';
+import {
+  getParserStatusQuery,
+  type ParserStatus,
+} from '@/features/parsing/services/queries/get-parser-status-query';
 import { saveOrganizationPublicMetadataCommand } from '@/features/organizations/services/commands/save-organization-metadata-command';
 import { logger } from '../lib/utils/logger';
 import { getAccountSetupStatusQuery as getAccountSetupStatus } from '@/features/organizations/services/queries/get-account-setup-query';
@@ -448,4 +452,17 @@ export async function getPiiIngestionModeAction(): Promise<PiiIngestionMode> {
   const orgId = await getOrgIdFromAuthOrThrow();
   await requireOrgAdmin(orgId);
   return getPiiIngestionMode(orgId);
+}
+
+/**
+ * The document parser's status, for the upload dialog's warning (Docling
+ * spec C1). Signed-in only: the status says nothing secret, but a panel read
+ * has no business answering an anonymous caller.
+ */
+export async function getParserStatusAction(): Promise<ParserStatus> {
+  const orgId = await getOrgIdFromAuth();
+  if (!orgId) {
+    return { state: 'unknown' };
+  }
+  return getParserStatusQuery();
 }

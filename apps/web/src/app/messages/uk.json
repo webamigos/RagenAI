@@ -364,7 +364,8 @@
     "supported-formats": "Сумісно з",
     "send-and-process": "Надіслати й обробити",
     "drop-to-upload": "Відпусти файли, щоб завантажити їх",
-    "remove-file": "Видалити {name}"
+    "remove-file": "Видалити {name}",
+    "parser-unavailable": "Парсер документів недоступний з {since}. Обробка завантажених файлів може тривати довше."
   },
   "create-document": {
     "title": "Створити документ",
@@ -2365,7 +2366,8 @@
       "target-env": "Дає ім'я розгортанню. Якщо не задано, трасування та метрики не повідомляють про жодне середовище, а посилання в листах не мають локального резервного варіанту.",
       "message-encryption": "Повідомлення розмов зберігаються у вигляді звичайного тексту. Локально це нормально; задай одне з цих значень, перш ніж туди потраплять реальні розмови.",
       "embeddings-dimension-mismatch": "EMBEDDINGS_MODEL={model} створює вектори з {expected} вимірами, але VECTOR_SIZE дорівнює {configured}. Qdrant відхиляє кожен upsert, тому жоден документ не стає доступним для пошуку.",
-      "object-storage-credentials": "STORAGE_PROVIDER=s3 задано, але частина його конфігурації відсутня. Завантаження та вивантаження не вдаються, доки ці значення не задано — використовуй префікс S3_ (S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY, S3_REGION), а не AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY / AWS_DEFAULT_REGION, які зарезервовано для AWS Bedrock та AWS KMS."
+      "object-storage-credentials": "STORAGE_PROVIDER=s3 задано, але частина його конфігурації відсутня. Завантаження та вивантаження не вдаються, доки ці значення не задано — використовуй префікс S3_ (S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY, S3_REGION), а не AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY / AWS_DEFAULT_REGION, які зарезервовано для AWS Bedrock та AWS KMS.",
+      "docling-unavailable": "Парсер документів (Docling) недоступний з {since, time, short}. Завантаження чекають на нього або використовують резервний парсер, тож перевірте, чи працює його контейнер."
     },
     "database-unreachable-see-logs": "Деталі можна знайти в журналі сервера."
   },

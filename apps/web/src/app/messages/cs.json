@@ -364,7 +364,8 @@
     "supported-formats": "Kompatibilní s",
     "send-and-process": "Odeslat a zpracovat",
     "drop-to-upload": "Upusťte soubory pro jejich nahrání",
-    "remove-file": "Odebrat {name}"
+    "remove-file": "Odebrat {name}",
+    "parser-unavailable": "Parser dokumentů je nedostupný od {since}. Zpracování nahraných souborů může trvat déle."
   },
   "create-document": {
     "title": "Vytvořit dokument",
@@ -2365,7 +2366,8 @@
       "target-env": "Pojmenovává nasazení. Pokud není nastavena, trasování a metriky nehlásí žádné prostředí a e-mailové odkazy nemají žádnou místní výchozí hodnotu.",
       "message-encryption": "Zprávy konverzací se ukládají jako prostý text. To je v pořádku lokálně; nastavte jednu z těchto hodnot, než se tam dostanou skutečné konverzace.",
       "embeddings-dimension-mismatch": "EMBEDDINGS_MODEL={model} produkuje vektory s {expected} dimenzemi, ale VECTOR_SIZE je {configured}. Qdrant odmítá každý upsert, takže žádný dokument nebude vyhledatelný.",
-      "object-storage-credentials": "STORAGE_PROVIDER=s3 je nastaven, ale část jeho konfigurace chybí. Nahrávání a stahování selhávají, dokud nejsou tyto hodnoty nastaveny — použijte předponu S3_ (S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY, S3_REGION), nikoli AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY / AWS_DEFAULT_REGION, které jsou vyhrazeny pro AWS Bedrock a AWS KMS."
+      "object-storage-credentials": "STORAGE_PROVIDER=s3 je nastaven, ale část jeho konfigurace chybí. Nahrávání a stahování selhávají, dokud nejsou tyto hodnoty nastaveny — použijte předponu S3_ (S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY, S3_REGION), nikoli AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY / AWS_DEFAULT_REGION, které jsou vyhrazeny pro AWS Bedrock a AWS KMS.",
+      "docling-unavailable": "Parser dokumentů (Docling) není dostupný od {since, time, short}. Nahrané soubory na něj čekají nebo použijí záložní parser, proto ověřte, že jeho kontejner běží."
     },
     "database-unreachable-see-logs": "Podrobnosti naleznete v protokolu serveru."
   },

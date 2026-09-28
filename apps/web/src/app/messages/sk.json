@@ -364,7 +364,8 @@
     "supported-formats": "Kompatibilné s",
     "send-and-process": "Odoslať a spracovať",
     "drop-to-upload": "Pustite súbory pre ich nahratie",
-    "remove-file": "Odstrániť {name}"
+    "remove-file": "Odstrániť {name}",
+    "parser-unavailable": "Parser dokumentov je nedostupný od {since}. Spracovanie nahraných súborov môže trvať dlhšie."
   },
   "create-document": {
     "title": "Vytvoriť dokument",
@@ -2365,7 +2366,8 @@
       "target-env": "Pomenúva nasadenie. Ak nie je nastavená, trasovania a metriky nehlásia žiadne prostredie a e-mailové odkazy nemajú žiadnu miestnu predvolenú hodnotu.",
       "message-encryption": "Správy konverzácií sa ukladajú ako obyčajný text. To je lokálne v poriadku; nastavte jednu z týchto hodnôt skôr, ako sa tam dostanú skutočné konverzácie.",
       "embeddings-dimension-mismatch": "EMBEDDINGS_MODEL={model} produkuje vektory s {expected} dimenziami, ale VECTOR_SIZE je {configured}. Qdrant odmieta každý upsert, takže žiadny dokument nebude vyhľadateľný.",
-      "object-storage-credentials": "STORAGE_PROVIDER=s3 je nastavený, ale časť jeho konfigurácie chýba. Nahrávanie a sťahovanie zlyhávajú, kým nie sú tieto hodnoty nastavené — použite predponu S3_ (S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY, S3_REGION), nie AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY / AWS_DEFAULT_REGION, ktoré sú vyhradené pre AWS Bedrock a AWS KMS."
+      "object-storage-credentials": "STORAGE_PROVIDER=s3 je nastavený, ale časť jeho konfigurácie chýba. Nahrávanie a sťahovanie zlyhávajú, kým nie sú tieto hodnoty nastavené — použite predponu S3_ (S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY, S3_REGION), nie AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY / AWS_DEFAULT_REGION, ktoré sú vyhradené pre AWS Bedrock a AWS KMS.",
+      "docling-unavailable": "Parser dokumentov (Docling) nie je dostupný od {since, time, short}. Nahrané súbory naň čakajú alebo použijú záložný parser, preto overte, že jeho kontajner beží."
     },
     "database-unreachable-see-logs": "Podrobnosti nájdete v protokole servera."
   },

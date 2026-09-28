@@ -135,6 +135,10 @@ archive is the blog.
   the file reads "Waiting for parser" in the knowledge base, with the time the
   parser went down in its tooltip, instead of looking like any queued upload.
   *Re-process* recovers it. A cancelled upload stops waiting.
+- `[brief]` **You can see when the document parser is down.** While Docling
+  is unavailable, the upload dialog says since when and that files may take
+  longer, and the setup page lists it as something to check. Nothing is shown
+  when the state is not known.
 - **Self-hosters get a sizing guide for Docling, and a fresh install writes
   the parsing ceiling into `.env`.** One conversion uses about four cores, so
   a second one in parallel only helps on a machine with eight; the guide says
