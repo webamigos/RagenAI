@@ -195,23 +195,37 @@ Each phase leaves the application working.
 
 ### Phase A — stop losing files
 
-- [ ] **A1.** `DOCLING_MAX_CONCURRENCY` in the worker's own env schema
+- [x] **A1.** `DOCLING_MAX_CONCURRENCY` in the worker's own env schema
   (only the worker reads it — ADR-37 keeps single-app variables there), wired as
   `jobConcurrency: { runFileEmbeddings: … }`. Integration test on real Redis:
   with the ceiling at 2 and two worker instances, never more than 2 jobs run.
-- [ ] **A2.** Docling client: `AbortSignal` from the step timeout; timeout
+- [x] **A2.** Docling client: `AbortSignal` from the step timeout; timeout
   derived from `DOCLING_SERVE_MAX_SYNC_WAIT` + margin; the same value set
   explicitly in compose, `infra/docling/Dockerfile` and Helm, with a test that
   the three agree.
-- [ ] **A3.** Error classification (table above); transient → the strict
+- [x] **A3.** Error classification (table above); transient → the strict
   step policy, permanent → non-retryable with Docling's message; the
   comment at `parse-and-embed.ts:499` corrected. Unit tests per class; a
   workflow test that a 503 then a success indexes the file.
 
 ### Phase B — wait out an outage
 
-- [ ] **B1.** Health gate before sending (cached), delaying the job without
+- [x] **B1.** Health gate before sending (cached), delaying the job without
   spending an attempt; `isDoclingAvailable` gets its first caller and tests.
+
+  *Done.* A step of its own, not a change to `packages/jobs-bullmq`: the
+  solution section's correction holds — the runtime retries steps and never
+  jobs — so "without spending an attempt" means a step before the parse
+  step, which the parse step's strict policy never sees fail.
+  `waitForDocling` asks a process-wide cached `/health` (5 s), backs off 5 s
+  → 1 min, reads cancellation between looks, and returns rather than throws.
+  Only the strict path waits; with a fallback allowed, waiting would only
+  delay the fallback. The limit is 30 minutes (`utils/docling-gate.ts`, a
+  sandbox-safe module shared with the step's 32-minute timeout, with a test
+  that the timeout outlasts the wait); past it the file fails, non-retryably,
+  with "Docling has been unavailable since …". A constant, not an
+  environment variable, until someone needs another value. Phases A1–A3 were
+  delivered in #1403.
 - [ ] **B2.** The waiting reason on the row and in the knowledge base list
   (per D3).
 

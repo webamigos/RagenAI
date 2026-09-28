@@ -124,13 +124,20 @@ archive is the blog.
   fail after six seconds; a document Docling genuinely cannot read fails at
   once, with Docling's own reason. Helm now sets `DOCLING_SERVE_MAX_SYNC_WAIT`
   (300 s) like compose, instead of upstream's 120 s.
+- `[brief]` **With `DOCLING_STRICT=1`, an upload survives Docling being down
+  for up to half an hour.** Before parsing, the worker now checks that Docling
+  is up and waits for it if it is not, looking again every minute at most,
+  instead of spending its retries on a service that is away. A file whose
+  Docling stays down longer fails with the time it went down, and one
+  *Re-process* recovers it. A cancelled upload stops waiting.
 - **Self-hosters get a sizing guide for Docling, and a fresh install writes
   the parsing ceiling into `.env`.** One conversion uses about four cores, so
   a second one in parallel only helps on a machine with eight; the guide says
   how much CPU and memory Docling needs and which three settings to raise
-  together. `npm create ragen-app` now writes `DOCLING_MAX_CONCURRENCY=4`,
-  so the setting that actually limits ingest is in the file next to
-  `WORKER_CONCURRENCY`.
+  together. On the BullMQ runtime, `npm create ragen-app` now writes
+  `DOCLING_MAX_CONCURRENCY=4`, so the setting that actually limits ingest is
+  in the file next to `WORKER_CONCURRENCY`; a Temporal install gets nothing,
+  because Temporal does not read it.
 
 ### Ragen Brain: an assistant beside the inbox
 

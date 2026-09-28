@@ -52,6 +52,10 @@ export function makeUserFile(overrides: Partial<UserFile> = {}): UserFile {
 
 export function createMockActivities() {
   return {
+    // B1: Docling is up unless a test says otherwise.
+    waitForDocling: vi
+      .fn()
+      .mockResolvedValue({ outcome: 'available', waitedMs: 0 }),
     getDocumentParser: vi
       .fn()
       .mockResolvedValue({ parser: 'legacy', strict: false }),
