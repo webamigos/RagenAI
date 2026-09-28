@@ -138,6 +138,11 @@ archive is the blog.
   `DOCLING_MAX_CONCURRENCY=4`, so the setting that actually limits ingest is
   in the file next to `WORKER_CONCURRENCY`; a Temporal install gets nothing,
   because Temporal does not read it.
+- `[brief]` **A Docling outage is two lines in the worker's log.** The worker
+  now checks Docling every 30 seconds and logs one error when it goes down and
+  one line when it comes back, instead of nothing until a file failed. A PDF
+  that falls back to the external parser is logged as an error, since it left
+  the deployment.
 
 ### Ragen Brain: an assistant beside the inbox
 
