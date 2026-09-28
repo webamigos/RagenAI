@@ -124,6 +124,12 @@ archive is the blog.
   fail after six seconds; a document Docling genuinely cannot read fails at
   once, with Docling's own reason. Helm now sets `DOCLING_SERVE_MAX_SYNC_WAIT`
   (300 s) like compose, instead of upstream's 120 s.
+- `[brief]` **With `DOCLING_STRICT=1`, an upload survives Docling being down
+  for up to half an hour.** Before parsing, the worker now checks that Docling
+  is up and waits for it if it is not, looking again every minute at most,
+  instead of spending its retries on a service that is away. A file whose
+  Docling stays down longer fails with the time it went down, and one
+  *Re-process* recovers it. A cancelled upload stops waiting.
 - `[brief]` **A Docling outage is two lines in the worker's log.** The worker
   now checks Docling every 30 seconds and logs one error when it goes down and
   one line when it comes back, instead of nothing until a file failed. A PDF

@@ -681,6 +681,23 @@ already claims. B1 and B2 start only after A2's baseline is committed.
   production (not staging, which is retired). Flip the default in a `feat` PR,
   with a `docs/changelog-notes.md` line.
 
+  *Decided 2026-09-27:* there is no production to compare against — demo is
+  the only deployment — so demo's findings are compared with what C4 measured
+  on the Phase A corpora, per document type: table documents raise headers
+  where the splitter cut them, prose raises nothing. Demo's files predate C2
+  and carry no diagnostics, so they are backfilled rather than re-processed:
+  `apps/worker/src/scripts/backfill-document-diagnostics.ts` reads each indexed
+  file's chunks back from Qdrant, runs the same checks with
+  `parser: 'unknown'` (no fallback or section-path check, since stored chunks
+  do not record their parser), and writes `metadata.diagnostics`. No model
+  call and no change to the index. It skips files that already have a report,
+  and prints findings per file type, which is the comparison's input.
+
+  The order: C3 deployed on demo; the backfill with `--dry-run`, then for
+  real; the key turned on for the demo organization in apps/admin (by a
+  person, not an agent); the per-type table set against C4 in a dated result;
+  and only then the default flipped.
+
 ## Testing
 
 - **Unit.**
