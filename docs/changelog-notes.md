@@ -134,6 +134,11 @@ archive is the blog.
 
 ### Thread: ingest that survives a busy Docling
 
+- `[brief]` **A worker that just started no longer reports Docling as down.**
+  Its first check ran while it was still starting up, could time out against
+  a healthy Docling, and then showed a parser outage on the setup page for
+  up to half a minute. The worker now checks a second time before it reports
+  Docling as down.
 - `[brief]` **A burst of uploads no longer overwhelms Docling, and a busy one
   no longer loses files.** At most four documents are parsed at once across
   the whole deployment (`DOCLING_MAX_CONCURRENCY`), instead of twenty per
