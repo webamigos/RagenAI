@@ -262,7 +262,7 @@ Each phase leaves the application working.
   take longer. The wording holds whether or not the worker runs strict,
   which apps/web cannot see: strict files wait, others fall back.
 - [x] **C2.** Sizing section in `docs/document-processing.md` and the Docling
-  runbook: CPU/RAM per concurrent conversion, `ENG_LOC_NUM_WORKERS`, how the
+  runbook: CPU/RAM per concurrent conversion, `DOCLING_SERVE_ENG_LOC_NUM_WORKERS`, how the
   ceiling relates to it; `create-ragen-app` writes the ceiling and says why.
   *Done.* Measured on the local Docling (2–4-page PDFs, 5 CPUs): one
   conversion takes ~`DOCLING_NUM_THREADS` cores, so two side by side need ~8
@@ -273,9 +273,18 @@ Each phase leaves the application working.
   write `DOCLING_SERVE_MAX_SYNC_WAIT`: compose sets the Docling side as a
   literal, so a line in `.env` would move the worker and not the server —
   the disagreement A2 removed.
-- [ ] **C3.** Measure: the jobs load test run with PDFs through a real Docling
+- [x] **C3.** Measure: the jobs load test run with PDFs through a real Docling
   (the demo corpus, `e15d46c10:scripts/demo-corpus/files`) at ceilings 2/4/8,
   recording throughput and failures — the number the default rests on.
+
+  *Done (2026-09-28).* `jobs-load-test.ts --files` uploads real PDFs; 16 at
+  once, two repetitions per ceiling, `DOCLING_STRICT=1`, 5 CPUs, Docling at
+  its defaults. Files per minute: 2.5/3.0 at 2, **3.9/4.4 at 4**, 3.3/3.6 at
+  8; 0 failures in 96 ingests, no timeouts, peak memory 3.9 GiB. Eight is
+  slower than four — the queue moves from Redis into docling-serve and parse
+  time doubles — which is C2's "about twice `DOCLING_SERVE_ENG_LOC_NUM_WORKERS`" measured.
+  The default of 4 stays. Table in "Sizing Docling" in
+  `docs/document-processing.md`.
 
 ## Testing
 
