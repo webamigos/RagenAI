@@ -1,3 +1,4 @@
+import { evidenceSection } from './evidence';
 import type { Arm, CaseResult, DocumentScore, Report } from './types';
 
 export interface Tally {
@@ -186,6 +187,26 @@ function table(
   return lines.join('\n');
 }
 
+/**
+ * What the server said ran between search and rendering, per case — the
+ * reranking row above is the harness's reading of settings; this one is the
+ * server's own account (the `retrieval` event's trace). Several values mean
+ * the run mixed configurations.
+ */
+export function serverPostRetrieval(results: readonly CaseResult[]): string {
+  const counts = new Map<string, number>();
+  for (const r of results) {
+    if (r.arm === 'rag' && r.retrievalTrace) {
+      const step = r.retrievalTrace.postRetrieval;
+      counts.set(step, (counts.get(step) ?? 0) + 1);
+    }
+  }
+  if (counts.size === 0) {
+    return '(not reported — the app sent no trace)';
+  }
+  return [...counts].map(([step, n]) => `\`${step}\` × ${n}`).join(', ');
+}
+
 export function renderMarkdown(report: Report): string {
   const { results, fingerprint } = report;
   const overall = crosstab(results, () => 'all questions');
@@ -209,6 +230,7 @@ export function renderMarkdown(report: Report): string {
     `| rephrase model | \`${fingerprint.rephraseModel}\` |`,
     `| embeddings | \`${fingerprint.embeddingsModel}\` (${fingerprint.vectorSize}-dim) |`,
     `| reranking | ${fingerprint.rerankingEnabled} — \`${fingerprint.rerankProvider}\` / \`${fingerprint.rerankModel}\` |`,
+    `| post-retrieval, as the server reported it | ${serverPostRetrieval(results)} |`,
     `| multi-query variants | ${fingerprint.multiQueryVariants} |`,
     `| ingest shape | ${fingerprint.shape ?? '(not named)'} |`,
     // The one line that says which of Phase B's two arms this is. Reported by
@@ -243,6 +265,12 @@ export function renderMarkdown(report: Report): string {
       crosstab(results, (r) => r.type),
     ),
   ];
+
+  // Only when the server sent a trace for at least one case; an older app
+  // sends none, and a table of dashes would read as zero recall.
+  if (results.some((r) => r.evidence !== undefined)) {
+    out.push(evidenceSection(results));
+  }
 
   // Only when there is something to put in it: a corpus with no
   // `expectedFiles` and a run with no scores would render a table of dashes.

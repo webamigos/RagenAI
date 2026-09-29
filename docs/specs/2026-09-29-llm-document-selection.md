@@ -306,9 +306,15 @@ defaulting to `false`.
   apps/api's OpenAI-compatible endpoint streams no retrieval frame at all,
   and the harness measures through apps/web — the shared code of Phases B–D
   (D4) is what keeps the two chains equal, not this frame.
-- [ ] **A2.** `rag-benchmark` parses the frame and reports **evidence recall**
+- [x] **A2.** `rag-benchmark` parses the frame and reports **evidence recall**
   (per question and per shape) next to the pass rate. It stamps the stack
   from the frame. Unit tests on the parser and on the recall computation.
+
+  *Done.* `lib/evidence.ts`: the trace's chunks are read back from Qdrant and
+  searched for the assertions' needles with the assertions' own matching;
+  per case in the JSON (`evidence`, `retrievalTrace`), and a report table by
+  language and question type. The stack table gains the server-reported
+  post-retrieval step beside the harness's reading of the settings.
 - [ ] **A3.** Run the baseline: reranking off / Scaleway / Cohere, on `kolej`
   and `tabele`, three repetitions each. Commit the results under
   `apps/web/evals/rag-benchmark/results/` with a write-up, and record in

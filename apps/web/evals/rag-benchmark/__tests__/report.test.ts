@@ -10,6 +10,7 @@ import {
   resultStem,
   byDocument,
   formatScore,
+  serverPostRetrieval,
 } from '../lib/report';
 import type { CaseResult, Report } from '../lib/types';
 
@@ -471,6 +472,39 @@ describe('resultStem — shape', () => {
   it('is unchanged without a shape', () => {
     expect(resultStem('2026-09-26', 'c', 1, () => false)).toBe(
       '2026-09-26-c-rev1',
+    );
+  });
+});
+
+describe('serverPostRetrieval', () => {
+  const rag = (postRetrieval?: string) =>
+    ({
+      arm: 'rag',
+      ...(postRetrieval
+        ? {
+            retrievalTrace: {
+              postRetrieval,
+              queryCount: 2,
+              chunkCount: 5,
+              timings: { searchMs: 1, rerankMs: 0 },
+            },
+          }
+        : {}),
+    }) as unknown as CaseResult;
+
+  it("counts the server's own account of each case", () => {
+    expect(
+      serverPostRetrieval([
+        rag('fusion'),
+        rag('fusion'),
+        rag('reranker:scaleway'),
+      ]),
+    ).toBe('`fusion` × 2, `reranker:scaleway` × 1');
+  });
+
+  it('says so when the app sent no trace', () => {
+    expect(serverPostRetrieval([rag()])).toBe(
+      '(not reported — the app sent no trace)',
     );
   });
 });
