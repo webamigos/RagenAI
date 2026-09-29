@@ -86,6 +86,10 @@ archive is the blog.
   weakened search and gave the answer model the whole file in place of each
   chunk. Masking now runs on each chunk. Re-process documents uploaded with
   masking on to apply it.
+- `[brief]` **An edited document keeps its summary.** Editing a document,
+  applying Optimize suggestions or rolling back a version removed the
+  document's summary from search, and the file kept showing the summary of
+  the text before the edit. The summary is now rewritten from the new text.
 - `[brief]` **An edited document is masked like an upload.** With PII
   masking on, a document's new text — after an edit, an applied Optimize
   suggestion or a rollback — was indexed as written, whatever its masking
