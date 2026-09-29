@@ -25,6 +25,9 @@ export {
 export {
   EMBED_BATCH_SIZE,
   MAX_EMBEDDING_TEXT_CHARS,
+  MAX_CONTEXT_PREFIX_CHARS,
+  CONTEXT_PREFIX_IN_BM25,
+  embeddingTextFor,
   truncateForEmbedding,
   prepareEmbeddingBatches,
   type TruncationReporter,

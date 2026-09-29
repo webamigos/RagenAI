@@ -393,3 +393,57 @@ describe('qdrantService.addDocuments — batching', () => {
     );
   });
 });
+
+/**
+ * The context prefix (spec 2026-09-29-contextual-chunks) is embedded in front
+ * of the chunk and stored beside it: the dense text changes, the stored chunk
+ * and — until the measurement says otherwise — the BM25 text do not.
+ */
+describe('qdrantService.addDocuments — context prefix', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockGetEncryptedPiiDek = vi.fn().mockResolvedValue(null);
+    mockTrackAiUsage = vi.fn().mockResolvedValue(undefined);
+    mockIsEncryptionConfigured = vi.fn().mockReturnValue(false);
+    mockGetEmbeddingModelForOrg = vi.fn().mockResolvedValue('mock-model');
+    mockWithLangfuseTrace = vi.fn().mockImplementation((_opts, fn) => fn());
+    mockEmbedMany = vi.fn().mockResolvedValue({
+      embeddings: [
+        [0.1, 0.2],
+        [0.3, 0.4],
+      ],
+      usage: { tokens: 10 },
+    });
+    mockQdrantInstance.collectionExists.mockResolvedValue({ exists: true });
+    mockQdrantInstance.upsert.mockResolvedValue(undefined);
+  });
+
+  it('embeds the prefix before the chunk, and stores the chunk as it was', async () => {
+    const { encode } = await import('@ragenai/rag-core');
+    const docs = [
+      makeDoc('Opłata wynosi 4% wartości umowy.', {
+        context_prefix: 'Umowa serwisowa — 4. Wynagrodzenie',
+        context_version: 1,
+      }),
+      makeDoc('Bez prefiksu.'),
+    ];
+
+    await qdrantService.addDocuments({ orgId: 'org-1', docs });
+
+    expect(mockEmbedMany.mock.calls[0][0].values).toEqual([
+      'Umowa serwisowa — 4. Wynagrodzenie\n\nOpłata wynosi 4% wartości umowy.',
+      'Bez prefiksu.',
+    ]);
+    const points = mockQdrantInstance.upsert.mock.calls[0][1].points as {
+      payload: { pageContent: string; content: string };
+      vector: { sparse?: { indices: number[] } };
+    }[];
+    expect(points[0]!.payload.pageContent).toBe(
+      'Opłata wynosi 4% wartości umowy.',
+    );
+    expect(points[0]!.payload.content).toBe('Opłata wynosi 4% wartości umowy.');
+    expect(points[0]!.vector.sparse?.indices).toEqual(
+      encode('Opłata wynosi 4% wartości umowy.').indices,
+    );
+  });
+});

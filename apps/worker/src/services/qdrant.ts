@@ -13,6 +13,8 @@ import {
   VECTOR_SIZE,
   DENSE_VECTOR_NAME,
   SPARSE_VECTOR_NAME,
+  CONTEXT_PREFIX_IN_BM25,
+  embeddingTextFor,
   prepareEmbeddingBatches,
 } from '@ragenai/rag-core';
 import { db } from './db/db.js';
@@ -136,6 +138,10 @@ const addDocuments = async ({
   }
 
   const texts = docs.map((d) => {
+    const prefix =
+      typeof d.metadata?.context_prefix === 'string'
+        ? d.metadata.context_prefix
+        : undefined;
     let text = d.pageContent;
     if (
       piiDek &&
@@ -151,7 +157,9 @@ const addDocuments = async ({
         );
       }
     }
-    return text;
+    // The context prefix (spec 2026-09-29-contextual-chunks) is embedded in
+    // front of the chunk and stored beside it; `pageContent` stays the chunk.
+    return embeddingTextFor(text, prefix);
   });
   const model = await getEmbeddingModelForOrg(orgId, EMBEDDINGS_MODEL);
 
@@ -200,7 +208,15 @@ const addDocuments = async ({
   });
 
   const points = docs.map((doc, i) => {
-    const sparse = encodeBm25(doc.pageContent);
+    const prefix =
+      typeof doc.metadata?.context_prefix === 'string'
+        ? doc.metadata.context_prefix
+        : undefined;
+    const sparse = encodeBm25(
+      CONTEXT_PREFIX_IN_BM25
+        ? embeddingTextFor(doc.pageContent, prefix)
+        : doc.pageContent,
+    );
     const vector: Record<string, number[] | SparseVector> = {
       [DENSE_VECTOR_NAME]: embeddings[i],
     };

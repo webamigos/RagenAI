@@ -43,6 +43,38 @@ export const EMBED_BATCH_SIZE = 96;
 export const MAX_EMBEDDING_TEXT_CHARS = 2000;
 
 /**
+ * The longest context prefix embedded with a chunk (spec
+ * 2026-09-29-contextual-chunks). A fifth of the text cap: the chunk has to
+ * stay the larger part of what is embedded, or every chunk of a document
+ * starts to look alike.
+ */
+export const MAX_CONTEXT_PREFIX_CHARS = 400;
+
+/**
+ * Whether the prefix is also part of the BM25 text, not only the dense one.
+ * A constant, not a setting (spec D4): the measurement picks one arm and it
+ * ships. Dense-only until then.
+ */
+export const CONTEXT_PREFIX_IN_BM25 = false;
+
+/**
+ * The text embedded for a chunk that carries a context prefix.
+ *
+ * The prefix goes first and is capped; the combination is then cut to
+ * `MAX_EMBEDDING_TEXT_CHARS` by `prepareEmbeddingBatches` as any text is — so
+ * what a long chunk loses is its tail, never its prefix. No prefix returns
+ * the chunk unchanged, which is what every chunk indexed without the feature
+ * was embedded from.
+ */
+export function embeddingTextFor(
+  chunk: string,
+  prefix: string | undefined,
+): string {
+  const trimmed = prefix?.trim().slice(0, MAX_CONTEXT_PREFIX_CHARS).trim();
+  return trimmed ? `${trimmed}\n\n${chunk}` : chunk;
+}
+
+/**
  * Guard for the two numeric options.
  *
  * `Number.isInteger` also rejects NaN and Infinity, which is the point: a

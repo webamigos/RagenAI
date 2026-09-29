@@ -1,7 +1,10 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
+  CONTEXT_PREFIX_IN_BM25,
   EMBED_BATCH_SIZE,
+  MAX_CONTEXT_PREFIX_CHARS,
   MAX_EMBEDDING_TEXT_CHARS,
+  embeddingTextFor,
   prepareEmbeddingBatches,
   truncateForEmbedding,
 } from '../embedding-contract';
@@ -106,5 +109,32 @@ describe('prepareEmbeddingBatches', () => {
     expect(() => truncateForEmbedding('hello', undefined, Number.NaN)).toThrow(
       /maxLength must be an integer/,
     );
+  });
+});
+
+describe('embeddingTextFor', () => {
+  it('returns the chunk unchanged without a prefix — what every chunk was embedded from', () => {
+    expect(embeddingTextFor('Opłata 4%.', undefined)).toBe('Opłata 4%.');
+    expect(embeddingTextFor('Opłata 4%.', '   ')).toBe('Opłata 4%.');
+  });
+
+  it('puts the prefix first, separated by a blank line', () => {
+    expect(embeddingTextFor('Opłata 4%.', 'Umowa — 4. Wynagrodzenie')).toBe(
+      'Umowa — 4. Wynagrodzenie\n\nOpłata 4%.',
+    );
+  });
+
+  it('caps the prefix, so a long chunk loses its tail and never its prefix', () => {
+    const text = embeddingTextFor('c'.repeat(3_000), 'p'.repeat(1_000));
+    expect(text.startsWith('p'.repeat(MAX_CONTEXT_PREFIX_CHARS) + '\n\n')).toBe(
+      true,
+    );
+    const [batch] = prepareEmbeddingBatches([text]);
+    expect(batch![0]!.length).toBe(MAX_EMBEDDING_TEXT_CHARS);
+    expect(batch![0]!.startsWith('p')).toBe(true);
+  });
+
+  it('keeps the prefix out of BM25 until the measurement picks that arm', () => {
+    expect(CONTEXT_PREFIX_IN_BM25).toBe(false);
   });
 });

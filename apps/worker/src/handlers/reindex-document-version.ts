@@ -43,6 +43,7 @@ export async function reindexDocumentVersion(
     deleteDocumentVectors,
     generateDocumentSummary,
     getDocumentContent,
+    applyContextPrefix,
     getFileRecord,
     mergeFileMetadata,
     splitText,
@@ -198,13 +199,21 @@ export async function reindexDocumentVersion(
       );
     }
     newSummary = summary;
+    // The same prefix an upload gets, behind the same key, so an edited
+    // document keeps its context (spec 2026-09-29-contextual-chunks).
+    const bodyDocs = await applyContextPrefix({
+      orgId,
+      docs,
+      fileName,
+      summary,
+    }).catch(() => docs);
     const docsWithSummary: Document[] =
       summary.length > 0
         ? [
             { pageContent: summary, metadata: { chunk_type: 'summary' } },
-            ...docs,
+            ...bodyDocs,
           ]
-        : docs;
+        : bodyDocs;
 
     const accessibleBy = await computeFileAccessPrincipals(fileId, orgId);
 

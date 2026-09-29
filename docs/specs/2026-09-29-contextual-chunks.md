@@ -252,10 +252,24 @@ that defaults to `false`.
 - [ ] **A1.** Docling prose chunks carry `section_path`, taken from the
   markdown heading stack. Splitter tests cover nested headings, a chunk that
   spans a heading, and a document without headings.
-- [ ] **A2.** `embeddingTextFor` and the free prefix in the worker, behind
+- [x] **A2.** `embeddingTextFor` and the free prefix in the worker, behind
   `contextualChunks`, writing `context_prefix` and `context_version: 1`.
   Tests for the builder, the cap, the truncation order, and the masked-only
   rule in `dual_content` mode.
+
+  *Done.* `embeddingTextFor`, `MAX_CONTEXT_PREFIX_CHARS` and
+  `CONTEXT_PREFIX_IN_BM25` (false: dense only until A3 picks the arm) in
+  `packages/rag-core`; the builder in `apps/worker/src/services/context-prefix.ts`
+  (title from the file name, `sectionPath`, the summary's first sentence);
+  the key read at job time and the prefix applied by one activity,
+  `applyContextPrefix`, in ingest and in `reindexDocumentVersion` — an
+  activity rather than a key read in the handler, because handlers also run
+  in Temporal's workflow sandbox, which cannot load `@ragenai/rag-core`. A
+  failed read or step indexes without a prefix. The
+  prefix is built after masking from the masked chunk and summary, so the
+  `dual_content` rule holds by construction: its embedding is
+  `masked prefix + decrypted original`. The legacy Meilisearch writer is not
+  changed.
 - [ ] **A3.** Measure four arms on `kolej` and `tabele`, three repetitions
   each:
   - no prefix;

@@ -174,6 +174,13 @@ export function createMockActivities() {
     // On, as the code default is, so a suite exercises the scorer rather
     // than the `ragReadinessScore`-is-off branch.
     isRagScoringEnabled: vi.fn().mockResolvedValue(true),
+    // Off by default, as the feature key is (spec 2026-09-29-contextual-chunks):
+    // the chunks come back unchanged.
+    applyContextPrefix: vi
+      .fn()
+      .mockImplementation(({ docs }: { docs: unknown[] }) =>
+        Promise.resolve(docs),
+      ),
     updatePageCount: vi.fn().mockResolvedValue(undefined),
     createFileRecord: vi.fn().mockResolvedValue([
       {
