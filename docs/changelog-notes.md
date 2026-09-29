@@ -79,6 +79,13 @@ archive is the blog.
 
 ### Knowledge base
 
+- `[brief]` **Documents that were indexed badly say so.** The knowledge base
+  now marks a document whose indexing went wrong: a table whose rows lost
+  their column names, text read as raw markup, empty chunks, or a parser
+  fallback. The document view lists what was found and why it matters. The
+  checks make no model call. Documents indexed before this change show
+  nothing until they are re-processed. An administrator can turn it off per
+  organization in apps/admin.
 - `[brief]` **With PII masking on, tables are masked too.** Docling's table
   chunks skipped masking and reached the index, the summary and the stored
   document with names and numbers intact. In the encrypted `dual_content`
