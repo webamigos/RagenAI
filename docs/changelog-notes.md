@@ -68,6 +68,15 @@ archive is the blog.
 
 ## Unreleased
 
+### Usage and limits
+
+- `[brief]` **The monthly cost limit counts document processing.** Usage
+  from processing documents — embeddings, summaries, scoring, Optimize and
+  Brain — was recorded with a cost of zero, so the cost shown for an
+  organization and its monthly cost ceiling left all of it out. It is
+  priced now, from the same table as chat. Rows recorded before this change
+  keep their zero.
+
 ### Knowledge base
 
 - `[brief]` **The RAG readiness score can be turned off.** A platform

@@ -21,6 +21,7 @@ import {
 } from './types/index.js';
 import { type UpdateFileSizeParams } from './types/UpdateFileSizeParams.js';
 import { decryptDocumentContent } from '@ragenai/crypto';
+import { calculateCost, priceFor } from '@ragenai/platform-contracts';
 
 /**
  * On Prisma (ADR-40 step 2).
@@ -568,6 +569,32 @@ type AiUsageStep =
   | 'GUARDRAIL';
 
 /**
+ * The row's estimated cost, from the table apps/web and apps/api price with.
+ * It was hard-coded to 0, and the monthly cost ceiling sums this column, so
+ * everything the worker spent — embeddings, summaries, scoring, Optimize,
+ * Brain — was invisible to it. An unpriced model still stores 0, and says so.
+ */
+export function estimateCost(input: {
+  provider: string;
+  model: string;
+  inputTokens: number;
+  outputTokens: number;
+}): number {
+  if (!priceFor(input.provider, input.model)) {
+    logger.warn(
+      { provider: input.provider, model: input.model },
+      'trackAiUsage: no pricing for this model — its cost is stored as 0',
+    );
+  }
+  return calculateCost(
+    input.provider,
+    input.model,
+    Math.max(0, input.inputTokens || 0),
+    Math.max(0, input.outputTokens || 0),
+  );
+}
+
+/**
  * Insert a row into `ai_usage`. Never throws — tracking failures must
  * not break ingestion. Mirrors apps/web's `trackAiUsage` so the dashboard
  * query sees worker-originated usage (embeddings, summaries) in the same
@@ -600,7 +627,7 @@ const trackAiUsage = async (input: {
         inputTokens: Math.max(0, Math.trunc(input.inputTokens) || 0),
         outputTokens: Math.max(0, Math.trunc(input.outputTokens) || 0),
         totalTokens: Math.max(0, Math.trunc(input.totalTokens) || 0),
-        estimatedCost: 0,
+        estimatedCost: estimateCost(input),
         durationMs: input.durationMs ?? null,
         // The object rather than `JSON.stringify`, and `DbNull` rather than
         // `null` — see the note in createInitialDocumentVersion.

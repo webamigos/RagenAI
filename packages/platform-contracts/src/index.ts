@@ -201,3 +201,11 @@ export {
   readDoclingStatus,
 } from './parsing/docling-status';
 export type { DoclingStatus } from './parsing/docling-status';
+
+export {
+  AI_PRICING,
+  EUR_TO_USD,
+  calculateCost,
+  priceFor,
+} from './pricing/ai-pricing';
+export type { ModelPricing } from './pricing/ai-pricing';

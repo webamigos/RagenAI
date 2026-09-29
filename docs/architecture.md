@@ -25,8 +25,9 @@ This is an npm-workspaces monorepo (`apps/*` + `packages/*`):
 │   │                             #   BM25 encoder, VECTOR_SIZE, vector names,
 │   │                             #   default embedding model (ADR-26)
 │   ├── platform-contracts/       # Values every app must resolve identically:
-│   │                             #   model catalogue, feature flags, connector
-│   │                             #   metadata, tenant-scope map (ADR-33)
+│   │                             #   model catalogue, model prices, feature
+│   │                             #   flags, connector metadata, tenant-scope
+│   │                             #   map (ADR-33)
 │   ├── storage/                  # File storage: local filesystem by default,
 │   │                             #   any S3-compatible store opt-in (ADR-27)
 │   ├── vault-client/             # HMAC-signed token-vault client (ADR-32)

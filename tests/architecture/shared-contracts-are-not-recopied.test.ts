@@ -115,6 +115,19 @@ const CONTRACTS = [
     name: 'TRIAL_PLAN_NAME',
     declaration: /\b(?:const|let|var)\s+TRIAL_PLAN_NAME\s*(?::[^=]+)?=/,
   },
+  /**
+   * The model price table. apps/web and apps/api each held a copy "kept in
+   * sync manually", and apps/worker had none — so every row the worker wrote
+   * was stored at cost 0 and the monthly cost ceiling never saw ingest. The
+   * package's name is refused, and so is the old copies' shape — `PRICING`
+   * typed with `ModelPricing` — without catching a test fixture that happens
+   * to be called `PRICING`.
+   */
+  {
+    name: 'AI_PRICING',
+    declaration:
+      /\b(?:const|let|var)\s+(?:AI_PRICING\s*(?::[^=]+)?|PRICING\s*:[^=]*ModelPricing[^=]*)=\s*\{/,
+  },
 ] as const;
 
 const SKIP_DIRS = new Set([
