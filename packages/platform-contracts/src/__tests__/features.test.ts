@@ -263,20 +263,21 @@ describe('ragScoreOnIngest', () => {
   });
 });
 
-// C3: the panel's half of the diagnostics. Off until D4 compares it on demo.
+// C3 built the panel's half behind this key; D4 turned it on by default after
+// the comparison on demo (2026-09-29).
 describe('documentDiagnostics', () => {
-  it('is off unless an operator turns it on', () => {
+  it('is on unless an operator turns it off', () => {
     expect(resolveFeatures({}).documentDiagnostics).toEqual({
-      value: false,
+      value: true,
       source: 'code-default',
     });
   });
 
-  it('can be turned on per organization', () => {
+  it('can be turned off per organization', () => {
     expect(
-      resolveFeatures({ orgOverrides: { documentDiagnostics: true } })
+      resolveFeatures({ orgOverrides: { documentDiagnostics: false } })
         .documentDiagnostics.value,
-    ).toBe(true);
+    ).toBe(false);
   });
 });
 

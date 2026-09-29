@@ -128,11 +128,12 @@ export type FeatureOverrides = Partial<Record<FeatureKey, boolean | null>>;
  * `documentDiagnostics` shows the checks the worker runs on a document's
  * indexed chunks — parsed as markup, a table without headers, a Docling
  * fallback — as a worded badge in the list and a list of findings in the
- * document view. It defaults to `false` because it is built across several
- * PRs behind this key (ADR-50; spec 2026-09-26-rag-readiness-score-review,
- * C3), and D4 flips it after a comparison on demo. It gates only what the
- * panel shows: the worker computes and stores the findings either way, at no
- * model cost, so they exist by the time the key is on.
+ * document view. It was built behind this key defaulting to `false` (ADR-50;
+ * spec 2026-09-26-rag-readiness-score-review, C3) and defaults to `true` since
+ * D4 compared demo's 28 files with the C4 corpora on 2026-09-29 and found the
+ * same pattern per type. It gates only what the panel shows: the worker
+ * computes and stores the findings either way, at no model cost. An operator
+ * can still turn it off per organization or for the platform.
  */
 export const DEFAULT_FEATURES: FeatureFlags = {
   inviteMembers: false,
@@ -152,7 +153,7 @@ export const DEFAULT_FEATURES: FeatureFlags = {
   deleteThreads: true,
   ragReadinessScore: true,
   ragScoreOnIngest: false,
-  documentDiagnostics: false,
+  documentDiagnostics: true,
 };
 
 /** Human-readable names, shared so the admin panel and the app cannot disagree. */

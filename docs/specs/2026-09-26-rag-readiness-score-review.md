@@ -702,7 +702,7 @@ already claims. B1 and B2 start only after A2's baseline is committed.
   best-effort, and `ragReadinessScore` off skips it. The `scoreDocument` job
   itself stays registered with no producer; removing a job name is a
   `packages/jobs` change of its own.
-- [ ] **D4.** Enable `documentDiagnostics` on demo, and compare it against
+- [x] **D4.** Enable `documentDiagnostics` on demo, and compare it against
   production (not staging, which is retired). Flip the default in a `feat` PR,
   with a `docs/changelog-notes.md` line.
 
@@ -722,6 +722,13 @@ already claims. B1 and B2 start only after A2's baseline is committed.
   real; the key turned on for the demo organization in apps/admin (by a
   person, not an agent); the per-type table set against C4 in a dated result;
   and only then the default flipped.
+
+  *Done (2026-09-29).* The backfill wrote diagnostics for all 28 of demo's
+  files: `table-without-header` on 8/8 XLSX and 1/8 DOCX, and nothing on PDF
+  or Markdown. That is C4's `docling` shape exactly, since demo runs without
+  table chunks. The key was turned on for the demo organization in apps/admin,
+  and the default flipped to `true`. Result:
+  `apps/web/evals/rag-benchmark/results/2026-09-29-document-diagnostics-on-demo.md`.
 
 ## Testing
 

@@ -10,8 +10,9 @@ import { ROUTES } from './helpers';
 
 /**
  * Document diagnostics in the panel (spec 2026-09-26-rag-readiness-score-review,
- * C3). `p1`, so it does not gate a merge: the `documentDiagnostics` key is off
- * by default, and the seed turns it on for the test organization only.
+ * C3). `p1`, so it does not gate a merge. The `documentDiagnostics` key is on
+ * by default since D4; the seed also sets it for the test organization, so the
+ * test does not depend on the default.
  *
  * The findings are seeded on the file's metadata. What this proves is that the
  * list and the document view read what the worker writes; the checks that
