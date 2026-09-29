@@ -47,6 +47,26 @@ describe('readDocumentDiagnostics', () => {
     expect(readDocumentDiagnostics(metadata)).toBeNull();
   });
 
+  // The panel keys its rows by check; a report edited by hand or merged by a
+  // script can repeat one, which rendered twice under the same key.
+  it('keeps one finding per check, the warning over the information', () => {
+    const read = readDocumentDiagnostics(
+      stored({
+        ...valid,
+        findings: [
+          { check: 'empty-chunks', severity: 'info', detail: { chunks: 1 } },
+          { check: 'markup', severity: 'warn' },
+          { check: 'empty-chunks', severity: 'warn', detail: { chunks: 4 } },
+          { check: 'markup', severity: 'warn', detail: { chunks: 9 } },
+        ],
+      }),
+    );
+    expect(read?.findings).toEqual([
+      { check: 'empty-chunks', severity: 'warn', detail: { chunks: 4 } },
+      { check: 'markup', severity: 'warn' },
+    ]);
+  });
+
   it('drops a finding it cannot render, and keeps the rest', () => {
     const read = readDocumentDiagnostics(
       stored({
