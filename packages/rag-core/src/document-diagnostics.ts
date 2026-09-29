@@ -98,6 +98,23 @@ function readFinding(value: unknown): DiagnosticFinding | null {
 }
 
 /**
+ * One finding per check, as the writer emits them. A report can still carry
+ * two — edited by hand, or merged by a script — and the panel keys its rows
+ * by check, so a repeat rendered twice under one key. The warning is kept
+ * over the information when they disagree, so a repeat never hides one.
+ */
+function oncePerCheck(findings: DiagnosticFinding[]): DiagnosticFinding[] {
+  const byCheck = new Map<DiagnosticCheck, DiagnosticFinding>();
+  for (const finding of findings) {
+    const seen = byCheck.get(finding.check);
+    if (!seen || (seen.severity === 'info' && finding.severity === 'warn')) {
+      byCheck.set(finding.check, finding);
+    }
+  }
+  return [...byCheck.values()];
+}
+
+/**
  * The diagnostics on a file's metadata, or `null` when there are none a reader
  * can trust.
  *
@@ -127,9 +144,11 @@ export function readDocumentDiagnostics(
   return {
     version: DIAGNOSTICS_VERSION,
     computedAt: raw.computedAt,
-    findings: raw.findings
-      .map(readFinding)
-      .filter((finding): finding is DiagnosticFinding => finding !== null),
+    findings: oncePerCheck(
+      raw.findings
+        .map(readFinding)
+        .filter((finding): finding is DiagnosticFinding => finding !== null),
+    ),
     stats: {
       chunkCount: number(stats.chunkCount),
       tableChunkCount: number(stats.tableChunkCount),
