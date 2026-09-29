@@ -61,9 +61,9 @@ There are eight, of which two are the ingest paths:
 - **`runFileEmbeddings`** (`src/handlers/parse-and-embed.ts`) - Main pipeline: S3 download → parse → chunk → generate summary → prepend summary chunk → hybrid embed (dense + sparse) → store in Qdrant → merge `UserFile.metadata.summary`
 - **`scrapeWebsite`** (`src/handlers/scrape-website.ts`) - Scrape website via FireCrawl → create document → generate embeddings → store in Qdrant
 
-The other six — `generateDocument`, `optimizeDocument`, `scoreDocument`,
-`reindexDocumentVersion`, `cleanupDemoThreads`, `pruneAnalyticsRetrievals` —
-follow the same shape. The last two are scheduled rather than produced.
+The others — `generateDocument`, `optimizeDocument`,
+`reindexDocumentVersion`, `cleanupDemoThreads`, `pruneAnalyticsRetrievals` and
+Ragen Brain's jobs — follow the same shape. The last two are scheduled rather than produced.
 
 **`runFileEmbeddings` flow:**
 

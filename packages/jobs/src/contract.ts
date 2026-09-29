@@ -71,7 +71,6 @@ export const JOB_NAMES = [
   'generateDocument',
   'reindexDocumentVersion',
   'optimizeDocument',
-  'scoreDocument',
   'cleanupDemoThreads',
   'pruneAnalyticsRetrievals',
   'brainExtract',
@@ -176,16 +175,6 @@ export interface OptimizeDocumentPayload {
    * a score the UI already shows.
    */
   baseScore?: number | null;
-}
-
-export interface ScoreDocumentPayload {
-  fileId: string;
-  documentId?: string | null;
-  orgId: string;
-  projectId?: string | null;
-  userId?: string | null;
-  fileName?: string;
-  documentText: string;
 }
 
 export interface CleanupDemoThreadsResult {
@@ -298,7 +287,6 @@ export interface JobPayloads {
   generateDocument: GenerateDocumentPayload;
   reindexDocumentVersion: ReindexDocumentVersionPayload;
   optimizeDocument: OptimizeDocumentPayload;
-  scoreDocument: ScoreDocumentPayload;
   cleanupDemoThreads: void;
   pruneAnalyticsRetrievals: void;
   brainExtract: BrainExtractPayload;
@@ -319,7 +307,6 @@ export interface JobResults {
   generateDocument: GenerateDocumentResult;
   reindexDocumentVersion: string;
   optimizeDocument: void;
-  scoreDocument: void;
   cleanupDemoThreads: CleanupDemoThreadsResult;
   pruneAnalyticsRetrievals: PruneAnalyticsRetrievalsResult;
   brainExtract: BrainExtractResult;

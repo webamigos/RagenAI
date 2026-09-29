@@ -700,7 +700,7 @@ already claims. B1 and B2 start only after A2's baseline is committed.
   scoring job did — the file and the active version — and uses it as the
   baseline. An existing score is kept, not recomputed. The step is
   best-effort, and `ragReadinessScore` off skips it. The `scoreDocument` job
-  itself stays registered with no producer; removing a job name is a
+  was left registered with no producer and removed on 2026-09-29, in a
   `packages/jobs` change of its own.
 - [ ] **D4.** Enable `documentDiagnostics` on demo, and compare it against
   production (not staging, which is retired). Flip the default in a `feat` PR,
