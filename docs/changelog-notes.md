@@ -86,6 +86,10 @@ archive is the blog.
   weakened search and gave the answer model the whole file in place of each
   chunk. Masking now runs on each chunk. Re-process documents uploaded with
   masking on to apply it.
+- `[brief]` **An edited document is masked like an upload.** With PII
+  masking on, a document's new text — after an edit, an applied Optimize
+  suggestion or a rollback — was indexed as written, whatever its masking
+  policy said. It is masked now, with the file's own policy.
 - `[brief]` **The RAG readiness score can be turned off.** A platform
   administrator can switch off the `RAG: NN` badge and its scoring call in
   apps/admin → Features, for the whole platform or per organization. With it
