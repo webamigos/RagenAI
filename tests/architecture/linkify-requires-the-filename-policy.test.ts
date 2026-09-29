@@ -1,9 +1,8 @@
-import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { trackedFiles } from './tracked-files';
+import { readSource, trackedFiles } from './tracked-files';
 
 /**
  * Any markdown renderer with `linkify` on must also apply the filename policy.
@@ -35,7 +34,7 @@ function sourceFiles(dir: string): string[] {
 /** Files that switch linkify on, whatever else they configure. */
 function linkifyingFiles(): { path: string; source: string }[] {
   return sourceFiles(WEB_SRC)
-    .map((path) => ({ path, source: readFileSync(path, 'utf8') }))
+    .map((path) => ({ path, source: readSource(path) }))
     .filter(({ source }) => /linkify:\s*true/.test(source));
 }
 

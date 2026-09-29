@@ -1,9 +1,8 @@
-import { readFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { trackedFiles } from './tracked-files';
+import { readSource, trackedFiles } from './tracked-files';
 
 /**
  * Every `ctx.steps({...})` must say how many attempts it wants.
@@ -112,9 +111,7 @@ describe('every step policy names its own attempt count', () => {
   it('finds the handlers it is supposed to be guarding', () => {
     // A walk that matched nothing would make the assertion below pass for the
     // wrong reason — the failure mode this repository has paid for twice.
-    const calls = files.flatMap((file) =>
-      policyBodies(readFileSync(file, 'utf8')),
-    );
+    const calls = files.flatMap((file) => policyBodies(readSource(file)));
 
     expect(files.length).toBeGreaterThanOrEqual(8);
     expect(calls.length).toBeGreaterThanOrEqual(8);
@@ -122,7 +119,7 @@ describe('every step policy names its own attempt count', () => {
 
   it('has no ctx.steps policy without maximumAttempts', () => {
     const offenders = files.flatMap((file) => {
-      const source = readFileSync(file, 'utf8');
+      const source = readSource(file);
       return policyBodies(source)
         .filter((body) => !/maximumAttempts\s*:/.test(body))
         .map(() => relative(ROOT, file));

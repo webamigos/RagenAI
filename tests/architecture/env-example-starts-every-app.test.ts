@@ -1,9 +1,9 @@
-import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
 import { parseWorkerEnv } from '../../apps/worker/src/config/env';
+import { readSource } from './tracked-files';
 
 /**
  * `.env.example` must be enough to start every app that refuses to boot on a
@@ -48,7 +48,7 @@ const ENV_EXAMPLE = join(import.meta.dirname, '..', '..', '.env.example');
 function parseEnvExample(): Record<string, string> {
   const values: Record<string, string> = {};
 
-  for (const line of readFileSync(ENV_EXAMPLE, 'utf8').split('\n')) {
+  for (const line of readSource(ENV_EXAMPLE).split('\n')) {
     const match = /^([A-Z][A-Z0-9_]*)=(.*)$/.exec(line.trim());
     if (match) {
       values[match[1] as string] = (match[2] as string).replace(

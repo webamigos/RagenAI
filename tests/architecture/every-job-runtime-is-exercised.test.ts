@@ -1,7 +1,7 @@
-import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
+import { readSource } from './tracked-files';
 
 /**
  * Every runtime the seam knows is run by some suite, somewhere.
@@ -70,7 +70,7 @@ const EXERCISED_ELSEWHERE: Record<string, string> = {
  * test start demanding an answer.
  */
 function declaredRuntimes(): string[] {
-  const source = readFileSync(SEAM, 'utf8');
+  const source = readSource(SEAM);
   const union = /export type WorkerRuntime =\s*([^;]+);/.exec(source);
 
   expect(
@@ -83,7 +83,7 @@ function declaredRuntimes(): string[] {
 
 /** Runtimes some job in this repository names as `WORKER_RUNTIME`. */
 function runtimesExercisedHere(): string[] {
-  const workflow = readFileSync(CI, 'utf8');
+  const workflow = readSource(CI);
 
   // Only a job that also runs the integration suite counts. A `WORKER_RUNTIME`
   // set by a job that boots an app — e2e does — proves the app starts, not

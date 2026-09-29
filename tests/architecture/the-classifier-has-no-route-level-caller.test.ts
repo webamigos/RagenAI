@@ -3,7 +3,7 @@ import { join, relative } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { trackedFiles } from './tracked-files';
+import { readSource, trackedFiles } from './tracked-files';
 
 /**
  * The jailbreak classifier runs in the loop, and nowhere else.
@@ -76,9 +76,7 @@ describe('the jailbreak classifier has no route-level caller', () => {
     'no app calls %s',
     (symbol) => {
       const offenders = appFiles.filter((file) =>
-        new RegExp(`\\b${symbol}\\s*\\(`).test(
-          stripComments(readFileSync(file, 'utf8')),
-        ),
+        new RegExp(`\\b${symbol}\\s*\\(`).test(stripComments(readSource(file))),
       );
 
       expect(
@@ -97,7 +95,7 @@ describe('the jailbreak classifier has no route-level caller', () => {
       // that still switched something would be a second answer to the same
       // question, and the panel would be the one that looked right.
       const offenders = appFiles.filter((file) =>
-        stripComments(readFileSync(file, 'utf8')).includes(variable),
+        stripComments(readSource(file)).includes(variable),
       );
 
       expect(

@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync } from 'node:fs';
 
 import { describe, expect, it } from 'vitest';
 
@@ -6,6 +6,7 @@ import {
   renderConfigReference,
   target as PAGE,
 } from '../../scripts/docs/generate-config-reference.mjs';
+import { readSource } from './tracked-files';
 
 /**
  * The published configuration reference is a build artifact, and this is what
@@ -51,7 +52,7 @@ describe('the configuration reference matches the tables', () => {
   it.skipIf(!pagePresent)(
     'is what the generator would write today',
     async () => {
-      const committed = readFileSync(PAGE, 'utf8');
+      const committed = readSource(PAGE);
 
       expect(
         committed,

@@ -3,7 +3,7 @@ import { join, relative, sep } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { trackedFiles } from './tracked-files';
+import { readSource, trackedFiles } from './tracked-files';
 
 /**
  * Envelope encryption lives once, in `@ragenai/crypto` (ADR-02, ADR-06).
@@ -119,7 +119,7 @@ const files = [
   ...sourceFiles(join(REPO_ROOT, 'packages')),
 ].map((f) => ({
   path: relative(REPO_ROOT, f),
-  source: readFileSync(f, 'utf8'),
+  source: readSource(f),
 }));
 
 function offenders(pattern: RegExp): string[] {

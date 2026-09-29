@@ -1,4 +1,3 @@
-import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
@@ -18,6 +17,7 @@ import {
   resolveWorkerRuntimeSelection,
   type WorkerRuntimeChoice,
 } from '../../packages/create-ragen-app/src/worker-runtime';
+import { readSource } from './tracked-files';
 
 /**
  * `packages/create-ragen-app` writes generated secrets and corrected local
@@ -43,7 +43,7 @@ const ENV_LINE = /^#?\s*([A-Z][A-Z0-9_]*)=/;
 
 function keysInEnvExample(path: string): Set<string> {
   const keys = new Set<string>();
-  for (const line of readFileSync(path, 'utf8').split('\n')) {
+  for (const line of readSource(path).split('\n')) {
     const key = ENV_LINE.exec(line)?.[1];
     if (key) {
       keys.add(key);
