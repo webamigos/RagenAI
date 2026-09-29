@@ -10,6 +10,7 @@ import type {
 import type { EmbeddingsProvider } from '@/libs/llm/types/embeddings';
 import type {
   RetrievedSource,
+  RetrievalTrace,
   BaseChatChainInput,
   ChainTrackingContext,
 } from '../types/common';
@@ -27,7 +28,11 @@ import {
 } from './config';
 import { ThreadDocumentRetriever } from '../utils/ThreadDocumentRetriever';
 import { redactPiiPlaceholders } from '@/libs/pii/redact-placeholders';
-import { rerankDocuments, isRerankingEnabled } from '@/libs/reranker';
+import {
+  rerankDocuments,
+  isRerankingEnabled,
+  rerankProviderName,
+} from '@/libs/reranker';
 import { logger } from '@/app/lib/utils/logger';
 import { withSpan } from '@/libs/monitoring/with-span';
 
@@ -514,6 +519,8 @@ export async function retrieveRelevantDocumentsWithIds(
   chunkCount: number;
   /** Wall-clock for the whole stage: fan-out, dedupe and rerank together. */
   durationMs: number;
+  /** Absent only on the empty-query early return, where nothing ran. */
+  trace?: RetrievalTrace;
 }> {
   if (!vectorStore) {
     throw new Error('Error retrieving relevant documents: No vector store');
@@ -559,11 +566,13 @@ export async function retrieveRelevantDocumentsWithIds(
       'rag.reranking_enabled': useReranking,
     },
     async (span) => {
+      const searchStartedAt = Date.now();
       const resultsPerQuery = await Promise.all(
         queryList.map((q) =>
           vectorStore.similaritySearch(q, perQueryCount, filter),
         ),
       );
+      const searchMs = Date.now() - searchStartedAt;
 
       const deduped = new Map<string, VectorStoreDocument>();
       for (const docs of resultsPerQuery) {
@@ -583,7 +592,9 @@ export async function retrieveRelevantDocumentsWithIds(
       span.setAttribute('rag.deduped_count', uniqueDocs.length);
 
       let finalDocs: VectorStoreDocument[];
-      if (useReranking && uniqueDocs.length > maxDocuments) {
+      const reranked = useReranking && uniqueDocs.length > maxDocuments;
+      const rerankStartedAt = Date.now();
+      if (reranked) {
         finalDocs = await withSpan(
           'rag.rerank',
           { 'rag.rerank_input_count': uniqueDocs.length },
@@ -596,6 +607,7 @@ export async function retrieveRelevantDocumentsWithIds(
       } else {
         finalDocs = uniqueDocs.slice(0, maxDocuments);
       }
+      const rerankMs = reranked ? Date.now() - rerankStartedAt : 0;
 
       const seenFileIds = new Set<string>();
       const sources: RetrievedSource[] = [];
@@ -723,9 +735,41 @@ export async function retrieveRelevantDocumentsWithIds(
         sources,
         chunkCount: finalDocs.length,
         durationMs: Date.now() - startedAt,
+        trace: {
+          chunks: renderedChunkPositions(finalDocs),
+          postRetrieval: reranked
+            ? (`reranker:${rerankProviderName()}` as const)
+            : ('fusion' as const),
+          queryCount: queryList.length,
+          timings: { searchMs, rerankMs },
+        },
       };
     },
   );
+}
+
+/**
+ * The `(fileId, chunkIndex)` of each chunk in the order it was rendered. A
+ * chunk without both — thread documents, points written before either field
+ * existed — is left out rather than reported at a position it does not have.
+ */
+export function renderedChunkPositions(
+  docs: readonly VectorStoreDocument[],
+): { fileId: string; chunkIndex: number }[] {
+  const positions: { fileId: string; chunkIndex: number }[] = [];
+  for (const doc of docs) {
+    const fileId = doc.metadata?.file_id;
+    const chunkIndex = doc.metadata?.chunk_index;
+    if (
+      typeof fileId === 'string' &&
+      fileId.length > 0 &&
+      typeof chunkIndex === 'number' &&
+      Number.isInteger(chunkIndex)
+    ) {
+      positions.push({ fileId, chunkIndex });
+    }
+  }
+  return positions;
 }
 
 export async function retrieveThreadDocuments(

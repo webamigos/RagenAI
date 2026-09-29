@@ -24,6 +24,7 @@ vi.mock('ai', async () => {
 vi.mock('@/libs/reranker', () => ({
   rerankDocuments: mockRerankDocuments,
   isRerankingEnabled: mockIsRerankingEnabled,
+  rerankProviderName: () => 'scaleway',
 }));
 
 vi.mock('@/app/lib/utils/logger', () => ({

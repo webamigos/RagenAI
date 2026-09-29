@@ -26,6 +26,11 @@ function getProvider(): 'scaleway' | 'cohere' {
   return process.env.RERANK_PROVIDER === 'cohere' ? 'cohere' : 'scaleway';
 }
 
+/** Which reranker a turn used, for the stream's `retrieval` frame. */
+export function rerankProviderName(): 'scaleway' | 'cohere' {
+  return getProvider();
+}
+
 export function isRerankingEnabled(): boolean {
   return getProvider() === 'scaleway'
     ? isScalewayRerankingEnabled()
