@@ -174,3 +174,33 @@ export function parseBackfillArgs(argv: readonly string[]): BackfillArgs {
     limit,
   };
 }
+
+/**
+ * The `QdrantClient` options for a URL an operator pastes.
+ *
+ * The client reads the port from the URL and falls back to 6333 when there is
+ * none — and `new URL()` drops a scheme's default port, so
+ * `https://qdrant.example.com` and `https://qdrant.example.com:443` both reach
+ * port 6333. A Qdrant behind a TLS proxy (Railway's public domain, a reverse
+ * proxy) only answers on 443, so the backfill timed out against demo. An
+ * explicit port wins; otherwise the scheme's own default is used.
+ */
+export function qdrantClientOptions(
+  url: string,
+  apiKey: string | undefined,
+): { url: string; apiKey?: string; port?: number } {
+  const parsed = new URL(url);
+  const key = apiKey?.trim() ? apiKey : undefined;
+  if (parsed.port) {
+    return { url, apiKey: key };
+  }
+  if (parsed.protocol === 'https:') {
+    return { url, apiKey: key, port: 443 };
+  }
+  if (parsed.protocol === 'http:' && parsed.hostname !== 'localhost') {
+    // Plain HTTP with no port means 80 for any host but a local Qdrant,
+    // whose default of 6333 the client already assumes.
+    return { url, apiKey: key, port: 80 };
+  }
+  return { url, apiKey: key };
+}
