@@ -28,6 +28,10 @@ import { runAssertions, judge } from './lib/grade';
 import { renderMarkdown, resultStem, tally } from './lib/report';
 import { withRetry } from './lib/retry';
 import {
+  describeRetrievalSettings,
+  type OrgRetrievalSettings,
+} from './lib/stack';
+import {
   chatModelToPin,
   pairUploads,
   parseArgs,
@@ -357,8 +361,26 @@ async function settledGatewayMode(startedAs: string): Promise<string> {
   return endedAs;
 }
 
+/** The organization's retrieval switches, read where the chain reads them. */
+async function orgRetrievalSettings(
+  prisma: PrismaClient,
+): Promise<OrgRetrievalSettings | null> {
+  const project = await prisma.project.findUnique({
+    where: { id: PROJECT_ID },
+    select: { organizationId: true },
+  });
+  if (!project?.organizationId) {
+    return null;
+  }
+  return prisma.organizationSettings.findUnique({
+    where: { organizationId: project.organizationId },
+    select: { rerankingEnabled: true, multiQueryEnabled: true },
+  });
+}
+
 async function fingerprint(
   llmGateway: string,
+  retrieval: OrgRetrievalSettings | null,
   shape?: string,
 ): Promise<StackFingerprint> {
   let gitSha = 'unknown';
@@ -382,8 +404,7 @@ async function fingerprint(
     vectorSize: process.env.VECTOR_SIZE ?? '(app default)',
     rerankProvider: process.env.RERANK_PROVIDER ?? '(unset)',
     rerankModel: process.env.RERANK_MODEL ?? '(unset)',
-    rerankingEnabled: process.env.FEATURE_FLAG_RERANKING === '1' ? 'on' : 'off',
-    multiQueryVariants: process.env.MULTI_QUERY_VARIANT_COUNT ?? '1 (default)',
+    ...describeRetrievalSettings(retrieval, process.env),
     appUrl: APP_URL,
     llmGateway,
     shape,
@@ -451,6 +472,7 @@ async function main(): Promise<void> {
   /** Ids of the files this run uploaded — what waiting and cleanup key on. */
   let uploaded: string[] = [];
   let documentScores: DocumentScore[] | undefined;
+  let retrievalSettings: OrgRetrievalSettings | null = null;
   let cookie: string | undefined;
 
   try {
@@ -488,6 +510,7 @@ async function main(): Promise<void> {
       );
       await pinProjectInstruction(prisma);
       await pinOrganizationModel(prisma);
+      retrievalSettings = await orgRetrievalSettings(prisma);
       await clearThread(prisma);
     }
 
@@ -632,6 +655,7 @@ async function main(): Promise<void> {
     corpusVersion: corpus.version,
     fingerprint: await fingerprint(
       await settledGatewayMode(startedUnderGateway),
+      retrievalSettings,
       shape,
     ),
     results,

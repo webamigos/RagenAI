@@ -68,8 +68,24 @@ archive is the blog.
 
 ## Unreleased
 
+### Usage and limits
+
+- `[brief]` **The monthly cost limit counts document processing.** Usage
+  from processing documents — embeddings, summaries, scoring, Optimize and
+  Brain — was recorded with a cost of zero, so the cost shown for an
+  organization and its monthly cost ceiling left all of it out. It is
+  priced now, from the same table as chat. Rows recorded before this change
+  keep their zero.
+
 ### Knowledge base
 
+- `[brief]` **With PII masking on, tables are masked too.** Docling's table
+  chunks skipped masking and reached the index, the summary and the stored
+  document with names and numbers intact. In the encrypted `dual_content`
+  mode, every chunk used to carry the whole document as its original, which
+  weakened search and gave the answer model the whole file in place of each
+  chunk. Masking now runs on each chunk. Re-process documents uploaded with
+  masking on to apply it.
 - `[brief]` **An edited document is masked like an upload.** With PII
   masking on, a document's new text — after an edit, an applied Optimize
   suggestion or a rollback — was indexed as written, whatever its masking
@@ -122,6 +138,11 @@ archive is the blog.
 
 ### Thread: ingest that survives a busy Docling
 
+- `[brief]` **A worker that just started no longer reports Docling as down.**
+  Its first check ran while it was still starting up, could time out against
+  a healthy Docling, and then showed a parser outage on the setup page for
+  up to half a minute. The worker now checks a second time before it reports
+  Docling as down.
 - `[brief]` **A burst of uploads no longer overwhelms Docling, and a busy one
   no longer loses files.** At most four documents are parsed at once across
   the whole deployment (`DOCLING_MAX_CONCURRENCY`), instead of twenty per

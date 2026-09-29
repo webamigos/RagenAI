@@ -100,3 +100,68 @@ describe('createDoclingStatusProbe (spec C1)', () => {
     await expect(probe()).resolves.toMatchObject({ up: false });
   });
 });
+
+/**
+ * One failed look is not an outage. The first probe runs while the worker is
+ * still importing its modules, and a blocked event loop let the 5 s health
+ * timeout fire on a healthy Docling: "Docling is unavailable" at boot, and
+ * "down" published for the setup page, on 2 of 5 local starts.
+ */
+describe('createDoclingStatusProbe — confirming an outage', () => {
+  function confirming(check: () => Promise<boolean>) {
+    const log = { info: vi.fn(), error: vi.fn() };
+    const write = vi.fn(async (_value: string, _ttl: number) => undefined);
+    const sleep = vi.fn(async (_ms: number) => undefined);
+    const probe = createDoclingStatusProbe({
+      check,
+      write,
+      log,
+      confirmDown: { delayMs: 5_000, sleep },
+    });
+    return { probe, log, write, sleep, check };
+  }
+
+  it('does not call Docling down at boot when a second look finds it up', async () => {
+    const { probe, log, write, sleep, check } = confirming(
+      answers(false, true),
+    );
+
+    await expect(probe()).resolves.toMatchObject({ up: true });
+
+    expect(check).toHaveBeenCalledTimes(2);
+    expect(sleep).toHaveBeenCalledWith(5_000);
+    expect(log.error).not.toHaveBeenCalled();
+    expect(JSON.parse(write.mock.calls[0]![0])).toMatchObject({ up: true });
+  });
+
+  it('reports an outage that the second look confirms, on the same probe', async () => {
+    const { probe, log } = confirming(answers(false, false));
+
+    await expect(probe()).resolves.toMatchObject({ up: false });
+
+    expect(log.error).toHaveBeenCalledWith(
+      { docling: 'down' },
+      'Docling is unavailable',
+    );
+  });
+
+  it('looks once when Docling is up', async () => {
+    const { probe, sleep, check } = confirming(answers(true));
+
+    await probe();
+
+    expect(check).toHaveBeenCalledTimes(1);
+    expect(sleep).not.toHaveBeenCalled();
+  });
+
+  it('does not log a blip between two healthy probes', async () => {
+    const { probe, log } = confirming(answers(true, false, true, true));
+
+    await probe();
+    await probe();
+    await probe();
+
+    expect(log.error).not.toHaveBeenCalled();
+    expect(log.info).not.toHaveBeenCalled();
+  });
+});

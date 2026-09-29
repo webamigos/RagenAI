@@ -63,6 +63,20 @@ Then stop the worker, **drain** (no file left in `PROCESSING`), and repeat with
 `WORKER_RUNTIME=bullmq` and `--json /tmp/bullmq.json`. A run in flight when the
 variable changes is orphaned: the new runtime has never heard of it.
 
+## Real files instead of synthetic text
+
+`--files <dir>` uploads the PDF, DOCX, TXT and MD files under a directory,
+cycled across each batch, instead of the ~500-word synthetic `.txt`. That is
+what [Docling spec C3](../specs/2026-09-26-docling-under-load.md) needs: a
+synthetic text is the cheapest conversion Docling does, so it measures the
+queue and the providers, not the parser. Set `DOCLING_STRICT=1` on the worker
+for such a run, so a Docling failure is counted as one rather than hidden by
+the fallback — which would also send the PDFs to an external model.
+
+Every run's row is printed, and `--json` rewritten, as soon as that run
+finishes (`"complete": false` until the matrix is done), so a run stopped
+halfway keeps the repetitions it already measured.
+
 ## Reading the result
 
 The script reports, per level and repetition: the time the `start()` calls

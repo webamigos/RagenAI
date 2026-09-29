@@ -14,6 +14,11 @@
  *   LOAD_TEST_ORG_ID=<org id> npx tsx src/scripts/jobs-load-test.ts \
  *     --levels 1,5,20 --repetitions 3 --json ../../tmp/bullmq.json
  *
+ * `--files <dir>` uploads the files in a directory instead — PDF, DOCX, TXT or
+ * MD, cycled across the batch — which is how Docling spec C3 measures the
+ * parser rather than the queue: a synthetic `.txt` is the cheapest conversion
+ * Docling does. See `jobs-load-test-fixtures.ts`.
+ *
  * `WORKER_RUNTIME` chooses the engine, exactly as it does for a deployment —
  * **and the worker you are running has to agree**, because a producer writes
  * to one engine only. The script prints the runtime it resolved and refuses to
@@ -55,11 +60,27 @@ import { deleteDocumentVectors } from '../activities/meilisearch/delete-document
 import { aws } from '../services/aws.js';
 import { getPrisma } from '../services/db/prisma.js';
 import { jobs } from '../jobs.js';
+import { FileType } from '../types/UserFile.js';
+
+import {
+  filesOption,
+  fixtureFor,
+  loadFixtures,
+  storageKey,
+  type LoadTestFixture,
+} from './jobs-load-test-fixtures.js';
+import {
+  TABLE_HEADER,
+  table,
+  tableRow,
+  writeResults,
+} from './jobs-load-test-report.js';
 
 interface Options {
   levels: number[];
   repetitions: number;
   words: number;
+  files: string | undefined;
   json: string | undefined;
   keep: boolean;
 }
@@ -100,7 +121,13 @@ interface RunResult {
    * in storage and a row in the database, in a real organization, from the
    * run that went wrong. The created ids are what gets cleaned.
    */
-  created: string[];
+  created: CreatedFile[];
+}
+
+/** What cleanup needs to find a file again: its row, and its object's key. */
+interface CreatedFile {
+  fileId: string;
+  fileName: string;
 }
 
 const POLL_INTERVAL_MS = 500;
@@ -164,6 +191,7 @@ function parseOptions(argv: string[]): Options {
     levels,
     repetitions,
     words,
+    files: filesOption(argv),
     json: value('--json'),
     keep: argv.includes('--keep'),
   };
@@ -228,24 +256,27 @@ async function runOnce(
   projectId: string,
   level: number,
   repetition: number,
-  words: number,
+  fixtures: readonly LoadTestFixture[],
 ): Promise<RunResult> {
   const prisma = getPrisma();
-  const content = Buffer.from(syntheticDocument(words), 'utf8');
+  const created: CreatedFile[] = [];
   const fileIds: string[] = [];
 
   try {
     for (let index = 0; index < level; index++) {
       const fileId = randomUUID();
-      const fileName = `load-${fileId}.txt`;
+      const fixture = fixtureFor(fixtures, index);
+      const fileName = `load-${fileId}-${fixture.fileName}`;
+      const { content } = fixture;
 
       // Recorded *before* the first write that can leave something behind. An
       // upload that succeeds and a row insert that fails would otherwise leave
       // an object nothing knows about — the id has to be on the cleanup list
       // before it exists anywhere else.
+      created.push({ fileId, fileName });
       fileIds.push(fileId);
 
-      await aws.uploadToS3(orgId, `${fileId}.txt`, content);
+      await aws.uploadToS3(orgId, storageKey(fileId, fileName), content);
       await prisma.userFile.create({
         data: {
           id: fileId,
@@ -253,8 +284,8 @@ async function runOnce(
           projectId,
           fileName,
           fileSize: content.byteLength,
-          fileType: 'TEXT',
-          isBinaryFile: false,
+          fileType: fixture.fileType,
+          isBinaryFile: fixture.isBinaryFile,
           isUploaded: true,
           uploadedAt: new Date(),
           // Every producer persists what it knows *before* enqueueing — the
@@ -268,7 +299,7 @@ async function runOnce(
     // Nothing has been enqueued yet, so nothing is running and cleaning up is
     // safe — which is exactly why this path cleans up and the ones below do
     // not.
-    await cleanup(orgId, fileIds);
+    await cleanup(orgId, created);
     throw error;
   }
 
@@ -373,7 +404,7 @@ async function runOnce(
     medianParseMs: median(files.map((file) => file.parseMs)),
     medianEmbedMs: median(files.map((file) => file.embedMs)),
     files,
-    created: fileIds,
+    created,
   };
 }
 
@@ -385,10 +416,10 @@ async function runOnce(
  * level look slower than the first for reasons that have nothing to do with
  * the runtime.
  */
-async function cleanup(orgId: string, fileIds: string[]): Promise<void> {
+async function cleanup(orgId: string, files: CreatedFile[]): Promise<void> {
   const prisma = getPrisma();
 
-  for (const fileId of fileIds) {
+  for (const { fileId, fileName } of files) {
     try {
       await deleteDocumentVectors({ orgId, fileId });
     } catch (error) {
@@ -399,8 +430,8 @@ async function cleanup(orgId: string, fileIds: string[]): Promise<void> {
       // The upload is the one thing that outlives the database row: deleting
       // the row leaves the object, and nothing ever looks at it again. On a
       // local provider that is a directory quietly filling up; on S3 it is a
-      // bill. Same key the upload used — `${orgId}/${fileId}.txt`.
-      await aws.deleteFromS3(orgId, `${fileId}.txt`);
+      // bill. Same key the upload used.
+      await aws.deleteFromS3(orgId, storageKey(fileId, fileName));
     } catch (error) {
       console.warn(`could not delete the stored file for ${fileId}:`, error);
     }
@@ -421,30 +452,6 @@ async function cleanup(orgId: string, fileIds: string[]): Promise<void> {
   }
 }
 
-function table(results: RunResult[]): string {
-  const header =
-    '| level | rep | start (ms) | min | p50 | p95 | max | wall | queue wait | parse | embed | failures |';
-  const divider = '| --- '.repeat(12) + '|';
-  const rows = results.map((result) =>
-    [
-      result.level,
-      result.repetition,
-      result.startMs,
-      result.min,
-      result.p50,
-      result.p95,
-      result.max,
-      result.wallMs,
-      result.medianQueueWaitMs ?? '—',
-      result.medianParseMs ?? '—',
-      result.medianEmbedMs ?? '—',
-      result.failures,
-    ].join(' | '),
-  );
-
-  return [header, divider, ...rows.map((row) => `| ${row} |`)].join('\n');
-}
-
 async function main(): Promise<void> {
   const options = parseOptions(process.argv.slice(2));
   const orgId = process.env.LOAD_TEST_ORG_ID?.trim();
@@ -458,6 +465,23 @@ async function main(): Promise<void> {
   const runtime = resolveWorkerRuntime();
   console.log(
     `runtime: ${runtime} — the worker consuming these jobs must be running with the same WORKER_RUNTIME, or every run below will time out.`,
+  );
+
+  // Read before anything is created, so a wrong path costs nothing.
+  const fixtures: LoadTestFixture[] = options.files
+    ? await loadFixtures(options.files)
+    : [
+        {
+          fileName: 'synthetic.txt',
+          fileType: FileType.TEXT,
+          isBinaryFile: false,
+          content: Buffer.from(syntheticDocument(options.words), 'utf8'),
+        },
+      ];
+  console.log(
+    options.files
+      ? `files: ${fixtures.length} from ${options.files}, cycled across each batch`
+      : `files: synthetic text, ${options.words} words`,
   );
 
   const prisma = getPrisma();
@@ -487,12 +511,21 @@ async function main(): Promise<void> {
           project.id,
           level,
           repetition,
-          options.words,
+          fixtures,
         );
         results.push(result);
-
-        if (!options.keep) {
-          await cleanup(orgId, result.created);
+        // Printed as it lands, for the same reason `writeResults` runs here.
+        console.log(`${TABLE_HEADER}\n${tableRow(result)}`);
+        try {
+          if (options.json) {
+            await writeResults(options.json, runtime, results, false);
+          }
+        } finally {
+          // The run finished, so its jobs are done and its files are safe to
+          // remove — whether or not the report could be written.
+          if (!options.keep) {
+            await cleanup(orgId, result.created);
+          }
         }
       }
     }
@@ -536,12 +569,7 @@ async function main(): Promise<void> {
   console.log(table(results));
 
   if (options.json) {
-    const { writeFile } = await import('node:fs/promises');
-    await writeFile(
-      options.json,
-      JSON.stringify({ runtime, results }, null, 2),
-      'utf8',
-    );
+    await writeResults(options.json, runtime, results, true);
     console.log(`\nwrote ${options.json}`);
   }
 }
