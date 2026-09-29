@@ -73,7 +73,6 @@ export const Workflow = {
   GENERATE_DOCUMENT: 'generateDocument',
   REINDEX_DOCUMENT_VERSION: 'reindexDocumentVersion',
   OPTIMIZE_DOCUMENT: 'optimizeDocument',
-  SCORE_DOCUMENT: 'scoreDocument',
 } as const satisfies Record<string, JobName>;
 
 export type Workflow = (typeof Workflow)[keyof typeof Workflow];

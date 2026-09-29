@@ -87,13 +87,13 @@ half — a three-line wrapper per handler plus `temporal-context.ts`, where
 concerns in the runtime: anything that reaches for `@temporalio/*` or `bullmq`
 from `src/handlers/` has undone the seam both runtimes stand on.
 
-Nine pipelines. The two ingest paths:
+Ten pipelines. The two ingest paths:
 
 - **`runFileEmbeddings`** (`src/handlers/parse-and-embed.ts`) - Main pipeline: download file from S3 → detect type → parse document → split into chunks → generate summary → prepend synthetic summary chunk → hybrid-embed (dense + sparse) → store in Qdrant → merge `UserFile.metadata.summary`
 - **`scrapeWebsite`** (`src/handlers/scrape-website.ts`) - Scrape website via FireCrawl → create document → generate embeddings → store in Qdrant
 
-and eight more in the same shape: `generateDocument`, `optimizeDocument`,
-`scoreDocument`, `reindexDocumentVersion`, the two scheduled ones,
+and more in the same shape: `generateDocument`, `optimizeDocument`,
+`reindexDocumentVersion`, the two scheduled ones,
 `cleanupDemoThreads` and `pruneAnalyticsRetrievals`, and Ragen Brain's
 `brainExtract` (`src/handlers/brain-extract.ts`) — candidate knowledge pages
 from documents' active versions, behind the `brain` flag, which the job

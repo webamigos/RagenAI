@@ -20,7 +20,6 @@ import { optimizeDocument } from '../../src/handlers/optimize-document.js';
 import { pruneAnalyticsRetrievals } from '../../src/handlers/prune-analytics-retrievals.js';
 import { reindexDocumentVersion } from '../../src/handlers/reindex-document-version.js';
 import { runFileEmbeddings } from '../../src/handlers/parse-and-embed.js';
-import { scoreDocument } from '../../src/handlers/score-document.js';
 import { scrapeWebsite } from '../../src/handlers/scrape-website.js';
 import {
   pollUntilTerminal,
@@ -94,7 +93,6 @@ export async function startBullMqHarness(
     generateDocument,
     reindexDocumentVersion,
     optimizeDocument,
-    scoreDocument,
     cleanupDemoThreads,
     pruneAnalyticsRetrievals,
     brainExtract,

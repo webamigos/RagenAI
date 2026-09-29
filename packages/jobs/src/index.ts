@@ -14,7 +14,6 @@ export {
   type GenerateDocumentResult,
   type ReindexDocumentVersionPayload,
   type OptimizeDocumentPayload,
-  type ScoreDocumentPayload,
   type CleanupDemoThreadsResult,
   type PruneAnalyticsRetrievalsResult,
   type BrainExtractPayload,

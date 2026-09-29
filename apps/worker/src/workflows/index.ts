@@ -3,7 +3,6 @@ export * from './scrape-website.js';
 export * from './generate-document.js';
 export * from './reindex-document-version.js';
 export * from './optimize-document.js';
-export * from './score-document.js';
 export * from './cleanup-demo-threads.js';
 export * from './prune-analytics-retrievals.js';
 export * from './brain-extract.js';

@@ -23,7 +23,6 @@ import { optimizeDocument } from './handlers/optimize-document.js';
 import { pruneAnalyticsRetrievals } from './handlers/prune-analytics-retrievals.js';
 import { reindexDocumentVersion } from './handlers/reindex-document-version.js';
 import { runFileEmbeddings } from './handlers/parse-and-embed.js';
-import { scoreDocument } from './handlers/score-document.js';
 import { scrapeWebsite } from './handlers/scrape-website.js';
 
 /**
@@ -47,7 +46,6 @@ const handlers: JobHandlers = {
   generateDocument,
   reindexDocumentVersion,
   optimizeDocument,
-  scoreDocument,
   cleanupDemoThreads,
   pruneAnalyticsRetrievals,
   brainExtract,
