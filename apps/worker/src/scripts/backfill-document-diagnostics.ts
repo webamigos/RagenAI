@@ -32,6 +32,7 @@ import type { FileType } from '../types/UserFile.js';
 import {
   chunksFromPoints,
   parseBackfillArgs,
+  qdrantClientOptions,
   renderSummary,
   summariseByType,
   type BackfillRow,
@@ -79,10 +80,12 @@ async function main() {
     process.argv.slice(2),
   );
 
-  const qdrant = new QdrantClient({
-    url: process.env.QDRANT_URL || 'http://localhost:6333',
-    apiKey: process.env.QDRANT_API_KEY,
-  });
+  const qdrant = new QdrantClient(
+    qdrantClientOptions(
+      process.env.QDRANT_URL || 'http://localhost:6333',
+      process.env.QDRANT_API_KEY,
+    ),
+  );
   if (!(await qdrant.collectionExists(orgId)).exists) {
     console.log(`No collection for organization ${orgId}; nothing is indexed.`);
     return;

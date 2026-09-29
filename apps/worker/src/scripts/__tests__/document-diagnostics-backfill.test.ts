@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 import {
   chunksFromPoints,
   parseBackfillArgs,
+  qdrantClientOptions,
   renderSummary,
   summariseByType,
   type BackfillRow,
@@ -165,5 +166,41 @@ describe('parseBackfillArgs', () => {
     expect(() => parseBackfillArgs(['--org', 'org-1', '--limit'])).toThrow(
       '--limit needs a value',
     );
+  });
+});
+
+describe('qdrantClientOptions', () => {
+  // The client falls back to 6333 when the URL has no port, and `new URL()`
+  // drops a scheme's default port — so an https Qdrant behind a proxy was
+  // dialled on 6333 and timed out.
+  it('dials 443 for an https URL without a port, written with or without it', () => {
+    expect(
+      qdrantClientOptions('https://qdrant-demo.up.railway.app', undefined),
+    ).toMatchObject({ port: 443 });
+    expect(
+      qdrantClientOptions('https://qdrant-demo.up.railway.app:443', undefined),
+    ).toMatchObject({ port: 443 });
+  });
+
+  it('keeps an explicit port', () => {
+    expect(
+      qdrantClientOptions('https://abc.cloud.qdrant.io:6333', 'k'),
+    ).toEqual({ url: 'https://abc.cloud.qdrant.io:6333', apiKey: 'k' });
+  });
+
+  it("leaves a local Qdrant on the client's default", () => {
+    expect(qdrantClientOptions('http://localhost:6333', undefined)).toEqual({
+      url: 'http://localhost:6333',
+      apiKey: undefined,
+    });
+    expect(
+      qdrantClientOptions('http://localhost', undefined),
+    ).not.toHaveProperty('port');
+  });
+
+  it('treats an empty API key as none', () => {
+    expect(
+      qdrantClientOptions('http://localhost:6333', '  ').apiKey,
+    ).toBeUndefined();
   });
 });
