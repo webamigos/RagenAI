@@ -292,10 +292,20 @@ defaulting to `false`.
 
 ### Phase A — measure what retrieval hands the model (shared)
 
-- [ ] **A1.** The `retrieval` stream frame in both chains: rendered chunk
+- [x] **A1.** The `retrieval` stream frame in both chains: rendered chunk
   positions, the post-retrieval step, multi-query, and step latencies. Unit
   tests on the frame builder, and a chain test that the frame lists exactly
   what `combineDocuments` rendered.
+
+  *Done.* A `retrieval` event already existed (sources, `chunkCount`,
+  `durationMs`); it gained a `trace` rather than a second frame:
+  `chunks` as `(fileId, chunkIndex)` in rendered order, `postRetrieval`
+  (`fusion` or `reranker:<provider>`), `queryCount`, and
+  `timings { searchMs, rerankMs, rephraseMs }`. Mapped field by field in
+  `toRetrievalEvent`, so no text can ride along. apps/web's chain only:
+  apps/api's OpenAI-compatible endpoint streams no retrieval frame at all,
+  and the harness measures through apps/web — the shared code of Phases B–D
+  (D4) is what keeps the two chains equal, not this frame.
 - [ ] **A2.** `rag-benchmark` parses the frame and reports **evidence recall**
   (per question and per shape) next to the pass rate. It stamps the stack
   from the frame. Unit tests on the parser and on the recall computation.

@@ -197,3 +197,33 @@ describe('toRetrievalEvent', () => {
     ]);
   });
 });
+
+describe('toRetrievalEvent — the trace', () => {
+  const trace = {
+    chunks: [{ fileId: 'f-1', chunkIndex: 3 }],
+    postRetrieval: 'reranker:scaleway' as const,
+    queryCount: 2,
+    timings: { searchMs: 40, rerankMs: 120, rephraseMs: 300 },
+  };
+
+  it('sends positions and step names, and nothing it was not told to', () => {
+    const withExtra = {
+      ...trace,
+      chunks: [{ fileId: 'f-1', chunkIndex: 3, pageContent: 'secret text' }],
+    };
+    const event = toRetrievalEvent({
+      sources: [],
+      chunkCount: 1,
+      durationMs: 160,
+      trace: withExtra,
+    });
+    expect(event.trace).toEqual(trace);
+    expect(JSON.stringify(event)).not.toContain('secret text');
+  });
+
+  it('omits the trace when the chain had none', () => {
+    expect(
+      toRetrievalEvent({ sources: [], chunkCount: 0, durationMs: 0 }),
+    ).not.toHaveProperty('trace');
+  });
+});

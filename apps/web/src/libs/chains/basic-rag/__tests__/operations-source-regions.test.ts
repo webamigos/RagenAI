@@ -18,6 +18,7 @@ vi.mock('@/libs/monitoring/with-span', () => ({
 vi.mock('@/libs/reranker', () => ({
   rerankDocuments: mockRerankDocuments,
   isRerankingEnabled: mockIsRerankingEnabled,
+  rerankProviderName: () => 'scaleway',
 }));
 
 vi.mock('@/app/lib/utils/logger', () => ({
