@@ -121,7 +121,10 @@ describe('retrieveRelevantDocumentsWithIds — the retrieval trace', () => {
   it('names the reranker when it cut the pool', async () => {
     mockIsRerankingEnabled.mockReturnValue(true);
     mockRerankDocuments.mockImplementation(async (_q, docs: Chunk[]) =>
-      docs.slice(0, 1),
+      docs.slice(0, 1).map((d) => ({
+        ...d,
+        metadata: { ...d.metadata, relevance_score: 0.9 },
+      })),
     );
     const { trace } = await retrieveRelevantDocumentsWithIds(
       storeReturning([
@@ -136,5 +139,22 @@ describe('retrieveRelevantDocumentsWithIds — the retrieval trace', () => {
     );
     expect(trace?.postRetrieval).toBe('reranker:scaleway');
     expect(trace?.chunks).toEqual([{ fileId: 'f-1', chunkIndex: 1 }]);
+  });
+
+  // A provider failure returns the unscored pool: the model saw fusion order,
+  // and the trace must not credit it to the reranker.
+  it('names a reranker fallback as such', async () => {
+    mockIsRerankingEnabled.mockReturnValue(true);
+    mockRerankDocuments.mockImplementation(async (_q, docs: Chunk[]) =>
+      docs.slice(0, 1),
+    );
+    const { trace } = await retrieveRelevantDocumentsWithIds(
+      storeReturning([chunk('f-1', 1, 'One.'), chunk('f-2', 1, 'Two.')]),
+      'q',
+      1,
+      undefined,
+      true,
+    );
+    expect(trace?.postRetrieval).toBe('reranker-failed:scaleway');
   });
 });

@@ -737,15 +737,37 @@ export async function retrieveRelevantDocumentsWithIds(
         durationMs: Date.now() - startedAt,
         trace: {
           chunks: renderedChunkPositions(finalDocs),
-          postRetrieval: reranked
-            ? (`reranker:${rerankProviderName()}` as const)
-            : ('fusion' as const),
+          postRetrieval: postRetrievalStep(reranked, finalDocs),
           queryCount: queryList.length,
           timings: { searchMs, rerankMs },
         },
       };
     },
   );
+}
+
+/**
+ * The step that actually produced `finalDocs`, not the branch taken.
+ *
+ * Both rerankers fall back to the unscored pool, in fusion order, when the
+ * provider fails — and every chunk they did score carries `relevance_score`.
+ * So "the reranker ran" and "the reranker's order is what the model saw" are
+ * told apart by the scores: a benchmark that credited a fallback to the
+ * reranker would measure fusion under the reranker's name.
+ */
+export function postRetrievalStep(
+  reranked: boolean,
+  finalDocs: readonly VectorStoreDocument[],
+): RetrievalTrace['postRetrieval'] {
+  if (!reranked) {
+    return 'fusion';
+  }
+  const scored = finalDocs.some(
+    (doc) => typeof doc.metadata?.relevance_score === 'number',
+  );
+  return scored
+    ? `reranker:${rerankProviderName()}`
+    : `reranker-failed:${rerankProviderName()}`;
 }
 
 /**

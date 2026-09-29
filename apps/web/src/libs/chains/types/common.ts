@@ -207,9 +207,10 @@ export interface RetrievalTrace {
   chunks: { fileId: string; chunkIndex: number }[];
   /**
    * The step between search and rendering. `fusion` is Qdrant's RRF order,
-   * used when reranking is off or had nothing to cut.
+   * used when reranking is off or had nothing to cut; `reranker-failed:` is
+   * the reranker's fallback, which is fusion order too.
    */
-  postRetrieval: 'fusion' | `reranker:${string}`;
+  postRetrieval: 'fusion' | `reranker:${string}` | `reranker-failed:${string}`;
   /** Queries searched: the standalone question plus multi-query variants. */
   queryCount: number;
   /** Milliseconds each step added. `rephraseMs` is set by the chain. */
