@@ -515,7 +515,8 @@ export async function runFileEmbeddings(
     });
 
     // ==== DETECT DOCUMENT LANGUAGE (best-effort)
-    // Runs here, before masking, for two reasons. `maskPii` needs it — the
+    // Runs here, before masking (which now runs on the chunks, below), for
+    // two reasons. `maskPii` needs it — the
     // Presidio analyzer is per-language, and analysing every document with one
     // hardcoded model replaced ordinary English words with `<PERSON>`. And the
     // text is more detectable now than after masking, which removes spans.
@@ -533,29 +534,6 @@ export async function runFileEmbeddings(
         `Language detection failed for file ${fileId}: ${languageError instanceof Error ? languageError.message : String(languageError)}`,
       );
     }
-
-    // PII masking — runs after sanitization, before chunking
-    const piiPolicy = file.piiPolicy ?? 'TOXIC_ONLY';
-    const docsBeforeMasking = rawDocs.map((d) => ({
-      ...d,
-      metadata: { ...d.metadata },
-    }));
-    rawDocs = await maskPii({
-      docs: rawDocs,
-      piiPolicy,
-      language,
-      fileId,
-      organizationId: orgId,
-      userId: ownerId,
-      requestId: ctx.runId,
-    });
-
-    // Dual-content mode: add encrypted original to each chunk's metadata
-    rawDocs = await applyDualContentMode({
-      originalDocs: docsBeforeMasking,
-      maskedDocs: rawDocs,
-      orgId,
-    });
 
     // ==== CALCULATE PAGE COUNT
     // Docling: the parser's own count, for any format that has pages
@@ -592,11 +570,47 @@ export async function runFileEmbeddings(
       pageCount = Math.max(Math.ceil(totalChars / 3000), 1);
     }
 
-    docs = await splitText({
+    const chunks = await splitText({
       fileType,
       rawDocs,
       splitterSettings,
       parsedWithDocling,
+    });
+
+    // ==== PII MASKING — on the chunks, after splitting
+    //
+    // It ran on `rawDocs`, before the split, and that missed two things.
+    // Docling's table chunks are built from `metadata.doclingTables`, not from
+    // the prose `maskPii` rewrote, so every table reached the index, the
+    // summary and the stored document unmasked. And in `dual_content` mode the
+    // encrypted original was attached to the raw document and then copied by
+    // the splitter onto every chunk cut from it: each chunk carried the whole
+    // document, which the embedding read (its first 2000 characters) and the
+    // query-time decode put back in place of the chunk. Masking the chunks
+    // gives each one its own original, and masks what the splitter adds.
+    //
+    // Splitting the original text also keeps Docling's page anchors, which
+    // are offsets into it, pointing at the right characters.
+    const piiPolicy = file.piiPolicy ?? 'TOXIC_ONLY';
+    const chunksBeforeMasking = chunks.map((d) => ({
+      ...d,
+      metadata: { ...d.metadata },
+    }));
+    const maskedChunks = await maskPii({
+      docs: chunks,
+      piiPolicy,
+      language,
+      fileId,
+      organizationId: orgId,
+      userId: ownerId,
+      requestId: ctx.runId,
+    });
+
+    // Dual-content mode: each chunk's own original, encrypted, beside it.
+    docs = await applyDualContentMode({
+      originalDocs: chunksBeforeMasking,
+      maskedDocs: maskedChunks,
+      orgId,
     });
 
     await updateParsingStatus({
