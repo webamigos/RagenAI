@@ -316,8 +316,17 @@ defaulting to `false`.
 
 ### Phase B — deterministic expansion
 
-- [ ] **B1.** `chunk_index` payload index: added in the worker's collection
+- [x] **B1.** `chunk_index` payload index: added in the worker's collection
   setup, plus a one-off script for existing collections.
+
+  *Done.* `PAYLOAD_INDEXES` in `packages/rag-core` is now the one list the
+  worker, apps/web and apps/api create collections with (each had its own),
+  with `metadata.chunk_index` as an integer index. The worker's
+  `ensurePayloadIndexes` reads a collection's `payload_schema` and creates
+  what is missing, on existing collections too, the first time it writes to
+  one after a deploy; `scripts/ensure-qdrant-payload-indexes.ts [--dry-run]`
+  does it for every collection at once. Locally, 10 of 10 collections lacked
+  only `chunk_index`.
 - [ ] **B2.** `getChunksByIndex` on `VectorStoreClient` (Qdrant
   implementation in apps/web and apps/api). It applies the search filter and
   goes through the dual-content decode wrapper. Tests cover the filter,

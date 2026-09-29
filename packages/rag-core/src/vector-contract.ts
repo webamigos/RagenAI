@@ -74,3 +74,22 @@ export function resolveEmbeddingsModel(): string {
   const configured = process.env.EMBEDDINGS_MODEL?.trim();
   return configured ? configured : DEFAULT_EMBEDDINGS_MODEL;
 }
+
+/**
+ * The payload indexes every collection carries, created by whichever app
+ * creates the collection — the worker, apps/web or apps/api. Keyword indexes
+ * serve the access filter; `chunk_index` is an integer index for looking a
+ * file's neighbouring chunks up by position (spec
+ * 2026-09-29-llm-document-selection, B1). Declared once because the three
+ * creators each had their own list.
+ */
+export const PAYLOAD_INDEXES: readonly {
+  field: string;
+  schema: 'keyword' | 'integer';
+}[] = [
+  { field: 'metadata.project_id', schema: 'keyword' },
+  { field: 'metadata.file_id', schema: 'keyword' },
+  { field: 'metadata.organization_id', schema: 'keyword' },
+  { field: 'metadata.accessible_by', schema: 'keyword' },
+  { field: 'metadata.chunk_index', schema: 'integer' },
+];

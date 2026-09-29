@@ -327,7 +327,12 @@ describe('QdrantVectorStoreClient (hybrid search)', () => {
           indexing_threshold: 20000,
         },
       });
-      expect(mockCreatePayloadIndex).toHaveBeenCalledTimes(4);
+      // Every index in rag-core's list, `chunk_index` as an integer index.
+      expect(mockCreatePayloadIndex).toHaveBeenCalledTimes(5);
+      expect(mockCreatePayloadIndex).toHaveBeenCalledWith(expect.any(String), {
+        field_name: 'metadata.chunk_index',
+        field_schema: 'integer',
+      });
     });
 
     it('does not create collection if it already exists', async () => {

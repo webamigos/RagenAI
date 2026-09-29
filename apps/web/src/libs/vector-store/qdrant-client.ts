@@ -10,6 +10,7 @@ import {
   DENSE_VECTOR_NAME,
   SPARSE_VECTOR_NAME,
   PREFETCH_MULTIPLIER,
+  PAYLOAD_INDEXES,
 } from '@ragenai/rag-core';
 import { withSpan } from '@/libs/monitoring/with-span';
 
@@ -313,17 +314,11 @@ export class QdrantVectorStoreClient implements VectorStoreClient {
     });
 
     // Create payload indexes for filterable metadata fields
-    const indexFields = [
-      'metadata.project_id',
-      'metadata.file_id',
-      'metadata.organization_id',
-      'metadata.accessible_by',
-    ];
-
-    for (const field of indexFields) {
+    // One list for every app that creates a collection (rag-core).
+    for (const { field, schema } of PAYLOAD_INDEXES) {
       await this.client.createPayloadIndex(this.collectionName, {
         field_name: field,
-        field_schema: 'keyword',
+        field_schema: schema,
       });
     }
 
