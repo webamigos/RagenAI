@@ -79,6 +79,11 @@ archive is the blog.
 
 ### Knowledge base
 
+- `[brief]` **Answers know which section a passage came from.** Documents
+  parsed by Docling — most PDFs and Office files — and Markdown files now
+  record the heading each passage sits under, as Word documents already did.
+  The assistant sees "4. Wynagrodzenie > 4.2 Terminy" beside the text it
+  cites. Re-process a document to add it to one uploaded earlier.
 - `[brief]` **With PII masking on, tables are masked too.** Docling's table
   chunks skipped masking and reached the index, the summary and the stored
   document with names and numbers intact. In the encrypted `dual_content`

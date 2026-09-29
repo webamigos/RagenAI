@@ -3,6 +3,7 @@ import {
   type PageAnchor,
 } from '../../services/text-splitters/source-pages.js';
 import { buildTableChunks } from '../../services/text-splitters/table-chunks.js';
+import { attachSectionPaths } from '../../services/text-splitters/section-paths.js';
 import type { DoclingTable } from '../../services/docling-client.js';
 import { type Document } from '../../types/Document.js';
 import {
@@ -96,10 +97,12 @@ export const splitText = async ({
       const anchors = source?.metadata?.doclingPageAnchors as
         PageAnchor[] | undefined;
 
-      const withPages =
+      const withPages = attachSectionPaths(
         anchors && anchors.length > 0
           ? attachSourcePages(chunks, source.pageContent, anchors)
-          : chunks;
+          : chunks,
+        source?.pageContent ?? '',
+      );
 
       // The tables, as chunks of their own. Present on the metadata only when
       // the excision actually ran, so this is never a second copy of figures
@@ -128,11 +131,19 @@ export const splitText = async ({
 
     switch (fileType) {
       case FileType.MARKDOWN:
-        return splitMarkdownDocuments(rawDocs, {
-          chunkSize: splitterSettings.chunkSize,
-          chunkOverlap: splitterSettings.chunkOverlap,
-          keepSeparator: true,
-        });
+        // Each document's chunks get the headings they sit under — which
+        // is also what a re-indexed version gets, since its text is split
+        // as Markdown.
+        return rawDocs.flatMap((doc) =>
+          attachSectionPaths(
+            splitMarkdownDocuments([doc], {
+              chunkSize: splitterSettings.chunkSize,
+              chunkOverlap: splitterSettings.chunkOverlap,
+              keepSeparator: true,
+            }),
+            doc.pageContent,
+          ),
+        );
 
       case FileType.CSV:
       case FileType.XLSX:
