@@ -105,6 +105,7 @@ export const basicRagChain = async ({
       //
       // The cost is one round-trip of latency on a turn with rules enabled.
       const guardedInput = await evaluateGuardrails();
+      const rephraseStartedAt = Date.now();
       const rephrased = await rephraseAndExpand(
         models.questionRephraser,
         guardedInput,
@@ -114,6 +115,7 @@ export const basicRagChain = async ({
       );
 
       const { standaloneQuestion, variants } = rephrased;
+      const rephraseMs = Date.now() - rephraseStartedAt;
 
       // Defensively dedupe the full query list (order-preserving) so any
       // future change in rephraseAndExpand cannot cause redundant Qdrant
@@ -289,6 +291,14 @@ export const basicRagChain = async ({
                 sources: retrieved.sources,
                 chunkCount: retrieved.chunkCount,
                 durationMs: retrieved.durationMs,
+                ...(retrieved.trace
+                  ? {
+                      trace: {
+                        ...retrieved.trace,
+                        timings: { ...retrieved.trace.timings, rephraseMs },
+                      },
+                    }
+                  : {}),
               }
             : null,
         ),

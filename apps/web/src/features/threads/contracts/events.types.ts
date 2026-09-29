@@ -134,6 +134,18 @@ export type ApiSseRetrieval = {
   /** Chunks put in front of the model; not the same as `sources.length`. */
   chunkCount: number;
   durationMs: number;
+  /**
+   * Which chunks reached the model and how they were chosen — positions, never
+   * text. Read by rag-benchmark for evidence recall; the panel ignores it.
+   */
+  trace?: ApiSseRetrievalTrace;
+};
+
+export type ApiSseRetrievalTrace = {
+  chunks: { fileId: string; chunkIndex: number }[];
+  postRetrieval: string;
+  queryCount: number;
+  timings: { searchMs: number; rerankMs: number; rephraseMs?: number };
 };
 
 /**

@@ -79,6 +79,13 @@ archive is the blog.
 
 ### Knowledge base
 
+- `[brief]` **Documents that were indexed badly say so.** The knowledge base
+  now marks a document whose indexing went wrong: a table whose rows lost
+  their column names, text read as raw markup, empty chunks, or a parser
+  fallback. The document view lists what was found and why it matters. The
+  checks make no model call. Documents indexed before this change show
+  nothing until they are re-processed. An administrator can turn it off per
+  organization in apps/admin.
 - `[brief]` **Answers know which section a passage came from.** Documents
   parsed by Docling — most PDFs and Office files — and Markdown files now
   record the heading each passage sits under, as Word documents already did.
