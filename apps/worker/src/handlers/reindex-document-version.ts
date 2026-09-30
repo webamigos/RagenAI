@@ -206,7 +206,12 @@ export async function reindexDocumentVersion(
       docs,
       fileName,
       summary,
-    }).catch(() => docs);
+    }).catch((prefixError: unknown) => {
+      ctx.log.warn(
+        `Context prefix failed for file ${fileId}; indexing without one: ${prefixError instanceof Error ? prefixError.message : String(prefixError)}`,
+      );
+      return docs;
+    });
     const docsWithSummary: Document[] =
       summary.length > 0
         ? [

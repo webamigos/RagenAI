@@ -156,9 +156,13 @@ Phase A's first step.
 
 ### PII
 
-**The prefix is built from masked text only.** The context step runs after
-`maskPii`, on the same `docs` the summary reads (`parse-and-embed.ts`), so a
-prefix can never carry a value that masking removed.
+**The prefix carries nothing the point does not already store in
+plaintext.** The context step runs after `maskPii`, on the same `docs` the
+summary reads (`parse-and-embed.ts`), so its summary sentence is masked. The
+title and the section come from the file name and the heading stack, which
+masking does not touch — but the same point already stores both, as
+`file_name` and `section_path`. Masking file names and headings is a separate,
+existing gap, not one the prefix opens.
 
 In `dual_content` mode the dense embedding uses the decrypted original. The
 prefix is still the masked one, because it is stored in the payload in

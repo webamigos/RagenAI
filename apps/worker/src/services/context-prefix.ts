@@ -15,10 +15,11 @@ const SUMMARY_SENTENCE_CHARS = 200;
  *
  *   "Umowa serwisowa SLA — 4. Wynagrodzenie > 4.2 Terminy. Umowa określa…"
  *
- * Built from masked text only: the summary was generated from the masked
- * document, and the title and section are the masked chunk's own metadata.
  * The prefix is stored in the payload in plaintext, like `pageContent`, so it
- * must never carry what masking removed.
+ * carries nothing a reader of the collection cannot already see. The summary
+ * was generated from the masked document. The title and the section are not
+ * masked, but are no new exposure: the same point already stores them as
+ * `file_name` and `section_path`.
  */
 export function freeContextPrefix({
   fileName,
