@@ -193,6 +193,28 @@ export interface RetrievalSummary {
   chunkCount: number;
   /** Wall-clock for the retrieval stage: fan-out, dedupe and rerank. */
   durationMs: number;
+  /**
+   * What reached the answer model, and how it was chosen — the input of
+   * rag-benchmark's evidence recall (spec 2026-09-29-llm-document-selection,
+   * Phase A). Positions only, never text: which chunk of which file, in the
+   * order `combineDocuments` rendered them.
+   */
+  trace?: RetrievalTrace;
+}
+
+export interface RetrievalTrace {
+  /** Each rendered chunk as `(fileId, chunkIndex)`; `chunkIndex` is 1-based. */
+  chunks: { fileId: string; chunkIndex: number }[];
+  /**
+   * The step between search and rendering. `fusion` is Qdrant's RRF order,
+   * used when reranking is off or had nothing to cut; `reranker-failed:` is
+   * the reranker's fallback, which is fusion order too.
+   */
+  postRetrieval: 'fusion' | `reranker:${string}` | `reranker-failed:${string}`;
+  /** Queries searched: the standalone question plus multi-query variants. */
+  queryCount: number;
+  /** Milliseconds each step added. `rephraseMs` is set by the chain. */
+  timings: { searchMs: number; rerankMs: number; rephraseMs?: number };
 }
 
 export interface ChainStreamResult {

@@ -1,0 +1,160 @@
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import type { Attributes, Span } from '@opentelemetry/api';
+
+const { mockRerankDocuments, mockIsRerankingEnabled } = vi.hoisted(() => ({
+  mockRerankDocuments: vi.fn(),
+  mockIsRerankingEnabled: vi.fn(),
+}));
+
+vi.mock('@/libs/monitoring/with-span', () => ({
+  withSpan: async <T>(
+    _name: string,
+    _attributes: Attributes,
+    fn: (span: Span) => Promise<T>,
+  ): Promise<T> => fn({ setAttribute: () => undefined } as unknown as Span),
+}));
+
+vi.mock('@/libs/reranker', () => ({
+  rerankDocuments: mockRerankDocuments,
+  isRerankingEnabled: mockIsRerankingEnabled,
+  rerankProviderName: () => 'scaleway',
+}));
+
+vi.mock('@/app/lib/utils/logger', () => ({
+  logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() },
+}));
+
+vi.mock(
+  '@/features/ai-usage/services/commands/create-ai-usage-command',
+  () => ({ trackAiUsage: vi.fn() }),
+);
+
+import { retrieveRelevantDocumentsWithIds } from '../operations';
+import type { VectorStoreClient } from '@/libs/vector-store/types';
+
+type Chunk = { pageContent: string; metadata: Record<string, unknown> };
+
+/** One query, returning exactly the chunks the case is about. */
+function storeReturning(chunks: Chunk[]): VectorStoreClient {
+  return {
+    similaritySearch: vi.fn(async () => chunks),
+  } as unknown as VectorStoreClient;
+}
+
+beforeEach(() => {
+  vi.clearAllMocks();
+  mockIsRerankingEnabled.mockReturnValue(false);
+});
+
+const chunk = (fileId: string, chunkIndex: number, text: string): Chunk => ({
+  pageContent: text,
+  metadata: {
+    file_id: fileId,
+    file_name: `${fileId}.pdf`,
+    chunk_index: chunkIndex,
+  },
+});
+
+/**
+ * What reached the answer model, by position — the input of rag-benchmark's
+ * evidence recall (spec 2026-09-29-llm-document-selection, Phase A).
+ */
+describe('retrieveRelevantDocumentsWithIds — the retrieval trace', () => {
+  it('lists the rendered chunks, in the order the context renders them', async () => {
+    const { context, trace } = await retrieveRelevantDocumentsWithIds(
+      storeReturning([
+        chunk('f-2', 7, 'Second file, seventh chunk.'),
+        chunk('f-1', 3, 'First file, third chunk.'),
+        chunk('f-2', 2, 'Second file, second chunk.'),
+      ]),
+      'q',
+      5,
+      undefined,
+      false,
+    );
+
+    expect(trace?.chunks).toEqual([
+      { fileId: 'f-2', chunkIndex: 7 },
+      { fileId: 'f-1', chunkIndex: 3 },
+      { fileId: 'f-2', chunkIndex: 2 },
+    ]);
+    const order = [
+      'Second file, seventh chunk.',
+      'First file, third chunk.',
+      'Second file, second chunk.',
+    ].map((text) => context.indexOf(text));
+    expect(order.every((at) => at >= 0)).toBe(true);
+    expect([...order].sort((a, b) => a - b)).toEqual(order);
+  });
+
+  it('leaves out a chunk with no position rather than inventing one', async () => {
+    const { trace, chunkCount } = await retrieveRelevantDocumentsWithIds(
+      storeReturning([
+        chunk('f-1', 1, 'Has a position.'),
+        {
+          pageContent: 'A point from before chunk_index.',
+          metadata: { file_id: 'f-1' },
+        },
+      ]),
+      'q',
+      5,
+      undefined,
+      false,
+    );
+    expect(chunkCount).toBe(2);
+    expect(trace?.chunks).toEqual([{ fileId: 'f-1', chunkIndex: 1 }]);
+  });
+
+  it('names fusion when nothing reranked, and counts the queries', async () => {
+    const { trace } = await retrieveRelevantDocumentsWithIds(
+      storeReturning([chunk('f-1', 1, 'Only chunk.')]),
+      ['q', 'variant'],
+      5,
+      undefined,
+      true,
+    );
+    expect(trace?.postRetrieval).toBe('fusion');
+    expect(trace?.queryCount).toBe(2);
+    expect(trace?.timings.rerankMs).toBe(0);
+  });
+
+  it('names the reranker when it cut the pool', async () => {
+    mockIsRerankingEnabled.mockReturnValue(true);
+    mockRerankDocuments.mockImplementation(async (_q, docs: Chunk[]) =>
+      docs.slice(0, 1).map((d) => ({
+        ...d,
+        metadata: { ...d.metadata, relevance_score: 0.9 },
+      })),
+    );
+    const { trace } = await retrieveRelevantDocumentsWithIds(
+      storeReturning([
+        chunk('f-1', 1, 'One.'),
+        chunk('f-1', 2, 'Two.'),
+        chunk('f-2', 1, 'Three.'),
+      ]),
+      'q',
+      1,
+      undefined,
+      true,
+    );
+    expect(trace?.postRetrieval).toBe('reranker:scaleway');
+    expect(trace?.chunks).toEqual([{ fileId: 'f-1', chunkIndex: 1 }]);
+  });
+
+  // A provider failure returns the unscored pool: the model saw fusion order,
+  // and the trace must not credit it to the reranker.
+  it('names a reranker fallback as such', async () => {
+    mockIsRerankingEnabled.mockReturnValue(true);
+    mockRerankDocuments.mockImplementation(async (_q, docs: Chunk[]) =>
+      docs.slice(0, 1),
+    );
+    const { trace } = await retrieveRelevantDocumentsWithIds(
+      storeReturning([chunk('f-1', 1, 'One.'), chunk('f-2', 1, 'Two.')]),
+      'q',
+      1,
+      undefined,
+      true,
+    );
+    expect(trace?.postRetrieval).toBe('reranker-failed:scaleway');
+  });
+});

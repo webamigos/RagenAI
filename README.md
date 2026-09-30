@@ -323,9 +323,9 @@ guard over ~20 models · no training on your documents, ever
 
 **Operations**
 Platform admin app · per-organization model allowlists and usage limits ·
-OpenTelemetry traces, metrics and logs · UI in 15 languages — English,
+OpenTelemetry traces, metrics and logs · UI in 17 languages — English,
 Polish, Spanish, German, French, Portuguese, Italian, Hungarian, Bulgarian,
-Ukrainian, Danish, Swedish, Finnish, Czech and Slovak
+Ukrainian, Danish, Swedish, Finnish, Czech, Slovak, Dutch and Norwegian
 
 ## ⚙️ How it works
 

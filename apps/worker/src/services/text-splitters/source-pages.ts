@@ -160,7 +160,7 @@ const VERIFY_LENGTH = 400;
  * exist. Several candidates and none verifying is genuinely ambiguous, and
  * gets no page at all.
  */
-function locate(markdown: string, text: string, from: number): number {
+export function locate(markdown: string, text: string, from: number): number {
   const probe = text.slice(0, PROBE_LENGTH);
   const verify = text.slice(0, Math.min(text.length, VERIFY_LENGTH));
 

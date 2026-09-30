@@ -1,6 +1,10 @@
-import type { RetrievedSource } from '@/libs/chains/types/common';
+import type {
+  RetrievalTrace,
+  RetrievedSource,
+} from '@/libs/chains/types/common';
 import type {
   ApiSseRetrieval,
+  ApiSseRetrievalTrace,
   ApiSseRetrievedSource,
 } from '../contracts/events.types';
 
@@ -60,10 +64,39 @@ export function toRetrievalEvent(retrieval: {
   sources: readonly RetrievedSource[];
   chunkCount: number;
   durationMs: number;
+  trace?: RetrievalTrace;
 }): ApiSseRetrieval {
   return {
     sources: retrieval.sources.map(toRetrievalEventSource),
     chunkCount: retrieval.chunkCount,
     durationMs: retrieval.durationMs,
+    ...(retrieval.trace
+      ? { trace: toRetrievalEventTrace(retrieval.trace) }
+      : {}),
+  };
+}
+
+/**
+ * Field by field, like the sources, and for the same reason: the chain's
+ * object would otherwise reach the browser with whatever is added to it later.
+ * Positions and step names only — no text.
+ */
+export function toRetrievalEventTrace(
+  trace: RetrievalTrace,
+): ApiSseRetrievalTrace {
+  return {
+    chunks: trace.chunks.map(({ fileId, chunkIndex }) => ({
+      fileId,
+      chunkIndex,
+    })),
+    postRetrieval: trace.postRetrieval,
+    queryCount: trace.queryCount,
+    timings: {
+      searchMs: trace.timings.searchMs,
+      rerankMs: trace.timings.rerankMs,
+      ...(trace.timings.rephraseMs !== undefined
+        ? { rephraseMs: trace.timings.rephraseMs }
+        : {}),
+    },
   };
 }

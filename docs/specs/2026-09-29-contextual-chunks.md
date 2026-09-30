@@ -240,8 +240,8 @@ that defaults to `false`.
 
 ### Phase 0 — prerequisites (separate PRs, D6)
 
-- [ ] **P1.** `reindexDocumentVersion` masks PII as ingest does.
-- [ ] **P2.** `reindexDocumentVersion` re-adds the summary chunk.
+- [x] **P1.** `reindexDocumentVersion` masks PII as ingest does (#1430).
+- [x] **P2.** `reindexDocumentVersion` re-adds the summary chunk (#1434).
 
 ### Phase A — the free prefix, measured
 
@@ -249,9 +249,17 @@ that defaults to `false`.
   evidence recall, Phase A of
   [model-chosen sections](2026-09-29-llm-document-selection.md). It lands
   once, for both specs.
-- [ ] **A1.** Docling prose chunks carry `section_path`, taken from the
+- [x] **A1.** Docling prose chunks carry `section_path`, taken from the
   markdown heading stack. Splitter tests cover nested headings, a chunk that
   spans a heading, and a document without headings.
+
+  *Done.* `attachSectionPaths` (`services/text-splitters/section-paths.ts`)
+  locates each chunk in the source the way `attachSourcePages` does and files
+  it under the heading stack in force where it starts. It runs on Docling
+  output and on Markdown files, which is also how a re-indexed version is
+  split. A chunk that already has a path (a table chunk) keeps it; one that
+  cannot be located gets none. Documents indexed before this get paths when
+  re-processed.
 - [x] **A2.** `embeddingTextFor` and the free prefix in the worker, behind
   `contextualChunks`, writing `context_prefix` and `context_version: 1`.
   Tests for the builder, the cap, the truncation order, and the masked-only
