@@ -4,6 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
+import { readSource } from './tracked-files';
 
 /**
  * The dev container is a second description of how this repository runs, and
@@ -51,7 +52,7 @@ function readDevcontainerJson(): DevcontainerConfig {
 
 /** Top-level service names in a Compose file, read as text. */
 function composeServices(path: string): string[] {
-  const source = readFileSync(path, 'utf8');
+  const source = readSource(path);
   const servicesBlock = source.split(/^services:$/m)[1] ?? '';
   const upToNextTopLevel = servicesBlock.split(/^[a-z]+:$/m)[0] as string;
   return [...upToNextTopLevel.matchAll(/^ {2}([a-z0-9-]+):$/gm)].map(
@@ -70,7 +71,7 @@ function buildableWorkspaces(): string[] {
       if (!entry.isDirectory() || !existsSync(packageJson)) {
         continue;
       }
-      const declared = JSON.parse(readFileSync(packageJson, 'utf8')) as {
+      const declared = JSON.parse(readSource(packageJson)) as {
         scripts?: Record<string, string>;
       };
       if (declared.scripts?.build) {
@@ -220,7 +221,7 @@ describe('the generated volume override covers every workspace', () => {
     [join(DEVCONTAINER, 'scripts/generate-compose-volumes.sh'), output],
     { encoding: 'utf8' },
   );
-  const generated = readFileSync(output, 'utf8');
+  const generated = readSource(output);
 
   it('knows where every buildable workspace writes its output', () => {
     expect(

@@ -1,7 +1,7 @@
-import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
+import { readSource } from './tracked-files';
 
 /**
  * Better Auth's rate limiter is off for `TARGET_ENV=test` and on everywhere
@@ -45,7 +45,7 @@ const AUTH_FILE = join(
 );
 
 function authSource(): string {
-  return readFileSync(AUTH_FILE, 'utf8');
+  return readSource(AUTH_FILE);
 }
 
 describe('Better Auth rate limiting', () => {

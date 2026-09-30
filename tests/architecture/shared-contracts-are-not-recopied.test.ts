@@ -3,7 +3,7 @@ import { join, relative } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { trackedFiles } from './tracked-files';
+import { readSource, trackedFiles } from './tracked-files';
 
 /**
  * Replaces `feature-keys-agree.test.ts` and `tenant-scope-guards-agree.test.ts`.
@@ -152,7 +152,7 @@ const files = [
   ...sourceFiles(join(REPO_ROOT, 'packages')),
 ].map((f) => ({
   path: relative(REPO_ROOT, f),
-  source: readFileSync(f, 'utf8'),
+  source: readSource(f),
 }));
 
 describe('shared platform contracts', () => {

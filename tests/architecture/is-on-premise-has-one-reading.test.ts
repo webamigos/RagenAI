@@ -3,7 +3,7 @@ import { join, relative } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { trackedFiles } from './tracked-files';
+import { readSource, trackedFiles } from './tracked-files';
 
 /**
  * `IS_ON_PREMISE` is read in one place.
@@ -114,7 +114,7 @@ describe.each(ONE_READING)('$variable', ({ variable, helper }) => {
         // Comments first. This rule is about code, and the files explaining
         // why the rule exists quote the very expression it forbids — this test
         // caught itself on its own prose the first time it ran.
-        const code = stripComments(readFileSync(file, 'utf8'));
+        const code = stripComments(readSource(file));
 
         if (pattern.test(code)) {
           offenders.push(rel);

@@ -2,6 +2,7 @@ import { globSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
+import { readSource } from './tracked-files';
 
 /**
  * Twenty-one statements of the same requirement, and none of them was true.
@@ -38,7 +39,7 @@ const REPO_ROOT = join(import.meta.dirname, '..', '..');
 function readJson(path: string): {
   engines?: { node?: string };
 } {
-  return JSON.parse(readFileSync(path, 'utf8')) as {
+  return JSON.parse(readSource(path)) as {
     engines?: { node?: string };
   };
 }
@@ -103,7 +104,7 @@ describe('the Node range is stated once', () => {
     (workspace, phrase) => {
       const readme = join(REPO_ROOT, workspace, 'README.md');
       expect(
-        readFileSync(readme, 'utf8'),
+        readSource(readme),
         `${workspace} declares a Node range of its own, so ${workspace}/README.md has to say why — a silent exemption is the drift this test exists to catch.`,
       ).toContain(phrase);
     },

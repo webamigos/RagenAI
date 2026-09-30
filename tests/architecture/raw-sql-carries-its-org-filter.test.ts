@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { TENANT_SCOPED_MODELS } from '@ragenai/platform-contracts';
 import { describe, expect, it } from 'vitest';
 
-import { trackedFiles } from './tracked-files';
+import { readSource, trackedFiles } from './tracked-files';
 
 /**
  * A raw SQL statement touching a tenant-scoped table must name its org column.
@@ -160,7 +160,7 @@ function rawStatements(): Statement[] {
   const found: Statement[] = [];
 
   for (const file of APP_SOURCE_ROOTS.flatMap(sourceFiles)) {
-    const code = withoutComments(readFileSync(file, 'utf8'));
+    const code = withoutComments(readSource(file));
     // A generic type argument has to be allowed through — `$queryRaw<Row[]>\`…\``
     // is the common form, and an earlier version of this pattern required the
     // backtick to follow the method name directly, so it silently skipped call

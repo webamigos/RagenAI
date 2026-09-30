@@ -2,6 +2,7 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
+import { readSource } from './tracked-files';
 
 /**
  * Every workspace that can be linted must be linted on commit.
@@ -119,7 +120,7 @@ describe('lint-staged covers every lintable workspace', () => {
         `lint-staged.config.mjs maps ${dir}, which does not exist. A renamed or removed workspace leaves an entry that silently matches nothing.`,
       ).toBe(true);
 
-      const declared = JSON.parse(readFileSync(packageJsonPath, 'utf8')) as {
+      const declared = JSON.parse(readSource(packageJsonPath)) as {
         name?: string;
       };
 

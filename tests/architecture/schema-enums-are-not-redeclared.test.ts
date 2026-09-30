@@ -3,7 +3,7 @@ import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { trackedFiles } from './tracked-files';
+import { readSource, trackedFiles } from './tracked-files';
 
 /**
  * No app may declare its own copy of an enum the schema already defines.
@@ -66,7 +66,7 @@ describe('schema enums are not redeclared', () => {
 
   it('finds no app declaring an enum the schema owns', () => {
     const offenders = files.flatMap((file) => {
-      const code = readFileSync(file, 'utf8');
+      const code = readSource(file);
       return [...code.matchAll(/^export enum (\w+) \{/gm)]
         .filter((match) => fromSchema.has(match[1]!))
         .map(

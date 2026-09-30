@@ -3,7 +3,7 @@ import { join, relative } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { trackedFiles } from './tracked-files';
+import { readSource, trackedFiles } from './tracked-files';
 
 /**
  * What a guardrail *does* is decided in one package, not in each runtime.
@@ -191,7 +191,7 @@ describe('guardrails are not recopied', () => {
     const sources = [
       ...sourceFiles(join(REPO_ROOT, 'packages', 'guardrails', 'src')),
     ]
-      .map((file) => readFileSync(file, 'utf8'))
+      .map((file) => readSource(file))
       .join('\n');
 
     expect(
@@ -203,7 +203,7 @@ describe('guardrails are not recopied', () => {
 
   it.each(PACKAGE_ONLY_SYMBOLS)('no app imports %s directly', (symbol) => {
     const offenders = appFiles.filter((file) => {
-      const code = stripComments(readFileSync(file, 'utf8'));
+      const code = stripComments(readSource(file));
       // Only an import of it from the package counts. A local variable that
       // happens to share the name is not a re-implementation.
       return new RegExp(
@@ -224,7 +224,7 @@ describe('guardrails are not recopied', () => {
     'no app decides $name for itself',
     ({ pattern, instead }) => {
       const offenders = appFiles.filter((file) =>
-        pattern.test(stripComments(readFileSync(file, 'utf8'))),
+        pattern.test(stripComments(readSource(file))),
       );
 
       expect(
@@ -323,7 +323,7 @@ describe('guardrails are not recopied', () => {
     ]);
 
     for (const binding of bindings) {
-      const code = stripComments(readFileSync(binding, 'utf8'));
+      const code = stripComments(readSource(binding));
       const where = relative(REPO_ROOT, binding);
 
       expect(code, `${where} does not read POLICY_JUDGE_MODEL`).toContain(

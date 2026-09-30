@@ -1,6 +1,6 @@
-import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { readSource } from './tracked-files';
 
 /**
  * Every text token has to be readable on the surface it is used on.
@@ -74,7 +74,7 @@ function contrastRatio(a: Rgb, b: Rgb): number {
   return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05);
 }
 
-const css = readFileSync(CSS_PATH, 'utf8');
+const css = readSource(CSS_PATH);
 
 /** The declarations inside one `{ … }` block, by token name. */
 function declarationsIn(openingLine: string): Map<string, string> {

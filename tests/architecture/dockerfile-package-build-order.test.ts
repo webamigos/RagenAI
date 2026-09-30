@@ -1,7 +1,8 @@
-import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { existsSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
+import { readSource } from './tracked-files';
 
 /**
  * A Dockerfile that builds workspace packages one at a time must list them in
@@ -42,7 +43,7 @@ function dependenciesOf(packageName: string): Set<string> {
     return new Set();
   }
 
-  const manifest = JSON.parse(readFileSync(manifestPath, 'utf8')) as {
+  const manifest = JSON.parse(readSource(manifestPath)) as {
     dependencies?: Record<string, string>;
     devDependencies?: Record<string, string>;
   };
@@ -65,7 +66,7 @@ function dockerfilesWithAChain(): { app: string; chain: string[] }[] {
     .filter(({ path }) => existsSync(path))
     .map(({ app, path }) => ({
       app,
-      chain: buildChain(readFileSync(path, 'utf8')).filter((name) =>
+      chain: buildChain(readSource(path)).filter((name) =>
         name.startsWith('@ragenai/'),
       ),
     }))
