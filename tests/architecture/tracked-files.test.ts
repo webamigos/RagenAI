@@ -1,9 +1,14 @@
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { REPO_ROOT, trackedFiles, trackedPaths } from './tracked-files';
+import {
+  REPO_ROOT,
+  readSource,
+  trackedFiles,
+  trackedPaths,
+} from './tracked-files';
 
 const TRACKED = [
   'apps/web/src/app/page.tsx',
@@ -79,5 +84,16 @@ describe('trackedPaths', () => {
     expect(paths).toContain('package.json');
     const existing = trackedFiles({ under: 'tests/architecture' });
     expect(existing.every((path) => existsSync(path))).toBe(true);
+  });
+});
+
+describe('readSource', () => {
+  it('reads a file as UTF-8, and the same text again from memory', () => {
+    const path = join(REPO_ROOT, 'package.json');
+    const first = readSource(path);
+    expect(first).toBe(readFileSync(path, 'utf8'));
+    // The same string, not a second read: guards scanning the same tree share
+    // the one copy within a worker.
+    expect(readSource(path)).toBe(first);
   });
 });

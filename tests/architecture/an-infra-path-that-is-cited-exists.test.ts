@@ -1,9 +1,9 @@
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { REPO_ROOT, trackedPaths } from './tracked-files';
+import { REPO_ROOT, readSource, trackedPaths } from './tracked-files';
 
 /**
  * A pointer that outlives the thing it points at.
@@ -191,7 +191,7 @@ function citations(files: readonly string[]): Citation[] {
       continue;
     }
 
-    const text = readFileSync(full, 'utf8');
+    const text = readSource(full);
     for (const [match] of text.matchAll(INFRA_PATH)) {
       found.push({ file, path: trimPunctuation(match) });
     }

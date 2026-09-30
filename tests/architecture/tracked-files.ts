@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process';
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { isAbsolute, join, relative, sep } from 'node:path';
 
 /**
@@ -105,4 +105,28 @@ export function trackedFiles(options: TrackedFileOptions = {}): string[] {
         options.tracked !== undefined || existsSync(join(REPO_ROOT, path)),
     )
     .map((path) => (options.relativePaths ? path : join(REPO_ROOT, path)));
+}
+
+const sources = new Map<string, string>();
+
+/**
+ * A file's text, read once per process.
+ *
+ * The guards read the same files over and over: `guardrails-are-not-recopied`
+ * re-read every app source for each symbol it bans, and a dozen guards each
+ * scan the whole tree. The architecture project runs without per-file
+ * isolation (`vitest.config.ts`), so this cache is shared by every guard in a
+ * worker, and a file is read once rather than once per case per guard. Under
+ * `npm run verify` that is the difference between a guard that finishes and
+ * one that misses its budget because four tasks were competing for the disk.
+ *
+ * Safe because nothing here writes the files it reads during a run.
+ */
+export function readSource(path: string): string {
+  let text = sources.get(path);
+  if (text === undefined) {
+    text = readFileSync(path, 'utf8');
+    sources.set(path, text);
+  }
+  return text;
 }

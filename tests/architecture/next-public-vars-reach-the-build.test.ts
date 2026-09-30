@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import ts from 'typescript';
 import { describe, expect, it } from 'vitest';
 
-import { trackedFiles } from './tracked-files';
+import { readSource, trackedFiles } from './tracked-files';
 
 /**
  * `apps/web` reads no `NEXT_PUBLIC_*` variable, and its Dockerfile declares
@@ -99,9 +99,7 @@ function namesReadByTheApp(): Map<string, string[]> {
   const found = new Map<string, string[]>();
 
   for (const file of sourceFiles(WEB_SRC)) {
-    for (const match of withoutComments(readFileSync(file, 'utf8')).matchAll(
-      READ,
-    )) {
+    for (const match of withoutComments(readSource(file)).matchAll(READ)) {
       const name = match[1] as string;
       const where = file.slice(REPO_ROOT.length + 1);
       found.set(name, [...(found.get(name) ?? []), where]);
@@ -136,9 +134,7 @@ describe(
 
     it('declares no NEXT_PUBLIC_* build argument', () => {
       const declared = [
-        ...readFileSync(DOCKERFILE, 'utf8').matchAll(
-          /^ARG\s+(NEXT_PUBLIC_[A-Z0-9_]+)/gm,
-        ),
+        ...readSource(DOCKERFILE).matchAll(/^ARG\s+(NEXT_PUBLIC_[A-Z0-9_]+)/gm),
       ].map((match) => match[1] as string);
 
       expect(

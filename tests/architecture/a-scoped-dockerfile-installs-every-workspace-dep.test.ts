@@ -3,7 +3,7 @@ import { join, relative } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { trackedFiles } from './tracked-files';
+import { readSource, trackedFiles } from './tracked-files';
 
 /**
  * An app whose Dockerfile installs with `npm ci --workspace=…` gets exactly the
@@ -83,7 +83,7 @@ function sourceFiles(app: string): { path: string; source: string }[] {
   return trackedFiles({
     under: join(REPO_ROOT, 'apps', app, 'src'),
     extensions: ['.ts', '.tsx'],
-  }).map((path) => ({ path, source: readFileSync(path, 'utf8') }));
+  }).map((path) => ({ path, source: readSource(path) }));
 }
 
 const scoped = APPS.filter((app) => {

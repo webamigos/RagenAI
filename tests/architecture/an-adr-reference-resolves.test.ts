@@ -1,9 +1,9 @@
-import { readdirSync, readFileSync } from 'node:fs';
+import { readdirSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { trackedFiles } from './tracked-files';
+import { readSource, trackedFiles } from './tracked-files';
 
 /**
  * An ADR that is referenced everywhere and exists nowhere.
@@ -99,7 +99,7 @@ describe('an ADR reference resolves', () => {
       if (file.startsWith(join(REPO_ROOT, 'tests', 'architecture'))) {
         continue;
       }
-      const text = readFileSync(file, 'utf8');
+      const text = readSource(file);
       for (const match of text.matchAll(ADR_NUMBER)) {
         const [citation, number] = match;
         if (numbers.has(number)) {
@@ -128,7 +128,7 @@ describe('an ADR reference resolves', () => {
       if (file.startsWith(join(REPO_ROOT, 'tests', 'architecture'))) {
         continue;
       }
-      const text = readFileSync(file, 'utf8');
+      const text = readSource(file);
       for (const [, slug] of text.matchAll(ADR_PATH)) {
         if (!slugs.has(slug)) {
           broken.push(`${relative(REPO_ROOT, file)} links docs/adrs/${slug}`);

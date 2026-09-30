@@ -1,7 +1,8 @@
-import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
+import { existsSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
+import { readSource } from './tracked-files';
 
 /**
  * `tsc` does not set the executable bit, and npm does.
@@ -58,7 +59,7 @@ function publishedBins(): PublishedBin[] {
       continue;
     }
 
-    const manifest = JSON.parse(readFileSync(manifestPath, 'utf8')) as {
+    const manifest = JSON.parse(readSource(manifestPath)) as {
       bin?: Record<string, string> | string;
       scripts?: Record<string, string>;
     };
@@ -139,7 +140,7 @@ describe('a published bin is executable', () => {
         `Could not find the source behind \`${command}\` at ${source}. If the layout moved, this guard has to move with it.`,
       ).toBe(true);
       expect(
-        readFileSync(source, 'utf8').split('\n')[0],
+        readSource(source).split('\n')[0],
         `${source} must start with a shebang, or the executable bit points at a file the kernel cannot run.`,
       ).toBe('#!/usr/bin/env node');
     },

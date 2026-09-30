@@ -1,8 +1,8 @@
-import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { parse } from 'yaml';
 import { describe, expect, it } from 'vitest';
+import { readSource } from './tracked-files';
 
 /**
  * A published image has to run on both architectures, and nothing else says so.
@@ -55,7 +55,7 @@ type Workflow = {
   >;
 };
 
-const workflow = parse(readFileSync(PUBLISH, 'utf8')) as Workflow;
+const workflow = parse(readSource(PUBLISH)) as Workflow;
 
 describe('every image is published for both architectures', () => {
   it('builds and merges the same set of apps', () => {

@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 
 import { JOB_NAMES } from '@ragenai/jobs';
 
-import { trackedFiles } from './tracked-files';
+import { readSource, trackedFiles } from './tracked-files';
 
 /**
  * The boundary that makes the job runtime swappable.
@@ -92,7 +92,7 @@ const packagesExcept = (excluded: string[]): string[] =>
 const SPECIFIER = /(?:from|import|require)\s*\(?\s*['"]([^'"]+)['"]/g;
 
 const importsIn = (file: string): string[] =>
-  [...readFileSync(file, 'utf8').matchAll(SPECIFIER)].map((match) => match[1]);
+  [...readSource(file).matchAll(SPECIFIER)].map((match) => match[1]);
 
 describe('the jobs seam is the only place that names a runtime', () => {
   it('no package imports from an app', () => {
@@ -221,7 +221,7 @@ describe('the jobs seam is the only place that names a runtime', () => {
     const workflows = sourceFiles(
       join(ROOT, 'apps', 'worker', 'src', 'workflows'),
     )
-      .map((file) => readFileSync(file, 'utf8'))
+      .map((file) => readSource(file))
       .join('\n');
 
     const missing = JOB_NAMES.filter(

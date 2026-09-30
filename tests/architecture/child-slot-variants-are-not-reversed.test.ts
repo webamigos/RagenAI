@@ -1,9 +1,8 @@
-import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { trackedFiles } from './tracked-files';
+import { readSource, trackedFiles } from './tracked-files';
 
 /**
  * A `data-slot` variant that styles a child must be written `*:data-[…]`, not
@@ -67,7 +66,7 @@ function withoutComments(source: string): string {
 function ourComponentSources(): { path: string; code: string }[] {
   return OUR_COMPONENT_DIRS.flatMap(sourceFiles).map((path) => ({
     path: path.replace(`${REPO_ROOT}/`, ''),
-    code: withoutComments(readFileSync(path, 'utf8')),
+    code: withoutComments(readSource(path)),
   }));
 }
 
