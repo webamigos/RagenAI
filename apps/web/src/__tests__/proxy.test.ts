@@ -58,6 +58,23 @@ describe('proxy Accept-Language parsing on the root path', () => {
     expect(res.headers.get('location')).toContain('/da');
   });
 
+  it('matches a regional tag to its language, e.g. nl-BE to nl', async () => {
+    const res = await proxy(
+      makeRequest('/', { 'accept-language': 'nl-BE,fr;q=0.8' }),
+    );
+
+    expect(res.headers.get('location')).toContain('/nl');
+  });
+
+  it.each(['no', 'nb-NO', 'nn-NO'])(
+    'sends Norwegian (%s) to Bokmål',
+    async (header) => {
+      const res = await proxy(makeRequest('/', { 'accept-language': header }));
+
+      expect(res.headers.get('location')).toMatch(/\/nb$/);
+    },
+  );
+
   it('falls back to the default locale when nothing in the header is supported', async () => {
     const res = await proxy(
       makeRequest('/', { 'accept-language': 'zh-CN,ja;q=0.9' }),

@@ -2465,7 +2465,7 @@
     "chip-label": "{number}. forrás: {name}",
     "page": "{page}. oldal",
     "document-count": "{documents} dokumentum",
-    "pages": "oldalak: {pages}",
+    "pages": "{count, plural, one {oldal: {pages}} other {oldalak: {pages}}}",
     "close-rail": "Források bezárása",
     "open-rail": "Források",
     "cited-none": "A válasz egyikre sem hivatkozott",

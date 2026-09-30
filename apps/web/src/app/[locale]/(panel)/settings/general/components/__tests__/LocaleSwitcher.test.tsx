@@ -58,6 +58,8 @@ describe('LocaleSwitcher', () => {
       'Suomi',
       'Čeština',
       'Slovenčina',
+      'Nederlands',
+      'Norsk bokmål',
     ];
     for (const name of nativeNames) {
       expect(screen.getByRole('option', { name })).toBeInTheDocument();

@@ -60,7 +60,7 @@ export type MergeInput = z.infer<typeof mergeInputSchema>;
 
 /**
  * Why a decision was not recorded. Codes rather than sentences: the panel
- * renders them in fifteen languages.
+ * renders them in seventeen languages.
  *
  * - `invalid-input` — the request did not have the shape above.
  * - `not-found` — no such page in this organization, or no right to review.

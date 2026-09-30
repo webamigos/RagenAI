@@ -9,6 +9,9 @@ const handleI18nRouting = createMiddleware(routing);
 
 const LOCALE_PREFIX_REGEX = new RegExp(`^/(${locales.join('|')})(?:/|$)`);
 const LOCALE_ONLY_PATH_REGEX = new RegExp(`^/(${locales.join('|')})$`);
+// Browsers in Norway often send the macrolanguage `no` (or Nynorsk, `nn`)
+// rather than `nb`; Bokmål is the translation they have, so it beats English.
+const LANGUAGE_ALIASES: Record<string, string> = { no: 'nb', nn: 'nb' };
 const SIGN_IN_PATH = '/sign-in';
 const PUBLIC_THREAD_RATE_LIMIT = 30;
 const WINDOW_SECONDS = 60;
@@ -58,7 +61,8 @@ export default async function proxy(request: NextRequest) {
     const acceptedLocales = (request.headers.get('accept-language') ?? '')
       .split(',')
       .map((lang) => lang.split(';')[0]?.trim().split('-')[0]?.toLowerCase())
-      .filter((lang): lang is string => Boolean(lang));
+      .filter((lang): lang is string => Boolean(lang))
+      .map((lang) => LANGUAGE_ALIASES[lang] ?? lang);
     const locale =
       acceptedLocales.find((lang) =>
         (locales as readonly string[]).includes(lang),
