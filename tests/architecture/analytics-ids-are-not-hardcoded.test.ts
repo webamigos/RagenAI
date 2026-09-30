@@ -3,7 +3,7 @@ import { join, relative } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { trackedFiles } from './tracked-files';
+import { readSource, trackedFiles } from './tracked-files';
 
 /**
  * No source file carries an analytics or tag-manager id as a literal, and the
@@ -104,7 +104,7 @@ const files = [
   ...sourceFiles(join(REPO_ROOT, 'packages')),
 ].map((file) => ({
   path: relative(REPO_ROOT, file),
-  code: stripComments(readFileSync(file, 'utf8')),
+  code: stripComments(readSource(file)),
 }));
 
 const PRODUCT_APPS = ['apps/web/', 'apps/admin/'];

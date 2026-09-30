@@ -1,7 +1,7 @@
-import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
+import { readSource } from './tracked-files';
 
 /**
  * An API key's secret is written by apps/web and destroyed by apps/admin, and
@@ -33,7 +33,7 @@ const WEB_COMMAND = join(
 const ADMIN_BINDING = join(REPO_ROOT, 'apps/admin/src/lib/vault.ts');
 
 function read(path: string): string {
-  return readFileSync(path, 'utf8');
+  return readSource(path);
 }
 
 describe('the API key vault address', () => {

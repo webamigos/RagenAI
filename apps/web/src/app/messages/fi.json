@@ -2465,7 +2465,7 @@
     "chip-label": "Lähde {number}: {name}",
     "page": "sivu {page}",
     "document-count": "{documents} dokumenttia",
-    "pages": "sivut {pages}",
+    "pages": "{count, plural, one {sivu {pages}} other {sivut {pages}}}",
     "close-rail": "Sulje lähteet",
     "open-rail": "Lähteet",
     "cited-none": "Vastaus ei viitannut yhteenkään niistä",

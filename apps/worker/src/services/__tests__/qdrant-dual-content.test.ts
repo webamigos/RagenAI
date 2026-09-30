@@ -14,6 +14,7 @@ const { mockQdrantInstance } = vi.hoisted(() => ({
     collectionExists: vi.fn(),
     createCollection: vi.fn(),
     createPayloadIndex: vi.fn(),
+    getCollection: vi.fn(),
     upsert: vi.fn(),
   },
 }));
@@ -111,6 +112,7 @@ describe('qdrantService.addDocuments — dual_content embedding', () => {
     mockQdrantInstance.collectionExists.mockResolvedValue({ exists: true });
     mockQdrantInstance.createCollection.mockResolvedValue(undefined);
     mockQdrantInstance.createPayloadIndex.mockResolvedValue(undefined);
+    mockQdrantInstance.getCollection.mockResolvedValue({ payload_schema: {} });
     mockQdrantInstance.upsert.mockResolvedValue(undefined);
   });
 
@@ -328,6 +330,7 @@ describe('qdrantService.addDocuments — batching', () => {
     mockQdrantInstance.collectionExists.mockResolvedValue({ exists: true });
     mockQdrantInstance.createCollection.mockResolvedValue(undefined);
     mockQdrantInstance.createPayloadIndex.mockResolvedValue(undefined);
+    mockQdrantInstance.getCollection.mockResolvedValue({ payload_schema: {} });
     mockQdrantInstance.upsert.mockResolvedValue(undefined);
   });
 

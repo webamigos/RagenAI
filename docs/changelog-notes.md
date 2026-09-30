@@ -86,6 +86,11 @@ archive is the blog.
   checks make no model call. Documents indexed before this change show
   nothing until they are re-processed. An administrator can turn it off per
   organization in apps/admin.
+- `[brief]` **Answers know which section a passage came from.** Documents
+  parsed by Docling — most PDFs and Office files — and Markdown files now
+  record the heading each passage sits under, as Word documents already did.
+  The assistant sees "4. Wynagrodzenie > 4.2 Terminy" beside the text it
+  cites. Re-process a document to add it to one uploaded earlier.
 - `[brief]` **With PII masking on, tables are masked too.** Docling's table
   chunks skipped masking and reached the index, the summary and the stored
   document with names and numbers intact. In the encrypted `dual_content`
@@ -320,6 +325,11 @@ archive is the blog.
 
 ### Thread: the panel speaks your language
 
+- `[brief]` **Dutch and Norwegian.** The panel is available in Nederlands and
+  Norsk bokmål, which makes 17 interface languages. Pick one under Settings →
+  General; a browser set to Dutch or Norwegian opens Ragen in it. Hungarian
+  and Finnish source lists also say "page" for a single page now, instead of
+  always "pages".
 - `[brief]` **Fewer English words on Polish pages, and the reverse.** Several
   labels were hard-coded in one language:
   - the assistant selector in a chat (it said "Asystent:" on English pages);

@@ -1,9 +1,8 @@
-import { readFileSync } from 'node:fs';
 import { join, relative, sep } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { trackedFiles } from './tracked-files';
+import { readSource, trackedFiles } from './tracked-files';
 
 /**
  * A provider fragment is meaningless without its rule, so merging one without
@@ -99,7 +98,7 @@ describe('a provider fragment is merged with the rule that gives it meaning', ()
 
       const unpaired = sourceFiles
         .filter((file) => {
-          const source = readFileSync(file, 'utf8');
+          const source = readSource(file);
           return merges.test(source) && !calls.test(source);
         })
         .map((file) => relative(REPO_ROOT, file));
@@ -129,7 +128,7 @@ describe('a provider fragment is merged with the rule that gives it meaning', ()
     const workerSchemas = sourceFiles.filter(
       (file) =>
         relative(REPO_ROOT, file).startsWith(join('apps', 'worker') + sep) &&
-        /fragments\s*\.\s*workerRuntime\b/.test(readFileSync(file, 'utf8')),
+        /fragments\s*\.\s*workerRuntime\b/.test(readSource(file)),
     );
 
     expect(
@@ -139,7 +138,7 @@ describe('a provider fragment is merged with the rule that gives it meaning', ()
 
     const producerHalfOnly = workerSchemas
       .filter((file) => {
-        const source = readFileSync(file, 'utf8');
+        const source = readSource(file);
         return !/\bworkerRuntimeRules\s*\(/.test(source);
       })
       .map((file) => relative(REPO_ROOT, file));
@@ -155,7 +154,7 @@ describe('a provider fragment is merged with the rule that gives it meaning', ()
     // pass for the wrong reason.
     const merging = sourceFiles.filter((file) =>
       /fragments\s*\.\s*(?:storage|encryption|workerRuntime)\b/.test(
-        readFileSync(file, 'utf8'),
+        readSource(file),
       ),
     );
 
