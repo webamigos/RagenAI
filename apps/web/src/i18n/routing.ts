@@ -23,6 +23,8 @@ export const routing = defineRouting({
       fi: '/fi',
       cs: '/cs',
       sk: '/sk',
+      nl: '/nl',
+      nb: '/nb',
     },
   },
   // option for i18n in pathnames

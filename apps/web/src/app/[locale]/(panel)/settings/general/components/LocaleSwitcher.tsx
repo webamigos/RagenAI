@@ -29,6 +29,8 @@ const localeNames: Record<Locale, string> = {
   fi: 'Suomi',
   cs: 'Čeština',
   sk: 'Slovenčina',
+  nl: 'Nederlands',
+  nb: 'Norsk bokmål',
 };
 
 export function LocaleSwitcher() {
