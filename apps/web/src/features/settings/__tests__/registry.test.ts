@@ -27,6 +27,7 @@ describe('settingsRegistry (actual)', () => {
       'account',
       'connectors',
       'general',
+      'memory',
       'shared-threads',
     ]);
   });
@@ -125,5 +126,27 @@ describe('filterSettingsPages over the real registry', () => {
       'connectors',
       'shared-threads',
     ]);
+  });
+});
+
+describe('the memory entry', () => {
+  const memory = () => settingsRegistry.find((page) => page.id === 'memory')!;
+  const ctx = { isAppAdmin: false, canManageOrg: false, isOrgOwner: false };
+
+  // Off by default for every organization (ADR-50): an entry a member could
+  // see before the feature exists would be a link to an unfinished page.
+  it('is hidden while personalMemory is off', () => {
+    expect(
+      filterSettingsPages([memory()], { ...ctx, featureFlags: {} }),
+    ).toEqual([]);
+  });
+
+  it('is listed for a plain member once it is on', () => {
+    expect(
+      filterSettingsPages([memory()], {
+        ...ctx,
+        featureFlags: { personalMemory: true },
+      }).map((page) => page.id),
+    ).toEqual(['memory']);
   });
 });

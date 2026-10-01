@@ -113,6 +113,11 @@ export async function listMemories(
   return opened.map(({ isEncrypted: _isEncrypted, ...row }) => row);
 }
 
+/** How many memories the owner has, expired ones included: what erasure would delete. */
+export async function countMemories(owner: MemoryOwner): Promise<number> {
+  return db.userMemory.count({ where: ownerWhere(owner) });
+}
+
 export async function getMemorySettings(
   owner: MemoryOwner,
 ): Promise<MemorySettings> {

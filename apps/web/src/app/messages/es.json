@@ -626,7 +626,8 @@
       "pii-policy": "Política de datos personales",
       "organization-section": "Organización",
       "you-section": "Tú",
-      "privacy-section": "Privacidad"
+      "privacy-section": "Privacidad",
+      "memory": "Memoria"
     },
     "general": {
       "profile": "Perfil",
@@ -924,6 +925,41 @@
         "days": "{count} d",
         "export": "Exportar CSV"
       }
+    },
+    "memory": {
+      "title": "Memoria",
+      "description": "Lo que el chat recuerda de ti en tus conversaciones de esta organización: cómo te gustan las respuestas, tu función, en qué trabajas. Solo tú puedes verlo.",
+      "switch-label": "Recordar lo que le cuento al chat sobre mí",
+      "switch-description": "Las conversaciones nuevas usan lo que dijiste antes. Al desactivarlo se conserva lo ya recordado; puedes olvidarlo abajo.",
+      "list-title": "Recordado",
+      "count": "{count, plural, one {# recuerdo} other {# recuerdos}} de {max}",
+      "empty": "Aún no hay nada recordado. Lo que digas sobre ti en el chat aparecerá aquí.",
+      "edit": "Editar",
+      "edit-label": "Editar recuerdo",
+      "save": "Guardar",
+      "cancel": "Cancelar",
+      "delete": "Eliminar",
+      "delete-confirm-title": "¿Eliminar este recuerdo?",
+      "delete-confirm-description": "El chat dejará de usarlo en conversaciones nuevas.",
+      "from-thread": "De {title}",
+      "from-untitled": "De una conversación",
+      "from-none": "Sin conversación asociada",
+      "until": "hasta {date}",
+      "forget-all": "Olvidar todo",
+      "forget-all-description": "Elimina todo lo que el chat recuerda de ti en esta organización.",
+      "forget-confirm-title": "¿Olvidar todo lo que el chat recuerda de ti?",
+      "forget-confirm-description": "Se eliminan todos los recuerdos de esta organización. No se puede deshacer.",
+      "forget-confirm-action": "Olvidar todo",
+      "saved": "Recuerdo actualizado.",
+      "deleted": "Recuerdo eliminado.",
+      "forgotten": "Se ha eliminado todo lo que el chat recordaba de ti.",
+      "switched-on": "El chat recordará lo que le cuentes.",
+      "switched-off": "El chat no añadirá recuerdos nuevos.",
+      "error": "No ha funcionado. Inténtalo de nuevo en un momento.",
+      "error-not-found": "Ese recuerdo ya no existe. Recarga la página.",
+      "off": "La memoria está desactivada en esta organización.",
+      "off-stored": "Todavía hay {count, plural, one {# recuerdo guardado} other {# recuerdos guardados}}. Puedes eliminarlos.",
+      "off-nothing": "No hay nada guardado sobre ti."
     }
   },
   "teams-page": {

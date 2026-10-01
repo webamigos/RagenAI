@@ -626,7 +626,8 @@
       "pii-policy": "PII-beleid",
       "organization-section": "Organisatie",
       "you-section": "Jij",
-      "privacy-section": "Privacy"
+      "privacy-section": "Privacy",
+      "memory": "Geheugen"
     },
     "general": {
       "profile": "Profiel",
@@ -924,6 +925,41 @@
         "days": "{count} d",
         "export": "CSV exporteren"
       }
+    },
+    "memory": {
+      "title": "Geheugen",
+      "description": "Wat de chat over je onthoudt uit je gesprekken in deze organisatie: hoe je antwoorden wilt, je rol, waar je aan werkt. Alleen jij kunt het zien.",
+      "switch-label": "Onthouden wat ik de chat over mezelf vertel",
+      "switch-description": "Nieuwe gesprekken gebruiken wat je eerder zei. Uitzetten bewaart wat al onthouden is; je kunt het hieronder vergeten.",
+      "list-title": "Onthouden",
+      "count": "{count, plural, one {# herinnering} other {# herinneringen}} van {max}",
+      "empty": "Nog niets onthouden. Wat je in de chat over jezelf zegt, verschijnt hier.",
+      "edit": "Bewerken",
+      "edit-label": "Herinnering bewerken",
+      "save": "Opslaan",
+      "cancel": "Annuleren",
+      "delete": "Verwijderen",
+      "delete-confirm-title": "Deze herinnering verwijderen?",
+      "delete-confirm-description": "De chat gebruikt haar niet meer in nieuwe gesprekken.",
+      "from-thread": "Uit {title}",
+      "from-untitled": "Uit een gesprek",
+      "from-none": "Niet aan een gesprek gekoppeld",
+      "until": "tot {date}",
+      "forget-all": "Alles vergeten",
+      "forget-all-description": "Verwijder alles wat de chat in deze organisatie over je onthoudt.",
+      "forget-confirm-title": "Alles vergeten wat de chat over je onthoudt?",
+      "forget-confirm-description": "Alle herinneringen in deze organisatie worden verwijderd. Dit kan niet ongedaan worden gemaakt.",
+      "forget-confirm-action": "Alles vergeten",
+      "saved": "Herinnering bijgewerkt.",
+      "deleted": "Herinnering verwijderd.",
+      "forgotten": "Alles wat de chat over je onthield, is verwijderd.",
+      "switched-on": "De chat onthoudt wat je vertelt.",
+      "switched-off": "De chat voegt geen nieuwe herinneringen toe.",
+      "error": "Dat lukte niet. Probeer het zo meteen opnieuw.",
+      "error-not-found": "Die herinnering bestaat niet meer. Laad de pagina opnieuw.",
+      "off": "Het geheugen staat uit voor deze organisatie.",
+      "off-stored": "{count, plural, one {# herinnering is} other {# herinneringen zijn}} nog opgeslagen. Je kunt ze verwijderen.",
+      "off-nothing": "Er is niets over je opgeslagen."
     }
   },
   "teams-page": {

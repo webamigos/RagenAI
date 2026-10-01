@@ -14,6 +14,9 @@ import {
   type SettingsPage,
 } from '@/features/settings/registry';
 import { filterSettingsPages } from '@/features/settings/filter';
+import { getEffectiveFeaturesQuery } from '@/features/subscriptions/services/queries/get-effective-features-query';
+import { countUserMemoriesQuery } from '@/features/memory/services/queries/get-user-memories-query';
+import { logger } from '@/app/lib/utils/logger';
 
 type Props = Readonly<{
   children: React.ReactNode;
@@ -26,11 +29,17 @@ export default async function SettingsLayout({ children }: Props) {
     getOrgIdFromAuth(),
   ]);
 
-  const member = activeOrgId ? await getActiveMember(activeOrgId) : null;
+  const [member, featureFlags] = activeOrgId
+    ? await Promise.all([
+        getActiveMember(activeOrgId),
+        navFeatureFlags(activeOrgId),
+      ])
+    : [null, {}];
   const access = {
     isAppAdmin: isAppAdmin(user),
     canManageOrg: member ? canManageOrg(member.role) : false,
     isOrgOwner: member ? hasOrgRole(member.role, 'owner') : false,
+    featureFlags,
   };
 
   // One rail, three sections — gap 8. Both halves are filtered by the same
@@ -81,4 +90,24 @@ export default async function SettingsLayout({ children }: Props) {
       <div className="flex-1 p-6 overflow-auto">{children}</div>
     </div>
   );
+}
+
+/**
+ * The flags the rail filters `featureFlag` entries by. `personalMemory` also
+ * counts as on while the user still has memories stored, so the page that
+ * erases them stays findable after an org turns the feature off. A failed
+ * read hides the flagged entries rather than the whole settings page.
+ */
+async function navFeatureFlags(
+  organizationId: string,
+): Promise<Record<string, boolean>> {
+  try {
+    const flags = await getEffectiveFeaturesQuery(organizationId);
+    const personalMemory =
+      flags.personalMemory || (await countUserMemoriesQuery()) > 0;
+    return { ...flags, personalMemory };
+  } catch (err) {
+    logger.error({ err }, 'SettingsLayout: feature flags unavailable');
+    return {};
+  }
 }

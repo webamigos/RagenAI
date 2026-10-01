@@ -626,7 +626,8 @@
       "pii-policy": "Henkilötietokäytäntö",
       "organization-section": "Organisaatio",
       "you-section": "Sinä",
-      "privacy-section": "Yksityisyys"
+      "privacy-section": "Yksityisyys",
+      "memory": "Muisti"
     },
     "general": {
       "profile": "Profiili",
@@ -924,6 +925,41 @@
         "days": "{count} pv",
         "export": "Vie CSV"
       }
+    },
+    "memory": {
+      "title": "Muisti",
+      "description": "Mitä keskustelu muistaa sinusta tämän organisaation keskusteluista: millaisia vastauksia haluat, roolisi, mitä työstät. Vain sinä näet sen.",
+      "switch-label": "Muista, mitä kerron keskustelulle itsestäni",
+      "switch-description": "Uudet keskustelut käyttävät sitä, mitä sanoit aiemmin. Poiskytkentä säilyttää jo muistetun; voit unohtaa sen alla.",
+      "list-title": "Muistettu",
+      "count": "{count, plural, one {# muisto} other {# muistoa}} / {max}",
+      "empty": "Mitään ei ole vielä muistettu. Se, mitä kerrot itsestäsi keskustelussa, näkyy tässä.",
+      "edit": "Muokkaa",
+      "edit-label": "Muokkaa muistoa",
+      "save": "Tallenna",
+      "cancel": "Peruuta",
+      "delete": "Poista",
+      "delete-confirm-title": "Poistetaanko tämä muisto?",
+      "delete-confirm-description": "Keskustelu lakkaa käyttämästä sitä uusissa keskusteluissa.",
+      "from-thread": "Keskustelusta {title}",
+      "from-untitled": "Keskustelusta",
+      "from-none": "Ei liity keskusteluun",
+      "until": "{date} asti",
+      "forget-all": "Unohda kaikki",
+      "forget-all-description": "Poista kaikki, mitä keskustelu muistaa sinusta tässä organisaatiossa.",
+      "forget-confirm-title": "Unohdetaanko kaikki, mitä keskustelu muistaa sinusta?",
+      "forget-confirm-description": "Kaikki tämän organisaation muistot poistetaan. Tätä ei voi kumota.",
+      "forget-confirm-action": "Unohda kaikki",
+      "saved": "Muisto päivitetty.",
+      "deleted": "Muisto poistettu.",
+      "forgotten": "Kaikki, mitä keskustelu muisti sinusta, on poistettu.",
+      "switched-on": "Keskustelu muistaa, mitä kerrot sille.",
+      "switched-off": "Keskustelu ei lisää uusia muistoja.",
+      "error": "Se ei onnistunut. Yritä hetken kuluttua uudelleen.",
+      "error-not-found": "Tätä muistoa ei enää ole. Lataa sivu uudelleen.",
+      "off": "Muisti on poistettu käytöstä tässä organisaatiossa.",
+      "off-stored": "Tallennettuna on yhä {count, plural, one {# muisto} other {# muistoa}}. Voit poistaa ne.",
+      "off-nothing": "Sinusta ei ole tallennettu mitään."
     }
   },
   "teams-page": {
