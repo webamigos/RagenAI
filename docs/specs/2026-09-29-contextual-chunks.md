@@ -282,7 +282,7 @@ that defaults to `false`.
   `dual_content` rule holds by construction: its embedding is
   `masked prefix + decrypted original`. The legacy Meilisearch writer is not
   changed.
-- [x] **A3.** Measure four arms on `kolej` and `tabele`, three repetitions
+- [ ] **A3.** Measure four arms on `kolej` and `tabele`, three repetitions
   each:
   - no prefix;
   - title + section, dense only;
@@ -292,7 +292,7 @@ that defaults to `false`.
   Record evidence recall, the pass rate and the cross-lingual row here, and
   pick D4's arm.
 
-  *Done for two of the four arms, 2026-10-01*
+  *Partial, 2026-10-01: two of the four arms measured*
   ([write-up](../../apps/web/evals/rag-benchmark/results/2026-10-01-contextual-a3-free-prefix.md)).
   The arms are no prefix and title + section + summary sentence, dense only.
   The other two need a switch the code does not have.
@@ -301,7 +301,9 @@ that defaults to `false`.
     against 2–3 without the prefix.
   - **`tabele`:** within noise on the pass rate, and evidence 1–2 figures
     lower. A table chunk's prefix names what every row of it shares.
-  - **D4's arm:** the summary-sentence one, dense only. **Phase B is not
+  - **D4's candidate arm:** the summary-sentence one, dense only. It is a
+    candidate rather than D4's pick, because the two unmeasured arms could
+    still beat it; A3 stays open until they are run. **Phase B is not
     needed** for prose. Tables are a chunking question (ADR-43), not a
     prefix one.
 
