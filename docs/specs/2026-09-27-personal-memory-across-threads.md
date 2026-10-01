@@ -632,13 +632,19 @@ shape an answer before it has been measured.
   `AiUsageStep.MEMORY`. All three models go into `TENANT_SCOPED_MODELS`. The
   migration is checked on a throwaway database first, because the local
   `ragen` database has diverged from `prisma/migrations`.
-- [ ] **A3.** `packages/crypto/src/owner-key.ts` with unit tests:
+- [x] **A3.** `packages/crypto/src/owner-key.ts` with unit tests:
   - the key is created once under a race and reused afterwards;
   - "no key" is returned when encryption is enabled but the provider fails;
   - a mixed profile (plaintext and encrypted rows) reads correctly.
 
   The architecture test lists the module, and the ADR-42 amendment lands in the
   same PR.
+
+  *Done.* `resolveOwnerKeyForWrite` (`plaintext` / `key` / `unavailable`,
+  the last meaning "write nothing"), `sealOwnedContent` and `openOwnedRows`,
+  over a `load`/`saveIfAbsent` store. ADR-42 has the amendment, and
+  `encryption-lives-in-one-package.test.ts` checks the module stays in the
+  package.
 - [ ] **A4.** `features/memory/services/memory-scope.ts` and the queries and
   commands over it:
   - `getUserMemoriesQuery`;
