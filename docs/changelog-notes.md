@@ -73,7 +73,7 @@ archive is the blog.
 - `[brief]` **Next.js 16.3.8.** Picks up the fixes for a remote code
   execution in `next/og` (critical; Ragen does not use it) and a
   server-side request forgery in image optimization (high), among others.
-  Self-hosters get it with the next image. (#PR)
+  Self-hosters get it with the next image. (#1465)
 
 ### Answers
 
