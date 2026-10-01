@@ -69,6 +69,8 @@ export const prepareMetadata = async ({
             pii_masked_entities?: string[];
             pii_mode?: 'dual_content';
             content_original?: string;
+            contextPrefix?: string;
+            contextVersion?: number;
             sourcePage?: number;
             sourceRegions?: SourceRegion[];
           }
@@ -131,6 +133,12 @@ export const prepareMetadata = async ({
         ...(incoming?.pii_mode ? { pii_mode: incoming.pii_mode } : {}),
         ...(incoming?.content_original
           ? { content_original: incoming.content_original }
+          : {}),
+        ...(incoming?.contextPrefix
+          ? {
+              context_prefix: incoming.contextPrefix,
+              context_version: incoming.contextVersion ?? 1,
+            }
           : {}),
       };
 

@@ -210,6 +210,19 @@ export type VectorStoreDocumentMetadata = {
   /** The pre-masking text, encrypted. Only alongside `pii_mode`. */
   content_original?: string;
   section_path?: string;
+  /**
+   * The text embedded before the chunk (spec 2026-09-29-contextual-chunks):
+   * title, section and the summary's first sentence. Stored beside the chunk
+   * and never in `pageContent`, so the answer model, citations and Optimize
+   * read the chunk exactly as without it.
+   */
+  context_prefix?: string;
+  /**
+   * Which prefix the chunk was embedded with: absent or 0 none, 1 the free
+   * prefix, 2 a model-written one. What a partly re-indexed collection is
+   * counted by.
+   */
+  context_version?: number;
   sheet_name?: string;
   timestamp_start_ms?: number;
   timestamp_end_ms?: number;
