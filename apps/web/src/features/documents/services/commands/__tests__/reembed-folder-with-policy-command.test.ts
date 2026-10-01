@@ -11,8 +11,12 @@ const mockFolderFindFirst = vi.fn();
 const mockFileFindMany = vi.fn();
 const mockFileUpdateMany = vi.fn();
 const mockFileUpdate = vi.fn();
+const mockVersionFindFirst = vi.fn();
 vi.mock('@ragenai/prisma-client', () => ({
   default: {
+    documentVersion: {
+      findFirst: (...args: unknown[]) => mockVersionFindFirst(...args),
+    },
     documentFolder: {
       update: (...args: unknown[]) => mockFolderUpdate(...args),
       findMany: (...args: unknown[]) => mockFolderFindMany(...args),
@@ -32,7 +36,10 @@ vi.mock('@/libs/jobs', () => ({
 }));
 
 vi.mock('@/features/documents/contracts/document.types', () => ({
-  Workflow: { RUN_FILE_EMBEDDINGS: 'runFileEmbeddings' },
+  Workflow: {
+    RUN_FILE_EMBEDDINGS: 'runFileEmbeddings',
+    REINDEX_DOCUMENT_VERSION: 'reindexDocumentVersion',
+  },
 }));
 
 vi.mock('@/app/lib/utils/logger', () => ({
@@ -88,6 +95,34 @@ describe('reembedFolderWithPolicyCommand', () => {
     mockFileUpdateMany.mockResolvedValue({ count: 0 });
     mockFileUpdate.mockResolvedValue({});
     mockJobStart.mockResolvedValue(undefined);
+    mockVersionFindFirst.mockResolvedValue(null);
+  });
+
+  // A policy change re-masks the document. For an edited one that has to
+  // start from the active version: re-parsing the upload would re-mask the
+  // original text and drop the edit from the index.
+  it('re-indexes an edited document from its active version under the new policy', async () => {
+    mockFileFindMany.mockResolvedValue([makeFile('file-1')]);
+    mockVersionFindFirst.mockResolvedValue({
+      documentId: 'doc-1',
+      changeType: 'ROLLBACK',
+    });
+
+    await reembedFolderWithPolicyCommand('folder-1', 'org-1', PiiPolicy.STRICT);
+
+    // The policy is on the row before the job starts; the job reads it there.
+    expect(mockFileUpdate.mock.invocationCallOrder[0]).toBeLessThan(
+      mockJobStart.mock.invocationCallOrder[0],
+    );
+    expect(mockJobStart).toHaveBeenCalledWith(
+      'reindexDocumentVersion',
+      expect.any(String),
+      expect.objectContaining({
+        orgId: 'org-1',
+        fileId: 'file-1',
+        documentId: 'doc-1',
+      }),
+    );
   });
 
   it('returns empty result when folder has no uploaded files', async () => {
