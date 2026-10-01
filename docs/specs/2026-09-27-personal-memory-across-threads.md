@@ -677,10 +677,16 @@ shape an answer before it has been measured.
 
 ### Phase B — the user's view, still no extraction
 
-- [ ] **B1.** The shared usage-limit evaluation, as its own PR: the pure
+- [x] **B1.** The shared usage-limit evaluation, as its own PR: the pure
   computation from `checkUsageLimitsQuery` moves into a package that web and
   worker both import, and each app keeps its own Prisma read. The web ceiling
   tests stay unchanged and green. This PR adds no call site in the worker yet.
+
+  *Done.* `evaluateCeilings`, `usageMonthStart` and `CHAT_TURN_STEP` in
+  `packages/platform-contracts/src/usage/ceilings.ts`. apps/api's
+  `checkUsageCeilings` was the same arithmetic a second time and uses it too;
+  `usage-math-is-not-recopied.test.ts` fails on a ceiling comparison in
+  either app.
 - [x] **B2.** The `settings/memory` page: list, edit, delete, forget everything,
   the extraction switch, and the deletion-only state when the org has the key
   off. It gets a registry entry in the `you` group, and i18n in all 15 locale
