@@ -27,7 +27,7 @@
 import { QdrantClient } from '@qdrant/js-client-rest';
 import { nanoid } from 'nanoid';
 
-import { jobs } from '../jobs.js';
+import { closeJobs, jobs } from '../jobs.js';
 import { FREE_CONTEXT_PREFIX_VERSION } from '../services/context-prefix.js';
 import { getPrisma } from '../services/db/prisma.js';
 import { resolveOrgFeatures } from '../services/org-features.js';
@@ -216,4 +216,4 @@ main()
     console.error(error);
     process.exitCode = 1;
   })
-  .finally(() => getPrisma().$disconnect());
+  .finally(() => Promise.all([getPrisma().$disconnect(), closeJobs()]));

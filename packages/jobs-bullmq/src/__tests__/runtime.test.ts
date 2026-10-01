@@ -301,3 +301,35 @@ describe('listSchedules', () => {
     schedulers.value = [];
   });
 });
+
+// A script ends by closing the runtime, or its open queue connections keep
+// the process alive after its last line (the worker's `closeJobs()`).
+describe('close', () => {
+  it('closes the queues the runtime opened, so a script can exit', async () => {
+    const runtime = new BullMqJobRuntime({ connection: {} as never });
+    await runtime.start('runFileEmbeddings', 'run-1', {
+      fileId: 'f-1',
+      orgId: 'o-1',
+    });
+    const opened = (runtime as unknown as { queues: Map<string, FakeQueue> })
+      .queues;
+    expect(opened.size).toBeGreaterThan(0);
+    const queues = [...opened.values()];
+
+    await runtime.close();
+
+    for (const queue of queues) {
+      expect(queue.close).toHaveBeenCalledTimes(1);
+    }
+    expect(opened.size).toBe(0);
+  });
+
+  it('leaves queues it was handed alone', async () => {
+    const queue = new FakeQueue('injected', {});
+    const runtime = new BullMqJobRuntime({
+      queues: new Map([['injected', queue as never]]),
+    });
+    await runtime.close();
+    expect(queue.close).not.toHaveBeenCalled();
+  });
+});

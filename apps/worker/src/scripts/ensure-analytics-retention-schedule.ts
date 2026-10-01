@@ -24,7 +24,7 @@
  * remove the schedule.** It keeps firing and failing. A rollback has to delete
  * it here too — `npx tsx src/scripts/ensure-analytics-retention-schedule.ts --delete`.
  */
-import { jobs } from '../jobs.js';
+import { closeJobs, jobs } from '../jobs.js';
 import { SCHEDULE_TIMEZONE } from './schedule-timezone.js';
 
 import { ANALYTICS_RETENTION_DAYS } from '../consts.js';
@@ -66,7 +66,9 @@ async function main() {
   );
 }
 
-main().catch((error: unknown) => {
-  console.error(error);
-  process.exitCode = 1;
-});
+main()
+  .catch((error: unknown) => {
+    console.error(error);
+    process.exitCode = 1;
+  })
+  .finally(() => closeJobs());
