@@ -74,9 +74,9 @@ export async function getOrgMemoryAction(): Promise<OrgMemoryPageData> {
 
 /** Delete every member's memories in this organization, without reading them. */
 export async function deleteAllMembersMemoriesAction(): Promise<{
-  deletedProfiles: number;
+  deletedMemories: number;
 }> {
   const orgId = await getOrgIdFromAuthOrThrow();
   await requireOrgAdmin(orgId);
-  return { deletedProfiles: await deleteAllOrgMemoriesCommand() };
+  return { deletedMemories: await deleteAllOrgMemoriesCommand() };
 }

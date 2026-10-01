@@ -967,7 +967,8 @@
       "error-not-found": "Tento záznam už neexistuje. Obnovte stránku.",
       "off": "Paměť je pro tuto organizaci vypnutá.",
       "off-stored": "Stále uloženo: {count, plural, one {# záznam} few {# záznamy} many {# záznamu} other {# záznamů}}. Můžete je smazat.",
-      "off-nothing": "Nic o vás není uloženo."
+      "off-nothing": "Nic o vás není uloženo.",
+      "list-unavailable": "Vaše záznamy se teď nepodařilo načíst. Níže můžete přesto zapomenout vše."
     }
   },
   "teams-page": {

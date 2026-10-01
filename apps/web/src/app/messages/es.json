@@ -967,7 +967,8 @@
       "error-not-found": "Ese recuerdo ya no existe. Recarga la página.",
       "off": "La memoria está desactivada en esta organización.",
       "off-stored": "Todavía hay {count, plural, one {# recuerdo guardado} other {# recuerdos guardados}}. Puedes eliminarlos.",
-      "off-nothing": "No hay nada guardado sobre ti."
+      "off-nothing": "No hay nada guardado sobre ti.",
+      "list-unavailable": "Ahora mismo no se han podido cargar tus recuerdos. Aun así puedes olvidarlo todo abajo."
     }
   },
   "teams-page": {

@@ -703,8 +703,11 @@ shape an answer before it has been measured.
   rows are untouched.
 
   *Done.* In Organization → RAG pipeline, shown while the key is on or
-  memories remain. **One addition to the scope:** besides
-  `deleteAllOrgMemories`, `orgHasMemories` — a profile-id existence check, so
+  memories remain. `deleteAllOrgMemories` is "forget everything" for every
+  member: memory and change rows go, profiles stay with the key cleared and
+  the epoch moved on, so an opted-out member stays opted out and a queued
+  job writes nothing. **One addition to the scope:** `orgHasMemories` — a
+  memory-id existence check, so
   the panel offers the deletion only when there is something to delete. It
   selects no content and names no user; the guard checks the scope's code,
   between markers, for `content` and `userId`.

@@ -967,7 +967,8 @@
       "error-not-found": "Det minde findes ikke længere. Genindlæs siden.",
       "off": "Hukommelse er slået fra for denne organisation.",
       "off-stored": "{count, plural, one {# minde er} other {# minder er}} stadig gemt. Du kan slette dem.",
-      "off-nothing": "Der er intet gemt om dig."
+      "off-nothing": "Der er intet gemt om dig.",
+      "list-unavailable": "Dine minder kunne ikke indlæses lige nu. Du kan stadig glemme alt nedenfor."
     }
   },
   "teams-page": {

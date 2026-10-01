@@ -967,7 +967,8 @@
       "error-not-found": "Tätä muistoa ei enää ole. Lataa sivu uudelleen.",
       "off": "Muisti on poistettu käytöstä tässä organisaatiossa.",
       "off-stored": "Tallennettuna on yhä {count, plural, one {# muisto} other {# muistoa}}. Voit poistaa ne.",
-      "off-nothing": "Sinusta ei ole tallennettu mitään."
+      "off-nothing": "Sinusta ei ole tallennettu mitään.",
+      "list-unavailable": "Muistojasi ei voitu ladata juuri nyt. Voit silti unohtaa kaiken alla."
     }
   },
   "teams-page": {

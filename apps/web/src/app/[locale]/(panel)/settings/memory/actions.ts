@@ -25,6 +25,12 @@ export type MemoryPageData = {
   enabled: boolean;
   /** Empty while the feature is off: the page offers deletion only. */
   memories: UserMemoryView[];
+  /**
+   * The list could not be read — the owner key was unavailable, or a row
+   * would not decrypt. The page still renders and still offers "forget
+   * everything", which needs no key: erasure must not depend on decryption.
+   */
+  listUnavailable: boolean;
   /** What "forget everything" would delete, shown either way. */
   storedCount: number;
   maxEntries: number;
@@ -44,14 +50,29 @@ const personalMemoryEnabled = async () =>
  */
 export async function getMemoryPageAction(): Promise<MemoryPageData> {
   const enabled = await personalMemoryEnabled();
-  const [memories, storedCount, settings] = await Promise.all([
-    enabled ? getUserMemoriesQuery() : Promise.resolve([]),
+  const [list, storedCount, settings] = await Promise.all([
+    enabled
+      ? getUserMemoriesQuery().then(
+          (memories) => ({ memories, unavailable: false }),
+          (err: unknown) => {
+            logger.error(
+              { err: { name: (err as Error)?.name } },
+              'getMemoryPageAction: the memories could not be read',
+            );
+            return { memories: [] as UserMemoryView[], unavailable: true };
+          },
+        )
+      : Promise.resolve({
+          memories: [] as UserMemoryView[],
+          unavailable: false,
+        }),
     countUserMemoriesQuery(),
     getMemorySettingsQuery(),
   ]);
   return {
     enabled,
-    memories,
+    memories: list.memories,
+    listUnavailable: list.unavailable,
     storedCount,
     maxEntries: MEMORY_MAX_ENTRIES,
     extractionEnabled: settings.extractionEnabled,

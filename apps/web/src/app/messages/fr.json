@@ -967,7 +967,8 @@
       "error-not-found": "Ce souvenir n'existe plus. Rechargez la page.",
       "off": "La mémoire est désactivée pour cette organisation.",
       "off-stored": "{count, plural, one {# souvenir est encore enregistré} other {# souvenirs sont encore enregistrés}}. Vous pouvez les supprimer.",
-      "off-nothing": "Rien n'est enregistré à votre sujet."
+      "off-nothing": "Rien n'est enregistré à votre sujet.",
+      "list-unavailable": "Vos souvenirs n'ont pas pu être chargés pour le moment. Vous pouvez quand même tout oublier ci-dessous."
     }
   },
   "teams-page": {

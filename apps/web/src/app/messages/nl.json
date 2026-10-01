@@ -967,7 +967,8 @@
       "error-not-found": "Die herinnering bestaat niet meer. Laad de pagina opnieuw.",
       "off": "Het geheugen staat uit voor deze organisatie.",
       "off-stored": "{count, plural, one {# herinnering is} other {# herinneringen zijn}} nog opgeslagen. Je kunt ze verwijderen.",
-      "off-nothing": "Er is niets over je opgeslagen."
+      "off-nothing": "Er is niets over je opgeslagen.",
+      "list-unavailable": "Je herinneringen konden nu niet worden geladen. Je kunt hieronder nog steeds alles vergeten."
     }
   },
   "teams-page": {

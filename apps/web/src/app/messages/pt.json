@@ -967,7 +967,8 @@
       "error-not-found": "Essa memória já não existe. Recarregue a página.",
       "off": "A memória está desativada nesta organização.",
       "off-stored": "Ainda estão guardadas {count, plural, one {# memória} other {# memórias}}. Pode eliminá-las.",
-      "off-nothing": "Não há nada guardado sobre si."
+      "off-nothing": "Não há nada guardado sobre si.",
+      "list-unavailable": "Não foi possível carregar as suas memórias agora. Ainda pode esquecer tudo abaixo."
     }
   },
   "teams-page": {

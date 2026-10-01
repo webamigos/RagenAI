@@ -89,6 +89,19 @@ describe('getMemoryPageAction', () => {
   });
 });
 
+describe('getMemoryPageAction when the list cannot be read', () => {
+  it('renders the page anyway, with the count, so erasure stays reachable', async () => {
+    m.list.mockRejectedValue(new Error('the owner key is unavailable'));
+    const data = await getMemoryPageAction();
+    expect(data).toMatchObject({
+      enabled: true,
+      memories: [],
+      listUnavailable: true,
+      storedCount: 1,
+    });
+  });
+});
+
 describe('the mutations', () => {
   it('edit, delete and the switch are refused while the feature is off', async () => {
     m.featureOn.mockResolvedValue(false);
