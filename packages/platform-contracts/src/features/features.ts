@@ -41,6 +41,7 @@ export const FEATURE_KEYS = [
   'documentDiagnostics',
   'contextualChunks',
   'contextExpansion',
+  'sectionSelection',
 ] as const;
 
 export type FeatureKey = (typeof FEATURE_KEYS)[number];
@@ -148,6 +149,12 @@ export type FeatureOverrides = Partial<Record<FeatureKey, boolean | null>>;
  * of chunks (spec 2026-09-29-llm-document-selection, B3). Off by default
  * while it is measured (ADR-50); it changes only what a turn reads, so it
  * applies to every file at once and needs no re-index.
+ *
+ * `sectionSelection` puts a model in the reranker's slot: shown the question
+ * and the widened pool, it names the passages worth reading (spec
+ * 2026-09-29-llm-document-selection, D1). When it is on, the reranker does
+ * not run. One call per turn on `SELECTION_MODEL`, recorded as
+ * `SECTION_SELECTION`. Off by default while it is measured (ADR-50).
  */
 export const DEFAULT_FEATURES: FeatureFlags = {
   inviteMembers: false,
@@ -170,6 +177,7 @@ export const DEFAULT_FEATURES: FeatureFlags = {
   documentDiagnostics: true,
   contextualChunks: false,
   contextExpansion: false,
+  sectionSelection: false,
 };
 
 /** Human-readable names, shared so the admin panel and the app cannot disagree. */
@@ -198,6 +206,8 @@ export const FEATURE_LABELS: Record<FeatureKey, string> = {
     'Contextual chunks: index each chunk with its title and section (experimental, re-index to apply)',
   contextExpansion:
     'Context expansion: answer from each retrieved chunk with the ones around it (experimental)',
+  sectionSelection:
+    'Section selection: a model picks the passages to read, in place of the reranker (experimental, one LLM call per turn)',
 };
 
 /**

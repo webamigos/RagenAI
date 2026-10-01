@@ -3,7 +3,12 @@ import type { LanguageModelV4 } from '@ai-sdk/provider';
 import type { ModelMessage } from 'ai';
 import { generateObject, generateText } from 'ai';
 import { z } from 'zod';
-import { expandHits } from '@ragenai/rag-core';
+import {
+  expandHits,
+  selectSections,
+  SELECTION_TIMEOUT_MS,
+  type GenerateSelection,
+} from '@ragenai/rag-core';
 import type {
   VectorStoreClient,
   VectorStoreDocument,
@@ -94,6 +99,50 @@ function recordRephraseUsage(
     totalTokens: inputTokens + outputTokens,
     durationMs,
   }).catch(() => undefined);
+}
+
+/**
+ * The model call `selectSections` makes, for `sectionSelection`: temperature
+ * 0, cut off at the selection timeout, and recorded as `SECTION_SELECTION`
+ * through the injected callback — a step of its own, so the AI-usage page can
+ * say what selection costs. Mirrors apps/web's `sectionSelectionCall`.
+ */
+export function sectionSelectionCall(
+  model: LanguageModelV4,
+  tracking?: ChainTrackingContext,
+  trackAiUsage?: TrackAiUsage,
+): GenerateSelection {
+  return async ({ system, prompt }) => {
+    const startMs = Date.now();
+    const result = await generateText({
+      model,
+      system,
+      prompt,
+      temperature: 0,
+      abortSignal: AbortSignal.timeout(SELECTION_TIMEOUT_MS),
+      experimental_telemetry: {
+        isEnabled: true,
+        functionId: 'select-sections',
+      },
+    });
+    if (tracking && trackAiUsage && result.usage) {
+      const inputTokens = result.usage.inputTokens ?? 0;
+      const outputTokens = result.usage.outputTokens ?? 0;
+      void trackAiUsage({
+        organizationId: tracking.organizationId,
+        projectId: tracking.projectId ?? null,
+        userId: tracking.userId ?? null,
+        step: 'SECTION_SELECTION',
+        provider: 'litellm',
+        model: model.modelId,
+        inputTokens,
+        outputTokens,
+        totalTokens: inputTokens + outputTokens,
+        durationMs: Date.now() - startMs,
+      }).catch(() => undefined);
+    }
+    return result.text;
+  };
 }
 
 function formatChatHistory(chatHistory: string): Message[] {
@@ -492,6 +541,12 @@ export async function retrieveRelevantDocumentsWithIds(
    * Absent is off.
    */
   expansion?: { orgId: string },
+  /**
+   * `sectionSelection` for this organization: a model picks the passages from
+   * the widened pool, in the reranker's slot — the reranker does not run.
+   * Absent is off.
+   */
+  selection?: { generate: GenerateSelection },
 ): Promise<{ context: string; fileIds: string[] }> {
   if (!vectorStore) {
     throw new Error('Error retrieving relevant documents: No vector store');
@@ -507,10 +562,14 @@ export async function retrieveRelevantDocumentsWithIds(
       ? metadataFilter
       : undefined;
 
-  const useReranking = rerankingEnabled && isRerankingEnabled();
-  const totalPoolTarget = useReranking
-    ? maxDocuments * RERANK_RETRIEVAL_MULTIPLIER
-    : maxDocuments;
+  // Selection takes the reranker's slot (D2 of the spec): never both.
+  const useSelection = selection !== undefined;
+  const useReranking =
+    !useSelection && rerankingEnabled && isRerankingEnabled();
+  const totalPoolTarget =
+    useReranking || useSelection
+      ? maxDocuments * RERANK_RETRIEVAL_MULTIPLIER
+      : maxDocuments;
   const perQueryCount = Math.max(
     maxDocuments,
     Math.floor(totalPoolTarget / queryList.length),
@@ -554,7 +613,31 @@ export async function retrieveRelevantDocumentsWithIds(
       span.setAttribute('rag.deduped_count', uniqueDocs.length);
 
       let finalDocs: VectorStoreDocument[];
-      if (useReranking && uniqueDocs.length > maxDocuments) {
+      if (useSelection && uniqueDocs.length > maxDocuments) {
+        const result = await withSpan(
+          'rag.select',
+          { 'rag.select_input_count': uniqueDocs.length },
+          async (selectSpan) => {
+            const r = await selectSections({
+              question: queryList[0],
+              candidates: uniqueDocs,
+              maxKeep: maxDocuments,
+              generate: selection.generate,
+            });
+            selectSpan.setAttribute('rag.select_kept_count', r.kept.length);
+            if (r.fallback) {
+              selectSpan.setAttribute('rag.select_fallback', r.fallback);
+            }
+            return r;
+          },
+        );
+        finalDocs = result.kept;
+        if (result.fallback) {
+          logger.warn(
+            `Section selection fell back to fusion order: ${result.fallback}`,
+          );
+        }
+      } else if (useReranking && uniqueDocs.length > maxDocuments) {
         finalDocs = await withSpan(
           'rag.rerank',
           { 'rag.rerank_input_count': uniqueDocs.length },

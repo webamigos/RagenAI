@@ -1111,6 +1111,11 @@ enum AiUsageStep {
   /// guardrails cost" — a question an operator asks precisely because policy
   /// rules are the expensive kind, one model call per rule per turn.
   GUARDRAIL
+  /// The model call that chooses which retrieved sections a turn reads
+  /// (spec 2026-09-29-llm-document-selection, D1), in the reranker's slot.
+  /// Its own step so the page can say what selection costs beside reranking.
+  /// Counts toward the token and cost ceilings, not the message ceiling.
+  SECTION_SELECTION
 }
 
 enum McpConnectorStatus {

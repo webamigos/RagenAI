@@ -18,7 +18,9 @@ export type AiUsageStep =
    * precisely because policy rules are the expensive kind: one model call per
    * rule per turn.
    */
-  | 'GUARDRAIL';
+  | 'GUARDRAIL'
+  /** The model choosing a turn's sections (`sectionSelection`). */
+  | 'SECTION_SELECTION';
 
 export type CreateAiUsageInput = {
   organizationId: string;

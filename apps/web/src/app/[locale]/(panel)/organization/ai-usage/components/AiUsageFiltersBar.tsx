@@ -33,6 +33,10 @@ const STEPS = [
   // folded into Moderation, because "what did the guardrails cost" is the
   // question an operator asks about the expensive kind of rule.
   { value: AiUsageStep.GUARDRAIL, label: 'Guardrail' },
+  // The model choosing which retrieved sections a turn reads, in place of a
+  // reranker (`sectionSelection`) — filterable for the same reason reranking
+  // is: an organization that turns it on wants to know what it costs.
+  { value: AiUsageStep.SECTION_SELECTION, label: 'Section selection' },
 ];
 
 export function AiUsageFiltersBar({ filters, onChange }: Props) {

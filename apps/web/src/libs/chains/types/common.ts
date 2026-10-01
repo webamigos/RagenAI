@@ -19,6 +19,11 @@ export interface BaseChatChainModels {
 export interface RagChainModels extends BaseChatChainModels {
   questionRephraser: LanguageModelV4;
   embeddings: EmbeddingsProvider;
+  /**
+   * `SELECTION_MODEL`, present only when `sectionSelection` is on for the
+   * organization (spec 2026-09-29-llm-document-selection, D1).
+   */
+  sectionSelector?: LanguageModelV4;
 }
 
 export interface ChainTrackingContext {
@@ -215,7 +220,12 @@ export interface RetrievalTrace {
    * used when reranking is off or had nothing to cut; `reranker-failed:` is
    * the reranker's fallback, which is fusion order too.
    */
-  postRetrieval: 'fusion' | `reranker:${string}` | `reranker-failed:${string}`;
+  postRetrieval:
+    | 'fusion'
+    | `reranker:${string}`
+    | `reranker-failed:${string}`
+    | 'selection'
+    | `selection-failed:${string}`;
   /**
    * Whether kept chunks were widened by their neighbours (`contextExpansion`).
    * `neighbours` only when at least one neighbour was rendered; `chunks` then
@@ -228,6 +238,7 @@ export interface RetrievalTrace {
   timings: {
     searchMs: number;
     rerankMs: number;
+    selectMs: number;
     expandMs: number;
     rephraseMs?: number;
   };
