@@ -377,7 +377,7 @@ defaulting to `false`.
   `retrieval` trace lists every position a widened section covers, plus
   `expansion` (`off` / `neighbours`) and `timings.expandMs`; rag-benchmark
   stamps the arm as `<step> + neighbours`, so B4 can tell its two arms apart.
-  `tests/architecture/both-rag-chains-expand-through-rag-core.test.ts` holds
+  `tests/architecture/both-rag-chains-expand-and-select-through-rag-core.test.ts` holds
   both chains to rag-core's `expandHits`. apps/api's search endpoint is not a
   chain and does not expand.
 - [x] **B4.** Measure: B3 on vs off, on both corpora, three repetitions.
@@ -400,18 +400,50 @@ defaulting to `false`.
 
   *Not needed (B4, 2026-10-01): fixed ±1 regressed no run.* `SELECTION_MODEL`
   ships with D1 instead, which needs it.
-- [ ] **C2.** `AiUsageStep.SECTION_SELECTION`, with its migration and its
+- [x] **C2.** `AiUsageStep.SECTION_SELECTION`, with its migration and its
   place on the AI-usage page.
+
+  *Done, with D1, which writes it.* One enum member and `ALTER TYPE … ADD
+  VALUE` (applied to a fresh database from every migration). It also adds the
+  five lists on the AI-usage page that
+  `every-ai-usage-step-is-on-the-page.test.ts` holds to the schema, and the
+  string unions in apps/api and apps/worker. Built although C1 was skipped,
+  because D1 needs it.
 - [ ] **C3.** Measure C1 against B3. *Not needed, with C1.*
 
 ### Phase D — selection
 
-- [ ] **D1.** `selectSections` in rag-core, wired into both chains in the
+- [x] **D1.** `selectSections` in rag-core, wired into both chains in the
   reranker's slot, behind `sectionSelection`. It uses the widened pool
   (`maxDocuments × 3`, as the reranker does). Tests cover the parser, the
   fallback paths and the prompt's untrusted wrapper.
-- [ ] **D2.** Measure: selection vs the best Phase A arm, with and without
+
+  *Done.* `packages/rag-core/src/selection/select-sections.ts`:
+  `buildSelectionPrompt` lists each candidate as `<candidate id file
+  section>` inside `<candidates trust="untrusted">`, capped at 600
+  characters, with any `candidate` tag in the text stripped so a passage
+  cannot close its own wrapper; `parseSelection` reads the integers in the
+  answer in order, in range, once each, up to `maxKeep`; `selectSections`
+  falls back to fusion order on a timeout (8 s), an error, an answer with no
+  number, or one naming nothing valid, and records which. With the key on,
+  each chain builds a selector on `SELECTION_MODEL` (declared in
+  `@ragenai/env`'s `models` fragment beside `REPHRASE_MODEL`, unset meaning
+  the rephrase model; `gateway:preflight` probes it when it is set apart),
+  widens the pool as the reranker does, and skips the reranker. The call is
+  temperature 0, aborted at the timeout, and recorded as
+  `SECTION_SELECTION`. apps/web's trace names the step `selection` or
+  `selection-failed:<reason>` and adds `timings.selectMs`. The architecture
+  guard now holds both chains to `selectSections` as well as `expandHits`.
+- [x] **D2.** Measure: selection vs the best Phase A arm, with and without
   expansion.
+
+  *Done 2026-10-01* ([write-up](../../apps/web/evals/rag-benchmark/results/2026-10-01-d2-section-selection.md)).
+  **On prose, selection matches the reranker:** pass medians 17 vs 18 of 24
+  without expansion and 21 vs 20 with it, and the same evidence recall.
+  **On tables it is worse:** 7/18 vs 10/17 and 10 vs 11 of 18. Each candidate is
+  capped at 600 characters, which cuts off the table rows. Selection is about
+  5× faster than Scaleway (p50 ~0.2 s vs ~1 s, p95 ~0.5 s vs ~3.4 s) and
+  costs ~$0.0003 per turn on `mistral-small-3.2`. It never fell back.
 
 ### Phase E — decide
 

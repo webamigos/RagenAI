@@ -3,6 +3,7 @@ import { buildToolApprovalConfig } from '../../mcp/client.js';
 import {
   rephraseAndExpand,
   retrieveRelevantDocumentsWithIds,
+  sectionSelectionCall,
   retrieveThreadDocuments,
   buildRagMessages,
   validateAnswerGenerator,
@@ -116,6 +117,15 @@ export const basicRagChain = async ({
           config?.ragSettings?.contextExpansionEnabled &&
             config?.tracking?.organizationId
             ? { orgId: config.tracking.organizationId }
+            : undefined,
+          models.sectionSelector
+            ? {
+                generate: sectionSelectionCall(
+                  models.sectionSelector,
+                  config?.tracking,
+                  config?.trackAiUsage,
+                ),
+              }
             : undefined,
         ),
         retrieveThreadDocuments(

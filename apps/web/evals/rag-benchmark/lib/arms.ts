@@ -41,6 +41,7 @@ export interface ServerRetrievalTrace {
   timings: {
     searchMs: number;
     rerankMs: number;
+    selectMs?: number;
     expandMs?: number;
     rephraseMs?: number;
   };

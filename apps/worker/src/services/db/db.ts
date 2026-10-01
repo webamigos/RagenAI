@@ -566,7 +566,8 @@ type AiUsageStep =
   | 'REPHRASING'
   | 'MODERATION'
   | 'RERANKING'
-  | 'GUARDRAIL';
+  | 'GUARDRAIL'
+  | 'SECTION_SELECTION';
 
 /**
  * The row's estimated cost, from the table apps/web and apps/api price with.

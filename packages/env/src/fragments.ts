@@ -263,6 +263,12 @@ export const models = z.object({
   DEFAULT_MODEL_PROVIDER: blankAsUndefined(z.string().optional()),
   REPHRASE_MODEL: blankAsUndefined(z.string().optional()),
   REPHRASE_TEMPERATURE: blankAsUndefined(z.string().optional()),
+  /**
+   * The model that picks a turn's passages under `sectionSelection` (spec
+   * 2026-09-29-llm-document-selection, D3). Unset falls back to
+   * `REPHRASE_MODEL`, the other cheap per-turn call.
+   */
+  SELECTION_MODEL: blankAsUndefined(z.string().optional()),
   SUMMARY_MODEL: blankAsUndefined(z.string().optional()),
   EMBEDDINGS_MODEL: blankAsUndefined(z.string().optional()),
   VECTOR_SIZE: blankAsUndefined(z.string().optional()),

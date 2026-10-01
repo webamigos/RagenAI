@@ -3,6 +3,10 @@ import {
   expandHits,
   isUndecodableText,
   readSourceRegions,
+  selectSections,
+  SELECTION_TIMEOUT_MS,
+  type GenerateSelection,
+  type SelectionFallbackReason,
 } from '@ragenai/rag-core';
 import type { ModelMessage } from 'ai';
 import { generateObject, generateText } from 'ai';
@@ -102,6 +106,51 @@ function recordRephraseUsage(
     totalTokens: inputTokens + outputTokens,
     durationMs,
   }).catch(() => undefined);
+}
+
+/**
+ * The model call `selectSections` makes, for `sectionSelection`: temperature
+ * 0, cut off at the selection timeout so a slow provider is not left running
+ * after the turn has moved on, and recorded as `SECTION_SELECTION` — a step of
+ * its own, so the AI-usage page can say what selection costs. It counts
+ * toward the token and cost ceilings, not the message ceiling.
+ */
+export function sectionSelectionCall(
+  model: LanguageModelV4,
+  tracking?: ChainTrackingContext,
+): GenerateSelection {
+  return async ({ system, prompt }) => {
+    const startMs = Date.now();
+    const result = await generateText({
+      model,
+      system,
+      prompt,
+      temperature: 0,
+      abortSignal: AbortSignal.timeout(SELECTION_TIMEOUT_MS),
+      experimental_telemetry: {
+        isEnabled: true,
+        functionId: 'select-sections',
+      },
+    });
+    if (tracking && result.usage) {
+      const inputTokens = result.usage.inputTokens ?? 0;
+      const outputTokens = result.usage.outputTokens ?? 0;
+      void trackAiUsage({
+        teamId: null,
+        organizationId: tracking.organizationId,
+        projectId: tracking.projectId ?? null,
+        userId: tracking.userId ?? null,
+        step: AiUsageStep.SECTION_SELECTION,
+        provider: 'litellm',
+        model: model.modelId,
+        inputTokens,
+        outputTokens,
+        totalTokens: inputTokens + outputTokens,
+        durationMs: Date.now() - startMs,
+      }).catch(() => undefined);
+    }
+    return result.text;
+  };
 }
 
 function formatChatHistory(chatHistory: string): Message[] {
@@ -521,6 +570,12 @@ export async function retrieveRelevantDocumentsWithIds(
    * Absent is off.
    */
   expansion?: { orgId: string },
+  /**
+   * `sectionSelection` for this organization: a model picks the passages from
+   * the widened pool, in the reranker's slot — the reranker does not run.
+   * Absent is off.
+   */
+  selection?: { generate: GenerateSelection },
 ): Promise<{
   context: string;
   fileIds: string[];
@@ -553,10 +608,14 @@ export async function retrieveRelevantDocumentsWithIds(
       ? metadataFilter
       : undefined;
 
-  const useReranking = rerankingEnabled && isRerankingEnabled();
-  const totalPoolTarget = useReranking
-    ? maxDocuments * RERANK_RETRIEVAL_MULTIPLIER
-    : maxDocuments;
+  // Selection takes the reranker's slot (D2 of the spec): never both.
+  const useSelection = selection !== undefined;
+  const useReranking =
+    !useSelection && rerankingEnabled && isRerankingEnabled();
+  const totalPoolTarget =
+    useReranking || useSelection
+      ? maxDocuments * RERANK_RETRIEVAL_MULTIPLIER
+      : maxDocuments;
   const perQueryCount = Math.max(
     maxDocuments,
     Math.floor(totalPoolTarget / queryList.length),
@@ -603,8 +662,36 @@ export async function retrieveRelevantDocumentsWithIds(
 
       let finalDocs: VectorStoreDocument[];
       const reranked = useReranking && uniqueDocs.length > maxDocuments;
+      const selected = useSelection && uniqueDocs.length > maxDocuments;
+      let selectionFallback: SelectionFallbackReason | undefined;
       const rerankStartedAt = Date.now();
-      if (reranked) {
+      if (selected) {
+        const result = await withSpan(
+          'rag.select',
+          { 'rag.select_input_count': uniqueDocs.length },
+          async (selectSpan) => {
+            const r = await selectSections({
+              question: queryList[0],
+              candidates: uniqueDocs,
+              maxKeep: maxDocuments,
+              generate: selection.generate,
+            });
+            selectSpan.setAttribute('rag.select_kept_count', r.kept.length);
+            if (r.fallback) {
+              selectSpan.setAttribute('rag.select_fallback', r.fallback);
+            }
+            return r;
+          },
+        );
+        finalDocs = result.kept;
+        selectionFallback = result.fallback;
+        if (selectionFallback) {
+          logger.warn(
+            { fallback: selectionFallback },
+            'Section selection fell back to fusion order',
+          );
+        }
+      } else if (reranked) {
         finalDocs = await withSpan(
           'rag.rerank',
           { 'rag.rerank_input_count': uniqueDocs.length },
@@ -618,6 +705,7 @@ export async function retrieveRelevantDocumentsWithIds(
         finalDocs = uniqueDocs.slice(0, maxDocuments);
       }
       const rerankMs = reranked ? Date.now() - rerankStartedAt : 0;
+      const selectMs = selected ? Date.now() - rerankStartedAt : 0;
 
       // After the cut, so the reranker still chooses which hits are kept and
       // expansion only widens them. A failed lookup leaves a hit as it was.
@@ -779,10 +867,12 @@ export async function retrieveRelevantDocumentsWithIds(
         durationMs: Date.now() - startedAt,
         trace: {
           chunks: renderedChunkPositions(finalDocs),
-          postRetrieval: postRetrievalStep(reranked, finalDocs),
+          postRetrieval: selected
+            ? selectionStep(selectionFallback)
+            : postRetrievalStep(reranked, finalDocs),
           expansion: expanded ? 'neighbours' : 'off',
           queryCount: queryList.length,
-          timings: { searchMs, rerankMs, expandMs },
+          timings: { searchMs, rerankMs, selectMs, expandMs },
         },
       };
     },
@@ -798,6 +888,13 @@ export async function retrieveRelevantDocumentsWithIds(
  * told apart by the scores: a benchmark that credited a fallback to the
  * reranker would measure fusion under the reranker's name.
  */
+/** The trace's name for selection: `selection`, or the fallback it took. */
+function selectionStep(
+  fallback: SelectionFallbackReason | undefined,
+): RetrievalTrace['postRetrieval'] {
+  return fallback ? `selection-failed:${fallback}` : 'selection';
+}
+
 export function postRetrievalStep(
   reranked: boolean,
   finalDocs: readonly VectorStoreDocument[],

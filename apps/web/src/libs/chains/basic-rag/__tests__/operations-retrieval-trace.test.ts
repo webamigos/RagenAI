@@ -251,3 +251,66 @@ describe('retrieveRelevantDocumentsWithIds — context expansion', () => {
     expect(trace?.chunks).toEqual([{ fileId: 'f-1', chunkIndex: 5 }]);
   });
 });
+
+/**
+ * `sectionSelection` (spec 2026-09-29-llm-document-selection, D1): a model
+ * picks the passages from the widened pool, in the reranker's slot.
+ */
+describe('retrieveRelevantDocumentsWithIds — section selection', () => {
+  const pool = [1, 2, 3, 4, 5, 6].map((n) =>
+    chunk(`f-${n}`, 1, `Passage ${n}.`),
+  );
+
+  it('keeps what the model chose, in its order, and the reranker does not run', async () => {
+    mockIsRerankingEnabled.mockReturnValue(true);
+    const generate = vi.fn().mockResolvedValue('5, 2');
+    const { context, trace } = await retrieveRelevantDocumentsWithIds(
+      storeReturning(pool),
+      'q',
+      2,
+      undefined,
+      true,
+      undefined,
+      undefined,
+      { generate },
+    );
+
+    expect(mockRerankDocuments).not.toHaveBeenCalled();
+    expect(generate).toHaveBeenCalledTimes(1);
+    expect(trace?.postRetrieval).toBe('selection');
+    expect(trace?.chunks.map((c) => c.fileId)).toEqual(['f-5', 'f-2']);
+    expect(context.indexOf('Passage 5.')).toBeLessThan(
+      context.indexOf('Passage 2.'),
+    );
+  });
+
+  it('widens the pool the way the reranker does', async () => {
+    const store = storeReturning(pool);
+    await retrieveRelevantDocumentsWithIds(
+      store,
+      'q',
+      2,
+      undefined,
+      false,
+      undefined,
+      undefined,
+      { generate: vi.fn().mockResolvedValue('1') },
+    );
+    expect(store.similaritySearch).toHaveBeenCalledWith('q', 6, undefined);
+  });
+
+  it('names a fallback, and answers from fusion order', async () => {
+    const { trace } = await retrieveRelevantDocumentsWithIds(
+      storeReturning(pool),
+      'q',
+      2,
+      undefined,
+      false,
+      undefined,
+      undefined,
+      { generate: vi.fn().mockRejectedValue(new Error('provider down')) },
+    );
+    expect(trace?.postRetrieval).toBe('selection-failed:error');
+    expect(trace?.chunks.map((c) => c.fileId)).toEqual(['f-1', 'f-2']);
+  });
+});

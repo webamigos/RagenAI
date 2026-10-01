@@ -20,7 +20,7 @@ const chunk = (fileId: string, chunkIndex: number, text: string): Chunk => ({
 /**
  * `contextExpansion` (spec 2026-09-29-llm-document-selection, B3), the same
  * behaviour as apps/web's chain: both call rag-core's `expandHits`, which
- * `both-rag-chains-expand-through-rag-core.test.ts` holds them to.
+ * `both-rag-chains-expand-and-select-through-rag-core.test.ts` holds them to.
  */
 describe('retrieveRelevantDocumentsWithIds — context expansion', () => {
   const filter = {

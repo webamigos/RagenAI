@@ -53,6 +53,8 @@ type InitializeRagChainParams = {
 };
 
 const DEFAULT_REPHRASE_MODEL = process.env.REPHRASE_MODEL || 'gemini-2.5-flash';
+/** `sectionSelection`'s model (D3): the rephrase model unless set apart. */
+const SELECTION_MODEL = process.env.SELECTION_MODEL || DEFAULT_REPHRASE_MODEL;
 const parsedRephraseTemp = Number(process.env.REPHRASE_TEMPERATURE);
 const DEFAULT_REPHRASE_TEMPERATURE = Number.isNaN(parsedRephraseTemp)
   ? 0.5
@@ -185,6 +187,7 @@ export class InitializeBasicRagService {
         ragPipelineSettings,
         { vectorStore: wrappedStore, metadataFilter },
         contextExpansionEnabled,
+        sectionSelectionEnabled,
       ] = await Promise.all([
         this.organizationSettings.getRagPipelineSettings(orgId),
         this.buildVectorStoreAndFilter({
@@ -197,7 +200,17 @@ export class InitializeBasicRagService {
           metadataFilter: metadataFilterOverride,
         }),
         this.subscriptions.isFeatureEnabled(orgId, 'contextExpansion'),
+        this.subscriptions.isFeatureEnabled(orgId, 'sectionSelection'),
       ]);
+      // Built only when the key is on: the chain runs selection exactly when
+      // it is handed a selector.
+      const sectionSelector = sectionSelectionEnabled
+        ? createChatCompletionInstance({
+            apiKey,
+            model: SELECTION_MODEL,
+            temperature: 0,
+          })
+        : undefined;
 
       return await basicRagChain({
         models: {
@@ -205,6 +218,7 @@ export class InitializeBasicRagService {
           questionRephraser,
           answerGenerator,
           embeddings: embeddingModel,
+          ...(sectionSelector ? { sectionSelector } : {}),
         },
         config: {
           metadataFilter,

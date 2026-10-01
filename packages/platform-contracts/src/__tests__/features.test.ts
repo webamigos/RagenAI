@@ -315,6 +315,16 @@ describe('contextualChunks', () => {
   });
 });
 
+// Off by default: D2 found it no better than the reranker (spec 2026-09-29-llm-document-selection, E1).
+describe('sectionSelection', () => {
+  it('is off unless an operator turns it on', () => {
+    expect(resolveFeatures({}).sectionSelection).toEqual({
+      value: false,
+      source: 'code-default',
+    });
+  });
+});
+
 describe('flattenFeatures', () => {
   it('drops the sources and keeps the values', () => {
     const flags = flattenFeatures(
