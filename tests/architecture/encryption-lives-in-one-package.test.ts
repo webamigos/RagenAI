@@ -209,6 +209,35 @@ describe('envelope encryption', () => {
     }
   });
 
+  /**
+   * ADR-42's amendment allows one encryption function per owner kind: the
+   * thread path, and owner keys for content that belongs to no message
+   * (personal memory). Both live in the package; this keeps the second from
+   * being rebuilt in an app because the memory code happens to live there.
+   */
+  it('keeps the owner-key path in the package', () => {
+    const ownerKey = files.find(
+      (f) => f.path === join('packages', 'crypto', 'src', 'owner-key.ts'),
+    );
+    expect(
+      ownerKey,
+      'packages/crypto/src/owner-key.ts has moved',
+    ).toBeDefined();
+    expect(ownerKey!.source).toMatch(
+      /export async function resolveOwnerKeyForWrite\b/,
+    );
+
+    const rebuilt = files
+      .filter(({ path }) => !path.startsWith(PACKAGE))
+      .filter(({ source }) =>
+        /\bfunction\s+(?:resolveOwnerKeyForWrite|sealOwnedContent|openOwnedRows)\b/.test(
+          source,
+        ),
+      )
+      .map(({ path }) => path);
+    expect(rebuilt).toEqual([]);
+  });
+
   it('is depended on by every app that uses it', () => {
     const missing = ['web', 'api', 'worker'].filter((app) => {
       const pkg = JSON.parse(
