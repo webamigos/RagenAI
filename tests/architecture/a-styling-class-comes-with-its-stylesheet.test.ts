@@ -1,8 +1,8 @@
-import { readFileSync, statSync } from 'node:fs';
+import { statSync } from 'node:fs';
 import { dirname, join, relative, resolve, sep } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
-import { trackedFiles } from './tracked-files';
+import { readSource, trackedFiles } from './tracked-files';
 
 /**
  * A component that paints with `chat-response` also imports the stylesheet.
@@ -94,9 +94,7 @@ describe.each(STYLING_CLASSES)(
         return resolve(dirname(file), imported) === stylesheetPath;
       });
 
-    const users = files.filter((file) =>
-      usage.test(readFileSync(file, 'utf8')),
-    );
+    const users = files.filter((file) => usage.test(readSource(file)));
 
     it('is used somewhere, or this test is checking nothing', () => {
       expect(users.length).toBeGreaterThan(0);
@@ -106,7 +104,7 @@ describe.each(STYLING_CLASSES)(
       '%s imports the stylesheet it paints with',
       (relativePath) => {
         const file = join(REPO_ROOT, relativePath);
-        const source = readFileSync(file, 'utf8');
+        const source = readSource(file);
 
         expect(
           importsTheStylesheet(file, source),

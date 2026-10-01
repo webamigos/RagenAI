@@ -1,4 +1,3 @@
-import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
@@ -7,6 +6,7 @@ import {
   readBuiltInCatalogue,
   seedBuiltInCatalogue,
 } from '../../prisma/catalog/seed-catalogue';
+import { readSource } from './tracked-files';
 
 /**
  * The catalogue table replaced the `McpConnectorProvider` enum as the answer
@@ -43,7 +43,7 @@ function enumMembers(source: string, name: string): string[] {
 }
 
 describe('the seeded catalogue', () => {
-  const schema = readFileSync(SCHEMA, 'utf8');
+  const schema = readSource(SCHEMA);
   const entries = readBuiltInCatalogue();
 
   it('uses an auth type the McpAuthType enum declares', () => {
@@ -54,7 +54,7 @@ describe('the seeded catalogue', () => {
   });
 
   it('is inserted by the migration, not only by the seed script', () => {
-    const migration = readFileSync(MIGRATION, 'utf8');
+    const migration = readSource(MIGRATION);
     for (const entry of entries) {
       expect(migration).toContain(`'${entry.slug}'`);
     }

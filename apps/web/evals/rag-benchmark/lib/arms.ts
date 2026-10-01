@@ -27,6 +27,41 @@ const CONTROL_TIMEOUT_MS = 120_000;
 export interface RagAnswer {
   text: string;
   citedFileIds: string[];
+  /** The server's account of what reached the model, when it sent one. */
+  trace?: ServerRetrievalTrace;
+}
+
+/** `retrieval.trace` as apps/web streams it (`ApiSseRetrievalTrace`). */
+export interface ServerRetrievalTrace {
+  chunks: { fileId: string; chunkIndex: number }[];
+  postRetrieval: string;
+  queryCount: number;
+  timings: { searchMs: number; rerankMs: number; rephraseMs?: number };
+}
+
+function readTrace(value: unknown): ServerRetrievalTrace | undefined {
+  if (typeof value !== 'object' || value === null) {
+    return undefined;
+  }
+  const t = value as Partial<ServerRetrievalTrace>;
+  if (
+    !Array.isArray(t.chunks) ||
+    typeof t.postRetrieval !== 'string' ||
+    typeof t.queryCount !== 'number' ||
+    typeof t.timings !== 'object' ||
+    t.timings === null
+  ) {
+    return undefined;
+  }
+  return {
+    chunks: t.chunks.filter(
+      (c): c is { fileId: string; chunkIndex: number } =>
+        typeof c?.fileId === 'string' && Number.isInteger(c?.chunkIndex),
+    ),
+    postRetrieval: t.postRetrieval,
+    queryCount: t.queryCount,
+    timings: t.timings,
+  };
 }
 
 /** Concatenate the SSE `content` deltas and pick up the `citations` frame. */
@@ -60,6 +95,7 @@ export async function askRag(opts: {
 export function parseRagStream(raw: string): RagAnswer {
   const parts: string[] = [];
   const citedFileIds: string[] = [];
+  let trace: ServerRetrievalTrace | undefined;
 
   // Frames are separated by a blank line; `event:` is optional (content
   // deltas carry only `data:`).
@@ -69,7 +105,7 @@ export function parseRagStream(raw: string): RagAnswer {
     if (!dataMatch) {
       continue;
     }
-    let payload: { content?: string; fileIds?: string[] };
+    let payload: { content?: string; fileIds?: string[]; trace?: unknown };
     try {
       payload = JSON.parse(dataMatch[1]) as typeof payload;
     } catch {
@@ -78,12 +114,14 @@ export function parseRagStream(raw: string): RagAnswer {
     }
     if (eventMatch?.[1] === 'citations' && Array.isArray(payload.fileIds)) {
       citedFileIds.push(...payload.fileIds);
+    } else if (eventMatch?.[1] === 'retrieval') {
+      trace = readTrace(payload.trace);
     } else if (typeof payload.content === 'string') {
       parts.push(payload.content);
     }
   }
 
-  return { text: parts.join(''), citedFileIds };
+  return { text: parts.join(''), citedFileIds, ...(trace ? { trace } : {}) };
 }
 
 /**

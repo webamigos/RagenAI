@@ -249,8 +249,8 @@ that defaults to `false`.
 
 ### Phase A — the free prefix, measured
 
-- [ ] **A0.** The shared measurement phase: the `retrieval` frame and
-  evidence recall, Phase A of
+- [x] **A0.** The shared measurement phase: the `retrieval` frame (#1440) and
+  evidence recall (#1442), Phase A of
   [model-chosen sections](2026-09-29-llm-document-selection.md). It lands
   once, for both specs.
 - [x] **A1.** Docling prose chunks carry `section_path`, taken from the

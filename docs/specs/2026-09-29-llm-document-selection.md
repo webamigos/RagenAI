@@ -306,9 +306,15 @@ defaulting to `false`.
   apps/api's OpenAI-compatible endpoint streams no retrieval frame at all,
   and the harness measures through apps/web — the shared code of Phases B–D
   (D4) is what keeps the two chains equal, not this frame.
-- [ ] **A2.** `rag-benchmark` parses the frame and reports **evidence recall**
+- [x] **A2.** `rag-benchmark` parses the frame and reports **evidence recall**
   (per question and per shape) next to the pass rate. It stamps the stack
   from the frame. Unit tests on the parser and on the recall computation.
+
+  *Done.* `lib/evidence.ts`: the trace's chunks are read back from Qdrant and
+  searched for the assertions' needles with the assertions' own matching;
+  per case in the JSON (`evidence`, `retrievalTrace`), and a report table by
+  language and question type. The stack table gains the server-reported
+  post-retrieval step beside the harness's reading of the settings.
 - [ ] **A3.** Run the baseline: reranking off / Scaleway / Cohere, on `kolej`
   and `tabele`, three repetitions each. Commit the results under
   `apps/web/evals/rag-benchmark/results/` with a write-up, and record in
@@ -316,8 +322,17 @@ defaulting to `false`.
 
 ### Phase B — deterministic expansion
 
-- [ ] **B1.** `chunk_index` payload index: added in the worker's collection
+- [x] **B1.** `chunk_index` payload index: added in the worker's collection
   setup, plus a one-off script for existing collections.
+
+  *Done.* `PAYLOAD_INDEXES` in `packages/rag-core` is now the one list the
+  worker, apps/web and apps/api create collections with (each had its own),
+  with `metadata.chunk_index` as an integer index. The worker's
+  `ensurePayloadIndexes` reads a collection's `payload_schema` and creates
+  what is missing, on existing collections too, the first time it writes to
+  one after a deploy; `scripts/ensure-qdrant-payload-indexes.ts [--dry-run]`
+  does it for every collection at once. Locally, 10 of 10 collections lacked
+  only `chunk_index`.
 - [ ] **B2.** `getChunksByIndex` on `VectorStoreClient` (Qdrant
   implementation in apps/web and apps/api). It applies the search filter and
   goes through the dual-content decode wrapper. Tests cover the filter,

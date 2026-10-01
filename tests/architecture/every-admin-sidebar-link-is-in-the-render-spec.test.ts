@@ -1,7 +1,7 @@
-import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
+import { readSource } from './tracked-files';
 
 /**
  * A page in the admin sidebar is a page `smoke-03-every-page-renders` visits.
@@ -46,7 +46,7 @@ const SPEC = join(
   'smoke-03-every-page-renders.spec.ts',
 );
 
-const read = (file: string) => readFileSync(file, 'utf8');
+const read = (file: string) => readSource(file);
 
 /** Every `href: '/…'` in the sidebar's nav table. */
 function sidebarHrefs(): string[] {

@@ -1,9 +1,8 @@
-import { readFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { trackedFiles } from './tracked-files';
+import { readSource, trackedFiles } from './tracked-files';
 
 /**
  * No source file outside `@ragenai/platform-contracts` compares a role field
@@ -95,7 +94,7 @@ const files = [
   ...sourceFiles(join(REPO_ROOT, 'packages')),
 ].map((f) => ({
   path: relative(REPO_ROOT, f),
-  code: stripComments(readFileSync(f, 'utf8')),
+  code: stripComments(readSource(f)),
 }));
 
 describe('organization and platform role checks', () => {

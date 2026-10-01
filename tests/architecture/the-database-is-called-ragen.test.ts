@@ -1,9 +1,8 @@
-import { readFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { trackedFiles } from './tracked-files';
+import { readSource, trackedFiles } from './tracked-files';
 
 /**
  * The database is `ragen`. It was `smart` + `rag` once, and the old name
@@ -105,7 +104,7 @@ describe('the retired database name is gone', () => {
       const offenders = files
         .filter((file) => {
           try {
-            return RETIRED_NAME.test(readFileSync(file, 'utf8'));
+            return RETIRED_NAME.test(readSource(file));
           } catch {
             return false;
           }

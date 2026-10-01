@@ -1,8 +1,9 @@
-import { readFileSync, existsSync } from 'node:fs';
+import { existsSync } from 'node:fs';
 import { dirname, join, relative } from 'node:path';
 
 import ts from 'typescript';
 import { describe, expect, it } from 'vitest';
+import { readSource } from './tracked-files';
 
 /**
  * An app's `dist/` is what its image ships, and a test file has no business
@@ -51,7 +52,7 @@ function buildConfigFor(app: string): string | null {
   }
 
   const build = (
-    JSON.parse(readFileSync(manifest, 'utf8')) as {
+    JSON.parse(readSource(manifest)) as {
       scripts?: Record<string, string>;
     }
   ).scripts?.build;

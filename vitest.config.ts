@@ -30,15 +30,39 @@ export default defineConfig({
 
   test: {
     environment: 'node',
-    include: [
-      'packages/*/src/**/*.test.ts',
-      'tests/**/*.test.ts',
-      // Reached across from apps/web on purpose: stryker.config.mjs mutates
-      // this one file against *this* config, so its test has to be runnable
-      // from here or every mutant in it survives by default.
-      'apps/web/src/libs/db/__tests__/tenant-scope-guard.test.ts',
-    ],
     clearMocks: true,
+    projects: [
+      {
+        extends: true,
+        test: {
+          name: 'packages',
+          include: [
+            'packages/*/src/**/*.test.ts',
+            // Reached across from apps/web on purpose: stryker.config.mjs
+            // mutates this one file against *this* config, so its test has to
+            // be runnable from here or every mutant in it survives by default.
+            'apps/web/src/libs/db/__tests__/tenant-scope-guard.test.ts',
+          ],
+        },
+      },
+      {
+        extends: true,
+        test: {
+          name: 'architecture',
+          include: ['tests/**/*.test.ts'],
+          // The guards read the repository as text and never mock, stub or
+          // mutate global state, so they need no per-file isolation — and
+          // sharing a worker lets `tracked-files.ts` list the repository and
+          // read each file once per worker instead of once per file.
+          isolate: false,
+          // A budget for a hang, not for a guard's work. Under `npm run
+          // verify` (turbo, four tasks at once) guards that finish in under a
+          // second alone missed the 5 s default by being scheduled late —
+          // docs/lessons/a-five-second-test-timeout-fires-under-verifys-concurrency.md.
+          testTimeout: 30_000,
+        },
+      },
+    ],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json-summary'],

@@ -3,7 +3,7 @@ import { join, relative } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { trackedFiles } from './tracked-files';
+import { readSource, trackedFiles } from './tracked-files';
 
 /**
  * Per-team `rpm` and `tpm` are enforced by this application.
@@ -62,7 +62,7 @@ describe('per-team rate limits are enforced by the application', () => {
     const callers = [...walk(join(REPO_ROOT, 'apps', 'web', 'src'))]
       .filter((file) => !/__tests__|\.test\.tsx?$/.test(file))
       .filter((file) =>
-        /\bassertWithinTeamRateLimit\s*\(/.test(readFileSync(file, 'utf8')),
+        /\bassertWithinTeamRateLimit\s*\(/.test(readSource(file)),
       )
       .map((file) => relative(REPO_ROOT, file))
       // The module that defines it does not count as a caller.
@@ -202,7 +202,7 @@ describe('per-team rate limits are enforced by the application', () => {
 
     const offenders = [...walk(join(REPO_ROOT, 'apps'))]
       .filter((file) => {
-        const body = readFileSync(file, 'utf8');
+        const body = readSource(file);
         return (
           body.includes('createLiteLLMTeam') ||
           body.includes('updateLiteLLMTeam')

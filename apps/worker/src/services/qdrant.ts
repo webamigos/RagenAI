@@ -15,6 +15,7 @@ import {
   SPARSE_VECTOR_NAME,
   CONTEXT_PREFIX_IN_BM25,
   embeddingTextFor,
+  PAYLOAD_INDEXES,
   prepareEmbeddingBatches,
 } from '@ragenai/rag-core';
 import { db } from './db/db.js';
@@ -82,26 +83,55 @@ async function doEnsureCollection(collectionName: string): Promise<void> {
       optimizers_config: { indexing_threshold: 20000 },
     });
 
-    const indexFields = [
-      'metadata.project_id',
-      'metadata.file_id',
-      'metadata.organization_id',
-      'metadata.accessible_by',
-    ];
-    for (const field of indexFields) {
-      await qdrant.createPayloadIndex(collectionName, {
-        field_name: field,
-        field_schema: 'keyword',
-      });
-    }
-
     logger.info(
       { collection: collectionName },
       'Qdrant collection created with hybrid dense+sparse vectors',
     );
   }
 
+  await ensurePayloadIndexes(qdrant, collectionName);
   verifiedCollections.add(collectionName);
+}
+
+/**
+ * Create whichever of `PAYLOAD_INDEXES` the collection lacks, and say which.
+ *
+ * Indexes used to be created only with the collection, so one added to the
+ * list later never reached a collection that already existed. Reading the
+ * collection's `payload_schema` first makes this safe to run on every
+ * collection, every time: an index that exists is left alone.
+ */
+export async function ensurePayloadIndexes(
+  qdrant: {
+    getCollection: (name: string) => Promise<{
+      payload_schema?: Record<string, unknown>;
+    }>;
+    createPayloadIndex: (
+      name: string,
+      index: { field_name: string; field_schema: 'keyword' | 'integer' },
+    ) => Promise<unknown>;
+  },
+  collectionName: string,
+  { dryRun = false }: { dryRun?: boolean } = {},
+): Promise<string[]> {
+  const info = await qdrant.getCollection(collectionName);
+  const existing = new Set(Object.keys(info.payload_schema ?? {}));
+  const missing = PAYLOAD_INDEXES.filter(({ field }) => !existing.has(field));
+  if (!dryRun) {
+    for (const { field, schema } of missing) {
+      await qdrant.createPayloadIndex(collectionName, {
+        field_name: field,
+        field_schema: schema,
+      });
+    }
+    if (missing.length > 0) {
+      logger.info(
+        { collection: collectionName, fields: missing.map((m) => m.field) },
+        'Qdrant payload indexes created',
+      );
+    }
+  }
+  return missing.map((m) => m.field);
 }
 
 const addDocuments = async ({

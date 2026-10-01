@@ -1,9 +1,9 @@
-import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
 import { renderShippedConfig } from '../../scripts/config/generate-ragen-config.mjs';
+import { readSource } from './tracked-files';
 
 /**
  * `ragen.config.ts` is an artifact of the installer's template, and this is
@@ -25,7 +25,7 @@ const SHIPPED = join(import.meta.dirname, '..', '..', 'ragen.config.ts');
 describe('the shipped config matches the installer template', () => {
   it('is what the template would write for a fresh clone', () => {
     expect(
-      readFileSync(SHIPPED, 'utf8'),
+      readSource(SHIPPED),
       'ragen.config.ts is out of date. Run `npm run config:template` — and if you edited it by hand, put the change in packages/create-ragen-app/src/config-template.ts instead, or the installer will overwrite it on the next scaffold.',
     ).toBe(renderShippedConfig());
   });

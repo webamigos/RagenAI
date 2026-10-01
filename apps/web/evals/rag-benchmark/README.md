@@ -243,6 +243,26 @@ Phase A). The score is written after the file is marked indexed, so the run
 waits for it separately. A per-document rate rests on two to five questions,
 so compare the median of three runs, not one.
 
+## Evidence recall: did retrieval hand the model the answer?
+
+The pass rate cannot tell a retrieval miss from an answer that ignored what it
+was given — both fail the same assertion. The app's `retrieval` stream event
+carries a `trace`: each chunk it rendered for the model as `(fileId,
+chunkIndex)`, the step that chose them (`fusion` or `reranker:<provider>`) and
+how long search, rerank and rephrase took. The harness reads those chunks
+back from Qdrant (`QDRANT_URL`, `QDRANT_API_KEY`) and asks of their text the
+same substring question `runAssertions` asks of the answer
+(`lib/evidence.ts`): `expectAll` counts each needle, `expectAny` counts as
+one, `expectNone` is not evidence.
+
+The report gains an **Evidence recall** table next to the pass rate, sliced
+the same way, and a stack row with the post-retrieval step as the *server*
+reported it. Low evidence and a low pass rate is retrieval; high evidence and
+a low pass rate is the answer. A run against an app that sends no trace
+renders neither. In `dual_content` mode evidence is counted on the stored
+(masked) text while the model saw the decoded original, so it can only be
+under-counted there.
+
 ## What this does not measure
 
 - **Latency.** Durations are recorded per case in the JSON, but nothing

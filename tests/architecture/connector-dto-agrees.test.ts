@@ -1,7 +1,7 @@
-import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
+import { readSource } from './tracked-files';
 
 /**
  * `ConnectorDto` is declared twice — once in apps/web, once in apps/api — as
@@ -82,9 +82,9 @@ function selectedFields(source: string): string[] {
 }
 
 describe('ConnectorDto', () => {
-  const web = pickedFields(readFileSync(WEB_TYPES, 'utf8'));
-  const api = pickedFields(readFileSync(API_TYPES, 'utf8'));
-  const selected = selectedFields(readFileSync(API_SERVICE, 'utf8'));
+  const web = pickedFields(readSource(WEB_TYPES));
+  const api = pickedFields(readSource(API_TYPES));
+  const selected = selectedFields(readSource(API_SERVICE));
 
   it('still names the column the expand/contract landed on', () => {
     // `providerSlug` is declared outside the Pick, because it is a `string`

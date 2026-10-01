@@ -1,9 +1,9 @@
-import { existsSync, readFileSync, statSync } from 'node:fs';
+import { existsSync, statSync } from 'node:fs';
 import { dirname, join, resolve, relative } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { trackedFiles } from './tracked-files';
+import { readSource, trackedFiles } from './tracked-files';
 
 /**
  * Nothing a client component can reach is server-only.
@@ -147,7 +147,7 @@ function sourceFiles(dir: string): string[] {
 
 const read = (file: string): string => {
   try {
-    return readFileSync(file, 'utf8');
+    return readSource(file);
   } catch {
     return '';
   }

@@ -27,6 +27,13 @@ import { askRag, askControl } from './lib/arms';
 import { runAssertions, judge } from './lib/grade';
 import { renderMarkdown, resultStem, tally } from './lib/report';
 import { withRetry } from './lib/retry';
+import { QdrantClient } from '@qdrant/js-client-rest';
+import {
+  chunkTextsFor,
+  evidenceFor,
+  evidenceSection,
+  type ScrollChunks,
+} from './lib/evidence';
 import {
   describeRetrievalSettings,
   type OrgRetrievalSettings,
@@ -361,6 +368,59 @@ async function settledGatewayMode(startedAs: string): Promise<string> {
   return endedAs;
 }
 
+/**
+ * Reads rendered chunks back by position, from the organization's collection
+ * — the collection is named after it. Text is the payload's `content`, which
+ * is what the chain renders; in `dual_content` mode the model saw the decoded
+ * original instead, so evidence there is counted on the masked text and can
+ * only be under-counted, never over.
+ */
+function qdrantScroll(orgId: string): ScrollChunks {
+  const client = new QdrantClient({
+    url: process.env.QDRANT_URL || 'http://localhost:6333',
+    apiKey: process.env.QDRANT_API_KEY || undefined,
+  });
+  return async (fileId, chunkIndexes) => {
+    const page = await client.scroll(orgId, {
+      filter: {
+        must: [{ key: 'metadata.file_id', match: { value: fileId } }],
+        should: chunkIndexes.map((index) => ({
+          key: 'metadata.chunk_index',
+          match: { value: index },
+        })),
+      },
+      limit: Math.max(chunkIndexes.length * 2, 16),
+      with_payload: true,
+      with_vector: false,
+    });
+    return page.points.flatMap((point) => {
+      const payload = (point.payload ?? {}) as {
+        content?: unknown;
+        pageContent?: unknown;
+        metadata?: { chunk_index?: unknown };
+      };
+      let text: string | undefined;
+      if (typeof payload.content === 'string') {
+        text = payload.content;
+      } else if (typeof payload.pageContent === 'string') {
+        text = payload.pageContent;
+      }
+      const chunkIndex = payload.metadata?.chunk_index;
+      return text !== undefined && typeof chunkIndex === 'number'
+        ? [{ chunkIndex, text }]
+        : [];
+    });
+  };
+}
+
+async function organizationOf(prisma: PrismaClient): Promise<string | null> {
+  const project = await prisma.project.findUnique({
+    where: { id: PROJECT_ID },
+    select: { organizationId: true },
+  });
+  return project?.organizationId ?? null;
+}
+
 /** The organization's retrieval switches, read where the chain reads them. */
 async function orgRetrievalSettings(
   prisma: PrismaClient,
@@ -473,6 +533,7 @@ async function main(): Promise<void> {
   let uploaded: string[] = [];
   let documentScores: DocumentScore[] | undefined;
   let retrievalSettings: OrgRetrievalSettings | null = null;
+  let scrollChunks: ScrollChunks | undefined;
   let cookie: string | undefined;
 
   try {
@@ -511,6 +572,8 @@ async function main(): Promise<void> {
       await pinProjectInstruction(prisma);
       await pinOrganizationModel(prisma);
       retrievalSettings = await orgRetrievalSettings(prisma);
+      const orgId = await organizationOf(prisma);
+      scrollChunks = orgId ? qdrantScroll(orgId) : undefined;
       await clearThread(prisma);
     }
 
@@ -537,6 +600,8 @@ async function main(): Promise<void> {
 
           let answer: string;
           let citedFiles: string[] | undefined;
+          let evidence: { needles: number; found: number } | undefined;
+          let retrievalTrace: CaseResult['retrievalTrace'];
           const answerStarted = Date.now();
           if (arm === 'rag') {
             const ragAnswer = await withRetry(
@@ -558,6 +623,21 @@ async function main(): Promise<void> {
             );
             answer = ragAnswer.text;
             citedFiles = ragAnswer.citedFileIds;
+            if (ragAnswer.trace) {
+              retrievalTrace = {
+                postRetrieval: ragAnswer.trace.postRetrieval,
+                queryCount: ragAnswer.trace.queryCount,
+                chunkCount: ragAnswer.trace.chunks.length,
+                timings: ragAnswer.trace.timings,
+              };
+              if (scrollChunks) {
+                const texts = await chunkTextsFor(
+                  ragAnswer.trace.chunks,
+                  scrollChunks,
+                );
+                evidence = evidenceFor(q, texts) ?? undefined;
+              }
+            }
             // Each question is independent: a leftover history would let a
             // later question answer from an earlier answer rather than from
             // the documents.
@@ -606,6 +686,8 @@ async function main(): Promise<void> {
             rubricError,
             passed,
             citedFiles,
+            ...(evidence ? { evidence } : {}),
+            ...(retrievalTrace ? { retrievalTrace } : {}),
             answerMs,
             durationMs: Date.now() - started,
           });

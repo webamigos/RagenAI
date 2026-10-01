@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
+import { readSource } from './tracked-files';
 
 /**
  * The release has to be created by a token that can start another workflow.
@@ -28,7 +29,7 @@ const PUBLISH = join(ROOT, '.github', 'workflows', 'publish-images.yml');
 
 describe('a release can trigger the image build', () => {
   it('creates the release with a token that is not the default one', () => {
-    const release = readFileSync(RELEASE, 'utf8');
+    const release = readSource(RELEASE);
 
     expect(
       /GITHUB_TOKEN:\s*\$\{\{\s*secrets\.GITHUB_TOKEN\s*\}\}/.test(release),
@@ -42,7 +43,7 @@ describe('a release can trigger the image build', () => {
   });
 
   it('builds images on the event that release creates', () => {
-    const publish = readFileSync(PUBLISH, 'utf8');
+    const publish = readSource(PUBLISH);
 
     // If this trigger is ever changed to `push: tags`, the token requirement
     // above still holds — a tag pushed with the default token is just as inert
@@ -64,7 +65,7 @@ describe('a release can trigger the image build', () => {
      * grows one, publishing it becomes the same mistake, and if `web` loses
      * them it becomes publishable and should be added.
      */
-    const publish = readFileSync(PUBLISH, 'utf8');
+    const publish = readSource(PUBLISH);
     const matrix = /app:\s*\[([^\]]+)\]/.exec(publish);
 
     expect(

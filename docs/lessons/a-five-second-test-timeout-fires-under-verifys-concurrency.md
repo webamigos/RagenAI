@@ -64,3 +64,33 @@ in isolation — different cause and different diagnostic.
 the default 5s timeout, and to the architecture guards in particular — they
 read the whole source tree as text, so they are the CPU-heaviest tests that
 look the cheapest.
+
+**Update, 2026-09-29 — the budget moved, and the work shrank.** The diagnosis
+above kept being right, and kept costing a re-run: on one day nearly every
+`npm run verify` failed once on a guard at 5–7 s
+(`guardrails-are-not-recopied`, `provider-fragments-carry-their-rules`,
+`schema-enums-are-not-redeclared`, `an-adr-reference-resolves`,
+`is-on-premise-has-one-reading`), each well under a second alone. A rule that
+says "re-run and prove it was scheduling" is right once and a tax every day
+after. Two changes, in `vitest.config.ts` and `tests/architecture/tracked-files.ts`:
+
+- **The architecture guards are their own vitest project, with a 30 s
+  timeout.** A guard's timeout exists to catch a hang, not to measure its
+  work, and 5 s was a CPU budget four concurrent turbo tasks could not
+  honour. Package tests keep the 5 s default.
+- **They share a worker, and read each file once.** The project runs with
+  `isolate: false`, and `readSource()` caches file text per process, so a
+  file scanned by several guards — or by every case of one `it.each` — is
+  read once per worker. `guardrails-are-not-recopied` re-read every app
+  source for each symbol it bans. The suite went from 6.6 s to about 3 s
+  alone, and the summed test time from 27 s to about 14 s.
+
+Sharing a worker is only sound while the guards are pure readers, so that is
+now a guard of its own: `architecture-guards-share-a-worker-safely.test.ts`
+fails on a `vi.mock`, `vi.stubEnv`, `vi.spyOn`, fake timers or a
+`process.env` assignment anywhere in `tests/architecture/`.
+
+**The rule, revised:** a timeout in a *package* test under `verify` is still a
+scheduling result until proven otherwise, diagnosed as above. An architecture
+guard that exceeds 30 s is not scheduling — it is doing too much, and the fix
+is `readSource` and fewer passes over the tree, not a larger number.

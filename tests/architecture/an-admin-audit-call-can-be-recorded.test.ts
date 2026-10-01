@@ -1,9 +1,8 @@
-import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { trackedFiles } from './tracked-files';
+import { readSource, trackedFiles } from './tracked-files';
 
 /**
  * Every `recordAdminAction` call can actually be written.
@@ -109,7 +108,7 @@ function hasTopLevelKey(body: string, key: string): boolean {
 type Call = { file: string; body: string };
 
 const calls: Call[] = sourceFiles(ADMIN_SRC).flatMap((file) =>
-  auditCallBodies(readFileSync(file, 'utf8')).map((body) => ({ file, body })),
+  auditCallBodies(readSource(file)).map((body) => ({ file, body })),
 );
 
 const relative = (file: string) => file.slice(REPO_ROOT.length + 1);

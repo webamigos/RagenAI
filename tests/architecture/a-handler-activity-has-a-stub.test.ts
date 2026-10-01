@@ -2,6 +2,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
+import { readSource } from './tracked-files';
 
 /**
  * Every activity a handler asks `ctx.steps` for must exist in
@@ -63,7 +64,7 @@ function requestedActivities(source: string): string[] {
   return [...names];
 }
 
-const fixture = readFileSync(FIXTURE, 'utf8');
+const fixture = readSource(FIXTURE);
 const handlers = readdirSync(HANDLERS).filter((f) => f.endsWith('.ts'));
 
 describe('a handler activity has a stub', () => {
