@@ -282,7 +282,7 @@ that defaults to `false`.
   `dual_content` rule holds by construction: its embedding is
   `masked prefix + decrypted original`. The legacy Meilisearch writer is not
   changed.
-- [ ] **A3.** Measure four arms on `kolej` and `tabele`, three repetitions
+- [x] **A3.** Measure four arms on `kolej` and `tabele`, three repetitions
   each:
   - no prefix;
   - title + section, dense only;
@@ -291,6 +291,19 @@ that defaults to `false`.
 
   Record evidence recall, the pass rate and the cross-lingual row here, and
   pick D4's arm.
+
+  *Done for two of the four arms, 2026-10-01*
+  ([write-up](../../apps/web/evals/rag-benchmark/results/2026-10-01-contextual-a3-free-prefix.md)).
+  The arms are no prefix and title + section + summary sentence, dense only.
+  The other two need a switch the code does not have.
+  - **`kolej`:** 24/24, 23/23 and 24/24 against 17–18/24, with evidence
+    26/26 in every run. **All 8 cross-lingual figures** reached the model,
+    against 2–3 without the prefix.
+  - **`tabele`:** within noise on the pass rate, and evidence 1–2 figures
+    lower. A table chunk's prefix names what every row of it shares.
+  - **D4's arm:** the summary-sentence one, dense only. **Phase B is not
+    needed** for prose. Tables are a chunking question (ADR-43), not a
+    prefix one.
 
 ### Phase B — the model's prefix (only if A3 leaves a gap)
 
