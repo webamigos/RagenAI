@@ -53,3 +53,11 @@ export {
   isUndecodableText,
   type UndecodableTextReason,
 } from './undecodable-text';
+
+export {
+  NON_PROSE_CHUNK_TYPES,
+  chunksByIndexFilter,
+  orderByChunkIndex,
+  wantedChunkIndexes,
+  type ChunksByIndexQuery,
+} from './selection/chunks-by-index';
