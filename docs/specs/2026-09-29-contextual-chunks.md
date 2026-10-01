@@ -156,9 +156,13 @@ Phase A's first step.
 
 ### PII
 
-**The prefix is built from masked text only.** The context step runs after
-`maskPii`, on the same `docs` the summary reads (`parse-and-embed.ts`), so a
-prefix can never carry a value that masking removed.
+**The prefix carries nothing the point does not already store in
+plaintext.** The context step runs after `maskPii`, on the same `docs` the
+summary reads (`parse-and-embed.ts`), so its summary sentence is masked. The
+title and the section come from the file name and the heading stack, which
+masking does not touch — but the same point already stores both, as
+`file_name` and `section_path`. Masking file names and headings is a separate,
+existing gap, not one the prefix opens.
 
 In `dual_content` mode the dense embedding uses the decrypted original. The
 prefix is still the masked one, because it is stored in the payload in
@@ -240,13 +244,13 @@ that defaults to `false`.
 
 ### Phase 0 — prerequisites (separate PRs, D6)
 
-- [ ] **P1.** `reindexDocumentVersion` masks PII as ingest does.
-- [ ] **P2.** `reindexDocumentVersion` re-adds the summary chunk.
+- [x] **P1.** `reindexDocumentVersion` masks PII as ingest does (#1430).
+- [x] **P2.** `reindexDocumentVersion` re-adds the summary chunk (#1434).
 
 ### Phase A — the free prefix, measured
 
-- [ ] **A0.** The shared measurement phase: the `retrieval` frame and
-  evidence recall, Phase A of
+- [x] **A0.** The shared measurement phase: the `retrieval` frame (#1440) and
+  evidence recall (#1442), Phase A of
   [model-chosen sections](2026-09-29-llm-document-selection.md). It lands
   once, for both specs.
 - [x] **A1.** Docling prose chunks carry `section_path`, taken from the
@@ -260,10 +264,24 @@ that defaults to `false`.
   split. A chunk that already has a path (a table chunk) keeps it; one that
   cannot be located gets none. Documents indexed before this get paths when
   re-processed.
-- [ ] **A2.** `embeddingTextFor` and the free prefix in the worker, behind
+- [x] **A2.** `embeddingTextFor` and the free prefix in the worker, behind
   `contextualChunks`, writing `context_prefix` and `context_version: 1`.
   Tests for the builder, the cap, the truncation order, and the masked-only
   rule in `dual_content` mode.
+
+  *Done.* `embeddingTextFor`, `MAX_CONTEXT_PREFIX_CHARS` and
+  `CONTEXT_PREFIX_IN_BM25` (false: dense only until A3 picks the arm) in
+  `packages/rag-core`; the builder in `apps/worker/src/services/context-prefix.ts`
+  (title from the file name, `sectionPath`, the summary's first sentence);
+  the key read at job time and the prefix applied by one activity,
+  `applyContextPrefix`, in ingest and in `reindexDocumentVersion` — an
+  activity rather than a key read in the handler, because handlers also run
+  in Temporal's workflow sandbox, which cannot load `@ragenai/rag-core`. A
+  failed read or step indexes without a prefix. The
+  prefix is built after masking from the masked chunk and summary, so the
+  `dual_content` rule holds by construction: its embedding is
+  `masked prefix + decrypted original`. The legacy Meilisearch writer is not
+  changed.
 - [ ] **A3.** Measure four arms on `kolej` and `tabele`, three repetitions
   each:
   - no prefix;

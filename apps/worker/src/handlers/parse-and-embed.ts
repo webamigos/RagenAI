@@ -84,6 +84,7 @@ export async function runFileEmbeddings(
     generateDocumentSummary,
     scoreDocumentForRag,
     isRagScoringEnabled,
+    applyContextPrefix,
     sanitizeDocuments,
 
     // activities/config
@@ -690,10 +691,30 @@ export async function runFileEmbeddings(
     );
   }
 
+  // ==== CONTEXT PREFIX (spec 2026-09-29-contextual-chunks, A2)
+  // Behind `contextualChunks`, off by default; the activity reads the key and
+  // returns the chunks unchanged when it is off. Built from the masked chunk
+  // and summary, stored beside the chunk and embedded in front of it —
+  // `pageContent` is untouched. A step that fails indexes without a prefix.
+  const bodyDocs = await applyContextPrefix({
+    orgId,
+    docs,
+    fileName,
+    summary,
+  }).catch((prefixError: unknown) => {
+    ctx.log.warn(
+      `Context prefix failed for file ${fileId}; indexing without one: ${prefixError instanceof Error ? prefixError.message : String(prefixError)}`,
+    );
+    return docs;
+  });
+
   const docsWithSummary: Document[] =
     summary.length > 0
-      ? [{ pageContent: summary, metadata: { chunk_type: 'summary' } }, ...docs]
-      : docs;
+      ? [
+          { pageContent: summary, metadata: { chunk_type: 'summary' } },
+          ...bodyDocs,
+        ]
+      : bodyDocs;
 
   enterStage('embedding');
   await checkCancelled();

@@ -160,3 +160,31 @@ describe('prepareMetadata — accessible_by', () => {
     expect(result[0].metadata.accessible_by).toEqual([]);
   });
 });
+
+describe('prepareMetadata — context prefix', () => {
+  it('carries the prefix and its version into the payload, and not the text', async () => {
+    const result = await prepareMetadata({
+      docs: [
+        {
+          pageContent: 'Opłata 4%.',
+          metadata: {
+            contextPrefix: 'umowa — 4. Wynagrodzenie',
+            contextVersion: 1,
+          },
+        },
+        { pageContent: 'Bez prefiksu.', metadata: {} },
+      ],
+      fileRecord: baseFileRecord,
+      fileType: FileType.MARKDOWN,
+      splitterSettings,
+    });
+
+    expect(result[0].metadata).toMatchObject({
+      context_prefix: 'umowa — 4. Wynagrodzenie',
+      context_version: 1,
+    });
+    expect(result[0].pageContent).toBe('Opłata 4%.');
+    expect('context_prefix' in result[1].metadata).toBe(false);
+    expect('context_version' in result[1].metadata).toBe(false);
+  });
+});

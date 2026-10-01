@@ -39,6 +39,7 @@ export const FEATURE_KEYS = [
   'ragReadinessScore',
   'ragScoreOnIngest',
   'documentDiagnostics',
+  'contextualChunks',
 ] as const;
 
 export type FeatureKey = (typeof FEATURE_KEYS)[number];
@@ -134,6 +135,12 @@ export type FeatureOverrides = Partial<Record<FeatureKey, boolean | null>>;
  * same pattern per type. It gates only what the panel shows: the worker
  * computes and stores the findings either way, at no model cost. An operator
  * can still turn it off per organization or for the platform.
+ *
+ * `contextualChunks` indexes each chunk with a short prefix that places it in
+ * its document — title, section, the summary's first sentence — beside the
+ * chunk rather than in it (spec 2026-09-29-contextual-chunks). Off by default
+ * while it is measured (ADR-50): it changes what is embedded, so only files
+ * ingested or re-indexed while it is on carry the prefix.
  */
 export const DEFAULT_FEATURES: FeatureFlags = {
   inviteMembers: false,
@@ -154,6 +161,7 @@ export const DEFAULT_FEATURES: FeatureFlags = {
   ragReadinessScore: true,
   ragScoreOnIngest: false,
   documentDiagnostics: true,
+  contextualChunks: false,
 };
 
 /** Human-readable names, shared so the admin panel and the app cannot disagree. */
@@ -178,6 +186,8 @@ export const FEATURE_LABELS: Record<FeatureKey, string> = {
   ragScoreOnIngest:
     'RAG readiness score: score every upload (one LLM call per file)',
   documentDiagnostics: 'Document diagnostics (indexing problems, no LLM call)',
+  contextualChunks:
+    'Contextual chunks: index each chunk with its title and section (experimental, re-index to apply)',
 };
 
 /**
