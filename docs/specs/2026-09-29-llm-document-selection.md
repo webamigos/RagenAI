@@ -370,8 +370,16 @@ defaulting to `false`.
   `tests/architecture/both-rag-chains-expand-through-rag-core.test.ts` holds
   both chains to rag-core's `expandHits`. apps/api's search endpoint is not a
   chain and does not expand.
-- [ ] **B4.** Measure: B3 on vs off, on both corpora, three repetitions.
+- [x] **B4.** Measure: B3 on vs off, on both corpora, three repetitions.
   Record it here.
+
+  *Done 2026-10-01* ([write-up](../../apps/web/evals/rag-benchmark/results/2026-10-01-b4-context-expansion.md)).
+  **`kolej`:** every run with expansion beat every run without it: 19–21
+  vs 17–18 of 24. Evidence rose from 20–21 to 23–24 of 26, and
+  cross-lingual evidence from 2–3 to 5–6 of 8. **`tabele`:** within noise,
+  10–12 vs 8–11 of 18. Cost: ~9 ms at p50 (18 ms at p95), and 7–11 chunk
+  positions per turn instead of 4. Fixed widening does not add noise, so
+  Phase C is not needed.
 
 ### Phase C — expansion decided by the model
 
@@ -379,9 +387,12 @@ defaulting to `false`.
   fragment. Under `contextExpansion`, the model's digit replaces the fixed ±1
   **only if B4 showed fixed widening adds noise**; otherwise this phase
   is recorded as not needed and skipped.
+
+  *Not needed (B4, 2026-10-01): fixed ±1 regressed no run.* `SELECTION_MODEL`
+  ships with D1 instead, which needs it.
 - [ ] **C2.** `AiUsageStep.SECTION_SELECTION`, with its migration and its
   place on the AI-usage page.
-- [ ] **C3.** Measure C1 against B3.
+- [ ] **C3.** Measure C1 against B3. *Not needed, with C1.*
 
 ### Phase D — selection
 
