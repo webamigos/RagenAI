@@ -81,7 +81,7 @@ archive is the blog.
   figure asked about across languages reaching the model. Tables did not
   move. Both are on by default and can be turned off per organization;
   files indexed earlier get the title-and-section context once they are
-  re-indexed. (#PR)
+  re-indexed. (#1458)
 
 ### Usage and limits
 
