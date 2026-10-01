@@ -38,6 +38,7 @@ import {
   parseReindexArgs,
   planReindex,
   renderVersionCounts,
+  startReindexSteps,
   type ContextPoint,
   type ReindexCandidate,
 } from './reindex-for-context-plan.js';
@@ -152,40 +153,62 @@ async function main() {
     return;
   }
 
-  let started = 0;
-  for (const step of steps) {
-    const workflowId = `reindex-context-${nanoid()}`;
-    // Before the start: a cancelled file's CANCELLED status is final for the
-    // worker's writers, so a new run must begin from NOT_STARTED, and the
-    // row carries the run id before the run exists (as every producer does).
-    await getPrisma().userFile.updateMany({
-      where: { id: step.fileId, organizationId: orgId },
-      data: {
-        parsingStatus: 'NOT_STARTED',
-        embeddingStatus: 'NOT_STARTED',
-        workflowId,
-      },
-    });
-    if (step.job === 'runFileEmbeddings') {
-      await jobs().start('runFileEmbeddings', workflowId, {
-        fileId: step.fileId,
-        orgId,
+  const prisma = getPrisma();
+  const { started, failed } = await startReindexSteps(steps, {
+    newWorkflowId: () => `reindex-context-${nanoid()}`,
+    readState: (fileId) =>
+      prisma.userFile.findFirst({
+        where: { id: fileId, organizationId: orgId },
+        select: {
+          parsingStatus: true,
+          embeddingStatus: true,
+          workflowId: true,
+        },
+      }),
+    reset: async (fileId, workflowId) => {
+      await prisma.userFile.updateMany({
+        where: { id: fileId, organizationId: orgId },
+        data: {
+          parsingStatus: 'NOT_STARTED',
+          embeddingStatus: 'NOT_STARTED',
+          workflowId,
+        },
       });
-    } else {
-      await jobs().start('reindexDocumentVersion', workflowId, {
-        orgId,
-        fileId: step.fileId,
-        fileName: step.fileName,
-        projectId: step.projectId,
-        userId: null,
-        documentId: step.documentId,
+    },
+    restore: async (fileId, state, workflowId) => {
+      await prisma.userFile.updateMany({
+        where: { id: fileId, organizationId: orgId, workflowId },
+        data: state,
       });
-    }
-    started += 1;
-  }
+    },
+    start: (step, workflowId) =>
+      step.job === 'runFileEmbeddings'
+        ? jobs().start('runFileEmbeddings', workflowId, {
+            fileId: step.fileId,
+            orgId,
+          })
+        : jobs().start('reindexDocumentVersion', workflowId, {
+            orgId,
+            fileId: step.fileId,
+            fileName: step.fileName,
+            projectId: step.projectId,
+            userId: null,
+            documentId: step.documentId,
+          }),
+  });
   console.log(
     `Started ${started}. Run again with --dry-run once they finish to see the count move.`,
   );
+  if (failed.length > 0) {
+    console.error(
+      `${failed.length} did not start. A failed start puts the file's ` +
+        'previous status back, unless the error below says it could not:',
+    );
+    for (const { fileId, error } of failed) {
+      console.error(`  ${fileId}:`, error);
+    }
+    process.exitCode = 1;
+  }
 }
 
 main()

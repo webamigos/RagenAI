@@ -172,3 +172,61 @@ export function planReindex(
   }
   return { steps, missing };
 }
+
+export interface StartStepDeps<State> {
+  newWorkflowId(): string;
+  /** The row's run state before the reset; null when the row is gone. */
+  readState(fileId: string): Promise<State | null>;
+  /** Sets both statuses to NOT_STARTED and the row's run id. */
+  reset(fileId: string, workflowId: string): Promise<void>;
+  /**
+   * Writes `state` back, only while the row still carries `workflowId`, so a
+   * restore never overwrites a later producer.
+   */
+  restore(fileId: string, state: State, workflowId: string): Promise<void>;
+  start(step: ReindexStep, workflowId: string): Promise<unknown>;
+}
+
+export interface StartReport {
+  started: number;
+  failed: { fileId: string; error: unknown }[];
+}
+
+/**
+ * Starts each step. A cancelled file's CANCELLED status is final for the
+ * worker's writers, so a new run must begin from NOT_STARTED, and the row
+ * carries the run id before the run exists (as every producer does). If the
+ * start then fails, the row gets its previous state back — otherwise it shows
+ * a pending run that does not exist — and the loop goes on, so the operator
+ * learns how many started and which did not.
+ */
+export async function startReindexSteps<State>(
+  steps: readonly ReindexStep[],
+  deps: StartStepDeps<State>,
+): Promise<StartReport> {
+  const report: StartReport = { started: 0, failed: [] };
+  for (const step of steps) {
+    const previous = await deps.readState(step.fileId);
+    if (!previous) {
+      report.failed.push({ fileId: step.fileId, error: 'no file row' });
+      continue;
+    }
+    const workflowId = deps.newWorkflowId();
+    await deps.reset(step.fileId, workflowId);
+    try {
+      await deps.start(step, workflowId);
+      report.started += 1;
+    } catch (error) {
+      report.failed.push({ fileId: step.fileId, error });
+      try {
+        await deps.restore(step.fileId, previous, workflowId);
+      } catch (restoreError) {
+        report.failed[report.failed.length - 1].error = new AggregateError(
+          [error, restoreError],
+          'the start failed and the previous status could not be restored',
+        );
+      }
+    }
+  }
+  return report;
+}

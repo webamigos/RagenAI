@@ -40,7 +40,9 @@ npx tsx --env-file=.env.local apps/worker/src/scripts/reindex-for-context.ts --o
   into retrieval.
 - Nothing is overwritten. Each file's ingest status is reset to
   `NOT_STARTED` before its job starts, so a file that was once cancelled can
-  record the new run.
+  record the new run. If a job fails to start (Redis unreachable, say), that
+  file gets its previous status back, the script carries on with the rest,
+  and it lists the files that did not start and exits non-zero.
 
 `--limit` bounds how many jobs one run starts. The jobs join the ordinary
 ingest queue, where the Docling ceiling (`DOCLING_MAX_CONCURRENCY`) bounds them
