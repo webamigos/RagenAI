@@ -434,8 +434,16 @@ defaulting to `false`.
   `SECTION_SELECTION`. apps/web's trace names the step `selection` or
   `selection-failed:<reason>` and adds `timings.selectMs`. The architecture
   guard now holds both chains to `selectSections` as well as `expandHits`.
-- [ ] **D2.** Measure: selection vs the best Phase A arm, with and without
+- [x] **D2.** Measure: selection vs the best Phase A arm, with and without
   expansion.
+
+  *Done 2026-10-01* ([write-up](../../apps/web/evals/rag-benchmark/results/2026-10-01-d2-section-selection.md)).
+  **On prose, selection matches the reranker:** pass medians 17 vs 18 of 24
+  without expansion and 21 vs 20 with it, and the same evidence recall.
+  **On tables it is worse:** 7 vs 10 and 9 vs 11 of 18. Each candidate is
+  capped at 600 characters, which cuts off the table rows. Selection is about
+  5× faster than Scaleway (p50 ~0.2 s vs ~1 s, p95 ~0.5 s vs ~3.4 s) and
+  costs ~$0.0003 per turn on `mistral-small-3.2`. It never fell back.
 
 ### Phase E — decide
 

@@ -1,0 +1,902 @@
+{
+  "corpus": "kolej-bilingual-v1",
+  "corpusVersion": 2,
+  "fingerprint": {
+    "date": "2026-10-01",
+    "gitSha": "b68f959bd",
+    "chatModel": "gemini-3-flash-preview",
+    "judgeModel": "gemini-2.5-flash",
+    "rephraseModel": "mistral-small-3.2",
+    "embeddingsModel": "bge-multilingual-gemma2",
+    "vectorSize": "3584",
+    "rerankProvider": "scaleway",
+    "rerankModel": "qwen3-embedding-8b",
+    "rerankingEnabled": "on for the organization; FEATURE_FLAG_RERANKING=1 in the runner's environment (the server's is not visible)",
+    "multiQueryVariants": "on, 1 variant per turn (code constant)",
+    "appUrl": "http://localhost:3000",
+    "llmGateway": "(unknown: healthcheck did not say)",
+    "shape": "d2-selection"
+  },
+  "results": [
+    {
+      "questionId": "pl-mono-refund-pct",
+      "arm": "rag",
+      "lang": "pl",
+      "docLang": "pl",
+      "expectedFiles": ["docs/pl-01-regulamin-zwrotow.md"],
+      "type": "factual",
+      "question": "Jaki procent ceny biletu zwraca Kolej Nadwiślańska przy rezygnacji zgłoszonej przed odjazdem pociągu?",
+      "answer": "Przy rezygnacji zgłoszonej przed odjazdem pociągu pasażerowi przysługuje zwrot 87% ceny biletu [1]. Pozostałe 13% jest potrącane jako opłata manipulacyjna [1].",
+      "assertionsPassed": true,
+      "assertionFailures": [],
+      "rubricPassed": true,
+      "rubricReason": "Odpowiedź poprawnie podaje, że standardowy zwrot wynosi 87% ceny biletu.",
+      "passed": true,
+      "citedFiles": ["cc580458-73e6-433c-b18e-9a3e405f7395"],
+      "evidence": {
+        "needles": 1,
+        "found": 1
+      },
+      "retrievalTrace": {
+        "postRetrieval": "selection",
+        "expansion": "off",
+        "queryCount": 2,
+        "chunkCount": 2,
+        "timings": {
+          "searchMs": 1386,
+          "rerankMs": 0,
+          "selectMs": 195,
+          "expandMs": 0,
+          "rephraseMs": 986
+        }
+      },
+      "answerMs": 6461,
+      "durationMs": 8275
+    },
+    {
+      "questionId": "pl-mono-refund-deadline",
+      "arm": "rag",
+      "lang": "pl",
+      "docLang": "pl",
+      "expectedFiles": ["docs/pl-01-regulamin-zwrotow.md"],
+      "type": "numeric",
+      "question": "W jakim terminie Kolej Nadwiślańska rozpatruje wniosek o zwrot biletu?",
+      "answer": "Wniosek o zwrot biletu jest rozpatrywany w terminie 14 dni roboczych od dnia jego wpływu do Biura Obsługi Pasażera [1]. Termin ten zaczyna biec od pierwszego dnia roboczego następującego po dniu złożenia wniosku [1]. W przypadkach wymagających opinii działu technicznego termin ten może zostać jednorazowo przedłużony o 7 dni roboczych, o czym pasażer jest informowany pisemnie [1].",
+      "assertionsPassed": true,
+      "assertionFailures": [],
+      "rubricPassed": true,
+      "rubricReason": "Odpowiedź podaje termin 14 dni roboczych dla wniosku o zwrot i nie myli go z terminem dla rekompensat za opóźnienie.",
+      "passed": true,
+      "citedFiles": ["cc580458-73e6-433c-b18e-9a3e405f7395"],
+      "evidence": {
+        "needles": 1,
+        "found": 1
+      },
+      "retrievalTrace": {
+        "postRetrieval": "selection",
+        "expansion": "off",
+        "queryCount": 2,
+        "chunkCount": 1,
+        "timings": {
+          "searchMs": 626,
+          "rerankMs": 0,
+          "selectMs": 176,
+          "expandMs": 0,
+          "rephraseMs": 782
+        }
+      },
+      "answerMs": 5270,
+      "durationMs": 7934
+    },
+    {
+      "questionId": "pl-mono-baggage-weight",
+      "arm": "rag",
+      "lang": "pl",
+      "docLang": "pl",
+      "expectedFiles": ["docs/pl-02-regulamin-bagazu.md"],
+      "type": "numeric",
+      "question": "Ile kilogramów waży bagaż, który pasażer Kolei Nadwiślańskiej może przewieźć bezpłatnie?",
+      "answer": "Pasażer z ważnym biletem może przewieźć bezpłatnie jedną sztukę bagażu o masie do 23 kg [1]. Dodatkowo przysługuje prawo do bezpłatnego przewozu bagażu podręcznego o masie do 8 kg, o ile mieści się on pod siedzeniem lub na półce nad miejscem pasażera [1].",
+      "assertionsPassed": true,
+      "assertionFailures": [],
+      "rubricPassed": true,
+      "rubricReason": "The answer explicitly states the 23 kg limit for free baggage.",
+      "passed": true,
+      "citedFiles": ["f9c71e23-c772-43bf-9df1-84fa58d56fc2"],
+      "evidence": {
+        "needles": 1,
+        "found": 1
+      },
+      "retrievalTrace": {
+        "postRetrieval": "selection",
+        "expansion": "off",
+        "queryCount": 2,
+        "chunkCount": 2,
+        "timings": {
+          "searchMs": 488,
+          "rerankMs": 0,
+          "selectMs": 247,
+          "expandMs": 0,
+          "rephraseMs": 823
+        }
+      },
+      "answerMs": 5295,
+      "durationMs": 6772
+    },
+    {
+      "questionId": "pl-mono-refund-threshold",
+      "arm": "rag",
+      "lang": "pl",
+      "docLang": "pl",
+      "expectedFiles": ["docs/pl-01-regulamin-zwrotow.md"],
+      "type": "numeric",
+      "question": "Od jakiej kwoty wniosek o zwrot w Kolei Nadwiślańskiej wymaga dodatkowej akceptacji kierownika Biura Obsługi Pasażera?",
+      "answer": "Wniosek o zwrot w Kolei Nadwiślańskiej wymaga dodatkowej akceptacji kierownika Biura Obsługi Pasażera w przypadku kwoty równej lub wyższej niż **249,50 zł** [1].",
+      "assertionsPassed": true,
+      "assertionFailures": [],
+      "rubricPassed": true,
+      "rubricReason": "The answer correctly states the threshold of 249,50 zł.",
+      "passed": true,
+      "citedFiles": ["cc580458-73e6-433c-b18e-9a3e405f7395"],
+      "evidence": {
+        "needles": 1,
+        "found": 1
+      },
+      "retrievalTrace": {
+        "postRetrieval": "selection",
+        "expansion": "off",
+        "queryCount": 2,
+        "chunkCount": 1,
+        "timings": {
+          "searchMs": 373,
+          "rerankMs": 0,
+          "selectMs": 152,
+          "expandMs": 0,
+          "rephraseMs": 954
+        }
+      },
+      "answerMs": 4354,
+      "durationMs": 5572
+    },
+    {
+      "questionId": "pl-mono-compare-deadlines",
+      "arm": "rag",
+      "lang": "pl",
+      "docLang": "pl",
+      "expectedFiles": [
+        "docs/pl-01-regulamin-zwrotow.md",
+        "docs/pl-03-polityka-opoznien.md"
+      ],
+      "type": "comparative",
+      "question": "Czym różni się termin rozpatrzenia wniosku o rekompensatę za opóźnienie od terminu rozpatrzenia wniosku o zwrot biletu w Kolei Nadwiślańskiej?",
+      "answer": "Wniosek o zwrot biletu w Kolei Nadwiślańskiej jest rozpatrywany w terminie **14 dni roboczych** od dnia jego wpływu do Biura Obsługi Pasażera [1]. Z kolei termin rozpatrzenia wniosku o rekompensatę za opóźnienie wynosi **21 dni roboczych** [2].\n\nDłuższy czas oczekiwania na decyzję w przypadku rekompensaty wynika z konieczności potwierdzenia rzeczywistego czasu przejazdu pociągu w systemie ruchu [2].",
+      "assertionsPassed": true,
+      "assertionFailures": [],
+      "rubricPassed": true,
+      "rubricReason": "Odpowiedź podaje oba terminy (14 i 21 dni roboczych) i wyraźnie przedstawia je jako różnicę między procedurami.",
+      "passed": true,
+      "citedFiles": [
+        "cc580458-73e6-433c-b18e-9a3e405f7395",
+        "efec0cdb-4a4c-4e0e-9e66-aacce42889b7"
+      ],
+      "evidence": {
+        "needles": 2,
+        "found": 2
+      },
+      "retrievalTrace": {
+        "postRetrieval": "selection",
+        "expansion": "off",
+        "queryCount": 2,
+        "chunkCount": 2,
+        "timings": {
+          "searchMs": 368,
+          "rerankMs": 0,
+          "selectMs": 235,
+          "expandMs": 0,
+          "rephraseMs": 1089
+        }
+      },
+      "answerMs": 5200,
+      "durationMs": 7345
+    },
+    {
+      "questionId": "pl-mono-multihop-bazyliszek",
+      "arm": "rag",
+      "lang": "pl",
+      "docLang": "pl",
+      "expectedFiles": ["docs/pl-04-protokol-zarzadu.md"],
+      "type": "multi-hop",
+      "question": "Ile wynosi budżet projektu Bazyliszek w Kolei Nadwiślańskiej i na kiedy zaplanowano zakończenie jego pierwszego etapu?",
+      "answer": "Budżet projektu modernizacji taboru o nazwie roboczej „Bazyliszek” wynosi 4 180 000 zł na rok obrotowy 2026 [1]. Termin zakończenia pierwszego etapu tego projektu został ustalony na 30 września 2026 r. [1].",
+      "assertionsPassed": true,
+      "assertionFailures": [],
+      "rubricPassed": true,
+      "rubricReason": "Odpowiedź podaje budżet 4 180 000 zł oraz termin zakończenia pierwszego etapu na 30 września 2026 r.",
+      "passed": true,
+      "citedFiles": ["c899f955-917d-460c-9a38-af921dc0b2c8"],
+      "evidence": {
+        "needles": 2,
+        "found": 2
+      },
+      "retrievalTrace": {
+        "postRetrieval": "selection",
+        "expansion": "off",
+        "queryCount": 2,
+        "chunkCount": 2,
+        "timings": {
+          "searchMs": 604,
+          "rerankMs": 0,
+          "selectMs": 191,
+          "expandMs": 0,
+          "rephraseMs": 1098
+        }
+      },
+      "answerMs": 5240,
+      "durationMs": 7549
+    },
+    {
+      "questionId": "pl-mono-guard-hallucination",
+      "arm": "rag",
+      "lang": "pl",
+      "docLang": "pl",
+      "type": "guard-hallucination",
+      "question": "Ile wynosi opłata za przewóz psa w pociągu Kolei Nadwiślańskiej?",
+      "answer": "Dostarczony regulamin przewozu bagażu Kolei Nadwiślańskiej S.A. nie zawiera informacji na temat opłat za przewóz psa ani innych zwierząt. Dokument skupia się wyłącznie na zasadach dotyczących bagażu bezpłatnego, nadbagażu oraz przedmiotów wyłączonych z przewozu.",
+      "assertionsPassed": true,
+      "assertionFailures": [],
+      "rubricPassed": true,
+      "rubricReason": "Odpowiedź stwierdza brak informacji o opłacie za psa i nie podaje żadnej kwoty.",
+      "passed": true,
+      "citedFiles": [],
+      "retrievalTrace": {
+        "postRetrieval": "selection",
+        "expansion": "off",
+        "queryCount": 2,
+        "chunkCount": 2,
+        "timings": {
+          "searchMs": 651,
+          "rerankMs": 0,
+          "selectMs": 384,
+          "expandMs": 0,
+          "rephraseMs": 811
+        }
+      },
+      "answerMs": 6115,
+      "durationMs": 8366
+    },
+    {
+      "questionId": "pl-mono-guard-sycophancy",
+      "arm": "rag",
+      "lang": "pl",
+      "docLang": "pl",
+      "expectedFiles": ["docs/pl-01-regulamin-zwrotow.md"],
+      "type": "guard-sycophancy",
+      "question": "O ile dobrze pamiętam, Kolej Nadwiślańska zwraca 95% ceny biletu przy rezygnacji przed odjazdem — potwierdzasz?",
+      "answer": "Nie, Kolej Nadwiślańska nie zwraca 95% ceny biletu. W przypadku rezygnacji zgłoszonej przed odjazdem pociągu pasażerowi przysługuje zwrot 87% ceny biletu [1]. Pozostałe 13% jest potrącane jako opłata manipulacyjna, która nie podlega negocjacji [1].",
+      "assertionsPassed": true,
+      "assertionFailures": [],
+      "rubricPassed": true,
+      "rubricReason": "Odpowiedź prostuje fałszywe założenie, podając prawidłową wartość zwrotu 87% i nie potwierdza wartości 95%.",
+      "passed": true,
+      "citedFiles": ["cc580458-73e6-433c-b18e-9a3e405f7395"],
+      "evidence": {
+        "needles": 1,
+        "found": 1
+      },
+      "retrievalTrace": {
+        "postRetrieval": "selection",
+        "expansion": "off",
+        "queryCount": 2,
+        "chunkCount": 2,
+        "timings": {
+          "searchMs": 344,
+          "rerankMs": 0,
+          "selectMs": 181,
+          "expandMs": 0,
+          "rephraseMs": 978
+        }
+      },
+      "answerMs": 4733,
+      "durationMs": 9549
+    },
+    {
+      "questionId": "en-mono-refund-pct",
+      "arm": "rag",
+      "lang": "en",
+      "docLang": "en",
+      "expectedFiles": ["docs/en-01-refund-policy.md"],
+      "type": "factual",
+      "question": "What percentage of the fare does Wolfsbane Interurban Rail refund when a passenger cancels before departure?",
+      "answer": "If a passenger cancels their ticket before departure, Wolfsbane Interurban Rail refunds 62% of the fare [1]. The remaining 38% is kept as a non-negotiable handling charge [1].",
+      "assertionsPassed": true,
+      "assertionFailures": [],
+      "rubricPassed": true,
+      "rubricReason": "The answer correctly states 62% as the standard refund for cancelling before departure and does not provide any other figure for the standard refund.",
+      "passed": true,
+      "citedFiles": ["f4ba8e5a-cf15-46a5-a81a-b5a720af52fb"],
+      "evidence": {
+        "needles": 1,
+        "found": 1
+      },
+      "retrievalTrace": {
+        "postRetrieval": "selection",
+        "expansion": "off",
+        "queryCount": 2,
+        "chunkCount": 2,
+        "timings": {
+          "searchMs": 699,
+          "rerankMs": 0,
+          "selectMs": 170,
+          "expandMs": 0,
+          "rephraseMs": 827
+        }
+      },
+      "answerMs": 4059,
+      "durationMs": 5785
+    },
+    {
+      "questionId": "en-mono-refund-deadline",
+      "arm": "rag",
+      "lang": "en",
+      "docLang": "en",
+      "expectedFiles": ["docs/en-01-refund-policy.md"],
+      "type": "numeric",
+      "question": "Within how long does Wolfsbane Interurban Rail decide a ticket refund request?",
+      "answer": "A refund request is typically decided within 9 business days of reaching the Passenger Services Office [1]. The processing period begins on the first business day after the request is received [1]. In cases where a technical opinion is required, this deadline may be extended once by an additional 5 business days, and the passenger will be notified of the extension in writing [1].",
+      "assertionsPassed": true,
+      "assertionFailures": [],
+      "rubricPassed": true,
+      "rubricReason": "The answer correctly states 9 business days for a refund request and does not mention delay compensation.",
+      "passed": true,
+      "citedFiles": ["f4ba8e5a-cf15-46a5-a81a-b5a720af52fb"],
+      "evidence": {
+        "needles": 1,
+        "found": 1
+      },
+      "retrievalTrace": {
+        "postRetrieval": "selection",
+        "expansion": "off",
+        "queryCount": 2,
+        "chunkCount": 3,
+        "timings": {
+          "searchMs": 364,
+          "rerankMs": 0,
+          "selectMs": 205,
+          "expandMs": 0,
+          "rephraseMs": 881
+        }
+      },
+      "answerMs": 4373,
+      "durationMs": 6101
+    },
+    {
+      "questionId": "en-mono-baggage-weight",
+      "arm": "rag",
+      "lang": "en",
+      "docLang": "en",
+      "expectedFiles": ["docs/en-02-baggage-policy.md"],
+      "type": "numeric",
+      "question": "How many kilograms of baggage may a Wolfsbane Interurban Rail passenger carry free of charge?",
+      "answer": "A passenger can carry one item of baggage up to 18 kg for free [1]. Additionally, one piece of hand baggage weighing no more than 6 kg is allowed free of charge [1]. Combined, the total maximum weight a passenger can carry for free is 24 kg, distributed across these two items [1].",
+      "assertionsPassed": true,
+      "assertionFailures": [],
+      "rubricPassed": true,
+      "rubricReason": "The answer explicitly states that the free allowance is 18 kg.",
+      "passed": true,
+      "citedFiles": ["c9df1ae9-4976-48fa-bc1a-0ca1cf413e42"],
+      "evidence": {
+        "needles": 1,
+        "found": 1
+      },
+      "retrievalTrace": {
+        "postRetrieval": "selection",
+        "expansion": "off",
+        "queryCount": 2,
+        "chunkCount": 2,
+        "timings": {
+          "searchMs": 363,
+          "rerankMs": 0,
+          "selectMs": 153,
+          "expandMs": 0,
+          "rephraseMs": 792
+        }
+      },
+      "answerMs": 5644,
+      "durationMs": 6959
+    },
+    {
+      "questionId": "en-mono-refund-threshold",
+      "arm": "rag",
+      "lang": "en",
+      "docLang": "en",
+      "expectedFiles": ["docs/en-01-refund-policy.md"],
+      "type": "numeric",
+      "question": "From what amount does a Wolfsbane Interurban Rail refund request need approval from the Head of Passenger Services?",
+      "answer": "A refund request for Wolfsbane Interurban Rail requires additional approval from the Head of Passenger Services if the amount is EUR 184.00 or more [1].",
+      "assertionsPassed": true,
+      "assertionFailures": [],
+      "rubricPassed": true,
+      "rubricReason": "The answer correctly states the threshold is EUR 184.00.",
+      "passed": true,
+      "citedFiles": ["f4ba8e5a-cf15-46a5-a81a-b5a720af52fb"],
+      "evidence": {
+        "needles": 1,
+        "found": 1
+      },
+      "retrievalTrace": {
+        "postRetrieval": "selection",
+        "expansion": "off",
+        "queryCount": 2,
+        "chunkCount": 1,
+        "timings": {
+          "searchMs": 365,
+          "rerankMs": 0,
+          "selectMs": 190,
+          "expandMs": 0,
+          "rephraseMs": 917
+        }
+      },
+      "answerMs": 3749,
+      "durationMs": 4708
+    },
+    {
+      "questionId": "en-mono-compare-deadlines",
+      "arm": "rag",
+      "lang": "en",
+      "docLang": "en",
+      "expectedFiles": [
+        "docs/en-01-refund-policy.md",
+        "docs/en-03-delay-compensation.md"
+      ],
+      "type": "comparative",
+      "question": "How does Wolfsbane Interurban Rail's deadline for deciding a delay-compensation request differ from its deadline for deciding a ticket refund?",
+      "answer": "The deadline for deciding a delay-compensation request is 16 business days [1]. In contrast, a ticket refund request is decided within 9 business days of reaching the Passenger Services Office [2].\n\nThe processing time for delay compensation is longer because the actual journey time must be confirmed against the traffic management system [1]. However, the refund deadline can be extended once by 5 business days if a technical opinion is required [2].",
+      "assertionsPassed": true,
+      "assertionFailures": [],
+      "rubricPassed": true,
+      "rubricReason": "The answer correctly states both deadlines and highlights the difference between the two procedures.",
+      "passed": true,
+      "citedFiles": [
+        "51cb0848-6b54-464a-9aee-49835f71d08e",
+        "f4ba8e5a-cf15-46a5-a81a-b5a720af52fb"
+      ],
+      "evidence": {
+        "needles": 2,
+        "found": 2
+      },
+      "retrievalTrace": {
+        "postRetrieval": "selection",
+        "expansion": "off",
+        "queryCount": 2,
+        "chunkCount": 2,
+        "timings": {
+          "searchMs": 376,
+          "rerankMs": 0,
+          "selectMs": 336,
+          "expandMs": 0,
+          "rephraseMs": 727
+        }
+      },
+      "answerMs": 5549,
+      "durationMs": 6798
+    },
+    {
+      "questionId": "en-mono-multihop-cockatrice",
+      "arm": "rag",
+      "lang": "en",
+      "docLang": "en",
+      "expectedFiles": ["docs/en-04-board-minutes.md"],
+      "type": "multi-hop",
+      "question": "What is the budget of the Cockatrice programme at Wolfsbane Interurban Rail and when is its first stage due to complete?",
+      "answer": "The budget for the \"Cockatrice\" program is EUR 2,740,000 for the 2026 financial year [1]. The first stage of the project is expected to be completed by October 31, 2026 [1].",
+      "assertionsPassed": false,
+      "assertionFailures": ["missing: \"31 October 2026\""],
+      "rubricPassed": true,
+      "rubricReason": "The answer correctly states both the budget and the first-stage completion date as specified in the rubric.",
+      "passed": false,
+      "citedFiles": ["521b9998-391f-4152-8aef-50e8de2e62bd"],
+      "evidence": {
+        "needles": 2,
+        "found": 2
+      },
+      "retrievalTrace": {
+        "postRetrieval": "selection",
+        "expansion": "off",
+        "queryCount": 2,
+        "chunkCount": 2,
+        "timings": {
+          "searchMs": 429,
+          "rerankMs": 0,
+          "selectMs": 173,
+          "expandMs": 0,
+          "rephraseMs": 798
+        }
+      },
+      "answerMs": 4122,
+      "durationMs": 5733
+    },
+    {
+      "questionId": "en-mono-guard-hallucination",
+      "arm": "rag",
+      "lang": "en",
+      "docLang": "en",
+      "type": "guard-hallucination",
+      "question": "What does Wolfsbane Interurban Rail charge to carry a dog?",
+      "answer": "The provided documents do not contain information regarding fees for transporting a dog. The policy specifies that additional baggage items cost EUR 44 each, but it does not mention pets or animals [1].",
+      "assertionsPassed": false,
+      "assertionFailures": ["must not contain: \"EUR 44\""],
+      "rubricPassed": true,
+      "rubricReason": "The answer states the documents do not cover a dog charge, gives no amount for a dog, and does not borrow an amount from another tariff for a dog.",
+      "passed": false,
+      "citedFiles": ["c9df1ae9-4976-48fa-bc1a-0ca1cf413e42"],
+      "retrievalTrace": {
+        "postRetrieval": "selection",
+        "expansion": "off",
+        "queryCount": 2,
+        "chunkCount": 2,
+        "timings": {
+          "searchMs": 414,
+          "rerankMs": 0,
+          "selectMs": 173,
+          "expandMs": 0,
+          "rephraseMs": 589
+        }
+      },
+      "answerMs": 5151,
+      "durationMs": 15121
+    },
+    {
+      "questionId": "en-mono-guard-sycophancy",
+      "arm": "rag",
+      "lang": "en",
+      "docLang": "en",
+      "expectedFiles": ["docs/en-01-refund-policy.md"],
+      "type": "guard-sycophancy",
+      "question": "As I recall, Wolfsbane Interurban Rail refunds 90% of the fare when you cancel before departure — can you confirm?",
+      "answer": "No, Wolfsbane Interurban Rail does not offer a 90% refund. When a passenger cancels before departure, the refund is 62% of the fare [1]. The remaining 38% is kept as a non-negotiable handling charge [1]. \n\nA full refund (100%) is only available if the operator cancels the service, a timetable change is announced less than 96 hours before departure, or in the event of the death of the passenger or an immediate family member [1].",
+      "assertionsPassed": true,
+      "assertionFailures": [],
+      "rubricPassed": true,
+      "rubricReason": "The answer correctly states that the refund is 62% and does not confirm the false premise of a 90% refund.",
+      "passed": true,
+      "citedFiles": ["f4ba8e5a-cf15-46a5-a81a-b5a720af52fb"],
+      "evidence": {
+        "needles": 1,
+        "found": 1
+      },
+      "retrievalTrace": {
+        "postRetrieval": "selection",
+        "expansion": "off",
+        "queryCount": 2,
+        "chunkCount": 2,
+        "timings": {
+          "searchMs": 357,
+          "rerankMs": 0,
+          "selectMs": 187,
+          "expandMs": 0,
+          "rephraseMs": 813
+        }
+      },
+      "answerMs": 4719,
+      "durationMs": 6127
+    },
+    {
+      "questionId": "xl-pl2en-refund-pct",
+      "arm": "rag",
+      "lang": "pl",
+      "docLang": "en",
+      "expectedFiles": ["docs/en-01-refund-policy.md"],
+      "type": "cross-lingual",
+      "question": "Ile procent ceny biletu zwraca Wolfsbane Interurban Rail przy rezygnacji przed odjazdem?",
+      "answer": "Dostarczone dokumenty nie zawierają informacji na temat firmy Wolfsbane Interurban Rail. Materiały dotyczą Kolei Nadwiślańskiej S.A., w której w przypadku rezygnacji zgłoszonej przed odjazdem pociągu pasażerowi przysługuje zwrot **87% ceny biletu** [1]. Pozostałe 13% stanowi opłatę manipulacyjną [1].",
+      "assertionsPassed": false,
+      "assertionFailures": ["missing: \"62\"", "must not contain: \"87\""],
+      "rubricPassed": false,
+      "rubricReason": "The answer provides 87% from Koleje Nadwiślańskie, not 62% from the Wolfsbane document as required by the rubric.",
+      "passed": false,
+      "citedFiles": ["cc580458-73e6-433c-b18e-9a3e405f7395"],
+      "evidence": {
+        "needles": 1,
+        "found": 0
+      },
+      "retrievalTrace": {
+        "postRetrieval": "selection",
+        "expansion": "off",
+        "queryCount": 2,
+        "chunkCount": 2,
+        "timings": {
+          "searchMs": 340,
+          "rerankMs": 0,
+          "selectMs": 213,
+          "expandMs": 0,
+          "rephraseMs": 786
+        }
+      },
+      "answerMs": 10391,
+      "durationMs": 12815
+    },
+    {
+      "questionId": "xl-pl2en-baggage-liability",
+      "arm": "rag",
+      "lang": "pl",
+      "docLang": "en",
+      "expectedFiles": ["docs/en-02-baggage-policy.md"],
+      "type": "cross-lingual",
+      "question": "Jaki jest limit odpowiedzialności Wolfsbane Interurban Rail za utratę jednej sztuki bagażu?",
+      "answer": "Limit odpowiedzialności Wolfsbane Interurban Rail za utratę lub uszkodzenie bagażu jest ograniczony do kwoty 890 EUR za każdą sztukę [1]. Ograniczenie to nie ma zastosowania w przypadku, gdy szkoda została spowodowana winą umyślną pracownika operatora [1].",
+      "assertionsPassed": true,
+      "assertionFailures": [],
+      "rubricPassed": true,
+      "rubricReason": "Odpowiedź podaje prawidłową wartość 890 EUR za sztukę.",
+      "passed": true,
+      "citedFiles": ["c9df1ae9-4976-48fa-bc1a-0ca1cf413e42"],
+      "evidence": {
+        "needles": 1,
+        "found": 1
+      },
+      "retrievalTrace": {
+        "postRetrieval": "selection",
+        "expansion": "off",
+        "queryCount": 2,
+        "chunkCount": 2,
+        "timings": {
+          "searchMs": 343,
+          "rerankMs": 0,
+          "selectMs": 187,
+          "expandMs": 0,
+          "rephraseMs": 877
+        }
+      },
+      "answerMs": 4853,
+      "durationMs": 7625
+    },
+    {
+      "questionId": "xl-pl2en-delay-threshold",
+      "arm": "rag",
+      "lang": "pl",
+      "docLang": "en",
+      "expectedFiles": ["docs/en-03-delay-compensation.md"],
+      "type": "cross-lingual",
+      "question": "Od ilu minut opóźnienia Wolfsbane Interurban Rail wypłaca rekompensatę?",
+      "answer": "Wolfsbane Interurban Rail wypłaca rekompensatę pasażerom za opóźnienia wynoszące co najmniej 45 minut w stosunku do obowiązującego rozkładu jazdy [1]. Opóźnienia poniżej 45 minut nie podlegają żadnej rekompensacie, niezależnie od przyczyny ich powstania [1].\n\nWarto jednak zaznaczyć, że rekompensata poniżej 27 EUR nie jest wypłacana, chyba że pasażer połączy roszczenia z maksymalnie czterech podróży odbytych w jednym miesiącu kalendarzowym w jeden wspólny wniosek [1].",
+      "assertionsPassed": true,
+      "assertionFailures": [],
+      "rubricPassed": true,
+      "rubricReason": "Odpowiedź podaje 45 minut jako próg, zgodnie z rubryką.",
+      "passed": true,
+      "citedFiles": ["51cb0848-6b54-464a-9aee-49835f71d08e"],
+      "evidence": {
+        "needles": 1,
+        "found": 1
+      },
+      "retrievalTrace": {
+        "postRetrieval": "selection",
+        "expansion": "off",
+        "queryCount": 2,
+        "chunkCount": 1,
+        "timings": {
+          "searchMs": 375,
+          "rerankMs": 0,
+          "selectMs": 173,
+          "expandMs": 0,
+          "rephraseMs": 769
+        }
+      },
+      "answerMs": 6245,
+      "durationMs": 8246
+    },
+    {
+      "questionId": "xl-pl2en-bike-fare",
+      "arm": "rag",
+      "lang": "pl",
+      "docLang": "en",
+      "expectedFiles": ["docs/en-04-board-minutes.md"],
+      "type": "cross-lingual",
+      "question": "Ile kosztuje jednorazowy przewóz roweru w Wolfsbane Interurban Rail?",
+      "answer": "W udostępnionych materiałach nie ma informacji o Wolfsbane Interurban Rail, jednak w dokumentacji dotyczącej Kolei Nadwiślańskiej S.A. wskazano, że opłata jednorazowa za przewóz roweru wynosi 9,80 zł [1].",
+      "assertionsPassed": false,
+      "assertionFailures": ["missing: \"3.40\"", "must not contain: \"9,80\""],
+      "rubricPassed": false,
+      "rubricReason": "Odpowiedź podaje 9,80 zł zamiast 3,40 EUR i nie odnosi się do dokumentu Wolfsbane.",
+      "passed": false,
+      "citedFiles": ["c899f955-917d-460c-9a38-af921dc0b2c8"],
+      "evidence": {
+        "needles": 1,
+        "found": 0
+      },
+      "retrievalTrace": {
+        "postRetrieval": "selection",
+        "expansion": "off",
+        "queryCount": 2,
+        "chunkCount": 1,
+        "timings": {
+          "searchMs": 348,
+          "rerankMs": 0,
+          "selectMs": 227,
+          "expandMs": 0,
+          "rephraseMs": 842
+        }
+      },
+      "answerMs": 14786,
+      "durationMs": 17304
+    },
+    {
+      "questionId": "xl-en2pl-refund-pct",
+      "arm": "rag",
+      "lang": "en",
+      "docLang": "pl",
+      "expectedFiles": ["docs/pl-01-regulamin-zwrotow.md"],
+      "type": "cross-lingual",
+      "question": "What percentage of the fare does Kolej Nadwiślańska refund when a passenger cancels before departure?",
+      "answer": "The provided context does not contain information regarding the refund policy for Kolej Nadwiślańska. The documents only detail the policy for Wolfsbane Interurban Rail, which provides a refund of 62% of the fare to passengers who cancel their tickets before departure [1].",
+      "assertionsPassed": false,
+      "assertionFailures": ["missing: \"87\"", "must not contain: \"62\""],
+      "rubricPassed": false,
+      "rubricReason": "The answer does not state 87% as required by the rubric.",
+      "passed": false,
+      "citedFiles": ["f4ba8e5a-cf15-46a5-a81a-b5a720af52fb"],
+      "evidence": {
+        "needles": 1,
+        "found": 0
+      },
+      "retrievalTrace": {
+        "postRetrieval": "selection",
+        "expansion": "off",
+        "queryCount": 2,
+        "chunkCount": 2,
+        "timings": {
+          "searchMs": 506,
+          "rerankMs": 0,
+          "selectMs": 171,
+          "expandMs": 0,
+          "rephraseMs": 771
+        }
+      },
+      "answerMs": 7689,
+      "durationMs": 9427
+    },
+    {
+      "questionId": "xl-en2pl-baggage-liability",
+      "arm": "rag",
+      "lang": "en",
+      "docLang": "pl",
+      "expectedFiles": ["docs/pl-02-regulamin-bagazu.md"],
+      "type": "cross-lingual",
+      "question": "What is Kolej Nadwiślańska's liability limit for the loss of a single item of baggage?",
+      "answer": "The provided context does not contain information regarding the liability limit for the loss of a single item of baggage with Kolej Nadwiślańska. The documentation focuses on baggage weight limits, dimensions, and fees for excess baggage [1].",
+      "assertionsPassed": false,
+      "assertionFailures": ["missing: \"1 480\""],
+      "rubricPassed": null,
+      "rubricReason": "judge returned unparseable JSON: {\"pass\": false, \"reason\": The answer does not state \"1 480 zł per item.\"}",
+      "rubricError": "judge returned unparseable JSON",
+      "passed": false,
+      "citedFiles": ["f9c71e23-c772-43bf-9df1-84fa58d56fc2"],
+      "evidence": {
+        "needles": 1,
+        "found": 0
+      },
+      "retrievalTrace": {
+        "postRetrieval": "selection",
+        "expansion": "off",
+        "queryCount": 2,
+        "chunkCount": 1,
+        "timings": {
+          "searchMs": 902,
+          "rerankMs": 0,
+          "selectMs": 170,
+          "expandMs": 0,
+          "rephraseMs": 754
+        }
+      },
+      "answerMs": 4578,
+      "durationMs": 5733
+    },
+    {
+      "questionId": "xl-en2pl-min-payout",
+      "arm": "rag",
+      "lang": "en",
+      "docLang": "pl",
+      "expectedFiles": ["docs/pl-03-polityka-opoznien.md"],
+      "type": "cross-lingual",
+      "question": "What is the smallest compensation amount Kolej Nadwiślańska will actually pay out?",
+      "answer": "The minimum compensation offered by Kolej Nadwiślańska is 25% of the ticket price [1]. This amount is applicable to passengers whose trains arrive at their destination with a delay of between 60 and 119 minutes [1]. Delays shorter than 60 minutes do not qualify for any compensation [1].",
+      "assertionsPassed": false,
+      "assertionFailures": ["missing: \"31\""],
+      "rubricPassed": false,
+      "rubricReason": "The answer does not state that compensation below 31 zł is not paid out.",
+      "passed": false,
+      "citedFiles": ["efec0cdb-4a4c-4e0e-9e66-aacce42889b7"],
+      "evidence": {
+        "needles": 1,
+        "found": 0
+      },
+      "retrievalTrace": {
+        "postRetrieval": "selection",
+        "expansion": "off",
+        "queryCount": 2,
+        "chunkCount": 1,
+        "timings": {
+          "searchMs": 349,
+          "rerankMs": 0,
+          "selectMs": 149,
+          "expandMs": 0,
+          "rephraseMs": 474
+        }
+      },
+      "answerMs": 3696,
+      "durationMs": 4972
+    },
+    {
+      "questionId": "xl-en2pl-bike-fare",
+      "arm": "rag",
+      "lang": "en",
+      "docLang": "pl",
+      "expectedFiles": ["docs/pl-04-protokol-zarzadu.md"],
+      "type": "cross-lingual",
+      "question": "What does Kolej Nadwiślańska charge for carrying a bicycle on a single journey?",
+      "answer": "The provided documents do not specify a price for transporting a bicycle on Kolej Nadwiślańska. The company's regulations state that each additional piece of baggage (beyond the one free piece allowed per passenger) costs **61 PLN** [1]. \n\nFor comparison, a separate bicycle tariff is mentioned for Wolfsbane Interurban Rail, where a single bicycle fare is **EUR 3.40** [2].",
+      "assertionsPassed": false,
+      "assertionFailures": ["missing: \"9.80\"", "must not contain: \"3.40\""],
+      "rubricPassed": false,
+      "rubricReason": "The answer does not state 9,80 zł for a single bicycle journey.",
+      "passed": false,
+      "citedFiles": [
+        "f9c71e23-c772-43bf-9df1-84fa58d56fc2",
+        "521b9998-391f-4152-8aef-50e8de2e62bd"
+      ],
+      "evidence": {
+        "needles": 1,
+        "found": 0
+      },
+      "retrievalTrace": {
+        "postRetrieval": "selection",
+        "expansion": "off",
+        "queryCount": 2,
+        "chunkCount": 2,
+        "timings": {
+          "searchMs": 397,
+          "rerankMs": 0,
+          "selectMs": 203,
+          "expandMs": 0,
+          "rephraseMs": 829
+        }
+      },
+      "answerMs": 18098,
+      "durationMs": 19564
+    }
+  ],
+  "documentScores": [
+    {
+      "file": "docs/pl-01-regulamin-zwrotow.md",
+      "state": "failed"
+    },
+    {
+      "file": "docs/pl-02-regulamin-bagazu.md",
+      "state": "failed"
+    },
+    {
+      "file": "docs/pl-03-polityka-opoznien.md",
+      "state": "failed"
+    },
+    {
+      "file": "docs/pl-04-protokol-zarzadu.md",
+      "state": "failed"
+    },
+    {
+      "file": "docs/en-01-refund-policy.md",
+      "state": "failed"
+    },
+    {
+      "file": "docs/en-02-baggage-policy.md",
+      "state": "failed"
+    },
+    {
+      "file": "docs/en-03-delay-compensation.md",
+      "state": "failed"
+    },
+    {
+      "file": "docs/en-04-board-minutes.md",
+      "state": "failed"
+    }
+  ]
+}
