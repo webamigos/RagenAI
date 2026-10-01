@@ -66,6 +66,10 @@ describe('InitializeBasicRagService', () => {
     const runOutputGuardrails = {
       stageFor: vi.fn().mockReturnValue(undefined),
     };
+    // `contextExpansion` off, its default.
+    const subscriptions = {
+      isFeatureEnabled: vi.fn().mockResolvedValue(false),
+    };
 
     return new InitializeBasicRagService(
       organizationSettings as never,
@@ -74,6 +78,7 @@ describe('InitializeBasicRagService', () => {
       guardrails as never,
       runOutputGuardrails as never,
       runGuardrails as never,
+      subscriptions as never,
     );
   }
 

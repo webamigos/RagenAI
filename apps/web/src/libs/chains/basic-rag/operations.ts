@@ -1,5 +1,9 @@
 import type { LanguageModelV4 } from '@ai-sdk/provider';
-import { isUndecodableText, readSourceRegions } from '@ragenai/rag-core';
+import {
+  expandHits,
+  isUndecodableText,
+  readSourceRegions,
+} from '@ragenai/rag-core';
 import type { ModelMessage } from 'ai';
 import { generateObject, generateText } from 'ai';
 import { z } from 'zod';
@@ -511,6 +515,12 @@ export async function retrieveRelevantDocumentsWithIds(
     userId?: string | null;
     projectId?: string | null;
   },
+  /**
+   * `contextExpansion` for this organization: kept prose chunks are widened by
+   * their neighbours through `getChunksByIndex`, inside the same filter.
+   * Absent is off.
+   */
+  expansion?: { orgId: string },
 ): Promise<{
   context: string;
   fileIds: string[];
@@ -608,6 +618,38 @@ export async function retrieveRelevantDocumentsWithIds(
         finalDocs = uniqueDocs.slice(0, maxDocuments);
       }
       const rerankMs = reranked ? Date.now() - rerankStartedAt : 0;
+
+      // After the cut, so the reranker still chooses which hits are kept and
+      // expansion only widens them. A failed lookup leaves a hit as it was.
+      const expandStartedAt = Date.now();
+      let expanded = false;
+      if (expansion && vectorStore.getChunksByIndex) {
+        const getChunksByIndex = vectorStore.getChunksByIndex.bind(vectorStore);
+        const result = await withSpan(
+          'rag.expand',
+          { 'rag.expand_input_count': finalDocs.length },
+          async (expandSpan) => {
+            const r = await expandHits({
+              hits: finalDocs,
+              maxDocuments,
+              fetchChunks: (fileId, indexes) =>
+                getChunksByIndex(expansion.orgId, fileId, indexes, filter),
+            });
+            expandSpan.setAttribute('rag.expand_added_count', r.addedChunks);
+            expandSpan.setAttribute('rag.expand_failed_files', r.failedFiles);
+            return r;
+          },
+        );
+        if (result.failedFiles > 0) {
+          logger.warn(
+            { failedFiles: result.failedFiles },
+            'Context expansion: a neighbour lookup failed; those hits render unexpanded',
+          );
+        }
+        finalDocs = result.docs;
+        expanded = result.addedChunks > 0;
+      }
+      const expandMs = expansion ? Date.now() - expandStartedAt : 0;
 
       const seenFileIds = new Set<string>();
       const sources: RetrievedSource[] = [];
@@ -738,8 +780,9 @@ export async function retrieveRelevantDocumentsWithIds(
         trace: {
           chunks: renderedChunkPositions(finalDocs),
           postRetrieval: postRetrievalStep(reranked, finalDocs),
+          expansion: expanded ? 'neighbours' : 'off',
           queryCount: queryList.length,
-          timings: { searchMs, rerankMs },
+          timings: { searchMs, rerankMs, expandMs },
         },
       };
     },
@@ -774,6 +817,8 @@ export function postRetrievalStep(
  * The `(fileId, chunkIndex)` of each chunk in the order it was rendered. A
  * chunk without both — thread documents, points written before either field
  * existed — is left out rather than reported at a position it does not have.
+ * A section widened by expansion reports every position it covers, in file
+ * order, since all of them reached the model.
  */
 export function renderedChunkPositions(
   docs: readonly VectorStoreDocument[],
@@ -788,7 +833,18 @@ export function renderedChunkPositions(
       typeof chunkIndex === 'number' &&
       Number.isInteger(chunkIndex)
     ) {
-      positions.push({ fileId, chunkIndex });
+      const covered = doc.metadata?.expanded_chunk_indexes;
+      if (
+        Array.isArray(covered) &&
+        covered.length > 0 &&
+        covered.every((i) => Number.isInteger(i))
+      ) {
+        for (const index of covered as number[]) {
+          positions.push({ fileId, chunkIndex: index });
+        }
+      } else {
+        positions.push({ fileId, chunkIndex });
+      }
     }
   }
   return positions;

@@ -40,6 +40,7 @@ export const FEATURE_KEYS = [
   'ragScoreOnIngest',
   'documentDiagnostics',
   'contextualChunks',
+  'contextExpansion',
 ] as const;
 
 export type FeatureKey = (typeof FEATURE_KEYS)[number];
@@ -141,6 +142,12 @@ export type FeatureOverrides = Partial<Record<FeatureKey, boolean | null>>;
  * chunk rather than in it (spec 2026-09-29-contextual-chunks). Off by default
  * while it is measured (ADR-50): it changes what is embedded, so only files
  * ingested or re-indexed while it is on carry the prefix.
+ *
+ * `contextExpansion` renders each retrieved prose chunk with the chunk before
+ * and after it, merged where hits meet, within three times the usual number
+ * of chunks (spec 2026-09-29-llm-document-selection, B3). Off by default
+ * while it is measured (ADR-50); it changes only what a turn reads, so it
+ * applies to every file at once and needs no re-index.
  */
 export const DEFAULT_FEATURES: FeatureFlags = {
   inviteMembers: false,
@@ -162,6 +169,7 @@ export const DEFAULT_FEATURES: FeatureFlags = {
   ragScoreOnIngest: false,
   documentDiagnostics: true,
   contextualChunks: false,
+  contextExpansion: false,
 };
 
 /** Human-readable names, shared so the admin panel and the app cannot disagree. */
@@ -188,6 +196,8 @@ export const FEATURE_LABELS: Record<FeatureKey, string> = {
   documentDiagnostics: 'Document diagnostics (indexing problems, no LLM call)',
   contextualChunks:
     'Contextual chunks: index each chunk with its title and section (experimental, re-index to apply)',
+  contextExpansion:
+    'Context expansion: answer from each retrieved chunk with the ones around it (experimental)',
 };
 
 /**

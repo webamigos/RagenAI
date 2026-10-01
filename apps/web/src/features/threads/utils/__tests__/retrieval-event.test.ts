@@ -202,8 +202,9 @@ describe('toRetrievalEvent — the trace', () => {
   const trace = {
     chunks: [{ fileId: 'f-1', chunkIndex: 3 }],
     postRetrieval: 'reranker:scaleway' as const,
+    expansion: 'neighbours' as const,
     queryCount: 2,
-    timings: { searchMs: 40, rerankMs: 120, rephraseMs: 300 },
+    timings: { searchMs: 40, rerankMs: 120, expandMs: 15, rephraseMs: 300 },
   };
 
   it('sends positions and step names, and nothing it was not told to', () => {

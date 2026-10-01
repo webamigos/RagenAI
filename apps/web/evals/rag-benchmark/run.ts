@@ -626,6 +626,9 @@ async function main(): Promise<void> {
             if (ragAnswer.trace) {
               retrievalTrace = {
                 postRetrieval: ragAnswer.trace.postRetrieval,
+                ...(ragAnswer.trace.expansion
+                  ? { expansion: ragAnswer.trace.expansion }
+                  : {}),
                 queryCount: ragAnswer.trace.queryCount,
                 chunkCount: ragAnswer.trace.chunks.length,
                 timings: ragAnswer.trace.timings,

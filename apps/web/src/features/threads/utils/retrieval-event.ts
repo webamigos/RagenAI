@@ -90,10 +90,12 @@ export function toRetrievalEventTrace(
       chunkIndex,
     })),
     postRetrieval: trace.postRetrieval,
+    expansion: trace.expansion,
     queryCount: trace.queryCount,
     timings: {
       searchMs: trace.timings.searchMs,
       rerankMs: trace.timings.rerankMs,
+      expandMs: trace.timings.expandMs,
       ...(trace.timings.rephraseMs !== undefined
         ? { rephraseMs: trace.timings.rephraseMs }
         : {}),

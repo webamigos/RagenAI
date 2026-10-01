@@ -144,8 +144,15 @@ export type ApiSseRetrieval = {
 export type ApiSseRetrievalTrace = {
   chunks: { fileId: string; chunkIndex: number }[];
   postRetrieval: string;
+  /** `neighbours` when `contextExpansion` widened at least one chunk. */
+  expansion: 'off' | 'neighbours';
   queryCount: number;
-  timings: { searchMs: number; rerankMs: number; rephraseMs?: number };
+  timings: {
+    searchMs: number;
+    rerankMs: number;
+    expandMs: number;
+    rephraseMs?: number;
+  };
 };
 
 /**

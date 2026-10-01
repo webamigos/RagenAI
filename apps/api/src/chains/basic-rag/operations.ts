@@ -3,6 +3,7 @@ import type { LanguageModelV4 } from '@ai-sdk/provider';
 import type { ModelMessage } from 'ai';
 import { generateObject, generateText } from 'ai';
 import { z } from 'zod';
+import { expandHits } from '@ragenai/rag-core';
 import type {
   VectorStoreClient,
   VectorStoreDocument,
@@ -485,6 +486,12 @@ export async function retrieveRelevantDocumentsWithIds(
     projectId?: string | null;
   },
   trackAiUsage?: TrackAiUsage,
+  /**
+   * `contextExpansion` for this organization: kept prose chunks are widened by
+   * their neighbours through `getChunksByIndex`, inside the same filter.
+   * Absent is off.
+   */
+  expansion?: { orgId: string },
 ): Promise<{ context: string; fileIds: string[] }> {
   if (!vectorStore) {
     throw new Error('Error retrieving relevant documents: No vector store');
@@ -560,6 +567,33 @@ export async function retrieveRelevantDocumentsWithIds(
         );
       } else {
         finalDocs = uniqueDocs.slice(0, maxDocuments);
+      }
+
+      // After the cut, so the reranker still chooses which hits are kept and
+      // expansion only widens them. A failed lookup leaves a hit as it was.
+      if (expansion && vectorStore.getChunksByIndex) {
+        const getChunksByIndex = vectorStore.getChunksByIndex.bind(vectorStore);
+        const result = await withSpan(
+          'rag.expand',
+          { 'rag.expand_input_count': finalDocs.length },
+          async (expandSpan) => {
+            const r = await expandHits({
+              hits: finalDocs,
+              maxDocuments,
+              fetchChunks: (fileId, indexes) =>
+                getChunksByIndex(expansion.orgId, fileId, indexes, filter),
+            });
+            expandSpan.setAttribute('rag.expand_added_count', r.addedChunks);
+            expandSpan.setAttribute('rag.expand_failed_files', r.failedFiles);
+            return r;
+          },
+        );
+        if (result.failedFiles > 0) {
+          logger.warn(
+            `Context expansion: ${result.failedFiles} neighbour lookup(s) failed; those hits render unexpanded`,
+          );
+        }
+        finalDocs = result.docs;
       }
 
       const seenFileIds = new Set<string>();

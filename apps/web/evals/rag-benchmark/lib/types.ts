@@ -110,9 +110,16 @@ export interface CaseResult {
   /** The server's post-retrieval step and timings for this turn. */
   retrievalTrace?: {
     postRetrieval: string;
+    /** `neighbours` when the server widened chunks (`contextExpansion`). */
+    expansion?: string;
     queryCount: number;
     chunkCount: number;
-    timings: { searchMs: number; rerankMs: number; rephraseMs?: number };
+    timings: {
+      searchMs: number;
+      rerankMs: number;
+      expandMs?: number;
+      rephraseMs?: number;
+    };
   };
   error?: string;
   /**

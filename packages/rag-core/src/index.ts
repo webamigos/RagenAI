@@ -61,3 +61,17 @@ export {
   wantedChunkIndexes,
   type ChunksByIndexQuery,
 } from './selection/chunks-by-index';
+
+export {
+  EXPANSION_BUDGET_MULTIPLIER,
+  EXPANSION_RADIUS,
+  expandHits,
+  expandablePosition,
+  joinTrimmingOverlap,
+  mergeExpanded,
+  planExpansion,
+  type ExpandableChunk,
+  type ExpandedSection,
+  type ExpansionResult,
+  type FetchChunksByIndex,
+} from './selection/expansion';

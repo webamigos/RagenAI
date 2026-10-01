@@ -17,6 +17,11 @@ vi.mock('@/features/organizations/services/organization-settings', () => ({
     rerankingEnabled: false,
   }),
 }));
+// `contextExpansion` off, its default — and no database behind the lookup.
+vi.mock(
+  '@/features/subscriptions/services/queries/get-effective-features-query',
+  () => ({ isFeatureEnabledQuery: vi.fn().mockResolvedValue(false) }),
+);
 vi.mock('@/app/lib/services/llm', () => ({
   createChatCompletionInstance: vi.fn(),
   createModerationInstance: vi.fn(),

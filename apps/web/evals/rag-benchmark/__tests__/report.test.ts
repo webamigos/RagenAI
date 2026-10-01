@@ -502,6 +502,22 @@ describe('serverPostRetrieval', () => {
     ).toBe('`fusion` × 2, `reranker:scaleway` × 1');
   });
 
+  it('names a turn the server widened with neighbours', () => {
+    const widened = {
+      arm: 'rag',
+      retrievalTrace: {
+        postRetrieval: 'fusion',
+        expansion: 'neighbours',
+        queryCount: 2,
+        chunkCount: 9,
+        timings: { searchMs: 1, rerankMs: 0, expandMs: 3 },
+      },
+    } as unknown as CaseResult;
+    expect(serverPostRetrieval([widened, rag('fusion')])).toBe(
+      '`fusion + neighbours` × 1, `fusion` × 1',
+    );
+  });
+
   it('says so when the app sent no trace', () => {
     expect(serverPostRetrieval([rag()])).toBe(
       '(not reported — the app sent no trace)',

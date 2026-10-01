@@ -35,8 +35,15 @@ export interface RagAnswer {
 export interface ServerRetrievalTrace {
   chunks: { fileId: string; chunkIndex: number }[];
   postRetrieval: string;
+  /** `neighbours` when `contextExpansion` widened a chunk; absent before B3. */
+  expansion?: string;
   queryCount: number;
-  timings: { searchMs: number; rerankMs: number; rephraseMs?: number };
+  timings: {
+    searchMs: number;
+    rerankMs: number;
+    expandMs?: number;
+    rephraseMs?: number;
+  };
 }
 
 function readTrace(value: unknown): ServerRetrievalTrace | undefined {
@@ -59,6 +66,7 @@ function readTrace(value: unknown): ServerRetrievalTrace | undefined {
         typeof c?.fileId === 'string' && Number.isInteger(c?.chunkIndex),
     ),
     postRetrieval: t.postRetrieval,
+    ...(typeof t.expansion === 'string' ? { expansion: t.expansion } : {}),
     queryCount: t.queryCount,
     timings: t.timings,
   };

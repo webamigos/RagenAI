@@ -31,6 +31,11 @@ export interface ChainRagSettings {
   multiQueryEnabled: boolean;
   contentModerationEnabled: boolean;
   rerankingEnabled: boolean;
+  /**
+   * `contextExpansion`: each retrieved prose chunk is rendered with its
+   * neighbours (spec 2026-09-29-llm-document-selection, B3). Absent is off.
+   */
+  contextExpansionEnabled?: boolean;
 }
 
 export interface ChainConfig {
@@ -211,10 +216,21 @@ export interface RetrievalTrace {
    * the reranker's fallback, which is fusion order too.
    */
   postRetrieval: 'fusion' | `reranker:${string}` | `reranker-failed:${string}`;
+  /**
+   * Whether kept chunks were widened by their neighbours (`contextExpansion`).
+   * `neighbours` only when at least one neighbour was rendered; `chunks` then
+   * lists every position the widened sections cover.
+   */
+  expansion: 'off' | 'neighbours';
   /** Queries searched: the standalone question plus multi-query variants. */
   queryCount: number;
   /** Milliseconds each step added. `rephraseMs` is set by the chain. */
-  timings: { searchMs: number; rerankMs: number; rephraseMs?: number };
+  timings: {
+    searchMs: number;
+    rerankMs: number;
+    expandMs: number;
+    rephraseMs?: number;
+  };
 }
 
 export interface ChainStreamResult {

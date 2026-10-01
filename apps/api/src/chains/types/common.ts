@@ -46,6 +46,11 @@ export interface ChainRagSettings {
   multiQueryEnabled: boolean;
   contentModerationEnabled: boolean;
   rerankingEnabled: boolean;
+  /**
+   * `contextExpansion`: each retrieved prose chunk is rendered with its
+   * neighbours (spec 2026-09-29-llm-document-selection, B3). Absent is off.
+   */
+  contextExpansionEnabled?: boolean;
 }
 
 export interface ChainConfig {
