@@ -32,16 +32,22 @@ look for that were in the chunks the server says it rendered (`lib/evidence.ts`)
 | kolej | Scaleway | 18/23¹, 17/24, 18/24 | 21, 20, 20 /26 | 3, 2, 2 /8 |
 | kolej | off | 19/24, 15/24, 17/24 | 21, 20, 20 /26 | 3, 2, 2 /8 |
 | tabele | Scaleway | 10/17¹, 8/18, 11/18 | 14, 13, 14 /18 | 4, 4, 4 /5 |
-| tabele | off | 7/18, 6/18, 6/18 | 8, 9, 8 /18 | 2, 2, 2 /5 |
+| tabele | off | 7/18, 7/18², 7/18² | 8, 9, 8 /18 | 2, 2, 2 /5 |
 
 ¹ One case ungraded (the judge returned unreadable JSON). It is excluded from
 the denominator, as the harness does.
+
+² Regraded by hand. The judge failed `pl-cap-extensometer` for adding "zł" to
+the right figure, which the rubric does not forbid, while it passed the same
+answer on the Scaleway runs. Both runs scored 6/18 as graded; the JSON
+records the regrade in `rubricReason`, and the run reports were regenerated
+from it.
 
 Medians:
 
 - **kolej:** Scaleway 18/24, off 17/24. Evidence recall is identical in every
   pairing.
-- **tabele:** Scaleway 10/18, off 6/18. Evidence recall 14 vs 8 of 18.
+- **tabele:** Scaleway 10/17, off 7/18. Evidence recall 14 vs 8 of 18.
 
 ## What it says
 
@@ -53,7 +59,7 @@ ranks highest already hold the evidence on every question where any arm finds
 it.
 
 **On `tabele` it helps, by more than noise.** It adds six figures of
-evidence and about four passing questions. The questions there target rows
+evidence and about three passing questions. The questions there target rows
 in the last third of a table, and those rows are what the wider pool brings
 into reach.
 
@@ -77,6 +83,6 @@ embedding) and selection are meant to move.
 - **B4** (expansion on vs off) runs on top of the Scaleway arm, which stays
   the default.
 - **D2** compares selection with the Scaleway arm above: kolej 18/24 and
-  20/26 evidence, tabele 10/18 and 14/18.
+  20/26 evidence, tabele 10/17 and 14/18.
 - **Contextual A3** should report the cross-lingual row separately, because
   that is where the headroom is.

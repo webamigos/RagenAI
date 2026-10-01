@@ -324,7 +324,8 @@ defaulting to `false`.
   Cohere not run, no credentials). **On `kolej` the reranker does not move
   evidence recall at all**: 21/20/20 of 26 in both arms, and pass medians
   of 18 vs 17 of 24, which is noise. **On `tabele` it does**: 14 vs 8 of 18,
-  and pass medians of 10 vs 6 of 18. That gain belongs to the widened pool
+  and pass medians of 10/17 vs 7/18 (two off-arm cases regraded by hand,
+  see the write-up). That gain belongs to the widened pool
   (`× 3`) and the reranker's order together. Selection cuts the same pool,
   so D2's comparison is like for like. The remaining miss is cross-lingual
   evidence (2–3 of 8 on `kolej`, in every arm).
