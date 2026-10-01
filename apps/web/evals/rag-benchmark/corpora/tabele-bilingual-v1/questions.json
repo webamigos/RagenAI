@@ -9,7 +9,7 @@
       "question": "Jaki jest limit zwrotu kosztów zakupu mikroskopu metalograficznego o kodzie CD-2208 w Zakładach Metalurgicznych „Czarny Dunajec\"?",
       "expectAll": ["24 177,31"],
       "expectNone": ["36 171,14"],
-      "rubric": "Podaje kwotę 24 177,31 jako limit zwrotu dla pozycji CD-2208. Sama liczba wystarczy — jednostka wynika z nagłówka kolumny i jej brak nie jest błędem.",
+      "rubric": "Podaje kwotę 24 177,31 jako limit zwrotu dla pozycji CD-2208. Jednostka jest dowolna: sama liczba wystarczy, bo jednostka wynika z nagłówka kolumny, a liczba z jednostką (zł) też jest poprawna.",
       "why": "Wiersz 49 z 60. Nagłówek tabeli jest osiem fragmentów wcześniej, więc fragment z tym wierszem to same liczby bez nazw kolumn — a 36 171,14 zł w tym samym wierszu wygląda dokładnie tak samo jak limit."
     },
     {
@@ -21,7 +21,7 @@
       "question": "Ile wynosi limit zwrotu za ekstensometr laserowy CD-2369 w Czarnym Dunajcu?",
       "expectAll": ["21 629,67"],
       "expectNone": ["32 783,02"],
-      "rubric": "Podaje kwotę 21 629,67 jako limit zwrotu dla pozycji CD-2369. Sama liczba wystarczy — jednostka wynika z nagłówka kolumny."
+      "rubric": "Podaje kwotę 21 629,67 jako limit zwrotu dla pozycji CD-2369. Jednostka jest dowolna: sama liczba wystarczy, bo jednostka wynika z nagłówka kolumny, a liczba z jednostką (zł) też jest poprawna."
     },
     {
       "id": "pl-rate-roughness",
@@ -88,7 +88,7 @@
       "question": "What is the reimbursement cap for the metallographic microscope, item TF-3208, at Thornbury Foundry Works?",
       "expectAll": ["3,294.59"],
       "expectNone": ["5,250.58"],
-      "rubric": "Gives 3,294.59 as the reimbursement cap for TF-3208. The bare figure is enough — the currency follows from the column heading and its absence is not an error."
+      "rubric": "Gives 3,294.59 as the reimbursement cap for TF-3208. The unit is optional: the bare figure is enough, because the currency follows from the column heading, and the figure with its currency (GBP) is right too."
     },
     {
       "id": "en-cap-extensometer",
@@ -99,7 +99,7 @@
       "question": "How much will Thornbury Foundry Works reimburse for a laser extensometer, item TF-3369?",
       "expectAll": ["5,807.94"],
       "expectNone": ["8,370.82"],
-      "rubric": "Gives 5,807.94 as the reimbursement cap for TF-3369. The bare figure is enough."
+      "rubric": "Gives 5,807.94 as the reimbursement cap for TF-3369. The unit is optional: the bare figure is enough, because the currency follows from the column heading, and the figure with its currency (GBP) is right too."
     },
     {
       "id": "en-rate-roughness",

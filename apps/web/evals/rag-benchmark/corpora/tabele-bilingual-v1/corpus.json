@@ -1,6 +1,6 @@
 {
   "name": "tabele-bilingual-v1",
-  "version": 1,
+  "version": 2,
   "license": "CC0-1.0",
   "languages": ["pl", "en"],
   "description": "Five invented documents from two fictional metalworks — three Polish (Zakłady Metalurgiczne „Czarny Dunajec\") and two English (Thornbury Foundry Works Ltd) — whose content is almost entirely wide tables of sixty and fifty rows. Each document is ten chunks, so the header chunk is not simply retrieved alongside the row being asked about: every question targets a row in the last third of its table, where a character splitter leaves numbers with no column names. The two sets are parallel in structure and different in every figure, so an answer taken from the wrong document is visibly wrong rather than plausibly right.",
