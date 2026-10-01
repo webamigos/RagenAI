@@ -38,6 +38,31 @@ export function wrapVectorStoreWithDualContentDecode(
     ...(store.deleteDocuments
       ? { deleteDocuments: store.deleteDocuments.bind(store) }
       : {}),
+    // Neighbours fetched for expansion are decoded like search results, so
+    // the answer model sees one representation throughout.
+    ...(store.getChunksByIndex
+      ? {
+          getChunksByIndex: async (
+            chunkOrgId: string,
+            fileId: string,
+            indexes: readonly number[],
+            filter?: object,
+          ) => {
+            // The wrapper decodes with this organization's key, so it looks
+            // up only this organization's chunks.
+            if (chunkOrgId !== orgId) {
+              throw new Error(
+                'getChunksByIndex: organization does not match the wrapped store',
+              );
+            }
+            return decodeDualContentChunks(
+              await store.getChunksByIndex!(orgId, fileId, indexes, filter),
+              orgId,
+              getOrCreatePiiDek,
+            );
+          },
+        }
+      : {}),
   };
 }
 

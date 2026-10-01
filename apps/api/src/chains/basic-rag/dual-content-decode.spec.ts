@@ -152,4 +152,48 @@ describe('wrapVectorStoreWithDualContentDecode', () => {
 
     expect(wrapped.deleteDocuments).toBeUndefined();
   });
+
+  it('decodes the neighbours getChunksByIndex returns, for its own organization only', async () => {
+    const getChunksByIndex = vi.fn().mockResolvedValue([
+      {
+        pageContent: 'masked',
+        metadata: { pii_mode: 'dual_content', content_original: 'cipher' },
+      },
+    ]);
+    const store: VectorStoreClient = {
+      similaritySearch: vi.fn(),
+      addDocuments: vi.fn(),
+      getChunksByIndex,
+    };
+
+    const wrapped = wrapVectorStoreWithDualContentDecode(
+      store,
+      'org-1',
+      getOrCreatePiiDek,
+    );
+
+    const chunks = await wrapped.getChunksByIndex!('org-1', 'file-1', [2], {
+      must: [],
+    });
+    expect(chunks[0].pageContent).toBe('real content');
+    expect(getChunksByIndex).toHaveBeenCalledWith('org-1', 'file-1', [2], {
+      must: [],
+    });
+    expect(getOrCreatePiiDek).toHaveBeenCalledWith('org-1');
+
+    await expect(
+      wrapped.getChunksByIndex!('org-2', 'file-1', [2]),
+    ).rejects.toThrow('organization does not match');
+    expect(getChunksByIndex).toHaveBeenCalledTimes(1);
+  });
+
+  it('omits getChunksByIndex when the underlying store does not support it', () => {
+    const wrapped = wrapVectorStoreWithDualContentDecode(
+      { similaritySearch: vi.fn(), addDocuments: vi.fn() },
+      'org-1',
+      getOrCreatePiiDek,
+    );
+
+    expect(wrapped.getChunksByIndex).toBeUndefined();
+  });
 });

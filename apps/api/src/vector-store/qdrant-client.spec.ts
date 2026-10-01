@@ -296,6 +296,72 @@ describe('QdrantVectorStoreClient (hybrid search)', () => {
     });
   });
 
+  describe('getChunksByIndex', () => {
+    const point = (metadata: Record<string, unknown>, content: string) => ({
+      id: content,
+      payload: { content, metadata },
+    });
+
+    it('asks for the positions inside the search filter, prose only', async () => {
+      mockScroll.mockResolvedValue({ points: [] });
+      const search = {
+        must: [
+          { key: 'metadata.accessible_by', match_any: { values: ['u-1'] } },
+        ],
+      };
+
+      await client.getChunksByIndex('org-1', 'file-1', [5, 3, 3], search);
+
+      expect(mockScroll).toHaveBeenCalledWith('test-collection', {
+        filter: {
+          must: [
+            {
+              must: [
+                { key: 'metadata.accessible_by', match: { any: ['u-1'] } },
+              ],
+            },
+            { key: 'metadata.organization_id', match: { value: 'org-1' } },
+            { key: 'metadata.file_id', match: { value: 'file-1' } },
+            { key: 'metadata.chunk_index', match: { any: [3, 5] } },
+          ],
+          must_not: [
+            {
+              key: 'metadata.chunk_type',
+              match: { any: ['summary', 'table'] },
+            },
+          ],
+        },
+        limit: 4,
+        with_payload: true,
+        with_vector: false,
+      });
+    });
+
+    it('returns the chunks in file order, a missing position simply absent', async () => {
+      mockScroll.mockResolvedValue({
+        points: [
+          point({ chunk_index: 5, file_id: 'file-1' }, 'five'),
+          point({ chunk_index: 3, file_id: 'file-1' }, 'three'),
+        ],
+      });
+
+      const chunks = await client.getChunksByIndex(
+        'org-1',
+        'file-1',
+        [3, 4, 5],
+      );
+
+      expect(chunks.map((c) => c.pageContent)).toEqual(['three', 'five']);
+    });
+
+    it('asks Qdrant nothing when no position is valid', async () => {
+      const chunks = await client.getChunksByIndex('org-1', 'file-1', [0, -1]);
+
+      expect(chunks).toEqual([]);
+      expect(mockScroll).not.toHaveBeenCalled();
+    });
+  });
+
   describe('ensureCollection', () => {
     it('creates collection with hybrid dense+sparse schema', async () => {
       mockCollectionExists.mockResolvedValue({ exists: false });

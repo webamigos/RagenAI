@@ -333,10 +333,21 @@ defaulting to `false`.
   one after a deploy; `scripts/ensure-qdrant-payload-indexes.ts [--dry-run]`
   does it for every collection at once. Locally, 10 of 10 collections lacked
   only `chunk_index`.
-- [ ] **B2.** `getChunksByIndex` on `VectorStoreClient` (Qdrant
+- [x] **B2.** `getChunksByIndex` on `VectorStoreClient` (Qdrant
   implementation in apps/web and apps/api). It applies the search filter and
   goes through the dual-content decode wrapper. Tests cover the filter,
   same-kind neighbours, and a missing neighbour.
+
+  *Done.* The filter is built once, by `chunksByIndexFilter` in
+  `packages/rag-core/src/selection/`: the search filter nested whole (so a
+  knowledge-base `should` keeps its meaning), plus `organization_id`,
+  `file_id` and `chunk_index` in the positions, and `chunk_type` not
+  `summary` or `table`. Both apps' Qdrant clients scroll with it and return
+  one chunk per position in file order (`orderByChunkIndex`). The method is
+  optional on the interface, since only Qdrant is supported (ADR-31). Both
+  dual-content wrappers decode what it returns, and refuse an organization
+  other than the one they were built for, because they decode with that
+  organization's key. Nothing calls it yet; B3 does.
 - [ ] **B3.** `mergeExpanded` in rag-core, with overlap trimming, plus the
   `contextExpansion` key. Behind it, each kept hit gets ±1 prose neighbour
   within the budget. Architecture test for both chains.
