@@ -52,6 +52,7 @@ const memory = {
 const base: MemoryPageData = {
   enabled: true,
   memories: [memory],
+  listUnavailable: false,
   storedCount: 1,
   maxEntries: 50,
   extractionEnabled: true,
@@ -153,5 +154,18 @@ describe('MemorySettingsView', () => {
       screen.getAllByRole('button', { name: 'Forget everything' }).at(-1)!,
     );
     await waitFor(() => expect(a.forget).toHaveBeenCalledTimes(1));
+  });
+
+  it('still offers "forget everything" when the list could not be read', () => {
+    renderView({
+      ...base,
+      memories: [],
+      listUnavailable: true,
+      storedCount: 2,
+    });
+    expect(screen.getByText(/couldn't be loaded/)).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Forget everything' }),
+    ).toBeInTheDocument();
   });
 });

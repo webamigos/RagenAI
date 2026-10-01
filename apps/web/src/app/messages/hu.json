@@ -959,7 +959,8 @@
       "error-not-found": "Ez a bejegyzés már nem létezik. Töltsd újra az oldalt.",
       "off": "A memória ki van kapcsolva ebben a szervezetben.",
       "off-stored": "Még tárolva: {count, plural, one {# bejegyzés} other {# bejegyzés}}. Törölheted őket.",
-      "off-nothing": "Semmi sincs tárolva rólad."
+      "off-nothing": "Semmi sincs tárolva rólad.",
+      "list-unavailable": "A bejegyzéseidet most nem sikerült betölteni. Lent így is elfelejthetsz mindent."
     }
   },
   "teams-page": {

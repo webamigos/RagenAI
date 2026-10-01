@@ -959,7 +959,8 @@
       "error-not-found": "That memory no longer exists. Reload the page.",
       "off": "Memory is turned off for this organization.",
       "off-stored": "{count, plural, one {# memory is} other {# memories are}} still stored. You can delete them.",
-      "off-nothing": "Nothing is stored about you."
+      "off-nothing": "Nothing is stored about you.",
+      "list-unavailable": "Your memories couldn't be loaded right now. You can still forget everything below."
     }
   },
   "teams-page": {

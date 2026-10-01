@@ -959,7 +959,8 @@
       "error-not-found": "Det minnet finnes ikke lenger. Last inn siden på nytt.",
       "off": "Minne er slått av for denne organisasjonen.",
       "off-stored": "{count, plural, one {# minne er} other {# minner er}} fortsatt lagret. Du kan slette dem.",
-      "off-nothing": "Ingenting er lagret om deg."
+      "off-nothing": "Ingenting er lagret om deg.",
+      "list-unavailable": "Minnene dine kunne ikke lastes nå. Du kan fortsatt glemme alt nedenfor."
     }
   },
   "teams-page": {

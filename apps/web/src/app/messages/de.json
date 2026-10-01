@@ -959,7 +959,8 @@
       "error-not-found": "Dieser Eintrag existiert nicht mehr. Laden Sie die Seite neu.",
       "off": "Das Gedächtnis ist für diese Organisation ausgeschaltet.",
       "off-stored": "{count, plural, one {# Eintrag ist} other {# Einträge sind}} noch gespeichert. Sie können sie löschen.",
-      "off-nothing": "Über Sie ist nichts gespeichert."
+      "off-nothing": "Über Sie ist nichts gespeichert.",
+      "list-unavailable": "Ihre Einträge konnten gerade nicht geladen werden. Sie können unten trotzdem alles vergessen lassen."
     }
   },
   "teams-page": {

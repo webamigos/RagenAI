@@ -959,7 +959,8 @@
       "error-not-found": "Ten wpis już nie istnieje. Odśwież stronę.",
       "off": "Pamięć jest wyłączona dla tej organizacji.",
       "off-stored": "Wciąż przechowywane: {count, plural, one {# wpis} few {# wpisy} many {# wpisów} other {# wpisu}}. Możesz je usunąć.",
-      "off-nothing": "Nic o Tobie nie jest przechowywane."
+      "off-nothing": "Nic o Tobie nie jest przechowywane.",
+      "list-unavailable": "Nie udało się teraz wczytać Twoich wpisów. Nadal możesz zapomnieć wszystko poniżej."
     }
   },
   "teams-page": {

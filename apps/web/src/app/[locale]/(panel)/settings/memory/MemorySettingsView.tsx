@@ -79,6 +79,40 @@ export function MemorySettingsView({ data }: Props) {
     </>
   );
 
+  const renderList = () => {
+    if (data.listUnavailable) {
+      return (
+        <p className="py-4 text-sm text-muted-foreground">
+          {t('list-unavailable')}
+        </p>
+      );
+    }
+    if (data.memories.length === 0) {
+      return <p className="py-4 text-sm text-muted-foreground">{t('empty')}</p>;
+    }
+    return (
+      <ul className="mt-3 divide-y divide-border rounded-md border border-border">
+        {data.memories.map((memory) => (
+          <MemoryRow
+            key={memory.publicId}
+            memory={memory}
+            disabled={isPending}
+            onSave={(content, done) =>
+              act(
+                () => updateMemoryAction(memory.publicId, content),
+                'saved',
+                done,
+              )
+            }
+            onDelete={() =>
+              act(() => deleteMemoryAction(memory.publicId), 'deleted')
+            }
+          />
+        ))}
+      </ul>
+    );
+  };
+
   if (!data.enabled) {
     return (
       <section className="space-y-3">
@@ -134,29 +168,7 @@ export function MemorySettingsView({ data }: Props) {
           </p>
         </div>
 
-        {data.memories.length === 0 ? (
-          <p className="py-4 text-sm text-muted-foreground">{t('empty')}</p>
-        ) : (
-          <ul className="mt-3 divide-y divide-border rounded-md border border-border">
-            {data.memories.map((memory) => (
-              <MemoryRow
-                key={memory.publicId}
-                memory={memory}
-                disabled={isPending}
-                onSave={(content, done) =>
-                  act(
-                    () => updateMemoryAction(memory.publicId, content),
-                    'saved',
-                    done,
-                  )
-                }
-                onDelete={() =>
-                  act(() => deleteMemoryAction(memory.publicId), 'deleted')
-                }
-              />
-            ))}
-          </ul>
-        )}
+        {renderList()}
       </section>
 
       {data.storedCount > 0 && (

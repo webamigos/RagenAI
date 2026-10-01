@@ -959,7 +959,8 @@
       "error-not-found": "Det minnet finns inte längre. Ladda om sidan.",
       "off": "Minnet är avstängt för den här organisationen.",
       "off-stored": "{count, plural, one {# minne är} other {# minnen är}} fortfarande sparade. Du kan ta bort dem.",
-      "off-nothing": "Inget är sparat om dig."
+      "off-nothing": "Inget är sparat om dig.",
+      "list-unavailable": "Dina minnen kunde inte läsas in just nu. Du kan fortfarande glömma allt nedan."
     }
   },
   "teams-page": {
