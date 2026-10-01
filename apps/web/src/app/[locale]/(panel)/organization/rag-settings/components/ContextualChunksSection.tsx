@@ -36,7 +36,7 @@ export function ContextualChunksSection({ data }: Props) {
       return t('contextual-none-indexed');
     }
     return t('contextual-count', {
-      current: status.indexed - status.stale,
+      current: status.indexed - status.stale - status.reindexing,
       total: status.indexed,
     });
   };
@@ -48,6 +48,8 @@ export function ContextualChunksSection({ data }: Props) {
         const { started, failed } = await reindexForContextAction();
         if (failed > 0) {
           toast.error(t('contextual-partial', { failed, started }));
+        } else if (started === 0) {
+          toast.info(t('contextual-nothing-started'));
         } else {
           toast.success(t('contextual-started', { count: started }));
         }
@@ -68,6 +70,12 @@ export function ContextualChunksSection({ data }: Props) {
       </p>
 
       <p className="mt-3 text-sm text-foreground">{countLine()}</p>
+
+      {status !== null && status.reindexing > 0 && (
+        <p className="mt-1 text-xs text-muted-foreground">
+          {t('contextual-reindexing', { count: status.reindexing })}
+        </p>
+      )}
 
       {!enabled && (
         <p className="mt-1 text-xs text-muted-foreground">

@@ -608,7 +608,10 @@
       "contextual-confirm-action": "Indekser på nytt",
       "contextual-started": "Indekserer {count, plural, one {# dokument} other {# dokumenter}} på nytt i bakgrunnen.",
       "contextual-partial": "{failed, plural, one {# dokument} other {# dokumenter}} kunne ikke startes; {started} startet. Prøv igjen om noen minutter.",
-      "contextual-error": "Ny indeksering kunne ikke startes. Prøv igjen om noen minutter."
+      "contextual-error": "Ny indeksering kunne ikke startes. Prøv igjen om noen minutter.",
+      "contextual-counting": "Teller dokumenter indeksert med kontekst …",
+      "contextual-reindexing": "{count, plural, one {# dokument} other {# dokumenter}} behandles nå og får kontekst når de er ferdige.",
+      "contextual-nothing-started": "Ingenting å indeksere på nytt: disse dokumentene behandles allerede."
     },
     "connectors": {
       "title": "Koblinger",

@@ -608,7 +608,10 @@
       "contextual-confirm-action": "Réindexer",
       "contextual-started": "Réindexation de {count, plural, one {# document} other {# documents}} en arrière-plan.",
       "contextual-partial": "Impossible de lancer {failed, plural, one {# document} other {# documents}} ; {started} lancés. Réessayez dans quelques minutes.",
-      "contextual-error": "Impossible de lancer la réindexation. Réessayez dans quelques minutes."
+      "contextual-error": "Impossible de lancer la réindexation. Réessayez dans quelques minutes.",
+      "contextual-counting": "Décompte des documents indexés avec contexte…",
+      "contextual-reindexing": "{count, plural, one {# document est} other {# documents sont}} en cours de traitement et auront du contexte une fois terminés.",
+      "contextual-nothing-started": "Rien à réindexer : ces documents sont déjà en cours de traitement."
     },
     "connectors": {
       "title": "Connecteurs",

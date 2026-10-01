@@ -608,7 +608,10 @@
       "contextual-confirm-action": "Volver a indexar",
       "contextual-started": "Volviendo a indexar {count, plural, one {# documento} other {# documentos}} en segundo plano.",
       "contextual-partial": "No se pudo iniciar {failed, plural, one {# documento} other {# documentos}}; se iniciaron {started}. Inténtalo de nuevo en unos minutos.",
-      "contextual-error": "No se pudo iniciar la reindexación. Inténtalo de nuevo en unos minutos."
+      "contextual-error": "No se pudo iniciar la reindexación. Inténtalo de nuevo en unos minutos.",
+      "contextual-counting": "Contando los documentos indexados con contexto…",
+      "contextual-reindexing": "Se están procesando {count, plural, one {# documento} other {# documentos}}; tendrán contexto al terminar.",
+      "contextual-nothing-started": "No hay nada que volver a indexar: esos documentos ya se están procesando."
     },
     "connectors": {
       "title": "Conectores",

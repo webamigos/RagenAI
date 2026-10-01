@@ -337,7 +337,12 @@ that defaults to `false`.
   off, computes the stale ids itself (never from the client), and
   `reindexForContextCommand` resets each file and starts it through
   `startFileReindexCommand`, so an edited document re-indexes its active
-  version. A failed start puts the previous status back.
+  version. A failed start puts the previous status back. A file whose ingest is
+  queued or running is never offered or restarted — it is counted apart
+  ("being processed now") until its job moves its version — and the reset
+  only matches an idle file, so two admins clicking at once queue one run.
+  The section streams under `Suspense`, because counting reads the whole
+  collection, folded page by page so memory grows with files, not chunks.
 - [x] **C2.** `reindex-for-context.ts` with `--dry-run`, and a runbook
   section.
 

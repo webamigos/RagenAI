@@ -46,6 +46,7 @@ beforeEach(() => {
   statusQuery.mockResolvedValue({
     indexed: 3,
     stale: 2,
+    reindexing: 0,
     staleFileIds: ['a', 'b'],
   });
   reindexCommand.mockResolvedValue({ started: 2, failed: 0 });
@@ -55,7 +56,7 @@ describe('getContextualChunksAction', () => {
   it('returns counts and the key, never the file ids', async () => {
     expect(await getContextualChunksAction()).toEqual({
       enabled: true,
-      status: { indexed: 3, stale: 2 },
+      status: { indexed: 3, stale: 2, reindexing: 0 },
     });
     expect(requireOrgAdmin).toHaveBeenCalledWith('org-1');
     expect(statusQuery).toHaveBeenCalledWith('org-1');

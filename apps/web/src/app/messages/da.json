@@ -608,7 +608,10 @@
       "contextual-confirm-action": "Genindekser",
       "contextual-started": "Genindekserer {count, plural, one {# dokument} other {# dokumenter}} i baggrunden.",
       "contextual-partial": "{failed, plural, one {# dokument} other {# dokumenter}} kunne ikke startes; {started} startet. Prøv igen om et par minutter.",
-      "contextual-error": "Genindekseringen kunne ikke startes. Prøv igen om et par minutter."
+      "contextual-error": "Genindekseringen kunne ikke startes. Prøv igen om et par minutter.",
+      "contextual-counting": "Tæller dokumenter indekseret med kontekst …",
+      "contextual-reindexing": "{count, plural, one {# dokument} other {# dokumenter}} behandles nu og får kontekst, når de er færdige.",
+      "contextual-nothing-started": "Intet at genindeksere: disse dokumenter behandles allerede."
     },
     "connectors": {
       "title": "Konnektorer",

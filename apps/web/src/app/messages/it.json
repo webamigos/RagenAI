@@ -608,7 +608,10 @@
       "contextual-confirm-action": "Reindicizza",
       "contextual-started": "Reindicizzazione di {count, plural, one {# documento} other {# documenti}} in background.",
       "contextual-partial": "Impossibile avviare {failed, plural, one {# documento} other {# documenti}}; {started} avviati. Riprova tra qualche minuto.",
-      "contextual-error": "Impossibile avviare la reindicizzazione. Riprova tra qualche minuto."
+      "contextual-error": "Impossibile avviare la reindicizzazione. Riprova tra qualche minuto.",
+      "contextual-counting": "Conteggio dei documenti indicizzati con contesto…",
+      "contextual-reindexing": "{count, plural, one {# documento è} other {# documenti sono}} in elaborazione e avranno il contesto al termine.",
+      "contextual-nothing-started": "Niente da reindicizzare: quei documenti sono già in elaborazione."
     },
     "connectors": {
       "title": "Connettori",

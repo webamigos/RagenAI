@@ -608,7 +608,10 @@
       "contextual-confirm-action": "Opnieuw indexeren",
       "contextual-started": "{count, plural, one {# document wordt} other {# documenten worden}} op de achtergrond opnieuw geïndexeerd.",
       "contextual-partial": "{failed, plural, one {# document kon} other {# documenten konden}} niet worden gestart; {started} gestart. Probeer het over een paar minuten opnieuw.",
-      "contextual-error": "Het opnieuw indexeren kon niet worden gestart. Probeer het over een paar minuten opnieuw."
+      "contextual-error": "Het opnieuw indexeren kon niet worden gestart. Probeer het over een paar minuten opnieuw.",
+      "contextual-counting": "Documenten met context worden geteld…",
+      "contextual-reindexing": "{count, plural, one {# document wordt} other {# documenten worden}} nu verwerkt en hebben daarna context.",
+      "contextual-nothing-started": "Niets om opnieuw te indexeren: die documenten worden al verwerkt."
     },
     "connectors": {
       "title": "Connectors",

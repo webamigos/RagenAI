@@ -8,13 +8,14 @@ const reindexAction = vi.hoisted(() => vi.fn());
 const refresh = vi.hoisted(() => vi.fn());
 const toastSuccess = vi.hoisted(() => vi.fn());
 const toastError = vi.hoisted(() => vi.fn());
+const toastInfo = vi.hoisted(() => vi.fn());
 
 vi.mock('../actions', () => ({
   reindexForContextAction: () => reindexAction(),
 }));
 vi.mock('@/i18n/routing', () => ({ useRouter: () => ({ refresh }) }));
 vi.mock('sonner', () => ({
-  toast: { success: toastSuccess, error: toastError },
+  toast: { success: toastSuccess, error: toastError, info: toastInfo },
 }));
 
 import { ContextualChunksSection } from '../components/ContextualChunksSection';
@@ -32,7 +33,10 @@ beforeEach(() => vi.clearAllMocks());
 
 describe('ContextualChunksSection', () => {
   it('shows how many documents carry context, and offers the rest', () => {
-    renderSection({ enabled: true, status: { indexed: 28, stale: 28 } });
+    renderSection({
+      enabled: true,
+      status: { indexed: 28, stale: 28, reindexing: 0 },
+    });
     expect(
       screen.getByText('0 of 28 documents indexed with context'),
     ).toBeInTheDocument();
@@ -42,7 +46,10 @@ describe('ContextualChunksSection', () => {
   });
 
   it('offers nothing when every document is up to date', () => {
-    renderSection({ enabled: true, status: { indexed: 3, stale: 0 } });
+    renderSection({
+      enabled: true,
+      status: { indexed: 3, stale: 0, reindexing: 0 },
+    });
     expect(
       screen.getByText('3 of 3 documents indexed with context'),
     ).toBeInTheDocument();
@@ -50,7 +57,10 @@ describe('ContextualChunksSection', () => {
   });
 
   it('explains instead of offering a re-index while the key is off', () => {
-    renderSection({ enabled: false, status: { indexed: 3, stale: 3 } });
+    renderSection({
+      enabled: false,
+      status: { indexed: 3, stale: 3, reindexing: 0 },
+    });
     expect(screen.getByText(/Contextual chunks are off/)).toBeInTheDocument();
     expect(screen.queryByRole('button')).toBeNull();
   });
@@ -63,7 +73,10 @@ describe('ContextualChunksSection', () => {
 
   it('re-indexes after confirming, then refreshes the counts', async () => {
     reindexAction.mockResolvedValue({ started: 2, failed: 0 });
-    renderSection({ enabled: true, status: { indexed: 2, stale: 2 } });
+    renderSection({
+      enabled: true,
+      status: { indexed: 2, stale: 2, reindexing: 0 },
+    });
 
     fireEvent.click(
       screen.getByRole('button', { name: 'Re-index 2 documents' }),
@@ -82,7 +95,10 @@ describe('ContextualChunksSection', () => {
 
   it('says how many could not be started', async () => {
     reindexAction.mockResolvedValue({ started: 1, failed: 1 });
-    renderSection({ enabled: true, status: { indexed: 2, stale: 2 } });
+    renderSection({
+      enabled: true,
+      status: { indexed: 2, stale: 2, reindexing: 0 },
+    });
 
     fireEvent.click(
       screen.getByRole('button', { name: 'Re-index 2 documents' }),
@@ -92,6 +108,41 @@ describe('ContextualChunksSection', () => {
     await waitFor(() =>
       expect(toastError).toHaveBeenCalledWith(
         "1 document couldn't be started; 1 started. Try again in a few minutes.",
+      ),
+    );
+  });
+
+  it('counts documents already being processed apart, and does not offer them', () => {
+    renderSection({
+      enabled: true,
+      status: { indexed: 10, stale: 0, reindexing: 4 },
+    });
+    expect(
+      screen.getByText('6 of 10 documents indexed with context'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        '4 documents are being processed now and will carry context when done.',
+      ),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole('button')).toBeNull();
+  });
+
+  it('says so when every document was already being processed', async () => {
+    reindexAction.mockResolvedValue({ started: 0, failed: 0, skipped: 2 });
+    renderSection({
+      enabled: true,
+      status: { indexed: 2, stale: 2, reindexing: 0 },
+    });
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Re-index 2 documents' }),
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Re-index' }));
+
+    await waitFor(() =>
+      expect(toastInfo).toHaveBeenCalledWith(
+        'Nothing to re-index: those documents are already being processed.',
       ),
     );
   });

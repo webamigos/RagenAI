@@ -608,7 +608,10 @@
       "contextual-confirm-action": "Znovu indexovat",
       "contextual-started": "Opětovné indexování na pozadí: {count, plural, one {# dokument} few {# dokumenty} many {# dokumentu} other {# dokumentů}}.",
       "contextual-partial": "Nepodařilo se spustit: {failed, plural, one {# dokument} few {# dokumenty} many {# dokumentu} other {# dokumentů}}; spuštěno {started}. Zkuste to znovu za několik minut.",
-      "contextual-error": "Opětovné indexování se nepodařilo spustit. Zkuste to znovu za několik minut."
+      "contextual-error": "Opětovné indexování se nepodařilo spustit. Zkuste to znovu za několik minut.",
+      "contextual-counting": "Počítání dokumentů indexovaných s kontextem…",
+      "contextual-reindexing": "Právě se zpracovává: {count, plural, one {# dokument} few {# dokumenty} many {# dokumentu} other {# dokumentů}}. Po dokončení budou mít kontext.",
+      "contextual-nothing-started": "Není co znovu indexovat: tyto dokumenty se už zpracovávají."
     },
     "connectors": {
       "title": "Konektory",

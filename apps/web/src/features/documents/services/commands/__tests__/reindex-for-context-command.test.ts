@@ -43,6 +43,8 @@ describe('reindexForContextCommand', () => {
       organizationId: ORG,
       id: { in: ['a', 'other-orgs-file'] },
       publishedPages: { none: {} },
+      parsingStatus: { notIn: ['NOT_STARTED', 'STARTED'] },
+      embeddingStatus: { notIn: ['NOT_STARTED', 'STARTED'] },
     });
   });
 
@@ -63,10 +65,14 @@ describe('reindexForContextCommand', () => {
       fileIds: ['a'],
     });
 
-    expect(result).toEqual({ started: 1, failed: 0 });
+    expect(result).toEqual({ started: 1, failed: 0, skipped: 0 });
     expect(order).toEqual(['reset', 'start true']);
     expect(updateMany.mock.calls[0][0]).toMatchObject({
-      where: { id: 'a', organizationId: ORG },
+      where: {
+        id: 'a',
+        organizationId: ORG,
+        parsingStatus: { notIn: ['NOT_STARTED', 'STARTED'] },
+      },
       data: { parsingStatus: 'NOT_STARTED', embeddingStatus: 'NOT_STARTED' },
     });
     expect(startFileReindex.mock.calls[0][0]).toMatchObject({
@@ -86,7 +92,7 @@ describe('reindexForContextCommand', () => {
       fileIds: ['a', 'b'],
     });
 
-    expect(result).toEqual({ started: 1, failed: 1 });
+    expect(result).toEqual({ started: 1, failed: 1, skipped: 0 });
     const restore = updateMany.mock.calls[1][0];
     expect(restore.where).toMatchObject({ id: 'a', organizationId: ORG });
     expect(restore.where.workflowId).toMatch(/^reindex-context-/);
@@ -96,5 +102,30 @@ describe('reindexForContextCommand', () => {
       workflowId: 'old-a',
     });
     expect(startFileReindex).toHaveBeenCalledTimes(2);
+  });
+
+  it('skips a file another run claimed between the lookup and the reset', async () => {
+    findMany.mockResolvedValue([file('a'), file('b')]);
+    updateMany
+      .mockResolvedValueOnce({ count: 0 })
+      .mockResolvedValueOnce({ count: 1 });
+
+    const result = await reindexForContextCommand({
+      organizationId: ORG,
+      fileIds: ['a', 'b'],
+    });
+
+    expect(result).toEqual({ started: 1, failed: 0, skipped: 1 });
+    expect(startFileReindex).toHaveBeenCalledTimes(1);
+    expect(startFileReindex.mock.calls[0][0].file.id).toBe('b');
+  });
+
+  it('counts a file the lookup left out as skipped', async () => {
+    findMany.mockResolvedValue([file('a')]);
+    const result = await reindexForContextCommand({
+      organizationId: ORG,
+      fileIds: ['a', 'busy'],
+    });
+    expect(result).toEqual({ started: 1, failed: 0, skipped: 1 });
   });
 });

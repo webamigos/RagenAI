@@ -3,11 +3,14 @@ import { nanoid } from 'nanoid';
 
 import { logger } from '@/app/lib/utils/logger';
 import { EmbeddingStatus, ParsingStatus } from '@/generated/prisma/client';
+import { INGEST_IN_PROGRESS } from '../queries/get-context-version-status-query';
 import { startFileReindexCommand } from './start-file-reindex-command';
 
 export interface ReindexForContextResult {
   started: number;
   failed: number;
+  /** Already queued or running when this call reached them; left alone. */
+  skipped: number;
 }
 
 /**
@@ -24,7 +27,19 @@ export interface ReindexForContextResult {
  * carrying the failed run's id, and the loop goes on. The jobs join the
  * ordinary ingest queue, whose Docling ceiling bounds them as it bounds an
  * upload.
+ *
+ * A file whose ingest is already queued or running is skipped — both in the
+ * lookup and, against a second admin clicking at the same moment, in the
+ * reset itself, which only matches a file that is still idle. Without that, a
+ * second click would give every file a new run id and queue a second full
+ * ingest while the first was still going.
  */
+/** A file no ingest is queued or running for. */
+const IDLE = {
+  parsingStatus: { notIn: INGEST_IN_PROGRESS.parsing },
+  embeddingStatus: { notIn: INGEST_IN_PROGRESS.embedding },
+};
+
 export async function reindexForContextCommand({
   organizationId,
   fileIds,
@@ -39,6 +54,7 @@ export async function reindexForContextCommand({
       organizationId,
       id: { in: [...fileIds] },
       publishedPages: { none: {} },
+      ...IDLE,
     },
     select: {
       id: true,
@@ -50,17 +66,26 @@ export async function reindexForContextCommand({
     },
   });
 
-  const result: ReindexForContextResult = { started: 0, failed: 0 };
+  const result: ReindexForContextResult = {
+    started: 0,
+    failed: 0,
+    skipped: fileIds.length - files.length,
+  };
   for (const file of files) {
     const workflowId = `reindex-context-${nanoid()}`;
-    await db.userFile.updateMany({
-      where: { id: file.id, organizationId },
+    const { count } = await db.userFile.updateMany({
+      where: { id: file.id, organizationId, ...IDLE },
       data: {
         parsingStatus: ParsingStatus.NOT_STARTED,
         embeddingStatus: EmbeddingStatus.NOT_STARTED,
         workflowId,
       },
     });
+    if (count === 0) {
+      // Another run claimed it between the lookup and here.
+      result.skipped += 1;
+      continue;
+    }
     try {
       await startFileReindexCommand({
         file,

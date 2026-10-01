@@ -608,7 +608,10 @@
       "contextual-confirm-action": "Zindeksuj ponownie",
       "contextual-started": "Ponowne indeksowanie: {count, plural, one {# dokument} few {# dokumenty} many {# dokumentów} other {# dokumentu}} w tle.",
       "contextual-partial": "Nie udało się uruchomić: {failed, plural, one {# dokument} few {# dokumenty} many {# dokumentów} other {# dokumentu}}; uruchomiono {started}. Spróbuj ponownie za kilka minut.",
-      "contextual-error": "Nie udało się uruchomić ponownego indeksowania. Spróbuj ponownie za kilka minut."
+      "contextual-error": "Nie udało się uruchomić ponownego indeksowania. Spróbuj ponownie za kilka minut.",
+      "contextual-counting": "Liczenie dokumentów zindeksowanych z kontekstem…",
+      "contextual-reindexing": "W trakcie przetwarzania: {count, plural, one {# dokument} few {# dokumenty} many {# dokumentów} other {# dokumentu}}. Po zakończeniu będą miały kontekst.",
+      "contextual-nothing-started": "Nie ma czego indeksować: te dokumenty są już przetwarzane."
     },
     "connectors": {
       "title": "Integracje",

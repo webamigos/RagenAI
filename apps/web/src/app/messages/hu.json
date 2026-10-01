@@ -608,7 +608,10 @@
       "contextual-confirm-action": "Újraindexelés",
       "contextual-started": "{count, plural, one {# dokumentum} other {# dokumentum}} újraindexelése a háttérben.",
       "contextual-partial": "{failed, plural, one {# dokumentum} other {# dokumentum}} nem indítható el; {started} elindítva. Próbálja újra néhány perc múlva.",
-      "contextual-error": "Az újraindexelés nem indítható el. Próbálja újra néhány perc múlva."
+      "contextual-error": "Az újraindexelés nem indítható el. Próbálja újra néhány perc múlva.",
+      "contextual-counting": "A kontextussal indexelt dokumentumok számolása…",
+      "contextual-reindexing": "{count, plural, one {# dokumentum} other {# dokumentum}} feldolgozása folyamatban; a végén kontextust kapnak.",
+      "contextual-nothing-started": "Nincs mit újraindexelni: ezek a dokumentumok már feldolgozás alatt vannak."
     },
     "connectors": {
       "title": "Kapcsolók",

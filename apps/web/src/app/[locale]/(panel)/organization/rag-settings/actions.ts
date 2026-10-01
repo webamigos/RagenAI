@@ -61,7 +61,7 @@ export type ContextualChunksPageData = {
   /** `contextualChunks` for this organization: whether ingest adds a prefix. */
   enabled: boolean;
   /** Null when the index could not be read; the page says so. */
-  status: { indexed: number; stale: number } | null;
+  status: { indexed: number; stale: number; reindexing: number } | null;
 };
 
 /**
@@ -83,7 +83,11 @@ export async function getContextualChunksAction(): Promise<ContextualChunksPageD
 
   return {
     enabled,
-    status: status && { indexed: status.indexed, stale: status.stale },
+    status: status && {
+      indexed: status.indexed,
+      stale: status.stale,
+      reindexing: status.reindexing,
+    },
   };
 }
 

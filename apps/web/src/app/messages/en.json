@@ -608,7 +608,10 @@
       "contextual-confirm-action": "Re-index",
       "contextual-started": "Re-indexing {count, plural, one {# document} other {# documents}} in the background.",
       "contextual-partial": "{failed, plural, one {# document} other {# documents}} couldn't be started; {started} started. Try again in a few minutes.",
-      "contextual-error": "The re-index couldn't be started. Try again in a few minutes."
+      "contextual-error": "The re-index couldn't be started. Try again in a few minutes.",
+      "contextual-counting": "Counting the documents indexed with context…",
+      "contextual-reindexing": "{count, plural, one {# document is} other {# documents are}} being processed now and will carry context when done.",
+      "contextual-nothing-started": "Nothing to re-index: those documents are already being processed."
     },
     "connectors": {
       "title": "Connectors",

@@ -608,7 +608,10 @@
       "contextual-confirm-action": "Neu indexieren",
       "contextual-started": "{count, plural, one {# Dokument wird} other {# Dokumente werden}} im Hintergrund neu indexiert.",
       "contextual-partial": "{failed, plural, one {# Dokument konnte} other {# Dokumente konnten}} nicht gestartet werden; {started} gestartet. Versuchen Sie es in einigen Minuten erneut.",
-      "contextual-error": "Die Neuindexierung konnte nicht gestartet werden. Versuchen Sie es in einigen Minuten erneut."
+      "contextual-error": "Die Neuindexierung konnte nicht gestartet werden. Versuchen Sie es in einigen Minuten erneut.",
+      "contextual-counting": "Dokumente mit Kontext werden gezählt …",
+      "contextual-reindexing": "{count, plural, one {# Dokument wird} other {# Dokumente werden}} gerade verarbeitet und haben danach Kontext.",
+      "contextual-nothing-started": "Nichts neu zu indexieren: Diese Dokumente werden bereits verarbeitet."
     },
     "connectors": {
       "title": "Connectors",
