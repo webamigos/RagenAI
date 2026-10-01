@@ -305,8 +305,20 @@ that defaults to `false`.
 - [ ] **C1.** The count per `context_version` and the re-index action in the
   knowledge-base settings. The action is guarded by `canManageOrg` and
   scoped by the session's organization.
-- [ ] **C2.** `reindex-for-context.ts` with `--dry-run`, and a runbook
+- [x] **C2.** `reindex-for-context.ts` with `--dry-run`, and a runbook
   section.
+
+  *Done.* `apps/worker/src/scripts/reindex-for-context.ts --org <id>
+  [--dry-run] [--limit n]`, with its decisions in
+  `reindex-for-context-plan.ts`. A file's version is the lowest
+  `context_version` over its body chunks, read from Qdrant (none is 0, the
+  summary does not count). A stale file whose active version is an edit, an
+  optimization or a rollback goes through `reindexDocumentVersion`; any other
+  goes through `runFileEmbeddings`. The script refuses an organization with
+  `contextualChunks` off, resets each file's ingest status and writes the run
+  id before the start, and prints the count per version (the "after" count is
+  the next `--dry-run`, because the jobs run once it exits). Runbook:
+  [`docs/runbooks/contextual-chunks-reindex.md`](../runbooks/contextual-chunks-reindex.md).
 
 ### Phase D — decide
 
