@@ -101,6 +101,19 @@ export interface CaseResult {
   passed: boolean;
   /** Files the answer cited, when the arm can report them. */
   citedFiles?: string[];
+  /**
+   * Of the figures the assertions look for, how many were in the chunks the
+   * server says it rendered (`lib/evidence.ts`). Absent on the control arm,
+   * on a question with no evidence to find, and when the server sent no trace.
+   */
+  evidence?: { needles: number; found: number };
+  /** The server's post-retrieval step and timings for this turn. */
+  retrievalTrace?: {
+    postRetrieval: string;
+    queryCount: number;
+    chunkCount: number;
+    timings: { searchMs: number; rerankMs: number; rephraseMs?: number };
+  };
   error?: string;
   /**
    * Time for the answer alone — the pipeline turn, or the control call.
