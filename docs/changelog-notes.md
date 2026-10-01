@@ -85,7 +85,7 @@ archive is the blog.
 - `[brief]` **An org admin can bring older documents up to date from the
   panel.** RAG pipeline settings shows how many documents are indexed with
   their title-and-section context and offers to re-index the rest in the
-  background — what until now took an operator running a script. (#PR)
+  background — what until now took an operator running a script. (#1463)
 
 ### Usage and limits
 
