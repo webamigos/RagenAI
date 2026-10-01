@@ -315,10 +315,19 @@ defaulting to `false`.
   per case in the JSON (`evidence`, `retrievalTrace`), and a report table by
   language and question type. The stack table gains the server-reported
   post-retrieval step beside the harness's reading of the settings.
-- [ ] **A3.** Run the baseline: reranking off / Scaleway / Cohere, on `kolej`
+- [x] **A3.** Run the baseline: reranking off / Scaleway / Cohere, on `kolej`
   and `tabele`, three repetitions each. Commit the results under
   `apps/web/evals/rag-benchmark/results/` with a write-up, and record in
   this spec whether the reranker moves evidence recall at all.
+
+  *Done 2026-10-01* ([write-up](../../apps/web/evals/rag-benchmark/results/2026-10-01-a3-reranker-baseline.md);
+  Cohere not run, no credentials). **On `kolej` the reranker does not move
+  evidence recall at all**: 21/20/20 of 26 in both arms, and pass medians
+  of 18 vs 17 of 24, which is noise. **On `tabele` it does**: 14 vs 8 of 18,
+  and pass medians of 10 vs 6 of 18. That gain belongs to the widened pool
+  (`× 3`) and the reranker's order together. Selection cuts the same pool,
+  so D2's comparison is like for like. The remaining miss is cross-lingual
+  evidence (2–3 of 8 on `kolej`, in every arm).
 
 ### Phase B — deterministic expansion
 
