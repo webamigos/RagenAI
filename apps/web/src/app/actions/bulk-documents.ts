@@ -9,8 +9,7 @@ import {
 import { getActiveMember } from '@/lib/auth-guards';
 import { canManageOrg } from '@/lib/auth-access-control';
 import { deleteFileCommand } from '@/features/documents/services/commands/delete-file-command';
-import { jobs } from '@/libs/jobs';
-import { Workflow } from '@/features/documents/contracts/document.types';
+import { startFileReindexCommand } from '@/features/documents/services/commands/start-file-reindex-command';
 import {
   EmbeddingStatus,
   ParsingStatus,
@@ -266,9 +265,12 @@ export async function bulkReembedFilesAction(
         },
       });
 
-      await jobs().start(Workflow.RUN_FILE_EMBEDDINGS, workflowId, {
-        fileId: fileRecord.id,
-        orgId,
+      // An edited document re-indexes its active version; re-parsing the
+      // stored upload would put the original text back in the index.
+      await startFileReindexCommand({
+        file: fileRecord,
+        organizationId: orgId,
+        workflowId,
       });
       succeeded.push(fileRecord.id);
     } catch (err) {

@@ -5,10 +5,9 @@ import {
   EmbeddingStatus,
   ParsingStatus,
 } from '@/generated/prisma/client';
-import { jobs } from '@/libs/jobs';
-import { Workflow } from '@/features/documents/contracts/document.types';
 import { logger } from '@/app/lib/utils/logger';
 import { persistUserFileUpdateWithRetry } from '@/features/documents/utils/persist-user-file-update-with-retry';
+import { startFileReindexCommand } from '@/features/documents/services/commands/start-file-reindex-command';
 
 export type ReembedFailure = {
   fileId: string;
@@ -78,10 +77,10 @@ async function reembedSingleFolder(
     }
 
     try {
-      await jobs().start(Workflow.RUN_FILE_EMBEDDINGS, workflowId, {
-        fileId: file.id,
-        orgId: organizationId,
-      });
+      // The new policy is on the row, and both jobs read it from there — so
+      // an edited document is re-masked from its active version rather than
+      // re-parsed from the original upload.
+      await startFileReindexCommand({ file, organizationId, workflowId });
     } catch (err) {
       logger.error(
         { err, fileId: file.id },

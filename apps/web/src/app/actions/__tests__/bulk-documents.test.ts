@@ -22,8 +22,12 @@ const mockFindFirst = vi.fn();
 const mockFindMany = vi.fn();
 const mockUpdateMany = vi.fn();
 const mockUpdate = vi.fn();
+const mockVersionFindFirst = vi.fn();
 vi.mock('@ragenai/prisma-client', () => ({
   default: {
+    documentVersion: {
+      findFirst: (...args: unknown[]) => mockVersionFindFirst(...args),
+    },
     userFile: {
       findFirst: (...args: unknown[]) => mockFindFirst(...args),
       findMany: (...args: unknown[]) => mockFindMany(...args),
@@ -298,6 +302,45 @@ describe('bulkReembedFilesAction', () => {
     mockGetCurrentUserId.mockResolvedValue('user-1');
     mockJobStart.mockResolvedValue(undefined);
     mockUpdate.mockResolvedValue(undefined);
+    mockVersionFindFirst.mockResolvedValue(null);
+  });
+
+  it('re-indexes an edited document from its active version, not the upload', async () => {
+    mockFindMany.mockResolvedValue([
+      {
+        id: 'file-1',
+        fileName: 'doc.pdf',
+        organizationId: 'org-1',
+        projectId: 'p-1',
+      },
+      {
+        id: 'file-2',
+        fileName: 'raw.pdf',
+        organizationId: 'org-1',
+        projectId: 'p-1',
+      },
+    ]);
+    mockVersionFindFirst.mockImplementation(
+      ({ where }: { where: { document: { fileId: string } } }) =>
+        Promise.resolve(
+          where.document.fileId === 'file-1'
+            ? { documentId: 'doc-1', changeType: 'AI_OPTIMIZE' }
+            : { documentId: 'doc-2', changeType: 'UPLOAD' },
+        ),
+    );
+
+    const result = await bulkReembedFilesAction(['file-1', 'file-2']);
+
+    expect(result.succeeded).toEqual(['file-1', 'file-2']);
+    expect(mockJobStart.mock.calls.map(([name]) => name)).toEqual([
+      'reindexDocumentVersion',
+      'runFileEmbeddings',
+    ]);
+    expect(mockJobStart.mock.calls[0][2]).toMatchObject({
+      fileId: 'file-1',
+      documentId: 'doc-1',
+      orgId: 'org-1',
+    });
   });
 
   it('clears the previous run status before starting, scoped to the org', async () => {
