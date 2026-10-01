@@ -14,7 +14,10 @@ vi.mock('@/app/lib/utils/logger', () => ({
   logger: { error: vi.fn(), warn: vi.fn(), info: vi.fn() },
 }));
 
-import { decodeDualContentChunks } from '../decode-dual-content-chunks';
+import {
+  decodeDualContentChunks,
+  wrapVectorStoreWithDualContentDecode,
+} from '../decode-dual-content-chunks';
 
 describe('decodeDualContentChunks', () => {
   const testDek = randomBytes(32);
@@ -86,5 +89,61 @@ describe('decodeDualContentChunks', () => {
     expect(result[0].pageContent).toBe('oryginał 1');
     expect(result[1].pageContent).toBe('oryginał 2');
     expect(mockGetOrCreatePiiDek).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('wrapVectorStoreWithDualContentDecode — getChunksByIndex', () => {
+  const testDek = randomBytes(32);
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockGetOrCreatePiiDek.mockResolvedValue(testDek);
+  });
+
+  it('decodes fetched neighbours like search results', async () => {
+    const getChunksByIndex = vi.fn().mockResolvedValue([
+      {
+        pageContent: 'masked',
+        metadata: {
+          pii_mode: 'dual_content',
+          content_original: encryptContent('oryginał', testDek),
+        },
+      },
+    ]);
+    const wrapped = wrapVectorStoreWithDualContentDecode(
+      { similaritySearch: vi.fn(), addDocuments: vi.fn(), getChunksByIndex },
+      'org-1',
+    );
+
+    const chunks = await wrapped.getChunksByIndex!('org-1', 'file-1', [2]);
+
+    expect(chunks[0].pageContent).toBe('oryginał');
+    expect(getChunksByIndex).toHaveBeenCalledWith(
+      'org-1',
+      'file-1',
+      [2],
+      undefined,
+    );
+  });
+
+  it('refuses another organization, since it decodes with this one’s key', async () => {
+    const getChunksByIndex = vi.fn();
+    const wrapped = wrapVectorStoreWithDualContentDecode(
+      { similaritySearch: vi.fn(), addDocuments: vi.fn(), getChunksByIndex },
+      'org-1',
+    );
+
+    await expect(
+      wrapped.getChunksByIndex!('org-2', 'file-1', [2]),
+    ).rejects.toThrow('organization does not match');
+    expect(getChunksByIndex).not.toHaveBeenCalled();
+  });
+
+  it('omits it when the store does not support it', () => {
+    const wrapped = wrapVectorStoreWithDualContentDecode(
+      { similaritySearch: vi.fn(), addDocuments: vi.fn() },
+      'org-1',
+    );
+    expect(wrapped.getChunksByIndex).toBeUndefined();
   });
 });

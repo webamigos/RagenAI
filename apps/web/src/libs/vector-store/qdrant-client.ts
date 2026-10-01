@@ -11,6 +11,9 @@ import {
   SPARSE_VECTOR_NAME,
   PREFETCH_MULTIPLIER,
   PAYLOAD_INDEXES,
+  chunksByIndexFilter,
+  orderByChunkIndex,
+  wantedChunkIndexes,
 } from '@ragenai/rag-core';
 import { withSpan } from '@/libs/monitoring/with-span';
 
@@ -117,18 +120,47 @@ export class QdrantVectorStoreClient implements VectorStoreClient {
 
         span.setAttribute('vector_store.result_count', results.points.length);
 
-        return results.points.map((point) => {
-          const payload = (point.payload || {}) as Record<string, unknown>;
-          return {
-            pageContent:
-              (payload.content as string) ||
-              (payload.pageContent as string) ||
-              '',
-            metadata: (payload.metadata as Record<string, unknown>) || {},
-          };
-        });
+        return results.points.map(toDocument);
       },
     );
+  }
+
+  /**
+   * A file's prose chunks at `indexes`, in file order, for expanding a hit
+   * into its neighbours (spec 2026-09-29-llm-document-selection, B2). The
+   * filter is the search's own, nested inside one for the organization, the
+   * file and the positions; summary and table chunks are excluded, so a prose
+   * hit only ever widens into prose.
+   */
+  async getChunksByIndex(
+    orgId: string,
+    fileId: string,
+    indexes: readonly number[],
+    filter?: object,
+  ): Promise<VectorStoreDocument[]> {
+    const wanted = wantedChunkIndexes(indexes);
+    if (wanted.length === 0) {
+      return [];
+    }
+    await this.ensureCollection();
+
+    const searchFilter = filter
+      ? convertToQdrantFilter(filter as IntermediateFilter)
+      : undefined;
+    const result = await this.client.scroll(this.collectionName, {
+      filter: chunksByIndexFilter(
+        { orgId, fileId, indexes: wanted },
+        searchFilter,
+      ),
+      // Twice the positions: a re-index racing the turn can leave two points
+      // at one position for a moment, and the first must not crowd out the
+      // rest.
+      limit: wanted.length * 2,
+      with_payload: true,
+      with_vector: false,
+    });
+
+    return orderByChunkIndex(result.points.map(toDocument));
   }
 
   async addDocuments(documents: VectorStoreDocument[]): Promise<void> {
@@ -377,4 +409,14 @@ function convertToQdrantFilter(
   }
 
   return result;
+}
+
+/** A point as the chains read it: the chunk text and its metadata. */
+function toDocument(point: { payload?: unknown }): VectorStoreDocument {
+  const payload = (point.payload || {}) as Record<string, unknown>;
+  return {
+    pageContent:
+      (payload.content as string) || (payload.pageContent as string) || '',
+    metadata: (payload.metadata as Record<string, unknown>) || {},
+  };
 }

@@ -315,10 +315,20 @@ defaulting to `false`.
   per case in the JSON (`evidence`, `retrievalTrace`), and a report table by
   language and question type. The stack table gains the server-reported
   post-retrieval step beside the harness's reading of the settings.
-- [ ] **A3.** Run the baseline: reranking off / Scaleway / Cohere, on `kolej`
+- [x] **A3.** Run the baseline: reranking off / Scaleway / Cohere, on `kolej`
   and `tabele`, three repetitions each. Commit the results under
   `apps/web/evals/rag-benchmark/results/` with a write-up, and record in
   this spec whether the reranker moves evidence recall at all.
+
+  *Done 2026-10-01* ([write-up](../../apps/web/evals/rag-benchmark/results/2026-10-01-a3-reranker-baseline.md);
+  Cohere not run, no credentials). **On `kolej` the reranker does not move
+  evidence recall at all**: 21/20/20 of 26 in both arms, and pass medians
+  of 18 vs 17 of 24, which is noise. **On `tabele` it does**: 14 vs 8 of 18,
+  and pass medians of 10/17 vs 7/18 (two off-arm cases regraded by hand,
+  see the write-up). That gain belongs to the widened pool
+  (`× 3`) and the reranker's order together. Selection cuts the same pool,
+  so D2's comparison is like for like. The remaining miss is cross-lingual
+  evidence (2–3 of 8 on `kolej`, in every arm).
 
 ### Phase B — deterministic expansion
 
@@ -333,10 +343,21 @@ defaulting to `false`.
   one after a deploy; `scripts/ensure-qdrant-payload-indexes.ts [--dry-run]`
   does it for every collection at once. Locally, 10 of 10 collections lacked
   only `chunk_index`.
-- [ ] **B2.** `getChunksByIndex` on `VectorStoreClient` (Qdrant
+- [x] **B2.** `getChunksByIndex` on `VectorStoreClient` (Qdrant
   implementation in apps/web and apps/api). It applies the search filter and
   goes through the dual-content decode wrapper. Tests cover the filter,
   same-kind neighbours, and a missing neighbour.
+
+  *Done.* The filter is built once, by `chunksByIndexFilter` in
+  `packages/rag-core/src/selection/`: the search filter nested whole (so a
+  knowledge-base `should` keeps its meaning), plus `organization_id`,
+  `file_id` and `chunk_index` in the positions, and `chunk_type` not
+  `summary` or `table`. Both apps' Qdrant clients scroll with it and return
+  one chunk per position in file order (`orderByChunkIndex`). The method is
+  optional on the interface, since only Qdrant is supported (ADR-31). Both
+  dual-content wrappers decode what it returns, and refuse an organization
+  other than the one they were built for, because they decode with that
+  organization's key. Nothing calls it yet; B3 does.
 - [ ] **B3.** `mergeExpanded` in rag-core, with overlap trimming, plus the
   `contextExpansion` key. Behind it, each kept hit gets ±1 prose neighbour
   within the budget. Architecture test for both chains.
