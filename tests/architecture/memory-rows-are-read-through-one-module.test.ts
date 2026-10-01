@@ -22,6 +22,15 @@ import { readSource, trackedPaths } from './tracked-files';
  */
 const DELEGATE = /\.(?:userMemoryProfile|userMemoryChange|userMemory)\b/;
 
+/**
+ * The other two ways to reach the rows without the delegate: through
+ * `Thread`'s relations (`include: { memories: true }` reads every user's
+ * memories in a thread, with no `userId` anywhere), and raw SQL on the
+ * tables.
+ */
+const RELATION = /\b(?:memories|memoryChanges)\s*:\s*(?:true|\{)/;
+const TABLE = /\buser_memor(?:y_profiles|ies|y_changes)\b/;
+
 const ALLOWED_PREFIXES = [
   'apps/web/src/features/memory/services/memory-scope.ts',
   'apps/web/src/features/memory/services/__tests__/',
@@ -52,7 +61,12 @@ describe('memory rows are read through one module', () => {
   it('finds them nowhere else', () => {
     const offenders = SOURCES.filter(
       (path) => !ALLOWED_PREFIXES.some((prefix) => path.startsWith(prefix)),
-    ).filter((path) => DELEGATE.test(readSource(path)));
+    ).filter((path) => {
+      const source = readSource(path);
+      return (
+        DELEGATE.test(source) || RELATION.test(source) || TABLE.test(source)
+      );
+    });
 
     expect(
       offenders,

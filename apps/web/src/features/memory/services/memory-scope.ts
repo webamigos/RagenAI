@@ -61,6 +61,30 @@ const profileKey = (owner: MemoryOwner) => ({
   organizationId_userId: ownerWhere(owner),
 });
 
+/**
+ * The owner's profile row, created on first use. Two first writes at once can
+ * both take the create branch, and the loser gets a unique violation on
+ * (organization, user) — the row it wanted now exists, so it reads it.
+ */
+async function upsertProfile(owner: MemoryOwner): Promise<{ id: number }> {
+  try {
+    return await db.userMemoryProfile.upsert({
+      where: profileKey(owner),
+      create: ownerWhere(owner),
+      update: {},
+      select: { id: true },
+    });
+  } catch (err) {
+    if ((err as { code?: string })?.code !== 'P2002') {
+      throw err;
+    }
+    return db.userMemoryProfile.findUniqueOrThrow({
+      where: profileKey(owner),
+      select: { id: true },
+    });
+  }
+}
+
 /** The owner key's storage: the profile's `encryptedDek`, set once. */
 function ownerKeyStore(owner: MemoryOwner): OwnerKeyStore {
   return {
@@ -72,12 +96,7 @@ function ownerKeyStore(owner: MemoryOwner): OwnerKeyStore {
         })
       )?.encryptedDek ?? null,
     saveIfAbsent: async (encryptedDek) => {
-      const profile = await db.userMemoryProfile.upsert({
-        where: profileKey(owner),
-        create: ownerWhere(owner),
-        update: {},
-        select: { id: true },
-      });
+      const profile = await upsertProfile(owner);
       const { count } = await db.userMemoryProfile.updateMany({
         where: { id: profile.id, ...ownerWhere(owner), encryptedDek: null },
         data: { encryptedDek },
