@@ -68,6 +68,21 @@ archive is the blog.
 
 ## Unreleased
 
+### Answers
+
+- `[major]` **Answers read more of the document around each passage, and
+  find passages across languages more often.** Every retrieved passage now
+  comes with the text just before and after it, and every newly indexed
+  passage carries its document's title, section and a one-line summary into
+  search. On our bilingual prose test set, each on its own beat the old
+  pipeline: the surrounding text took correct answers from about 18 to 20 of
+  24, and the title-and-section context to every graded question in three
+  runs, with every
+  figure asked about across languages reaching the model. Tables did not
+  move. Both are on by default and can be turned off per organization;
+  files indexed earlier get the title-and-section context once they are
+  re-indexed. (#1458)
+
 ### Usage and limits
 
 - `[brief]` **The monthly cost limit counts document processing.** Usage

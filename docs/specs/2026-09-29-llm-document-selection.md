@@ -447,7 +447,7 @@ defaulting to `false`.
 
 ### Phase E — decide
 
-- [ ] **E1.** On A3, B4, C3 and D2, decide two things:
+- [x] **E1.** On A3, B4, C3 and D2, decide two things:
   - which post-retrieval step is the default, and whether expansion is on by
     default;
   - the latency ceiling (D5).
@@ -455,6 +455,16 @@ defaulting to `false`.
   Then flip the defaults (`feat`, plus a changelog line) or record why not.
   If the reranker adds nothing over selection, open a separate spec to
   remove it.
+
+  *Done 2026-10-01.* `contextExpansion` defaults to `true`: B4 beat the
+  baseline on prose in every run, for ~9 ms. The post-retrieval default does
+  not change: reranking stays as it was, and `sectionSelection` stays an
+  opt-in third option, because D2 found it level with the reranker on prose
+  and worse on tables. The reranker does add something over selection (on
+  tables), so no removal spec. C3 was not needed. Latency ceiling (D5): not
+  set as a number, because neither default adds latency that would need one.
+  Expansion costs 18 ms at p95, and selection, still opt-in, ~0.5 s against
+  the reranker's 3.4 s.
 
 ## Testing
 
@@ -478,8 +488,9 @@ defaulting to `false`.
 
 ## Rollout and rollback
 
-- **Rollout.** Both keys are off by default, and each is turned on per
-  organization in apps/admin.
+- **Rollout.** Both keys were off by default while they were measured. Since
+  E1, `contextExpansion` is on by default and `sectionSelection` stays off;
+  either is changed per organization in apps/admin.
 - **Rollback.** Turning a key off restores today's chain on the next turn:
   nothing is stored per chunk, and the payload index is inert.
 - **Migrations.** The only one adds an enum value. It stays even if the
