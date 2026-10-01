@@ -113,6 +113,10 @@ export const basicRagChain = async ({
           config?.ragSettings?.rerankingEnabled ?? true,
           config?.tracking,
           config?.trackAiUsage,
+          config?.ragSettings?.contextExpansionEnabled &&
+            config?.tracking?.organizationId
+            ? { orgId: config.tracking.organizationId }
+            : undefined,
         ),
         retrieveThreadDocuments(
           textThreadDocs,

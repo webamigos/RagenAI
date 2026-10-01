@@ -25,6 +25,7 @@ import { QdrantVectorStoreClient } from '@/libs/vector-store/qdrant-client';
 import { SupabaseVectorStoreClient } from '@/libs/vector-store/supabase-client';
 import { getOrganizationMetadataQuery as getOrganizationMetadata } from '@/features/organizations/services/queries/get-organization-metadata-query';
 import { getRagPipelineSettings } from '@/features/organizations/services/organization-settings';
+import { isFeatureEnabledQuery } from '@/features/subscriptions/services/queries/get-effective-features-query';
 import { type ThreadDocumentUI } from '@/features/documents/contracts/document.types';
 import { wrapVectorStoreWithDualContentDecode } from './decode-dual-content-chunks';
 import { getImportedKbFileIdsQuery } from '@/features/documents/services/queries/get-imported-kb-file-ids-query';
@@ -139,10 +140,12 @@ export const initializeRagChain = async ({
       reasoningEffort,
     });
 
-    const [orgMetadata, ragPipelineSettings] = await Promise.all([
-      getOrganizationMetadata(orgId),
-      getRagPipelineSettings(orgId),
-    ]);
+    const [orgMetadata, ragPipelineSettings, contextExpansionEnabled] =
+      await Promise.all([
+        getOrganizationMetadata(orgId),
+        getRagPipelineSettings(orgId),
+        isFeatureEnabledQuery(orgId, 'contextExpansion'),
+      ]);
     // An organization row can still carry a backend from before ADR-26 moved
     // ingest into apps/worker, which writes to Qdrant regardless. Retrieval
     // would then return nothing at all, and nothing would say why — indis-
@@ -225,6 +228,7 @@ export const initializeRagChain = async ({
           contentModerationEnabled:
             ragPipelineSettings.contentModerationEnabled,
           rerankingEnabled: ragPipelineSettings.rerankingEnabled,
+          contextExpansionEnabled,
         },
       },
       vectorStore: wrappedStore,

@@ -191,13 +191,18 @@ function table(
  * What the server said ran between search and rendering, per case — the
  * reranking row above is the harness's reading of settings; this one is the
  * server's own account (the `retrieval` event's trace). Several values mean
- * the run mixed configurations.
+ * the run mixed configurations. A turn whose chunks were widened by their
+ * neighbours (`contextExpansion`) is counted as `<step> + neighbours`, so a
+ * B4 run says which arm it was.
  */
 export function serverPostRetrieval(results: readonly CaseResult[]): string {
   const counts = new Map<string, number>();
   for (const r of results) {
     if (r.arm === 'rag' && r.retrievalTrace) {
-      const step = r.retrievalTrace.postRetrieval;
+      const step =
+        r.retrievalTrace.expansion === 'neighbours'
+          ? `${r.retrievalTrace.postRetrieval} + neighbours`
+          : r.retrievalTrace.postRetrieval;
       counts.set(step, (counts.get(step) ?? 0) + 1);
     }
   }

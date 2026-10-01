@@ -3,6 +3,7 @@ import { InitializeBasicRagService } from './basic-rag/initialize-basic-rag.serv
 import { GuardrailsModule } from '../guardrails/guardrails.module.js';
 import { OrganizationsModule } from '../organizations/organizations.module.js';
 import { DocumentsModule } from '../documents/documents.module.js';
+import { SubscriptionsModule } from '../subscriptions/subscriptions.module.js';
 
 /**
  * `basic-rag/{chain,config,operations}.ts`, `types/`, and
@@ -15,7 +16,12 @@ import { DocumentsModule } from '../documents/documents.module.js';
  * docs/adrs/21-monorepo-and-api-decoupling.md.
  */
 @Module({
-  imports: [OrganizationsModule, DocumentsModule, GuardrailsModule],
+  imports: [
+    OrganizationsModule,
+    DocumentsModule,
+    GuardrailsModule,
+    SubscriptionsModule,
+  ],
   providers: [InitializeBasicRagService],
   exports: [InitializeBasicRagService],
 })

@@ -348,9 +348,28 @@ defaulting to `false`.
   dual-content wrappers decode what it returns, and refuse an organization
   other than the one they were built for, because they decode with that
   organization's key. Nothing calls it yet; B3 does.
-- [ ] **B3.** `mergeExpanded` in rag-core, with overlap trimming, plus the
+- [x] **B3.** `mergeExpanded` in rag-core, with overlap trimming, plus the
   `contextExpansion` key. Behind it, each kept hit gets ±1 prose neighbour
   within the budget. Architecture test for both chains.
+
+  *Done.* `packages/rag-core/src/selection/expansion.ts`: `planExpansion`
+  spends the budget (`maxDocuments × 3` chunks) on hits in rank order and
+  never fetches a position that is already a hit; `expandHits` does one
+  `getChunksByIndex` per file, in parallel, and keeps only what it asked for;
+  `mergeExpanded` joins a section in file order, trims the splitter's overlap
+  (`joinTrimmingOverlap`, 20–1000 characters, else a newline and nothing
+  dropped), and folds two sections of one file that touch into the
+  better-ranked one. A section keeps its hit's metadata and gains
+  `expanded_chunk_indexes`. Both chains call it after the reranker's cut, so
+  the reranker still chooses which hits are kept; a failed lookup renders the
+  hit alone. The key is read per turn (`isFeatureEnabledQuery` in apps/web,
+  `SubscriptionsService` in apps/api) and is off by default. apps/web's
+  `retrieval` trace lists every position a widened section covers, plus
+  `expansion` (`off` / `neighbours`) and `timings.expandMs`; rag-benchmark
+  stamps the arm as `<step> + neighbours`, so B4 can tell its two arms apart.
+  `tests/architecture/both-rag-chains-expand-through-rag-core.test.ts` holds
+  both chains to rag-core's `expandHits`. apps/api's search endpoint is not a
+  chain and does not expand.
 - [ ] **B4.** Measure: B3 on vs off, on both corpora, three repetitions.
   Record it here.
 

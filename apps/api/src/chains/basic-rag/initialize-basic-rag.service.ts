@@ -27,6 +27,7 @@ import { GetImportedKbFileIdsService } from '../../documents/get-imported-kb-fil
 import { GuardrailsService } from '../../guardrails/guardrails.service.js';
 import { RunInputGuardrailsService } from '../../guardrails/run-input-guardrails.service.js';
 import { RunOutputGuardrailsService } from '../../guardrails/run-output-guardrails.service.js';
+import { SubscriptionsService } from '../../subscriptions/subscriptions.service.js';
 import { type OrganizationSettings } from '../../organizations/types.js';
 import { type ThreadDocumentUI } from '../types/thread-document.js';
 import { type BaseChatChainOutput } from '../types/common.js';
@@ -103,6 +104,7 @@ export class InitializeBasicRagService {
     private readonly guardrails: GuardrailsService,
     private readonly runOutputGuardrails: RunOutputGuardrailsService,
     private readonly runGuardrails: RunInputGuardrailsService,
+    private readonly subscriptions: SubscriptionsService,
   ) {}
 
   async initializeRagChain({
@@ -182,6 +184,7 @@ export class InitializeBasicRagService {
       const [
         ragPipelineSettings,
         { vectorStore: wrappedStore, metadataFilter },
+        contextExpansionEnabled,
       ] = await Promise.all([
         this.organizationSettings.getRagPipelineSettings(orgId),
         this.buildVectorStoreAndFilter({
@@ -193,6 +196,7 @@ export class InitializeBasicRagService {
           projectId,
           metadataFilter: metadataFilterOverride,
         }),
+        this.subscriptions.isFeatureEnabled(orgId, 'contextExpansion'),
       ]);
 
       return await basicRagChain({
@@ -261,6 +265,7 @@ export class InitializeBasicRagService {
             contentModerationEnabled:
               ragPipelineSettings.contentModerationEnabled,
             rerankingEnabled: ragPipelineSettings.rerankingEnabled,
+            contextExpansionEnabled,
           },
         },
         vectorStore: wrappedStore,

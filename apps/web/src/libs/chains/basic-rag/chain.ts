@@ -152,6 +152,10 @@ export const basicRagChain = async ({
               config?.metadataFilter,
               config?.ragSettings?.rerankingEnabled ?? true,
               config?.tracking,
+              config?.ragSettings?.contextExpansionEnabled &&
+                config?.tracking?.organizationId
+                ? { orgId: config.tracking.organizationId }
+                : undefined,
             )
           : null,
         retrieveThreadDocuments(

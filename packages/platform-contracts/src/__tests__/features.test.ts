@@ -281,6 +281,23 @@ describe('documentDiagnostics', () => {
   });
 });
 
+// Off while B4 measures it (spec 2026-09-29-llm-document-selection, ADR-50).
+describe('contextExpansion', () => {
+  it('is off unless an operator turns it on', () => {
+    expect(resolveFeatures({}).contextExpansion).toEqual({
+      value: false,
+      source: 'code-default',
+    });
+  });
+
+  it('can be turned on per organization', () => {
+    expect(
+      resolveFeatures({ orgOverrides: { contextExpansion: true } })
+        .contextExpansion.value,
+    ).toBe(true);
+  });
+});
+
 describe('flattenFeatures', () => {
   it('drops the sources and keeps the values', () => {
     const flags = flattenFeatures(

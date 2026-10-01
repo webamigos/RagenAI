@@ -14,6 +14,7 @@ import {
 } from '@/app/lib/services/llm';
 import { getOrganizationMetadataQuery as getOrganizationMetadata } from '@/features/organizations/services/queries/get-organization-metadata-query';
 import { getRagPipelineSettings } from '@/features/organizations/services/organization-settings';
+import { isFeatureEnabledQuery } from '@/features/subscriptions/services/queries/get-effective-features-query';
 import { wrapVectorStoreWithDualContentDecode } from '@/app/api/threads/services/decode-dual-content-chunks';
 import { MeilisearchVectorStoreClient } from '@/libs/vector-store/meilisearch-client';
 import { QdrantVectorStoreClient } from '@/libs/vector-store/qdrant-client';
@@ -64,10 +65,12 @@ export const initializePublicRagChain = async ({
       temperature: answerTemperature,
     });
 
-    const [orgMetadata, ragPipelineSettings] = await Promise.all([
-      getOrganizationMetadata(organizationId),
-      getRagPipelineSettings(organizationId),
-    ]);
+    const [orgMetadata, ragPipelineSettings, contextExpansionEnabled] =
+      await Promise.all([
+        getOrganizationMetadata(organizationId),
+        getRagPipelineSettings(organizationId),
+        isFeatureEnabledQuery(organizationId, 'contextExpansion'),
+      ]);
     // See initializeBasicRag: ingest writes to Qdrant regardless of this
     // setting, so any other backend retrieves from a store nothing filled.
     if (!isSupportedVectorStore(orgMetadata.vectorStore)) {
@@ -145,6 +148,7 @@ export const initializePublicRagChain = async ({
           contentModerationEnabled:
             ragPipelineSettings.contentModerationEnabled,
           rerankingEnabled: ragPipelineSettings.rerankingEnabled,
+          contextExpansionEnabled,
         },
       },
       vectorStore: wrappedStore,

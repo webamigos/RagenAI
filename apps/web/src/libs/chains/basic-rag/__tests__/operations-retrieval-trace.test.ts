@@ -158,3 +158,96 @@ describe('retrieveRelevantDocumentsWithIds — the retrieval trace', () => {
     expect(trace?.postRetrieval).toBe('reranker-failed:scaleway');
   });
 });
+
+/**
+ * `contextExpansion` (spec 2026-09-29-llm-document-selection, B3): kept prose
+ * hits are rendered with their ±1 neighbours, fetched through
+ * `getChunksByIndex` inside the search's own filter.
+ */
+describe('retrieveRelevantDocumentsWithIds — context expansion', () => {
+  const filter = {
+    must: [{ key: 'metadata.organization_id', match: { value: 'org-1' } }],
+  };
+
+  function expandingStore(hits: Chunk[]) {
+    const getChunksByIndex = vi.fn(
+      async (_orgId: string, fileId: string, indexes: readonly number[]) =>
+        indexes.map((i) => chunk(fileId, i, `${fileId} neighbour ${i}.`)),
+    );
+    const store = {
+      similaritySearch: vi.fn(async () => hits),
+      getChunksByIndex,
+    } as unknown as VectorStoreClient;
+    return { store, getChunksByIndex };
+  }
+
+  it('renders each hit with its neighbours and reports every position', async () => {
+    const { store, getChunksByIndex } = expandingStore([
+      chunk('f-1', 5, 'The hit.'),
+    ]);
+    const { context, trace, chunkCount } =
+      await retrieveRelevantDocumentsWithIds(
+        store,
+        'q',
+        4,
+        filter,
+        false,
+        undefined,
+        { orgId: 'org-1' },
+      );
+
+    expect(getChunksByIndex).toHaveBeenCalledWith(
+      'org-1',
+      'f-1',
+      [4, 6],
+      filter,
+    );
+    expect(context).toContain('f-1 neighbour 4.\nThe hit.\nf-1 neighbour 6.');
+    expect(chunkCount).toBe(1);
+    expect(trace?.expansion).toBe('neighbours');
+    expect(trace?.chunks).toEqual([
+      { fileId: 'f-1', chunkIndex: 4 },
+      { fileId: 'f-1', chunkIndex: 5 },
+      { fileId: 'f-1', chunkIndex: 6 },
+    ]);
+  });
+
+  it('does nothing when the key is off, which is the default', async () => {
+    const { store, getChunksByIndex } = expandingStore([
+      chunk('f-1', 5, 'The hit.'),
+    ]);
+    const { trace } = await retrieveRelevantDocumentsWithIds(
+      store,
+      'q',
+      4,
+      filter,
+      false,
+    );
+
+    expect(getChunksByIndex).not.toHaveBeenCalled();
+    expect(trace?.expansion).toBe('off');
+    expect(trace?.timings.expandMs).toBe(0);
+  });
+
+  it('renders the hit alone when the lookup fails, and still answers', async () => {
+    const { store, getChunksByIndex } = expandingStore([
+      chunk('f-1', 5, 'The hit.'),
+    ]);
+    getChunksByIndex.mockRejectedValue(new Error('qdrant down'));
+
+    const { context, trace } = await retrieveRelevantDocumentsWithIds(
+      store,
+      'q',
+      4,
+      filter,
+      false,
+      undefined,
+      { orgId: 'org-1' },
+    );
+
+    expect(context).toContain('The hit.');
+    expect(context).not.toContain('neighbour');
+    expect(trace?.expansion).toBe('off');
+    expect(trace?.chunks).toEqual([{ fileId: 'f-1', chunkIndex: 5 }]);
+  });
+});
