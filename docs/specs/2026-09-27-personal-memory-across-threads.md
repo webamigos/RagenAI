@@ -626,8 +626,10 @@ shape an answer before it has been measured.
 
 - [ ] **A0.** Confirm the Better Auth hook that fires on member removal *and* on
   leave in the installed version. Record the answer in this spec.
-- [ ] **A1.** The feature key `personalMemory` (default `false`) and its label.
+- [x] **A1.** The feature key `personalMemory` (default `false`) and its label.
   `features.test.ts` is updated.
+
+  *Done.* In `packages/platform-contracts`, with a label the admin panel shows.
 - [x] **A2.** The migration: the three models, `UserMemoryOperation`, and
   `AiUsageStep.MEMORY`. All three models go into `TENANT_SCOPED_MODELS`. The
   migration is checked on a throwaway database first, because the local
