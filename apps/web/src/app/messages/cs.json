@@ -595,7 +595,20 @@
       "model-answer": "Generování odpovědí",
       "budget-title": "Měsíční rozpočet na AI",
       "budget-no-limit": "Nenastaven žádný limit",
-      "budget-managed-by-admin": "Spravováno administrátorem platformy."
+      "budget-managed-by-admin": "Spravováno administrátorem platformy.",
+      "contextual-title": "Úseky s kontextem",
+      "contextual-description": "Každý úsek se indexuje s názvem, oddílem a jednořádkovým shrnutím svého dokumentu, takže ho vyhledávání snáze najde. Dokumenty indexované dříve to získají po opětovném indexování.",
+      "contextual-count": "{current} z {total} dokumentů indexováno s kontextem",
+      "contextual-none-indexed": "Zatím nejsou indexovány žádné dokumenty.",
+      "contextual-unavailable": "Index se nepodařilo načíst. Obnovte stránku a zkuste to znovu.",
+      "contextual-off": "Úseky s kontextem jsou pro tuto organizaci vypnuté, takže opětovné indexování by nepřidalo žádný kontext. Správce platformy je může zapnout.",
+      "contextual-reindex-button": "Znovu indexovat {count, plural, one {# dokument} few {# dokumenty} many {# dokumentu} other {# dokumentů}}",
+      "contextual-confirm-title": "Znovu indexovat {count, plural, one {# dokument} few {# dokumenty} many {# dokumentu} other {# dokumentů}}?",
+      "contextual-confirm-description": "Každý dokument se znovu zpracuje na pozadí, několik najednou. Velká znalostní báze chvíli potrvá.",
+      "contextual-confirm-action": "Znovu indexovat",
+      "contextual-started": "Opětovné indexování na pozadí: {count, plural, one {# dokument} few {# dokumenty} many {# dokumentu} other {# dokumentů}}.",
+      "contextual-partial": "Nepodařilo se spustit: {failed, plural, one {# dokument} few {# dokumenty} many {# dokumentu} other {# dokumentů}}; spuštěno {started}. Zkuste to znovu za několik minut.",
+      "contextual-error": "Opětovné indexování se nepodařilo spustit. Zkuste to znovu za několik minut."
     },
     "connectors": {
       "title": "Konektory",

@@ -595,7 +595,20 @@
       "model-answer": "Antwortgenerierung",
       "budget-title": "Monatliches KI-Budget",
       "budget-no-limit": "Kein Limit festgelegt",
-      "budget-managed-by-admin": "Wird vom Plattformadministrator verwaltet."
+      "budget-managed-by-admin": "Wird vom Plattformadministrator verwaltet.",
+      "contextual-title": "Kontextbezogene Abschnitte",
+      "contextual-description": "Jeder Abschnitt wird mit dem Titel, dem Kapitel und einer einzeiligen Zusammenfassung seines Dokuments indexiert, damit die Suche ihn besser findet. Dokumente, die vorher indexiert wurden, erhalten das erst nach einer Neuindexierung.",
+      "contextual-count": "{current} von {total} Dokumenten mit Kontext indexiert",
+      "contextual-none-indexed": "Noch keine Dokumente indexiert.",
+      "contextual-unavailable": "Der Index konnte nicht gelesen werden. Laden Sie die Seite neu, um es erneut zu versuchen.",
+      "contextual-off": "Kontextbezogene Abschnitte sind für diese Organisation deaktiviert, eine Neuindexierung würde also keinen Kontext hinzufügen. Ein Plattformadministrator kann sie aktivieren.",
+      "contextual-reindex-button": "{count, plural, one {# Dokument} other {# Dokumente}} neu indexieren",
+      "contextual-confirm-title": "{count, plural, one {# Dokument} other {# Dokumente}} neu indexieren?",
+      "contextual-confirm-description": "Jedes Dokument wird im Hintergrund erneut verarbeitet, einige gleichzeitig. Eine große Wissensdatenbank dauert eine Weile.",
+      "contextual-confirm-action": "Neu indexieren",
+      "contextual-started": "{count, plural, one {# Dokument wird} other {# Dokumente werden}} im Hintergrund neu indexiert.",
+      "contextual-partial": "{failed, plural, one {# Dokument konnte} other {# Dokumente konnten}} nicht gestartet werden; {started} gestartet. Versuchen Sie es in einigen Minuten erneut.",
+      "contextual-error": "Die Neuindexierung konnte nicht gestartet werden. Versuchen Sie es in einigen Minuten erneut."
     },
     "connectors": {
       "title": "Connectors",

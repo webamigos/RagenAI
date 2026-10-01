@@ -595,7 +595,20 @@
       "model-answer": "Svargenerering",
       "budget-title": "Månedlig AI-budsjett",
       "budget-no-limit": "Ingen grense satt",
-      "budget-managed-by-admin": "Administreres av plattformadministratoren."
+      "budget-managed-by-admin": "Administreres av plattformadministratoren.",
+      "contextual-title": "Fragmenter med kontekst",
+      "contextual-description": "Hvert fragment indekseres med dokumentets tittel, seksjon og et sammendrag på én linje, slik at søket finner det lettere. Dokumenter som ble indeksert før, får dette når de indekseres på nytt.",
+      "contextual-count": "{current} av {total} dokumenter indeksert med kontekst",
+      "contextual-none-indexed": "Ingen dokumenter er indeksert ennå.",
+      "contextual-unavailable": "Kunne ikke lese indeksen. Last inn siden på nytt for å prøve igjen.",
+      "contextual-off": "Fragmenter med kontekst er slått av for denne organisasjonen, så en ny indeksering ville ikke legge til kontekst. En plattformadministrator kan slå dem på.",
+      "contextual-reindex-button": "Indekser {count, plural, one {# dokument} other {# dokumenter}} på nytt",
+      "contextual-confirm-title": "Indeksere {count, plural, one {# dokument} other {# dokumenter}} på nytt?",
+      "contextual-confirm-description": "Hvert dokument behandles på nytt i bakgrunnen, noen få om gangen. En stor kunnskapsbase tar litt tid.",
+      "contextual-confirm-action": "Indekser på nytt",
+      "contextual-started": "Indekserer {count, plural, one {# dokument} other {# dokumenter}} på nytt i bakgrunnen.",
+      "contextual-partial": "{failed, plural, one {# dokument} other {# dokumenter}} kunne ikke startes; {started} startet. Prøv igjen om noen minutter.",
+      "contextual-error": "Ny indeksering kunne ikke startes. Prøv igjen om noen minutter."
     },
     "connectors": {
       "title": "Koblinger",

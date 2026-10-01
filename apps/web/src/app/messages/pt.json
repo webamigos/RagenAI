@@ -595,7 +595,20 @@
       "model-answer": "Geração de respostas",
       "budget-title": "Orçamento mensal de IA",
       "budget-no-limit": "Nenhum limite definido",
-      "budget-managed-by-admin": "Gerenciado pelo administrador da plataforma."
+      "budget-managed-by-admin": "Gerenciado pelo administrador da plataforma.",
+      "contextual-title": "Fragmentos com contexto",
+      "contextual-description": "Cada fragmento é indexado com o título, a secção e um resumo de uma linha do seu documento, o que ajuda a pesquisa a encontrá-lo. Os documentos indexados antes recebem-no quando forem reindexados.",
+      "contextual-count": "{current} de {total} documentos indexados com contexto",
+      "contextual-none-indexed": "Ainda não há documentos indexados.",
+      "contextual-unavailable": "Não foi possível ler o índice. Recarregue a página para tentar novamente.",
+      "contextual-off": "Os fragmentos com contexto estão desativados nesta organização, por isso reindexar não acrescentaria contexto. Um administrador da plataforma pode ativá-los.",
+      "contextual-reindex-button": "Reindexar {count, plural, one {# documento} other {# documentos}}",
+      "contextual-confirm-title": "Reindexar {count, plural, one {# documento} other {# documentos}}?",
+      "contextual-confirm-description": "Cada documento é processado novamente em segundo plano, alguns de cada vez. Uma base de conhecimento grande demora algum tempo.",
+      "contextual-confirm-action": "Reindexar",
+      "contextual-started": "A reindexar {count, plural, one {# documento} other {# documentos}} em segundo plano.",
+      "contextual-partial": "Não foi possível iniciar {failed, plural, one {# documento} other {# documentos}}; {started} iniciados. Tente novamente dentro de alguns minutos.",
+      "contextual-error": "Não foi possível iniciar a reindexação. Tente novamente dentro de alguns minutos."
     },
     "connectors": {
       "title": "Conectores",

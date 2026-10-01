@@ -1,6 +1,6 @@
 ---
 title: Each chunk is indexed with the context that places it in its document
-status: approved
+status: implemented
 areas: [rag, worker, knowledge-base]
 adrs: [14, 16, 17, 19, 20, 24, 50]
 ---
@@ -315,11 +315,29 @@ that defaults to `false`.
 - [ ] **B2.** Measure B1 against A3's best arm. The cost per document goes
   next to the numbers, so the default is decided on both.
 
+  *Not built.* A3 left no gap on prose for a model-written prefix to close
+  (every graded `kolej` question passed with the free prefix), and tables
+  are a chunking question (ADR-43). `CURRENT_CONTEXT_VERSION` in rag-core
+  stays 1.
+
 ### Phase C — existing corpora
 
-- [ ] **C1.** The count per `context_version` and the re-index action in the
+- [x] **C1.** The count per `context_version` and the re-index action in the
   knowledge-base settings. The action is guarded by `canManageOrg` and
   scoped by the session's organization.
+
+  *Done.* Organization → RAG pipeline settings shows "N of M documents
+  indexed with context" and, while `contextualChunks` is on and something is
+  stale, a "Re-index N documents" button behind a confirmation.
+  `getContextVersionStatusQuery` scrolls the organization's collection and
+  applies rag-core's `fileContextVersions` — the same rule as the script,
+  moved there from the worker — counting only files the organization has a
+  row for and leaving out published Brain pages, as the bulk re-embed does.
+  `reindexForContextAction` runs `requireOrgAdmin`, refuses while the key is
+  off, computes the stale ids itself (never from the client), and
+  `reindexForContextCommand` resets each file and starts it through
+  `startFileReindexCommand`, so an edited document re-indexes its active
+  version. A failed start puts the previous status back.
 - [x] **C2.** `reindex-for-context.ts` with `--dry-run`, and a runbook
   section.
 

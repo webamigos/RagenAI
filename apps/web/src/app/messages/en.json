@@ -595,7 +595,20 @@
       "model-answer": "Answer generation",
       "budget-title": "Monthly AI budget",
       "budget-no-limit": "No limit set",
-      "budget-managed-by-admin": "Managed by platform administrator."
+      "budget-managed-by-admin": "Managed by platform administrator.",
+      "contextual-title": "Contextual chunks",
+      "contextual-description": "Each chunk is indexed with its document's title, section and a one-line summary, which helps search find it. Documents indexed before this was on get it once they are re-indexed.",
+      "contextual-count": "{current} of {total} documents indexed with context",
+      "contextual-none-indexed": "No documents are indexed yet.",
+      "contextual-unavailable": "Couldn't read the index. Reload the page to try again.",
+      "contextual-off": "Contextual chunks are off for this organization, so a re-index would add no context. A platform administrator can turn them on.",
+      "contextual-reindex-button": "Re-index {count, plural, one {# document} other {# documents}}",
+      "contextual-confirm-title": "Re-index {count, plural, one {# document} other {# documents}}?",
+      "contextual-confirm-description": "Each document is processed again in the background, a few at a time. A large knowledge base takes a while.",
+      "contextual-confirm-action": "Re-index",
+      "contextual-started": "Re-indexing {count, plural, one {# document} other {# documents}} in the background.",
+      "contextual-partial": "{failed, plural, one {# document} other {# documents}} couldn't be started; {started} started. Try again in a few minutes.",
+      "contextual-error": "The re-index couldn't be started. Try again in a few minutes."
     },
     "connectors": {
       "title": "Connectors",

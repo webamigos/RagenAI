@@ -2,7 +2,8 @@ import { getTranslations } from 'next-intl/server';
 import type { PropsWihLocale } from '@/app/lib/types/types';
 import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
 import { requireOrgAdmin } from '@/lib/auth-guards';
-import { getRagSettingsAction } from './actions';
+import { getContextualChunksAction, getRagSettingsAction } from './actions';
+import { ContextualChunksSection } from './components/ContextualChunksSection';
 import { RagSettingsView } from './components/RagSettingsView';
 
 export async function generateMetadata({ params }: PropsWihLocale) {
@@ -15,11 +16,16 @@ export default async function RagSettingsPage() {
   const orgId = await getOrgIdFromAuthOrThrow();
   await requireOrgAdmin(orgId);
 
-  const data = await getRagSettingsAction();
+  const [data, contextualChunks] = await Promise.all([
+    getRagSettingsAction(),
+    getContextualChunksAction(),
+  ]);
 
   return (
     <div className="max-w-2xl space-y-8">
       <RagSettingsView data={data} />
+      <hr className="border-border" />
+      <ContextualChunksSection data={contextualChunks} />
     </div>
   );
 }

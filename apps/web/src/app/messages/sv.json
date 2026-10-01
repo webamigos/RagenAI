@@ -595,7 +595,20 @@
       "model-answer": "Svargenerering",
       "budget-title": "Månatlig AI-budget",
       "budget-no-limit": "Ingen gräns angiven",
-      "budget-managed-by-admin": "Hanteras av plattformens administratör."
+      "budget-managed-by-admin": "Hanteras av plattformens administratör.",
+      "contextual-title": "Fragment med kontext",
+      "contextual-description": "Varje fragment indexeras med dokumentets titel, avsnitt och en sammanfattning på en rad, så att sökningen hittar det lättare. Dokument som indexerades tidigare får det när de indexeras om.",
+      "contextual-count": "{current} av {total} dokument indexerade med kontext",
+      "contextual-none-indexed": "Inga dokument är indexerade än.",
+      "contextual-unavailable": "Det gick inte att läsa indexet. Ladda om sidan för att försöka igen.",
+      "contextual-off": "Fragment med kontext är avstängda för den här organisationen, så en omindexering skulle inte lägga till någon kontext. En plattformsadministratör kan slå på dem.",
+      "contextual-reindex-button": "Indexera om {count, plural, one {# dokument} other {# dokument}}",
+      "contextual-confirm-title": "Indexera om {count, plural, one {# dokument} other {# dokument}}?",
+      "contextual-confirm-description": "Varje dokument bearbetas igen i bakgrunden, några åt gången. En stor kunskapsbas tar en stund.",
+      "contextual-confirm-action": "Indexera om",
+      "contextual-started": "Indexerar om {count, plural, one {# dokument} other {# dokument}} i bakgrunden.",
+      "contextual-partial": "{failed, plural, one {# dokument} other {# dokument}} kunde inte startas; {started} startade. Försök igen om några minuter.",
+      "contextual-error": "Omindexeringen kunde inte startas. Försök igen om några minuter."
     },
     "connectors": {
       "title": "Kopplingar",

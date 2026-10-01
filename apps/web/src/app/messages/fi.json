@@ -595,7 +595,20 @@
       "model-answer": "Vastausten luonti",
       "budget-title": "Kuukausittainen tekoälybudjetti",
       "budget-no-limit": "Ei rajaa asetettu",
-      "budget-managed-by-admin": "Alustan ylläpitäjän hallinnoima."
+      "budget-managed-by-admin": "Alustan ylläpitäjän hallinnoima.",
+      "contextual-title": "Kontekstilliset katkelmat",
+      "contextual-description": "Jokainen katkelma indeksoidaan asiakirjansa otsikon, osion ja yhden rivin tiivistelmän kanssa, jolloin haku löytää sen helpommin. Aiemmin indeksoidut asiakirjat saavat sen, kun ne indeksoidaan uudelleen.",
+      "contextual-count": "{current}/{total} asiakirjaa indeksoitu kontekstin kanssa",
+      "contextual-none-indexed": "Asiakirjoja ei ole vielä indeksoitu.",
+      "contextual-unavailable": "Indeksiä ei voitu lukea. Lataa sivu uudelleen ja yritä uudelleen.",
+      "contextual-off": "Kontekstilliset katkelmat ovat pois päältä tässä organisaatiossa, joten uudelleenindeksointi ei lisäisi kontekstia. Alustan ylläpitäjä voi ottaa ne käyttöön.",
+      "contextual-reindex-button": "Indeksoi uudelleen ({count, plural, one {# asiakirja} other {# asiakirjaa}})",
+      "contextual-confirm-title": "Indeksoidaanko uudelleen ({count, plural, one {# asiakirja} other {# asiakirjaa}})?",
+      "contextual-confirm-description": "Jokainen asiakirja käsitellään uudelleen taustalla, muutama kerrallaan. Suuri tietopankki vie hetken.",
+      "contextual-confirm-action": "Indeksoi uudelleen",
+      "contextual-started": "Indeksoidaan uudelleen taustalla: {count, plural, one {# asiakirja} other {# asiakirjaa}}.",
+      "contextual-partial": "Ei voitu käynnistää: {failed, plural, one {# asiakirja} other {# asiakirjaa}}; {started} käynnistetty. Yritä uudelleen muutaman minuutin kuluttua.",
+      "contextual-error": "Uudelleenindeksointia ei voitu käynnistää. Yritä uudelleen muutaman minuutin kuluttua."
     },
     "connectors": {
       "title": "Liittimet",

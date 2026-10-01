@@ -595,7 +595,20 @@
       "model-answer": "Génération de réponses",
       "budget-title": "Budget IA mensuel",
       "budget-no-limit": "Aucune limite définie",
-      "budget-managed-by-admin": "Géré par l'administrateur de la plateforme."
+      "budget-managed-by-admin": "Géré par l'administrateur de la plateforme.",
+      "contextual-title": "Fragments avec contexte",
+      "contextual-description": "Chaque fragment est indexé avec le titre, la section et un résumé d'une ligne de son document, ce qui aide la recherche à le trouver. Les documents indexés auparavant l'obtiennent une fois réindexés.",
+      "contextual-count": "{current} documents sur {total} indexés avec contexte",
+      "contextual-none-indexed": "Aucun document n'est encore indexé.",
+      "contextual-unavailable": "Impossible de lire l'index. Rechargez la page pour réessayer.",
+      "contextual-off": "Les fragments avec contexte sont désactivés pour cette organisation, une réindexation n'ajouterait donc aucun contexte. Un administrateur de la plateforme peut les activer.",
+      "contextual-reindex-button": "Réindexer {count, plural, one {# document} other {# documents}}",
+      "contextual-confirm-title": "Réindexer {count, plural, one {# document} other {# documents}} ?",
+      "contextual-confirm-description": "Chaque document est traité à nouveau en arrière-plan, quelques-uns à la fois. Une grande base de connaissances prend un certain temps.",
+      "contextual-confirm-action": "Réindexer",
+      "contextual-started": "Réindexation de {count, plural, one {# document} other {# documents}} en arrière-plan.",
+      "contextual-partial": "Impossible de lancer {failed, plural, one {# document} other {# documents}} ; {started} lancés. Réessayez dans quelques minutes.",
+      "contextual-error": "Impossible de lancer la réindexation. Réessayez dans quelques minutes."
     },
     "connectors": {
       "title": "Connecteurs",

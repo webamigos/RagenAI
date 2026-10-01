@@ -82,6 +82,10 @@ archive is the blog.
   move. Both are on by default and can be turned off per organization;
   files indexed earlier get the title-and-section context once they are
   re-indexed. (#1458)
+- `[brief]` **An org admin can bring older documents up to date from the
+  panel.** RAG pipeline settings shows how many documents are indexed with
+  their title-and-section context and offers to re-index the rest in the
+  background — what until now took an operator running a script. (#PR)
 
 ### Usage and limits
 
