@@ -27,7 +27,7 @@ with no documents attached — the floor the pipeline has to beat.
 
 | | Ragen (RAG) | control (no retrieval) |
 |---|---|---|
-| all questions | 9/18 (50%) | — |
+| all questions | 10/18 (56%) | — |
 
 ## By language
 
@@ -35,21 +35,21 @@ with no documents attached — the floor the pipeline has to beat.
 
 | | Ragen (RAG) | control (no retrieval) |
 |---|---|---|
-| pl | 3/9 (33%) | — |
+| pl | 4/9 (44%) | — |
 | en | 6/9 (67%) | — |
 
 ### Language of the document holding the answer
 
 | | Ragen (RAG) | control (no retrieval) |
 |---|---|---|
-| pl | 4/10 (40%) | — |
+| pl | 5/10 (50%) | — |
 | en | 5/8 (63%) | — |
 
 ### Same-language vs cross-lingual
 
 | | Ragen (RAG) | control (no retrieval) |
 |---|---|---|
-| question and document same language | 8/13 (62%) | — |
+| question and document same language | 9/13 (69%) | — |
 | cross-lingual | 1/5 (20%) | — |
 
 ## By question type
@@ -58,7 +58,7 @@ with no documents attached — the floor the pipeline has to beat.
 
 | | Ragen (RAG) | control (no retrieval) |
 |---|---|---|
-| numeric | 6/9 (67%) | — |
+| numeric | 7/9 (78%) | — |
 | multi-hop | 0/2 (0%) | — |
 | cross-lingual | 1/5 (20%) | — |
 | guard-hallucination | 1/1 (100%) | — |
@@ -90,7 +90,7 @@ is not counted. The RAG score is the one ingest wrote when this run uploaded it.
 
 | document | RAG score | Ragen (RAG) | control (no retrieval) |
 |---|---|---|---|
-| `docs/pl-01-limity-sprzetowe.md` | failed | 1/3 (33%) | — |
+| `docs/pl-01-limity-sprzetowe.md` | failed | 2/3 (67%) | — |
 | `docs/pl-02-stawki-serwisowe.md` | failed | 1/4 (25%) | — |
 | `docs/pl-03-rejestr-wytopow.xlsx` | failed | 1/2 (50%) | — |
 | `docs/en-01-equipment-limits.md` | failed | 3/5 (60%) | — |
@@ -101,7 +101,7 @@ is not counted. The RAG score is the one ingest wrote when this run uploaded it.
 | id | lang → doc | type | result | note |
 |---|---|---|---|---|
 | `pl-cap-metallographic` | pl → pl | numeric | FAIL | missing: "24 177,31"; rubric: Odpowiedź nie podaje wymaganej kwoty 24 177,31. |
-| `pl-cap-extensometer` | pl → pl | numeric | FAIL | rubric: Odpowiedź zawiera jednostkę 'zł', podczas gdy rubryka wskazuje, że sama liczba wystarczy, a jednostka wynika z nagłówka kolumny. |
+| `pl-cap-extensometer` | pl → pl | numeric | PASS |  |
 | `pl-rate-roughness` | pl → pl | numeric | FAIL | rubric: Odpowiedź nie zawiera jednostki waluty i czasu (zł/h) dla podanej stawki. |
 | `pl-rate-scale-verification-oob` | pl → pl | numeric | PASS |  |
 | `pl-roughness-and-callout` | pl → pl | multi-hop | FAIL | missing: "399,63"; rubric: Odpowiedź nie podaje stawki podstawowej za pomiar chropowatości. |

@@ -64,9 +64,9 @@
       "answer": "Limit zwrotu za ekstensometr laserowy o kodzie CD-2369 wynosi 21 629,67 zł [1].",
       "assertionsPassed": true,
       "assertionFailures": [],
-      "rubricPassed": false,
-      "rubricReason": "Odpowiedź zawiera jednostkę 'zł', podczas gdy rubryka wskazuje, że sama liczba wystarczy, a jednostka wynika z nagłówka kolumny.",
-      "passed": false,
+      "rubricPassed": true,
+      "rubricReason": "Regraded by hand on 2026-10-01: the answer gives 21 629,67, which the rubric requires. The judge failed it only for adding 'zł', which the rubric does not forbid (the same regrade as A3's off arm).",
+      "passed": true,
       "citedFiles": ["b5f0ee15-dcd4-4da0-b7c6-d515ed3fa662"],
       "evidence": {
         "needles": 1,

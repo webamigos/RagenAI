@@ -28,7 +28,11 @@ reranker's slot choosing from the same `maxDocuments × 3` pool).
 | tabele | Scaleway | 10/17, 8/18, 11/18 | 14, 13, 14 /18 | 4, 4, 4 /5 |
 | tabele | selection | 9/18, 6/18, 7/18 | 15, 8, 10 /18 | 3, 2, 3 /5 |
 | tabele | Scaleway + expansion | 10/18, 11/18, 12/18 | 13, 15, 15 /18 | 3, 4, 5 /5 |
-| tabele | selection + expansion | 10/18, 9/18, 8/18 | 13, 13, 13 /18 | 4, 3, 4 /5 |
+| tabele | selection + expansion | 10/18, 10/18¹, 8/18 | 13, 13, 13 /18 | 4, 3, 4 /5 |
+
+¹ Regraded by hand from 9/18: the judge failed `pl-cap-extensometer` for adding
+"zł" to the right figure, which the rubric does not forbid. A3's off arm had
+the same regrade; the JSON records it in `rubricReason`.
 
 Cost and latency, from the traces and the organization's `ai_usage` rows:
 
@@ -48,7 +52,7 @@ Cost and latency, from the traces and the organization's `ai_usage` rows:
 
 **On tables, selection is worse and less steady.**
 
-- Medians are 7 vs 10 of 18 without expansion and 9 vs 11 with it.
+- Medians are 7/18 vs 10/17 without expansion and 10 vs 11 of 18 with it.
 - Evidence across the three runs swings from 8 to 15 of 18, where the
   reranker held 13–15.
 - The selector sees each candidate capped at 600 characters. A run of table
