@@ -75,3 +75,15 @@ export {
   type ExpansionResult,
   type FetchChunksByIndex,
 } from './selection/expansion';
+
+export {
+  SELECTION_CANDIDATE_CHARS,
+  SELECTION_TIMEOUT_MS,
+  buildSelectionPrompt,
+  parseSelection,
+  selectSections,
+  type GenerateSelection,
+  type SelectionFallbackReason,
+  type SelectionPrompt,
+  type SelectionResult,
+} from './selection/select-sections';

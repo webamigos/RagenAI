@@ -10,7 +10,9 @@ import { readSource } from './tracked-files';
  * widened differently. So each chain must call rag-core's `expandHits`, and
  * neither may grow a local planner or merger beside it.
  *
- * Selection (Phase D) joins this guard when it lands.
+ * Selection (Phase D) is held the same way: a model choosing passages in
+ * one chain and a different prompt or parser in the other would measure one
+ * and ship the other.
  */
 const OPERATIONS = [
   'apps/web/src/libs/chains/basic-rag/operations.ts',
@@ -18,9 +20,9 @@ const OPERATIONS = [
 ];
 
 const LOCAL_COPY =
-  /function\s+(expandHits|mergeExpanded|planExpansion|joinTrimmingOverlap)\b/;
+  /function\s+(expandHits|mergeExpanded|planExpansion|joinTrimmingOverlap|selectSections|parseSelection|buildSelectionPrompt)\b/;
 
-describe('both RAG chains expand through rag-core', () => {
+describe('both RAG chains expand and select through rag-core', () => {
   it.each(OPERATIONS)(
     '%s imports expandHits from @ragenai/rag-core',
     (path) => {

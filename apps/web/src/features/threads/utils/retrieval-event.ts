@@ -95,6 +95,7 @@ export function toRetrievalEventTrace(
     timings: {
       searchMs: trace.timings.searchMs,
       rerankMs: trace.timings.rerankMs,
+      selectMs: trace.timings.selectMs,
       expandMs: trace.timings.expandMs,
       ...(trace.timings.rephraseMs !== undefined
         ? { rephraseMs: trace.timings.rephraseMs }

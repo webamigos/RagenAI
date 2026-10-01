@@ -43,6 +43,7 @@ const STEP_COLORS: Record<string, string> = {
   // state on a cost chart, and reranking is an ordinary line item.
   RERANKING: '#06b6d4',
   GUARDRAIL: '#ec4899',
+  SECTION_SELECTION: '#84cc16',
 };
 
 const STEP_LABELS: Record<string, string> = {
@@ -52,6 +53,7 @@ const STEP_LABELS: Record<string, string> = {
   EMBEDDINGS: 'EMBEDDINGS',
   RERANKING: 'RERANKING',
   GUARDRAIL: 'GUARDRAIL',
+  SECTION_SELECTION: 'SELECTION',
 };
 
 function formatCost(value: number): string {

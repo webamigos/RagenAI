@@ -29,6 +29,8 @@ type InitializePublicRagChainParams = {
 };
 
 const DEFAULT_REPHRASE_MODEL = process.env.REPHRASE_MODEL || 'gemini-2.5-flash';
+/** `sectionSelection`'s model (D3): the rephrase model unless set apart. */
+const SELECTION_MODEL = process.env.SELECTION_MODEL || DEFAULT_REPHRASE_MODEL;
 const parsedRephraseTemp = Number(process.env.REPHRASE_TEMPERATURE);
 const DEFAULT_REPHRASE_TEMPERATURE = Number.isNaN(parsedRephraseTemp)
   ? 0.5
@@ -65,12 +67,26 @@ export const initializePublicRagChain = async ({
       temperature: answerTemperature,
     });
 
-    const [orgMetadata, ragPipelineSettings, contextExpansionEnabled] =
-      await Promise.all([
-        getOrganizationMetadata(organizationId),
-        getRagPipelineSettings(organizationId),
-        isFeatureEnabledQuery(organizationId, 'contextExpansion'),
-      ]);
+    const [
+      orgMetadata,
+      ragPipelineSettings,
+      contextExpansionEnabled,
+      sectionSelectionEnabled,
+    ] = await Promise.all([
+      getOrganizationMetadata(organizationId),
+      getRagPipelineSettings(organizationId),
+      isFeatureEnabledQuery(organizationId, 'contextExpansion'),
+      isFeatureEnabledQuery(organizationId, 'sectionSelection'),
+    ]);
+    // Built only when the key is on: the chain runs selection exactly when it
+    // is handed a selector.
+    const sectionSelector = sectionSelectionEnabled
+      ? createChatCompletionInstance({
+          apiKey,
+          model: SELECTION_MODEL,
+          temperature: 0,
+        })
+      : undefined;
     // See initializeBasicRag: ingest writes to Qdrant regardless of this
     // setting, so any other backend retrieves from a store nothing filled.
     if (!isSupportedVectorStore(orgMetadata.vectorStore)) {
@@ -137,6 +153,7 @@ export const initializePublicRagChain = async ({
         questionRephraser,
         answerGenerator,
         embeddings: embeddingModel,
+        ...(sectionSelector ? { sectionSelector } : {}),
       },
       config: {
         metadataFilter,

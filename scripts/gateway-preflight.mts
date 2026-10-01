@@ -32,9 +32,7 @@ type ConfiguredModel = {
   readonly fallbackOnly?: boolean;
 };
 
-export function configuredModels(
-  env: NodeJS.ProcessEnv,
-): ConfiguredModel[] {
+export function configuredModels(env: NodeJS.ProcessEnv): ConfiguredModel[] {
   const models: ConfiguredModel[] = [];
 
   const add = (
@@ -51,6 +49,10 @@ export function configuredModels(
   add('DEFAULT_MODEL', env.DEFAULT_MODEL, 'chat');
   add('REPHRASE_MODEL', env.REPHRASE_MODEL ?? 'mistral-small-3.2', 'chat');
   add('SUMMARY_MODEL', env.SUMMARY_MODEL ?? 'gemini-2.5-flash', 'chat');
+  // Falls back to the rephrase model, so an unset one adds no second probe.
+  if (env.SELECTION_MODEL) {
+    add('SELECTION_MODEL', env.SELECTION_MODEL, 'chat');
+  }
   add(
     'EMBEDDINGS_MODEL',
     env.EMBEDDINGS_MODEL ?? 'bge-multilingual-gemma2',
@@ -121,7 +123,11 @@ async function check(
         model: embedding,
         value: 'preflight',
       });
-      return { model, status: 'ok', detail: `→ ${route.provider}, ${vector.length} dims` };
+      return {
+        model,
+        status: 'ok',
+        detail: `→ ${route.provider}, ${vector.length} dims`,
+      };
     }
 
     const chat = await gateway.resolveModel(model.id);
@@ -162,7 +168,11 @@ async function main(): Promise<void> {
   console.log(
     `Route table serves ${gateway.availableModels().length} model(s) with credentials present.`,
   );
-  console.log(probe ? 'Probing each configured model…\n' : 'Checking routing and credentials only (pass --probe to make real calls)…\n');
+  console.log(
+    probe
+      ? 'Probing each configured model…\n'
+      : 'Checking routing and credentials only (pass --probe to make real calls)…\n',
+  );
 
   const outcomes: Outcome[] = [];
   for (const model of models) {
@@ -170,7 +180,8 @@ async function main(): Promise<void> {
   }
 
   for (const { model, status, detail } of outcomes) {
-    const mark = status === 'ok' ? 'ok  ' : status === 'failed' ? 'FAIL' : 'MISS';
+    const mark =
+      status === 'ok' ? 'ok  ' : status === 'failed' ? 'FAIL' : 'MISS';
     const note = model.fallbackOnly ? ' (fallback path only)' : '';
     console.log(
       `  ${mark}  ${model.variable.padEnd(26)} ${model.id.padEnd(28)} ${detail ?? ''}${note}`,

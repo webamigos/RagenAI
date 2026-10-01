@@ -150,6 +150,7 @@ export type ApiSseRetrievalTrace = {
   timings: {
     searchMs: number;
     rerankMs: number;
+    selectMs: number;
     expandMs: number;
     rephraseMs?: number;
   };

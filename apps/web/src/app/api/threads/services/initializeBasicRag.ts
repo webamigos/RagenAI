@@ -76,6 +76,8 @@ type InitializeRagChainParams = {
 };
 
 const DEFAULT_REPHRASE_MODEL = process.env.REPHRASE_MODEL || 'gemini-2.5-flash';
+/** `sectionSelection`'s model (D3): the rephrase model unless set apart. */
+const SELECTION_MODEL = process.env.SELECTION_MODEL || DEFAULT_REPHRASE_MODEL;
 const parsedRephraseTemp = Number(process.env.REPHRASE_TEMPERATURE);
 const DEFAULT_REPHRASE_TEMPERATURE = Number.isNaN(parsedRephraseTemp)
   ? 0.5
@@ -140,12 +142,26 @@ export const initializeRagChain = async ({
       reasoningEffort,
     });
 
-    const [orgMetadata, ragPipelineSettings, contextExpansionEnabled] =
-      await Promise.all([
-        getOrganizationMetadata(orgId),
-        getRagPipelineSettings(orgId),
-        isFeatureEnabledQuery(orgId, 'contextExpansion'),
-      ]);
+    const [
+      orgMetadata,
+      ragPipelineSettings,
+      contextExpansionEnabled,
+      sectionSelectionEnabled,
+    ] = await Promise.all([
+      getOrganizationMetadata(orgId),
+      getRagPipelineSettings(orgId),
+      isFeatureEnabledQuery(orgId, 'contextExpansion'),
+      isFeatureEnabledQuery(orgId, 'sectionSelection'),
+    ]);
+    // Built only when the key is on: the chain runs selection exactly when it
+    // is handed a selector.
+    const sectionSelector = sectionSelectionEnabled
+      ? createChatCompletionInstance({
+          apiKey,
+          model: SELECTION_MODEL,
+          temperature: 0,
+        })
+      : undefined;
     // An organization row can still carry a backend from before ADR-26 moved
     // ingest into apps/worker, which writes to Qdrant regardless. Retrieval
     // would then return nothing at all, and nothing would say why — indis-
@@ -209,6 +225,7 @@ export const initializeRagChain = async ({
         questionRephraser,
         answerGenerator,
         embeddings: embeddingModel,
+        ...(sectionSelector ? { sectionSelector } : {}),
       },
       config: {
         metadataFilter,

@@ -34,6 +34,11 @@ export interface BaseChatChainModels {
 export interface RagChainModels extends BaseChatChainModels {
   questionRephraser: LanguageModelV4;
   embeddings: EmbeddingsProvider;
+  /**
+   * `SELECTION_MODEL`, present only when `sectionSelection` is on for the
+   * organization (spec 2026-09-29-llm-document-selection, D1).
+   */
+  sectionSelector?: LanguageModelV4;
 }
 
 export interface ChainTrackingContext {
