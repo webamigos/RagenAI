@@ -595,7 +595,15 @@
       "model-answer": "Antwoordgeneratie",
       "budget-title": "Maandelijks AI-budget",
       "budget-no-limit": "Geen limiet ingesteld",
-      "budget-managed-by-admin": "Beheerd door de platformbeheerder."
+      "budget-managed-by-admin": "Beheerd door de platformbeheerder.",
+      "org-memory-title": "Persoonlijk geheugen",
+      "org-memory-description": "Het geheugen van elk lid is alleen voor dat lid zichtbaar; beheerders kunnen het verwijderen, maar niet lezen. Verwijder alles als de organisatie de functie niet meer gebruikt.",
+      "org-memory-delete": "Geheugen van alle leden verwijderen",
+      "org-memory-confirm-title": "Geheugen van alle leden verwijderen?",
+      "org-memory-confirm-description": "Alles wat de chat over elk lid van deze organisatie onthoudt, wordt verwijderd. Leden krijgen geen melding en dit kan niet ongedaan worden gemaakt.",
+      "org-memory-deleted": "Het geheugen van alle leden is verwijderd.",
+      "org-memory-error": "Het geheugen kon niet worden verwijderd. Probeer het zo meteen opnieuw.",
+      "org-memory-none": "Geen enkel lid heeft een opgeslagen geheugen."
     },
     "connectors": {
       "title": "Connectors",

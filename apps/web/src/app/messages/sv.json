@@ -595,7 +595,15 @@
       "model-answer": "Svargenerering",
       "budget-title": "Månatlig AI-budget",
       "budget-no-limit": "Ingen gräns angiven",
-      "budget-managed-by-admin": "Hanteras av plattformens administratör."
+      "budget-managed-by-admin": "Hanteras av plattformens administratör.",
+      "org-memory-title": "Personligt minne",
+      "org-memory-description": "Varje medlems minne syns bara för medlemmen själv; administratörer kan ta bort det men inte läsa det. Ta bort allt när organisationen slutar använda funktionen.",
+      "org-memory-delete": "Ta bort alla medlemmars minnen",
+      "org-memory-confirm-title": "Ta bort alla medlemmars minnen?",
+      "org-memory-confirm-description": "Allt chatten minns om medlemmarna i den här organisationen tas bort. Medlemmarna meddelas inte, och det går inte att ångra.",
+      "org-memory-deleted": "Alla medlemmars minnen har tagits bort.",
+      "org-memory-error": "Minnena kunde inte tas bort. Försök igen om en stund.",
+      "org-memory-none": "Ingen medlem har sparade minnen."
     },
     "connectors": {
       "title": "Kopplingar",

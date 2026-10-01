@@ -697,10 +697,17 @@ shape an answer before it has been measured.
   before, so `featureFlag` on a settings entry had never worked. Edit, delete
   and the switch are refused server-side while the key is off; "forget
   everything" never is.
-- [ ] **B3.** The org-admin "delete all members' memories" action through the
+- [x] **B3.** The org-admin "delete all members' memories" action through the
   separate `OrgMemoryAdmin` scope, guarded by `canManageOrg()`. Tests: it reads
   no content, a member without the capability is refused, and another org's
   rows are untouched.
+
+  *Done.* In Organization → RAG pipeline, shown while the key is on or
+  memories remain. **One addition to the scope:** besides
+  `deleteAllOrgMemories`, `orgHasMemories` — a profile-id existence check, so
+  the panel offers the deletion only when there is something to delete. It
+  selects no content and names no user; the guard checks the scope's code,
+  between markers, for `content` and `userId`.
 
 ### Phase C — extraction
 

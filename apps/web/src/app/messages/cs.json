@@ -595,7 +595,15 @@
       "model-answer": "Generování odpovědí",
       "budget-title": "Měsíční rozpočet na AI",
       "budget-no-limit": "Nenastaven žádný limit",
-      "budget-managed-by-admin": "Spravováno administrátorem platformy."
+      "budget-managed-by-admin": "Spravováno administrátorem platformy.",
+      "org-memory-title": "Osobní paměť",
+      "org-memory-description": "Paměť každého člena vidí jen on sám; správci ji mohou smazat, ale ne číst. Smažte vše, když organizace přestane funkci používat.",
+      "org-memory-delete": "Smazat paměť všech členů",
+      "org-memory-confirm-title": "Smazat paměť všech členů?",
+      "org-memory-confirm-description": "Vše, co si chat pamatuje o členech této organizace, bude smazáno. Členové nebudou upozorněni a nelze to vrátit.",
+      "org-memory-deleted": "Paměť všech členů je smazána.",
+      "org-memory-error": "Paměť se nepodařilo smazat. Zkuste to za chvíli znovu.",
+      "org-memory-none": "Žádný člen nemá uloženou paměť."
     },
     "connectors": {
       "title": "Konektory",

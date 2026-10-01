@@ -595,7 +595,15 @@
       "model-answer": "Antwortgenerierung",
       "budget-title": "Monatliches KI-Budget",
       "budget-no-limit": "Kein Limit festgelegt",
-      "budget-managed-by-admin": "Wird vom Plattformadministrator verwaltet."
+      "budget-managed-by-admin": "Wird vom Plattformadministrator verwaltet.",
+      "org-memory-title": "Persönliches Gedächtnis",
+      "org-memory-description": "Das Gedächtnis jedes Mitglieds sieht nur dieses Mitglied; Administratoren können es löschen, aber nicht lesen. Löschen Sie alles, wenn die Organisation die Funktion nicht mehr nutzt.",
+      "org-memory-delete": "Gedächtnis aller Mitglieder löschen",
+      "org-memory-confirm-title": "Gedächtnis aller Mitglieder löschen?",
+      "org-memory-confirm-description": "Alles, was der Chat über die Mitglieder dieser Organisation weiß, wird gelöscht. Die Mitglieder werden nicht benachrichtigt, und das lässt sich nicht rückgängig machen.",
+      "org-memory-deleted": "Das Gedächtnis aller Mitglieder ist gelöscht.",
+      "org-memory-error": "Das Gedächtnis konnte nicht gelöscht werden. Versuchen Sie es gleich noch einmal.",
+      "org-memory-none": "Kein Mitglied hat ein gespeichertes Gedächtnis."
     },
     "connectors": {
       "title": "Connectors",

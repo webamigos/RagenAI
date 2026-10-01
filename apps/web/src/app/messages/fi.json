@@ -595,7 +595,15 @@
       "model-answer": "Vastausten luonti",
       "budget-title": "Kuukausittainen tekoälybudjetti",
       "budget-no-limit": "Ei rajaa asetettu",
-      "budget-managed-by-admin": "Alustan ylläpitäjän hallinnoima."
+      "budget-managed-by-admin": "Alustan ylläpitäjän hallinnoima.",
+      "org-memory-title": "Henkilökohtainen muisti",
+      "org-memory-description": "Kunkin jäsenen muisti näkyy vain hänelle itselleen; ylläpitäjät voivat poistaa sen mutta eivät lukea. Poista kaikki, kun organisaatio lopettaa ominaisuuden käytön.",
+      "org-memory-delete": "Poista kaikkien jäsenten muisti",
+      "org-memory-confirm-title": "Poistetaanko kaikkien jäsenten muisti?",
+      "org-memory-confirm-description": "Kaikki, mitä keskustelu muistaa tämän organisaation jäsenistä, poistetaan. Jäsenille ei ilmoiteta, eikä tätä voi kumota.",
+      "org-memory-deleted": "Kaikkien jäsenten muisti on poistettu.",
+      "org-memory-error": "Muistia ei voitu poistaa. Yritä hetken kuluttua uudelleen.",
+      "org-memory-none": "Kenelläkään jäsenellä ei ole tallennettua muistia."
     },
     "connectors": {
       "title": "Liittimet",

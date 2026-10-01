@@ -595,7 +595,15 @@
       "model-answer": "Válaszgenerálás",
       "budget-title": "Havi AI-keret",
       "budget-no-limit": "Nincs beállított korlát",
-      "budget-managed-by-admin": "A platform adminisztrátora kezeli."
+      "budget-managed-by-admin": "A platform adminisztrátora kezeli.",
+      "org-memory-title": "Személyes memória",
+      "org-memory-description": "Minden tag memóriáját csak az adott tag látja; az adminisztrátorok törölhetik, de nem olvashatják. Töröld az egészet, ha a szervezet már nem használja a funkciót.",
+      "org-memory-delete": "Az összes tag memóriájának törlése",
+      "org-memory-confirm-title": "Törlöd az összes tag memóriáját?",
+      "org-memory-confirm-description": "Minden, amit a csevegés a szervezet tagjairól megjegyzett, törlődik. A tagok nem kapnak értesítést, és ez nem vonható vissza.",
+      "org-memory-deleted": "Az összes tag memóriája törölve.",
+      "org-memory-error": "A memóriát nem sikerült törölni. Próbáld újra egy pillanat múlva.",
+      "org-memory-none": "Egyik tagnak sincs tárolt memóriája."
     },
     "connectors": {
       "title": "Kapcsolók",

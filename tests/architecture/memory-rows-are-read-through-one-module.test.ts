@@ -67,3 +67,32 @@ describe('memory rows are read through one module', () => {
     ).toEqual([]);
   });
 });
+
+/**
+ * The org admin's scope deletes every member's memories and may ask whether
+ * any exist; it must never be a way to read one (spec, B3). Checked on the
+ * code between the scope's markers, comments stripped, so a `select` of the
+ * memory's text or a filter on a member is caught where it would be added.
+ */
+describe('the org admin memory scope', () => {
+  const source = readSource(
+    'apps/web/src/features/memory/services/memory-scope.ts',
+  );
+  const begin = source.indexOf('// --- OrgMemoryAdmin: begin');
+  const end = source.indexOf('// --- OrgMemoryAdmin: end');
+
+  it('is marked in the scope module', () => {
+    expect(begin).toBeGreaterThan(-1);
+    expect(end).toBeGreaterThan(begin);
+  });
+
+  it('reads no content and names no user', () => {
+    const code = source
+      .slice(begin, end)
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .replace(/\/\/.*$/gm, '');
+    expect(code).not.toMatch(/\bcontent\b/);
+    expect(code).not.toMatch(/\buserId\b/);
+    expect(code).toMatch(/export async function deleteAllOrgMemories\b/);
+  });
+});

@@ -595,7 +595,15 @@
       "model-answer": "Svargenerering",
       "budget-title": "Månedligt AI-budget",
       "budget-no-limit": "Ingen grænse angivet",
-      "budget-managed-by-admin": "Administreres af platformadministratoren."
+      "budget-managed-by-admin": "Administreres af platformadministratoren.",
+      "org-memory-title": "Personlig hukommelse",
+      "org-memory-description": "Hvert medlems hukommelse er kun synlig for medlemmet selv; administratorer kan slette den, men ikke læse den. Slet det hele, når organisationen holder op med at bruge funktionen.",
+      "org-memory-delete": "Slet alle medlemmers hukommelse",
+      "org-memory-confirm-title": "Slet alle medlemmers hukommelse?",
+      "org-memory-confirm-description": "Alt, chatten husker om medlemmerne af denne organisation, slettes. Medlemmerne får ikke besked, og det kan ikke fortrydes.",
+      "org-memory-deleted": "Alle medlemmers hukommelse er slettet.",
+      "org-memory-error": "Hukommelsen kunne ikke slettes. Prøv igen om et øjeblik.",
+      "org-memory-none": "Ingen medlemmer har gemt hukommelse."
     },
     "connectors": {
       "title": "Konnektorer",

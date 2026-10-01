@@ -13,6 +13,7 @@ import {
   getOrgIdFromAuthOrThrow,
 } from '@/app/lib/utils/auth-helpers';
 import { logger } from '@/app/lib/utils/logger';
+import { requireOrgAdmin } from '@/lib/auth-guards';
 import { NotFoundException, UnauthorizedException } from '@/libs/utils/errors';
 import {
   memoryContentSchema,
@@ -219,3 +220,50 @@ export async function setMemoryExtraction(
       : { extractionEnabled: false, epoch: { increment: 1 } },
   });
 }
+
+// --- OrgMemoryAdmin: begin ---------------------------------------------------
+// The one operation that is not per user. An org admin may delete every
+// member's memories — for an organization that stops using the feature — and
+// may ask whether any exist, so the panel offers the deletion only when there
+// is something to delete. Nothing in this scope reads a memory's content or
+// names a user: `memory-rows-are-read-through-one-module.test.ts` fails if a
+// function between these markers mentions either.
+
+declare const orgMemoryAdminBrand: unique symbol;
+
+/** An org admin acting on the session's organization, and only that. */
+export interface OrgMemoryAdmin {
+  readonly organizationId: string;
+  readonly [orgMemoryAdminBrand]: true;
+}
+
+/** Throws `Unauthorized` for a member who cannot manage the organization. */
+export async function orgMemoryAdminFromSession(): Promise<OrgMemoryAdmin> {
+  const organizationId = await getOrgIdFromAuthOrThrow();
+  await requireOrgAdmin(organizationId);
+  return { organizationId } as OrgMemoryAdmin;
+}
+
+/** Whether any member of the organization has a memory profile. */
+export async function orgHasMemories(admin: OrgMemoryAdmin): Promise<boolean> {
+  const any = await db.userMemoryProfile.findFirst({
+    where: { organizationId: admin.organizationId },
+    select: { id: true },
+  });
+  return any !== null;
+}
+
+/**
+ * Delete every member's memories in the organization, without reading them.
+ * Profiles go, and their memories and changes cascade with them; a member
+ * who comes back starts with extraction on and nothing stored.
+ */
+export async function deleteAllOrgMemories(
+  admin: OrgMemoryAdmin,
+): Promise<number> {
+  const { count } = await db.userMemoryProfile.deleteMany({
+    where: { organizationId: admin.organizationId },
+  });
+  return count;
+}
+// --- OrgMemoryAdmin: end -----------------------------------------------------

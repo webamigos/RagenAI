@@ -595,7 +595,15 @@
       "model-answer": "Génération de réponses",
       "budget-title": "Budget IA mensuel",
       "budget-no-limit": "Aucune limite définie",
-      "budget-managed-by-admin": "Géré par l'administrateur de la plateforme."
+      "budget-managed-by-admin": "Géré par l'administrateur de la plateforme.",
+      "org-memory-title": "Mémoire personnelle",
+      "org-memory-description": "La mémoire de chaque membre n'est visible que par lui ; les administrateurs peuvent la supprimer, mais pas la lire. Supprimez-la entièrement si l'organisation cesse d'utiliser la fonctionnalité.",
+      "org-memory-delete": "Supprimer la mémoire de tous les membres",
+      "org-memory-confirm-title": "Supprimer la mémoire de tous les membres ?",
+      "org-memory-confirm-description": "Tout ce que le chat retient de chaque membre de cette organisation est supprimé. Les membres ne sont pas prévenus, et cette action est irréversible.",
+      "org-memory-deleted": "La mémoire de tous les membres est supprimée.",
+      "org-memory-error": "La mémoire n'a pas pu être supprimée. Réessayez dans un instant.",
+      "org-memory-none": "Aucun membre n'a de mémoire enregistrée."
     },
     "connectors": {
       "title": "Connecteurs",

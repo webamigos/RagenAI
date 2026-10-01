@@ -595,7 +595,15 @@
       "model-answer": "Svargenerering",
       "budget-title": "Månedlig AI-budsjett",
       "budget-no-limit": "Ingen grense satt",
-      "budget-managed-by-admin": "Administreres av plattformadministratoren."
+      "budget-managed-by-admin": "Administreres av plattformadministratoren.",
+      "org-memory-title": "Personlig minne",
+      "org-memory-description": "Hvert medlems minne er bare synlig for medlemmet selv; administratorer kan slette det, men ikke lese det. Slett alt når organisasjonen slutter å bruke funksjonen.",
+      "org-memory-delete": "Slett minnet til alle medlemmer",
+      "org-memory-confirm-title": "Slette minnet til alle medlemmer?",
+      "org-memory-confirm-description": "Alt chatten husker om medlemmene i denne organisasjonen, slettes. Medlemmene får ikke beskjed, og dette kan ikke angres.",
+      "org-memory-deleted": "Minnet til alle medlemmer er slettet.",
+      "org-memory-error": "Minnet kunne ikke slettes. Prøv igjen om et øyeblikk.",
+      "org-memory-none": "Ingen medlemmer har lagret minne."
     },
     "connectors": {
       "title": "Koblinger",
