@@ -337,9 +337,16 @@ that defaults to `false`.
 
 ### Phase D — decide
 
-- [ ] **D1.** On A3 and B2, decide whether `contextualChunks` defaults to
+- [x] **D1.** On A3 and B2, decide whether `contextualChunks` defaults to
   `true`, and at which version. Then flip it (`feat`, plus a changelog line)
   or record why not.
+
+  *Done 2026-10-01.* `contextualChunks` defaults to `true`, at
+  `context_version` 1 (the free prefix, A3's measured arm). B2 was not run:
+  A3 leaves no gap on prose for a model-written prefix to close. Table
+  chunks get the prefix too; A3 cost them one or two figures of evidence,
+  within noise on the pass rate, and there is no switch to leave them out.
+  Existing files keep their version until they are re-indexed (runbook).
 
 ## Testing
 
@@ -361,8 +368,9 @@ that defaults to `false`.
 
 ## Rollout and rollback
 
-- **Rollout.** The key is off by default and turned on per organization in
-  apps/admin; a turned-on organization re-indexes from its settings.
+- **Rollout.** The key was off by default while it was measured, and is on
+  by default since D1. New and re-indexed files get the prefix; the rest is
+  brought up by `reindex-for-context.ts`.
 - **Rollback.** Turn the key off, then re-index to drop the prefix. The
   answer path never read the prefix, so a prefixed collection is safe to
   leave in place meanwhile. The only migration (Phase B) adds an enum value.

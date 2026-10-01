@@ -8,7 +8,8 @@ of the organization up to date.
 
 ## Before you start
 
-- Turn `contextualChunks` on for the organization in apps/admin. The script
+- Check that `contextualChunks` is on for the organization. It is on by
+  default; an operator may have turned it off in apps/admin. The script
   refuses an organization with the key off, because a re-index would write no
   prefix.
 - Point the shell at the environment: `DATABASE_URL`, `REDIS_URL`,

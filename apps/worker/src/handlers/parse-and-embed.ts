@@ -692,7 +692,7 @@ export async function runFileEmbeddings(
   }
 
   // ==== CONTEXT PREFIX (spec 2026-09-29-contextual-chunks, A2)
-  // Behind `contextualChunks`, off by default; the activity reads the key and
+  // Behind `contextualChunks`, on by default; the activity reads the key and
   // returns the chunks unchanged when it is off. Built from the masked chunk
   // and summary, stored beside the chunk and embedded in front of it —
   // `pageContent` is untouched. A step that fails indexes without a prefix.

@@ -281,20 +281,37 @@ describe('documentDiagnostics', () => {
   });
 });
 
-// Off while B4 measures it (spec 2026-09-29-llm-document-selection, ADR-50).
+// On by default since B4 (spec 2026-09-29-llm-document-selection, E1).
 describe('contextExpansion', () => {
-  it('is off unless an operator turns it on', () => {
+  it('is on unless an operator turns it off', () => {
     expect(resolveFeatures({}).contextExpansion).toEqual({
-      value: false,
+      value: true,
       source: 'code-default',
     });
   });
 
-  it('can be turned on per organization', () => {
+  it('can be turned off per organization', () => {
     expect(
-      resolveFeatures({ orgOverrides: { contextExpansion: true } })
+      resolveFeatures({ orgOverrides: { contextExpansion: false } })
         .contextExpansion.value,
-    ).toBe(true);
+    ).toBe(false);
+  });
+});
+
+// On by default since A3 (spec 2026-09-29-contextual-chunks, D1).
+describe('contextualChunks', () => {
+  it('is on unless an operator turns it off', () => {
+    expect(resolveFeatures({}).contextualChunks).toEqual({
+      value: true,
+      source: 'code-default',
+    });
+  });
+
+  it('can be turned off per organization', () => {
+    expect(
+      resolveFeatures({ orgOverrides: { contextualChunks: false } })
+        .contextualChunks.value,
+    ).toBe(false);
   });
 });
 

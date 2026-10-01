@@ -139,15 +139,16 @@ export type FeatureOverrides = Partial<Record<FeatureKey, boolean | null>>;
  *
  * `contextualChunks` indexes each chunk with a short prefix that places it in
  * its document — title, section, the summary's first sentence — beside the
- * chunk rather than in it (spec 2026-09-29-contextual-chunks). Off by default
- * while it is measured (ADR-50): it changes what is embedded, so only files
- * ingested or re-indexed while it is on carry the prefix.
+ * chunk rather than in it (spec 2026-09-29-contextual-chunks). On by default
+ * since its measurement (A3: every cross-lingual figure on prose reached the
+ * model). It changes what is embedded, so only files ingested or re-indexed
+ * while it is on carry the prefix; `reindex-for-context.ts` brings the rest up.
  *
  * `contextExpansion` renders each retrieved prose chunk with the chunk before
  * and after it, merged where hits meet, within three times the usual number
- * of chunks (spec 2026-09-29-llm-document-selection, B3). Off by default
- * while it is measured (ADR-50); it changes only what a turn reads, so it
- * applies to every file at once and needs no re-index.
+ * of chunks (spec 2026-09-29-llm-document-selection, B3). On by default since
+ * B4 measured it (better on prose every run, ~9 ms per turn); it changes only
+ * what a turn reads, so it applies to every file at once and needs no re-index.
  */
 export const DEFAULT_FEATURES: FeatureFlags = {
   inviteMembers: false,
@@ -168,8 +169,8 @@ export const DEFAULT_FEATURES: FeatureFlags = {
   ragReadinessScore: true,
   ragScoreOnIngest: false,
   documentDiagnostics: true,
-  contextualChunks: false,
-  contextExpansion: false,
+  contextualChunks: true,
+  contextExpansion: true,
 };
 
 /** Human-readable names, shared so the admin panel and the app cannot disagree. */
@@ -195,9 +196,9 @@ export const FEATURE_LABELS: Record<FeatureKey, string> = {
     'RAG readiness score: score every upload (one LLM call per file)',
   documentDiagnostics: 'Document diagnostics (indexing problems, no LLM call)',
   contextualChunks:
-    'Contextual chunks: index each chunk with its title and section (experimental, re-index to apply)',
+    'Contextual chunks: index each chunk with its title and section (re-index to apply)',
   contextExpansion:
-    'Context expansion: answer from each retrieved chunk with the ones around it (experimental)',
+    'Context expansion: answer from each retrieved chunk with the ones around it',
 };
 
 /**
