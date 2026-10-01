@@ -1,11 +1,10 @@
 import { nanoid } from 'nanoid';
 import db from '@ragenai/prisma-client';
-import { jobs } from '@/libs/jobs';
-import { Workflow } from '@/features/documents/contracts/document.types';
 import { logger } from '@/app/lib/utils/logger';
 import { NotFoundException } from '@/libs/utils/errors';
 import { persistUserFileUpdateWithRetry } from '@/features/documents/utils/persist-user-file-update-with-retry';
 import { resetIngestStatusForNewRun } from '@/features/documents/utils/reset-ingest-status-for-new-run';
+import { startFileReindexCommand } from '@/features/documents/services/commands/start-file-reindex-command';
 
 export async function reembedFileCommand(
   fileId: string,
@@ -28,9 +27,12 @@ export async function reembedFileCommand(
   await resetIngestStatusForNewRun({ fileId, organizationId });
 
   try {
-    await jobs().start(Workflow.RUN_FILE_EMBEDDINGS, workflowId, {
-      fileId: file.id,
-      orgId: file.organizationId,
+    // Not always RUN_FILE_EMBEDDINGS: for an edited document that re-parses
+    // the original upload and takes the edit out of the index.
+    await startFileReindexCommand({
+      file,
+      organizationId: file.organizationId,
+      workflowId,
     });
   } catch (wfErr) {
     logger.error({ err: wfErr, fileId }, 'Failed to start re-embed workflow');

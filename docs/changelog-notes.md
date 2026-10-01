@@ -79,6 +79,11 @@ archive is the blog.
 
 ### Knowledge base
 
+- `[brief]` **Re-embedding a document keeps your edits.** Re-embedding a
+  file, a selection or a folder (including after a PII policy change) used to
+  re-read the originally uploaded file, so a document you had edited,
+  optimized or rolled back answered in chat from its old text while showing
+  the new one. It now re-indexes the version you see.
 - `[brief]` **Documents that were indexed badly say so.** The knowledge base
   now marks a document whose indexing went wrong: a table whose rows lost
   their column names, text read as raw markup, empty chunks, or a parser

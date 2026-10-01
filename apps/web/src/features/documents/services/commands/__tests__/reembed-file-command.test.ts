@@ -3,8 +3,12 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 const mockFindFirst = vi.fn();
 const mockUpdateMany = vi.fn();
 const mockUpdate = vi.fn();
+const mockVersionFindFirst = vi.fn();
 vi.mock('@ragenai/prisma-client', () => ({
   default: {
+    documentVersion: {
+      findFirst: (...args: unknown[]) => mockVersionFindFirst(...args),
+    },
     userFile: {
       findFirst: (...args: unknown[]) => mockFindFirst(...args),
       updateMany: (...args: unknown[]) => mockUpdateMany(...args),
@@ -19,7 +23,10 @@ vi.mock('@/libs/jobs', () => ({
 }));
 
 vi.mock('@/features/documents/contracts/document.types', () => ({
-  Workflow: { RUN_FILE_EMBEDDINGS: 'runFileEmbeddings' },
+  Workflow: {
+    RUN_FILE_EMBEDDINGS: 'runFileEmbeddings',
+    REINDEX_DOCUMENT_VERSION: 'reindexDocumentVersion',
+  },
 }));
 
 vi.mock('@/app/lib/utils/logger', () => ({
@@ -70,6 +77,58 @@ describe('reembedFileCommand', () => {
     mockJobStart.mockResolvedValue(undefined);
     mockUpdateMany.mockResolvedValue({ count: 1 });
     mockUpdate.mockResolvedValue(undefined);
+    mockVersionFindFirst.mockResolvedValue(null);
+  });
+
+  // The stored file still holds the original upload. Re-parsing it for a
+  // document whose active version is an edit would put the original text
+  // back in the index while the document shows the edit.
+  it('re-indexes an edited document from its active version, not the upload', async () => {
+    mockFindFirst.mockResolvedValue(makeFileRecord());
+    mockVersionFindFirst.mockResolvedValue({
+      documentId: 'doc-1',
+      changeType: 'MANUAL',
+    });
+
+    await reembedFileCommand('file-1', 'org-1');
+
+    expect(mockVersionFindFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          organizationId: 'org-1',
+          isActive: true,
+          document: { fileId: 'file-1', organizationId: 'org-1' },
+        },
+      }),
+    );
+    expect(mockJobStart).toHaveBeenCalledWith(
+      'reindexDocumentVersion',
+      'reembed-test-nano-id',
+      {
+        orgId: 'org-1',
+        fileId: 'file-1',
+        fileName: 'report.pdf',
+        projectId: 'proj-1',
+        userId: null,
+        documentId: 'doc-1',
+      },
+    );
+  });
+
+  it('re-parses the upload while the active version is the upload', async () => {
+    mockFindFirst.mockResolvedValue(makeFileRecord());
+    mockVersionFindFirst.mockResolvedValue({
+      documentId: 'doc-1',
+      changeType: 'UPLOAD',
+    });
+
+    await reembedFileCommand('file-1', 'org-1');
+
+    expect(mockJobStart).toHaveBeenCalledWith(
+      'runFileEmbeddings',
+      'reembed-test-nano-id',
+      { fileId: 'file-1', orgId: 'org-1' },
+    );
   });
 
   // Without this the new run records no status at all on a file whose previous
