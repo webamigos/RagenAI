@@ -31,6 +31,7 @@ const COLORS = [
   '#06b6d4',
   '#ec4899',
   '#84cc16',
+  '#8b5cf6',
 ];
 
 const STEP_COLORS: Record<string, string> = {
@@ -44,6 +45,7 @@ const STEP_COLORS: Record<string, string> = {
   RERANKING: '#06b6d4',
   GUARDRAIL: '#ec4899',
   SECTION_SELECTION: '#84cc16',
+  MEMORY: '#8b5cf6',
 };
 
 const STEP_LABELS: Record<string, string> = {
@@ -54,6 +56,7 @@ const STEP_LABELS: Record<string, string> = {
   RERANKING: 'RERANKING',
   GUARDRAIL: 'GUARDRAIL',
   SECTION_SELECTION: 'SELECTION',
+  MEMORY: 'MEMORY',
 };
 
 function formatCost(value: number): string {

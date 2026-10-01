@@ -62,6 +62,12 @@ export const TENANT_SCOPED_MODELS: Record<string, string> = {
   KnowledgeEdge: 'organizationId',
   KnowledgeFinding: 'organizationId',
   KnowledgeDecision: 'organizationId',
+  // Personal memory. The guard sees the organization half of the boundary
+  // only; the user half is held by apps/web's `memory-scope.ts` and an
+  // architecture test, because a missing `userId` is invisible here.
+  UserMemoryProfile: 'organizationId',
+  UserMemory: 'organizationId',
+  UserMemoryChange: 'organizationId',
 };
 
 /**

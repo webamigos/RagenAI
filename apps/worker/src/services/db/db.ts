@@ -567,7 +567,8 @@ type AiUsageStep =
   | 'MODERATION'
   | 'RERANKING'
   | 'GUARDRAIL'
-  | 'SECTION_SELECTION';
+  | 'SECTION_SELECTION'
+  | 'MEMORY';
 
 /**
  * The row's estimated cost, from the table apps/web and apps/api price with.

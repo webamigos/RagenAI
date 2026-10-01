@@ -20,7 +20,9 @@ export type AiUsageStep =
    */
   | 'GUARDRAIL'
   /** The model choosing a turn's sections (`sectionSelection`). */
-  | 'SECTION_SELECTION';
+  | 'SECTION_SELECTION'
+  /** The model extracting a user's personal memories (`personalMemory`). */
+  | 'MEMORY';
 
 export type CreateAiUsageInput = {
   organizationId: string;
