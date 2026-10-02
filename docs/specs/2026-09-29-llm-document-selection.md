@@ -1,6 +1,6 @@
 ---
 title: The model chooses which retrieved sections to read, and how much around each
-status: approved
+status: implemented
 areas: [rag]
 adrs: [12, 14, 15, 19, 20, 33, 37, 50]
 ---
