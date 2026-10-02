@@ -43,4 +43,13 @@ describe('AI_PRICING', () => {
     expect(priceFor('litellm', 'gemini-2.5-flash')).toBeDefined();
     expect(priceFor('litellm', 'bge-multilingual-gemma2')).toBeDefined();
   });
+
+  it('prices the default reranker under the provider its rows carry', () => {
+    // scaleway-reranker.ts (apps/web and apps/api) writes provider
+    // 'scaleway' and RERANK_MODEL's default. Unpriced, every reranking row
+    // cost 0 and the cost ceiling never saw it.
+    expect(
+      calculateCost('scaleway', 'qwen3-embedding-8b', 1_000_000, 0),
+    ).toBeCloseTo(0.1 * EUR_TO_USD, 4);
+  });
 });
