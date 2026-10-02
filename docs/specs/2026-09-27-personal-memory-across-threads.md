@@ -680,7 +680,7 @@ shape an answer before it has been measured.
   over a `load`/`saveIfAbsent` store. ADR-42 has the amendment, and
   `encryption-lives-in-one-package.test.ts` checks the module stays in the
   package.
-- [ ] **A4.** `features/memory/services/memory-scope.ts` and the queries and
+- [x] **A4.** `features/memory/services/memory-scope.ts` and the queries and
   commands over it:
   - `getUserMemoriesQuery`;
   - `updateUserMemoryCommand`, `deleteUserMemoryCommand`;
@@ -690,6 +690,14 @@ shape an answer before it has been measured.
   It also adds the architecture test that memory rows are touched only there,
   and an IDOR test per function: another user's `publicId` in the same org is
   `NotFound`, never a write.
+
+  *Done.* A branded `MemoryOwner` that only `memoryOwnerFromSession()` makes;
+  every function scopes by both halves. Two choices the spec left open:
+  `updateMemory` writes only under the `version` it read (so an extraction
+  in between is not overwritten blind), and a settings edit keeps the
+  memory's `sourceThreadId`, so deleting that thread still removes it. The
+  guard is `memory-rows-are-read-through-one-module.test.ts`; it allows the
+  worker's future `src/activities/memory/`.
 - [ ] **A5.** The member-removal cleanup from A0, with its test — the trigger,
   if the recommendation above is accepted. Waits for that decision.
 
