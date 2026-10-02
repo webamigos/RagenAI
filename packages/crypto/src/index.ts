@@ -43,6 +43,14 @@ export {
 } from './thread-encryption';
 
 export {
+  openOwnedRows,
+  resolveOwnerKeyForWrite,
+  sealOwnedContent,
+  type OwnerKeyForWrite,
+  type OwnerKeyStore,
+} from './owner-key';
+
+export {
   encryptionProviderIsUnusable,
   getEncryptionProbeResult,
   probeEncryptionProvider,

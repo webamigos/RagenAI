@@ -325,6 +325,23 @@ describe('sectionSelection', () => {
   });
 });
 
+// Off while it is built and measured (spec 2026-09-27-personal-memory-across-threads, ADR-50).
+describe('personalMemory', () => {
+  it('is off unless an operator turns it on', () => {
+    expect(resolveFeatures({}).personalMemory).toEqual({
+      value: false,
+      source: 'code-default',
+    });
+  });
+
+  it('can be turned on per organization', () => {
+    expect(
+      resolveFeatures({ orgOverrides: { personalMemory: true } }).personalMemory
+        .value,
+    ).toBe(true);
+  });
+});
+
 describe('flattenFeatures', () => {
   it('drops the sources and keeps the values', () => {
     const flags = flattenFeatures(

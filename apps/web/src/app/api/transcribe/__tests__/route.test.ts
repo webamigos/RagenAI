@@ -40,11 +40,12 @@ function makeRequest() {
     value: () => Promise.resolve(new ArrayBuffer(8)),
   });
   formData.append('audio', audio);
+  // No body: jsdom's FormData cannot be serialised by Node's Request (jsdom
+  // 30.1 throws inside it), and the native Request.formData() can hang in
+  // jsdom anyway, so the route reads this resolved mock instead.
   const req = new Request('http://localhost/api/transcribe', {
     method: 'POST',
-    body: formData,
   });
-  // The native Request.formData() can hang in jsdom; replace with a resolved mock
   Object.defineProperty(req, 'formData', {
     value: () => Promise.resolve(formData),
   });

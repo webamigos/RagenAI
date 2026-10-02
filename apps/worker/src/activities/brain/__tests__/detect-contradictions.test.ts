@@ -89,6 +89,14 @@ describe('detectContradictions', () => {
     );
   });
 
+  // The message ceiling counts CHAT_COMPLETION rows. Recorded as one, every
+  // pair judged here spent a chat message the organization never sent.
+  it('records its usage under BRAIN, not as a chat completion', async () => {
+    await detectContradictions(input);
+    const steps = db.trackAiUsage.mock.calls.map(([row]) => row.step);
+    expect(steps).toEqual(['BRAIN']);
+  });
+
   it('calls no model when there is no pair', async () => {
     store.loadContradictionCandidates.mockResolvedValue({
       pages: [page(1, 'f-run')],
