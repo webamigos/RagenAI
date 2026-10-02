@@ -146,7 +146,7 @@ jobs:
       matrix:
         app: [worker, api, admin, mcp, web]
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           pattern: digests-${{ matrix.app }}-*
           merge-multiple: true
