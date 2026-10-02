@@ -24,11 +24,15 @@ import type { MemoryExtractSkip } from '@ragenai/jobs';
 export const extractionAnswerSchema = z.object({
   operations: z
     .array(
+      // Every field present, null when it does not apply. With them optional,
+      // structured output on gemini-2.5-flash left `content` out of every
+      // UPDATE (C2's role-update case, 0 of 3), and an UPDATE without its
+      // statement is dropped.
       z.object({
         op: z.enum(['ADD', 'UPDATE', 'DELETE']),
-        ref: z.string().optional(),
-        content: z.string().optional(),
-        until: z.string().optional(),
+        ref: z.string().nullable(),
+        content: z.string().nullable(),
+        until: z.string().nullable(),
       }),
     )
     .default([]),
@@ -45,16 +49,24 @@ const answerShape = z.object({
  * the one thing models were seen to rename.
  */
 function withOpField(candidate: unknown): unknown {
-  if (
-    candidate !== null &&
-    typeof candidate === 'object' &&
-    !('op' in candidate) &&
-    'operation' in candidate
-  ) {
-    const { operation, ...rest } = candidate as Record<string, unknown>;
-    return { ...rest, op: operation };
+  if (candidate === null || typeof candidate !== 'object') {
+    return candidate;
   }
-  return candidate;
+  let entry = candidate as Record<string, unknown>;
+  if (!('op' in entry) && 'operation' in entry) {
+    const { operation, ...rest } = entry;
+    entry = { ...rest, op: operation };
+  }
+  // A field that does not apply arrives as null (the schema asks for every
+  // field), or as the string "null"; either means absent.
+  for (const field of ['ref', 'content', 'until'] as const) {
+    const value = entry[field];
+    if (value === null || value === 'null' || value === '') {
+      const { [field]: _dropped, ...rest } = entry;
+      entry = rest;
+    }
+  }
+  return entry;
 }
 
 const content = z.string().trim().min(1).max(MEMORY_MAX_CHARS);
