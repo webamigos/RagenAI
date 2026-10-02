@@ -20,7 +20,9 @@ export type AiUsageStep =
    */
   | 'GUARDRAIL'
   /** The model choosing a turn's sections (`sectionSelection`). */
-  | 'SECTION_SELECTION';
+  | 'SECTION_SELECTION'
+  /** Ragen Brain's background extraction and contradiction calls. */
+  | 'BRAIN';
 
 export type CreateAiUsageInput = {
   organizationId: string;

@@ -37,6 +37,10 @@ const STEPS = [
   // reranker (`sectionSelection`) — filterable for the same reason reranking
   // is: an organization that turns it on wants to know what it costs.
   { value: AiUsageStep.SECTION_SELECTION, label: 'Section selection' },
+  // Ragen Brain's background extraction and contradiction checks. Filed under
+  // Completion until it had a step of its own, which also counted every call
+  // against the organization's monthly message limit.
+  { value: AiUsageStep.BRAIN, label: 'Brain' },
 ];
 
 export function AiUsageFiltersBar({ filters, onChange }: Props) {

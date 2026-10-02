@@ -95,6 +95,13 @@ archive is the blog.
   organization and its monthly cost ceiling left all of it out. It is
   priced now, from the same table as chat. Rows recorded before this change
   keep their zero.
+- `[brief]` **Ragen Brain no longer uses up the monthly message limit.**
+  Brain's background work — reading documents for candidate pages and
+  checking pages for contradictions — was counted as chat messages, so an
+  organization running Brain could be refused chat turns it never sent. It
+  now has its own step on the AI-usage page ("Brain"), still counts toward
+  the token and cost limits, and past Brain usage is moved there too, so an
+  admin will see this month's message count drop.
 
 ### Knowledge base
 

@@ -18,6 +18,7 @@ const STEP_LABELS: Record<string, string> = {
   RERANKING: 'RERANKING',
   GUARDRAIL: 'GUARDRAIL',
   SECTION_SELECTION: 'SELECTION',
+  BRAIN: 'BRAIN',
 };
 
 const STEP_BADGE_COLORS: Record<string, string> = {
@@ -29,6 +30,7 @@ const STEP_BADGE_COLORS: Record<string, string> = {
   RERANKING: 'bg-secondary text-secondary-foreground',
   GUARDRAIL: 'bg-muted text-muted-foreground',
   SECTION_SELECTION: 'bg-secondary text-secondary-foreground',
+  BRAIN: 'bg-muted text-muted-foreground',
 };
 
 function formatDate(d: Date | string): string {
