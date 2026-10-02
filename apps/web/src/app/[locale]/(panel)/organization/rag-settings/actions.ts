@@ -21,6 +21,8 @@ import {
   type ReindexForContextResult,
 } from '@/features/documents/services/commands/reindex-for-context-command';
 import { isFeatureEnabledQuery } from '@/features/subscriptions/services/queries/get-effective-features-query';
+import { getOrgHasMemoriesQuery } from '@/features/memory/services/queries/get-org-has-memories-query';
+import { deleteAllOrgMemoriesCommand } from '@/features/memory/services/commands/delete-all-org-memories-command';
 
 export type RagSettingsPageData = {
   ragSettings: RagPipelineSettings;
@@ -113,4 +115,35 @@ export async function reindexForContextAction(): Promise<ReindexForContextResult
     fileIds: staleFileIds,
     userId: await getCurrentUserId(),
   });
+}
+
+export type OrgMemoryPageData = {
+  /** `personalMemory` for this organization. */
+  enabled: boolean;
+  /** Whether any member has memories — never what they are. */
+  hasMemories: boolean;
+};
+
+/**
+ * Whether to offer "delete all members' memories" (spec
+ * 2026-09-27-personal-memory-across-threads, B3): while the feature is on,
+ * or while memories remain after it was turned off.
+ */
+export async function getOrgMemoryAction(): Promise<OrgMemoryPageData> {
+  const orgId = await getOrgIdFromAuthOrThrow();
+  await requireOrgAdmin(orgId);
+  const [enabled, hasMemories] = await Promise.all([
+    isFeatureEnabledQuery(orgId, 'personalMemory'),
+    getOrgHasMemoriesQuery(),
+  ]);
+  return { enabled, hasMemories };
+}
+
+/** Delete every member's memories in this organization, without reading them. */
+export async function deleteAllMembersMemoriesAction(): Promise<{
+  deletedProfiles: number;
+}> {
+  const orgId = await getOrgIdFromAuthOrThrow();
+  await requireOrgAdmin(orgId);
+  return { deletedProfiles: await deleteAllOrgMemoriesCommand() };
 }

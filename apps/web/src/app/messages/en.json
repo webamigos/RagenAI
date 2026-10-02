@@ -611,7 +611,15 @@
       "contextual-error": "The re-index couldn't be started. Try again in a few minutes.",
       "contextual-counting": "Counting the documents indexed with context…",
       "contextual-reindexing": "{count, plural, one {# document is} other {# documents are}} being processed now and will carry context when done.",
-      "contextual-nothing-started": "Nothing to re-index: those documents are already being processed."
+      "contextual-nothing-started": "Nothing to re-index: those documents are already being processed.",
+      "org-memory-title": "Personal memory",
+      "org-memory-description": "Each member's memories are visible only to that member; administrators can delete them but not read them. Delete them all when the organization stops using the feature.",
+      "org-memory-delete": "Delete all members' memories",
+      "org-memory-confirm-title": "Delete every member's memories?",
+      "org-memory-confirm-description": "Everything chat remembers about every member of this organization is deleted. Members are not told, and this can't be undone.",
+      "org-memory-deleted": "All members' memories are deleted.",
+      "org-memory-error": "The memories couldn't be deleted. Try again in a moment.",
+      "org-memory-none": "No member has memories stored."
     },
     "connectors": {
       "title": "Connectors",

@@ -611,7 +611,15 @@
       "contextual-error": "Nie udało się uruchomić ponownego indeksowania. Spróbuj ponownie za kilka minut.",
       "contextual-counting": "Liczenie dokumentów zindeksowanych z kontekstem…",
       "contextual-reindexing": "W trakcie przetwarzania: {count, plural, one {# dokument} few {# dokumenty} many {# dokumentów} other {# dokumentu}}. Po zakończeniu będą miały kontekst.",
-      "contextual-nothing-started": "Nie ma czego indeksować: te dokumenty są już przetwarzane."
+      "contextual-nothing-started": "Nie ma czego indeksować: te dokumenty są już przetwarzane.",
+      "org-memory-title": "Pamięć osobista",
+      "org-memory-description": "Pamięć każdego członka widzi tylko on; administratorzy mogą ją usunąć, ale nie mogą jej czytać. Usuń wszystko, gdy organizacja przestaje korzystać z tej funkcji.",
+      "org-memory-delete": "Usuń pamięć wszystkich członków",
+      "org-memory-confirm-title": "Usunąć pamięć wszystkich członków?",
+      "org-memory-confirm-description": "Wszystko, co czat pamięta o każdym członku tej organizacji, zostanie usunięte. Członkowie nie zostaną powiadomieni i nie da się tego cofnąć.",
+      "org-memory-deleted": "Pamięć wszystkich członków została usunięta.",
+      "org-memory-error": "Nie udało się usunąć pamięci. Spróbuj ponownie za chwilę.",
+      "org-memory-none": "Żaden członek nie ma zapisanej pamięci."
     },
     "connectors": {
       "title": "Integracje",

@@ -611,7 +611,15 @@
       "contextual-error": "Não foi possível iniciar a reindexação. Tente novamente dentro de alguns minutos.",
       "contextual-counting": "A contar os documentos indexados com contexto…",
       "contextual-reindexing": "{count, plural, one {# documento está} other {# documentos estão}} a ser processados e terão contexto quando terminarem.",
-      "contextual-nothing-started": "Nada para reindexar: esses documentos já estão a ser processados."
+      "contextual-nothing-started": "Nada para reindexar: esses documentos já estão a ser processados.",
+      "org-memory-title": "Memória pessoal",
+      "org-memory-description": "A memória de cada membro só é visível para esse membro; os administradores podem eliminá-la, mas não lê-la. Elimine-a toda quando a organização deixar de usar a funcionalidade.",
+      "org-memory-delete": "Eliminar a memória de todos os membros",
+      "org-memory-confirm-title": "Eliminar a memória de todos os membros?",
+      "org-memory-confirm-description": "Tudo o que o chat se lembra de cada membro desta organização é eliminado. Os membros não são avisados e não é possível anular.",
+      "org-memory-deleted": "A memória de todos os membros foi eliminada.",
+      "org-memory-error": "Não foi possível eliminar a memória. Tente novamente daqui a pouco.",
+      "org-memory-none": "Nenhum membro tem memória guardada."
     },
     "connectors": {
       "title": "Conectores",

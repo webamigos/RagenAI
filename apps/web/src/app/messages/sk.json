@@ -611,7 +611,15 @@
       "contextual-error": "Opätovné indexovanie sa nepodarilo spustiť. Skúste to znova o niekoľko minút.",
       "contextual-counting": "Počítanie dokumentov indexovaných s kontextom…",
       "contextual-reindexing": "Práve sa spracúva: {count, plural, one {# dokument} few {# dokumenty} many {# dokumentu} other {# dokumentov}}. Po dokončení budú mať kontext.",
-      "contextual-nothing-started": "Nie je čo znova indexovať: tieto dokumenty sa už spracúvajú."
+      "contextual-nothing-started": "Nie je čo znova indexovať: tieto dokumenty sa už spracúvajú.",
+      "org-memory-title": "Osobná pamäť",
+      "org-memory-description": "Pamäť každého člena vidí iba on sám; správcovia ju môžu odstrániť, ale nie čítať. Odstráňte všetko, keď organizácia prestane funkciu používať.",
+      "org-memory-delete": "Odstrániť pamäť všetkých členov",
+      "org-memory-confirm-title": "Odstrániť pamäť všetkých členov?",
+      "org-memory-confirm-description": "Všetko, čo si chat pamätá o členoch tejto organizácie, bude odstránené. Členovia nebudú upozornení a nedá sa to vrátiť.",
+      "org-memory-deleted": "Pamäť všetkých členov je odstránená.",
+      "org-memory-error": "Pamäť sa nepodarilo odstrániť. Skúste to o chvíľu znova.",
+      "org-memory-none": "Žiadny člen nemá uloženú pamäť."
     },
     "connectors": {
       "title": "Konektory",

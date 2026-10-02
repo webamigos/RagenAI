@@ -611,7 +611,15 @@
       "contextual-error": "Die Neuindexierung konnte nicht gestartet werden. Versuchen Sie es in einigen Minuten erneut.",
       "contextual-counting": "Dokumente mit Kontext werden gezählt …",
       "contextual-reindexing": "{count, plural, one {# Dokument wird} other {# Dokumente werden}} gerade verarbeitet und haben danach Kontext.",
-      "contextual-nothing-started": "Nichts neu zu indexieren: Diese Dokumente werden bereits verarbeitet."
+      "contextual-nothing-started": "Nichts neu zu indexieren: Diese Dokumente werden bereits verarbeitet.",
+      "org-memory-title": "Persönliches Gedächtnis",
+      "org-memory-description": "Das Gedächtnis jedes Mitglieds sieht nur dieses Mitglied; Administratoren können es löschen, aber nicht lesen. Löschen Sie alles, wenn die Organisation die Funktion nicht mehr nutzt.",
+      "org-memory-delete": "Gedächtnis aller Mitglieder löschen",
+      "org-memory-confirm-title": "Gedächtnis aller Mitglieder löschen?",
+      "org-memory-confirm-description": "Alles, was der Chat über die Mitglieder dieser Organisation weiß, wird gelöscht. Die Mitglieder werden nicht benachrichtigt, und das lässt sich nicht rückgängig machen.",
+      "org-memory-deleted": "Das Gedächtnis aller Mitglieder ist gelöscht.",
+      "org-memory-error": "Das Gedächtnis konnte nicht gelöscht werden. Versuchen Sie es gleich noch einmal.",
+      "org-memory-none": "Kein Mitglied hat ein gespeichertes Gedächtnis."
     },
     "connectors": {
       "title": "Connectors",

@@ -4,8 +4,10 @@ const db = vi.hoisted(() => ({
   userMemoryProfile: {
     findUnique: vi.fn(),
     findUniqueOrThrow: vi.fn(),
+    findFirst: vi.fn(),
     upsert: vi.fn(),
     updateMany: vi.fn(),
+    deleteMany: vi.fn(),
   },
   userMemory: {
     findMany: vi.fn(),
@@ -32,6 +34,10 @@ vi.mock('@/app/lib/utils/auth-helpers', () => ({
   getCurrentUserId: () => session.userId(),
 }));
 vi.mock('@ragenai/crypto', () => crypto);
+const requireOrgAdmin = vi.hoisted(() => vi.fn());
+vi.mock('@/lib/auth-guards', () => ({
+  requireOrgAdmin: (orgId: string) => requireOrgAdmin(orgId),
+}));
 vi.mock('@/app/lib/utils/logger', () => ({
   logger: { warn: vi.fn(), error: vi.fn(), info: vi.fn() },
 }));
@@ -39,8 +45,11 @@ vi.mock('@/app/lib/utils/logger', () => ({
 import { NotFoundException } from '@/libs/utils/errors';
 import type { OwnerKeyStore } from '@ragenai/crypto';
 import {
+  deleteAllOrgMemories,
   deleteMemory,
   forgetAllMemories,
+  orgHasMemories,
+  orgMemoryAdminFromSession,
   getMemorySettings,
   listMemories,
   memoryOwnerFromSession,
@@ -295,6 +304,45 @@ describe('the owner key store', () => {
     expect(await store.saveIfAbsent('wrapped')).toBe(false);
     expect(db.userMemoryProfile.findUniqueOrThrow).toHaveBeenCalledWith({
       where: { organizationId_userId: OWNER_WHERE },
+      select: { id: true },
+    });
+  });
+});
+
+describe('the org admin scope', () => {
+  it('refuses a member who cannot manage the organization', async () => {
+    requireOrgAdmin.mockRejectedValue(new Error('Unauthorized'));
+    await expect(orgMemoryAdminFromSession()).rejects.toThrow('Unauthorized');
+  });
+
+  it('is built from the session’s organization and checks it', async () => {
+    requireOrgAdmin.mockResolvedValue({ role: 'admin' });
+    expect(await orgMemoryAdminFromSession()).toEqual({ organizationId: ORG });
+    expect(requireOrgAdmin).toHaveBeenCalledWith(ORG);
+  });
+
+  it('deletes only this organization’s profiles, and selects nothing', async () => {
+    requireOrgAdmin.mockResolvedValue({ role: 'admin' });
+    db.userMemoryProfile.deleteMany.mockResolvedValue({ count: 4 });
+
+    const deleted = await deleteAllOrgMemories(
+      await orgMemoryAdminFromSession(),
+    );
+
+    expect(deleted).toBe(4);
+    expect(db.userMemoryProfile.deleteMany).toHaveBeenCalledWith({
+      where: { organizationId: ORG },
+    });
+    expect(db.userMemory.findMany).not.toHaveBeenCalled();
+  });
+
+  it('asks whether memories exist by profile id alone', async () => {
+    requireOrgAdmin.mockResolvedValue({ role: 'admin' });
+    db.userMemoryProfile.findFirst.mockResolvedValue({ id: 1 });
+
+    expect(await orgHasMemories(await orgMemoryAdminFromSession())).toBe(true);
+    expect(db.userMemoryProfile.findFirst).toHaveBeenCalledWith({
+      where: { organizationId: ORG },
       select: { id: true },
     });
   });

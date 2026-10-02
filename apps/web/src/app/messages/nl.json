@@ -611,7 +611,15 @@
       "contextual-error": "Het opnieuw indexeren kon niet worden gestart. Probeer het over een paar minuten opnieuw.",
       "contextual-counting": "Documenten met context worden geteld…",
       "contextual-reindexing": "{count, plural, one {# document wordt} other {# documenten worden}} nu verwerkt en hebben daarna context.",
-      "contextual-nothing-started": "Niets om opnieuw te indexeren: die documenten worden al verwerkt."
+      "contextual-nothing-started": "Niets om opnieuw te indexeren: die documenten worden al verwerkt.",
+      "org-memory-title": "Persoonlijk geheugen",
+      "org-memory-description": "Het geheugen van elk lid is alleen voor dat lid zichtbaar; beheerders kunnen het verwijderen, maar niet lezen. Verwijder alles als de organisatie de functie niet meer gebruikt.",
+      "org-memory-delete": "Geheugen van alle leden verwijderen",
+      "org-memory-confirm-title": "Geheugen van alle leden verwijderen?",
+      "org-memory-confirm-description": "Alles wat de chat over elk lid van deze organisatie onthoudt, wordt verwijderd. Leden krijgen geen melding en dit kan niet ongedaan worden gemaakt.",
+      "org-memory-deleted": "Het geheugen van alle leden is verwijderd.",
+      "org-memory-error": "Het geheugen kon niet worden verwijderd. Probeer het zo meteen opnieuw.",
+      "org-memory-none": "Geen enkel lid heeft een opgeslagen geheugen."
     },
     "connectors": {
       "title": "Connectors",

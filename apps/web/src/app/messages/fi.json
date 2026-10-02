@@ -611,7 +611,15 @@
       "contextual-error": "Uudelleenindeksointia ei voitu käynnistää. Yritä uudelleen muutaman minuutin kuluttua.",
       "contextual-counting": "Lasketaan kontekstin kanssa indeksoituja asiakirjoja…",
       "contextual-reindexing": "Käsitellään parhaillaan: {count, plural, one {# asiakirja} other {# asiakirjaa}}. Ne saavat kontekstin valmistuttuaan.",
-      "contextual-nothing-started": "Ei uudelleenindeksoitavaa: nämä asiakirjat ovat jo käsittelyssä."
+      "contextual-nothing-started": "Ei uudelleenindeksoitavaa: nämä asiakirjat ovat jo käsittelyssä.",
+      "org-memory-title": "Henkilökohtainen muisti",
+      "org-memory-description": "Kunkin jäsenen muisti näkyy vain hänelle itselleen; ylläpitäjät voivat poistaa sen mutta eivät lukea. Poista kaikki, kun organisaatio lopettaa ominaisuuden käytön.",
+      "org-memory-delete": "Poista kaikkien jäsenten muisti",
+      "org-memory-confirm-title": "Poistetaanko kaikkien jäsenten muisti?",
+      "org-memory-confirm-description": "Kaikki, mitä keskustelu muistaa tämän organisaation jäsenistä, poistetaan. Jäsenille ei ilmoiteta, eikä tätä voi kumota.",
+      "org-memory-deleted": "Kaikkien jäsenten muisti on poistettu.",
+      "org-memory-error": "Muistia ei voitu poistaa. Yritä hetken kuluttua uudelleen.",
+      "org-memory-none": "Kenelläkään jäsenellä ei ole tallennettua muistia."
     },
     "connectors": {
       "title": "Liittimet",

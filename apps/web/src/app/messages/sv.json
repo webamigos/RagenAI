@@ -611,7 +611,15 @@
       "contextual-error": "Omindexeringen kunde inte startas. Försök igen om några minuter.",
       "contextual-counting": "Räknar dokument indexerade med kontext …",
       "contextual-reindexing": "{count, plural, one {# dokument} other {# dokument}} bearbetas nu och får kontext när de är klara.",
-      "contextual-nothing-started": "Inget att indexera om: de dokumenten bearbetas redan."
+      "contextual-nothing-started": "Inget att indexera om: de dokumenten bearbetas redan.",
+      "org-memory-title": "Personligt minne",
+      "org-memory-description": "Varje medlems minne syns bara för medlemmen själv; administratörer kan ta bort det men inte läsa det. Ta bort allt när organisationen slutar använda funktionen.",
+      "org-memory-delete": "Ta bort alla medlemmars minnen",
+      "org-memory-confirm-title": "Ta bort alla medlemmars minnen?",
+      "org-memory-confirm-description": "Allt chatten minns om medlemmarna i den här organisationen tas bort. Medlemmarna meddelas inte, och det går inte att ångra.",
+      "org-memory-deleted": "Alla medlemmars minnen har tagits bort.",
+      "org-memory-error": "Minnena kunde inte tas bort. Försök igen om en stund.",
+      "org-memory-none": "Ingen medlem har sparade minnen."
     },
     "connectors": {
       "title": "Kopplingar",
