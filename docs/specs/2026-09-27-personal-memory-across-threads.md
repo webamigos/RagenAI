@@ -720,7 +720,7 @@ shape an answer before it has been measured.
 
 ### Phase C — extraction
 
-- [ ] **C1.** `memoryExtract` in `packages/jobs` (payload: `orgId`, `userId`,
+- [x] **C1.** `memoryExtract` in `packages/jobs` (payload: `orgId`, `userId`,
   `threadId`, `messageId`, and the encrypted masked question). The handler is
   `apps/worker/src/handlers/memory-extract.ts`, registered in the `JobHandlers`
   map, with a Temporal wrapper. It checks the ceiling (B1's evaluation, tested
@@ -734,6 +734,25 @@ shape an answer before it has been measured.
   - the in-transaction re-check: a job enqueued before "forget everything",
     before opting out, before member removal, and before the key is turned off
     writes nothing in each case.
+
+  *Done.* One activity, `runMemoryExtraction` in
+  `apps/worker/src/activities/memory/`, so the decrypted question and
+  memories never become a step result a runtime stores; its decisions are
+  pure functions in `extraction-plan.ts`. The model sees memories under
+  `m<n>` handles, never their ids. Three things the spec left open:
+  - **The key for a new profile is stored inside the transaction.**
+    `packages/crypto` gained `resolveOwnerKeyForTransaction`, which generates
+    without storing; the job stores it with a conditional update and, if it
+    lost the race, rolls back and retries once under the winner's key.
+  - **Only the token and cost ceilings stop an extraction.** The message
+    ceiling counts chat turns, which an extraction is not.
+  - **The payload carries `questionEncrypted`**, because `maybeEncryptContent`
+    leaves content plaintext when encryption is off even on a thread that
+    has a key, and the worker must not try to decrypt that.
+  The shared limits (`MEMORY_MAX_ENTRIES`, `MEMORY_MAX_CHARS`, …) moved to
+  `platform-contracts`, since the worker writes what the web app shows. A
+  first prompt ships with C1 so the job is runnable; C2 measures and
+  revises it.
 - [ ] **C2.** The extraction prompt, with a promptfoo suite
   `evals/configs/memory-extraction.yaml`. Its dataset has at least 40 user
   messages, covering:

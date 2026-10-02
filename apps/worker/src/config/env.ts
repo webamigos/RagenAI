@@ -110,6 +110,9 @@ export const workerEnvSchema = fragments.targetEnvRequired
     // A blank value (`BRAIN_EXTRACT_MAX_TOKENS=` in a compose file) is unset,
     // as `consts.ts` reads it — not 0, which would refuse to boot.
     BRAIN_EXTRACT_MODEL: blankAsUndefined(z.string().min(1).optional()),
+    // Personal-memory extraction (consts.ts). Optional; falls back to
+    // SUMMARY_MODEL.
+    MEMORY_EXTRACT_MODEL: blankAsUndefined(z.string().min(1).optional()),
     BRAIN_EXTRACT_MAX_DOCUMENTS: blankAsUndefined(
       z.coerce.number().int().positive().optional(),
     ),

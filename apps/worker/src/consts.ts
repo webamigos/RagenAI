@@ -231,6 +231,15 @@ export const BRAIN_EXTRACT_MODEL =
   process.env.BRAIN_EXTRACT_MODEL?.trim() || SUMMARY_MODEL;
 
 /**
+ * The personal-memory extraction model (spec
+ * 2026-09-27-personal-memory-across-threads, C1). One call per chat turn
+ * while `personalMemory` is on, so it falls back to SUMMARY_MODEL, the cheap
+ * model ingest already uses, for the same reason Brain's does.
+ */
+export const MEMORY_EXTRACT_MODEL =
+  process.env.MEMORY_EXTRACT_MODEL?.trim() || SUMMARY_MODEL;
+
+/**
  * Per-run ceilings for Brain extraction (spec B4). A run is one
  * `brainExtract` job; both limits apply to the whole of it. Deliberately
  * modest: a 40k-document pilot started by accident is the failure these exist

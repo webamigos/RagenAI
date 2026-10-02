@@ -259,6 +259,13 @@ export function createMockActivities() {
       notJudged: 0,
       tokens: 0,
     }),
+    runMemoryExtraction: vi.fn().mockResolvedValue({
+      skipped: null,
+      added: 0,
+      updated: 0,
+      deleted: 0,
+      dropped: 0,
+    }),
     reconcileBrainFindings: vi.fn().mockResolvedValue({
       created: 0,
       updated: 0,

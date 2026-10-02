@@ -44,8 +44,10 @@ export {
 
 export {
   openOwnedRows,
+  resolveOwnerKeyForTransaction,
   resolveOwnerKeyForWrite,
   sealOwnedContent,
+  type OwnerKeyForTransaction,
   type OwnerKeyForWrite,
   type OwnerKeyStore,
 } from './owner-key';

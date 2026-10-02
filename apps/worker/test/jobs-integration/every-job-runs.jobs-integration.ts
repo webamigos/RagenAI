@@ -71,6 +71,15 @@ const PAYLOADS: { [N in JobName]: JobPayloads[N] } = {
   brainExtract: { orgId: 'org-1', fileIds: ['file-1'], userId: 'user-1' },
   brainReconcileFindings: { orgId: 'org-1' },
   brainPublishPage: { orgId: 'org-1', pageId: 'page-1', generation: 1 },
+  memoryExtract: {
+    orgId: 'org-1',
+    userId: 'user-1',
+    threadId: 'thread-1',
+    messageId: 'msg-1',
+    epoch: 0,
+    question: 'I prefer bullet points.',
+    questionEncrypted: false,
+  },
 };
 
 /** The activity that proves the pipeline ran, not merely that the job did. */
@@ -85,6 +94,7 @@ const EVIDENCE: Record<JobName, string> = {
   brainExtract: 'extractDocumentCandidates',
   brainReconcileFindings: 'reconcileBrainFindings',
   brainPublishPage: 'publishKnowledgePage',
+  memoryExtract: 'runMemoryExtraction',
 };
 
 describe('every job runs', () => {

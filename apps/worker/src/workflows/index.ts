@@ -8,3 +8,4 @@ export * from './prune-analytics-retrievals.js';
 export * from './brain-extract.js';
 export * from './brain-reconcile-findings.js';
 export * from './brain-publish-page.js';
+export * from './memory-extract.js';

@@ -8,5 +8,6 @@ export * from './files/index.js';
 export * from './loaders/index.js';
 export * from './notifications/index.js';
 export * from './meilisearch/index.js';
+export * from './memory/index.js';
 export * from './splitters/index.js';
 export * from './thumbnails/index.js';
