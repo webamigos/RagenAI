@@ -776,10 +776,19 @@ shape an answer before it has been measured.
   injections, "yes, like that"). It reports keep-precision, keep-recall,
   drop-recall, the org-fact drop rate (E2's gate) and the "yes, like that"
   rate. The numbers are E1's, and need a model budget.
-- [ ] **C3.** The enqueue in `assistant-stream.ts` behind the gate function, with
+- [x] **C3.** The enqueue in `assistant-stream.ts` behind the gate function, with
   a unit test per gate condition, the ownership rule included. From this step,
   with the key on, memories are written and visible in settings, and nothing
   reads them yet. An internal org can now run the eval against real use.
+
+  *Done.* `enqueueMemoryExtractionCommand`, called after the assistant
+  message is saved, outside public mode; the gate is
+  `features/memory/utils/memory-extraction-gate.ts`. The owner is the
+  thread's `visitorId`, the field `ownThreadWhere` reads; "private" means no
+  team, no share and no public link, read in the command's own query rather
+  than by widening `getThreadDetails`. An input refusal throws before this
+  point and a ceiling refusal earlier still, so "refused" at the call site
+  is an output guardrail's `guardrailBlocked`.
 - [ ] **C4.** The daily `memoryPurge` job: expired memories, and change rows
   older than 30 days.
 
