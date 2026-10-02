@@ -1122,6 +1122,14 @@ enum AiUsageStep {
   /// Its own step so the page can say what selection costs beside reranking.
   /// Counts toward the token and cost ceilings, not the message ceiling.
   SECTION_SELECTION
+  /// Ragen Brain's background model calls — extracting candidate pages from a
+  /// document and judging pairs of pages for contradictions. Its own step
+  /// because the message ceiling counts `CHAT_COMPLETION` rows, and one Brain
+  /// run makes several calls per document: recorded as completions, an
+  /// organization running Brain was refused chat turns it never sent. Counts
+  /// toward the token and cost ceilings, not the message ceiling. The Brain
+  /// assistant's answers are a user's turn and stay `CHAT_COMPLETION`.
+  BRAIN
 }
 
 enum McpConnectorStatus {

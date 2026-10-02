@@ -554,7 +554,7 @@ const createSecurityEvent = async (input: {
  * this boundary.
  *
  * It carries every member, not only the ones this app writes today. The
- * worker writes `EMBEDDINGS` and `CHAT_COMPLETION`; it had drifted two members
+ * worker writes `EMBEDDINGS`, `CHAT_COMPLETION` and `BRAIN`; it had drifted two members
  * short of the schema, which costs nothing until the day something here wants
  * to write one of them and cannot — and the symptom then is an absent cost,
  * not a wrong one. `tests/architecture/every-ai-usage-step-is-on-the-page.ts`
@@ -567,7 +567,8 @@ type AiUsageStep =
   | 'MODERATION'
   | 'RERANKING'
   | 'GUARDRAIL'
-  | 'SECTION_SELECTION';
+  | 'SECTION_SELECTION'
+  | 'BRAIN';
 
 /**
  * The row's estimated cost, from the table apps/web and apps/api price with.
