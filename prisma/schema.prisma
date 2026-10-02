@@ -185,6 +185,10 @@ model Thread {
   encryptedDek               String?                 @map("encrypted_dek") // KMS-encrypted data encryption key (base64), presence means messages are encrypted
   chatbotId                  String?                 @map("chatbot_id") @db.Uuid
   chatbot                    Chatbot?                @relation(fields: [chatbotId], references: [id], onDelete: SetNull)
+  /// Personal memories this thread last wrote; they go with it (spec
+  /// 2026-09-27-personal-memory-across-threads, "Provenance is the last writer").
+  memories                   UserMemory[]
+  memoryChanges              UserMemoryChange[]
 
   @@unique([chatbotId, visitorId])
   @@index([organizationId])
@@ -1122,6 +1126,11 @@ enum AiUsageStep {
   /// Its own step so the page can say what selection costs beside reranking.
   /// Counts toward the token and cost ceilings, not the message ceiling.
   SECTION_SELECTION
+  /// The model call that extracts a user's personal memories after a turn
+  /// (spec 2026-09-27-personal-memory-across-threads). Nothing writes it until
+  /// Phase C. Counts toward the token and cost ceilings, not the message
+  /// ceiling, like every other step that is not the answer.
+  MEMORY
   /// Ragen Brain's background model calls — extracting candidate pages from a
   /// document and judging pairs of pages for contradictions. Its own step
   /// because the message ceiling counts `CHAT_COMPLETION` rows, and one Brain
@@ -1759,4 +1768,102 @@ model KnowledgeDecision {
   @@unique([pageId, action, publicationGeneration])
   @@index([organizationId, createdAt])
   @@map("knowledge_decisions")
+}
+
+// ---------------------------------------------------------------------------
+// Personal memory (spec 2026-09-27-personal-memory-across-threads). Every read
+// and write of these three goes through apps/web's
+// `features/memory/services/memory-scope.ts` or the worker's memory activity
+// module: the boundary is the (organization, user) pair, and the tenant-scope
+// guard can see only the organization half. `organizationId` and `userId` are
+// the strings `Thread` uses, with no FK to Better Auth's tables.
+// ---------------------------------------------------------------------------
+
+/// One per (user, organization) that has ever had a memory. Holds the key and
+/// the user's switch, because there is no per-user preference model to put
+/// the switch in. "Forget everything" keeps this row.
+model UserMemoryProfile {
+  id                Int                @id @default(autoincrement())
+  organizationId    String             @map("organization_id")
+  userId            String             @map("user_id")
+  /// The profile's DEK, wrapped like a thread's (ADR-42, as amended for owner
+  /// keys). Null until the first encrypted write.
+  encryptedDek      String?            @map("encrypted_dek")
+  extractionEnabled Boolean            @default(true) @map("extraction_enabled")
+  /// Incremented by "forget everything" and by switching extraction off. A
+  /// job enqueued under an older epoch writes nothing.
+  epoch             Int                @default(0)
+  createdAt         DateTime           @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt         DateTime           @updatedAt @map("updated_at") @db.Timestamptz
+  memories          UserMemory[]
+  changes           UserMemoryChange[]
+
+  @@unique([organizationId, userId])
+  @@map("user_memory_profiles")
+}
+
+/// One short statement about the user, in the third person. At most 50 per
+/// profile and 300 characters each, so a profile is loaded whole.
+model UserMemory {
+  id             Int               @id @default(autoincrement())
+  publicId       String            @unique @default(uuid()) @map("public_id") @db.Uuid
+  organizationId String            @map("organization_id")
+  userId         String            @map("user_id")
+  profileId      Int               @map("profile_id")
+  profile        UserMemoryProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  content        String
+  /// Recorded per row, not inferred from the profile's key: a profile can hold
+  /// plaintext rows written while encryption was off and gain a key later.
+  isEncrypted    Boolean           @map("is_encrypted")
+  /// Incremented on every write; what a stale undo is detected by.
+  version        Int               @default(1)
+  /// The thread that last wrote this row. Deleting it deletes the row.
+  sourceThreadId String?           @map("source_thread_id") @db.Uuid
+  sourceThread   Thread?           @relation(fields: [sourceThreadId], references: [id], onDelete: Cascade)
+  /// 30 days after the date an ongoing-work memory names; neither read nor
+  /// listed after it.
+  expiresAt      DateTime?         @map("expires_at") @db.Timestamptz
+  createdAt      DateTime          @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime          @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@index([organizationId, userId])
+  @@index([sourceThreadId])
+  @@map("user_memories")
+}
+
+/// One per operation an extraction applied. It is what the thread's
+/// "Remembered · Undo" line reads, and what undo restores from. Kept 30 days.
+model UserMemoryChange {
+  id              Int                 @id @default(autoincrement())
+  publicId        String              @unique @default(uuid()) @map("public_id") @db.Uuid
+  organizationId  String              @map("organization_id")
+  userId          String              @map("user_id")
+  profileId       Int                 @map("profile_id")
+  profile         UserMemoryProfile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  /// The assistant message whose turn produced this change.
+  messageId       String              @map("message_id")
+  sourceThreadId  String?             @map("source_thread_id") @db.Uuid
+  sourceThread    Thread?             @relation(fields: [sourceThreadId], references: [id], onDelete: Cascade)
+  memoryPublicId  String              @map("memory_public_id") @db.Uuid
+  operation       UserMemoryOperation
+  /// The content before an UPDATE or DELETE, and the new content after an ADD
+  /// or UPDATE, encrypted like the memory. Needed after a DELETE, when the
+  /// memory row no longer exists.
+  previousContent String?             @map("previous_content")
+  newContent      String?             @map("new_content")
+  isEncrypted     Boolean             @map("is_encrypted")
+  /// The memory's version after this change; null for a DELETE.
+  resultVersion   Int?                @map("result_version")
+  undoneAt        DateTime?           @map("undone_at") @db.Timestamptz
+  createdAt       DateTime            @default(now()) @map("created_at") @db.Timestamptz
+
+  @@index([organizationId, userId, messageId])
+  @@index([sourceThreadId])
+  @@map("user_memory_changes")
+}
+
+enum UserMemoryOperation {
+  ADD
+  UPDATE
+  DELETE
 }

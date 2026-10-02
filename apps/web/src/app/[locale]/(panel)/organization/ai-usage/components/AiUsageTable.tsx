@@ -18,6 +18,7 @@ const STEP_LABELS: Record<string, string> = {
   RERANKING: 'RERANKING',
   GUARDRAIL: 'GUARDRAIL',
   SECTION_SELECTION: 'SELECTION',
+  MEMORY: 'MEMORY',
   BRAIN: 'BRAIN',
   DOCUMENT_PROCESSING: 'DOCUMENTS',
 };
@@ -31,6 +32,7 @@ const STEP_BADGE_COLORS: Record<string, string> = {
   RERANKING: 'bg-secondary text-secondary-foreground',
   GUARDRAIL: 'bg-muted text-muted-foreground',
   SECTION_SELECTION: 'bg-secondary text-secondary-foreground',
+  MEMORY: 'bg-muted text-muted-foreground',
   BRAIN: 'bg-muted text-muted-foreground',
   DOCUMENT_PROCESSING: 'bg-muted text-muted-foreground',
 };

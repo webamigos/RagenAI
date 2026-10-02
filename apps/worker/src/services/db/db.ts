@@ -568,6 +568,7 @@ type AiUsageStep =
   | 'RERANKING'
   | 'GUARDRAIL'
   | 'SECTION_SELECTION'
+  | 'MEMORY'
   | 'BRAIN'
   | 'DOCUMENT_PROCESSING';
 

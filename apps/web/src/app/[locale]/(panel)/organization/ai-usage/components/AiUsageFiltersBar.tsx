@@ -37,6 +37,9 @@ const STEPS = [
   // reranker (`sectionSelection`) — filterable for the same reason reranking
   // is: an organization that turns it on wants to know what it costs.
   { value: AiUsageStep.SECTION_SELECTION, label: 'Section selection' },
+  // The model extracting a user's personal memories after a turn
+  // (`personalMemory`): one call per turn, so its cost is worth a row.
+  { value: AiUsageStep.MEMORY, label: 'Personal memory' },
   // Ragen Brain's background extraction and contradiction checks. Filed under
   // Completion until it had a step of its own, which also counted every call
   // against the organization's monthly message limit.

@@ -31,6 +31,7 @@ const COLORS = [
   '#06b6d4',
   '#ec4899',
   '#84cc16',
+  '#8b5cf6',
   '#f97316',
   '#14b8a6',
 ];
@@ -46,6 +47,7 @@ const STEP_COLORS: Record<string, string> = {
   RERANKING: '#06b6d4',
   GUARDRAIL: '#ec4899',
   SECTION_SELECTION: '#84cc16',
+  MEMORY: '#8b5cf6',
   BRAIN: '#f97316',
   DOCUMENT_PROCESSING: '#14b8a6',
 };
@@ -58,6 +60,7 @@ const STEP_LABELS: Record<string, string> = {
   RERANKING: 'RERANKING',
   GUARDRAIL: 'GUARDRAIL',
   SECTION_SELECTION: 'SELECTION',
+  MEMORY: 'MEMORY',
   BRAIN: 'BRAIN',
   DOCUMENT_PROCESSING: 'DOCUMENTS',
 };

@@ -655,10 +655,18 @@ shape an answer before it has been measured.
   `features.test.ts` is updated.
 
   *Done.* In `packages/platform-contracts`, with a label the admin panel shows.
-- [ ] **A2.** The migration: the three models, `UserMemoryOperation`, and
+- [x] **A2.** The migration: the three models, `UserMemoryOperation`, and
   `AiUsageStep.MEMORY`. All three models go into `TENANT_SCOPED_MODELS`. The
   migration is checked on a throwaway database first, because the local
   `ragen` database has diverged from `prisma/migrations`.
+
+  *Done.* `20261002120000_personal_memory`, generated with `migrate diff
+  --from-migrations` against a shadow database and applied to a fresh one;
+  deleting a thread there removed its memory and change rows and kept the
+  profile. One addition to the data model below: an index on
+  `user_memory_changes.source_thread_id`, which the cascade from `threads`
+  scans. `MEMORY` is on the AI-usage page (chart, filter, table) and in the
+  api and worker step unions.
 - [x] **A3.** `packages/crypto/src/owner-key.ts` with unit tests:
   - the key is created once under a race and reused afterwards;
   - "no key" is returned when encryption is enabled but the provider fails;
