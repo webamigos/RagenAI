@@ -637,6 +637,12 @@ model Account {
 
   @@unique([providerId, accountId])
   @@index([userId])
+  /// Better Auth 1.7 finds an account by (issuer, accountId) on every social
+  /// sign-in and account link (findAccountByKey, findAccountOwnerByKey). The
+  /// library's own schema declares this pair unique; it is a plain index here
+  /// because `issuer` is nullable for a 1.4 rollback. Created by
+  /// 20260902090000_better_auth_1_7_account_issuer.
+  @@index([issuer, accountId])
   @@map("accounts")
 }
 
