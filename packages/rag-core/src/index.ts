@@ -35,6 +35,15 @@ export {
 } from './embedding-contract';
 
 export {
+  CONTEXT_VERSION_PAYLOAD_FIELDS,
+  CURRENT_CONTEXT_VERSION,
+  FREE_CONTEXT_PREFIX_VERSION,
+  countByVersion,
+  fileContextVersions,
+  type ContextPoint,
+} from './context-versions';
+
+export {
   MAX_SOURCE_REGIONS,
   readSourceRegions,
   type SourceRegion,
