@@ -75,9 +75,9 @@ describe('the org memory actions', () => {
     expect(m.deleteAll).not.toHaveBeenCalled();
   });
 
-  it('deletes and returns how many memories went', async () => {
+  it('deletes and returns how many members it covered', async () => {
     expect(await deleteAllMembersMemoriesAction()).toEqual({
-      deletedMemories: 3,
+      deletedProfiles: 3,
     });
   });
 });
