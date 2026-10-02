@@ -76,13 +76,3 @@ archive is the blog.
   ([PL](https://ragen.ai/pl/blog/ragen-changelog-4-11-wrzesnia-2026))
 
 ## Unreleased
-
-### Knowledge base
-
-- `[brief]` **Deleting a file through the API deletes the file.** A document
-  deleted through the public API (`DELETE /v1/files/{id}`) lost its row, its
-  thumbnail and its search index entries, but its original upload stayed in
-  storage: the cleanup asked the session which organization it was in, and an
-  API call has no session. Deleting a folder had the same gap. Both delete the
-  stored original now. Files deleted through the API before this can still
-  have their originals in storage.

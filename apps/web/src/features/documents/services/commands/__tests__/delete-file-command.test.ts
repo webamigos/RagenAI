@@ -147,7 +147,8 @@ describe('deleteFileCommand', () => {
       },
     });
     // The original, by full key under the org it was handed — the
-    // session-reading variant threw on the API path and left it in storage.
+    // session-reading variant threw on the internal route (no session) and
+    // left it in storage.
     expect(mockDeleteFromS3ByKey).toHaveBeenCalledWith('org-1/file-1.pdf');
     expect(mockDeleteFromS3ByKey).toHaveBeenCalledWith('org-1/thumbs/doc.pdf');
     expect(mockDeleteFromS3).not.toHaveBeenCalled();

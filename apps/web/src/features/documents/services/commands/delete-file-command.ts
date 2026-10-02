@@ -80,9 +80,10 @@ export async function deleteFileCommand(
   });
 
   // The full key, from the organization this command was handed. The
-  // session-reading `deleteFromS3` threw on the internal API path — which has
-  // no session — so every file deleted through the public API kept its
-  // original upload in storage while the row, thumbnail and vectors went.
+  // session-reading `deleteFromS3` threw on the internal `/api/v1/files/[fileId]`
+  // route — which has no session — so a file deleted there kept its original
+  // upload in storage while the row, thumbnail and vectors went. (apps/api's
+  // `DELETE /v1/files` has its own delete service and was not affected.)
   const s3Key = `${organizationId}/${fileRecord.id}.${getFileExtension(fileRecord.fileName)}`;
   try {
     await deleteFromS3ByKey(s3Key);
