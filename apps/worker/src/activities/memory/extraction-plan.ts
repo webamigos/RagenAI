@@ -151,6 +151,8 @@ export interface CurrentMemory {
   content: string;
   version: number;
   updatedAt: Date;
+  /** When the memory stops being read; kept by an UPDATE that names no date. */
+  expiresAt?: Date | null;
 }
 
 export interface MemoryPlan {
@@ -221,7 +223,12 @@ export function planMemoryApply(
       plan.updates.push({
         memory,
         content: operation.content,
-        expiresAt: expiryFor(operation.until),
+        // The prompt shows the model no dates, so an UPDATE without one is
+        // not a decision to make a dated memory permanent: keep the expiry.
+        expiresAt:
+          operation.until === undefined
+            ? (memory.expiresAt ?? null)
+            : expiryFor(operation.until),
       });
     }
   }

@@ -4,7 +4,12 @@ const m = vi.hoisted(() => {
   const tx = {
     member: { findFirst: vi.fn() },
     userMemoryProfile: { upsert: vi.fn(), updateMany: vi.fn() },
-    userMemory: { updateMany: vi.fn(), deleteMany: vi.fn(), create: vi.fn() },
+    userMemory: {
+      updateMany: vi.fn(),
+      deleteMany: vi.fn(),
+      create: vi.fn(),
+      count: vi.fn(),
+    },
     userMemoryChange: { create: vi.fn() },
     $queryRaw: vi.fn(),
   };
@@ -53,6 +58,8 @@ vi.mock('@ragenai/crypto', () => ({
   sealOwnedContent: (content: string) => ({ content, isEncrypted: false }),
 }));
 
+import { MEMORY_MAX_ENTRIES } from '@ragenai/platform-contracts';
+
 import { runMemoryExtraction } from '../run-memory-extraction.js';
 
 const PAYLOAD = {
@@ -99,6 +106,7 @@ beforeEach(() => {
   }));
   m.tx.userMemory.updateMany.mockResolvedValue({ count: 1 });
   m.tx.userMemory.deleteMany.mockResolvedValue({ count: 1 });
+  m.tx.userMemory.count.mockResolvedValue(0);
 });
 
 describe('runMemoryExtraction', () => {
@@ -268,14 +276,19 @@ describe('runMemoryExtraction', () => {
       .mockResolvedValueOnce({
         status: 'key',
         dek: Buffer.alloc(32),
+        encryptedDek: 'mine',
         newEncryptedDek: 'mine',
       })
       .mockResolvedValueOnce({
         status: 'key',
         dek: Buffer.alloc(32),
+        encryptedDek: 'theirs',
         newEncryptedDek: null,
       });
     m.tx.userMemoryProfile.updateMany.mockResolvedValueOnce({ count: 0 });
+    m.tx.$queryRaw.mockResolvedValue([
+      { extraction_enabled: true, epoch: 0, encrypted_dek: 'theirs' },
+    ]);
 
     const result = await runMemoryExtraction(PAYLOAD);
 
@@ -285,6 +298,52 @@ describe('runMemoryExtraction', () => {
     });
     expect(m.prisma.$transaction).toHaveBeenCalledTimes(2);
     expect(result.added).toBe(2);
+  });
+
+  it('rolls back when the profile no longer holds the key the content was sealed under', async () => {
+    // The member was removed (profile deleted) and added back between the
+    // key read and the write: the recreated profile holds no key, so rows
+    // sealed under the old one could never be opened again.
+    m.resolveKey
+      .mockResolvedValueOnce({
+        status: 'key',
+        dek: Buffer.alloc(32),
+        encryptedDek: 'old',
+        newEncryptedDek: null,
+      })
+      .mockResolvedValueOnce({
+        status: 'key',
+        dek: Buffer.alloc(32),
+        encryptedDek: 'fresh',
+        newEncryptedDek: 'fresh',
+      });
+    m.tx.$queryRaw
+      .mockResolvedValueOnce([
+        { extraction_enabled: true, epoch: 0, encrypted_dek: null },
+      ])
+      .mockResolvedValueOnce([
+        { extraction_enabled: true, epoch: 0, encrypted_dek: 'fresh' },
+      ]);
+
+    const result = await runMemoryExtraction(PAYLOAD);
+
+    expect(m.prisma.$transaction).toHaveBeenCalledTimes(2);
+    expect(m.tx.userMemoryProfile.updateMany).toHaveBeenCalledWith({
+      where: { id: 9, encryptedDek: null },
+      data: { encryptedDek: 'fresh' },
+    });
+    expect(result.added).toBe(2);
+  });
+
+  it('counts the entry limit again under the lock and drops what no longer fits', async () => {
+    // Another job, or the user's own add, filled the list after the plan
+    // counted it: one place left for this job's two adds.
+    m.tx.userMemory.count.mockResolvedValue(MEMORY_MAX_ENTRIES - 1);
+
+    const result = await runMemoryExtraction(PAYLOAD);
+
+    expect(m.tx.userMemory.create).toHaveBeenCalledTimes(1);
+    expect(result).toMatchObject({ added: 1, dropped: 1 });
   });
 
   it('writes nothing when encryption is on and the owner key is unavailable', async () => {

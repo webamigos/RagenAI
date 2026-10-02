@@ -11,6 +11,7 @@ import type {
 } from '@ragenai/jobs';
 import {
   CHAT_TURN_STEP,
+  MEMORY_MAX_ENTRIES,
   evaluateCeilings,
   usageMonthStart,
 } from '@ragenai/platform-contracts';
@@ -118,6 +119,7 @@ export async function runMemoryExtraction(
       isEncrypted: true,
       version: true,
       updatedAt: true,
+      expiresAt: true,
     },
   });
   const opened = await openOwnedRows(rows, keyStore);
@@ -127,6 +129,7 @@ export async function runMemoryExtraction(
     content: row.content,
     version: row.version,
     updatedAt: row.updatedAt,
+    expiresAt: row.expiresAt,
   }));
 
   const startedAt = Date.now();
@@ -195,9 +198,11 @@ export async function runMemoryExtraction(
       key,
     });
     if (outcome !== 'key-race') {
-      return typeof outcome === 'string'
-        ? skip(outcome, dropped)
-        : { skipped: null, ...outcome, dropped };
+      if (typeof outcome === 'string') {
+        return skip(outcome, dropped);
+      }
+      const { trimmed, ...counts } = outcome;
+      return { skipped: null, ...counts, dropped: dropped + trimmed };
     }
   }
   return skip('key-unavailable', dropped);
@@ -234,7 +239,7 @@ async function applyPlan({
   plan: MemoryPlan;
   key: ApplyKey;
 }): Promise<
-  | { added: number; updated: number; deleted: number }
+  | { added: number; updated: number; deleted: number; trimmed: number }
   | MemoryExtractSkip
   | 'key-race'
 > {
@@ -281,8 +286,23 @@ async function applyPlan({
       }
 
       const [locked] = await tx.$queryRaw<
-        { extraction_enabled: boolean; epoch: number }[]
-      >`SELECT extraction_enabled, epoch FROM user_memory_profiles WHERE id = ${profile.id} AND organization_id = ${orgId} AND user_id = ${userId} FOR UPDATE`;
+        {
+          extraction_enabled: boolean;
+          epoch: number;
+          encrypted_dek: string | null;
+        }[]
+      >`SELECT extraction_enabled, epoch, encrypted_dek FROM user_memory_profiles WHERE id = ${profile.id} AND organization_id = ${orgId} AND user_id = ${userId} FOR UPDATE`;
+      // The content was sealed under `key`. A profile deleted and recreated
+      // since the key was read (a member removed and added back) holds no key
+      // or another one, and rows sealed under the old key could never be read
+      // again. Roll back; the retry resolves the profile's key as it is now.
+      if (
+        key.status === 'key' &&
+        locked &&
+        locked.encrypted_dek !== key.encryptedDek
+      ) {
+        throw new KeyRace();
+      }
       const features = await resolveOrgFeatures(orgId);
       const gate = memoryWriteGate({
         featureOn: features.personalMemory.value,
@@ -301,6 +321,7 @@ async function applyPlan({
       }
 
       let added = 0;
+      let trimmed = 0;
       let updated = 0;
       let deleted = 0;
       for (const update of sealed.updates) {
@@ -362,7 +383,18 @@ async function applyPlan({
           });
         }
       }
-      for (const add of sealed.adds) {
+      // The entry limit, again under the lock: the plan's room was counted
+      // before the model call, and a job for the next turn, or the user's own
+      // add, may have written since. Counted after this job's deletes.
+      const live = await tx.userMemory.count({
+        where: {
+          ...owner,
+          OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
+        },
+      });
+      const room = Math.max(0, MEMORY_MAX_ENTRIES - live);
+      trimmed = Math.max(0, sealed.adds.length - room);
+      for (const add of sealed.adds.slice(0, room)) {
         const memory = await tx.userMemory.create({
           data: {
             ...owner,
@@ -389,7 +421,7 @@ async function applyPlan({
           },
         });
       }
-      return { added, updated, deleted };
+      return { added, updated, deleted, trimmed };
     });
   } catch (error) {
     if (error instanceof KeyRace) {

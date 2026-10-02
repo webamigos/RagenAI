@@ -159,6 +159,26 @@ describe('planMemoryApply', () => {
     expect(plan.dropped).toBe(0);
   });
 
+  it("keeps a dated memory's expiry when an UPDATE names no date", () => {
+    // The prompt shows the model no dates, so leaving "until" out is not a
+    // decision to make the memory permanent.
+    const dated = {
+      ...memory('m1', 'Is preparing the X tender.'),
+      expiresAt: new Date('2026-11-14T00:00:00Z'),
+    };
+    const plan = planMemoryApply(
+      [dated],
+      [
+        {
+          op: 'UPDATE',
+          ref: 'm1',
+          content: 'Is preparing the X and Y tenders.',
+        },
+      ],
+    );
+    expect(plan.updates[0]?.expiresAt).toEqual(dated.expiresAt);
+  });
+
   it('drops a ref the model was never shown, and a second operation on one ref', () => {
     const plan = planMemoryApply(current, [
       { op: 'DELETE', ref: 'm9' },
