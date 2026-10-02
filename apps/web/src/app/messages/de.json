@@ -642,7 +642,8 @@
       "pii-policy": "Richtlinie für personenbezogene Daten",
       "organization-section": "Organisation",
       "you-section": "Du",
-      "privacy-section": "Datenschutz"
+      "privacy-section": "Datenschutz",
+      "memory": "Gedächtnis"
     },
     "general": {
       "profile": "Profil",
@@ -940,6 +941,42 @@
         "days": "{count} T",
         "export": "CSV exportieren"
       }
+    },
+    "memory": {
+      "title": "Gedächtnis",
+      "description": "Was der Chat in all Ihren Unterhaltungen in dieser Organisation über Sie weiß: wie Sie Antworten mögen, Ihre Rolle, woran Sie arbeiten. Nur Sie sehen es.",
+      "switch-label": "Merken, was ich dem Chat über mich sage",
+      "switch-description": "Neue Unterhaltungen nutzen, was Sie vorher gesagt haben. Beim Ausschalten bleibt Gemerktes erhalten; Sie können es unten vergessen lassen.",
+      "list-title": "Gemerkt",
+      "count": "{count, plural, one {# Eintrag} other {# Einträge}} von {max}",
+      "empty": "Noch nichts gemerkt. Was Sie im Chat über sich sagen, erscheint hier.",
+      "edit": "Bearbeiten",
+      "edit-label": "Eintrag bearbeiten",
+      "save": "Speichern",
+      "cancel": "Abbrechen",
+      "delete": "Löschen",
+      "delete-confirm-title": "Diesen Eintrag löschen?",
+      "delete-confirm-description": "Der Chat verwendet ihn in neuen Unterhaltungen nicht mehr.",
+      "from-thread": "Aus {title}",
+      "from-untitled": "Aus einer Unterhaltung",
+      "from-none": "Keiner Unterhaltung zugeordnet",
+      "until": "bis {date}",
+      "forget-all": "Alles vergessen",
+      "forget-all-description": "Alles löschen, was der Chat in dieser Organisation über Sie weiß.",
+      "forget-confirm-title": "Alles vergessen, was der Chat über Sie weiß?",
+      "forget-confirm-description": "Alle Einträge in dieser Organisation werden gelöscht. Das lässt sich nicht rückgängig machen.",
+      "forget-confirm-action": "Alles vergessen",
+      "saved": "Eintrag aktualisiert.",
+      "deleted": "Eintrag gelöscht.",
+      "forgotten": "Alles, was der Chat über Sie wusste, ist gelöscht.",
+      "switched-on": "Der Chat merkt sich, was Sie ihm sagen.",
+      "switched-off": "Der Chat fügt keine neuen Einträge hinzu.",
+      "error": "Das hat nicht geklappt. Versuchen Sie es gleich noch einmal.",
+      "error-not-found": "Dieser Eintrag existiert nicht mehr. Laden Sie die Seite neu.",
+      "off": "Das Gedächtnis ist für diese Organisation ausgeschaltet.",
+      "off-stored": "{count, plural, one {# Eintrag ist} other {# Einträge sind}} noch gespeichert. Sie können sie löschen.",
+      "off-nothing": "Über Sie ist nichts gespeichert.",
+      "list-unavailable": "Ihre Einträge konnten gerade nicht geladen werden. Sie können unten trotzdem alles vergessen lassen."
     }
   },
   "teams-page": {

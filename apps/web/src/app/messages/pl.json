@@ -642,7 +642,8 @@
       "pii-policy": "Polityka PII",
       "organization-section": "Organizacja",
       "you-section": "Ty",
-      "privacy-section": "Prywatność"
+      "privacy-section": "Prywatność",
+      "memory": "Pamięć"
     },
     "general": {
       "profile": "Profil",
@@ -940,6 +941,42 @@
         "days": "{count} dni",
         "export": "Eksportuj CSV"
       }
+    },
+    "memory": {
+      "title": "Pamięć",
+      "description": "Co czat pamięta o Tobie ze wszystkich rozmów w tej organizacji: jak lubisz odpowiedzi, Twoją rolę, nad czym pracujesz. Widzisz to tylko Ty.",
+      "switch-label": "Zapamiętuj, co mówię czatowi o sobie",
+      "switch-description": "Nowe rozmowy korzystają z tego, co powiedziałeś wcześniej. Wyłączenie zachowuje to, co już zapamiętane; możesz to usunąć poniżej.",
+      "list-title": "Zapamiętane",
+      "count": "{count, plural, one {# wpis} few {# wpisy} many {# wpisów} other {# wpisu}} z {max}",
+      "empty": "Na razie nic nie jest zapamiętane. To, co powiesz o sobie w rozmowach, pojawi się tutaj.",
+      "edit": "Edytuj",
+      "edit-label": "Edytuj wpis",
+      "save": "Zapisz",
+      "cancel": "Anuluj",
+      "delete": "Usuń",
+      "delete-confirm-title": "Usunąć ten wpis?",
+      "delete-confirm-description": "Czat przestanie z niego korzystać w nowych rozmowach.",
+      "from-thread": "Z rozmowy {title}",
+      "from-untitled": "Z rozmowy",
+      "from-none": "Niezwiązane z rozmową",
+      "until": "do {date}",
+      "forget-all": "Zapomnij wszystko",
+      "forget-all-description": "Usuń wszystko, co czat pamięta o Tobie w tej organizacji.",
+      "forget-confirm-title": "Zapomnieć wszystko, co czat pamięta o Tobie?",
+      "forget-confirm-description": "Wszystkie wpisy w tej organizacji zostaną usunięte. Nie da się tego cofnąć.",
+      "forget-confirm-action": "Zapomnij wszystko",
+      "saved": "Wpis zaktualizowany.",
+      "deleted": "Wpis usunięty.",
+      "forgotten": "Wszystko, co czat o Tobie pamiętał, zostało usunięte.",
+      "switched-on": "Czat będzie pamiętał, co mu mówisz.",
+      "switched-off": "Czat nie będzie dodawał nowych wpisów.",
+      "error": "Nie udało się. Spróbuj ponownie za chwilę.",
+      "error-not-found": "Ten wpis już nie istnieje. Odśwież stronę.",
+      "off": "Pamięć jest wyłączona dla tej organizacji.",
+      "off-stored": "Wciąż przechowywane: {count, plural, one {# wpis} few {# wpisy} many {# wpisów} other {# wpisu}}. Możesz je usunąć.",
+      "off-nothing": "Nic o Tobie nie jest przechowywane.",
+      "list-unavailable": "Nie udało się teraz wczytać Twoich wpisów. Nadal możesz zapomnieć wszystko poniżej."
     }
   },
   "teams-page": {

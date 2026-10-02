@@ -642,7 +642,8 @@
       "pii-policy": "PII-retningslinjer",
       "organization-section": "Organisasjon",
       "you-section": "Du",
-      "privacy-section": "Personvern"
+      "privacy-section": "Personvern",
+      "memory": "Minne"
     },
     "general": {
       "profile": "Profil",
@@ -940,6 +941,42 @@
         "days": "{count} d",
         "export": "Eksporter CSV"
       }
+    },
+    "memory": {
+      "title": "Minne",
+      "description": "Det chatten husker om deg fra samtalene dine i denne organisasjonen: hvordan du liker svar, rollen din, hva du jobber med. Bare du kan se det.",
+      "switch-label": "Husk det jeg forteller chatten om meg selv",
+      "switch-description": "Nye samtaler bruker det du har sagt før. Å slå av beholder det som allerede er husket; du kan glemme det nedenfor.",
+      "list-title": "Husket",
+      "count": "{count, plural, one {# minne} other {# minner}} av {max}",
+      "empty": "Ingenting er husket ennå. Det du sier om deg selv i chatten, vises her.",
+      "edit": "Rediger",
+      "edit-label": "Rediger minne",
+      "save": "Lagre",
+      "cancel": "Avbryt",
+      "delete": "Slett",
+      "delete-confirm-title": "Slette dette minnet?",
+      "delete-confirm-description": "Chatten slutter å bruke det i nye samtaler.",
+      "from-thread": "Fra {title}",
+      "from-untitled": "Fra en samtale",
+      "from-none": "Ikke knyttet til en samtale",
+      "until": "til {date}",
+      "forget-all": "Glem alt",
+      "forget-all-description": "Slett alt chatten husker om deg i denne organisasjonen.",
+      "forget-confirm-title": "Glemme alt chatten husker om deg?",
+      "forget-confirm-description": "Alle minner i denne organisasjonen slettes. Dette kan ikke angres.",
+      "forget-confirm-action": "Glem alt",
+      "saved": "Minnet er oppdatert.",
+      "deleted": "Minnet er slettet.",
+      "forgotten": "Alt chatten husket om deg, er slettet.",
+      "switched-on": "Chatten husker det du forteller den.",
+      "switched-off": "Chatten legger ikke til nye minner.",
+      "error": "Det fungerte ikke. Prøv igjen om et øyeblikk.",
+      "error-not-found": "Det minnet finnes ikke lenger. Last inn siden på nytt.",
+      "off": "Minne er slått av for denne organisasjonen.",
+      "off-stored": "{count, plural, one {# minne er} other {# minner er}} fortsatt lagret. Du kan slette dem.",
+      "off-nothing": "Ingenting er lagret om deg.",
+      "list-unavailable": "Minnene dine kunne ikke lastes nå. Du kan fortsatt glemme alt nedenfor."
     }
   },
   "teams-page": {

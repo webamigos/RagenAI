@@ -107,6 +107,20 @@ export const settingsRegistry: readonly SettingsPage[] = [
     group: 'you',
     visibility: { requireRole: 'user' },
   },
+  {
+    // Personal memory (spec 2026-09-27-personal-memory-across-threads, B2).
+    // Listed while the org has `personalMemory` on, or while the user still
+    // has memories stored — the settings layout folds that into the flag —
+    // so a user can always find the page that erases them. The page itself
+    // is reachable either way.
+    id: 'memory',
+    path: '/settings/memory',
+    labelKey: 'settings-page.nav.memory',
+    icon: 'chat-bubble',
+    order: 37,
+    group: 'you',
+    visibility: { requireRole: 'user', featureFlag: 'personalMemory' },
+  },
 ];
 
 /**

@@ -642,7 +642,8 @@
       "pii-policy": "Zásady osobných údajov",
       "organization-section": "Organizácia",
       "you-section": "Vy",
-      "privacy-section": "Súkromie"
+      "privacy-section": "Súkromie",
+      "memory": "Pamäť"
     },
     "general": {
       "profile": "Profil",
@@ -940,6 +941,42 @@
         "days": "{count} d",
         "export": "Exportovať CSV"
       }
+    },
+    "memory": {
+      "title": "Pamäť",
+      "description": "Čo si o vás chat pamätá z vašich konverzácií v tejto organizácii: aké odpovede máte radi, vašu rolu, na čom pracujete. Vidíte to iba vy.",
+      "switch-label": "Pamätať si, čo chatu poviem o sebe",
+      "switch-description": "Nové konverzácie využívajú to, čo ste povedali predtým. Vypnutím zostane zapamätané zachované; nižšie to môžete zabudnúť.",
+      "list-title": "Zapamätané",
+      "count": "{count, plural, one {# záznam} few {# záznamy} many {# záznamu} other {# záznamov}} z {max}",
+      "empty": "Zatiaľ nie je nič zapamätané. Čo o sebe v chate poviete, sa zobrazí tu.",
+      "edit": "Upraviť",
+      "edit-label": "Upraviť záznam",
+      "save": "Uložiť",
+      "cancel": "Zrušiť",
+      "delete": "Odstrániť",
+      "delete-confirm-title": "Odstrániť tento záznam?",
+      "delete-confirm-description": "Chat ho prestane používať v nových konverzáciách.",
+      "from-thread": "Z konverzácie {title}",
+      "from-untitled": "Z konverzácie",
+      "from-none": "Nesúvisí s konverzáciou",
+      "until": "do {date}",
+      "forget-all": "Zabudnúť všetko",
+      "forget-all-description": "Odstrániť všetko, čo si o vás chat v tejto organizácii pamätá.",
+      "forget-confirm-title": "Zabudnúť všetko, čo si o vás chat pamätá?",
+      "forget-confirm-description": "Všetky záznamy v tejto organizácii budú odstránené. Nedá sa to vrátiť.",
+      "forget-confirm-action": "Zabudnúť všetko",
+      "saved": "Záznam upravený.",
+      "deleted": "Záznam odstránený.",
+      "forgotten": "Všetko, čo si o vás chat pamätal, je odstránené.",
+      "switched-on": "Chat si bude pamätať, čo mu poviete.",
+      "switched-off": "Chat nebude pridávať nové záznamy.",
+      "error": "Nepodarilo sa to. Skúste to o chvíľu znova.",
+      "error-not-found": "Tento záznam už neexistuje. Obnovte stránku.",
+      "off": "Pamäť je pre túto organizáciu vypnutá.",
+      "off-stored": "Stále uložené: {count, plural, one {# záznam} few {# záznamy} many {# záznamu} other {# záznamov}}. Môžete ich odstrániť.",
+      "off-nothing": "Nič o vás nie je uložené.",
+      "list-unavailable": "Vaše záznamy sa teraz nepodarilo načítať. Nižšie môžete aj tak zabudnúť všetko."
     }
   },
   "teams-page": {

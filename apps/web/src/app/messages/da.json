@@ -642,7 +642,8 @@
       "pii-policy": "Politik for personoplysninger",
       "organization-section": "Organisation",
       "you-section": "Dig",
-      "privacy-section": "Privatliv"
+      "privacy-section": "Privatliv",
+      "memory": "Hukommelse"
     },
     "general": {
       "profile": "Profil",
@@ -940,6 +941,42 @@
         "days": "{count} d",
         "export": "Eksportér CSV"
       }
+    },
+    "memory": {
+      "title": "Hukommelse",
+      "description": "Det chatten husker om dig fra dine samtaler i denne organisation: hvordan du kan lide svar, din rolle, hvad du arbejder på. Kun du kan se det.",
+      "switch-label": "Husk det, jeg fortæller chatten om mig selv",
+      "switch-description": "Nye samtaler bruger det, du har sagt før. At slå fra beholder det, der allerede er husket; du kan glemme det nedenfor.",
+      "list-title": "Husket",
+      "count": "{count, plural, one {# minde} other {# minder}} af {max}",
+      "empty": "Intet er husket endnu. Det, du siger om dig selv i chatten, vises her.",
+      "edit": "Rediger",
+      "edit-label": "Rediger minde",
+      "save": "Gem",
+      "cancel": "Annuller",
+      "delete": "Slet",
+      "delete-confirm-title": "Slet dette minde?",
+      "delete-confirm-description": "Chatten holder op med at bruge det i nye samtaler.",
+      "from-thread": "Fra {title}",
+      "from-untitled": "Fra en samtale",
+      "from-none": "Ikke knyttet til en samtale",
+      "until": "indtil {date}",
+      "forget-all": "Glem alt",
+      "forget-all-description": "Slet alt, chatten husker om dig i denne organisation.",
+      "forget-confirm-title": "Glem alt, chatten husker om dig?",
+      "forget-confirm-description": "Alle minder i denne organisation slettes. Det kan ikke fortrydes.",
+      "forget-confirm-action": "Glem alt",
+      "saved": "Mindet er opdateret.",
+      "deleted": "Mindet er slettet.",
+      "forgotten": "Alt, chatten huskede om dig, er slettet.",
+      "switched-on": "Chatten husker det, du fortæller den.",
+      "switched-off": "Chatten tilføjer ikke nye minder.",
+      "error": "Det virkede ikke. Prøv igen om et øjeblik.",
+      "error-not-found": "Det minde findes ikke længere. Genindlæs siden.",
+      "off": "Hukommelse er slået fra for denne organisation.",
+      "off-stored": "{count, plural, one {# minde er} other {# minder er}} stadig gemt. Du kan slette dem.",
+      "off-nothing": "Der er intet gemt om dig.",
+      "list-unavailable": "Dine minder kunne ikke indlæses lige nu. Du kan stadig glemme alt nedenfor."
     }
   },
   "teams-page": {

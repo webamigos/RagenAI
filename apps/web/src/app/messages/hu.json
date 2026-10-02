@@ -642,7 +642,8 @@
       "pii-policy": "Személyes adatok kezelési szabályzata",
       "organization-section": "Szervezet",
       "you-section": "Te",
-      "privacy-section": "Adatvédelem"
+      "privacy-section": "Adatvédelem",
+      "memory": "Memória"
     },
     "general": {
       "profile": "Profil",
@@ -940,6 +941,42 @@
         "days": "{count} nap",
         "export": "CSV exportálása"
       }
+    },
+    "memory": {
+      "title": "Memória",
+      "description": "Amit a csevegés megjegyez rólad a szervezet beszélgetéseiből: milyen válaszokat szeretsz, a szereped, min dolgozol. Csak te láthatod.",
+      "switch-label": "Jegyezze meg, amit magamról mondok a csevegésnek",
+      "switch-description": "Az új beszélgetések felhasználják, amit korábban mondtál. A kikapcsolás megtartja a már megjegyzetteket; lent elfelejtheted őket.",
+      "list-title": "Megjegyezve",
+      "count": "{count, plural, one {# bejegyzés} other {# bejegyzés}} / {max}",
+      "empty": "Még semmi sincs megjegyezve. Amit magadról mondasz a csevegésben, itt jelenik meg.",
+      "edit": "Szerkesztés",
+      "edit-label": "Bejegyzés szerkesztése",
+      "save": "Mentés",
+      "cancel": "Mégse",
+      "delete": "Törlés",
+      "delete-confirm-title": "Törlöd ezt a bejegyzést?",
+      "delete-confirm-description": "A csevegés nem használja többé az új beszélgetésekben.",
+      "from-thread": "Innen: {title}",
+      "from-untitled": "Egy beszélgetésből",
+      "from-none": "Nem kapcsolódik beszélgetéshez",
+      "until": "eddig: {date}",
+      "forget-all": "Minden elfelejtése",
+      "forget-all-description": "Törli mindazt, amit a csevegés rólad megjegyzett ebben a szervezetben.",
+      "forget-confirm-title": "Elfelejted mindazt, amit a csevegés rólad megjegyzett?",
+      "forget-confirm-description": "A szervezet összes bejegyzése törlődik. Ez nem vonható vissza.",
+      "forget-confirm-action": "Minden elfelejtése",
+      "saved": "Bejegyzés frissítve.",
+      "deleted": "Bejegyzés törölve.",
+      "forgotten": "Minden, amit a csevegés rólad megjegyzett, törölve.",
+      "switched-on": "A csevegés megjegyzi, amit mondasz neki.",
+      "switched-off": "A csevegés nem ad hozzá új bejegyzéseket.",
+      "error": "Ez nem sikerült. Próbáld újra egy pillanat múlva.",
+      "error-not-found": "Ez a bejegyzés már nem létezik. Töltsd újra az oldalt.",
+      "off": "A memória ki van kapcsolva ebben a szervezetben.",
+      "off-stored": "Még tárolva: {count, plural, one {# bejegyzés} other {# bejegyzés}}. Törölheted őket.",
+      "off-nothing": "Semmi sincs tárolva rólad.",
+      "list-unavailable": "A bejegyzéseidet most nem sikerült betölteni. Lent így is elfelejthetsz mindent."
     }
   },
   "teams-page": {

@@ -14,6 +14,7 @@ import {
   type SettingsPage,
 } from '@/features/settings/registry';
 import { filterSettingsPages } from '@/features/settings/filter';
+import { navFeatureFlags } from '@/features/settings/nav-feature-flags';
 
 type Props = Readonly<{
   children: React.ReactNode;
@@ -26,11 +27,17 @@ export default async function SettingsLayout({ children }: Props) {
     getOrgIdFromAuth(),
   ]);
 
-  const member = activeOrgId ? await getActiveMember(activeOrgId) : null;
+  const [member, featureFlags] = activeOrgId
+    ? await Promise.all([
+        getActiveMember(activeOrgId),
+        navFeatureFlags(activeOrgId),
+      ])
+    : [null, {}];
   const access = {
     isAppAdmin: isAppAdmin(user),
     canManageOrg: member ? canManageOrg(member.role) : false,
     isOrgOwner: member ? hasOrgRole(member.role, 'owner') : false,
+    featureFlags,
   };
 
   // One rail, three sections — gap 8. Both halves are filtered by the same

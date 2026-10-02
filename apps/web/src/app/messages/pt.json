@@ -642,7 +642,8 @@
       "pii-policy": "Política de dados pessoais",
       "organization-section": "Organização",
       "you-section": "Você",
-      "privacy-section": "Privacidade"
+      "privacy-section": "Privacidade",
+      "memory": "Memória"
     },
     "general": {
       "profile": "Perfil",
@@ -940,6 +941,42 @@
         "days": "{count} d",
         "export": "Exportar CSV"
       }
+    },
+    "memory": {
+      "title": "Memória",
+      "description": "O que o chat se lembra de si nas conversas desta organização: como prefere as respostas, a sua função, em que está a trabalhar. Só o utilizador o vê.",
+      "switch-label": "Lembrar o que digo ao chat sobre mim",
+      "switch-description": "As novas conversas usam o que disse antes. Desativar mantém o que já foi lembrado; pode esquecê-lo abaixo.",
+      "list-title": "Lembrado",
+      "count": "{count, plural, one {# memória} other {# memórias}} de {max}",
+      "empty": "Ainda nada foi lembrado. O que disser sobre si no chat aparecerá aqui.",
+      "edit": "Editar",
+      "edit-label": "Editar memória",
+      "save": "Guardar",
+      "cancel": "Cancelar",
+      "delete": "Eliminar",
+      "delete-confirm-title": "Eliminar esta memória?",
+      "delete-confirm-description": "O chat deixará de a usar em novas conversas.",
+      "from-thread": "De {title}",
+      "from-untitled": "De uma conversa",
+      "from-none": "Sem conversa associada",
+      "until": "até {date}",
+      "forget-all": "Esquecer tudo",
+      "forget-all-description": "Eliminar tudo o que o chat se lembra de si nesta organização.",
+      "forget-confirm-title": "Esquecer tudo o que o chat se lembra de si?",
+      "forget-confirm-description": "Todas as memórias desta organização são eliminadas. Não é possível anular.",
+      "forget-confirm-action": "Esquecer tudo",
+      "saved": "Memória atualizada.",
+      "deleted": "Memória eliminada.",
+      "forgotten": "Tudo o que o chat se lembrava de si foi eliminado.",
+      "switched-on": "O chat vai lembrar-se do que lhe disser.",
+      "switched-off": "O chat não vai acrescentar novas memórias.",
+      "error": "Não funcionou. Tente novamente daqui a pouco.",
+      "error-not-found": "Essa memória já não existe. Recarregue a página.",
+      "off": "A memória está desativada nesta organização.",
+      "off-stored": "Ainda estão guardadas {count, plural, one {# memória} other {# memórias}}. Pode eliminá-las.",
+      "off-nothing": "Não há nada guardado sobre si.",
+      "list-unavailable": "Não foi possível carregar as suas memórias agora. Ainda pode esquecer tudo abaixo."
     }
   },
   "teams-page": {

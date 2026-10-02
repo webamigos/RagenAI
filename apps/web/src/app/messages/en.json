@@ -642,7 +642,8 @@
       "pii-policy": "PII policy",
       "organization-section": "Organization",
       "you-section": "You",
-      "privacy-section": "Privacy"
+      "privacy-section": "Privacy",
+      "memory": "Memory"
     },
     "general": {
       "profile": "Profile",
@@ -940,6 +941,42 @@
         "days": "{count} d",
         "export": "Export CSV"
       }
+    },
+    "memory": {
+      "title": "Memory",
+      "description": "What chat remembers about you across your conversations in this organization: how you like answers, your role, what you are working on. Only you can see it.",
+      "switch-label": "Remember what I tell chat about myself",
+      "switch-description": "New conversations use what you said before. Turning this off keeps what is already remembered; you can forget it below.",
+      "list-title": "Remembered",
+      "count": "{count, plural, one {# memory} other {# memories}} of {max}",
+      "empty": "Nothing remembered yet. As you chat, what you say about yourself will show up here.",
+      "edit": "Edit",
+      "edit-label": "Edit memory",
+      "save": "Save",
+      "cancel": "Cancel",
+      "delete": "Delete",
+      "delete-confirm-title": "Delete this memory?",
+      "delete-confirm-description": "Chat will stop using it in new conversations.",
+      "from-thread": "From {title}",
+      "from-untitled": "From a conversation",
+      "from-none": "Not tied to a conversation",
+      "until": "until {date}",
+      "forget-all": "Forget everything",
+      "forget-all-description": "Delete everything chat remembers about you in this organization.",
+      "forget-confirm-title": "Forget everything chat remembers about you?",
+      "forget-confirm-description": "Every memory in this organization is deleted. This can't be undone.",
+      "forget-confirm-action": "Forget everything",
+      "saved": "Memory updated.",
+      "deleted": "Memory deleted.",
+      "forgotten": "Everything chat remembered about you is deleted.",
+      "switched-on": "Chat will remember what you tell it.",
+      "switched-off": "Chat won't add new memories.",
+      "error": "That didn't work. Try again in a moment.",
+      "error-not-found": "That memory no longer exists. Reload the page.",
+      "off": "Memory is turned off for this organization.",
+      "off-stored": "{count, plural, one {# memory is} other {# memories are}} still stored. You can delete them.",
+      "off-nothing": "Nothing is stored about you.",
+      "list-unavailable": "Your memories couldn't be loaded right now. You can still forget everything below."
     }
   },
   "teams-page": {

@@ -725,11 +725,22 @@ shape an answer before it has been measured.
   `checkUsageCeilings` was the same arithmetic a second time and uses it too;
   `usage-math-is-not-recopied.test.ts` fails on a ceiling comparison in
   either app.
-- [ ] **B2.** The `settings/memory` page: list, edit, delete, forget everything,
+- [x] **B2.** The `settings/memory` page: list, edit, delete, forget everything,
   the extraction switch, and the deletion-only state when the org has the key
   off. It gets a registry entry in the `you` group, and i18n in all 15 locale
   files, regenerated from a key list rather than hand-merged. With nothing yet
   writing memories, the page shows its empty state.
+
+  *Done.* The repo has 17 locales now, all regenerated. One decision the spec
+  left open: **the rail lists the page while the org has `personalMemory` on
+  or the user still has memories stored**, and the page is reachable by URL
+  either way. Listing it unconditionally would put an unfinished feature in
+  every member's menu while the key defaults to off; hiding it whenever the
+  key is off would hide the erasure page from someone with memories. The
+  settings layout now passes feature flags to the rail at all — it did not
+  before, so `featureFlag` on a settings entry had never worked. Edit, delete
+  and the switch are refused server-side while the key is off; "forget
+  everything" never is.
 - [ ] **B3.** The org-admin "delete all members' memories" action through the
   separate `OrgMemoryAdmin` scope, guarded by `canManageOrg()`. Tests: it reads
   no content, a member without the capability is refused, and another org's

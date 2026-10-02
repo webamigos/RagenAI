@@ -642,7 +642,8 @@
       "pii-policy": "Policy för personuppgifter",
       "organization-section": "Organisation",
       "you-section": "Du",
-      "privacy-section": "Integritet"
+      "privacy-section": "Integritet",
+      "memory": "Minne"
     },
     "general": {
       "profile": "Profil",
@@ -940,6 +941,42 @@
         "days": "{count} d",
         "export": "Exportera CSV"
       }
+    },
+    "memory": {
+      "title": "Minne",
+      "description": "Det chatten minns om dig från dina samtal i den här organisationen: hur du vill ha svar, din roll, vad du arbetar med. Bara du kan se det.",
+      "switch-label": "Kom ihåg det jag berättar för chatten om mig",
+      "switch-description": "Nya samtal använder det du sagt tidigare. Att stänga av behåller det som redan är ihågkommet; du kan glömma det nedan.",
+      "list-title": "Ihågkommet",
+      "count": "{count, plural, one {# minne} other {# minnen}} av {max}",
+      "empty": "Inget är ihågkommet än. Det du säger om dig själv i chatten visas här.",
+      "edit": "Redigera",
+      "edit-label": "Redigera minne",
+      "save": "Spara",
+      "cancel": "Avbryt",
+      "delete": "Ta bort",
+      "delete-confirm-title": "Ta bort det här minnet?",
+      "delete-confirm-description": "Chatten slutar använda det i nya samtal.",
+      "from-thread": "Från {title}",
+      "from-untitled": "Från ett samtal",
+      "from-none": "Inte kopplat till ett samtal",
+      "until": "till {date}",
+      "forget-all": "Glöm allt",
+      "forget-all-description": "Ta bort allt chatten minns om dig i den här organisationen.",
+      "forget-confirm-title": "Glömma allt chatten minns om dig?",
+      "forget-confirm-description": "Alla minnen i den här organisationen tas bort. Det går inte att ångra.",
+      "forget-confirm-action": "Glöm allt",
+      "saved": "Minnet har uppdaterats.",
+      "deleted": "Minnet har tagits bort.",
+      "forgotten": "Allt chatten mindes om dig har tagits bort.",
+      "switched-on": "Chatten kommer ihåg det du berättar.",
+      "switched-off": "Chatten lägger inte till nya minnen.",
+      "error": "Det fungerade inte. Försök igen om en stund.",
+      "error-not-found": "Det minnet finns inte längre. Ladda om sidan.",
+      "off": "Minnet är avstängt för den här organisationen.",
+      "off-stored": "{count, plural, one {# minne är} other {# minnen är}} fortfarande sparade. Du kan ta bort dem.",
+      "off-nothing": "Inget är sparat om dig.",
+      "list-unavailable": "Dina minnen kunde inte läsas in just nu. Du kan fortfarande glömma allt nedan."
     }
   },
   "teams-page": {

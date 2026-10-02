@@ -642,7 +642,8 @@
       "pii-policy": "Politique des données personnelles",
       "organization-section": "Organisation",
       "you-section": "Vous",
-      "privacy-section": "Confidentialité"
+      "privacy-section": "Confidentialité",
+      "memory": "Mémoire"
     },
     "general": {
       "profile": "Profil",
@@ -940,6 +941,42 @@
         "days": "{count} j",
         "export": "Exporter en CSV"
       }
+    },
+    "memory": {
+      "title": "Mémoire",
+      "description": "Ce que le chat retient de vous dans vos conversations de cette organisation : comment vous aimez les réponses, votre rôle, ce sur quoi vous travaillez. Vous seul pouvez le voir.",
+      "switch-label": "Retenir ce que je dis au chat sur moi",
+      "switch-description": "Les nouvelles conversations utilisent ce que vous avez dit avant. Désactiver conserve ce qui est déjà retenu ; vous pouvez l'oublier ci-dessous.",
+      "list-title": "Retenu",
+      "count": "{count, plural, one {# souvenir} other {# souvenirs}} sur {max}",
+      "empty": "Rien n'est encore retenu. Ce que vous dites de vous dans le chat apparaîtra ici.",
+      "edit": "Modifier",
+      "edit-label": "Modifier le souvenir",
+      "save": "Enregistrer",
+      "cancel": "Annuler",
+      "delete": "Supprimer",
+      "delete-confirm-title": "Supprimer ce souvenir ?",
+      "delete-confirm-description": "Le chat ne l'utilisera plus dans les nouvelles conversations.",
+      "from-thread": "De {title}",
+      "from-untitled": "D'une conversation",
+      "from-none": "Lié à aucune conversation",
+      "until": "jusqu'au {date}",
+      "forget-all": "Tout oublier",
+      "forget-all-description": "Supprimer tout ce que le chat retient de vous dans cette organisation.",
+      "forget-confirm-title": "Oublier tout ce que le chat retient de vous ?",
+      "forget-confirm-description": "Tous les souvenirs de cette organisation sont supprimés. Cette action est irréversible.",
+      "forget-confirm-action": "Tout oublier",
+      "saved": "Souvenir mis à jour.",
+      "deleted": "Souvenir supprimé.",
+      "forgotten": "Tout ce que le chat retenait de vous est supprimé.",
+      "switched-on": "Le chat retiendra ce que vous lui dites.",
+      "switched-off": "Le chat n'ajoutera pas de nouveaux souvenirs.",
+      "error": "Cela n'a pas fonctionné. Réessayez dans un instant.",
+      "error-not-found": "Ce souvenir n'existe plus. Rechargez la page.",
+      "off": "La mémoire est désactivée pour cette organisation.",
+      "off-stored": "{count, plural, one {# souvenir est encore enregistré} other {# souvenirs sont encore enregistrés}}. Vous pouvez les supprimer.",
+      "off-nothing": "Rien n'est enregistré à votre sujet.",
+      "list-unavailable": "Vos souvenirs n'ont pas pu être chargés pour le moment. Vous pouvez quand même tout oublier ci-dessous."
     }
   },
   "teams-page": {
