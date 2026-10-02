@@ -85,8 +85,16 @@ async function upsertProfile(owner: MemoryOwner): Promise<{ id: number }> {
   }
 }
 
-/** The owner key's storage: the profile's `encryptedDek`, set once. */
-function ownerKeyStore(owner: MemoryOwner): OwnerKeyStore {
+/**
+ * The owner key's storage: the profile's `encryptedDek`, set once. A writer
+ * passes the `epoch` it read, so a key generated before a concurrent "forget
+ * everything" is not stored after it: that would leave a key on a profile the
+ * user has just had cleared.
+ */
+function ownerKeyStore(
+  owner: MemoryOwner,
+  expectedEpoch?: number,
+): OwnerKeyStore {
   return {
     load: async () =>
       (
@@ -98,7 +106,12 @@ function ownerKeyStore(owner: MemoryOwner): OwnerKeyStore {
     saveIfAbsent: async (encryptedDek) => {
       const profile = await upsertProfile(owner);
       const { count } = await db.userMemoryProfile.updateMany({
-        where: { id: profile.id, ...ownerWhere(owner), encryptedDek: null },
+        where: {
+          id: profile.id,
+          ...ownerWhere(owner),
+          encryptedDek: null,
+          ...(expectedEpoch === undefined ? {} : { epoch: expectedEpoch }),
+        },
         data: { encryptedDek },
       });
       return count === 1;
@@ -158,13 +171,15 @@ export async function updateMemory(
 
   const memory = await db.userMemory.findFirst({
     where: { publicId: id, ...ownerWhere(owner) },
-    select: { id: true, version: true },
+    select: { id: true, version: true, profile: { select: { epoch: true } } },
   });
   if (!memory) {
     throw new NotFoundException('Memory not found');
   }
 
-  const key = await resolveOwnerKeyForWrite(ownerKeyStore(owner));
+  const key = await resolveOwnerKeyForWrite(
+    ownerKeyStore(owner, memory.profile.epoch),
+  );
   if (key.status === 'unavailable') {
     logger.warn(
       { err: key.error },
