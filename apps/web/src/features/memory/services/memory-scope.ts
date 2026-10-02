@@ -86,8 +86,16 @@ async function upsertProfile(owner: MemoryOwner): Promise<{ id: number }> {
   }
 }
 
-/** The owner key's storage: the profile's `encryptedDek`, set once. */
-function ownerKeyStore(owner: MemoryOwner): OwnerKeyStore {
+/**
+ * The owner key's storage: the profile's `encryptedDek`, set once. A writer
+ * passes the `epoch` it read, so a key generated before a concurrent "forget
+ * everything" is not stored after it: that would leave a key on a profile the
+ * user has just had cleared.
+ */
+function ownerKeyStore(
+  owner: MemoryOwner,
+  expectedEpoch?: number,
+): OwnerKeyStore {
   return {
     load: async () =>
       (
@@ -99,7 +107,12 @@ function ownerKeyStore(owner: MemoryOwner): OwnerKeyStore {
     saveIfAbsent: async (encryptedDek) => {
       const profile = await upsertProfile(owner);
       const { count } = await db.userMemoryProfile.updateMany({
-        where: { id: profile.id, ...ownerWhere(owner), encryptedDek: null },
+        where: {
+          id: profile.id,
+          ...ownerWhere(owner),
+          encryptedDek: null,
+          ...(expectedEpoch === undefined ? {} : { epoch: expectedEpoch }),
+        },
         data: { encryptedDek },
       });
       return count === 1;
@@ -164,13 +177,15 @@ export async function updateMemory(
 
   const memory = await db.userMemory.findFirst({
     where: { publicId: id, ...ownerWhere(owner) },
-    select: { id: true, version: true },
+    select: { id: true, version: true, profile: { select: { epoch: true } } },
   });
   if (!memory) {
     throw new NotFoundException('Memory not found');
   }
 
-  const key = await resolveOwnerKeyForWrite(ownerKeyStore(owner));
+  const key = await resolveOwnerKeyForWrite(
+    ownerKeyStore(owner, memory.profile.epoch),
+  );
   if (key.status === 'unavailable') {
     logger.warn(
       { err: key.error },
@@ -263,14 +278,9 @@ export async function orgMemoryAdminFromSession(): Promise<OrgMemoryAdmin> {
   return { organizationId } as OrgMemoryAdmin;
 }
 
-/**
- * Whether any member of the organization has a memory. Asked of the memory
- * rows, not the profiles: a profile outlives "forget everything" and is made
- * by flipping the switch, so it says nothing about whether there is anything
- * to delete.
- */
+/** Whether any member of the organization has a memory profile. */
 export async function orgHasMemories(admin: OrgMemoryAdmin): Promise<boolean> {
-  const any = await db.userMemory.findFirst({
+  const any = await db.userMemoryProfile.findFirst({
     where: { organizationId: admin.organizationId },
     select: { id: true },
   });
@@ -278,25 +288,16 @@ export async function orgHasMemories(admin: OrgMemoryAdmin): Promise<boolean> {
 }
 
 /**
- * Delete every member's memories in the organization, without reading them —
- * "forget everything" for every member at once, and the same three writes.
- * The profiles stay: deleting them would turn a member's "off" switch back
- * to the default "on", and restart the epoch at 0, so an extraction queued
- * just before would pass the epoch check and write again. Returns how many
- * memories were deleted.
+ * Delete every member's memories in the organization, without reading them.
+ * Profiles go, and their memories and changes cascade with them; a member
+ * who comes back starts with extraction on and nothing stored.
  */
 export async function deleteAllOrgMemories(
   admin: OrgMemoryAdmin,
 ): Promise<number> {
-  const where = { organizationId: admin.organizationId };
-  const [memories] = await db.$transaction([
-    db.userMemory.deleteMany({ where }),
-    db.userMemoryChange.deleteMany({ where }),
-    db.userMemoryProfile.updateMany({
-      where,
-      data: { encryptedDek: null, epoch: { increment: 1 } },
-    }),
-  ]);
-  return memories.count;
+  const { count } = await db.userMemoryProfile.deleteMany({
+    where: { organizationId: admin.organizationId },
+  });
+  return count;
 }
 // --- OrgMemoryAdmin: end -----------------------------------------------------

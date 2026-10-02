@@ -132,7 +132,7 @@ export async function detectContradictions(input: {
       await db.trackAiUsage({
         organizationId: input.orgId,
         userId: input.userId ?? null,
-        step: 'CHAT_COMPLETION',
+        step: 'BRAIN',
         provider: 'litellm',
         model: BRAIN_EXTRACT_MODEL,
         inputTokens: usage.inputTokens,

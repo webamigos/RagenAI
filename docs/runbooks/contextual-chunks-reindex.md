@@ -6,6 +6,12 @@ organization changes nothing already in its index: only files ingested or
 re-indexed afterwards carry the prefix. This is how an operator brings the rest
 of the organization up to date.
 
+An org admin or owner can do the same from the panel: **Organization → RAG
+pipeline settings** shows how many documents carry the prefix and offers
+"Re-index N documents" for the rest. It uses the same rule for "stale" and
+the same jobs as this script; the script remains for operators, for
+`--limit`, and for an organization nobody is signed in to.
+
 ## Before you start
 
 - Check that `contextualChunks` is on for the organization. It is on by

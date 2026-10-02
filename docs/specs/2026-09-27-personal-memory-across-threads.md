@@ -1,6 +1,6 @@
 ---
 title: Personal memory across a user's threads
-status: draft
+status: in-progress
 areas: [chat, worker, auth, guardrails]
 adrs: [02, 06, 20, 38, 39, 42, 44, 50]
 ---
@@ -441,7 +441,7 @@ feature depends on. So:
 | `apps/web` chat stream | Enqueue after the turn; memory block in both chains | unit tests on the gate; `p0-35` (see "Testing") |
 | ADR-42 function | Amended, not changed, for threads | its existing tests stay green unchanged |
 | auth / tenant scoping | Per-user boundary in one module | `memory-rows-are-read-through-one-module.test.ts` + an IDOR unit test per function |
-| Better Auth membership | An `organizationHooks` hook deletes a removed member's profile | a unit test on the hook |
+| Better Auth membership | A trigger on `members` deletes a removed member's profile (A0, A5) | `a-removed-member-takes-their-memory.test.ts` pins the trigger; every removal path checked once against Postgres (A5) |
 | `apps/api` thread deletion | None: the FK cascade does it (see "Data model") | a test in `thread-core.service` that deleting a thread deletes its memories |
 
 ## Data model
@@ -593,15 +593,13 @@ enum UserMemoryOperation {
 - **Encryption is switched on after plaintext memories exist.** Plaintext rows
   keep `isEncrypted = false` and stay readable. New and updated rows are
   encrypted. A test covers the mixed profile.
-- **A member is removed from the organization, or leaves.** Better Auth
-  `organizationHooks` delete the member's profile, which cascades to their
-  memories and changes. It is a hook and not code in `removeMember`, because
-  Better Auth's own remove-member and leave endpoints bypass that server
-  action. A0 checks that the installed version's hook fires on both paths. If
-  it does not, the leave path gets its own call and a test. There is no
-  org-deletion or user-deletion path in the app today. When one is added, it
-  must delete profiles, and the tenant-scope map listing these models is where
-  a reviewer of that change finds them.
+- **A member is removed from the organization, or leaves.** The member's
+  profile is deleted, which cascades to their memories and changes. A0 found
+  that no Better Auth hook covers every path — `/organization/leave`, the
+  panel's own `removeMember` and apps/admin's removal call none — so the
+  mechanism is a trigger on `members` (A0, A5). Because `members`
+  cascades from `organizations` and `users`, the trigger also covers an org or
+  user deletion when one is added.
 - **The org turns `personalMemory` off.** Extraction and reading stop at the
   next turn (the gate). Stored memories are kept, so turning it back on restores
   them. The user can still delete them, and an org admin can delete all of
@@ -624,8 +622,35 @@ shape an answer before it has been measured.
 
 ### Phase A — storage, the key and the boundary, no behaviour
 
-- [ ] **A0.** Confirm the Better Auth hook that fires on member removal *and* on
+- [x] **A0.** Confirm the Better Auth hook that fires on member removal *and* on
   leave in the installed version. Record the answer in this spec.
+
+  *Answered 2026-10-02, on better-auth 1.7.2: a hook covers one path in four.*
+  `organizationHooks.beforeRemoveMember`/`afterRemoveMember` fire only inside
+  the plugin's `/organization/remove-member` endpoint
+  (`routes/crud-members.mjs`). The other three ways a membership ends call no
+  hook:
+
+  | Path | How the row goes | Hook? |
+  | --- | --- | --- |
+  | Better Auth `/organization/remove-member` | plugin adapter | yes |
+  | Better Auth `/organization/leave`, reachable through `/api/auth/[...all]` | plugin adapter (`deleteMember`) | **no** |
+  | The panel's `removeMember` action (`organization/profile/actions/members.ts`) | `db.member.delete` | **no** |
+  | apps/admin's platform removal (`organizations/actions.ts`) | `tx.member.delete` | **no** |
+
+  So the hook the spec planned would leave memories behind on three paths,
+  including the one the panel uses. **Recommendation for A5, accepted by the
+  product owner on 2026-10-02:** a database trigger, `AFTER DELETE ON members`, that deletes
+  the matching `user_memory_profiles` row (cascading to memories and
+  changes) in the delete's own transaction. It covers all four paths and any
+  added later, and — because `members` cascades from `organizations` and
+  `users` — also the org and user deletions the spec says do not exist yet.
+  It is the same pattern as `user_files_mark_brain_sources_deleted`. It reads
+  `members.organization_id`/`user_id` and writes only our table, so it does
+  not write a library-owned table; the coupling is to two column names. The
+  alternative is three calls (a Better Auth `hooks.after` matcher on
+  `/organization/leave`, plus the two Prisma deletes), each one refactor away
+  from being forgotten.
 - [x] **A1.** The feature key `personalMemory` (default `false`) and its label.
   `features.test.ts` is updated.
 
@@ -673,14 +698,33 @@ shape an answer before it has been measured.
   memory's `sourceThreadId`, so deleting that thread still removes it. The
   guard is `memory-rows-are-read-through-one-module.test.ts`; it allows the
   worker's future `src/activities/memory/`.
-- [ ] **A5.** The member-removal hook from A0, with its test.
+- [x] **A5.** The member-removal cleanup from A0, with its test — the trigger,
+  if the recommendation above is accepted. Waits for that decision.
+
+  *Done.* Migration `20261002150000_memory_profile_deleted_with_member`:
+  `members_delete_memory_profile`, `AFTER DELETE ON members`, deletes the
+  profile with the same `organization_id` and `user_id`. Checked against a
+  fresh Postgres with two orgs and three users: deleting one membership
+  removed only that profile and its memories and changes, the same user's
+  profile in the other org stayed; deleting a user and then an org removed
+  exactly their profiles through the `members` cascade; a delete rolled back
+  kept the profile. Every application path ends in that one `DELETE` on
+  `members`, so the check covers them. `prisma migrate diff` stays clean (it
+  does not model triggers). `a-removed-member-takes-their-memory.test.ts`
+  pins the trigger's shape and that no later migration drops it.
 
 ### Phase B — the user's view, still no extraction
 
-- [ ] **B1.** The shared usage-limit evaluation, as its own PR: the pure
+- [x] **B1.** The shared usage-limit evaluation, as its own PR: the pure
   computation from `checkUsageLimitsQuery` moves into a package that web and
   worker both import, and each app keeps its own Prisma read. The web ceiling
   tests stay unchanged and green. This PR adds no call site in the worker yet.
+
+  *Done.* `evaluateCeilings`, `usageMonthStart` and `CHAT_TURN_STEP` in
+  `packages/platform-contracts/src/usage/ceilings.ts`. apps/api's
+  `checkUsageCeilings` was the same arithmetic a second time and uses it too;
+  `usage-math-is-not-recopied.test.ts` fails on a ceiling comparison in
+  either app.
 - [x] **B2.** The `settings/memory` page: list, edit, delete, forget everything,
   the extraction switch, and the deletion-only state when the org has the key
   off. It gets a registry entry in the `you` group, and i18n in all 15 locale
@@ -703,11 +747,8 @@ shape an answer before it has been measured.
   rows are untouched.
 
   *Done.* In Organization → RAG pipeline, shown while the key is on or
-  memories remain. `deleteAllOrgMemories` is "forget everything" for every
-  member: memory and change rows go, profiles stay with the key cleared and
-  the epoch moved on, so an opted-out member stays opted out and a queued
-  job writes nothing. **One addition to the scope:** `orgHasMemories` — a
-  memory-id existence check, so
+  memories remain. **One addition to the scope:** besides
+  `deleteAllOrgMemories`, `orgHasMemories` — a profile-id existence check, so
   the panel offers the deletion only when there is something to delete. It
   selects no content and names no user; the guard checks the scope's code,
   between markers, for `content` and `userId`.
@@ -779,7 +820,7 @@ shape an answer before it has been measured.
   - forget-everything keeping the switch and incrementing the epoch;
   - the `OrgMemoryAdmin` scope's authorization;
   - the stale-undo refusal;
-  - the member-removal hook.
+  - the member-removal trigger (an architecture test; see A5).
 - **Architecture:** `memory-rows-are-read-through-one-module.test.ts`, and the
   updated `encryption-lives-in-one-package.test.ts`.
 - **Integration:**

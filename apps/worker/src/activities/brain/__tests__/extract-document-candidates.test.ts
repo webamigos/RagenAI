@@ -139,6 +139,14 @@ describe('extractDocumentCandidates', () => {
     );
   });
 
+  // The message ceiling counts CHAT_COMPLETION rows, and one Brain run
+  // extracts many documents: recorded as completions, a run refused chats.
+  it('records its usage under BRAIN, not as a chat completion', async () => {
+    await extractDocumentCandidates(INPUT);
+    const steps = trackAiUsage.mock.calls.map(([row]) => row.step);
+    expect(steps).toEqual(['BRAIN']);
+  });
+
   it('raises EXTRACTION_FAILED for a document with no parsed text, at no model cost', async () => {
     brainDb.getExtractionSource.mockResolvedValue(null);
     const result = await extractDocumentCandidates(INPUT);

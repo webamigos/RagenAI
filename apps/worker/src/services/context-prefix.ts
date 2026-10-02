@@ -1,9 +1,11 @@
-import { MAX_CONTEXT_PREFIX_CHARS } from '@ragenai/rag-core';
+import {
+  FREE_CONTEXT_PREFIX_VERSION,
+  MAX_CONTEXT_PREFIX_CHARS,
+} from '@ragenai/rag-core';
 
 import { type Document } from '../types/Document.js';
 
-/** Version 1: the prefix built without any model call. */
-export const FREE_CONTEXT_PREFIX_VERSION = 1;
+export { FREE_CONTEXT_PREFIX_VERSION };
 
 const SUMMARY_SENTENCE_CHARS = 200;
 
