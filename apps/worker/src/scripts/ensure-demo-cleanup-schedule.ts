@@ -21,7 +21,7 @@
  * the code does not remove the schedule.** It keeps firing and failing. A
  * rollback has to delete it here too — `npx tsx src/scripts/ensure-demo-cleanup-schedule.ts --delete`.
  */
-import { jobs } from '../jobs.js';
+import { closeJobs, jobs } from '../jobs.js';
 import {
   DEMO_ORGANIZATION_ID,
   DEMO_THREAD_RETENTION_HOURS,
@@ -76,7 +76,9 @@ async function main() {
   );
 }
 
-main().catch((error: unknown) => {
-  console.error(error);
-  process.exitCode = 1;
-});
+main()
+  .catch((error: unknown) => {
+    console.error(error);
+    process.exitCode = 1;
+  })
+  .finally(() => closeJobs());
