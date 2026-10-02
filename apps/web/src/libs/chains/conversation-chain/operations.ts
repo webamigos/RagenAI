@@ -41,14 +41,21 @@ export function buildConversationMessages(
   answerInstructions?: string | null,
   projectInstruction?: string,
   imageDocuments?: ThreadDocumentUI[],
+  memoryBlock?: string,
 ): { system: string; messages: ModelMessage[] } {
   const effectiveAnswerInstructions =
     answerInstructions || DEFAULT_ANSWER_INSTRUCTIONS;
   const effectiveProjectInstructions = projectInstruction || '';
 
-  const systemMessage = systemTemplates.answerChain
+  const filled = systemTemplates.answerChain
     .replace('{answer_instructions}', effectiveAnswerInstructions)
     .replace('{project_instructions}', effectiveProjectInstructions);
+  // After every field is filled: see `ChainConfig.memoryBlock`.
+  const systemMessage = memoryBlock
+    ? `${filled}
+
+${memoryBlock}`
+    : filled;
 
   const messages: ModelMessage[] = [];
 

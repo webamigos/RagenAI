@@ -1,6 +1,5 @@
 import 'server-only';
 
-import db from '@ragenai/prisma-client';
 import { isEncryptionEnabled } from '@ragenai/crypto';
 
 import { logger } from '@/app/lib/utils/logger';
@@ -9,6 +8,7 @@ import { maybeEncryptContent } from '@/features/messages/services/thread-content
 import { isFeatureEnabledQuery } from '@/features/subscriptions/services/queries/get-effective-features-query';
 import { memoryExtractionGate } from '../../utils/memory-extraction-gate';
 import { getExtractionState, memoryOwnerFromSession } from '../memory-scope';
+import { getMemoryGateThreadQuery } from '../queries/get-memory-gate-thread-query';
 
 /**
  * Start a `memoryExtract` job for a saved turn, when the gate allows it
@@ -42,18 +42,7 @@ export async function enqueueMemoryExtractionCommand({
     }
 
     const [thread, featureOn, state] = await Promise.all([
-      db.thread.findFirst({
-        where: { id: threadId, organizationId: orgId },
-        select: {
-          kind: true,
-          source: true,
-          chatbotId: true,
-          visitorId: true,
-          teamId: true,
-          publicLink: { select: { id: true } },
-          _count: { select: { shares: true } },
-        },
-      }),
+      getMemoryGateThreadQuery(threadId, orgId),
       isFeatureEnabledQuery(orgId, 'personalMemory'),
       getExtractionState(owner),
     ]);
@@ -62,15 +51,7 @@ export async function enqueueMemoryExtractionCommand({
     }
 
     const refusal = memoryExtractionGate({
-      thread: {
-        kind: thread.kind,
-        source: thread.source,
-        chatbotId: thread.chatbotId,
-        visitorId: thread.visitorId,
-        teamId: thread.teamId,
-        shareCount: thread._count.shares,
-        hasPublicLink: thread.publicLink !== null,
-      },
+      thread,
       sessionUserId: owner.userId,
       featureOn,
       extractionEnabled: state.extractionEnabled,

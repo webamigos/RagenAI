@@ -799,10 +799,20 @@ shape an answer before it has been measured.
 
 ### Phase D — reading
 
-- [ ] **D1.** The memory block in both chains' system templates, passed from
+- [x] **D1.** The memory block in both chains' system templates, passed from
   `assistant-stream.ts` behind the same gate. Chain tests: the block is present
   when memories exist, absent otherwise, absent in a shared or team thread,
   and never inside `{context}`.
+
+  *Done.* `ChainConfig.memoryBlock`, rendered by
+  `features/memory/utils/render-memory-block.ts` and loaded by
+  `getMemoryBlockForTurnQuery`, which holds the read gate and never throws.
+  **One change from "beside `projectInstruction`":** the block is appended
+  to the system prompt after every template field is filled, not put into
+  `{project_instructions}`. Placed in a field, a memory reading "{context}"
+  would be replaced by the retrieved documents by the next `.replace`; after
+  the fill, it is inert text. The write and the read share one thread read
+  (`getMemoryGateThreadQuery`) and one gate.
 - [ ] **D2.** The "Remembered: … · Undo" line under an answer, read from
   `UserMemoryChange`, and the undo command with its `version` check. Tests: an
   undo after a later extraction, and after a settings edit, is refused for each

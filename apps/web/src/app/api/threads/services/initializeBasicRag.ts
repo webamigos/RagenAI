@@ -39,6 +39,8 @@ type InitializeRagChainParams = {
   userTeamIds?: string[];
   scope?: OrgVisibilityScope;
   projectInstruction?: string | null;
+  /** The user's personal memory block; see `ChainConfig.memoryBlock`. */
+  memoryBlock?: string;
   projectId?: string | null;
   /**
    * How much this thread may retrieve. Absent means `KNOWLEDGE_BASE` — every
@@ -90,6 +92,7 @@ export const initializeRagChain = async ({
   userTeamIds = [],
   scope = 'member',
   projectInstruction,
+  memoryBlock,
   projectId,
   knowledgeScope = DEFAULT_KNOWLEDGE_SCOPE,
   threadDocuments,
@@ -234,6 +237,7 @@ export const initializeRagChain = async ({
         maxTokens,
         answerInstructions: answerInstructions || '',
         projectInstruction: projectInstruction || '',
+        memoryBlock,
         threadDocuments: threadDocuments || [],
         mcpTools,
         mcpContext,

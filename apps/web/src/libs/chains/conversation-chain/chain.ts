@@ -90,6 +90,7 @@ export const conversationChain = async ({
         config?.answerInstructions,
         config?.projectInstruction,
         imageDocs.length > 0 ? imageDocs : undefined,
+        config?.memoryBlock,
       );
 
       const hasTools =
