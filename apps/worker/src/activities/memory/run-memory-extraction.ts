@@ -162,6 +162,15 @@ export async function runMemoryExtraction(
   const plan = planMemoryApply(current, parsed.operations);
   const dropped = parsed.dropped + plan.dropped;
   if (planWritesNothing(plan)) {
+    // Counts only, never content. A run that drops every operation looks
+    // like "nothing to remember" unless it says so — which is how a parser
+    // that rejected every answer stayed invisible.
+    if (dropped > 0) {
+      logger.info(
+        { orgId, messageId, dropped },
+        'memoryExtract: every operation dropped',
+      );
+    }
     return { skipped: null, added: 0, updated: 0, deleted: 0, dropped };
   }
 

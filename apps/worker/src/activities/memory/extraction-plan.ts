@@ -14,9 +14,48 @@ import type { MemoryExtractSkip } from '@ragenai/jobs';
  */
 
 /** What the model is asked for: a list of operations, nothing else. */
+/**
+ * The shape the model is asked for, and what structured output holds it to.
+ * Each operation names its kind in `op`. This used to be `z.unknown()[]`, and
+ * the prompt never named the field, so models wrote `"operation": "ADD"` and
+ * every operation failed the `op` union below: extraction ran on every turn
+ * and stored nothing (C2's eval: 0 of 19 keep cases written).
+ */
 export const extractionAnswerSchema = z.object({
+  operations: z
+    .array(
+      z.object({
+        op: z.enum(['ADD', 'UPDATE', 'DELETE']),
+        ref: z.string().optional(),
+        content: z.string().optional(),
+        until: z.string().optional(),
+      }),
+    )
+    .default([]),
+});
+
+/** What parsing accepts: any list, so each entry is judged on its own below. */
+const answerShape = z.object({
   operations: z.array(z.unknown()).default([]),
 });
+
+/**
+ * `operation` for `op`. Structured output asks for `op`, but a provider
+ * without it falls back to a loose parse of the text, and the field name is
+ * the one thing models were seen to rename.
+ */
+function withOpField(candidate: unknown): unknown {
+  if (
+    candidate !== null &&
+    typeof candidate === 'object' &&
+    !('op' in candidate) &&
+    'operation' in candidate
+  ) {
+    const { operation, ...rest } = candidate as Record<string, unknown>;
+    return { ...rest, op: operation };
+  }
+  return candidate;
+}
 
 const content = z.string().trim().min(1).max(MEMORY_MAX_CHARS);
 /** `YYYY-MM-DD`, the date an ongoing-work memory names. */
@@ -42,7 +81,7 @@ export type MemoryOperation = z.infer<typeof operationSchema>;
 export function parseOperations(
   answer: unknown,
 ): { operations: MemoryOperation[]; dropped: number } | null {
-  const outer = extractionAnswerSchema.safeParse(answer);
+  const outer = answerShape.safeParse(answer);
   if (!outer.success) {
     return null;
   }
@@ -50,7 +89,7 @@ export function parseOperations(
   const operations: MemoryOperation[] = [];
   let dropped = Math.max(0, raw.length - MEMORY_MAX_OPERATIONS);
   for (const candidate of raw.slice(0, MEMORY_MAX_OPERATIONS)) {
-    const parsed = operationSchema.safeParse(candidate);
+    const parsed = operationSchema.safeParse(withOpField(candidate));
     if (parsed.success) {
       operations.push(parsed.data);
     } else {

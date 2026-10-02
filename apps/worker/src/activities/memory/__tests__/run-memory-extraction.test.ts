@@ -308,6 +308,28 @@ describe('runMemoryExtraction', () => {
     expect(m.prisma.$transaction).not.toHaveBeenCalled();
   });
 
+  it('says so, without content, when every operation is dropped', async () => {
+    m.generate.mockResolvedValue({
+      object: {
+        operations: [
+          { op: 'ADD', content: 'Works with <PERSON_1> on the CFO report.' },
+          { kind: 'ADD', content: 'Is the CFO.' },
+        ],
+      },
+      usage: { inputTokens: 50, outputTokens: 20 },
+    });
+
+    const result = await runMemoryExtraction(PAYLOAD);
+
+    expect(result).toMatchObject({ skipped: null, added: 0, dropped: 2 });
+    expect(m.prisma.$transaction).not.toHaveBeenCalled();
+    expect(m.logInfo).toHaveBeenCalledWith(
+      expect.objectContaining({ dropped: 2 }),
+      'memoryExtract: every operation dropped',
+    );
+    expect(JSON.stringify(m.logInfo.mock.calls)).not.toContain('CFO');
+  });
+
   it('never logs the question or a memory', async () => {
     m.features.mockResolvedValue(off);
     await runMemoryExtraction(PAYLOAD);
