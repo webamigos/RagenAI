@@ -76,3 +76,13 @@ archive is the blog.
   ([PL](https://ragen.ai/pl/blog/ragen-changelog-4-11-wrzesnia-2026))
 
 ## Unreleased
+
+### Knowledge base
+
+- `[brief]` **A document deleted while it is still being indexed stays
+  deleted.** Deleting a file during its upload's embedding step removed the
+  file, and the worker then wrote its chunks into the index anyway: the
+  document was gone from the knowledge base and still came back in answers,
+  cited. The worker now checks once more after writing and takes the chunks
+  out if the file is gone or its upload was cancelled. Files deleted this way
+  before the fix can still have chunks in the index.

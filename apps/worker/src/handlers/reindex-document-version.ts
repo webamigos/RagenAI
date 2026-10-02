@@ -8,6 +8,7 @@ import type * as activities from '../activities/index.js';
 import { isStagedIntake, isWithdrawnFromRetrieval } from './parse-and-embed.js';
 import { type Document } from '../types/Document.js';
 import { EmbeddingStatus, FileType } from '../types/UserFile.js';
+import { withdrawVectorsIfIngestEnded } from './ingest-cancellation.js';
 import { CHUNK_SETTINGS } from '../utils/splitters.js';
 import {
   computeDocumentDiagnostics,
@@ -238,6 +239,19 @@ export async function reindexDocumentVersion(
     });
 
     await addDocumentsToVectorStore({ orgId, docs: updatedDocs });
+    if (
+      await withdrawVectorsIfIngestEnded({
+        isCancelled: () => ctx.checkCancelled({ fileId, orgId }),
+        deleteVectors: () => deleteDocumentVectors({ orgId, fileId }),
+      })
+    ) {
+      // The file was deleted (or its ingest cancelled) while this version was
+      // being written; its vectors are out again and there is nothing to mark.
+      ctx.log.info(
+        `File ${fileId} went away during its re-index; vectors withdrawn`,
+      );
+      return fileId;
+    }
 
     await updateEmbeddingStatus({
       fileId,

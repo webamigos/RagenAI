@@ -69,3 +69,32 @@ export function isNonRetryable(error: unknown): boolean {
     (error as { nonRetryable?: unknown }).nonRetryable === true
   );
 }
+
+/**
+ * Called right after a file's vectors are written: if the file was deleted or
+ * its ingest cancelled while they were being written, take them out again.
+ *
+ * The checkpoints before the write cannot catch this. Deleting a file removes
+ * its row and then its vectors, by filter; a pipeline already past its last
+ * checkpoint writes its chunks after that delete has run, and nothing removes
+ * them — the document is gone from the knowledge base and still answers, and
+ * is cited, in chat. Checking once more after the write closes the window: a
+ * delete that ran before this check is seen here, and one that runs after it
+ * finds the vectors and removes them itself.
+ *
+ * Returns whether the vectors were withdrawn, so the caller can stop.
+ */
+export async function withdrawVectorsIfIngestEnded({
+  isCancelled,
+  deleteVectors,
+}: {
+  /** `ctx.checkCancelled` for the file — a missing row reads as cancelled. */
+  isCancelled: () => Promise<boolean>;
+  deleteVectors: () => Promise<unknown>;
+}): Promise<boolean> {
+  if (!(await isCancelled())) {
+    return false;
+  }
+  await deleteVectors();
+  return true;
+}
