@@ -1,5 +1,5 @@
 import db from '@ragenai/prisma-client';
-import { deleteFromS3, deleteFromS3ByKey } from '@/app/lib/services/storage';
+import { deleteFromS3ByKey } from '@/app/lib/services/storage';
 import { deleteFileFromVectorStore } from '@/app/api/upload/services/TableService';
 import { getFileExtension } from '@/app/lib/utils/getFileExtension';
 import { deleteDocumentFromDbCommand } from './update-document-command';
@@ -79,9 +79,13 @@ export async function deleteFileCommand(
     entityId: fileRecord.id,
   });
 
-  const s3Key = `${fileRecord.id}.${getFileExtension(fileRecord.fileName)}`;
+  // The full key, from the organization this command was handed. The
+  // session-reading `deleteFromS3` threw on the internal API path — which has
+  // no session — so every file deleted through the public API kept its
+  // original upload in storage while the row, thumbnail and vectors went.
+  const s3Key = `${organizationId}/${fileRecord.id}.${getFileExtension(fileRecord.fileName)}`;
   try {
-    await deleteFromS3(s3Key);
+    await deleteFromS3ByKey(s3Key);
   } catch (err) {
     logger.warn({ err, s3Key }, 'Failed to remove S3 object');
   }

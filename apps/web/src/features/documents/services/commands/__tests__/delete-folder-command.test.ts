@@ -159,8 +159,11 @@ describe('deleteFolderCommand', () => {
     const result = await deleteFolderCommand('folder-1', ORG_ID);
 
     expect(result).toEqual({ success: true });
-    expect(mockDeleteFromS3).toHaveBeenCalledWith('file-abc.pdf');
+    expect(mockDeleteFromS3ByKey).toHaveBeenCalledWith(
+      `${ORG_ID}/file-abc.pdf`,
+    );
     expect(mockDeleteFromS3ByKey).toHaveBeenCalledWith('thumb/file-abc.jpg');
+    expect(mockDeleteFromS3).not.toHaveBeenCalled();
     // The org id is passed, not re-derived from a session — see
     // delete-file-command.test.ts for why that distinction is the whole fix.
     expect(mockDeleteFileFromVectorStore).toHaveBeenCalledWith(
@@ -210,7 +213,7 @@ describe('deleteFolderCommand', () => {
     const result = await deleteFolderCommand('folder-1', ORG_ID);
 
     expect(result).toEqual({ success: true });
-    expect(mockDeleteFromS3).toHaveBeenCalledTimes(2);
+    expect(mockDeleteFromS3ByKey).toHaveBeenCalledTimes(2);
     expect(mockDeleteFileFromVectorStore).toHaveBeenCalledTimes(2);
     // Descendant folders should be deleted
     expect(mockFolderDeleteMany).toHaveBeenCalledWith({
@@ -263,14 +266,14 @@ describe('deleteFolderCommand', () => {
         thumbnailS3Key: null,
       },
     ]);
-    mockDeleteFromS3
+    mockDeleteFromS3ByKey
       .mockRejectedValueOnce(new Error('S3 error'))
       .mockResolvedValueOnce(undefined);
 
     const result = await deleteFolderCommand('folder-1', ORG_ID);
 
     expect(result).toEqual({ success: true });
-    expect(mockDeleteFromS3).toHaveBeenCalledTimes(2);
+    expect(mockDeleteFromS3ByKey).toHaveBeenCalledTimes(2);
     expect(mockDeleteFileFromVectorStore).toHaveBeenCalledTimes(2);
   });
 });

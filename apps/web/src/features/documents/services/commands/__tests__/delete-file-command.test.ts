@@ -146,8 +146,11 @@ describe('deleteFileCommand', () => {
         publishedPages: { none: {} },
       },
     });
-    expect(mockDeleteFromS3).toHaveBeenCalledWith('file-1.pdf');
+    // The original, by full key under the org it was handed — the
+    // session-reading variant threw on the API path and left it in storage.
+    expect(mockDeleteFromS3ByKey).toHaveBeenCalledWith('org-1/file-1.pdf');
     expect(mockDeleteFromS3ByKey).toHaveBeenCalledWith('org-1/thumbs/doc.pdf');
+    expect(mockDeleteFromS3).not.toHaveBeenCalled();
     expect(mockDeleteFromVectorStore).toHaveBeenCalledWith('file-1', 'org-1');
     expect(mockTrackAudit).toHaveBeenCalled();
   });
@@ -161,7 +164,7 @@ describe('deleteFileCommand', () => {
       documentId: null,
     });
     mockDeleteMany.mockResolvedValue({ count: 1 });
-    mockDeleteFromS3.mockRejectedValue(new Error('S3 down'));
+    mockDeleteFromS3ByKey.mockRejectedValue(new Error('S3 down'));
     mockDeleteFromVectorStore.mockRejectedValue(new Error('qdrant down'));
 
     const result = await deleteFileCommand({
