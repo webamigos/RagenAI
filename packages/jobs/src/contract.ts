@@ -77,6 +77,7 @@ export const JOB_NAMES = [
   'brainReconcileFindings',
   'brainPublishPage',
   'memoryExtract',
+  'memoryPurge',
 ] as const;
 
 export type JobName = (typeof JOB_NAMES)[number];
@@ -255,6 +256,16 @@ export interface MemoryExtractPayload {
   questionEncrypted: boolean;
 }
 
+/**
+ * The nightly personal-memory purge (spec C4): memories past their
+ * `expiresAt`, and change rows past the 30 days undo is offered for.
+ */
+export interface MemoryPurgeResult {
+  memoriesDeleted: number;
+  changesDeleted: number;
+  changesOlderThan: string;
+}
+
 /** Why an extraction wrote nothing; `null` when it ran. Never any content. */
 export type MemoryExtractSkip =
   | 'disabled'
@@ -344,6 +355,7 @@ export interface JobPayloads {
   brainReconcileFindings: BrainReconcileFindingsPayload;
   brainPublishPage: BrainPublishPagePayload;
   memoryExtract: MemoryExtractPayload;
+  memoryPurge: void;
 }
 
 /**
@@ -365,4 +377,5 @@ export interface JobResults {
   brainReconcileFindings: BrainReconcileFindingsResult;
   brainPublishPage: BrainPublishPageResult;
   memoryExtract: MemoryExtractResult;
+  memoryPurge: MemoryPurgeResult;
 }

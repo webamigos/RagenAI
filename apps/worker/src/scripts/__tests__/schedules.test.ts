@@ -101,3 +101,24 @@ describe('ensure-analytics-retention-schedule', () => {
     expect(upsertSchedule).not.toHaveBeenCalled();
   });
 });
+
+describe('ensure-memory-purge-schedule', () => {
+  const script = '../ensure-memory-purge-schedule.js';
+
+  it('registers the nightly memory purge after the other two deletes', async () => {
+    await run(script);
+    expect(upsertSchedule).toHaveBeenCalledWith({
+      id: 'personal-memory-purge',
+      job: 'memoryPurge',
+      cron: '0 4 * * *',
+      timezone: 'Europe/Warsaw',
+    });
+  });
+
+  it('deletes the schedule with --delete', async () => {
+    process.argv = ['node', 'script', '--delete'];
+    await run(script);
+    expect(deleteSchedule).toHaveBeenCalledWith('personal-memory-purge');
+    expect(upsertSchedule).not.toHaveBeenCalled();
+  });
+});

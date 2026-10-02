@@ -154,6 +154,7 @@ export type {
 } from './usage/usage';
 
 export {
+  MEMORY_CHANGE_RETENTION_DAYS,
   MEMORY_DATED_GRACE_DAYS,
   MEMORY_MAX_CHARS,
   MEMORY_MAX_ENTRIES,

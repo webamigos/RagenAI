@@ -19,3 +19,6 @@ export const MEMORY_MAX_OPERATIONS = 10;
  * then neither read nor listed.
  */
 export const MEMORY_DATED_GRACE_DAYS = 30;
+
+/** How long a change row — and so the undo it offers — is kept. */
+export const MEMORY_CHANGE_RETENTION_DAYS = 30;

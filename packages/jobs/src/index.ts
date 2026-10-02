@@ -25,6 +25,7 @@ export {
   type MemoryExtractPayload,
   type MemoryExtractResult,
   type MemoryExtractSkip,
+  type MemoryPurgeResult,
 } from './contract';
 
 export {

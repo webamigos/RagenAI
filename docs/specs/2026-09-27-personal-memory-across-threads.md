@@ -789,8 +789,13 @@ shape an answer before it has been measured.
   than by widening `getThreadDetails`. An input refusal throws before this
   point and a ceiling refusal earlier still, so "refused" at the call site
   is an output guardrail's `guardrailBlocked`.
-- [ ] **C4.** The daily `memoryPurge` job: expired memories, and change rows
+- [x] **C4.** The daily `memoryPurge` job: expired memories, and change rows
   older than 30 days.
+
+  *Done.* `purgeExpiredMemories`, on the shared `ragen-maintenance` queue
+  with the other nightly jobs so they never overlap, scheduled at 04:00 by
+  `apps/worker/src/scripts/ensure-memory-purge-schedule.ts` (run once per
+  environment, `--delete` to roll back).
 
 ### Phase D — reading
 

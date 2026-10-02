@@ -80,6 +80,7 @@ const PAYLOADS: { [N in JobName]: JobPayloads[N] } = {
     question: 'I prefer bullet points.',
     questionEncrypted: false,
   },
+  memoryPurge: undefined,
 };
 
 /** The activity that proves the pipeline ran, not merely that the job did. */
@@ -95,6 +96,7 @@ const EVIDENCE: Record<JobName, string> = {
   brainReconcileFindings: 'reconcileBrainFindings',
   brainPublishPage: 'publishKnowledgePage',
   memoryExtract: 'runMemoryExtraction',
+  memoryPurge: 'purgeExpiredMemories',
 };
 
 describe('every job runs', () => {

@@ -20,6 +20,7 @@ import { brainPublishPage } from './handlers/brain-publish-page.js';
 import { cleanupDemoThreads } from './handlers/cleanup-demo-threads.js';
 import { generateDocument } from './handlers/generate-document.js';
 import { memoryExtract } from './handlers/memory-extract.js';
+import { memoryPurge } from './handlers/memory-purge.js';
 import { optimizeDocument } from './handlers/optimize-document.js';
 import { pruneAnalyticsRetrievals } from './handlers/prune-analytics-retrievals.js';
 import { reindexDocumentVersion } from './handlers/reindex-document-version.js';
@@ -53,6 +54,7 @@ const handlers: JobHandlers = {
   brainReconcileFindings,
   brainPublishPage,
   memoryExtract,
+  memoryPurge,
 };
 
 /**

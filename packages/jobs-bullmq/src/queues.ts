@@ -4,7 +4,7 @@ import { type JobName, JOB_NAMES } from '@ragenai/jobs';
  * The queue a job runs on.
  *
  * One queue per job name, so a slow ingest cannot starve document generation
- * and each gets its own concurrency — the spec's C1. The exception is the two
+ * and each gets its own concurrency — the spec's C1. The exception is the
  * scheduled jobs, which share `ragen-maintenance`: they take no payload, run
  * nightly, and must not overlap. A shared queue is what lets a single global
  * concurrency of 1 cover both.
@@ -14,6 +14,7 @@ export const MAINTENANCE_QUEUE = 'ragen-maintenance';
 const MAINTENANCE_JOBS = new Set<JobName>([
   'cleanupDemoThreads',
   'pruneAnalyticsRetrievals',
+  'memoryPurge',
 ]);
 
 export function queueNameFor(job: JobName): string {
