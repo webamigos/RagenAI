@@ -68,6 +68,13 @@ archive is the blog.
 
 ## Unreleased
 
+### Security
+
+- `[brief]` **Next.js 16.3.8.** Picks up the fixes for a remote code
+  execution in `next/og` (critical; Ragen does not use it) and a
+  server-side request forgery in image optimization (high), among others.
+  Self-hosters get it with the next image. (#1465)
+
 ### Answers
 
 - `[major]` **Answers read more of the document around each passage, and
@@ -82,6 +89,10 @@ archive is the blog.
   move. Both are on by default and can be turned off per organization;
   files indexed earlier get the title-and-section context once they are
   re-indexed. (#1458)
+- `[brief]` **An org admin can bring older documents up to date from the
+  panel.** RAG pipeline settings shows how many documents are indexed with
+  their title-and-section context and offers to re-index the rest in the
+  background — what until now took an operator running a script. (#1463)
 
 ### Usage and limits
 
