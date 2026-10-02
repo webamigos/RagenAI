@@ -154,6 +154,18 @@ export type {
 } from './usage/usage';
 
 export {
+  CHAT_TURN_STEP,
+  evaluateCeilings,
+  usageMonthStart,
+} from './usage/ceilings';
+export type {
+  CeilingDimension,
+  CeilingEvaluation,
+  MonthlyCeilings,
+  MonthlyUsage,
+} from './usage/ceilings';
+
+export {
   REGISTRATION_ENABLED_KEY,
   REGISTRATION_ENABLED_BY_DEFAULT,
   registrationIsEnabled,

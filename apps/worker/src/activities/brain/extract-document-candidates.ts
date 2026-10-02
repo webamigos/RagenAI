@@ -94,7 +94,7 @@ export async function extractFile({
     await db.trackAiUsage({
       organizationId: orgId,
       userId: userId ?? null,
-      step: 'CHAT_COMPLETION',
+      step: 'BRAIN',
       provider: 'litellm',
       model: BRAIN_EXTRACT_MODEL,
       inputTokens: outcome.usage.inputTokens,

@@ -1,4 +1,10 @@
 import { Injectable } from '@nestjs/common';
+import {
+  CHAT_TURN_STEP,
+  evaluateCeilings,
+  usageMonthStart,
+  type CeilingDimension,
+} from '@ragenai/platform-contracts';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { OrganizationSettingsService } from '../organizations/organization-settings.service.js';
 
@@ -8,7 +14,7 @@ export type ApiLimitStatus = {
   limit: number | null;
 };
 
-export type UsageCeilingDimension = 'tokens' | 'cost' | 'messages';
+export type UsageCeilingDimension = CeilingDimension;
 
 export type UsageCeilingStatus = {
   exceeded: UsageCeilingDimension[];
@@ -24,11 +30,6 @@ export type UsageCeilingStatus = {
   };
 };
 
-function getMonthStart(): Date {
-  const now = new Date();
-  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
-}
-
 /**
  * Ported from apps/web's src/app/api/v1/check-api-limit.ts.
  * See docs/adrs/21-monorepo-and-api-decoupling.md.
@@ -43,10 +44,9 @@ export class ApiLimitsService {
   /**
    * The monthly token, cost and message ceilings.
    *
-   * The apps/web counterpart is
-   * `features/ai-usage/services/queries/check-usage-limits-query.ts`; the two
-   * have to agree, and the parts that are easy to get wrong are written down in
-   * both places:
+   * The arithmetic is `evaluateCeilings` in `@ragenai/platform-contracts`,
+   * shared with apps/web's `check-usage-limits-query.ts` and the worker; this
+   * keeps only the Prisma read. The parts that are easy to get wrong:
    *
    * - **Spend aggregates over every step.** Embeddings and reranking cost
    *   money, so they count toward tokens and cost.
@@ -60,7 +60,7 @@ export class ApiLimitsService {
   async checkUsageCeilings(
     organizationId: string,
   ): Promise<UsageCeilingStatus> {
-    const monthStart = getMonthStart();
+    const monthStart = usageMonthStart();
 
     const [limits, aggregates, chatMessageCount] = await Promise.all([
       this.organizationSettings.getUsageLimits(organizationId),
@@ -72,43 +72,20 @@ export class ApiLimitsService {
         where: {
           organizationId,
           createdAt: { gte: monthStart },
-          step: 'CHAT_COMPLETION',
+          step: CHAT_TURN_STEP,
         },
       }),
     ]);
 
-    const totalTokens = aggregates._sum.totalTokens ?? 0;
-    const totalCostCents = Math.round(
-      (aggregates._sum.estimatedCost ?? 0) * 100,
-    );
-
-    const exceeded: UsageCeilingDimension[] = [];
-    if (
-      limits.monthlyTokenLimit !== null &&
-      totalTokens >= limits.monthlyTokenLimit
-    ) {
-      exceeded.push('tokens');
-    }
-    if (
-      limits.monthlyCostLimitCents !== null &&
-      totalCostCents >= limits.monthlyCostLimitCents
-    ) {
-      exceeded.push('cost');
-    }
-    if (
-      limits.monthlyMessageLimit !== null &&
-      chatMessageCount >= limits.monthlyMessageLimit
-    ) {
-      exceeded.push('messages');
-    }
+    const { exceeded, current } = evaluateCeilings(limits, {
+      totalTokens: aggregates._sum.totalTokens,
+      totalCostDollars: aggregates._sum.estimatedCost,
+      chatMessages: chatMessageCount,
+    });
 
     return {
       exceeded,
-      current: {
-        totalTokens,
-        totalCostCents,
-        totalMessages: chatMessageCount,
-      },
+      current,
       limits: {
         monthlyTokenLimit: limits.monthlyTokenLimit,
         monthlyCostLimitCents: limits.monthlyCostLimitCents,
@@ -128,8 +105,8 @@ export class ApiLimitsService {
     const count = await this.prisma.client.aiUsage.count({
       where: {
         organizationId,
-        createdAt: { gte: getMonthStart() },
-        step: 'CHAT_COMPLETION',
+        createdAt: { gte: usageMonthStart() },
+        step: CHAT_TURN_STEP,
         metadata: {
           path: ['source'],
           equals: 'API',
