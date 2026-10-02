@@ -1,5 +1,9 @@
 import db from '@ragenai/prisma-client';
-import { AiUsageStep } from '@/generated/prisma/client';
+import {
+  CHAT_TURN_STEP,
+  evaluateCeilings,
+  usageMonthStart,
+} from '@ragenai/platform-contracts';
 import { getUsageLimits } from '@/features/organizations/services/organization-settings';
 import type { UsageLimits } from '@/features/organizations/contracts/organization.types';
 
@@ -20,15 +24,10 @@ export type UsageLimitStatus = {
   isAnyLimitExceeded: boolean;
 };
 
-function getMonthStart(): Date {
-  const now = new Date();
-  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
-}
-
 export async function checkUsageLimitsQuery(
   organizationId: string,
 ): Promise<UsageLimitStatus> {
-  const monthStart = getMonthStart();
+  const monthStart = usageMonthStart();
 
   const [limits, aggregates, chatMessageCount, apiRequestCount] =
     await Promise.all([
@@ -44,7 +43,8 @@ export async function checkUsageLimitsQuery(
         },
       }),
       /**
-       * The message ceiling counts chat turns, not every tracked call.
+       * The message ceiling counts chat turns, not every tracked call
+       * (`CHAT_TURN_STEP`; the rule lives in `@ragenai/platform-contracts`).
        *
        * Tokens and cost are spend, so they aggregate everything — embeddings
        * and reranking cost money. "Monthly Message Limit" is a count of
@@ -58,14 +58,14 @@ export async function checkUsageLimitsQuery(
         where: {
           organizationId,
           createdAt: { gte: monthStart },
-          step: AiUsageStep.CHAT_COMPLETION,
+          step: CHAT_TURN_STEP,
         },
       }),
       db.aiUsage.count({
         where: {
           organizationId,
           createdAt: { gte: monthStart },
-          step: AiUsageStep.CHAT_COMPLETION,
+          step: CHAT_TURN_STEP,
           metadata: {
             path: ['source'],
             equals: 'API',
@@ -74,32 +74,23 @@ export async function checkUsageLimitsQuery(
       }),
     ]);
 
-  const totalTokens = aggregates._sum.totalTokens ?? 0;
-  const totalCost = aggregates._sum.estimatedCost ?? 0;
-  const totalCostCents = Math.round(totalCost * 100);
-  const totalMessages = chatMessageCount;
-
-  const tokensExceeded =
-    limits.monthlyTokenLimit !== null &&
-    totalTokens >= limits.monthlyTokenLimit;
-  const costExceeded =
-    limits.monthlyCostLimitCents !== null &&
-    totalCostCents >= limits.monthlyCostLimitCents;
-  const messagesExceeded =
-    limits.monthlyMessageLimit !== null &&
-    totalMessages >= limits.monthlyMessageLimit;
+  const { exceeded, current } = evaluateCeilings(limits, {
+    totalTokens: aggregates._sum.totalTokens,
+    totalCostDollars: aggregates._sum.estimatedCost,
+    chatMessages: chatMessageCount,
+  });
+  // The API request quota is a separate dimension the API surfaces read; it
+  // is not one of the three spend/turn ceilings.
   const apiRequestsExceeded =
     limits.monthlyApiRequestLimit !== null &&
     apiRequestCount >= limits.monthlyApiRequestLimit;
+  const tokensExceeded = exceeded.includes('tokens');
+  const costExceeded = exceeded.includes('cost');
+  const messagesExceeded = exceeded.includes('messages');
 
   return {
     limits,
-    current: {
-      totalTokens,
-      totalCostCents,
-      totalMessages,
-      apiRequests: apiRequestCount,
-    },
+    current: { ...current, apiRequests: apiRequestCount },
     exceeded: {
       tokens: tokensExceeded,
       cost: costExceeded,
