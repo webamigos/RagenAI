@@ -85,3 +85,37 @@ describe('the AI-usage sum selection', () => {
     expect(source).not.toMatch(/_sum:\s*\{[\s\S]{0,120}inputTokens:\s*true/);
   });
 });
+
+/**
+ * The monthly ceilings were evaluated twice — apps/web's
+ * `check-usage-limits-query.ts` and apps/api's `api-limits.service.ts` —
+ * each with a comment saying the two had to agree, and the worker is the third
+ * caller (personal memory checks the ceiling before its extraction call). The
+ * comparison now lives once, in `evaluateCeilings`.
+ */
+describe('the monthly ceilings', () => {
+  const CEILING_CONSUMERS = [
+    'apps/web/src/features/ai-usage/services/queries/check-usage-limits-query.ts',
+    'apps/api/src/api-limits/api-limits.service.ts',
+  ];
+
+  it.each(CEILING_CONSUMERS)(
+    '%s evaluates through evaluateCeilings',
+    (path) => {
+      expect(read(path)).toMatch(
+        /import \{[\s\S]*?evaluateCeilings[\s\S]*?\} from '@ragenai\/platform-contracts'/,
+      );
+    },
+  );
+
+  // The comparison itself is the tell for a copy: a fourth "is the org over
+  // its token/cost/message limit" written next to a Prisma read.
+  it.each(CEILING_CONSUMERS)(
+    '%s does not compare against a ceiling itself',
+    (path) => {
+      expect(read(path)).not.toMatch(
+        />=\s*limits\.monthly(?:Token|Cost|Message)Limit/,
+      );
+    },
+  );
+});

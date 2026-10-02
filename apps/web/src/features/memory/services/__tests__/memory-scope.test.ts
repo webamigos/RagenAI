@@ -109,7 +109,11 @@ describe('listMemories', () => {
 
 describe('updateMemory', () => {
   it('writes under the version it read, scoped to the owner', async () => {
-    db.userMemory.findFirst.mockResolvedValue({ id: 7, version: 3 });
+    db.userMemory.findFirst.mockResolvedValue({
+      id: 7,
+      version: 3,
+      profile: { epoch: 2 },
+    });
     db.userMemory.updateMany.mockResolvedValue({ count: 1 });
 
     await updateMemory(await owner(), MEMORY_ID, '  Is the CFO.  ');
@@ -139,7 +143,11 @@ describe('updateMemory', () => {
   });
 
   it('writes nothing when encryption is on and the owner key is unavailable', async () => {
-    db.userMemory.findFirst.mockResolvedValue({ id: 7, version: 1 });
+    db.userMemory.findFirst.mockResolvedValue({
+      id: 7,
+      version: 1,
+      profile: { epoch: 2 },
+    });
     crypto.resolveOwnerKeyForWrite.mockResolvedValue({
       status: 'unavailable',
       error: new Error('kms down'),
@@ -162,7 +170,11 @@ describe('updateMemory', () => {
   });
 
   it('reports a memory that changed between the read and the write', async () => {
-    db.userMemory.findFirst.mockResolvedValue({ id: 7, version: 1 });
+    db.userMemory.findFirst.mockResolvedValue({
+      id: 7,
+      version: 1,
+      profile: { epoch: 2 },
+    });
     db.userMemory.updateMany.mockResolvedValue({ count: 0 });
     await expect(
       updateMemory(await owner(), MEMORY_ID, 'Is the CFO.'),
@@ -236,7 +248,11 @@ describe('getMemorySettings', () => {
 describe('the owner key store', () => {
   /** The store memory-scope hands to the crypto package, captured from a write. */
   async function captureStore(): Promise<OwnerKeyStore> {
-    db.userMemory.findFirst.mockResolvedValue({ id: 7, version: 1 });
+    db.userMemory.findFirst.mockResolvedValue({
+      id: 7,
+      version: 1,
+      profile: { epoch: 2 },
+    });
     db.userMemory.updateMany.mockResolvedValue({ count: 1 });
     await updateMemory(await owner(), MEMORY_ID, 'Is the CFO.');
     return crypto.resolveOwnerKeyForWrite.mock.calls[0][0];
@@ -249,9 +265,23 @@ describe('the owner key store', () => {
 
     expect(await store.saveIfAbsent('wrapped')).toBe(true);
     expect(db.userMemoryProfile.updateMany).toHaveBeenCalledWith({
-      where: { id: 3, ...OWNER_WHERE, encryptedDek: null },
+      where: { id: 3, ...OWNER_WHERE, encryptedDek: null, epoch: 2 },
       data: { encryptedDek: 'wrapped' },
     });
+  });
+
+  it('stores no key once forget-everything has moved the epoch on', async () => {
+    // updateMemory read the profile at epoch 2; "forget everything" then
+    // cleared the key and moved it to 3, so the conditional write matches
+    // nothing and the cleared profile stays without a key.
+    const store = await captureStore();
+    db.userMemoryProfile.upsert.mockResolvedValue({ id: 3 });
+    db.userMemoryProfile.updateMany.mockResolvedValue({ count: 0 });
+
+    expect(await store.saveIfAbsent('wrapped')).toBe(false);
+    expect(db.userMemoryProfile.updateMany.mock.calls[0][0].where.epoch).toBe(
+      2,
+    );
   });
 
   it('reads the profile a concurrent first write created, instead of failing', async () => {

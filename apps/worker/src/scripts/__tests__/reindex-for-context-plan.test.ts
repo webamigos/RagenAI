@@ -1,8 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
 import {
-  countByVersion,
-  fileContextVersions,
   parseReindexArgs,
   planReindex,
   renderVersionCounts,
@@ -10,10 +8,6 @@ import {
   type ReindexCandidate,
   type StartStepDeps,
 } from '../reindex-for-context-plan.js';
-
-const point = (metadata: Record<string, unknown>) => ({
-  payload: { metadata },
-});
 
 describe('parseReindexArgs', () => {
   it('needs an organization', () => {
@@ -34,42 +28,12 @@ describe('parseReindexArgs', () => {
   });
 });
 
-describe('fileContextVersions', () => {
-  it('takes the lowest version over a file’s body chunks, none being 0', () => {
-    const versions = fileContextVersions([
-      point({ file_id: 'a', context_version: 1 }),
-      point({ file_id: 'a', context_version: 1 }),
-      point({ file_id: 'b', context_version: 1 }),
-      point({ file_id: 'b' }),
-      point({ file_id: 'c' }),
-    ]);
-    expect(Object.fromEntries(versions)).toEqual({ a: 1, b: 0, c: 0 });
-  });
-
-  it('ignores the summary chunk, which is never prefixed, and points with no file', () => {
-    const versions = fileContextVersions([
-      point({ file_id: 'a', context_version: 1 }),
-      point({ file_id: 'a', chunk_type: 'summary' }),
-      point({ context_version: 1 }),
-      { payload: null },
-    ]);
-    expect(Object.fromEntries(versions)).toEqual({ a: 1 });
-  });
-});
-
-describe('countByVersion', () => {
-  it('counts files per version, lowest first', () => {
-    const counts = countByVersion(
-      new Map([
-        ['a', 1],
-        ['b', 0],
-        ['c', 1],
-      ]),
-    );
-    expect(counts).toEqual([
+describe('renderVersionCounts', () => {
+  it('prints files per version, lowest first', () => {
+    const counts: [number, number][] = [
       [0, 1],
       [1, 2],
-    ]);
+    ];
     expect(renderVersionCounts(counts)).toBe(
       '  context_version 0 (none): 1 file\n  context_version 1: 2 files',
     );

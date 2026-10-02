@@ -126,6 +126,24 @@ describe('scoreDocumentForRag', () => {
     expect(json).not.toContain('"maxLength":300');
   });
 
+  // The message ceiling counts CHAT_COMPLETION rows. Recorded as one, every
+  // scored document spent a chat message the organization never sent.
+  it('records its usage under DOCUMENT_PROCESSING, not as a chat completion', async () => {
+    generateObject.mockResolvedValue({
+      object: answer([long]),
+      usage: { inputTokens: 1, outputTokens: 1, totalTokens: 2 },
+    } as never);
+
+    await scoreDocumentForRag({ documentText: 'Cennik.', orgId: 'org-1' });
+
+    expect(trackAiUsage).toHaveBeenCalledWith(
+      expect.objectContaining({
+        step: 'DOCUMENT_PROCESSING',
+        metadata: expect.objectContaining({ kind: 'rag_scorer' }),
+      }),
+    );
+  });
+
   it('states the limit in the prompt', async () => {
     generateObject.mockResolvedValue({
       object: answer([]),
