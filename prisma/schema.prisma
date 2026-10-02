@@ -1124,6 +1124,13 @@ enum AiUsageStep {
   /// toward the token and cost ceilings, not the message ceiling. The Brain
   /// assistant's answers are a user's turn and stay `CHAT_COMPLETION`.
   BRAIN
+  /// The worker's per-document model calls: summaries at ingest, the RAG
+  /// readiness score and Optimize's suggestions (`metadata.kind` is
+  /// `document_summary`, `rag_scorer` or `rag_optimizer`). Recorded as
+  /// `CHAT_COMPLETION` until this step existed, so uploading documents spent
+  /// the message ceiling — the case that ceiling's own comment rules out.
+  /// Counts toward the token and cost ceilings, not the message ceiling.
+  DOCUMENT_PROCESSING
 }
 
 enum McpConnectorStatus {

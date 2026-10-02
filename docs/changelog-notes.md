@@ -102,6 +102,11 @@ archive is the blog.
   now has its own step on the AI-usage page ("Brain"), still counts toward
   the token and cost limits, and past Brain usage is moved there too, so an
   admin will see this month's message count drop.
+- `[brief]` **Uploading documents no longer uses up the monthly message
+  limit either.** Document summaries, the readiness score and Optimize's
+  suggestions were counted as chat messages too. They are now one step,
+  "Document processing", on the AI-usage page, still counted toward the token
+  and cost limits, and past usage is moved there as well.
 
 ### Knowledge base
 

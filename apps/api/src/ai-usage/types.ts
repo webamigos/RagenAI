@@ -22,7 +22,9 @@ export type AiUsageStep =
   /** The model choosing a turn's sections (`sectionSelection`). */
   | 'SECTION_SELECTION'
   /** Ragen Brain's background extraction and contradiction calls. */
-  | 'BRAIN';
+  | 'BRAIN'
+  /** The worker's document summaries, readiness scoring and Optimize. */
+  | 'DOCUMENT_PROCESSING';
 
 export type CreateAiUsageInput = {
   organizationId: string;
