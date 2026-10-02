@@ -441,7 +441,7 @@ feature depends on. So:
 | `apps/web` chat stream | Enqueue after the turn; memory block in both chains | unit tests on the gate; `p0-35` (see "Testing") |
 | ADR-42 function | Amended, not changed, for threads | its existing tests stay green unchanged |
 | auth / tenant scoping | Per-user boundary in one module | `memory-rows-are-read-through-one-module.test.ts` + an IDOR unit test per function |
-| Better Auth membership | A trigger on `members` deletes a removed member's profile (A0; pending decision) | a migration test that each of the four removal paths leaves no profile |
+| Better Auth membership | A trigger on `members` deletes a removed member's profile (A0, A5) | `a-removed-member-takes-their-memory.test.ts` pins the trigger; every removal path checked once against Postgres (A5) |
 | `apps/api` thread deletion | None: the FK cascade does it (see "Data model") | a test in `thread-core.service` that deleting a thread deletes its memories |
 
 ## Data model
@@ -597,7 +597,7 @@ enum UserMemoryOperation {
   profile is deleted, which cascades to their memories and changes. A0 found
   that no Better Auth hook covers every path — `/organization/leave`, the
   panel's own `removeMember` and apps/admin's removal call none — so the
-  recommended mechanism is a trigger on `members` (see A0). Because `members`
+  mechanism is a trigger on `members` (A0, A5). Because `members`
   cascades from `organizations` and `users`, the trigger also covers an org or
   user deletion when one is added.
 - **The org turns `personalMemory` off.** Extraction and reading stop at the
@@ -639,8 +639,8 @@ shape an answer before it has been measured.
   | apps/admin's platform removal (`organizations/actions.ts`) | `tx.member.delete` | **no** |
 
   So the hook the spec planned would leave memories behind on three paths,
-  including the one the panel uses. **Recommendation for A5, awaiting the
-  product owner:** a database trigger, `AFTER DELETE ON members`, that deletes
+  including the one the panel uses. **Recommendation for A5, accepted by the
+  product owner on 2026-10-02:** a database trigger, `AFTER DELETE ON members`, that deletes
   the matching `user_memory_profiles` row (cascading to memories and
   changes) in the delete's own transaction. It covers all four paths and any
   added later, and — because `members` cascades from `organizations` and
@@ -690,8 +690,20 @@ shape an answer before it has been measured.
   It also adds the architecture test that memory rows are touched only there,
   and an IDOR test per function: another user's `publicId` in the same org is
   `NotFound`, never a write.
-- [ ] **A5.** The member-removal cleanup from A0, with its test — the trigger,
+- [x] **A5.** The member-removal cleanup from A0, with its test — the trigger,
   if the recommendation above is accepted. Waits for that decision.
+
+  *Done.* Migration `20261002150000_memory_profile_deleted_with_member`:
+  `members_delete_memory_profile`, `AFTER DELETE ON members`, deletes the
+  profile with the same `organization_id` and `user_id`. Checked against a
+  fresh Postgres with two orgs and three users: deleting one membership
+  removed only that profile and its memories and changes, the same user's
+  profile in the other org stayed; deleting a user and then an org removed
+  exactly their profiles through the `members` cascade; a delete rolled back
+  kept the profile. Every application path ends in that one `DELETE` on
+  `members`, so the check covers them. `prisma migrate diff` stays clean (it
+  does not model triggers). `a-removed-member-takes-their-memory.test.ts`
+  pins the trigger's shape and that no later migration drops it.
 
 ### Phase B — the user's view, still no extraction
 
@@ -782,7 +794,7 @@ shape an answer before it has been measured.
   - forget-everything keeping the switch and incrementing the epoch;
   - the `OrgMemoryAdmin` scope's authorization;
   - the stale-undo refusal;
-  - the member-removal hook.
+  - the member-removal trigger (an architecture test; see A5).
 - **Architecture:** `memory-rows-are-read-through-one-module.test.ts`, and the
   updated `encryption-lives-in-one-package.test.ts`.
 - **Integration:**
