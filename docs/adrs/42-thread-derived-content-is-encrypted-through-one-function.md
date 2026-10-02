@@ -81,3 +81,38 @@ because someone re-embedded a document is worse than one that costs storage.
 already plaintext when encryption is off". True in that configuration and false
 in every other one, and it is the divergence — plaintext snippet next to an
 encrypted message — that this ADR exists to prevent.
+
+## Amendment 2026-10-02: content whose owner is not a thread
+
+[Personal memory](../specs/2026-09-27-personal-memory-across-threads.md) adds
+content that is derived from a thread but belongs to no single message. A
+memory is written from a turn in one thread and read in the user's other
+threads, so "the same key as the message it belongs to" has no answer for it.
+This amendment is the change to this ADR that the Consequences section asks
+for, rather than a second path beside it.
+
+- **The key is chosen by the content's owner.** For everything that existed
+  before this amendment, the owner is a thread and nothing changes. For a
+  memory, the owner is a (user, organization) profile, and the key is one DEK
+  per profile, `UserMemoryProfile.encryptedDek`, wrapped by the same
+  installation-wide provider as a thread DEK. Per-org KMS keys (ADR-02) stay
+  deferred; when they land, the owner key moves with the thread key.
+- **One function per owner kind, on the same primitives.** Threads keep
+  `maybeEncryptContent`. Owner keys are `resolveOwnerKeyForWrite`,
+  `sealOwnedContent` and `openOwnedRows` in
+  `packages/crypto/src/owner-key.ts`, built on the envelope and the DEK cache
+  the thread path uses. They take a two-method store, so apps/web and
+  apps/worker resolve the key identically with their own Prisma reads.
+- **An owned row records whether it is encrypted** (`isEncrypted`). A thread
+  can infer it from its key; a profile cannot, because it may hold plaintext
+  rows from before encryption was switched on.
+- **It fails closed, unlike thread-derived content, and that is the point of
+  the difference.** When encryption is on and the owner key cannot be
+  obtained, the memory is not written. The argument above for following the
+  message down does not apply: there is no message beside a memory, and it is
+  read in other threads that may be encrypted, so a plaintext memory would be
+  the divergence this ADR exists to prevent. Losing one extraction costs
+  nothing.
+
+`tests/architecture/encryption-lives-in-one-package.test.ts` checks that the
+owner-key module is in the package.
