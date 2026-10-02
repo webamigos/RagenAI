@@ -25,21 +25,24 @@
  * `DATABASE_URL`, `REDIS_URL`, `QDRANT_URL` and `QDRANT_API_KEY`.
  */
 import { QdrantClient } from '@qdrant/js-client-rest';
+import {
+  CONTEXT_VERSION_PAYLOAD_FIELDS,
+  CURRENT_CONTEXT_VERSION,
+  countByVersion,
+  fileContextVersions,
+  type ContextPoint,
+} from '@ragenai/rag-core';
 import { nanoid } from 'nanoid';
 
 import { closeJobs, jobs } from '../jobs.js';
-import { FREE_CONTEXT_PREFIX_VERSION } from '../services/context-prefix.js';
 import { getPrisma } from '../services/db/prisma.js';
 import { resolveOrgFeatures } from '../services/org-features.js';
 import { qdrantClientOptions } from './document-diagnostics-backfill.js';
 import {
-  countByVersion,
-  fileContextVersions,
   parseReindexArgs,
   planReindex,
   renderVersionCounts,
   startReindexSteps,
-  type ContextPoint,
   type ReindexCandidate,
 } from './reindex-for-context-plan.js';
 
@@ -57,11 +60,7 @@ async function contextPoints(
       limit: PAGE,
       offset,
       with_payload: {
-        include: [
-          'metadata.file_id',
-          'metadata.chunk_type',
-          'metadata.context_version',
-        ],
+        include: [...CONTEXT_VERSION_PAYLOAD_FIELDS],
       },
       with_vector: false,
     });
@@ -107,7 +106,7 @@ async function candidatesFor(
 async function main() {
   // Validated before any read, let alone a job.
   const { orgId, dryRun, limit } = parseReindexArgs(process.argv.slice(2));
-  const current = FREE_CONTEXT_PREFIX_VERSION;
+  const current = CURRENT_CONTEXT_VERSION;
 
   const features = await resolveOrgFeatures(orgId);
   if (!features.contextualChunks.value) {
