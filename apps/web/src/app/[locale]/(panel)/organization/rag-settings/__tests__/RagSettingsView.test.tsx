@@ -3,6 +3,7 @@ import { describe, it, expect } from 'vitest';
 import { NextIntlClientProvider } from 'next-intl';
 import { RagSettingsView } from '../components/RagSettingsView';
 import type { RagSettingsPageData } from '../actions';
+import { resolveEffectivePipeline } from '@/features/organizations/utils/effective-rag-pipeline';
 
 const messages = {
   'organization-page': {
@@ -17,7 +18,16 @@ const messages = {
       'doc-summaries-description': 'Generate summaries at ingest time.',
       'content-moderation-label': 'Content moderation',
       'content-moderation-description': 'Filter harmful content.',
-      'content-moderation-saas-note': 'Always enabled in SaaS mode.',
+      'content-moderation-guardrails-note':
+        'Runs through guardrail rules. Active for this organization: {count}.',
+      'content-moderation-no-guardrails-note':
+        'No guardrail rules are active for this organization, so nothing is moderated.',
+      'content-moderation-unreadable-note':
+        'The guardrail rules could not be read just now, so this may not show what runs.',
+      'doc-summaries-installation-off-note':
+        'Switched off for the whole installation, so no summaries are generated.',
+      'reranking-unavailable-note':
+        'This installation has no reranker configured, so nothing is reranked.',
       'reranking-label': 'Reranking',
       'reranking-description': 'Re-score retrieved documents.',
       'reranking-replaced-note':
@@ -59,6 +69,17 @@ const baseData: RagSettingsPageData = {
     contextExpansion: true,
     sectionSelection: false,
   },
+  pipeline: resolveEffectivePipeline({
+    ragSettings: {
+      multiQueryEnabled: true,
+      docSummariesEnabled: true,
+      contentModerationEnabled: true,
+      rerankingEnabled: false,
+    },
+    installation: { docSummaries: true, reranker: false },
+    retrievalFeatures: { contextExpansion: true, sectionSelection: false },
+    guardrails: { active: 0, degraded: false },
+  }),
   budgetCents: 1000,
   models: {
     embedding: 'cohere-embed-multilingual-v3',
@@ -93,11 +114,57 @@ describe('RagSettingsView', () => {
     ).not.toBeChecked();
   });
 
+  it('shows each row as the pipeline resolves it, with its note', () => {
+    renderWithProviders({
+      ...baseData,
+      pipeline: {
+        ...baseData.pipeline,
+        reranking: {
+          checked: false,
+          note: { key: 'reranking-unavailable-note' },
+        },
+        docSummaries: {
+          checked: false,
+          note: { key: 'doc-summaries-installation-off-note' },
+        },
+        contentModeration: {
+          checked: true,
+          note: { key: 'content-moderation-guardrails-note', count: 3 },
+        },
+      },
+    });
+
+    expect(screen.getByRole('switch', { name: 'Reranking' })).not.toBeChecked();
+    expect(
+      screen.getByText(
+        'This installation has no reranker configured, so nothing is reranked.',
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('switch', { name: 'Document summaries' }),
+    ).not.toBeChecked();
+    expect(
+      screen.getByText(
+        'Switched off for the whole installation, so no summaries are generated.',
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('switch', { name: 'Content moderation' }),
+    ).toBeChecked();
+    expect(
+      screen.getByText(
+        'Runs through guardrail rules. Active for this organization: 3.',
+      ),
+    ).toBeInTheDocument();
+  });
+
   it('says the reranker does not run while section selection replaces it', () => {
     renderWithProviders({
       ...baseData,
-      ragSettings: { ...baseData.ragSettings, rerankingEnabled: true },
-      retrievalFeatures: { contextExpansion: true, sectionSelection: true },
+      pipeline: {
+        ...baseData.pipeline,
+        reranking: { checked: false, note: { key: 'reranking-replaced-note' } },
+      },
     });
 
     expect(
@@ -107,15 +174,17 @@ describe('RagSettingsView', () => {
     ).toBeInTheDocument();
   });
 
-  it('adds no reranker note when section selection is off', () => {
-    renderWithProviders({
-      ...baseData,
-      ragSettings: { ...baseData.ragSettings, rerankingEnabled: true },
-    });
+  it('says nothing is moderated when the organization has no guardrail rules', () => {
+    renderWithProviders(baseData);
 
     expect(
-      screen.queryByText(/Not run while section selection is on/),
-    ).not.toBeInTheDocument();
+      screen.getByRole('switch', { name: 'Content moderation' }),
+    ).not.toBeChecked();
+    expect(
+      screen.getByText(
+        'No guardrail rules are active for this organization, so nothing is moderated.',
+      ),
+    ).toBeInTheDocument();
   });
 
   it('renders the on-premise info banner in SaaS mode', () => {
@@ -135,22 +204,6 @@ describe('RagSettingsView', () => {
       screen.queryByText(
         'These settings can be changed in on-premise deployments.',
       ),
-    ).not.toBeInTheDocument();
-  });
-
-  it('shows SaaS note for content moderation in SaaS mode', () => {
-    renderWithProviders(baseData);
-
-    expect(
-      screen.getByText('Always enabled in SaaS mode.'),
-    ).toBeInTheDocument();
-  });
-
-  it('hides SaaS note for content moderation in on-premise mode', () => {
-    renderWithProviders({ ...baseData, isOnPremise: true });
-
-    expect(
-      screen.queryByText('Always enabled in SaaS mode.'),
     ).not.toBeInTheDocument();
   });
 

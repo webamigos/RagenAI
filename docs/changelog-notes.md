@@ -97,6 +97,15 @@ archive is the blog.
 
 ### Settings
 
+- `[brief]` **The RAG settings page shows what runs, not what was
+  switched on.** Reranking showed "on" on every default install, where no
+  reranker is configured; it now shows off and says why. Content moderation
+  showed a column nothing reads and "always enabled in SaaS mode"; it now
+  shows the organization's active guardrail rules, or that there are none.
+  Document summaries say when the installation has them switched off, and
+  that the setting applies to documents indexed from now on. The reranking
+  description no longer claims a cross-encoder.
+
 - `[brief]` **The RAG pipeline page shows context expansion and section
   selection.** Both stages ran — expansion on by default — but the page that
   lists an organization's retrieval stages had no row for either. It now
