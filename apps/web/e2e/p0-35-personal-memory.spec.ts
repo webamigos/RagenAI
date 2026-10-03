@@ -80,6 +80,8 @@ async function withPrisma<T>(fn: (prisma: any) => Promise<T>): Promise<T> {
 }
 
 let savedOverrides: unknown = null;
+/** Threads the `ask()` turns create, deleted with the seeded ones. */
+const askedThreads: string[] = [];
 
 async function createThread(
   prisma: any,
@@ -191,7 +193,9 @@ test.afterAll(async () => {
       where: { organizationId: TEST_ORG_ID },
     });
     await prisma.thread.deleteMany({
-      where: { id: { in: [LINE_THREAD.id, SOURCE_THREAD.id] } },
+      where: {
+        id: { in: [LINE_THREAD.id, SOURCE_THREAD.id, ...askedThreads] },
+      },
     });
     await prisma.organizationSettings.update({
       where: { organizationId: TEST_ORG_ID },
@@ -214,6 +218,20 @@ async function ask(page: Page, question: string): Promise<void> {
   await expect(page.getByText(MOCK_ANSWER).last()).toBeVisible({
     timeout: TURN_TIMEOUT,
   });
+  const match = /\/chats\/([^/?#]+)/.exec(page.url());
+  if (match) {
+    askedThreads.push(match[1]);
+  }
+}
+
+/** The second user's role in the test org. Seeded as a plain member. */
+async function setOtherUserRole(role: 'admin' | 'member'): Promise<void> {
+  await withPrisma((prisma) =>
+    prisma.member.updateMany({
+      where: { organizationId: TEST_ORG_ID, userId: TEST_OTHER_USER_ID },
+      data: { role },
+    }),
+  );
 }
 
 async function memoryRow(page: Page, content: string) {
@@ -267,24 +285,29 @@ test('a second member of the org sees none of it, not even in a thread shared wi
       await expect(page.getByText(text)).toHaveCount(0);
     }
 
-    // The thread is shared with them, and opening it shows none of the
-    // owner's memories: change rows are read under the reader's own
-    // (organization, user), and memories are never read for a shared thread.
-    //
-    // **What this cannot prove yet.** The messages route admits the owner and
-    // org admins only, so a plain member opens a shared thread onto no
-    // messages at all — a separate defect. Until that is fixed this asserts
-    // the absence of the line on a thread that renders nothing; once it is,
-    // assert the seeded answer is visible first, so the absence means
-    // something. The per-user wall itself is covered by `memory-scope.test.ts`.
     await expect(
       page.getByRole('link', { name: `Thread: ${LINE_THREAD.title}` }),
     ).toBeVisible({ timeout: 15_000 });
-    await page.goto(`/pl/chats/${LINE_THREAD.id}`);
-    await expect(page.locator('textarea')).toBeVisible({ timeout: 15_000 });
-    await expect(page.getByText(/Zapamiętano:/)).toHaveCount(0);
-    for (const text of [PREFERENCE, SOURCE_MEMORY, LINE_MEMORY]) {
-      await expect(page.getByText(text)).toHaveCount(0);
+
+    // Opening the shared thread, as someone who can actually load it. The
+    // messages route admits the owner and org admins only, so a plain member
+    // opens a shared thread onto no messages at all — a separate defect, and
+    // asserting an absence on an empty page would prove nothing. An admin
+    // reads any thread in the org, read-only: a reader who sees *more* than a
+    // share grants, which makes "none of the owner's memory shows" the
+    // stricter claim. Promoted for this check only, and put back.
+    await setOtherUserRole('admin');
+    try {
+      await page.goto(`/pl/chats/${LINE_THREAD.id}`);
+      await expect(
+        page.getByText('Zapamiętam, że wolisz odpowiedzi w punktach.'),
+      ).toBeVisible({ timeout: 15_000 });
+      await expect(page.getByText(/Zapamiętano:/)).toHaveCount(0);
+      for (const text of [PREFERENCE, SOURCE_MEMORY, LINE_MEMORY]) {
+        await expect(page.getByText(text)).toHaveCount(0);
+      }
+    } finally {
+      await setOtherUserRole('member');
     }
   } finally {
     await context.close();
