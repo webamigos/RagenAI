@@ -28,6 +28,7 @@ import { getProjectInstructionQuery as getProjectInstruction } from '@/features/
 import { getTemplateInstructionForProject } from '@/features/assistant-templates/services/queries/get-template-instruction-query';
 import { type ThreadDocumentUI } from '@/features/documents/contracts/document.types';
 import { recordKnowledgeUsageCommand } from '@/features/documents/services/commands/record-knowledge-usage-command';
+import { enqueueMemoryExtractionCommand } from '@/features/memory/services/commands/enqueue-memory-extraction-command';
 import type { BaseChatChainOutput } from '@/libs/chains/types/common';
 import { getCurrentUserId } from '@/app/lib/utils/auth-helpers';
 import {
@@ -1175,6 +1176,23 @@ export async function streamEvents({
                   { err },
                   'Failed to save document retrievals and citations — non-blocking',
                 );
+              });
+            }
+
+            // Personal memory (spec 2026-09-27-personal-memory-across-threads,
+            // C3): a job extracts what the user said about themselves from
+            // this turn's masked question, never from the answer. The command
+            // holds the whole gate — panel chat, the owner's own private
+            // thread, the key and the user's switch — and never throws.
+            if (dbMessage && mode !== AssistantMode.PUBLIC) {
+              void enqueueMemoryExtractionCommand({
+                orgId,
+                threadId: threadRecord.id,
+                messageId: dbMessage.id,
+                maskedQuestion: piiResult.maskedText,
+                // An input refusal never gets here (the chain throws); an
+                // output refusal saves the turn with this set.
+                turnRefused: guardrailBlocked !== null,
               });
             }
 

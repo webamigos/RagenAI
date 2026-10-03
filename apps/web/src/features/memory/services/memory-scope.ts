@@ -146,6 +146,24 @@ export async function listMemories(
   return opened.map(({ isEncrypted: _isEncrypted, ...row }) => row);
 }
 
+/**
+ * What the chat needs to decide whether to enqueue an extraction: the user's
+ * switch, and the epoch the job carries so a later "forget everything" or
+ * opt-out fences it. No profile yet means on, at epoch 0.
+ */
+export async function getExtractionState(
+  owner: MemoryOwner,
+): Promise<{ extractionEnabled: boolean; epoch: number }> {
+  const profile = await db.userMemoryProfile.findUnique({
+    where: profileKey(owner),
+    select: { extractionEnabled: true, epoch: true },
+  });
+  return {
+    extractionEnabled: profile?.extractionEnabled ?? true,
+    epoch: profile?.epoch ?? 0,
+  };
+}
+
 /** How many memories the owner has, expired ones included: what erasure would delete. */
 export async function countMemories(owner: MemoryOwner): Promise<number> {
   return db.userMemory.count({ where: ownerWhere(owner) });
