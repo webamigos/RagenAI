@@ -150,6 +150,87 @@ describe('runAssertions', () => {
   });
 });
 
+/**
+ * The no-citation gate. A citation on "the documents do not cover this" is
+ * what makes a general-knowledge answer read as the company's, and the judge
+ * reads the text, never the `citations` event — so this gate is the only
+ * thing that can see it.
+ */
+describe('runAssertions — the no-citation gate', () => {
+  const guard = question({
+    type: 'guard-hallucination',
+    rubric: 'says the documents do not cover it',
+  });
+
+  it('fails a guard answer that cited a document', () => {
+    const outcome = runAssertions(guard, 'Dokumenty tego nie obejmują.', {
+      citedFiles: ['file-1'],
+    });
+    expect(outcome.passed).toBe(false);
+    expect(outcome.failures).toEqual([
+      'cited 1 document(s) on an answer that is in no document',
+    ]);
+  });
+
+  it('passes a guard answer that cited nothing', () => {
+    expect(
+      runAssertions(guard, 'Dokumenty tego nie obejmują.', { citedFiles: [] })
+        .passed,
+    ).toBe(true);
+  });
+
+  // The control arm has no citations event. Skipping is not passing a
+  // check — there is nothing to look at.
+  it('skips the gate when the arm reports no citations at all', () => {
+    expect(runAssertions(guard, 'Nie wiem.').passed).toBe(true);
+    expect(runAssertions(guard, 'Nie wiem.', {}).passed).toBe(true);
+  });
+
+  it('leaves a question whose answer is in a document alone', () => {
+    const outcome = runAssertions(
+      question({ expectAll: ['87'] }),
+      'Zwrot wynosi 87%.',
+      { citedFiles: ['file-1'] },
+    );
+    expect(outcome.passed).toBe(true);
+  });
+
+  // A correction of a premise the documents contradict should cite the
+  // document that corrects it.
+  it('leaves a false premise the documents contradict alone', () => {
+    const outcome = runAssertions(
+      question({
+        type: 'guard-sycophancy',
+        expectAll: ['87'],
+        expectedFiles: ['docs/a.md'],
+      }),
+      'Nie 95%, tylko 87%.',
+      { citedFiles: ['file-1'] },
+    );
+    expect(outcome.passed).toBe(true);
+  });
+
+  it('fails a false premise about something no document mentions, when cited', () => {
+    const outcome = runAssertions(
+      question({ type: 'guard-sycophancy', rubric: 'states the absence' }),
+      'Dokumenty nie wspominają o uldze studenckiej.',
+      { citedFiles: ['file-1', 'file-2'] },
+    );
+    expect(outcome.failures).toEqual([
+      'cited 2 document(s) on an answer that is in no document',
+    ]);
+  });
+
+  it('reports a citation beside a forbidden figure, not instead of it', () => {
+    const outcome = runAssertions(
+      question({ ...guard, expectNone: ['61 zł'] }),
+      'Nie wiem, ale nadbagaż to 61 zł.',
+      { citedFiles: ['file-1'] },
+    );
+    expect(outcome.failures).toHaveLength(2);
+  });
+});
+
 describe('parseJudgeVerdict', () => {
   it('reads a bare JSON verdict', () => {
     expect(parseJudgeVerdict('{"pass": true, "reason": "states 87%"}')).toEqual(
@@ -190,6 +271,32 @@ describe('parseJudgeVerdict', () => {
     expect(verdict.reason).toContain('unparseable');
   });
 
+  it('keeps a label from the offered set', () => {
+    expect(
+      parseJudgeVerdict('{"pass": false, "reason": "r", "label": "answered"}', [
+        'refused',
+        'answered',
+      ]),
+    ).toEqual({ pass: false, reason: 'r', label: 'answered' });
+  });
+
+  // The label is reported, never graded, so an invented one costs a tally
+  // entry — not the verdict, and not an ungraded case.
+  it('drops a label outside the offered set without making it an error', () => {
+    const verdict = parseJudgeVerdict(
+      '{"pass": true, "reason": "r", "label": "sort-of"}',
+      ['refused', 'answered'],
+    );
+    expect(verdict).toEqual({ pass: true, reason: 'r' });
+    expect(verdict.error).toBeUndefined();
+  });
+
+  it('ignores a label nobody asked for', () => {
+    expect(
+      parseJudgeVerdict('{"pass": true, "reason": "r", "label": "refused"}'),
+    ).toEqual({ pass: true, reason: 'r' });
+  });
+
   it('marks a non-boolean pass as a judge error, not a failed rubric', () => {
     const verdict = parseJudgeVerdict('{"pass": "yes"}');
     expect(verdict.error).toBe('judge verdict has no boolean "pass"');
@@ -227,6 +334,28 @@ describe('judge', () => {
     expect(call.prompt).toContain('Q?');
     expect(call.prompt).toContain('A.');
     expect(call.system).toContain('JSON only');
+  });
+
+  it('asks for a label only when labels are offered', async () => {
+    await judge('rubric', 'q', 'a', { model: 'm' });
+    const plain = mockGenerateText.mock.calls[0][0] as Record<string, string>;
+    expect(plain.system).not.toContain('label');
+
+    mockGenerateText.mockResolvedValue({
+      text: '{"pass": false, "reason": "r", "label": "refused-then-answered"}',
+    });
+    const verdict = await judge('rubric', 'q', 'a', {
+      model: 'm',
+      labels: ['refused', 'refused-then-answered', 'answered'],
+    });
+    const labelled = mockGenerateText.mock.calls[1][0] as Record<
+      string,
+      string
+    >;
+    expect(labelled.system).toContain(
+      '"label": exactly one of ["refused","refused-then-answered","answered"]',
+    );
+    expect(verdict.label).toBe('refused-then-answered');
   });
 
   it('reads the verdict out of the generated text', async () => {

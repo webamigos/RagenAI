@@ -665,19 +665,24 @@ async function main(): Promise<void> {
 
           const answerMs = Date.now() - answerStarted;
 
-          const assertions = runAssertions(q, answer);
+          // `citedFiles` is undefined on the control arm, which skips the
+          // no-citation gate there rather than passing it.
+          const assertions = runAssertions(q, answer, { citedFiles });
           let rubricPassed: boolean | null = null;
           let rubricReason: string | undefined;
+          let rubricLabel: string | undefined;
           let rubricError: string | undefined;
           if (q.rubric) {
             const verdict = await withRetry(
               () =>
                 judge(q.rubric!, q.question, answer, {
                   model: JUDGE_MODEL,
+                  labels: q.judgeLabels,
                 }),
               { onRetry },
             );
             rubricReason = verdict.reason;
+            rubricLabel = verdict.label;
             // An unreadable verdict leaves `rubricPassed` null. Recording
             // `false` would spend a real failure on the judge's formatting and
             // move the published rate; the report excludes the case instead.
@@ -693,6 +698,7 @@ async function main(): Promise<void> {
             assertionFailures: assertions.failures,
             rubricPassed,
             rubricReason,
+            ...(rubricLabel ? { rubricLabel } : {}),
             rubricError,
             passed,
             citedFiles,

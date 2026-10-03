@@ -1,4 +1,5 @@
 import { evidenceSection } from './evidence';
+import { forbidsCitation } from './corpus';
 import type { Arm, CaseResult, DocumentScore, Report } from './types';
 
 export interface Tally {
@@ -212,6 +213,82 @@ export function serverPostRetrieval(results: readonly CaseResult[]): string {
   return [...counts].map(([step, n]) => `\`${step}\` × ${n}`).join(', ');
 }
 
+/** What a labelled case counts as when the judge offered no usable label. */
+export const NO_LABEL = '(no label)';
+
+/**
+ * The guard cases, split by the judge's outcome label and by whether the
+ * answer carried a citation it must not carry.
+ *
+ * A pass rate cannot tell "said the documents do not cover it" from "said
+ * so, then answered anyway" — both fail the rubric, and only the second is a
+ * general-knowledge answer wearing the company's name. The labels are the
+ * judge's reading of the rubric and are reported, never graded; ungraded
+ * cases are left out, as everywhere else.
+ */
+export function guardOutcomes(
+  results: CaseResult[],
+): { key: string; byArm: Record<Arm, number> }[] {
+  const mustNotCite = results.filter(
+    (r) => !isUngraded(r) && forbidsCitation(r),
+  );
+  const rows: { key: string; byArm: Record<Arm, number> }[] = [];
+
+  // Label rows only once the judge was asked for labels at all. A result file
+  // does not carry `judgeLabels`, so a corpus without them would otherwise
+  // render every guard case as unlabelled.
+  if (mustNotCite.some((r) => r.rubricLabel !== undefined)) {
+    const graded = mustNotCite.filter((r) => r.rubricPassed !== null);
+    const keys = [...new Set(graded.map((r) => r.rubricLabel ?? NO_LABEL))];
+    for (const key of keys) {
+      rows.push({
+        key,
+        byArm: countByArm(
+          graded.filter((r) => (r.rubricLabel ?? NO_LABEL) === key),
+        ),
+      });
+    }
+  }
+
+  if (mustNotCite.some((r) => r.citedFiles !== undefined)) {
+    rows.push({
+      key: 'carried a citation it must not carry',
+      byArm: countByArm(
+        mustNotCite.filter((r) => (r.citedFiles?.length ?? 0) > 0),
+      ),
+    });
+  }
+  return rows;
+}
+
+function countByArm(rows: CaseResult[]): Record<Arm, number> {
+  const byArm = {} as Record<Arm, number>;
+  for (const arm of ARMS) {
+    byArm[arm] = rows.filter((r) => r.arm === arm).length;
+  }
+  return byArm;
+}
+
+function guardTable(
+  rows: { key: string; byArm: Record<Arm, number> }[],
+): string {
+  const lines = [
+    '## Guard outcomes',
+    '',
+    'Questions whose answer is in no document. The labels are the judge’s',
+    'reading of each rubric, reported rather than graded; the citation row is the',
+    'deterministic gate, counted on the RAG arm only.',
+    '',
+    '| | Ragen (RAG) | control (no retrieval) |',
+    '|---|---|---|',
+  ];
+  for (const row of rows) {
+    lines.push(`| ${row.key} | ${row.byArm.rag} | ${row.byArm['no-rag']} |`);
+  }
+  lines.push('');
+  return lines.join('\n');
+}
+
 export function renderMarkdown(report: Report): string {
   const { results, fingerprint } = report;
   const overall = crosstab(results, () => 'all questions');
@@ -275,6 +352,11 @@ export function renderMarkdown(report: Report): string {
   // sends none, and a table of dashes would read as zero recall.
   if (results.some((r) => r.evidence !== undefined)) {
     out.push(evidenceSection(results));
+  }
+
+  const guards = guardOutcomes(results);
+  if (guards.length > 0) {
+    out.push(guardTable(guards));
   }
 
   // Only when there is something to put in it: a corpus with no
@@ -345,6 +427,7 @@ function caseNote(r: CaseResult): string {
   return [
     ...r.assertionFailures,
     r.rubricPassed === false ? `rubric: ${r.rubricReason ?? ''}` : '',
+    r.rubricLabel ? `label: ${r.rubricLabel}` : '',
     r.rubricError ? `judge: ${r.rubricError}` : '',
   ]
     .filter(Boolean)
