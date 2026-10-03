@@ -162,7 +162,7 @@ export async function runMemoryExtraction(
   if (!parsed) {
     return skip('unparseable');
   }
-  const plan = planMemoryApply(current, parsed.operations);
+  const plan = planMemoryApply(current, parsed.operations, question);
   const dropped = parsed.dropped + plan.dropped;
   if (planWritesNothing(plan)) {
     // Counts only, never content. A run that drops every operation looks
