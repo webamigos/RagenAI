@@ -113,7 +113,11 @@ export const GET = async (request: NextRequest, { params }: Params) => {
     }
 
     // The query itself validates visitorId ownership
-    const result = await fetchMessagesFromDb(threadIdParam, effectiveVisitorId);
+    const result = await fetchMessagesFromDb(
+      threadIdParam,
+      effectiveVisitorId,
+      { guestOnly: !session?.user },
+    );
     return NextResponse.json({ ...result, isReadOnly });
   } catch (e) {
     logger.error(

@@ -340,3 +340,59 @@ describe('getThreadMessagesQuery — persisted retrieval', () => {
     expect(messages[0]).not.toHaveProperty('documentCitations');
   });
 });
+
+describe('getThreadMessagesQuery — guest reads', () => {
+  const GUEST_VISITOR = 'visitor_0123456789abcdef01234567';
+  const USER_ID = 'kQ3vN8xLp2RtY7wZ0aBcD4eF6gH9jM1s';
+
+  beforeEach(() => {
+    mockMessageFindMany.mockResolvedValue([
+      answer({ documentRetrievals: [], documentCitations: [] }),
+    ]);
+  });
+
+  it('returns a guest thread’s messages to its visitor', async () => {
+    const result = await getThreadMessagesQuery(THREAD_ID, GUEST_VISITOR, {
+      guestOnly: true,
+    });
+
+    expect(mockThreadFindFirst.mock.calls[0][0].where).toEqual({
+      id: THREAD_ID,
+      visitorId: GUEST_VISITOR,
+      userId: null,
+      chatbotId: null,
+    });
+    expect(result.messages).toHaveLength(1);
+    expect(result.threadContext).not.toBeNull();
+  });
+
+  it('returns nothing for a panel thread, whose visitor id is its owner’s user id', async () => {
+    const result = await getThreadMessagesQuery(THREAD_ID, USER_ID, {
+      guestOnly: true,
+    });
+
+    expect(result).toEqual({ messages: [], threadContext: null });
+    expect(mockThreadFindFirst).not.toHaveBeenCalled();
+    expect(mockMessageFindMany).not.toHaveBeenCalled();
+  });
+
+  it('returns nothing when the visitor’s thread has a user or a chatbot', async () => {
+    mockThreadFindFirst.mockResolvedValue(null);
+
+    const result = await getThreadMessagesQuery(THREAD_ID, GUEST_VISITOR, {
+      guestOnly: true,
+    });
+
+    expect(result).toEqual({ messages: [], threadContext: null });
+    expect(mockMessageFindMany).not.toHaveBeenCalled();
+  });
+
+  it('keeps the signed-in lookup to id and visitor id', async () => {
+    await getThreadMessagesQuery(THREAD_ID, USER_ID);
+
+    expect(mockThreadFindFirst.mock.calls[0][0].where).toEqual({
+      id: THREAD_ID,
+      visitorId: USER_ID,
+    });
+  });
+});

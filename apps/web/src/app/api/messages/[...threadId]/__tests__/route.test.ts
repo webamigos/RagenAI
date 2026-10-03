@@ -31,8 +31,7 @@ vi.mock('@/lib/auth-guards', () => ({
 vi.mock(
   '@/features/messages/services/queries/get-thread-messages-query',
   () => ({
-    getThreadMessagesQuery: (threadId: string, visitorId: string) =>
-      m.fetchMessages(threadId, visitorId),
+    getThreadMessagesQuery: (...args: unknown[]) => m.fetchMessages(...args),
   }),
 );
 vi.mock('@/app/lib/utils/logger', () => ({
@@ -78,7 +77,9 @@ describe('GET /api/messages/[threadId]/[visitorId]', () => {
     const res = await get(OWNER);
     expect(res.status).toBe(200);
     expect((await res.json()).isReadOnly).toBe(false);
-    expect(m.fetchMessages).toHaveBeenCalledWith(THREAD, OWNER);
+    expect(m.fetchMessages).toHaveBeenCalledWith(THREAD, OWNER, {
+      guestOnly: false,
+    });
   });
 
   it('serves a member the thread was shared with, read-only, as the owner’s thread', async () => {
@@ -87,7 +88,9 @@ describe('GET /api/messages/[threadId]/[visitorId]', () => {
     expect(res.status).toBe(200);
     expect((await res.json()).isReadOnly).toBe(true);
     expect(m.shared).toHaveBeenCalledWith(THREAD, READER);
-    expect(m.fetchMessages).toHaveBeenCalledWith(THREAD, OWNER);
+    expect(m.fetchMessages).toHaveBeenCalledWith(THREAD, OWNER, {
+      guestOnly: false,
+    });
   });
 
   it('still serves an org admin, read-only', async () => {
@@ -95,12 +98,33 @@ describe('GET /api/messages/[threadId]/[visitorId]', () => {
     const res = await get();
     expect(res.status).toBe(200);
     expect((await res.json()).isReadOnly).toBe(true);
-    expect(m.fetchMessages).toHaveBeenCalledWith(THREAD, OWNER);
+    expect(m.fetchMessages).toHaveBeenCalledWith(THREAD, OWNER, {
+      guestOnly: false,
+    });
   });
 
   it('refuses a member it was not shared with, as not found', async () => {
     const res = await get();
     expect(res.status).toBe(404);
     expect(m.fetchMessages).not.toHaveBeenCalled();
+  });
+
+  it('reads guest threads only when there is no session', async () => {
+    m.session.mockResolvedValue(null);
+    const res = await get('visitor_abc');
+    expect(res.status).toBe(200);
+    expect((await res.json()).isReadOnly).toBe(false);
+    expect(m.findThread).not.toHaveBeenCalled();
+    expect(m.fetchMessages).toHaveBeenCalledWith(THREAD, 'visitor_abc', {
+      guestOnly: true,
+    });
+  });
+
+  it('asks for a guest thread even when the visitor id is a user id', async () => {
+    m.session.mockResolvedValue(null);
+    await get(OWNER);
+    expect(m.fetchMessages).toHaveBeenCalledWith(THREAD, OWNER, {
+      guestOnly: true,
+    });
   });
 });
