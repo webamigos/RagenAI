@@ -106,6 +106,15 @@ export const AI_PRICING: Readonly<
     // Scaleway rerank uses qwen3-embedding-8b (bi-encoder via /v1/rerank).
     'qwen3-embedding-8b': { input: eurToUsd(0.1), output: 0 },
   },
+  // The Scaleway rerankers in apps/web and apps/api record their rows as
+  // provider 'scaleway', not 'litellm', so the entry above never matched
+  // them and every reranking row was stored at a cost of 0 — leaving the
+  // default reranker out of the monthly cost ceiling. Same list price
+  // (EUR 0.10 per 1M input tokens, output free), under the provider those
+  // rows actually carry.
+  scaleway: {
+    'qwen3-embedding-8b': { input: eurToUsd(0.1), output: 0 },
+  },
   openrouter: {
     'openai/gpt-4o': { input: 2.5, output: 10 },
     'openai/gpt-4o-mini': { input: 0.15, output: 0.6 },

@@ -88,10 +88,72 @@ export async function resolveOwnerKeyForWrite(
   }
 }
 
+/**
+ * A write that stores the key in its own transaction.
+ *
+ * `resolveOwnerKeyForWrite` stores a new key at once, which creates the
+ * owner's profile row. A background writer must not: the job that extracts a
+ * memory may run after the member was removed, and its whole write — profile
+ * included — has to be one transaction that a failed membership check rolls
+ * back. So this resolves the key without storing it: an existing key is
+ * unwrapped; otherwise a new one is generated and handed back as
+ * `newEncryptedDek`, for the caller to store with a conditional update inside
+ * its transaction (and to retry under the winner's key if that update loses).
+ * No KMS round trip happens inside the transaction either way (ADR-42).
+ */
+export type OwnerKeyForTransaction =
+  | { status: 'plaintext' }
+  | {
+      status: 'key';
+      dek: Buffer;
+      /** The wrapped form of `dek`, whichever branch produced it — what the
+       * caller's transaction checks the profile still holds. */
+      encryptedDek: string;
+      /** Set only when the key is new and the caller must store it. */
+      newEncryptedDek: string | null;
+    }
+  | { status: 'unavailable'; error: unknown };
+
+export async function resolveOwnerKeyForTransaction(
+  store: Pick<OwnerKeyStore, 'load'>,
+): Promise<OwnerKeyForTransaction> {
+  if (!isEncryptionEnabled()) {
+    try {
+      assertEncryptionAvailable();
+    } catch (error) {
+      return { status: 'unavailable', error };
+    }
+    return { status: 'plaintext' };
+  }
+
+  try {
+    const existing = await store.load();
+    if (existing) {
+      return {
+        status: 'key',
+        dek: await decryptThreadKey(existing),
+        encryptedDek: existing,
+        newEncryptedDek: null,
+      };
+    }
+    const key = await generateThreadKey();
+    return {
+      status: 'key',
+      dek: key.plaintextDek,
+      encryptedDek: key.encryptedDek,
+      newEncryptedDek: key.encryptedDek,
+    };
+  } catch (error) {
+    return { status: 'unavailable', error };
+  }
+}
+
 /** Content as a write stores it, with the flag the read needs. */
 export function sealOwnedContent(
   content: string,
-  key: Exclude<OwnerKeyForWrite, { status: 'unavailable' }>,
+  key:
+    | Exclude<OwnerKeyForWrite, { status: 'unavailable' }>
+    | Exclude<OwnerKeyForTransaction, { status: 'unavailable' }>,
 ): { content: string; isEncrypted: boolean } {
   return key.status === 'key'
     ? { content: encryptContent(content, key.dek), isEncrypted: true }

@@ -86,3 +86,11 @@ archive is the blog.
   cited. The worker now checks once more after writing and takes the chunks
   out if the file is gone or its upload was cancelled. Files deleted this way
   before the fix can still have chunks in the index.
+### Usage and limits
+
+- `[brief]` **Reranking counts toward the monthly cost limit.** The default
+  Scaleway reranker recorded its usage under a provider the price table did
+  not list, so every reranking call was stored at a cost of zero and the
+  cost ceiling never saw it. It is priced now (EUR 0.10 per million input
+  tokens). Rows recorded before this change keep their zero.
+  ([#1481](https://github.com/webamigos/RagenAI/pull/1481))

@@ -16,6 +16,7 @@ import { brainReconcileFindings } from '../../src/handlers/brain-reconcile-findi
 import { brainPublishPage } from '../../src/handlers/brain-publish-page.js';
 import { cleanupDemoThreads } from '../../src/handlers/cleanup-demo-threads.js';
 import { generateDocument } from '../../src/handlers/generate-document.js';
+import { memoryExtract } from '../../src/handlers/memory-extract.js';
 import { optimizeDocument } from '../../src/handlers/optimize-document.js';
 import { pruneAnalyticsRetrievals } from '../../src/handlers/prune-analytics-retrievals.js';
 import { reindexDocumentVersion } from '../../src/handlers/reindex-document-version.js';
@@ -98,6 +99,7 @@ export async function startBullMqHarness(
     brainExtract,
     brainReconcileFindings,
     brainPublishPage,
+    memoryExtract,
     ...options.handlerOverrides,
   };
 

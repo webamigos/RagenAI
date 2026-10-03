@@ -26,16 +26,23 @@ import { fileURLToPath } from 'node:url';
 import { PrismaClient } from '../../src/generated/prisma/client';
 import { extractMarkerNumbers } from '../../src/features/documents/utils/citation-markers';
 import { PrismaPg } from '@prisma/adapter-pg';
+import {
+  TEST_PROJECT_ID,
+  TEST_THREAD_ID,
+  TEST_USER_EMAIL,
+  TEST_USER_PASSWORD,
+} from '../../e2e/constants';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const APP_URL = process.env.RAG_EVAL_APP_URL ?? 'http://localhost:3000';
-const EMAIL = process.env.RAG_EVAL_EMAIL ?? 'e2e-test@ragen.ai';
-const PASSWORD = process.env.RAG_EVAL_PASSWORD ?? 'E2eTestPassword123!';
-const PROJECT_ID =
-  process.env.RAG_EVAL_PROJECT_ID ?? 'e2e00000-0000-0000-0000-00e2e0000001';
-const THREAD_ID =
-  process.env.RAG_EVAL_THREAD_ID ?? 'e2e00000-0000-0000-0000-00e2e0000010';
+// The seeded account, read from the same constants the e2e seed writes it
+// with — so a TEST_USER_EMAIL/TEST_USER_PASSWORD in .env.local changes both,
+// instead of the seed creating one account and this run signing in as another.
+const EMAIL = process.env.RAG_EVAL_EMAIL ?? TEST_USER_EMAIL;
+const PASSWORD = process.env.RAG_EVAL_PASSWORD ?? TEST_USER_PASSWORD;
+const PROJECT_ID = process.env.RAG_EVAL_PROJECT_ID ?? TEST_PROJECT_ID;
+const THREAD_ID = process.env.RAG_EVAL_THREAD_ID ?? TEST_THREAD_ID;
 /** Ingestion runs an LLM over the document, so this is minutes, not seconds. */
 const INGEST_TIMEOUT_MS = Number(process.env.RAG_EVAL_TIMEOUT_MS ?? 300_000);
 
