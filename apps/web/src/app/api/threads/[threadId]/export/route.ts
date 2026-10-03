@@ -7,6 +7,7 @@ import {
 } from '@/app/lib/utils/auth-helpers';
 import { getActiveMember } from '@/lib/auth-guards';
 import { canManageOrg } from '@/lib/auth-access-control';
+import { isThreadSharedWithUserQuery } from '@/features/threads/services/queries/is-thread-shared-with-user-query';
 import { decryptMessageContents } from '@ragenai/crypto';
 import {
   serializeToMarkdown,
@@ -75,8 +76,11 @@ export async function GET(
       return NextResponse.json({ error: 'Thread not found' }, { status: 404 });
     }
 
+    // Whoever can read the thread can export it: the owner, a member it was
+    // shared with, or anyone who can manage the org — the same readers as
+    // `api/messages`.
     const isOwner = thread.userId === userId;
-    if (!isOwner) {
+    if (!isOwner && !(await isThreadSharedWithUserQuery(thread.id, userId))) {
       const member = await getActiveMember(orgId);
       if (!member || !canManageOrg(member.role)) {
         return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
