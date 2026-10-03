@@ -103,17 +103,101 @@ function hasDefinedField(value: unknown, field: string): boolean {
 }
 
 /**
+ * Whether a filter value pins a column to named values. A plain value does
+ * (`null` included: it selects the global rows), as do `{ equals }` with a
+ * value and a non-empty `{ in }`; further operators beside them only narrow.
+ * Everything else is a filter that names the column without confining it:
+ * `{ not }` and `{ notIn }` select every other organization, and
+ * `{ equals: undefined }` or `{}` is dropped by Prisma and filters nothing.
+ * Better Auth's adapter writes `eq` as `{ equals: value }`, so an undefined
+ * value arrives in exactly that shape.
+ */
+function pinsValue(value: unknown): boolean {
+  if (value === undefined) {
+    return false;
+  }
+  if (value === null || typeof value !== 'object') {
+    return true;
+  }
+  if (Array.isArray(value) || value instanceof Date) {
+    return false;
+  }
+  const filter = value as Record<string, unknown>;
+  if ('equals' in filter && filter.equals !== undefined) {
+    return pinsValue(filter.equals);
+  }
+  return (
+    Array.isArray(filter.in) &&
+    filter.in.length > 0 &&
+    filter.in.every((item) => item !== undefined && pinsValue(item))
+  );
+}
+
+function pinsField(where: unknown, field: string): boolean {
+  return (
+    typeof where === 'object' &&
+    where !== null &&
+    field in where &&
+    pinsValue((where as Record<string, unknown>)[field])
+  );
+}
+
+/**
+ * Whether a `where` constrains `field`, in any of the shapes Prisma accepts
+ * for a filter that every matching row must satisfy:
+ *
+ * - a top-level key: `{ organizationId }`;
+ * - a compound unique selector naming the column:
+ *   `{ organizationId_userId: { organizationId, userId } }` — the shape
+ *   `findUnique` needs, and the one the tenant-scope audit recommends;
+ * - one conjunct of an `AND`: `{ AND: [{ organizationId }, { userId }] }` —
+ *   how Better Auth's Prisma adapter writes every multi-field lookup;
+ * - every branch of an `OR`: `{ OR: [{ organizationId }, { organizationId: null }] }`.
+ *   One unscoped branch makes the whole `OR` unscoped.
+ *
+ * `NOT` never counts, nor does a relation filter: neither says which
+ * organization a row belongs to. In every shape the value must pin the column
+ * (`pinsValue`): `{ organizationId: { not: x } }` names it and scopes nothing.
+ */
+function whereCarriesField(where: unknown, field: string): boolean {
+  if (typeof where !== 'object' || where === null) {
+    return false;
+  }
+  if (pinsField(where, field)) {
+    return true;
+  }
+
+  const clauses = where as Record<string, unknown>;
+  for (const [key, value] of Object.entries(clauses)) {
+    if (key.split('_').includes(field) && pinsField(value, field)) {
+      return true;
+    }
+  }
+
+  const conjuncts: unknown[] = [clauses.AND].flat();
+  if (conjuncts.some((conjunct) => whereCarriesField(conjunct, field))) {
+    return true;
+  }
+
+  const or = clauses.OR;
+  return (
+    Array.isArray(or) &&
+    or.length > 0 &&
+    or.every((branch) => whereCarriesField(branch, field))
+  );
+}
+
+/**
  * Whether `args` includes the tenant-scoping field for `model`/`operation`.
  *
  * Returns `null` when `model` isn't in `TENANT_SCOPED_MODELS` (nothing to
  * check) or `operation` isn't one this guard understands (e.g. raw queries) —
  * callers should treat `null` as "not applicable", not as a violation.
  *
- * Only checks the top-level `where`/`data`/`create`/`update` key — current
- * call sites always thread the org field as a sibling key there, never
- * nested inside `AND`/`OR`/a relation filter, so a deeper check isn't
- * needed yet (see the tenant-scoping research this file's tests are based
- * on).
+ * A presence check, not a proof: it cannot tell whether the value came from
+ * the session. `where` is read through `whereCarriesField`; `data`/`create`
+ * only at the top level, so a create that sets the organization through
+ * `organization: { connect }` is reported — write the scalar column instead.
  */
 export function isTenantScopeSatisfied(
   model: string,
@@ -129,7 +213,7 @@ export function isTenantScopeSatisfied(
   }
 
   if (WHERE_OPERATIONS.has(operation)) {
-    return hasDefinedField(args.where, field);
+    return whereCarriesField(args.where, field);
   }
   if (operation === 'create') {
     return hasDefinedField(args.data, field);
@@ -148,7 +232,8 @@ export function isTenantScopeSatisfied(
   }
   if (operation === 'upsert') {
     return (
-      hasDefinedField(args.where, field) && hasDefinedField(args.create, field)
+      whereCarriesField(args.where, field) &&
+      hasDefinedField(args.create, field)
     );
   }
 

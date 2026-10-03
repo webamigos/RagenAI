@@ -132,7 +132,10 @@ export async function* runBrainAssistantTurnCommand(
 
   try {
     assertWithinUsageLimits(usageLimits, { organizationId: turn.orgId });
-    await assertWithinTeamRateLimit({ teamId: usageTeamId });
+    await assertWithinTeamRateLimit({
+      teamId: usageTeamId,
+      organizationId: turn.orgId,
+    });
   } catch (error) {
     yield { type: 'error', code: refusalCode(error) };
     return;

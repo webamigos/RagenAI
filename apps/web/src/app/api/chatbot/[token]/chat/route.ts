@@ -161,7 +161,11 @@ export async function POST(
       sessionId,
     );
 
-    const previousMessages = await getChatbotThreadHistoryQuery(thread.id, 10);
+    const previousMessages = await getChatbotThreadHistoryQuery(
+      thread.id,
+      organizationId,
+      10,
+    );
 
     const chatHistory = previousMessages
       .map(

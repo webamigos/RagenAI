@@ -394,7 +394,10 @@ export async function streamEvents({
           // rather than after. `tpm` is read here and charged after the turn
           // by `trackAiUsage`, from the real token count: a guessed estimate
           // would refuse real requests on arithmetic nobody can audit.
-          await assertWithinTeamRateLimit({ teamId: usageTeamId });
+          await assertWithinTeamRateLimit({
+            teamId: usageTeamId,
+            organizationId: orgId,
+          });
 
           sendApiEvent(controller, 'thread_found', {
             id: threadRecord.id,

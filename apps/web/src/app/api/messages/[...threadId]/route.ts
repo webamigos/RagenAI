@@ -70,6 +70,7 @@ export const GET = async (request: NextRequest, { params }: Params) => {
 
     let isReadOnly = false;
     let effectiveVisitorId = visitorId;
+    let readerOrgId: string | undefined;
 
     if (session?.user) {
       const orgId = await getOrgIdFromAuth();
@@ -79,6 +80,7 @@ export const GET = async (request: NextRequest, { params }: Params) => {
           { status: StatusCodes.FORBIDDEN },
         );
       }
+      readerOrgId = orgId;
       const thread = await db.thread.findFirst({
         where: { id: threadIdParam, organizationId: orgId },
         select: { id: true, visitorId: true },
@@ -116,7 +118,7 @@ export const GET = async (request: NextRequest, { params }: Params) => {
     const result = await fetchMessagesFromDb(
       threadIdParam,
       effectiveVisitorId,
-      { guestOnly: !session?.user },
+      { organizationId: readerOrgId, guestOnly: !session?.user },
     );
     return NextResponse.json({ ...result, isReadOnly });
   } catch (e) {

@@ -20,8 +20,9 @@ import { logger } from '@/app/lib/utils/logger';
  */
 export async function refuseIfOverTeamRateLimit(
   teamId: string | null,
+  organizationId: string,
 ): Promise<NextResponse | null> {
-  const result = await checkTeamRateLimitQuery({ teamId });
+  const result = await checkTeamRateLimitQuery({ teamId, organizationId });
   if (result.ok) {
     return null;
   }

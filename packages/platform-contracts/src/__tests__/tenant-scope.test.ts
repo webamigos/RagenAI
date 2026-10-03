@@ -170,6 +170,204 @@ describe('isTenantScopeSatisfied', () => {
     ).toBe(false);
   });
 
+  describe('where shapes that scope without a top-level key', () => {
+    // Each of these was reported on every request during a soak run, while
+    // the query was scoped: the guard only looked at the top-level key.
+    it('accepts a compound unique selector that names the column', () => {
+      expect(
+        isTenantScopeSatisfied('McpConnector', 'findUnique', {
+          where: {
+            organizationId_userId_providerSlug: {
+              organizationId: 'org-1',
+              userId: 'u-1',
+              providerSlug: 'SLACK',
+            },
+          },
+        }),
+      ).toBe(true);
+    });
+
+    it('rejects a compound selector that does not carry the column', () => {
+      expect(
+        isTenantScopeSatisfied('McpConnector', 'findUnique', {
+          where: { userId_providerSlug: { userId: 'u-1', providerSlug: 'S' } },
+        }),
+      ).toBe(false);
+      expect(
+        isTenantScopeSatisfied('UserMemoryProfile', 'findUnique', {
+          where: {
+            organizationId_userId: { organizationId: undefined, userId: 'u' },
+          },
+        }),
+      ).toBe(false);
+    });
+
+    it('rejects a key that merely contains the column name', () => {
+      expect(
+        isTenantScopeSatisfied('Project', 'findFirst', {
+          where: { parentOrganizationId: { organizationId: 'org-1' } },
+        }),
+      ).toBe(false);
+    });
+
+    it('accepts the column in one conjunct of an AND (Better Auth adapter shape)', () => {
+      expect(
+        isTenantScopeSatisfied('Member', 'findFirst', {
+          where: {
+            AND: [
+              { organizationId: { equals: 'org-1' } },
+              { userId: { equals: 'u-1' } },
+            ],
+          },
+        }),
+      ).toBe(true);
+      expect(
+        isTenantScopeSatisfied('Member', 'findFirst', {
+          where: { AND: { organizationId: 'org-1' } },
+        }),
+      ).toBe(true);
+    });
+
+    it('rejects an AND none of whose conjuncts carries the column', () => {
+      expect(
+        isTenantScopeSatisfied('Member', 'findFirst', {
+          where: { AND: [{ userId: 'u-1' }, { role: 'owner' }] },
+        }),
+      ).toBe(false);
+    });
+
+    it('accepts an OR only when every branch carries the column', () => {
+      expect(
+        isTenantScopeSatisfied('Guardrail', 'findMany', {
+          where: {
+            OR: [{ organizationId: 'org-1' }, { organizationId: null }],
+          },
+        }),
+      ).toBe(true);
+      expect(
+        isTenantScopeSatisfied('Thread', 'findFirst', {
+          where: { OR: [{ organizationId: 'org-1' }, { visitorId: 'v-1' }] },
+        }),
+      ).toBe(false);
+      expect(
+        isTenantScopeSatisfied('Thread', 'findFirst', { where: { OR: [] } }),
+      ).toBe(false);
+    });
+
+    it('never counts NOT or a relation filter', () => {
+      expect(
+        isTenantScopeSatisfied('Thread', 'findFirst', {
+          where: { NOT: { organizationId: 'org-1' } },
+        }),
+      ).toBe(false);
+      expect(
+        isTenantScopeSatisfied('Thread', 'findFirst', {
+          where: { project: { organizationId: 'org-1' } },
+        }),
+      ).toBe(false);
+    });
+
+    it('accepts a filter value that pins the column', () => {
+      for (const organizationId of [
+        'org-1',
+        { equals: 'org-1' },
+        { in: ['org-1', 'org-2'] },
+        { equals: 'org-1', mode: 'insensitive' },
+      ]) {
+        expect(
+          isTenantScopeSatisfied('Member', 'findFirst', {
+            where: { AND: [{ organizationId }, { userId: 'u-1' }] },
+          }),
+        ).toBe(true);
+        expect(
+          isTenantScopeSatisfied('Thread', 'findMany', {
+            where: { organizationId },
+          }),
+        ).toBe(true);
+      }
+    });
+
+    it('rejects a filter value that names the column without confining it', () => {
+      // Each names organizationId and filters nothing, or every other org.
+      // Better Auth writes `ne` as { not: { equals } } and `eq` with an
+      // undefined value as { equals: undefined }.
+      for (const organizationId of [
+        { not: { equals: 'org-1' } },
+        { not: 'org-1' },
+        { notIn: ['org-1'] },
+        { equals: undefined },
+        {},
+        { in: [] },
+        { in: [undefined] },
+      ]) {
+        expect(
+          isTenantScopeSatisfied('Member', 'findFirst', {
+            where: { AND: [{ organizationId }, { userId: { equals: 'u-1' } }] },
+          }),
+        ).toBe(false);
+        expect(
+          isTenantScopeSatisfied('Thread', 'findMany', {
+            where: { organizationId },
+          }),
+        ).toBe(false);
+      }
+      expect(
+        isTenantScopeSatisfied('Thread', 'findMany', {
+          where: {
+            OR: [
+              { organizationId: 'org-1' },
+              { organizationId: { not: 'org-1' } },
+            ],
+          },
+        }),
+      ).toBe(false);
+      expect(
+        isTenantScopeSatisfied('UserMemoryProfile', 'findUnique', {
+          where: {
+            organizationId_userId: {
+              organizationId: { not: 'org-1' },
+              userId: 'u',
+            },
+          },
+        }),
+      ).toBe(false);
+    });
+
+    it('rejects an AND whose only scope sits under NOT, a partial OR, or undefined', () => {
+      for (const conjunct of [
+        { NOT: { organizationId: 'org-1' } },
+        { OR: [{ organizationId: 'org-1' }, { visitorId: 'v-1' }] },
+        { organizationId: undefined },
+      ]) {
+        expect(
+          isTenantScopeSatisfied('Thread', 'findFirst', {
+            where: { AND: [conjunct, { id: 't-1' }] },
+          }),
+        ).toBe(false);
+      }
+    });
+
+    it('reads the where of an upsert the same way', () => {
+      expect(
+        isTenantScopeSatisfied('UserMemoryProfile', 'upsert', {
+          where: {
+            organizationId_userId: { organizationId: 'o', userId: 'u' },
+          },
+          create: { organizationId: 'o', userId: 'u' },
+          update: {},
+        }),
+      ).toBe(true);
+    });
+
+    it('still reports a create that sets the organization through connect', () => {
+      expect(
+        isTenantScopeSatisfied('AiUsage', 'create', {
+          data: { organization: { connect: { id: 'org-1' } } },
+        }),
+      ).toBe(false);
+    });
+  });
+
   it('uses orgId for DocumentCitation, the naming outlier', () => {
     expect(
       isTenantScopeSatisfied('DocumentCitation', 'findMany', {

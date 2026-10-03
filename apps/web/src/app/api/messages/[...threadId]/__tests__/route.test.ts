@@ -78,6 +78,7 @@ describe('GET /api/messages/[threadId]/[visitorId]', () => {
     expect(res.status).toBe(200);
     expect((await res.json()).isReadOnly).toBe(false);
     expect(m.fetchMessages).toHaveBeenCalledWith(THREAD, OWNER, {
+      organizationId: 'org-1',
       guestOnly: false,
     });
   });
@@ -89,6 +90,7 @@ describe('GET /api/messages/[threadId]/[visitorId]', () => {
     expect((await res.json()).isReadOnly).toBe(true);
     expect(m.shared).toHaveBeenCalledWith(THREAD, READER);
     expect(m.fetchMessages).toHaveBeenCalledWith(THREAD, OWNER, {
+      organizationId: 'org-1',
       guestOnly: false,
     });
   });
@@ -99,6 +101,7 @@ describe('GET /api/messages/[threadId]/[visitorId]', () => {
     expect(res.status).toBe(200);
     expect((await res.json()).isReadOnly).toBe(true);
     expect(m.fetchMessages).toHaveBeenCalledWith(THREAD, OWNER, {
+      organizationId: 'org-1',
       guestOnly: false,
     });
   });
@@ -116,6 +119,7 @@ describe('GET /api/messages/[threadId]/[visitorId]', () => {
     expect((await res.json()).isReadOnly).toBe(false);
     expect(m.findThread).not.toHaveBeenCalled();
     expect(m.fetchMessages).toHaveBeenCalledWith(THREAD, 'visitor_abc', {
+      organizationId: undefined,
       guestOnly: true,
     });
   });
@@ -124,6 +128,7 @@ describe('GET /api/messages/[threadId]/[visitorId]', () => {
     m.session.mockResolvedValue(null);
     await get(OWNER);
     expect(m.fetchMessages).toHaveBeenCalledWith(THREAD, OWNER, {
+      organizationId: undefined,
       guestOnly: true,
     });
   });

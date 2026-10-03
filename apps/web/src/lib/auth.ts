@@ -29,6 +29,7 @@ import {
 import Stripe from 'stripe';
 import crypto from 'node:crypto';
 import db from '@ragenai/prisma-client';
+import { ensureDefaultTeamMembershipCommand } from '@/features/teams/services/commands/ensure-default-team-membership-command';
 import {
   hasPendingInvitation,
   isRegistrationOpen,
@@ -571,31 +572,7 @@ export const auth = betterAuth({
             // now enforces itself. Stable team id makes a partial second run
             // a no-op.
             try {
-              const defaultTeamId = `${orgId}-general`;
-
-              await db.team.upsert({
-                where: { id: defaultTeamId },
-                update: {},
-                create: {
-                  id: defaultTeamId,
-                  name: 'General',
-                  organizationId: orgId,
-                },
-              });
-
-              const existingMembership = await db.teamMember.findFirst({
-                where: { teamId: defaultTeamId, userId: user.id },
-                select: { id: true },
-              });
-              if (!existingMembership) {
-                await db.teamMember.create({
-                  data: {
-                    id: crypto.randomUUID(),
-                    teamId: defaultTeamId,
-                    userId: user.id,
-                  },
-                });
-              }
+              await ensureDefaultTeamMembershipCommand(orgId, user.id);
             } catch (teamError) {
               console.error(
                 '[AUTH] Failed to provision default Better-Auth team',

@@ -6,10 +6,11 @@ import { logger } from '@/app/lib/utils/logger';
 
 export const getChatbotSessionMessagesQuery = async (
   chatbotId: string,
+  organizationId: string,
   sessionId: string,
 ): Promise<{ role: string; content: string }[]> => {
   const thread = await db.thread.findFirst({
-    where: { chatbotId, visitorId: sessionId },
+    where: { chatbotId, organizationId, visitorId: sessionId },
     select: {
       id: true,
       encryptedDek: true,

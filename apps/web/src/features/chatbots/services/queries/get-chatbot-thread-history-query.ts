@@ -6,11 +6,12 @@ import { logger } from '@/app/lib/utils/logger';
 
 export const getChatbotThreadHistoryQuery = async (
   threadId: string,
+  organizationId: string,
   take = 10,
 ): Promise<{ role: string; content: string }[]> => {
   const [threadMeta, rawMessages] = await Promise.all([
     db.thread.findFirst({
-      where: { id: threadId },
+      where: { id: threadId, organizationId },
       select: { encryptedDek: true },
     }),
     db.message.findMany({

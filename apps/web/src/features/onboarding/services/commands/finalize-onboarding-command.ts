@@ -5,6 +5,7 @@ import { headers } from 'next/headers';
 import { TRIAL_PLAN_NAME, TRIAL_DAYS } from '@/app/config';
 import { logger } from '@/app/lib/utils/logger';
 import db from '@ragenai/prisma-client';
+import { ensureDefaultTeamMembershipCommand } from '@/features/teams/services/commands/ensure-default-team-membership-command';
 import { resolveDefaultVectorStore } from '@ragenai/rag-core';
 
 /**
@@ -184,30 +185,13 @@ export async function finalizeOnboardingCommand(preferredOrgId?: string) {
     // can race with the rest of onboarding. Ensure the team exists and
     // that the user is a member before we hand them the dashboard.
     try {
-      const defaultTeamId = `${activeOrgId}-general`;
-      await db.team.upsert({
-        where: { id: defaultTeamId },
-        update: {},
-        create: {
-          id: defaultTeamId,
-          name: 'General',
-          organizationId: activeOrgId,
-        },
-      });
-      const existingTeamMembership = await db.teamMember.findFirst({
-        where: { teamId: defaultTeamId, userId },
-        select: { id: true },
-      });
-      if (!existingTeamMembership) {
-        await db.teamMember.create({
-          data: {
-            id: crypto.randomUUID(),
-            teamId: defaultTeamId,
-            userId,
-          },
-        });
+      const { teamId, joined } = await ensureDefaultTeamMembershipCommand(
+        activeOrgId,
+        userId,
+      );
+      if (joined) {
         logger.info(
-          { userId, teamId: defaultTeamId, activeOrgId },
+          { userId, teamId, activeOrgId },
           'Self-healed default team membership during onboarding',
         );
       }

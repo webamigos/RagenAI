@@ -14,14 +14,19 @@ import { readSourceRegions, type SourceRegion } from '@ragenai/rag-core';
 import { isUndecodableText } from '@ragenai/rag-core/undecodable-text';
 
 /**
- * `guestOnly` matches a guest thread and nothing else: one opened under a
- * visitor cookie, with no user and no chatbot behind it. A reader with no
- * session gets those only.
+ * `organizationId` is the signed-in reader's organization, which the route has
+ * already checked the thread against. `guestOnly` matches a guest thread and
+ * nothing else: one opened under a visitor cookie, with no user and no
+ * chatbot behind it. A reader with no session gets those only, and is matched
+ * on `visitorId` without an organization.
  */
 export const getThreadMessagesQuery = async (
   threadId: Thread['id'],
   visitorId: Thread['visitorId'],
-  { guestOnly = false }: { guestOnly?: boolean } = {},
+  {
+    organizationId,
+    guestOnly = false,
+  }: { organizationId?: string; guestOnly?: boolean } = {},
 ) => {
   try {
     if (guestOnly && !visitorId?.startsWith(visitorIdPrefix)) {
@@ -32,6 +37,7 @@ export const getThreadMessagesQuery = async (
       where: {
         id: threadId,
         visitorId: visitorId,
+        ...(organizationId ? { organizationId } : {}),
         ...(guestOnly ? { userId: null, chatbotId: null } : {}),
       },
       select: {

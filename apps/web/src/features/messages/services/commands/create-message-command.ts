@@ -159,7 +159,7 @@ export const createAndStoreMessageCommand = async ({
     // Auto-set thread title from first user message if not already set
     try {
       await db.thread.updateMany({
-        where: { id: threadId, title: null },
+        where: { id: threadId, organizationId, title: null },
         data: {
           title:
             trimmedPrompt.length > 100

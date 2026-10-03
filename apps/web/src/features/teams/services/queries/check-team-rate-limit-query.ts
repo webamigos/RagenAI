@@ -59,8 +59,11 @@ export type TeamRateLimitResult =
  */
 export async function checkTeamRateLimitQuery({
   teamId,
+  organizationId,
 }: {
   teamId: string | null;
+  /** The organization the team was resolved in, from the session or API key. */
+  organizationId: string;
 }): Promise<TeamRateLimitResult> {
   if (!teamId) {
     return { ok: true };
@@ -73,8 +76,8 @@ export async function checkTeamRateLimitQuery({
 
   let limits: { rpmLimit: number | null; tpmLimit: number | null } | null;
   try {
-    limits = await db.team.findUnique({
-      where: { id: teamId },
+    limits = await db.team.findFirst({
+      where: { id: teamId, organizationId },
       select: { rpmLimit: true, tpmLimit: true },
     });
   } catch (err) {
@@ -133,6 +136,7 @@ export async function checkTeamRateLimitQuery({
 /** `checkTeamRateLimitQuery`, as a guard that throws. */
 export async function assertWithinTeamRateLimit(input: {
   teamId: string | null;
+  organizationId: string;
   estimatedTokens?: number;
 }): Promise<void> {
   const result = await checkTeamRateLimitQuery(input);

@@ -508,8 +508,10 @@ describe('undoMemoryChange', () => {
     expect(await undoMemoryChange(await owner(), CHANGE_ID)).toBe(
       'already-undone',
     );
+    // The owner repeated on the claim, not only on the read before it.
     expect(tx.userMemoryChange.updateMany.mock.calls[0][0].where).toEqual({
       id: 11,
+      ...OWNER_WHERE,
       undoneAt: null,
     });
     expect(tx.userMemory.deleteMany).not.toHaveBeenCalled();

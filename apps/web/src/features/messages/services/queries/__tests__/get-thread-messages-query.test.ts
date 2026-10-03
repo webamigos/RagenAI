@@ -341,6 +341,31 @@ describe('getThreadMessagesQuery — persisted retrieval', () => {
   });
 });
 
+describe('getThreadMessagesQuery — scope', () => {
+  beforeEach(() => {
+    mockMessageFindMany.mockResolvedValue([]);
+  });
+
+  it('matches the reader’s organization when the route passes one', async () => {
+    await getThreadMessagesQuery(THREAD_ID, VISITOR_ID, {
+      organizationId: 'org-1',
+    });
+    expect(mockThreadFindFirst.mock.calls[0][0].where).toEqual({
+      id: THREAD_ID,
+      visitorId: VISITOR_ID,
+      organizationId: 'org-1',
+    });
+  });
+
+  it('matches a guest on the visitor id alone', async () => {
+    await run();
+    expect(mockThreadFindFirst.mock.calls[0][0].where).toEqual({
+      id: THREAD_ID,
+      visitorId: VISITOR_ID,
+    });
+  });
+});
+
 describe('getThreadMessagesQuery — guest reads', () => {
   const GUEST_VISITOR = 'visitor_0123456789abcdef01234567';
   const USER_ID = 'kQ3vN8xLp2RtY7wZ0aBcD4eF6gH9jM1s';
