@@ -1,6 +1,6 @@
 # RAG Pipeline Diagrams
 
-Visual reference for the retrieval-quality stack. See ADRs 11, 12, 14, 15, 16 for decision history, and `AGENTS.md` for the concise prose summary.
+Visual reference for the retrieval-quality stack. See ADRs 11, 12, 14, 15, 16 for decision history, the 2026-09-29 specs (`contextual-chunks`, `llm-document-selection`) for the three newer stages, and `AGENTS.md` for the concise prose summary.
 
 ## Ingest flow (in `apps/worker`)
 
@@ -8,9 +8,10 @@ Visual reference for the retrieval-quality stack. See ADRs 11, 12, 14, 15, 16 fo
 flowchart LR
     A[File upload] --> B[Parse<br/>PDF/DOCX/EPUB/…]
     B --> C[Chunk<br/>type-specific splitter]
-    C --> D[Generate summary<br/>ADR-16]
+    C --> D["Generate summary — ADR-16<br/>env flag AND org setting"]
     D --> E[Prepend summary chunk<br/>chunk_type: summary]
-    E --> F[Hybrid embed<br/>bge-multilingual-gemma2 dense + BM25 sparse<br/>ADR-14]
+    E --> X["Context prefix — contextualChunks<br/>title · section · summary's first sentence<br/>stored beside the chunk, embedded in front"]
+    X --> F[Hybrid embed<br/>bge-multilingual-gemma2 dense + BM25 sparse<br/>ADR-14]
     F --> G[Upsert to Qdrant<br/>named vectors]
     F --> H[Merge UserFile.metadata.summary<br/>jsonb merge, best-effort]
 ```
@@ -26,13 +27,24 @@ flowchart TD
     S1 --> D1[Qdrant RRF fusion<br/>dense + sparse per query<br/>ADR-14]
     S2 --> D1
     D1 --> U[Dedupe by content]
-    U --> RR["Rerank — ADR-12<br/>opt-in: skipped unless<br/>FEATURE_FLAG_RERANKING=1"]
-    RR --> G[Answer generation<br/>with citation prompting<br/>ADR-16]
+    U --> SEL{"sectionSelection on?<br/>(off by default)"}
+    SEL -- yes --> SS["Section selection<br/>a model names the passages<br/>SELECTION_MODEL, one call"]
+    SEL -- no --> RR["Rerank — ADR-12<br/>opt-in: skipped unless<br/>FEATURE_FLAG_RERANKING=1"]
+    SS --> CE["Context expansion — contextExpansion<br/>each prose chunk with its neighbours<br/>(on by default)"]
+    RR --> CE
+    CE --> G[Answer generation<br/>with citation prompting<br/>ADR-16]
 ```
 
 Shown with multi-query on (the default). With the per-org `multiQueryEnabled`
 setting off, `rephraseAndExpand` returns only the standalone question, so `P`
 is `[standalone]` and only the `S1` branch runs.
+
+**With neither the reranker nor section selection running — the default
+install — the variant's hits do not reach the model.** The lists are
+concatenated in query order and cut to `maxDocuments`, which is the first
+query's hits. The `crossQueryFusion` feature key (off by default, #1518)
+merges the lists by reciprocal rank before the cut instead; the
+retrieval-claims spec's Phase B measures it.
 
 ## Vector store query (Qdrant hybrid)
 
@@ -47,17 +59,22 @@ flowchart LR
     K --> C[Rerank<br/>ADR-12, when enabled]
 ```
 
-## How the four improvements compose
+## How the stages compose
 
-| ADR | Pipeline stage | Problem it solves |
+| Stage | Where | Problem it solves |
 |-----|---------------|-------------------|
 | **ADR-12** Rerank | After retrieval | Sharpens top-k by scoring each query/document pair directly |
 | **ADR-14** Hybrid search | At retrieval | Exact-term + morphological matches that dense alone misses |
 | **ADR-15** Multi-query | Before retrieval | Vocabulary mismatch between user phrasing and document phrasing |
 | **ADR-16** Summaries | At ingest | Per-document topic anchors that no flat chunk contains |
+| **Contextual chunks** | At ingest | A chunk that does not say which document or section it is from |
+| **Context expansion** | After retrieval | A hit whose answer continues in the chunk before or after it |
+| **Section selection** | After retrieval, in the reranker's slot | Choosing passages by reading them rather than scoring them |
 
-ADR-14/15/16 widen the candidate pool; ADR-12 sharpens it. They are **not**
-gated alike, and none of them hangs off a single "default on" env flag:
+ADR-14/15/16 and contextual chunks widen or sharpen the candidate pool;
+ADR-12 or section selection picks from it; context expansion widens what each
+pick shows the model. They are **not** gated alike, and none of them hangs off
+a single "default on" env flag:
 
 - **Hybrid search (ADR-14)** is unconditional — it is how the Qdrant collection
   is written and queried, with no toggle.
@@ -65,11 +82,29 @@ gated alike, and none of them hangs off a single "default on" env flag:
   (`OrganizationSettings.multiQueryEnabled`, default on). The env flag that
   used to gate it, `FEATURE_FLAG_MULTI_QUERY`, **no longer exists** — it was
   replaced by the setting when the per-org RAG settings landed.
-- **Summaries (ADR-16)** are gated in the worker by `FEATURE_FLAG_DOC_SUMMARIES`
-  (on unless `0`/`false`).
+- **Summaries (ADR-16)** need both `FEATURE_FLAG_DOC_SUMMARIES` (the
+  installation's off switch, on unless `0`/`false`) and the per-org
+  `docSummariesEnabled` setting (default on), read by the worker when the job
+  runs. Existing summaries stay when either is turned off.
 - **Reranking (ADR-12)** is **opt-in**: it needs `FEATURE_FLAG_RERANKING=1`
   *and* provider credentials, so a default install answers from raw hybrid
   results. The per-org `rerankingEnabled` setting can only turn it further off.
+  Measured on 2026-10-01 (`evals/rag-benchmark/results/2026-10-01-a3-reranker-baseline.md`):
+  no change on prose (`kolej` 17 vs 18 of 24, identical evidence), a gain on
+  tables (`tabele` 7/18 off vs 10/17 Scaleway). The reranking arm also
+  retrieves a three-times-wider pool, so that gain is not yet attributable to
+  the reranker; the retrieval-claims spec's Phase B splits the two before
+  anything claims a benefit.
+- **Contextual chunks** — feature key `contextualChunks`, **on** by default.
+  It changes what is embedded, so only files ingested or re-indexed while it is
+  on carry the prefix; `apps/worker/src/scripts/reindex-for-context.ts` brings
+  the rest up, and the RAG settings page counts how many are current.
+- **Context expansion** — feature key `contextExpansion`, **on** by default.
+  It changes only what a turn reads, so it applies to every file at once.
+- **Section selection** — feature key `sectionSelection`, **off** by default.
+  When on, the reranker does not run; one call per turn on `SELECTION_MODEL`,
+  recorded as `SECTION_SELECTION`. Level with the reranker on prose and worse
+  on tables in its measurement, so it is an opt-in alternative.
 
 ## Configuration and defaults
 
@@ -129,10 +164,15 @@ screen was a retrieval-frequency table.
     activity, so ingest-time summaries are on by default.
   - There is **no** `FEATURE_FLAG_MULTI_QUERY`. Any doc still listing it is
     stale; the gate is the per-org setting below.
-- **Per-org settings** (`OrganizationSettings`, all default on, editable at
-  `/organization/rag-settings` and in the admin panel):
+- **Per-org settings** (`OrganizationSettings`, all default on, shown at
+  `/organization/rag-settings` and edited in the admin panel):
   `multiQueryEnabled` and `rerankingEnabled` are read by the chain;
-  `contentModerationEnabled` only applies when `IS_ON_PREMISE` is set (SaaS
-  always moderates); `docSummariesEnabled` is **not read by the worker yet**, so
-  turning it off does not currently stop summary generation.
+  `docSummariesEnabled` is read by the worker at ingest, beside the env flag;
+  `contentModerationEnabled` is **read by nothing** — guardrails replaced the
+  moderation call, and what runs is the organization's guardrail rules
+  ([`guardrails.md`](guardrails.md)), an empty set being off. The settings
+  page shows each row as it runs (`resolveEffectivePipeline`), not the column.
+- **Feature keys** (`packages/platform-contracts`, per org in the admin panel →
+  Features): `contextualChunks` and `contextExpansion` on, `sectionSelection`
+  off, as above.
 
