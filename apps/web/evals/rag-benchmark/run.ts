@@ -636,6 +636,12 @@ async function main(): Promise<void> {
                 ...(ragAnswer.trace.expansion
                   ? { expansion: ragAnswer.trace.expansion }
                   : {}),
+                ...(ragAnswer.trace.crossQueryFusionEnabled !== undefined
+                  ? {
+                      crossQueryFusionEnabled:
+                        ragAnswer.trace.crossQueryFusionEnabled,
+                    }
+                  : {}),
                 queryCount: ragAnswer.trace.queryCount,
                 chunkCount: ragAnswer.trace.chunks.length,
                 timings: ragAnswer.trace.timings,

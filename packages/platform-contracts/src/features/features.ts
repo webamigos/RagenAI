@@ -43,6 +43,7 @@ export const FEATURE_KEYS = [
   'contextExpansion',
   'sectionSelection',
   'personalMemory',
+  'crossQueryFusion',
 ] as const;
 
 export type FeatureKey = (typeof FEATURE_KEYS)[number];
@@ -159,6 +160,13 @@ export type FeatureOverrides = Partial<Record<FeatureKey, boolean | null>>;
  * `SECTION_SELECTION`. Off by default: D2 found it level with the reranker on
  * prose and worse on tables, so it is an opt-in third option.
  *
+ * `crossQueryFusion` orders a turn's hits across its queries by reciprocal
+ * rank when neither the reranker nor section selection chooses among them
+ * (spec 2026-10-03-retrieval-claims, B0). Without it that turn keeps the first
+ * query's hits, so a multi-query variant never reaches the model. Off by
+ * default until B1 measures it; it changes only what a turn reads, so it
+ * applies to every file at once.
+ *
  * `personalMemory` lets panel chat remember what a user says about themselves
  * — preferences, role, ongoing work — across their own threads (spec
  * 2026-09-27-personal-memory-across-threads). One extraction call per turn,
@@ -188,6 +196,7 @@ export const DEFAULT_FEATURES: FeatureFlags = {
   contextExpansion: true,
   sectionSelection: false,
   personalMemory: false,
+  crossQueryFusion: false,
 };
 
 /** Human-readable names, shared so the admin panel and the app cannot disagree. */
@@ -220,6 +229,8 @@ export const FEATURE_LABELS: Record<FeatureKey, string> = {
     'Section selection: a model picks the passages to read, in place of the reranker (one LLM call per turn)',
   personalMemory:
     'Personal memory: chat remembers what each user says about themselves (experimental, one LLM call per turn)',
+  crossQueryFusion:
+    'Cross-query fusion: without a reranker, rank hits from every query together so the multi-query variant counts',
 };
 
 /**
