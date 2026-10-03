@@ -168,8 +168,9 @@ Redis is the job queue (BullMQ, ADR-44); there is no Temporal or LiteLLM
 container any more. Models are called directly through the route table
 (`infra/llm-gateway/routes.yaml`, ADR-49), so the answer, rephrase and
 embedding models need a route and their provider's credentials in
-`.env.local`: `npm run gateway:preflight -- --probe` checks both before a
-run spends anything. Presidio sits behind the `pii` profile.
+`.env.local`: `npm run gateway:preflight -- --probe` checks both with one
+small real request per configured model — a few cents at most, against the
+hundreds of calls a benchmark run makes. Presidio sits behind the `pii` profile.
 
 Then `apps/web` and `apps/worker`, both against the same database and the same
 storage directory:
