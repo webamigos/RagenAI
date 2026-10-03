@@ -15,6 +15,7 @@
  */
 export {
   MODEL_REGISTRY,
+  isChatModel,
   isReasoningModel,
   normalizeModelId,
   selectableModels,
@@ -22,6 +23,7 @@ export {
 } from './llm/model-catalog';
 export type {
   AvailableModel,
+  ModelKind,
   ModelOrigin,
   ModelProvider,
   ModelRegistryEntry,

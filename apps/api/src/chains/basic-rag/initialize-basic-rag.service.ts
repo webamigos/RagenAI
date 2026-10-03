@@ -10,7 +10,12 @@ import {
   createChatCompletionInstance,
   createEmbeddingsInstance,
 } from '../../llm/model-instances.js';
-import { isModelRoutable, routableModels } from '../../llm/native-models.js';
+import {
+  isChatModelRoutable,
+  isModelRoutable,
+  routableChatModels,
+  routableModels,
+} from '../../llm/native-models.js';
 import { resolveEmbeddingsModel } from '@ragenai/rag-core';
 import { QdrantVectorStoreClient } from '../../vector-store/qdrant-client.js';
 import { MeilisearchVectorStoreClient } from '../../vector-store/meilisearch-client.js';
@@ -95,6 +100,30 @@ function assertModelIsRoutable(modelId: string | undefined): void {
   );
 }
 
+/**
+ * The same refusal for the answer model, which has to be a *chat* model.
+ *
+ * Routed is not enough: the embedding models are routed too, so a request
+ * naming one was accepted and sent a chat call to an embeddings endpoint. And
+ * the list in the message is the chat models only — offering the caller an
+ * embedding model as a valid choice is the error this replaced.
+ */
+function assertChatModelIsRoutable(modelId: string | undefined): void {
+  if (!modelId || isChatModelRoutable(modelId)) {
+    return;
+  }
+
+  const reason = isModelRoutable(modelId)
+    ? `Model "${modelId}" is not a chat model.`
+    : `No route for model "${modelId}".`;
+
+  throw new BadRequestException(
+    `${reason} This installation serves these chat models: ${
+      routableChatModels().join(', ') || '(no chat models are configured)'
+    }. See infra/llm-gateway/routes.yaml.`,
+  );
+}
+
 @Injectable()
 export class InitializeBasicRagService {
   private readonly logger = new Logger(InitializeBasicRagService.name);
@@ -149,7 +178,7 @@ export class InitializeBasicRagService {
       // from a `"model"` in the request body, and without anyone being hostile
       // from an org default or an `EMBEDDINGS_MODEL` that no longer has a row
       // in the route table.
-      assertModelIsRoutable(answerModel);
+      assertChatModelIsRoutable(answerModel);
       assertModelIsRoutable(resolveEmbeddingsModel());
 
       const embeddingModel = createEmbeddingsInstance(

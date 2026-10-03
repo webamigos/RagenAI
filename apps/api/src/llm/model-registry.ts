@@ -8,6 +8,7 @@
  */
 export {
   MODEL_REGISTRY,
+  isChatModel,
   isReasoningModel,
   normalizeModelId,
   selectableModels,
@@ -16,6 +17,7 @@ export {
 
 export type {
   AvailableModel,
+  ModelKind,
   ModelOrigin,
   ModelProvider,
   ModelRegistryEntry,
