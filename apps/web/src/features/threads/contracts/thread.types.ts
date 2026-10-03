@@ -1,13 +1,5 @@
-import { z } from 'zod';
 import type { Thread } from '@/generated/prisma/browser';
 import type { MessageDtoWithoutId } from '@/features/messages/contracts/message.types';
-
-export const createThreadSchema = z.object({
-  id: z.string().min(1),
-  projectId: z.string().optional(),
-});
-
-export type CreateThreadDto = z.infer<typeof createThreadSchema>;
 
 export type ThreadHistoryResponse = {
   createdAt: string;
