@@ -82,9 +82,12 @@ a single "default on" env flag:
 - **Reranking (ADR-12)** is **opt-in**: it needs `FEATURE_FLAG_RERANKING=1`
   *and* provider credentials, so a default install answers from raw hybrid
   results. The per-org `rerankingEnabled` setting can only turn it further off.
-  It has not yet been shown to help: the 2026-09-04 comparison was a three-way
-  tie between off, Scaleway and Cohere, so no claim about its benefit is made
-  until the retrieval-claims spec's Phase B measures it again.
+  Measured on 2026-10-01 (`evals/rag-benchmark/results/2026-10-01-a3-reranker-baseline.md`):
+  no change on prose (`kolej` 17 vs 18 of 24, identical evidence), a gain on
+  tables (`tabele` 7/18 off vs 10/17 Scaleway). The reranking arm also
+  retrieves a three-times-wider pool, so that gain is not yet attributable to
+  the reranker; the retrieval-claims spec's Phase B splits the two before
+  anything claims a benefit.
 - **Contextual chunks** — feature key `contextualChunks`, **on** by default.
   It changes what is embedded, so only files ingested or re-indexed while it is
   on carry the prefix; `apps/worker/src/scripts/reindex-for-context.ts` brings
