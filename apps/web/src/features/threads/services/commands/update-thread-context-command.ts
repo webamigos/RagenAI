@@ -1,113 +1,55 @@
 'use server';
 
-import db from '@ragenai/prisma-client';
 import { logger } from '@/app/lib/utils/logger';
-import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
+import {
+  getCurrentUserId,
+  getOrgIdFromAuthOrThrow,
+} from '@/app/lib/utils/auth-helpers';
 import type { ThreadContextAction } from '../../contracts/thread.types';
+import { setThreadProjectContext } from './set-thread-project-context';
 
-export const updateThreadProjectContextCommand = async (
-  publicThreadId: string,
-  mentionedProjectId: string | null,
-) => {
-  try {
-    const updatedThread = await db.thread.update({
-      where: { id: publicThreadId },
-      data: { mentionedProjectId: mentionedProjectId },
-      select: {
-        id: true,
-        mentionedProjectId: true,
-      },
-    });
-
-    logger.info(
-      {
-        threadId: publicThreadId,
-        mentionedProjectId,
-      },
-      'Thread project context updated successfully',
-    );
-
-    return updatedThread;
-  } catch (error) {
-    logger.error(
-      { err: error },
-      `Failed to update thread context ${publicThreadId}`,
-    );
-    throw error;
-  }
-};
-
+/**
+ * The project-context picker's action: point one of the caller's threads at
+ * a project they can see, or at none. Organization and user come from the
+ * session; the rule is `setThreadProjectContext`'s.
+ */
 export const updateThreadContextCommand = async (
   threadId: string,
   mentionedProjectId: string | null,
 ): Promise<ThreadContextAction> => {
   try {
-    const orgId = await getOrgIdFromAuthOrThrow();
-    if (!orgId) {
-      return {
-        success: false,
-        errorMessage: 'Unauthorized',
-      };
+    const organizationId = await getOrgIdFromAuthOrThrow();
+    const userId = await getCurrentUserId();
+    if (!userId) {
+      return { success: false, errorMessage: 'Unauthorized' };
     }
 
-    // Verify thread belongs to user's organization
-    const thread = await db.thread.findFirst({
-      where: {
-        id: threadId,
-        organizationId: orgId,
-      },
-    });
-
-    if (!thread) {
-      return {
-        success: false,
-        errorMessage: 'Thread not found',
-      };
-    }
-
-    // If mentionedProjectId is provided, verify user has access to the project
-    if (mentionedProjectId) {
-      const project = await db.project.findFirst({
-        where: {
-          id: mentionedProjectId,
-          organizationId: orgId,
-        },
-      });
-
-      if (!project) {
-        return {
-          success: false,
-          errorMessage: 'Project not found or access denied',
-        };
-      }
-    }
-
-    const updatedThread = await updateThreadProjectContextCommand(
+    const change = await setThreadProjectContext({
       threadId,
+      organizationId,
+      userId,
       mentionedProjectId,
-    );
+    });
+    if (change.status === 'thread-not-found') {
+      return { success: false, errorMessage: 'Thread not found' };
+    }
+    if (change.status === 'project-not-found') {
+      return {
+        success: false,
+        errorMessage: 'Project not found or access denied',
+      };
+    }
 
     logger.info(
-      {
-        threadId,
-        mentionedProjectId: updatedThread.mentionedProjectId,
-        orgId,
-      },
+      { threadId, mentionedProjectId: change.mentionedProjectId },
       'Thread context updated successfully',
     );
-
-    return {
-      success: true,
-      mentionedProjectId: updatedThread.mentionedProjectId,
-    };
+    return { success: true, mentionedProjectId: change.mentionedProjectId };
   } catch (error) {
     logger.error(
       { err: error, threadId, mentionedProjectId },
       'Error updating thread context',
     );
-    return {
-      success: false,
-      errorMessage: 'Failed to update thread context',
-    };
+    return { success: false, errorMessage: 'Failed to update thread context' };
   }
 };
