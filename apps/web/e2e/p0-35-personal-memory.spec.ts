@@ -224,16 +224,6 @@ async function ask(page: Page, question: string): Promise<void> {
   }
 }
 
-/** The second user's role in the test org. Seeded as a plain member. */
-async function setOtherUserRole(role: 'admin' | 'member'): Promise<void> {
-  await withPrisma((prisma) =>
-    prisma.member.updateMany({
-      where: { organizationId: TEST_ORG_ID, userId: TEST_OTHER_USER_ID },
-      data: { role },
-    }),
-  );
-}
-
 async function memoryRow(page: Page, content: string) {
   return page.getByRole('listitem').filter({ hasText: content });
 }
@@ -289,25 +279,16 @@ test('a second member of the org sees none of it, not even in a thread shared wi
       page.getByRole('link', { name: `Thread: ${LINE_THREAD.title}` }),
     ).toBeVisible({ timeout: 15_000 });
 
-    // Opening the shared thread, as someone who can actually load it. The
-    // messages route admits the owner and org admins only, so a plain member
-    // opens a shared thread onto no messages at all — a separate defect, and
-    // asserting an absence on an empty page would prove nothing. An admin
-    // reads any thread in the org, read-only: a reader who sees *more* than a
-    // share grants, which makes "none of the owner's memory shows" the
-    // stricter claim. Promoted for this check only, and put back.
-    await setOtherUserRole('admin');
-    try {
-      await page.goto(`/pl/chats/${LINE_THREAD.id}`);
-      await expect(
-        page.getByText('Zapamiętam, że wolisz odpowiedzi w punktach.'),
-      ).toBeVisible({ timeout: 15_000 });
-      await expect(page.getByText(/Zapamiętano:/)).toHaveCount(0);
-      for (const text of [PREFERENCE, SOURCE_MEMORY, LINE_MEMORY]) {
-        await expect(page.getByText(text)).toHaveCount(0);
-      }
-    } finally {
-      await setOtherUserRole('member');
+    // Opened as the plain member it was shared with, read-only: the seeded
+    // answer renders, so the absence of the memory line and the owner's
+    // memories below means something.
+    await page.goto(`/pl/chats/${LINE_THREAD.id}`);
+    await expect(
+      page.getByText('Zapamiętam, że wolisz odpowiedzi w punktach.'),
+    ).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByText(/Zapamiętano:/)).toHaveCount(0);
+    for (const text of [PREFERENCE, SOURCE_MEMORY, LINE_MEMORY]) {
+      await expect(page.getByText(text)).toHaveCount(0);
     }
   } finally {
     await context.close();
