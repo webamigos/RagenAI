@@ -902,9 +902,60 @@ shape an answer before it has been measured.
 
 ### Phase E — measure, then turn it on
 
-- [ ] **E1.** Run the extraction eval, and run the existing `rag-quality` suite
+- [x] **E1.** Run the extraction eval, and run the existing `rag-quality` suite
   with and without a memory block. Record the numbers in this spec. ADR-20
   applies: memory changes every answer's system prompt.
+
+  **E1 results — 2026-10-03**, on `main` at `f6aa810dc`. E1 is the runs
+  and their record, both below; the rollout decision is E2's.
+
+  *Models.* Extraction: `MEMORY_EXTRACT_MODEL` unset, so `SUMMARY_MODEL` =
+  `gemini-2.5-flash` (vertex). `rag-quality`: `gemini-2.5-flash` (vertex)
+  for both the rephrase and the answer — the provider binds one model to
+  both — graded by promptfoo's own `openai:chat:gpt-4o-mini`. Preflight
+  (`npm run gateway:preflight -- --probe`): every required model answered.
+
+  *Extraction eval* (`memory-extraction-eval.ts --repeats 3`, 44 cases × 3,
+  132 calls, 111,706 tokens): keep precision 96.4%, keep recall 95.8%, drop
+  recall 97.3%, **org-fact drops 100% (72/72; gate ≥ 95%)**, "yes, like that"
+  kept 55.6% (5/9). By kind: preference 16/18, role 15/15, ongoing work
+  15/15, org fact 24/24, third party 15/15, request 12/12, placeholder 11/12,
+  injection 11/12. Misses: `pref-short` ×2 (written, but without the word
+  "short" the fixture checks for), `pii-boss` ×1 and `inj-forget-all` ×1
+  (each wrote something; the script records no content, so what is
+  unknown), "yes, like that" ×4. Against C2's first run the same morning:
+  keep recall 100% → 95.8%, injection 12/12 → 11/12, "yes, like that" 6/9 →
+  5/9 — one-case swings at three repeats, which is this eval's noise.
+
+  *`rag-quality` with and without memory.* The memory arm is
+  `evals/configs/rag-quality-memory.yaml`: the same dataset, model and
+  grader, plus six memories the provider renders through the chat's own
+  `renderMemoryBlock` into `ChainConfig.memoryBlock` — a finance controller,
+  a Q4 budget review due 2026-10-20, "prefers concise answers", the Warsaw
+  office, Excel tables, and one related to the dataset on purpose: "is
+  integrating the Ragen API into the finance team's internal reporting
+  tool" (15 of the 38 cases ask about API authentication). All four runs
+  `--no-cache`, 38 cases each, about 114 calls a run:
+
+  | Arm | Run | Pass | contains-any | rubric | Mean answer | Answer prompt tokens |
+  |---|---|---|---|---|---|---|
+  | no memory | 1 | 38/38 | 38/38 | 38/38 | 175 chars | 48,518 |
+  | no memory | 2 | 38/38 | 38/38 | 38/38 | 175 chars | 48,499 |
+  | memory | 1 | 38/38 | 38/38 | 38/38 | 162 chars | 55,910 |
+  | memory | 2 | 38/38 | 38/38 | 38/38 | 182 chars | 56,114 |
+
+  Noise band on pass rate: zero — and that is the finding to read first. The
+  suite is at its ceiling on this model, so it cannot show a regression
+  smaller than a whole failed case, and "no regression" here is weak
+  evidence. The block costs about 195 prompt tokens a turn (+15%). No answer
+  in either memory run mentions any memory (finance, budget, Warsaw, Excel,
+  the reporting tool), the related one included, and every non-English case
+  still answered in the question's language.
+
+  *Against E2.* Org-fact drop rate 100% ≥ 95%: passes. `rag-quality` shows
+  no regression beyond its noise: passes, with the caveat above. A suite
+  that can fail — `rag-benchmark`, or harder cases where a preference
+  could cost a rubric point — would make the second condition mean more.
 - [ ] **E2.** Rollout gate: the organizational-fact drop rate is at least 95% on
   the eval, and `rag-quality` shows no regression beyond the suite's noise.
   Then turn `personalMemory` on for the demo organization.
