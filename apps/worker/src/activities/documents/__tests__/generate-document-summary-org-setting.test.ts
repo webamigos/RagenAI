@@ -43,6 +43,9 @@ describe('generateDocumentSummary — the organization setting', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.unstubAllEnvs();
+    // On explicitly, so a FEATURE_FLAG_DOC_SUMMARIES=0 in the environment
+    // running the suite cannot make the organization branches pass unread.
+    vi.stubEnv('FEATURE_FLAG_DOC_SUMMARIES', '1');
     m.generateText.mockResolvedValue({
       text: 'A service agreement.',
       usage: { inputTokens: 10, outputTokens: 5, totalTokens: 15 },
@@ -62,6 +65,7 @@ describe('generateDocumentSummary — the organization setting', () => {
     m.isOrgDocSummariesEnabled.mockResolvedValue(false);
 
     await expect(generateDocumentSummary(input)).resolves.toBe('');
+    expect(m.isOrgDocSummariesEnabled).toHaveBeenCalledWith('org-1');
     expect(m.generateText).not.toHaveBeenCalled();
   });
 
