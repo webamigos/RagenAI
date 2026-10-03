@@ -3,7 +3,7 @@ import { createServer } from 'node:net';
 import { FastMCP } from 'fastmcp';
 
 import type { RagenSession } from '../auth.js';
-import { mcpEnvSchema } from '../config/env.js';
+import { DEV_SERVER_VERSION, mcpEnvSchema } from '../config/env.js';
 import { serverOptions } from '../server-options.js';
 
 /** A port nothing is listening on, so parallel suites cannot collide. */
@@ -101,9 +101,9 @@ describe('serverOptions', () => {
     expect(serverInfo.version).toBe('abc123');
   });
 
-  it('never reports the old hardcoded placeholder', async () => {
+  it('falls back to the dev version when the build named neither', async () => {
     const serverInfo = await serverInfoFor({});
 
-    expect(serverInfo.version).toBe('dev');
+    expect(serverInfo.version).toBe(DEV_SERVER_VERSION);
   });
 });
