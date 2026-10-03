@@ -4,7 +4,9 @@ import { trackAiUsage } from '@/features/ai-usage/services/commands/create-ai-us
 import type { VectorStoreDocument } from '@/libs/vector-store/types';
 import type { RerankOptions } from './bedrock-cohere-reranker';
 
-const RERANK_MODEL = process.env.RERANK_MODEL || 'qwen3-embedding-8b';
+export const SCALEWAY_RERANK_MODEL =
+  process.env.RERANK_MODEL || 'qwen3-embedding-8b';
+const RERANK_MODEL = SCALEWAY_RERANK_MODEL;
 const DEFAULT_RERANK_TOP_N = 5;
 const MAX_RERANK_MS = 15_000;
 

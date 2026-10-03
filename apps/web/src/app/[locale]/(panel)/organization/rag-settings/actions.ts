@@ -15,6 +15,7 @@ import {
 } from '@/features/organizations/services/organization-settings';
 import type { RagPipelineSettings } from '@/features/organizations/contracts/organization.types';
 import { resolveEmbeddingsModel } from '@ragenai/rag-core';
+import { rerankModelName } from '@/libs/reranker';
 import { getContextVersionStatusQuery } from '@/features/documents/services/queries/get-context-version-status-query';
 import {
   reindexForContextCommand,
@@ -51,7 +52,7 @@ export async function getRagSettingsAction(): Promise<RagSettingsPageData> {
     budgetCents: usageLimits.monthlyCostLimitCents,
     models: {
       embedding: resolveEmbeddingsModel(),
-      reranking: 'cohere-rerank-v3-5',
+      reranking: rerankModelName(),
       rephrase: process.env.REPHRASE_MODEL || 'gemini-2.5-flash',
       answer: answerModel || 'gemini-3-flash-preview',
     },
