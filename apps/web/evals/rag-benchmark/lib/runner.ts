@@ -58,6 +58,13 @@ export function parseArgs(
       `--profile: the only profile is "default", got ${JSON.stringify(profileArg ?? '')}`,
     );
   }
+  // The published number is the gap between the two arms, and the trace
+  // check runs on the RAG arm: a default-profile run needs both.
+  if (profileArg && argv.includes('--arms')) {
+    throw new Error(
+      '--profile default runs both arms; drop --arms (the published figure is the RAG–control gap)',
+    );
+  }
   if (profileArg && shape) {
     throw new Error(
       '--profile default and --shape do not combine: a shape names a departure from the default',

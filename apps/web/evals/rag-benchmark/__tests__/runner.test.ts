@@ -81,6 +81,16 @@ describe('parseArgs', () => {
     expect(() => parseArgs(['--profile'], DEFAULT_DIR)).toThrow(/--profile/);
   });
 
+  it('runs both arms under --profile default, refusing --arms', () => {
+    expect(parseArgs(['--profile', 'default'], DEFAULT_DIR).arms).toEqual([
+      'rag',
+      'no-rag',
+    ]);
+    expect(() =>
+      parseArgs(['--profile', 'default', '--arms', 'no-rag'], DEFAULT_DIR),
+    ).toThrow(/runs both arms/);
+  });
+
   it('does not combine --profile default with --shape', () => {
     expect(() =>
       parseArgs(['--profile', 'default', '--shape', 'x'], DEFAULT_DIR),
