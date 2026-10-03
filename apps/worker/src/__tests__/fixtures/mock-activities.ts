@@ -259,6 +259,11 @@ export function createMockActivities() {
       notJudged: 0,
       tokens: 0,
     }),
+    purgeExpiredMemories: vi.fn().mockResolvedValue({
+      memoriesDeleted: 0,
+      changesDeleted: 0,
+      changesOlderThan: '2026-01-01T00:00:00.000Z',
+    }),
     runMemoryExtraction: vi.fn().mockResolvedValue({
       skipped: null,
       added: 0,

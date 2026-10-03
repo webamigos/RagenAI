@@ -9,3 +9,4 @@ export * from './brain-extract.js';
 export * from './brain-reconcile-findings.js';
 export * from './brain-publish-page.js';
 export * from './memory-extract.js';
+export * from './memory-purge.js';
