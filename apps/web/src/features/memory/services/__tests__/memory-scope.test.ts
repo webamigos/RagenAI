@@ -392,6 +392,16 @@ describe('listThreadMemoryChanges', () => {
     expect(db.userMemory.findMany).not.toHaveBeenCalled();
   });
 
+  it('reads a seeded thread whose id carries no RFC 4122 version', async () => {
+    db.userMemoryChange.findMany.mockResolvedValue([]);
+    const seeded = 'e2e00000-0000-0000-0000-00e2e0000010';
+    expect(await listThreadMemoryChanges(await owner(), seeded)).toEqual({});
+    expect(db.userMemoryChange.findMany.mock.calls[0][0].where).toEqual({
+      ...OWNER_WHERE,
+      sourceThreadId: seeded,
+    });
+  });
+
   it('refuses a thread id that is not a UUID before querying', async () => {
     await expect(
       listThreadMemoryChanges(await owner(), 'not-a-uuid'),

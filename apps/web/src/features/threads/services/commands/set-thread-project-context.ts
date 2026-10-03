@@ -10,7 +10,13 @@ export type ThreadProjectContextChange =
   | { status: 'thread-not-found' }
   | { status: 'project-not-found' };
 
-const uuid = z.string().uuid();
+/**
+ * A Postgres `uuid`: any 8-4-4-4-12 hex id, which is what the columns hold.
+ * Not `z.uuid()`, which also demands an RFC 4122 version and variant: ids
+ * Prisma generates pass it, but a row seeded or imported with a fixed id
+ * (the e2e seed's `e2e00000-…`) is a valid thread the strict form refuses.
+ */
+const uuid = z.guid();
 
 /**
  * Point a thread at a project (or at none), the one way to change a thread's

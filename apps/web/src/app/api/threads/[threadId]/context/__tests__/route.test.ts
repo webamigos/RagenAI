@@ -66,6 +66,13 @@ describe('PATCH /api/threads/[threadId]/context', () => {
     expect(m.set).not.toHaveBeenCalled();
   });
 
+  it('accepts a seeded project id with no RFC 4122 version', async () => {
+    const res = await patch({
+      mentionedProjectId: 'e2e00000-0000-0000-0000-00e2e0000001',
+    });
+    expect(res.status).toBe(200);
+  });
+
   it('rejects a body that is not a project id or null', async () => {
     expect((await patch({ mentionedProjectId: 'nope' })).status).toBe(400);
     expect(m.set).not.toHaveBeenCalled();
