@@ -15,6 +15,7 @@ import {
   isIngestCancellation,
   isNonRetryable,
   type EmbeddingStage,
+  withdrawVectorsIfIngestEnded,
 } from './ingest-cancellation.js';
 
 export async function scrapeWebsite(
@@ -50,6 +51,7 @@ export async function scrapeWebsite(
 
     // activities/meilisearch
     addDocumentsToVectorStore,
+    deleteDocumentVectors,
 
     // activities/splitters
     splitText,
@@ -253,6 +255,16 @@ export async function scrapeWebsite(
       orgId,
       docs: updatedDocs,
     });
+    if (
+      await withdrawVectorsIfIngestEnded({
+        isCancelled: () => ctx.checkCancelled({ fileId, orgId }),
+        deleteVectors: () => deleteDocumentVectors({ orgId, fileId }),
+      })
+    ) {
+      // Deleted or cancelled while the vectors were being written; they are
+      // out again, and this records the cancellation and throws it.
+      await checkCancelled();
+    }
 
     await updateEmbeddingStatus({
       fileId,

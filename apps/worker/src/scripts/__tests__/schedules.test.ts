@@ -16,8 +16,11 @@ const deleteSchedule = vi.hoisted(() =>
   vi.fn(async (_id: string) => undefined),
 );
 
+const closeJobs = vi.hoisted(() => vi.fn(async () => undefined));
+
 vi.mock('../../jobs.js', () => ({
   jobs: () => ({ upsertSchedule, deleteSchedule }),
+  closeJobs,
 }));
 
 const argv = process.argv;
@@ -120,5 +123,27 @@ describe('ensure-memory-purge-schedule', () => {
     await run(script);
     expect(deleteSchedule).toHaveBeenCalledWith('personal-memory-purge');
     expect(upsertSchedule).not.toHaveBeenCalled();
+  });
+});
+
+// An open queue connection keeps the process alive after the last line, so
+// each script releases the runtime whether it registered, deleted or failed.
+describe.each([
+  '../ensure-demo-cleanup-schedule.js',
+  '../ensure-analytics-retention-schedule.js',
+  '../ensure-memory-purge-schedule.js',
+])('%s', (script) => {
+  it('closes the job runtime before it ends', async () => {
+    await run(script);
+    expect(upsertSchedule).toHaveBeenCalled();
+    expect(closeJobs).toHaveBeenCalledTimes(1);
+  });
+
+  it('closes it after a failure too', async () => {
+    upsertSchedule.mockRejectedValueOnce(new Error('redis unreachable'));
+    const exitCode = process.exitCode;
+    await run(script);
+    expect(closeJobs).toHaveBeenCalledTimes(1);
+    process.exitCode = exitCode;
   });
 });

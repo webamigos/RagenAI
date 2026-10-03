@@ -40,6 +40,14 @@ const STEPS = [
   // The model extracting a user's personal memories after a turn
   // (`personalMemory`): one call per turn, so its cost is worth a row.
   { value: AiUsageStep.MEMORY, label: 'Personal memory' },
+  // Ragen Brain's background extraction and contradiction checks. Filed under
+  // Completion until it had a step of its own, which also counted every call
+  // against the organization's monthly message limit.
+  { value: AiUsageStep.BRAIN, label: 'Brain' },
+  // Summaries at ingest, the readiness score and Optimize's suggestions — the
+  // model calls a document costs beyond its embeddings. Filed under
+  // Completion until it had a step, which also spent the message limit.
+  { value: AiUsageStep.DOCUMENT_PROCESSING, label: 'Document processing' },
 ];
 
 export function AiUsageFiltersBar({ filters, onChange }: Props) {

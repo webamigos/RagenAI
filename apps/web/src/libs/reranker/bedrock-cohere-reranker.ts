@@ -3,7 +3,9 @@ import type { VectorStoreDocument } from '@/libs/vector-store/types';
 import { AiUsageStep } from '@/generated/prisma/client';
 import { trackAiUsage } from '@/features/ai-usage/services/commands/create-ai-usage-command';
 
-const RERANK_MODEL = process.env.RERANK_MODEL || 'cohere-rerank-v3-5';
+export const COHERE_RERANK_MODEL =
+  process.env.RERANK_MODEL || 'cohere-rerank-v3-5';
+const RERANK_MODEL = COHERE_RERANK_MODEL;
 
 export type RerankTrackingContext = {
   organizationId?: string | null;

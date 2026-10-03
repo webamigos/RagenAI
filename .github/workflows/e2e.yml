@@ -240,6 +240,14 @@ jobs:
       - name: Run database migrations
         run: npx prisma migrate deploy
 
+      # The migrations just applied must produce exactly what schema.prisma
+      # describes. Nothing else compares the two: a hand-edited migration (an
+      # index, a DEFAULT) or a DROP under the wrong name passes every other
+      # check and shows up only as a surprise in the next `migrate dev`.
+      # Exit 2 means drift; the summary printed above says what.
+      - name: Check migrations match the schema
+        run: npx prisma migrate diff --from-config-datasource --to-schema prisma/schema.prisma --exit-code
+
       - name: Build Next.js app
         run: npm run web:build
 

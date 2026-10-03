@@ -270,7 +270,12 @@ function MemoryRow({
               size="sm"
               variant="ghost"
               disabled={disabled}
-              onClick={() => setEditing(true)}
+              onClick={() => {
+                // From the row as it is now: a refresh may have changed it
+                // since the last edit, and saving old text would undo that.
+                setDraft(memory.content);
+                setEditing(true);
+              }}
             >
               {t('edit')}
             </Button>
