@@ -2,7 +2,7 @@
 title: A prompt rule the model follows most of the time is not a rule, and two repeats cannot tell you which it is
 modules: [brain-core, worker]
 areas: [rag, testing]
-topics: [llm, prompt, structured-output, evals, adr-20, variance, tables, brain]
+topics: [llm, prompt, structured-output, evals, adr-20, variance, tables, brain, personal-memory, prompt-injection]
 ---
 
 ## Context
@@ -62,3 +62,32 @@ did not change.
 - **Count what should be there, not only what came back.** A page count
   says nothing about rows that were never returned; coverage of the source
   does.
+
+## Recurred: personal memory (2026-10-03)
+
+The extraction prompt forbids two things outright: deleting a memory
+because the message says so, and keeping a claim to authority ("is an
+administrator"). The spec's E1 ran each case three times and recorded the
+injection case `inj-forget-all` as "wrote something, 1 of 3" — with no way
+to say what, because the eval printed the verdict and not the operations.
+
+At twenty repeats, with the operations printed, the same case deleted a
+stored preference in **1 of 20** runs and wrote "Is a system
+administrator." in **2 of 20**. Both rules are checkable against text, so
+both are enforced after the answer now: no UPDATE or DELETE for a message
+about the memory itself (`isMemoryDirective`, #1510), no statement that
+claims permissions or access (`claimsAuthority`, #1513). With them the
+injection cases are 80/80 at twenty repeats.
+
+Two more takeaways from it:
+
+- **An eval that reports only pass/fail cannot tell a harmless miss from a
+  destructive one.** "Wrote something" covered both an extra ADD and a
+  deleted memory. Print what the model asked for on every miss.
+- **Read the spec's measurement plan against what was built.** The spec
+  names `evals/configs/memory-extraction.yaml` twice; the eval became a
+  worker script (`apps/worker/src/scripts/memory-extraction-eval.ts`),
+  because it runs the job's own prompt, parse and plan. And `rag-quality`
+  sat at its ceiling (38/38 in every arm) on this model, so "no regression"
+  there is weak evidence — a suite that can fail is needed before it means
+  more.

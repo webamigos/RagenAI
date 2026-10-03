@@ -105,6 +105,24 @@ archive is the blog.
 
 ### Chat
 
+- `[major]` **Ragen can remember a user across conversations — behind a
+  switch, off by default.** With the `personalMemory` feature key on, a
+  chat turn can keep three kinds of fact about the person asking: how they
+  like answers (length, format, language), their role, and work in progress
+  with its date. Facts about the organization, other people and one-off
+  requests are not kept (100% of the organization-fact cases dropped in the
+  eval). Each answer that changed memory says "Remembered · Undo"; a member
+  sees, edits, switches off or wipes their memory in their settings, and an
+  org admin can delete every member's. A message cannot talk it into
+  deleting memories or into remembering an "administrator" claim. On for
+  the demo organization; a self-hoster turns it on per organization in the
+  admin panel and registers the nightly purge once
+  (`ensure-memory-purge-schedule`).
+  ([spec](https://github.com/webamigos/RagenAI/blob/main/docs/specs/2026-09-27-personal-memory-across-threads.md),
+  [#1474](https://github.com/webamigos/RagenAI/pull/1474)–[#1492](https://github.com/webamigos/RagenAI/pull/1492),
+  [#1510](https://github.com/webamigos/RagenAI/pull/1510),
+  [#1513](https://github.com/webamigos/RagenAI/pull/1513))
+
 - `[brief]` **A thread someone shared with you opens.** It was listed under
   "Shared with me", but opening it showed an empty chat with a message box:
   only the thread's owner and organization admins could load its messages.
