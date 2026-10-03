@@ -38,6 +38,7 @@ describe('ThreadsCoreService', () => {
           findFirst: vi.fn(),
           findFirstOrThrow: vi.fn(),
           update: vi.fn(),
+          updateMany: vi.fn().mockResolvedValue({ count: 1 }),
           delete: vi.fn(),
           count: vi.fn(),
           findMany: vi.fn(),
@@ -64,6 +65,9 @@ describe('ThreadsCoreService', () => {
     const auditLog = { track: vi.fn() } as unknown as AuditLogService;
     const projects = {
       getDefaultProjectId: vi.fn(),
+      getEffectiveProjectPermission: vi
+        .fn()
+        .mockResolvedValue({ canView: true }),
     } as unknown as ProjectsService;
     const messages = {
       createAndStoreMessage: vi.fn(),
@@ -372,19 +376,80 @@ describe('ThreadsCoreService', () => {
     });
   });
 
-  describe('updateThreadContext', () => {
-    it('rejects when the mentioned project does not belong to the org', async () => {
-      const { service } = makeService({
-        thread: {
-          findFirst: vi.fn().mockResolvedValue({ id: 't1' }),
-        } as never,
-        project: { findFirst: vi.fn().mockResolvedValue(null) } as never,
+  describe('updateThreadContext / removeThreadContext', () => {
+    const OWNED = { id: 't1', organizationId: 'org-1', visitorId: 'user-1' };
+
+    it('points the caller’s own thread at a project they can see, writing under the same scope', async () => {
+      const { service, prisma, projects } = makeService({
+        thread: { findFirst: vi.fn().mockResolvedValue({ id: 't1' }) } as never,
       });
 
-      const result = await service.updateThreadContext('t1', 'proj-x', 'org-1');
-      expect(result).toEqual({
+      const result = await service.updateThreadContext(
+        't1',
+        'proj-x',
+        'org-1',
+        'user-1',
+      );
+
+      expect(result).toEqual({ success: true, mentionedProjectId: 'proj-x' });
+      expect(prisma.client.thread.findFirst).toHaveBeenCalledWith({
+        where: OWNED,
+        select: { id: true },
+      });
+      expect(projects.getEffectiveProjectPermission).toHaveBeenCalledWith(
+        'proj-x',
+        'org-1',
+        'user-1',
+      );
+      expect(prisma.client.thread.updateMany).toHaveBeenCalledWith({
+        where: OWNED,
+        data: { mentionedProjectId: 'proj-x' },
+      });
+    });
+
+    it('refuses another member’s thread as not found, and writes nothing', async () => {
+      const { service, prisma } = makeService({
+        thread: { findFirst: vi.fn().mockResolvedValue(null) } as never,
+      });
+
+      expect(
+        await service.updateThreadContext('t1', 'proj-x', 'org-1', 'user-2'),
+      ).toEqual({ success: false, errorMessage: 'Thread not found' });
+      expect(
+        await service.removeThreadContext('t1', 'org-1', 'user-2'),
+      ).toEqual({ success: false, errorMessage: 'Thread not found' });
+      expect(prisma.client.thread.updateMany).not.toHaveBeenCalled();
+    });
+
+    it('refuses a project the caller cannot see, even in their organization', async () => {
+      const { service, prisma, projects } = makeService({
+        thread: { findFirst: vi.fn().mockResolvedValue({ id: 't1' }) } as never,
+      });
+      vi.mocked(projects.getEffectiveProjectPermission).mockResolvedValue({
+        canView: false,
+      } as never);
+
+      expect(
+        await service.updateThreadContext('t1', 'proj-x', 'org-1', 'user-1'),
+      ).toEqual({
         success: false,
         errorMessage: 'Project not found or access denied',
+      });
+      expect(prisma.client.thread.updateMany).not.toHaveBeenCalled();
+    });
+
+    it('clears the context of the caller’s own thread without consulting any project', async () => {
+      const { service, prisma, projects } = makeService({
+        thread: { findFirst: vi.fn().mockResolvedValue({ id: 't1' }) } as never,
+      });
+
+      expect(
+        await service.removeThreadContext('t1', 'org-1', 'user-1'),
+      ).toEqual({ success: true, mentionedProjectId: null });
+      expect(projects.getEffectiveProjectPermission).not.toHaveBeenCalled();
+      expect(prisma.client.thread.updateMany).toHaveBeenCalledWith({
+        where: OWNED,
+        data: { mentionedProjectId: null },
       });
     });
   });
