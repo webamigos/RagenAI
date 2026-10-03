@@ -44,8 +44,24 @@ export async function ensureDefaultTeamMembershipCommand(
   if (existing) {
     return { teamId, joined: false };
   }
-  await db.teamMember.create({
-    data: { id: crypto.randomUUID(), teamId, userId },
-  });
+  try {
+    await db.teamMember.create({
+      data: { id: crypto.randomUUID(), teamId, userId },
+    });
+  } catch (err) {
+    // (teamId, userId) is unique, and the other caller can add the user
+    // between the read above and this insert. That caller did the job.
+    if (!isUniqueViolation(err)) {
+      throw err;
+    }
+    const raced = await db.teamMember.findFirst({
+      where: { teamId, userId },
+      select: { id: true },
+    });
+    if (!raced) {
+      throw err;
+    }
+    return { teamId, joined: false };
+  }
   return { teamId, joined: true };
 }

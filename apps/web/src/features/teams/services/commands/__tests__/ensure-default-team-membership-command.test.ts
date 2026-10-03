@@ -73,6 +73,29 @@ describe('ensureDefaultTeamMembershipCommand', () => {
     expect(m.teamMemberCreate).not.toHaveBeenCalled();
   });
 
+  it('reports the membership a concurrent call created between the read and the insert', async () => {
+    m.teamMemberFindFirst
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce({ id: 'tm-1' });
+    m.teamMemberCreate.mockRejectedValue(
+      Object.assign(new Error('Unique constraint failed'), { code: 'P2002' }),
+    );
+
+    const result = await ensureDefaultTeamMembershipCommand('org-1', 'user-1');
+
+    expect(result).toEqual({ teamId: 'org-1-general', joined: false });
+  });
+
+  it('rethrows a P2002 on the membership when no membership is there after all', async () => {
+    m.teamMemberCreate.mockRejectedValue(
+      Object.assign(new Error('Unique constraint failed'), { code: 'P2002' }),
+    );
+
+    await expect(
+      ensureDefaultTeamMembershipCommand('org-1', 'user-1'),
+    ).rejects.toThrow('Unique constraint failed');
+  });
+
   it('adds nobody when the user is already in the team', async () => {
     m.teamMemberFindFirst.mockResolvedValue({ id: 'tm-1' });
 
