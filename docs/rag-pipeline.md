@@ -39,6 +39,13 @@ Shown with multi-query on (the default). With the per-org `multiQueryEnabled`
 setting off, `rephraseAndExpand` returns only the standalone question, so `P`
 is `[standalone]` and only the `S1` branch runs.
 
+**With neither the reranker nor section selection running — the default
+install — the variant's hits do not reach the model.** The lists are
+concatenated in query order and cut to `maxDocuments`, which is the first
+query's hits. The `crossQueryFusion` feature key (off by default, #1518)
+merges the lists by reciprocal rank before the cut instead; the
+retrieval-claims spec's Phase B measures it.
+
 ## Vector store query (Qdrant hybrid)
 
 ```mermaid
