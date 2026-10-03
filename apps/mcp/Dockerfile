@@ -89,6 +89,15 @@ COPY --from=builder /app/packages/env/dist ./packages/env/dist
 COPY --from=builder /app/packages/env/package.json ./packages/env/package.json
 COPY package.json ./package.json
 
+# The release this image was built from, reported as `serverInfo.version` in
+# the MCP initialize response. publish-images.yml passes the release tag; a
+# build that passes nothing (compose, Railway) gets an empty value, which the
+# env schema reads as unset and falls back to the commit sha, then `dev`.
+# Declared here, after everything else, so a new version invalidates only the
+# layers below it.
+ARG RAGEN_VERSION
+ENV RAGEN_VERSION=$RAGEN_VERSION
+
 USER mcp
 
 # Prefer IPv6 DNS resolution for Railway internal networking (neutral on IPv4-only networks)

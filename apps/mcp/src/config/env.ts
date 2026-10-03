@@ -1,4 +1,5 @@
 import {
+  blankAsUndefined,
   fragments,
   httpUrl,
   parseEnv,
@@ -15,6 +16,8 @@ import { z } from 'zod';
 /** Where apps/api answers when nobody says otherwise. Only ever right locally. */
 const LOCAL_RAGEN_API_URL = 'http://localhost:3001';
 const DEFAULT_PORT = 3300;
+/** What the server reports as its version when the build named none. */
+export const DEV_SERVER_VERSION = 'dev';
 
 /**
  * `targetEnvRequired`, not `targetEnv` — the same choice apps/worker makes,
@@ -46,6 +49,16 @@ export const mcpEnvSchema = fragments.targetEnvRequired
     // already filled in and never fire. A deployed MCP server silently
     // pointed at localhost answers every tool call with a connection error.
     RAGEN_API_URL: httpUrl().optional(),
+    // The release this image was built from, as `serverInfo.version` in the
+    // MCP initialize response. semantic-release tags the repository and bumps
+    // no package.json, so the tag is the only real version there is, and
+    // `publish-images.yml` passes it in as a build argument. An image built
+    // without one (compose, Railway) gets `ENV RAGEN_VERSION=` — an empty
+    // string, hence blankAsUndefined.
+    RAGEN_VERSION: blankAsUndefined(z.string().trim().optional()),
+    // Railway's own build identifier, the fallback when no release tag was
+    // passed — the same value instrument.ts reports as `service.version`.
+    RAILWAY_GIT_COMMIT_SHA: blankAsUndefined(z.string().trim().optional()),
   })
   .superRefine((env, ctx) => {
     requiredInDeployedEnvs(
@@ -59,6 +72,8 @@ export const mcpEnvSchema = fragments.targetEnvRequired
     ...env,
     PORT: env.RAGEN_MCP_PORT ?? env.PORT ?? DEFAULT_PORT,
     RAGEN_API_URL: env.RAGEN_API_URL ?? LOCAL_RAGEN_API_URL,
+    SERVER_VERSION:
+      env.RAGEN_VERSION ?? env.RAILWAY_GIT_COMMIT_SHA ?? DEV_SERVER_VERSION,
   }));
 
 export type McpEnv = z.infer<typeof mcpEnvSchema>;

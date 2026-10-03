@@ -4,10 +4,10 @@ import './instrument.js';
 
 import { FastMCP } from 'fastmcp';
 
-import { authenticate } from './auth.js';
+import type { RagenSession } from './auth.js';
 import { getEnv } from './config/env.js';
-import { fastmcpLogger } from './fastmcp-logger.js';
 import { logger } from './logger.js';
+import { serverOptions } from './server-options.js';
 import { registerChatTool } from './tools/chat-tool.js';
 import { registerListAssistantsTool } from './tools/list-assistants-tool.js';
 import { registerSearchKnowledgeBaseTool } from './tools/search-knowledge-base-tool.js';
@@ -48,14 +48,7 @@ try {
  */
 const PORT = env.PORT;
 
-const mcp = new FastMCP({
-  name: 'Ragen',
-  version: '0.0.1',
-  authenticate,
-  // Without this FastMCP's own output goes straight to console — unstructured,
-  // and invisible to the OTel logs bridge.
-  logger: fastmcpLogger,
-});
+const mcp = new FastMCP<RagenSession>(serverOptions(env));
 
 registerChatTool(mcp);
 registerListAssistantsTool(mcp);

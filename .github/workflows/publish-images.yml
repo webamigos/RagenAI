@@ -88,14 +88,23 @@ jobs:
       # built. The driver this installs is `docker-container`.
       - uses: docker/setup-buildx-action@v4
 
-      # Here only for the OCI labels. The tags are applied once, by `merge`,
-      # to the manifest list — a per-architecture build must push no tag at
-      # all, or the two jobs race and whichever finishes last wins the tag
-      # with a single-architecture image behind it.
+      # Here only for the OCI labels and the version build argument. The tags
+      # are applied once, by `merge`, to the manifest list — a per-architecture
+      # build must push no tag at all, or the two jobs race and whichever
+      # finishes last wins the tag with a single-architecture image behind it.
+      # The `tags` below are never pushed (`outputs` pushes by digest); they
+      # are what decides `outputs.version`, which without them would be the
+      # raw `vX.Y.Z` ref — the same rules `merge` uses, so the version inside
+      # the image matches the tag outside it: the semver, or the commit sha on
+      # a dispatch from a branch.
       - id: meta
         uses: docker/metadata-action@v6
         with:
           images: ghcr.io/${{ github.repository_owner }}/ragen-${{ matrix.app }}
+          flavor: latest=false
+          tags: |
+            type=semver,pattern={{version}}
+            type=sha,format=long
 
       - id: build
         uses: docker/build-push-action@v7
@@ -107,6 +116,12 @@ jobs:
           file: apps/${{ matrix.app }}/Dockerfile
           platforms: linux/${{ matrix.platform.arch }}
           labels: ${{ steps.meta.outputs.labels }}
+          # The release version, for the app to report about itself — only
+          # apps/mcp reads it so far (as `serverInfo.version`). Passed to every
+          # image because the matrix is shared and Docker ignores a build
+          # argument a Dockerfile does not declare.
+          build-args: |
+            RAGEN_VERSION=${{ steps.meta.outputs.version }}
           # Pushes the image under its digest and nothing else, which is what
           # leaves `merge` something to join. `name-canonical` is what makes
           # the digest resolvable under the repository name afterwards.
