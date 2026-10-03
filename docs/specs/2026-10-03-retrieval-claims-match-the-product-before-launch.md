@@ -24,7 +24,8 @@ answer from general knowledge, and no published number.
 <!--
 Each question carries a recommendation, and the phases below are written
 assuming it. If an answer differs, only the phase named in the question
-changes, because the phases are independent (see "Why one spec").
+changes, because the phases deploy independently (see "Why one spec" and
+"Phases" for the two places a later phase reads an earlier one's result).
 -->
 
 - **Q1 (Phase A).** The per-org `docSummariesEnabled` setting does nothing.
@@ -74,7 +75,7 @@ switches, and apps/admin edits the same columns.
 - **Reranking is described as something it is not.** The description reads
   "Re-score retrieved documents using a cross-encoder model". The default
   provider is Scaleway `qwen3-embedding-8b`, and
-  `scaleway-reranker.ts:23` says in its own words that it is "a bi-encoder
+  `scaleway-reranker.ts:25` says in its own words that it is "a bi-encoder
   … not a true cross-encoder".
 
 ### 2. Reranking has never been shown to help
@@ -353,8 +354,11 @@ enough, which is the only evidence that would justify a per-turn call.
 
 ## Phases
 
-Each phase leaves the application working, ships as its own PR, and none
-depends on another. The suggested order is A, E, B, C, D: A and E are
+Each phase leaves the application working and ships as its own PR. The
+phases are independently deployable, but not independently completable:
+E's reranking and strict-grounding lines describe what B and C found and
+built, and D3 needs a release that ships A–C. The suggested order is A, E,
+B, C, D: A and E are
 cheapest and remove false claims, B needs a few hours of runs, C is the real
 work, and D packages the result.
 
