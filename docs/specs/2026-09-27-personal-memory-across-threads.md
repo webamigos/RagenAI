@@ -569,9 +569,13 @@ enum UserMemoryOperation {
     organizational facts.
 - **Prompt injection through a memory.** A user can only inject into their own
   memory, and it only affects their own chats. That is the same reach they
-  already have by typing. Memories are still rendered as a quoted list under a
-  fixed header, never as instructions, and the output guardrail still runs on
-  every answer.
+  already have by typing — except that a memory outlives the turn, so a
+  directive stored once would reach every later turn, tools included.
+  Memories are therefore rendered inside a `<user_memory>` element, with
+  angle brackets escaped so none can close it, under a fixed header and
+  beside a rule that the element is background, not instructions, and never
+  causes a tool call on its own. The output guardrail still runs on every
+  answer.
 - **Someone else's thread.** The ownership rule stops both extraction and
   reading when the session user is not the owner, or when the thread is on a
   team, shared, or public.
