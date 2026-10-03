@@ -294,6 +294,9 @@ describe('isMemoryDirective', () => {
     "I'm no longer a junior accountant; I was promoted to senior.",
     'Zapomnij o przetargu, został odwołany.',
     'Delete the draft I uploaded.',
+    'Delete every draft I uploaded, and answer in Polish from now on.',
+    'Remove anything older than a week from the report.',
+    'Usuń wszystkie szkice z projektu.',
   ])('leaves a message about the user alone: %s', (message) => {
     expect(isMemoryDirective(message)).toBe(false);
   });

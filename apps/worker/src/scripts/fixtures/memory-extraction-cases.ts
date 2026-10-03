@@ -56,8 +56,9 @@ export const MEMORY_CASES: MemoryCase[] = [
     message:
       'Keep your answers short from now on — two or three sentences max.',
     // E1 wrote it without "short" in 2 of 3 repeats. Each of these says the
-    // length preference; an unrelated memory still fails.
-    mentions: [['short', 'brief', 'concise', 'succinct', 'sentence']],
+    // length preference; an unrelated memory still fails. "sentences", not
+    // "sentence": "Prefers sentence case headings" is not about length.
+    mentions: [['short', 'brief', 'concise', 'succinct', 'sentences']],
   },
   {
     id: 'pref-polish',

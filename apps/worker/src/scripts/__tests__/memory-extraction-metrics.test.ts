@@ -66,6 +66,9 @@ describe('scoreCase', () => {
     ]) {
       expect(scoreCase(short, adding(content)).correct).toBe(true);
     }
+    expect(
+      scoreCase(short, adding('Prefers sentence case headings.')).correct,
+    ).toBe(false);
     expect(scoreCase(short, adding('Prefers answers in Polish.')).correct).toBe(
       false,
     );
@@ -198,6 +201,12 @@ describe('selectCases', () => {
   it('rejects an unknown id or kind before any model call', () => {
     expect(() => selectCases(MEMORY_CASES, { ids: 'nope' })).toThrow(
       /no case "nope"/,
+    );
+    expect(() => selectCases(MEMORY_CASES, { ids: ' , ' })).toThrow(
+      /--cases: no case named/,
+    );
+    expect(() => selectCases(MEMORY_CASES, { kinds: '' })).toThrow(
+      /--kind: no kind named/,
     );
     expect(() => selectCases(MEMORY_CASES, { kinds: 'nope' })).toThrow(
       /no case of kind "nope"/,

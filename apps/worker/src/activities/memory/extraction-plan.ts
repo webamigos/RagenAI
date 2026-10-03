@@ -154,14 +154,16 @@ export function expiryFor(until: string | undefined): Date | null {
  * settings, where it is their own click.
  *
  * Deliberately narrow: a verb of erasing followed, within the sentence, by a
- * word naming the memory or all of it. "Forget about the bullet points, I
+ * word naming the memory, or "everything" / "wszystko". A bare quantifier
+ * does not count: "delete every draft" is about drafts, and must not stop the
+ * same message from updating a preference. "Forget about the bullet points, I
  * prefer prose" still updates; "forget all about the tender, it was
  * cancelled" keeps the memory, which then lapses at its own date. English
  * and Polish only — another language falls back to the prompt alone.
  */
 const MEMORY_DIRECTIVE = [
-  /(?<!\p{L})(?:forget|delete|erase|wipe|clear|remove|reset|purge|overwrite|replace)(?!\p{L})[^.!?\n]{0,40}?(?<!\p{L})(?:memor\p{L}*|remember\p{L}*|everything|anything|every|facts?)(?!\p{L})/iu,
-  /(?<!\p{L})(?:zapomnij|usuń|usun|wyczyść|wyczysc|skasuj|wymaż|wymaz|zresetuj|nadpisz|zastąp|zastap)\p{L}*[^.!?\n]{0,40}?(?<!\p{L})(?:pami[eę]\p{L}*|zapami[eę]t\p{L}*|wszystk\p{L}*|fakt\p{L}*)/iu,
+  /(?<!\p{L})(?:forget|delete|erase|wipe|clear|remove|reset|purge|overwrite|replace)(?!\p{L})[^.!?\n]{0,40}?(?<!\p{L})(?:memor\p{L}*|remember\p{L}*|everything|facts?)(?!\p{L})/iu,
+  /(?<!\p{L})(?:zapomnij|usuń|usun|wyczyść|wyczysc|skasuj|wymaż|wymaz|zresetuj|nadpisz|zastąp|zastap)\p{L}*[^.!?\n]{0,40}?(?<!\p{L})(?:pami[eę]\p{L}*|zapami[eę]t\p{L}*|wszystko(?!\p{L})|fakt\p{L}*)/iu,
 ];
 
 export function isMemoryDirective(message: string): boolean {

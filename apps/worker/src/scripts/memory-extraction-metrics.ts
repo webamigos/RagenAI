@@ -109,6 +109,14 @@ export function selectCases(
           .filter(Boolean);
   const wantedIds = split(ids);
   const wantedKinds = split(kinds);
+  // An option given with nothing in it would run no cases at all and report
+  // empty metrics as if they were a result.
+  if (wantedIds?.length === 0) {
+    throw new Error('--cases: no case named');
+  }
+  if (wantedKinds?.length === 0) {
+    throw new Error('--kind: no kind named');
+  }
   for (const id of wantedIds ?? []) {
     if (!cases.some((c) => c.id === id)) {
       throw new Error(`--cases: no case "${id}"`);
