@@ -424,51 +424,73 @@ export class ThreadsCoreService {
     }
   }
 
-  async removeThreadProjectContext(publicThreadId: string) {
-    try {
-      const updatedThread = await this.prisma.client.thread.update({
-        where: { id: publicThreadId },
-        data: { mentionedProjectId: null },
-        select: { id: true, mentionedProjectId: true },
-      });
-
-      this.logger.log(
-        `Thread project context removed successfully (threadId=${publicThreadId})`,
-      );
-
-      return updatedThread;
-    } catch (error) {
-      this.logger.error(
-        `Failed to remove thread context ${publicThreadId}`,
-        error,
-      );
-      throw error;
+  /**
+   * Point one of the caller's threads at a project they can see, or at none.
+   *
+   * The thread must be the caller's (`ownThreadWhere`, as for delete, rename
+   * and star): its context decides which instructions its next answer runs
+   * under, so a member it was shared with, or an admin reading it, does not
+   * set it. The project must be one the caller can view
+   * (`getEffectiveProjectPermission`), not merely one in the organization.
+   * The write repeats the thread's scope.
+   */
+  private async setThreadProjectContext(
+    threadId: string,
+    mentionedProjectId: string | null,
+    orgId: string,
+    userId: string,
+  ): Promise<ThreadContextAction> {
+    const owned = ownThreadWhere(threadId, orgId, userId);
+    const thread = await this.prisma.client.thread.findFirst({
+      where: owned,
+      select: { id: true },
+    });
+    if (!thread) {
+      return { success: false, errorMessage: 'Thread not found' };
     }
+
+    if (mentionedProjectId) {
+      const permission = await this.projects.getEffectiveProjectPermission(
+        mentionedProjectId,
+        orgId,
+        userId,
+      );
+      if (!permission.canView) {
+        return {
+          success: false,
+          errorMessage: 'Project not found or access denied',
+        };
+      }
+    }
+
+    const { count } = await this.prisma.client.thread.updateMany({
+      where: owned,
+      data: { mentionedProjectId },
+    });
+    if (count === 0) {
+      return { success: false, errorMessage: 'Thread not found' };
+    }
+    return { success: true, mentionedProjectId };
   }
 
   async removeThreadContext(
     threadId: string,
     orgId: string,
+    userId: string,
   ): Promise<ThreadContextAction> {
     try {
-      const thread = await this.prisma.client.thread.findFirst({
-        where: { id: threadId, organizationId: orgId },
-      });
-
-      if (!thread) {
-        return { success: false, errorMessage: 'Thread not found' };
-      }
-
-      const updatedThread = await this.removeThreadProjectContext(threadId);
-
-      this.logger.log(
-        `Thread context removed successfully (threadId=${threadId}, orgId=${orgId})`,
+      const result = await this.setThreadProjectContext(
+        threadId,
+        null,
+        orgId,
+        userId,
       );
-
-      return {
-        success: true,
-        mentionedProjectId: updatedThread.mentionedProjectId,
-      };
+      if (result.success) {
+        this.logger.log(
+          `Thread context removed successfully (threadId=${threadId}, orgId=${orgId})`,
+        );
+      }
+      return result;
     } catch (error) {
       this.logger.error(
         `Error removing thread context (threadId=${threadId})`,
@@ -481,71 +503,25 @@ export class ThreadsCoreService {
     }
   }
 
-  async updateThreadProjectContext(
-    publicThreadId: string,
-    mentionedProjectId: string | null,
-  ) {
-    try {
-      const updatedThread = await this.prisma.client.thread.update({
-        where: { id: publicThreadId },
-        data: { mentionedProjectId: mentionedProjectId },
-        select: { id: true, mentionedProjectId: true },
-      });
-
-      this.logger.log(
-        `Thread project context updated successfully (threadId=${publicThreadId}, mentionedProjectId=${mentionedProjectId})`,
-      );
-
-      return updatedThread;
-    } catch (error) {
-      this.logger.error(
-        `Failed to update thread context ${publicThreadId}`,
-        error,
-      );
-      throw error;
-    }
-  }
-
   async updateThreadContext(
     threadId: string,
     mentionedProjectId: string | null,
     orgId: string,
+    userId: string,
   ): Promise<ThreadContextAction> {
     try {
-      const thread = await this.prisma.client.thread.findFirst({
-        where: { id: threadId, organizationId: orgId },
-      });
-
-      if (!thread) {
-        return { success: false, errorMessage: 'Thread not found' };
-      }
-
-      if (mentionedProjectId) {
-        const project = await this.prisma.client.project.findFirst({
-          where: { id: mentionedProjectId, organizationId: orgId },
-        });
-
-        if (!project) {
-          return {
-            success: false,
-            errorMessage: 'Project not found or access denied',
-          };
-        }
-      }
-
-      const updatedThread = await this.updateThreadProjectContext(
+      const result = await this.setThreadProjectContext(
         threadId,
         mentionedProjectId,
+        orgId,
+        userId,
       );
-
-      this.logger.log(
-        `Thread context updated successfully (threadId=${threadId}, mentionedProjectId=${updatedThread.mentionedProjectId}, orgId=${orgId})`,
-      );
-
-      return {
-        success: true,
-        mentionedProjectId: updatedThread.mentionedProjectId,
-      };
+      if (result.success) {
+        this.logger.log(
+          `Thread context updated successfully (threadId=${threadId}, mentionedProjectId=${mentionedProjectId}, orgId=${orgId})`,
+        );
+      }
+      return result;
     } catch (error) {
       this.logger.error(
         `Error updating thread context (threadId=${threadId}, mentionedProjectId=${mentionedProjectId})`,

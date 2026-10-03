@@ -65,9 +65,6 @@ import { SkipResponseTransform } from '../common/decorators/skip-response-transf
  *   unauthenticated shared-thread page, a different auth surface
  *   `SessionAuthGuard` doesn't cover (same exclusion pattern as
  *   `ProjectsController`'s `getPublicProject` exclusion).
- * - `removeThreadProjectContext`/`updateThreadProjectContext` (the raw,
- *   unscoped private-ish helpers) — only their org-gated wrappers
- *   (`removeThreadContext`/`updateThreadContext`) are exposed.
  * - `findOrCreateThread`/`createGuestThread`/`createThread` — internal
  *   building blocks for the guest/embed-widget flow (keyed by
  *   `visitorId`, no `userId`/`orgId` concept), a different, unaddressed
@@ -233,7 +230,7 @@ export class ThreadCoreController {
     @Param('id') id: string,
     @GetSessionAuthContext() context: SessionAuthContext,
   ) {
-    return this.threads.removeThreadContext(id, context.orgId);
+    return this.threads.removeThreadContext(id, context.orgId, context.userId);
   }
 
   @Put(':id/context')
@@ -246,6 +243,7 @@ export class ThreadCoreController {
       id,
       dto.mentionedProjectId ?? null,
       context.orgId,
+      context.userId,
     );
   }
 
