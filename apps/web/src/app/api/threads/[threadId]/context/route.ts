@@ -2,10 +2,11 @@ import { type NextRequest } from 'next/server';
 import { z } from 'zod';
 import { auth } from '@/lib/auth';
 import { logger } from '@/app/lib/utils/logger';
-import { updateThreadProjectContextCommand as updateThreadProjectContext } from '@/features/threads/services/commands/update-thread-context-command';
-import { removeThreadProjectContextCommand as removeThreadProjectContext } from '@/features/threads/services/commands/remove-thread-context-command';
-import db from '@ragenai/prisma-client';
 import { getOrgIdFromAuth } from '@/app/lib/utils/auth-helpers';
+import {
+  setThreadProjectContext,
+  type ThreadProjectContextChange,
+} from '@/features/threads/services/commands/set-thread-project-context';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -15,124 +16,87 @@ type Params = {
 };
 
 const updateContextSchema = z.object({
-  mentionedProjectId: z.string().nullable(),
+  mentionedProjectId: z.string().uuid().nullable(),
 });
 
-// PATCH - Update thread project context
+/** The caller's organization and user, or the response that refuses them. */
+async function caller(
+  request: NextRequest,
+): Promise<{ organizationId: string; userId: string } | Response> {
+  const session = await auth.api.getSession({ headers: request.headers });
+  if (!session?.user) {
+    return new Response('Unauthorized', { status: 401 });
+  }
+  const organizationId = await getOrgIdFromAuth();
+  if (!organizationId) {
+    return new Response('Organization not found', { status: 401 });
+  }
+  return { organizationId, userId: session.user.id };
+}
+
+function respond(change: ThreadProjectContextChange): Response {
+  if (change.status === 'thread-not-found') {
+    return new Response('Thread not found', { status: 404 });
+  }
+  if (change.status === 'project-not-found') {
+    return new Response('Project not found or access denied', { status: 404 });
+  }
+  return Response.json({
+    success: true,
+    mentionedProjectId: change.mentionedProjectId,
+  });
+}
+
+// PATCH - Point one of the caller's threads at a project they can see
 export async function PATCH(request: NextRequest, { params }: Params) {
   const { threadId } = await params;
   try {
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
-
-    if (!session?.user) {
-      return new Response('Unauthorized', { status: 401 });
+    const who = await caller(request);
+    if (who instanceof Response) {
+      return who;
     }
 
-    const orgId = await getOrgIdFromAuth();
-    if (!orgId) {
-      return new Response('Organization not found', { status: 401 });
+    const parsed = updateContextSchema.safeParse(await request.json());
+    if (!parsed.success) {
+      return new Response('Invalid request', { status: 400 });
     }
 
-    const body = await request.json();
-    const { mentionedProjectId } = updateContextSchema.parse(body);
-
-    // Verify thread belongs to user's organization
-    const thread = await db.thread.findFirst({
-      where: {
-        id: threadId,
-        organizationId: orgId,
-      },
-    });
-
-    if (!thread) {
-      return new Response('Thread not found', { status: 404 });
-    }
-
-    // If mentionedProjectId is provided, verify user has access to the project
-    if (mentionedProjectId) {
-      const project = await db.project.findFirst({
-        where: {
-          id: mentionedProjectId,
-          organizationId: orgId,
-        },
-      });
-
-      if (!project) {
-        return new Response('Project not found or access denied', {
-          status: 404,
-        });
-      }
-    }
-
-    const updatedThread = await updateThreadProjectContext(
+    const change = await setThreadProjectContext({
       threadId,
-      mentionedProjectId,
-    );
-
-    logger.info(
-      {
-        threadId,
-        mentionedProjectId,
-        orgId,
-      },
-      'Thread project context updated',
-    );
-
-    return Response.json({
-      success: true,
-      mentionedProjectId: updatedThread.mentionedProjectId,
+      ...who,
+      mentionedProjectId: parsed.data.mentionedProjectId,
     });
+    if (change.status === 'ok') {
+      logger.info(
+        { threadId, mentionedProjectId: change.mentionedProjectId },
+        'Thread project context updated',
+      );
+    }
+    return respond(change);
   } catch (error) {
     logger.error({ err: error }, 'Error updating thread project context');
     return new Response('Internal Server Error', { status: 500 });
   }
 }
 
-// DELETE - Remove thread project context (fallback to organization instructions)
+// DELETE - Remove a thread's project context (back to organization instructions)
 export async function DELETE(request: NextRequest, { params }: Params) {
   const { threadId } = await params;
   try {
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
-
-    if (!session?.user) {
-      return new Response('Unauthorized', { status: 401 });
+    const who = await caller(request);
+    if (who instanceof Response) {
+      return who;
     }
 
-    const orgId = await getOrgIdFromAuth();
-    if (!orgId) {
-      return new Response('Organization not found', { status: 401 });
-    }
-
-    // Verify thread belongs to user's organization
-    const thread = await db.thread.findFirst({
-      where: {
-        id: threadId,
-        organizationId: orgId,
-      },
-    });
-
-    if (!thread) {
-      return new Response('Thread not found', { status: 404 });
-    }
-
-    await removeThreadProjectContext(threadId);
-
-    logger.info(
-      {
-        threadId,
-        orgId,
-      },
-      'Thread project context removed',
-    );
-
-    return Response.json({
-      success: true,
+    const change = await setThreadProjectContext({
+      threadId,
+      ...who,
       mentionedProjectId: null,
     });
+    if (change.status === 'ok') {
+      logger.info({ threadId }, 'Thread project context removed');
+    }
+    return respond(change);
   } catch (error) {
     logger.error({ err: error }, 'Error removing thread project context');
     return new Response('Internal Server Error', { status: 500 });
