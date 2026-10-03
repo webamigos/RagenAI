@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
   docSummariesInstalled,
@@ -122,7 +122,15 @@ describe('resolveEffectivePipeline', () => {
 });
 
 describe('docSummariesInstalled', () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
   it('reads FEATURE_FLAG_DOC_SUMMARIES the way the worker does', () => {
+    // Unset in the process too, so the default parameter reads nothing a
+    // developer's environment happens to carry.
+    vi.stubEnv('FEATURE_FLAG_DOC_SUMMARIES', undefined);
+    expect(docSummariesInstalled()).toBe(true);
     expect(docSummariesInstalled(undefined)).toBe(true);
     expect(docSummariesInstalled('1')).toBe(true);
     expect(docSummariesInstalled('0')).toBe(false);

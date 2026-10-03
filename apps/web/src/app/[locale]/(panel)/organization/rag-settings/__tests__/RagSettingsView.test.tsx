@@ -27,7 +27,7 @@ const messages = {
       'doc-summaries-installation-off-note':
         'Switched off for the whole installation, so no summaries are generated.',
       'reranking-unavailable-note':
-        'This installation has no reranker configured, so nothing is reranked.',
+        'Reranking is not enabled on this installation, so nothing is reranked.',
       'reranking-label': 'Reranking',
       'reranking-description': 'Re-score retrieved documents.',
       'reranking-replaced-note':
@@ -137,7 +137,7 @@ describe('RagSettingsView', () => {
     expect(screen.getByRole('switch', { name: 'Reranking' })).not.toBeChecked();
     expect(
       screen.getByText(
-        'This installation has no reranker configured, so nothing is reranked.',
+        'Reranking is not enabled on this installation, so nothing is reranked.',
       ),
     ).toBeInTheDocument();
     expect(
