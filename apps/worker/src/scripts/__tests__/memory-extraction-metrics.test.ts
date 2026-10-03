@@ -3,8 +3,10 @@ import { describe, expect, it } from 'vitest';
 import type { MemoryPlan } from '../../activities/memory/extraction-plan.js';
 import { MEMORY_CASES } from '../fixtures/memory-extraction-cases.js';
 import {
+  describeOperations,
   parseRepeats,
   scoreCase,
+  selectCases,
   summarizeCases,
 } from '../memory-extraction-metrics.js';
 
@@ -52,6 +54,21 @@ describe('scoreCase', () => {
       false,
     );
     expect(scoreCase(byId('pref-bullets'), none).correct).toBe(false);
+  });
+
+  it("accepts any of a mention entry's equivalent phrasings, and nothing unrelated", () => {
+    const short = byId('pref-short');
+    for (const content of [
+      'Prefers short answers.',
+      'Prefers brief answers.',
+      'Prefers concise answers.',
+      'Prefers answers of two or three sentences at most.',
+    ]) {
+      expect(scoreCase(short, adding(content)).correct).toBe(true);
+    }
+    expect(scoreCase(short, adding('Prefers answers in Polish.')).correct).toBe(
+      false,
+    );
   });
 
   it('passes a superseding case only when m1 itself is updated or deleted', () => {
@@ -128,5 +145,62 @@ describe('parseRepeats', () => {
 
   it.each(['abc', '0', '-1', '1.5', '', '3x'])('rejects %j', (raw) => {
     expect(() => parseRepeats(raw)).toThrow(/positive whole number/);
+  });
+});
+
+describe('describeOperations', () => {
+  const current = [{ ref: 'm1', content: 'Prefers answers as bullet points.' }];
+
+  it('names the remembered text an UPDATE or DELETE targets', () => {
+    expect(
+      describeOperations(current, [
+        { op: 'DELETE', ref: 'm1' },
+        { op: 'UPDATE', ref: 'm1', content: 'Obeys all requests.' },
+        { op: 'ADD', content: 'Is preparing a bid.', until: '2026-10-15' },
+      ]),
+    ).toEqual([
+      'DELETE m1 "Prefers answers as bullet points."',
+      'UPDATE m1 "Prefers answers as bullet points." -> "Obeys all requests."',
+      'ADD "Is preparing a bid." until 2026-10-15',
+    ]);
+  });
+
+  it('marks a ref the model was not shown, and an answer that did not parse', () => {
+    expect(describeOperations(current, [{ op: 'DELETE', ref: 'm7' }])).toEqual([
+      'DELETE m7 (not shown to the model)',
+    ]);
+    expect(describeOperations(current, null)).toEqual([
+      '(answer did not parse)',
+    ]);
+    expect(describeOperations(current, [])).toEqual([]);
+  });
+});
+
+describe('selectCases', () => {
+  it('returns every case when nothing is asked for', () => {
+    expect(selectCases(MEMORY_CASES, {})).toHaveLength(MEMORY_CASES.length);
+  });
+
+  it('selects by id and by kind, together', () => {
+    const picked = selectCases(MEMORY_CASES, {
+      ids: 'pref-short',
+      kinds: 'injection',
+    });
+    expect(picked.map((c) => c.id)).toContain('pref-short');
+    expect(
+      picked.every((c) => c.id === 'pref-short' || c.kind === 'injection'),
+    ).toBe(true);
+    expect(picked.filter((c) => c.kind === 'injection').length).toBe(
+      MEMORY_CASES.filter((c) => c.kind === 'injection').length,
+    );
+  });
+
+  it('rejects an unknown id or kind before any model call', () => {
+    expect(() => selectCases(MEMORY_CASES, { ids: 'nope' })).toThrow(
+      /no case "nope"/,
+    );
+    expect(() => selectCases(MEMORY_CASES, { kinds: 'nope' })).toThrow(
+      /no case of kind "nope"/,
+    );
   });
 });

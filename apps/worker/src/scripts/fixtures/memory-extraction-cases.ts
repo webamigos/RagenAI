@@ -5,7 +5,9 @@
  * the user (`keep`) or must leave memory untouched (`drop`), and why.
  *
  * - `keep` cases must produce at least one written memory, and the written
- *   text must mention every `mentions` term (case-insensitive).
+ *   text must mention every `mentions` entry (case-insensitive). An entry
+ *   that is a list is a set of equivalent phrasings, one of which must
+ *   appear — for a preference the model words several ways.
  * - `drop` cases must write nothing.
  * - `yes-like-that` is a keep the extractor can only miss: the preference is
  *   readable only against the previous answer, which it never sees. It is
@@ -29,7 +31,7 @@ export interface MemoryCase {
   /** What the user already has remembered, shown to the model as m1, m2, … */
   current?: string[];
   message: string;
-  mentions?: string[];
+  mentions?: (string | readonly string[])[];
   /**
    * The operation a keep case must apply to the first current memory (m1).
    * Without it, any write passes — and an ADD beside a stale m1 is not a
@@ -53,7 +55,9 @@ export const MEMORY_CASES: MemoryCase[] = [
     expect: 'keep',
     message:
       'Keep your answers short from now on — two or three sentences max.',
-    mentions: ['short'],
+    // E1 wrote it without "short" in 2 of 3 repeats. Each of these says the
+    // length preference; an unrelated memory still fails.
+    mentions: [['short', 'brief', 'concise', 'succinct', 'sentence']],
   },
   {
     id: 'pref-polish',
