@@ -100,6 +100,9 @@ export function toRetrievalEventTrace(
     ...(trace.selectionEnabled !== undefined
       ? { selectionEnabled: trace.selectionEnabled }
       : {}),
+    ...(trace.crossQueryFusionEnabled !== undefined
+      ? { crossQueryFusionEnabled: trace.crossQueryFusionEnabled }
+      : {}),
     queryCount: trace.queryCount,
     timings: {
       searchMs: trace.timings.searchMs,

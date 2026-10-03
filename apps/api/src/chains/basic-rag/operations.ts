@@ -5,6 +5,7 @@ import { generateObject, generateText } from 'ai';
 import { z } from 'zod';
 import {
   expandHits,
+  fuseAcrossQueries,
   selectSections,
   SELECTION_TIMEOUT_MS,
   type GenerateSelection,
@@ -547,6 +548,14 @@ export async function retrieveRelevantDocumentsWithIds(
    * Absent is off.
    */
   selection?: { generate: GenerateSelection },
+  /**
+   * `crossQueryFusion` for this organization: when neither the reranker nor
+   * selection chooses, the queries' hit lists are merged by reciprocal rank
+   * before the cut, so a multi-query variant's hits can be kept. Absent is
+   * off, which keeps the first query's hits (spec 2026-10-03-retrieval-claims,
+   * B0).
+   */
+  crossQueryFusion?: boolean,
 ): Promise<{ context: string; fileIds: string[] }> {
   if (!vectorStore) {
     throw new Error('Error retrieving relevant documents: No vector store');
@@ -649,7 +658,11 @@ export async function retrieveRelevantDocumentsWithIds(
             }),
         );
       } else {
-        finalDocs = uniqueDocs.slice(0, maxDocuments);
+        // Concatenated, the first query's hits fill the cut and a variant's
+        // never reach the model; fused, each list contributes by rank.
+        finalDocs = (
+          crossQueryFusion ? fuseAcrossQueries(resultsPerQuery) : uniqueDocs
+        ).slice(0, maxDocuments);
       }
 
       // After the cut, so the reranker still chooses which hits are kept and

@@ -58,6 +58,16 @@ export interface Question {
   /** Graded by an LLM judge through the same proxy the product uses. */
   rubric?: string;
   /**
+   * Outcome labels the judge must choose one of, as the rubric describes them.
+   *
+   * For a guard question a pass/fail hides the difference that matters most:
+   * an answer that says the documents do not cover it and stops, and one that
+   * says so and then answers anyway. Both may fail the rubric; only the
+   * second is the screenshot. The label is reported, never graded — the
+   * verdict is still `pass`. Requires a `rubric`.
+   */
+  judgeLabels?: string[];
+  /**
    * Why this question is in the corpus, for a reader deciding whether a
    * failure is a regression or a question that was never fair.
    *
@@ -91,6 +101,8 @@ export interface CaseResult {
    */
   rubricPassed: boolean | null;
   rubricReason?: string;
+  /** The judge's choice from `Question.judgeLabels`, when it made a readable one. */
+  rubricLabel?: string;
   /**
    * Why a declared rubric produced no verdict. A fact about the judge, not
    * about the answer, so `isUngraded()` keeps such a case out of every
@@ -99,7 +111,13 @@ export interface CaseResult {
   rubricError?: string;
   /** A case passes only when both gates pass. */
   passed: boolean;
-  /** Files the answer cited, when the arm can report them. */
+  /**
+   * Files the answer cited, when the arm can report them — the app's
+   * `citations` event, i.e. the retrieved files `selectCitedSources` matched
+   * in the answer text, not every file retrieval returned. Absent on the
+   * control arm. A guard question whose answer is in no document fails when
+   * this is non-empty (`forbidsCitation` in `grade.ts`).
+   */
   citedFiles?: string[];
   /**
    * Of the figures the assertions look for, how many were in the chunks the
@@ -112,6 +130,8 @@ export interface CaseResult {
     postRetrieval: string;
     /** `neighbours` when the server widened chunks (`contextExpansion`). */
     expansion?: string;
+    /** `crossQueryFusion` was on for this turn (spec 2026-10-03, B0). */
+    crossQueryFusionEnabled?: boolean;
     queryCount: number;
     chunkCount: number;
     timings: {

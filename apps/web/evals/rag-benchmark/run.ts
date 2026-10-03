@@ -636,6 +636,12 @@ async function main(): Promise<void> {
                 ...(ragAnswer.trace.expansion
                   ? { expansion: ragAnswer.trace.expansion }
                   : {}),
+                ...(ragAnswer.trace.crossQueryFusionEnabled !== undefined
+                  ? {
+                      crossQueryFusionEnabled:
+                        ragAnswer.trace.crossQueryFusionEnabled,
+                    }
+                  : {}),
                 queryCount: ragAnswer.trace.queryCount,
                 chunkCount: ragAnswer.trace.chunks.length,
                 timings: ragAnswer.trace.timings,
@@ -668,16 +674,19 @@ async function main(): Promise<void> {
           const assertions = runAssertions(q, answer);
           let rubricPassed: boolean | null = null;
           let rubricReason: string | undefined;
+          let rubricLabel: string | undefined;
           let rubricError: string | undefined;
           if (q.rubric) {
             const verdict = await withRetry(
               () =>
                 judge(q.rubric!, q.question, answer, {
                   model: JUDGE_MODEL,
+                  labels: q.judgeLabels,
                 }),
               { onRetry },
             );
             rubricReason = verdict.reason;
+            rubricLabel = verdict.label;
             // An unreadable verdict leaves `rubricPassed` null. Recording
             // `false` would spend a real failure on the judge's formatting and
             // move the published rate; the report excludes the case instead.
@@ -693,6 +702,7 @@ async function main(): Promise<void> {
             assertionFailures: assertions.failures,
             rubricPassed,
             rubricReason,
+            ...(rubricLabel ? { rubricLabel } : {}),
             rubricError,
             passed,
             citedFiles,

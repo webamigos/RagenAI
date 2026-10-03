@@ -288,6 +288,18 @@ describe('pairUploads', () => {
     ).toThrow(/"a \(1\).md" under a name no corpus document has/);
   });
 
+  // guard-bilingual-v1 names kolej's files as `../kolej-bilingual-v1/docs/…`;
+  // the upload stores the base name, so the pairing must not care how the
+  // path got there.
+  it('pairs a document named by a path into a sibling corpus', () => {
+    expect(
+      pairUploads(
+        [{ fileName: 'a.md', id: 'f1' }],
+        [{ file: '../other-corpus/docs/a.md' }],
+      ),
+    ).toEqual([{ id: 'f1', file: '../other-corpus/docs/a.md' }]);
+  });
+
   it('refuses two documents that share a base name', () => {
     expect(() =>
       pairUploads([], [{ file: 'pl/a.md' }, { file: 'en/a.md' }]),

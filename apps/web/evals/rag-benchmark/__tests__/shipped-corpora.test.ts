@@ -1,9 +1,9 @@
 import { existsSync, readFileSync, statSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 
 import { describe, it, expect } from 'vitest';
 
-import { loadCorpus } from '../lib/corpus';
+import { forbidsCitation, loadCorpus } from '../lib/corpus';
 import { containsExpectation } from '../lib/grade';
 
 /**
@@ -165,5 +165,91 @@ describe('tabele-bilingual-v1 can see the failure it was built for', () => {
     // Not graded and not reported — it is what stops the corpus reading as a
     // pile of arbitrary numbers to whoever inherits it.
     expect(loaded.questions.filter((q) => q.why).length).toBeGreaterThan(3);
+  });
+});
+
+/**
+ * The guard corpus asks about kolej's documents and names them by path
+ * rather than copying them, so the two corpora cannot drift. Its questions
+ * are sorted by id prefix — `ooc` (topic absent), `near` (topic present, fact
+ * absent), `premise` (false premise) — and the README quotes the counts.
+ */
+describe('guard-bilingual-v1', () => {
+  const dir = join(CORPORA, 'guard-bilingual-v1');
+  const loaded = loadCorpus(dir);
+  const kolej = loadCorpus(join(CORPORA, 'kolej-bilingual-v1'));
+  const category = (id: string) => id.split('-')[1];
+
+  it('loads and validates', () => {
+    expect(loaded.corpus.name).toBe('guard-bilingual-v1');
+  });
+
+  it("uploads exactly kolej's eight documents, resolved from kolej's directory", () => {
+    const resolved = loaded.corpus.documents.map((d) => resolve(dir, d.file));
+    const kolejFiles = kolej.corpus.documents.map((d) =>
+      resolve(kolej.dir, d.file),
+    );
+    expect(resolved).toEqual(kolejFiles);
+    for (const path of resolved) {
+      expect(existsSync(path), `${path} is missing`).toBe(true);
+    }
+  });
+
+  it('has the composition the README states, split evenly by language', () => {
+    const counts: Record<string, number> = {};
+    for (const q of loaded.questions) {
+      const key = `${category(q.id)}/${q.lang}`;
+      counts[key] = (counts[key] ?? 0) + 1;
+    }
+    expect(counts).toEqual({
+      'ooc/pl': 7,
+      'ooc/en': 7,
+      'near/pl': 4,
+      'near/en': 4,
+      'premise/pl': 3,
+      'premise/en': 3,
+    });
+  });
+
+  it('files every question under one of the three categories, by type', () => {
+    for (const q of loaded.questions) {
+      const expected =
+        category(q.id) === 'premise'
+          ? 'guard-sycophancy'
+          : 'guard-hallucination';
+      expect(q.type, q.id).toBe(expected);
+      expect(q.id.startsWith(`${q.lang}-`), q.id).toBe(true);
+    }
+  });
+
+  // The whole point: outside the false premises a document contradicts,
+  // the right answer is a statement of absence, with no citation and with
+  // the judge saying which kind of absence it was.
+  it('forbids a citation, and asks for a label, wherever the answer is in no document', () => {
+    for (const q of loaded.questions) {
+      if (q.expectedFiles?.length) {
+        expect(q.type, q.id).toBe('guard-sycophancy');
+        continue;
+      }
+      expect(forbidsCitation(q), q.id).toBe(true);
+      expect(q.judgeLabels, q.id).toEqual([
+        'refused',
+        'refused-then-answered',
+        'answered',
+      ]);
+      expect(q.rubric, q.id).toMatch(/refused-then-answered/);
+    }
+  });
+
+  it('has false premises of both kinds', () => {
+    const premises = loaded.questions.filter(
+      (q) => q.type === 'guard-sycophancy',
+    );
+    expect(premises.filter((q) => q.expectedFiles?.length)).toHaveLength(4);
+    expect(premises.filter((q) => !q.expectedFiles?.length)).toHaveLength(2);
+  });
+
+  it('says why every question is here', () => {
+    expect(loaded.questions.filter((q) => !q.why).map((q) => q.id)).toEqual([]);
   });
 });

@@ -37,6 +37,8 @@ export interface ServerRetrievalTrace {
   postRetrieval: string;
   /** `neighbours` when `contextExpansion` widened a chunk; absent before B3. */
   expansion?: string;
+  /** `crossQueryFusion` was on for this turn (spec 2026-10-03, B0). */
+  crossQueryFusionEnabled?: boolean;
   queryCount: number;
   timings: {
     searchMs: number;
@@ -68,6 +70,9 @@ function readTrace(value: unknown): ServerRetrievalTrace | undefined {
     ),
     postRetrieval: t.postRetrieval,
     ...(typeof t.expansion === 'string' ? { expansion: t.expansion } : {}),
+    ...(typeof t.crossQueryFusionEnabled === 'boolean'
+      ? { crossQueryFusionEnabled: t.crossQueryFusionEnabled }
+      : {}),
     queryCount: t.queryCount,
     timings: t.timings,
   };

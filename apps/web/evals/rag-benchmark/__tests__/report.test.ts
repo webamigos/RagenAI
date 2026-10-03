@@ -11,6 +11,8 @@ import {
   byDocument,
   formatScore,
   serverPostRetrieval,
+  guardOutcomes,
+  NO_LABEL,
 } from '../lib/report';
 import type { CaseResult, Report } from '../lib/types';
 
@@ -522,5 +524,97 @@ describe('serverPostRetrieval', () => {
     expect(serverPostRetrieval([rag()])).toBe(
       '(not reported — the app sent no trace)',
     );
+  });
+});
+
+describe('guardOutcomes', () => {
+  const guard = (overrides: Partial<CaseResult>) =>
+    result({ type: 'guard-hallucination', ...overrides });
+
+  it('is empty for a run with no guard questions', () => {
+    expect(guardOutcomes([result({ citedFiles: ['a'] })])).toEqual([]);
+  });
+
+  it('counts each label per arm, and an unlabelled verdict as such', () => {
+    const rows = guardOutcomes([
+      guard({ rubricLabel: 'refused' }),
+      guard({ rubricLabel: 'refused-then-answered', passed: false }),
+      guard({ rubricLabel: 'refused-then-answered', arm: 'no-rag' }),
+      guard({ arm: 'no-rag' }),
+    ]);
+    expect(rows).toEqual([
+      { key: 'refused', byArm: { rag: 1, 'no-rag': 0 } },
+      { key: 'refused-then-answered', byArm: { rag: 1, 'no-rag': 1 } },
+      { key: NO_LABEL, byArm: { rag: 0, 'no-rag': 1 } },
+    ]);
+  });
+
+  // A corpus without labels (kolej) would otherwise render every guard case
+  // as "(no label)", which reads as a judge that failed to label them.
+  it('renders no label rows when the judge was never asked for labels', () => {
+    expect(guardOutcomes([guard({}), guard({ arm: 'no-rag' })])).toEqual([]);
+  });
+
+  it('counts the guard answers that cited a document', () => {
+    const rows = guardOutcomes([
+      guard({ citedFiles: ['file-1'], passed: false }),
+      guard({ citedFiles: [] }),
+      result({
+        type: 'guard-sycophancy',
+        expectedFiles: ['docs/a.md'],
+        citedFiles: ['file-1'],
+      }),
+      guard({ arm: 'no-rag' }),
+    ]);
+    expect(rows).toEqual([
+      {
+        key: 'cited a document (reported, not graded)',
+        byArm: { rag: 1, 'no-rag': 0 },
+      },
+    ]);
+  });
+
+  it('leaves ungraded cases out', () => {
+    expect(
+      guardOutcomes([
+        guard({ rubricLabel: 'refused' }),
+        guard({ rubricLabel: 'answered', error: 'fetch failed' }),
+      ]),
+    ).toEqual([{ key: 'refused', byArm: { rag: 1, 'no-rag': 0 } }]);
+  });
+
+  it('puts the table and the per-case label into the rendered report', () => {
+    const md = renderMarkdown({
+      corpus: 'guard',
+      corpusVersion: 1,
+      fingerprint: {
+        date: '2026-10-03',
+        gitSha: 'abc1234',
+        chatModel: 'm',
+        judgeModel: 'j',
+        rephraseModel: 'r',
+        embeddingsModel: 'e',
+        vectorSize: '1',
+        rerankProvider: 'none',
+        rerankModel: 'none',
+        rerankingEnabled: 'off',
+        multiQueryVariants: '1',
+        appUrl: 'http://localhost:3000',
+        llmGateway: 'native',
+      },
+      results: [
+        guard({
+          questionId: 'pl-near-x',
+          rubricLabel: 'refused-then-answered',
+          rubricPassed: false,
+          passed: false,
+          citedFiles: ['file-1'],
+        }),
+      ],
+    });
+    expect(md).toContain('## Guard outcomes');
+    expect(md).toContain('| refused-then-answered | 1 | 0 |');
+    expect(md).toContain('| cited a document (reported, not graded) | 1 | 0 |');
+    expect(md).toContain('label: refused-then-answered');
   });
 });
