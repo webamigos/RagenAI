@@ -4,6 +4,7 @@ import { useTranslations } from 'next-intl';
 import { Switch } from '@/components/ui/switch';
 import { InformationCircleIcon } from '@heroicons/react/20/solid';
 import type { RagSettingsPageData } from '../actions';
+import type { PipelineRow } from '@/features/organizations/utils/effective-rag-pipeline';
 
 type Props = {
   data: RagSettingsPageData;
@@ -40,8 +41,16 @@ function SettingRow({
 
 export function RagSettingsView({ data }: Props) {
   const t = useTranslations('organization-page.rag-settings');
-  const { ragSettings, retrievalFeatures, budgetCents, models, isOnPremise } =
-    data;
+  const { pipeline, budgetCents, models, isOnPremise } = data;
+  const noteFor = (row: PipelineRow): string | undefined => {
+    if (!row.note) {
+      return undefined;
+    }
+    if (row.note.key === 'content-moderation-guardrails-note') {
+      return t(row.note.key, { count: row.note.count });
+    }
+    return t(row.note.key);
+  };
 
   return (
     <>
@@ -61,45 +70,41 @@ export function RagSettingsView({ data }: Props) {
         </div>
       )}
 
-      {/* Pipeline toggles */}
+      {/* Pipeline toggles — each shows the stage as it runs, not only the
+          organization's column (resolveEffectivePipeline). */}
       <section className="divide-y divide-border">
         <SettingRow
           label={t('multi-query-label')}
           description={t('multi-query-description')}
-          checked={ragSettings.multiQueryEnabled}
+          checked={pipeline.multiQuery.checked}
         />
         <SettingRow
           label={t('doc-summaries-label')}
           description={t('doc-summaries-description')}
-          checked={ragSettings.docSummariesEnabled}
+          checked={pipeline.docSummaries.checked}
+          note={noteFor(pipeline.docSummaries)}
         />
         <SettingRow
           label={t('content-moderation-label')}
           description={t('content-moderation-description')}
-          checked={ragSettings.contentModerationEnabled}
-          note={!isOnPremise ? t('content-moderation-saas-note') : undefined}
+          checked={pipeline.contentModeration.checked}
+          note={noteFor(pipeline.contentModeration)}
         />
         <SettingRow
           label={t('reranking-label')}
           description={t('reranking-description')}
-          checked={ragSettings.rerankingEnabled}
-          // Section selection takes the reranker's slot: with both on, the
-          // reranker does not run, and the switch alone would say it does.
-          note={
-            ragSettings.rerankingEnabled && retrievalFeatures.sectionSelection
-              ? t('reranking-replaced-note')
-              : undefined
-          }
+          checked={pipeline.reranking.checked}
+          note={noteFor(pipeline.reranking)}
         />
         <SettingRow
           label={t('context-expansion-label')}
           description={t('context-expansion-description')}
-          checked={retrievalFeatures.contextExpansion}
+          checked={pipeline.contextExpansion.checked}
         />
         <SettingRow
           label={t('section-selection-label')}
           description={t('section-selection-description')}
-          checked={retrievalFeatures.sectionSelection}
+          checked={pipeline.sectionSelection.checked}
         />
       </section>
 
