@@ -161,7 +161,7 @@ export async function scoreDocumentForRag({
       organizationId: orgId,
       projectId: projectId ?? null,
       userId: userId ?? null,
-      step: 'CHAT_COMPLETION',
+      step: 'DOCUMENT_PROCESSING',
       provider: 'litellm',
       model: SUMMARY_MODEL,
       inputTokens: usage?.inputTokens ?? 0,

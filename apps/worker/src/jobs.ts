@@ -75,3 +75,13 @@ if (resolveWorkerRuntime() === 'temporal') {
 export function jobs(): JobRuntime {
   return getJobRuntime();
 }
+
+/**
+ * Release the runtime's connections, so a script's process can exit once its
+ * work is done. A script that calls `jobs()` ends with this (or with
+ * `process.exit`); `tests/architecture/worker-scripts-close-the-job-runtime`
+ * holds them to it.
+ */
+export async function closeJobs(): Promise<void> {
+  await jobs().close?.();
+}

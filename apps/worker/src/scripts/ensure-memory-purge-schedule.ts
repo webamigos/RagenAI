@@ -14,7 +14,7 @@
  * does not remove the schedule — a rollback deletes it here too, with
  * `--delete`.
  */
-import { jobs } from '../jobs.js';
+import { closeJobs, jobs } from '../jobs.js';
 import { SCHEDULE_TIMEZONE } from './schedule-timezone.js';
 
 const SCHEDULE_ID = 'personal-memory-purge';
@@ -41,7 +41,9 @@ async function main() {
   );
 }
 
-main().catch((error: unknown) => {
-  console.error(error);
-  process.exitCode = 1;
-});
+main()
+  .catch((error: unknown) => {
+    console.error(error);
+    process.exitCode = 1;
+  })
+  .finally(() => closeJobs());

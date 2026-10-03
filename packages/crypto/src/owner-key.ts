@@ -103,7 +103,15 @@ export async function resolveOwnerKeyForWrite(
  */
 export type OwnerKeyForTransaction =
   | { status: 'plaintext' }
-  | { status: 'key'; dek: Buffer; newEncryptedDek: string | null }
+  | {
+      status: 'key';
+      dek: Buffer;
+      /** The wrapped form of `dek`, whichever branch produced it — what the
+       * caller's transaction checks the profile still holds. */
+      encryptedDek: string;
+      /** Set only when the key is new and the caller must store it. */
+      newEncryptedDek: string | null;
+    }
   | { status: 'unavailable'; error: unknown };
 
 export async function resolveOwnerKeyForTransaction(
@@ -124,6 +132,7 @@ export async function resolveOwnerKeyForTransaction(
       return {
         status: 'key',
         dek: await decryptThreadKey(existing),
+        encryptedDek: existing,
         newEncryptedDek: null,
       };
     }
@@ -131,6 +140,7 @@ export async function resolveOwnerKeyForTransaction(
     return {
       status: 'key',
       dek: key.plaintextDek,
+      encryptedDek: key.encryptedDek,
       newEncryptedDek: key.encryptedDek,
     };
   } catch (error) {

@@ -110,6 +110,25 @@ describe('MemorySettingsView', () => {
     expect(a.refresh).toHaveBeenCalled();
   });
 
+  it('opens the editor on the memory as it is now, after a refresh changed it', () => {
+    const { rerender } = renderView(base);
+    const refreshed: MemoryPageData = {
+      ...base,
+      memories: [{ ...memory, content: 'Is the CFO since October.' }],
+    };
+    rerender(
+      <NextIntlClientProvider messages={en} locale="en">
+        <MemorySettingsView data={refreshed} />
+      </NextIntlClientProvider>,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Edit' }));
+
+    expect(screen.getByRole('textbox', { name: 'Edit memory' })).toHaveValue(
+      'Is the CFO since October.',
+    );
+  });
+
   it('deletes only after confirming', async () => {
     renderView(base);
     fireEvent.click(screen.getByRole('button', { name: 'Delete' }));

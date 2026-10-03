@@ -38,6 +38,17 @@ export interface JobRuntime {
 
   upsertSchedule(schedule: JobSchedule): Promise<void>;
   deleteSchedule(id: string): Promise<void>;
+
+  /**
+   * Release the connections the runtime opened.
+   *
+   * A long-running app never calls it. A script must: an open queue
+   * connection keeps Node's event loop alive after `main()` returns, so the
+   * script prints its last line and never exits — and a loop over several
+   * runs of it stops after the first. Optional, because an adapter with
+   * nothing to release need not implement it.
+   */
+  close?(): Promise<void>;
 }
 
 /**

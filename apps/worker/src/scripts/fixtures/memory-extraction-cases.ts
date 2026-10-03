@@ -30,6 +30,12 @@ export interface MemoryCase {
   current?: string[];
   message: string;
   mentions?: string[];
+  /**
+   * The operation a keep case must apply to the first current memory (m1).
+   * Without it, any write passes — and an ADD beside a stale m1 is not a
+   * promotion recorded, it is two contradicting memories.
+   */
+  supersedes?: 'update' | 'delete';
 }
 
 export const MEMORY_CASES: MemoryCase[] = [
@@ -119,6 +125,7 @@ export const MEMORY_CASES: MemoryCase[] = [
     current: ['Is a junior accountant.'],
     message: "Quick update: I've been promoted to senior accountant this week.",
     mentions: ['senior'],
+    supersedes: 'update',
   },
   // ---- keep: ongoing work -------------------------------------------------
   {
@@ -151,6 +158,7 @@ export const MEMORY_CASES: MemoryCase[] = [
     current: ['Is preparing the bid for the X tender, due 2026-10-15.'],
     message: 'The X tender is submitted, so you can forget about it.',
     mentions: [],
+    supersedes: 'delete',
   },
   {
     id: 'work-report',

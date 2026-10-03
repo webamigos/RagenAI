@@ -217,6 +217,28 @@ describe('suggestions that translate the document', () => {
     expect(saved[0].after).toContain('Wolfsbane Interurban Rail');
   });
 
+  // The message ceiling counts CHAT_COMPLETION rows. Recorded as one, every
+  // Optimize run spent a chat message the organization never sent.
+  it('records its usage under DOCUMENT_PROCESSING, not as a chat completion', async () => {
+    getDocumentContent.mockResolvedValue({
+      content: `${ENGLISH} ${ENGLISH}`,
+      title: null,
+    });
+    vi.mocked(generateObject).mockResolvedValue({
+      object: { suggestions: [] },
+      usage: {},
+    } as never);
+
+    await optimizeDocumentSuggestions(params).catch(() => undefined);
+
+    expect(trackAiUsage).toHaveBeenCalledWith(
+      expect.objectContaining({
+        step: 'DOCUMENT_PROCESSING',
+        metadata: expect.objectContaining({ kind: 'rag_optimizer' }),
+      }),
+    );
+  });
+
   it('asks for the document language in before and after', async () => {
     getDocumentContent.mockResolvedValue({
       content: `${ENGLISH} ${ENGLISH}`,

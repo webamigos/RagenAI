@@ -14,9 +14,60 @@ import type { MemoryExtractSkip } from '@ragenai/jobs';
  */
 
 /** What the model is asked for: a list of operations, nothing else. */
+/**
+ * The shape the model is asked for, and what structured output holds it to.
+ * Each operation names its kind in `op`. This used to be `z.unknown()[]`, and
+ * the prompt never named the field, so models wrote `"operation": "ADD"` and
+ * every operation failed the `op` union below: extraction ran on every turn
+ * and stored nothing (C2's eval: 0 of 19 keep cases written).
+ */
 export const extractionAnswerSchema = z.object({
+  operations: z
+    .array(
+      // Every field present, null when it does not apply. With them optional,
+      // structured output on gemini-2.5-flash left `content` out of every
+      // UPDATE (C2's role-update case, 0 of 3), and an UPDATE without its
+      // statement is dropped.
+      z.object({
+        op: z.enum(['ADD', 'UPDATE', 'DELETE']),
+        ref: z.string().nullable(),
+        content: z.string().nullable(),
+        until: z.string().nullable(),
+      }),
+    )
+    .default([]),
+});
+
+/** What parsing accepts: any list, so each entry is judged on its own below. */
+const answerShape = z.object({
   operations: z.array(z.unknown()).default([]),
 });
+
+/**
+ * `operation` for `op`. Structured output asks for `op`, but a provider
+ * without it falls back to a loose parse of the text, and the field name is
+ * the one thing models were seen to rename.
+ */
+function withOpField(candidate: unknown): unknown {
+  if (candidate === null || typeof candidate !== 'object') {
+    return candidate;
+  }
+  let entry = candidate as Record<string, unknown>;
+  if (!('op' in entry) && 'operation' in entry) {
+    const { operation, ...rest } = entry;
+    entry = { ...rest, op: operation };
+  }
+  // A field that does not apply arrives as null (the schema asks for every
+  // field), or as the string "null"; either means absent.
+  for (const field of ['ref', 'content', 'until'] as const) {
+    const value = entry[field];
+    if (value === null || value === 'null' || value === '') {
+      const { [field]: _dropped, ...rest } = entry;
+      entry = rest;
+    }
+  }
+  return entry;
+}
 
 const content = z.string().trim().min(1).max(MEMORY_MAX_CHARS);
 /** `YYYY-MM-DD`, the date an ongoing-work memory names. */
@@ -42,7 +93,7 @@ export type MemoryOperation = z.infer<typeof operationSchema>;
 export function parseOperations(
   answer: unknown,
 ): { operations: MemoryOperation[]; dropped: number } | null {
-  const outer = extractionAnswerSchema.safeParse(answer);
+  const outer = answerShape.safeParse(answer);
   if (!outer.success) {
     return null;
   }
@@ -50,7 +101,7 @@ export function parseOperations(
   const operations: MemoryOperation[] = [];
   let dropped = Math.max(0, raw.length - MEMORY_MAX_OPERATIONS);
   for (const candidate of raw.slice(0, MEMORY_MAX_OPERATIONS)) {
-    const parsed = operationSchema.safeParse(candidate);
+    const parsed = operationSchema.safeParse(withOpField(candidate));
     if (parsed.success) {
       operations.push(parsed.data);
     } else {
@@ -100,6 +151,8 @@ export interface CurrentMemory {
   content: string;
   version: number;
   updatedAt: Date;
+  /** When the memory stops being read; kept by an UPDATE that names no date. */
+  expiresAt?: Date | null;
 }
 
 export interface MemoryPlan {
@@ -170,7 +223,12 @@ export function planMemoryApply(
       plan.updates.push({
         memory,
         content: operation.content,
-        expiresAt: expiryFor(operation.until),
+        // The prompt shows the model no dates, so an UPDATE without one is
+        // not a decision to make a dated memory permanent: keep the expiry.
+        expiresAt:
+          operation.until === undefined
+            ? (memory.expiresAt ?? null)
+            : expiryFor(operation.until),
       });
     }
   }
