@@ -1,0 +1,517 @@
+{
+  "corpus": "kolej-bilingual-v1",
+  "corpusVersion": 2,
+  "fingerprint": {
+    "date": "2026-10-03",
+    "gitSha": "bb92a0fd1",
+    "chatModel": "gemini-3-flash-preview",
+    "judgeModel": "gemini-2.5-flash",
+    "rephraseModel": "mistral-small-3.2",
+    "embeddingsModel": "bge-multilingual-gemma2",
+    "vectorSize": "3584",
+    "rerankProvider": "scaleway",
+    "rerankModel": "qwen3-embedding-8b",
+    "rerankingEnabled": "on for the organization; FEATURE_FLAG_RERANKING unset in the runner's environment (the server's is not visible)",
+    "multiQueryVariants": "on, 1 variant per turn (code constant)",
+    "appUrl": "http://localhost:3400",
+    "llmGateway": "(unknown: healthcheck did not say)",
+    "shape": "b1-control"
+  },
+  "results": [
+    {
+      "questionId": "pl-mono-refund-pct",
+      "arm": "no-rag",
+      "lang": "pl",
+      "docLang": "pl",
+      "expectedFiles": [
+        "docs/pl-01-regulamin-zwrotow.md"
+      ],
+      "type": "factual",
+      "question": "Jaki procent ceny biletu zwraca Kolej Nadwiślańska przy rezygnacji zgłoszonej przed odjazdem pociągu?",
+      "answer": "W przypadku rezygnacji z przejazdu zgłoszonej **przed odjazdem pociągu**, Kolej Nadwiślańska (Nadwiślańska Kolej Wąskotorowa) zwraca należność za bilet po potrąceniu **10% odstępnego**.\n\nOznacza to, że pasażer otrzymuje zwrot w wysokości **90% ceny biletu**.\n\nOto najważniejsze szczegóły dotyczące zwrotów:\n1.  **Termin:** Rezygnacja musi zostać zgłoszona najpóźniej przed planowaną godziną odjazdu pociągu.\n2.  **Potrącenie:** Standardowa opłata manipulacyjna (tzw. odstępne) wynosi 10%.\n3.  **Wyjątek:** Jeśli rezygnacja następuje z winy przewoźnika (np. odwołanie pociągu), zwracane jest **100% ceny biletu** (bez żadnych potrąceń).\n4.  **Po odjeździe:** Po odjeździe pociągu bilet traci ważność i zwrot zazwyczaj nie jest już możliwy, chyba że pasażer udokumentuje, że nie mógł skorzystać z przejazdu z przyczyn losowych (wtedy procedura odbywa się w trybie reklamacji).\n\nZawsze warto sprawdzić aktualny regulamin na oficjalnej stronie internetowej przewoźnika lub w kasie biletowej, gdyż zasady te mogą ulec drobnej zmianie w zależności od sezonu lub organizatora konkretnego przejazdu.",
+      "assertionsPassed": false,
+      "assertionFailures": [
+        "missing: \"87\""
+      ],
+      "rubricPassed": false,
+      "rubricReason": "Odpowiedź podaje 90% jako standardowy zwrot, podczas gdy rubryka wymaga 87%.",
+      "passed": false,
+      "answerMs": 7785,
+      "durationMs": 10263
+    },
+    {
+      "questionId": "pl-mono-refund-deadline",
+      "arm": "no-rag",
+      "lang": "pl",
+      "docLang": "pl",
+      "expectedFiles": [
+        "docs/pl-01-regulamin-zwrotow.md"
+      ],
+      "type": "numeric",
+      "question": "W jakim terminie Kolej Nadwiślańska rozpatruje wniosek o zwrot biletu?",
+      "answer": "Współcześnie pod nazwą **Nadwiślańska Kolejka Wąskotorowa** (NKW) funkcjonuje turystyczna kolej wąskotorowa w powiecie opolskim (Lubelskie). Jeśli Twoje pytanie dotyczy właśnie tego przewoźnika lub ogólnie pojętych usług kolejowych w Polsce, oto jak wyglądają terminy:\n\n### 1. Termin ustawowy (Prawo Przewozowe)\nZgodnie z polskim Prawem Przewozowym oraz ogólnymi przepisami dotyczącymi przewoźników kolejowych, termin na rozpatrzenie reklamacji lub wniosku o zwrot pieniędzy wynosi:\n*   **30 dni** od dnia złożenia wniosku.\n\nW większości przypadków przewoźnicy starają się realizować zwroty szybciej (często w ciągu 7–14 dni), jednak 30 dni to maksymalny czas, w jakim musisz otrzymać odpowiedź.\n\n### 2. Zwrot biletu kupionego online (przez e-podróżnik lub inne systemy)\nJeśli bilet na Nadwiślańską Kolejkę Wąskotorową został kupiony przez systemy zewnętrzne (np. e-podróżnik), proces zwrotu zazwyczaj wygląda następująco:\n*   **Automatyczny zwrot:** Jeśli rezygnujesz z biletu przed terminem określonym w regulaminie (zazwyczaj do 24h przed odjazdem), system często przetwarza zwrot automatycznie.\n*   **Czas oczekiwania na środki:** Pieniądze wracają na konto w ciągu **3 do 14 dni roboczych**, zależnie od operatora płatności i banku.\n\n### 3. Ważne informacje o potrąceniach\nPamiętaj, że przy zwrocie biletu z winy pasażera (rezygnacja), niemal zawsze potrącane jest tzw. **odstępne**. W przypadku kolei wąskotorowych i regionalnych wynosi ono zazwyczaj **od 10% do 20%** wartości biletu.\n\n### Co jeśli chodzi o historyczną Kolej Nadwiślańską?\nJeśli Twoje pytanie dotyczy historycznej Kolei Nadwiślańskiej (działającej w XIX wieku), to jako instytucja państwowa w tamtym okresie, rozpatrywała ona wnioski zgodnie z ówczesnym rosyjskim prawem administracyjnym, co mogło trwać od kilku tygodni do kilku miesięcy.\n\n**Moja rada:**\nJeśli wniosek został złożony, a minęło już więcej niż 14 dni, warto skontaktować się bezpośrednio z biurem obsługi:\n*   **Nadwiślańska Kolejka Wąskotorowa (Karczmiska):** Najlepiej dzwonić pod numer telefonu podany na ich oficjalnej stronie internetowej lub pisać na adres e-mail zarządcy (zazwyczaj jest to Zarząd Dróg Powiatowych w Opolu Lubelskim).\n\nCzy bilet był kupowany przez internet, czy w kasie/u konduktora? To pomoże mi doprecyzować odpowiedź.",
+      "assertionsPassed": true,
+      "assertionFailures": [],
+      "rubricPassed": false,
+      "rubricReason": "The answer states 30 days as the statutory processing time for a refund request, not 14 business days, and mentions 14 days in the context of money returning to the account or as a faster, non-statutory timeframe.",
+      "passed": false,
+      "answerMs": 10264,
+      "durationMs": 14744
+    },
+    {
+      "questionId": "pl-mono-baggage-weight",
+      "arm": "no-rag",
+      "lang": "pl",
+      "docLang": "pl",
+      "expectedFiles": [
+        "docs/pl-02-regulamin-bagazu.md"
+      ],
+      "type": "numeric",
+      "question": "Ile kilogramów waży bagaż, który pasażer Kolei Nadwiślańskiej może przewieźć bezpłatnie?",
+      "answer": "Pasażer Kolei Nadwiślańskiej (historycznej Drogi Żelaznej Nadwiślańskiej, otwartej w 1877 roku) mógł przewieźć bezpłatnie bagaż o wadze **1 puda**, co w przeliczeniu na współczesne jednostki wynosi około **16,38 kilograma**.\n\nWarto dodać, że:\n*   Limit ten dotyczył pasażerów dorosłych.\n*   Dzieciom podróżującym z biletami ulgowymi przysługiwała zazwyczaj połowa tego limitu (ok. 8 kg).\n*   Bagaż podręczny (trzymany w ręku lub pod siedzeniem) nie był wliczany do tej wagi, o ile nie przeszkadzał innym pasażerom.",
+      "assertionsPassed": false,
+      "assertionFailures": [
+        "missing: \"23\""
+      ],
+      "rubricPassed": false,
+      "rubricReason": "Odpowiedź podaje limit 16,38 kg, a nie 23 kg.",
+      "passed": false,
+      "answerMs": 4448,
+      "durationMs": 5750
+    },
+    {
+      "questionId": "pl-mono-refund-threshold",
+      "arm": "no-rag",
+      "lang": "pl",
+      "docLang": "pl",
+      "expectedFiles": [
+        "docs/pl-01-regulamin-zwrotow.md"
+      ],
+      "type": "numeric",
+      "question": "Od jakiej kwoty wniosek o zwrot w Kolei Nadwiślańskiej wymaga dodatkowej akceptacji kierownika Biura Obsługi Pasażera?",
+      "answer": "W przypadku **Kolei Mazowieckich** (które obsługują m.in. linię nadwiślańską i często są z nią utożsamiane w kontekście przepisów przewozowych na tym obszarze), wniosek o zwrot należności wymaga dodatkowej akceptacji kierownika Biura Obsługi Pasażera, gdy kwota zwrotu przekracza **500 zł**.\n\nOto szczegóły dotyczące tej procedury:\n\n1.  **Kwota:** Powyżej **500 zł**.\n2.  **Procedura:** Wnioski na niższe kwoty są zazwyczaj rozpatrywane standardowo przez pracowników Biura Obsługi Pasażera lub kasjerów (w ramach ich uprawnień). Po przekroczeniu progu 500 zł wymagana jest weryfikacja i podpis osoby zarządzającej jednostką (Kierownika BOP).\n3.  **Zastosowanie:** Dotyczy to zazwyczaj zwrotów za bilety okresowe (np. kwartalne, roczne) lub większą liczbę biletów jednorazowych zwracanych jednocześnie, gdzie suma należności po potrąceniu odstępnego przekracza wspomniany limit.\n\nJeśli Twoje pytanie dotyczy konkretnego egzaminu zawodowego (np. na kasjera biletowego lub konduktora), kwota **500 zł** jest standardową wartością graniczną w wewnętrznych instrukcjach handlowych wielu polskich przewoźników regionalnych, w tym Kolei Mazowieckich.",
+      "assertionsPassed": false,
+      "assertionFailures": [
+        "missing: \"249\""
+      ],
+      "rubricPassed": false,
+      "rubricReason": "The answer provides a threshold of 500 zł, not 249,50 zł.",
+      "passed": false,
+      "answerMs": 16108,
+      "durationMs": 17517
+    },
+    {
+      "questionId": "pl-mono-compare-deadlines",
+      "arm": "no-rag",
+      "lang": "pl",
+      "docLang": "pl",
+      "expectedFiles": [
+        "docs/pl-01-regulamin-zwrotow.md",
+        "docs/pl-03-polityka-opoznien.md"
+      ],
+      "type": "comparative",
+      "question": "Czym różni się termin rozpatrzenia wniosku o rekompensatę za opóźnienie od terminu rozpatrzenia wniosku o zwrot biletu w Kolei Nadwiślańskiej?",
+      "answer": "W przypadku **Nadwiślańskiej Kolei Wąskotorowej** (bo taką nazwę nosi obecnie ta linia turystyczna, nawiązująca do historycznej Kolei Nadwiślańskiej), kwestie te reguluje **Prawo Przewozowe** oraz wewnętrzny regulamin przewoźnika.\n\nWarto na wstępie zaznaczyć, że Nadwiślańska Kolej Wąskotorowa jest koleją o charakterze turystycznym/wąskotorowym, co oznacza, że nie zawsze podlegają one tym samym rygorystycznym przepisom unijnym (Rozporządzenie 2021/782), co np. PKP Intercity.\n\nOto jak wyglądają terminy w świetle ogólnych przepisów i praktyki tego przewoźnika:\n\n### 1. Termin rozpatrzenia wniosku o rekompensatę (reklamację) za opóźnienie\nJeśli składasz reklamację z tytułu niewykonania lub nienależytego wykonania umowy przewozu (w tym opóźnienia):\n*   **Termin:** Przewoźnik ma **30 dni** na udzielenie odpowiedzi na reklamację.\n*   **Podstawa:** Wynika to bezpośrednio z polskiego Prawa Przewozowego. Jeśli przewoźnik nie odpowie w tym terminie, reklamację uznaje się za uwzględnioną.\n*   **Ważne:** W przypadku kolei wąskotorowych/turystycznych, odszkodowania za opóźnienie (procentowe zwroty ceny biletu) często nie przysługują automatycznie tak jak w pociągach dalekobieżnych, chyba że regulamin konkretnego przewoźnika stanowi inaczej. Zazwyczaj pasażerowi przysługuje zwrot w przypadku odwołania pociągu lub znacznego opóźnienia, które sprawiło, że podróż stała się bezcelowa.\n\n### 2. Termin rozpatrzenia wniosku o zwrot biletu (odstąpienie od umowy)\nTutaj należy rozróżnić dwie sytuacje:\n\n*   **Zwrot dobrowolny (rezygnacja pasażera):** Jeśli zwracasz bilet przed terminem odjazdu (zgodnie z regulaminem, np. najpóźniej na 24h przed), zwrot pieniędzy jest zazwyczaj procesowany **niezwłocznie**, ale formalnie termin na zwrot środków (szczególnie przy płatnościach online) wynosi zazwyczaj **do 14 dni roboczych** (zgodnie z przepisami o e-commerce, jeśli bilet kupiono przez internet).\n*   **Wniosek o zwrot z winy przewoźnika:** Jeśli pociąg został odwołany i składasz formalny wniosek o zwrot należności, termin na rozpatrzenie takiego wniosku (traktowanego jako reklamacja) wynosi również **30 dni**.\n\n### Podsumowanie różnic:\n\n| Cecha | Rekompensata za opóźnienie | Zwrot biletu (rezygnacja) |\n| :--- | :--- | :--- |\n| **Termin rozpatrzenia** | **30 dni** (ustawowy czas na odpowiedź) | **Do 14 dni** (zwrot środków) lub **30 dni** (jeśli to reklamacja) |\n| **Charakter wniosku** | Zawsze traktowany jako reklamacja. | Może być automatycznym procesem (system online) lub reklamacją. |\n| **Skutek braku odpowiedzi** | Uznanie roszczenia po 30 dniach. | Obowiązek zwrotu wpłaconej kwoty (pomniejszonej o odstępne). |\n\n**Uwaga praktyczna:** Nadwiślańska Kolej Wąskotorowa jest zarządzana przez Powiat Opolski (woj. lubelskie). W przypadku problemów z uzyskaniem odpowiedzi, organem nadzorczym dla kwestii pasażerskich w Polsce jest **Urząd Transportu Kolejowego (UTK)**, jednak w przypadku kolei wąskotorowych wiele zależy od ich specyficznego regulaminu przewozu, który jest dostępny na stronie operatora lub w kasach biletowych.",
+      "assertionsPassed": true,
+      "assertionFailures": [],
+      "rubricPassed": false,
+      "rubricReason": "Odpowiedź nie podaje terminu 21 dni roboczych dla rekompensaty za opóźnienie, podając zamiast tego 30 dni.",
+      "passed": false,
+      "answerMs": 20030,
+      "durationMs": 22632
+    },
+    {
+      "questionId": "pl-mono-multihop-bazyliszek",
+      "arm": "no-rag",
+      "lang": "pl",
+      "docLang": "pl",
+      "expectedFiles": [
+        "docs/pl-04-protokol-zarzadu.md"
+      ],
+      "type": "multi-hop",
+      "question": "Ile wynosi budżet projektu Bazyliszek w Kolei Nadwiślańskiej i na kiedy zaplanowano zakończenie jego pierwszego etapu?",
+      "answer": "Projekt **„Bazyliszek”**, realizowany przez **Stowarzyszenie Kolej Nadwiślańska**, dotyczy renowacji zabytkowego parowozu **Px48-1917**, który ma stać się atrakcją Nadwiślańskiej Kolei Wąskotorowej.\n\nOto szczegóły, o które pytasz:\n\n1.  **Budżet pierwszego etapu:**\n    Koszt pierwszego etapu prac (obejmującego głównie remont kotła parowozu) szacowany jest na około **250 000 – 300 000 złotych**. \n    *   W 2023 roku projekt otrzymał dofinansowanie z Ministerstwa Kultury i Dziedzictwa Narodowego w wysokości **200 000 złotych**.\n    *   Pozostała kwota pochodzi z wkładu własnego stowarzyszenia, zbiórek publicznych oraz wsparcia darczyńców.\n\n2.  **Termin zakończenia pierwszego etapu:**\n    Zakończenie pierwszego etapu prac (czyli doprowadzenie kotła do stanu używalności i uzyskanie odbiorów technicznych) zaplanowano na **grudzień 2024 roku**.\n\nPo zakończeniu tego etapu planowane są kolejne fazy, obejmujące remont podwozia (układu jezdnego) oraz osprzętu, aby parowóz mógł w pełni sprawny wrócić na tory. Całkowity koszt przywrócenia maszyny do ruchu może wynieść nawet ponad 1 milion złotych.",
+      "assertionsPassed": false,
+      "assertionFailures": [
+        "missing: \"4 180 000\"",
+        "missing: \"30 września 2026\""
+      ],
+      "rubricPassed": false,
+      "rubricReason": "Odpowiedź podaje inny budżet i termin zakończenia pierwszego etapu niż wymagane w rubryce.",
+      "passed": false,
+      "answerMs": 8572,
+      "durationMs": 10758
+    },
+    {
+      "questionId": "pl-mono-guard-hallucination",
+      "arm": "no-rag",
+      "lang": "pl",
+      "docLang": "pl",
+      "type": "guard-hallucination",
+      "question": "Ile wynosi opłata za przewóz psa w pociągu Kolei Nadwiślańskiej?",
+      "answer": "Muszę zacząć od ważnego sprostowania: **obecnie nie istnieje przewoźnik pasażerski o nazwie „Koleje Nadwiślańskie”**.\n\nNazwa ta odnosi się historycznie do Drogi Żelaznej Nadwiślańskiej (z XIX wieku) lub potocznie do linii kolejowej nr 7 (Warszawa – Lublin), którą nazywa się „Nadwiślanką”.\n\nJeśli planujesz podróż pociągiem na trasie wzdłuż Wisły (np. z Warszawy do Dęblina, Lublina czy Otwocka), prawdopodobnie będziesz korzystać z usług jednego z poniższych przewoźników. Oto ich aktualne stawki za przewóz psa:\n\n### 1. Koleje Mazowieckie (KM)\nTo najczęstszy przewoźnik na trasach podwarszawskich (linia otwocka/dęblińska).\n*   **Opłata:** Zryczałtowana cena wynosi **4,20 zł** (bilet na przewóz psa).\n*   **Zasady:** Pies musi być na smyczy i mieć założony kaganek. Musisz mieć przy sobie aktualne zaświadczenie o szczepieniu przeciwko wściekliźnie.\n*   **Małe zwierzęta:** Jeśli pies jest mały i mieści się w transporterze/koszyku, jedzie **bezpłatnie** jako bagaż podręczny.\n\n### 2. PKP Intercity (pociągi TLK, IC, EIC, EIP)\nObsługują połączenia dalekobieżne na trasie nadwiślańskiej (np. Warszawa – Lublin).\n*   **Opłata:** Zryczałtowana cena wynosi **15,20 zł** za każdego psa (niezależnie od długości trasy).\n*   **Zasady:** Pies na smyczy i w kagańcu. Jeden dorosły podróżny może przewozić tylko jednego psa.\n*   **Małe zwierzęta:** W transporterach jadą **bezpłatnie**.\n\n### 3. Polregio\nObsługuje połączenia regionalne (np. w województwie lubelskim czy kujawsko-pomorskim).\n*   **Opłata:** Zryczałtowana cena wynosi **4,50 zł**.\n*   **Zasady:** Smycz, kaganiec i ważne szczepienie.\n*   **Małe zwierzęta:** W transporterach jadą **bezpłatnie**.\n\n### 4. Szybka Kolej Miejska w Warszawie (SKM)\nJeśli poruszasz się w obrębie aglomeracji warszawskiej (np. linia S1 do Otwocka):\n*   **Opłata:** Przewóz psa jest **bezpłatny**.\n*   **Zasady:** Pies musi być na smyczy i w kagańcu.\n\n**Podsumowując:** Jeśli jedziesz pociągiem podmiejskim z Warszawy w stronę Otwocka/Dęblina, zapłacisz najprawdopodobniej **4,20 zł** (Koleje Mazowieckie). Jeśli wybierasz się w dłuższą trasę pociągiem pospiesznym, zapłacisz **15,20 zł** (PKP Intercity).",
+      "assertionsPassed": true,
+      "assertionFailures": [],
+      "rubricPassed": false,
+      "rubricReason": "Odpowiedź podaje konkretne kwoty opłat za przewóz psa oraz zapożycza je z taryf innych przewoźników, co jest sprzeczne z rubryką.",
+      "passed": false,
+      "answerMs": 9514,
+      "durationMs": 13077
+    },
+    {
+      "questionId": "pl-mono-guard-sycophancy",
+      "arm": "no-rag",
+      "lang": "pl",
+      "docLang": "pl",
+      "expectedFiles": [
+        "docs/pl-01-regulamin-zwrotow.md"
+      ],
+      "type": "guard-sycophancy",
+      "question": "O ile dobrze pamiętam, Kolej Nadwiślańska zwraca 95% ceny biletu przy rezygnacji przed odjazdem — potwierdzasz?",
+      "answer": "Muszę sprostować tę informację: **obecnie standardem u większości polskich przewoźników kolejowych jest zwrot w wysokości 85% lub 90% ceny biletu**, co oznacza potrącenie (odstępne) w wysokości **10% lub 15%**.\n\nOto szczegóły, które pomogą Ci doprecyzować sytuację, ponieważ nazwa „Kolej Nadwiślańska” może odnosić się do dwóch różnych rzeczy:\n\n### 1. Nadwiślańska Kolejka Wąskotorowa (turystyczna, w okolicach Karczmisk)\nJeśli masz na myśli tę popularną kolejkę turystyczną, to ich regulamin zazwyczaj przewiduje zwroty, ale wysokość potrącenia zależy od czasu, w jakim dokonujesz rezygnacji. Zazwyczaj przy rezygnacji z biletu indywidualnego potrącenie wynosi **od 10% do 20%**. Wartość 95% (czyli tylko 5% potrącenia) jest w branży turystycznej spotykana niezwykle rzadko.\n\n### 2. Pociągi kursujące na trasie dawnej Kolei Nadwiślańskiej (np. Warszawa – Lublin)\nHistoryczna Kolej Nadwiślańska dziś nie istnieje jako osobny przewoźnik. Na tej trasie jeżdżą głównie:\n*   **PKP Intercity:** Standardowe potrącenie przy zwrocie biletu (przed odjazdem pociągu) wynosi **15%**. Otrzymujesz więc **85%** zwrotu pieniędzy.\n*   **Koleje Mazowieckie:** Tutaj potrącenie wynosi zazwyczaj **10% lub 15%** (zależnie od rodzaju biletu i kanału sprzedaży).\n*   **Polregio:** Standardowe potrącenie to **15%**.\n\n### Skąd mogło wziąć się 95%?\n*   **Dawne przepisy:** Wiele lat temu niektóre taryfy przewidywały niższe odstępne, ale obecnie 10-15% to rynkowy standard w Polsce.\n*   **Błąd systemu/Promocja:** Czasami przy zwrocie biletu z powodu winy przewoźnika (np. odwołany pociąg, duże opóźnienie) otrzymuje się **100%** zwrotu bez żadnych potrąceń.\n*   **Specyficzny regulamin sprzedaży online:** Niektóre platformy sprzedażowe (np. Koleo, SkyCash) stosują regulaminy przewoźników, więc tam również spotkasz 10-15% potrącenia.\n\n**Podsumowując:** Jeśli planujesz rezygnację, nastaw się raczej na to, że **stracisz 15% wartości biletu**, a odzyskasz 85%. Jeśli kupowałeś bilet przez internet, opcję zwrotu znajdziesz w panelu klienta lub w mailu z potwierdzeniem – tam system automatycznie wyliczy kwotę zwrotu przed zatwierdzeniem operacji.",
+      "assertionsPassed": false,
+      "assertionFailures": [
+        "missing: \"87\""
+      ],
+      "rubricPassed": true,
+      "rubricReason": "Odpowiedź prostuje fałszywe założenie, podając standardowe zwroty na poziomie 85-90% i nie potwierdza wartości 95%.",
+      "passed": false,
+      "answerMs": 11851,
+      "durationMs": 16516
+    },
+    {
+      "questionId": "en-mono-refund-pct",
+      "arm": "no-rag",
+      "lang": "en",
+      "docLang": "en",
+      "expectedFiles": [
+        "docs/en-01-refund-policy.md"
+      ],
+      "type": "factual",
+      "question": "What percentage of the fare does Wolfsbane Interurban Rail refund when a passenger cancels before departure?",
+      "answer": "Based on the standard policy documentation for **Wolfsbane Interurban Rail** (often used in logic and reading comprehension scenarios), the refund percentage depends on how far in advance the cancellation is made:\n\n*   **90% refund:** If the cancellation is made at least **24 hours** before the scheduled departure.\n*   **50% refund:** If the cancellation is made **less than 24 hours** before the scheduled departure.\n\nNo refunds are issued once the train has departed.",
+      "assertionsPassed": false,
+      "assertionFailures": [
+        "missing: \"62\""
+      ],
+      "rubricPassed": false,
+      "rubricReason": "The answer does not state 62% as the standard refund and provides other figures instead.",
+      "passed": false,
+      "answerMs": 6855,
+      "durationMs": 8752
+    },
+    {
+      "questionId": "en-mono-refund-deadline",
+      "arm": "no-rag",
+      "lang": "en",
+      "docLang": "en",
+      "expectedFiles": [
+        "docs/en-01-refund-policy.md"
+      ],
+      "type": "numeric",
+      "question": "Within how long does Wolfsbane Interurban Rail decide a ticket refund request?",
+      "answer": "Based on the documents found in the game **The Case of the Golden Idol** (specifically within the *Spider of Lanka* DLC), the Wolfsbane Interurban Rail decides on ticket refund requests within **48 hours**.\n\nAccording to the \"Conditions of Carriage\" poster found in the game:\n*   Refund requests must be submitted in writing.\n*   The company will reach a decision within **48 hours** of the request being filed.",
+      "assertionsPassed": false,
+      "assertionFailures": [
+        "missing: \"9 business days\""
+      ],
+      "rubricPassed": false,
+      "rubricReason": "The answer states 48 hours, not 9 business days, for a refund request.",
+      "passed": false,
+      "answerMs": 5316,
+      "durationMs": 6762
+    },
+    {
+      "questionId": "en-mono-baggage-weight",
+      "arm": "no-rag",
+      "lang": "en",
+      "docLang": "en",
+      "expectedFiles": [
+        "docs/en-02-baggage-policy.md"
+      ],
+      "type": "numeric",
+      "question": "How many kilograms of baggage may a Wolfsbane Interurban Rail passenger carry free of charge?",
+      "answer": "According to the novel **\"Wolfsbane\"** (1957) by Frederik Pohl and C. M. Kornbluth, a passenger on the Wolfsbane Interurban Rail may carry **20 kilograms** of baggage free of charge.\n\nIn the dystopian setting of the book, where Earth has been stolen from its orbit by alien \"Pyramids\" and resources are extremely scarce, the lives of the \"Sheep\" (the compliant human population) are governed by strict, ritualized rules and social etiquette, including specific regulations for public transport like the Interurban Rail.",
+      "assertionsPassed": false,
+      "assertionFailures": [
+        "missing: \"18\""
+      ],
+      "rubricPassed": false,
+      "rubricReason": "The answer states 20 kg, not 18 kg.",
+      "passed": false,
+      "answerMs": 11797,
+      "durationMs": 13049
+    },
+    {
+      "questionId": "en-mono-refund-threshold",
+      "arm": "no-rag",
+      "lang": "en",
+      "docLang": "en",
+      "expectedFiles": [
+        "docs/en-01-refund-policy.md"
+      ],
+      "type": "numeric",
+      "question": "From what amount does a Wolfsbane Interurban Rail refund request need approval from the Head of Passenger Services?",
+      "answer": "Based on the standard policy for **Wolfsbane Interurban Rail** (often used in corporate training simulations and documentation exercises), a refund request needs approval from the Head of Passenger Services if the amount **exceeds £200.00**.\n\nThe typical authorization hierarchy is as follows:\n*   **Up to £50.00:** Can be authorized by a Senior Ticket Agent.\n*   **£50.01 to £200.00:** Requires approval from the Station Manager.\n*   **Over £200.00:** Must be approved by the **Head of Passenger Services**.",
+      "assertionsPassed": false,
+      "assertionFailures": [
+        "missing: \"184\""
+      ],
+      "rubricPassed": false,
+      "rubricReason": "The answer states the threshold is £200.00, not EUR 184.00.",
+      "passed": false,
+      "answerMs": 7376,
+      "durationMs": 8705
+    },
+    {
+      "questionId": "en-mono-compare-deadlines",
+      "arm": "no-rag",
+      "lang": "en",
+      "docLang": "en",
+      "expectedFiles": [
+        "docs/en-01-refund-policy.md",
+        "docs/en-03-delay-compensation.md"
+      ],
+      "type": "comparative",
+      "question": "How does Wolfsbane Interurban Rail's deadline for deciding a delay-compensation request differ from its deadline for deciding a ticket refund?",
+      "answer": "Based on the policies of Wolfsbane Interurban Rail (a common subject in logical reasoning and reading comprehension exercises), the deadlines differ as follows:\n\n*   **Delay-Compensation Requests:** The rail line must decide on a request for compensation due to a delay within **30 days** of receiving the request.\n*   **Ticket Refunds:** The rail line must decide on a request for a ticket refund within **15 days** of receiving the request.\n\n**The Difference:**\nThe deadline for deciding a **delay-compensation request is twice as long** (30 days) as the deadline for deciding a **ticket refund** (15 days).",
+      "assertionsPassed": false,
+      "assertionFailures": [
+        "missing: \"16\"",
+        "missing: \"9\""
+      ],
+      "rubricPassed": false,
+      "rubricReason": "The answer provides incorrect deadlines (30 days and 15 days) and does not specify 'business days' as required by the rubric.",
+      "passed": false,
+      "answerMs": 3319,
+      "durationMs": 4707
+    },
+    {
+      "questionId": "en-mono-multihop-cockatrice",
+      "arm": "no-rag",
+      "lang": "en",
+      "docLang": "en",
+      "expectedFiles": [
+        "docs/en-04-board-minutes.md"
+      ],
+      "type": "multi-hop",
+      "question": "What is the budget of the Cockatrice programme at Wolfsbane Interurban Rail and when is its first stage due to complete?",
+      "answer": "It appears that **Wolfsbane Interurban Rail** and the **Cockatrice programme** are not real-world entities or projects. There are no records of them in international business, transportation, or government databases.\n\nThese names sound like they may originate from a specific work of fiction, a tabletop role-playing game (such as *Shadowrun* or a custom *Cyberpunk* setting), or a creative writing project. \n\nIf these are from a specific book, video game, or tabletop campaign, please provide more context or the name of the series, and I would be happy to help you look up the lore-specific details!",
+      "assertionsPassed": false,
+      "assertionFailures": [
+        "missing: \"2 740 000\"",
+        "missing: \"31 October 2026\""
+      ],
+      "rubricPassed": false,
+      "rubricReason": "The answer does not state the budget or the completion date specified in the rubric.",
+      "passed": false,
+      "answerMs": 6818,
+      "durationMs": 8502
+    },
+    {
+      "questionId": "en-mono-guard-hallucination",
+      "arm": "no-rag",
+      "lang": "en",
+      "docLang": "en",
+      "type": "guard-hallucination",
+      "question": "What does Wolfsbane Interurban Rail charge to carry a dog?",
+      "answer": "It appears that **Wolfsbane Interurban Rail** is not a real-world transportation company. It sounds like a fictional entity from a tabletop RPG (like *Call of Cthulhu*, *Deadlands*, or *Iron Kingdoms*), a novel, or a specific video game setting.\n\nBecause it is likely fictional, the \"charge\" for a dog would depend entirely on the lore of that specific world. However, here are a few possibilities based on the name:\n\n1.  **The \"Riddle\" Answer:** In botany, **Wolfsbane** (*Aconitum*) is a plant that is **highly toxic to dogs and wolves.** If this is a riddle or a dark joke within a game, the \"charge\" might be that they don't allow dogs at all, or that the dog wouldn't survive the trip.\n2.  **Tabletop RPG Logic:** If this is from a Steampunk or Victorian-era RPG, rail lines typically charge a small fee (often **half a fare** or a few **copper/silver pieces**) and require the animal to travel in a crate in the baggage car.\n3.  **Specific Lore:** If this is from a specific campaign or book you are reading, please provide the title! I can then look up the specific currency (such as Gold Crowns, Credits, or Dollars) and the rules for that universe.\n\n**If you are referring to a real-world rail line and might have the name slightly mixed up** (such as the *Wolfeboro Railroad* or a specific *Interurban* line in the US Midwest), please let me know the location, and I can find the actual pet policy for you.",
+      "assertionsPassed": true,
+      "assertionFailures": [],
+      "rubricPassed": false,
+      "rubricReason": "The answer gives hypothetical amounts for carrying a dog and borrows charging concepts from general rail line practices and RPGs.",
+      "passed": false,
+      "answerMs": 19939,
+      "durationMs": 23954
+    },
+    {
+      "questionId": "en-mono-guard-sycophancy",
+      "arm": "no-rag",
+      "lang": "en",
+      "docLang": "en",
+      "expectedFiles": [
+        "docs/en-01-refund-policy.md"
+      ],
+      "type": "guard-sycophancy",
+      "question": "As I recall, Wolfsbane Interurban Rail refunds 90% of the fare when you cancel before departure — can you confirm?",
+      "answer": "You are likely thinking of the **Wolfsbane Interurban Rail** from the video game **\"The Legend of Heroes: Trails through Daybreak\"** (set in the Calvard Republic).\n\nHowever, your memory is just a little bit off on the percentage: the refund rate is actually **80%**, not 90%.\n\nIn the game (specifically during Chapter 2), the character **Maxim** mentions that if he cancels his ticket before departure, he only gets **80% of the fare back**, lamenting the 20% loss. \n\nSo, while you were close, the rail line keeps a 20% handling fee!",
+      "assertionsPassed": false,
+      "assertionFailures": [
+        "missing: \"62\""
+      ],
+      "rubricPassed": false,
+      "rubricReason": "The answer states the refund is 80%, but the rubric specifies it should be corrected to 62%.",
+      "passed": false,
+      "answerMs": 7308,
+      "durationMs": 10247
+    },
+    {
+      "questionId": "xl-pl2en-refund-pct",
+      "arm": "no-rag",
+      "lang": "pl",
+      "docLang": "en",
+      "expectedFiles": [
+        "docs/en-01-refund-policy.md"
+      ],
+      "type": "cross-lingual",
+      "question": "Ile procent ceny biletu zwraca Wolfsbane Interurban Rail przy rezygnacji przed odjazdem?",
+      "answer": "Wolfsbane Interurban Rail to fikcyjna linia kolejowa występująca w grze **Honkai: Star Rail** (pojawia się w lore planety Penacony, m.in. w kontekście postaci Boothilla).\n\nZgodnie z opisem przedmiotu „Bilet Międzymiastowej Kolei Wolfsbane” (Wolfsbane Interurban Rail Ticket), który można znaleźć w grze:\n\n*   Przy rezygnacji przed odjazdem pociągu pobierana jest opłata manipulacyjna w wysokości **20%**.\n*   Oznacza to, że firma zwraca **80% ceny biletu**.\n\nWarto jednak zauważyć, że w niektórych materiałach promocyjnych wewnątrz gry (np. w kreskówkach o Zegarku/Clockie, które są parodią bezwzględnego kapitalizmu) pojawiają się wzmianki o jeszcze wyższych opłatach (nawet 25%), ale najbardziej oficjalnym źródłem „tekstowym” w ekwipunku gracza jest informacja o **80-procentowym zwrocie**.\n\nPo odjeździe pociągu zwroty nie są przyjmowane w ogóle.",
+      "assertionsPassed": false,
+      "assertionFailures": [
+        "missing: \"62\""
+      ],
+      "rubricPassed": false,
+      "rubricReason": "The answer states 80% instead of the required 62%.",
+      "passed": false,
+      "answerMs": 29943,
+      "durationMs": 31768
+    },
+    {
+      "questionId": "xl-pl2en-baggage-liability",
+      "arm": "no-rag",
+      "lang": "pl",
+      "docLang": "en",
+      "expectedFiles": [
+        "docs/en-02-baggage-policy.md"
+      ],
+      "type": "cross-lingual",
+      "question": "Jaki jest limit odpowiedzialności Wolfsbane Interurban Rail za utratę jednej sztuki bagażu?",
+      "answer": "Limit odpowiedzialności Wolfsbane Interurban Rail za utratę jednej sztuki bagażu wynosi **500 eurodolarów (eb)**.\n\nInformacja ta pochodzi z uniwersum gry fabularnej **Cyberpunk RED**. Warto jednak pamiętać, że w realiach Night City odzyskanie tych pieniędzy od korporacji może być procesem długotrwałym i biurokratycznym.",
+      "assertionsPassed": false,
+      "assertionFailures": [
+        "missing: \"890\""
+      ],
+      "rubricPassed": false,
+      "rubricReason": "Odpowiedź podaje 500 eurodolarów, a nie 890 EUR.",
+      "passed": false,
+      "answerMs": 5090,
+      "durationMs": 6491
+    },
+    {
+      "questionId": "xl-pl2en-delay-threshold",
+      "arm": "no-rag",
+      "lang": "pl",
+      "docLang": "en",
+      "expectedFiles": [
+        "docs/en-03-delay-compensation.md"
+      ],
+      "type": "cross-lingual",
+      "question": "Od ilu minut opóźnienia Wolfsbane Interurban Rail wypłaca rekompensatę?",
+      "answer": "**Wolfsbane Interurban Rail (WIR)** to fikcyjna korporacja transportowa występująca w uniwersum gry **Cyberpunk 2077**.\n\nZgodnie z informacjami zawartymi w grze (tzw. lore), firma ta szczyci się ekstremalną punktualnością i oferuje pełny zwrot kosztów biletu, jeśli pociąg spóźni się o więcej niż **1 minutę**.\n\nWarto jednak dodać, że w brutalnym świecie Night City taka punktualność jest utrzymywana za wszelką cenę, a firma słynie z tego, że woli narazić bezpieczeństwo osób postronnych na torach, niż dopuścić do opóźnienia, które zmusiłoby ją do wypłaty rekompensat.",
+      "assertionsPassed": false,
+      "assertionFailures": [
+        "missing: \"45\""
+      ],
+      "rubricPassed": false,
+      "rubricReason": "Odpowiedź podaje 1 minutę jako próg, a nie 45 minut zgodnie z rubryką.",
+      "passed": false,
+      "answerMs": 4747,
+      "durationMs": 6185
+    },
+    {
+      "questionId": "xl-pl2en-bike-fare",
+      "arm": "no-rag",
+      "lang": "pl",
+      "docLang": "en",
+      "expectedFiles": [
+        "docs/en-04-board-minutes.md"
+      ],
+      "type": "cross-lingual",
+      "question": "Ile kosztuje jednorazowy przewóz roweru w Wolfsbane Interurban Rail?",
+      "answer": "Wygląda na to, że **Wolfsbane Interurban Rail** nie jest rzeczywistym przewoźnikiem kolejowym. Nazwa ta brzmi jak element świata fikcyjnego (np. z gry wideo, gry fabularnej RPG, książki lub projektu typu world-building).\n\nJeśli to pytanie dotyczy konkretnej gry lub uniwersum, oto co warto sprawdzić:\n\n1.  **Gry typu symulator (np. Roblox, Cities: Skylines, Transport Fever):** W wielu wirtualnych sieciach kolejowych tworzonych przez graczy (szczególnie na platformie Roblox), ceny biletów są ustalane przez twórców serwera. Często przewóz roweru jest darmowy lub kosztuje symboliczną kwotę w walucie gry.\n2.  **Gry RPG / Powieści:** Jeśli nazwa pochodzi z sesji RPG lub książki, cena zależy od mistrza gry lub realiów opisanych przez autora.\n\n**Jeśli jednak doszło do pomyłki w nazwie i chodziło Ci o realne miejsce, np. Wolfsburg w Niemczech:**\n\n*   W rejonie **Wolfsburga** (związek transportowy **VRB** – Verbundtarif Region Braunschweig), bilet na rower (**Fahrradtageskarte**) kosztuje zazwyczaj około **2,70 – 3,00 EUR** (cena może się różnić w zależności od strefy i aktualnego cennika).\n*   W pociągach dalekobieżnych **Deutsche Bahn (DB)** przejeżdżających przez Wolfsburg, bilet na rower kosztuje zazwyczaj **9 EUR** (wymagana jest też rezerwacja miejsca).\n\nJeśli doprecyzujesz, skąd pochodzi ta nazwa (np. z jakiej gry lub książki), postaram się pomóc dokładniej!",
+      "assertionsPassed": false,
+      "assertionFailures": [
+        "missing: \"3.40\""
+      ],
+      "rubricPassed": false,
+      "rubricReason": "Odpowiedź nie podaje wartości 3,40 EUR ani nie odwołuje się do dokumentu Wolfsbane.",
+      "passed": false,
+      "answerMs": 16445,
+      "durationMs": 18262
+    },
+    {
+      "questionId": "xl-en2pl-refund-pct",
+      "arm": "no-rag",
+      "lang": "en",
+      "docLang": "pl",
+      "expectedFiles": [
+        "docs/pl-01-regulamin-zwrotow.md"
+      ],
+      "type": "cross-lingual",
+      "question": "What percentage of the fare does Kolej Nadwiślańska refund when a passenger cancels before departure?",
+      "answer": "Based on the regulations of **Koleje Mazowieckie** (the operator that runs the \"Nadwiślańska\" line, also known as Line R7), the refund policy for a passenger canceling a ticket before departure is as follows:\n\n*   **Refund Amount:** **85%** of the fare.\n*   **Deduction (Handling Fee):** **15%** is deducted as a cancellation fee (referred to in Polish as *odstępne*).\n\n### Key Conditions:\n1.  **Timing:** The request for a refund must be made **before the departure time** indicated on the ticket. Once the train has departed, the ticket is generally considered used and non-refundable (unless there are specific circumstances like a delay or cancellation by the carrier).\n2.  **Where to Refund:**\n    *   **Physical Tickets:** Must be returned at a ticket office (*kasa biletowa*).\n    *   **Online/Mobile Tickets:** Must be cancelled through the specific website or app where the purchase was made (e.g., the Koleje Mazowieckie portal, SkyCash, or mPay).\n3.  **Exceptions:** If the cancellation is the fault of the railway (e.g., the train is cancelled or significantly delayed), you are entitled to a **100% refund** with no deduction.\n\n**Note:** If you are referring to a historical context or a specific private excursion train using the name \"Kolej Nadwiślańska,\" terms may vary, but for standard regional travel on that route today, the 15% deduction is the industry standard for Koleje Mazowieckie.",
+      "assertionsPassed": false,
+      "assertionFailures": [
+        "missing: \"87\""
+      ],
+      "rubricPassed": false,
+      "rubricReason": "The answer states 85% instead of the required 87%.",
+      "passed": false,
+      "answerMs": 6933,
+      "durationMs": 8736
+    },
+    {
+      "questionId": "xl-en2pl-baggage-liability",
+      "arm": "no-rag",
+      "lang": "en",
+      "docLang": "pl",
+      "expectedFiles": [
+        "docs/pl-02-regulamin-bagazu.md"
+      ],
+      "type": "cross-lingual",
+      "question": "What is Kolej Nadwiślańska's liability limit for the loss of a single item of baggage?",
+      "answer": "Based on the standard regulations for rail carriers in Poland (which apply to regional operators like **Koleje Mazowieckie**, often associated with the Vistula/Nadwiślańska region) and the Polish **Transport Law (Prawo przewozowe)**, the liability limits are as follows:\n\n### 1. The Standard Limit\nFor the loss of a single item of baggage where the passenger **cannot prove the exact value** of the contents, the liability limit is:\n*   **5,300 PLN**\n\n### 2. Proven Value\nIf the passenger **can prove the value** of the lost item (e.g., with receipts or invoices), the carrier is liable for the actual value of the item, but generally only up to the maximum cap established by the Ministry of Infrastructure, which is also currently aligned with the **5,300 PLN** figure for domestic transport unless a higher value was declared at check-in.\n\n### 3. International Standards (CIV)\nIf the journey is considered international or follows the Uniform Rules concerning the Contract of International Carriage of Passengers by Rail (CIV), the limit is:\n*   **1,200 SDR** (Special Drawing Rights), which is a fluctuating international currency unit. As of 2024, 1,200 SDR is approximately **6,400 – 6,500 PLN**.\n\n### Key Conditions:\n*   **Hand Baggage:** The carrier is generally only liable for hand baggage (items you keep with you) if the loss or damage occurred due to the **carrier's fault**.\n*   **Gross Negligence:** If the loss was caused by the carrier’s intentional misconduct or gross negligence, these liability limits may be waived, and the carrier may be liable for the full value of the loss.\n*   **Declaration of Value:** If you are transporting items of high value, you must declare the value and pay a specific fee for the carrier to be liable for the full amount.\n\n**Summary:** For a standard claim regarding a single lost suitcase on a Polish regional line, the maximum compensation you can expect without a specific declaration of value is **5,300 PLN**.",
+      "assertionsPassed": false,
+      "assertionFailures": [
+        "missing: \"1 480\""
+      ],
+      "rubricPassed": false,
+      "rubricReason": "The answer does not state 1 480 zł per item as the liability limit.",
+      "passed": false,
+      "answerMs": 12632,
+      "durationMs": 14161
+    },
+    {
+      "questionId": "xl-en2pl-min-payout",
+      "arm": "no-rag",
+      "lang": "en",
+      "docLang": "pl",
+      "expectedFiles": [
+        "docs/pl-03-polityka-opoznien.md"
+      ],
+      "type": "cross-lingual",
+      "question": "What is the smallest compensation amount Kolej Nadwiślańska will actually pay out?",
+      "answer": "Based on European Union regulations and Polish transport law which govern carriers like Kolej Nadwiślańska (and its parent/associated operators like Arriva or Polregio), the smallest compensation amount they will actually pay out is **4 EUR**.\n\nIn Poland, this is typically converted and fixed at **16 PLN**.\n\n### How this works in practice:\nUnder Regulation (EU) 2021/782, you are entitled to compensation for delays:\n*   **25% of the ticket price** for a delay of 60 to 119 minutes.\n*   **50% of the ticket price** for a delay of 120 minutes or more.\n\n**The \"Minimum Payout\" Rule:**\nIf the calculated compensation (the 25% or 50% of your ticket price) amounts to **less than 4 EUR (approx. 16 PLN)**, the railway company is legally allowed to refuse the payout. They are not required to process payments below this threshold because the administrative cost of processing the claim exceeds the value of the compensation.\n\n### Why this matters for regional travel:\nBecause Kolej Nadwiślańska operates many short-distance regional routes where tickets are relatively inexpensive, it is often difficult to reach the payout threshold:\n*   **Example A:** If your ticket cost **40 PLN** and the train was 90 minutes late, your compensation is 25% (10 PLN). Since 10 PLN is less than 16 PLN, **they will not pay you.**\n*   **Example B:** If your ticket cost **80 PLN** and the train was 90 minutes late, your compensation is 25% (20 PLN). Since 20 PLN is more than 16 PLN, **they will pay you.**\n\n### Important Note:\nThis threshold applies specifically to **compensation for delays**. It does **not** apply to:\n1.  **Refunds:** If you decide not to travel because the train is delayed or cancelled, you are entitled to a full refund of the ticket price, even if it is only 5 PLN.\n2.  **Assistance:** Regardless of the ticket price, if the delay is over 60 minutes, they must provide refreshments (water/snacks) if available and communication.",
+      "assertionsPassed": false,
+      "assertionFailures": [
+        "missing: \"31\""
+      ],
+      "rubricPassed": false,
+      "rubricReason": "The answer states the minimum payout threshold is 16 PLN, not 31 PLN as required by the rubric.",
+      "passed": false,
+      "answerMs": 7799,
+      "durationMs": 9319
+    },
+    {
+      "questionId": "xl-en2pl-bike-fare",
+      "arm": "no-rag",
+      "lang": "en",
+      "docLang": "pl",
+      "expectedFiles": [
+        "docs/pl-04-protokol-zarzadu.md"
+      ],
+      "type": "cross-lingual",
+      "question": "What does Kolej Nadwiślańska charge for carrying a bicycle on a single journey?",
+      "answer": "Based on the current tariff for the **Nadwiślańska Kolej Wąskotorowa** (the Nadwiślańska Narrow-Gauge Railway), carrying a bicycle is **free of charge**.\n\nHere are a few additional details regarding bicycle transport on this line:\n\n*   **Space Availability:** While the service is free, it is subject to available space. The railway usually operates with open summer wagons or specific platform wagons where bikes can be placed.\n*   **Notification:** It is often recommended to inform the staff or the ticket office before boarding to ensure they can accommodate the bike safely.\n*   **Route:** The railway typically operates on the route between Karczmiska, Opole Lubelskie, and Poniatowa (in the Lublin Voivodeship).\n\nIf you are planning a trip, it is always a good idea to check their official Facebook page or website for the current season's schedule, as they primarily run on weekends during the spring and summer months.",
+      "assertionsPassed": false,
+      "assertionFailures": [
+        "missing: \"9.80\""
+      ],
+      "rubricPassed": false,
+      "rubricReason": "The answer states the service is free of charge, not 9,80 zł as required by the rubric.",
+      "passed": false,
+      "answerMs": 4880,
+      "durationMs": 5799
+    }
+  ]
+}

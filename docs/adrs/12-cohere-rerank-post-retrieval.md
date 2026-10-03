@@ -111,3 +111,27 @@ will need real AWS Bedrock credentials to reach `cohere-rerank-v3-5` at all —
 spoken for by Scaleway's S3-compatible storage and are not valid for Bedrock;
 see
 [the lesson on this collision](../lessons/aws-prefixed-env-vars-are-scaleway-s3-not-bedrock.md).
+
+## Update 2026-10-03: measured on the default install, and it stays opt-in
+
+The retrieval-claims spec (Phase B1) ran reranking off, off with cross-query
+fusion (`crossQueryFusion`), and Scaleway, three runs each on both corpora, on
+an install with contextual chunks and context expansion on
+([results](../../apps/web/evals/rag-benchmark/results/2026-10-03-b1-reranking-split.md)).
+Medians, pass and evidence recall:
+
+| corpus | off | off + fusion | Scaleway |
+|---|---|---|---|
+| `kolej` (24) | 22, 25/26 | 24, 26/26 | 21, 26/26 |
+| `tabele` (18) | 14, 15/18 | 15, 15/18 | 16, 17/18 |
+
+The 2026-10-01 gap on tables (7/18 off against 10/17 Scaleway) has mostly
+closed because the off arm improved, not because the reranker got worse.
+Scaleway's remaining edge on tables is consistent in direction (every run at
+least 16 figures of evidence against at most 15) and below the harness's
+noise floor. **Decision: reranking stays opt-in, Scaleway stays the default
+provider when it is switched on, nothing changes on the demo or in
+`create-ragen-app`, and no launch copy claims a benefit from it.** Cohere was
+not measured: no endpoint was available. A corpus further from the ceiling, or
+more repetitions, is what would justify revisiting this.
+
