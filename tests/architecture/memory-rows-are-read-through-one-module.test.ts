@@ -35,6 +35,11 @@ const ALLOWED_PREFIXES = [
   'apps/web/src/features/memory/services/memory-scope.ts',
   'apps/web/src/features/memory/services/__tests__/',
   'apps/worker/src/activities/memory/',
+  // The e2e job starts no worker, so nothing can extract a memory there: the
+  // spec seeds the rows it then reads through the app, and the seed clears
+  // them for the test orgs. Neither is code a request runs.
+  'apps/web/e2e/p0-35-personal-memory.spec.ts',
+  'apps/web/e2e/seed/e2e-seed.ts',
 ];
 
 const SOURCES = trackedPaths().filter(
