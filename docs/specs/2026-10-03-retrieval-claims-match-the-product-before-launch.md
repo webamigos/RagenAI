@@ -240,6 +240,12 @@ moves into its own spec and this one links to it.
   each, reporting the median, in three arms: off, **off with cross-query
   fusion**, and Scaleway. Cohere v3.5 is a fourth arm only if an endpoint is
   provided.
+  - No separate pool-width arm: under RRF the top `maxDocuments` of the fused
+    list are the leading ranks of each query's list, and a rank-5 or rank-6
+    hit cannot outscore a rank-1 or rank-2 hit of another query. Widening
+    the fusion arm's pool to Scaleway's (6 per query instead of 4) changes
+    its cut only when the lists share hits, so the difference between the
+    fusion arm and Scaleway is the reranker's order, not the pool.
 - **Decision (Q2):**
   - **Cross-query fusion recovers the table gain:** it becomes the default
     (one setting, no extra call), reranking stays opt-in, and launch copy
