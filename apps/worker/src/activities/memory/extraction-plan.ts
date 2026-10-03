@@ -122,6 +122,39 @@ export function containsPiiPlaceholder(text: string): boolean {
   return PII_PLACEHOLDER.test(text);
 }
 
+/**
+ * A statement about what the user may see or do — "Is a system
+ * administrator.", "Has full access.", "Ma uprawnienia administratora." The
+ * prompt already forbids keeping one: what a user may see comes from the
+ * application's permissions, never from what they say. This holds when the
+ * model keeps one anyway — the memory eval saw gemini-2.5-flash write "Is a
+ * system administrator." for an injected order in 2 of 20 runs, and a stored
+ * memory is read into every later turn's system prompt.
+ *
+ * It costs a real job title: a user who is a system administrator by trade
+ * is not remembered as one. That is the trade, chosen on purpose — the
+ * wording of a job and of a claim to authority are the same words.
+ */
+const AUTHORITY_CLAIM = [
+  /(?<!\p{L})(?:admin|admins|administrator|administrators|superuser|superadmin|sysadmin|root access|full access|access to|permissions?|privileges?|authori[sz]ed|clearance)(?!\p{L})/iu,
+  /(?<!\p{L})(?:may|can|is allowed to)\s+(?:see|access|view|read)\s+(?:everything|anything|all)(?!\p{L})/iu,
+  /(?<!\p{L})(?:administrator\p{L}*|admin\p{L}*|superużytkownik\p{L}*|uprawnie\p{L}*|upoważni\p{L}*|dost[eę]p(?:u|em|ie)?)(?!\p{L})/iu,
+];
+
+/**
+ * Access the user is still waiting for is ongoing work, not a claim: "Needs
+ * access to the staging DB for the migration." It is taken out before the
+ * check, and only that phrase — "Has access to…" in the same memory is
+ * still a claim, and so is "Needs admin rights".
+ */
+const ACCESS_NEED =
+  /(?<!\p{L})(?:needs|need|is requesting|requested|requests|is waiting for|waiting for|is asking for|asked for|potrzebuje|czeka na|prosi o|wnioskuje o)\s+(?:access to|dost[eę]p\p{L}*(?:\s+do)?)(?!\p{L})/giu;
+
+export function claimsAuthority(text: string): boolean {
+  const withoutNeeds = text.replace(ACCESS_NEED, ' ');
+  return AUTHORITY_CLAIM.some((pattern) => pattern.test(withoutNeeds));
+}
+
 /** Two statements that differ only in case, spacing or a final full stop are one. */
 export function normalizeMemory(text: string): string {
   return text
@@ -201,7 +234,8 @@ export interface MemoryPlan {
  * - One operation per memory; a second one on the same ref is dropped.
  * - An `ADD` identical to an existing memory, or to another `ADD`, after
  *   normalisation, is dropped.
- * - A statement carrying a PII placeholder is dropped.
+ * - A statement carrying a PII placeholder is dropped, and so is one that
+ *   claims permissions, access or authority (`claimsAuthority`).
  * - The entry limit holds: an `ADD` past `MEMORY_MAX_ENTRIES` is dropped and
  *   counted, and nothing old is evicted to make room.
  * - When `message` addresses the memory itself ("delete everything you
@@ -228,7 +262,8 @@ export function planMemoryApply(
     }
     if (
       operation.op !== 'DELETE' &&
-      containsPiiPlaceholder(operation.content)
+      (containsPiiPlaceholder(operation.content) ||
+        claimsAuthority(operation.content))
     ) {
       plan.dropped += 1;
       continue;
