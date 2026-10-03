@@ -47,6 +47,24 @@ describe('parseRagStream', () => {
   it('returns an empty answer for an empty stream rather than throwing', () => {
     expect(parseRagStream('')).toEqual({ text: '', citedFileIds: [] });
   });
+
+  // B1 confirms each arm from this flag; without it an off run and an
+  // off-fusion run read the same.
+  it('keeps crossQueryFusionEnabled from the retrieval trace', () => {
+    const trace = {
+      chunks: [],
+      postRetrieval: 'fusion',
+      crossQueryFusionEnabled: true,
+      queryCount: 2,
+      timings: { searchMs: 1, rerankMs: 0, selectMs: 0, expandMs: 0 },
+    };
+    const raw = [
+      'event: retrieval',
+      `data: ${JSON.stringify({ trace })}`,
+      '',
+    ].join('\n');
+    expect(parseRagStream(raw).trace?.crossQueryFusionEnabled).toBe(true);
+  });
 });
 
 /**
