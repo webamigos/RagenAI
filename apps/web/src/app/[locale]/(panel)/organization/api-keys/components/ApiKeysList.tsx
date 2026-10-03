@@ -304,10 +304,14 @@ export function ApiKeysList({ initialKeys, assistants }: ApiKeysListProps) {
           </DialogHeader>
           <div className="flex flex-col gap-4">
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-foreground">
+              <label
+                htmlFor="api-key-name"
+                className="mb-1.5 block text-sm font-medium text-foreground"
+              >
                 {t('name')}
               </label>
               <Input
+                id="api-key-name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 onKeyDown={(e) => {

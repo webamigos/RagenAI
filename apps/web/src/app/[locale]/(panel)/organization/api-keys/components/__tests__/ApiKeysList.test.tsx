@@ -168,6 +168,21 @@ describe('ApiKeysList — the key carries a scope', () => {
     expect(mockCreateApiKey).not.toHaveBeenCalled();
   });
 
+  // A screen reader announces the field by its label, and Playwright's
+  // getByLabel finds it the same way; a label beside the input is not enough.
+  it('labels the name input so it can be found by its label', async () => {
+    const user = userEvent.setup();
+    renderList();
+
+    await user.click(screen.getByRole('button', { name: 'Create Key' }));
+
+    const input = screen.getByLabelText('Name');
+    expect(input).toBe(screen.getByRole('textbox', { name: 'Name' }));
+
+    await user.type(input, 'zapier');
+    expect(input).toHaveValue('zapier');
+  });
+
   it('does not offer an assistant picker for a knowledge-base key', async () => {
     const user = userEvent.setup();
     renderList();
