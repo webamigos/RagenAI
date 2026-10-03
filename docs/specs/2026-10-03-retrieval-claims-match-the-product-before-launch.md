@@ -30,11 +30,12 @@ changes, because the phases deploy independently (see "Why one spec" and
 
 - **Q1 (Phase A).** The per-org `docSummariesEnabled` setting does nothing.
   Should the worker read it (**recommended**), or should it be deleted?
-- **Q2 (Phase B).** If B1 shows the table gain comes from the **wider pool**,
-  does the default install retrieve the wider pool with no reranker
-  (**recommended**: no extra call, no provider)? If it comes from the
-  **reranker's order**, does Scaleway become the default for the demo and for
-  `create-ragen-app`? Cohere is measured only if someone provides an endpoint
+- **Q2 (Phase B).** If B1 shows that fusing all queries' hits recovers the
+  table gain with no reranker, does that fusion become the default
+  (**recommended**: no extra call, no provider, and multi-query starts doing
+  what it is described as doing)? If only the reranker's order recovers it,
+  does Scaleway become the default for the demo and for `create-ragen-app`?
+  Cohere is measured only if someone provides an endpoint
   (`RERANK_COHERE_BASE_URL`); none exists on the measuring machine today.
 - **Q3 (Phase C).** Who gets "answer only from the documents"?
   - **(a)** A per-assistant setting. It defaults to strict for a project with
@@ -98,8 +99,19 @@ the chain retrieves three times as many candidates and cuts them back. The
 `tabele` gain belongs to the wider pool *and* the reranker's order, and the
 run cannot split them. Cohere was not run (no endpoint on that machine), and
 both arms predate contextual chunks and context expansion becoming the
-default. So "reranking improves answers" is not a claim we can make, and the
-cheaper fix — a wider pool with no reranker call — may be the real one.
+default. So "reranking improves answers" is not a claim we can make yet.
+
+**Without a reranker, the multi-query variant never reaches the model.**
+With reranking and section selection off — the default install —
+`retrieveRelevantDocumentsWithIds` (`apps/web/src/libs/chains/basic-rag/operations.ts`)
+runs each query for `maxDocuments` hits, concatenates the lists in query
+order, dedupes, and keeps `uniqueDocs.slice(0, maxDocuments)`: the first
+query's hits. The variant's hits sit after them and are cut, unless the first
+query returned fewer than `maxDocuments`. Multi-query is on by default and is
+described as broadening retrieval; on a default install it runs a second
+search whose results are discarded. With a reranker or selection the variant
+does count, because both choose from the whole deduped pool — which is a
+second candidate explanation for the `tabele` gain above.
 
 ### 3. The model is told it may answer from its own knowledge
 
@@ -216,16 +228,20 @@ moves into its own spec and this one links to it.
 
 ### Phase B — reranking gets a number, then a decision
 
-- **B0. A knob that widens the pool without reranking.** The candidate pool
-  is `maxDocuments × RERANK_RETRIEVAL_MULTIPLIER` only when reranking runs.
-  Add a server setting (env, default unchanged) that retrieves the same wider
-  pool and cuts it by fused rank, so the two effects can be told apart.
+- **B0. Cross-query fusion when nothing reranks.** Widening the pool and
+  cutting it by rank would change nothing — the first query's hits still come
+  first. What can change is the order across queries: when neither the
+  reranker nor selection runs, merge the per-query ranked lists by reciprocal
+  rank (the RRF Qdrant already uses inside each query), dedupe, then cut to
+  `maxDocuments`. Behind a server setting, default unchanged until B1. Both
+  copies of the chain (apps/web, and apps/api's if it has the same cut).
 - **B1.** Run `kolej-bilingual-v1` and `tabele-bilingual-v1` on today's
   default install (contextual chunks and context expansion on), three runs
-  each, reporting the median, in three arms: off, **off with the wide pool**,
-  and Scaleway. Cohere v3.5 is a fourth arm only if an endpoint is provided.
+  each, reporting the median, in three arms: off, **off with cross-query
+  fusion**, and Scaleway. Cohere v3.5 is a fourth arm only if an endpoint is
+  provided.
 - **Decision (Q2):**
-  - **The wide pool alone recovers the table gain:** it becomes the default
+  - **Cross-query fusion recovers the table gain:** it becomes the default
     (one setting, no extra call), reranking stays opt-in, and launch copy
     does not claim reranking.
   - **Only Scaleway's order recovers it:** Scaleway becomes the demo default
@@ -403,9 +419,10 @@ work, and D packages the result.
 
 ### Phase B — reranking gets a number, then a decision
 
-- [ ] **B0.** The wide-pool setting, default unchanged, with a unit test that
-  it widens the pool and cuts by fused rank without calling a reranker.
-- [ ] **B1.** Three arms (off, off + wide pool, Scaleway; Cohere if an
+- [ ] **B0.** Cross-query fusion behind a setting, default unchanged, with a
+  unit test that a variant's top hit outranks the first query's last hit when
+  nothing reranks, and that the reranker and selection paths are untouched.
+- [ ] **B1.** Three arms (off, off + cross-query fusion, Scaleway; Cohere if an
   endpoint exists) × two corpora × three runs, on today's default install.
   Results are committed, and ADR-12 gets an update with the medians.
 - [ ] **B2.** The decision from Q2 is applied: the demo env, the
