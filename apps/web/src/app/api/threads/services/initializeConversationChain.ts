@@ -14,6 +14,8 @@ type InitializeConversationChainParams = {
   settings: OrganizationSettings;
   orgId: string;
   projectInstruction?: string | null;
+  /** The user's personal memory block; see `ChainConfig.memoryBlock`. */
+  memoryBlock?: string;
   mcpTools?: Record<string, any>;
   mcpContext?: string;
   tracking?: ChainTrackingContext;
@@ -25,6 +27,7 @@ export const initializeConversationChain = async ({
   settings,
   orgId,
   projectInstruction,
+  memoryBlock,
   mcpTools,
   mcpContext,
   tracking,
@@ -49,6 +52,7 @@ export const initializeConversationChain = async ({
       config: {
         answerInstructions: prompt || '',
         projectInstruction: projectInstruction || '',
+        memoryBlock,
         mcpTools,
         mcpContext,
         tracking,

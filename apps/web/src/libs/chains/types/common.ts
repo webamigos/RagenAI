@@ -47,6 +47,16 @@ export interface ChainConfig {
   answerInstructions?: string | null;
   projectInstruction?: string;
   /**
+   * What the user's personal memory says about them, rendered by
+   * `features/memory/utils/render-memory-block.ts` (spec
+   * 2026-09-27-personal-memory-across-threads, D1). Appended to the system
+   * prompt after every template field is filled, so it is never part of
+   * `{context}` — a citation must never point at a memory — and a memory
+   * that happens to contain `{context}` is not a template field. Absent or
+   * empty: no block.
+   */
+  memoryBlock?: string;
+  /**
    * Cap on generated tokens. Threaded through to `streamText({ maxTokens })`.
    * Leave undefined for provider default. Populated by the OpenAI-compatible
    * API (`/api/v1/chat/completions`) from the caller's `max_tokens`.

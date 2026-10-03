@@ -976,16 +976,23 @@ export function buildRagMessages(
   answerInstructions?: string | null,
   projectInstructions?: string,
   imageDocuments?: ThreadDocumentUI[],
+  memoryBlock?: string,
 ): { system: string; messages: ModelMessage[] } {
   const effectiveAnswerInstructions =
     answerInstructions || DEFAULT_ANSWER_INSTRUCTIONS;
   const effectiveProjectInstructions = projectInstructions || '';
 
-  const systemMessage = systemTemplates.answerChain
+  const filled = systemTemplates.answerChain
     .replace('{answer_instructions}', effectiveAnswerInstructions)
     .replace('{project_instructions}', effectiveProjectInstructions)
     .replace('{context}', context)
     .replace('{thread_context}', threadContext);
+  // After every field is filled: see `ChainConfig.memoryBlock`.
+  const systemMessage = memoryBlock
+    ? `${filled}
+
+${memoryBlock}`
+    : filled;
 
   const messages: ModelMessage[] = [];
 

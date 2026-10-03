@@ -29,6 +29,7 @@ import { getTemplateInstructionForProject } from '@/features/assistant-templates
 import { type ThreadDocumentUI } from '@/features/documents/contracts/document.types';
 import { recordKnowledgeUsageCommand } from '@/features/documents/services/commands/record-knowledge-usage-command';
 import { enqueueMemoryExtractionCommand } from '@/features/memory/services/commands/enqueue-memory-extraction-command';
+import { getMemoryBlockForTurnQuery } from '@/features/memory/services/queries/get-memory-block-for-turn-query';
 import type { BaseChatChainOutput } from '@/libs/chains/types/common';
 import { getCurrentUserId } from '@/app/lib/utils/auth-helpers';
 import {
@@ -668,6 +669,19 @@ export async function streamEvents({
             tags: traceTags,
           });
 
+          // Personal memory (spec 2026-09-27-personal-memory-across-threads,
+          // D1): what the user told the chat about themselves, as a block
+          // beside the answer instructions, never inside {context}. Panel
+          // chat only, and only in the user's own private thread — the query
+          // holds the gate and returns '' rather than failing the turn.
+          const memoryBlock =
+            mode === AssistantMode.INTERNAL
+              ? await getMemoryBlockForTurnQuery({
+                  orgId,
+                  threadId: threadRecord.id,
+                })
+              : '';
+
           if (mode === AssistantMode.INTERNAL) {
             if (filteredMode === ChatType.CONVERSATION) {
               const inlineThreadDocuments = userMessage.threadDocuments || [];
@@ -684,6 +698,7 @@ export async function streamEvents({
                 },
                 orgId,
                 projectInstruction,
+                memoryBlock,
                 mcpTools,
                 mcpContext,
                 tracking: {
@@ -729,6 +744,7 @@ export async function streamEvents({
                 userTeamIds,
                 scope: userScope,
                 projectInstruction,
+                memoryBlock,
                 projectId: projectIdToUse ?? null,
                 // The thread's, not the message's. Scope is set once and
                 // constant for the thread's life — see gap 10 in

@@ -7,12 +7,12 @@ import {
 import type { BaseChatChainInput } from '../../types/common';
 
 export const sanitizeAndValidateInput = (
-  input: BaseChatChainInput
+  input: BaseChatChainInput,
 ): BaseChatChainInput => {
   return {
     question: zodUserInputValidator(
       normalizeAndSanitizeText(input.question),
-      MAX_USER_INPUT_LENGTH
+      MAX_USER_INPUT_LENGTH,
     ).question,
     chat_history: limitChatHistory(input.chat_history, HISTORY_CHARACTER_LIMIT),
   };
