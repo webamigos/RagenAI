@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 /**
  * Measure the personal-memory extraction prompt (spec
  * 2026-09-27-personal-memory-across-threads, C2), per ADR-20: a prompt is
@@ -37,6 +36,7 @@ import { MEMORY_CASES } from './fixtures/memory-extraction-cases.js';
 import {
   scoreCase,
   summarizeCases,
+  parseRepeats,
   type MemoryCaseResult,
 } from './memory-extraction-metrics.js';
 
@@ -45,11 +45,13 @@ function option(flag: string): string | undefined {
   return i === -1 ? undefined : process.argv[i + 1];
 }
 
+const print = (line: string) => process.stdout.write(`${line}\n`);
+
 const pct = (v: number | null) =>
   v === null ? '—' : `${(v * 100).toFixed(1)}%`;
 
 async function main() {
-  const repeats = Number(option('--repeats') ?? '3');
+  const repeats = parseRepeats(option('--repeats'));
   const generate = structuredGenerator(
     await getChatModel(MEMORY_EXTRACT_MODEL),
   );
@@ -78,27 +80,27 @@ async function main() {
   }
 
   const summary = summarizeCases(results);
-  console.log(
+  print(
     `model: ${MEMORY_EXTRACT_MODEL}, cases: ${MEMORY_CASES.length} × ${repeats}`,
   );
-  console.log(`keep precision   ${pct(summary.keepPrecision)}`);
-  console.log(`keep recall      ${pct(summary.keepRecall)}`);
-  console.log(`drop recall      ${pct(summary.dropRecall)}`);
-  console.log(
+  print(`keep precision   ${pct(summary.keepPrecision)}`);
+  print(`keep recall      ${pct(summary.keepRecall)}`);
+  print(`drop recall      ${pct(summary.dropRecall)}`);
+  print(
     `org-fact drops   ${pct(summary.orgFactDropRate)}   (rollout gate: ≥ 95%)`,
   );
-  console.log(
+  print(
     `"yes, like that" ${pct(summary.yesLikeThatKept)}   (cost of excluding the answer)`,
   );
   for (const [kind, { correct, total }] of Object.entries(summary.byKind)) {
-    console.log(`  ${kind.padEnd(14)} ${correct}/${total}`);
+    print(`  ${kind.padEnd(14)} ${correct}/${total}`);
   }
   for (const r of results.filter((x) => !x.correct)) {
-    console.log(
-      `  ✗ ${r.id} (repeat ${r.repeat}): ${r.expect}, wrote=${r.wrote}`,
+    print(
+      `  ✗ ${r.id} (repeat ${r.repeat}): ${r.expect}, wrote=${r.wrote}${r.supersedesOk ? '' : ', m1 not superseded'}`,
     );
   }
-  console.log(`tokens: ${tokens}`);
+  print(`tokens: ${tokens}`);
 
   const out = option('--json');
   if (out) {
@@ -114,6 +116,8 @@ async function main() {
 }
 
 main().catch((error: unknown) => {
-  console.error(error);
+  process.stderr.write(
+    `${error instanceof Error ? (error.stack ?? error.message) : String(error)}\n`,
+  );
   process.exitCode = 1;
 });

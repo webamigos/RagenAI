@@ -18,6 +18,8 @@ export interface MemoryCaseResult {
   wrote: boolean;
   /** For a keep case, every `mentions` term appears in what was written. */
   mentionsOk: boolean;
+  /** For a case with `supersedes`, the plan applies that operation to m1. */
+  supersedesOk: boolean;
   correct: boolean;
 }
 
@@ -33,15 +35,34 @@ export function scoreCase(c: MemoryCase, plan: MemoryPlan): MemoryCaseResult {
   const mentionsOk = (c.mentions ?? []).every((term) =>
     written.includes(term.toLowerCase()),
   );
-  const correct = c.expect === 'keep' ? wrote && mentionsOk : !wrote;
+  const first = c.current?.[0];
+  const supersedesOk =
+    c.supersedes === undefined ||
+    (c.supersedes === 'update'
+      ? plan.updates.some((u) => u.memory.content === first)
+      : plan.deletes.some((d) => d.content === first));
+  const correct =
+    c.expect === 'keep' ? wrote && mentionsOk && supersedesOk : !wrote;
   return {
     id: c.id,
     kind: c.kind,
     expect: c.expect,
     wrote,
     mentionsOk,
+    supersedesOk,
     correct,
   };
+}
+
+/** `--repeats`: a positive whole number, or a usage error before any model call is paid for. */
+export function parseRepeats(raw: string | undefined): number {
+  const value = raw ?? '3';
+  if (!/^[1-9]\d*$/.test(value)) {
+    throw new Error(
+      `--repeats must be a positive whole number, got "${value}"`,
+    );
+  }
+  return Number(value);
 }
 
 const rate = (hits: number, total: number): number | null =>
