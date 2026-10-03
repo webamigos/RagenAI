@@ -438,17 +438,30 @@ work, and D packages the result.
 
 ### Phase C — an assistant can be told to answer only from its documents
 
-- [ ] **C1.** The guard corpus with its loader and rubric. A baseline is run
+- [x] **C1.** The guard corpus with its loader and rubric. A baseline is run
   on today's prompt and committed.
-- [ ] **C2.** `answerFromDocumentsOnly`: migration, read path (web + api +
+
+  *Done 2026-10-03* (`results/2026-10-03-c1-c3-strict-grounding.md`,
+  corpus #1519): baseline guard pass 23/28 median once the v1 citation gate
+  is set aside; the gate itself turned out to fail correct near-miss answers
+  and became a rubric rule in corpus v3.
+- [x] **C2.** `answerFromDocumentsOnly`: migration, read path (web + api +
   guest chatbot), the prompt rule in both copies, the architecture test
   that the copies agree, the settings switch, and a `p0-*` e2e test that a
   chatbot-enabled assistant refuses an out-of-corpus question. The rule goes
   into `docs/rag-pipeline.md`, and a line into `docs/changelog-notes.md`.
-- [ ] **C3.** Measure C2 against C1's baseline, including the over-refusal
+
+  *Done 2026-10-03* (#1520), with the organization's embedded widget always
+  strict (it has no assistant to carry the setting).
+- [x] **C3.** Measure C2 against C1's baseline, including the over-refusal
   arm. Build the grader (behind a key, default off) only if the agreed
   threshold is missed; otherwise mark this step "not needed", with the
   numbers.
+
+  *Done 2026-10-03:* strict 26/28 against baseline 23/28 on the guard
+  corpus, every strict run above every baseline run, no over-refusal on
+  `kolej` attributable to the rule. **Grader not needed** (7% of guard cases
+  left failing, 4% with a forbidden figure).
 
 ### Phase D — a number we can quote
 

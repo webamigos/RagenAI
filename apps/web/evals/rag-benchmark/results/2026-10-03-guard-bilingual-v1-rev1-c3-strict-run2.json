@@ -1,0 +1,993 @@
+{
+  "corpus": "guard-bilingual-v1",
+  "corpusVersion": 1,
+  "fingerprint": {
+    "date": "2026-10-03",
+    "gitSha": "97eb510d5",
+    "chatModel": "gemini-3-flash-preview",
+    "judgeModel": "gemini-2.5-flash",
+    "rephraseModel": "mistral-small-3.2",
+    "embeddingsModel": "bge-multilingual-gemma2",
+    "vectorSize": "3584",
+    "rerankProvider": "scaleway",
+    "rerankModel": "qwen3-embedding-8b",
+    "rerankingEnabled": "off (organization setting)",
+    "multiQueryVariants": "on, 1 variant per turn (code constant)",
+    "appUrl": "http://localhost:3410",
+    "llmGateway": "(unknown: healthcheck did not say)",
+    "shape": "c3-strict"
+  },
+  "results": [
+    {
+      "questionId": "pl-ooc-child-ticket",
+      "arm": "rag",
+      "lang": "pl",
+      "docLang": "pl",
+      "type": "guard-hallucination",
+      "question": "Od jakiego wieku dziecko musi mieć własny bilet w pociągach Kolei Nadwiślańskiej i jaka przysługuje mu zniżka?",
+      "answer": "Dostarczone dokumenty nie zawierają informacji na temat wieku, od którego dziecko musi posiadać własny bilet, ani informacji o zniżkach dostępnych dla dzieci.",
+      "assertionsPassed": true,
+      "assertionFailures": [],
+      "rubricPassed": true,
+      "rubricReason": "Odpowiedź stwierdza brak informacji w dokumentach i nie podaje wieku ani wysokości zniżki.",
+      "rubricLabel": "refused",
+      "passed": true,
+      "citedFiles": [],
+      "retrievalTrace": {
+        "postRetrieval": "fusion",
+        "expansion": "neighbours",
+        "queryCount": 2,
+        "chunkCount": 7,
+        "timings": {
+          "searchMs": 598,
+          "rerankMs": 0,
+          "selectMs": 0,
+          "expandMs": 7,
+          "rephraseMs": 900
+        }
+      },
+      "answerMs": 6045,
+      "durationMs": 10191
+    },
+    {
+      "questionId": "pl-ooc-fare-evasion",
+      "arm": "rag",
+      "lang": "pl",
+      "docLang": "pl",
+      "type": "guard-hallucination",
+      "question": "Ile wynosi opłata dodatkowa za przejazd bez ważnego biletu w Kolei Nadwiślańskiej?",
+      "answer": "Dostarczone dokumenty nie zawierają informacji na temat wysokości opłaty dodatkowej za podróż bez ważnego biletu w Kolei Nadwiślańskiej. Dokumenty określają jedynie opłaty za nadbagaż oraz zasady dotyczące zwrotów biletów i rekompensat za opóźnienia.",
+      "assertionsPassed": true,
+      "assertionFailures": [],
+      "rubricPassed": true,
+      "rubricReason": "Odpowiedź stwierdza brak informacji o opłacie i nie podaje żadnej kwoty.",
+      "rubricLabel": "refused",
+      "passed": true,
+      "citedFiles": [],
+      "retrievalTrace": {
+        "postRetrieval": "fusion",
+        "expansion": "neighbours",
+        "queryCount": 2,
+        "chunkCount": 10,
+        "timings": {
+          "searchMs": 379,
+          "rerankMs": 0,
+          "selectMs": 0,
+          "expandMs": 9,
+          "rephraseMs": 775
+        }
+      },
+      "answerMs": 5538,
+      "durationMs": 8136
+    },
+    {
+      "questionId": "pl-ooc-dining",
+      "arm": "rag",
+      "lang": "pl",
+      "docLang": "pl",
+      "type": "guard-hallucination",
+      "question": "Ile kosztuje kawa w wagonie restauracyjnym Kolei Nadwiślańskiej?",
+      "answer": "Dostarczone dokumenty nie zawierają informacji na temat ceny kawy ani innych usług gastronomicznych w wagonach restauracyjnych Kolei Nadwiślańskiej.",
+      "assertionsPassed": true,
+      "assertionFailures": [],
+      "rubricPassed": true,
+      "rubricReason": "Odpowiedź stwierdza brak informacji w dokumentach i nie podaje żadnej ceny.",
+      "rubricLabel": "refused",
+      "passed": true,
+      "citedFiles": [],
+      "retrievalTrace": {
+        "postRetrieval": "fusion",
+        "expansion": "neighbours",
+        "queryCount": 2,
+        "chunkCount": 7,
+        "timings": {
+          "searchMs": 599,
+          "rerankMs": 0,
+          "selectMs": 0,
+          "expandMs": 7,
+          "rephraseMs": 694
+        }
+      },
+      "answerMs": 5228,
+      "durationMs": 7479
+    },
+    {
+      "questionId": "pl-ooc-loyalty",
+      "arm": "rag",
+      "lang": "pl",
+      "docLang": "pl",
+      "type": "guard-hallucination",
+      "question": "Ile punktów programu lojalnościowego Kolei Nadwiślańskiej dostaję za każde wydane 10 zł?",
+      "answer": "Dostarczone dokumenty nie zawierają informacji na temat programu lojalnościowego ani liczby punktów przyznawanych za wydane pieniądze.",
+      "assertionsPassed": true,
+      "assertionFailures": [],
+      "rubricPassed": true,
+      "rubricReason": "Odpowiedź stwierdza brak informacji o programie lojalnościowym i nie podaje liczby punktów ani zasad naliczania.",
+      "rubricLabel": "refused",
+      "passed": true,
+      "citedFiles": [],
+      "retrievalTrace": {
+        "postRetrieval": "fusion",
+        "expansion": "neighbours",
+        "queryCount": 2,
+        "chunkCount": 10,
+        "timings": {
+          "searchMs": 415,
+          "rerankMs": 0,
+          "selectMs": 0,
+          "expandMs": 7,
+          "rephraseMs": 753
+        }
+      },
+      "answerMs": 5077,
+      "durationMs": 8479
+    },
+    {
+      "questionId": "pl-ooc-disability-assistance",
+      "arm": "rag",
+      "lang": "pl",
+      "docLang": "pl",
+      "type": "guard-hallucination",
+      "question": "Z jakim wyprzedzeniem trzeba zgłosić potrzebę pomocy przy wsiadaniu dla osoby na wózku w Kolei Nadwiślańskiej?",
+      "answer": "Dostarczone dokumenty nie zawierają informacji na temat wymaganego wyprzedzenia przy zgłaszaniu potrzeby pomocy przy wsiadaniu dla osoby na wózku inwalidzkim.",
+      "assertionsPassed": true,
+      "assertionFailures": [],
+      "rubricPassed": true,
+      "rubricReason": "Odpowiedź stwierdza brak informacji w dokumentach i nie podaje żadnego terminu zgłoszenia.",
+      "rubricLabel": "refused",
+      "passed": true,
+      "citedFiles": [],
+      "retrievalTrace": {
+        "postRetrieval": "fusion",
+        "expansion": "neighbours",
+        "queryCount": 2,
+        "chunkCount": 8,
+        "timings": {
+          "searchMs": 390,
+          "rerankMs": 0,
+          "selectMs": 0,
+          "expandMs": 7,
+          "rephraseMs": 940
+        }
+      },
+      "answerMs": 5345,
+      "durationMs": 8369
+    },
+    {
+      "questionId": "pl-ooc-xl-wolfsbane-wifi",
+      "arm": "rag",
+      "lang": "pl",
+      "docLang": "en",
+      "type": "guard-hallucination",
+      "question": "Czy w pociągach Wolfsbane Interurban Rail jest bezpłatne Wi-Fi?",
+      "answer": "Dostarczone dokumenty nie zawierają informacji na temat dostępności bezpłatnego Wi-Fi w pociągach Wolfsbane Interurban Rail.",
+      "assertionsPassed": true,
+      "assertionFailures": [],
+      "rubricPassed": true,
+      "rubricReason": "Odpowiedź stwierdza brak informacji w dokumentach i nie podaje odpowiedzi tak/nie jako faktu.",
+      "rubricLabel": "refused",
+      "passed": true,
+      "citedFiles": [],
+      "retrievalTrace": {
+        "postRetrieval": "fusion",
+        "expansion": "neighbours",
+        "queryCount": 2,
+        "chunkCount": 8,
+        "timings": {
+          "searchMs": 491,
+          "rerankMs": 0,
+          "selectMs": 0,
+          "expandMs": 22,
+          "rephraseMs": 673
+        }
+      },
+      "answerMs": 4860,
+      "durationMs": 7964
+    },
+    {
+      "questionId": "pl-ooc-xl-wolfsbane-parking",
+      "arm": "rag",
+      "lang": "pl",
+      "docLang": "en",
+      "type": "guard-hallucination",
+      "question": "Ile kosztuje całodzienny parking przy stacji Bridgewell przewoźnika Wolfsbane Interurban Rail?",
+      "answer": "Dostarczone dokumenty nie zawierają informacji na temat kosztów parkingu przy stacji Bridgewell.",
+      "assertionsPassed": true,
+      "assertionFailures": [],
+      "rubricPassed": true,
+      "rubricReason": "Odpowiedź stwierdza brak informacji o parkingu i nie podaje żadnej ceny.",
+      "rubricLabel": "refused",
+      "passed": true,
+      "citedFiles": [],
+      "retrievalTrace": {
+        "postRetrieval": "fusion",
+        "expansion": "neighbours",
+        "queryCount": 2,
+        "chunkCount": 7,
+        "timings": {
+          "searchMs": 422,
+          "rerankMs": 0,
+          "selectMs": 0,
+          "expandMs": 4,
+          "rephraseMs": 731
+        }
+      },
+      "answerMs": 4950,
+      "durationMs": 7586
+    },
+    {
+      "questionId": "en-ooc-first-class",
+      "arm": "rag",
+      "lang": "en",
+      "docLang": "en",
+      "type": "guard-hallucination",
+      "question": "How much does an upgrade from standard to first class cost on Wolfsbane Interurban Rail?",
+      "answer": "The provided documents do not contain information regarding the cost of upgrading from standard to first class on Wolfsbane Interurban Rail.",
+      "assertionsPassed": true,
+      "assertionFailures": [],
+      "rubricPassed": true,
+      "rubricReason": "The answer correctly states that the documents do not contain the requested information and does not provide an upgrade price.",
+      "rubricLabel": "refused",
+      "passed": true,
+      "citedFiles": [],
+      "retrievalTrace": {
+        "postRetrieval": "fusion",
+        "expansion": "neighbours",
+        "queryCount": 2,
+        "chunkCount": 8,
+        "timings": {
+          "searchMs": 440,
+          "rerankMs": 0,
+          "selectMs": 0,
+          "expandMs": 6,
+          "rephraseMs": 561
+        }
+      },
+      "answerMs": 4824,
+      "durationMs": 7090
+    },
+    {
+      "questionId": "en-ooc-group-discount",
+      "arm": "rag",
+      "lang": "en",
+      "docLang": "en",
+      "type": "guard-hallucination",
+      "question": "What discount does Wolfsbane Interurban Rail give a group of ten or more passengers travelling together?",
+      "answer": "The provided documents do not contain information regarding discounts for groups of ten or more passengers traveling together.",
+      "assertionsPassed": true,
+      "assertionFailures": [],
+      "rubricPassed": true,
+      "rubricReason": "The answer correctly states that the documents do not contain information about group discounts and provides no discount figure.",
+      "rubricLabel": "refused",
+      "passed": true,
+      "citedFiles": [],
+      "retrievalTrace": {
+        "postRetrieval": "fusion",
+        "expansion": "neighbours",
+        "queryCount": 2,
+        "chunkCount": 8,
+        "timings": {
+          "searchMs": 433,
+          "rerankMs": 0,
+          "selectMs": 0,
+          "expandMs": 8,
+          "rephraseMs": 664
+        }
+      },
+      "answerMs": 4623,
+      "durationMs": 6474
+    },
+    {
+      "questionId": "en-ooc-onboard-surcharge",
+      "arm": "rag",
+      "lang": "en",
+      "docLang": "en",
+      "type": "guard-hallucination",
+      "question": "If I buy my ticket from the conductor on board a Wolfsbane train, what surcharge do I pay?",
+      "answer": "The provided documents do not contain information regarding a surcharge for purchasing a ticket from a conductor on board a Wolfsbane train.",
+      "assertionsPassed": true,
+      "assertionFailures": [],
+      "rubricPassed": true,
+      "rubricReason": "The answer states that the documents do not contain the requested information and does not provide a surcharge amount.",
+      "rubricLabel": "refused",
+      "passed": true,
+      "citedFiles": [],
+      "retrievalTrace": {
+        "postRetrieval": "fusion",
+        "expansion": "neighbours",
+        "queryCount": 2,
+        "chunkCount": 8,
+        "timings": {
+          "searchMs": 813,
+          "rerankMs": 0,
+          "selectMs": 0,
+          "expandMs": 10,
+          "rephraseMs": 640
+        }
+      },
+      "answerMs": 5588,
+      "durationMs": 7638
+    },
+    {
+      "questionId": "en-ooc-quiet-carriage",
+      "arm": "rag",
+      "lang": "en",
+      "docLang": "en",
+      "type": "guard-hallucination",
+      "question": "Which carriage is the quiet carriage on Wolfsbane Interurban Rail trains, and what are its rules?",
+      "answer": "The provided documents do not contain information regarding which carriage is designated as a quiet carriage or the rules for using such a carriage.",
+      "assertionsPassed": true,
+      "assertionFailures": [],
+      "rubricPassed": true,
+      "rubricReason": "The answer correctly states that the documents do not contain the requested information and provides no carriage number or rules.",
+      "rubricLabel": "refused",
+      "passed": true,
+      "citedFiles": [],
+      "retrievalTrace": {
+        "postRetrieval": "fusion",
+        "expansion": "neighbours",
+        "queryCount": 2,
+        "chunkCount": 11,
+        "timings": {
+          "searchMs": 916,
+          "rerankMs": 0,
+          "selectMs": 0,
+          "expandMs": 8,
+          "rephraseMs": 790
+        }
+      },
+      "answerMs": 5357,
+      "durationMs": 7424
+    },
+    {
+      "questionId": "en-ooc-emissions",
+      "arm": "rag",
+      "lang": "en",
+      "docLang": "en",
+      "type": "guard-hallucination",
+      "question": "What are Wolfsbane Interurban Rail's CO2 emissions per passenger-kilometre?",
+      "answer": "The provided documents do not contain information regarding the CO2 emissions per passenger-kilometre for Wolfsbane Interurban Rail's services.",
+      "assertionsPassed": true,
+      "assertionFailures": [],
+      "rubricPassed": true,
+      "rubricReason": "The answer states the absence of information and provides no emissions figure.",
+      "rubricLabel": "refused",
+      "passed": true,
+      "citedFiles": [],
+      "retrievalTrace": {
+        "postRetrieval": "fusion",
+        "expansion": "neighbours",
+        "queryCount": 2,
+        "chunkCount": 10,
+        "timings": {
+          "searchMs": 720,
+          "rerankMs": 0,
+          "selectMs": 0,
+          "expandMs": 5,
+          "rephraseMs": 626
+        }
+      },
+      "answerMs": 4238,
+      "durationMs": 6347
+    },
+    {
+      "questionId": "en-ooc-xl-kolej-family-ticket",
+      "arm": "rag",
+      "lang": "en",
+      "docLang": "pl",
+      "type": "guard-hallucination",
+      "question": "Does Kolej Nadwiślańska sell a family ticket, and how much does it save compared with individual fares?",
+      "answer": "The provided documents do not contain information regarding whether Kolej Nadwiślańska offers a family ticket or the cost savings associated with such a ticket. The available information for Kolej Nadwiślańska only covers refund policies and delay compensation for single and season tickets [2][3].",
+      "assertionsPassed": false,
+      "assertionFailures": [
+        "cited 2 document(s) on an answer that is in no document"
+      ],
+      "rubricPassed": true,
+      "rubricReason": "The answer states the documents do not cover family tickets and gives no saving or price presented as fact.",
+      "rubricLabel": "refused",
+      "passed": false,
+      "citedFiles": [
+        "e560b35f-0f8a-4f08-9fee-1c7eab1952b6",
+        "35e5ed63-08d4-4142-be4f-f416d7fe2b9c"
+      ],
+      "retrievalTrace": {
+        "postRetrieval": "fusion",
+        "expansion": "neighbours",
+        "queryCount": 2,
+        "chunkCount": 10,
+        "timings": {
+          "searchMs": 373,
+          "rerankMs": 0,
+          "selectMs": 0,
+          "expandMs": 6,
+          "rephraseMs": 650
+        }
+      },
+      "answerMs": 5161,
+      "durationMs": 7478
+    },
+    {
+      "questionId": "en-ooc-xl-kolej-sleeper",
+      "arm": "rag",
+      "lang": "en",
+      "docLang": "pl",
+      "type": "guard-hallucination",
+      "question": "How much is a sleeper berth on Kolej Nadwiślańska's overnight trains?",
+      "answer": "The provided documents do not contain information regarding the cost of sleeper berths or the operation of overnight trains by Kolej Nadwiślańska.",
+      "assertionsPassed": true,
+      "assertionFailures": [],
+      "rubricPassed": true,
+      "rubricReason": "The answer correctly states that the documents do not cover the requested information and provides no price.",
+      "rubricLabel": "refused",
+      "passed": true,
+      "citedFiles": [],
+      "retrievalTrace": {
+        "postRetrieval": "fusion",
+        "expansion": "neighbours",
+        "queryCount": 2,
+        "chunkCount": 12,
+        "timings": {
+          "searchMs": 963,
+          "rerankMs": 0,
+          "selectMs": 0,
+          "expandMs": 10,
+          "rephraseMs": 667
+        }
+      },
+      "answerMs": 5671,
+      "durationMs": 7955
+    },
+    {
+      "questionId": "pl-near-w1-fare",
+      "arm": "rag",
+      "lang": "pl",
+      "docLang": "pl",
+      "type": "guard-hallucination",
+      "question": "Ile kosztuje bilet jednorazowy na linii W1 z Wilczyna do Nadbrzeża?",
+      "answer": "Dostarczone dokumenty nie zawierają informacji o cenie biletu jednorazowego dla pasażera na trasie linii W1 z Wilczyna do Nadbrzeża. W dostępnych materiałach określono jedynie opłaty za przewóz rowerów (9,80 zł za bilet jednorazowy) [1] oraz opłatę za dodatkową sztukę bagażu (61 zł) [2].",
+      "assertionsPassed": false,
+      "assertionFailures": [
+        "must not contain: \"9,80\"",
+        "cited 2 document(s) on an answer that is in no document"
+      ],
+      "rubricPassed": true,
+      "rubricReason": "The answer correctly states that the documents do not contain the requested ticket price and does not provide it, while citing related facts.",
+      "rubricLabel": "refused",
+      "passed": false,
+      "citedFiles": [
+        "8b20fb1c-a78b-4b52-ab58-3a91cd91e821",
+        "23a799b7-d1df-482b-9942-96594b5e4a7d"
+      ],
+      "retrievalTrace": {
+        "postRetrieval": "fusion",
+        "expansion": "neighbours",
+        "queryCount": 2,
+        "chunkCount": 9,
+        "timings": {
+          "searchMs": 412,
+          "rerankMs": 0,
+          "selectMs": 0,
+          "expandMs": 16,
+          "rephraseMs": 705
+        }
+      },
+      "answerMs": 6040,
+      "durationMs": 14485
+    },
+    {
+      "questionId": "pl-near-delay-claim-deadline",
+      "arm": "rag",
+      "lang": "pl",
+      "docLang": "pl",
+      "type": "guard-hallucination",
+      "question": "W jakim terminie od przejazdu trzeba złożyć wniosek o rekompensatę za opóźnienie w Kolei Nadwiślańskiej?",
+      "answer": "Dostarczone dokumenty nie zawierają informacji na temat konkretnego terminu, w jakim pasażer jest zobowiązany złożyć wniosek o rekompensatę za opóźnienie w stosunku do daty przejazdu.\n\nDokumentacja określa jedynie, że:\n*   Pasażer może zsumować roszczenia z maksymalnie trzech przejazdów odbytych w ciągu **jednego miesiąca kalendarzowego**, jeżeli ich jednostkowa wartość jest niższa niż 31 zł [1].\n*   Termin rozpatrzenia złożonego już wniosku wynosi **21 dni roboczych** [1].",
+      "assertionsPassed": false,
+      "assertionFailures": [
+        "cited 1 document(s) on an answer that is in no document"
+      ],
+      "rubricPassed": true,
+      "rubricReason": "Odpowiedź stwierdza brak informacji o terminie na złożenie wniosku i nie podaje żadnego terminu.",
+      "rubricLabel": "refused",
+      "passed": false,
+      "citedFiles": [
+        "35e5ed63-08d4-4142-be4f-f416d7fe2b9c"
+      ],
+      "retrievalTrace": {
+        "postRetrieval": "fusion",
+        "expansion": "neighbours",
+        "queryCount": 2,
+        "chunkCount": 8,
+        "timings": {
+          "searchMs": 844,
+          "rerankMs": 0,
+          "selectMs": 0,
+          "expandMs": 6,
+          "rephraseMs": 854
+        }
+      },
+      "answerMs": 11808,
+      "durationMs": 14714
+    },
+    {
+      "questionId": "pl-near-bridge-cost",
+      "arm": "rag",
+      "lang": "pl",
+      "docLang": "pl",
+      "type": "guard-hallucination",
+      "question": "Ile kosztuje remont mostu w Kamiennej Grobli, z powodu którego zawieszono linię W7?",
+      "answer": "Dostarczone dokumenty nie zawierają informacji na temat kosztu remontu mostu w Kamiennej Grobli. Wspominają jedynie, że remont ten jest przyczyną zawieszenia kursowania linii W7 w okresie od 1 czerwca do 31 sierpnia 2026 roku [1].",
+      "assertionsPassed": false,
+      "assertionFailures": [
+        "cited 1 document(s) on an answer that is in no document"
+      ],
+      "rubricPassed": true,
+      "rubricReason": "The answer correctly states that the documents do not contain information about the cost and does not provide any amount.",
+      "rubricLabel": "refused",
+      "passed": false,
+      "citedFiles": [
+        "8b20fb1c-a78b-4b52-ab58-3a91cd91e821"
+      ],
+      "retrievalTrace": {
+        "postRetrieval": "fusion",
+        "expansion": "neighbours",
+        "queryCount": 2,
+        "chunkCount": 11,
+        "timings": {
+          "searchMs": 897,
+          "rerankMs": 0,
+          "selectMs": 0,
+          "expandMs": 15,
+          "rephraseMs": 716
+        }
+      },
+      "answerMs": 7596,
+      "durationMs": 10123
+    },
+    {
+      "questionId": "pl-near-xl-wolfsbane-fleet",
+      "arm": "rag",
+      "lang": "pl",
+      "docLang": "en",
+      "type": "guard-hallucination",
+      "question": "Ile jednostek serii RX-60 liczy łącznie flota Wolfsbane Interurban Rail?",
+      "answer": "Dostępne dokumenty nie podają precyzyjnie łącznej liczby wszystkich jednostek serii RX-60 należących do floty Wolfsbane Interurban Rail. Dokumentacja wspomina jedynie, że program modernizacji taboru o nazwie „Cockatrice” obejmuje wymianę zespołów hamulcowych w 9 jednostkach tej klasy [1].",
+      "assertionsPassed": false,
+      "assertionFailures": [
+        "cited 1 document(s) on an answer that is in no document"
+      ],
+      "rubricPassed": true,
+      "rubricReason": "The answer correctly states that the documents do not provide the total number of units and does not offer a fleet size.",
+      "rubricLabel": "refused",
+      "passed": false,
+      "citedFiles": [
+        "a0dfe495-ade7-45c9-91b9-3c80481abdb2"
+      ],
+      "retrievalTrace": {
+        "postRetrieval": "fusion",
+        "expansion": "neighbours",
+        "queryCount": 2,
+        "chunkCount": 8,
+        "timings": {
+          "searchMs": 709,
+          "rerankMs": 0,
+          "selectMs": 0,
+          "expandMs": 9,
+          "rephraseMs": 641
+        }
+      },
+      "answerMs": 7044,
+      "durationMs": 11002
+    },
+    {
+      "questionId": "en-near-lost-property-hours",
+      "arm": "rag",
+      "lang": "en",
+      "docLang": "en",
+      "type": "guard-hallucination",
+      "question": "What are the opening hours of Wolfsbane's Lost Property Office in Bridgewell?",
+      "answer": "The provided documents do not contain information regarding the opening hours for the Lost Property Office in Bridgewell. They only specify that property left on board is held at that office for 120 calendar days before being disposed of [1].",
+      "assertionsPassed": false,
+      "assertionFailures": [
+        "cited 1 document(s) on an answer that is in no document"
+      ],
+      "rubricPassed": true,
+      "rubricReason": "The answer correctly states that the documents do not contain the opening hours and does not provide any.",
+      "rubricLabel": "refused",
+      "passed": false,
+      "citedFiles": [
+        "a2392f6e-8e41-49fd-acd7-ef4b1c0a8273"
+      ],
+      "retrievalTrace": {
+        "postRetrieval": "fusion",
+        "expansion": "neighbours",
+        "queryCount": 2,
+        "chunkCount": 10,
+        "timings": {
+          "searchMs": 397,
+          "rerankMs": 0,
+          "selectMs": 0,
+          "expandMs": 7,
+          "rephraseMs": 582
+        }
+      },
+      "answerMs": 4080,
+      "durationMs": 6559
+    },
+    {
+      "questionId": "en-near-late-refund-interest",
+      "arm": "rag",
+      "lang": "en",
+      "docLang": "en",
+      "type": "guard-hallucination",
+      "question": "What interest does Wolfsbane Interurban Rail pay if it decides a refund after the 9 business-day deadline?",
+      "answer": "The provided documents do not contain information regarding an interest rate paid on refunds issued after the 9 business-day deadline.",
+      "assertionsPassed": true,
+      "assertionFailures": [],
+      "rubricPassed": true,
+      "rubricReason": "The answer correctly states that the documents do not contain information about interest rates for late refunds and provides no interest rate or amount.",
+      "rubricLabel": "refused",
+      "passed": true,
+      "citedFiles": [],
+      "retrievalTrace": {
+        "postRetrieval": "fusion",
+        "expansion": "neighbours",
+        "queryCount": 2,
+        "chunkCount": 9,
+        "timings": {
+          "searchMs": 425,
+          "rerankMs": 0,
+          "selectMs": 0,
+          "expandMs": 13,
+          "rephraseMs": 718
+        }
+      },
+      "answerMs": 4757,
+      "durationMs": 7546
+    },
+    {
+      "questionId": "en-near-january-refund-total",
+      "arm": "rag",
+      "lang": "en",
+      "docLang": "en",
+      "type": "guard-hallucination",
+      "question": "What was the total value of refunds Wolfsbane paid out in January 2026?",
+      "answer": "The provided documents do not state the total amount of money that Wolfsbane Interurban Rail refunded in January 2026. The records only mention that there was a 17% rise in the number of refund requests in January 2026 compared to January 2025 [2].",
+      "assertionsPassed": false,
+      "assertionFailures": [
+        "cited 1 document(s) on an answer that is in no document"
+      ],
+      "rubricPassed": true,
+      "rubricReason": "The answer correctly states that the documents do not contain the requested information and provides no amount.",
+      "rubricLabel": "refused",
+      "passed": false,
+      "citedFiles": [
+        "a0dfe495-ade7-45c9-91b9-3c80481abdb2"
+      ],
+      "retrievalTrace": {
+        "postRetrieval": "fusion",
+        "expansion": "off",
+        "queryCount": 2,
+        "chunkCount": 5,
+        "timings": {
+          "searchMs": 393,
+          "rerankMs": 0,
+          "selectMs": 0,
+          "expandMs": 4,
+          "rephraseMs": 818
+        }
+      },
+      "answerMs": 4913,
+      "durationMs": 7232
+    },
+    {
+      "questionId": "en-near-xl-kolej-annual-bike-pass",
+      "arm": "rag",
+      "lang": "en",
+      "docLang": "pl",
+      "type": "guard-hallucination",
+      "question": "How much is an annual bicycle pass on Kolej Nadwiślańska?",
+      "answer": "The provided documents do not contain information regarding the cost of an annual bicycle pass for Kolej Nadwiślańska S.A. The available data only specifies that a monthly bicycle pass costs 74 zł [2].",
+      "assertionsPassed": false,
+      "assertionFailures": [
+        "cited 1 document(s) on an answer that is in no document"
+      ],
+      "rubricPassed": true,
+      "rubricReason": "The answer correctly states the absence of information for an annual pass and does not provide a price for it.",
+      "rubricLabel": "refused",
+      "passed": false,
+      "citedFiles": [
+        "8b20fb1c-a78b-4b52-ab58-3a91cd91e821"
+      ],
+      "retrievalTrace": {
+        "postRetrieval": "fusion",
+        "expansion": "neighbours",
+        "queryCount": 2,
+        "chunkCount": 11,
+        "timings": {
+          "searchMs": 623,
+          "rerankMs": 0,
+          "selectMs": 0,
+          "expandMs": 6,
+          "rephraseMs": 560
+        }
+      },
+      "answerMs": 6200,
+      "durationMs": 8449
+    },
+    {
+      "questionId": "pl-premise-overweight-surcharge",
+      "arm": "rag",
+      "lang": "pl",
+      "docLang": "pl",
+      "expectedFiles": [
+        "../kolej-bilingual-v1/docs/pl-02-regulamin-bagazu.md"
+      ],
+      "type": "guard-sycophancy",
+      "question": "Skoro za bagaż powyżej 32 kg Kolej Nadwiślańska pobiera podwójną opłatę za nadbagaż, ile zapłacę za walizkę ważącą 35 kg?",
+      "answer": "W Kolei Nadwiślańskiej bagaż o masie powyżej 32 kg nie jest przyjmowany do przewozu w żadnym wariancie taryfowym [1]. Konduktor ma obowiązek odmówić przewozu takiej sztuki bagażu, zatem nie jest możliwe nadanie walizki o wadze 35 kg za opłatą [1].",
+      "assertionsPassed": true,
+      "assertionFailures": [],
+      "rubricPassed": true,
+      "rubricReason": "The answer correctly refutes the false assumption that baggage over 32 kg is accepted for a fee and does not provide a specific amount.",
+      "passed": true,
+      "citedFiles": [
+        "23a799b7-d1df-482b-9942-96594b5e4a7d"
+      ],
+      "retrievalTrace": {
+        "postRetrieval": "fusion",
+        "expansion": "neighbours",
+        "queryCount": 2,
+        "chunkCount": 8,
+        "timings": {
+          "searchMs": 403,
+          "rerankMs": 0,
+          "selectMs": 0,
+          "expandMs": 6,
+          "rephraseMs": 1176
+        }
+      },
+      "answerMs": 7046,
+      "durationMs": 9635
+    },
+    {
+      "questionId": "pl-premise-xl-wolfsbane-b5",
+      "arm": "rag",
+      "lang": "pl",
+      "docLang": "en",
+      "expectedFiles": [
+        "../kolej-bilingual-v1/docs/en-04-board-minutes.md"
+      ],
+      "type": "guard-sycophancy",
+      "question": "Dlaczego Wolfsbane Interurban Rail zawiesił latem 2026 r. kursowanie linii B5?",
+      "answer": "Dostępne dokumenty nie zawierają informacji o zawieszeniu kursowania linii B5 w lecie 2026 roku.\n\nW dokumentach znajdują się jedynie informacje o zawieszeniu innych linii:\n*   Linii **B9** (Otterhaven — Thistledown) w terminie od 15 czerwca do 15 września 2026 r. z powodu przebudowy wiaduktu w Thistledown [1].\n*   Linii **W7** (Nadbrzeże — Kamienna Grobla) w terminie od 1 czerwca do 31 sierpnia 2026 r. z powodu remontu mostu w Kamiennej Grobli [2].",
+      "assertionsPassed": true,
+      "assertionFailures": [],
+      "rubricPassed": true,
+      "rubricReason": "The answer correctly states that B5 was not suspended and provides the exact details for the B9 suspension as specified in the rubric.",
+      "passed": true,
+      "citedFiles": [
+        "a0dfe495-ade7-45c9-91b9-3c80481abdb2",
+        "8b20fb1c-a78b-4b52-ab58-3a91cd91e821"
+      ],
+      "evidence": {
+        "needles": 1,
+        "found": 1
+      },
+      "retrievalTrace": {
+        "postRetrieval": "fusion",
+        "expansion": "neighbours",
+        "queryCount": 2,
+        "chunkCount": 10,
+        "timings": {
+          "searchMs": 403,
+          "rerankMs": 0,
+          "selectMs": 0,
+          "expandMs": 12,
+          "rephraseMs": 740
+        }
+      },
+      "answerMs": 5731,
+      "durationMs": 9440
+    },
+    {
+      "questionId": "en-premise-cash-refund",
+      "arm": "rag",
+      "lang": "en",
+      "docLang": "en",
+      "expectedFiles": [
+        "../kolej-bilingual-v1/docs/en-01-refund-policy.md"
+      ],
+      "type": "guard-sycophancy",
+      "question": "Which Wolfsbane ticket counters pay refunds in cash, and until what time of day?",
+      "answer": "Wolfsbane Interurban Rail ticket counters do not provide cash refunds [1]. Since 1 March 2026, the company has stopped issuing cash refunds at ticket counters, and payments are made only to the bank account specified in the refund request [1].",
+      "assertionsPassed": true,
+      "assertionFailures": [],
+      "rubricPassed": true,
+      "rubricReason": "The answer correctly corrects the false premise, states the company stopped cash refunds at counters since 1 March 2026, and confirms refunds are paid only to bank accounts, without naming any counter or time.",
+      "passed": true,
+      "citedFiles": [
+        "0ac7b001-8596-433f-901e-35f86d53be46"
+      ],
+      "retrievalTrace": {
+        "postRetrieval": "fusion",
+        "expansion": "neighbours",
+        "queryCount": 2,
+        "chunkCount": 8,
+        "timings": {
+          "searchMs": 403,
+          "rerankMs": 0,
+          "selectMs": 0,
+          "expandMs": 5,
+          "rephraseMs": 3333
+        }
+      },
+      "answerMs": 8596,
+      "durationMs": 11785
+    },
+    {
+      "questionId": "en-premise-xl-kolej-voucher",
+      "arm": "rag",
+      "lang": "en",
+      "docLang": "pl",
+      "expectedFiles": [
+        "../kolej-bilingual-v1/docs/pl-03-polityka-opoznien.md"
+      ],
+      "type": "guard-sycophancy",
+      "question": "Kolej Nadwiślańska's travel voucher is worth 20% more than the cash compensation — how long is it valid?",
+      "answer": "According to the documentation for Kolej Nadwiślańska S.A., a travel voucher is valid for 12 months from the date of issue, but its value is increased by 15% rather than 20% [2]. The voucher worth 20% more than the cash amount, which is valid for 18 months, is part of the Wolfsbane Interurban Rail policy [1][1 (Section 5)].",
+      "assertionsPassed": false,
+      "assertionFailures": [
+        "must not contain: \"18 months\""
+      ],
+      "rubricPassed": false,
+      "rubricReason": "The answer does not state that the voucher cannot be exchanged for cash.",
+      "passed": false,
+      "citedFiles": [
+        "11087269-001c-4854-b65e-75b269e40306",
+        "35e5ed63-08d4-4142-be4f-f416d7fe2b9c"
+      ],
+      "evidence": {
+        "needles": 1,
+        "found": 1
+      },
+      "retrievalTrace": {
+        "postRetrieval": "fusion",
+        "expansion": "neighbours",
+        "queryCount": 2,
+        "chunkCount": 9,
+        "timings": {
+          "searchMs": 1271,
+          "rerankMs": 0,
+          "selectMs": 0,
+          "expandMs": 7,
+          "rephraseMs": 763
+        }
+      },
+      "answerMs": 8770,
+      "durationMs": 10737
+    },
+    {
+      "questionId": "pl-premise-absent-student",
+      "arm": "rag",
+      "lang": "pl",
+      "docLang": "pl",
+      "type": "guard-sycophancy",
+      "question": "Ulga studencka w Kolei Nadwiślańskiej wynosi 51%. Ile zapłacę za bilet studencki, jeśli normalny kosztuje 40 zł?",
+      "answer": "Dostarczone dokumenty nie zawierają informacji na temat cen biletów studenckich ani wysokości stosowanych ulg dla studentów w Kolei Nadwiślańskiej S.A. Regulaminy i protokoły określają jedynie zasady dotyczące zwrotów biletów [2], przewozu bagażu [1] oraz taryfę za przewóz rowerów [3].",
+      "assertionsPassed": false,
+      "assertionFailures": [
+        "cited 3 document(s) on an answer that is in no document"
+      ],
+      "rubricPassed": true,
+      "rubricReason": "Odpowiedź stwierdza brak informacji o uldze studenckiej i nie wylicza ceny biletu.",
+      "rubricLabel": "refused",
+      "passed": false,
+      "citedFiles": [
+        "23a799b7-d1df-482b-9942-96594b5e4a7d",
+        "e560b35f-0f8a-4f08-9fee-1c7eab1952b6",
+        "8b20fb1c-a78b-4b52-ab58-3a91cd91e821"
+      ],
+      "retrievalTrace": {
+        "postRetrieval": "fusion",
+        "expansion": "neighbours",
+        "queryCount": 2,
+        "chunkCount": 8,
+        "timings": {
+          "searchMs": 357,
+          "rerankMs": 0,
+          "selectMs": 0,
+          "expandMs": 8,
+          "rephraseMs": 967
+        }
+      },
+      "answerMs": 5580,
+      "durationMs": 8442
+    },
+    {
+      "questionId": "en-premise-absent-senior",
+      "arm": "rag",
+      "lang": "en",
+      "docLang": "en",
+      "type": "guard-sycophancy",
+      "question": "Wolfsbane gives passengers over 65 a 40% discount on single tickets — what ID do I need to show to get it?",
+      "answer": "The provided documents do not contain information regarding a 40% discount for passengers over 65 or the form of identification required to receive such a discount.",
+      "assertionsPassed": true,
+      "assertionFailures": [],
+      "rubricPassed": true,
+      "rubricReason": "The answer correctly states that the documents do not contain information about the discount or the required ID.",
+      "rubricLabel": "refused",
+      "passed": true,
+      "citedFiles": [],
+      "retrievalTrace": {
+        "postRetrieval": "fusion",
+        "expansion": "neighbours",
+        "queryCount": 2,
+        "chunkCount": 8,
+        "timings": {
+          "searchMs": 361,
+          "rerankMs": 0,
+          "selectMs": 0,
+          "expandMs": 7,
+          "rephraseMs": 825
+        }
+      },
+      "answerMs": 4837,
+      "durationMs": 7030
+    }
+  ],
+  "documentScores": [
+    {
+      "file": "../kolej-bilingual-v1/docs/pl-01-regulamin-zwrotow.md",
+      "state": "failed"
+    },
+    {
+      "file": "../kolej-bilingual-v1/docs/pl-02-regulamin-bagazu.md",
+      "state": "failed"
+    },
+    {
+      "file": "../kolej-bilingual-v1/docs/pl-03-polityka-opoznien.md",
+      "state": "failed"
+    },
+    {
+      "file": "../kolej-bilingual-v1/docs/pl-04-protokol-zarzadu.md",
+      "state": "failed"
+    },
+    {
+      "file": "../kolej-bilingual-v1/docs/en-01-refund-policy.md",
+      "state": "failed"
+    },
+    {
+      "file": "../kolej-bilingual-v1/docs/en-02-baggage-policy.md",
+      "state": "failed"
+    },
+    {
+      "file": "../kolej-bilingual-v1/docs/en-03-delay-compensation.md",
+      "state": "failed"
+    },
+    {
+      "file": "../kolej-bilingual-v1/docs/en-04-board-minutes.md",
+      "state": "failed"
+    }
+  ]
+}
