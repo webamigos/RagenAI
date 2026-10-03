@@ -956,11 +956,27 @@ shape an answer before it has been measured.
   no regression beyond its noise: passes, with the caveat above. A suite
   that can fail — `rag-benchmark`, or harder cases where a preference
   could cost a rubric point — would make the second condition mean more.
-- [ ] **E2.** Rollout gate: the organizational-fact drop rate is at least 95% on
+- [x] **E2.** Rollout gate: the organizational-fact drop rate is at least 95% on
   the eval, and `rag-quality` shows no regression beyond the suite's noise.
   Then turn `personalMemory` on for the demo organization.
-- [ ] **E3.** A line in `docs/changelog-notes.md`, and a `docs/lessons.md` entry
+
+  *Done 2026-10-03.* Both conditions held (above). Before the switch, two
+  injection results seen only at twenty repeats were closed in code: a
+  message about the memory itself applies no UPDATE or DELETE (#1510), and
+  a statement claiming permissions or access is not kept (#1513);
+  injection 80/80 at twenty repeats. `personalMemory` is on for the demo
+  organization (admin panel → Features). The nightly purge is registered
+  separately, once per environment, with
+  `ensure-memory-purge-schedule.ts` (C4).
+- [x] **E3.** A line in `docs/changelog-notes.md`, and a `docs/lessons.md` entry
   if any step contradicted this spec.
+
+  *Done 2026-10-03.* The changelog line is under Chat. Two steps did
+  contradict the spec, and the lesson records both, as a recurrence of
+  `a-prompt-rule-the-model-mostly-follows-is-not-enforced.md`: the
+  extraction eval is a worker script, not the `memory-extraction.yaml` this
+  spec names under C2 and Testing, and three repeats were too few to see
+  what the injection case wrote.
 
 ## Testing
 
