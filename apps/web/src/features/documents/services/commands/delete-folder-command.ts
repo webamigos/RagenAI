@@ -2,7 +2,7 @@
 
 import db from '@ragenai/prisma-client';
 import { NOT_A_BRAIN_VEHICLE } from './not-a-brain-vehicle';
-import { deleteFromS3, deleteFromS3ByKey } from '@/app/lib/services/storage';
+import { deleteFromS3ByKey } from '@/app/lib/services/storage';
 import { deleteFileFromVectorStore } from '@/app/api/upload/services/TableService';
 import { deleteDocumentFromDbCommand as deleteDocumentFromDb } from '@/features/documents/services/commands/update-document-command';
 import { getOrganizationFilesCountQuery as getOrganizationFilesCount } from '@/features/documents/services/queries/get-file-details-query';
@@ -56,8 +56,10 @@ export async function deleteFolderCommand(
     // Delete files from S3 and vector store (best-effort, outside transaction)
     for (const file of files) {
       try {
-        const s3Path = `${file.id}.${getFileExtension(file.fileName)}`;
-        await deleteFromS3(s3Path);
+        // By full key and the validated org — see deleteFileCommand: the
+        // session-reading `deleteFromS3` fails wherever there is no session.
+        const s3Path = `${organizationId}/${file.id}.${getFileExtension(file.fileName)}`;
+        await deleteFromS3ByKey(s3Path);
       } catch (err) {
         logger.error(
           { err, fileId: file.id },
