@@ -368,6 +368,82 @@ describe('isTenantScopeSatisfied', () => {
     });
   });
 
+  describe("a user's own memberships, read by user", () => {
+    // What Better Auth's listOrganizations sends through its Prisma adapter:
+    // a one-element where array becomes a single `{ field: { equals } }`.
+    const listOrganizationsWhere = { userId: { equals: 'user-1' } };
+
+    it.each([
+      ['the adapter shape', 'findMany', listOrganizationsWhere],
+      ['a bare equality', 'findMany', { userId: 'user-1' }],
+      ['findFirst', 'findFirst', listOrganizationsWhere],
+      ['the only conjunct of an AND', 'findMany', { AND: [{ userId: 'u' }] }],
+      ['an AND given as an object', 'findMany', { AND: { userId: 'u' } }],
+    ])('accepts %s', (_label, operation, where) => {
+      expect(isTenantScopeSatisfied('Member', operation, { where })).toBe(true);
+    });
+
+    it.each([
+      ['no where', 'findMany', undefined],
+      ['an empty where', 'findMany', {}],
+      ['a filter on something else', 'findMany', { role: 'owner' }],
+      ['userId plus another key', 'findMany', { userId: 'u', role: 'owner' }],
+      [
+        'userId plus another conjunct',
+        'findMany',
+        { AND: [{ userId: 'u' }, { role: 'owner' }] },
+      ],
+      ['an AND alongside userId', 'findMany', { userId: 'u', AND: [] }],
+      ['an empty AND', 'findMany', { AND: [] }],
+      ['userId undefined', 'findMany', { userId: undefined }],
+      ['an empty userId', 'findMany', { userId: '' }],
+      ['userId in a list', 'findMany', { userId: { in: ['a', 'b'] } }],
+      ['userId negated', 'findMany', { userId: { not: 'u' } }],
+      [
+        'equals with a second operator',
+        'findMany',
+        { userId: { equals: 'u', mode: 'insensitive' } },
+      ],
+      ['userId inside an OR', 'findMany', { OR: [{ userId: 'u' }] }],
+      ['count', 'count', { userId: 'u' }],
+      ['findUnique', 'findUnique', { userId: 'u' }],
+      ['update', 'update', { userId: 'u' }],
+      ['updateMany', 'updateMany', { userId: 'u' }],
+      ['delete', 'delete', { userId: 'u' }],
+      ['deleteMany', 'deleteMany', { userId: 'u' }],
+    ])('still reports %s', (_label, operation, where) => {
+      expect(isTenantScopeSatisfied('Member', operation, { where })).toBe(
+        false,
+      );
+    });
+
+    it('still reports a create or upsert keyed by userId alone', () => {
+      expect(
+        isTenantScopeSatisfied('Member', 'create', { data: { userId: 'u' } }),
+      ).toBe(false);
+      expect(
+        isTenantScopeSatisfied('Member', 'upsert', {
+          where: { userId: 'u' },
+          create: { userId: 'u' },
+          update: {},
+        }),
+      ).toBe(false);
+    });
+
+    it('exempts Member only, not another model read by userId', () => {
+      expect(
+        isTenantScopeSatisfied('Invitation', 'findMany', {
+          where: { userId: { equals: 'u' } },
+        }),
+      ).toBe(false);
+      expect(
+        isTenantScopeSatisfied('UserMemory', 'findMany', {
+          where: { userId: 'u' },
+        }),
+      ).toBe(false);
+    });
+  });
+
   it('uses orgId for DocumentCitation, the naming outlier', () => {
     expect(
       isTenantScopeSatisfied('DocumentCitation', 'findMany', {

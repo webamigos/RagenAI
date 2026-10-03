@@ -188,6 +188,73 @@ function whereCarriesField(where: unknown, field: string): boolean {
 }
 
 /**
+ * A user's own memberships are read across organizations by design.
+ *
+ * Listing the organizations a user belongs to — Better Auth's
+ * `listOrganizations`, behind the org switcher on every panel page — has to
+ * read `Member` rows in every organization, so it cannot carry an
+ * `organizationId`. Its adapter issues
+ * `member.findMany({ where: { userId: { equals: userId } } })`.
+ *
+ * This is the one exemption, and it is narrow on purpose: a `Member` read
+ * (`findMany`/`findFirst`) whose `where` is a single equality on `userId` —
+ * bare or `{ equals }`, at the top level or as the only conjunct of an `AND`.
+ * Any other key alongside it, any other operator, and every write still need
+ * the organization.
+ */
+const OWN_MEMBERSHIPS_MODEL = 'Member';
+const OWN_MEMBERSHIPS_OPERATIONS = new Set(['findMany', 'findFirst']);
+
+function isUserIdEquality(value: unknown): boolean {
+  if (typeof value === 'string') {
+    return value.length > 0;
+  }
+  if (typeof value !== 'object' || value === null) {
+    return false;
+  }
+  const keys = Object.keys(value);
+  const equals = (value as Record<string, unknown>).equals;
+  return (
+    keys.length === 1 &&
+    keys[0] === 'equals' &&
+    typeof equals === 'string' &&
+    equals.length > 0
+  );
+}
+
+function isOwnMembershipsRead(
+  model: string,
+  operation: string,
+  where: unknown,
+): boolean {
+  if (
+    model !== OWN_MEMBERSHIPS_MODEL ||
+    !OWN_MEMBERSHIPS_OPERATIONS.has(operation)
+  ) {
+    return false;
+  }
+  if (typeof where !== 'object' || where === null) {
+    return false;
+  }
+  const clauses = where as Record<string, unknown>;
+  const keys = Object.keys(clauses);
+  if (keys.length !== 1) {
+    return false;
+  }
+  if (keys[0] === 'userId') {
+    return isUserIdEquality(clauses.userId);
+  }
+  if (keys[0] === 'AND') {
+    const conjuncts: unknown[] = [clauses.AND].flat();
+    return (
+      conjuncts.length === 1 &&
+      isOwnMembershipsRead(model, operation, conjuncts[0])
+    );
+  }
+  return false;
+}
+
+/**
  * Whether `args` includes the tenant-scoping field for `model`/`operation`.
  *
  * Returns `null` when `model` isn't in `TENANT_SCOPED_MODELS` (nothing to
@@ -213,7 +280,10 @@ export function isTenantScopeSatisfied(
   }
 
   if (WHERE_OPERATIONS.has(operation)) {
-    return whereCarriesField(args.where, field);
+    return (
+      whereCarriesField(args.where, field) ||
+      isOwnMembershipsRead(model, operation, args.where)
+    );
   }
   if (operation === 'create') {
     return hasDefinedField(args.data, field);

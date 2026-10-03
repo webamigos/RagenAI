@@ -22,6 +22,7 @@ or a non-empty `{ in }`. `{ not }`, `{ notIn }`, `{ equals: undefined }` and
 create only the top-level `data` is read, so write `organizationId` rather than
 `organization: { connect }`. Until 2026-10 only the top-level key counted, and
 those scoped shapes were most of the warnings in a normal run.
+One named exemption: a `Member` `findMany`/`findFirst` whose `where` is a single `userId` equality (bare, `{ equals }`, or the only `AND` conjunct) — a user's own memberships are read across organizations by design (Better Auth's `listOrganizations`); any other key, operator or write still warns.
 
 ## Where the pieces live
 
