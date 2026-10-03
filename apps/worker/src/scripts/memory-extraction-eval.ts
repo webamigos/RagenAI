@@ -1,0 +1,119 @@
+/* eslint-disable no-console */
+/**
+ * Measure the personal-memory extraction prompt (spec
+ * 2026-09-27-personal-memory-across-threads, C2), per ADR-20: a prompt is
+ * changed against numbers, not against a demo.
+ *
+ *   npx tsx --env-file=.env.local apps/worker/src/scripts/memory-extraction-eval.ts \
+ *     --repeats 3 [--json out.json]
+ *
+ * Runs the job's own prompt through `structuredGenerator` — the binding
+ * `runMemoryExtraction` uses — then the job's parse and plan, on
+ * `fixtures/memory-extraction-cases.ts`. Reports keep-precision and
+ * drop-recall separately, the organizational-fact drop rate that gates the
+ * rollout (E2: ≥ 95%), and how often a "yes, like that" is kept — what
+ * leaving the answer out of the extractor costs. Fixture text only; no
+ * database, no customer message. Costs one small model call per case per
+ * repeat.
+ */
+import { writeFileSync } from 'node:fs';
+
+import { type z } from 'zod';
+
+import { structuredGenerator } from '../activities/brain/structured-generator.js';
+import {
+  extractionAnswerSchema,
+  parseOperations,
+  planMemoryApply,
+  type CurrentMemory,
+} from '../activities/memory/extraction-plan.js';
+import {
+  MEMORY_EXTRACTION_SYSTEM,
+  memoryExtractionPrompt,
+} from '../activities/memory/prompt.js';
+import { MEMORY_EXTRACT_MODEL } from '../consts.js';
+import { getChatModel } from '../services/llm/provider.js';
+import { MEMORY_CASES } from './fixtures/memory-extraction-cases.js';
+import {
+  scoreCase,
+  summarizeCases,
+  type MemoryCaseResult,
+} from './memory-extraction-metrics.js';
+
+function option(flag: string): string | undefined {
+  const i = process.argv.indexOf(flag);
+  return i === -1 ? undefined : process.argv[i + 1];
+}
+
+const pct = (v: number | null) =>
+  v === null ? '—' : `${(v * 100).toFixed(1)}%`;
+
+async function main() {
+  const repeats = Number(option('--repeats') ?? '3');
+  const generate = structuredGenerator(
+    await getChatModel(MEMORY_EXTRACT_MODEL),
+  );
+  const results: (MemoryCaseResult & { repeat: number })[] = [];
+  let tokens = 0;
+
+  for (let repeat = 1; repeat <= repeats; repeat++) {
+    for (const c of MEMORY_CASES) {
+      const current: CurrentMemory[] = (c.current ?? []).map((content, i) => ({
+        ref: `m${i + 1}`,
+        publicId: `case-${c.id}-${i}`,
+        content,
+        version: 1,
+        updatedAt: new Date(0),
+      }));
+      const answer = await generate({
+        system: MEMORY_EXTRACTION_SYSTEM,
+        prompt: memoryExtractionPrompt(current, c.message),
+        schema: extractionAnswerSchema as z.ZodType,
+      });
+      tokens += answer.usage.inputTokens + answer.usage.outputTokens;
+      const parsed = parseOperations(answer.object);
+      const plan = planMemoryApply(current, parsed?.operations ?? []);
+      results.push({ ...scoreCase(c, plan), repeat });
+    }
+  }
+
+  const summary = summarizeCases(results);
+  console.log(
+    `model: ${MEMORY_EXTRACT_MODEL}, cases: ${MEMORY_CASES.length} × ${repeats}`,
+  );
+  console.log(`keep precision   ${pct(summary.keepPrecision)}`);
+  console.log(`keep recall      ${pct(summary.keepRecall)}`);
+  console.log(`drop recall      ${pct(summary.dropRecall)}`);
+  console.log(
+    `org-fact drops   ${pct(summary.orgFactDropRate)}   (rollout gate: ≥ 95%)`,
+  );
+  console.log(
+    `"yes, like that" ${pct(summary.yesLikeThatKept)}   (cost of excluding the answer)`,
+  );
+  for (const [kind, { correct, total }] of Object.entries(summary.byKind)) {
+    console.log(`  ${kind.padEnd(14)} ${correct}/${total}`);
+  }
+  for (const r of results.filter((x) => !x.correct)) {
+    console.log(
+      `  ✗ ${r.id} (repeat ${r.repeat}): ${r.expect}, wrote=${r.wrote}`,
+    );
+  }
+  console.log(`tokens: ${tokens}`);
+
+  const out = option('--json');
+  if (out) {
+    writeFileSync(
+      out,
+      JSON.stringify(
+        { model: MEMORY_EXTRACT_MODEL, repeats, summary, results },
+        null,
+        2,
+      ),
+    );
+  }
+}
+
+main().catch((error: unknown) => {
+  console.error(error);
+  process.exitCode = 1;
+});

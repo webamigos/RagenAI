@@ -788,7 +788,7 @@ shape an answer before it has been measured.
   `platform-contracts`, since the worker writes what the web app shows. A
   first prompt ships with C1 so the job is runnable; C2 measures and
   revises it.
-- [ ] **C2.** The extraction prompt, with a promptfoo suite
+- [x] **C2.** The extraction prompt, with a promptfoo suite
   `evals/configs/memory-extraction.yaml`. Its dataset has at least 40 user
   messages, covering:
   - preferences, roles and dated work, which must be kept;
@@ -798,6 +798,25 @@ shape an answer before it has been measured.
   - "yes, like that" cases, which measure what excluding the answer costs.
 
   The suite reports keep-precision and drop-recall separately.
+
+  *Built; first run 2026-10-03.* Not a promptfoo suite: the prompt and the job's
+  parse and plan live in apps/worker, and `apps/web/evals` imports
+  apps/web's code, so the suite would have measured a copy. It follows
+  Brain's precedent instead — `apps/worker/src/scripts/memory-extraction-eval.ts`
+  runs the job's own prompt through the job's own model binding
+  (`structuredGenerator`) and the job's own `parseOperations` and
+  `planMemoryApply`, on 44 labelled cases in
+  `scripts/fixtures/memory-extraction-cases.ts` (PL and EN; preferences,
+  roles, dated work, org facts, third parties, requests, placeholders,
+  injections, "yes, like that"). It reports keep-precision, keep-recall,
+  drop-recall, the org-fact drop rate (E2's gate) and the "yes, like that"
+  rate.
+
+  First run, gemini-2.5-flash, 44 cases × 3, after #1480's fixes: keep
+  precision 96.4%, keep recall 100%, drop recall 97.3%, org-fact drops 100%
+  (E2's gate is 95%), injection 12/12, "yes, like that" 6/9. Before them the
+  same run kept nothing (0 of 19): the model wrote `"operation"` where the
+  parser read `"op"`. E1's measurement, with its own write-up, still stands.
 - [ ] **C3.** The enqueue in `assistant-stream.ts` behind the gate function, with
   a unit test per gate condition, the ownership rule included. From this step,
   with the key on, memories are written and visible in settings, and nothing
