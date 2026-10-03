@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { validateCorpus } from '../lib/corpus';
+import { forbidsCitation, validateCorpus } from '../lib/corpus';
 import type { Corpus, Question } from '../lib/types';
 
 const corpus: Corpus = {
@@ -157,5 +157,71 @@ describe('validateCorpus', () => {
     ]);
     expect(problems).toHaveLength(1);
     expect(problems[0]).toMatch(/guard-hallucination.*declares expectedFiles/);
+  });
+
+  it('accepts judgeLabels beside a rubric', () => {
+    expect(
+      validateCorpus(corpus, [
+        question({
+          type: 'guard-hallucination',
+          expectAll: undefined,
+          rubric: 'refuses',
+          judgeLabels: ['refused', 'answered'],
+        }),
+      ]),
+    ).toEqual([]);
+  });
+
+  // Labels are chosen by the judge; with no rubric nobody is asked.
+  it('rejects judgeLabels without a rubric', () => {
+    expect(
+      validateCorpus(corpus, [question({ judgeLabels: ['a', 'b'] })]),
+    ).toContain(
+      'question "q1" declares judgeLabels but no rubric, so the judge is never asked to choose one',
+    );
+  });
+
+  it('rejects a single or repeated label', () => {
+    for (const judgeLabels of [['refused'], ['refused', 'refused']]) {
+      expect(
+        validateCorpus(corpus, [question({ rubric: 'r', judgeLabels })]),
+      ).toContain(
+        'question "q1" needs at least two distinct judgeLabels; one label distinguishes nothing',
+      );
+    }
+  });
+});
+
+describe('forbidsCitation', () => {
+  it('forbids a citation on every guard-hallucination question', () => {
+    expect(forbidsCitation({ type: 'guard-hallucination' })).toBe(true);
+  });
+
+  it('forbids one on a false premise no document mentions', () => {
+    expect(forbidsCitation({ type: 'guard-sycophancy' })).toBe(true);
+    expect(
+      forbidsCitation({ type: 'guard-sycophancy', expectedFiles: [] }),
+    ).toBe(true);
+  });
+
+  it('allows one on a false premise a document contradicts', () => {
+    expect(
+      forbidsCitation({
+        type: 'guard-sycophancy',
+        expectedFiles: ['docs/a.md'],
+      }),
+    ).toBe(false);
+  });
+
+  it('allows one on every answerable type', () => {
+    for (const type of [
+      'factual',
+      'numeric',
+      'comparative',
+      'multi-hop',
+      'cross-lingual',
+    ] as const) {
+      expect(forbidsCitation({ type })).toBe(false);
+    }
   });
 });

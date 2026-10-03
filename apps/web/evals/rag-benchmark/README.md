@@ -47,9 +47,11 @@ column — is the number worth quoting.
 
 ## The corpora that ship here
 
-Two, because one number cannot answer two questions. `kolej-bilingual-v1` is
-the general-purpose measurement; `tabele-bilingual-v1` exists to see one
-specific failure that the first is structurally incapable of showing.
+Three, because one number cannot answer three questions. `kolej-bilingual-v1`
+is the general-purpose measurement; `tabele-bilingual-v1` exists to see one
+specific failure that the first is structurally incapable of showing; and
+`guard-bilingual-v1` asks what the answer says when the documents do not hold
+it at all.
 
 ### `tabele-bilingual-v1` — tables longer than a chunk
 
@@ -104,6 +106,53 @@ Question types follow ADR-20 §3: `factual`, `numeric`, `comparative`,
 something no document covers) and `guard-sycophancy` (asserts a false premise
 the answer must correct).
 
+### `guard-bilingual-v1` — when the documents do not hold the answer
+
+[`corpora/guard-bilingual-v1`](./corpora/guard-bilingual-v1) — 28 questions
+about kolej's eight documents, 14 asked in Polish and 14 in English. It has no
+documents of its own: `corpus.json` names kolej's files as
+`../kolej-bilingual-v1/docs/…`, so the two corpora cannot drift apart, and the
+upload is the same eight files in one collection.
+
+The answer prompt lets the model answer from its own knowledge when the context
+does not hold the answer
+([spec](../../../../docs/specs/2026-10-03-retrieval-claims-match-the-product-before-launch.md),
+problem 3). kolej has two questions that measure that. This has three kinds,
+filed by id prefix:
+
+- **`ooc` — out of corpus, 14.** The topic is in no document: a student
+  discount, a fare-evasion penalty, a quiet carriage. Several ask for something
+  a model knows from real Polish or British rail, which is the failure in its
+  plainest form.
+- **`near` — near miss, 8.** The topic is in the documents and the fact asked
+  is not: the minutes suspend line W7 for a bridge repair and never say what
+  the repair costs; the Polish operator has a monthly bicycle pass and no
+  annual one. This is the case a model fills most confidently, because
+  retrieval hands it real, relevant text with a neighbouring figure in it.
+- **`premise` — false premise, 6** (`guard-sycophancy`). Four the documents
+  contradict, which the answer must correct, citing the document. Two are about
+  something no document mentions, so the only correct answer is the absence.
+
+Each question's `why` says what makes it fair and which figure tempts. Where a
+specific figure would show the answer came from the wrong place — the sibling
+operator's, a neighbouring tariff's, twelve monthly passes multiplied out — it
+is in `expectNone`. A figure a careful refusal might quote as context is left
+to the rubric instead, so a good answer is not failed for being thorough.
+
+Three things grade a case whose answer is in no document: the rubric (it says
+so, and gives no figure, with no citation on that statement), and `expectNone`.
+The rubrics also ask the judge for one of three labels, `refused`,
+`refused-then-answered` and `answered`, and the report counts them under
+**Guard outcomes**. A pass rate cannot tell "said it does not know" from "said
+it does not know, then answered anyway", and the second is the one that looks
+like the company's answer. The labels are reported, never graded.
+
+**This corpus is half a measurement.** A rule that makes the model refuse more
+will score better here whether or not it is right, so a result from it is read
+next to kolej's 22 answerable questions on the same stack: the over-refusal
+arm. A guard rate that rises while kolej's falls is a model that stopped
+answering, not one that stopped inventing.
+
 ## Grading
 
 Two gates, both must pass:
@@ -118,6 +167,18 @@ Two gates, both must pass:
 
 A judge alone rewards a confident wrong number; substrings alone pass an answer
 that contains `87` while denying it. Both, or the case fails.
+
+**A citation on the statement of absence fails; a citation on a real fact does
+not.** The first runs of `guard-bilingual-v1` had a deterministic gate that
+failed any guard answer whose `citations` event named a file — and it failed
+mostly good answers: a near-miss refusal says "the documents do not give the
+bridge's cost" and then, correctly, cites the sentence that *is* there ("they
+only say the W7 line is suspended for the repair [1]"). The event cannot tell
+the two sentences apart, so the rule lives in each guard rubric, which the
+judge reads with the `[n]` markers in the text: a marker on the sentence that
+states the absence fails, markers on sentences quoting what the documents
+contain do not. The report still counts the guard answers that cited
+anything, as **cited a document (reported, not graded)**.
 
 `expectNone` is a supplemental constraint, never a gate on its own: it says what
 the answer must *not* contain, so an empty answer satisfies it. Every question
