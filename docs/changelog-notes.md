@@ -94,3 +94,11 @@ archive is the blog.
   cost ceiling never saw it. It is priced now (EUR 0.10 per million input
   tokens). Rows recorded before this change keep their zero.
   ([#1481](https://github.com/webamigos/RagenAI/pull/1481))
+
+### Chat
+
+- `[brief]` **A thread someone shared with you opens.** It was listed under
+  "Shared with me", but opening it showed an empty chat with a message box:
+  only the thread's owner and organization admins could load its messages.
+  A member it was shared with now reads it, read-only, and can export it.
+  ([#1493](https://github.com/webamigos/RagenAI/pull/1493))

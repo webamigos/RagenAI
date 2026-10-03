@@ -8,6 +8,7 @@ import { auth } from '@/lib/auth';
 import { getOrgIdFromAuth } from '@/app/lib/utils/auth-helpers';
 import { getActiveMember } from '@/lib/auth-guards';
 import { canManageOrg } from '@/lib/auth-access-control';
+import { isThreadSharedWithUserQuery } from '@/features/threads/services/queries/is-thread-shared-with-user-query';
 import db from '@ragenai/prisma-client';
 
 export const dynamic = 'force-dynamic';
@@ -89,10 +90,18 @@ export const GET = async (request: NextRequest, { params }: Params) => {
         );
       }
 
+      // Three readers: the owner, read-write; and, read-only, a member the
+      // owner shared the thread with, or anyone who can manage the org. A
+      // shared reader used to fall through to 404 here, so a thread listed
+      // under "Shared with me" opened onto no messages at all.
       const isThreadOwner = thread.visitorId === session.user.id;
       if (!isThreadOwner) {
-        const member = await getActiveMember(orgId);
-        if (!member || !canManageOrg(member.role)) {
+        const sharedWithMe = await isThreadSharedWithUserQuery(
+          thread.id,
+          session.user.id,
+        );
+        const member = sharedWithMe ? null : await getActiveMember(orgId);
+        if (!sharedWithMe && (!member || !canManageOrg(member.role))) {
           return NextResponse.json(
             { error: 'Thread not found' },
             { status: StatusCodes.NOT_FOUND },
