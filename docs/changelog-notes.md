@@ -76,3 +76,12 @@ archive is the blog.
   ([PL](https://ragen.ai/pl/blog/ragen-changelog-4-11-wrzesnia-2026))
 
 ## Unreleased
+
+### Usage and limits
+
+- `[brief]` **Reranking counts toward the monthly cost limit.** The default
+  Scaleway reranker recorded its usage under a provider the price table did
+  not list, so every reranking call was stored at a cost of zero and the
+  cost ceiling never saw it. It is priced now (EUR 0.10 per million input
+  tokens). Rows recorded before this change keep their zero.
+  ([#1481](https://github.com/webamigos/RagenAI/pull/1481))
