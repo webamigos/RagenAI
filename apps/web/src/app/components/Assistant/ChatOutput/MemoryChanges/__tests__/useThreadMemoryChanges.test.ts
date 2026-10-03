@@ -72,4 +72,33 @@ describe('useThreadMemoryChanges', () => {
     await advance(120_000);
     expect(read).toHaveBeenCalledTimes(MEMORY_LINE_POLL_DELAYS_MS.length);
   });
+
+  it('drops a refresh that resolves after the reader moved to another thread', async () => {
+    let resolveOld: (v: unknown) => void = () => {};
+    const old = { id: 'm1', createdAt: new Date(0) };
+    const { result, rerender } = renderHook(
+      ({ thread }) => useThreadMemoryChanges(thread, old),
+      { initialProps: { thread: 't1' } },
+    );
+    await advance(0);
+
+    read.mockImplementationOnce(
+      () => new Promise((resolve) => (resolveOld = resolve)),
+    );
+    let pending: Promise<void> = Promise.resolve();
+    act(() => {
+      pending = result.current.refresh();
+    });
+
+    read.mockResolvedValue({ m9: LINE });
+    rerender({ thread: 't2' });
+    await advance(0);
+    expect(result.current.changes).toEqual({ m9: LINE });
+
+    await act(async () => {
+      resolveOld({ m1: LINE });
+      await pending;
+    });
+    expect(result.current.changes).toEqual({ m9: LINE });
+  });
 });

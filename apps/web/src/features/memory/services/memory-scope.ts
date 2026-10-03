@@ -420,6 +420,14 @@ export async function undoMemoryChange(
           throw new StaleUndo('stale');
         }
       } else {
+        // Lock the profile, as the extraction's apply does, so two restores
+        // for one owner cannot both count room for one more memory.
+        await tx.$queryRaw`
+          SELECT id FROM user_memory_profiles
+          WHERE id = ${change.profileId}
+            AND organization_id = ${owner.organizationId}
+            AND user_id = ${owner.userId}
+          FOR UPDATE`;
         // `publicId` is unique across every owner, so this is not scoped:
         // any row holding it means the statement exists again.
         const exists = await tx.userMemory.findFirst({

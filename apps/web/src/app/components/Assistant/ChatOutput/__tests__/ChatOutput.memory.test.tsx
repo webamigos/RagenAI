@@ -36,7 +36,11 @@ const answers: MessageDto[] = [
   { id: 'm2', role: 'ASSISTANT', content: 'Second answer.', createdAt: at },
 ] as MessageDto[];
 
-const show = (props: { isPublicAccess?: boolean; threadId?: string }) =>
+const show = (props: {
+  isPublicAccess?: boolean;
+  isReadOnly?: boolean;
+  threadId?: string;
+}) =>
   render(
     <Provider
       store={configureStore({
@@ -85,6 +89,16 @@ describe('ChatOutput memory line', () => {
 
   it('never reads or shows memory on a public or read-only surface', async () => {
     show({ threadId: 't1', isPublicAccess: true });
+
+    await waitFor(() =>
+      expect(screen.getByText('Second answer.')).toBeTruthy(),
+    );
+    expect(read).not.toHaveBeenCalled();
+    expect(screen.queryByText(/Remembered:/)).toBeNull();
+  });
+
+  it('never reads or shows memory on a read-only thread, where nothing can be undone', async () => {
+    show({ threadId: 't1', isReadOnly: true });
 
     await waitFor(() =>
       expect(screen.getByText('Second answer.')).toBeTruthy(),

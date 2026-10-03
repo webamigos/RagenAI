@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import type { ThreadMemoryChanges } from '@/features/memory/contracts/memory.types';
 import { getThreadMemoryChangesAction } from './actions';
@@ -32,9 +32,21 @@ export function useThreadMemoryChanges(
     : undefined;
   const [changes, setChanges] = useState<ThreadMemoryChanges>({});
 
+  // The thread on screen now. A refresh started on one thread — after an
+  // undo, say — that resolves once the reader has moved to another must not
+  // write the old thread's changes over the new one's.
+  const currentThread = useRef(threadId);
+  useEffect(() => {
+    currentThread.current = threadId;
+  }, [threadId]);
+
   const refresh = useCallback(async () => {
-    if (threadId) {
-      setChanges(await getThreadMemoryChangesAction(threadId));
+    if (!threadId) {
+      return;
+    }
+    const next = await getThreadMemoryChangesAction(threadId);
+    if (currentThread.current === threadId) {
+      setChanges(next);
     }
   }, [threadId]);
 

@@ -20,6 +20,7 @@ const db = vi.hoisted(() => ({
 }));
 /** The client an interactive transaction hands its callback. */
 const tx = vi.hoisted(() => ({
+  $queryRaw: vi.fn(),
   userMemoryChange: { findFirst: vi.fn(), updateMany: vi.fn() },
   userMemory: {
     deleteMany: vi.fn(),
@@ -551,6 +552,31 @@ describe('undoMemoryChange', () => {
         sourceThreadId: null,
       },
     });
+  });
+
+  it('locks the owner’s profile before counting room for a restored DELETE', async () => {
+    tx.userMemoryChange.findFirst.mockResolvedValue(
+      change({
+        operation: 'DELETE',
+        previousContent: 'x',
+        resultVersion: null,
+      }),
+    );
+    const order: string[] = [];
+    tx.$queryRaw.mockImplementation(async () => order.push('lock'));
+    tx.userMemory.count.mockImplementation(async () => {
+      order.push('count');
+      return 0;
+    });
+
+    await undoMemoryChange(await owner(), CHANGE_ID);
+
+    const [sql, ...values] = tx.$queryRaw.mock.calls[0];
+    expect((sql as TemplateStringsArray).join('?')).toMatch(
+      /FROM user_memory_profiles[\s\S]*FOR UPDATE/,
+    );
+    expect(values).toEqual([5, ORG, USER]);
+    expect(order).toEqual(['lock', 'count']);
   });
 
   // The spec's D2 tests. A later extraction and a settings edit both bump
