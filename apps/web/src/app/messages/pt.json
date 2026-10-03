@@ -1121,7 +1121,8 @@
       "assistants": "Assistentes",
       "chatbots": "Chatbots",
       "organization": "Organização",
-      "brain": "Brain"
+      "brain": "Brain",
+      "brainBeta": "Beta"
     },
     "starred": {
       "title": "Favoritos"

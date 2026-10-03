@@ -1121,7 +1121,8 @@
       "assistants": "Asszisztensek",
       "chatbots": "Chatbotok",
       "organization": "Szervezet",
-      "brain": "Brain"
+      "brain": "Brain",
+      "brainBeta": "Beta"
     },
     "starred": {
       "title": "Kedvencek"

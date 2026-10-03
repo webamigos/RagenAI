@@ -1121,7 +1121,8 @@
       "assistants": "Асистенти",
       "chatbots": "Чатботове",
       "organization": "Организация",
-      "brain": "Brain"
+      "brain": "Brain",
+      "brainBeta": "Beta"
     },
     "starred": {
       "title": "Любими"

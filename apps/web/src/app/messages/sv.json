@@ -1121,7 +1121,8 @@
       "assistants": "Assistenter",
       "chatbots": "Chattbotar",
       "organization": "Organisation",
-      "brain": "Brain"
+      "brain": "Brain",
+      "brainBeta": "Beta"
     },
     "starred": {
       "title": "Favoriter"

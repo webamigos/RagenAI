@@ -1121,7 +1121,8 @@
       "assistants": "Assistenter",
       "chatbots": "Chatboter",
       "organization": "Organisasjon",
-      "brain": "Brain"
+      "brain": "Brain",
+      "brainBeta": "Beta"
     },
     "starred": {
       "title": "Stjernemerket"

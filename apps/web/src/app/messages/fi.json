@@ -1121,7 +1121,8 @@
       "assistants": "Assistentit",
       "chatbots": "Chatbotit",
       "organization": "Organisaatio",
-      "brain": "Brain"
+      "brain": "Brain",
+      "brainBeta": "Beta"
     },
     "starred": {
       "title": "Suosikit"
