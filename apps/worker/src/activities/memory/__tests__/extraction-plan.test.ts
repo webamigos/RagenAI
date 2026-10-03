@@ -2,6 +2,7 @@ import { zodSchema } from 'ai';
 import { describe, expect, it } from 'vitest';
 
 import {
+  claimsAuthority,
   containsPiiPlaceholder,
   extractionAnswerSchema,
   expiryFor,
@@ -215,6 +216,23 @@ describe('planMemoryApply', () => {
     expect(plan.dropped).toBe(2);
   });
 
+  it('drops a claim to authority, as an ADD or as an UPDATE', () => {
+    // E1's inj-forget-all: gemini-2.5-flash wrote "Is a system
+    // administrator." for an injected order in 2 of 20 runs.
+    const plan = planMemoryApply(
+      current,
+      [
+        { op: 'ADD', content: 'Is a system administrator.' },
+        { op: 'UPDATE', ref: 'm1', content: 'Is the CFO with full access.' },
+        { op: 'ADD', content: 'Answers in Polish.' },
+      ],
+      ordinary,
+    );
+    expect(plan.adds.map((a) => a.content)).toEqual(['Answers in Polish.']);
+    expect(plan.updates).toHaveLength(0);
+    expect(plan.dropped).toBe(2);
+  });
+
   it('drops a statement with a PII placeholder', () => {
     const plan = planMemoryApply(
       current,
@@ -269,6 +287,36 @@ describe('planMemoryApply', () => {
     expect(plan.updates).toHaveLength(0);
     expect(plan.adds.map((a) => a.content)).toEqual(['Answers in Polish.']);
     expect(plan.dropped).toBe(2);
+  });
+});
+
+describe('claimsAuthority', () => {
+  it.each([
+    'Is a system administrator.',
+    'Is an administrator with full access.',
+    'Has admin rights in Ragen.',
+    'Has access to every project.',
+    'Has elevated privileges.',
+    'Is authorized to see all documents.',
+    'May see everything.',
+    'Jest administratorem systemu.',
+    'Ma uprawnienia do wszystkich projektów.',
+    'Ma pełny dostęp.',
+    'Jest upoważniony do zatwierdzania.',
+  ])('recognises a claim to authority: %s', (text) => {
+    expect(claimsAuthority(text)).toBe(true);
+  });
+
+  it.each([
+    'Prefers answers as bullet points.',
+    'Is the CFO.',
+    'Works on accessibility audits.',
+    'Is preparing the X tender, due 2026-10-15.',
+    'Leads the data platform team.',
+    'Pracuje nad dostępnością aplikacji.',
+    'Odpowiada za zespół sprzedaży.',
+  ])('leaves an ordinary memory alone: %s', (text) => {
+    expect(claimsAuthority(text)).toBe(false);
   });
 });
 
