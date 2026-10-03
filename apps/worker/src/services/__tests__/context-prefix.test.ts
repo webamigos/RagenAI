@@ -27,6 +27,14 @@ describe('freeContextPrefix', () => {
     expect(freeContextPrefix({ fileName: 'Regulamin.docx' })).toBe('Regulamin');
   });
 
+  // An organization with docSummariesEnabled off gets '' from
+  // generateDocumentSummary, not undefined — the prefix must read it as none.
+  it('reads an empty summary as no summary', () => {
+    expect(freeContextPrefix({ fileName: 'Regulamin.docx', summary: '' })).toBe(
+      'Regulamin',
+    );
+  });
+
   it('never exceeds the embedding contract’s cap', () => {
     const prefix = freeContextPrefix({
       fileName: 'a.pdf',

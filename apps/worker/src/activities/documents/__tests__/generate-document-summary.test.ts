@@ -8,6 +8,16 @@ vi.mock('../../../services/llm/provider.js', () => ({
   getChatModelForOrg: vi.fn().mockResolvedValue('mock-model'),
 }));
 
+// The organization's setting is read before the model call; these cases are
+// about the env flag and the model, so the organization allows summaries.
+// The setting's own branches are in generate-document-summary-org-setting.
+vi.mock('../../../services/db/db.js', () => ({
+  db: {
+    trackAiUsage: vi.fn(async () => undefined),
+    isOrgDocSummariesEnabled: vi.fn(async () => true),
+  },
+}));
+
 vi.mock('../../../services/langfuse-trace.js', () => ({
   withLangfuseTrace: vi.fn((_opts: unknown, fn: () => unknown) => fn()),
 }));
