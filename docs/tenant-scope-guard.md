@@ -8,6 +8,17 @@ from the Task Router.
 
 **Tenant-scope guard (warn-only)**: the guard is a Prisma Client Extension, wired into the singleton, that logs a warning (via `logger.warn`) whenever a query on a tenant-scoped model runs without its org field (`organizationId`, or `orgId` for `DocumentCitation`) present in `where`/`data`. It covers ~20 models with a direct org column (`Thread`, `Project`, `UserFile`, `DocumentFolder`, `McpConnector`, etc. — see the file for the full list); it does **not** cover models scoped only via a relation (`Message`, `ThreadDocument`, `DocumentPermission`, `ProjectPermission`, `ThreadShare*`) since there's no column to check. It **warns, it does not throw** — a repo-wide grep found ~200 existing call sites across `apps/web` and `apps/api`, too many to audit in one pass; flipping to hard enforcement is deliberate future work once the warning logs are clean. The model map and the predicate now live in `@ragenai/platform-contracts` (ADR-33); `src/libs/db/tenant-scope-guard.ts` and `apps/api/src/prisma/tenant-scope-guard.ts` are thin bindings that wrap them in each app's own `Prisma.defineExtension` — do not re-declare the model map. See `docs/lessons/missing-org-scope-on-project-lookup.md` for the one confirmed real bug this already caught.
 
+## Which shapes count as scoped
+
+A presence check on the org column, in any filter every matching row must
+satisfy: a top-level key; a compound unique selector naming the column
+(`organizationId_userId: { organizationId, userId }`); one conjunct of an
+`AND` (how Better Auth's Prisma adapter writes every multi-field lookup); or
+*every* branch of an `OR`. `NOT` and relation filters never count. On a
+create only the top-level `data` is read, so write `organizationId` rather than
+`organization: { connect }`. Until 2026-10 only the top-level key counted, and
+those scoped shapes were most of the warnings in a normal run.
+
 ## Where the pieces live
 
 | Piece | Where | Why there |

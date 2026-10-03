@@ -30,16 +30,15 @@ export async function createAiUsageCommand(
 
     await db.aiUsage.create({
       data: {
-        organization: { connect: { id: input.organizationId } },
-        ...(input.projectId
-          ? { project: { connect: { id: input.projectId } } }
-          : {}),
-        ...(input.userId ? { user: { connect: { id: input.userId } } } : {}),
-        // `team` rather than a raw `teamId`: the column carries a relation now,
-        // and Prisma refuses a scalar foreign key alongside `connect` on the
-        // same create. `threadId` next to it is a plain column with no
-        // relation, which is why it stays a scalar.
-        ...(input.teamId ? { team: { connect: { id: input.teamId } } } : {}),
+        // Scalar foreign keys throughout, not `connect`. Prisma refuses the two
+        // forms mixed on one create, and the tenant-scope guard reads the
+        // `organizationId` column: `organization: { connect }` names the same
+        // organization but is reported as a create with no scope, once per
+        // model call.
+        organizationId: input.organizationId,
+        projectId: input.projectId || null,
+        userId: input.userId || null,
+        teamId: input.teamId || null,
         threadId: input.threadId ?? null,
         step: input.step,
         provider: input.provider,

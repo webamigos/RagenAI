@@ -76,6 +76,7 @@ describe('getChatbotSessionMessagesQuery', () => {
 
     const result = await getChatbotSessionMessagesQuery(
       'chatbot-1',
+      'org-1',
       'session-1',
     );
 
@@ -91,6 +92,7 @@ describe('getChatbotSessionMessagesQuery', () => {
 
     const result = await getChatbotSessionMessagesQuery(
       'chatbot-1',
+      'org-1',
       'session-1',
     );
 
@@ -122,6 +124,7 @@ describe('getChatbotSessionMessagesQuery', () => {
 
     const result = await getChatbotSessionMessagesQuery(
       'chatbot-1',
+      'org-1',
       'session-1',
     );
 
@@ -138,6 +141,7 @@ describe('getChatbotSessionMessagesQuery', () => {
 
     const result = await getChatbotSessionMessagesQuery(
       'chatbot-1',
+      'org-1',
       'session-1',
     );
 
@@ -152,19 +156,20 @@ describe('getChatbotSessionMessagesQuery', () => {
     mockFindFirst.mockResolvedValue({ ...baseThread, encryptedDek: dek });
     mockDecrypt.mockResolvedValue(baseMessages);
 
-    await getChatbotSessionMessagesQuery('chatbot-1', 'session-1');
+    await getChatbotSessionMessagesQuery('chatbot-1', 'org-1', 'session-1');
 
     expect(mockDecrypt).toHaveBeenCalledWith(expect.any(Array), dek);
   });
 
-  it('scopes the DB query to chatbotId and visitorId', async () => {
+  it('scopes the DB query to the chatbot’s organization, chatbotId and visitorId', async () => {
     mockFindFirst.mockResolvedValue(null);
 
-    await getChatbotSessionMessagesQuery('chatbot-1', 'session-abc');
+    await getChatbotSessionMessagesQuery('chatbot-1', 'org-1', 'session-abc');
 
     const whereArg = mockFindFirst.mock.calls[0][0].where;
-    expect(whereArg).toMatchObject({
+    expect(whereArg).toEqual({
       chatbotId: 'chatbot-1',
+      organizationId: 'org-1',
       visitorId: 'session-abc',
     });
   });

@@ -186,7 +186,7 @@ export async function finalizeOnboardingCommand(preferredOrgId?: string) {
     try {
       const defaultTeamId = `${activeOrgId}-general`;
       await db.team.upsert({
-        where: { id: defaultTeamId },
+        where: { id: defaultTeamId, organizationId: activeOrgId },
         update: {},
         create: {
           id: defaultTeamId,

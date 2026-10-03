@@ -31,8 +31,11 @@ vi.mock('@/lib/auth-guards', () => ({
 vi.mock(
   '@/features/messages/services/queries/get-thread-messages-query',
   () => ({
-    getThreadMessagesQuery: (threadId: string, visitorId: string) =>
-      m.fetchMessages(threadId, visitorId),
+    getThreadMessagesQuery: (
+      threadId: string,
+      visitorId: string,
+      organizationId?: string,
+    ) => m.fetchMessages(threadId, visitorId, organizationId),
   }),
 );
 vi.mock('@/app/lib/utils/logger', () => ({
@@ -78,7 +81,7 @@ describe('GET /api/messages/[threadId]/[visitorId]', () => {
     const res = await get(OWNER);
     expect(res.status).toBe(200);
     expect((await res.json()).isReadOnly).toBe(false);
-    expect(m.fetchMessages).toHaveBeenCalledWith(THREAD, OWNER);
+    expect(m.fetchMessages).toHaveBeenCalledWith(THREAD, OWNER, 'org-1');
   });
 
   it('serves a member the thread was shared with, read-only, as the owner’s thread', async () => {
@@ -87,7 +90,7 @@ describe('GET /api/messages/[threadId]/[visitorId]', () => {
     expect(res.status).toBe(200);
     expect((await res.json()).isReadOnly).toBe(true);
     expect(m.shared).toHaveBeenCalledWith(THREAD, READER);
-    expect(m.fetchMessages).toHaveBeenCalledWith(THREAD, OWNER);
+    expect(m.fetchMessages).toHaveBeenCalledWith(THREAD, OWNER, 'org-1');
   });
 
   it('still serves an org admin, read-only', async () => {
@@ -95,7 +98,15 @@ describe('GET /api/messages/[threadId]/[visitorId]', () => {
     const res = await get();
     expect(res.status).toBe(200);
     expect((await res.json()).isReadOnly).toBe(true);
-    expect(m.fetchMessages).toHaveBeenCalledWith(THREAD, OWNER);
+    expect(m.fetchMessages).toHaveBeenCalledWith(THREAD, OWNER, 'org-1');
+  });
+
+  it('reads a guest’s thread by visitor id alone, with no organization', async () => {
+    m.session.mockResolvedValue(null);
+    const res = await get(OWNER);
+    expect(res.status).toBe(200);
+    expect(m.findThread).not.toHaveBeenCalled();
+    expect(m.fetchMessages).toHaveBeenCalledWith(THREAD, OWNER, undefined);
   });
 
   it('refuses a member it was not shared with, as not found', async () => {

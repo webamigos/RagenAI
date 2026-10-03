@@ -573,7 +573,7 @@ export const auth = betterAuth({
               const defaultTeamId = `${orgId}-general`;
 
               await db.team.upsert({
-                where: { id: defaultTeamId },
+                where: { id: defaultTeamId, organizationId: orgId },
                 update: {},
                 create: {
                   id: defaultTeamId,

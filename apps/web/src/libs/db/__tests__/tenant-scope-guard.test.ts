@@ -69,4 +69,47 @@ describe('createTenantScopeWarnExtension', () => {
 
     expect(onViolation).not.toHaveBeenCalled();
   });
+
+  // The two shapes that filled the soak-run logs while being scoped: a
+  // compound unique key, and Better Auth's adapter writing every multi-field
+  // lookup as an `AND`.
+  it.each([
+    [
+      'McpConnector',
+      'findUnique',
+      {
+        where: {
+          organizationId_userId_providerSlug: {
+            organizationId: 'org-1',
+            userId: 'u-1',
+            providerSlug: 'SLACK',
+          },
+        },
+      },
+    ],
+    [
+      'Member',
+      'findFirst',
+      {
+        where: {
+          AND: [
+            { organizationId: { equals: 'org-1' } },
+            { userId: { equals: 'u-1' } },
+          ],
+        },
+      },
+    ],
+  ])('does not report a scoped %s.%s', async (model, operation, args) => {
+    const onViolation = vi.fn();
+    const config = captureExtensionConfig(onViolation);
+
+    await config.query.$allModels.$allOperations({
+      model,
+      operation,
+      args,
+      query: vi.fn().mockResolvedValue(null),
+    });
+
+    expect(onViolation).not.toHaveBeenCalled();
+  });
 });

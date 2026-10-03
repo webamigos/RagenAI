@@ -389,7 +389,7 @@ export async function undoMemoryChange(
         throw new NotFoundException('Memory change not found');
       }
       const claimed = await tx.userMemoryChange.updateMany({
-        where: { id: change.id, undoneAt: null },
+        where: { id: change.id, ...ownerWhere(owner), undoneAt: null },
         data: { undoneAt: new Date() },
       });
       if (claimed.count === 0) {

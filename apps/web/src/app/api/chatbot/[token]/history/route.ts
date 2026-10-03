@@ -86,6 +86,7 @@ export async function GET(
   try {
     messages = await getChatbotSessionMessagesQuery(
       chatbot.id,
+      chatbot.organizationId,
       sessionIdParsed.data,
     );
   } catch (err) {

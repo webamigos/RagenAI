@@ -116,6 +116,7 @@ export const createMessageInDbCommand = async ({
 export const createAndStoreMessageCommand = async ({
   prompt,
   threadId,
+  organizationId,
   visitorId,
   messageType = 'TEXT',
   voiceDurationSeconds,
@@ -123,6 +124,11 @@ export const createAndStoreMessageCommand = async ({
 }: {
   prompt: string;
   threadId: Thread['id'];
+  /**
+   * The thread's organization, as the caller resolved the thread — repeated
+   * on the title write so it cannot land outside the thread that was checked.
+   */
+  organizationId: Thread['organizationId'];
   visitorId?: string;
   messageType?: MessageContentType;
   voiceDurationSeconds?: number;
@@ -146,7 +152,7 @@ export const createAndStoreMessageCommand = async ({
     // Auto-set thread title from first user message if not already set
     try {
       await db.thread.updateMany({
-        where: { id: threadId, title: null },
+        where: { id: threadId, organizationId, title: null },
         data: {
           title:
             trimmedPrompt.length > 100

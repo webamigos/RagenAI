@@ -127,7 +127,10 @@ export async function POST(request: NextRequest) {
 
     // Before any retrieval or model turn: a limit charged after the work is
     // done is an accounting entry, not a limit.
-    const overTeamLimit = await refuseIfOverTeamRateLimit(usageTeamId);
+    const overTeamLimit = await refuseIfOverTeamRateLimit(
+      usageTeamId,
+      organizationId,
+    );
     if (overTeamLimit) {
       return overTeamLimit;
     }

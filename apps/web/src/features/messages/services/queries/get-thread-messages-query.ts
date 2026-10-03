@@ -12,13 +12,23 @@ import { decryptMessageContents } from '@ragenai/crypto';
 import { readSourceRegions, type SourceRegion } from '@ragenai/rag-core';
 import { isUndecodableText } from '@ragenai/rag-core/undecodable-text';
 
+/**
+ * `organizationId` is the signed-in reader's organization, which the route has
+ * already checked the thread against. A guest reading their own thread has
+ * none, and is matched on `visitorId` alone.
+ */
 export const getThreadMessagesQuery = async (
   threadId: Thread['id'],
   visitorId: Thread['visitorId'],
+  organizationId?: string,
 ) => {
   try {
     const thread = await db.thread.findFirst({
-      where: { id: threadId, visitorId: visitorId },
+      where: {
+        id: threadId,
+        visitorId: visitorId,
+        ...(organizationId ? { organizationId } : {}),
+      },
       select: {
         id: true,
         encryptedDek: true,

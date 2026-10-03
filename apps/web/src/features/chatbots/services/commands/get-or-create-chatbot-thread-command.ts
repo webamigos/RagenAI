@@ -9,7 +9,7 @@ export const getOrCreateChatbotThreadCommand = async (
   sessionId: string,
 ) => {
   const existing = await db.thread.findFirst({
-    where: { chatbotId, visitorId: sessionId },
+    where: { chatbotId, organizationId, visitorId: sessionId },
     select: { id: true },
   });
 
@@ -33,7 +33,7 @@ export const getOrCreateChatbotThreadCommand = async (
       err.code === 'P2002'
     ) {
       return db.thread.findFirstOrThrow({
-        where: { chatbotId, visitorId: sessionId },
+        where: { chatbotId, organizationId, visitorId: sessionId },
         select: { id: true },
       });
     }
