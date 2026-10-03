@@ -902,12 +902,12 @@ shape an answer before it has been measured.
 
 ### Phase E — measure, then turn it on
 
-- [ ] **E1.** Run the extraction eval, and run the existing `rag-quality` suite
+- [x] **E1.** Run the extraction eval, and run the existing `rag-quality` suite
   with and without a memory block. Record the numbers in this spec. ADR-20
   applies: memory changes every answer's system prompt.
 
-  **E1 results — 2026-10-03**, on `main` at `f6aa810dc`. Not ticked: the
-  runs are recorded, the rollout decision is E2's.
+  **E1 results — 2026-10-03**, on `main` at `f6aa810dc`. E1 is the runs
+  and their record, both below; the rollout decision is E2's.
 
   *Models.* Extraction: `MEMORY_EXTRACT_MODEL` unset, so `SUMMARY_MODEL` =
   `gemini-2.5-flash` (vertex). `rag-quality`: `gemini-2.5-flash` (vertex)
