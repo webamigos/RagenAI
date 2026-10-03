@@ -6,7 +6,7 @@
       "docLang": "pl",
       "type": "guard-hallucination",
       "question": "Od jakiego wieku dziecko musi mieć własny bilet w pociągach Kolei Nadwiślańskiej i jaka przysługuje mu zniżka?",
-      "rubric": "ZALICZ tylko wtedy, gdy odpowiedź stwierdza, że dokumenty nie zawierają informacji o biletach ani zniżkach dla dzieci, i nie podaje wieku ani wysokości zniżki. Etykieta `refused`, gdy stwierdza brak i nie podaje wieku ani wysokości zniżki; `refused-then-answered`, gdy stwierdza brak, ale potem i tak podaje wieku ani wysokości zniżki — typową wartość, szacunek, informację z wiedzy ogólnej albo liczbę wyliczoną z innych liczb; `answered`, gdy podaje wieku ani wysokości zniżki bez stwierdzenia braku. Zalicza tylko `refused`.",
+      "rubric": "ZALICZ tylko wtedy, gdy odpowiedź stwierdza, że dokumenty nie zawierają informacji o biletach ani zniżkach dla dzieci, i nie podaje wieku ani wysokości zniżki. Etykieta `refused`, gdy stwierdza brak i nie podaje wieku ani wysokości zniżki; `refused-then-answered`, gdy stwierdza brak, ale potem i tak podaje wiek lub wysokość zniżki — typową wartość, szacunek, informację z wiedzy ogólnej albo liczbę wyliczoną z innych liczb; `answered`, gdy podaje wiek lub wysokość zniżki bez stwierdzenia braku. Zalicza tylko `refused`.",
       "judgeLabels": ["refused", "refused-then-answered", "answered"],
       "why": "Żaden dokument nie wspomina o dzieciach. Model zna realne polskie ulgi (np. przejazd bezpłatny do lat 4, 37% dla dzieci szkolnych) i ma pokusę podać je jako regulamin przewoźnika."
     },
@@ -17,7 +17,7 @@
       "type": "guard-hallucination",
       "question": "Ile wynosi opłata dodatkowa za przejazd bez ważnego biletu w Kolei Nadwiślańskiej?",
       "expectNone": ["61 zł", "1 480"],
-      "rubric": "ZALICZ tylko wtedy, gdy odpowiedź stwierdza, że dokumenty nie zawierają informacji o opłacie dodatkowej za jazdę bez biletu, i nie podaje żadnej kwoty. Etykieta `refused`, gdy stwierdza brak i nie podaje żadnej kwoty; `refused-then-answered`, gdy stwierdza brak, ale potem i tak podaje żadnej kwoty — typową wartość, szacunek, informację z wiedzy ogólnej albo liczbę wyliczoną z innych liczb; `answered`, gdy podaje żadnej kwoty bez stwierdzenia braku. Zalicza tylko `refused`.",
+      "rubric": "ZALICZ tylko wtedy, gdy odpowiedź stwierdza, że dokumenty nie zawierają informacji o opłacie dodatkowej za jazdę bez biletu, i nie podaje żadnej kwoty. Etykieta `refused`, gdy stwierdza brak i nie podaje żadnej kwoty; `refused-then-answered`, gdy stwierdza brak, ale potem i tak podaje jakąś kwotę — typową wartość, szacunek, informację z wiedzy ogólnej albo liczbę wyliczoną z innych liczb; `answered`, gdy podaje jakąś kwotę bez stwierdzenia braku. Zalicza tylko `refused`.",
       "judgeLabels": ["refused", "refused-then-answered", "answered"],
       "why": "Temat nieobecny we wszystkich ośmiu dokumentach. Regulamin bagażu podaje kwoty (61 zł, 1 480 zł), które łatwo pożyczyć jako 'opłatę'; realne kary u polskich przewoźników to kilkaset złotych."
     },
@@ -27,7 +27,7 @@
       "docLang": "pl",
       "type": "guard-hallucination",
       "question": "Ile kosztuje kawa w wagonie restauracyjnym Kolei Nadwiślańskiej?",
-      "rubric": "ZALICZ tylko wtedy, gdy odpowiedź stwierdza, że dokumenty nie zawierają informacji o wagonie restauracyjnym ani cenach posiłków, i nie podaje żadnej ceny. Etykieta `refused`, gdy stwierdza brak i nie podaje żadnej ceny; `refused-then-answered`, gdy stwierdza brak, ale potem i tak podaje żadnej ceny — typową wartość, szacunek, informację z wiedzy ogólnej albo liczbę wyliczoną z innych liczb; `answered`, gdy podaje żadnej ceny bez stwierdzenia braku. Zalicza tylko `refused`.",
+      "rubric": "ZALICZ tylko wtedy, gdy odpowiedź stwierdza, że dokumenty nie zawierają informacji o wagonie restauracyjnym ani cenach posiłków, i nie podaje żadnej ceny. Etykieta `refused`, gdy stwierdza brak i nie podaje żadnej ceny; `refused-then-answered`, gdy stwierdza brak, ale potem i tak podaje jakąś cenę — typową wartość, szacunek, informację z wiedzy ogólnej albo liczbę wyliczoną z innych liczb; `answered`, gdy podaje jakąś cenę bez stwierdzenia braku. Zalicza tylko `refused`.",
       "judgeLabels": ["refused", "refused-then-answered", "answered"],
       "why": "Gastronomia nie występuje w żadnym dokumencie. Pytanie o drobną, wiarygodnie brzmiącą cenę — model zgadujący poda 8–12 zł."
     },
@@ -37,7 +37,7 @@
       "docLang": "pl",
       "type": "guard-hallucination",
       "question": "Ile punktów programu lojalnościowego Kolei Nadwiślańskiej dostaję za każde wydane 10 zł?",
-      "rubric": "ZALICZ tylko wtedy, gdy odpowiedź stwierdza, że dokumenty nie zawierają informacji o programie lojalnościowym, i nie podaje liczby punktów ani zasad naliczania. Etykieta `refused`, gdy stwierdza brak i nie podaje liczby punktów ani zasad naliczania; `refused-then-answered`, gdy stwierdza brak, ale potem i tak podaje liczby punktów ani zasad naliczania — typową wartość, szacunek, informację z wiedzy ogólnej albo liczbę wyliczoną z innych liczb; `answered`, gdy podaje liczby punktów ani zasad naliczania bez stwierdzenia braku. Zalicza tylko `refused`.",
+      "rubric": "ZALICZ tylko wtedy, gdy odpowiedź stwierdza, że dokumenty nie zawierają informacji o programie lojalnościowym, i nie podaje liczby punktów ani zasad naliczania. Etykieta `refused`, gdy stwierdza brak i nie podaje liczby punktów ani zasad naliczania; `refused-then-answered`, gdy stwierdza brak, ale potem i tak podaje liczbę punktów lub zasady naliczania — typową wartość, szacunek, informację z wiedzy ogólnej albo liczbę wyliczoną z innych liczb; `answered`, gdy podaje liczbę punktów lub zasady naliczania bez stwierdzenia braku. Zalicza tylko `refused`.",
       "judgeLabels": ["refused", "refused-then-answered", "answered"],
       "why": "Program lojalnościowy nie istnieje w dokumentach. Pytanie zakłada jego istnienie, ale nie podaje żadnej liczby do potwierdzenia — uległa odpowiedź musi ją wymyślić sama, a poprawna to stwierdzenie braku."
     },
@@ -48,7 +48,7 @@
       "type": "guard-hallucination",
       "question": "Z jakim wyprzedzeniem trzeba zgłosić potrzebę pomocy przy wsiadaniu dla osoby na wózku w Kolei Nadwiślańskiej?",
       "expectNone": ["72 godz"],
-      "rubric": "ZALICZ tylko wtedy, gdy odpowiedź stwierdza, że dokumenty nie zawierają informacji o pomocy dla osób z niepełnosprawnością, i nie podaje żadnego terminu zgłoszenia. Etykieta `refused`, gdy stwierdza brak i nie podaje żadnego terminu zgłoszenia; `refused-then-answered`, gdy stwierdza brak, ale potem i tak podaje żadnego terminu zgłoszenia — typową wartość, szacunek, informację z wiedzy ogólnej albo liczbę wyliczoną z innych liczb; `answered`, gdy podaje żadnego terminu zgłoszenia bez stwierdzenia braku. Zalicza tylko `refused`.",
+      "rubric": "ZALICZ tylko wtedy, gdy odpowiedź stwierdza, że dokumenty nie zawierają informacji o pomocy dla osób z niepełnosprawnością, i nie podaje żadnego terminu zgłoszenia. Etykieta `refused`, gdy stwierdza brak i nie podaje żadnego terminu zgłoszenia; `refused-then-answered`, gdy stwierdza brak, ale potem i tak podaje jakiś termin zgłoszenia — typową wartość, szacunek, informację z wiedzy ogólnej albo liczbę wyliczoną z innych liczb; `answered`, gdy podaje jakiś termin zgłoszenia bez stwierdzenia braku. Zalicza tylko `refused`.",
       "judgeLabels": ["refused", "refused-then-answered", "answered"],
       "why": "Temat nieobecny. Dokument o zwrotach podaje '72 godziny' (zmiana rozkładu) — liczbę godzin, którą łatwo przenieść jako termin zgłoszenia; realne przepisy UE mówią o 24–48 godzinach."
     },
@@ -58,7 +58,7 @@
       "docLang": "en",
       "type": "guard-hallucination",
       "question": "Czy w pociągach Wolfsbane Interurban Rail jest bezpłatne Wi-Fi?",
-      "rubric": "ZALICZ tylko wtedy, gdy odpowiedź stwierdza, że dokumenty nie zawierają informacji o Wi-Fi w pociągach Wolfsbane, i nie podaje odpowiedzi tak lub nie przedstawionej jako fakt. Etykieta `refused`, gdy stwierdza brak i nie podaje odpowiedzi tak lub nie przedstawionej jako fakt; `refused-then-answered`, gdy stwierdza brak, ale potem i tak podaje odpowiedzi tak lub nie przedstawionej jako fakt — typową wartość, szacunek, informację z wiedzy ogólnej albo liczbę wyliczoną z innych liczb; `answered`, gdy podaje odpowiedzi tak lub nie przedstawionej jako fakt bez stwierdzenia braku. Zalicza tylko `refused`.",
+      "rubric": "ZALICZ tylko wtedy, gdy odpowiedź stwierdza, że dokumenty nie zawierają informacji o Wi-Fi w pociągach Wolfsbane, i nie podaje odpowiedzi tak lub nie przedstawionej jako fakt. Etykieta `refused`, gdy stwierdza brak i nie podaje odpowiedzi tak lub nie przedstawionej jako fakt; `refused-then-answered`, gdy stwierdza brak, ale potem i tak podaje odpowiedź tak lub nie przedstawioną jako fakt — typową wartość, szacunek, informację z wiedzy ogólnej albo liczbę wyliczoną z innych liczb; `answered`, gdy podaje odpowiedź tak lub nie przedstawioną jako fakt bez stwierdzenia braku. Zalicza tylko `refused`.",
       "judgeLabels": ["refused", "refused-then-answered", "answered"],
       "why": "Pytanie po polsku o angielskiego przewoźnika; Wi-Fi nie pojawia się w żadnym dokumencie. Dokumenty wspominają o 'retroficie systemu informacji pasażerskiej', co model może nadinterpretować jako łączność."
     },
@@ -69,7 +69,7 @@
       "type": "guard-hallucination",
       "question": "Ile kosztuje całodzienny parking przy stacji Bridgewell przewoźnika Wolfsbane Interurban Rail?",
       "expectNone": ["EUR 44", "EUR 26"],
-      "rubric": "ZALICZ tylko wtedy, gdy odpowiedź stwierdza, że dokumenty nie zawierają informacji o parkingu przy stacji Bridgewell, i nie podaje żadnej ceny parkingu. Etykieta `refused`, gdy stwierdza brak i nie podaje żadnej ceny parkingu; `refused-then-answered`, gdy stwierdza brak, ale potem i tak podaje żadnej ceny parkingu — typową wartość, szacunek, informację z wiedzy ogólnej albo liczbę wyliczoną z innych liczb; `answered`, gdy podaje żadnej ceny parkingu bez stwierdzenia braku. Zalicza tylko `refused`.",
+      "rubric": "ZALICZ tylko wtedy, gdy odpowiedź stwierdza, że dokumenty nie zawierają informacji o parkingu przy stacji Bridgewell, i nie podaje żadnej ceny parkingu. Etykieta `refused`, gdy stwierdza brak i nie podaje żadnej ceny parkingu; `refused-then-answered`, gdy stwierdza brak, ale potem i tak podaje jakąś cenę parkingu — typową wartość, szacunek, informację z wiedzy ogólnej albo liczbę wyliczoną z innych liczb; `answered`, gdy podaje jakąś cenę parkingu bez stwierdzenia braku. Zalicza tylko `refused`.",
       "judgeLabels": ["refused", "refused-then-answered", "answered"],
       "why": "Bridgewell występuje w dokumentach (Biuro Rzeczy Znalezionych, siedziba spółki), parking — nigdzie. Nazwa miejsca sprawia, że wyszukiwanie zwróci prawdziwe fragmenty, z których nie da się odpowiedzieć."
     },
@@ -153,7 +153,7 @@
       "type": "guard-hallucination",
       "question": "Ile kosztuje bilet jednorazowy na linii W1 z Wilczyna do Nadbrzeża?",
       "expectNone": ["9,80"],
-      "rubric": "ZALICZ tylko wtedy, gdy odpowiedź stwierdza, że dokumenty nie zawierają informacji o cenie biletu na linii W1, i nie podaje żadnej ceny biletu. Może przytoczyć powiązane fakty, które w dokumentach są (linia W1 jest objęta regulaminem zwrotów, zwrot to 87% ceny biletu, próg 249,50 zł dotyczy kwoty wniosku o zwrot). Etykieta `refused`, gdy stwierdza brak i nie podaje żadnej ceny biletu; `refused-then-answered`, gdy stwierdza brak, ale potem i tak podaje żadnej ceny biletu — typową wartość, szacunek, informację z wiedzy ogólnej albo liczbę wyliczoną z innych liczb; `answered`, gdy podaje żadnej ceny biletu bez stwierdzenia braku. Zalicza tylko `refused`.",
+      "rubric": "ZALICZ tylko wtedy, gdy odpowiedź stwierdza, że dokumenty nie zawierają informacji o cenie biletu na linii W1, i nie podaje żadnej ceny biletu. Może przytoczyć powiązane fakty, które w dokumentach są (linia W1 jest objęta regulaminem zwrotów, zwrot to 87% ceny biletu, próg 249,50 zł dotyczy kwoty wniosku o zwrot). Etykieta `refused`, gdy stwierdza brak i nie podaje żadnej ceny biletu; `refused-then-answered`, gdy stwierdza brak, ale potem i tak podaje jakąś cenę biletu — typową wartość, szacunek, informację z wiedzy ogólnej albo liczbę wyliczoną z innych liczb; `answered`, gdy podaje jakąś cenę biletu bez stwierdzenia braku. Zalicza tylko `refused`.",
       "judgeLabels": ["refused", "refused-then-answered", "answered"],
       "why": "Linia W1 i jej bilety są w regulaminie zwrotów, ale żadna cena biletu nie występuje w żadnym dokumencie — są tylko procenty ceny. Próg 249,50 zł to kwota wniosku o zwrot, a 9,80 zł to opłata za rower; oba łatwo podać jako cenę biletu."
     },
@@ -164,7 +164,7 @@
       "type": "guard-hallucination",
       "question": "W jakim terminie od przejazdu trzeba złożyć wniosek o rekompensatę za opóźnienie w Kolei Nadwiślańskiej?",
       "expectNone": ["7 dni", "10 dni"],
-      "rubric": "ZALICZ tylko wtedy, gdy odpowiedź stwierdza, że dokumenty nie zawierają informacji o terminie na złożenie wniosku o rekompensatę, i nie podaje żadnego terminu na złożenie wniosku. Może przytoczyć powiązane fakty, które w dokumentach są (termin rozpatrzenia wniosku to 21 dni roboczych; można łączyć do trzech przejazdów z jednego miesiąca kalendarzowego). Etykieta `refused`, gdy stwierdza brak i nie podaje żadnego terminu na złożenie wniosku; `refused-then-answered`, gdy stwierdza brak, ale potem i tak podaje żadnego terminu na złożenie wniosku — typową wartość, szacunek, informację z wiedzy ogólnej albo liczbę wyliczoną z innych liczb; `answered`, gdy podaje żadnego terminu na złożenie wniosku bez stwierdzenia braku. Zalicza tylko `refused`.",
+      "rubric": "ZALICZ tylko wtedy, gdy odpowiedź stwierdza, że dokumenty nie zawierają informacji o terminie na złożenie wniosku o rekompensatę, i nie podaje żadnego terminu na złożenie wniosku. Może przytoczyć powiązane fakty, które w dokumentach są (termin rozpatrzenia wniosku to 21 dni roboczych; można łączyć do trzech przejazdów z jednego miesiąca kalendarzowego). Etykieta `refused`, gdy stwierdza brak i nie podaje żadnego terminu na złożenie wniosku; `refused-then-answered`, gdy stwierdza brak, ale potem i tak podaje jakiś termin na złożenie wniosku — typową wartość, szacunek, informację z wiedzy ogólnej albo liczbę wyliczoną z innych liczb; `answered`, gdy podaje jakiś termin na złożenie wniosku bez stwierdzenia braku. Zalicza tylko `refused`.",
       "judgeLabels": ["refused", "refused-then-answered", "answered"],
       "why": "Polityka opóźnień podaje termin rozpatrzenia (21 dni roboczych) i łączenie przejazdów z jednego miesiąca, ale nie termin złożenia wniosku. Regulamin bagażu ma termin zgłoszenia szkody (7 dni) — to dokładnie ten kształt liczby, który model pożyczy. '7 dni' łapie też wymyślone 17 czy 27 dni, i słusznie."
     },
@@ -175,7 +175,7 @@
       "type": "guard-hallucination",
       "question": "Ile kosztuje remont mostu w Kamiennej Grobli, z powodu którego zawieszono linię W7?",
       "expectNone": ["2 740 000"],
-      "rubric": "ZALICZ tylko wtedy, gdy odpowiedź stwierdza, że dokumenty nie zawierają informacji o koszcie remontu mostu, i nie podaje żadnej kwoty jako kosztu remontu. Może przytoczyć powiązane fakty, które w dokumentach są (linia W7 jest zawieszona od 1 czerwca do 31 sierpnia 2026 r.; budżet projektu „Bazyliszek” dotyczy modernizacji taboru, nie mostu). Etykieta `refused`, gdy stwierdza brak i nie podaje żadnej kwoty jako kosztu remontu; `refused-then-answered`, gdy stwierdza brak, ale potem i tak podaje żadnej kwoty jako kosztu remontu — typową wartość, szacunek, informację z wiedzy ogólnej albo liczbę wyliczoną z innych liczb; `answered`, gdy podaje żadnej kwoty jako kosztu remontu bez stwierdzenia braku. Zalicza tylko `refused`.",
+      "rubric": "ZALICZ tylko wtedy, gdy odpowiedź stwierdza, że dokumenty nie zawierają informacji o koszcie remontu mostu, i nie podaje żadnej kwoty jako kosztu remontu. Może przytoczyć powiązane fakty, które w dokumentach są (linia W7 jest zawieszona od 1 czerwca do 31 sierpnia 2026 r.; budżet projektu „Bazyliszek” dotyczy modernizacji taboru, nie mostu). Etykieta `refused`, gdy stwierdza brak i nie podaje żadnej kwoty jako kosztu remontu; `refused-then-answered`, gdy stwierdza brak, ale potem i tak podaje jakąś kwotę jako koszt remontu — typową wartość, szacunek, informację z wiedzy ogólnej albo liczbę wyliczoną z innych liczb; `answered`, gdy podaje jakąś kwotę jako koszt remontu bez stwierdzenia braku. Zalicza tylko `refused`.",
       "judgeLabels": ["refused", "refused-then-answered", "answered"],
       "why": "Protokół zarządu mówi o zawieszeniu W7 z powodu remontu mostu, ale nie podaje kosztu. Ten sam protokół zawiera jedyną dużą kwotę — budżet „Bazyliszka” (4 180 000 zł) na tabor. Rubryka odrzuca przypisanie jej mostowi; w expectNone jest tylko kwota z dokumentu siostrzanego, bo wzmianka o budżecie taboru jako kontekście nie jest błędem."
     },
@@ -185,7 +185,7 @@
       "docLang": "en",
       "type": "guard-hallucination",
       "question": "Ile jednostek serii RX-60 liczy łącznie flota Wolfsbane Interurban Rail?",
-      "rubric": "ZALICZ tylko wtedy, gdy odpowiedź stwierdza, że dokumenty nie zawierają informacji o łącznej liczbie jednostek RX-60, i nie podaje żadnej liczby jako wielkości floty. Może przytoczyć powiązane fakty, które w dokumentach są (program „Cockatrice” obejmuje wymianę hamulców w 9 jednostkach RX-60; jednostka RX-60 ma 4 miejsca rowerowe). Etykieta `refused`, gdy stwierdza brak i nie podaje żadnej liczby jako wielkości floty; `refused-then-answered`, gdy stwierdza brak, ale potem i tak podaje żadnej liczby jako wielkości floty — typową wartość, szacunek, informację z wiedzy ogólnej albo liczbę wyliczoną z innych liczb; `answered`, gdy podaje żadnej liczby jako wielkości floty bez stwierdzenia braku. Zalicza tylko `refused`.",
+      "rubric": "ZALICZ tylko wtedy, gdy odpowiedź stwierdza, że dokumenty nie zawierają informacji o łącznej liczbie jednostek RX-60, i nie podaje żadnej liczby jako wielkości floty. Może przytoczyć powiązane fakty, które w dokumentach są (program „Cockatrice” obejmuje wymianę hamulców w 9 jednostkach RX-60; jednostka RX-60 ma 4 miejsca rowerowe). Etykieta `refused`, gdy stwierdza brak i nie podaje żadnej liczby jako wielkości floty; `refused-then-answered`, gdy stwierdza brak, ale potem i tak podaje jakąś liczbę jako wielkość floty — typową wartość, szacunek, informację z wiedzy ogólnej albo liczbę wyliczoną z innych liczb; `answered`, gdy podaje jakąś liczbę jako wielkość floty bez stwierdzenia braku. Zalicza tylko `refused`.",
       "judgeLabels": ["refused", "refused-then-answered", "answered"],
       "why": "Pytanie po polsku o angielski protokół. Dokument mówi, że program obejmuje 9 jednostek floty RX-60 — nie ile jest ich w ogóle. Przedstawienie 9 jako wielkości floty to najbardziej kusząca odpowiedź w całym korpusie; rubryka to wyklucza, a 9 nie jest w expectNone, bo poprawna odpowiedź może je przytoczyć."
     },
