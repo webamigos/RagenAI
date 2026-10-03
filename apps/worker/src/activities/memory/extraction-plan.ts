@@ -141,8 +141,18 @@ const AUTHORITY_CLAIM = [
   /(?<!\p{L})(?:administrator\p{L}*|admin\p{L}*|superużytkownik\p{L}*|uprawnie\p{L}*|upoważni\p{L}*|dost[eę]p(?:u|em|ie)?)(?!\p{L})/iu,
 ];
 
+/**
+ * Access the user is still waiting for is ongoing work, not a claim: "Needs
+ * access to the staging DB for the migration." It is taken out before the
+ * check, and only that phrase — "Has access to…" in the same memory is
+ * still a claim, and so is "Needs admin rights".
+ */
+const ACCESS_NEED =
+  /(?<!\p{L})(?:needs|need|is requesting|requested|requests|is waiting for|waiting for|is asking for|asked for|potrzebuje|czeka na|prosi o|wnioskuje o)\s+(?:access to|dost[eę]p\p{L}*(?:\s+do)?)(?!\p{L})/giu;
+
 export function claimsAuthority(text: string): boolean {
-  return AUTHORITY_CLAIM.some((pattern) => pattern.test(text));
+  const withoutNeeds = text.replace(ACCESS_NEED, ' ');
+  return AUTHORITY_CLAIM.some((pattern) => pattern.test(withoutNeeds));
 }
 
 /** Two statements that differ only in case, spacing or a final full stop are one. */

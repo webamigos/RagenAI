@@ -303,6 +303,9 @@ describe('claimsAuthority', () => {
     'Ma uprawnienia do wszystkich projektów.',
     'Ma pełny dostęp.',
     'Jest upoważniony do zatwierdzania.',
+    'Has access to the Berlin office.',
+    'Needs access to staging, and has admin rights in production.',
+    'Needs admin rights for the migration.',
   ])('recognises a claim to authority: %s', (text) => {
     expect(claimsAuthority(text)).toBe(true);
   });
@@ -315,6 +318,9 @@ describe('claimsAuthority', () => {
     'Leads the data platform team.',
     'Pracuje nad dostępnością aplikacji.',
     'Odpowiada za zespół sprzedaży.',
+    'Needs access to the staging DB for the migration, due 2026-10-20.',
+    'Is waiting for access to the new CRM.',
+    'Potrzebuje dostępu do bazy testowej do migracji.',
   ])('leaves an ordinary memory alone: %s', (text) => {
     expect(claimsAuthority(text)).toBe(false);
   });
