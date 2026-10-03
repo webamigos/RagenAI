@@ -18,7 +18,8 @@ export const CROSS_QUERY_RRF_K = 60;
 
 /**
  * Each distinct chunk (by `pageContent`, as the chains dedupe) scores
- * `Σ 1 / (k + rank)` over the lists it appears in, rank counted from 1.
+ * `Σ 1 / (k + rank)` over the lists it appears in, rank counted from 1 and
+ * taken once per list — its first occurrence there.
  * Ties keep the order of first appearance, so with one list — or identical
  * lists — the result is that list, deduped.
  */
@@ -32,7 +33,14 @@ export function fuseAcrossQueries<T extends { pageContent: string }>(
   >();
   let seen = 0;
   for (const results of resultsPerQuery) {
+    // A chunk counts once per list, at its best rank: a query that returned
+    // it twice is still one vote, as the chains' dedupe treats it.
+    const seenInList = new Set<string>();
     results.forEach((doc, index) => {
+      if (seenInList.has(doc.pageContent)) {
+        return;
+      }
+      seenInList.add(doc.pageContent);
       const contribution = 1 / (k + index + 1);
       const entry = entries.get(doc.pageContent);
       if (entry) {

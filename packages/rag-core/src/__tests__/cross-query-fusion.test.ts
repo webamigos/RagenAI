@@ -35,6 +35,20 @@ describe('fuseAcrossQueries', () => {
     ).toEqual(['a', 'b', 'c']);
   });
 
+  it('counts a chunk once per list, so a repeat cannot outrank the top hit', () => {
+    expect(texts(fuseAcrossQueries([['a', 'b', 'b', 'c'].map(doc)]))).toEqual([
+      'a',
+      'b',
+      'c',
+    ]);
+    // Still counted once in each of two lists.
+    expect(
+      texts(
+        fuseAcrossQueries([['a', 'b', 'b'].map(doc), ['b', 'c'].map(doc)]),
+      )[0],
+    ).toBe('b');
+  });
+
   it('keeps the first copy of a chunk, as the chains’ dedupe does', () => {
     const first = { pageContent: 'x', metadata: { fileId: 'f1' } };
     const second = { pageContent: 'x', metadata: { fileId: 'f2' } };
