@@ -103,6 +103,46 @@ function hasDefinedField(value: unknown, field: string): boolean {
 }
 
 /**
+ * Whether a filter value pins a column to named values. A plain value does
+ * (`null` included: it selects the global rows), as do `{ equals }` with a
+ * value and a non-empty `{ in }`; further operators beside them only narrow.
+ * Everything else is a filter that names the column without confining it:
+ * `{ not }` and `{ notIn }` select every other organization, and
+ * `{ equals: undefined }` or `{}` is dropped by Prisma and filters nothing.
+ * Better Auth's adapter writes `eq` as `{ equals: value }`, so an undefined
+ * value arrives in exactly that shape.
+ */
+function pinsValue(value: unknown): boolean {
+  if (value === undefined) {
+    return false;
+  }
+  if (value === null || typeof value !== 'object') {
+    return true;
+  }
+  if (Array.isArray(value) || value instanceof Date) {
+    return false;
+  }
+  const filter = value as Record<string, unknown>;
+  if ('equals' in filter && filter.equals !== undefined) {
+    return pinsValue(filter.equals);
+  }
+  return (
+    Array.isArray(filter.in) &&
+    filter.in.length > 0 &&
+    filter.in.every((item) => item !== undefined && pinsValue(item))
+  );
+}
+
+function pinsField(where: unknown, field: string): boolean {
+  return (
+    typeof where === 'object' &&
+    where !== null &&
+    field in where &&
+    pinsValue((where as Record<string, unknown>)[field])
+  );
+}
+
+/**
  * Whether a `where` constrains `field`, in any of the shapes Prisma accepts
  * for a filter that every matching row must satisfy:
  *
@@ -116,19 +156,20 @@ function hasDefinedField(value: unknown, field: string): boolean {
  *   One unscoped branch makes the whole `OR` unscoped.
  *
  * `NOT` never counts, nor does a relation filter: neither says which
- * organization a row belongs to.
+ * organization a row belongs to. In every shape the value must pin the column
+ * (`pinsValue`): `{ organizationId: { not: x } }` names it and scopes nothing.
  */
 function whereCarriesField(where: unknown, field: string): boolean {
   if (typeof where !== 'object' || where === null) {
     return false;
   }
-  if (hasDefinedField(where, field)) {
+  if (pinsField(where, field)) {
     return true;
   }
 
   const clauses = where as Record<string, unknown>;
   for (const [key, value] of Object.entries(clauses)) {
-    if (key.split('_').includes(field) && hasDefinedField(value, field)) {
+    if (key.split('_').includes(field) && pinsField(value, field)) {
       return true;
     }
   }
