@@ -16,14 +16,24 @@
  * See ./README.md for prerequisites.
  */
 
-import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
+import {
+  readFileSync,
+  writeFileSync,
+  mkdirSync,
+  existsSync,
+  renameSync,
+} from 'node:fs';
 import { join, dirname, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { execSync } from 'node:child_process';
 import { PrismaClient } from '../../src/generated/prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PLATFORM_FEATURE_DEFAULTS_KEY } from '@ragenai/platform-contracts';
-import { checkDefaultProfile, traceProfileMismatches } from './lib/profile';
+import {
+  checkDefaultProfile,
+  ProfileMismatchError,
+  traceProfileMismatches,
+} from './lib/profile';
 import {
   TEST_PROJECT_ID,
   TEST_THREAD_ID,
@@ -686,7 +696,7 @@ async function main(): Promise<void> {
                     'the server sent no retrieval trace, so the profile cannot be confirmed',
                   ];
               if (mismatches.length > 0) {
-                throw new Error(
+                throw new ProfileMismatchError(
                   `--profile default: ${q.id}: ${mismatches.join('; ')}`,
                 );
               }
@@ -777,6 +787,11 @@ async function main(): Promise<void> {
               caseNote(rubricError, passed, assertions.failures, rubricReason),
           );
         } catch (err) {
+          // Not a failed case: the run is not the default install, and must
+          // not be written, let alone published, as one.
+          if (err instanceof ProfileMismatchError) {
+            throw err;
+          }
           results.push({
             ...base,
             answer: '',
@@ -847,7 +862,12 @@ async function main(): Promise<void> {
     // so the -runN suffixes of a day's three runs stay side by side.
     const publishedDir = join(outDir, 'published');
     mkdirSync(publishedDir, { recursive: true });
-    writeFileSync(join(publishedDir, `${stem}.md`), renderMarkdown(report));
+    // Written whole, then renamed: a release reads this directory, and a
+    // crash mid-write must not leave half a report under a final name.
+    const published = join(publishedDir, `${stem}.md`);
+    const partial = `${published}.partial`;
+    writeFileSync(partial, renderMarkdown(report));
+    renameSync(partial, published);
     console.log(`Wrote results/published/${stem}.md`);
   }
 

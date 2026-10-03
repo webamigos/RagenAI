@@ -109,3 +109,15 @@ export function traceProfileMismatches(trace: TraceFlags): string[] {
         `the server ran with ${flag}=${trace[flag]}; the default is ${expected[flag]}`,
     );
 }
+
+/**
+ * Thrown when a `--profile default` run turns out not to be the default
+ * install. A distinct type, so the runner's per-case `catch` — which records
+ * an ordinary failure and moves on — can tell it apart and let it end the run.
+ */
+export class ProfileMismatchError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'ProfileMismatchError';
+  }
+}

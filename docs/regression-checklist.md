@@ -66,11 +66,18 @@ producers; a mismatch means nothing consumes the queue. See
       against the release build (setup: `apps/web/evals/rag-benchmark/README.md`).
       It refuses to start, and stops on the first case, when the stack is not
       the default install.
-- [ ] Compare the median of the three with the newest file for that corpus in
-      `apps/web/evals/rag-benchmark/results/published/`. **Fail the release if
-      the RAG–control gap shrinks by more than the spread** between the three
-      runs recorded there (or three cases, when no spread is recorded).
-- [ ] Commit the three published files with the release.
+- [ ] Take the release's **triplet** for each corpus: the three published
+      files of one day and one corpus revision —
+      `<date>-<corpus>-rev<n>-default.md`, `…-default-run2.md`,
+      `…-default-run3.md` in `apps/web/evals/rag-benchmark/results/published/`.
+      For each run, the **gap** is RAG passed − control passed. The triplet's
+      **median gap** is the middle of the three; its **spread** is the largest
+      gap minus the smallest.
+- [ ] Compare with the previous release's triplet for the same corpus and
+      revision. **Fail the release if the median gap fell by more than the
+      previous triplet's spread** (three cases, when the previous triplet's
+      spread is under three — the harness's noise floor).
+- [ ] Commit the triplets with the release; they are next release's baseline.
 
 ### Projects
 

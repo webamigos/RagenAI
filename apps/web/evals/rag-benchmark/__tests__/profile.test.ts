@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import { checkDefaultProfile, traceProfileMismatches } from '../lib/profile';
+import {
+  checkDefaultProfile,
+  ProfileMismatchError,
+  traceProfileMismatches,
+} from '../lib/profile';
 
 const clean = { env: {}, org: null };
 
@@ -77,5 +81,17 @@ describe('traceProfileMismatches', () => {
 
   it('does not count a flag an older app does not send', () => {
     expect(traceProfileMismatches({})).toEqual([]);
+  });
+});
+
+// The runner's per-case catch rethrows this type and records everything else
+// as a failed case; an instanceof check is what tells them apart.
+describe('ProfileMismatchError', () => {
+  it('is an Error the runner can tell apart from a failed case', () => {
+    const err = new ProfileMismatchError('--profile default: q1: rerank');
+    expect(err).toBeInstanceOf(Error);
+    expect(err).toBeInstanceOf(ProfileMismatchError);
+    expect(err.name).toBe('ProfileMismatchError');
+    expect(new Error('fetch failed')).not.toBeInstanceOf(ProfileMismatchError);
   });
 });
