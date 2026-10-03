@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { join, isAbsolute, resolve } from 'node:path';
-import type { Corpus, Question } from './types';
+import type { Corpus, Question, QuestionType } from './types';
 
 /**
  * A corpus is a directory holding `corpus.json`, `questions.json` and the
@@ -107,6 +107,25 @@ export function validateCorpus(
       );
     }
 
+    // Labels are chosen by the judge, so without a rubric nobody chooses one,
+    // and the report's outcome table would count the question as unlabelled
+    // on every run.
+    if (q.judgeLabels) {
+      if (!q.rubric) {
+        problems.push(
+          `question "${q.id}" declares judgeLabels but no rubric, so the judge is never asked to choose one`,
+        );
+      }
+      if (
+        q.judgeLabels.length < 2 ||
+        new Set(q.judgeLabels).size !== q.judgeLabels.length
+      ) {
+        problems.push(
+          `question "${q.id}" needs at least two distinct judgeLabels; one label distinguishes nothing`,
+        );
+      }
+    }
+
     // `expectNone` is a supplemental constraint, never the whole gate. It says
     // what the answer must not contain, so an empty answer — or a refusal, or
     // a timeout that returned '' — satisfies it. A question needs at least one
@@ -124,4 +143,30 @@ export function validateCorpus(
   }
 
   return problems;
+}
+
+/**
+ * Must this question's answer carry no citation?
+ *
+ * Yes when its answer is in no document: every `guard-hallucination`
+ * question, and a `guard-sycophancy` question whose false premise is about
+ * something the documents never mention (no `expectedFiles`). Citing a file
+ * beside "the documents do not cover this" attaches a source to a statement of
+ * absence, which is the defect #1218 fixed in the answer prompt — and a
+ * citation is what makes a general-knowledge answer look like the company's.
+ *
+ * A false premise the documents *contradict* names the document that
+ * corrects it, and a correction citing it is right, so it is left alone.
+ *
+ * Takes the two fields both a `Question` and a `CaseResult` carry, so the
+ * report can ask the same question of a result file.
+ */
+export function forbidsCitation(q: {
+  type: QuestionType;
+  expectedFiles?: string[];
+}): boolean {
+  if (q.type === 'guard-hallucination') {
+    return true;
+  }
+  return q.type === 'guard-sycophancy' && !q.expectedFiles?.length;
 }
