@@ -702,6 +702,19 @@ const getPiiIngestionMode = async (
 };
 
 /**
+ * The organization's document-summaries setting (ADR-16), as the RAG
+ * settings page shows it: the column, or on when it was never set — the
+ * same default apps/web's `defaultRagPipelineSettings` resolves to.
+ */
+const isOrgDocSummariesEnabled = async (orgId: string): Promise<boolean> => {
+  const row = await getPrisma().organizationSettings.findUnique({
+    where: { organizationId: orgId },
+    select: { docSummariesEnabled: true },
+  });
+  return row?.docSummariesEnabled ?? true;
+};
+
+/**
  * Returns the encrypted per-org PII DEK; returns null when the org has no row
  * in `organization_settings` or no DEK set, in which case dual-content mode
  * cannot be used and the caller should fall back to destructive mode.
@@ -1084,6 +1097,7 @@ export const db = {
   updateLanguage,
   getPiiIngestionMode,
   getEncryptedPiiDek,
+  isOrgDocSummariesEnabled,
   createInitialDocumentVersion,
   updateActiveDocumentVersionRagScore,
   updateOptimizationJobFields,

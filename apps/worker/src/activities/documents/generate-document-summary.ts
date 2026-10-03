@@ -30,7 +30,9 @@ Rules:
 /**
  * Feature flag for document summary generation at ingest time (ADR-16).
  * Enabled unless explicitly set to "0" or "false". Disable by setting
- * FEATURE_FLAG_DOC_SUMMARIES=0 in the environment.
+ * FEATURE_FLAG_DOC_SUMMARIES=0 in the environment. It is the
+ * installation-wide off switch; the organization's own setting is read
+ * after it (`isOrgOptedIn`).
  */
 function isDocSummariesEnabled(): boolean {
   const value = process.env.FEATURE_FLAG_DOC_SUMMARIES;
@@ -41,10 +43,30 @@ function isDocSummariesEnabled(): boolean {
 }
 
 /**
+ * Whether the organization allows summaries — `docSummariesEnabled`, the
+ * switch on the RAG settings page that, until now, nothing at ingest read
+ * (spec 2026-10-03-retrieval-claims, A1). A failed read generates the
+ * summary, as before this setting was read: one model call is a smaller
+ * mistake than an ingest that silently loses its summary.
+ */
+async function isOrgOptedIn(orgId: string): Promise<boolean> {
+  try {
+    return await db.isOrgDocSummariesEnabled(orgId);
+  } catch (err) {
+    logger.warn(
+      { orgId, err: err instanceof Error ? err.message : String(err) },
+      'generateDocumentSummary: could not read docSummariesEnabled — generating the summary',
+    );
+    return true;
+  }
+}
+
+/**
  * Generate a 1-2 paragraph summary of a document for ingest-time enrichment.
  *
  * Behavior:
- * - Feature flag off → returns empty string, no LLM call made.
+ * - Feature flag off, or the organization's `docSummariesEnabled` off →
+ *   returns empty string, no LLM call made.
  * - Input text empty/whitespace → returns empty string.
  * - LLM error (timeout, rate limit, etc.) → logs a warning, returns empty
  *   string. Never throws. Summary enrichment is a quality feature, not a
@@ -71,6 +93,14 @@ export async function generateDocumentSummary({
 
   const trimmed = documentText.trim();
   if (trimmed.length === 0) {
+    return '';
+  }
+
+  if (!(await isOrgOptedIn(orgId))) {
+    logger.info(
+      { orgId, fileName },
+      'Document summaries are off for this organization; skipping',
+    );
     return '';
   }
 

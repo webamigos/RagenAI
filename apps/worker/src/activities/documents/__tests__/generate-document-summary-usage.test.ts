@@ -7,7 +7,9 @@ import { describe, expect, it, vi } from 'vitest';
 
 const trackAiUsage = vi.hoisted(() => vi.fn(async () => undefined));
 
-vi.mock('../../../services/db/db.js', () => ({ db: { trackAiUsage } }));
+vi.mock('../../../services/db/db.js', () => ({
+  db: { trackAiUsage, isOrgDocSummariesEnabled: vi.fn(async () => true) },
+}));
 vi.mock('ai', () => ({
   generateText: vi.fn(async () => ({
     text: 'A summary.',

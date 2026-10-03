@@ -79,6 +79,14 @@ archive is the blog.
 
 ### Knowledge base
 
+- `[brief]` **Switching document summaries off for an organization takes
+  effect.** The per-organization "Document summaries" setting was shown on
+  the RAG settings page and editable in the admin panel, and ingest never
+  read it: every organization got summaries whatever it said. New uploads
+  and re-indexes now honour it (the installation-wide
+  `FEATURE_FLAG_DOC_SUMMARIES` still switches them off for everyone);
+  documents already summarized keep their summaries.
+
 - `[brief]` **A document deleted while it is still being indexed stays
   deleted.** Deleting a file during its upload's embedding step removed the
   file, and the worker then wrote its chunks into the index anyway: the
