@@ -50,7 +50,10 @@ export async function recordKnowledgeUsageCommand(
         return null;
       }
       try {
-        return await maybeEncryptContent(threadId, snippet);
+        return await maybeEncryptContent(
+          { threadId, organizationId: orgId },
+          snippet,
+        );
       } catch (err) {
         // A quote is the least important thing this command writes. The rows
         // themselves carry rank and drive the citation metrics, and before

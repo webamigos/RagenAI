@@ -602,6 +602,7 @@ export class ThreadsCoreService {
       const messageResponse = await this.messages.createAndStoreMessage({
         prompt,
         threadId: threadRecord.id,
+        organizationId: threadRecord.organizationId,
         visitorId,
         messageType: requestData.data.messageType,
         voiceDurationSeconds: requestData.data.voiceDurationSeconds,

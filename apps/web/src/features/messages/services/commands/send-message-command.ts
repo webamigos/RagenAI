@@ -38,6 +38,7 @@ export const sendMessageCommand = async (
     const messageResponse = await createAndStoreMessageCommand({
       prompt,
       threadId: threadRecord.id,
+      organizationId: threadRecord.organizationId,
       visitorId,
       messageType: requestData.data.messageType,
       voiceDurationSeconds: requestData.data.voiceDurationSeconds,

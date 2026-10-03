@@ -500,7 +500,11 @@ describe('ThreadsCoreService', () => {
     it('finds/creates the thread then stores the message', async () => {
       const { service, prisma, messages } = makeService({
         thread: {
-          findFirst: vi.fn().mockResolvedValue({ id: 't1', visitorId: 'v1' }),
+          findFirst: vi.fn().mockResolvedValue({
+            id: 't1',
+            visitorId: 'v1',
+            organizationId: 'org-1',
+          }),
           update: vi.fn().mockResolvedValue({}),
         } as never,
       });
@@ -516,7 +520,11 @@ describe('ThreadsCoreService', () => {
 
       expect(prisma.client.thread.findFirst).toHaveBeenCalled();
       expect(messages.createAndStoreMessage).toHaveBeenCalledWith(
-        expect.objectContaining({ prompt: 'hello world', threadId: 't1' }),
+        expect.objectContaining({
+          prompt: 'hello world',
+          threadId: 't1',
+          organizationId: 'org-1',
+        }),
       );
       expect(result).toEqual({ message: { id: 'm1' }, status: 201 });
     });

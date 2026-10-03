@@ -33,7 +33,7 @@ describe('PersistApiThreadService', () => {
     const threadOps = {
       create: vi.fn().mockResolvedValue({ id: 'thread-1' }),
       delete: vi.fn().mockResolvedValue({ id: 'thread-1' }),
-      findUniqueOrThrow: vi.fn().mockResolvedValue({ encryptedDek: null }),
+      findFirstOrThrow: vi.fn().mockResolvedValue({ encryptedDek: null }),
       updateMany: vi.fn().mockResolvedValue({ count: 1 }),
       ...overrides.thread,
     };
@@ -191,8 +191,16 @@ describe('PersistApiThreadService', () => {
         });
 
         expect(mockGenerateThreadKey).toHaveBeenCalledTimes(1);
+        expect(threadOps.findFirstOrThrow).toHaveBeenCalledWith({
+          where: { id: 'thread-1', organizationId: 'org-1' },
+          select: { encryptedDek: true },
+        });
         expect(threadOps.updateMany).toHaveBeenCalledWith({
-          where: { id: 'thread-1', encryptedDek: null },
+          where: {
+            id: 'thread-1',
+            organizationId: 'org-1',
+            encryptedDek: null,
+          },
           data: { encryptedDek: 'wrapped-dek' },
         });
         expect(mockEncryptContent).toHaveBeenCalledWith(
@@ -212,7 +220,7 @@ describe('PersistApiThreadService', () => {
 
         const { service, threadOps } = makeService({
           thread: {
-            findUniqueOrThrow: vi
+            findFirstOrThrow: vi
               .fn()
               .mockResolvedValue({ encryptedDek: 'already-wrapped' }),
           },
@@ -245,7 +253,7 @@ describe('PersistApiThreadService', () => {
           thread: {
             // First call (initial check): no key yet.
             // Second call (after losing the race): the winner's key.
-            findUniqueOrThrow: vi
+            findFirstOrThrow: vi
               .fn()
               .mockResolvedValueOnce({ encryptedDek: null })
               .mockResolvedValueOnce({ encryptedDek: 'winner-wrapped-dek' }),
@@ -260,7 +268,11 @@ describe('PersistApiThreadService', () => {
           question: 'Question',
         });
 
-        expect(threadOps.findUniqueOrThrow).toHaveBeenCalledTimes(2);
+        expect(threadOps.findFirstOrThrow).toHaveBeenCalledTimes(2);
+        expect(threadOps.findFirstOrThrow).toHaveBeenLastCalledWith({
+          where: { id: 'thread-1', organizationId: 'org-1' },
+          select: { encryptedDek: true },
+        });
         expect(mockDecryptThreadKey).toHaveBeenCalledWith('winner-wrapped-dek');
         expect(mockEncryptContent).toHaveBeenCalledWith('Question', winnerDek);
       });
@@ -274,7 +286,7 @@ describe('PersistApiThreadService', () => {
 
         const { service } = makeService({
           thread: {
-            findUniqueOrThrow: vi
+            findFirstOrThrow: vi
               .fn()
               .mockResolvedValueOnce({ encryptedDek: null })
               .mockResolvedValueOnce({ encryptedDek: null }),

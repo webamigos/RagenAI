@@ -43,7 +43,7 @@ describe('MessagesService', () => {
   ) {
     const threadOps = {
       findFirst: vi.fn(),
-      findUniqueOrThrow: vi.fn().mockResolvedValue({ encryptedDek: null }),
+      findFirstOrThrow: vi.fn().mockResolvedValue({ encryptedDek: null }),
       updateMany: vi.fn().mockResolvedValue({ count: 1 }),
       ...overrides.thread,
     };
@@ -103,6 +103,7 @@ describe('MessagesService', () => {
       const result = await service.createAndStoreMessage({
         prompt: '  hello  ',
         threadId: 'thread-1',
+        organizationId: 'org-1',
       });
 
       expect(create).toHaveBeenCalledWith(
@@ -124,6 +125,7 @@ describe('MessagesService', () => {
         service.createAndStoreMessage({
           prompt: 'hello',
           threadId: 'thread-1',
+          organizationId: 'org-1',
         }),
       ).rejects.toThrow('encryption required');
       expect(create).not.toHaveBeenCalled();
@@ -143,20 +145,24 @@ describe('MessagesService', () => {
         voicePlayed: false,
         attachments: null,
       });
+      const findFirstOrThrow = vi
+        .fn()
+        .mockResolvedValue({ encryptedDek: 'enc-dek' });
       const { service } = makeService({
-        thread: {
-          findUniqueOrThrow: vi
-            .fn()
-            .mockResolvedValue({ encryptedDek: 'enc-dek' }),
-        },
+        thread: { findFirstOrThrow },
         message: { create },
       });
 
       await service.createAndStoreMessage({
         prompt: 'hello',
         threadId: 'thread-1',
+        organizationId: 'org-1',
       });
 
+      expect(findFirstOrThrow).toHaveBeenCalledWith({
+        where: { id: 'thread-1', organizationId: 'org-1' },
+        select: { encryptedDek: true },
+      });
       expect(mockDecryptThreadKey).toHaveBeenCalledWith('enc-dek');
       expect(create).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -173,7 +179,7 @@ describe('MessagesService', () => {
       });
       mockEncryptContent.mockReturnValue('encrypted:hello');
       const updateMany = vi.fn().mockResolvedValue({ count: 0 });
-      const findUniqueOrThrow = vi
+      const findFirstOrThrow = vi
         .fn()
         .mockResolvedValueOnce({ encryptedDek: null })
         .mockResolvedValueOnce({ encryptedDek: 'winner-enc' });
@@ -189,20 +195,53 @@ describe('MessagesService', () => {
         attachments: null,
       });
       const { service } = makeService({
-        thread: { findUniqueOrThrow, updateMany },
+        thread: { findFirstOrThrow, updateMany },
         message: { create },
       });
 
       await service.createAndStoreMessage({
         prompt: 'hello',
         threadId: 'thread-1',
+        organizationId: 'org-1',
       });
 
       expect(updateMany).toHaveBeenCalledWith({
-        where: { id: 'thread-1', encryptedDek: null },
+        where: { id: 'thread-1', organizationId: 'org-1', encryptedDek: null },
         data: { encryptedDek: 'fresh-enc' },
       });
+      expect(findFirstOrThrow).toHaveBeenLastCalledWith({
+        where: { id: 'thread-1', organizationId: 'org-1' },
+        select: { encryptedDek: true },
+      });
       expect(mockDecryptThreadKey).toHaveBeenCalledWith('winner-enc');
+    });
+
+    it('does not encrypt or key a thread outside the caller’s organization', async () => {
+      mockIsEncryptionEnabled.mockReturnValue(true);
+      const findFirstOrThrow = vi
+        .fn()
+        .mockRejectedValue(new Error('No Thread found'));
+      const updateMany = vi.fn();
+      const create = vi.fn();
+      const { service } = makeService({
+        thread: { findFirstOrThrow, updateMany },
+        message: { create },
+      });
+
+      await expect(
+        service.createAndStoreMessage({
+          prompt: 'hello',
+          threadId: 'thread-of-org-2',
+          organizationId: 'org-1',
+        }),
+      ).rejects.toThrow('No Thread found');
+      expect(findFirstOrThrow).toHaveBeenCalledWith({
+        where: { id: 'thread-of-org-2', organizationId: 'org-1' },
+        select: { encryptedDek: true },
+      });
+      expect(mockGenerateThreadKey).not.toHaveBeenCalled();
+      expect(updateMany).not.toHaveBeenCalled();
+      expect(create).not.toHaveBeenCalled();
     });
 
     it('auto-sets the thread title from the trimmed prompt', async () => {
@@ -225,6 +264,7 @@ describe('MessagesService', () => {
       await service.createAndStoreMessage({
         prompt: 'hello world',
         threadId: 'thread-1',
+        organizationId: 'org-1',
       });
 
       expect(updateMany).toHaveBeenCalledWith({
@@ -253,6 +293,7 @@ describe('MessagesService', () => {
       await service.createAndStoreMessage({
         prompt: 'hi',
         threadId: 'thread-1',
+        organizationId: 'org-1',
         visitorId: 'visitor-1',
       });
       await Promise.resolve();
