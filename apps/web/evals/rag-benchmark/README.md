@@ -160,9 +160,17 @@ The same live stack [`e2e-rag`](../e2e-rag/README.md) needs, minus Docling
 (the corpus is Markdown, so nothing goes through PDF parsing):
 
 ```bash
-docker compose up -d postgres qdrant redis temporal litellm-postgres litellm \
+docker compose --profile pii up -d postgres qdrant redis \
   presidio-analyzer presidio-anonymizer
 ```
+
+Redis is the job queue (BullMQ, ADR-44); there is no Temporal or LiteLLM
+container any more. Models are called directly through the route table
+(`infra/llm-gateway/routes.yaml`, ADR-49), so the answer, rephrase and
+embedding models need a route and their provider's credentials in
+`.env.local`: `npm run gateway:preflight -- --probe` checks both with one
+small real request per configured model — a few cents at most, against the
+hundreds of calls a benchmark run makes. Presidio sits behind the `pii` profile.
 
 Then `apps/web` and `apps/worker`, both against the same database and the same
 storage directory:

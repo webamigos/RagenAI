@@ -15,7 +15,13 @@ import {
 } from '@/features/organizations/services/organization-settings';
 import type { RagPipelineSettings } from '@/features/organizations/contracts/organization.types';
 import { resolveEmbeddingsModel } from '@ragenai/rag-core';
-import { rerankModelName } from '@/libs/reranker';
+import { isRerankingEnabled, rerankModelName } from '@/libs/reranker';
+import { getOrgGuardrailsQuery } from '@/features/guardrails/services/queries/get-org-guardrails-query';
+import {
+  docSummariesInstalled,
+  resolveEffectivePipeline,
+  type EffectivePipeline,
+} from '@/features/organizations/utils/effective-rag-pipeline';
 import { getContextVersionStatusQuery } from '@/features/documents/services/queries/get-context-version-status-query';
 import {
   reindexForContextCommand,
@@ -36,6 +42,12 @@ export type RagSettingsPageData = {
     contextExpansion: boolean;
     sectionSelection: boolean;
   };
+  /**
+   * What each row shows: the stage as it runs, from the org's settings, what
+   * the installation can run and the org's guardrail rules (spec
+   * 2026-10-03-retrieval-claims, A2).
+   */
+  pipeline: EffectivePipeline;
   budgetCents: number | null;
   models: {
     embedding: string;
@@ -56,17 +68,34 @@ export async function getRagSettingsAction(): Promise<RagSettingsPageData> {
     answerModel,
     contextExpansion,
     sectionSelection,
+    guardrails,
   ] = await Promise.all([
     getRagPipelineSettings(orgId),
     getUsageLimits(orgId),
     getModel(orgId),
     isFeatureEnabledQuery(orgId, 'contextExpansion'),
     isFeatureEnabledQuery(orgId, 'sectionSelection'),
+    getOrgGuardrailsQuery(orgId),
   ]);
+
+  const retrievalFeatures = { contextExpansion, sectionSelection };
+  // A BOTH rule sits in both lists; it is one rule.
+  const activeGuardrails = new Set(
+    [...guardrails.input, ...guardrails.output].map((rule) => rule.publicId),
+  ).size;
 
   return {
     ragSettings,
-    retrievalFeatures: { contextExpansion, sectionSelection },
+    retrievalFeatures,
+    pipeline: resolveEffectivePipeline({
+      ragSettings,
+      installation: {
+        docSummaries: docSummariesInstalled(),
+        reranker: isRerankingEnabled(),
+      },
+      retrievalFeatures,
+      guardrails: { active: activeGuardrails, degraded: guardrails.degraded },
+    }),
     budgetCents: usageLimits.monthlyCostLimitCents,
     models: {
       embedding: resolveEmbeddingsModel(),

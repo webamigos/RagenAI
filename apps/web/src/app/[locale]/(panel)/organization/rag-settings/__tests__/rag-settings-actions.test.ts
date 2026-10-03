@@ -6,6 +6,8 @@ const isFeatureEnabled = vi.hoisted(() => vi.fn());
 const getRagPipelineSettings = vi.hoisted(() => vi.fn());
 const getUsageLimits = vi.hoisted(() => vi.fn());
 const getModel = vi.hoisted(() => vi.fn());
+const isRerankingEnabled = vi.hoisted(() => vi.fn());
+const getOrgGuardrails = vi.hoisted(() => vi.fn());
 
 vi.mock('@/app/lib/utils/auth-helpers', () => ({
   getOrgIdFromAuthOrThrow: () => getOrgId(),
@@ -33,7 +35,12 @@ vi.mock(
 );
 vi.mock('@/libs/reranker', () => ({
   rerankModelName: () => 'qwen3-embedding-8b',
+  isRerankingEnabled: () => isRerankingEnabled(),
 }));
+vi.mock(
+  '@/features/guardrails/services/queries/get-org-guardrails-query',
+  () => ({ getOrgGuardrailsQuery: getOrgGuardrails }),
+);
 vi.mock('@ragenai/rag-core', () => ({
   resolveEmbeddingsModel: () => 'text-embedding-3-small',
 }));
@@ -58,6 +65,13 @@ beforeEach(() => {
   getRagPipelineSettings.mockResolvedValue(ragSettings);
   getUsageLimits.mockResolvedValue({ monthlyCostLimitCents: null });
   getModel.mockResolvedValue('gpt-5.4');
+  isRerankingEnabled.mockReturnValue(false);
+  getOrgGuardrails.mockResolvedValue({
+    input: [],
+    output: [],
+    degraded: false,
+    dropped: [],
+  });
 });
 
 describe('getRagSettingsAction', () => {
@@ -85,6 +99,34 @@ describe('getRagSettingsAction', () => {
     expect(data.retrievalFeatures).toEqual({
       contextExpansion: true,
       sectionSelection: true,
+    });
+  });
+
+  it('resolves each row against the installation and the org’s guardrails', async () => {
+    isFeatureEnabled.mockResolvedValue(false);
+    getRagPipelineSettings.mockResolvedValue({
+      ...ragSettings,
+      rerankingEnabled: true,
+    });
+    // A BOTH rule appears in both lists and is one rule.
+    getOrgGuardrails.mockResolvedValue({
+      input: [{ publicId: 'g-1' }, { publicId: 'g-2' }],
+      output: [{ publicId: 'g-2' }],
+      degraded: false,
+      dropped: [],
+    });
+
+    const data = await getRagSettingsAction();
+
+    expect(getOrgGuardrails).toHaveBeenCalledWith('org-1');
+    // The default install: the column says on, FEATURE_FLAG_RERANKING is unset.
+    expect(data.pipeline.reranking).toEqual({
+      checked: false,
+      note: { key: 'reranking-unavailable-note' },
+    });
+    expect(data.pipeline.contentModeration).toEqual({
+      checked: true,
+      note: { key: 'content-moderation-guardrails-note', count: 2 },
     });
   });
 
