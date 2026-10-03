@@ -81,6 +81,18 @@ describe('setThreadProjectContext', () => {
     expect(await change(null)).toEqual({ status: 'thread-not-found' });
   });
 
+  // The columns are Postgres `uuid`s, which take any 8-4-4-4-12 hex id. The
+  // e2e seed's fixed ids carry no RFC 4122 version; a strict check refused
+  // them as a missing thread and a missing project.
+  it('accepts a seeded id with no RFC 4122 version, as the column does', async () => {
+    const seededThread = 'e2e00000-0000-0000-0000-00e2e0000010';
+    const seededProject = 'e2e00000-0000-0000-0000-00e2e0000001';
+    expect(await change(seededProject, seededThread)).toEqual({
+      status: 'ok',
+      mentionedProjectId: seededProject,
+    });
+  });
+
   it('rejects ids that are not UUIDs before querying', async () => {
     expect(await change(null, 'not-a-uuid')).toEqual({
       status: 'thread-not-found',

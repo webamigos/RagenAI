@@ -16,7 +16,8 @@ type Params = {
 };
 
 const updateContextSchema = z.object({
-  mentionedProjectId: z.string().uuid().nullable(),
+  // `guid`, not `uuid`: see `set-thread-project-context.ts`.
+  mentionedProjectId: z.guid().nullable(),
 });
 
 /** The caller's organization and user, or the response that refuses them. */

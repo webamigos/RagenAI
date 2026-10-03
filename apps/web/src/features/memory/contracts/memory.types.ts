@@ -33,7 +33,12 @@ export interface MemorySettings {
   extractionEnabled: boolean;
 }
 
-export const memoryThreadIdSchema = z.string().uuid();
+/**
+ * A thread id as the `threads.id` column holds it: any 8-4-4-4-12 hex id.
+ * `z.uuid()` would also demand an RFC 4122 version, refusing threads seeded
+ * or imported with a fixed id, whose memory line would then never show.
+ */
+export const memoryThreadIdSchema = z.guid();
 
 /**
  * Whether the line under an answer may offer undo for one change.
