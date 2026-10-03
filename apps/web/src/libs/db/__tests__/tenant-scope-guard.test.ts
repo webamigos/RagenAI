@@ -112,4 +112,31 @@ describe('createTenantScopeWarnExtension', () => {
 
     expect(onViolation).not.toHaveBeenCalled();
   });
+
+  // Better Auth's listOrganizations, behind the org switcher on every panel
+  // page: a user's memberships across every organization, by design.
+  it("does not report Better Auth's listOrganizations read, but reports the same where on a write", async () => {
+    const onViolation = vi.fn();
+    const config = captureExtensionConfig(onViolation);
+    const where = { userId: { equals: 'u-1' } };
+
+    await config.query.$allModels.$allOperations({
+      model: 'Member',
+      operation: 'findMany',
+      args: { where, take: 100, skip: 0 },
+      query: vi.fn().mockResolvedValue([]),
+    });
+    expect(onViolation).not.toHaveBeenCalled();
+
+    await config.query.$allModels.$allOperations({
+      model: 'Member',
+      operation: 'deleteMany',
+      args: { where },
+      query: vi.fn().mockResolvedValue({ count: 0 }),
+    });
+    expect(onViolation).toHaveBeenCalledWith({
+      model: 'Member',
+      operation: 'deleteMany',
+    });
+  });
 });
