@@ -184,8 +184,10 @@ not answer, and which rule applies is per assistant
 (`ProjectSettings.answerFromDocumentsOnly`; spec
 `2026-10-03-retrieval-claims-match-the-product-before-launch`, Phase C2):
 
-- **Strict** — "If the context does not contain the answer, say that the
-  documents do not cover it, and do not answer from general knowledge."
+- **Strict** — "If neither the context nor a document or image attached to
+  the message contains the answer, say that the documents do not cover
+  it, and do not answer from general knowledge." Attachments count: an image
+  arrives in the user's message, not in the context block.
 - **Default** — the model may answer from its own knowledge, saying so.
 
 The column is nullable. `null` means "the surface default": strict when the

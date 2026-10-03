@@ -22,7 +22,7 @@ export const GROUNDING_RULES = {
   default:
     'If the answer is not directly in the provided context but you believe you know the answer, explain this to the user. Clearly indicate that the answer is based on your own knowledge, not the provided context.',
   strict:
-    'If the context does not contain the answer, say that the documents do not cover it, and do not answer from general knowledge.',
+    'If neither the context nor a document or image attached to the message contains the answer, say that the documents do not cover it, and do not answer from general knowledge.',
 } as const;
 
 export const systemTemplates = {

@@ -216,7 +216,7 @@ test.describe('the mock reports the rule, or the turn below tests nothing', () =
       });
 
     const strict = await ask(
-      '- If the context does not contain the answer, say that the documents do not cover it, and do not answer from general knowledge.',
+      '- If neither the context nor a document or image attached to the message contains the answer, say that the documents do not cover it, and do not answer from general knowledge.',
     );
     expect((await strict.json()).choices[0].message.content).toBe(
       STRICT_REFUSAL,
