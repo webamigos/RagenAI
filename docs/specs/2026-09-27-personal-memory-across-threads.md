@@ -965,9 +965,9 @@ shape an answer before it has been measured.
   message about the memory itself applies no UPDATE or DELETE (#1510), and
   a statement claiming permissions or access is not kept (#1513);
   injection 80/80 at twenty repeats. `personalMemory` is on for the demo
-  organization (admin panel → Features). The nightly purge is registered
-  separately, once per environment, with
-  `ensure-memory-purge-schedule.ts` (C4).
+  organization (admin panel → Features), and the nightly purge is
+  registered on demo's worker (`ensure-memory-purge-schedule.ts`, C4 — once
+  per environment).
 - [x] **E3.** A line in `docs/changelog-notes.md`, and a `docs/lessons.md` entry
   if any step contradicted this spec.
 
