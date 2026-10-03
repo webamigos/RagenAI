@@ -1,7 +1,9 @@
 'use server';
 
 import db from '@ragenai/prisma-client';
+import { ORG_OWNER_ROLE } from '@ragenai/platform-contracts';
 import type { OperationResult } from '@/types/common';
+import { personalOrganizationSlug } from '@/features/organizations/constants/personal-organization';
 import {
   isInstallClaimed,
   markInstallClaimed,
@@ -102,8 +104,20 @@ export async function updateInitialAdminAccountCommand(
     // marker to an error there would leave the door open.
     await markInstallClaimed();
 
+    // The organization the sign-up hook created for this account, named by its
+    // slug — not "any organization the user owns". `findFirst` on owner
+    // memberships alone has no order, so a user owning more than one would
+    // get an arbitrary one renamed. There is no session to read the active
+    // organization from (see above), and the organization the form's name is
+    // meant for is the sign-up one anyway. A user id is the only input, and
+    // it comes from the invariant above, never from the caller.
     const membership = await db.member.findFirst({
-      where: { userId, role: 'owner' },
+      where: {
+        userId,
+        role: ORG_OWNER_ROLE,
+        organization: { slug: personalOrganizationSlug(userId) },
+      },
+      select: { organizationId: true },
     });
 
     if (membership) {

@@ -114,6 +114,111 @@ describe('updateInitialAdminAccountCommand', () => {
     );
   });
 
+  describe('which organization is renamed', () => {
+    type Membership = {
+      userId: string;
+      role: string;
+      organizationId: string;
+      slug: string;
+    };
+
+    /**
+     * A stand-in for Postgres that applies the `where` it is given, so the
+     * test fails if the lookup stops naming the organization rather than if
+     * it stops matching one particular object literal.
+     */
+    function membershipsAre(rows: Membership[]) {
+      memberFindFirst.mockImplementation(
+        async ({
+          where,
+        }: {
+          where: {
+            userId: string;
+            role?: string;
+            organization?: { slug?: string };
+          };
+        }) => {
+          const row = rows.find(
+            (m) =>
+              m.userId === where.userId &&
+              (where.role === undefined || m.role === where.role) &&
+              (where.organization?.slug === undefined ||
+                m.slug === where.organization.slug),
+          );
+          return row ? { organizationId: row.organizationId } : null;
+        },
+      );
+    }
+
+    it('renames the sign-up organization of a user who owns several', async () => {
+      // The defect: `findFirst({ userId, role: 'owner' })` has no order, so an
+      // owner of several organizations could get any of them renamed. The
+      // other one is listed first here so that an unscoped lookup picks it.
+      membershipsAre([
+        {
+          userId: 'user-1',
+          role: 'owner',
+          organizationId: 'org-other',
+          slug: 'someone-elses-org',
+        },
+        {
+          userId: 'user-1',
+          role: 'owner',
+          organizationId: 'org-signup',
+          slug: 'user-1-org',
+        },
+      ]);
+
+      await updateInitialAdminAccountCommand('Acme');
+
+      expect(organizationUpdate).toHaveBeenCalledTimes(1);
+      expect(organizationUpdate).toHaveBeenCalledWith(
+        expect.objectContaining({ where: { id: 'org-signup' } }),
+      );
+    });
+
+    it('renames the only organization of a single-organization owner', async () => {
+      membershipsAre([
+        {
+          userId: 'user-1',
+          role: 'owner',
+          organizationId: 'org-1',
+          slug: 'user-1-org',
+        },
+      ]);
+
+      await updateInitialAdminAccountCommand('Acme');
+
+      expect(organizationUpdate).toHaveBeenCalledWith({
+        where: { id: 'org-1' },
+        data: { name: 'Acme', slug: 'acme-org-1' },
+      });
+    });
+
+    it('renames nothing when the user does not own their sign-up organization', async () => {
+      // Owning some other organization is not a reason to rename it.
+      membershipsAre([
+        {
+          userId: 'user-1',
+          role: 'owner',
+          organizationId: 'org-other',
+          slug: 'someone-elses-org',
+        },
+        {
+          userId: 'user-1',
+          role: 'member',
+          organizationId: 'org-signup',
+          slug: 'user-1-org',
+        },
+      ]);
+
+      const result = await updateInitialAdminAccountCommand('Acme');
+
+      expect(result).toMatchObject({ success: true });
+      expect(organizationUpdate).not.toHaveBeenCalled();
+    });
+  });
+
   it('refuses on an install that has already been claimed', async () => {
     // The reason the role check alone was not enough: `role` is a mutable
     // column, so demoting or deleting the last admin made "no admin yet" true
