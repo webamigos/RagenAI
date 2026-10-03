@@ -63,11 +63,12 @@ export function parseArgs(
       '--profile default and --shape do not combine: a shape names a departure from the default',
     );
   }
-  const withShape = profileArg
-    ? { shape: 'default', profile: 'default' as const }
-    : shape
-      ? { shape }
-      : {};
+  let withShape: { shape?: string; profile?: 'default' } = {};
+  if (profileArg) {
+    withShape = { shape: 'default', profile: 'default' };
+  } else if (shape) {
+    withShape = { shape };
+  }
 
   const arms = valueOf(argv, '--arms');
   if (arms === undefined) {
