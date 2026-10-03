@@ -1140,6 +1140,7 @@ export async function streamEvents({
 
             const dbMessage = await createMessageInDB({
               threadId: threadRecord.id,
+              organizationId: orgId,
               message: {
                 content: persisted.content,
                 source: Source.UI,

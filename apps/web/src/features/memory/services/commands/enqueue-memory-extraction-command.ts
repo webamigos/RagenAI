@@ -67,7 +67,10 @@ export async function enqueueMemoryExtractionCommand({
       threadId,
       messageId,
       epoch: state.epoch,
-      question: await maybeEncryptContent(threadId, maskedQuestion),
+      question: await maybeEncryptContent(
+        { threadId, organizationId: orgId },
+        maskedQuestion,
+      ),
       questionEncrypted: isEncryptionEnabled(),
     });
   } catch (err) {

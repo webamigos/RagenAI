@@ -41,7 +41,10 @@ export async function createBrainAssistantThreadCommand(
     },
     select: { id: true },
   });
-  const title = await maybeEncryptContent(thread.id, threadTitle(question));
+  const title = await maybeEncryptContent(
+    { threadId: thread.id, organizationId: owner.orgId },
+    threadTitle(question),
+  );
   await db.thread.updateMany({
     where: { id: thread.id, organizationId: owner.orgId },
     data: { title },
@@ -74,6 +77,7 @@ export async function storeBrainAssistantQuestionCommand(
 ): Promise<string> {
   const message = await createMessageInDbCommand({
     threadId,
+    organizationId: owner.orgId,
     message: { content: question },
     role: Role.USER,
     visitorId: owner.userId,
@@ -91,6 +95,7 @@ export async function storeBrainAssistantAnswerCommand(
 ): Promise<string> {
   const message = await createMessageInDbCommand({
     threadId,
+    organizationId: owner.orgId,
     message: { content: encodeStoredMessage(text, proposals, options) },
     role: Role.ASSISTANT,
     visitorId: owner.userId,
@@ -151,7 +156,7 @@ export async function transitionProposalCommand(
       i === index ? updated : p,
     );
     const content = await maybeEncryptContent(
-      threadId,
+      { threadId, organizationId: owner.orgId },
       encodeStoredMessage(found.text, proposals, { refused: found.refused }),
     );
     await tx.message.updateMany({

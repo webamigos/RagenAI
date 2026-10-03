@@ -68,6 +68,7 @@ function sanitizeAttachments(
 
 export const createMessageInDbCommand = async ({
   threadId,
+  organizationId,
   message,
   role,
   visitorId,
@@ -77,6 +78,11 @@ export const createMessageInDbCommand = async ({
   attachments,
 }: {
   threadId: Thread['id'];
+  /**
+   * The thread's organization, as the caller resolved the thread — the
+   * encryption key is read and created only within it.
+   */
+  organizationId: Thread['organizationId'];
   message: Omit<DbMessageDto, 'id' | 'role'>;
   role: Role;
   visitorId?: string;
@@ -89,7 +95,7 @@ export const createMessageInDbCommand = async ({
 
   try {
     const encryptedContent = await maybeEncryptContent(
-      threadId,
+      { threadId, organizationId },
       message.content,
     );
 
@@ -139,6 +145,7 @@ export const createAndStoreMessageCommand = async ({
 
     const dbMessage = await createMessageInDbCommand({
       threadId: threadId,
+      organizationId,
       message: {
         content: trimmedPrompt,
       },

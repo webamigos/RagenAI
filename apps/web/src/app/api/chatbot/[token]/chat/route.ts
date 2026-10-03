@@ -187,6 +187,7 @@ export async function POST(
       try {
         await createMessageInDbCommand({
           threadId: thread.id,
+          organizationId,
           message: { content: message },
           role: Role.USER,
           visitorId: sessionId,
@@ -356,6 +357,7 @@ export async function POST(
             try {
               await createMessageInDbCommand({
                 threadId: thread.id,
+                organizationId,
                 message: {
                   content: fullResponse,
                   source: Source.CHATBOT,

@@ -18,7 +18,7 @@ const { documentRetrievalCreateMany, documentCitationCreateMany, transaction } =
   }));
 
 const { mockEncrypt } = vi.hoisted(() => ({
-  mockEncrypt: vi.fn(async (_threadId: string, content: string) => content),
+  mockEncrypt: vi.fn(async (_thread: unknown, content: string) => content),
 }));
 
 // The point of mocking this rather than the crypto primitives: the guarantee
@@ -191,7 +191,10 @@ describe('recordKnowledgeUsageCommand', () => {
         'See employee-handbook.pdf.',
         'thread-1',
       ).then(() => {
-        expect(mockEncrypt).toHaveBeenCalledWith('thread-1', HANDBOOK.snippet);
+        expect(mockEncrypt).toHaveBeenCalledWith(
+          { threadId: 'thread-1', organizationId: ORG_ID },
+          HANDBOOK.snippet,
+        );
       });
     });
 

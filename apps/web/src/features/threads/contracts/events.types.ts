@@ -143,9 +143,17 @@ export type ApiSseRetrieval = {
 
 export type ApiSseRetrievalTrace = {
   chunks: { fileId: string; chunkIndex: number }[];
+  /** `fusion` with `rerankEnabled`/`selectionEnabled` true: on, nothing to cut. */
   postRetrieval: string;
-  /** `neighbours` when `contextExpansion` widened at least one chunk. */
+  /**
+   * `neighbours` when `contextExpansion` widened at least one chunk. `off`
+   * with `expansionEnabled: true` means it ran and added nothing.
+   */
   expansion: 'off' | 'neighbours';
+  /** Which stages were switched on this turn; see `RetrievalTrace`. */
+  expansionEnabled?: boolean;
+  rerankEnabled?: boolean;
+  selectionEnabled?: boolean;
   queryCount: number;
   timings: {
     searchMs: number;

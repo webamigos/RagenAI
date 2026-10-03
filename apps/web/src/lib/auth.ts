@@ -29,6 +29,7 @@ import {
 import Stripe from 'stripe';
 import crypto from 'node:crypto';
 import db from '@ragenai/prisma-client';
+import { ensureDefaultTeamMembershipCommand } from '@/features/teams/services/commands/ensure-default-team-membership-command';
 import {
   hasPendingInvitation,
   isRegistrationOpen,
@@ -36,6 +37,7 @@ import {
 } from './registration';
 import { createOrganizationWithDefaultProjectCommand as createOrganizationWithDefaultProject } from '@/features/organizations/services/commands/create-organization-command';
 import { applyDefaultLimitsToOrg } from '@/features/organizations/services/organization-settings';
+import { personalOrganizationSlug } from '@/features/organizations/constants/personal-organization';
 import { trackAudit } from '@/features/audit-logs/services/commands/create-audit-log-command';
 import { eventBus } from '@/libs/events';
 import {
@@ -541,7 +543,7 @@ export const auth = betterAuth({
               data: {
                 id: orgId,
                 name: organizationName,
-                slug: `${user.id}-org`,
+                slug: personalOrganizationSlug(user.id),
               },
             });
 
@@ -570,31 +572,7 @@ export const auth = betterAuth({
             // now enforces itself. Stable team id makes a partial second run
             // a no-op.
             try {
-              const defaultTeamId = `${orgId}-general`;
-
-              await db.team.upsert({
-                where: { id: defaultTeamId, organizationId: orgId },
-                update: {},
-                create: {
-                  id: defaultTeamId,
-                  name: 'General',
-                  organizationId: orgId,
-                },
-              });
-
-              const existingMembership = await db.teamMember.findFirst({
-                where: { teamId: defaultTeamId, userId: user.id },
-                select: { id: true },
-              });
-              if (!existingMembership) {
-                await db.teamMember.create({
-                  data: {
-                    id: crypto.randomUUID(),
-                    teamId: defaultTeamId,
-                    userId: user.id,
-                  },
-                });
-              }
+              await ensureDefaultTeamMembershipCommand(orgId, user.id);
             } catch (teamError) {
               console.error(
                 '[AUTH] Failed to provision default Better-Auth team',

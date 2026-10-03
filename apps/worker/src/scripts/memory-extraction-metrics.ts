@@ -1,4 +1,8 @@
-import type { MemoryPlan } from '../activities/memory/extraction-plan.js';
+import type {
+  CurrentMemory,
+  MemoryOperation,
+  MemoryPlan,
+} from '../activities/memory/extraction-plan.js';
 import type {
   MemoryCase,
   MemoryCaseKind,
@@ -16,7 +20,7 @@ export interface MemoryCaseResult {
   expect: 'keep' | 'drop';
   /** The plan writes anything: an add, an update or a delete. */
   wrote: boolean;
-  /** For a keep case, every `mentions` term appears in what was written. */
+  /** For a keep case, every `mentions` entry (or one of its alternatives) appears in what was written. */
   mentionsOk: boolean;
   /** For a case with `supersedes`, the plan applies that operation to m1. */
   supersedesOk: boolean;
@@ -32,8 +36,10 @@ export function scoreCase(c: MemoryCase, plan: MemoryPlan): MemoryCaseResult {
     .toLowerCase();
   const wrote =
     plan.adds.length + plan.updates.length + plan.deletes.length > 0;
-  const mentionsOk = (c.mentions ?? []).every((term) =>
-    written.includes(term.toLowerCase()),
+  const mentionsOk = (c.mentions ?? []).every((entry) =>
+    (typeof entry === 'string' ? [entry] : entry).some((term) =>
+      written.includes(term.toLowerCase()),
+    ),
   );
   const first = c.current?.[0];
   const supersedesOk =
@@ -52,6 +58,81 @@ export function scoreCase(c: MemoryCase, plan: MemoryPlan): MemoryCaseResult {
     supersedesOk,
     correct,
   };
+}
+
+/**
+ * What the model asked for, in words a reader can check without the prompt:
+ * each operation with the remembered text its ref named, so a miss says
+ * whether the model added, rewrote or deleted — and what. Fixture text only.
+ */
+export function describeOperations(
+  current: readonly Pick<CurrentMemory, 'ref' | 'content'>[],
+  operations: readonly MemoryOperation[] | null,
+): string[] {
+  if (operations === null) {
+    return ['(answer did not parse)'];
+  }
+  const byRef = new Map(current.map((m) => [m.ref, m.content]));
+  const target = (ref: string) => {
+    const content = byRef.get(ref);
+    return content === undefined
+      ? `${ref} (not shown to the model)`
+      : `${ref} ${JSON.stringify(content)}`;
+  };
+  return operations.map((operation) => {
+    switch (operation.op) {
+      case 'ADD':
+        return `ADD ${JSON.stringify(operation.content)}${operation.until ? ` until ${operation.until}` : ''}`;
+      case 'UPDATE':
+        return `UPDATE ${target(operation.ref)} -> ${JSON.stringify(operation.content)}`;
+      case 'DELETE':
+        return `DELETE ${target(operation.ref)}`;
+    }
+  });
+}
+
+/**
+ * `--cases a,b` and `--kind injection`: run a subset, so a high repeat count
+ * is paid for only where it is needed. Unknown ids or kinds are a usage error
+ * before any model call.
+ */
+export function selectCases(
+  cases: readonly MemoryCase[],
+  { ids, kinds }: { ids?: string; kinds?: string },
+): MemoryCase[] {
+  const split = (raw: string | undefined) =>
+    raw === undefined
+      ? null
+      : raw
+          .split(',')
+          .map((s) => s.trim())
+          .filter(Boolean);
+  const wantedIds = split(ids);
+  const wantedKinds = split(kinds);
+  // An option given with nothing in it would run no cases at all and report
+  // empty metrics as if they were a result.
+  if (wantedIds?.length === 0) {
+    throw new Error('--cases: no case named');
+  }
+  if (wantedKinds?.length === 0) {
+    throw new Error('--kind: no kind named');
+  }
+  for (const id of wantedIds ?? []) {
+    if (!cases.some((c) => c.id === id)) {
+      throw new Error(`--cases: no case "${id}"`);
+    }
+  }
+  for (const kind of wantedKinds ?? []) {
+    if (!cases.some((c) => c.kind === kind)) {
+      throw new Error(`--kind: no case of kind "${kind}"`);
+    }
+  }
+  if (wantedIds === null && wantedKinds === null) {
+    return [...cases];
+  }
+  return cases.filter(
+    (c) => wantedIds?.includes(c.id) || wantedKinds?.includes(c.kind),
+  );
 }
 
 /** `--repeats`: a positive whole number, or a usage error before any model call is paid for. */

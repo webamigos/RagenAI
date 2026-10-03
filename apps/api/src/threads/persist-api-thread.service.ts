@@ -98,7 +98,10 @@ export class PersistApiThreadService {
         },
       });
 
-      const userContent = await this.maybeEncrypt(thread.id, fullUserContent);
+      const userContent = await this.maybeEncrypt(
+        { threadId: thread.id, organizationId: orgId },
+        fullUserContent,
+      );
 
       await this.prisma.client.message.create({
         data: {
@@ -119,7 +122,10 @@ export class PersistApiThreadService {
           guardrailBlocked?: GuardrailBlockedMarker | null,
         ) => {
           try {
-            const encrypted = await this.maybeEncrypt(threadId, content);
+            const encrypted = await this.maybeEncrypt(
+              { threadId, organizationId: orgId },
+              content,
+            );
             await this.prisma.client.message.create({
               data: {
                 threadId,
@@ -158,8 +164,12 @@ export class PersistApiThreadService {
     }
   }
 
+  /**
+   * Reads and keys the thread within `organizationId`, the organization the
+   * thread was just created in — a thread outside it is not found.
+   */
   private async maybeEncrypt(
-    threadId: string,
+    { threadId, organizationId }: { threadId: string; organizationId: string },
     content: string,
   ): Promise<string> {
     if (!isEncryptionEnabled()) {
@@ -167,8 +177,8 @@ export class PersistApiThreadService {
     }
 
     // Check if the thread already has an encryption key
-    const existing = await this.prisma.client.thread.findUniqueOrThrow({
-      where: { id: threadId },
+    const existing = await this.prisma.client.thread.findFirstOrThrow({
+      where: { id: threadId, organizationId },
       select: { encryptedDek: true },
     });
 
@@ -182,14 +192,14 @@ export class PersistApiThreadService {
 
       // Conditional update to avoid race condition
       const result = await this.prisma.client.thread.updateMany({
-        where: { id: threadId, encryptedDek: null },
+        where: { id: threadId, organizationId, encryptedDek: null },
         data: { encryptedDek: key.encryptedDek },
       });
 
       // Another request won the race — use their key
       if (result.count === 0) {
-        const updated = await this.prisma.client.thread.findUniqueOrThrow({
-          where: { id: threadId },
+        const updated = await this.prisma.client.thread.findFirstOrThrow({
+          where: { id: threadId, organizationId },
           select: { encryptedDek: true },
         });
         if (!updated.encryptedDek) {

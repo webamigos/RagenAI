@@ -1,4 +1,5 @@
 import db from '@ragenai/prisma-client';
+import type { Thread } from '@/generated/prisma/client';
 import {
   isEncryptionEnabled,
   generateThreadKey,
@@ -21,9 +22,17 @@ import {
  * It also creates the thread's key if there is not one yet, which is why the
  * race below exists: two turns can arrive together on a thread's first
  * message.
+ *
+ * The thread is read and keyed within `organizationId` — the organization the
+ * caller already resolved the thread under, never one taken from the client.
+ * A thread outside it is not found, so this throws rather than reading or
+ * creating another organization's key.
  */
 export async function maybeEncryptContent(
-  threadId: string,
+  {
+    threadId,
+    organizationId,
+  }: { threadId: string; organizationId: Thread['organizationId'] },
   content: string,
 ): Promise<string> {
   if (!isEncryptionEnabled()) {
@@ -31,8 +40,8 @@ export async function maybeEncryptContent(
     return content;
   }
 
-  const thread = await db.thread.findUniqueOrThrow({
-    where: { id: threadId },
+  const thread = await db.thread.findFirstOrThrow({
+    where: { id: threadId, organizationId },
     select: { encryptedDek: true },
   });
 
@@ -46,14 +55,14 @@ export async function maybeEncryptContent(
 
     // Conditional update to avoid race condition: only set DEK if still null
     const result = await db.thread.updateMany({
-      where: { id: threadId, encryptedDek: null },
+      where: { id: threadId, organizationId, encryptedDek: null },
       data: { encryptedDek: key.encryptedDek },
     });
 
     // Another request won the race — use their key instead
     if (result.count === 0) {
-      const updated = await db.thread.findUniqueOrThrow({
-        where: { id: threadId },
+      const updated = await db.thread.findFirstOrThrow({
+        where: { id: threadId, organizationId },
         select: { encryptedDek: true },
       });
       if (!updated.encryptedDek) {

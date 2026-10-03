@@ -267,6 +267,86 @@ describe('isTenantScopeSatisfied', () => {
       ).toBe(false);
     });
 
+    it('accepts a filter value that pins the column', () => {
+      for (const organizationId of [
+        'org-1',
+        { equals: 'org-1' },
+        { in: ['org-1', 'org-2'] },
+        { equals: 'org-1', mode: 'insensitive' },
+      ]) {
+        expect(
+          isTenantScopeSatisfied('Member', 'findFirst', {
+            where: { AND: [{ organizationId }, { userId: 'u-1' }] },
+          }),
+        ).toBe(true);
+        expect(
+          isTenantScopeSatisfied('Thread', 'findMany', {
+            where: { organizationId },
+          }),
+        ).toBe(true);
+      }
+    });
+
+    it('rejects a filter value that names the column without confining it', () => {
+      // Each names organizationId and filters nothing, or every other org.
+      // Better Auth writes `ne` as { not: { equals } } and `eq` with an
+      // undefined value as { equals: undefined }.
+      for (const organizationId of [
+        { not: { equals: 'org-1' } },
+        { not: 'org-1' },
+        { notIn: ['org-1'] },
+        { equals: undefined },
+        {},
+        { in: [] },
+        { in: [undefined] },
+      ]) {
+        expect(
+          isTenantScopeSatisfied('Member', 'findFirst', {
+            where: { AND: [{ organizationId }, { userId: { equals: 'u-1' } }] },
+          }),
+        ).toBe(false);
+        expect(
+          isTenantScopeSatisfied('Thread', 'findMany', {
+            where: { organizationId },
+          }),
+        ).toBe(false);
+      }
+      expect(
+        isTenantScopeSatisfied('Thread', 'findMany', {
+          where: {
+            OR: [
+              { organizationId: 'org-1' },
+              { organizationId: { not: 'org-1' } },
+            ],
+          },
+        }),
+      ).toBe(false);
+      expect(
+        isTenantScopeSatisfied('UserMemoryProfile', 'findUnique', {
+          where: {
+            organizationId_userId: {
+              organizationId: { not: 'org-1' },
+              userId: 'u',
+            },
+          },
+        }),
+      ).toBe(false);
+    });
+
+    it('rejects an AND whose only scope sits under NOT, a partial OR, or undefined', () => {
+      for (const conjunct of [
+        { NOT: { organizationId: 'org-1' } },
+        { OR: [{ organizationId: 'org-1' }, { visitorId: 'v-1' }] },
+        { organizationId: undefined },
+      ]) {
+        expect(
+          isTenantScopeSatisfied('Thread', 'findFirst', {
+            where: { AND: [conjunct, { id: 't-1' }] },
+          }),
+        ).toBe(false);
+      }
+    });
+
     it('reads the where of an upsert the same way', () => {
       expect(
         isTenantScopeSatisfied('UserMemoryProfile', 'upsert', {

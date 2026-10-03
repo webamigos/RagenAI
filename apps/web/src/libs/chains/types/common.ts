@@ -229,6 +229,11 @@ export interface RetrievalTrace {
    * The step between search and rendering. `fusion` is Qdrant's RRF order,
    * used when reranking is off or had nothing to cut; `reranker-failed:` is
    * the reranker's fallback, which is fusion order too.
+   *
+   * `fusion` alone does not say whether a stage was switched on: read it with
+   * `rerankEnabled` and `selectionEnabled`. `fusion` with either of them
+   * `true` means the stage was on but the pool was no larger than
+   * `maxDocuments`, so there was nothing to cut and it did not run.
    */
   postRetrieval:
     | 'fusion'
@@ -240,8 +245,25 @@ export interface RetrievalTrace {
    * Whether kept chunks were widened by their neighbours (`contextExpansion`).
    * `neighbours` only when at least one neighbour was rendered; `chunks` then
    * lists every position the widened sections cover.
+   *
+   * Read it with `expansionEnabled`: `off` with `expansionEnabled: true`
+   * means expansion ran and added nothing; `off` with `false` means it was
+   * not switched on.
    */
   expansion: 'off' | 'neighbours';
+  /**
+   * Whether each stage was switched on for this turn, whatever it then did.
+   * Optional because traces recorded before these existed lack them; an
+   * absent value says nothing either way.
+   *
+   * `expansionEnabled`: `contextExpansion` was on and the vector store can
+   * fetch neighbours. `rerankEnabled`: reranking was on (org setting and
+   * `FEATURE_FLAG_RERANKING`) and selection was not, since selection takes
+   * the reranker's slot. `selectionEnabled`: LLM section selection was on.
+   */
+  expansionEnabled?: boolean;
+  rerankEnabled?: boolean;
+  selectionEnabled?: boolean;
   /** Queries searched: the standalone question plus multi-query variants. */
   queryCount: number;
   /** Milliseconds each step added. `rephraseMs` is set by the chain. */

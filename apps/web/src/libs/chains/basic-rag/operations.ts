@@ -711,6 +711,8 @@ export async function retrieveRelevantDocumentsWithIds(
       // expansion only widens them. A failed lookup leaves a hit as it was.
       const expandStartedAt = Date.now();
       let expanded = false;
+      const useExpansion =
+        expansion !== undefined && vectorStore.getChunksByIndex !== undefined;
       if (expansion && vectorStore.getChunksByIndex) {
         const getChunksByIndex = vectorStore.getChunksByIndex.bind(vectorStore);
         const result = await withSpan(
@@ -871,6 +873,11 @@ export async function retrieveRelevantDocumentsWithIds(
             ? selectionStep(selectionFallback)
             : postRetrievalStep(reranked, finalDocs),
           expansion: expanded ? 'neighbours' : 'off',
+          // Switched on, not "ran": the pair above can be `fusion`/`off` with
+          // these true, when the stage had nothing to cut or nothing to add.
+          expansionEnabled: useExpansion,
+          rerankEnabled: useReranking,
+          selectionEnabled: useSelection,
           queryCount: queryList.length,
           timings: { searchMs, rerankMs, selectMs, expandMs },
         },

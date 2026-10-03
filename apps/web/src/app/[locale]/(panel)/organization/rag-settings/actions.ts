@@ -27,6 +27,15 @@ import { deleteAllOrgMemoriesCommand } from '@/features/memory/services/commands
 
 export type RagSettingsPageData = {
   ragSettings: RagPipelineSettings;
+  /**
+   * Retrieval stages behind feature keys rather than org settings, read the
+   * way the chat chains read them (`initializeBasicRag`), so the page cannot
+   * report a stage the turn does not run.
+   */
+  retrievalFeatures: {
+    contextExpansion: boolean;
+    sectionSelection: boolean;
+  };
   budgetCents: number | null;
   models: {
     embedding: string;
@@ -41,14 +50,23 @@ export async function getRagSettingsAction(): Promise<RagSettingsPageData> {
   const orgId = await getOrgIdFromAuthOrThrow();
   await requireOrgAdmin(orgId);
 
-  const [ragSettings, usageLimits, answerModel] = await Promise.all([
+  const [
+    ragSettings,
+    usageLimits,
+    answerModel,
+    contextExpansion,
+    sectionSelection,
+  ] = await Promise.all([
     getRagPipelineSettings(orgId),
     getUsageLimits(orgId),
     getModel(orgId),
+    isFeatureEnabledQuery(orgId, 'contextExpansion'),
+    isFeatureEnabledQuery(orgId, 'sectionSelection'),
   ]);
 
   return {
     ragSettings,
+    retrievalFeatures: { contextExpansion, sectionSelection },
     budgetCents: usageLimits.monthlyCostLimitCents,
     models: {
       embedding: resolveEmbeddingsModel(),

@@ -1,0 +1,40 @@
+description: 'rag-quality with a personal-memory block in the system prompt (personal memory E1)'
+
+# The same dataset, model and grader as rag-quality.yaml; the only difference is
+# `memories`, which the provider renders with the chat's own renderMemoryBlock
+# into the <user_memory> block (spec 2026-09-27-personal-memory-across-threads,
+# E1). Compare against rag-quality.yaml, both run with --no-cache:
+#
+#   npm run eval -- --config evals/configs/rag-quality-memory.yaml --no-cache
+#
+# Five of the six memories have nothing to do with the questions' topics; the
+# fourth (the API integration) touches the dataset's API-authentication cases
+# on purpose. The third is a format preference, which every answer may feel.
+providers:
+  - id: 'file://../providers/rag-chain.provider.ts'
+    label: 'RAG Chain (gemini-2.5-flash) + memory'
+    config:
+      model: 'gemini-2.5-flash'
+      memories:
+        - 'Works as a financial controller in the finance team; owns the monthly management report.'
+        - 'Is preparing the Q4 budget review, due 2026-10-20.'
+        - 'Prefers concise answers without a long introduction.'
+        - 'Is integrating the Ragen API into the finance team''s internal reporting tool.'
+        - 'Is based in the Warsaw office.'
+        - 'Uses Excel for most of their analysis and often pastes tables into the chat.'
+
+prompts:
+  - '{{question}}'
+
+tests: 'file://../datasets/rag-quality.yaml'
+
+defaultTest:
+  options:
+    # See rag-quality.yaml: promptfoo's own grader, not the product's gateway.
+    provider:
+      id: 'openai:chat:gpt-4o-mini'
+      config:
+        apiBaseUrl: '{{ env.EVAL_GRADER_BASE_URL | default("https://api.openai.com/v1") }}'
+        apiKeyEnvar: OPENAI_API_KEY
+
+outputPath: 'evals/results/rag-quality-memory.json'

@@ -16,7 +16,7 @@ const m = vi.hoisted(() => {
       ),
     },
     encrypt: vi.fn(
-      async (_threadId: string, content: string) => `enc(${content})`,
+      async (_thread: unknown, content: string) => `enc(${content})`,
     ),
     createMessage: vi.fn(),
   };
@@ -62,7 +62,10 @@ describe('createBrainAssistantThreadCommand', () => {
       visitorId: 'u-1',
       kind: 'BRAIN_OPERATOR',
     });
-    expect(m.encrypt).toHaveBeenCalledWith('t-1', 'Who owns leave?');
+    expect(m.encrypt).toHaveBeenCalledWith(
+      { threadId: 't-1', organizationId: 'org-1' },
+      'Who owns leave?',
+    );
     expect(m.db.thread.updateMany).toHaveBeenCalledWith({
       where: { id: 't-1', organizationId: 'org-1' },
       data: { title: 'enc(Who owns leave?)' },
@@ -78,6 +81,7 @@ describe('storing turns', () => {
     ]);
     const call = m.createMessage.mock.calls[0]![0];
     expect(call.role).toBe('ASSISTANT');
+    expect(call).toMatchObject({ threadId: 't-1', organizationId: 'org-1' });
     expect(JSON.parse(call.message.content)).toEqual({
       v: 1,
       text: 'answer',
@@ -111,6 +115,10 @@ describe('transitionProposalCommand', () => {
       NOW,
     );
     expect(result).toMatchObject({ id: 'p-1', outcome: claim });
+    expect(m.encrypt.mock.calls[0]![0]).toEqual({
+      threadId: 't-1',
+      organizationId: 'org-1',
+    });
     const content = m.encrypt.mock.calls[0]![1];
     expect(JSON.parse(content).proposals[0].outcome).toEqual(claim);
     expect(m.db.message.updateMany).toHaveBeenCalledWith({

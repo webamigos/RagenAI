@@ -27,7 +27,9 @@ export const themeConfigSchema = z
 
 export const createChatbotSchema = z.object({
   name: z.string().trim().min(1),
-  selectedFileIds: z.array(z.string().uuid()).optional(),
+  // `guid`, not `uuid`: these are `user_files.id` values, Postgres uuids that
+  // need no RFC 4122 version (see docs/lessons/zod-4-uuid-refuses-well-formed-database-ids.md).
+  selectedFileIds: z.array(z.guid()).optional(),
   allowedOrigins: z.array(z.string()).optional(),
   themeConfig: themeConfigSchema,
   chatbotPrompt: z.string().optional(),

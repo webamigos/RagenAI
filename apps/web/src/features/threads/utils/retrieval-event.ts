@@ -91,6 +91,15 @@ export function toRetrievalEventTrace(
     })),
     postRetrieval: trace.postRetrieval,
     expansion: trace.expansion,
+    ...(trace.expansionEnabled !== undefined
+      ? { expansionEnabled: trace.expansionEnabled }
+      : {}),
+    ...(trace.rerankEnabled !== undefined
+      ? { rerankEnabled: trace.rerankEnabled }
+      : {}),
+    ...(trace.selectionEnabled !== undefined
+      ? { selectionEnabled: trace.selectionEnabled }
+      : {}),
     queryCount: trace.queryCount,
     timings: {
       searchMs: trace.timings.searchMs,

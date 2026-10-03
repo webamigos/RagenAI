@@ -3,6 +3,7 @@ import { basicRagChain } from '@/libs/chains/basic-rag/chain';
 import { MockVectorStoreClient } from '../fixtures/mock-vector-store';
 import demoCorpus from '../fixtures/documents/demo-corpus.json' with { type: 'json' };
 import { selectCitedSources } from '@/features/documents/utils/cited-sources';
+import { renderMemoryBlock } from '@/features/memory/utils/render-memory-block';
 import type { VectorStoreDocument } from '@/libs/vector-store/types';
 import {
   createNoopModeration,
@@ -23,6 +24,15 @@ export interface RagChainProviderConfig {
    * the model has something to cite by. The citations suite needs the latter.
    */
   corpus?: 'product-faq' | 'demo-corpus';
+  /**
+   * The asking user's personal memories (spec
+   * 2026-09-27-personal-memory-across-threads, E1). Rendered by the same
+   * `renderMemoryBlock` the chat uses and passed as `ChainConfig.memoryBlock`,
+   * so a suite can run with and without the `<user_memory>` block on the
+   * production prompt path. Absent or empty: no block, as for a user with no
+   * memories.
+   */
+  memories?: string[];
 }
 
 export class RagChainProvider implements ApiProvider {
@@ -63,6 +73,7 @@ export class RagChainProvider implements ApiProvider {
         config: {
           answerInstructions: this.providerConfig.answerInstructions,
           projectInstruction: this.providerConfig.projectInstruction,
+          memoryBlock: renderMemoryBlock(this.providerConfig.memories ?? []),
           threadDocuments: [],
         },
       });

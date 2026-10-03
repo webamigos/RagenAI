@@ -14,7 +14,11 @@ A presence check on the org column, in any filter every matching row must
 satisfy: a top-level key; a compound unique selector naming the column
 (`organizationId_userId: { organizationId, userId }`); one conjunct of an
 `AND` (how Better Auth's Prisma adapter writes every multi-field lookup); or
-*every* branch of an `OR`. `NOT` and relation filters never count. On a
+*every* branch of an `OR`. `NOT` and relation filters never count. In each
+shape the value must pin the column: a plain value, `{ equals }` with a value,
+or a non-empty `{ in }`. `{ not }`, `{ notIn }`, `{ equals: undefined }` and
+`{}` name the column and scope nothing — Better Auth writes `ne` as
+`{ not: { equals } }`, so the `AND` shape would otherwise pass it. On a
 create only the top-level `data` is read, so write `organizationId` rather than
 `organization: { connect }`. Until 2026-10 only the top-level key counted, and
 those scoped shapes were most of the warnings in a normal run.
