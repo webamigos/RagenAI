@@ -20,3 +20,5 @@ For an id that is a database key, check the **shape** (`/^[0-9a-f]{8}-…-[0-9a-
 ## Applies to
 
 Any Zod schema that validates an id coming back from the browser or from a file, in every workspace, and especially one run against seeded data.
+
+**It came back two weeks later, in new code written after this lesson existed** (#1491, #1494, fixed in #1496). The thread-context setter, its route's body schema, and the memory line's thread-id check all used `z.string().uuid()`. The owner got a 400 when setting the e2e seed's own project as context, and a seeded thread's memory line could never appear. Every unit fixture was v4 again; a throwaway HTTP check against a production build found it. `z.guid()` is Zod 4's built-in for the shape-only check and is what #1496 uses. One `z.string().uuid()` on a database key is still left: `selectedFileIds` in `features/chatbots/contracts/chatbot.types.ts`.
