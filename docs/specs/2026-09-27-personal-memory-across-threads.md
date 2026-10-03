@@ -886,7 +886,19 @@ shape an answer before it has been measured.
 
   No loading status for memory is shown, so `status-searching-memories` is
   deleted from every locale.
-- [ ] **D3.** E2E `p0-35-personal-memory.spec.ts` (see "Testing").
+- [x] **D3.** E2E `p0-35-personal-memory.spec.ts` (see "Testing").
+
+  *Done.* **The memories are seeded, not extracted:** the e2e job starts no
+  worker, so scenario 1 seeds a remembered preference instead of stating one
+  in a turn, and extraction keeps its coverage in the worker's suites. The
+  prompt is observed through the mock's echo — a memory carrying a
+  `zzqx-echo-` token the question does not. The four scenarios as written,
+  plus D2's line: the answer that wrote a memory says "Zapamiętano: …", and
+  undo removes it. The spec switches `personalMemory` on for the test org and
+  owns its rows only while it runs, so no other chat spec has a memory block
+  in its prompt; the seed also clears memory profiles for the test orgs, and
+  `memory-rows-are-read-through-one-module.test.ts` allows exactly those two
+  files.
 
 ### Phase E — measure, then turn it on
 
