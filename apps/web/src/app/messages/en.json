@@ -4,7 +4,6 @@
     "welcome": "Welcome",
     "start-new-thread": "Start new thread",
     "status-thinking": "Thinking...",
-    "status-searching-memories": "Searching memories...",
     "status-robots-are-waking-up": "Beep, boop, robots are waking up...",
     "status-asking-ai": "Asking AI what it thinks about your question...",
     "limit-reached": "Messages limit reached",
@@ -484,6 +483,18 @@
       "regenerate-error": "Failed to regenerate response. Please try again.",
       "read-only-banner": "You are viewing another user's thread. You cannot send messages in this thread.",
       "guardrail-blocked-answer": "The answer was withheld because it matched a rule set by your organization's administrator."
+    },
+    "memory-line": {
+      "label": "Memory changes from this answer",
+      "remembered": "Remembered: {content}",
+      "updated": "Updated memory: {content}",
+      "forgot": "Forgot: {content}",
+      "undo": "Undo",
+      "undoing": "Undoing…",
+      "undone": "Undone",
+      "stale": "Changed since, edit it in settings",
+      "full": "Memory is full, remove one in settings first",
+      "failed": "Could not undo, try again"
     }
   },
   "assistant-settings": {

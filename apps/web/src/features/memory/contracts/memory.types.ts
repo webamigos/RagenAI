@@ -32,3 +32,32 @@ export interface MemorySettings {
   /** Whether new turns may write memories. True until the user turns it off. */
   extractionEnabled: boolean;
 }
+
+export const memoryThreadIdSchema = z.string().uuid();
+
+/**
+ * Whether the line under an answer may offer undo for one change.
+ * `stale`: the memory was written again since — by a later extraction or a
+ * settings edit — or, for a DELETE, exists again; undoing would overwrite a
+ * newer statement, so the line points at settings instead.
+ */
+export type MemoryChangeState = 'undoable' | 'undone' | 'stale';
+
+/** One change a turn made to the user's memory, as the thread shows it. */
+export interface MemoryChangeView {
+  publicId: string;
+  operation: 'ADD' | 'UPDATE' | 'DELETE';
+  /** The statement now (ADD, UPDATE), or the one forgotten (DELETE). */
+  content: string;
+  state: MemoryChangeState;
+}
+
+/** A thread's changes, keyed by the assistant message whose turn made them. */
+export type ThreadMemoryChanges = Record<string, MemoryChangeView[]>;
+
+/**
+ * What an undo did. `full`: undoing a DELETE would restore a memory past
+ * `MEMORY_MAX_ENTRIES`, which an extraction is not allowed to do either.
+ */
+export type UndoMemoryChangeResult =
+  'undone' | 'already-undone' | 'stale' | 'full';

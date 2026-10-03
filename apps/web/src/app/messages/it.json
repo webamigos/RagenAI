@@ -4,7 +4,6 @@
     "welcome": "Benvenuto",
     "start-new-thread": "Avvia una nuova conversazione",
     "status-thinking": "Sto pensando...",
-    "status-searching-memories": "Ricerca nella memoria...",
     "status-robots-are-waking-up": "Beep, boop, i robot si stanno svegliando...",
     "status-asking-ai": "Chiedo all'IA cosa ne pensa della tua domanda...",
     "limit-reached": "Limite di messaggi raggiunto",
@@ -484,6 +483,18 @@
       "regenerate-error": "Impossibile rigenerare la risposta. Riprova.",
       "read-only-banner": "Stai visualizzando la conversazione di un altro utente. Non puoi inviare messaggi in questa conversazione.",
       "guardrail-blocked-answer": "La risposta è stata trattenuta perché corrisponde a una regola impostata dall'amministratore della tua organizzazione."
+    },
+    "memory-line": {
+      "label": "Modifiche alla memoria da questa risposta",
+      "remembered": "Ricordato: {content}",
+      "updated": "Memoria aggiornata: {content}",
+      "forgot": "Dimenticato: {content}",
+      "undo": "Annulla",
+      "undoing": "Annullamento…",
+      "undone": "Annullato",
+      "stale": "Modificato nel frattempo, modificalo nelle impostazioni",
+      "full": "La memoria è piena, rimuovi prima una voce nelle impostazioni",
+      "failed": "Impossibile annullare, riprova"
     }
   },
   "assistant-settings": {

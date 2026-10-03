@@ -4,7 +4,6 @@
     "welcome": "Velkommen",
     "start-new-thread": "Start ny samtale",
     "status-thinking": "Tenker...",
-    "status-searching-memories": "Søker i minner...",
     "status-robots-are-waking-up": "Bip, bop, robotene våkner...",
     "status-asking-ai": "Spør AI hva den mener om spørsmålet ditt...",
     "limit-reached": "Grensen for meldinger er nådd",
@@ -484,6 +483,18 @@
       "regenerate-error": "Kunne ikke generere svaret på nytt. Prøv igjen.",
       "read-only-banner": "Du ser på en annen brukers samtale. Du kan ikke sende meldinger i denne samtalen.",
       "guardrail-blocked-answer": "Svaret ble holdt tilbake fordi det samsvarte med en regel satt av organisasjonens administrator."
+    },
+    "memory-line": {
+      "label": "Minneendringer fra dette svaret",
+      "remembered": "Husket: {content}",
+      "updated": "Minnet oppdatert: {content}",
+      "forgot": "Glemt: {content}",
+      "undo": "Angre",
+      "undoing": "Angrer…",
+      "undone": "Angret",
+      "stale": "Endret siden, rediger det i innstillingene",
+      "full": "Minnet er fullt, fjern først noe i innstillingene",
+      "failed": "Kunne ikke angre, prøv igjen"
     }
   },
   "assistant-settings": {

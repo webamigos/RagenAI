@@ -4,7 +4,6 @@
     "welcome": "Bienvenido",
     "start-new-thread": "Iniciar nuevo hilo",
     "status-thinking": "Pensando...",
-    "status-searching-memories": "Buscando en la memoria...",
     "status-robots-are-waking-up": "Beep, boop, los robots se están despertando...",
     "status-asking-ai": "Preguntando a la IA qué opina sobre tu pregunta...",
     "limit-reached": "Se alcanzó el límite de mensajes",
@@ -484,6 +483,18 @@
       "regenerate-error": "Error al regenerar la respuesta. Inténtalo de nuevo.",
       "read-only-banner": "Estás viendo el hilo de otro usuario. No puedes enviar mensajes en este hilo.",
       "guardrail-blocked-answer": "La respuesta se retuvo porque coincide con una regla establecida por el administrador de tu organización."
+    },
+    "memory-line": {
+      "label": "Cambios en la memoria de esta respuesta",
+      "remembered": "Recordado: {content}",
+      "updated": "Memoria actualizada: {content}",
+      "forgot": "Olvidado: {content}",
+      "undo": "Deshacer",
+      "undoing": "Deshaciendo…",
+      "undone": "Deshecho",
+      "stale": "Cambiado desde entonces, edítalo en la configuración",
+      "full": "La memoria está llena, elimina primero un elemento en la configuración",
+      "failed": "No se pudo deshacer, inténtalo de nuevo"
     }
   },
   "assistant-settings": {

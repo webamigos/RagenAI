@@ -4,7 +4,6 @@
     "welcome": "Välkommen",
     "start-new-thread": "Starta en ny konversation",
     "status-thinking": "Tänker...",
-    "status-searching-memories": "Söker i minnet...",
     "status-robots-are-waking-up": "Beep, boop, robotarna vaknar...",
     "status-asking-ai": "Frågar AI:n vad den tycker om din fråga...",
     "limit-reached": "Meddelandegränsen nådd",
@@ -484,6 +483,18 @@
       "regenerate-error": "Det gick inte att generera svaret igen. Försök igen.",
       "read-only-banner": "Du tittar på en annan användares konversation. Du kan inte skicka meddelanden i den här konversationen.",
       "guardrail-blocked-answer": "Svaret hölls tillbaka eftersom det matchar en regel som din organisations administratör har angett."
+    },
+    "memory-line": {
+      "label": "Minnesändringar från det här svaret",
+      "remembered": "Ihågkommet: {content}",
+      "updated": "Minnet uppdaterat: {content}",
+      "forgot": "Glömt: {content}",
+      "undo": "Ångra",
+      "undoing": "Ångrar…",
+      "undone": "Ångrat",
+      "stale": "Ändrat sedan dess, redigera det i inställningarna",
+      "full": "Minnet är fullt, ta först bort något i inställningarna",
+      "failed": "Kunde inte ångra, försök igen"
     }
   },
   "assistant-settings": {

@@ -4,7 +4,6 @@
     "welcome": "Witaj",
     "start-new-thread": "Rozpocznij nowy wątek",
     "status-thinking": "Myślę...",
-    "status-searching-memories": "Wyszukuję w pamięci...",
     "status-robots-are-waking-up": "Beep, boop, roboty budzą się...",
     "status-asking-ai": "Pytam AI co myśli o Twoim pytaniu...",
     "limit-reached": "Limit wiadomości został przekroczony.",
@@ -484,6 +483,18 @@
       "regenerate-error": "Nie udało się zregenerować odpowiedzi. Spróbuj ponownie.",
       "read-only-banner": "Przeglądasz wątek innego użytkownika. Nie możesz wysyłać wiadomości w tym wątku.",
       "guardrail-blocked-answer": "Odpowiedź została wstrzymana, ponieważ pasuje do reguły ustawionej przez administratora Twojej organizacji."
+    },
+    "memory-line": {
+      "label": "Zmiany w pamięci po tej odpowiedzi",
+      "remembered": "Zapamiętano: {content}",
+      "updated": "Zaktualizowano pamięć: {content}",
+      "forgot": "Zapomniano: {content}",
+      "undo": "Cofnij",
+      "undoing": "Cofanie…",
+      "undone": "Cofnięto",
+      "stale": "Zmieniono od tego czasu, edytuj w ustawieniach",
+      "full": "Pamięć jest pełna, najpierw usuń coś w ustawieniach",
+      "failed": "Nie udało się cofnąć, spróbuj ponownie"
     }
   },
   "assistant-settings": {

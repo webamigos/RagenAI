@@ -4,7 +4,6 @@
     "welcome": "Üdvözlünk",
     "start-new-thread": "Új beszélgetés indítása",
     "status-thinking": "Gondolkodom...",
-    "status-searching-memories": "Keresés a memóriában...",
     "status-robots-are-waking-up": "Beep, boop, a robotok ébrednek...",
     "status-asking-ai": "Megkérdezem az AI-t, mit gondol a kérdésedről...",
     "limit-reached": "Üzenetkorlát elérve",
@@ -484,6 +483,18 @@
       "regenerate-error": "A válasz újragenerálása sikertelen. Próbáld újra.",
       "read-only-banner": "Egy másik felhasználó beszélgetését nézed. Ebben a beszélgetésben nem küldhetsz üzenetet.",
       "guardrail-blocked-answer": "A választ visszatartottuk, mert megfelel a szervezete rendszergazdája által beállított szabálynak."
+    },
+    "memory-line": {
+      "label": "Memóriaváltozások ebből a válaszból",
+      "remembered": "Megjegyezve: {content}",
+      "updated": "Memória frissítve: {content}",
+      "forgot": "Elfelejtve: {content}",
+      "undo": "Visszavonás",
+      "undoing": "Visszavonás…",
+      "undone": "Visszavonva",
+      "stale": "Azóta módosult, szerkeszd a beállításokban",
+      "full": "A memória megtelt, előbb törölj egy elemet a beállításokban",
+      "failed": "A visszavonás nem sikerült, próbáld újra"
     }
   },
   "assistant-settings": {
