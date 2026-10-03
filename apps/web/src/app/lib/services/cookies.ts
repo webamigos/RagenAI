@@ -1,7 +1,7 @@
 import { cookies } from 'next/headers';
 import crypto from 'node:crypto';
 
-import { visitorCookieName } from '@/app/config';
+import { visitorCookieName, visitorIdPrefix } from '@/app/config';
 import { logger } from '../utils/logger';
 
 export const setVisitorCookie = async () => {
@@ -10,7 +10,7 @@ export const setVisitorCookie = async () => {
   let visitorCookie = cookieStore.get(visitorCookieName);
 
   if (!visitorCookie) {
-    const visitorCookieValue = `visitor_${crypto.randomBytes(12).toString('hex')}`;
+    const visitorCookieValue = `${visitorIdPrefix}${crypto.randomBytes(12).toString('hex')}`;
     cookieStore.set(visitorCookieName, visitorCookieValue, {
       httpOnly: false,
       secure: process.env.NODE_ENV === 'production',
