@@ -17,6 +17,14 @@
  */
 export type ModelProvider = 'litellm';
 
+/**
+ * What a model is called *for*. A route in `infra/llm-gateway/routes.yaml`
+ * says only which upstream serves an id, not whether that id can hold a
+ * conversation, so an embedding model is as routable as a chat one. This is
+ * the field that tells them apart.
+ */
+export type ModelKind = 'chat' | 'embedding' | 'rerank';
+
 /** Visual grouping for the model selector UI (maps to the original provider behind the model) */
 export type ModelOrigin = 'openai' | 'google' | 'anthropic' | 'mistral';
 
@@ -36,6 +44,12 @@ export type ModelRegistryEntry = {
    * Gemini thoughts) leave this falsy.
    */
   supportsReasoningEffort?: boolean;
+  /**
+   * Absent means `'chat'`, which is what nearly every entry is. Set it on
+   * anything that cannot answer a chat turn, or a request naming it as the
+   * answer model is accepted and fails at the provider instead of with a 400.
+   */
+  kind?: ModelKind;
 };
 
 export const MODEL_REGISTRY: Record<string, ModelRegistryEntry> = {
@@ -165,21 +179,25 @@ export const MODEL_REGISTRY: Record<string, ModelRegistryEntry> = {
     displayName: 'Cohere Rerank v3.5',
     visible: false, // internal: used for reranking
     origin: 'openai',
+    kind: 'rerank',
   },
   'cohere-embed-multilingual-v3': {
     displayName: 'Cohere Embed Multilingual v3',
     visible: false, // internal: used for embeddings
     origin: 'openai',
+    kind: 'embedding',
   },
   'bge-multilingual-gemma2': {
     displayName: 'BGE Multilingual Gemma 2',
     visible: false, // internal: used for embeddings (Scaleway)
     origin: 'openai',
+    kind: 'embedding',
   },
   'qwen3-embedding-8b': {
     displayName: 'Qwen3 Embedding 8B',
     visible: false, // internal: used for embeddings/reranking (Scaleway)
     origin: 'openai',
+    kind: 'embedding',
   },
 };
 
@@ -200,6 +218,17 @@ export function supportsReasoningEffort(modelValue: string): boolean {
 /** Whether the model supports extended thinking / reasoning. */
 export function isReasoningModel(modelValue: string): boolean {
   return MODEL_REGISTRY[modelValue]?.reasoning === true;
+}
+
+/**
+ * Whether `modelValue` can be the answer model of a chat turn.
+ *
+ * An id the catalogue does not know counts as chat: an operator may route
+ * models of their own in `routes.yaml` that no entry here describes, and
+ * refusing those would break a supported setup to guard against a mistake.
+ */
+export function isChatModel(modelValue: string): boolean {
+  return (MODEL_REGISTRY[modelValue]?.kind ?? 'chat') === 'chat';
 }
 
 /** Pass-through today — the hook for mapping a retired model ID to its successor. */

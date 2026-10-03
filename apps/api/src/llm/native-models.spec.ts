@@ -7,8 +7,9 @@ const resolveEmbeddingModel = vi.hoisted(() =>
   vi.fn(() => Promise.resolve({ id: 'native-embedding' })),
 );
 const routeFor = vi.hoisted(() => vi.fn(() => undefined as unknown));
+const availableModels = vi.hoisted(() => vi.fn(() => [] as string[]));
 const gatewayFromEnv = vi.hoisted(() =>
-  vi.fn(() => ({ resolveEmbeddingModel, routeFor })),
+  vi.fn(() => ({ resolveEmbeddingModel, routeFor, availableModels })),
 );
 
 vi.mock('@ragenai/llm-gateway', async (importOriginal) => {
@@ -16,8 +17,13 @@ vi.mock('@ragenai/llm-gateway', async (importOriginal) => {
   return { ...actual, gatewayFromEnv, nativeChatModel };
 });
 
-const { nativeChatInstance, nativeEmbeddingInstance, servingProvider } =
-  await import('./native-models.js');
+const {
+  isChatModelRoutable,
+  nativeChatInstance,
+  nativeEmbeddingInstance,
+  routableChatModels,
+  servingProvider,
+} = await import('./native-models.js');
 
 const originalGateway = process.env.LLM_GATEWAY;
 
@@ -124,5 +130,44 @@ describe('the provider that actually served a turn', () => {
 
     expect(() => servingProvider('gpt-5.4')).not.toThrow();
     expect(servingProvider('gpt-5.4')).toBeUndefined();
+  });
+});
+
+describe('which routed models can answer a chat turn', () => {
+  it('excludes embedding and rerank models from the chat list', () => {
+    availableModels.mockReturnValue([
+      'gpt-5.4',
+      'qwen3-embedding-8b',
+      'bge-multilingual-gemma2',
+      'cohere-rerank-v3-5',
+      'mistral-small-3.2',
+    ]);
+
+    expect(routableChatModels()).toEqual(['gpt-5.4', 'mistral-small-3.2']);
+  });
+
+  /** An operator's own route the catalogue does not describe stays usable. */
+  it('keeps a routed model the catalogue does not know', () => {
+    availableModels.mockReturnValue(['my-own-llm']);
+
+    expect(routableChatModels()).toEqual(['my-own-llm']);
+  });
+
+  it('accepts a routed chat model', () => {
+    routeFor.mockReturnValue({ provider: 'azure' });
+
+    expect(isChatModelRoutable('gpt-5.4')).toBe(true);
+  });
+
+  it('refuses a routed embedding model', () => {
+    routeFor.mockReturnValue({ provider: 'openai-compatible' });
+
+    expect(isChatModelRoutable('qwen3-embedding-8b')).toBe(false);
+  });
+
+  it('refuses an unrouted chat model', () => {
+    routeFor.mockReturnValue(undefined);
+
+    expect(isChatModelRoutable('gpt-5.4')).toBe(false);
   });
 });

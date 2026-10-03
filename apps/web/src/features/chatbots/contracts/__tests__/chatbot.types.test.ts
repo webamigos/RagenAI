@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { themeConfigSchema } from '../chatbot.types';
+import { createChatbotSchema, themeConfigSchema } from '../chatbot.types';
 
 describe('themeConfigSchema', () => {
   it('accepts undefined (optional schema)', () => {
@@ -99,5 +99,36 @@ describe('themeConfigSchema', () => {
 
   it('accepts undefined avatarUrl', () => {
     expect(themeConfigSchema.parse({})).toEqual({});
+  });
+});
+
+describe('createChatbotSchema selectedFileIds', () => {
+  const base = { name: 'Bot' };
+
+  it('accepts a generated v4 file id', () => {
+    expect(
+      createChatbotSchema.safeParse({
+        ...base,
+        selectedFileIds: ['6ec0bd7f-11c0-43da-975e-2a8ad9ebae0b'],
+      }).success,
+    ).toBe(true);
+  });
+
+  // A seeded or imported file keeps a fixed id with no RFC 4122 version, which
+  // the `user_files.id` column holds fine and `z.uuid()` refused.
+  it('accepts a seeded file id with no RFC 4122 version', () => {
+    expect(
+      createChatbotSchema.safeParse({
+        ...base,
+        selectedFileIds: ['e2e00000-0000-0000-0000-00e2e0000020'],
+      }).success,
+    ).toBe(true);
+  });
+
+  it('rejects something that is not an id', () => {
+    expect(
+      createChatbotSchema.safeParse({ ...base, selectedFileIds: ['nope'] })
+        .success,
+    ).toBe(false);
   });
 });

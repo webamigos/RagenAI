@@ -1,7 +1,7 @@
 import type { EmbeddingModelV4, LanguageModelV4 } from '@ai-sdk/provider';
 import { gatewayFromEnv, nativeChatModel } from '@ragenai/llm-gateway';
 
-import { supportsReasoningEffort } from './model-registry.js';
+import { isChatModel, supportsReasoningEffort } from './model-registry.js';
 import { type ReasoningEffortLevel } from './types/index.js';
 
 /**
@@ -89,7 +89,25 @@ export function isModelRoutable(modelId: string): boolean {
   return gatewayFromEnv().routeFor(modelId) !== undefined;
 }
 
+/**
+ * Whether `modelId` can answer a chat turn here: routed, and not an embedding
+ * or rerank model. A route alone does not say so — `bge-multilingual-gemma2`
+ * is routed for ingest, and accepting it as an answer model sends a chat call
+ * to an embeddings endpoint.
+ */
+export function isChatModelRoutable(modelId: string): boolean {
+  return isModelRoutable(modelId) && isChatModel(modelId);
+}
+
 /** The model ids this deployment serves, for an error message that helps. */
 export function routableModels(): string[] {
   return gatewayFromEnv().availableModels();
+}
+
+/**
+ * The chat models this deployment serves — the list to offer a caller whose
+ * answer model was refused, which must not suggest an embedding model.
+ */
+export function routableChatModels(): string[] {
+  return routableModels().filter(isChatModel);
 }
