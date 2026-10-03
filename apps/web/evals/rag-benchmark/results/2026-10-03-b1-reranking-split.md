@@ -67,6 +67,12 @@ On `tabele` this was `en-heat-charge-mass` all three times.
 
 Medians:
 
+`pass` is the median **number of passed cases** across the three runs, shown
+over the corpus size. It is not a median pass rate: a run with an ungraded
+case has a denominator one smaller (17 on `tabele`), and the rate medians are
+then 14/17 for `off`, 15/18 for `off-fusion` and 16/17 for Scaleway. The
+comparison reads the same either way.
+
 | corpus | arm | pass | evidence | cross-lingual evidence |
 |---|---|---|---|---|
 | kolej | off | 22/24 | 25/26 | 7/8 |

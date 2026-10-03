@@ -92,7 +92,7 @@ a single "default on" env flag:
   Measured on 2026-10-03 on the default install
   (`evals/rag-benchmark/results/2026-10-03-b1-reranking-split.md`): off,
   cross-query fusion and Scaleway are within noise on both corpora (`kolej`
-  medians 22/24/21 of 24, `tabele` 14/15/16 of 18). Scaleway's small edge on
+  median passed cases 22/24/21 of 24, `tabele` 14/15/16 of 18). Scaleway's small edge on
   tables is consistent but under the noise floor, so reranking stays opt-in
   and is not claimed as a quality gain (ADR-12, 2026-10-03 update).
 - **Contextual chunks** — feature key `contextualChunks`, **on** by default.

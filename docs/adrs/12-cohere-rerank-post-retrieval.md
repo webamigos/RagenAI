@@ -118,7 +118,8 @@ The retrieval-claims spec (Phase B1) ran reranking off, off with cross-query
 fusion (`crossQueryFusion`), and Scaleway, three runs each on both corpora, on
 an install with contextual chunks and context expansion on
 ([results](../../apps/web/evals/rag-benchmark/results/2026-10-03-b1-reranking-split.md)).
-Medians, pass and evidence recall:
+Medians of the number of passed cases (over the corpus size; a run with an
+ungraded case has one fewer graded) and of evidence recall:
 
 | corpus | off | off + fusion | Scaleway |
 |---|---|---|---|
