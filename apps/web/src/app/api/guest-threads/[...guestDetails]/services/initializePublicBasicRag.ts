@@ -72,11 +72,13 @@ export const initializePublicRagChain = async ({
       ragPipelineSettings,
       contextExpansionEnabled,
       sectionSelectionEnabled,
+      crossQueryFusionEnabled,
     ] = await Promise.all([
       getOrganizationMetadata(organizationId),
       getRagPipelineSettings(organizationId),
       isFeatureEnabledQuery(organizationId, 'contextExpansion'),
       isFeatureEnabledQuery(organizationId, 'sectionSelection'),
+      isFeatureEnabledQuery(organizationId, 'crossQueryFusion'),
     ]);
     // Built only when the key is on: the chain runs selection exactly when it
     // is handed a selector.
@@ -166,6 +168,7 @@ export const initializePublicRagChain = async ({
             ragPipelineSettings.contentModerationEnabled,
           rerankingEnabled: ragPipelineSettings.rerankingEnabled,
           contextExpansionEnabled,
+          crossQueryFusionEnabled,
         },
       },
       vectorStore: wrappedStore,
