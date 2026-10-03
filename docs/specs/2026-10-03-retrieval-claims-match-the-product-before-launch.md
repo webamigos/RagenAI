@@ -306,8 +306,8 @@ false claim this spec removes.
 - Follow-up, not done here: open an issue in ragen-docs listing the pages to
   regenerate.
 
-Each user-visible phase (A, C) adds its own line to
-`docs/changelog-notes.md` in its PR, as `AGENTS.md`'s post-task workflow
+Each user-visible phase (A, C, and B2 when it changes a default) adds its
+own line to `docs/changelog-notes.md` in its PR, as `AGENTS.md`'s post-task workflow
 asks; B2 adds what it found to the reranking row, and C2 adds the
 strict-grounding rule to `docs/rag-pipeline.md`.
 
