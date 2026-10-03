@@ -4,7 +4,6 @@
     "welcome": "Bienvenue",
     "start-new-thread": "Démarrer un nouveau fil",
     "status-thinking": "Réflexion en cours...",
-    "status-searching-memories": "Recherche dans la mémoire...",
     "status-robots-are-waking-up": "Beep, boop, les robots se réveillent...",
     "status-asking-ai": "Demande à l'IA ce qu'elle pense de ta question...",
     "limit-reached": "Limite de messages atteinte",
@@ -484,6 +483,18 @@
       "regenerate-error": "Échec de la régénération de la réponse. Veuillez réessayer.",
       "read-only-banner": "Tu consultes le fil d'un autre utilisateur. Tu ne peux pas envoyer de messages dans ce fil.",
       "guardrail-blocked-answer": "La réponse a été retenue car elle correspond à une règle définie par l'administrateur de votre organisation."
+    },
+    "memory-line": {
+      "label": "Modifications de la mémoire issues de cette réponse",
+      "remembered": "Mémorisé : {content}",
+      "updated": "Mémoire mise à jour : {content}",
+      "forgot": "Oublié : {content}",
+      "undo": "Annuler",
+      "undoing": "Annulation…",
+      "undone": "Annulé",
+      "stale": "Modifié depuis, à modifier dans les paramètres",
+      "full": "La mémoire est pleine, supprimez d’abord une entrée dans les paramètres",
+      "failed": "Impossible d’annuler, réessayez"
     }
   },
   "assistant-settings": {

@@ -858,10 +858,34 @@ shape an answer before it has been measured.
   would be replaced by the retrieved documents by the next `.replace`; after
   the fill, it is inert text. The write and the read share one thread read
   (`getMemoryGateThreadQuery`) and one gate.
-- [ ] **D2.** The "Remembered: … · Undo" line under an answer, read from
+- [x] **D2.** The "Remembered: … · Undo" line under an answer, read from
   `UserMemoryChange`, and the undo command with its `version` check. Tests: an
   undo after a later extraction, and after a settings edit, is refused for each
   of `ADD`, `UPDATE` and `DELETE`.
+
+  *Done.* `listThreadMemoryChanges` and `undoMemoryChange` in
+  `memory-scope.ts`; the stale rule is `utils/memory-change-state.ts`, and
+  the undo applies the same conditions in its `where` clauses. The line is
+  `ChatOutput/MemoryChanges/`, on the panel only. Four decisions the spec
+  left open:
+  - **When the line appears.** The extraction runs after the turn is saved,
+    so the thread reads its changes on open, and after a fresh answer (under
+    two minutes old) again at 4, 12 and 30 seconds, stopping once that
+    answer's line exists. Most turns change nothing, so the last read is
+    the end of it.
+  - **A DELETE cannot go stale by a later write.** New memories get new ids,
+    so "a later extraction" or "a settings edit" never recreates the deleted
+    `publicId`. What the check catches for a DELETE is the same change
+    restored twice — by a second click (the change row is claimed first) or
+    a concurrent request (the unique `publicId`).
+  - **A restored DELETE is tied to no thread.** Its text came from a turn
+    the change row does not name; tying it to the thread that deleted it
+    would let deleting that thread remove a statement it never wrote.
+  - **A restore past `MEMORY_MAX_ENTRIES` is refused** ("memory is full"),
+    as an extraction's ADD is.
+
+  No loading status for memory is shown, so `status-searching-memories` is
+  deleted from every locale.
 - [ ] **D3.** E2E `p0-35-personal-memory.spec.ts` (see "Testing").
 
 ### Phase E — measure, then turn it on

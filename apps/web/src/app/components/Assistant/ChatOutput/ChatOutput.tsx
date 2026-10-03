@@ -28,6 +28,9 @@ import { ActiveToolCalls } from '../ActiveToolCalls';
 import { MarkdownWithMermaid } from './MarkdownWithMermaid';
 import { SourcesBlock } from './SourcesBlock';
 import { CitedSourcePreview } from './CitedSourcePreview';
+import { MemoryChangesLine } from './MemoryChanges/MemoryChangesLine';
+import { useThreadMemoryChanges } from './MemoryChanges/useThreadMemoryChanges';
+import type { MemoryChangeView } from '@/features/memory/contracts/memory.types';
 import { useAppSelector } from '@/store/hooks';
 import type {
   MessageRetrieval,
@@ -207,6 +210,12 @@ type Props = {
    * this prop hides a working feature rather than offering a broken card.
    */
   canOpenSources?: boolean;
+  /**
+   * The thread is open read-only (archived, or not the reader's to write to).
+   * Nothing on it can be changed from here, an undo included, so the memory
+   * line is not shown.
+   */
+  isReadOnly?: boolean;
   onMessagePlayed?: (messageId: string) => void;
   voiceId?: string;
   /**
@@ -295,8 +304,13 @@ const MessageBubbleContent = ({
 const AssistantAnswer = ({
   message,
   canOpenSources,
+  memoryChanges,
+  onMemoryChanged,
 }: {
   message: MessageDto;
+  /** What this turn changed in the reader's memory; empty for most turns. */
+  memoryChanges?: readonly MemoryChangeView[];
+  onMemoryChanged?: () => Promise<void>;
   /**
    * Whether this reader can open a cited document.
    *
@@ -354,6 +368,12 @@ const AssistantAnswer = ({
           retrieval={retrieval}
           idPrefix={anchorPrefix}
           onActivate={canOpenSources ? setOpenSource : undefined}
+        />
+      ) : null}
+      {memoryChanges && onMemoryChanged ? (
+        <MemoryChangesLine
+          changes={memoryChanges}
+          onChanged={onMemoryChanged}
         />
       ) : null}
       <CitedSourcePreview
@@ -430,6 +450,7 @@ export const ChatOutput = ({
   // authenticated read-only thread view — the one surface that is read-only
   // *and* has a session.
   canOpenSources = !isPublicAccess,
+  isReadOnly = false,
   voiceId,
   threadId,
   onApproveToolCall,
@@ -456,6 +477,19 @@ export const ChatOutput = ({
     }
     return -1;
   })();
+
+  // Personal memory is the session user's own, and its line offers an undo,
+  // so it never shows on a public surface or a read-only thread. The latest answer is passed only once it is
+  // saved, so the hook can wait for its extraction.
+  const lastAnswer =
+    lastAssistantMessageIndex >= 0
+      ? messages[lastAssistantMessageIndex]
+      : undefined;
+  const { changes: memoryChanges, refresh: refreshMemoryChanges } =
+    useThreadMemoryChanges(
+      !isPublicAccess && !isReadOnly ? threadId : undefined,
+      isLoading ? undefined : lastAnswer,
+    );
 
   return (
     <div className="max-w-4xl mx-auto w-full px-4 sm:px-6 py-4">
@@ -586,6 +620,8 @@ export const ChatOutput = ({
                     <AssistantAnswer
                       message={message}
                       canOpenSources={canOpenSources}
+                      memoryChanges={memoryChanges[message.id]}
+                      onMemoryChanged={refreshMemoryChanges}
                     />
                   ) : (
                     <MessageBubbleContent

@@ -352,6 +352,7 @@ export const Assistant = ({ threadId }: Props) => {
             loadingMessage={messageLoadingText}
             streamedMessage={streamedMessage}
             isPublicAccess={isPublicAccess}
+            isReadOnly={isReadOnly}
             voiceId={voiceId}
             threadId={threadId}
             onRegenerate={isReadOnly ? undefined : onRegenerate}

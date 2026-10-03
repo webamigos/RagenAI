@@ -4,7 +4,6 @@
     "welcome": "Vitajte",
     "start-new-thread": "Začať novú konverzáciu",
     "status-thinking": "Premýšľam...",
-    "status-searching-memories": "Hľadám v pamäti...",
     "status-robots-are-waking-up": "Bíp, bop, roboti sa prebúdzajú...",
     "status-asking-ai": "Pýtam sa AI, čo si myslí o vašej otázke...",
     "limit-reached": "Dosiahnutý limit správ",
@@ -484,6 +483,18 @@
       "regenerate-error": "Odpoveď sa nepodarilo znova vygenerovať. Skúste to znova.",
       "read-only-banner": "Prezeráte konverzáciu iného používateľa. V tejto konverzácii nemôžete odosielať správy.",
       "guardrail-blocked-answer": "Odpoveď bola zadržaná, pretože zodpovedá pravidlu nastavenému správcom vašej organizácie."
+    },
+    "memory-line": {
+      "label": "Zmeny pamäte z tejto odpovede",
+      "remembered": "Zapamätané: {content}",
+      "updated": "Pamäť aktualizovaná: {content}",
+      "forgot": "Zabudnuté: {content}",
+      "undo": "Späť",
+      "undoing": "Vracia sa…",
+      "undone": "Vrátené",
+      "stale": "Medzitým zmenené, upravte v nastaveniach",
+      "full": "Pamäť je plná, najprv v nastaveniach niečo odstráňte",
+      "failed": "Vrátiť sa nepodarilo, skúste to znova"
     }
   },
   "assistant-settings": {

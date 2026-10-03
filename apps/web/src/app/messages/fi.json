@@ -4,7 +4,6 @@
     "welcome": "Tervetuloa",
     "start-new-thread": "Aloita uusi keskustelu",
     "status-thinking": "Ajattelen...",
-    "status-searching-memories": "Haetaan muistista...",
     "status-robots-are-waking-up": "Piip, poup, robotit heräävät...",
     "status-asking-ai": "Kysytään tekoälyltä, mitä se ajattelee kysymyksestäsi...",
     "limit-reached": "Viestiraja saavutettu",
@@ -484,6 +483,18 @@
       "regenerate-error": "Vastauksen luominen uudelleen epäonnistui. Yritä uudelleen.",
       "read-only-banner": "Tarkastelet toisen käyttäjän keskustelua. Et voi lähettää viestejä tässä keskustelussa.",
       "guardrail-blocked-answer": "Vastaus pidätettiin, koska se vastaa organisaatiosi järjestelmänvalvojan asettamaa sääntöä."
+    },
+    "memory-line": {
+      "label": "Muistin muutokset tästä vastauksesta",
+      "remembered": "Muistettu: {content}",
+      "updated": "Muisti päivitetty: {content}",
+      "forgot": "Unohdettu: {content}",
+      "undo": "Kumoa",
+      "undoing": "Kumotaan…",
+      "undone": "Kumottu",
+      "stale": "Muutettu sen jälkeen, muokkaa asetuksissa",
+      "full": "Muisti on täynnä, poista ensin jotain asetuksista",
+      "failed": "Kumoaminen epäonnistui, yritä uudelleen"
     }
   },
   "assistant-settings": {

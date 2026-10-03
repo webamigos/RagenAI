@@ -4,7 +4,6 @@
     "welcome": "Welkom",
     "start-new-thread": "Nieuw gesprek starten",
     "status-thinking": "Aan het nadenken...",
-    "status-searching-memories": "Herinneringen doorzoeken...",
     "status-robots-are-waking-up": "Biep, boep, de robots worden wakker...",
     "status-asking-ai": "De AI vragen wat die van je vraag vindt...",
     "limit-reached": "Berichtenlimiet bereikt",
@@ -484,6 +483,18 @@
       "regenerate-error": "Antwoord opnieuw genereren mislukt. Probeer het opnieuw.",
       "read-only-banner": "Je bekijkt het gesprek van een andere gebruiker. Je kunt in dit gesprek geen berichten versturen.",
       "guardrail-blocked-answer": "Het antwoord is tegengehouden omdat het voldeed aan een regel die de beheerder van je organisatie heeft ingesteld."
+    },
+    "memory-line": {
+      "label": "Geheugenwijzigingen door dit antwoord",
+      "remembered": "Onthouden: {content}",
+      "updated": "Geheugen bijgewerkt: {content}",
+      "forgot": "Vergeten: {content}",
+      "undo": "Ongedaan maken",
+      "undoing": "Bezig met ongedaan maken…",
+      "undone": "Ongedaan gemaakt",
+      "stale": "Sindsdien gewijzigd, bewerk het in de instellingen",
+      "full": "Het geheugen is vol, verwijder eerst iets in de instellingen",
+      "failed": "Ongedaan maken mislukt, probeer het opnieuw"
     }
   },
   "assistant-settings": {

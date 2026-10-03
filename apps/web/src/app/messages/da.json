@@ -4,7 +4,6 @@
     "welcome": "Velkommen",
     "start-new-thread": "Start en ny samtale",
     "status-thinking": "Tænker...",
-    "status-searching-memories": "Søger i hukommelsen...",
     "status-robots-are-waking-up": "Beep, boop, robotterne vågner...",
     "status-asking-ai": "Spørger AI'en, hvad den synes om dit spørgsmål...",
     "limit-reached": "Beskedgrænse nået",
@@ -484,6 +483,18 @@
       "regenerate-error": "Kunne ikke generere svaret igen. Prøv igen.",
       "read-only-banner": "Du ser en anden brugers samtale. Du kan ikke sende beskeder i denne samtale.",
       "guardrail-blocked-answer": "Svaret blev tilbageholdt, fordi det matcher en regel, som din organisations administrator har oprettet."
+    },
+    "memory-line": {
+      "label": "Hukommelsesændringer fra dette svar",
+      "remembered": "Husket: {content}",
+      "updated": "Hukommelse opdateret: {content}",
+      "forgot": "Glemt: {content}",
+      "undo": "Fortryd",
+      "undoing": "Fortryder…",
+      "undone": "Fortrudt",
+      "stale": "Ændret siden, rediger det i indstillingerne",
+      "full": "Hukommelsen er fuld, fjern først et punkt i indstillingerne",
+      "failed": "Kunne ikke fortryde, prøv igen"
     }
   },
   "assistant-settings": {

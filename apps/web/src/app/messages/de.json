@@ -4,7 +4,6 @@
     "welcome": "Willkommen",
     "start-new-thread": "Neuen Thread starten",
     "status-thinking": "Denke nach...",
-    "status-searching-memories": "Durchsuche Erinnerungen...",
     "status-robots-are-waking-up": "Beep, boop, die Roboter wachen auf...",
     "status-asking-ai": "Frage die KI, was sie über deine Frage denkt...",
     "limit-reached": "Nachrichtenlimit erreicht",
@@ -484,6 +483,18 @@
       "regenerate-error": "Die Antwort konnte nicht neu generiert werden. Bitte versuche es erneut.",
       "read-only-banner": "Du siehst den Thread eines anderen Nutzers an. Du kannst in diesem Thread keine Nachrichten senden.",
       "guardrail-blocked-answer": "Die Antwort wurde zurückgehalten, da sie einer von Ihrer Organisation festgelegten Regel entspricht."
+    },
+    "memory-line": {
+      "label": "Gedächtnisänderungen durch diese Antwort",
+      "remembered": "Gemerkt: {content}",
+      "updated": "Gedächtnis aktualisiert: {content}",
+      "forgot": "Vergessen: {content}",
+      "undo": "Rückgängig",
+      "undoing": "Wird rückgängig gemacht…",
+      "undone": "Rückgängig gemacht",
+      "stale": "Seitdem geändert, in den Einstellungen bearbeiten",
+      "full": "Gedächtnis ist voll, entferne zuerst einen Eintrag in den Einstellungen",
+      "failed": "Rückgängig machen fehlgeschlagen, bitte erneut versuchen"
     }
   },
   "assistant-settings": {
