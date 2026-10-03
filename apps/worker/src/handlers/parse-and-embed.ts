@@ -26,6 +26,7 @@ import {
   isIngestCancellation,
   isNonRetryable,
   type EmbeddingStage,
+  withdrawVectorsIfIngestEnded,
 } from './ingest-cancellation.js';
 
 /**
@@ -807,6 +808,16 @@ export async function runFileEmbeddings(
         userId: ownerId,
         docs: updatedDocs,
       });
+      if (
+        await withdrawVectorsIfIngestEnded({
+          isCancelled: () => ctx.checkCancelled({ fileId, orgId }),
+          deleteVectors: () => deleteDocumentVectors({ orgId, fileId }),
+        })
+      ) {
+        // Deleted or cancelled while the vectors were being written. They are
+        // out again; this records the cancellation and throws it.
+        await checkCancelled();
+      }
       indexed = true;
 
       await updateEmbeddingStatus({
