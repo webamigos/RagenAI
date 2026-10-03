@@ -24,7 +24,26 @@ const MOCK_RESPONSE = 'This is a mock AI response for e2e testing.';
  */
 const ECHO_REQUEST = /zzqx-echo-([a-z0-9-]{1,40})/i;
 
+/**
+ * An answer prompt that forbids general knowledge gets a refusal.
+ *
+ * The answer prompt's strict grounding rule (`GROUNDING_RULES.strict` in both
+ * apps' `basic-rag/config.ts`) ends with this clause; nothing else in any
+ * prompt carries it. A real model told to stay inside the documents answers
+ * an out-of-corpus question by saying they do not cover it, and the canned
+ * sentence below would read as the opposite — so this replies the way a
+ * compliant model would, which is what lets `p0-37` see that the rule reached
+ * the model at all. It reads the prompt, not the question: the decision about
+ * strictness belongs to the application, and the mock only reports it.
+ */
+const STRICT_GROUNDING_RULE = 'do not answer from general knowledge';
+const STRICT_REFUSAL =
+  'The documents available to this assistant do not cover this question.';
+
 function responseFor(body: string): string {
+  if (body.includes(STRICT_GROUNDING_RULE)) {
+    return STRICT_REFUSAL;
+  }
   const match = ECHO_REQUEST.exec(body);
   return match ? `${MOCK_RESPONSE} Echo: zzqx-echo-${match[1]}` : MOCK_RESPONSE;
 }
@@ -270,11 +289,15 @@ function handleChatCompletions(
  * was only ever *resolved*, and that is the route table's problem rather than
  * this one's.
  *
- * So this is for the run that comes after a vector store does. The dimension
- * is small and the values are deterministic: nothing asserts either today, and
- * a spec that needs real similarity needs a real embedder, not a better
- * pretend one.
+ * So this is for the run that comes after a vector store does. The values are
+ * deterministic and nothing asserts them; a spec that needs real similarity
+ * needs a real embedder, not a better pretend one. The dimension is the
+ * collection's (`VECTOR_SIZE`, rag-core's default 3584), because Qdrant
+ * refuses a query vector of any other length — with a vector store present, a
+ * small one turned every retrieving turn into an error.
  */
+const EMBEDDING_DIMENSION = Number(process.env.VECTOR_SIZE) || 3584;
+
 function handleEmbeddings(req: http.IncomingMessage, res: http.ServerResponse) {
   let body = '';
   req.on('data', (chunk) => {
@@ -297,7 +320,10 @@ function handleEmbeddings(req: http.IncomingMessage, res: http.ServerResponse) {
         data: Array.from({ length: count }, (_, index) => ({
           object: 'embedding',
           index,
-          embedding: Array.from({ length: 8 }, (_, i) => (i + 1) / 10),
+          embedding: Array.from(
+            { length: EMBEDDING_DIMENSION },
+            (_, i) => ((i % 10) + 1) / 10,
+          ),
         })),
         usage: { prompt_tokens: 1, total_tokens: 1 },
       }),

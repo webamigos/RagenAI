@@ -113,6 +113,18 @@ archive is the blog.
 
 ### Chat
 
+- `[major]` **An assistant can be told to answer only from its documents,
+  and every assistant with the public chatbot on is, from this release.**
+  Asked something its documents do not cover, such an assistant now says
+  so instead of answering from the model's general knowledge — an answer
+  that, on a customer's website, read as the company's own. **This flips
+  every existing chatbot-enabled assistant to strict on deploy**; every
+  other assistant keeps today's behaviour. One switch on the assistant
+  page, "Answer only from documents", turns it either way per assistant.
+  The same rule applies in the panel, on the public assistant page and
+  through the API. The organization-level embedded widget is not covered
+  yet.
+
 - `[major]` **Ragen can remember a user across conversations — behind a
   switch, off by default.** With the `personalMemory` feature key on, a
   chat turn can keep three kinds of fact about the person asking: how they

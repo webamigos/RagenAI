@@ -191,6 +191,9 @@ export {
 } from './retrieval/knowledge-scope';
 export type { KnowledgeScope } from './retrieval/knowledge-scope';
 
+export { resolveAnswerFromDocumentsOnly } from './retrieval/answer-from-documents-only';
+export type { AnswerFromDocumentsOnlyInput } from './retrieval/answer-from-documents-only';
+
 export {
   TRIAL_PLAN_NAME,
   pickBestSubscription,

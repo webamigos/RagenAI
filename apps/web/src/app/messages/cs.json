@@ -1848,6 +1848,14 @@
       "powered-by": "Poháněno {name}",
       "connectors": "Konektory",
       "connectors-description": "Žádné připojené integrace",
+      "answer-from-documents-only": {
+        "title": "Odpovídat jen z dokumentů",
+        "description": "Když je zapnuto, na otázku, kterou dokumenty nepokrývají, asistent odpoví, že ji nepokrývají, místo aby odpovídal z obecných znalostí modelu.",
+        "default-chatbot": "Výchozí pro tohoto asistenta: zapnuto, protože má zapnutého veřejného chatbota.",
+        "default-panel": "Výchozí pro tohoto asistenta: vypnuto.",
+        "set-for-assistant": "Nastaveno pro tohoto asistenta.",
+        "save-failed": "Nastavení se nepodařilo uložit. Zkuste to znovu."
+      },
       "connectors-saving": "Ukládání...",
       "loading": "Načítání integrací..."
     },

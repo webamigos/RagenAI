@@ -1848,6 +1848,14 @@
       "powered-by": "Üzemeltető: {name}",
       "connectors": "Kapcsolók",
       "connectors-description": "Nincs csatlakoztatott integráció",
+      "answer-from-documents-only": {
+        "title": "Csak a dokumentumokból válaszoljon",
+        "description": "Bekapcsolva a dokumentumok által nem lefedett kérdésre a válasz ezt közli, ahelyett, hogy a modell általános tudásából válaszolna.",
+        "default-chatbot": "Alapértelmezés ennél az asszisztensnél: be, mert a nyilvános chatbotja engedélyezve van.",
+        "default-panel": "Alapértelmezés ennél az asszisztensnél: ki.",
+        "set-for-assistant": "Ennél az asszisztensnél beállítva.",
+        "save-failed": "A beállítást nem sikerült menteni. Próbáld újra."
+      },
       "connectors-saving": "Mentés folyamatban...",
       "loading": "Integrációk betöltése..."
     },

@@ -1848,6 +1848,14 @@
       "powered-by": "Poháňané {name}",
       "connectors": "Konektory",
       "connectors-description": "Žiadne pripojené integrácie",
+      "answer-from-documents-only": {
+        "title": "Odpovedať len z dokumentov",
+        "description": "Keď je zapnuté, na otázku, ktorú dokumenty nepokrývajú, asistent odpovie, že ju nepokrývajú, namiesto odpovede zo všeobecných znalostí modelu.",
+        "default-chatbot": "Predvolené pre tohto asistenta: zapnuté, pretože má zapnutého verejného chatbota.",
+        "default-panel": "Predvolené pre tohto asistenta: vypnuté.",
+        "set-for-assistant": "Nastavené pre tohto asistenta.",
+        "save-failed": "Nastavenie sa nepodarilo uložiť. Skúste to znova."
+      },
       "connectors-saving": "Ukladanie...",
       "loading": "Načítavanie integrácií..."
     },

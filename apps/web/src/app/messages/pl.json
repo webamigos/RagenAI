@@ -1802,6 +1802,14 @@
       "powered-by": "Obsługiwany przez {name}",
       "connectors": "Integracje",
       "connectors-description": "Brak połączonych integracji",
+      "answer-from-documents-only": {
+        "title": "Odpowiadaj tylko na podstawie dokumentów",
+        "description": "Gdy włączone, na pytanie spoza dokumentów asystent odpowiada, że dokumenty tego nie obejmują, zamiast odpowiadać z ogólnej wiedzy modelu.",
+        "default-chatbot": "Domyślnie dla tego asystenta: włączone, bo ma włączonego publicznego chatbota.",
+        "default-panel": "Domyślnie dla tego asystenta: wyłączone.",
+        "set-for-assistant": "Ustawione dla tego asystenta.",
+        "save-failed": "Nie udało się zapisać ustawienia. Spróbuj ponownie."
+      },
       "connectors-saving": "Zapisywanie...",
       "loading": "Ładowanie integracji..."
     },

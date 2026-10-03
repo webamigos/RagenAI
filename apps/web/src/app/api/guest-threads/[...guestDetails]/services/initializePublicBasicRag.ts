@@ -14,6 +14,7 @@ import {
 } from '@/app/lib/services/llm';
 import { getOrganizationMetadataQuery as getOrganizationMetadata } from '@/features/organizations/services/queries/get-organization-metadata-query';
 import { getRagPipelineSettings } from '@/features/organizations/services/organization-settings';
+import { getAnswerFromDocumentsOnlyQuery } from '@/features/projects/services/queries/get-answer-from-documents-only-query';
 import { isFeatureEnabledQuery } from '@/features/subscriptions/services/queries/get-effective-features-query';
 import { wrapVectorStoreWithDualContentDecode } from '@/app/api/threads/services/decode-dual-content-chunks';
 import { MeilisearchVectorStoreClient } from '@/libs/vector-store/meilisearch-client';
@@ -72,11 +73,15 @@ export const initializePublicRagChain = async ({
       ragPipelineSettings,
       contextExpansionEnabled,
       sectionSelectionEnabled,
+      answerFromDocumentsOnly,
     ] = await Promise.all([
       getOrganizationMetadata(organizationId),
       getRagPipelineSettings(organizationId),
       isFeatureEnabledQuery(organizationId, 'contextExpansion'),
       isFeatureEnabledQuery(organizationId, 'sectionSelection'),
+      // The public assistant page is the surface strict grounding exists
+      // for; `projectId` was resolved from the thread or the access token.
+      getAnswerFromDocumentsOnlyQuery(projectId, organizationId),
     ]);
     // Built only when the key is on: the chain runs selection exactly when it
     // is handed a selector.
@@ -159,6 +164,7 @@ export const initializePublicRagChain = async ({
         metadataFilter,
         maxDocumentsToRetrieve,
         answerInstructions: finalInstructions,
+        answerFromDocumentsOnly,
         tracking: { organizationId },
         ragSettings: {
           multiQueryEnabled: ragPipelineSettings.multiQueryEnabled,

@@ -1848,6 +1848,14 @@
       "powered-by": "Drevet af {name}",
       "connectors": "Konnektorer",
       "connectors-description": "Ingen forbundne integrationer",
+      "answer-from-documents-only": {
+        "title": "Svar kun ud fra dokumenterne",
+        "description": "Når den er slået til, får et spørgsmål, som dokumenterne ikke dækker, et svar, der siger det, i stedet for et svar ud fra modellens generelle viden.",
+        "default-chatbot": "Standard for denne assistent: til, fordi dens offentlige chatbot er slået til.",
+        "default-panel": "Standard for denne assistent: fra.",
+        "set-for-assistant": "Indstillet for denne assistent.",
+        "save-failed": "Indstillingen kunne ikke gemmes. Prøv igen."
+      },
       "connectors-saving": "Gemmer...",
       "loading": "Indlæser integrationer..."
     },
