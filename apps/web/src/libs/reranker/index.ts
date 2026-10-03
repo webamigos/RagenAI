@@ -1,4 +1,5 @@
 import {
+  COHERE_RERANK_MODEL,
   rerankDocuments as rerankDocumentsBedrock,
   isRerankingEnabled as isBedrockRerankingEnabled,
   type RerankOptions,
@@ -6,6 +7,7 @@ import {
   type RerankTrackingContext,
 } from './bedrock-cohere-reranker';
 import {
+  SCALEWAY_RERANK_MODEL,
   rerankDocumentsScaleway,
   isScalewayRerankingEnabled,
 } from './scaleway-reranker';
@@ -29,6 +31,17 @@ function getProvider(): 'scaleway' | 'cohere' {
 /** Which reranker a turn used, for the stream's `retrieval` frame. */
 export function rerankProviderName(): 'scaleway' | 'cohere' {
   return getProvider();
+}
+
+/**
+ * The model the active provider reranks with — the same value its usage rows
+ * record. The RAG settings page shows it, and used to show a literal
+ * `cohere-rerank-v3-5` long after Scaleway became the default.
+ */
+export function rerankModelName(): string {
+  return getProvider() === 'scaleway'
+    ? SCALEWAY_RERANK_MODEL
+    : COHERE_RERANK_MODEL;
 }
 
 export function isRerankingEnabled(): boolean {

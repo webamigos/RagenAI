@@ -3,8 +3,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const db = vi.hoisted(() => ({
   userMemoryProfile: {
     findUnique: vi.fn(),
-    findFirst: vi.fn(),
     findUniqueOrThrow: vi.fn(),
+    findFirst: vi.fn(),
     upsert: vi.fn(),
     updateMany: vi.fn(),
     deleteMany: vi.fn(),
@@ -118,7 +118,11 @@ describe('listMemories', () => {
 
 describe('updateMemory', () => {
   it('writes under the version it read, scoped to the owner', async () => {
-    db.userMemory.findFirst.mockResolvedValue({ id: 7, version: 3 });
+    db.userMemory.findFirst.mockResolvedValue({
+      id: 7,
+      version: 3,
+      profile: { epoch: 2 },
+    });
     db.userMemory.updateMany.mockResolvedValue({ count: 1 });
 
     await updateMemory(await owner(), MEMORY_ID, '  Is the CFO.  ');
@@ -148,7 +152,11 @@ describe('updateMemory', () => {
   });
 
   it('writes nothing when encryption is on and the owner key is unavailable', async () => {
-    db.userMemory.findFirst.mockResolvedValue({ id: 7, version: 1 });
+    db.userMemory.findFirst.mockResolvedValue({
+      id: 7,
+      version: 1,
+      profile: { epoch: 2 },
+    });
     crypto.resolveOwnerKeyForWrite.mockResolvedValue({
       status: 'unavailable',
       error: new Error('kms down'),
@@ -171,7 +179,11 @@ describe('updateMemory', () => {
   });
 
   it('reports a memory that changed between the read and the write', async () => {
-    db.userMemory.findFirst.mockResolvedValue({ id: 7, version: 1 });
+    db.userMemory.findFirst.mockResolvedValue({
+      id: 7,
+      version: 1,
+      profile: { epoch: 2 },
+    });
     db.userMemory.updateMany.mockResolvedValue({ count: 0 });
     await expect(
       updateMemory(await owner(), MEMORY_ID, 'Is the CFO.'),
@@ -242,63 +254,14 @@ describe('getMemorySettings', () => {
   });
 });
 
-describe('the org admin scope', () => {
-  it('refuses a member who cannot manage the organization', async () => {
-    requireOrgAdmin.mockRejectedValue(new Error('Unauthorized'));
-    await expect(orgMemoryAdminFromSession()).rejects.toThrow('Unauthorized');
-  });
-
-  it('is built from the session’s organization and checks it', async () => {
-    requireOrgAdmin.mockResolvedValue({ role: 'admin' });
-    expect(await orgMemoryAdminFromSession()).toEqual({ organizationId: ORG });
-    expect(requireOrgAdmin).toHaveBeenCalledWith(ORG);
-  });
-
-  it('deletes this organization’s memories and changes, keeping profiles and moving their epoch', async () => {
-    requireOrgAdmin.mockResolvedValue({ role: 'admin' });
-    db.$transaction.mockResolvedValue([
-      { count: 4 },
-      { count: 6 },
-      { count: 2 },
-    ]);
-
-    const deleted = await deleteAllOrgMemories(
-      await orgMemoryAdminFromSession(),
-    );
-
-    expect(deleted).toBe(4);
-    expect(db.userMemory.deleteMany).toHaveBeenCalledWith({
-      where: { organizationId: ORG },
-    });
-    expect(db.userMemoryChange.deleteMany).toHaveBeenCalledWith({
-      where: { organizationId: ORG },
-    });
-    // Profiles stay, so an opted-out member stays opted out, and the epoch
-    // moves on so a job queued before the deletion writes nothing.
-    expect(db.userMemoryProfile.updateMany).toHaveBeenCalledWith({
-      where: { organizationId: ORG },
-      data: { encryptedDek: null, epoch: { increment: 1 } },
-    });
-    expect(db.userMemoryProfile.deleteMany).not.toHaveBeenCalled();
-    expect(db.userMemory.findMany).not.toHaveBeenCalled();
-  });
-
-  it('asks whether memories exist of the memory rows, by id alone', async () => {
-    requireOrgAdmin.mockResolvedValue({ role: 'admin' });
-    db.userMemory.findFirst.mockResolvedValue(null);
-
-    expect(await orgHasMemories(await orgMemoryAdminFromSession())).toBe(false);
-    expect(db.userMemory.findFirst).toHaveBeenCalledWith({
-      where: { organizationId: ORG },
-      select: { id: true },
-    });
-  });
-});
-
 describe('the owner key store', () => {
   /** The store memory-scope hands to the crypto package, captured from a write. */
   async function captureStore(): Promise<OwnerKeyStore> {
-    db.userMemory.findFirst.mockResolvedValue({ id: 7, version: 1 });
+    db.userMemory.findFirst.mockResolvedValue({
+      id: 7,
+      version: 1,
+      profile: { epoch: 2 },
+    });
     db.userMemory.updateMany.mockResolvedValue({ count: 1 });
     await updateMemory(await owner(), MEMORY_ID, 'Is the CFO.');
     return crypto.resolveOwnerKeyForWrite.mock.calls[0][0];
@@ -311,9 +274,23 @@ describe('the owner key store', () => {
 
     expect(await store.saveIfAbsent('wrapped')).toBe(true);
     expect(db.userMemoryProfile.updateMany).toHaveBeenCalledWith({
-      where: { id: 3, ...OWNER_WHERE, encryptedDek: null },
+      where: { id: 3, ...OWNER_WHERE, encryptedDek: null, epoch: 2 },
       data: { encryptedDek: 'wrapped' },
     });
+  });
+
+  it('stores no key once forget-everything has moved the epoch on', async () => {
+    // updateMemory read the profile at epoch 2; "forget everything" then
+    // cleared the key and moved it to 3, so the conditional write matches
+    // nothing and the cleared profile stays without a key.
+    const store = await captureStore();
+    db.userMemoryProfile.upsert.mockResolvedValue({ id: 3 });
+    db.userMemoryProfile.updateMany.mockResolvedValue({ count: 0 });
+
+    expect(await store.saveIfAbsent('wrapped')).toBe(false);
+    expect(db.userMemoryProfile.updateMany.mock.calls[0][0].where.epoch).toBe(
+      2,
+    );
   });
 
   it('reads the profile a concurrent first write created, instead of failing', async () => {
@@ -327,6 +304,45 @@ describe('the owner key store', () => {
     expect(await store.saveIfAbsent('wrapped')).toBe(false);
     expect(db.userMemoryProfile.findUniqueOrThrow).toHaveBeenCalledWith({
       where: { organizationId_userId: OWNER_WHERE },
+      select: { id: true },
+    });
+  });
+});
+
+describe('the org admin scope', () => {
+  it('refuses a member who cannot manage the organization', async () => {
+    requireOrgAdmin.mockRejectedValue(new Error('Unauthorized'));
+    await expect(orgMemoryAdminFromSession()).rejects.toThrow('Unauthorized');
+  });
+
+  it('is built from the session’s organization and checks it', async () => {
+    requireOrgAdmin.mockResolvedValue({ role: 'admin' });
+    expect(await orgMemoryAdminFromSession()).toEqual({ organizationId: ORG });
+    expect(requireOrgAdmin).toHaveBeenCalledWith(ORG);
+  });
+
+  it('deletes only this organization’s profiles, and selects nothing', async () => {
+    requireOrgAdmin.mockResolvedValue({ role: 'admin' });
+    db.userMemoryProfile.deleteMany.mockResolvedValue({ count: 4 });
+
+    const deleted = await deleteAllOrgMemories(
+      await orgMemoryAdminFromSession(),
+    );
+
+    expect(deleted).toBe(4);
+    expect(db.userMemoryProfile.deleteMany).toHaveBeenCalledWith({
+      where: { organizationId: ORG },
+    });
+    expect(db.userMemory.findMany).not.toHaveBeenCalled();
+  });
+
+  it('asks whether memories exist by profile id alone', async () => {
+    requireOrgAdmin.mockResolvedValue({ role: 'admin' });
+    db.userMemoryProfile.findFirst.mockResolvedValue({ id: 1 });
+
+    expect(await orgHasMemories(await orgMemoryAdminFromSession())).toBe(true);
+    expect(db.userMemoryProfile.findFirst).toHaveBeenCalledWith({
+      where: { organizationId: ORG },
       select: { id: true },
     });
   });

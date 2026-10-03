@@ -170,6 +170,9 @@ describe('resolveOwnerKeyForTransaction', () => {
 
     expect(result.status).toBe('key');
     expect(result.status === 'key' && result.newEncryptedDek).toBeTruthy();
+    expect(
+      result.status === 'key' && result.encryptedDek === result.newEncryptedDek,
+    ).toBe(true);
     expect(store.saveIfAbsent).not.toHaveBeenCalled();
     // The new key is the one its wrapped form unwraps to.
     if (result.status === 'key' && result.newEncryptedDek) {
@@ -187,6 +190,9 @@ describe('resolveOwnerKeyForTransaction', () => {
 
     expect(first.status).toBe('key');
     expect(result).toMatchObject({ status: 'key', newEncryptedDek: null });
+    // The wrapped key it unwrapped, for the caller's transaction to check
+    // the profile still holds.
+    expect(result.status === 'key' && result.encryptedDek).toBeTruthy();
   });
 
   it('is unavailable, never plaintext, when encryption is on and the key fails', async () => {

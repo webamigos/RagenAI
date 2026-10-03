@@ -1,12 +1,9 @@
 /**
  * The decisions behind `reindex-for-context.ts`, kept apart from its I/O so
  * they are tested without a stack (spec 2026-09-29-contextual-chunks, C2).
+ * What counts as a file's version is rag-core's `fileContextVersions`, shared
+ * with the knowledge-base settings in apps/web.
  */
-
-/** A point as the script reads it: only the fields the plan needs. */
-export interface ContextPoint {
-  payload?: Record<string, unknown> | null;
-}
 
 export interface ReindexArgs {
   orgId: string;
@@ -46,47 +43,6 @@ export function parseReindexArgs(argv: readonly string[]): ReindexArgs {
   }
 
   return { orgId, dryRun: argv.includes('--dry-run'), limit };
-}
-
-/**
- * Each file's context version: the lowest over its body chunks, where a
- * chunk without `context_version` is 0. The summary chunk is never prefixed
- * (it is the document-level context already), so it does not count. One
- * stale chunk makes the file stale, because retrieval reads chunks, not
- * files.
- */
-export function fileContextVersions(
-  points: readonly ContextPoint[],
-): Map<string, number> {
-  const versions = new Map<string, number>();
-  for (const point of points) {
-    const metadata = point.payload?.metadata as
-      Record<string, unknown> | undefined;
-    const fileId = metadata?.file_id;
-    if (
-      !metadata ||
-      typeof fileId !== 'string' ||
-      metadata.chunk_type === 'summary'
-    ) {
-      continue;
-    }
-    const raw = metadata.context_version;
-    const version =
-      typeof raw === 'number' && Number.isInteger(raw) && raw > 0 ? raw : 0;
-    versions.set(fileId, Math.min(versions.get(fileId) ?? version, version));
-  }
-  return versions;
-}
-
-/** Files per context version, lowest first: `{ 0: 12, 1: 30 }`. */
-export function countByVersion(
-  versions: ReadonlyMap<string, number>,
-): [number, number][] {
-  const counts = new Map<number, number>();
-  for (const version of versions.values()) {
-    counts.set(version, (counts.get(version) ?? 0) + 1);
-  }
-  return [...counts.entries()].sort(([a], [b]) => a - b);
 }
 
 export function renderVersionCounts(
