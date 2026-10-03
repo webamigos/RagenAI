@@ -101,8 +101,16 @@ export class MessagesService {
 
   constructor(private readonly prisma: PrismaService) {}
 
+  /**
+   * Reads and keys the thread within `organizationId` — the organization the
+   * caller resolved the thread under. A thread outside it is not found, so
+   * this throws rather than touching another organization's key.
+   */
   private async maybeEncryptContent(
-    threadId: string,
+    {
+      threadId,
+      organizationId,
+    }: { threadId: string; organizationId: Thread['organizationId'] },
     content: string,
   ): Promise<string> {
     if (!isEncryptionEnabled()) {
@@ -110,8 +118,8 @@ export class MessagesService {
       return content;
     }
 
-    const thread = await this.prisma.client.thread.findUniqueOrThrow({
-      where: { id: threadId },
+    const thread = await this.prisma.client.thread.findFirstOrThrow({
+      where: { id: threadId, organizationId },
       select: { encryptedDek: true },
     });
 
@@ -125,14 +133,14 @@ export class MessagesService {
 
       // Conditional update to avoid race condition: only set DEK if still null
       const result = await this.prisma.client.thread.updateMany({
-        where: { id: threadId, encryptedDek: null },
+        where: { id: threadId, organizationId, encryptedDek: null },
         data: { encryptedDek: key.encryptedDek },
       });
 
       // Another request won the race — use their key instead
       if (result.count === 0) {
-        const updated = await this.prisma.client.thread.findUniqueOrThrow({
-          where: { id: threadId },
+        const updated = await this.prisma.client.thread.findFirstOrThrow({
+          where: { id: threadId, organizationId },
           select: { encryptedDek: true },
         });
         if (!updated.encryptedDek) {
@@ -166,6 +174,7 @@ export class MessagesService {
 
   async createMessageInDb({
     threadId,
+    organizationId,
     message,
     role,
     visitorId,
@@ -175,6 +184,8 @@ export class MessagesService {
     attachments,
   }: {
     threadId: Thread['id'];
+    /** The thread's organization, as the caller resolved the thread. */
+    organizationId: Thread['organizationId'];
     message: Omit<DbMessageDto, 'id' | 'role'>;
     role: Role;
     visitorId?: string;
@@ -187,7 +198,7 @@ export class MessagesService {
 
     try {
       const encryptedContent = await this.maybeEncryptContent(
-        threadId,
+        { threadId, organizationId },
         message.content,
       );
 
@@ -214,6 +225,7 @@ export class MessagesService {
   async createAndStoreMessage({
     prompt,
     threadId,
+    organizationId,
     visitorId,
     messageType = 'TEXT',
     voiceDurationSeconds,
@@ -221,6 +233,8 @@ export class MessagesService {
   }: {
     prompt: string;
     threadId: Thread['id'];
+    /** The thread's organization, as the caller resolved the thread. */
+    organizationId: Thread['organizationId'];
     visitorId?: string;
     messageType?: MessageContentType;
     voiceDurationSeconds?: number;
@@ -231,6 +245,7 @@ export class MessagesService {
 
       const dbMessage = await this.createMessageInDb({
         threadId,
+        organizationId,
         message: { content: trimmedPrompt },
         role: Role.USER,
         visitorId,

@@ -66,7 +66,10 @@ describe('enqueueMemoryExtractionCommand', () => {
   it('starts one job per turn with the encrypted question and the current epoch', async () => {
     await enqueueMemoryExtractionCommand(INPUT);
 
-    expect(m.encrypt).toHaveBeenCalledWith('thread-1', 'I am the CFO.');
+    expect(m.encrypt).toHaveBeenCalledWith(
+      { threadId: 'thread-1', organizationId: 'org-1' },
+      'I am the CFO.',
+    );
     expect(m.start).toHaveBeenCalledWith('memoryExtract', 'memory-msg-1', {
       orgId: 'org-1',
       userId: 'user-1',

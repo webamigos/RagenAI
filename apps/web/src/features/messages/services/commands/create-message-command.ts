@@ -68,6 +68,7 @@ function sanitizeAttachments(
 
 export const createMessageInDbCommand = async ({
   threadId,
+  organizationId,
   message,
   role,
   visitorId,
@@ -77,6 +78,11 @@ export const createMessageInDbCommand = async ({
   attachments,
 }: {
   threadId: Thread['id'];
+  /**
+   * The thread's organization, as the caller resolved the thread — the
+   * encryption key is read and created only within it.
+   */
+  organizationId: Thread['organizationId'];
   message: Omit<DbMessageDto, 'id' | 'role'>;
   role: Role;
   visitorId?: string;
@@ -89,7 +95,7 @@ export const createMessageInDbCommand = async ({
 
   try {
     const encryptedContent = await maybeEncryptContent(
-      threadId,
+      { threadId, organizationId },
       message.content,
     );
 
@@ -116,6 +122,7 @@ export const createMessageInDbCommand = async ({
 export const createAndStoreMessageCommand = async ({
   prompt,
   threadId,
+  organizationId,
   visitorId,
   messageType = 'TEXT',
   voiceDurationSeconds,
@@ -123,6 +130,11 @@ export const createAndStoreMessageCommand = async ({
 }: {
   prompt: string;
   threadId: Thread['id'];
+  /**
+   * The thread's organization, as the caller resolved the thread — repeated
+   * on the title write so it cannot land outside the thread that was checked.
+   */
+  organizationId: Thread['organizationId'];
   visitorId?: string;
   messageType?: MessageContentType;
   voiceDurationSeconds?: number;
@@ -133,6 +145,7 @@ export const createAndStoreMessageCommand = async ({
 
     const dbMessage = await createMessageInDbCommand({
       threadId: threadId,
+      organizationId,
       message: {
         content: trimmedPrompt,
       },
