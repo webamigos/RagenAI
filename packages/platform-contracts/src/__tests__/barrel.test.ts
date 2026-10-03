@@ -11,6 +11,7 @@ describe('the public entry point', () => {
   it.each([
     ['MODEL_REGISTRY', 'object'],
     ['selectableModels', 'function'],
+    ['isChatModel', 'function'],
     ['isReasoningModel', 'function'],
     ['supportsReasoningEffort', 'function'],
     ['normalizeModelId', 'function'],

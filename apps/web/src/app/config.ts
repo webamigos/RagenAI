@@ -22,6 +22,8 @@ export const timezone = 'Europe/Warsaw';
 export const defaultLocale = 'en';
 export const dailyMessageLimit = 3;
 export const visitorCookieName = 'ragen-visitor';
+/** Every visitor cookie value starts with this; no user id does. */
+export const visitorIdPrefix = 'visitor_';
 export const TRIAL_DAYS = 14;
 // Declared in @ragenai/platform-contracts, which decides plan features from it
 // (`pickBestSubscription`); re-exported so onboarding names the same plan.

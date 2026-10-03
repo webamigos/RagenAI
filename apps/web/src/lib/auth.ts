@@ -37,6 +37,7 @@ import {
 } from './registration';
 import { createOrganizationWithDefaultProjectCommand as createOrganizationWithDefaultProject } from '@/features/organizations/services/commands/create-organization-command';
 import { applyDefaultLimitsToOrg } from '@/features/organizations/services/organization-settings';
+import { personalOrganizationSlug } from '@/features/organizations/constants/personal-organization';
 import { trackAudit } from '@/features/audit-logs/services/commands/create-audit-log-command';
 import { eventBus } from '@/libs/events';
 import {
@@ -542,7 +543,7 @@ export const auth = betterAuth({
               data: {
                 id: orgId,
                 name: organizationName,
-                slug: `${user.id}-org`,
+                slug: personalOrganizationSlug(user.id),
               },
             });
 

@@ -134,6 +134,61 @@ describe('InitializeBasicRagService', () => {
     ).rejects.toThrow(/stub-chat, other-model/);
   });
 
+  // Found in an overnight soak: the 400 for a bad model listed
+  // `qwen3-embedding-8b` among the models the caller could use instead. The
+  // route table serves embedding models too, and a route says nothing about
+  // whether a model can answer a chat turn — the catalogue's `kind` does.
+  describe('when the route table also serves embedding models', () => {
+    beforeEach(() => {
+      availableModels.mockReturnValue([
+        'stub-chat',
+        'qwen3-embedding-8b',
+        'other-model',
+        'bge-multilingual-gemma2',
+        'cohere-rerank-v3-5',
+      ]);
+    });
+
+    it('lists only the chat models in the refusal', async () => {
+      const error = await service
+        .initializeRagChain(withModel('model-with-no-route'))
+        .catch((e: unknown) => e);
+
+      expect(error).toBeInstanceOf(BadRequestException);
+      const message = (error as Error).message;
+      expect(message).toMatch(/stub-chat, other-model\./);
+      expect(message).not.toMatch(/qwen3-embedding-8b/);
+      expect(message).not.toMatch(/bge-multilingual-gemma2/);
+      expect(message).not.toMatch(/cohere-rerank-v3-5/);
+    });
+
+    it.each([
+      'qwen3-embedding-8b',
+      'bge-multilingual-gemma2',
+      'cohere-rerank-v3-5',
+    ])(
+      'refuses the routed non-chat model %s as the answer model',
+      async (model) => {
+        const error = await service
+          .initializeRagChain(withModel(model))
+          .catch((e: unknown) => e);
+
+        expect(error).toBeInstanceOf(BadRequestException);
+        expect((error as Error).message).toMatch(
+          new RegExp(`"${model}" is not a chat model`),
+        );
+        expect(basicRagChain).not.toHaveBeenCalled();
+      },
+    );
+
+    // The embeddings guard is a different question — there an embedding model
+    // is exactly what is wanted — so the default EMBEDDINGS_MODEL still passes.
+    it('still builds a chain for a chat model with the default embeddings model', async () => {
+      await expect(service.initializeRagChain(params)).resolves.toBeDefined();
+      expect(basicRagChain).toHaveBeenCalled();
+    });
+  });
+
   // The second way an unroutable model ended the process, and the one the
   // answer-model guard alone did not close: `createEmbeddingsInstance` returns
   // a *promise* (`resolveEmbeddingModel` is async), so an unroutable

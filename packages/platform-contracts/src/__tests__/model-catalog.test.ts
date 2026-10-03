@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   MODEL_REGISTRY,
+  isChatModel,
   isReasoningModel,
   normalizeModelId,
   selectableModels,
@@ -97,6 +98,38 @@ describe('selectableModels', () => {
     ]) {
       expect(MODEL_REGISTRY[id]?.visible).toBe(false);
     }
+  });
+});
+
+describe('isChatModel', () => {
+  // The answer-model check in apps/api asks this, and so does the list of
+  // models its 400 offers instead. A route says nothing about it: the route
+  // table serves the embedding models too.
+  it.each([
+    'bge-multilingual-gemma2',
+    'qwen3-embedding-8b',
+    'cohere-embed-multilingual-v3',
+    'cohere-rerank-v3-5',
+  ])('is false for the internal non-chat model %s', (id) => {
+    expect(isChatModel(id)).toBe(false);
+  });
+
+  it('is true for a chat model, visible or internal', () => {
+    expect(isChatModel('gpt-5.4')).toBe(true);
+    expect(isChatModel('gemini-2.5-flash')).toBe(true);
+  });
+
+  // An operator may route models of their own that no entry describes.
+  it('is true for an id the catalogue does not know', () => {
+    expect(isChatModel('my-own-llm')).toBe(true);
+  });
+
+  it('holds for every model a user can pick', () => {
+    const notChat = selectableModels()
+      .filter((m) => !isChatModel(m.value))
+      .map((m) => m.value);
+
+    expect(notChat).toEqual([]);
   });
 });
 

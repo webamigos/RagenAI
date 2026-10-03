@@ -228,6 +228,41 @@ describe('toRetrievalEvent — the trace', () => {
     expect(JSON.stringify(event)).not.toContain('secret text');
   });
 
+  it('passes through which stages were switched on, false included', () => {
+    const event = toRetrievalEvent({
+      sources: [],
+      chunkCount: 1,
+      durationMs: 160,
+      trace: {
+        ...trace,
+        expansion: 'off',
+        postRetrieval: 'fusion',
+        expansionEnabled: true,
+        rerankEnabled: true,
+        selectionEnabled: false,
+      },
+    });
+    expect(event.trace).toMatchObject({
+      expansion: 'off',
+      postRetrieval: 'fusion',
+      expansionEnabled: true,
+      rerankEnabled: true,
+      selectionEnabled: false,
+    });
+  });
+
+  it('leaves the flags out of a trace that has none', () => {
+    const event = toRetrievalEvent({
+      sources: [],
+      chunkCount: 1,
+      durationMs: 160,
+      trace,
+    });
+    expect(event.trace).not.toHaveProperty('expansionEnabled');
+    expect(event.trace).not.toHaveProperty('rerankEnabled');
+    expect(event.trace).not.toHaveProperty('selectionEnabled');
+  });
+
   it('omits the trace when the chain had none', () => {
     expect(
       toRetrievalEvent({ sources: [], chunkCount: 0, durationMs: 0 }),

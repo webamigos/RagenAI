@@ -3,6 +3,7 @@
 import { type Thread } from '@/generated/prisma/client';
 import db from '@ragenai/prisma-client';
 import { logger } from '@/app/lib/utils/logger';
+import { visitorIdPrefix } from '@/app/config';
 import type {
   MessageAttachment,
   MessageMetadata,
@@ -14,20 +15,30 @@ import { isUndecodableText } from '@ragenai/rag-core/undecodable-text';
 
 /**
  * `organizationId` is the signed-in reader's organization, which the route has
- * already checked the thread against. A guest reading their own thread has
- * none, and is matched on `visitorId` alone.
+ * already checked the thread against. `guestOnly` matches a guest thread and
+ * nothing else: one opened under a visitor cookie, with no user and no
+ * chatbot behind it. A reader with no session gets those only, and is matched
+ * on `visitorId` without an organization.
  */
 export const getThreadMessagesQuery = async (
   threadId: Thread['id'],
   visitorId: Thread['visitorId'],
-  organizationId?: string,
+  {
+    organizationId,
+    guestOnly = false,
+  }: { organizationId?: string; guestOnly?: boolean } = {},
 ) => {
   try {
+    if (guestOnly && !visitorId?.startsWith(visitorIdPrefix)) {
+      return { messages: [], threadContext: null };
+    }
+
     const thread = await db.thread.findFirst({
       where: {
         id: threadId,
         visitorId: visitorId,
         ...(organizationId ? { organizationId } : {}),
+        ...(guestOnly ? { userId: null, chatbotId: null } : {}),
       },
       select: {
         id: true,

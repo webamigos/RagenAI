@@ -314,3 +314,189 @@ describe('retrieveRelevantDocumentsWithIds — section selection', () => {
     expect(trace?.chunks.map((c) => c.fileId)).toEqual(['f-1', 'f-2']);
   });
 });
+
+/**
+ * `expansion: 'off'` and `postRetrieval: 'fusion'` each cover two cases — the
+ * stage was off, or it was on and changed nothing. The `*Enabled` flags tell
+ * them apart without changing either value.
+ */
+describe('retrieveRelevantDocumentsWithIds — which stages were switched on', () => {
+  const pool = [1, 2, 3].map((n) => chunk(`f-${n}`, 1, `Passage ${n}.`));
+
+  function storeWithNeighbours(hits: Chunk[], neighbours: boolean) {
+    return {
+      similaritySearch: vi.fn(async () => hits),
+      getChunksByIndex: vi.fn(
+        async (_orgId: string, fileId: string, indexes: readonly number[]) =>
+          neighbours
+            ? indexes.map((i) => chunk(fileId, i, `${fileId} neighbour ${i}.`))
+            : [],
+      ),
+    } as unknown as VectorStoreClient;
+  }
+
+  describe('expansion', () => {
+    it('on and widened: neighbours, enabled', async () => {
+      const { trace } = await retrieveRelevantDocumentsWithIds(
+        storeWithNeighbours([chunk('f-1', 5, 'The hit.')], true),
+        'q',
+        4,
+        undefined,
+        false,
+        undefined,
+        { orgId: 'org-1' },
+      );
+      expect(trace?.expansion).toBe('neighbours');
+      expect(trace?.expansionEnabled).toBe(true);
+    });
+
+    it('on but nothing to add: still off, but enabled', async () => {
+      const { trace } = await retrieveRelevantDocumentsWithIds(
+        storeWithNeighbours([chunk('f-1', 5, 'The hit.')], false),
+        'q',
+        4,
+        undefined,
+        false,
+        undefined,
+        { orgId: 'org-1' },
+      );
+      expect(trace?.expansion).toBe('off');
+      expect(trace?.expansionEnabled).toBe(true);
+    });
+
+    it('switched off: off, not enabled', async () => {
+      const { trace } = await retrieveRelevantDocumentsWithIds(
+        storeWithNeighbours([chunk('f-1', 5, 'The hit.')], true),
+        'q',
+        4,
+        undefined,
+        false,
+      );
+      expect(trace?.expansion).toBe('off');
+      expect(trace?.expansionEnabled).toBe(false);
+    });
+
+    it('a store that cannot fetch neighbours does not count as on', async () => {
+      const { trace } = await retrieveRelevantDocumentsWithIds(
+        storeReturning([chunk('f-1', 5, 'The hit.')]),
+        'q',
+        4,
+        undefined,
+        false,
+        undefined,
+        { orgId: 'org-1' },
+      );
+      expect(trace?.expansion).toBe('off');
+      expect(trace?.expansionEnabled).toBe(false);
+    });
+  });
+
+  describe('reranking', () => {
+    it('on and cut the pool: the reranker, enabled', async () => {
+      mockIsRerankingEnabled.mockReturnValue(true);
+      mockRerankDocuments.mockImplementation(async (_q, docs: Chunk[]) =>
+        docs.slice(0, 1).map((d) => ({
+          ...d,
+          metadata: { ...d.metadata, relevance_score: 0.9 },
+        })),
+      );
+      const { trace } = await retrieveRelevantDocumentsWithIds(
+        storeReturning(pool),
+        'q',
+        1,
+        undefined,
+        true,
+      );
+      expect(trace?.postRetrieval).toBe('reranker:scaleway');
+      expect(trace?.rerankEnabled).toBe(true);
+      expect(trace?.selectionEnabled).toBe(false);
+    });
+
+    it('on but nothing to cut: still fusion, but enabled', async () => {
+      mockIsRerankingEnabled.mockReturnValue(true);
+      const { trace } = await retrieveRelevantDocumentsWithIds(
+        storeReturning(pool),
+        'q',
+        5,
+        undefined,
+        true,
+      );
+      expect(mockRerankDocuments).not.toHaveBeenCalled();
+      expect(trace?.postRetrieval).toBe('fusion');
+      expect(trace?.rerankEnabled).toBe(true);
+    });
+
+    it('switched off by the org: fusion, not enabled', async () => {
+      mockIsRerankingEnabled.mockReturnValue(true);
+      const { trace } = await retrieveRelevantDocumentsWithIds(
+        storeReturning(pool),
+        'q',
+        1,
+        undefined,
+        false,
+      );
+      expect(trace?.postRetrieval).toBe('fusion');
+      expect(trace?.rerankEnabled).toBe(false);
+    });
+
+    it('switched off by the feature flag: fusion, not enabled', async () => {
+      const { trace } = await retrieveRelevantDocumentsWithIds(
+        storeReturning(pool),
+        'q',
+        1,
+        undefined,
+        true,
+      );
+      expect(trace?.postRetrieval).toBe('fusion');
+      expect(trace?.rerankEnabled).toBe(false);
+    });
+  });
+
+  describe('section selection', () => {
+    it('on and cut the pool: selection, enabled, and the reranker is not', async () => {
+      mockIsRerankingEnabled.mockReturnValue(true);
+      const { trace } = await retrieveRelevantDocumentsWithIds(
+        storeReturning(pool),
+        'q',
+        1,
+        undefined,
+        true,
+        undefined,
+        undefined,
+        { generate: vi.fn().mockResolvedValue('2') },
+      );
+      expect(trace?.postRetrieval).toBe('selection');
+      expect(trace?.selectionEnabled).toBe(true);
+      expect(trace?.rerankEnabled).toBe(false);
+    });
+
+    it('on but nothing to cut: still fusion, but enabled', async () => {
+      const generate = vi.fn();
+      const { trace } = await retrieveRelevantDocumentsWithIds(
+        storeReturning(pool),
+        'q',
+        5,
+        undefined,
+        false,
+        undefined,
+        undefined,
+        { generate },
+      );
+      expect(generate).not.toHaveBeenCalled();
+      expect(trace?.postRetrieval).toBe('fusion');
+      expect(trace?.selectionEnabled).toBe(true);
+    });
+
+    it('switched off: fusion, not enabled', async () => {
+      const { trace } = await retrieveRelevantDocumentsWithIds(
+        storeReturning(pool),
+        'q',
+        1,
+        undefined,
+        false,
+      );
+      expect(trace?.postRetrieval).toBe('fusion');
+      expect(trace?.selectionEnabled).toBe(false);
+    });
+  });
+});

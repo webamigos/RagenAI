@@ -118,7 +118,7 @@ export const GET = async (request: NextRequest, { params }: Params) => {
     const result = await fetchMessagesFromDb(
       threadIdParam,
       effectiveVisitorId,
-      readerOrgId,
+      { organizationId: readerOrgId, guestOnly: !session?.user },
     );
     return NextResponse.json({ ...result, isReadOnly });
   } catch (e) {
