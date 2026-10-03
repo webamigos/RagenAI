@@ -20,6 +20,14 @@ const messages = {
       'content-moderation-saas-note': 'Always enabled in SaaS mode.',
       'reranking-label': 'Reranking',
       'reranking-description': 'Re-score retrieved documents.',
+      'reranking-replaced-note':
+        'Not run while section selection is on: a model chooses the passages instead.',
+      'context-expansion-label': 'Context expansion',
+      'context-expansion-description':
+        'Read each retrieved passage with the passages around it.',
+      'section-selection-label': 'Section selection',
+      'section-selection-description':
+        'A model picks the passages to read, in place of the reranker.',
       'models-title': 'Models in use',
       'model-embedding': 'Embedding',
       'model-reranking': 'Reranking',
@@ -47,6 +55,10 @@ const baseData: RagSettingsPageData = {
     contentModerationEnabled: true,
     rerankingEnabled: false,
   },
+  retrievalFeatures: {
+    contextExpansion: true,
+    sectionSelection: false,
+  },
   budgetCents: 1000,
   models: {
     embedding: 'cohere-embed-multilingual-v3',
@@ -58,7 +70,7 @@ const baseData: RagSettingsPageData = {
 };
 
 describe('RagSettingsView', () => {
-  it('renders all four toggle labels', () => {
+  it('renders all six toggle labels', () => {
     renderWithProviders(baseData);
 
     expect(screen.getByText('Multi-query expansion')).toBeInTheDocument();
@@ -66,6 +78,44 @@ describe('RagSettingsView', () => {
     expect(screen.getByText('Content moderation')).toBeInTheDocument();
     // "Reranking" appears both as toggle label and model row label
     expect(screen.getAllByText('Reranking')).toHaveLength(2);
+    expect(screen.getByText('Context expansion')).toBeInTheDocument();
+    expect(screen.getByText('Section selection')).toBeInTheDocument();
+  });
+
+  it('shows context expansion and section selection as their feature keys say', () => {
+    renderWithProviders(baseData);
+
+    expect(
+      screen.getByRole('switch', { name: 'Context expansion' }),
+    ).toBeChecked();
+    expect(
+      screen.getByRole('switch', { name: 'Section selection' }),
+    ).not.toBeChecked();
+  });
+
+  it('says the reranker does not run while section selection replaces it', () => {
+    renderWithProviders({
+      ...baseData,
+      ragSettings: { ...baseData.ragSettings, rerankingEnabled: true },
+      retrievalFeatures: { contextExpansion: true, sectionSelection: true },
+    });
+
+    expect(
+      screen.getByText(
+        'Not run while section selection is on: a model chooses the passages instead.',
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it('adds no reranker note when section selection is off', () => {
+    renderWithProviders({
+      ...baseData,
+      ragSettings: { ...baseData.ragSettings, rerankingEnabled: true },
+    });
+
+    expect(
+      screen.queryByText(/Not run while section selection is on/),
+    ).not.toBeInTheDocument();
   });
 
   it('renders the on-premise info banner in SaaS mode', () => {
@@ -104,11 +154,11 @@ describe('RagSettingsView', () => {
     ).not.toBeInTheDocument();
   });
 
-  it('renders all four switches as disabled', () => {
+  it('renders all six switches as disabled', () => {
     renderWithProviders(baseData);
 
     const switches = screen.getAllByRole('switch');
-    expect(switches).toHaveLength(4);
+    expect(switches).toHaveLength(6);
     for (const s of switches) {
       expect(s).toBeDisabled();
     }

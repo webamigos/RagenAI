@@ -29,6 +29,7 @@ function SettingRow({
       </div>
       <Switch
         checked={checked}
+        aria-label={label}
         disabled
         onCheckedChange={() => {}}
         className="shrink-0"
@@ -39,7 +40,8 @@ function SettingRow({
 
 export function RagSettingsView({ data }: Props) {
   const t = useTranslations('organization-page.rag-settings');
-  const { ragSettings, budgetCents, models, isOnPremise } = data;
+  const { ragSettings, retrievalFeatures, budgetCents, models, isOnPremise } =
+    data;
 
   return (
     <>
@@ -81,6 +83,23 @@ export function RagSettingsView({ data }: Props) {
           label={t('reranking-label')}
           description={t('reranking-description')}
           checked={ragSettings.rerankingEnabled}
+          // Section selection takes the reranker's slot: with both on, the
+          // reranker does not run, and the switch alone would say it does.
+          note={
+            ragSettings.rerankingEnabled && retrievalFeatures.sectionSelection
+              ? t('reranking-replaced-note')
+              : undefined
+          }
+        />
+        <SettingRow
+          label={t('context-expansion-label')}
+          description={t('context-expansion-description')}
+          checked={retrievalFeatures.contextExpansion}
+        />
+        <SettingRow
+          label={t('section-selection-label')}
+          description={t('section-selection-description')}
+          checked={retrievalFeatures.sectionSelection}
         />
       </section>
 
