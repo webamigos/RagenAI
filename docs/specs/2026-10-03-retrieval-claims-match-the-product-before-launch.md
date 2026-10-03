@@ -292,16 +292,24 @@ enough, which is the only evidence that would justify a per-turn call.
 
 ### Phase E — docs describe `main`
 
+Phase E documents what is on `main` when it ships, so it can go early.
+What B and C will change is documented by B's and C's own PRs, not here:
+a doc line for a result that does not exist yet would be the same kind of
+false claim this spec removes.
+
 - Update `docs/rag-pipeline.md`:
   - add contextual chunks, context expansion and section selection, each with
     its feature key and default;
-  - make the reranking row state that it is opt-in, and what Phase B found;
-  - add the strict-grounding rule once Phase C ships.
+  - make the reranking row state that it is opt-in.
 - Fix the benchmark README's prerequisites (no Temporal or LiteLLM
   containers).
-- Add a line to `docs/changelog-notes.md` for each user-visible phase (A, C).
 - Follow-up, not done here: open an issue in ragen-docs listing the pages to
   regenerate.
+
+Each user-visible phase (A, C) adds its own line to
+`docs/changelog-notes.md` in its PR, as `AGENTS.md`'s post-task workflow
+asks; B2 adds what it found to the reranking row, and C2 adds the
+strict-grounding rule to `docs/rag-pipeline.md`.
 
 ## Core surfaces touched
 
@@ -356,8 +364,8 @@ enough, which is the only evidence that would justify a per-turn call.
 
 Each phase leaves the application working and ships as its own PR. The
 phases are independently deployable, but not independently completable:
-E's reranking and strict-grounding lines describe what B and C found and
-built, and D3 needs a release that ships A–C. The suggested order is A, E,
+B2 and C2 each document their own result (Phase E documents only what is
+already on `main`), and D3 needs a release that ships A–C. The suggested order is A, E,
 B, C, D: A and E are
 cheapest and remove false claims, B needs a few hours of runs, C is the real
 work, and D packages the result.
@@ -378,7 +386,8 @@ work, and D packages the result.
   and ADR-12 gets an update with the medians.
 - [ ] **B2.** The decision from Q2 is applied: the demo env, the
   `create-ragen-app` default, and the Scaleway label, each only as the
-  numbers allow.
+  numbers allow. The reranking row of `docs/rag-pipeline.md` records what
+  B1 found.
 
 ### Phase C — an assistant can be told to answer only from its documents
 
@@ -387,7 +396,8 @@ work, and D packages the result.
 - [ ] **C2.** `answerFromDocumentsOnly`: migration, read path (web + api +
   guest chatbot), the prompt rule in both copies, the architecture test
   that the copies agree, the settings switch, and a `p0-*` e2e test that a
-  chatbot-enabled assistant refuses an out-of-corpus question.
+  chatbot-enabled assistant refuses an out-of-corpus question. The rule goes
+  into `docs/rag-pipeline.md`, and a line into `docs/changelog-notes.md`.
 - [ ] **C3.** Measure C2 against C1's baseline, including the over-refusal
   arm. Build the grader (behind a key, default off) only if the agreed
   threshold is missed; otherwise mark this step "not needed", with the
@@ -402,9 +412,9 @@ work, and D packages the result.
 
 ### Phase E — docs describe `main`
 
-- [ ] **E1.** `docs/rag-pipeline.md` and the benchmark README prerequisites.
-- [ ] **E2.** Changelog lines for A and C, and the ragen-docs follow-up
-  issue.
+- [ ] **E1.** `docs/rag-pipeline.md` (the three shipped stages, reranking as
+  opt-in) and the benchmark README prerequisites.
+- [ ] **E2.** The ragen-docs follow-up issue.
 
 ## Testing
 
