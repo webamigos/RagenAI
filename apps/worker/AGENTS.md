@@ -117,6 +117,17 @@ measures the judge; change its prompt against that, per ADR-20.
 `startBullWorkers` from the `jobConcurrency` option before any worker
 consumes. Temporal installs need their own limit; the adapter has none.
 
+**Personal memory (`memoryExtract`)** — one job per chat turn while the org
+has `personalMemory` on (spec `2026-09-27-personal-memory-across-threads`).
+Everything is one activity, `runMemoryExtraction` in `activities/memory/`, so
+the decrypted question and memories never become a step result a runtime
+stores; that folder is the only place the worker touches the three memory
+models (`memory-rows-are-read-through-one-module.test.ts`). It checks the
+org's token and cost ceilings before its model call, writes in one
+transaction that re-checks membership, the user's switch, the epoch and the
+key under the profile lock, and logs no content. `MEMORY_EXTRACT_MODEL`
+defaults to `SUMMARY_MODEL`.
+
 **runFileEmbeddings flow:**
 
 ```mermaid

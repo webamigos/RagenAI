@@ -154,6 +154,13 @@ export type {
 } from './usage/usage';
 
 export {
+  MEMORY_DATED_GRACE_DAYS,
+  MEMORY_MAX_CHARS,
+  MEMORY_MAX_ENTRIES,
+  MEMORY_MAX_OPERATIONS,
+} from './memory/limits';
+
+export {
   CHAT_TURN_STEP,
   evaluateCeilings,
   usageMonthStart,

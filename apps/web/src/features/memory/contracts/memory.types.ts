@@ -1,14 +1,12 @@
 import { z } from 'zod';
+import {
+  MEMORY_MAX_CHARS,
+  MEMORY_MAX_ENTRIES,
+} from '@ragenai/platform-contracts';
 
-/**
- * A user has at most this many memories, so the whole set fits in a prompt
- * and is loaded whole rather than searched (spec
- * 2026-09-27-personal-memory-across-threads, "What a memory is").
- */
-export const MEMORY_MAX_ENTRIES = 50;
-
-/** Characters per memory, after trimming. */
-export const MEMORY_MAX_CHARS = 300;
+// Declared once, in platform-contracts, because the worker writes what this
+// app shows and edits (spec 2026-09-27-personal-memory-across-threads).
+export { MEMORY_MAX_CHARS, MEMORY_MAX_ENTRIES };
 
 /** One memory's text, as a user edits it or an extraction writes it. */
 export const memoryContentSchema = z

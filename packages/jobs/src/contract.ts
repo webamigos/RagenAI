@@ -76,6 +76,7 @@ export const JOB_NAMES = [
   'brainExtract',
   'brainReconcileFindings',
   'brainPublishPage',
+  'memoryExtract',
 ] as const;
 
 export type JobName = (typeof JOB_NAMES)[number];
@@ -229,6 +230,56 @@ export interface BrainReconcileFindingsResult {
 }
 
 /**
+ * Extract a user's personal memories from one chat turn (spec
+ * 2026-09-27-personal-memory-across-threads, Phase C). Started by the chat
+ * after the answer is saved, with run id `memory-<messageId>`, so a repeated
+ * start for the same turn is one job.
+ *
+ * The question travels as the answering model saw it — after PII masking and
+ * the input guardrail — never the raw prompt and never the answer.
+ */
+export interface MemoryExtractPayload {
+  orgId: string;
+  userId: string;
+  threadId: string;
+  /** The assistant message whose turn this is; what the change rows point at. */
+  messageId: string;
+  /**
+   * The user's memory epoch when the turn was enqueued (0 without a
+   * profile). "Forget everything", switching extraction off and an admin's
+   * org-wide deletion move it on, so a job from before writes nothing.
+   */
+  epoch: number;
+  /** The masked, guarded question, encrypted with the thread's DEK when `questionEncrypted`. */
+  question: string;
+  questionEncrypted: boolean;
+}
+
+/** Why an extraction wrote nothing; `null` when it ran. Never any content. */
+export type MemoryExtractSkip =
+  | 'disabled'
+  | 'opted-out'
+  | 'stale'
+  | 'not-member'
+  | 'ceiling'
+  | 'key-unavailable'
+  | 'unparseable';
+
+/**
+ * Counts only, never content: results sit in Redis for an hour under the
+ * runtime's retention, and the thread reads what changed from
+ * `UserMemoryChange` in Postgres.
+ */
+export interface MemoryExtractResult {
+  skipped: MemoryExtractSkip | null;
+  added: number;
+  updated: number;
+  deleted: number;
+  /** Operations refused by a bound, the placeholder check or the entry limit. */
+  dropped: number;
+}
+
+/**
  * Write one knowledge page's chunks into the index (spec E2). Started by the
  * web after its transaction has bumped the page's publication generation;
  * the handler writes only while that generation is current, so a publish and
@@ -292,6 +343,7 @@ export interface JobPayloads {
   brainExtract: BrainExtractPayload;
   brainReconcileFindings: BrainReconcileFindingsPayload;
   brainPublishPage: BrainPublishPagePayload;
+  memoryExtract: MemoryExtractPayload;
 }
 
 /**
@@ -312,4 +364,5 @@ export interface JobResults {
   brainExtract: BrainExtractResult;
   brainReconcileFindings: BrainReconcileFindingsResult;
   brainPublishPage: BrainPublishPageResult;
+  memoryExtract: MemoryExtractResult;
 }

@@ -4,6 +4,7 @@ import { encryptContent } from '../envelope';
 import { resetKeyProviderForTests } from '../key-provider';
 import {
   openOwnedRows,
+  resolveOwnerKeyForTransaction,
   resolveOwnerKeyForWrite,
   sealOwnedContent,
   type OwnerKeyStore,
@@ -158,6 +159,55 @@ describe('sealOwnedContent and openOwnedRows', () => {
     expect(sealOwnedContent('Is the CFO.', { status: 'plaintext' })).toEqual({
       content: 'Is the CFO.',
       isEncrypted: false,
+    });
+  });
+});
+
+describe('resolveOwnerKeyForTransaction', () => {
+  it('generates a key without storing it, for the caller’s transaction to store', async () => {
+    const store = memoryStore();
+    const result = await resolveOwnerKeyForTransaction(store);
+
+    expect(result.status).toBe('key');
+    expect(result.status === 'key' && result.newEncryptedDek).toBeTruthy();
+    expect(
+      result.status === 'key' && result.encryptedDek === result.newEncryptedDek,
+    ).toBe(true);
+    expect(store.saveIfAbsent).not.toHaveBeenCalled();
+    // The new key is the one its wrapped form unwraps to.
+    if (result.status === 'key' && result.newEncryptedDek) {
+      expect(
+        (await decryptThreadKey(result.newEncryptedDek)).equals(result.dek),
+      ).toBe(true);
+    }
+  });
+
+  it('unwraps an existing key and asks for nothing to be stored', async () => {
+    const first = await resolveOwnerKeyForWrite(memoryStore());
+    const store = memoryStore();
+    await resolveOwnerKeyForWrite(store); // stores one
+    const result = await resolveOwnerKeyForTransaction(store);
+
+    expect(first.status).toBe('key');
+    expect(result).toMatchObject({ status: 'key', newEncryptedDek: null });
+    // The wrapped key it unwrapped, for the caller's transaction to check
+    // the profile still holds.
+    expect(result.status === 'key' && result.encryptedDek).toBeTruthy();
+  });
+
+  it('is unavailable, never plaintext, when encryption is on and the key fails', async () => {
+    expect(
+      (await resolveOwnerKeyForTransaction(memoryStore('not-a-wrapped-key')))
+        .status,
+    ).toBe('unavailable');
+  });
+
+  it('is plaintext when encryption is off', async () => {
+    delete process.env.ENCRYPTION_PROVIDER;
+    delete process.env.ENCRYPTION_MASTER_KEY;
+    resetKeyProviderForTests();
+    expect(await resolveOwnerKeyForTransaction(memoryStore())).toEqual({
+      status: 'plaintext',
     });
   });
 });
