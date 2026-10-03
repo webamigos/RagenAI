@@ -22,6 +22,8 @@ import { fileURLToPath } from 'node:url';
 import { execSync } from 'node:child_process';
 import { PrismaClient } from '../../src/generated/prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
+import { PLATFORM_FEATURE_DEFAULTS_KEY } from '@ragenai/platform-contracts';
+import { checkDefaultProfile, traceProfileMismatches } from './lib/profile';
 import {
   TEST_PROJECT_ID,
   TEST_THREAD_ID,
@@ -420,6 +422,45 @@ function qdrantScroll(orgId: string): ScrollChunks {
   };
 }
 
+/**
+ * `--profile default`: refuse before a single upload when the organization or
+ * the runner's environment is not the default install (lib/profile.ts).
+ */
+async function assertDefaultProfile(prisma: PrismaClient): Promise<void> {
+  const orgId = await organizationOf(prisma);
+  const [org, platformRow] = await Promise.all([
+    orgId
+      ? prisma.organizationSettings.findUnique({
+          where: { organizationId: orgId },
+          select: {
+            multiQueryEnabled: true,
+            docSummariesEnabled: true,
+            featureOverrides: true,
+          },
+        })
+      : null,
+    prisma.settings.findUnique({
+      where: { key: PLATFORM_FEATURE_DEFAULTS_KEY },
+    }),
+  ]);
+  let platformDefaults: unknown;
+  try {
+    platformDefaults = platformRow ? JSON.parse(platformRow.value) : undefined;
+  } catch {
+    platformDefaults = undefined;
+  }
+  const problems = checkDefaultProfile({
+    env: process.env,
+    org,
+    platformDefaults,
+  });
+  if (problems.length > 0) {
+    throw new Error(
+      `--profile default: this is not the default install:\n  - ${problems.join('\n  - ')}`,
+    );
+  }
+}
+
 async function organizationOf(prisma: PrismaClient): Promise<string | null> {
   const project = await prisma.project.findUnique({
     where: { id: PROJECT_ID },
@@ -515,6 +556,7 @@ async function main(): Promise<void> {
     corpus: corpusArg,
     arms,
     shape,
+    profile,
   } = parseArgs(process.argv.slice(2), DEFAULT_CORPUS_DIR);
   const dir = resolveCorpusDir(corpusArg, process.cwd());
   const { corpus, questions } = loadCorpus(dir);
@@ -544,6 +586,10 @@ async function main(): Promise<void> {
   let cookie: string | undefined;
 
   try {
+    if (profile === 'default') {
+      console.log('Checking the default-install profile');
+      await assertDefaultProfile(prisma);
+    }
     if (arms.includes('rag')) {
       console.log(`[1/4] Signing in as ${EMAIL}`);
       cookie = await login();
@@ -630,6 +676,21 @@ async function main(): Promise<void> {
             );
             answer = ragAnswer.text;
             citedFiles = ragAnswer.citedFileIds;
+            // The server's account of the turn — what the runner's env cannot
+            // vouch for. One case off the default ends a `--profile default`
+            // run rather than labelling it the default.
+            if (profile === 'default') {
+              const mismatches = ragAnswer.trace
+                ? traceProfileMismatches(ragAnswer.trace)
+                : [
+                    'the server sent no retrieval trace, so the profile cannot be confirmed',
+                  ];
+              if (mismatches.length > 0) {
+                throw new Error(
+                  `--profile default: ${q.id}: ${mismatches.join('; ')}`,
+                );
+              }
+            }
             if (ragAnswer.trace) {
               retrievalTrace = {
                 postRetrieval: ragAnswer.trace.postRetrieval,
@@ -777,6 +838,14 @@ async function main(): Promise<void> {
   writeFileSync(join(outDir, `${stem}.json`), JSON.stringify(report, null, 2));
   writeFileSync(join(outDir, `${stem}.md`), renderMarkdown(report));
   console.log(`\nWrote results/${stem}.json and results/${stem}.md`);
+  if (profile === 'default') {
+    // The published copy: the figure someone may quote, under the same stem
+    // so the -runN suffixes of a day's three runs stay side by side.
+    const publishedDir = join(outDir, 'published');
+    mkdirSync(publishedDir, { recursive: true });
+    writeFileSync(join(publishedDir, `${stem}.md`), renderMarkdown(report));
+    console.log(`Wrote results/published/${stem}.md`);
+  }
 
   const rag = tally(results.filter((r) => r.arm === 'rag'));
   console.log(

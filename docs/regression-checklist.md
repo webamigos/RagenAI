@@ -59,6 +59,19 @@ producers; a mismatch means nothing consumes the queue. See
 - [ ] Roll a document version back — the re-index embeds the restored text
 - [ ] Both nightly schedules exist after the switch (bull-board, or the Temporal UI)
 
+### Retrieval quality (once per release)
+
+- [ ] Run `npm run eval:benchmark -- --profile default` three times on each
+      of `kolej-bilingual-v1`, `tabele-bilingual-v1` and `guard-bilingual-v1`
+      against the release build (setup: `apps/web/evals/rag-benchmark/README.md`).
+      It refuses to start, and stops on the first case, when the stack is not
+      the default install.
+- [ ] Compare the median of the three with the newest file for that corpus in
+      `apps/web/evals/rag-benchmark/results/published/`. **Fail the release if
+      the RAG–control gap shrinks by more than the spread** between the three
+      runs recorded there (or three cases, when no spread is recorded).
+- [ ] Commit the three published files with the release.
+
 ### Projects
 
 - [ ] Create new project — appears in project list

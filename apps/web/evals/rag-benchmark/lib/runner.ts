@@ -18,6 +18,13 @@ export interface ParsedArgs {
    * four shapes run on one day do not become `-run2` … `-run12`.
    */
   shape?: string;
+  /**
+   * `--profile default`: the run must be the default install (see
+   * lib/profile.ts). It names the result `default` and also writes it under
+   * `results/published/`. Not combinable with `--shape`, which names a
+   * deliberate departure from the default.
+   */
+  profile?: 'default';
 }
 
 const SHAPE = /^[a-z0-9][a-z0-9-]{0,39}$/;
@@ -45,7 +52,22 @@ export function parseArgs(
       `--shape: expected a name of lower-case letters, digits and hyphens, got ${JSON.stringify(shape ?? '')}`,
     );
   }
-  const withShape = shape ? { shape } : {};
+  const profileArg = valueOf(argv, '--profile');
+  if (argv.includes('--profile') && profileArg !== 'default') {
+    throw new Error(
+      `--profile: the only profile is "default", got ${JSON.stringify(profileArg ?? '')}`,
+    );
+  }
+  if (profileArg && shape) {
+    throw new Error(
+      '--profile default and --shape do not combine: a shape names a departure from the default',
+    );
+  }
+  const withShape = profileArg
+    ? { shape: 'default', profile: 'default' as const }
+    : shape
+      ? { shape }
+      : {};
 
   const arms = valueOf(argv, '--arms');
   if (arms === undefined) {

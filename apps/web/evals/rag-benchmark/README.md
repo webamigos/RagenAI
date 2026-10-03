@@ -215,6 +215,36 @@ the uploaded files through the product's own delete path, which is what also
 removes their Qdrant points. Without it the files are left behind and the next
 run ranks against duplicates. The runner says so rather than failing.
 
+## The published number (`--profile default`)
+
+`--profile default` is the run whose figure may be quoted. It refuses to start
+when the runner's environment or the test organization is not the default
+install: `FEATURE_FLAG_RERANKING` set, summaries off, multi-query off, or a
+retrieval feature key (`contextualChunks`, `contextExpansion`,
+`sectionSelection`, `crossQueryFusion`) resolved to anything but its default.
+It then checks every case's retrieval trace — the server's account, which the
+runner's environment cannot vouch for — and stops on the first turn that ran a
+stage differently. A finished run is named `default` and also written to
+`results/published/`. A release runs it three times per corpus
+(`docs/regression-checklist.md`, "Retrieval quality").
+
+### Method, for anyone quoting it
+
+- **Invented figures.** Every number in the corpora exists nowhere outside
+  this directory, so a correct answer is evidence of retrieval, not of what the
+  model already knew.
+- **A control arm.** The same model answers every question with no documents.
+  The number to quote is the gap between the two columns, never the RAG column
+  alone.
+- **The median of three runs.** Answers and the judge both vary; a single run
+  can move by about three cases with nothing changed.
+- **Two gates.** A deterministic check on the figures (and on forbidden
+  figures), plus an LLM judge reading a rubric. A case passes only when both
+  do; a verdict the judge could not deliver is ungraded, not failed.
+- **What it does not measure:** latency, cost, real users' questions, answer
+  style, or documents larger and messier than these corpora. It describes one
+  configuration on one day's models.
+
 ## One run is not a baseline
 
 These are LLM-scored and they move. Two runs of the same corpus on the same
