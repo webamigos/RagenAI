@@ -217,6 +217,7 @@ export class InitializeBasicRagService {
         { vectorStore: wrappedStore, metadataFilter },
         contextExpansionEnabled,
         sectionSelectionEnabled,
+        crossQueryFusionEnabled,
       ] = await Promise.all([
         this.organizationSettings.getRagPipelineSettings(orgId),
         this.buildVectorStoreAndFilter({
@@ -230,6 +231,7 @@ export class InitializeBasicRagService {
         }),
         this.subscriptions.isFeatureEnabled(orgId, 'contextExpansion'),
         this.subscriptions.isFeatureEnabled(orgId, 'sectionSelection'),
+        this.subscriptions.isFeatureEnabled(orgId, 'crossQueryFusion'),
       ]);
       // Built only when the key is on: the chain runs selection exactly when
       // it is handed a selector.
@@ -309,6 +311,7 @@ export class InitializeBasicRagService {
               ragPipelineSettings.contentModerationEnabled,
             rerankingEnabled: ragPipelineSettings.rerankingEnabled,
             contextExpansionEnabled,
+            crossQueryFusionEnabled,
           },
         },
         vectorStore: wrappedStore,
