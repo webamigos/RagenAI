@@ -26,6 +26,7 @@ import {
 } from '../utils/chain-utils.js';
 import {
   DEFAULT_ANSWER_INSTRUCTIONS,
+  GROUNDING_RULES,
   humanTemplates,
   systemTemplates,
 } from './config.js';
@@ -730,12 +731,21 @@ export function buildRagMessages(
   answerInstructions?: string | null,
   projectInstructions?: string,
   imageDocuments?: ThreadDocumentUI[],
+  answerFromDocumentsOnly?: boolean,
 ): { system: string; messages: ModelMessage[] } {
   const effectiveAnswerInstructions =
     answerInstructions || DEFAULT_ANSWER_INSTRUCTIONS;
   const effectiveProjectInstructions = projectInstructions || '';
 
+  // Filled first, while the only `{grounding_rule}` in the string is the
+  // template's own — see `GROUNDING_RULES`.
   const systemMessage = systemTemplates.answerChain
+    .replace(
+      '{grounding_rule}',
+      answerFromDocumentsOnly
+        ? GROUNDING_RULES.strict
+        : GROUNDING_RULES.default,
+    )
     .replace('{answer_instructions}', effectiveAnswerInstructions)
     .replace('{project_instructions}', effectiveProjectInstructions)
     .replace('{context}', context)

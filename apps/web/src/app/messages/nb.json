@@ -1852,6 +1852,14 @@
       "powered-by": "Drevet av {name}",
       "connectors": "Koblinger",
       "connectors-description": "Ingen tilkoblede integrasjoner",
+      "answer-from-documents-only": {
+        "title": "Svar bare ut fra dokumentene",
+        "description": "Når dette er på, får et spørsmål som dokumentene ikke dekker, et svar som sier det, i stedet for et svar fra modellens generelle kunnskap.",
+        "default-chatbot": "Standard for denne assistenten: på, fordi den offentlige chatboten er slått på.",
+        "default-panel": "Standard for denne assistenten: av.",
+        "set-for-assistant": "Satt for denne assistenten.",
+        "save-failed": "Kunne ikke lagre innstillingen. Prøv igjen."
+      },
       "connectors-saving": "Lagrer...",
       "loading": "Laster inn integrasjoner..."
     },

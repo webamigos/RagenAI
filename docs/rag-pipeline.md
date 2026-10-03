@@ -176,3 +176,34 @@ screen was a retrieval-frequency table.
   Features): `contextualChunks` and `contextExpansion` on, `sectionSelection`
   off, as above.
 
+
+## Strict grounding: what an answer may draw on
+
+The answer prompt carries one rule for a question the retrieved context does
+not answer, and which rule applies is per assistant
+(`ProjectSettings.answerFromDocumentsOnly`; spec
+`2026-10-03-retrieval-claims-match-the-product-before-launch`, Phase C2):
+
+- **Strict** — "If the context does not contain the answer, say that the
+  documents do not cover it, and do not answer from general knowledge."
+- **Default** — the model may answer from its own knowledge, saying so.
+
+The column is nullable. `null` means "the surface default": strict when the
+assistant has the public chatbot enabled (`Project.chatbotEnabled`), the
+default rule otherwise; an admin can set it either way with the switch on the
+assistant page. `resolveAnswerFromDocumentsOnly` in
+`@ragenai/platform-contracts` is the one resolver, read by the panel chat, the
+public assistant page and apps/api's `/chat` and `/chat/completions`, always
+by a project id the server already resolved and scoped to the organization.
+Two cases keep the default rule: a turn with no assistant (the knowledge
+base), and a `MODEL_ONLY` turn (there is no context to stay inside, so strict
+would refuse everything). The embedded widget (`api/chatbot/[token]/chat`) is
+an organization-level chatbot with no assistant to carry the setting, so its
+route forces strict (`answerFromDocumentsOnly: true` on `initializeRagChain`).
+
+Both apps fill `{grounding_rule}` from their own copy of `GROUNDING_RULES`
+(`basic-rag/config.ts`), and
+`tests/architecture/answer-prompt-rules-agree.test.ts` fails when the two rule
+lists differ in either variant. There is no relevance threshold: an RRF score
+encodes rank only, so a cut-off on it would look like a guard and not be one.
+Whether the prompt rule is enough is measured by the guard corpus (C1/C3).

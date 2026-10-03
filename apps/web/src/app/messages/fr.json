@@ -1852,6 +1852,14 @@
       "powered-by": "Propulsé par {name}",
       "connectors": "Connecteurs",
       "connectors-description": "Aucune intégration connectée",
+      "answer-from-documents-only": {
+        "title": "Répondre uniquement à partir des documents",
+        "description": "Activé, une question que les documents ne couvrent pas reçoit une réponse qui le dit, au lieu d'une réponse tirée des connaissances générales du modèle.",
+        "default-chatbot": "Par défaut pour cet assistant : activé, car son chatbot public est activé.",
+        "default-panel": "Par défaut pour cet assistant : désactivé.",
+        "set-for-assistant": "Défini pour cet assistant.",
+        "save-failed": "Impossible d'enregistrer le réglage. Réessayez."
+      },
       "connectors-saving": "Enregistrement en cours...",
       "loading": "Chargement des intégrations..."
     },

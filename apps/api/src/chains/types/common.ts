@@ -62,6 +62,14 @@ export interface ChainConfig {
   answerInstructions?: string | null;
   projectInstruction?: string;
   /**
+   * Answer only from the documents: the answer prompt's grounding rule is
+   * `GROUNDING_RULES.strict` instead of the one that lets the model answer
+   * from its own knowledge. Resolved by the caller from
+   * `ProjectSettings.answerFromDocumentsOnly` and `Project.chatbotEnabled`
+   * (`resolveAnswerFromDocumentsOnly`). Absent is today's rule.
+   */
+  answerFromDocumentsOnly?: boolean;
+  /**
    * Cap on generated tokens. Threaded through to `streamText({ maxTokens })`.
    * Leave undefined for provider default. Populated by the OpenAI-compatible
    * API (`/api/v1/chat/completions`) from the caller's `max_tokens`.

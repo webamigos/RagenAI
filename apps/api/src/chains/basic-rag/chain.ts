@@ -150,6 +150,7 @@ export const basicRagChain = async ({
         config?.answerInstructions,
         config?.projectInstruction,
         imageThreadDocs.length > 0 ? imageThreadDocs : undefined,
+        config?.answerFromDocumentsOnly,
       );
 
       const hasTools =

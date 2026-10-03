@@ -259,9 +259,53 @@ describe('ChatService', () => {
         id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
         organizationId: 'org-1',
       },
-      select: { settings: { select: { instructions: true } } },
+      select: {
+        chatbotEnabled: true,
+        settings: {
+          select: { instructions: true, answerFromDocumentsOnly: true },
+        },
+      },
     });
   });
+
+  it.each([
+    [{ chatbotEnabled: true, settings: { instructions: null } }, true],
+    [{ chatbotEnabled: false, settings: null }, false],
+    [
+      {
+        chatbotEnabled: true,
+        settings: { instructions: null, answerFromDocumentsOnly: false },
+      },
+      false,
+    ],
+    [
+      {
+        chatbotEnabled: false,
+        settings: { instructions: null, answerFromDocumentsOnly: true },
+      },
+      true,
+    ],
+  ])(
+    'tells the chain whether %o answers only from its documents (%s)',
+    async (row, expected) => {
+      prisma.client.project.findFirst.mockResolvedValue({
+        id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+        ...row,
+      });
+      initializeBasicRag.initializeRagChain.mockResolvedValue(makeChain({}));
+
+      await service.chat(
+        baseDto,
+        mockContext,
+        createMockReq(),
+        createMockRes(),
+      );
+
+      expect(initializeBasicRag.initializeRagChain).toHaveBeenCalledWith(
+        expect.objectContaining({ answerFromDocumentsOnly: expected }),
+      );
+    },
+  );
 
   it('strips the asst- prefix from assistant_id when resolving the project', async () => {
     const req = createMockReq();
