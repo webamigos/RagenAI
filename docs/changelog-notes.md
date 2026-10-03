@@ -95,6 +95,14 @@ archive is the blog.
   tokens). Rows recorded before this change keep their zero.
   ([#1481](https://github.com/webamigos/RagenAI/pull/1481))
 
+### Settings
+
+- `[brief]` **The RAG pipeline page shows context expansion and section
+  selection.** Both stages ran — expansion on by default — but the page that
+  lists an organization's retrieval stages had no row for either. It now
+  shows each as on or off, and says when section selection has taken the
+  reranker's place.
+
 ### Chat
 
 - `[brief]` **A thread someone shared with you opens.** It was listed under
