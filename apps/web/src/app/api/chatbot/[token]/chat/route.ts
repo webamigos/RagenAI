@@ -260,6 +260,10 @@ export async function POST(
             // which is what the deleted call above got right and the chain's
             // default does not know.
             guardrailSource: 'chatbot',
+            // The embedded widget is the organization's most public surface
+            // and has no assistant to carry the setting: it answers only from
+            // the documents, never from general knowledge (C2).
+            answerFromDocumentsOnly: true,
           });
 
           const result = await ragChain.stream({

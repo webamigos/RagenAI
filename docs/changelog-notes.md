@@ -131,8 +131,9 @@ archive is the blog.
   other assistant keeps today's behaviour. One switch on the assistant
   page, "Answer only from documents", turns it either way per assistant.
   The same rule applies in the panel, on the public assistant page and
-  through the API. The organization-level embedded widget is not covered
-  yet.
+  through the API. The organization's embedded website widget is always
+  strict: it has no assistant to carry the switch, and it is the most
+  public surface.
 
 - `[major]` **Ragen can remember a user across conversations — behind a
   switch, off by default.** With the `personalMemory` feature key on, a

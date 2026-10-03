@@ -195,10 +195,11 @@ assistant page. `resolveAnswerFromDocumentsOnly` in
 `@ragenai/platform-contracts` is the one resolver, read by the panel chat, the
 public assistant page and apps/api's `/chat` and `/chat/completions`, always
 by a project id the server already resolved and scoped to the organization.
-Three cases keep the default rule: a turn with no assistant (the knowledge
-base), a `MODEL_ONLY` turn (there is no context to stay inside, so strict would
-refuse everything), and the embedded widget, which is an organization-level
-chatbot with no assistant to carry the setting.
+Two cases keep the default rule: a turn with no assistant (the knowledge
+base), and a `MODEL_ONLY` turn (there is no context to stay inside, so strict
+would refuse everything). The embedded widget (`api/chatbot/[token]/chat`) is
+an organization-level chatbot with no assistant to carry the setting, so its
+route forces strict (`answerFromDocumentsOnly: true` on `initializeRagChain`).
 
 Both apps fill `{grounding_rule}` from their own copy of `GROUNDING_RULES`
 (`basic-rag/config.ts`), and

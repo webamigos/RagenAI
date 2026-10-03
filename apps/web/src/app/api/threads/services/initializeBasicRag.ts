@@ -44,6 +44,13 @@ type InitializeRagChainParams = {
   memoryBlock?: string;
   projectId?: string | null;
   /**
+   * Forces the grounding rule instead of reading the assistant's setting. The
+   * organization's embedded widget sets `true`: it has no assistant to carry
+   * the setting, and as the most public surface it answers only from the
+   * documents (spec 2026-10-03-retrieval-claims, C2).
+   */
+  answerFromDocumentsOnly?: boolean;
+  /**
    * How much this thread may retrieve. Absent means `KNOWLEDGE_BASE` — every
    * caller that predates the field kept working unchanged, which is the only
    * reason the default is the widest of the three.
@@ -95,6 +102,7 @@ export const initializeRagChain = async ({
   projectInstruction,
   memoryBlock,
   projectId,
+  answerFromDocumentsOnly: answerFromDocumentsOnlyOverride,
   knowledgeScope = DEFAULT_KNOWLEDGE_SCOPE,
   threadDocuments,
   mcpTools,
@@ -160,9 +168,10 @@ export const initializeRagChain = async ({
       // Only an assistant carries the setting, and only a turn that searches
       // its documents can be told to stay inside them: a MODEL_ONLY turn has
       // no context, so the strict rule would refuse every question.
-      projectId && scopeRetrieves(knowledgeScope)
-        ? getAnswerFromDocumentsOnlyQuery(projectId, orgId)
-        : false,
+      answerFromDocumentsOnlyOverride ??
+        (projectId && scopeRetrieves(knowledgeScope)
+          ? getAnswerFromDocumentsOnlyQuery(projectId, orgId)
+          : false),
     ]);
     // Built only when the key is on: the chain runs selection exactly when it
     // is handed a selector.

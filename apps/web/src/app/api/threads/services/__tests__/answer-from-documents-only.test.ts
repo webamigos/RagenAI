@@ -113,6 +113,18 @@ describe('initializeRagChain — answer from documents only', () => {
     },
   );
 
+  it('uses a forced rule as given, reading no setting — the embedded widget', async () => {
+    await initializeRagChain({
+      settings,
+      orgId: 'org-1',
+      scope: 'none',
+      answerFromDocumentsOnly: true,
+    });
+
+    expect(mockGetAnswerFromDocumentsOnly).not.toHaveBeenCalled();
+    expect(configOf().answerFromDocumentsOnly).toBe(true);
+  });
+
   it("keeps today's rule with no assistant, and reads nothing", async () => {
     await initializeRagChain({ settings, orgId: 'org-1', userId: 'user-1' });
 
