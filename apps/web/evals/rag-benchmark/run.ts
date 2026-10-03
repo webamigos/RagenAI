@@ -665,9 +665,7 @@ async function main(): Promise<void> {
 
           const answerMs = Date.now() - answerStarted;
 
-          // `citedFiles` is undefined on the control arm, which skips the
-          // no-citation gate there rather than passing it.
-          const assertions = runAssertions(q, answer, { citedFiles });
+          const assertions = runAssertions(q, answer);
           let rubricPassed: boolean | null = null;
           let rubricReason: string | undefined;
           let rubricLabel: string | undefined;

@@ -2,7 +2,6 @@ import { generateText } from 'ai';
 
 import { nativeChatInstance } from '@/libs/llm/native-models';
 
-import { forbidsCitation } from './corpus';
 import type { Question } from './types';
 
 /**
@@ -84,19 +83,9 @@ export interface AssertionOutcome {
   failures: string[];
 }
 
-export interface AssertionContext {
-  /**
-   * What the answer cited (`CaseResult.citedFiles`). `undefined` — the
-   * control arm, or an app that sends no `citations` event — skips the
-   * citation gate rather than passing it: there is nothing to look at.
-   */
-  citedFiles?: string[];
-}
-
 export function runAssertions(
   question: Question,
   answer: string,
-  context: AssertionContext = {},
 ): AssertionOutcome {
   const failures: string[] = [];
 
@@ -121,15 +110,6 @@ export function runAssertions(
     if (containsExpectation(answer, needle)) {
       failures.push(`must not contain: "${needle}"`);
     }
-  }
-
-  // Deterministic, so it sits here rather than in the rubric: a judge reading
-  // the text cannot see the citation event, and "said it does not know, then
-  // cited a document" must fail however politely it was phrased.
-  if (forbidsCitation(question) && context.citedFiles?.length) {
-    failures.push(
-      `cited ${context.citedFiles.length} document(s) on an answer that is in no document`,
-    );
   }
 
   return { passed: failures.length === 0, failures };

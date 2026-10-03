@@ -555,7 +555,7 @@ describe('guardOutcomes', () => {
     expect(guardOutcomes([guard({}), guard({ arm: 'no-rag' })])).toEqual([]);
   });
 
-  it('counts the answers that carried a citation they must not carry', () => {
+  it('counts the guard answers that cited a document', () => {
     const rows = guardOutcomes([
       guard({ citedFiles: ['file-1'], passed: false }),
       guard({ citedFiles: [] }),
@@ -568,7 +568,7 @@ describe('guardOutcomes', () => {
     ]);
     expect(rows).toEqual([
       {
-        key: 'carried a citation it must not carry',
+        key: 'cited a document (reported, not graded)',
         byArm: { rag: 1, 'no-rag': 0 },
       },
     ]);
@@ -614,7 +614,7 @@ describe('guardOutcomes', () => {
     });
     expect(md).toContain('## Guard outcomes');
     expect(md).toContain('| refused-then-answered | 1 | 0 |');
-    expect(md).toContain('| carried a citation it must not carry | 1 | 0 |');
+    expect(md).toContain('| cited a document (reported, not graded) | 1 | 0 |');
     expect(md).toContain('label: refused-then-answered');
   });
 });

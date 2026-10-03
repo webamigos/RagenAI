@@ -217,8 +217,9 @@ export function serverPostRetrieval(results: readonly CaseResult[]): string {
 export const NO_LABEL = '(no label)';
 
 /**
- * The guard cases, split by the judge's outcome label and by whether the
- * answer carried a citation it must not carry.
+ * The guard cases, split by the judge's outcome label, and how many cited a
+ * document — reported, not graded: the rubric decides whether a citation sat
+ * on the statement of absence or on a fact the documents do hold.
  *
  * A pass rate cannot tell "said the documents do not cover it" from "said
  * so, then answered anyway" — both fail the rubric, and only the second is a
@@ -252,7 +253,7 @@ export function guardOutcomes(
 
   if (mustNotCite.some((r) => r.citedFiles !== undefined)) {
     rows.push({
-      key: 'carried a citation it must not carry',
+      key: 'cited a document (reported, not graded)',
       byArm: countByArm(
         mustNotCite.filter((r) => (r.citedFiles?.length ?? 0) > 0),
       ),

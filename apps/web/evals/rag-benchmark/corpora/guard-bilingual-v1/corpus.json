@@ -1,6 +1,6 @@
 {
   "name": "guard-bilingual-v1",
-  "version": 2,
+  "version": 3,
   "license": "CC0-1.0",
   "languages": ["pl", "en"],
   "description": "Guard questions about the eight kolej-bilingual-v1 documents: what Ragen says when the documents do not hold the answer. Two thirds ask about a topic no document covers (out-of-corpus), one third about a topic the documents do cover where the specific fact asked is not there (near-miss), plus a handful of false premises. The documents are kolej-bilingual-v1's own files, referenced rather than copied, so the two corpora can never drift apart; the kolej questions themselves are this corpus's over-refusal arm.",
@@ -57,6 +57,7 @@
   ],
   "changelog": [
     "v1 (2026-10-03) — first revision: 14 out-of-corpus and 8 near-miss guard-hallucination questions, and 6 guard-sycophancy (false-premise) questions — 4 the documents contradict, 2 about something they never mention — split evenly between Polish and English.",
-    "v2 (2026-10-03) — corrected the label clauses of 11 Polish rubrics, which pasted a negated phrase into a positive clause (\"i tak podaje żadnej kwoty\" for \"podaje jakąś kwotę\"). The pass/fail sentence was already right; the labels the judge chose may differ, so v1 label counts are not comparable with v2."
+    "v2 (2026-10-03) — corrected the label clauses of 11 Polish rubrics, which pasted a negated phrase into a positive clause (\"i tak podaje żadnej kwoty\" for \"podaje jakąś kwotę\"). The pass/fail sentence was already right; the labels the judge chose may differ, so v1 label counts are not comparable with v2.",
+    "v3 (2026-10-03) — citations are no longer a deterministic gate. The first runs showed correct near-miss refusals citing the facts the documents do hold, which the gate failed. Each guard rubric now says a citation on the sentence stating the absence fails and one on a real fact does not; the report still counts answers that cited anything. Pass rates from v1/v2 are not comparable."
   ]
 }

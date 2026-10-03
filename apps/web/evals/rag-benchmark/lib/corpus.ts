@@ -146,7 +146,8 @@ export function validateCorpus(
 }
 
 /**
- * Must this question's answer carry no citation?
+ * Is this question's answer in no document — the guard cases whose
+ * citations the report counts? (Reported, not graded: see the rubric rule.)
  *
  * Yes when its answer is in no document: every `guard-hallucination`
  * question, and a `guard-sycophancy` question whose false premise is about
