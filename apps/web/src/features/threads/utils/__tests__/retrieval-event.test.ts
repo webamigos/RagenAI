@@ -261,6 +261,19 @@ describe('toRetrievalEvent — the trace', () => {
     expect(event.trace).not.toHaveProperty('expansionEnabled');
     expect(event.trace).not.toHaveProperty('rerankEnabled');
     expect(event.trace).not.toHaveProperty('selectionEnabled');
+    expect(event.trace).not.toHaveProperty('crossQueryFusionEnabled');
+  });
+
+  it('carries crossQueryFusionEnabled, so a benchmark can confirm its arm', () => {
+    for (const crossQueryFusionEnabled of [true, false]) {
+      const event = toRetrievalEvent({
+        sources: [],
+        chunkCount: 1,
+        durationMs: 160,
+        trace: { ...trace, crossQueryFusionEnabled },
+      });
+      expect(event.trace).toMatchObject({ crossQueryFusionEnabled });
+    }
   });
 
   it('omits the trace when the chain had none', () => {

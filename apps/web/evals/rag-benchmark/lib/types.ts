@@ -112,6 +112,8 @@ export interface CaseResult {
     postRetrieval: string;
     /** `neighbours` when the server widened chunks (`contextExpansion`). */
     expansion?: string;
+    /** `crossQueryFusion` was on for this turn (spec 2026-10-03, B0). */
+    crossQueryFusionEnabled?: boolean;
     queryCount: number;
     chunkCount: number;
     timings: {
