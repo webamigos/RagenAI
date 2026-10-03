@@ -13,14 +13,14 @@ import {
  */
 
 /** The retrieval stages behind feature keys, checked against their defaults. */
-export const PROFILE_FEATURE_KEYS: readonly FeatureKey[] = (
-  [
-    'contextualChunks',
-    'contextExpansion',
-    'sectionSelection',
-    'crossQueryFusion',
-  ] as const
-).filter((key): key is FeatureKey => key in DEFAULT_FEATURES);
+// `crossQueryFusion` only where the key exists, so the check holds on a
+// checkout that predates it.
+export const PROFILE_FEATURE_KEYS: readonly FeatureKey[] = [
+  'contextualChunks',
+  'contextExpansion',
+  'sectionSelection',
+  'crossQueryFusion',
+].filter((key): key is FeatureKey => key in DEFAULT_FEATURES);
 
 export interface ProfileInputs {
   /** The runner's environment, which `.env.local` also feeds the app from. */
