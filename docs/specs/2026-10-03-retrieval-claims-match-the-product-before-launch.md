@@ -30,10 +30,12 @@ changes, because the phases deploy independently (see "Why one spec" and
 
 - **Q1 (Phase A).** The per-org `docSummariesEnabled` setting does nothing.
   Should the worker read it (**recommended**), or should it be deleted?
-- **Q2 (Phase B).** If Cohere Rerank v3.5 beats "off" on both corpora, does
-  `FEATURE_FLAG_RERANKING=1` with Cohere become the default for the demo and
-  for `create-ragen-app` (**recommended**)? Or do we only stop claiming
-  reranking?
+- **Q2 (Phase B).** If B1 shows the table gain comes from the **wider pool**,
+  does the default install retrieve the wider pool with no reranker
+  (**recommended**: no extra call, no provider)? If it comes from the
+  **reranker's order**, does Scaleway become the default for the demo and for
+  `create-ragen-app`? Cohere is measured only if someone provides an endpoint
+  (`RERANK_COHERE_BASE_URL`); none exists on the measuring machine today.
 - **Q3 (Phase C).** Who gets "answer only from the documents"?
   - **(a)** A per-assistant setting. It defaults to strict for a project with
     the chatbot enabled, and stays as today everywhere else.
@@ -78,12 +80,26 @@ switches, and apps/admin edits the same columns.
   `scaleway-reranker.ts:25` says in its own words that it is "a bi-encoder
   … not a true cross-encoder".
 
-### 2. Reranking has never been shown to help
+### 2. Reranking helps on one corpus, and we do not know why
 
 The 2026-09-04 comparison was a three-way tie between off, Scaleway and
-Cohere. `kolej-bilingual-v1` exists partly because that comparison could not
-discriminate. Reranking has not been measured on it since. So we cannot say
-whether reranking helps, and we should not say that it does.
+Cohere. The selection spec's A3 measured again on 2026-10-01, three runs per
+arm on both corpora
+(`apps/web/evals/rag-benchmark/results/2026-10-01-a3-reranker-baseline.md`):
+
+| corpus | off, median | Scaleway, median | evidence recall, off vs Scaleway |
+|---|---|---|---|
+| `kolej` | 17/24 | 18/24 | identical in every pairing |
+| `tabele` | 7/18 | 10/17 | 8 vs 14 of 18 |
+
+On prose it changes nothing measurable. On tables it helps by more than
+noise — but the "reranker" arm changes two things at once: with reranking on,
+the chain retrieves three times as many candidates and cuts them back. The
+`tabele` gain belongs to the wider pool *and* the reranker's order, and the
+run cannot split them. Cohere was not run (no endpoint on that machine), and
+both arms predate contextual chunks and context expansion becoming the
+default. So "reranking improves answers" is not a claim we can make, and the
+cheaper fix — a wider pool with no reranker call — may be the real one.
 
 ### 3. The model is told it may answer from its own knowledge
 
@@ -200,20 +216,25 @@ moves into its own spec and this one links to it.
 
 ### Phase B — reranking gets a number, then a decision
 
-- Run `kolej-bilingual-v1` and `tabele-bilingual-v1` on the default install,
-  three runs each, reporting the median. There are three arms: reranking off,
-  Scaleway, and Cohere v3.5 (`RERANK_PROVIDER=cohere`).
-- **If Cohere beats off on both corpora by more than the run-to-run spread
-  (Q2):**
-  - set it on the demo;
-  - make it the `create-ragen-app` default whenever a Cohere or Bedrock
-    credential is offered;
-  - update ADR-12 with the numbers.
-- **If Scaleway does not beat off:** it stops being the default provider.
-  It stays selectable and documented as a similarity re-sort, not a
-  reranker.
-- **If neither beats off:** reranking stays opt-in, and launch copy does not
-  mention it.
+- **B0. A knob that widens the pool without reranking.** The candidate pool
+  is `maxDocuments × RERANK_RETRIEVAL_MULTIPLIER` only when reranking runs.
+  Add a server setting (env, default unchanged) that retrieves the same wider
+  pool and cuts it by fused rank, so the two effects can be told apart.
+- **B1.** Run `kolej-bilingual-v1` and `tabele-bilingual-v1` on today's
+  default install (contextual chunks and context expansion on), three runs
+  each, reporting the median, in three arms: off, **off with the wide pool**,
+  and Scaleway. Cohere v3.5 is a fourth arm only if an endpoint is provided.
+- **Decision (Q2):**
+  - **The wide pool alone recovers the table gain:** it becomes the default
+    (one setting, no extra call), reranking stays opt-in, and launch copy
+    does not claim reranking.
+  - **Only Scaleway's order recovers it:** Scaleway becomes the demo default
+    and the `create-ragen-app` default whenever its credentials are offered;
+    ADR-12 is updated with the numbers.
+  - **Neither beats off beyond the spread:** nothing changes, and launch copy
+    does not mention reranking.
+  - In every outcome the Scaleway provider is documented as a similarity
+    re-sort, not a cross-encoder (A3 already fixes the settings text).
 
 ### Phase C — an assistant can be told to answer only from its documents
 
@@ -382,8 +403,11 @@ work, and D packages the result.
 
 ### Phase B — reranking gets a number, then a decision
 
-- [ ] **B1.** Three arms × two corpora × three runs. Results are committed,
-  and ADR-12 gets an update with the medians.
+- [ ] **B0.** The wide-pool setting, default unchanged, with a unit test that
+  it widens the pool and cuts by fused rank without calling a reranker.
+- [ ] **B1.** Three arms (off, off + wide pool, Scaleway; Cohere if an
+  endpoint exists) × two corpora × three runs, on today's default install.
+  Results are committed, and ADR-12 gets an update with the medians.
 - [ ] **B2.** The decision from Q2 is applied: the demo env, the
   `create-ragen-app` default, and the Scaleway label, each only as the
   numbers allow. The reranking row of `docs/rag-pipeline.md` records what
