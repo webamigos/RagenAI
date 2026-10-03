@@ -1,4 +1,9 @@
-import { getEnv, mcpEnvSchema, resetEnvCache } from '../env.js';
+import {
+  DEV_SERVER_VERSION,
+  getEnv,
+  mcpEnvSchema,
+  resetEnvCache,
+} from '../env.js';
 
 const ORIGINAL_ENV = process.env;
 
@@ -134,5 +139,35 @@ describe('getEnv', () => {
         OTEL_EXPORTER_OTLP_ENDPOINT: 'localhost:4318',
       }),
     ).toThrow(/OTEL_EXPORTER_OTLP_ENDPOINT/);
+  });
+});
+
+describe('SERVER_VERSION', () => {
+  const parse = (env: Record<string, string>) =>
+    mcpEnvSchema.parse({ TARGET_ENV: 'local', ...env }).SERVER_VERSION;
+
+  it('is the release tag the image was built with', () => {
+    expect(
+      parse({ RAGEN_VERSION: '2.32.8', RAILWAY_GIT_COMMIT_SHA: 'abc123' }),
+    ).toBe('2.32.8');
+  });
+
+  it('falls back to the Railway commit sha when no release was named', () => {
+    expect(parse({ RAILWAY_GIT_COMMIT_SHA: 'abc123' })).toBe('abc123');
+  });
+
+  it('is dev when the build named neither', () => {
+    expect(parse({})).toBe(DEV_SERVER_VERSION);
+  });
+
+  // `ARG RAGEN_VERSION` with no value passed still sets
+  // `ENV RAGEN_VERSION=` in the image — every compose and Railway build.
+  it('reads an empty RAGEN_VERSION as unset, not as the version', () => {
+    expect(parse({ RAGEN_VERSION: '', RAILWAY_GIT_COMMIT_SHA: 'abc123' })).toBe(
+      'abc123',
+    );
+    expect(parse({ RAGEN_VERSION: '  ', RAILWAY_GIT_COMMIT_SHA: '' })).toBe(
+      DEV_SERVER_VERSION,
+    );
   });
 });
