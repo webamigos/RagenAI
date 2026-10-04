@@ -69,6 +69,33 @@ describe('parseArgs', () => {
       /no arms given/,
     );
   });
+
+  it('takes --profile default, names the run "default", and refuses any other profile', () => {
+    expect(parseArgs(['--profile', 'default'], DEFAULT_DIR)).toMatchObject({
+      profile: 'default',
+      shape: 'default',
+    });
+    expect(() => parseArgs(['--profile', 'fast'], DEFAULT_DIR)).toThrow(
+      /the only profile is "default"/,
+    );
+    expect(() => parseArgs(['--profile'], DEFAULT_DIR)).toThrow(/--profile/);
+  });
+
+  it('runs both arms under --profile default, refusing --arms', () => {
+    expect(parseArgs(['--profile', 'default'], DEFAULT_DIR).arms).toEqual([
+      'rag',
+      'no-rag',
+    ]);
+    expect(() =>
+      parseArgs(['--profile', 'default', '--arms', 'no-rag'], DEFAULT_DIR),
+    ).toThrow(/runs both arms/);
+  });
+
+  it('does not combine --profile default with --shape', () => {
+    expect(() =>
+      parseArgs(['--profile', 'default', '--shape', 'x'], DEFAULT_DIR),
+    ).toThrow(/do not combine/);
+  });
 });
 
 /** Just enough of the client for `waitForIngest`, with a scripted poll queue. */

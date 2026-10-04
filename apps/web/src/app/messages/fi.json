@@ -1852,6 +1852,14 @@
       "powered-by": "Palvelun tarjoaa {name}",
       "connectors": "Liittimet",
       "connectors-description": "Ei yhdistettyjä integraatioita",
+      "answer-from-documents-only": {
+        "title": "Vastaa vain asiakirjojen perusteella",
+        "description": "Kun tämä on päällä, kysymykseen, jota asiakirjat eivät kata, vastataan kertomalla se sen sijaan, että vastattaisiin mallin yleistiedon pohjalta.",
+        "default-chatbot": "Oletus tälle avustajalle: päällä, koska sen julkinen chatbot on käytössä.",
+        "default-panel": "Oletus tälle avustajalle: pois.",
+        "set-for-assistant": "Asetettu tälle avustajalle.",
+        "save-failed": "Asetusta ei voitu tallentaa. Yritä uudelleen."
+      },
       "connectors-saving": "Tallennetaan...",
       "loading": "Ladataan integraatioita..."
     },

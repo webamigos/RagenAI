@@ -1852,6 +1852,14 @@
       "powered-by": "Offerto da {name}",
       "connectors": "Connettori",
       "connectors-description": "Nessuna integrazione collegata",
+      "answer-from-documents-only": {
+        "title": "Rispondi solo dai documenti",
+        "description": "Se attivo, a una domanda non coperta dai documenti si risponde dicendolo, invece di usare le conoscenze generali del modello.",
+        "default-chatbot": "Predefinito per questo assistente: attivo, perché il suo chatbot pubblico è abilitato.",
+        "default-panel": "Predefinito per questo assistente: disattivato.",
+        "set-for-assistant": "Impostato per questo assistente.",
+        "save-failed": "Impossibile salvare l'impostazione. Riprova."
+      },
       "connectors-saving": "Salvataggio in corso...",
       "loading": "Caricamento delle integrazioni in corso..."
     },

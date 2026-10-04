@@ -461,9 +461,17 @@ work, and D packages the result.
 
 ### Phase D — a number we can quote
 
-- [ ] **D1.** `--profile default` with its flag check, and the
+- [x] **D1.** `--profile default` with its flag check, and the
   `results/published/` layout.
-- [ ] **D2.** The regression-checklist P0 item and the methodology section.
+
+  *Done 2026-10-03:* refuses on the runner's env, the organization's
+  columns and resolved feature keys, then checks every case's retrieval
+  trace and stops on the first turn off the default.
+- [x] **D2.** The regression-checklist P0 item and the methodology section.
+
+  *Done 2026-10-03:* "Retrieval quality (once per release)" in
+  `docs/regression-checklist.md`; "The published number" and "Method, for
+  anyone quoting it" in the benchmark README.
 - [ ] **D3.** The first published run on the release that ships A–C.
 
 ### Phase E — docs describe `main`

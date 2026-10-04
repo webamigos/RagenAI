@@ -12,6 +12,7 @@ import { ApiLimitsService } from '../api-limits/api-limits.service.js';
 import { OrganizationSettingsService } from '../organizations/organization-settings.service.js';
 import { LoadMcpToolsService } from '../mcp/load-mcp-tools.service.js';
 import { InitializeBasicRagService } from '../chains/basic-rag/initialize-basic-rag.service.js';
+import { resolveAnswerFromDocumentsOnly } from '@ragenai/platform-contracts';
 import { PersistApiThreadService } from '../threads/persist-api-thread.service.js';
 import { AiUsageService } from '../ai-usage/ai-usage.service.js';
 import { TeamRateLimitService } from '../team-limits/team-rate-limit.service.js';
@@ -97,7 +98,12 @@ export class ChatCompletionsService {
     const project = resolvedProjectId
       ? await this.prisma.client.project.findFirst({
           where: { id: resolvedProjectId, organizationId: context.orgId },
-          select: { settings: { select: { instructions: true } } },
+          select: {
+            chatbotEnabled: true,
+            settings: {
+              select: { instructions: true, answerFromDocumentsOnly: true },
+            },
+          },
         })
       : null;
 
@@ -196,6 +202,14 @@ export class ChatCompletionsService {
           project?.settings?.instructions ?? null,
           systemPrompts,
         ),
+        // Read from the project resolved above, which is org-scoped; a
+        // knowledge-base turn has no assistant and keeps today's rule.
+        answerFromDocumentsOnly: project
+          ? resolveAnswerFromDocumentsOnly({
+              setting: project.settings?.answerFromDocumentsOnly,
+              chatbotEnabled: project.chatbotEnabled,
+            })
+          : false,
         maxTokens: dto.max_tokens ?? dto.max_completion_tokens,
         reasoningEffort,
         mcpTools,

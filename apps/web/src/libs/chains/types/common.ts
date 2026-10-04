@@ -53,6 +53,14 @@ export interface ChainConfig {
   answerInstructions?: string | null;
   projectInstruction?: string;
   /**
+   * Answer only from the documents: the answer prompt's grounding rule is
+   * `GROUNDING_RULES.strict` instead of the one that lets the model answer
+   * from its own knowledge. Resolved by the caller from
+   * `ProjectSettings.answerFromDocumentsOnly` and `Project.chatbotEnabled`
+   * (`resolveAnswerFromDocumentsOnly`). Absent is today's rule.
+   */
+  answerFromDocumentsOnly?: boolean;
+  /**
    * What the user's personal memory says about them, rendered by
    * `features/memory/utils/render-memory-block.ts` (spec
    * 2026-09-27-personal-memory-across-threads, D1). Appended to the system

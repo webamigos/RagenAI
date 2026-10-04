@@ -1852,6 +1852,14 @@
       "powered-by": "Mogelijk gemaakt door {name}",
       "connectors": "Connectors",
       "connectors-description": "Geen gekoppelde integraties",
+      "answer-from-documents-only": {
+        "title": "Alleen antwoorden uit documenten",
+        "description": "Als dit aan staat, krijgt een vraag die de documenten niet behandelen een antwoord dat dat zegt, in plaats van een antwoord uit de algemene kennis van het model.",
+        "default-chatbot": "Standaard voor deze assistent: aan, omdat de openbare chatbot is ingeschakeld.",
+        "default-panel": "Standaard voor deze assistent: uit.",
+        "set-for-assistant": "Ingesteld voor deze assistent.",
+        "save-failed": "De instelling kon niet worden opgeslagen. Probeer het opnieuw."
+      },
       "connectors-saving": "Opslaan...",
       "loading": "Integraties laden..."
     },

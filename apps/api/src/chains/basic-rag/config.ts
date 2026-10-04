@@ -3,6 +3,28 @@ export const CHAIN_FINAL_ANSWER_RUN_NAME = 'final_answer';
 export const DEFAULT_ANSWER_INSTRUCTIONS =
   'You are an expert at interpreting and answering questions based on provided sources.';
 
+/**
+ * The answer prompt's rule for a question the context does not answer, filled
+ * into `{grounding_rule}` by `buildRagMessages`.
+ *
+ * `default` lets the model answer from its own knowledge and say so, which is
+ * reasonable for a member asking in the panel. `strict` is for an assistant
+ * set to answer only from its documents — by default, one with the public
+ * chatbot enabled, where a general-knowledge answer reads as the company's
+ * answer (spec 2026-10-03-retrieval-claims-match-the-product-before-launch,
+ * Phase C2; `resolveAnswerFromDocumentsOnly` decides which applies).
+ *
+ * apps/web and apps/api each hold a copy of this prompt;
+ * `tests/architecture/answer-prompt-rules-agree.test.ts` fails when the two
+ * rule lists differ in either variant.
+ */
+export const GROUNDING_RULES = {
+  default:
+    'If the answer is not directly in the provided context but you believe you know the answer, explain this to the user. Clearly indicate that the answer is based on your own knowledge, not the provided context.',
+  strict:
+    'If neither the context nor a document or image attached to the message contains the answer, say that the documents do not cover it, and do not answer from general knowledge.',
+} as const;
+
 export const systemTemplates = {
   rephraseQuestion: `Based on the chat history and the user's question, rephrase the question so that it is a standalone question. CRITICAL: Write the standalone question in EXACTLY the same natural language as the user's last message — if the user wrote in Polish, output Polish; if in English, output English. Never translate. Only produce the standalone question without any additional commentary.`,
   expandQueries: `You are a query expansion assistant for a retrieval system. Given a standalone question, produce alternative phrasings that capture the same information need from different angles. Use different vocabulary, synonyms, related terms, or a different level of abstraction. Each alternative must be a complete, standalone question — not a fragment. CRITICAL: All alternatives MUST be written in EXACTLY the same natural language as the input question. Never translate to English or any other language. Do not include the original question in your output.`,
@@ -30,7 +52,7 @@ export const systemTemplates = {
       - If you do not know the answer, clearly say so.
       - If the question is ambiguous or has multiple possible interpretations, ask the user for clarification.
       - If the context is low quality or lacks sufficient detail, inform the user.
-      - If the answer is not directly in the provided context but you believe you know the answer, explain this to the user. Clearly indicate that the answer is based on your own knowledge, not the provided context.
+      - {grounding_rule}
       - Each chunk in the project_knowledge section is wrapped in a <chunk> element with attributes describing its source:
         * \`file\` — the name of the source document
         * \`section\` — the heading path within the document (when available, e.g. "Chapter 3 > 3.2 Revenue terms" for structured documents like DOCX or PDF)

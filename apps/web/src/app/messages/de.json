@@ -1852,6 +1852,14 @@
       "powered-by": "Bereitgestellt von {name}",
       "connectors": "Connectors",
       "connectors-description": "Keine verbundenen Integrationen",
+      "answer-from-documents-only": {
+        "title": "Nur aus Dokumenten antworten",
+        "description": "Wenn aktiviert, wird bei einer Frage, die die Dokumente nicht abdecken, genau das gesagt, statt mit dem Allgemeinwissen des Modells zu antworten.",
+        "default-chatbot": "Standard für diesen Assistenten: an, weil sein öffentlicher Chatbot aktiviert ist.",
+        "default-panel": "Standard für diesen Assistenten: aus.",
+        "set-for-assistant": "Für diesen Assistenten festgelegt.",
+        "save-failed": "Die Einstellung konnte nicht gespeichert werden. Versuche es erneut."
+      },
       "connectors-saving": "Wird gespeichert...",
       "loading": "Integrationen werden geladen..."
     },

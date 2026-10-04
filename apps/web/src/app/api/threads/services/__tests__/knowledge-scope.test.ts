@@ -56,6 +56,12 @@ vi.mock(
     getImportedKbFileIdsQuery: vi.fn().mockResolvedValue([]),
   }),
 );
+// A project-scoped turn reads the assistant's grounding setting; no database
+// behind it here (answer-from-documents-only.test.ts covers the wiring).
+vi.mock(
+  '@/features/projects/services/queries/get-answer-from-documents-only-query',
+  () => ({ getAnswerFromDocumentsOnlyQuery: vi.fn().mockResolvedValue(false) }),
+);
 vi.mock('@/app/lib/utils/logger', () => ({
   logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() },
 }));

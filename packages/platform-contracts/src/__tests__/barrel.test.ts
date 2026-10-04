@@ -58,6 +58,7 @@ describe('the public entry point', () => {
     ['orgVisibilityScope', 'function'],
     ['hasOrgRole', 'function'],
     ['isOrgRole', 'function'],
+    ['resolveAnswerFromDocumentsOnly', 'function'],
     ['isAppAdmin', 'function'],
     ['NOTIFICATION_TYPES', 'object'],
     ['isNotificationType', 'function'],

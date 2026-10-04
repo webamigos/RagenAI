@@ -14,6 +14,7 @@ import { ApiExcludeController } from '@nestjs/swagger';
 import { ProjectsService } from './projects.service.js';
 import { CreateProjectDto } from './dto/create-project.dto.js';
 import { RenameProjectDto } from './dto/rename-project.dto.js';
+import { SaveAnswerFromDocumentsOnlyDto } from './dto/save-answer-from-documents-only.dto.js';
 import { SaveProjectInstructionDto } from './dto/save-project-instruction.dto.js';
 import { SaveProjectMcpProvidersDto } from './dto/save-project-mcp-providers.dto.js';
 import { ShareProjectDto } from './dto/share-project.dto.js';
@@ -199,6 +200,33 @@ export class ProjectsController {
     await this.projects.saveProjectInstruction(
       id,
       dto.instruction,
+      context.orgId,
+      context.userId,
+    );
+    return { success: true };
+  }
+
+  @Get(':id/answer-from-documents-only')
+  getAnswerFromDocumentsOnly(
+    @Param('id') id: string,
+    @GetSessionAuthContext() context: SessionAuthContext,
+  ) {
+    return this.projects.getAnswerFromDocumentsOnly(
+      id,
+      context.orgId,
+      context.userId,
+    );
+  }
+
+  @Put(':id/answer-from-documents-only')
+  async saveAnswerFromDocumentsOnly(
+    @Param('id') id: string,
+    @Body() dto: SaveAnswerFromDocumentsOnlyDto,
+    @GetSessionAuthContext() context: SessionAuthContext,
+  ) {
+    await this.projects.saveAnswerFromDocumentsOnly(
+      id,
+      dto.answerFromDocumentsOnly,
       context.orgId,
       context.userId,
     );

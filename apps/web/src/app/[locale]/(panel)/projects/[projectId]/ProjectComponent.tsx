@@ -62,6 +62,7 @@ import {
 } from '@/app/actions/google-drive';
 import { isFirefliesConnected } from '@/app/actions/fireflies';
 import { ProjectMcpProviders } from '@/app/components/Projects/ProjectMcpProviders/ProjectMcpProviders';
+import { AnswerFromDocumentsOnly } from '@/app/components/Projects/AnswerFromDocumentsOnly/AnswerFromDocumentsOnly';
 import { importFilesToProject } from '@/app/actions';
 
 import type { FileType } from '@/generated/prisma/browser';
@@ -1015,6 +1016,9 @@ export function ProjectComponent({ projectId }: Props) {
               <p className="text-xs text-muted-foreground">{t('no-files')}</p>
             )}
           </div>
+
+          {/* How the assistant answers a question its documents do not cover */}
+          {project && <AnswerFromDocumentsOnly projectId={project.id} />}
 
           {/* MCP connectors section */}
           {project && <ProjectMcpProviders projectId={project.id} />}

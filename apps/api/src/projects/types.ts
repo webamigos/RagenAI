@@ -57,3 +57,17 @@ export type ShareProjectInput = {
 };
 
 export type AccessLevel = 'view' | 'manage' | 'owner';
+
+/**
+ * The assistant settings page's "answer only from documents" row: what is
+ * stored, the surface it defaults from, and what a turn actually uses.
+ */
+export type AnswerFromDocumentsOnlyState = {
+  /** `ProjectSettings.answerFromDocumentsOnly`; `null` until someone sets it. */
+  setting: boolean | null;
+  chatbotEnabled: boolean;
+  /** `resolveAnswerFromDocumentsOnly(setting, chatbotEnabled)`. */
+  effective: boolean;
+  /** Whether this caller may change it (`manage` access). */
+  canManage: boolean;
+};

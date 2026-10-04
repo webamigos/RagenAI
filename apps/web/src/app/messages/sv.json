@@ -1852,6 +1852,14 @@
       "powered-by": "Drivs av {name}",
       "connectors": "Kopplingar",
       "connectors-description": "Inga anslutna integrationer",
+      "answer-from-documents-only": {
+        "title": "Svara bara utifrån dokumenten",
+        "description": "När det är på får en fråga som dokumenten inte täcker ett svar som säger det, i stället för ett svar från modellens allmänna kunskap.",
+        "default-chatbot": "Standard för den här assistenten: på, eftersom dess offentliga chattbot är aktiverad.",
+        "default-panel": "Standard för den här assistenten: av.",
+        "set-for-assistant": "Inställt för den här assistenten.",
+        "save-failed": "Det gick inte att spara inställningen. Försök igen."
+      },
       "connectors-saving": "Sparar...",
       "loading": "Laddar integrationer..."
     },

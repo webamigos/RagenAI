@@ -39,6 +39,10 @@ export interface ServerRetrievalTrace {
   expansion?: string;
   /** `crossQueryFusion` was on for this turn (spec 2026-10-03, B0). */
   crossQueryFusionEnabled?: boolean;
+  /** Whether each stage was switched on for the turn (#1501). */
+  expansionEnabled?: boolean;
+  rerankEnabled?: boolean;
+  selectionEnabled?: boolean;
   queryCount: number;
   timings: {
     searchMs: number;
@@ -72,6 +76,15 @@ function readTrace(value: unknown): ServerRetrievalTrace | undefined {
     ...(typeof t.expansion === 'string' ? { expansion: t.expansion } : {}),
     ...(typeof t.crossQueryFusionEnabled === 'boolean'
       ? { crossQueryFusionEnabled: t.crossQueryFusionEnabled }
+      : {}),
+    ...(typeof t.expansionEnabled === 'boolean'
+      ? { expansionEnabled: t.expansionEnabled }
+      : {}),
+    ...(typeof t.rerankEnabled === 'boolean'
+      ? { rerankEnabled: t.rerankEnabled }
+      : {}),
+    ...(typeof t.selectionEnabled === 'boolean'
+      ? { selectionEnabled: t.selectionEnabled }
       : {}),
     queryCount: t.queryCount,
     timings: t.timings,
