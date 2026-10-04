@@ -2054,7 +2054,11 @@
       "saving": "Lagrer...",
       "cancel": "Avbryt",
       "edit-success": "Organisasjonsprofilen er oppdatert",
-      "edit-error": "Det oppstod en feil under oppdatering av profilen"
+      "edit-error": "Det oppstod en feil under oppdatering av profilen",
+      "validation": {
+        "name-required": "Navn er påkrevd",
+        "name-too-long": "Navnet kan ha maksimalt {max} tegn"
+      }
     },
     "members": {
       "title": "Brukere",
@@ -2100,7 +2104,12 @@
       "copy-credentials": "Kopier påloggingsinformasjon",
       "copied": "Kopiert",
       "done": "Ferdig",
-      "confirm-remove-title": "Fjerne dette medlemmet?"
+      "confirm-remove-title": "Fjerne dette medlemmet?",
+      "validation": {
+        "invalid-email": "Skriv inn en gyldig e-postadresse",
+        "role-required": "Rolle er påkrevd",
+        "full-name-required": "For- og etternavn er påkrevd"
+      }
     },
     "invitations": {
       "title": "Invitasjoner",
@@ -2193,7 +2202,11 @@
       "saving": "Lagrer...",
       "cancel": "Avbryt",
       "success": "Profilen er oppdatert",
-      "error": "Kunne ikke oppdatere profilen"
+      "error": "Kunne ikke oppdatere profilen",
+      "validation": {
+        "name-required": "Navn er påkrevd",
+        "name-too-long": "Navnet kan ha maksimalt {max} tegn"
+      }
     },
     "password": {
       "current": "Nåværende passord",
@@ -2203,7 +2216,12 @@
       "demo-account-locked": "Dette er den delte demokontoen, så passordet kan ikke endres.",
       "changing": "Endrer passord...",
       "success": "Passordet er endret",
-      "error": "Ugyldig nåværende passord"
+      "error": "Ugyldig nåværende passord",
+      "validation": {
+        "min-length": "Minst {min} tegn",
+        "passwords-mismatch": "Passordene samsvarer ikke",
+        "must-differ": "Det nye passordet må være annerledes enn det nåværende"
+      }
     },
     "sessions": {
       "title": "Aktive økter",
@@ -3088,5 +3106,104 @@
     "description": "Denne siden kunne ikke vises. Prøv igjen, eller start en ny chat – ingenting du har lagret, går tapt.",
     "retry": "Prøv igjen",
     "new-chat": "Ny chat"
+  },
+  "emails": {
+    "invitation": {
+      "subject": "Invitasjon til {organization} på Ragen AI",
+      "preview": "Du er invitert til {organization} på Ragen AI",
+      "greeting": "Hei!",
+      "invited-by": "<strong>{inviter}</strong> inviterer deg til å bli med i organisasjonen <strong>{organization}</strong> på Ragen AI.",
+      "invited": "Du er invitert til organisasjonen <strong>{organization}</strong> på Ragen AI.",
+      "role": "Du blir lagt til med rollen: <strong>{role}</strong>",
+      "accept": "Godta invitasjonen",
+      "expires": "Denne invitasjonen utløper <strong>{date}</strong>.",
+      "join": "Bli med i organisasjonen",
+      "magic-note": "Når du klikker på knappen, blir du logget inn automatisk, uten passord du må huske. Lenken utløper etter 7 dager.",
+      "ignore": "Hvis du ikke vil bli med i denne organisasjonen, kan du se bort fra denne meldingen.",
+      "sent-to": "Invitasjonen er sendt til: {email}",
+      "role-admin": "Administrator",
+      "role-member": "Bruker"
+    },
+    "password-reset": {
+      "subject": "Tilbakestill Ragen-passordet ditt",
+      "preview": "Tilbakestill Ragen-passordet ditt",
+      "body": "Klikk på knappen nedenfor for å tilbakestille passordet ditt:",
+      "button": "Tilbakestill passord",
+      "ignore": "Hvis du ikke har bedt om å tilbakestille passordet, kan du se bort fra denne meldingen.",
+      "expiry": "Lenken utløper om 1 time."
+    },
+    "verification": {
+      "subject": "Bekreft e-postadressen din – Ragen AI",
+      "preview": "Bekreft e-postadressen din på Ragen AI",
+      "body": "Takk for at du registrerte deg på Ragen AI! Klikk på knappen nedenfor for å bekrefte e-postadressen din:",
+      "button": "Bekreft e-post",
+      "ignore": "Hvis du ikke har opprettet en konto på Ragen AI, kan du se bort fra denne meldingen.",
+      "expiry": "Lenken utløper om 24 timer."
+    },
+    "welcome": {
+      "subject": "Velkommen til Ragen!",
+      "preview": "Bruk AI trygt i bedriften din",
+      "greeting": "Hei!",
+      "greeting-named": "Hei {name}!",
+      "thanks": "Takk for at du registrerte deg på Ragen AI :)",
+      "mission": "Vi jobber med dette prosjektet for å gjøre det enkelt å bygge AI-assistenter.",
+      "contacts-tip": "I de kommende ukene utvikler vi løsningen vår videre, så det er lurt å legge denne e-postadressen til i kontaktene dine – da går du ikke glipp av nyheter om nye funksjoner.",
+      "button": "Åpne Ragen-appen",
+      "questions": "Hvis du har spørsmål, ønsker eller ideer om hvordan appen fungerer, skriv til {email}."
+    },
+    "security-alert": {
+      "preview": "[{severity}] {event} – sikkerhetsvarsel fra Ragen",
+      "intro": "En sikkerhetshendelse på nivå <strong>{severity}</strong> er registrert i Ragen AI. Gå gjennom detaljene nedenfor og bekreft i administrasjonspanelet at den er håndtert.",
+      "label-id": "Hendelses-ID",
+      "label-type": "Type",
+      "label-severity": "Nivå",
+      "label-source": "Kilde",
+      "label-time": "Tidspunkt for hendelsen",
+      "label-organization": "Organisasjon",
+      "label-user": "Bruker",
+      "label-ip": "IP-adresse",
+      "label-request": "Forespørsels-ID",
+      "open": "Åpne hendelsen i panelet:",
+      "footer": "Du får denne meldingen fordi adressen din er satt i miljøvariabelen <code>SECURITY_ALERT_EMAIL</code>. Varselet ble utløst av en kritisk hendelse. Hendelser på lavere nivåer er bare tilgjengelige i administrasjonspanelet.",
+      "severity": {
+        "info": "Informasjon",
+        "warn": "Advarsel",
+        "critical": "Kritisk"
+      },
+      "source": {
+        "auth": "Autentisering",
+        "chat": "Chat",
+        "chatbot": "Chatbot",
+        "upload": "Filopplasting",
+        "admin": "Administrasjonspanel",
+        "api": "API",
+        "mcp": "MCP",
+        "infra": "Infrastruktur"
+      },
+      "event-type": {
+        "AUTH_LOGIN_FAILED": "Mislykket pålogging",
+        "AUTH_BRUTEFORCE_SUSPECTED": "Mistanke om brute force-angrep",
+        "AUTH_PASSWORD_RESET_REQUESTED": "Tilbakestilling av passord forespurt",
+        "AUTH_ADMIN_ROLE_GRANTED": "Administratorrolle tildelt",
+        "AUTH_ADMIN_ROLE_REVOKED": "Administratorrolle trukket tilbake",
+        "API_KEY_CREATED": "API-nøkkel opprettet",
+        "API_KEY_REVOKED": "API-nøkkel trukket tilbake",
+        "API_INTERNAL_SECRET_MISMATCH": "Intern API-hemmelighet stemmer ikke",
+        "CROSS_ORG_ACCESS_ATTEMPTED": "Forsøk på tilgang på tvers av organisasjoner",
+        "UNAUTHORIZED_ACCESS_ATTEMPTED": "Forsøk på uautorisert tilgang",
+        "CHAT_JAILBREAK_DETECTED": "Jailbreak-forsøk oppdaget",
+        "CHAT_PII_DETECTED": "Personopplysninger oppdaget i chatten",
+        "CHAT_PII_MASKING_FAILED": "Maskering av personopplysninger mislyktes",
+        "TOOL_CALL_BLOCKED": "Verktøykall blokkert",
+        "TOOL_CALL_CONFIRMED": "Verktøykall bekreftet",
+        "TOOL_CALL_DENIED": "Verktøykall avvist",
+        "TOOL_ARGS_HIGH_RISK": "Verktøyargumenter med høy risiko",
+        "UPLOAD_SUSPICIOUS_CONTENT": "Mistenkelig innhold i en opplastet fil",
+        "UPLOAD_REJECTED": "Opplastet fil avvist",
+        "ADMIN_SETTINGS_CHANGED": "Administrative innstillinger endret",
+        "RATE_LIMIT_HIT": "Forespørselsgrensen er overskredet",
+        "MCP_OAUTH_FAILED": "MCP OAuth-autorisasjon mislyktes"
+      }
+    }
   }
 }

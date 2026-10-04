@@ -9,6 +9,7 @@ import { getActiveMember } from '@/lib/auth-guards';
 import { canManageOrg, canOwnOrg } from '@/lib/auth-access-control';
 import { syncSeatsToStripe } from '@/features/subscriptions/services/commands/sync-seats-command';
 import { pendingMagicLinkContext } from '@/lib/magic-link-context';
+import { resolveEmailLocale } from '@/app/emails/utils/email-locale';
 import { createMemberAccountCommand } from '@/features/organizations/services/commands/create-member-account-command';
 import { canAddMemberQuery } from '@/features/organizations/services/queries/can-add-member-query';
 import { failure } from '../errors';
@@ -98,6 +99,7 @@ export async function inviteMember(
       organizationName,
       invitationId,
       role,
+      locale: await resolveEmailLocale(),
     });
 
     try {

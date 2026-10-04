@@ -2054,7 +2054,11 @@
       "saving": "Guardando...",
       "cancel": "Cancelar",
       "edit-success": "El perfil de la organización ha sido actualizado",
-      "edit-error": "Ha ocurrido un error al actualizar el perfil"
+      "edit-error": "Ha ocurrido un error al actualizar el perfil",
+      "validation": {
+        "name-required": "El nombre es obligatorio",
+        "name-too-long": "El nombre puede tener como máximo {max} caracteres"
+      }
     },
     "members": {
       "title": "Usuarios",
@@ -2100,7 +2104,12 @@
       "copy-credentials": "Copiar credenciales",
       "copied": "Copiado",
       "done": "Hecho",
-      "confirm-remove-title": "¿Eliminar este miembro?"
+      "confirm-remove-title": "¿Eliminar este miembro?",
+      "validation": {
+        "invalid-email": "Introduce una dirección de correo electrónico válida",
+        "role-required": "El rol es obligatorio",
+        "full-name-required": "El nombre y los apellidos son obligatorios"
+      }
     },
     "invitations": {
       "title": "Invitaciones",
@@ -2193,7 +2202,11 @@
       "saving": "Guardando...",
       "cancel": "Cancelar",
       "success": "Perfil actualizado",
-      "error": "Error al actualizar el perfil"
+      "error": "Error al actualizar el perfil",
+      "validation": {
+        "name-required": "El nombre es obligatorio",
+        "name-too-long": "El nombre puede tener como máximo {max} caracteres"
+      }
     },
     "password": {
       "current": "Contraseña actual",
@@ -2203,7 +2216,12 @@
       "demo-account-locked": "Esta es la cuenta de demostración compartida, por lo que su contraseña no se puede cambiar.",
       "changing": "Cambiando contraseña...",
       "success": "La contraseña ha sido cambiada",
-      "error": "Contraseña actual no válida"
+      "error": "Contraseña actual no válida",
+      "validation": {
+        "min-length": "Mínimo {min} caracteres",
+        "passwords-mismatch": "Las contraseñas no coinciden",
+        "must-differ": "La nueva contraseña debe ser distinta de la actual"
+      }
     },
     "sessions": {
       "title": "Sesiones activas",
@@ -3088,5 +3106,104 @@
     "description": "No se pudo mostrar esta página. Inténtalo de nuevo o empieza un chat nuevo: no se ha perdido nada de lo guardado.",
     "retry": "Reintentar",
     "new-chat": "Nuevo chat"
+  },
+  "emails": {
+    "invitation": {
+      "subject": "Invitación a {organization} en Ragen AI",
+      "preview": "Te han invitado a {organization} en Ragen AI",
+      "greeting": "¡Hola!",
+      "invited-by": "<strong>{inviter}</strong> te invita a unirte a la organización <strong>{organization}</strong> en Ragen AI.",
+      "invited": "Te han invitado a la organización <strong>{organization}</strong> en Ragen AI.",
+      "role": "Se te añadirá con el rol: <strong>{role}</strong>",
+      "accept": "Aceptar la invitación",
+      "expires": "Esta invitación caduca el <strong>{date}</strong>.",
+      "join": "Unirme a la organización",
+      "magic-note": "Al hacer clic en este botón iniciarás sesión automáticamente, sin tener que recordar ninguna contraseña. El enlace caduca a los 7 días.",
+      "ignore": "Si no quieres unirte a esta organización, ignora este mensaje.",
+      "sent-to": "Invitación enviada a: {email}",
+      "role-admin": "Administrador",
+      "role-member": "Usuario"
+    },
+    "password-reset": {
+      "subject": "Restablece tu contraseña de Ragen",
+      "preview": "Restablece tu contraseña de Ragen",
+      "body": "Haz clic en el botón de abajo para restablecer tu contraseña:",
+      "button": "Restablecer contraseña",
+      "ignore": "Si no has solicitado restablecer tu contraseña, ignora este mensaje.",
+      "expiry": "El enlace caduca en 1 hora."
+    },
+    "verification": {
+      "subject": "Verifica tu dirección de correo electrónico – Ragen AI",
+      "preview": "Verifica tu dirección de correo electrónico en Ragen AI",
+      "body": "¡Gracias por registrarte en Ragen AI! Haz clic en el botón de abajo para verificar tu dirección de correo electrónico:",
+      "button": "Verificar correo electrónico",
+      "ignore": "Si no has creado una cuenta en Ragen AI, ignora este mensaje.",
+      "expiry": "El enlace caduca en 24 horas."
+    },
+    "welcome": {
+      "subject": "¡Te damos la bienvenida a Ragen!",
+      "preview": "Usa la IA de forma segura en tu empresa",
+      "greeting": "¡Hola!",
+      "greeting-named": "¡Hola, {name}!",
+      "thanks": "Gracias por registrarte en Ragen AI :)",
+      "mission": "Trabajamos en este proyecto para que construir asistentes de IA sea fácil.",
+      "contacts-tip": "En las próximas semanas seguiremos desarrollando nuestra solución, así que conviene añadir esta dirección de correo a tus contactos: así no te perderás las novedades sobre nuevas funciones.",
+      "button": "Abrir la aplicación Ragen",
+      "questions": "Si tienes preguntas, peticiones o ideas sobre el funcionamiento de la aplicación, escribe a {email}."
+    },
+    "security-alert": {
+      "preview": "[{severity}] {event} – alerta de seguridad de Ragen",
+      "intro": "Se ha registrado en Ragen AI un evento de seguridad de nivel <strong>{severity}</strong>. Revisa los detalles a continuación y confirma que se ha atendido en el panel de administración.",
+      "label-id": "ID del evento",
+      "label-type": "Tipo",
+      "label-severity": "Nivel",
+      "label-source": "Origen",
+      "label-time": "Hora del evento",
+      "label-organization": "Organización",
+      "label-user": "Usuario",
+      "label-ip": "Dirección IP",
+      "label-request": "ID de la solicitud",
+      "open": "Abre el evento en el panel:",
+      "footer": "Recibes este mensaje porque tu dirección está configurada en la variable de entorno <code>SECURITY_ALERT_EMAIL</code>. La alerta se generó por un evento crítico. Los eventos de nivel inferior solo están disponibles en el panel de administración.",
+      "severity": {
+        "info": "Información",
+        "warn": "Advertencia",
+        "critical": "Crítico"
+      },
+      "source": {
+        "auth": "Autenticación",
+        "chat": "Chat",
+        "chatbot": "Chatbot",
+        "upload": "Subida de archivos",
+        "admin": "Panel de administración",
+        "api": "API",
+        "mcp": "MCP",
+        "infra": "Infraestructura"
+      },
+      "event-type": {
+        "AUTH_LOGIN_FAILED": "Inicio de sesión fallido",
+        "AUTH_BRUTEFORCE_SUSPECTED": "Sospecha de ataque de fuerza bruta",
+        "AUTH_PASSWORD_RESET_REQUESTED": "Restablecimiento de contraseña solicitado",
+        "AUTH_ADMIN_ROLE_GRANTED": "Rol de administrador concedido",
+        "AUTH_ADMIN_ROLE_REVOKED": "Rol de administrador revocado",
+        "API_KEY_CREATED": "Clave de API creada",
+        "API_KEY_REVOKED": "Clave de API revocada",
+        "API_INTERNAL_SECRET_MISMATCH": "Secreto interno de la API no coincide",
+        "CROSS_ORG_ACCESS_ATTEMPTED": "Intento de acceso entre organizaciones",
+        "UNAUTHORIZED_ACCESS_ATTEMPTED": "Intento de acceso no autorizado",
+        "CHAT_JAILBREAK_DETECTED": "Intento de jailbreak detectado",
+        "CHAT_PII_DETECTED": "Datos personales detectados en el chat",
+        "CHAT_PII_MASKING_FAILED": "Error al enmascarar datos personales",
+        "TOOL_CALL_BLOCKED": "Llamada a herramienta bloqueada",
+        "TOOL_CALL_CONFIRMED": "Llamada a herramienta confirmada",
+        "TOOL_CALL_DENIED": "Llamada a herramienta denegada",
+        "TOOL_ARGS_HIGH_RISK": "Argumentos de herramienta de alto riesgo",
+        "UPLOAD_SUSPICIOUS_CONTENT": "Contenido sospechoso en un archivo subido",
+        "UPLOAD_REJECTED": "Archivo subido rechazado",
+        "ADMIN_SETTINGS_CHANGED": "Ajustes administrativos modificados",
+        "RATE_LIMIT_HIT": "Límite de solicitudes superado",
+        "MCP_OAUTH_FAILED": "Error de autorización OAuth de MCP"
+      }
+    }
   }
 }

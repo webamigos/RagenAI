@@ -2054,7 +2054,11 @@
       "saving": "Sparar...",
       "cancel": "Avbryt",
       "edit-success": "Organisationens profil har uppdaterats",
-      "edit-error": "Ett fel uppstod vid uppdatering av profilen"
+      "edit-error": "Ett fel uppstod vid uppdatering av profilen",
+      "validation": {
+        "name-required": "Namn är obligatoriskt",
+        "name-too-long": "Namnet får vara högst {max} tecken"
+      }
     },
     "members": {
       "title": "Användare",
@@ -2100,7 +2104,12 @@
       "copy-credentials": "Kopiera inloggningsuppgifter",
       "copied": "Kopierat",
       "done": "Klar",
-      "confirm-remove-title": "Ta bort medlemmen?"
+      "confirm-remove-title": "Ta bort medlemmen?",
+      "validation": {
+        "invalid-email": "Ange en giltig e-postadress",
+        "role-required": "En roll krävs",
+        "full-name-required": "För- och efternamn krävs"
+      }
     },
     "invitations": {
       "title": "Inbjudningar",
@@ -2193,7 +2202,11 @@
       "saving": "Sparar...",
       "cancel": "Avbryt",
       "success": "Profilen har uppdaterats",
-      "error": "Det gick inte att uppdatera profilen"
+      "error": "Det gick inte att uppdatera profilen",
+      "validation": {
+        "name-required": "Namn är obligatoriskt",
+        "name-too-long": "Namnet får vara högst {max} tecken"
+      }
     },
     "password": {
       "current": "Nuvarande lösenord",
@@ -2203,7 +2216,12 @@
       "demo-account-locked": "Detta är det delade demokontot, så dess lösenord kan inte ändras.",
       "changing": "Byter lösenord...",
       "success": "Lösenordet har ändrats",
-      "error": "Ogiltigt nuvarande lösenord"
+      "error": "Ogiltigt nuvarande lösenord",
+      "validation": {
+        "min-length": "Minst {min} tecken",
+        "passwords-mismatch": "Lösenorden matchar inte",
+        "must-differ": "Det nya lösenordet måste skilja sig från det nuvarande"
+      }
     },
     "sessions": {
       "title": "Aktiva sessioner",
@@ -3088,5 +3106,104 @@
     "description": "Sidan kunde inte visas. Försök igen eller starta en ny chatt – inget du sparat har gått förlorat.",
     "retry": "Försök igen",
     "new-chat": "Ny chatt"
+  },
+  "emails": {
+    "invitation": {
+      "subject": "Inbjudan till {organization} på Ragen AI",
+      "preview": "Du har blivit inbjuden till {organization} på Ragen AI",
+      "greeting": "Hej!",
+      "invited-by": "<strong>{inviter}</strong> bjuder in dig att gå med i organisationen <strong>{organization}</strong> på Ragen AI.",
+      "invited": "Du har blivit inbjuden till organisationen <strong>{organization}</strong> på Ragen AI.",
+      "role": "Du läggs till med rollen: <strong>{role}</strong>",
+      "accept": "Acceptera inbjudan",
+      "expires": "Den här inbjudan upphör att gälla den <strong>{date}</strong>.",
+      "join": "Gå med i organisationen",
+      "magic-note": "När du klickar på knappen loggas du in automatiskt, utan att behöva komma ihåg något lösenord. Länken upphör att gälla efter 7 dagar.",
+      "ignore": "Om du inte vill gå med i organisationen kan du bortse från det här meddelandet.",
+      "sent-to": "Inbjudan skickad till: {email}",
+      "role-admin": "Administratör",
+      "role-member": "Användare"
+    },
+    "password-reset": {
+      "subject": "Återställ ditt Ragen-lösenord",
+      "preview": "Återställ ditt Ragen-lösenord",
+      "body": "Klicka på knappen nedan för att återställa ditt lösenord:",
+      "button": "Återställ lösenord",
+      "ignore": "Om du inte har begärt en återställning av lösenordet kan du bortse från det här meddelandet.",
+      "expiry": "Länken upphör att gälla om 1 timme."
+    },
+    "verification": {
+      "subject": "Verifiera din e-postadress – Ragen AI",
+      "preview": "Verifiera din e-postadress på Ragen AI",
+      "body": "Tack för att du har registrerat dig på Ragen AI! Klicka på knappen nedan för att verifiera din e-postadress:",
+      "button": "Verifiera e-post",
+      "ignore": "Om du inte har skapat ett konto på Ragen AI kan du bortse från det här meddelandet.",
+      "expiry": "Länken upphör att gälla om 24 timmar."
+    },
+    "welcome": {
+      "subject": "Välkommen till Ragen!",
+      "preview": "Använd AI på ett säkert sätt i ditt företag",
+      "greeting": "Hej!",
+      "greeting-named": "Hej {name}!",
+      "thanks": "Tack för att du har registrerat dig på Ragen AI :)",
+      "mission": "Vi arbetar med det här projektet för att göra det enkelt att bygga AI-assistenter.",
+      "contacts-tip": "Under de närmaste veckorna vidareutvecklar vi vår lösning, så det är bra att lägga till den här e-postadressen bland dina kontakter – då missar du inte nyheter om nya funktioner.",
+      "button": "Öppna Ragen-appen",
+      "questions": "Om du har frågor, önskemål eller idéer om hur appen fungerar är du välkommen att skriva till {email}."
+    },
+    "security-alert": {
+      "preview": "[{severity}] {event} – säkerhetslarm från Ragen",
+      "intro": "En säkerhetshändelse på nivån <strong>{severity}</strong> har registrerats i Ragen AI. Granska uppgifterna nedan och bekräfta i administrationspanelen att den har hanterats.",
+      "label-id": "Händelse-ID",
+      "label-type": "Typ",
+      "label-severity": "Nivå",
+      "label-source": "Källa",
+      "label-time": "Tidpunkt för händelsen",
+      "label-organization": "Organisation",
+      "label-user": "Användare",
+      "label-ip": "IP-adress",
+      "label-request": "Begärans ID",
+      "open": "Öppna händelsen i panelen:",
+      "footer": "Du får det här meddelandet eftersom din adress är angiven i miljövariabeln <code>SECURITY_ALERT_EMAIL</code>. Larmet utlöstes av en kritisk händelse. Händelser på lägre nivåer finns bara i administrationspanelen.",
+      "severity": {
+        "info": "Information",
+        "warn": "Varning",
+        "critical": "Kritisk"
+      },
+      "source": {
+        "auth": "Autentisering",
+        "chat": "Chatt",
+        "chatbot": "Chattbot",
+        "upload": "Filuppladdning",
+        "admin": "Administrationspanel",
+        "api": "API",
+        "mcp": "MCP",
+        "infra": "Infrastruktur"
+      },
+      "event-type": {
+        "AUTH_LOGIN_FAILED": "Misslyckad inloggning",
+        "AUTH_BRUTEFORCE_SUSPECTED": "Misstänkt brute force-attack",
+        "AUTH_PASSWORD_RESET_REQUESTED": "Återställning av lösenord begärd",
+        "AUTH_ADMIN_ROLE_GRANTED": "Administratörsroll tilldelad",
+        "AUTH_ADMIN_ROLE_REVOKED": "Administratörsroll återkallad",
+        "API_KEY_CREATED": "API-nyckel skapad",
+        "API_KEY_REVOKED": "API-nyckel återkallad",
+        "API_INTERNAL_SECRET_MISMATCH": "Intern API-hemlighet stämmer inte",
+        "CROSS_ORG_ACCESS_ATTEMPTED": "Försök till åtkomst mellan organisationer",
+        "UNAUTHORIZED_ACCESS_ATTEMPTED": "Försök till obehörig åtkomst",
+        "CHAT_JAILBREAK_DETECTED": "Jailbreak-försök upptäckt",
+        "CHAT_PII_DETECTED": "Personuppgifter upptäckta i chatten",
+        "CHAT_PII_MASKING_FAILED": "Maskning av personuppgifter misslyckades",
+        "TOOL_CALL_BLOCKED": "Verktygsanrop blockerat",
+        "TOOL_CALL_CONFIRMED": "Verktygsanrop bekräftat",
+        "TOOL_CALL_DENIED": "Verktygsanrop nekat",
+        "TOOL_ARGS_HIGH_RISK": "Verktygsargument med hög risk",
+        "UPLOAD_SUSPICIOUS_CONTENT": "Misstänkt innehåll i en uppladdad fil",
+        "UPLOAD_REJECTED": "Uppladdad fil avvisad",
+        "ADMIN_SETTINGS_CHANGED": "Administrativa inställningar ändrade",
+        "RATE_LIMIT_HIT": "Begränsningen för antal förfrågningar överskreds",
+        "MCP_OAUTH_FAILED": "MCP OAuth-auktorisering misslyckades"
+      }
+    }
   }
 }

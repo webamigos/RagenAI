@@ -2054,7 +2054,11 @@
       "saving": "Zapisywanie...",
       "cancel": "Anuluj",
       "edit-success": "Profil organizacji został zaktualizowany",
-      "edit-error": "Wystąpił błąd podczas aktualizacji profilu"
+      "edit-error": "Wystąpił błąd podczas aktualizacji profilu",
+      "validation": {
+        "name-required": "Nazwa jest wymagana",
+        "name-too-long": "Nazwa może mieć maksymalnie {max} znaków"
+      }
     },
     "members": {
       "title": "Użytkownicy",
@@ -2100,7 +2104,12 @@
       "copy-credentials": "Kopiuj dane",
       "copied": "Skopiowano",
       "done": "Gotowe",
-      "confirm-remove-title": "Usunąć użytkownika?"
+      "confirm-remove-title": "Usunąć użytkownika?",
+      "validation": {
+        "invalid-email": "Nieprawidłowy adres email",
+        "role-required": "Rola jest wymagana",
+        "full-name-required": "Imię i nazwisko są wymagane"
+      }
     },
     "invitations": {
       "title": "Zaproszenia",
@@ -2193,7 +2202,11 @@
       "saving": "Zapisywanie...",
       "cancel": "Anuluj",
       "success": "Profil zaktualizowany",
-      "error": "Nie udało się zaktualizować profilu"
+      "error": "Nie udało się zaktualizować profilu",
+      "validation": {
+        "name-required": "Nazwa jest wymagana",
+        "name-too-long": "Nazwa może mieć maksymalnie {max} znaków"
+      }
     },
     "password": {
       "current": "Obecne hasło",
@@ -2203,7 +2216,12 @@
       "demo-account-locked": "To wspólne konto demonstracyjne, więc jego hasła nie można zmienić.",
       "changing": "Zmiana hasła...",
       "success": "Hasło zostało zmienione",
-      "error": "Nieprawidłowe obecne hasło"
+      "error": "Nieprawidłowe obecne hasło",
+      "validation": {
+        "min-length": "Minimum {min} znaków",
+        "passwords-mismatch": "Hasła nie pasują",
+        "must-differ": "Nowe hasło musi być inne niż obecne"
+      }
     },
     "sessions": {
       "title": "Aktywne sesje",
@@ -3088,5 +3106,104 @@
     "description": "Nie udało się wyświetlić tej strony. Spróbuj ponownie albo zacznij nowy czat — nic, co zapisano, nie zginęło.",
     "retry": "Spróbuj ponownie",
     "new-chat": "Nowy czat"
+  },
+  "emails": {
+    "invitation": {
+      "subject": "Zaproszenie do organizacji {organization} w Ragen AI",
+      "preview": "Otrzymałeś zaproszenie do organizacji {organization} w Ragen AI",
+      "greeting": "Cześć!",
+      "invited-by": "<strong>{inviter}</strong> zaprasza Cię do dołączenia do organizacji <strong>{organization}</strong> w Ragen AI.",
+      "invited": "Otrzymałeś zaproszenie do organizacji <strong>{organization}</strong> w Ragen AI.",
+      "role": "Zostaniesz dodany z rolą: <strong>{role}</strong>",
+      "accept": "Zaakceptuj zaproszenie",
+      "expires": "To zaproszenie wygasa <strong>{date}</strong>.",
+      "join": "Dołącz do organizacji",
+      "magic-note": "Kliknięcie tego przycisku zaloguje Cię automatycznie — bez konieczności zapamiętywania hasła. Link wygasa po 7 dniach.",
+      "ignore": "Jeśli nie chcesz dołączyć do tej organizacji, zignoruj tę wiadomość.",
+      "sent-to": "Zaproszenie wysłane na adres: {email}",
+      "role-admin": "Administrator",
+      "role-member": "Użytkownik"
+    },
+    "password-reset": {
+      "subject": "Zresetuj hasło do Ragen",
+      "preview": "Zresetuj hasło do Ragen",
+      "body": "Kliknij poniższy przycisk, aby zresetować swoje hasło:",
+      "button": "Zresetuj hasło",
+      "ignore": "Jeśli nie prosiłeś o reset hasła, zignoruj tę wiadomość.",
+      "expiry": "Link wygaśnie za 1 godzinę."
+    },
+    "verification": {
+      "subject": "Zweryfikuj swój adres email - Ragen AI",
+      "preview": "Zweryfikuj swój adres email w Ragen AI",
+      "body": "Dziękujemy za rejestrację w Ragen AI! Kliknij poniższy przycisk, aby zweryfikować swój adres email:",
+      "button": "Zweryfikuj email",
+      "ignore": "Jeśli nie zakładałeś konta w Ragen AI, zignoruj tę wiadomość.",
+      "expiry": "Link wygaśnie za 24 godziny."
+    },
+    "welcome": {
+      "subject": "Witaj w Ragen!",
+      "preview": "Korzystaj w bezpieczny sposób z AI w swojej firmie",
+      "greeting": "Cześć!",
+      "greeting-named": "Cześć {name}!",
+      "thanks": "Dziękujemy za rejestrację w Ragen AI :)",
+      "mission": "Pracujemy nad tym projektem, aby pomóc w łatwy sposób budować asystentów AI.",
+      "contacts-tip": "W najbliższym czasie będziemy rozwijać nasze rozwiązanie, więc warto dodać ten adres e-mail do kontaktów - nie ominą Cię wtedy informacje o nowych funkcjonalnościach.",
+      "button": "Przejdź do aplikacji Ragen",
+      "questions": "Jeśli masz jakieś pytania, prośby lub pomysły związane z działaniem aplikacji, to śmiało napisz na adres {email}."
+    },
+    "security-alert": {
+      "preview": "[{severity}] {event} — alert bezpieczeństwa Ragen",
+      "intro": "W systemie Ragen AI zarejestrowano zdarzenie bezpieczeństwa o poziomie <strong>{severity}</strong>. Przejrzyj szczegóły poniżej i potwierdź jego obsługę w panelu administracyjnym.",
+      "label-id": "ID zdarzenia",
+      "label-type": "Typ",
+      "label-severity": "Poziom",
+      "label-source": "Źródło",
+      "label-time": "Czas zdarzenia",
+      "label-organization": "Organizacja",
+      "label-user": "Użytkownik",
+      "label-ip": "Adres IP",
+      "label-request": "ID żądania",
+      "open": "Otwórz zdarzenie w panelu:",
+      "footer": "Otrzymujesz tę wiadomość, ponieważ Twój adres jest skonfigurowany w zmiennej środowiskowej <code>SECURITY_ALERT_EMAIL</code>. Alert został wywołany przez zdarzenie o poziomie krytycznym. Zdarzenia o niższych poziomach są dostępne wyłącznie w panelu administracyjnym.",
+      "severity": {
+        "info": "Informacja",
+        "warn": "Ostrzeżenie",
+        "critical": "Krytyczne"
+      },
+      "source": {
+        "auth": "Uwierzytelnianie",
+        "chat": "Czat",
+        "chatbot": "Chatbot",
+        "upload": "Przesyłanie pliku",
+        "admin": "Panel administracyjny",
+        "api": "API",
+        "mcp": "MCP",
+        "infra": "Infrastruktura"
+      },
+      "event-type": {
+        "AUTH_LOGIN_FAILED": "Nieudane logowanie",
+        "AUTH_BRUTEFORCE_SUSPECTED": "Podejrzenie ataku brute-force",
+        "AUTH_PASSWORD_RESET_REQUESTED": "Żądanie resetowania hasła",
+        "AUTH_ADMIN_ROLE_GRANTED": "Przyznano rolę administratora",
+        "AUTH_ADMIN_ROLE_REVOKED": "Odebrano rolę administratora",
+        "API_KEY_CREATED": "Klucz API utworzony",
+        "API_KEY_REVOKED": "Klucz API odwołany",
+        "API_INTERNAL_SECRET_MISMATCH": "Niezgodność sekretu wewnętrznego API",
+        "CROSS_ORG_ACCESS_ATTEMPTED": "Próba dostępu między organizacjami",
+        "UNAUTHORIZED_ACCESS_ATTEMPTED": "Próba nieautoryzowanego dostępu",
+        "CHAT_JAILBREAK_DETECTED": "Wykryto próbę jailbreak",
+        "CHAT_PII_DETECTED": "Wykryto dane osobowe w czacie",
+        "CHAT_PII_MASKING_FAILED": "Błąd maskowania danych osobowych",
+        "TOOL_CALL_BLOCKED": "Wywołanie narzędzia zablokowane",
+        "TOOL_CALL_CONFIRMED": "Wywołanie narzędzia potwierdzone",
+        "TOOL_CALL_DENIED": "Wywołanie narzędzia odrzucone",
+        "TOOL_ARGS_HIGH_RISK": "Argumenty narzędzia wysokiego ryzyka",
+        "UPLOAD_SUSPICIOUS_CONTENT": "Podejrzana treść w przesłanym pliku",
+        "UPLOAD_REJECTED": "Przesłany plik odrzucony",
+        "ADMIN_SETTINGS_CHANGED": "Zmiana ustawień administracyjnych",
+        "RATE_LIMIT_HIT": "Przekroczono limit zapytań",
+        "MCP_OAUTH_FAILED": "Błąd autoryzacji OAuth MCP"
+      }
+    }
   }
 }

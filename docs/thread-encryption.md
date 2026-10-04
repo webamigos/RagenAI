@@ -28,7 +28,7 @@ Adding a KMS is one file in `packages/crypto/src/key-provider/`.
 | `local` | Local master key — dev | `ENCRYPTION_MASTER_KEY` |
 | unset | Auto-detect, in order: Scaleway → KMS → local | whichever of the above is present |
 
-With none of them set, encryption stays off and local development is plaintext.
+With none of them set, encryption stays off: local development is plaintext, and a deployed environment refuses to store content instead (see [Production requires a key provider](#production-requires-a-key-provider)).
 
 `kms` needs exactly two actions on the key — `kms:GenerateDataKey` and
 `kms:Decrypt` — which is the `KmsEnvelopeEncryption` statement in

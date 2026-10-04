@@ -2054,7 +2054,11 @@
       "saving": "Opslaan...",
       "cancel": "Annuleren",
       "edit-success": "Het organisatieprofiel is bijgewerkt",
-      "edit-error": "Er is een fout opgetreden bij het bijwerken van het profiel"
+      "edit-error": "Er is een fout opgetreden bij het bijwerken van het profiel",
+      "validation": {
+        "name-required": "Naam is verplicht",
+        "name-too-long": "De naam mag maximaal {max} tekens bevatten"
+      }
     },
     "members": {
       "title": "Gebruikers",
@@ -2100,7 +2104,12 @@
       "copy-credentials": "Inloggegevens kopiëren",
       "copied": "Gekopieerd",
       "done": "Klaar",
-      "confirm-remove-title": "Dit lid verwijderen?"
+      "confirm-remove-title": "Dit lid verwijderen?",
+      "validation": {
+        "invalid-email": "Voer een geldig e-mailadres in",
+        "role-required": "Een rol is verplicht",
+        "full-name-required": "Voor- en achternaam zijn verplicht"
+      }
     },
     "invitations": {
       "title": "Uitnodigingen",
@@ -2193,7 +2202,11 @@
       "saving": "Opslaan...",
       "cancel": "Annuleren",
       "success": "Profiel bijgewerkt",
-      "error": "Profiel kon niet worden bijgewerkt"
+      "error": "Profiel kon niet worden bijgewerkt",
+      "validation": {
+        "name-required": "Naam is verplicht",
+        "name-too-long": "De naam mag maximaal {max} tekens bevatten"
+      }
     },
     "password": {
       "current": "Huidig wachtwoord",
@@ -2203,7 +2216,12 @@
       "demo-account-locked": "Dit is het gedeelde demo-account, dus het wachtwoord kan niet worden gewijzigd.",
       "changing": "Wachtwoord wijzigen...",
       "success": "Wachtwoord is gewijzigd",
-      "error": "Ongeldig huidig wachtwoord"
+      "error": "Ongeldig huidig wachtwoord",
+      "validation": {
+        "min-length": "Minimaal {min} tekens",
+        "passwords-mismatch": "De wachtwoorden komen niet overeen",
+        "must-differ": "Het nieuwe wachtwoord moet verschillen van het huidige"
+      }
     },
     "sessions": {
       "title": "Actieve sessies",
@@ -3088,5 +3106,104 @@
     "description": "Deze pagina kon niet worden weergegeven. Probeer het opnieuw, of start een nieuwe chat — niets wat je hebt opgeslagen gaat verloren.",
     "retry": "Opnieuw proberen",
     "new-chat": "Nieuwe chat"
+  },
+  "emails": {
+    "invitation": {
+      "subject": "Uitnodiging voor {organization} op Ragen AI",
+      "preview": "Je bent uitgenodigd voor {organization} op Ragen AI",
+      "greeting": "Hallo!",
+      "invited-by": "<strong>{inviter}</strong> nodigt je uit om lid te worden van de organisatie <strong>{organization}</strong> op Ragen AI.",
+      "invited": "Je bent uitgenodigd voor de organisatie <strong>{organization}</strong> op Ragen AI.",
+      "role": "Je wordt toegevoegd met de rol: <strong>{role}</strong>",
+      "accept": "Uitnodiging accepteren",
+      "expires": "Deze uitnodiging verloopt op <strong>{date}</strong>.",
+      "join": "Lid worden van de organisatie",
+      "magic-note": "Als je op deze knop klikt, word je automatisch ingelogd, zonder dat je een wachtwoord hoeft te onthouden. De link verloopt na 7 dagen.",
+      "ignore": "Wil je niet lid worden van deze organisatie, negeer dit bericht dan.",
+      "sent-to": "Uitnodiging verzonden naar: {email}",
+      "role-admin": "Beheerder",
+      "role-member": "Gebruiker"
+    },
+    "password-reset": {
+      "subject": "Stel je Ragen-wachtwoord opnieuw in",
+      "preview": "Stel je Ragen-wachtwoord opnieuw in",
+      "body": "Klik op de knop hieronder om je wachtwoord opnieuw in te stellen:",
+      "button": "Wachtwoord opnieuw instellen",
+      "ignore": "Heb je geen nieuw wachtwoord aangevraagd, negeer dit bericht dan.",
+      "expiry": "De link verloopt over 1 uur."
+    },
+    "verification": {
+      "subject": "Bevestig je e-mailadres – Ragen AI",
+      "preview": "Bevestig je e-mailadres op Ragen AI",
+      "body": "Bedankt voor je registratie bij Ragen AI! Klik op de knop hieronder om je e-mailadres te bevestigen:",
+      "button": "E-mail bevestigen",
+      "ignore": "Heb je geen account aangemaakt bij Ragen AI, negeer dit bericht dan.",
+      "expiry": "De link verloopt over 24 uur."
+    },
+    "welcome": {
+      "subject": "Welkom bij Ragen!",
+      "preview": "Gebruik AI veilig in je bedrijf",
+      "greeting": "Hallo!",
+      "greeting-named": "Hallo {name}!",
+      "thanks": "Bedankt voor je registratie bij Ragen AI :)",
+      "mission": "We werken aan dit project om het eenvoudig te maken AI-assistenten te bouwen.",
+      "contacts-tip": "In de komende weken ontwikkelen we onze oplossing verder, dus voeg dit e-mailadres toe aan je contacten – dan mis je het nieuws over nieuwe functies niet.",
+      "button": "Ragen-app openen",
+      "questions": "Heb je vragen, verzoeken of ideeën over hoe de app werkt, schrijf dan naar {email}."
+    },
+    "security-alert": {
+      "preview": "[{severity}] {event} – Ragen-beveiligingsmelding",
+      "intro": "In Ragen AI is een beveiligingsgebeurtenis van niveau <strong>{severity}</strong> geregistreerd. Bekijk de details hieronder en bevestig in het beheerpaneel dat deze is afgehandeld.",
+      "label-id": "Gebeurtenis-ID",
+      "label-type": "Type",
+      "label-severity": "Niveau",
+      "label-source": "Bron",
+      "label-time": "Tijdstip van de gebeurtenis",
+      "label-organization": "Organisatie",
+      "label-user": "Gebruiker",
+      "label-ip": "IP-adres",
+      "label-request": "Verzoek-ID",
+      "open": "Open de gebeurtenis in het paneel:",
+      "footer": "Je ontvangt dit bericht omdat je adres is ingesteld in de omgevingsvariabele <code>SECURITY_ALERT_EMAIL</code>. De melding is veroorzaakt door een kritieke gebeurtenis. Gebeurtenissen van lagere niveaus zijn alleen beschikbaar in het beheerpaneel.",
+      "severity": {
+        "info": "Informatie",
+        "warn": "Waarschuwing",
+        "critical": "Kritiek"
+      },
+      "source": {
+        "auth": "Authenticatie",
+        "chat": "Chat",
+        "chatbot": "Chatbot",
+        "upload": "Bestandsupload",
+        "admin": "Beheerpaneel",
+        "api": "API",
+        "mcp": "MCP",
+        "infra": "Infrastructuur"
+      },
+      "event-type": {
+        "AUTH_LOGIN_FAILED": "Mislukte aanmelding",
+        "AUTH_BRUTEFORCE_SUSPECTED": "Vermoeden van brute-force-aanval",
+        "AUTH_PASSWORD_RESET_REQUESTED": "Wachtwoordreset aangevraagd",
+        "AUTH_ADMIN_ROLE_GRANTED": "Beheerdersrol toegekend",
+        "AUTH_ADMIN_ROLE_REVOKED": "Beheerdersrol ingetrokken",
+        "API_KEY_CREATED": "API-sleutel aangemaakt",
+        "API_KEY_REVOKED": "API-sleutel ingetrokken",
+        "API_INTERNAL_SECRET_MISMATCH": "Intern API-geheim komt niet overeen",
+        "CROSS_ORG_ACCESS_ATTEMPTED": "Poging tot toegang tussen organisaties",
+        "UNAUTHORIZED_ACCESS_ATTEMPTED": "Poging tot ongeautoriseerde toegang",
+        "CHAT_JAILBREAK_DETECTED": "Jailbreakpoging gedetecteerd",
+        "CHAT_PII_DETECTED": "Persoonsgegevens gedetecteerd in de chat",
+        "CHAT_PII_MASKING_FAILED": "Maskeren van persoonsgegevens mislukt",
+        "TOOL_CALL_BLOCKED": "Toolaanroep geblokkeerd",
+        "TOOL_CALL_CONFIRMED": "Toolaanroep bevestigd",
+        "TOOL_CALL_DENIED": "Toolaanroep geweigerd",
+        "TOOL_ARGS_HIGH_RISK": "Toolargumenten met hoog risico",
+        "UPLOAD_SUSPICIOUS_CONTENT": "Verdachte inhoud in een geüpload bestand",
+        "UPLOAD_REJECTED": "Geüpload bestand afgewezen",
+        "ADMIN_SETTINGS_CHANGED": "Beheerinstellingen gewijzigd",
+        "RATE_LIMIT_HIT": "Verzoeklimiet overschreden",
+        "MCP_OAUTH_FAILED": "MCP OAuth-autorisatie mislukt"
+      }
+    }
   }
 }

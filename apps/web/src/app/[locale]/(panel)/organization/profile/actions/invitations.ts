@@ -8,6 +8,7 @@ import db from '@ragenai/prisma-client';
 import { getActiveMember } from '@/lib/auth-guards';
 import { canManageOrg } from '@/lib/auth-access-control';
 import { pendingMagicLinkContext } from '@/lib/magic-link-context';
+import { resolveEmailLocale } from '@/app/emails/utils/email-locale';
 import { failure } from '../errors';
 
 /**
@@ -100,8 +101,7 @@ export async function resendInvitation(
       select: { name: true },
     });
 
-    const inviter =
-      session?.user?.name || session?.user?.email || 'Twój współpracownik';
+    const inviter = session?.user?.name || session?.user?.email || undefined;
     const organizationName = organization?.name || 'Organization';
     const emailKey = email.toLowerCase();
 
@@ -111,6 +111,7 @@ export async function resendInvitation(
       organizationName,
       invitationId: invitation.id,
       role,
+      locale: await resolveEmailLocale(),
     });
 
     try {

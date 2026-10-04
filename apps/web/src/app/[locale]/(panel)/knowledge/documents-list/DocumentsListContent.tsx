@@ -265,6 +265,7 @@ export function DocumentsListContent({
           selectedPolicies={selectedPolicies}
           canManageOrg={canManageOrg}
           subfolders={subfolders}
+          onFolderMutated={handleFolderMutated}
           onNavigateFolder={handleBreadcrumbNavigate}
           heading={
             <div className="min-w-0">

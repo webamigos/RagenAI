@@ -8,7 +8,7 @@ import { statusToast } from '@/app/lib/utils/toast';
 import { updateOrganization } from '../actions/organization';
 import { actionErrorMessage } from '../errors';
 import {
-  UpdateOrganizationSchema,
+  getUpdateOrganizationSchema,
   type UpdateOrganizationFormData,
 } from '../types';
 
@@ -38,7 +38,7 @@ export function OrganizationProfileForm({ organization, canEdit }: Props) {
     formState: { errors, isSubmitting, isDirty },
     reset,
   } = useForm<UpdateOrganizationFormData>({
-    resolver: zodResolver(UpdateOrganizationSchema),
+    resolver: zodResolver(getUpdateOrganizationSchema(t)),
     defaultValues: {
       name: organization.name,
     },

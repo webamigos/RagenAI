@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { logger } from '@/app/lib/utils/logger';
 import db from '@ragenai/prisma-client';
 import {
-  UpdateOrganizationSchema,
+  getUpdateOrganizationSchema,
   type UpdateOrganizationFormData,
 } from '../types';
 import { getActiveMember } from '@/lib/auth-guards';
@@ -19,7 +19,10 @@ import { failure } from '../errors';
 export async function updateOrganization(data: UpdateOrganizationFormData) {
   try {
     // 1. Validate input
-    const validated = UpdateOrganizationSchema.safeParse(data);
+    // Only whether the input is valid is used here, never the schema's
+    // messages, so the translator is the identity. What the action says to the
+    // user is a separate matter (#1092).
+    const validated = getUpdateOrganizationSchema((key) => key).safeParse(data);
     if (!validated.success) {
       return failure('invalid-data');
     }

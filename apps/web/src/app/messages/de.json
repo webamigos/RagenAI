@@ -2054,7 +2054,11 @@
       "saving": "Wird gespeichert...",
       "cancel": "Abbrechen",
       "edit-success": "Das Organisationsprofil wurde aktualisiert",
-      "edit-error": "Beim Aktualisieren des Profils ist ein Fehler aufgetreten"
+      "edit-error": "Beim Aktualisieren des Profils ist ein Fehler aufgetreten",
+      "validation": {
+        "name-required": "Name ist erforderlich",
+        "name-too-long": "Der Name darf höchstens {max} Zeichen lang sein"
+      }
     },
     "members": {
       "title": "Benutzer",
@@ -2100,7 +2104,12 @@
       "copy-credentials": "Zugangsdaten kopieren",
       "copied": "Kopiert",
       "done": "Fertig",
-      "confirm-remove-title": "Mitglied entfernen?"
+      "confirm-remove-title": "Mitglied entfernen?",
+      "validation": {
+        "invalid-email": "Bitte eine gültige E-Mail-Adresse eingeben",
+        "role-required": "Eine Rolle ist erforderlich",
+        "full-name-required": "Vor- und Nachname sind erforderlich"
+      }
     },
     "invitations": {
       "title": "Einladungen",
@@ -2193,7 +2202,11 @@
       "saving": "Wird gespeichert...",
       "cancel": "Abbrechen",
       "success": "Profil aktualisiert",
-      "error": "Fehler beim Aktualisieren des Profils"
+      "error": "Fehler beim Aktualisieren des Profils",
+      "validation": {
+        "name-required": "Name ist erforderlich",
+        "name-too-long": "Der Name darf höchstens {max} Zeichen lang sein"
+      }
     },
     "password": {
       "current": "Aktuelles Passwort",
@@ -2203,7 +2216,12 @@
       "demo-account-locked": "Dies ist das gemeinsame Demo-Konto, daher kann das Passwort nicht geändert werden.",
       "changing": "Passwort wird geändert...",
       "success": "Das Passwort wurde geändert",
-      "error": "Ungültiges aktuelles Passwort"
+      "error": "Ungültiges aktuelles Passwort",
+      "validation": {
+        "min-length": "Mindestens {min} Zeichen",
+        "passwords-mismatch": "Die Passwörter stimmen nicht überein",
+        "must-differ": "Das neue Passwort muss sich vom aktuellen unterscheiden"
+      }
     },
     "sessions": {
       "title": "Aktive Sitzungen",
@@ -3088,5 +3106,104 @@
     "description": "Diese Seite konnte nicht angezeigt werden. Versuchen Sie es erneut oder starten Sie einen neuen Chat – nichts Gespeichertes geht verloren.",
     "retry": "Erneut versuchen",
     "new-chat": "Neuer Chat"
+  },
+  "emails": {
+    "invitation": {
+      "subject": "Einladung zu {organization} bei Ragen AI",
+      "preview": "Du wurdest zu {organization} bei Ragen AI eingeladen",
+      "greeting": "Hallo!",
+      "invited-by": "<strong>{inviter}</strong> lädt dich ein, der Organisation <strong>{organization}</strong> bei Ragen AI beizutreten.",
+      "invited": "Du wurdest zur Organisation <strong>{organization}</strong> bei Ragen AI eingeladen.",
+      "role": "Du wirst mit der Rolle <strong>{role}</strong> hinzugefügt",
+      "accept": "Einladung annehmen",
+      "expires": "Diese Einladung läuft am <strong>{date}</strong> ab.",
+      "join": "Der Organisation beitreten",
+      "magic-note": "Mit einem Klick auf diese Schaltfläche wirst du automatisch angemeldet – ganz ohne Passwort. Der Link läuft nach 7 Tagen ab.",
+      "ignore": "Wenn du dieser Organisation nicht beitreten möchtest, ignoriere diese Nachricht.",
+      "sent-to": "Einladung gesendet an: {email}",
+      "role-admin": "Administrator",
+      "role-member": "Benutzer"
+    },
+    "password-reset": {
+      "subject": "Setze dein Ragen-Passwort zurück",
+      "preview": "Setze dein Ragen-Passwort zurück",
+      "body": "Klicke auf die Schaltfläche unten, um dein Passwort zurückzusetzen:",
+      "button": "Passwort zurücksetzen",
+      "ignore": "Wenn du das Zurücksetzen nicht angefordert hast, ignoriere diese Nachricht.",
+      "expiry": "Der Link läuft in 1 Stunde ab."
+    },
+    "verification": {
+      "subject": "Bestätige deine E-Mail-Adresse – Ragen AI",
+      "preview": "Bestätige deine E-Mail-Adresse bei Ragen AI",
+      "body": "Danke für deine Registrierung bei Ragen AI! Klicke auf die Schaltfläche unten, um deine E-Mail-Adresse zu bestätigen:",
+      "button": "E-Mail bestätigen",
+      "ignore": "Wenn du kein Konto bei Ragen AI erstellt hast, ignoriere diese Nachricht.",
+      "expiry": "Der Link läuft in 24 Stunden ab."
+    },
+    "welcome": {
+      "subject": "Willkommen bei Ragen!",
+      "preview": "Nutze KI sicher in deinem Unternehmen",
+      "greeting": "Hallo!",
+      "greeting-named": "Hallo {name}!",
+      "thanks": "Danke für deine Registrierung bei Ragen AI :)",
+      "mission": "Wir arbeiten an diesem Projekt, damit sich KI-Assistenten einfach bauen lassen.",
+      "contacts-tip": "In den nächsten Wochen entwickeln wir unsere Lösung weiter. Füge diese E-Mail-Adresse deshalb am besten zu deinen Kontakten hinzu – so verpasst du keine Neuigkeiten zu neuen Funktionen.",
+      "button": "Ragen-App öffnen",
+      "questions": "Wenn du Fragen, Wünsche oder Ideen zur App hast, schreib an {email}."
+    },
+    "security-alert": {
+      "preview": "[{severity}] {event} – Ragen-Sicherheitsalarm",
+      "intro": "In Ragen AI wurde ein Sicherheitsereignis der Stufe <strong>{severity}</strong> erfasst. Sieh dir die Details unten an und bestätige im Admin-Panel, dass es bearbeitet wurde.",
+      "label-id": "Ereignis-ID",
+      "label-type": "Typ",
+      "label-severity": "Stufe",
+      "label-source": "Quelle",
+      "label-time": "Zeitpunkt des Ereignisses",
+      "label-organization": "Organisation",
+      "label-user": "Benutzer",
+      "label-ip": "IP-Adresse",
+      "label-request": "Anfrage-ID",
+      "open": "Ereignis im Panel öffnen:",
+      "footer": "Du erhältst diese Nachricht, weil deine Adresse in der Umgebungsvariable <code>SECURITY_ALERT_EMAIL</code> hinterlegt ist. Der Alarm wurde durch ein kritisches Ereignis ausgelöst. Ereignisse niedrigerer Stufen sind nur im Admin-Panel einsehbar.",
+      "severity": {
+        "info": "Information",
+        "warn": "Warnung",
+        "critical": "Kritisch"
+      },
+      "source": {
+        "auth": "Authentifizierung",
+        "chat": "Chat",
+        "chatbot": "Chatbot",
+        "upload": "Datei-Upload",
+        "admin": "Admin-Panel",
+        "api": "API",
+        "mcp": "MCP",
+        "infra": "Infrastruktur"
+      },
+      "event-type": {
+        "AUTH_LOGIN_FAILED": "Fehlgeschlagene Anmeldung",
+        "AUTH_BRUTEFORCE_SUSPECTED": "Verdacht auf Brute-Force-Angriff",
+        "AUTH_PASSWORD_RESET_REQUESTED": "Passwort-Zurücksetzen angefordert",
+        "AUTH_ADMIN_ROLE_GRANTED": "Administratorrolle vergeben",
+        "AUTH_ADMIN_ROLE_REVOKED": "Administratorrolle entzogen",
+        "API_KEY_CREATED": "API-Schlüssel erstellt",
+        "API_KEY_REVOKED": "API-Schlüssel widerrufen",
+        "API_INTERNAL_SECRET_MISMATCH": "Interner API-Schlüssel stimmt nicht überein",
+        "CROSS_ORG_ACCESS_ATTEMPTED": "Zugriffsversuch über Organisationsgrenzen hinweg",
+        "UNAUTHORIZED_ACCESS_ATTEMPTED": "Versuch eines unbefugten Zugriffs",
+        "CHAT_JAILBREAK_DETECTED": "Jailbreak-Versuch erkannt",
+        "CHAT_PII_DETECTED": "Personenbezogene Daten im Chat erkannt",
+        "CHAT_PII_MASKING_FAILED": "Maskierung personenbezogener Daten fehlgeschlagen",
+        "TOOL_CALL_BLOCKED": "Werkzeugaufruf blockiert",
+        "TOOL_CALL_CONFIRMED": "Werkzeugaufruf bestätigt",
+        "TOOL_CALL_DENIED": "Werkzeugaufruf abgelehnt",
+        "TOOL_ARGS_HIGH_RISK": "Werkzeugargumente mit hohem Risiko",
+        "UPLOAD_SUSPICIOUS_CONTENT": "Verdächtiger Inhalt in einer hochgeladenen Datei",
+        "UPLOAD_REJECTED": "Hochgeladene Datei abgelehnt",
+        "ADMIN_SETTINGS_CHANGED": "Administrative Einstellungen geändert",
+        "RATE_LIMIT_HIT": "Anfragelimit überschritten",
+        "MCP_OAUTH_FAILED": "MCP-OAuth-Autorisierung fehlgeschlagen"
+      }
+    }
   }
 }

@@ -8,7 +8,7 @@ import { useSession } from '@/app/hooks/use-better-auth';
 import { Button } from '@ragenai/common-ui/Button';
 import { statusToast } from '@/app/lib/utils/toast';
 import { updateProfile } from '../actions/user';
-import { UpdateProfileSchema, type UpdateProfileFormData } from '../types';
+import { getUpdateProfileSchema, type UpdateProfileFormData } from '../types';
 
 type User = {
   name?: string | null;
@@ -42,7 +42,7 @@ export function ProfileEditForm({ user, locked = false }: Props) {
     formState: { errors, isSubmitting, isDirty },
     reset,
   } = useForm<UpdateProfileFormData>({
-    resolver: zodResolver(UpdateProfileSchema),
+    resolver: zodResolver(getUpdateProfileSchema(t)),
     defaultValues: {
       name: user.name || '',
     },
