@@ -108,6 +108,13 @@ archive is the blog.
 
 ### Navigation
 
+- `[brief]` **Settings get the same sidebar menu, and only your own pages.**
+  Inside Settings the sidebar lists General, Account, Connectors, Shared
+  threads and Memory in place of the main menu, with "Main menu" back to where
+  you were, and the page gets the width the second column took. The settings
+  menu used to mix in the organization's pages too; Knowledge analytics, PII
+  policy and the rest are now only in the Organization menu, and their old
+  settings links still redirect there.
 - `[brief]` **The organization pages have one menu, in the sidebar, not two
   columns.** Inside Organization the sidebar lists that section's pages
   (Users, Teams, API keys, RAG pipeline, and the rest) in place of the main menu

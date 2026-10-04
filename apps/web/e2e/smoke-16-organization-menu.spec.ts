@@ -61,3 +61,42 @@ test.describe('Organization menu in the sidebar (smoke)', () => {
     await expect(page).toHaveURL(/\/pl\/new/, { timeout: 15_000 });
   });
 });
+
+/**
+ * The same mechanism for the user's own settings: inside /settings the sidebar
+ * lists only the user's pages, and none of the organization's — Knowledge
+ * analytics and PII policy used to sit in that menu under "Privacy".
+ */
+test.describe('Settings menu in the sidebar (smoke)', () => {
+  test('lists only the user’s pages, and goes back to the thread it was entered from', async ({
+    page,
+  }) => {
+    await page.goto(`/pl/chats/${TEST_THREAD_ID}`);
+    await expect(
+      page.getByRole('link', { name: TEST_THREAD_TITLE }).first(),
+    ).toBeVisible({ timeout: 15_000 });
+
+    await page.goto('/pl/settings/general');
+
+    const back = page.getByTestId('settings-back');
+    await expect(back).toBeVisible({ timeout: 15_000 });
+    await expect(back).toHaveText(/menu główne/i);
+    await expect(page.getByRole('link', { name: 'Konto' })).toHaveCount(1);
+    await expect(
+      page.getByRole('link', { name: TEST_THREAD_TITLE }),
+    ).toHaveCount(0);
+
+    // The organization's screens are not in this menu, even for an owner.
+    for (const name of ['Analityka wiedzy', 'Polityka PII', 'Chatboty']) {
+      await expect(page.getByRole('link', { name })).toHaveCount(0);
+    }
+
+    await page.getByRole('link', { name: 'Konto' }).click();
+    await expect(page).toHaveURL(/\/settings\/account/);
+
+    await page.getByTestId('settings-back').click();
+    await expect(page).toHaveURL(new RegExp(`/chats/${TEST_THREAD_ID}`), {
+      timeout: 15_000,
+    });
+  });
+});

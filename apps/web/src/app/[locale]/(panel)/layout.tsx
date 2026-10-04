@@ -40,10 +40,15 @@ import { DEFAULT_FEATURES } from '@/features/subscriptions/contracts/features.ty
 import { Badge } from '@/components/ui/badge';
 import { canUseBrain } from '@/features/brain/utils/can-use-brain';
 import { filterSettingsPages } from '@/features/settings/filter';
-import { organizationRegistry } from '@/features/settings/registry';
-import { OutsideOrganization } from '@/app/components/Sidebar/OrganizationSection/OutsideOrganization';
-import { OrganizationSidebarBody } from '@/app/components/Sidebar/OrganizationSection/OrganizationSidebarBody';
-import { RememberLastPage } from '@/app/components/Sidebar/OrganizationSection/RememberLastPage';
+import { navFeatureFlags } from '@/features/settings/nav-feature-flags';
+import {
+  organizationRegistry,
+  settingsRegistry,
+  type SettingsPage,
+} from '@/features/settings/registry';
+import { OutsideSectionMenu } from '@/app/components/Sidebar/SectionMenu/OutsideSectionMenu';
+import { SectionSidebarBody } from '@/app/components/Sidebar/SectionMenu/SectionSidebarBody';
+import { RememberLastPage } from '@/app/components/Sidebar/SectionMenu/RememberLastPage';
 
 type Props = Readonly<{
   children: React.ReactNode;
@@ -73,17 +78,35 @@ export default async function PanelLayout({ children }: Props) {
     ? await getEffectiveFeaturesQuery(activeOrgId)
     : DEFAULT_FEATURES;
 
-  // What the organization menu lists while the reader is inside /organization,
-  // where it takes the sidebar's place (#1399). Filtered here, with the
-  // predicate the settings pages use, so the sidebar draws what it is handed
+  // What each section's menu lists while the reader is inside it, where it
+  // takes the sidebar's place: the organization's pages under /organization
+  // (#1399), the user's own under /settings. Filtered here, with the
+  // predicate the pages' guards use, so the sidebar draws what it is handed
   // and decides nothing about who may see which entry. Only the four fields it
   // renders cross to the client.
-  const organizationItems = filterSettingsPages(organizationRegistry, {
+  //
+  // The settings menu filters on `navFeatureFlags`, which keeps the memory
+  // page listed while the user still has memories to erase; the feature read
+  // inside it is the cached one above, not a second query.
+  const access = {
     isAppAdmin: isAppAdmin(user),
     canManageOrg: member ? canManageOrg(member.role) : false,
     isOrgOwner: member ? canOwnOrg(member.role) : false,
+  };
+  const toNavItem = ({ id, path, labelKey, icon }: SettingsPage) => ({
+    id,
+    path,
+    labelKey,
+    icon,
+  });
+  const organizationItems = filterSettingsPages(organizationRegistry, {
+    ...access,
     featureFlags: features,
-  }).map(({ id, path, labelKey, icon }) => ({ id, path, labelKey, icon }));
+  }).map(toNavItem);
+  const settingsItems = filterSettingsPages(settingsRegistry, {
+    ...access,
+    featureFlags: activeOrgId ? await navFeatureFlags(activeOrgId) : {},
+  }).map(toNavItem);
 
   const navbar = (
     <Navbar>
@@ -144,11 +167,12 @@ export default async function PanelLayout({ children }: Props) {
         </div>
 
         {/*
-          Zones 2 and 3 are the main menu. Inside /organization the sidebar's
-          body becomes that section's menu instead, so they step aside — the
-          brand row above and the switcher and user menu below do not.
+          Zones 2 and 3 are the main menu. Inside /organization and /settings
+          the sidebar's body becomes that section's menu instead, so they step
+          aside — the brand row above and the switcher and user menu below do
+          not.
         */}
-        <OutsideOrganization>
+        <OutsideSectionMenu>
           <SidebarSection>
             {/*
             Zone 2 — actions. Things you *do*: start a chat, search, check
@@ -221,13 +245,22 @@ export default async function PanelLayout({ children }: Props) {
               </SidebarItem>
             )}
           </SidebarSection>
-        </OutsideOrganization>
+        </OutsideSectionMenu>
       </SidebarHeader>
 
-      <OutsideOrganization>
+      <OutsideSectionMenu>
         <MainSidebarBody />
-      </OutsideOrganization>
-      <OrganizationSidebarBody items={organizationItems} />
+      </OutsideSectionMenu>
+      <SectionSidebarBody
+        section="organization"
+        titleKey="organization-page.title"
+        items={organizationItems}
+      />
+      <SectionSidebarBody
+        section="settings"
+        titleKey="settings-page.title"
+        items={settingsItems}
+      />
       <SidebarFooterMenu
         above={
           <OrganizationSwitcher
