@@ -1852,6 +1852,14 @@
       "powered-by": "Desarrollado por {name}",
       "connectors": "Conectores",
       "connectors-description": "Sin integraciones conectadas",
+      "answer-from-documents-only": {
+        "title": "Responder solo a partir de los documentos",
+        "description": "Si está activado, ante una pregunta que los documentos no cubren se responde indicándolo, en lugar de usar el conocimiento general del modelo.",
+        "default-chatbot": "Predeterminado para este asistente: activado, porque tiene el chatbot público activado.",
+        "default-panel": "Predeterminado para este asistente: desactivado.",
+        "set-for-assistant": "Configurado para este asistente.",
+        "save-failed": "No se pudo guardar la configuración. Inténtalo de nuevo."
+      },
       "connectors-saving": "Guardando...",
       "loading": "Cargando integraciones..."
     },

@@ -464,6 +464,88 @@ describe('ProjectsService', () => {
     });
   });
 
+  describe('answerFromDocumentsOnly', () => {
+    it('hides the state of a project the caller cannot view', async () => {
+      const { service, projectOps } = makeService();
+      projectOps.findFirst.mockResolvedValue(null);
+
+      await expect(
+        service.getAnswerFromDocumentsOnly(PROJECT, ORG, 'u'),
+      ).rejects.toThrow(NotFoundException);
+    });
+
+    it.each([
+      [null, true, true],
+      [null, false, false],
+      [false, true, false],
+      [true, false, true],
+    ])(
+      'reports setting %s with chatbot %s as effective %s',
+      async (setting, chatbotEnabled, effective) => {
+        const { service, projectOps } = makeService();
+        projectOps.findFirst
+          // the permission check
+          .mockResolvedValueOnce({ id: PROJECT, ownerId: 'u' })
+          // the state read
+          .mockResolvedValueOnce({
+            chatbotEnabled,
+            settings:
+              setting === null ? null : { answerFromDocumentsOnly: setting },
+          });
+
+        await expect(
+          service.getAnswerFromDocumentsOnly(PROJECT, ORG, 'u'),
+        ).resolves.toEqual({
+          setting,
+          chatbotEnabled,
+          effective,
+          canManage: true,
+        });
+        expect(projectOps.findFirst).toHaveBeenLastCalledWith(
+          expect.objectContaining({
+            where: { id: PROJECT, organizationId: ORG },
+          }),
+        );
+      },
+    );
+
+    it('refuses a caller who can view but not manage', async () => {
+      const { service, projectOps, projectPermissionOps, projectSettingsOps } =
+        makeService();
+      projectOps.findFirst.mockResolvedValue({ id: PROJECT, ownerId: 'owner' });
+      projectPermissionOps.findMany.mockResolvedValue([
+        { permission: 'view', granteeType: 'user' },
+      ]);
+
+      await expect(
+        service.saveAnswerFromDocumentsOnly(PROJECT, false, ORG, 'u'),
+      ).rejects.toThrow(UnauthorizedException);
+      expect(projectSettingsOps.upsert).not.toHaveBeenCalled();
+    });
+
+    it('refuses a project outside the organization', async () => {
+      const { service, projectOps, projectSettingsOps } = makeService();
+      projectOps.findFirst.mockResolvedValue(null);
+
+      await expect(
+        service.saveAnswerFromDocumentsOnly(PROJECT, true, ORG, 'u'),
+      ).rejects.toThrow(NotFoundException);
+      expect(projectSettingsOps.upsert).not.toHaveBeenCalled();
+    });
+
+    it('upserts the switch when access allows', async () => {
+      const { service, projectOps, projectSettingsOps } = makeService();
+      projectOps.findFirst.mockResolvedValue({ id: PROJECT, ownerId: 'u' });
+
+      await service.saveAnswerFromDocumentsOnly(PROJECT, false, ORG, 'u');
+      expect(projectSettingsOps.upsert).toHaveBeenCalledWith({
+        where: { projectId: PROJECT },
+        update: { answerFromDocumentsOnly: false },
+        create: { projectId: PROJECT, answerFromDocumentsOnly: false },
+      });
+    });
+  });
+
   describe('getProjectMcpProviders', () => {
     it('delegates to GetProjectMcpProvidersService', async () => {
       const { service, getProjectMcpProvidersService } = makeService();
