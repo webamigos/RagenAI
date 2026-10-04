@@ -1149,7 +1149,8 @@
       "audit-logs": "Revisionslogs",
       "knowledge-analytics": "Videnanalyse",
       "role-org-owner": "Ejer"
-    }
+    },
+    "back-to-main-menu": "Hovedmenu"
   },
   "chats-page": {
     "title": "Chats",

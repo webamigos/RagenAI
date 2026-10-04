@@ -43,7 +43,7 @@ describe('settingsRegistry (actual)', () => {
 
     expect(
       adminOnly,
-      'An organization-scoped screen belongs under /organization/, in OrganizationNav.',
+      'An organization-scoped screen belongs under /organization/, in organizationRegistry.',
     ).toEqual([]);
   });
 

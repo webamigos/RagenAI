@@ -1149,7 +1149,8 @@
       "audit-logs": "Revisjonslogger",
       "knowledge-analytics": "Kunnskapsanalyse",
       "role-org-owner": "Eier"
-    }
+    },
+    "back-to-main-menu": "Hovedmeny"
   },
   "chats-page": {
     "title": "Chatter",

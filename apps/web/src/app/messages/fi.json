@@ -1149,7 +1149,8 @@
       "audit-logs": "Tarkastuslokit",
       "knowledge-analytics": "Tietämysanalytiikka",
       "role-org-owner": "Omistaja"
-    }
+    },
+    "back-to-main-menu": "Päävalikko"
   },
   "chats-page": {
     "title": "Keskustelut",

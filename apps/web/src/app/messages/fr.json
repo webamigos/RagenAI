@@ -1149,7 +1149,8 @@
       "audit-logs": "Journaux d'audit",
       "knowledge-analytics": "Analyse des connaissances",
       "role-org-owner": "Propriétaire"
-    }
+    },
+    "back-to-main-menu": "Menu principal"
   },
   "chats-page": {
     "title": "Chats",

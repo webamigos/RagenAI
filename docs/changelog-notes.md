@@ -105,6 +105,17 @@ archive is the blog.
   changed while it was being indexed. Documents revoked before this release are
   corrected the next time anyone touches their sharing, or when they are
   re-indexed; there is no sweep over old ones yet. ([#1245](https://github.com/webamigos/RagenAI/issues/1245))
+### Navigation
+
+- `[brief]` **The organization pages have one menu, in the sidebar, not two
+  columns.** Inside Organization the sidebar lists that section's pages
+  (Users, Teams, API keys, RAG pipeline, and the rest) in place of the main menu
+  and the thread history, and the page gets the width the second column took.
+  "Main menu" at the top returns to the page you came from, however many
+  organization pages you opened in between; a bookmarked organization URL goes
+  to a new chat. The organization switcher and the user menu stay where they
+  were. ([#1399](https://github.com/webamigos/RagenAI/issues/1399))
+
 ### Usage and limits
 
 - `[brief]` **Reranking counts toward the monthly cost limit.** The default

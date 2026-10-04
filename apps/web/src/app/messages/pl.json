@@ -1149,7 +1149,8 @@
       "audit-logs": "Dziennik zdarzeń",
       "knowledge-analytics": "Analityka wiedzy",
       "role-org-owner": "Właściciel"
-    }
+    },
+    "back-to-main-menu": "Menu główne"
   },
   "chats-page": {
     "title": "Wątki",

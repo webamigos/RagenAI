@@ -29,7 +29,7 @@ import { getTranslations } from 'next-intl/server';
 import { OrganizationSwitcher } from '@/app/components/Sidebar/OrganizationSwitcher';
 import { getUserOrganizationsQuery } from '@/features/organizations/services/queries/get-user-organizations-query';
 import { getCurrentUser, getOrgIdFromAuth } from '@/app/lib/utils/auth-helpers';
-import { isAppAdmin, canManageOrg } from '@/lib/auth-access-control';
+import { isAppAdmin, canManageOrg, canOwnOrg } from '@/lib/auth-access-control';
 import { getActiveMember } from '@/lib/auth-guards';
 import { ensureOnboardingComplete } from '@/features/onboarding/services/commands/ensure-onboarding-complete';
 import { OrgFeaturesProvider } from '@/context/OrgFeaturesContext';
@@ -37,6 +37,11 @@ import { getEffectiveFeaturesQuery } from '@/features/subscriptions/services/que
 import { DEFAULT_FEATURES } from '@/features/subscriptions/contracts/features.types';
 import { Badge } from '@/components/ui/badge';
 import { canUseBrain } from '@/features/brain/utils/can-use-brain';
+import { filterSettingsPages } from '@/features/settings/filter';
+import { organizationRegistry } from '@/features/settings/registry';
+import { OutsideOrganization } from '@/app/components/Sidebar/OrganizationSection/OutsideOrganization';
+import { OrganizationSidebarBody } from '@/app/components/Sidebar/OrganizationSection/OrganizationSidebarBody';
+import { RememberLastPage } from '@/app/components/Sidebar/OrganizationSection/RememberLastPage';
 
 type Props = Readonly<{
   children: React.ReactNode;
@@ -65,6 +70,18 @@ export default async function PanelLayout({ children }: Props) {
   const features = activeOrgId
     ? await getEffectiveFeaturesQuery(activeOrgId)
     : DEFAULT_FEATURES;
+
+  // What the organization menu lists while the reader is inside /organization,
+  // where it takes the sidebar's place (#1399). Filtered here, with the
+  // predicate the settings pages use, so the sidebar draws what it is handed
+  // and decides nothing about who may see which entry. Only the four fields it
+  // renders cross to the client.
+  const organizationItems = filterSettingsPages(organizationRegistry, {
+    isAppAdmin: isAppAdmin(user),
+    canManageOrg: member ? canManageOrg(member.role) : false,
+    isOrgOwner: member ? canOwnOrg(member.role) : false,
+    featureFlags: features,
+  }).map(({ id, path, labelKey, icon }) => ({ id, path, labelKey, icon }));
 
   const navbar = (
     <Navbar>
@@ -124,27 +141,33 @@ export default async function PanelLayout({ children }: Props) {
           </span>
         </div>
 
-        <SidebarSection>
-          {/*
+        {/*
+          Zones 2 and 3 are the main menu. Inside /organization the sidebar's
+          body becomes that section's menu instead, so they step aside — the
+          brand row above and the switcher and user menu below do not.
+        */}
+        <OutsideOrganization>
+          <SidebarSection>
+            {/*
             Zone 2 — actions. Things you *do*: start a chat, search, check
             notifications. Notifications lived a section below, next to
             Knowledge, which put one action and one destination in a group
             together and left the reader to sort out which was which.
           */}
-          {/* The primary action is not one of the rows below it. */}
-          <div className="mb-2">
-            <ChatButton variant="primary">{t('new-chat')}</ChatButton>
-          </div>
-          <SearchButton variant="sidebar">
-            <MagnifyingGlassIconOutline className="size-5 shrink-0 stroke-muted-foreground" />
-            <SidebarLabel className="font-normal">{t('search')}</SidebarLabel>
-            <ShortcutHint />
-          </SearchButton>
-        </SidebarSection>
+            {/* The primary action is not one of the rows below it. */}
+            <div className="mb-2">
+              <ChatButton variant="primary">{t('new-chat')}</ChatButton>
+            </div>
+            <SearchButton variant="sidebar">
+              <MagnifyingGlassIconOutline className="size-5 shrink-0 stroke-muted-foreground" />
+              <SidebarLabel className="font-normal">{t('search')}</SidebarLabel>
+              <ShortcutHint />
+            </SearchButton>
+          </SidebarSection>
 
-        <SidebarDivider className="my-2" />
+          <SidebarDivider className="my-2" />
 
-        {/*
+          {/*
           Zone 3 — the library, and the only destinations in the sidebar. Not
           headed: the divider above already separates it from the actions, and
           the "Library" label cost a line the thread list needs on a phone.
@@ -156,49 +179,53 @@ export default async function PanelLayout({ children }: Props) {
           destination, but who may manage a knowledge base is an authorization
           question and not one a redesign gets to answer.
         */}
-        <SidebarSection>
-          <SidebarItem href="/chats">
-            <ChatBubbleLeftIconOutline className="size-5 shrink-0 stroke-muted-foreground" />
-            <SidebarLabel className="font-normal">
-              {t('nav.chats')}
-            </SidebarLabel>
-          </SidebarItem>
-          <SidebarItem href="/projects">
-            <FolderIconOutline className="size-5 shrink-0 stroke-muted-foreground" />
-            <SidebarLabel className="font-normal">
-              {t('nav.assistants')}
-            </SidebarLabel>
-          </SidebarItem>
-          {/*
+          <SidebarSection>
+            <SidebarItem href="/chats">
+              <ChatBubbleLeftIconOutline className="size-5 shrink-0 stroke-muted-foreground" />
+              <SidebarLabel className="font-normal">
+                {t('nav.chats')}
+              </SidebarLabel>
+            </SidebarItem>
+            <SidebarItem href="/projects">
+              <FolderIconOutline className="size-5 shrink-0 stroke-muted-foreground" />
+              <SidebarLabel className="font-normal">
+                {t('nav.assistants')}
+              </SidebarLabel>
+            </SidebarItem>
+            {/*
             Brain answers to the same test its routes do — the flags, and an
             owner or admin of this organization (or any member, while
             `brainForMembers` is on). Not `userIsOrgAdmin`, which
             also lets a platform admin through: this is the customer's
             knowledge, and a link to a page that 404s is worse than none.
           */}
-          {canUseBrain({ role: member?.role, flags: features }) && (
-            <SidebarItem href="/brain">
-              <LightBulbIconOutline className="size-5 shrink-0 stroke-muted-foreground" />
-              <SidebarLabel className="font-normal">
-                {t('nav.brain')}
-              </SidebarLabel>
-              <Badge variant="secondary" className="ml-auto">
-                {t('nav.brainBeta')}
-              </Badge>
-            </SidebarItem>
-          )}
-          {userIsOrgAdmin && (
-            <SidebarItem href="/knowledge/documents-list">
-              <BookOpenIconOutline className="size-5 shrink-0 stroke-muted-foreground" />
-              <SidebarLabel className="font-normal">
-                {t('manage-knowledge')}
-              </SidebarLabel>
-            </SidebarItem>
-          )}
-        </SidebarSection>
+            {canUseBrain({ role: member?.role, flags: features }) && (
+              <SidebarItem href="/brain">
+                <LightBulbIconOutline className="size-5 shrink-0 stroke-muted-foreground" />
+                <SidebarLabel className="font-normal">
+                  {t('nav.brain')}
+                </SidebarLabel>
+                <Badge variant="secondary" className="ml-auto">
+                  {t('nav.brainBeta')}
+                </Badge>
+              </SidebarItem>
+            )}
+            {userIsOrgAdmin && (
+              <SidebarItem href="/knowledge/documents-list">
+                <BookOpenIconOutline className="size-5 shrink-0 stroke-muted-foreground" />
+                <SidebarLabel className="font-normal">
+                  {t('manage-knowledge')}
+                </SidebarLabel>
+              </SidebarItem>
+            )}
+          </SidebarSection>
+        </OutsideOrganization>
       </SidebarHeader>
 
-      <MainSidebarBody />
+      <OutsideOrganization>
+        <MainSidebarBody />
+      </OutsideOrganization>
+      <OrganizationSidebarBody items={organizationItems} />
       <SidebarFooterMenu
         above={
           <OrganizationSwitcher
@@ -214,6 +241,7 @@ export default async function PanelLayout({ children }: Props) {
 
   return (
     <OrgFeaturesProvider features={features}>
+      <RememberLastPage />
       <PanelLayoutWrapper navbar={navbar} sidebar={sidebar}>
         {children}
       </PanelLayoutWrapper>

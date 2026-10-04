@@ -18,7 +18,10 @@ Source: `apps/web/design_handoff_ragen_panel/UX_RULES.md`.
 1. **One left sidebar, three zones.** Actions (New chat, Search, Notifications) →
    Library (Threads, Assistants, Knowledge) → Recent, grouped by day. The org and
    user switchers stay pinned at the bottom. Never mix a nav destination and an
-   action in the same zone.
+   action in the same zone. Inside `/organization` the sidebar's body is that
+   section's menu instead, behind a "Main menu" control that returns to the page
+   you came from — a section does not get a second navigation column beside the
+   sidebar.
 2. **Content is capped at 1120px and left-aligned inside the pane**, except
    table-heavy pages, which run full width (`data-panel-fullwidth`).
 3. **Page header is one row**: title (display font) + primary action, right

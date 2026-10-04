@@ -1149,7 +1149,8 @@
       "audit-logs": "Naplók",
       "knowledge-analytics": "Tudásbázis-elemzés",
       "role-org-owner": "Tulajdonos"
-    }
+    },
+    "back-to-main-menu": "Főmenü"
   },
   "chats-page": {
     "title": "Chatek",
