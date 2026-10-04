@@ -480,6 +480,9 @@ work, and D packages the result.
   One of the seven failed cases across the runs was a citation on the absence; the
   case that fails in every run (`en-premise-xl-kolej-voucher`) has relevant
   context, so a relevance grader would not change it.
+  Corpus v4 dropped every documented figure from the guard `expectNone`.
+  The same answers, regraded, fail 1, 2 and 2 of 28, so the median is still 7.1%
+  (`apps/web/evals/rag-benchmark/results/2026-10-04-guard-v4-regrade.md`).
 
 ### Phase D — a number we can quote
 

@@ -133,11 +133,15 @@ filed by id prefix:
   contradict, which the answer must correct, citing the document. Two are about
   something no document mentions, so the only correct answer is the absence.
 
-Each question's `why` says what makes it fair and which figure tempts. Where a
-specific figure would show the answer came from the wrong place — the sibling
-operator's, a neighbouring tariff's, twelve monthly passes multiplied out — it
-is in `expectNone`. A figure a careful refusal might quote as context is left
-to the rubric instead, so a good answer is not failed for being thorough.
+Each question's `why` says what makes it fair and which figure tempts.
+`expectNone` holds only figures that appear in **no** document — twelve
+monthly passes multiplied out, a false premise's percentage applied — so
+finding one in an answer means it was invented. A documented figure that
+tempts (the sibling operator's, a neighbouring tariff's) is left to the
+rubric: a careful refusal quotes it as context, and a substring cannot tell
+quoting from borrowing. Corpus v3 forbade those too and failed correct
+refusals for it; v4 dropped them, and `__tests__/guard-v4.test.ts` checks
+every `expectNone` figure against the documents.
 
 Three things grade a case whose answer is in no document: the rubric (it says
 so, and gives no figure, with no citation on that statement), and `expectNone`.
