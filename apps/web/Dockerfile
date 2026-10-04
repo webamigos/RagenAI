@@ -4,7 +4,6 @@ FROM base AS deps
 RUN apk add --no-cache python3 make g++
 WORKDIR /app
 COPY package.json package-lock.json* ./
-COPY packages/db/package.json ./packages/db/package.json
 COPY packages/rag-core/package.json ./packages/rag-core/package.json
 COPY packages/storage/package.json ./packages/storage/package.json
 COPY packages/observability/package.json ./packages/observability/package.json

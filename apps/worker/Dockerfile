@@ -14,7 +14,6 @@ COPY package.json package-lock.json ./
 COPY apps/worker/package.json apps/worker/
 COPY apps/api/package.json apps/api/
 COPY apps/admin/package.json apps/admin/
-COPY packages/db/package.json packages/db/
 # Real workspace dependencies, not just manifests npm wants to see:
 # node_modules/@ragenai/* are symlinks into packages/, so each manifest has to
 # be here for `npm ci` to link it, each has to be built in the builder stage,

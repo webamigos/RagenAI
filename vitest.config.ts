@@ -68,7 +68,7 @@ export default defineConfig({
       reporter: ['text', 'json-summary'],
       reportsDirectory: './coverage/packages',
       include: ['packages/*/src/**/*.ts'],
-      exclude: ['packages/*/src/**/__tests__/**', 'packages/db/**'],
+      exclude: ['packages/*/src/**/__tests__/**'],
     },
   },
 });

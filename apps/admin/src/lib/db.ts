@@ -1,6 +1,12 @@
 // The client is generated into apps/web by the root prisma/schema.prisma's
 // first `generator` block (ADR-29 moved that app; the output path moved with
 // it). apps/api has its own block and its own copy.
+//
+// Unlike apps/web's and apps/api's clients, this one is deliberately NOT wrapped
+// in the tenant-scope guard. The panel is the platform-wide surface (ADR-35):
+// disk usage, ceilings and revocation read across every organization, so a
+// guard that demands an org filter would fire on each legitimate query. Do not
+// add it here; a per-organization read belongs in apps/web.
 import { PrismaClient } from '../../../web/src/generated/prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 
