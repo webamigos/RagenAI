@@ -30,9 +30,36 @@ export function resolveConnection(
   flags: Flags,
   env: Record<string, string | undefined>,
 ): Connection | undefined {
-  const url = normalizeUrl(flags.values.get('--url') ?? env.RAGEN_API_URL);
-  const key = flags.values.get('--api-key') ?? env.RAGEN_API_KEY ?? '';
+  const explicitUrl = flags.values.get('--url') || env.RAGEN_API_URL;
+  const url = normalizeUrl(explicitUrl || env[SAVED_URL]);
+  const key =
+    flags.values.get('--api-key') ||
+    env.RAGEN_API_KEY ||
+    savedKeyFor(url, env) ||
+    '';
   return url && key ? { url, key } : undefined;
+}
+
+/**
+ * Where index.ts puts what `ragen login` saved. Kept apart from
+ * RAGEN_API_URL/RAGEN_API_KEY on purpose: the saved address and key are one
+ * fact, and merged into those two they came apart — `--url https://other`
+ * with a saved key sent that key to the other host.
+ */
+export const SAVED_URL = 'RAGEN_SAVED_URL';
+export const SAVED_KEY = 'RAGEN_SAVED_KEY';
+
+/**
+ * The saved key, only when the request is going to the address it was saved
+ * for. A key is a credential for one installation; any other address — a
+ * typo, a staging host, plain http — does not get it.
+ */
+export function savedKeyFor(
+  url: string,
+  env: Record<string, string | undefined>,
+): string | undefined {
+  const saved = normalizeUrl(env[SAVED_URL]);
+  return saved && url === saved ? env[SAVED_KEY] : undefined;
 }
 
 /**
@@ -46,7 +73,7 @@ export function normalizeUrl(url: string | undefined): string {
 
 /** What every installation-facing command says when it has no connection. */
 export const NO_CONNECTION =
-  'Run `ragen login --url <api-url>`, or set RAGEN_API_URL and RAGEN_API_KEY (or pass --url and --api-key).';
+  'Run `ragen login --url <api-url>`, or set RAGEN_API_URL and RAGEN_API_KEY (or pass --url and --api-key). A saved key is only sent to the address it was saved for.';
 
 /**
  * A request that never got an answer — refused, unresolvable, timed out —
@@ -96,8 +123,15 @@ async function serverMessage(res: Response): Promise<string | undefined> {
       message?: unknown;
       error?: { message?: unknown } | string;
     };
-    const candidate =
-      typeof body.error === 'object' ? body.error?.message : body.message;
+    // Three shapes: OpenAI's `{ error: { message } }`, Nest's `{ message }`,
+    // and `/v1/chat`'s limits, `{ error: 'Monthly usage limit exceeded' }` —
+    // the one that tells "wait a minute" from "wait a month".
+    let candidate: unknown = body.message;
+    if (typeof body.error === 'string') {
+      candidate = body.error;
+    } else if (typeof body.error === 'object') {
+      candidate = body.error?.message;
+    }
     if (typeof candidate === 'string') {
       return candidate;
     }

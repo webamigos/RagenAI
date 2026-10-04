@@ -1,13 +1,15 @@
 import { join } from 'node:path';
 
+import { SAVED_KEY, SAVED_URL } from './api';
+
 /**
  * The connection `ragen login` saves, so a terminal does not need
  * RAGEN_API_URL and RAGEN_API_KEY exported in every shell.
  *
  * Precedence is flags, then the environment, then this file: a script that
  * sets the variables, or a one-off `--url`, always wins over whatever someone
- * logged in to last. That ordering is applied once, in `withStoredConnection`,
- * so no command has to know the file exists.
+ * logged in to last. The saved key is only ever sent to the saved address —
+ * see `savedKeyFor` in api.ts, which every command resolves through.
  *
  * The key is stored as plain text, readable only by the user (0600). That is
  * the same trade `gh`, `npm` and `docker` make without a keychain; the README
@@ -54,8 +56,9 @@ export function parseStoredConnection(
 }
 
 /**
- * The environment the commands see: the stored connection fills only what
- * the real environment leaves empty.
+ * The environment the commands see: the saved pair under its own names, for
+ * `resolveConnection` to use only as a pair — the key goes with the address
+ * it was saved for and nowhere else.
  */
 export function withStoredConnection(
   env: Record<string, string | undefined>,
@@ -64,11 +67,7 @@ export function withStoredConnection(
   if (!stored) {
     return env;
   }
-  return {
-    ...env,
-    RAGEN_API_URL: env.RAGEN_API_URL || stored.url,
-    RAGEN_API_KEY: env.RAGEN_API_KEY || stored.key,
-  };
+  return { ...env, [SAVED_URL]: stored.url, [SAVED_KEY]: stored.key };
 }
 
 /** `sk-d723…ptqQ` — enough to tell two keys apart, not enough to use one. */

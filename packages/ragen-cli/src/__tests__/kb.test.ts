@@ -136,6 +136,44 @@ describe('ragen kb upload', () => {
     expect(err[0]).toMatch(/Rate limited; waiting 12s/);
   });
 
+  it('does not retry a 429 without Retry-After — a ceiling, not a throttle — and stops the batch', async () => {
+    const { deps, err, sleep, fetchMock } = harness({
+      'POST files': {
+        status: 429,
+        body: { error: 'Monthly usage limit exceeded' },
+      },
+    });
+    await expect(runKb(['upload', './a.pdf', './b.md'], deps)).resolves.toBe(1);
+    expect(sleep).not.toHaveBeenCalled();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(err.join('\n')).toContain('Monthly usage limit exceeded');
+    expect(err.join('\n')).toContain('Stopped: 1 file(s) not uploaded.');
+  });
+
+  it('caps a long Retry-After instead of sleeping it out', async () => {
+    const { deps, sleep } = harness({
+      'POST files': [
+        { status: 429, body: {}, headers: { 'Retry-After': '3600' } },
+        { body: file('file-a', 'uploaded', 'a.pdf') },
+      ],
+    });
+    await expect(runKb(['upload', './a.pdf'], deps)).resolves.toBe(0);
+    expect(sleep).toHaveBeenCalledWith(120_000);
+  });
+
+  it('with --wait --json, still prints what was uploaded when waiting fails', async () => {
+    const { deps, out, err } = harness({
+      'POST files': { body: file('file-a', 'uploaded', 'a.pdf') },
+      'GET files': { status: 502, body: {} },
+    });
+    await expect(
+      runKb(['upload', './a.pdf', '--wait', '--json'], deps),
+    ).resolves.toBe(1);
+    expect(JSON.parse(out[0]!)).toEqual([file('file-a', 'uploaded', 'a.pdf')]);
+    expect(err.join('\n')).toContain('Stopped waiting: The API answered 502.');
+    expect(err.join('\n')).toContain('ragen kb status file-a');
+  });
+
   it('carries on past an unreadable file but exits non-zero', async () => {
     const { deps, err, out } = harness({
       'POST files': { body: file('file-a', 'uploaded', 'a.pdf') },

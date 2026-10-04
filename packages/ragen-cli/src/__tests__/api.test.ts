@@ -30,6 +30,53 @@ describe('resolveConnection', () => {
     ).toEqual({ url: 'https://flag.example.com', key: 'sk-env' });
   });
 
+  describe('with a saved connection', () => {
+    const saved = {
+      RAGEN_SAVED_URL: 'https://ragen.acme.com',
+      RAGEN_SAVED_KEY: 'sk-saved.secret',
+    };
+
+    it('uses the saved pair when nothing else is given', () => {
+      expect(resolveConnection(parseFlags([], []), saved)).toEqual({
+        url: 'https://ragen.acme.com',
+        key: 'sk-saved.secret',
+      });
+    });
+
+    it('never sends the saved key to another address — flag or variable', () => {
+      expect(
+        resolveConnection(
+          parseFlags(['--url', 'https://evil.example'], []),
+          saved,
+        ),
+      ).toBeUndefined();
+      expect(
+        resolveConnection(parseFlags([], []), {
+          ...saved,
+          RAGEN_API_URL: 'http://localhost:3001',
+        }),
+      ).toBeUndefined();
+    });
+
+    it('sends it to the saved address however that is spelled', () => {
+      expect(
+        resolveConnection(
+          parseFlags(['--url', 'https://ragen.acme.com/v1/'], []),
+          saved,
+        )?.key,
+      ).toBe('sk-saved.secret');
+    });
+
+    it('lets an explicit key go to an explicit address', () => {
+      expect(
+        resolveConnection(
+          parseFlags(['--url', 'https://other', '--api-key', 'sk-other'], []),
+          saved,
+        ),
+      ).toEqual({ url: 'https://other', key: 'sk-other' });
+    });
+  });
+
   it('is undefined when either half is missing', () => {
     expect(
       resolveConnection(parseFlags([], []), { RAGEN_API_URL: 'https://x' }),
@@ -88,6 +135,19 @@ describe('createApiClient', () => {
     );
     await expect(api('files')).rejects.toThrow(
       'The API answered 413. (File too large)',
+    );
+  });
+
+  it('keeps a limit message sent as a plain string in `error`', async () => {
+    const api = createApiClient(
+      respond(429, {
+        error: 'Monthly usage limit exceeded',
+        code: 'LIMIT',
+      }) as unknown as typeof fetch,
+      connection,
+    );
+    await expect(api('chat')).rejects.toThrow(
+      'Too many requests: the rate or usage limit was reached. (Monthly usage limit exceeded)',
     );
   });
 
