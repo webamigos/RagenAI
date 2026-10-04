@@ -89,12 +89,12 @@ a single "default on" env flag:
 - **Reranking (ADR-12)** is **opt-in**: it needs `FEATURE_FLAG_RERANKING=1`
   *and* provider credentials, so a default install answers from raw hybrid
   results. The per-org `rerankingEnabled` setting can only turn it further off.
-  Measured on 2026-10-01 (`evals/rag-benchmark/results/2026-10-01-a3-reranker-baseline.md`):
-  no change on prose (`kolej` 17 vs 18 of 24, identical evidence), a gain on
-  tables (`tabele` 7/18 off vs 10/17 Scaleway). The reranking arm also
-  retrieves a three-times-wider pool, so that gain is not yet attributable to
-  the reranker; the retrieval-claims spec's Phase B splits the two before
-  anything claims a benefit.
+  Measured on 2026-10-03 on the default install
+  (`apps/web/evals/rag-benchmark/results/2026-10-03-b1-reranking-split.md`): off,
+  cross-query fusion and Scaleway are within noise on both corpora (`kolej`
+  median passed cases 22/24/21 of 24, `tabele` 14/15/16 of 18). Scaleway's small edge on
+  tables is consistent but under the noise floor, so reranking stays opt-in
+  and is not claimed as a quality gain (ADR-12, 2026-10-03 update).
 - **Contextual chunks** — feature key `contextualChunks`, **on** by default.
   It changes what is embedded, so only files ingested or re-indexed while it is
   on carry the prefix; `apps/worker/src/scripts/reindex-for-context.ts` brings
