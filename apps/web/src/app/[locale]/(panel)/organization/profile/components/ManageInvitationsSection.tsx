@@ -5,6 +5,7 @@ import { useTranslations, useLocale } from 'next-intl';
 import { statusToast } from '@/app/lib/utils/toast';
 import { ConfirmDialog } from '@/app/components/ConfirmDialog';
 import { cancelInvitation, resendInvitation } from '../actions/invitations';
+import { actionErrorMessage } from '../errors';
 import { ORG_ADMIN_ROLE, canManageOrg } from '@/lib/auth-access-control';
 import type { Invitation } from '../types';
 
@@ -20,6 +21,7 @@ export function ManageInvitationsSection({
   currentUserRole,
 }: Props) {
   const t = useTranslations('organization.invitations');
+  const tErrors = useTranslations('organization.errors');
   const locale = useLocale();
   const { successToast, errorToast } = statusToast();
 
@@ -36,7 +38,9 @@ export function ManageInvitationsSection({
     if (result.success) {
       successToast({ message: t('cancel-success') });
     } else {
-      errorToast({ message: result.error || t('cancel-error') });
+      errorToast({
+        message: actionErrorMessage(tErrors, result, t('cancel-error')),
+      });
     }
   };
 
@@ -49,7 +53,9 @@ export function ManageInvitationsSection({
     if (result.success) {
       successToast({ message: t('resend-success') });
     } else {
-      errorToast({ message: result.error || t('resend-error') });
+      errorToast({
+        message: actionErrorMessage(tErrors, result, t('resend-error')),
+      });
     }
   };
 

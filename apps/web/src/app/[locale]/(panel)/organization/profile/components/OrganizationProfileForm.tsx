@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 import { Button } from '@ragenai/common-ui/Button';
 import { statusToast } from '@/app/lib/utils/toast';
 import { updateOrganization } from '../actions/organization';
+import { actionErrorMessage } from '../errors';
 import {
   UpdateOrganizationSchema,
   type UpdateOrganizationFormData,
@@ -28,6 +29,7 @@ const labelClasses = 'block text-sm text-muted-foreground mb-1.5';
 
 export function OrganizationProfileForm({ organization, canEdit }: Props) {
   const t = useTranslations('organization.profile');
+  const tErrors = useTranslations('organization.errors');
   const { successToast, errorToast } = statusToast();
 
   const {
@@ -49,7 +51,9 @@ export function OrganizationProfileForm({ organization, canEdit }: Props) {
       successToast({ message: t('edit-success') });
       reset(data);
     } else {
-      errorToast({ message: result.error || t('edit-error') });
+      errorToast({
+        message: actionErrorMessage(tErrors, result, t('edit-error')),
+      });
     }
   };
 

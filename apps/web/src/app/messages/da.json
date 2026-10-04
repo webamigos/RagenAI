@@ -2124,6 +2124,28 @@
       "resend-success": "Invitationen er sendt igen",
       "resend-error": "Der opstod en fejl under gensendelse af invitationen",
       "confirm-cancel-title": "Annuller invitationen?"
+    },
+    "errors": {
+      "invalid-data": "Ugyldige data",
+      "invitation-not-found": "Invitationen blev ikke fundet",
+      "no-permission-cancel-invitation": "Du har ikke tilladelse til at annullere invitationer",
+      "cancel-invitation-failed": "Der opstod en fejl under annulleringen af invitationen",
+      "no-permission-send-invitation": "Du har ikke tilladelse til at sende invitationer",
+      "send-invitation-failed": "Invitationen kunne ikke sendes",
+      "resend-invitation-failed": "Der opstod en fejl under gensendelsen af invitationen",
+      "invitation-already-sent": "Der er allerede sendt en invitation til denne e-mailadresse",
+      "already-member": "En bruger med denne e-mailadresse er allerede medlem af organisationen",
+      "invite-member-failed": "Der opstod en fejl under invitationen af medlemmet",
+      "no-permission-remove-member": "Du har ikke tilladelse til at fjerne medlemmer",
+      "member-not-found": "Medlemmet blev ikke fundet",
+      "cannot-remove-self": "Du kan ikke fjerne dig selv fra organisationen",
+      "cannot-remove-owner": "Organisationens ejer kan ikke fjernes",
+      "remove-member-failed": "Der opstod en fejl under fjernelsen af medlemmet",
+      "no-permission-change-role": "Du har ikke tilladelse til at ændre roller",
+      "cannot-change-owner-role": "Organisationsejerens rolle kan ikke ændres",
+      "change-role-failed": "Der opstod en fejl under ændringen af rollen",
+      "no-permission-edit-organization": "Du har ikke tilladelse til at redigere organisationens profil",
+      "update-organization-failed": "Der opstod en fejl under opdateringen af organisationen"
     }
   },
   "invitation-banner": {

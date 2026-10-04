@@ -129,10 +129,8 @@ describe('inviteMember (magic-link flow)', () => {
 
     const result = await inviteMember('fresh@example.com', 'member', ORG);
 
-    expect(result).toEqual({
-      success: false,
-      error: 'Nie udało się wysłać zaproszenia',
-    });
+    // A code, not a sentence: the component says it in the reader's language.
+    expect(result).toEqual({ success: false, code: 'send-invitation-failed' });
     expect(mockInvitationDelete).toHaveBeenCalledTimes(1);
     expect(pendingMagicLinkContext.has('fresh@example.com')).toBe(false);
   });
@@ -143,7 +141,7 @@ describe('inviteMember (magic-link flow)', () => {
 
     const result = await inviteMember('member@example.com', 'member', ORG);
 
-    expect(result.success).toBe(false);
+    expect(result).toEqual({ success: false, code: 'already-member' });
     expect(mockSignInMagicLink).not.toHaveBeenCalled();
     expect(mockInvitationCreate).not.toHaveBeenCalled();
   });
@@ -153,7 +151,7 @@ describe('inviteMember (magic-link flow)', () => {
 
     const result = await inviteMember('pending@example.com', 'member', ORG);
 
-    expect(result.success).toBe(false);
+    expect(result).toEqual({ success: false, code: 'invitation-already-sent' });
     expect(mockSignInMagicLink).not.toHaveBeenCalled();
     expect(mockInvitationCreate).not.toHaveBeenCalled();
   });

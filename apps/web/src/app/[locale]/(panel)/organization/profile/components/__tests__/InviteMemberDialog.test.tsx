@@ -46,7 +46,9 @@ describe('InviteMemberDialog', () => {
     const onClose = renderDialog();
 
     await user.type(screen.getByLabelText(t.email), 'ada@example.com');
-    await user.click(screen.getByRole('button', { name: t['send-invitation'] }));
+    await user.click(
+      screen.getByRole('button', { name: t['send-invitation'] }),
+    );
 
     await waitFor(() =>
       expect(inviteMember).toHaveBeenCalledWith(
@@ -57,6 +59,41 @@ describe('InviteMemberDialog', () => {
     );
     expect(createMemberAccount).not.toHaveBeenCalled();
     expect(onClose).toHaveBeenCalled();
+  });
+
+  it('says why an invitation was refused, in the reader’s language', async () => {
+    // The action returns a code (#1092); this is the English the user reads.
+    inviteMember.mockResolvedValue({ success: false, code: 'already-member' });
+    const user = userEvent.setup();
+    const onClose = renderDialog();
+
+    await user.type(screen.getByLabelText(t.email), 'ada@example.com');
+    await user.click(
+      screen.getByRole('button', { name: t['send-invitation'] }),
+    );
+
+    await waitFor(() =>
+      expect(errorToast).toHaveBeenCalledWith({
+        message: messages.organization.errors['already-member'],
+      }),
+    );
+    expect(onClose).not.toHaveBeenCalled();
+  });
+
+  it('shows prose from the shared add-member check as it is', async () => {
+    // The gate and the account command still return sentences of their own.
+    inviteMember.mockResolvedValue({ success: false, error: 'Plan limit' });
+    const user = userEvent.setup();
+    renderDialog();
+
+    await user.type(screen.getByLabelText(t.email), 'ada@example.com');
+    await user.click(
+      screen.getByRole('button', { name: t['send-invitation'] }),
+    );
+
+    await waitFor(() =>
+      expect(errorToast).toHaveBeenCalledWith({ message: 'Plan limit' }),
+    );
   });
 
   it('asks for a name only when creating the account directly', async () => {

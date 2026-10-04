@@ -2124,6 +2124,28 @@
       "resend-success": "La invitación ha sido reenviada",
       "resend-error": "Ha ocurrido un error al reenviar la invitación",
       "confirm-cancel-title": "¿Cancelar esta invitación?"
+    },
+    "errors": {
+      "invalid-data": "Datos no válidos",
+      "invitation-not-found": "Invitación no encontrada",
+      "no-permission-cancel-invitation": "No tienes permiso para cancelar invitaciones",
+      "cancel-invitation-failed": "Se produjo un error al cancelar la invitación",
+      "no-permission-send-invitation": "No tienes permiso para enviar invitaciones",
+      "send-invitation-failed": "No se pudo enviar la invitación",
+      "resend-invitation-failed": "Se produjo un error al reenviar la invitación",
+      "invitation-already-sent": "Ya se ha enviado una invitación a esta dirección de correo electrónico",
+      "already-member": "Un usuario con esta dirección de correo electrónico ya es miembro de la organización",
+      "invite-member-failed": "Se produjo un error al invitar al miembro",
+      "no-permission-remove-member": "No tienes permiso para eliminar miembros",
+      "member-not-found": "Miembro no encontrado",
+      "cannot-remove-self": "No puedes eliminarte a ti mismo de la organización",
+      "cannot-remove-owner": "No se puede eliminar al propietario de la organización",
+      "remove-member-failed": "Se produjo un error al eliminar al miembro",
+      "no-permission-change-role": "No tienes permiso para cambiar roles",
+      "cannot-change-owner-role": "No se puede cambiar el rol del propietario de la organización",
+      "change-role-failed": "Se produjo un error al cambiar el rol",
+      "no-permission-edit-organization": "No tienes permiso para editar el perfil de la organización",
+      "update-organization-failed": "Se produjo un error al actualizar la organización"
     }
   },
   "invitation-banner": {

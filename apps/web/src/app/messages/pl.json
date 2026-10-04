@@ -2124,6 +2124,28 @@
       "resend-success": "Zaproszenie zostało wysłane ponownie",
       "resend-error": "Wystąpił błąd podczas wysyłania zaproszenia",
       "confirm-cancel-title": "Anulować zaproszenie?"
+    },
+    "errors": {
+      "invalid-data": "Nieprawidłowe dane",
+      "invitation-not-found": "Zaproszenie nie znalezione",
+      "no-permission-cancel-invitation": "Nie masz uprawnień do anulowania zaproszeń",
+      "cancel-invitation-failed": "Wystąpił błąd podczas anulowania zaproszenia",
+      "no-permission-send-invitation": "Nie masz uprawnień do wysyłania zaproszeń",
+      "send-invitation-failed": "Nie udało się wysłać zaproszenia",
+      "resend-invitation-failed": "Wystąpił błąd podczas ponownego wysyłania zaproszenia",
+      "invitation-already-sent": "Zaproszenie dla tego adresu email już zostało wysłane",
+      "already-member": "Użytkownik o tym adresie email już jest członkiem organizacji",
+      "invite-member-failed": "Wystąpił błąd podczas zapraszania członka",
+      "no-permission-remove-member": "Nie masz uprawnień do usuwania członków",
+      "member-not-found": "Członek nie znaleziony",
+      "cannot-remove-self": "Nie możesz usunąć samego siebie z organizacji",
+      "cannot-remove-owner": "Nie można usunąć właściciela organizacji",
+      "remove-member-failed": "Wystąpił błąd podczas usuwania członka",
+      "no-permission-change-role": "Nie masz uprawnień do zmiany ról",
+      "cannot-change-owner-role": "Nie można zmienić roli właściciela organizacji",
+      "change-role-failed": "Wystąpił błąd podczas zmiany roli",
+      "no-permission-edit-organization": "Nie masz uprawnień do edycji profilu organizacji",
+      "update-organization-failed": "Wystąpił błąd podczas aktualizacji organizacji"
     }
   },
   "invitation-banner": {

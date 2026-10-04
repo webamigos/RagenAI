@@ -8,6 +8,7 @@ import { MemberActionsDropdown } from './MemberActionsDropdown';
 import { statusToast } from '@/app/lib/utils/toast';
 import { ConfirmDialog } from '@/app/components/ConfirmDialog';
 import { removeMember, updateMemberRole } from '../actions/members';
+import { actionErrorMessage } from '../errors';
 import {
   ORG_ADMIN_ROLE,
   canManageOrg,
@@ -38,6 +39,7 @@ export function MembersList({
   demoAccount = false,
 }: Props) {
   const t = useTranslations('organization.members');
+  const tErrors = useTranslations('organization.errors');
   const locale = useLocale();
   const { successToast, errorToast } = statusToast();
   const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
@@ -57,7 +59,9 @@ export function MembersList({
     if (result.success) {
       successToast({ message: t('remove-success') });
     } else {
-      errorToast({ message: result.error || t('remove-error') });
+      errorToast({
+        message: actionErrorMessage(tErrors, result, t('remove-error')),
+      });
     }
   };
 
@@ -69,7 +73,9 @@ export function MembersList({
     if (result.success) {
       successToast({ message: t('role-update-success') });
     } else {
-      errorToast({ message: result.error || t('role-update-error') });
+      errorToast({
+        message: actionErrorMessage(tErrors, result, t('role-update-error')),
+      });
     }
   };
 

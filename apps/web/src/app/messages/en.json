@@ -2124,6 +2124,28 @@
       "resend-success": "Invitation has been resent",
       "resend-error": "An error occurred while resending invitation",
       "confirm-cancel-title": "Cancel this invitation?"
+    },
+    "errors": {
+      "invalid-data": "Invalid data",
+      "invitation-not-found": "Invitation not found",
+      "no-permission-cancel-invitation": "You do not have permission to cancel invitations",
+      "cancel-invitation-failed": "Something went wrong while cancelling the invitation",
+      "no-permission-send-invitation": "You do not have permission to send invitations",
+      "send-invitation-failed": "Could not send the invitation",
+      "resend-invitation-failed": "Something went wrong while resending the invitation",
+      "invitation-already-sent": "An invitation for this email address has already been sent",
+      "already-member": "A user with this email address is already a member of the organization",
+      "invite-member-failed": "Something went wrong while inviting the member",
+      "no-permission-remove-member": "You do not have permission to remove members",
+      "member-not-found": "Member not found",
+      "cannot-remove-self": "You cannot remove yourself from the organization",
+      "cannot-remove-owner": "The organization owner cannot be removed",
+      "remove-member-failed": "Something went wrong while removing the member",
+      "no-permission-change-role": "You do not have permission to change roles",
+      "cannot-change-owner-role": "The role of the organization owner cannot be changed",
+      "change-role-failed": "Something went wrong while changing the role",
+      "no-permission-edit-organization": "You do not have permission to edit the organization profile",
+      "update-organization-failed": "Something went wrong while updating the organization"
     }
   },
   "invitation-banner": {

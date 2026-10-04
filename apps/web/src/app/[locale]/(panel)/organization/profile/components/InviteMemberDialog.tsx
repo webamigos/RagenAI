@@ -9,6 +9,7 @@ import { Button } from '@ragenai/common-ui/Button';
 import { statusToast } from '@/app/lib/utils/toast';
 import { createMemberAccount, inviteMember } from '../actions/members';
 import { AddMemberSchema, type AddMemberFormData } from '../types';
+import { actionErrorMessage } from '../errors';
 import { CreatedAccountPanel } from './CreatedAccountPanel';
 
 const inputClasses =
@@ -26,6 +27,7 @@ type Mode = 'invite' | 'create';
 
 export function InviteMemberDialog({ isOpen, onClose, organizationId }: Props) {
   const t = useTranslations('organization.members');
+  const tErrors = useTranslations('organization.errors');
   const { successToast, errorToast } = statusToast();
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [mode, setModeState] = useState<Mode>('invite');
@@ -67,7 +69,13 @@ export function InviteMemberDialog({ isOpen, onClose, organizationId }: Props) {
         setCreated(result.data);
         reset();
       } else {
-        errorToast({ message: result.error || t('create-account-error') });
+        errorToast({
+          message: actionErrorMessage(
+            tErrors,
+            result,
+            t('create-account-error'),
+          ),
+        });
       }
       return;
     }
@@ -79,7 +87,9 @@ export function InviteMemberDialog({ isOpen, onClose, organizationId }: Props) {
       onClose();
       reset();
     } else {
-      errorToast({ message: result.error || t('invite-error') });
+      errorToast({
+        message: actionErrorMessage(tErrors, result, t('invite-error')),
+      });
     }
   };
 

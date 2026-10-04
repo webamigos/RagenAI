@@ -8,6 +8,7 @@ import db from '@ragenai/prisma-client';
 import { getActiveMember } from '@/lib/auth-guards';
 import { canManageOrg } from '@/lib/auth-access-control';
 import { pendingMagicLinkContext } from '@/lib/magic-link-context';
+import { failure } from '../errors';
 
 /**
  * Anulowanie zaproszenia
@@ -20,20 +21,14 @@ export async function cancelInvitation(invitationId: string) {
     });
 
     if (!invitation) {
-      return {
-        success: false,
-        error: 'Zaproszenie nie znalezione',
-      };
+      return failure('invitation-not-found');
     }
 
     // Sprawdź permissions
     const activeMember = await getActiveMember(invitation.organizationId);
 
     if (!activeMember || !canManageOrg(activeMember.role)) {
-      return {
-        success: false,
-        error: 'Nie masz uprawnień do anulowania zaproszeń',
-      };
+      return failure('no-permission-cancel-invitation');
     }
 
     // Anuluj zaproszenie (delete from database)
@@ -48,10 +43,7 @@ export async function cancelInvitation(invitationId: string) {
     return { success: true };
   } catch (error) {
     logger.error({ err: error }, 'Error canceling invitation');
-    return {
-      success: false,
-      error: 'Wystąpił błąd podczas anulowania zaproszenia',
-    };
+    return failure('cancel-invitation-failed');
   }
 }
 
@@ -68,10 +60,7 @@ export async function resendInvitation(
     const activeMember = await getActiveMember(organizationId);
 
     if (!activeMember || !canManageOrg(activeMember.role)) {
-      return {
-        success: false,
-        error: 'Nie masz uprawnień do wysyłania zaproszeń',
-      };
+      return failure('no-permission-send-invitation');
     }
 
     // Update or create invitation with new expiry
@@ -151,10 +140,7 @@ export async function resendInvitation(
         },
         'Failed to dispatch magic-link resend',
       );
-      return {
-        success: false,
-        error: 'Nie udało się wysłać zaproszenia',
-      };
+      return failure('send-invitation-failed');
     }
 
     logger.info(
@@ -167,9 +153,6 @@ export async function resendInvitation(
     return { success: true };
   } catch (error) {
     logger.error({ err: error }, 'Error resending invitation');
-    return {
-      success: false,
-      error: 'Wystąpił błąd podczas ponownego wysyłania zaproszenia',
-    };
+    return failure('resend-invitation-failed');
   }
 }

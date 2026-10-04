@@ -2124,6 +2124,28 @@
       "resend-success": "L'invito è stato inviato di nuovo",
       "resend-error": "Si è verificato un errore durante il reinvio dell'invito",
       "confirm-cancel-title": "Annullare questo invito?"
+    },
+    "errors": {
+      "invalid-data": "Dati non validi",
+      "invitation-not-found": "Invito non trovato",
+      "no-permission-cancel-invitation": "Non hai il permesso di annullare gli inviti",
+      "cancel-invitation-failed": "Si è verificato un errore durante l'annullamento dell'invito",
+      "no-permission-send-invitation": "Non hai il permesso di inviare inviti",
+      "send-invitation-failed": "Impossibile inviare l'invito",
+      "resend-invitation-failed": "Si è verificato un errore durante il nuovo invio dell'invito",
+      "invitation-already-sent": "È già stato inviato un invito a questo indirizzo email",
+      "already-member": "Un utente con questo indirizzo email è già membro dell'organizzazione",
+      "invite-member-failed": "Si è verificato un errore durante l'invito del membro",
+      "no-permission-remove-member": "Non hai il permesso di rimuovere membri",
+      "member-not-found": "Membro non trovato",
+      "cannot-remove-self": "Non puoi rimuovere te stesso dall'organizzazione",
+      "cannot-remove-owner": "Il proprietario dell'organizzazione non può essere rimosso",
+      "remove-member-failed": "Si è verificato un errore durante la rimozione del membro",
+      "no-permission-change-role": "Non hai il permesso di modificare i ruoli",
+      "cannot-change-owner-role": "Il ruolo del proprietario dell'organizzazione non può essere modificato",
+      "change-role-failed": "Si è verificato un errore durante la modifica del ruolo",
+      "no-permission-edit-organization": "Non hai il permesso di modificare il profilo dell'organizzazione",
+      "update-organization-failed": "Si è verificato un errore durante l'aggiornamento dell'organizzazione"
     }
   },
   "invitation-banner": {
