@@ -63,6 +63,18 @@ export const apiEnvSchema = fragments.targetEnvRequired
       "apps/web's internal endpoints reject every request without it",
     );
 
+    // Every chat and search reads the vector store, and the clients that do
+    // fall back to `localhost:6333` when this is unset — which in a container
+    // is nothing. The service booted clean on demo with it missing and
+    // answered every /v1/chat with a 500. Only Qdrant is supported (ADR-31),
+    // so there is no deployment that can do without it.
+    requiredInDeployedEnvs(
+      env,
+      ctx,
+      ['QDRANT_URL'],
+      'chat and search fall back to localhost:6333, where a deployed container has no vector store',
+    );
+
     // `fragments.encryption` was merged and nothing checked it, so a chosen
     // provider with no key reached the crypto package as "not configured".
     encryptionRules(env, ctx);

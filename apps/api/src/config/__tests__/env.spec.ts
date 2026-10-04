@@ -37,6 +37,7 @@ describe('parseApiEnv', () => {
     const result = withEnv({
       TARGET_ENV: 'production',
       INTERNAL_API_SECRET: 'internal-secret',
+      QDRANT_URL: 'http://qdrant:6333',
     });
 
     expect(result.ok).toBe(true);
@@ -61,11 +62,26 @@ describe('parseApiEnv', () => {
       withEnv({
         TARGET_ENV: 'production',
         INTERNAL_API_SECRET: 'shared',
+        QDRANT_URL: 'http://qdrant:6333',
       }).ok,
     ).toBe(true);
   });
 
-  it('asks for neither locally, so a fresh clone runs', () => {
+  it('requires QDRANT_URL in a deployed environment', () => {
+    // Unset, the vector store clients fall back to localhost:6333. On demo
+    // the service booted clean like that and answered every /v1/chat with a
+    // 500 — the failure this turns into a refusal to start.
+    for (const TARGET_ENV of ['staging', 'production']) {
+      const result = withEnv({ TARGET_ENV, INTERNAL_API_SECRET: 'shared' });
+
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.report).toContain('QDRANT_URL');
+      }
+    }
+  });
+
+  it('asks for none of them locally, so a fresh clone runs', () => {
     expect(withEnv({ TARGET_ENV: 'local' }).ok).toBe(true);
   });
 
