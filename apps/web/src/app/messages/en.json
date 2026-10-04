@@ -1149,7 +1149,8 @@
       "audit-logs": "Audit Logs",
       "knowledge-analytics": "Knowledge Analytics",
       "role-org-owner": "Owner"
-    }
+    },
+    "back-to-main-menu": "Main menu"
   },
   "chats-page": {
     "title": "Chats",
@@ -2154,7 +2155,13 @@
       "cannot-change-owner-role": "The role of the organization owner cannot be changed",
       "change-role-failed": "Something went wrong while changing the role",
       "no-permission-edit-organization": "You do not have permission to edit the organization profile",
-      "update-organization-failed": "Something went wrong while updating the organization"
+      "update-organization-failed": "Something went wrong while updating the organization",
+      "no-permission-add-member": "You do not have permission to add members",
+      "plan-required-for-members": "Adding members is only available on paid plans",
+      "member-limit-reached": "The member limit ({limit}) has been reached. Contact your administrator to increase it.",
+      "account-exists-use-invitation": "An account with this email address already exists. Send an invitation instead",
+      "invitation-pending-cancel-first": "An invitation for this email address already exists. Cancel it to create an account",
+      "create-account-failed": "Could not create the user account"
     }
   },
   "invitation-banner": {

@@ -15,7 +15,15 @@
  * `__tests__/errors.test.ts` checks, since the lookup is dynamic and the
  * translation-key guard cannot see it.
  */
+import {
+  ADD_MEMBER_ERROR_CODES,
+  type AddMemberErrorCode,
+  type ErrorParams,
+} from '@/features/organizations/contracts/add-member-errors';
+
 export const ORG_PROFILE_ERROR_CODES = [
+  // Why adding a member was refused, from the feature that decides it.
+  ...ADD_MEMBER_ERROR_CODES,
   'invalid-data',
   // invitations
   'invitation-not-found',
@@ -26,7 +34,6 @@ export const ORG_PROFILE_ERROR_CODES = [
   'resend-invitation-failed',
   'invitation-already-sent',
   // members
-  'already-member',
   'invite-member-failed',
   'no-permission-remove-member',
   'member-not-found',
@@ -41,11 +48,18 @@ export const ORG_PROFILE_ERROR_CODES = [
   'update-organization-failed',
 ] as const;
 
-export type OrgProfileErrorCode = (typeof ORG_PROFILE_ERROR_CODES)[number];
+export type OrgProfileErrorCode =
+  AddMemberErrorCode | (typeof ORG_PROFILE_ERROR_CODES)[number];
 
 /** A refusal. The actions' failure shape, with a code in place of prose. */
-export const failure = (code: OrgProfileErrorCode) =>
-  ({ success: false, code }) as const;
+export const failure = (code: OrgProfileErrorCode, params?: ErrorParams) =>
+  (params ? { success: false, code, params } : { success: false, code }) as
+    | { readonly success: false; readonly code: OrgProfileErrorCode }
+    | {
+        readonly success: false;
+        readonly code: OrgProfileErrorCode;
+        readonly params: ErrorParams;
+      };
 
 /** What an action's result may carry when it did not succeed. */
 export type ActionFailure = {
@@ -59,6 +73,8 @@ export type ActionFailure = {
   success?: boolean;
   /** A code from this file. */
   code?: OrgProfileErrorCode;
+  /** Values for the placeholders in the code's message, e.g. `{ limit: 5 }`. */
+  params?: ErrorParams;
   /**
    * Prose from a shared check (the add-member gate and the account command),
    * which still returns sentences of its own. Shown as it is; moving those to
@@ -74,12 +90,12 @@ export type ActionFailure = {
  * component's own generic message for a result with neither a code nor text.
  */
 export function actionErrorMessage(
-  tErrors: (code: OrgProfileErrorCode) => string,
+  tErrors: (code: OrgProfileErrorCode, values?: ErrorParams) => string,
   result: ActionFailure,
   fallback: string,
 ): string {
   if (result.code) {
-    return tErrors(result.code);
+    return tErrors(result.code, result.params);
   }
 
   return result.error || fallback;

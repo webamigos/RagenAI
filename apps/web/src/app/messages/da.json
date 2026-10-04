@@ -1149,7 +1149,8 @@
       "audit-logs": "Revisionslogs",
       "knowledge-analytics": "Videnanalyse",
       "role-org-owner": "Ejer"
-    }
+    },
+    "back-to-main-menu": "Hovedmenu"
   },
   "chats-page": {
     "title": "Chats",
@@ -2154,7 +2155,13 @@
       "cannot-change-owner-role": "Organisationsejerens rolle kan ikke ændres",
       "change-role-failed": "Der opstod en fejl under ændringen af rollen",
       "no-permission-edit-organization": "Du har ikke tilladelse til at redigere organisationens profil",
-      "update-organization-failed": "Der opstod en fejl under opdateringen af organisationen"
+      "update-organization-failed": "Der opstod en fejl under opdateringen af organisationen",
+      "no-permission-add-member": "Du har ikke tilladelse til at tilføje medlemmer",
+      "plan-required-for-members": "Tilføjelse af medlemmer er kun tilgængelig i betalte abonnementer",
+      "member-limit-reached": "Medlemsgrænsen ({limit}) er nået. Kontakt din administrator for at øge den.",
+      "account-exists-use-invitation": "Der findes allerede en konto med denne e-mailadresse. Send en invitation i stedet",
+      "invitation-pending-cancel-first": "Der findes allerede en invitation til denne e-mailadresse. Annuller den for at oprette en konto",
+      "create-account-failed": "Brugerkontoen kunne ikke oprettes"
     }
   },
   "invitation-banner": {

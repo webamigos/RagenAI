@@ -1149,7 +1149,8 @@
       "audit-logs": "Granskningsloggar",
       "knowledge-analytics": "Kunskapsanalys",
       "role-org-owner": "Ägare"
-    }
+    },
+    "back-to-main-menu": "Huvudmeny"
   },
   "chats-page": {
     "title": "Chattar",
@@ -2154,7 +2155,13 @@
       "cannot-change-owner-role": "Organisationsägarens roll kan inte ändras",
       "change-role-failed": "Ett fel uppstod när rollen skulle ändras",
       "no-permission-edit-organization": "Du har inte behörighet att redigera organisationens profil",
-      "update-organization-failed": "Ett fel uppstod när organisationen skulle uppdateras"
+      "update-organization-failed": "Ett fel uppstod när organisationen skulle uppdateras",
+      "no-permission-add-member": "Du har inte behörighet att lägga till medlemmar",
+      "plan-required-for-members": "Att lägga till medlemmar är bara tillgängligt i betalplaner",
+      "member-limit-reached": "Medlemsgränsen ({limit}) har nåtts. Kontakta din administratör för att höja den.",
+      "account-exists-use-invitation": "Det finns redan ett konto med den här e-postadressen. Skicka en inbjudan i stället",
+      "invitation-pending-cancel-first": "Det finns redan en inbjudan till den här e-postadressen. Återkalla den för att skapa ett konto",
+      "create-account-failed": "Användarkontot kunde inte skapas"
     }
   },
   "invitation-banner": {

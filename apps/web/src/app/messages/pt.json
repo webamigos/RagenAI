@@ -1149,7 +1149,8 @@
       "audit-logs": "Registros de auditoria",
       "knowledge-analytics": "Análise de conhecimento",
       "role-org-owner": "Proprietário"
-    }
+    },
+    "back-to-main-menu": "Menu principal"
   },
   "chats-page": {
     "title": "Chats",
@@ -2154,7 +2155,13 @@
       "cannot-change-owner-role": "A função do proprietário da organização não pode ser alterada",
       "change-role-failed": "Ocorreu um erro ao alterar a função",
       "no-permission-edit-organization": "Você não tem permissão para editar o perfil da organização",
-      "update-organization-failed": "Ocorreu um erro ao atualizar a organização"
+      "update-organization-failed": "Ocorreu um erro ao atualizar a organização",
+      "no-permission-add-member": "Você não tem permissão para adicionar membros",
+      "plan-required-for-members": "Adicionar membros está disponível apenas nos planos pagos",
+      "member-limit-reached": "O limite de membros ({limit}) foi atingido. Entre em contato com o administrador para aumentá-lo.",
+      "account-exists-use-invitation": "Já existe uma conta com este endereço de e-mail. Envie um convite em vez disso",
+      "invitation-pending-cancel-first": "Já existe um convite para este endereço de e-mail. Cancele-o para criar uma conta",
+      "create-account-failed": "Não foi possível criar a conta de usuário"
     }
   },
   "invitation-banner": {

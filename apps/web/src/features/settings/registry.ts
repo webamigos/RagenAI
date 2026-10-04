@@ -64,8 +64,8 @@ export type SettingsPage = {
 
 /**
  * Only user-level pages. An organization-scoped screen belongs under
- * `/organization/`, behind `OrganizationNav` and the org layout's admin
- * check — `knowledge-analytics` and `pii-policy` were listed here with
+ * `/organization/`, in `organizationRegistry` below and behind the org
+ * layout's admin check — `knowledge-analytics` and `pii-policy` were listed here with
  * `requireRole: 'orgAdmin'`, which put two administrator screens in the
  * personal settings menu. `__tests__/registry.test.ts` now fails on any
  * entry that requires more than `user`.
@@ -126,7 +126,7 @@ export const settingsRegistry: readonly SettingsPage[] = [
 /**
  * The organization-scoped screens, as data.
  *
- * `OrganizationNav` used to hold these as a hardcoded array with no visibility
+ * The organization menu used to hold these as a hardcoded array with no visibility
  * information, which was safe only because `/organization/layout.tsx` gates
  * the whole group in one place. That is the asymmetry gap 8 has to resolve
  * before the two rails can be shown together: a list rendered outside the

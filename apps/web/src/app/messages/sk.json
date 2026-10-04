@@ -1149,7 +1149,8 @@
       "audit-logs": "Audítorské protokoly",
       "knowledge-analytics": "Analýza znalostí",
       "role-org-owner": "Vlastník"
-    }
+    },
+    "back-to-main-menu": "Hlavná ponuka"
   },
   "chats-page": {
     "title": "Konverzácie",
@@ -2154,7 +2155,13 @@
       "cannot-change-owner-role": "Rolu vlastníka organizácie nemožno zmeniť",
       "change-role-failed": "Pri zmene roly sa vyskytla chyba",
       "no-permission-edit-organization": "Nemáte oprávnenie upravovať profil organizácie",
-      "update-organization-failed": "Pri aktualizácii organizácie sa vyskytla chyba"
+      "update-organization-failed": "Pri aktualizácii organizácie sa vyskytla chyba",
+      "no-permission-add-member": "Nemáte oprávnenie pridávať členov",
+      "plan-required-for-members": "Pridávanie členov je dostupné iba v platených plánoch",
+      "member-limit-reached": "Bol dosiahnutý limit členov ({limit}). Pre jeho navýšenie sa obráťte na správcu.",
+      "account-exists-use-invitation": "Účet s touto e-mailovou adresou už existuje. Namiesto toho pošlite pozvánku",
+      "invitation-pending-cancel-first": "Pre túto e-mailovú adresu už existuje pozvánka. Zrušte ju, aby ste mohli vytvoriť účet",
+      "create-account-failed": "Používateľský účet sa nepodarilo vytvoriť"
     }
   },
   "invitation-banner": {

@@ -1149,7 +1149,8 @@
       "audit-logs": "Journaux d'audit",
       "knowledge-analytics": "Analyse des connaissances",
       "role-org-owner": "Propriétaire"
-    }
+    },
+    "back-to-main-menu": "Menu principal"
   },
   "chats-page": {
     "title": "Chats",
@@ -2154,7 +2155,13 @@
       "cannot-change-owner-role": "Le rôle du propriétaire de l'organisation ne peut pas être modifié",
       "change-role-failed": "Une erreur s'est produite lors de la modification du rôle",
       "no-permission-edit-organization": "Vous n'avez pas l'autorisation de modifier le profil de l'organisation",
-      "update-organization-failed": "Une erreur s'est produite lors de la mise à jour de l'organisation"
+      "update-organization-failed": "Une erreur s'est produite lors de la mise à jour de l'organisation",
+      "no-permission-add-member": "Vous n'avez pas l'autorisation d'ajouter des membres",
+      "plan-required-for-members": "L'ajout de membres n'est disponible que dans les offres payantes",
+      "member-limit-reached": "La limite de membres ({limit}) est atteinte. Contactez votre administrateur pour l'augmenter.",
+      "account-exists-use-invitation": "Un compte existe déjà pour cette adresse e-mail. Envoyez plutôt une invitation",
+      "invitation-pending-cancel-first": "Une invitation existe déjà pour cette adresse e-mail. Annulez-la pour créer un compte",
+      "create-account-failed": "Impossible de créer le compte utilisateur"
     }
   },
   "invitation-banner": {

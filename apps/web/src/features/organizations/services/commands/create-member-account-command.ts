@@ -5,8 +5,16 @@ import { randomBytes, randomUUID } from 'node:crypto';
 import db from '@ragenai/prisma-client';
 import { auth } from '@/lib/auth';
 import { logger } from '@/app/lib/utils/logger';
-import type { OperationResult } from '@/types/common';
 import { canAddMemberQuery } from '../queries/can-add-member-query';
+import type { AddMemberRefusal } from '../../contracts/add-member-errors';
+
+/**
+ * Either the account, or a code for why it was not made — never a sentence,
+ * see `contracts/add-member-errors.ts`.
+ */
+export type CreateMemberAccountResult =
+  | { success: true; data: CreatedMemberAccount }
+  | ({ success: false } & AddMemberRefusal);
 
 export type CreatedMemberAccount = {
   email: string;
@@ -53,13 +61,13 @@ export async function createMemberAccountCommand({
   name: string;
   role: 'admin' | 'member';
   organizationId: string;
-}): Promise<OperationResult<CreatedMemberAccount>> {
+}): Promise<CreateMemberAccountResult> {
   const normalizedEmail = email.trim().toLowerCase();
 
   try {
     const gate = await canAddMemberQuery(organizationId);
     if (!gate.allowed) {
-      return { success: false, error: gate.error };
+      return { success: false, code: gate.code, params: gate.params };
     }
 
     const existingUser = await db.user.findUnique({
@@ -75,9 +83,9 @@ export async function createMemberAccountCommand({
 
       return {
         success: false,
-        error: alreadyMember
-          ? 'Użytkownik o tym adresie email już jest członkiem organizacji'
-          : 'Konto z tym adresem email już istnieje — użyj zaproszenia',
+        code: alreadyMember
+          ? 'already-member'
+          : 'account-exists-use-invitation',
       };
     }
 
@@ -95,11 +103,7 @@ export async function createMemberAccountCommand({
     });
 
     if (existingInvitation?.status === 'pending') {
-      return {
-        success: false,
-        error:
-          'Dla tego adresu email istnieje już zaproszenie — anuluj je, aby utworzyć konto',
-      };
+      return { success: false, code: 'invitation-pending-cancel-first' };
     }
 
     const temporaryPassword = generateTemporaryPassword();
@@ -210,9 +214,6 @@ export async function createMemberAccountCommand({
       'Failed to create member account',
     );
 
-    return {
-      success: false,
-      error: 'Nie udało się utworzyć konta użytkownika',
-    };
+    return { success: false, code: 'create-account-failed' };
   }
 }
