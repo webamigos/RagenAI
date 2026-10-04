@@ -63,13 +63,12 @@ function parseFolderId(value: string | undefined): string | null | undefined {
  * - `getFileDetailsById`/`getOrganizationFilesCount`/`getDocumentByIdWithFile`
  *   (no corresponding apps/web UI action calls these directly — internal
  *   helpers used by other commands/queries).
- * - `VectorPermissionsService` entirely (`computeAccessibleBy`,
- *   `syncFolderVectorPermissions`) — never called from a UI action, and it
- *   would not have worked if it were (it wrote `'metadata.accessible_by'` as a
- *   dotted payload key, which Qdrant stores as a literal top-level field).
- *   What keeps `accessible_by` current is the `syncDocumentAccess` job, which
- *   `DocumentAccessSyncService` starts from the share, revoke, move and team
- *   paths below (#1245); the service is dead code awaiting deletion.
+ * - `VectorPermissionsService` — deleted. It was never called from a UI
+ *   action and would not have worked if it were (it wrote
+ *   `'metadata.accessible_by'` as a dotted payload key, which Qdrant stores as
+ *   a literal top-level field). What keeps `accessible_by` current is the
+ *   `syncDocumentAccess` job, which `DocumentAccessSyncService` starts from the
+ *   share, revoke, move and team paths below (#1245).
  */
 @ApiExcludeController()
 @Controller('internal')

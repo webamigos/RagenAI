@@ -94,6 +94,17 @@ archive is the blog.
   cited. The worker now checks once more after writing and takes the chunks
   out if the file is gone or its upload was cancelled. Files deleted this way
   before the fix can still have chunks in the index.
+
+- `[major]` **Taking a document away from someone now takes it out of their
+  answers, not only out of their knowledge base.** Revoking a share, moving a
+  file or folder, or changing a folder's team updated the document list at once
+  and left the search index as it was at upload, so a person who had lost
+  access could still get that document's content back in chat until it was
+  re-indexed. The index is now rewritten after each of those changes, and an
+  upload re-checks who may read it once its chunks are written, in case access
+  changed while it was being indexed. Documents revoked before this release are
+  corrected the next time anyone touches their sharing, or when they are
+  re-indexed; there is no sweep over old ones yet. ([#1245](https://github.com/webamigos/RagenAI/issues/1245))
 ### Usage and limits
 
 - `[brief]` **Reranking counts toward the monthly cost limit.** The default
