@@ -34,6 +34,12 @@ class ExpensiveClassController {
   any() {
     return 'ok';
   }
+
+  @Get('cheap')
+  @Throttle({ cheap: { ttl: 60_000 } })
+  cheapHandler() {
+    return 'ok';
+  }
 }
 
 /** What Nest hands a guard for `classRef.prototype[method]`. */
@@ -55,6 +61,12 @@ describe('routeTier', () => {
       'expensive',
     );
     expect(routeTier(contextFor(TierController, 'cheap'))).toBe('cheap');
+  });
+
+  it('lets a handler’s tier win over its class’s, and counts a ttl-only tier', () => {
+    expect(
+      routeTier(contextFor(ExpensiveClassController, 'cheapHandler')),
+    ).toBe('cheap');
   });
 
   it('honours a tier named on the class', () => {
@@ -121,9 +133,10 @@ describe('tieredThrottlers under ThrottlerGuard', () => {
     expect(ok).toBe(60);
   });
 
-  it('counts each route separately', async () => {
-    // /t/plain is exhausted above; a class-level expensive route is not.
-    const { ok } = await admitted('/c', 1);
-    expect(ok).toBe(1);
+  it('gives a class-level expensive route its own full allowance', async () => {
+    // /t/expensive is exhausted above. Separate counters per route are the
+    // library's own behaviour; this pins that the class-level tier keeps it.
+    const { ok } = await admitted('/c', 12);
+    expect(ok).toBe(10);
   });
 });

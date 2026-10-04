@@ -24,24 +24,39 @@ export const THROTTLE_TIERS = ['cheap', 'default', 'expensive'] as const;
 export type ThrottleTier = (typeof THROTTLE_TIERS)[number];
 
 /**
- * The metadata key `@Throttle({ name: { limit } })` writes, per throttler —
- * `THROTTLER_LIMIT + name` in @nestjs/throttler. The library does not export
- * the constant from its entry point, so it is spelled here; the tests pin it
- * against the decorator, so a library change that renames it fails there.
+ * The metadata keys `@Throttle({ name: { limit, ttl } })` writes, per
+ * throttler — `THROTTLER_LIMIT + name` and `THROTTLER_TTL + name` in
+ * @nestjs/throttler. The library does not export the constants from its entry
+ * point, so they are spelled here; the tests pin them against the decorator,
+ * so a library change that renames them fails there.
  */
 const LIMIT_KEY = 'THROTTLER:LIMIT';
+const TTL_KEY = 'THROTTLER:TTL';
 
 const reflector = new Reflector();
 
-/** The tier a route opted into, or `default` when it named none. */
+function namesTier(target: object, tier: ThrottleTier): boolean {
+  return (
+    reflector.get(LIMIT_KEY + tier, target as never) !== undefined ||
+    reflector.get(TTL_KEY + tier, target as never) !== undefined
+  );
+}
+
+/**
+ * The tier a route opted into, or `default` when it named none. The handler
+ * is read before its class, so a handler's tier wins over the class's, as
+ * the library's own overrides do. A tier named with only a `ttl` counts.
+ *
+ * One consequence to keep in mind: `@SkipThrottle({ expensive: true })` on a
+ * route that is in the `expensive` tier leaves it unthrottled, because no
+ * other tier counts it any more.
+ */
 export function routeTier(context: ExecutionContext): ThrottleTier {
-  const targets = [context.getHandler(), context.getClass()];
-  for (const tier of THROTTLE_TIERS) {
-    if (
-      tier !== 'default' &&
-      reflector.getAllAndOverride(LIMIT_KEY + tier, targets) !== undefined
-    ) {
-      return tier;
+  for (const target of [context.getHandler(), context.getClass()]) {
+    for (const tier of THROTTLE_TIERS) {
+      if (tier !== 'default' && namesTier(target, tier)) {
+        return tier;
+      }
     }
   }
   return 'default';
