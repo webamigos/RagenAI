@@ -115,6 +115,20 @@ type FileListWrapperWithDataProps = {
    */
   subfolders?: DocumentFolderItem[];
   onNavigateFolder?: (folderId: string) => void;
+  /**
+   * Told when a folder was created from here.
+   *
+   * The page above holds its folders in client state (the rail, and the
+   * subfolders shown ahead of the files), filled by a `useEffect` that nothing
+   * re-runs. `router.refresh()` re-renders server components and leaves that
+   * state exactly as it was, so a folder created with only a refresh was in the
+   * database and on neither list until a hard reload (#1269). The handler this
+   * is wired to reloads the folders *and* refreshes the route.
+   *
+   * Optional, so a page that gets its folders from the server still works: with
+   * no handler the dialog falls back to the refresh alone.
+   */
+  onFolderMutated?: () => void;
 };
 
 export const FileListWrapperWithData = ({
@@ -129,6 +143,7 @@ export const FileListWrapperWithData = ({
   canManageOrg,
   subfolders,
   onNavigateFolder,
+  onFolderMutated,
 }: FileListWrapperWithDataProps) => {
   const { successToast, errorToast, warningToast } = statusToast();
   const tSuccess = useTranslations('success-toast');
@@ -1084,7 +1099,13 @@ export const FileListWrapperWithData = ({
         teams={teams.map((t) => ({ id: t.id, name: t.name }))}
         onCreated={() => {
           setIsCreateFolderOpen(false);
-          router.refresh();
+          // Not `router.refresh()` alone: see `onFolderMutated`. The handler
+          // does the refresh too, so calling both would refresh twice.
+          if (onFolderMutated) {
+            onFolderMutated();
+          } else {
+            router.refresh();
+          }
         }}
         parentId={currentFolderId}
       />

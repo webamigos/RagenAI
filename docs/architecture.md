@@ -17,10 +17,10 @@ This is an npm-workspaces monorepo (`apps/*` + `packages/*`):
 │   ├── web/                      # The Next.js app (ADR-29 moved it off the root)
 │   ├── api/                      # NestJS public API
 │   ├── admin/                    # Platform admin panel
-│   ├── worker/                   # Document-ingest worker (BullMQ, ADR-44)
-│   └── docs/                     # Docusaurus documentation site (ADR-30)
+│   ├── mcp/                      # MCP server exposing Ragen's chat to external
+│   │                             #   clients, through apps/api (ADR-36)
+│   └── worker/                   # Document-ingest worker (BullMQ, ADR-44)
 ├── packages/
-│   ├── db/                       # Prisma client singleton
 │   ├── rag-core/                 # Vector contract shared by app, api & worker:
 │   │                             #   BM25 encoder, VECTOR_SIZE, vector names,
 │   │                             #   default embedding model (ADR-26)
@@ -37,6 +37,19 @@ This is an npm-workspaces monorepo (`apps/*` + `packages/*`):
 │   ├── env/                      # Typed env contract, composed per app
 │   │                             #   from shared fragments (ADR-37)
 │   ├── observability/            # OTel logger + span helper (ADR-28)
+│   ├── jobs/                     # The job contract: names, payloads, the
+│   │                             #   runtime seam (ADR-44)
+│   ├── jobs-bullmq/              # The BullMQ adapter behind that seam
+│   ├── llm-gateway/              # The route table and in-process model
+│   │                             #   calls (ADR-49)
+│   ├── guardrails/               # Input and output guardrail rules, one
+│   │                             #   package for both stages
+│   ├── connector-guard/          # The URL policy for connectors: save,
+│   │                             #   connect and every tool call
+│   ├── brain-contracts/          # Ragen Brain: shared types and constants
+│   ├── brain-core/               # Ragen Brain: the rules, free of I/O
+│   ├── create-ragen-app/         # `npx create-ragen-app`, the installer
+│   ├── ragen-cli/                # The `ragen` command-line tool
 │   └── eslint-config/            # One flat config, three entry points
 └── prisma/schema.prisma          # One schema, a generator block per app
 ```
@@ -59,7 +72,7 @@ Inside `apps/web/src/`:
 ```
 apps/web/src/
 ├── app/                          # Next.js App Router
-│   ├── [locale]/                 # Locale-prefixed routes (en, pl)
+│   ├── [locale]/                 # Locale-prefixed routes, one per entry in app/config.ts
 │   │   ├── (panel)/              # Authenticated app (threads, settings, documents)
 │   │   ├── (auth)/               # Sign-in, sign-up, forgot password
 │   │   └── public/               # Public assistant chat widgets
@@ -72,14 +85,28 @@ apps/web/src/
 │   └── components/               # UI components organized by feature
 │
 ├── features/                     # Domain feature modules (CQRS pattern)
+│   ├── ai-usage/                 # AI usage rows: tokens and cost per call
+│   ├── assistant-templates/      # Activating an assistant template, its instructions
 │   ├── assistants/               # Assistant mode types
+│   ├── audit-logs/               # The operational audit log, state before and after
+│   ├── brain/                    # Ragen Brain: knowledge pages, review, publishing, access
+│   ├── brain-assistant/          # The assistant that proposes Brain changes in a thread
+│   ├── chatbots/                 # Embeddable website chatbots and their visitor threads
 │   ├── connectors/               # External connectors (Google Drive, etc.)
 │   ├── documents/                # Document & file management
+│   ├── guardrails/               # Per-organization input and output guardrail rules
+│   ├── memory/                   # Personal memory across threads: extract, forget
 │   ├── messages/                 # Chat messages
+│   ├── notifications/            # In-app notifications
 │   ├── onboarding/               # User onboarding flow
 │   ├── organizations/            # Organizations, settings, API keys
+│   ├── parsing/                  # Document parser status (Docling)
 │   ├── projects/                 # Projects & instructions
+│   ├── security/                 # Security events: recording and resolving
+│   ├── settings/                 # The settings pages' registry and per-permission nav
+│   ├── setup/                    # First-run setup status and environment inspection
 │   ├── subscriptions/            # Subscription management
+│   ├── teams/                    # Teams, default membership, team settings, thread sharing
 │   ├── threads/                  # Chat threads & SSE events
 │   └── users/                    # User metadata
 │
