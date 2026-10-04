@@ -447,17 +447,36 @@ work, and D packages the result.
 
 ### Phase C — an assistant can be told to answer only from its documents
 
-- [ ] **C1.** The guard corpus with its loader and rubric. A baseline is run
+- [x] **C1.** The guard corpus with its loader and rubric. A baseline is run
   on today's prompt and committed.
-- [ ] **C2.** `answerFromDocumentsOnly`: migration, read path (web + api +
+
+  *Done 2026-10-03* (`results/2026-10-03-c1-c3-strict-grounding.md`,
+  corpus #1519): baseline guard pass 23/28 median once the v1 citation gate
+  is set aside; the gate itself turned out to fail correct near-miss answers
+  and became a rubric rule in corpus v3.
+- [x] **C2.** `answerFromDocumentsOnly`: migration, read path (web + api +
   guest chatbot), the prompt rule in both copies, the architecture test
   that the copies agree, the settings switch, and a `p0-*` e2e test that a
   chatbot-enabled assistant refuses an out-of-corpus question. The rule goes
   into `docs/rag-pipeline.md`, and a line into `docs/changelog-notes.md`.
+
+  *Done 2026-10-03* (#1520), with the organization's embedded widget always
+  strict (it has no assistant to carry the setting).
 - [ ] **C3.** Measure C2 against C1's baseline, including the over-refusal
   arm. Build the grader (behind a key, default off) only if the agreed
   threshold is missed; otherwise mark this step "not needed", with the
   numbers.
+
+  *Measured 2026-10-03:* strict 26/28 against baseline 23/28 on the guard
+  corpus (v1, with its citation gate set aside), every strict run above every
+  baseline run, no over-refusal on `kolej` attributable to the rule. **The
+  grader decision is open:** no failure share was agreed before measuring.
+  Proposed threshold: build the grader if strict leaves more than 10% of guard
+  cases failing, counted over graded cases, with a citation on the statement
+  of absence counted as a failure (the corpus v3 rubric rule). Strict leaves
+  2/28 (7%) on v1's pass criteria without the citation gate; v3's rubric rule
+  has not been run yet. To tick: agree the threshold, then run the guard
+  corpus v3 under strict and compare.
 
 ### Phase D — a number we can quote
 
