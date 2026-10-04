@@ -3,6 +3,7 @@ import { ORG_ADMIN_ROLE } from '@ragenai/platform-contracts';
 import { EmailLayout } from './components/email-layout';
 import { getBaseUrl } from './utils/base-url';
 import { strong, type EmailTranslator } from './utils/email-translator';
+import { previewTranslator } from './utils/preview-translator';
 
 type Props = {
   invitedEmail: string;
@@ -74,6 +75,18 @@ const InvitationEmail = ({
     </EmailLayout>
   );
 };
+
+/** What `npm run emails:dev` renders this template with. */
+InvitationEmail.PreviewProps = {
+  invitedEmail: 'ada@example.com',
+  organizationName: 'Acme',
+  inviterName: 'Grace Hopper',
+  role: 'member',
+  invitationId: 'preview',
+  expiresAt: new Date('2026-12-24T10:00:00Z'),
+  locale: 'en',
+  t: previewTranslator('invitation'),
+} satisfies Props;
 
 export { InvitationEmail };
 export default InvitationEmail;

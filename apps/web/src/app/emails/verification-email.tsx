@@ -1,6 +1,7 @@
 import { Button, Hr, Text } from '@react-email/components';
 import { EmailLayout } from './components/email-layout';
 import type { EmailTranslator } from './utils/email-translator';
+import { previewTranslator } from './utils/preview-translator';
 
 type Props = {
   verificationUrl: string;
@@ -23,6 +24,13 @@ const VerificationEmail = ({ verificationUrl, locale, t }: Props) => (
     <Text className="text-base leading-6 text-[#525f7f]">{t('expiry')}</Text>
   </EmailLayout>
 );
+
+/** What `npm run emails:dev` renders this template with. */
+VerificationEmail.PreviewProps = {
+  verificationUrl: 'https://app.example.test/verify-email?token=preview',
+  locale: 'en',
+  t: previewTranslator('verification'),
+} satisfies Props;
 
 export { VerificationEmail };
 export default VerificationEmail;

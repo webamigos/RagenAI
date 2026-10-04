@@ -1,6 +1,7 @@
 import { Button, Hr, Text } from '@react-email/components';
 import { EmailLayout } from './components/email-layout';
 import type { EmailTranslator } from './utils/email-translator';
+import { previewTranslator } from './utils/preview-translator';
 
 type Props = {
   resetUrl: string;
@@ -23,6 +24,13 @@ const PasswordResetEmail = ({ resetUrl, locale, t }: Props) => (
     <Text className="text-base leading-6 text-[#525f7f]">{t('expiry')}</Text>
   </EmailLayout>
 );
+
+/** What `npm run emails:dev` renders this template with. */
+PasswordResetEmail.PreviewProps = {
+  resetUrl: 'https://app.example.test/reset-password?token=preview',
+  locale: 'en',
+  t: previewTranslator('password-reset'),
+} satisfies Props;
 
 export { PasswordResetEmail };
 export default PasswordResetEmail;

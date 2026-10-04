@@ -2,6 +2,7 @@ import { Heading, Section, Text, Link } from '@react-email/components';
 import { EmailLayout } from './components/email-layout';
 import { getBaseUrl } from './utils/base-url';
 import { code, strong, type EmailTranslator } from './utils/email-translator';
+import { previewTranslator } from './utils/preview-translator';
 
 type Props = {
   publicId: string;
@@ -115,6 +116,21 @@ const SecurityAlertEmail = ({
     </EmailLayout>
   );
 };
+
+/** What `npm run emails:dev` renders this template with. */
+SecurityAlertEmail.PreviewProps = {
+  publicId: 'evt_preview',
+  eventType: 'AUTH_LOGIN_FAILED',
+  severity: 'critical',
+  source: 'auth',
+  organizationId: 'org_preview',
+  userId: 'user_preview',
+  ipAddress: '203.0.113.7',
+  requestId: 'req_preview',
+  createdAtIso: '2026-10-04T10:00:00.000Z',
+  locale: 'en',
+  t: previewTranslator('security-alert'),
+} satisfies Props;
 
 export { SecurityAlertEmail };
 export default SecurityAlertEmail;

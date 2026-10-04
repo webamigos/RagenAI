@@ -2,6 +2,7 @@ import { Button, Hr, Text } from '@react-email/components';
 import { EmailLayout } from './components/email-layout';
 import { getBaseUrl } from './utils/base-url';
 import type { EmailTranslator } from './utils/email-translator';
+import { previewTranslator } from './utils/preview-translator';
 
 /** Where a new user's questions go. Not translated: it is an address. */
 const CONTACT_EMAIL = 'hello@webamigos.pl';
@@ -35,6 +36,13 @@ const WelcomeEmail = ({ name, locale, t }: Props) => (
     </Text>
   </EmailLayout>
 );
+
+/** What `npm run emails:dev` renders this template with. */
+WelcomeEmail.PreviewProps = {
+  name: 'Ada Lovelace',
+  locale: 'en',
+  t: previewTranslator('welcome'),
+} satisfies Props;
 
 export { WelcomeEmail };
 export default WelcomeEmail;
