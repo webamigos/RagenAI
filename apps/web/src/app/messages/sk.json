@@ -1149,7 +1149,8 @@
       "audit-logs": "Audítorské protokoly",
       "knowledge-analytics": "Analýza znalostí",
       "role-org-owner": "Vlastník"
-    }
+    },
+    "back-to-main-menu": "Hlavná ponuka"
   },
   "chats-page": {
     "title": "Konverzácie",

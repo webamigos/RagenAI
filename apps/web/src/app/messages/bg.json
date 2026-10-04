@@ -1149,7 +1149,8 @@
       "audit-logs": "Одитни логове",
       "knowledge-analytics": "Анализ на знанията",
       "role-org-owner": "Собственик"
-    }
+    },
+    "back-to-main-menu": "Главно меню"
   },
   "chats-page": {
     "title": "Чатове",

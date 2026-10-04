@@ -1149,7 +1149,8 @@
       "audit-logs": "Журнали аудиту",
       "knowledge-analytics": "Аналітика знань",
       "role-org-owner": "Власник"
-    }
+    },
+    "back-to-main-menu": "Головне меню"
   },
   "chats-page": {
     "title": "Чати",

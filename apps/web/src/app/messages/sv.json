@@ -1149,7 +1149,8 @@
       "audit-logs": "Granskningsloggar",
       "knowledge-analytics": "Kunskapsanalys",
       "role-org-owner": "Ägare"
-    }
+    },
+    "back-to-main-menu": "Huvudmeny"
   },
   "chats-page": {
     "title": "Chattar",
