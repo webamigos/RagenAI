@@ -79,6 +79,13 @@ archive is the blog.
 
 ### Self-hosting
 
+- `[brief]` **A smoke test for the MCP server.** `npm run smoke
+  --workspace=@ragenai/mcp -- <url>` checks a running server one layer at a
+  time — connection, tools, the API key, retrieval, optionally a model
+  answer — and names the service and variable to look at when one fails.
+  The server's health check passes while the API behind it has no token
+  vault or vector store; this is what catches that.
+
 - [brief] A fresh `npx create-ragen-app` install on an OpenAI or Anthropic key
   now parses its first upload. The worker refused to boot without Scaleway
   credentials it never used, and summaries, scoring and live ingest progress
