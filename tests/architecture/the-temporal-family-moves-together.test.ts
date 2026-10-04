@@ -63,7 +63,6 @@ const MANIFESTS = [
   'apps/worker/package.json',
   'apps/mcp/package.json',
   'packages/rag-core/package.json',
-  'packages/db/package.json',
 ];
 
 const EXACT_VERSION = /^\d+\.\d+\.\d+$/;

@@ -44,7 +44,6 @@
     "@ragenai/brain-core": "*",
     "@ragenai/connector-guard": "*",
     "@ragenai/crypto": "*",
-    "@ragenai/db": "*",
     "@ragenai/env": "*",
     "@ragenai/guardrails": "*",
     "@ragenai/jobs": "*",

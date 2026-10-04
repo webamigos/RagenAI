@@ -96,14 +96,8 @@ const importsIn = (file: string): string[] =>
 
 describe('the jobs seam is the only place that names a runtime', () => {
   it('no package imports from an app', () => {
-    // `packages/db` is the one exception, and it is older than this rule: it
-    // constructs `PrismaClient` from `apps/web/src/generated/prisma`, because
-    // the generated client is a per-app artifact that no package can own. It
-    // gets away with it by shipping raw TypeScript rather than a build, which
-    // is exactly the property `packages/jobs` cannot have — apps/api compiles
-    // to CommonJS and runs the output. Listing it here rather than widening
-    // the rule keeps the next one from being waved through.
-    const offenders = packagesExcept(['db']).filter((file) =>
+    // No exception list: `packages/db`, which was one, is gone (#1137).
+    const offenders = packagesExcept([]).filter((file) =>
       importsIn(file).some(
         (specifier) =>
           specifier.startsWith('@/') ||
