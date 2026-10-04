@@ -30,12 +30,33 @@ export function resolveConnection(
   flags: Flags,
   env: Record<string, string | undefined>,
 ): Connection | undefined {
-  const url = (flags.values.get('--url') ?? env.RAGEN_API_URL ?? '').replace(
-    /\/+$/,
-    '',
-  );
+  const url = normalizeUrl(flags.values.get('--url') ?? env.RAGEN_API_URL);
   const key = flags.values.get('--api-key') ?? env.RAGEN_API_KEY ?? '';
   return url && key ? { url, key } : undefined;
+}
+
+/**
+ * The API's origin as the client wants it: no trailing slash, and no `/v1` —
+ * the docs show `https://api.example.com/v1` as the base URL, so that is what
+ * people paste, and the client adds `/v1` itself.
+ */
+export function normalizeUrl(url: string | undefined): string {
+  return (url ?? '').trim().replace(/\/+$/, '').replace(/\/v1$/, '');
+}
+
+/** What every installation-facing command says when it has no connection. */
+export const NO_CONNECTION =
+  'Run `ragen login --url <api-url>`, or set RAGEN_API_URL and RAGEN_API_KEY (or pass --url and --api-key).';
+
+/**
+ * A request that never got an answer — refused, unresolvable, timed out —
+ * as a sentence naming the address, instead of undici's bare "fetch failed".
+ */
+export function unreachable(url: string, error: unknown): ApiError {
+  const cause = (error as { cause?: { code?: string } }).cause;
+  const reason =
+    cause?.code ?? (error instanceof Error ? error.message : String(error));
+  return new ApiError(`Cannot reach ${url} (${reason}).`, 0);
 }
 
 export class ApiError extends Error {
@@ -136,10 +157,15 @@ export function createApiClient(
       body = JSON.stringify(options.body);
     }
 
-    const res = await fetchImpl(
-      `${connection.url}/v1/${path}${qs ? `?${qs}` : ''}`,
-      { method: options.method ?? 'GET', headers, body },
-    );
+    let res: Response;
+    try {
+      res = await fetchImpl(
+        `${connection.url}/v1/${path}${qs ? `?${qs}` : ''}`,
+        { method: options.method ?? 'GET', headers, body },
+      );
+    } catch (error) {
+      throw unreachable(connection.url, error);
+    }
 
     if (res.ok) {
       return (await res.json()) as T;

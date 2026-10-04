@@ -10,6 +10,9 @@ function harness(overrides: Partial<RunOptions> = {}) {
   const brain = vi.fn(() => Promise.resolve(0));
   const kb = vi.fn(() => Promise.resolve(0));
   const search = vi.fn(() => Promise.resolve(0));
+  const login = vi.fn(() => Promise.resolve(0));
+  const logout = vi.fn(() => Promise.resolve(0));
+  const doctor = vi.fn(() => Promise.resolve(0));
 
   const options: RunOptions = {
     version: '1.2.3',
@@ -17,6 +20,9 @@ function harness(overrides: Partial<RunOptions> = {}) {
     brain,
     kb,
     search,
+    login,
+    logout,
+    doctor,
     out: (message) => out.push(message),
     err: (message) => err.push(message),
     ...overrides,
@@ -27,6 +33,9 @@ function harness(overrides: Partial<RunOptions> = {}) {
     brain,
     kb,
     search,
+    login,
+    logout,
+    doctor,
     out,
     err,
     run: (argv: string[]) => run(argv, options),
@@ -112,4 +121,15 @@ describe('run kb and search', () => {
     await expect(cli.run(['search', 'refund', '--max', '3'])).resolves.toBe(0);
     expect(cli.search).toHaveBeenCalledWith(['refund', '--max', '3']);
   });
+});
+
+describe('run login, logout and doctor', () => {
+  it.each(['login', 'logout', 'doctor'] as const)(
+    'hands everything after `%s` to it',
+    async (name) => {
+      const cli = harness();
+      await expect(cli.run([name, '--url', 'https://x'])).resolves.toBe(0);
+      expect(cli[name]).toHaveBeenCalledWith(['--url', 'https://x']);
+    },
+  );
 });

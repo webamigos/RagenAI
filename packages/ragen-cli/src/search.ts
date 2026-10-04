@@ -1,4 +1,9 @@
-import { CONNECTION_HELP, createApiClient, resolveConnection } from './api';
+import {
+  CONNECTION_HELP,
+  NO_CONNECTION,
+  createApiClient,
+  resolveConnection,
+} from './api';
 import { parseFlags, positiveInt } from './flags';
 
 /**
@@ -46,9 +51,7 @@ export async function runSearch(
     }
     const connection = resolveConnection(flags, deps.env);
     if (!connection) {
-      deps.err(
-        'Set RAGEN_API_URL and RAGEN_API_KEY (or pass --url and --api-key).',
-      );
+      deps.err(NO_CONNECTION);
       return 1;
     }
     const api = createApiClient(deps.fetch, connection);

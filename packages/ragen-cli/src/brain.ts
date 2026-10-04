@@ -2,6 +2,7 @@ import { dirname, isAbsolute, join, normalize, sep } from 'node:path';
 
 import {
   CONNECTION_HELP,
+  NO_CONNECTION,
   createApiClient,
   resolveConnection,
   type ApiClient,
@@ -77,7 +78,7 @@ export async function runBrain(
   const connection = resolveConnection(flags, deps.env);
   if (!connection) {
     deps.err(
-      'Set RAGEN_API_URL and RAGEN_API_KEY (or pass --url and --api-key). The key must belong to an owner or admin of an organization with Brain on.',
+      `${NO_CONNECTION} The key must belong to an owner or admin of an organization with Brain on.`,
     );
     return 1;
   }

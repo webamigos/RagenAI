@@ -43,6 +43,21 @@ export const COMMANDS: readonly CommandSpec[] = [
     status: 'available',
   },
   {
+    name: 'login',
+    summary: 'check an API key and save it with the API address',
+    status: 'available',
+  },
+  {
+    name: 'logout',
+    summary: 'forget the saved API address and key',
+    status: 'available',
+  },
+  {
+    name: 'doctor',
+    summary: 'check this terminal can reach an installation',
+    status: 'available',
+  },
+  {
     name: 'help',
     summary: 'show this message',
     status: 'available',
@@ -51,18 +66,6 @@ export const COMMANDS: readonly CommandSpec[] = [
     name: 'version',
     summary: 'print the version of this CLI',
     status: 'available',
-  },
-  {
-    name: 'login',
-    summary: 'authenticate against a Ragen installation',
-    status: 'planned',
-    blockedBy: 'an identity endpoint on the public API',
-  },
-  {
-    name: 'doctor',
-    summary: "check an installation's configuration",
-    status: 'planned',
-    blockedBy: 'an identity endpoint on the public API',
   },
   {
     name: 'plugin',

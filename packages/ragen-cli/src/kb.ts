@@ -3,6 +3,7 @@ import { basename } from 'node:path';
 import {
   ApiError,
   CONNECTION_HELP,
+  NO_CONNECTION,
   createApiClient,
   resolveConnection,
   type ApiClient,
@@ -84,9 +85,7 @@ export async function runKb(args: string[], deps: KbDeps): Promise<number> {
     const flags = parseFlags(rest, VALUE_FLAGS);
     const connection = resolveConnection(flags, deps.env);
     if (!connection) {
-      deps.err(
-        'Set RAGEN_API_URL and RAGEN_API_KEY (or pass --url and --api-key).',
-      );
+      deps.err(NO_CONNECTION);
       return 1;
     }
     const api = createApiClient(deps.fetch, connection);

@@ -11,6 +11,10 @@ export interface RunOptions {
   /** `ragen kb …` and `ragen search …`, likewise over the API. */
   kb: (args: string[]) => Promise<number>;
   search: (args: string[]) => Promise<number>;
+  /** `ragen login`, `logout` and `doctor`: the saved connection. */
+  login: (args: string[]) => Promise<number>;
+  logout: (args: string[]) => Promise<number>;
+  doctor: (args: string[]) => Promise<number>;
   /**
    * Required, not defaulted to `console`: the router does no I/O of its own,
    * which is what lets a test read its output instead of capturing a stream.
@@ -71,6 +75,12 @@ export function run(
       return options.kb(args.rest);
     case 'search':
       return options.search(args.rest);
+    case 'login':
+      return options.login(args.rest);
+    case 'logout':
+      return options.logout(args.rest);
+    case 'doctor':
+      return options.doctor(args.rest);
     case 'help':
       out(helpText(options.version));
       return 0;

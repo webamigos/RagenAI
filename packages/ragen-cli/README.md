@@ -31,18 +31,70 @@ binary it finds on `PATH` before it fetches anything.)
 ragen create [dir]   scaffold a self-hosted Ragen installation
 ragen kb <cmd>       knowledge base files: ls, upload, status, rm
 ragen search <q>     the passages chat would answer from, without an answer
+ragen login          check an API key and save it with the API address
+ragen logout         forget them
+ragen doctor         check this terminal can reach an installation
 ragen brain <cmd>    Ragen Brain: next, doctor, findings, pages, graph, query, export
 ragen help
 ragen version
 ```
 
 Every command except `create` talks to an installation's public API, with an
-API key created under **Organization → API keys**:
+API key created under **Organization → API keys**. Save both once:
 
 ```bash
-export RAGEN_API_URL=https://api.example.com   # or --url
-export RAGEN_API_KEY=sk-...                    # or --api-key
+ragen login --url https://api.example.com      # asks for the key, hidden
+echo "$KEY" | ragen login --url https://api.example.com   # or piped
 ```
+
+or set them per shell, which wins over what is saved — as `--url` and
+`--api-key` win over both:
+
+```bash
+export RAGEN_API_URL=https://api.example.com
+export RAGEN_API_KEY=sk-...
+```
+
+### `ragen login`, `ragen logout`
+
+There is no identity endpoint to sign in against, and none is needed: a key
+already names its organization and scope. `login` asks `GET /v1/models` —
+which any key may call — and saves the address and key only if the key is
+accepted, so a typo never becomes every later command's "The API key was
+refused". A `/v1` at the end of the address is dropped; the CLI adds it.
+
+The key is kept **as plain text** in `$XDG_CONFIG_HOME/ragen/config.json`
+(`~/.config/ragen/config.json` by default, `%APPDATA%\ragen\config.json` on
+Windows), readable only by you — the same trade `gh`, `npm` and `docker` make
+without a keychain. `ragen logout` deletes it. The key is read from a hidden
+prompt or stdin rather than an argument by default, because arguments land in
+shell history; `--api-key` still works. Over plain `http` to anything but
+localhost, `login` warns that the key travels unencrypted.
+
+### `ragen doctor`
+
+Checks the path from this terminal to an installation, and exits non-zero if
+any check fails:
+
+```
+ok    node       v24.15.0
+ok    cli        ragen-cli 0.3.0
+ok    url        https://api.example.com (from ~/.config/ragen/config.json)
+ok    key        sk-749…sgF8 (from RAGEN_API_KEY)
+ok    api        answers
+ok    auth       the key is accepted
+ok    models     gpt-oss-120b, mistral-small-3.2
+-     brain      off for the organization, or the key's user is not an owner or admin
+```
+
+It says where the address and key came from — flag, variable or saved file —
+which is most of what goes wrong when two of them disagree. `api` asks the
+unauthenticated health check first, so "nothing answers here" (or "that is the
+panel's address, not the API's") is told apart from "the key is refused".
+
+`doctor` is about this client. Whether an installation is configured well —
+its environment, its model routes, its queue — is answered on the host, by the
+setup page and `npm run gateway:preflight`.
 
 `ragen create` delegates to
 [`create-ragen-app`](https://www.npmjs.com/package/create-ragen-app) and
@@ -130,9 +182,9 @@ refuses a bundle path that would land outside the target directory.
 
 ## What does not work yet
 
-`login`, `doctor` and `plugin` are listed in `ragen help` under **Not built
-yet**. Running one prints what it is waiting on and **exits non-zero**,
-so a script cannot mistake it for a no-op that succeeded.
+`plugin` is listed in `ragen help` under **Not built yet**. Running it prints
+what it is waiting on and **exits non-zero**, so a script cannot mistake it for
+a no-op that succeeded.
 
 `ragen plugin` in particular waits on custom MCP connectors. Ragen's extension
 API is MCP — third-party code runs out of process and never inside the app —

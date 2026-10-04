@@ -86,6 +86,13 @@ archive is the blog.
   The per-minute upload limit is waited out rather than failing the
   eleventh file. Needs `ragen-cli` 0.3.0.
 
+- `[brief]` **`ragen login` and `ragen doctor`.** `ragen login --url …`
+  checks an API key against the installation and saves it, so later commands
+  need no exported variables; `ragen doctor` says which address and key are in
+  use and where each came from, whether the API answers, whether it accepts
+  the key, which models it offers, and whether the CLI is out of date.
+  Needs `ragen-cli` 0.3.0.
+
 - `[brief]` **A smoke test for the MCP server.** `npm run smoke
   --workspace=@ragenai/mcp -- <url>` checks a running server one layer at a
   time — connection, tools, the API key, retrieval, optionally a model
