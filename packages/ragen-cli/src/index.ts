@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { readFileSync } from 'node:fs';
-import { chmod, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import { dirname, join } from 'node:path';
 
@@ -28,6 +28,12 @@ const version = readVersion(join(__dirname, '..', 'package.json'));
 const out = (message: string) => console.log(message);
 const err = (message: string) => console.error(message);
 
+/**
+ * How long `login` waits for a piped key. A pipe that never sends one — an
+ * ssh session without a tty, some CI runners — would otherwise hang.
+ */
+const STDIN_TIMEOUT_MS = 30_000;
+
 const savedAt = configPath(process.env, homedir(), process.platform);
 const stored = parseStoredConnection(readIfPresent(savedAt));
 // What `kb`, `search` and `brain` see: flags, then the environment, then
@@ -35,13 +41,34 @@ const stored = parseStoredConnection(readIfPresent(savedAt));
 // because they report or replace the saved connection rather than use it.
 const env = withStoredConnection(process.env, stored);
 
+/**
+ * `false` only when there was no file. Any other failure — a permission, a
+ * read-only disk — is thrown: `logout` reporting "not logged in" while the key
+ * is still on disk is the one wrong answer it must not give.
+ */
 async function removeConfig(path: string): Promise<boolean> {
   try {
     await rm(path);
     return true;
-  } catch {
-    return false;
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+      return false;
+    }
+    throw error;
   }
+}
+
+/**
+ * Written to a file created 0600 and renamed over the old one, so the key is
+ * never readable by others even for a moment — `writeFile`'s `mode` applies
+ * only when it creates the file, and an existing 0644 file would have held
+ * the new key until a `chmod` after it.
+ */
+async function saveConfig(path: string, content: string): Promise<void> {
+  await mkdir(dirname(path), { recursive: true, mode: 0o700 });
+  const temporary = `${path}.${process.pid}.tmp`;
+  await writeFile(temporary, content, { encoding: 'utf8', mode: 0o600 });
+  await rename(temporary, path);
 }
 
 function readIfPresent(path: string): string | undefined {
@@ -99,15 +126,9 @@ Promise.resolve()
             if (process.stdin.isTTY) {
               return promptHidden('API key: ');
             }
-            return readFirstLine(process.stdin);
+            return readFirstLine(process.stdin, STDIN_TIMEOUT_MS);
           },
-          saveConfig: async (path, content) => {
-            await mkdir(dirname(path), { recursive: true, mode: 0o700 });
-            await writeFile(path, content, { encoding: 'utf8', mode: 0o600 });
-            // `mode` applies only when the file is created; a file left by an
-            // earlier version, or created by hand, keeps its own until this.
-            await chmod(path, 0o600);
-          },
+          saveConfig,
           removeConfig,
           out,
           err,

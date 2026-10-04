@@ -132,20 +132,31 @@ function connectionFrom(
   values: Map<string, string>,
   deps: DoctorDeps,
 ): { connection: Connection | undefined; checks: Check[] } {
-  const pick = (flag: string, variable: string, saved: string | undefined) => {
+  const pick = (flag: string, variable: string) => {
     if (values.get(flag)) {
       return { value: values.get(flag)!, source: flag };
     }
     if (deps.env[variable]) {
       return { value: deps.env[variable]!, source: variable };
     }
-    if (saved) {
-      return { value: saved, source: deps.configPath };
-    }
     return undefined;
   };
-  const url = pick('--url', 'RAGEN_API_URL', deps.stored?.url);
-  const key = pick('--api-key', 'RAGEN_API_KEY', deps.stored?.key);
+  const url =
+    pick('--url', 'RAGEN_API_URL') ??
+    (deps.stored
+      ? { value: deps.stored.url, source: deps.configPath }
+      : undefined);
+  // The saved key only goes with the saved address — the same rule as every
+  // other command (`savedKeyFor`), so doctor never probes another host with it.
+  const savedKeyApplies =
+    !!deps.stored &&
+    !!url &&
+    normalizeUrl(url.value) === normalizeUrl(deps.stored.url);
+  const key =
+    pick('--api-key', 'RAGEN_API_KEY') ??
+    (savedKeyApplies
+      ? { value: deps.stored!.key, source: deps.configPath }
+      : undefined);
 
   const checks: Check[] = [
     url
@@ -169,7 +180,10 @@ function connectionFrom(
       : {
           name: 'key',
           status: 'fail',
-          detail: 'no API key',
+          detail:
+            deps.stored && url
+              ? `no API key for this address; the saved one is for ${normalizeUrl(deps.stored.url)} and is not sent elsewhere`
+              : 'no API key',
           hint: 'ragen login, with a key from Organization → API keys',
         },
   ];
