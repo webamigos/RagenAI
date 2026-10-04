@@ -79,6 +79,11 @@ archive is the blog.
 
 ### Knowledge base
 
+- `[brief]` **The file list's toolbar stays on one row on a laptop.** With the
+  app sidebar open on a 14" screen, the last filter (PII policy) dropped to a
+  second line. The search field now narrows to make room before any filter
+  wraps, and widens back when there is space.
+
 - `[brief]` **Switching document summaries off for an organization takes
   effect.** The per-organization "Document summaries" setting was shown on
   the RAG settings page and editable in the admin panel, and ingest never

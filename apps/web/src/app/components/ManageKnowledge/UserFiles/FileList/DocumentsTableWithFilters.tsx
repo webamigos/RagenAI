@@ -273,15 +273,36 @@ function FiltersBar({
         its own above three controls that do the same job. The view toggle sits
         at the far end — it changes how the answer is drawn, not what it is.
 
-        Two boxes rather than one wrapping row: the controls that narrow the
-        set wrap among themselves, and the view toggle stays anchored to the
-        top right. In one row it rode the *last* wrapped line, so on a narrow
-        panel it appeared halfway down the toolbar, beside whichever chip
-        happened to fall last.
+        Three boxes on one line that does not wrap, and each gives way in a
+        set order. The search field goes first: it grows into whatever the
+        chips leave, up to the 18rem it used to take outright, and narrows to
+        8rem before anything moves. Only then do the chips wrap — among
+        themselves, so the search field stays top left and the view toggle
+        top right. In one wrapping row the toggle rode the *last* line, so on a
+        narrow panel it appeared halfway down the toolbar.
+
+        The search field used to sit inside the chips' wrapping box at a fixed
+        18rem. A wrapping box never shrinks an item to keep a line — it breaks
+        the line — so on a 14" laptop with the app sidebar open the last chip
+        fell to a second row, with room to spare in the search field.
       */}
       <div className="flex shrink-0 items-start gap-2">
-        <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
-          {search}
+        {search && (
+          /*
+            From `md` only: below that the search is an icon that expands over
+            the row, and a flexible width would push it away from the chips.
+          */
+          <div
+            data-testid="files-toolbar-search"
+            className="md:max-w-72 md:min-w-32 md:flex-1"
+          >
+            {search}
+          </div>
+        )}
+        <div
+          data-testid="files-toolbar-filters"
+          className="flex min-w-0 flex-wrap items-center gap-2"
+        >
           <SortChip sort={sort} dir={dir} onSort={onSort} />
           <FileTypeFilterDropdown
             selected={selectedFileTypes}
@@ -312,7 +333,7 @@ function FiltersBar({
             </button>
           )}
         </div>
-        {viewToggle}
+        {viewToggle && <div className="ml-auto shrink-0">{viewToggle}</div>}
       </div>
 
       {selectionBar && <div className="shrink-0">{selectionBar}</div>}
