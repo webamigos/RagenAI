@@ -68,7 +68,11 @@ describe.skipIf(!available)(
     const point = (
       id: string,
       metadata: Record<string, unknown>,
-    ): { id: string; vector: Record<string, number[]>; payload: unknown } => ({
+    ): {
+      id: string;
+      vector: Record<string, number[]>;
+      payload: Record<string, unknown>;
+    } => ({
       id,
       vector: { [DENSE_VECTOR_NAME]: vector },
       payload: { content: id, metadata },
