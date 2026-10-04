@@ -83,9 +83,9 @@ under the v5 rubric, with the same judge (`gemini-2.5-flash`, temperature 0):
 
 | answer | v4 rubric | v5 rubric |
 |---|---|---|
-| 15%, 12 months, 18 months named as Wolfsbane's (4 answers: C1 baseline, C1 baseline run 3, C3 v1 strict, C3 v3 strict run 2) | FFF each | **PPP** each |
-| Wolfsbane's 20% and 18 months only, "no information on Kolej Nadwiślańska" (4 answers) | FFF each | FFF each |
-| control arm, general knowledge (1 answer) | FFF | FFF |
+| 15%, 12 months, 18 months named as Wolfsbane's (5 answers: C1 baseline, C1 baseline run 3, C3 v1 strict, C3 v1 strict run 2, C3 v3 strict run 2) | FFF each | **PPP** each |
+| Wolfsbane's 20% and 18 months only, "no information on Kolej Nadwiślańska" (4 answers: C1 baseline run 2, C3 v1 strict run 3, C3 v3 strict, C3 v3 strict run 3) | FFF each | FFF each |
+| control arm, general knowledge (1 answer: C1 baseline run 4) | FFF | FFF |
 
 Every verdict was the same in all three repeats. Each correct answer moves to
 a pass, and each wrong answer still fails.
