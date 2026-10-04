@@ -8,6 +8,11 @@ import { filterSettingsPages } from '@/features/settings/filter';
 import { organizationRegistry } from '@/features/settings/registry';
 
 const pathname = vi.hoisted(() => ({ current: '/organization/profile' }));
+const query = vi.hoisted(() => ({ current: '' }));
+
+vi.mock('next/navigation', () => ({
+  useSearchParams: () => new URLSearchParams(query.current),
+}));
 
 vi.mock('@/i18n/routing', () => ({
   usePathname: () => pathname.current,
@@ -55,6 +60,7 @@ function renderBody(items: readonly OrganizationNavItem[]) {
 
 beforeEach(() => {
   pathname.current = '/organization/profile';
+  query.current = '';
   window.sessionStorage.clear();
 });
 
@@ -170,6 +176,29 @@ describe('RememberLastPage', () => {
 
     expect(window.sessionStorage.getItem(ORGANIZATION_RETURN_KEY)).toBe(
       '/projects',
+    );
+  });
+
+  it('remembers the query string with the path', () => {
+    pathname.current = '/knowledge-base';
+    query.current = 'folder=abc';
+    render(<RememberLastPage />);
+
+    expect(window.sessionStorage.getItem(ORGANIZATION_RETURN_KEY)).toBe(
+      '/knowledge-base?folder=abc',
+    );
+  });
+
+  it('remembers a change of query alone, on the same path', () => {
+    pathname.current = '/knowledge-base';
+    query.current = 'folder=abc';
+    const { rerender } = render(<RememberLastPage />);
+
+    query.current = 'folder=def';
+    rerender(<RememberLastPage />);
+
+    expect(window.sessionStorage.getItem(ORGANIZATION_RETURN_KEY)).toBe(
+      '/knowledge-base?folder=def',
     );
   });
 

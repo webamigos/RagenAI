@@ -1,5 +1,7 @@
 export const dynamic = 'force-dynamic';
 
+import { Suspense } from 'react';
+
 import { Navbar, NavbarSection, NavbarSpacer } from '@ragenai/common-ui/Navbar';
 import {
   Sidebar,
@@ -241,7 +243,10 @@ export default async function PanelLayout({ children }: Props) {
 
   return (
     <OrgFeaturesProvider features={features}>
-      <RememberLastPage />
+      {/* useSearchParams needs a boundary; it renders nothing either way. */}
+      <Suspense fallback={null}>
+        <RememberLastPage />
+      </Suspense>
       <PanelLayoutWrapper navbar={navbar} sidebar={sidebar}>
         {children}
       </PanelLayoutWrapper>
