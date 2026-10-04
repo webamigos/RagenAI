@@ -570,6 +570,14 @@ Deeper reference, in `docs/`:
 [testing conventions](docs/testing-conventions.md) ·
 [lessons](docs/lessons.md)
 
+## 🛟 Need help?
+
+Deploying Ragen in your company, getting retrieval right on your own documents,
+or an SLA and rollout support from the people who build it?
+**[Get in touch](https://ragen.ai/en/contact?utm_source=github&utm_medium=readme&utm_campaign=ragen&utm_content=need-help)**.
+For bugs and questions from the community, use [Issues](https://github.com/webamigos/RagenAI/issues)
+and [Discussions](https://github.com/webamigos/RagenAI/discussions).
+
 ## 🤝 Contributing
 
 Pull requests are welcome on everything under Apache 2.0. Start with
