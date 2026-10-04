@@ -95,8 +95,11 @@ explanation to recover.
 equals off's (15/18), and its pass median is one case higher, within noise.
 The questions Scaleway still wins on are the same under fusion as under off.
 The clearest is `en-guard-false-premise`: Scaleway had its evidence in all
-three runs, and off and off-fusion in none. So the remaining margin comes from
-the reranker's order, not from letting the variant's hits through.
+three runs, and off and off-fusion in none. That points at the reranker's
+order rather than at the variant's hits, but does not prove it: the fusion
+arm fused four candidates per query and Scaleway chose from six, lists that
+share hits can move the fused cut, and the traces do not record the
+per-query candidate lists that would settle it.
 
 **Scaleway's remaining `tabele` margin is under the noise floor.** It is
 +2 evidence and +2 passes on the median. Every Scaleway run had at least 16
@@ -126,3 +129,33 @@ Before the fix, a query that returned both chunks of a pair would have boosted
 that title chunk, which holds no evidence. The harness does not record
 per-query lists, so whether this happened, and on which cases, cannot be read
 back from these results.
+
+## Known grader false negatives
+
+A review of the saved answers found cases graded as failures that are
+correct. They are left as the harness wrote them — a results file records a
+run, it is not edited after the fact — and listed here so nobody reads them
+as retrieval misses:
+
+- **`kolej` dog-fee questions (off, and the Scaleway runs):** answers that
+  name the bicycle and baggage tariffs as *other* fees trip `expectNone`,
+  which forbids those figures anywhere in the answer, though the rubric
+  passes them.
+- **`kolej` refund deadline (Scaleway run 1):** an answer that contrasts the
+  21-day compensation deadline with the 14-day refund deadline trips
+  `expectNone` the same way.
+- **`kolej` baggage limit (Scaleway run 3):** the judge failed "18 kg per
+  item, plus 6 kg hand baggage", which other runs passed.
+- **`kolej` Wolfsbane refund (Scaleway run 3):** failed for not naming the
+  English document as the source, though it cites it; other runs passed the
+  same answer.
+- **`kolej` bicycle fare (Scaleway run 1):** `9.80 PLN` for `9,80 zł`,
+  accepted in other runs.
+
+Most fall on the Scaleway arm, so its `kolej` pass median (21/24) understates
+it; with full evidence in every Scaleway run, the conclusion — no arm beats
+off beyond the spread — does not change. The `expectNone` cases are an
+instrument defect in `kolej-bilingual-v1` (a forbidden figure should be
+allowed when the answer names it as a different tariff) and need a corpus
+revision, not a regrade.
+

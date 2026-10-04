@@ -90,7 +90,7 @@ a single "default on" env flag:
   *and* provider credentials, so a default install answers from raw hybrid
   results. The per-org `rerankingEnabled` setting can only turn it further off.
   Measured on 2026-10-03 on the default install
-  (`evals/rag-benchmark/results/2026-10-03-b1-reranking-split.md`): off,
+  (`apps/web/evals/rag-benchmark/results/2026-10-03-b1-reranking-split.md`): off,
   cross-query fusion and Scaleway are within noise on both corpora (`kolej`
   median passed cases 22/24/21 of 24, `tabele` 14/15/16 of 18). Scaleway's small edge on
   tables is consistent but under the noise floor, so reranking stays opt-in

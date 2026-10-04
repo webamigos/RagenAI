@@ -432,7 +432,7 @@ work, and D packages the result.
   endpoint exists) × two corpora × three runs, on today's default install.
   Results are committed, and ADR-12 gets an update with the medians.
 
-  *Done 2026-10-03* (`results/2026-10-03-b1-reranking-split.md`): neither
+  *Done 2026-10-03* (`apps/web/evals/rag-benchmark/results/2026-10-03-b1-reranking-split.md`): neither
   fusion nor Scaleway beats off beyond the spread; Cohere not run (no
   endpoint).
 - [x] **B2.** The decision from Q2 is applied: the demo env, the
