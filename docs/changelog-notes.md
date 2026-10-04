@@ -167,6 +167,13 @@ archive is the blog.
 
 ### Settings
 
+- `[brief]` **The API keys page says when a key cannot be created, and why.**
+  An organization whose plan has no API access was offered the "New key"
+  form anyway, and every submit failed with "Failed to load keys" — a
+  message about loading, shown for any failure to create. The button now
+  gives way to a notice naming the plan (or demo mode), and a failed create
+  says the key was not created.
+
 - `[brief]` **The RAG settings page shows what runs, not what was
   switched on.** Reranking showed "on" on every default install, where no
   reranker is configured; it now shows off and says why. Content moderation

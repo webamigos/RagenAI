@@ -2,6 +2,7 @@
 
 import {
   getOrgIdFromAuthOrThrow,
+  getCurrentUser,
   getCurrentUserId,
 } from '@/app/lib/utils/auth-helpers';
 import { requireOrgAdmin } from '@/lib/auth-guards';
@@ -15,6 +16,8 @@ import { getOrgAssistantsQuery } from '@/features/projects/services/queries/get-
 import { createApiKeyCommand } from '@/features/organizations/services/commands/create-api-key-command';
 import { removeApiKeyCommand } from '@/features/organizations/services/commands/remove-api-key-command';
 import { toggleApiKeyCommand } from '@/features/organizations/services/commands/toggle-api-key-command';
+import { isFeatureEnabledQuery } from '@/features/subscriptions/services/queries/get-effective-features-query';
+import { isSharedDemoAccount } from '@/libs/demo-credentials';
 import db from '@ragenai/prisma-client';
 
 export async function getApiKeys() {
@@ -28,6 +31,28 @@ export async function getAssistantsForKeyScope() {
   const orgId = await getOrgIdFromAuthOrThrow();
   await requireOrgAdmin(orgId);
   return getOrgAssistantsQuery(orgId);
+}
+
+/**
+ * Whether this organization may mint a key — the same `apiAccess` check
+ * `createApiKeyCommand` makes, asked before the form is offered instead of
+ * after it fails. No app-admin bypass, unlike the invite button: the command
+ * has none, so offering the form to an app admin would only move the failure.
+ *
+ * `demoAccount` decides the wording, not the outcome: on the shared demo
+ * tenant the switch is off on purpose and there is no plan to upgrade to.
+ */
+export async function getApiKeyCreationAccess(): Promise<{
+  allowed: boolean;
+  demoAccount: boolean;
+}> {
+  const orgId = await getOrgIdFromAuthOrThrow();
+  await requireOrgAdmin(orgId);
+  const [allowed, user] = await Promise.all([
+    isFeatureEnabledQuery(orgId, 'apiAccess'),
+    getCurrentUser(),
+  ]);
+  return { allowed, demoAccount: isSharedDemoAccount(user?.email) };
 }
 
 type CreateApiKeyArgs = {

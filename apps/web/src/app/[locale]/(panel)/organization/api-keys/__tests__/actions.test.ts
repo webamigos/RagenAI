@@ -6,10 +6,26 @@ const mockRequireOrgAdmin = vi.fn();
 const mockCreateCommand = vi.fn();
 const mockProjectFindFirst = vi.fn();
 const mockAssistantsQuery = vi.fn();
+const mockGetCurrentUser = vi.fn();
+const mockIsFeatureEnabled = vi.fn();
 
 vi.mock('@/app/lib/utils/auth-helpers', () => ({
   getOrgIdFromAuthOrThrow: (...args: unknown[]) => mockGetOrgId(...args),
   getCurrentUserId: (...args: unknown[]) => mockGetUserId(...args),
+  getCurrentUser: (...args: unknown[]) => mockGetCurrentUser(...args),
+}));
+
+vi.mock(
+  '@/features/subscriptions/services/queries/get-effective-features-query',
+  () => ({
+    isFeatureEnabledQuery: (...args: unknown[]) =>
+      mockIsFeatureEnabled(...args),
+  }),
+);
+
+vi.mock('@/libs/demo-credentials', () => ({
+  isSharedDemoAccount: (email: string | null | undefined) =>
+    email === 'demo@ragen.example',
 }));
 
 vi.mock('@/lib/auth-guards', () => ({
@@ -53,7 +69,11 @@ vi.mock('@ragenai/prisma-client', () => ({
   },
 }));
 
-import { createApiKey, getAssistantsForKeyScope } from '../actions';
+import {
+  createApiKey,
+  getApiKeyCreationAccess,
+  getAssistantsForKeyScope,
+} from '../actions';
 
 describe('createApiKey action', () => {
   beforeEach(() => {
@@ -153,5 +173,51 @@ describe('getAssistantsForKeyScope action', () => {
 
     await expect(getAssistantsForKeyScope()).rejects.toThrow('forbidden');
     expect(mockAssistantsQuery).not.toHaveBeenCalled();
+  });
+});
+
+describe('getApiKeyCreationAccess', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockGetOrgId.mockResolvedValue('org-1');
+    mockRequireOrgAdmin.mockResolvedValue(undefined);
+    mockGetCurrentUser.mockResolvedValue({ email: 'owner@acme.example' });
+  });
+
+  // The page asks the same question the command asks on submit, so the form
+  // is not offered to an organization whose submit can only fail.
+  it("reads the organization's apiAccess feature", async () => {
+    mockIsFeatureEnabled.mockResolvedValue(false);
+
+    await expect(getApiKeyCreationAccess()).resolves.toEqual({
+      allowed: false,
+      demoAccount: false,
+    });
+    expect(mockIsFeatureEnabled).toHaveBeenCalledWith('org-1', 'apiAccess');
+  });
+
+  it('allows creation when the feature is on', async () => {
+    mockIsFeatureEnabled.mockResolvedValue(true);
+
+    await expect(getApiKeyCreationAccess()).resolves.toMatchObject({
+      allowed: true,
+    });
+  });
+
+  it('marks the shared demo account, so the notice says demo, not plan', async () => {
+    mockIsFeatureEnabled.mockResolvedValue(false);
+    mockGetCurrentUser.mockResolvedValue({ email: 'demo@ragen.example' });
+
+    await expect(getApiKeyCreationAccess()).resolves.toEqual({
+      allowed: false,
+      demoAccount: true,
+    });
+  });
+
+  it('is an org-admin read, like the rest of the page', async () => {
+    mockRequireOrgAdmin.mockRejectedValue(new Error('forbidden'));
+
+    await expect(getApiKeyCreationAccess()).rejects.toThrow('forbidden');
+    expect(mockIsFeatureEnabled).not.toHaveBeenCalled();
   });
 });

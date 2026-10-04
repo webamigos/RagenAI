@@ -45,9 +45,22 @@ type Assistant = { id: string; title: string | null };
 type ApiKeysListProps = {
   initialKeys: ApiKeyDto[];
   assistants: Assistant[];
+  /**
+   * The organization's `apiAccess` feature. Off, the create button gives way
+   * to a notice: the form would only fail on submit. Existing keys stay
+   * listed and manageable either way.
+   */
+  allowCreate: boolean;
+  /** The shared demo account — says "demo", not "plan", in the notice. */
+  demoAccount?: boolean;
 };
 
-export function ApiKeysList({ initialKeys, assistants }: ApiKeysListProps) {
+export function ApiKeysList({
+  initialKeys,
+  assistants,
+  allowCreate,
+  demoAccount = false,
+}: ApiKeysListProps) {
   const t = useTranslations('api-keys');
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -123,7 +136,7 @@ export function ApiKeysList({ initialKeys, assistants }: ApiKeysListProps) {
         ]);
         resetCreateForm();
       } catch {
-        setCreateError(t('failed-to-load'));
+        setCreateError(t('failed-to-create'));
       }
     });
   };
@@ -190,17 +203,29 @@ export function ApiKeysList({ initialKeys, assistants }: ApiKeysListProps) {
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-end">
-        <Button
-          onClick={() => {
-            setCreateOpen(true);
-            setCreateError(null);
-          }}
-        >
-          <PlusIcon className="size-4" />
-          {t('create-key')}
-        </Button>
-      </div>
+      {allowCreate ? (
+        <div className="flex justify-end">
+          <Button
+            onClick={() => {
+              setCreateOpen(true);
+              setCreateError(null);
+            }}
+          >
+            <PlusIcon className="size-4" />
+            {t('create-key')}
+          </Button>
+        </div>
+      ) : (
+        <div className="rounded-lg border border-pending/40 bg-pending-tint p-3 dark:bg-pending/30">
+          <p className="text-sm text-pending">
+            {t(
+              demoAccount
+                ? 'create-unavailable-demo'
+                : 'create-unavailable-plan',
+            )}
+          </p>
+        </div>
+      )}
 
       {keys.length > 0 && (
         <div className="overflow-hidden rounded-lg border border-border">

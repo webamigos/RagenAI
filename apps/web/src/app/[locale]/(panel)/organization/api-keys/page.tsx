@@ -1,5 +1,9 @@
 import { getTranslations } from 'next-intl/server';
-import { getApiKeys, getAssistantsForKeyScope } from './actions';
+import {
+  getApiKeyCreationAccess,
+  getApiKeys,
+  getAssistantsForKeyScope,
+} from './actions';
 import { ApiKeysList } from './components/ApiKeysList';
 
 export async function generateMetadata() {
@@ -9,9 +13,10 @@ export async function generateMetadata() {
 
 export default async function ApiKeysSettingsPage() {
   const t = await getTranslations('api-keys');
-  const [keys, assistants] = await Promise.all([
+  const [keys, assistants, creation] = await Promise.all([
     getApiKeys(),
     getAssistantsForKeyScope(),
+    getApiKeyCreationAccess(),
   ]);
 
   return (
@@ -35,7 +40,12 @@ export default async function ApiKeysSettingsPage() {
           })}
         </p>
       </section>
-      <ApiKeysList initialKeys={keys} assistants={assistants} />
+      <ApiKeysList
+        initialKeys={keys}
+        assistants={assistants}
+        allowCreate={creation.allowed}
+        demoAccount={creation.demoAccount}
+      />
     </div>
   );
 }
