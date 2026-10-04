@@ -2,6 +2,7 @@ import { Button, Hr, Text } from '@react-email/components';
 import { ORG_ADMIN_ROLE } from '@ragenai/platform-contracts';
 import { EmailLayout } from './components/email-layout';
 import { strong, type EmailTranslator } from './utils/email-translator';
+import { previewTranslator } from './utils/preview-translator';
 
 type Props = {
   invitedEmail: string;
@@ -64,6 +65,17 @@ const MagicLinkInvitationEmail = ({
     </EmailLayout>
   );
 };
+
+/** What `npm run emails:dev` renders this template with. */
+MagicLinkInvitationEmail.PreviewProps = {
+  invitedEmail: 'ada@example.com',
+  organizationName: 'Acme',
+  inviterName: 'Grace Hopper',
+  role: 'admin',
+  magicLinkUrl: 'https://app.example.test/magic-link?token=preview',
+  locale: 'en',
+  t: previewTranslator('invitation'),
+} satisfies Props;
 
 export { MagicLinkInvitationEmail };
 export default MagicLinkInvitationEmail;
