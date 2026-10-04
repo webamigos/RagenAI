@@ -26,7 +26,10 @@ data — on your own servers, with your own models.**
 
 ```bash
 npx create-ragen-app my-ragen-app
-cd my-ragen-app && npm run web:dev
+cd my-ragen-app
+npm run api:dev      # one terminal each: chat needs the API,
+npm run web:dev      # and an upload is only parsed
+npm run worker:dev   # while the worker runs
 ```
 
 Needs Node.js `^24.15.0 || >=26.0.0` and Docker; [Quick start](#-quick-start)
@@ -201,7 +204,10 @@ npx create-ragen-app my-ragen-app
 repo, generates every secret it safely can, lets you paste a plain OpenAI or
 Anthropic key instead of configuring an enterprise LLM provider, starts the
 backing services in Docker, and runs the first-time Prisma setup — ending at
-`cd my-ragen-app && npm run web:dev`. Requires Node.js `^24.15.0 || >=26.0.0` —
+three processes to start, each in its own terminal: `npm run api:dev`,
+`npm run web:dev` and `npm run worker:dev`. The web app alone loads, but
+cannot open a chat without the API or parse an upload without the worker.
+Requires Node.js `^24.15.0 || >=26.0.0` —
 a range rather than a minimum, and the wizard refuses outside it before it
 clones anything; `--skip-docker`,
 `--skip-install` and `--yes` are available for a more manual or scripted run.
@@ -228,8 +234,9 @@ docker pull ghcr.io/webamigos/ragen-web:latest    # also: -api, -worker, -admin,
 Each carries four tags — the full version, the minor series, the exact commit
 (`sha-…`) and `latest`. Pin production to the `sha-` tag; the other three move.
 
-Either way, open <http://localhost:3000>, upload a document, and ask it
-something.
+Either way, open <http://localhost:3000>. A new install asks you to create
+its first account, which becomes the platform administrator; then upload a
+document under Knowledge and ask it something.
 
 ### Requirements
 

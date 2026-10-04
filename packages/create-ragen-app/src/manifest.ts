@@ -91,6 +91,16 @@ export const MANIFEST: ManifestEntry[] = [
     targets: ['root', 'admin'],
     value: 'postgresql://postgres:pass123@localhost:55432/ragen',
   },
+  {
+    // Where the worker posts ingest progress for the app to push over SSE.
+    // `.env.example` ships it commented out, and without it the worker logs
+    // "SSE notification skipped" on every document: the upload is indexed,
+    // but the knowledge base never hears that it finished.
+    key: 'RAGEN_APP_URL',
+    strategy: 'local-default',
+    targets: ['root'],
+    value: 'http://localhost:3000',
+  },
 ];
 
 export function entriesForTarget(target: EnvTarget): ManifestEntry[] {

@@ -29,6 +29,8 @@ function providerSection(choice: LlmProviderChoice): string[] {
     'DEFAULT_MODEL_PROVIDER=litellm',
     `DEFAULT_MODEL=${config.modelName}`,
     `REPHRASE_MODEL=${config.modelName}`,
+    `SUMMARY_MODEL=${config.modelName}`,
+    `SCORING_MODEL=${config.modelName}`,
   ];
 
   const connectionLine = config.connection

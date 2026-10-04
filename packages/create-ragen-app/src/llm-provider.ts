@@ -171,6 +171,14 @@ export function resolveLlmProviderChoice(
     // leaving it would fail the RAG chain on its *first* step — before the
     // model the user just configured is ever reached.
     REPHRASE_MODEL: config.modelName,
+    // Same reason, one step later. The worker falls back to gemini-2.5-flash
+    // for SUMMARY_MODEL, which runs on every ingest (ADR-16) and for the RAG
+    // readiness score, and leads scoring to the value .env.example ships. Left
+    // alone, the first upload logged "no route for model" and the document
+    // was indexed without its summary — quietly, because a failed summary is
+    // not a failed ingest.
+    SUMMARY_MODEL: config.modelName,
+    SCORING_MODEL: config.modelName,
   };
 
   // The route table is the whole configuration now. There is no second place
