@@ -481,7 +481,10 @@ work, and D packages the result.
   case that fails in every run (`en-premise-xl-kolej-voucher`) has relevant
   context, so a relevance grader would not change it.
   Corpus v4 dropped every documented figure from the guard `expectNone`.
-  The same answers, regraded, fail 1, 2 and 2 of 28, so the median is still 7.1%
+  The same answers, regraded, fail 1, 2 and 2 of 28, so the median is still 7.1%.
+  Corpus v5 loosened the voucher rubric. That rubric had failed a correct answer
+  for leaving out a point the question did not ask about. The answers fail 1, 1
+  and 2 of 28, a median of 3.6%
   (`apps/web/evals/rag-benchmark/results/2026-10-04-guard-v4-regrade.md`).
 
 ### Phase D — a number we can quote
