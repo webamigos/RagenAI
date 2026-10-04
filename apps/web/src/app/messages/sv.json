@@ -2133,6 +2133,28 @@
       "resend-success": "Inbjudan har skickats igen",
       "resend-error": "Ett fel uppstod vid omskickning av inbjudan",
       "confirm-cancel-title": "Avbryt inbjudan?"
+    },
+    "errors": {
+      "invalid-data": "Ogiltiga uppgifter",
+      "invitation-not-found": "Inbjudan hittades inte",
+      "no-permission-cancel-invitation": "Du har inte behörighet att återkalla inbjudningar",
+      "cancel-invitation-failed": "Ett fel uppstod när inbjudan skulle återkallas",
+      "no-permission-send-invitation": "Du har inte behörighet att skicka inbjudningar",
+      "send-invitation-failed": "Inbjudan kunde inte skickas",
+      "resend-invitation-failed": "Ett fel uppstod när inbjudan skulle skickas igen",
+      "invitation-already-sent": "En inbjudan har redan skickats till den här e-postadressen",
+      "already-member": "En användare med den här e-postadressen är redan medlem i organisationen",
+      "invite-member-failed": "Ett fel uppstod när medlemmen skulle bjudas in",
+      "no-permission-remove-member": "Du har inte behörighet att ta bort medlemmar",
+      "member-not-found": "Medlemmen hittades inte",
+      "cannot-remove-self": "Du kan inte ta bort dig själv från organisationen",
+      "cannot-remove-owner": "Organisationens ägare kan inte tas bort",
+      "remove-member-failed": "Ett fel uppstod när medlemmen skulle tas bort",
+      "no-permission-change-role": "Du har inte behörighet att ändra roller",
+      "cannot-change-owner-role": "Organisationsägarens roll kan inte ändras",
+      "change-role-failed": "Ett fel uppstod när rollen skulle ändras",
+      "no-permission-edit-organization": "Du har inte behörighet att redigera organisationens profil",
+      "update-organization-failed": "Ett fel uppstod när organisationen skulle uppdateras"
     }
   },
   "invitation-banner": {

@@ -2133,6 +2133,28 @@
       "resend-success": "Pozvánka bola znova odoslaná",
       "resend-error": "Pri opätovnom odosielaní pozvánky došlo k chybe",
       "confirm-cancel-title": "Zrušiť túto pozvánku?"
+    },
+    "errors": {
+      "invalid-data": "Neplatné údaje",
+      "invitation-not-found": "Pozvánka sa nenašla",
+      "no-permission-cancel-invitation": "Nemáte oprávnenie rušiť pozvánky",
+      "cancel-invitation-failed": "Pri rušení pozvánky sa vyskytla chyba",
+      "no-permission-send-invitation": "Nemáte oprávnenie odosielať pozvánky",
+      "send-invitation-failed": "Pozvánku sa nepodarilo odoslať",
+      "resend-invitation-failed": "Pri opätovnom odosielaní pozvánky sa vyskytla chyba",
+      "invitation-already-sent": "Na túto e-mailovú adresu už bola pozvánka odoslaná",
+      "already-member": "Používateľ s touto e-mailovou adresou je už členom organizácie",
+      "invite-member-failed": "Pri pozývaní člena sa vyskytla chyba",
+      "no-permission-remove-member": "Nemáte oprávnenie odstraňovať členov",
+      "member-not-found": "Člen sa nenašiel",
+      "cannot-remove-self": "Nemôžete odstrániť sami seba z organizácie",
+      "cannot-remove-owner": "Vlastníka organizácie nemožno odstrániť",
+      "remove-member-failed": "Pri odstraňovaní člena sa vyskytla chyba",
+      "no-permission-change-role": "Nemáte oprávnenie meniť roly",
+      "cannot-change-owner-role": "Rolu vlastníka organizácie nemožno zmeniť",
+      "change-role-failed": "Pri zmene roly sa vyskytla chyba",
+      "no-permission-edit-organization": "Nemáte oprávnenie upravovať profil organizácie",
+      "update-organization-failed": "Pri aktualizácii organizácie sa vyskytla chyba"
     }
   },
   "invitation-banner": {

@@ -2133,6 +2133,28 @@
       "resend-success": "O convite foi reenviado",
       "resend-error": "Ocorreu um erro ao reenviar o convite",
       "confirm-cancel-title": "Cancelar este convite?"
+    },
+    "errors": {
+      "invalid-data": "Dados inválidos",
+      "invitation-not-found": "Convite não encontrado",
+      "no-permission-cancel-invitation": "Você não tem permissão para cancelar convites",
+      "cancel-invitation-failed": "Ocorreu um erro ao cancelar o convite",
+      "no-permission-send-invitation": "Você não tem permissão para enviar convites",
+      "send-invitation-failed": "Não foi possível enviar o convite",
+      "resend-invitation-failed": "Ocorreu um erro ao reenviar o convite",
+      "invitation-already-sent": "Já foi enviado um convite para este endereço de e-mail",
+      "already-member": "Um usuário com este endereço de e-mail já é membro da organização",
+      "invite-member-failed": "Ocorreu um erro ao convidar o membro",
+      "no-permission-remove-member": "Você não tem permissão para remover membros",
+      "member-not-found": "Membro não encontrado",
+      "cannot-remove-self": "Você não pode remover a si mesmo da organização",
+      "cannot-remove-owner": "O proprietário da organização não pode ser removido",
+      "remove-member-failed": "Ocorreu um erro ao remover o membro",
+      "no-permission-change-role": "Você não tem permissão para alterar funções",
+      "cannot-change-owner-role": "A função do proprietário da organização não pode ser alterada",
+      "change-role-failed": "Ocorreu um erro ao alterar a função",
+      "no-permission-edit-organization": "Você não tem permissão para editar o perfil da organização",
+      "update-organization-failed": "Ocorreu um erro ao atualizar a organização"
     }
   },
   "invitation-banner": {

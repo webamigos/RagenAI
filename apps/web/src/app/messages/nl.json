@@ -2133,6 +2133,28 @@
       "resend-success": "Uitnodiging is opnieuw verstuurd",
       "resend-error": "Er is een fout opgetreden bij het opnieuw versturen van de uitnodiging",
       "confirm-cancel-title": "Deze uitnodiging annuleren?"
+    },
+    "errors": {
+      "invalid-data": "Ongeldige gegevens",
+      "invitation-not-found": "Uitnodiging niet gevonden",
+      "no-permission-cancel-invitation": "Je hebt geen toestemming om uitnodigingen in te trekken",
+      "cancel-invitation-failed": "Er is iets misgegaan bij het intrekken van de uitnodiging",
+      "no-permission-send-invitation": "Je hebt geen toestemming om uitnodigingen te versturen",
+      "send-invitation-failed": "De uitnodiging kon niet worden verstuurd",
+      "resend-invitation-failed": "Er is iets misgegaan bij het opnieuw versturen van de uitnodiging",
+      "invitation-already-sent": "Er is al een uitnodiging verstuurd naar dit e-mailadres",
+      "already-member": "Een gebruiker met dit e-mailadres is al lid van de organisatie",
+      "invite-member-failed": "Er is iets misgegaan bij het uitnodigen van het lid",
+      "no-permission-remove-member": "Je hebt geen toestemming om leden te verwijderen",
+      "member-not-found": "Lid niet gevonden",
+      "cannot-remove-self": "Je kunt jezelf niet uit de organisatie verwijderen",
+      "cannot-remove-owner": "De eigenaar van de organisatie kan niet worden verwijderd",
+      "remove-member-failed": "Er is iets misgegaan bij het verwijderen van het lid",
+      "no-permission-change-role": "Je hebt geen toestemming om rollen te wijzigen",
+      "cannot-change-owner-role": "De rol van de eigenaar van de organisatie kan niet worden gewijzigd",
+      "change-role-failed": "Er is iets misgegaan bij het wijzigen van de rol",
+      "no-permission-edit-organization": "Je hebt geen toestemming om het organisatieprofiel te bewerken",
+      "update-organization-failed": "Er is iets misgegaan bij het bijwerken van de organisatie"
     }
   },
   "invitation-banner": {

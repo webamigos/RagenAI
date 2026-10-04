@@ -2133,6 +2133,28 @@
       "resend-success": "L'invitation a été renvoyée",
       "resend-error": "Une erreur s'est produite lors du renvoi de l'invitation",
       "confirm-cancel-title": "Annuler cette invitation ?"
+    },
+    "errors": {
+      "invalid-data": "Données non valides",
+      "invitation-not-found": "Invitation introuvable",
+      "no-permission-cancel-invitation": "Vous n'avez pas l'autorisation d'annuler des invitations",
+      "cancel-invitation-failed": "Une erreur s'est produite lors de l'annulation de l'invitation",
+      "no-permission-send-invitation": "Vous n'avez pas l'autorisation d'envoyer des invitations",
+      "send-invitation-failed": "Impossible d'envoyer l'invitation",
+      "resend-invitation-failed": "Une erreur s'est produite lors du renvoi de l'invitation",
+      "invitation-already-sent": "Une invitation a déjà été envoyée à cette adresse e-mail",
+      "already-member": "Un utilisateur avec cette adresse e-mail est déjà membre de l'organisation",
+      "invite-member-failed": "Une erreur s'est produite lors de l'invitation du membre",
+      "no-permission-remove-member": "Vous n'avez pas l'autorisation de retirer des membres",
+      "member-not-found": "Membre introuvable",
+      "cannot-remove-self": "Vous ne pouvez pas vous retirer vous-même de l'organisation",
+      "cannot-remove-owner": "Le propriétaire de l'organisation ne peut pas être retiré",
+      "remove-member-failed": "Une erreur s'est produite lors du retrait du membre",
+      "no-permission-change-role": "Vous n'avez pas l'autorisation de modifier les rôles",
+      "cannot-change-owner-role": "Le rôle du propriétaire de l'organisation ne peut pas être modifié",
+      "change-role-failed": "Une erreur s'est produite lors de la modification du rôle",
+      "no-permission-edit-organization": "Vous n'avez pas l'autorisation de modifier le profil de l'organisation",
+      "update-organization-failed": "Une erreur s'est produite lors de la mise à jour de l'organisation"
     }
   },
   "invitation-banner": {

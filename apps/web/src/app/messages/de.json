@@ -2133,6 +2133,28 @@
       "resend-success": "Die Einladung wurde erneut gesendet",
       "resend-error": "Beim erneuten Senden der Einladung ist ein Fehler aufgetreten",
       "confirm-cancel-title": "Einladung stornieren?"
+    },
+    "errors": {
+      "invalid-data": "Ungültige Daten",
+      "invitation-not-found": "Einladung nicht gefunden",
+      "no-permission-cancel-invitation": "Du hast keine Berechtigung, Einladungen zu widerrufen",
+      "cancel-invitation-failed": "Beim Widerrufen der Einladung ist ein Fehler aufgetreten",
+      "no-permission-send-invitation": "Du hast keine Berechtigung, Einladungen zu versenden",
+      "send-invitation-failed": "Die Einladung konnte nicht gesendet werden",
+      "resend-invitation-failed": "Beim erneuten Senden der Einladung ist ein Fehler aufgetreten",
+      "invitation-already-sent": "Für diese E-Mail-Adresse wurde bereits eine Einladung gesendet",
+      "already-member": "Ein Benutzer mit dieser E-Mail-Adresse ist bereits Mitglied der Organisation",
+      "invite-member-failed": "Beim Einladen des Mitglieds ist ein Fehler aufgetreten",
+      "no-permission-remove-member": "Du hast keine Berechtigung, Mitglieder zu entfernen",
+      "member-not-found": "Mitglied nicht gefunden",
+      "cannot-remove-self": "Du kannst dich nicht selbst aus der Organisation entfernen",
+      "cannot-remove-owner": "Der Inhaber der Organisation kann nicht entfernt werden",
+      "remove-member-failed": "Beim Entfernen des Mitglieds ist ein Fehler aufgetreten",
+      "no-permission-change-role": "Du hast keine Berechtigung, Rollen zu ändern",
+      "cannot-change-owner-role": "Die Rolle des Organisationsinhabers kann nicht geändert werden",
+      "change-role-failed": "Beim Ändern der Rolle ist ein Fehler aufgetreten",
+      "no-permission-edit-organization": "Du hast keine Berechtigung, das Organisationsprofil zu bearbeiten",
+      "update-organization-failed": "Beim Aktualisieren der Organisation ist ein Fehler aufgetreten"
     }
   },
   "invitation-banner": {

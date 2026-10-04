@@ -2133,6 +2133,28 @@
       "resend-success": "Запрошення надіслано ще раз",
       "resend-error": "Під час повторного надсилання запрошення сталася помилка",
       "confirm-cancel-title": "Скасувати це запрошення?"
+    },
+    "errors": {
+      "invalid-data": "Недійсні дані",
+      "invitation-not-found": "Запрошення не знайдено",
+      "no-permission-cancel-invitation": "У вас немає дозволу скасовувати запрошення",
+      "cancel-invitation-failed": "Сталася помилка під час скасування запрошення",
+      "no-permission-send-invitation": "У вас немає дозволу надсилати запрошення",
+      "send-invitation-failed": "Не вдалося надіслати запрошення",
+      "resend-invitation-failed": "Сталася помилка під час повторного надсилання запрошення",
+      "invitation-already-sent": "Запрошення на цю адресу електронної пошти вже надіслано",
+      "already-member": "Користувач із цією адресою електронної пошти вже є учасником організації",
+      "invite-member-failed": "Сталася помилка під час запрошення учасника",
+      "no-permission-remove-member": "У вас немає дозволу вилучати учасників",
+      "member-not-found": "Учасника не знайдено",
+      "cannot-remove-self": "Ви не можете вилучити себе з організації",
+      "cannot-remove-owner": "Власника організації не можна вилучити",
+      "remove-member-failed": "Сталася помилка під час вилучення учасника",
+      "no-permission-change-role": "У вас немає дозволу змінювати ролі",
+      "cannot-change-owner-role": "Роль власника організації змінити не можна",
+      "change-role-failed": "Сталася помилка під час зміни ролі",
+      "no-permission-edit-organization": "У вас немає дозволу редагувати профіль організації",
+      "update-organization-failed": "Сталася помилка під час оновлення організації"
     }
   },
   "invitation-banner": {

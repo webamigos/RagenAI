@@ -2133,6 +2133,28 @@
       "resend-success": "Поканата беше изпратена отново",
       "resend-error": "Възникна грешка при повторното изпращане на поканата",
       "confirm-cancel-title": "Да се отмени ли поканата?"
+    },
+    "errors": {
+      "invalid-data": "Невалидни данни",
+      "invitation-not-found": "Поканата не е намерена",
+      "no-permission-cancel-invitation": "Нямате право да отменяте покани",
+      "cancel-invitation-failed": "Възникна грешка при отмяната на поканата",
+      "no-permission-send-invitation": "Нямате право да изпращате покани",
+      "send-invitation-failed": "Поканата не можа да бъде изпратена",
+      "resend-invitation-failed": "Възникна грешка при повторното изпращане на поканата",
+      "invitation-already-sent": "Вече е изпратена покана до този имейл адрес",
+      "already-member": "Потребител с този имейл адрес вече е член на организацията",
+      "invite-member-failed": "Възникна грешка при поканването на члена",
+      "no-permission-remove-member": "Нямате право да премахвате членове",
+      "member-not-found": "Членът не е намерен",
+      "cannot-remove-self": "Не можете да премахнете себе си от организацията",
+      "cannot-remove-owner": "Собственикът на организацията не може да бъде премахнат",
+      "remove-member-failed": "Възникна грешка при премахването на члена",
+      "no-permission-change-role": "Нямате право да променяте роли",
+      "cannot-change-owner-role": "Ролята на собственика на организацията не може да бъде променена",
+      "change-role-failed": "Възникна грешка при промяната на ролята",
+      "no-permission-edit-organization": "Нямате право да редактирате профила на организацията",
+      "update-organization-failed": "Възникна грешка при актуализирането на организацията"
     }
   },
   "invitation-banner": {

@@ -10,6 +10,7 @@ import {
 import { getActiveMember } from '@/lib/auth-guards';
 import { canManageOrg } from '@/lib/auth-access-control';
 import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
+import { failure } from '../errors';
 
 /**
  * Update organization profile
@@ -23,10 +24,7 @@ export async function updateOrganization(data: UpdateOrganizationFormData) {
     // user is a separate matter (#1092).
     const validated = getUpdateOrganizationSchema((key) => key).safeParse(data);
     if (!validated.success) {
-      return {
-        success: false,
-        error: 'Nieprawidłowe dane',
-      };
+      return failure('invalid-data');
     }
 
     // 2. Derive org from session
@@ -36,10 +34,7 @@ export async function updateOrganization(data: UpdateOrganizationFormData) {
     const activeMember = await getActiveMember(organizationId);
 
     if (!activeMember || !canManageOrg(activeMember.role)) {
-      return {
-        success: false,
-        error: 'Nie masz uprawnień do edycji profilu organizacji',
-      };
+      return failure('no-permission-edit-organization');
     }
 
     // 4. Update organization
@@ -64,9 +59,6 @@ export async function updateOrganization(data: UpdateOrganizationFormData) {
     };
   } catch (error) {
     logger.error('Error updating organization:', error);
-    return {
-      success: false,
-      error: 'Wystąpił błąd podczas aktualizacji organizacji',
-    };
+    return failure('update-organization-failed');
   }
 }

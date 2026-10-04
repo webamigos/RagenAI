@@ -2133,6 +2133,28 @@
       "resend-success": "Pozvánka byla znovu odeslána",
       "resend-error": "Při opětovném odesílání pozvánky došlo k chybě",
       "confirm-cancel-title": "Zrušit tuto pozvánku?"
+    },
+    "errors": {
+      "invalid-data": "Neplatná data",
+      "invitation-not-found": "Pozvánka nebyla nalezena",
+      "no-permission-cancel-invitation": "Nemáte oprávnění rušit pozvánky",
+      "cancel-invitation-failed": "Při rušení pozvánky došlo k chybě",
+      "no-permission-send-invitation": "Nemáte oprávnění odesílat pozvánky",
+      "send-invitation-failed": "Pozvánku se nepodařilo odeslat",
+      "resend-invitation-failed": "Při opětovném odesílání pozvánky došlo k chybě",
+      "invitation-already-sent": "Na tuto e-mailovou adresu už byla pozvánka odeslána",
+      "already-member": "Uživatel s touto e-mailovou adresou už je členem organizace",
+      "invite-member-failed": "Při zvaní člena došlo k chybě",
+      "no-permission-remove-member": "Nemáte oprávnění odebírat členy",
+      "member-not-found": "Člen nebyl nalezen",
+      "cannot-remove-self": "Nemůžete odebrat sami sebe z organizace",
+      "cannot-remove-owner": "Vlastníka organizace nelze odebrat",
+      "remove-member-failed": "Při odebírání člena došlo k chybě",
+      "no-permission-change-role": "Nemáte oprávnění měnit role",
+      "cannot-change-owner-role": "Roli vlastníka organizace nelze změnit",
+      "change-role-failed": "Při změně role došlo k chybě",
+      "no-permission-edit-organization": "Nemáte oprávnění upravovat profil organizace",
+      "update-organization-failed": "Při aktualizaci organizace došlo k chybě"
     }
   },
   "invitation-banner": {

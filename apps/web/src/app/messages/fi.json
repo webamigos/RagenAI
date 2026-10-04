@@ -2133,6 +2133,28 @@
       "resend-success": "Kutsu lähetetty uudelleen",
       "resend-error": "Kutsun lähettämisessä uudelleen tapahtui virhe",
       "confirm-cancel-title": "Perutaanko kutsu?"
+    },
+    "errors": {
+      "invalid-data": "Virheelliset tiedot",
+      "invitation-not-found": "Kutsua ei löytynyt",
+      "no-permission-cancel-invitation": "Sinulla ei ole oikeutta peruuttaa kutsuja",
+      "cancel-invitation-failed": "Kutsun peruuttamisessa tapahtui virhe",
+      "no-permission-send-invitation": "Sinulla ei ole oikeutta lähettää kutsuja",
+      "send-invitation-failed": "Kutsua ei voitu lähettää",
+      "resend-invitation-failed": "Kutsun uudelleenlähetyksessä tapahtui virhe",
+      "invitation-already-sent": "Tähän sähköpostiosoitteeseen on jo lähetetty kutsu",
+      "already-member": "Tällä sähköpostiosoitteella oleva käyttäjä on jo organisaation jäsen",
+      "invite-member-failed": "Jäsenen kutsumisessa tapahtui virhe",
+      "no-permission-remove-member": "Sinulla ei ole oikeutta poistaa jäseniä",
+      "member-not-found": "Jäsentä ei löytynyt",
+      "cannot-remove-self": "Et voi poistaa itseäsi organisaatiosta",
+      "cannot-remove-owner": "Organisaation omistajaa ei voi poistaa",
+      "remove-member-failed": "Jäsenen poistamisessa tapahtui virhe",
+      "no-permission-change-role": "Sinulla ei ole oikeutta muuttaa rooleja",
+      "cannot-change-owner-role": "Organisaation omistajan roolia ei voi muuttaa",
+      "change-role-failed": "Roolin muuttamisessa tapahtui virhe",
+      "no-permission-edit-organization": "Sinulla ei ole oikeutta muokata organisaation profiilia",
+      "update-organization-failed": "Organisaation päivittämisessä tapahtui virhe"
     }
   },
   "invitation-banner": {

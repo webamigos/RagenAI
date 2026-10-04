@@ -2133,6 +2133,28 @@
       "resend-success": "A meghívó újraküldve",
       "resend-error": "Hiba történt a meghívó újraküldése közben",
       "confirm-cancel-title": "Visszavonja a meghívót?"
+    },
+    "errors": {
+      "invalid-data": "Érvénytelen adatok",
+      "invitation-not-found": "A meghívó nem található",
+      "no-permission-cancel-invitation": "Nincs jogosultsága meghívók visszavonására",
+      "cancel-invitation-failed": "Hiba történt a meghívó visszavonásakor",
+      "no-permission-send-invitation": "Nincs jogosultsága meghívók küldésére",
+      "send-invitation-failed": "A meghívót nem sikerült elküldeni",
+      "resend-invitation-failed": "Hiba történt a meghívó újraküldésekor",
+      "invitation-already-sent": "Erre az e-mail-címre már küldtek meghívót",
+      "already-member": "Ezzel az e-mail-címmel már van tagja a szervezetnek",
+      "invite-member-failed": "Hiba történt a tag meghívásakor",
+      "no-permission-remove-member": "Nincs jogosultsága tagok eltávolítására",
+      "member-not-found": "A tag nem található",
+      "cannot-remove-self": "Nem távolíthatja el saját magát a szervezetből",
+      "cannot-remove-owner": "A szervezet tulajdonosa nem távolítható el",
+      "remove-member-failed": "Hiba történt a tag eltávolításakor",
+      "no-permission-change-role": "Nincs jogosultsága szerepkörök módosítására",
+      "cannot-change-owner-role": "A szervezet tulajdonosának szerepköre nem módosítható",
+      "change-role-failed": "Hiba történt a szerepkör módosításakor",
+      "no-permission-edit-organization": "Nincs jogosultsága a szervezet profiljának szerkesztésére",
+      "update-organization-failed": "Hiba történt a szervezet frissítésekor"
     }
   },
   "invitation-banner": {

@@ -12,6 +12,7 @@ import { pendingMagicLinkContext } from '@/lib/magic-link-context';
 import { resolveEmailLocale } from '@/app/emails/utils/email-locale';
 import { createMemberAccountCommand } from '@/features/organizations/services/commands/create-member-account-command';
 import { canAddMemberQuery } from '@/features/organizations/services/queries/can-add-member-query';
+import { failure } from '../errors';
 
 /**
  * Zapraszanie nowego członka do organizacji
@@ -45,11 +46,7 @@ export async function inviteMember(
       });
 
       if (existingMember) {
-        return {
-          success: false,
-          error:
-            'Użytkownik o tym adresie email już jest członkiem organizacji',
-        };
+        return failure('already-member');
       }
     }
 
@@ -63,10 +60,7 @@ export async function inviteMember(
     });
 
     if (existingInvitation) {
-      return {
-        success: false,
-        error: 'Zaproszenie dla tego adresu email już zostało wysłane',
-      };
+      return failure('invitation-already-sent');
     }
 
     // 5. Wyślij zaproszenie
@@ -126,10 +120,7 @@ export async function inviteMember(
       await db.invitation
         .delete({ where: { id: invitationId } })
         .catch(() => undefined);
-      return {
-        success: false,
-        error: 'Nie udało się wysłać zaproszenia',
-      };
+      return failure('send-invitation-failed');
     }
 
     logger.info(
@@ -142,10 +133,7 @@ export async function inviteMember(
     return { success: true };
   } catch (error) {
     logger.error({ err: error }, 'Error inviting member');
-    return {
-      success: false,
-      error: 'Wystąpił błąd podczas zapraszania członka',
-    };
+    return failure('invite-member-failed');
   }
 }
 
@@ -161,10 +149,7 @@ export async function removeMember(
     const activeMember = await getActiveMember(organizationId);
 
     if (!activeMember || !canManageOrg(activeMember.role)) {
-      return {
-        success: false,
-        error: 'Nie masz uprawnień do usuwania członków',
-      };
+      return failure('no-permission-remove-member');
     }
 
     // 2. Znajdź członka do usunięcia (po email lub id)
@@ -188,27 +173,18 @@ export async function removeMember(
     }
 
     if (!memberToRemove) {
-      return {
-        success: false,
-        error: 'Członek nie znaleziony',
-      };
+      return failure('member-not-found');
     }
 
     // 3. Sprawdź czy nie próbuje usunąć siebie
     const session = await auth.api.getSession({ headers: await headers() });
     if (session?.user?.id === memberToRemove.userId) {
-      return {
-        success: false,
-        error: 'Nie możesz usunąć sam siebie. Użyj opcji "Opuść organizację"',
-      };
+      return failure('cannot-remove-self');
     }
 
     // 4. Nie można usunąć właściciela
     if (canOwnOrg(memberToRemove.role)) {
-      return {
-        success: false,
-        error: 'Nie można usunąć właściciela organizacji',
-      };
+      return failure('cannot-remove-owner');
     }
 
     // 5. Usuń członka
@@ -229,10 +205,7 @@ export async function removeMember(
     return { success: true };
   } catch (error) {
     logger.error({ err: error }, 'Error removing member');
-    return {
-      success: false,
-      error: 'Wystąpił błąd podczas usuwania członka',
-    };
+    return failure('remove-member-failed');
   }
 }
 
@@ -249,10 +222,7 @@ export async function updateMemberRole(
     const activeMember = await getActiveMember(organizationId);
 
     if (!activeMember || !canManageOrg(activeMember.role)) {
-      return {
-        success: false,
-        error: 'Nie masz uprawnień do zmiany ról',
-      };
+      return failure('no-permission-change-role');
     }
 
     // 2. Znajdź członka i sprawdź czy nie jest właścicielem
@@ -261,17 +231,11 @@ export async function updateMemberRole(
     });
 
     if (!targetMember) {
-      return {
-        success: false,
-        error: 'Członek nie znaleziony',
-      };
+      return failure('member-not-found');
     }
 
     if (canOwnOrg(targetMember.role)) {
-      return {
-        success: false,
-        error: 'Nie można zmienić roli właściciela organizacji',
-      };
+      return failure('cannot-change-owner-role');
     }
 
     // 3. Zmień rolę
@@ -290,10 +254,7 @@ export async function updateMemberRole(
     return { success: true };
   } catch (error) {
     logger.error({ err: error }, 'Error updating member role');
-    return {
-      success: false,
-      error: 'Wystąpił błąd podczas zmiany roli',
-    };
+    return failure('change-role-failed');
   }
 }
 
