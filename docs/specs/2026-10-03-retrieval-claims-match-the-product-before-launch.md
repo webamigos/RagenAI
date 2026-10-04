@@ -462,21 +462,24 @@ work, and D packages the result.
 
   *Done 2026-10-03* (#1520), with the organization's embedded widget always
   strict (it has no assistant to carry the setting).
-- [ ] **C3.** Measure C2 against C1's baseline, including the over-refusal
+- [x] **C3.** Measure C2 against C1's baseline, including the over-refusal
   arm. Build the grader (behind a key, default off) only if the agreed
   threshold is missed; otherwise mark this step "not needed", with the
   numbers.
 
   *Measured 2026-10-03:* strict 26/28 against baseline 23/28 on the guard
   corpus (v1, with its citation gate set aside), every strict run above every
-  baseline run, no over-refusal on `kolej` attributable to the rule. **The
-  grader decision is open:** no failure share was agreed before measuring.
-  Proposed threshold: build the grader if strict leaves more than 10% of guard
-  cases failing, counted over graded cases, with a citation on the statement
-  of absence counted as a failure (the corpus v3 rubric rule). Strict leaves
-  2/28 (7%) on v1's pass criteria without the citation gate; v3's rubric rule
-  has not been run yet. To tick: agree the threshold, then run the guard
-  corpus v3 under strict and compare.
+  baseline run, no over-refusal on `kolej` attributable to the rule.
+
+  *Done 2026-10-04 — grader not needed.* Threshold agreed by the spec owner:
+  build the grader if strict leaves more than 10% of graded guard cases
+  failing, a citation on the statement of absence counting as a failure (the
+  corpus v3 rubric rule). Guard corpus v3 under strict, three runs: 3, 2 and 2
+  of 28 failed — median **7.1%**
+  (`apps/web/evals/rag-benchmark/results/2026-10-04-c3-guard-v3-strict.md`).
+  One of the seven failed cases across the runs was a citation on the absence; the
+  case that fails in every run (`en-premise-xl-kolej-voucher`) has relevant
+  context, so a relevance grader would not change it.
 
 ### Phase D — a number we can quote
 
