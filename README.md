@@ -14,7 +14,7 @@ _Crafted by hand. Extended by agents._
 [![Documentation: docs.ragen.ai](https://img.shields.io/badge/docs-docs.ragen.ai-informational.svg)](https://docs.ragen.ai)
 [![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![Built with TypeScript 5.7](https://img.shields.io/badge/TypeScript-5.7-3178C6.svg?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
-[![Built with Next.js 16](https://img.shields.io/badge/Next.js-16-000000.svg?logo=nextdotjs&logoColor=white)](https://nextjs.org)
+[![Built with Next.js 16](https://img.shields.io/badge/Next.js-16-555555.svg?logo=nextdotjs&logoColor=white&labelColor=000000)](https://nextjs.org)
 
 [Live demo](https://demo.ragen.ai) ·
 [Documentation](https://docs.ragen.ai) ·
