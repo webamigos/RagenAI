@@ -57,10 +57,11 @@ describe('every ingest path writes accessible_by', () => {
   });
 
   it('keeps the rule in one place rather than one copy per app', () => {
+    // Both app-side copies are gone (#1245): the worker's two activities are the
+    // only places that compute the principals, and both call the shared rule.
     const owners = [
-      'apps/web/src/features/documents/services/commands/sync-vector-permissions-command.ts',
-      'apps/api/src/documents/vector-permissions.service.ts',
       'apps/worker/src/activities/db/compute-file-access-principals.ts',
+      'apps/worker/src/activities/meilisearch/sync-file-access.ts',
     ];
 
     for (const path of owners) {
