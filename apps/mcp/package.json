@@ -13,6 +13,7 @@
     "build": "tsc -p tsconfig.build.json",
     "prestart": "npm run build",
     "start": "node --env-file-if-exists=../../.env.local --env-file-if-exists=.env.local dist/index.js",
+    "smoke": "tsx src/smoke/cli.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
@@ -40,6 +41,7 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@modelcontextprotocol/sdk": "^1.27.1",
     "@ragenai/eslint-config": "*",
     "@types/node": "^22.10.7",
     "@vitest/coverage-v8": "^4.1.11",

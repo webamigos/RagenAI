@@ -89,6 +89,7 @@ npm run dev --workspace=@ragenai/mcp
 | `npm run test` | Run the Vitest suite |
 | `npm run lint` | Run ESLint |
 | `npm run typecheck` | Type-check without emitting |
+| `npm run smoke -- <url>` | Check a running server end to end — see below |
 
 `npm run build` needs `@ragenai/observability` and `@ragenai/env` built first;
 `npx turbo run build --filter=@ragenai/mcp` does that in order.
@@ -101,6 +102,40 @@ docker build -f apps/mcp/Dockerfile -t ragen-mcp .
 docker run -p 3300:3300 -e TARGET_ENV=local -e RAGEN_API_URL=http://host.docker.internal:3001 ragen-mcp
 ```
 
+## Checking a deployment
+
+`/health` says the MCP server is up. It does not say whether the tools work:
+those depend on the Ragen API, which depends on its token vault and its
+vector store. When any of them is misconfigured, the tools still get listed
+and every call fails. The smoke test checks one layer per step and stops at
+the first failure, with a hint naming the service and the variable to check:
+
+```bash
+read -s RAGEN_API_KEY && export RAGEN_API_KEY
+npm run smoke --workspace=@ragenai/mcp -- https://ragen-mcp.example.com/mcp
+```
+
+```text
+✓ initialize: Ragen 2.37.0
+✓ tools/list: ragen_chat, ragen_list_assistants, ragen_search_knowledge_base
+✓ ragen_list_assistants: 2 assistant(s): Support Bot, Default Assistant
+✗ ragen_search_knowledge_base: status 500: Internal Server Error
+  → The Ragen API failed. Check its logs: an unreachable vector store (QDRANT_URL on the api service), token vault or model provider is the usual cause.
+```
+
+| Step | What a pass proves |
+|---|---|
+| `initialize` | The server is reachable at this URL and accepts the header |
+| `tools/list` | It serves the three tools. No key has been checked yet |
+| `ragen_list_assistants` | The key is valid, so the API and its token vault work |
+| `ragen_search_knowledge_base` | Retrieval works, so the vector store does |
+| `ragen_chat` | A model answers too. Runs only with `--chat "<message>"`, because it spends tokens |
+
+The key is read from `RAGEN_API_KEY`, never from an argument, so it stays
+out of shell history. Without it the last steps are skipped and the first
+two still run. `--query "<text>"` changes the search. The exit code is 1
+when a step fails, so the script can gate a deployment.
+
 ## Layout
 
 | Path | |
@@ -111,3 +146,4 @@ docker run -p 3300:3300 -e TARGET_ENV=local -e RAGEN_API_URL=http://host.docker.
 | `src/client/ragen-api-client.ts` | Calls to the Ragen API, one error parser per endpoint |
 | `src/transport.ts` | Which transport is running — read before anything logs |
 | `src/instrument.ts` | OpenTelemetry bootstrap; must stay the first import |
+| `src/smoke/` | The smoke test (`npm run smoke`). Not part of the build |
