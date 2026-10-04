@@ -103,7 +103,19 @@ test.describe('Settings menu in the sidebar (smoke)', () => {
     const back = page.getByTestId('settings-back');
     await expect(back).toBeVisible({ timeout: 15_000 });
     await expect(back).toHaveText(/menu główne/i);
-    await expect(page.getByRole('link', { name: 'Konto' })).toHaveCount(1);
+    // Every entry the menu always lists, drawn once. Memory is left out: it is
+    // listed only while the organization has personal memory on, or the user
+    // still has memories, and the component tests cover that filtering.
+    for (const name of [
+      'Ogólne',
+      'Konto',
+      'Integracje',
+      'Udostępnione wątki',
+    ]) {
+      await expect(page.getByRole('link', { name, exact: true })).toHaveCount(
+        1,
+      );
+    }
     await expect(
       page.getByRole('link', { name: TEST_THREAD_TITLE }),
     ).toHaveCount(0);
