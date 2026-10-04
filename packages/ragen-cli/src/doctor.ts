@@ -41,7 +41,7 @@ export interface Check {
 }
 
 /** The oldest Node this package's `engines` admits. */
-export const MIN_NODE_MAJOR = 20;
+export const MIN_NODE_MAJOR = 22;
 /** Long enough for a cold API, short enough that a dead one does not hang. */
 const TIMEOUT_MS = 5_000;
 

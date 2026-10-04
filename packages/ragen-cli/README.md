@@ -221,11 +221,16 @@ server it is pointed at.
 
 ## Node
 
-`engines` asks for Node 20 or newer, which is deliberately lower than the Node
+`engines` asks for Node 22 or newer, which is deliberately lower than the Node
 24 a Ragen *installation* requires. This is a client; refusing to print help on
-Node 20 would be untrue and unhelpfully broad. `ragen create` inherits
+Node 22 would be untrue and unhelpfully broad. `ragen create` inherits
 `create-ragen-app`'s own check, which refuses at the point where a too-old Node
 would actually damage the install.
+
+The floor is the oldest Node line still supported upstream, not the oldest one
+the code happens to run on: Node 20 left support on 2026-04-30, and a CLI that
+holds an API key should not invite a runtime that no longer gets security
+fixes. `ragen doctor` checks the same number (`MIN_NODE_MAJOR`).
 
 ## Publishing (manual)
 

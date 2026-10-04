@@ -1,6 +1,10 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
 import { describe, expect, it, vi } from 'vitest';
 
 import {
+  MIN_NODE_MAJOR,
   compareVersions,
   nodeCheck,
   runDoctor,
@@ -131,8 +135,18 @@ describe('ragen doctor', () => {
 });
 
 describe('nodeCheck and compareVersions', () => {
+  it('checks the Node floor package.json declares, not a second number', () => {
+    const manifest = JSON.parse(
+      readFileSync(join(__dirname, '..', '..', 'package.json'), 'utf8'),
+    ) as { engines: { node: string } };
+    expect(manifest.engines.node).toBe(`>=${MIN_NODE_MAJOR}`);
+  });
+
   it('fails a Node older than engines allows', () => {
     expect(nodeCheck('v18.20.0').status).toBe('fail');
+    // Node 20 left support on 2026-04-30.
+    expect(nodeCheck('v20.19.0').status).toBe('fail');
+    expect(nodeCheck('v22.12.0').status).toBe('ok');
     expect(nodeCheck('v24.15.0').status).toBe('ok');
   });
 
