@@ -8,6 +8,9 @@ export interface RunOptions {
   create: (args: string[]) => number;
   /** `ragen brain …`, which talks to the API and so is asynchronous. */
   brain: (args: string[]) => Promise<number>;
+  /** `ragen kb …` and `ragen search …`, likewise over the API. */
+  kb: (args: string[]) => Promise<number>;
+  search: (args: string[]) => Promise<number>;
   /**
    * Required, not defaulted to `console`: the router does no I/O of its own,
    * which is what lets a test read its output instead of capturing a stream.
@@ -64,6 +67,10 @@ export function run(
       return options.create(args.rest);
     case 'brain':
       return options.brain(args.rest);
+    case 'kb':
+      return options.kb(args.rest);
+    case 'search':
+      return options.search(args.rest);
     case 'help':
       out(helpText(options.version));
       return 0;

@@ -1,5 +1,12 @@
 import { dirname, isAbsolute, join, normalize, sep } from 'node:path';
 
+import {
+  CONNECTION_HELP,
+  createApiClient,
+  resolveConnection,
+  type ApiClient,
+} from './api';
+import { parseFlags } from './flags';
 import { renderGraphHtml, type GraphHtmlView } from './graph-html';
 
 /**
@@ -36,47 +43,21 @@ const USAGE = [
   '  export <dir>          write the curated bundle: markdown, graph.json, manifest.json',
   '',
   'Options',
-  '  --url <api-url>       the Ragen API, e.g. https://api.example.com (or RAGEN_API_URL)',
-  '  --api-key <key>       an API key of an owner or admin (or RAGEN_API_KEY)',
+  CONNECTION_HELP + ' — of an owner or admin',
   '  --json                print the API response as JSON',
 ].join('\n');
 
-type Flags = {
-  values: Map<string, string>;
-  switches: Set<string>;
-  positional: string[];
-};
-
-const VALUE_FLAGS = new Set([
-  '--url',
-  '--api-key',
+const VALUE_FLAGS = [
   '--status',
   '--focus',
   '--hops',
   '--budget',
   '--html',
   '--assistant',
-]);
+];
 
-function parse(args: string[]): Flags {
-  const flags: Flags = {
-    values: new Map(),
-    switches: new Set(),
-    positional: [],
-  };
-  for (let i = 0; i < args.length; i++) {
-    const arg = args[i]!;
-    if (VALUE_FLAGS.has(arg)) {
-      flags.values.set(arg, args[i + 1] ?? '');
-      i++;
-    } else if (arg.startsWith('--')) {
-      flags.switches.add(arg);
-    } else {
-      flags.positional.push(arg);
-    }
-  }
-  return flags;
-}
+const BRAIN_OFF =
+  'Brain is not available for this key: it is off for the organization, or the key’s user is not an owner or admin.';
 
 export async function runBrain(
   args: string[],
@@ -92,48 +73,19 @@ export async function runBrain(
     deps.out(USAGE);
     return command ? 0 : 1;
   }
-  const flags = parse(rest);
-  const url = (
-    flags.values.get('--url') ??
-    deps.env.RAGEN_API_URL ??
-    ''
-  ).replace(/\/+$/, '');
-  const key = flags.values.get('--api-key') ?? deps.env.RAGEN_API_KEY ?? '';
-  if (!url || !key) {
+  const flags = parseFlags(rest, VALUE_FLAGS);
+  const connection = resolveConnection(flags, deps.env);
+  if (!connection) {
     deps.err(
       'Set RAGEN_API_URL and RAGEN_API_KEY (or pass --url and --api-key). The key must belong to an owner or admin of an organization with Brain on.',
     );
     return 1;
   }
+  const api = createApiClient(deps.fetch, connection);
   const json = flags.switches.has('--json');
 
-  const get = async (
-    path: string,
-    query: Record<string, string | undefined> = {},
-  ) => {
-    const params = new URLSearchParams(
-      Object.entries(query).filter((e): e is [string, string] => Boolean(e[1])),
-    );
-    const qs = params.toString();
-    const res = await deps.fetch(
-      `${url}/v1/brain/${path}${qs ? `?${qs}` : ''}`,
-      {
-        headers: { Authorization: `Bearer ${key}`, Accept: 'application/json' },
-      },
-    );
-    if (res.status === 404) {
-      throw new Error(
-        'Brain is not available for this key: it is off for the organization, or the key’s user is not an owner or admin.',
-      );
-    }
-    if (res.status === 401 || res.status === 403) {
-      throw new Error('The API key was refused.');
-    }
-    if (!res.ok) {
-      throw new Error(`The API answered ${res.status}.`);
-    }
-    return (await res.json()) as unknown;
-  };
+  const get = (path: string, query: Record<string, string | undefined> = {}) =>
+    api(`brain/${path}`, { query, notFound: BRAIN_OFF });
 
   try {
     switch (command) {
@@ -186,7 +138,7 @@ export async function runBrain(
           );
           return 1;
         }
-        return await query(deps, url, key, question, assistant, json);
+        return await query(deps, api, question, assistant, json);
       }
       case 'export': {
         const dir = flags.positional[0];
@@ -214,40 +166,21 @@ export async function runBrain(
  */
 async function query(
   deps: BrainDeps,
-  url: string,
-  key: string,
+  api: ApiClient,
   question: string,
   assistant: string | undefined,
   json: boolean,
 ): Promise<number> {
-  const res = await deps.fetch(`${url}/v1/chat`, {
+  const body = await api<{ text?: string }>('chat', {
     method: 'POST',
-    headers: {
-      Authorization: `Bearer ${key}`,
-      Accept: 'application/json',
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
+    body: {
       content: question,
       stream: false,
       ...(assistant ? { assistant_id: assistant } : {}),
-    }),
-  });
-  if (res.status === 404) {
-    throw new Error(
+    },
+    notFound:
       'No such assistant for this key. Pass --assistant <id> or set RAGEN_ASSISTANT_ID.',
-    );
-  }
-  if (res.status === 401 || res.status === 403) {
-    throw new Error('The API key was refused.');
-  }
-  if (res.status === 429) {
-    throw new Error('The organization is over its request limit.');
-  }
-  if (!res.ok) {
-    throw new Error(`The API answered ${res.status}.`);
-  }
-  const body = (await res.json()) as { text?: string };
+  });
   deps.out(json ? JSON.stringify(body, null, 2) : (body.text ?? ''));
   return 0;
 }

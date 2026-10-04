@@ -1,11 +1,13 @@
 #!/usr/bin/env node
 import { join } from 'node:path';
 
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 
 import { runBrain } from './brain';
 import { run } from './cli';
 import { runCreate } from './create';
+import { runKb } from './kb';
+import { runSearch } from './search';
 import { readVersion } from './version';
 
 // `__dirname` is dist/ in the published package and src/ when run from the
@@ -31,6 +33,17 @@ Promise.resolve()
           out,
           err,
         }),
+      kb: (args) =>
+        runKb(args, {
+          fetch,
+          env: process.env,
+          readFile: (path) => readFile(path),
+          sleep: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
+          now: () => Date.now(),
+          out,
+          err,
+        }),
+      search: (args) => runSearch(args, { fetch, env: process.env, out, err }),
       out,
       err,
     }),

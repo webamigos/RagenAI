@@ -9,8 +9,8 @@ npx ragen-cli@latest help     # no install
 npm install -g ragen-cli      # or install it, then just `ragen`
 ```
 
-Reach for `npx` while the only substantial command is `create`, which you run
-once per installation. Install it globally when you run it often — and expect to
+Reach for `npx` for a one-off `create`. Install it globally when you work with
+an installation from the terminal — `kb`, `search`, `brain` — and expect to
 upgrade it yourself, because a global CLI goes stale without saying so.
 
 ## The package is `ragen-cli`; the command is `ragen`
@@ -29,9 +29,19 @@ binary it finds on `PATH` before it fetches anything.)
 
 ```
 ragen create [dir]   scaffold a self-hosted Ragen installation
+ragen kb <cmd>       knowledge base files: ls, upload, status, rm
+ragen search <q>     the passages chat would answer from, without an answer
 ragen brain <cmd>    Ragen Brain: next, doctor, findings, pages, graph, query, export
 ragen help
 ragen version
+```
+
+Every command except `create` talks to an installation's public API, with an
+API key created under **Organization → API keys**:
+
+```bash
+export RAGEN_API_URL=https://api.example.com   # or --url
+export RAGEN_API_KEY=sk-...                    # or --api-key
 ```
 
 `ragen create` delegates to
@@ -51,6 +61,45 @@ The scaffolder stays the scaffolder. It is the only thing exercising the
 first-run path, CI runs it on every pull request, and a second copy of that
 wizard living here would drift from the environment manifest without anything
 noticing.
+
+### `ragen kb`
+
+The knowledge base's files, over `/v1/files`:
+
+```bash
+ragen kb ls                          # newest 20; --limit <n>, --all for every page
+ragen kb upload docs/*.pdf --wait    # upload, then wait until each is indexed
+ragen kb status file-… --wait        # where a file is: uploaded, processed, error
+ragen kb rm file-…                   # delete a file and its chunks
+```
+
+**The key decides where files go.** A key scoped to the whole knowledge base
+uploads to, and lists, the files that belong to no assistant; a key scoped to
+an assistant works on that assistant's files. The CLI has no flag for it,
+because it could only disagree with the server.
+
+`--wait` exits non-zero when a file fails to index or is still indexing at
+`--timeout` (default 600 s), so a script can gate on it. `status` exits
+non-zero when any file it names is in `error`.
+
+**Rate limits are waited out, not reported.** Every `/v1/files` route is
+throttled per minute and per address — ten requests in production — so a
+folder of documents meets the limit by design. On a 429 the CLI waits as long
+as the server's `Retry-After` asks (up to three tries per file), and `--wait`
+asks about every file it is waiting for in one request per round, every 8 s.
+
+`upload` takes files, not directories: let the shell expand `docs/*.pdf`.
+
+### `ragen search`
+
+```bash
+ragen search "refund policy"            # --max <1-20>, --assistant <id>, --json
+```
+
+Retrieval without an answer, over `/v1/search`: the same PII-redacted context
+block the chat endpoint gives its answer model, and the files it came from.
+When an answer is wrong, this tells you whether retrieval found the passage or
+the model ignored it.
 
 ### `ragen brain`
 
@@ -81,8 +130,8 @@ refuses a bundle path that would land outside the target directory.
 
 ## What does not work yet
 
-`login`, `doctor`, `kb` and `plugin` are listed in `ragen help` under **Not
-built yet**. Running one prints what it is waiting on and **exits non-zero**,
+`login`, `doctor` and `plugin` are listed in `ragen help` under **Not built
+yet**. Running one prints what it is waiting on and **exits non-zero**,
 so a script cannot mistake it for a no-op that succeeded.
 
 `ragen plugin` in particular waits on custom MCP connectors. Ragen's extension

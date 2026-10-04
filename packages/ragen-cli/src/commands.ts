@@ -33,6 +33,16 @@ export const COMMANDS: readonly CommandSpec[] = [
     status: 'available',
   },
   {
+    name: 'kb',
+    summary: 'knowledge base files: ls, upload, status, rm',
+    status: 'available',
+  },
+  {
+    name: 'search',
+    summary: 'the passages chat would answer from, without an answer',
+    status: 'available',
+  },
+  {
     name: 'help',
     summary: 'show this message',
     status: 'available',
@@ -53,12 +63,6 @@ export const COMMANDS: readonly CommandSpec[] = [
     summary: "check an installation's configuration",
     status: 'planned',
     blockedBy: 'an identity endpoint on the public API',
-  },
-  {
-    name: 'kb',
-    summary: 'list knowledge bases and upload documents',
-    status: 'planned',
-    blockedBy: 'ragen login',
   },
   {
     name: 'plugin',

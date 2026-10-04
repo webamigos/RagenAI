@@ -8,11 +8,15 @@ function harness(overrides: Partial<RunOptions> = {}) {
   const err: string[] = [];
   const create = vi.fn(() => 0);
   const brain = vi.fn(() => Promise.resolve(0));
+  const kb = vi.fn(() => Promise.resolve(0));
+  const search = vi.fn(() => Promise.resolve(0));
 
   const options: RunOptions = {
     version: '1.2.3',
     create,
     brain,
+    kb,
+    search,
     out: (message) => out.push(message),
     err: (message) => err.push(message),
     ...overrides,
@@ -21,6 +25,8 @@ function harness(overrides: Partial<RunOptions> = {}) {
   return {
     create,
     brain,
+    kb,
+    search,
     out,
     err,
     run: (argv: string[]) => run(argv, options),
@@ -91,5 +97,19 @@ describe('run brain', () => {
     const cli = harness();
     await expect(cli.run(['brain', 'next', '--json'])).resolves.toBe(0);
     expect(cli.brain).toHaveBeenCalledWith(['next', '--json']);
+  });
+});
+
+describe('run kb and search', () => {
+  it('hands everything after `kb` to the kb command', async () => {
+    const cli = harness();
+    await expect(cli.run(['kb', 'upload', 'a.pdf', '--wait'])).resolves.toBe(0);
+    expect(cli.kb).toHaveBeenCalledWith(['upload', 'a.pdf', '--wait']);
+  });
+
+  it('hands everything after `search` to the search command', async () => {
+    const cli = harness();
+    await expect(cli.run(['search', 'refund', '--max', '3'])).resolves.toBe(0);
+    expect(cli.search).toHaveBeenCalledWith(['refund', '--max', '3']);
   });
 });

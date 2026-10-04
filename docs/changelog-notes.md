@@ -79,6 +79,13 @@ archive is the blog.
 
 ### Self-hosting
 
+- `[brief]` **The knowledge base from a terminal.** `ragen kb upload docs/*.pdf
+  --wait` uploads files with an API key and waits until each is indexed,
+  exiting non-zero if one fails; `ragen kb ls`, `status` and `rm` cover the
+  rest, and `ragen search "…"` prints the passages chat would answer from.
+  The per-minute upload limit is waited out rather than failing the
+  eleventh file. Needs `ragen-cli` 0.3.0.
+
 - `[brief]` **A smoke test for the MCP server.** `npm run smoke
   --workspace=@ragenai/mcp -- <url>` checks a running server one layer at a
   time — connection, tools, the API key, retrieval, optionally a model
