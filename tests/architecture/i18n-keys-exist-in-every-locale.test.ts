@@ -1,17 +1,24 @@
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
+import { locales as LOCALES } from '../../apps/web/src/app/config';
+
 import { trackedFiles } from './tracked-files';
 
 /**
- * A translation key called in a component but missing from one locale renders
- * as the raw key for users of that language. There was one: English users hit
+ * A translation key called in a component but missing from a locale renders as
+ * the raw key for users of that language. There was one: English users hit
  * `ErrorBoundary.file-error-fetching` and saw the key, because it existed only
- * in pl.json. Comparing the two files by hand does not find that — the files
- * were nearly the same size, and eleven keys differed of which only one was
- * actually called.
+ * in pl.json. Comparing the files by hand does not find that — they were nearly
+ * the same size, and eleven keys differed of which only one was actually called.
+ *
+ * The locales are the ones `apps/web/src/app/config.ts` declares, read from
+ * there rather than listed here. This used to say `['en', 'pl']` while the app
+ * shipped fifteen, so the bug it was written to prevent was unguarded for
+ * thirteen of the languages a user could select (#1097); a new language added
+ * to the config is now in scope the moment it is added.
  *
  * Deliberately narrow, so it has no false positives:
  *
@@ -22,12 +29,11 @@ import { trackedFiles } from './tracked-files';
  *
  * The consequence of that narrowness is worth stating: this does not prove a
  * key is unused, so it must not be used to delete keys. It proves that what is
- * statically called exists in both locales.
+ * statically called exists in every locale.
  */
 
 const REPO_ROOT = join(import.meta.dirname, '..', '..');
 const MESSAGES = join(REPO_ROOT, 'apps/web/src/app/messages');
-const LOCALES = ['en', 'pl'] as const;
 
 const NAMESPACE = /useTranslations\(\s*['"]([^'"]+)['"]/g;
 const CALL = /\bt\(\s*['"]([^'"]+)['"]/g;
@@ -83,33 +89,59 @@ function staticallyResolvableCalls(): Call[] {
 }
 
 describe('translation keys called from components', () => {
+  it('has a messages file for every locale in the config, and no other', () => {
+    const files = readdirSync(MESSAGES)
+      .filter((name) => name.endsWith('.json'))
+      .map((name) => name.replace(/\.json$/, ''))
+      .sort();
+
+    expect(files).toEqual([...LOCALES].sort());
+  });
+
   it('exist in every locale', () => {
     const keys = Object.fromEntries(
       LOCALES.map((locale) => [locale, localeKeys(locale)]),
     );
 
-    const missing = staticallyResolvableCalls()
-      .map(({ key, file }) => ({
-        key,
-        file,
-        absentFrom: LOCALES.filter((locale) => !keys[locale].has(key)),
-      }))
+    const missingByLocale = new Map<string, Map<string, string>>();
+
+    for (const { key, file } of staticallyResolvableCalls()) {
+      const absentFrom = LOCALES.filter((locale) => !keys[locale].has(key));
+
       // Absent from every locale means the key was never added at all, which
       // is a different bug and one `next-intl` surfaces loudly at runtime.
-      // This is about the asymmetry, which is silent for half the users.
-      .filter(({ absentFrom }) => absentFrom.length === 1);
+      // This is about the asymmetry, which is silent for some of the users.
+      if (absentFrom.length === 0 || absentFrom.length === LOCALES.length) {
+        continue;
+      }
+
+      for (const locale of absentFrom) {
+        const forLocale = missingByLocale.get(locale) ?? new Map();
+        forLocale.set(key, file);
+        missingByLocale.set(locale, forLocale);
+      }
+    }
+
+    // Per locale, because "de is missing 4 keys" is something a person can act
+    // on and "some locale is missing something" is not.
+    const report = [...missingByLocale]
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([locale, missing]) =>
+        [
+          `${locale} is missing ${missing.size} key${missing.size === 1 ? '' : 's'}:`,
+          ...[...missing].map(([key, file]) => `    ${key} (${file})`),
+        ].join('\n'),
+      );
 
     expect(
-      missing,
-      missing.length === 0
+      report,
+      report.length === 0
         ? ''
         : [
-            'A key is called in a component but missing from one locale, so',
-            'users of that language see the raw key:',
+            'A key is called in a component but missing from a locale, so users',
+            'of that language see the raw key:',
             '',
-            ...missing.map(
-              (m) => `  ${m.key} — missing from ${m.absentFrom[0]} (${m.file})`,
-            ),
+            ...report,
           ].join('\n'),
     ).toEqual([]);
   });
