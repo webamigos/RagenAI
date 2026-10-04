@@ -2154,7 +2154,13 @@
       "cannot-change-owner-role": "Organisaation omistajan roolia ei voi muuttaa",
       "change-role-failed": "Roolin muuttamisessa tapahtui virhe",
       "no-permission-edit-organization": "Sinulla ei ole oikeutta muokata organisaation profiilia",
-      "update-organization-failed": "Organisaation päivittämisessä tapahtui virhe"
+      "update-organization-failed": "Organisaation päivittämisessä tapahtui virhe",
+      "no-permission-add-member": "Sinulla ei ole oikeutta lisätä jäseniä",
+      "plan-required-for-members": "Jäsenten lisääminen on käytettävissä vain maksullisissa paketeissa",
+      "member-limit-reached": "Jäsenraja ({limit}) on saavutettu. Ota yhteyttä ylläpitäjään sen nostamiseksi.",
+      "account-exists-use-invitation": "Tällä sähköpostiosoitteella on jo tili. Lähetä sen sijaan kutsu",
+      "invitation-pending-cancel-first": "Tälle sähköpostiosoitteelle on jo kutsu. Peruuta se luodaksesi tilin",
+      "create-account-failed": "Käyttäjätilin luominen epäonnistui"
     }
   },
   "invitation-banner": {

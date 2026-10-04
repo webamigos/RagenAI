@@ -54,13 +54,10 @@ describe('createMemberAccountCommand', () => {
   it('creates the account and returns credentials to hand over', async () => {
     const result = await createMemberAccountCommand(input);
 
-    expect(result.success).toBe(true);
-    // OperationResult is not a discriminated union — `success` does not narrow
-    // `data` — so the test asserts on the payload it actually uses.
-    const { data } = result;
-    if (!data) {
+    if (!result.success) {
       throw new Error('expected the command to return the created account');
     }
+    const { data } = result;
     expect(data.email).toBe('ada@example.com');
     expect(data.temporaryPassword).toHaveLength(24);
 
@@ -87,8 +84,7 @@ describe('createMemberAccountCommand', () => {
     const first = await createMemberAccountCommand(input);
     const second = await createMemberAccountCommand(input);
 
-    expect(first.success && second.success).toBe(true);
-    if (!first.data || !second.data) {
+    if (!first.success || !second.success) {
       throw new Error('expected both commands to return an account');
     }
     expect(first.data.temporaryPassword).not.toBe(
@@ -107,11 +103,20 @@ describe('createMemberAccountCommand', () => {
   });
 
   it('refuses when the caller may not add members', async () => {
-    canAddMember.mockResolvedValue({ allowed: false, error: 'Brak uprawnień' });
+    canAddMember.mockResolvedValue({
+      allowed: false,
+      code: 'no-permission-add-member',
+    });
 
     const result = await createMemberAccountCommand(input);
 
-    expect(result).toEqual({ success: false, error: 'Brak uprawnień' });
+    // The code, and its params when the refusal has any, are passed through as
+    // they are; the dialog says them in the reader's language.
+    expect(result).toEqual({
+      success: false,
+      code: 'no-permission-add-member',
+      params: undefined,
+    });
     expect(signUpEmail).not.toHaveBeenCalled();
     expect(dbMock.invitation.create).not.toHaveBeenCalled();
   });
@@ -119,15 +124,15 @@ describe('createMemberAccountCommand', () => {
   it('distinguishes an existing member from an existing account elsewhere', async () => {
     dbMock.user.findUnique.mockResolvedValue({ id: 'user_9' });
     dbMock.member.findFirst.mockResolvedValue({ id: 'member_9' });
-    await expect(createMemberAccountCommand(input)).resolves.toMatchObject({
+    await expect(createMemberAccountCommand(input)).resolves.toEqual({
       success: false,
-      error: expect.stringContaining('już jest członkiem'),
+      code: 'already-member',
     });
 
     dbMock.member.findFirst.mockResolvedValue(null);
-    await expect(createMemberAccountCommand(input)).resolves.toMatchObject({
+    await expect(createMemberAccountCommand(input)).resolves.toEqual({
       success: false,
-      error: expect.stringContaining('już istnieje'),
+      code: 'account-exists-use-invitation',
     });
   });
 
@@ -139,7 +144,10 @@ describe('createMemberAccountCommand', () => {
 
     const result = await createMemberAccountCommand(input);
 
-    expect(result.success).toBe(false);
+    expect(result).toEqual({
+      success: false,
+      code: 'invitation-pending-cancel-first',
+    });
     expect(dbMock.invitation.create).not.toHaveBeenCalled();
     expect(signUpEmail).not.toHaveBeenCalled();
   });
@@ -204,8 +212,9 @@ describe('createMemberAccountCommand', () => {
     // message shown at all.
     dbMock.user.findUnique.mockRejectedValue(new Error('connection lost'));
 
-    await expect(createMemberAccountCommand(input)).resolves.toMatchObject({
+    await expect(createMemberAccountCommand(input)).resolves.toEqual({
       success: false,
+      code: 'create-account-failed',
     });
   });
 

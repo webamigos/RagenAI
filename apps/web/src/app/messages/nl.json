@@ -2154,7 +2154,13 @@
       "cannot-change-owner-role": "De rol van de eigenaar van de organisatie kan niet worden gewijzigd",
       "change-role-failed": "Er is iets misgegaan bij het wijzigen van de rol",
       "no-permission-edit-organization": "Je hebt geen toestemming om het organisatieprofiel te bewerken",
-      "update-organization-failed": "Er is iets misgegaan bij het bijwerken van de organisatie"
+      "update-organization-failed": "Er is iets misgegaan bij het bijwerken van de organisatie",
+      "no-permission-add-member": "Je hebt geen toestemming om leden toe te voegen",
+      "plan-required-for-members": "Leden toevoegen is alleen beschikbaar in betaalde abonnementen",
+      "member-limit-reached": "De limiet voor het aantal leden ({limit}) is bereikt. Neem contact op met je beheerder om deze te verhogen.",
+      "account-exists-use-invitation": "Er bestaat al een account met dit e-mailadres. Stuur in plaats daarvan een uitnodiging",
+      "invitation-pending-cancel-first": "Er bestaat al een uitnodiging voor dit e-mailadres. Trek die in om een account aan te maken",
+      "create-account-failed": "Het gebruikersaccount kon niet worden aangemaakt"
     }
   },
   "invitation-banner": {
