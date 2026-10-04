@@ -20,43 +20,61 @@ import { cn } from '@/lib/utils';
  *
  * Clicking fills the composer; it does not send. Choosing an example is not
  * the same as having asked a question.
+ *
+ * **Secondary on purpose.** The composer is the page on a new chat (panel UX
+ * rule 6). Four bordered cards, each with a title and a two-line prompt,
+ * outweighed it, so they are one row of quiet chips: the title only, muted
+ * until hovered, with the full prompt as the chip's tooltip. The prompt no
+ * longer has to be printed on the card to keep the click from being a guess —
+ * clicking sends nothing, so the prompt appears in the composer, editable, the
+ * moment it is chosen.
  */
 const SUGGESTIONS = ['summarize', 'explain', 'analyze', 'write'] as const;
 
 type Props = {
   /** Fills the composer with this text. Never sends it. */
   onSelect: (prompt: string) => void;
+  /**
+   * Hidden once the composer holds a draft — the chips would be offering to
+   * replace it. Hidden, **not unmounted**: the row keeps its height, so the
+   * composer above it does not move when the first character is typed. The
+   * empty state is centred in the pane, and unmounting the row changed the
+   * block's height and so moved the input by half of it.
+   */
+  hidden?: boolean;
   className?: string;
 };
 
-export const StartFromSuggestions = ({ onSelect, className }: Props) => {
+export const StartFromSuggestions = ({
+  onSelect,
+  hidden = false,
+  className,
+}: Props) => {
   const t = useTranslations('Index');
 
   return (
     <section
-      className={cn('mt-6', className)}
+      className={cn(
+        'mt-4 flex flex-wrap items-center justify-center gap-x-2 gap-y-1.5',
+        // Fades rather than blinks. `visibility` is transitioned with the
+        // opacity so it flips at the end of the fade, not the start; with
+        // reduced motion both change at once.
+        'motion-safe:transition-[opacity,visibility] motion-safe:duration-150',
+        hidden && 'invisible opacity-0',
+        className,
+      )}
       aria-labelledby="start-from-heading"
+      // `invisible` already hides it from assistive tech in a browser; `inert`
+      // takes the chips out of the tab order and makes that explicit.
+      aria-hidden={hidden || undefined}
+      inert={hidden}
+      data-state={hidden ? 'hidden' : 'visible'}
     >
-      <h2
-        id="start-from-heading"
-        className="mb-2 text-xs font-medium text-muted-foreground"
-      >
+      <h2 id="start-from-heading" className="text-xs text-muted-foreground">
         {t('start-from')}
       </h2>
 
-      {/*
-        `auto-fit` with a 280px floor rather than a stack of breakpoints: the
-        composer is capped at max-w-3xl, so this lands on two columns on a
-        desktop and one on a phone without asking what the viewport is. Four
-        cards over three columns would leave an orphan on the second row.
-
-        The `min(280px,100%)` is not decoration. A bare `minmax(280px,1fr)`
-        makes 280px a hard floor for the track, so in a container narrower than
-        that the grid overflows instead of shrinking — on a 375px phone the
-        cards ran past the page edge and squeezed the composer to a third of
-        its width. `min()` lets the track collapse to the container.
-      */}
-      <ul className="grid grid-cols-[repeat(auto-fit,minmax(min(280px,100%),1fr))] gap-2">
+      <ul className="flex flex-wrap justify-center gap-1.5">
         {SUGGESTIONS.map((slug) => {
           const prompt = t(`suggestion-${slug}-prompt`);
           return (
@@ -64,22 +82,15 @@ export const StartFromSuggestions = ({ onSelect, className }: Props) => {
               <button
                 type="button"
                 onClick={() => onSelect(prompt)}
+                title={prompt}
                 className={cn(
-                  'w-full rounded-lg border border-border bg-card px-3.5 py-3 text-left',
-                  'transition-colors hover:bg-muted',
+                  // 32px tall: the hit-target floor outside toolbars (rule 26).
+                  'inline-flex min-h-8 items-center rounded-full border border-border px-3 text-xs text-muted-foreground',
+                  'transition-colors hover:bg-muted hover:text-foreground',
                   'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
                 )}
               >
-                <span className="block text-sm font-medium text-foreground">
-                  {t(`suggestion-${slug}`)}
-                </span>
-                {/*
-                  The prompt is shown as well as inserted, so the card is not a
-                  guess about what clicking it will do.
-                */}
-                <span className="mt-1 block text-xs text-muted-foreground">
-                  {prompt}
-                </span>
+                {t(`suggestion-${slug}`)}
               </button>
             </li>
           );
