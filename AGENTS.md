@@ -181,7 +181,7 @@ volumes, and the observability profile:
 
 **What it is**: RAG AI chat app with an in-process model gateway, document knowledge bases, and a public API.
 
-**Monorepo layout**: npm workspaces, `apps/*` + `packages/*` — five apps
+**Monorepo layout**: npm workspaces, `apps/*` + `packages/*` — 5 apps
 (`web`, `api`, `admin`, `worker`, `mcp`) over 17 packages, with one
 `prisma/schema.prisma` serving all of them via per-app `generator` blocks, and
 the supporting services in `infra/`. The tree, what each package is for and why

@@ -38,9 +38,12 @@ const adrs = entries('docs/adrs', (name) => /^\d+-.+\.md$/.test(name));
 const apps = entries('apps', (name) => !name.startsWith('.'));
 const packages = entries('packages', (name) => !name.startsWith('.'));
 
-/** Every number that directly precedes `noun`, with an optional link wrapper. */
+/**
+ * Every number that directly precedes `noun` (a regex fragment), with an
+ * optional link wrapper.
+ */
 function claims(noun: string): { file: string; count: number }[] {
-  const pattern = new RegExp(`\\b(\\d+) (?:\\[)?${noun}\\b`, 'g');
+  const pattern = new RegExp(`\\b(\\d+) (?:\\[)?(?:${noun})\\b`, 'g');
 
   return texts.flatMap(({ file, text }) =>
     [...text.matchAll(pattern)].map((match) => ({
@@ -52,23 +55,44 @@ function claims(noun: string): { file: string; count: number }[] {
 
 describe('the counts stated in the README and AGENTS.md match the tree', () => {
   it.each([
-    ['ADRs', adrs, 'the ADR files in docs/adrs'],
-    ['applications', apps, 'the directories in apps/'],
-    ['packages', packages, 'the directories in packages/'],
-  ] as const)('every "<n> %s" says %i', (noun, actual, what) => {
-    const stated = claims(noun);
+    // [what it counts, the words that follow the number, the real count, where
+    //  it is counted, and which files must state it]
+    ['ADRs', 'ADRs', adrs, 'the ADR files in docs/adrs', ['README.md']],
+    [
+      'applications',
+      'applications|apps',
+      apps,
+      'the directories in apps/',
+      ['README.md', 'AGENTS.md'],
+    ],
+    [
+      'packages',
+      'packages',
+      packages,
+      'the directories in packages/',
+      ['README.md', 'AGENTS.md'],
+    ],
+  ] as const)(
+    'every "<n> %s" says the real number',
+    (label, nouns, actual, what, requiredIn) => {
+      const stated = claims(nouns);
 
-    // A guard that finds nothing to check is a guard that stopped working.
-    expect(
-      stated.length,
-      `no "<n> ${noun}" in the README or AGENTS.md`,
-    ).toBeGreaterThan(0);
+      // Presence is checked per file, not in total: one file stating the count
+      // must not excuse another that stopped stating it, or one that states it
+      // in words the matcher cannot read (AGENTS.md's "five apps" once did).
+      for (const file of requiredIn) {
+        expect(
+          stated.some((claim) => claim.file === file),
+          `${file} no longer states "<n> ${label}" in digits, so nothing checks it`,
+        ).toBe(true);
+      }
 
-    for (const { file, count } of stated) {
-      expect(
-        count,
-        `${file} says ${count} ${noun}; ${what} has ${actual}`,
-      ).toBe(actual);
-    }
-  });
+      for (const { file, count } of stated) {
+        expect(
+          count,
+          `${file} says ${count} ${label}; ${what} has ${actual}`,
+        ).toBe(actual);
+      }
+    },
+  );
 });
