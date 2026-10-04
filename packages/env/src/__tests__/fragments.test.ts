@@ -156,3 +156,34 @@ describe('redisUrl', () => {
     },
   );
 });
+
+describe('DEFAULT_MODEL_PROVIDER', () => {
+  // Every consumer accepts exactly `litellm`, and `getDefaultModel()` parses
+  // lazily — so a looser schema let `openai` boot and throw at the first
+  // question (#1134). The fragment is what the boot-time check is built from.
+  const parse = (value: unknown) =>
+    fragments.models.safeParse({ DEFAULT_MODEL_PROVIDER: value });
+
+  it.each(['litellm', undefined, '', '   '])(
+    'accepts %j — the one value the consumers take, or unset',
+    (value) => {
+      expect(parse(value).success).toBe(true);
+    },
+  );
+
+  it.each(['openai', 'anthropic', 'google', 'azure-openai', 'LiteLLM'])(
+    'rejects %j at boot rather than at the first model call',
+    (value) => {
+      expect(parse(value).success).toBe(false);
+    },
+  );
+
+  it('says what to do instead, not just that the value is wrong', () => {
+    const result = parse('openai');
+
+    expect(result.success).toBe(false);
+    expect(result.error?.issues[0]?.message).toMatch(
+      /'litellm'.*infra\/llm-gateway\/routes\.yaml/s,
+    );
+  });
+});
