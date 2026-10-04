@@ -16,12 +16,24 @@
  * See ./README.md for prerequisites.
  */
 
-import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
+import {
+  readFileSync,
+  writeFileSync,
+  mkdirSync,
+  existsSync,
+  renameSync,
+} from 'node:fs';
 import { join, dirname, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { execSync } from 'node:child_process';
 import { PrismaClient } from '../../src/generated/prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
+import { PLATFORM_FEATURE_DEFAULTS_KEY } from '@ragenai/platform-contracts';
+import {
+  checkDefaultProfile,
+  ProfileMismatchError,
+  traceProfileMismatches,
+} from './lib/profile';
 import {
   TEST_PROJECT_ID,
   TEST_THREAD_ID,
@@ -420,6 +432,45 @@ function qdrantScroll(orgId: string): ScrollChunks {
   };
 }
 
+/**
+ * `--profile default`: refuse before a single upload when the organization or
+ * the runner's environment is not the default install (lib/profile.ts).
+ */
+async function assertDefaultProfile(prisma: PrismaClient): Promise<void> {
+  const orgId = await organizationOf(prisma);
+  const [org, platformRow] = await Promise.all([
+    orgId
+      ? prisma.organizationSettings.findUnique({
+          where: { organizationId: orgId },
+          select: {
+            multiQueryEnabled: true,
+            docSummariesEnabled: true,
+            featureOverrides: true,
+          },
+        })
+      : null,
+    prisma.settings.findUnique({
+      where: { key: PLATFORM_FEATURE_DEFAULTS_KEY },
+    }),
+  ]);
+  let platformDefaults: unknown;
+  try {
+    platformDefaults = platformRow ? JSON.parse(platformRow.value) : undefined;
+  } catch {
+    platformDefaults = undefined;
+  }
+  const problems = checkDefaultProfile({
+    env: process.env,
+    org,
+    platformDefaults,
+  });
+  if (problems.length > 0) {
+    throw new Error(
+      `--profile default: this is not the default install:\n  - ${problems.join('\n  - ')}`,
+    );
+  }
+}
+
 async function organizationOf(prisma: PrismaClient): Promise<string | null> {
   const project = await prisma.project.findUnique({
     where: { id: PROJECT_ID },
@@ -515,6 +566,7 @@ async function main(): Promise<void> {
     corpus: corpusArg,
     arms,
     shape,
+    profile,
   } = parseArgs(process.argv.slice(2), DEFAULT_CORPUS_DIR);
   const dir = resolveCorpusDir(corpusArg, process.cwd());
   const { corpus, questions } = loadCorpus(dir);
@@ -544,6 +596,10 @@ async function main(): Promise<void> {
   let cookie: string | undefined;
 
   try {
+    if (profile === 'default') {
+      console.log('Checking the default-install profile');
+      await assertDefaultProfile(prisma);
+    }
     if (arms.includes('rag')) {
       console.log(`[1/4] Signing in as ${EMAIL}`);
       cookie = await login();
@@ -630,11 +686,32 @@ async function main(): Promise<void> {
             );
             answer = ragAnswer.text;
             citedFiles = ragAnswer.citedFileIds;
+            // The server's account of the turn — what the runner's env cannot
+            // vouch for. One case off the default ends a `--profile default`
+            // run rather than labelling it the default.
+            if (profile === 'default') {
+              const mismatches = ragAnswer.trace
+                ? traceProfileMismatches(ragAnswer.trace)
+                : [
+                    'the server sent no retrieval trace, so the profile cannot be confirmed',
+                  ];
+              if (mismatches.length > 0) {
+                throw new ProfileMismatchError(
+                  `--profile default: ${q.id}: ${mismatches.join('; ')}`,
+                );
+              }
+            }
             if (ragAnswer.trace) {
               retrievalTrace = {
                 postRetrieval: ragAnswer.trace.postRetrieval,
                 ...(ragAnswer.trace.expansion
                   ? { expansion: ragAnswer.trace.expansion }
+                  : {}),
+                ...(ragAnswer.trace.crossQueryFusionEnabled !== undefined
+                  ? {
+                      crossQueryFusionEnabled:
+                        ragAnswer.trace.crossQueryFusionEnabled,
+                    }
                   : {}),
                 queryCount: ragAnswer.trace.queryCount,
                 chunkCount: ragAnswer.trace.chunks.length,
@@ -668,16 +745,19 @@ async function main(): Promise<void> {
           const assertions = runAssertions(q, answer);
           let rubricPassed: boolean | null = null;
           let rubricReason: string | undefined;
+          let rubricLabel: string | undefined;
           let rubricError: string | undefined;
           if (q.rubric) {
             const verdict = await withRetry(
               () =>
                 judge(q.rubric!, q.question, answer, {
                   model: JUDGE_MODEL,
+                  labels: q.judgeLabels,
                 }),
               { onRetry },
             );
             rubricReason = verdict.reason;
+            rubricLabel = verdict.label;
             // An unreadable verdict leaves `rubricPassed` null. Recording
             // `false` would spend a real failure on the judge's formatting and
             // move the published rate; the report excludes the case instead.
@@ -693,6 +773,7 @@ async function main(): Promise<void> {
             assertionFailures: assertions.failures,
             rubricPassed,
             rubricReason,
+            ...(rubricLabel ? { rubricLabel } : {}),
             rubricError,
             passed,
             citedFiles,
@@ -706,6 +787,11 @@ async function main(): Promise<void> {
               caseNote(rubricError, passed, assertions.failures, rubricReason),
           );
         } catch (err) {
+          // Not a failed case: the run is not the default install, and must
+          // not be written, let alone published, as one.
+          if (err instanceof ProfileMismatchError) {
+            throw err;
+          }
           results.push({
             ...base,
             answer: '',
@@ -771,6 +857,19 @@ async function main(): Promise<void> {
   writeFileSync(join(outDir, `${stem}.json`), JSON.stringify(report, null, 2));
   writeFileSync(join(outDir, `${stem}.md`), renderMarkdown(report));
   console.log(`\nWrote results/${stem}.json and results/${stem}.md`);
+  if (profile === 'default') {
+    // The published copy: the figure someone may quote, under the same stem
+    // so the -runN suffixes of a day's three runs stay side by side.
+    const publishedDir = join(outDir, 'published');
+    mkdirSync(publishedDir, { recursive: true });
+    // Written whole, then renamed: a release reads this directory, and a
+    // crash mid-write must not leave half a report under a final name.
+    const published = join(publishedDir, `${stem}.md`);
+    const partial = `${published}.partial`;
+    writeFileSync(partial, renderMarkdown(report));
+    renameSync(partial, published);
+    console.log(`Wrote results/published/${stem}.md`);
+  }
 
   const rag = tally(results.filter((r) => r.arm === 'rag'));
   console.log(

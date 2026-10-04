@@ -150,6 +150,30 @@ describe('runAssertions', () => {
   });
 });
 
+/**
+ * Citations are not a deterministic gate. Run on the guard corpus, a correct
+ * refusal of a near-miss question cites the facts the documents *do* hold —
+ * "they only say the W7 line is suspended for the repair [1]" — and a gate on
+ * the `citations` event failed those as hard as a cited refusal. The rubric
+ * owns it now: a citation on the sentence stating the absence fails, one on a
+ * sentence quoting a real fact does not. The report still counts answers that
+ * cited anything.
+ */
+describe('runAssertions — citations', () => {
+  it('does not fail a guard answer for citing a document', () => {
+    const guard = question({
+      type: 'guard-hallucination',
+      rubric: 'says the documents do not cover it',
+    });
+    expect(
+      runAssertions(
+        guard,
+        'Dokumenty tego nie obejmują. Podają jedynie termin 21 dni [1].',
+      ).passed,
+    ).toBe(true);
+  });
+});
+
 describe('parseJudgeVerdict', () => {
   it('reads a bare JSON verdict', () => {
     expect(parseJudgeVerdict('{"pass": true, "reason": "states 87%"}')).toEqual(
@@ -190,6 +214,32 @@ describe('parseJudgeVerdict', () => {
     expect(verdict.reason).toContain('unparseable');
   });
 
+  it('keeps a label from the offered set', () => {
+    expect(
+      parseJudgeVerdict('{"pass": false, "reason": "r", "label": "answered"}', [
+        'refused',
+        'answered',
+      ]),
+    ).toEqual({ pass: false, reason: 'r', label: 'answered' });
+  });
+
+  // The label is reported, never graded, so an invented one costs a tally
+  // entry — not the verdict, and not an ungraded case.
+  it('drops a label outside the offered set without making it an error', () => {
+    const verdict = parseJudgeVerdict(
+      '{"pass": true, "reason": "r", "label": "sort-of"}',
+      ['refused', 'answered'],
+    );
+    expect(verdict).toEqual({ pass: true, reason: 'r' });
+    expect(verdict.error).toBeUndefined();
+  });
+
+  it('ignores a label nobody asked for', () => {
+    expect(
+      parseJudgeVerdict('{"pass": true, "reason": "r", "label": "refused"}'),
+    ).toEqual({ pass: true, reason: 'r' });
+  });
+
   it('marks a non-boolean pass as a judge error, not a failed rubric', () => {
     const verdict = parseJudgeVerdict('{"pass": "yes"}');
     expect(verdict.error).toBe('judge verdict has no boolean "pass"');
@@ -227,6 +277,28 @@ describe('judge', () => {
     expect(call.prompt).toContain('Q?');
     expect(call.prompt).toContain('A.');
     expect(call.system).toContain('JSON only');
+  });
+
+  it('asks for a label only when labels are offered', async () => {
+    await judge('rubric', 'q', 'a', { model: 'm' });
+    const plain = mockGenerateText.mock.calls[0][0] as Record<string, string>;
+    expect(plain.system).not.toContain('label');
+
+    mockGenerateText.mockResolvedValue({
+      text: '{"pass": false, "reason": "r", "label": "refused-then-answered"}',
+    });
+    const verdict = await judge('rubric', 'q', 'a', {
+      model: 'm',
+      labels: ['refused', 'refused-then-answered', 'answered'],
+    });
+    const labelled = mockGenerateText.mock.calls[1][0] as Record<
+      string,
+      string
+    >;
+    expect(labelled.system).toContain(
+      '"label": exactly one of ["refused","refused-then-answered","answered"]',
+    );
+    expect(verdict.label).toBe('refused-then-answered');
   });
 
   it('reads the verdict out of the generated text', async () => {

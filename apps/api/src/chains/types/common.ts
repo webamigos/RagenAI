@@ -56,6 +56,12 @@ export interface ChainRagSettings {
    * neighbours (spec 2026-09-29-llm-document-selection, B3). Absent is off.
    */
   contextExpansionEnabled?: boolean;
+  /**
+   * `crossQueryFusion`: with no reranker or selection, hits are ordered
+   * across queries by reciprocal rank before the cut (spec
+   * 2026-10-03-retrieval-claims, B0). Absent is off.
+   */
+  crossQueryFusionEnabled?: boolean;
 }
 
 export interface ChainConfig {

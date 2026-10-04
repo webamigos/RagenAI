@@ -74,6 +74,7 @@ export const initializePublicRagChain = async ({
       contextExpansionEnabled,
       sectionSelectionEnabled,
       answerFromDocumentsOnly,
+      crossQueryFusionEnabled,
     ] = await Promise.all([
       getOrganizationMetadata(organizationId),
       getRagPipelineSettings(organizationId),
@@ -82,6 +83,7 @@ export const initializePublicRagChain = async ({
       // The public assistant page is the surface strict grounding exists
       // for; `projectId` was resolved from the thread or the access token.
       getAnswerFromDocumentsOnlyQuery(projectId, organizationId),
+      isFeatureEnabledQuery(organizationId, 'crossQueryFusion'),
     ]);
     // Built only when the key is on: the chain runs selection exactly when it
     // is handed a selector.
@@ -172,6 +174,7 @@ export const initializePublicRagChain = async ({
             ragPipelineSettings.contentModerationEnabled,
           rerankingEnabled: ragPipelineSettings.rerankingEnabled,
           contextExpansionEnabled,
+          crossQueryFusionEnabled,
         },
       },
       vectorStore: wrappedStore,

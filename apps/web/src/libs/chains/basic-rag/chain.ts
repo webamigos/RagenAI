@@ -165,6 +165,7 @@ export const basicRagChain = async ({
                     ),
                   }
                 : undefined,
+              config?.ragSettings?.crossQueryFusionEnabled,
             )
           : null,
         retrieveThreadDocuments(

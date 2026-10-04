@@ -127,6 +127,7 @@ export const basicRagChain = async ({
                 ),
               }
             : undefined,
+          config?.ragSettings?.crossQueryFusionEnabled,
         ),
         retrieveThreadDocuments(
           textThreadDocs,
