@@ -11,6 +11,8 @@ people up.
   agree on the approach before you spend time on it.
 - **Security vulnerabilities** — do **not** open an issue. See
   [SECURITY.md](SECURITY.md).
+- **How we treat each other** — everyone taking part follows the
+  [Code of Conduct](CODE_OF_CONDUCT.md).
 
 ## Branch model
 

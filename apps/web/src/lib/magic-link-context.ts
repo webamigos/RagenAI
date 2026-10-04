@@ -10,10 +10,17 @@
  */
 export type MagicLinkContext = {
   type: 'organization-invitation';
-  inviterName: string;
+  /** Absent when the inviter has neither a name nor an email to show. */
+  inviterName?: string;
   organizationName: string;
   invitationId: string;
   role: string;
+  /**
+   * The language the inviter was using. The email is sent from a callback that
+   * has lost the request, so it is captured here, while there still is one;
+   * unset falls back to resolving it from whatever request is around.
+   */
+  locale?: string;
 };
 
 export const pendingMagicLinkContext = new Map<string, MagicLinkContext>();

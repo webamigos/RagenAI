@@ -1,29 +1,26 @@
 import { Button, Hr, Text } from '@react-email/components';
 import { EmailLayout } from './components/email-layout';
+import type { EmailTranslator } from './utils/email-translator';
 
 type Props = {
   verificationUrl: string;
+  locale: string;
+  /** The `emails.verification` strings in `locale`. */
+  t: EmailTranslator;
 };
 
-const VerificationEmail = ({ verificationUrl }: Props) => (
-  <EmailLayout preview="Zweryfikuj swój adres email w Ragen AI">
-    <Text className="text-base leading-6 text-[#525f7f]">
-      Dziękujemy za rejestrację w Ragen AI! Kliknij poniższy przycisk, aby
-      zweryfikować swój adres email:
-    </Text>
+const VerificationEmail = ({ verificationUrl, locale, t }: Props) => (
+  <EmailLayout locale={locale} preview={t('preview')}>
+    <Text className="text-base leading-6 text-[#525f7f]">{t('body')}</Text>
     <Button
       className="block w-full rounded-[5px] bg-[#394d9d] px-2.5 py-2.5 text-center text-base font-bold text-white no-underline"
       href={verificationUrl}
     >
-      Zweryfikuj email
+      {t('button')}
     </Button>
     <Hr className="my-5 border-[#e6ebf1]" />
-    <Text className="text-base leading-6 text-[#525f7f]">
-      Jeśli nie zakładałeś konta w Ragen AI, zignoruj tę wiadomość.
-    </Text>
-    <Text className="text-base leading-6 text-[#525f7f]">
-      Link wygaśnie za 24 godziny.
-    </Text>
+    <Text className="text-base leading-6 text-[#525f7f]">{t('ignore')}</Text>
+    <Text className="text-base leading-6 text-[#525f7f]">{t('expiry')}</Text>
   </EmailLayout>
 );
 

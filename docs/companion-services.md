@@ -189,7 +189,7 @@ The reverse direction from `ragen-connectors` above: instead of Ragen calling
 other services' MCP tools, this exposes Ragen's own chat as an MCP tool
 external clients (Claude Desktop, Cursor) can call. See
 [ADR-36](adrs/36-mcp-server-exposes-chat-via-apps-api.md) and
-[`apps/docs/docs/api-reference/mcp-server.md`](../apps/docs/docs/api-reference/mcp-server.md).
+[the MCP Server page](https://docs.ragen.ai/api-reference/mcp-server) in the docs.
 
 ```bash
 cd apps/mcp && npm run dev   # MCP (Streamable HTTP) + health, both on :3300

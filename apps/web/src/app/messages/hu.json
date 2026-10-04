@@ -2054,7 +2054,11 @@
       "saving": "Mentés folyamatban...",
       "cancel": "Mégse",
       "edit-success": "A szervezet profilja frissült",
-      "edit-error": "Hiba történt a profil frissítése közben"
+      "edit-error": "Hiba történt a profil frissítése közben",
+      "validation": {
+        "name-required": "A név megadása kötelező",
+        "name-too-long": "A név legfeljebb {max} karakter lehet"
+      }
     },
     "members": {
       "title": "Felhasználók",
@@ -2100,7 +2104,12 @@
       "copy-credentials": "Hitelesítő adatok másolása",
       "copied": "Másolva",
       "done": "Kész",
-      "confirm-remove-title": "Eltávolítja a tagot?"
+      "confirm-remove-title": "Eltávolítja a tagot?",
+      "validation": {
+        "invalid-email": "Adjon meg érvényes e-mail-címet",
+        "role-required": "A szerepkör megadása kötelező",
+        "full-name-required": "A vezeték- és keresztnév megadása kötelező"
+      }
     },
     "invitations": {
       "title": "Meghívók",
@@ -2199,7 +2208,11 @@
       "saving": "Mentés folyamatban...",
       "cancel": "Mégse",
       "success": "A profil frissült",
-      "error": "A profil frissítése sikertelen"
+      "error": "A profil frissítése sikertelen",
+      "validation": {
+        "name-required": "A név megadása kötelező",
+        "name-too-long": "A név legfeljebb {max} karakter lehet"
+      }
     },
     "password": {
       "current": "Jelenlegi jelszó",
@@ -2209,7 +2222,12 @@
       "demo-account-locked": "Ez a megosztott demófiók, ezért a jelszava nem módosítható.",
       "changing": "Jelszó módosítása folyamatban...",
       "success": "A jelszó megváltozott",
-      "error": "Érvénytelen jelenlegi jelszó"
+      "error": "Érvénytelen jelenlegi jelszó",
+      "validation": {
+        "min-length": "Legalább {min} karakter",
+        "passwords-mismatch": "A jelszavak nem egyeznek",
+        "must-differ": "Az új jelszónak különböznie kell a jelenlegitől"
+      }
     },
     "sessions": {
       "title": "Aktív munkamenetek",
@@ -3094,5 +3112,104 @@
     "description": "Ezt az oldalt nem sikerült megjeleníteni. Próbáld újra, vagy kezdj új csevegést – semmi mentett nem veszett el.",
     "retry": "Újra",
     "new-chat": "Új csevegés"
+  },
+  "emails": {
+    "invitation": {
+      "subject": "Meghívó a(z) {organization} szervezetbe a Ragen AI-ban",
+      "preview": "Meghívták a(z) {organization} szervezetbe a Ragen AI-ban",
+      "greeting": "Üdvözlöm!",
+      "invited-by": "<strong>{inviter}</strong> meghívta Önt a(z) <strong>{organization}</strong> szervezetbe a Ragen AI-ban.",
+      "invited": "Meghívták a(z) <strong>{organization}</strong> szervezetbe a Ragen AI-ban.",
+      "role": "A következő szerepkörrel adjuk hozzá: <strong>{role}</strong>",
+      "accept": "Meghívó elfogadása",
+      "expires": "Ez a meghívó ekkor jár le: <strong>{date}</strong>.",
+      "join": "Csatlakozás a szervezethez",
+      "magic-note": "A gombra kattintva automatikusan bejelentkezik, jelszó megjegyzése nélkül. A hivatkozás 7 nap után lejár.",
+      "ignore": "Ha nem szeretne csatlakozni ehhez a szervezethez, hagyja figyelmen kívül ezt az üzenetet.",
+      "sent-to": "A meghívó erre a címre érkezett: {email}",
+      "role-admin": "Adminisztrátor",
+      "role-member": "Felhasználó"
+    },
+    "password-reset": {
+      "subject": "Állítsa vissza a Ragen jelszavát",
+      "preview": "Állítsa vissza a Ragen jelszavát",
+      "body": "Kattintson az alábbi gombra a jelszava visszaállításához:",
+      "button": "Jelszó visszaállítása",
+      "ignore": "Ha nem kért jelszó-visszaállítást, hagyja figyelmen kívül ezt az üzenetet.",
+      "expiry": "A hivatkozás 1 óra múlva lejár."
+    },
+    "verification": {
+      "subject": "Erősítse meg az e-mail-címét – Ragen AI",
+      "preview": "Erősítse meg az e-mail-címét a Ragen AI-ban",
+      "body": "Köszönjük, hogy regisztrált a Ragen AI-ban! Kattintson az alábbi gombra az e-mail-címe megerősítéséhez:",
+      "button": "E-mail megerősítése",
+      "ignore": "Ha nem hozott létre fiókot a Ragen AI-ban, hagyja figyelmen kívül ezt az üzenetet.",
+      "expiry": "A hivatkozás 24 óra múlva lejár."
+    },
+    "welcome": {
+      "subject": "Üdvözöljük a Ragenben!",
+      "preview": "Használja az AI-t biztonságosan a cégében",
+      "greeting": "Üdvözlöm!",
+      "greeting-named": "Üdvözlöm, {name}!",
+      "thanks": "Köszönjük, hogy regisztrált a Ragen AI-ban :)",
+      "mission": "Azért dolgozunk ezen a projekten, hogy könnyű legyen AI-asszisztenseket építeni.",
+      "contacts-tip": "A következő hetekben tovább fejlesztjük a megoldásunkat, ezért érdemes felvenni ezt az e-mail-címet a kapcsolatai közé – így nem marad le az új funkciókról szóló hírekről.",
+      "button": "A Ragen alkalmazás megnyitása",
+      "questions": "Ha kérdése, kérése vagy ötlete van az alkalmazás működésével kapcsolatban, írjon a(z) {email} címre."
+    },
+    "security-alert": {
+      "preview": "[{severity}] {event} – Ragen biztonsági riasztás",
+      "intro": "A Ragen AI-ban <strong>{severity}</strong> szintű biztonsági esemény keletkezett. Nézze át az alábbi részleteket, és az adminisztrációs felületen erősítse meg a kezelését.",
+      "label-id": "Esemény azonosítója",
+      "label-type": "Típus",
+      "label-severity": "Szint",
+      "label-source": "Forrás",
+      "label-time": "Az esemény ideje",
+      "label-organization": "Szervezet",
+      "label-user": "Felhasználó",
+      "label-ip": "IP-cím",
+      "label-request": "Kérés azonosítója",
+      "open": "Az esemény megnyitása a felületen:",
+      "footer": "Azért kapja ezt az üzenetet, mert az Ön címe be van állítva a <code>SECURITY_ALERT_EMAIL</code> környezeti változóban. A riasztást kritikus szintű esemény váltotta ki. Az alacsonyabb szintű események csak az adminisztrációs felületen érhetők el.",
+      "severity": {
+        "info": "Információ",
+        "warn": "Figyelmeztetés",
+        "critical": "Kritikus"
+      },
+      "source": {
+        "auth": "Hitelesítés",
+        "chat": "Csevegés",
+        "chatbot": "Chatbot",
+        "upload": "Fájlfeltöltés",
+        "admin": "Adminisztrációs felület",
+        "api": "API",
+        "mcp": "MCP",
+        "infra": "Infrastruktúra"
+      },
+      "event-type": {
+        "AUTH_LOGIN_FAILED": "Sikertelen bejelentkezés",
+        "AUTH_BRUTEFORCE_SUSPECTED": "Feltételezett nyers erő támadás",
+        "AUTH_PASSWORD_RESET_REQUESTED": "Jelszó-visszaállítás kérve",
+        "AUTH_ADMIN_ROLE_GRANTED": "Adminisztrátori szerepkör megadva",
+        "AUTH_ADMIN_ROLE_REVOKED": "Adminisztrátori szerepkör visszavonva",
+        "API_KEY_CREATED": "API-kulcs létrehozva",
+        "API_KEY_REVOKED": "API-kulcs visszavonva",
+        "API_INTERNAL_SECRET_MISMATCH": "Az API belső titka nem egyezik",
+        "CROSS_ORG_ACCESS_ATTEMPTED": "Szervezetek közötti hozzáférési kísérlet",
+        "UNAUTHORIZED_ACCESS_ATTEMPTED": "Jogosulatlan hozzáférési kísérlet",
+        "CHAT_JAILBREAK_DETECTED": "Jailbreak-kísérlet észlelve",
+        "CHAT_PII_DETECTED": "Személyes adat észlelve a csevegésben",
+        "CHAT_PII_MASKING_FAILED": "A személyes adatok maszkolása sikertelen",
+        "TOOL_CALL_BLOCKED": "Eszközhívás letiltva",
+        "TOOL_CALL_CONFIRMED": "Eszközhívás megerősítve",
+        "TOOL_CALL_DENIED": "Eszközhívás elutasítva",
+        "TOOL_ARGS_HIGH_RISK": "Magas kockázatú eszközargumentumok",
+        "UPLOAD_SUSPICIOUS_CONTENT": "Gyanús tartalom a feltöltött fájlban",
+        "UPLOAD_REJECTED": "Feltöltött fájl elutasítva",
+        "ADMIN_SETTINGS_CHANGED": "Adminisztrációs beállítások módosítva",
+        "RATE_LIMIT_HIT": "Kérések korlátja túllépve",
+        "MCP_OAUTH_FAILED": "Az MCP OAuth-engedélyezés sikertelen"
+      }
+    }
   }
 }

@@ -8,7 +8,12 @@ import { isFeatureEnabledQuery } from '@/features/subscriptions/services/queries
 import type { AddMemberRefusal } from '../../contracts/add-member-errors';
 
 export type AddMemberGate =
-  | { allowed: true; inviterId: string | undefined; inviterName: string }
+  | {
+      allowed: true;
+      inviterId: string | undefined;
+      /** Absent when there is neither a name nor an email to show. */
+      inviterName: string | undefined;
+    }
   | ({ allowed: false } & AddMemberRefusal);
 
 /**
@@ -63,7 +68,8 @@ export async function canAddMemberQuery(
   return {
     allowed: true,
     inviterId: session?.user?.id,
-    inviterName:
-      session?.user?.name || session?.user?.email || 'Twój współpracownik',
+    // No Polish stand-in: the invitation email has its own wording for an
+    // invitation with no named inviter, in the reader's language.
+    inviterName: session?.user?.name || session?.user?.email || undefined,
   };
 }

@@ -98,7 +98,13 @@ test.describe('Knowledge Base P0', () => {
     ).toHaveCount(0);
   });
 
-  test('create folder via button', async ({ page }) => {
+  test('create folder via button, and see it without reloading', async ({
+    page,
+  }) => {
+    // Unique per attempt: a retry must not find the folder its first attempt
+    // left behind and pass for the wrong reason.
+    const folderName = `E2E Created Folder ${Date.now()}`;
+
     await page.goto(ROUTES.knowledgeDocuments);
     await expect(page).toHaveURL(/documents-list/);
 
@@ -121,7 +127,7 @@ test.describe('Knowledge Base P0', () => {
     const nameInput = page
       .locator('[role="dialog"] input[type="text"]')
       .first();
-    await nameInput.fill('E2E Test Folder');
+    await nameInput.fill(folderName);
 
     // Submit
     await page
@@ -131,6 +137,14 @@ test.describe('Knowledge Base P0', () => {
 
     // Dialog should close — input should disappear
     await expect(nameInput).not.toBeVisible({ timeout: 5_000 });
+
+    // And the folder is there, with no reload. This used to stop at the line
+    // above: the toast said "created", the dialog closed, and the folder was in
+    // the database and on neither list until F5, because the page's folders are
+    // client state that only its own handler reloads (#1269).
+    await expect(page.getByText(folderName).first()).toBeVisible({
+      timeout: 10_000,
+    });
   });
 
   test('navigate to folder by clicking folder row', async ({ page }) => {

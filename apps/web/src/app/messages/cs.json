@@ -2054,7 +2054,11 @@
       "saving": "Ukládání...",
       "cancel": "Zrušit",
       "edit-success": "Profil organizace byl aktualizován",
-      "edit-error": "Při aktualizaci profilu došlo k chybě"
+      "edit-error": "Při aktualizaci profilu došlo k chybě",
+      "validation": {
+        "name-required": "Název je povinný",
+        "name-too-long": "Název může mít nejvýše {max} znaků"
+      }
     },
     "members": {
       "title": "Uživatelé",
@@ -2100,7 +2104,12 @@
       "copy-credentials": "Kopírovat přihlašovací údaje",
       "copied": "Zkopírováno",
       "done": "Hotovo",
-      "confirm-remove-title": "Odebrat tohoto člena?"
+      "confirm-remove-title": "Odebrat tohoto člena?",
+      "validation": {
+        "invalid-email": "Zadejte platnou e-mailovou adresu",
+        "role-required": "Role je povinná",
+        "full-name-required": "Jméno a příjmení jsou povinné"
+      }
     },
     "invitations": {
       "title": "Pozvánky",
@@ -2199,7 +2208,11 @@
       "saving": "Ukládání...",
       "cancel": "Zrušit",
       "success": "Profil byl aktualizován",
-      "error": "Profil se nepodařilo aktualizovat"
+      "error": "Profil se nepodařilo aktualizovat",
+      "validation": {
+        "name-required": "Jméno je povinné",
+        "name-too-long": "Jméno může mít nejvýše {max} znaků"
+      }
     },
     "password": {
       "current": "Aktuální heslo",
@@ -2209,7 +2222,12 @@
       "demo-account-locked": "Toto je sdílený demo účet, proto nelze změnit jeho heslo.",
       "changing": "Měnění hesla...",
       "success": "Heslo bylo změněno",
-      "error": "Neplatné aktuální heslo"
+      "error": "Neplatné aktuální heslo",
+      "validation": {
+        "min-length": "Minimálně {min} znaků",
+        "passwords-mismatch": "Hesla se neshodují",
+        "must-differ": "Nové heslo musí být jiné než současné"
+      }
     },
     "sessions": {
       "title": "Aktivní relace",
@@ -3094,5 +3112,104 @@
     "description": "Tuto stránku se nepodařilo zobrazit. Zkuste to znovu nebo začněte nový chat – nic uloženého se neztratilo.",
     "retry": "Zkusit znovu",
     "new-chat": "Nový chat"
+  },
+  "emails": {
+    "invitation": {
+      "subject": "Pozvánka do organizace {organization} v Ragen AI",
+      "preview": "Byli jste pozváni do organizace {organization} v Ragen AI",
+      "greeting": "Dobrý den!",
+      "invited-by": "<strong>{inviter}</strong> vás zve, abyste se připojili k organizaci <strong>{organization}</strong> v Ragen AI.",
+      "invited": "Byli jste pozváni do organizace <strong>{organization}</strong> v Ragen AI.",
+      "role": "Budete přidáni s rolí: <strong>{role}</strong>",
+      "accept": "Přijmout pozvánku",
+      "expires": "Tato pozvánka vyprší dne <strong>{date}</strong>.",
+      "join": "Připojit se k organizaci",
+      "magic-note": "Kliknutím na toto tlačítko se automaticky přihlásíte, aniž byste si museli pamatovat heslo. Odkaz vyprší za 7 dní.",
+      "ignore": "Pokud se k této organizaci připojit nechcete, tuto zprávu ignorujte.",
+      "sent-to": "Pozvánka odeslána na adresu: {email}",
+      "role-admin": "Administrátor",
+      "role-member": "Uživatel"
+    },
+    "password-reset": {
+      "subject": "Obnovte si heslo do Ragen",
+      "preview": "Obnovte si heslo do Ragen",
+      "body": "Kliknutím na tlačítko níže obnovíte své heslo:",
+      "button": "Obnovit heslo",
+      "ignore": "Pokud jste o obnovení hesla nežádali, tuto zprávu ignorujte.",
+      "expiry": "Odkaz vyprší za 1 hodinu."
+    },
+    "verification": {
+      "subject": "Ověřte svou e-mailovou adresu – Ragen AI",
+      "preview": "Ověřte svou e-mailovou adresu v Ragen AI",
+      "body": "Děkujeme za registraci v Ragen AI! Kliknutím na tlačítko níže ověříte svou e-mailovou adresu:",
+      "button": "Ověřit e-mail",
+      "ignore": "Pokud jste si účet v Ragen AI nezakládali, tuto zprávu ignorujte.",
+      "expiry": "Odkaz vyprší za 24 hodin."
+    },
+    "welcome": {
+      "subject": "Vítejte v Ragen!",
+      "preview": "Používejte AI bezpečně ve své firmě",
+      "greeting": "Dobrý den!",
+      "greeting-named": "Dobrý den, {name}!",
+      "thanks": "Děkujeme za registraci v Ragen AI :)",
+      "mission": "Na tomto projektu pracujeme proto, aby bylo snadné vytvářet AI asistenty.",
+      "contacts-tip": "V následujících týdnech budeme naše řešení dál rozvíjet, takže si tuto e-mailovou adresu přidejte do kontaktů – nepřijdete tak o novinky o nových funkcích.",
+      "button": "Otevřít aplikaci Ragen",
+      "questions": "Pokud máte dotazy, přání nebo nápady týkající se fungování aplikace, napište na {email}."
+    },
+    "security-alert": {
+      "preview": "[{severity}] {event} – bezpečnostní upozornění Ragen",
+      "intro": "V Ragen AI byla zaznamenána bezpečnostní událost úrovně <strong>{severity}</strong>. Projděte si podrobnosti níže a v administračním panelu potvrďte, že byla vyřešena.",
+      "label-id": "ID události",
+      "label-type": "Typ",
+      "label-severity": "Úroveň",
+      "label-source": "Zdroj",
+      "label-time": "Čas události",
+      "label-organization": "Organizace",
+      "label-user": "Uživatel",
+      "label-ip": "IP adresa",
+      "label-request": "ID požadavku",
+      "open": "Otevřít událost v panelu:",
+      "footer": "Tuto zprávu dostáváte, protože je vaše adresa nastavena v proměnné prostředí <code>SECURITY_ALERT_EMAIL</code>. Upozornění vyvolala kritická událost. Události nižších úrovní jsou dostupné pouze v administračním panelu.",
+      "severity": {
+        "info": "Informace",
+        "warn": "Varování",
+        "critical": "Kritická"
+      },
+      "source": {
+        "auth": "Ověřování",
+        "chat": "Chat",
+        "chatbot": "Chatbot",
+        "upload": "Nahrávání souboru",
+        "admin": "Administrační panel",
+        "api": "API",
+        "mcp": "MCP",
+        "infra": "Infrastruktura"
+      },
+      "event-type": {
+        "AUTH_LOGIN_FAILED": "Neúspěšné přihlášení",
+        "AUTH_BRUTEFORCE_SUSPECTED": "Podezření na útok hrubou silou",
+        "AUTH_PASSWORD_RESET_REQUESTED": "Požadavek na obnovení hesla",
+        "AUTH_ADMIN_ROLE_GRANTED": "Přidělena role administrátora",
+        "AUTH_ADMIN_ROLE_REVOKED": "Odebrána role administrátora",
+        "API_KEY_CREATED": "Vytvořen klíč API",
+        "API_KEY_REVOKED": "Zrušen klíč API",
+        "API_INTERNAL_SECRET_MISMATCH": "Neshoda interního tajemství API",
+        "CROSS_ORG_ACCESS_ATTEMPTED": "Pokus o přístup napříč organizacemi",
+        "UNAUTHORIZED_ACCESS_ATTEMPTED": "Pokus o neoprávněný přístup",
+        "CHAT_JAILBREAK_DETECTED": "Zjištěn pokus o jailbreak",
+        "CHAT_PII_DETECTED": "Zjištěny osobní údaje v chatu",
+        "CHAT_PII_MASKING_FAILED": "Maskování osobních údajů selhalo",
+        "TOOL_CALL_BLOCKED": "Volání nástroje zablokováno",
+        "TOOL_CALL_CONFIRMED": "Volání nástroje potvrzeno",
+        "TOOL_CALL_DENIED": "Volání nástroje zamítnuto",
+        "TOOL_ARGS_HIGH_RISK": "Argumenty nástroje s vysokým rizikem",
+        "UPLOAD_SUSPICIOUS_CONTENT": "Podezřelý obsah v nahraném souboru",
+        "UPLOAD_REJECTED": "Nahraný soubor odmítnut",
+        "ADMIN_SETTINGS_CHANGED": "Změněno administrativní nastavení",
+        "RATE_LIMIT_HIT": "Překročen limit požadavků",
+        "MCP_OAUTH_FAILED": "Autorizace OAuth pro MCP selhala"
+      }
+    }
   }
 }

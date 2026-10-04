@@ -3,6 +3,7 @@ import { headers } from 'next/headers';
 import { logger } from '@/app/lib/utils/logger';
 import { auth } from '@/lib/auth';
 import { pendingMagicLinkContext } from '@/lib/magic-link-context';
+import { resolveEmailLocale } from '@/app/emails/utils/email-locale';
 import db from '@ragenai/prisma-client';
 
 /**
@@ -83,6 +84,7 @@ export async function resendInvitationCommand({
     organizationName: organization?.name || 'Organization',
     invitationId: invitation.id,
     role: invitation.role,
+    locale: await resolveEmailLocale(),
   });
 
   try {

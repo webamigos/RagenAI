@@ -2054,7 +2054,11 @@
       "saving": "Enregistrement en cours...",
       "cancel": "Annuler",
       "edit-success": "Le profil de l'organisation a été mis à jour",
-      "edit-error": "Une erreur s'est produite lors de la mise à jour du profil"
+      "edit-error": "Une erreur s'est produite lors de la mise à jour du profil",
+      "validation": {
+        "name-required": "Le nom est obligatoire",
+        "name-too-long": "Le nom ne peut pas dépasser {max} caractères"
+      }
     },
     "members": {
       "title": "Utilisateurs",
@@ -2100,7 +2104,12 @@
       "copy-credentials": "Copier les identifiants",
       "copied": "Copié",
       "done": "Terminé",
-      "confirm-remove-title": "Retirer ce membre ?"
+      "confirm-remove-title": "Retirer ce membre ?",
+      "validation": {
+        "invalid-email": "Saisissez une adresse e-mail valide",
+        "role-required": "Le rôle est obligatoire",
+        "full-name-required": "Le prénom et le nom sont obligatoires"
+      }
     },
     "invitations": {
       "title": "Invitations",
@@ -2199,7 +2208,11 @@
       "saving": "Enregistrement en cours...",
       "cancel": "Annuler",
       "success": "Profil mis à jour",
-      "error": "Échec de la mise à jour du profil"
+      "error": "Échec de la mise à jour du profil",
+      "validation": {
+        "name-required": "Le nom est obligatoire",
+        "name-too-long": "Le nom ne peut pas dépasser {max} caractères"
+      }
     },
     "password": {
       "current": "Mot de passe actuel",
@@ -2209,7 +2222,12 @@
       "demo-account-locked": "Il s’agit du compte de démonstration partagé, son mot de passe ne peut donc pas être modifié.",
       "changing": "Changement du mot de passe en cours...",
       "success": "Le mot de passe a été changé",
-      "error": "Mot de passe actuel invalide"
+      "error": "Mot de passe actuel invalide",
+      "validation": {
+        "min-length": "{min} caractères minimum",
+        "passwords-mismatch": "Les mots de passe ne correspondent pas",
+        "must-differ": "Le nouveau mot de passe doit être différent de l'actuel"
+      }
     },
     "sessions": {
       "title": "Sessions actives",
@@ -3094,5 +3112,104 @@
     "description": "Cette page n'a pas pu être affichée. Réessayez ou démarrez une nouvelle discussion — rien de ce que vous avez enregistré n'est perdu.",
     "retry": "Réessayer",
     "new-chat": "Nouvelle discussion"
+  },
+  "emails": {
+    "invitation": {
+      "subject": "Invitation à rejoindre {organization} sur Ragen AI",
+      "preview": "Vous avez été invité à rejoindre {organization} sur Ragen AI",
+      "greeting": "Bonjour !",
+      "invited-by": "<strong>{inviter}</strong> vous invite à rejoindre l'organisation <strong>{organization}</strong> sur Ragen AI.",
+      "invited": "Vous avez été invité à rejoindre l'organisation <strong>{organization}</strong> sur Ragen AI.",
+      "role": "Vous serez ajouté avec le rôle : <strong>{role}</strong>",
+      "accept": "Accepter l'invitation",
+      "expires": "Cette invitation expire le <strong>{date}</strong>.",
+      "join": "Rejoindre l'organisation",
+      "magic-note": "Un clic sur ce bouton vous connecte automatiquement, sans mot de passe à retenir. Le lien expire au bout de 7 jours.",
+      "ignore": "Si vous ne souhaitez pas rejoindre cette organisation, ignorez ce message.",
+      "sent-to": "Invitation envoyée à : {email}",
+      "role-admin": "Administrateur",
+      "role-member": "Utilisateur"
+    },
+    "password-reset": {
+      "subject": "Réinitialisez votre mot de passe Ragen",
+      "preview": "Réinitialisez votre mot de passe Ragen",
+      "body": "Cliquez sur le bouton ci-dessous pour réinitialiser votre mot de passe :",
+      "button": "Réinitialiser le mot de passe",
+      "ignore": "Si vous n'avez pas demandé de réinitialisation, ignorez ce message.",
+      "expiry": "Le lien expire dans 1 heure."
+    },
+    "verification": {
+      "subject": "Vérifiez votre adresse e-mail – Ragen AI",
+      "preview": "Vérifiez votre adresse e-mail sur Ragen AI",
+      "body": "Merci de vous être inscrit sur Ragen AI ! Cliquez sur le bouton ci-dessous pour vérifier votre adresse e-mail :",
+      "button": "Vérifier l'e-mail",
+      "ignore": "Si vous n'avez pas créé de compte Ragen AI, ignorez ce message.",
+      "expiry": "Le lien expire dans 24 heures."
+    },
+    "welcome": {
+      "subject": "Bienvenue sur Ragen !",
+      "preview": "Utilisez l'IA en toute sécurité dans votre entreprise",
+      "greeting": "Bonjour !",
+      "greeting-named": "Bonjour {name} !",
+      "thanks": "Merci de vous être inscrit sur Ragen AI :)",
+      "mission": "Nous travaillons sur ce projet pour faciliter la création d'assistants IA.",
+      "contacts-tip": "Nous allons faire évoluer notre solution dans les semaines à venir : pensez à ajouter cette adresse e-mail à vos contacts pour ne pas manquer les nouveautés.",
+      "button": "Ouvrir l'application Ragen",
+      "questions": "Pour toute question, demande ou idée concernant le fonctionnement de l'application, écrivez à {email}."
+    },
+    "security-alert": {
+      "preview": "[{severity}] {event} – alerte de sécurité Ragen",
+      "intro": "Un événement de sécurité de niveau <strong>{severity}</strong> a été enregistré dans Ragen AI. Consultez les détails ci-dessous et confirmez sa prise en charge dans le panneau d'administration.",
+      "label-id": "ID de l'événement",
+      "label-type": "Type",
+      "label-severity": "Niveau",
+      "label-source": "Source",
+      "label-time": "Heure de l'événement",
+      "label-organization": "Organisation",
+      "label-user": "Utilisateur",
+      "label-ip": "Adresse IP",
+      "label-request": "ID de la requête",
+      "open": "Ouvrir l'événement dans le panneau :",
+      "footer": "Vous recevez ce message car votre adresse est renseignée dans la variable d'environnement <code>SECURITY_ALERT_EMAIL</code>. L'alerte a été déclenchée par un événement critique. Les événements de niveau inférieur ne sont disponibles que dans le panneau d'administration.",
+      "severity": {
+        "info": "Information",
+        "warn": "Avertissement",
+        "critical": "Critique"
+      },
+      "source": {
+        "auth": "Authentification",
+        "chat": "Chat",
+        "chatbot": "Chatbot",
+        "upload": "Envoi de fichier",
+        "admin": "Panneau d'administration",
+        "api": "API",
+        "mcp": "MCP",
+        "infra": "Infrastructure"
+      },
+      "event-type": {
+        "AUTH_LOGIN_FAILED": "Échec de connexion",
+        "AUTH_BRUTEFORCE_SUSPECTED": "Attaque par force brute suspectée",
+        "AUTH_PASSWORD_RESET_REQUESTED": "Réinitialisation du mot de passe demandée",
+        "AUTH_ADMIN_ROLE_GRANTED": "Rôle d'administrateur accordé",
+        "AUTH_ADMIN_ROLE_REVOKED": "Rôle d'administrateur révoqué",
+        "API_KEY_CREATED": "Clé d'API créée",
+        "API_KEY_REVOKED": "Clé d'API révoquée",
+        "API_INTERNAL_SECRET_MISMATCH": "Secret interne de l'API non concordant",
+        "CROSS_ORG_ACCESS_ATTEMPTED": "Tentative d'accès entre organisations",
+        "UNAUTHORIZED_ACCESS_ATTEMPTED": "Tentative d'accès non autorisé",
+        "CHAT_JAILBREAK_DETECTED": "Tentative de jailbreak détectée",
+        "CHAT_PII_DETECTED": "Données personnelles détectées dans le chat",
+        "CHAT_PII_MASKING_FAILED": "Échec du masquage des données personnelles",
+        "TOOL_CALL_BLOCKED": "Appel d'outil bloqué",
+        "TOOL_CALL_CONFIRMED": "Appel d'outil confirmé",
+        "TOOL_CALL_DENIED": "Appel d'outil refusé",
+        "TOOL_ARGS_HIGH_RISK": "Arguments d'outil à haut risque",
+        "UPLOAD_SUSPICIOUS_CONTENT": "Contenu suspect dans un fichier envoyé",
+        "UPLOAD_REJECTED": "Fichier envoyé rejeté",
+        "ADMIN_SETTINGS_CHANGED": "Paramètres d'administration modifiés",
+        "RATE_LIMIT_HIT": "Limite de requêtes dépassée",
+        "MCP_OAUTH_FAILED": "Échec de l'autorisation OAuth MCP"
+      }
+    }
   }
 }

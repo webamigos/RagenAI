@@ -2054,7 +2054,11 @@
       "saving": "Tallennetaan...",
       "cancel": "Peruuta",
       "edit-success": "Organisaation profiili päivitetty",
-      "edit-error": "Profiilin päivittämisessä tapahtui virhe"
+      "edit-error": "Profiilin päivittämisessä tapahtui virhe",
+      "validation": {
+        "name-required": "Nimi on pakollinen",
+        "name-too-long": "Nimi voi olla enintään {max} merkkiä pitkä"
+      }
     },
     "members": {
       "title": "Käyttäjät",
@@ -2100,7 +2104,12 @@
       "copy-credentials": "Kopioi kirjautumistiedot",
       "copied": "Kopioitu",
       "done": "Valmis",
-      "confirm-remove-title": "Poistetaanko jäsen?"
+      "confirm-remove-title": "Poistetaanko jäsen?",
+      "validation": {
+        "invalid-email": "Anna kelvollinen sähköpostiosoite",
+        "role-required": "Rooli on pakollinen",
+        "full-name-required": "Etu- ja sukunimi ovat pakollisia"
+      }
     },
     "invitations": {
       "title": "Kutsut",
@@ -2199,7 +2208,11 @@
       "saving": "Tallennetaan...",
       "cancel": "Peruuta",
       "success": "Profiili päivitetty",
-      "error": "Profiilin päivittäminen epäonnistui"
+      "error": "Profiilin päivittäminen epäonnistui",
+      "validation": {
+        "name-required": "Nimi on pakollinen",
+        "name-too-long": "Nimi voi olla enintään {max} merkkiä pitkä"
+      }
     },
     "password": {
       "current": "Nykyinen salasana",
@@ -2209,7 +2222,12 @@
       "demo-account-locked": "Tämä on jaettu demotili, joten sen salasanaa ei voi muuttaa.",
       "changing": "Vaihdetaan salasanaa...",
       "success": "Salasana vaihdettu",
-      "error": "Virheellinen nykyinen salasana"
+      "error": "Virheellinen nykyinen salasana",
+      "validation": {
+        "min-length": "Vähintään {min} merkkiä",
+        "passwords-mismatch": "Salasanat eivät täsmää",
+        "must-differ": "Uuden salasanan on oltava eri kuin nykyinen"
+      }
     },
     "sessions": {
       "title": "Aktiiviset istunnot",
@@ -3094,5 +3112,104 @@
     "description": "Tätä sivua ei voitu näyttää. Yritä uudelleen tai aloita uusi keskustelu – mitään tallennettua ei menetetty.",
     "retry": "Yritä uudelleen",
     "new-chat": "Uusi keskustelu"
+  },
+  "emails": {
+    "invitation": {
+      "subject": "Kutsu organisaatioon {organization} Ragen AI:ssa",
+      "preview": "Sinut on kutsuttu organisaatioon {organization} Ragen AI:ssa",
+      "greeting": "Hei!",
+      "invited-by": "<strong>{inviter}</strong> kutsuu sinut liittymään organisaatioon <strong>{organization}</strong> Ragen AI:ssa.",
+      "invited": "Sinut on kutsuttu organisaatioon <strong>{organization}</strong> Ragen AI:ssa.",
+      "role": "Sinut lisätään roolilla: <strong>{role}</strong>",
+      "accept": "Hyväksy kutsu",
+      "expires": "Tämä kutsu vanhenee <strong>{date}</strong>.",
+      "join": "Liity organisaatioon",
+      "magic-note": "Painikkeen napsauttaminen kirjaa sinut sisään automaattisesti, eikä sinun tarvitse muistaa salasanaa. Linkki vanhenee 7 päivän kuluttua.",
+      "ignore": "Jos et halua liittyä tähän organisaatioon, jätä tämä viesti huomiotta.",
+      "sent-to": "Kutsu lähetetty osoitteeseen: {email}",
+      "role-admin": "Ylläpitäjä",
+      "role-member": "Käyttäjä"
+    },
+    "password-reset": {
+      "subject": "Nollaa Ragen-salasanasi",
+      "preview": "Nollaa Ragen-salasanasi",
+      "body": "Nollaa salasanasi napsauttamalla alla olevaa painiketta:",
+      "button": "Nollaa salasana",
+      "ignore": "Jos et pyytänyt salasanan nollausta, jätä tämä viesti huomiotta.",
+      "expiry": "Linkki vanhenee 1 tunnin kuluttua."
+    },
+    "verification": {
+      "subject": "Vahvista sähköpostiosoitteesi – Ragen AI",
+      "preview": "Vahvista sähköpostiosoitteesi Ragen AI:ssa",
+      "body": "Kiitos rekisteröitymisestä Ragen AI:hin! Vahvista sähköpostiosoitteesi napsauttamalla alla olevaa painiketta:",
+      "button": "Vahvista sähköposti",
+      "ignore": "Jos et luonut tiliä Ragen AI:hin, jätä tämä viesti huomiotta.",
+      "expiry": "Linkki vanhenee 24 tunnin kuluttua."
+    },
+    "welcome": {
+      "subject": "Tervetuloa Ragenin käyttäjäksi!",
+      "preview": "Käytä tekoälyä turvallisesti yrityksessäsi",
+      "greeting": "Hei!",
+      "greeting-named": "Hei {name}!",
+      "thanks": "Kiitos rekisteröitymisestä Ragen AI:hin :)",
+      "mission": "Kehitämme tätä projektia, jotta tekoälyavustajien rakentaminen olisi helppoa.",
+      "contacts-tip": "Kehitämme ratkaisuamme edelleen lähiviikkoina, joten kannattaa lisätä tämä sähköpostiosoite yhteystietoihisi – näin et jää paitsi uusista ominaisuuksista kertovista uutisista.",
+      "button": "Avaa Ragen-sovellus",
+      "questions": "Jos sinulla on kysyttävää, toiveita tai ideoita sovelluksen toiminnasta, kirjoita osoitteeseen {email}."
+    },
+    "security-alert": {
+      "preview": "[{severity}] {event} – Ragenin tietoturvahälytys",
+      "intro": "Ragen AI:ssa on kirjattu tasoltaan <strong>{severity}</strong> tietoturvatapahtuma. Tarkista tiedot alta ja vahvista hallintapaneelissa, että tapahtuma on käsitelty.",
+      "label-id": "Tapahtuman tunnus",
+      "label-type": "Tyyppi",
+      "label-severity": "Taso",
+      "label-source": "Lähde",
+      "label-time": "Tapahtuman aika",
+      "label-organization": "Organisaatio",
+      "label-user": "Käyttäjä",
+      "label-ip": "IP-osoite",
+      "label-request": "Pyynnön tunnus",
+      "open": "Avaa tapahtuma paneelissa:",
+      "footer": "Saat tämän viestin, koska osoitteesi on määritetty ympäristömuuttujaan <code>SECURITY_ALERT_EMAIL</code>. Hälytyksen laukaisi kriittinen tapahtuma. Matalamman tason tapahtumat näkyvät vain hallintapaneelissa.",
+      "severity": {
+        "info": "Tieto",
+        "warn": "Varoitus",
+        "critical": "Kriittinen"
+      },
+      "source": {
+        "auth": "Todennus",
+        "chat": "Keskustelu",
+        "chatbot": "Chatbot",
+        "upload": "Tiedoston lataus",
+        "admin": "Hallintapaneeli",
+        "api": "API",
+        "mcp": "MCP",
+        "infra": "Infrastruktuuri"
+      },
+      "event-type": {
+        "AUTH_LOGIN_FAILED": "Epäonnistunut kirjautuminen",
+        "AUTH_BRUTEFORCE_SUSPECTED": "Epäilty brute force -hyökkäys",
+        "AUTH_PASSWORD_RESET_REQUESTED": "Salasanan nollaus pyydetty",
+        "AUTH_ADMIN_ROLE_GRANTED": "Ylläpitäjän rooli myönnetty",
+        "AUTH_ADMIN_ROLE_REVOKED": "Ylläpitäjän rooli peruutettu",
+        "API_KEY_CREATED": "API-avain luotu",
+        "API_KEY_REVOKED": "API-avain peruutettu",
+        "API_INTERNAL_SECRET_MISMATCH": "API:n sisäinen salaisuus ei täsmää",
+        "CROSS_ORG_ACCESS_ATTEMPTED": "Yritys käyttää resursseja organisaatioiden välillä",
+        "UNAUTHORIZED_ACCESS_ATTEMPTED": "Yritys luvattomaan käyttöön",
+        "CHAT_JAILBREAK_DETECTED": "Jailbreak-yritys havaittu",
+        "CHAT_PII_DETECTED": "Henkilötietoja havaittu keskustelussa",
+        "CHAT_PII_MASKING_FAILED": "Henkilötietojen maskaus epäonnistui",
+        "TOOL_CALL_BLOCKED": "Työkalukutsu estetty",
+        "TOOL_CALL_CONFIRMED": "Työkalukutsu vahvistettu",
+        "TOOL_CALL_DENIED": "Työkalukutsu hylätty",
+        "TOOL_ARGS_HIGH_RISK": "Korkean riskin työkaluargumentit",
+        "UPLOAD_SUSPICIOUS_CONTENT": "Epäilyttävää sisältöä ladatussa tiedostossa",
+        "UPLOAD_REJECTED": "Ladattu tiedosto hylätty",
+        "ADMIN_SETTINGS_CHANGED": "Hallinta-asetuksia muutettu",
+        "RATE_LIMIT_HIT": "Pyyntöraja ylitetty",
+        "MCP_OAUTH_FAILED": "MCP OAuth -valtuutus epäonnistui"
+      }
+    }
   }
 }
