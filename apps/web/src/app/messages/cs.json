@@ -2145,7 +2145,13 @@
       "cannot-change-owner-role": "Roli vlastníka organizace nelze změnit",
       "change-role-failed": "Při změně role došlo k chybě",
       "no-permission-edit-organization": "Nemáte oprávnění upravovat profil organizace",
-      "update-organization-failed": "Při aktualizaci organizace došlo k chybě"
+      "update-organization-failed": "Při aktualizaci organizace došlo k chybě",
+      "no-permission-add-member": "Nemáte oprávnění přidávat členy",
+      "plan-required-for-members": "Přidávání členů je dostupné pouze v placených tarifech",
+      "member-limit-reached": "Bylo dosaženo limitu členů ({limit}). Pro jeho navýšení se obraťte na správce.",
+      "account-exists-use-invitation": "Účet s touto e-mailovou adresou již existuje. Místo toho pošlete pozvánku",
+      "invitation-pending-cancel-first": "Pro tuto e-mailovou adresu již existuje pozvánka. Zrušte ji, abyste mohli vytvořit účet",
+      "create-account-failed": "Uživatelský účet se nepodařilo vytvořit"
     }
   },
   "invitation-banner": {

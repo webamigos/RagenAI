@@ -2145,7 +2145,13 @@
       "cannot-change-owner-role": "A szervezet tulajdonosának szerepköre nem módosítható",
       "change-role-failed": "Hiba történt a szerepkör módosításakor",
       "no-permission-edit-organization": "Nincs jogosultsága a szervezet profiljának szerkesztésére",
-      "update-organization-failed": "Hiba történt a szervezet frissítésekor"
+      "update-organization-failed": "Hiba történt a szervezet frissítésekor",
+      "no-permission-add-member": "Nincs jogosultsága tagok hozzáadására",
+      "plan-required-for-members": "Tagok hozzáadása csak a fizetős csomagokban érhető el",
+      "member-limit-reached": "Elérte a tagok számának korlátját ({limit}). A növeléshez forduljon a rendszergazdához.",
+      "account-exists-use-invitation": "Ezzel az e-mail-címmel már létezik fiók. Küldjön inkább meghívót",
+      "invitation-pending-cancel-first": "Ehhez az e-mail-címhez már van meghívó. Vonja vissza a fiók létrehozásához",
+      "create-account-failed": "A felhasználói fiókot nem sikerült létrehozni"
     }
   },
   "invitation-banner": {

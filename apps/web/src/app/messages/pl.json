@@ -2145,7 +2145,13 @@
       "cannot-change-owner-role": "Nie można zmienić roli właściciela organizacji",
       "change-role-failed": "Wystąpił błąd podczas zmiany roli",
       "no-permission-edit-organization": "Nie masz uprawnień do edycji profilu organizacji",
-      "update-organization-failed": "Wystąpił błąd podczas aktualizacji organizacji"
+      "update-organization-failed": "Wystąpił błąd podczas aktualizacji organizacji",
+      "no-permission-add-member": "Nie masz uprawnień do dodawania członków",
+      "plan-required-for-members": "Dodawanie członków dostępne tylko w płatnych planach",
+      "member-limit-reached": "Osiągnięto limit członków ({limit}). Skontaktuj się z administratorem, aby go zwiększyć.",
+      "account-exists-use-invitation": "Konto z tym adresem email już istnieje — użyj zaproszenia",
+      "invitation-pending-cancel-first": "Dla tego adresu email istnieje już zaproszenie — anuluj je, aby utworzyć konto",
+      "create-account-failed": "Nie udało się utworzyć konta użytkownika"
     }
   },
   "invitation-banner": {

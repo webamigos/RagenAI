@@ -80,6 +80,28 @@ describe('InviteMemberDialog', () => {
     expect(onClose).not.toHaveBeenCalled();
   });
 
+  it('fills the limit into the message when a refusal carries it', async () => {
+    createMemberAccount.mockResolvedValue({
+      success: false,
+      code: 'member-limit-reached',
+      params: { limit: 5 },
+    });
+    const user = userEvent.setup();
+    renderDialog();
+    await switchToCreateMode(user);
+
+    await user.type(screen.getByLabelText(t.name), 'Ada Lovelace');
+    await user.type(screen.getByLabelText(t.email), 'ada@example.com');
+    await user.click(screen.getByRole('button', { name: t['create-account'] }));
+
+    await waitFor(() =>
+      expect(errorToast).toHaveBeenCalledWith({
+        message:
+          'The member limit (5) has been reached. Contact your administrator to increase it.',
+      }),
+    );
+  });
+
   it('shows prose from the shared add-member check as it is', async () => {
     // The gate and the account command still return sentences of their own.
     inviteMember.mockResolvedValue({ success: false, error: 'Plan limit' });

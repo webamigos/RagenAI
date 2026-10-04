@@ -5,10 +5,11 @@ import { getActiveMember, getSession } from '@/lib/auth-guards';
 import { isAppAdmin, canManageOrg } from '@/lib/auth-access-control';
 import { getUsageLimits } from '@/features/organizations/services/organization-settings';
 import { isFeatureEnabledQuery } from '@/features/subscriptions/services/queries/get-effective-features-query';
+import type { AddMemberRefusal } from '../../contracts/add-member-errors';
 
 export type AddMemberGate =
   | { allowed: true; inviterId: string | undefined; inviterName: string }
-  | { allowed: false; error: string };
+  | ({ allowed: false } & AddMemberRefusal);
 
 /**
  * The checks every way of adding someone to an organization has to pass:
@@ -24,10 +25,7 @@ export async function canAddMemberQuery(
   const activeMember = await getActiveMember(organizationId);
 
   if (!activeMember || !canManageOrg(activeMember.role)) {
-    return {
-      allowed: false,
-      error: 'Nie masz uprawnień do dodawania członków',
-    };
+    return { allowed: false, code: 'no-permission-add-member' };
   }
 
   const session = await getSession();
@@ -39,10 +37,7 @@ export async function canAddMemberQuery(
       'inviteMembers',
     );
     if (!canInvite) {
-      return {
-        allowed: false,
-        error: 'Dodawanie członków dostępne tylko w płatnych planach',
-      };
+      return { allowed: false, code: 'plan-required-for-members' };
     }
 
     const usageLimits = await getUsageLimits(organizationId);
@@ -58,7 +53,8 @@ export async function canAddMemberQuery(
       ) {
         return {
           allowed: false,
-          error: `Member limit reached (${usageLimits.maxMembers}). Contact your administrator to increase the limit.`,
+          code: 'member-limit-reached',
+          params: { limit: usageLimits.maxMembers },
         };
       }
     }

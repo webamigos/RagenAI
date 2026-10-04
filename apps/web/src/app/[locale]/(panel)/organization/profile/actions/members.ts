@@ -28,7 +28,7 @@ export async function inviteMember(
     const gate = await canAddMemberQuery(organizationId);
 
     if (!gate.allowed) {
-      return { success: false, error: gate.error };
+      return failure(gate.code, gate.params);
     }
 
     // 4. Sprawdź czy email już w organizacji
