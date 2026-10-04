@@ -16,6 +16,32 @@
 # checkouts on one machine collide on names that are global to the daemon.
 # `docker compose ps` from the project directory is the readable replacement.
 services:
+  # Applies the migrations and seeds the database, then exits; every app below
+  # waits for it to succeed. See the `migrate` stage in apps/web/Dockerfile.
+  migrate:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      target: migrate
+    restart: 'no'
+    # Secrets, the provider key and the model names, from the `.env.local`
+    # create-ragen-app writes (`--skip-install` is enough; this stack does the
+    # migrating). Nothing else carried them into these containers, so web
+    # served its setup page, api and the worker restart-looped on missing
+    # secrets, and no answer was possible. Optional so a bare clone still
+    # starts and says what is missing. `environment:` wins over this file,
+    # which is what keeps its localhost addresses off the compose network.
+    env_file:
+      - path: .env.local
+        required: false
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-pass123}@postgres:5432/${POSTGRES_DB:-ragen}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - ragen-network
+
   web:
     build:
       context: .
@@ -23,6 +49,9 @@ services:
     restart: unless-stopped
     ports:
       - '${WEB_PORT:-3000}:3000'
+    env_file: # see `migrate`
+      - path: .env.local
+        required: false
     environment:
       # Service names, not localhost: these resolve on the compose network.
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-pass123}@postgres:5432/${POSTGRES_DB:-ragen}
@@ -73,6 +102,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
       qdrant:
         condition: service_started
     networks:
@@ -85,6 +116,9 @@ services:
     restart: unless-stopped
     ports:
       - '${API_PORT:-3001}:3001'
+    env_file: # see `migrate`
+      - path: .env.local
+        required: false
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-pass123}@postgres:5432/${POSTGRES_DB:-ragen}
       QDRANT_URL: http://qdrant:6333
@@ -119,6 +153,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
     networks:
       - ragen-network
 
@@ -127,6 +163,9 @@ services:
       context: .
       dockerfile: apps/worker/Dockerfile
     restart: unless-stopped
+    env_file: # see `migrate`
+      - path: .env.local
+        required: false
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-pass123}@postgres:5432/${POSTGRES_DB:-ragen}
       QDRANT_URL: http://qdrant:6333
@@ -175,6 +214,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
       # The queues live in Redis now (ADR-44), so this is the dependency that
       # decides whether the worker can consume anything at all.
       redis:
@@ -189,8 +230,14 @@ services:
     restart: unless-stopped
     ports:
       - '${ADMIN_PORT:-3200}:3200'
+    env_file: # see `migrate`
+      - path: apps/admin/.env.local
+        required: false
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-pass123}@postgres:5432/${POSTGRES_DB:-ragen}
+      # Its .env.local says localhost:3000, which inside this container is the
+      # admin app itself; invitations and guardrail trials post to web.
+      RAGEN_APP_URL: http://web:3000
       TARGET_ENV: ${TARGET_ENV:-local}
     volumes:
       # Same reasoning as the other three: the route table is configuration, so
@@ -199,6 +246,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
     networks:
       - ragen-network
 

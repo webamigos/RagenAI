@@ -31,6 +31,21 @@ COPY prisma.config.ts prisma.config.ts
 # esbuild; apps/web reaches both, so it rebuilds both.
 RUN npm ci --ignore-scripts && npm rebuild bcrypt esbuild
 
+# The one-shot `migrate` service in docker-compose.fullapp.yml: applies the
+# migrations and seeds the plans and connector catalogue, then exits. Without
+# it the full-app stack started against a database with no tables at all, and
+# the only way to migrate was `prisma migrate deploy` from a Node toolchain on
+# the host — the thing that stack exists to make unnecessary. Built from the
+# same `deps` layer as the app, so it costs a copy and a `prisma generate`,
+# not a second install. Not the default target: the runner stays the last
+# stage, so `docker build` without `--target` still produces the app.
+FROM base AS migrate
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+RUN npx prisma generate
+CMD ["sh", "-c", "npx prisma migrate deploy && npx tsx prisma/seed.ts"]
+
 FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
