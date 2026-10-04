@@ -30,7 +30,9 @@ const messages = {
     'debug-mode-description': 'Persist threads for debugging.',
     active: 'Active',
     'name-is-to-short': 'Name is to short - use at least 3 characters',
-    'failed-to-load': 'Failed to load keys',
+    'failed-to-create': 'Could not create the API key.',
+    'create-unavailable-plan': 'Not available in your plan.',
+    'create-unavailable-demo': 'Not available in demo mode.',
     assistant: 'Assistant',
     'project-is-required': 'Knowledge source is required',
     scope: 'Scope',
@@ -62,10 +64,16 @@ const assistants = [
 
 function renderList(
   initialKeys: Parameters<typeof ApiKeysList>[0]['initialKeys'] = [],
+  creation: { allowCreate?: boolean; demoAccount?: boolean } = {},
 ) {
   return render(
     <NextIntlClientProvider messages={messages} locale="en">
-      <ApiKeysList initialKeys={initialKeys} assistants={assistants} />
+      <ApiKeysList
+        initialKeys={initialKeys}
+        assistants={assistants}
+        allowCreate={creation.allowCreate ?? true}
+        demoAccount={creation.demoAccount}
+      />
     </NextIntlClientProvider>,
   );
 }
@@ -190,5 +198,45 @@ describe('ApiKeysList — the key carries a scope', () => {
     await user.click(screen.getByRole('button', { name: 'Create Key' }));
 
     expect(screen.queryByLabelText('Assistant')).not.toBeInTheDocument();
+  });
+});
+
+describe('ApiKeysList — when a key cannot be created', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  // Offering the form to an organization without API access only moved the
+  // failure to submit, where it read as "failed to load keys".
+  it('offers no create button, and says why, when the plan has no API access', () => {
+    renderList([], { allowCreate: false });
+
+    expect(
+      screen.queryByRole('button', { name: /create key/i }),
+    ).not.toBeInTheDocument();
+    expect(screen.getByText('Not available in your plan.')).toBeInTheDocument();
+  });
+
+  it('says demo, not plan, on the shared demo account', () => {
+    renderList([], { allowCreate: false, demoAccount: true });
+
+    expect(screen.getByText('Not available in demo mode.')).toBeInTheDocument();
+    expect(
+      screen.queryByText('Not available in your plan.'),
+    ).not.toBeInTheDocument();
+  });
+
+  it('says the key was not created when creating fails', async () => {
+    mockCreateApiKey.mockRejectedValue(new Error('vault unreachable'));
+    const user = userEvent.setup();
+    renderList();
+
+    await user.click(screen.getByRole('button', { name: /create key/i }));
+    await user.type(screen.getByLabelText('Name'), 'n8n');
+    await user.click(screen.getByRole('button', { name: /^create$/i }));
+
+    expect(
+      await screen.findByText('Could not create the API key.'),
+    ).toBeInTheDocument();
   });
 });
