@@ -73,7 +73,7 @@ Three auth mechanisms, all using timing-safe comparison:
 
 - **ReplaceIdsInterceptor** (global) — rewrites `public_id` → `id` in responses and strips internal IDs (`id`, `organization_id`, `project_id`). All API responses go through this.
 - **ApiExceptionFilter** (global) — catches all exceptions; returns structured JSON errors.
-- **ThrottlerGuard** (global, via `@nestjs/throttler`) — per-IP rate limiting (20 req/min production, 30 req/min local). Healthcheck is excluded via `@SkipThrottle()`.
+- **ThrottlerGuard** (global, via `@nestjs/throttler`) — per-IP (per-person for apps/web's session calls) rate limiting in three tiers, and **each route is counted by exactly one**: the tier it names with `@Throttle({ cheap | expensive: … })`, otherwise `default` — cheap 60, default 20, expensive 10 req/min in production (×1.5 local, ×100 ci/test). The library on its own applies every named throttler to every route, which held every route to `expensive`'s 10; the per-throttler `skipIf` from `common/throttle-tiers.ts` is what makes the tiers exclusive. Healthcheck is excluded via `@SkipThrottle()`.
 - **ValidationPipe** (global) — `whitelist: true, forbidNonWhitelisted: true, transform: true`.
 
 ### Modules

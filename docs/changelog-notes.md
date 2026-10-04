@@ -165,6 +165,13 @@ archive is the blog.
 
 ### Usage and limits
 
+- `[brief]` **The public API's rate limits are the documented ones.** Every
+  route was held to the strictest tier, 10 requests a minute per address,
+  because the rate limiter applied all three of its tiers to every route.
+  Listing and reading files, threads and assistants, `/v1/search` and
+  `/v1/chat` now allow the documented 20 a minute; uploads and chat
+  completions stay at 10.
+
 - `[brief]` **Reranking counts toward the monthly cost limit.** The default
   Scaleway reranker recorded its usage under a provider the price table did
   not list, so every reranking call was stored at a cost of zero and the
