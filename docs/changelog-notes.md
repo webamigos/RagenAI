@@ -77,6 +77,14 @@ archive is the blog.
 
 ## Unreleased
 
+### Self-hosting
+
+- [brief] A fresh `npx create-ragen-app` install on an OpenAI or Anthropic key
+  now parses its first upload. The worker refused to boot without Scaleway
+  credentials it never used, and summaries, scoring and live ingest progress
+  pointed at models and an address the install did not have. The README's
+  quickstart also names all three processes rather than only the web app.
+
 ### Knowledge base
 
 - `[brief]` **Switching document summaries off for an organization takes

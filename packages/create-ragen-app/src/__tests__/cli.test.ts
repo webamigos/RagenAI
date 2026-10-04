@@ -87,6 +87,9 @@ const ROOT_TEMPLATE = [
   '# LLM_GATEWAY=native',
   'DEFAULT_MODEL=gemini-3-flash-preview',
   'REPHRASE_MODEL=gemini-2.5-flash',
+  '# SUMMARY_MODEL=gemini-2.5-flash',
+  'SCORING_MODEL=gemini-2.5-flash',
+  '# RAGEN_APP_URL=http://localhost:3000',
   'EMBEDDINGS_MODEL=bge-multilingual-gemma2',
   '# VECTOR_SIZE=3584',
   'OPENAI_API_KEY=',
@@ -361,6 +364,24 @@ describe('run', () => {
       .mock.calls.find(([path]) => String(path).endsWith('/.env.local'));
 
     expect(String(rootEnv?.[1])).toContain('REPHRASE_MODEL=gpt-4o-mini');
+    expect(String(rootEnv?.[1])).toContain('SUMMARY_MODEL=gpt-4o-mini');
+    expect(String(rootEnv?.[1])).toContain('SCORING_MODEL=gpt-4o-mini');
+  });
+
+  it('tells the worker where the app is, so ingest progress reaches it', async () => {
+    vi.mocked(clack.select).mockResolvedValueOnce('openai' as never);
+    vi.mocked(clack.password).mockResolvedValueOnce('sk-test' as never);
+    vi.mocked(clack.confirm).mockResolvedValue(false as never);
+
+    await run(['/tmp/ragen-test']);
+
+    const rootEnv = vi
+      .mocked(writeFileSync)
+      .mock.calls.find(([path]) => String(path).endsWith('/.env.local'));
+
+    expect(String(rootEnv?.[1])).toMatch(
+      /^RAGEN_APP_URL=http:\/\/localhost:3000$/m,
+    );
   });
 
   /**

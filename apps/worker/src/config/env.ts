@@ -64,9 +64,15 @@ export const workerEnvSchema = fragments.targetEnvRequired
     MEILISEARCH_URL: z.string().url().optional(),
     MEILISEARCH_API_KEY: z.string().optional(),
 
-    // Scaleway Generative APIs (the `scaleway` connection in the route table)
-    SCW_API_BASE: z.string().url(),
-    SCW_API_KEY: z.string().min(1),
+    // Scaleway Generative APIs (the `scaleway` connection in the route table).
+    // Optional: nothing in this app reads them, only a route naming that
+    // connection does, and an install on another provider has neither. They
+    // were required unconditionally, so a fresh `create-ragen-app` install on
+    // an OpenAI key had a worker that refused to boot and uploads that were
+    // never parsed. The Scaleway encryption provider still requires the key,
+    // through `encryptionRules` below.
+    SCW_API_BASE: blankAsUndefined(z.string().url().optional()),
+    SCW_API_KEY: blankAsUndefined(z.string().optional()),
 
     // Embeddings model name (must match a route id in infra/llm-gateway/routes.yaml)
     EMBEDDINGS_MODEL: z.string(),

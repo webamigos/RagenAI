@@ -9,8 +9,6 @@ const VALID: Record<string, string> = {
   TEMPORAL_SERVER_ADDRESS: 'localhost:7233',
   REDIS_URL: 'redis://localhost:56379',
   SECRET_KEY: 'secret',
-  SCW_API_BASE: 'https://api.scaleway.ai/v1',
-  SCW_API_KEY: 'scw-key',
   EMBEDDINGS_MODEL: 'bge-multilingual-gemma2',
 };
 
@@ -26,6 +24,21 @@ describe('parseWorkerEnv', () => {
 
   it('accepts a minimal local environment', () => {
     expect(withEnv({}).ok).toBe(true);
+  });
+
+  /**
+   * The minimal environment above has no Scaleway credentials, which is what
+   * `create-ragen-app` writes for an OpenAI or Anthropic key. They were
+   * required unconditionally, so that install's worker refused to boot.
+   */
+  describe('Scaleway credentials', () => {
+    it('are not needed by an install on another provider', () => {
+      expect(withEnv({ SCW_API_BASE: '', SCW_API_KEY: '' }).ok).toBe(true);
+    });
+
+    it('still have to be a URL when given', () => {
+      expect(withEnv({ SCW_API_BASE: 'not-a-url' }).ok).toBe(false);
+    });
   });
 
   /**
@@ -98,17 +111,30 @@ describe('parseWorkerEnv', () => {
      * every ingest. Refusing to boot turns that into a legible error.
      */
     it('requires the Key Manager key id once scaleway is chosen', () => {
-      // Only the key id: `SCW_API_KEY` is already required unconditionally,
-      // because the worker uses the same secret for Scaleway *inference*
-      // (SCW_API_BASE) as for Key Manager. Unsetting it here would fail the
-      // base parse and skip the refinement entirely.
-      const result = withEnv({ ENCRYPTION_PROVIDER: 'scaleway' });
+      const result = withEnv({
+        ENCRYPTION_PROVIDER: 'scaleway',
+        SCW_API_KEY: 'scw-key',
+      });
 
       expect(result.ok).toBe(false);
       if (!result.ok) {
         expect(result.issues.map((i) => i.name)).toContain(
           'SCW_KEY_MANAGER_KEY_ID',
         );
+      }
+    });
+
+    // The schema no longer demands the key for inference, so the encryption
+    // rule is now the only thing that does — and has to.
+    it('requires the account key once scaleway is chosen', () => {
+      const result = withEnv({
+        ENCRYPTION_PROVIDER: 'scaleway',
+        SCW_KEY_MANAGER_KEY_ID: 'key-id',
+      });
+
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.issues.map((i) => i.name)).toContain('SCW_API_KEY');
       }
     });
 
@@ -149,6 +175,7 @@ describe('parseWorkerEnv', () => {
         withEnv({
           ENCRYPTION_PROVIDER: 'scaleway',
           SCW_KEY_MANAGER_KEY_ID: 'key-1',
+          SCW_API_KEY: 'scw-key',
         }).ok,
       ).toBe(true);
     });
@@ -299,7 +326,7 @@ describe('parseWorkerEnv', () => {
   it('reports every problem at once rather than one per restart', () => {
     const result = withEnv({
       DATABASE_URL: undefined,
-      SCW_API_KEY: undefined,
+      SECRET_KEY: undefined,
       EMBEDDINGS_MODEL: undefined,
     });
 

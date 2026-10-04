@@ -12,6 +12,8 @@ describe('resolveLlmProviderChoice', () => {
       DEFAULT_MODEL: 'gpt-4o-mini',
       DEFAULT_MODEL_PROVIDER: 'litellm',
       REPHRASE_MODEL: 'gpt-4o-mini',
+      SUMMARY_MODEL: 'gpt-4o-mini',
+      SCORING_MODEL: 'gpt-4o-mini',
       EMBEDDINGS_MODEL: 'text-embedding-3-small',
       VECTOR_SIZE: '1536',
     });
@@ -37,6 +39,8 @@ describe('resolveLlmProviderChoice', () => {
       DEFAULT_MODEL: 'claude-haiku-4-5-direct',
       DEFAULT_MODEL_PROVIDER: 'litellm',
       REPHRASE_MODEL: 'claude-haiku-4-5-direct',
+      SUMMARY_MODEL: 'claude-haiku-4-5-direct',
+      SCORING_MODEL: 'claude-haiku-4-5-direct',
     });
     // Leaving EMBEDDINGS_MODEL alone is the point: overriding it with
     // something this key cannot serve would break the knowledge base in a
@@ -65,6 +69,31 @@ describe('resolveLlmProviderChoice', () => {
       const { envUpdates } = resolveLlmProviderChoice(choice, 'key');
       expect(envUpdates.REPHRASE_MODEL).toBe(LLM_PROVIDERS[choice].modelName);
       expect(envUpdates.REPHRASE_MODEL).not.toContain('gemini');
+    }
+  });
+
+  /**
+   * The worker reads SUMMARY_MODEL on every ingest and falls back to
+   * gemini-2.5-flash, which no scaffolded route table serves. A fresh OpenAI
+   * install indexed its first upload without a summary and said so only in
+   * the worker's log.
+   */
+  it('points every model the app falls back on at a route it has', () => {
+    for (const choice of Object.keys(LLM_PROVIDERS) as Array<
+      keyof typeof LLM_PROVIDERS
+    >) {
+      const { envUpdates, routes } = resolveLlmProviderChoice(
+        choice,
+        'key',
+        'https://example.test/v1',
+      );
+      const routed = new Set(routes.map((route) => route.modelName));
+
+      for (const key of ['SUMMARY_MODEL', 'SCORING_MODEL'] as const) {
+        expect(routed.has(envUpdates[key] ?? ''), `${choice} ${key}`).toBe(
+          true,
+        );
+      }
     }
   });
 
