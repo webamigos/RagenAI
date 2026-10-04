@@ -18,6 +18,7 @@ import { cleanupDemoThreads } from '../../src/handlers/cleanup-demo-threads.js';
 import { generateDocument } from '../../src/handlers/generate-document.js';
 import { memoryExtract } from '../../src/handlers/memory-extract.js';
 import { memoryPurge } from '../../src/handlers/memory-purge.js';
+import { syncDocumentAccess } from '../../src/handlers/sync-document-access.js';
 import { optimizeDocument } from '../../src/handlers/optimize-document.js';
 import { pruneAnalyticsRetrievals } from '../../src/handlers/prune-analytics-retrievals.js';
 import { reindexDocumentVersion } from '../../src/handlers/reindex-document-version.js';
@@ -102,6 +103,7 @@ export async function startBullMqHarness(
     brainPublishPage,
     memoryExtract,
     memoryPurge,
+    syncDocumentAccess,
     ...options.handlerOverrides,
   };
 

@@ -81,6 +81,7 @@ const PAYLOADS: { [N in JobName]: JobPayloads[N] } = {
     questionEncrypted: false,
   },
   memoryPurge: undefined,
+  syncDocumentAccess: { orgId: 'org-1', fileIds: ['file-1'] },
 };
 
 /** The activity that proves the pipeline ran, not merely that the job did. */
@@ -97,6 +98,7 @@ const EVIDENCE: Record<JobName, string> = {
   brainPublishPage: 'publishKnowledgePage',
   memoryExtract: 'runMemoryExtraction',
   memoryPurge: 'purgeExpiredMemories',
+  syncDocumentAccess: 'syncFileAccess',
 };
 
 describe('every job runs', () => {

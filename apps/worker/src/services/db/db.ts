@@ -97,6 +97,58 @@ const getFileAccessRows = async (fileId: string, orgId: string) => {
 };
 
 /**
+ * Every file in the given folders and in all of their descendants.
+ *
+ * A folder's share, move or team reaches the files under it, so the access
+ * sync names the folder and resolves the subtree here, when it runs: a file
+ * added a moment ago is found, where a list built at enqueue would miss it.
+ *
+ * `path` is the materialized ancestry (`/a/b/`), so a descendant of folder `f`
+ * is one whose path starts with `${f.path}${f.id}/` — the same rule the web
+ * app's folder queries use. Both lookups are filtered by organization; the ids
+ * the caller supplies are never trusted to belong to it.
+ */
+const getFileIdsUnderFolders = async (
+  orgId: string,
+  folderIds: string[],
+): Promise<string[]> => {
+  if (folderIds.length === 0) {
+    return [];
+  }
+
+  const roots = await getPrisma().documentFolder.findMany({
+    where: { organizationId: orgId, id: { in: folderIds } },
+    select: { id: true, path: true },
+  });
+
+  if (roots.length === 0) {
+    return [];
+  }
+
+  const descendants = await getPrisma().documentFolder.findMany({
+    where: {
+      organizationId: orgId,
+      OR: roots.map((root) => ({
+        path: { startsWith: `${root.path}${root.id}/` },
+      })),
+    },
+    select: { id: true },
+  });
+
+  const files = await getPrisma().userFile.findMany({
+    where: {
+      organizationId: orgId,
+      folderId: {
+        in: [...roots.map((r) => r.id), ...descendants.map((d) => d.id)],
+      },
+    },
+    select: { id: true },
+  });
+
+  return files.map((file) => file.id);
+};
+
+/**
  * What `createFileDetailsInDB` hands back.
  *
  * Written out rather than `Pick<UserFile, …>`, because it deliberately is not
@@ -1076,6 +1128,7 @@ const deleteExpiredDocumentRetrievals = async (
 export const db = {
   getUserFile,
   getFileAccessRows,
+  getFileIdsUnderFolders,
   getDocumentContent,
   getFileIdForDocument,
   isIngestCancelled,

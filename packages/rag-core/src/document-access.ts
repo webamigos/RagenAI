@@ -23,28 +23,27 @@
  */
 
 /**
- * Known gap, recorded here because this is where the next person will look.
- * Tracked as issue #1245, which carries the call sites and the open design
- * questions; this docblock is the short version.
+ * How `accessible_by` stays current (#1245).
  *
- * `metadata.accessible_by` is written at ingest and **never refreshed**.
- * Nothing calls `syncFolderVectorPermissions` — not apps/web, not apps/api;
- * `documents.controller.ts` says so explicitly ("Nothing to wire"), and the
- * only other writer is the one-shot `backfill-accessible-by` script. So a
- * share revoked after a document was indexed still satisfies the retrieval
- * filter until that document is re-ingested.
+ * The field is written at ingest, and **rewritten by the `syncDocumentAccess`
+ * job** (`apps/worker/src/handlers/sync-document-access.ts`) whenever something
+ * changes who may read a file. The job reads the database when it runs, so it
+ * carries no principals and two quick changes converge on the later state. The
+ * three ingest handlers read the principals again after writing their points,
+ * because an ingest takes them before a write that can last minutes.
  *
- * `fileAccessWhere` reads the database directly, so the knowledge-base listing
- * honours a revocation immediately. The lag is retrieval-only, and it is new
- * in the sense that it had nothing to lag behind before: the field was absent,
- * so the filter matched nothing and member-scope retrieval returned nothing at
- * all. Trading "no retrieval" for "retrieval that lags a revoke" is the right
- * direction, not the destination.
+ * What still has to hold is on the producers: every path that changes who may
+ * read a file — a share, an unshare, a file or folder move, a team change, an
+ * `isOrgWide` toggle, an owner deletion — starts the job after it commits.
+ * `fileAccessWhere` reads Postgres directly, so the knowledge-base listing was
+ * always right the moment a grant was revoked; this is what makes retrieval as
+ * prompt.
  *
- * Closing it means calling the sync from every path that changes who may read
- * a file — a share, an unshare, a folder move, a team change, an `isOrgWide`
- * toggle, an owner deletion — which is a larger change than the one that made
- * the field real. See #1245.
+ * `syncFolderVectorPermissions` in apps/web and apps/api is the earlier attempt
+ * and should not be revived: it has no call site, and it wrote
+ * `'metadata.accessible_by'` as a dotted payload key, which Qdrant stores as a
+ * literal top-level field — the call succeeded and the retrieval filter never
+ * saw it.
  */
 
 /** A permission row, from a file, its folder, or one of that folder's ancestors. */

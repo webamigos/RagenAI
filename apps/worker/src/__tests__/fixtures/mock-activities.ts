@@ -282,6 +282,11 @@ export function createMockActivities() {
       .fn()
       .mockResolvedValue({ status: 'published', chunks: 1 }),
     markPublicationFailed: vi.fn().mockResolvedValue({ marked: true }),
+
+    // #1245: the access sync, and the check each ingest handler makes after its
+    // write. `unchanged` is what an ingest that nobody revoked mid-flight sees.
+    resolveAccessSyncFiles: vi.fn().mockResolvedValue(['file-1']),
+    syncFileAccess: vi.fn().mockResolvedValue('unchanged'),
   };
 }
 
