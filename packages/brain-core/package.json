@@ -2,6 +2,7 @@
   "name": "@ragenai/brain-core",
   "version": "1.0.0",
   "private": true,
+  "license": "Apache-2.0",
   "description": "Ragen Brain's domain logic — extraction with verified span citations, the access intersection rule, and candidate assembly. Pure: the model call is injected, so apps/worker owns the gateway and this package owns the rules",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

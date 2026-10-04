@@ -4,6 +4,7 @@
   "description": "MCP server exposing Ragen's own chat capability to external MCP clients",
   "type": "module",
   "private": true,
+  "license": "Apache-2.0",
   "engines": {
     "node": "^24.15.0 || >=26.0.0"
   },

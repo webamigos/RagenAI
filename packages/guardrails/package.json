@@ -2,6 +2,7 @@
   "name": "@ragenai/guardrails",
   "version": "1.0.0",
   "private": true,
+  "license": "Apache-2.0",
   "description": "Guardrail contracts and the pure rule resolver — shared by apps/web, apps/api and apps/admin so the runtime and the authoring surface cannot disagree about what a rule is",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
