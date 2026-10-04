@@ -8,7 +8,7 @@ import { Dialog, DialogTitle } from '@ragenai/common-ui/Dialog';
 import { Button } from '@ragenai/common-ui/Button';
 import { statusToast } from '@/app/lib/utils/toast';
 import { createMemberAccount, inviteMember } from '../actions/members';
-import { AddMemberSchema, type AddMemberFormData } from '../types';
+import { getAddMemberSchema, type AddMemberFormData } from '../types';
 import { CreatedAccountPanel } from './CreatedAccountPanel';
 
 const inputClasses =
@@ -41,7 +41,7 @@ export function InviteMemberDialog({ isOpen, onClose, organizationId }: Props) {
     reset,
     setValue,
   } = useForm<AddMemberFormData>({
-    resolver: zodResolver(AddMemberSchema),
+    resolver: zodResolver(getAddMemberSchema(t)),
     defaultValues: { role: 'member', mode: 'invite' },
   });
 

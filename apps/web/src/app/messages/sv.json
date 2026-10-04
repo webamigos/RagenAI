@@ -2054,7 +2054,11 @@
       "saving": "Sparar...",
       "cancel": "Avbryt",
       "edit-success": "Organisationens profil har uppdaterats",
-      "edit-error": "Ett fel uppstod vid uppdatering av profilen"
+      "edit-error": "Ett fel uppstod vid uppdatering av profilen",
+      "validation": {
+        "name-required": "Namn är obligatoriskt",
+        "name-too-long": "Namnet får vara högst {max} tecken"
+      }
     },
     "members": {
       "title": "Användare",
@@ -2100,7 +2104,12 @@
       "copy-credentials": "Kopiera inloggningsuppgifter",
       "copied": "Kopierat",
       "done": "Klar",
-      "confirm-remove-title": "Ta bort medlemmen?"
+      "confirm-remove-title": "Ta bort medlemmen?",
+      "validation": {
+        "invalid-email": "Ange en giltig e-postadress",
+        "role-required": "En roll krävs",
+        "full-name-required": "För- och efternamn krävs"
+      }
     },
     "invitations": {
       "title": "Inbjudningar",
@@ -2171,7 +2180,11 @@
       "saving": "Sparar...",
       "cancel": "Avbryt",
       "success": "Profilen har uppdaterats",
-      "error": "Det gick inte att uppdatera profilen"
+      "error": "Det gick inte att uppdatera profilen",
+      "validation": {
+        "name-required": "Namn är obligatoriskt",
+        "name-too-long": "Namnet får vara högst {max} tecken"
+      }
     },
     "password": {
       "current": "Nuvarande lösenord",
@@ -2181,7 +2194,12 @@
       "demo-account-locked": "Detta är det delade demokontot, så dess lösenord kan inte ändras.",
       "changing": "Byter lösenord...",
       "success": "Lösenordet har ändrats",
-      "error": "Ogiltigt nuvarande lösenord"
+      "error": "Ogiltigt nuvarande lösenord",
+      "validation": {
+        "min-length": "Minst {min} tecken",
+        "passwords-mismatch": "Lösenorden matchar inte",
+        "must-differ": "Det nya lösenordet måste skilja sig från det nuvarande"
+      }
     },
     "sessions": {
       "title": "Aktiva sessioner",

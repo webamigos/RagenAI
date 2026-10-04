@@ -46,7 +46,9 @@ describe('InviteMemberDialog', () => {
     const onClose = renderDialog();
 
     await user.type(screen.getByLabelText(t.email), 'ada@example.com');
-    await user.click(screen.getByRole('button', { name: t['send-invitation'] }));
+    await user.click(
+      screen.getByRole('button', { name: t['send-invitation'] }),
+    );
 
     await waitFor(() =>
       expect(inviteMember).toHaveBeenCalledWith(
@@ -76,7 +78,11 @@ describe('InviteMemberDialog', () => {
     await user.type(screen.getByLabelText(t.email), 'ada@example.com');
     await user.click(screen.getByRole('button', { name: t['create-account'] }));
 
-    expect(await screen.findByText(/Imię i nazwisko/)).toBeInTheDocument();
+    // The message is the English one: it used to be a Polish literal, which this
+    // test then asserted, so an English user saw Polish and nothing failed.
+    expect(
+      await screen.findByText(t.validation['full-name-required']),
+    ).toBeInTheDocument();
     expect(createMemberAccount).not.toHaveBeenCalled();
   });
 

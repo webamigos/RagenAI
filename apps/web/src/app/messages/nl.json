@@ -2054,7 +2054,11 @@
       "saving": "Opslaan...",
       "cancel": "Annuleren",
       "edit-success": "Het organisatieprofiel is bijgewerkt",
-      "edit-error": "Er is een fout opgetreden bij het bijwerken van het profiel"
+      "edit-error": "Er is een fout opgetreden bij het bijwerken van het profiel",
+      "validation": {
+        "name-required": "Naam is verplicht",
+        "name-too-long": "De naam mag maximaal {max} tekens bevatten"
+      }
     },
     "members": {
       "title": "Gebruikers",
@@ -2100,7 +2104,12 @@
       "copy-credentials": "Inloggegevens kopiëren",
       "copied": "Gekopieerd",
       "done": "Klaar",
-      "confirm-remove-title": "Dit lid verwijderen?"
+      "confirm-remove-title": "Dit lid verwijderen?",
+      "validation": {
+        "invalid-email": "Voer een geldig e-mailadres in",
+        "role-required": "Een rol is verplicht",
+        "full-name-required": "Voor- en achternaam zijn verplicht"
+      }
     },
     "invitations": {
       "title": "Uitnodigingen",
@@ -2171,7 +2180,11 @@
       "saving": "Opslaan...",
       "cancel": "Annuleren",
       "success": "Profiel bijgewerkt",
-      "error": "Profiel kon niet worden bijgewerkt"
+      "error": "Profiel kon niet worden bijgewerkt",
+      "validation": {
+        "name-required": "Naam is verplicht",
+        "name-too-long": "De naam mag maximaal {max} tekens bevatten"
+      }
     },
     "password": {
       "current": "Huidig wachtwoord",
@@ -2181,7 +2194,12 @@
       "demo-account-locked": "Dit is het gedeelde demo-account, dus het wachtwoord kan niet worden gewijzigd.",
       "changing": "Wachtwoord wijzigen...",
       "success": "Wachtwoord is gewijzigd",
-      "error": "Ongeldig huidig wachtwoord"
+      "error": "Ongeldig huidig wachtwoord",
+      "validation": {
+        "min-length": "Minimaal {min} tekens",
+        "passwords-mismatch": "De wachtwoorden komen niet overeen",
+        "must-differ": "Het nieuwe wachtwoord moet verschillen van het huidige"
+      }
     },
     "sessions": {
       "title": "Actieve sessies",

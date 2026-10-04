@@ -2054,7 +2054,11 @@
       "saving": "Wird gespeichert...",
       "cancel": "Abbrechen",
       "edit-success": "Das Organisationsprofil wurde aktualisiert",
-      "edit-error": "Beim Aktualisieren des Profils ist ein Fehler aufgetreten"
+      "edit-error": "Beim Aktualisieren des Profils ist ein Fehler aufgetreten",
+      "validation": {
+        "name-required": "Name ist erforderlich",
+        "name-too-long": "Der Name darf höchstens {max} Zeichen lang sein"
+      }
     },
     "members": {
       "title": "Benutzer",
@@ -2100,7 +2104,12 @@
       "copy-credentials": "Zugangsdaten kopieren",
       "copied": "Kopiert",
       "done": "Fertig",
-      "confirm-remove-title": "Mitglied entfernen?"
+      "confirm-remove-title": "Mitglied entfernen?",
+      "validation": {
+        "invalid-email": "Bitte eine gültige E-Mail-Adresse eingeben",
+        "role-required": "Eine Rolle ist erforderlich",
+        "full-name-required": "Vor- und Nachname sind erforderlich"
+      }
     },
     "invitations": {
       "title": "Einladungen",
@@ -2171,7 +2180,11 @@
       "saving": "Wird gespeichert...",
       "cancel": "Abbrechen",
       "success": "Profil aktualisiert",
-      "error": "Fehler beim Aktualisieren des Profils"
+      "error": "Fehler beim Aktualisieren des Profils",
+      "validation": {
+        "name-required": "Name ist erforderlich",
+        "name-too-long": "Der Name darf höchstens {max} Zeichen lang sein"
+      }
     },
     "password": {
       "current": "Aktuelles Passwort",
@@ -2181,7 +2194,12 @@
       "demo-account-locked": "Dies ist das gemeinsame Demo-Konto, daher kann das Passwort nicht geändert werden.",
       "changing": "Passwort wird geändert...",
       "success": "Das Passwort wurde geändert",
-      "error": "Ungültiges aktuelles Passwort"
+      "error": "Ungültiges aktuelles Passwort",
+      "validation": {
+        "min-length": "Mindestens {min} Zeichen",
+        "passwords-mismatch": "Die Passwörter stimmen nicht überein",
+        "must-differ": "Das neue Passwort muss sich vom aktuellen unterscheiden"
+      }
     },
     "sessions": {
       "title": "Aktive Sitzungen",

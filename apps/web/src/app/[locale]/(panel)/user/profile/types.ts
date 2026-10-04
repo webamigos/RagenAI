@@ -1,36 +1,65 @@
 import { z } from 'zod';
 
-// Zod schemas
-export const UpdateProfileSchema = z.object({
-  name: z
-    .string()
-    .min(1, 'Nazwa jest wymagana')
-    .max(100, 'Nazwa może mieć max 100 znaków'),
-});
+/**
+ * The shape of `t` these factories need. A scoped `useTranslations('…')` fits it,
+ * and so does a plain function in a test. Values are for ICU placeholders.
+ */
+type Translate = (
+  key: string,
+  values?: Record<string, string | number>,
+) => string;
 
-export const ChangePasswordSchema = z
-  .object({
-    currentPassword: z.string().min(8, 'Minimum 8 znaków'),
-    newPassword: z.string().min(8, 'Minimum 8 znaków'),
-    confirmPassword: z.string().min(8, 'Minimum 8 znaków'),
-  })
-  .superRefine(({ newPassword, confirmPassword, currentPassword }, ctx) => {
-    if (newPassword !== confirmPassword) {
-      ctx.addIssue({
-        code: 'custom',
-        message: 'Hasła nie pasują',
-        path: ['confirmPassword'],
-      });
-    }
-    if (newPassword === currentPassword) {
-      ctx.addIssue({
-        code: 'custom',
-        message: 'Nowe hasło musi być inne niż obecne',
-        path: ['newPassword'],
-      });
-    }
+export const NAME_MAX_LENGTH = 100;
+export const PASSWORD_MIN_LENGTH = 8;
+
+/**
+ * Schemas are built from a translator, following `getAddFromUrlSchema`, so the
+ * messages a user sees are in the language they chose rather than in Polish.
+ * `t` is scoped to `user-profile.profile`.
+ */
+export const getUpdateProfileSchema = (t: Translate) =>
+  z.object({
+    name: z
+      .string()
+      .min(1, t('validation.name-required'))
+      .max(
+        NAME_MAX_LENGTH,
+        t('validation.name-too-long', { max: NAME_MAX_LENGTH }),
+      ),
   });
 
+/** `t` is scoped to `user-profile.password`. */
+export const getChangePasswordSchema = (t: Translate) => {
+  const tooShort = t('validation.min-length', { min: PASSWORD_MIN_LENGTH });
+
+  return z
+    .object({
+      currentPassword: z.string().min(PASSWORD_MIN_LENGTH, tooShort),
+      newPassword: z.string().min(PASSWORD_MIN_LENGTH, tooShort),
+      confirmPassword: z.string().min(PASSWORD_MIN_LENGTH, tooShort),
+    })
+    .superRefine(({ newPassword, confirmPassword, currentPassword }, ctx) => {
+      if (newPassword !== confirmPassword) {
+        ctx.addIssue({
+          code: 'custom',
+          message: t('validation.passwords-mismatch'),
+          path: ['confirmPassword'],
+        });
+      }
+      if (newPassword === currentPassword) {
+        ctx.addIssue({
+          code: 'custom',
+          message: t('validation.must-differ'),
+          path: ['newPassword'],
+        });
+      }
+    });
+};
+
 // TypeScript types
-export type UpdateProfileFormData = z.infer<typeof UpdateProfileSchema>;
-export type ChangePasswordFormData = z.infer<typeof ChangePasswordSchema>;
+export type UpdateProfileFormData = z.infer<
+  ReturnType<typeof getUpdateProfileSchema>
+>;
+export type ChangePasswordFormData = z.infer<
+  ReturnType<typeof getChangePasswordSchema>
+>;

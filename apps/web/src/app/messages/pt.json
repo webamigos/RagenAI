@@ -2054,7 +2054,11 @@
       "saving": "Salvando...",
       "cancel": "Cancelar",
       "edit-success": "O perfil da organização foi atualizado",
-      "edit-error": "Ocorreu um erro ao atualizar o perfil"
+      "edit-error": "Ocorreu um erro ao atualizar o perfil",
+      "validation": {
+        "name-required": "O nome é obrigatório",
+        "name-too-long": "O nome pode ter no máximo {max} caracteres"
+      }
     },
     "members": {
       "title": "Usuários",
@@ -2100,7 +2104,12 @@
       "copy-credentials": "Copiar credenciais",
       "copied": "Copiado",
       "done": "Concluído",
-      "confirm-remove-title": "Remover este membro?"
+      "confirm-remove-title": "Remover este membro?",
+      "validation": {
+        "invalid-email": "Informe um endereço de e-mail válido",
+        "role-required": "A função é obrigatória",
+        "full-name-required": "Nome e sobrenome são obrigatórios"
+      }
     },
     "invitations": {
       "title": "Convites",
@@ -2171,7 +2180,11 @@
       "saving": "Salvando...",
       "cancel": "Cancelar",
       "success": "Perfil atualizado",
-      "error": "Falha ao atualizar o perfil"
+      "error": "Falha ao atualizar o perfil",
+      "validation": {
+        "name-required": "O nome é obrigatório",
+        "name-too-long": "O nome pode ter no máximo {max} caracteres"
+      }
     },
     "password": {
       "current": "Senha atual",
@@ -2181,7 +2194,12 @@
       "demo-account-locked": "Esta é a conta de demonstração compartilhada, por isso a senha não pode ser alterada.",
       "changing": "Alterando a senha...",
       "success": "A senha foi alterada",
-      "error": "Senha atual inválida"
+      "error": "Senha atual inválida",
+      "validation": {
+        "min-length": "Mínimo de {min} caracteres",
+        "passwords-mismatch": "As senhas não coincidem",
+        "must-differ": "A nova senha deve ser diferente da atual"
+      }
     },
     "sessions": {
       "title": "Sessões ativas",

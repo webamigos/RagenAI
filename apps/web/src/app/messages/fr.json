@@ -2054,7 +2054,11 @@
       "saving": "Enregistrement en cours...",
       "cancel": "Annuler",
       "edit-success": "Le profil de l'organisation a été mis à jour",
-      "edit-error": "Une erreur s'est produite lors de la mise à jour du profil"
+      "edit-error": "Une erreur s'est produite lors de la mise à jour du profil",
+      "validation": {
+        "name-required": "Le nom est obligatoire",
+        "name-too-long": "Le nom ne peut pas dépasser {max} caractères"
+      }
     },
     "members": {
       "title": "Utilisateurs",
@@ -2100,7 +2104,12 @@
       "copy-credentials": "Copier les identifiants",
       "copied": "Copié",
       "done": "Terminé",
-      "confirm-remove-title": "Retirer ce membre ?"
+      "confirm-remove-title": "Retirer ce membre ?",
+      "validation": {
+        "invalid-email": "Saisissez une adresse e-mail valide",
+        "role-required": "Le rôle est obligatoire",
+        "full-name-required": "Le prénom et le nom sont obligatoires"
+      }
     },
     "invitations": {
       "title": "Invitations",
@@ -2171,7 +2180,11 @@
       "saving": "Enregistrement en cours...",
       "cancel": "Annuler",
       "success": "Profil mis à jour",
-      "error": "Échec de la mise à jour du profil"
+      "error": "Échec de la mise à jour du profil",
+      "validation": {
+        "name-required": "Le nom est obligatoire",
+        "name-too-long": "Le nom ne peut pas dépasser {max} caractères"
+      }
     },
     "password": {
       "current": "Mot de passe actuel",
@@ -2181,7 +2194,12 @@
       "demo-account-locked": "Il s’agit du compte de démonstration partagé, son mot de passe ne peut donc pas être modifié.",
       "changing": "Changement du mot de passe en cours...",
       "success": "Le mot de passe a été changé",
-      "error": "Mot de passe actuel invalide"
+      "error": "Mot de passe actuel invalide",
+      "validation": {
+        "min-length": "{min} caractères minimum",
+        "passwords-mismatch": "Les mots de passe ne correspondent pas",
+        "must-differ": "Le nouveau mot de passe doit être différent de l'actuel"
+      }
     },
     "sessions": {
       "title": "Sessions actives",

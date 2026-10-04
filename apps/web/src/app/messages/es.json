@@ -2054,7 +2054,11 @@
       "saving": "Guardando...",
       "cancel": "Cancelar",
       "edit-success": "El perfil de la organización ha sido actualizado",
-      "edit-error": "Ha ocurrido un error al actualizar el perfil"
+      "edit-error": "Ha ocurrido un error al actualizar el perfil",
+      "validation": {
+        "name-required": "El nombre es obligatorio",
+        "name-too-long": "El nombre puede tener como máximo {max} caracteres"
+      }
     },
     "members": {
       "title": "Usuarios",
@@ -2100,7 +2104,12 @@
       "copy-credentials": "Copiar credenciales",
       "copied": "Copiado",
       "done": "Hecho",
-      "confirm-remove-title": "¿Eliminar este miembro?"
+      "confirm-remove-title": "¿Eliminar este miembro?",
+      "validation": {
+        "invalid-email": "Introduce una dirección de correo electrónico válida",
+        "role-required": "El rol es obligatorio",
+        "full-name-required": "El nombre y los apellidos son obligatorios"
+      }
     },
     "invitations": {
       "title": "Invitaciones",
@@ -2171,7 +2180,11 @@
       "saving": "Guardando...",
       "cancel": "Cancelar",
       "success": "Perfil actualizado",
-      "error": "Error al actualizar el perfil"
+      "error": "Error al actualizar el perfil",
+      "validation": {
+        "name-required": "El nombre es obligatorio",
+        "name-too-long": "El nombre puede tener como máximo {max} caracteres"
+      }
     },
     "password": {
       "current": "Contraseña actual",
@@ -2181,7 +2194,12 @@
       "demo-account-locked": "Esta es la cuenta de demostración compartida, por lo que su contraseña no se puede cambiar.",
       "changing": "Cambiando contraseña...",
       "success": "La contraseña ha sido cambiada",
-      "error": "Contraseña actual no válida"
+      "error": "Contraseña actual no válida",
+      "validation": {
+        "min-length": "Mínimo {min} caracteres",
+        "passwords-mismatch": "Las contraseñas no coinciden",
+        "must-differ": "La nueva contraseña debe ser distinta de la actual"
+      }
     },
     "sessions": {
       "title": "Sesiones activas",

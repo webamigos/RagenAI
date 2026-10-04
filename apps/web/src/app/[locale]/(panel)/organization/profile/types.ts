@@ -11,11 +11,21 @@ import { ORG_ADMIN_ROLE, ORG_MEMBER_ROLE } from '@ragenai/platform-contracts';
  */
 const ASSIGNABLE_ROLES = [ORG_ADMIN_ROLE, ORG_MEMBER_ROLE] as const;
 
+/**
+ * The shape of `t` these factories need. A scoped `useTranslations('…')` fits it,
+ * and so does a plain function in a test. Values are for ICU placeholders.
+ */
+type Translate = (
+  key: string,
+  values?: Record<string, string | number>,
+) => string;
+
+export const ORGANIZATION_NAME_MAX_LENGTH = 100;
+
 // Zod schemas
-export const InviteMemberSchema = z.object({
-  email: z.email('Nieprawidłowy adres email'),
-  role: z.enum(ASSIGNABLE_ROLES, { error: 'Rola jest wymagana' }),
-});
+//
+// The ones with messages are built from a translator, following
+// `getAddFromUrlSchema`, so what a user sees is in the language they chose.
 
 /**
  * One schema for both ways of adding someone, keyed on `mode`.
@@ -24,42 +34,49 @@ export const InviteMemberSchema = z.object({
  * form types for one form, which does not typecheck — and `name` genuinely is
  * conditional: the create path needs one because nobody types a name during a
  * sign-up that never happens, while an invitation collects it later.
+ *
+ * `t` is scoped to `organization.members`.
  */
-export const AddMemberSchema = z
-  .object({
-    mode: z.enum(['invite', 'create']),
-    email: z.email('Nieprawidłowy adres email'),
-    role: z.enum(ASSIGNABLE_ROLES, { error: 'Rola jest wymagana' }),
-    name: z.string().trim().optional(),
-  })
-  .superRefine((data, ctx) => {
-    if (data.mode === 'create' && !data.name) {
-      ctx.addIssue({
-        code: 'custom',
-        path: ['name'],
-        message: 'Imię i nazwisko są wymagane',
-      });
-    }
-  });
+export const getAddMemberSchema = (t: Translate) =>
+  z
+    .object({
+      mode: z.enum(['invite', 'create']),
+      email: z.email(t('validation.invalid-email')),
+      role: z.enum(ASSIGNABLE_ROLES, { error: t('validation.role-required') }),
+      name: z.string().trim().optional(),
+    })
+    .superRefine((data, ctx) => {
+      if (data.mode === 'create' && !data.name) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['name'],
+          message: t('validation.full-name-required'),
+        });
+      }
+    });
 
 export const UpdateMemberRoleSchema = z.object({
   memberId: z.string().min(1),
   role: z.enum(ASSIGNABLE_ROLES), // owner nie może być zmieniany
 });
 
-export const UpdateOrganizationSchema = z.object({
-  name: z
-    .string()
-    .min(1, 'Nazwa jest wymagana')
-    .max(100, 'Nazwa może mieć max 100 znaków'),
-});
+/** `t` is scoped to `organization.profile`. */
+export const getUpdateOrganizationSchema = (t: Translate) =>
+  z.object({
+    name: z
+      .string()
+      .min(1, t('validation.name-required'))
+      .max(
+        ORGANIZATION_NAME_MAX_LENGTH,
+        t('validation.name-too-long', { max: ORGANIZATION_NAME_MAX_LENGTH }),
+      ),
+  });
 
 // TypeScript types
-export type InviteMemberFormData = z.infer<typeof InviteMemberSchema>;
-export type AddMemberFormData = z.infer<typeof AddMemberSchema>;
+export type AddMemberFormData = z.infer<ReturnType<typeof getAddMemberSchema>>;
 export type UpdateMemberRoleFormData = z.infer<typeof UpdateMemberRoleSchema>;
 export type UpdateOrganizationFormData = z.infer<
-  typeof UpdateOrganizationSchema
+  ReturnType<typeof getUpdateOrganizationSchema>
 >;
 
 export type Member = {

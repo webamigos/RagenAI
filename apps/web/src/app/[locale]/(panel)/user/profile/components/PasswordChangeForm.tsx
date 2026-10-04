@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl';
 import { Button } from '@ragenai/common-ui/Button';
 import { statusToast } from '@/app/lib/utils/toast';
 import { changePassword } from '../actions/user';
-import { ChangePasswordSchema, type ChangePasswordFormData } from '../types';
+import { getChangePasswordSchema, type ChangePasswordFormData } from '../types';
 
 const inputClasses =
   'w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50';
@@ -32,7 +32,7 @@ export function PasswordChangeForm({ locked = false }: Props) {
     formState: { errors, isSubmitting, isDirty },
     reset,
   } = useForm<ChangePasswordFormData>({
-    resolver: zodResolver(ChangePasswordSchema),
+    resolver: zodResolver(getChangePasswordSchema(t)),
     defaultValues: {
       currentPassword: '',
       newPassword: '',
