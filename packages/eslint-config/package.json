@@ -2,6 +2,7 @@
   "name": "@ragenai/eslint-config",
   "version": "1.0.0",
   "private": true,
+  "license": "Apache-2.0",
   "description": "One ESLint flat config for every app in the monorepo: shared base rules, with Next and Node variants",
   "type": "module",
   "exports": {

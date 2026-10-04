@@ -2,6 +2,7 @@
   "name": "@ragenai/crypto",
   "version": "1.0.0",
   "private": true,
+  "license": "Apache-2.0",
   "description": "Envelope encryption — the KeyProvider interface, its Scaleway/AWS/local implementations and the AES-256-GCM content helpers — shared by apps/web, apps/api and apps/worker (ADR-02, ADR-06)",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

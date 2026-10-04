@@ -2,6 +2,7 @@
   "name": "@ragenai/rag-core",
   "version": "1.0.0",
   "private": true,
+  "license": "Apache-2.0",
   "description": "Vector-store contract shared by apps/web, apps/api and apps/worker (ADR-26)",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

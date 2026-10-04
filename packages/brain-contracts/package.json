@@ -2,6 +2,7 @@
   "name": "@ragenai/brain-contracts",
   "version": "1.0.0",
   "private": true,
+  "license": "Apache-2.0",
   "description": "Ragen Brain's exchange contracts — knowledge-page frontmatter, the bundle manifest and the published-file metadata — shared by apps/web and apps/worker so the bundle a customer keeps and the page Ragen indexes cannot disagree",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

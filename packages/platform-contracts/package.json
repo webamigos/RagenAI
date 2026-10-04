@@ -2,6 +2,7 @@
   "name": "@ragenai/platform-contracts",
   "version": "1.0.0",
   "private": true,
+  "license": "Apache-2.0",
   "description": "Cross-app platform contracts — the LLM catalogue, the model price table, feature flags, MCP connector metadata and the tenant-scope model map — shared by apps/web, apps/api, apps/admin and apps/worker (ADR-33)",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

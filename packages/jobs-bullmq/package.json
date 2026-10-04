@@ -2,6 +2,7 @@
   "name": "@ragenai/jobs-bullmq",
   "version": "1.0.0",
   "private": true,
+  "license": "Apache-2.0",
   "description": "The BullMQ adapter behind the @ragenai/jobs seam \u2014 the only package that imports bullmq",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

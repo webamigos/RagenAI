@@ -2,6 +2,7 @@
   "name": "@ragenai/connector-guard",
   "version": "1.0.0",
   "private": true,
+  "license": "Apache-2.0",
   "description": "The SSRF address policy for connector URLs \u2014 the classification, the guarded fetch and the guarded MCP transport \u2014 shared by apps/web, apps/api and apps/admin",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

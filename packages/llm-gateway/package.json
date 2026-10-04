@@ -2,6 +2,7 @@
   "name": "@ragenai/llm-gateway",
   "version": "1.0.0",
   "private": true,
+  "license": "Apache-2.0",
   "description": "In-process LLM gateway: routes a model id to an AI SDK provider, replacing the LiteLLM proxy's data plane (ADR-04 successor, spec 2026-09-14 Phase B)",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
