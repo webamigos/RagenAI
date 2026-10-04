@@ -85,7 +85,8 @@ export const FileSearch = ({
           value={value}
           onChange={onChange}
           containerClassName="!pt-0"
-          className="pl-3 w-72 outline-none"
+          // The width belongs to the toolbar that places it, not to the field.
+          className="pl-3 w-full outline-none"
           iconRight={
             value ? (
               <button

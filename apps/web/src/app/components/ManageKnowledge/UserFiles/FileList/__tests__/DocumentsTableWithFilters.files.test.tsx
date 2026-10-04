@@ -363,6 +363,55 @@ describe('DocumentsTableWithFilters — the filter row', () => {
   });
 
   /**
+   * jsdom does no layout, so whether the row fits on one line cannot be
+   * measured here — what can be pinned is the structure that makes it fit.
+   * The search field sat inside the chips' wrapping box at a fixed 18rem, and
+   * a wrapping box breaks the line rather than shrinking anything, so on a
+   * 14" laptop with the app sidebar open the last chip fell to a second row.
+   * The search field is now its own flexible box beside the chips: it narrows
+   * first, and only then do the chips wrap.
+   */
+  it('gives the search field its own flexible box, outside the chips that wrap', () => {
+    renderComponent({
+      result: makeResult([makeFile('a', 'alfa.pdf')]),
+      search: <input aria-label="Search file names" />,
+      viewToggle: <button type="button">Grid</button>,
+    });
+
+    const slot = screen.getByTestId('files-toolbar-search');
+    const filters = screen.getByTestId('files-toolbar-filters');
+    const row = slot.parentElement!;
+
+    expect(slot).toContainElement(
+      screen.getByRole('textbox', { name: 'Search file names' }),
+    );
+    expect(slot).toHaveClass('md:flex-1', 'md:min-w-32', 'md:max-w-72');
+
+    // The chips wrap among themselves; the search field is not one of them.
+    expect(filters).toHaveClass('flex-wrap', 'min-w-0');
+    expect(filters).not.toContainElement(slot);
+    expect(filters).toContainElement(screen.getByTestId('filter-file-type'));
+    expect(filters).toContainElement(screen.getByTestId('sort-chip'));
+
+    // Search, chips and the view toggle share one row that does not wrap.
+    expect(filters.parentElement).toBe(row);
+    expect(row).toHaveClass('flex');
+    expect(row).not.toHaveClass('flex-wrap');
+    expect(row).toContainElement(screen.getByRole('button', { name: 'Grid' }));
+    expect(filters).not.toContainElement(
+      screen.getByRole('button', { name: 'Grid' }),
+    );
+  });
+
+  it('renders no search slot when it is not given a search field', () => {
+    renderComponent({ result: makeResult([makeFile('a', 'alfa.pdf')]) });
+
+    expect(
+      screen.queryByTestId('files-toolbar-search'),
+    ).not.toBeInTheDocument();
+  });
+
+  /**
    * "Clear all", the design's word. It appears only once a filter is set —
    * a link offering to clear nothing is noise.
    */
