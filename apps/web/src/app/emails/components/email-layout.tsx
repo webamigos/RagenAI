@@ -14,13 +14,15 @@ import { Tailwind } from '@react-email/tailwind';
 
 type Props = {
   preview: string;
+  /** The language of the message, for the `lang` of the document. */
+  locale: string;
   children: ReactNode;
 };
 
 const LOGO_URL = 'https://app.ragen.ai/assets/ragen-logo-on-light-bg.svg';
 
-export const EmailLayout = ({ preview, children }: Props) => (
-  <Html>
+export const EmailLayout = ({ preview, locale, children }: Props) => (
+  <Html lang={locale}>
     <Head />
     <Preview>{preview}</Preview>
     <Tailwind>

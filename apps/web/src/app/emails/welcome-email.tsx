@@ -1,38 +1,37 @@
 import { Button, Hr, Text } from '@react-email/components';
 import { EmailLayout } from './components/email-layout';
 import { getBaseUrl } from './utils/base-url';
+import type { EmailTranslator } from './utils/email-translator';
+
+/** Where a new user's questions go. Not translated: it is an address. */
+const CONTACT_EMAIL = 'hello@webamigos.pl';
 
 type Props = {
   name: string | undefined;
+  locale: string;
+  /** The `emails.welcome` strings in `locale`. */
+  t: EmailTranslator;
 };
 
-const WelcomeEmail = ({ name }: Props) => (
-  <EmailLayout preview="Korzystaj w bezpieczny sposób z AI w swojej firmie">
+const WelcomeEmail = ({ name, locale, t }: Props) => (
+  <EmailLayout locale={locale} preview={t('preview')}>
     <Text className="text-base leading-6 text-[#525f7f]">
-      Cześć{name ? ` ${name}` : ''}!
+      {name ? t('greeting-named', { name }) : t('greeting')}
     </Text>
+    <Text className="text-base leading-6 text-[#525f7f]">{t('thanks')}</Text>
+    <Text className="text-base leading-6 text-[#525f7f]">{t('mission')}</Text>
     <Text className="text-base leading-6 text-[#525f7f]">
-      Dziękujemy za rejestrację w Ragen AI :)
-    </Text>
-    <Text className="text-base leading-6 text-[#525f7f]">
-      Pracujemy nad tym projektem, aby pomóc w łatwy sposób budować asystentów
-      AI.
-    </Text>
-    <Text className="text-base leading-6 text-[#525f7f]">
-      W najbliższym czasie będziemy rozwijać nasze rozwiązanie, więc warto dodać
-      ten adres e-mail do kontaktów - nie ominą Cię wtedy informacje o nowych
-      funkcjonalnościach.
+      {t('contacts-tip')}
     </Text>
     <Button
       className="block w-full rounded-[5px] bg-[#394d9d] px-2.5 py-2.5 text-center text-base font-bold text-white no-underline"
       href={getBaseUrl()}
     >
-      Przejdź do aplikacji Ragen
+      {t('button')}
     </Button>
     <Hr className="my-5 border-[#e6ebf1]" />
     <Text className="text-base leading-6 text-[#525f7f]">
-      Jeśli masz jakieś pytania, prośby lub pomysły związane z działaniem
-      aplikacji, to śmiało napisz na adres hello@webamigos.pl.
+      {t('questions', { email: CONTACT_EMAIL })}
     </Text>
   </EmailLayout>
 );

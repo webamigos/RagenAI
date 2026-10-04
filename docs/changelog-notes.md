@@ -105,6 +105,19 @@ archive is the blog.
   changed while it was being indexed. Documents revoked before this release are
   corrected the next time anyone touches their sharing, or when they are
   re-indexed; there is no sweep over old ones yet. ([#1245](https://github.com/webamigos/RagenAI/issues/1245))
+### Email
+
+- `[major]` **Ragen's emails speak the reader's language.** Invitations,
+  password resets, address verification, the welcome message and security
+  alerts were Polish – subject and body – whatever language the person
+  spoke. They are now written in any of the 17 languages the panel ships. The
+  language is the one the request came in: an administrator's language for the
+  invitations they send, the browser's for someone signing up or resetting a
+  password; English when there is nothing to go on. Security alerts go to the
+  people who run the installation, so they use the new optional
+  `SECURITY_ALERT_LOCALE` (default English) and never the language of the
+  request that raised them.
+
 ### Usage and limits
 
 - `[brief]` **Reranking counts toward the monthly cost limit.** The default
