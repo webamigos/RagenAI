@@ -8,7 +8,7 @@ export type DiagnosticCopy = { label: string; advice: string };
 /**
  * The words for each check, written out one literal key at a time.
  *
- * Not `t(`${check}-label`)`: `i18n-keys-exist-in-both-locales.test.ts` can
+ * Not `t(`${check}-label`)`: `i18n-keys-exist-in-every-locale.test.ts` can
  * only verify a key it can read, and a template literal would let a check
  * added to `DIAGNOSTIC_CHECKS` render as its raw key in Polish without any
  * test noticing. The `Record` makes a missing check a type error instead.
