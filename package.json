@@ -111,7 +111,7 @@
     "prettier": "^3.9.8",
     "prisma": "^7.10.0",
     "promptfoo": "^0.123.1",
-    "react-email": "^5.2.9",
+    "react-email": "5.2.10",
     "semantic-release": "^24.1.0",
     "shadcn": "^3.8.5",
     "tailwind-merge": "^2.6.1",
@@ -287,10 +287,7 @@
     },
     "protobufjs": "^8.7.0",
     "tar": "^7.5.22",
-    "whatwg-url@17.1.1": "17.1.0",
-    "@react-email/preview-server": {
-      "next": "$next"
-    }
+    "whatwg-url@17.1.1": "17.1.0"
   },
   "resolutions": {
     "zod": "^4.3.6"
