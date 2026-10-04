@@ -462,15 +462,21 @@ work, and D packages the result.
 
   *Done 2026-10-03* (#1520), with the organization's embedded widget always
   strict (it has no assistant to carry the setting).
-- [x] **C3.** Measure C2 against C1's baseline, including the over-refusal
+- [ ] **C3.** Measure C2 against C1's baseline, including the over-refusal
   arm. Build the grader (behind a key, default off) only if the agreed
   threshold is missed; otherwise mark this step "not needed", with the
   numbers.
 
-  *Done 2026-10-03:* strict 26/28 against baseline 23/28 on the guard
-  corpus, every strict run above every baseline run, no over-refusal on
-  `kolej` attributable to the rule. **Grader not needed** (7% of guard cases
-  left failing, 4% with a forbidden figure).
+  *Measured 2026-10-03:* strict 26/28 against baseline 23/28 on the guard
+  corpus (v1, with its citation gate set aside), every strict run above every
+  baseline run, no over-refusal on `kolej` attributable to the rule. **The
+  grader decision is open:** no failure share was agreed before measuring.
+  Proposed threshold: build the grader if strict leaves more than 10% of guard
+  cases failing, counted over graded cases, with a citation on the statement
+  of absence counted as a failure (the corpus v3 rubric rule). Strict leaves
+  2/28 (7%) on v1's pass criteria without the citation gate; v3's rubric rule
+  has not been run yet. To tick: agree the threshold, then run the guard
+  corpus v3 under strict and compare.
 
 ### Phase D — a number we can quote
 

@@ -212,6 +212,11 @@ describe('renderMarkdown', () => {
     ],
   };
 
+  it('does not claim a passed guard question proves retrieval', () => {
+    const md = renderMarkdown(report);
+    expect(md).toContain('a question that needs one of those figures');
+    expect(md).toContain('can be passed without');
+  });
   it('records the stack the numbers came from', () => {
     const md = renderMarkdown(report);
     expect(md).toContain('bge-multilingual-gemma2');

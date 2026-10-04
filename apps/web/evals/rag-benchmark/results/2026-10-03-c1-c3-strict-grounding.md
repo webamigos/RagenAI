@@ -227,7 +227,13 @@ v1 rubrics, so the new rubric rule is not applied):
 | strict | 26/28, 26/28, 26/28 | 26 |
 
 Every strict run beats every baseline run; the median gap (+3) sits at the
-harness's noise floor. **C3's grader is not needed:** without the citation
-gate strict leaves 2/28 guard cases failing (7%), 1/24 with a forbidden
-figure, and no over-refusal attributable to the rule on `kolej`.
+harness's noise floor. Without the citation gate strict leaves 2/28 guard
+cases failing (7%), 1/24 with a forbidden figure, and no over-refusal
+attributable to the rule on `kolej`.
+
+**Whether C3's grader is needed is not decided here.** The spec makes it
+conditional on an agreed failure share, and none was agreed before this run.
+The spec now records a proposed threshold (10% of graded guard cases, with a
+citation on the statement of absence counted per the v3 rubric) and what is
+left to run: the guard corpus v3 under strict.
 
