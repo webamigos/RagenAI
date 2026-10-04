@@ -2,11 +2,12 @@ import { describe, expect, it } from 'vitest';
 
 import {
   DEFAULT_RETURN_PATH,
-  ORGANIZATION_RETURN_KEY,
-  isOrganizationPath,
+  RETURN_PATH_KEY,
+  isMenuSectionPath,
   isSafeReturnPath,
   rememberPage,
   returnPath,
+  sectionOf,
 } from '../return-path';
 
 function memoryStorage(initial: Record<string, string> = {}) {
@@ -20,13 +21,24 @@ function memoryStorage(initial: Record<string, string> = {}) {
   };
 }
 
-describe('isOrganizationPath', () => {
-  it('is the section and everything under it, and nothing that merely starts like it', () => {
-    expect(isOrganizationPath('/organization')).toBe(true);
-    expect(isOrganizationPath('/organization/profile')).toBe(true);
-    expect(isOrganizationPath('/organization-settings')).toBe(false);
-    expect(isOrganizationPath('/chats/organization')).toBe(false);
-    expect(isOrganizationPath('/new')).toBe(false);
+describe('sectionOf', () => {
+  it('is each section and everything under it, and nothing that merely starts like it', () => {
+    expect(sectionOf('/organization')).toBe('organization');
+    expect(sectionOf('/organization/profile')).toBe('organization');
+    expect(sectionOf('/settings')).toBe('settings');
+    expect(sectionOf('/settings/account')).toBe('settings');
+    expect(sectionOf('/organization-settings')).toBeNull();
+    expect(sectionOf('/settingsx')).toBeNull();
+    expect(sectionOf('/chats/organization')).toBeNull();
+    expect(sectionOf('/chats/settings')).toBeNull();
+    expect(sectionOf('/new')).toBeNull();
+  });
+
+  it('agrees with isMenuSectionPath', () => {
+    for (const path of ['/organization/teams', '/settings/general']) {
+      expect(isMenuSectionPath(path)).toBe(true);
+    }
+    expect(isMenuSectionPath('/projects')).toBe(false);
   });
 });
 
@@ -47,6 +59,7 @@ describe('isSafeReturnPath', () => {
     ['a backslash trick', '/\\evil.example'],
     ['a line break', '/new\nSet-Cookie: x=1'],
     ['a way back into the section', '/organization/profile'],
+    ['a way back into settings', '/settings/general'],
     ['the section itself with a query', '/organization?x=1'],
     ['something absurdly long', `/${'a'.repeat(3000)}`],
     ['not a string', 42],
@@ -84,6 +97,17 @@ describe('rememberPage and returnPath', () => {
     expect(returnPath(storage)).toBe('/chats/abc');
   });
 
+  it('remembers the page before either section, when the reader goes from settings into the organization', () => {
+    const storage = memoryStorage();
+
+    rememberPage(storage, '/chats/abc');
+    rememberPage(storage, '/settings/general');
+    rememberPage(storage, '/settings/account');
+    rememberPage(storage, '/organization/profile');
+
+    expect(returnPath(storage)).toBe('/chats/abc');
+  });
+
   it('follows the reader outside the section, to the latest page they were on', () => {
     const storage = memoryStorage();
 
@@ -102,14 +126,10 @@ describe('rememberPage and returnPath', () => {
     // Storage is writable by anything on the origin, so a value that is not a
     // path this app would send someone to falls back instead of being followed.
     expect(
-      returnPath(
-        memoryStorage({ [ORGANIZATION_RETURN_KEY]: '//evil.example' }),
-      ),
+      returnPath(memoryStorage({ [RETURN_PATH_KEY]: '//evil.example' })),
     ).toBe(DEFAULT_RETURN_PATH);
     expect(
-      returnPath(
-        memoryStorage({ [ORGANIZATION_RETURN_KEY]: '/organization/profile' }),
-      ),
+      returnPath(memoryStorage({ [RETURN_PATH_KEY]: '/organization/profile' })),
     ).toBe(DEFAULT_RETURN_PATH);
   });
 
@@ -118,6 +138,6 @@ describe('rememberPage and returnPath', () => {
 
     rememberPage(storage, '//evil.example');
 
-    expect(storage.getItem(ORGANIZATION_RETURN_KEY)).toBeNull();
+    expect(storage.getItem(RETURN_PATH_KEY)).toBeNull();
   });
 });

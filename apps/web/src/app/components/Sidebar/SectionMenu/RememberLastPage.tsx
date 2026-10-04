@@ -8,8 +8,8 @@ import { usePathname } from '@/i18n/routing';
 import { rememberPage } from './return-path';
 
 /**
- * Records the page the reader is on, so the organization section's "Main menu"
- * can take them back to it. Renders nothing; mounted once in the panel layout,
+ * Records the page the reader is on, so a section's "Main menu" (organization
+ * or settings) can take them back to it. Renders nothing; mounted once in the panel layout,
  * which persists across navigations, so it sees every page including the ones
  * visited before the section was entered.
  *

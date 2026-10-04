@@ -92,69 +92,47 @@ describe('label keys, now that one component renders both registries', () => {
     for (const page of [...settingsRegistry, ...organizationRegistry]) {
       expect(typeof resolve(page.labelKey)).toBe('string');
     }
-    expect(typeof resolve('settings-page.nav.organization-section')).toBe(
-      'string',
-    );
+    // The headings the two sidebar menus draw above their entries.
+    expect(typeof resolve('settings-page.title')).toBe('string');
+    expect(typeof resolve('organization-page.title')).toBe('string');
   });
 });
 
 /**
- * The rail's three eyebrows, as data on the entries.
+ * Which menu a screen appears in.
  *
- * The grouping is deliberately *not* "which registry did this come from".
- * That split follows where the guard is — `/organization/**` has a layout
- * check and `/settings/**` does not — and PII policy and Knowledge analytics
- * sit on the guarded side while belonging under Privacy in the rail. These
- * assert the two stay independent, because collapsing them back into one
- * would either move two routes out from behind their guard or put two privacy
- * screens under the wrong heading.
+ * The settings menu used to merge both registries under three eyebrows, which
+ * put the organization's screens — Knowledge analytics and PII policy under
+ * "Privacy", the rest under "Organization" — in the personal settings menu.
+ * Each section now has its own menu in the sidebar, drawn from its own
+ * registry, so a screen's menu is the registry it is in. These pin that the
+ * split matches the guard: what needs an administrator is under the guarded
+ * prefix, and what is personal is not.
  */
-describe('rail grouping', () => {
-  it('gives every entry in both registries a group', () => {
-    for (const page of [...settingsRegistry, ...organizationRegistry]) {
-      expect(page.group).toBeDefined();
-    }
-  });
-
-  it('puts every personal screen under You', () => {
+describe('menu membership', () => {
+  it('keeps every personal screen under /settings, open to any member', () => {
     for (const page of settingsRegistry) {
-      expect(page.group).toBe('you');
+      expect(page.path.startsWith('/settings/')).toBe(true);
+      expect(page.visibility.requireRole ?? 'user').toBe('user');
     }
   });
 
-  it('groups the two privacy screens under Privacy, still guarded', () => {
-    const privacy = organizationRegistry.filter((p) => p.group === 'privacy');
+  it('lists Knowledge analytics and PII policy with the organization, behind its guard', () => {
+    const ids = organizationRegistry.map((p) => p.id);
 
-    expect(privacy.map((p) => p.id).sort()).toEqual([
-      'org-knowledge-analytics',
-      'org-pii-policy',
-    ]);
-    // The point of the separate group is that it changes the heading and
-    // nothing else: both are still under the prefix their guard covers.
-    for (const page of privacy) {
+    expect(ids).toContain('org-knowledge-analytics');
+    expect(ids).toContain('org-pii-policy');
+    for (const page of organizationRegistry) {
       expect(page.path.startsWith('/organization/')).toBe(true);
       expect(page.visibility.requireRole).toBe('orgAdmin');
     }
   });
 
-  it('never puts a personal screen under an administrator heading', () => {
-    // A `you` entry in the organization registry would render above the
-    // Privacy heading while still requiring orgAdmin — a link a member sees
-    // filtered away with no explanation of where it went.
+  it('lists no screen in both menus', () => {
+    const personal = new Set(settingsRegistry.map((p) => p.path));
+
     for (const page of organizationRegistry) {
-      expect(page.group).not.toBe('you');
-    }
-  });
-
-  it('has a translation for every section heading', () => {
-    const nav = messages['settings-page'].nav as Record<string, string>;
-
-    for (const key of [
-      'you-section',
-      'privacy-section',
-      'organization-section',
-    ]) {
-      expect(nav[key]).toBeTruthy();
+      expect(personal.has(page.path)).toBe(false);
     }
   });
 });

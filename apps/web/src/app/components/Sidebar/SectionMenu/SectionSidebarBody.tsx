@@ -18,37 +18,44 @@ import type { SettingsPage } from '@/features/settings/registry';
 
 import {
   DEFAULT_RETURN_PATH,
-  isOrganizationPath,
   returnPath,
+  sectionOf,
+  type MenuSection,
 } from './return-path';
 
 /** What the sidebar needs of a registry entry, which is all that crosses from the server. */
-export type OrganizationNavItem = Pick<
+export type SectionNavItem = Pick<
   SettingsPage,
   'id' | 'path' | 'labelKey' | 'icon'
 >;
 
 /**
- * The organization menu, in the sidebar's body in place of the thread list
- * while the reader is inside `/organization` (#1399).
+ * A section's menu, in the sidebar's body in place of the thread list while
+ * the reader is inside that section: the organization's pages under
+ * `/organization` (#1399), the user's own under `/settings`.
  *
- * It used to be a second column beside the sidebar, which left the page a third
- * less width on a laptop. The items are filtered on the server, in the panel
- * layout, with the same predicate the settings pages use — this component draws
- * what it is handed and decides nothing about who may see what.
+ * Both used to be a second column beside the sidebar, which left the page a
+ * third less width on a laptop. The items are filtered on the server, in the
+ * panel layout, with the same predicate the pages' guards use — this component
+ * draws what it is handed and decides nothing about who may see what.
  *
- * Renders nothing outside the section.
+ * Renders nothing outside its section.
  */
-export function OrganizationSidebarBody({
+export function SectionSidebarBody({
+  section,
+  titleKey,
   items,
 }: {
-  items: readonly OrganizationNavItem[];
+  section: MenuSection;
+  /** A fully qualified message key for the heading above the items. */
+  titleKey: string;
+  items: readonly SectionNavItem[];
 }) {
   const pathname = usePathname();
   const t = useTranslations();
   const [back, setBack] = useState(DEFAULT_RETURN_PATH);
 
-  const inSection = isOrganizationPath(pathname);
+  const inSection = sectionOf(pathname) === section;
 
   // Read in an effect, not during render: storage does not exist on the server,
   // and a link whose target differed between the server's HTML and the client's
@@ -71,7 +78,7 @@ export function OrganizationSidebarBody({
   return (
     <SidebarBody>
       <SidebarSection>
-        <SidebarItem href={back} data-testid="organization-back">
+        <SidebarItem href={back} data-testid={`${section}-back`}>
           <ArrowLeftIcon className="size-5 shrink-0 stroke-muted-foreground" />
           <SidebarLabel className="font-normal">
             {t('sidebar.back-to-main-menu')}
@@ -82,7 +89,7 @@ export function OrganizationSidebarBody({
       <SidebarDivider className="my-2" />
 
       <SidebarSection>
-        <SidebarHeading>{t('organization-page.title')}</SidebarHeading>
+        <SidebarHeading>{t(titleKey)}</SidebarHeading>
         {items.map((item) => {
           const Icon = SETTINGS_ICONS[item.icon];
           const isActive =

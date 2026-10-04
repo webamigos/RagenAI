@@ -12,7 +12,6 @@ const page = (overrides: Partial<SettingsPage> = {}): SettingsPage => ({
   labelKey: 'test',
   icon: 'cog',
   order: 100,
-  group: 'you',
   visibility: {},
   ...overrides,
 });
