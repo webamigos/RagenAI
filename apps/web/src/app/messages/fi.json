@@ -2054,7 +2054,11 @@
       "saving": "Tallennetaan...",
       "cancel": "Peruuta",
       "edit-success": "Organisaation profiili päivitetty",
-      "edit-error": "Profiilin päivittämisessä tapahtui virhe"
+      "edit-error": "Profiilin päivittämisessä tapahtui virhe",
+      "validation": {
+        "name-required": "Nimi on pakollinen",
+        "name-too-long": "Nimi voi olla enintään {max} merkkiä pitkä"
+      }
     },
     "members": {
       "title": "Käyttäjät",
@@ -2100,7 +2104,12 @@
       "copy-credentials": "Kopioi kirjautumistiedot",
       "copied": "Kopioitu",
       "done": "Valmis",
-      "confirm-remove-title": "Poistetaanko jäsen?"
+      "confirm-remove-title": "Poistetaanko jäsen?",
+      "validation": {
+        "invalid-email": "Anna kelvollinen sähköpostiosoite",
+        "role-required": "Rooli on pakollinen",
+        "full-name-required": "Etu- ja sukunimi ovat pakollisia"
+      }
     },
     "invitations": {
       "title": "Kutsut",
@@ -2171,7 +2180,11 @@
       "saving": "Tallennetaan...",
       "cancel": "Peruuta",
       "success": "Profiili päivitetty",
-      "error": "Profiilin päivittäminen epäonnistui"
+      "error": "Profiilin päivittäminen epäonnistui",
+      "validation": {
+        "name-required": "Nimi on pakollinen",
+        "name-too-long": "Nimi voi olla enintään {max} merkkiä pitkä"
+      }
     },
     "password": {
       "current": "Nykyinen salasana",
@@ -2181,7 +2194,12 @@
       "demo-account-locked": "Tämä on jaettu demotili, joten sen salasanaa ei voi muuttaa.",
       "changing": "Vaihdetaan salasanaa...",
       "success": "Salasana vaihdettu",
-      "error": "Virheellinen nykyinen salasana"
+      "error": "Virheellinen nykyinen salasana",
+      "validation": {
+        "min-length": "Vähintään {min} merkkiä",
+        "passwords-mismatch": "Salasanat eivät täsmää",
+        "must-differ": "Uuden salasanan on oltava eri kuin nykyinen"
+      }
     },
     "sessions": {
       "title": "Aktiiviset istunnot",

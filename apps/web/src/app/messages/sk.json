@@ -2054,7 +2054,11 @@
       "saving": "Ukladanie...",
       "cancel": "Zrušiť",
       "edit-success": "Profil organizácie bol aktualizovaný",
-      "edit-error": "Pri aktualizácii profilu došlo k chybe"
+      "edit-error": "Pri aktualizácii profilu došlo k chybe",
+      "validation": {
+        "name-required": "Názov je povinný",
+        "name-too-long": "Názov môže mať najviac {max} znakov"
+      }
     },
     "members": {
       "title": "Používatelia",
@@ -2100,7 +2104,12 @@
       "copy-credentials": "Kopírovať prihlasovacie údaje",
       "copied": "Skopírované",
       "done": "Hotovo",
-      "confirm-remove-title": "Odstrániť tohto člena?"
+      "confirm-remove-title": "Odstrániť tohto člena?",
+      "validation": {
+        "invalid-email": "Zadajte platnú e-mailovú adresu",
+        "role-required": "Rola je povinná",
+        "full-name-required": "Meno a priezvisko sú povinné"
+      }
     },
     "invitations": {
       "title": "Pozvánky",
@@ -2171,7 +2180,11 @@
       "saving": "Ukladanie...",
       "cancel": "Zrušiť",
       "success": "Profil bol aktualizovaný",
-      "error": "Profil sa nepodarilo aktualizovať"
+      "error": "Profil sa nepodarilo aktualizovať",
+      "validation": {
+        "name-required": "Meno je povinné",
+        "name-too-long": "Meno môže mať najviac {max} znakov"
+      }
     },
     "password": {
       "current": "Aktuálne heslo",
@@ -2181,7 +2194,12 @@
       "demo-account-locked": "Toto je zdieľaný demo účet, preto nie je možné zmeniť jeho heslo.",
       "changing": "Menenie hesla...",
       "success": "Heslo bolo zmenené",
-      "error": "Neplatné aktuálne heslo"
+      "error": "Neplatné aktuálne heslo",
+      "validation": {
+        "min-length": "Minimálne {min} znakov",
+        "passwords-mismatch": "Heslá sa nezhodujú",
+        "must-differ": "Nové heslo musí byť iné ako súčasné"
+      }
     },
     "sessions": {
       "title": "Aktívne relácie",

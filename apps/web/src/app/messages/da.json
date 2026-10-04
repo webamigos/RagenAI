@@ -2054,7 +2054,11 @@
       "saving": "Gemmer...",
       "cancel": "Annuller",
       "edit-success": "Organisationens profil er opdateret",
-      "edit-error": "Der opstod en fejl under opdatering af profilen"
+      "edit-error": "Der opstod en fejl under opdatering af profilen",
+      "validation": {
+        "name-required": "Navn er påkrævet",
+        "name-too-long": "Navnet må højst være på {max} tegn"
+      }
     },
     "members": {
       "title": "Brugere",
@@ -2100,7 +2104,12 @@
       "copy-credentials": "Kopier legitimationsoplysninger",
       "copied": "Kopieret",
       "done": "Færdig",
-      "confirm-remove-title": "Fjern dette medlem?"
+      "confirm-remove-title": "Fjern dette medlem?",
+      "validation": {
+        "invalid-email": "Angiv en gyldig e-mailadresse",
+        "role-required": "Rolle er påkrævet",
+        "full-name-required": "For- og efternavn er påkrævet"
+      }
     },
     "invitations": {
       "title": "Invitationer",
@@ -2171,7 +2180,11 @@
       "saving": "Gemmer...",
       "cancel": "Annuller",
       "success": "Profilen er opdateret",
-      "error": "Kunne ikke opdatere profilen"
+      "error": "Kunne ikke opdatere profilen",
+      "validation": {
+        "name-required": "Navn er påkrævet",
+        "name-too-long": "Navnet må højst være på {max} tegn"
+      }
     },
     "password": {
       "current": "Nuværende adgangskode",
@@ -2181,7 +2194,12 @@
       "demo-account-locked": "Dette er den fælles demokonto, så dens adgangskode kan ikke ændres.",
       "changing": "Skifter adgangskode...",
       "success": "Adgangskoden er ændret",
-      "error": "Ugyldig nuværende adgangskode"
+      "error": "Ugyldig nuværende adgangskode",
+      "validation": {
+        "min-length": "Mindst {min} tegn",
+        "passwords-mismatch": "Adgangskoderne stemmer ikke overens",
+        "must-differ": "Den nye adgangskode skal være forskellig fra den nuværende"
+      }
     },
     "sessions": {
       "title": "Aktive sessioner",

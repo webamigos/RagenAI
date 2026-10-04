@@ -2054,7 +2054,11 @@
       "saving": "Zapisywanie...",
       "cancel": "Anuluj",
       "edit-success": "Profil organizacji został zaktualizowany",
-      "edit-error": "Wystąpił błąd podczas aktualizacji profilu"
+      "edit-error": "Wystąpił błąd podczas aktualizacji profilu",
+      "validation": {
+        "name-required": "Nazwa jest wymagana",
+        "name-too-long": "Nazwa może mieć maksymalnie {max} znaków"
+      }
     },
     "members": {
       "title": "Użytkownicy",
@@ -2100,7 +2104,12 @@
       "copy-credentials": "Kopiuj dane",
       "copied": "Skopiowano",
       "done": "Gotowe",
-      "confirm-remove-title": "Usunąć użytkownika?"
+      "confirm-remove-title": "Usunąć użytkownika?",
+      "validation": {
+        "invalid-email": "Nieprawidłowy adres email",
+        "role-required": "Rola jest wymagana",
+        "full-name-required": "Imię i nazwisko są wymagane"
+      }
     },
     "invitations": {
       "title": "Zaproszenia",
@@ -2171,7 +2180,11 @@
       "saving": "Zapisywanie...",
       "cancel": "Anuluj",
       "success": "Profil zaktualizowany",
-      "error": "Nie udało się zaktualizować profilu"
+      "error": "Nie udało się zaktualizować profilu",
+      "validation": {
+        "name-required": "Nazwa jest wymagana",
+        "name-too-long": "Nazwa może mieć maksymalnie {max} znaków"
+      }
     },
     "password": {
       "current": "Obecne hasło",
@@ -2181,7 +2194,12 @@
       "demo-account-locked": "To wspólne konto demonstracyjne, więc jego hasła nie można zmienić.",
       "changing": "Zmiana hasła...",
       "success": "Hasło zostało zmienione",
-      "error": "Nieprawidłowe obecne hasło"
+      "error": "Nieprawidłowe obecne hasło",
+      "validation": {
+        "min-length": "Minimum {min} znaków",
+        "passwords-mismatch": "Hasła nie pasują",
+        "must-differ": "Nowe hasło musi być inne niż obecne"
+      }
     },
     "sessions": {
       "title": "Aktywne sesje",
