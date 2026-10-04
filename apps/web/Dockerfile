@@ -157,6 +157,14 @@ RUN cd /tmp && npm init -y > /dev/null 2>&1 && npm install prisma@7.3.0 > /dev/n
     && rm -rf /tmp/node_modules /tmp/package.json /tmp/package-lock.json \
     && chown -R nextjs:nodejs /app/node_modules
 
+# The local-storage volume in docker-compose.fullapp.yml mounts here. An empty
+# named volume takes the owner of the directory it is mounted over, and
+# without this one it was root's — so the first upload failed with EACCES and
+# the stack could never index a document. web, api and the worker share the
+# volume and all run as uid 1001, so whichever starts first leaves a directory
+# the other two can write to.
+RUN mkdir -p /data/storage && chown nextjs /data/storage
+
 USER nextjs
 
 EXPOSE 3000

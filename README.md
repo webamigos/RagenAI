@@ -212,16 +212,20 @@ a range rather than a minimum, and the wizard refuses outside it before it
 clones anything; `--skip-docker`,
 `--skip-install` and `--yes` are available for a more manual or scripted run.
 
-Already have the repo cloned:
+Rather run the applications in containers too:
 
 ```bash
-npm run ragen:up:everything
+npx create-ragen-app my-ragen-app --skip-install
+cd my-ragen-app && npm run ragen:up:everything
 ```
 
-Builds and starts every Ragen application — web, API, ingest worker, admin —
-alongside Postgres, Qdrant, Redis and Docling. No Node
-toolchain on the host, which makes it the fastest way to evaluate a self-hosted
-install.
+With `--skip-install` the wizard only writes `.env.local` — the secrets, your
+model key and the model names — and installs nothing. The stack then builds
+every Ragen application (web, API, ingest worker, admin), migrates and seeds
+the database itself, and starts them alongside Postgres, Qdrant, Redis and
+Docling. The first run builds four images one at a time and takes a while.
+Already have the repo cloned and a `.env.local`? `npm run ragen:up:everything`
+on its own does the same.
 
 Deploying rather than evaluating? Every release publishes the application
 images, so a deployment that is not tracking `main` does not have to compile

@@ -200,6 +200,14 @@ COPY package.json ./package.json
 # /app/apps/worker.
 COPY infra/llm-gateway ./infra/llm-gateway
 
+# The local-storage volume in docker-compose.fullapp.yml mounts here. An empty
+# named volume takes the owner of the directory it is mounted over, and
+# without this one it was root's — so the first upload failed with EACCES and
+# the stack could never index a document. web, api and the worker share the
+# volume and all run as uid 1001, so whichever starts first leaves a directory
+# the other two can write to.
+RUN mkdir -p /data/storage && chown worker /data/storage
+
 USER worker
 
 # Prefer IPv6 DNS resolution for Railway internal networking (neutral on IPv4-only networks)
