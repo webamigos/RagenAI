@@ -67,8 +67,12 @@ export const POLL_INTERVAL_MS = 8_000;
 const DEFAULT_TIMEOUT_S = 600;
 /** A rate-limited request is tried this many times before giving up. */
 const RATE_LIMIT_ATTEMPTS = 3;
-/** Used when a 429 carries no `Retry-After`; the upload limit is per minute. */
-const DEFAULT_RETRY_S = 60;
+/**
+ * The longest single wait. The throttlers ask for 60 s at most; a larger
+ * `Retry-After` is not a per-minute limit, and sleeping it out unattended is
+ * not what someone running a command expects.
+ */
+const MAX_RETRY_S = 120;
 
 export async function runKb(args: string[], deps: KbDeps): Promise<number> {
   const [command, ...rest] = args;
@@ -211,6 +215,13 @@ async function remove(deps: KbDeps, api: ApiClient, flags: Flags) {
     } catch (error) {
       failed++;
       deps.err(error instanceof Error ? error.message : String(error));
+      if (stopsTheBatch(error)) {
+        const left = ids.length - ids.indexOf(id) - 1;
+        if (left > 0) {
+          deps.err(`Stopped: ${left} file(s) not deleted.`);
+        }
+        break;
+      }
     }
   }
   return failed > 0 ? 1 : 0;
@@ -252,11 +263,11 @@ async function upload(deps: KbDeps, api: ApiClient, flags: Flags) {
       deps.err(
         `${path}: ${error instanceof Error ? error.message : String(error)}`,
       );
-      // A refused key refuses every file after this one too.
-      if (
-        error instanceof ApiError &&
-        (error.status === 401 || error.status === 403)
-      ) {
+      if (stopsTheBatch(error)) {
+        const left = paths.length - paths.indexOf(path) - 1;
+        if (left > 0) {
+          deps.err(`Stopped: ${left} file(s) not uploaded.`);
+        }
         break;
       }
     }
@@ -304,12 +315,8 @@ async function outlastRateLimit<T>(
     try {
       return await request();
     } catch (error) {
-      if (
-        error instanceof ApiError &&
-        error.status === 429 &&
-        attempt < RATE_LIMIT_ATTEMPTS
-      ) {
-        const seconds = error.retryAfter ?? DEFAULT_RETRY_S;
+      const seconds = waitableRetry(error);
+      if (seconds !== undefined && attempt < RATE_LIMIT_ATTEMPTS) {
         deps.err(`Rate limited; waiting ${seconds}s before ${label}.`);
         await deps.sleep(seconds * 1000);
         continue;
@@ -317,6 +324,34 @@ async function outlastRateLimit<T>(
       throw error;
     }
   }
+}
+
+/**
+ * How long to wait out a 429, or `undefined` when it is not one to wait out.
+ * The per-minute throttlers always send a `Retry-After`; a 429 without one is
+ * a usage ceiling that lifts next month, and retrying it only delays the
+ * failure.
+ */
+function waitableRetry(error: unknown): number | undefined {
+  if (
+    !(error instanceof ApiError) ||
+    error.status !== 429 ||
+    error.retryAfter === undefined
+  ) {
+    return undefined;
+  }
+  return Math.min(error.retryAfter, MAX_RETRY_S);
+}
+
+/**
+ * An error that every later request in the batch would meet too: a refused
+ * or disallowed key, or a limit still in force after the retries.
+ */
+function stopsTheBatch(error: unknown): boolean {
+  return (
+    error instanceof ApiError &&
+    (error.status === 401 || error.status === 403 || error.status === 429)
+  );
 }
 
 /**
@@ -341,6 +376,7 @@ async function waitForIndex(
     deps.out(`Waiting for ${pending().length} file(s) to be indexed…`);
   }
   let delay = POLL_INTERVAL_MS;
+  let stoppedBy: string | undefined;
   while (pending().length > 0 && deps.now() < deadline) {
     // The last round is cut short rather than skipped, so a timeout shorter
     // than the interval still asks once before giving up.
@@ -358,19 +394,28 @@ async function waitForIndex(
         }
       }
     } catch (error) {
-      if (error instanceof ApiError && error.status === 429) {
-        delay = (error.retryAfter ?? DEFAULT_RETRY_S) * 1000;
+      const seconds = waitableRetry(error);
+      if (seconds !== undefined) {
+        delay = seconds * 1000;
         continue;
       }
-      throw error;
+      // Anything else ends the wait, not the command: the uploads happened,
+      // and a script still needs their ids and the statuses known so far.
+      stoppedBy = error instanceof Error ? error.message : String(error);
+      break;
     }
   }
 
   const stillPending = pending();
   for (const file of stillPending) {
     deps.err(
-      `${file.filename} is still being indexed after ${timeoutS}s. Check later: ragen kb status ${file.id}`,
+      stoppedBy
+        ? `${file.filename} was still being indexed when waiting stopped. Check later: ragen kb status ${file.id}`
+        : `${file.filename} is still being indexed after ${timeoutS}s. Check later: ragen kb status ${file.id}`,
     );
+  }
+  if (stoppedBy) {
+    deps.err(`Stopped waiting: ${stoppedBy}`);
   }
   const errored = [...latest.values()].filter((f) => f.status === 'error');
   for (const file of errored) {

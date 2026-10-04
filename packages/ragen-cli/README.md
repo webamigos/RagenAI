@@ -50,7 +50,10 @@ echo "$KEY" | ragen login --url https://api.example.com   # or piped
 ```
 
 or set them per shell, which wins over what is saved — as `--url` and
-`--api-key` win over both:
+`--api-key` win over both. **The saved key is only ever sent to the saved
+address**: with `--url` or `RAGEN_API_URL` naming another host, a key has to
+be given explicitly, or the command stops instead of sending the saved one
+there.
 
 ```bash
 export RAGEN_API_URL=https://api.example.com
@@ -156,11 +159,15 @@ because it could only disagree with the server.
 `--timeout` (default 600 s), so a script can gate on it. `status` exits
 non-zero when any file it names is in `error`.
 
-**Rate limits are waited out, not reported.** Every `/v1/files` route is
-throttled per minute and per address — ten requests in production — so a
-folder of documents meets the limit by design. On a 429 the CLI waits as long
-as the server's `Retry-After` asks (up to three tries per file), and `--wait`
-asks about every file it is waiting for in one request per round, every 8 s.
+**Per-minute limits are waited out; usage ceilings are not.** Uploads are
+throttled per minute and per address — ten in production — so a folder of
+documents meets the limit by design. On a 429 that carries a `Retry-After`
+(any `Retry-After-<tier>` too) the CLI waits as asked, at most 120 s, up to
+three tries per file. A 429 without one is a usage ceiling that lifts next
+month: it is reported with the server's message and stops the batch. `--wait`
+asks about every file it is waiting for in one request per round, every 8 s,
+and if a request fails for any other reason it stops waiting but still prints
+what was uploaded (with `--json`, the ids), and exits non-zero.
 
 `upload` takes files, not directories: let the shell expand `docs/*.pdf`.
 

@@ -47,14 +47,16 @@ describe('parseStoredConnection', () => {
 });
 
 describe('withStoredConnection', () => {
-  const stored = { url: 'https://saved', key: 'sk-saved' };
-
-  it('fills only what the environment leaves empty', () => {
+  it('passes the saved pair under its own names, leaving RAGEN_API_* alone', () => {
     expect(
-      withStoredConnection({ RAGEN_API_KEY: 'sk-env' }, stored),
-    ).toMatchObject({
-      RAGEN_API_URL: 'https://saved',
+      withStoredConnection(
+        { RAGEN_API_KEY: 'sk-env' },
+        { url: 'https://saved', key: 'sk-saved' },
+      ),
+    ).toEqual({
       RAGEN_API_KEY: 'sk-env',
+      RAGEN_SAVED_URL: 'https://saved',
+      RAGEN_SAVED_KEY: 'sk-saved',
     });
   });
 

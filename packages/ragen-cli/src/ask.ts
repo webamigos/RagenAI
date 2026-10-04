@@ -22,6 +22,12 @@ export interface AskDeps {
   env: Record<string, string | undefined>;
   /** Raw stdout, no newline added — the answer arrives in pieces. */
   write: (chunk: string) => void;
+  /**
+   * Whether stdout is a terminal. Streaming only helps a person watching; in
+   * a file or a pipe it is worse, because a guardrail can withdraw text that
+   * is already written and a file cannot unwrite it.
+   */
+  isTTY: boolean;
   out: (message: string) => void;
   err: (message: string) => void;
 }
@@ -37,7 +43,8 @@ const USAGE = [
   'Options',
   '  --assistant <id>      ask this assistant (or RAGEN_ASSISTANT_ID); see `ragen assistants ls`',
   '  --reasoning <level>   low, medium or high, for models that reason; ignored by others',
-  '  --no-stream           print the answer once it is complete',
+  '  --no-stream           print the answer once it is complete (the default',
+  '                        when output is not a terminal; --stream forces streaming)',
   CONNECTION_HELP,
   '  --json                print {"text": …} once complete',
 ].join('\n');
@@ -74,7 +81,12 @@ export async function runAsk(args: string[], deps: AskDeps): Promise<number> {
     const assistant =
       flags.values.get('--assistant') ?? deps.env.RAGEN_ASSISTANT_ID;
     const json = flags.switches.has('--json');
-    const stream = !json && !flags.switches.has('--no-stream');
+    // Streamed to a terminal by default; to a file or pipe only on request
+    // (`--stream`), since only the complete answer has guardrails applied.
+    const stream =
+      !json &&
+      !flags.switches.has('--no-stream') &&
+      (deps.isTTY || flags.switches.has('--stream'));
     const body = {
       content: question,
       stream,

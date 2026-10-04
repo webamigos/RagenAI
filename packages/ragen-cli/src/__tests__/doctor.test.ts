@@ -67,6 +67,16 @@ describe('ragen doctor', () => {
     expect(text()).toContain('(from RAGEN_API_URL)');
   });
 
+  it('does not probe another address with the saved key', async () => {
+    const { deps, text } = harness(healthy);
+    deps.env = { RAGEN_API_URL: 'https://other.example.com' };
+    await expect(runDoctor([], deps)).resolves.toBe(1);
+    expect(text()).toContain(
+      'no API key for this address; the saved one is for https://api.example.com and is not sent elsewhere',
+    );
+    expect(text()).not.toContain('ok    auth');
+  });
+
   it('fails without a connection and points at ragen login', async () => {
     const { deps, text } = harness(healthy);
     deps.stored = undefined;

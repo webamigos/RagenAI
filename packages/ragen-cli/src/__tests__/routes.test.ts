@@ -117,7 +117,7 @@ describe('the route manifest', () => {
     await runKb(['rm', 'file-a'], kb);
 
     await runSearch(['q'], io);
-    await runAsk(['q'], { ...io, write: () => {} });
+    await runAsk(['q'], { ...io, write: () => {}, isTTY: true });
     await runAssistants(['ls'], io);
 
     const brain = { ...io, writeFile: async () => {}, mkdir: async () => {} };
