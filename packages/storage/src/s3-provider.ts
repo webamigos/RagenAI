@@ -54,8 +54,13 @@ function isNotFound(err: unknown): boolean {
  * See docs/adrs/27-storage-abstraction-local-by-default.md's Update section.
  */
 function createS3Client(): S3Client {
+  // Compose passes a blank value, which means "AWS". Blank as @ragenai/env's
+  // `blankAsUndefined` reads it — empty or whitespace only — so the schema and
+  // the client cannot disagree about whether an endpoint was set.
+  const endpoint = process.env.S3_ENDPOINT_URL;
+
   return new S3Client({
-    endpoint: process.env.S3_ENDPOINT_URL,
+    endpoint: endpoint?.trim() ? endpoint : undefined,
     region: process.env.S3_REGION,
     // Accepts the spellings people actually write. apps/web used to compare
     // against '1' only, so S3_FORCE_PATH_STYLE=true silently did nothing

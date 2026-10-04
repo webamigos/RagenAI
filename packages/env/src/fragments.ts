@@ -223,7 +223,11 @@ export const observability = z.object({
 export const storage = z.object({
   STORAGE_PROVIDER: blankAsUndefined(z.enum(['s3', 'local']).default('local')),
   STORAGE_LOCAL_PATH: z.string().optional(),
-  S3_ENDPOINT_URL: httpUrl().optional(),
+  // Blank is unset: docker-compose.fullapp.yml passes
+  // `${S3_CONTAINER_ENDPOINT_URL:-${S3_ENDPOINT_URL:-}}`, which is an empty
+  // string on every install that is not on S3 — and that refused to boot the
+  // web app and the worker over a store they were not using.
+  S3_ENDPOINT_URL: blankAsUndefined(httpUrl().optional()),
   S3_BUCKET_NAME: z.string().optional(),
   S3_REGION: z.string().optional(),
   S3_ACCESS_KEY_ID: z.string().optional(),

@@ -71,6 +71,20 @@ COPY --from=build /app/packages ./packages
 # /app/apps/worker.
 COPY infra/llm-gateway ./infra/llm-gateway
 
-USER node
+# The local-storage volume in docker-compose.fullapp.yml mounts here. An empty
+# named volume takes the owner of the directory it is mounted over, and
+# without this one it was root's — so the first upload failed with EACCES and
+# the stack could never index a document. web, api and the worker share the
+# volume and all run as uid 1001, so whichever starts first leaves a directory
+# the other two can write to.
+#
+# Not `node` (uid 1000), which this image used to run as: api writes to the
+# same volume (uploads through the public API), and a directory web created
+# with the default 0755 is not writable by another uid. Everything under /app
+# is root's and world-readable, so the change touches nothing else.
+RUN adduser -S -u 1001 -G node ragen \
+    && mkdir -p /data/storage && chown ragen /data/storage
+
+USER ragen
 EXPOSE 3001
 CMD ["node", "--import", "@opentelemetry/instrumentation/hook.mjs", "--import", "./apps/api/dist/instrument.js", "apps/api/dist/main.js"]

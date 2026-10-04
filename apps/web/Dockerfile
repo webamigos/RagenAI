@@ -31,6 +31,21 @@ COPY prisma.config.ts prisma.config.ts
 # esbuild; apps/web reaches both, so it rebuilds both.
 RUN npm ci --ignore-scripts && npm rebuild bcrypt esbuild
 
+# The one-shot `migrate` service in docker-compose.fullapp.yml: applies the
+# migrations and seeds the plans and connector catalogue, then exits. Without
+# it the full-app stack started against a database with no tables at all, and
+# the only way to migrate was `prisma migrate deploy` from a Node toolchain on
+# the host — the thing that stack exists to make unnecessary. Built from the
+# same `deps` layer as the app, so it costs a copy and a `prisma generate`,
+# not a second install. Not the default target: the runner stays the last
+# stage, so `docker build` without `--target` still produces the app.
+FROM base AS migrate
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+RUN npx prisma generate
+CMD ["sh", "-c", "npx prisma migrate deploy && npx tsx prisma/seed.ts"]
+
 FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
@@ -96,6 +111,12 @@ ENV BETTER_AUTH_SECRET="build-placeholder-secret-min-32-chars!" \
     DEFAULT_MODEL="gpt-5.4-nano" \
     LITELLM_PROXY_URL="http://localhost:4000"
 
+# CI builds this with a 4 GB heap (ci.yml), and so must the image: Node's
+# default ceiling inside an 8 GB Docker VM is lower than `next build` needs,
+# and `npm run ragen:up:everything` died on "JavaScript heap out of memory" on
+# a clean machine with exactly the 8 GB the README asks for. Build stage only;
+# the runner sets its own NODE_OPTIONS.
+ENV NODE_OPTIONS="--max-old-space-size=4096"
 RUN npm run web:build
 
 FROM base AS runner
@@ -135,6 +156,14 @@ RUN cd /tmp && npm init -y > /dev/null 2>&1 && npm install prisma@7.3.0 > /dev/n
     && ln -sf ../prisma/build/index.js /app/node_modules/.bin/prisma \
     && rm -rf /tmp/node_modules /tmp/package.json /tmp/package-lock.json \
     && chown -R nextjs:nodejs /app/node_modules
+
+# The local-storage volume in docker-compose.fullapp.yml mounts here. An empty
+# named volume takes the owner of the directory it is mounted over, and
+# without this one it was root's — so the first upload failed with EACCES and
+# the stack could never index a document. web, api and the worker share the
+# volume and all run as uid 1001, so whichever starts first leaves a directory
+# the other two can write to.
+RUN mkdir -p /data/storage && chown nextjs /data/storage
 
 USER nextjs
 

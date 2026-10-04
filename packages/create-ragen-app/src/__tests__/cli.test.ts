@@ -719,6 +719,31 @@ describe('run', () => {
   });
 });
 
+describe('the closing instructions', () => {
+  // Nothing was migrated or installed, so `npm run web:dev` would fail; the
+  // container stack migrates for itself.
+  it('point --skip-install at the container stack, not the host', async () => {
+    vi.mocked(clack.select).mockResolvedValueOnce('skip' as never);
+
+    await run(['/tmp/ragen-test', '--skip-docker', '--skip-install']);
+
+    const outro = String(vi.mocked(clack.outro).mock.calls.at(-1)?.[0]);
+    expect(outro).toContain('npm run ragen:up:everything');
+    expect(outro).not.toContain('npm run web:dev');
+  });
+
+  it('point a full install at the three host processes', async () => {
+    vi.mocked(clack.select).mockResolvedValueOnce('skip' as never);
+    vi.mocked(clack.confirm).mockResolvedValue(false as never);
+
+    await run(['/tmp/ragen-test', '--skip-docker']);
+
+    const outro = String(vi.mocked(clack.outro).mock.calls.at(-1)?.[0]);
+    expect(outro).toContain('npm run api:dev');
+    expect(outro).toContain('npm run worker:dev');
+  });
+});
+
 describe('a docker start that fails', () => {
   /**
    * The one step whose failure must not abort the install.
