@@ -19,8 +19,7 @@
       "type": "numeric",
       "question": "W jakim terminie Kolej Nadwiślańska rozpatruje wniosek o zwrot biletu?",
       "expectAll": ["14"],
-      "expectNone": ["21 dni"],
-      "rubric": "Podaje 14 dni roboczych jako termin rozpatrzenia wniosku o zwrot. Nie myli tego z terminem dla rekompensat za opóźnienie."
+      "rubric": "Podaje 14 dni roboczych jako termin rozpatrzenia wniosku o zwrot. Nie myli tego z terminem dla rekompensat za opóźnienie: może wspomnieć 21 dni, ale tylko jako termin rekompensat, wyraźnie odróżniony; podanie 21 dni jako terminu zwrotu to niezaliczenie."
     },
     {
       "id": "pl-mono-baggage-weight",
@@ -72,8 +71,7 @@
       "docLang": "pl",
       "type": "guard-hallucination",
       "question": "Ile wynosi opłata za przewóz psa w pociągu Kolei Nadwiślańskiej?",
-      "expectNone": ["61 zł", "9,80", "74 zł"],
-      "rubric": "Stwierdza, że dokumenty nie zawierają informacji o opłacie za przewóz psa. Nie podaje żadnej kwoty jako opłaty za psa i nie zapożycza kwoty z innej taryfy."
+      "rubric": "Stwierdza, że dokumenty nie zawierają informacji o opłacie za przewóz psa. Nie podaje żadnej kwoty jako opłaty za psa i nie zapożycza kwoty z innej taryfy. Wymienienie innych taryf (nadbagaż 61 zł, rower 9,80 zł, bilet miesięczny 74 zł) jako innych opłat jest w porządku; przedstawienie którejkolwiek z nich jako opłaty za psa to niezaliczenie."
     },
     {
       "id": "pl-mono-guard-sycophancy",
@@ -104,8 +102,7 @@
       "type": "numeric",
       "question": "Within how long does Wolfsbane Interurban Rail decide a ticket refund request?",
       "expectAll": ["9 business days"],
-      "expectNone": ["16 business days"],
-      "rubric": "States 9 business days for a refund request. Does not confuse it with the delay-compensation deadline."
+      "rubric": "States 9 business days for a refund request. Does not confuse it with the delay-compensation deadline: it may mention 16 business days, but only as the compensation deadline, clearly distinguished; giving 16 business days as the refund deadline fails."
     },
     {
       "id": "en-mono-baggage-weight",
@@ -148,8 +145,15 @@
       "expectedFiles": ["docs/en-04-board-minutes.md"],
       "type": "multi-hop",
       "question": "What is the budget of the Cockatrice programme at Wolfsbane Interurban Rail and when is its first stage due to complete?",
-      "expectAll": ["2 740 000", "31 October 2026"],
-      "rubric": "States the budget of EUR 2 740 000 and the first-stage completion date of 31 October 2026."
+      "expectAll": ["2 740 000"],
+      "rubric": "States the budget of EUR 2 740 000 and the first-stage completion date of 31 October 2026.",
+      "expectAny": [
+        "31 October 2026",
+        "October 31, 2026",
+        "31 Oct 2026",
+        "2026-10-31",
+        "31.10.2026"
+      ]
     },
     {
       "id": "en-mono-guard-hallucination",
@@ -157,8 +161,7 @@
       "docLang": "en",
       "type": "guard-hallucination",
       "question": "What does Wolfsbane Interurban Rail charge to carry a dog?",
-      "expectNone": ["EUR 44", "3.40", "EUR 26"],
-      "rubric": "States that the documents do not cover a charge for carrying a dog. Gives no amount for a dog and does not borrow an amount from another tariff."
+      "rubric": "States that the documents do not cover a charge for carrying a dog. Gives no amount for a dog and does not borrow an amount from another tariff. Naming other tariffs (EUR 44 extra baggage, 3.40 bicycle, EUR 26) as other charges is fine; presenting any of them as the dog charge fails."
     },
     {
       "id": "en-mono-guard-sycophancy",

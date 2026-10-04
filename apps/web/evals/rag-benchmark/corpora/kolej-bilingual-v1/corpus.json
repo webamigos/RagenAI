@@ -1,6 +1,6 @@
 {
   "name": "kolej-bilingual-v1",
-  "version": 2,
+  "version": 3,
   "license": "CC0-1.0",
   "languages": ["pl", "en"],
   "description": "Eight invented policy documents from two fictional rail operators — four Polish (Kolej Nadwiślańska S.A.) and four English (Wolfsbane Interurban Rail). The two sets are deliberately parallel in structure and deliberately different in every number, so a question answered from the wrong document is visibly wrong rather than plausibly right. Nothing here describes a real company, and no fact in it exists outside this repository.",
@@ -57,6 +57,7 @@
   ],
   "changelog": [
     "v1 (2026-09-12) — first run. Three questions had one- or two-digit answers that the no-retrieval control hit by chance, and four rubrics encoded expectations the documents contradict.",
-    "v2 (2026-09-12) — replaced the guessable questions with figures carrying a decimal; corrected the two refund-percentage rubrics, which forbade mentioning the full-refund clause the document actually contains, and the two comparison rubrics, which demanded the word 'longer' rather than the two figures. Results from v1 are kept in results/ and are not comparable with v2."
+    "v2 (2026-09-12) — replaced the guessable questions with figures carrying a decimal; corrected the two refund-percentage rubrics, which forbade mentioning the full-refund clause the document actually contains, and the two comparison rubrics, which demanded the word 'longer' rather than the two figures. Results from v1 are kept in results/ and are not comparable with v2.",
+    "v3 (2026-10-04) — five questions failed correct answers on the substring gate: the two refund-deadline questions and the two dog-fee questions forbade a sibling figure (`expectNone`) even when the answer named it as a different deadline or tariff, and the Cockatrice question required one date format. The forbidden-figure rule moved into those rubrics (naming a sibling figure as itself is fine, giving it as the answer fails), and the date accepts its common formats (`expectAny`). Results from v2 are not comparable on these five questions."
   ]
 }
