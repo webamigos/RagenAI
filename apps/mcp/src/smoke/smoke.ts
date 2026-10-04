@@ -27,7 +27,15 @@ export const EXPECTED_TOOLS = [
 export interface SmokeClient {
   connect(): Promise<{ name?: string; version?: string } | undefined>;
   listTools(): Promise<string[]>;
-  callTool(name: string, args: Record<string, unknown>): Promise<string>;
+  /**
+   * The tool's text, and whether the server marked the result as an error.
+   * The flag is what tells a tool that threw — FastMCP answers with its
+   * message as plain text — from one that answered with its JSON envelope.
+   */
+  callTool(
+    name: string,
+    args: Record<string, unknown>,
+  ): Promise<{ text: string; isError: boolean }>;
   close(): Promise<void>;
 }
 
@@ -105,8 +113,9 @@ async function toolStep(
   describe: (envelope: Record<string, unknown>) => string,
 ): Promise<StepResult> {
   let text: string;
+  let isError: boolean;
   try {
-    text = await client.callTool(tool, args);
+    ({ text, isError } = await client.callTool(tool, args));
   } catch (error) {
     return {
       step,
@@ -116,6 +125,16 @@ async function toolStep(
     };
   }
   const envelope = parseEnvelope(text);
+  if (!envelope && isError) {
+    // Every Ragen tool catches the API's failures and returns them in its
+    // envelope, so a bare error result means the tool itself threw.
+    return {
+      step,
+      outcome: 'failed',
+      detail: text.slice(0, 200),
+      hint: "The tool failed inside the MCP server, before or after calling the Ragen API. Check the MCP server's logs.",
+    };
+  }
   if (!envelope) {
     return {
       step,

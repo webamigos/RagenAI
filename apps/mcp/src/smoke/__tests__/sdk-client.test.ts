@@ -2,6 +2,7 @@ import { createServer, type Server } from 'node:http';
 import type { AddressInfo } from 'node:net';
 
 import { FastMCP } from 'fastmcp';
+import { z } from 'zod';
 
 import type { RagenSession } from '../../auth.js';
 import { mcpEnvSchema, resetEnvCache } from '../../config/env.js';
@@ -34,7 +35,12 @@ describe('the smoke test against a running server', () => {
 
   afterEach(async () => {
     await mcp?.stop();
-    await new Promise((resolve) => api?.close(resolve));
+    mcp = undefined;
+    const server = api;
+    if (server) {
+      await new Promise((resolve) => server.close(resolve));
+    }
+    api = undefined;
     process.env = ORIGINAL_ENV;
     resetEnvCache();
   });
@@ -93,5 +99,51 @@ describe('the smoke test against a running server', () => {
     );
     // The key went through the MCP server to the API unchanged.
     expect(authorizations).toContain('Bearer sk-test.secret');
+  });
+
+  // A tool that throws comes back as plain text with `isError`, not as its
+  // JSON envelope. Read without the flag, that text looked like a version
+  // mismatch between the server and this script.
+  it('reports a tool that threw as a failure inside the MCP server', async () => {
+    const probe = createServer();
+    const mcpPort = await listen(probe);
+    await new Promise((resolve) => probe.close(resolve));
+
+    mcp = new FastMCP<RagenSession>(
+      serverOptions(mcpEnvSchema.parse({ TARGET_ENV: 'local' })),
+    );
+    for (const name of [
+      'ragen_chat',
+      'ragen_list_assistants',
+      'ragen_search_knowledge_base',
+    ]) {
+      mcp.addTool({
+        name,
+        description: name,
+        parameters: z.object({}).passthrough(),
+        execute: async () => {
+          throw new Error('boom');
+        },
+      });
+    }
+    await mcp.start({
+      transportType: 'httpStream',
+      httpStream: { host: '127.0.0.1', port: mcpPort },
+    });
+
+    const results = await runSmoke(
+      sdkClient(new URL(`http://127.0.0.1:${mcpPort}/mcp`), 'sk-test.secret'),
+      { hasKey: true, query: 'refunds' },
+    );
+    const last = results.at(-1);
+
+    expect(last).toMatchObject({
+      step: 'ragen_list_assistants',
+      outcome: 'failed',
+    });
+    expect(last?.detail).toContain('boom');
+    expect(last?.outcome === 'failed' && last.hint).toMatch(
+      /MCP server's logs/,
+    );
   });
 });

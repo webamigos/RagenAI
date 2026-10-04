@@ -7,6 +7,11 @@ import {
 
 type ToolAnswers = Record<string, unknown>;
 
+/** A tool that threw: the server answers with its message and `isError`. */
+class Thrown {
+  constructor(readonly message: string) {}
+}
+
 /** A client whose every answer is chosen by the test. */
 function fakeClient(
   answers: ToolAnswers = {},
@@ -20,7 +25,13 @@ function fakeClient(
     callTool: async (name: string) => {
       fake.calls.push(name);
       const answer = answers[name];
-      return typeof answer === 'string' ? answer : JSON.stringify(answer);
+      if (answer instanceof Thrown) {
+        return { text: answer.message, isError: true };
+      }
+      return {
+        text: typeof answer === 'string' ? answer : JSON.stringify(answer),
+        isError: false,
+      };
     },
     close: async () => {
       fake.closed = true;
@@ -177,6 +188,28 @@ describe('runSmoke', () => {
       outcome: 'ok',
       detail: expect.stringContaining('found nothing'),
     });
+  });
+
+  it('blames the MCP server, not a version mismatch, when a tool threw', async () => {
+    const client = fakeClient({
+      ...HEALTHY,
+      ragen_list_assistants: new Thrown(
+        "Tool 'ragen_list_assistants' execution failed: boom",
+      ),
+    });
+
+    const results = await runSmoke(client, withKey);
+    const last = results.at(-1);
+
+    expect(last).toMatchObject({
+      step: 'ragen_list_assistants',
+      outcome: 'failed',
+      detail: "Tool 'ragen_list_assistants' execution failed: boom",
+    });
+    expect(last?.outcome === 'failed' && last.hint).toMatch(
+      /MCP server's logs/,
+    );
+    expect(last?.outcome === 'failed' && last.hint).not.toMatch(/version/);
   });
 
   it('fails on a tool answer that is not the JSON envelope', async () => {

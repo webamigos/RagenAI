@@ -40,10 +40,13 @@ export function sdkClient(url: URL, apiKey: string): SmokeClient {
         type: string;
         text?: string;
       }[];
-      return content
-        .filter((part) => part.type === 'text')
-        .map((part) => part.text ?? '')
-        .join('');
+      return {
+        text: content
+          .filter((part) => part.type === 'text')
+          .map((part) => part.text ?? '')
+          .join(''),
+        isError: result.isError === true,
+      };
     },
     close: () => client.close(),
   };
