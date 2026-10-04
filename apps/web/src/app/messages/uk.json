@@ -1121,7 +1121,8 @@
       "assistants": "Асистенти",
       "chatbots": "Чат-боти",
       "organization": "Організація",
-      "brain": "Brain"
+      "brain": "Brain",
+      "brainBeta": "Beta"
     },
     "starred": {
       "title": "Обране"

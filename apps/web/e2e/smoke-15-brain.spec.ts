@@ -20,8 +20,9 @@ import {
 test.describe('Ragen Brain panel (smoke)', () => {
   test('the sidebar links to Brain', async ({ page }) => {
     await page.goto('/pl/chats');
+    // The link's accessible name carries the Beta badge: "Brain Beta".
     await expect(
-      page.getByRole('link', { name: 'Brain', exact: true }),
+      page.getByRole('link', { name: /^Brain(\s+Beta)?$/ }),
     ).toBeVisible({
       timeout: 15000,
     });

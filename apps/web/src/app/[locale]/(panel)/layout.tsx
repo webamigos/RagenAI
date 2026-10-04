@@ -35,6 +35,7 @@ import { ensureOnboardingComplete } from '@/features/onboarding/services/command
 import { OrgFeaturesProvider } from '@/context/OrgFeaturesContext';
 import { getEffectiveFeaturesQuery } from '@/features/subscriptions/services/queries/get-effective-features-query';
 import { DEFAULT_FEATURES } from '@/features/subscriptions/contracts/features.types';
+import { Badge } from '@/components/ui/badge';
 import { canUseBrain } from '@/features/brain/utils/can-use-brain';
 
 type Props = Readonly<{
@@ -181,6 +182,9 @@ export default async function PanelLayout({ children }: Props) {
               <SidebarLabel className="font-normal">
                 {t('nav.brain')}
               </SidebarLabel>
+              <Badge variant="secondary" className="ml-auto">
+                {t('nav.brainBeta')}
+              </Badge>
             </SidebarItem>
           )}
           {userIsOrgAdmin && (

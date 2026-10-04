@@ -1121,7 +1121,8 @@
       "assistants": "Asistenti",
       "chatbots": "Chatboti",
       "organization": "Organizace",
-      "brain": "Brain"
+      "brain": "Brain",
+      "brainBeta": "Beta"
     },
     "starred": {
       "title": "Oblíbené"
