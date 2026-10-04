@@ -150,15 +150,17 @@ describe('ragen kb upload', () => {
     expect(err.join('\n')).toContain('Stopped: 1 file(s) not uploaded.');
   });
 
-  it('caps a long Retry-After instead of sleeping it out', async () => {
-    const { deps, sleep } = harness({
-      'POST files': [
-        { status: 429, body: {}, headers: { 'Retry-After': '3600' } },
-        { body: file('file-a', 'uploaded', 'a.pdf') },
-      ],
+  it('treats a Retry-After longer than any throttler asks for as final', async () => {
+    const { deps, sleep, err } = harness({
+      'POST files': {
+        status: 429,
+        body: {},
+        headers: { 'Retry-After': '3600' },
+      },
     });
-    await expect(runKb(['upload', './a.pdf'], deps)).resolves.toBe(0);
-    expect(sleep).toHaveBeenCalledWith(120_000);
+    await expect(runKb(['upload', './a.pdf', './b.md'], deps)).resolves.toBe(1);
+    expect(sleep).not.toHaveBeenCalled();
+    expect(err.join('\n')).toContain('Stopped: 1 file(s) not uploaded.');
   });
 
   it('with --wait --json, still prints what was uploaded when waiting fails', async () => {

@@ -30,6 +30,11 @@ export function resolveConnection(
   flags: Flags,
   env: Record<string, string | undefined>,
 ): Connection | undefined {
+  // `--url` given with no value is a mistake to report, not a reason to fall
+  // back quietly to the saved address.
+  if (flags.values.has('--url') && !flags.values.get('--url')) {
+    return undefined;
+  }
   const explicitUrl = flags.values.get('--url') || env.RAGEN_API_URL;
   const url = normalizeUrl(explicitUrl || env[SAVED_URL]);
   const key =

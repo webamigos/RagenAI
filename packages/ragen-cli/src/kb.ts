@@ -68,9 +68,8 @@ const DEFAULT_TIMEOUT_S = 600;
 /** A rate-limited request is tried this many times before giving up. */
 const RATE_LIMIT_ATTEMPTS = 3;
 /**
- * The longest single wait. The throttlers ask for 60 s at most; a larger
- * `Retry-After` is not a per-minute limit, and sleeping it out unattended is
- * not what someone running a command expects.
+ * The longest wait worth sitting out. The throttlers ask for 60 s at most; a
+ * larger `Retry-After` is not a per-minute limit, and is treated as final.
  */
 const MAX_RETRY_S = 120;
 
@@ -336,11 +335,13 @@ function waitableRetry(error: unknown): number | undefined {
   if (
     !(error instanceof ApiError) ||
     error.status !== 429 ||
-    error.retryAfter === undefined
+    error.retryAfter === undefined ||
+    // Longer than any per-minute throttler asks for: not worth sitting out.
+    error.retryAfter > MAX_RETRY_S
   ) {
     return undefined;
   }
-  return Math.min(error.retryAfter, MAX_RETRY_S);
+  return error.retryAfter;
 }
 
 /**

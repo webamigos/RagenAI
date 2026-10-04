@@ -67,8 +67,21 @@ async function removeConfig(path: string): Promise<boolean> {
 async function saveConfig(path: string, content: string): Promise<void> {
   await mkdir(dirname(path), { recursive: true, mode: 0o700 });
   const temporary = `${path}.${process.pid}.tmp`;
-  await writeFile(temporary, content, { encoding: 'utf8', mode: 0o600 });
-  await rename(temporary, path);
+  // A leftover from a crashed run would keep its own mode, so it goes first,
+  // and `wx` refuses to reuse one that appears in between.
+  await rm(temporary, { force: true });
+  try {
+    await writeFile(temporary, content, {
+      encoding: 'utf8',
+      mode: 0o600,
+      flag: 'wx',
+    });
+    await rename(temporary, path);
+  } catch (error) {
+    // The temporary file holds the key; it must not outlive a failed save.
+    await rm(temporary, { force: true });
+    throw error;
+  }
 }
 
 function readIfPresent(path: string): string | undefined {

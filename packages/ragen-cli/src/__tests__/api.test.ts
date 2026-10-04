@@ -67,6 +67,12 @@ describe('resolveConnection', () => {
       ).toBe('sk-saved.secret');
     });
 
+    it('reports an empty --url instead of falling back to the saved address', () => {
+      expect(
+        resolveConnection(parseFlags(['--url'], []), saved),
+      ).toBeUndefined();
+    });
+
     it('lets an explicit key go to an explicit address', () => {
       expect(
         resolveConnection(

@@ -162,9 +162,10 @@ non-zero when any file it names is in `error`.
 **Per-minute limits are waited out; usage ceilings are not.** Uploads are
 throttled per minute and per address — ten in production — so a folder of
 documents meets the limit by design. On a 429 that carries a `Retry-After`
-(any `Retry-After-<tier>` too) the CLI waits as asked, at most 120 s, up to
-three tries per file. A 429 without one is a usage ceiling that lifts next
-month: it is reported with the server's message and stops the batch. `--wait`
+(any `Retry-After-<tier>` too) of up to 120 s the CLI waits as asked, up to
+three tries per file. A 429 without one, or asking for longer, is a limit that
+waiting will not lift — a usage ceiling resets next month — so it is reported
+with the server's message and stops the batch. `--wait`
 asks about every file it is waiting for in one request per round, every 8 s,
 and if a request fails for any other reason it stops waiting but still prints
 what was uploaded (with `--json`, the ids), and exits non-zero.
