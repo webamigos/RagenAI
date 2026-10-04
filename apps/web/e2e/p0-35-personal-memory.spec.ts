@@ -275,6 +275,10 @@ test('a second member of the org sees none of it, not even in a thread shared wi
       await expect(page.getByText(text)).toHaveCount(0);
     }
 
+    // The thread shared with them is in their sidebar history. Not checked on
+    // the memory page: inside /settings the sidebar lists the settings menu
+    // in place of the history.
+    await page.goto(ROUTES.newChat);
     await expect(
       page.getByRole('link', { name: `Thread: ${LINE_THREAD.title}` }),
     ).toBeVisible({ timeout: 15_000 });

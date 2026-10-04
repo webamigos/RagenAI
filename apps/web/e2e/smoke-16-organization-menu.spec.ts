@@ -1,6 +1,17 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 
 import { TEST_THREAD_ID, TEST_THREAD_TITLE } from './constants';
+
+/**
+ * The page a section was entered from is remembered after hydration, in an
+ * effect. A thread page is visible from the server's HTML before that runs, so
+ * a test that navigates on as soon as it sees it can leave nothing remembered.
+ */
+async function rememberedReturnPath(page: Page): Promise<string | null> {
+  return page.evaluate(() =>
+    window.sessionStorage.getItem('ragen:organization-return-path'),
+  );
+}
 
 /**
  * Inside /organization the sidebar lists the section's pages in place of the
@@ -22,6 +33,9 @@ test.describe('Organization menu in the sidebar (smoke)', () => {
     await expect(
       page.getByRole('link', { name: TEST_THREAD_TITLE }).first(),
     ).toBeVisible({ timeout: 15_000 });
+    await expect
+      .poll(() => rememberedReturnPath(page), { timeout: 15_000 })
+      .toContain(TEST_THREAD_ID);
 
     await page.goto('/pl/organization/profile');
 
@@ -42,6 +56,11 @@ test.describe('Organization menu in the sidebar (smoke)', () => {
     await expect(page).toHaveURL(/\/organization\/api-keys/);
 
     // Back is the page it was entered from, not the previous organization page.
+    await expect(page.getByTestId('organization-back')).toHaveAttribute(
+      'href',
+      new RegExp(`/chats/${TEST_THREAD_ID}`),
+      { timeout: 15_000 },
+    );
     await page.getByTestId('organization-back').click();
     await expect(page).toHaveURL(new RegExp(`/chats/${TEST_THREAD_ID}`), {
       timeout: 15_000,
@@ -75,6 +94,9 @@ test.describe('Settings menu in the sidebar (smoke)', () => {
     await expect(
       page.getByRole('link', { name: TEST_THREAD_TITLE }).first(),
     ).toBeVisible({ timeout: 15_000 });
+    await expect
+      .poll(() => rememberedReturnPath(page), { timeout: 15_000 })
+      .toContain(TEST_THREAD_ID);
 
     await page.goto('/pl/settings/general');
 
@@ -94,6 +116,11 @@ test.describe('Settings menu in the sidebar (smoke)', () => {
     await page.getByRole('link', { name: 'Konto' }).click();
     await expect(page).toHaveURL(/\/settings\/account/);
 
+    await expect(page.getByTestId('settings-back')).toHaveAttribute(
+      'href',
+      new RegExp(`/chats/${TEST_THREAD_ID}`),
+      { timeout: 15_000 },
+    );
     await page.getByTestId('settings-back').click();
     await expect(page).toHaveURL(new RegExp(`/chats/${TEST_THREAD_ID}`), {
       timeout: 15_000,
