@@ -612,7 +612,8 @@ and [Discussions](https://github.com/webamigos/RagenAI/discussions).
 Pull requests are welcome on everything under Apache 2.0. Start with
 [CONTRIBUTING.md](CONTRIBUTING.md), and read [AGENTS.md](AGENTS.md) before your
 first change — it is the canonical brief for both humans and coding agents, and
-it will save you a review round. Security issues go through
+it will save you a review round. Everyone taking part follows the
+[Code of Conduct](CODE_OF_CONDUCT.md). Security issues go through
 [SECURITY.md](SECURITY.md), not the public tracker.
 
 Questions, ideas and "has anyone deployed this against X" belong in
