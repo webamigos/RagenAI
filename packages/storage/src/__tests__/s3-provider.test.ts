@@ -242,13 +242,16 @@ describe('S3StorageProvider', () => {
     });
 
     // Compose writes a blank value for "not set"; an empty endpoint is not AWS.
-    it('reads a blank endpoint as AWS', () => {
-      vi.stubEnv('S3_ENDPOINT_URL', '');
-      new S3StorageProvider();
-      expect(mockS3ClientCtor).toHaveBeenLastCalledWith(
-        expect.objectContaining({ endpoint: undefined }),
-      );
-    });
+    it.each(['', '   ', '\t'])(
+      'reads a blank endpoint (%j) as AWS',
+      (value) => {
+        vi.stubEnv('S3_ENDPOINT_URL', value);
+        new S3StorageProvider();
+        expect(mockS3ClientCtor).toHaveBeenLastCalledWith(
+          expect.objectContaining({ endpoint: undefined }),
+        );
+      },
+    );
 
     it('forwards S3_SESSION_TOKEN for temporary credentials', () => {
       vi.stubEnv('S3_SESSION_TOKEN', 'session-token');

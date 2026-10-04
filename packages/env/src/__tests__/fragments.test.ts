@@ -84,10 +84,9 @@ describe('shared fragments', () => {
   // docker-compose.fullapp.yml passes a blank S3_ENDPOINT_URL to every app on
   // local storage, and it used to fail validation as "Invalid URL".
   it('reads a blank S3 endpoint as unset', () => {
-    const parsed = fragments.storage.safeParse({ S3_ENDPOINT_URL: '' });
+    const parsed = fragments.storage.parse({ S3_ENDPOINT_URL: '' });
 
-    expect(parsed.success).toBe(true);
-    expect(parsed.data?.S3_ENDPOINT_URL).toBeUndefined();
+    expect(parsed.S3_ENDPOINT_URL).toBeUndefined();
   });
 
   it('still refuses an S3 endpoint that is not an http URL', () => {
