@@ -6,6 +6,9 @@ import { PasswordResetEmail } from '../password-reset-email';
 import { VerificationEmail } from '../verification-email';
 import { SecurityAlertEmail } from '../security-alert-email';
 import { logger } from '@/app/lib/utils/logger';
+import { defaultLocale } from '@/app/config';
+import { isLocale, resolveEmailLocale } from '../utils/email-locale';
+import { getEmailTranslator } from '../utils/email-translator';
 
 const FROM_EMAIL =
   process.env.MAIL_FROM || 'Ragen AI <noreply@updates.webamigos.pl>';
@@ -66,6 +69,16 @@ function shouldSendSecurityAlert(dedupeKey: string): boolean {
   return true;
 }
 
+/**
+ * The language of security alerts: `SECURITY_ALERT_LOCALE` when it names a
+ * locale the app ships, otherwise the application default.
+ */
+function securityAlertLocale() {
+  const configured = process.env.SECURITY_ALERT_LOCALE?.trim();
+
+  return isLocale(configured) ? configured : defaultLocale;
+}
+
 type SecurityAlertEvent = {
   publicId: string;
   eventType: string;
@@ -116,11 +129,18 @@ export const sendSecurityAlertEmail = async ({
   }
 
   try {
+    // Not the request's language: an alert goes to the people who run the
+    // installation, and the request that raised it may be an attacker's.
+    const locale = securityAlertLocale();
+    const t = await getEmailTranslator(locale, 'security-alert');
+
     await getMailProvider().send({
       from: SECURITY_FROM_EMAIL,
       to: recipients,
       subject: `[Ragen Security] ${event.severity.toUpperCase()}: ${event.eventType}`,
       react: SecurityAlertEmail({
+        locale,
+        t,
         publicId: event.publicId,
         eventType: event.eventType,
         severity: event.severity,
@@ -145,22 +165,27 @@ export const sendSecurityAlertEmail = async ({
 export const sendWelcomeEmail = async ({
   to,
   name,
+  locale: requestedLocale,
 }: {
   to: string;
   name: string | undefined;
+  locale?: string;
 }) => {
   try {
+    const locale = await resolveEmailLocale(requestedLocale);
+    const t = await getEmailTranslator(locale, 'welcome');
+
     await getMailProvider().send({
       from: FROM_EMAIL,
       to,
-      subject: 'Witaj w Ragen!',
-      react: WelcomeEmail({ name }),
+      subject: t('subject'),
+      react: WelcomeEmail({ name, locale, t }),
     });
 
     return { data: true };
   } catch (error) {
     logger.error({ error }, 'Failed to send welcome email');
-    return { error: 'Nie udało się wysłać powitalnego e-maila' };
+    return { error: 'Failed to send welcome email' };
   }
 };
 
@@ -204,16 +229,21 @@ export const addContactToSegment = async ({
 export const sendPasswordResetEmailViaMailer = async ({
   to,
   resetUrl,
+  locale: requestedLocale,
 }: {
   to: string;
   resetUrl: string;
+  locale?: string;
 }) => {
   try {
+    const locale = await resolveEmailLocale(requestedLocale);
+    const t = await getEmailTranslator(locale, 'password-reset');
+
     await getMailProvider().send({
       from: FROM_EMAIL,
       to,
-      subject: 'Zresetuj hasło do Ragen',
-      react: PasswordResetEmail({ resetUrl }),
+      subject: t('subject'),
+      react: PasswordResetEmail({ resetUrl, locale, t }),
     });
 
     return { data: true };
@@ -226,16 +256,21 @@ export const sendPasswordResetEmailViaMailer = async ({
 export const sendVerificationEmail = async ({
   to,
   verificationUrl,
+  locale: requestedLocale,
 }: {
   to: string;
   verificationUrl: string;
+  locale?: string;
 }) => {
   try {
+    const locale = await resolveEmailLocale(requestedLocale);
+    const t = await getEmailTranslator(locale, 'verification');
+
     await getMailProvider().send({
       from: FROM_EMAIL,
       to,
-      subject: 'Zweryfikuj swój adres email - Ragen AI',
-      react: VerificationEmail({ verificationUrl }),
+      subject: t('subject'),
+      react: VerificationEmail({ verificationUrl, locale, t }),
     });
 
     return { data: true };
@@ -252,6 +287,7 @@ export const sendInvitationEmail = async ({
   role,
   invitationId,
   expiresAt,
+  locale: requestedLocale,
 }: {
   to: string;
   organizationName: string;
@@ -259,6 +295,7 @@ export const sendInvitationEmail = async ({
   role: string;
   invitationId: string;
   expiresAt: Date;
+  locale?: string;
 }) => {
   try {
     logger.info(
@@ -266,10 +303,13 @@ export const sendInvitationEmail = async ({
       'Attempting to send invitation email',
     );
 
+    const locale = await resolveEmailLocale(requestedLocale);
+    const t = await getEmailTranslator(locale, 'invitation');
+
     await getMailProvider().send({
       from: FROM_EMAIL,
       to,
-      subject: `Zaproszenie do organizacji ${organizationName} w Ragen AI`,
+      subject: t('subject', { organization: organizationName }),
       react: InvitationEmail({
         invitedEmail: to,
         organizationName,
@@ -277,6 +317,8 @@ export const sendInvitationEmail = async ({
         role,
         invitationId,
         expiresAt,
+        locale,
+        t,
       }),
     });
 
@@ -291,7 +333,7 @@ export const sendInvitationEmail = async ({
       { error, to, organizationName, invitationId },
       'Failed to send invitation email',
     );
-    return { error: 'Nie udało się wysłać emaila z zaproszeniem' };
+    return { error: 'Failed to send invitation email' };
   }
 };
 
@@ -301,12 +343,14 @@ export const sendMagicLinkInvitationEmail = async ({
   organizationName,
   inviterName,
   role,
+  locale: requestedLocale,
 }: {
   to: string;
   magicLinkUrl: string;
   organizationName: string;
   inviterName?: string;
   role: string;
+  locale?: string;
 }) => {
   try {
     logger.info(
@@ -314,16 +358,21 @@ export const sendMagicLinkInvitationEmail = async ({
       'Attempting to send magic-link invitation email',
     );
 
+    const locale = await resolveEmailLocale(requestedLocale);
+    const t = await getEmailTranslator(locale, 'invitation');
+
     await getMailProvider().send({
       from: FROM_EMAIL,
       to,
-      subject: `Zaproszenie do organizacji ${organizationName} w Ragen AI`,
+      subject: t('subject', { organization: organizationName }),
       react: MagicLinkInvitationEmail({
         invitedEmail: to,
         organizationName,
         inviterName,
         role,
         magicLinkUrl,
+        locale,
+        t,
       }),
     });
 
@@ -338,6 +387,6 @@ export const sendMagicLinkInvitationEmail = async ({
       { error, to, organizationName },
       'Failed to send magic-link invitation email',
     );
-    return { error: 'Nie udało się wysłać emaila z zaproszeniem' };
+    return { error: 'Failed to send invitation email' };
   }
 };

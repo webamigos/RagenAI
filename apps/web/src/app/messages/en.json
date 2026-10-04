@@ -3066,5 +3066,104 @@
     "description": "This page could not be shown. Try again, or start a new chat — nothing you saved is lost.",
     "retry": "Try again",
     "new-chat": "New chat"
+  },
+  "emails": {
+    "invitation": {
+      "subject": "Invitation to {organization} on Ragen AI",
+      "preview": "You have been invited to {organization} on Ragen AI",
+      "greeting": "Hello!",
+      "invited-by": "<strong>{inviter}</strong> invites you to join the organization <strong>{organization}</strong> on Ragen AI.",
+      "invited": "You have been invited to the organization <strong>{organization}</strong> on Ragen AI.",
+      "role": "You will be added with the role: <strong>{role}</strong>",
+      "accept": "Accept the invitation",
+      "expires": "This invitation expires on <strong>{date}</strong>.",
+      "join": "Join the organization",
+      "magic-note": "Clicking this button signs you in automatically, with no password to remember. The link expires after 7 days.",
+      "ignore": "If you do not want to join this organization, ignore this message.",
+      "sent-to": "Invitation sent to: {email}",
+      "role-admin": "Administrator",
+      "role-member": "User"
+    },
+    "password-reset": {
+      "subject": "Reset your Ragen password",
+      "preview": "Reset your Ragen password",
+      "body": "Click the button below to reset your password:",
+      "button": "Reset password",
+      "ignore": "If you did not ask for a password reset, ignore this message.",
+      "expiry": "The link expires in 1 hour."
+    },
+    "verification": {
+      "subject": "Verify your email address – Ragen AI",
+      "preview": "Verify your email address on Ragen AI",
+      "body": "Thank you for signing up for Ragen AI! Click the button below to verify your email address:",
+      "button": "Verify email",
+      "ignore": "If you did not create a Ragen AI account, ignore this message.",
+      "expiry": "The link expires in 24 hours."
+    },
+    "welcome": {
+      "subject": "Welcome to Ragen!",
+      "preview": "Use AI safely in your company",
+      "greeting": "Hello!",
+      "greeting-named": "Hello {name}!",
+      "thanks": "Thank you for signing up for Ragen AI :)",
+      "mission": "We are building this project to make it easy to build AI assistants.",
+      "contacts-tip": "We will be developing our solution in the coming weeks, so it is worth adding this email address to your contacts – that way you will not miss news about new features.",
+      "button": "Open the Ragen app",
+      "questions": "If you have any questions, requests or ideas about how the app works, write to {email}."
+    },
+    "security-alert": {
+      "preview": "[{severity}] {event} – Ragen security alert",
+      "intro": "A security event of level <strong>{severity}</strong> was recorded in Ragen AI. Review the details below and confirm it has been handled in the admin panel.",
+      "label-id": "Event ID",
+      "label-type": "Type",
+      "label-severity": "Level",
+      "label-source": "Source",
+      "label-time": "Event time",
+      "label-organization": "Organization",
+      "label-user": "User",
+      "label-ip": "IP address",
+      "label-request": "Request ID",
+      "open": "Open the event in the panel:",
+      "footer": "You receive this message because your address is set in the <code>SECURITY_ALERT_EMAIL</code> environment variable. The alert was triggered by a critical event. Lower-level events are available only in the admin panel.",
+      "severity": {
+        "info": "Information",
+        "warn": "Warning",
+        "critical": "Critical"
+      },
+      "source": {
+        "auth": "Authentication",
+        "chat": "Chat",
+        "chatbot": "Chatbot",
+        "upload": "File upload",
+        "admin": "Admin panel",
+        "api": "API",
+        "mcp": "MCP",
+        "infra": "Infrastructure"
+      },
+      "event-type": {
+        "AUTH_LOGIN_FAILED": "Failed sign-in",
+        "AUTH_BRUTEFORCE_SUSPECTED": "Suspected brute-force attack",
+        "AUTH_PASSWORD_RESET_REQUESTED": "Password reset requested",
+        "AUTH_ADMIN_ROLE_GRANTED": "Administrator role granted",
+        "AUTH_ADMIN_ROLE_REVOKED": "Administrator role revoked",
+        "API_KEY_CREATED": "API key created",
+        "API_KEY_REVOKED": "API key revoked",
+        "API_INTERNAL_SECRET_MISMATCH": "Internal API secret mismatch",
+        "CROSS_ORG_ACCESS_ATTEMPTED": "Cross-organization access attempt",
+        "UNAUTHORIZED_ACCESS_ATTEMPTED": "Unauthorized access attempt",
+        "CHAT_JAILBREAK_DETECTED": "Jailbreak attempt detected",
+        "CHAT_PII_DETECTED": "Personal data detected in chat",
+        "CHAT_PII_MASKING_FAILED": "Personal data masking failed",
+        "TOOL_CALL_BLOCKED": "Tool call blocked",
+        "TOOL_CALL_CONFIRMED": "Tool call confirmed",
+        "TOOL_CALL_DENIED": "Tool call denied",
+        "TOOL_ARGS_HIGH_RISK": "High-risk tool arguments",
+        "UPLOAD_SUSPICIOUS_CONTENT": "Suspicious content in an uploaded file",
+        "UPLOAD_REJECTED": "Uploaded file rejected",
+        "ADMIN_SETTINGS_CHANGED": "Administrative settings changed",
+        "RATE_LIMIT_HIT": "Request limit exceeded",
+        "MCP_OAUTH_FAILED": "MCP OAuth authorization failed"
+      }
+    }
   }
 }
