@@ -48,7 +48,10 @@ echo "$KEY" | ragen login --url https://api.example.com   # or piped
 ```
 
 or set them per shell, which wins over what is saved — as `--url` and
-`--api-key` win over both:
+`--api-key` win over both. **The saved key is only ever sent to the saved
+address**: with `--url` or `RAGEN_API_URL` naming another host, a key has to
+be given explicitly, or the command stops instead of sending the saved one
+there.
 
 ```bash
 export RAGEN_API_URL=https://api.example.com
