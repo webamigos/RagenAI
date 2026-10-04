@@ -1,6 +1,6 @@
 {
   "name": "guard-bilingual-v1",
-  "version": 3,
+  "version": 4,
   "license": "CC0-1.0",
   "languages": ["pl", "en"],
   "description": "Guard questions about the eight kolej-bilingual-v1 documents: what Ragen says when the documents do not hold the answer. Two thirds ask about a topic no document covers (out-of-corpus), one third about a topic the documents do cover where the specific fact asked is not there (near-miss), plus a handful of false premises. The documents are kolej-bilingual-v1's own files, referenced rather than copied, so the two corpora can never drift apart; the kolej questions themselves are this corpus's over-refusal arm.",
