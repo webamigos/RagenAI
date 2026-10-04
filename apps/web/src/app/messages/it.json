@@ -3067,5 +3067,104 @@
     "description": "Impossibile mostrare questa pagina. Riprova o avvia una nuova chat: nulla di ciò che hai salvato è andato perso.",
     "retry": "Riprova",
     "new-chat": "Nuova chat"
+  },
+  "emails": {
+    "invitation": {
+      "subject": "Invito a {organization} su Ragen AI",
+      "preview": "Sei stato invitato a {organization} su Ragen AI",
+      "greeting": "Ciao!",
+      "invited-by": "<strong>{inviter}</strong> ti invita a unirti all'organizzazione <strong>{organization}</strong> su Ragen AI.",
+      "invited": "Sei stato invitato all'organizzazione <strong>{organization}</strong> su Ragen AI.",
+      "role": "Verrai aggiunto con il ruolo: <strong>{role}</strong>",
+      "accept": "Accetta l'invito",
+      "expires": "Questo invito scade il <strong>{date}</strong>.",
+      "join": "Unisciti all'organizzazione",
+      "magic-note": "Cliccando su questo pulsante accederai automaticamente, senza dover ricordare alcuna password. Il link scade dopo 7 giorni.",
+      "ignore": "Se non vuoi unirti a questa organizzazione, ignora questo messaggio.",
+      "sent-to": "Invito inviato a: {email}",
+      "role-admin": "Amministratore",
+      "role-member": "Utente"
+    },
+    "password-reset": {
+      "subject": "Reimposta la tua password di Ragen",
+      "preview": "Reimposta la tua password di Ragen",
+      "body": "Clicca sul pulsante qui sotto per reimpostare la tua password:",
+      "button": "Reimposta password",
+      "ignore": "Se non hai richiesto la reimpostazione della password, ignora questo messaggio.",
+      "expiry": "Il link scade tra 1 ora."
+    },
+    "verification": {
+      "subject": "Verifica il tuo indirizzo email – Ragen AI",
+      "preview": "Verifica il tuo indirizzo email su Ragen AI",
+      "body": "Grazie per esserti registrato su Ragen AI! Clicca sul pulsante qui sotto per verificare il tuo indirizzo email:",
+      "button": "Verifica email",
+      "ignore": "Se non hai creato un account su Ragen AI, ignora questo messaggio.",
+      "expiry": "Il link scade tra 24 ore."
+    },
+    "welcome": {
+      "subject": "Benvenuto in Ragen!",
+      "preview": "Usa l'IA in modo sicuro nella tua azienda",
+      "greeting": "Ciao!",
+      "greeting-named": "Ciao {name}!",
+      "thanks": "Grazie per esserti registrato su Ragen AI :)",
+      "mission": "Lavoriamo a questo progetto per rendere semplice creare assistenti IA.",
+      "contacts-tip": "Nelle prossime settimane continueremo a sviluppare la nostra soluzione, quindi conviene aggiungere questo indirizzo email ai tuoi contatti: così non perderai le novità sulle nuove funzionalità.",
+      "button": "Apri l'app Ragen",
+      "questions": "Se hai domande, richieste o idee sul funzionamento dell'app, scrivi a {email}."
+    },
+    "security-alert": {
+      "preview": "[{severity}] {event} – avviso di sicurezza di Ragen",
+      "intro": "In Ragen AI è stato registrato un evento di sicurezza di livello <strong>{severity}</strong>. Controlla i dettagli qui sotto e conferma nel pannello di amministrazione che è stato gestito.",
+      "label-id": "ID evento",
+      "label-type": "Tipo",
+      "label-severity": "Livello",
+      "label-source": "Origine",
+      "label-time": "Ora dell'evento",
+      "label-organization": "Organizzazione",
+      "label-user": "Utente",
+      "label-ip": "Indirizzo IP",
+      "label-request": "ID richiesta",
+      "open": "Apri l'evento nel pannello:",
+      "footer": "Ricevi questo messaggio perché il tuo indirizzo è impostato nella variabile d'ambiente <code>SECURITY_ALERT_EMAIL</code>. L'avviso è stato generato da un evento critico. Gli eventi di livello inferiore sono disponibili solo nel pannello di amministrazione.",
+      "severity": {
+        "info": "Informazione",
+        "warn": "Avviso",
+        "critical": "Critico"
+      },
+      "source": {
+        "auth": "Autenticazione",
+        "chat": "Chat",
+        "chatbot": "Chatbot",
+        "upload": "Caricamento file",
+        "admin": "Pannello di amministrazione",
+        "api": "API",
+        "mcp": "MCP",
+        "infra": "Infrastruttura"
+      },
+      "event-type": {
+        "AUTH_LOGIN_FAILED": "Accesso non riuscito",
+        "AUTH_BRUTEFORCE_SUSPECTED": "Sospetto attacco brute force",
+        "AUTH_PASSWORD_RESET_REQUESTED": "Reimpostazione password richiesta",
+        "AUTH_ADMIN_ROLE_GRANTED": "Ruolo di amministratore assegnato",
+        "AUTH_ADMIN_ROLE_REVOKED": "Ruolo di amministratore revocato",
+        "API_KEY_CREATED": "Chiave API creata",
+        "API_KEY_REVOKED": "Chiave API revocata",
+        "API_INTERNAL_SECRET_MISMATCH": "Segreto interno dell'API non corrispondente",
+        "CROSS_ORG_ACCESS_ATTEMPTED": "Tentativo di accesso tra organizzazioni",
+        "UNAUTHORIZED_ACCESS_ATTEMPTED": "Tentativo di accesso non autorizzato",
+        "CHAT_JAILBREAK_DETECTED": "Tentativo di jailbreak rilevato",
+        "CHAT_PII_DETECTED": "Dati personali rilevati nella chat",
+        "CHAT_PII_MASKING_FAILED": "Mascheramento dei dati personali non riuscito",
+        "TOOL_CALL_BLOCKED": "Chiamata allo strumento bloccata",
+        "TOOL_CALL_CONFIRMED": "Chiamata allo strumento confermata",
+        "TOOL_CALL_DENIED": "Chiamata allo strumento negata",
+        "TOOL_ARGS_HIGH_RISK": "Argomenti dello strumento ad alto rischio",
+        "UPLOAD_SUSPICIOUS_CONTENT": "Contenuto sospetto in un file caricato",
+        "UPLOAD_REJECTED": "File caricato rifiutato",
+        "ADMIN_SETTINGS_CHANGED": "Impostazioni amministrative modificate",
+        "RATE_LIMIT_HIT": "Limite di richieste superato",
+        "MCP_OAUTH_FAILED": "Autorizzazione OAuth di MCP non riuscita"
+      }
+    }
   }
 }

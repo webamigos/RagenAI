@@ -3067,5 +3067,104 @@
     "description": "Siden kunne ikke vises. Prøv igen, eller start en ny chat – intet gemt er gået tabt.",
     "retry": "Prøv igen",
     "new-chat": "Ny chat"
+  },
+  "emails": {
+    "invitation": {
+      "subject": "Invitation til {organization} på Ragen AI",
+      "preview": "Du er blevet inviteret til {organization} på Ragen AI",
+      "greeting": "Hej!",
+      "invited-by": "<strong>{inviter}</strong> inviterer dig til at blive en del af organisationen <strong>{organization}</strong> på Ragen AI.",
+      "invited": "Du er blevet inviteret til organisationen <strong>{organization}</strong> på Ragen AI.",
+      "role": "Du bliver tilføjet med rollen: <strong>{role}</strong>",
+      "accept": "Accepter invitationen",
+      "expires": "Denne invitation udløber den <strong>{date}</strong>.",
+      "join": "Deltag i organisationen",
+      "magic-note": "Når du klikker på knappen, bliver du logget ind automatisk uden en adgangskode, du skal huske. Linket udløber efter 7 dage.",
+      "ignore": "Hvis du ikke vil deltage i denne organisation, kan du ignorere denne besked.",
+      "sent-to": "Invitationen er sendt til: {email}",
+      "role-admin": "Administrator",
+      "role-member": "Bruger"
+    },
+    "password-reset": {
+      "subject": "Nulstil din Ragen-adgangskode",
+      "preview": "Nulstil din Ragen-adgangskode",
+      "body": "Klik på knappen nedenfor for at nulstille din adgangskode:",
+      "button": "Nulstil adgangskode",
+      "ignore": "Hvis du ikke har bedt om at få nulstillet din adgangskode, kan du ignorere denne besked.",
+      "expiry": "Linket udløber om 1 time."
+    },
+    "verification": {
+      "subject": "Bekræft din e-mailadresse – Ragen AI",
+      "preview": "Bekræft din e-mailadresse på Ragen AI",
+      "body": "Tak, fordi du har oprettet dig på Ragen AI! Klik på knappen nedenfor for at bekræfte din e-mailadresse:",
+      "button": "Bekræft e-mail",
+      "ignore": "Hvis du ikke har oprettet en konto på Ragen AI, kan du ignorere denne besked.",
+      "expiry": "Linket udløber om 24 timer."
+    },
+    "welcome": {
+      "subject": "Velkommen til Ragen!",
+      "preview": "Brug AI sikkert i din virksomhed",
+      "greeting": "Hej!",
+      "greeting-named": "Hej {name}!",
+      "thanks": "Tak, fordi du har oprettet dig på Ragen AI :)",
+      "mission": "Vi arbejder på dette projekt for at gøre det nemt at bygge AI-assistenter.",
+      "contacts-tip": "I de kommende uger udvikler vi vores løsning videre, så det er en god idé at føje denne e-mailadresse til dine kontakter – så går du ikke glip af nyheder om nye funktioner.",
+      "button": "Åbn Ragen-appen",
+      "questions": "Har du spørgsmål, ønsker eller idéer til, hvordan appen fungerer, så skriv til {email}."
+    },
+    "security-alert": {
+      "preview": "[{severity}] {event} – sikkerhedsalarm fra Ragen",
+      "intro": "Der er registreret en sikkerhedshændelse på niveau <strong>{severity}</strong> i Ragen AI. Gennemgå detaljerne nedenfor, og bekræft i administrationspanelet, at den er håndteret.",
+      "label-id": "Hændelses-ID",
+      "label-type": "Type",
+      "label-severity": "Niveau",
+      "label-source": "Kilde",
+      "label-time": "Tidspunkt for hændelsen",
+      "label-organization": "Organisation",
+      "label-user": "Bruger",
+      "label-ip": "IP-adresse",
+      "label-request": "Anmodnings-ID",
+      "open": "Åbn hændelsen i panelet:",
+      "footer": "Du modtager denne besked, fordi din adresse er angivet i miljøvariablen <code>SECURITY_ALERT_EMAIL</code>. Alarmen blev udløst af en kritisk hændelse. Hændelser på lavere niveauer er kun tilgængelige i administrationspanelet.",
+      "severity": {
+        "info": "Information",
+        "warn": "Advarsel",
+        "critical": "Kritisk"
+      },
+      "source": {
+        "auth": "Godkendelse",
+        "chat": "Chat",
+        "chatbot": "Chatbot",
+        "upload": "Filupload",
+        "admin": "Administrationspanel",
+        "api": "API",
+        "mcp": "MCP",
+        "infra": "Infrastruktur"
+      },
+      "event-type": {
+        "AUTH_LOGIN_FAILED": "Mislykket login",
+        "AUTH_BRUTEFORCE_SUSPECTED": "Mistanke om brute force-angreb",
+        "AUTH_PASSWORD_RESET_REQUESTED": "Nulstilling af adgangskode anmodet",
+        "AUTH_ADMIN_ROLE_GRANTED": "Administratorrolle tildelt",
+        "AUTH_ADMIN_ROLE_REVOKED": "Administratorrolle fjernet",
+        "API_KEY_CREATED": "API-nøgle oprettet",
+        "API_KEY_REVOKED": "API-nøgle tilbagekaldt",
+        "API_INTERNAL_SECRET_MISMATCH": "Intern API-hemmelighed stemmer ikke overens",
+        "CROSS_ORG_ACCESS_ATTEMPTED": "Forsøg på adgang på tværs af organisationer",
+        "UNAUTHORIZED_ACCESS_ATTEMPTED": "Forsøg på uautoriseret adgang",
+        "CHAT_JAILBREAK_DETECTED": "Jailbreak-forsøg registreret",
+        "CHAT_PII_DETECTED": "Personoplysninger registreret i chatten",
+        "CHAT_PII_MASKING_FAILED": "Maskering af personoplysninger mislykkedes",
+        "TOOL_CALL_BLOCKED": "Værktøjskald blokeret",
+        "TOOL_CALL_CONFIRMED": "Værktøjskald bekræftet",
+        "TOOL_CALL_DENIED": "Værktøjskald afvist",
+        "TOOL_ARGS_HIGH_RISK": "Værktøjsargumenter med høj risiko",
+        "UPLOAD_SUSPICIOUS_CONTENT": "Mistænkeligt indhold i en uploadet fil",
+        "UPLOAD_REJECTED": "Uploadet fil afvist",
+        "ADMIN_SETTINGS_CHANGED": "Administrative indstillinger ændret",
+        "RATE_LIMIT_HIT": "Anmodningsgrænsen er overskredet",
+        "MCP_OAUTH_FAILED": "MCP OAuth-autorisation mislykkedes"
+      }
+    }
   }
 }

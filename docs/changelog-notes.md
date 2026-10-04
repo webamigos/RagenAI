@@ -105,6 +105,7 @@ archive is the blog.
   changed while it was being indexed. Documents revoked before this release are
   corrected the next time anyone touches their sharing, or when they are
   re-indexed; there is no sweep over old ones yet. ([#1245](https://github.com/webamigos/RagenAI/issues/1245))
+
 ### Navigation
 
 - `[brief]` **The organization pages have one menu, in the sidebar, not two
@@ -115,6 +116,19 @@ archive is the blog.
   organization pages you opened in between; a bookmarked organization URL goes
   to a new chat. The organization switcher and the user menu stay where they
   were. ([#1399](https://github.com/webamigos/RagenAI/issues/1399))
+
+### Email
+
+- `[major]` **Ragen's emails speak the reader's language.** Invitations,
+  password resets, address verification, the welcome message and security
+  alerts were Polish – subject and body – whatever language the person
+  spoke. They are now written in any of the 17 languages the panel ships. The
+  language is the one the request came in: an administrator's language for the
+  invitations they send, the browser's for someone signing up or resetting a
+  password; English when there is nothing to go on. Security alerts go to the
+  people who run the installation, so they use the new optional
+  `SECURITY_ALERT_LOCALE` (default English) and never the language of the
+  request that raised them.
 
 ### Usage and limits
 

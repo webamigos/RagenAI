@@ -182,6 +182,7 @@ async function handleSendMagicLink({
       organizationName: context.organizationName,
       inviterName: context.inviterName,
       role: context.role,
+      locale: context.locale,
     });
     if ('error' in result) {
       console.error('[AUTH] Failed to send magic-link invitation email', {

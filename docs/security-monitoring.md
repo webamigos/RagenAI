@@ -132,6 +132,7 @@ Tune by adjusting the weights in `src/libs/security/tool-arg-inspector.ts` or ad
 | `SECURITY_ALERT_EMAIL` | empty (off) | Comma-separated recipient list |
 | `SECURITY_ALERT_FROM` | `Ragen Security <noreply@updates.webamigos.pl>` | From address |
 | `SECURITY_ALERT_SEVERITY` | `critical` | Minimum severity to email. Lower to `warn` for broader coverage. |
+| `SECURITY_ALERT_LOCALE` | application default (`en`) | Language of the alert email, one of the app's locales. Never taken from the request that raised the alert. |
 
 **Dedupe:** same `(eventType, actor)` within 15 minutes → skipped. Prevents email storms from one attacker hammering one endpoint.
 

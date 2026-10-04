@@ -3067,5 +3067,104 @@
     "description": "Túto stránku sa nepodarilo zobraziť. Skúste to znova alebo začnite nový chat – nič uložené sa nestratilo.",
     "retry": "Skúsiť znova",
     "new-chat": "Nový chat"
+  },
+  "emails": {
+    "invitation": {
+      "subject": "Pozvánka do organizácie {organization} v Ragen AI",
+      "preview": "Boli ste pozvaní do organizácie {organization} v Ragen AI",
+      "greeting": "Dobrý deň!",
+      "invited-by": "<strong>{inviter}</strong> vás pozýva, aby ste sa pripojili k organizácii <strong>{organization}</strong> v Ragen AI.",
+      "invited": "Boli ste pozvaní do organizácie <strong>{organization}</strong> v Ragen AI.",
+      "role": "Budete pridaní s rolou: <strong>{role}</strong>",
+      "accept": "Prijať pozvánku",
+      "expires": "Táto pozvánka vyprší <strong>{date}</strong>.",
+      "join": "Pripojiť sa k organizácii",
+      "magic-note": "Kliknutím na toto tlačidlo sa automaticky prihlásite bez toho, aby ste si museli pamätať heslo. Odkaz vyprší o 7 dní.",
+      "ignore": "Ak sa k tejto organizácii pripojiť nechcete, túto správu ignorujte.",
+      "sent-to": "Pozvánka odoslaná na adresu: {email}",
+      "role-admin": "Administrátor",
+      "role-member": "Používateľ"
+    },
+    "password-reset": {
+      "subject": "Obnovte si heslo do Ragen",
+      "preview": "Obnovte si heslo do Ragen",
+      "body": "Kliknutím na tlačidlo nižšie obnovíte svoje heslo:",
+      "button": "Obnoviť heslo",
+      "ignore": "Ak ste o obnovenie hesla nežiadali, túto správu ignorujte.",
+      "expiry": "Odkaz vyprší o 1 hodinu."
+    },
+    "verification": {
+      "subject": "Overte svoju e-mailovú adresu – Ragen AI",
+      "preview": "Overte svoju e-mailovú adresu v Ragen AI",
+      "body": "Ďakujeme za registráciu v Ragen AI! Kliknutím na tlačidlo nižšie overíte svoju e-mailovú adresu:",
+      "button": "Overiť e-mail",
+      "ignore": "Ak ste si účet v Ragen AI nezakladali, túto správu ignorujte.",
+      "expiry": "Odkaz vyprší o 24 hodín."
+    },
+    "welcome": {
+      "subject": "Vitajte v Ragen!",
+      "preview": "Používajte AI bezpečne vo svojej firme",
+      "greeting": "Dobrý deň!",
+      "greeting-named": "Dobrý deň, {name}!",
+      "thanks": "Ďakujeme za registráciu v Ragen AI :)",
+      "mission": "Na tomto projekte pracujeme preto, aby bolo jednoduché vytvárať AI asistentov.",
+      "contacts-tip": "V nasledujúcich týždňoch budeme naše riešenie ďalej rozvíjať, takže si túto e-mailovú adresu pridajte do kontaktov – neprídete tak o novinky o nových funkciách.",
+      "button": "Otvoriť aplikáciu Ragen",
+      "questions": "Ak máte otázky, želania alebo nápady týkajúce sa fungovania aplikácie, napíšte na {email}."
+    },
+    "security-alert": {
+      "preview": "[{severity}] {event} – bezpečnostné upozornenie Ragen",
+      "intro": "V Ragen AI bola zaznamenaná bezpečnostná udalosť úrovne <strong>{severity}</strong>. Prejdite si podrobnosti nižšie a v administračnom paneli potvrďte, že bola vyriešená.",
+      "label-id": "ID udalosti",
+      "label-type": "Typ",
+      "label-severity": "Úroveň",
+      "label-source": "Zdroj",
+      "label-time": "Čas udalosti",
+      "label-organization": "Organizácia",
+      "label-user": "Používateľ",
+      "label-ip": "IP adresa",
+      "label-request": "ID požiadavky",
+      "open": "Otvoriť udalosť v paneli:",
+      "footer": "Túto správu dostávate, pretože je vaša adresa nastavená v premennej prostredia <code>SECURITY_ALERT_EMAIL</code>. Upozornenie vyvolala kritická udalosť. Udalosti nižších úrovní sú dostupné iba v administračnom paneli.",
+      "severity": {
+        "info": "Informácia",
+        "warn": "Varovanie",
+        "critical": "Kritická"
+      },
+      "source": {
+        "auth": "Overovanie",
+        "chat": "Chat",
+        "chatbot": "Chatbot",
+        "upload": "Nahrávanie súboru",
+        "admin": "Administračný panel",
+        "api": "API",
+        "mcp": "MCP",
+        "infra": "Infraštruktúra"
+      },
+      "event-type": {
+        "AUTH_LOGIN_FAILED": "Neúspešné prihlásenie",
+        "AUTH_BRUTEFORCE_SUSPECTED": "Podozrenie na útok hrubou silou",
+        "AUTH_PASSWORD_RESET_REQUESTED": "Požiadavka na obnovenie hesla",
+        "AUTH_ADMIN_ROLE_GRANTED": "Pridelená rola administrátora",
+        "AUTH_ADMIN_ROLE_REVOKED": "Odobratá rola administrátora",
+        "API_KEY_CREATED": "Vytvorený kľúč API",
+        "API_KEY_REVOKED": "Zrušený kľúč API",
+        "API_INTERNAL_SECRET_MISMATCH": "Nezhoda interného tajomstva API",
+        "CROSS_ORG_ACCESS_ATTEMPTED": "Pokus o prístup naprieč organizáciami",
+        "UNAUTHORIZED_ACCESS_ATTEMPTED": "Pokus o neoprávnený prístup",
+        "CHAT_JAILBREAK_DETECTED": "Zistený pokus o jailbreak",
+        "CHAT_PII_DETECTED": "Zistené osobné údaje v chate",
+        "CHAT_PII_MASKING_FAILED": "Maskovanie osobných údajov zlyhalo",
+        "TOOL_CALL_BLOCKED": "Volanie nástroja zablokované",
+        "TOOL_CALL_CONFIRMED": "Volanie nástroja potvrdené",
+        "TOOL_CALL_DENIED": "Volanie nástroja zamietnuté",
+        "TOOL_ARGS_HIGH_RISK": "Argumenty nástroja s vysokým rizikom",
+        "UPLOAD_SUSPICIOUS_CONTENT": "Podozrivý obsah v nahranom súbore",
+        "UPLOAD_REJECTED": "Nahraný súbor odmietnutý",
+        "ADMIN_SETTINGS_CHANGED": "Zmenené administratívne nastavenia",
+        "RATE_LIMIT_HIT": "Prekročený limit požiadaviek",
+        "MCP_OAUTH_FAILED": "Autorizácia OAuth pre MCP zlyhala"
+      }
+    }
   }
 }

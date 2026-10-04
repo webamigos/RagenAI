@@ -1,6 +1,7 @@
 import { Heading, Section, Text, Link } from '@react-email/components';
 import { EmailLayout } from './components/email-layout';
 import { getBaseUrl } from './utils/base-url';
+import { code, strong, type EmailTranslator } from './utils/email-translator';
 
 type Props = {
   publicId: string;
@@ -12,48 +13,9 @@ type Props = {
   ipAddress: string | null;
   requestId: string | null;
   createdAtIso: string;
-};
-
-const SEVERITY_LABEL: Record<string, string> = {
-  info: 'Informacja',
-  warn: 'Ostrzeżenie',
-  critical: 'Krytyczne',
-};
-
-const EVENT_TYPE_LABEL: Record<string, string> = {
-  AUTH_LOGIN_FAILED: 'Nieudane logowanie',
-  AUTH_BRUTEFORCE_SUSPECTED: 'Podejrzenie ataku brute-force',
-  AUTH_PASSWORD_RESET_REQUESTED: 'Żądanie resetowania hasła',
-  AUTH_ADMIN_ROLE_GRANTED: 'Przyznano rolę administratora',
-  AUTH_ADMIN_ROLE_REVOKED: 'Odebrano rolę administratora',
-  API_KEY_CREATED: 'Klucz API utworzony',
-  API_KEY_REVOKED: 'Klucz API odwołany',
-  API_INTERNAL_SECRET_MISMATCH: 'Niezgodność sekretu wewnętrznego API',
-  CROSS_ORG_ACCESS_ATTEMPTED: 'Próba dostępu między organizacjami',
-  UNAUTHORIZED_ACCESS_ATTEMPTED: 'Próba nieautoryzowanego dostępu',
-  CHAT_JAILBREAK_DETECTED: 'Wykryto próbę jailbreak',
-  CHAT_PII_DETECTED: 'Wykryto dane osobowe w czacie',
-  CHAT_PII_MASKING_FAILED: 'Błąd maskowania danych osobowych',
-  TOOL_CALL_BLOCKED: 'Wywołanie narzędzia zablokowane',
-  TOOL_CALL_CONFIRMED: 'Wywołanie narzędzia potwierdzone',
-  TOOL_CALL_DENIED: 'Wywołanie narzędzia odrzucone',
-  TOOL_ARGS_HIGH_RISK: 'Argumenty narzędzia wysokiego ryzyka',
-  UPLOAD_SUSPICIOUS_CONTENT: 'Podejrzana treść w przesłanym pliku',
-  UPLOAD_REJECTED: 'Przesłany plik odrzucony',
-  ADMIN_SETTINGS_CHANGED: 'Zmiana ustawień administracyjnych',
-  RATE_LIMIT_HIT: 'Przekroczono limit zapytań',
-  MCP_OAUTH_FAILED: 'Błąd autoryzacji OAuth MCP',
-};
-
-const SOURCE_LABEL: Record<string, string> = {
-  auth: 'Uwierzytelnianie',
-  chat: 'Czat',
-  chatbot: 'Chatbot',
-  upload: 'Przesyłanie pliku',
-  admin: 'Panel administracyjny',
-  api: 'API',
-  mcp: 'MCP',
-  infra: 'Infrastruktura',
+  locale: string;
+  /** The `emails.security-alert` strings in `locale`. */
+  t: EmailTranslator;
 };
 
 const SEVERITY_COLOR: Record<string, string> = {
@@ -61,6 +23,14 @@ const SEVERITY_COLOR: Record<string, string> = {
   warn: '#c2410c',
   critical: '#b91c1c',
 };
+
+/**
+ * A label from the messages for a value the application defines, or the value
+ * itself when it has no label yet: a new event type must still show up in an
+ * alert as its own name rather than as a raw translation key or a blank.
+ */
+const labelFor = (t: EmailTranslator, group: string, value: string) =>
+  t.has(`${group}.${value}`) ? t(`${group}.${value}`) : value;
 
 const SecurityAlertEmail = ({
   publicId,
@@ -72,77 +42,75 @@ const SecurityAlertEmail = ({
   ipAddress,
   requestId,
   createdAtIso,
+  locale,
+  t,
 }: Props) => {
   const color = SEVERITY_COLOR[severity] ?? '#525f7f';
-  const label = SEVERITY_LABEL[severity] ?? severity;
-  const eventTypeLabel = EVENT_TYPE_LABEL[eventType] ?? eventType;
-  const sourceLabel = SOURCE_LABEL[source] ?? source;
+  const label = labelFor(t, 'severity', severity);
+  const eventTypeLabel = labelFor(t, 'event-type', eventType);
+  const sourceLabel = labelFor(t, 'source', source);
   const incidentUrl = `${getBaseUrl()}/organization/security?highlight=${encodeURIComponent(
     publicId,
   )}`;
 
   return (
     <EmailLayout
-      preview={`[${label}] ${eventTypeLabel} — alert bezpieczeństwa Ragen`}
+      locale={locale}
+      preview={t('preview', { severity: label, event: eventTypeLabel })}
     >
       <Heading className="m-0 text-lg font-bold" style={{ color }}>
         [{label}] {eventTypeLabel}
       </Heading>
       <Text className="text-sm leading-6 text-[#525f7f]">
-        W systemie Ragen AI zarejestrowano zdarzenie bezpieczeństwa o poziomie{' '}
-        <strong>{label.toLowerCase()}</strong>. Przejrzyj szczegóły poniżej i
-        potwierdź jego obsługę w panelu administracyjnym.
+        {t.rich('intro', { severity: label.toLowerCase(), strong })}
       </Text>
 
       <Section className="my-5 rounded-[5px] border border-[#e6ebf1] bg-[#f9fafb] p-4">
         <Text className="m-0 text-sm leading-6 text-[#525f7f]">
-          <strong>ID zdarzenia:</strong> {publicId}
+          <strong>{t('label-id')}:</strong> {publicId}
           <br />
-          <strong>Typ:</strong> {eventTypeLabel}
+          <strong>{t('label-type')}:</strong> {eventTypeLabel}
           <br />
-          <strong>Poziom:</strong> {label}
+          <strong>{t('label-severity')}:</strong> {label}
           <br />
-          <strong>Źródło:</strong> {sourceLabel}
+          <strong>{t('label-source')}:</strong> {sourceLabel}
           <br />
-          <strong>Czas zdarzenia:</strong> {createdAtIso}
+          <strong>{t('label-time')}:</strong> {createdAtIso}
           {organizationId ? (
             <>
               <br />
-              <strong>Organizacja:</strong> {organizationId}
+              <strong>{t('label-organization')}:</strong> {organizationId}
             </>
           ) : null}
           {userId ? (
             <>
               <br />
-              <strong>Użytkownik:</strong> {userId}
+              <strong>{t('label-user')}:</strong> {userId}
             </>
           ) : null}
           {ipAddress ? (
             <>
               <br />
-              <strong>Adres IP:</strong> {ipAddress}
+              <strong>{t('label-ip')}:</strong> {ipAddress}
             </>
           ) : null}
           {requestId ? (
             <>
               <br />
-              <strong>ID żądania:</strong> {requestId}
+              <strong>{t('label-request')}:</strong> {requestId}
             </>
           ) : null}
         </Text>
       </Section>
 
       <Text className="text-sm leading-6 text-[#525f7f]">
-        Otwórz zdarzenie w panelu:{' '}
+        {t('open')}{' '}
         <Link href={incidentUrl} className="text-[#394d9d]">
           {incidentUrl}
         </Link>
       </Text>
       <Text className="text-xs leading-5 text-[#8898aa]">
-        Otrzymujesz tę wiadomość, ponieważ Twój adres jest skonfigurowany w
-        zmiennej środowiskowej <code>SECURITY_ALERT_EMAIL</code>. Alert został
-        wywołany przez zdarzenie o poziomie krytycznym. Zdarzenia o niższych
-        poziomach są dostępne wyłącznie w panelu administracyjnym.
+        {t.rich('footer', { code })}
       </Text>
     </EmailLayout>
   );
