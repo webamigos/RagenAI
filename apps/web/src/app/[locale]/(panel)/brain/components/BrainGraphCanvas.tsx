@@ -4,11 +4,11 @@ import { useTranslations } from 'next-intl';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ArrowUturnLeftIcon,
-  ArrowsPointingOutIcon,
   DocumentTextIcon,
   MagnifyingGlassMinusIcon,
   MagnifyingGlassPlusIcon,
   ShareIcon,
+  ViewfinderCircleIcon,
 } from '@heroicons/react/24/outline';
 import type Sigma from 'sigma';
 
@@ -83,6 +83,14 @@ const MEDIUM_GRAPH = 200;
 
 /** Up to this many pages, the layout spreads out and the camera leaves label room. */
 export const ROOMY_GRAPH = 15;
+
+/**
+ * Where the camera opens, and where "Fit the whole graph" brings it back.
+ * Sigma's own fit (its default state) frames the nodes; a roomy view adds
+ * room for the labels drawn to their right — see the comment where it opens.
+ */
+const HOME_CAMERA = { x: 0.5, y: 0.5, ratio: 1, angle: 0 };
+const ROOMY_HOME_CAMERA = { x: 0.62, y: 0.5, ratio: 1.32, angle: 0 };
 
 /** ForceAtlas2's `scalingRatio` for a graph of `order` pages. */
 function spreadFor(
@@ -193,6 +201,8 @@ export function BrainGraphCanvas({
   );
   const [failed, setFailed] = useState(false);
   const renderer = useRef<Sigma | null>(null);
+  // Set by the effect that builds the renderer, which knows the view's home.
+  const fitView = useRef<(() => void) | null>(null);
   // Read by the reducers inside the effect, which outlive a render; a state
   // change pokes the renderer to redraw rather than rebuilding the graph.
   const selectedId = useRef<string | null>(selected?.id ?? null);
@@ -515,9 +525,19 @@ export function BrainGraphCanvas({
         // the view right by the same share, which leaves the extra room on
         // the side the labels grow into. A larger graph keeps the tight fit:
         // zoomed out, it only got smaller and its labels ran together.
+        const home = roomy ? ROOMY_HOME_CAMERA : HOME_CAMERA;
         if (roomy) {
-          sigmaRenderer.getCamera().setState({ x: 0.62, y: 0.5, ratio: 1.32 });
+          sigmaRenderer.getCamera().setState(home);
         }
+        // Back to the whole graph. Sigma's `animatedReset` went to its default
+        // state, which is where a graph past ROOMY_GRAPH already opens — the
+        // button did nothing — and it kept the box a drag froze, so a page
+        // dragged out of it stayed out of the "whole" graph. Unfreeze the box
+        // so the frame is the graph as it stands now, then go home.
+        fitView.current = () => {
+          sigmaRenderer.setCustomBBox(null);
+          void sigmaRenderer.getCamera().animate(home, { duration: 300 });
+        };
         // Sigma sizes its canvases from the container but only re-reads it on
         // a window resize. Opening the assistant narrows the container, not
         // the window, and the canvas kept its old width — drawn over the
@@ -531,6 +551,7 @@ export function BrainGraphCanvas({
         kill = () => {
           resizes?.disconnect();
           renderer.current = null;
+          fitView.current = null;
           sigmaRenderer.kill();
         };
       } catch {
@@ -698,13 +719,10 @@ export function BrainGraphCanvas({
                   className={controlClass}
                   aria-label={t('zoom-fit')}
                   title={t('zoom-fit')}
-                  onClick={() =>
-                    void renderer.current
-                      ?.getCamera()
-                      .animatedReset({ duration: 300 })
-                  }
+                  onClick={() => fitView.current?.()}
                 >
-                  <ArrowsPointingOutIcon className="size-4" />
+                  {/* A frame, not four outward arrows: those read as fullscreen. */}
+                  <ViewfinderCircleIcon className="size-4" />
                 </button>
                 {arranged && (
                   <button
