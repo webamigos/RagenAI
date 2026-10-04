@@ -9,8 +9,12 @@ data — on your own servers, with your own models.**
 
 _Crafted by hand. Extended by agents._
 
-<!-- TODO(badges): only valid once the repo is public under the right org.
-     Planned: Apache 2.0 · docs.ragen.ai · PRs Welcome · Next.js 16 -->
+[![License: Apache 2.0](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
+[![CI status on main](https://github.com/webamigos/RagenAI/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/webamigos/RagenAI/actions/workflows/ci.yml)
+[![Documentation: docs.ragen.ai](https://img.shields.io/badge/docs-docs.ragen.ai-informational.svg)](https://docs.ragen.ai)
+[![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+[![Built with TypeScript 5.7](https://img.shields.io/badge/TypeScript-5.7-3178C6.svg?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
+[![Built with Next.js 16](https://img.shields.io/badge/Next.js-16-555555.svg?logo=nextdotjs&logoColor=white&labelColor=000000)](https://nextjs.org)
 
 [Live demo](https://demo.ragen.ai) ·
 [Documentation](https://docs.ragen.ai) ·
