@@ -39,8 +39,8 @@
  * always right the moment a grant was revoked; this is what makes retrieval as
  * prompt.
  *
- * `syncFolderVectorPermissions` in apps/web and apps/api is the earlier attempt
- * and should not be revived: it has no call site, and it wrote
+ * `syncFolderVectorPermissions`, in apps/web and apps/api, was the earlier
+ * attempt and is deleted: it had no call site, and it wrote
  * `'metadata.accessible_by'` as a dotted payload key, which Qdrant stores as a
  * literal top-level field — the call succeeded and the retrieval filter never
  * saw it.

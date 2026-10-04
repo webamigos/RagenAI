@@ -3,6 +3,7 @@ import type { OrgVisibilityScope } from '@ragenai/platform-contracts';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { AuditLogService } from '../audit-logs/audit-log.service.js';
 import { ProjectsService } from '../projects/projects.service.js';
+import { DocumentAccessSyncService } from './document-access-sync.service.js';
 import {
   type FileType,
   type EmbeddingStatus,
@@ -54,6 +55,7 @@ export class FilesService {
     private readonly prisma: PrismaService,
     private readonly auditLog: AuditLogService,
     private readonly projects: ProjectsService,
+    private readonly accessSync: DocumentAccessSyncService,
   ) {}
 
   async createFile(
@@ -273,6 +275,10 @@ export class FilesService {
       where: { id: file.id },
       data: { folderId },
     });
+
+    // The folder carries the team and the inherited grants, so moving the file
+    // changes who may read it.
+    await this.accessSync.afterChange(organizationId, { fileIds: [file.id] });
 
     return { success: true };
   }

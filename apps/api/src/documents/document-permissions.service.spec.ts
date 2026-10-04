@@ -2,6 +2,7 @@ import type { Mock } from 'vitest';
 import { DocumentPermissionsService } from './document-permissions.service.js';
 import { type PrismaService } from '../prisma/prisma.service.js';
 import { type NotificationsService } from '../notifications/notifications.service.js';
+import { type DocumentAccessSyncService } from './document-access-sync.service.js';
 
 describe('DocumentPermissionsService', () => {
   function makeService(overrides: {
@@ -40,10 +41,19 @@ describe('DocumentPermissionsService', () => {
         ),
     } as unknown as NotificationsService;
 
+    const afterChange = vi.fn().mockResolvedValue(undefined);
+    const accessSync = { afterChange } as unknown as DocumentAccessSyncService;
+
     return {
-      service: new DocumentPermissionsService(prisma, notifications),
+      service: new DocumentPermissionsService(
+        prisma,
+        notifications,
+        accessSync,
+      ),
       prisma,
       notifications,
+      accessSync,
+      afterChange,
     };
   }
 
@@ -212,6 +222,46 @@ describe('DocumentPermissionsService', () => {
       );
     });
 
+    it('starts the access sync for the file or folder that was shared', async () => {
+      const file = makeService({
+        member: { findFirst: vi.fn().mockResolvedValue({ id: 'm' }) },
+        userFile: {
+          findFirst: vi.fn().mockResolvedValue({ id: 'file-1', fileName: 'a' }),
+        },
+      });
+      await file.service.shareResource({
+        resourceType: 'file',
+        fileId: 'file-1',
+        organizationId: 'org-1',
+        granteeType: 'user',
+        granteeId: 'user-2',
+        permission: 'view',
+        grantedBy: 'user-1',
+      });
+      expect(file.afterChange).toHaveBeenCalledWith('org-1', {
+        fileIds: ['file-1'],
+      });
+
+      const folder = makeService({
+        member: { findFirst: vi.fn().mockResolvedValue({ id: 'm' }) },
+        documentFolder: {
+          findFirst: vi.fn().mockResolvedValue({ id: 'folder-1', name: 'f' }),
+        },
+      });
+      await folder.service.shareResource({
+        resourceType: 'folder',
+        folderId: 'folder-1',
+        organizationId: 'org-1',
+        granteeType: 'user',
+        granteeId: 'user-2',
+        permission: 'view',
+        grantedBy: 'user-1',
+      });
+      expect(folder.afterChange).toHaveBeenCalledWith('org-1', {
+        folderIds: ['folder-1'],
+      });
+    });
+
     it('does not notify a team grantee', async () => {
       const notificationsCreate = vi.fn().mockResolvedValue({});
       const { service } = makeService({
@@ -296,6 +346,8 @@ describe('DocumentPermissionsService', () => {
         documentPermission: {
           findUnique: vi.fn().mockResolvedValue({
             id: 1,
+            fileId: 'file-1',
+            folderId: null,
             file: { organizationId: 'org-1' },
             folder: null,
           }),
@@ -306,6 +358,69 @@ describe('DocumentPermissionsService', () => {
       const result = await service.revokeShare(1, 'org-1');
       expect(result).toEqual({ success: true });
       expect(del).toHaveBeenCalledWith({ where: { id: 1 } });
+    });
+
+    it('starts the access sync for the file, after the row is gone', async () => {
+      const del = vi.fn().mockResolvedValue({});
+      const { service, afterChange } = makeService({
+        documentPermission: {
+          findUnique: vi.fn().mockResolvedValue({
+            id: 1,
+            fileId: 'file-1',
+            folderId: null,
+            file: { organizationId: 'org-1' },
+            folder: null,
+          }),
+          delete: del,
+        },
+      });
+
+      await service.revokeShare(1, 'org-1');
+
+      expect(afterChange).toHaveBeenCalledWith('org-1', {
+        fileIds: ['file-1'],
+      });
+      // The job reads the database, so it must not run before the delete.
+      expect(afterChange.mock.invocationCallOrder[0]).toBeGreaterThan(
+        del.mock.invocationCallOrder[0],
+      );
+    });
+
+    it('starts it for the folder when the revoked grant was on a folder', async () => {
+      const { service, afterChange } = makeService({
+        documentPermission: {
+          findUnique: vi.fn().mockResolvedValue({
+            id: 1,
+            fileId: null,
+            folderId: 'folder-1',
+            file: null,
+            folder: { organizationId: 'org-1' },
+          }),
+        },
+      });
+
+      await service.revokeShare(1, 'org-1');
+
+      expect(afterChange).toHaveBeenCalledWith('org-1', {
+        folderIds: ['folder-1'],
+      });
+    });
+
+    it('starts nothing when the revoke was refused', async () => {
+      const { service, afterChange } = makeService({
+        documentPermission: {
+          findUnique: vi.fn().mockResolvedValue({
+            id: 1,
+            fileId: 'file-1',
+            file: { organizationId: 'org-2' },
+            folder: null,
+          }),
+        },
+      });
+
+      await service.revokeShare(1, 'org-1');
+
+      expect(afterChange).not.toHaveBeenCalled();
     });
   });
 

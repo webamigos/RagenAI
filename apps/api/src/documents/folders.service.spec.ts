@@ -1,6 +1,7 @@
 import type { Mock } from 'vitest';
 import { FoldersService } from './folders.service.js';
 import { type PrismaService } from '../prisma/prisma.service.js';
+import { type DocumentAccessSyncService } from './document-access-sync.service.js';
 import { PiiPolicy } from '../generated/prisma/client.js';
 
 describe('FoldersService', () => {
@@ -51,7 +52,16 @@ describe('FoldersService', () => {
       },
     } as unknown as PrismaService;
 
-    return { service: new FoldersService(prisma), prisma, $transaction };
+    const afterChange = vi.fn().mockResolvedValue(undefined);
+    const accessSync = { afterChange } as unknown as DocumentAccessSyncService;
+
+    return {
+      service: new FoldersService(prisma, accessSync),
+      prisma,
+      $transaction,
+      accessSync,
+      afterChange,
+    };
   }
 
   describe('createFolder', () => {
@@ -196,6 +206,39 @@ describe('FoldersService', () => {
         data: { name: 'New name' },
       });
     });
+
+    it("starts the access sync when the folder's team changes", async () => {
+      const { service, afterChange } = makeService({
+        team: { findFirst: vi.fn().mockResolvedValue({ id: 'team-1' }) },
+        documentFolder: { update: vi.fn().mockResolvedValue({}) },
+      });
+
+      await service.updateFolder('folder-1', 'org-1', { teamId: 'team-1' });
+
+      expect(afterChange).toHaveBeenCalledWith('org-1', {
+        folderIds: ['folder-1'],
+      });
+    });
+
+    it('also starts it when the team is cleared, which widens who may read', async () => {
+      const { service, afterChange } = makeService({
+        documentFolder: { update: vi.fn().mockResolvedValue({}) },
+      });
+
+      await service.updateFolder('folder-1', 'org-1', { teamId: null });
+
+      expect(afterChange).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not start it for a rename or a PII policy, which change nobody’s access', async () => {
+      const { service, afterChange } = makeService({
+        documentFolder: { update: vi.fn().mockResolvedValue({}) },
+      });
+
+      await service.updateFolder('folder-1', 'org-1', { name: 'New name' });
+
+      expect(afterChange).not.toHaveBeenCalled();
+    });
   });
 
   describe('moveFolder', () => {
@@ -282,6 +325,34 @@ describe('FoldersService', () => {
         where: { id: 'child-1' },
         data: { path: '/target-1/folder-1/child-1/' },
       });
+    });
+
+    it('starts the access sync for the moved subtree once the move has committed', async () => {
+      const findFirst = vi
+        .fn()
+        .mockResolvedValueOnce({ id: 'folder-1', path: '/' })
+        .mockResolvedValueOnce({ id: 'target-1', path: '/' });
+      const $transaction = vi.fn((cb: (tx: unknown) => unknown) =>
+        cb({
+          documentFolder: {
+            update: vi.fn().mockResolvedValue({}),
+            findMany: vi.fn().mockResolvedValue([]),
+          },
+        }),
+      );
+      const { service, afterChange } = makeService({
+        documentFolder: { findFirst },
+        transaction: $transaction,
+      });
+
+      await service.moveFolder('folder-1', 'target-1', 'org-1');
+
+      expect(afterChange).toHaveBeenCalledWith('org-1', {
+        folderIds: ['folder-1'],
+      });
+      expect(afterChange.mock.invocationCallOrder[0]).toBeGreaterThan(
+        $transaction.mock.invocationCallOrder[0],
+      );
     });
 
     it('returns failure when the transaction throws', async () => {

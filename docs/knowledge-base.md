@@ -11,7 +11,7 @@ Nested folders, per-user file ownership, sharing with users/teams.
 
 **Visibility rules**: `ownerId = null` → all org members (legacy). `ownerId = userA` → owner + org admins + explicit shares. Folder with `teamId` → team members + org admins. UI views: All Files / My Files / Shared with me.
 
-**Vector store access filtering**: each chunk has `metadata.accessible_by: string[]` (`org:<id>`, `user:<id>`, `team:<id>`). RAG queries add this filter for non-admins; org admins bypass. Filter built in `src/app/api/threads/services/initializeBasicRag.ts`. Sync command: `sync-vector-permissions-command.ts`. Backfill script: `src/scripts/backfill-accessible-by.ts`.
+**Vector store access filtering**: each chunk has `metadata.accessible_by: string[]` (`org:<id>`, `user:<id>`, `team:<id>`). RAG queries add this filter for non-admins; org admins bypass. Filter built in `src/app/api/threads/services/initializeBasicRag.ts`. Written at ingest, and kept current by the worker's `syncDocumentAccess` job, which apps/api starts after a share, revoke, move or team change (`DocumentAccessSyncService`) — see `apps/worker/AGENTS.md`. One-shot backfill script: `src/scripts/backfill-accessible-by.ts`.
 
 **Key files**: `src/features/documents/` (contracts + commands), `src/features/documents/utils/folder-tree.ts` (`buildFolderTree()`), `src/app/actions/folders.ts` + `permissions.ts`, UI under `src/app/components/ManageKnowledge/Folders/` and `src/app/[locale]/(panel)/knowledge/documents-list/`.
 

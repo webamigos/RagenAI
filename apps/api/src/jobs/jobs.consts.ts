@@ -17,6 +17,7 @@ import type { JobName } from '@ragenai/jobs';
 
 export const Workflow = {
   RUN_FILE_EMBEDDINGS: 'runFileEmbeddings',
+  SYNC_DOCUMENT_ACCESS: 'syncDocumentAccess',
 } as const satisfies Record<string, JobName>;
 
 export type Workflow = (typeof Workflow)[keyof typeof Workflow];

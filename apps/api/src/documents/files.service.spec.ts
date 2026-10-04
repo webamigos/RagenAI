@@ -34,6 +34,7 @@ import { FilesService } from './files.service.js';
 import { type PrismaService } from '../prisma/prisma.service.js';
 import { type AuditLogService } from '../audit-logs/audit-log.service.js';
 import { type ProjectsService } from '../projects/projects.service.js';
+import { type DocumentAccessSyncService } from './document-access-sync.service.js';
 
 describe('FilesService', () => {
   function makeService(overrides: {
@@ -77,11 +78,16 @@ describe('FilesService', () => {
       getProjectByIdOrThrow: overrides.getProjectByIdOrThrow ?? vi.fn(),
     } as unknown as ProjectsService;
 
+    const afterChange = vi.fn().mockResolvedValue(undefined);
+    const accessSync = { afterChange } as unknown as DocumentAccessSyncService;
+
     return {
-      service: new FilesService(prisma, auditLog, projects),
+      service: new FilesService(prisma, auditLog, projects, accessSync),
       prisma,
       auditLog,
       projects,
+      accessSync,
+      afterChange,
     };
   }
 
@@ -342,6 +348,38 @@ describe('FilesService', () => {
         where: { id: 'file-1' },
         data: { folderId: 'folder-1' },
       });
+    });
+
+    it('starts the access sync for the moved file, after the move', async () => {
+      const update = vi.fn().mockResolvedValue({});
+      const { service, afterChange } = makeService({
+        userFile: {
+          findFirst: vi.fn().mockResolvedValue({ id: 'file-1' }),
+          update,
+        },
+        documentFolder: {
+          findFirst: vi.fn().mockResolvedValue({ id: 'folder-1' }),
+        },
+      });
+
+      await service.moveFileToFolder('file-1', 'folder-1', 'org-1');
+
+      expect(afterChange).toHaveBeenCalledWith('org-1', {
+        fileIds: ['file-1'],
+      });
+      expect(afterChange.mock.invocationCallOrder[0]).toBeGreaterThan(
+        update.mock.invocationCallOrder[0],
+      );
+    });
+
+    it('starts nothing when the move was refused', async () => {
+      const { service, afterChange } = makeService({
+        userFile: { findFirst: vi.fn().mockResolvedValue(null) },
+      });
+
+      await service.moveFileToFolder('file-1', 'folder-1', 'org-1');
+
+      expect(afterChange).not.toHaveBeenCalled();
     });
   });
 
