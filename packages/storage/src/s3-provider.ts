@@ -55,7 +55,8 @@ function isNotFound(err: unknown): boolean {
  */
 function createS3Client(): S3Client {
   return new S3Client({
-    endpoint: process.env.S3_ENDPOINT_URL,
+    // `||`, not `??`: compose passes a blank value, which means "AWS".
+    endpoint: process.env.S3_ENDPOINT_URL || undefined,
     region: process.env.S3_REGION,
     // Accepts the spellings people actually write. apps/web used to compare
     // against '1' only, so S3_FORCE_PATH_STYLE=true silently did nothing

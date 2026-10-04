@@ -58,6 +58,11 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+      # A first start initialises the cluster and restarts it, and on a slow
+      # disk that restart's checkpoint alone took 53 s — past five retries, so
+      # `up` gave up on a database that came up healthy seconds later. Failures
+      # inside this window do not count.
+      start_period: 60s
     networks:
       - ragen-network
 

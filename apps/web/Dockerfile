@@ -96,6 +96,12 @@ ENV BETTER_AUTH_SECRET="build-placeholder-secret-min-32-chars!" \
     DEFAULT_MODEL="gpt-5.4-nano" \
     LITELLM_PROXY_URL="http://localhost:4000"
 
+# CI builds this with a 4 GB heap (ci.yml), and so must the image: Node's
+# default ceiling inside an 8 GB Docker VM is lower than `next build` needs,
+# and `npm run ragen:up:everything` died on "JavaScript heap out of memory" on
+# a clean machine with exactly the 8 GB the README asks for. Build stage only;
+# the runner sets its own NODE_OPTIONS.
+ENV NODE_OPTIONS="--max-old-space-size=4096"
 RUN npm run web:build
 
 FROM base AS runner

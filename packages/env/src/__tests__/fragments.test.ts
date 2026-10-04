@@ -81,6 +81,22 @@ describe('shared fragments', () => {
     expect(fragments.storage.parse({}).STORAGE_PROVIDER).toBe('local');
   });
 
+  // docker-compose.fullapp.yml passes a blank S3_ENDPOINT_URL to every app on
+  // local storage, and it used to fail validation as "Invalid URL".
+  it('reads a blank S3 endpoint as unset', () => {
+    const parsed = fragments.storage.safeParse({ S3_ENDPOINT_URL: '' });
+
+    expect(parsed.success).toBe(true);
+    expect(parsed.data?.S3_ENDPOINT_URL).toBeUndefined();
+  });
+
+  it('still refuses an S3 endpoint that is not an http URL', () => {
+    expect(
+      fragments.storage.safeParse({ S3_ENDPOINT_URL: 'localhost:9000' })
+        .success,
+    ).toBe(false);
+  });
+
   it('needs nothing: the shipped route table is the default (ADR-49)', () => {
     // The opposite of what this asserted while ADR-04 held, and the change is
     // the point: no app talks to a proxy any more, so an empty environment is
