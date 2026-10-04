@@ -3,6 +3,7 @@ import pino from 'pino';
 import pretty from 'pino-pretty';
 
 import { otelLogger } from './telemetry/otel-logger.js';
+import { isStdioTransport } from './transport.js';
 
 const isProductionTargetEnv = process.env.TARGET_ENV === 'production';
 
@@ -15,6 +16,9 @@ const isProductionTargetEnv = process.env.TARGET_ENV === 'production';
  * The mirroring is a no-op until `OTEL_EXPORTER_OTLP_ENDPOINT` is set — the
  * global logger provider is the API's built-in no-op until instrument.ts
  * replaces it.
+ *
+ * Over stdio the lines go to stderr instead: stdout carries the JSON-RPC
+ * stream, and one log line there is a message the client cannot parse.
  */
 const logger = pino(
   {
@@ -35,7 +39,7 @@ const logger = pino(
       },
     },
   },
-  pretty({ colorize: true }),
+  pretty({ colorize: true, destination: isStdioTransport() ? 2 : 1 }),
 );
 
 export { logger };

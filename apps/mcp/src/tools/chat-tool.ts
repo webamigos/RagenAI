@@ -4,6 +4,7 @@ import type { FastMCP } from 'fastmcp';
 import { chat } from '../client/ragen-api-client.js';
 import { logger } from '../logger.js';
 import { withToolSpan } from '../telemetry/with-tool-span.js';
+import { noSessionResult } from './no-session.js';
 import type { RagenSession } from '../auth.js';
 
 const TOOL_NAME = 'ragen_chat';
@@ -35,20 +36,8 @@ export function registerChatTool(server: FastMCP<RagenSession>): void {
         ),
     }),
     execute: async (args, { session }) => {
-      // `session` is typed optional by FastMCP (only absent when authenticate
-      // isn't wired up, or for the stdio transport this server never uses) —
-      // the `authenticate` hook in ../auth.ts always runs for httpStream and
-      // always returns an apiKey or rejects the connection, so this is a
-      // type-safety guard, not a real runtime path.
       if (!session) {
-        logger.error(
-          { tool: TOOL_NAME },
-          'Tool executed without an authenticated session',
-        );
-        return JSON.stringify({
-          success: false,
-          error: 'No authenticated session — this should not happen.',
-        });
+        return noSessionResult(TOOL_NAME);
       }
 
       return withToolSpan(

@@ -7,6 +7,8 @@ import {
 } from '@ragenai/env';
 import { z } from 'zod';
 
+import { MCP_TRANSPORTS } from '../transport.js';
+
 /**
  * apps/mcp's environment contract (ADR-37).
  *
@@ -42,6 +44,17 @@ export const mcpEnvSchema = fragments.targetEnvRequired
     // apps/api followed this server onto apps/api's port, where it died with
     // EADDRINUSE. The app-specific name wins so one file can serve both.
     RAGEN_MCP_PORT: z.coerce.number().int().positive().max(65535).optional(),
+    // `stdio` for a client that runs this server as a child process — see
+    // ../transport.ts. Unset is the deployment's streamable-HTTP listener.
+    RAGEN_MCP_TRANSPORT: blankAsUndefined(
+      z.enum(MCP_TRANSPORTS).default('http'),
+    ),
+    // Over stdio there is no request to carry an Authorization header, so the
+    // key comes from here — the same name and the same `sk-<keyId>.<secret>`
+    // value the `ragen` CLI reads. Ignored over HTTP, where each caller sends
+    // its own: one key in the environment of a shared server would make every
+    // caller the same caller.
+    RAGEN_API_KEY: blankAsUndefined(z.string().trim().optional()),
     PORT: z.coerce.number().int().positive().max(65535).optional(),
     // Optional here rather than `.default(...)`, and defaulted in the
     // transform below, because a Zod default is applied *before* superRefine

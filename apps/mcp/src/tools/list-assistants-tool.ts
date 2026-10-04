@@ -4,6 +4,7 @@ import type { FastMCP } from 'fastmcp';
 import { listAssistants } from '../client/ragen-api-client.js';
 import { logger } from '../logger.js';
 import { withToolSpan } from '../telemetry/with-tool-span.js';
+import { noSessionResult } from './no-session.js';
 import type { RagenSession } from '../auth.js';
 
 const TOOL_NAME = 'ragen_list_assistants';
@@ -18,14 +19,7 @@ export function registerListAssistantsTool(
     parameters: z.object({}),
     execute: async (_args, { session }) => {
       if (!session) {
-        logger.error(
-          { tool: TOOL_NAME },
-          'Tool executed without an authenticated session',
-        );
-        return JSON.stringify({
-          success: false,
-          error: 'No authenticated session — this should not happen.',
-        });
+        return noSessionResult(TOOL_NAME);
       }
 
       return withToolSpan(TOOL_NAME, {}, async () => {

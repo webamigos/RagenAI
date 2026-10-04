@@ -156,3 +156,52 @@ drift) instead of assembling a full chain. `SearchController` has no
 `@UseFilters` override, so unlike `/v1/chat` it produces exactly one error
 shape (the global `ApiExceptionFilter`'s `{ message }`) — deliberately not
 matching `/v1/chat`'s three, per the gap noted above.
+
+## Update 2026-10-04: a stdio transport, for directory inspection
+
+`RAGEN_MCP_TRANSPORT=stdio` serves the same three tools over the process's
+stdin/stdout instead of the HTTP listener. HTTP stays the default and the
+deployment; nothing about it changed.
+
+**Why.** Glama's MCP directory scores a server by building it, starting it
+behind `mcp-proxy`, and sending `initialize` and `tools/list` over stdio. An
+HTTP-only server leaves `mcp-proxy` waiting on stdin until the build times
+out, and is never scored or listed. A local MCP client that launches servers
+as child processes gets the same mode for free.
+
+**What differs over stdio:**
+
+- **The key comes from `RAGEN_API_KEY`**, the same variable and value the
+  `ragen` CLI reads, because there is no request to carry an `Authorization`
+  header. Over HTTP it is ignored: a key in a shared server's environment
+  would make every caller the same caller.
+- **No key still starts the session.** FastMCP logs the rejected
+  authentication and carries on, so `initialize` and `tools/list` answer
+  with no secrets at all — all that an inspection asks — and every tool call
+  returns the missing-key error (`src/tools/no-session.ts`) without reaching
+  `apps/api`. That error used to read "this should not happen"; over stdio
+  it can.
+- **Logs go to stderr**, because stdout is the protocol. Both writers that
+  run before the environment is parsed — the pino logger and the OTel
+  bootstrap — read the transport straight from `process.env`
+  (`src/transport.ts`). `src/__tests__/stdio-transport.test.ts` starts the
+  real entry point and fails on any stdout line that is not JSON-RPC.
+
+**Glama's build settings** (its admin form, not a file in this repository —
+`glama.json` at the root only names the maintainers):
+
+```text
+Build steps:
+  npm ci --ignore-scripts --workspace=@ragenai/mcp --workspace=@ragenai/observability --workspace=@ragenai/env
+  npm run build --workspace=@ragenai/observability
+  npm run build --workspace=@ragenai/env
+  npm run build --workspace=@ragenai/mcp
+CMD:
+  ["mcp-proxy", "--", "env", "TARGET_ENV=local", "RAGEN_MCP_TRANSPORT=stdio", "node", "apps/mcp/dist/index.js"]
+```
+
+The build order is the one `apps/mcp/Dockerfile` spells out, for the reason
+written there. `env` sets the two variables in the command itself, so the
+listing does not depend on what Glama's form keeps between builds.
+`TARGET_ENV=local` is honest here: there is no `apps/api` behind an
+inspection, and the localhost default is never called.

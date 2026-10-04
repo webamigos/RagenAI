@@ -4,6 +4,7 @@ import type { Mock } from 'vitest';
 
 import { logger } from '../logger.js';
 import { authenticate } from '../auth.js';
+import { resetEnvCache } from '../config/env.js';
 
 vi.mock('../logger.js', () => ({
   logger: {
@@ -76,5 +77,36 @@ describe('authenticate', () => {
       expect.objectContaining({ hasHeader: false }),
       expect.any(String),
     );
+  });
+});
+
+describe('authenticate over stdio, where there is no request', () => {
+  const ORIGINAL_ENV = process.env;
+
+  afterEach(() => {
+    process.env = ORIGINAL_ENV;
+    resetEnvCache();
+  });
+
+  function withKey(key: string | undefined) {
+    process.env = { TARGET_ENV: 'local', RAGEN_API_KEY: key };
+    resetEnvCache();
+  }
+
+  it('builds the Bearer header apps/api expects from RAGEN_API_KEY', async () => {
+    withKey('sk-abc.def');
+
+    await expect(authenticate(undefined)).resolves.toEqual({
+      apiKey: 'Bearer sk-abc.def',
+    });
+  });
+
+  // FastMCP catches this, logs it and starts the session anyway — which is
+  // what lets tools/list answer with no key. The message is what an operator
+  // reads on stderr, so it names the variable.
+  it('rejects without a key, naming the variable to set', async () => {
+    withKey(undefined);
+
+    await expect(authenticate(undefined)).rejects.toThrow(/RAGEN_API_KEY/);
   });
 });

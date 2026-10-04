@@ -85,6 +85,12 @@ archive is the blog.
   pointed at models and an address the install did not have. The README's
   quickstart also names all three processes rather than only the web app.
 
+- `[brief]` **Ragen's MCP server also runs over stdio.** Set
+  `RAGEN_MCP_TRANSPORT=stdio` and `RAGEN_API_KEY`, and an MCP client that
+  launches servers as child processes can start it directly instead of
+  connecting to a deployed `/mcp` URL. It is also what lets the Glama MCP
+  directory inspect and score the server.
+
 ### Knowledge base
 
 - `[brief]` **The file list's toolbar stays on one row on a laptop.** With the

@@ -1,5 +1,6 @@
 import type { IncomingMessage } from 'node:http';
 
+import { getEnv } from './config/env.js';
 import { logger } from './logger.js';
 
 /**
@@ -14,9 +15,18 @@ export interface RagenSession {
   [key: string]: unknown; // satisfies FastMCP's Record<string, unknown> bound
 }
 
+/**
+ * FastMCP calls this once per HTTP session with the request, and once for the
+ * whole stdio session with `undefined` — there is no request over stdio, so
+ * the key comes from `RAGEN_API_KEY` instead.
+ */
 export async function authenticate(
-  request: IncomingMessage,
+  request: IncomingMessage | undefined,
 ): Promise<RagenSession> {
+  if (!request) {
+    return authenticateStdio();
+  }
+
   const header = request.headers['authorization'];
   const value = Array.isArray(header) ? header[0] : header;
 
@@ -52,4 +62,20 @@ export async function authenticate(
   }
 
   return { apiKey: value };
+}
+
+/**
+ * Without a key the stdio session still starts: FastMCP logs this rejection
+ * and carries on unauthenticated, so `initialize` and `tools/list` answer —
+ * which is all a directory's inspection asks — and each tool call returns
+ * the missing-key error instead of reaching apps/api.
+ */
+function authenticateStdio(): RagenSession {
+  const key = getEnv().RAGEN_API_KEY;
+  if (!key) {
+    throw new Error(
+      'RAGEN_API_KEY is not set: tools are listed, but every tool call will be refused until it is',
+    );
+  }
+  return { apiKey: `Bearer ${key}` };
 }
