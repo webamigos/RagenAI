@@ -60,10 +60,35 @@ remove failures.
     other operator's. The rubric failed it only because it did not add that
     the voucher "cannot be exchanged for cash", which the question did not
     ask. That is a strict-but-literal rubric, the same kind as
-    `en-premise-cash-refund` in the C3 report. It is not changed here: a
-    rubric change invalidates the recorded verdicts, and this file's point is
-    that the regrade is exact.
+    `en-premise-cash-refund` in the C3 report. v4 leaves the rubric alone,
+    because a rubric change invalidates the recorded verdicts. v5 changes it,
+    and the next section re-judges those answers.
 - **`en-near-late-refund-interest`, run 3**: a citation on the statement of
   absence, as the C3 report describes.
 - **`en-premise-cash-refund`, run 2**: the premise is corrected, but half of
   the rubric is missing (C3 report).
+
+## v5 — the voucher rubric
+
+Corpus v5 changes one rubric, `en-premise-xl-kolej-voucher`. The rubric no
+longer requires the answer to say that the voucher cannot be exchanged for
+cash, because the question does not ask. It now says outright that giving
+18 months as Wolfsbane Interurban Rail's validity is fine, and that giving it
+as Kolej Nadwiślańska's is not.
+
+A rubric change invalidates the recorded verdicts for that case, so every
+recorded answer to it was judged again. The answers came from all ten guard
+runs on file. Each was judged three times under the v4 rubric and three times
+under the v5 rubric, with the same judge (`gemini-2.5-flash`, temperature 0):
+
+| answer | v4 rubric | v5 rubric |
+|---|---|---|
+| 15%, 12 months, 18 months named as Wolfsbane's (5 answers: C1 baseline, C1 baseline run 3, C3 v1 strict, C3 v1 strict run 2, C3 v3 strict run 2) | FFF each | **PPP** each |
+| Wolfsbane's 20% and 18 months only, "no information on Kolej Nadwiślańska" (4 answers: C1 baseline run 2, C3 v1 strict run 3, C3 v3 strict, C3 v3 strict run 3) | FFF each | FFF each |
+| control arm, general knowledge (1 answer: C1 baseline run 4) | FFF | FFF |
+
+Every verdict was the same in all three repeats. Each correct answer moves to
+a pass, and each wrong answer still fails.
+
+With v5, the three C3 v3 runs fail **1, 1 and 2** of 28. The median is
+**1/28 = 3.6%**.
