@@ -1,8 +1,13 @@
 # Runs Ragen's own applications in containers, on top of the backing services
 # defined in docker-compose.yml. Always used together with that file:
 #
-#   docker compose -f docker-compose.yml -f docker-compose.fullapp.yml up --build
-#   # or simply: npm run ragen:up:everything
+#   npm run ragen:up:everything
+#
+# which builds the images one at a time (`ragen:build:apps`) and then runs
+# `up`. Not `up --build`: Compose builds every image at once, and four `npm ci`
+# plus `next build` in parallel were killed by the kernel on a machine with the
+# 8 GB the README asks for. COMPOSE_PARALLEL_LIMIT does not help — Compose v5
+# hands the builds to bake, which ignores it.
 #
 # Why this exists: Ragen is self-hosted software, and until now `docker compose
 # up` gave you only the dependencies — Postgres, Qdrant, Docling, Redis —

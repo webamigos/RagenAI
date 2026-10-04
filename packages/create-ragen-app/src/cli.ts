@@ -393,31 +393,55 @@ export async function run(argv: string[]): Promise<boolean> {
   }
 
   clack.outro(
-    [
-      'Done. Next steps:',
-      `  cd ${targetDir}`,
-      '  npm run api:dev     # in one terminal',
-      '  npm run web:dev     # in another',
-      '  npm run worker:dev  # in a third — document ingest runs here',
-      '',
-      // Both, not just web: apps/web delegates thread creation, the thread
-      // sidebar and notifications to apps/api (ADR-21), so starting only the
-      // web app gets you a panel that loads and a chat that cannot open a
-      // thread.
-      'apps/api is not optional — the web app creates threads through it,',
-      'so chat fails without it. Without the worker an upload is accepted and',
-      'never parsed: the queue fills and nothing drains it.',
-      '',
-      'App:   http://localhost:3000',
-      'API:   http://localhost:3001',
-      'Admin: http://localhost:3200  (npm run admin:dev)',
-      '',
-      'Anything the wizard did not ask about (Stripe, email, MCP connectors)',
-      'is documented in docs/self-hosting.',
-    ].join('\n'),
+    args.skipInstall ? containerOutro(targetDir) : hostOutro(targetDir),
   );
 
   return true;
+}
+
+/**
+ * `--skip-install` ran no migrations and installed nothing, so the host
+ * commands below would fail on a missing toolchain or an empty database. The
+ * full-app stack is the path that needs neither: its `migrate` service does
+ * both, and its containers read the `.env.local` just written.
+ */
+function containerOutro(targetDir: string): string {
+  return [
+    'Done. Start everything in containers:',
+    `  cd ${targetDir}`,
+    '  npm run ragen:up:everything',
+    '',
+    'The first run builds four images and takes a while. It migrates the',
+    'database itself and reads the .env.local written here.',
+    '',
+    'App:   http://localhost:3000',
+    'Admin: http://localhost:3200',
+  ].join('\n');
+}
+
+function hostOutro(targetDir: string): string {
+  return [
+    'Done. Next steps:',
+    `  cd ${targetDir}`,
+    '  npm run api:dev     # in one terminal',
+    '  npm run web:dev     # in another',
+    '  npm run worker:dev  # in a third — document ingest runs here',
+    '',
+    // Both, not just web: apps/web delegates thread creation, the thread
+    // sidebar and notifications to apps/api (ADR-21), so starting only the
+    // web app gets you a panel that loads and a chat that cannot open a
+    // thread.
+    'apps/api is not optional — the web app creates threads through it,',
+    'so chat fails without it. Without the worker an upload is accepted and',
+    'never parsed: the queue fills and nothing drains it.',
+    '',
+    'App:   http://localhost:3000',
+    'API:   http://localhost:3001',
+    'Admin: http://localhost:3200  (npm run admin:dev)',
+    '',
+    'Anything the wizard did not ask about (Stripe, email, MCP connectors)',
+    'is documented in docs/self-hosting.',
+  ].join('\n');
 }
 
 async function resolveTargetDir(
