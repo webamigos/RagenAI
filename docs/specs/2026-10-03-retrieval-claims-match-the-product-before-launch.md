@@ -477,7 +477,7 @@ work, and D packages the result.
   corpus v3 rubric rule). Guard corpus v3 under strict, three runs: 3, 2 and 2
   of 28 failed — median **7.1%**
   (`apps/web/evals/rag-benchmark/results/2026-10-04-c3-guard-v3-strict.md`).
-  One of the nine failures across the runs was a citation on the absence; the
+  One of the seven failed cases across the runs was a citation on the absence; the
   case that fails in every run (`en-premise-xl-kolej-voucher`) has relevant
   context, so a relevance grader would not change it.
 

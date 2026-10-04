@@ -114,7 +114,7 @@ run. A document was cited (reported, not graded) in 9, 7 and 8 of the 24.
     interest or penalties."
   - `en-premise-xl-kolej-voucher`: as in run 1.
 
-**Failures from a citation on the statement of absence:** 1 in 9 failures
+**Failures from a citation on the statement of absence:** 1 of the 7 failed cases
 across the three runs, `en-near-late-refund-interest` in run 3. Runs 1 and 2
 had none.
 
