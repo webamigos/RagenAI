@@ -101,6 +101,42 @@ describe('mcpEnvSchema', () => {
     expect(result.RAGEN_API_URL).toBe('http://ragen-api.railway.internal:3001');
   });
 
+  it('serves HTTP unless stdio is asked for', () => {
+    expect(
+      mcpEnvSchema.parse({ TARGET_ENV: 'local' }).RAGEN_MCP_TRANSPORT,
+    ).toBe('http');
+    // A compose file that passes `${RAGEN_MCP_TRANSPORT:-}` hands over an
+    // empty string, which means unset, not an invalid transport.
+    expect(
+      mcpEnvSchema.parse({ TARGET_ENV: 'local', RAGEN_MCP_TRANSPORT: '' })
+        .RAGEN_MCP_TRANSPORT,
+    ).toBe('http');
+    expect(
+      mcpEnvSchema.parse({ TARGET_ENV: 'local', RAGEN_MCP_TRANSPORT: 'stdio' })
+        .RAGEN_MCP_TRANSPORT,
+    ).toBe('stdio');
+  });
+
+  it('refuses a transport it does not serve, rather than falling back to HTTP', () => {
+    expect(
+      mcpEnvSchema.safeParse({
+        TARGET_ENV: 'local',
+        RAGEN_MCP_TRANSPORT: 'sse',
+      }).success,
+    ).toBe(false);
+  });
+
+  it('reads RAGEN_API_KEY trimmed, and a blank one as unset', () => {
+    expect(
+      mcpEnvSchema.parse({ TARGET_ENV: 'local', RAGEN_API_KEY: ' sk-a.b\n' })
+        .RAGEN_API_KEY,
+    ).toBe('sk-a.b');
+    expect(
+      mcpEnvSchema.parse({ TARGET_ENV: 'local', RAGEN_API_KEY: '' })
+        .RAGEN_API_KEY,
+    ).toBeUndefined();
+  });
+
   it('rejects a scheme-less RAGEN_API_URL', () => {
     expect(
       mcpEnvSchema.safeParse({ RAGEN_API_URL: 'localhost:3001' }).success,

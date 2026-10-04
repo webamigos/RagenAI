@@ -31,8 +31,9 @@ try {
 }
 
 /**
- * A single httpStream listener on the one port Railway actually routes
- * public traffic to (`PORT`) — both the MCP protocol (`/mcp`) and the
+ * Over HTTP — the default, and the deployment — a single httpStream
+ * listener on the one port Railway actually routes public traffic to
+ * (`PORT`): both the MCP protocol (`/mcp`) and the
  * health check (`/health`, FastMCP's own built-in endpoint, enabled by
  * default) are served from it.
  *
@@ -54,17 +55,28 @@ registerChatTool(mcp);
 registerListAssistantsTool(mcp);
 registerSearchKnowledgeBaseTool(mcp);
 
-await mcp.start({
-  transportType: 'httpStream',
-  // FastMCP's own unhandled-request handler (which now matters — it's what
-  // serves the built-in /health endpoint) builds a base URL as
-  // `http://${host}`. With host: '::' that's the invalid `http://::`,
-  // crashing the process on any non-/mcp request. 0.0.0.0 still binds every
-  // IPv4 interface (what Docker/Railway route to) without that bug.
-  httpStream: { host: '0.0.0.0', port: PORT },
-});
+if (env.RAGEN_MCP_TRANSPORT === 'stdio') {
+  // One session for the life of the process, on the client's stdin/stdout.
+  // Nothing listens on a port, so PORT and /health do not apply.
+  await mcp.start({ transportType: 'stdio' });
 
-logger.info(
-  { port: PORT, targetEnv: env.TARGET_ENV },
-  `[ragen-mcp] listening on port ${PORT} (MCP at /mcp, health at /health)`,
-);
+  logger.info(
+    { transport: 'stdio', targetEnv: env.TARGET_ENV },
+    '[ragen-mcp] serving MCP over stdio',
+  );
+} else {
+  await mcp.start({
+    transportType: 'httpStream',
+    // FastMCP's own unhandled-request handler (which now matters — it's what
+    // serves the built-in /health endpoint) builds a base URL as
+    // `http://${host}`. With host: '::' that's the invalid `http://::`,
+    // crashing the process on any non-/mcp request. 0.0.0.0 still binds every
+    // IPv4 interface (what Docker/Railway route to) without that bug.
+    httpStream: { host: '0.0.0.0', port: PORT },
+  });
+
+  logger.info(
+    { port: PORT, targetEnv: env.TARGET_ENV },
+    `[ragen-mcp] listening on port ${PORT} (MCP at /mcp, health at /health)`,
+  );
+}

@@ -4,6 +4,7 @@ import type { FastMCP } from 'fastmcp';
 import { searchKnowledgeBase } from '../client/ragen-api-client.js';
 import { logger } from '../logger.js';
 import { withToolSpan } from '../telemetry/with-tool-span.js';
+import { noSessionResult } from './no-session.js';
 import type { RagenSession } from '../auth.js';
 
 const TOOL_NAME = 'ragen_search_knowledge_base';
@@ -34,17 +35,8 @@ export function registerSearchKnowledgeBaseTool(
         ),
     }),
     execute: async (args, { session }) => {
-      // See ../tools/chat-tool.ts for why this guard exists but should never
-      // trigger in practice.
       if (!session) {
-        logger.error(
-          { tool: TOOL_NAME },
-          'Tool executed without an authenticated session',
-        );
-        return JSON.stringify({
-          success: false,
-          error: 'No authenticated session — this should not happen.',
-        });
+        return noSessionResult(TOOL_NAME);
       }
 
       return withToolSpan(

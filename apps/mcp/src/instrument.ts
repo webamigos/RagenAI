@@ -38,6 +38,7 @@ import {
 
 import { collectorOriginOf } from './telemetry/collector-origin.js';
 import { resolveServiceName } from './telemetry/service-name.js';
+import { isStdioTransport } from './transport.js';
 
 const endpoint = process.env.OTEL_EXPORTER_OTLP_ENDPOINT;
 const serviceName = resolveServiceName();
@@ -145,8 +146,10 @@ if (endpoint) {
     process.once('SIGTERM', onShutdown);
     process.once('SIGINT', onShutdown);
 
+    // stderr over stdio, where stdout is the protocol (see ./transport.ts).
     // eslint-disable-next-line no-console -- runs before src/logger.ts is imported, by design
-    console.log(
+    const report = isStdioTransport() ? console.error : console.log;
+    report(
       `[otel] OpenTelemetry initialized, sending to ${collectorOrigin ?? 'an unparseable endpoint'}`,
     );
   } catch (error) {
