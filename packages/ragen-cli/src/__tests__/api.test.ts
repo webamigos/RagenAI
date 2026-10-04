@@ -134,6 +134,19 @@ describe('createApiClient', () => {
     expect((error as ApiError).retryAfter).toBe(7);
   });
 
+  it('tells a key that is not allowed apart from one that is refused', async () => {
+    const api = createApiClient(
+      respond(403, {
+        statusCode: 403,
+        message: 'This API key is scoped to the knowledge base',
+      }) as unknown as typeof fetch,
+      connection,
+    );
+    await expect(api('chat')).rejects.toThrow(
+      'The API key is not allowed to do this. (This API key is scoped to the knowledge base)',
+    );
+  });
+
   it('reads the throttler-named Retry-After header @nestjs/throttler sends', async () => {
     const api = createApiClient(
       respond(

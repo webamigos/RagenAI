@@ -13,6 +13,8 @@ function harness(overrides: Partial<RunOptions> = {}) {
   const login = vi.fn(() => Promise.resolve(0));
   const logout = vi.fn(() => Promise.resolve(0));
   const doctor = vi.fn(() => Promise.resolve(0));
+  const ask = vi.fn(() => Promise.resolve(0));
+  const assistants = vi.fn(() => Promise.resolve(0));
 
   const options: RunOptions = {
     version: '1.2.3',
@@ -23,6 +25,8 @@ function harness(overrides: Partial<RunOptions> = {}) {
     login,
     logout,
     doctor,
+    ask,
+    assistants,
     out: (message) => out.push(message),
     err: (message) => err.push(message),
     ...overrides,
@@ -36,6 +40,8 @@ function harness(overrides: Partial<RunOptions> = {}) {
     login,
     logout,
     doctor,
+    ask,
+    assistants,
     out,
     err,
     run: (argv: string[]) => run(argv, options),
@@ -123,8 +129,8 @@ describe('run kb and search', () => {
   });
 });
 
-describe('run login, logout and doctor', () => {
-  it.each(['login', 'logout', 'doctor'] as const)(
+describe('run login, logout, doctor, ask and assistants', () => {
+  it.each(['login', 'logout', 'doctor', 'ask', 'assistants'] as const)(
     'hands everything after `%s` to it',
     async (name) => {
       const cli = harness();

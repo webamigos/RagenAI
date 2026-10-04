@@ -43,6 +43,16 @@ export const COMMANDS: readonly CommandSpec[] = [
     status: 'available',
   },
   {
+    name: 'ask',
+    summary: 'ask the knowledge base, as chat does, streamed',
+    status: 'available',
+  },
+  {
+    name: 'assistants',
+    summary: 'list the assistants a key can see',
+    status: 'available',
+  },
+  {
     name: 'login',
     summary: 'check an API key and save it with the API address',
     status: 'available',

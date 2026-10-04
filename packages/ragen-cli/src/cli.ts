@@ -15,6 +15,9 @@ export interface RunOptions {
   login: (args: string[]) => Promise<number>;
   logout: (args: string[]) => Promise<number>;
   doctor: (args: string[]) => Promise<number>;
+  /** `ragen ask` and `ragen assistants`, over the chat and assistants APIs. */
+  ask: (args: string[]) => Promise<number>;
+  assistants: (args: string[]) => Promise<number>;
   /**
    * Required, not defaulted to `console`: the router does no I/O of its own,
    * which is what lets a test read its output instead of capturing a stream.
@@ -81,6 +84,10 @@ export function run(
       return options.logout(args.rest);
     case 'doctor':
       return options.doctor(args.rest);
+    case 'ask':
+      return options.ask(args.rest);
+    case 'assistants':
+      return options.assistants(args.rest);
     case 'help':
       out(helpText(options.version));
       return 0;

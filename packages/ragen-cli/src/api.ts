@@ -136,66 +136,86 @@ export function createApiClient(
   connection: Connection,
 ): ApiClient {
   return async <T>(path: string, options: RequestOptions = {}) => {
-    const params = new URLSearchParams();
-    for (const [name, value] of Object.entries(options.query ?? {})) {
-      if (value !== undefined && value !== '') {
-        params.set(name, String(value));
-      }
-    }
-    const qs = params.toString();
-    const headers: Record<string, string> = {
-      Authorization: `Bearer ${connection.key}`,
-      Accept: 'application/json',
-    };
-    let body: string | FormData | undefined;
-    if (options.body instanceof FormData) {
-      // fetch sets the multipart boundary itself; setting Content-Type here
-      // would drop it.
-      body = options.body;
-    } else if (options.body) {
-      headers['Content-Type'] = 'application/json';
-      body = JSON.stringify(options.body);
-    }
+    const res = await requestRaw(fetchImpl, connection, path, options);
+    return (await res.json()) as T;
+  };
+}
 
-    let res: Response;
-    try {
-      res = await fetchImpl(
-        `${connection.url}/v1/${path}${qs ? `?${qs}` : ''}`,
-        { method: options.method ?? 'GET', headers, body },
-      );
-    } catch (error) {
-      throw unreachable(connection.url, error);
+/**
+ * One request, with the error mapping applied, returning the response
+ * unread — for a caller that consumes the body itself, like a streamed
+ * answer. `createApiClient` is this plus `res.json()`.
+ */
+export async function requestRaw(
+  fetchImpl: typeof fetch,
+  connection: Connection,
+  path: string,
+  options: RequestOptions & { accept?: string } = {},
+): Promise<Response> {
+  const params = new URLSearchParams();
+  for (const [name, value] of Object.entries(options.query ?? {})) {
+    if (value !== undefined && value !== '') {
+      params.set(name, String(value));
     }
+  }
+  const qs = params.toString();
+  const headers: Record<string, string> = {
+    Authorization: `Bearer ${connection.key}`,
+    Accept: options.accept ?? 'application/json',
+  };
+  let body: string | FormData | undefined;
+  if (options.body instanceof FormData) {
+    // fetch sets the multipart boundary itself; setting Content-Type here
+    // would drop it.
+    body = options.body;
+  } else if (options.body) {
+    headers['Content-Type'] = 'application/json';
+    body = JSON.stringify(options.body);
+  }
 
-    if (res.ok) {
-      return (await res.json()) as T;
-    }
+  let res: Response;
+  try {
+    res = await fetchImpl(`${connection.url}/v1/${path}${qs ? `?${qs}` : ''}`, {
+      method: options.method ?? 'GET',
+      headers,
+      body,
+    });
+  } catch (error) {
+    throw unreachable(connection.url, error);
+  }
 
-    const detail = await serverMessage(res);
-    const withDetail = (sentence: string) =>
-      detail && !sentence.includes(detail)
-        ? `${sentence} (${detail})`
-        : sentence;
+  if (res.ok) {
+    return res;
+  }
 
-    if (res.status === 401 || res.status === 403) {
-      throw new ApiError(withDetail('The API key was refused.'), res.status);
-    }
-    if (res.status === 404) {
-      throw new ApiError(
-        options.notFound ?? withDetail('Not found.'),
-        res.status,
-      );
-    }
-    if (res.status === 429) {
-      throw new ApiError(
-        withDetail('Too many requests: the rate or usage limit was reached.'),
-        res.status,
-        retryAfterSeconds(res),
-      );
-    }
+  const detail = await serverMessage(res);
+  const withDetail = (sentence: string) =>
+    detail && !sentence.includes(detail) ? `${sentence} (${detail})` : sentence;
+
+  if (res.status === 401) {
+    throw new ApiError(withDetail('The API key was refused.'), res.status);
+  }
+  // A 403 is a key the server knows and will not let do *this*: deactivated,
+  // or scoped to the knowledge base and asked about an assistant. "Refused"
+  // would send the reader to replace a key that works.
+  if (res.status === 403) {
     throw new ApiError(
-      withDetail(`The API answered ${res.status}.`),
+      withDetail('The API key is not allowed to do this.'),
       res.status,
     );
-  };
+  }
+  if (res.status === 404) {
+    throw new ApiError(
+      options.notFound ?? withDetail('Not found.'),
+      res.status,
+    );
+  }
+  if (res.status === 429) {
+    throw new ApiError(
+      withDetail('Too many requests: the rate or usage limit was reached.'),
+      res.status,
+      retryAfterSeconds(res),
+    );
+  }
+  throw new ApiError(withDetail(`The API answered ${res.status}.`), res.status);
 }

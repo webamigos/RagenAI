@@ -4,6 +4,8 @@ import { chmod, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import { dirname, join } from 'node:path';
 
+import { runAsk } from './ask';
+import { runAssistants } from './assistants';
 import { runBrain } from './brain';
 import { run } from './cli';
 import {
@@ -77,6 +79,17 @@ Promise.resolve()
           err,
         }),
       search: (args) => runSearch(args, { fetch, env, out, err }),
+      ask: (args) =>
+        runAsk(args, {
+          fetch,
+          env,
+          write: (chunk) => {
+            process.stdout.write(chunk);
+          },
+          out,
+          err,
+        }),
+      assistants: (args) => runAssistants(args, { fetch, env, out, err }),
       login: (args) =>
         runLogin(args, {
           fetch,

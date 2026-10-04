@@ -31,6 +31,8 @@ binary it finds on `PATH` before it fetches anything.)
 ragen create [dir]   scaffold a self-hosted Ragen installation
 ragen kb <cmd>       knowledge base files: ls, upload, status, rm
 ragen search <q>     the passages chat would answer from, without an answer
+ragen ask <q>        ask the knowledge base, as chat does, streamed
+ragen assistants ls  the assistants a key can see
 ragen login          check an API key and save it with the API address
 ragen logout         forget them
 ragen doctor         check this terminal can reach an installation
@@ -54,6 +56,26 @@ or set them per shell, which wins over what is saved — as `--url` and
 export RAGEN_API_URL=https://api.example.com
 export RAGEN_API_KEY=sk-...
 ```
+
+### `ragen ask`, `ragen assistants`
+
+```bash
+ragen ask "What is our refund policy?"        # streamed as it is written
+ragen ask "…" --assistant asst-… --no-stream  # or --json for {"text": …}
+ragen assistants ls                           # ids for --assistant / RAGEN_ASSISTANT_ID
+```
+
+`ask` is one chat turn over `POST /v1/chat` — the same retrieval, guardrails
+and usage limits as the panel. It exits non-zero when the stream ends without
+the API's `[DONE]`, because the API closes a failed answer without saying so in
+the body and a cut-off answer would otherwise pass for a short one. When an
+output guardrail stops an answer mid-stream, what was already printed cannot
+be unprinted: `ask` says on stderr that it was withdrawn, and prints the
+refusal. `--reasoning low|medium|high` reaches models that reason.
+
+`assistants ls` lists what the key can *see*. A key scoped to the whole
+knowledge base sees every assistant but may not answer as one; the API says so
+(`The API key is not allowed to do this. (…scoped to the knowledge base…)`).
 
 ### `ragen login`, `ragen logout`
 

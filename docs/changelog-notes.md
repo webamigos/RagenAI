@@ -93,6 +93,11 @@ archive is the blog.
   the key, which models it offers, and whether the CLI is out of date.
   Needs `ragen-cli` 0.3.0.
 
+- `[brief]` **Ask from a terminal.** `ragen ask "…"` streams an answer from
+  the knowledge base, with the same retrieval and guardrails as chat, and
+  exits non-zero if the answer is cut off; `ragen assistants ls` lists the
+  ids `--assistant` takes. Needs `ragen-cli` 0.3.0.
+
 - `[brief]` **A smoke test for the MCP server.** `npm run smoke
   --workspace=@ragenai/mcp -- <url>` checks a running server one layer at a
   time — connection, tools, the API key, retrieval, optionally a model
