@@ -75,10 +75,13 @@ describe('a release can trigger the image build', () => {
 
     const published = matrix![1].split(',').map((entry) => entry.trim());
 
+    // `migrate` is a stage of apps/web's Dockerfile, not an app of its own —
+    // the same mapping the workflow's `file:` expression makes.
+    const dockerfileOf = (app: string): string =>
+      join(ROOT, 'apps', app === 'migrate' ? 'web' : app, 'Dockerfile');
+
     const bakedIn = published.filter((app) =>
-      /^ARG NEXT_PUBLIC_/m.test(
-        readFileSync(join(ROOT, 'apps', app, 'Dockerfile'), 'utf8'),
-      ),
+      /^ARG NEXT_PUBLIC_/m.test(readFileSync(dockerfileOf(app), 'utf8')),
     );
 
     expect(

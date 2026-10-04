@@ -3,11 +3,19 @@
 #
 #   npm run ragen:up:everything
 #
-# which builds the images one at a time (`ragen:build:apps`) and then runs
-# `up`. Not `up --build`: Compose builds every image at once, and four `npm ci`
-# plus `next build` in parallel were killed by the kernel on a machine with the
-# 8 GB the README asks for. COMPOSE_PARALLEL_LIMIT does not help — Compose v5
-# hands the builds to bake, which ignores it.
+# which pulls the release images from ghcr.io and starts them. Every service
+# below names both an `image:` and a `build:`, and Compose uses them in that
+# order: it pulls the image, and builds from this checkout only if the pull
+# fails. Building all five took ~38 minutes on a clean machine, almost all of
+# it `npm ci`; pulling takes a few. Pin a release with RAGEN_VERSION in `.env`
+# (the `sha-…` tag for production, as the README says); unset means `latest`.
+#
+# To run what is in this checkout instead — a branch, an unreleased fix —
+# `npm run ragen:up:everything:source` builds the images one at a time first.
+# Not `up --build`: Compose builds every image at once, and four `npm ci` plus
+# `next build` in parallel were killed by the kernel on a machine with the 8 GB
+# the README asks for. COMPOSE_PARALLEL_LIMIT does not help — Compose v5 hands
+# the builds to bake, which ignores it.
 #
 # Why this exists: Ragen is self-hosted software, and until now `docker compose
 # up` gave you only the dependencies — Postgres, Qdrant, Docling, Redis —
@@ -24,6 +32,7 @@ services:
   # Applies the migrations and seeds the database, then exits; every app below
   # waits for it to succeed. See the `migrate` stage in apps/web/Dockerfile.
   migrate:
+    image: ghcr.io/webamigos/ragen-migrate:${RAGEN_VERSION:-latest}
     build:
       context: .
       dockerfile: apps/web/Dockerfile
@@ -48,6 +57,7 @@ services:
       - ragen-network
 
   web:
+    image: ghcr.io/webamigos/ragen-web:${RAGEN_VERSION:-latest}
     build:
       context: .
       dockerfile: apps/web/Dockerfile
@@ -115,6 +125,7 @@ services:
       - ragen-network
 
   api:
+    image: ghcr.io/webamigos/ragen-api:${RAGEN_VERSION:-latest}
     build:
       context: .
       dockerfile: apps/api/Dockerfile
@@ -164,6 +175,7 @@ services:
       - ragen-network
 
   worker:
+    image: ghcr.io/webamigos/ragen-worker:${RAGEN_VERSION:-latest}
     build:
       context: .
       dockerfile: apps/worker/Dockerfile
@@ -229,6 +241,7 @@ services:
       - ragen-network
 
   admin:
+    image: ghcr.io/webamigos/ragen-admin:${RAGEN_VERSION:-latest}
     build:
       context: .
       dockerfile: apps/admin/Dockerfile
