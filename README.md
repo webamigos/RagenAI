@@ -220,23 +220,19 @@ cd my-ragen-app && npm run ragen:up:everything
 ```
 
 With `--skip-install` the wizard only writes `.env.local` — the secrets, your
-model key and the model names — and installs nothing. The stack then builds
-every Ragen application (web, API, ingest worker, admin), migrates and seeds
-the database itself, and starts them alongside Postgres, Qdrant, Redis and
-Docling. The first run builds four images one at a time and takes a while.
-Already have the repo cloned and a `.env.local`? `npm run ragen:up:everything`
-on its own does the same.
+model key and the model names — and installs nothing. The stack then pulls
+the release images of every Ragen application (web, API, ingest worker,
+admin), migrates and seeds the database itself, and starts them alongside
+Postgres, Qdrant, Redis and Docling. Already have the repo cloned and a
+`.env.local`? `npm run ragen:up:everything` on its own does the same.
 
-Deploying rather than evaluating? Every release publishes the application
-images, so a deployment that is not tracking `main` does not have to compile
-them:
-
-```bash
-docker pull ghcr.io/webamigos/ragen-web:latest    # also: -api, -worker, -admin, -mcp
-```
-
-Each carries four tags — the full version, the minor series, the exact commit
-(`sha-…`) and `latest`. Pin production to the `sha-` tag; the other three move.
+Each image carries four tags — the full version, the minor series, the exact
+commit (`sha-…`) and `latest`, which is what the stack pulls unless
+`RAGEN_VERSION` in `.env` names another. Pin production to the `sha-` tag; the
+other three move. To run the code in your checkout instead of a release — a
+branch, an unreleased fix — `npm run ragen:up:everything:source` builds the
+images first, one at a time, which takes the better part of an hour the
+first time.
 
 Either way, open <http://localhost:3000>. A new install asks you to create
 its first account, which becomes the platform administrator; then upload a

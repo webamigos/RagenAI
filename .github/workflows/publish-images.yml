@@ -61,7 +61,7 @@ jobs:
       # One broken image should not hide whether the others build.
       fail-fast: false
       matrix:
-        app: [worker, api, admin, mcp, web]
+        app: [worker, api, admin, mcp, web, migrate]
         # A list of objects rather than a bare `[amd64, arm64]` plus a lookup:
         # the runner label belongs next to the architecture it provides, so
         # adding a third one is one entry and not two edits that have to agree.
@@ -113,7 +113,14 @@ jobs:
           # resolves the workspace tree from it. Each Dockerfile says so on its
           # first line.
           context: .
-          file: apps/${{ matrix.app }}/Dockerfile
+          # `migrate` is not an app: it is the `migrate` stage of apps/web's
+          # Dockerfile — prisma, the migrations and the seed — which
+          # docker-compose.fullapp.yml runs once before any app starts.
+          # Published so an install can pull it with the others instead of
+          # building it, which costs a full dependency install. Every other entry builds
+          # its own Dockerfile's last stage, which is what an empty target means.
+          file: apps/${{ matrix.app == 'migrate' && 'web' || matrix.app }}/Dockerfile
+          target: ${{ matrix.app == 'migrate' && 'migrate' || '' }}
           platforms: linux/${{ matrix.platform.arch }}
           labels: ${{ steps.meta.outputs.labels }}
           # The release version, for the app to report about itself — only
@@ -159,7 +166,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        app: [worker, api, admin, mcp, web]
+        app: [worker, api, admin, mcp, web, migrate]
     steps:
       - uses: actions/download-artifact@v8
         with:
