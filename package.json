@@ -287,7 +287,10 @@
     },
     "protobufjs": "^8.7.0",
     "tar": "^7.5.22",
-    "whatwg-url@17.1.1": "17.1.0"
+    "whatwg-url@17.1.1": "17.1.0",
+    "@react-email/preview-server": {
+      "next": "$next"
+    }
   },
   "resolutions": {
     "zod": "^4.3.6"
