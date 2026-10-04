@@ -26,6 +26,7 @@ import { pruneAnalyticsRetrievals } from './handlers/prune-analytics-retrievals.
 import { reindexDocumentVersion } from './handlers/reindex-document-version.js';
 import { runFileEmbeddings } from './handlers/parse-and-embed.js';
 import { scrapeWebsite } from './handlers/scrape-website.js';
+import { syncDocumentAccess } from './handlers/sync-document-access.js';
 
 /**
  * This app's side of the BullMQ runtime.
@@ -55,6 +56,7 @@ const handlers: JobHandlers = {
   brainPublishPage,
   memoryExtract,
   memoryPurge,
+  syncDocumentAccess,
 };
 
 /**

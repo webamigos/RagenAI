@@ -111,6 +111,7 @@ export async function runFileEmbeddings(
     // activities/meilisearch
     addDocumentsToVectorStore,
     deleteDocumentVectors,
+    syncFileAccess,
 
     // activities/splitters
     splitText,
@@ -818,6 +819,11 @@ export async function runFileEmbeddings(
         // out again; this records the cancellation and throws it.
         await checkCancelled();
       }
+      // `accessibleBy` above is a snapshot from before the write, which can take
+      // minutes. Read again now that the points exist: a revoke that landed in
+      // between is applied here, and one that lands after this is the access
+      // sync's, to points that are there to rewrite (#1245).
+      await syncFileAccess({ orgId, fileId, unlessEqualTo: accessibleBy });
       indexed = true;
 
       await updateEmbeddingStatus({

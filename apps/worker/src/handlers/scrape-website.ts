@@ -51,6 +51,7 @@ export async function scrapeWebsite(
 
     // activities/meilisearch
     addDocumentsToVectorStore,
+    syncFileAccess,
     deleteDocumentVectors,
 
     // activities/splitters
@@ -265,6 +266,9 @@ export async function scrapeWebsite(
       // out again, and this records the cancellation and throws it.
       await checkCancelled();
     }
+
+    // See `runFileEmbeddings`: the principals above predate the write (#1245).
+    await syncFileAccess({ orgId, fileId, unlessEqualTo: accessibleBy });
 
     await updateEmbeddingStatus({
       fileId,

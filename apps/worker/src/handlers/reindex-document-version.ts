@@ -42,6 +42,7 @@ export async function reindexDocumentVersion(
     prepareMetadata,
     addDocumentsToVectorStore,
     deleteDocumentVectors,
+    syncFileAccess,
     generateDocumentSummary,
     getDocumentContent,
     applyContextPrefix,
@@ -252,6 +253,9 @@ export async function reindexDocumentVersion(
       );
       return fileId;
     }
+
+    // See `runFileEmbeddings`: the principals above predate the write (#1245).
+    await syncFileAccess({ orgId, fileId, unlessEqualTo: accessibleBy });
 
     await updateEmbeddingStatus({
       fileId,

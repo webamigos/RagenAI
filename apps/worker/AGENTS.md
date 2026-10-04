@@ -128,6 +128,22 @@ transaction that re-checks membership, the user's switch, the epoch and the
 key under the profile lock, and logs no content. `MEMORY_EXTRACT_MODEL`
 defaults to `SUMMARY_MODEL`.
 
+**Document access (`syncDocumentAccess`)** — keeps `metadata.accessible_by`
+on a file's points equal to who may read the file now (#1245). The field is the
+retrieval filter, and it used to be written once, at ingest. A producer starts
+the job *after* committing a change to who can read a file, naming `fileIds`
+and/or `folderIds`; a folder is resolved to its whole subtree when the job runs.
+It carries no principals: `syncFileAccess` reads the database when it executes,
+so two quick changes both end in the later state. The same activity runs at the
+end of the three writers (`runFileEmbeddings`, `reindexDocumentVersion`,
+`scrapeWebsite`) with what they wrote as `unlessEqualTo`, because an ingest
+takes its principals before a write that can last minutes. Two details that
+were wrong in the code this replaced: the payload is written with
+`key: 'metadata'` (a dotted `'metadata.accessible_by'` key creates a literal
+top-level field and changes nothing the filter reads), and points carrying
+`brain_generation` are skipped, since a published Brain page's access comes from
+the page and `brainPublishPage` rewrites it.
+
 **runFileEmbeddings flow:**
 
 ```mermaid

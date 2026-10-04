@@ -78,6 +78,7 @@ export const JOB_NAMES = [
   'brainPublishPage',
   'memoryExtract',
   'memoryPurge',
+  'syncDocumentAccess',
 ] as const;
 
 export type JobName = (typeof JOB_NAMES)[number];
@@ -231,6 +232,37 @@ export interface BrainReconcileFindingsResult {
 }
 
 /**
+ * Bring `metadata.accessible_by` on a file's vector-store points back in line
+ * with who may read the file now (#1245).
+ *
+ * The field is written at ingest and, before this job, never again, so a share
+ * revoked after indexing still satisfied the retrieval filter. A producer starts
+ * this after it has *committed* a change to who can read a file, naming what it
+ * touched: files directly, or folders whose whole subtree is affected (a folder
+ * share, a folder move, a team change).
+ *
+ * Identifiers only, and the principals are computed when the job runs — never
+ * carried in the payload. A payload is a snapshot, and a snapshot taken at
+ * enqueue is exactly the staleness this job exists to remove: two permission
+ * changes in quick succession must both end in the later state.
+ *
+ * At least one of the two lists must be non-empty.
+ */
+export interface SyncDocumentAccessPayload {
+  orgId: string;
+  fileIds?: string[];
+  /** Every file in each folder and in its descendants, resolved at run time. */
+  folderIds?: string[];
+}
+
+export interface SyncDocumentAccessResult {
+  /** Files whose points were rewritten. */
+  filesSynced: number;
+  /** Files named or found that no longer exist in the organization. */
+  filesMissing: number;
+}
+
+/**
  * Extract a user's personal memories from one chat turn (spec
  * 2026-09-27-personal-memory-across-threads, Phase C). Started by the chat
  * after the answer is saved, with run id `memory-<messageId>`, so a repeated
@@ -356,6 +388,7 @@ export interface JobPayloads {
   brainPublishPage: BrainPublishPagePayload;
   memoryExtract: MemoryExtractPayload;
   memoryPurge: void;
+  syncDocumentAccess: SyncDocumentAccessPayload;
 }
 
 /**
@@ -378,4 +411,5 @@ export interface JobResults {
   brainPublishPage: BrainPublishPageResult;
   memoryExtract: MemoryExtractResult;
   memoryPurge: MemoryPurgeResult;
+  syncDocumentAccess: SyncDocumentAccessResult;
 }

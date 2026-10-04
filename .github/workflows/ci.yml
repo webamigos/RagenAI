@@ -190,6 +190,15 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+      qdrant:
+        # Matches docker-compose.yml. `set-file-access` asserts what Qdrant does
+        # with the access rewrite — which points it touches and which field it
+        # writes — and a mocked client cannot (#1245). No health check here: the
+        # image ships no curl/wget, so one is a bash one-liner through two layers
+        # of quoting, and the test waits for `/healthz` itself instead.
+        image: qdrant/qdrant:v1.19.1
+        ports:
+          - 6333:6333
     env:
       # Named rather than defaulted, and `every-job-runtime-is-exercised.test.ts`
       # reads it. The suite's config falls back to `bullmq`, so leaving this out
@@ -199,6 +208,8 @@ jobs:
       # argument the parity job made.
       WORKER_RUNTIME: bullmq
       JOBS_TEST_REDIS_URL: redis://localhost:6379/15
+      # The test fails, rather than skips, when CI cannot reach it.
+      QDRANT_URL: http://localhost:6333
     steps:
       - uses: actions/checkout@v7
         with:

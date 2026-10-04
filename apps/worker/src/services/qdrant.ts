@@ -350,8 +350,58 @@ const deleteBrainChunks = async ({
   );
 };
 
+/**
+ * Rewrite `metadata.accessible_by` on a file's points, leaving the points
+ * themselves alone.
+ *
+ * Two details are load-bearing, and the first one was wrong in the code this
+ * replaces:
+ *
+ * - `key: 'metadata'` with a payload of `{ accessible_by }`. A payload keyed
+ *   `'metadata.accessible_by'` is not a path: Qdrant stores it as a literal
+ *   top-level key with a dot in its name, the retrieval filter never reads it,
+ *   and the call reports success while changing nothing that matters.
+ * - Points that carry `brain_generation` are skipped. A published Brain page
+ *   is chunked under its own file id, and its access comes from the page's
+ *   `accessibleBy`, which `brainPublishPage` rewrites by clearing and
+ *   re-publishing. Deriving it from the file row here would overwrite it.
+ *
+ * A file with no points matches nothing and is not an error, which is what
+ * makes it safe to run against a file that is still being ingested.
+ */
+const setFileAccess = async ({
+  orgId,
+  fileId,
+  accessibleBy,
+}: {
+  orgId: string;
+  fileId: string;
+  accessibleBy: string[];
+}): Promise<void> => {
+  const qdrant = await getClient();
+  await ensureCollection(orgId);
+
+  await qdrant.setPayload(orgId, {
+    payload: { accessible_by: accessibleBy },
+    key: 'metadata',
+    filter: {
+      must: [
+        { key: 'metadata.file_id', match: { value: fileId } },
+        { is_empty: { key: 'metadata.brain_generation' } },
+      ],
+    },
+    wait: true,
+  });
+
+  logger.info(
+    { fileId, collection: orgId, principals: accessibleBy.length },
+    'Rewrote accessible_by on file chunks in Qdrant',
+  );
+};
+
 export const qdrantService = {
   addDocuments,
   deleteByFileId,
+  setFileAccess,
   deleteBrainChunks,
 };

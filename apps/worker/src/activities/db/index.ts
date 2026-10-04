@@ -19,3 +19,4 @@ export * from './update-page-count.js';
 export * from './update-parsing-status.js';
 export * from './update-workflow-id.js';
 export * from './get-document-content.js';
+export * from './resolve-access-sync-files.js';
