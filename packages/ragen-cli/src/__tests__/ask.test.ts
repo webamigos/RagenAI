@@ -17,6 +17,7 @@ function harness(response: () => Response) {
     fetch: fetchMock as unknown as typeof fetch,
     env: { RAGEN_API_URL: 'https://api.example.com', RAGEN_API_KEY: 'sk-k.s' },
     write: (c) => written.push(c),
+    isTTY: true,
     out: (m) => out.push(m),
     err: (m) => err.push(m),
   };
@@ -71,6 +72,27 @@ describe('ragen ask', () => {
       sse(['{"reasoning":"thinking…"}', '{"text":"Yes."}', '[DONE]']),
     );
     await runAsk(['q'], deps);
+    expect(written.join('')).toBe('Yes.\n');
+  });
+
+  it('does not stream into a file or pipe, so a withdrawn answer never lands there', async () => {
+    const { deps, out, written, fetchMock } = harness(
+      () => new Response(JSON.stringify({ text: 'I cannot answer that.' })),
+    );
+    deps.isTTY = false;
+    await expect(runAsk(['q'], deps)).resolves.toBe(0);
+    const body = JSON.parse(
+      (fetchMock.mock.calls[0]![1] as RequestInit).body as string,
+    );
+    expect(body.stream).toBe(false);
+    expect(out).toEqual(['I cannot answer that.']);
+    expect(written).toEqual([]);
+  });
+
+  it('streams into a pipe when asked to with --stream', async () => {
+    const { deps, written } = harness(() => sse(['{"text":"Yes."}', '[DONE]']));
+    deps.isTTY = false;
+    await expect(runAsk(['q', '--stream'], deps)).resolves.toBe(0);
     expect(written.join('')).toBe('Yes.\n');
   });
 

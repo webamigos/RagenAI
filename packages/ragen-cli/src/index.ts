@@ -113,6 +113,7 @@ Promise.resolve()
           write: (chunk) => {
             process.stdout.write(chunk);
           },
+          isTTY: process.stdout.isTTY === true,
           out,
           err,
         }),
