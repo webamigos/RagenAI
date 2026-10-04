@@ -91,6 +91,19 @@ describe('createApiClient', () => {
     );
   });
 
+  it('keeps a limit message sent as a plain string in `error`', async () => {
+    const api = createApiClient(
+      respond(429, {
+        error: 'Monthly usage limit exceeded',
+        code: 'LIMIT',
+      }) as unknown as typeof fetch,
+      connection,
+    );
+    await expect(api('chat')).rejects.toThrow(
+      'Too many requests: the rate or usage limit was reached. (Monthly usage limit exceeded)',
+    );
+  });
+
   it('joins class-validator messages', async () => {
     const api = createApiClient(
       respond(400, {

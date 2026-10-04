@@ -75,8 +75,15 @@ async function serverMessage(res: Response): Promise<string | undefined> {
       message?: unknown;
       error?: { message?: unknown } | string;
     };
-    const candidate =
-      typeof body.error === 'object' ? body.error?.message : body.message;
+    // Three shapes: OpenAI's `{ error: { message } }`, Nest's `{ message }`,
+    // and `/v1/chat`'s limits, `{ error: 'Monthly usage limit exceeded' }` —
+    // the one that tells "wait a minute" from "wait a month".
+    let candidate: unknown = body.message;
+    if (typeof body.error === 'string') {
+      candidate = body.error;
+    } else if (typeof body.error === 'object') {
+      candidate = body.error?.message;
+    }
     if (typeof candidate === 'string') {
       return candidate;
     }
