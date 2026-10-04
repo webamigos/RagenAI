@@ -243,11 +243,20 @@ export const storage = z.object({
  * the other direction, as variables the configuration page could not document
  * because nothing declared them.
  *
- * All optional, and deliberately not enums. The catalogue lives in
+ * All optional, and the model names deliberately not enums. The catalogue lives in
  * `infra/llm-gateway/routes.yaml` — which model ids resolve to an upstream —
  * and `@ragenai/platform-contracts`, which says how each one is presented.
  * Pinning model names here would mean a schema change every time a model is
  * provisioned.
+ *
+ * `DEFAULT_MODEL_PROVIDER` is the one exception, because it is not a catalogue.
+ * It is the pricing namespace, and the only value the consumers accept is
+ * `litellm` (`modelsSchema` in apps/web's `llm.ts` and apps/api's
+ * `credentials.ts` both say `z.literal('litellm')`). Typed as a bare string, a
+ * value the `.env.example` comment used to invite — `openai`, `anthropic` —
+ * booted cleanly and threw a Zod error at the first model call, because
+ * `getDefaultModel()` parses lazily (#1134). Which upstream serves a model is a
+ * route in `infra/llm-gateway/routes.yaml`, not this variable.
  *
  * This comment named the retired proxy config until #1297, a week after ADR-49
  * deleted it, and this is the documented entry point for adding a model — so
@@ -260,7 +269,15 @@ export const storage = z.object({
  */
 export const models = z.object({
   DEFAULT_MODEL: blankAsUndefined(z.string().optional()),
-  DEFAULT_MODEL_PROVIDER: blankAsUndefined(z.string().optional()),
+  DEFAULT_MODEL_PROVIDER: blankAsUndefined(
+    z
+      .literal('litellm', {
+        error:
+          "DEFAULT_MODEL_PROVIDER must be 'litellm' (the pricing namespace, not an upstream). " +
+          'Which provider serves a model is a route in infra/llm-gateway/routes.yaml.',
+      })
+      .optional(),
+  ),
   REPHRASE_MODEL: blankAsUndefined(z.string().optional()),
   REPHRASE_TEMPERATURE: blankAsUndefined(z.string().optional()),
   /**
