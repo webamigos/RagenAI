@@ -5,7 +5,10 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { canManageOrg } from '@ragenai/platform-contracts';
+import {
+  canManageOrg,
+  resolveAnswerFromDocumentsOnly,
+} from '@ragenai/platform-contracts';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { Source, type Project } from '../generated/prisma/client.js';
 import { AuditLogService } from '../audit-logs/audit-log.service.js';
@@ -15,6 +18,7 @@ import { SubscriptionsService } from '../subscriptions/subscriptions.service.js'
 import { GetProjectMcpProvidersService } from './get-project-mcp-providers.service.js';
 import {
   type AccessLevel,
+  type AnswerFromDocumentsOnlyState,
   type EffectiveProjectPermission,
   type ProjectGranteeType,
   type ProjectPermissionItem,
@@ -529,6 +533,49 @@ export class ProjectsService {
     return settings?.instructions ?? null;
   }
 
+  /**
+   * The assistant's "answer only from documents" state for its settings page
+   * (spec 2026-10-03-retrieval-claims-match-the-product-before-launch, C2).
+   * Anyone who can view the assistant can see how it answers; changing it
+   * takes `manage`, like its instructions.
+   */
+  async getAnswerFromDocumentsOnly(
+    projectId: string,
+    orgId: string,
+    userId: string,
+  ): Promise<AnswerFromDocumentsOnlyState> {
+    const perm = await this.getEffectiveProjectPermission(
+      projectId,
+      orgId,
+      userId,
+    );
+    if (!perm.canView) {
+      throw new NotFoundException('Project not found');
+    }
+
+    const project = await this.prisma.client.project.findFirst({
+      where: { id: projectId, organizationId: orgId },
+      select: {
+        chatbotEnabled: true,
+        settings: { select: { answerFromDocumentsOnly: true } },
+      },
+    });
+    if (!project) {
+      throw new NotFoundException('Project not found');
+    }
+
+    const setting = project.settings?.answerFromDocumentsOnly ?? null;
+    return {
+      setting,
+      chatbotEnabled: project.chatbotEnabled,
+      effective: resolveAnswerFromDocumentsOnly({
+        setting,
+        chatbotEnabled: project.chatbotEnabled,
+      }),
+      canManage: perm.canManage,
+    };
+  }
+
   // --- Commands -----------------------------------------------------------
 
   async createProject(title: string, organizationId: string, userId: string) {
@@ -753,6 +800,26 @@ export class ProjectsService {
       where: { projectId },
       update: { instructions: instruction },
       create: { projectId, instructions: instruction },
+    });
+  }
+
+  /**
+   * Sets the assistant's "answer only from documents" switch. Only `true` or
+   * `false`: once an admin has chosen, the assistant no longer follows its
+   * surface default, so turning the chatbot off later leaves it strict.
+   */
+  async saveAnswerFromDocumentsOnly(
+    projectId: string,
+    answerFromDocumentsOnly: boolean,
+    orgId: string,
+    userId: string,
+  ): Promise<void> {
+    await this.requireAccess(projectId, 'manage', orgId, userId);
+
+    await this.prisma.client.projectSettings.upsert({
+      where: { projectId },
+      update: { answerFromDocumentsOnly },
+      create: { projectId, answerFromDocumentsOnly },
     });
   }
 

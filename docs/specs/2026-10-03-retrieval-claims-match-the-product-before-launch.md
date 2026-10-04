@@ -428,13 +428,22 @@ work, and D packages the result.
 - [ ] **B0.** Cross-query fusion behind a setting, default unchanged, with a
   unit test that a variant's top hit outranks the first query's last hit when
   nothing reranks, and that the reranker and selection paths are untouched.
-- [ ] **B1.** Three arms (off, off + cross-query fusion, Scaleway; Cohere if an
+- [x] **B1.** Three arms (off, off + cross-query fusion, Scaleway; Cohere if an
   endpoint exists) × two corpora × three runs, on today's default install.
   Results are committed, and ADR-12 gets an update with the medians.
-- [ ] **B2.** The decision from Q2 is applied: the demo env, the
+
+  *Done 2026-10-03* (`apps/web/evals/rag-benchmark/results/2026-10-03-b1-reranking-split.md`): neither
+  fusion nor Scaleway beats off beyond the spread; Cohere not run (no
+  endpoint).
+- [x] **B2.** The decision from Q2 is applied: the demo env, the
   `create-ragen-app` default, and the Scaleway label, each only as the
   numbers allow. The reranking row of `docs/rag-pipeline.md` records what
   B1 found.
+
+  *Done 2026-10-03:* the "neither" outcome — nothing changes on the demo or
+  in `create-ragen-app`; reranking stays opt-in and unclaimed;
+  `crossQueryFusion` stays off by default; ADR-12 and `docs/rag-pipeline.md`
+  record the numbers. The Scaleway label was already fixed in A3 (#1516).
 
 ### Phase C — an assistant can be told to answer only from its documents
 
@@ -465,9 +474,17 @@ work, and D packages the result.
 
 ### Phase D — a number we can quote
 
-- [ ] **D1.** `--profile default` with its flag check, and the
+- [x] **D1.** `--profile default` with its flag check, and the
   `results/published/` layout.
-- [ ] **D2.** The regression-checklist P0 item and the methodology section.
+
+  *Done 2026-10-03:* refuses on the runner's env, the organization's
+  columns and resolved feature keys, then checks every case's retrieval
+  trace and stops on the first turn off the default.
+- [x] **D2.** The regression-checklist P0 item and the methodology section.
+
+  *Done 2026-10-03:* "Retrieval quality (once per release)" in
+  `docs/regression-checklist.md`; "The published number" and "Method, for
+  anyone quoting it" in the benchmark README.
 - [ ] **D3.** The first published run on the release that ships A–C.
 
 ### Phase E — docs describe `main`

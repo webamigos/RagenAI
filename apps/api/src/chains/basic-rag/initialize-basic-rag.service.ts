@@ -44,6 +44,11 @@ type InitializeRagChainParams = {
   userTeamIds?: string[];
   scope?: OrgVisibilityScope;
   projectInstruction?: string | null;
+  /**
+   * Answer only from the documents — see `ChainConfig.answerFromDocumentsOnly`.
+   * Resolved by the caller from the project it already read, org-scoped.
+   */
+  answerFromDocumentsOnly?: boolean;
   projectId?: string | null;
   threadDocuments?: ThreadDocumentUI[];
 
@@ -145,6 +150,7 @@ export class InitializeBasicRagService {
     userTeamIds = [],
     scope = 'member',
     projectInstruction,
+    answerFromDocumentsOnly = false,
     projectId,
     threadDocuments,
     mcpTools,
@@ -217,6 +223,7 @@ export class InitializeBasicRagService {
         { vectorStore: wrappedStore, metadataFilter },
         contextExpansionEnabled,
         sectionSelectionEnabled,
+        crossQueryFusionEnabled,
       ] = await Promise.all([
         this.organizationSettings.getRagPipelineSettings(orgId),
         this.buildVectorStoreAndFilter({
@@ -230,6 +237,7 @@ export class InitializeBasicRagService {
         }),
         this.subscriptions.isFeatureEnabled(orgId, 'contextExpansion'),
         this.subscriptions.isFeatureEnabled(orgId, 'sectionSelection'),
+        this.subscriptions.isFeatureEnabled(orgId, 'crossQueryFusion'),
       ]);
       // Built only when the key is on: the chain runs selection exactly when
       // it is handed a selector.
@@ -255,6 +263,7 @@ export class InitializeBasicRagService {
           maxTokens,
           answerInstructions: answerInstructions || '',
           projectInstruction: projectInstruction || '',
+          answerFromDocumentsOnly,
           threadDocuments: threadDocuments || [],
           mcpTools,
           mcpContext,
@@ -309,6 +318,7 @@ export class InitializeBasicRagService {
               ragPipelineSettings.contentModerationEnabled,
             rerankingEnabled: ragPipelineSettings.rerankingEnabled,
             contextExpansionEnabled,
+            crossQueryFusionEnabled,
           },
         },
         vectorStore: wrappedStore,

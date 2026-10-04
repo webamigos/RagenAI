@@ -467,6 +467,38 @@ describe('ChatCompletionsService', () => {
     });
   });
 
+  it.each([
+    [{ chatbotEnabled: true, settings: { instructions: null } }, true],
+    [{ chatbotEnabled: false, settings: null }, false],
+    [
+      {
+        chatbotEnabled: true,
+        settings: { instructions: null, answerFromDocumentsOnly: false },
+      },
+      false,
+    ],
+  ])(
+    'tells the chain whether %o answers only from its documents (%s)',
+    async (row, expected) => {
+      prisma.client.project.findFirst.mockResolvedValue({
+        id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+        ...row,
+      });
+      initializeBasicRag.initializeRagChain.mockResolvedValue(makeChain({}));
+
+      await service.create(
+        baseDto,
+        mockContext,
+        createMockReq(),
+        createMockRes().res,
+      );
+
+      expect(initializeBasicRag.initializeRagChain).toHaveBeenCalledWith(
+        expect.objectContaining({ answerFromDocumentsOnly: expected }),
+      );
+    },
+  );
+
   it('persists an API thread when the API key has debug mode enabled', async () => {
     const saveAssistantMessage = vi.fn().mockResolvedValue(undefined);
     persistApiThread.createApiThread.mockResolvedValue({

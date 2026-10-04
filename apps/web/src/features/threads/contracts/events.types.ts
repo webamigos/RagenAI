@@ -154,6 +154,7 @@ export type ApiSseRetrievalTrace = {
   expansionEnabled?: boolean;
   rerankEnabled?: boolean;
   selectionEnabled?: boolean;
+  crossQueryFusionEnabled?: boolean;
   queryCount: number;
   timings: {
     searchMs: number;

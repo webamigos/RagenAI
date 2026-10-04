@@ -1852,6 +1852,14 @@
       "powered-by": "Powered by {name}",
       "connectors": "Connectors",
       "connectors-description": "No connected integrations",
+      "answer-from-documents-only": {
+        "title": "Answer only from documents",
+        "description": "When on, a question the documents do not cover gets an answer saying so, instead of one from the model's general knowledge.",
+        "default-chatbot": "Default for this assistant: on, because its public chatbot is enabled.",
+        "default-panel": "Default for this assistant: off.",
+        "set-for-assistant": "Set for this assistant.",
+        "save-failed": "Couldn't save the setting. Try again."
+      },
       "connectors-saving": "Saving...",
       "loading": "Loading integrations..."
     },

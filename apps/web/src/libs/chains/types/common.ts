@@ -41,11 +41,25 @@ export interface ChainRagSettings {
    * neighbours (spec 2026-09-29-llm-document-selection, B3). Absent is off.
    */
   contextExpansionEnabled?: boolean;
+  /**
+   * `crossQueryFusion`: with no reranker or selection, hits are ordered
+   * across queries by reciprocal rank before the cut (spec
+   * 2026-10-03-retrieval-claims, B0). Absent is off.
+   */
+  crossQueryFusionEnabled?: boolean;
 }
 
 export interface ChainConfig {
   answerInstructions?: string | null;
   projectInstruction?: string;
+  /**
+   * Answer only from the documents: the answer prompt's grounding rule is
+   * `GROUNDING_RULES.strict` instead of the one that lets the model answer
+   * from its own knowledge. Resolved by the caller from
+   * `ProjectSettings.answerFromDocumentsOnly` and `Project.chatbotEnabled`
+   * (`resolveAnswerFromDocumentsOnly`). Absent is today's rule.
+   */
+  answerFromDocumentsOnly?: boolean;
   /**
    * What the user's personal memory says about them, rendered by
    * `features/memory/utils/render-memory-block.ts` (spec
@@ -264,6 +278,12 @@ export interface RetrievalTrace {
   expansionEnabled?: boolean;
   rerankEnabled?: boolean;
   selectionEnabled?: boolean;
+  /**
+   * `crossQueryFusion` was on: when nothing reranked or selected, the cut
+   * took hits by reciprocal rank across queries rather than the first
+   * query's.
+   */
+  crossQueryFusionEnabled?: boolean;
   /** Queries searched: the standalone question plus multi-query variants. */
   queryCount: number;
   /** Milliseconds each step added. `rephraseMs` is set by the chain. */

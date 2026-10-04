@@ -118,6 +118,8 @@ export function runAssertions(
 export interface JudgeVerdict {
   pass: boolean;
   reason: string;
+  /** One of the labels the caller offered, when the judge chose one of them. */
+  label?: string;
   /**
    * Set when the judge answered but the verdict could not be read. A verdict
    * with this field is *ungraded*, not failed — see `parseJudgeVerdict`.
@@ -138,20 +140,26 @@ export async function judge(
   rubric: string,
   question: string,
   answer: string,
-  opts: { model: string },
+  opts: { model: string; labels?: string[] },
 ): Promise<JudgeVerdict> {
+  const labels = opts.labels?.length ? opts.labels : undefined;
   const { text } = await generateText({
     model: nativeChatInstance({ model: opts.model, temperature: 0 }),
     system:
       'You grade answers against a rubric. Reply with JSON only: {"pass": boolean, "reason": string}. ' +
       'The reason must be one short sentence. Grade strictly: if the rubric is only partly satisfied, that is a fail. ' +
-      'Judge the answer against the rubric alone — do not reward or punish it for the language it is written in unless the rubric says so.',
+      'Judge the answer against the rubric alone — do not reward or punish it for the language it is written in unless the rubric says so.' +
+      // Only when asked, so a corpus without labels is graded by the exact
+      // prompt it always was.
+      (labels
+        ? ` Also include "label": exactly one of ${JSON.stringify(labels)}, chosen as the rubric describes.`
+        : ''),
     prompt: `RUBRIC:\n${rubric}\n\nQUESTION:\n${question}\n\nANSWER:\n${answer}`,
     // As in arms.ts: an un-timed-out call turns a stalled socket into a hung
     // run instead of a retry.
     abortSignal: AbortSignal.timeout(JUDGE_TIMEOUT_MS),
   });
-  return parseJudgeVerdict(text);
+  return parseJudgeVerdict(text, labels);
 }
 
 /**
@@ -167,7 +175,10 @@ export async function judge(
  * parse failure carries `error`, and every tally treats such a case as
  * ungraded: excluded from the denominator rather than counted as a loss.
  */
-export function parseJudgeVerdict(raw: string): JudgeVerdict {
+export function parseJudgeVerdict(
+  raw: string,
+  labels?: string[],
+): JudgeVerdict {
   const match = raw.match(/\{[\s\S]*\}/);
   if (!match) {
     return {
@@ -177,7 +188,11 @@ export function parseJudgeVerdict(raw: string): JudgeVerdict {
     };
   }
   try {
-    const parsed = JSON.parse(match[0]) as { pass?: unknown; reason?: unknown };
+    const parsed = JSON.parse(match[0]) as {
+      pass?: unknown;
+      reason?: unknown;
+      label?: unknown;
+    };
     // A verdict whose `pass` is absent or not a boolean is as unreadable as
     // one that would not parse: `pass !== true` would silently score it a
     // fail, which is the conflation this function exists to avoid.
@@ -188,9 +203,19 @@ export function parseJudgeVerdict(raw: string): JudgeVerdict {
         error: 'judge verdict has no boolean "pass"',
       };
     }
+    // A label outside the offered set is dropped, not an error: the label is
+    // reported, never graded, so a judge inventing one costs the report a
+    // tally entry, not the case its verdict.
+    const label =
+      labels &&
+      typeof parsed.label === 'string' &&
+      labels.includes(parsed.label)
+        ? { label: parsed.label }
+        : {};
     return {
       pass: parsed.pass,
       reason: typeof parsed.reason === 'string' ? parsed.reason : '',
+      ...label,
     };
   } catch {
     return {

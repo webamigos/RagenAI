@@ -224,4 +224,22 @@ describe('InitializeBasicRagService', () => {
     expect(lastCall).toBeDefined();
     expect(typeof lastCall?.[0].models.contentModerator).toBe('function');
   });
+
+  it.each([
+    [undefined, false],
+    [false, false],
+    [true, true],
+  ])(
+    'passes answerFromDocumentsOnly %s to the chain as %s',
+    async (answerFromDocumentsOnly, expected) => {
+      await service.initializeRagChain({
+        ...(params as object),
+        answerFromDocumentsOnly,
+      } as never);
+
+      const lastCall = basicRagChain.mock.calls.at(-1) as
+        [{ config: { answerFromDocumentsOnly?: boolean } }] | undefined;
+      expect(lastCall?.[0].config.answerFromDocumentsOnly).toBe(expected);
+    },
+  );
 });

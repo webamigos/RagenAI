@@ -165,6 +165,7 @@ export const basicRagChain = async ({
                     ),
                   }
                 : undefined,
+              config?.ragSettings?.crossQueryFusionEnabled,
             )
           : null,
         retrieveThreadDocuments(
@@ -196,6 +197,7 @@ export const basicRagChain = async ({
         config?.projectInstruction,
         imageThreadDocs.length > 0 ? imageThreadDocs : undefined,
         config?.memoryBlock,
+        config?.answerFromDocumentsOnly,
       );
 
       const hasTools =

@@ -1,6 +1,7 @@
 import type { LanguageModelV4 } from '@ai-sdk/provider';
 import {
   expandHits,
+  fuseAcrossQueries,
   isUndecodableText,
   readSourceRegions,
   selectSections,
@@ -31,6 +32,7 @@ import {
 } from '../utils/chain-utils';
 import {
   DEFAULT_ANSWER_INSTRUCTIONS,
+  GROUNDING_RULES,
   humanTemplates,
   systemTemplates,
 } from './config';
@@ -576,6 +578,14 @@ export async function retrieveRelevantDocumentsWithIds(
    * Absent is off.
    */
   selection?: { generate: GenerateSelection },
+  /**
+   * `crossQueryFusion` for this organization: when neither the reranker nor
+   * selection chooses, the queries' hit lists are merged by reciprocal rank
+   * before the cut, so a multi-query variant's hits can be kept. Absent is
+   * off, which keeps the first query's hits (spec 2026-10-03-retrieval-claims,
+   * B0).
+   */
+  crossQueryFusion?: boolean,
 ): Promise<{
   context: string;
   fileIds: string[];
@@ -702,7 +712,11 @@ export async function retrieveRelevantDocumentsWithIds(
             }),
         );
       } else {
-        finalDocs = uniqueDocs.slice(0, maxDocuments);
+        // Concatenated, the first query's hits fill the cut and a variant's
+        // never reach the model; fused, each list contributes by rank.
+        finalDocs = (
+          crossQueryFusion ? fuseAcrossQueries(resultsPerQuery) : uniqueDocs
+        ).slice(0, maxDocuments);
       }
       const rerankMs = reranked ? Date.now() - rerankStartedAt : 0;
       const selectMs = selected ? Date.now() - rerankStartedAt : 0;
@@ -878,6 +892,7 @@ export async function retrieveRelevantDocumentsWithIds(
           expansionEnabled: useExpansion,
           rerankEnabled: useReranking,
           selectionEnabled: useSelection,
+          crossQueryFusionEnabled: crossQueryFusion === true,
           queryCount: queryList.length,
           timings: { searchMs, rerankMs, selectMs, expandMs },
         },
@@ -984,12 +999,21 @@ export function buildRagMessages(
   projectInstructions?: string,
   imageDocuments?: ThreadDocumentUI[],
   memoryBlock?: string,
+  answerFromDocumentsOnly?: boolean,
 ): { system: string; messages: ModelMessage[] } {
   const effectiveAnswerInstructions =
     answerInstructions || DEFAULT_ANSWER_INSTRUCTIONS;
   const effectiveProjectInstructions = projectInstructions || '';
 
+  // Filled first, while the only `{grounding_rule}` in the string is the
+  // template's own — see `GROUNDING_RULES`.
   const filled = systemTemplates.answerChain
+    .replace(
+      '{grounding_rule}',
+      answerFromDocumentsOnly
+        ? GROUNDING_RULES.strict
+        : GROUNDING_RULES.default,
+    )
     .replace('{answer_instructions}', effectiveAnswerInstructions)
     .replace('{project_instructions}', effectiveProjectInstructions)
     .replace('{context}', context)

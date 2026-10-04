@@ -5,6 +5,7 @@ import { generateObject, generateText } from 'ai';
 import { z } from 'zod';
 import {
   expandHits,
+  fuseAcrossQueries,
   selectSections,
   SELECTION_TIMEOUT_MS,
   type GenerateSelection,
@@ -26,6 +27,7 @@ import {
 } from '../utils/chain-utils.js';
 import {
   DEFAULT_ANSWER_INSTRUCTIONS,
+  GROUNDING_RULES,
   humanTemplates,
   systemTemplates,
 } from './config.js';
@@ -547,6 +549,14 @@ export async function retrieveRelevantDocumentsWithIds(
    * Absent is off.
    */
   selection?: { generate: GenerateSelection },
+  /**
+   * `crossQueryFusion` for this organization: when neither the reranker nor
+   * selection chooses, the queries' hit lists are merged by reciprocal rank
+   * before the cut, so a multi-query variant's hits can be kept. Absent is
+   * off, which keeps the first query's hits (spec 2026-10-03-retrieval-claims,
+   * B0).
+   */
+  crossQueryFusion?: boolean,
 ): Promise<{ context: string; fileIds: string[] }> {
   if (!vectorStore) {
     throw new Error('Error retrieving relevant documents: No vector store');
@@ -649,7 +659,11 @@ export async function retrieveRelevantDocumentsWithIds(
             }),
         );
       } else {
-        finalDocs = uniqueDocs.slice(0, maxDocuments);
+        // Concatenated, the first query's hits fill the cut and a variant's
+        // never reach the model; fused, each list contributes by rank.
+        finalDocs = (
+          crossQueryFusion ? fuseAcrossQueries(resultsPerQuery) : uniqueDocs
+        ).slice(0, maxDocuments);
       }
 
       // After the cut, so the reranker still chooses which hits are kept and
@@ -730,12 +744,21 @@ export function buildRagMessages(
   answerInstructions?: string | null,
   projectInstructions?: string,
   imageDocuments?: ThreadDocumentUI[],
+  answerFromDocumentsOnly?: boolean,
 ): { system: string; messages: ModelMessage[] } {
   const effectiveAnswerInstructions =
     answerInstructions || DEFAULT_ANSWER_INSTRUCTIONS;
   const effectiveProjectInstructions = projectInstructions || '';
 
+  // Filled first, while the only `{grounding_rule}` in the string is the
+  // template's own — see `GROUNDING_RULES`.
   const systemMessage = systemTemplates.answerChain
+    .replace(
+      '{grounding_rule}',
+      answerFromDocumentsOnly
+        ? GROUNDING_RULES.strict
+        : GROUNDING_RULES.default,
+    )
     .replace('{answer_instructions}', effectiveAnswerInstructions)
     .replace('{project_instructions}', effectiveProjectInstructions)
     .replace('{context}', context)

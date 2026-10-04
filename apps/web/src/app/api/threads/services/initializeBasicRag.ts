@@ -25,6 +25,7 @@ import { QdrantVectorStoreClient } from '@/libs/vector-store/qdrant-client';
 import { SupabaseVectorStoreClient } from '@/libs/vector-store/supabase-client';
 import { getOrganizationMetadataQuery as getOrganizationMetadata } from '@/features/organizations/services/queries/get-organization-metadata-query';
 import { getRagPipelineSettings } from '@/features/organizations/services/organization-settings';
+import { getAnswerFromDocumentsOnlyQuery } from '@/features/projects/services/queries/get-answer-from-documents-only-query';
 import { isFeatureEnabledQuery } from '@/features/subscriptions/services/queries/get-effective-features-query';
 import { type ThreadDocumentUI } from '@/features/documents/contracts/document.types';
 import { wrapVectorStoreWithDualContentDecode } from './decode-dual-content-chunks';
@@ -42,6 +43,13 @@ type InitializeRagChainParams = {
   /** The user's personal memory block; see `ChainConfig.memoryBlock`. */
   memoryBlock?: string;
   projectId?: string | null;
+  /**
+   * Forces the grounding rule instead of reading the assistant's setting. The
+   * organization's embedded widget sets `true`: it has no assistant to carry
+   * the setting, and as the most public surface it answers only from the
+   * documents (spec 2026-10-03-retrieval-claims, C2).
+   */
+  answerFromDocumentsOnly?: boolean;
   /**
    * How much this thread may retrieve. Absent means `KNOWLEDGE_BASE` — every
    * caller that predates the field kept working unchanged, which is the only
@@ -94,6 +102,7 @@ export const initializeRagChain = async ({
   projectInstruction,
   memoryBlock,
   projectId,
+  answerFromDocumentsOnly: answerFromDocumentsOnlyOverride,
   knowledgeScope = DEFAULT_KNOWLEDGE_SCOPE,
   threadDocuments,
   mcpTools,
@@ -150,11 +159,21 @@ export const initializeRagChain = async ({
       ragPipelineSettings,
       contextExpansionEnabled,
       sectionSelectionEnabled,
+      answerFromDocumentsOnly,
+      crossQueryFusionEnabled,
     ] = await Promise.all([
       getOrganizationMetadata(orgId),
       getRagPipelineSettings(orgId),
       isFeatureEnabledQuery(orgId, 'contextExpansion'),
       isFeatureEnabledQuery(orgId, 'sectionSelection'),
+      // Only an assistant carries the setting, and only a turn that searches
+      // its documents can be told to stay inside them: a MODEL_ONLY turn has
+      // no context, so the strict rule would refuse every question.
+      answerFromDocumentsOnlyOverride ??
+        (projectId && scopeRetrieves(knowledgeScope)
+          ? getAnswerFromDocumentsOnlyQuery(projectId, orgId)
+          : false),
+      isFeatureEnabledQuery(orgId, 'crossQueryFusion'),
     ]);
     // Built only when the key is on: the chain runs selection exactly when it
     // is handed a selector.
@@ -237,6 +256,7 @@ export const initializeRagChain = async ({
         maxTokens,
         answerInstructions: answerInstructions || '',
         projectInstruction: projectInstruction || '',
+        answerFromDocumentsOnly,
         memoryBlock,
         threadDocuments: threadDocuments || [],
         mcpTools,
@@ -250,6 +270,7 @@ export const initializeRagChain = async ({
             ragPipelineSettings.contentModerationEnabled,
           rerankingEnabled: ragPipelineSettings.rerankingEnabled,
           contextExpansionEnabled,
+          crossQueryFusionEnabled,
         },
       },
       vectorStore: wrappedStore,

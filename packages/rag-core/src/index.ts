@@ -86,6 +86,11 @@ export {
 } from './selection/expansion';
 
 export {
+  CROSS_QUERY_RRF_K,
+  fuseAcrossQueries,
+} from './selection/cross-query-fusion';
+
+export {
   SELECTION_CANDIDATE_CHARS,
   SELECTION_TIMEOUT_MS,
   buildSelectionPrompt,

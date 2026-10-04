@@ -89,12 +89,12 @@ a single "default on" env flag:
 - **Reranking (ADR-12)** is **opt-in**: it needs `FEATURE_FLAG_RERANKING=1`
   *and* provider credentials, so a default install answers from raw hybrid
   results. The per-org `rerankingEnabled` setting can only turn it further off.
-  Measured on 2026-10-01 (`evals/rag-benchmark/results/2026-10-01-a3-reranker-baseline.md`):
-  no change on prose (`kolej` 17 vs 18 of 24, identical evidence), a gain on
-  tables (`tabele` 7/18 off vs 10/17 Scaleway). The reranking arm also
-  retrieves a three-times-wider pool, so that gain is not yet attributable to
-  the reranker; the retrieval-claims spec's Phase B splits the two before
-  anything claims a benefit.
+  Measured on 2026-10-03 on the default install
+  (`apps/web/evals/rag-benchmark/results/2026-10-03-b1-reranking-split.md`): off,
+  cross-query fusion and Scaleway are within noise on both corpora (`kolej`
+  median passed cases 22/24/21 of 24, `tabele` 14/15/16 of 18). Scaleway's small edge on
+  tables is consistent but under the noise floor, so reranking stays opt-in
+  and is not claimed as a quality gain (ADR-12, 2026-10-03 update).
 - **Contextual chunks** — feature key `contextualChunks`, **on** by default.
   It changes what is embedded, so only files ingested or re-indexed while it is
   on carry the prefix; `apps/worker/src/scripts/reindex-for-context.ts` brings
@@ -176,3 +176,36 @@ screen was a retrieval-frequency table.
   Features): `contextualChunks` and `contextExpansion` on, `sectionSelection`
   off, as above.
 
+
+## Strict grounding: what an answer may draw on
+
+The answer prompt carries one rule for a question the retrieved context does
+not answer, and which rule applies is per assistant
+(`ProjectSettings.answerFromDocumentsOnly`; spec
+`2026-10-03-retrieval-claims-match-the-product-before-launch`, Phase C2):
+
+- **Strict** — "If neither the context nor a document or image attached to
+  the message contains the answer, say that the documents do not cover
+  it, and do not answer from general knowledge." Attachments count: an image
+  arrives in the user's message, not in the context block.
+- **Default** — the model may answer from its own knowledge, saying so.
+
+The column is nullable. `null` means "the surface default": strict when the
+assistant has the public chatbot enabled (`Project.chatbotEnabled`), the
+default rule otherwise; an admin can set it either way with the switch on the
+assistant page. `resolveAnswerFromDocumentsOnly` in
+`@ragenai/platform-contracts` is the one resolver, read by the panel chat, the
+public assistant page and apps/api's `/chat` and `/chat/completions`, always
+by a project id the server already resolved and scoped to the organization.
+Two cases keep the default rule: a turn with no assistant (the knowledge
+base), and a `MODEL_ONLY` turn (there is no context to stay inside, so strict
+would refuse everything). The embedded widget (`api/chatbot/[token]/chat`) is
+an organization-level chatbot with no assistant to carry the setting, so its
+route forces strict (`answerFromDocumentsOnly: true` on `initializeRagChain`).
+
+Both apps fill `{grounding_rule}` from their own copy of `GROUNDING_RULES`
+(`basic-rag/config.ts`), and
+`tests/architecture/answer-prompt-rules-agree.test.ts` fails when the two rule
+lists differ in either variant. There is no relevance threshold: an RRF score
+encodes rank only, so a cut-off on it would look like a guard and not be one.
+Whether the prompt rule is enough is measured by the guard corpus (C1/C3).
