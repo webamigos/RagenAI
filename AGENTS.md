@@ -86,6 +86,7 @@ Before starting a nontrivial task, match it against this table and read the link
 | Running the whole ecosystem locally, ports, companion services | [`docs/companion-services.md`](docs/companion-services.md) |
 | Documentation site, published docs, self-hosting guide | the **`ragen-docs`** repository (Mintlify) — not this one. `npm run docs:config-reference` writes the generated reference into a sibling checkout |
 | Anything touching `apps/api`, the NestJS port, or what's been cut over vs. stays local | [ADR-21](docs/adrs/21-monorepo-and-api-decoupling.md) (read the latest updates first), `apps/api/AGENTS.md` |
+| `apps/mcp`, the MCP server that exposes Ragen's chat to Claude Desktop, Cursor and other clients | [ADR-36](docs/adrs/36-mcp-server-exposes-chat-via-apps-api.md) — it calls `apps/api` with the caller's key and never touches the database; [`docs/companion-services.md`](docs/companion-services.md) for running it; the user-facing page is [docs.ragen.ai](https://docs.ragen.ai/api-reference/mcp-server) |
 | Document ingest, background jobs, anything in `apps/worker` | [ADR-44](docs/adrs/44-bullmq-is-the-worker-runtime.md) — BullMQ runs jobs, Temporal is an adapter — [ADR-26](docs/adrs/26-absorb-ragen-worker-into-monorepo.md), [ADR-40](docs/adrs/40-worker-uses-prisma-not-knex.md), `apps/worker/AGENTS.md` |
 | Writing or reviewing a spec before building | [`docs/specs/README.md`](docs/specs/README.md), [`docs/specs/TEMPLATE.md`](docs/specs/TEMPLATE.md) |
 | A feature too big for one PR, several people on it, or which commits cut a release | [ADR-50](docs/adrs/50-a-large-feature-ships-as-many-small-prs.md) — small PRs onto `main` behind a feature key defaulting to `false`, never a release branch; a slice behind a disabled key is a `chore` and releases nothing |
@@ -110,7 +111,7 @@ Before starting a nontrivial task, match it against this table and read the link
 
 ## Core Surfaces
 
-Four apps and a worker share one schema and ten packages, so some files are
+Four apps and a worker share one schema and 17 packages, so some files are
 read by code you are not looking at. Before changing one of these, know who
 else depends on it — and run `npm run verify`, which is the only command that
 checks all of them at once.
@@ -162,7 +163,7 @@ DEFAULT_MODEL=gpt-4o-mini        # plus OPENAI_API_KEY and a route for it
 ```
 
 **No bare `PORT` in the root `.env.local`** — three services read it, so one
-value moves all three. Use `RAGEN_API_PORT` / `RAGEN_MCP_PORT`.
+value moves all three. Use `RAGEN_API_PORT` / `RAGEN_MCP_PORT` (the MCP server defaults to 3300).
 
 **Postgres 55432 and Redis 56379 are on non-standard ports on purpose**, and a
 bare `prisma migrate` reads only `process.env.DATABASE_URL` — a stale value
@@ -181,7 +182,7 @@ volumes, and the observability profile:
 **What it is**: RAG AI chat app with an in-process model gateway, document knowledge bases, and a public API.
 
 **Monorepo layout**: npm workspaces, `apps/*` + `packages/*` — five apps
-(`web`, `api`, `admin`, `worker`, `mcp`) over ten packages, with one
+(`web`, `api`, `admin`, `worker`, `mcp`) over 17 packages, with one
 `prisma/schema.prisma` serving all of them via per-app `generator` blocks, and
 the supporting services in `infra/`. The tree, what each package is for and why
 it exists: [`docs/architecture.md`](docs/architecture.md).
