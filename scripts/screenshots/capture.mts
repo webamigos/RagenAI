@@ -167,18 +167,16 @@ const ADMIN_SHOTS: Shot[] = [
  * them the operator's panel and nothing of the surface their own users see.
  */
 /**
- * Three of these are hand-placed design-system v2 targets rather than captures.
- * They come from the Claude Design handoff in
- * `apps/web/design_handoff_ragen_panel/` and show the panel as it is being
- * rebuilt, with demo content the seeded state does not have. Drop the `manual`
- * flag on each as its phase lands and the capture becomes truthful again.
+ * Every app screenshot is a capture. Three of them were hand-placed design-system
+ * v2 targets from `apps/web/design_handoff_ragen_panel/` while the panel was
+ * being rebuilt; the phases have landed, so they are generated like the rest.
+ * The `manual` flag still exists for a shot that has to be placed by hand.
  */
 const WEB_SHOTS: Shot[] = [
   {
     name: 'chat',
     path: '/en/new',
     full: true,
-    manual: 'design-system v2 target — phases 5 and 6 (composer, sources)',
   },
   // Phase 7 landed (#1053, #1057, #1068, #1070 and the follow-up that closed
   // the selection bar, the heading totals and the filter row), so this one is
@@ -198,12 +196,10 @@ const WEB_SHOTS: Shot[] = [
   {
     name: 'projects',
     path: '/en/projects',
-    manual: 'design-system v2 target — phase 3 (primitives)',
   },
   {
     name: 'settings-general',
     path: '/en/settings/general',
-    manual: 'design-system v2 target — phase 8 (merged settings surface)',
   },
   { name: 'settings-account', path: '/en/settings/account' },
   {
