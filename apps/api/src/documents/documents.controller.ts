@@ -64,12 +64,12 @@ function parseFolderId(value: string | undefined): string | null | undefined {
  *   (no corresponding apps/web UI action calls these directly — internal
  *   helpers used by other commands/queries).
  * - `VectorPermissionsService` entirely (`computeAccessibleBy`,
- *   `syncFolderVectorPermissions`) — grepping apps/web's `src/app/`
- *   confirms neither is ever called from a UI action; the source file's
- *   own doc comment describes `syncFolderVectorPermissions` as something
- *   to "call after folder permission changes" (i.e. server-side
- *   orchestration, not a user-triggered action) and a standalone backfill
- *   script (`src/scripts/backfill-accessible-by.ts`). Nothing to wire.
+ *   `syncFolderVectorPermissions`) — never called from a UI action, and it
+ *   would not have worked if it were (it wrote `'metadata.accessible_by'` as a
+ *   dotted payload key, which Qdrant stores as a literal top-level field).
+ *   What keeps `accessible_by` current is the `syncDocumentAccess` job, which
+ *   `DocumentAccessSyncService` starts from the share, revoke, move and team
+ *   paths below (#1245); the service is dead code awaiting deletion.
  */
 @ApiExcludeController()
 @Controller('internal')

@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { GetImportedKbFileIdsService } from './get-imported-kb-file-ids.service.js';
 import { FoldersService } from './folders.service.js';
 import { FilesService } from './files.service.js';
+import { DocumentAccessSyncService } from './document-access-sync.service.js';
 import { DocumentPermissionsService } from './document-permissions.service.js';
 import { VectorPermissionsService } from './vector-permissions.service.js';
 import { DocumentEncryptionService } from './document-encryption.service.js';
@@ -36,6 +37,7 @@ import { SubscriptionsModule } from '../subscriptions/subscriptions.module.js';
     KnowledgeAnalyticsController,
   ],
   providers: [
+    DocumentAccessSyncService,
     GetImportedKbFileIdsService,
     FoldersService,
     FilesService,

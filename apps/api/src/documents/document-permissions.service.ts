@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { notificationDetails } from '@ragenai/platform-contracts';
 import { NotificationsService } from '../notifications/notifications.service.js';
+import { DocumentAccessSyncService } from './document-access-sync.service.js';
 import type {
   DocumentPermissionItem,
   ResourceType,
@@ -49,6 +50,7 @@ export class DocumentPermissionsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly notifications: NotificationsService,
+    private readonly accessSync: DocumentAccessSyncService,
   ) {}
 
   async shareResource(params: ShareParams): Promise<OperationResult> {
@@ -137,6 +139,16 @@ export class DocumentPermissionsService {
       });
     }
 
+    // A share only widens who may read, so a late sync is the safe direction,
+    // but a *changed* level or a re-share goes through here too, and the index
+    // should not be the one place that lags.
+    await this.accessSync.afterChange(
+      organizationId,
+      resourceType === 'file'
+        ? { fileIds: [params.fileId] }
+        : { folderIds: [params.folderId] },
+    );
+
     if (granteeType === 'user') {
       const resourceUrl =
         resourceType === 'file'
@@ -203,6 +215,14 @@ export class DocumentPermissionsService {
 
     await this.prisma.client.documentPermission.delete({
       where: { id: permissionId },
+    });
+
+    // The one that matters: the row is gone, so the listing already stops
+    // showing the document to the grantee, and retrieval keeps matching their
+    // principal until the points are rewritten.
+    await this.accessSync.afterChange(organizationId, {
+      ...(permission.fileId ? { fileIds: [permission.fileId] } : {}),
+      ...(permission.folderId ? { folderIds: [permission.folderId] } : {}),
     });
 
     return { success: true };

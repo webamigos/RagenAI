@@ -5,6 +5,7 @@ import {
 } from '@ragenai/platform-contracts';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { PiiPolicy, type Prisma } from '../generated/prisma/client.js';
+import { DocumentAccessSyncService } from './document-access-sync.service.js';
 import type { DocumentFolderItem } from './types.js';
 
 export type BreadcrumbItem = { id: string; name: string };
@@ -23,7 +24,10 @@ type OperationResult = { success: true } | { success: false; error: string };
  */
 @Injectable()
 export class FoldersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly accessSync: DocumentAccessSyncService,
+  ) {}
 
   /**
    * Resolves `scope`/`userTeamIds` for a caller — several documents queries
@@ -145,7 +149,7 @@ export class FoldersService {
       }
     }
 
-    return this.prisma.client.documentFolder.update({
+    const updated = await this.prisma.client.documentFolder.update({
       where: { id: folderId, organizationId },
       data: {
         ...(data.name !== undefined ? { name: data.name } : {}),
@@ -153,6 +157,15 @@ export class FoldersService {
         ...(data.piiPolicy !== undefined ? { piiPolicy: data.piiPolicy } : {}),
       },
     });
+
+    // A folder's team is one of the principals of every file in it.
+    if (data.teamId !== undefined) {
+      await this.accessSync.afterChange(organizationId, {
+        folderIds: [folderId],
+      });
+    }
+
+    return updated;
   }
 
   async moveFolder(
@@ -224,6 +237,12 @@ export class FoldersService {
     } catch {
       return { success: false, error: 'Failed to move folder' };
     }
+
+    // The ancestors changed, and a folder's grants are inherited down its
+    // path, so every file beneath it may have a different set of readers.
+    await this.accessSync.afterChange(organizationId, {
+      folderIds: [folderId],
+    });
 
     return { success: true };
   }
