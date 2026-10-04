@@ -26,6 +26,8 @@ const sigma = vi.hoisted(() => ({
     handlers: Record<string, (e: unknown) => void>;
     cameraStates: Record<string, number>[];
     cameraCalls: string[];
+    animations: Record<string, number>[];
+    bbox: unknown;
     refreshes: number;
     settings: {
       nodeReducer?: (
@@ -40,6 +42,7 @@ vi.mock('sigma', () => ({
     handlers: Record<string, (e: unknown) => void> = {};
     cameraStates: Record<string, number>[] = [];
     cameraCalls: string[] = [];
+    animations: Record<string, number>[] = [];
     constructor(
       public graph: unknown,
       _container: unknown,
@@ -54,7 +57,10 @@ vi.mock('sigma', () => ({
       return {
         setState: (state: Record<string, number>) =>
           this.cameraStates.push(state),
-        animate: record('animate'),
+        animate: async (state: Record<string, number>) => {
+          this.cameraCalls.push('animate');
+          this.animations.push(state);
+        },
         animatedZoom: record('zoom-in'),
         animatedUnzoom: record('zoom-out'),
         animatedReset: record('fit'),
@@ -451,7 +457,77 @@ describe('BrainGraphCanvas legend', () => {
     expect(sigma.instances[0]!.cameraCalls).toEqual([
       'zoom-in',
       'zoom-out',
-      'fit',
+      'animate',
+    ]);
+  });
+
+  // The fit went to sigma's default camera — where a larger graph opens, so
+  // the button did nothing — and kept the box a drag froze, so a page dragged
+  // out of it stayed out of the "whole" graph.
+  it('fits the graph as it now stands, after a drag froze the frame', async () => {
+    render(
+      <NextIntlClientProvider locale="en" messages={messages}>
+        <BrainGraphCanvas layoutScope={SCOPE} view={view} />
+      </NextIntlClientProvider>,
+    );
+    await waitFor(() => expect(sigma.instances).toHaveLength(1));
+    const s = sigma.instances[0]!;
+    act(() =>
+      s.handlers.downNode!({
+        node: A,
+        event: { x: 0, y: 0, original: { button: 0 } },
+      }),
+    );
+    expect(s.bbox).not.toBeNull();
+    fireEvent.click(
+      screen.getByRole('button', { name: messages.brain.graph['zoom-fit'] }),
+    );
+    expect(s.bbox).toBeNull();
+    expect(s.cameraCalls).not.toContain('fit');
+  });
+
+  it('fits a neighbourhood-sized view back to where it opened, labels and all', async () => {
+    render(
+      <NextIntlClientProvider locale="en" messages={messages}>
+        <BrainGraphCanvas layoutScope={SCOPE} view={view} />
+      </NextIntlClientProvider>,
+    );
+    await waitFor(() => expect(sigma.instances).toHaveLength(1));
+    const s = sigma.instances[0]!;
+    fireEvent.click(
+      screen.getByRole('button', { name: messages.brain.graph['zoom-fit'] }),
+    );
+    const [opened] = s.cameraStates;
+    expect(s.animations).toEqual([opened]);
+    expect(opened!.ratio).toBeGreaterThan(1);
+  });
+
+  it('fits a larger graph to sigma’s own frame', async () => {
+    const nodes = Array.from({ length: ROOMY_GRAPH + 1 }, (_, i) => ({
+      ...view.nodes[1]!,
+      id: `00000000-0000-4000-8000-${String(i).padStart(12, '0')}`,
+      title: `Strona ${i}`,
+    }));
+    render(
+      <NextIntlClientProvider locale="en" messages={messages}>
+        <BrainGraphCanvas
+          layoutScope={SCOPE}
+          view={{
+            ...view,
+            nodes,
+            edges: [],
+            shown: { nodes: nodes.length, edges: 0 },
+            total: { nodes: nodes.length, edges: 0 },
+          }}
+        />
+      </NextIntlClientProvider>,
+    );
+    await waitFor(() => expect(sigma.instances).toHaveLength(1));
+    fireEvent.click(
+      screen.getByRole('button', { name: messages.brain.graph['zoom-fit'] }),
+    );
+    expect(sigma.instances[0]!.animations).toEqual([
+      { x: 0.5, y: 0.5, ratio: 1, angle: 0 },
     ]);
   });
 
