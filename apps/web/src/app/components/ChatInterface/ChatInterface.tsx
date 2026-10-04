@@ -74,7 +74,10 @@ export const ChatInterface = ({
   const t = useTranslations('Index');
   const tDrop = useTranslations('page-drop');
   const tDeepThinking = useTranslations('assistant.deep-thinking');
-  const { organization } = useOrganization();
+  // `canManageOrg` only, not `|| isAppAdmin`: the org connectors page itself
+  // calls `requireOrgAdmin`, which does not admit a platform admin who is not
+  // a manager of this organization, so that link would land them on an error.
+  const { organization, canManageOrg } = useOrganization();
   const { user } = useUser();
   const { orgId: sessionOrgId } = useAuth();
   const mentionTextareaRef = useRef<MentionTextareaRef>(null);
@@ -322,13 +325,18 @@ export const ChatInterface = ({
       </div>
 
       {/*
-        Only on a genuinely blank thread. Once there is a draft the cards would
+        Only on a genuinely blank thread. Once there is a draft the chips would
         be offering to replace it, and inside a project or a public widget the
         thread already has a subject — a generic example is worse than nothing
         there.
+
+        A draft hides the row rather than unmounting it. This block is centred
+        in the pane, so removing the row on the first keystroke shrank the
+        block and moved the composer under the reader's cursor.
       */}
-      {!projectTitle && !isPublicAccess && prompt.trim().length === 0 && (
+      {!projectTitle && !isPublicAccess && (
         <StartFromSuggestions
+          hidden={prompt.trim().length > 0}
           onSelect={(suggestion) => {
             handleInputChange(suggestion);
             mentionTextareaRef.current?.focus();
@@ -339,8 +347,18 @@ export const ChatInterface = ({
       {!projectTitle && !isPublicAccess && (
         <p className="text-center text-sm text-muted-foreground/60 mt-4">
           {t('new-thread-tip')}{' '}
+          {/*
+            Turning a connector on for the organization is a manager's job, and
+            `/organization/**` redirects everyone else to /settings/general —
+            whose page would then explain nothing about connectors. A member is
+            sent to their own connectors instead, where they link their account
+            to what the organization has enabled: the same tip, the step that
+            is theirs to take.
+          */}
           <Link
-            href="/settings/connectors"
+            href={
+              canManageOrg ? '/organization/connectors' : '/settings/connectors'
+            }
             className="text-muted-foreground/40 hover:text-muted-foreground/60"
             aria-label="Open connectors settings"
           >
