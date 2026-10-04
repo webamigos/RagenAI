@@ -7,8 +7,6 @@
 **Turn your company documents into an AI assistant that answers from your
 data — on your own servers, with your own models.**
 
-_Crafted by hand. Extended by agents._
-
 [![License: Apache 2.0](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![CI status on main](https://github.com/webamigos/RagenAI/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/webamigos/RagenAI/actions/workflows/ci.yml)
 [![Documentation: docs.ragen.ai](https://img.shields.io/badge/docs-docs.ragen.ai-informational.svg)](https://docs.ragen.ai)
@@ -25,6 +23,14 @@ _Crafted by hand. Extended by agents._
 [Self-hosting](https://docs.ragen.ai/docs/self-hosting) ·
 [Open models](https://docs.ragen.ai/docs/open-models)
 <!-- TODO(cta): community link — see open questions -->
+
+```bash
+npx create-ragen-app my-ragen-app
+cd my-ragen-app && npm run web:dev
+```
+
+Needs Node.js `^24.15.0 || >=26.0.0` and Docker; [Quick start](#-quick-start)
+has the details.
 
 Built and maintained by **[Web Amigos](https://webamigos.pl/en?utm_source=github&utm_medium=readme&utm_campaign=ragen&utm_content=header)**.
 
@@ -87,7 +93,7 @@ helpers. Most existing clients work by changing the base URL.
 
 Ragen was not generated. Two years and 3,200 commits of hand-written
 architecture came first — the tenant-scope guard, the retrieval permission
-model, the CQRS feature modules, the shared contracts package. Thirty-four ADRs
+model, the CQRS feature modules, the shared contracts package. 50 ADRs
 record what was rejected and why.
 
 Only then did the agent harness go on top: `AGENTS.md` as the canonical brief,
@@ -158,16 +164,8 @@ Connector health, showing which MCP integrations are failing and why:
 ![Connector health](docs/img/admin/connector-health.png)
 
 Every page of the panel is documented, with screenshots regenerated from a
-scripted demo state rather than captured by hand — unless one is marked
-`manual` in `scripts/screenshots/capture.mts`, which is how a hand-placed
-image survives the next run:
+scripted demo state rather than captured by hand:
 [Admin panel](https://docs.ragen.ai/security/admin-panel).
-
-Three screenshots of the app itself are currently such exceptions. They are the
-design-system v2 targets from `apps/web/design_handoff_ragen_panel/`, so they
-show where the interface is going rather than where it is; each goes back to
-being generated as its phase lands. The knowledge base is the first to make
-that trip — phase 7 has shipped, so its image is a capture again.
 
 Or skip the screenshots and use it: the app is live at
 [demo.ragen.ai](https://demo.ragen.ai), running against a seeded showcase
@@ -507,7 +505,7 @@ request in the abstract.
 
 ## 🏛️ Architecture at a glance
 
-An npm-workspaces monorepo on Turborepo. Six applications and eight packages
+An npm-workspaces monorepo on Turborepo. 5 applications and 17 packages
 share one Prisma schema.
 
 | Application                  | What it is                                                                            |
@@ -523,7 +521,38 @@ share one Prisma schema.
 | `rag-core`                                                               | vector and embedding contracts — web, api, worker                                                                     |
 | `platform-contracts`                                                     | values every app must resolve identically: model catalogue, feature flags, connector metadata, tenant-scope model map |
 | `storage`                                                                | file storage providers — local by default, S3-compatible opt-in                                                       |
-| `vault-client`, `observability`, `db`, `eslint-config` | the remaining cross-app wiring                                                                                        |
+| `vault-client`, `observability`, `eslint-config`       | the remaining cross-app wiring                                                                                        |
+| `crypto`, `env`, `jobs`, `jobs-bullmq`, `guardrails`, `llm-gateway`, `connector-guard`, `brain-contracts`, `brain-core`, `create-ragen-app`, `ragen-cli` | envelope encryption, the typed env contract, the job runtime seam and its BullMQ adapter, guardrails, the model gateway, the connector URL policy, Ragen Brain, and the two CLIs |
+
+How the pieces fit at runtime:
+
+```mermaid
+flowchart LR
+    user([Browser]) --> web["apps/web<br/>Next.js app"]
+    client([API clients]) --> api["apps/api<br/>NestJS, OpenAI-compatible"]
+    agent([MCP clients<br/>Claude Desktop, Cursor]) --> mcp["apps/mcp<br/>MCP server"]
+    operator([Platform operator]) --> admin["apps/admin<br/>platform admin"]
+
+    mcp --> api
+    web <--> api
+    web -- "enqueue jobs" --> redis[("Redis<br/>BullMQ queue")]
+    api -- "enqueue jobs" --> redis
+    redis --> worker["apps/worker<br/>ingest, embedding,<br/>re-indexing"]
+
+    web --> pg[("Postgres<br/>one Prisma schema")]
+    api --> pg
+    admin --> pg
+    worker --> pg
+    web --> qdrant[("Qdrant<br/>hybrid dense + sparse")]
+    api --> qdrant
+    worker --> qdrant
+
+    worker --> docling["Docling<br/>document parsing"]
+    worker -. "optional" .-> presidio["Presidio<br/>PII masking"]
+    web --> models["Model providers<br/>your keys or your own GPU"]
+    api --> models
+    worker --> models
+```
 
 Supporting services — Docling, Presidio, the OTel collector — live in
 [`infra/`](infra/README.md), each with its own deployment config.
@@ -533,7 +562,7 @@ modules, the connector registry — is in [docs/architecture.md](docs/architectu
 What each companion service is and how to run the set locally:
 [docs/companion-services.md](docs/companion-services.md).
 
-Thirty-four [ADRs](docs/adrs/) record the decisions and what was rejected.
+50 [ADRs](docs/adrs/) record the decisions and what was rejected.
 Start with [ADR-21](docs/adrs/21-monorepo-and-api-decoupling.md) for the
 monorepo shape and [ADR-33](docs/adrs/33-shared-platform-contracts-package.md)
 for why shared values live in one package.
