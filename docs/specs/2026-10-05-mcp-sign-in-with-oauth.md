@@ -424,7 +424,7 @@ organization (ADR-50).
 
 - [ ] **E1.** Removal, leaving, organization deletion and a ban revoke the
   user's grants in that organization.
-- [ ] **E2.** ADR-53 records the decision and amends ADR-36's "auth is the
+- [ ] **E2.** A new ADR records the decision and amends ADR-36's "auth is the
   caller's API key" paragraph. `create-ragen-app` updated (secret, public
   MCP URL). ragen-docs: connecting from claude.ai. A changelog note.
 
