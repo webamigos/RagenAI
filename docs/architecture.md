@@ -191,7 +191,7 @@ API keys use an opaque format (`sk-<keyId>.<secret>`) with no embedded context (
 
 ### Auth
 
-Better Auth with Prisma adapter + `admin` and `organization` plugins (with `createAccessControl`). On user creation, a hook auto-creates an organization, internal organization, and default project. Dual org system: Better Auth `Organization` for membership + Ragen `InternalOrganization` for app data (projects, API keys, subscriptions).
+Better Auth with Prisma adapter + `admin` and `organization` plugins (with `createAccessControl`). On user creation, a hook auto-creates an organization, the owner's membership and a default project. One org record: Better Auth's `Organization`, extended with Ragen's own columns (`hasKnowledge`, `vectorStore`); `Member`, `Project`, `ApiKey`, `OrganizationSettings` and the rest all reference its `id`. The separate `InternalOrganization` table no longer exists.
 
 Two role hierarchies:
 - **App-level** (`User.role`): `'admin'` (superadmin) vs `'user'` — platform-wide access
