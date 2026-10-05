@@ -9,8 +9,8 @@ npx ragen-cli@latest help     # no install
 npm install -g ragen-cli      # or install it, then just `ragen`
 ```
 
-Reach for `npx` while the only substantial command is `create`, which you run
-once per installation. Install it globally when you run it often — and expect to
+Reach for `npx` for a one-off `create`. Install it globally when you work with
+an installation from the terminal — `kb`, `search`, `brain` — and expect to
 upgrade it yourself, because a global CLI goes stale without saying so.
 
 ## The package is `ragen-cli`; the command is `ragen`
@@ -29,10 +29,97 @@ binary it finds on `PATH` before it fetches anything.)
 
 ```
 ragen create [dir]   scaffold a self-hosted Ragen installation
+ragen kb <cmd>       knowledge base files: ls, upload, status, rm
+ragen search <q>     the passages chat would answer from, without an answer
+ragen ask <q>        ask the knowledge base, as chat does, streamed
+ragen assistants ls  the assistants a key can see
+ragen login          check an API key and save it with the API address
+ragen logout         forget them
+ragen doctor         check this terminal can reach an installation
 ragen brain <cmd>    Ragen Brain: next, doctor, findings, pages, graph, query, export
 ragen help
 ragen version
 ```
+
+Every command except `create` talks to an installation's public API, with an
+API key created under **Organization → API keys**. Save both once:
+
+```bash
+ragen login --url https://api.example.com      # asks for the key, hidden
+echo "$KEY" | ragen login --url https://api.example.com   # or piped
+```
+
+or set them per shell, which wins over what is saved — as `--url` and
+`--api-key` win over both. **The saved key is only ever sent to the saved
+address**: with `--url` or `RAGEN_API_URL` naming another host, a key has to
+be given explicitly, or the command stops instead of sending the saved one
+there.
+
+```bash
+export RAGEN_API_URL=https://api.example.com
+export RAGEN_API_KEY=sk-...
+```
+
+### `ragen ask`, `ragen assistants`
+
+```bash
+ragen ask "What is our refund policy?"        # streamed as it is written
+ragen ask "…" --assistant asst-… --no-stream  # or --json for {"text": …}
+ragen assistants ls                           # ids for --assistant / RAGEN_ASSISTANT_ID
+```
+
+`ask` is one chat turn over `POST /v1/chat` — the same retrieval, guardrails
+and usage limits as the panel. It exits non-zero when the stream ends without
+the API's `[DONE]`, because the API closes a failed answer without saying so in
+the body and a cut-off answer would otherwise pass for a short one. When an
+output guardrail stops an answer mid-stream, what was already printed cannot
+be unprinted: `ask` says on stderr that it was withdrawn, and prints the
+refusal. `--reasoning low|medium|high` reaches models that reason.
+
+`assistants ls` lists what the key can *see*. A key scoped to the whole
+knowledge base sees every assistant but may not answer as one; the API says so
+(`The API key is not allowed to do this. (…scoped to the knowledge base…)`).
+
+### `ragen login`, `ragen logout`
+
+There is no identity endpoint to sign in against, and none is needed: a key
+already names its organization and scope. `login` asks `GET /v1/models` —
+which any key may call — and saves the address and key only if the key is
+accepted, so a typo never becomes every later command's "The API key was
+refused". A `/v1` at the end of the address is dropped; the CLI adds it.
+
+The key is kept **as plain text** in `$XDG_CONFIG_HOME/ragen/config.json`
+(`~/.config/ragen/config.json` by default, `%APPDATA%\ragen\config.json` on
+Windows), readable only by you — the same trade `gh`, `npm` and `docker` make
+without a keychain. `ragen logout` deletes it. The key is read from a hidden
+prompt or stdin rather than an argument by default, because arguments land in
+shell history; `--api-key` still works. Over plain `http` to anything but
+localhost, `login` warns that the key travels unencrypted.
+
+### `ragen doctor`
+
+Checks the path from this terminal to an installation, and exits non-zero if
+any check fails:
+
+```
+ok    node       v24.15.0
+ok    cli        ragen-cli 0.3.0
+ok    url        https://api.example.com (from ~/.config/ragen/config.json)
+ok    key        sk-749…sgF8 (from RAGEN_API_KEY)
+ok    api        answers
+ok    auth       the key is accepted
+ok    models     gpt-oss-120b, mistral-small-3.2
+-     brain      off for the organization, or the key's user is not an owner or admin
+```
+
+It says where the address and key came from — flag, variable or saved file —
+which is most of what goes wrong when two of them disagree. `api` asks the
+unauthenticated health check first, so "nothing answers here" (or "that is the
+panel's address, not the API's") is told apart from "the key is refused".
+
+`doctor` is about this client. Whether an installation is configured well —
+its environment, its model routes, its queue — is answered on the host, by the
+setup page and `npm run gateway:preflight`.
 
 `ragen create` delegates to
 [`create-ragen-app`](https://www.npmjs.com/package/create-ragen-app) and
@@ -51,6 +138,50 @@ The scaffolder stays the scaffolder. It is the only thing exercising the
 first-run path, CI runs it on every pull request, and a second copy of that
 wizard living here would drift from the environment manifest without anything
 noticing.
+
+### `ragen kb`
+
+The knowledge base's files, over `/v1/files`:
+
+```bash
+ragen kb ls                          # newest 20; --limit <n>, --all for every page
+ragen kb upload docs/*.pdf --wait    # upload, then wait until each is indexed
+ragen kb status file-… --wait        # where a file is: uploaded, processed, error
+ragen kb rm file-…                   # delete a file and its chunks
+```
+
+**The key decides where files go.** A key scoped to the whole knowledge base
+uploads to, and lists, the files that belong to no assistant; a key scoped to
+an assistant works on that assistant's files. The CLI has no flag for it,
+because it could only disagree with the server.
+
+`--wait` exits non-zero when a file fails to index or is still indexing at
+`--timeout` (default 600 s), so a script can gate on it. `status` exits
+non-zero when any file it names is in `error`.
+
+**Per-minute limits are waited out; usage ceilings are not.** Uploads are
+throttled per minute and per address — ten in production — so a folder of
+documents meets the limit by design. On a 429 that carries a `Retry-After`
+(any `Retry-After-<tier>` too) of up to 120 s the CLI waits as asked, up to
+three tries per file. A 429 without one, or asking for longer, is a limit that
+waiting will not lift — a usage ceiling resets next month — so it is reported
+with the server's message and stops the batch. `--wait`
+asks about every file it is waiting for in one request per round, every 8 s,
+and if a request fails for any other reason it stops waiting but still prints
+what was uploaded (with `--json`, the ids), and exits non-zero.
+
+`upload` takes files, not directories: let the shell expand `docs/*.pdf`.
+
+### `ragen search`
+
+```bash
+ragen search "refund policy"            # --max <1-20>, --assistant <id>, --json
+```
+
+Retrieval without an answer, over `/v1/search`: the same PII-redacted context
+block the chat endpoint gives its answer model, and the files it came from.
+When an answer is wrong, this tells you whether retrieval found the passage or
+the model ignored it.
 
 ### `ragen brain`
 
@@ -81,9 +212,9 @@ refuses a bundle path that would land outside the target directory.
 
 ## What does not work yet
 
-`login`, `doctor`, `kb` and `plugin` are listed in `ragen help` under **Not
-built yet**. Running one prints what it is waiting on and **exits non-zero**,
-so a script cannot mistake it for a no-op that succeeded.
+`plugin` is listed in `ragen help` under **Not built yet**. Running it prints
+what it is waiting on and **exits non-zero**, so a script cannot mistake it for
+a no-op that succeeded.
 
 `ragen plugin` in particular waits on custom MCP connectors. Ragen's extension
 API is MCP — third-party code runs out of process and never inside the app —
@@ -98,11 +229,16 @@ server it is pointed at.
 
 ## Node
 
-`engines` asks for Node 20 or newer, which is deliberately lower than the Node
+`engines` asks for Node 22 or newer, which is deliberately lower than the Node
 24 a Ragen *installation* requires. This is a client; refusing to print help on
-Node 20 would be untrue and unhelpfully broad. `ragen create` inherits
+Node 22 would be untrue and unhelpfully broad. `ragen create` inherits
 `create-ragen-app`'s own check, which refuses at the point where a too-old Node
 would actually damage the install.
+
+The floor is the oldest Node line still supported upstream, not the oldest one
+the code happens to run on: Node 20 left support on 2026-04-30, and a CLI that
+holds an API key should not invite a runtime that no longer gets security
+fixes. `ragen doctor` checks the same number (`MIN_NODE_MAJOR`).
 
 ## Publishing (manual)
 

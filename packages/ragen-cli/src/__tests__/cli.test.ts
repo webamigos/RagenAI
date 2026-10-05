@@ -8,11 +8,25 @@ function harness(overrides: Partial<RunOptions> = {}) {
   const err: string[] = [];
   const create = vi.fn(() => 0);
   const brain = vi.fn(() => Promise.resolve(0));
+  const kb = vi.fn(() => Promise.resolve(0));
+  const search = vi.fn(() => Promise.resolve(0));
+  const login = vi.fn(() => Promise.resolve(0));
+  const logout = vi.fn(() => Promise.resolve(0));
+  const doctor = vi.fn(() => Promise.resolve(0));
+  const ask = vi.fn(() => Promise.resolve(0));
+  const assistants = vi.fn(() => Promise.resolve(0));
 
   const options: RunOptions = {
     version: '1.2.3',
     create,
     brain,
+    kb,
+    search,
+    login,
+    logout,
+    doctor,
+    ask,
+    assistants,
     out: (message) => out.push(message),
     err: (message) => err.push(message),
     ...overrides,
@@ -21,6 +35,13 @@ function harness(overrides: Partial<RunOptions> = {}) {
   return {
     create,
     brain,
+    kb,
+    search,
+    login,
+    logout,
+    doctor,
+    ask,
+    assistants,
     out,
     err,
     run: (argv: string[]) => run(argv, options),
@@ -92,4 +113,29 @@ describe('run brain', () => {
     await expect(cli.run(['brain', 'next', '--json'])).resolves.toBe(0);
     expect(cli.brain).toHaveBeenCalledWith(['next', '--json']);
   });
+});
+
+describe('run kb and search', () => {
+  it('hands everything after `kb` to the kb command', async () => {
+    const cli = harness();
+    await expect(cli.run(['kb', 'upload', 'a.pdf', '--wait'])).resolves.toBe(0);
+    expect(cli.kb).toHaveBeenCalledWith(['upload', 'a.pdf', '--wait']);
+  });
+
+  it('hands everything after `search` to the search command', async () => {
+    const cli = harness();
+    await expect(cli.run(['search', 'refund', '--max', '3'])).resolves.toBe(0);
+    expect(cli.search).toHaveBeenCalledWith(['refund', '--max', '3']);
+  });
+});
+
+describe('run login, logout, doctor, ask and assistants', () => {
+  it.each(['login', 'logout', 'doctor', 'ask', 'assistants'] as const)(
+    'hands everything after `%s` to it',
+    async (name) => {
+      const cli = harness();
+      await expect(cli.run([name, '--url', 'https://x'])).resolves.toBe(0);
+      expect(cli[name]).toHaveBeenCalledWith(['--url', 'https://x']);
+    },
+  );
 });
