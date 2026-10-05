@@ -1,9 +1,11 @@
 import { mcp } from '@better-auth/mcp';
 import { jwt } from 'better-auth/plugins';
 import { APIError } from 'better-auth/api';
+import { getOAuthProviderState } from '@better-auth/oauth-provider';
+import { MCP_REGISTRATION_RATE_LIMIT } from './mcp-registration';
 import { fragments, mcpOAuthRules, parseEnv } from '@ragenai/env';
 
-/** Phase A installs the AS, but grants remain closed until workspace selection is wired. */
+/** The authorization server is present only with valid deployment configuration. */
 export function mcpOAuthPlugins(
   source: Record<string, string | undefined> = process.env,
 ) {
@@ -37,23 +39,63 @@ export function mcpOAuthPlugins(
       refreshTokenExpiresIn: 30 * 24 * 60 * 60,
       refreshTokenReuseInterval: 0,
       clientRegistrationRequirePKCE: true,
-      allowDynamicClientRegistration: false,
-      allowUnauthenticatedClientRegistration: false,
+      rateLimit: { register: MCP_REGISTRATION_RATE_LIMIT },
+      // No administrative OAuth surface is exposed to panel members.
+      // The provider otherwise lets any signed-in user edit resource claims.
+      clientPrivileges: async () => false,
+      resourcePrivileges: async () => false,
+      allowDynamicClientRegistration: true,
+      allowUnauthenticatedClientRegistration: true,
       loginPage: '/en/sign-in',
       consentPage: '/en/connect/consent',
       postLogin: {
         page: '/en/connect/workspace',
-        shouldRedirect: async () => true,
-        consentReferenceId: async () => {
-          throw new APIError('FORBIDDEN', {
-            message: 'MCP workspace selection is not available yet',
-          });
+        shouldRedirect: async ({ user, session }) => {
+          const clientId = new URLSearchParams(
+            (await getOAuthProviderState())?.query,
+          ).get('client_id');
+          if (!clientId) {
+            return true;
+          }
+          const { getMcpSelection } =
+            await import('@/features/organizations/services/commands/mcp-selection-command');
+          try {
+            await getMcpSelection(
+              { userId: user.id, sessionId: session.id },
+              clientId,
+            );
+            return false;
+          } catch {
+            return true;
+          }
+        },
+        consentReferenceId: async ({ user, session }) => {
+          const clientId = new URLSearchParams(
+            (await getOAuthProviderState())?.query,
+          ).get('client_id');
+          if (!clientId) {
+            throw new APIError('FORBIDDEN', {
+              message: 'MCP client is required',
+            });
+          }
+          const { getMcpSelection, mcpReferenceId } =
+            await import('@/features/organizations/services/commands/mcp-selection-command');
+          const selection = await getMcpSelection(
+            { userId: user.id, sessionId: session.id },
+            clientId,
+          );
+          return mcpReferenceId(selection.organizationId, selection.projectId);
         },
       },
-      customAccessTokenClaims: async () => {
-        throw new APIError('FORBIDDEN', {
-          message: 'MCP workspace selection is not available yet',
-        });
+      customAccessTokenClaims: async ({ user, referenceId }) => {
+        if (!user?.id || !referenceId) {
+          throw new APIError('FORBIDDEN', {
+            message: 'MCP workspace selection is required',
+          });
+        }
+        const { mcpClaims } =
+          await import('@/features/organizations/services/commands/mcp-selection-command');
+        return mcpClaims(user?.id, referenceId);
       },
     }),
   ] as const;

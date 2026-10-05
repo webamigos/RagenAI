@@ -1,3 +1,7 @@
+import {
+  assertMcpRegistrationRedirects,
+  MCP_REGISTRATION_RATE_LIMIT,
+} from './mcp-registration';
 /* eslint-disable no-console */
 // These auth hooks are included in middleware/Edge bundles. Importing the
 // logger would pull Node-only pino dependencies into that bundle, so these
@@ -390,6 +394,9 @@ export const auth = betterAuth({
    */
   rateLimit: {
     enabled: !isTestTargetEnv,
+    customRules: {
+      '/oauth2/register': MCP_REGISTRATION_RATE_LIMIT,
+    },
   },
 
   user: {
@@ -423,6 +430,9 @@ export const auth = betterAuth({
    */
   hooks: {
     before: createAuthMiddleware(async (ctx) => {
+      if (ctx.path === '/oauth2/register') {
+        assertMcpRegistrationRedirects(ctx.body);
+      }
       // Checked first: this one is reached signed out, so looking for a
       // session would find nothing and let it through.
       if (ctx.path === DEMO_ACCOUNT_PASSWORD_RESET_PATH) {

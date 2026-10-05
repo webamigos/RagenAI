@@ -394,9 +394,9 @@ organization (ADR-50).
 
 ### Phase B — authorization server in `apps/web`
 
-- [ ] **B1.** Root discovery routes, the registration guard and its rate
+- [x] **B1.** Root discovery routes, the registration guard and its rate
   limit. Unit tests for every redirect-URI case.
-- [ ] **B2.** The post-login page: organizations with `mcpOAuth` on, then
+- [x] **B2.** The post-login page: organizations with `mcpOAuth` on, then
   assistants the member can see. Feature key `mcpOAuth` in
   `platform-contracts`, default `false`.
 - [ ] **B3.** The consent page and the token claims. Proof: the MCP Inspector
@@ -486,3 +486,29 @@ organization (ADR-50).
   follow-up migration only if the feature is abandoned.
 - **Rotating `MCP_SERVICE_SECRET`:** change it in `apps/mcp` and `apps/api`
   together. Assertions live 30 s, so the window of refused calls is a deploy.
+
+
+### Phase B local validation — 2026-10-06
+
+Root discovery, guarded dynamic registration, workspace selection and consent
+are implemented behind the deployment and organization gates. The browser E2E
+completes sign-in, selects an organization and assistant, accepts consent,
+exchanges the PKCE code and verifies the issued JWT against the advertised
+JWKS. It checks issuer, audience, user, organization, project, client, scope
+and the 15-minute lifetime, then proves refresh is refused when the live
+organization flag is disabled. Discovery and registration smoke tests pass.
+B3's specific MCP Inspector proof remains pending until the protected-resource
+phase makes the local MCP endpoint support OAuth. The browser test is evidence
+for the authorization server, not a claim that the full MCP integration ships.
+
+Final validation: OAuth discovery/registration, email sign-in, password
+reset, sign-out and consent E2E passed (6/6) on Docker Desktop. The full
+web unit suite passed separately (511 files, 5,046 tests). Full verification
+completed all builds, lint and typechecks; four previously reproduced root
+architecture failures remain (`packages/db` without a manifest, its missing
+architecture entry, the resulting package count, and a stale configuration
+reference in the sibling documentation checkout). One existing
+`PublicShareDialog` test timed out while builds ran concurrently; all three
+of its cases and the entire web suite passed on recheck without code changes.
+CodeRabbit was unavailable in this session; a manual review checked the signed
+query, live grant checks and provider administrative privileges.

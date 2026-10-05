@@ -34,8 +34,8 @@ describe('MCP OAuth plugin wiring', () => {
     if (!provider || provider.id !== 'oauth-provider') {
       throw new Error('Missing OAuth provider');
     }
-    expect(provider.options.allowDynamicClientRegistration).toBe(false);
-    expect(provider.options.allowUnauthenticatedClientRegistration).toBe(false);
+    expect(provider.options.allowDynamicClientRegistration).toBe(true);
+    expect(provider.options.allowUnauthenticatedClientRegistration).toBe(true);
     expect(provider.options.resources).toEqual([
       {
         identifier: 'https://mcp.example/mcp',
@@ -44,6 +44,22 @@ describe('MCP OAuth plugin wiring', () => {
       },
     ]);
     expect(provider.options.refreshTokenReuseInterval).toBe(0);
+    expect(
+      await provider.options.clientPrivileges?.({
+        headers: new Headers(),
+        action: 'create',
+      }),
+    ).toBe(false);
+    expect(
+      await provider.options.resourcePrivileges?.({
+        headers: new Headers(),
+        action: 'update',
+      }),
+    ).toBe(false);
+    expect(provider.options.rateLimit?.register).toEqual({
+      window: 60,
+      max: 10,
+    });
     expect(provider.options.clientRegistrationRequirePKCE).toBe(true);
     await expect(
       provider.options.customAccessTokenClaims?.({ scopes: ['mcp:read'] }),

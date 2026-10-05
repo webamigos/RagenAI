@@ -46,7 +46,7 @@ export default async function proxy(request: NextRequest) {
   const url = request.nextUrl.pathname;
 
   // Skip auth checks for API routes - early return
-  if (url.startsWith('/api')) {
+  if (url.startsWith('/api') || url.startsWith('/.well-known/')) {
     return NextResponse.next();
   }
 

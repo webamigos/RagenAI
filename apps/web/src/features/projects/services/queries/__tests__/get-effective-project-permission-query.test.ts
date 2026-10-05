@@ -117,3 +117,23 @@ describe('getEffectiveProjectPermissionQuery', () => {
     expect(res.source).toBe('none');
   });
 });
+
+describe('explicit-member permission resolution for OAuth', () => {
+  it('uses the token actor role without consulting a browser session', async () => {
+    mockProjectFindFirst.mockResolvedValue({
+      id: PROJECT,
+      ownerId: 'another-user',
+    });
+    mockGetActiveMember.mockClear();
+    const { resolveProjectPermissionForMember } =
+      await import('../resolve-project-permission-for-member');
+    const result = await resolveProjectPermissionForMember(
+      PROJECT,
+      ORG,
+      'token-user',
+      'admin',
+    );
+    expect(result.source).toBe('orgAdmin');
+    expect(mockGetActiveMember).not.toHaveBeenCalled();
+  });
+});

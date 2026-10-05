@@ -1,5 +1,7 @@
 'use client';
 
+import { oauthProviderClient } from '@better-auth/oauth-provider/client';
+
 import { publicRuntimeConfig } from '@/config/public-runtime-config';
 import { createAuthClient } from 'better-auth/react';
 import {
@@ -22,6 +24,7 @@ export const authClient = createAuthClient({
     }),
     adminClient(),
     magicLinkClient(),
+    oauthProviderClient(),
     stripeClient({ subscription: true }),
   ],
 });
