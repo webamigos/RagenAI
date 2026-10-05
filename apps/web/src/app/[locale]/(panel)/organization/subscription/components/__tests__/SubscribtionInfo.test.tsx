@@ -61,6 +61,11 @@ const baseSubscription: SubscriptionDetails = {
   seats: 1,
   trialStart: null,
   trialEnd: null,
+  cancelAt: null,
+  canceledAt: null,
+  endedAt: null,
+  billingInterval: null,
+  stripeScheduleId: null,
   subscriptionPlan: {
     id: 'plan_1',
     name: 'Trial',
