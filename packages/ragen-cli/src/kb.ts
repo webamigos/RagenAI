@@ -61,7 +61,8 @@ const VALUE_FLAGS = ['--limit', '--timeout'];
 
 /**
  * How often `--wait` asks. Ingest takes seconds to minutes, and the API allows
- * a `/v1/files` route ten requests a minute per address — this stays under.
+ * reading `/v1/files` 20 times a minute per address — 7.5 a minute leaves room
+ * for the uploads and deletes around it.
  */
 export const POLL_INTERVAL_MS = 8_000;
 const DEFAULT_TIMEOUT_S = 600;
@@ -169,9 +170,9 @@ async function status(deps: KbDeps, api: ApiClient, flags: Flags) {
 
 /**
  * The current state of these files, in as few requests as the API allows:
- * one page of the newest files, then by id for any not on it. Every
- * `/v1/files` route is held to the API's tightest throttler (10 a minute per
- * address in production), so a request per file is refused by the eleventh.
+ * one page of the newest files, then by id for any not on it. Reading
+ * `/v1/files` is limited to 20 a minute per address in production, so a
+ * request per file per round would be refused for any sizeable batch.
  */
 async function refresh(
   api: ApiClient,
