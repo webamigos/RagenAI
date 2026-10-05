@@ -63,6 +63,16 @@ function getClient(): PrismaClientSingleton {
  */
 export const prisma = new Proxy({} as PrismaClientSingleton, {
   get(_target, prop, receiver) {
+    // `@better-auth/prisma-adapter` 1.7.3+ reads `_runtimeDataModel` inside
+    // `betterAuth()` itself, for its schema check — so at import time of
+    // `auth.ts`, which is every build and every test that touches it. Building
+    // the client here for that would bring back exactly the DATABASE_URL
+    // dependency this proxy exists to avoid. `undefined` is the adapter's own
+    // "a client that stands in for one": it skips the check, and apps/web, which
+    // shares this schema and builds its client eagerly, still runs it.
+    if (prop === '_runtimeDataModel' && !client) {
+      return undefined;
+    }
     return Reflect.get(getClient(), prop, receiver);
   },
 });
