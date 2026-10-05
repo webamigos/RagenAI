@@ -19,8 +19,8 @@
  * The spec's D1 says "the org, its shared account, the flag overrides…". The
  * account is deliberately left out: a fresh deployment already serves
  * `/initial-account`, and completing that form creates the user through Better
- * Auth, which in turn creates the Better Auth organization, the
- * `InternalOrganization` and a default project (see AGENTS.md, "Auth").
+ * Auth, which in turn creates the Better Auth organization, the owner's
+ * membership and a default project (see AGENTS.md, "Auth").
  *
  * Writing those rows here instead would mean writing Better-Auth-owned tables
  * from outside the library, and this repository has already paid for that

@@ -251,10 +251,10 @@ API-only mode: [`docs/architecture.md`](docs/architecture.md).
 ### Auth
 
 Better Auth (`src/lib/auth.ts`) with the `admin` and `organization` plugins.
-Two org records exist per organization and both matter: Better Auth's
-`Organization` owns membership, Ragen's `InternalOrganization` owns app data
-(projects, API keys, subscriptions). A user-creation hook makes both plus a
-default project. Detail: [`docs/architecture.md`](docs/architecture.md).
+One org record: Better Auth's `Organization`, plus Ragen's own columns.
+`Member` and all app data (projects, API keys, settings) reference its `id`;
+there is no `InternalOrganization` any more. A user-creation hook makes the
+org, the owner's membership and a default project. Detail: [`docs/architecture.md`](docs/architecture.md).
 
 ### RBAC — Two distinct role hierarchies (never confuse)
 

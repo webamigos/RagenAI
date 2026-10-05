@@ -1,0 +1,447 @@
+---
+title: Signing in to the Ragen MCP server with OAuth
+status: approved
+areas: [auth, api, mcp, knowledge-base]
+adrs: [13, 21, 36, 39, 50]
+---
+
+# Signing in to the Ragen MCP server with OAuth
+
+## TLDR
+
+Today `apps/mcp` accepts only a Ragen API key, which a person has to copy
+into their MCP client. claude.ai and ChatGPT connectors don't take a pasted
+key. They sign in with OAuth 2.1. This spec adds OAuth as a second way in,
+next to API keys: `apps/web` (Better Auth) issues the tokens, `apps/mcp`
+checks them, and `apps/mcp` then calls `apps/api` as a trusted service on
+behalf of the signed-in user (variant (a)). The non-obvious part is that last
+hop. The token's audience is `apps/mcp`, so the MCP spec forbids passing it on
+unchanged to `apps/api`. The way `apps/mcp` speaks for a user to `apps/api`
+is the new trust boundary this spec has to get right.
+
+## Decisions
+
+Answered 2026-10-05; every one as recommended. The rest of the spec refers to
+them by number.
+
+- **Q1. A grant binds to an organization plus an optional assistant**, the
+  same boundary an API key's `knowledgeScope` draws. A user who connects "the
+  HR assistant" to claude.ai does not hand over every assistant in the
+  organization.
+- **Q2. `apps/mcp` vouches for the user with its own secret,**
+  `MCP_SERVICE_SECRET`, checked by a new guard on the three routes the MCP
+  tools call. Not `SESSION_AUTH_SECRET`, and not RFC 8693 token exchange. See
+  "The hop from `apps/mcp` to `apps/api`".
+- **Q3. Two gates:** a deployment env var, `MCP_OAUTH_ENABLED`, for the
+  discovery documents and the authorization server, and a per-org feature key,
+  `mcpOAuth` (default `false`), checked at consent and on every call.
+  Discovery runs before anyone has signed in, so a per-org key cannot gate it.
+- **Q4. Any member may connect an app** in an organization that has `mcpOAuth`
+  on. The token never grants more than the member already sees in the panel.
+- **Q5. Dynamic client registration is open** (RFC 7591), because claude.ai
+  registers itself without credentials. It sits behind a redirect-URI guard
+  and a per-IP rate limit. Client ID Metadata Documents may come later as an
+  addition, not a replacement.
+
+## Problem
+
+- Someone who wants to use a Ragen assistant from claude.ai, Claude Desktop
+  or ChatGPT cannot. Those clients add a remote MCP server as a "connector"
+  and expect OAuth 2.1 with discovery (RFC 9728, RFC 8414), dynamic client
+  registration and PKCE. A static `Authorization` header is supported only
+  by developer clients (Claude Code, Cursor, the MCP Inspector).
+- An API key is an organization credential, shown once and pasted into a
+  config file. Handing one to every employee who wants an assistant in
+  claude.ai means one long-lived secret per person, stored outside Ragen,
+  revocable only by an admin.
+- `ADR-36` says `apps/mcp` needs "no OAuth callback to serve, since the
+  caller already has a Ragen API key". That held while the only callers were
+  developers. It does not hold for end users.
+
+What already works and does not change: `apps/api` resolves document
+visibility per user. `ChatService` and `ChatCompletionsService` call
+`folders.getMembershipContext(orgId, userId)`, and for an API key `userId` is
+the key's creator. An OAuth caller gets the same per-user retrieval scope for
+free, as long as the request reaches `apps/api` with the right `userId`.
+
+## Out of scope
+
+- **Write tools.** The three tools stay as they are: `ragen_chat`,
+  `ragen_search_knowledge_base` and `ragen_list_assistants`. OAuth scopes
+  reserve `mcp:write`, but nothing issues it.
+- **OAuth for the public REST API** (`apps/api` `/v1/*` called directly).
+  Only `apps/mcp` accepts OAuth tokens. `apps/api` keeps API keys and the
+  service guard from Q2.
+- **Removing or replacing API keys.** Keys stay the way in for scripts, CI
+  and developer MCP clients.
+- **Client ID Metadata Documents, DPoP, token introspection.** DPoP-bound
+  tokens are refused, not supported.
+- **Platform-admin management of OAuth clients** in `apps/admin`. A user
+  disconnects their own apps in `apps/web`; an org admin's view of everyone's
+  connections is a follow-up (ADR-35 decides which app it lives in).
+- **Anything in `ragen-connectors`.** That is Ragen consuming other MCP
+  servers. This spec is the reverse direction.
+
+## Proposed solution
+
+### Roles
+
+| Role                 | Who                         | What it does                                                                                       |
+| -------------------- | --------------------------- | -------------------------------------------------------------------------------------------------- |
+| Authorization server | `apps/web`, Better Auth     | sign-in, picking the organization and assistant, consent, issuing and refreshing tokens, JWKS     |
+| Protected resource   | `apps/mcp`                  | RFC 9728 metadata, the 401 challenge, verifying the access token, mapping it to a user and an org |
+| Data                 | `apps/api`                  | unchanged business logic; a new guard accepts `apps/mcp`'s service assertion on three routes     |
+
+Users sign in only at `apps/web`. That is the rule ADR-21 already set for
+`SessionAuthService`, and this keeps it: no app other than `apps/web` reads a
+Better Auth session.
+
+### Authorization server in `apps/web`
+
+`better-auth` goes from `^1.7.2` to `^1.7.7`, and adds `@better-auth/mcp`
+(the MCP preset over `@better-auth/oauth-provider`) plus the `jwt()` plugin.
+Not the 1.6-era `mcp` plugin from `better-auth/plugins`: that one stores
+tokens in plaintext, ignores RFC 8707 `resource`, and has no hook for "which
+organization does this token act for". `@better-auth/oauth-provider` hashes
+tokens and client secrets by default, binds tokens to a resource, and has
+`postLogin` + `consentReferenceId`, which is where the organization choice
+goes.
+
+Configuration, in a new non-`'use server'` module beside `src/lib/auth.ts`:
+
+- `resource` = the public URL of `apps/mcp`'s endpoint, e.g.
+  `https://mcp.ragen.ai/mcp`, from a new env var `RAGEN_MCP_PUBLIC_URL`.
+  Declared explicitly in `resources` with `allowedScopes` listing every scope
+  we issue. The plugin writes `null` for "unrestricted", which Prisma reads
+  back as `[]`, and `[]` allows no scope at all.
+- Scopes: `openid`, `offline_access`, `mcp:read`. `mcp:write` is declared but
+  not grantable yet.
+- Grants: `authorization_code` with PKCE S256 always, and `refresh_token`.
+- Access token: a JWT, 15 minutes, `aud` = the resource, claims `org`
+  (Better Auth's `Organization.id`, which `Member`, `ApiKey` and `Project`
+  all reference), `project` (optional, Q1), `scope`,
+  `client_id`. Refresh token: rotating, 30 days.
+- Dynamic client registration: open (Q5). A `before` hook on
+  `/oauth2/register` refuses any redirect URI that is not `https://`, or
+  `http://` on `localhost` / `127.0.0.1`. Loopback clients (Claude Code) must
+  register as `application_type: "native"`; the plugin refuses loopback
+  redirects for web clients. Per-IP rate limit on the endpoint.
+- Discovery documents at the origin root, outside Better Auth's base path:
+  `/.well-known/oauth-authorization-server` and
+  `/.well-known/openid-configuration`, as Next route handlers that hand the
+  request to `auth.handler`.
+
+### The flow
+
+1. The client calls `apps/mcp` without a token. `apps/mcp` answers `401` with
+   `WWW-Authenticate: Bearer resource_metadata="<mcp-origin>/.well-known/oauth-protected-resource"`.
+2. Protected-resource metadata (served by FastMCP's built-in
+   `oauth.protectedResource` option) names the resource, the authorization
+   server (the `apps/web` issuer) and the scopes.
+3. The client reads the authorization-server metadata from `apps/web`,
+   registers itself, and opens `/api/auth/oauth2/authorize` with
+   `resource=<mcp-origin>/mcp`.
+4. Not signed in: the normal sign-in page, which resumes the flow afterwards.
+   Magic link and every other sign-in method keep working, because the flow
+   only needs a session at the end.
+5. **Post-login page** `/[locale]/connect/workspace`: the user picks an
+   organization from their memberships, then optionally one assistant (Q1).
+   Only organizations with `mcpOAuth` on are offered (Q3). The pick is stored
+   against the session *and the client* (two connect flows in one browser
+   must not overwrite each other's pick) and becomes `consentReferenceId` =
+   `"<orgId>:<projectId|all>"`.
+6. **Consent page** `/[locale]/connect/consent`: the client's name, its
+   redirect host, the chosen organization and assistant, and the scopes. The
+   redirect host is the one thing that tells a user a lookalike client from
+   the real one, so it is shown prominently, not in small print.
+7. The token endpoint issues the access and refresh tokens. The org and
+   project claims come from the consent reference id, re-validated against
+   the live membership when the token is minted.
+
+### `apps/mcp`: two kinds of credential
+
+`authenticate` branches on the token's shape:
+
+- `sk-…` is the API-key path, unchanged: the header is forwarded to
+  `apps/api` and `ApiKeyGuard` decides.
+- Anything else is verified as a JWT: signature against `apps/web`'s JWKS
+  (`jose`'s `createRemoteJWKSet`, cached, refetched on an unknown `kid`),
+  then `iss`, `aud` = this resource, `exp`, and `scope` containing
+  `mcp:read`. A DPoP-bound token is refused. Failure is `401` with
+  `error="invalid_token"`. A missing scope is `403` with
+  `error="insufficient_scope"`.
+
+`RagenSession` becomes a union:
+
+```ts
+type RagenSession =
+  | { kind: 'api_key'; apiKey: string }
+  | { kind: 'oauth'; accessToken: string; userId: string; orgId: string;
+      projectId?: string; clientId: string; expiresAt: number };
+```
+
+**Expiry inside a long session.** With the installed versions (fastmcp
+3.35.0 over mcp-proxy 6.7.13), `authenticate` runs on every POST, so an
+expired token already gets a 401 with `WWW-Authenticate`. But the `session`
+a tool's `execute` receives is captured once, when the MCP session is
+created. After the client refreshes on the same `mcp-session-id`, a tool
+would still see the old token, its old expiry and its old identity. So a
+tool must never take identity from a stateful session. The default is
+`stateless: true`, where every request builds its session from the token it
+carries. D1 confirms that the three tools work stateless, and records the
+fallback (read identity from the current request) only if they do not.
+
+### The hop from `apps/mcp` to `apps/api` (Q2)
+
+`apps/mcp` cannot forward the user's access token: its audience is
+`apps/mcp`, and the MCP authorization spec forbids token passthrough. So
+`apps/mcp` speaks for the user with its own credential.
+
+**Chosen (Q2): a dedicated service assertion.**
+
+- A new shared secret, `MCP_SERVICE_SECRET`, held by `apps/mcp` and
+  `apps/api` only.
+- `apps/mcp` signs a short-lived assertion per call (HMAC, 30 s TTL)
+  carrying `typ: "mcp"`, `userId`, `orgId`, `projectId?`, `clientId` and the
+  access token's `jti`. It is sent as `Authorization: Bearer
+  mcp.<payload>.<sig>`, and the signature covers the `mcp.` prefix too. The
+  session-token format in `issue-session-token.ts` has no type field, so a
+  copy of it would tell the two tokens apart only by which secret signed
+  them. Both services refuse to boot when `MCP_SERVICE_SECRET` equals
+  `SESSION_AUTH_SECRET`, which matters for installs that generate both.
+- A new `McpServiceGuard` in `apps/api` verifies it and then runs the live
+  checks a key gets from its row: the `Member` row still exists for that user
+  in that organization, the user is not banned, the organization has
+  `mcpOAuth` on, and, with a project, the member can view that project
+  (`getEffectiveProjectPermission(...).canView`, the panel's own rule), not
+  merely that it belongs to the organization. Only then does it build the same `ApiContext` the controllers
+  already read.
+- The guard is accepted only on `POST /v1/chat`, `POST /v1/search` and
+  `GET /v1/assistants`, via a composite guard (`ApiKeyGuard` or
+  `McpServiceGuard`) on those three handlers. Today `@UseGuards(ApiKeyGuard)`
+  sits at class level on all three controllers, and Nest ANDs class and
+  method guards, so a handler-level "either" would still be refused.
+  `ChatController` and `SearchController` swap the class guard for the
+  composite one. `AssistantsController` moves to per-handler guards instead,
+  because swapping its class guard would open create, update and delete to
+  MCP assertions. Those three stay API-key only, and a test says so.
+- `throttleTracker` gets an MCP-assertion branch that counts against
+  `user:<userId>`. Without it every OAuth call arrives from `apps/mcp`'s one
+  IP, and every user in every organization shares one per-IP bucket.
+
+Why not the alternatives:
+
+- **Reuse `SESSION_AUTH_SECRET`.** That secret already authorizes every
+  `SessionAuthGuard` route: documents, folders, threads, connectors. Giving it
+  to `apps/mcp`, the one app that faces the public internet with no session
+  of its own, would let a compromise of `apps/mcp` act as any user on all of
+  them. A separate secret on three routes bounds that to what the MCP tools
+  can already do.
+- **RFC 8693 token exchange at `apps/web`.** The textbook answer: `apps/mcp`
+  trades the user's token for one with `aud` = `apps/api`. Better Auth 1.7
+  does not ship it, so it would be our own grant type on a library-owned
+  token table ("a library that owns a table also owns how it is queried").
+  Worth revisiting if a second resource ever needs user tokens.
+- **Variant (b): `apps/api` accepts the MCP token itself.** Rejected when
+  choosing variant (a). It needs `apps/api` to trust a token whose audience is
+  another service, which is the passthrough the spec forbids, only moved.
+
+`ApiContext` changes in one place. `keyId: KeyId` becomes
+`credential: { type: 'api_key'; id: KeyId } | { type: 'oauth'; id: string }`,
+where the OAuth id is `"<clientId>:<userId>"`. Today `keyId` is assigned in
+the guard and read nowhere else, so this is cheap. `knowledgeScope` is
+`'ASSISTANT'` when the grant names a project and absent when it does not,
+which `AssistantScopeService` reads as "no key boundary".
+
+**That is not enough for an org-wide grant.** With no boundary,
+`AssistantScopeService.resolve` checks only that a project is in the
+organization, and `AssistantsService.list` returns every project in it. That
+is right for an API key, an organization credential. It is wrong for a
+person: a plain member would list and chat with colleagues' private
+assistants and read their instructions. So for an OAuth credential, `list`
+returns only projects the member can view, and `resolve` refuses a project
+the member cannot view, with the same `getEffectiveProjectPermission` rule
+the panel uses. Folder membership still limits retrieval inside a project, as
+it does today. `debugMode` is `false` and `teamId` absent for an OAuth
+context.
+
+### Revocation
+
+A **Connected apps** section in the user's account settings: one row per
+client the user has consented to, with the organization it acts for and its
+last use, and a **Disconnect** button. Disconnect deletes the consent and the
+client's refresh and access tokens for that user, through the plugin's API,
+not with Prisma directly. An access token already issued lives until it
+expires, at most 15 minutes. Membership removal, a ban and turning
+`mcpOAuth` off take effect on the next call, because `McpServiceGuard`
+reads them live.
+
+## Core surfaces touched
+
+| Surface                                  | Change                                                                                   | What catches a mistake                                                                                   |
+| ---------------------------------------- | ---------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `prisma/schema.prisma`                   | the plugin's OAuth tables + `jwks`; one table for the post-login pick                    | an additive migration on a throwaway DB, plus `npm run verify`                                           |
+| Better Auth tables                       | new library-owned tables; `better-auth` minor bump                                       | `tests/architecture/`, `test-e2e` (sign-in end to end), the `ragen-upgrade-dependency` skill            |
+| `src/lib/auth.ts`                        | two plugins, a registration hook                                                         | its unit tests, `test-e2e`                                                                               |
+| `apps/api` `ApiContext` and guards       | `credential` union; `McpServiceGuard`; guards on three routes; throttle; assistant visibility | guard unit tests; a test that every other `ApiKeyGuard` route still refuses an MCP assertion            |
+| `packages/platform-contracts`            | feature key `mcpOAuth`                                                                   | package tests, `shared-contracts-are-not-recopied.test.ts`                                               |
+| `packages/env`                           | `MCP_SERVICE_SECRET` (mcp + api), `RAGEN_MCP_PUBLIC_URL` (web + mcp), `MCP_OAUTH_ENABLED` | a fragment shared by the apps that read it, plus each app's env schema tests                            |
+| `packages/create-ragen-app`              | the new secret generated at install, the public MCP URL asked for                        | its tests + `create-ragen-app-manifest-is-current.test.ts`; said in the PR description                  |
+| `apps/mcp`                               | JWT verification, protected-resource metadata, the service assertion                     | its own tests, including a real server started in a test                                                 |
+
+## Data model
+
+- **Plugin tables.** Whatever `@better-auth/oauth-provider` 1.7.7 declares,
+  taken from the installed package's schema in step A1, not written from
+  memory. At the time of writing that is `oauthClient`, `oauthAccessToken`,
+  `oauthRefreshToken`, `oauthConsent`, plus `jwks` from `jwt()` and the MCP
+  preset's resource table. Mapped to snake_case columns like every other
+  Better Auth table. String ids, as Better Auth tables keep.
+- **Null scalar lists.** The plugin writes `null` to unset `string[]`
+  columns. Prisma rejects that on write and reads NULL as `[]`. The adapter
+  layer drops those nulls for the OAuth models, and a test keeps its field
+  list in sync with the schema, so a new plugin column cannot slip past.
+- **`mcp_connect_selections`**: `sessionId` (FK to `sessions`, cascade) and
+  `clientId`, together the primary key; `userId`, `organizationId`,
+  `projectId?`, `createdAt`. A pick older than 10
+  minutes is treated as absent, so a later connect asks again.
+- **Not `McpOAuthToken`.** That existing model stores tokens Ragen holds as
+  an MCP *client* of other servers. The new tables are Ragen as an
+  authorization server. Different direction, never joined; the schema comment
+  on each says so.
+- **Rows written before this change:** none of these tables exist yet, so no
+  backfill. `ApiKey` and every existing table are untouched.
+
+## Failure modes
+
+- **`apps/web` unreachable when `apps/mcp` needs the JWKS.** A cached key set
+  keeps verifying. A cold start with no cache refuses OAuth tokens with `503`.
+  API keys are unaffected.
+- **Signing key rotated.** An unknown `kid` triggers one JWKS refetch, rate
+  limited, then a `401`.
+- **Token expired mid-session.** See "Expiry inside a long session": a `401`
+  the client refreshes on. Never a silent extension.
+- **Member removed, member leaves, organization deleted, user banned.** The
+  refresh token still works at the token endpoint until it is revoked, but
+  every call fails in `McpServiceGuard`. Step E1 revokes the user's grants in
+  that organization on every one of these paths, so a dead grant does not
+  linger in Connected apps.
+- **One client connected to two organizations.** The plugin keeps one consent
+  per client and user. Connecting the same app to a second organization
+  replaces the first grant and revokes its refresh tokens. Connected apps shows
+  the organization the grant currently acts for. Two organizations at once
+  from one app is a follow-up, if anyone asks.
+- **Private assistants in an org-wide grant.** Covered by the per-member
+  project check in `list` and `resolve`. A test lists assistants as a member
+  who owns none and is shared none, and expects only public ones.
+- **`mcpOAuth` turned off for an org.** Calls fail at once in the guard.
+  Existing grants stay listed, so turning it back on does not make every user
+  reconnect.
+- **Hostile client registration.** Open DCR lets anyone register a client
+  named "Ragen". The redirect-URI guard limits where a code can go, and the
+  consent page shows the redirect host. A consent screen is the defence
+  against a lookalike, so it must not be skippable for a first-time client.
+- **Registration flood.** Per-IP rate limit on `/oauth2/register`. Unused
+  clients are pruned after 30 days with no consent.
+- **`MCP_SERVICE_SECRET` leaked.** The holder can call three routes as any
+  user. Rotation is changing it in both services; assertions live 30 s, so
+  nothing in flight needs migrating. This is the residual risk Q2 accepts.
+- **Replay of a service assertion.** 30 s TTL, and the `jti` of the access
+  token is logged with each call so a replay is at least visible.
+- **Two requests race on a refresh token.** Rotation in the plugin; the loser
+  gets `invalid_grant` and the client signs in again. Accepted.
+- **Usage ceilings.** `ChatService` and `SearchService` already check the
+  monthly ceilings per organization, and an OAuth call reaches the same code
+  with the same `orgId`. Listing assistants costs nothing and has no ceiling.
+  Step C3 asserts it with a test, because a limit is a call site.
+
+## Phases
+
+Each phase leaves the application working. Everything new is off until
+`MCP_OAUTH_ENABLED=true` on the deployment and `mcpOAuth` on for an
+organization (ADR-50).
+
+### Phase A — plugin in place, nothing reachable
+
+- [ ] **A1.** `better-auth` and `@better-auth/stripe` to `^1.7.7`;
+  `apps/admin`'s range with them. Read the 1.7.3–1.7.7 changes for sign-in,
+  session, organization and member queries against our direct writes (seed,
+  the user-creation hook). Behaviour-neutral, its own PR, `test-e2e` green.
+- [ ] **A2.** `@better-auth/mcp` + `jwt()` registered only when
+  `MCP_OAUTH_ENABLED=true`. Additive migration for the plugin tables and
+  `mcp_connect_selections`, checked on a throwaway database first. The
+  null-list adapter and its field-list test. Env fragment for the new vars.
+
+### Phase B — authorization server in `apps/web`
+
+- [ ] **B1.** Root discovery routes, the registration guard and its rate
+  limit. Unit tests for every redirect-URI case.
+- [ ] **B2.** The post-login page: organizations with `mcpOAuth` on, then
+  assistants the member can see. Feature key `mcpOAuth` in
+  `platform-contracts`, default `false`.
+- [ ] **B3.** The consent page and the token claims. Proof: the MCP Inspector
+  against a local stack completes the flow and gets a JWT whose claims match
+  the pick.
+
+### Phase C — `apps/api` accepts `apps/mcp`'s assertion
+
+- [ ] **C1.** `ApiContext.credential` replaces `keyId`. No behaviour change.
+- [ ] **C2.** `McpServiceGuard` with its live checks; the composite guard on
+  chat and search; per-handler guards on `AssistantsController`. Tests: every
+  other `ApiKeyGuard` and `SessionAuthGuard` route refuses an MCP assertion,
+  and so do `POST`, `PATCH` and `DELETE` on `/v1/assistants`.
+- [ ] **C3.** Per-member project visibility in `AssistantsService.list` and
+  `AssistantScopeService.resolve` for an OAuth credential. API keys keep
+  seeing every project in the organization.
+- [ ] **C4.** The `throttleTracker` branch. Tests that an OAuth-credentialed
+  request hits the usage ceilings, a per-user throttle bucket and the
+  folder-membership retrieval scope.
+
+### Phase D — `apps/mcp` speaks OAuth
+
+- [ ] **D1.** Switch to `stateless: true` and run the three tools against
+  Claude Code and the MCP Inspector. Record the result here.
+- [ ] **D2.** Protected-resource metadata, the 401/403 challenges, JWT
+  verification with a cached JWKS, and the `RagenSession` union.
+- [ ] **D3.** The service assertion on every call to `apps/api` for an OAuth
+  session. A test that an OAuth session's access token never appears in an
+  outgoing request.
+- [ ] **D4.** Connected apps in account settings, with Disconnect. It comes
+  before the first real connection, so nobody on demo connects an app they
+  cannot disconnect.
+- [ ] **D5.** End to end on the demo environment: claude.ai custom connector
+  added, sign-in, a chat answer, a search, the assistant list, Disconnect.
+
+### Phase E — revocation and docs
+
+- [ ] **E1.** Removal, leaving, organization deletion and a ban revoke the
+  user's grants in that organization.
+- [ ] **E2.** ADR-53 records the decision and amends ADR-36's "auth is the
+  caller's API key" paragraph. `create-ragen-app` updated (secret, public
+  MCP URL). ragen-docs: connecting from claude.ai. A changelog note.
+
+## Testing
+
+- **Unit:** the registration guard, claim mapping, JWT verification (each of
+  `iss`/`aud`/`exp`/`scope`/DPoP failing alone), the assertion format,
+  `McpServiceGuard`'s live checks, the null-list adapter.
+- **Integration:** `apps/mcp` started for real in a test, against a stub
+  JWKS and a stub `apps/api`, so the 401 challenge and the outgoing assertion
+  are read off the wire, not off a mock of our own client.
+- **E2E:** `p0-` spec for the consent flow in `apps/web`, from authorize to
+  code, because it touches sign-in and must gate the PR that breaks it. The
+  claude.ai connector itself cannot run in CI; D5 is a manual check on demo,
+  recorded in `docs/regression-checklist.md`.
+
+## Rollout and rollback
+
+- Order: A1 alone, then A2…E behind `MCP_OAUTH_ENABLED` (deployment) and
+  `mcpOAuth` (per org). Demo first; there is no production yet.
+- **Turning it off:** `MCP_OAUTH_ENABLED=false` removes discovery, the
+  authorization endpoints and OAuth verification in `apps/mcp`. API keys keep
+  working throughout. Per org, `mcpOAuth` off stops calls immediately.
+- **Rolling back the code:** the migration is additive. Reverting the code
+  leaves the OAuth tables unused and harmless. They are dropped in a
+  follow-up migration only if the feature is abandoned.
+- **Rotating `MCP_SERVICE_SECRET`:** change it in `apps/mcp` and `apps/api`
+  together. Assertions live 30 s, so the window of refused calls is a deploy.
