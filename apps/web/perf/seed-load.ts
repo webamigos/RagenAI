@@ -171,9 +171,10 @@ async function seedAll() {
       id: `perf-acct-${u.id}`,
       userId: u.id,
       providerId: 'credential',
-      // Better Auth 1.7 matches on providerId + issuer + accountId, and for a
-      // local credential accountId is the user id. Seeding the row directly
-      // means reproducing that, or sign-in silently finds no account.
+      // Better Auth 1.7 matches on providerId + accountId (1.7.0–1.7.2 also
+      // on issuer), and for a local credential accountId is the user id.
+      // Seeding the row directly means reproducing that, or sign-in silently
+      // finds no account.
       accountId: u.id,
       issuer: 'local:credential',
       password: hashed,

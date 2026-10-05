@@ -6,13 +6,16 @@ import { describe, expect, it } from 'vitest';
 
 /**
  * Better Auth owns the `accounts` table, and it looks a credential account up
- * by three fields at once:
+ * by more than one field:
  *
  *   providerId === 'credential'
- *   && issuer === createLocalAccountIssuer('credential')  // 'local:credential'
  *   && accountId === user.id
  *
- * 1.4 matched on `providerId` alone. When 1.7 started reading the other two,
+ * 1.7.0–1.7.2 also matched `issuer === 'local:credential'`; 1.7.3 dropped
+ * that, and 1.7.7 neither reads nor writes `issuer`. Seeds still write it:
+ * the column stays, and a rollback to 1.7.2 would read it again.
+ *
+ * 1.4 matched on `providerId` alone. When 1.7 started reading the others,
  * the E2E seed — which writes that row directly with Prisma rather than through
  * the library — stopped matching, and every auth spec timed out on the
  * post-login redirect. Nothing caught it: both columns are valid per the Prisma
