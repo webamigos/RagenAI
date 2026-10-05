@@ -2,6 +2,7 @@ import {
   fieldGroupRules,
   encryptionRules,
   fragments,
+  mcpServiceRules,
   parseEnv,
   TOKEN_VAULT_GROUP,
   requiredInDeployedEnvs,
@@ -35,6 +36,8 @@ export const apiEnvSchema = fragments.targetEnvRequired
   .merge(fragments.redis)
   .merge(fragments.qdrant)
   .merge(fragments.observability)
+  .merge(fragments.mcpOAuth)
+  .merge(fragments.mcpService)
   .merge(fragments.connectorGuard)
   .merge(fragments.tokenVault)
   .merge(fragments.encryption)
@@ -50,6 +53,7 @@ export const apiEnvSchema = fragments.targetEnvRequired
     PORT: z.string().optional(),
   })
   .superRefine((env, ctx) => {
+    mcpServiceRules(env, ctx);
     // Only on the proxy path — `native` is the default and authenticates
 
     // The comment on the field says this is not optional in a deployment;

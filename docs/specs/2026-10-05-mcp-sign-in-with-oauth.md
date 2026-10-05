@@ -375,10 +375,22 @@ organization (ADR-50).
   without building a client. The plugin tables in A2 are covered by the same
   runtime check, so a missing column there fails sign-in in `test-e2e`, not
   silently.
-- [ ] **A2.** `@better-auth/mcp` + `jwt()` registered only when
+- [x] **A2.** `@better-auth/mcp` + `jwt()` registered only when
   `MCP_OAUTH_ENABLED=true`. Additive migration for the plugin tables and
   `mcp_connect_selections`, checked on a throwaway database first. The
   null-list adapter and its field-list test. Env fragment for the new vars.
+  *Implementation prepared 2026-10-06:* the preset and JWT are conditional,
+  with explicit resource scopes, a 15-minute access TTL, a 30-day refresh TTL
+  and strict refresh rotation. DCR and token claims remain closed until B.
+  The installed 1.7.7 schema also declares `oauthClientResource` and
+  `oauthClientAssertion`; these are included in the additive migration.
+  The Prisma extension normalizes list writes, including transactions and
+  bulk/upsert operations, and relations follow the Prisma adapter's join
+  names. All 91 migrations replayed on disposable PostgreSQL (PGlite);
+  real Better Auth + Prisma sign-up/sign-in passed with the plugins enabled
+  and disabled, as did resource seeding, list create/update and an OAuth join.
+  The installer generates a separate service secret and writes the local MCP
+  URL. Local full-gate and Playwright results are recorded below.
 
 ### Phase B — authorization server in `apps/web`
 
@@ -440,6 +452,27 @@ organization (ADR-50).
   code, because it touches sign-in and must gate the PR that breaks it. The
   claude.ai connector itself cannot run in CI; D5 is a manual check on demo,
   recorded in `docs/regression-checklist.md`.
+
+### A2 local validation — 2026-10-06
+
+- All 91 migrations replayed on an empty disposable PostgreSQL (PGlite).
+  Selection keys isolate clients within a session; session deletion cascades.
+- Real Better Auth + Prisma sign-up/sign-in passed with OAuth enabled and
+  disabled, along with resource seeding, null-list writes, adapter joins and
+  refusal of dynamic registration.
+- `npm run verify -- --continue=always`: 69 of 70 tasks passed, including
+  every application build, typecheck, lint and test suite. Four root
+  architecture tests failed; the same failures were reproduced on unchanged
+  `main`: an untracked `packages/db` cache directory is counted as a workspace,
+  and the sibling documentation's environment reference is stale.
+- The final malformed-URL validation fix passed the env build, 13 env tests
+  and 33 focused web tests.
+- Docker Desktop supplied PostgreSQL, Redis and Qdrant. Pending migrations
+  were applied only to the dedicated `ragen_e2e` database. Playwright smoke
+  04–06 (sign-in validation, sign-in success, sign-out success) passed 3/3
+  with OAuth disabled and 3/3 with `MCP_OAUTH_ENABLED=true`.
+- This covers phase A2. Phases B–E and the real OAuth connector flow remain
+  unimplemented; no demo rollout has been performed.
 
 ## Rollout and rollback
 

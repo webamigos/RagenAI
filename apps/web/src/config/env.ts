@@ -2,6 +2,7 @@ import {
   fieldGroupRules,
   encryptionRules,
   fragments,
+  mcpOAuthRules,
   parseEnv,
   TOKEN_VAULT_GROUP,
   requiredInDeployedEnvs,
@@ -63,6 +64,7 @@ export const webEnvSchema = fragments.targetEnv
   .merge(fragments.redis)
   .merge(fragments.qdrant)
   .merge(fragments.observability)
+  .merge(fragments.mcpOAuth)
   .merge(fragments.connectorGuard)
   .merge(fragments.storage)
   .merge(fragments.tokenVault)
@@ -106,6 +108,7 @@ export const webEnvSchema = fragments.targetEnv
     NEXT_PUBLIC_TARGET_ENV: fragments.blankAsUndefined(z.string().optional()),
   })
   .superRefine((env, ctx) => {
+    mcpOAuthRules(env, ctx);
     // Only on the proxy path — `native` is the default and authenticates
 
     requiredInDeployedEnvs(

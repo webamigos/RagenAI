@@ -483,3 +483,13 @@ export const encryption = z.object({
   AWS_ENDPOINT_URL: z.string().optional(),
   AWS_DEFAULT_REGION: z.string().optional(),
 });
+
+export const mcpOAuth = z.object({
+  MCP_OAUTH_ENABLED: blankAsUndefined(
+    z.enum(['true', 'false']).default('false'),
+  ),
+  RAGEN_MCP_PUBLIC_URL: blankAsUndefined(httpUrl().optional()),
+});
+export const mcpService = z.object({
+  MCP_SERVICE_SECRET: blankAsUndefined(z.string().min(32).optional()),
+});

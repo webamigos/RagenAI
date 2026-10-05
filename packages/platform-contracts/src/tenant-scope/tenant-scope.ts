@@ -37,6 +37,7 @@ export const TENANT_SCOPED_MODELS: Record<string, string> = {
   Team: 'organizationId',
   DocumentFolder: 'organizationId',
   McpConnector: 'organizationId',
+  McpConnectSelection: 'organizationId',
   McpOAuthToken: 'organizationId',
   AiUsage: 'organizationId',
   GoogleDriveSync: 'organizationId',
