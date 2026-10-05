@@ -4,6 +4,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerGuard } from '@nestjs/throttler';
 import { SessionAuthService } from './common/services/session-auth.service.js';
+import { tieredThrottlers } from './common/throttle-tiers.js';
 import { throttleTracker } from './common/throttle-tracker.js';
 import { PrismaModule } from './prisma/prisma.module.js';
 import { VaultModule } from './vault/vault.module.js';
@@ -45,16 +46,19 @@ import { SubscriptionsModule } from './subscriptions/subscriptions.module.js';
         // reasons unrelated to the code under test. Kept enabled rather than
         // switched off so a runaway request loop would still trip it.
         const isAutomatedTest = targetEnv === 'ci' || targetEnv === 'test';
-        // Three named throttlers. Routes inherit `default` unless a
-        // handler overrides with `@Throttle({ cheap: {...} })` or
-        // `@Throttle({ expensive: {...} })`.
+        // Three named throttlers, and each route is counted by exactly one:
+        // the tier it names with `@Throttle({ cheap: {...} })` or
+        // `@Throttle({ expensive: {...} })`, otherwise `default`. The
+        // library applies every throttler to every route on its own; the
+        // `skipIf` on each one is what makes the tiers exclusive — see
+        // common/throttle-tiers.ts.
         //
         // Rationale:
         // - cheap      read-only flat Prisma lookups (get-by-id on
         //              small rows)
         // - default    routine CRUD (list/get/create/update/delete on
         //              threads/messages/assistants/files)
-        // - expensive  LLM-hitting (chat completions) or S3/Temporal
+        // - expensive  LLM-hitting (chat completions) or S3/queue
         //              pipelines (file uploads) — real cost per call
         let mult = 1;
         if (isAutomatedTest) {
@@ -67,23 +71,7 @@ import { SubscriptionsModule } from './subscriptions/subscriptions.module.js';
           // rest — see `throttleTracker`.
           getTracker: (req: Record<string, unknown>) =>
             throttleTracker(req, (t) => sessionAuth.verify(t)),
-          throttlers: [
-            {
-              name: 'cheap',
-              ttl: 60_000,
-              limit: Math.round(60 * mult),
-            },
-            {
-              name: 'default',
-              ttl: 60_000,
-              limit: Math.round(20 * mult),
-            },
-            {
-              name: 'expensive',
-              ttl: 60_000,
-              limit: Math.round(10 * mult),
-            },
-          ],
+          throttlers: tieredThrottlers(mult),
         };
       },
     }),
