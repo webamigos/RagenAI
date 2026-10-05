@@ -629,11 +629,11 @@ model Account {
   refreshToken          String?   @map("refresh_token")
   idToken               String?   @map("id_token")
   accessTokenExpiresAt  DateTime? @map("access_token_expires_at") @db.Timestamptz
-  /// Better Auth 1.7 keys accounts by (issuer, accountId). Synthetic values:
-  /// `local:credential` for password accounts, `local:oauth:<providerId>` for
-  /// social ones — no provider we configure declares an issuer of its own.
-  /// Nullable so a rollback to 1.4 can still insert rows; backfilled for
-  /// every existing row by the accompanying migration.
+  /// Read and written only by Better Auth 1.7.0–1.7.2, which keyed accounts by
+  /// (issuer, accountId). 1.7.3 went back to (providerId, accountId), and rows
+  /// it creates leave this NULL. Kept, nullable, so a rollback to 1.7.2 still
+  /// works after a backfill (see 20260902090000_better_auth_1_7_account_issuer).
+  /// Values: `local:credential`, `local:oauth:<providerId>`.
   issuer                String?
   refreshTokenExpiresAt DateTime? @map("refresh_token_expires_at") @db.Timestamptz
   scope                 String?
@@ -646,11 +646,9 @@ model Account {
 
   @@unique([providerId, accountId])
   @@index([userId])
-  /// Better Auth 1.7 finds an account by (issuer, accountId) on every social
-  /// sign-in and account link (findAccountByKey, findAccountOwnerByKey). The
-  /// library's own schema declares this pair unique; it is a plain index here
-  /// because `issuer` is nullable for a 1.4 rollback. Created by
-  /// 20260902090000_better_auth_1_7_account_issuer.
+  /// Used only by Better Auth 1.7.0–1.7.2's findAccountByKey. A plain index,
+  /// not unique — 1.7.3's upgrade guide requires exactly that, or sign-ups
+  /// fail. Created by 20260902090000_better_auth_1_7_account_issuer.
   @@index([issuer, accountId])
   @@map("accounts")
 }
