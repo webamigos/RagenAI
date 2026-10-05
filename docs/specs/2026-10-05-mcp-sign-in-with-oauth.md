@@ -363,10 +363,18 @@ organization (ADR-50).
 
 ### Phase A — plugin in place, nothing reachable
 
-- [ ] **A1.** `better-auth` and `@better-auth/stripe` to `^1.7.7`;
+- [x] **A1.** (#1572) `better-auth` and `@better-auth/stripe` to `^1.7.7`;
   `apps/admin`'s range with them. Read the 1.7.3–1.7.7 changes for sign-in,
   session, organization and member queries against our direct writes (seed,
   the user-creation hook). Behaviour-neutral, its own PR, `test-e2e` green.
+  *As landed:* 1.7.3+ checks the Prisma schema against every plugin at
+  runtime and refuses all auth requests on a mismatch. That needed a
+  migration for five `subscriptions` columns `@better-auth/stripe` always
+  declared. The prisma adapter also reads `_runtimeDataModel` at
+  `betterAuth()` time, which `apps/admin`'s lazy client proxy now answers
+  without building a client. The plugin tables in A2 are covered by the same
+  runtime check, so a missing column there fails sign-in in `test-e2e`, not
+  silently.
 - [ ] **A2.** `@better-auth/mcp` + `jwt()` registered only when
   `MCP_OAUTH_ENABLED=true`. Additive migration for the plugin tables and
   `mcp_connect_selections`, checked on a throwaway database first. The
