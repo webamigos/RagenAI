@@ -39,6 +39,30 @@ packages by hand any more. `packages/*` have no test runner of their own, so
 they get a root `vitest.config.ts` and their own `Packages / Test` job rather
 than riding along in another app's config.
 
+### A schema change misses the cache in every app that uses Prisma
+
+The root tasks declare no `inputs`, so turbo hashes only each workspace's own
+tracked files. `prisma/schema.prisma` sits at the repository root, outside all
+of them, and the generated clients are gitignored. Until #1572 a schema edit
+changed one task hash out of 89 (the root `//#test`), so `npm run verify`
+replayed typecheck from cache over a fixture that no longer compiled.
+
+`apps/web`, `apps/admin`, `apps/api` and `apps/worker` each have a package
+`turbo.json` (`"extends": ["//"]`). For every task it adds the schema to
+`inputs`:
+
+```json
+"inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/prisma/schema.prisma"]
+```
+
+Both entries matter. Without `$TURBO_DEFAULT$` the task would hash the schema
+*instead of* the app's own files. `outputs` and `dependsOn` still come from
+the root. This was chosen over `globalDependencies`, which would also
+invalidate the twenty-odd `packages/*` builds that never touch Prisma. A new
+workspace that imports a generated client needs the same file, and
+`tests/architecture/a-schema-change-invalidates-the-turbo-cache.test.ts` fails
+until it has one.
+
 ### There is no remote cache configured
 
 The cache is local (`.turbo/`), so CI gets no cross-job reuse — every job still
