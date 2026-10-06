@@ -136,6 +136,54 @@ test('MCP authorization binds a verified JWT to the selected workspace and reche
     expect(String(payload.scope).split(' ')).toContain('mcp:read');
     expect(payload.exp! - payload.iat!).toBe(900);
     expect(token.refresh_token).toBeTruthy();
+    let activeRefreshToken = token.refresh_token;
+    query.set('state', 'replacement-test-state');
+    await page.goto(`${baseURL}/api/auth/oauth2/authorize?${query}`);
+    await expect(page).toHaveURL(/(?:\/en)?\/connect\/workspace/);
+    await page
+      .getByRole('combobox', { name: 'Organization', exact: true })
+      .selectOption(TEST_ORG_ID);
+    await page
+      .getByRole('combobox', { name: 'Assistant', exact: true })
+      .selectOption('');
+    await page.getByRole('button', { name: 'Continue', exact: true }).click();
+    await expect(page).toHaveURL(/(?:\/en)?\/connect\/consent/);
+    await page
+      .getByRole('button', { name: 'Allow access', exact: true })
+      .click();
+    await expect(page).toHaveURL(/https:\/\/client.example\/callback/);
+    const replacementCallback = new URL(page.url());
+    expect(replacementCallback.searchParams.get('state')).toBe(
+      'replacement-test-state',
+    );
+    const replacementResponse = await request.post('/api/auth/oauth2/token', {
+      form: {
+        grant_type: 'authorization_code',
+        code: replacementCallback.searchParams.get('code')!,
+        code_verifier: verifier,
+        client_id: client.client_id,
+        redirect_uri: 'https://client.example/callback',
+        resource,
+      },
+    });
+    expect(replacementResponse.ok()).toBe(true);
+    const replacementToken = await replacementResponse.json();
+    activeRefreshToken = replacementToken.refresh_token;
+    expect(
+      await prisma.oauthConsent.count({
+        where: { userId: TEST_USER_ID, clientId: client.client_id },
+      }),
+    ).toBe(1);
+    const oldRefresh = await request.post('/api/auth/oauth2/token', {
+      form: {
+        grant_type: 'refresh_token',
+        refresh_token: token.refresh_token,
+        client_id: client.client_id,
+        resource,
+      },
+    });
+    expect(oldRefresh.ok()).toBe(false);
+
     expect(typeof payload.jti).toBe('string');
     const apiURL =
       process.env.RAGEN_API_INTERNAL_URL ?? 'http://localhost:3001';
@@ -185,7 +233,7 @@ test('MCP authorization binds a verified JWT to the selected workspace and reche
     const refresh = await request.post('/api/auth/oauth2/token', {
       form: {
         grant_type: 'refresh_token',
-        refresh_token: token.refresh_token,
+        refresh_token: activeRefreshToken,
         client_id: client.client_id,
         resource,
       },
@@ -212,7 +260,7 @@ test('MCP authorization binds a verified JWT to the selected workspace and reche
     const disconnectedRefresh = await request.post('/api/auth/oauth2/token', {
       form: {
         grant_type: 'refresh_token',
-        refresh_token: token.refresh_token,
+        refresh_token: activeRefreshToken,
         client_id: client.client_id,
         resource,
       },

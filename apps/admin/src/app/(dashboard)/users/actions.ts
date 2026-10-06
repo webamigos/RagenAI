@@ -1,5 +1,7 @@
 'use server';
 
+import { auth } from '@/lib/auth';
+
 import { APP_ADMIN_ROLE } from '@ragenai/platform-contracts';
 
 import { requireAdmin } from '@/lib/auth-guard';
@@ -67,6 +69,8 @@ export async function banUserAction(userId: string, reason?: string) {
   const { count: sessionsRevoked } = await prisma.session.deleteMany({
     where: { userId },
   });
+
+  await auth.api.revokeBannedUserMcpGrants({ body: { userId } });
 
   // `warn`, not `info`: banning is the most consequential thing this page does,
   // and it is the one an incident review is most likely to be looking for.

@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 import {
   disconnectMcpGrant,
   revokeMcpGrants,
+  replaceMcpGrant,
   removedMcpGrantScope,
 } from '../mcp-grants-plugin';
 
@@ -87,5 +88,37 @@ it('derives revocation scope from successful server results, not caller bodies',
   });
   expect(
     removedMcpGrantScope('/organization/remove-member', { error: 'Forbidden' }),
+  ).toBeUndefined();
+});
+
+it('replaces only other workspace grants after the new MCP consent exists', async () => {
+  const { database, transaction } = adapter({ scopes: ['mcp:read'] });
+  await replaceMcpGrant(database, 'user', 'client', 'new-org:all');
+  expect(transaction.deleteMany).toHaveBeenCalledTimes(3);
+  for (const [query] of transaction.deleteMany.mock.calls)
+    expect(query.where).toEqual([
+      { field: 'userId', value: 'user' },
+      { field: 'clientId', value: 'client' },
+      { field: 'referenceId', operator: 'ne', value: 'new-org:all' },
+    ]);
+});
+it('preserves the previous grant until new consent is accepted', async () => {
+  const { database, transaction } = adapter(null);
+  await expect(
+    replaceMcpGrant(database, 'user', 'client', 'new-org:all'),
+  ).rejects.toMatchObject({ status: 'FORBIDDEN' });
+  expect(transaction.deleteMany).not.toHaveBeenCalled();
+});
+
+it('revokes grants for a successful web-admin ban but ignores unsuccessful ban results', () => {
+  expect(
+    removedMcpGrantScope('/admin/ban-user', {
+      user: { id: 'user', banned: true },
+    }),
+  ).toEqual({ userId: 'user' });
+  expect(
+    removedMcpGrantScope('/admin/ban-user', {
+      user: { id: 'user', banned: false },
+    }),
   ).toBeUndefined();
 });

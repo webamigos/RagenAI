@@ -1,3 +1,4 @@
+import { getOAuthProviderState } from '@better-auth/oauth-provider';
 import type { DBAdapter, BetterAuthPlugin } from 'better-auth';
 import {
   APIError,
@@ -70,10 +71,43 @@ export async function revokeMcpGrants(
   });
 }
 
+export async function replaceMcpGrant(
+  adapter: DBAdapter,
+  userId: string,
+  clientId: string,
+  referenceId: string,
+): Promise<void> {
+  await adapter.transaction(async (transaction) => {
+    const current = await transaction.findOne<{ scopes: string[] }>({
+      model: 'oauthConsent',
+      where: [
+        { field: 'userId', value: userId },
+        { field: 'clientId', value: clientId },
+        { field: 'referenceId', value: referenceId },
+      ],
+    });
+    if (!current?.scopes.includes('mcp:read'))
+      throw new APIError('FORBIDDEN', {
+        message: 'New MCP consent is required',
+      });
+    const where = [
+      { field: 'userId', value: userId },
+      { field: 'clientId', value: clientId },
+      { field: 'referenceId', operator: 'ne' as const, value: referenceId },
+    ];
+    for (const model of [
+      'oauthAccessToken',
+      'oauthRefreshToken',
+      'oauthConsent',
+    ])
+      await transaction.deleteMany({ model, where });
+  });
+}
+
 export function removedMcpGrantScope(
   path: string,
   returned: unknown,
-): { userId?: string; organizationId: string } | undefined {
+): { userId?: string; organizationId?: string } | undefined {
   const member = z.object({
     userId: z.string().min(1),
     organizationId: z.string().min(1),
@@ -90,6 +124,14 @@ export function removedMcpGrantScope(
   if (path === '/organization/leave') {
     const result = member.safeParse(returned);
     return result.success ? result.data : undefined;
+  }
+  if (path === '/admin/ban-user') {
+    const result = z
+      .object({
+        user: z.object({ id: z.string().min(1), banned: z.literal(true) }),
+      })
+      .safeParse(returned);
+    return result.success ? { userId: result.data.user.id } : undefined;
   }
   if (path === '/organization/delete') {
     const result = z.object({ id: z.string().min(1) }).safeParse(returned);
@@ -110,6 +152,8 @@ export function mcpGrantsPlugin() {
               '/organization/remove-member',
               '/organization/leave',
               '/organization/delete',
+              '/admin/ban-user',
+              '/oauth2/consent',
             ].includes(ctx.path ?? ''),
           handler: createAuthMiddleware(async (ctx) => {
             const scope = removedMcpGrantScope(
@@ -117,6 +161,36 @@ export function mcpGrantsPlugin() {
               ctx.context.returned,
             );
             if (scope) await revokeMcpGrants(ctx.context.adapter, scope);
+            if (ctx.path === '/oauth2/consent' && ctx.body?.accept === true) {
+              const result = z
+                .object({ url: z.string().url() })
+                .safeParse(ctx.context.returned);
+              if (
+                !result.success ||
+                !new URL(result.data.url).searchParams.has('code')
+              )
+                return;
+              const clientId = new URLSearchParams(
+                (await getOAuthProviderState())?.query,
+              ).get('client_id');
+              const session = ctx.context.session;
+              if (!clientId || !session)
+                throw new APIError('BAD_REQUEST', {
+                  message: 'MCP consent context is required',
+                });
+              const { getMcpSelection, mcpReferenceId } =
+                await import('@/features/organizations/services/commands/mcp-selection-command');
+              const selection = await getMcpSelection(
+                { userId: session.user.id, sessionId: session.session.id },
+                clientId,
+              );
+              await replaceMcpGrant(
+                ctx.context.adapter,
+                session.user.id,
+                clientId,
+                mcpReferenceId(selection.organizationId, selection.projectId),
+              );
+            }
           }),
         },
       ],

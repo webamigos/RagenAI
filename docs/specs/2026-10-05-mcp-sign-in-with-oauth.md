@@ -434,7 +434,7 @@ organization (ADR-50).
 
 ### Phase E — revocation and docs
 
-- [ ] **E1.** Removal, leaving, organization deletion and a ban revoke the
+- [x] **E1.** Removal, leaving, organization deletion and a ban revoke the
   user's grants in that organization.
 - [ ] **E2.** A new ADR records the decision and amends ADR-36's "auth is the
   caller's API key" paragraph. `create-ragen-app` updated (secret, public
@@ -627,3 +627,20 @@ that the owner's grants survive removal of a different member, and that a
 similarly prefixed neighboring organization survives organization deletion.
 Seven focused tests, web typecheck and targeted lint pass. E1 remains open
 for the admin-panel ban path and workspace replacement revocation.
+
+### E1 ban and replacement verification — 2026-10-06
+
+The admin ban action now revokes all of the banned user's OAuth grants through
+a server-only Better Auth adapter transaction. The admin app registers the
+provider schema without exposing OAuth issuer endpoints. Focused adapter tests
+cover foreign users, unbanned users and the private endpoint; all 704 admin
+tests and the production build pass. The web ban hook also uses the successful
+server response, never the posted user id.
+
+Accepting a new workspace consent replaces older workspace grants for the same
+user and client. Every fresh authorization requires the workspace checkpoint;
+only the signed continuation may reuse a live selection. The browser test
+authorizes twice, verifies that exactly one consent remains and that the old
+refresh token fails, then exercises permission changes and Disconnect. It
+passes on Docker Desktop (1/1). The MCP production Docker image also builds
+successfully, including the shared assertion package.

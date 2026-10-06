@@ -1,3 +1,4 @@
+import { getCurrentAuthContext } from '@better-auth/core/context';
 import { mcpGrantsPlugin } from './mcp-grants-plugin';
 import { mcp } from '@better-auth/mcp';
 import { jwt } from 'better-auth/plugins';
@@ -52,20 +53,24 @@ export function mcpOAuthPlugins(
       postLogin: {
         page: '/en/connect/workspace',
         shouldRedirect: async ({ user, session }) => {
-          const clientId = new URLSearchParams(
-            (await getOAuthProviderState())?.query,
-          ).get('client_id');
-          if (!clientId) {
+          const state = await getOAuthProviderState();
+          const clientId = new URLSearchParams(state?.query).get('client_id');
+          const context = await getCurrentAuthContext();
+          // The provider clears signed-query timing before this callback.
+          // Inspect the original server request, not caller-controlled headers.
+          const requestPath = context.request
+            ? new URL(context.request.url).pathname
+            : '';
+          if (!clientId || !requestPath.endsWith('/oauth2/continue'))
             return true;
-          }
           const { getMcpSelection } =
             await import('@/features/organizations/services/commands/mcp-selection-command');
           try {
-            await getMcpSelection(
+            const selection = await getMcpSelection(
               { userId: user.id, sessionId: session.id },
               clientId,
             );
-            return false;
+            return !selection;
           } catch {
             return true;
           }
