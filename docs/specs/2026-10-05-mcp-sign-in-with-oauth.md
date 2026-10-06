@@ -732,3 +732,14 @@ configured, and the web origin is `https://demo.ragen.ai`. D5 remains unverified
 until rollout and a pilot grant are authorized. Its concrete sequence is now
 recorded in the regression checklist. No deployment, migration or demo gate
 change was performed during this preflight.
+
+### Final resource image and client reconfirmation — 2026-10-06
+
+The final MCP Docker Desktop image builds successfully with corrected wire
+claims and JWKS availability handling. MCP Inspector 2.9.0 CLI and Claude Code
+2.1.282 are re-run against this final contract: each calls assistant listing,
+chat and search successfully with a verified `org` claim JWT. The isolated API
+fixture accepts all six fresh service assertions for the expected user. These
+are transport checks with synthetic responses; the separate Inspector browser
+check above proves the real issuer and selected scope. Demo claude.ai remains
+an explicit pending authorization and verification gate.
