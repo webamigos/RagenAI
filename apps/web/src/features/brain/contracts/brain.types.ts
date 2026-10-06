@@ -156,6 +156,7 @@ export type KnowledgeFindingListItem = {
   status: KnowledgeFindingStatus;
   detectedAt: string;
   pages: PageRef[];
+  reviewPages?: (PageRef & { ownerId: string | null; updatedAt: string })[];
   file: { name: string; documentId: string | null } | null;
   summary: FindingSummary;
 };

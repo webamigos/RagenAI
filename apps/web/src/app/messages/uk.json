@@ -2704,7 +2704,30 @@
       },
       "discuss": "Запитати асистента про це",
       "empty-in-language-title": "Нічого цією мовою",
-      "empty-in-language-description": "Жодне виявлення не стосується документа цією мовою чи сторінки, що його цитує. Виберіть іншу мову або всі."
+      "empty-in-language-description": "Жодне виявлення не стосується документа цією мовою чи сторінки, що його цитує. Виберіть іншу мову або всі.",
+      "intro": "Check detected problems and choose a corrective action.",
+      "filter-types": "Finding types",
+      "all-types": "All types",
+      "subject-gone": "The source was deleted",
+      "retry-extraction": "Retry extraction",
+      "open-review": "Open review",
+      "view-relations": "Check relations",
+      "dismiss-orphan": "This is fine, close",
+      "dismissed": "Finding dismissed",
+      "batch": "{count} × {type}",
+      "batch-scope": "Findings on this list page, detected at intervals of up to 5 minutes.",
+      "why": {
+        "ORPHAN": "Missing relations make the context of this page harder to check.",
+        "EXTRACTION_FAILED": "The document supplied no knowledge for review.",
+        "UNOWNED": "An owner vouches for the content and enables approval.",
+        "CONTRADICTION": "Conflicting sources need review before the knowledge is used in chat.",
+        "STALE": "The knowledge may no longer match its current sources.",
+        "GAP": "The process has no relation to a role responsible for carrying it out."
+      },
+      "relation-suggestions": "Suggested relations",
+      "relation-basis": "These pages cite the same document. Check whether they should be linked; a shared source does not establish a relation.",
+      "select-relations": "Select relations to review",
+      "add-relations": "Add selected relations"
     },
     "page": {
       "back": "Сторінки знань",
@@ -3091,7 +3114,8 @@
           "MERGE": "Об'єднати дві сторінки",
           "SET_OWNER": "Призначити власника",
           "SET_ACCESS": "Змінити, хто може читати сторінку",
-          "RETRY_EXTRACTION": "Повторити вилучення даних"
+          "RETRY_EXTRACTION": "Повторити вилучення даних",
+          "ADD_RELATIONS": "Add relations"
         },
         "apply": "Застосувати",
         "dismiss": "Відхилити",
@@ -3138,7 +3162,8 @@
       "governs": "регулює",
       "is-part-of": "є частиною",
       "references": "посилається на",
-      "depends-on": "залежить від"
+      "depends-on": "залежить від",
+      "related-to": "related to"
     },
     "language": {
       "label": "Мова",

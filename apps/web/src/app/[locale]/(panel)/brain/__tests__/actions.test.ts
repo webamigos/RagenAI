@@ -9,6 +9,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const access = vi.hoisted(() => ({ getBrainWriteAccessQuery: vi.fn() }));
 const auth = vi.hoisted(() => ({ getCurrentUserId: vi.fn() }));
 const commands = vi.hoisted(() => ({
+  relations: vi.fn(),
+  dismissOrphan: vi.fn(),
   approve: vi.fn(),
   approvePublish: vi.fn(),
   documentOwner: vi.fn(),
@@ -61,6 +63,14 @@ vi.mock(
 vi.mock(
   '@/features/brain/services/commands/set-owner-for-document-candidates-command',
   () => ({ setOwnerForDocumentCandidatesCommand: commands.documentOwner }),
+);
+vi.mock(
+  '@/features/brain/services/commands/add-knowledge-relations-command',
+  () => ({ addKnowledgeRelationsCommand: commands.relations }),
+);
+vi.mock(
+  '@/features/brain/services/commands/dismiss-orphan-finding-command',
+  () => ({ dismissOrphanFindingCommand: commands.dismissOrphan }),
 );
 const actions = await import('../actions');
 
@@ -165,4 +175,39 @@ it('uses session identity for document owner assignment and combined approval', 
     orgId: 'org-session',
     actorId: 'u-session',
   });
+});
+
+it('finding fixes use the session identity and refuse read-only access', async () => {
+  const input = {
+    ...ref,
+    targets: [{ ...ref, kind: 'related to' }],
+    orgId: 'forged',
+    actorId: 'forged',
+  };
+  await actions.addKnowledgeRelationsAction(input);
+  expect(commands.relations).toHaveBeenCalledWith({
+    ...ref,
+    targets: [{ ...ref, kind: 'related to' }],
+    orgId: 'org-session',
+    actorId: 'u-session',
+  });
+  await actions.dismissOrphanFindingAction({
+    findingPublicId: ref.publicId,
+    orgId: 'forged',
+  });
+  expect(commands.dismissOrphan).toHaveBeenCalledWith({
+    findingPublicId: ref.publicId,
+    orgId: 'org-session',
+    actorId: 'u-session',
+  });
+  access.getBrainWriteAccessQuery.mockResolvedValue(null);
+  expect(await actions.addKnowledgeRelationsAction(input)).toEqual({
+    success: false,
+    error: 'not-found',
+  });
+  expect(
+    await actions.dismissOrphanFindingAction({ findingPublicId: ref.publicId }),
+  ).toEqual({ success: false, error: 'not-found' });
+  expect(commands.relations).toHaveBeenCalledTimes(1);
+  expect(commands.dismissOrphan).toHaveBeenCalledTimes(1);
 });

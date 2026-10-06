@@ -63,7 +63,10 @@ export async function getKnowledgeFindingsQuery(
   const [rows, total] = await Promise.all([
     db.knowledgeFinding.findMany({
       where,
-      orderBy: [{ severity: 'desc' }, { detectedAt: 'desc' }, { id: 'desc' }],
+      orderBy:
+        status === 'OPEN'
+          ? [{ severity: 'desc' }, { detectedAt: 'desc' }, { id: 'desc' }]
+          : [{ detectedAt: 'desc' }, { id: 'desc' }],
       skip: listSkip(page),
       take: BRAIN_LIST_LIMIT,
       select: FINDING_SELECT,
@@ -137,7 +140,13 @@ async function describeFindings(
     pageIds.length
       ? db.knowledgePage.findMany({
           where: { organizationId: orgId, id: { in: pageIds } },
-          select: { id: true, publicId: true, title: true },
+          select: {
+            id: true,
+            publicId: true,
+            title: true,
+            ownerId: true,
+            updatedAt: true,
+          },
         })
       : [],
     sourceIds.length
@@ -162,6 +171,7 @@ async function describeFindings(
   const pageById = new Map<number, PageRef>(
     pages.map((p) => [p.id, { publicId: p.publicId, title: p.title }]),
   );
+  const reviewPageById = new Map(pages.map((page) => [page.id, page]));
   const fileById = new Map(files.map((f) => [f.id, f]));
   const lookups = {
     quotes: new Map(sources.map((s) => [s.id, s.quote])),
@@ -179,6 +189,19 @@ async function describeFindings(
       pages: row.pageIds.flatMap((id) => {
         const page = pageById.get(id);
         return page ? [page] : [];
+      }),
+      reviewPages: row.pageIds.flatMap((id) => {
+        const page = reviewPageById.get(id);
+        return page
+          ? [
+              {
+                publicId: page.publicId,
+                title: page.title,
+                ownerId: page.ownerId,
+                updatedAt: page.updatedAt.toISOString(),
+              },
+            ]
+          : [];
       }),
       file: file
         ? {

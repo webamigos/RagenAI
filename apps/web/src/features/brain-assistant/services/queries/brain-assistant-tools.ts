@@ -221,6 +221,7 @@ export function createBrainAssistantTools(context: BrainAssistantToolContext) {
       // applied below.
       inputSchema: z.object({
         action: z.enum([
+          'ADD_RELATIONS',
           'APPROVE',
           'REJECT',
           'PUBLISH',
@@ -231,6 +232,9 @@ export function createBrainAssistantTools(context: BrainAssistantToolContext) {
           'RETRY_EXTRACTION',
         ]),
         reason: z.string(),
+        targets: z
+          .array(z.object({ pageId: z.string(), kind: z.string() }))
+          .optional(),
         pageIds: z.array(z.string()).optional(),
         pageId: z.string().optional(),
         sourcePageId: z.string().optional(),
@@ -265,6 +269,7 @@ const NOT_FOUND = { error: 'not-found' } as const;
 
 const PROPOSE_DESCRIPTION = `Suggest a change to Brain. It is shown to the operator as a card with Apply and Dismiss; nothing changes unless they apply it. Never claim a change was made.
 Shapes:
+- ADD_RELATIONS: pageId, targets (1-30 objects with pageId and kind; read both pages first; inferred relations only), reason
 - APPROVE | REJECT | PUBLISH | UNPUBLISH: pageIds (1-30), reason
 - MERGE: sourcePageId (the candidate folded away), targetPageId (the page that stays), reason
 - SET_OWNER: pageId, ownerId (a member's user id from listMembersAndTeams), reason

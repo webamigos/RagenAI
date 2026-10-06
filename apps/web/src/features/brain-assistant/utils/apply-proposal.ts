@@ -12,6 +12,7 @@ import type {
  * do and a test can see every call it makes.
  */
 export type BrainReviewActions = {
+  addRelations: (input: unknown) => Promise<ReviewResult>;
   approve: (input: unknown) => Promise<ReviewResult>;
   reject: (input: unknown) => Promise<ReviewResult>;
   publish: (input: unknown) => Promise<ReviewResult>;
@@ -38,6 +39,22 @@ export function proposalSteps(
   options: { confirmWidening: boolean },
 ): Step[] {
   switch (proposal.action) {
+    case 'ADD_RELATIONS':
+      return [
+        {
+          label: proposal.page.title,
+          run: () =>
+            actions.addRelations({
+              publicId: proposal.page.publicId,
+              expectedUpdatedAt: proposal.page.updatedAt,
+              targets: proposal.targets.map((target) => ({
+                publicId: target.publicId,
+                expectedUpdatedAt: target.updatedAt,
+                kind: target.kind,
+              })),
+            }),
+        },
+      ];
     case 'APPROVE':
     case 'REJECT':
     case 'PUBLISH':

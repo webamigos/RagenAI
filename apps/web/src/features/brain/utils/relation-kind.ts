@@ -12,6 +12,7 @@
  * Keys are message keys under `brain.relation-kind`.
  */
 const KNOWN_KINDS: Record<string, string> = {
+  'related to': 'related-to',
   approves: 'approves',
   owns: 'owns',
   'is responsible for': 'is-responsible-for',

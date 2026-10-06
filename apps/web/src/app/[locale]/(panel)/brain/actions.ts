@@ -1,6 +1,10 @@
 'use server';
+import { addRelationsInputSchema } from '@/features/brain/contracts/brain-review.types';
+import { addKnowledgeRelationsCommand } from '@/features/brain/services/commands/add-knowledge-relations-command';
 
-import type { z } from 'zod';
+import { z } from 'zod';
+import { dbUuid } from '@/features/brain/contracts/brain-review.types';
+import { dismissOrphanFindingCommand } from '@/features/brain/services/commands/dismiss-orphan-finding-command';
 import { setOwnerForDocumentCandidatesCommand } from '@/features/brain/services/commands/set-owner-for-document-candidates-command';
 import { approveAndPublishKnowledgePageCommand } from '@/features/brain/services/commands/approve-and-publish-knowledge-page-command';
 
@@ -231,4 +235,20 @@ export async function approveAndPublishKnowledgePageAction(
     input,
     approveAndPublishKnowledgePageCommand,
   );
+}
+
+export async function dismissOrphanFindingAction(
+  input: unknown,
+): Promise<ReviewResult> {
+  return run(
+    z.object({ findingPublicId: dbUuid }),
+    input,
+    dismissOrphanFindingCommand,
+  );
+}
+
+export async function addKnowledgeRelationsAction(
+  input: unknown,
+): Promise<ReviewResult> {
+  return run(addRelationsInputSchema, input, addKnowledgeRelationsCommand);
 }

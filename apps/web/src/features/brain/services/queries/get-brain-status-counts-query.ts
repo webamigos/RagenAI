@@ -6,6 +6,7 @@ import {
 
 import type {
   KnowledgeFindingStatus,
+  KnowledgeFindingType,
   KnowledgePageStatus,
 } from '../../contracts/brain.types';
 
@@ -17,6 +18,7 @@ import type {
 export async function getBrainStatusCountsQuery(
   orgId: string,
   scope: BrainLanguageScope | null = null,
+  findingType?: KnowledgeFindingType,
 ): Promise<{
   pages: Record<KnowledgePageStatus, number>;
   findings: Record<KnowledgeFindingStatus, number>;
@@ -35,6 +37,7 @@ export async function getBrainStatusCountsQuery(
       where: {
         organizationId: orgId,
         ...(scope ? findingsInScope(scope) : {}),
+        ...(findingType ? { type: findingType } : {}),
       },
       _count: { _all: true },
     }),

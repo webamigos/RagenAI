@@ -5,12 +5,14 @@ import { useState, useTransition } from 'react';
 
 import { ConfirmDialog } from '@/app/components/ConfirmDialog';
 import { Button } from '@/components/ui/button';
+import type { ReviewResult } from '@/features/brain/contracts/brain-review.types';
 import type { AccessEntry } from '@/features/brain/contracts/brain.types';
 import type {
   BrainProposal,
   ProposalDecisionResult,
 } from '@/features/brain-assistant/contracts/brain-assistant.types';
 import { Link, useRouter } from '@/i18n/routing';
+import { RelationKind } from '../RelationKind';
 
 import {
   applyBrainProposalAction,
@@ -32,21 +34,30 @@ export function ProposalCard({
   threadId,
   messageId,
   onChange,
+  applyAction,
+  applyLabel,
 }: {
   proposal: BrainProposal;
   threadId: string | null;
   messageId: string | null;
   onChange: (proposal: BrainProposal) => void;
+  applyAction?: () => Promise<
+    ProposalDecisionResult | Extract<ReviewResult, { success: false }>
+  >;
+  applyLabel?: string;
 }) {
   const t = useTranslations('brain');
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [confirmWiden, setConfirmWiden] = useState(false);
-  const decidable = threadId !== null && messageId !== null;
+  const decidable =
+    applyAction !== undefined || (threadId !== null && messageId !== null);
 
   function decide(
-    run: () => Promise<ProposalDecisionResult>,
+    run: () => Promise<
+      ProposalDecisionResult | Extract<ReviewResult, { success: false }>
+    >,
     refreshAfter: boolean,
   ) {
     setError(null);
@@ -63,13 +74,21 @@ export function ProposalCard({
         setConfirmWiden(true);
         return;
       }
-      setError(t(`assistant.proposal.errors.${result.error}`));
+      setError(
+        t.has(`assistant.proposal.errors.${result.error}`)
+          ? t(`assistant.proposal.errors.${result.error}`)
+          : t(`review.errors.${result.error}`),
+      );
     });
   }
 
   const ref = { threadId, messageId, proposalId: proposal.id };
   const apply = (confirmWidening = false) =>
-    decide(() => applyBrainProposalAction({ ...ref, confirmWidening }), true);
+    decide(
+      applyAction ??
+        (() => applyBrainProposalAction({ ...ref, confirmWidening })),
+      true,
+    );
   const dismiss = () => decide(() => dismissBrainProposalAction(ref), false);
 
   return (
@@ -88,7 +107,9 @@ export function ProposalCard({
       </p>
       <ProposalSubject proposal={proposal} />
       <p className="mt-2 text-[13px] text-muted-foreground">
-        {proposal.reason}
+        {proposal.reason === 'shared-source-document'
+          ? t('findings.relation-basis')
+          : proposal.reason}
       </p>
 
       {proposal.outcome === null ? (
@@ -98,16 +119,18 @@ export function ProposalCard({
             disabled={pending || !decidable}
             onClick={() => apply()}
           >
-            {t('assistant.proposal.apply')}
+            {applyLabel ?? t('assistant.proposal.apply')}
           </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            disabled={pending || !decidable}
-            onClick={dismiss}
-          >
-            {t('assistant.proposal.dismiss')}
-          </Button>
+          {!applyAction && (
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={pending || !decidable}
+              onClick={dismiss}
+            >
+              {t('assistant.proposal.dismiss')}
+            </Button>
+          )}
           {!decidable && (
             <span className="text-xs text-muted-foreground">
               {t('assistant.proposal.not-stored')}
@@ -152,6 +175,19 @@ function PageLink({ publicId, title }: { publicId: string; title: string }) {
 function ProposalSubject({ proposal }: { proposal: BrainProposal }) {
   const t = useTranslations('brain');
   switch (proposal.action) {
+    case 'ADD_RELATIONS':
+      return (
+        <div className="mt-1 space-y-1">
+          <PageLink {...proposal.page} />
+          <ul>
+            {proposal.targets.map((target) => (
+              <li key={`${target.publicId}-${target.kind}`}>
+                <PageLink {...target} /> · <RelationKind kind={target.kind} />
+              </li>
+            ))}
+          </ul>
+        </div>
+      );
     case 'APPROVE':
     case 'REJECT':
     case 'PUBLISH':

@@ -2704,7 +2704,30 @@
       },
       "discuss": "Demander à l'assistant",
       "empty-in-language-title": "Rien dans cette langue",
-      "empty-in-language-description": "Aucun constat ne concerne un document dans cette langue ni une page qui en cite un. Choisissez une autre langue, ou toutes."
+      "empty-in-language-description": "Aucun constat ne concerne un document dans cette langue ni une page qui en cite un. Choisissez une autre langue, ou toutes.",
+      "intro": "Check detected problems and choose a corrective action.",
+      "filter-types": "Finding types",
+      "all-types": "All types",
+      "subject-gone": "The source was deleted",
+      "retry-extraction": "Retry extraction",
+      "open-review": "Open review",
+      "view-relations": "Check relations",
+      "dismiss-orphan": "This is fine, close",
+      "dismissed": "Finding dismissed",
+      "batch": "{count} × {type}",
+      "batch-scope": "Findings on this list page, detected at intervals of up to 5 minutes.",
+      "why": {
+        "ORPHAN": "Missing relations make the context of this page harder to check.",
+        "EXTRACTION_FAILED": "The document supplied no knowledge for review.",
+        "UNOWNED": "An owner vouches for the content and enables approval.",
+        "CONTRADICTION": "Conflicting sources need review before the knowledge is used in chat.",
+        "STALE": "The knowledge may no longer match its current sources.",
+        "GAP": "The process has no relation to a role responsible for carrying it out."
+      },
+      "relation-suggestions": "Suggested relations",
+      "relation-basis": "These pages cite the same document. Check whether they should be linked; a shared source does not establish a relation.",
+      "select-relations": "Select relations to review",
+      "add-relations": "Add selected relations"
     },
     "page": {
       "back": "Pages de connaissances",
@@ -3091,7 +3114,8 @@
           "MERGE": "Fusionner deux pages",
           "SET_OWNER": "Définir le responsable",
           "SET_ACCESS": "Modifier qui peut lire la page",
-          "RETRY_EXTRACTION": "Relancer l'extraction"
+          "RETRY_EXTRACTION": "Relancer l'extraction",
+          "ADD_RELATIONS": "Add relations"
         },
         "apply": "Appliquer",
         "dismiss": "Ignorer",
@@ -3138,7 +3162,8 @@
       "governs": "régit",
       "is-part-of": "fait partie de",
       "references": "fait référence à",
-      "depends-on": "dépend de"
+      "depends-on": "dépend de",
+      "related-to": "related to"
     },
     "language": {
       "label": "Langue",

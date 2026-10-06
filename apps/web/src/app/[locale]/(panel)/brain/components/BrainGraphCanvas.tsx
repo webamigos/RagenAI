@@ -187,10 +187,12 @@ export function BrainGraphCanvas({
   layoutScope,
   language = null,
   compact = false,
+  relationsBeside = false,
 }: {
   view: BrainGraphView;
   /** Standalone ego view: same canvas and relations, without the global legend. */
   compact?: boolean;
+  relationsBeside?: boolean;
   /** `?selected=` — the page picked before a reload or a way back here. */
   selected?: string;
   /** Whose saved layouts these are: `orgId:userId`, from the server. */
@@ -632,18 +634,19 @@ export function BrainGraphCanvas({
         }))
     : [];
 
+  let gridClass = 'grid gap-4 @4xl:grid-cols-[minmax(0,1fr)_320px]';
+  if (compact) {
+    gridClass = relationsBeside
+      ? 'grid min-w-0 gap-4 @3xl:grid-cols-[minmax(0,2fr)_minmax(240px,1fr)]'
+      : 'grid min-w-0 gap-4';
+  }
+
   return (
     // The legend moves beside the canvas by the room this screen has, not the
     // window's: with the assistant open a wide window still leaves too little
     // for both columns.
     <div className="@container">
-      <div
-        className={
-          compact
-            ? 'grid min-w-0 gap-4'
-            : 'grid gap-4 @4xl:grid-cols-[minmax(0,1fr)_320px]'
-        }
-      >
+      <div className={gridClass}>
         {/* What the assistant beside Brain is told the operator is looking at. */}
         <BrainScreen
           context={{
@@ -783,10 +786,10 @@ export function BrainGraphCanvas({
             </>
           )}
         </div>
-        <aside className="space-y-4 text-sm">
+        <aside className="min-w-0 space-y-4 text-sm">
           {selected ? (
             <div
-              className="rounded-[6px] border border-border p-3"
+              className="break-words rounded-[6px] border border-border p-3"
               data-testid="brain-graph-card"
             >
               <p className="font-medium text-foreground">{selected.title}</p>

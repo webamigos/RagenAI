@@ -20,6 +20,7 @@ const T = '2026-09-25T10:00:00.000Z';
 function actions() {
   const ok = () => vi.fn().mockResolvedValue({ success: true, changed: true });
   return {
+    addRelations: ok(),
     approve: ok(),
     reject: ok(),
     publish: ok(),
@@ -340,4 +341,27 @@ it('offers relevant prompts on the overview without requiring a page selection',
     'uncurated',
     'failed',
   ]);
+});
+
+it('ADD_RELATIONS applies both endpoint versions through the existing proposal mechanism', async () => {
+  const a = actions();
+  await runProposalSteps(
+    proposalSteps(
+      {
+        ...base,
+        action: 'ADD_RELATIONS',
+        page: { publicId: A, title: 'A', updatedAt: T },
+        targets: [
+          { publicId: B, title: 'B', updatedAt: T, kind: 'applies to' },
+        ],
+      },
+      a,
+      { confirmWidening: false },
+    ),
+  );
+  expect(a.addRelations).toHaveBeenCalledWith({
+    publicId: A,
+    expectedUpdatedAt: T,
+    targets: [{ publicId: B, expectedUpdatedAt: T, kind: 'applies to' }],
+  });
 });

@@ -165,6 +165,8 @@ After a nontrivial correction or a non-obvious gotcha (see `AGENTS.md`'s "Post-T
 ### frontend
 
 - [Brain publication after approval needs its own timestamp](lessons/brain-review-publication-needs-approval-timestamp.md) — area:frontend,architecture,testing; module:web,brain; topic:brain,review,publication,concurrency,optimistic-locking. Pass the timestamp written under approval’s lock to publication; a fresh read can accept an intervening change. A publication error preserves approval and must say so.
+- [Brain relation proposals need both endpoint versions](lessons/brain-relation-proposals-need-both-endpoint-versions.md) — area:frontend,architecture,testing; module:web,brain; topic:brain,relations,proposals,concurrency,provenance. Shared sources provide suggestions, not evidence. Lock and validate both endpoints, retain INFERRED provenance and include inferred edges in the findings neighbourhood link.
+
 - [Brain overview counts need the same scope as their destination lists](lessons/brain-overview-counts-need-matching-destinations.md) — area:frontend,architecture,testing; module:web,brain; topic:brain,counts,filters,languages,navigation. Global page counts differ from per-file coverage; a summary's filters must also narrow its destination list, total and pagination.
 - [Brain citations are not pages, and publication completion must reach the mounted screen](lessons/brain-citations-and-publication-state.md) — area:frontend,architecture,testing; module:web,worker,brain-core; topic:brain,counts,citations,publication,async-state. Count distinct file/page pairs rather than quote rows, and refresh a mounted pending publication after the worker completes.
 
