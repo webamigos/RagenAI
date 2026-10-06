@@ -2920,7 +2920,8 @@
       "status": {
         "APPROVED": "Zatwierdzona",
         "CANDIDATE": "Kandydat",
-        "REJECTED": "Odrzucona"
+        "REJECTED": "Odrzucona",
+        "STALE": "Nieaktualna"
       },
       "review-group": "Przejrzyj całą grupę ({count})"
     },

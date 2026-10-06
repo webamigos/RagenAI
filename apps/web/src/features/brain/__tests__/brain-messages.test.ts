@@ -59,6 +59,18 @@ describe('Brain messages', () => {
     }
   });
 
+  it('localizes every graph page status in every catalog', () => {
+    for (const locale of locales) {
+      const brain = load(locale).brain as Tree;
+      const statuses = at(brain, 'page-status') as Tree;
+      const graphStatuses = at(brain, 'graph.status') as Tree;
+      expect(Object.keys(graphStatuses).sort(), locale).toEqual(
+        Object.keys(statuses).sort(),
+      );
+      expect(graphStatuses.STALE, locale).toBe(statuses.STALE);
+    }
+  });
+
   it('defines every key the Brain components use', () => {
     const missing: string[] = [];
     for (const file of files(ROUTES).filter((f) => f.endsWith('.tsx'))) {

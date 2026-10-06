@@ -2920,7 +2920,8 @@
       "status": {
         "APPROVED": "Approved",
         "CANDIDATE": "Candidate",
-        "REJECTED": "Rejected"
+        "REJECTED": "Rejected",
+        "STALE": "Forældet"
       },
       "review-group": "Review entire group ({count})"
     },
