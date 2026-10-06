@@ -699,3 +699,19 @@ an issuer outage. Invalid signatures still return 401; API keys bypass the
 resolver. A real HTTP JWKS test covers cold-cache refusal, the authentication
 response, cache survival and signature refusal. All 139 MCP tests, typecheck
 and build pass. No token, key material or internal fetch error is exposed.
+
+### Unused client retention verification — 2026-10-06
+
+`npm run mcp:prune-clients --workspace=@ragenai/web` performs the 30-day DCR
+cleanup through the provider schema and Better Auth adapter, inside a
+serializable Prisma transaction. It preserves owned clients, recent or unknown
+dates, consents, tokens and explicit resource configuration. Pagination uses an
+id cursor; serialization conflicts retry within three attempts. The command
+loads the installation environment, runs once, and reports disabled without
+OAuth queries when the deployment gate is off. Register it daily as described
+in [the maintenance runbook](../runbooks/mcp-oauth-maintenance.md).
+
+Sixteen focused tests and web typecheck pass. The `p0-98` Docker Desktop E2E
+creates old unused, recent, owned and consented clients, verifies only the
+eligible client is removed, repeats the run and preserves the consent (1/1).
+The actual CLI succeeds with the gate both disabled and enabled on `ragen_e2e`.

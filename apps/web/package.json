@@ -34,7 +34,8 @@
     "eval:view": "promptfoo view",
     "emails:dev": "email dev -d src/app/emails -p 3001",
     "test:watch": "vitest",
-    "typecheck": "tsc --noEmit --incremental --tsBuildInfoFile ./typecheck.tsbuildinfo"
+    "typecheck": "tsc --noEmit --incremental --tsBuildInfoFile ./typecheck.tsbuildinfo",
+    "mcp:prune-clients": "tsx --env-file-if-exists=../../.env.local --env-file-if-exists=.env.local scripts/prune-unused-mcp-clients.ts"
   },
   "dependencies": {
     "@ai-sdk/mcp": "^2.0.49",
