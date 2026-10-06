@@ -7,6 +7,10 @@ const db = vi.hoisted(() => ({
   knowledgeFinding: { groupBy: vi.fn() },
 }));
 vi.mock('@ragenai/prisma-client', () => ({ default: db }));
+vi.mock(
+  '@/features/subscriptions/services/queries/get-effective-features-query',
+  () => ({ isFeatureEnabledQuery: vi.fn().mockResolvedValue(false) }),
+);
 const { getBrainOverviewQuery } =
   await import('../services/queries/get-brain-overview-query');
 

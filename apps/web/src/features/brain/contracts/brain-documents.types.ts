@@ -19,6 +19,19 @@ export type BrainDocument = {
   uploadedAt: string | null;
   /** ISO 639-3, as detected at ingest; null when it could not be told. */
   language: string | null;
+  /**
+   * The same document in another language (ADR-54), when the organization
+   * has paired them. `approvedPages` and `candidatePages` here are the
+   * distinct pages citing *either* file, so a page that cites both counts
+   * once; the document's own counts above stay its own.
+   */
+  pair?: {
+    fileId: string;
+    fileName: string;
+    language: string | null;
+    approvedPages: number;
+    candidatePages: number;
+  } | null;
 };
 
 export const sourceDocumentInputSchema = z.object({ fileId: dbUuid });

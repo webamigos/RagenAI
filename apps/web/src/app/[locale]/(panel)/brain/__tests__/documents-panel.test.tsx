@@ -121,3 +121,38 @@ it('asks to check undetected languages without flagging a recognized language', 
   expect(screen.getAllByText('Sprawdź język')).toHaveLength(1);
   expect(screen.getByText('scots')).toBeVisible();
 });
+
+it('names the same document in the other language and counts its pages once', () => {
+  render(
+    <NextIntlClientProvider locale="pl" messages={pl}>
+      <BrainDocumentsPanel
+        documents={[
+          {
+            ...doc('pl-policy', 2, 0),
+            pair: {
+              fileId: 'en-policy',
+              fileName: 'en-policy.pdf',
+              language: 'eng',
+              approvedPages: 3,
+              candidatePages: 1,
+            },
+          },
+          doc('lonely', 1, 0),
+        ]}
+        extraction={new Map()}
+        locale="pl"
+        canWrite={false}
+      />
+    </NextIntlClientProvider>,
+  );
+  const rows = screen.getAllByTestId('brain-document-row');
+  const paired = rows.find((row) => within(row).queryByText('pl-policy.pdf'))!;
+  const lonely = rows.find((row) => within(row).queryByText('lonely.pdf'))!;
+  expect(within(paired).getByTestId('brain-document-pair')).toHaveTextContent(
+    'en-policy.pdf',
+  );
+  expect(
+    within(paired).getByText(/Para: 3 zatwierdzonych/),
+  ).toBeInTheDocument();
+  expect(within(lonely).queryByTestId('brain-document-pair')).toBeNull();
+});
