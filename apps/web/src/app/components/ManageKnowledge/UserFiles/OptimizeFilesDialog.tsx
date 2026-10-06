@@ -33,22 +33,25 @@ export function OptimizeFilesDialog({
   );
   async function run() {
     setPending(true);
-    const ids = results
-      ? results.filter((result) => !result.ok).map((result) => result.id)
-      : eligible.map((file) => file.document!.id);
-    const next = await requestDocumentOptimizations(ids);
-    const failed = next.filter((result) => !result.ok);
-    if (failed.length) {
-      logger.warn(
-        { failed: failed.length },
-        'Document optimization requests failed',
-      );
+    try {
+      const ids = results
+        ? results.filter((result) => !result.ok).map((result) => result.id)
+        : eligible.map((file) => file.document!.id);
+      const next = await requestDocumentOptimizations(ids);
+      const failed = next.filter((result) => !result.ok);
+      if (failed.length) {
+        logger.warn(
+          { failed: failed.length },
+          'Document optimization requests failed',
+        );
+      }
+      setResults((previous) => [
+        ...(previous?.filter((result) => result.ok) ?? []),
+        ...next,
+      ]);
+    } finally {
+      setPending(false);
     }
-    setResults((previous) => [
-      ...(previous?.filter((result) => result.ok) ?? []),
-      ...next,
-    ]);
-    setPending(false);
   }
   const failed = results?.filter((result) => !result.ok).length ?? 0;
   let actionLabel = t('optimization-start');

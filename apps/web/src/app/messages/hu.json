@@ -1467,7 +1467,7 @@
     "no-shared-files": "Még nem osztottak meg veled fájlt",
     "usage": "Felhasználás",
     "storage": "Tárhely",
-    "pages": "File pages",
+    "pages": "Oldalak",
     "file-count": "{count, plural, one {# fájl} other {# fájl}}",
     "knowledge-base": "Tudásbázis",
     "more-folders": "További mappák",

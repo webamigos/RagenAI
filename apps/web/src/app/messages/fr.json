@@ -1467,7 +1467,7 @@
     "no-shared-files": "Aucun fichier n'a encore été partagé avec toi",
     "usage": "Utilisation",
     "storage": "Stockage",
-    "pages": "File pages",
+    "pages": "Pages",
     "file-count": "{count, plural, one {# fichier} other {# fichiers}}",
     "knowledge-base": "Base de connaissances",
     "more-folders": "Plus de dossiers",

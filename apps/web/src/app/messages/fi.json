@@ -1467,7 +1467,7 @@
     "no-shared-files": "Kanssasi ei ole vielä jaettu tiedostoja",
     "usage": "Käyttö",
     "storage": "Tallennustila",
-    "pages": "File pages",
+    "pages": "Sivut",
     "file-count": "{count, plural, one {# tiedosto} other {# tiedostoa}}",
     "knowledge-base": "Tietopankki",
     "more-folders": "Lisää kansioita",

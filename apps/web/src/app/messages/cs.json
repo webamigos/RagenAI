@@ -1467,7 +1467,7 @@
     "no-shared-files": "S vámi zatím nebyl sdílen žádný soubor",
     "usage": "Využití",
     "storage": "Úložiště",
-    "pages": "File pages",
+    "pages": "Stránky",
     "file-count": "{count, plural, one {# soubor} few {# soubory} other {# souborů}}",
     "knowledge-base": "Znalostní báze",
     "more-folders": "Další složky",

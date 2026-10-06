@@ -1467,7 +1467,7 @@
     "no-shared-files": "З тобою ще не поділилися жодним файлом",
     "usage": "Використання",
     "storage": "Сховище",
-    "pages": "File pages",
+    "pages": "Сторінки",
     "file-count": "{count, plural, one {# файл} few {# файли} many {# файлів} other {# файлів}}",
     "knowledge-base": "База знань",
     "more-folders": "Більше папок",

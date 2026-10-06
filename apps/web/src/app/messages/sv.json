@@ -1467,7 +1467,7 @@
     "no-shared-files": "Inga filer har delats med dig än",
     "usage": "Användning",
     "storage": "Lagring",
-    "pages": "File pages",
+    "pages": "Sidor",
     "file-count": "{count, plural, one {# fil} other {# filer}}",
     "knowledge-base": "Kunskapsbas",
     "more-folders": "Fler mappar",

@@ -1467,7 +1467,7 @@
     "no-shared-files": "Ingen filer er delt med deg ennå",
     "usage": "Bruk",
     "storage": "Lagring",
-    "pages": "File pages",
+    "pages": "Sider",
     "file-count": "{count, plural, one {# fil} other {# filer}}",
     "knowledge-base": "Kunnskapsbase",
     "more-folders": "Flere mapper",

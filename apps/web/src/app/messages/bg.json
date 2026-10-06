@@ -1467,7 +1467,7 @@
     "no-shared-files": "Все още не са споделени файлове с теб",
     "usage": "Използване",
     "storage": "Съхранение",
-    "pages": "File pages",
+    "pages": "Страници",
     "file-count": "{count, plural, one {# файл} other {# файла}}",
     "knowledge-base": "База от знания",
     "more-folders": "Още папки",

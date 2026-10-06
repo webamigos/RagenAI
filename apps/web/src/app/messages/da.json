@@ -1467,7 +1467,7 @@
     "no-shared-files": "Ingen filer er delt med dig endnu",
     "usage": "Forbrug",
     "storage": "Lager",
-    "pages": "File pages",
+    "pages": "Sider",
     "file-count": "{count, plural, one {# fil} other {# filer}}",
     "knowledge-base": "Videnbase",
     "more-folders": "Flere mapper",
