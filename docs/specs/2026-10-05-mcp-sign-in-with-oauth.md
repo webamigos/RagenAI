@@ -540,3 +540,19 @@ API. Deployment and organization gates remain off by default.
 Final phase C verification completed 69/70 tasks. All application builds,
 lint, typechecks and tests passed; the sole failing task was the root suite's
 four previously reproduced architecture failures described above.
+
+
+### Phase D1 transport probe — 2026-10-06
+
+HTTP now starts with `stateless: true`; stdio keeps its existing lifecycle.
+A real FastMCP server and the official Streamable HTTP SDK run chat, search
+and assistant listing twice. Changing the credential between calls changes
+the credential reaching the API for all three tools, without reconnecting,
+and no MCP session ID is created. All 19 MCP test files (114 tests) pass.
+
+FastMCP 3.35.0 waits about one second for client capabilities on each
+stateless request and logs a warning when it cannot infer them; the SDK calls
+still succeed. The integration test has a 20-second budget for eight protocol
+requests rather than the default five seconds. This proves SDK compatibility;
+the specifically requested Claude Code and Inspector probes remain pending,
+so D1's checkbox is not yet marked complete.

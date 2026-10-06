@@ -8,6 +8,7 @@ import type { RagenSession } from './auth.js';
 import { getEnv } from './config/env.js';
 import { logger } from './logger.js';
 import { serverOptions } from './server-options.js';
+import { httpStreamOptions } from './transport.js';
 import { registerChatTool } from './tools/chat-tool.js';
 import { registerListAssistantsTool } from './tools/list-assistants-tool.js';
 import { registerSearchKnowledgeBaseTool } from './tools/search-knowledge-base-tool.js';
@@ -72,7 +73,7 @@ if (env.RAGEN_MCP_TRANSPORT === 'stdio') {
     // `http://${host}`. With host: '::' that's the invalid `http://::`,
     // crashing the process on any non-/mcp request. 0.0.0.0 still binds every
     // IPv4 interface (what Docker/Railway route to) without that bug.
-    httpStream: { host: '0.0.0.0', port: PORT },
+    httpStream: httpStreamOptions(PORT),
   });
 
   logger.info(
