@@ -419,7 +419,7 @@ organization (ADR-50).
 
 ### Phase D — `apps/mcp` speaks OAuth
 
-- [ ] **D1.** Switch to `stateless: true` and run the three tools against
+- [x] **D1.** Switch to `stateless: true` and run the three tools against
   Claude Code and the MCP Inspector. Record the result here.
 - [x] **D2.** Protected-resource metadata, the 401/403 challenges, JWT
   verification with a cached JWKS, and the `RagenSession` union.
@@ -658,3 +658,16 @@ workspace consent, all three tools, Connected apps/Disconnect and self-hosting
 configuration to the existing MCP pages. The generated configuration reference
 is synchronized with its source. MDX syntax and docs.json checks pass; the ADR
 reference, generated-reference and installer suites pass (41 tests).
+
+### D1 named-client interoperability verification — 2026-10-06
+
+MCP Inspector 2.9.0 CLI and Claude Code 2.1.282 both connected to the real built
+FastMCP server with `stateless: true`, discovered the three tools and called
+`ragen_list_assistants`, `ragen_chat` and `ragen_search_knowledge_base`.
+Each returned `success: true`. The isolated transport fixture used a local
+JWKS issuer and a signed 15-minute bearer JWT; its API accepted only valid
+service assertions for the expected user. It recorded six accepted calls,
+three from each client, in the expected order. Claude Code ran with only these
+MCP tools, an explicit session config and no session persistence. No production
+API or knowledge-base data was used. This proves D1 client compatibility, not
+B3's Inspector authorization flow or D5's demo claude.ai rollout gate.
