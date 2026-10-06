@@ -436,7 +436,7 @@ organization (ADR-50).
 
 - [x] **E1.** Removal, leaving, organization deletion and a ban revoke the
   user's grants in that organization.
-- [ ] **E2.** A new ADR records the decision and amends ADR-36's "auth is the
+- [x] **E2.** A new ADR records the decision and amends ADR-36's "auth is the
   caller's API key" paragraph. `create-ragen-app` updated (secret, public
   MCP URL). ragen-docs: connecting from claude.ai. A changelog note.
 
@@ -644,3 +644,17 @@ authorizes twice, verifies that exactly one consent remains and that the old
 refresh token fails, then exercises permission changes and Disconnect. It
 passes on Docker Desktop (1/1). The MCP production Docker image also builds
 successfully, including the shared assertion package.
+
+### E2 documentation verification — 2026-10-06
+
+ADR-53 records the issuer/resource/API boundary, stateless requests, independent
+service assertions, live permissions, replacement and revocation limits. ADR-36
+now describes both authentication paths. A changelog note explicitly says the
+feature is behind disabled deployment and organization gates. The installer
+already generates the independent service secret and local public MCP URL.
+
+The ragen-docs commit `ab305a6` adds claude.ai automatic client registration,
+workspace consent, all three tools, Connected apps/Disconnect and self-hosting
+configuration to the existing MCP pages. The generated configuration reference
+is synchronized with its source. MDX syntax and docs.json checks pass; the ADR
+reference, generated-reference and installer suites pass (41 tests).

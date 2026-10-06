@@ -77,6 +77,14 @@ archive is the blog.
 
 ## Unreleased
 
+### MCP sign-in
+
+- `[brief]` **Connect an AI client with your Ragen account.** OAuth sign-in,
+  workspace consent and **Connected apps** are implemented behind deployment
+  and organization flags that default off. Once enabled after interoperability
+  checks, users can connect without copying an API key and disconnect from
+  account settings; current membership and document permissions govern calls.
+
 ### Self-hosting
 
 - `[brief]` **The knowledge base from a terminal.** `ragen kb upload docs/*.pdf
