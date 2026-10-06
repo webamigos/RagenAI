@@ -43,7 +43,7 @@ describe('ModelsService', () => {
   const context: ApiContext = {
     orgId: 'org-1' as OrgId,
     userId: 'user-1' as UserId,
-    keyId: 'key-1' as KeyId,
+    credential: { type: 'api_key', id: 'key-1' as KeyId },
     debugMode: false,
     knowledgeScope: 'KNOWLEDGE_BASE',
   };

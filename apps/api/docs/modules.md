@@ -6,7 +6,7 @@ Extracted from `apps/api/AGENTS.md` on 2026-08-31 to keep that file inside the
 
 - **PrismaModule** (global) — `PrismaService` wrapping `PrismaClient` with `@prisma/adapter-pg`.
 - **VaultModule** — `VaultClient` for secure token storage via HMAC-SHA256 signed HTTP requests to an external ragen-token-vault service.
-- **CommonModule** (global) — `ApiKeysService`, `ApiKeyGuard`.
+- **CommonModule** (global) — API-key and session authentication, `AssistantScopeService`, `McpServiceAuthService`, `McpServiceGuard` and `McpOrApiKeyGuard`. Imports `ProjectsModule` and `SubscriptionsModule` for live OAuth assistant permissions and the per-org `mcpOAuth` gate. MCP assertions are accepted only by chat, search and assistant listing; the full DI-graph test enumerates all controllers to enforce that boundary.
 - **ChatModule** — Direct implementation (as of the Phase B cutover, not a proxy) — see "Chat" below. **ChatCompletionsModule** — also a direct implementation as of a later Phase B cutover (OpenAI-compatible `/v1/chat/completions`), no longer proxies to apps/web — see "Chat" below.
 - **ThreadsModule** — CRUD for threads + nested messages sub-resource.
 - **AssistantsModule** — Assistant CRUD.

@@ -56,3 +56,28 @@ describe('throttleTracker', () => {
     expect(verify).not.toHaveBeenCalled();
   });
 });
+
+describe('MCP throttle identity', () => {
+  it('gives verified OAuth callers independent per-user buckets at one MCP IP', () => {
+    const session = vi.fn(() => null);
+    const identities: Record<string, { userId: string } | undefined> = {
+      'mcp.user-a': { userId: 'a' },
+      'mcp.user-b': { userId: 'b' },
+    };
+    const verify = (token: string) => identities[token] ?? null;
+    const request = (token: string) => ({
+      ip: '10.0.0.1',
+      headers: { authorization: `Bearer ${token}` },
+    });
+    expect(throttleTracker(request('mcp.user-a'), session, verify)).toBe(
+      'user:a',
+    );
+    expect(throttleTracker(request('mcp.user-b'), session, verify)).toBe(
+      'user:b',
+    );
+    expect(throttleTracker(request('mcp.forged'), session, verify)).toBe(
+      '10.0.0.1',
+    );
+    expect(session).not.toHaveBeenCalled();
+  });
+});

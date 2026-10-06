@@ -1,3 +1,4 @@
+import { issueMcpServiceAssertion } from '@ragenai/crypto/mcp-service';
 import { test, expect, request as apiRequest } from '@playwright/test';
 import { createHash, randomBytes } from 'node:crypto';
 import { PrismaClient } from '../src/generated/prisma/client';
@@ -135,6 +136,48 @@ test('MCP authorization binds a verified JWT to the selected workspace and reche
     expect(String(payload.scope).split(' ')).toContain('mcp:read');
     expect(payload.exp! - payload.iat!).toBe(900);
     expect(token.refresh_token).toBeTruthy();
+    expect(typeof payload.jti).toBe('string');
+    const apiURL =
+      process.env.RAGEN_API_INTERNAL_URL ?? 'http://localhost:3001';
+    const serviceHeaders = () => ({
+      authorization:
+        'Bearer ' +
+        issueMcpServiceAssertion(
+          {
+            userId: TEST_USER_ID,
+            orgId: TEST_ORG_ID,
+            projectId: TEST_PROJECT_ID,
+            clientId: client.client_id,
+            jti: payload.jti!,
+          },
+          process.env.MCP_SERVICE_SECRET!,
+        ),
+    });
+    const assistants = await request.get(`${apiURL}/v1/assistants`, {
+      headers: serviceHeaders(),
+    });
+    expect(assistants.status()).toBe(200);
+    expect(
+      (await assistants.json()).data.map(
+        (assistant: { id: string }) => assistant.id,
+      ),
+    ).toEqual([`asst-${TEST_PROJECT_ID}`]);
+    const passthrough = await request.get(`${apiURL}/v1/assistants`, {
+      headers: { authorization: `Bearer ${token.access_token}` },
+    });
+    expect(passthrough.status()).toBe(401);
+    const internal = await request.get(`${apiURL}/v1/internal/projects`, {
+      headers: serviceHeaders(),
+    });
+    expect(internal.status()).toBe(401);
+    for (const method of ['post', 'patch', 'delete'] as const) {
+      const mutation = await request[method](
+        `${apiURL}/v1/assistants/asst-${TEST_PROJECT_ID}`,
+        { headers: serviceHeaders(), data: {} },
+      );
+      expect(mutation.status()).toBe(401);
+    }
+
     await prisma.organizationSettings.update({
       where: { organizationId: TEST_ORG_ID },
       data: { featureOverrides: { ...features, mcpOAuth: false } },
@@ -148,6 +191,10 @@ test('MCP authorization binds a verified JWT to the selected workspace and reche
       },
     });
     expect(refresh.ok()).toBe(false);
+    const disabled = await request.get(`${apiURL}/v1/assistants`, {
+      headers: serviceHeaders(),
+    });
+    expect(disabled.status()).toBe(403);
   } finally {
     await prisma.organizationSettings.update({
       where: { organizationId: TEST_ORG_ID },

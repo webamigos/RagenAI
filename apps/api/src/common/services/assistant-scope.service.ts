@@ -1,3 +1,4 @@
+import { ProjectsService } from '../../projects/projects.service.js';
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { scopeRequiresProject } from '@ragenai/platform-contracts';
 import { PrismaService } from '../../prisma/prisma.service.js';
@@ -21,13 +22,74 @@ import { stripPrefix } from '../utils/openai-format.js';
  */
 @Injectable()
 export class AssistantScopeService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly projects: ProjectsService,
+  ) {}
+
+  async resolve(
+    assistantId: string | undefined,
+    context: ApiContext,
+  ): Promise<string | null> {
+    const projectId = await this.resolveBoundary(assistantId, context);
+    if (projectId && context.credential.type === 'oauth') {
+      await this.assertVisible(projectId, context);
+    }
+    return projectId;
+  }
+
+  /** Permission filtering precedes pagination; private instructions never enter the response. */
+  async visibleProjectIds(context: ApiContext): Promise<string[] | undefined> {
+    if (context.credential.type !== 'oauth') {
+      return undefined;
+    }
+    const confined = this.confinedToProject(context);
+    const projects = await this.prisma.client.project.findMany({
+      where: {
+        organizationId: context.orgId,
+        ...(confined ? { id: confined } : {}),
+      },
+      select: { id: true },
+    });
+    const permissions = await Promise.all(
+      projects.map(async (project) => ({
+        id: project.id,
+        canView: (
+          await this.projects.getEffectiveProjectPermission(
+            project.id,
+            context.orgId,
+            context.userId,
+          )
+        ).canView,
+      })),
+    );
+    return permissions
+      .filter((permission) => permission.canView)
+      .map((permission) => permission.id);
+  }
+
+  private async assertVisible(
+    projectId: string,
+    context: ApiContext,
+  ): Promise<void> {
+    if (
+      !(
+        await this.projects.getEffectiveProjectPermission(
+          projectId,
+          context.orgId,
+          context.userId,
+        )
+      ).canView
+    ) {
+      throw new ForbiddenException('Assistant is unavailable');
+    }
+  }
 
   /**
    * @returns the project to run against — `null` means the knowledge base
    * (`metadata.project_id IS NULL`), which is a scope, not a missing value.
    */
-  async resolve(
+  private async resolveBoundary(
     assistantId: string | undefined,
     context: ApiContext,
   ): Promise<string | null> {

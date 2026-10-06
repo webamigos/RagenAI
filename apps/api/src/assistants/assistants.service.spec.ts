@@ -1,3 +1,4 @@
+import { type ProjectsService } from '../projects/projects.service.js';
 /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */
 import type { Mock } from 'vitest';
 import { AssistantScopeService } from '../common/services/assistant-scope.service.js';
@@ -21,7 +22,7 @@ describe('AssistantsService', () => {
     orgId: 'org-1' as OrgId,
     userId: 'user-1' as UserId,
     projectId: 'proj-bound' as ProjectId,
-    keyId: 'key-1' as KeyId,
+    credential: { type: 'api_key', id: 'key-1' as KeyId },
     debugMode: false,
   };
 
@@ -51,8 +52,20 @@ describe('AssistantsService', () => {
         },
       },
     } as unknown as PrismaService;
+    const permissions = {
+      getEffectiveProjectPermission: vi
+        .fn()
+        .mockResolvedValue({ canView: true }),
+    };
     return {
-      service: new AssistantsService(prisma, new AssistantScopeService(prisma)),
+      permissions,
+      service: new AssistantsService(
+        prisma,
+        new AssistantScopeService(
+          prisma,
+          permissions as unknown as ProjectsService,
+        ),
+      ),
       prisma,
       projectOps,
     };
@@ -248,7 +261,7 @@ describe('AssistantsService', () => {
       const orphaned: ApiContext = {
         orgId: context.orgId,
         userId: context.userId,
-        keyId: context.keyId,
+        credential: context.credential,
         debugMode: false,
         knowledgeScope: 'ASSISTANT',
       };
@@ -256,5 +269,27 @@ describe('AssistantsService', () => {
         /no longer exists/,
       );
     });
+  });
+  it('list: filters private assistants before applying pagination to an OAuth grant', async () => {
+    const { service, projectOps, permissions } = makeService();
+    projectOps.findMany
+      .mockResolvedValueOnce([{ id: 'private' }, { id: 'shared' }])
+      .mockResolvedValueOnce([{ ...project, id: 'shared' }]);
+    permissions.getEffectiveProjectPermission.mockImplementation((id: string) =>
+      Promise.resolve({ canView: id === 'shared' }),
+    );
+    const out = await service.list(
+      {
+        ...context,
+        projectId: undefined,
+        credential: { type: 'oauth', id: 'client:user-1' },
+      },
+      { limit: 1 },
+    );
+    expect(projectOps.findMany.mock.calls[1][0]).toMatchObject({
+      where: { organizationId: 'org-1', id: { in: ['shared'] } },
+      take: 1,
+    });
+    expect(out.data.map((item) => item.id)).toEqual(['asst-shared']);
   });
 });

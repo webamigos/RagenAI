@@ -1,3 +1,10 @@
+import { ModulesContainer } from '@nestjs/core';
+import { GUARDS_METADATA } from '@nestjs/common/constants.js';
+import { type ExecutionContext, UnauthorizedException } from '@nestjs/common';
+import { McpOrApiKeyGuard } from '../common/guards/mcp-or-api-key.guard.js';
+import { ApiKeyGuard } from '../common/guards/api-key.guard.js';
+import { SessionAuthGuard } from '../common/guards/session-auth.guard.js';
+import { issueMcpServiceAssertion } from '@ragenai/crypto/mcp-service';
 import { Test } from '@nestjs/testing';
 import { AppModule } from '../app.module.js';
 import { ChatService } from './chat.service.js';
@@ -74,5 +81,77 @@ describe('AppModule (full DI graph wiring)', () => {
     expect(moduleRef.get(ModelsController)).toBeInstanceOf(ModelsController);
 
     await moduleRef.close();
+  });
+  it('accepts the MCP guard on exactly three handlers and refuses assertions on every other key/session handler', async () => {
+    const moduleRef = await Test.createTestingModule({
+      imports: [AppModule],
+    }).compile();
+    try {
+      const request = {
+        headers: {
+          authorization:
+            'Bearer ' +
+            issueMcpServiceAssertion(
+              {
+                userId: 'user-a',
+                orgId: 'org-a',
+                clientId: 'client-a',
+                jti: 'token-a',
+              },
+              'dedicated-mcp-boundary-secret-32-characters',
+            ),
+        },
+      };
+      const context = {
+        switchToHttp: () => ({ getRequest: () => request }),
+      } as ExecutionContext;
+      const compositeHandlers: string[] = [];
+      let rejected = 0;
+      for (const module of moduleRef.get(ModulesContainer).values()) {
+        for (const controller of module.controllers.values()) {
+          const type = controller.metatype;
+          if (!type) {
+            continue;
+          }
+          const classGuards: unknown[] =
+            (Reflect.getMetadata(GUARDS_METADATA, type) as
+              unknown[] | undefined) ?? [];
+          const prototype = type.prototype as Record<string, unknown>;
+          for (const name of Object.getOwnPropertyNames(prototype)) {
+            const handler = prototype[name];
+            if (name === 'constructor' || typeof handler !== 'function') {
+              continue;
+            }
+            const guards: unknown[] = [
+              ...classGuards,
+              ...((Reflect.getMetadata(GUARDS_METADATA, handler) as
+                unknown[] | undefined) ?? []),
+            ];
+            if (guards.includes(McpOrApiKeyGuard)) {
+              expect(guards).not.toContain(ApiKeyGuard);
+              compositeHandlers.push(`${type.name}.${name}`);
+            } else if (guards.includes(ApiKeyGuard)) {
+              await expect(
+                moduleRef.get(ApiKeyGuard).canActivate(context),
+              ).rejects.toBeInstanceOf(UnauthorizedException);
+              rejected++;
+            } else if (guards.includes(SessionAuthGuard)) {
+              expect(() =>
+                moduleRef.get(SessionAuthGuard).canActivate(context),
+              ).toThrow(UnauthorizedException);
+              rejected++;
+            }
+          }
+        }
+      }
+      expect([...new Set(compositeHandlers)].sort()).toEqual([
+        'AssistantsController.list',
+        'ChatController.chat',
+        'SearchController.search',
+      ]);
+      expect(rejected).toBeGreaterThan(20);
+    } finally {
+      await moduleRef.close();
+    }
   });
 });

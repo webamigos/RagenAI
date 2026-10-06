@@ -405,15 +405,15 @@ organization (ADR-50).
 
 ### Phase C — `apps/api` accepts `apps/mcp`'s assertion
 
-- [ ] **C1.** `ApiContext.credential` replaces `keyId`. No behaviour change.
-- [ ] **C2.** `McpServiceGuard` with its live checks; the composite guard on
+- [x] **C1.** `ApiContext.credential` replaces `keyId`. No behaviour change.
+- [x] **C2.** `McpServiceGuard` with its live checks; the composite guard on
   chat and search; per-handler guards on `AssistantsController`. Tests: every
   other `ApiKeyGuard` and `SessionAuthGuard` route refuses an MCP assertion,
   and so do `POST`, `PATCH` and `DELETE` on `/v1/assistants`.
-- [ ] **C3.** Per-member project visibility in `AssistantsService.list` and
+- [x] **C3.** Per-member project visibility in `AssistantsService.list` and
   `AssistantScopeService.resolve` for an OAuth credential. API keys keep
   seeing every project in the organization.
-- [ ] **C4.** The `throttleTracker` branch. Tests that an OAuth-credentialed
+- [x] **C4.** The `throttleTracker` branch. Tests that an OAuth-credentialed
   request hits the usage ceilings, a per-user throttle bucket and the
   folder-membership retrieval scope.
 
@@ -512,3 +512,31 @@ reference in the sibling documentation checkout). One existing
 of its cases and the entire web suite passed on recheck without code changes.
 CodeRabbit was unavailable in this session; a manual review checked the signed
 query, live grant checks and provider administrative privileges.
+
+
+### Phase C local validation — 2026-10-06
+
+The API context now distinguishes API keys from OAuth credentials. A shared
+`@ragenai/crypto/mcp-service` helper signs the typed `mcp.` namespace with a
+dedicated secret and a 30-second lifetime. The API verifies it and checks the
+live member, ban, organization flag and project permission before constructing
+a context with debug disabled and no caller-supplied team.
+
+The real AppModule test enumerates every controller: only chat, search and
+assistant listing use the composite guard; every remaining API-key/session
+handler rejects a correctly signed MCP assertion. OAuth assistant listing
+filters permissions before pagination, and resolution applies the same panel
+permission service even to a bound project. Tests prove the per-user throttle,
+usage ceilings and caller folder membership also apply to OAuth.
+
+The browser OAuth test now calls the real Docker-backed API with the selected
+identity: it lists only the chosen assistant, rejects JWT passthrough, rejects
+internal project reads and assistant POST/PATCH/DELETE, and refuses the next
+API call after the organization's flag is switched off. Discovery, registration
+and this complete flow passed (3/3). API tests passed (116 files, 1,312 tests),
+and the assertion helper's 13 tests passed. No OAuth token is forwarded to the
+API. Deployment and organization gates remain off by default.
+
+Final phase C verification completed 69/70 tasks. All application builds,
+lint, typechecks and tests passed; the sole failing task was the root suite's
+four previously reproduced architecture failures described above.

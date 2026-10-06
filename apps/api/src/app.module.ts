@@ -1,3 +1,4 @@
+import { McpServiceAuthService } from './common/services/mcp-service-auth.service.js';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
@@ -33,10 +34,11 @@ import { SubscriptionsModule } from './subscriptions/subscriptions.module.js';
     }),
     ThrottlerModule.forRootAsync({
       imports: [ConfigModule, CommonModule],
-      inject: [ConfigService, SessionAuthService],
+      inject: [ConfigService, SessionAuthService, McpServiceAuthService],
       useFactory: (
         configService: ConfigService,
         sessionAuth: SessionAuthService,
+        mcpAuth: McpServiceAuthService,
       ) => {
         const targetEnv = configService.get<string>('TARGET_ENV');
         const isLocal = targetEnv === 'local';
@@ -70,7 +72,11 @@ import { SubscriptionsModule } from './subscriptions/subscriptions.module.js';
           // Per person for apps/web's server-to-server calls, per IP for the
           // rest — see `throttleTracker`.
           getTracker: (req: Record<string, unknown>) =>
-            throttleTracker(req, (t) => sessionAuth.verify(t)),
+            throttleTracker(
+              req,
+              (t) => sessionAuth.verify(t),
+              (t) => mcpAuth.verify(t),
+            ),
           throttlers: tieredThrottlers(mult),
         };
       },

@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "license": "Apache-2.0",
-  "description": "Envelope encryption — the KeyProvider interface, its Scaleway/AWS/local implementations and the AES-256-GCM content helpers — shared by apps/web, apps/api and apps/worker (ADR-02, ADR-06)",
+  "description": "Envelope encryption \u2014 the KeyProvider interface, its Scaleway/AWS/local implementations and the AES-256-GCM content helpers \u2014 shared by apps/web, apps/api and apps/worker (ADR-02, ADR-06)",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "files": [
@@ -27,5 +27,15 @@
   },
   "engines": {
     "node": "^24.15.0 || >=26.0.0"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./mcp-service": {
+      "types": "./dist/mcp-service.d.ts",
+      "default": "./dist/mcp-service.js"
+    }
   }
 }

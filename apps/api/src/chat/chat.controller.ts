@@ -9,13 +9,13 @@ import { type Request, type Response } from 'express';
 import { ChatService } from './chat.service.js';
 import { GetApiContext } from '../common/decorators/api-context.decorator.js';
 import { type ApiContext } from '../common/types/api-context.js';
-import { ApiKeyGuard } from '../common/guards/api-key.guard.js';
+import { McpOrApiKeyGuard } from '../common/guards/mcp-or-api-key.guard.js';
 import { ChatDto } from './dto/chat.dto.js';
 
 @ApiTags('Chat')
 @ApiSecurity('bearer')
 @Controller('chat')
-@UseGuards(ApiKeyGuard)
+@UseGuards(McpOrApiKeyGuard)
 export class ChatController {
   constructor(private readonly chatService: ChatService) {}
 

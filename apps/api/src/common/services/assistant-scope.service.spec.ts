@@ -1,3 +1,4 @@
+import { type ProjectsService } from '../../projects/projects.service.js';
 import { ForbiddenException } from '@nestjs/common';
 import { AssistantScopeService } from './assistant-scope.service.js';
 import { type PrismaService } from '../../prisma/prisma.service.js';
@@ -10,10 +11,10 @@ import {
 } from '../types/brand.js';
 
 describe('AssistantScopeService', () => {
-  const base = {
+  const base: ApiContext = {
     orgId: 'org-1' as OrgId,
     userId: 'user-1' as UserId,
-    keyId: 'key-1' as KeyId,
+    credential: { type: 'api_key', id: 'key-1' as KeyId },
     debugMode: false,
   };
 
@@ -33,7 +34,10 @@ describe('AssistantScopeService', () => {
     const prisma = {
       client: { project: { findFirst } },
     } as unknown as PrismaService;
-    return { service: new AssistantScopeService(prisma), findFirst };
+    return {
+      service: new AssistantScopeService(prisma, {} as ProjectsService),
+      findFirst,
+    };
   }
 
   describe('a key bound to an assistant', () => {
@@ -157,5 +161,82 @@ describe('AssistantScopeService', () => {
         service.resolve('proj-elsewhere', sessionContext),
       ).rejects.toBeInstanceOf(ForbiddenException);
     });
+  });
+});
+
+describe('OAuth assistant visibility', () => {
+  const context: ApiContext = {
+    orgId: 'org-a' as OrgId,
+    userId: 'user-a' as UserId,
+    credential: { type: 'oauth', id: 'client-a:user-a' },
+    debugMode: false,
+  };
+  function make() {
+    const permissions = {
+      getEffectiveProjectPermission: vi
+        .fn()
+        .mockResolvedValue({ canView: false }),
+    };
+    const projects = {
+      findFirst: vi.fn().mockResolvedValue({ id: 'private' }),
+      findMany: vi
+        .fn()
+        .mockResolvedValue([{ id: 'private' }, { id: 'shared' }]),
+    };
+    const service = new AssistantScopeService(
+      { client: { project: projects } } as unknown as PrismaService,
+      permissions as unknown as ProjectsService,
+    );
+    return { service, projects, permissions };
+  }
+  it('refuses an in-org private assistant for an org-wide OAuth grant', async () => {
+    const s = make();
+    await expect(s.service.resolve('private', context)).rejects.toBeInstanceOf(
+      ForbiddenException,
+    );
+    expect(s.permissions.getEffectiveProjectPermission).toHaveBeenCalledWith(
+      'private',
+      'org-a',
+      'user-a',
+    );
+    s.permissions.getEffectiveProjectPermission.mockResolvedValue({
+      canView: true,
+    });
+    await expect(s.service.resolve('private', context)).resolves.toBe(
+      'private',
+    );
+  });
+  it('rechecks even a bound assistant, and applies its boundary first', async () => {
+    const s = make();
+    const bound = {
+      ...context,
+      projectId: 'private' as ProjectId,
+      knowledgeScope: 'ASSISTANT' as const,
+    };
+    await expect(s.service.resolve(undefined, bound)).rejects.toBeInstanceOf(
+      ForbiddenException,
+    );
+    await expect(s.service.resolve('another', bound)).rejects.toBeInstanceOf(
+      ForbiddenException,
+    );
+    expect(s.permissions.getEffectiveProjectPermission).toHaveBeenCalledTimes(
+      1,
+    );
+  });
+  it('filters visible IDs with the panel permission rule and keeps keys org-wide', async () => {
+    const s = make();
+    s.permissions.getEffectiveProjectPermission.mockImplementation(
+      (id: string) => Promise.resolve({ canView: id === 'shared' }),
+    );
+    await expect(s.service.visibleProjectIds(context)).resolves.toEqual([
+      'shared',
+    ]);
+    await expect(
+      s.service.visibleProjectIds({
+        ...context,
+        credential: { type: 'api_key', id: 'key' as KeyId },
+      }),
+    ).resolves.toBeUndefined();
+    expect(s.projects.findMany).toHaveBeenCalledTimes(1);
   });
 });

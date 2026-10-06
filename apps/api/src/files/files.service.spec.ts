@@ -1,3 +1,4 @@
+import { type ProjectsService } from '../projects/projects.service.js';
 /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */
 import type { Mock } from 'vitest';
 import { AssistantScopeService } from '../common/services/assistant-scope.service.js';
@@ -24,7 +25,7 @@ describe('FilesService', () => {
     orgId: 'org-1' as OrgId,
     userId: 'user-1' as UserId,
     projectId: 'proj-1' as ProjectId,
-    keyId: 'key-1' as KeyId,
+    credential: { type: 'api_key', id: 'key-1' as KeyId },
     debugMode: false,
   };
 
@@ -57,7 +58,7 @@ describe('FilesService', () => {
         prisma,
         uploadFile,
         deleteFile,
-        new AssistantScopeService(prisma),
+        new AssistantScopeService(prisma, {} as ProjectsService),
       ),
       prisma,
       organizationFindUnique,
@@ -336,7 +337,7 @@ describe('FilesService', () => {
     const kbKey: ApiContext = {
       orgId: context.orgId,
       userId: context.userId,
-      keyId: context.keyId,
+      credential: context.credential,
       debugMode: false,
       knowledgeScope: 'KNOWLEDGE_BASE',
     };
