@@ -1,6 +1,7 @@
 'use server';
 
 import db from '@ragenai/prisma-client';
+import { getFileBrainCoverageQuery } from './get-file-brain-coverage-query';
 import type { OrgVisibilityScope } from '@ragenai/platform-contracts';
 
 import { buildUserFilesWhere } from './user-files-where';
@@ -32,6 +33,8 @@ export const getUserFilesQuery = async (
     dir?: UserFilesSortDir;
     page?: number;
     pageSize?: number;
+    compactPagination?: boolean;
+    includeBrainCoverage?: boolean;
     fileType?: FileType[];
     embeddingStatus?: EmbeddingStatus[];
     piiPolicy?: PiiPolicy[];
@@ -46,6 +49,8 @@ export const getUserFilesQuery = async (
     dir = 'desc',
     page = 1,
     pageSize = DEFAULT_PAGE_SIZE,
+    compactPagination = false,
+    includeBrainCoverage = false,
     fileType = [],
     embeddingStatus = [],
     piiPolicy = [],
@@ -68,10 +73,20 @@ export const getUserFilesQuery = async (
     return { items: [], totalCount: 0, totalPages: 1, page, pageSize };
   }
 
-  const skip = (page - 1) * pageSize;
+  const counted = compactPagination
+    ? await db.userFile.count({ where: baseWhere })
+    : null;
+  const effectiveSize = counted !== null && counted < 60 ? 59 : pageSize;
+  const effectivePage =
+    counted !== null
+      ? Math.min(page, Math.max(1, Math.ceil(counted / effectiveSize)))
+      : page;
+  const skip = (effectivePage - 1) * effectiveSize;
 
   const [totalCount, items] = await Promise.all([
-    db.userFile.count({ where: baseWhere }),
+    counted !== null
+      ? Promise.resolve(counted)
+      : db.userFile.count({ where: baseWhere }),
     db.userFile.findMany({
       where: baseWhere,
       select: {
@@ -92,6 +107,7 @@ export const getUserFilesQuery = async (
         embeddingStartedAt: true,
         parsingStatus: true,
         thumbnailS3Key: true,
+        language: true,
         piiPolicy: true,
         document: { select: { id: true } },
         project: { select: { title: true, id: true } },
@@ -100,11 +116,25 @@ export const getUserFilesQuery = async (
       },
       orderBy: { [sort]: dir },
       skip,
-      take: pageSize,
+      take: effectiveSize,
     }),
   ]);
 
-  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+  const totalPages = Math.max(1, Math.ceil(totalCount / effectiveSize));
 
-  return { items, totalCount, totalPages, page, pageSize };
+  const coverage = includeBrainCoverage
+    ? await getFileBrainCoverageQuery(
+        organizationId,
+        items.map((file) => file.id),
+      )
+    : null;
+  return {
+    items: coverage
+      ? items.map((file) => ({ ...file, brainCoverage: coverage.get(file.id) }))
+      : items,
+    totalCount,
+    totalPages,
+    page: effectivePage,
+    pageSize: effectiveSize,
+  };
 };

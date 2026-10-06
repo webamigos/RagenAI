@@ -19,7 +19,8 @@ const { getBrainStatusCountsQuery } =
 const { parseBrainLanguage } =
   await import('../contracts/brain-language.types');
 const { withLanguage } = await import('../utils/with-language');
-const { languageName } = await import('../utils/language-name');
+const { languageName, shortLanguageTag } =
+  await import('../utils/language-name');
 
 beforeEach(() => vi.clearAllMocks());
 
@@ -150,4 +151,10 @@ describe('getBrainLanguagesQuery', () => {
       organizationId: 'org-1',
     });
   });
+});
+
+it('canonicalizes short language tags safely', () => {
+  expect(shortLanguageTag('pol')).toBe('PL');
+  expect(shortLanguageTag('eng')).toBe('EN');
+  expect(shortLanguageTag('not valid')).toBe('NOT VALID');
 });

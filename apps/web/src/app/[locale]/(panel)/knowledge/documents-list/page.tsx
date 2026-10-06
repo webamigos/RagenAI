@@ -1,4 +1,5 @@
 import { getTranslations } from 'next-intl/server';
+import { getBrainAccessQuery } from '@/features/brain/services/queries/get-brain-access-query';
 import { getUserFilesQuery } from '@/features/documents/services/queries/get-user-files-query';
 import {
   getFileScopeCountsQuery,
@@ -112,9 +113,10 @@ const UploadedListPage = async ({ searchParams }: Props) => {
   const user = await getCurrentUser();
   const userId = user?.id;
 
-  const [teamIds, member] = await Promise.all([
+  const [teamIds, member, brain] = await Promise.all([
     userId ? getUserTeamIds(orgId, userId) : Promise.resolve([]),
     userId ? getActiveMember(orgId) : Promise.resolve(null),
+    getBrainAccessQuery(),
   ]);
 
   const scope = orgVisibilityScope(member?.role);
@@ -142,7 +144,9 @@ const UploadedListPage = async ({ searchParams }: Props) => {
       sort,
       dir,
       page,
-      pageSize: 25,
+      pageSize: 50,
+      compactPagination: true,
+      includeBrainCoverage: brain?.orgId === orgId,
       fileType: selectedFileTypes,
       embeddingStatus: selectedStatuses,
       piiPolicy: selectedPolicies,

@@ -3,6 +3,10 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 // Mock must be hoisted before imports
 const mockFindMany = vi.hoisted(() => vi.fn());
 const mockCount = vi.hoisted(() => vi.fn());
+const mockCoverage = vi.hoisted(() => vi.fn());
+vi.mock('../get-file-brain-coverage-query', () => ({
+  getFileBrainCoverageQuery: mockCoverage,
+}));
 
 vi.mock('@ragenai/prisma-client', () => ({
   default: {
@@ -23,6 +27,7 @@ import {
 const ORG_ID = 'org-1';
 
 beforeEach(() => {
+  vi.clearAllMocks();
   mockFindMany.mockResolvedValue([]);
   mockCount.mockResolvedValue(0);
 });
@@ -361,5 +366,53 @@ describe('getUserFilesQuery — user-scoped views without a user id', () => {
     const where = mockFindMany.mock.calls[0]![0].where;
     expect(JSON.stringify(where)).not.toContain('undefined');
     expect(where.ownerId).toEqual({ not: null, notIn: ['user-1'] });
+  });
+});
+
+describe('knowledge list compact pagination', () => {
+  it('shows all 59 matching files on one page and clamps stale page parameters', async () => {
+    mockCount.mockResolvedValue(59);
+    const result = await getUserFilesQuery(ORG_ID, [], {
+      page: 3,
+      pageSize: 50,
+      compactPagination: true,
+    });
+    expect(mockFindMany).toHaveBeenCalledWith(
+      expect.objectContaining({ skip: 0, take: 59 }),
+    );
+    expect(result).toMatchObject({ page: 1, totalPages: 1, pageSize: 59 });
+  });
+  it('uses pages of 50 at the 60-file threshold', async () => {
+    mockCount.mockResolvedValue(60);
+    const result = await getUserFilesQuery(ORG_ID, [], {
+      page: 2,
+      pageSize: 50,
+      compactPagination: true,
+    });
+    expect(mockFindMany).toHaveBeenCalledWith(
+      expect.objectContaining({ skip: 50, take: 50 }),
+    );
+    expect(result).toMatchObject({ page: 2, totalPages: 2, pageSize: 50 });
+  });
+});
+
+describe('optional authorized Brain coverage', () => {
+  it('does not read Brain by default', async () => {
+    await getUserFilesQuery(ORG_ID);
+    expect(mockCoverage).not.toHaveBeenCalled();
+  });
+  it('enriches only IDs returned by the access-scoped list', async () => {
+    mockFindMany.mockResolvedValue([{ id: 'visible-file' }]);
+    mockCoverage.mockResolvedValue(
+      new Map([['visible-file', { approved: 2, candidates: 1 }]]),
+    );
+    const result = await getUserFilesQuery(ORG_ID, [], {
+      includeBrainCoverage: true,
+    });
+    expect(mockCoverage).toHaveBeenCalledWith(ORG_ID, ['visible-file']);
+    expect(result.items[0].brainCoverage).toEqual({
+      approved: 2,
+      candidates: 1,
+    });
   });
 });

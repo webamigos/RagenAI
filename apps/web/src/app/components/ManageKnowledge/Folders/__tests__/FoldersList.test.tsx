@@ -189,22 +189,17 @@ describe('folder PII policy tag', () => {
     expect(row.className).toContain('text-left');
   });
 
-  /**
-   * jsdom has no layout, so this pins the mechanism rather than the pixels.
-   * `flex-1` on the name made its basis 0: the tag was sized first and
-   * "Płace" became "Pł…" beside a legible "All PII". The name now starts at
-   * its content width, and the tag gives way first.
-   */
-  it('sizes the name before the tag, and shrinks the tag first', () => {
-    renderList([makeFolder({ name: 'Płace', piiPolicy: 'STRICT' })]);
-
-    const name = screen.getByText('Płace');
-    expect(name.className).not.toContain('flex-1');
-    const tagSlot = screen.getByTestId(
-      'pii-policy-badge-strict',
-    ).parentElement!;
-    expect(tagSlot.className).toContain('shrink-[999]');
-    expect(tagSlot.className).toContain('ml-auto');
+  it('wraps the full folder name and places its policy below it', () => {
+    const fullName = 'Payroll contracts and personal data for all departments';
+    renderList([makeFolder({ name: fullName, piiPolicy: 'STRICT' })]);
+    const name = screen.getByText(fullName);
+    expect(name).toHaveAttribute('title', fullName);
+    expect(name.className).toContain('break-words');
+    expect(name.className).not.toContain('truncate');
+    const slot = screen.getByTestId('pii-policy-badge-strict').parentElement!;
+    expect(slot.className).toContain('flex-col');
+    expect(slot).toContainElement(name);
+    expect(slot.closest('button')!.className).toContain('h-auto');
   });
 });
 

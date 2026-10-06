@@ -48,6 +48,8 @@ import { GridView } from './Grid/GridView';
 import { LayoutToggle, getSavedViewMode } from './LayoutToggle';
 import { useBulkSelection } from './hooks/useBulkSelection';
 import { BulkActionBar } from './BulkActionBar';
+import { OptimizeFilesDialog } from './OptimizeFilesDialog';
+import { KnowledgeListIssues } from './KnowledgeListIssues';
 import {
   BulkProgressBanner,
   type BulkProgressState,
@@ -88,6 +90,7 @@ export type ModalStateProps = {
 };
 
 type FileListWrapperWithDataProps = {
+  knowledgeList?: boolean;
   result: PaginatedUserFilesResult;
   sort: UserFilesSort;
   dir: UserFilesSortDir;
@@ -133,6 +136,7 @@ type FileListWrapperWithDataProps = {
 
 export const FileListWrapperWithData = ({
   result,
+  knowledgeList = false,
   sort,
   dir,
   selectedFileTypes,
@@ -152,6 +156,7 @@ export const FileListWrapperWithData = ({
   const tBulk = useTranslations('bulk-notifications');
   const { user } = useUser();
   const [layoutMode, setLayoutMode] = useState<'list' | 'grid'>('list');
+  const [optimizationIds, setOptimizationIds] = useState<string[] | null>(null);
   const [searchValue, setSearchValue] = useState('');
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [showModal, setShowModal] = useState<ModalStateProps>({
@@ -213,11 +218,11 @@ export const FileListWrapperWithData = ({
   const isSharedView = viewMode === 'shared-with-me';
 
   useEffect(() => {
-    const saved = getSavedViewMode();
+    const saved = knowledgeList ? 'list' : getSavedViewMode();
     if (saved !== 'list') {
       setLayoutMode(saved);
     }
-  }, []);
+  }, [knowledgeList]);
 
   useEffect(() => {
     getPiiIngestionModeAction().then((mode) => {
@@ -747,7 +752,7 @@ export const FileListWrapperWithData = ({
     <FileSearch value={searchValue} onChange={handleSearchChange} />
   );
 
-  const viewToggleNode = (
+  const viewToggleNode = knowledgeList ? undefined : (
     <LayoutToggle
       className="hidden md:flex"
       viewMode={layoutMode}
@@ -766,6 +771,11 @@ export const FileListWrapperWithData = ({
       onShare={() => setIsBulkShareOpen(true)}
       onChangePolicy={() => setIsBulkPolicyOpen(true)}
       canChangePolicy={canManageOrg === true}
+      onOptimize={
+        knowledgeList && canManageOrg
+          ? () => setOptimizationIds(fileIds)
+          : undefined
+      }
       onReembed={handleBulkReembed}
       stagedCount={stagedSelectedIds.length}
       onSendStaged={handleBulkSendStaged}
@@ -860,6 +870,25 @@ export const FileListWrapperWithData = ({
 
       {topBarLeft && <div className="mb-2 shrink-0">{topBarLeft}</div>}
 
+      {knowledgeList && (
+        <KnowledgeListIssues
+          disabled={isBulkLoading}
+          files={filteredFiles}
+          onOptimize={canManageOrg ? setOptimizationIds : undefined}
+          onReprocess={canManageOrg ? runBulkReembed : undefined}
+        />
+      )}
+      {optimizationIds && (
+        <OptimizeFilesDialog
+          files={filteredFiles.filter((file) =>
+            optimizationIds.includes(file.id),
+          )}
+          onClose={() => {
+            setOptimizationIds(null);
+            router.refresh();
+          }}
+        />
+      )}
       <BulkProgressBanner
         state={bulkProgress}
         onDismiss={() => setBulkProgress({ status: 'idle' })}
@@ -1000,6 +1029,10 @@ export const FileListWrapperWithData = ({
         )}
         {(hasContent || isFilteredEmpty) && layoutMode === 'list' && (
           <DocumentsTableWithFilters
+            knowledgeList={knowledgeList}
+            onOptimizeFiles={
+              knowledgeList && canManageOrg ? setOptimizationIds : undefined
+            }
             result={result}
             files={filteredFiles}
             subfolders={subfolders}

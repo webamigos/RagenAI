@@ -25,6 +25,10 @@ vi.mock('@/app/lib/utils/auth-helpers', () => ({
   getCurrentUser: vi.fn(async () => ({ id: 'user-1' })),
 }));
 
+vi.mock('@/features/brain/services/queries/get-brain-access-query', () => ({
+  getBrainAccessQuery: vi.fn(async () => ({ orgId: 'org-1' })),
+}));
+
 vi.mock('@/lib/auth-guards', () => ({
   getUserTeamIds: vi.fn(async () => []),
   getActiveMember: vi.fn(async () => ({ role: 'owner' })),

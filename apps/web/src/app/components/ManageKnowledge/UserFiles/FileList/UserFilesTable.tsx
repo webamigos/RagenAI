@@ -1,7 +1,11 @@
 import React, { useState, useRef, useMemo, type ComponentProps } from 'react';
 import prettyBytes from 'pretty-bytes';
-import { useFormatter, useTranslations } from 'next-intl';
+import { useFormatter, useTranslations, useLocale } from 'next-intl';
 import { StatusBadge } from '@/components/ui/status-badge';
+import {
+  languageName,
+  shortLanguageTag,
+} from '@/features/brain/utils/language-name';
 import { DEFAULT_PROJECT_TITLE } from '@/features/organizations/constants/settings';
 
 import {
@@ -28,6 +32,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { SuspiciousContentBadge } from './SuspiciousContentBadge';
 import { RagScoreBadge } from './RagScoreBadge';
+import { BrainCoverageCell, ChatQualityCell } from './KnowledgeFileCells';
 import { DiagnosticsBadge } from '../../Diagnostics/DiagnosticsBadge';
 import { SendStagedButton } from './SendStagedButton';
 import { PiiPolicyBadge } from '../../PiiPolicyBadge';
@@ -63,6 +68,8 @@ const COLUMN = {
   size: 'w-[88px]',
   added: 'w-[128px]',
   status: 'w-[108px]',
+  brain: 'w-[176px]',
+  quality: 'w-[220px]',
   policy: 'w-[168px]',
   actions: 'w-8',
 } as const;
@@ -129,6 +136,8 @@ type SelectionProps = {
 };
 
 type Props = {
+  knowledgeList?: boolean;
+  onOptimizeFiles?: (ids: string[]) => void;
   files: UserFileType[];
   subfolders?: DocumentFolderItem[];
   onNavigateFolder?: (folderId: string) => void;
@@ -172,6 +181,8 @@ export type UserFileTypeSafe = UserFileType & {
 };
 
 type FileRowProps = {
+  knowledgeList?: boolean;
+  onOptimizeFiles?: (ids: string[]) => void;
   file: UserFileTypeSafe;
   showModal: ModalStateProps;
   deleteLoading: boolean;
@@ -298,6 +309,8 @@ function FileStatusBadge({
 
 const FileRow = ({
   file,
+  knowledgeList = false,
+  onOptimizeFiles,
   showModal,
   deleteLoading,
   canDelete = true,
@@ -312,6 +325,8 @@ const FileRow = ({
 }: FileRowProps) => {
   const [isLoading] = useState(false);
   const tBulkBar = useTranslations('bulk-action-bar');
+  const tKnowledge = useTranslations('knowledge-list');
+  const locale = useLocale();
   const router = useRouter();
 
   const format = useFormatter();
@@ -435,6 +450,16 @@ const FileRow = ({
             <span className="shrink-0 rounded border border-paper-200 px-1 font-mono text-[9px] leading-4 text-muted-foreground dark:border-paper-800">
               {getFileLabel(fileName)}
             </span>
+            {knowledgeList && file.language && (
+              <span
+                className="shrink-0 rounded border border-border px-1 text-[10px] uppercase"
+                aria-label={tKnowledge('file-language', {
+                  language: languageName(file.language, locale),
+                })}
+              >
+                {shortLanguageTag(file.language)}
+              </span>
+            )}
             {/*
               The name is the keyboard's way in.
 
@@ -475,8 +500,12 @@ const FileRow = ({
               </span>
             )}
             <SuspiciousContentBadge metadata={file.metadata} />
-            <RagScoreBadge metadata={file.metadata} />
-            <DiagnosticsBadge metadata={file.metadata} />
+            {!knowledgeList && (
+              <>
+                <RagScoreBadge metadata={file.metadata} />
+                <DiagnosticsBadge metadata={file.metadata} />
+              </>
+            )}
           </span>
         </Td>
         {/*
@@ -490,13 +519,32 @@ const FileRow = ({
         <Td className="whitespace-nowrap text-right tabular-nums text-muted-foreground">
           {formattedCreatedAt}
         </Td>
+        {knowledgeList && (
+          <Td>
+            <BrainCoverageCell file={file} />
+          </Td>
+        )}
         <Td>
           <div className="flex flex-col items-start gap-1">
-            <FileStatusBadge
-              embeddingStatus={file.embeddingStatus}
-              parsingStatus={file.parsingStatus}
-              metadata={file.metadata}
-            />
+            {knowledgeList ? (
+              <ChatQualityCell
+                file={file}
+                onOptimize={onOptimizeFiles}
+                status={
+                  <FileStatusBadge
+                    embeddingStatus={file.embeddingStatus}
+                    parsingStatus={file.parsingStatus}
+                    metadata={file.metadata}
+                  />
+                }
+              />
+            ) : (
+              <FileStatusBadge
+                embeddingStatus={file.embeddingStatus}
+                parsingStatus={file.parsingStatus}
+                metadata={file.metadata}
+              />
+            )}
             {canManageOrg === true &&
               file.embeddingStatus === EmbeddingStatus.STAGED && (
                 <SendStagedButton fileId={file.id} />
@@ -549,6 +597,8 @@ const FileRow = ({
 
 export const UserFilesTable = ({
   files,
+  knowledgeList = false,
+  onOptimizeFiles,
   subfolders = [],
   onNavigateFolder,
   showModal,
@@ -577,6 +627,7 @@ export const UserFilesTable = ({
   onChangeRowPolicy,
 }: Props & ComponentProps<'table'>) => {
   const t = useTranslations('files-table');
+  const tKnowledge = useTranslations('knowledge-list');
   const tBulkBar = useTranslations('bulk-action-bar');
   const tFolders = useTranslations('folders');
   const [searchValue] = useState('');
@@ -676,13 +727,19 @@ export const UserFilesTable = ({
       is a risk on one breakpoint and a no-op on the other.
     */
     <div className="relative min-h-0 flex-1 overflow-x-auto overflow-y-auto">
-      <table className="w-full min-w-[840px] table-fixed border-separate border-spacing-0 text-sm [&_tbody_tr:last-child_td]:border-b-0">
+      <table
+        className={cn(
+          'w-full table-fixed border-separate border-spacing-0 text-sm [&_tbody_tr:last-child_td]:border-b-0',
+          knowledgeList ? 'min-w-[1100px]' : 'min-w-[840px]',
+        )}
+      >
         <colgroup>
           {showCheckboxes && <col className={COLUMN.select} />}
           <col className={COLUMN.name} />
           <col className={COLUMN.size} />
           <col className={COLUMN.added} />
-          <col className={COLUMN.status} />
+          {knowledgeList && <col className={COLUMN.brain} />}
+          <col className={knowledgeList ? COLUMN.quality : COLUMN.status} />
           {canManageOrg === true && <col className={COLUMN.policy} />}
           <col className={COLUMN.actions} />
         </colgroup>
@@ -795,7 +852,12 @@ export const UserFilesTable = ({
                 )}
               </button>
             </Th>
-            <Th>{t('column-status')}</Th>
+            {knowledgeList && <Th>{tKnowledge('column-brain')}</Th>}
+            <Th>
+              {knowledgeList
+                ? tKnowledge('column-quality')
+                : t('column-status')}
+            </Th>
             {canManageOrg === true && (
               <Th data-testid="pii-policy-column-header">
                 {t('column-pii-policy')}
@@ -832,6 +894,7 @@ export const UserFilesTable = ({
                 </span>
               </Td>
               <Td />
+              {knowledgeList && <Td />}
               <Td />
               {canManageOrg === true && <Td />}
               <Td />
@@ -844,6 +907,8 @@ export const UserFilesTable = ({
               deleteLoading={deleteLoading}
               key={file.id}
               file={file}
+              knowledgeList={knowledgeList}
+              onOptimizeFiles={onOptimizeFiles}
               showModal={showModal}
               toggleModal={toggleModal}
               canDelete={canDelete}

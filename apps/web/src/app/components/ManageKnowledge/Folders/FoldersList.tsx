@@ -421,7 +421,7 @@ export function FoldersList({
         <div className="group relative">
           <button
             type="button"
-            className={`${navItemBase} ${isSelected ? navItemActive : navItemInactive} ${dropTargetId === folder.id ? navItemDropTarget : ''}`}
+            className={`${navItemBase} h-auto min-h-[30px] py-2 ${isSelected ? navItemActive : navItemInactive} ${dropTargetId === folder.id ? navItemDropTarget : ''}`}
             style={{ paddingLeft: `${12 + depth * 16}px` }}
             onClick={() => onSelectFolder?.(folder.id, 'all')}
             {...dropHandlers(folder.id)}
@@ -453,37 +453,14 @@ export function FoldersList({
               <span className="w-3.5 shrink-0" />
             )}
             <FolderIcon className="size-4 shrink-0 text-muted-foreground" />
-            {/*
-              The name takes the space and the tag gives it up. A 216px rail
-              cannot hold both in full, and the name is what you are aiming
-              at — a row reading "HR ..." beside a legible policy is the wrong
-              half to keep. The tag truncates with its full text in `title`.
-
-              "Takes" is done with shrink factors, not with `flex-1` on the
-              name: `flex-1` sets the name's basis to 0, so the tag was sized
-              first and the name got whatever was left — "Płace" became
-              "Pł…" beside a legible "Wszystkie". Now both start at their
-              content width, the tag shrinks 999 times faster, and `ml-auto`
-              keeps it on the right.
-
-              The per-folder file count that used to sit here is gone with it.
-              It was the third thing competing for the same 160px, it is not in
-              the phase 7 rail, and unlike the scope counts above it answers
-              nothing you would act on: opening the folder shows you.
-            */}
-            <span className="min-w-0 truncate">{folder.name}</span>
-            {/*
-              A folder carries a policy only when it overrides the default, so
-              the tag's presence *is* the override — which is why it renders on
-              `piiPolicy` being set rather than on it differing from something.
-              `mr-5` keeps it clear of the row menu, which appears over the
-              right edge on hover.
-            */}
-            {folder.piiPolicy && (
-              <span className="mr-5 ml-auto min-w-0 max-w-[88px] shrink-[999]">
-                <PiiPolicyBadge piiPolicy={folder.piiPolicy} compact />
+            <span className="flex min-w-0 flex-1 flex-col items-start gap-1 text-left">
+              <span className="break-words" title={folder.name}>
+                {folder.name}
               </span>
-            )}
+              {folder.piiPolicy && (
+                <PiiPolicyBadge piiPolicy={folder.piiPolicy} compact />
+              )}
+            </span>
           </button>
 
           <DropdownMenu>

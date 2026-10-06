@@ -13,3 +13,12 @@ export function languageName(code: string, locale: string): string {
     return code;
   }
 }
+
+/** Canonical short language tag, with a safe fallback for legacy metadata. */
+export function shortLanguageTag(code: string): string {
+  try {
+    return new Intl.Locale(code).language.toUpperCase();
+  } catch {
+    return code.toUpperCase();
+  }
+}

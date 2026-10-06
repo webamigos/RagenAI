@@ -29,7 +29,7 @@ test.describe('Document diagnostics', () => {
     await expect(page.getByRole('table')).toBeVisible({ timeout: 10_000 });
 
     const diagnosed = page.getByTestId(`file-row-${TEST_DIAGNOSED_FILE_ID}`);
-    await expect(diagnosed.getByTestId('diagnostics-badge')).toHaveText(
+    await expect(diagnosed.getByTestId('file-chat-quality')).toContainText(
       'Tabela bez nagłówków',
     );
 
@@ -37,7 +37,12 @@ test.describe('Document diagnostics', () => {
     // and in particular no "all clear".
     const unchecked = page.getByTestId(`file-row-${TEST_FILE_ID}`);
     await expect(unchecked).toBeVisible();
-    await expect(unchecked.getByTestId('diagnostics-badge')).toHaveCount(0);
+    await expect(unchecked.getByTestId('file-chat-quality')).toContainText(
+      'Nie sprawdzono',
+    );
+    await expect(unchecked.getByTestId('file-chat-quality')).not.toContainText(
+      'OK',
+    );
   });
 
   test('the document view lists each finding with what to do', async ({
