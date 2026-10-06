@@ -1,6 +1,6 @@
 # ADR-54: A document language pair is an explicit, confirmed link between two files
 
-**Status:** Proposed. Awaiting acceptance before any schema change; this is Phase 8 of the Brain rebuild.
+**Status:** Accepted. Phase 8 of the Brain rebuild; it ships in small pull requests behind a feature key (ADR-50).
 **Date:** 2026-10-06
 
 ## Context
