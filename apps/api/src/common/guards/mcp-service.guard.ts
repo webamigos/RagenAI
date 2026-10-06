@@ -3,6 +3,7 @@ import {
   ExecutionContext,
   ForbiddenException,
   Injectable,
+  Logger,
   UnauthorizedException,
 } from '@nestjs/common';
 import { type Request } from 'express';
@@ -15,6 +16,7 @@ import { type OrgId, type UserId, type ProjectId } from '../types/brand.js';
 
 @Injectable()
 export class McpServiceGuard implements CanActivate {
+  private readonly logger = new Logger(McpServiceGuard.name);
   constructor(
     private readonly authentication: McpServiceAuthService,
     private readonly prisma: PrismaService,
@@ -32,6 +34,13 @@ export class McpServiceGuard implements CanActivate {
         'Invalid or expired MCP service assertion',
       );
     }
+    this.logger.log({
+      event: 'mcp.service.assertion.verified',
+      jti: assertion.jti,
+      userId: assertion.userId,
+      orgId: assertion.orgId,
+      clientId: assertion.clientId,
+    });
     const member = await this.prisma.client.member.findFirst({
       where: { organizationId: assertion.orgId, userId: assertion.userId },
       include: { user: true },

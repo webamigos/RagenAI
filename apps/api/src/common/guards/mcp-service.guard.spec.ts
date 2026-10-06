@@ -1,5 +1,6 @@
 import {
   type ExecutionContext,
+  Logger,
   ForbiddenException,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -62,6 +63,27 @@ function setup() {
   };
 }
 describe('McpServiceGuard', () => {
+  it('logs the verified token id without forwarding credentials into logs', async () => {
+    const log = vi
+      .spyOn(Logger.prototype, 'log')
+      .mockImplementation(() => undefined);
+    try {
+      const s = setup();
+      await s.guard.canActivate(s.context);
+      expect(log).toHaveBeenCalledWith({
+        event: 'mcp.service.assertion.verified',
+        jti: 'token-a',
+        userId: 'user-a',
+        orgId: 'org-a',
+        clientId: 'client-a',
+      });
+      expect(JSON.stringify(log.mock.calls)).not.toContain(
+        s.request.headers.authorization,
+      );
+    } finally {
+      log.mockRestore();
+    }
+  });
   it('does not record activity for a refused connection', async () => {
     const s = setup();
     s.features.isFeatureEnabled.mockResolvedValue(false);
