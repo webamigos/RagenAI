@@ -38,6 +38,7 @@ export const DEV_SERVER_VERSION = 'dev';
 export const mcpEnvSchema = fragments.targetEnvRequired
   .merge(fragments.observability)
   .merge(fragments.mcpOAuth)
+  .merge(fragments.authOrigin)
   .merge(fragments.mcpService)
   .extend({
     // `RAGEN_MCP_PORT` first, then `PORT` — see the transform below.
@@ -79,6 +80,13 @@ export const mcpEnvSchema = fragments.targetEnvRequired
     RAILWAY_GIT_COMMIT_SHA: blankAsUndefined(z.string().trim().optional()),
   })
   .superRefine((env, ctx) => {
+    if (env.MCP_OAUTH_ENABLED === 'true' && !env.BETTER_AUTH_URL) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['BETTER_AUTH_URL'],
+        message: 'BETTER_AUTH_URL is required for MCP OAuth',
+      });
+    }
     mcpServiceRules(env, ctx);
     mcpOAuthRules(env, ctx);
     requiredInDeployedEnvs(

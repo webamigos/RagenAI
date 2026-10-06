@@ -423,7 +423,7 @@ organization (ADR-50).
   Claude Code and the MCP Inspector. Record the result here.
 - [ ] **D2.** Protected-resource metadata, the 401/403 challenges, JWT
   verification with a cached JWKS, and the `RagenSession` union.
-- [ ] **D3.** The service assertion on every call to `apps/api` for an OAuth
+- [x] **D3.** The service assertion on every call to `apps/api` for an OAuth
   session. A test that an OAuth session's access token never appears in an
   outgoing request.
 - [ ] **D4.** Connected apps in account settings, with Disconnect. It comes
@@ -556,3 +556,15 @@ still succeed. The integration test has a 20-second budget for eight protocol
 requests rather than the default five seconds. This proves SDK compatibility;
 the specifically requested Claude Code and Inspector probes remain pending,
 so D1's checkbox is not yet marked complete.
+
+### D2/D3 verification — 2026-10-06
+
+The real FastMCP HTTP integration test `oauth-http.test.ts` verifies public
+protected-resource metadata, missing/invalid-token 401 challenges, the 403
+insufficient-scope challenge, and one cached JWKS fetch. All three tools
+run twice through the official MCP SDK with a changed JWT on the same client.
+The mock API verifies every service assertion and its current user identity;
+neither access token appears in outgoing authorization headers.
+MCP verification: 21 files, 131 passing tests; typecheck and lint pass.
+D2 remains open for an explicit remote-JWKS rotation test and the final
+review of issuer configuration. D1's named-client probes remain outstanding.

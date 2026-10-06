@@ -212,6 +212,7 @@ describe('MCP OAuth resource configuration', () => {
   const valid = {
     TARGET_ENV: 'local',
     MCP_OAUTH_ENABLED: 'true',
+    BETTER_AUTH_URL: 'http://localhost:3000',
     RAGEN_MCP_PUBLIC_URL: 'https://mcp.example/mcp',
     MCP_SERVICE_SECRET: 'm'.repeat(32),
   };

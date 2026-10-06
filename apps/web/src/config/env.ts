@@ -86,7 +86,7 @@ export const webEnvSchema = fragments.targetEnv
      * operator running a prebuilt image, which is why `BETTER_AUTH_URL` is
      * the one to prefer.
      */
-    BETTER_AUTH_URL: fragments.blankAsUndefined(fragments.httpUrl().optional()),
+    ...fragments.authOrigin.shape,
     NEXT_PUBLIC_APP_URL: fragments.blankAsUndefined(
       fragments.httpUrl().optional(),
     ),

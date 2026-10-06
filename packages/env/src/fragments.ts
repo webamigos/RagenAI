@@ -493,3 +493,8 @@ export const mcpOAuth = z.object({
 export const mcpService = z.object({
   MCP_SERVICE_SECRET: blankAsUndefined(z.string().min(32).optional()),
 });
+
+/** Public origin of the Better Auth authorization server. */
+export const authOrigin = z.object({
+  BETTER_AUTH_URL: blankAsUndefined(httpUrl().optional()),
+});

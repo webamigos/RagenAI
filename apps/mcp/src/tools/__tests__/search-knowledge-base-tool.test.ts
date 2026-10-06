@@ -57,7 +57,7 @@ describe('ragen_search_knowledge_base tool', () => {
         query: 'refund policy',
         max_results: 3,
       },
-      { session: { apiKey: 'Bearer sk-test.secret' } },
+      { session: { kind: 'api_key', apiKey: 'Bearer sk-test.secret' } },
     );
 
     expect(mockSearchKnowledgeBase).toHaveBeenCalledWith(
@@ -81,7 +81,7 @@ describe('ragen_search_knowledge_base tool', () => {
 
     const result = await execute(
       { assistant_id: 'missing', query: 'refund policy' },
-      { session: { apiKey: 'Bearer sk-test.secret' } },
+      { session: { kind: 'api_key', apiKey: 'Bearer sk-test.secret' } },
     );
 
     expect(JSON.parse(result)).toEqual({

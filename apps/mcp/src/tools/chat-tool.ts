@@ -1,3 +1,4 @@
+import { apiAuthorization } from '../auth.js';
 import { z } from 'zod';
 import type { FastMCP } from 'fastmcp';
 
@@ -44,7 +45,7 @@ export function registerChatTool(server: FastMCP<RagenSession>): void {
         TOOL_NAME,
         { 'ragen.assistant_id': args.assistant_id },
         async () => {
-          const result = await chat(session.apiKey, {
+          const result = await chat(apiAuthorization(session), {
             assistant_id: args.assistant_id,
             content: args.message,
             context: args.context,
