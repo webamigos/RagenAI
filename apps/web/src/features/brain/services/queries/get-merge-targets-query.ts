@@ -1,5 +1,6 @@
 import db from '@ragenai/prisma-client';
 
+import { isFeatureEnabledQuery } from '@/features/subscriptions/services/queries/get-effective-features-query';
 import type { MergeTarget } from '../../contracts/brain-review.types';
 
 /** How many pages the merge picker offers; suggestions always come first. */
@@ -27,10 +28,11 @@ export async function getMergeTargetsQuery(
       id: { not: page.id },
       status: { in: ['CANDIDATE', 'APPROVED', 'STALE'] },
     },
-    select: { publicId: true, title: true, slug: true, status: true },
+    select: { id: true, publicId: true, title: true, slug: true, status: true },
     orderBy: { title: 'asc' },
     take: 2000,
   });
+  const sameContent = await pagesCitingCounterparts(orgId, page.id);
   const title = normalizeTitle(page.title);
   const slug = baseSlug(page.slug);
   const targets = rows.map((r) => ({
@@ -38,11 +40,63 @@ export async function getMergeTargetsQuery(
     title: r.title,
     status: r.status as MergeTarget['status'],
     suggested: normalizeTitle(r.title) === title || baseSlug(r.slug) === slug,
+    ...(sameContent.has(r.id) ? { sameContentInOtherLanguage: true } : {}),
   }));
   return [
-    ...targets.filter((t) => t.suggested),
-    ...targets.filter((t) => !t.suggested),
+    ...targets.filter((t) => t.sameContentInOtherLanguage),
+    ...targets.filter((t) => !t.sameContentInOtherLanguage && t.suggested),
+    ...targets.filter((t) => !t.sameContentInOtherLanguage && !t.suggested),
   ].slice(0, MERGE_TARGETS_SHOWN);
+}
+
+/**
+ * Pages that cite the counterpart, in another language, of a document this
+ * page cites (ADR-54). The pair is what says two files are one document, so a
+ * page drawn from the Polish half and one drawn from the English half are the
+ * likeliest to be the same page. Read by organization: Brain already offers
+ * every live page of the organization here. Nothing while the feature is off.
+ */
+async function pagesCitingCounterparts(
+  orgId: string,
+  pageId: number,
+): Promise<Set<number>> {
+  if (!(await isFeatureEnabledQuery(orgId, 'languagePairs'))) {
+    return new Set();
+  }
+  const cited = await db.knowledgePageSource.findMany({
+    where: { organizationId: orgId, pageId },
+    distinct: ['fileId'],
+    select: { fileId: true },
+  });
+  const fileIds = cited.map((source) => source.fileId);
+  if (fileIds.length === 0) {
+    return new Set();
+  }
+  const pairs = await db.documentPair.findMany({
+    where: {
+      organizationId: orgId,
+      OR: [{ fileAId: { in: fileIds } }, { fileBId: { in: fileIds } }],
+    },
+    select: { fileAId: true, fileBId: true },
+  });
+  const own = new Set(fileIds);
+  const counterparts = pairs.flatMap((pair) => [
+    ...(own.has(pair.fileAId) ? [pair.fileBId] : []),
+    ...(own.has(pair.fileBId) ? [pair.fileAId] : []),
+  ]);
+  if (counterparts.length === 0) {
+    return new Set();
+  }
+  const sources = await db.knowledgePageSource.findMany({
+    where: {
+      organizationId: orgId,
+      fileId: { in: counterparts },
+      pageId: { not: pageId },
+    },
+    distinct: ['pageId'],
+    select: { pageId: true },
+  });
+  return new Set(sources.map((source) => source.pageId));
 }
 
 export function normalizeTitle(title: string): string {

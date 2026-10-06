@@ -2835,7 +2835,8 @@
       "merge-none": "Não há outra página com a qual fundir",
       "merge-confirm-title": "Fundir esta página?",
       "merge-confirm-description": "As suas afirmações e fontes passam para «{target}», que mantém o título, adota o acesso mais restrito dos dois e volta a revisão. Esta página fica rejeitada e aponta para ela.",
-      "merged": "Páginas fundidas"
+      "merged": "Páginas fundidas",
+      "merge-other-language": "Same content in another language"
     },
     "history": {
       "empty": "Ainda sem decisões",

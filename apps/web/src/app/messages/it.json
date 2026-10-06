@@ -2835,7 +2835,8 @@
       "merge-none": "Nessun’altra pagina a cui unirla",
       "merge-confirm-title": "Unire questa pagina?",
       "merge-confirm-description": "Le sue affermazioni e fonti passano a «{target}», che mantiene il titolo, prende l’accesso più ristretto dei due e torna in revisione. Questa pagina viene segnata come rifiutata e rimanda a essa.",
-      "merged": "Pagine unite"
+      "merged": "Pagine unite",
+      "merge-other-language": "Same content in another language"
     },
     "history": {
       "empty": "Ancora nessuna decisione",

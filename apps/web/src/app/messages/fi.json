@@ -2835,7 +2835,8 @@
       "merge-none": "Ei muuta sivua, johon yhdistää",
       "merge-confirm-title": "Yhdistetäänkö tämä sivu?",
       "merge-confirm-description": "Sen väitteet ja lähteet siirtyvät sivulle ”{target}”, joka säilyttää otsikkonsa, saa kahdesta suppeamman käyttöoikeuden ja palaa arvioitavaksi. Tämä sivu merkitään hylätyksi ja viittaa siihen.",
-      "merged": "Sivut yhdistetty"
+      "merged": "Sivut yhdistetty",
+      "merge-other-language": "Same content in another language"
     },
     "history": {
       "empty": "Ei vielä päätöksiä",

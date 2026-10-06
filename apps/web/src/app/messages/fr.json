@@ -2835,7 +2835,8 @@
       "merge-none": "Aucune autre page avec laquelle fusionner",
       "merge-confirm-title": "Fusionner cette page ?",
       "merge-confirm-description": "Ses affirmations et ses sources passent dans « {target} », qui garde son titre, prend l’accès le plus restreint des deux et repart en révision. Cette page est marquée rejetée et renvoie vers elle.",
-      "merged": "Pages fusionnées"
+      "merged": "Pages fusionnées",
+      "merge-other-language": "Same content in another language"
     },
     "history": {
       "empty": "Aucune décision pour l’instant",

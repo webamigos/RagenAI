@@ -2835,7 +2835,8 @@
       "merge-none": "Žiadna iná stránka na zlúčenie",
       "merge-confirm-title": "Zlúčiť túto stránku?",
       "merge-confirm-description": "Jej tvrdenia a zdroje prejdú do „{target}“, ktorá si ponechá názov, prevezme užší z oboch prístupov a vráti sa na posúdenie. Táto stránka bude označená ako zamietnutá a bude na ňu odkazovať.",
-      "merged": "Stránky zlúčené"
+      "merged": "Stránky zlúčené",
+      "merge-other-language": "Same content in another language"
     },
     "history": {
       "empty": "Zatiaľ žiadne rozhodnutia",

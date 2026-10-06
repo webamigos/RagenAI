@@ -181,6 +181,46 @@ describe('MergePicker', () => {
     expect(screen.getByText('No other page to merge into')).toBeVisible();
   });
 
+  it('offers the same content in another language under its own heading, first', async () => {
+    wrap(
+      <MergePicker
+        publicId={PUBLIC_ID}
+        updatedAt={UPDATED}
+        targets={[
+          {
+            publicId: TARGET,
+            title: 'Leave policy',
+            status: 'APPROVED',
+            suggested: false,
+            sameContentInOtherLanguage: true,
+          },
+          {
+            publicId: 'b',
+            title: 'Urlop',
+            status: 'APPROVED',
+            suggested: true,
+          },
+          {
+            publicId: 'c',
+            title: 'Kadry',
+            status: 'APPROVED',
+            suggested: false,
+          },
+        ]}
+      />,
+    );
+    fireEvent.click(screen.getByRole('combobox', { name: 'Merge into' }));
+    const listbox = await screen.findByRole('listbox');
+    const text = listbox.textContent ?? '';
+    expect(text.indexOf('Same content in another language')).toBeGreaterThan(
+      -1,
+    );
+    expect(text.indexOf('Same content in another language')).toBeLessThan(
+      text.indexOf('Looks like the same subject'),
+    );
+    expect(text.indexOf('Leave policy')).toBeLessThan(text.indexOf('Urlop'));
+  });
+
   it('merges after confirmation and lands on the page that stayed', async () => {
     actions.mergeKnowledgePagesAction.mockResolvedValue({
       success: true,

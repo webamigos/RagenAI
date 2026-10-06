@@ -44,8 +44,13 @@ export function MergePicker({
   if (targets.length === 0) {
     return <p className="text-muted-foreground">{t('merge-none')}</p>;
   }
-  const suggested = targets.filter((p) => p.suggested);
-  const others = targets.filter((p) => !p.suggested);
+  const otherLanguage = targets.filter((p) => p.sameContentInOtherLanguage);
+  const suggested = targets.filter(
+    (p) => p.suggested && !p.sameContentInOtherLanguage,
+  );
+  const others = targets.filter(
+    (p) => !p.suggested && !p.sameContentInOtherLanguage,
+  );
   const target = targets.find((p) => p.publicId === chosen);
 
   return (
@@ -59,6 +64,16 @@ export function MergePicker({
           <SelectValue placeholder={t('merge-placeholder')} />
         </SelectTrigger>
         <SelectContent>
+          {otherLanguage.length > 0 && (
+            <SelectGroup>
+              <SelectLabel>{t('merge-other-language')}</SelectLabel>
+              {otherLanguage.map((p) => (
+                <SelectItem key={p.publicId} value={p.publicId}>
+                  {p.title}
+                </SelectItem>
+              ))}
+            </SelectGroup>
+          )}
           {suggested.length > 0 && (
             <SelectGroup>
               <SelectLabel>{t('merge-suggested')}</SelectLabel>

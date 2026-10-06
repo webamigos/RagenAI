@@ -110,6 +110,11 @@ export type MergeTarget = {
   title: string;
   status: 'CANDIDATE' | 'APPROVED' | 'STALE';
   suggested: boolean;
+  /**
+   * Cites the counterpart, in another language, of a document this page cites
+   * (ADR-54): very likely the same content. Offered, never merged on its own.
+   */
+  sameContentInOtherLanguage?: boolean;
 };
 
 /** Who a reviewer may name as owner, or grant access to. */

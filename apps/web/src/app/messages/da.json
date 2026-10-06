@@ -2835,7 +2835,8 @@
       "merge-none": "Ingen anden side at flette med",
       "merge-confirm-title": "Flet denne side?",
       "merge-confirm-description": "Dens udsagn og kilder flyttes til “{target}”, som beholder sin titel, får den snævreste af de to adgange og går tilbage til gennemgang. Denne side markeres som afvist og peger derhen.",
-      "merged": "Siderne er flettet"
+      "merged": "Siderne er flettet",
+      "merge-other-language": "Same content in another language"
     },
     "history": {
       "empty": "Ingen beslutninger endnu",

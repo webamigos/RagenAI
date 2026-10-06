@@ -2835,7 +2835,8 @@
       "merge-none": "Keine andere Seite zum Zusammenführen",
       "merge-confirm-title": "Diese Seite zusammenführen?",
       "merge-confirm-description": "Ihre Aussagen und Quellen gehen an „{target}“, die ihren Titel behält, den engeren der beiden Zugriffe übernimmt und wieder zur Prüfung geht. Diese Seite wird als abgelehnt markiert und verweist darauf.",
-      "merged": "Seiten zusammengeführt"
+      "merged": "Seiten zusammengeführt",
+      "merge-other-language": "Same content in another language"
     },
     "history": {
       "empty": "Noch keine Entscheidungen",

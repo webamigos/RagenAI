@@ -2835,7 +2835,8 @@
       "merge-none": "No other page to merge into",
       "merge-confirm-title": "Merge this page?",
       "merge-confirm-description": "Its statements and sources move to “{target}”, which keeps its title, takes the narrower access of the two and returns to review. This page is marked rejected and points to it.",
-      "merged": "Pages merged"
+      "merged": "Pages merged",
+      "merge-other-language": "Same content in another language"
     },
     "history": {
       "empty": "No decisions yet",

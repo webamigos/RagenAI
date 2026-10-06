@@ -2835,7 +2835,8 @@
       "merge-none": "Ingen andre sider å slå sammen med",
       "merge-confirm-title": "Slå sammen denne siden?",
       "merge-confirm-description": "Utsagnene og kildene flyttes til «{target}», som beholder tittelen sin, får den strengeste tilgangen av de to og går tilbake til gjennomgang. Denne siden merkes som avvist og peker dit.",
-      "merged": "Sidene er slått sammen"
+      "merged": "Sidene er slått sammen",
+      "merge-other-language": "Same content in another language"
     },
     "history": {
       "empty": "Ingen beslutninger ennå",
