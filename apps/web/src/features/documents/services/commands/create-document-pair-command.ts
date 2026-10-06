@@ -25,10 +25,11 @@ export type CreateDocumentPairResult =
  * the actor cannot read is "not found", never "forbidden": a name alone
  * confirms a document exists.
  *
- * "At most one pair per file" spans two columns, which the schema cannot
- * express, so both file rows are locked in id order and the check runs under
- * the lock. Two people pairing the same file at once queue instead of both
- * succeeding.
+ * "At most one pair per file" is the database's rule: each paired file has a
+ * `DocumentPairMember` row keyed on the file, so a second pair for it, or two
+ * people pairing it at once, fails on that key and answers `already-paired`.
+ * The row lock and the lookup below only make the common refusal cheap and
+ * the concurrent one orderly; nothing depends on them for correctness.
  */
 export async function createDocumentPairCommand(input: {
   organizationId: string;
@@ -51,8 +52,8 @@ export async function createDocumentPairCommand(input: {
   }
   const [fileAId, fileBId] = ordered;
 
-  const result = await db.$transaction(
-    async (tx): Promise<CreateDocumentPairResult> => {
+  const result = await db
+    .$transaction(async (tx): Promise<CreateDocumentPairResult> => {
       const locked = await tx.$queryRaw<{ id: string }[]>`
         SELECT id FROM user_files
         WHERE organization_id = ${organizationId}
@@ -97,12 +98,21 @@ export async function createDocumentPairCommand(input: {
           fileAId,
           fileBId,
           createdById: actor.userId,
+          members: {
+            create: [{ fileId: fileAId }, { fileId: fileBId }],
+          },
         },
         select: { id: true },
       });
       return { ok: true, pairId: pair.id };
-    },
-  );
+    })
+    .catch((error: unknown): CreateDocumentPairResult => {
+      // The member key refusing a file that is already paired.
+      if ((error as { code?: string } | null)?.code === 'P2002') {
+        return { ok: false, error: 'already-paired' };
+      }
+      throw error;
+    });
 
   if (result.ok) {
     trackAudit({

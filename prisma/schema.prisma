@@ -269,6 +269,7 @@ model UserFile {
   /// Back-relations of DocumentPair only; no column on user_files (ADR-54).
   pairsAsA             DocumentPair[]       @relation("DocumentPairA")
   pairsAsB             DocumentPair[]       @relation("DocumentPairB")
+  pairMembership       DocumentPairMember?
 
   @@unique([id, organizationId])
   @@index([organizationId])
@@ -854,8 +855,8 @@ model DocumentFolder {
 /// Two files of one organization holding the same document in different
 /// languages (ADR-54). The ids are stored smaller-first (a CHECK in the
 /// migration), so a pair has one representation. "At most one pair per file"
-/// across both columns is held by the create command under a row lock, not by
-/// the schema. Deleting either file deletes the pair and leaves the other.
+/// spans both columns, so it is held by `DocumentPairMember`, whose primary key
+/// is the file. Deleting either file deletes the pair and leaves the other.
 model DocumentPair {
   id             String   @id @default(uuid()) @db.Uuid
   organizationId String   @map("organization_id")
@@ -865,13 +866,32 @@ model DocumentPair {
   createdById    String?  @map("created_by_id")
   createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz
 
-  fileA UserFile @relation("DocumentPairA", fields: [fileAId, organizationId], references: [id, organizationId], onDelete: Cascade)
-  fileB UserFile @relation("DocumentPairB", fields: [fileBId, organizationId], references: [id, organizationId], onDelete: Cascade)
+  fileA   UserFile             @relation("DocumentPairA", fields: [fileAId, organizationId], references: [id, organizationId], onDelete: Cascade)
+  fileB   UserFile             @relation("DocumentPairB", fields: [fileBId, organizationId], references: [id, organizationId], onDelete: Cascade)
+  members DocumentPairMember[]
 
   @@unique([fileAId])
   @@unique([fileBId])
   @@index([organizationId])
+  @@unique([id, organizationId])
   @@map("document_pairs")
+}
+
+/// One row per paired file, the file being the primary key: the database
+/// refuses a second pair for a file, whichever column it sits in, and refuses
+/// two writers pairing it at once. The create command writes the pair and both
+/// members in one transaction; both cascade from the pair and from the file.
+model DocumentPairMember {
+  fileId         String @id @map("file_id") @db.Uuid
+  pairId         String @map("pair_id") @db.Uuid
+  organizationId String @map("organization_id")
+
+  file UserFile     @relation(fields: [fileId, organizationId], references: [id, organizationId], onDelete: Cascade)
+  pair DocumentPair @relation(fields: [pairId, organizationId], references: [id, organizationId], onDelete: Cascade)
+
+  @@unique([fileId, organizationId])
+  @@index([pairId])
+  @@map("document_pair_members")
 }
 
 model DocumentPermission {

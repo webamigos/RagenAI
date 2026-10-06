@@ -77,6 +77,9 @@ describe('createDocumentPairCommand', () => {
       fileAId: A,
       fileBId: B,
       createdById: 'u1',
+      members: {
+        create: [{ fileId: A }, { fileId: B }],
+      },
     });
     expect(trackAudit).toHaveBeenCalled();
   });
@@ -127,6 +130,24 @@ describe('createDocumentPairCommand', () => {
     expect(where.organizationId).toBe('org');
     expect(where.OR).toHaveLength(2);
     expect(pairCreate).not.toHaveBeenCalled();
+  });
+
+  it('answers already-paired when the member key refuses a racing writer', async () => {
+    pairCreate.mockRejectedValue(
+      Object.assign(new Error('unique'), { code: 'P2002' }),
+    );
+    await expect(createDocumentPairCommand(input)).resolves.toEqual({
+      ok: false,
+      error: 'already-paired',
+    });
+    expect(trackAudit).not.toHaveBeenCalled();
+  });
+
+  it('does not swallow other database errors', async () => {
+    pairCreate.mockRejectedValue(new Error('connection lost'));
+    await expect(createDocumentPairCommand(input)).rejects.toThrow(
+      'connection lost',
+    );
   });
 
   it('refuses a session with no user', async () => {
