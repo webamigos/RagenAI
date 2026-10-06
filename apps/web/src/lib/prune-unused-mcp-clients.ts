@@ -47,7 +47,6 @@ export async function pruneUnusedMcpClients(
         'oauthConsent',
         'oauthAccessToken',
         'oauthRefreshToken',
-        'oauthClientResource',
       ]) {
         if (
           await adapter.findOne({
@@ -60,6 +59,12 @@ export async function pruneUnusedMcpClients(
         }
       }
       if (used) continue;
+      // Registration itself creates resource bindings; they are configuration,
+      // not a user's grant. Remove them atomically with the unused client.
+      await adapter.deleteMany({
+        model: 'oauthClientResource',
+        where: [{ field: 'clientId', value: client.clientId }],
+      });
       await adapter.delete({
         model: 'oauthClient',
         where: [{ field: 'id', value: client.id }],

@@ -25,7 +25,8 @@ the next run uses a fresh cutoff and catches up.
 The deployment gate defaults off, and the command then reports
 `{"disabled":true,"deleted":0}` without querying OAuth tables. When enabled,
 it deletes anonymous clients created more than 30 days ago that have no
-consent, access token, refresh token or explicit resource configuration. A
+consent, access token or refresh token. Registration-time resource bindings are
+removed in the same transaction as an unused client. A
 client owned by a user, a client with an unknown creation date, and every
 client with a consent are preserved. Scope selection cannot bypass retention.
 

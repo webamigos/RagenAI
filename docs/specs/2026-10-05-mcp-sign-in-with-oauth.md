@@ -743,3 +743,19 @@ fixture accepts all six fresh service assertions for the expected user. These
 are transport checks with synthetic responses; the separate Inspector browser
 check above proves the real issuer and selected scope. Demo claude.ai remains
 an explicit pending authorization and verification gate.
+
+### Retention against actual DCR records — 2026-10-06
+
+The `p0-98` check now also calls the real anonymous `/oauth2/register` endpoint,
+ages its stored client beyond 30 days, runs maintenance and verifies removal.
+This revealed that provider registration automatically creates resource
+bindings: treating their presence as proof of usage kept every real DCR client.
+Maintenance now checks only consents and access/refresh tokens as grant usage,
+then removes registration-time resource bindings atomically with the unused
+client. Owned clients are still preserved. The previous retention note's claim
+about preserving all resource bindings is superseded by this correction.
+
+The real DCR client and synthetic old unused client are deleted, while recent,
+owned and consented clients and the consent survive repeated runs. The E2E uses
+a fresh request context without cookies, cleans up all its created client ids,
+and passes on Docker Desktop (1/1). Fifteen focused adapter/runner tests pass.

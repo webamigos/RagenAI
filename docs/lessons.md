@@ -194,6 +194,8 @@ After a nontrivial correction or a non-obvious gotcha (see `AGENTS.md`'s "Post-T
 
 ### testing
 
+- [DCR resource bindings do not prove a client was used](lessons/dcr-resource-bindings-do-not-prove-a-client-was-used.md) — area:auth,testing; module:web; topic:better-auth,oauth,dcr,retention,prisma. Real anonymous registration creates resource bindings before consent. Test the provider endpoint with an empty cookie context and delete unused bindings with their client in one serializable transaction.
+
 - [Better Auth OAuth sign-in needs the provider client plugin](lessons/better-auth-oauth-sign-in-needs-the-client-plugin.md) — area:auth,testing; module:web; topic:better-auth,oauth,sign-in,client-plugin,e2e. Email sign-in succeeded but returned to onboarding until the official provider client plugin supplied the signed OAuth query. Preserve repeated parameters and prove the complete resume through a browser code exchange.
 
 - [A test that builds the model's answer by hand cannot see what the model actually writes](lessons/a-hand-built-model-answer-cannot-see-the-models-field-names.md) — area:testing,rag; module:worker; topic:personal-memory,structured-output,zod,evals,llm-contract,false-green. Memory extraction shipped with 46 green tests and stored nothing: the schema sent to the model was `unknown[]`, the prompt never named `op`, and the model wrote `"operation"` — every entry failed the parser's union, silently. The tests built `{ op: … }` by hand. Put the field in the schema the provider receives, prefer required-nullable over optional, keep one real answer as a fixture, and run the eval once before it merges.

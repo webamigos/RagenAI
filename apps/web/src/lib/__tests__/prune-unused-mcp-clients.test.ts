@@ -16,16 +16,21 @@ function fixture(clients = [old], usedModel?: string) {
     findOne: vi.fn(async ({ model }) =>
       model === usedModel ? { id: 'used' } : null,
     ),
+    deleteMany: vi.fn().mockResolvedValue(1),
     delete: vi.fn().mockResolvedValue(undefined),
   };
   return { adapter, db: adapter as unknown as DBAdapter };
 }
 describe('unused MCP client retention', () => {
-  it('removes only an old anonymous MCP client without any grants or resource configuration', async () => {
+  it('removes only an old anonymous MCP client without any grants', async () => {
     const { adapter, db } = fixture();
     expect(await pruneUnusedMcpClients(db, now)).toEqual({
       deleted: 1,
       olderThan: '2026-09-06T00:00:00.000Z',
+    });
+    expect(adapter.deleteMany).toHaveBeenCalledWith({
+      model: 'oauthClientResource',
+      where: [{ field: 'clientId', value: 'client' }],
     });
     expect(adapter.delete).toHaveBeenCalledWith({
       model: 'oauthClient',
@@ -37,16 +42,14 @@ describe('unused MCP client retention', () => {
       value: new Date('2026-09-06T00:00:00Z'),
     });
   });
-  it.each([
-    'oauthConsent',
-    'oauthAccessToken',
-    'oauthRefreshToken',
-    'oauthClientResource',
-  ])('preserves a client used by %s', async (model) => {
-    const { adapter, db } = fixture([old], model);
-    expect((await pruneUnusedMcpClients(db, now)).deleted).toBe(0);
-    expect(adapter.delete).not.toHaveBeenCalled();
-  });
+  it.each(['oauthConsent', 'oauthAccessToken', 'oauthRefreshToken'])(
+    'preserves a client used by %s',
+    async (model) => {
+      const { adapter, db } = fixture([old], model);
+      expect((await pruneUnusedMcpClients(db, now)).deleted).toBe(0);
+      expect(adapter.delete).not.toHaveBeenCalled();
+    },
+  );
   it.each([
     { ...old, createdAt: new Date('2026-09-06T00:00:00Z') },
     { ...old, createdAt: new Date('2026-10-05T00:00:00Z') },
