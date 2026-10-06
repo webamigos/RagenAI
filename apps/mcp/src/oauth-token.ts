@@ -1,4 +1,9 @@
-import { createRemoteJWKSet, jwtVerify, type JWTVerifyGetKey } from 'jose';
+import {
+  createRemoteJWKSet,
+  customFetch,
+  jwtVerify,
+  type JWTVerifyGetKey,
+} from 'jose';
 
 export interface OAuthIdentity {
   userId: string;
@@ -10,8 +15,14 @@ export interface OAuthIdentity {
 }
 
 export class OAuthTokenError extends Error {
-  constructor(public readonly status: 401 | 403) {
-    super(status === 403 ? 'Insufficient scope' : 'Invalid access token');
+  constructor(public readonly status: 401 | 403 | 503) {
+    super(
+      {
+        401: 'Invalid access token',
+        403: 'Insufficient scope',
+        503: 'Authorization keys unavailable',
+      }[status],
+    );
   }
 }
 
@@ -21,11 +32,24 @@ const algorithms = ['EdDSA', 'ES256', 'ES512', 'PS256', 'RS256'];
 export function createOAuthTokenVerifier(
   issuer: string,
   resource: string,
-  getKey: JWTVerifyGetKey = createRemoteJWKSet(new URL(`${issuer}/jwks`)),
+  getKey?: JWTVerifyGetKey,
 ): (token: string) => Promise<OAuthIdentity> {
+  const resolveKey =
+    getKey ??
+    createRemoteJWKSet(new URL(`${issuer}/jwks`), {
+      [customFetch]: async (...args) => {
+        try {
+          const response = await fetch(...args);
+          if (!response.ok) throw new OAuthTokenError(503);
+          return response;
+        } catch {
+          throw new OAuthTokenError(503);
+        }
+      },
+    });
   return async (token) => {
     try {
-      const { payload } = await jwtVerify(token, getKey, {
+      const { payload } = await jwtVerify(token, resolveKey, {
         issuer,
         audience: resource,
         algorithms,

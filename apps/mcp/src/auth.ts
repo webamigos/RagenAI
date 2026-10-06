@@ -75,6 +75,8 @@ export async function authenticate(
     return { kind: 'oauth', accessToken: value.slice(7), ...identity };
   } catch (error) {
     const status = error instanceof OAuthTokenError ? error.status : 401;
+    if (status === 503)
+      throw new Response(null, { status, headers: { 'Retry-After': '30' } });
     throw oauthChallenge(
       status,
       status === 403 ? 'insufficient_scope' : 'invalid_token',

@@ -688,3 +688,14 @@ web issues `org`/`project`, while the MCP verifier read `orgId`/`projectId`.
 Commit `0bf1d9f5c` aligns the verifier and its fixtures with the specified
 wire claims, keeping the internal assertion identity names unchanged.
 All 138 MCP tests, build and typecheck pass after the correction.
+
+### JWKS availability verification — 2026-10-06
+
+The JOSE remote resolver now uses its public `customFetch` hook to distinguish
+failed key retrieval from invalid tokens. Network failures and non-successful
+JWKS HTTP responses return 503 with `Retry-After: 30`, without claiming that
+the user's token is invalid. A successful cached key continues to verify during
+an issuer outage. Invalid signatures still return 401; API keys bypass the
+resolver. A real HTTP JWKS test covers cold-cache refusal, the authentication
+response, cache survival and signature refusal. All 139 MCP tests, typecheck
+and build pass. No token, key material or internal fetch error is exposed.
