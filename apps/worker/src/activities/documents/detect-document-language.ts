@@ -39,7 +39,13 @@ export async function detectDocumentLanguage({
     if (/\.(xlsx|csv)$/i.test(fileName ?? '')) {
       // A few headers among numbers are not prose. Do not turn a price list
       // into a confident-looking language tag used by downstream PII masking.
-      const letters = trimmed.match(/\p{L}/gu)?.length ?? 0;
+      let letters = 0;
+      const unicodeLetter = /\p{L}/u;
+      for (const character of trimmed) {
+        if (unicodeLetter.test(character)) {
+          letters += 1;
+        }
+      }
       if (letters < 100 || letters / trimmed.length < 0.3) {
         return null;
       }

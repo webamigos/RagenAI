@@ -98,6 +98,29 @@ describe('detectDocumentLanguage', () => {
     expect(mockFrancAll).not.toHaveBeenCalled();
   });
 
+  it.each(['ż', '漢', '\u{10400}'])(
+    'counts Unicode letters at the spreadsheet prose threshold (%s)',
+    async (letter) => {
+      mockFrancAll.mockReturnValue([
+        ['pol', 1],
+        ['eng', 0.7],
+      ]);
+      expect(
+        await detectDocumentLanguage({
+          fileName: 'prices.csv',
+          documentText: letter.repeat(99),
+        }),
+      ).toBeNull();
+      expect(mockFrancAll).not.toHaveBeenCalled();
+      expect(
+        await detectDocumentLanguage({
+          fileName: 'prices.csv',
+          documentText: letter.repeat(100),
+        }),
+      ).toBe('pol');
+    },
+  );
+
   it('leaves ambiguous spreadsheet prose undetected', async () => {
     mockFrancAll.mockReturnValue([
       ['eng', 1],
