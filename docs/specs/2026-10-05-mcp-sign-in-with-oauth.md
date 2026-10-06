@@ -815,3 +815,42 @@ the three previously reproduced root architecture failures associated with
 untracked `packages/db` cache contents. No implementation changed after that
 verification. OAuth defaults remain disabled in source configuration; demo
 pilot enablement is the explicitly approved exception.
+
+
+### Post-pilot branding, demo protection and architecture cleanup — 2026-10-06
+
+Commit `2b27f671e` advertises the existing 512px Ragen PNG through MCP
+`serverInfo.icons`, packaged as a data URI for stdio/offline clients, and
+serves identical public `/icon.png` and `/favicon.ico` responses. FastMCP
+4.15.0 is pinned because the previous 3.35.0 ignores server icon metadata.
+All 140 MCP tests pass, including OAuth and stateless transport regressions.
+The shared demo account's existing authentication hook now also refuses
+`/organization/create`; other accounts retain the route. Nine focused
+account-lock tests pass.
+
+The prior root architecture failures came from an untracked, ignored
+`packages/db/.turbo/turbo-lint.log` left after that package was removed.
+The directory contained no manifest or source. Moving only this stale cache
+to `/tmp/ragen-retired-db-cache-20261006` preserves it while removing the false
+package from the local tree. The three architecture files pass all 12 tests,
+and full `npm run verify` now succeeds: 70/70 tasks, including 4006 root,
+5078 web, 1314 API, 704 admin, 1217 worker and 140 MCP tests. All lint,
+typechecks and application builds pass. This supersedes the earlier root-test
+failure notes; no assertion or architecture documentation was weakened.
+
+The first demo upload exposed the documented nested-Zod lockfile prune.
+The repaired lockfile retains Zod 3 and the npm-10-required Smithy nodes;
+`npm ci --dry-run --ignore-scripts` passes under both pinned npm 10.9.8 and
+image npm 11.19.0. The recurrence is recorded in the existing lesson.
+Public MCP deployment `df3715ee-a2c9-40ee-a8c0-8adc2b73b695` succeeds:
+health is 200, both branding routes match the source image hash, and the
+real initialize response contains one PNG icon. Claude's rendering/cache
+behavior has not been verified after adding this metadata.
+
+
+Web deployment `7b3eaaa1-8b24-4a70-a697-bab5f61814c8` also succeeds.
+A real sign-in with the published shared demo account followed by
+`POST /api/auth/organization/create` returns 403 and the shared-account lock
+message. The probe uses an invalid creation payload so no organization can be
+created if the lock is missing, and signs its own test session out afterward.
+This confirms the hook refuses the route before payload validation on demo.
