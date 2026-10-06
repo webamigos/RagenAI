@@ -88,7 +88,7 @@ test('findings offer scoped actions, selected inferred relations, history groups
         )
         .toBe(true);
       await page.screenshot({
-        path: `/private/tmp/brain-phase6-open-${width}.png`,
+        path: test.info().outputPath(`brain-phase6-open-${width}.png`),
         fullPage: true,
       });
     }
@@ -170,7 +170,7 @@ test('findings offer scoped actions, selected inferred relations, history groups
         )
         .toBe(true);
       await page.screenshot({
-        path: `/private/tmp/brain-phase6-findings-${width}.png`,
+        path: test.info().outputPath(`brain-phase6-findings-${width}.png`),
         fullPage: true,
       });
     }
@@ -185,7 +185,7 @@ test('findings offer scoped actions, selected inferred relations, history groups
     const cardBox = await graphCard.boundingBox();
     expect(cardBox!.x).toBeGreaterThan(canvasBox!.x);
     await page.screenshot({
-      path: '/private/tmp/brain-phase6-graph-1440.png',
+      path: test.info().outputPath('brain-phase6-graph-1440.png'),
       fullPage: true,
     });
     await page.setViewportSize({ width: 390, height: 900 });
@@ -195,7 +195,7 @@ test('findings offer scoped actions, selected inferred relations, history groups
       )
       .toBe(true);
     await page.screenshot({
-      path: '/private/tmp/brain-phase6-graph-390.png',
+      path: test.info().outputPath('brain-phase6-graph-390.png'),
       fullPage: true,
     });
   } finally {
