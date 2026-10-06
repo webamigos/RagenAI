@@ -3212,5 +3212,16 @@
         "MCP_OAUTH_FAILED": "MCP-OAuth-Autorisierung fehlgeschlagen"
       }
     }
+  },
+  "connected-apps": {
+    "title": "Verbundene Apps",
+    "loading": "Verbindungen werden geladen…",
+    "empty": "Keine verbundenen Apps.",
+    "disconnect": "Trennen",
+    "disconnecting": "Wird getrennt…",
+    "error": "Apps konnten nicht aktualisiert werden. Erneut versuchen.",
+    "unavailable": "Arbeitsbereich nicht verfügbar",
+    "never": "Nie",
+    "lastUsed": "Zuletzt verwendet: {date}"
   }
 }

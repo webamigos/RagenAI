@@ -1,3 +1,4 @@
+import { verifiedMcpQuery } from '@/lib/mcp-connect-flow';
 import Image from 'next/image';
 import { redirect as nextRedirect } from 'next/navigation';
 
@@ -25,7 +26,7 @@ export async function generateMetadata({ params }: PropsWihLocale) {
 }
 
 type SignInPageProps = {
-  searchParams: Promise<{ invitationId?: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
 export default async function SignInPage({ searchParams }: SignInPageProps) {
@@ -45,10 +46,32 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
 
   const user = await getCurrentUser();
   const t = await getTranslations('sign-in');
-  const { invitationId } = await searchParams;
+  const queryParams = await searchParams;
+  const invitationId =
+    typeof queryParams.invitationId === 'string'
+      ? queryParams.invitationId
+      : undefined;
 
-  if (user) {
+  const requiresFreshLogin =
+    queryParams.sig &&
+    typeof queryParams.prompt === 'string' &&
+    queryParams.prompt.split(' ').includes('login');
+  if (user && !requiresFreshLogin) {
     const locale = await getLocale();
+    if (queryParams.sig) {
+      const query = new URLSearchParams(
+        Object.entries(queryParams).flatMap(([key, value]) =>
+          value === undefined
+            ? []
+            : (Array.isArray(value) ? value : [value]).map((item) => [
+                key,
+                item,
+              ]),
+        ),
+      ).toString();
+      await verifiedMcpQuery(query);
+      nextRedirect(`/api/auth/oauth2/authorize?${query}`);
+    }
     if (invitationId) {
       nextRedirect(
         `/${locale}/accept-invitation?token=${encodeURIComponent(invitationId)}`,

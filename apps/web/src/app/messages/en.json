@@ -3212,5 +3212,16 @@
         "MCP_OAUTH_FAILED": "MCP OAuth authorization failed"
       }
     }
+  },
+  "connected-apps": {
+    "title": "Connected apps",
+    "loading": "Loading connections…",
+    "empty": "No connected apps.",
+    "disconnect": "Disconnect",
+    "disconnecting": "Disconnecting…",
+    "error": "Could not update connected apps. Try again.",
+    "unavailable": "Unavailable workspace",
+    "never": "Never",
+    "lastUsed": "Last used: {date}"
   }
 }

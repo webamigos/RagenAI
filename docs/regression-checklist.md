@@ -2,6 +2,24 @@
 
 ## P0 — Critical (Must Pass)
 
+### MCP OAuth — demo rollout gate
+
+- [x] Deploy the additive provider and grant-activity migrations, and web/API/MCP/admin code behind disabled default gates.
+- [x] Configure the public HTTPS MCP URL and web issuer, plus an independent matching service secret in API/MCP.
+- [x] Enable OAuth for a pilot organization only; verify discovery and API-key regression.
+- [x] Add a claude.ai custom connector with automatic client registration, sign in and choose the pilot workspace/assistant.
+- [x] Get a chat answer, retrieve search results and list assistants through the connector.
+- [x] Disconnect in Ragen Account settings; verify consent/token rows are removed and refresh is refused.
+- [x] Record date, deployed revision, pilot scope and all three results here. Restore the pilot gate if rollout is not approved.
+
+Local verification on 2026-10-06: the full MCP Inspector authorization flow and
+JWT scope verification passed; Inspector and Claude Code passed all three
+stateless tools. Docker Desktop browser tests cover code exchange, replacement,
+live permission changes, Disconnect and real-adapter client retention. These
+checks do not replace the claude.ai demo gate. Railway demo was inspected with
+OAuth disabled and no service secret/public MCP URL configured; rollout awaits
+user authorization.
+
 ### Authentication
 
 - [ ] Sign up with email/password — account created, email verification sent
@@ -277,3 +295,51 @@ producers; a mismatch means nothing consumes the queue. See
 - [ ] `GET /api/v1/assistants` — lists assistants
 - [ ] `GET /api/v1/documents` — lists documents
 - [ ] API-only mode (`IS_API_MODE=1`) — `/v1` rewrites work
+
+
+### MCP OAuth demo deployment evidence — 2026-10-06
+
+Local revision `df6a5818e` was uploaded directly to Railway demo, without a
+Git push. All four deployments completed successfully with OAuth disabled:
+web `8644bf51-67fc-4844-8884-ecf34bf61615`,
+API `9b6334ac-ca36-49a9-a2f2-c119715495d7`,
+MCP `cfa577c9-3d9a-4f90-bd65-afb765dda559`,
+admin `7c5917c9-3a6c-4d3c-b429-15e525adffb3`.
+The existing web pre-deploy command applied
+`20261006000000_mcp_oauth_provider` and
+`20261006010000_mcp_grant_activity`; both finished successfully and there were
+no other pending migrations.
+
+Web/MCP use the public resource
+`https://ragen-mcp-demo.up.railway.app/mcp`; MCP's web origin is
+`https://demo.ragen.ai`. API/MCP received an independent matching service
+secret, with automatic variable-triggered deploys suppressed. The deployed MCP
+refuses an unauthenticated initialize request with 401 while its gate is off.
+
+After explicit user approval, an isolated synthetic pilot account, organization
+`7e9c6408-2cdf-4454-a4c0-c70bb5c67084` and assistant
+`b989235f-25d0-4ea5-86e9-a0852075da8f` were created. The account signs in through
+the ordinary Ragen form. Its synthetic `oauth-pilot-verification.txt` document
+completed parsing and embedding. No existing organization had OAuth enabled.
+
+The Claude custom-connector form is prepared with automatic client registration,
+but the connector has not been added or authorized. Deployment gates and the
+pilot organization gate remain false: enabling them was rejected by automatic
+approval review, and a separate explicit approval question is pending. These
+preparations do not prove D5.
+
+
+### MCP OAuth demo rollout completed — 2026-10-06
+
+The user approved demo enablement and whole knowledge-base access only for
+“MCP OAuth Pilot 2026-10-06”. Deployed revision: `df6a5818e`. Discovery is live;
+API-key compatibility passed the final local MCP suite (139 tests). Claude.ai
+“Ragen OAuth Pilot” completed DCR, PKCE and consent. Assistant listing returned
+“OAuth Test Assistant”. Search and chat both omitted `assistant_id`; search
+returned two synthetic document chunks and chat returned the cited verification
+phrase `ORBIT-2026`. Ragen Account settings Disconnect removed the Claude entry
+and the pilot consent/refresh rows (one each before, zero after). Refresh refusal
+is verified by local real-provider E2E, not by extracting Claude credentials.
+JWTs retain their documented 15-minute lifetime. Rollout was explicitly approved,
+so the pilot flag remains enabled; no active pilot OAuth grant remains.
+This supersedes the earlier pending rollout/preparation notes.

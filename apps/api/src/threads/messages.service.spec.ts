@@ -16,7 +16,7 @@ describe('MessagesService', () => {
     orgId: 'org-1' as OrgId,
     userId: 'user-1' as UserId,
     projectId: 'proj-1' as ProjectId,
-    keyId: 'key-1' as KeyId,
+    credential: { type: 'api_key', id: 'key-1' as KeyId },
     debugMode: false,
   };
 

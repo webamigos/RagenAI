@@ -1,3 +1,12 @@
+const revokeMcpGrants = vi.fn().mockResolvedValue({ success: true });
+vi.mock('@/lib/auth', () => ({
+  auth: {
+    api: {
+      revokeBannedUserMcpGrants: (...args: unknown[]) =>
+        revokeMcpGrants(...args),
+    },
+  },
+}));
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const requireAdmin = vi.fn();
@@ -80,6 +89,10 @@ describe('renameUserAction', () => {
 });
 
 describe('banUserAction', () => {
+  it('revokes MCP grants through the server-only plugin API after authorization', async () => {
+    await banUserAction(USER_ID);
+    expect(revokeMcpGrants).toHaveBeenCalledWith({ body: { userId: USER_ID } });
+  });
   it('sets the ban flag with the given reason', async () => {
     await banUserAction(USER_ID, 'Abuse');
 

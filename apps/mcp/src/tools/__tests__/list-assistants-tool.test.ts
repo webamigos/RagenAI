@@ -47,7 +47,7 @@ describe('ragen_list_assistants tool', () => {
 
     const result = await execute(
       {},
-      { session: { apiKey: 'Bearer sk-test.secret' } },
+      { session: { kind: 'api_key', apiKey: 'Bearer sk-test.secret' } },
     );
 
     expect(mockListAssistants).toHaveBeenCalledWith('Bearer sk-test.secret');
@@ -67,7 +67,7 @@ describe('ragen_list_assistants tool', () => {
 
     const result = await execute(
       {},
-      { session: { apiKey: 'Bearer sk-bad.secret' } },
+      { session: { kind: 'api_key', apiKey: 'Bearer sk-bad.secret' } },
     );
 
     expect(JSON.parse(result)).toEqual({

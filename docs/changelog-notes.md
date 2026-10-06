@@ -79,6 +79,14 @@ archive is the blog.
 
 - Brain’s Documents tab counts each knowledge page once per source file, even when it cites several quotes from that file. Publication status updates after indexing without a reload, empty extractions remain actionable, and ambiguous spreadsheet languages stay undetected.
 
+### MCP sign-in
+
+- `[brief]` **Connect an AI client with your Ragen account.** OAuth sign-in,
+  workspace consent and **Connected apps** are implemented behind deployment
+  and organization flags that default off. Once enabled after interoperability
+  checks, users can connect without copying an API key and disconnect from
+  account settings; current membership and document permissions govern calls.
+
 ### Self-hosting
 
 - `[brief]` **The knowledge base from a terminal.** `ragen kb upload docs/*.pdf
@@ -262,3 +270,8 @@ archive is the blog.
   only the thread's owner and organization admins could load its messages.
   A member it was shared with now reads it, read-only, and can export it.
   ([#1493](https://github.com/webamigos/RagenAI/pull/1493))
+
+- 2026-10-06: The Ragen MCP server advertises its packaged Ragen logo and serves a public favicon for connector clients.
+- 2026-10-06: The published shared demo account can no longer create new organizations, including through the authentication API. Separate accounts retain that capability.
+
+- 2026-10-06: Patch proxy-addr to 2.0.8 to prevent IP spoofing with incorrectly configured IPv4-mapped IPv6 trust subnets (GHSA-jqcg-44mw-7w3h).

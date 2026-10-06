@@ -14,7 +14,7 @@ import { type SubscriptionsService } from '../subscriptions/subscriptions.servic
 const CONTEXT: ApiContext = {
   orgId: 'org-1' as OrgId,
   userId: 'u-1' as UserId,
-  keyId: 'k-1' as KeyId,
+  credential: { type: 'api_key', id: 'k-1' as KeyId },
   debugMode: false,
 };
 

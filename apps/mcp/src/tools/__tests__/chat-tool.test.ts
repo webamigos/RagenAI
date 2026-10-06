@@ -52,7 +52,7 @@ describe('ragen_chat tool', () => {
 
     await execute(
       { message: 'Hello' },
-      { session: { apiKey: 'Bearer sk-test.secret' } },
+      { session: { kind: 'api_key', apiKey: 'Bearer sk-test.secret' } },
     );
 
     expect(mockChat).toHaveBeenCalledWith('Bearer sk-test.secret', {
@@ -74,7 +74,7 @@ describe('ragen_chat tool', () => {
         context: 'page text',
         reasoning_effort: 'high',
       },
-      { session: { apiKey: 'Bearer sk-test.secret' } },
+      { session: { kind: 'api_key', apiKey: 'Bearer sk-test.secret' } },
     );
 
     expect(mockChat).toHaveBeenCalledWith('Bearer sk-test.secret', {
@@ -96,7 +96,7 @@ describe('ragen_chat tool', () => {
 
     const result = await execute(
       { assistant_id: 'missing', message: 'Hello' },
-      { session: { apiKey: 'Bearer sk-test.secret' } },
+      { session: { kind: 'api_key', apiKey: 'Bearer sk-test.secret' } },
     );
 
     expect(JSON.parse(result)).toEqual({

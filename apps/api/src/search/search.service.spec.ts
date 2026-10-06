@@ -1,3 +1,4 @@
+import { type ProjectsService } from '../projects/projects.service.js';
 /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-argument */
 import type { Mock, MockedFunction } from 'vitest';
 import { AssistantScopeService } from '../common/services/assistant-scope.service.js';
@@ -41,7 +42,7 @@ describe('SearchService', () => {
     orgId: 'org-1' as OrgId,
     userId: 'user-1' as UserId,
     projectId: 'proj-1' as ProjectId,
-    keyId: 'key-1' as KeyId,
+    credential: { type: 'api_key', id: 'key-1' as KeyId },
     debugMode: false,
   };
 
@@ -114,7 +115,14 @@ describe('SearchService', () => {
       initializeBasicRag as any,
       aiUsage as any,
       folders as any,
-      new AssistantScopeService(prisma as any),
+      new AssistantScopeService(
+        prisma as any,
+        {
+          getEffectiveProjectPermission: vi
+            .fn()
+            .mockResolvedValue({ canView: true }),
+        } as unknown as ProjectsService,
+      ),
     );
   });
 
@@ -271,6 +279,27 @@ describe('SearchService', () => {
 
     await expect(service.search(baseDto, mockContext)).rejects.toMatchObject({
       status: 500,
+    });
+  });
+  it('applies usage ceilings and user folder membership to an OAuth credential', async () => {
+    const context: ApiContext = {
+      ...mockContext,
+      credential: { type: 'oauth', id: 'client:user-1' },
+      debugMode: false,
+    };
+    await service.search(baseDto, context);
+    expect(apiLimits.checkApiRequestLimit).toHaveBeenCalledWith('org-1');
+    expect(apiLimits.checkUsageCeilings).toHaveBeenCalledWith('org-1');
+    expect(folders.getMembershipContext).toHaveBeenCalledWith(
+      'org-1',
+      'user-1',
+    );
+    expect(initializeBasicRag.buildRetrievalContext).toHaveBeenCalledWith(
+      expect.objectContaining({ scope: 'member', userTeamIds: ['team-1'] }),
+    );
+    apiLimits.checkUsageCeilings.mockResolvedValue({ exceeded: ['tokens'] });
+    await expect(service.search(baseDto, context)).rejects.toMatchObject({
+      status: 429,
     });
   });
 });

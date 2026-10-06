@@ -3212,5 +3212,16 @@
         "MCP_OAUTH_FAILED": "Autorizace OAuth pro MCP selhala"
       }
     }
+  },
+  "connected-apps": {
+    "title": "Připojené aplikace",
+    "loading": "Načítání připojení…",
+    "empty": "Žádné připojené aplikace.",
+    "disconnect": "Odpojit",
+    "disconnecting": "Odpojování…",
+    "error": "Aplikace se nepodařilo aktualizovat. Zkuste to znovu.",
+    "unavailable": "Nedostupný pracovní prostor",
+    "never": "Nikdy",
+    "lastUsed": "Poslední použití: {date}"
   }
 }

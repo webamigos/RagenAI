@@ -1,3 +1,4 @@
+import { apiAuthorization } from '../auth.js';
 import { z } from 'zod';
 import type { FastMCP } from 'fastmcp';
 
@@ -23,7 +24,7 @@ export function registerListAssistantsTool(
       }
 
       return withToolSpan(TOOL_NAME, {}, async () => {
-        const result = await listAssistants(session.apiKey);
+        const result = await listAssistants(apiAuthorization(session));
 
         if (result.ok) {
           logger.info(

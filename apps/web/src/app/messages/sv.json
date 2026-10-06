@@ -3212,5 +3212,16 @@
         "MCP_OAUTH_FAILED": "MCP OAuth-auktorisering misslyckades"
       }
     }
+  },
+  "connected-apps": {
+    "title": "Anslutna appar",
+    "loading": "Laddar anslutningar…",
+    "empty": "Inga anslutna appar.",
+    "disconnect": "Koppla från",
+    "disconnecting": "Kopplar från…",
+    "error": "Det gick inte att uppdatera apparna. Försök igen.",
+    "unavailable": "Arbetsytan är inte tillgänglig",
+    "never": "Aldrig",
+    "lastUsed": "Senast använd: {date}"
   }
 }

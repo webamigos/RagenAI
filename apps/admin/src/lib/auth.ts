@@ -1,3 +1,4 @@
+import { mcpGrantRevocationPlugin } from './mcp-grant-revocation-plugin';
 import { betterAuth } from 'better-auth';
 import { prismaAdapter } from 'better-auth/adapters/prisma';
 import { prisma } from './db';
@@ -21,8 +22,10 @@ const ALLOWED_DOMAIN = (
 const googleCredentials = getGoogleCredentials();
 
 export const auth = betterAuth({
+  plugins: [mcpGrantRevocationPlugin()],
   database: prismaAdapter(prisma, {
     provider: 'postgresql',
+    transaction: true,
   }),
   /**
    * This app's own origin, in addition to whatever `BETTER_AUTH_URL` names.

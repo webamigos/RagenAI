@@ -29,6 +29,9 @@ export const LoginForm = ({ prefillEmail }: LoginFormProps = {}) => {
   const locale = useLocale();
   const searchParams = useSearchParams();
   const invitationId = searchParams.get('invitationId');
+  const oauthQuery = searchParams.get('sig')
+    ? searchParams.toString()
+    : undefined;
 
   const {
     register,
@@ -57,6 +60,12 @@ export const LoginForm = ({ prefillEmail }: LoginFormProps = {}) => {
         } else {
           setError(result.error.message || 'Sign in failed');
         }
+        return;
+      }
+
+      const oauthRedirect = (result.data as { url?: string } | undefined)?.url;
+      if (oauthQuery && oauthRedirect) {
+        window.location.assign(oauthRedirect);
         return;
       }
 

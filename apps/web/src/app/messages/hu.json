@@ -3212,5 +3212,16 @@
         "MCP_OAUTH_FAILED": "Az MCP OAuth-engedélyezés sikertelen"
       }
     }
+  },
+  "connected-apps": {
+    "title": "Csatlakoztatott alkalmazások",
+    "loading": "Kapcsolatok betöltése…",
+    "empty": "Nincsenek csatlakoztatott alkalmazások.",
+    "disconnect": "Leválasztás",
+    "disconnecting": "Leválasztás…",
+    "error": "Az alkalmazások frissítése sikertelen. Próbálja újra.",
+    "unavailable": "Nem elérhető munkaterület",
+    "never": "Soha",
+    "lastUsed": "Utoljára használva: {date}"
   }
 }

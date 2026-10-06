@@ -136,3 +136,21 @@ describe('the worker runtime it enqueues into', () => {
     ).toBe(true);
   });
 });
+
+describe('MCP API service configuration', () => {
+  it('requires the dedicated credential when OAuth is enabled', () => {
+    expect(withEnv({ MCP_OAUTH_ENABLED: 'true' }).ok).toBe(false);
+    expect(
+      withEnv({ MCP_OAUTH_ENABLED: 'true', MCP_SERVICE_SECRET: 'm'.repeat(32) })
+        .ok,
+    ).toBe(true);
+  });
+  it('refuses reusing the session credential', () => {
+    expect(
+      withEnv({
+        SESSION_AUTH_SECRET: 'm'.repeat(32),
+        MCP_SERVICE_SECRET: 'm'.repeat(32),
+      }).ok,
+    ).toBe(false);
+  });
+});

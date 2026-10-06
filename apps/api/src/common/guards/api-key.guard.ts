@@ -91,7 +91,7 @@ export class ApiKeyGuard implements CanActivate {
       userId: dbKey.createdBy as UserId,
       ...(dbKey.projectId ? { projectId: dbKey.projectId as ProjectId } : {}),
       knowledgeScope: dbKey.knowledgeScope,
-      keyId: keyId as KeyId,
+      credential: { type: 'api_key', id: keyId as KeyId },
       debugMode: dbKey.debugMode,
       ...(claimedTeamId ? { teamId: claimedTeamId } : {}),
     };

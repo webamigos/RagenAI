@@ -1,3 +1,4 @@
+import { ConnectedApps } from './components/ConnectedApps';
 import { getTranslations, getLocale } from 'next-intl/server';
 import { getCurrentUser } from '@/app/lib/utils/auth-helpers';
 import { redirect } from '@/i18n/routing';
@@ -58,6 +59,12 @@ export default async function AccountSettingsPage() {
           <ActiveSessions locked={locked} />
         </div>
       </section>
+      {process.env.MCP_OAUTH_ENABLED === 'true' && (
+        <>
+          <hr className="border-border" />
+          <ConnectedApps locked={locked} />
+        </>
+      )}
     </div>
   );
 }

@@ -24,3 +24,8 @@ export function isStdioTransport(
 ): boolean {
   return env.RAGEN_MCP_TRANSPORT === 'stdio';
 }
+
+/** Rebuild identity from each HTTP request, including after a token refresh. */
+export function httpStreamOptions(port: number, host = '0.0.0.0') {
+  return { host, port, stateless: true } as const;
+}

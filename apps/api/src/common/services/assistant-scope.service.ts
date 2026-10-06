@@ -1,5 +1,9 @@
+import { ProjectsService } from '../../projects/projects.service.js';
 import { ForbiddenException, Injectable } from '@nestjs/common';
-import { scopeRequiresProject } from '@ragenai/platform-contracts';
+import {
+  canManageOrg,
+  scopeRequiresProject,
+} from '@ragenai/platform-contracts';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { type ApiContext } from '../types/api-context.js';
 import { stripPrefix } from '../utils/openai-format.js';
@@ -21,13 +25,97 @@ import { stripPrefix } from '../utils/openai-format.js';
  */
 @Injectable()
 export class AssistantScopeService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly projects: ProjectsService,
+  ) {}
+
+  async resolve(
+    assistantId: string | undefined,
+    context: ApiContext,
+  ): Promise<string | null> {
+    const projectId = await this.resolveBoundary(assistantId, context);
+    if (projectId && context.credential.type === 'oauth') {
+      await this.assertVisible(projectId, context);
+    }
+    return projectId;
+  }
+
+  /** Permission filtering precedes pagination; private instructions never enter the response. */
+  async visibleProjectIds(context: ApiContext): Promise<string[] | undefined> {
+    if (context.credential.type !== 'oauth') {
+      return undefined;
+    }
+    const confined = this.confinedToProject(context);
+    const projects = await this.prisma.client.project.findMany({
+      where: {
+        organizationId: context.orgId,
+        ...(confined ? { id: confined } : {}),
+      },
+      select: { id: true, ownerId: true },
+    });
+    if (projects.length === 0) return [];
+    const [member, teams] = await Promise.all([
+      this.prisma.client.member
+        .findFirst({
+          where: { organizationId: context.orgId, userId: context.userId },
+        })
+        .catch(() => null),
+      this.prisma.client.teamMember.findMany({
+        where: {
+          userId: context.userId,
+          team: { organizationId: context.orgId },
+        },
+        select: { teamId: true },
+      }),
+    ]);
+    const grants = await this.prisma.client.projectPermission.findMany({
+      where: {
+        projectId: { in: projects.map((project) => project.id) },
+        OR: [
+          { granteeType: 'user', granteeId: context.userId },
+          {
+            granteeType: 'team',
+            granteeId: { in: teams.map((team) => team.teamId) },
+          },
+        ],
+      },
+      select: { projectId: true },
+    });
+    const shared = new Set(grants.map((grant) => grant.projectId));
+    return projects
+      .filter(
+        (project) =>
+          project.ownerId === context.userId ||
+          canManageOrg(member?.role) ||
+          project.ownerId === null ||
+          shared.has(project.id),
+      )
+      .map((project) => project.id);
+  }
+
+  private async assertVisible(
+    projectId: string,
+    context: ApiContext,
+  ): Promise<void> {
+    if (
+      !(
+        await this.projects.getEffectiveProjectPermission(
+          projectId,
+          context.orgId,
+          context.userId,
+        )
+      ).canView
+    ) {
+      throw new ForbiddenException('Assistant is unavailable');
+    }
+  }
 
   /**
    * @returns the project to run against — `null` means the knowledge base
    * (`metadata.project_id IS NULL`), which is a scope, not a missing value.
    */
-  async resolve(
+  private async resolveBoundary(
     assistantId: string | undefined,
     context: ApiContext,
   ): Promise<string | null> {

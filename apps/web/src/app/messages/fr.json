@@ -3212,5 +3212,16 @@
         "MCP_OAUTH_FAILED": "Échec de l'autorisation OAuth MCP"
       }
     }
+  },
+  "connected-apps": {
+    "title": "Applications connectées",
+    "loading": "Chargement des connexions…",
+    "empty": "Aucune application connectée.",
+    "disconnect": "Déconnecter",
+    "disconnecting": "Déconnexion…",
+    "error": "Impossible de mettre à jour les applications. Réessayez.",
+    "unavailable": "Espace de travail indisponible",
+    "never": "Jamais",
+    "lastUsed": "Dernière utilisation : {date}"
   }
 }

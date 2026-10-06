@@ -23,6 +23,7 @@ COPY apps/mcp/package.json apps/mcp/
 # one — see docs/lessons/workspace-scoped-npm-ci-nests-conflicting-versions.md.
 COPY packages/observability/package.json packages/observability/
 COPY packages/env/package.json packages/env/
+COPY packages/crypto/package.json packages/crypto/
 
 FROM manifests AS prod-deps
 RUN npm ci --workspace=@ragenai/mcp --omit=dev --ignore-scripts
@@ -39,10 +40,12 @@ RUN npm ci \
     --workspace=@ragenai/mcp \
     --workspace=@ragenai/observability \
     --workspace=@ragenai/env \
+    --workspace=@ragenai/crypto \
     --ignore-scripts
 RUN mkdir -p \
     /app/apps/mcp/node_modules \
     /app/packages/observability/node_modules \
+    /app/packages/crypto/node_modules \
     /app/packages/env/node_modules
 
 FROM base AS builder
@@ -60,6 +63,7 @@ COPY packages ./packages
 COPY --from=deps /app/apps/mcp/node_modules ./apps/mcp/node_modules
 COPY --from=deps /app/packages/observability/node_modules ./packages/observability/node_modules
 COPY --from=deps /app/packages/env/node_modules ./packages/env/node_modules
+COPY --from=deps /app/packages/crypto/node_modules ./packages/crypto/node_modules
 # Order is spelled out rather than delegated to turbo: turbo is a root
 # devDependency and the installs above are workspace-scoped, so it is not in
 # this image. apps/mcp resolves @ragenai/observability through its
@@ -67,6 +71,7 @@ COPY --from=deps /app/packages/env/node_modules ./packages/env/node_modules
 # first line tsc fails with "Cannot find module '@ragenai/observability'".
 RUN npm run build --workspace=@ragenai/observability
 RUN npm run build --workspace=@ragenai/env
+RUN npm run build --workspace=@ragenai/crypto
 RUN npm run build --workspace=@ragenai/mcp
 
 FROM base AS runner
@@ -87,6 +92,8 @@ COPY --from=builder /app/packages/observability/dist ./packages/observability/di
 COPY --from=builder /app/packages/observability/package.json ./packages/observability/package.json
 COPY --from=builder /app/packages/env/dist ./packages/env/dist
 COPY --from=builder /app/packages/env/package.json ./packages/env/package.json
+COPY --from=builder /app/packages/crypto/dist ./packages/crypto/dist
+COPY --from=builder /app/packages/crypto/package.json ./packages/crypto/package.json
 COPY package.json ./package.json
 
 # The release this image was built from, reported as `serverInfo.version` in

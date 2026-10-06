@@ -42,14 +42,13 @@ shape. Two tools today: `ragen_chat` (`POST /v1/chat`) and
 "does this user have access" logic in `apps/mcp` at all, since `apps/api`
 already scopes that list to the API key's own organization.
 
-**Auth is the caller's existing Ragen API key, not a new credential.**
-`fastmcp`'s `authenticate` hook (run once per MCP session, its documented
-pattern for "let clients supply their own API key via headers" —
-`node_modules/fastmcp/README.md`, "Passing Headers Through Context") reads
-the `Authorization` header off the incoming connection and threads it through
-every tool call's `session`. `apps/mcp` only checks that *something
-Bearer-shaped* was supplied — whether it's a real, active key is `apps/api`'s
-`ApiKeyGuard`'s job, checked exactly once, not duplicated here.
+**Auth accepts the caller's API key and, behind disabled gates, OAuth sign-in.**
+API keys continue to reach `apps/api` unchanged and are validated by its
+`ApiKeyGuard`. [ADR-53](53-mcp-sign-in-with-oauth.md) adds browser sign-in:
+`apps/web` issues short-lived JWTs, `apps/mcp` verifies each request and sends
+a fresh internal assertion, and `apps/api` rechecks current user permissions.
+HTTP is stateless so each request supplies its own identity. Stdio continues
+to use `RAGEN_API_KEY`. The adapter still owns no database or retrieval logic.
 
 **Tech stack matches `ragen-connectors`, not `@ai-sdk/mcp`.** `@ai-sdk/mcp`
 (already a dependency of both `apps/web` and `apps/api`) is what this

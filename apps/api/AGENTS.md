@@ -62,12 +62,14 @@ Uses Prisma with `@prisma/adapter-pg` (same pattern as apps/web). **No local sch
 
 ### Authentication & Guards
 
-Three auth mechanisms, all using timing-safe comparison:
+Four auth mechanisms, all using timing-safe comparison:
 - **ApiKeyGuard** (`Authorization: Bearer` header) — for client-facing endpoints. Parses `keyId` from the opaque key (`sk-<keyId>.<secret>`), queries DB for `isActive`/org/project context, validates secret against Vault, and attaches `ApiContext` to the request. Updates `lastUsedAt` (fire-and-forget). Returns `403` for deactivated keys.
 - **WorkerSecretGuard** (`x-worker-secret` header) — for internal worker-to-API calls (e.g., ai-usage reporting).
 - **SessionAuthGuard** (`Authorization: Bearer` header, short-lived HMAC-signed token — NOT an API key or a Better Auth session cookie) — for server-to-server calls from apps/web on behalf of an already session-authenticated user. `SessionAuthService.verify()` checks the HMAC signature (`SESSION_AUTH_SECRET`, shared with apps/web) and a short expiry (payload has its own `exp`, issued with a ~30s TTL by apps/web's `issueSessionToken()` in `src/libs/service-auth/`). apps/api never validates a Better Auth session/cookie itself and never issues these tokens — only apps/web does, after it has already resolved the real session. Attaches `SessionAuthContext` (`userId`, `orgId`, optional `projectId`), accessed via `@GetSessionAuthContext()`. Not yet used by any route — added in Phase A of the decoupling plan (see ADR-21) to unblock Phase C; wire it into a controller alongside that phase's move, not before.
 
-`ApiContext` (orgId, userId, projectId, keyId) is sourced from the **database record**, not from the key itself. Accessed via the `@GetApiContext()` parameter decorator.
+- **McpServiceGuard** (`Authorization: Bearer mcp.<payload>.<sig>`) — a dedicated `MCP_SERVICE_SECRET` and a typed, 30-second HMAC assertion. Requires deployment OAuth to be enabled, a live unbanned member, the `mcpOAuth` organization flag and, for a bound assistant, the panel's `ProjectsService.getEffectiveProjectPermission().canView`. `McpOrApiKeyGuard` admits either credential only on `POST /v1/chat`, `POST /v1/search` and `GET /v1/assistants`. Every other public route and every assistant mutation remains API-key only. Session routes refuse MCP assertions. For OAuth, assistant listing/resolution also checks per-member visibility; retrieval and usage ceilings use the same user context as the existing data path. The throttler counts a verified assertion against `user:<userId>`.
+
+`ApiContext` (orgId, userId, projectId, credential) comes from the API key row or a verified MCP assertion followed by live authorization checks. `credential` is `{ type: 'api_key'; id: KeyId } | { type: 'oauth'; id: string }`; OAuth contexts disable debug persistence and ignore caller-supplied team IDs. Accessed via the `@GetApiContext()` parameter decorator.
 
 ### Key Cross-Cutting Concerns
 

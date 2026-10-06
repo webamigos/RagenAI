@@ -1,3 +1,4 @@
+import { type ProjectsService } from '../projects/projects.service.js';
 /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument */
 import type { Mock } from 'vitest';
 import { ForbiddenException } from '@nestjs/common';
@@ -39,7 +40,7 @@ describe('ChatService', () => {
     orgId: 'org-1' as OrgId,
     userId: 'user-1' as UserId,
     projectId: 'proj-1' as ProjectId,
-    keyId: 'key-1' as KeyId,
+    credential: { type: 'api_key', id: 'key-1' as KeyId },
     debugMode: false,
   };
 
@@ -173,7 +174,7 @@ describe('ChatService', () => {
       persistApiThread as any,
       aiUsage as any,
       teamRateLimit as any,
-      new AssistantScopeService(prisma as any),
+      new AssistantScopeService(prisma as any, {} as ProjectsService),
       // Resolves the caller's visibility scope. Without it the chain falls
       // back to `member` and retrieval matches nothing — see
       // `computeAccessiblePrincipals` in @ragenai/rag-core.

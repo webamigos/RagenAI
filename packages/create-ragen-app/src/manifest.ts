@@ -66,6 +66,14 @@ export const MANIFEST: ManifestEntry[] = [
     targets: ['admin'],
   },
 
+  { key: 'MCP_SERVICE_SECRET', strategy: 'generate-secret', targets: ['root'] },
+  {
+    key: 'RAGEN_MCP_PUBLIC_URL',
+    strategy: 'local-default',
+    targets: ['root'],
+    value: 'http://localhost:3300/mcp',
+  },
+
   // --- Generated secrets, shared value across targets ---
   {
     // Read by apps/web, apps/api and apps/admin (apps/api gap-fills from the

@@ -136,3 +136,26 @@ describe('the worker runtime it enqueues into', () => {
     expect(result.ok).toBe(true);
   });
 });
+
+describe('MCP OAuth web configuration', () => {
+  it('requires the resource URL when the authorization server is enabled', () => {
+    expect(parseWebEnv({ ...base, MCP_OAUTH_ENABLED: 'true' }).ok).toBe(false);
+    expect(
+      parseWebEnv({
+        ...base,
+        MCP_OAUTH_ENABLED: 'true',
+        RAGEN_MCP_PUBLIC_URL: 'https://mcp.example/mcp',
+      }).ok,
+    ).toBe(true);
+  });
+  it('does not require the MCP service credential in the authorization server', () => {
+    expect(
+      parseWebEnv({
+        ...base,
+        MCP_OAUTH_ENABLED: 'true',
+        RAGEN_MCP_PUBLIC_URL: 'https://mcp.example/mcp',
+        MCP_SERVICE_SECRET: undefined,
+      }).ok,
+    ).toBe(true);
+  });
+});
