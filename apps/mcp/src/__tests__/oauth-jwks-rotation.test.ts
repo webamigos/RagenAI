@@ -32,7 +32,7 @@ it('caches remote JWKS and refetches for a rotated kid after its bounded cooldow
   const resource = 'https://mcp.example/mcp';
   const verify = createOAuthTokenVerifier(issuer, resource);
   const sign = (key: typeof first.privateKey, kid: string) =>
-    new SignJWT({ orgId: 'org', client_id: 'client', scope: 'mcp:read' })
+    new SignJWT({ org: 'org', client_id: 'client', scope: 'mcp:read' })
       .setSubject('user')
       .setJti(kid)
       .setIssuer(issuer)

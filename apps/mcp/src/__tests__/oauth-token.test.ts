@@ -19,8 +19,8 @@ beforeAll(async () => {
   sign = (claims = {}) =>
     new SignJWT({
       sub: 'user',
-      orgId: 'org',
-      projectId: 'project',
+      org: 'org',
+      project: 'project',
       client_id: 'client',
       jti: 'token-id',
       scope: 'openid mcp:read',
@@ -45,9 +45,9 @@ describe('OAuth access token verification', () => {
     });
   });
   it('accepts an organization-wide grant', async () => {
-    expect(
-      await verify(await sign({ projectId: undefined })),
-    ).not.toHaveProperty('projectId');
+    expect(await verify(await sign({ project: undefined }))).not.toHaveProperty(
+      'projectId',
+    );
   });
   it.each([
     { iss: 'https://attacker.example' },
@@ -55,10 +55,11 @@ describe('OAuth access token verification', () => {
     { exp: 1 },
     { exp: undefined },
     { sub: undefined },
-    { orgId: '' },
+    { org: '' },
+    { org: undefined, orgId: 'org' },
     { client_id: undefined },
     { jti: undefined },
-    { projectId: 42 },
+    { project: 42 },
     { cnf: { jkt: 'proof-bound' } },
   ])('rejects invalid claims %j', async (claims) => {
     await expect(verify(await sign(claims))).rejects.toMatchObject({

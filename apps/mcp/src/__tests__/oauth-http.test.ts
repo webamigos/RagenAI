@@ -74,7 +74,7 @@ it('verifies OAuth over HTTP and sends service assertions for the current token'
   vi.stubEnv('BETTER_AUTH_URL', `http://127.0.0.1:${authPort}`);
   vi.stubEnv('RAGEN_MCP_PUBLIC_URL', resource);
   const sign = (user: string, scope = 'mcp:read') =>
-    new SignJWT({ orgId: 'org', client_id: 'client', scope })
+    new SignJWT({ org: 'org', client_id: 'client', scope })
       .setSubject(user)
       .setJti(user + '-jti')
       .setIssuer(issuer)

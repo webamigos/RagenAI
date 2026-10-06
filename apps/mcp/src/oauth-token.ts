@@ -37,10 +37,10 @@ export function createOAuthTokenVerifier(
         value.length <= 2048;
       if (
         !stringClaim(payload.sub) ||
-        !stringClaim(payload.orgId) ||
+        !stringClaim(payload.org) ||
         !stringClaim(payload.client_id) ||
         !stringClaim(payload.jti) ||
-        (payload.projectId !== undefined && !stringClaim(payload.projectId)) ||
+        (payload.project !== undefined && !stringClaim(payload.project)) ||
         payload.cnf !== undefined ||
         typeof payload.exp !== 'number'
       ) {
@@ -54,10 +54,10 @@ export function createOAuthTokenVerifier(
       }
       return {
         userId: payload.sub,
-        orgId: payload.orgId,
-        ...(payload.projectId === undefined
+        orgId: payload.org,
+        ...(payload.project === undefined
           ? {}
-          : { projectId: payload.projectId }),
+          : { projectId: payload.project }),
         clientId: payload.client_id,
         jti: payload.jti,
         expiresAt: payload.exp,
