@@ -268,3 +268,6 @@ archive is the blog.
   only the thread's owner and organization admins could load its messages.
   A member it was shared with now reads it, read-only, and can export it.
   ([#1493](https://github.com/webamigos/RagenAI/pull/1493))
+
+- 2026-10-06: The Ragen MCP server advertises its packaged Ragen logo and serves a public favicon for connector clients.
+- 2026-10-06: The published shared demo account can no longer create new organizations, including through the authentication API. Separate accounts retain that capability.

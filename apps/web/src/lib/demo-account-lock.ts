@@ -16,6 +16,7 @@ import { isSharedDemoAccount } from '@/libs/demo-credentials';
  * `ctx.path` carries inside a hook.
  */
 export const DEMO_ACCOUNT_LOCKED_PATHS = [
+  '/organization/create',
   '/update-user',
   '/change-password',
   '/set-password',
@@ -38,7 +39,7 @@ export const DEMO_ACCOUNT_LOCKED_PATHS = [
 export const DEMO_ACCOUNT_PASSWORD_RESET_PATH = '/request-password-reset';
 
 export const DEMO_ACCOUNT_LOCKED_MESSAGE =
-  'This is the shared demo account. Its name, password and sessions cannot be changed.';
+  'This is the shared demo account. Its name, password and sessions cannot be changed, and it cannot create organizations.';
 
 /**
  * Should this request be refused because it would change the shared demo

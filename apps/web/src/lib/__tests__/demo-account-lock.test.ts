@@ -12,13 +12,14 @@ import {
 } from '../demo-account-lock';
 
 describe('the shared demo account lock', () => {
-  it('covers the routes behind name, password and sessions, and nothing else', () => {
+  it('covers the routes behind organization creation, name, password and sessions', () => {
     // These are the endpoints the forms in user/profile and settings/account
     // call, plus the two that would remove the account. Sign-in, sign-out and
     // the session read stay open — a lock that blocked sign-out would trap the
     // visitor in the demo.
     expect([...DEMO_ACCOUNT_LOCKED_PATHS].sort()).toEqual(
       [
+        '/organization/create',
         '/update-user',
         '/change-password',
         '/set-password',
@@ -36,6 +37,9 @@ describe('the shared demo account lock', () => {
   it('refuses a locked route for the shared account', () => {
     isSharedDemoAccount.mockReturnValue(true);
 
+    expect(
+      isDemoAccountLockedRequest('/organization/create', 'demo@x.test'),
+    ).toBe(true);
     expect(isDemoAccountLockedRequest('/change-password', 'demo@x.test')).toBe(
       true,
     );
@@ -57,6 +61,9 @@ describe('the shared demo account lock', () => {
     // The lock is on one account, not on the deployment.
     isSharedDemoAccount.mockReturnValue(false);
 
+    expect(
+      isDemoAccountLockedRequest('/organization/create', 'me@x.test'),
+    ).toBe(false);
     expect(isDemoAccountLockedRequest('/change-password', 'me@x.test')).toBe(
       false,
     );

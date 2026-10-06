@@ -1,6 +1,7 @@
 import type { FastMCP } from 'fastmcp';
 
 import { authenticate, oauthIssuer, type RagenSession } from './auth.js';
+import { serverIcons } from './branding.js';
 import type { McpEnv } from './config/env.js';
 import { fastmcpLogger } from './fastmcp-logger.js';
 
@@ -15,6 +16,7 @@ export function serverOptions(
 ): ServerOptions {
   return {
     name: 'Ragen',
+    icons: serverIcons,
     ...(env.MCP_OAUTH_ENABLED === 'true' &&
     env.BETTER_AUTH_URL &&
     env.RAGEN_MCP_PUBLIC_URL

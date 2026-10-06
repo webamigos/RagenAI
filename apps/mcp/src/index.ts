@@ -5,6 +5,7 @@ import './instrument.js';
 import { FastMCP } from 'fastmcp';
 
 import type { RagenSession } from './auth.js';
+import { registerBrandingRoutes } from './branding.js';
 import { getEnv } from './config/env.js';
 import { logger } from './logger.js';
 import { serverOptions } from './server-options.js';
@@ -51,6 +52,8 @@ try {
 const PORT = env.PORT;
 
 const mcp = new FastMCP<RagenSession>(serverOptions(env));
+
+registerBrandingRoutes(mcp);
 
 registerChatTool(mcp);
 registerListAssistantsTool(mcp);
