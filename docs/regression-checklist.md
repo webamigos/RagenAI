@@ -2,6 +2,24 @@
 
 ## P0 — Critical (Must Pass)
 
+### MCP OAuth — demo rollout gate
+
+- [ ] Deploy the additive provider and grant-activity migrations, and web/API/MCP/admin code behind disabled default gates.
+- [ ] Configure the public HTTPS MCP URL and web issuer, plus an independent matching service secret in API/MCP.
+- [ ] Enable OAuth for a pilot organization only; verify discovery and API-key regression.
+- [ ] Add a claude.ai custom connector with automatic client registration, sign in and choose the pilot workspace/assistant.
+- [ ] Get a chat answer, retrieve search results and list assistants through the connector.
+- [ ] Disconnect in Ragen Account settings; verify consent/token rows are removed and refresh is refused.
+- [ ] Record date, deployed revision, pilot scope and all three results here. Restore the pilot gate if rollout is not approved.
+
+Local verification on 2026-10-06: the full MCP Inspector authorization flow and
+JWT scope verification passed; Inspector and Claude Code passed all three
+stateless tools. Docker Desktop browser tests cover code exchange, replacement,
+live permission changes, Disconnect and real-adapter client retention. These
+checks do not replace the claude.ai demo gate. Railway demo was inspected with
+OAuth disabled and no service secret/public MCP URL configured; rollout awaits
+user authorization.
+
 ### Authentication
 
 - [ ] Sign up with email/password — account created, email verification sent

@@ -715,3 +715,20 @@ Sixteen focused tests and web typecheck pass. The `p0-98` Docker Desktop E2E
 creates old unused, recent, owned and consented clients, verifies only the
 eligible client is removed, repeats the run and preserves the consent (1/1).
 The actual CLI succeeds with the gate both disabled and enabled on `ragen_e2e`.
+
+### Final local gate and demo preflight — 2026-10-06
+
+After retention, `npm run verify -- --continue` completes 69/70 tasks, with all
+application tests, builds, lint and typecheck passing. Root tests report 4002
+passed and three failures from the previously reproduced untracked
+`packages/db` cache-directory accounting. The generated-reference and ADR-count
+failures are resolved. Web reports 5079 passing tests; API 1313 and MCP 139.
+Commit `c4f98f3d5` adds the required verified-assertion jti audit log and passes
+15 focused guard tests plus API typecheck; it never logs the credential.
+
+Railway demo preflight confirms existing web/API/MCP services. OAuth is unset
+(default false) everywhere, no public MCP resource URL or service secret is
+configured, and the web origin is `https://demo.ragen.ai`. D5 remains unverified
+until rollout and a pilot grant are authorized. Its concrete sequence is now
+recorded in the regression checklist. No deployment, migration or demo gate
+change was performed during this preflight.
