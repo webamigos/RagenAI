@@ -429,7 +429,7 @@ organization (ADR-50).
 - [x] **D4.** Connected apps in account settings, with Disconnect. It comes
   before the first real connection, so nobody on demo connects an app they
   cannot disconnect.
-- [ ] **D5.** End to end on the demo environment: claude.ai custom connector
+- [x] **D5.** End to end on the demo environment: claude.ai custom connector
   added, sign-in, a chat answer, a search, the assistant list, Disconnect.
 
 ### Phase E — revocation and docs
@@ -779,3 +779,39 @@ passes against the real provider registration endpoint. The working tree is
 clean after the fix. D5 still requires the separately requested approval to
 deploy to the public demo, apply migrations and enable a pilot organization;
 no rollout or public demo change has been made.
+
+
+### D5 public demo verification — 2026-10-06
+
+After explicit user approval, demo web/API/MCP OAuth gates were enabled and
+only `MCP OAuth Pilot 2026-10-06` received the organization feature flag.
+The deployed source revision is `df6a5818e`; successful enabled deployments are
+web `3e74583c-1c16-4874-9840-98333684f208`, API
+`54049e22-f7ba-4b06-8a2b-e157f9178034`, and MCP
+`bfcb9718-961f-4c81-b71e-05a2894f55eb`. Admin uses the previously verified
+`7c5917c9-3a6c-4d3c-b429-15e525adffb3` deployment.
+
+Claude.ai custom connector “Ragen OAuth Pilot” completed automatic registration,
+PKCE sign-in and consent for `mcp:read offline_access`. The user explicitly
+selected whole pilot knowledge-base access: the grant has no assistant/project
+restriction. Three real tool calls succeeded using only synthetic pilot data:
+assistant listing returned “OAuth Test Assistant”; search without `assistant_id`
+returned two chunks from `oauth-pilot-knowledge-base.txt`; chat without
+`assistant_id` answered `ORBIT-2026` and cited that document. Both parsing and
+embedding completed for the organization-level fixture. This verifies the
+same general knowledge-base path as `/new`, without selecting an assistant.
+
+Ragen Account settings showed Claude, the pilot organization and the latest
+use timestamp. Clicking Disconnect removed the entry; scoped database checks
+confirmed consent and refresh-token counts changed from one to zero. Access-token
+rows were zero before and after because the issued access token is a JWT.
+Refresh refusal after Disconnect is covered by the previously passing local
+real-provider E2E; the Claude-held refresh token was not extracted or replayed.
+Previously issued JWTs retain their documented maximum 15-minute lifetime.
+All deployment/rollout pending notes above are superseded by this result.
+
+The full application verification remains 69/70 tasks successful, with only
+the three previously reproduced root architecture failures associated with
+untracked `packages/db` cache contents. No implementation changed after that
+verification. OAuth defaults remain disabled in source configuration; demo
+pilot enablement is the explicitly approved exception.

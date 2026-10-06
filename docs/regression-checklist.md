@@ -6,11 +6,11 @@
 
 - [x] Deploy the additive provider and grant-activity migrations, and web/API/MCP/admin code behind disabled default gates.
 - [x] Configure the public HTTPS MCP URL and web issuer, plus an independent matching service secret in API/MCP.
-- [ ] Enable OAuth for a pilot organization only; verify discovery and API-key regression.
-- [ ] Add a claude.ai custom connector with automatic client registration, sign in and choose the pilot workspace/assistant.
-- [ ] Get a chat answer, retrieve search results and list assistants through the connector.
-- [ ] Disconnect in Ragen Account settings; verify consent/token rows are removed and refresh is refused.
-- [ ] Record date, deployed revision, pilot scope and all three results here. Restore the pilot gate if rollout is not approved.
+- [x] Enable OAuth for a pilot organization only; verify discovery and API-key regression.
+- [x] Add a claude.ai custom connector with automatic client registration, sign in and choose the pilot workspace/assistant.
+- [x] Get a chat answer, retrieve search results and list assistants through the connector.
+- [x] Disconnect in Ragen Account settings; verify consent/token rows are removed and refresh is refused.
+- [x] Record date, deployed revision, pilot scope and all three results here. Restore the pilot gate if rollout is not approved.
 
 Local verification on 2026-10-06: the full MCP Inspector authorization flow and
 JWT scope verification passed; Inspector and Claude Code passed all three
@@ -327,3 +327,19 @@ but the connector has not been added or authorized. Deployment gates and the
 pilot organization gate remain false: enabling them was rejected by automatic
 approval review, and a separate explicit approval question is pending. These
 preparations do not prove D5.
+
+
+### MCP OAuth demo rollout completed — 2026-10-06
+
+The user approved demo enablement and whole knowledge-base access only for
+“MCP OAuth Pilot 2026-10-06”. Deployed revision: `df6a5818e`. Discovery is live;
+API-key compatibility passed the final local MCP suite (139 tests). Claude.ai
+“Ragen OAuth Pilot” completed DCR, PKCE and consent. Assistant listing returned
+“OAuth Test Assistant”. Search and chat both omitted `assistant_id`; search
+returned two synthetic document chunks and chat returned the cited verification
+phrase `ORBIT-2026`. Ragen Account settings Disconnect removed the Claude entry
+and the pilot consent/refresh rows (one each before, zero after). Refresh refusal
+is verified by local real-provider E2E, not by extracting Claude credentials.
+JWTs retain their documented 15-minute lifetime. Rollout was explicitly approved,
+so the pilot flag remains enabled; no active pilot OAuth grant remains.
+This supersedes the earlier pending rollout/preparation notes.
