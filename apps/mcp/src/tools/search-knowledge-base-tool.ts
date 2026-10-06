@@ -1,3 +1,4 @@
+import { apiAuthorization } from '../auth.js';
 import { z } from 'zod';
 import type { FastMCP } from 'fastmcp';
 
@@ -43,7 +44,7 @@ export function registerSearchKnowledgeBaseTool(
         TOOL_NAME,
         { 'ragen.assistant_id': args.assistant_id },
         async () => {
-          const result = await searchKnowledgeBase(session.apiKey, {
+          const result = await searchKnowledgeBase(apiAuthorization(session), {
             assistant_id: args.assistant_id,
             query: args.query,
             max_results: args.max_results,

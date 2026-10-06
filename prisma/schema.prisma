@@ -569,6 +569,7 @@ model ApiKey {
 
 // Better Auth tables
 model User {
+  mcpGrantActivities McpGrantActivity[]
   id                 String    @id
   name               String?
   email              String    @unique
@@ -603,18 +604,24 @@ model User {
   documentVersions   DocumentVersion[]
   ownedKnowledge     KnowledgePage[]
 
+  oauthclients       OauthClient[]       @relation("oauthClient_userId")
+  oauthrefreshtokens OauthRefreshToken[] @relation("oauthRefreshToken_userId")
+  oauthaccesstokens  OauthAccessToken[]  @relation("oauthAccessToken_userId")
+  oauthconsents      OauthConsent[]      @relation("oauthConsent_userId")
+
   @@map("users")
 }
 
 model Session {
-  id        String   @id
-  userId    String   @map("user_id")
-  expiresAt DateTime @map("expires_at") @db.Timestamptz
-  token     String   @unique
-  ipAddress String?  @map("ip_address")
-  userAgent String?  @map("user_agent")
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
+  mcpConnectSelections McpConnectSelection[]
+  id                   String                @id
+  userId               String                @map("user_id")
+  expiresAt            DateTime              @map("expires_at") @db.Timestamptz
+  token                String                @unique
+  ipAddress            String?               @map("ip_address")
+  userAgent            String?               @map("user_agent")
+  createdAt            DateTime              @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt            DateTime              @updatedAt @map("updated_at") @db.Timestamptz
 
   // Better Auth organization plugin fields
   activeOrganizationId String? @map("active_organization_id")
@@ -623,7 +630,9 @@ model Session {
   // Better Auth admin plugin fields
   impersonatedBy String? @map("impersonated_by")
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  oauthrefreshtokens OauthRefreshToken[] @relation("oauthRefreshToken_sessionId")
+  oauthaccesstokens  OauthAccessToken[]  @relation("oauthAccessToken_sessionId")
 
   @@index([userId])
   @@map("sessions")
@@ -663,6 +672,7 @@ model Account {
 }
 
 model Organization {
+  mcpGrantActivities McpGrantActivity[]
   id        String   @id
   name      String
   slug      String?  @unique
@@ -893,6 +903,8 @@ model McpConnector {
   @@map("mcp_connectors")
 }
 
+/// Tokens Ragen holds as a client of external MCP servers.
+/// Not the authorization-server grants in OauthAccessToken/OauthRefreshToken.
 model McpOAuthToken {
   id             String    @id @default(uuid()) @db.Uuid
   organizationId String    @map("organization_id")
@@ -1878,4 +1890,218 @@ enum UserMemoryOperation {
   ADD
   UPDATE
   DELETE
+}
+
+/// Better Auth authorization server. Separate from Ragen as an MCP client.
+model OauthClient {
+  id                               String                @id
+  clientId                         String                @unique @map("client_id")
+  clientSecret                     String?               @map("client_secret")
+  clientDiscoveryId                String?               @map("client_discovery_id")
+  disabled                         Boolean?              @default(false)
+  skipConsent                      Boolean?              @map("skip_consent")
+  enableEndSession                 Boolean?              @map("enable_end_session")
+  subjectType                      String?               @map("subject_type")
+  scopes                           String[]
+  clientCredentialsScopes          String[]              @default([]) @map("client_credentials_scopes")
+  userId                           String?               @map("user_id")
+  user                             User?                 @relation("oauthClient_userId", fields: [userId], references: [id], onDelete: Cascade)
+  createdAt                        DateTime?             @map("created_at") @db.Timestamptz
+  updatedAt                        DateTime?             @map("updated_at") @db.Timestamptz
+  name                             String?
+  uri                              String?
+  icon                             String?
+  contacts                         String[]
+  tos                              String?
+  policy                           String?
+  softwareId                       String?               @map("software_id")
+  softwareVersion                  String?               @map("software_version")
+  softwareStatement                String?               @map("software_statement")
+  redirectUris                     String[]              @map("redirect_uris")
+  postLogoutRedirectUris           String[]              @map("post_logout_redirect_uris")
+  backchannelLogoutUri             String?               @map("backchannel_logout_uri")
+  backchannelLogoutSessionRequired Boolean?              @map("backchannel_logout_session_required")
+  tokenEndpointAuthMethod          String?               @map("token_endpoint_auth_method")
+  applicationType                  String?               @map("application_type")
+  jwks                             String?
+  jwksUri                          String?               @map("jwks_uri")
+  grantTypes                       String[]              @map("grant_types")
+  responseTypes                    String[]              @map("response_types")
+  requirePKCE                      Boolean?              @map("require_p_k_c_e")
+  dpopBoundAccessTokens            Boolean?              @default(false) @map("dpop_bound_access_tokens")
+  referenceId                      String?               @map("reference_id")
+  metadata                         Json?
+  oauthclientresources             OauthClientResource[] @relation("oauthClientResource_clientId")
+  oauthrefreshtokens               OauthRefreshToken[]   @relation("oauthRefreshToken_clientId")
+  oauthaccesstokens                OauthAccessToken[]    @relation("oauthAccessToken_clientId")
+  oauthconsents                    OauthConsent[]        @relation("oauthConsent_clientId")
+
+  @@index([userId])
+  @@map("oauth_clients")
+}
+
+/// Better Auth authorization server. Separate from Ragen as an MCP client.
+model OauthResource {
+  id                            String                @id
+  identifier                    String                @unique
+  name                          String
+  accessTokenTtl                Int?                  @map("access_token_ttl")
+  refreshTokenTtl               Int?                  @map("refresh_token_ttl")
+  signingAlgorithm              String?               @map("signing_algorithm")
+  signingKeyId                  String?               @map("signing_key_id")
+  allowedScopes                 String[]              @map("allowed_scopes")
+  customClaims                  Json?                 @map("custom_claims")
+  dpopBoundAccessTokensRequired Boolean?              @default(false) @map("dpop_bound_access_tokens_required")
+  disabled                      Boolean?              @default(false)
+  createdAt                     DateTime?             @map("created_at") @db.Timestamptz
+  updatedAt                     DateTime?             @map("updated_at") @db.Timestamptz
+  policyVersion                 Int?                  @default(1) @map("policy_version")
+  metadata                      Json?
+  oauthclientresources          OauthClientResource[] @relation("oauthClientResource_resourceId")
+
+  @@map("oauth_resources")
+}
+
+/// Better Auth authorization server. Separate from Ragen as an MCP client.
+model OauthClientResource {
+  id            String        @id
+  clientId      String        @map("client_id")
+  oauthclient   OauthClient   @relation("oauthClientResource_clientId", fields: [clientId], references: [clientId], onDelete: Cascade)
+  resourceId    String        @map("resource_id")
+  oauthresource OauthResource @relation("oauthClientResource_resourceId", fields: [resourceId], references: [identifier], onDelete: Cascade)
+  metadata      Json?
+  createdAt     DateTime?     @map("created_at") @db.Timestamptz
+
+  @@unique([clientId, resourceId])
+  @@index([clientId])
+  @@index([resourceId])
+  @@map("oauth_client_resources")
+}
+
+/// Better Auth authorization server. Separate from Ragen as an MCP client.
+model OauthRefreshToken {
+  id                      String             @id
+  token                   String             @unique
+  clientId                String             @map("client_id")
+  oauthclient             OauthClient        @relation("oauthRefreshToken_clientId", fields: [clientId], references: [clientId], onDelete: Cascade)
+  sessionId               String?            @map("session_id")
+  session                 Session?           @relation("oauthRefreshToken_sessionId", fields: [sessionId], references: [id], onDelete: SetNull)
+  userId                  String             @map("user_id")
+  user                    User               @relation("oauthRefreshToken_userId", fields: [userId], references: [id], onDelete: Cascade)
+  referenceId             String?            @map("reference_id")
+  authorizationCodeId     String?            @map("authorization_code_id")
+  resources               String[]
+  requestedUserInfoClaims String[]           @map("requested_user_info_claims")
+  expiresAt               DateTime           @map("expires_at") @db.Timestamptz
+  createdAt               DateTime           @map("created_at") @db.Timestamptz
+  revoked                 DateTime?          @db.Timestamptz
+  rotatedAt               DateTime?          @map("rotated_at") @db.Timestamptz
+  rotationReplayResponse  String?            @map("rotation_replay_response")
+  rotationReplayExpiresAt DateTime?          @map("rotation_replay_expires_at") @db.Timestamptz
+  authTime                DateTime?          @map("auth_time") @db.Timestamptz
+  confirmation            Json?
+  scopes                  String[]
+  oauthaccesstokens       OauthAccessToken[] @relation("oauthAccessToken_refreshId")
+
+  @@index([clientId])
+  @@index([sessionId])
+  @@index([userId])
+  @@index([authorizationCodeId])
+  @@map("oauth_refresh_tokens")
+}
+
+/// Better Auth authorization server. Separate from Ragen as an MCP client.
+model OauthAccessToken {
+  id                      String             @id
+  token                   String             @unique
+  clientId                String             @map("client_id")
+  oauthclient             OauthClient        @relation("oauthAccessToken_clientId", fields: [clientId], references: [clientId], onDelete: Cascade)
+  sessionId               String?            @map("session_id")
+  session                 Session?           @relation("oauthAccessToken_sessionId", fields: [sessionId], references: [id], onDelete: SetNull)
+  userId                  String?            @map("user_id")
+  user                    User?              @relation("oauthAccessToken_userId", fields: [userId], references: [id], onDelete: Cascade)
+  referenceId             String?            @map("reference_id")
+  authorizationCodeId     String?            @map("authorization_code_id")
+  resources               String[]
+  requestedUserInfoClaims String[]           @map("requested_user_info_claims")
+  refreshId               String?            @map("refresh_id")
+  oauthrefreshtoken       OauthRefreshToken? @relation("oauthAccessToken_refreshId", fields: [refreshId], references: [id], onDelete: Cascade)
+  expiresAt               DateTime           @map("expires_at") @db.Timestamptz
+  createdAt               DateTime           @map("created_at") @db.Timestamptz
+  revoked                 DateTime?          @db.Timestamptz
+  confirmation            Json?
+  scopes                  String[]
+
+  @@index([clientId])
+  @@index([sessionId])
+  @@index([userId])
+  @@index([authorizationCodeId])
+  @@index([refreshId])
+  @@map("oauth_access_tokens")
+}
+
+/// Better Auth authorization server. Separate from Ragen as an MCP client.
+model OauthConsent {
+  id                      String      @id
+  clientId                String      @map("client_id")
+  oauthclient             OauthClient @relation("oauthConsent_clientId", fields: [clientId], references: [clientId], onDelete: Cascade)
+  userId                  String?     @map("user_id")
+  user                    User?       @relation("oauthConsent_userId", fields: [userId], references: [id], onDelete: Cascade)
+  referenceId             String?     @map("reference_id")
+  resources               String[]
+  requestedUserInfoClaims String[]    @map("requested_user_info_claims")
+  scopes                  String[]
+  createdAt               DateTime    @map("created_at") @db.Timestamptz
+  updatedAt               DateTime    @map("updated_at") @db.Timestamptz
+
+  @@index([clientId])
+  @@index([userId])
+  @@map("oauth_consents")
+}
+
+/// Better Auth authorization server. Separate from Ragen as an MCP client.
+model OauthClientAssertion {
+  id        String   @id
+  expiresAt DateTime @map("expires_at") @db.Timestamptz
+
+  @@map("oauth_client_assertions")
+}
+
+/// Better Auth authorization server. Separate from Ragen as an MCP client.
+model Jwks {
+  id         String    @id
+  publicKey  String    @map("public_key")
+  privateKey String    @map("private_key")
+  createdAt  DateTime  @map("created_at") @db.Timestamptz
+  expiresAt  DateTime? @map("expires_at") @db.Timestamptz
+  alg        String?
+  crv        String?
+
+  @@map("jwks")
+}
+
+/// The workspace pick is isolated per session and OAuth client.
+model McpConnectSelection {
+  sessionId      String   @map("session_id")
+  clientId       String   @map("client_id")
+  userId         String   @map("user_id")
+  organizationId String   @map("organization_id")
+  projectId      String?  @map("project_id")
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz
+  session        Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@id([sessionId, clientId])
+  @@map("mcp_connect_selections")
+}
+
+/// Ragen-owned activity; OAuth provider tables remain library-owned.
+model McpGrantActivity {
+  userId String @map("user_id")
+  clientId String @map("client_id")
+  organizationId String @map("organization_id")
+  lastUsedAt DateTime @map("last_used_at") @db.Timestamptz
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  @@id([userId, clientId])
+  @@map("mcp_grant_activity")
 }

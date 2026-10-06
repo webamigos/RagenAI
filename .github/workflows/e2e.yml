@@ -59,6 +59,10 @@ env:
   # suite needs it running — without these three, connectors, project upload
   # and thread export fail with "Missing RAGEN_API_INTERNAL_URL".
   SESSION_AUTH_SECRET: 'e2e-session-auth-secret-min-32-chars-long'
+  # Exercise the conditional auth plugins and the p0 OAuth consent gate.
+  MCP_OAUTH_ENABLED: 'true'
+  MCP_SERVICE_SECRET: 'e2e-mcp-service-secret-min-32-chars-long'
+  RAGEN_MCP_PUBLIC_URL: 'http://localhost:3300/mcp'
   RAGEN_API_INTERNAL_URL: 'http://localhost:3001'
   API_PORT: '3001'
   BETTER_AUTH_URL: 'http://localhost:3000'

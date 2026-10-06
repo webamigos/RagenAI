@@ -50,11 +50,18 @@ export class AssistantsService {
     const cursorId = query.after ? stripPrefix(query.after, 'asst') : undefined;
 
     const confinedTo = this.assistantScope.confinedToProject(context);
+    const visibleIds = await this.assistantScope.visibleProjectIds(context);
+    const projectFilter: { id?: string | { in: string[] } } = {};
+    if (visibleIds !== undefined) {
+      projectFilter.id = { in: visibleIds };
+    } else if (confinedTo) {
+      projectFilter.id = confinedTo;
+    }
 
     const rows = await this.prisma.client.project.findMany({
       where: {
         organizationId: context.orgId,
-        ...(confinedTo ? { id: confinedTo } : {}),
+        ...projectFilter,
       },
       orderBy: { createdAt: order },
       take: limit,

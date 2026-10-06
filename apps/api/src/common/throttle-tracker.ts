@@ -26,11 +26,15 @@ type TrackedRequest = {
 export function throttleTracker(
   req: TrackedRequest,
   verify: (token: string) => SessionAuthContext | null,
+  verifyMcp?: (token: string) => { userId: string } | null,
 ): string {
   const header = req.headers?.authorization;
   const auth = Array.isArray(header) ? header[0] : header;
   if (auth?.startsWith(BEARER_PREFIX)) {
-    const context = verify(auth.slice(BEARER_PREFIX.length));
+    const token = auth.slice(BEARER_PREFIX.length);
+    const context = token.startsWith('mcp.')
+      ? verifyMcp?.(token)
+      : verify(token);
     if (context) {
       return `user:${context.userId}`;
     }

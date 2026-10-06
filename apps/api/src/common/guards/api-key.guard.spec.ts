@@ -105,7 +105,7 @@ describe('ApiKeyGuard', () => {
       // The boundary `AssistantScopeService` enforces; it comes from the DB
       // row, like everything else here.
       knowledgeScope: 'ASSISTANT',
-      keyId: 'key_5',
+      credential: { type: 'api_key', id: 'key_5' },
       debugMode: false,
     });
   });

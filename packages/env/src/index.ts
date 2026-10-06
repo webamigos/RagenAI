@@ -87,3 +87,5 @@ export {
   resolveBuiltInMcpServerUrl,
   type BuiltInMcpSlug,
 } from './mcp-servers';
+
+export { mcpOAuthRules, mcpServiceRules } from './mcp-oauth';

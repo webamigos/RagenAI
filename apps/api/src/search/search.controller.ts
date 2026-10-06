@@ -8,13 +8,13 @@ import {
 import { SearchService } from './search.service.js';
 import { GetApiContext } from '../common/decorators/api-context.decorator.js';
 import { type ApiContext } from '../common/types/api-context.js';
-import { ApiKeyGuard } from '../common/guards/api-key.guard.js';
+import { McpOrApiKeyGuard } from '../common/guards/mcp-or-api-key.guard.js';
 import { SearchDto } from './dto/search.dto.js';
 
 @ApiTags('Search')
 @ApiSecurity('bearer')
 @Controller('search')
-@UseGuards(ApiKeyGuard)
+@UseGuards(McpOrApiKeyGuard)
 export class SearchController {
   constructor(private readonly searchService: SearchService) {}
 

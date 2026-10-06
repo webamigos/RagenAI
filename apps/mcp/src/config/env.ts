@@ -1,6 +1,8 @@
 import {
   blankAsUndefined,
   fragments,
+  mcpServiceRules,
+  mcpOAuthRules,
   httpUrl,
   parseEnv,
   requiredInDeployedEnvs,
@@ -35,6 +37,9 @@ export const DEV_SERVER_VERSION = 'dev';
 
 export const mcpEnvSchema = fragments.targetEnvRequired
   .merge(fragments.observability)
+  .merge(fragments.mcpOAuth)
+  .merge(fragments.authOrigin)
+  .merge(fragments.mcpService)
   .extend({
     // `RAGEN_MCP_PORT` first, then `PORT` — see the transform below.
     //
@@ -54,6 +59,7 @@ export const mcpEnvSchema = fragments.targetEnvRequired
     // value the `ragen` CLI reads. Ignored over HTTP, where each caller sends
     // its own: one key in the environment of a shared server would make every
     // caller the same caller.
+    SESSION_AUTH_SECRET: z.string().optional(),
     RAGEN_API_KEY: blankAsUndefined(z.string().trim().optional()),
     PORT: z.coerce.number().int().positive().max(65535).optional(),
     // Optional here rather than `.default(...)`, and defaulted in the
@@ -74,6 +80,37 @@ export const mcpEnvSchema = fragments.targetEnvRequired
     RAILWAY_GIT_COMMIT_SHA: blankAsUndefined(z.string().trim().optional()),
   })
   .superRefine((env, ctx) => {
+    if (env.MCP_OAUTH_ENABLED === 'true' && !env.BETTER_AUTH_URL) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['BETTER_AUTH_URL'],
+        message: 'BETTER_AUTH_URL is required for MCP OAuth',
+      });
+    }
+    if (env.MCP_OAUTH_ENABLED === 'true' && env.BETTER_AUTH_URL) {
+      const issuer = new URL(env.BETTER_AUTH_URL);
+      if (
+        (issuer.protocol !== 'https:' &&
+          !(
+            issuer.protocol === 'http:' &&
+            ['localhost', '127.0.0.1', '[::1]'].includes(issuer.hostname)
+          )) ||
+        issuer.username ||
+        issuer.password ||
+        issuer.pathname !== '/' ||
+        issuer.search ||
+        issuer.hash
+      ) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['BETTER_AUTH_URL'],
+          message:
+            'Use the public HTTPS auth origin (HTTP only on loopback), without path, credentials, query or fragment',
+        });
+      }
+    }
+    mcpServiceRules(env, ctx);
+    mcpOAuthRules(env, ctx);
     requiredInDeployedEnvs(
       env,
       ctx,

@@ -28,7 +28,7 @@ describe('authenticate', () => {
   it('returns the forwarded Authorization header as apiKey for a Bearer-prefixed value', async () => {
     const session = await authenticate(makeRequest('Bearer sk-abc.def'));
 
-    expect(session).toEqual({ apiKey: 'Bearer sk-abc.def' });
+    expect(session).toEqual({ kind: 'api_key', apiKey: 'Bearer sk-abc.def' });
   });
 
   it('rejects with a 401 Response when the header is missing', async () => {
@@ -50,7 +50,7 @@ describe('authenticate', () => {
 
     const session = await authenticate(request);
 
-    expect(session).toEqual({ apiKey: 'Bearer sk-first' });
+    expect(session).toEqual({ kind: 'api_key', apiKey: 'Bearer sk-first' });
   });
 
   it('logs a rejection without ever putting the supplied credential in the log', async () => {
@@ -97,6 +97,7 @@ describe('authenticate over stdio, where there is no request', () => {
     withKey('sk-abc.def');
 
     await expect(authenticate(undefined)).resolves.toEqual({
+      kind: 'api_key',
       apiKey: 'Bearer sk-abc.def',
     });
   });

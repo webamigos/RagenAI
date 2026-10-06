@@ -3,6 +3,7 @@ import { createServer } from 'node:net';
 import { FastMCP } from 'fastmcp';
 
 import type { RagenSession } from '../auth.js';
+import { registerBrandingRoutes } from '../branding.js';
 import { DEV_SERVER_VERSION, mcpEnvSchema } from '../config/env.js';
 import { serverOptions } from '../server-options.js';
 
@@ -29,9 +30,11 @@ async function freePort(): Promise<number> {
  * server — not from the options object, because what a client sees is the
  * thing that was wrong (`0.0.1`, hardcoded, in every build).
  */
-async function initialize(
-  port: number,
-): Promise<{ name: string; version: string }> {
+async function initialize(port: number): Promise<{
+  name: string;
+  version: string;
+  icons: { src: string; mimeType: string; sizes: string[] }[];
+}> {
   const response = await fetch(`http://127.0.0.1:${port}/mcp`, {
     method: 'POST',
     headers: {
@@ -59,7 +62,13 @@ async function initialize(
         .find((line) => line.startsWith('data:'))
         ?.slice('data:'.length) ?? '');
   const message = JSON.parse(json) as {
-    result: { serverInfo: { name: string; version: string } };
+    result: {
+      serverInfo: {
+        name: string;
+        version: string;
+        icons: { src: string; mimeType: string; sizes: string[] }[];
+      };
+    };
   };
   return message.result.serverInfo;
 }
@@ -77,6 +86,7 @@ describe('serverOptions', () => {
     server = new FastMCP<RagenSession>(
       serverOptions(mcpEnvSchema.parse({ TARGET_ENV: 'local', ...env })),
     );
+    registerBrandingRoutes(server);
     await server.start({
       transportType: 'httpStream',
       httpStream: { host: '127.0.0.1', port },
@@ -90,7 +100,7 @@ describe('serverOptions', () => {
       RAILWAY_GIT_COMMIT_SHA: 'abc123',
     });
 
-    expect(serverInfo).toEqual({ name: 'Ragen', version: '2.32.8' });
+    expect(serverInfo).toMatchObject({ name: 'Ragen', version: '2.32.8' });
   });
 
   it('reports the commit sha when the build named no release', async () => {
@@ -99,6 +109,21 @@ describe('serverOptions', () => {
     });
 
     expect(serverInfo.version).toBe('abc123');
+  });
+
+  it('advertises a packaged PNG and serves the identical public favicon', async () => {
+    const info = await serverInfoFor({});
+    const icon = info.icons[0];
+    expect(icon.mimeType).toBe('image/png');
+    expect(icon.sizes).toEqual(['512x512']);
+    const bytes = Buffer.from(icon.src.split(',')[1], 'base64');
+    expect(bytes.subarray(0, 8).toString('hex')).toBe('89504e470d0a1a0a');
+    for (const path of ['/icon.png', '/favicon.ico']) {
+      const response = await server!.getApp().request(path);
+      expect(response.status).toBe(200);
+      expect(response.headers.get('content-type')).toBe('image/png');
+      expect(Buffer.from(await response.arrayBuffer())).toEqual(bytes);
+    }
   });
 
   it('falls back to the dev version when the build named neither', async () => {

@@ -1,3 +1,4 @@
+import { McpOrApiKeyGuard } from '../common/guards/mcp-or-api-key.guard.js';
 import {
   Body,
   Controller,
@@ -43,12 +44,12 @@ import { OpenAiExceptionFilter } from '../common/filters/openai-exception.filter
 @ApiTags('Assistants')
 @ApiSecurity('bearer')
 @Controller('assistants')
-@UseGuards(ApiKeyGuard)
 @UseFilters(OpenAiExceptionFilter)
 @SkipResponseTransform()
 export class AssistantsController {
   constructor(private readonly assistantsService: AssistantsService) {}
 
+  @UseGuards(McpOrApiKeyGuard)
   @Get()
   @ApiOperation({ summary: 'List assistants' })
   list(
@@ -58,12 +59,14 @@ export class AssistantsController {
     return this.assistantsService.list(context, query);
   }
 
+  @UseGuards(ApiKeyGuard)
   @Get(':id')
   @ApiOperation({ summary: 'Retrieve an assistant' })
   retrieve(@Param('id') id: string, @GetApiContext() context: ApiContext) {
     return this.assistantsService.get(id, context);
   }
 
+  @UseGuards(ApiKeyGuard)
   @Post()
   @ApiOperation({ summary: 'Create an assistant' })
   create(
@@ -75,6 +78,7 @@ export class AssistantsController {
 
   // OpenAI uses POST /v1/assistants/:id for modify. We accept both
   // POST and PATCH so cURL users with more REST-ish habits also work.
+  @UseGuards(ApiKeyGuard)
   @Post(':id')
   @ApiOperation({ summary: 'Modify an assistant (OpenAI-compatible)' })
   modifyViaPost(
@@ -85,6 +89,7 @@ export class AssistantsController {
     return this.assistantsService.update(id, dto, context);
   }
 
+  @UseGuards(ApiKeyGuard)
   @Patch(':id')
   @ApiOperation({ summary: 'Modify an assistant (REST-style PATCH)' })
   modifyViaPatch(
@@ -95,6 +100,7 @@ export class AssistantsController {
     return this.assistantsService.update(id, dto, context);
   }
 
+  @UseGuards(ApiKeyGuard)
   @Delete(':id')
   @ApiOperation({ summary: 'Delete an assistant' })
   remove(@Param('id') id: string, @GetApiContext() context: ApiContext) {

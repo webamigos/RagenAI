@@ -16,7 +16,7 @@ describe('RagenWebClient', () => {
     orgId: 'org-1' as OrgId,
     userId: 'user-1' as UserId,
     projectId: 'proj-1' as ProjectId,
-    keyId: 'key-1' as KeyId,
+    credential: { type: 'api_key', id: 'key-1' as KeyId },
     debugMode: false,
   };
 
@@ -50,7 +50,7 @@ describe('RagenWebClient', () => {
     const orgOnly = {
       orgId: context.orgId,
       userId: context.userId,
-      keyId: context.keyId,
+      credential: context.credential,
     } as unknown as typeof context;
 
     await client.request({

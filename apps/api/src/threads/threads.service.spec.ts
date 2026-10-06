@@ -1,3 +1,4 @@
+import { type ProjectsService } from '../projects/projects.service.js';
 /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */
 import type { Mock } from 'vitest';
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
@@ -18,7 +19,7 @@ describe('ThreadsService', () => {
     orgId: 'org-1' as OrgId,
     userId: 'user-1' as UserId,
     projectId: 'proj-bound' as ProjectId,
-    keyId: 'key-1' as KeyId,
+    credential: { type: 'api_key', id: 'key-1' as KeyId },
     debugMode: false,
   };
 
@@ -68,7 +69,7 @@ describe('ThreadsService', () => {
     return {
       service: new ThreadsService(
         prisma,
-        new AssistantScopeService(prisma),
+        new AssistantScopeService(prisma, {} as ProjectsService),
         subscriptions,
       ),
       isFeatureEnabled,
@@ -149,7 +150,7 @@ describe('ThreadsService', () => {
     const kbKey: ApiContext = {
       orgId: context.orgId,
       userId: context.userId,
-      keyId: context.keyId,
+      credential: context.credential,
       debugMode: false,
       knowledgeScope: 'KNOWLEDGE_BASE',
     };

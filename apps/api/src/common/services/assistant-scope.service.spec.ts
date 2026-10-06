@@ -1,3 +1,4 @@
+import { type ProjectsService } from '../../projects/projects.service.js';
 import { ForbiddenException } from '@nestjs/common';
 import { AssistantScopeService } from './assistant-scope.service.js';
 import { type PrismaService } from '../../prisma/prisma.service.js';
@@ -10,10 +11,10 @@ import {
 } from '../types/brand.js';
 
 describe('AssistantScopeService', () => {
-  const base = {
+  const base: ApiContext = {
     orgId: 'org-1' as OrgId,
     userId: 'user-1' as UserId,
-    keyId: 'key-1' as KeyId,
+    credential: { type: 'api_key', id: 'key-1' as KeyId },
     debugMode: false,
   };
 
@@ -33,7 +34,10 @@ describe('AssistantScopeService', () => {
     const prisma = {
       client: { project: { findFirst } },
     } as unknown as PrismaService;
-    return { service: new AssistantScopeService(prisma), findFirst };
+    return {
+      service: new AssistantScopeService(prisma, {} as ProjectsService),
+      findFirst,
+    };
   }
 
   describe('a key bound to an assistant', () => {
@@ -158,4 +162,122 @@ describe('AssistantScopeService', () => {
       ).rejects.toBeInstanceOf(ForbiddenException);
     });
   });
+});
+
+describe('OAuth assistant visibility', () => {
+  const context: ApiContext = {
+    orgId: 'org-a' as OrgId,
+    userId: 'user-a' as UserId,
+    credential: { type: 'oauth', id: 'client-a:user-a' },
+    debugMode: false,
+  };
+  function make() {
+    const permissions = {
+      getEffectiveProjectPermission: vi
+        .fn()
+        .mockResolvedValue({ canView: false }),
+    };
+    const projects = {
+      findFirst: vi.fn().mockResolvedValue({ id: 'private' }),
+      findMany: vi.fn().mockResolvedValue([
+        { id: 'private', ownerId: 'other' },
+        { id: 'shared', ownerId: 'other' },
+      ]),
+    };
+    const member = vi.fn().mockResolvedValue({ role: 'member' });
+    const teams = vi.fn().mockResolvedValue([{ teamId: 'team-a' }]);
+    const grants = vi.fn().mockResolvedValue([{ projectId: 'shared' }]);
+    const service = new AssistantScopeService(
+      {
+        client: {
+          project: projects,
+          member: { findFirst: member },
+          teamMember: { findMany: teams },
+          projectPermission: { findMany: grants },
+        },
+      } as unknown as PrismaService,
+      permissions as unknown as ProjectsService,
+    );
+    return { service, projects, permissions, member, teams, grants };
+  }
+  it('refuses an in-org private assistant for an org-wide OAuth grant', async () => {
+    const s = make();
+    await expect(s.service.resolve('private', context)).rejects.toBeInstanceOf(
+      ForbiddenException,
+    );
+    expect(s.permissions.getEffectiveProjectPermission).toHaveBeenCalledWith(
+      'private',
+      'org-a',
+      'user-a',
+    );
+    s.permissions.getEffectiveProjectPermission.mockResolvedValue({
+      canView: true,
+    });
+    await expect(s.service.resolve('private', context)).resolves.toBe(
+      'private',
+    );
+  });
+  it('rechecks even a bound assistant, and applies its boundary first', async () => {
+    const s = make();
+    const bound = {
+      ...context,
+      projectId: 'private' as ProjectId,
+      knowledgeScope: 'ASSISTANT' as const,
+    };
+    await expect(s.service.resolve(undefined, bound)).rejects.toBeInstanceOf(
+      ForbiddenException,
+    );
+    await expect(s.service.resolve('another', bound)).rejects.toBeInstanceOf(
+      ForbiddenException,
+    );
+    expect(s.permissions.getEffectiveProjectPermission).toHaveBeenCalledTimes(
+      1,
+    );
+  });
+  it('filters visible IDs with the panel permission rule and keeps keys org-wide', async () => {
+    const s = make();
+
+    await expect(s.service.visibleProjectIds(context)).resolves.toEqual([
+      'shared',
+    ]);
+    await expect(
+      s.service.visibleProjectIds({
+        ...context,
+        credential: { type: 'api_key', id: 'key' as KeyId },
+      }),
+    ).resolves.toBeUndefined();
+    expect(s.projects.findMany).toHaveBeenCalledTimes(1);
+    expect(s.member).toHaveBeenCalledTimes(1);
+    expect(s.teams).toHaveBeenCalledTimes(1);
+    expect(s.grants).toHaveBeenCalledTimes(1);
+    expect(s.permissions.getEffectiveProjectPermission).not.toHaveBeenCalled();
+    expect(s.grants).toHaveBeenCalledWith({
+      where: {
+        projectId: { in: ['private', 'shared'] },
+        OR: [
+          { granteeType: 'user', granteeId: 'user-a' },
+          { granteeType: 'team', granteeId: { in: ['team-a'] } },
+        ],
+      },
+      select: { projectId: true },
+    });
+  });
+  it.each(['member', 'admin', 'owner'])(
+    'preserves owner, ownerless and org-manager visibility for %s',
+    async (role) => {
+      const s = make();
+      s.member.mockResolvedValue({ role });
+      s.grants.mockResolvedValue([]);
+      s.projects.findMany.mockResolvedValue([
+        { id: 'owned', ownerId: 'user-a' },
+        { id: 'legacy', ownerId: null },
+        { id: 'private', ownerId: 'other' },
+      ]);
+      await expect(s.service.visibleProjectIds(context)).resolves.toEqual(
+        role === 'member'
+          ? ['owned', 'legacy']
+          : ['owned', 'legacy', 'private'],
+      );
+    },
+  );
 });

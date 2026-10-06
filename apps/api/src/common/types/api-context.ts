@@ -20,7 +20,7 @@ export interface ApiContext {
    * an absent scope as a value would 403 every one of them.
    */
   knowledgeScope?: KnowledgeScope;
-  keyId: KeyId;
+  credential: { type: 'api_key'; id: KeyId } | { type: 'oauth'; id: string };
   debugMode: boolean;
   /**
    * The team the caller says it is acting for, from `x-ragen-team-id`.

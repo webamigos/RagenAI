@@ -83,3 +83,14 @@ describe('proxy Accept-Language parsing on the root path', () => {
     expect(res.headers.get('location')).toContain('/en');
   });
 });
+
+describe('OAuth discovery bypasses locale and session routing', () => {
+  it.each([
+    '/.well-known/oauth-authorization-server',
+    '/.well-known/openid-configuration',
+  ])('allows %s without a session', async (path) => {
+    const response = await proxy(makeRequest(path));
+    expect(response.headers.get('location')).toBeNull();
+    expect(response.headers.get('x-marker')).toBeNull();
+  });
+});

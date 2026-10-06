@@ -375,56 +375,68 @@ organization (ADR-50).
   without building a client. The plugin tables in A2 are covered by the same
   runtime check, so a missing column there fails sign-in in `test-e2e`, not
   silently.
-- [ ] **A2.** `@better-auth/mcp` + `jwt()` registered only when
+- [x] **A2.** `@better-auth/mcp` + `jwt()` registered only when
   `MCP_OAUTH_ENABLED=true`. Additive migration for the plugin tables and
   `mcp_connect_selections`, checked on a throwaway database first. The
   null-list adapter and its field-list test. Env fragment for the new vars.
+  *Implementation prepared 2026-10-06:* the preset and JWT are conditional,
+  with explicit resource scopes, a 15-minute access TTL, a 30-day refresh TTL
+  and strict refresh rotation. DCR and token claims remain closed until B.
+  The installed 1.7.7 schema also declares `oauthClientResource` and
+  `oauthClientAssertion`; these are included in the additive migration.
+  The Prisma extension normalizes list writes, including transactions and
+  bulk/upsert operations, and relations follow the Prisma adapter's join
+  names. All 91 migrations replayed on disposable PostgreSQL (PGlite);
+  real Better Auth + Prisma sign-up/sign-in passed with the plugins enabled
+  and disabled, as did resource seeding, list create/update and an OAuth join.
+  The installer generates a separate service secret and writes the local MCP
+  URL. Local full-gate and Playwright results are recorded below.
 
 ### Phase B — authorization server in `apps/web`
 
-- [ ] **B1.** Root discovery routes, the registration guard and its rate
+- [x] **B1.** Root discovery routes, the registration guard and its rate
   limit. Unit tests for every redirect-URI case.
-- [ ] **B2.** The post-login page: organizations with `mcpOAuth` on, then
+- [x] **B2.** The post-login page: organizations with `mcpOAuth` on, then
   assistants the member can see. Feature key `mcpOAuth` in
   `platform-contracts`, default `false`.
-- [ ] **B3.** The consent page and the token claims. Proof: the MCP Inspector
+- [x] **B3.** The consent page and the token claims. Proof: the MCP Inspector
   against a local stack completes the flow and gets a JWT whose claims match
   the pick.
 
 ### Phase C — `apps/api` accepts `apps/mcp`'s assertion
 
-- [ ] **C1.** `ApiContext.credential` replaces `keyId`. No behaviour change.
-- [ ] **C2.** `McpServiceGuard` with its live checks; the composite guard on
+- [x] **C1.** `ApiContext.credential` replaces `keyId`. No behaviour change.
+- [x] **C2.** `McpServiceGuard` with its live checks; the composite guard on
   chat and search; per-handler guards on `AssistantsController`. Tests: every
   other `ApiKeyGuard` and `SessionAuthGuard` route refuses an MCP assertion,
   and so do `POST`, `PATCH` and `DELETE` on `/v1/assistants`.
-- [ ] **C3.** Per-member project visibility in `AssistantsService.list` and
+- [x] **C3.** Per-member project visibility in `AssistantsService.list` and
   `AssistantScopeService.resolve` for an OAuth credential. API keys keep
   seeing every project in the organization.
-- [ ] **C4.** The `throttleTracker` branch. Tests that an OAuth-credentialed
+- [x] **C4.** The `throttleTracker` branch. Tests that an OAuth-credentialed
   request hits the usage ceilings, a per-user throttle bucket and the
   folder-membership retrieval scope.
 
 ### Phase D — `apps/mcp` speaks OAuth
 
-- [ ] **D1.** Switch to `stateless: true` and run the three tools against
+- [x] **D1.** Switch to `stateless: true` and run the three tools against
   Claude Code and the MCP Inspector. Record the result here.
-- [ ] **D2.** Protected-resource metadata, the 401/403 challenges, JWT
+- [x] **D2.** Protected-resource metadata, the 401/403 challenges, JWT
   verification with a cached JWKS, and the `RagenSession` union.
-- [ ] **D3.** The service assertion on every call to `apps/api` for an OAuth
+- [x] **D3.** The service assertion on every call to `apps/api` for an OAuth
   session. A test that an OAuth session's access token never appears in an
   outgoing request.
-- [ ] **D4.** Connected apps in account settings, with Disconnect. It comes
+- [x] **D4.** Connected apps in account settings, with Disconnect. It comes
   before the first real connection, so nobody on demo connects an app they
   cannot disconnect.
-- [ ] **D5.** End to end on the demo environment: claude.ai custom connector
+- [x] **D5.** End to end on the demo environment: claude.ai custom connector
   added, sign-in, a chat answer, a search, the assistant list, Disconnect.
 
 ### Phase E — revocation and docs
 
-- [ ] **E1.** Removal, leaving, organization deletion and a ban revoke the
+- [x] **E1.** Removal, leaving, organization deletion and a ban revoke the
   user's grants in that organization.
-- [ ] **E2.** A new ADR records the decision and amends ADR-36's "auth is the
+- [x] **E2.** A new ADR records the decision and amends ADR-36's "auth is the
   caller's API key" paragraph. `create-ragen-app` updated (secret, public
   MCP URL). ragen-docs: connecting from claude.ai. A changelog note.
 
@@ -441,6 +453,27 @@ organization (ADR-50).
   claude.ai connector itself cannot run in CI; D5 is a manual check on demo,
   recorded in `docs/regression-checklist.md`.
 
+### A2 local validation — 2026-10-06
+
+- All 91 migrations replayed on an empty disposable PostgreSQL (PGlite).
+  Selection keys isolate clients within a session; session deletion cascades.
+- Real Better Auth + Prisma sign-up/sign-in passed with OAuth enabled and
+  disabled, along with resource seeding, null-list writes, adapter joins and
+  refusal of dynamic registration.
+- `npm run verify -- --continue=always`: 69 of 70 tasks passed, including
+  every application build, typecheck, lint and test suite. Four root
+  architecture tests failed; the same failures were reproduced on unchanged
+  `main`: an untracked `packages/db` cache directory is counted as a workspace,
+  and the sibling documentation's environment reference is stale.
+- The final malformed-URL validation fix passed the env build, 13 env tests
+  and 33 focused web tests.
+- Docker Desktop supplied PostgreSQL, Redis and Qdrant. Pending migrations
+  were applied only to the dedicated `ragen_e2e` database. Playwright smoke
+  04–06 (sign-in validation, sign-in success, sign-out success) passed 3/3
+  with OAuth disabled and 3/3 with `MCP_OAUTH_ENABLED=true`.
+- This covers phase A2. Phases B–E and the real OAuth connector flow remain
+  unimplemented; no demo rollout has been performed.
+
 ## Rollout and rollback
 
 - Order: A1 alone, then A2…E behind `MCP_OAUTH_ENABLED` (deployment) and
@@ -453,3 +486,371 @@ organization (ADR-50).
   follow-up migration only if the feature is abandoned.
 - **Rotating `MCP_SERVICE_SECRET`:** change it in `apps/mcp` and `apps/api`
   together. Assertions live 30 s, so the window of refused calls is a deploy.
+
+
+### Phase B local validation — 2026-10-06
+
+Root discovery, guarded dynamic registration, workspace selection and consent
+are implemented behind the deployment and organization gates. The browser E2E
+completes sign-in, selects an organization and assistant, accepts consent,
+exchanges the PKCE code and verifies the issued JWT against the advertised
+JWKS. It checks issuer, audience, user, organization, project, client, scope
+and the 15-minute lifetime, then proves refresh is refused when the live
+organization flag is disabled. Discovery and registration smoke tests pass.
+B3's specific MCP Inspector proof remains pending until the protected-resource
+phase makes the local MCP endpoint support OAuth. The browser test is evidence
+for the authorization server, not a claim that the full MCP integration ships.
+
+Final validation: OAuth discovery/registration, email sign-in, password
+reset, sign-out and consent E2E passed (6/6) on Docker Desktop. The full
+web unit suite passed separately (511 files, 5,046 tests). Full verification
+completed all builds, lint and typechecks; four previously reproduced root
+architecture failures remain (`packages/db` without a manifest, its missing
+architecture entry, the resulting package count, and a stale configuration
+reference in the sibling documentation checkout). One existing
+`PublicShareDialog` test timed out while builds ran concurrently; all three
+of its cases and the entire web suite passed on recheck without code changes.
+CodeRabbit was unavailable in this session; a manual review checked the signed
+query, live grant checks and provider administrative privileges.
+
+
+### Phase C local validation — 2026-10-06
+
+The API context now distinguishes API keys from OAuth credentials. A shared
+`@ragenai/crypto/mcp-service` helper signs the typed `mcp.` namespace with a
+dedicated secret and a 30-second lifetime. The API verifies it and checks the
+live member, ban, organization flag and project permission before constructing
+a context with debug disabled and no caller-supplied team.
+
+The real AppModule test enumerates every controller: only chat, search and
+assistant listing use the composite guard; every remaining API-key/session
+handler rejects a correctly signed MCP assertion. OAuth assistant listing
+filters permissions before pagination, and resolution applies the same panel
+permission service even to a bound project. Tests prove the per-user throttle,
+usage ceilings and caller folder membership also apply to OAuth.
+
+The browser OAuth test now calls the real Docker-backed API with the selected
+identity: it lists only the chosen assistant, rejects JWT passthrough, rejects
+internal project reads and assistant POST/PATCH/DELETE, and refuses the next
+API call after the organization's flag is switched off. Discovery, registration
+and this complete flow passed (3/3). API tests passed (116 files, 1,312 tests),
+and the assertion helper's 13 tests passed. No OAuth token is forwarded to the
+API. Deployment and organization gates remain off by default.
+
+Final phase C verification completed 69/70 tasks. All application builds,
+lint, typechecks and tests passed; the sole failing task was the root suite's
+four previously reproduced architecture failures described above.
+
+
+### Phase D1 transport probe — 2026-10-06
+
+HTTP now starts with `stateless: true`; stdio keeps its existing lifecycle.
+A real FastMCP server and the official Streamable HTTP SDK run chat, search
+and assistant listing twice. Changing the credential between calls changes
+the credential reaching the API for all three tools, without reconnecting,
+and no MCP session ID is created. All 19 MCP test files (114 tests) pass.
+
+FastMCP 3.35.0 waits about one second for client capabilities on each
+stateless request and logs a warning when it cannot infer them; the SDK calls
+still succeed. The integration test has a 20-second budget for eight protocol
+requests rather than the default five seconds. This proves SDK compatibility;
+the specifically requested Claude Code and Inspector probes remain pending,
+so D1's checkbox is not yet marked complete.
+
+### D2/D3 verification — 2026-10-06
+
+The real FastMCP HTTP integration test `oauth-http.test.ts` verifies public
+protected-resource metadata, missing/invalid-token 401 challenges, the 403
+insufficient-scope challenge, and one cached JWKS fetch. All three tools
+run twice through the official MCP SDK with a changed JWT on the same client.
+The mock API verifies every service assertion and its current user identity;
+neither access token appears in outgoing authorization headers.
+MCP verification: 21 files, 131 passing tests; typecheck and lint pass.
+The follow-up `oauth-jwks-rotation.test.ts` verifies a real remote JWKS
+rotation: cached keys are reused, an unknown kid is refused during JOSE's
+default 30-second fetch cooldown, and a fresh set is fetched after that
+cooldown and then cached. Issuer configuration accepts HTTPS origins and
+loopback HTTP only, with no path, credentials, query or fragment; the
+configured origin derives the Better Auth issuer and its `/api/auth/jwks`.
+Final MCP verification: 22 files, 137 tests; typecheck and lint pass.
+D1's named-client probes remain outstanding.
+
+### D4 Disconnect API verification — 2026-10-06
+
+The provider's `/oauth2/delete-consent` endpoint only deletes consent; it
+does not revoke tokens. The gated `mcp-grants` Better Auth plugin adds
+`POST /api/auth/mcp/disconnect` with session middleware and a consent id.
+Its adapter transaction first verifies ownership and the MCP scope, then
+deletes access tokens, refresh tokens and consents for that user/client.
+The Prisma adapter enables real transactions only with MCP OAuth enabled.
+The real-handler memory-adapter integration test signs up a user and proves
+401 without a session, 404 for a foreign consent, 403 for a foreign origin
+(with production CSRF checks explicitly enabled), and preservation of other
+users' and clients' grants after a successful Disconnect.
+D4 remains open for the account UI, last-use tracking, and Docker-backed
+end-to-end verification of refresh refusal after Disconnect.
+
+### D4 account settings and Docker verification — 2026-10-06
+
+Account settings now lists this user's MCP clients once each, with workspace
+and accessible assistant names, last use, and Disconnect. The gated plugin
+API returns only display fields; inaccessible project/workspace labels are
+not disclosed. All 17 locales translate the section and format its dates.
+The Ragen-owned `McpGrantActivity` table records accepted MCP calls after
+live guard checks and cascades on user or organization deletion. The additive
+migration was applied only to Docker Desktop's `ragen_e2e` database.
+The extended browser gate signs in, grants consent, calls the actual API,
+checks live flag revocation, opens account settings, disconnects the client,
+and proves refresh refusal plus zero refresh-token/consent rows for that
+user/client. Playwright: 54 passed, 1 skipped (including dependent smoke
+tests); the OAuth/Disconnect gate itself passed in 2.8 seconds. Production
+web build, API/web typechecks and focused guard/integration tests passed.
+Full verification completed with 69/70 tasks successful. It exposed a missing
+crypto dependency in the MCP image and missing tenant-registry coverage for
+McpGrantActivity; both are fixed. The two focused suites then passed 185
+tests. A final root run passed 3999 tests and retained only the four proven
+baseline failures (the ignored packages/db/.turbo directory and its tree/count
+consequences, plus the stale sibling configuration reference). The real MCP
+Docker Desktop image build is in progress separately.
+
+### E1 organization lifecycle verification — 2026-10-06
+
+The gated Better Auth plugin revokes access tokens, refresh tokens and consent
+through its adapter transaction after successful remove-member, leave and
+delete-organization endpoints. Scope derives from the server-returned member
+or organization, not posted identifiers. Matching `referenceId` uses the
+exact organization prefix including its colon separator.
+The real-handler integration test now creates organizations and another user,
+leaves one organization, removes that other member, and deletes an organization.
+It verifies that all three token/consent tables lose only affected grants,
+that the owner's grants survive removal of a different member, and that a
+similarly prefixed neighboring organization survives organization deletion.
+Seven focused tests, web typecheck and targeted lint pass. E1 remains open
+for the admin-panel ban path and workspace replacement revocation.
+
+### E1 ban and replacement verification — 2026-10-06
+
+The admin ban action now revokes all of the banned user's OAuth grants through
+a server-only Better Auth adapter transaction. The admin app registers the
+provider schema without exposing OAuth issuer endpoints. Focused adapter tests
+cover foreign users, unbanned users and the private endpoint; all 704 admin
+tests and the production build pass. The web ban hook also uses the successful
+server response, never the posted user id.
+
+Accepting a new workspace consent replaces older workspace grants for the same
+user and client. Every fresh authorization requires the workspace checkpoint;
+only the signed continuation may reuse a live selection. The browser test
+authorizes twice, verifies that exactly one consent remains and that the old
+refresh token fails, then exercises permission changes and Disconnect. It
+passes on Docker Desktop (1/1). The MCP production Docker image also builds
+successfully, including the shared assertion package.
+
+### E2 documentation verification — 2026-10-06
+
+ADR-53 records the issuer/resource/API boundary, stateless requests, independent
+service assertions, live permissions, replacement and revocation limits. ADR-36
+now describes both authentication paths. A changelog note explicitly says the
+feature is behind disabled deployment and organization gates. The installer
+already generates the independent service secret and local public MCP URL.
+
+The ragen-docs commit `ab305a6` adds claude.ai automatic client registration,
+workspace consent, all three tools, Connected apps/Disconnect and self-hosting
+configuration to the existing MCP pages. The generated configuration reference
+is synchronized with its source. MDX syntax and docs.json checks pass; the ADR
+reference, generated-reference and installer suites pass (41 tests).
+
+### D1 named-client interoperability verification — 2026-10-06
+
+MCP Inspector 2.9.0 CLI and Claude Code 2.1.282 both connected to the real built
+FastMCP server with `stateless: true`, discovered the three tools and called
+`ragen_list_assistants`, `ragen_chat` and `ragen_search_knowledge_base`.
+Each returned `success: true`. The isolated transport fixture used a local
+JWKS issuer and a signed 15-minute bearer JWT; its API accepted only valid
+service assertions for the expected user. It recorded six accepted calls,
+three from each client, in the expected order. Claude Code ran with only these
+MCP tools, an explicit session config and no session persistence. No production
+API or knowledge-base data was used. This proves D1 client compatibility, not
+B3's Inspector authorization flow or D5's demo claude.ai rollout gate.
+
+### B3 Inspector authorization verification — 2026-10-06
+
+MCP Inspector 2.9.0 web completed resource discovery, dynamic registration,
+Ragen email sign-in, workspace and assistant selection, consent, code exchange
+and authenticated MCP connection (protocol 2025-11-25). Its memory-only token
+store supplied the actual issued JWT for signature verification against the
+web JWKS, with issuer `http://localhost:3000/api/auth` and audience
+`http://localhost:3300/mcp`. Verified claims match the seeded E2E user,
+organization and selected assistant exactly; scope contains `mcp:read` and
+`exp - iat` is 900 seconds. The organization flag is restored after the check.
+
+This check caught a contract mismatch hidden by isolated synthetic tokens:
+web issues `org`/`project`, while the MCP verifier read `orgId`/`projectId`.
+Commit `0bf1d9f5c` aligns the verifier and its fixtures with the specified
+wire claims, keeping the internal assertion identity names unchanged.
+All 138 MCP tests, build and typecheck pass after the correction.
+
+### JWKS availability verification — 2026-10-06
+
+The JOSE remote resolver now uses its public `customFetch` hook to distinguish
+failed key retrieval from invalid tokens. Network failures and non-successful
+JWKS HTTP responses return 503 with `Retry-After: 30`, without claiming that
+the user's token is invalid. A successful cached key continues to verify during
+an issuer outage. Invalid signatures still return 401; API keys bypass the
+resolver. A real HTTP JWKS test covers cold-cache refusal, the authentication
+response, cache survival and signature refusal. All 139 MCP tests, typecheck
+and build pass. No token, key material or internal fetch error is exposed.
+
+### Unused client retention verification — 2026-10-06
+
+`npm run mcp:prune-clients --workspace=@ragenai/web` performs the 30-day DCR
+cleanup through the provider schema and Better Auth adapter, inside a
+serializable Prisma transaction. It preserves owned clients, recent or unknown
+dates, consents, tokens and explicit resource configuration. Pagination uses an
+id cursor; serialization conflicts retry within three attempts. The command
+loads the installation environment, runs once, and reports disabled without
+OAuth queries when the deployment gate is off. Register it daily as described
+in [the maintenance runbook](../runbooks/mcp-oauth-maintenance.md).
+
+Sixteen focused tests and web typecheck pass. The `p0-98` Docker Desktop E2E
+creates old unused, recent, owned and consented clients, verifies only the
+eligible client is removed, repeats the run and preserves the consent (1/1).
+The actual CLI succeeds with the gate both disabled and enabled on `ragen_e2e`.
+
+### Final local gate and demo preflight — 2026-10-06
+
+After retention, `npm run verify -- --continue` completes 69/70 tasks, with all
+application tests, builds, lint and typecheck passing. Root tests report 4002
+passed and three failures from the previously reproduced untracked
+`packages/db` cache-directory accounting. The generated-reference and ADR-count
+failures are resolved. Web reports 5079 passing tests; API 1313 and MCP 139.
+Commit `c4f98f3d5` adds the required verified-assertion jti audit log and passes
+15 focused guard tests plus API typecheck; it never logs the credential.
+
+Railway demo preflight confirms existing web/API/MCP services. OAuth is unset
+(default false) everywhere, no public MCP resource URL or service secret is
+configured, and the web origin is `https://demo.ragen.ai`. D5 remains unverified
+until rollout and a pilot grant are authorized. Its concrete sequence is now
+recorded in the regression checklist. No deployment, migration or demo gate
+change was performed during this preflight.
+
+### Final resource image and client reconfirmation — 2026-10-06
+
+The final MCP Docker Desktop image builds successfully with corrected wire
+claims and JWKS availability handling. MCP Inspector 2.9.0 CLI and Claude Code
+2.1.282 are re-run against this final contract: each calls assistant listing,
+chat and search successfully with a verified `org` claim JWT. The isolated API
+fixture accepts all six fresh service assertions for the expected user. These
+are transport checks with synthetic responses; the separate Inspector browser
+check above proves the real issuer and selected scope. Demo claude.ai remains
+an explicit pending authorization and verification gate.
+
+### Retention against actual DCR records — 2026-10-06
+
+The `p0-98` check now also calls the real anonymous `/oauth2/register` endpoint,
+ages its stored client beyond 30 days, runs maintenance and verifies removal.
+This revealed that provider registration automatically creates resource
+bindings: treating their presence as proof of usage kept every real DCR client.
+Maintenance now checks only consents and access/refresh tokens as grant usage,
+then removes registration-time resource bindings atomically with the unused
+client. Owned clients are still preserved. The previous retention note's claim
+about preserving all resource bindings is superseded by this correction.
+
+The real DCR client and synthetic old unused client are deleted, while recent,
+owned and consented clients and the consent survive repeated runs. The E2E uses
+a fresh request context without cookies, cleans up all its created client ids,
+and passes on Docker Desktop (1/1). Fifteen focused adapter/runner tests pass.
+
+
+### Verification after the real DCR retention fix — 2026-10-06
+
+Commit `0fc333fd6` includes the real anonymous registration retention fix and
+its regression coverage. `npm run verify` encounters the three existing root
+architecture failures and interrupts outstanding tasks. Running
+`npx turbo run lint typecheck typecheck:config test build --concurrency=4 --continue`
+then completes all 70 tasks: 69 succeed, and only the root test task fails.
+Web has 5078 passing tests (one skipped and one todo), API 1314, MCP 139,
+admin 704 and worker 1217. Root tests have 4003 passing tests and the same
+three failures: workspace manifest, architecture tree and package counts,
+all associated with the previously reproduced untracked `packages/db` cache
+directory. All application builds, lint and typechecks pass.
+
+The focused retention tests pass (15), and the Docker Desktop `p0-98` E2E
+passes against the real provider registration endpoint. The working tree is
+clean after the fix. D5 still requires the separately requested approval to
+deploy to the public demo, apply migrations and enable a pilot organization;
+no rollout or public demo change has been made.
+
+
+### D5 public demo verification — 2026-10-06
+
+After explicit user approval, demo web/API/MCP OAuth gates were enabled and
+only `MCP OAuth Pilot 2026-10-06` received the organization feature flag.
+The deployed source revision is `df6a5818e`; successful enabled deployments are
+web `3e74583c-1c16-4874-9840-98333684f208`, API
+`54049e22-f7ba-4b06-8a2b-e157f9178034`, and MCP
+`bfcb9718-961f-4c81-b71e-05a2894f55eb`. Admin uses the previously verified
+`7c5917c9-3a6c-4d3c-b429-15e525adffb3` deployment.
+
+Claude.ai custom connector “Ragen OAuth Pilot” completed automatic registration,
+PKCE sign-in and consent for `mcp:read offline_access`. The user explicitly
+selected whole pilot knowledge-base access: the grant has no assistant/project
+restriction. Three real tool calls succeeded using only synthetic pilot data:
+assistant listing returned “OAuth Test Assistant”; search without `assistant_id`
+returned two chunks from `oauth-pilot-knowledge-base.txt`; chat without
+`assistant_id` answered `ORBIT-2026` and cited that document. Both parsing and
+embedding completed for the organization-level fixture. This verifies the
+same general knowledge-base path as `/new`, without selecting an assistant.
+
+Ragen Account settings showed Claude, the pilot organization and the latest
+use timestamp. Clicking Disconnect removed the entry; scoped database checks
+confirmed consent and refresh-token counts changed from one to zero. Access-token
+rows were zero before and after because the issued access token is a JWT.
+Refresh refusal after Disconnect is covered by the previously passing local
+real-provider E2E; the Claude-held refresh token was not extracted or replayed.
+Previously issued JWTs retain their documented maximum 15-minute lifetime.
+All deployment/rollout pending notes above are superseded by this result.
+
+The full application verification remains 69/70 tasks successful, with only
+the three previously reproduced root architecture failures associated with
+untracked `packages/db` cache contents. No implementation changed after that
+verification. OAuth defaults remain disabled in source configuration; demo
+pilot enablement is the explicitly approved exception.
+
+
+### Post-pilot branding, demo protection and architecture cleanup — 2026-10-06
+
+Commit `2b27f671e` advertises the existing 512px Ragen PNG through MCP
+`serverInfo.icons`, packaged as a data URI for stdio/offline clients, and
+serves identical public `/icon.png` and `/favicon.ico` responses. FastMCP
+4.15.0 is pinned because the previous 3.35.0 ignores server icon metadata.
+All 140 MCP tests pass, including OAuth and stateless transport regressions.
+The shared demo account's existing authentication hook now also refuses
+`/organization/create`; other accounts retain the route. Nine focused
+account-lock tests pass.
+
+The prior root architecture failures came from an untracked, ignored
+`packages/db/.turbo/turbo-lint.log` left after that package was removed.
+The directory contained no manifest or source. Moving only this stale cache
+to `/tmp/ragen-retired-db-cache-20261006` preserves it while removing the false
+package from the local tree. The three architecture files pass all 12 tests,
+and full `npm run verify` now succeeds: 70/70 tasks, including 4006 root,
+5078 web, 1314 API, 704 admin, 1217 worker and 140 MCP tests. All lint,
+typechecks and application builds pass. This supersedes the earlier root-test
+failure notes; no assertion or architecture documentation was weakened.
+
+The first demo upload exposed the documented nested-Zod lockfile prune.
+The repaired lockfile retains Zod 3 and the npm-10-required Smithy nodes;
+`npm ci --dry-run --ignore-scripts` passes under both pinned npm 10.9.8 and
+image npm 11.19.0. The recurrence is recorded in the existing lesson.
+Public MCP deployment `df3715ee-a2c9-40ee-a8c0-8adc2b73b695` succeeds:
+health is 200, both branding routes match the source image hash, and the
+real initialize response contains one PNG icon. Claude's rendering/cache
+behavior has not been verified after adding this metadata.
+
+
+Web deployment `7b3eaaa1-8b24-4a70-a697-bab5f61814c8` also succeeds.
+A real sign-in with the published shared demo account followed by
+`POST /api/auth/organization/create` returns 403 and the shared-account lock
+message. The probe uses an invalid creation payload so no organization can be
+created if the lock is missing, and signs its own test session out afterward.
+This confirms the hook refuses the route before payload validation on demo.

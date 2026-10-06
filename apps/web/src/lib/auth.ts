@@ -1,7 +1,13 @@
+import {
+  assertMcpRegistrationRedirects,
+  MCP_REGISTRATION_RATE_LIMIT,
+} from './mcp-registration';
 /* eslint-disable no-console */
 // These auth hooks are included in middleware/Edge bundles. Importing the
 // logger would pull Node-only pino dependencies into that bundle, so these
 // console calls stay here and every email field is masked before logging.
+import { mcpOAuthPlugins } from './mcp-oauth-config';
+import { oauthScalarListsExtension } from './oauth-prisma-extension';
 import { betterAuth } from 'better-auth';
 import { prismaAdapter } from 'better-auth/adapters/prisma';
 import { organization, openAPI, admin } from 'better-auth/plugins';
@@ -214,9 +220,15 @@ export const auth = betterAuth({
     cookiePrefix: 'better-auth',
   },
 
-  database: prismaAdapter(db, {
-    provider: 'postgresql',
-  }),
+  database: prismaAdapter(
+    process.env.MCP_OAUTH_ENABLED === 'true'
+      ? db.$extends(oauthScalarListsExtension)
+      : db,
+    {
+      provider: 'postgresql',
+      transaction: process.env.MCP_OAUTH_ENABLED === 'true',
+    },
+  ),
 
   // No social providers. Sign-in with Google is an enterprise-edition feature;
   // the open edition is email + password and magic link. apps/admin keeps its
@@ -349,6 +361,7 @@ export const auth = betterAuth({
           }),
         ]
       : []),
+    ...mcpOAuthPlugins(),
     nextCookies(),
   ],
 
@@ -382,6 +395,9 @@ export const auth = betterAuth({
    */
   rateLimit: {
     enabled: !isTestTargetEnv,
+    customRules: {
+      '/oauth2/register': MCP_REGISTRATION_RATE_LIMIT,
+    },
   },
 
   user: {
@@ -415,6 +431,9 @@ export const auth = betterAuth({
    */
   hooks: {
     before: createAuthMiddleware(async (ctx) => {
+      if (ctx.path === '/oauth2/register') {
+        assertMcpRegistrationRedirects(ctx.body);
+      }
       // Checked first: this one is reached signed out, so looking for a
       // session would find nothing and let it through.
       if (ctx.path === DEMO_ACCOUNT_PASSWORD_RESET_PATH) {
