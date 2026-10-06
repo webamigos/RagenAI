@@ -102,7 +102,7 @@ test.describe('Ragen Brain panel (smoke)', () => {
   });
 
   test('draws the graph with an honest count', async ({ page }) => {
-    await page.goto('/pl/brain/graph');
+    await page.goto('/pl/brain/graph?view=full');
     await expect(page.getByTestId('brain-graph-count')).toContainText(
       /Strony: \d+ z \d+/,
       { timeout: 15000 },

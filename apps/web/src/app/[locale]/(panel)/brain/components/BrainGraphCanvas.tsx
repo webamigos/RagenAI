@@ -18,6 +18,7 @@ import { Link } from '@/i18n/routing';
 import { makeDrawNodeHover } from './graph-hover';
 import { RelationKind } from './RelationKind';
 import { canvasLabel, LABEL_SIZE_PX, separateLabels } from './separate-labels';
+import { shouldShowGraphLabel } from './graph-label-visibility';
 import { clearLayout, loadLayout, saveLayout, viewKey } from './graph-layouts';
 import { shelveIsolated } from './shelve-isolated';
 import { BrainScreen } from './assistant/BrainAssistantContext';
@@ -185,8 +186,11 @@ export function BrainGraphCanvas({
   selected: selectedInUrl,
   layoutScope,
   language = null,
+  compact = false,
 }: {
   view: BrainGraphView;
+  /** Standalone ego view: same canvas and relations, without the global legend. */
+  compact?: boolean;
   /** `?selected=` — the page picked before a reload or a way back here. */
   selected?: string;
   /** Whose saved layouts these are: `orgId:userId`, from the server. */
@@ -368,6 +372,7 @@ export function BrainGraphCanvas({
         }
 
         let hovered: string | null = null;
+        let cameraRatio = 1;
         // Hover wins; otherwise the page picked by a click or a search stays
         // lit with its neighbours, and a picked group dims the rest.
         const emphasised = () => hovered ?? selectedId.current;
@@ -392,24 +397,32 @@ export function BrainGraphCanvas({
           nodeReducer: (id, data) => {
             const filter = filterRef.current;
             const focus = emphasised();
+            const highlighted = [hovered, selectedId.current].some(
+              (pageId) =>
+                pageId && (id === pageId || graph.areNeighbors(id, pageId)),
+            );
             // The page just picked — by search, from another group — stays
             // visible and named; otherwise the camera landed on a grey dot.
             if (
               filter !== null &&
-              id !== focus &&
+              !highlighted &&
               graph.getNodeAttribute(id, 'community') !== filter
             ) {
               return { ...data, color: palette.dim, label: '' };
             }
-            if (!focus || id === focus || graph.areNeighbors(id, focus)) {
+            if (!focus || highlighted) {
               // The page under the cursor or picked is named in full.
-              return focus === id
-                ? {
-                    ...data,
-                    forceLabel: true,
-                    label: graph.getNodeAttribute(id, 'title') as string,
-                  }
-                : data;
+              if (!compact && !shouldShowGraphLabel(cameraRatio, highlighted)) {
+                return { ...data, label: '', forceLabel: false };
+              }
+              if (focus === id) {
+                return {
+                  ...data,
+                  forceLabel: true,
+                  label: graph.getNodeAttribute(id, 'title') as string,
+                };
+              }
+              return highlighted ? { ...data, forceLabel: true } : data;
             }
             return { ...data, color: palette.dim, label: '' };
           },
@@ -430,6 +443,20 @@ export function BrainGraphCanvas({
             return { ...data, hidden: true };
           },
         });
+        const camera = sigmaRenderer.getCamera();
+        cameraRatio = camera.getState?.().ratio ?? 1;
+        const updateLabels = ({ ratio }: { ratio: number }) => {
+          const previous = shouldShowGraphLabel(cameraRatio, false);
+          cameraRatio = ratio;
+          if (
+            !compact &&
+            previous !== shouldShowGraphLabel(cameraRatio, false)
+          ) {
+            sigmaRenderer.refresh();
+          }
+        };
+        camera.on?.('updated', updateLabels);
+        sigmaRenderer.refresh();
         sigmaRenderer.on('enterNode', ({ node }) => {
           hovered = node;
           sigmaRenderer.refresh();
@@ -550,6 +577,7 @@ export function BrainGraphCanvas({
         renderer.current = sigmaRenderer;
         kill = () => {
           resizes?.disconnect();
+          camera.removeListener?.('updated', updateLabels);
           renderer.current = null;
           fitView.current = null;
           sigmaRenderer.kill();
@@ -562,7 +590,7 @@ export function BrainGraphCanvas({
       disposed = true;
       kill?.();
     };
-  }, [view, layoutRun, layoutScope, language]);
+  }, [view, layoutRun, layoutScope, language, compact]);
 
   const matches = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -609,7 +637,13 @@ export function BrainGraphCanvas({
     // window's: with the assistant open a wide window still leaves too little
     // for both columns.
     <div className="@container">
-      <div className="grid gap-4 @4xl:grid-cols-[minmax(0,1fr)_320px]">
+      <div
+        className={
+          compact
+            ? 'grid min-w-0 gap-4'
+            : 'grid gap-4 @4xl:grid-cols-[minmax(0,1fr)_320px]'
+        }
+      >
         {/* What the assistant beside Brain is told the operator is looking at. */}
         <BrainScreen
           context={{
@@ -630,7 +664,11 @@ export function BrainGraphCanvas({
             })}
             // As tall as the window allows, never under 600px: a fixed height
             // left a large graph cramped on a tall screen.
-            className="h-[calc(100svh-15rem)] min-h-[600px] w-full overflow-hidden rounded-[6px] border border-border bg-background"
+            className={
+              compact
+                ? 'h-[360px] w-full overflow-hidden rounded-md border border-border bg-background'
+                : 'h-[calc(100svh-15rem)] min-h-[600px] w-full overflow-hidden rounded-[6px] border border-border bg-background'
+            }
           />
           {failed && (
             <p className="absolute inset-x-0 top-4 text-center text-sm text-muted-foreground">
@@ -644,49 +682,51 @@ export function BrainGraphCanvas({
               this screen. Type part of a title; picking a result selects the
               page and flies the camera to it.
             */}
-              <div className="absolute left-3 top-3 w-72">
-                <input
-                  type="search"
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && matches[0]) {
-                      flyTo(matches[0]);
-                    }
-                    if (e.key === 'Escape') {
-                      setQuery('');
-                    }
-                  }}
-                  placeholder={t('search-placeholder')}
-                  aria-label={t('search-placeholder')}
-                  data-testid="brain-graph-search"
-                  className="w-full rounded-md border border-border bg-card px-3 py-1.5 text-sm text-foreground shadow-sm placeholder:text-muted-foreground"
-                />
-                {query.trim().length >= 2 && (
-                  <ul
-                    className="mt-1 max-h-72 overflow-y-auto rounded-md border border-border bg-card py-1 text-sm shadow-md"
-                    data-testid="brain-graph-search-results"
-                  >
-                    {matches.length === 0 ? (
-                      <li className="px-3 py-1.5 text-muted-foreground">
-                        {t('search-empty')}
-                      </li>
-                    ) : (
-                      matches.map((node) => (
-                        <li key={node.id}>
-                          <button
-                            type="button"
-                            onClick={() => flyTo(node)}
-                            className="w-full truncate px-3 py-1.5 text-left text-foreground hover:bg-muted"
-                          >
-                            {node.title}
-                          </button>
+              {!compact && (
+                <div className="absolute left-3 right-12 top-3 max-w-72">
+                  <input
+                    type="search"
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && matches[0]) {
+                        flyTo(matches[0]);
+                      }
+                      if (e.key === 'Escape') {
+                        setQuery('');
+                      }
+                    }}
+                    placeholder={t('search-placeholder')}
+                    aria-label={t('search-placeholder')}
+                    data-testid="brain-graph-search"
+                    className="w-full rounded-md border border-border bg-card px-3 py-1.5 text-sm text-foreground shadow-sm placeholder:text-muted-foreground"
+                  />
+                  {query.trim().length >= 2 && (
+                    <ul
+                      className="mt-1 max-h-72 overflow-y-auto rounded-md border border-border bg-card py-1 text-sm shadow-md"
+                      data-testid="brain-graph-search-results"
+                    >
+                      {matches.length === 0 ? (
+                        <li className="px-3 py-1.5 text-muted-foreground">
+                          {t('search-empty')}
                         </li>
-                      ))
-                    )}
-                  </ul>
-                )}
-              </div>
+                      ) : (
+                        matches.map((node) => (
+                          <li key={node.id}>
+                            <button
+                              type="button"
+                              onClick={() => flyTo(node)}
+                              className="w-full truncate px-3 py-1.5 text-left text-foreground hover:bg-muted"
+                            >
+                              {node.title}
+                            </button>
+                          </li>
+                        ))
+                      )}
+                    </ul>
+                  )}
+                </div>
+              )}
               <div className="absolute right-3 top-3 flex flex-col gap-1">
                 <button
                   type="button"
@@ -834,38 +874,40 @@ export function BrainGraphCanvas({
           ) : (
             <p className="text-muted-foreground">{t('select-hint')}</p>
           )}
-          <div>
-            <h3 className="mb-1 text-xs font-medium uppercase text-muted-foreground">
-              {t('legend-title')}
-            </h3>
-            {/*
+          {!compact && (
+            <div>
+              <h3 className="mb-1 text-xs font-medium uppercase text-muted-foreground">
+                {t('legend-title')}
+              </h3>
+              {/*
             Each line is shown, not described: the swatch is drawn from the
             same width and colour as the canvas, and the text says only what
             the line means.
           */}
-            <ul
-              className="space-y-1.5 text-xs"
-              data-testid="brain-graph-legend"
-            >
-              {(
-                [
-                  ['EXTRACTED', 'legend-extracted'],
-                  ['AMBIGUOUS', 'legend-ambiguous'],
-                  ['INFERRED', 'legend-inferred'],
-                ] as const
-              ).map(([origin, key]) => (
-                <li key={origin} className="flex items-start gap-2">
-                  <EdgeSwatch origin={origin} />
-                  <span>{t(key)}</span>
+              <ul
+                className="space-y-1.5 text-xs"
+                data-testid="brain-graph-legend"
+              >
+                {(
+                  [
+                    ['EXTRACTED', 'legend-extracted'],
+                    ['AMBIGUOUS', 'legend-ambiguous'],
+                    ['INFERRED', 'legend-inferred'],
+                  ] as const
+                ).map(([origin, key]) => (
+                  <li key={origin} className="flex items-start gap-2">
+                    <EdgeSwatch origin={origin} />
+                    <span>{t(key)}</span>
+                  </li>
+                ))}
+                <li className="flex items-start gap-2">
+                  <FindingSwatch />
+                  <span>{t('legend-findings')}</span>
                 </li>
-              ))}
-              <li className="flex items-start gap-2">
-                <FindingSwatch />
-                <span>{t('legend-findings')}</span>
-              </li>
-            </ul>
-          </div>
-          {view.communities.some((c) => c.size > 1) && (
+              </ul>
+            </div>
+          )}
+          {!compact && view.communities.some((c) => c.size > 1) && (
             <div>
               <h3 className="mb-1 text-xs font-medium uppercase text-muted-foreground">
                 {t('communities-title')}

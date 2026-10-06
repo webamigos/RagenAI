@@ -2893,7 +2893,36 @@
         "AMBIGUOUS": "Incerta"
       },
       "empty-in-language-title": "Niente in questa lingua",
-      "empty-in-language-description": "Nessun documento in questa lingua, o nessuna pagina che ne citi uno. Scegli un'altra lingua o tutte."
+      "empty-in-language-description": "Nessun documento in questa lingua, o nessuna pagina che ne citi uno. Scegli un'altra lingua o tutte.",
+      "connections-title": "How knowledge connects",
+      "connections-description": "Topics first, then details. The full graph is available when you need it.",
+      "back-brain": "← Brain",
+      "views-label": "Graph view",
+      "views": {
+        "topics": "Topics",
+        "neighbourhood": "Page neighbourhood",
+        "full": "Full graph"
+      },
+      "topics-title": "Topic map",
+      "topics-scale": "Size = page count · colour = review state",
+      "topic-pages": "{count, plural, one {# page} other {# pages}}",
+      "topic-approved": "Has approved pages",
+      "topic-approved-count": "{count, plural, one {# approved} other {# approved}}",
+      "topic-candidates": "Only candidates",
+      "isolated-count": "{count, plural, one {# page outside the main topics} other {# pages outside the main topics}}",
+      "isolated-description": "Instead of a column of loose dots: a list of pages without relations. Open a page to propose links.",
+      "review-isolated": "Review isolated pages",
+      "isolated-list": "Pages without relations",
+      "group-pages": "{count, plural, one {Group pages (#)} other {Group pages (#)}}",
+      "review-page": "Review page",
+      "search-all-pages": "Find a page to see its neighbourhood",
+      "search-results-count": "Showing {shown} of {count} matching pages",
+      "status": {
+        "APPROVED": "Approved",
+        "CANDIDATE": "Candidate",
+        "REJECTED": "Rejected"
+      },
+      "review-group": "Review entire group ({count})"
     },
     "export": {
       "ready": "Pronte per l’esportazione: {count}",
