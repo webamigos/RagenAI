@@ -60,6 +60,8 @@ const EXEMPT: Readonly<Record<string, string>> = {
     'Same: the page owns who reads its chunks, and an access change re-publishes them.',
   'apps/web/src/features/brain/services/commands/set-knowledge-page-owner-command.ts':
     'Same: the page file mirrors the page owner; its chunks are the page’s to write.',
+  'apps/web/src/features/brain/services/commands/set-owner-for-document-candidates-command.ts':
+    'Same owner mirror for retained published Brain files only: the page accessibleBy is unchanged, and brain_generation chunks are written by Brain publication, not the ordinary document access sync.',
 };
 
 const PRISMA_CALL =

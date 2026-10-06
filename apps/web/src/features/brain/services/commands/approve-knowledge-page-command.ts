@@ -22,23 +22,31 @@ import { decideOnKnowledgePage, isOrgMember } from './decide-on-knowledge-page';
  * not built yet.
  */
 export async function approveKnowledgePageCommand(
-  input: PageDecisionInput & { orgId: string; actorId: string },
+  input: PageDecisionInput & {
+    orgId: string;
+    actorId: string;
+    returnUpdatedAt?: boolean;
+  },
 ): Promise<ReviewResult> {
-  return decideOnKnowledgePage(input, async (page, tx) => {
-    if (page.status !== 'CANDIDATE') {
-      return 'invalid-status';
-    }
-    if (page.ownerId === null) {
-      return 'owner-required';
-    }
-    if (!(await isOrgMember(tx, input.orgId, page.ownerId))) {
-      return 'owner-not-member';
-    }
-    return {
-      action: 'APPROVE',
-      data: { status: 'APPROVED' },
-      before: { status: page.status },
-      after: { status: 'APPROVED' },
-    };
-  });
+  return decideOnKnowledgePage(
+    input,
+    async (page, tx) => {
+      if (page.status !== 'CANDIDATE') {
+        return 'invalid-status';
+      }
+      if (page.ownerId === null) {
+        return 'owner-required';
+      }
+      if (!(await isOrgMember(tx, input.orgId, page.ownerId))) {
+        return 'owner-not-member';
+      }
+      return {
+        action: 'APPROVE',
+        data: { status: 'APPROVED' },
+        before: { status: page.status },
+        after: { status: 'APPROVED' },
+      };
+    },
+    input.returnUpdatedAt,
+  );
 }

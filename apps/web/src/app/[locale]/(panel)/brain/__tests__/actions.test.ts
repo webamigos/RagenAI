@@ -10,6 +10,8 @@ const access = vi.hoisted(() => ({ getBrainWriteAccessQuery: vi.fn() }));
 const auth = vi.hoisted(() => ({ getCurrentUserId: vi.fn() }));
 const commands = vi.hoisted(() => ({
   approve: vi.fn(),
+  approvePublish: vi.fn(),
+  documentOwner: vi.fn(),
   reject: vi.fn(),
   owner: vi.fn(),
   access: vi.fn(),
@@ -52,6 +54,14 @@ vi.mock(
   () => ({ setKnowledgePageAccessCommand: commands.access }),
 );
 
+vi.mock(
+  '@/features/brain/services/commands/approve-and-publish-knowledge-page-command',
+  () => ({ approveAndPublishKnowledgePageCommand: commands.approvePublish }),
+);
+vi.mock(
+  '@/features/brain/services/commands/set-owner-for-document-candidates-command',
+  () => ({ setOwnerForDocumentCandidatesCommand: commands.documentOwner }),
+);
 const actions = await import('../actions');
 
 const ref = {
@@ -86,6 +96,12 @@ describe('Brain review actions', () => {
     access.getBrainWriteAccessQuery.mockResolvedValue(null);
     for (const call of [
       () => actions.approveKnowledgePageAction(ref),
+      () => actions.approveAndPublishKnowledgePageAction(ref),
+      () =>
+        actions.setOwnerForDocumentCandidatesAction({
+          fileId: ref.publicId,
+          ownerId: 'u1',
+        }),
       () => actions.rejectKnowledgePageAction(ref),
       () => actions.setKnowledgePageOwnerAction({ ...ref, ownerId: 'u1' }),
       () => actions.setKnowledgePageAccessAction({ ...ref, principals: [] }),
@@ -123,5 +139,30 @@ describe('Brain review actions', () => {
       principals: ['user:u1'],
       confirmWidening: false,
     });
+  });
+});
+
+it('uses session identity for document owner assignment and combined approval', async () => {
+  await actions.setOwnerForDocumentCandidatesAction({
+    fileId: ref.publicId,
+    ownerId: 'u1',
+    orgId: 'forged',
+    actorId: 'forged',
+  });
+  expect(commands.documentOwner).toHaveBeenCalledWith({
+    fileId: ref.publicId,
+    ownerId: 'u1',
+    orgId: 'org-session',
+    actorId: 'u-session',
+  });
+  await actions.approveAndPublishKnowledgePageAction({
+    ...ref,
+    orgId: 'forged',
+    actorId: 'forged',
+  });
+  expect(commands.approvePublish).toHaveBeenCalledWith({
+    ...ref,
+    orgId: 'org-session',
+    actorId: 'u-session',
   });
 });

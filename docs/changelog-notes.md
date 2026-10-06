@@ -129,6 +129,8 @@ archive is the blog.
 
 ### Knowledge base
 
+Brain ma tryb przeglądu z twierdzeniami obok cytatów, przypisaniem właściciela wszystkim kandydatom dokumentu i decyzjami z klawiatury. Ostrzeżenia o brakujących liczbach lub negacji są opcjonalne; oceny pojedynczych twierdzeń pozostają tylko w widoku.
+
 - Brain ma nowy przegląd: pokazuje drogę od dokumentów do publikacji, strony wymagające uwagi i dokumenty z największą liczbą kandydatów. Liczniki prowadzą do dopasowanych list.
 
 - `[brief]` **The file list's toolbar stays on one row on a laptop.** With the

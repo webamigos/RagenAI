@@ -464,3 +464,19 @@ describe('setKnowledgePageAccessCommand', () => {
     expect(recorded()).toEqual({ page: [], decisions: [] });
   });
 });
+
+it('returns the approval timestamp under the row lock only when requested', async () => {
+  givenPage({ ownerId: 'u1' });
+  const result = await approveKnowledgePageCommand({
+    ...base,
+    returnUpdatedAt: true,
+  });
+  expect(result).toMatchObject({
+    success: true,
+    changed: true,
+    updatedAt: expect.any(String),
+  });
+  const data = tx.knowledgePage.updateMany.mock.calls[0][0].data;
+  expect(result.success && result.updatedAt).toBe(data.updatedAt.toISOString());
+  expect(data.status).toBe('APPROVED');
+});

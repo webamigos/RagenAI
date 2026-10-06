@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "license": "Apache-2.0",
-  "description": "Ragen Brain's domain logic — extraction with verified span citations, the access intersection rule, and candidate assembly. Pure: the model call is injected, so apps/worker owns the gateway and this package owns the rules",
+  "description": "Ragen Brain's domain logic \u2014 extraction with verified span citations, the access intersection rule, and candidate assembly. Pure: the model call is injected, so apps/worker owns the gateway and this package owns the rules",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "files": [
@@ -31,5 +31,15 @@
   },
   "engines": {
     "node": "^24.15.0 || >=26.0.0"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./review": {
+      "types": "./dist/review/align-claims.d.ts",
+      "default": "./dist/review/align-claims.js"
+    }
   }
 }

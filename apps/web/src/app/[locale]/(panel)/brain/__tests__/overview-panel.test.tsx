@@ -51,7 +51,7 @@ describe('BrainOverviewPanel', () => {
     show();
     expect(
       screen.getByRole('link', { name: /Rozpocznij przegląd \(123\)/ }),
-    ).toHaveAttribute('href', '/brain?status=CANDIDATE&lang=pol');
+    ).toHaveAttribute('href', '/brain/review?lang=pol');
     expect(screen.getByTestId('overview-published')).toHaveTextContent('1');
     expect(
       screen.getByTestId('overview-published').querySelector('a'),
