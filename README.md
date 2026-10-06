@@ -569,7 +569,7 @@ modules, the connector registry — is in [docs/architecture.md](docs/architectu
 What each companion service is and how to run the set locally:
 [docs/companion-services.md](docs/companion-services.md).
 
-51 [ADRs](docs/adrs/) record the decisions and what was rejected.
+52 [ADRs](docs/adrs/) record the decisions and what was rejected.
 Start with [ADR-21](docs/adrs/21-monorepo-and-api-decoupling.md) for the
 monorepo shape and [ADR-33](docs/adrs/33-shared-platform-contracts-package.md)
 for why shared values live in one package.
