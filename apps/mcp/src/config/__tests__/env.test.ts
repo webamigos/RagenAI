@@ -236,3 +236,21 @@ describe('MCP OAuth resource configuration', () => {
     ).toBe(false);
   });
 });
+
+it.each([
+  'http://auth.example',
+  'https://auth.example/api/auth',
+  Object.assign(new URL('https://auth.example'), { username: 'user', password: 'password' }).href,
+  'https://auth.example?query=1',
+  'https://auth.example#fragment',
+])('rejects an unsafe OAuth issuer origin %s', (BETTER_AUTH_URL) => {
+  expect(
+    mcpEnvSchema.safeParse({
+      TARGET_ENV: 'local',
+      MCP_OAUTH_ENABLED: 'true',
+      RAGEN_MCP_PUBLIC_URL: 'https://mcp.example/mcp',
+      MCP_SERVICE_SECRET: 'm'.repeat(32),
+      BETTER_AUTH_URL,
+    }).success,
+  ).toBe(false);
+});

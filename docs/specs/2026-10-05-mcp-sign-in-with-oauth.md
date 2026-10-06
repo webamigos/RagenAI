@@ -421,7 +421,7 @@ organization (ADR-50).
 
 - [ ] **D1.** Switch to `stateless: true` and run the three tools against
   Claude Code and the MCP Inspector. Record the result here.
-- [ ] **D2.** Protected-resource metadata, the 401/403 challenges, JWT
+- [x] **D2.** Protected-resource metadata, the 401/403 challenges, JWT
   verification with a cached JWKS, and the `RagenSession` union.
 - [x] **D3.** The service assertion on every call to `apps/api` for an OAuth
   session. A test that an OAuth session's access token never appears in an
@@ -566,5 +566,11 @@ run twice through the official MCP SDK with a changed JWT on the same client.
 The mock API verifies every service assertion and its current user identity;
 neither access token appears in outgoing authorization headers.
 MCP verification: 21 files, 131 passing tests; typecheck and lint pass.
-D2 remains open for an explicit remote-JWKS rotation test and the final
-review of issuer configuration. D1's named-client probes remain outstanding.
+The follow-up `oauth-jwks-rotation.test.ts` verifies a real remote JWKS
+rotation: cached keys are reused, an unknown kid is refused during JOSE's
+default 30-second fetch cooldown, and a fresh set is fetched after that
+cooldown and then cached. Issuer configuration accepts HTTPS origins and
+loopback HTTP only, with no path, credentials, query or fragment; the
+configured origin derives the Better Auth issuer and its `/api/auth/jwks`.
+Final MCP verification: 22 files, 137 tests; typecheck and lint pass.
+D1's named-client probes remain outstanding.

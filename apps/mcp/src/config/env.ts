@@ -87,6 +87,28 @@ export const mcpEnvSchema = fragments.targetEnvRequired
         message: 'BETTER_AUTH_URL is required for MCP OAuth',
       });
     }
+    if (env.MCP_OAUTH_ENABLED === 'true' && env.BETTER_AUTH_URL) {
+      const issuer = new URL(env.BETTER_AUTH_URL);
+      if (
+        (issuer.protocol !== 'https:' &&
+          !(
+            issuer.protocol === 'http:' &&
+            ['localhost', '127.0.0.1', '[::1]'].includes(issuer.hostname)
+          )) ||
+        issuer.username ||
+        issuer.password ||
+        issuer.pathname !== '/' ||
+        issuer.search ||
+        issuer.hash
+      ) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['BETTER_AUTH_URL'],
+          message:
+            'Use the public HTTPS auth origin (HTTP only on loopback), without path, credentials, query or fragment',
+        });
+      }
+    }
     mcpServiceRules(env, ctx);
     mcpOAuthRules(env, ctx);
     requiredInDeployedEnvs(
