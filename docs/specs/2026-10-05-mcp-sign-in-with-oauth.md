@@ -399,7 +399,7 @@ organization (ADR-50).
 - [x] **B2.** The post-login page: organizations with `mcpOAuth` on, then
   assistants the member can see. Feature key `mcpOAuth` in
   `platform-contracts`, default `false`.
-- [ ] **B3.** The consent page and the token claims. Proof: the MCP Inspector
+- [x] **B3.** The consent page and the token claims. Proof: the MCP Inspector
   against a local stack completes the flow and gets a JWT whose claims match
   the pick.
 
@@ -671,3 +671,20 @@ three from each client, in the expected order. Claude Code ran with only these
 MCP tools, an explicit session config and no session persistence. No production
 API or knowledge-base data was used. This proves D1 client compatibility, not
 B3's Inspector authorization flow or D5's demo claude.ai rollout gate.
+
+### B3 Inspector authorization verification — 2026-10-06
+
+MCP Inspector 2.9.0 web completed resource discovery, dynamic registration,
+Ragen email sign-in, workspace and assistant selection, consent, code exchange
+and authenticated MCP connection (protocol 2025-11-25). Its memory-only token
+store supplied the actual issued JWT for signature verification against the
+web JWKS, with issuer `http://localhost:3000/api/auth` and audience
+`http://localhost:3300/mcp`. Verified claims match the seeded E2E user,
+organization and selected assistant exactly; scope contains `mcp:read` and
+`exp - iat` is 900 seconds. The organization flag is restored after the check.
+
+This check caught a contract mismatch hidden by isolated synthetic tokens:
+web issues `org`/`project`, while the MCP verifier read `orgId`/`projectId`.
+Commit `0bf1d9f5c` aligns the verifier and its fixtures with the specified
+wire claims, keeping the internal assertion identity names unchanged.
+All 138 MCP tests, build and typecheck pass after the correction.
