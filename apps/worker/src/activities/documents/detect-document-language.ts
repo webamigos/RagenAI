@@ -13,6 +13,9 @@ import { logger } from '../../services/logger.js';
  *   `minLength`, 10 characters) or otherwise undetermined → returns `null`.
  *   franc reports this internally as `'und'`; that sentinel is not a useful
  *   value to persist, so it is normalized to `null` here.
+ * - xlsx/csv with fewer than 100 letters, a letter ratio below 30%, or
+ *   less than 0.1 separation between franc's top two relative scores → null.
+ *   No organization default exists; undetected is the chosen fallback.
  * - franc throws (should not happen — it is a synchronous, dependency-free
  *   heuristic — but is defended against as best-effort enrichment must never
  *   fail the ingest workflow) → logs a warning, returns `null`.
@@ -32,7 +35,29 @@ export async function detectDocumentLanguage({
   }
 
   try {
-    const { franc } = await import('franc');
+    const { franc, francAll } = await import('franc');
+    if (/\.(xlsx|csv)$/i.test(fileName ?? '')) {
+      // A few headers among numbers are not prose. Do not turn a price list
+      // into a confident-looking language tag used by downstream PII masking.
+      const letters = trimmed.match(/\p{L}/gu)?.length ?? 0;
+      if (letters < 100 || letters / trimmed.length < 0.3) {
+        return null;
+      }
+      const ranked = francAll(trimmed);
+      const best = ranked[0];
+      const runnerUp = ranked[1];
+      // franc scores are relative distances, not probabilities. Require
+      // separation from the next result instead of treating the top 1 as
+      // absolute confidence. Ambiguous tables remain undetected.
+      if (
+        !best ||
+        best[0] === 'und' ||
+        (runnerUp && best[1] - runnerUp[1] < 0.1)
+      ) {
+        return null;
+      }
+      return best[0];
+    }
     const detected = franc(trimmed);
     if (detected === 'und') {
       return null;

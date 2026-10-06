@@ -10,9 +10,12 @@ import { detectDocumentLanguage } from '../detect-document-language.js';
 // answers — the 'und' sentinel, a throw, empty input — not about whether
 // franc classifies a given string correctly. That is franc's own suite's job,
 // and asserting on it here would make this test fail on a franc upgrade.
-const { mockFranc } = vi.hoisted(() => ({ mockFranc: vi.fn() }));
+const { mockFranc, mockFrancAll } = vi.hoisted(() => ({
+  mockFranc: vi.fn(),
+  mockFrancAll: vi.fn(),
+}));
 
-vi.mock('franc', () => ({ franc: mockFranc }));
+vi.mock('franc', () => ({ franc: mockFranc, francAll: mockFrancAll }));
 
 vi.mock('../../../services/logger.js', () => ({
   logger: {
@@ -26,6 +29,7 @@ vi.mock('../../../services/logger.js', () => ({
 describe('detectDocumentLanguage', () => {
   beforeEach(() => {
     mockFranc.mockReset();
+    mockFrancAll.mockReset();
   });
 
   it("returns franc's detected code on the happy path", async () => {
@@ -80,5 +84,47 @@ describe('detectDocumentLanguage', () => {
     });
 
     expect(result).toBeNull();
+  });
+
+  it('leaves a price-list table undetected despite a confident code from franc', async () => {
+    mockFranc.mockReturnValue('sco');
+    const result = await detectDocumentLanguage({
+      fileName: 'price-list-2026.xlsx',
+      documentText:
+        '| SKU | Price | EUR |\n| A-01 | 120 | 10 |\n| B-02 | 240 | 20 |',
+    });
+    expect(result).toBeNull();
+    expect(mockFranc).not.toHaveBeenCalled();
+    expect(mockFrancAll).not.toHaveBeenCalled();
+  });
+
+  it('leaves ambiguous spreadsheet prose undetected', async () => {
+    mockFrancAll.mockReturnValue([
+      ['eng', 1],
+      ['sco', 0.96],
+    ]);
+    const result = await detectDocumentLanguage({
+      fileName: 'prices.CSV',
+      documentText:
+        'The price includes delivery and installation at the customer premises. '.repeat(
+          4,
+        ),
+    });
+    expect(result).toBeNull();
+  });
+
+  it('detects spreadsheet prose when the best language is clearly separated', async () => {
+    mockFrancAll.mockReturnValue([
+      ['eng', 1],
+      ['sco', 0.7],
+    ]);
+    const result = await detectDocumentLanguage({
+      fileName: 'prices.xlsx',
+      documentText:
+        'The price includes delivery and installation at the customer premises. '.repeat(
+          4,
+        ),
+    });
+    expect(result).toBe('eng');
   });
 });

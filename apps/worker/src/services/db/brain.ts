@@ -321,3 +321,15 @@ export async function resolveExtractionFailed(input: {
   });
   return result.count;
 }
+
+/** Whether any knowledge page cites this file, in the session's organization. */
+export async function hasPagesFromFile(input: {
+  orgId: string;
+  fileId: string;
+}): Promise<boolean> {
+  const source = await getPrisma().knowledgePageSource.findFirst({
+    where: { organizationId: input.orgId, fileId: input.fileId },
+    select: { id: true },
+  });
+  return source !== null;
+}

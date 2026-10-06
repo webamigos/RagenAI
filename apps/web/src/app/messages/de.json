@@ -2698,6 +2698,7 @@
         "gap": "Ein Prozess ohne zugeordnete Rolle",
         "extraction-failed": "Das Dokument konnte nicht verarbeitet werden",
         "unknown": "Keine Details",
+        "nothing-extracted": "Nichts extrahiert",
         "technical-details": "Technische Details"
       },
       "discuss": "Den Assistenten dazu fragen",

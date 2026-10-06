@@ -2698,6 +2698,7 @@
         "gap": "A process with no role linked to it",
         "extraction-failed": "The document could not be extracted",
         "unknown": "No detail",
+        "nothing-extracted": "Nothing extracted",
         "technical-details": "Technical details"
       },
       "discuss": "Ask the assistant about this",

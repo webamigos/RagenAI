@@ -2698,6 +2698,7 @@
         "gap": "Um processo sem nenhuma função associada",
         "extraction-failed": "Não foi possível processar o documento",
         "unknown": "Sem detalhes",
+        "nothing-extracted": "Nada extraído",
         "technical-details": "Detalhes técnicos"
       },
       "discuss": "Perguntar ao assistente sobre isto",

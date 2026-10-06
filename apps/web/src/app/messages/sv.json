@@ -2698,6 +2698,7 @@
         "gap": "En process utan kopplad roll",
         "extraction-failed": "Dokumentet kunde inte bearbetas",
         "unknown": "Inga detaljer",
+        "nothing-extracted": "Inget extraherat",
         "technical-details": "Tekniska detaljer"
       },
       "discuss": "Fråga assistenten om detta",

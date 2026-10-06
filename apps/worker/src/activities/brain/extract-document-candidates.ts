@@ -8,6 +8,7 @@ import {
 import { BRAIN_EXTRACT_MODEL } from '../../consts.js';
 import {
   getExtractionSource,
+  hasPagesFromFile,
   recordExtractionFailed,
   replaceCandidatesFromFile,
   resolveExtractionFailed,
@@ -242,6 +243,27 @@ export async function persistExtraction(
     );
     return {
       status: 'failed',
+      pagesCreated: 0,
+      unverifiedClaims: result.assembled.unverifiedClaims,
+      tokens: result.tokens,
+    };
+  }
+
+  // A completed answer with no pages must not close the document's failure
+  // while no knowledge exists. Preserve earlier pages if the file has them.
+  if (result.assembled.pages.length === 0) {
+    const hasPages = await hasPagesFromFile({ orgId, fileId });
+    if (!hasPages) {
+      await recordExtractionFailed({
+        orgId,
+        fileId,
+        detail: { reason: 'nothing_extracted', windowIndex: null, runId },
+      });
+    } else {
+      await resolveExtractionFailed({ orgId, fileId });
+    }
+    return {
+      status: hasPages ? 'extracted' : 'failed',
       pagesCreated: 0,
       unverifiedClaims: result.assembled.unverifiedClaims,
       tokens: result.tokens,

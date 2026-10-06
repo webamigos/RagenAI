@@ -1,5 +1,7 @@
 import { detectPageFindings, reconcileFindings } from '@ragenai/brain-core';
 
+import { reconcileEmptyExtractions } from '../../services/db/empty-extractions.js';
+
 import {
   applyFindingsPlan,
   loadComputedFindings,
@@ -47,5 +49,11 @@ export async function reconcileBrainFindings({
     orgId,
     reconcileFindings(desired, existing),
   );
-  return { ...written, holding: desired.length, sweptSources };
+  const emptyExtractions = await reconcileEmptyExtractions(orgId);
+  return {
+    ...written,
+    created: written.created + emptyExtractions,
+    holding: desired.length,
+    sweptSources,
+  };
 }

@@ -2698,6 +2698,7 @@
         "gap": "Proces bez přiřazené role",
         "extraction-failed": "Dokument se nepodařilo zpracovat",
         "unknown": "Bez podrobností",
+        "nothing-extracted": "Nebylo nic extrahováno",
         "technical-details": "Technické podrobnosti"
       },
       "discuss": "Zeptej se na to asistenta",

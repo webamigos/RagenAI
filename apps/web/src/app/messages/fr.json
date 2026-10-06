@@ -2698,6 +2698,7 @@
         "gap": "Un processus sans rôle associé",
         "extraction-failed": "Le document n’a pas pu être traité",
         "unknown": "Aucun détail",
+        "nothing-extracted": "Aucune donnée extraite",
         "technical-details": "Détails techniques"
       },
       "discuss": "Demander à l'assistant",

@@ -7,11 +7,14 @@ const db = vi.hoisted(() => ({
   markSourcesOfDeletedFiles: vi.fn(),
 }));
 vi.mock('../../../services/db/brain-findings.js', () => db);
+const empty = vi.hoisted(() => ({ reconcileEmptyExtractions: vi.fn() }));
+vi.mock('../../../services/db/empty-extractions.js', () => empty);
 
 import { reconcileBrainFindings } from '../reconcile-brain-findings.js';
 
 beforeEach(() => {
   vi.clearAllMocks();
+  empty.reconcileEmptyExtractions.mockResolvedValue(0);
   db.loadFindingsSnapshot.mockResolvedValue({
     pages: [
       {
@@ -83,5 +86,13 @@ describe('reconcileBrainFindings', () => {
     ]);
     expect(plan.resolve).toEqual([6]);
     expect(result).toEqual({ created: 1, updated: 0, resolved: 1, holding: 2 });
+  });
+
+  it('repairs previously empty extractions in the same organization', async () => {
+    db.loadComputedFindings.mockResolvedValue([]);
+    empty.reconcileEmptyExtractions.mockResolvedValue(3);
+    const result = await reconcileBrainFindings({ orgId: 'org-1' });
+    expect(empty.reconcileEmptyExtractions).toHaveBeenCalledWith('org-1');
+    expect(result.created).toBe(5);
   });
 });

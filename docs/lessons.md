@@ -162,6 +162,8 @@ After a nontrivial correction or a non-obvious gotcha (see `AGENTS.md`'s "Post-T
 
 ### frontend
 
+- [Brain citations are not pages, and publication completion must reach the mounted screen](lessons/brain-citations-and-publication-state.md) — area:frontend,architecture,testing; module:web,worker,brain-core; topic:brain,counts,citations,publication,async-state. Count distinct file/page pairs rather than quote rows, and refresh a mounted pending publication after the worker completes.
+
 - [React rewrites `dangerouslySetInnerHTML` on every re-render, so marks added to that DOM vanish the moment the component updates](lessons/react-rewrites-inner-html-on-every-render.md) — area:frontend; module:web; topic:react,dangerously-set-inner-html,dom-mutation,citations,highlighting,false-green. React 19 compares the prop *object*, and `{ __html }` is new each render, so the citation highlight's own "found" state re-wrote the DOCX HTML and wiped its `<mark>`s; the effect did not re-run to restore them. Memoise the element so React skips the subtree.
 
 - [A custom-property override on `:root` loses to the element that already owns the property, so the declaration renders nothing](lessons/a-custom-property-override-on-root-loses-to-the-element-that-owns-it.md) — area:frontend; module:docs,web; topic:css-custom-properties,specificity,docusaurus,infima,design-tokens,dead-code. Three of `apps/docs`'s brand colours had never painted: `.footer--dark` owns the footer tokens on the element itself, and `html[data-theme="dark"]` outranks a bare `[data-theme="dark"]`. Typecheck, lint and the build are all green either way — verify a retokenisation against `getComputedStyle`, not the source.

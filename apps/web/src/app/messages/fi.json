@@ -2698,6 +2698,7 @@
         "gap": "Prosessi ilman liitettyä roolia",
         "extraction-failed": "Asiakirjaa ei voitu käsitellä",
         "unknown": "Ei tietoja",
+        "nothing-extracted": "Mitään ei poimittu",
         "technical-details": "Tekniset tiedot"
       },
       "discuss": "Kysy avustajalta tästä",

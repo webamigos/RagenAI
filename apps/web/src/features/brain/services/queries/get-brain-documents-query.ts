@@ -34,18 +34,24 @@ export async function getBrainDocumentsQuery(
   const [approved, candidates] = await Promise.all(
     (['APPROVED', 'CANDIDATE'] as const).map((status) =>
       db.knowledgePageSource.groupBy({
-        by: ['fileId'],
+        by: ['fileId', 'pageId'],
         where: {
           organizationId: orgId,
           fileId: { in: fileIds },
           page: { status },
         },
-        _count: { pageId: true },
       }),
     ),
   );
-  const count = (rows: { fileId: string; _count: { pageId: number } }[]) =>
-    new Map(rows.map((r) => [r.fileId, r._count.pageId]));
+  // A page has one source row per quote. Grouping the file/page pair makes
+  // each page count once per file, including pages citing several files.
+  const count = (rows: { fileId: string; pageId: number }[]) => {
+    const counts = new Map<string, number>();
+    for (const row of rows) {
+      counts.set(row.fileId, (counts.get(row.fileId) ?? 0) + 1);
+    }
+    return counts;
+  };
   const approvedBy = count(approved!);
   const candidatesBy = count(candidates!);
   return files.map((f) => ({
