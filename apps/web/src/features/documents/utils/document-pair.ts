@@ -68,3 +68,16 @@ export function piiInconsistency(
     raiseTo: stricterPiiPolicy(first, second),
   };
 }
+
+/**
+ * Which files a person may pair or unpair: any file for an organization
+ * manager, otherwise only their own. Reading a file does not give this — a
+ * file shared for viewing is readable and not theirs to change — and it is the
+ * same rule the bulk delete and bulk policy actions already apply.
+ */
+export function manageableFileWhere(
+  userId: string,
+  canManageOrg: boolean,
+): { ownerId?: string } {
+  return canManageOrg ? {} : { ownerId: userId };
+}

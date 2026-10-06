@@ -41,10 +41,27 @@ export async function getDocumentPairsQuery(input: {
     return [];
   }
 
+  // Only files the actor can read may be asked about. Without this, asking
+  // about a file they cannot read whose counterpart they can would return that
+  // counterpart under the unreadable file's id, which confirms the pairing.
+  const readableAsked = await db.userFile.findMany({
+    where: {
+      organizationId,
+      id: { in: fileIds },
+      ...fileAccessWhere(actor),
+      ...NOT_A_BRAIN_VEHICLE,
+    },
+    select: { id: true },
+  });
+  const askedIds = readableAsked.map((file) => file.id);
+  if (askedIds.length === 0) {
+    return [];
+  }
+
   const pairs = await db.documentPair.findMany({
     where: {
       organizationId,
-      OR: [{ fileAId: { in: fileIds } }, { fileBId: { in: fileIds } }],
+      OR: [{ fileAId: { in: askedIds } }, { fileBId: { in: askedIds } }],
     },
     select: { fileAId: true, fileBId: true },
   });
@@ -52,7 +69,7 @@ export async function getDocumentPairsQuery(input: {
     return [];
   }
 
-  const asked = new Set(fileIds);
+  const asked = new Set(askedIds);
   const links = pairs.flatMap((pair) => {
     const out: { fileId: string; counterpartId: string }[] = [];
     if (asked.has(pair.fileAId)) {

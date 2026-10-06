@@ -9,18 +9,21 @@ import {
   fileAccessWhere,
   type DocumentActor,
 } from '../queries/document-access';
+import { manageableFileWhere } from '../../utils/document-pair';
 
 export type RemoveDocumentPairResult =
   { ok: true } | { ok: false; error: 'not-found' };
 
 /**
  * Unlink a file from its counterpart. Neither file is touched. Needs access
- * to both, like creating one: a pair whose far end the actor cannot read is
+ * to, and the right to manage, both files, like creating one: a pair whose far end the actor cannot read is
  * "not found", so removing it cannot be used to learn that it exists.
  */
 export async function removeDocumentPairCommand(input: {
   organizationId: string;
   actor: DocumentActor;
+  /** `canManageOrg(member.role)` of the caller, resolved by the action. */
+  canManageOrg: boolean;
   fileId: string;
 }): Promise<RemoveDocumentPairResult> {
   const { organizationId, actor, fileId } = input;
@@ -48,6 +51,7 @@ export async function removeDocumentPairCommand(input: {
       organizationId,
       id: { in: [pair.fileAId, pair.fileBId] },
       ...fileAccessWhere(actor),
+      ...manageableFileWhere(actor.userId, input.canManageOrg),
     },
   });
   if (readable !== 2) {

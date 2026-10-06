@@ -9,7 +9,7 @@ import {
   fileAccessWhere,
   type DocumentActor,
 } from '../queries/document-access';
-import { orderPairIds } from '../../utils/document-pair';
+import { manageableFileWhere, orderPairIds } from '../../utils/document-pair';
 import { NOT_A_BRAIN_VEHICLE } from './not-a-brain-vehicle';
 
 export type CreateDocumentPairResult =
@@ -21,7 +21,10 @@ export type CreateDocumentPairResult =
  * languages (ADR-54). A person confirms it; nothing calls this on its own.
  *
  * Both files must be ones the actor can read, found by `organizationId` and
- * `fileAccessWhere`, and neither may be a Brain publication vehicle. A file
+ * `fileAccessWhere`, **and** ones the actor may manage: an organization
+ * manager, or the file's owner. Reading is not enough, since a file shared for
+ * viewing is not the viewer's to link. Neither may be a Brain publication
+ * vehicle. A file
  * the actor cannot read is "not found", never "forbidden": a name alone
  * confirms a document exists.
  *
@@ -34,6 +37,8 @@ export type CreateDocumentPairResult =
 export async function createDocumentPairCommand(input: {
   organizationId: string;
   actor: DocumentActor;
+  /** `canManageOrg(member.role)` of the caller, resolved by the action. */
+  canManageOrg: boolean;
   fileId: string;
   counterpartFileId: string;
 }): Promise<CreateDocumentPairResult> {
@@ -70,6 +75,7 @@ export async function createDocumentPairCommand(input: {
           organizationId,
           id: { in: [fileAId, fileBId] },
           ...fileAccessWhere(actor),
+          ...manageableFileWhere(actor.userId!, input.canManageOrg),
           ...NOT_A_BRAIN_VEHICLE,
         },
         select: { id: true },

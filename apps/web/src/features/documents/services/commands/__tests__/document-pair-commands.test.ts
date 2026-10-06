@@ -63,6 +63,7 @@ describe('createDocumentPairCommand', () => {
   const input = {
     organizationId: 'org',
     actor,
+    canManageOrg: true,
     fileId: B,
     counterpartFileId: A,
   };
@@ -101,6 +102,16 @@ describe('createDocumentPairCommand', () => {
     const where = fileFindMany.mock.calls[0][0].where;
     expect(where.organizationId).toBe('org');
     expect(where.publishedPages).toEqual({ none: {} });
+  });
+
+  it('lets an organization manager pair files they do not own', async () => {
+    await createDocumentPairCommand(input);
+    expect(fileFindMany.mock.calls[0][0].where.ownerId).toBeUndefined();
+  });
+
+  it('limits a member to files they own, since reading is not managing', async () => {
+    await createDocumentPairCommand({ ...input, canManageOrg: false });
+    expect(fileFindMany.mock.calls[0][0].where.ownerId).toBe('u1');
   });
 
   it('says not-found when the actor cannot read the other file', async () => {
@@ -161,7 +172,12 @@ describe('createDocumentPairCommand', () => {
 });
 
 describe('removeDocumentPairCommand', () => {
-  const input = { organizationId: 'org', actor, fileId: A };
+  const input = {
+    organizationId: 'org',
+    actor,
+    canManageOrg: true,
+    fileId: A,
+  };
   beforeEach(() => {
     pairFindFirst.mockResolvedValue({ id: 'pair-1', fileAId: A, fileBId: B });
     fileCount.mockResolvedValue(2);
@@ -174,6 +190,11 @@ describe('removeDocumentPairCommand', () => {
     expect(pairDeleteMany).toHaveBeenCalledWith({
       where: { id: 'pair-1', organizationId: 'org' },
     });
+  });
+
+  it('limits a member to pairs of files they own', async () => {
+    await removeDocumentPairCommand({ ...input, canManageOrg: false });
+    expect(fileCount.mock.calls[0][0].where.ownerId).toBe('u1');
   });
 
   it('is not-found when the actor cannot read the far end', async () => {

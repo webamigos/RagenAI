@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  manageableFileWhere,
   orderPairIds,
   piiInconsistency,
   stricterPiiPolicy,
@@ -60,5 +61,12 @@ describe('piiInconsistency', () => {
         }
       }
     }
+  });
+});
+
+describe('manageableFileWhere', () => {
+  it('lets a manager act on any file and a member only on their own', () => {
+    expect(manageableFileWhere('u1', true)).toEqual({});
+    expect(manageableFileWhere('u1', false)).toEqual({ ownerId: 'u1' });
   });
 });

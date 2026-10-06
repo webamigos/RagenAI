@@ -35,3 +35,47 @@ CREATE INDEX "document_pair_members_pair_id_idx" ON "document_pair_members"("pai
 
 ALTER TABLE "document_pair_members" ADD CONSTRAINT "document_pair_members_file_id_organization_id_fkey" FOREIGN KEY ("file_id", "organization_id") REFERENCES "user_files"("id", "organization_id") ON DELETE CASCADE ON UPDATE CASCADE;
 ALTER TABLE "document_pair_members" ADD CONSTRAINT "document_pair_members_pair_id_organization_id_fkey" FOREIGN KEY ("pair_id", "organization_id") REFERENCES "document_pairs"("id", "organization_id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- A pair's endpoints are its members, and nothing else. Without this a pair
+-- could be inserted with no member rows, or a file could be the smaller id in
+-- one pair and the larger in another, and the member key above would never see
+-- it. Checked at commit, because a pair and its members are written in one
+-- transaction and neither exists first.
+CREATE FUNCTION "document_pairs_check_members"() RETURNS trigger AS $$
+BEGIN
+    IF TG_TABLE_NAME = 'document_pairs' THEN
+        IF NOT EXISTS (SELECT 1 FROM "document_pairs" WHERE "id" = NEW."id") THEN
+            RETURN NULL;
+        END IF;
+        IF (SELECT count(*) FROM "document_pair_members"
+            WHERE "pair_id" = NEW."id"
+              AND "file_id" IN (NEW."file_a_id", NEW."file_b_id")) <> 2
+           OR (SELECT count(*) FROM "document_pair_members"
+               WHERE "pair_id" = NEW."id") <> 2 THEN
+            RAISE EXCEPTION 'document pair % must have exactly its two files as members', NEW."id"
+                USING ERRCODE = 'integrity_constraint_violation';
+        END IF;
+    ELSE
+        IF NOT EXISTS (SELECT 1 FROM "document_pair_members" WHERE "file_id" = NEW."file_id") THEN
+            RETURN NULL;
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM "document_pairs"
+                       WHERE "id" = NEW."pair_id"
+                         AND NEW."file_id" IN ("file_a_id", "file_b_id")) THEN
+            RAISE EXCEPTION 'file % is not an endpoint of pair %', NEW."file_id", NEW."pair_id"
+                USING ERRCODE = 'integrity_constraint_violation';
+        END IF;
+    END IF;
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE CONSTRAINT TRIGGER "document_pairs_members_complete"
+    AFTER INSERT OR UPDATE ON "document_pairs"
+    DEFERRABLE INITIALLY DEFERRED
+    FOR EACH ROW EXECUTE FUNCTION "document_pairs_check_members"();
+
+CREATE CONSTRAINT TRIGGER "document_pair_members_are_endpoints"
+    AFTER INSERT OR UPDATE ON "document_pair_members"
+    DEFERRABLE INITIALLY DEFERRED
+    FOR EACH ROW EXECUTE FUNCTION "document_pairs_check_members"();
