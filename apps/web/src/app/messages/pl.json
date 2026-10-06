@@ -3007,7 +3007,7 @@
       "screen-intro": "Co Brain wyciągnął z każdego pliku i ile z tego jest już sprawdzone.",
       "table-title": "Dokumenty według języka",
       "shared-scale": "Skala wspólna: {count, plural, one {# strona} few {# strony} many {# stron} other {# strony}} = pełny pasek",
-      "coverage-counts": "{approved} zatwierdzone · {candidates} kandydatów",
+      "coverage-counts": "{approved, plural, one {# zatwierdzona} few {# zatwierdzone} many {# zatwierdzonych} other {# zatwierdzone}} · {candidates, plural, one {# kandydat} few {# kandydaci} many {# kandydatów} other {# kandydatów}}",
       "summary": {
         "documents": "Dokumenty",
         "empty": "Nic nie wyodrębniono",

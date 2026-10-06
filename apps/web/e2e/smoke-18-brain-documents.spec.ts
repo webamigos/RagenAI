@@ -49,7 +49,9 @@ test('shows distinct coverage, confirmed empty extraction, waiting and language 
     ).toBeVisible();
     const rows = page.getByTestId('brain-document-row');
     const seeded = rows.filter({ hasText: TEST_FILE_NAME });
-    await expect(seeded).toContainText(/\d+ zatwierdzone · \d+ kandydatów/);
+    await expect(seeded).toContainText(
+      /\d+ zatwierdzon(?:a|e|ych) · \d+ (?:kandydat|kandydaci|kandydatów)/,
+    );
     const empty = rows.filter({ hasText: names[0] });
     await expect(empty).toContainText('Nic nie wyodrębniono');
     await expect(empty).toContainText('Sprawdź język');
@@ -67,7 +69,7 @@ test('shows distinct coverage, confirmed empty extraction, waiting and language 
         1,
         ...elements.map((row) => {
           const text = row.textContent?.match(
-            /(\d+) zatwierdzone · (\d+) kandydatów/,
+            /(\d+) zatwierdzon(?:a|e|ych) · (\d+) (?:kandydat|kandydaci|kandydatów)/,
           );
           return text ? Number(text[1]) + Number(text[2]) : 0;
         }),
