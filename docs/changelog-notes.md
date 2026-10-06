@@ -271,3 +271,5 @@ archive is the blog.
 
 - 2026-10-06: The Ragen MCP server advertises its packaged Ragen logo and serves a public favicon for connector clients.
 - 2026-10-06: The published shared demo account can no longer create new organizations, including through the authentication API. Separate accounts retain that capability.
+
+- 2026-10-06: Patch proxy-addr to 2.0.8 to prevent IP spoofing with incorrectly configured IPv4-mapped IPv6 trust subnets (GHSA-jqcg-44mw-7w3h).
