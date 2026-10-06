@@ -1405,7 +1405,8 @@
     "pagination-next": "Następna",
     "pagination-previous-page": "Poprzednia strona",
     "pagination-next-page": "Następna strona",
-    "pagination-label": "Nawigacja po stronach"
+    "pagination-label": "Nawigacja po stronach",
+    "language-pair": "Para językowa…"
   },
   "folders": {
     "title": "Foldery",
@@ -3411,6 +3412,25 @@
     "optimization-start": "Przygotuj sugestie",
     "optimization-starting": "Uruchamianie…",
     "optimization-retry": "Ponów nieudane żądania",
-    "close": "Zamknij"
+    "close": "Zamknij",
+    "paired-with": "Sparowany z {name} ({language})",
+    "pair-pii-count": "{count, plural, one {# para językowa} few {# pary językowe} many {# par językowych} other {# pary językowej}} z różnymi politykami PII",
+    "pair-pii-description": "Jeden plik z pary maskuje mniej niż drugi, więc ten sam tekst można odzyskać bez maskowania z którejkolwiek wersji językowej. Podniesienie słabszego pliku do ostrzejszej polityki przetwarza go ponownie. Polityka nigdy nie jest obniżana.",
+    "pair-pii-raise": "Podnieś do ostrzejszej polityki"
+  },
+  "document-pairs": {
+    "title": "Para językowa",
+    "description-none": "Połącz plik {name} z tym samym dokumentem w innym języku. Para grupuje oba pliki w bazie wiedzy i w Brain; nie zmienia tego, co znajduje pytanie.",
+    "description-paired": "Plik {name} jest sparowany z {counterpart} ({language}).",
+    "loading": "Szukam tego samego dokumentu w innym języku…",
+    "none-found": "Brak sugestii. Sugestie powstają z podsumowania dokumentu, więc plik musi je mieć, a druga wersja musi być plikiem, którym możesz zarządzać.",
+    "pair-action": "Połącz",
+    "remove-action": "Usuń parę",
+    "close": "Zamknij",
+    "pii-differs": "Oba pliki mają różne polityki PII. Po sparowaniu podnieś słabszą z listy.",
+    "language-unknown": "nie wykryto języka",
+    "paired-toast": "Pliki połączone w parę.",
+    "removed-toast": "Para usunięta.",
+    "error": "Nie udało się zmienić pary. Plik może już być sparowany albo nie zarządzasz obydwoma plikami."
   }
 }

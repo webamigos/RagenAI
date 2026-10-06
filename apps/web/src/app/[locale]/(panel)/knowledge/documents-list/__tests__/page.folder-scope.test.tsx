@@ -11,6 +11,11 @@ vi.mock('@/features/documents/services/queries/get-user-files-query', () => ({
 }));
 
 vi.mock(
+  '@/features/documents/services/queries/get-document-pairs-query',
+  () => ({ getDocumentPairsQuery: vi.fn().mockResolvedValue([]) }),
+);
+
+vi.mock(
   '@/features/documents/services/queries/get-file-scope-counts-query',
   () => ({
     getFileScopeCountsQuery: (...args: unknown[]) =>

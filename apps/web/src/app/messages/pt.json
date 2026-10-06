@@ -1405,7 +1405,8 @@
     "pagination-next": "Próximo",
     "pagination-previous-page": "Página anterior",
     "pagination-next-page": "Página seguinte",
-    "pagination-label": "Navegação de páginas"
+    "pagination-label": "Navegação de páginas",
+    "language-pair": "Language pair…"
   },
   "folders": {
     "title": "Pastas",
@@ -3411,6 +3412,25 @@
     "optimization-start": "Prepare suggestions",
     "optimization-starting": "Starting…",
     "optimization-retry": "Retry failed requests",
-    "close": "Close"
+    "close": "Close",
+    "paired-with": "Paired with {name} ({language})",
+    "pair-pii-count": "{count, plural, one {# language pair} other {# language pairs}} with different PII policies",
+    "pair-pii-description": "One file of the pair masks less than the other, so the same text can be retrieved unmasked from either language. Raising the weaker file to the stricter policy reprocesses it. A policy is never lowered.",
+    "pair-pii-raise": "Raise to the stricter policy"
+  },
+  "document-pairs": {
+    "title": "Language pair",
+    "description-none": "Link {name} to the same document in another language. A pair groups the two files in the knowledge base and Brain; it does not change what a question retrieves.",
+    "description-paired": "{name} is paired with {counterpart} ({language}).",
+    "loading": "Looking for the same document in another language…",
+    "none-found": "No suggestions. Suggestions come from the document summary, so the file needs one and the counterpart must be a file you can manage.",
+    "pair-action": "Pair",
+    "remove-action": "Remove pair",
+    "close": "Close",
+    "pii-differs": "The two files have different PII policies. After pairing, raise the weaker one from the list.",
+    "language-unknown": "language not detected",
+    "paired-toast": "Files paired.",
+    "removed-toast": "Pair removed.",
+    "error": "Could not update the pair. It may already be paired, or you may not manage both files."
   }
 }

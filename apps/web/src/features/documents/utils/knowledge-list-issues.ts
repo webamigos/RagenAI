@@ -2,8 +2,9 @@ import {
   readDocumentDiagnostics,
   warningsOf,
 } from '@ragenai/rag-core/document-diagnostics';
-import type { UserFileType } from '../contracts/document.types';
+import type { PiiPolicy, UserFileType } from '../contracts/document.types';
 import { canOptimizeDocument } from './tabular-documents';
+import { piiInconsistency } from './document-pair';
 
 export function optimizationEligible(file: UserFileType): boolean {
   return Boolean(
@@ -33,6 +34,33 @@ export function knowledgeListIssues(
         file.brainCoverage.approved + file.brainCoverage.candidates === 0,
     ),
   };
+}
+
+export type PairPolicyRaise = {
+  /** The weaker file of a pair, which is the one to change. */
+  fileId: string;
+  raiseTo: PiiPolicy;
+};
+
+/**
+ * Pairs on the visible page whose two files mask differently, each as the one
+ * change that would make them agree: raise the weaker file to the stricter
+ * policy (ADR-54). Never a lowering. A pair with both files on the page is
+ * listed once.
+ */
+export function pairPolicyRaises(files: UserFileType[]): PairPolicyRaise[] {
+  const raises = new Map<string, PairPolicyRaise>();
+  for (const file of files) {
+    if (!file.pairedWith || !file.piiPolicy) {
+      continue;
+    }
+    const gap = piiInconsistency(file.piiPolicy, file.pairedWith.piiPolicy);
+    if (gap) {
+      const fileId = gap.weaker === 'first' ? file.id : file.pairedWith.id;
+      raises.set(fileId, { fileId, raiseTo: gap.raiseTo });
+    }
+  }
+  return [...raises.values()];
 }
 
 /** Existing authenticated optimization endpoint; sequential, deduplicated and partial-result aware. */

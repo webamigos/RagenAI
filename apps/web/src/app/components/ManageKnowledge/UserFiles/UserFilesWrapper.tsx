@@ -50,6 +50,9 @@ import { useBulkSelection } from './hooks/useBulkSelection';
 import { BulkActionBar } from './BulkActionBar';
 import { OptimizeFilesDialog } from './OptimizeFilesDialog';
 import { KnowledgeListIssues } from './KnowledgeListIssues';
+import { DocumentPairsProvider } from './DocumentPairsContext';
+import { LanguagePairDialog } from './LanguagePairDialog';
+import type { PairPolicyRaise } from '@/features/documents/utils/knowledge-list-issues';
 import {
   BulkProgressBanner,
   type BulkProgressState,
@@ -169,6 +172,8 @@ export const FileListWrapperWithData = ({
   // `assertCanManageDocuments` — but a demo visitor should not be shown an
   // "Add document" button that answers with an error.
   const canManageDocuments = useOrgFeature('manageDocuments');
+  const languagePairs = useOrgFeature('languagePairs');
+  const [pairFileId, setPairFileId] = useState<string | null>(null);
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
   const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
   const [uploadPiiPolicy, setUploadPiiPolicy] =
@@ -333,6 +338,61 @@ export const FileListWrapperWithData = ({
   const policyRowFile = policyRowFileId
     ? filteredFiles.find((file) => file.id === policyRowFileId)
     : undefined;
+
+  const pairFile = pairFileId
+    ? (filteredFiles.find((file) => file.id === pairFileId) ?? null)
+    : null;
+  const handleManagePair = useCallback(
+    (fileId: string) => setPairFileId(fileId),
+    [],
+  );
+
+  /**
+   * "Raise to the stricter policy" for pairs whose two files mask differently
+   * (ADR-54). Each weaker file goes to the policy of its stricter twin and is
+   * then reprocessed, because a policy change does not touch chunks that are
+   * already indexed. Nothing here can lower a policy: the targets come from
+   * `pairPolicyRaises`, which only ever names the stricter of the two.
+   */
+  const handleRaisePairPolicies = async (raises: PairPolicyRaise[]) => {
+    setIsBulkLoading(true);
+    try {
+      const byPolicy = new Map<PiiPolicy, string[]>();
+      for (const raise of raises) {
+        byPolicy.set(raise.raiseTo, [
+          ...(byPolicy.get(raise.raiseTo) ?? []),
+          raise.fileId,
+        ]);
+      }
+      const succeeded: string[] = [];
+      let failedCount = 0;
+      for (const [policy, ids] of byPolicy) {
+        const result = await bulkUpdatePiiPolicyAction(ids, policy);
+        succeeded.push(...result.succeeded);
+        failedCount += result.failed.length;
+      }
+      if (failedCount > 0) {
+        warningToast({
+          message: tBulk('policy-partial', {
+            succeeded: succeeded.length,
+            total: raises.length,
+          }),
+        });
+      } else {
+        successToast({
+          message: tBulk('policy-all', { count: succeeded.length }),
+        });
+      }
+      if (succeeded.length > 0) {
+        await runBulkReembed(succeeded);
+      }
+      router.refresh();
+    } catch {
+      errorToast({ message: tBulk('policy-error') });
+    } finally {
+      setIsBulkLoading(false);
+    }
+  };
 
   const handleChangeRowPolicy = useCallback((fileId: string) => {
     setPolicyRowFileId(fileId);
@@ -784,31 +844,38 @@ export const FileListWrapperWithData = ({
   );
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
-      {/*
+    <DocumentPairsProvider
+      value={
+        knowledgeList && languagePairs && canManageOrg === true
+          ? handleManagePair
+          : undefined
+      }
+    >
+      <div className="flex min-h-0 flex-1 flex-col">
+        {/*
         Title and the two actions on one row. Everything that narrows or
         redraws the table lives in the filter row below, so this row holds
         only the name of the place and the two ways to add to it.
       */}
-      <div
-        className={
-          heading || (!isSharedView && canManageDocuments)
-            ? 'mb-3 flex shrink-0 items-start gap-3'
-            : 'hidden'
-        }
-      >
-        {heading}
-        <div className="flex-1" />
-        {!isSharedView && canManageDocuments && (
-          <>
-            <button
-              onClick={() => setIsCreateFolderOpen(true)}
-              className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-2 text-sm font-medium text-foreground shadow-sm hover:bg-muted transition-colors dark:bg-muted dark:hover:bg-paper-700"
-            >
-              <FolderPlusIcon className="size-4" />
-              {tFolders('new')}
-            </button>
-            {/*
+        <div
+          className={
+            heading || (!isSharedView && canManageDocuments)
+              ? 'mb-3 flex shrink-0 items-start gap-3'
+              : 'hidden'
+          }
+        >
+          {heading}
+          <div className="flex-1" />
+          {!isSharedView && canManageDocuments && (
+            <>
+              <button
+                onClick={() => setIsCreateFolderOpen(true)}
+                className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-2 text-sm font-medium text-foreground shadow-sm hover:bg-muted transition-colors dark:bg-muted dark:hover:bg-paper-700"
+              >
+                <FolderPlusIcon className="size-4" />
+                {tFolders('new')}
+              </button>
+              {/*
               `modal={false}` is load-bearing, not a preference. Radix locks
               the page while an open menu is modal — `pointer-events: none` on
               the body plus a focus trap — where Headless UI did not. Both
@@ -817,8 +884,8 @@ export const FileListWrapperWithData = ({
               buttons render visible and refuse to be clicked.
               smoke-10-knowledge-upload caught exactly that.
             */}
-            <DropdownMenu modal={false}>
-              {/*
+              <DropdownMenu modal={false}>
+                {/*
                 `color="violet"` is gone rather than translated. It was one of
                 three competing accents in an app whose brand is navy and
                 crimson, and shadcn's default button is `bg-primary` — which
@@ -828,73 +895,78 @@ export const FileListWrapperWithData = ({
                 old menu could select them for spacing. shadcn's item lays out
                 its children with flex and a gap.
               */}
-              <DropdownMenuTrigger asChild>
-                <Button className="inline-flex items-center gap-2">
-                  {tFolders('add-document')}
-                  <ChevronDownIcon className="size-3.5 ml-0.5 opacity-70" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => fileInputRef.current?.click()}>
-                  <ComputerDesktopIcon className="size-4" />
-                  {tFolders('from-disk')}
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => router.push('/knowledge/create-document')}
-                >
-                  <DocumentPlusIcon className="size-4" />
-                  {tFolders('create-document')}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setIsAddFromUrlOpen(true)}>
-                  <GlobeAltIcon className="size-4" />
-                  {tFolders('add-from-url')}
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => router.push('/knowledge/optimize-document')}
-                >
-                  <SparklesIcon className="size-4" />
-                  {tFolders('optimize-document')}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-            <input
-              ref={fileInputRef}
-              type="file"
-              multiple
-              className="hidden"
-              onChange={handleFileInputChange}
-            />
-          </>
-        )}
-      </div>
-
-      {topBarLeft && <div className="mb-2 shrink-0">{topBarLeft}</div>}
-
-      {knowledgeList && (
-        <KnowledgeListIssues
-          disabled={isBulkLoading}
-          files={filteredFiles}
-          onOptimize={canManageOrg ? setOptimizationIds : undefined}
-          onReprocess={canManageOrg ? runBulkReembed : undefined}
-        />
-      )}
-      {optimizationIds && (
-        <OptimizeFilesDialog
-          files={filteredFiles.filter((file) =>
-            optimizationIds.includes(file.id),
+                <DropdownMenuTrigger asChild>
+                  <Button className="inline-flex items-center gap-2">
+                    {tFolders('add-document')}
+                    <ChevronDownIcon className="size-3.5 ml-0.5 opacity-70" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    <ComputerDesktopIcon className="size-4" />
+                    {tFolders('from-disk')}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => router.push('/knowledge/create-document')}
+                  >
+                    <DocumentPlusIcon className="size-4" />
+                    {tFolders('create-document')}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setIsAddFromUrlOpen(true)}>
+                    <GlobeAltIcon className="size-4" />
+                    {tFolders('add-from-url')}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => router.push('/knowledge/optimize-document')}
+                  >
+                    <SparklesIcon className="size-4" />
+                    {tFolders('optimize-document')}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                className="hidden"
+                onChange={handleFileInputChange}
+              />
+            </>
           )}
-          onClose={() => {
-            setOptimizationIds(null);
-            router.refresh();
-          }}
-        />
-      )}
-      <BulkProgressBanner
-        state={bulkProgress}
-        onDismiss={() => setBulkProgress({ status: 'idle' })}
-      />
+        </div>
 
-      {/*
+        {topBarLeft && <div className="mb-2 shrink-0">{topBarLeft}</div>}
+
+        {knowledgeList && (
+          <KnowledgeListIssues
+            disabled={isBulkLoading}
+            files={filteredFiles}
+            onOptimize={canManageOrg ? setOptimizationIds : undefined}
+            onReprocess={canManageOrg ? runBulkReembed : undefined}
+            onRaisePairPolicies={
+              canManageOrg ? handleRaisePairPolicies : undefined
+            }
+          />
+        )}
+        {optimizationIds && (
+          <OptimizeFilesDialog
+            files={filteredFiles.filter((file) =>
+              optimizationIds.includes(file.id),
+            )}
+            onClose={() => {
+              setOptimizationIds(null);
+              router.refresh();
+            }}
+          />
+        )}
+        <BulkProgressBanner
+          state={bulkProgress}
+          onDismiss={() => setBulkProgress({ status: 'idle' })}
+        />
+
+        {/*
         The drop target, and nothing else. It used to be the page's scroller
         too — one `overflow-y-auto` box with a 2px dashed edge and an 8px
         radius, holding the toolbar, the table and the pager together — which
@@ -908,316 +980,329 @@ export const FileListWrapperWithData = ({
         without shifting a single row. 1px rather than 2px — panels here are
         line drawings.
       */}
-      <div
-        data-testid="documents-drop-zone"
-        className={`relative flex min-h-0 flex-1 flex-col rounded-md border border-dashed transition-colors ${
-          isDragOver && !isSharedView
-            ? 'bg-brand-50 border-brand-300 dark:bg-brand-900/20 dark:border-brand-600'
-            : 'border-transparent'
-        }`}
-        onDrop={isSharedView ? undefined : handleDrop}
-        onDragOver={isSharedView ? undefined : handleDragOver}
-        onDragLeave={isSharedView ? undefined : handleDragLeave}
-      >
-        {isTrulyEmpty && isSharedView && (
-          <EmptyState title={tFolders('no-shared-files')} className="py-20" />
-        )}
-        {isTrulyEmpty && !isSharedView && !canManageDocuments && (
-          <EmptyState
-            title={tFolders(
-              currentFolderId ? 'no-documents-in-folder' : 'no-documents',
-            )}
-            className="py-20"
-          />
-        )}
-        {isTrulyEmpty && !isSharedView && canManageDocuments && (
-          <EmptyState
-            icon={<ArrowUpTrayIcon className="size-10 text-muted-foreground" />}
-            title={tFolders(
-              currentFolderId ? 'no-documents-in-folder' : 'no-documents',
-            )}
-            description={tFolders('drag-drop')}
-            actions={[
-              {
-                label: tFolders('upload-cta'),
-                onClick: () => fileInputRef.current?.click(),
-              },
-              {
-                label: tFolders('create-document'),
-                onClick: () => router.push('/knowledge/create-document'),
-              },
-              {
-                label: tFolders('add-from-url'),
-                onClick: () => setIsAddFromUrlOpen(true),
-              },
-            ]}
-            className="py-20"
-          />
-        )}
-        {(hasContent || isFilteredEmpty) && layoutMode === 'grid' && (
-          <DocumentsGridWithFilters
-            result={result}
-            sort={sort}
-            dir={dir}
-            selectedFileTypes={selectedFileTypes}
-            selectedStatuses={selectedStatuses}
-            selectedPolicies={selectedPolicies}
-            search={searchNode}
-            viewToggle={viewToggleNode}
-            selectionBar={selectionBarNode}
-          >
-            {isSearchEmpty ? (
-              <EmptyState
-                icon={
-                  <MagnifyingGlassIcon className="size-10 text-muted-foreground" />
-                }
-                title={tFolders('no-search-results', { query: searchValue })}
-                className="py-20"
-              />
-            ) : (
-              <GridView
-                deleteLoading={deleteLoading}
-                isError={false}
-                isLoading={false}
-                addFile={addFile}
-                showModal={showModal}
-                removeFile={removeFile}
-                files={filteredFiles}
-                subfolders={subfolders ?? []}
-                onNavigateFolder={onNavigateFolder}
-                onDragFiles={handleDragFiles}
-                toggleModal={toggleModal}
-                handleDelete={handleDelete}
-                canDelete={canManageDocuments}
-                isSelected={bulk.isSelected}
-                isAllSelected={bulk.isAllSelected}
-                isIndeterminate={bulk.isIndeterminate}
-                onToggleFile={bulk.toggleFile}
-                onToggleAll={bulk.toggleAll}
-                onUpload={
-                  !isSharedView
-                    ? () => fileInputRef.current?.click()
-                    : undefined
-                }
-                onCreateDocument={
-                  !isSharedView
-                    ? () => router.push('/knowledge/create-document')
-                    : undefined
-                }
-                onAddFromUrl={
-                  !isSharedView ? () => setIsAddFromUrlOpen(true) : undefined
-                }
-                onPreviewFile={handlePreviewFile}
-                onMove={(fileId) => {
-                  const f = filteredFiles.find((x) => x.id === fileId);
-                  setSingleMoveFileId(fileId);
-                  setSingleMoveFileName(f?.fileName ?? '');
-                }}
-                onShare={(fileId) => {
-                  const f = filteredFiles.find((x) => x.id === fileId);
-                  setSingleShareFileId(fileId);
-                  setSingleShareFileName(f?.fileName ?? '');
-                }}
-                isFilteredEmpty={isFilteredEmpty}
-                onResetFilters={
-                  isFilteredEmpty ? handleResetFilters : undefined
-                }
-                canManageOrg={canManageOrg}
-              />
-            )}
-          </DocumentsGridWithFilters>
-        )}
-        {(hasContent || isFilteredEmpty) && layoutMode === 'list' && (
-          <DocumentsTableWithFilters
-            knowledgeList={knowledgeList}
-            onOptimizeFiles={
-              knowledgeList && canManageOrg ? setOptimizationIds : undefined
-            }
-            result={result}
-            files={filteredFiles}
-            subfolders={subfolders}
-            onNavigateFolder={onNavigateFolder}
-            onDragFiles={handleDragFiles}
-            onChangeRowPolicy={
-              canManageOrg === true ? handleChangeRowPolicy : undefined
-            }
-            sort={sort}
-            dir={dir}
-            selectedFileTypes={selectedFileTypes}
-            selectedStatuses={selectedStatuses}
-            selectedPolicies={selectedPolicies}
-            search={searchNode}
-            viewToggle={viewToggleNode}
-            selectionBar={selectionBarNode}
-            showModal={showModal}
-            deleteLoading={deleteLoading}
-            toggleModal={toggleModal}
-            addFile={addFile}
-            removeFile={removeFile}
-            handleDelete={handleDelete}
-            canDelete={canManageDocuments}
-            isSelected={bulk.isSelected}
-            isAllSelected={bulk.isAllSelected}
-            isIndeterminate={bulk.isIndeterminate}
-            onToggleFile={bulk.toggleFile}
-            onToggleAll={bulk.toggleAll}
-            onUpload={
-              !isSharedView ? () => fileInputRef.current?.click() : undefined
-            }
-            onCreateDocument={
-              !isSharedView
-                ? () => router.push('/knowledge/create-document')
-                : undefined
-            }
-            onAddFromUrl={
-              !isSharedView ? () => setIsAddFromUrlOpen(true) : undefined
-            }
-            onPreviewFile={handlePreviewFile}
-            canManageOrg={canManageOrg}
-          />
-        )}
-      </div>
-
-      <DocumentPreviewSlideOver
-        file={previewFile}
-        files={filteredFiles as UserFileTypeSafe[]}
-        initialIndex={previewIndex}
-        isOpen={!!previewFile}
-        onClose={() => setPreviewFile(null)}
-        onFileChange={(f, i) => {
-          setPreviewFile(f);
-          setPreviewIndex(i);
-        }}
-        onDelete={
-          canManageDocuments
-            ? (fileId) => {
-                toggleModal(fileId);
-                setPreviewFile(null);
+        <div
+          data-testid="documents-drop-zone"
+          className={`relative flex min-h-0 flex-1 flex-col rounded-md border border-dashed transition-colors ${
+            isDragOver && !isSharedView
+              ? 'bg-brand-50 border-brand-300 dark:bg-brand-900/20 dark:border-brand-600'
+              : 'border-transparent'
+          }`}
+          onDrop={isSharedView ? undefined : handleDrop}
+          onDragOver={isSharedView ? undefined : handleDragOver}
+          onDragLeave={isSharedView ? undefined : handleDragLeave}
+        >
+          {isTrulyEmpty && isSharedView && (
+            <EmptyState title={tFolders('no-shared-files')} className="py-20" />
+          )}
+          {isTrulyEmpty && !isSharedView && !canManageDocuments && (
+            <EmptyState
+              title={tFolders(
+                currentFolderId ? 'no-documents-in-folder' : 'no-documents',
+              )}
+              className="py-20"
+            />
+          )}
+          {isTrulyEmpty && !isSharedView && canManageDocuments && (
+            <EmptyState
+              icon={
+                <ArrowUpTrayIcon className="size-10 text-muted-foreground" />
               }
-            : undefined
-        }
-        onShare={(fileId) => {
-          const f = filteredFiles.find((x) => x.id === fileId);
-          setPreviewFile(null);
-          setSingleShareFileId(fileId);
-          setSingleShareFileName(f?.fileName ?? '');
-        }}
-        onMove={(fileId) => {
-          const f = filteredFiles.find((x) => x.id === fileId);
-          setPreviewFile(null);
-          setSingleMoveFileId(fileId);
-          setSingleMoveFileName(f?.fileName ?? '');
-        }}
-      />
+              title={tFolders(
+                currentFolderId ? 'no-documents-in-folder' : 'no-documents',
+              )}
+              description={tFolders('drag-drop')}
+              actions={[
+                {
+                  label: tFolders('upload-cta'),
+                  onClick: () => fileInputRef.current?.click(),
+                },
+                {
+                  label: tFolders('create-document'),
+                  onClick: () => router.push('/knowledge/create-document'),
+                },
+                {
+                  label: tFolders('add-from-url'),
+                  onClick: () => setIsAddFromUrlOpen(true),
+                },
+              ]}
+              className="py-20"
+            />
+          )}
+          {(hasContent || isFilteredEmpty) && layoutMode === 'grid' && (
+            <DocumentsGridWithFilters
+              result={result}
+              sort={sort}
+              dir={dir}
+              selectedFileTypes={selectedFileTypes}
+              selectedStatuses={selectedStatuses}
+              selectedPolicies={selectedPolicies}
+              search={searchNode}
+              viewToggle={viewToggleNode}
+              selectionBar={selectionBarNode}
+            >
+              {isSearchEmpty ? (
+                <EmptyState
+                  icon={
+                    <MagnifyingGlassIcon className="size-10 text-muted-foreground" />
+                  }
+                  title={tFolders('no-search-results', { query: searchValue })}
+                  className="py-20"
+                />
+              ) : (
+                <GridView
+                  deleteLoading={deleteLoading}
+                  isError={false}
+                  isLoading={false}
+                  addFile={addFile}
+                  showModal={showModal}
+                  removeFile={removeFile}
+                  files={filteredFiles}
+                  subfolders={subfolders ?? []}
+                  onNavigateFolder={onNavigateFolder}
+                  onDragFiles={handleDragFiles}
+                  toggleModal={toggleModal}
+                  handleDelete={handleDelete}
+                  canDelete={canManageDocuments}
+                  isSelected={bulk.isSelected}
+                  isAllSelected={bulk.isAllSelected}
+                  isIndeterminate={bulk.isIndeterminate}
+                  onToggleFile={bulk.toggleFile}
+                  onToggleAll={bulk.toggleAll}
+                  onUpload={
+                    !isSharedView
+                      ? () => fileInputRef.current?.click()
+                      : undefined
+                  }
+                  onCreateDocument={
+                    !isSharedView
+                      ? () => router.push('/knowledge/create-document')
+                      : undefined
+                  }
+                  onAddFromUrl={
+                    !isSharedView ? () => setIsAddFromUrlOpen(true) : undefined
+                  }
+                  onPreviewFile={handlePreviewFile}
+                  onMove={(fileId) => {
+                    const f = filteredFiles.find((x) => x.id === fileId);
+                    setSingleMoveFileId(fileId);
+                    setSingleMoveFileName(f?.fileName ?? '');
+                  }}
+                  onShare={(fileId) => {
+                    const f = filteredFiles.find((x) => x.id === fileId);
+                    setSingleShareFileId(fileId);
+                    setSingleShareFileName(f?.fileName ?? '');
+                  }}
+                  isFilteredEmpty={isFilteredEmpty}
+                  onResetFilters={
+                    isFilteredEmpty ? handleResetFilters : undefined
+                  }
+                  canManageOrg={canManageOrg}
+                />
+              )}
+            </DocumentsGridWithFilters>
+          )}
+          {(hasContent || isFilteredEmpty) && layoutMode === 'list' && (
+            <DocumentsTableWithFilters
+              knowledgeList={knowledgeList}
+              onOptimizeFiles={
+                knowledgeList && canManageOrg ? setOptimizationIds : undefined
+              }
+              result={result}
+              files={filteredFiles}
+              subfolders={subfolders}
+              onNavigateFolder={onNavigateFolder}
+              onDragFiles={handleDragFiles}
+              onChangeRowPolicy={
+                canManageOrg === true ? handleChangeRowPolicy : undefined
+              }
+              sort={sort}
+              dir={dir}
+              selectedFileTypes={selectedFileTypes}
+              selectedStatuses={selectedStatuses}
+              selectedPolicies={selectedPolicies}
+              search={searchNode}
+              viewToggle={viewToggleNode}
+              selectionBar={selectionBarNode}
+              showModal={showModal}
+              deleteLoading={deleteLoading}
+              toggleModal={toggleModal}
+              addFile={addFile}
+              removeFile={removeFile}
+              handleDelete={handleDelete}
+              canDelete={canManageDocuments}
+              isSelected={bulk.isSelected}
+              isAllSelected={bulk.isAllSelected}
+              isIndeterminate={bulk.isIndeterminate}
+              onToggleFile={bulk.toggleFile}
+              onToggleAll={bulk.toggleAll}
+              onUpload={
+                !isSharedView ? () => fileInputRef.current?.click() : undefined
+              }
+              onCreateDocument={
+                !isSharedView
+                  ? () => router.push('/knowledge/create-document')
+                  : undefined
+              }
+              onAddFromUrl={
+                !isSharedView ? () => setIsAddFromUrlOpen(true) : undefined
+              }
+              onPreviewFile={handlePreviewFile}
+              canManageOrg={canManageOrg}
+            />
+          )}
+        </div>
 
-      <UploadFilesDialog
-        isOpen={isUploadDialogOpen}
-        files={pendingFiles}
-        initialPiiPolicy={uploadPiiPolicy}
-        isUploading={isUploading}
-        isDualContent={isDualContent}
-        onClose={() => {
-          setIsUploadDialogOpen(false);
-          setPendingFiles([]);
-        }}
-        onRemoveFile={(index) =>
-          setPendingFiles((prev) => prev.filter((_, i) => i !== index))
-        }
-        onSubmit={handleUploadSubmit}
-      />
-
-      <CreateFolderDialog
-        isOpen={isCreateFolderOpen}
-        onClose={() => setIsCreateFolderOpen(false)}
-        teams={teams.map((t) => ({ id: t.id, name: t.name }))}
-        onCreated={() => {
-          setIsCreateFolderOpen(false);
-          // Not `router.refresh()` alone: see `onFolderMutated`. The handler
-          // does the refresh too, so calling both would refresh twice.
-          if (onFolderMutated) {
-            onFolderMutated();
-          } else {
-            router.refresh();
+        <DocumentPreviewSlideOver
+          file={previewFile}
+          files={filteredFiles as UserFileTypeSafe[]}
+          initialIndex={previewIndex}
+          isOpen={!!previewFile}
+          onClose={() => setPreviewFile(null)}
+          onFileChange={(f, i) => {
+            setPreviewFile(f);
+            setPreviewIndex(i);
+          }}
+          onDelete={
+            canManageDocuments
+              ? (fileId) => {
+                  toggleModal(fileId);
+                  setPreviewFile(null);
+                }
+              : undefined
           }
-        }}
-        parentId={currentFolderId}
-      />
+          onShare={(fileId) => {
+            const f = filteredFiles.find((x) => x.id === fileId);
+            setPreviewFile(null);
+            setSingleShareFileId(fileId);
+            setSingleShareFileName(f?.fileName ?? '');
+          }}
+          onMove={(fileId) => {
+            const f = filteredFiles.find((x) => x.id === fileId);
+            setPreviewFile(null);
+            setSingleMoveFileId(fileId);
+            setSingleMoveFileName(f?.fileName ?? '');
+          }}
+        />
 
-      <AddFromUrlDialog
-        isOpen={isAddFromUrlOpen}
-        onClose={() => setIsAddFromUrlOpen(false)}
-        onSuccess={() => {
-          setIsAddFromUrlOpen(false);
-          router.refresh();
-        }}
-      />
+        <UploadFilesDialog
+          isOpen={isUploadDialogOpen}
+          files={pendingFiles}
+          initialPiiPolicy={uploadPiiPolicy}
+          isUploading={isUploading}
+          isDualContent={isDualContent}
+          onClose={() => {
+            setIsUploadDialogOpen(false);
+            setPendingFiles([]);
+          }}
+          onRemoveFile={(index) =>
+            setPendingFiles((prev) => prev.filter((_, i) => i !== index))
+          }
+          onSubmit={handleUploadSubmit}
+        />
 
-      <ConfirmBulkDeleteDialog
-        isOpen={isBulkDeleteOpen}
-        isLoading={isBulkLoading}
-        count={bulk.selectedCount}
-        onClose={() => setIsBulkDeleteOpen(false)}
-        onConfirm={handleBulkDelete}
-      />
+        <CreateFolderDialog
+          isOpen={isCreateFolderOpen}
+          onClose={() => setIsCreateFolderOpen(false)}
+          teams={teams.map((t) => ({ id: t.id, name: t.name }))}
+          onCreated={() => {
+            setIsCreateFolderOpen(false);
+            // Not `router.refresh()` alone: see `onFolderMutated`. The handler
+            // does the refresh too, so calling both would refresh twice.
+            if (onFolderMutated) {
+              onFolderMutated();
+            } else {
+              router.refresh();
+            }
+          }}
+          parentId={currentFolderId}
+        />
 
-      <BulkPolicyDialog
-        isOpen={isBulkPolicyOpen}
-        isLoading={isBulkLoading}
-        count={policyRowFileId ? 1 : bulk.selectedCount}
-        fileName={policyRowFile?.fileName}
-        initialPolicy={policyRowFile?.piiPolicy ?? undefined}
-        onClose={() => {
-          setIsBulkPolicyOpen(false);
-          setPolicyRowFileId(null);
-        }}
-        onConfirm={handleBulkChangePolicy}
-      />
-
-      <MoveDialog
-        mode="bulk"
-        isOpen={isBulkMoveOpen}
-        onClose={() => setIsBulkMoveOpen(false)}
-        fileIds={fileIds}
-        onMoved={handleBulkMoved}
-      />
-
-      {singleMoveFileId && (
-        <MoveDialog
-          mode="single"
-          resourceType="file"
-          resourceId={singleMoveFileId}
-          resourceName={singleMoveFileName}
-          isOpen={!!singleMoveFileId}
-          onClose={() => setSingleMoveFileId(null)}
-          onMoved={() => {
-            setSingleMoveFileId(null);
+        <AddFromUrlDialog
+          isOpen={isAddFromUrlOpen}
+          onClose={() => setIsAddFromUrlOpen(false)}
+          onSuccess={() => {
+            setIsAddFromUrlOpen(false);
             router.refresh();
           }}
         />
-      )}
 
-      <ShareDialog
-        mode="bulk"
-        isOpen={isBulkShareOpen}
-        onClose={() => setIsBulkShareOpen(false)}
-        fileIds={fileIds}
-        orgMembers={orgMembers}
-        orgTeams={orgTeams}
-        onShared={handleBulkShared}
-      />
+        <ConfirmBulkDeleteDialog
+          isOpen={isBulkDeleteOpen}
+          isLoading={isBulkLoading}
+          count={bulk.selectedCount}
+          onClose={() => setIsBulkDeleteOpen(false)}
+          onConfirm={handleBulkDelete}
+        />
 
-      {singleShareFileId && (
+        <LanguagePairDialog
+          file={pairFile}
+          onClose={() => setPairFileId(null)}
+          onChanged={(message) => {
+            successToast({ message });
+            setPairFileId(null);
+            router.refresh();
+          }}
+        />
+
+        <BulkPolicyDialog
+          isOpen={isBulkPolicyOpen}
+          isLoading={isBulkLoading}
+          count={policyRowFileId ? 1 : bulk.selectedCount}
+          fileName={policyRowFile?.fileName}
+          initialPolicy={policyRowFile?.piiPolicy ?? undefined}
+          onClose={() => {
+            setIsBulkPolicyOpen(false);
+            setPolicyRowFileId(null);
+          }}
+          onConfirm={handleBulkChangePolicy}
+        />
+
+        <MoveDialog
+          mode="bulk"
+          isOpen={isBulkMoveOpen}
+          onClose={() => setIsBulkMoveOpen(false)}
+          fileIds={fileIds}
+          onMoved={handleBulkMoved}
+        />
+
+        {singleMoveFileId && (
+          <MoveDialog
+            mode="single"
+            resourceType="file"
+            resourceId={singleMoveFileId}
+            resourceName={singleMoveFileName}
+            isOpen={!!singleMoveFileId}
+            onClose={() => setSingleMoveFileId(null)}
+            onMoved={() => {
+              setSingleMoveFileId(null);
+              router.refresh();
+            }}
+          />
+        )}
+
         <ShareDialog
-          mode="single"
-          resourceType="file"
-          resourceId={singleShareFileId}
-          resourceName={singleShareFileName}
-          isOpen={!!singleShareFileId}
-          onClose={() => setSingleShareFileId(null)}
+          mode="bulk"
+          isOpen={isBulkShareOpen}
+          onClose={() => setIsBulkShareOpen(false)}
+          fileIds={fileIds}
           orgMembers={orgMembers}
           orgTeams={orgTeams}
+          onShared={handleBulkShared}
         />
-      )}
-    </div>
+
+        {singleShareFileId && (
+          <ShareDialog
+            mode="single"
+            resourceType="file"
+            resourceId={singleShareFileId}
+            resourceName={singleShareFileName}
+            isOpen={!!singleShareFileId}
+            onClose={() => setSingleShareFileId(null)}
+            orgMembers={orgMembers}
+            orgTeams={orgTeams}
+          />
+        )}
+      </div>
+    </DocumentPairsProvider>
   );
 };

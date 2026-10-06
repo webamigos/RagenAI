@@ -11,6 +11,7 @@ import {
   ShareIcon,
   SparklesIcon,
   ShieldCheckIcon,
+  LanguageIcon,
 } from '@heroicons/react/24/outline';
 import { useRouter } from '@/i18n/routing';
 import {
@@ -47,6 +48,11 @@ type ToolbarActionsProps = {
    * disabled, because a disabled item in a menu is a promise you cannot keep.
    */
   onChangePolicy?: (fileId: string) => void;
+  /**
+   * Opens the language-pair dialog (ADR-54). Passed only where the
+   * organization has the feature on and the viewer may manage the file.
+   */
+  onPair?: (fileId: string) => void;
   isLoading: boolean;
   /**
    * False where the organization may not remove documents (the demo). The
@@ -65,6 +71,7 @@ export const ToolbarActions = ({
   onMove,
   onShare,
   onChangePolicy,
+  onPair,
   isLoading,
   canDelete = true,
 }: ToolbarActionsProps) => {
@@ -142,6 +149,13 @@ export const ToolbarActions = ({
           <DropdownMenuItem onClick={() => onChangePolicy(fileId)}>
             <ShieldCheckIcon className="size-4" />
             {t('change-pii-policy')}
+          </DropdownMenuItem>
+        )}
+
+        {fileId && onPair && (
+          <DropdownMenuItem onClick={() => onPair(fileId)}>
+            <LanguageIcon className="size-4" />
+            {t('language-pair')}
           </DropdownMenuItem>
         )}
 

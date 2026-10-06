@@ -208,4 +208,27 @@ describe('UserFilesTable — the columns phase 7 names', () => {
       ).not.toBeInTheDocument();
     });
   });
+
+  it('marks a paired file with its counterpart, and shows nothing for an unpaired one', () => {
+    renderTable({
+      knowledgeList: true,
+      files: [
+        makeFile({
+          id: 'a',
+          language: 'pol',
+          pairedWith: {
+            id: 'b',
+            fileName: 'policy.pdf',
+            language: 'eng',
+            piiPolicy: 'STRICT',
+          },
+        }),
+        makeFile({ id: 'c', fileName: 'other.pdf', language: 'pol' }),
+      ],
+    } as Partial<typeof defaultProps>);
+
+    const marks = screen.getAllByLabelText('Paired with policy.pdf (English)');
+    expect(marks).toHaveLength(1);
+    expect(marks[0]).toHaveTextContent('↔ EN');
+  });
 });
