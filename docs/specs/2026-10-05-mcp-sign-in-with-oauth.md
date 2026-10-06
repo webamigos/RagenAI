@@ -574,3 +574,18 @@ loopback HTTP only, with no path, credentials, query or fragment; the
 configured origin derives the Better Auth issuer and its `/api/auth/jwks`.
 Final MCP verification: 22 files, 137 tests; typecheck and lint pass.
 D1's named-client probes remain outstanding.
+
+### D4 Disconnect API verification — 2026-10-06
+
+The provider's `/oauth2/delete-consent` endpoint only deletes consent; it
+does not revoke tokens. The gated `mcp-grants` Better Auth plugin adds
+`POST /api/auth/mcp/disconnect` with session middleware and a consent id.
+Its adapter transaction first verifies ownership and the MCP scope, then
+deletes access tokens, refresh tokens and consents for that user/client.
+The Prisma adapter enables real transactions only with MCP OAuth enabled.
+The real-handler memory-adapter integration test signs up a user and proves
+401 without a session, 404 for a foreign consent, 403 for a foreign origin
+(with production CSRF checks explicitly enabled), and preservation of other
+users' and clients' grants after a successful Disconnect.
+D4 remains open for the account UI, last-use tracking, and Docker-backed
+end-to-end verification of refresh refusal after Disconnect.

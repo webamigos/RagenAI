@@ -29,6 +29,7 @@ describe('MCP OAuth plugin wiring', () => {
     expect(plugins.map((plugin) => plugin.id)).toEqual([
       'jwt',
       'oauth-provider',
+      'mcp-grants',
     ]);
     const provider = plugins[1];
     if (!provider || provider.id !== 'oauth-provider') {

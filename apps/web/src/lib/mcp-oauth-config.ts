@@ -1,3 +1,4 @@
+import { mcpGrantsPlugin } from './mcp-grants-plugin';
 import { mcp } from '@better-auth/mcp';
 import { jwt } from 'better-auth/plugins';
 import { APIError } from 'better-auth/api';
@@ -98,5 +99,6 @@ export function mcpOAuthPlugins(
         return mcpClaims(user?.id, referenceId);
       },
     }),
+    mcpGrantsPlugin(),
   ] as const;
 }

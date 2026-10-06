@@ -226,6 +226,7 @@ export const auth = betterAuth({
       : db,
     {
       provider: 'postgresql',
+      transaction: process.env.MCP_OAUTH_ENABLED === 'true',
     },
   ),
 
