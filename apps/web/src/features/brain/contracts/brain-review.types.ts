@@ -101,7 +101,8 @@ export type ReviewError =
  * decision is written, because the ledger records acts, not clicks.
  */
 export type ReviewResult =
-  { success: true; changed: boolean } | { success: false; error: ReviewError };
+  | { success: true; changed: boolean; updatedAt?: string }
+  | { success: false; error: ReviewError; approved?: boolean };
 
 /** A page this one may be merged into; `suggested` when it looks like the same subject. */
 export type MergeTarget = {
@@ -116,3 +117,8 @@ export type ReviewOptions = {
   members: { userId: string; name: string }[];
   teams: { id: string; name: string }[];
 };
+
+export const documentCandidateOwnerInputSchema = z.object({
+  fileId: dbUuid,
+  ownerId: z.string().min(1).max(200),
+});

@@ -106,7 +106,7 @@ export function BrainOverviewPanel({
             <BrainUploadButton />
             {data.candidates > 0 ? (
               <Button asChild>
-                <Link href={href('/brain?status=CANDIDATE')}>
+                <Link href={href('/brain/review')}>
                   {t('overview.start-review', { count: data.candidates })}
                 </Link>
               </Button>

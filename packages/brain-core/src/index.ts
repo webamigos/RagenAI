@@ -106,3 +106,9 @@ export {
   type BundlePageInput,
   type BundleSkipReason,
 } from './export/build-bundle';
+
+export {
+  alignClaimsToSources,
+  missingQuoteFacts,
+  type AlignedClaim,
+} from './review/align-claims';

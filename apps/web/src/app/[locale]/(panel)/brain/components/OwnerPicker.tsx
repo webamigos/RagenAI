@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -11,6 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import type { ReviewResult } from '@/features/brain/contracts/brain-review.types';
 import type { ReviewOptions } from '@/features/brain/contracts/brain-review.types';
 
 import { setKnowledgePageOwnerAction } from '../actions';
@@ -26,19 +27,37 @@ export function OwnerPicker({
   updatedAt,
   ownerId,
   members,
+  saveAction,
+  saveLabel,
+  onSaved,
+  onPendingChange,
+  disabled = false,
 }: {
   publicId: string;
   updatedAt: string;
   ownerId: string | null;
   members: ReviewOptions['members'];
+  saveAction?: (ownerId: string) => Promise<ReviewResult>;
+  saveLabel?: string;
+  onSaved?: () => void;
+  onPendingChange?: (pending: boolean) => void;
+  disabled?: boolean;
 }) {
   const t = useTranslations('brain.review');
   const { pending, run } = useReviewAction();
   const [chosen, setChosen] = useState(ownerId ?? '');
+  useEffect(() => {
+    onPendingChange?.(pending);
+    return () => onPendingChange?.(false);
+  }, [pending, onPendingChange]);
 
   return (
-    <div className="space-y-2">
-      <Select value={chosen} onValueChange={setChosen} disabled={pending}>
+    <div className="space-y-2" data-testid="review-owner-picker">
+      <Select
+        value={chosen}
+        onValueChange={setChosen}
+        disabled={pending || disabled}
+      >
         <SelectTrigger
           size="sm"
           className="w-full"
@@ -54,24 +73,27 @@ export function OwnerPicker({
           ))}
         </SelectContent>
       </Select>
-      {chosen !== '' && chosen !== ownerId && (
+      {chosen !== '' && (chosen !== ownerId || saveAction !== undefined) && (
         <Button
           size="sm"
           variant="outline"
-          disabled={pending}
+          disabled={pending || disabled}
           onClick={() =>
             run(
               () =>
-                setKnowledgePageOwnerAction({
-                  publicId,
-                  expectedUpdatedAt: updatedAt,
-                  ownerId: chosen,
-                }),
+                saveAction
+                  ? saveAction(chosen)
+                  : setKnowledgePageOwnerAction({
+                      publicId,
+                      expectedUpdatedAt: updatedAt,
+                      ownerId: chosen,
+                    }),
               t('owner-saved'),
+              { onSuccess: onSaved },
             )
           }
         >
-          {t('owner-save')}
+          {saveLabel ?? t('owner-save')}
         </Button>
       )}
     </div>

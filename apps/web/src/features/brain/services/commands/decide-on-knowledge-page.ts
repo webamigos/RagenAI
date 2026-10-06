@@ -75,6 +75,7 @@ export async function decideOnKnowledgePage(
     expectedUpdatedAt: string;
   },
   decide: Decide,
+  returnUpdatedAt = false,
 ): Promise<ReviewResult> {
   const { orgId, actorId, publicId, expectedUpdatedAt } = input;
   const result = await db.$transaction(async (tx): Promise<ReviewResult> => {
@@ -116,9 +117,12 @@ export async function decideOnKnowledgePage(
       return refuse(outcome);
     }
 
+    const updatedAt = new Date(
+      Math.max(Date.now(), page.updatedAt.getTime() + 1),
+    );
     await tx.knowledgePage.updateMany({
       where: { organizationId: orgId, id: page.id },
-      data: outcome.data,
+      data: { ...outcome.data, ...(returnUpdatedAt ? { updatedAt } : {}) },
     });
     await tx.knowledgeDecision.create({
       data: {
@@ -133,7 +137,11 @@ export async function decideOnKnowledgePage(
         after: outcome.after,
       },
     });
-    return { success: true, changed: true };
+    return {
+      success: true,
+      changed: true,
+      ...(returnUpdatedAt ? { updatedAt: updatedAt.toISOString() } : {}),
+    };
   });
   if (result.success && result.changed) {
     await startFindingsReconcile(orgId);

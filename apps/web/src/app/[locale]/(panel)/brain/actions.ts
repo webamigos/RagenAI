@@ -1,9 +1,12 @@
 'use server';
 
 import type { z } from 'zod';
+import { setOwnerForDocumentCandidatesCommand } from '@/features/brain/services/commands/set-owner-for-document-candidates-command';
+import { approveAndPublishKnowledgePageCommand } from '@/features/brain/services/commands/approve-and-publish-knowledge-page-command';
 
 import { getCurrentUserId } from '@/app/lib/utils/auth-helpers';
 import {
+  documentCandidateOwnerInputSchema,
   mergeInputSchema,
   pageDecisionInputSchema,
   setAccessInputSchema,
@@ -209,4 +212,23 @@ export async function publishAllApprovedAction(): Promise<
     return { error: 'not-found' };
   }
   return publishAllApprovedCommand(who);
+}
+
+export async function setOwnerForDocumentCandidatesAction(
+  input: unknown,
+): Promise<ReviewResult> {
+  return run(
+    documentCandidateOwnerInputSchema,
+    input,
+    setOwnerForDocumentCandidatesCommand,
+  );
+}
+export async function approveAndPublishKnowledgePageAction(
+  input: unknown,
+): Promise<ReviewResult> {
+  return run(
+    pageDecisionInputSchema,
+    input,
+    approveAndPublishKnowledgePageCommand,
+  );
 }

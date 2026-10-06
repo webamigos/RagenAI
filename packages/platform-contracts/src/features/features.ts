@@ -36,6 +36,7 @@ export const FEATURE_KEYS = [
   'manageBrain',
   'brainForMembers',
   'brainAssistant',
+  'brainParaphraseWarnings',
   'deleteThreads',
   'ragReadinessScore',
   'ragScoreOnIngest',
@@ -190,6 +191,8 @@ export const DEFAULT_FEATURES: FeatureFlags = {
   manageBrain: true,
   brainForMembers: false,
   brainAssistant: false,
+  // Review hints are heuristic and require an explicit operator opt-in.
+  brainParaphraseWarnings: false,
   deleteThreads: true,
   ragReadinessScore: true,
   ragScoreOnIngest: false,
@@ -219,6 +222,7 @@ export const FEATURE_LABELS: Record<FeatureKey, string> = {
   brainForMembers:
     'Ragen Brain: members may browse (read-only, sees every page)',
   brainAssistant: "Ragen Brain: the operator's assistant",
+  brainParaphraseWarnings: 'Ragen Brain: heuristic paraphrase warnings',
   deleteThreads: 'Delete threads',
   ragReadinessScore: 'RAG readiness score (badge, Optimize)',
   ragScoreOnIngest:
