@@ -281,3 +281,5 @@ Brain ma tryb przeglądu z twierdzeniami obok cytatów, przypisaniem właścicie
 - 2026-10-06: Patch proxy-addr to 2.0.8 to prevent IP spoofing with incorrectly configured IPv4-mapped IPv6 trust subnets (GHSA-jqcg-44mw-7w3h).
 
 - Brain opens its graph as a topic map with complete page counts and review states. Find any page's neighbourhood, browse groups or pages without relations, and switch to the full graph when needed; distant graph labels now hide until zoomed in.
+
+- Brain source documents now show approved/candidate coverage on one shared scale, explicit empty-extraction failures with retry, processing and waiting states, and full language names. Undetected languages prompt a check; document retrieval controls remain available.

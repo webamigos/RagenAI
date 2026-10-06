@@ -2965,7 +2965,9 @@
         "candidates": "Kandidater",
         "retrieval": "Sökning",
         "actions": "Åtgärder",
-        "language": "Språk"
+        "language": "Språk",
+        "coverage": "Knowledge in Brain",
+        "state": "State"
       },
       "retrieval": {
         "in": "Sökbart",
@@ -3000,7 +3002,26 @@
       "empty-in-language-title": "Inget på det här språket",
       "empty-in-language-description": "Inget dokument på det här språket, eller ingen sida som citerar ett. Välj ett annat språk eller alla.",
       "empty-filter": "Documents without extracted knowledge",
-      "clear-filter": "Show all documents"
+      "clear-filter": "Show all documents",
+      "screen-title": "Source documents",
+      "screen-intro": "What Brain extracted from each file and how much has already been reviewed.",
+      "table-title": "Documents by language",
+      "shared-scale": "Shared scale: {count, plural, one {# page} other {# pages}} = full bar",
+      "coverage-counts": "{approved} approved · {candidates} candidates",
+      "summary": {
+        "documents": "Documents",
+        "empty": "Nothing extracted",
+        "withdrawn": "Excluded from search"
+      },
+      "state": {
+        "empty": "Nothing extracted",
+        "failed": "Extraction or processing failed",
+        "processing": "Processing",
+        "extracted": "Extracted",
+        "waiting": "Not extracted yet"
+      },
+      "check-language": "Check language",
+      "retry-extraction": "Retry extraction"
     },
     "publish-all": {
       "button": "Publicera godkända ({count})",
