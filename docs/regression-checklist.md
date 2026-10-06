@@ -4,8 +4,8 @@
 
 ### MCP OAuth — demo rollout gate
 
-- [ ] Deploy the additive provider and grant-activity migrations, and web/API/MCP/admin code behind disabled default gates.
-- [ ] Configure the public HTTPS MCP URL and web issuer, plus an independent matching service secret in API/MCP.
+- [x] Deploy the additive provider and grant-activity migrations, and web/API/MCP/admin code behind disabled default gates.
+- [x] Configure the public HTTPS MCP URL and web issuer, plus an independent matching service secret in API/MCP.
 - [ ] Enable OAuth for a pilot organization only; verify discovery and API-key regression.
 - [ ] Add a claude.ai custom connector with automatic client registration, sign in and choose the pilot workspace/assistant.
 - [ ] Get a chat answer, retrieve search results and list assistants through the connector.
@@ -295,3 +295,35 @@ producers; a mismatch means nothing consumes the queue. See
 - [ ] `GET /api/v1/assistants` — lists assistants
 - [ ] `GET /api/v1/documents` — lists documents
 - [ ] API-only mode (`IS_API_MODE=1`) — `/v1` rewrites work
+
+
+### MCP OAuth demo deployment evidence — 2026-10-06
+
+Local revision `df6a5818e` was uploaded directly to Railway demo, without a
+Git push. All four deployments completed successfully with OAuth disabled:
+web `8644bf51-67fc-4844-8884-ecf34bf61615`,
+API `9b6334ac-ca36-49a9-a2f2-c119715495d7`,
+MCP `cfa577c9-3d9a-4f90-bd65-afb765dda559`,
+admin `7c5917c9-3a6c-4d3c-b429-15e525adffb3`.
+The existing web pre-deploy command applied
+`20261006000000_mcp_oauth_provider` and
+`20261006010000_mcp_grant_activity`; both finished successfully and there were
+no other pending migrations.
+
+Web/MCP use the public resource
+`https://ragen-mcp-demo.up.railway.app/mcp`; MCP's web origin is
+`https://demo.ragen.ai`. API/MCP received an independent matching service
+secret, with automatic variable-triggered deploys suppressed. The deployed MCP
+refuses an unauthenticated initialize request with 401 while its gate is off.
+
+After explicit user approval, an isolated synthetic pilot account, organization
+`7e9c6408-2cdf-4454-a4c0-c70bb5c67084` and assistant
+`b989235f-25d0-4ea5-86e9-a0852075da8f` were created. The account signs in through
+the ordinary Ragen form. Its synthetic `oauth-pilot-verification.txt` document
+completed parsing and embedding. No existing organization had OAuth enabled.
+
+The Claude custom-connector form is prepared with automatic client registration,
+but the connector has not been added or authorized. Deployment gates and the
+pilot organization gate remain false: enabling them was rejected by automatic
+approval review, and a separate explicit approval question is pending. These
+preparations do not prove D5.
