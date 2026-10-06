@@ -1,7 +1,8 @@
-import type { DBAdapter } from 'better-auth';
+import type { DBAdapter, BetterAuthPlugin } from 'better-auth';
 import {
   APIError,
   createAuthEndpoint,
+  createAuthMiddleware,
   sessionMiddleware,
 } from 'better-auth/api';
 import { z } from 'zod';
@@ -40,10 +41,86 @@ export async function disconnectMcpGrant(
   });
 }
 
+export async function revokeMcpGrants(
+  adapter: DBAdapter,
+  scope: { userId?: string; organizationId?: string },
+): Promise<void> {
+  if (!scope.userId && !scope.organizationId)
+    throw new Error('Grant revocation requires a scope');
+  const where = [
+    ...(scope.userId ? [{ field: 'userId', value: scope.userId }] : []),
+    ...(scope.organizationId
+      ? [
+          {
+            field: 'referenceId',
+            operator: 'starts_with' as const,
+            value: `${scope.organizationId}:`,
+          },
+        ]
+      : []),
+  ];
+  await adapter.transaction(async (transaction) => {
+    for (const model of [
+      'oauthAccessToken',
+      'oauthRefreshToken',
+      'oauthConsent',
+    ]) {
+      await transaction.deleteMany({ model, where });
+    }
+  });
+}
+
+export function removedMcpGrantScope(
+  path: string,
+  returned: unknown,
+): { userId?: string; organizationId: string } | undefined {
+  const member = z.object({
+    userId: z.string().min(1),
+    organizationId: z.string().min(1),
+  });
+  if (path === '/organization/remove-member') {
+    const result = z.object({ member }).safeParse(returned);
+    return result.success
+      ? {
+          userId: result.data.member.userId,
+          organizationId: result.data.member.organizationId,
+        }
+      : undefined;
+  }
+  if (path === '/organization/leave') {
+    const result = member.safeParse(returned);
+    return result.success ? result.data : undefined;
+  }
+  if (path === '/organization/delete') {
+    const result = z.object({ id: z.string().min(1) }).safeParse(returned);
+    return result.success ? { organizationId: result.data.id } : undefined;
+  }
+  return undefined;
+}
+
 /** The provider's delete-consent endpoint alone does not revoke tokens. */
 export function mcpGrantsPlugin() {
   return {
-    id: 'mcp-grants',
+    id: 'mcp-grants' as const,
+    hooks: {
+      after: [
+        {
+          matcher: (ctx: { path?: string }) =>
+            [
+              '/organization/remove-member',
+              '/organization/leave',
+              '/organization/delete',
+            ].includes(ctx.path ?? ''),
+          handler: createAuthMiddleware(async (ctx) => {
+            const scope = removedMcpGrantScope(
+              ctx.path ?? '',
+              ctx.context.returned,
+            );
+            if (scope) await revokeMcpGrants(ctx.context.adapter, scope);
+          }),
+        },
+      ],
+    },
     endpoints: {
       listMcpApps: createAuthEndpoint(
         '/mcp/apps',
@@ -119,5 +196,5 @@ export function mcpGrantsPlugin() {
         },
       ),
     },
-  } as const;
+  } satisfies BetterAuthPlugin;
 }

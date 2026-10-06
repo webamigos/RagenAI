@@ -1,3 +1,4 @@
+import { organization } from 'better-auth/plugins';
 vi.mock(
   '@/features/organizations/services/queries/get-mcp-connection-labels-query',
   () => ({
@@ -28,6 +29,9 @@ it('requires a session and revokes only its own client grants through the real h
       'oauthAccessToken',
       'oauthClientAssertion',
       'jwks',
+      'organization',
+      'member',
+      'invitation',
     ].map((model) => [model, []]),
   );
   const auth = betterAuth({
@@ -37,6 +41,7 @@ it('requires a session and revokes only its own client grants through the real h
     advanced: { disableOriginCheck: false, disableCSRFCheck: false },
     emailAndPassword: { enabled: true },
     plugins: [
+      organization(),
       ...mcpOAuthPlugins({
         MCP_OAUTH_ENABLED: 'true',
         RAGEN_MCP_PUBLIC_URL: 'https://mcp.example/mcp',
@@ -64,6 +69,7 @@ it('requires a session and revokes only its own client grants through the real h
     userId,
     clientId,
     scopes,
+    referenceId: 'unrelated-org:all',
     resources: ['https://mcp.example/mcp'],
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -134,4 +140,101 @@ it('requires a session and revokes only its own client grants through the real h
       'foreign-token',
       'other-app-token',
     ]);
+  const org = await auth.api.createOrganization({
+    headers: new Headers({ cookie }),
+    body: { name: 'Leave test', slug: 'leave-test' },
+  });
+  if (!org) throw new Error('Missing organization');
+  const member = data.member.find(
+    (row) => row.userId === userId && row.organizationId === org.id,
+  )!;
+  member.role = 'member';
+  for (const model of ['oauthConsent', 'oauthRefreshToken', 'oauthAccessToken'])
+    data[model].push({
+      ...grant('leave-grant', userId, 'leave-app'),
+      referenceId: `${org.id}:all`,
+    });
+  await auth.api.leaveOrganization({
+    headers: new Headers({ cookie }),
+    body: { organizationId: org.id },
+  });
+  for (const model of [
+    'oauthConsent',
+    'oauthRefreshToken',
+    'oauthAccessToken',
+  ]) {
+    expect(data[model].some((row) => row.id === 'leave-grant')).toBe(false);
+    expect(data[model]).toHaveLength(2);
+  }
+  const deletionOrg = await auth.api.createOrganization({
+    headers: new Headers({ cookie }),
+    body: { name: 'Delete test', slug: 'delete-test' },
+  });
+  if (!deletionOrg) throw new Error('Missing deletion organization');
+  const foreignUser = await auth.api.signUpEmail({
+    body: {
+      email: 'foreign@example.com',
+      password: 'test-password-123',
+      name: 'Foreign user',
+    },
+  });
+  await auth.api.addMember({
+    body: {
+      organizationId: deletionOrg.id,
+      userId: foreignUser.user.id,
+      role: 'member',
+    },
+    headers: new Headers({ cookie }),
+  });
+  const foreignMember = data.member.find(
+    (row) =>
+      row.userId === foreignUser.user.id &&
+      row.organizationId === deletionOrg.id,
+  )!;
+  for (const model of [
+    'oauthConsent',
+    'oauthRefreshToken',
+    'oauthAccessToken',
+  ]) {
+    data[model].push({
+      ...grant('removed-grant', foreignUser.user.id, 'removed-app'),
+      referenceId: `${deletionOrg.id}:all`,
+    });
+    data[model].push({
+      ...grant('owner-grant', userId, 'owner-app'),
+      referenceId: `${deletionOrg.id}:all`,
+    });
+    data[model].push({
+      ...grant('prefix-neighbor', userId, 'neighbor-app'),
+      referenceId: `${deletionOrg.id}-other:all`,
+    });
+  }
+  await auth.api.removeMember({
+    headers: new Headers({ cookie }),
+    body: {
+      organizationId: deletionOrg.id,
+      memberIdOrEmail: foreignMember.id as string,
+    },
+  });
+  for (const model of [
+    'oauthConsent',
+    'oauthRefreshToken',
+    'oauthAccessToken',
+  ]) {
+    expect(data[model].some((row) => row.id === 'removed-grant')).toBe(false);
+    expect(data[model].some((row) => row.id === 'owner-grant')).toBe(true);
+  }
+  await auth.api.deleteOrganization({
+    headers: new Headers({ cookie }),
+    body: { organizationId: deletionOrg.id },
+  });
+  for (const model of [
+    'oauthConsent',
+    'oauthRefreshToken',
+    'oauthAccessToken',
+  ]) {
+    expect(data[model].some((row) => row.id === 'owner-grant')).toBe(false);
+    expect(data[model].some((row) => row.id === 'prefix-neighbor')).toBe(true);
+    expect(data[model]).toHaveLength(3);
+  }
 });

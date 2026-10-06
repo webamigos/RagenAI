@@ -1,6 +1,10 @@
 import type { DBAdapter } from 'better-auth';
 import { describe, expect, it, vi } from 'vitest';
-import { disconnectMcpGrant } from '../mcp-grants-plugin';
+import {
+  disconnectMcpGrant,
+  revokeMcpGrants,
+  removedMcpGrantScope,
+} from '../mcp-grants-plugin';
 
 function adapter(consent: unknown) {
   const transaction = {
@@ -47,4 +51,41 @@ describe('MCP Disconnect', () => {
       expect(transaction.deleteMany).not.toHaveBeenCalled();
     },
   );
+});
+
+it('revokes only grants within the affected user and exact organization namespace', async () => {
+  const { database, transaction } = adapter(null);
+  await revokeMcpGrants(database, { userId: 'user', organizationId: 'org' });
+  expect(transaction.deleteMany).toHaveBeenCalledTimes(3);
+  for (const [query] of transaction.deleteMany.mock.calls)
+    expect(query.where).toEqual([
+      { field: 'userId', value: 'user' },
+      { field: 'referenceId', operator: 'starts_with', value: 'org:' },
+    ]);
+});
+it('cannot revoke an unscoped set of grants', async () => {
+  const { database, transaction } = adapter(null);
+  await expect(revokeMcpGrants(database, {})).rejects.toThrow(
+    'requires a scope',
+  );
+  expect(transaction.deleteMany).not.toHaveBeenCalled();
+});
+it('derives revocation scope from successful server results, not caller bodies', () => {
+  expect(
+    removedMcpGrantScope('/organization/remove-member', {
+      member: { userId: 'user', organizationId: 'org' },
+    }),
+  ).toEqual({ userId: 'user', organizationId: 'org' });
+  expect(
+    removedMcpGrantScope('/organization/leave', {
+      userId: 'user',
+      organizationId: 'org',
+    }),
+  ).toEqual({ userId: 'user', organizationId: 'org' });
+  expect(removedMcpGrantScope('/organization/delete', { id: 'org' })).toEqual({
+    organizationId: 'org',
+  });
+  expect(
+    removedMcpGrantScope('/organization/remove-member', { error: 'Forbidden' }),
+  ).toBeUndefined();
 });

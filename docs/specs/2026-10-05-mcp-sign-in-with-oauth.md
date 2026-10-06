@@ -612,3 +612,18 @@ tests. A final root run passed 3999 tests and retained only the four proven
 baseline failures (the ignored packages/db/.turbo directory and its tree/count
 consequences, plus the stale sibling configuration reference). The real MCP
 Docker Desktop image build is in progress separately.
+
+### E1 organization lifecycle verification — 2026-10-06
+
+The gated Better Auth plugin revokes access tokens, refresh tokens and consent
+through its adapter transaction after successful remove-member, leave and
+delete-organization endpoints. Scope derives from the server-returned member
+or organization, not posted identifiers. Matching `referenceId` uses the
+exact organization prefix including its colon separator.
+The real-handler integration test now creates organizations and another user,
+leaves one organization, removes that other member, and deletes an organization.
+It verifies that all three token/consent tables lose only affected grants,
+that the owner's grants survive removal of a different member, and that a
+similarly prefixed neighboring organization survives organization deletion.
+Seven focused tests, web typecheck and targeted lint pass. E1 remains open
+for the admin-panel ban path and workspace replacement revocation.
