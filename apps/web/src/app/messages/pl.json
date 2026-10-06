@@ -2698,6 +2698,7 @@
         "gap": "Proces bez przypisanej roli",
         "extraction-failed": "Nie udało się przetworzyć dokumentu",
         "unknown": "Brak szczegółów",
+        "nothing-extracted": "Nic nie wyodrębniono",
         "technical-details": "Szczegóły techniczne"
       },
       "discuss": "Zapytaj asystenta o to",

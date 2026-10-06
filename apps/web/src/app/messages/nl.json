@@ -2698,6 +2698,7 @@
         "gap": "Een proces zonder gekoppelde rol",
         "extraction-failed": "Het document kon niet worden geëxtraheerd",
         "unknown": "Geen details",
+        "nothing-extracted": "Niets geëxtraheerd",
         "technical-details": "Technische details"
       },
       "discuss": "Vraag de assistent hiernaar",

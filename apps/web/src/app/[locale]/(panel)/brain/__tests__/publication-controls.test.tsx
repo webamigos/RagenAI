@@ -1,6 +1,12 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from '@testing-library/react';
 import { NextIntlClientProvider } from 'next-intl';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import messages from '@/app/messages/en.json';
 
@@ -9,7 +15,8 @@ const actions = vi.hoisted(() => ({
   unpublishKnowledgePageAction: vi.fn(),
 }));
 vi.mock('../actions', () => actions);
-vi.mock('@/i18n/routing', () => ({ useRouter: () => ({ refresh: vi.fn() }) }));
+const router = vi.hoisted(() => ({ refresh: vi.fn() }));
+vi.mock('@/i18n/routing', () => ({ useRouter: () => router }));
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 
 const { PublicationControls } =
@@ -29,6 +36,7 @@ const wrap = (ui: React.ReactNode) =>
   );
 
 beforeEach(() => vi.clearAllMocks());
+afterEach(() => vi.useRealTimers());
 
 describe('PublicationControls', () => {
   it('says what blocks a publication and keeps the button disabled', () => {
@@ -90,5 +98,47 @@ describe('PublicationControls', () => {
     wrap(<PublicationControls {...props} state="published" outdated />);
     expect(screen.getByText(/changed since it was published/)).toBeVisible();
     expect(screen.getByRole('button', { name: 'Republish' })).toBeEnabled();
+  });
+
+  it('refreshes a pending publication and stops after it completes', () => {
+    vi.useFakeTimers();
+    const { rerender, unmount } = wrap(
+      <PublicationControls {...props} state="publishing" />,
+    );
+    act(() => vi.advanceTimersByTime(2000));
+    expect(router.refresh).toHaveBeenCalledTimes(1);
+    rerender(
+      <NextIntlClientProvider locale="en" messages={messages}>
+        <PublicationControls {...props} state="published" />
+      </NextIntlClientProvider>,
+    );
+    act(() => vi.advanceTimersByTime(6000));
+    expect(router.refresh).toHaveBeenCalledTimes(1);
+    expect(screen.getByText(/answers can cite it/)).toBeVisible();
+    unmount();
+  });
+
+  it('backs off refreshes for a long-running publication', () => {
+    vi.useFakeTimers();
+    const { unmount } = wrap(
+      <PublicationControls {...props} state="publishing" />,
+    );
+    act(() => vi.advanceTimersByTime(60000));
+    const calls = router.refresh.mock.calls.length;
+    act(() => vi.advanceTimersByTime(29999));
+    expect(router.refresh).toHaveBeenCalledTimes(calls);
+    act(() => vi.advanceTimersByTime(1));
+    expect(router.refresh).toHaveBeenCalledTimes(calls + 1);
+    unmount();
+  });
+
+  it('cancels publication refreshes when the reviewer leaves', () => {
+    vi.useFakeTimers();
+    const { unmount } = wrap(
+      <PublicationControls {...props} state="publishing" />,
+    );
+    unmount();
+    act(() => vi.advanceTimersByTime(6000));
+    expect(router.refresh).not.toHaveBeenCalled();
   });
 });

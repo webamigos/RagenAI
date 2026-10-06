@@ -18,6 +18,7 @@ const prisma = vi.hoisted(() => ({
     create: vi.fn(),
   },
   userFile: { findFirst: vi.fn() },
+  knowledgePageSource: { findFirst: vi.fn() },
   documentVersion: { findFirst: vi.fn() },
 }));
 
@@ -25,6 +26,7 @@ vi.mock('../prisma.js', () => ({ getPrisma: () => prisma }));
 
 import {
   getExtractionSource,
+  hasPagesFromFile,
   recordExtractionFailed,
   replaceCandidatesFromFile,
   resolveExtractionFailed,
@@ -273,5 +275,25 @@ describe('getExtractionSource', () => {
       documentId: null,
     });
     expect(await getExtractionSource('file-1', 'org-1')).toBeNull();
+  });
+});
+
+describe('hasPagesFromFile', () => {
+  it('checks for a page citing the file within the organization', async () => {
+    prisma.knowledgePageSource.findFirst.mockResolvedValue({ id: 1 });
+    expect(await hasPagesFromFile({ orgId: 'org-1', fileId: 'file-1' })).toBe(
+      true,
+    );
+    expect(prisma.knowledgePageSource.findFirst).toHaveBeenCalledWith({
+      where: { organizationId: 'org-1', fileId: 'file-1' },
+      select: { id: true },
+    });
+  });
+
+  it('answers false when no page cites the file', async () => {
+    prisma.knowledgePageSource.findFirst.mockResolvedValue(null);
+    expect(await hasPagesFromFile({ orgId: 'org-1', fileId: 'file-1' })).toBe(
+      false,
+    );
   });
 });

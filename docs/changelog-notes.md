@@ -77,6 +77,8 @@ archive is the blog.
 
 ## Unreleased
 
+- Brain’s Documents tab counts each knowledge page once per source file, even when it cites several quotes from that file. Publication status updates after indexing without a reload, empty extractions remain actionable, and ambiguous spreadsheet languages stay undetected.
+
 ### MCP sign-in
 
 - `[brief]` **Connect an AI client with your Ragen account.** OAuth sign-in,

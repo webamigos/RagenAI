@@ -189,8 +189,11 @@ describe('getBrainDocumentsQuery', () => {
       },
     ]);
     db.knowledgePageSource.groupBy
-      .mockResolvedValueOnce([{ fileId: 'f1', _count: { pageId: 2 } }])
-      .mockResolvedValueOnce([{ fileId: 'f2', _count: { pageId: 1 } }]);
+      .mockResolvedValueOnce([
+        { fileId: 'f1', pageId: 1 },
+        { fileId: 'f1', pageId: 2 },
+      ])
+      .mockResolvedValueOnce([{ fileId: 'f2', pageId: 3 }]);
     await expect(getBrainDocumentsQuery(ORG)).resolves.toEqual([
       {
         fileId: 'f1',
@@ -209,5 +212,58 @@ describe('getBrainDocumentsQuery', () => {
         uploadedAt: null,
       },
     ]);
+  });
+
+  it('counts three quotes as one page, and a shared page once for each file', async () => {
+    db.userFile.findMany.mockResolvedValue(
+      ['f1', 'f2'].map((id) => ({
+        id,
+        fileName: `${id}.pdf`,
+        embeddingStatus: 'COMPLETED',
+        createdAt: null,
+        language: 'pol',
+      })),
+    );
+    const sources = [
+      { fileId: 'f1', pageId: 1, status: 'APPROVED' },
+      { fileId: 'f1', pageId: 1, status: 'APPROVED' },
+      { fileId: 'f1', pageId: 1, status: 'APPROVED' },
+      { fileId: 'f2', pageId: 1, status: 'APPROVED' },
+      { fileId: 'f1', pageId: 2, status: 'CANDIDATE' },
+      { fileId: 'f1', pageId: 2, status: 'CANDIDATE' },
+    ];
+    // Model SQL grouping over source rows, so the old query reproduces B1.
+    db.knowledgePageSource.groupBy.mockImplementation(async ({ by, where }) => {
+      const groups = new Map<string, Record<string, unknown>>();
+      for (const source of sources) {
+        if (source.status !== where.page.status) {
+          continue;
+        }
+        const key = by
+          .map((field: 'fileId' | 'pageId') => source[field])
+          .join(':');
+        const group = groups.get(key) ?? {
+          fileId: source.fileId,
+          pageId: source.pageId,
+          _count: { pageId: 0 },
+        };
+        (group._count as { pageId: number }).pageId += 1;
+        groups.set(key, group);
+      }
+      return [...groups.values()];
+    });
+    const documents = await getBrainDocumentsQuery(ORG);
+    expect(
+      documents.map(({ approvedPages, candidatePages }) => ({
+        approvedPages,
+        candidatePages,
+      })),
+    ).toEqual([
+      { approvedPages: 1, candidatePages: 1 },
+      { approvedPages: 1, candidatePages: 0 },
+    ]);
+    for (const [args] of db.knowledgePageSource.groupBy.mock.calls) {
+      expect(args.where.organizationId).toBe(ORG);
+    }
   });
 });

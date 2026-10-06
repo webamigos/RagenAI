@@ -5,6 +5,7 @@ const brainDb = vi.hoisted(() => ({
   recordExtractionFailed: vi.fn(),
   replaceCandidatesFromFile: vi.fn(),
   resolveExtractionFailed: vi.fn(),
+  hasPagesFromFile: vi.fn(),
 }));
 const trackAiUsage = vi.hoisted(() => vi.fn());
 const generateObject = vi.hoisted(() => vi.fn());
@@ -61,6 +62,7 @@ const USAGE = { inputTokens: 300, outputTokens: 200 };
 
 beforeEach(() => {
   vi.clearAllMocks();
+  brainDb.hasPagesFromFile.mockResolvedValue(false);
   brainDb.getExtractionSource.mockResolvedValue({
     fileName: 'regulamin.pdf',
     language: 'pol',
@@ -270,7 +272,7 @@ describe('extractDocumentCandidates', () => {
     );
   });
 
-  it('still reads a document with genuinely nothing to extract as a success', async () => {
+  it('raises a finding for a finished extraction that yielded no pages', async () => {
     generateObject.mockResolvedValue({
       object: { entities: [], claims: [], relations: [] },
       usage: USAGE,
@@ -280,8 +282,33 @@ describe('extractDocumentCandidates', () => {
       pagesReplaced: 0,
     });
     const result = await extractDocumentCandidates(INPUT);
+    expect(result.status).toBe('failed');
+    expect(brainDb.resolveExtractionFailed).not.toHaveBeenCalled();
+    expect(brainDb.recordExtractionFailed).toHaveBeenCalledWith({
+      orgId: INPUT.orgId,
+      fileId: INPUT.fileId,
+      detail: {
+        reason: 'nothing_extracted',
+        windowIndex: null,
+        runId: INPUT.runId,
+      },
+    });
+  });
+
+  it('preserves existing pages when a repeat extraction yields no new knowledge', async () => {
+    generateObject.mockResolvedValue({
+      object: { entities: [], claims: [], relations: [] },
+      usage: USAGE,
+    });
+    brainDb.hasPagesFromFile.mockResolvedValue(true);
+    const result = await extractDocumentCandidates(INPUT);
     expect(result.status).toBe('extracted');
+    expect(brainDb.replaceCandidatesFromFile).not.toHaveBeenCalled();
     expect(brainDb.recordExtractionFailed).not.toHaveBeenCalled();
+    expect(brainDb.resolveExtractionFailed).toHaveBeenCalledWith({
+      orgId: INPUT.orgId,
+      fileId: INPUT.fileId,
+    });
   });
 
   it('returns budget_exhausted and writes nothing when no tokens are left', async () => {

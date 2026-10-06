@@ -1,10 +1,11 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { ConfirmDialog } from '@/app/components/ConfirmDialog';
 import { Button } from '@/components/ui/button';
+import { useRouter } from '@/i18n/routing';
 import type { KnowledgePageDetail } from '@/features/brain/contracts/brain.types';
 
 import {
@@ -37,6 +38,24 @@ export function PublicationControls({
   blockers: string[];
 }) {
   const t = useTranslations('brain.publication');
+  const router = useRouter();
+  useEffect(() => {
+    if (state !== 'publishing') {
+      return;
+    }
+    // The worker finishes after the action's first refresh. Read its status
+    // again while publishing, rather than leaving a completed job pending
+    // on this mounted screen until the reviewer reloads it.
+    let attempts = 0;
+    let timer: number;
+    const refresh = () => {
+      router.refresh();
+      attempts += 1;
+      timer = window.setTimeout(refresh, attempts < 30 ? 2000 : 30000);
+    };
+    timer = window.setTimeout(refresh, 2000);
+    return () => window.clearTimeout(timer);
+  }, [state, router]);
   const { pending, run } = useReviewAction();
   const [confirmWithdraw, setConfirmWithdraw] = useState(false);
   const ref = { publicId, expectedUpdatedAt: updatedAt };

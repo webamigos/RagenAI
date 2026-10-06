@@ -2698,6 +2698,7 @@
         "gap": "Folyamat hozzárendelt szerepkör nélkül",
         "extraction-failed": "A dokumentumot nem sikerült feldolgozni",
         "unknown": "Nincsenek részletek",
+        "nothing-extracted": "Nem történt kinyerés",
         "technical-details": "Technikai részletek"
       },
       "discuss": "Kérdezd erről az asszisztenst",

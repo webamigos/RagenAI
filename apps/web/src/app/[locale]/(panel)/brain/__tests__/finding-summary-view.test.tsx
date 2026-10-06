@@ -44,4 +44,13 @@ describe('FindingSummaryView — an extraction failure', () => {
 
     expect(container.querySelector('details')).toBeNull();
   });
+
+  it('names a finished extraction with no pages in Polish', async () => {
+    render(
+      await FindingSummaryView({
+        summary: { kind: 'extraction_failed', reason: 'nothing_extracted' },
+      }),
+    );
+    expect(screen.getByText('Nic nie wyodrębniono')).toBeInTheDocument();
+  });
 });

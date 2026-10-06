@@ -69,14 +69,20 @@ export async function FindingSummaryView({
     case 'extraction_failed':
       return (
         <div className="text-sm">
-          <p>{t('extraction-failed')}</p>
+          <p>
+            {t(
+              summary.reason === 'nothing_extracted'
+                ? 'nothing-extracted'
+                : 'extraction-failed',
+            )}
+          </p>
           {/*
             The reason is the worker's own text, in English whatever the
             reader's language, and written for whoever runs the worker. It
             used to follow the sentence in brackets; it is kept, because it is
             what a retry decision or a support ticket needs, but folded away.
           */}
-          {summary.reason && (
+          {summary.reason && summary.reason !== 'nothing_extracted' && (
             <details className="mt-1 text-xs text-muted-foreground">
               <summary className="cursor-pointer select-none">
                 {t('technical-details')}

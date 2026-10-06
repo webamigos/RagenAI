@@ -2698,6 +2698,7 @@
         "gap": "En proces uden tilknyttet rolle",
         "extraction-failed": "Dokumentet kunne ikke behandles",
         "unknown": "Ingen detaljer",
+        "nothing-extracted": "Intet udtrukket",
         "technical-details": "Tekniske detaljer"
       },
       "discuss": "Spørg assistenten om dette",

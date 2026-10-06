@@ -12,6 +12,7 @@ export default [
       // it is a bundled runtime written to different rules — linting it fails
       // the commit hook on code nobody here maintains or ships.
       'design_handoff_ragen_panel/**',
+      'design_handoff_ragen_brain/**',
     ],
   },
   {
