@@ -3211,5 +3211,16 @@
         "MCP_OAUTH_FAILED": "MCP OAuth -valtuutus epäonnistui"
       }
     }
+  },
+  "connected-apps": {
+    "title": "Yhdistetyt sovellukset",
+    "loading": "Ladataan yhteyksiä…",
+    "empty": "Ei yhdistettyjä sovelluksia.",
+    "disconnect": "Katkaise yhteys",
+    "disconnecting": "Katkaistaan yhteyttä…",
+    "error": "Sovellusten päivitys epäonnistui. Yritä uudelleen.",
+    "unavailable": "Työtila ei ole käytettävissä",
+    "never": "Ei koskaan",
+    "lastUsed": "Viimeksi käytetty: {date}"
   }
 }

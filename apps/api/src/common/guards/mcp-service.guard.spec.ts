@@ -37,19 +37,39 @@ function setup() {
       .fn()
       .mockResolvedValue({ user: { banned: false, banExpires: null } }),
   };
+  const activity = { upsert: vi.fn().mockResolvedValue({}) };
   const features = { isFeatureEnabled: vi.fn().mockResolvedValue(true) };
   const projects = {
     getEffectiveProjectPermission: vi.fn().mockResolvedValue({ canView: true }),
   };
   const guard = new McpServiceGuard(
     auth as unknown as McpServiceAuthService,
-    { client: { member } } as unknown as PrismaService,
+    {
+      client: { member, mcpGrantActivity: activity },
+    } as unknown as PrismaService,
     features as unknown as SubscriptionsService,
     projects as unknown as ProjectsService,
   );
-  return { request, context, auth, member, features, projects, guard };
+  return {
+    request,
+    context,
+    auth,
+    member,
+    features,
+    projects,
+    guard,
+    activity,
+  };
 }
 describe('McpServiceGuard', () => {
+  it('does not record activity for a refused connection', async () => {
+    const s = setup();
+    s.features.isFeatureEnabled.mockResolvedValue(false);
+    await expect(s.guard.canActivate(s.context)).rejects.toBeInstanceOf(
+      ForbiddenException,
+    );
+    expect(s.activity.upsert).not.toHaveBeenCalled();
+  });
   it('builds a constrained OAuth context after checking the live member, flag and assistant permission', async () => {
     const s = setup();
     await expect(s.guard.canActivate(s.context)).resolves.toBe(true);
@@ -65,6 +85,15 @@ describe('McpServiceGuard', () => {
       'project-a',
       'org-a',
       'user-a',
+    );
+    expect(s.activity.upsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { userId_clientId: { userId: 'user-a', clientId: 'client-a' } },
+        update: {
+          organizationId: 'org-a',
+          lastUsedAt: expect.any(Date) as Date,
+        },
+      }),
     );
     expect(s.request[API_CONTEXT_KEY]).toEqual({
       orgId: 'org-a',

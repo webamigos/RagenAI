@@ -195,6 +195,39 @@ test('MCP authorization binds a verified JWT to the selected workspace and reche
       headers: serviceHeaders(),
     });
     expect(disabled.status()).toBe(403);
+    await prisma.organizationSettings.update({
+      where: { organizationId: TEST_ORG_ID },
+      data: { featureOverrides: { ...features, mcpOAuth: true } },
+    });
+    await page.goto('/en/settings/account');
+    const section = page.getByRole('region', { name: 'Connected apps' });
+    await expect(section).toBeVisible();
+    const row = section
+      .getByRole('listitem')
+      .filter({ hasText: 'MCP consent test' });
+    await expect(row).toBeVisible();
+    await expect(row).toContainText('Last used:');
+    await row.getByRole('button', { name: 'Disconnect', exact: true }).click();
+    await expect(row).toHaveCount(0);
+    const disconnectedRefresh = await request.post('/api/auth/oauth2/token', {
+      form: {
+        grant_type: 'refresh_token',
+        refresh_token: token.refresh_token,
+        client_id: client.client_id,
+        resource,
+      },
+    });
+    expect(disconnectedRefresh.ok()).toBe(false);
+    expect(
+      await prisma.oauthRefreshToken.count({
+        where: { userId: TEST_USER_ID, clientId: client.client_id },
+      }),
+    ).toBe(0);
+    expect(
+      await prisma.oauthConsent.count({
+        where: { userId: TEST_USER_ID, clientId: client.client_id },
+      }),
+    ).toBe(0);
   } finally {
     await prisma.organizationSettings.update({
       where: { organizationId: TEST_ORG_ID },

@@ -1,6 +1,16 @@
+vi.mock(
+  '@/features/organizations/services/queries/get-mcp-connection-labels-query',
+  () => ({
+    getMcpConnectionLastUse: vi.fn(async () => null),
+    getMcpConnectionLabels: vi.fn(async () => ({
+      organizationName: 'Workspace',
+      assistantName: null,
+    })),
+  }),
+);
 import { betterAuth } from 'better-auth';
 import { memoryAdapter } from 'better-auth/adapters/memory';
-import { expect, it } from 'vitest';
+import { expect, it, vi } from 'vitest';
 import { mcpOAuthPlugins } from '../mcp-oauth-config';
 
 it('requires a session and revokes only its own client grants through the real handler', async () => {
@@ -85,6 +95,29 @@ it('requires a session and revokes only its own client grants through the real h
         body: JSON.stringify({ consentId }),
       }),
     );
+  const list = (sessionCookie?: string) =>
+    auth.handler(
+      new Request('http://localhost:3000/api/auth/mcp/apps', {
+        headers: sessionCookie ? { cookie: sessionCookie } : {},
+      }),
+    );
+  expect((await list()).status).toBe(401);
+  const listed = await list(cookie);
+  expect(listed.status).toBe(200);
+  const apps = await listed.json();
+  expect(
+    apps.map((app: { consentId: string }) => app.consentId).sort(),
+  ).toEqual(['other-app', 'own']);
+  expect(Object.keys(apps[0]).sort()).toEqual([
+    'assistantName',
+    'clientId',
+    'connectedAt',
+    'consentId',
+    'lastUsedAt',
+    'name',
+    'organizationName',
+    'referenceId',
+  ]);
   expect((await disconnect('own')).status).toBe(401);
   expect((await disconnect('foreign', cookie)).status).toBe(404);
   expect(

@@ -426,7 +426,7 @@ organization (ADR-50).
 - [x] **D3.** The service assertion on every call to `apps/api` for an OAuth
   session. A test that an OAuth session's access token never appears in an
   outgoing request.
-- [ ] **D4.** Connected apps in account settings, with Disconnect. It comes
+- [x] **D4.** Connected apps in account settings, with Disconnect. It comes
   before the first real connection, so nobody on demo connects an app they
   cannot disconnect.
 - [ ] **D5.** End to end on the demo environment: claude.ai custom connector
@@ -589,3 +589,26 @@ The real-handler memory-adapter integration test signs up a user and proves
 users' and clients' grants after a successful Disconnect.
 D4 remains open for the account UI, last-use tracking, and Docker-backed
 end-to-end verification of refresh refusal after Disconnect.
+
+### D4 account settings and Docker verification — 2026-10-06
+
+Account settings now lists this user's MCP clients once each, with workspace
+and accessible assistant names, last use, and Disconnect. The gated plugin
+API returns only display fields; inaccessible project/workspace labels are
+not disclosed. All 17 locales translate the section and format its dates.
+The Ragen-owned `McpGrantActivity` table records accepted MCP calls after
+live guard checks and cascades on user or organization deletion. The additive
+migration was applied only to Docker Desktop's `ragen_e2e` database.
+The extended browser gate signs in, grants consent, calls the actual API,
+checks live flag revocation, opens account settings, disconnects the client,
+and proves refresh refusal plus zero refresh-token/consent rows for that
+user/client. Playwright: 54 passed, 1 skipped (including dependent smoke
+tests); the OAuth/Disconnect gate itself passed in 2.8 seconds. Production
+web build, API/web typechecks and focused guard/integration tests passed.
+Full verification completed with 69/70 tasks successful. It exposed a missing
+crypto dependency in the MCP image and missing tenant-registry coverage for
+McpGrantActivity; both are fixed. The two focused suites then passed 185
+tests. A final root run passed 3999 tests and retained only the four proven
+baseline failures (the ignored packages/db/.turbo directory and its tree/count
+consequences, plus the stale sibling configuration reference). The real MCP
+Docker Desktop image build is in progress separately.

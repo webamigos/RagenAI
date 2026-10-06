@@ -3211,5 +3211,16 @@
         "MCP_OAUTH_FAILED": "MCP OAuth-autorisatie mislukt"
       }
     }
+  },
+  "connected-apps": {
+    "title": "Verbonden apps",
+    "loading": "Verbindingen laden…",
+    "empty": "Geen verbonden apps.",
+    "disconnect": "Verbinding verbreken",
+    "disconnecting": "Verbinding wordt verbroken…",
+    "error": "Apps konden niet worden bijgewerkt. Probeer opnieuw.",
+    "unavailable": "Werkruimte niet beschikbaar",
+    "never": "Nooit",
+    "lastUsed": "Laatst gebruikt: {date}"
   }
 }

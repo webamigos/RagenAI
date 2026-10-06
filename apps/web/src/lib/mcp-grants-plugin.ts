@@ -45,6 +45,63 @@ export function mcpGrantsPlugin() {
   return {
     id: 'mcp-grants',
     endpoints: {
+      listMcpApps: createAuthEndpoint(
+        '/mcp/apps',
+        {
+          method: 'GET',
+          use: [sessionMiddleware],
+        },
+        async (ctx) => {
+          const consents = await ctx.context.adapter.findMany<{
+            id: string;
+            clientId: string;
+            referenceId?: string;
+            scopes: string[];
+            createdAt: Date;
+          }>({
+            model: 'oauthConsent',
+            where: [{ field: 'userId', value: ctx.context.session.user.id }],
+          });
+          const clients = new Set<string>();
+          const apps = [];
+          for (const consent of consents.sort(
+            (a, b) =>
+              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+          )) {
+            if (
+              !consent.scopes.includes('mcp:read') ||
+              clients.has(consent.clientId)
+            )
+              continue;
+            clients.add(consent.clientId);
+            const client = await ctx.context.adapter.findOne<{ name?: string }>(
+              {
+                model: 'oauthClient',
+                where: [{ field: 'clientId', value: consent.clientId }],
+              },
+            );
+            const { getMcpConnectionLabels, getMcpConnectionLastUse } =
+              await import('@/features/organizations/services/queries/get-mcp-connection-labels-query');
+            const labels = await getMcpConnectionLabels(
+              ctx.context.session.user.id,
+              consent.referenceId,
+            );
+            apps.push({
+              ...labels,
+              lastUsedAt: await getMcpConnectionLastUse(
+                ctx.context.session.user.id,
+                consent.clientId,
+              ),
+              consentId: consent.id,
+              clientId: consent.clientId,
+              name: client?.name ?? consent.clientId,
+              referenceId: consent.referenceId ?? null,
+              connectedAt: consent.createdAt,
+            });
+          }
+          return ctx.json(apps);
+        },
+      ),
       disconnectMcpApp: createAuthEndpoint(
         '/mcp/disconnect',
         {

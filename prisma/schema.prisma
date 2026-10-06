@@ -569,6 +569,7 @@ model ApiKey {
 
 // Better Auth tables
 model User {
+  mcpGrantActivities McpGrantActivity[]
   id                 String    @id
   name               String?
   email              String    @unique
@@ -671,6 +672,7 @@ model Account {
 }
 
 model Organization {
+  mcpGrantActivities McpGrantActivity[]
   id        String   @id
   name      String
   slug      String?  @unique
@@ -2090,4 +2092,16 @@ model McpConnectSelection {
 
   @@id([sessionId, clientId])
   @@map("mcp_connect_selections")
+}
+
+/// Ragen-owned activity; OAuth provider tables remain library-owned.
+model McpGrantActivity {
+  userId String @map("user_id")
+  clientId String @map("client_id")
+  organizationId String @map("organization_id")
+  lastUsedAt DateTime @map("last_used_at") @db.Timestamptz
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  @@id([userId, clientId])
+  @@map("mcp_grant_activity")
 }

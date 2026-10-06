@@ -56,6 +56,22 @@ export class McpServiceGuard implements CanActivate {
     ) {
       throw new ForbiddenException('Assistant is unavailable');
     }
+    const lastUsedAt = new Date();
+    await this.prisma.client.mcpGrantActivity.upsert({
+      where: {
+        userId_clientId: {
+          userId: assertion.userId,
+          clientId: assertion.clientId,
+        },
+      },
+      create: {
+        userId: assertion.userId,
+        clientId: assertion.clientId,
+        organizationId: assertion.orgId,
+        lastUsedAt,
+      },
+      update: { organizationId: assertion.orgId, lastUsedAt },
+    });
     const apiContext: ApiContext = {
       orgId: assertion.orgId as OrgId,
       userId: assertion.userId as UserId,

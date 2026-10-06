@@ -3211,5 +3211,16 @@
         "MCP_OAUTH_FAILED": "MCP OAuth-autorisasjon mislyktes"
       }
     }
+  },
+  "connected-apps": {
+    "title": "Tilkoblede apper",
+    "loading": "Laster tilkoblinger…",
+    "empty": "Ingen tilkoblede apper.",
+    "disconnect": "Koble fra",
+    "disconnecting": "Kobler fra…",
+    "error": "Kunne ikke oppdatere appene. Prøv igjen.",
+    "unavailable": "Arbeidsområdet er utilgjengelig",
+    "never": "Aldri",
+    "lastUsed": "Sist brukt: {date}"
   }
 }

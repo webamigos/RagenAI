@@ -3211,5 +3211,16 @@
         "MCP_OAUTH_FAILED": "Błąd autoryzacji OAuth MCP"
       }
     }
+  },
+  "connected-apps": {
+    "title": "Podłączone aplikacje",
+    "loading": "Wczytywanie połączeń…",
+    "empty": "Brak podłączonych aplikacji.",
+    "disconnect": "Odłącz",
+    "disconnecting": "Odłączanie…",
+    "error": "Nie udało się zaktualizować aplikacji. Spróbuj ponownie.",
+    "unavailable": "Niedostępny obszar roboczy",
+    "never": "Nigdy",
+    "lastUsed": "Ostatnie użycie: {date}"
   }
 }
