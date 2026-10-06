@@ -294,6 +294,7 @@ export default async function BrainGraphPage({
                     layoutScope={`${access.orgId}:${userId ?? 'anonymous'}`}
                     language={language}
                     compact
+                    relationsBeside={mode === 'neighbourhood'}
                   />
                 )}
                 {mode === 'topics' &&
@@ -323,21 +324,23 @@ export default async function BrainGraphPage({
                           key={page.id}
                           className="flex flex-wrap items-center justify-between gap-2 rounded border p-2 text-sm"
                         >
-                          <Link
-                            className="inline-flex min-h-8 min-w-0 items-center break-words text-primary hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-                            href={withLanguage(
-                              `/brain/pages/${page.id}`,
-                              language,
-                            )}
-                          >
-                            {page.title}
-                          </Link>
-                          <Badge variant={pageStatusVariant(page.status)}>
-                            {t(`status.${page.status}`)}
-                          </Badge>
+                          <div className="flex min-w-0 flex-wrap items-center gap-2">
+                            <Link
+                              className="inline-flex min-h-8 min-w-0 items-center break-words text-primary hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+                              href={withLanguage(
+                                `/brain/pages/${page.id}`,
+                                language,
+                              )}
+                            >
+                              {page.title}
+                            </Link>
+                            <Badge variant={pageStatusVariant(page.status)}>
+                              {t(`status.${page.status}`)}
+                            </Badge>
+                          </div>
                           {page.status === 'CANDIDATE' && (
                             <Link
-                              className="inline-flex min-h-8 items-center text-primary hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+                              className="ml-auto inline-flex min-h-8 items-center text-primary hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
                               href={withLanguage(
                                 `/brain/review?page=${page.id}`,
                                 language,

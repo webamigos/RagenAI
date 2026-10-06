@@ -2704,7 +2704,30 @@
       },
       "discuss": "Попитай асистента за това",
       "empty-in-language-title": "Нищо на този език",
-      "empty-in-language-description": "Няма констатация за документ на този език или страница, която го цитира. Изберете друг език или всички."
+      "empty-in-language-description": "Няма констатация за документ на този език или страница, която го цитира. Изберете друг език или всички.",
+      "intro": "Check detected problems and choose a corrective action.",
+      "filter-types": "Finding types",
+      "all-types": "All types",
+      "subject-gone": "The source was deleted",
+      "retry-extraction": "Retry extraction",
+      "open-review": "Open review",
+      "view-relations": "Check relations",
+      "dismiss-orphan": "This is fine, close",
+      "dismissed": "Finding dismissed",
+      "batch": "{count} × {type}",
+      "batch-scope": "Findings on this list page, detected at intervals of up to 5 minutes.",
+      "why": {
+        "ORPHAN": "Missing relations make the context of this page harder to check.",
+        "EXTRACTION_FAILED": "The document supplied no knowledge for review.",
+        "UNOWNED": "An owner vouches for the content and enables approval.",
+        "CONTRADICTION": "Conflicting sources need review before the knowledge is used in chat.",
+        "STALE": "The knowledge may no longer match its current sources.",
+        "GAP": "The process has no relation to a role responsible for carrying it out."
+      },
+      "relation-suggestions": "Suggested relations",
+      "relation-basis": "These pages cite the same document. Check whether they should be linked; a shared source does not establish a relation.",
+      "select-relations": "Select relations to review",
+      "add-relations": "Add selected relations"
     },
     "page": {
       "back": "Страници със знания",
@@ -3091,7 +3114,8 @@
           "MERGE": "Обедини две страници",
           "SET_OWNER": "Задай отговорник",
           "SET_ACCESS": "Промени кой може да чете страницата",
-          "RETRY_EXTRACTION": "Опитай извличането отново"
+          "RETRY_EXTRACTION": "Опитай извличането отново",
+          "ADD_RELATIONS": "Add relations"
         },
         "apply": "Приложи",
         "dismiss": "Отхвърли",
@@ -3138,7 +3162,8 @@
       "governs": "урежда",
       "is-part-of": "е част от",
       "references": "препраща към",
-      "depends-on": "зависи от"
+      "depends-on": "зависи от",
+      "related-to": "related to"
     },
     "language": {
       "label": "Език",

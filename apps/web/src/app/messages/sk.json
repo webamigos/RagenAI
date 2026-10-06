@@ -2704,7 +2704,30 @@
       },
       "discuss": "Opýtaj sa na to asistenta",
       "empty-in-language-title": "Nič v tomto jazyku",
-      "empty-in-language-description": "Žiadne zistenie sa netýka dokumentu v tomto jazyku ani stránky, ktorá ho cituje. Vyberte iný jazyk alebo všetky."
+      "empty-in-language-description": "Žiadne zistenie sa netýka dokumentu v tomto jazyku ani stránky, ktorá ho cituje. Vyberte iný jazyk alebo všetky.",
+      "intro": "Check detected problems and choose a corrective action.",
+      "filter-types": "Finding types",
+      "all-types": "All types",
+      "subject-gone": "The source was deleted",
+      "retry-extraction": "Retry extraction",
+      "open-review": "Open review",
+      "view-relations": "Check relations",
+      "dismiss-orphan": "This is fine, close",
+      "dismissed": "Finding dismissed",
+      "batch": "{count} × {type}",
+      "batch-scope": "Findings on this list page, detected at intervals of up to 5 minutes.",
+      "why": {
+        "ORPHAN": "Missing relations make the context of this page harder to check.",
+        "EXTRACTION_FAILED": "The document supplied no knowledge for review.",
+        "UNOWNED": "An owner vouches for the content and enables approval.",
+        "CONTRADICTION": "Conflicting sources need review before the knowledge is used in chat.",
+        "STALE": "The knowledge may no longer match its current sources.",
+        "GAP": "The process has no relation to a role responsible for carrying it out."
+      },
+      "relation-suggestions": "Suggested relations",
+      "relation-basis": "These pages cite the same document. Check whether they should be linked; a shared source does not establish a relation.",
+      "select-relations": "Select relations to review",
+      "add-relations": "Add selected relations"
     },
     "page": {
       "back": "Znalostné stránky",
@@ -3091,7 +3114,8 @@
           "MERGE": "Zlúčiť dve stránky",
           "SET_OWNER": "Nastaviť vlastníka",
           "SET_ACCESS": "Zmeniť, kto môže stránku čítať",
-          "RETRY_EXTRACTION": "Zopakovať extrakciu"
+          "RETRY_EXTRACTION": "Zopakovať extrakciu",
+          "ADD_RELATIONS": "Add relations"
         },
         "apply": "Použiť",
         "dismiss": "Zahodiť",
@@ -3138,7 +3162,8 @@
       "governs": "upravuje",
       "is-part-of": "je súčasťou",
       "references": "odkazuje na",
-      "depends-on": "závisí od"
+      "depends-on": "závisí od",
+      "related-to": "related to"
     },
     "language": {
       "label": "Jazyk",

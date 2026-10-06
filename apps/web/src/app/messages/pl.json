@@ -2704,7 +2704,30 @@
       },
       "discuss": "Zapytaj asystenta o to",
       "empty-in-language-title": "Nic w tym języku",
-      "empty-in-language-description": "Żadne wykrycie nie dotyczy dokumentu w tym języku ani strony, która go cytuje. Wybierz inny język albo wszystkie."
+      "empty-in-language-description": "Żadne wykrycie nie dotyczy dokumentu w tym języku ani strony, która go cytuje. Wybierz inny język albo wszystkie.",
+      "intro": "Sprawdź wykryte problemy i wybierz akcję naprawczą.",
+      "filter-types": "Rodzaje wykryć",
+      "all-types": "Wszystkie rodzaje",
+      "subject-gone": "Źródło zostało usunięte",
+      "retry-extraction": "Ponów ekstrakcję",
+      "open-review": "Otwórz przegląd",
+      "view-relations": "Sprawdź powiązania",
+      "dismiss-orphan": "To w porządku, zamknij",
+      "dismissed": "Wykrycie zamknięte",
+      "batch": "{count} × {type}",
+      "batch-scope": "Wykrycia z tej strony listy, wykryte w odstępach do 5 minut.",
+      "why": {
+        "ORPHAN": "Brak powiązań utrudnia sprawdzenie kontekstu tej strony.",
+        "EXTRACTION_FAILED": "Dokument nie dostarczył wiedzy do przeglądu.",
+        "UNOWNED": "Właściciel odpowiada za treść strony i umożliwia jej zatwierdzenie.",
+        "CONTRADICTION": "Sprzeczne źródła wymagają sprawdzenia przed użyciem wiedzy w czacie.",
+        "STALE": "Wiedza może już nie odpowiadać aktualnym źródłom.",
+        "GAP": "Proces nie wskazuje powiązanej roli odpowiedzialnej za jego wykonanie."
+      },
+      "relation-suggestions": "Propozycje powiązań",
+      "relation-basis": "Strony cytują ten sam dokument. Sprawdź, czy warto je powiązać; wspólne źródło nie potwierdza relacji.",
+      "select-relations": "Wybierz powiązania do sprawdzenia",
+      "add-relations": "Dodaj zaznaczone powiązania"
     },
     "page": {
       "back": "Strony wiedzy",
@@ -2908,7 +2931,7 @@
       "topic-pages": "{count, plural, one {# strona} few {# strony} many {# stron} other {# strony}}",
       "topic-approved": "Są zatwierdzone strony",
       "topic-approved-count": "{count} zatw.",
-      "topic-candidates": "Same kandydaci",
+      "topic-candidates": "Same kandydatury",
       "isolated-count": "{count, plural, one {# strona poza głównymi tematami} few {# strony poza głównymi tematami} many {# stron poza głównymi tematami} other {# strony poza głównymi tematami}}",
       "isolated-description": "Zamiast kolumny luźnych kropek: lista stron bez powiązań. Otwórz stronę, aby zaproponować powiązania.",
       "review-isolated": "Przejrzyj strony bez powiązań",
@@ -3091,7 +3114,8 @@
           "MERGE": "Scal dwie strony",
           "SET_OWNER": "Wskaż właściciela",
           "SET_ACCESS": "Zmień, kto może czytać stronę",
-          "RETRY_EXTRACTION": "Ponów ekstrakcję"
+          "RETRY_EXTRACTION": "Ponów ekstrakcję",
+          "ADD_RELATIONS": "Dodaj powiązania"
         },
         "apply": "Zastosuj",
         "dismiss": "Odrzuć propozycję",
@@ -3138,7 +3162,8 @@
       "governs": "reguluje",
       "is-part-of": "jest częścią",
       "references": "odwołuje się do",
-      "depends-on": "zależy od"
+      "depends-on": "zależy od",
+      "related-to": "powiązane z"
     },
     "language": {
       "label": "Język",

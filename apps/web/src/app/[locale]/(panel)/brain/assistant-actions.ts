@@ -23,6 +23,7 @@ import {
 } from '@/features/brain-assistant/utils/apply-proposal';
 
 import {
+  addKnowledgeRelationsAction,
   approveKnowledgePageAction,
   mergeKnowledgePagesAction,
   publishKnowledgePageAction,
@@ -45,6 +46,7 @@ import {
  */
 
 const REVIEW_ACTIONS: BrainReviewActions = {
+  addRelations: addKnowledgeRelationsAction,
   approve: approveKnowledgePageAction,
   reject: rejectKnowledgePageAction,
   publish: publishKnowledgePageAction,

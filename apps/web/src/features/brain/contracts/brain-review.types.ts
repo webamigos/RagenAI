@@ -122,3 +122,19 @@ export const documentCandidateOwnerInputSchema = z.object({
   fileId: dbUuid,
   ownerId: z.string().min(1).max(200),
 });
+
+export const addRelationsInputSchema = z.object({
+  publicId: dbUuid,
+  expectedUpdatedAt: z.string().datetime(),
+  targets: z
+    .array(
+      z.object({
+        publicId: dbUuid,
+        expectedUpdatedAt: z.string().datetime(),
+        kind: z.string().trim().min(1).max(120),
+      }),
+    )
+    .min(1)
+    .max(30),
+});
+export type AddRelationsInput = z.infer<typeof addRelationsInputSchema>;

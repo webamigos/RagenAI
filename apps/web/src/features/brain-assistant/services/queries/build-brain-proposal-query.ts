@@ -50,6 +50,38 @@ export async function buildBrainProposalQuery(
   const base = { id: randomUUID(), reason: input.reason, outcome: null };
 
   switch (input.action) {
+    case 'ADD_RELATIONS': {
+      if (input.targets.some((target) => target.pageId === input.pageId)) {
+        return 'same-page';
+      }
+      const rows = await readPages(orgId, [
+        input.pageId,
+        ...input.targets.map((target) => target.pageId),
+      ]);
+      if (
+        rows.length !==
+        new Set([input.pageId, ...input.targets.map((target) => target.pageId)])
+          .size
+      ) {
+        return 'unknown-page';
+      }
+      if (rows.some((row) => row.status === 'REJECTED')) {
+        return 'not-applicable';
+      }
+      return {
+        ...base,
+        action: 'ADD_RELATIONS',
+        page: toProposalPage(
+          rows.find((row) => row.publicId === input.pageId)!,
+        ),
+        targets: input.targets.map((target) => ({
+          ...toProposalPage(
+            rows.find((row) => row.publicId === target.pageId)!,
+          ),
+          kind: target.kind,
+        })),
+      };
+    }
     case 'APPROVE':
     case 'REJECT':
     case 'PUBLISH':

@@ -13,6 +13,7 @@ const m = vi.hoisted(() => ({
   threads: vi.fn(),
   thread: vi.fn(),
   approve: vi.fn(),
+  addRelations: vi.fn(),
   setAccess: vi.fn(),
 }));
 
@@ -35,6 +36,7 @@ vi.mock(
 );
 vi.mock('../actions', () => ({
   approveKnowledgePageAction: m.approve,
+  addKnowledgeRelationsAction: m.addRelations,
   rejectKnowledgePageAction: vi.fn(),
   publishKnowledgePageAction: vi.fn(),
   unpublishKnowledgePageAction: vi.fn(),

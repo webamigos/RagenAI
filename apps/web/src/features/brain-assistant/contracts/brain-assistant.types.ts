@@ -79,6 +79,17 @@ const reason = z.string().trim().min(1).max(600);
  */
 export const brainProposalInputSchema = z.discriminatedUnion('action', [
   z.object({
+    action: z.literal('ADD_RELATIONS'),
+    pageId: dbUuid,
+    targets: z
+      .array(
+        z.object({ pageId: dbUuid, kind: z.string().trim().min(1).max(120) }),
+      )
+      .min(1)
+      .max(30),
+    reason,
+  }),
+  z.object({
     action: z.enum(['APPROVE', 'REJECT', 'PUBLISH', 'UNPUBLISH']),
     pageIds: z.array(dbUuid).min(1).max(MAX_BATCH_PAGES),
     reason,
@@ -155,6 +166,11 @@ export type BrainProposal = {
       page: ProposalPage;
       principals: string[];
       preview: { before: AccessEntry[]; after: AccessEntry[]; widens: boolean };
+    }
+  | {
+      action: 'ADD_RELATIONS';
+      page: ProposalPage;
+      targets: (ProposalPage & { kind: string })[];
     }
   | {
       action: 'RETRY_EXTRACTION';

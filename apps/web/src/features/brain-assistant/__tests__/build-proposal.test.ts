@@ -203,3 +203,49 @@ describe('buildBrainProposalQuery', () => {
     });
   });
 });
+
+it('builds relation proposals only for distinct live endpoints in the organization', async () => {
+  db.knowledgePage.findMany.mockResolvedValue([row(A), row(B)]);
+  const proposal = await buildBrainProposalQuery(ORG, {
+    action: 'ADD_RELATIONS',
+    pageId: A,
+    targets: [{ pageId: B, kind: 'related to' }],
+    reason: 'Shared context',
+  });
+  expect(proposal).toMatchObject({
+    action: 'ADD_RELATIONS',
+    page: { publicId: A, updatedAt: updatedAt.toISOString() },
+    targets: [
+      { publicId: B, updatedAt: updatedAt.toISOString(), kind: 'related to' },
+    ],
+  });
+  expect(
+    await buildBrainProposalQuery(ORG, {
+      action: 'ADD_RELATIONS',
+      pageId: A,
+      targets: [{ pageId: A, kind: 'related to' }],
+      reason: 'Bad self link',
+    }),
+  ).toBe('same-page');
+  db.knowledgePage.findMany.mockResolvedValue([row(A)]);
+  expect(
+    await buildBrainProposalQuery(ORG, {
+      action: 'ADD_RELATIONS',
+      pageId: A,
+      targets: [{ pageId: B, kind: 'related to' }],
+      reason: 'Missing endpoint',
+    }),
+  ).toBe('unknown-page');
+  db.knowledgePage.findMany.mockResolvedValue([
+    row(A),
+    row(B, { status: 'REJECTED' }),
+  ]);
+  expect(
+    await buildBrainProposalQuery(ORG, {
+      action: 'ADD_RELATIONS',
+      pageId: A,
+      targets: [{ pageId: B, kind: 'related to' }],
+      reason: 'Rejected endpoint',
+    }),
+  ).toBe('not-applicable');
+});

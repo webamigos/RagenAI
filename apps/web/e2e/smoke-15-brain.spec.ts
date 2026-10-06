@@ -170,7 +170,7 @@ test.describe('Ragen Brain panel (smoke)', () => {
     page,
   }) => {
     await page.goto('/pl/brain/findings');
-    await expect(page.getByTestId('brain-finding-row').first()).toBeVisible({
+    await expect(page.getByTestId('brain-finding-card').first()).toBeVisible({
       timeout: 15000,
     });
     await expect(

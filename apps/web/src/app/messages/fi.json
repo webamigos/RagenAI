@@ -2704,7 +2704,30 @@
       },
       "discuss": "Kysy avustajalta tästä",
       "empty-in-language-title": "Ei mitään tällä kielellä",
-      "empty-in-language-description": "Mikään havainto ei koske tämänkielistä asiakirjaa tai sivua, joka lainaa sitä. Valitse toinen kieli tai kaikki."
+      "empty-in-language-description": "Mikään havainto ei koske tämänkielistä asiakirjaa tai sivua, joka lainaa sitä. Valitse toinen kieli tai kaikki.",
+      "intro": "Check detected problems and choose a corrective action.",
+      "filter-types": "Finding types",
+      "all-types": "All types",
+      "subject-gone": "The source was deleted",
+      "retry-extraction": "Retry extraction",
+      "open-review": "Open review",
+      "view-relations": "Check relations",
+      "dismiss-orphan": "This is fine, close",
+      "dismissed": "Finding dismissed",
+      "batch": "{count} × {type}",
+      "batch-scope": "Findings on this list page, detected at intervals of up to 5 minutes.",
+      "why": {
+        "ORPHAN": "Missing relations make the context of this page harder to check.",
+        "EXTRACTION_FAILED": "The document supplied no knowledge for review.",
+        "UNOWNED": "An owner vouches for the content and enables approval.",
+        "CONTRADICTION": "Conflicting sources need review before the knowledge is used in chat.",
+        "STALE": "The knowledge may no longer match its current sources.",
+        "GAP": "The process has no relation to a role responsible for carrying it out."
+      },
+      "relation-suggestions": "Suggested relations",
+      "relation-basis": "These pages cite the same document. Check whether they should be linked; a shared source does not establish a relation.",
+      "select-relations": "Select relations to review",
+      "add-relations": "Add selected relations"
     },
     "page": {
       "back": "Tietosivut",
@@ -3091,7 +3114,8 @@
           "MERGE": "Yhdistä kaksi sivua",
           "SET_OWNER": "Aseta omistaja",
           "SET_ACCESS": "Muuta, kuka voi lukea sivun",
-          "RETRY_EXTRACTION": "Yritä poimintaa uudelleen"
+          "RETRY_EXTRACTION": "Yritä poimintaa uudelleen",
+          "ADD_RELATIONS": "Add relations"
         },
         "apply": "Ota käyttöön",
         "dismiss": "Hylkää",
@@ -3138,7 +3162,8 @@
       "governs": "sääntelee",
       "is-part-of": "on osa",
       "references": "viittaa",
-      "depends-on": "riippuu"
+      "depends-on": "riippuu",
+      "related-to": "related to"
     },
     "language": {
       "label": "Kieli",

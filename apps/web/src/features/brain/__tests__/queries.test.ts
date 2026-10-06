@@ -330,7 +330,7 @@ describe('getKnowledgeFindingsQuery', () => {
     ]);
     db.knowledgeFinding.count.mockResolvedValue(2);
     db.knowledgePage.findMany.mockResolvedValue([
-      { id: 1, publicId: 'p1', title: 'Urlop' },
+      { id: 1, publicId: 'p1', title: 'Urlop', ownerId: null, updatedAt: NOW },
     ]);
     db.knowledgePageSource.findMany.mockResolvedValue([{ id: 10, quote: 'A' }]);
     db.userFile.findMany.mockResolvedValue([
