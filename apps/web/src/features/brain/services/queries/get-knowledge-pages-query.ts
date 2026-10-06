@@ -1,4 +1,5 @@
 import db from '@ragenai/prisma-client';
+import type { PageFilters } from '../../utils/page-filters';
 import type { BrainLanguageScope } from './brain-language-scope';
 
 import { BRAIN_LIST_LIMIT } from '../../constants';
@@ -21,10 +22,20 @@ export async function getKnowledgePagesQuery(
   page = 1,
   scope: BrainLanguageScope | null = null,
   search: string | null = null,
+  filters: PageFilters = {},
 ): Promise<KnowledgePageList> {
+  const defaultStatus =
+    filters.published === true ? {} : { status: { not: 'REJECTED' as const } };
   const where = {
     organizationId: orgId,
-    status: status ?? { not: 'REJECTED' as const },
+    ...(status ? { status } : defaultStatus),
+    ...(filters.owner === 'none' ? { ownerId: null } : {}),
+    ...(filters.published !== undefined
+      ? { publishedAt: filters.published ? { not: null } : null }
+      : {}),
+    ...(filters.file
+      ? { sources: { some: { organizationId: orgId, fileId: filters.file } } }
+      : {}),
     ...(scope ? { id: { in: scope.pageIds } } : {}),
     // Part of a title, any case: 126 pages is past reading the list.
     ...(search

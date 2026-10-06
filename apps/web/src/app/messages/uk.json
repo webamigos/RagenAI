@@ -2617,7 +2617,8 @@
       "pages": "Сторінки знань",
       "findings": "Виявлення",
       "graph": "Граф",
-      "documents": "Документи"
+      "documents": "Документи",
+      "overview": "Overview"
     },
     "filters": {
       "status": "Статус",
@@ -2967,7 +2968,9 @@
       "staged-oldest": "найстаріший завантажено {when}",
       "language-none": "Не розпізнано",
       "empty-in-language-title": "Нічого цією мовою",
-      "empty-in-language-description": "Немає документа цією мовою або сторінки, що його цитує. Виберіть іншу мову або всі."
+      "empty-in-language-description": "Немає документа цією мовою або сторінки, що його цитує. Виберіть іншу мову або всі.",
+      "empty-filter": "Documents without extracted knowledge",
+      "clear-filter": "Show all documents"
     },
     "publish-all": {
       "button": "Опублікувати затверджені ({count})",
@@ -3068,7 +3071,8 @@
       "pages": "Сторінки знань із джерелами: кожна сторінка містить твердження з дослівними цитатами з вихідних документів. Кандидат чекає на перевірку; затвердьте й опублікуйте сторінку, щоб чат міг відповідати з неї.",
       "findings": "Що потребує вашої уваги: суперечності, прогалини, застарілі сторінки чи сторінки без власника та документи, які Brain не зміг прочитати.",
       "graph": "Як пов’язані сторінки — який процес потребує якого правила і які сторінки посилаються одна на одну.",
-      "documents": "Вихідні документи, які читає Brain: скільки сторінок дав кожен і чи чат досі шукає в ньому."
+      "documents": "Вихідні документи, які читає Brain: скільки сторінок дав кожен і чи чат досі шукає в ньому.",
+      "overview": "See how much knowledge has been reviewed and what needs attention."
     },
     "relation-kind": {
       "approves": "затверджує",
@@ -3090,6 +3094,41 @@
       "all": "Усі мови",
       "none": "Не розпізнано",
       "option": "{name} ({count})"
+    },
+    "overview": {
+      "intro": "Company knowledge extracted from documents. See how much has been reviewed by people.",
+      "start-review": "Start review ({count})",
+      "pipeline-title": "The knowledge journey: from documents to chat answers",
+      "publication-description": "Published pages are available in chat. Source documents may still be searched.",
+      "stages": {
+        "documents": "Documents",
+        "candidates": "Candidates (waiting)",
+        "approved": "Approved",
+        "published": "Published in chat"
+      },
+      "empty-documents-count": "{count} without extracted knowledge",
+      "unowned-count": "{count} without an owner",
+      "approved-share": "{percent}% of candidate and approved pages",
+      "awaiting-publication": "{count} approved pages awaiting publication",
+      "attention-title": "Needs attention",
+      "unowned-title": "Pages without an owner",
+      "unowned-description": "They cannot be approved. Assign an owner before review.",
+      "empty-documents-title": "Documents without knowledge",
+      "empty-documents-description": "0 pages. Check the documents and extract knowledge.",
+      "finding-description": "Review the finding and address its cause.",
+      "attention-empty": "No findings or pages need an owner.",
+      "ranking-title": "Where the most unreviewed knowledge is",
+      "legend": "Approved / candidates · shared scale across documents",
+      "coverage-counts": "{approved} approved · {candidates} candidates",
+      "all-documents": "All documents ({count})",
+      "ranking-empty": "No candidates to review.",
+      "empty-title": "Knowledge starts with documents",
+      "empty-description": "Upload documents to extract and review company knowledge.",
+      "empty-language-description": "There are no documents in this language. Choose another language or upload documents.",
+      "clear-filter": "Clear overview filter",
+      "filtered-list": "List narrowed by an overview filter",
+      "no-pages-title": "No pages match this filter",
+      "no-pages-description": "Change or clear the filter to see the remaining pages."
     }
   },
   "project-context-manager": {

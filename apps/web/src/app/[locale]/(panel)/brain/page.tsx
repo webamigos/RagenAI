@@ -27,6 +27,10 @@ import { parseBrainLanguage } from '@/features/brain/contracts/brain-language.ty
 import { getBrainLanguageScopeQuery } from '@/features/brain/services/queries/brain-language-scope';
 import { pageStatusVariant } from '@/features/brain/utils/page-status-variant';
 import { withLanguage } from '@/features/brain/utils/with-language';
+import {
+  parsePageFilters,
+  withPageFilters,
+} from '@/features/brain/utils/page-filters';
 import { withSearch } from '@/features/brain/utils/with-search';
 import { BrainScreen } from './components/assistant/BrainAssistantContext';
 import { FilterChips } from './components/FilterChips';
@@ -37,6 +41,9 @@ export const dynamic = 'force-dynamic';
 type Props = {
   searchParams: Promise<{
     status?: string | string[];
+    owner?: string | string[];
+    published?: string | string[];
+    file?: string | string[];
     page?: string | string[];
     lang?: string | string[];
     q?: string | string[];
@@ -49,6 +56,8 @@ export default async function BrainPagesPage({ searchParams }: Props) {
     notFound();
   }
   const params = await searchParams;
+  const filters = parsePageFilters(params);
+  const filtered = (href: string) => withPageFilters(href, filters);
   const raw = params.status;
   const value = Array.isArray(raw) ? raw[0] : raw;
   const listPage = parseListPage(params.page);
@@ -68,7 +77,14 @@ export default async function BrainPagesPage({ searchParams }: Props) {
     await Promise.all([
       getTranslations('brain'),
       getFormatter(),
-      getKnowledgePagesQuery(access.orgId, status, listPage, scope, search),
+      getKnowledgePagesQuery(
+        access.orgId,
+        status,
+        listPage,
+        scope,
+        search,
+        filters,
+      ),
       getBrainExportSummaryQuery(access.orgId),
       getApprovedPageCountQuery(access.orgId),
       getBrainStatusCountsQuery(access.orgId, scope),
@@ -84,7 +100,12 @@ export default async function BrainPagesPage({ searchParams }: Props) {
     title: t('pages.empty-title'),
     description: t('pages.empty-description'),
   };
-  if (search) {
+  if (Object.keys(filters).length > 0) {
+    empty = {
+      title: t('overview.no-pages-title'),
+      description: t('overview.no-pages-description'),
+    };
+  } else if (search) {
     empty = {
       title: t('pages.search-empty-title'),
       description: t('pages.search-empty-description', { search }),
@@ -106,7 +127,9 @@ export default async function BrainPagesPage({ searchParams }: Props) {
           {
             key: 'all',
             label: t('filters.all-but-rejected'),
-            href: withLanguage(withSearch('/brain', search), language),
+            href: filtered(
+              withLanguage(withSearch('/brain', search), language),
+            ),
             active: status === null,
             count:
               counts.pages.CANDIDATE +
@@ -116,9 +139,8 @@ export default async function BrainPagesPage({ searchParams }: Props) {
           ...PAGE_STATUS_FILTERS.map((s) => ({
             key: s,
             label: t(`page-status.${s}`),
-            href: withLanguage(
-              withSearch(`/brain?status=${s}`, search),
-              language,
+            href: filtered(
+              withLanguage(withSearch(`/brain?status=${s}`, search), language),
             ),
             active: status === s,
             count: counts.pages[s],
@@ -156,7 +178,25 @@ export default async function BrainPagesPage({ searchParams }: Props) {
         </div>
       )}
 
-      <PageSearch search={search} status={status} language={language} />
+      {Object.keys(filters).length > 0 && (
+        <div className="mb-3 flex flex-wrap items-center gap-2 text-sm">
+          <span className="text-muted-foreground">
+            {t('overview.filtered-list')}
+          </span>
+          <Link
+            className="text-primary underline underline-offset-4"
+            href={withLanguage('/brain', language)}
+          >
+            {t('overview.clear-filter')}
+          </Link>
+        </div>
+      )}
+      <PageSearch
+        search={search}
+        status={status}
+        language={language}
+        filters={filters}
+      />
 
       {items.length === 0 && listPage === 1 ? (
         <BrainEmpty title={empty.title} description={empty.description} />
@@ -268,13 +308,15 @@ export default async function BrainPagesPage({ searchParams }: Props) {
             page={listPage}
             total={total}
             hrefFor={(n) =>
-              withLanguage(
-                `/brain?${new URLSearchParams({
-                  ...(status ? { status } : {}),
-                  ...(search ? { q: search } : {}),
-                  page: String(n),
-                })}`,
-                language,
+              filtered(
+                withLanguage(
+                  `/brain?${new URLSearchParams({
+                    ...(status ? { status } : {}),
+                    ...(search ? { q: search } : {}),
+                    page: String(n),
+                  })}`,
+                  language,
+                ),
               )
             }
           />

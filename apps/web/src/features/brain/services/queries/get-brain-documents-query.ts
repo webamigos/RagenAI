@@ -14,9 +14,22 @@ import { extractableFilesInLanguage } from './brain-language-scope';
 export async function getBrainDocumentsQuery(
   orgId: string,
   language: BrainLanguage | null = null,
+  emptyOnly = false,
 ): Promise<BrainDocument[]> {
+  const cited = emptyOnly
+    ? await db.knowledgePageSource.findMany({
+        where: { organizationId: orgId },
+        distinct: ['fileId'],
+        select: { fileId: true },
+      })
+    : [];
   const files = await db.userFile.findMany({
-    where: extractableFilesInLanguage(orgId, language),
+    where: {
+      ...extractableFilesInLanguage(orgId, language),
+      ...(emptyOnly
+        ? { id: { notIn: cited.map((source) => source.fileId) } }
+        : {}),
+    },
     select: {
       id: true,
       fileName: true,
@@ -25,7 +38,6 @@ export async function getBrainDocumentsQuery(
       language: true,
     },
     orderBy: { fileName: 'asc' },
-    take: 1000,
   });
   if (files.length === 0) {
     return [];

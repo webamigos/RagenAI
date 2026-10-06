@@ -129,6 +129,8 @@ archive is the blog.
 
 ### Knowledge base
 
+- Brain ma nowy przegląd: pokazuje drogę od dokumentów do publikacji, strony wymagające uwagi i dokumenty z największą liczbą kandydatów. Liczniki prowadzą do dopasowanych list.
+
 - `[brief]` **The file list's toolbar stays on one row on a laptop.** With the
   app sidebar open on a 14" screen, the last filter (PII policy) dropped to a
   second line. The search field now narrows to make room before any filter

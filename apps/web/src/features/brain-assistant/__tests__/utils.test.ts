@@ -333,3 +333,11 @@ describe('stepPolicy', () => {
     expect(stepPolicy(8, 10, false)).toEqual({ toolChoice: 'none' });
   });
 });
+
+it('offers relevant prompts on the overview without requiring a page selection', () => {
+  expect(suggestedPromptKeys('overview', false)).toEqual([
+    'what-first',
+    'uncurated',
+    'failed',
+  ]);
+});

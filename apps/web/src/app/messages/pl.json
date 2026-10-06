@@ -2617,7 +2617,8 @@
       "pages": "Strony wiedzy",
       "findings": "Wykrycia",
       "graph": "Graf",
-      "documents": "Dokumenty"
+      "documents": "Dokumenty",
+      "overview": "Przegląd"
     },
     "filters": {
       "status": "Status",
@@ -2967,7 +2968,9 @@
       "staged-oldest": "najstarszy wgrany {when}",
       "language-none": "Nierozpoznany",
       "empty-in-language-title": "Nic w tym języku",
-      "empty-in-language-description": "Żaden dokument nie jest w tym języku albo żadna strona go nie cytuje. Wybierz inny język albo wszystkie."
+      "empty-in-language-description": "Żaden dokument nie jest w tym języku albo żadna strona go nie cytuje. Wybierz inny język albo wszystkie.",
+      "empty-filter": "Dokumenty bez wyodrębnionej wiedzy",
+      "clear-filter": "Pokaż wszystkie dokumenty"
     },
     "publish-all": {
       "button": "Opublikuj zatwierdzone ({count})",
@@ -3068,7 +3071,8 @@
       "pages": "Strony wiedzy z cytatami ze źródeł: każda strona zawiera twierdzenia z dosłownymi cytatami z dokumentów źródłowych. Kandydat czeka na przegląd; zatwierdź stronę i opublikuj ją, żeby czat mógł z niej odpowiadać.",
       "findings": "Co wymaga Twojej uwagi: sprzeczności między stronami, luki, nieaktualne lub bezpańskie strony i dokumenty, których Brain nie odczytał.",
       "graph": "Jak strony się łączą — który proces wymaga której zasady i które strony odwołują się do siebie.",
-      "documents": "Dokumenty źródłowe, które czyta Brain: ile stron dał każdy z nich i czy czat nadal go przeszukuje."
+      "documents": "Dokumenty źródłowe, które czyta Brain: ile stron dał każdy z nich i czy czat nadal go przeszukuje.",
+      "overview": "Tu widzisz, ile wiedzy jest już sprawdzone i co wymaga uwagi."
     },
     "relation-kind": {
       "approves": "zatwierdza",
@@ -3090,6 +3094,41 @@
       "all": "Wszystkie języki",
       "none": "Nierozpoznany",
       "option": "{name} ({count})"
+    },
+    "overview": {
+      "intro": "Wiedza firmy wyciągnięta z dokumentów. Tu widzisz, ile z niej jest już sprawdzone przez ludzi.",
+      "start-review": "Rozpocznij przegląd ({count})",
+      "pipeline-title": "Droga wiedzy: od dokumentu do odpowiedzi czatu",
+      "publication-description": "Opublikowane strony są dostępne w czacie. Dokumenty źródłowe mogą nadal być przeszukiwane.",
+      "stages": {
+        "documents": "Dokumenty",
+        "candidates": "Kandydaci (czekają)",
+        "approved": "Zatwierdzone",
+        "published": "Opublikowane w czacie"
+      },
+      "empty-documents-count": "{count} bez wyodrębnionej wiedzy",
+      "unowned-count": "{count} bez właściciela",
+      "approved-share": "{percent}% kandydatów i zatwierdzonych stron",
+      "awaiting-publication": "{count, plural, one {# zatwierdzona czeka na publikację} few {# zatwierdzone czekają na publikację} many {# zatwierdzonych czeka na publikację} other {# zatwierdzone czekają na publikację}}",
+      "attention-title": "Wymaga uwagi",
+      "unowned-title": "Strony bez właściciela",
+      "unowned-description": "Nie da się ich zatwierdzić. Przypisz właściciela przed przeglądem.",
+      "empty-documents-title": "Dokumenty bez wiedzy",
+      "empty-documents-description": "0 stron. Sprawdź dokumenty i wyodrębnij wiedzę.",
+      "finding-description": "Sprawdź wykrycie i usuń jego przyczynę.",
+      "attention-empty": "Nie ma wykryć ani stron wymagających przypisania właściciela.",
+      "ranking-title": "Gdzie leży najwięcej niesprawdzonej wiedzy",
+      "legend": "Zatwierdzone / kandydaci · wspólna skala dla dokumentów",
+      "coverage-counts": "{approved, plural, one {# zatwierdzona} few {# zatwierdzone} many {# zatwierdzonych} other {# zatwierdzone}} · {candidates, plural, one {# kandydat} few {# kandydaci} many {# kandydatów} other {# kandydatów}}",
+      "all-documents": "Wszystkie dokumenty ({count})",
+      "ranking-empty": "Nie ma kandydatów do przeglądu.",
+      "empty-title": "Wiedza zaczyna się od dokumentów",
+      "empty-description": "Wgraj dokumenty, żeby wyodrębnić i sprawdzić wiedzę firmy.",
+      "empty-language-description": "W tym języku nie ma dokumentów. Wybierz inny język lub wgraj dokumenty.",
+      "clear-filter": "Wyczyść filtr przeglądu",
+      "filtered-list": "Lista ograniczona filtrem z przeglądu",
+      "no-pages-title": "Brak stron dla wybranego filtra",
+      "no-pages-description": "Zmień lub wyczyść filtr, aby zobaczyć pozostałe strony."
     }
   },
   "project-context-manager": {

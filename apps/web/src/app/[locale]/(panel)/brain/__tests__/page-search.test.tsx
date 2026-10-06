@@ -63,3 +63,25 @@ describe('PageSearch', () => {
     expect(push).toHaveBeenCalledWith('/brain?lang=eng');
   });
 });
+
+it('keeps the overview filters when searching and clearing', () => {
+  wrap(
+    <PageSearch
+      search="urlop"
+      status="CANDIDATE"
+      language="pol"
+      filters={{ owner: 'none' }}
+    />,
+  );
+  fireEvent.change(screen.getByTestId('brain-page-search'), {
+    target: { value: 'kadry' },
+  });
+  fireEvent.submit(screen.getByTestId('brain-page-search').closest('form')!);
+  expect(push).toHaveBeenCalledWith(
+    '/brain?status=CANDIDATE&q=kadry&lang=pol&owner=none',
+  );
+  fireEvent.click(screen.getByTestId('brain-page-search-clear'));
+  expect(push).toHaveBeenLastCalledWith(
+    '/brain?status=CANDIDATE&lang=pol&owner=none',
+  );
+});

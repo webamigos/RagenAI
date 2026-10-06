@@ -226,7 +226,7 @@ export default async function PanelLayout({ children }: Props) {
             knowledge, and a link to a page that 404s is worse than none.
           */}
             {canUseBrain({ role: member?.role, flags: features }) && (
-              <SidebarItem href="/brain">
+              <SidebarItem href="/brain/overview">
                 <LightBulbIconOutline className="size-5 shrink-0 stroke-muted-foreground" />
                 <SidebarLabel className="font-normal">
                   {t('nav.brain')}

@@ -12,6 +12,8 @@ import { notFound } from 'next/navigation';
 import { getBrainAccessQuery } from '@/features/brain/services/queries/get-brain-access-query';
 import { parseBrainLanguage } from '@/features/brain/contracts/brain-language.types';
 import { getBrainDocumentsQuery } from '@/features/brain/services/queries/get-brain-documents-query';
+import { Link } from '@/i18n/routing';
+import { withLanguage } from '@/features/brain/utils/with-language';
 import { languageName } from '@/features/brain/utils/language-name';
 
 import { BrainEmpty } from '../components/BrainEmpty';
@@ -28,7 +30,10 @@ export const dynamic = 'force-dynamic';
  * Never automatic, always reversible.
  */
 type Props = {
-  searchParams: Promise<{ lang?: string | string[] }>;
+  searchParams: Promise<{
+    lang?: string | string[];
+    coverage?: string | string[];
+  }>;
 };
 
 export default async function BrainDocumentsPage({ searchParams }: Props) {
@@ -36,11 +41,13 @@ export default async function BrainDocumentsPage({ searchParams }: Props) {
   if (!access) {
     notFound();
   }
-  const language = parseBrainLanguage((await searchParams).lang);
+  const params = await searchParams;
+  const language = parseBrainLanguage(params.lang);
+  const emptyOnly = params.coverage === 'empty';
   const [t, format, documents, locale] = await Promise.all([
     getTranslations('brain.documents'),
     getFormatter(),
-    getBrainDocumentsQuery(access.orgId, language),
+    getBrainDocumentsQuery(access.orgId, language, emptyOnly),
     getLocale(),
   ]);
   const staged = documents.filter((d) => d.retrieval === 'staged');
@@ -64,6 +71,17 @@ export default async function BrainDocumentsPage({ searchParams }: Props) {
         </p>
         {access.canWrite && <BrainUploadButton />}
       </div>
+      {emptyOnly && (
+        <div className="mb-3 flex flex-wrap items-center gap-2 text-sm">
+          <span className="text-muted-foreground">{t('empty-filter')}</span>
+          <Link
+            className="text-primary underline underline-offset-4"
+            href={withLanguage('/brain/documents', language)}
+          >
+            {t('clear-filter')}
+          </Link>
+        </div>
+      )}
       {staged.length > 0 && (
         <p
           className="mb-3 text-xs text-foreground"

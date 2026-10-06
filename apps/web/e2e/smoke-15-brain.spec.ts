@@ -28,6 +28,39 @@ test.describe('Ragen Brain panel (smoke)', () => {
     });
   });
 
+  test('opens overview from the sidebar and follows an honest candidate count', async ({
+    page,
+  }) => {
+    await page.goto('/pl/chats');
+    const brain = page.getByRole('link', { name: /^Brain(\s+Beta)?$/ });
+    await expect(brain).toHaveAttribute('href', /\/brain\/overview$/);
+    await brain.click();
+    await expect(page.getByTestId('brain-overview')).toBeVisible();
+    await expect(
+      page.getByRole('link', { name: 'Przegląd', exact: true }),
+    ).toHaveAttribute('aria-current', 'page');
+    const candidateStage = page.getByTestId('overview-candidates');
+    const candidates = (
+      await candidateStage.locator('strong').innerText()
+    ).trim();
+    await candidateStage.locator('a').click();
+    await expect(page).toHaveURL(/status=CANDIDATE/);
+    await expect(
+      page.getByText(new RegExp(`Strony:.*z ${candidates}$`)),
+    ).toBeVisible();
+    await page.goto('/pl/brain/overview');
+    await page.getByTestId('overview-published').locator('a').first().click();
+    await expect(page).toHaveURL(/published=true/);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/pl/brain/overview');
+    await expect(page.getByTestId('overview-pipeline')).toBeVisible();
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= window.innerWidth,
+      ),
+    ).toBe(true);
+  });
+
   test('lists the seeded page and opens it with its source', async ({
     page,
   }) => {

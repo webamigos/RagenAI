@@ -15,6 +15,7 @@ type Prompt = {
 };
 
 const PROMPTS: Record<BrainScreenView, Prompt[]> = {
+  overview: [{ key: 'what-first' }, { key: 'uncurated' }, { key: 'failed' }],
   pages: [{ key: 'what-first' }, { key: 'duplicates' }, { key: 'week' }],
   inbox: [
     { key: 'what-first' },

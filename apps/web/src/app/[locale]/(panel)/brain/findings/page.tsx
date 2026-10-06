@@ -1,11 +1,19 @@
 import { getTranslations } from 'next-intl/server';
+import { withFindingType } from '@/features/brain/utils/page-filters';
+import { Link } from '@/i18n/routing';
 import { notFound } from 'next/navigation';
 import { parseBrainLanguage } from '@/features/brain/contracts/brain-language.types';
 import { getBrainLanguageScopeQuery } from '@/features/brain/services/queries/brain-language-scope';
 import { withLanguage } from '@/features/brain/utils/with-language';
 
-import { FINDING_STATUS_FILTERS } from '@/features/brain/constants';
-import type { KnowledgeFindingStatus } from '@/features/brain/contracts/brain.types';
+import {
+  FINDING_STATUS_FILTERS,
+  FINDING_TYPE_FILTERS,
+} from '@/features/brain/constants';
+import type {
+  KnowledgeFindingStatus,
+  KnowledgeFindingType,
+} from '@/features/brain/contracts/brain.types';
 import { getBrainAccessQuery } from '@/features/brain/services/queries/get-brain-access-query';
 import { getKnowledgeFindingsQuery } from '@/features/brain/services/queries/get-knowledge-findings-query';
 import { getBrainStatusCountsQuery } from '@/features/brain/services/queries/get-brain-status-counts-query';
@@ -24,6 +32,7 @@ export const dynamic = 'force-dynamic';
 type Props = {
   searchParams: Promise<{
     status?: string | string[];
+    type?: string | string[];
     page?: string | string[];
     /** A finding the assistant linked to, put on screen for it. */
     finding?: string | string[];
@@ -37,6 +46,13 @@ export default async function BrainFindingsPage({ searchParams }: Props) {
     notFound();
   }
   const params = await searchParams;
+  const rawType = Array.isArray(params.type) ? params.type[0] : params.type;
+  const type = (FINDING_TYPE_FILTERS as readonly string[]).includes(
+    rawType ?? '',
+  )
+    ? (rawType as KnowledgeFindingType)
+    : undefined;
+  const typed = (href: string) => withFindingType(href, type);
   const raw = params.status;
   const value = Array.isArray(raw) ? raw[0] : raw;
   const listPage = parseListPage(params.page);
@@ -55,7 +71,7 @@ export default async function BrainFindingsPage({ searchParams }: Props) {
   const scope = await getBrainLanguageScopeQuery(access.orgId, language);
   const [t, { items, total }, counts] = await Promise.all([
     getTranslations('brain'),
-    getKnowledgeFindingsQuery(access.orgId, status, listPage, undefined, scope),
+    getKnowledgeFindingsQuery(access.orgId, status, listPage, type, scope),
     getBrainStatusCountsQuery(access.orgId, scope),
   ]);
 
@@ -66,17 +82,32 @@ export default async function BrainFindingsPage({ searchParams }: Props) {
         context={
           focused
             ? { view: 'finding', findingId: focused }
-            : { view: 'inbox', status }
+            : { view: 'inbox', status, ...(type ? { type } : {}) }
         }
       />
+      {type && (
+        <div className="mb-3 text-sm">
+          <span className="mr-3 text-muted-foreground">
+            {t(`findings.type.${type}`)}
+          </span>
+          <Link
+            className="text-primary underline underline-offset-4"
+            href={withLanguage('/brain/findings', language)}
+          >
+            {t('overview.clear-filter')}
+          </Link>
+        </div>
+      )}
       <FilterChips
         label={t('filters.status')}
         options={FINDING_STATUS_FILTERS.map((s) => ({
           key: s,
           label: t(`findings.status.${s}`),
-          href: withLanguage(
-            s === 'OPEN' ? '/brain/findings' : `/brain/findings?status=${s}`,
-            language,
+          href: typed(
+            withLanguage(
+              s === 'OPEN' ? '/brain/findings' : `/brain/findings?status=${s}`,
+              language,
+            ),
           ),
           active: status === s,
           count: counts.findings[s],
@@ -109,13 +140,15 @@ export default async function BrainFindingsPage({ searchParams }: Props) {
             focusedId={focused}
             assistant={access.assistant}
             discussHref={(publicId) =>
-              withLanguage(
-                `/brain/findings?${new URLSearchParams({
-                  ...(status === 'OPEN' ? {} : { status }),
-                  ...(listPage > 1 ? { page: String(listPage) } : {}),
-                  finding: publicId,
-                })}#finding-${publicId}`,
-                language,
+              typed(
+                withLanguage(
+                  `/brain/findings?${new URLSearchParams({
+                    ...(status === 'OPEN' ? {} : { status }),
+                    ...(listPage > 1 ? { page: String(listPage) } : {}),
+                    finding: publicId,
+                  })}#finding-${publicId}`,
+                  language,
+                ),
               )
             }
           />
@@ -123,12 +156,14 @@ export default async function BrainFindingsPage({ searchParams }: Props) {
             page={listPage}
             total={total}
             hrefFor={(n) =>
-              withLanguage(
-                `/brain/findings?${new URLSearchParams({
-                  ...(status === 'OPEN' ? {} : { status }),
-                  page: String(n),
-                })}`,
-                language,
+              typed(
+                withLanguage(
+                  `/brain/findings?${new URLSearchParams({
+                    ...(status === 'OPEN' ? {} : { status }),
+                    page: String(n),
+                  })}`,
+                  language,
+                ),
               )
             }
           />

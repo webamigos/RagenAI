@@ -2617,7 +2617,8 @@
       "pages": "Pagine di conoscenza",
       "findings": "Rilevazioni",
       "graph": "Grafo",
-      "documents": "Documenti"
+      "documents": "Documenti",
+      "overview": "Overview"
     },
     "filters": {
       "status": "Stato",
@@ -2967,7 +2968,9 @@
       "staged-oldest": "il più vecchio caricato {when}",
       "language-none": "Non rilevata",
       "empty-in-language-title": "Niente in questa lingua",
-      "empty-in-language-description": "Nessun documento in questa lingua, o nessuna pagina che ne citi uno. Scegli un'altra lingua o tutte."
+      "empty-in-language-description": "Nessun documento in questa lingua, o nessuna pagina che ne citi uno. Scegli un'altra lingua o tutte.",
+      "empty-filter": "Documents without extracted knowledge",
+      "clear-filter": "Show all documents"
     },
     "publish-all": {
       "button": "Pubblica approvate ({count})",
@@ -3068,7 +3071,8 @@
       "pages": "Pagine di conoscenza con le loro fonti: ogni pagina riporta affermazioni con le citazioni esatte dei documenti di origine. Un candidato attende la revisione; approva e pubblica una pagina perché la chat possa usarla per rispondere.",
       "findings": "Ciò che richiede la tua attenzione: contraddizioni, lacune, pagine obsolete o senza responsabile e documenti che Brain non è riuscito a leggere.",
       "graph": "Come si collegano le pagine: quale processo richiede quale regola e quali pagine si citano a vicenda.",
-      "documents": "I documenti di origine letti da Brain: quante pagine ha prodotto ciascuno e se la chat li cerca ancora."
+      "documents": "I documenti di origine letti da Brain: quante pagine ha prodotto ciascuno e se la chat li cerca ancora.",
+      "overview": "See how much knowledge has been reviewed and what needs attention."
     },
     "relation-kind": {
       "approves": "approva",
@@ -3090,6 +3094,41 @@
       "all": "Tutte le lingue",
       "none": "Non rilevata",
       "option": "{name} ({count})"
+    },
+    "overview": {
+      "intro": "Company knowledge extracted from documents. See how much has been reviewed by people.",
+      "start-review": "Start review ({count})",
+      "pipeline-title": "The knowledge journey: from documents to chat answers",
+      "publication-description": "Published pages are available in chat. Source documents may still be searched.",
+      "stages": {
+        "documents": "Documents",
+        "candidates": "Candidates (waiting)",
+        "approved": "Approved",
+        "published": "Published in chat"
+      },
+      "empty-documents-count": "{count} without extracted knowledge",
+      "unowned-count": "{count} without an owner",
+      "approved-share": "{percent}% of candidate and approved pages",
+      "awaiting-publication": "{count} approved pages awaiting publication",
+      "attention-title": "Needs attention",
+      "unowned-title": "Pages without an owner",
+      "unowned-description": "They cannot be approved. Assign an owner before review.",
+      "empty-documents-title": "Documents without knowledge",
+      "empty-documents-description": "0 pages. Check the documents and extract knowledge.",
+      "finding-description": "Review the finding and address its cause.",
+      "attention-empty": "No findings or pages need an owner.",
+      "ranking-title": "Where the most unreviewed knowledge is",
+      "legend": "Approved / candidates · shared scale across documents",
+      "coverage-counts": "{approved} approved · {candidates} candidates",
+      "all-documents": "All documents ({count})",
+      "ranking-empty": "No candidates to review.",
+      "empty-title": "Knowledge starts with documents",
+      "empty-description": "Upload documents to extract and review company knowledge.",
+      "empty-language-description": "There are no documents in this language. Choose another language or upload documents.",
+      "clear-filter": "Clear overview filter",
+      "filtered-list": "List narrowed by an overview filter",
+      "no-pages-title": "No pages match this filter",
+      "no-pages-description": "Change or clear the filter to see the remaining pages."
     }
   },
   "project-context-manager": {
