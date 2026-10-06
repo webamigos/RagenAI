@@ -19,6 +19,8 @@ Global page totals cannot be summed from per-file counts: a page citing two docu
 
 Count global pages directly, keep distinct file/page coverage for document bars, and count zero-page files against all source rows. Pass the same organization and document-language scope to every metric and destination. Validate URL filters, apply them to both rows and total, and preserve them through search, pagination and fragment links. Never rely on a default list predicate when a summary count explicitly uses another one. Verify the link's resulting list in a smoke test, not just its href in a mock.
 
+Phase 5 also distinguishes coverage from extraction outcome: a completed embedding with zero approved/candidate pages does not prove a finished, empty extraction. Read all-status sources and the open `EXTRACTION_FAILED` finding; only `nothing_extracted` without any sources proves that state. Keep indexing/withdrawal labels separate from extraction evidence.
+
 ## Applies to
 
 Brain overview, document coverage, publication summaries and attention links.

@@ -2965,7 +2965,9 @@
         "candidates": "Kandidaten",
         "retrieval": "Suche",
         "actions": "Aktionen",
-        "language": "Sprache"
+        "language": "Sprache",
+        "coverage": "Knowledge in Brain",
+        "state": "State"
       },
       "retrieval": {
         "in": "Durchsuchbar",
@@ -3000,7 +3002,26 @@
       "empty-in-language-title": "Nichts in dieser Sprache",
       "empty-in-language-description": "Kein Dokument in dieser Sprache oder keine Seite, die eines zitiert. Wählen Sie eine andere Sprache oder alle.",
       "empty-filter": "Documents without extracted knowledge",
-      "clear-filter": "Show all documents"
+      "clear-filter": "Show all documents",
+      "screen-title": "Source documents",
+      "screen-intro": "What Brain extracted from each file and how much has already been reviewed.",
+      "table-title": "Documents by language",
+      "shared-scale": "Shared scale: {count, plural, one {# page} other {# pages}} = full bar",
+      "coverage-counts": "{approved} approved · {candidates} candidates",
+      "summary": {
+        "documents": "Documents",
+        "empty": "Nothing extracted",
+        "withdrawn": "Excluded from search"
+      },
+      "state": {
+        "empty": "Nothing extracted",
+        "failed": "Extraction or processing failed",
+        "processing": "Processing",
+        "extracted": "Extracted",
+        "waiting": "Not extracted yet"
+      },
+      "check-language": "Check language",
+      "retry-extraction": "Retry extraction"
     },
     "publish-all": {
       "button": "Freigegebene veröffentlichen ({count})",

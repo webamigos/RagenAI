@@ -1,11 +1,3 @@
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@ragenai/common-ui/Table';
 import { getFormatter, getLocale, getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
@@ -14,11 +6,11 @@ import { parseBrainLanguage } from '@/features/brain/contracts/brain-language.ty
 import { getBrainDocumentsQuery } from '@/features/brain/services/queries/get-brain-documents-query';
 import { Link } from '@/i18n/routing';
 import { withLanguage } from '@/features/brain/utils/with-language';
-import { languageName } from '@/features/brain/utils/language-name';
+import { getBrainDocumentExtractionQuery } from '@/features/brain/services/queries/get-brain-document-extraction-query';
 
 import { BrainEmpty } from '../components/BrainEmpty';
 import { BrainUploadButton } from '../components/BrainUploadButton';
-import { DocumentRetrievalActions } from '../components/DocumentRetrievalActions';
+import { BrainDocumentsPanel } from '../components/BrainDocumentsPanel';
 import { BrainScreen } from '../components/assistant/BrainAssistantContext';
 
 export const dynamic = 'force-dynamic';
@@ -50,6 +42,10 @@ export default async function BrainDocumentsPage({ searchParams }: Props) {
     getBrainDocumentsQuery(access.orgId, language, emptyOnly),
     getLocale(),
   ]);
+  const extraction = await getBrainDocumentExtractionQuery(
+    access.orgId,
+    documents.map((document) => document.fileId),
+  );
   const staged = documents.filter((d) => d.retrieval === 'staged');
   // How long the oldest has waited (spec F4): staging is a "not yet", and a
   // "not yet" of three months is a decision nobody made.
@@ -62,13 +58,18 @@ export default async function BrainDocumentsPage({ searchParams }: Props) {
   );
 
   return (
-    <section>
+    <section className="space-y-4" data-panel-fullwidth>
       <BrainScreen context={{ view: 'documents', selectedFileIds: [] }} />
       <title>{t('title')}</title>
       <div className="mb-3 flex flex-wrap items-start justify-between gap-3">
-        <p className="max-w-[720px] text-xs text-muted-foreground">
-          {t('intro')}
-        </p>
+        <div className="space-y-1">
+          <h2 className="font-display text-2xl font-semibold">
+            {t('screen-title')}
+          </h2>
+          <p className="max-w-[720px] text-sm text-muted-foreground">
+            {t('screen-intro')}
+          </p>
+        </div>
         {access.canWrite && <BrainUploadButton />}
       </div>
       {emptyOnly && (
@@ -109,70 +110,12 @@ export default async function BrainDocumentsPage({ searchParams }: Props) {
           )}
         />
       ) : (
-        <div className="overflow-x-auto">
-          <Table dense>
-            <TableHead>
-              <TableRow>
-                <TableHeader>{t('columns.document')}</TableHeader>
-                <TableHeader className="text-right">
-                  {t('columns.approved')}
-                </TableHeader>
-                <TableHeader className="text-right">
-                  {t('columns.candidates')}
-                </TableHeader>
-                <TableHeader>{t('columns.language')}</TableHeader>
-                <TableHeader>{t('columns.retrieval')}</TableHeader>
-                {access.canWrite && (
-                  <TableHeader className="text-right">
-                    {t('columns.actions')}
-                  </TableHeader>
-                )}
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {documents.map((d) => (
-                <TableRow key={d.fileId} data-testid="brain-document-row">
-                  <TableCell className="font-medium">
-                    {/*
-                      Truncated, with the full name in `title`: the table is
-                      `whitespace-nowrap`, so one long file name widened the
-                      whole table past the 1072px the layout gives it and
-                      pushed the actions column out of view.
-                    */}
-                    <span
-                      className="block max-w-[320px] truncate"
-                      title={d.fileName}
-                    >
-                      {d.fileName}
-                    </span>
-                  </TableCell>
-                  <TableCell className="text-right tabular-nums">
-                    {d.approvedPages}
-                  </TableCell>
-                  <TableCell className="text-right tabular-nums">
-                    {d.candidatePages}
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">
-                    {d.language
-                      ? languageName(d.language, locale)
-                      : t('language-none')}
-                  </TableCell>
-                  <TableCell>{t(`retrieval.${d.retrieval}`)}</TableCell>
-                  {access.canWrite && (
-                    <TableCell className="text-right">
-                      <DocumentRetrievalActions
-                        fileId={d.fileId}
-                        fileName={d.fileName}
-                        retrieval={d.retrieval}
-                        curated={d.approvedPages > 0}
-                      />
-                    </TableCell>
-                  )}
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+        <BrainDocumentsPanel
+          documents={documents}
+          extraction={extraction}
+          locale={locale}
+          canWrite={access.canWrite}
+        />
       )}
     </section>
   );

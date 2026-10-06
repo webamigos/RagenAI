@@ -70,6 +70,21 @@ describe('ExtractDialog', () => {
 });
 
 describe('RetryExtractionButton', () => {
+  it('uses an explicit document action label while keeping retry behavior', async () => {
+    actions.retryExtractionFindingAction.mockResolvedValue({
+      success: true,
+      documents: 1,
+    });
+    wrap(
+      <RetryExtractionButton findingPublicId="p1" label="Retry extraction" />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Retry extraction' }));
+    expect(await screen.findByText('Retry queued')).toBeVisible();
+    expect(actions.retryExtractionFindingAction).toHaveBeenCalledWith({
+      findingPublicId: 'p1',
+    });
+  });
+
   it('queues a retry and then says so instead of offering it again', async () => {
     actions.retryExtractionFindingAction.mockResolvedValue({
       success: true,

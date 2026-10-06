@@ -16,8 +16,10 @@ import { retryExtractionFindingAction } from '../actions';
  */
 export function RetryExtractionButton({
   findingPublicId,
+  label,
 }: {
   findingPublicId: string;
+  label?: string;
 }) {
   const t = useTranslations('brain.extract');
   const [pending, startTransition] = useTransition();
@@ -47,7 +49,7 @@ export function RetryExtractionButton({
         })
       }
     >
-      {t('retry')}
+      {label ?? t('retry')}
     </Button>
   );
 }
