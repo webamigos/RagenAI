@@ -29,6 +29,8 @@ const sigma = vi.hoisted(() => ({
     animations: Record<string, number>[];
     bbox: unknown;
     refreshes: number;
+    ratio: number;
+    cameraHandler: ((state: { ratio: number }) => void) | null;
     settings: {
       nodeReducer?: (
         id: string,
@@ -50,11 +52,18 @@ vi.mock('sigma', () => ({
     ) {
       sigma.instances.push(this as never);
     }
+    ratio = 0.5;
+    cameraHandler: ((state: { ratio: number }) => void) | null = null;
     getCamera() {
       const record = (name: string) => async () => {
         this.cameraCalls.push(name);
       };
       return {
+        getState: () => ({ ratio: this.ratio }),
+        on: (_event: string, fn: (state: { ratio: number }) => void) => {
+          this.cameraHandler = fn;
+        },
+        removeListener: () => {},
         setState: (state: Record<string, number>) =>
           this.cameraStates.push(state),
         animate: async (state: Record<string, number>) => {
@@ -1017,4 +1026,39 @@ describe('the card in Polish', () => {
       expect(link.querySelector('svg[aria-hidden="true"]')).not.toBeNull();
     }
   });
+});
+
+it('reprocesses label visibility at a zoom threshold and preserves selected neighbours', async () => {
+  render(
+    <NextIntlClientProvider locale="en" messages={messages}>
+      <BrainGraphCanvas view={view} layoutScope={SCOPE} />
+    </NextIntlClientProvider>,
+  );
+  await waitFor(() => expect(sigma.instances).toHaveLength(1));
+  const instance = sigma.instances[0]!;
+  const reducer = instance.settings.nodeReducer!;
+  const refreshes = instance.refreshes;
+  act(() => {
+    instance.ratio = 1;
+    instance.cameraHandler?.({ ratio: 1 });
+  });
+  expect(instance.refreshes).toBeGreaterThan(refreshes);
+  expect(reducer(A, { label: 'A' }).label).toBe('');
+  act(() => instance.handlers.clickNode!({ node: A }));
+  await waitFor(() => expect(reducer(A, { label: 'A' }).label).toBe('Urlop'));
+  expect(reducer(B, { label: 'B' }).forceLabel).toBe(true);
+});
+it('reuses the focused canvas and relation list without the global legend in compact mode', async () => {
+  render(
+    <NextIntlClientProvider locale="en" messages={messages}>
+      <BrainGraphCanvas
+        view={{ ...view, focus: A }}
+        layoutScope={SCOPE}
+        compact
+      />
+    </NextIntlClientProvider>,
+  );
+  await waitFor(() => expect(sigma.instances).toHaveLength(1));
+  expect(screen.getByTestId('brain-graph-card')).toHaveTextContent('Urlop');
+  expect(screen.queryByTestId('brain-graph-legend')).not.toBeInTheDocument();
 });

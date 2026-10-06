@@ -2893,7 +2893,37 @@
         "AMBIGUOUS": "Niepewne"
       },
       "empty-in-language-title": "Nic w tym języku",
-      "empty-in-language-description": "Żaden dokument nie jest w tym języku albo żadna strona go nie cytuje. Wybierz inny język albo wszystkie."
+      "empty-in-language-description": "Żaden dokument nie jest w tym języku albo żadna strona go nie cytuje. Wybierz inny język albo wszystkie.",
+      "connections-title": "Jak łączy się wiedza",
+      "connections-description": "Najpierw tematy, potem szczegóły. Pełny graf zostaje dla tych, którzy go potrzebują.",
+      "back-brain": "← Brain",
+      "views-label": "Widok grafu",
+      "views": {
+        "topics": "Tematy",
+        "neighbourhood": "Sąsiedztwo strony",
+        "full": "Pełny graf"
+      },
+      "topics-title": "Mapa tematów",
+      "topics-scale": "Wielkość = liczba stron · kolor = stan przeglądu",
+      "topic-pages": "{count, plural, one {# strona} few {# strony} many {# stron} other {# strony}}",
+      "topic-approved": "Są zatwierdzone strony",
+      "topic-approved-count": "{count} zatw.",
+      "topic-candidates": "Same kandydaci",
+      "isolated-count": "{count, plural, one {# strona poza głównymi tematami} few {# strony poza głównymi tematami} many {# stron poza głównymi tematami} other {# strony poza głównymi tematami}}",
+      "isolated-description": "Zamiast kolumny luźnych kropek: lista stron bez powiązań. Otwórz stronę, aby zaproponować powiązania.",
+      "review-isolated": "Przejrzyj strony bez powiązań",
+      "isolated-list": "Strony bez powiązań",
+      "group-pages": "Strony w grupie ({count})",
+      "review-page": "Przejrzyj stronę",
+      "search-all-pages": "Znajdź stronę, aby zobaczyć jej sąsiedztwo",
+      "search-results-count": "Wyświetlono {shown} z {count} pasujących stron",
+      "status": {
+        "APPROVED": "Zatwierdzona",
+        "CANDIDATE": "Kandydat",
+        "REJECTED": "Odrzucona",
+        "STALE": "Nieaktualna"
+      },
+      "review-group": "Przejrzyj całą grupę ({count})"
     },
     "export": {
       "ready": "Gotowe do eksportu: {count}",
