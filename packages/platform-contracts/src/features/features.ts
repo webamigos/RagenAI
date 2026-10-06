@@ -46,6 +46,7 @@ export const FEATURE_KEYS = [
   'sectionSelection',
   'personalMemory',
   'crossQueryFusion',
+  'languagePairs',
 ] as const;
 
 export type FeatureKey = (typeof FEATURE_KEYS)[number];
@@ -169,6 +170,13 @@ export type FeatureOverrides = Partial<Record<FeatureKey, boolean | null>>;
  * default until B1 measures it; it changes only what a turn reads, so it
  * applies to every file at once.
  *
+ * `languagePairs` lets a person link two files that hold the same document in
+ * different languages (ADR-54, Phase 8 of the Brain rebuild): suggestions,
+ * the pair toggle in the knowledge base, the PII inconsistency card and pair
+ * rows in Brain. It is built across several PRs behind this key (ADR-50), so it
+ * defaults to `false`. A pair changes what the panel shows and never what a
+ * question retrieves, and Ragen never creates one on its own.
+ *
  * `personalMemory` lets panel chat remember what a user says about themselves
  * — preferences, role, ongoing work — across their own threads (spec
  * 2026-09-27-personal-memory-across-threads). One extraction call per turn,
@@ -202,6 +210,7 @@ export const DEFAULT_FEATURES: FeatureFlags = {
   sectionSelection: false,
   personalMemory: false,
   crossQueryFusion: false,
+  languagePairs: false,
 };
 
 /** Human-readable names, shared so the admin panel and the app cannot disagree. */
@@ -238,6 +247,8 @@ export const FEATURE_LABELS: Record<FeatureKey, string> = {
     'Personal memory: chat remembers what each user says about themselves (experimental, one LLM call per turn)',
   crossQueryFusion:
     'Cross-query fusion: without a reranker, rank hits from every query together so the multi-query variant counts',
+  languagePairs:
+    'Language pairs: link the same document in two languages (suggestions, PII check, Brain grouping)',
 };
 
 /**

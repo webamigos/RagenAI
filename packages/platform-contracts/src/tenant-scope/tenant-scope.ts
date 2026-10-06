@@ -47,6 +47,8 @@ export const TENANT_SCOPED_MODELS: Record<string, string> = {
   Chatbot: 'organizationId',
   Notification: 'organizationId',
   DocumentVersion: 'organizationId',
+  DocumentPair: 'organizationId',
+  DocumentPairMember: 'organizationId',
   DocumentCitation: 'orgId',
   DocumentRetrieval: 'orgId',
   // Nullable on Guardrail, where null marks a platform rule applying to every
