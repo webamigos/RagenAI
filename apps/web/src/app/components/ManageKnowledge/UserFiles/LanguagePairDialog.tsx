@@ -71,6 +71,7 @@ export function LanguagePairDialog({ file, onClose, onChanged }: Props) {
         logger.warn({ err: error }, 'Pair suggestions failed');
         if (!cancelled) {
           setSuggestions([]);
+          setFailed(true);
         }
       });
     return () => {
@@ -124,7 +125,7 @@ export function LanguagePairDialog({ file, onClose, onChanged }: Props) {
             {t('loading')}
           </p>
         )}
-        {!counterpart && suggestions?.length === 0 && (
+        {!counterpart && !failed && suggestions?.length === 0 && (
           <p className="text-sm text-muted-foreground">{t('none-found')}</p>
         )}
         {!counterpart && suggestions && suggestions.length > 0 && (

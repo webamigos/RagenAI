@@ -78,6 +78,13 @@ describe('LanguagePairDialog', () => {
     );
   });
 
+  it('shows an error, not "no suggestions", when the suggestions cannot be loaded', async () => {
+    suggest.mockRejectedValue(new Error('network'));
+    show(file);
+    expect(await screen.findByRole('alert')).toBeInTheDocument();
+    expect(screen.queryByText(/No suggestions/)).toBeNull();
+  });
+
   it('says so when there is nothing to suggest', async () => {
     show(file);
     expect(await screen.findByText(/No suggestions/)).toBeInTheDocument();
