@@ -759,3 +759,23 @@ The real DCR client and synthetic old unused client are deleted, while recent,
 owned and consented clients and the consent survive repeated runs. The E2E uses
 a fresh request context without cookies, cleans up all its created client ids,
 and passes on Docker Desktop (1/1). Fifteen focused adapter/runner tests pass.
+
+
+### Verification after the real DCR retention fix — 2026-10-06
+
+Commit `0fc333fd6` includes the real anonymous registration retention fix and
+its regression coverage. `npm run verify` encounters the three existing root
+architecture failures and interrupts outstanding tasks. Running
+`npx turbo run lint typecheck typecheck:config test build --concurrency=4 --continue`
+then completes all 70 tasks: 69 succeed, and only the root test task fails.
+Web has 5078 passing tests (one skipped and one todo), API 1314, MCP 139,
+admin 704 and worker 1217. Root tests have 4003 passing tests and the same
+three failures: workspace manifest, architecture tree and package counts,
+all associated with the previously reproduced untracked `packages/db` cache
+directory. All application builds, lint and typechecks pass.
+
+The focused retention tests pass (15), and the Docker Desktop `p0-98` E2E
+passes against the real provider registration endpoint. The working tree is
+clean after the fix. D5 still requires the separately requested approval to
+deploy to the public demo, apply migrations and enable a pilot organization;
+no rollout or public demo change has been made.
