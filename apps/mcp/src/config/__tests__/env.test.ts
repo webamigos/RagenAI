@@ -240,7 +240,10 @@ describe('MCP OAuth resource configuration', () => {
 it.each([
   'http://auth.example',
   'https://auth.example/api/auth',
-  Object.assign(new URL('https://auth.example'), { username: 'user', password: 'password' }).href,
+  Object.assign(new URL('https://auth.example'), {
+    username: 'user',
+    password: 'password',
+  }).href,
   'https://auth.example?query=1',
   'https://auth.example#fragment',
 ])('rejects an unsafe OAuth issuer origin %s', (BETTER_AUTH_URL) => {

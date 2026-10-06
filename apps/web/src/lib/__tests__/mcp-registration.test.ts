@@ -38,7 +38,10 @@ describe('MCP registration policy', () => {
     'javascript:alert(1)',
     '/callback',
     'not a URI',
-    Object.assign(new URL('https://client.example/callback'), { username: 'user', password: 'pass' }).href,
+    Object.assign(new URL('https://client.example/callback'), {
+      username: 'user',
+      password: 'pass',
+    }).href,
     'https://client.example/callback#fragment',
     'https://*.example/callback',
   ])('rejects unsafe redirect: %s', (uri) => {

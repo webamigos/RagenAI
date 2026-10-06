@@ -33,7 +33,10 @@ describe('MCP OAuth environment', () => {
     'not-a-url',
     'http://mcp.example/mcp',
     'https://mcp.example/other',
-    Object.assign(new URL('https://mcp.example/mcp'), { username: 'user', password: 'password' }).href,
+    Object.assign(new URL('https://mcp.example/mcp'), {
+      username: 'user',
+      password: 'password',
+    }).href,
     'https://mcp.example/mcp?a=b',
     'https://mcp.example/mcp#fragment',
   ])('refuses %s', (url) => {
