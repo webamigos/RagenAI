@@ -2,7 +2,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const db = vi.hoisted(() => ({
   userFile: { findFirst: vi.fn(), updateMany: vi.fn(), findMany: vi.fn() },
-  knowledgePageSource: { findFirst: vi.fn(), groupBy: vi.fn() },
+  knowledgePageSource: {
+    findFirst: vi.fn(),
+    groupBy: vi.fn(),
+    findMany: vi.fn(),
+  },
 }));
 vi.mock('@ragenai/prisma-client', () => ({ default: db }));
 const vectors = vi.hoisted(() => ({ deleteFileFromVectorStore: vi.fn() }));
@@ -265,5 +269,22 @@ describe('getBrainDocumentsQuery', () => {
     for (const [args] of db.knowledgePageSource.groupBy.mock.calls) {
       expect(args.where.organizationId).toBe(ORG);
     }
+  });
+});
+
+describe('overview empty-document destination', () => {
+  it('excludes any cited file, scoped to the organization, without a display cap', async () => {
+    db.knowledgePageSource.findMany.mockResolvedValue([{ fileId: 'cited' }]);
+    db.userFile.findMany.mockResolvedValue([]);
+    expect(await getBrainDocumentsQuery(ORG, null, true)).toEqual([]);
+    expect(db.userFile.findMany.mock.calls[0][0].where).toMatchObject({
+      organizationId: ORG,
+      id: { notIn: ['cited'] },
+    });
+    expect(db.userFile.findMany.mock.calls[0][0]).not.toHaveProperty('take');
+    expect(db.knowledgePageSource.findMany.mock.calls[0][0]).toMatchObject({
+      where: { organizationId: ORG },
+      distinct: ['fileId'],
+    });
   });
 });

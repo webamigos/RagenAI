@@ -4,6 +4,10 @@ import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
+import {
+  withPageFilters,
+  type PageFilters,
+} from '@/features/brain/utils/page-filters';
 import { useRouter } from '@/i18n/routing';
 
 /**
@@ -15,10 +19,12 @@ export function PageSearch({
   search,
   status,
   language,
+  filters = {},
 }: {
   search: string | null;
   status: string | null;
   language: string | null;
+  filters?: PageFilters;
 }) {
   const t = useTranslations('brain');
   const router = useRouter();
@@ -44,7 +50,7 @@ export function PageSearch({
       params.set('lang', language);
     }
     const query = params.toString();
-    router.push(query ? `/brain?${query}` : '/brain');
+    router.push(withPageFilters(query ? `/brain?${query}` : '/brain', filters));
   };
 
   return (

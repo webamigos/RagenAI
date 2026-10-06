@@ -141,3 +141,10 @@ describe('describeScreenQuery', () => {
     ).toBe('The findings inbox.');
   });
 });
+
+it('describes overview as an overview without reading unscoped data', async () => {
+  expect(await describeScreenQuery('org-1', { view: 'overview' })).toContain(
+    'The Brain overview',
+  );
+  expect(db.knowledgePage.findFirst).not.toHaveBeenCalled();
+});

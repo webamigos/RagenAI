@@ -36,6 +36,7 @@ describe('BrainTabs', () => {
   // The segment under /brain. A page in the graph's drawer is `graph`, as
   // the graph is what fills the screen; the full page is `pages`.
   it.each([
+    ['overview', /knowledge has been reviewed/],
     [null, /exact quotes/],
     ['pages', /exact quotes/],
     ['findings', /needs your attention/],
@@ -63,6 +64,19 @@ describe('BrainTabs', () => {
     } finally {
       search.current = '';
     }
+  });
+
+  it('places overview first while preserving the pages list route', () => {
+    segment.current = 'overview';
+    wrap(<BrainTabs />);
+    expect(screen.getAllByRole('link')[0]).toHaveAttribute(
+      'href',
+      '/brain/overview',
+    );
+    expect(screen.getByRole('link', { name: 'Overview' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
   });
 
   it('marks the active tab for assistive technology, not only by its look', () => {

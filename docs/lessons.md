@@ -164,6 +164,7 @@ After a nontrivial correction or a non-obvious gotcha (see `AGENTS.md`'s "Post-T
 
 ### frontend
 
+- [Brain overview counts need the same scope as their destination lists](lessons/brain-overview-counts-need-matching-destinations.md) — area:frontend,architecture,testing; module:web,brain; topic:brain,counts,filters,languages,navigation. Global page counts differ from per-file coverage; a summary's filters must also narrow its destination list, total and pagination.
 - [Brain citations are not pages, and publication completion must reach the mounted screen](lessons/brain-citations-and-publication-state.md) — area:frontend,architecture,testing; module:web,worker,brain-core; topic:brain,counts,citations,publication,async-state. Count distinct file/page pairs rather than quote rows, and refresh a mounted pending publication after the worker completes.
 
 - [React rewrites `dangerouslySetInnerHTML` on every re-render, so marks added to that DOM vanish the moment the component updates](lessons/react-rewrites-inner-html-on-every-render.md) — area:frontend; module:web; topic:react,dangerously-set-inner-html,dom-mutation,citations,highlighting,false-green. React 19 compares the prop *object*, and `{ __html }` is new each render, so the citation highlight's own "found" state re-wrote the DOCX HTML and wiped its `<mark>`s; the effect did not re-run to restore them. Memoise the element so React skips the subtree.

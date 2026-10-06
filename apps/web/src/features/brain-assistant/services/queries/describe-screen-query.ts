@@ -15,6 +15,8 @@ export async function describeScreenQuery(
   screen: BrainScreenContext,
 ): Promise<string> {
   switch (screen.view) {
+    case 'overview':
+      return 'The Brain overview: documents, review stages, open findings and candidate coverage. Use listPages, listFindings and listDocuments to inspect the current data.';
     case 'pages':
       return `The list of knowledge pages${screen.status ? `, filtered to ${screen.status}` : ''}.`;
     case 'inbox':

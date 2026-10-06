@@ -16,3 +16,12 @@ export const FINDING_STATUS_FILTERS = [
   'RESOLVED',
   'DISMISSED',
 ] as const;
+
+export const FINDING_TYPE_FILTERS = [
+  'CONTRADICTION',
+  'GAP',
+  'STALE',
+  'ORPHAN',
+  'UNOWNED',
+  'EXTRACTION_FAILED',
+] as const;

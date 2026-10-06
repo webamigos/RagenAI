@@ -29,6 +29,7 @@ const PAGE_STATUSES = ['CANDIDATE', 'APPROVED', 'STALE', 'REJECTED'] as const;
  * id that answers nothing there is simply absent from what the model sees.
  */
 export const brainScreenContextSchema = z.discriminatedUnion('view', [
+  z.object({ view: z.literal('overview') }),
   z.object({
     view: z.literal('pages'),
     status: z.enum(PAGE_STATUSES).nullable().default(null),

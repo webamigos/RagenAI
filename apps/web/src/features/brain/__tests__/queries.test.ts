@@ -393,3 +393,33 @@ describe('publicationState', () => {
     expect(publicationState(null, 'WITHDRAWN')).toBe('withdrawn');
   });
 });
+
+describe('overview destination filters', () => {
+  it('filters unowned candidates in both rows and total', async () => {
+    await getKnowledgePagesQuery(ORG, 'CANDIDATE', 1, null, null, {
+      owner: 'none',
+    });
+    for (const method of [db.knowledgePage.findMany, db.knowledgePage.count]) {
+      expect(method.mock.calls[0][0].where).toMatchObject({
+        organizationId: ORG,
+        status: 'CANDIDATE',
+        ownerId: null,
+      });
+    }
+  });
+  it('includes every timestamp-published page, even stale or rejected', async () => {
+    await getKnowledgePagesQuery(ORG, null, 1, null, null, { published: true });
+    expect(db.knowledgePage.count.mock.calls[0][0].where).toEqual({
+      organizationId: ORG,
+      publishedAt: { not: null },
+    });
+  });
+  it('filters candidates by a scoped source file', async () => {
+    await getKnowledgePagesQuery(ORG, 'CANDIDATE', 1, null, null, {
+      file: PUBLIC_ID,
+    });
+    expect(db.knowledgePage.count.mock.calls[0][0].where.sources).toEqual({
+      some: { organizationId: ORG, fileId: PUBLIC_ID },
+    });
+  });
+});

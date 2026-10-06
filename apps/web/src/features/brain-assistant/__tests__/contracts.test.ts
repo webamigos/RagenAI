@@ -13,6 +13,7 @@ const ID = '11111111-2222-4333-8444-555555555555';
 describe('brainScreenContextSchema', () => {
   it('accepts every view the Brain screens send', () => {
     for (const screen of [
+      { view: 'overview' },
       { view: 'pages', status: null },
       { view: 'pages', status: 'CANDIDATE' },
       { view: 'inbox', status: 'OPEN', type: 'CONTRADICTION' },

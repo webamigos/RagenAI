@@ -2617,7 +2617,8 @@
       "pages": "Tietosivut",
       "findings": "Havainnot",
       "graph": "Graafi",
-      "documents": "Asiakirjat"
+      "documents": "Asiakirjat",
+      "overview": "Overview"
     },
     "filters": {
       "status": "Tila",
@@ -2967,7 +2968,9 @@
       "staged-oldest": "vanhin ladattu {when}",
       "language-none": "Tunnistamaton",
       "empty-in-language-title": "Ei mitään tällä kielellä",
-      "empty-in-language-description": "Ei asiakirjaa tällä kielellä tai sivua, joka lainaa sitä. Valitse toinen kieli tai kaikki."
+      "empty-in-language-description": "Ei asiakirjaa tällä kielellä tai sivua, joka lainaa sitä. Valitse toinen kieli tai kaikki.",
+      "empty-filter": "Documents without extracted knowledge",
+      "clear-filter": "Show all documents"
     },
     "publish-all": {
       "button": "Julkaise hyväksytyt ({count})",
@@ -3068,7 +3071,8 @@
       "pages": "Tietosivut lähteineen: jokainen sivu esittää väitteet lähdedokumenttien sanatarkkoine lainauksineen. Ehdokas odottaa tarkistusta; hyväksy ja julkaise sivu, jotta chat voi vastata sen pohjalta.",
       "findings": "Mikä vaatii huomiotasi: ristiriidat, aukot, vanhentuneet tai omistajattomat sivut ja dokumentit, joita Brain ei pystynyt lukemaan.",
       "graph": "Miten sivut liittyvät toisiinsa — mikä prosessi edellyttää mitäkin käytäntöä ja mitkä sivut viittaavat toisiinsa.",
-      "documents": "Lähdedokumentit, joita Brain lukee: kuinka monta sivua kustakin syntyi ja haetaanko sitä yhä chatissa."
+      "documents": "Lähdedokumentit, joita Brain lukee: kuinka monta sivua kustakin syntyi ja haetaanko sitä yhä chatissa.",
+      "overview": "See how much knowledge has been reviewed and what needs attention."
     },
     "relation-kind": {
       "approves": "hyväksyy",
@@ -3090,6 +3094,41 @@
       "all": "Kaikki kielet",
       "none": "Tunnistamaton",
       "option": "{name} ({count})"
+    },
+    "overview": {
+      "intro": "Company knowledge extracted from documents. See how much has been reviewed by people.",
+      "start-review": "Start review ({count})",
+      "pipeline-title": "The knowledge journey: from documents to chat answers",
+      "publication-description": "Published pages are available in chat. Source documents may still be searched.",
+      "stages": {
+        "documents": "Documents",
+        "candidates": "Candidates (waiting)",
+        "approved": "Approved",
+        "published": "Published in chat"
+      },
+      "empty-documents-count": "{count} without extracted knowledge",
+      "unowned-count": "{count} without an owner",
+      "approved-share": "{percent}% of candidate and approved pages",
+      "awaiting-publication": "{count} approved pages awaiting publication",
+      "attention-title": "Needs attention",
+      "unowned-title": "Pages without an owner",
+      "unowned-description": "They cannot be approved. Assign an owner before review.",
+      "empty-documents-title": "Documents without knowledge",
+      "empty-documents-description": "0 pages. Check the documents and extract knowledge.",
+      "finding-description": "Review the finding and address its cause.",
+      "attention-empty": "No findings or pages need an owner.",
+      "ranking-title": "Where the most unreviewed knowledge is",
+      "legend": "Approved / candidates · shared scale across documents",
+      "coverage-counts": "{approved} approved · {candidates} candidates",
+      "all-documents": "All documents ({count})",
+      "ranking-empty": "No candidates to review.",
+      "empty-title": "Knowledge starts with documents",
+      "empty-description": "Upload documents to extract and review company knowledge.",
+      "empty-language-description": "There are no documents in this language. Choose another language or upload documents.",
+      "clear-filter": "Clear overview filter",
+      "filtered-list": "List narrowed by an overview filter",
+      "no-pages-title": "No pages match this filter",
+      "no-pages-description": "Change or clear the filter to see the remaining pages."
     }
   },
   "project-context-manager": {

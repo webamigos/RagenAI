@@ -8,6 +8,7 @@ import type { ReactNode } from 'react';
 import { withLanguage } from '@/features/brain/utils/with-language';
 
 const TABS = [
+  { key: 'overview', path: '/brain/overview', segment: 'overview' },
   { key: 'pages', path: '/brain', segment: null },
   { key: 'findings', path: '/brain/findings', segment: 'findings' },
   { key: 'graph', path: '/brain/graph', segment: 'graph' },
@@ -23,8 +24,8 @@ export function BrainTabs({ aside }: { aside?: ReactNode }) {
   const segment = useSelectedLayoutSegment();
   // The language filter is Brain-wide: switching tabs keeps it.
   const language = useSearchParams().get('lang');
-  const active = TABS.findIndex((tab, i) => i > 0 && tab.segment === segment);
-  const current = active === -1 ? 0 : active;
+  const active = TABS.findIndex((tab) => tab.segment === segment);
+  const current = active === -1 ? 1 : active;
   // Each tab is a link and navigates on its own. Pushing here as well moved
   // the current tab on a Ctrl/Cmd-click that asked for a new one.
   const go = () => {};
@@ -32,8 +33,16 @@ export function BrainTabs({ aside }: { aside?: ReactNode }) {
   return (
     <div className="mb-4 mt-3">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <Tabs className="w-auto" activeTab={current} setActiveTab={go}>
-          <TabList activeTab={current} setActiveTab={go}>
+        <Tabs
+          className="w-auto min-w-0 max-w-full overflow-x-auto"
+          activeTab={current}
+          setActiveTab={go}
+        >
+          <TabList
+            className="whitespace-nowrap"
+            activeTab={current}
+            setActiveTab={go}
+          >
             {TABS.map((tab) => (
               <Tab key={tab.key} href={withLanguage(tab.path, language)}>
                 {t(`tabs.${tab.key}`)}
@@ -44,8 +53,8 @@ export function BrainTabs({ aside }: { aside?: ReactNode }) {
         {aside}
       </div>
       {/*
-        What this tab is for, in one line: four tabs over one feature read as
-        four names for the same thing until someone says how they differ.
+        What this tab is for, in one line: five tabs over one feature read as
+        names for the same thing until someone says how they differ.
       */}
       <p
         data-testid="brain-tab-hint"
