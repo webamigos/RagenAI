@@ -1,3 +1,4 @@
+import { canManageOrg } from '@/lib/auth-access-control';
 import db from '@ragenai/prisma-client';
 import { APIError } from 'better-auth/api';
 import { isFeatureEnabledQuery } from '@/features/subscriptions/services/queries/get-effective-features-query';
@@ -49,20 +50,35 @@ export async function getMcpWorkspaceOptions(userId: string) {
     }
     const projects = await db.project.findMany({
       where: { organizationId: member.organizationId, isArchived: false },
-      select: { id: true, title: true },
+      select: { id: true, title: true, ownerId: true },
     });
-    const assistants = [];
-    for (const project of projects) {
-      const permission = await resolveProjectPermissionForMember(
-        project.id,
-        member.organizationId,
-        userId,
-        member.role,
-      );
-      if (permission.canView) {
-        assistants.push(project);
-      }
-    }
+    const teams = await db.teamMember.findMany({
+      where: { userId, team: { organizationId: member.organizationId } },
+      select: { teamId: true },
+    });
+    const grants = await db.projectPermission.findMany({
+      where: {
+        projectId: { in: projects.map((project) => project.id) },
+        OR: [
+          { granteeType: 'user', granteeId: userId },
+          {
+            granteeType: 'team',
+            granteeId: { in: teams.map((team) => team.teamId) },
+          },
+        ],
+      },
+      select: { projectId: true },
+    });
+    const shared = new Set(grants.map((grant) => grant.projectId));
+    const assistants = projects
+      .filter(
+        (project) =>
+          project.ownerId === userId ||
+          canManageOrg(member.role) ||
+          project.ownerId === null ||
+          shared.has(project.id),
+      )
+      .map(({ id, title }) => ({ id, title }));
     options.push({
       id: member.organizationId,
       name: member.organization.name,

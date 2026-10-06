@@ -1,6 +1,9 @@
 import { ProjectsService } from '../../projects/projects.service.js';
 import { ForbiddenException, Injectable } from '@nestjs/common';
-import { scopeRequiresProject } from '@ragenai/platform-contracts';
+import {
+  canManageOrg,
+  scopeRequiresProject,
+} from '@ragenai/platform-contracts';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { type ApiContext } from '../types/api-context.js';
 import { stripPrefix } from '../utils/openai-format.js';
@@ -49,23 +52,46 @@ export class AssistantScopeService {
         organizationId: context.orgId,
         ...(confined ? { id: confined } : {}),
       },
-      select: { id: true },
+      select: { id: true, ownerId: true },
     });
-    const permissions = await Promise.all(
-      projects.map(async (project) => ({
-        id: project.id,
-        canView: (
-          await this.projects.getEffectiveProjectPermission(
-            project.id,
-            context.orgId,
-            context.userId,
-          )
-        ).canView,
-      })),
-    );
-    return permissions
-      .filter((permission) => permission.canView)
-      .map((permission) => permission.id);
+    if (projects.length === 0) return [];
+    const [member, teams] = await Promise.all([
+      this.prisma.client.member
+        .findFirst({
+          where: { organizationId: context.orgId, userId: context.userId },
+        })
+        .catch(() => null),
+      this.prisma.client.teamMember.findMany({
+        where: {
+          userId: context.userId,
+          team: { organizationId: context.orgId },
+        },
+        select: { teamId: true },
+      }),
+    ]);
+    const grants = await this.prisma.client.projectPermission.findMany({
+      where: {
+        projectId: { in: projects.map((project) => project.id) },
+        OR: [
+          { granteeType: 'user', granteeId: context.userId },
+          {
+            granteeType: 'team',
+            granteeId: { in: teams.map((team) => team.teamId) },
+          },
+        ],
+      },
+      select: { projectId: true },
+    });
+    const shared = new Set(grants.map((grant) => grant.projectId));
+    return projects
+      .filter(
+        (project) =>
+          project.ownerId === context.userId ||
+          canManageOrg(member?.role) ||
+          project.ownerId === null ||
+          shared.has(project.id),
+      )
+      .map((project) => project.id);
   }
 
   private async assertVisible(

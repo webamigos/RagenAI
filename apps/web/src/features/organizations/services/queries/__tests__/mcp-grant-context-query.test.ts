@@ -5,11 +5,15 @@ const mocks = vi.hoisted(() => ({
   projects: vi.fn(),
   enabled: vi.fn(),
   permission: vi.fn(),
+  teams: vi.fn(),
+  grants: vi.fn(),
 }));
 vi.mock('@ragenai/prisma-client', () => ({
   default: {
     member: { findFirst: mocks.member, findMany: mocks.members },
     project: { findMany: mocks.projects },
+    teamMember: { findMany: mocks.teams },
+    projectPermission: { findMany: mocks.grants },
   },
 }));
 vi.mock(
@@ -34,6 +38,8 @@ describe('live MCP authorization', () => {
   beforeEach(() => {
     vi.resetAllMocks();
     mocks.member.mockResolvedValue(member);
+    mocks.teams.mockResolvedValue([{ teamId: 'team-a' }]);
+    mocks.grants.mockResolvedValue([{ projectId: 'public' }]);
     mocks.enabled.mockResolvedValue(true);
     mocks.permission.mockResolvedValue({ canView: true });
   });
@@ -90,8 +96,8 @@ describe('live MCP authorization', () => {
     ]);
     mocks.enabled.mockImplementation(async (org: string) => org !== 'disabled');
     mocks.projects.mockResolvedValue([
-      { id: 'public', title: 'Shared' },
-      { id: 'private', title: 'Private' },
+      { id: 'public', title: 'Shared', ownerId: 'other' },
+      { id: 'private', title: 'Private', ownerId: 'other' },
     ]);
     mocks.permission.mockImplementation(async (project: string) => ({
       canView: project === 'public',
@@ -103,6 +109,37 @@ describe('live MCP authorization', () => {
         assistants: [{ id: 'public', title: 'Shared' }],
       },
     ]);
-    expect(mocks.projects.mock.calls[0][0].where.organizationId).toBe('org-a');
+    expect(mocks.projects.mock.calls[0][0].where).toEqual({
+      organizationId: 'org-a',
+      isArchived: false,
+    });
+    expect(mocks.permission).not.toHaveBeenCalled();
+    expect(mocks.teams).toHaveBeenCalledTimes(1);
+    expect(mocks.grants).toHaveBeenCalledTimes(1);
+    expect(mocks.grants.mock.calls[0][0].where).toEqual({
+      projectId: { in: ['public', 'private'] },
+      OR: [
+        { granteeType: 'user', granteeId: 'user-a' },
+        { granteeType: 'team', granteeId: { in: ['team-a'] } },
+      ],
+    });
   });
+  it.each(['member', 'admin', 'owner'])(
+    'preserves workspace visibility for %s',
+    async (role) => {
+      mocks.members.mockResolvedValue([{ ...member, role }]);
+      mocks.grants.mockResolvedValue([]);
+      mocks.projects.mockResolvedValue([
+        { id: 'owned', title: 'Owned', ownerId: 'user-a' },
+        { id: 'legacy', title: 'Legacy', ownerId: null },
+        { id: 'private', title: 'Private', ownerId: 'other' },
+      ]);
+      const options = await getMcpWorkspaceOptions('user-a');
+      expect(options[0].assistants.map((p) => p.id)).toEqual(
+        role === 'member'
+          ? ['owned', 'legacy']
+          : ['owned', 'legacy', 'private'],
+      );
+    },
+  );
 });

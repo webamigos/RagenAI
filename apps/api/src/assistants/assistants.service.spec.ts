@@ -45,6 +45,11 @@ describe('AssistantsService', () => {
     const prisma = {
       client: {
         project: projectOps,
+        member: { findFirst: vi.fn().mockResolvedValue({ role: 'member' }) },
+        teamMember: { findMany: vi.fn().mockResolvedValue([]) },
+        projectPermission: {
+          findMany: vi.fn().mockResolvedValue([{ projectId: 'shared' }]),
+        },
         organizationSettings: {
           findUnique: vi
             .fn()
@@ -271,13 +276,13 @@ describe('AssistantsService', () => {
     });
   });
   it('list: filters private assistants before applying pagination to an OAuth grant', async () => {
-    const { service, projectOps, permissions } = makeService();
+    const { service, projectOps } = makeService();
     projectOps.findMany
-      .mockResolvedValueOnce([{ id: 'private' }, { id: 'shared' }])
+      .mockResolvedValueOnce([
+        { id: 'private', ownerId: 'other' },
+        { id: 'shared', ownerId: 'other' },
+      ])
       .mockResolvedValueOnce([{ ...project, id: 'shared' }]);
-    permissions.getEffectiveProjectPermission.mockImplementation((id: string) =>
-      Promise.resolve({ canView: id === 'shared' }),
-    );
     const out = await service.list(
       {
         ...context,

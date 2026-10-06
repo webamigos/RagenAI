@@ -20,6 +20,7 @@ describe('the shared demo account lock', () => {
     expect([...DEMO_ACCOUNT_LOCKED_PATHS].sort()).toEqual(
       [
         '/organization/create',
+        '/mcp/disconnect',
         '/update-user',
         '/change-password',
         '/set-password',
@@ -40,6 +41,9 @@ describe('the shared demo account lock', () => {
     expect(
       isDemoAccountLockedRequest('/organization/create', 'demo@x.test'),
     ).toBe(true);
+    expect(isDemoAccountLockedRequest('/mcp/disconnect', 'demo@x.test')).toBe(
+      true,
+    );
     expect(isDemoAccountLockedRequest('/change-password', 'demo@x.test')).toBe(
       true,
     );
@@ -65,6 +69,9 @@ describe('the shared demo account lock', () => {
       isDemoAccountLockedRequest('/organization/create', 'me@x.test'),
     ).toBe(false);
     expect(isDemoAccountLockedRequest('/change-password', 'me@x.test')).toBe(
+      false,
+    );
+    expect(isDemoAccountLockedRequest('/mcp/disconnect', 'me@x.test')).toBe(
       false,
     );
     expect(isDemoAccountLockedRequest('/update-user', undefined)).toBe(false);

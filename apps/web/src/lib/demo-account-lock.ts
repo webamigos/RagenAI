@@ -17,6 +17,7 @@ import { isSharedDemoAccount } from '@/libs/demo-credentials';
  */
 export const DEMO_ACCOUNT_LOCKED_PATHS = [
   '/organization/create',
+  '/mcp/disconnect',
   '/update-user',
   '/change-password',
   '/set-password',
