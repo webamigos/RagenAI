@@ -164,6 +164,8 @@ After a nontrivial correction or a non-obvious gotcha (see `AGENTS.md`'s "Post-T
 
 ### frontend
 
+- [Knowledge-list optimization must match the document route](lessons/knowledge-list-optimization-must-match-the-document-route.md) — area:frontend,architecture,testing; module:web,documents; topic:knowledge,optimization,diagnostics,authorization,bulk-actions. A warning is not optimization eligibility. Preserve table exclusions, unknown diagnostics and authorized file coverage, and retry only failed requests.
+
 - [Brain publication after approval needs its own timestamp](lessons/brain-review-publication-needs-approval-timestamp.md) — area:frontend,architecture,testing; module:web,brain; topic:brain,review,publication,concurrency,optimistic-locking. Pass the timestamp written under approval’s lock to publication; a fresh read can accept an intervening change. A publication error preserves approval and must say so.
 - [Brain relation proposals need both endpoint versions](lessons/brain-relation-proposals-need-both-endpoint-versions.md) — area:frontend,architecture,testing; module:web,brain; topic:brain,relations,proposals,concurrency,provenance. Shared sources provide suggestions, not evidence. Lock and validate both endpoints, retain INFERRED provenance and include inferred edges in the findings neighbourhood link.
 

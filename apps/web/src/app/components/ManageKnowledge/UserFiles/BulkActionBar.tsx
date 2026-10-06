@@ -21,6 +21,7 @@ type Props = {
   onShare: () => void;
   onChangePolicy: () => void;
   onReembed: () => void;
+  onOptimize?: () => void;
   isLoading?: boolean;
   /**
    * Whether to offer the policy at all. The per-row policy select renders
@@ -45,12 +46,14 @@ export const BulkActionBar = ({
   onShare,
   onChangePolicy,
   onReembed,
+  onOptimize,
   isLoading,
   canChangePolicy = false,
   stagedCount = 0,
   onSendStaged,
 }: Props) => {
   const t = useTranslations('bulk-action-bar');
+  const tKnowledge = useTranslations('knowledge-list');
 
   if (selectedCount === 0) {
     return null;
@@ -81,6 +84,17 @@ export const BulkActionBar = ({
         {t('selected', { count: selectedCount })}
       </span>
 
+      {onOptimize && (
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={onOptimize}
+          disabled={isLoading}
+          data-testid="bulk-optimize"
+        >
+          {tKnowledge('optimize-rag')}
+        </Button>
+      )}
       <Button
         variant="outline"
         size="sm"

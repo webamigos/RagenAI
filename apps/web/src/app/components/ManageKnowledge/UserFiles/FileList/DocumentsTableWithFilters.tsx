@@ -79,6 +79,8 @@ function buildVisiblePages(current: number, total: number): (number | null)[] {
 }
 
 type CommonProps = {
+  knowledgeList?: boolean;
+  onOptimizeFiles?: (ids: string[]) => void;
   result: PaginatedUserFilesResult;
   files?: UserFileType[];
   sort: UserFilesSort;
@@ -412,6 +414,8 @@ function FiltersBar({
 
 export function DocumentsTableWithFilters({
   result,
+  knowledgeList,
+  onOptimizeFiles,
   files,
   sort,
   dir,
@@ -533,6 +537,8 @@ export function DocumentsTableWithFilters({
       selectionBar={selectionBar}
     >
       <UserFilesTable
+        knowledgeList={knowledgeList}
+        onOptimizeFiles={onOptimizeFiles}
         files={files ?? result.items}
         subfolders={subfolders}
         onNavigateFolder={onNavigateFolder}

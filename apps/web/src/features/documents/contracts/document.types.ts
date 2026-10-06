@@ -28,6 +28,9 @@ export type UserFileType = {
   fileType: UserFile['fileType'];
   projectId: UserFile['projectId'];
   thumbnailS3Key?: string | null;
+  language?: string | null;
+  /** Distinct live source pages, absent when Brain is unavailable to the actor. */
+  brainCoverage?: { approved: number; candidates: number };
   embeddingStatus?: EmbeddingStatus;
   embeddingStartedAt?: UserFile['embeddingStartedAt'];
   embeddingCompletedAt?: UserFile['embeddingCompletedAt'];

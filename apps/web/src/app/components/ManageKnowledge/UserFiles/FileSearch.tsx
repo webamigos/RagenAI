@@ -39,10 +39,10 @@ export const FileSearch = ({
   return (
     <div className={className}>
       {/* --- MOBILE section (below md) --- */}
-      <div className="relative flex items-center justify-end md:hidden">
+      <div className="relative flex h-8 w-8 shrink-0 items-center justify-center md:hidden">
         {!isOpenMobile && (
           <button onClick={handleOpenSearch}>
-            <SearchIcon className="w-5 h-5 absolute top-6 right-2" />
+            <SearchIcon className="w-5 h-5" />
           </button>
         )}
 
@@ -52,7 +52,7 @@ export const FileSearch = ({
           onChange={onChange}
           onBlur={handleBlur}
           className={`
-          absolute right-0 top-1
+          absolute left-0 top-0
           overflow-hidden
           transition-all duration-300 ease-in-out
           h-7 pl-3

@@ -26,6 +26,13 @@ describe('FileSearch', () => {
    * laptop with the app sidebar open that pushed the last filter chip onto a
    * second line.
    */
+  it('anchors the mobile search inside its toolbar slot', () => {
+    renderSearch();
+    const mobile = screen.getAllByPlaceholderText('Search files')[0];
+    expect(mobile).toHaveClass('left-0', 'top-0');
+    expect(mobile.closest('.md\\:hidden')).toHaveClass('w-8', 'h-8');
+  });
+
   it('fills the width its toolbar gives it instead of fixing its own', () => {
     renderSearch();
 
