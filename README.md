@@ -96,7 +96,7 @@ helpers. Most existing clients work by changing the base URL.
 
 Ragen was not generated. Two years and 3,200 commits of hand-written
 architecture came first — the tenant-scope guard, the retrieval permission
-model, the CQRS feature modules, the shared contracts package. 50 ADRs
+model, the CQRS feature modules, the shared contracts package. 51 ADRs
 record what was rejected and why.
 
 Only then did the agent harness go on top: `AGENTS.md` as the canonical brief,
