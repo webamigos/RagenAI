@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
-import { computeAccessiblePrincipals } from '../document-access';
+import {
+  computeAccessiblePrincipals,
+  fileAccessWhere,
+} from '../document-access';
 
 const ORG = 'org_1';
 
@@ -91,5 +94,41 @@ describe('computeAccessiblePrincipals', () => {
         ],
       }),
     ).toEqual(['user:user_1', 'team:team_3']);
+  });
+});
+
+describe('fileAccessWhere (the one definition of who may read a file)', () => {
+  it('is unrestricted for the organization scope, and nothing for no scope', () => {
+    expect(
+      fileAccessWhere({ userId: 'u', teamIds: [], scope: 'organization' }),
+    ).toEqual({});
+    expect(
+      fileAccessWhere({ userId: 'u', teamIds: [], scope: 'none' }),
+    ).toEqual({
+      id: { in: [] },
+    });
+  });
+
+  it('does not treat an unowned file as org-wide: only isOrgWide does', () => {
+    const where = fileAccessWhere({
+      userId: 'u-1',
+      teamIds: [],
+      scope: 'member',
+    }) as { OR: Record<string, unknown>[] };
+    expect(where.OR).toContainEqual({ isOrgWide: true });
+    expect(where.OR).toContainEqual({ ownerId: 'u-1' });
+    expect(where.OR).not.toContainEqual({ ownerId: null });
+  });
+
+  it('adds team arms only when the actor has teams', () => {
+    const solo = JSON.stringify(
+      fileAccessWhere({ userId: 'u-1', teamIds: [], scope: 'member' }),
+    );
+    const teamed = JSON.stringify(
+      fileAccessWhere({ userId: 'u-1', teamIds: ['t-1'], scope: 'member' }),
+    );
+    expect(solo).not.toContain('"team"');
+    expect(teamed).toContain('"team"');
+    expect(teamed).toContain('"teamId":{"in":["t-1"]}');
   });
 });
