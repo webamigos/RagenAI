@@ -133,7 +133,7 @@ export const CollapsedSidebarRail = ({ showBrain = false }: Props) => {
 
       {showBrain && (
         <Link
-          href="/brain"
+          href="/brain/overview"
           className={isBrainActive ? activeIconButtonClass : iconButtonClass}
           aria-label={tSidebar('nav.brain')}
         >

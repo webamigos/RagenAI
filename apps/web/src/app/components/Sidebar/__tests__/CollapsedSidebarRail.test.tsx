@@ -80,7 +80,7 @@ describe('CollapsedSidebarRail', () => {
     const { unmount } = renderRail({ showBrain: true });
     expect(screen.getByRole('link', { name: 'Brain' })).toHaveAttribute(
       'href',
-      '/brain',
+      '/brain/overview',
     );
     unmount();
     renderRail();
