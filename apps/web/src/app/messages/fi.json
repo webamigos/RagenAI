@@ -2949,7 +2949,7 @@
         "STALE": "Vanhentunut"
       },
       "review-group": "Review entire group ({count})",
-      "pair-merge": "{count, plural, one {# candidate page comes} other {# candidate pages come}} from the same document in two languages and may be one page.",
+      "pair-merge": "{count, plural, one {# candidate page} other {# candidate pages}} may match a page drawn from the other language of a paired document.",
       "pair-merge-review": "Review and merge"
     },
     "export": {

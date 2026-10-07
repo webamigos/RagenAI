@@ -2949,7 +2949,7 @@
         "STALE": "Nieaktualna"
       },
       "review-group": "Przejrzyj całą grupę ({count})",
-      "pair-merge": "{count, plural, one {# strona kandydująca pochodzi} few {# strony kandydujące pochodzą} many {# stron kandydujących pochodzi} other {# strony kandydującej pochodzi}} z tego samego dokumentu w dwóch językach i może być jedną stroną.",
+      "pair-merge": "{count, plural, one {# strona kandydująca może pasować} few {# strony kandydujące mogą pasować} many {# stron kandydujących może pasować} other {# strony kandydującej może pasować}} do strony z drugiej wersji językowej sparowanego dokumentu.",
       "pair-merge-review": "Przejrzyj i scal"
     },
     "export": {
