@@ -39,6 +39,7 @@ import {
   resolveApiSources,
   type ApiSource,
 } from '../common/utils/api-sources.js';
+import { getBrainCitations } from '../brain/brain-citations.js';
 import type { GuardrailBlockedMarker } from '../threads/persist-api-thread.service.js';
 
 /**
@@ -236,6 +237,21 @@ export class ChatCompletionsService {
         chat_history: chatHistory,
       });
 
+      // Which cited files are published Brain pages, read as this caller: the
+      // actor is the one retrieval ran as, so a page or a source document the
+      // caller may not open never appears (spec E8).
+      const lookupBrain = (fileIds: string[]) =>
+        getBrainCitations(
+          this.prisma.client,
+          context.orgId,
+          {
+            userId: context.userId,
+            teamIds: membership.userTeamIds,
+            scope: membership.scope,
+          },
+          fileIds,
+        );
+
       // What the turn drew on rides along with the answer, so a persisted turn
       // is recorded with its sources (spec api-answers-carry-their-sources, A2b).
       const saveAssistantMessage = apiThread
@@ -297,7 +313,7 @@ export class ChatCompletionsService {
             trackUsage,
             saveAssistantMessage,
             ...(dto.ragen_sources
-              ? { resolveSources: () => resolveApiSources(result) }
+              ? { resolveSources: () => resolveApiSources(result, lookupBrain) }
               : {}),
           });
         } finally {
@@ -350,7 +366,7 @@ export class ChatCompletionsService {
             ? {
                 ragenSources: guardrailBlocked
                   ? []
-                  : await resolveApiSources(result),
+                  : await resolveApiSources(result, lookupBrain),
               }
             : {}),
         }),

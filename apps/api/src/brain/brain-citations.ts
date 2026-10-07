@@ -1,34 +1,25 @@
-import db from '@ragenai/prisma-client';
-
-import {
-  fileAccessWhere,
-  type DocumentActor,
-} from '@/features/documents/services/queries/document-access';
-
 import {
   canReadPage,
+  fileAccessWhere,
   shapeBrainCitations,
   type BrainCitations,
+  type DocumentActor,
 } from '@ragenai/rag-core';
 
+import type { PrismaService } from '../prisma/prisma.service.js';
+
 /**
- * The second level of a Brain citation (spec E8): for each cited file that
- * is a published page, the page's title and the source documents behind it.
+ * The second level of a Brain citation (spec E8) for an API answer: for each
+ * cited file that is a published page, the page's title and the source
+ * documents behind it that the caller may open.
  *
- * Two checks, because two things are shown:
- *
- * - **The page** by its own `accessibleBy`, matched against the reader's
- *   principals — the rule its chunks were retrieved under. The vehicle file's
- *   sharing is not the question: a reader who retrieved the page through a
- *   team principal may not pass `fileAccessWhere` on that file, and still
- *   read the page legitimately.
- * - **Each source document** by `fileAccessWhere`, the one predicate every
- *   by-id file read uses. A page widened to someone who may not see all of
- *   its sources shows them the page and only the sources they may open —
- *   never the names of the others (spec E8: "gets the page and no source
- *   list").
+ * The query is this app's, because the Prisma client is; the decisions — who
+ * may read a page, what a reader who may read it but not all of its sources is
+ * shown, and which files `actor` may open — are rag-core's, the same functions
+ * `apps/web` calls, so the panel and the API cannot answer differently.
  */
-export async function getBrainCitationsQuery(
+export async function getBrainCitations(
+  client: PrismaService['client'],
   orgId: string,
   actor: DocumentActor,
   fileIds: string[],
@@ -36,7 +27,7 @@ export async function getBrainCitationsQuery(
   if (actor.scope === 'none' || fileIds.length === 0) {
     return {};
   }
-  const pages = await db.knowledgePage.findMany({
+  const pages = await client.knowledgePage.findMany({
     where: {
       organizationId: orgId,
       publishedFileId: { in: [...new Set(fileIds)].slice(0, 50) },
@@ -64,11 +55,11 @@ export async function getBrainCitationsQuery(
     ...new Set(readable.flatMap((p) => p.sources.map((s) => s.fileId))),
   ];
   const files = sourceFileIds.length
-    ? await db.userFile.findMany({
+    ? await client.userFile.findMany({
         where: {
           organizationId: orgId,
           id: { in: sourceFileIds },
-          ...fileAccessWhere(actor),
+          ...(fileAccessWhere(actor) as Record<string, unknown>),
         },
         select: {
           id: true,
@@ -90,5 +81,3 @@ export async function getBrainCitationsQuery(
     })),
   );
 }
-
-export { canReadPage };

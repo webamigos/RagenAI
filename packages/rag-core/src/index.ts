@@ -52,9 +52,22 @@ export {
 } from './vector-metadata';
 
 export {
+  canReadPage,
+  shapeBrainCitations,
+  type BrainCitation,
+  type BrainCitations,
+  type CitedPage,
+  type ReadableSourceFile,
+} from './brain-citations';
+
+export {
   computeAccessiblePrincipals,
+  fileAccessWhere,
   type DocumentAccessGrant,
   type DocumentAccessInput,
+  type DocumentActor,
+  type FileAccessWhere,
+  type OrgVisibilityScope as DocumentActorScope,
 } from './document-access';
 
 export {
