@@ -173,7 +173,16 @@ export function SidebarLayout({
       <SidebarCollapseContext.Provider value={{ isCollapsed, toggle }}>
         <div className="relative isolate flex min-h-svh w-full bg-card max-lg:flex-col lg:bg-background">
           {/* Sidebar on desktop */}
+          {/*
+            The panel that is not showing is `inert`, not just zero-wide: both
+            render the same destinations, and a zero-width box is still in the
+            accessibility tree (`aria-hidden` says so to tools that do not read `inert`). Without it a screen reader met every link
+            twice, a keyboard walked into an invisible one, and a role query
+            for "Brain" matched two elements.
+          */}
           <div
+            inert={isCollapsed}
+            aria-hidden={isCollapsed || undefined}
             className={`fixed inset-y-0 left-0 max-lg:hidden transition-all duration-200 ${isCollapsed ? 'w-0 overflow-hidden' : 'w-64'}`}
           >
             {sidebar}
@@ -182,6 +191,8 @@ export function SidebarLayout({
           {/* Collapsed icon rail on desktop */}
           {collapsedSidebar && (
             <div
+              inert={!isCollapsed}
+              aria-hidden={!isCollapsed || undefined}
               className={`fixed inset-y-0 left-0 z-20 max-lg:hidden transition-all duration-200 ${isCollapsed ? 'w-12' : 'w-0 overflow-hidden'}`}
             >
               {collapsedSidebar}

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { afterEach, describe, it, expect, vi } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { SidebarLayout, useMobileSidebar } from '../SidebarLayout';
@@ -117,5 +117,49 @@ describe('main content width', () => {
 
     expect(contentWrapper()).toHaveClass('flex', 'flex-col');
     expect(contentWrapper()?.parentElement).toHaveClass('items-stretch');
+  });
+});
+
+/**
+ * Both the full sidebar and the collapsed rail render the same destinations.
+ * The one that is not showing is only zero-wide, which leaves it in the
+ * accessibility tree: a role query for "Brain" matched two links and failed
+ * `smoke-15-brain` on main. `inert` takes it out of the tree and the tab order.
+ */
+describe('the panel that is not showing', () => {
+  // jsdom does not take `inert` out of the accessibility tree, so the
+  // attribute is what can be asserted here; the browser does the rest.
+  function renderShell() {
+    render(
+      <SidebarLayout
+        navbar={<div />}
+        sidebar={<span>Full</span>}
+        collapsedSidebar={<span>Rail</span>}
+      >
+        <div />
+      </SidebarLayout>,
+    );
+    return {
+      full: screen.getByText('Full').parentElement as HTMLElement,
+      rail: screen.getByText('Rail').parentElement as HTMLElement,
+    };
+  }
+
+  afterEach(() => localStorage.removeItem('sidebar-collapsed'));
+
+  it('makes the rail inert while the full sidebar shows', () => {
+    localStorage.setItem('sidebar-collapsed', 'false');
+    const { full, rail } = renderShell();
+    expect(rail).toHaveAttribute('inert');
+    expect(rail).toHaveAttribute('aria-hidden', 'true');
+    expect(full).not.toHaveAttribute('inert');
+  });
+
+  it('makes the full sidebar inert while the rail shows', () => {
+    localStorage.setItem('sidebar-collapsed', 'true');
+    const { full, rail } = renderShell();
+    expect(full).toHaveAttribute('inert');
+    expect(full).toHaveAttribute('aria-hidden', 'true');
+    expect(rail).not.toHaveAttribute('inert');
   });
 });
