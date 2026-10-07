@@ -28,6 +28,7 @@ describe('PersistApiThreadService', () => {
     overrides: {
       thread?: Partial<Record<string, Mock>>;
       message?: Partial<Record<string, Mock>>;
+      retrieval?: Partial<Record<string, Mock>>;
     } = {},
   ) {
     const threadOps = {
@@ -41,13 +42,28 @@ describe('PersistApiThreadService', () => {
       create: vi.fn().mockResolvedValue({ id: 'msg-1' }),
       ...overrides.message,
     };
+    const retrievalOps = {
+      createMany: vi.fn().mockReturnValue('retrievals'),
+      ...overrides.retrieval,
+    };
+    const citationOps = { createMany: vi.fn().mockReturnValue('citations') };
+    const transaction = vi.fn().mockResolvedValue([]);
     const prisma = {
-      client: { thread: threadOps, message: messageOps },
+      client: {
+        thread: threadOps,
+        message: messageOps,
+        documentRetrieval: retrievalOps,
+        documentCitation: citationOps,
+        $transaction: transaction,
+      },
     } as unknown as PrismaService;
     return {
       service: new PersistApiThreadService(prisma),
       threadOps,
       messageOps,
+      retrievalOps,
+      citationOps,
+      transaction,
     };
   }
 
@@ -346,6 +362,99 @@ describe('PersistApiThreadService', () => {
       await expect(
         result?.saveAssistantMessage('Answer'),
       ).resolves.toBeUndefined();
+    });
+  });
+
+  describe('recording what the turn retrieved (A2b)', () => {
+    const create = async (service: PersistApiThreadService) =>
+      (await service.createApiThread({
+        orgId: 'org-1',
+        userId: 'user-1',
+        projectId: 'proj-1',
+        question: 'Question',
+      }))!;
+
+    it('writes ranked retrievals and only the cited file as a citation', async () => {
+      const { service, retrievalOps, citationOps, transaction } = makeService();
+      const thread = await create(service);
+
+      await thread.saveAssistantMessage('See [2].', null, [
+        { fileId: 'a', fileName: 'alpha.pdf', snippet: 'quote a' },
+        { fileId: 'b', fileName: 'beta.pdf' },
+      ]);
+
+      expect(retrievalOps.createMany).toHaveBeenCalledWith({
+        data: [
+          expect.objectContaining({
+            fileId: 'a',
+            rank: 1,
+            snippet: 'quote a',
+            messageId: 'msg-1',
+            orgId: 'org-1',
+          }),
+          expect.objectContaining({ fileId: 'b', rank: 2, snippet: null }),
+        ],
+        skipDuplicates: true,
+      });
+      expect(citationOps.createMany).toHaveBeenCalledWith({
+        data: [{ messageId: 'msg-1', fileId: 'b', orgId: 'org-1' }],
+        skipDuplicates: true,
+      });
+      expect(transaction).toHaveBeenCalledTimes(1);
+    });
+
+    it('records nothing when no retrieval is given or it is empty', async () => {
+      const { service, transaction } = makeService();
+      const thread = await create(service);
+
+      await thread.saveAssistantMessage('Answer');
+      await thread.saveAssistantMessage('Answer', null, []);
+
+      expect(transaction).not.toHaveBeenCalled();
+    });
+
+    it('stores the snippet under the thread key, like the message', async () => {
+      mockIsEncryptionEnabled.mockReturnValue(true);
+      mockGenerateThreadKey.mockResolvedValue({
+        plaintextDek: Buffer.from('dek'),
+        encryptedDek: 'enc-dek',
+      });
+      mockEncryptContent.mockImplementation((c: string) => `enc(${c})`);
+      const { service, retrievalOps } = makeService();
+      const thread = await create(service);
+
+      await thread.saveAssistantMessage('Answer', null, [
+        { fileId: 'a', fileName: 'a.pdf', snippet: 'secret quote' },
+      ]);
+
+      const rows = retrievalOps.createMany.mock.calls[0][0].data;
+      expect(rows[0].snippet).toBe('enc(secret quote)');
+    });
+
+    it('does not throw when recording fails; the answer is already saved', async () => {
+      const { service, messageOps, transaction } = makeService();
+      transaction.mockRejectedValue(new Error('db down'));
+      const thread = await create(service);
+
+      await expect(
+        thread.saveAssistantMessage('Answer', null, [
+          { fileId: 'a', fileName: 'a.pdf' },
+        ]),
+      ).resolves.toBeUndefined();
+      // user message + assistant message
+      expect(messageOps.create).toHaveBeenCalledTimes(2);
+    });
+
+    it('records nothing when the answer itself could not be saved', async () => {
+      const { service, messageOps, transaction } = makeService();
+      const thread = await create(service);
+      messageOps.create.mockRejectedValueOnce(new Error('db down'));
+
+      await thread.saveAssistantMessage('Answer', null, [
+        { fileId: 'a', fileName: 'a.pdf' },
+      ]);
+
+      expect(transaction).not.toHaveBeenCalled();
     });
   });
 });

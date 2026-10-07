@@ -7,6 +7,10 @@ import {
   encryptContent,
   decryptThreadKey,
 } from '@ragenai/crypto';
+import {
+  recordRetrievalUsage,
+  type CitableSource,
+} from '@ragenai/rag-core/retrieval-usage';
 
 /**
  * Why an assistant message holds a refusal instead of an answer.
@@ -34,10 +38,16 @@ export type CreateApiThreadResult = {
    * than something inferred from the content, because "this text happens to
    * equal the refusal sentence" is not the same claim as "a rule refused this
    * answer" — and the panel renders on the marker.
+   *
+   * `retrieved` is what the turn drew on. When given, the turn is recorded the
+   * way the panel's is — `DocumentRetrieval` and `DocumentCitation` rows — so
+   * an API thread opened in the panel shows its sources. A failure there is
+   * logged and never costs the answer already saved.
    */
   saveAssistantMessage: (
     content: string,
     guardrailBlocked?: GuardrailBlockedMarker | null,
+    retrieved?: readonly CitableSource[],
   ) => Promise<void>;
 };
 
@@ -120,13 +130,16 @@ export class PersistApiThreadService {
         saveAssistantMessage: async (
           content: string,
           guardrailBlocked?: GuardrailBlockedMarker | null,
+          retrieved?: readonly CitableSource[],
         ) => {
+          let messageId: string;
           try {
             const encrypted = await this.maybeEncrypt(
               { threadId, organizationId: orgId },
               content,
             );
-            await this.prisma.client.message.create({
+            const message = await this.prisma.client.message.create({
+              select: { id: true },
               data: {
                 threadId,
                 content: encrypted,
@@ -135,10 +148,21 @@ export class PersistApiThreadService {
                 ...(guardrailBlocked ? { metadata: { guardrailBlocked } } : {}),
               },
             });
+            messageId = message.id;
           } catch (err) {
             this.logger.error('Failed to save API assistant message', {
               err,
               threadId,
+            });
+            return;
+          }
+          if (retrieved && retrieved.length > 0) {
+            await this.recordRetrieval({
+              messageId,
+              threadId,
+              orgId,
+              retrieved,
+              answer: content,
             });
           }
         },
@@ -161,6 +185,61 @@ export class PersistApiThreadService {
           });
       }
       return null;
+    }
+  }
+
+  /**
+   * The same rule as the panel's `recordKnowledgeUsageCommand`, which is
+   * `recordRetrievalUsage` in rag-core: this binds it to this app's client and
+   * to `maybeEncrypt`, so a snippet is protected exactly as the message beside
+   * it (ADR-42). Never throws: a hole in the sources is the right failure for
+   * an answer the caller already has.
+   */
+  private async recordRetrieval({
+    messageId,
+    threadId,
+    orgId,
+    retrieved,
+    answer,
+  }: {
+    messageId: string;
+    threadId: string;
+    orgId: string;
+    retrieved: readonly CitableSource[];
+    answer: string;
+  }): Promise<void> {
+    try {
+      await recordRetrievalUsage(retrieved, answer, {
+        encryptSnippet: (snippet) =>
+          this.maybeEncrypt({ threadId, organizationId: orgId }, snippet),
+        onSnippetEncryptionFailed: (err) => {
+          this.logger.warn(
+            'Could not encrypt a source snippet — storing the retrieval without its quote',
+            { err, threadId },
+          );
+        },
+        writeUsage: async ({ retrievals, citedFileIds }) => {
+          await this.prisma.client.$transaction([
+            this.prisma.client.documentRetrieval.createMany({
+              data: retrievals.map((row) => ({ ...row, messageId, orgId })),
+              skipDuplicates: true,
+            }),
+            this.prisma.client.documentCitation.createMany({
+              data: citedFileIds.map((fileId) => ({
+                messageId,
+                fileId,
+                orgId,
+              })),
+              skipDuplicates: true,
+            }),
+          ]);
+        },
+      });
+    } catch (err) {
+      this.logger.warn('Failed to record API retrieval — non-blocking', {
+        err,
+        threadId,
+      });
     }
   }
 

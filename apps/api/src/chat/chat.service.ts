@@ -193,9 +193,21 @@ export class ChatService {
           })
         : null;
       const threadId = apiThread?.threadId ?? null;
-      const saveAssistantMessage = apiThread?.saveAssistantMessage;
-
       const result = await ragChain.stream({ question, chat_history: '' });
+
+      // What the turn drew on rides along with the answer, so a persisted turn
+      // is recorded with its sources (spec api-answers-carry-their-sources, A2b).
+      const saveAssistantMessage = apiThread
+        ? async (
+            content: string,
+            guardrailBlocked?: GuardrailBlockedMarker | null,
+          ) =>
+            apiThread.saveAssistantMessage(
+              content,
+              guardrailBlocked,
+              await Promise.resolve(result.sources).catch(() => []),
+            )
+        : undefined;
 
       const modelId = settings.model || '';
       const trackUsage = async () => {
