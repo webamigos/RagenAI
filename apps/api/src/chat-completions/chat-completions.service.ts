@@ -35,6 +35,10 @@ import { servingProvider } from '../llm/native-models.js';
 import { OUTPUT_GUARDRAIL_REFUSAL } from '@ragenai/guardrails';
 
 import { GuardrailError } from '../chains/errors.js';
+import {
+  resolveApiSources,
+  type ApiSource,
+} from '../common/utils/api-sources.js';
 import type { GuardrailBlockedMarker } from '../threads/persist-api-thread.service.js';
 
 /**
@@ -292,6 +296,9 @@ export class ChatCompletionsService {
             includeUsage,
             trackUsage,
             saveAssistantMessage,
+            ...(dto.ragen_sources
+              ? { resolveSources: () => resolveApiSources(result) }
+              : {}),
           });
         } finally {
           await closeMcpClients();
@@ -337,6 +344,15 @@ export class ChatCompletionsService {
           ...(guardrailBlocked
             ? { finishReason: 'content_filter' as const }
             : {}),
+          // Empty for a refusal: the sources of a withheld answer are not
+          // something to hand back.
+          ...(dto.ragen_sources
+            ? {
+                ragenSources: guardrailBlocked
+                  ? []
+                  : await resolveApiSources(result),
+              }
+            : {}),
         }),
       );
     } catch (error) {
@@ -364,6 +380,8 @@ export class ChatCompletionsService {
     model: string;
     includeUsage: boolean;
     trackUsage: () => Promise<OpenAIUsage | undefined>;
+    /** Present only when the caller asked for `ragen_sources`. */
+    resolveSources?: () => Promise<ApiSource[]>;
     saveAssistantMessage?: (
       content: string,
       guardrailBlocked?: GuardrailBlockedMarker | null,
@@ -377,6 +395,7 @@ export class ChatCompletionsService {
       includeUsage,
       trackUsage,
       saveAssistantMessage,
+      resolveSources,
     } = params;
 
     res.setHeader('Content-Type', 'text/event-stream; charset=utf-8');
@@ -465,6 +484,21 @@ export class ChatCompletionsService {
             usage,
           };
           res.write(encodeSseData(usageChunk));
+        }
+
+        // One trailing chunk with no choices, like the usage chunk, so a
+        // client that reads `choices` skips it. Empty for a refusal.
+        if (resolveSources) {
+          const sourcesChunk: OpenAIChatCompletionChunk = {
+            id,
+            object: 'chat.completion.chunk',
+            created,
+            model,
+            choices: [],
+            ragen_sources:
+              finishReason === 'content_filter' ? [] : await resolveSources(),
+          };
+          res.write(encodeSseData(sourcesChunk));
         }
 
         res.write(SSE_DONE);

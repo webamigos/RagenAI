@@ -289,3 +289,5 @@ Brain ma tryb przeglądu z twierdzeniami obok cytatów, przypisaniem właścicie
 - Brain source documents now show approved/candidate coverage on one shared scale, explicit empty-extraction failures with retry, processing and waiting states, and full language names. Undetected languages prompt a check; document retrieval controls remain available.
 
 - The chat API can now return the documents an answer was drawn from: send `"sources": true` and the JSON response gains a ranked `sources` list (file id, file name, rank); a streamed response sends it as one event just before `[DONE]`. Off by default, so existing integrations see no change; a refused answer returns an empty list.
+
+- `POST /v1/chat/completions` can return an answer's sources too: send `"ragen_sources": true` and the response gains a ranked `ragen_sources` list (a trailing chunk with no choices when streaming). Off by default, so OpenAI clients see the format they expect; a refused answer returns an empty list.

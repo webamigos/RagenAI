@@ -147,6 +147,18 @@ export class CreateChatCompletionDto {
   @IsIn(['low', 'medium', 'high'])
   reasoning_effort?: ReasoningEffort;
 
+  /**
+   * Ragen's extension, namespaced so it cannot collide with a field OpenAI
+   * adds later. When true the response gains `ragen_sources` — the documents
+   * the answer was drawn from, ranked — as a top-level field of the JSON body,
+   * or as one trailing chunk with `choices: []` when streaming. Off by default,
+   * so an OpenAI client sees exactly the format it expects.
+   */
+  @ApiProperty({ required: false, default: false })
+  @IsOptional()
+  @IsBoolean()
+  ragen_sources?: boolean;
+
   // ── Accepted and validated, but without effect today ──────────────
   // Sampling and bookkeeping params that the RAG chain has no wiring
   // for. Ignoring these changes wording at most, never the response

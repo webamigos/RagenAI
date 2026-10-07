@@ -18,6 +18,7 @@ import { servingProvider } from '../llm/native-models.js';
 import { OUTPUT_GUARDRAIL_REFUSAL } from '@ragenai/guardrails';
 
 import { GuardrailError } from '../chains/errors.js';
+import { resolveApiSources } from '../common/utils/api-sources.js';
 import type { GuardrailBlockedMarker } from '../threads/persist-api-thread.service.js';
 
 /**
@@ -354,33 +355,4 @@ export class ChatService {
       res.status(500).send('Internal Server Error');
     }
   }
-}
-
-/** One document a /chat answer was drawn from, as the caller sees it. */
-export type ApiSource = {
-  fileId: string;
-  /** Null when the chunk carried no file name (older ingests). */
-  fileName: string | null;
-  /** 1 is the most relevant, by the order retrieval ranked them. */
-  rank: number;
-};
-
-/**
- * The sources of a finished turn. Failing to read them is a hole in an
- * optional field, never a failed answer the caller is already holding.
- */
-async function resolveApiSources(result: {
-  sources: PromiseLike<{ fileId: string; fileName: string | null }[]>;
-}): Promise<ApiSource[]> {
-  let sources: { fileId: string; fileName: string | null }[] = [];
-  try {
-    sources = await result.sources;
-  } catch {
-    sources = [];
-  }
-  return sources.map(({ fileId, fileName }, index) => ({
-    fileId,
-    fileName,
-    rank: index + 1,
-  }));
 }

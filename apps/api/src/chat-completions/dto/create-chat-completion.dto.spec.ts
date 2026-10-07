@@ -98,6 +98,15 @@ describe('CreateChatCompletionDto under the global validation pipe', () => {
     });
   });
 
+  it('accepts the ragen_sources extension, and rejects a non-boolean one', async () => {
+    await expect(
+      validate({ ...minimal, ragen_sources: true }),
+    ).resolves.toBeDefined();
+    await expect(
+      rejectionDetail({ ...minimal, ragen_sources: 'yes' }),
+    ).resolves.toContain('ragen_sources');
+  });
+
   it('accepts a whole OpenAI-shaped payload at once', async () => {
     await expect(
       validate({
