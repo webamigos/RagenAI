@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 import {
+  assistantId,
   buildList,
   stripPrefix,
   type OpenAIListEnvelope,
@@ -184,7 +185,11 @@ export class AssistantsService {
       throw new NotFoundException(`Assistant '${id}' not found`);
     }
 
-    return { id, object: 'assistant.deleted', deleted: true };
+    return {
+      id: assistantId(rawId),
+      object: 'assistant.deleted',
+      deleted: true,
+    };
   }
 
   private async findOrThrow(

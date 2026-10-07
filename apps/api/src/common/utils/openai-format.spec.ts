@@ -1,4 +1,5 @@
 import {
+  assistantId,
   buildChatCompletion,
   buildChatCompletionChunk,
   buildError,
@@ -26,6 +27,15 @@ describe('openai-format', () => {
 
   it('fileId prefixes publicId', () => {
     expect(fileId('abc-123')).toBe('file-abc-123');
+  });
+
+  it('assistantId is the bare project id, with no asst- prefix', () => {
+    expect(assistantId('abc-123')).toBe('abc-123');
+  });
+
+  it('stripPrefix still accepts the legacy asst- prefix on input', () => {
+    expect(stripPrefix('asst-abc-123', 'asst')).toBe('abc-123');
+    expect(stripPrefix('abc-123', 'asst')).toBe('abc-123');
   });
 
   it('stripPrefix removes the prefix only when present', () => {

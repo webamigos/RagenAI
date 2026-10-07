@@ -69,7 +69,7 @@ describe('ragen_chat tool', () => {
 
     const result = await execute(
       {
-        assistant_id: 'asst-1',
+        assistant_id: '11111111-1111-4111-8111-111111111111',
         message: 'Hello',
         context: 'page text',
         reasoning_effort: 'high',
@@ -78,7 +78,7 @@ describe('ragen_chat tool', () => {
     );
 
     expect(mockChat).toHaveBeenCalledWith('Bearer sk-test.secret', {
-      assistant_id: 'asst-1',
+      assistant_id: '11111111-1111-4111-8111-111111111111',
       content: 'Hello',
       context: 'page text',
       reasoning_effort: 'high',
@@ -110,7 +110,7 @@ describe('ragen_chat tool', () => {
     const execute = captureExecute();
 
     const result = await execute(
-      { assistant_id: 'asst-1', message: 'Hello' },
+      { assistant_id: '11111111-1111-4111-8111-111111111111', message: 'Hello' },
       { session: undefined },
     );
 

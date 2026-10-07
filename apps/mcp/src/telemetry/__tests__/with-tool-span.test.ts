@@ -58,14 +58,14 @@ describe('withToolSpan', () => {
   it('names the span after the tool and carries the caller attributes', async () => {
     const { captured } = armTracer();
 
-    await withToolSpan('ragen_chat', { 'ragen.assistant_id': 'asst-1' }, () =>
+    await withToolSpan('ragen_chat', { 'ragen.assistant_id': '11111111-1111-4111-8111-111111111111' }, () =>
       Promise.resolve({ payload: '{}' }),
     );
 
     expect(captured.name).toBe('mcp.tool ragen_chat');
     expect(captured.options?.attributes).toEqual({
       'mcp.tool.name': 'ragen_chat',
-      'ragen.assistant_id': 'asst-1',
+      'ragen.assistant_id': '11111111-1111-4111-8111-111111111111',
     });
   });
 

@@ -15,7 +15,7 @@ describe('toOpenAIThread', () => {
       tool_resources: {},
       metadata: {},
       title: 'Daily standup',
-      assistant_id: 'asst-proj-1',
+      assistant_id: 'proj-1',
     });
   });
 

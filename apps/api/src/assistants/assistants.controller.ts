@@ -24,7 +24,7 @@ import { OpenAiExceptionFilter } from '../common/filters/openai-exception.filter
 
 /**
  * OpenAI-compatible Assistants API. Maps 1:1 onto Ragen Projects:
- *   `asst-<projectId>` ↔ `Project.id`
+ *   `<projectId>`      ↔ `Project.id` (legacy `asst-` prefix still accepted on input)
  *   `name`             ↔ `Project.title`
  *   `instructions`     ↔ `ProjectSettings.instructions`
  *   `model`/`temperature` are read-through from org defaults today;

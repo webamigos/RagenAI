@@ -25,7 +25,7 @@ describe('ragen search', () => {
     });
     await expect(
       runSearch(
-        ['refund', 'policy', '--assistant', 'asst-1', '--max', '3'],
+        ['refund', 'policy', '--assistant', '11111111-1111-4111-8111-111111111111', '--max', '3'],
         deps,
       ),
     ).resolves.toBe(0);
@@ -36,7 +36,7 @@ describe('ragen search', () => {
     expect(url).toBe('https://api.example.com/v1/search');
     expect(JSON.parse(init.body as string)).toEqual({
       query: 'refund policy',
-      assistant_id: 'asst-1',
+      assistant_id: '11111111-1111-4111-8111-111111111111',
       max_results: 3,
     });
     expect(out[0]).toContain('Refunds are issued');

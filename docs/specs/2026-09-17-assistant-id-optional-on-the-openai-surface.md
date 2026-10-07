@@ -163,7 +163,7 @@ resolveAssistantScope(assistant_id | undefined, ApiContext)
 | key scope                    | `assistant_id` in body | result                        |
 | ---------------------------- | ---------------------- | ----------------------------- |
 | `ASSISTANT` → `A`            | absent                 | `A`                           |
-| `ASSISTANT` → `A`            | `A` or `asst-A`        | `A`                           |
+| `ASSISTANT` → `A`            | `A` or `asst-A` (legacy) | `A`                         |
 | `ASSISTANT` → `A`            | `B`                    | **403**                       |
 | `ASSISTANT` → `A`            | unknown / another org  | **403** (not 404 — see below) |
 | `ASSISTANT`, project deleted | anything or absent     | **403**, naming the cause     |
@@ -192,6 +192,8 @@ Alternatives rejected:
   and no column, but a key "bound" to an assistant guarantees nothing, and an
   integrator handed that key can read every other assistant in the org.
 - **A new `ApiKeyScope` enum.** ADR-33; see [Answered](#answered).
+- **Update 2026-10-07 — the `asst-` prefix is gone from output.** Responses
+  return the bare project id; input still accepts `asst-<id>` as a legacy alias.
 - **`model: "asst-<id>"` (Q4).** Under a boundary the key already fixes the
   answer, so a second way to ask adds a syntax and no capability.
 - **Encoding the scope in the key string.**

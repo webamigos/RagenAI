@@ -14,7 +14,7 @@ describe('toOpenAIAssistant', () => {
       temperature: 0.3,
     });
     expect(out).toEqual({
-      id: 'asst-abc-123',
+      id: 'abc-123',
       object: 'assistant',
       created_at: Math.floor(new Date('2026-04-14T12:00:00Z').getTime() / 1000),
       name: 'Support Bot',

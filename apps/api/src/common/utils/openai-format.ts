@@ -83,9 +83,13 @@ export function fileId(publicId: string): string {
   return `file-${publicId}`;
 }
 
-/** Generate an OpenAI-style assistant ID. */
+/**
+ * The public assistant ID is the bare project id. It used to be
+ * `asst-<projectId>`; the prefix carried no information, so responses no
+ * longer include it. Input still accepts the old form (see `stripPrefix`).
+ */
 export function assistantId(publicId: string): string {
-  return `asst-${publicId}`;
+  return publicId;
 }
 
 /** Generate an OpenAI-style thread ID. */

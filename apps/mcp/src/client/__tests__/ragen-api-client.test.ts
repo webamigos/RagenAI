@@ -20,7 +20,7 @@ describe('chat', () => {
     });
 
     const result = await chat('Bearer sk-test.secret', {
-      assistant_id: 'asst-1',
+      assistant_id: '11111111-1111-4111-8111-111111111111',
       content: 'Hi',
     });
 
@@ -39,7 +39,7 @@ describe('chat', () => {
       (mockFetch.mock.calls[0][1] as { body: string }).body,
     );
     expect(body).toEqual({
-      assistant_id: 'asst-1',
+      assistant_id: '11111111-1111-4111-8111-111111111111',
       content: 'Hi',
       stream: false,
     });
@@ -95,7 +95,7 @@ describe('chat', () => {
     });
 
     const result = await chat('Bearer sk-test.secret', {
-      assistant_id: 'asst-1',
+      assistant_id: '11111111-1111-4111-8111-111111111111',
       content: 'Hi',
     });
 
@@ -114,7 +114,7 @@ describe('chat', () => {
     });
 
     const result = await chat('Bearer sk-test.secret', {
-      assistant_id: 'asst-1',
+      assistant_id: '11111111-1111-4111-8111-111111111111',
       content: 'Hi',
     });
 
@@ -129,7 +129,7 @@ describe('chat', () => {
     mockFetch.mockRejectedValue(new Error('fetch failed'));
 
     const result = await chat('Bearer sk-test.secret', {
-      assistant_id: 'asst-1',
+      assistant_id: '11111111-1111-4111-8111-111111111111',
       content: 'Hi',
     });
 
@@ -148,7 +148,7 @@ describe('chat', () => {
     });
 
     await chat('Bearer sk-test.secret', {
-      assistant_id: 'asst-1',
+      assistant_id: '11111111-1111-4111-8111-111111111111',
       content: 'Hi',
       context: 'page content',
       reasoning_effort: 'high',
@@ -177,8 +177,8 @@ describe('listAssistants', () => {
         Promise.resolve({
           object: 'list',
           data: [
-            { id: 'asst-1', name: 'Support Bot', model: 'ragen' },
-            { id: 'asst-2', name: 'Sales Bot', model: 'ragen' },
+            { id: '11111111-1111-4111-8111-111111111111', name: 'Support Bot', model: 'ragen' },
+            { id: '22222222-2222-4222-8222-222222222222', name: 'Sales Bot', model: 'ragen' },
           ],
         }),
     });
@@ -188,8 +188,8 @@ describe('listAssistants', () => {
     expect(result).toEqual({
       ok: true,
       assistants: [
-        { id: 'asst-1', name: 'Support Bot' },
-        { id: 'asst-2', name: 'Sales Bot' },
+        { id: '11111111-1111-4111-8111-111111111111', name: 'Support Bot' },
+        { id: '22222222-2222-4222-8222-222222222222', name: 'Sales Bot' },
       ],
     });
     expect(mockFetch).toHaveBeenCalledWith(
@@ -285,7 +285,7 @@ describe('searchKnowledgeBase', () => {
     });
 
     const result = await searchKnowledgeBase('Bearer sk-test.secret', {
-      assistant_id: 'asst-1',
+      assistant_id: '11111111-1111-4111-8111-111111111111',
       query: 'refund policy',
     });
 
@@ -307,7 +307,7 @@ describe('searchKnowledgeBase', () => {
     const body = JSON.parse(
       (mockFetch.mock.calls[0][1] as { body: string }).body,
     );
-    expect(body).toEqual({ assistant_id: 'asst-1', query: 'refund policy' });
+    expect(body).toEqual({ assistant_id: '11111111-1111-4111-8111-111111111111', query: 'refund policy' });
   });
 
   it('omits assistant_id entirely when the caller does not name one', async () => {
@@ -356,7 +356,7 @@ describe('searchKnowledgeBase', () => {
     });
 
     const result = await searchKnowledgeBase('Bearer sk-test.secret', {
-      assistant_id: 'asst-1',
+      assistant_id: '11111111-1111-4111-8111-111111111111',
       query: 'refund policy',
     });
 
@@ -371,7 +371,7 @@ describe('searchKnowledgeBase', () => {
     mockFetch.mockRejectedValue(new Error('fetch failed'));
 
     const result = await searchKnowledgeBase('Bearer sk-test.secret', {
-      assistant_id: 'asst-1',
+      assistant_id: '11111111-1111-4111-8111-111111111111',
       query: 'refund policy',
     });
 
@@ -390,7 +390,7 @@ describe('searchKnowledgeBase', () => {
     });
 
     const result = await searchKnowledgeBase('Bearer sk-test.secret', {
-      assistant_id: 'asst-1',
+      assistant_id: '11111111-1111-4111-8111-111111111111',
       query: 'refund policy',
     });
 
@@ -409,7 +409,7 @@ describe('searchKnowledgeBase', () => {
     });
 
     const result = await searchKnowledgeBase('Bearer sk-test.secret', {
-      assistant_id: 'asst-1',
+      assistant_id: '11111111-1111-4111-8111-111111111111',
       query: 'refund policy',
     });
 
@@ -428,7 +428,7 @@ describe('searchKnowledgeBase', () => {
     });
 
     await searchKnowledgeBase('Bearer sk-test.secret', {
-      assistant_id: 'asst-1',
+      assistant_id: '11111111-1111-4111-8111-111111111111',
       query: 'refund policy',
       max_results: 3,
     });
