@@ -389,6 +389,97 @@ describe('ChatService', () => {
     expect(closeMcpClients).toHaveBeenCalledTimes(1);
   });
 
+  describe('sources (opt-in)', () => {
+    const retrieved = [
+      { fileId: 'file-1', fileName: 'policy.pdf' },
+      { fileId: 'file-2', fileName: null },
+    ];
+    const expected = [
+      { fileId: 'file-1', fileName: 'policy.pdf', rank: 1 },
+      { fileId: 'file-2', fileName: null, rank: 2 },
+    ];
+
+    it('adds a ranked sources array to the JSON response when asked', async () => {
+      const res = createMockRes();
+      initializeBasicRag.initializeRagChain.mockResolvedValue(
+        makeChain({ sources: retrieved }),
+      );
+
+      await service.chat(
+        { ...baseDto, sources: true },
+        mockContext,
+        createMockReq(),
+        res,
+      );
+
+      expect((res as any).json).toHaveBeenCalledWith({
+        text: 'response',
+        sources: expected,
+      });
+    });
+
+    it('sends one trailing sources event before [DONE] when streaming', async () => {
+      const res = createMockRes();
+      initializeBasicRag.initializeRagChain.mockResolvedValue(
+        makeChain({ sources: retrieved }),
+      );
+
+      await service.chat(
+        { ...baseDto, stream: true, sources: true },
+        mockContext,
+        createMockReq(),
+        res,
+      );
+
+      const writes: string[] = ((res as any).write as Mock).mock.calls.map(
+        (c: unknown[]) => c[0] as string,
+      );
+      expect(writes.slice(-2)).toEqual([
+        `data: ${JSON.stringify({ sources: expected })}\n\n`,
+        'data: [DONE]\n\n',
+      ]);
+    });
+
+    it('returns no sources for an answer a guardrail withheld', async () => {
+      // eslint-disable-next-line @typescript-eslint/require-await
+      async function* refused() {
+        yield {
+          type: 'guardrail-violation' as const,
+          guardrailPublicId: 'g-1',
+          guardrailName: 'no-secrets',
+        };
+      }
+      const res = createMockRes();
+      initializeBasicRag.initializeRagChain.mockResolvedValue(
+        makeChain({ fullStream: refused() as never, sources: retrieved }),
+      );
+
+      await service.chat(
+        { ...baseDto, stream: true, sources: true },
+        mockContext,
+        createMockReq(),
+        res,
+      );
+
+      const writes: string[] = ((res as any).write as Mock).mock.calls.map(
+        (c: unknown[]) => c[0] as string,
+      );
+      expect(writes).toContain(`data: ${JSON.stringify({ sources: [] })}\n\n`);
+      expect(writes.join('')).not.toContain('policy.pdf');
+    });
+
+    it('leaves the response untouched when not asked', async () => {
+      const res = createMockRes();
+      initializeBasicRag.initializeRagChain.mockResolvedValue(
+        makeChain({ sources: retrieved }),
+      );
+
+      await service.chat(baseDto, mockContext, createMockReq(), res);
+
+      expect((res as any).json).toHaveBeenCalledWith({ text: 'response' });
+    });
+  });
+
   it('hands the sources the turn retrieved to the persisted message', async () => {
     const saveAssistantMessage = vi.fn().mockResolvedValue(undefined);
     persistApiThread.createApiThread.mockResolvedValue({
