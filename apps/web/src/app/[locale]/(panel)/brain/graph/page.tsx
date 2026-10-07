@@ -21,6 +21,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { pageStatusVariant } from '@/features/brain/utils/page-status-variant';
+import { getPairedPageCandidatesQuery } from '@/features/brain/services/queries/get-paired-page-candidates-query';
 import { getBrainTopicsQuery } from '@/features/brain/services/queries/get-brain-topics-query';
 import { parseGraphMode } from '@/features/brain/utils/graph-topics';
 import { withLanguage } from '@/features/brain/utils/with-language';
@@ -96,10 +97,14 @@ export default async function BrainGraphPage({
             topics?.pages[0]?.id ??
             null,
         };
-  const [t, view, userId] = await Promise.all([
+  const [t, view, userId, pairedCandidates] = await Promise.all([
     getTranslations('brain.graph'),
     getBrainGraphQuery(access.orgId, effectiveParams, scope),
     getCurrentUserId(),
+    // Merging is a curator's act, so a reader is not shown a to-do they cannot do.
+    access.canWrite
+      ? getPairedPageCandidatesQuery(access.orgId)
+      : Promise.resolve({ count: 0, firstPublicId: null }),
   ]);
 
   const href = (over: Partial<Record<keyof Search, string | null>>) => {
@@ -160,6 +165,23 @@ export default async function BrainGraphPage({
           </nav>
         </div>
       </div>
+      {pairedCandidates.count > 0 && pairedCandidates.firstPublicId && (
+        <div
+          className="mb-3 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-md border border-border bg-card p-3 text-sm"
+          data-testid="brain-graph-pair-merge"
+        >
+          <span>{t('pair-merge', { count: pairedCandidates.count })}</span>
+          <Link
+            className="inline-flex min-h-8 items-center text-primary underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+            href={withLanguage(
+              `/brain/review?page=${pairedCandidates.firstPublicId}`,
+              language,
+            )}
+          >
+            {t('pair-merge-review')}
+          </Link>
+        </div>
+      )}
       {params.focus && view.focus ? (
         // The neighbourhood as an active filter, removed like one: a chip
         // with the page's name and an × whose name is "back to the
