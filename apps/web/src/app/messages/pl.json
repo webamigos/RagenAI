@@ -2836,7 +2836,8 @@
       "merge-none": "Nie ma innej strony do scalenia",
       "merge-confirm-title": "Scalić tę stronę?",
       "merge-confirm-description": "Jej stwierdzenia i źródła trafią do „{target}”, która zachowa tytuł, przyjmie węższy z dwóch dostępów i wróci do recenzji. Ta strona zostanie oznaczona jako odrzucona i będzie do niej odsyłać.",
-      "merged": "Strony scalone"
+      "merged": "Strony scalone",
+      "merge-other-language": "Ta sama treść w innym języku"
     },
     "history": {
       "empty": "Na razie bez decyzji",

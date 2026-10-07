@@ -2836,7 +2836,8 @@
       "merge-none": "Ingen annan sida att slå samman med",
       "merge-confirm-title": "Slå samman den här sidan?",
       "merge-confirm-description": "Dess påståenden och källor flyttas till ”{target}”, som behåller sin titel, får den snävare av de två åtkomsterna och går tillbaka till granskning. Den här sidan markeras som avvisad och pekar dit.",
-      "merged": "Sidorna sammanslagna"
+      "merged": "Sidorna sammanslagna",
+      "merge-other-language": "Same content in another language"
     },
     "history": {
       "empty": "Inga beslut än",

@@ -2836,7 +2836,8 @@
       "merge-none": "Geen andere pagina om mee samen te voegen",
       "merge-confirm-title": "Deze pagina samenvoegen?",
       "merge-confirm-description": "De beweringen en bronnen gaan naar “{target}”, die haar titel behoudt, de beperktste toegang van de twee krijgt en terug naar beoordeling gaat. Deze pagina wordt als afgewezen gemarkeerd en verwijst ernaar.",
-      "merged": "Pagina's samengevoegd"
+      "merged": "Pagina's samengevoegd",
+      "merge-other-language": "Same content in another language"
     },
     "history": {
       "empty": "Nog geen beslissingen",
