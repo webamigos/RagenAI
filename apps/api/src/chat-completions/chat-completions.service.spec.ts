@@ -75,6 +75,7 @@ describe('ChatCompletionsService', () => {
   function makeChain(overrides: {
     textStream?: AsyncIterable<string>;
     usage?: unknown;
+    sources?: { fileId: string; fileName: string | null }[];
   }) {
     function* defaultTextStream() {
       yield 'response';
@@ -84,6 +85,7 @@ describe('ChatCompletionsService', () => {
       usage:
         overrides.usage ??
         Promise.resolve({ inputTokens: 10, outputTokens: 5, totalTokens: 15 }),
+      sources: Promise.resolve(overrides.sources ?? []),
     };
     return { stream: vi.fn().mockResolvedValue(streamResult) };
   }
@@ -526,7 +528,9 @@ describe('ChatCompletionsService', () => {
     // `null` for the guardrail marker, and asserted rather than ignored: the
     // second argument is what tells a stored refusal from an answer, so a
     // turn nothing refused has to say so explicitly.
-    expect(saveAssistantMessage).toHaveBeenCalledWith('response', null);
+    // The third argument is what the turn retrieved, so a persisted turn is
+    // recorded with its sources (A2b). Empty here: the stub retrieved nothing.
+    expect(saveAssistantMessage).toHaveBeenCalledWith('response', null, []);
   });
 
   it('does not persist a thread when debug mode is off', async () => {

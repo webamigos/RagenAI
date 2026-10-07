@@ -77,6 +77,7 @@ describe('ChatService', () => {
     >;
     textStream?: AsyncIterable<string>;
     usage?: unknown;
+    sources?: { fileId: string; fileName: string | null }[];
   }) {
     function* defaultTextStream() {
       yield 'response';
@@ -97,6 +98,7 @@ describe('ChatService', () => {
           totalTokens: 15,
         }),
       sourceFileIds: Promise.resolve([]),
+      sources: Promise.resolve(overrides.sources ?? []),
     };
     // initializeRagChain() resolves to { stream: (input) => Promise<...> },
     // not the stream result directly — mirror that shape here.
@@ -387,6 +389,31 @@ describe('ChatService', () => {
     expect(closeMcpClients).toHaveBeenCalledTimes(1);
   });
 
+  it('hands the sources the turn retrieved to the persisted message', async () => {
+    const saveAssistantMessage = vi.fn().mockResolvedValue(undefined);
+    persistApiThread.createApiThread.mockResolvedValue({
+      threadId: 'thread-1',
+      saveAssistantMessage,
+    });
+    const sources = [{ fileId: 'file-1', fileName: 'policy.pdf' }];
+    initializeBasicRag.initializeRagChain.mockResolvedValue(
+      makeChain({ sources }),
+    );
+
+    await service.chat(
+      baseDto,
+      { ...mockContext, debugMode: true },
+      createMockReq(),
+      createMockRes(),
+    );
+
+    expect(saveAssistantMessage).toHaveBeenCalledWith(
+      'response',
+      null,
+      sources,
+    );
+  });
+
   it('persists an API thread when the API key has debug mode enabled', async () => {
     const saveAssistantMessage = vi.fn().mockResolvedValue(undefined);
     persistApiThread.createApiThread.mockResolvedValue({
@@ -405,7 +432,9 @@ describe('ChatService', () => {
     // `null` for the guardrail marker, and asserted rather than ignored: the
     // second argument is what tells a stored refusal from an answer, so a
     // turn nothing refused has to say so explicitly.
-    expect(saveAssistantMessage).toHaveBeenCalledWith('response', null);
+    // The third argument is what the turn retrieved, so a persisted turn is
+    // recorded with its sources (A2b). Empty here: the stub retrieved nothing.
+    expect(saveAssistantMessage).toHaveBeenCalledWith('response', null, []);
   });
 
   it('does not persist a thread when debug mode is off', async () => {
