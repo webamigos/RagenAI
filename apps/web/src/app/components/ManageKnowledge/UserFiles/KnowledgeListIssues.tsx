@@ -4,6 +4,8 @@ import { useOrgFeature } from '@/app/hooks/useOrgFeatures';
 import {
   knowledgeListIssues,
   optimizationEligible,
+  pairPolicyRaises,
+  type PairPolicyRaise,
 } from '@/features/documents/utils/knowledge-list-issues';
 import type { UserFileType } from '@/features/documents/contracts/document.types';
 import { Link } from '@/i18n/routing';
@@ -13,18 +15,22 @@ export function KnowledgeListIssues({
   files,
   onOptimize,
   onReprocess,
+  onRaisePairPolicies,
   disabled = false,
 }: {
   files: UserFileType[];
   disabled?: boolean;
   onOptimize?: (ids: string[]) => void;
   onReprocess?: (ids: string[]) => void;
+  /** Offered to someone who may change a policy; omitted otherwise. */
+  onRaisePairPolicies?: (raises: PairPolicyRaise[]) => void;
 }) {
   const t = useTranslations('knowledge-list');
   const issues = knowledgeListIssues(
     files,
     useOrgFeature('documentDiagnostics'),
   );
+  const pairRaises = pairPolicyRaises(files);
   const optimizable = issues.headerless.filter(optimizationEligible);
   const tabular = issues.headerless.filter(
     (file) =>
@@ -32,7 +38,11 @@ export function KnowledgeListIssues({
       file.document &&
       ['COMPLETED', 'WITHDRAWN', 'STAGED'].includes(file.embeddingStatus ?? ''),
   );
-  if (!issues.headerless.length && !issues.noKnowledge.length) {
+  if (
+    !issues.headerless.length &&
+    !issues.noKnowledge.length &&
+    !pairRaises.length
+  ) {
     return null;
   }
   return (
@@ -92,6 +102,26 @@ export function KnowledgeListIssues({
             >
               {t('show-brain')}
             </Link>
+          </div>
+        )}
+        {pairRaises.length > 0 && (
+          <div className="rounded-md border border-border bg-card p-3 text-sm">
+            <p className="font-medium">
+              {t('pair-pii-count', { count: pairRaises.length })}
+            </p>
+            <p className="my-2 text-muted-foreground">
+              {t('pair-pii-description')}
+            </p>
+            {onRaisePairPolicies && (
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={disabled}
+                onClick={() => onRaisePairPolicies(pairRaises)}
+              >
+                {t('pair-pii-raise')}
+              </Button>
+            )}
           </div>
         )}
       </div>

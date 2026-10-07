@@ -41,6 +41,17 @@ export type UserFileType = {
     id: UserDocument['id'];
   } | null;
   piiPolicy?: PiiPolicy | null;
+  /**
+   * The counterpart in another language, when the file is paired and the
+   * viewer may read both (ADR-54). Absent otherwise, and always absent while
+   * `languagePairs` is off.
+   */
+  pairedWith?: {
+    id: string;
+    fileName: string;
+    language: string | null;
+    piiPolicy: PiiPolicy;
+  } | null;
 };
 
 export interface ThreadDocumentUI {

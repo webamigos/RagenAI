@@ -1,6 +1,7 @@
 import { getTranslations } from 'next-intl/server';
 import { getBrainAccessQuery } from '@/features/brain/services/queries/get-brain-access-query';
 import { getUserFilesQuery } from '@/features/documents/services/queries/get-user-files-query';
+import { getDocumentPairsQuery } from '@/features/documents/services/queries/get-document-pairs-query';
 import {
   getFileScopeCountsQuery,
   getFolderTotalsQuery,
@@ -165,9 +166,28 @@ const UploadedListPage = async ({ searchParams }: Props) => {
       : Promise.resolve(null),
   ]);
 
+  // A pair rides on the row it belongs to, so nothing between this page and
+  // the table has to carry a second list. The query answers only for files the
+  // viewer can read and returns nothing while the feature is off.
+  const pairs = await getDocumentPairsQuery({
+    organizationId: orgId,
+    actor: { userId: userId ?? null, teamIds, scope },
+    fileIds: result.items.map((file) => file.id),
+  });
+  const counterpartOf = new Map(
+    pairs.map((pair) => [pair.fileId, pair.counterpart]),
+  );
+  const resultWithPairs = {
+    ...result,
+    items: result.items.map((file) => ({
+      ...file,
+      pairedWith: counterpartOf.get(file.id) ?? null,
+    })),
+  };
+
   return (
     <DocumentsListContent
-      result={result}
+      result={resultWithPairs}
       scopeCounts={scopeCounts}
       folderTotals={folderTotals}
       sort={sort}

@@ -145,4 +145,23 @@ describe('ToolbarActions', () => {
       ).not.toBeInTheDocument();
     });
   });
+
+  it('offers the language pair only to a viewer who may manage it', async () => {
+    const onPair = vi.fn();
+    show({ onPair });
+    await userEvent.click(screen.getByRole('button', { name: /Actions for/ }));
+    await userEvent.click(
+      await screen.findByRole('menuitem', { name: 'Language pair…' }),
+    );
+    expect(onPair).toHaveBeenCalledWith('file-1');
+  });
+
+  it('has no language pair item when none is passed', async () => {
+    show({});
+    await userEvent.click(screen.getByRole('button', { name: /Actions for/ }));
+    expect(await screen.findAllByRole('menuitem')).not.toHaveLength(0);
+    expect(
+      screen.queryByRole('menuitem', { name: 'Language pair…' }),
+    ).not.toBeInTheDocument();
+  });
 });

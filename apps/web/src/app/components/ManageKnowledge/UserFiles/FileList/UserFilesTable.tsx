@@ -25,6 +25,7 @@ import {
   type UserFilesSortDir,
 } from '@/features/documents/contracts/document.types';
 import { ToolbarActions } from './ToolbarActions';
+import { useManageDocumentPair } from '../DocumentPairsContext';
 import {
   FolderIcon,
   ArrowUpTrayIcon,
@@ -324,6 +325,7 @@ const FileRow = ({
   onChangeRowPolicy,
 }: FileRowProps) => {
   const [isLoading] = useState(false);
+  const onPairRow = useManageDocumentPair();
   const tBulkBar = useTranslations('bulk-action-bar');
   const tKnowledge = useTranslations('knowledge-list');
   const locale = useLocale();
@@ -460,6 +462,28 @@ const FileRow = ({
                 {shortLanguageTag(file.language)}
               </span>
             )}
+            {knowledgeList && file.pairedWith && (
+              <span
+                className="shrink-0 rounded border border-border px-1 text-[10px]"
+                title={tKnowledge('paired-with', {
+                  name: file.pairedWith.fileName,
+                  language: file.pairedWith.language
+                    ? languageName(file.pairedWith.language, locale)
+                    : '—',
+                })}
+                aria-label={tKnowledge('paired-with', {
+                  name: file.pairedWith.fileName,
+                  language: file.pairedWith.language
+                    ? languageName(file.pairedWith.language, locale)
+                    : '—',
+                })}
+              >
+                {'↔ '}
+                {file.pairedWith.language
+                  ? shortLanguageTag(file.pairedWith.language).toUpperCase()
+                  : '—'}
+              </span>
+            )}
             {/*
               The name is the keyboard's way in.
 
@@ -588,6 +612,7 @@ const FileRow = ({
             canDelete={canDelete}
             isLoading={isLoading}
             onChangePolicy={onChangeRowPolicy}
+            onPair={onPairRow}
           />
         </Td>
       </tr>
