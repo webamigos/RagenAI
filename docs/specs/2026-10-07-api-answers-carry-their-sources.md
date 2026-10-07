@@ -102,8 +102,20 @@ No new tables. `DocumentRetrieval` gains writers, not columns.
 
 ### Phase A — sources on `/chat`
 
-- [ ] **A1.** Shared recording function in `rag-core`; web switches to it.
-- [ ] **A2.** `/chat` records retrieval for API turns.
+- [x] **A1.** Shared recording function in `rag-core`; web switches to it (#1596).
+- [ ] **A2a.** `apps/api`'s chain returns what web's does: a `RetrievedSource[]`
+      (file name, snippet, page, regions) on the stream result. Found while
+      starting A2: the API has its own fork of the chain
+      (`apps/api/src/chains/basic-rag/`) whose retrieval returns only
+      `{ context, fileIds }` — no names, no snippets, and no `retrieval`
+      summary on the result. This is the real size of A, and it is a port of
+      web's retrieval summary into a forked file (ADR-21), not a wiring job.
+- [ ] **A2b.** `/chat` records retrieval — **only for turns that are persisted.**
+      An API turn is stored only in debug mode (`context.debugMode`, from the
+      key's record); otherwise there is no `Message` for a `DocumentRetrieval`
+      row to hang on. `saveAssistantMessage` must also return the message id.
+      Non-persisted turns still get `sources` in the response (A3), just no
+      stored rows. Q4 holds for the turns that have a message.
 - [ ] **A3.** Opt-in `sources` in JSON and as a trailing SSE event.
 
 ### Phase B — Brain second level in the API (closes E8)
