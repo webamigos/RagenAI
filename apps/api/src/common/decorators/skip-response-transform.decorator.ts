@@ -7,7 +7,7 @@ export const SKIP_RESPONSE_TRANSFORM = 'skipResponseTransform';
  * interceptor strips `id`/`organization_id`/`project_id` and renames
  * `public_id` → `id` — perfect for our ragen-native REST shape, but
  * wrong for OpenAI-compatible endpoints that need to return `id` fields
- * like `"chatcmpl-..."`, `"file-..."`, `"asst-..."` untouched.
+ * like `"chatcmpl-..."`, `"file-..."` untouched.
  *
  * Apply at the class level for whole-controller opt-out, or on a
  * specific handler method when only one route needs raw passthrough.

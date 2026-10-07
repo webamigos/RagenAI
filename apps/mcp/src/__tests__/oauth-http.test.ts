@@ -48,7 +48,7 @@ it('verifies OAuth over HTTP and sends service assertions for the current token'
     const responses: Record<string, unknown> = {
       '/v1/chat': { text: 'Hello' },
       '/v1/search': { context: 'Known', file_ids: ['file-a'] },
-      '/v1/assistants': { data: [{ id: 'asst-a', name: 'Assistant' }] },
+      '/v1/assistants': { data: [{ id: '11111111-1111-4111-8111-111111111111', name: 'Assistant' }] },
     };
     const body = responses[request.url ?? ''];
     response.statusCode = body ? 200 : 404;

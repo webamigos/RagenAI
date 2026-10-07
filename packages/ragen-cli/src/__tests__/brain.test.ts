@@ -160,7 +160,7 @@ describe('ragen brain', () => {
     const { d, out, fetchMock } = deps({
       '/v1/chat': { body: { text: 'Tak, praca zdalna wymaga zgody.' } },
     });
-    d.env.RAGEN_ASSISTANT_ID = 'asst-1';
+    d.env.RAGEN_ASSISTANT_ID = '11111111-1111-4111-8111-111111111111';
     await expect(
       runBrain(['query', 'Czy', 'praca', 'zdalna', 'wymaga', 'zgody?'], d),
     ).resolves.toBe(0);
@@ -173,7 +173,7 @@ describe('ragen brain', () => {
     expect(JSON.parse(init.body as string)).toEqual({
       content: 'Czy praca zdalna wymaga zgody?',
       stream: false,
-      assistant_id: 'asst-1',
+      assistant_id: '11111111-1111-4111-8111-111111111111',
     });
     expect(out.join('\n')).toBe('Tak, praca zdalna wymaga zgody.');
   });

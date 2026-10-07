@@ -77,6 +77,8 @@ archive is the blog.
 
 ## Unreleased
 
+- [brief] Assistant IDs in the public API are now the bare project UUID: `/v1/assistants` and a thread's `assistant_id` no longer carry the `asst-` prefix. The old `asst-<id>` form is still accepted everywhere an assistant ID is sent, so existing integrations keep working. (SDK and docs updated alongside.)
+
 - [brief] The knowledge base lists distinct Brain page coverage and chat diagnostics beside each file, groups actionable issues above the current page, and prepares RAG suggestions for selected supported documents. Folder names wrap above their PII policy; the list shows up to 59 files together or pages of 50 and no longer offers empty grid cards.
 
 - [brief] Brain findings offer a fix beside each open problem: retry extraction, assign an owner, review stale or conflicting knowledge, or confirm suggested relations. Closed findings collapse into time groups. The graph neighbourhood places relations beside the graph on wide screens, and topic rows keep status badges beside page names.

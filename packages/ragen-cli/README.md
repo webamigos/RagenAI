@@ -64,7 +64,7 @@ export RAGEN_API_KEY=sk-...
 
 ```bash
 ragen ask "What is our refund policy?"        # streamed as it is written
-ragen ask "…" --assistant asst-… --no-stream  # or --json for {"text": …}
+ragen ask "…" --assistant <assistant-id> --no-stream  # or --json for {"text": …}
 ragen assistants ls                           # ids for --assistant / RAGEN_ASSISTANT_ID
 ```
 

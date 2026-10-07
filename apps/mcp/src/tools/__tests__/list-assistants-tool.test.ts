@@ -41,7 +41,7 @@ describe('ragen_list_assistants tool', () => {
   it('calls the API client with the session apiKey and returns the assistant list', async () => {
     mockListAssistants.mockResolvedValue({
       ok: true,
-      assistants: [{ id: 'asst-1', name: 'Support Bot' }],
+      assistants: [{ id: '11111111-1111-4111-8111-111111111111', name: 'Support Bot' }],
     });
     const execute = captureExecute();
 
@@ -53,7 +53,7 @@ describe('ragen_list_assistants tool', () => {
     expect(mockListAssistants).toHaveBeenCalledWith('Bearer sk-test.secret');
     expect(JSON.parse(result)).toEqual({
       success: true,
-      assistants: [{ id: 'asst-1', name: 'Support Bot' }],
+      assistants: [{ id: '11111111-1111-4111-8111-111111111111', name: 'Support Bot' }],
     });
   });
 

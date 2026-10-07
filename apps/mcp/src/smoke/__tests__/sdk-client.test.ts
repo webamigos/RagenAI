@@ -51,7 +51,7 @@ describe('the smoke test against a running server', () => {
       response.setHeader('content-type', 'application/json');
       if (request.url === '/v1/assistants') {
         response.end(
-          JSON.stringify({ data: [{ id: 'asst-1', name: 'Support Bot' }] }),
+          JSON.stringify({ data: [{ id: '11111111-1111-4111-8111-111111111111', name: 'Support Bot' }] }),
         );
         return;
       }

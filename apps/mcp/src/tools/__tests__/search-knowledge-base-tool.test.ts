@@ -53,7 +53,7 @@ describe('ragen_search_knowledge_base tool', () => {
 
     const result = await execute(
       {
-        assistant_id: 'asst-1',
+        assistant_id: '11111111-1111-4111-8111-111111111111',
         query: 'refund policy',
         max_results: 3,
       },
@@ -62,7 +62,7 @@ describe('ragen_search_knowledge_base tool', () => {
 
     expect(mockSearchKnowledgeBase).toHaveBeenCalledWith(
       'Bearer sk-test.secret',
-      { assistant_id: 'asst-1', query: 'refund policy', max_results: 3 },
+      { assistant_id: '11111111-1111-4111-8111-111111111111', query: 'refund policy', max_results: 3 },
     );
     expect(JSON.parse(result)).toEqual({
       success: true,
@@ -95,7 +95,7 @@ describe('ragen_search_knowledge_base tool', () => {
     const execute = captureExecute();
 
     const result = await execute(
-      { assistant_id: 'asst-1', query: 'refund policy' },
+      { assistant_id: '11111111-1111-4111-8111-111111111111', query: 'refund policy' },
       { session: undefined },
     );
 

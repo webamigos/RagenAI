@@ -91,11 +91,11 @@ describe('AssistantsService', () => {
     expect(call.skip).toBe(1);
   });
 
-  it('list: returns OpenAI envelope with asst- prefix', async () => {
+  it('list: returns OpenAI envelope with bare project ids', async () => {
     const { service } = makeService();
     const out = await service.list(context, {});
     expect(out.object).toBe('list');
-    expect(out.data[0].id).toBe('asst-proj-a');
+    expect(out.data[0].id).toBe('proj-a');
     expect(out.data[0].model).toBe('gpt-5.4');
     expect(out.data[0].temperature).toBe(0.5);
   });
@@ -103,7 +103,7 @@ describe('AssistantsService', () => {
   it('get: strips prefix and scopes by org', async () => {
     const { service, projectOps } = makeService();
     const out = await service.get('asst-proj-a', context);
-    expect(out.id).toBe('asst-proj-a');
+    expect(out.id).toBe('proj-a');
     const call = projectOps.findFirst.mock.calls[0][0];
     expect(call.where).toEqual({ id: 'proj-a', organizationId: 'org-1' });
   });
@@ -174,7 +174,7 @@ describe('AssistantsService', () => {
     const { service } = makeService();
     const out = await service.remove('asst-proj-a', context);
     expect(out).toEqual({
-      id: 'asst-proj-a',
+      id: 'proj-a',
       object: 'assistant.deleted',
       deleted: true,
     });
@@ -222,7 +222,7 @@ describe('AssistantsService', () => {
     it('reads its own assistant', async () => {
       const { service } = makeService();
       await expect(service.get('asst-proj-a', boundKey)).resolves.toMatchObject(
-        { id: 'asst-proj-a' },
+        { id: 'proj-a' },
       );
     });
 
@@ -295,6 +295,6 @@ describe('AssistantsService', () => {
       where: { organizationId: 'org-1', id: { in: ['shared'] } },
       take: 1,
     });
-    expect(out.data.map((item) => item.id)).toEqual(['asst-shared']);
+    expect(out.data.map((item) => item.id)).toEqual(['shared']);
   });
 });

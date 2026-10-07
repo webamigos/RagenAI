@@ -209,7 +209,7 @@ test('MCP authorization binds a verified JWT to the selected workspace and reche
       (await assistants.json()).data.map(
         (assistant: { id: string }) => assistant.id,
       ),
-    ).toEqual([`asst-${TEST_PROJECT_ID}`]);
+    ).toEqual([TEST_PROJECT_ID]);
     const passthrough = await request.get(`${apiURL}/v1/assistants`, {
       headers: { authorization: `Bearer ${token.access_token}` },
     });

@@ -467,3 +467,12 @@ Phased, in dependency order:
 | `ragen-app: src/app/api/v1/chat/route.ts`, `chat/completions/route.ts`, `files/route.ts` | Logic to be ported into `apps/api` in Phase B |
 | `ragen-app: src/libs/chains/`, `llm/`, `litellm/`, `vector-store/`, `reranker/` | The RAG engine being relocated |
 | `ragen-app: docs/adrs/13-opaque-api-keys.md` | Prior decision this ADR builds on (auth model) |
+
+## Update 2026-10-07 — assistant IDs lose the `asst-` prefix
+
+`/v1/assistants` and a thread's `assistant_id` now return the bare project id
+instead of `asst-<projectId>`. The prefix was cosmetic (nothing keyed off it),
+and it forced every consumer to handle two spellings of one id. Input is
+unchanged in behaviour: `stripPrefix(x, 'asst')` still accepts the legacy form,
+so stored ids keep working. `file-`, `thread-`, `msg-` and `chatcmpl-` are
+untouched.
