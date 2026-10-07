@@ -3,6 +3,7 @@ import type { ModerationInstance } from '../moderation-instance.js';
 import type { EmbeddingsProvider } from '../../llm/types/embeddings.js';
 import type { TrackAiUsage } from '../../ai-usage/types.js';
 import type { ThreadDocumentUI } from './thread-document.js';
+import type { CitableSource } from '@ragenai/rag-core/retrieval-usage';
 
 /** Maximum number of tool-use steps allowed per stream when MCP tools are enabled. */
 export const MAX_TOOL_STEPS = 10;
@@ -159,6 +160,11 @@ export interface ChainStreamResult {
   reasoningText: PromiseLike<string | undefined>;
   usage: PromiseLike<ChainUsage>;
   sourceFileIds: PromiseLike<string[]>;
+  /**
+   * The files this turn retrieved, in rank order, with the quote and location
+   * of each one's best chunk. Superset of `sourceFileIds`.
+   */
+  sources: PromiseLike<CitableSource[]>;
 }
 
 export type ChainStreamPart =

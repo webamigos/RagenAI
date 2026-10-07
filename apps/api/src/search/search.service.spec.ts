@@ -106,6 +106,7 @@ describe('SearchService', () => {
     mockRetrieve.mockResolvedValue({
       context: '<chunk file="policy.md">Refunds within 30 days.</chunk>',
       fileIds: ['file-1'],
+      sources: [],
     });
 
     service = new SearchService(

@@ -105,7 +105,7 @@ export const basicRagChain = async ({
         partitionThreadDocuments(config?.threadDocuments || []);
 
       // Step 5: Retrieve KB documents and thread documents in parallel
-      const [{ context, fileIds }, threadContext] = await Promise.all([
+      const [{ context, fileIds, sources }, threadContext] = await Promise.all([
         retrieveRelevantDocumentsWithIds(
           vectorStore,
           retrievalQueries,
@@ -247,6 +247,7 @@ export const basicRagChain = async ({
         // "restore" `totalUsage` here; it is the deprecated spelling now.
         usage: result.usage,
         sourceFileIds: Promise.resolve(fileIds),
+        sources: Promise.resolve(sources),
       };
     },
   };
