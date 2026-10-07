@@ -6,6 +6,12 @@ import {
   ChatBubbleLeftIcon,
   FolderIcon,
   BookOpenIcon,
+  LightBulbIcon,
+  BuildingOfficeIcon,
+  ChartBarIcon,
+  CpuChipIcon,
+  CircleStackIcon,
+  DocumentTextIcon,
 } from '@heroicons/react/24/outline';
 import { useSidebarCollapse } from '@ragenai/common-ui/SidebarLayout';
 import { useUser, useOrganization } from '@/app/hooks/use-auth';
@@ -18,6 +24,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
@@ -53,9 +60,17 @@ const iconButtonClass =
 const activeIconButtonClass =
   'flex items-center justify-center size-9 rounded-lg bg-accent text-accent-foreground transition-colors';
 
-export const CollapsedSidebarRail = () => {
+type Props = {
+  /**
+   * Whether Brain is offered. Decided in the panel layout by `canUseBrain`
+   * (flags plus role), which needs server data; the rail only renders it.
+   */
+  showBrain?: boolean;
+};
+
+export const CollapsedSidebarRail = ({ showBrain = false }: Props) => {
   const { toggle } = useSidebarCollapse();
-  const { user } = useUser();
+  const { user, isAppAdmin } = useUser();
   const { canManageOrg } = useOrganization();
   const { openSearch } = useSearchThreads();
   const pathname = usePathname();
@@ -66,6 +81,8 @@ export const CollapsedSidebarRail = () => {
   const isChatsActive = pathname === '/chats' || pathname.startsWith('/chats/');
   const isProjectsActive =
     pathname === '/projects' || pathname.startsWith('/projects/');
+  const isBrainActive = pathname.startsWith('/brain');
+  const showAdminTools = isAppAdmin || canManageOrg;
   const isKnowledgeActive = pathname.startsWith('/knowledge');
 
   return (
@@ -113,6 +130,16 @@ export const CollapsedSidebarRail = () => {
       >
         <FolderIcon className="size-5" />
       </Link>
+
+      {showBrain && (
+        <Link
+          href="/brain"
+          className={isBrainActive ? activeIconButtonClass : iconButtonClass}
+          aria-label={tSidebar('nav.brain')}
+        >
+          <LightBulbIcon className="size-5" />
+        </Link>
+      )}
 
       {/*
         Library is Chats, Assistants and Knowledge in the expanded sidebar; the
@@ -174,6 +201,44 @@ export const CollapsedSidebarRail = () => {
               {t('settings')}
             </Link>
           </DropdownMenuItem>
+          {showAdminTools && (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuLabel className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+                {t('admin-tools')}
+              </DropdownMenuLabel>
+              <DropdownMenuItem asChild>
+                <Link href="/organization/assistant-settings">
+                  <BuildingOfficeIcon className="size-4 shrink-0 text-muted-foreground" />
+                  {t('organization')}
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/organization/ai-usage">
+                  <CpuChipIcon className="size-4 shrink-0 text-muted-foreground" />
+                  {t('ai-usage')}
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/organization/disk-usage">
+                  <CircleStackIcon className="size-4 shrink-0 text-muted-foreground" />
+                  {t('disk-usage')}
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/organization/audit-logs">
+                  <DocumentTextIcon className="size-4 shrink-0 text-muted-foreground" />
+                  {t('audit-logs')}
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/organization/knowledge-analytics">
+                  <ChartBarIcon className="size-4 shrink-0 text-muted-foreground" />
+                  {t('knowledge-analytics')}
+                </Link>
+              </DropdownMenuItem>
+            </>
+          )}
           <DropdownMenuSeparator />
           <DropdownMenuItem
             onSelect={async () => {

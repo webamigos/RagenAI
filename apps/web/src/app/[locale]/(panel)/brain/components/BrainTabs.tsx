@@ -58,7 +58,7 @@ export function BrainTabs({ aside }: { aside?: ReactNode }) {
       */}
       <p
         data-testid="brain-tab-hint"
-        className="mt-2 max-w-3xl text-[13px] text-muted-foreground"
+        className="mt-2 text-[13px] text-muted-foreground"
       >
         {t(`tab-hints.${TABS[current]!.key}`)}
       </p>

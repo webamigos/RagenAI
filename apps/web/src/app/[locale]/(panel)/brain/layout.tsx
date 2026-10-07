@@ -62,6 +62,7 @@ export default async function BrainLayout({
               {t('title')}
             </h1>
             <div className="flex items-center gap-2">
+              <LanguageFilter languages={languages} />
               <BrainAssistantToggle />
               {access.canWrite && <ExtractDialog documents={documents} />}
             </div>
@@ -80,7 +81,7 @@ export default async function BrainLayout({
               {t('read-only.notice')}
             </p>
           )}
-          <BrainTabs aside={<LanguageFilter languages={languages} />} />
+          <BrainTabs />
           {children}
         </div>
       </BrainAssistantShell>
