@@ -3045,7 +3045,9 @@
         "waiting": "Not extracted yet"
       },
       "check-language": "Check language",
-      "retry-extraction": "Retry extraction"
+      "retry-extraction": "Retry extraction",
+      "pair-with": "Same document in {language}: {name}",
+      "pair-coverage": "Pair: {approved} approved · {candidates} candidates (each page counted once)"
     },
     "publish-all": {
       "button": "Publiser godkjente ({count})",

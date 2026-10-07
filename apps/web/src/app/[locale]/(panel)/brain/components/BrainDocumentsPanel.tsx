@@ -127,6 +127,19 @@ export function BrainDocumentsPanel({
                           ? languageName(document.language, locale)
                           : t('language-none')}
                       </span>
+                      {document.pair && (
+                        <span
+                          className="mt-1 block break-words text-xs text-muted-foreground [overflow-wrap:anywhere]"
+                          data-testid="brain-document-pair"
+                        >
+                          {t('pair-with', {
+                            name: document.pair.fileName,
+                            language: document.pair.language
+                              ? languageName(document.pair.language, locale)
+                              : t('language-none'),
+                          })}
+                        </span>
+                      )}
                     </TableCell>
                     <TableCell className="w-[280px] min-w-[220px]">
                       <svg
@@ -160,6 +173,14 @@ export function BrainDocumentsPanel({
                           candidates: document.candidatePages,
                         })}
                       </span>
+                      {document.pair && (
+                        <span className="mt-1 block text-right text-xs tabular-nums text-muted-foreground">
+                          {t('pair-coverage', {
+                            approved: document.pair.approvedPages,
+                            candidates: document.pair.candidatePages,
+                          })}
+                        </span>
+                      )}
                     </TableCell>
                     <TableCell className="whitespace-normal">
                       <Badge variant={variant}>{t(`state.${state}`)}</Badge>

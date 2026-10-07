@@ -3045,7 +3045,9 @@
         "waiting": "Nie wyodrębniono jeszcze"
       },
       "check-language": "Sprawdź język",
-      "retry-extraction": "Ponów ekstrakcję"
+      "retry-extraction": "Ponów ekstrakcję",
+      "pair-with": "Ten sam dokument po: {language}: {name}",
+      "pair-coverage": "Para: {approved} zatwierdzonych · {candidates} kandydatów (każda strona raz)"
     },
     "publish-all": {
       "button": "Opublikuj zatwierdzone ({count})",

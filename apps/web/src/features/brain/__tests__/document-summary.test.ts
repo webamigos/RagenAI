@@ -78,3 +78,40 @@ it('uses a nonzero scale for an empty list', () => {
     withdrawn: 0,
   });
 });
+
+it('puts the two languages of one document side by side and sorts the rest as before', () => {
+  const pair = (fileId: string, language: string) => ({
+    fileId: language === 'pol' ? 'pl' : 'en',
+    fileName: `${fileId}.pdf`,
+    language,
+    approvedPages: 1,
+    candidatePages: 0,
+  });
+  const summary = summarizeBrainDocuments(
+    [
+      file({
+        fileId: 'pl',
+        fileName: 'a.pdf',
+        language: 'pol',
+        pair: pair('en', 'eng'),
+      }),
+      file({ fileId: 'other-en', fileName: 'b.pdf', language: 'eng' }),
+      file({
+        fileId: 'en',
+        fileName: 'z.pdf',
+        language: 'eng',
+        pair: pair('pl', 'pol'),
+      }),
+      file({ fileId: 'other-pl', fileName: 'c.pdf', language: 'pol' }),
+    ],
+    new Map(),
+    'en',
+  );
+  // English first, then Polish. The pair stays together at its first member.
+  expect(summary.documents.map((d) => d.fileId)).toEqual([
+    'other-en',
+    'en',
+    'pl',
+    'other-pl',
+  ]);
+});

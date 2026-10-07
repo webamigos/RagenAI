@@ -9,6 +9,10 @@ const db = vi.hoisted(() => ({
   },
 }));
 vi.mock('@ragenai/prisma-client', () => ({ default: db }));
+vi.mock(
+  '@/features/subscriptions/services/queries/get-effective-features-query',
+  () => ({ isFeatureEnabledQuery: vi.fn().mockResolvedValue(false) }),
+);
 const vectors = vi.hoisted(() => ({ deleteFileFromVectorStore: vi.fn() }));
 vi.mock('@/app/api/upload/services/TableService', () => vectors);
 const audit = vi.hoisted(() => ({ trackAudit: vi.fn() }));

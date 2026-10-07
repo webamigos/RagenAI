@@ -24,6 +24,30 @@ export function documentExtractionState(
   return 'waiting';
 }
 
+/**
+ * A paired file's twin follows it, wherever the sort put the twin; everything
+ * else keeps its order. Sorting by language alone would put the Polish and the
+ * English half of one document pages apart.
+ */
+function adjacentPairs(documents: BrainDocument[]): BrainDocument[] {
+  const byId = new Map(documents.map((doc) => [doc.fileId, doc]));
+  const placed = new Set<string>();
+  const ordered: BrainDocument[] = [];
+  for (const doc of documents) {
+    if (placed.has(doc.fileId)) {
+      continue;
+    }
+    placed.add(doc.fileId);
+    ordered.push(doc);
+    const twin = doc.pair ? byId.get(doc.pair.fileId) : undefined;
+    if (twin && !placed.has(twin.fileId)) {
+      placed.add(twin.fileId);
+      ordered.push(twin);
+    }
+  }
+  return ordered;
+}
+
 /** Shared scale covers every displayed file; language groups have no pairing semantics. */
 export function summarizeBrainDocuments(
   documents: BrainDocument[],
@@ -46,7 +70,7 @@ export function summarizeBrainDocuments(
     );
   });
   return {
-    documents: sorted,
+    documents: adjacentPairs(sorted),
     maxPages: Math.max(
       1,
       ...documents.map((d) => d.approvedPages + d.candidatePages),
