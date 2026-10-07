@@ -2948,7 +2948,9 @@
         "REJECTED": "Rejected",
         "STALE": "Inaktuell"
       },
-      "review-group": "Review entire group ({count})"
+      "review-group": "Review entire group ({count})",
+      "pair-merge": "{count, plural, one {# candidate page} other {# candidate pages}} may match a page drawn from the other language of a paired document.",
+      "pair-merge-review": "Review and merge"
     },
     "export": {
       "ready": "Redo att exportera: {count}",

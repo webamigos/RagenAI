@@ -2948,7 +2948,9 @@
         "REJECTED": "Odrzucona",
         "STALE": "Nieaktualna"
       },
-      "review-group": "Przejrzyj całą grupę ({count})"
+      "review-group": "Przejrzyj całą grupę ({count})",
+      "pair-merge": "{count, plural, one {# strona kandydująca może pasować} few {# strony kandydujące mogą pasować} many {# stron kandydujących może pasować} other {# strony kandydującej może pasować}} do strony z drugiej wersji językowej sparowanego dokumentu.",
+      "pair-merge-review": "Przejrzyj i scal"
     },
     "export": {
       "ready": "Gotowe do eksportu: {count}",

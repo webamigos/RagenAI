@@ -5,6 +5,7 @@ const mocks = vi.hoisted(() => ({
   graph: vi.fn(),
   topics: vi.fn(),
   scope: vi.fn(),
+  paired: vi.fn(),
   canvas: vi.fn((_props: Record<string, unknown>) => null),
   notFound: vi.fn(() => {
     throw Error('not-found');
@@ -19,6 +20,10 @@ vi.mock('@/features/brain/services/queries/get-brain-graph-query', async () => {
   );
   return { ...actual, getBrainGraphQuery: mocks.graph };
 });
+vi.mock(
+  '@/features/brain/services/queries/get-paired-page-candidates-query',
+  () => ({ getPairedPageCandidatesQuery: mocks.paired }),
+);
 vi.mock('@/features/brain/services/queries/get-brain-topics-query', () => ({
   getBrainTopicsQuery: mocks.topics,
 }));
@@ -53,6 +58,7 @@ const id = '00000000-0000-4000-8000-000000000001';
 beforeEach(() => {
   vi.clearAllMocks();
   mocks.access.mockResolvedValue({ orgId: 'session-org' });
+  mocks.paired.mockResolvedValue({ count: 0, firstPublicId: null });
   mocks.scope.mockResolvedValue({ fileIds: ['file'], pageIds: [1] });
   mocks.topics.mockResolvedValue({
     topics: [
@@ -135,4 +141,24 @@ it('refuses a neighbourhood focus outside the scoped organization pages', async 
 it('opens the full member list only after choosing a topic', async () => {
   render(await GraphPage({ searchParams: Promise.resolve({ topic: id }) }));
   expect(screen.getByTestId('brain-topic-members')).toHaveTextContent('A');
+});
+
+it('points a curator at pages from the same document in two languages', async () => {
+  mocks.access.mockResolvedValue({ orgId: 'session-org', canWrite: true });
+  mocks.paired.mockResolvedValue({ count: 3, firstPublicId: id });
+  render(await GraphPage({ searchParams: Promise.resolve({ lang: 'pol' }) }));
+  expect(mocks.paired).toHaveBeenCalledWith('session-org');
+  expect(screen.getByTestId('brain-graph-pair-merge')).toHaveTextContent(
+    'pair-merge',
+  );
+  expect(
+    screen.getByRole('link', { name: 'pair-merge-review' }),
+  ).toHaveAttribute('href', `/brain/review?page=${id}&lang=pol`);
+});
+
+it('shows no pair notice to a reader, or when there is nothing to merge', async () => {
+  mocks.paired.mockResolvedValue({ count: 3, firstPublicId: id });
+  render(await GraphPage({ searchParams: Promise.resolve({}) }));
+  expect(mocks.paired).not.toHaveBeenCalled();
+  expect(screen.queryByTestId('brain-graph-pair-merge')).toBeNull();
 });
