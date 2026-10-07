@@ -1,6 +1,6 @@
 ---
 title: Brain asks the person who knows, and keeps the reply as evidence
-status: draft
+status: approved
 areas: [brain, knowledge-base, connectors, notifications]
 adrs: [38, 39, 42, 50]
 ---
@@ -29,11 +29,13 @@ Hard gate (docs/specs/README.md): no code until these are answered.
   Ragen" works without Slack. "Deliver the question over Slack/Teams" is a
   delivery channel on top. Proposal: **split**, so this spec is in-app + email
   and Slack gets its own spec once Q3 is decided. Yes / no?
+  **Answer (2026-10-07): split. This spec is in-app + email; Slack/Teams delivery gets its own spec.**
 - **Q2. Who can be asked?** (a) only members of the organization, who have a
   `User` and can sign in to answer, or (b) also people without a Ragen account,
   identified by email or Slack user. (b) means an unauthenticated answer link,
   and the "name on the evidence" is then a claimed name, not a signed-in user.
   Proposal: **(a)** for v1.
+  **Answer (2026-10-07): (a) members of the organization only.**
 - **Q3. If Slack is in scope, which mechanism?** (a) the operator's own Slack
   connection (`features/connectors/providers/slack.ts`, Slack's hosted MCP,
   per-user OAuth). The message is sent as the operator, and the reply is read
@@ -41,6 +43,7 @@ Hard gate (docs/specs/README.md): no code until these are answered.
   operator's token outside a request. (b) a Ragen Slack app with a bot user and
   the Events API: a webhook route, new secrets, and a workspace admin install.
   Proposal: decide only if Q1 = no.
+  **Answer (2026-10-07): out of scope here, because Q1 = split. Decided in the Slack spec.**
 - **Q4. Is an answer a page source?** (a) an answer can be cited by a page
   beside document spans. `KnowledgePageSource.fileId`/`documentVersionId`
   become nullable and a source has a kind. (b) the answer is attached to the
@@ -48,11 +51,13 @@ Hard gate (docs/specs/README.md): no code until these are answered.
   (a) is what the LinkedIn framing means by "the reply is the evidence"; (b) is
   a much smaller change. Proposal: **(b)** first, (a) when a page needs to say
   "per Anna, 2026-10-05" in its own text.
+  **Answer (2026-10-07): (b) the answer attaches to the `KnowledgeDecision`; (a) later, when a page needs to say it in its own text.**
 - **Q5. Does the owner's answer verify the page?** When the person asked is the
   page's `ownerId` and confirms the page, should applying it reset
   `lastVerifiedAt` (a `VERIFY` decision by the operator *citing* the answer),
   or should only the owner's own click verify? Proposal: the operator's
   `VERIFY`, with the answer attached.
+  **Answer (2026-10-07): the operator's `VERIFY`, citing the answer.**
 
 ## Problem
 
