@@ -1,6 +1,6 @@
 ---
 title: BullMQ is the worker runtime; Temporal becomes an extractable adapter
-status: draft
+status: implemented
 areas: [worker, api, web, admin, infra]
 adrs: [07, 21, 26, 32, 33, 35, 37, 40]
 ---

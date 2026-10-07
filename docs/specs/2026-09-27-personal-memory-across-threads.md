@@ -1,6 +1,6 @@
 ---
 title: Personal memory across a user's threads
-status: in-progress
+status: done
 areas: [chat, worker, auth, guardrails]
 adrs: [02, 06, 20, 38, 39, 42, 44, 50]
 ---

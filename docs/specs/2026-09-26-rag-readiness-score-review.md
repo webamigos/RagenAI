@@ -1,6 +1,6 @@
 ---
 title: the RAG readiness score — what it measures, whether it predicts retrieval, and what replaces it
-status: draft
+status: in-progress
 areas: [rag, knowledge-base, worker]
 adrs: [16, 17, 19, 20, 43, 50]
 ---

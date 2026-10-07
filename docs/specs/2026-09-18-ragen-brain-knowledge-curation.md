@@ -1,6 +1,6 @@
 ---
 title: Ragen Brain — curated knowledge as the product, RAG as an optional consumer
-status: draft
+status: in-progress
 areas: [knowledge-base, worker, rag, admin, self-hosting]
 adrs: [11, 16, 20, 26, 27, 33, 37, 39, 42, 43, 44, 49]
 ---
@@ -1198,7 +1198,7 @@ baseline without the outlier (edges 72.7 % `EXTRACTED` against 70.3 %,
       "Delete what was removed" is deliberately not a side effect of a bulk
       run: a page leaves the index by a person withdrawing it. Verified: first
       run queued 1, second run 1 unchanged._
-- [ ] **E8.** Two-level citation rendering in `apps/web` and `apps/api`:
+- [x] **E8.** (#1332, #1337, #1602) Two-level citation rendering in `apps/web` and `apps/api`:
       `metadata.brain.pageId` → `KnowledgePageSource` → source documents,
       resolved against the pinned `documentVersionId` and filtered by the same
       file predicate as any other read (`fileAccessWhere`). A test that a reader

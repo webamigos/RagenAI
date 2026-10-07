@@ -1,6 +1,6 @@
 ---
 title: MCP servers added and scoped from the admin panel, without a deploy
-status: draft
+status: implemented
 areas: [admin, connectors, api, auth]
 adrs: [27, 32, 33, 35, 36, 38]
 ---

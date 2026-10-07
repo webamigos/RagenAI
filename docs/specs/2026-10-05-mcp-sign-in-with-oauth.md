@@ -1,6 +1,6 @@
 ---
 title: Signing in to the Ragen MCP server with OAuth
-status: approved
+status: delivered
 areas: [auth, api, mcp, knowledge-base]
 adrs: [13, 21, 36, 39, 50]
 ---
