@@ -1,3 +1,4 @@
+import type { ApiSource } from './api-sources.js';
 import { randomUUID } from 'node:crypto';
 
 /**
@@ -29,6 +30,8 @@ export type OpenAIChatCompletion = {
     logprobs: null;
   }>;
   usage?: OpenAIUsage;
+  /** Ragen's extension, present only when the caller asked (`ragen_sources`). */
+  ragen_sources?: ApiSource[];
 };
 
 export type OpenAIChatCompletionChunk = {
@@ -43,6 +46,8 @@ export type OpenAIChatCompletionChunk = {
     logprobs: null;
   }>;
   usage?: OpenAIUsage;
+  /** Ragen's extension, present only when the caller asked (`ragen_sources`). */
+  ragen_sources?: ApiSource[];
 };
 
 export type OpenAIListEnvelope<T> = {
@@ -113,6 +118,7 @@ export function buildChatCompletion(params: {
   content: string;
   usage?: OpenAIUsage;
   finishReason?: 'stop' | 'length' | 'content_filter';
+  ragenSources?: ApiSource[];
 }): OpenAIChatCompletion {
   return {
     id: params.id ?? chatCompletionId(),
@@ -128,6 +134,7 @@ export function buildChatCompletion(params: {
       },
     ],
     usage: params.usage,
+    ...(params.ragenSources ? { ragen_sources: params.ragenSources } : {}),
   };
 }
 

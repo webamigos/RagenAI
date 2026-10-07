@@ -1,5 +1,6 @@
 import { type ProjectsService } from '../projects/projects.service.js';
 /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument */
+import { GuardrailError } from '../chains/errors.js';
 import type { Mock } from 'vitest';
 import { AssistantScopeService } from '../common/services/assistant-scope.service.js';
 import { ForbiddenException, HttpException } from '@nestjs/common';
@@ -242,6 +243,110 @@ describe('ChatCompletionsService', () => {
         }),
       }),
     );
+  });
+
+  describe('ragen_sources (opt-in extension)', () => {
+    const retrieved = [
+      { fileId: 'file-1', fileName: 'policy.pdf' },
+      { fileId: 'file-2', fileName: null },
+    ];
+    const expected = [
+      { fileId: 'file-1', fileName: 'policy.pdf', rank: 1 },
+      { fileId: 'file-2', fileName: null, rank: 2 },
+    ];
+    async function* refusedStream(): AsyncGenerator<string> {
+      await Promise.resolve();
+      yield 'partial ';
+      throw new GuardrailError('g-1', 'no-secrets');
+    }
+    async function* textOf(parts: string[]) {
+      await Promise.resolve();
+      for (const p of parts) {
+        yield p;
+      }
+    }
+
+    it('adds ragen_sources to the JSON body when asked', async () => {
+      const { res } = createMockRes();
+      initializeBasicRag.initializeRagChain.mockResolvedValue(
+        makeChain({ sources: retrieved }),
+      );
+
+      await service.create(
+        { ...baseDto, ragen_sources: true },
+        mockContext,
+        createMockReq(),
+        res,
+      );
+
+      expect((res.json as Mock).mock.calls[0][0].ragen_sources).toEqual(
+        expected,
+      );
+    });
+
+    it('leaves the body a plain OpenAI object when not asked', async () => {
+      const { res } = createMockRes();
+      initializeBasicRag.initializeRagChain.mockResolvedValue(
+        makeChain({ sources: retrieved }),
+      );
+
+      await service.create(baseDto, mockContext, createMockReq(), res);
+
+      expect(res.json as Mock).toHaveBeenCalledTimes(1);
+      expect((res.json as Mock).mock.calls[0][0]).not.toHaveProperty(
+        'ragen_sources',
+      );
+    });
+
+    it('streams one trailing choices:[] chunk with the sources, before [DONE]', async () => {
+      const { res, chunks } = createMockRes();
+      initializeBasicRag.initializeRagChain.mockResolvedValue(
+        makeChain({ textStream: textOf(['Hi']), sources: retrieved }),
+      );
+
+      await service.create(
+        { ...baseDto, stream: true, ragen_sources: true },
+        mockContext,
+        createMockReq(),
+        res,
+      );
+
+      const idx = chunks.findIndex((c) => c.includes('"ragen_sources"'));
+      expect(idx).toBeGreaterThan(-1);
+      expect(chunks[idx]).toContain('"choices":[]');
+      expect(
+        JSON.parse(chunks[idx].replace(/^data: /, '')).ragen_sources,
+      ).toEqual(expected);
+      expect(chunks.findIndex((c) => c === 'data: [DONE]\n\n')).toBeGreaterThan(
+        idx,
+      );
+    });
+
+    it('returns an empty list for an answer a guardrail withheld, streamed or not', async () => {
+      for (const stream of [false, true]) {
+        const { res, chunks } = createMockRes();
+        initializeBasicRag.initializeRagChain.mockResolvedValue(
+          makeChain({ textStream: refusedStream(), sources: retrieved }),
+        );
+
+        await service.create(
+          { ...baseDto, stream, ragen_sources: true },
+          mockContext,
+          createMockReq(),
+          res,
+        );
+
+        const body = stream
+          ? JSON.parse(
+              chunks
+                .find((c) => c.includes('"ragen_sources"'))!
+                .replace(/^data: /, ''),
+            )
+          : (res.json as Mock).mock.calls[0][0];
+        expect(body.ragen_sources).toEqual([]);
+        expect(JSON.stringify(body)).not.toContain('policy.pdf');
+      }
+    });
   });
 
   it('returns an OpenAI chat.completion object for non-streaming requests and tracks usage', async () => {
