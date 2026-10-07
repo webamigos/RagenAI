@@ -19,6 +19,10 @@
     "./document-diagnostics": {
       "types": "./dist/document-diagnostics.d.ts",
       "default": "./dist/document-diagnostics.js"
+    },
+    "./retrieval-usage": {
+      "types": "./dist/retrieval-usage.d.ts",
+      "default": "./dist/retrieval-usage.js"
     }
   },
   "files": [
