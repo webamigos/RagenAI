@@ -291,3 +291,5 @@ Brain ma tryb przeglądu z twierdzeniami obok cytatów, przypisaniem właścicie
 - The chat API can now return the documents an answer was drawn from: send `"sources": true` and the JSON response gains a ranked `sources` list (file id, file name, rank); a streamed response sends it as one event just before `[DONE]`. Off by default, so existing integrations see no change; a refused answer returns an empty list.
 
 - `POST /v1/chat/completions` can return an answer's sources too: send `"ragen_sources": true` and the response gains a ranked `ragen_sources` list (a trailing chunk with no choices when streaming). Off by default, so OpenAI clients see the format they expect; a refused answer returns an empty list.
+
+- API answers that cite a published Brain page now say so: a source with `brain: { pageTitle, sources }` names the page and the documents behind it that the caller is allowed to open. A caller who may read the page but none of its documents gets the page and an empty list, never the names of documents they cannot open.
