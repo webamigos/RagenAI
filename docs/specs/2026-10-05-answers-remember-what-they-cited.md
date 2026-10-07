@@ -1,6 +1,6 @@
 ---
 title: Answers remember the version they cited, and say when it moved
-status: draft
+status: approved
 areas: [brain, rag, knowledge-base, threads]
 adrs: [20, 42, 50]
 ---
@@ -30,6 +30,7 @@ Hard gate (docs/specs/README.md): no code until these are answered.
   independent, and the Brain spec already plans part of it (phase E,
   "edit-and-republish", not built). Proposal: **this spec = A + B; C goes into
   the Brain spec as phase E work.** Yes / no?
+  **Answer (2026-10-07): yes. This spec is A + B; page revisions (C) go to the Brain spec as phase E.**
 - **Q2. Where does the document version come from?** (a) stamp
   `document_version_id` on every chunk at embed time, so the citation records
   the version the retrieved chunk was *actually from*. Old chunks have none
@@ -38,17 +39,20 @@ Hard gate (docs/specs/README.md): no code until these are answered.
   name the wrong version during a re-index window, when old chunks still serve
   while the new version is already active. Proposal: **(a)**, with null
   meaning "recorded before versions were stamped" and no flag shown.
+  **Answer (2026-10-07): (a) stamp `document_version_id` on every chunk at embed time; null = recorded before stamping, no flag.**
 - **Q3. What counts as drift for a document?** (a) any newer active version,
   or (b) a newer version that no longer contains the cited snippet. That is
   the Brain STALE rule (`page-findings.ts:196-256`) applied to
   `DocumentRetrieval.snippet`, which is stored encrypted. Proposal: **(b)**.
   (a) flags every re-upload of the same PDF.
+  **Answer (2026-10-07): (b) a newer version that no longer contains the cited snippet.**
 - **Q4. Who sees the flag, and where?** Only on the message in the thread
   (computed on read), or also a list ("answers affected by this change") on
   the document/page, for the operator? The list reads across users' threads,
   which runs into the no-impersonation decision. It is allowed only as counts,
   never message text. Proposal: **on the message only** in v1, counts on the
   page later.
+  **Answer (2026-10-07): on the message only in v1; counts on the page later.**
 
 ## Problem
 
