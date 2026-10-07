@@ -3419,7 +3419,8 @@
     "paired-with": "Sparowany z {name} ({language})",
     "pair-pii-count": "{count, plural, one {# para językowa} few {# pary językowe} many {# par językowych} other {# pary językowej}} z różnymi politykami PII",
     "pair-pii-description": "Jeden plik z pary maskuje mniej niż drugi, więc ten sam tekst można odzyskać bez maskowania z którejkolwiek wersji językowej. Podniesienie słabszego pliku do ostrzejszej polityki przetwarza go ponownie. Polityka nigdy nie jest obniżana.",
-    "pair-pii-raise": "Podnieś do ostrzejszej polityki"
+    "pair-pii-raise": "Podnieś do ostrzejszej polityki",
+    "group-pairs": "Grupuj pary językowe"
   },
   "document-pairs": {
     "title": "Para językowa",

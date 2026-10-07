@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  groupPairedFiles,
   manageableFileWhere,
   orderPairIds,
   piiInconsistency,
@@ -68,5 +69,32 @@ describe('manageableFileWhere', () => {
   it('lets a manager act on any file and a member only on their own', () => {
     expect(manageableFileWhere('u1', true)).toEqual({});
     expect(manageableFileWhere('u1', false)).toEqual({ ownerId: 'u1' });
+  });
+});
+
+describe('groupPairedFiles', () => {
+  const f = (id: string, twin?: string) => ({
+    id,
+    pairedWith: twin ? { id: twin } : null,
+  });
+
+  it('puts a counterpart right after its file and keeps the rest in order', () => {
+    expect(
+      groupPairedFiles([f('a', 'z'), f('b'), f('c'), f('z', 'a')]).map(
+        (x) => x.id,
+      ),
+    ).toEqual(['a', 'z', 'b', 'c']);
+  });
+
+  it('leaves a file whose counterpart is not loaded where it is', () => {
+    expect(
+      groupPairedFiles([f('a', 'elsewhere'), f('b')]).map((x) => x.id),
+    ).toEqual(['a', 'b']);
+  });
+
+  it('never drops or repeats a file', () => {
+    const files = [f('a', 'b'), f('c'), f('b', 'a'), f('d', 'c')];
+    const ids = groupPairedFiles(files).map((x) => x.id);
+    expect([...ids].sort()).toEqual(['a', 'b', 'c', 'd']);
   });
 });
