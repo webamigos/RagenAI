@@ -1,6 +1,6 @@
 ---
 title: API chat answers carry their sources
-status: draft
+status: approved
 areas: [api, rag, brain]
 adrs: [13, 21, 36]
 ---
@@ -26,22 +26,27 @@ Hard gate (docs/specs/README.md): no code until these are answered.
 - **Q1. Does the API return sources at all?** Callers of the public API (and
   `apps/mcp`, ADR-36) get an answer with no way to check it. Proposal: **yes,
   an opt-in `sources` field**, so existing clients see no change.
+  **Answer (2026-10-07): yes, an opt-in `sources` field.**
 - **Q2. What may a source expose?** The web shows file name, page, quoted
   snippet. An API key is an opaque credential with no org context (ADR-13), so
   the answer must be filtered by the same `fileAccessWhere` the retrieval used.
   Proposal: **file id, file name, rank, and for a Brain page the page title and
   the names of source documents the caller may read**; no snippet text in v1.
+  **Answer (2026-10-07): file id, file name, rank; for a Brain page the page title and the source document names the caller may read. No snippet text in v1.**
 - **Q3. Streaming shape.** Sources are known when retrieval finishes, before
   the first token. Options: (a) a leading `data: {"sources": [...]}` event,
   (b) a trailing one before `[DONE]`. Proposal: **(b)**, because a trailing
   event can reflect what the answer actually cited, and a client that ignores
   unknown events is unaffected.
+  **Answer (2026-10-07): (b) a trailing event before `[DONE]`.**
 - **Q4. Does the API record retrieval?** The web path writes `DocumentRetrieval`
   rows so a reopened thread can show its sources. The API does not. Recording
   them also unblocks "answers remember what they cited" for API threads.
   Proposal: **yes, same function, same encryption**, in the same change.
+  **Answer (2026-10-07): yes: same function, same encryption, in the same change.**
 - **Q5. Is this one change or two?** (A) return sources, (B) return the Brain
   second level (E8). Proposal: **two phases, A first**.
+  **Answer (2026-10-07): two phases, A first.**
 
 ## Problem
 
