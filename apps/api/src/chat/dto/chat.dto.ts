@@ -64,4 +64,14 @@ export class ChatDto {
   @IsIn(['low', 'medium', 'high'])
   @IsOptional()
   reasoning_effort?: ReasoningEffort;
+
+  @ApiPropertyOptional({
+    description:
+      'Return the documents the answer was drawn from. JSON responses gain a `sources` array; streamed responses send one `{"sources": [...]}` event just before `[DONE]`. Each source has `fileId`, `fileName` (null when unknown) and `rank` (1 = most relevant). Only files the API key may read can appear. A refused answer returns an empty list. Default: false, which leaves the response unchanged.',
+    default: false,
+    example: true,
+  })
+  @IsBoolean()
+  @IsOptional()
+  sources?: boolean;
 }

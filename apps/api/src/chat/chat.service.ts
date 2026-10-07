@@ -284,6 +284,18 @@ export class ChatService {
             await saveAssistantMessage(fullText, guardrailBlocked);
           }
           await trackUsage();
+          // A trailing event, so it reflects the turn that finished. Empty for
+          // a refusal: the sources of an answer that was withheld are not
+          // something to hand back.
+          if (dto.sources) {
+            res.write(
+              `data: ${JSON.stringify({
+                sources: guardrailBlocked
+                  ? []
+                  : await resolveApiSources(result),
+              })}\n\n`,
+            );
+          }
           res.write('data: [DONE]\n\n');
         } catch (err) {
           this.logger.error('Error streaming /chat response', err);
@@ -323,6 +335,13 @@ export class ChatService {
       }
       await trackUsage();
 
+      if (dto.sources) {
+        res.json({
+          text,
+          sources: guardrailBlocked ? [] : await resolveApiSources(result),
+        });
+        return;
+      }
       res.json({ text });
     } catch (error) {
       await closeMcpClients();
@@ -335,4 +354,33 @@ export class ChatService {
       res.status(500).send('Internal Server Error');
     }
   }
+}
+
+/** One document a /chat answer was drawn from, as the caller sees it. */
+export type ApiSource = {
+  fileId: string;
+  /** Null when the chunk carried no file name (older ingests). */
+  fileName: string | null;
+  /** 1 is the most relevant, by the order retrieval ranked them. */
+  rank: number;
+};
+
+/**
+ * The sources of a finished turn. Failing to read them is a hole in an
+ * optional field, never a failed answer the caller is already holding.
+ */
+async function resolveApiSources(result: {
+  sources: PromiseLike<{ fileId: string; fileName: string | null }[]>;
+}): Promise<ApiSource[]> {
+  let sources: { fileId: string; fileName: string | null }[] = [];
+  try {
+    sources = await result.sources;
+  } catch {
+    sources = [];
+  }
+  return sources.map(({ fileId, fileName }, index) => ({
+    fileId,
+    fileName,
+    rank: index + 1,
+  }));
 }

@@ -287,3 +287,5 @@ Brain ma tryb przeglądu z twierdzeniami obok cytatów, przypisaniem właścicie
 - Brain opens its graph as a topic map with complete page counts and review states. Find any page's neighbourhood, browse groups or pages without relations, and switch to the full graph when needed; distant graph labels now hide until zoomed in.
 
 - Brain source documents now show approved/candidate coverage on one shared scale, explicit empty-extraction failures with retry, processing and waiting states, and full language names. Undetected languages prompt a check; document retrieval controls remain available.
+
+- The chat API can now return the documents an answer was drawn from: send `"sources": true` and the JSON response gains a ranked `sources` list (file id, file name, rank); a streamed response sends it as one event just before `[DONE]`. Off by default, so existing integrations see no change; a refused answer returns an empty list.
