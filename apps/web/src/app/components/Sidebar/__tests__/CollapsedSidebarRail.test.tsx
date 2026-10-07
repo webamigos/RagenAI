@@ -15,6 +15,7 @@ const { mockCanManageOrg } = vi.hoisted(() => ({
 vi.mock('@/app/hooks/use-auth', () => ({
   useUser: () => ({
     user: { id: 'u1', name: 'Test User', email: 'test@example.com' },
+    isAppAdmin: false,
   }),
   useOrganization: () => ({ canManageOrg: mockCanManageOrg.value }),
 }));
@@ -50,24 +51,51 @@ const messages = {
     nav: {
       chats: 'Wątki',
       assistants: 'Asystenci',
+      brain: 'Brain',
     },
     footer: {
       'my-profile': 'Mój profil',
       settings: 'Ustawienia',
       'sign-out': 'Wyloguj się',
+      'admin-tools': 'Narzędzia',
+      organization: 'Organization',
+      'ai-usage': 'AI',
+      'disk-usage': 'Disk',
+      'audit-logs': 'Audit',
+      'knowledge-analytics': 'Analytics',
     },
   },
 };
 
-function renderRail() {
+function renderRail(props: { showBrain?: boolean } = {}) {
   return render(
     <NextIntlClientProvider locale="pl" messages={messages}>
-      <CollapsedSidebarRail />
+      <CollapsedSidebarRail {...props} />
     </NextIntlClientProvider>,
   );
 }
 
 describe('CollapsedSidebarRail', () => {
+  it('shows Brain only when the layout says it is offered', () => {
+    const { unmount } = renderRail({ showBrain: true });
+    expect(screen.getByRole('link', { name: 'Brain' })).toHaveAttribute(
+      'href',
+      '/brain/overview',
+    );
+    unmount();
+    renderRail();
+    expect(screen.queryByRole('link', { name: 'Brain' })).toBeNull();
+  });
+
+  it('offers organization settings in the user menu to an org manager', async () => {
+    mockCanManageOrg.value = true;
+    renderRail();
+    await userEvent.click(screen.getByTestId('user-menu'));
+    expect(
+      screen.getByRole('menuitem', { name: /organization/i }),
+    ).toBeInTheDocument();
+  });
+
   describe('the Knowledge destination', () => {
     // The rail is a second rendering of the same navigation as the expanded
     // sidebar, so a permission applied in one and forgotten in the other is

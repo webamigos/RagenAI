@@ -58,7 +58,7 @@ export default async function BrainDocumentsPage({ searchParams }: Props) {
   );
 
   return (
-    <section className="space-y-4" data-panel-fullwidth>
+    <section className="space-y-4">
       <BrainScreen context={{ view: 'documents', selectedFileIds: [] }} />
       <title>{t('title')}</title>
       <div className="mb-3 flex flex-wrap items-start justify-between gap-3">

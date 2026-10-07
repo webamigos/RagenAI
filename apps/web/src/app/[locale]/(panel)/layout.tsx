@@ -280,7 +280,11 @@ export default async function PanelLayout({ children }: Props) {
       <Suspense fallback={null}>
         <RememberLastPage />
       </Suspense>
-      <PanelLayoutWrapper navbar={navbar} sidebar={sidebar}>
+      <PanelLayoutWrapper
+        navbar={navbar}
+        sidebar={sidebar}
+        showBrain={canUseBrain({ role: member?.role, flags: features })}
+      >
         {children}
       </PanelLayoutWrapper>
     </OrgFeaturesProvider>

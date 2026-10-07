@@ -57,11 +57,12 @@ export default async function BrainLayout({
           title lower than every other screen's.
         */}
         <div className="w-full">
-          <div className="flex items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center justify-between gap-3">
             <h1 className="font-display text-xl font-semibold text-foreground">
               {t('title')}
             </h1>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <LanguageFilter languages={languages} />
               <BrainAssistantToggle />
               {access.canWrite && <ExtractDialog documents={documents} />}
             </div>
@@ -80,7 +81,7 @@ export default async function BrainLayout({
               {t('read-only.notice')}
             </p>
           )}
-          <BrainTabs aside={<LanguageFilter languages={languages} />} />
+          <BrainTabs />
           {children}
         </div>
       </BrainAssistantShell>

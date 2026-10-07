@@ -31,9 +31,15 @@ type Props = {
   navbar: React.ReactNode;
   sidebar: React.ReactNode;
   children: React.ReactNode;
+  showBrain?: boolean;
 };
 
-export const PanelLayoutWrapper = ({ navbar, sidebar, children }: Props) => {
+export const PanelLayoutWrapper = ({
+  navbar,
+  sidebar,
+  children,
+  showBrain = false,
+}: Props) => {
   const { isLoaded, isSignedIn } = useUser();
   const t = useTranslations('sidebar');
   const router = useRouter();
@@ -68,7 +74,7 @@ export const PanelLayoutWrapper = ({ navbar, sidebar, children }: Props) => {
       <SidebarLayout
         navbar={navbar}
         sidebar={sidebar}
-        collapsedSidebar={<CollapsedSidebarRail />}
+        collapsedSidebar={<CollapsedSidebarRail showBrain={showBrain} />}
         openNavigationLabel={t('open-navigation')}
         closeNavigationLabel={t('close-navigation')}
       >
