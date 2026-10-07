@@ -1,3 +1,4 @@
+import { isUndecodableText } from './undecodable-text';
 import type { SourceRegion } from './vector-metadata';
 
 /**
@@ -376,4 +377,37 @@ export async function recordRetrievalUsage(
     ),
     citedFileIds: cited.map(({ fileId }) => fileId),
   });
+}
+
+/**
+ * A ceiling on a stored or returned quote, not a target length.
+ *
+ * The snippet is persisted per turn and encrypted, so it duplicates document
+ * text at the rate answers are produced. Chunk size is configurable per
+ * organization, so there is no single correct length: this bounds the worst
+ * case without truncating an ordinary chunk.
+ */
+export const SNIPPET_MAX_CHARS = 2000;
+
+/**
+ * Cuts a snippet to the ceiling without splitting a character in half.
+ *
+ * `slice` counts UTF-16 code units, and anything outside the BMP is two of
+ * them. Cutting between the pair leaves an unpaired high surrogate: a string
+ * that is no longer valid UTF-16 and renders as a replacement glyph.
+ *
+ * A chunk that is a binary file read as text, or a file's raw XML, has nothing
+ * to quote: returns an empty string, so the source still lists without a quote.
+ */
+export function truncateSnippet(text: string): string {
+  if (isUndecodableText(text)) {
+    return '';
+  }
+  if (text.length <= SNIPPET_MAX_CHARS) {
+    return text;
+  }
+  const cut = text.slice(0, SNIPPET_MAX_CHARS);
+  const last = cut.charCodeAt(cut.length - 1);
+  const endsMidCharacter = last >= 0xd800 && last <= 0xdbff;
+  return endsMidCharacter ? cut.slice(0, -1) : cut;
 }

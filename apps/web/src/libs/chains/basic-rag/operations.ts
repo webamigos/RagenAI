@@ -2,13 +2,13 @@ import type { LanguageModelV4 } from '@ai-sdk/provider';
 import {
   expandHits,
   fuseAcrossQueries,
-  isUndecodableText,
   readSourceRegions,
   selectSections,
   SELECTION_TIMEOUT_MS,
   type GenerateSelection,
   type SelectionFallbackReason,
 } from '@ragenai/rag-core';
+import { truncateSnippet } from '@ragenai/rag-core/retrieval-usage';
 import type { ModelMessage } from 'ai';
 import { generateObject, generateText } from 'ai';
 import { z } from 'zod';
@@ -516,45 +516,6 @@ export async function retrieveRelevantDocuments(
  * decided after the answer exists — `features/documents/utils/cited-sources.ts`
  * — never here.
  */
-/**
- * A ceiling on a stored quote, not a target length.
- *
- * The snippet is persisted per turn and encrypted, so it duplicates document
- * text at the rate answers are produced. Chunk size is configurable per
- * organization, so there is no single correct length — this bounds the worst
- * case without truncating an ordinary chunk.
- */
-const SNIPPET_MAX_CHARS = 2000;
-
-/**
- * Cuts a snippet to the ceiling without splitting a character in half.
- *
- * `slice` counts UTF-16 code units, and anything outside the BMP — an emoji,
- * some CJK extensions, a mathematical symbol — is two of them. Cutting between
- * the pair leaves an unpaired high surrogate: a string that is no longer valid
- * UTF-16, survives JSON round-trips as U+FFFD, and renders as a replacement
- * glyph in the quote.
- */
-function truncateSnippet(text: string): string {
-  // A chunk that is a binary file read as text — the worker indexed Word
-  // files' ZIP bytes that way before it refused them — has nothing to quote,
-  // and neither has one that is a file's raw XML (an .xlsx indexed as its
-  // worksheet part before #1347), which is ASCII but not the file's text.
-  // Returning nothing drops the snippet from the source rather than showing
-  // the reader a line of replacement glyphs; the source itself still lists.
-  if (isUndecodableText(text)) {
-    return '';
-  }
-  if (text.length <= SNIPPET_MAX_CHARS) {
-    return text;
-  }
-  const cut = text.slice(0, SNIPPET_MAX_CHARS);
-  const last = cut.charCodeAt(cut.length - 1);
-  // A high surrogate at the very end has lost its partner to the cut.
-  const endsMidCharacter = last >= 0xd800 && last <= 0xdbff;
-  return endsMidCharacter ? cut.slice(0, -1) : cut;
-}
-
 export async function retrieveRelevantDocumentsWithIds(
   vectorStore: VectorStoreClient,
   queries: string | string[],

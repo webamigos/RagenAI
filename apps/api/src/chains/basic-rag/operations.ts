@@ -6,10 +6,15 @@ import { z } from 'zod';
 import {
   expandHits,
   fuseAcrossQueries,
+  readSourceRegions,
   selectSections,
   SELECTION_TIMEOUT_MS,
   type GenerateSelection,
 } from '@ragenai/rag-core';
+import {
+  truncateSnippet,
+  type CitableSource,
+} from '@ragenai/rag-core/retrieval-usage';
 import type {
   VectorStoreClient,
   VectorStoreDocument,
@@ -32,6 +37,7 @@ import {
   systemTemplates,
 } from './config.js';
 import { ThreadDocumentRetriever } from '../utils/thread-document-retriever.js';
+import { redactPiiPlaceholders } from '../../security/redact-placeholders.js';
 import { rerankDocuments, isRerankingEnabled } from '../../reranker/index.js';
 import { withSpan } from '../../telemetry/telemetry.js';
 
@@ -557,14 +563,24 @@ export async function retrieveRelevantDocumentsWithIds(
    * B0).
    */
   crossQueryFusion?: boolean,
-): Promise<{ context: string; fileIds: string[] }> {
+): Promise<{
+  context: string;
+  fileIds: string[];
+  /**
+   * One entry per file, in final rank order — what a turn records and what
+   * the API can return as `sources` (spec 2026-10-07-api-answers-carry-their-
+   * sources). Same shape and same rule as apps/web's `RetrievedSource`, less
+   * the analytics fields the API does not use.
+   */
+  sources: CitableSource[];
+}> {
   if (!vectorStore) {
     throw new Error('Error retrieving relevant documents: No vector store');
   }
 
   const queryList = Array.isArray(queries) ? queries : [queries];
   if (queryList.length === 0) {
-    return { context: combineDocuments([]), fileIds: [] };
+    return { context: combineDocuments([]), fileIds: [], sources: [] };
   }
 
   const filter =
@@ -695,6 +711,7 @@ export async function retrieveRelevantDocumentsWithIds(
 
       const seenFileIds = new Set<string>();
       const fileIds: string[] = [];
+      const sources: CitableSource[] = [];
       for (const doc of finalDocs) {
         const fileId = doc.metadata?.file_id;
         if (
@@ -704,13 +721,38 @@ export async function retrieveRelevantDocumentsWithIds(
         ) {
           seenFileIds.add(fileId);
           fileIds.push(fileId);
+          // The file's best-ranked chunk supplies the name, quote and
+          // location, so all three describe one place in one document.
+          // Redacted the way the context is, so the quote shows what the
+          // model read; `source_page`, never the older `page_number`, which
+          // held the chunk index.
+          const fileName = doc.metadata?.file_name;
+          const snippet = truncateSnippet(
+            redactPiiPlaceholders(doc.pageContent.trim()),
+          );
+          const sourcePage = doc.metadata?.source_page;
+          const sourceRegions = readSourceRegions(doc.metadata?.source_regions);
+          sources.push({
+            fileId,
+            fileName:
+              typeof fileName === 'string' && fileName.length > 0
+                ? fileName
+                : null,
+            ...(typeof sourcePage === 'number' &&
+            Number.isInteger(sourcePage) &&
+            sourcePage >= 1
+              ? { sourcePage }
+              : {}),
+            ...(sourceRegions.length > 0 ? { sourceRegions } : {}),
+            ...(snippet.length > 0 ? { snippet } : {}),
+          });
         }
       }
 
       span.setAttribute('rag.final_count', finalDocs.length);
       span.setAttribute('rag.file_count', fileIds.length);
 
-      return { context: combineDocuments(finalDocs), fileIds };
+      return { context: combineDocuments(finalDocs), fileIds, sources };
     },
   );
 }

@@ -24,6 +24,7 @@ import {
   rephraseAndExpand,
   rephraseQuestion,
   retrieveRelevantDocuments,
+  retrieveRelevantDocumentsWithIds,
   MULTI_QUERY_VARIANT_COUNT,
 } from './operations.js';
 import type { LanguageModelV4 } from '@ai-sdk/provider';
@@ -726,5 +727,69 @@ describe('retrieveRelevantDocuments (multi-query)', () => {
     await retrieveRelevantDocuments(vs, ['q1'], 3, undefined, true);
 
     expect(mockRerankDocuments).toHaveBeenCalled();
+  });
+});
+
+describe('retrieveRelevantDocumentsWithIds (sources)', () => {
+  it('returns one source per file, in rank order, from the first chunk of each', async () => {
+    mockIsRerankingEnabled.mockReturnValue(false);
+    const vs = makeVectorStore([
+      [
+        {
+          pageContent: 'first chunk of A',
+          metadata: {
+            file_id: 'a',
+            file_name: 'alpha.pdf',
+            source_page: 3,
+            source_regions: [{ page: 3, x: 0.1, y: 0.2, w: 0.3, h: 0.4 }],
+          },
+        },
+        {
+          pageContent: 'a chunk of B',
+          metadata: { file_id: 'b', file_name: 'beta.pdf' },
+        },
+        {
+          pageContent: 'second chunk of A',
+          metadata: { file_id: 'a', file_name: 'alpha.pdf', source_page: 9 },
+        },
+      ],
+    ]);
+
+    const result = await retrieveRelevantDocumentsWithIds(vs, 'q', 4);
+
+    expect(result.fileIds).toEqual(['a', 'b']);
+    expect(result.sources.map((s) => s.fileId)).toEqual(['a', 'b']);
+    expect(result.sources[0]).toMatchObject({
+      fileName: 'alpha.pdf',
+      snippet: 'first chunk of A',
+      sourcePage: 3,
+    });
+    expect(result.sources[0].sourceRegions).toHaveLength(1);
+    // No page the parser could not give: absent, never defaulted.
+    expect('sourcePage' in result.sources[1]).toBe(false);
+  });
+
+  it('names a file null when the chunk carries no name, and skips chunks with no file id', async () => {
+    mockIsRerankingEnabled.mockReturnValue(false);
+    const vs = makeVectorStore([
+      [
+        { pageContent: 'orphan', metadata: {} },
+        { pageContent: 'unnamed', metadata: { file_id: 'x' } },
+      ],
+    ]);
+
+    const result = await retrieveRelevantDocumentsWithIds(vs, 'q', 4);
+
+    expect(result.sources).toEqual([
+      { fileId: 'x', fileName: null, snippet: 'unnamed' },
+    ]);
+  });
+
+  it('has no sources when nothing is retrieved', async () => {
+    const result = await retrieveRelevantDocumentsWithIds(
+      makeVectorStore([]),
+      [],
+    );
+    expect(result.sources).toEqual([]);
   });
 });
