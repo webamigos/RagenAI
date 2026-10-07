@@ -3419,7 +3419,8 @@
     "paired-with": "Paired with {name} ({language})",
     "pair-pii-count": "{count, plural, one {# language pair} other {# language pairs}} with different PII policies",
     "pair-pii-description": "One file of the pair masks less than the other, so the same text can be retrieved unmasked from either language. Raising the weaker file to the stricter policy reprocesses it. A policy is never lowered.",
-    "pair-pii-raise": "Raise to the stricter policy"
+    "pair-pii-raise": "Raise to the stricter policy",
+    "group-pairs": "Group language pairs"
   },
   "document-pairs": {
     "title": "Language pair",

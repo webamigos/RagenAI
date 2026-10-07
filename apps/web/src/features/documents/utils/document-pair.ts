@@ -81,3 +81,30 @@ export function manageableFileWhere(
 ): { ownerId?: string } {
   return canManageOrg ? {} : { ownerId: userId };
 }
+
+/**
+ * Put each paired file's counterpart right after it, when the counterpart is in
+ * the list, and leave everything else where it was. A counterpart on another
+ * page of the list is not fetched: grouping reorders what is loaded and never
+ * widens it.
+ */
+export function groupPairedFiles<
+  T extends { id: string; pairedWith?: { id: string } | null },
+>(files: T[]): T[] {
+  const byId = new Map(files.map((file) => [file.id, file]));
+  const placed = new Set<string>();
+  const ordered: T[] = [];
+  for (const file of files) {
+    if (placed.has(file.id)) {
+      continue;
+    }
+    placed.add(file.id);
+    ordered.push(file);
+    const twin = file.pairedWith ? byId.get(file.pairedWith.id) : undefined;
+    if (twin && !placed.has(twin.id)) {
+      placed.add(twin.id);
+      ordered.push(twin);
+    }
+  }
+  return ordered;
+}

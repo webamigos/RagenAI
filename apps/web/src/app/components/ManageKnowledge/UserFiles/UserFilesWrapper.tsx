@@ -52,6 +52,7 @@ import { OptimizeFilesDialog } from './OptimizeFilesDialog';
 import { KnowledgeListIssues } from './KnowledgeListIssues';
 import { DocumentPairsProvider } from './DocumentPairsContext';
 import { LanguagePairDialog } from './LanguagePairDialog';
+import { groupPairedFiles } from '@/features/documents/utils/document-pair';
 import type { PairPolicyRaise } from '@/features/documents/utils/knowledge-list-issues';
 import {
   BulkProgressBanner,
@@ -157,6 +158,7 @@ export const FileListWrapperWithData = ({
   const tError = useTranslations('error-toast');
   const tFolders = useTranslations('folders');
   const tBulk = useTranslations('bulk-notifications');
+  const tKnowledge = useTranslations('knowledge-list');
   const { user } = useUser();
   const [layoutMode, setLayoutMode] = useState<'list' | 'grid'>('list');
   const [optimizationIds, setOptimizationIds] = useState<string[] | null>(null);
@@ -174,6 +176,30 @@ export const FileListWrapperWithData = ({
   const canManageDocuments = useOrgFeature('manageDocuments');
   const languagePairs = useOrgFeature('languagePairs');
   const [pairFileId, setPairFileId] = useState<string | null>(null);
+  const [groupPairs, setGroupPairs] = useState(false);
+  // A remembered preference, nothing more: the list renders correctly without it.
+  useEffect(() => {
+    try {
+      setGroupPairs(
+        window.localStorage.getItem('ragen:group-language-pairs') === '1',
+      );
+    } catch {
+      // storage blocked: stay ungrouped
+    }
+  }, []);
+  const toggleGroupPairs = () => {
+    setGroupPairs((on) => {
+      try {
+        window.localStorage.setItem(
+          'ragen:group-language-pairs',
+          on ? '0' : '1',
+        );
+      } catch {
+        // not remembered; still applied for this view
+      }
+      return !on;
+    });
+  };
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
   const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
   const [uploadPiiPolicy, setUploadPiiPolicy] =
@@ -277,10 +303,14 @@ export const FileListWrapperWithData = ({
   };
 
   const filteredFiles = useMemo(() => {
-    return result.items.filter((file) =>
+    const matching = result.items.filter((file) =>
       file.fileName.toLowerCase().includes(searchValue.toLowerCase()),
     );
-  }, [result.items, searchValue]);
+    return knowledgeList && languagePairs && groupPairs
+      ? groupPairedFiles(matching)
+      : matching;
+  }, [result.items, searchValue, knowledgeList, languagePairs, groupPairs]);
+  const hasPairs = result.items.some((file) => file.pairedWith);
 
   const handlePreviewFile = (file: UserFileTypeSafe) => {
     const idx = filteredFiles.findIndex((f) => f.id === file.id);
@@ -949,6 +979,18 @@ export const FileListWrapperWithData = ({
               canManageOrg ? handleRaisePairPolicies : undefined
             }
           />
+        )}
+        {knowledgeList && languagePairs && hasPairs && (
+          <div className="mb-2 shrink-0">
+            <Button
+              variant="outline"
+              size="sm"
+              aria-pressed={groupPairs}
+              onClick={toggleGroupPairs}
+            >
+              {tKnowledge('group-pairs')}
+            </Button>
+          </div>
         )}
         {optimizationIds && (
           <OptimizeFilesDialog
