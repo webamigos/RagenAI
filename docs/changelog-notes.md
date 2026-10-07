@@ -77,7 +77,7 @@ archive is the blog.
 
 ## Unreleased
 
-- [brief] Assistant IDs in the public API are now the bare project UUID: `/v1/assistants` and a thread's `assistant_id` no longer carry the `asst-` prefix. The old `asst-<id>` form is still accepted everywhere an assistant ID is sent, so existing integrations keep working. (SDK and docs updated alongside.)
+- [brief] Assistant IDs in the public API are now the bare project UUID: `/v1/assistants` and a thread's `assistant_id` no longer carry the `asst-` prefix. Requests still accept the old `asst-<id>` form, but responses no longer return it, so a client that compares returned IDs against stored `asst-…` values must be updated. (SDK and docs updated alongside.)
 
 - [brief] The knowledge base lists distinct Brain page coverage and chat diagnostics beside each file, groups actionable issues above the current page, and prepares RAG suggestions for selected supported documents. Folder names wrap above their PII policy; the list shows up to 59 files together or pages of 50 and no longer offers empty grid cards.
 
