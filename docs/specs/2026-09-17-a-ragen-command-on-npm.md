@@ -213,10 +213,9 @@ Independent of every open question.
   (AGENTS.md is explicit that thin bindings get a test — they are the only
   place the wiring exists).
 - [x] **A5.** (#1565) Register the workspace: `lint-staged.config.mjs` done and its
-  architecture guard passes, `check-config-path-globs` clean. **`npm run verify`
-  and ESLint have not run** — this was built in a worktree with no
-  `node_modules`, and `npm install --no-workspaces` cannot resolve this tree.
-  They must run before the branch lands.
+  architecture guard passes, `check-config-path-globs` clean, and PR #1565's
+  `Lint` check passes. The exact `npm run verify` command has not run; CI runs
+  its lint, typecheck, test and build tasks as separate jobs.
 - [x] **A6.** A CI smoke job modelled on `installer.yml`: `npm pack`, install
   the tarball, run `ragen --help` and `ragen --version`. Exercise the artefact
   npm would serve, not the workspace.

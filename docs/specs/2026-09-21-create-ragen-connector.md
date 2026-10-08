@@ -393,7 +393,6 @@ Each phase leaves both repositories working.
 - [x] **D2.** `docs/mcp-integrations.md` in this repository gains the paragraph
   linking the two halves.
 - [x] **D3.** (published to npm 2026-09-21 as 0.1.0) Publish `create-ragen-connector@0.1.0`. The name is free on npm.
-  Not done — publishing is outward-facing and is the owner's call.
 
 ## Testing
 

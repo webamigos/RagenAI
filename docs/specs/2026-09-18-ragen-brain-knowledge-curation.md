@@ -1216,8 +1216,9 @@ baseline without the outlier (edges 72.7 % `EXTRACTED` against 70.3 %,
       `fileAccessWhere`; a reader who may see the page and none of its
       sources is told so, never shown their names. Read when rendered, so a
       reopened thread shows the page as it is now; off on a public share or
-      guest thread. Verified live, live turn and reopened thread. Still open:
-      `apps/api`, whose chat responses carry no source list to extend._
+      guest thread. Verified live, live turn and reopened thread. The
+      `apps/api` half — chat responses carrying a source list, with a Brain
+      page naming the page and its documents — landed in #1602._
 - [x] **E9.** Take a curated source document out of retrieval — per document,
       human-triggered, reversible by re-running ingest. Mode 1's path to a clean
       index, and never automatic.

@@ -1,6 +1,6 @@
 ---
 title: <what this builds, as a noun phrase>
-status: draft | approved | in-progress | done | abandoned
+status: draft | approved | in-progress | done | delivered | implemented | abandoned
 areas: [<from the Task Router: rag, auth, knowledge-base, api, worker, admin, …>]
 adrs: [<ADRs this relies on or changes, e.g. 14, 31>]
 ---
