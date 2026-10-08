@@ -388,12 +388,22 @@ landable without it, because ADR-20 forbids it.
       call with a migration attached (a collection holds both chunk shapes
       until every document is re-indexed) and has not been made. ADR-43's
       status says the same. Reopened again by the packing fixes below.
-- [ ] **C3.** Re-run Phase C's comparison before acting on C2. Review fixed two
+- [x] **C3.** Re-run Phase C's comparison before acting on C2. Review fixed two
       defects in the packer — every body row was charged for an `| --- |`
       separator no chunk contains, and the caption prepended to each chunk was
       not charged to the budget at all — so table chunks were packed to roughly
       half the intended budget. The recorded numbers describe the instrument as
       it was at `d975ba4f8`, not as it is now.
+      _Done 2026-10-09
+      ([comparison](../../apps/web/evals/rag-benchmark/results/2026-10-09-table-chunks-comparison-after-packer-fix.md)):
+      `tabele` rev2 15 → **16/18**, `kolej` rev3 24 → 23/24 (one flicker each
+      way), controls 0. Excision applied to every table, no refusals. The
+      corpora were revised since 2026-09-12 (#1459, #1525), so the off arm is
+      not the 10/18 baseline: the gain is +1 on the median, with
+      `pl-ask-en-roughness` moving `...` → `PPP`. The mechanism holds and costs
+      nothing on ordinary documents; the margin is smaller than first
+      recorded. Recommendation for C2 unchanged — default on with a re-index —
+      on weaker evidence; the decision is still open._
 
 ## Testing
 
