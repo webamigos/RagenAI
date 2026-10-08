@@ -127,6 +127,9 @@ by CI instead of living in someone's head.
 - **An assistant wired into your tools** — Google Workspace, Slack, HubSpot,
   ClickUp and more over MCP, so the model can read live systems mid-conversation
   rather than only what was indexed last night
+- **A curated knowledge layer** — Ragen Brain turns a shared drive into
+  knowledge pages with owners, finds where the documents contradict each other
+  or have gone stale, and lets only what a person approved reach the assistant
 
 ## 📸 Screenshots
 
@@ -318,17 +321,29 @@ Client and server both · Google Workspace, Gmail, Slack, HubSpot, ClickUp,
 Fireflies, WooCommerce · four auth styles including OAuth with PKCE · OAuth
 tokens held in a separate vault service, never in the application database ·
 a Ragen assistant is also _itself_ callable as an MCP tool (`apps/mcp`) by
-external clients like Claude Desktop or Cursor, authenticated with the same
-API key as the REST API
+external clients like Claude Desktop or Cursor — with the same API key as the
+REST API, or by signing in as a Ragen user over OAuth
+([ADR-53](docs/adrs/53-mcp-sign-in-with-oauth.md)) · the connector catalogue is
+data a platform admin edits, not a hard-coded list
+
+**Ragen Brain** _(preview, off by default)_
+Knowledge pages extracted from your documents, each claim citing its source
+passage · review inbox: approve, reject, merge, set owner and access ·
+findings for contradictions, gaps, stale and unowned knowledge · knowledge
+graph · publishing to the index only by a person, and withdrawable · an
+operator's assistant that proposes changes but never applies them · bundle
+export (markdown + `graph.json`) · read-only `ragen brain` CLI
 
 **API and SDK**
 OpenAI-compatible REST API · official TypeScript SDK · opaque API keys ·
-streaming over SSE · embeddable chatbot widget
+streaming over SSE · embeddable chatbot widget · `ragen` CLI for the knowledge
+base, search and Brain
 
 **Security**
 Opt-in AES-256-GCM envelope encryption, one key per conversation · optional PII
-masking via Presidio · audit log with before-and-after state · tenant-scope
-guard over ~20 models · no training on your documents, ever
+masking via Presidio · per-organization guardrail rules on input and output ·
+audit log with before-and-after state · tenant-scope guard over ~20 models ·
+no training on your documents, ever
 
 **Operations**
 Platform admin app · per-organization model allowlists and usage limits ·
@@ -365,6 +380,47 @@ provider's credentials, and is skipped without them. Every stage degrades
 rather than fails — a reranker error falls back to the raw vector order, an
 expansion error falls back to a single query. Tuning constants and flag names:
 [docs/rag-pipeline.md](docs/rag-pipeline.md).
+
+## 🧠 Ragen Brain
+
+Retrieval over raw documents has a blind spot: nothing in it decides what is
+_true_. When two documents disagree, the answer depends on whichever chunk
+ranks higher; nothing says who vouches for a statement or when it was last
+checked; and a file is live in chat the moment its ingest finishes.
+
+Ragen Brain is the curation layer that closes it. A background job reads the
+organization's documents and proposes **knowledge pages** — processes,
+policies, products, roles, entities — where every claim cites the exact
+passage it came from. Alongside them it produces **findings**: contradictions
+between documents, gaps, stale pages, pages with no owner, and documents
+extraction could not read. A curator works through them in a review inbox —
+approve, reject, merge, assign an owner, set who may read the page — and every
+decision lands in a ledger naming the person who made it. The graph view shows
+how pages relate and where the corpus is thin.
+
+What makes it safe to switch on is that **nothing reaches retrieval on its
+own**:
+
+- **A page enters the index only when a person publishes it**, and unpublishing
+  removes its chunks again. Brain never publishes a source document.
+- **A page built from several documents is readable by the intersection** of
+  their audiences. Widening that is an explicit, logged decision.
+- **Uploads can be staged in Brain alone** — parsed and curated, never indexed —
+  so a shared drive can be explored without changing what the assistant says.
+- **The operator's assistant beside Brain only proposes.** Every change it
+  suggests is applied by a person, through the same action a button runs.
+
+An answer that cites a published page says so, and names only the source
+documents the caller may open. The curated knowledge can be exported as a
+bundle (markdown, `graph.json`, a manifest) or read from a terminal with
+`ragen brain` ([`packages/ragen-cli`](packages/ragen-cli/README.md)).
+
+Brain ships as `packages/brain-core` and `packages/brain-contracts`, with its
+screens in `apps/web` and its jobs in `apps/worker` — no extra service to
+deploy. It is still being built across releases, so it sits behind the `brain`
+feature key, **off by default**, per organization. Design and decisions:
+[the Ragen Brain spec](docs/specs/2026-09-18-ragen-brain-knowledge-curation.md)
+and [the operator's assistant](docs/specs/2026-09-25-brain-operator-assistant.md).
 
 ## 🔒 Security and privacy
 
@@ -501,8 +557,10 @@ not building:
 - **Image generation, advanced voice mode, a code interpreter.** Ragen answers
   from your documents. A general-purpose assistant is a different product and
   there are good ones.
-- **A knowledge graph layer.** We would rather improve retrieval we can measure
-  than add a stage we cannot.
+- **A knowledge graph in the retrieval path.** We would rather improve retrieval
+  we can measure than add a stage we cannot. Ragen Brain's graph is a curation
+  view for people; what reaches an answer is still a published page, retrieved
+  like any other document.
 - **A visual workflow builder.** Tools reach Ragen over MCP. The work we would
   rather do in that layer is approval and audit, not a node canvas.
 
@@ -517,9 +575,9 @@ share one Prisma schema.
 
 | Application                  | What it is                                                                            |
 | ---------------------------- | ------------------------------------------------------------------------------------- |
-| [`apps/web`](apps/web)       | The Next.js app — chat, knowledge base, projects, settings                            |
+| [`apps/web`](apps/web)       | The Next.js app — chat, knowledge base, Ragen Brain, projects, settings               |
 | [`apps/api`](apps/api)       | NestJS public API, the OpenAI-compatible surface                                      |
-| [`apps/worker`](apps/worker) | Job worker: ingest, embedding, re-indexing                                            |
+| [`apps/worker`](apps/worker) | Job worker: ingest, embedding, re-indexing, Brain extraction and publishing           |
 | [`apps/admin`](apps/admin)   | Platform admin — organizations, models, limits, usage                                 |
 | [`apps/mcp`](apps/mcp)       | MCP server exposing Ragen's own chat to external MCP clients (Claude Desktop, Cursor) |
 
@@ -544,7 +602,7 @@ flowchart LR
     web <--> api
     web -- "enqueue jobs" --> redis[("Redis<br/>BullMQ queue")]
     api -- "enqueue jobs" --> redis
-    redis --> worker["apps/worker<br/>ingest, embedding,<br/>re-indexing"]
+    redis --> worker["apps/worker<br/>ingest, embedding,<br/>re-indexing, Brain"]
 
     web --> pg[("Postgres<br/>one Prisma schema")]
     api --> pg
@@ -594,6 +652,7 @@ Deeper reference, in `docs/`:
 [knowledge base](docs/knowledge-base.md) ·
 [document versioning](docs/document-versioning.md) ·
 [document processing](docs/document-processing.md) ·
+[Ragen Brain](docs/specs/2026-09-18-ragen-brain-knowledge-curation.md) ·
 [vector store](docs/vector-store.md) ·
 [MCP integrations](docs/mcp-integrations.md) ·
 [token vault](docs/token-vault.md) ·
