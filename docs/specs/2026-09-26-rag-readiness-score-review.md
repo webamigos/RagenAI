@@ -422,9 +422,12 @@ is today, not a fixed one. C and D do not start until A4 is done (Q1).
 
 ### Phase A — measure the score (no product change)
 
-- [ ] **A0.** Read `metadata.ragScore`, `ragScoredAt` and `UserDocument.content`
+- [x] **A0.** *(dropped 2026-10-08)* Read `metadata.ragScore`, `ragScoredAt` and `UserDocument.content`
   (first 500 characters) for the two `RAG: 0` DOCX files on demo. Record which of
   the three causes applies. This is a read only.
+  _Not done, on purpose: the likely causes are the ones B1 (the model's own
+  total) and B3 fixed, and the read is against a demo database. Reopen it only
+  if a `RAG: 0` appears again._
 - [x] **A1.** *(done: #1394)* Add an expected-document field to the benchmark's `Question` and
   fill it in both corpora (see "How to validate" above). Then add a
   per-document table to the `rag-benchmark` report. The corpus is ingested
@@ -442,9 +445,12 @@ is today, not a fixed one. C and D do not start until A4 is done (Q1).
   shapes) and `kolej-bilingual-v1` (as written vs optimized), with the scorer
   as it is on `main` before any Phase B change. Commit the results under
   `rag-benchmark/results/`. This is the baseline B1 and B2 wait for.
-- [ ] **A3.** *(optional, recommended)* Port the demo corpus: bring the files
+- [x] **A3.** *(dropped 2026-10-08)* *(optional, recommended)* Port the demo corpus: bring the files
   from `e15d46c10`, turn the README's question table into a `questions.json`,
   and run A2 on it. Separate PR, because it adds binary fixtures.
+  _Not done, on purpose: A4 answered the question with the two corpora that
+  exist, and the demo corpus adds binary fixtures for no new answer. Port it
+  if the score is ever measured against a third document shape._
 - [x] **A4.** Write the finding into this spec: does the score rank shapes in the
   benchmark's order, for tables and for prose? Also measure run-to-run variance
   on unchanged text (ten runs, one document). If B1 and B2 have landed by then,
@@ -490,7 +496,7 @@ already claims. B1 and B2 start only after A2's baseline is committed.
   `temperature: 0`. Delete the unused apps/web scorer
   (`document-scorer.ts` and its test). Keep one prompt, in the worker. Test:
   the total is always the weighted sum, clamped to 0–100.
-- [ ] **B2.** Make the button and ingest score the same text: the joined
+- [x] **B2.** Make the button and ingest score the same text: the joined
   chunks, without duplicated overlap. Raise or remove the 12k truncation, or
   state it on the badge. Test: the same file gives the same input string from
   both paths.
@@ -503,6 +509,14 @@ already claims. B1 and B2 start only after A2's baseline is committed.
   that B6 reshapes, so it waits for B6. The duplicated overlap is in the stored
   content itself, so removing it changes what `UserDocument.content` holds;
   that needs a decision rather than a scorer fix.
+  _2026-10-08: the 12k truncation is gone — the scorer reads up to 100,000
+  characters, the ceiling the Optimize tab's generator already uses, so the
+  badge and the button see the same text (test: a 50,000-character document
+  reaches the model whole, one past the ceiling is cut, not refused). The
+  duplicated overlap is **deferred, not decided**: removing it changes what
+  `UserDocument.content` holds, including for organizations with encryption
+  on, for a small difference in score. Take it up if a measurement shows the
+  duplication moving a score._
 - [x] **B3.** Keep the promise the UI makes about scores after "Apply
   suggestions", one way or the other: either `REINDEX_DOCUMENT_VERSION` rescores
   (one call), or `applied-hint` stops promising it and the badge clears. A

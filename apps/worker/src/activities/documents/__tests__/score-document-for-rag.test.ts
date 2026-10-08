@@ -1,5 +1,6 @@
 import {
   computeRagTotal,
+  MAX_INPUT_CHARS,
   MAX_SUGGESTION_CHARS,
   normalizeRagScore,
   ragScoreResponseSchema,
@@ -124,6 +125,42 @@ describe('scoreDocumentForRag', () => {
     const json = JSON.stringify(await schema.jsonSchema);
     expect(json).toContain('"suggestions"');
     expect(json).not.toContain('"maxLength":300');
+  });
+
+  // The scorer used to read the first 12,000 characters of every document, so
+  // the badge on a long one described its opening pages.
+  it('sends a long document whole, up to the ceiling the Optimize tab uses', async () => {
+    generateObject.mockResolvedValue({
+      object: answer([]),
+      usage: { inputTokens: 1, outputTokens: 1, totalTokens: 2 },
+    } as never);
+    const tail = 'KONIEC-DOKUMENTU';
+    const text = `${'a'.repeat(50_000)}${tail}`;
+
+    await scoreDocumentForRag({ documentText: text, orgId: 'org-1' });
+
+    const { messages } = generateObject.mock.calls[0][0] as {
+      messages: { content: string }[];
+    };
+    expect(messages[0].content).toContain(tail);
+  });
+
+  it('cuts a document beyond the ceiling rather than refusing it', async () => {
+    generateObject.mockResolvedValue({
+      object: answer([]),
+      usage: { inputTokens: 1, outputTokens: 1, totalTokens: 2 },
+    } as never);
+
+    await scoreDocumentForRag({
+      documentText: 'b'.repeat(MAX_INPUT_CHARS + 5_000),
+      orgId: 'org-1',
+    });
+
+    const { messages } = generateObject.mock.calls[0][0] as {
+      messages: { content: string }[];
+    };
+    const sent = messages[0].content.replace(/^[^]*?:\n\n/, '');
+    expect(sent).toHaveLength(MAX_INPUT_CHARS);
   });
 
   // The message ceiling counts CHAT_COMPLETION rows. Recorded as one, every
