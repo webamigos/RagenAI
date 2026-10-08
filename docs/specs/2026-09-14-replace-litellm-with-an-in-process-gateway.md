@@ -834,11 +834,11 @@ resumes:
                           `tests/architecture/esm-apps-keep-their-runtime-contract.test.ts`, which
                           exists because three of the four defects above are silent.
 
-- [ ] **B0b.** `apps/worker` → ESM. The real work: 499 relative imports with no
+- [x] **B0b.** (#1166) `apps/worker` → ESM. The real work: 499 relative imports with no
       extension, and `workflowsPath: require.resolve('./workflows')` feeding
       Temporal's own workflow bundler. Cost it separately before starting.
-- [ ] **B0c.** Upgrade to AI SDK 7 across the monorepo, once B0b lands.
-- [ ] **B1.** Create the package: AI SDK providers for Azure, Bedrock, Vertex
+- [x] **B0c.** (#1171) Upgrade to AI SDK 7 across the monorepo, once B0b lands.
+- [x] **B1.** (#1175) Create the package: AI SDK providers for Azure, Bedrock, Vertex
       and OpenAI-compatible (Scaleway), a `resolveModel(id)` reading the
       gateway's **own route table** (not `MODEL_REGISTRY`, which is
       presentation), and the two behaviours that currently live in
@@ -847,7 +847,7 @@ resumes:
       **The route table is configuration, not a constant** — see Q6. An
       OpenAI-compatible entry has to be addable without editing the package,
       or attaching LiteLLM, vLLM or Ollama becomes a fork.
-- [ ] **B2.** Switch chat and embeddings behind `LLM_GATEWAY=litellm|native`,
+- [x] **B2.** (#1175) Switch chat and embeddings behind `LLM_GATEWAY=litellm|native`,
       defaulting to `litellm`. Run the retrieval evals under both per
       [ADR-20](../adrs/20-pause-and-measure-rag-quality.md) and record the
       comparison in `docs/`. The proxy arm is already measured:
@@ -1072,7 +1072,7 @@ resumes:
       `Team.budgetUsdCents`, `budgetDuration`, `rpmLimit`, `tpmLimit` and
       `allowedModels` are deliberately kept — those are Ragen's own settings,
       read from the database, and now enforced from there.
-- [ ] **B6.** Remove the infrastructure: `infra/litellm/`, the compose service
+- [x] **B6.** (#1194) Remove the infrastructure: `infra/litellm/`, the compose service
       and its Postgres, the Helm values, the devcontainer wiring, the e2e mock
       proxy, the promptfoo configs' base URLs, `packages/litellm-client`,
       `create-ragen-app`'s YAML splice, and the upgrade runbook. Re-point

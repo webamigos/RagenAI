@@ -1,6 +1,6 @@
 ---
 title: What Ragen says about retrieval matches what it does, before public launch
-status: draft
+status: in-progress
 areas: [rag, worker, knowledge-base, admin, settings]
 adrs: [12, 15, 16, 19, 20, 50]
 ---
@@ -415,17 +415,17 @@ work, and D packages the result.
 
 ### Phase A — settings report the pipeline that runs
 
-- [ ] **A1.** The worker reads `docSummariesEnabled` (env AND org), fails
+- [x] **A1.** (#1515) The worker reads `docSummariesEnabled` (env AND org), fails
   open, with a unit test per branch, plus a test that the context prefix
   tolerates a missing summary.
-- [ ] **A2.** The reranking row shows its effective state with a note when
+- [x] **A2.** (#1516) The reranking row shows its effective state with a note when
   the installation has no reranker. All four rows are audited, and a
   component test covers each combination.
-- [ ] **A3.** The reranking description is rewritten in 17 locales.
+- [x] **A3.** (#1516) The reranking description is rewritten in 17 locales.
 
 ### Phase B — reranking gets a number, then a decision
 
-- [ ] **B0.** Cross-query fusion behind a setting, default unchanged, with a
+- [x] **B0.** (#1518) Cross-query fusion behind a setting, default unchanged, with a
   unit test that a variant's top hit outranks the first query's last hit when
   nothing reranks, and that the reranker and selection paths are untouched.
 - [x] **B1.** Three arms (off, off + cross-query fusion, Scaleway; Cohere if an
@@ -504,7 +504,7 @@ work, and D packages the result.
 
 ### Phase E — docs describe `main`
 
-- [ ] **E1.** `docs/rag-pipeline.md` (the three shipped stages, reranking as
+- [x] **E1.** (#1517) `docs/rag-pipeline.md` (the three shipped stages, reranking as
   opt-in) and the benchmark README prerequisites.
 - [ ] **E2.** The ragen-docs follow-up issue.
 

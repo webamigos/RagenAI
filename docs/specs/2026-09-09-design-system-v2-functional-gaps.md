@@ -1,6 +1,6 @@
 ---
 title: What design system v2 asks for that the product cannot yet do
-status: approved
+status: delivered
 areas: [web, api, worker, rag, knowledge-base]
 adrs: [20, 21, 41]
 ---

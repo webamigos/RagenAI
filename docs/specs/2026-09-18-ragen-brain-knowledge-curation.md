@@ -1,6 +1,6 @@
 ---
 title: Ragen Brain — curated knowledge as the product, RAG as an optional consumer
-status: draft
+status: in-progress
 areas: [knowledge-base, worker, rag, admin, self-hosting]
 adrs: [11, 16, 20, 26, 27, 33, 37, 39, 42, 43, 44, 49]
 ---
@@ -1198,7 +1198,7 @@ baseline without the outlier (edges 72.7 % `EXTRACTED` against 70.3 %,
       "Delete what was removed" is deliberately not a side effect of a bulk
       run: a page leaves the index by a person withdrawing it. Verified: first
       run queued 1, second run 1 unchanged._
-- [ ] **E8.** Two-level citation rendering in `apps/web` and `apps/api`:
+- [x] **E8.** (#1332, #1337, #1602) Two-level citation rendering in `apps/web` and `apps/api`:
       `metadata.brain.pageId` → `KnowledgePageSource` → source documents,
       resolved against the pinned `documentVersionId` and filtered by the same
       file predicate as any other read (`fileAccessWhere`). A test that a reader
@@ -1216,8 +1216,9 @@ baseline without the outlier (edges 72.7 % `EXTRACTED` against 70.3 %,
       `fileAccessWhere`; a reader who may see the page and none of its
       sources is told so, never shown their names. Read when rendered, so a
       reopened thread shows the page as it is now; off on a public share or
-      guest thread. Verified live, live turn and reopened thread. Still open:
-      `apps/api`, whose chat responses carry no source list to extend._
+      guest thread. Verified live, live turn and reopened thread. The
+      `apps/api` half — chat responses carrying a source list, with a Brain
+      page naming the page and its documents — landed in #1602._
 - [x] **E9.** Take a curated source document out of retrieval — per document,
       human-triggered, reversible by re-running ingest. Mode 1's path to a clean
       index, and never automatic.

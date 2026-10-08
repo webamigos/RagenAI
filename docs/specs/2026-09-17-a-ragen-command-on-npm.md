@@ -212,11 +212,10 @@ Independent of every open question.
   unknown command, a planned command exiting non-zero, and the spawn binding
   (AGENTS.md is explicit that thin bindings get a test — they are the only
   place the wiring exists).
-- [~] **A5.** Register the workspace: `lint-staged.config.mjs` done and its
-  architecture guard passes, `check-config-path-globs` clean. **`npm run verify`
-  and ESLint have not run** — this was built in a worktree with no
-  `node_modules`, and `npm install --no-workspaces` cannot resolve this tree.
-  They must run before the branch lands.
+- [x] **A5.** (#1565) Register the workspace: `lint-staged.config.mjs` done and its
+  architecture guard passes, `check-config-path-globs` clean, and PR #1565's
+  `Lint` check passes. The exact `npm run verify` command has not run; CI runs
+  its lint, typecheck, test and build tasks as separate jobs.
 - [x] **A6.** A CI smoke job modelled on `installer.yml`: `npm pack`, install
   the tarball, run `ragen --help` and `ragen --version`. Exercise the artefact
   npm would serve, not the workspace.
@@ -233,18 +232,18 @@ Independent of every open question.
 
 Blocked on Q4.
 
-- [ ] **B1.** Config resolution: `RAGEN_API_URL` / `RAGEN_API_KEY` over
+- [x] **B1.** (#1565) Config resolution: `RAGEN_API_URL` / `RAGEN_API_KEY` over
   `~/.ragen/config.json`, written `0600` via temp-file rename.
-- [ ] **B2.** `ragen login` / `ragen logout`, key never echoed.
+- [x] **B2.** (#1565) `ragen login` / `ragen logout`, key never echoed.
 - [ ] **B3.** A read-only identity/health endpoint in `apps/api`, plus the
   version-skew check.
-- [ ] **B4.** `ragen doctor`: reachability, key validity, configured model,
+- [x] **B4.** (#1565) `ragen doctor`: reachability, key validity, configured model,
   vector store, worker queue — the questions a stranger's broken install
   actually raises.
 
 ### Phase C — it does something worth scripting
 
-- [ ] **C1.** `ragen kb list` / `ragen kb upload <file>`.
+- [x] **C1.** (#1565) `ragen kb list` / `ragen kb upload <file>`.
 - [ ] **C2.** `--json` on every read command, so it composes with `jq`.
 
 ### Phase D — `ragen plugin`

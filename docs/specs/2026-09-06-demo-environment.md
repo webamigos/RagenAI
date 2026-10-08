@@ -352,7 +352,7 @@ the five were consequences of one Phase A change.
 
 ### Phase D — the demo organization
 
-- [ ] **D1.** Write the seed script: the org, its shared account, the flag
+- [x] **D1.** (#911) Write the seed script: the org, its shared account, the flag
       overrides, `monthlyCostLimitCents`, `allowedModels`, and the sample
       corpus. Writing it is safe anywhere; it is not run in this step.
 - [ ] **D2.** Run it against the Phase C deployment, and walk the prospect's
@@ -383,13 +383,13 @@ the five were consequences of one Phase A change.
 The repository has no Temporal Schedule, so this introduces the pattern as
 much as the job.
 
-- [ ] **E1.** Decide how the worker identifies the demo organization. It
+- [x] **E1.** (#916) Decide how the worker identifies the demo organization. It
       **must not** be `TARGET_ENV`, which would contradict this spec's own
       rule. Proposal: a `DEMO_ORGANIZATION_ID` variable naming the org — it
       is operational config rather than a behaviour branch, and it needs no
       migration. Trade-off: cleanup then serves exactly one organization,
       and a second demo org would need this revisited.
-- [ ] **E2.** A workflow deleting that org's threads older than a configured
+- [x] **E2.** (#916) A workflow deleting that org's threads older than a configured
       age. It **cannot** reuse `DELETE /v1/internal/threads/:id`: that route
       sits behind `SessionAuthGuard` and needs a user's bearer token, which
       the worker has no way to mint. A scoped `deleteMany` in the worker is
@@ -425,7 +425,7 @@ much as the job.
       signed out. `/reset-password` needs a token only that route issues, so
       there is nothing further down the flow to block.
 
-- [ ] **E3.** Make a failed run visible. `apps/worker` has **no alerting** —
+- [x] **E3.** (#916) Make a failed run visible. `apps/worker` has **no alerting** —
       only OTel and Langfuse — so this is a new capability, not a checkbox.
       Either add one, or scope this to "the run logs an error and a
       dashboard shows it", and say which.

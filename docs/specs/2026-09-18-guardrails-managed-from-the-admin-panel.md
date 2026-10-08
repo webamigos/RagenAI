@@ -1,6 +1,6 @@
 ---
 title: Guardrails, authored and applied from the admin panel
-status: draft
+status: done
 areas: [admin, chat, api, security]
 adrs: [33, 35, 39, 42]
 ---

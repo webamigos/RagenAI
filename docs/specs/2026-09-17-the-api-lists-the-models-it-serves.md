@@ -1,6 +1,6 @@
 ---
 title: GET /v1/models, so an OpenAI client can fill its model picker
-status: in-progress
+status: done
 areas: [api, docs]
 adrs: [13, 21, 33, 49]
 ---

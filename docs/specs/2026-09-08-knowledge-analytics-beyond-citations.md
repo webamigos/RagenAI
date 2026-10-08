@@ -1,6 +1,6 @@
 ---
 title: Knowledge analytics that explain a bad answer, not just count good ones
-status: approved
+status: in-progress
 areas: [rag, api, worker, knowledge-base]
 adrs: [20, 21, 33]
 ---
@@ -320,12 +320,12 @@ worth nothing until B has been in production for a while.
 
 ### Phase A — one time window for the whole screen
 
-- [ ] **A1.** A period selector (7 / 30 / 90 days) **and** `getTopCitedDocuments`
+- [x] **A1.** (#990) A period selector (7 / 30 / 90 days) **and** `getTopCitedDocuments`
       taking `days`, in one step. They cannot be split: between a selector and
       a windowed query, the panel shows all-time counts under a "last 7 days"
       label and caches them under a 7-day key. The cache key already varies by
       `days` for three of the five calls.
-- [ ] **A2.** Decide what the selector means for "Documents Unused for 90+
+- [x] **A2.** (#990) Decide what the selector means for "Documents Unused for 90+
       Days", which is defined by a fixed `UNUSED_THRESHOLD_DAYS` rather than a
       window. Either it is exempt and labelled so, or the threshold follows the
       selector — leaving it silently unfiltered recreates the inconsistency
@@ -385,9 +385,9 @@ for privacy, not only for accuracy. Counting API threads again means dropping
 
 ### Phase E — which documents back a bad answer
 
-- [ ] **E1.** `rate` joined to citations per document: cited, thumbs-up,
+- [x] **E1.** (#990) `rate` joined to citations per document: cited, thumbs-up,
       thumbs-down, and the rate. No new data — this is possible today.
-- [ ] **E2.** A column in the top-cited table rather than a section of its
+- [x] **E2.** (#990) A column in the top-cited table rather than a section of its
       own, since it describes the same documents.
 
 ### Phase F — questions the corpus cannot answer
@@ -405,7 +405,7 @@ for privacy, not only for accuracy. Counting API threads again means dropping
 
 ### Phase G — documents that have gone stale
 
-- [ ] **G1.** Cited documents whose `updatedAt` is older than the citations
+- [x] **G1.** (#990) Cited documents whose `updatedAt` is older than the citations
       against them, i.e. material still being answered from but not reviewed
       in a long time. Reads existing columns.
 

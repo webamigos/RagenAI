@@ -1,6 +1,6 @@
 ---
 title: assistant_id is optional on the OpenAI-compatible surface
-status: in-progress
+status: implemented
 areas: [api, auth, knowledge-base, rag, docs]
 adrs: [13, 21, 33, 36]
 ---

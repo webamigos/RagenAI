@@ -1,6 +1,6 @@
 ---
 title: Document ingest that survives a slow, busy or absent Docling
-status: approved
+status: done
 areas: [worker, knowledge-base, self-hosting]
 adrs: [44, 47, 43]
 ---
