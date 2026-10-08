@@ -6,7 +6,16 @@ import { logger } from '../../services/logger.js';
 import { SUMMARY_MODEL } from '../../consts.js';
 import { db } from '../../services/db/db.js';
 
-const MAX_INPUT_CHARS = 12_000;
+/**
+ * How much of a document the scorer reads. The same ceiling as the Optimize
+ * tab's generator in apps/web (`MAX_INPUT_CHARS` there), so the badge and the
+ * button see the same text, and a long document is not scored on its first
+ * twelve thousand characters alone (spec 2026-09-26-rag-readiness-score-review,
+ * B2). Scoring is off by default (`ragScoreOnIngest`), and a document this long
+ * is the exception, so the extra tokens are paid only where they were being
+ * hidden.
+ */
+export const MAX_INPUT_CHARS = 100_000;
 
 export const MAX_SUGGESTIONS = 5;
 export const MAX_SUGGESTION_CHARS = 300;
