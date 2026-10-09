@@ -3279,7 +3279,9 @@
       "empty-description": "Er zijn geen pagina's om te beoordelen. Ga terug naar het Brain-overzicht om de overige kennis te bekijken.",
       "back": "Return to Brain overview",
       "claims-step": "Step 2 · Claims",
-      "publication-failed": "The page was approved, but publication did not finish: {reason} Open page details to retry publication."
+      "publication-failed": "The page was approved, but publication did not finish: {reason} Open page details to retry publication.",
+      "claim-correct": "Correct",
+      "claim-needs-fix": "Needs a fix"
     }
   },
   "project-context-manager": {

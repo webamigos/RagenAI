@@ -3279,7 +3279,9 @@
       "empty-description": "Немає сторінок на перевірку. Поверніться до огляду Brain, щоб переглянути решту знань.",
       "back": "Return to Brain overview",
       "claims-step": "Step 2 · Claims",
-      "publication-failed": "The page was approved, but publication did not finish: {reason} Open page details to retry publication."
+      "publication-failed": "The page was approved, but publication did not finish: {reason} Open page details to retry publication.",
+      "claim-correct": "Correct",
+      "claim-needs-fix": "Needs a fix"
     }
   },
   "project-context-manager": {

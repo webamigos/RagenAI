@@ -104,6 +104,13 @@ export function BrainReviewMode({
   const canDecide = canWrite && page?.status === 'CANDIDATE';
   const canApprove = canDecide && ownerIsMember;
   const canPublish = canApprove && (page?.principals.length ?? 0) > 0;
+  // Why "Zatwierdź i opublikuj" is grey, when it is.
+  let publishBlocker: 'needs-owner' | 'needs-access' | null = null;
+  if (canDecide && !ownerIsMember) {
+    publishBlocker = 'needs-owner';
+  } else if (canDecide && !canPublish) {
+    publishBlocker = 'needs-access';
+  }
   const navigate = useCallback(
     (publicId?: string) => {
       router.push(
@@ -434,7 +441,10 @@ export function BrainReviewMode({
                     aria-label={t('review-mode.claims-step')}
                     className="[&_[data-slot=progress-indicator]]:bg-ready"
                   />
-                  <p className="text-sm text-muted-foreground">
+                  <p
+                    className="text-sm text-muted-foreground"
+                    aria-live="polite"
+                  >
                     {t('review-mode.claim-progress', { ...claimProgress })}
                   </p>
                 </div>
@@ -455,10 +465,27 @@ export function BrainReviewMode({
                       <Button
                         className="w-full whitespace-normal"
                         disabled={pending || !canPublish}
+                        aria-describedby={
+                          publishBlocker ? 'review-publish-blocker' : undefined
+                        }
                         onClick={() => decision('publish')}
                       >
                         {t('review-mode.approve-publish')}
                       </Button>
+                      {/*
+                        Why the button is grey, right under it: below all
+                        three it read as being about "Odrzuć", which is
+                        never blocked.
+                      */}
+                      {publishBlocker && (
+                        <p
+                          id="review-publish-blocker"
+                          data-testid="review-publish-blocker"
+                          className="text-sm text-muted-foreground"
+                        >
+                          {t(`review-mode.${publishBlocker}`)}
+                        </p>
+                      )}
                       <Button
                         className="w-full"
                         variant="outline"
@@ -475,16 +502,6 @@ export function BrainReviewMode({
                       >
                         {t('review-mode.reject')}
                       </Button>
-                      {!ownerIsMember && (
-                        <p className="text-sm text-muted-foreground">
-                          {t('review-mode.needs-owner')}
-                        </p>
-                      )}
-                      {ownerIsMember && !canPublish && (
-                        <p className="text-sm text-muted-foreground">
-                          {t('review-mode.needs-access')}
-                        </p>
-                      )}
                     </>
                   ) : (
                     <p className="text-sm text-muted-foreground">
