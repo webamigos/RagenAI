@@ -15,7 +15,6 @@ import {
   getAllSettings,
   getPublicChatModel,
 } from '@/features/organizations/services/organization-settings';
-import { ApiKeyError } from '@/libs/chains/errors';
 import { SseExceptionFilter } from '../services/sseExceptionFilter';
 import {
   ChatType,
@@ -369,10 +368,6 @@ export async function streamEvents({
               checkUsageLimitsQuery(orgId),
             ]);
 
-          if (!rawSettings.apiKey) {
-            throw new ApiKeyError();
-          }
-
           // Before the turn costs anything and before the user's message is
           // stored, so an organization over its ceiling does not accumulate
           // half-turns nobody answered. Resolved in the batch above, so this
@@ -431,7 +426,10 @@ export async function streamEvents({
           }
 
           const effectiveSettings = {
-            apiKey: rawSettings.apiKey,
+            // Read by nothing downstream since the gateway took over provider
+            // calls (ADR-49); it used to gate the turn on an OpenAI key, which
+            // refused every install served by another provider.
+            apiKey: rawSettings.apiKey ?? '',
             model: effectiveModel,
             temperature: rawSettings.temperature,
             prompt: rawSettings.prompt,
