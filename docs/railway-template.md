@@ -326,6 +326,27 @@ egress is free, a service's own egress is not.
    composer accepts one.
 3. Measure idle memory and cost; Docling dominates both.
 
+**What *Generate Template from Project* dropped** (template `QufTr4`,
+2026-10-09) — check each of these after regenerating:
+
+- **Group membership.** The groups came across empty, so a deploy from the
+  template put every service loose on the canvas. Membership is set in the
+  composer (right-click a service → *Group*) and stored in the template's
+  `canvasConfig.groupRefs`, not in `serializedConfig`. A bucket cannot be
+  grouped there; it sits beside *Storage*.
+- **Literal variable values** came across blank and had to be re-entered;
+  generated secrets became `${{secret(64, "abcdef0123456789")}}`.
+
+The pre-deploy command, restart policies and healthchecks did come across.
+Redis and Qdrant pull from Docker Hub, so a Docker Hub incident fails a fresh
+deploy of the template even when every Ragen image (GHCR) pulls fine.
+
+**Qdrant needs `PORT=6333`.** Railway's healthcheck probes `PORT`, and without
+one it probes a port of its own choosing; Qdrant listens on 6333 regardless, so
+`/readyz` failed for the full five-minute window on a Qdrant that had started
+cleanly. The source project never set it either, so the template could not carry it;
+the first fresh deploy from the template was the first to fail.
+
 **Rebuilding the project by hand, not from the template** — two traps the test
 hit, which a template avoids because it creates every service at once:
 
