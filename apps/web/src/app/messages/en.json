@@ -2706,7 +2706,6 @@
       "discuss": "Ask the assistant about this",
       "empty-in-language-title": "Nothing in this language",
       "empty-in-language-description": "No problem is about a document in this language or a page citing one. Pick another language, or all of them.",
-      "intro": "Check detected problems and choose a corrective action.",
       "filter-types": "Problem types",
       "all-types": "All types",
       "subject-gone": "The source was deleted",
@@ -2731,7 +2730,6 @@
       "add-relations": "Add selected relations"
     },
     "page": {
-      "back": "Knowledge pages",
       "owner": "Owner",
       "verification": "Verification",
       "last-verified": "Last verified {date}",
@@ -2919,9 +2917,6 @@
       },
       "empty-in-language-title": "Nothing in this language",
       "empty-in-language-description": "No document in this language, or no page citing one. Pick another language, or all of them.",
-      "connections-title": "How knowledge connects",
-      "connections-description": "Topics first, then details. The full graph is available when you need it.",
-      "back-brain": "← Brain",
       "views-label": "Graph view",
       "views": {
         "topics": "Topics",
@@ -3030,8 +3025,6 @@
       "empty-in-language-description": "No document in this language, or no page citing one. Pick another language, or all of them.",
       "empty-filter": "Documents without extracted knowledge",
       "clear-filter": "Show all documents",
-      "screen-title": "Sources",
-      "screen-intro": "What Brain extracted from each file and how much has already been reviewed.",
       "table-title": "Documents by language",
       "shared-scale": "Shared scale: {count, plural, one {# page} other {# pages}} = full bar",
       "coverage-counts": "{approved} approved · {candidates} to review",
@@ -3149,11 +3142,11 @@
       }
     },
     "tab-hints": {
-      "pages": "Knowledge pages with their sources: each page states claims with the exact quotes from the documents they come from. A page to review waits for your decision; approve it and publish it to make it answerable in chat.",
+      "pages": "Each page collects claims with exact quotes from their sources. Review a page, approve it and publish it so chat can answer from it.",
       "findings": "What needs your attention: contradictions between pages, gaps, stale pages, pages with no owner, and documents Brain could not read.",
       "graph": "How pages connect — which process requires which policy, and which pages cite each other.",
       "documents": "The source documents Brain reads, how many pages each one yielded, and whether each is still searched by chat.",
-      "overview": "See how much knowledge has been reviewed and what needs attention."
+      "overview": "Company knowledge drawn from documents and checked by people. See what already works in chat and what is waiting for your decision."
     },
     "relation-kind": {
       "approves": "approves",
@@ -3193,7 +3186,6 @@
       "option": "{name} ({count})"
     },
     "overview": {
-      "intro": "Company knowledge extracted from documents. See how much has been reviewed by people.",
       "start-review": "Start review ({count})",
       "pipeline-title": "The knowledge journey: from documents to chat answers",
       "publication-description": "Published pages are available in chat. Source documents may still be searched.",

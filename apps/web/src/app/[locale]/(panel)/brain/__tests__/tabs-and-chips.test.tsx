@@ -36,9 +36,8 @@ describe('BrainTabs', () => {
   // The segment under /brain. A page in the graph's drawer is `graph`, as
   // the graph is what fills the screen; the full page is `pages`.
   it.each([
-    ['overview', /knowledge has been reviewed/],
+    ['overview', /checked by people/],
     [null, /exact quotes/],
-    ['pages', /exact quotes/],
     ['findings', /needs your attention/],
     ['graph', /How pages connect/],
     ['documents', /source documents/],
@@ -47,6 +46,20 @@ describe('BrainTabs', () => {
     wrap(<BrainTabs />);
     expect(screen.getByTestId('brain-tab-hint')).toHaveTextContent(hint);
   });
+
+  // A page and the review mode sit inside the pages tab; the line describes
+  // the list, which is not on screen there. Breadcrumbs say where you are.
+  it.each(['pages', 'review'])(
+    'says nothing about the list on %s',
+    (current) => {
+      segment.current = current;
+      wrap(<BrainTabs />);
+      expect(screen.queryByTestId('brain-tab-hint')).toBeNull();
+      expect(
+        screen.getByRole('link', { name: 'Knowledge pages' }),
+      ).toBeInTheDocument();
+    },
+  );
 
   it('keeps the language filter on every tab’s link', () => {
     segment.current = 'graph';

@@ -2706,7 +2706,6 @@
       "discuss": "Zapytaj asystenta o to",
       "empty-in-language-title": "Nic w tym języku",
       "empty-in-language-description": "Żaden problem nie dotyczy dokumentu w tym języku ani strony, która go cytuje. Wybierz inny język albo wszystkie.",
-      "intro": "Sprawdź wykryte problemy i wybierz akcję naprawczą.",
       "filter-types": "Rodzaje problemów",
       "all-types": "Wszystkie rodzaje",
       "subject-gone": "Źródło zostało usunięte",
@@ -2731,7 +2730,6 @@
       "add-relations": "Dodaj zaznaczone powiązania"
     },
     "page": {
-      "back": "Strony wiedzy",
       "owner": "Właściciel",
       "verification": "Weryfikacja",
       "last-verified": "Ostatnio zweryfikowana {date}",
@@ -2919,9 +2917,6 @@
       },
       "empty-in-language-title": "Nic w tym języku",
       "empty-in-language-description": "Żaden dokument nie jest w tym języku albo żadna strona go nie cytuje. Wybierz inny język albo wszystkie.",
-      "connections-title": "Jak łączy się wiedza",
-      "connections-description": "Najpierw tematy, potem szczegóły. Pełny graf zostaje dla tych, którzy go potrzebują.",
-      "back-brain": "← Brain",
       "views-label": "Widok grafu",
       "views": {
         "topics": "Tematy",
@@ -3030,8 +3025,6 @@
       "empty-in-language-description": "Żaden dokument nie jest w tym języku albo żadna strona go nie cytuje. Wybierz inny język albo wszystkie.",
       "empty-filter": "Dokumenty bez wyodrębnionej wiedzy",
       "clear-filter": "Pokaż wszystkie dokumenty",
-      "screen-title": "Źródła",
-      "screen-intro": "Co Brain wyciągnął z każdego pliku i ile z tego jest już sprawdzone.",
       "table-title": "Dokumenty według języka",
       "shared-scale": "Skala wspólna: {count, plural, one {# strona} few {# strony} many {# stron} other {# strony}} = pełny pasek",
       "coverage-counts": "{approved, plural, one {# zatwierdzona} few {# zatwierdzone} many {# zatwierdzonych} other {# zatwierdzone}} · {candidates} do sprawdzenia",
@@ -3149,11 +3142,11 @@
       }
     },
     "tab-hints": {
-      "pages": "Strony wiedzy z cytatami ze źródeł: każda strona zawiera twierdzenia z dosłownymi cytatami z dokumentów źródłowych. Strona do sprawdzenia czeka na Twoją decyzję. Zatwierdź ją i opublikuj, żeby czat mógł z niej odpowiadać.",
+      "pages": "Każda strona zbiera twierdzenia z dosłownymi cytatami ze źródeł. Sprawdź stronę, zatwierdź ją i opublikuj, żeby czat mógł z niej odpowiadać.",
       "findings": "Co wymaga Twojej uwagi: sprzeczności między stronami, luki, nieaktualne strony, strony bez właściciela i dokumenty, których Brain nie odczytał.",
       "graph": "Jak strony się łączą: który proces wymaga której zasady i które strony odwołują się do siebie.",
       "documents": "Dokumenty źródłowe, które czyta Brain: ile stron dał każdy z nich i czy czat nadal go przeszukuje.",
-      "overview": "Tu widzisz, ile wiedzy jest już sprawdzone i co wymaga uwagi."
+      "overview": "Wiedza firmy wyciągnięta z dokumentów i sprawdzona przez ludzi. Zobacz, co już działa w czacie i co czeka na Twoją decyzję."
     },
     "relation-kind": {
       "approves": "zatwierdza",
@@ -3193,7 +3186,6 @@
       "option": "{name} ({count})"
     },
     "overview": {
-      "intro": "Wiedza firmy wyciągnięta z dokumentów. Tu widzisz, ile z niej jest już sprawdzone przez ludzi.",
       "start-review": "Rozpocznij przegląd ({count})",
       "pipeline-title": "Droga wiedzy: od dokumentu do odpowiedzi czatu",
       "publication-description": "Opublikowane strony są dostępne w czacie. Dokumenty źródłowe mogą nadal być przeszukiwane.",

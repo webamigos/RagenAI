@@ -97,10 +97,7 @@ export function BrainOverviewPanel({
   );
   return (
     <div className="space-y-6" data-testid="brain-overview">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <p className="max-w-2xl text-sm text-muted-foreground">
-          {t('overview.intro')}
-        </p>
+      <div className="flex flex-wrap items-start justify-end gap-3">
         {canWrite && (
           <div className="flex flex-wrap items-center gap-2">
             <BrainUploadButton />

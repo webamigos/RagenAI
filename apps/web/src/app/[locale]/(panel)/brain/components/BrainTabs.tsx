@@ -15,6 +15,9 @@ const TABS = [
   { key: 'documents', path: '/brain/documents', segment: 'documents' },
 ] as const;
 
+/** Segments that are a screen inside a tab rather than the tab itself. */
+const BELOW_A_TAB = new Set(['pages', 'review']);
+
 export function BrainTabs({ aside }: { aside?: ReactNode }) {
   const t = useTranslations('brain');
   // The route segment under /brain, not the address. A page opened in the
@@ -54,14 +57,19 @@ export function BrainTabs({ aside }: { aside?: ReactNode }) {
       </div>
       {/*
         What this tab is for, in one line: five tabs over one feature read as
-        names for the same thing until someone says how they differ.
+        names for the same thing until someone says how they differ. Only on
+        a tab's own screen: below it (a page, the review mode) the line
+        described a list that is not there, and the breadcrumbs say where
+        you are instead.
       */}
-      <p
-        data-testid="brain-tab-hint"
-        className="mt-2 text-[13px] text-muted-foreground"
-      >
-        {t(`tab-hints.${TABS[current]!.key}`)}
-      </p>
+      {!BELOW_A_TAB.has(segment ?? '') && (
+        <p
+          data-testid="brain-tab-hint"
+          className="mt-2 max-w-3xl text-sm text-muted-foreground"
+        >
+          {t(`tab-hints.${TABS[current]!.key}`)}
+        </p>
+      )}
     </div>
   );
 }

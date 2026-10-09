@@ -91,9 +91,6 @@ export default async function BrainFindingsPage({ searchParams }: Props) {
             : { view: 'inbox', status, ...(type ? { type } : {}) }
         }
       />
-      <p className="mb-4 text-sm text-muted-foreground">
-        {t('findings.intro')}
-      </p>
       {type && (
         <div className="mb-3 text-sm">
           <span className="mr-3 text-muted-foreground">

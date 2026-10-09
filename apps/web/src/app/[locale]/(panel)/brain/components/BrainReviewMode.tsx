@@ -27,6 +27,7 @@ import {
   rejectKnowledgePageAction,
   setOwnerForDocumentCandidatesAction,
 } from '../actions';
+import { BrainBreadcrumbs } from './BrainBreadcrumbs';
 import { OwnerPicker } from './OwnerPicker';
 import { ClaimAlignment } from './ClaimAlignment';
 import { useReviewAction } from './useReviewAction';
@@ -244,14 +245,9 @@ export function BrainReviewMode({
             : { view: 'pages', status: 'CANDIDATE' }
         }
       />
+      <BrainBreadcrumbs current={t('review-mode.title')} />
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-3">
-          <Link
-            href={withLanguage('/brain/overview', language)}
-            className="inline-flex min-h-8 items-center text-sm text-primary underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-          >
-            ← {t('title')}
-          </Link>
           <h2 className="font-display text-xl font-semibold">
             {t('review-mode.title')}
           </h2>

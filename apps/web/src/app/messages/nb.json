@@ -2706,7 +2706,6 @@
       "discuss": "Spør assistenten om dette",
       "empty-in-language-title": "Ingenting på dette språket",
       "empty-in-language-description": "Ingen problemer gjelder et dokument på dette språket eller en side som siterer det. Velg et annet språk, eller alle.",
-      "intro": "Check detected problems and choose a corrective action.",
       "filter-types": "Problemtyper",
       "all-types": "All types",
       "subject-gone": "The source was deleted",
@@ -2731,7 +2730,6 @@
       "add-relations": "Add selected relations"
     },
     "page": {
-      "back": "Kunnskapssider",
       "owner": "Eier",
       "verification": "Verifisering",
       "last-verified": "Sist verifisert {date}",
@@ -2919,9 +2917,6 @@
       },
       "empty-in-language-title": "Ingenting på dette språket",
       "empty-in-language-description": "Ingen dokumenter på dette språket, eller ingen sider som viser til dem. Velg et annet språk, eller alle.",
-      "connections-title": "How knowledge connects",
-      "connections-description": "Topics first, then details. The full graph is available when you need it.",
-      "back-brain": "← Brain",
       "views-label": "Graph view",
       "views": {
         "topics": "Topics",
@@ -3030,8 +3025,6 @@
       "empty-in-language-description": "Ingen dokumenter på dette språket, eller ingen sider som viser til dem. Velg et annet språk, eller alle.",
       "empty-filter": "Documents without extracted knowledge",
       "clear-filter": "Show all documents",
-      "screen-title": "Kilder",
-      "screen-intro": "What Brain extracted from each file and how much has already been reviewed.",
       "table-title": "Documents by language",
       "shared-scale": "Shared scale: {count, plural, one {# page} other {# pages}} = full bar",
       "coverage-counts": "{approved} godkjent · {candidates} til gjennomgang",
@@ -3193,7 +3186,6 @@
       "option": "{name} ({count})"
     },
     "overview": {
-      "intro": "Company knowledge extracted from documents. See how much has been reviewed by people.",
       "start-review": "Start review ({count})",
       "pipeline-title": "The knowledge journey: from documents to chat answers",
       "publication-description": "Published pages are available in chat. Source documents may still be searched.",

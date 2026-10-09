@@ -1,4 +1,3 @@
-import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { getFormatter, getLocale, getTranslations } from 'next-intl/server';
 import { formatIsoDuration } from '@/features/brain/utils/format-iso-duration';
 import { notFound } from 'next/navigation';
@@ -14,6 +13,7 @@ import { relationKindLabel } from '@/features/brain/utils/relation-kind';
 import { pageStatusVariant } from '@/features/brain/utils/page-status-variant';
 import { Link } from '@/i18n/routing';
 
+import { BrainBreadcrumbs } from './BrainBreadcrumbs';
 import { BrainScreen } from './assistant/BrainAssistantContext';
 import { AccessEditor } from './AccessEditor';
 import { AccessList } from './AccessList';
@@ -71,18 +71,18 @@ export async function KnowledgePageView({
       {variant === 'page' && (
         <>
           <title>{`${page.title} – ${t('title')}`}</title>
-          <Link
-            href="/brain"
-            className="mb-3 inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
-          >
-            <ArrowLeftIcon className="size-3.5" aria-hidden="true" />
-            {t('page.back')}
-          </Link>
+          <BrainBreadcrumbs current={page.title} />
         </>
       )}
 
       <header className="mb-4 flex flex-wrap items-center gap-2">
-        <h2 className="text-base font-semibold text-foreground">
+        <h2
+          className={
+            variant === 'page'
+              ? 'font-display text-xl font-semibold text-foreground'
+              : 'text-base font-semibold text-foreground'
+          }
+        >
           {page.title}
         </h2>
         <Badge variant={pageStatusVariant(page.status)}>

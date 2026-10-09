@@ -9,7 +9,6 @@ import { withLanguage } from '@/features/brain/utils/with-language';
 import { getBrainDocumentExtractionQuery } from '@/features/brain/services/queries/get-brain-document-extraction-query';
 
 import { BrainEmpty } from '../components/BrainEmpty';
-import { BrainUploadButton } from '../components/BrainUploadButton';
 import { BrainDocumentsPanel } from '../components/BrainDocumentsPanel';
 import { BrainScreen } from '../components/assistant/BrainAssistantContext';
 
@@ -61,17 +60,6 @@ export default async function BrainDocumentsPage({ searchParams }: Props) {
     <section className="space-y-4">
       <BrainScreen context={{ view: 'documents', selectedFileIds: [] }} />
       <title>{t('title')}</title>
-      <div className="mb-3 flex flex-wrap items-start justify-between gap-3">
-        <div className="space-y-1">
-          <h2 className="font-display text-2xl font-semibold">
-            {t('screen-title')}
-          </h2>
-          <p className="max-w-[720px] text-sm text-muted-foreground">
-            {t('screen-intro')}
-          </p>
-        </div>
-        {access.canWrite && <BrainUploadButton />}
-      </div>
       {emptyOnly && (
         <div className="mb-3 flex flex-wrap items-center gap-2 text-sm">
           <span className="text-muted-foreground">{t('empty-filter')}</span>

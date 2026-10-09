@@ -2706,7 +2706,6 @@
       "discuss": "Chiedi all'assistente",
       "empty-in-language-title": "Niente in questa lingua",
       "empty-in-language-description": "Nessun problema riguarda un documento in questa lingua o una pagina che lo cita. Scegli un'altra lingua, o tutte.",
-      "intro": "Check detected problems and choose a corrective action.",
       "filter-types": "Tipi di problema",
       "all-types": "All types",
       "subject-gone": "The source was deleted",
@@ -2731,7 +2730,6 @@
       "add-relations": "Add selected relations"
     },
     "page": {
-      "back": "Pagine di conoscenza",
       "owner": "Responsabile",
       "verification": "Verifica",
       "last-verified": "Verificata il {date}",
@@ -2919,9 +2917,6 @@
       },
       "empty-in-language-title": "Niente in questa lingua",
       "empty-in-language-description": "Nessun documento in questa lingua, o nessuna pagina che ne citi uno. Scegli un'altra lingua o tutte.",
-      "connections-title": "How knowledge connects",
-      "connections-description": "Topics first, then details. The full graph is available when you need it.",
-      "back-brain": "← Brain",
       "views-label": "Graph view",
       "views": {
         "topics": "Topics",
@@ -3030,8 +3025,6 @@
       "empty-in-language-description": "Nessun documento in questa lingua, o nessuna pagina che ne citi uno. Scegli un'altra lingua o tutte.",
       "empty-filter": "Documents without extracted knowledge",
       "clear-filter": "Show all documents",
-      "screen-title": "Fonti",
-      "screen-intro": "What Brain extracted from each file and how much has already been reviewed.",
       "table-title": "Documents by language",
       "shared-scale": "Shared scale: {count, plural, one {# page} other {# pages}} = full bar",
       "coverage-counts": "{approved} approvate · {candidates} da verificare",
@@ -3193,7 +3186,6 @@
       "option": "{name} ({count})"
     },
     "overview": {
-      "intro": "Company knowledge extracted from documents. See how much has been reviewed by people.",
       "start-review": "Start review ({count})",
       "pipeline-title": "The knowledge journey: from documents to chat answers",
       "publication-description": "Published pages are available in chat. Source documents may still be searched.",
