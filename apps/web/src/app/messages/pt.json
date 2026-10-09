@@ -2731,9 +2731,7 @@
     },
     "page": {
       "owner": "Responsável",
-      "verification": "Verificação",
       "last-verified": "Verificada em {date}",
-      "never-verified": "Nunca verificada",
       "verify-every": "Intervalo de verificação: {every}",
       "sources": {
         "title": "Fontes ({count})",
@@ -2769,12 +2767,13 @@
       "history": "Histórico",
       "merge": "Fundir",
       "superseded-by": "Fundida com",
-      "publication": "Publicação",
       "publish-blocker": {
         "status": "Só uma página aprovada pode ser publicada",
         "owner": "Defina primeiro um responsável",
         "access": "Escolha primeiro a quem a página está aberta"
-      }
+      },
+      "state": "Status",
+      "status-by": "{status} by {name}, {date}"
     },
     "origin": {
       "EXTRACTED": "citada",

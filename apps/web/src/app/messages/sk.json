@@ -2731,9 +2731,7 @@
     },
     "page": {
       "owner": "Vlastník",
-      "verification": "Overenie",
       "last-verified": "Naposledy overené {date}",
-      "never-verified": "Nikdy neoverené",
       "verify-every": "Interval overenia: {every}",
       "sources": {
         "title": "Zdroje ({count})",
@@ -2769,12 +2767,13 @@
       "history": "História",
       "merge": "Zlúčenie",
       "superseded-by": "Zlúčené so stránkou",
-      "publication": "Zverejnenie",
       "publish-blocker": {
         "status": "Zverejniť sa dá len schválená stránka",
         "owner": "Najprv určte vlastníka",
         "access": "Najprv vyberte, komu je stránka prístupná"
-      }
+      },
+      "state": "Status",
+      "status-by": "{status} by {name}, {date}"
     },
     "origin": {
       "EXTRACTED": "citované",

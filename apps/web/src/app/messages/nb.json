@@ -2731,9 +2731,7 @@
     },
     "page": {
       "owner": "Eier",
-      "verification": "Verifisering",
       "last-verified": "Sist verifisert {date}",
-      "never-verified": "Aldri verifisert",
       "verify-every": "Verifiseringsintervall: {every}",
       "sources": {
         "title": "Kilder ({count})",
@@ -2769,12 +2767,13 @@
       "history": "Historikk",
       "merge": "Slå sammen",
       "superseded-by": "Slått sammen med",
-      "publication": "Publisering",
       "publish-blocker": {
         "status": "Bare en godkjent side kan publiseres",
         "owner": "Angi en eier først",
         "access": "Velg først hvem siden skal være åpen for"
-      }
+      },
+      "state": "Status",
+      "status-by": "{status} by {name}, {date}"
     },
     "origin": {
       "EXTRACTED": "sitert",

@@ -9,6 +9,10 @@ import { getBrainAccessQuery } from '@/features/brain/services/queries/get-brain
 import { getBrainReviewOptionsQuery } from '@/features/brain/services/queries/get-brain-review-options-query';
 import { getKnowledgePageQuery } from '@/features/brain/services/queries/get-knowledge-page-query';
 import { getMergeTargetsQuery } from '@/features/brain/services/queries/get-merge-targets-query';
+import {
+  pageBodyForDisplay,
+  statusDecision,
+} from '@/features/brain/utils/page-body';
 import { relationKindLabel } from '@/features/brain/utils/relation-kind';
 import { pageStatusVariant } from '@/features/brain/utils/page-status-variant';
 import { Link } from '@/i18n/routing';
@@ -58,6 +62,7 @@ export async function KnowledgePageView({
       : Promise.resolve([]),
   ]);
   const curated = page.status !== 'REJECTED';
+  const decided = statusDecision(page.status, page.decisions);
   const date = (iso: string) =>
     format.dateTime(new Date(iso), {
       day: 'numeric',
@@ -120,7 +125,10 @@ export async function KnowledgePageView({
           <section className="rounded-[6px] border border-border bg-background p-4">
             <div className="chat-response text-sm">
               <ReactMarkdown>
-                {withoutTitle(page.content, page.title)}
+                {pageBodyForDisplay(page.content, page.title, (n) => {
+                  const source = page.sources[n - 1];
+                  return source ? `source-${source.id}` : null;
+                })}
               </ReactMarkdown>
             </div>
           </section>
@@ -135,10 +143,10 @@ export async function KnowledgePageView({
                   key={source.id}
                   id={`source-${source.id}`}
                   data-testid="brain-source"
-                  className="rounded-[6px] border border-border bg-background p-3 text-sm"
+                  className="scroll-mt-4 rounded-[6px] border border-border bg-background p-3 text-sm target:border-primary"
                 >
                   <div className="mb-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                    <span className="tabular-nums">{i + 1}.</span>
+                    <span className="tabular-nums">[{i + 1}]</span>
                     {source.documentId ? (
                       <Link
                         href={`/knowledge/documents/${source.documentId}`}
@@ -188,6 +196,71 @@ export async function KnowledgePageView({
         </div>
 
         <aside className="space-y-5 text-sm">
+          <section aria-labelledby="brain-state">
+            <h3
+              id="brain-state"
+              className="mb-1 text-xs font-medium uppercase text-muted-foreground"
+            >
+              {t('page.state')}
+            </h3>
+            {/*
+              One line for where the page stands and who put it there,
+              taken from the ledger below, instead of a status here and a
+              "never verified" there.
+            */}
+            <p className="text-foreground" data-testid="brain-page-state">
+              {decided
+                ? t('page.status-by', {
+                    status: t(`page-status.${page.status}`),
+                    name: decided.actorName ?? t('history.unknown-actor'),
+                    date: date(decided.createdAt),
+                  })
+                : t(`page-status.${page.status}`)}
+            </p>
+            {page.lastVerifiedAt && (
+              <p className="text-muted-foreground">
+                {t('page.last-verified', { date: date(page.lastVerifiedAt) })}
+              </p>
+            )}
+            {page.verifyEvery && (
+              <p className="text-muted-foreground">
+                {t('page.verify-every', {
+                  every: formatIsoDuration(page.verifyEvery, locale),
+                })}
+              </p>
+            )}
+            {(page.status === 'APPROVED' || page.publication !== 'none') && (
+              <div className="mt-3">
+                {/*
+                  A reader gets the state in words, the same sentence the
+                  controls lead with, and none of the buttons.
+                */}
+                {!access.canWrite ? (
+                  <p className="text-foreground">
+                    {t(`publication.state.${page.publication}`)}
+                  </p>
+                ) : (
+                  <PublicationControls
+                    publicId={page.publicId}
+                    updatedAt={page.updatedAt}
+                    state={page.publication}
+                    outdated={page.publicationOutdated}
+                    blockers={[
+                      ...(page.status !== 'APPROVED'
+                        ? [t('page.publish-blocker.status')]
+                        : []),
+                      ...(page.ownerId === null
+                        ? [t('page.publish-blocker.owner')]
+                        : []),
+                      ...(page.principals.length === 0
+                        ? [t('page.publish-blocker.access')]
+                        : []),
+                    ]}
+                  />
+                )}
+              </div>
+            )}
+          </section>
           <div>
             <h3 className="mb-1 text-xs font-medium uppercase text-muted-foreground">
               {t('page.owner')}
@@ -204,40 +277,6 @@ export async function KnowledgePageView({
               </div>
             )}
           </div>
-          {(page.status === 'APPROVED' || page.publication !== 'none') && (
-            <div>
-              <h3 className="mb-1 text-xs font-medium uppercase text-muted-foreground">
-                {t('page.publication')}
-              </h3>
-              {/*
-                A reader gets the state in words, the same sentence the
-                controls lead with, and none of the buttons.
-              */}
-              {!access.canWrite ? (
-                <p className="text-foreground">
-                  {t(`publication.state.${page.publication}`)}
-                </p>
-              ) : (
-                <PublicationControls
-                  publicId={page.publicId}
-                  updatedAt={page.updatedAt}
-                  state={page.publication}
-                  outdated={page.publicationOutdated}
-                  blockers={[
-                    ...(page.status !== 'APPROVED'
-                      ? [t('page.publish-blocker.status')]
-                      : []),
-                    ...(page.ownerId === null
-                      ? [t('page.publish-blocker.owner')]
-                      : []),
-                    ...(page.principals.length === 0
-                      ? [t('page.publish-blocker.access')]
-                      : []),
-                  ]}
-                />
-              )}
-            </div>
-          )}
           <div>
             <h3 className="mb-1 text-xs font-medium uppercase text-muted-foreground">
               {t('page.access.title')}
@@ -251,23 +290,6 @@ export async function KnowledgePageView({
                 principals={page.principals}
                 options={options}
               />
-            )}
-          </div>
-          <div>
-            <h3 className="mb-1 text-xs font-medium uppercase text-muted-foreground">
-              {t('page.verification')}
-            </h3>
-            <p>
-              {page.lastVerifiedAt
-                ? t('page.last-verified', { date: date(page.lastVerifiedAt) })
-                : t('page.never-verified')}
-            </p>
-            {page.verifyEvery && (
-              <p className="text-muted-foreground">
-                {t('page.verify-every', {
-                  every: formatIsoDuration(page.verifyEvery, locale),
-                })}
-              </p>
             )}
           </div>
           <div>
@@ -333,14 +355,4 @@ export async function KnowledgePageView({
       </div>
     </article>
   );
-}
-
-/**
- * The page's markdown starts with its own title as `# …`, which the header
- * above already shows. Dropped only when it is exactly the title, so an edited
- * page whose first heading says something else keeps it.
- */
-function withoutTitle(content: string, title: string): string {
-  const [first, ...rest] = content.split('\n');
-  return first?.trim() === `# ${title}` ? rest.join('\n').trimStart() : content;
 }

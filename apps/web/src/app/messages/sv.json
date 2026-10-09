@@ -2731,9 +2731,7 @@
     },
     "page": {
       "owner": "Ansvarig",
-      "verification": "Kontroll",
       "last-verified": "Senast kontrollerad {date}",
-      "never-verified": "Aldrig kontrollerad",
       "verify-every": "Kontrollintervall: {every}",
       "sources": {
         "title": "Källor ({count})",
@@ -2769,12 +2767,13 @@
       "history": "Historik",
       "merge": "Sammanslagning",
       "superseded-by": "Sammanslagen med",
-      "publication": "Publicering",
       "publish-blocker": {
         "status": "Bara en godkänd sida kan publiceras",
         "owner": "Ange först en ägare",
         "access": "Välj först vem sidan är öppen för"
-      }
+      },
+      "state": "Status",
+      "status-by": "{status} by {name}, {date}"
     },
     "origin": {
       "EXTRACTED": "citerad",

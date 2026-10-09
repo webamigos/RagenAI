@@ -2731,9 +2731,7 @@
     },
     "page": {
       "owner": "Verantwortlich",
-      "verification": "Prüfung",
       "last-verified": "Zuletzt geprüft am {date}",
-      "never-verified": "Nie geprüft",
       "verify-every": "Prüfintervall: {every}",
       "sources": {
         "title": "Quellen ({count})",
@@ -2769,12 +2767,13 @@
       "history": "Verlauf",
       "merge": "Zusammenführen",
       "superseded-by": "Zusammengeführt mit",
-      "publication": "Veröffentlichung",
       "publish-blocker": {
         "status": "Nur eine freigegebene Seite kann veröffentlicht werden",
         "owner": "Legen Sie zuerst einen Verantwortlichen fest",
         "access": "Wählen Sie zuerst, für wen die Seite zugänglich ist"
-      }
+      },
+      "state": "Status",
+      "status-by": "{status} by {name}, {date}"
     },
     "origin": {
       "EXTRACTED": "zitiert",

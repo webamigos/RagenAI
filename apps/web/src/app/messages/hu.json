@@ -2731,9 +2731,7 @@
     },
     "page": {
       "owner": "Felelős",
-      "verification": "Ellenőrzés",
       "last-verified": "Utoljára ellenőrizve: {date}",
-      "never-verified": "Még nem ellenőrizték",
       "verify-every": "Ellenőrzési időköz: {every}",
       "sources": {
         "title": "Források ({count})",
@@ -2769,12 +2767,13 @@
       "history": "Előzmények",
       "merge": "Egyesítés",
       "superseded-by": "Egyesítve ezzel",
-      "publication": "Közzététel",
       "publish-blocker": {
         "status": "Csak jóváhagyott oldal tehető közzé",
         "owner": "Előbb jelöljön ki felelőst",
         "access": "Előbb válassza ki, kinek érhető el az oldal"
-      }
+      },
+      "state": "Status",
+      "status-by": "{status} by {name}, {date}"
     },
     "origin": {
       "EXTRACTED": "idézett",

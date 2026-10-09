@@ -2731,9 +2731,7 @@
     },
     "page": {
       "owner": "Responsabile",
-      "verification": "Verifica",
       "last-verified": "Verificata il {date}",
-      "never-verified": "Mai verificata",
       "verify-every": "Intervallo di verifica: {every}",
       "sources": {
         "title": "Fonti ({count})",
@@ -2769,12 +2767,13 @@
       "history": "Cronologia",
       "merge": "Unisci",
       "superseded-by": "Unita a",
-      "publication": "Pubblicazione",
       "publish-blocker": {
         "status": "Si può pubblicare solo una pagina approvata",
         "owner": "Imposta prima un responsabile",
         "access": "Scegli prima a chi è aperta la pagina"
-      }
+      },
+      "state": "Status",
+      "status-by": "{status} by {name}, {date}"
     },
     "origin": {
       "EXTRACTED": "citata",

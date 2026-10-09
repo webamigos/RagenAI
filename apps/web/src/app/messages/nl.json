@@ -2731,9 +2731,7 @@
     },
     "page": {
       "owner": "Eigenaar",
-      "verification": "Verificatie",
       "last-verified": "Laatst geverifieerd op {date}",
-      "never-verified": "Nooit geverifieerd",
       "verify-every": "Verificatie-interval: {every}",
       "sources": {
         "title": "Bronnen ({count})",
@@ -2769,12 +2767,13 @@
       "history": "Geschiedenis",
       "merge": "Samenvoegen",
       "superseded-by": "Samengevoegd met",
-      "publication": "Publicatie",
       "publish-blocker": {
         "status": "Alleen een goedgekeurde pagina kan worden gepubliceerd",
         "owner": "Stel eerst een eigenaar in",
         "access": "Kies eerst voor wie de pagina toegankelijk is"
-      }
+      },
+      "state": "Status",
+      "status-by": "{status} by {name}, {date}"
     },
     "origin": {
       "EXTRACTED": "geciteerd",

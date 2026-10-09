@@ -2731,9 +2731,7 @@
     },
     "page": {
       "owner": "Właściciel",
-      "verification": "Weryfikacja",
       "last-verified": "Ostatnio zweryfikowana {date}",
-      "never-verified": "Nigdy nie zweryfikowana",
       "verify-every": "Interwał weryfikacji: {every}",
       "sources": {
         "title": "Źródła ({count})",
@@ -2769,12 +2767,13 @@
       "history": "Historia",
       "merge": "Scalanie",
       "superseded-by": "Scalona ze stroną",
-      "publication": "Publikacja",
       "publish-blocker": {
         "status": "Opublikować można tylko zatwierdzoną stronę",
         "owner": "Najpierw wskaż właściciela",
         "access": "Najpierw wybierz, dla kogo strona jest dostępna"
-      }
+      },
+      "state": "Stan",
+      "status-by": "{status} przez {name}, {date}"
     },
     "origin": {
       "EXTRACTED": "z cytatu",

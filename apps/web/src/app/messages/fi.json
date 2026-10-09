@@ -2731,9 +2731,7 @@
     },
     "page": {
       "owner": "Vastuuhenkilö",
-      "verification": "Tarkistus",
       "last-verified": "Viimeksi tarkistettu {date}",
-      "never-verified": "Ei koskaan tarkistettu",
       "verify-every": "Tarkistusväli: {every}",
       "sources": {
         "title": "Lähteet ({count})",
@@ -2769,12 +2767,13 @@
       "history": "Historia",
       "merge": "Yhdistäminen",
       "superseded-by": "Yhdistetty sivuun",
-      "publication": "Julkaisu",
       "publish-blocker": {
         "status": "Vain hyväksytyn sivun voi julkaista",
         "owner": "Nimeä ensin omistaja",
         "access": "Valitse ensin, kenelle sivu on avoin"
-      }
+      },
+      "state": "Status",
+      "status-by": "{status} by {name}, {date}"
     },
     "origin": {
       "EXTRACTED": "lainattu",

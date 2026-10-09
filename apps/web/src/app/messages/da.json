@@ -2731,9 +2731,7 @@
     },
     "page": {
       "owner": "Ansvarlig",
-      "verification": "Kontrol",
       "last-verified": "Senest kontrolleret {date}",
-      "never-verified": "Aldrig kontrolleret",
       "verify-every": "Kontrolinterval: {every}",
       "sources": {
         "title": "Kilder ({count})",
@@ -2769,12 +2767,13 @@
       "history": "Historik",
       "merge": "Fletning",
       "superseded-by": "Flettet med",
-      "publication": "Publicering",
       "publish-blocker": {
         "status": "Kun en godkendt side kan udgives",
         "owner": "Angiv først en ejer",
         "access": "Vælg først, hvem siden er åben for"
-      }
+      },
+      "state": "Status",
+      "status-by": "{status} by {name}, {date}"
     },
     "origin": {
       "EXTRACTED": "citeret",

@@ -2731,9 +2731,7 @@
     },
     "page": {
       "owner": "Власник",
-      "verification": "Перевірка",
       "last-verified": "Востаннє перевірено {date}",
-      "never-verified": "Ніколи не перевірялася",
       "verify-every": "Інтервал перевірки: {every}",
       "sources": {
         "title": "Джерела ({count})",
@@ -2769,12 +2767,13 @@
       "history": "Історія",
       "merge": "Об’єднання",
       "superseded-by": "Об’єднано зі сторінкою",
-      "publication": "Публікація",
       "publish-blocker": {
         "status": "Опублікувати можна лише затверджену сторінку",
         "owner": "Спершу призначте власника",
         "access": "Спершу виберіть, кому сторінка доступна"
-      }
+      },
+      "state": "Status",
+      "status-by": "{status} by {name}, {date}"
     },
     "origin": {
       "EXTRACTED": "з цитати",

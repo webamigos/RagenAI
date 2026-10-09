@@ -2731,9 +2731,7 @@
     },
     "page": {
       "owner": "Отговорник",
-      "verification": "Проверка",
       "last-verified": "Последна проверка на {date}",
-      "never-verified": "Никога не е проверявана",
       "verify-every": "Интервал на проверка: {every}",
       "sources": {
         "title": "Източници ({count})",
@@ -2769,12 +2767,13 @@
       "history": "История",
       "merge": "Обединяване",
       "superseded-by": "Обединена със",
-      "publication": "Публикуване",
       "publish-blocker": {
         "status": "Може да се публикува само одобрена страница",
         "owner": "Първо посочете собственик",
         "access": "Първо изберете за кого е достъпна страницата"
-      }
+      },
+      "state": "Status",
+      "status-by": "{status} by {name}, {date}"
     },
     "origin": {
       "EXTRACTED": "от цитат",
