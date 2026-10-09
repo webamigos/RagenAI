@@ -339,6 +339,12 @@ The pre-deploy command, restart policies and healthchecks did come across.
 Redis and Qdrant pull from Docker Hub, so a Docker Hub incident fails a fresh
 deploy of the template even when every Ragen image (GHCR) pulls fine.
 
+**Qdrant needs `PORT=6333`.** Railway's healthcheck probes `PORT`, and without
+one it probes a port of its own choosing; Qdrant listens on 6333 regardless, so
+`/readyz` failed for the full five-minute window on a Qdrant that had started
+cleanly. The source project never set it either, so the template could not carry it;
+the first fresh deploy from the template was the first to fail.
+
 **Rebuilding the project by hand, not from the template** — two traps the test
 hit, which a template avoids because it creates every service at once:
 
