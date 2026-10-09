@@ -1,3 +1,5 @@
+import { resolveWorkerRuntime } from '@ragenai/jobs';
+import { PROVIDER_CREDENTIAL_VARS } from '@ragenai/llm-gateway';
 import {
   DEFAULT_EMBEDDINGS_MODEL,
   DEFAULT_VECTOR_SIZE,
@@ -54,11 +56,6 @@ const RECOMMENDED: Array<Omit<SetupFinding, 'severity'>> = [
     example: 'http://localhost:6333',
   },
   {
-    id: 'temporal',
-    vars: ['TEMPORAL_SERVER_ADDRESS'],
-    example: 'localhost:7233',
-  },
-  {
     // Either transport satisfies this; without one, mail is only logged.
     id: 'mail',
     vars: ['RESEND_API_KEY', 'SMTP_HOST'],
@@ -81,6 +78,15 @@ const RECOMMENDED: Array<Omit<SetupFinding, 'severity'>> = [
     id: 'target-env',
     vars: ['TARGET_ENV'],
     example: 'local / demo / staging / production',
+  },
+  {
+    // Either key gives the content-moderation guardrail a provider. Without
+    // one an install still chats — the guardrail logs "not configured" and
+    // lets the turn through — which is worth knowing before an organization
+    // switches that guardrail on and assumes it works.
+    id: 'moderation',
+    vars: ['OPENAI_MODERATION_KEY', 'OPENAI_API_KEY'],
+    example: 'OPENAI_MODERATION_KEY=sk-...',
   },
   {
     id: 'message-encryption',
@@ -132,6 +138,11 @@ export function inspectEnvironment(env: Env): SetupReport {
     findings.push(missingModelCredentials);
   }
 
+  const missingJobRuntime = findMissingJobRuntime(env);
+  if (missingJobRuntime) {
+    findings.push(missingJobRuntime);
+  }
+
   return {
     findings,
     hasBlockingIssues: findings.some((f) => f.severity === 'required'),
@@ -147,9 +158,11 @@ export function inspectEnvironment(env: Env): SetupReport {
  * no way to satisfy it.
  *
  * The rule cannot be a list of variables that must all be present, because the
- * five provider families need different ones and a deployment needs exactly
- * one family. So it is "any credential at all": the first required entry of
- * each family in `@ragenai/llm-gateway`'s `credentials-from-env`, plus any
+ * provider families need different ones and a deployment needs exactly one
+ * family. So it is "any one complete family": every variable the gateway's
+ * `credentials-from-env` requires for it — Azure is a key *and* a base URL,
+ * Vertex a project *and* a location, and half of either fails at the first
+ * call exactly as none would — plus any
  * `LLM_<CONNECTION>_BASE_URL` for an OpenAI-compatible upstream, whose name is
  * chosen by the route and cannot be enumerated here.
  *
@@ -159,13 +172,13 @@ export function inspectEnvironment(env: Env): SetupReport {
  * that and should not pretend to.
  */
 function findMissingModelCredentials(env: Env): SetupFinding | null {
-  const anyFamily = [
-    'OPENAI_API_KEY',
-    'ANTHROPIC_API_KEY',
-    'AZURE_API_KEY',
-    'AWS_BEDROCK_REGION',
-    'VERTEX_PROJECT',
-  ].some((name) => isSet(env[name]));
+  // The gateway's own table, not a copy: the copy that stood here listed five
+  // families and missed OpenRouter, so an install configured with nothing but
+  // `OPENROUTER_API_KEY` — the Railway template's one value — was told on the
+  // sign-in screen that it had no model provider.
+  const anyFamily = Object.values(PROVIDER_CREDENTIAL_VARS).some((vars) =>
+    vars.every((name) => isSet(env[name])),
+  );
 
   const anyCompatible = Object.entries(env).some(
     ([name, value]) => /^LLM_[A-Z0-9_]+_BASE_URL$/.test(name) && isSet(value),
@@ -178,10 +191,51 @@ function findMissingModelCredentials(env: Env): SetupFinding | null {
   return {
     id: 'model-provider-credentials',
     severity: 'required',
-    vars: ['OPENAI_API_KEY'],
+    vars: ['OPENROUTER_API_KEY', 'OPENAI_API_KEY'],
     example:
-      'OPENAI_API_KEY=sk-... — or another provider family: ANTHROPIC_API_KEY, AZURE_API_KEY, AWS_BEDROCK_REGION, VERTEX_PROJECT — or an OpenAI-compatible upstream: LLM_<CONNECTION>_BASE_URL, e.g. LLM_OLLAMA_BASE_URL=http://localhost:11434/v1',
+      'OPENROUTER_API_KEY=sk-or-... or OPENAI_API_KEY=sk-... — or another provider family: ANTHROPIC_API_KEY, AZURE_API_KEY, AWS_BEDROCK_REGION, VERTEX_PROJECT — or an OpenAI-compatible upstream: LLM_<CONNECTION>_BASE_URL, e.g. LLM_OLLAMA_BASE_URL=http://localhost:11434/v1',
   };
+}
+
+/**
+ * Where background jobs run, which decides which variable matters.
+ *
+ * This used to recommend `TEMPORAL_SERVER_ADDRESS` unconditionally — written
+ * when Temporal ran every job. BullMQ on Redis is the default since ADR-44,
+ * so the checklist asked every new install for an engine it does not use and
+ * said nothing about the one it does. Under BullMQ, `REDIS_URL` is required:
+ * apps/api refuses to boot without it and no upload is ever processed.
+ *
+ * An unrecognised `WORKER_RUNTIME` reports nothing here; the worker refuses to
+ * start on it with a message naming the value, which is the better place.
+ */
+function findMissingJobRuntime(env: Env): SetupFinding | null {
+  let runtime: ReturnType<typeof resolveWorkerRuntime>;
+  try {
+    runtime = resolveWorkerRuntime(env);
+  } catch {
+    return null;
+  }
+
+  if (runtime === 'temporal') {
+    return isSet(env.TEMPORAL_SERVER_ADDRESS)
+      ? null
+      : {
+          id: 'temporal',
+          severity: 'recommended',
+          vars: ['TEMPORAL_SERVER_ADDRESS'],
+          example: 'localhost:7233',
+        };
+  }
+
+  return isSet(env.REDIS_URL)
+    ? null
+    : {
+        id: 'redis',
+        severity: 'required',
+        vars: ['REDIS_URL'],
+        example: 'redis://localhost:56379',
+      };
 }
 
 /**

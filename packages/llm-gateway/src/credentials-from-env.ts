@@ -20,7 +20,16 @@ export class MissingCredentialsError extends Error {
  * gateway reads the variables that were already set. That is why the names
  * here look nothing like the provider SDKs' own conventions.
  */
-const REQUIRED: Record<Exclude<ProviderId, 'openai-compatible'>, string[]> = {
+/**
+ * Exported so a caller that has an environment but no gateway — the setup
+ * checklist on the sign-in screen — asks the same question the gateway does,
+ * instead of keeping a list of its own. It kept one, and it did not know
+ * OpenRouter: an install configured with only `OPENROUTER_API_KEY` was told it
+ * had no model provider at all.
+ */
+export const PROVIDER_CREDENTIAL_VARS: Readonly<
+  Record<Exclude<ProviderId, 'openai-compatible'>, readonly string[]>
+> = {
   azure: ['AZURE_API_KEY', 'AZURE_API_BASE'],
   // Only the region. `createAmazonBedrock` is handed no credentials — see
   // `providers.ts`, which already says so — because the AWS default chain
@@ -269,7 +278,7 @@ export class EnvCredentialSource implements CredentialSource {
       };
     }
 
-    const required = REQUIRED[provider];
+    const required = PROVIDER_CREDENTIAL_VARS[provider];
     const missing = required.filter((name) => !process.env[name]);
     if (missing.length > 0) {
       throw new MissingCredentialsError(provider, missing);
@@ -338,5 +347,7 @@ export function providerIsConfigured(
       ? firstSet(connectionEnvNames(connection).baseUrl) !== undefined
       : false;
   }
-  return REQUIRED[provider].every((name) => Boolean(process.env[name]));
+  return PROVIDER_CREDENTIAL_VARS[provider].every((name) =>
+    Boolean(process.env[name]),
+  );
 }

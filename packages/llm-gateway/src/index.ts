@@ -13,6 +13,7 @@ export {
 export {
   EnvCredentialSource,
   MissingCredentialsError,
+  PROVIDER_CREDENTIAL_VARS,
   providerIsConfigured,
 } from './credentials-from-env';
 export {
