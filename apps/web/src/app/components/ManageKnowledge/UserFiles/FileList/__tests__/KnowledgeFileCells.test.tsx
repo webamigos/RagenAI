@@ -64,7 +64,7 @@ describe('knowledge list cells', () => {
       </>,
     );
     expect(screen.getByText('Brain unavailable')).toBeInTheDocument();
-    expect(screen.getByText('2 approved · 3 candidates')).toBeInTheDocument();
+    expect(screen.getByText('2 approved · 3 to review')).toBeInTheDocument();
     expect(screen.getByText('No knowledge')).toBeInTheDocument();
     expect(screen.getByText('Awaiting extraction')).toBeInTheDocument();
   });

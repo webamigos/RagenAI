@@ -1,0 +1,565 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="utf-8" />
+    <title>Strona wiedzy po zmianach</title>
+    <script src="./support.js"></script>
+  </head>
+  <body>
+    <x-dc>
+      <helmet>
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700&amp;family=Inter:wght@400;500;600&amp;display=swap"
+        />
+        <style>
+          body {
+            margin: 0;
+            font-family: 'Inter', system-ui, sans-serif;
+            color: #1c1f2e;
+            background: #f3f4f9;
+          }
+          .h {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 700;
+            margin: 0;
+          }
+          .btn {
+            font:
+              600 14px 'Inter',
+              sans-serif;
+            border-radius: 8px;
+            padding: 10px 16px;
+            border: 1px solid #d5d8e6;
+            background: #fff;
+            color: #1c1f2e;
+            min-height: 44px;
+            box-sizing: border-box;
+            cursor: pointer;
+          }
+          .btn.p {
+            background: #3b4a9e;
+            border-color: #3b4a9e;
+            color: #fff;
+          }
+          .card {
+            background: #fff;
+            border: 1px solid #e3e5ef;
+            border-radius: 12px;
+          }
+          .chg {
+            font-size: 11px;
+            font-weight: 600;
+            background: #fff0cf;
+            color: #7a4b00;
+            border-radius: 999px;
+            padding: 2px 8px;
+            white-space: nowrap;
+          }
+          .lbl {
+            font-size: 12px;
+            color: #5b607a;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+          }
+          .mono {
+            font-family: ui-monospace, Menlo, monospace;
+            font-size: 13px;
+            background: #f3f4f9;
+            border-radius: 8px;
+            padding: 10px 12px;
+            line-height: 1.5;
+          }
+        </style>
+      </helmet>
+      <div style="display: flex; flex-wrap: wrap; min-height: 1000px">
+        <aside
+          style="
+            width: 208px;
+            background: #fff;
+            border-right: 1px solid #e3e5ef;
+            padding: 20px 14px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            font-size: 14px;
+          "
+        >
+          <div style="font-weight: 600; font-size: 18px; margin-bottom: 12px">
+            Ragen.ai
+          </div>
+          <div
+            style="
+              background: #3b4a9e;
+              color: #fff;
+              text-align: center;
+              border-radius: 8px;
+              padding: 10px;
+              font-weight: 600;
+            "
+          >
+            Nowy czat
+          </div>
+          <div style="padding: 10px 6px; color: #3c4160">Szukaj</div>
+          <div style="padding: 8px 6px">Wątki</div>
+          <div style="padding: 8px 6px">Asystenci</div>
+          <div
+            style="
+              padding: 8px 6px;
+              font-weight: 600;
+              background: #eef0fb;
+              border-radius: 8px;
+            "
+          >
+            Brain
+          </div>
+          <div style="padding: 8px 6px">Baza wiedzy</div>
+        </aside>
+
+        <main
+          style="
+            flex: 999 1 640px;
+            min-width: 0;
+            padding: 24px 32px;
+            box-sizing: border-box;
+          "
+        >
+          <div
+            style="
+              max-width: 1240px;
+              display: flex;
+              flex-direction: column;
+              gap: 18px;
+            "
+          >
+            <div
+              style="
+                font-size: 14px;
+                color: #5b607a;
+                display: flex;
+                gap: 10px;
+                flex-wrap: wrap;
+                align-items: center;
+              "
+            >
+              <a href="#" style="color: #3b4a9e; text-decoration: none">Brain</a
+              >/<a href="#" style="color: #3b4a9e; text-decoration: none"
+                >Strony wiedzy</a
+              >/<b style="color: #1c1f2e">Acme Industries</b>
+              <span class="chg">okruszki, bez opisu zakładki</span>
+            </div>
+
+            <div
+              style="
+                display: flex;
+                gap: 12px;
+                align-items: center;
+                flex-wrap: wrap;
+              "
+            >
+              <h1 class="h" style="font-size: 40px">Acme Industries</h1>
+              <span
+                style="
+                  font-size: 13px;
+                  font-weight: 600;
+                  background: #e6f4ea;
+                  color: #14532d;
+                  border-radius: 999px;
+                  padding: 3px 12px;
+                "
+                >Zatwierdzona</span
+              ><span
+                style="
+                  font-size: 13px;
+                  font-weight: 600;
+                  border: 1px solid #d5d8e6;
+                  border-radius: 999px;
+                  padding: 3px 12px;
+                "
+                >Obiekt</span
+              ><span class="chg">było: Byt</span>
+            </div>
+
+            <div
+              style="
+                display: flex;
+                gap: 20px;
+                flex-wrap: wrap;
+                align-items: flex-start;
+              "
+            >
+              <div
+                style="
+                  flex: 999 1 560px;
+                  min-width: 0;
+                  display: flex;
+                  flex-direction: column;
+                  gap: 18px;
+                "
+              >
+                <section
+                  class="card"
+                  style="
+                    padding: 22px 24px;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 12px;
+                    font-size: 15px;
+                    line-height: 1.6;
+                  "
+                >
+                  <p style="margin: 0; color: #3c4160">
+                    A company based in Poznań, Poland, that designs and
+                    manufactures warehouse equipment.
+                  </p>
+                  <ul
+                    style="
+                      margin: 0;
+                      padding-left: 20px;
+                      display: flex;
+                      flex-direction: column;
+                      gap: 6px;
+                    "
+                  >
+                    <li>
+                      Acme Industries is a company based in Poznań, Poland, with
+                      a website and phone number provided.
+                      <a
+                        href="#s1"
+                        style="
+                          color: #3b4a9e;
+                          font-weight: 600;
+                          text-decoration: none;
+                        "
+                        >[1]</a
+                      >
+                    </li>
+                    <li>
+                      Acme Industries designs and manufactures warehouse
+                      equipment in Poznań since 2011.
+                      <a
+                        href="#s2"
+                        style="
+                          color: #3b4a9e;
+                          font-weight: 600;
+                          text-decoration: none;
+                        "
+                        >[2]</a
+                      >
+                    </li>
+                    <li>
+                      Every racking structure meets the PN-EN 15512 and PN-EN
+                      15620 standards, and each delivery includes a product card
+                      stating the permissible loads.
+                      <a
+                        href="#s3"
+                        style="
+                          color: #3b4a9e;
+                          font-weight: 600;
+                          text-decoration: none;
+                        "
+                        >[3]</a
+                      >
+                    </li>
+                  </ul>
+                  <span class="chg" style="align-self: flex-start"
+                    >usunięty blok z cytatami: dziś ten sam tekst jest tu i
+                    niżej</span
+                  >
+                </section>
+
+                <section
+                  class="card"
+                  style="
+                    padding: 22px 24px;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 12px;
+                  "
+                >
+                  <div
+                    style="
+                      display: flex;
+                      justify-content: space-between;
+                      align-items: center;
+                    "
+                  >
+                    <h2 class="h" style="font-size: 24px">Źródła (3)</h2>
+                    <a
+                      href="#"
+                      style="
+                        font-size: 14px;
+                        color: #3b4a9e;
+                        text-decoration: none;
+                        font-weight: 600;
+                      "
+                      >Rozwiń wszystkie</a
+                    >
+                  </div>
+                  <div
+                    id="s1"
+                    style="
+                      display: flex;
+                      gap: 12px;
+                      align-items: flex-start;
+                      border-top: 1px solid #e3e5ef;
+                      padding-top: 12px;
+                    "
+                  >
+                    <b style="color: #3b4a9e">[1]</b>
+                    <div
+                      style="
+                        display: flex;
+                        flex-direction: column;
+                        gap: 6px;
+                        font-size: 14px;
+                      "
+                    >
+                      <span
+                        ><a
+                          href="#"
+                          style="
+                            color: #3b4a9e;
+                            text-decoration: none;
+                            font-weight: 600;
+                          "
+                          >product-catalogue-2026.pdf</a
+                        >
+                        <span style="color: #5b607a">· wersja 1</span></span
+                      >
+                      <div class="mono">
+                        Acme Industries sp. z o.o., ul. Kwiatowa 7, 61-001
+                        Poznań · www.acme-industries.pl · +48 61 245 18 00
+                      </div>
+                    </div>
+                  </div>
+                  <div
+                    id="s2"
+                    style="
+                      display: flex;
+                      gap: 12px;
+                      align-items: flex-start;
+                      border-top: 1px solid #e3e5ef;
+                      padding-top: 12px;
+                    "
+                  >
+                    <b style="color: #3b4a9e">[2]</b>
+                    <div
+                      style="
+                        display: flex;
+                        flex-direction: column;
+                        gap: 6px;
+                        font-size: 14px;
+                      "
+                    >
+                      <span
+                        ><a
+                          href="#"
+                          style="
+                            color: #3b4a9e;
+                            text-decoration: none;
+                            font-weight: 600;
+                          "
+                          >product-catalogue-2026.pdf</a
+                        >
+                        <span style="color: #5b607a">· wersja 1</span></span
+                      >
+                      <div class="mono">
+                        Warehouse equipment designed and manufactured in Poznań
+                        since 2011.
+                      </div>
+                    </div>
+                  </div>
+                  <div
+                    id="s3"
+                    style="
+                      display: flex;
+                      gap: 12px;
+                      align-items: flex-start;
+                      border-top: 1px solid #e3e5ef;
+                      padding-top: 12px;
+                    "
+                  >
+                    <b style="color: #3b4a9e">[3]</b>
+                    <div
+                      style="
+                        display: flex;
+                        flex-direction: column;
+                        gap: 6px;
+                        font-size: 14px;
+                      "
+                    >
+                      <span
+                        ><a
+                          href="#"
+                          style="
+                            color: #3b4a9e;
+                            text-decoration: none;
+                            font-weight: 600;
+                          "
+                          >product-catalogue-2026.pdf</a
+                        >
+                        <span style="color: #5b607a">· wersja 1</span></span
+                      >
+                      <div class="mono">
+                        Every racking structure meets the PN-EN 15512 and PN-EN
+                        15620 standards, and each delivery includes a product
+                        card stating the permissible loads.
+                      </div>
+                    </div>
+                  </div>
+                </section>
+
+                <section
+                  class="card"
+                  style="
+                    padding: 22px 24px;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 6px;
+                  "
+                >
+                  <h2 class="h" style="font-size: 24px">
+                    Problemy
+                    <span class="chg" style="vertical-align: middle"
+                      >było: Otwarte wykrycia</span
+                    >
+                  </h2>
+                  <div
+                    style="font-size: 14px; color: #5b607a; line-height: 1.5"
+                  >
+                    Brak otwartych problemów. Pojawią się tu, gdy Brain coś
+                    zgłosi.
+                  </div>
+                </section>
+              </div>
+
+              <aside
+                class="card"
+                style="
+                  flex: 0 0 300px;
+                  padding: 20px;
+                  display: flex;
+                  flex-direction: column;
+                  gap: 18px;
+                  font-size: 14px;
+                  line-height: 1.5;
+                "
+              >
+                <div>
+                  <div class="lbl">
+                    Stan <span class="chg">jedna linia</span>
+                  </div>
+                  <div style="margin-top: 6px">
+                    <b>Zatwierdzona</b> przez Joe Doe, 4 paź 2026, 17:23<br /><span
+                      style="color: #5b607a"
+                      >Nie jest opublikowana w czacie.</span
+                    >
+                  </div>
+                </div>
+                <div>
+                  <button class="btn p" style="width: 100%">Opublikuj</button>
+                  <div style="font-size: 12px; color: #5b607a; margin-top: 6px">
+                    Po opublikowaniu czat może odpowiadać na jej podstawie.
+                    <span class="chg">było: Opublikuj w bazie wiedzy</span>
+                  </div>
+                </div>
+                <div>
+                  <div class="lbl">Właściciel</div>
+                  <div
+                    style="
+                      margin-top: 6px;
+                      border: 1px solid #d5d8e6;
+                      border-radius: 8px;
+                      padding: 9px 12px;
+                      background: #fff;
+                    "
+                  >
+                    Joe Doe
+                  </div>
+                </div>
+                <div>
+                  <div class="lbl">Dostępna dla</div>
+                  <div
+                    style="
+                      margin-top: 6px;
+                      display: flex;
+                      justify-content: space-between;
+                      align-items: center;
+                    "
+                  >
+                    <span>Joe Doe</span
+                    ><button
+                      class="btn"
+                      style="padding: 6px 12px; min-height: 36px"
+                    >
+                      Zmień dostęp
+                    </button>
+                  </div>
+                </div>
+                <div>
+                  <div class="lbl">
+                    Powiązania <span class="chg">po polsku</span>
+                  </div>
+                  <div
+                    style="
+                      margin-top: 6px;
+                      display: flex;
+                      flex-direction: column;
+                      gap: 4px;
+                    "
+                  >
+                    <a
+                      href="#"
+                      style="
+                        color: #3b4a9e;
+                        text-decoration: none;
+                        font-weight: 600;
+                      "
+                      >Pokaż w grafie</a
+                    ><span
+                      >produkuje →
+                      <a href="#" style="color: #3b4a9e; text-decoration: none"
+                        >Racking</a
+                      ></span
+                    ><span
+                      >produkuje →
+                      <a href="#" style="color: #3b4a9e; text-decoration: none"
+                        >Pallet trucks</a
+                      ></span
+                    ><span
+                      >produkuje →
+                      <a href="#" style="color: #3b4a9e; text-decoration: none"
+                        >Accessories</a
+                      ></span
+                    >
+                  </div>
+                </div>
+                <div>
+                  <div class="lbl">Historia</div>
+                  <div style="margin-top: 6px; color: #3c4160">
+                    Zatwierdzono · Joe Doe · 4 paź 2026<br />Wskazano
+                    właściciela · Joe Doe · 4 paź 2026
+                  </div>
+                </div>
+              </aside>
+            </div>
+          </div>
+        </main>
+      </div>
+    </x-dc>
+    <script
+      type="text/x-dc"
+      data-dc-script
+      data-props='{"$preview":{"width":1440,"height":1000}}'
+    >
+      class Component extends DCLogic {
+      renderVals() {
+      return {};
+      }
+      }
+    </script>
+  </body>
+</html>

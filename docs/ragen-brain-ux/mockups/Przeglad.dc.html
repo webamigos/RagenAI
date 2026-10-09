@@ -1,0 +1,565 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="utf-8" />
+    <title>Przegląd Brain po zmianach</title>
+    <script src="./support.js"></script>
+  </head>
+  <body>
+    <x-dc>
+      <helmet>
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700&amp;family=Inter:wght@400;500;600&amp;display=swap"
+        />
+        <style>
+          body {
+            margin: 0;
+            font-family: 'Inter', system-ui, sans-serif;
+            color: #1c1f2e;
+            background: #f3f4f9;
+          }
+          .h {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 700;
+            margin: 0;
+          }
+          .btn {
+            font:
+              600 14px 'Inter',
+              sans-serif;
+            border-radius: 8px;
+            padding: 10px 16px;
+            border: 1px solid #d5d8e6;
+            background: #fff;
+            color: #1c1f2e;
+            min-height: 44px;
+            box-sizing: border-box;
+            cursor: pointer;
+          }
+          .btn.p {
+            background: #3b4a9e;
+            border-color: #3b4a9e;
+            color: #fff;
+          }
+          .tab {
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #3c4160;
+            text-decoration: none;
+          }
+          .tab.on {
+            background: #fff;
+            box-shadow: 0 1px 2px rgba(20, 24, 60, 0.12);
+            color: #1c1f2e;
+            font-weight: 600;
+          }
+          .card {
+            background: #fff;
+            border: 1px solid #e3e5ef;
+            border-radius: 12px;
+          }
+          .chg {
+            font-size: 11px;
+            font-weight: 600;
+            background: #fff0cf;
+            color: #7a4b00;
+            border-radius: 999px;
+            padding: 2px 8px;
+            white-space: nowrap;
+          }
+        </style>
+      </helmet>
+      <div style="display: flex; flex-wrap: wrap; min-height: 1180px">
+        <aside
+          style="
+            width: 208px;
+            background: #fff;
+            border-right: 1px solid #e3e5ef;
+            padding: 20px 14px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            font-size: 14px;
+          "
+        >
+          <div style="font-weight: 600; font-size: 18px; margin-bottom: 12px">
+            Ragen.ai
+          </div>
+          <div
+            style="
+              background: #3b4a9e;
+              color: #fff;
+              text-align: center;
+              border-radius: 8px;
+              padding: 10px;
+              font-weight: 600;
+            "
+          >
+            Nowy czat
+          </div>
+          <div style="padding: 10px 6px; color: #3c4160">Szukaj</div>
+          <div style="padding: 8px 6px">Wątki</div>
+          <div style="padding: 8px 6px">Asystenci</div>
+          <div
+            style="
+              padding: 8px 6px;
+              font-weight: 600;
+              background: #eef0fb;
+              border-radius: 8px;
+            "
+          >
+            Brain
+            <span style="font-size: 11px; color: #5b607a; margin-left: 8px"
+              >Beta</span
+            >
+          </div>
+          <div style="padding: 8px 6px">Baza wiedzy</div>
+        </aside>
+
+        <main
+          style="
+            flex: 999 1 640px;
+            min-width: 0;
+            padding: 28px 32px;
+            box-sizing: border-box;
+          "
+        >
+          <div
+            style="
+              max-width: 1180px;
+              display: flex;
+              flex-direction: column;
+              gap: 20px;
+            "
+          >
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                flex-wrap: wrap;
+                gap: 12px;
+              "
+            >
+              <div
+                style="
+                  display: flex;
+                  align-items: center;
+                  gap: 20px;
+                  flex-wrap: wrap;
+                "
+              >
+                <h1 class="h" style="font-size: 30px">Brain</h1>
+                <nav
+                  style="
+                    display: flex;
+                    gap: 4px;
+                    background: #e9ebf4;
+                    padding: 4px;
+                    border-radius: 10px;
+                  "
+                >
+                  <a class="tab on" href="#">Przegląd</a
+                  ><a class="tab" href="#">Strony wiedzy</a
+                  ><a class="tab" href="#"
+                    >Problemy <span class="chg">nazwa</span></a
+                  ><a class="tab" href="#">Graf</a
+                  ><a class="tab" href="#"
+                    >Źródła <span class="chg">nazwa</span></a
+                  >
+                </nav>
+              </div>
+              <div style="display: flex; gap: 10px; align-items: center">
+                <button class="btn">Asystent</button>
+                <button class="btn p">Dodaj dokumenty</button>
+                <span class="chg">jeden przycisk</span>
+              </div>
+            </div>
+
+            <p
+              style="
+                margin: 0;
+                font-size: 15px;
+                color: #3c4160;
+                max-width: 760px;
+              "
+            >
+              Wiedza firmy wyciągnięta z dokumentów i sprawdzona przez ludzi.
+              Zobacz, co już działa w czacie i co czeka na Twoją decyzję.
+            </p>
+
+            <section
+              class="card"
+              style="
+                padding: 22px 24px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                gap: 20px;
+                flex-wrap: wrap;
+                border-left: 4px solid #3b4a9e;
+              "
+            >
+              <div
+                style="
+                  display: flex;
+                  flex-direction: column;
+                  gap: 6px;
+                  max-width: 700px;
+                "
+              >
+                <div
+                  style="
+                    font-size: 12px;
+                    font-weight: 600;
+                    color: #3b4a9e;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                  "
+                >
+                  Co teraz? <span class="chg">nowe</span>
+                </div>
+                <h2 class="h" style="font-size: 28px">
+                  Przypisz właścicieli do 123 stron
+                </h2>
+                <div style="font-size: 14px; color: #3c4160; line-height: 1.5">
+                  Strona bez właściciela nie może zostać zatwierdzona. Możesz
+                  przypisać całe dokumenty naraz, to zajmie około minuty.
+                </div>
+              </div>
+              <div style="display: flex; gap: 10px; flex-wrap: wrap">
+                <button class="btn p">Przypisz właścicieli</button
+                ><button class="btn">Zobacz strony</button>
+              </div>
+            </section>
+
+            <section
+              class="card"
+              style="
+                padding: 22px 24px;
+                display: flex;
+                flex-direction: column;
+                gap: 16px;
+              "
+            >
+              <div
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  gap: 16px;
+                  flex-wrap: wrap;
+                  align-items: baseline;
+                "
+              >
+                <h2 class="h" style="font-size: 24px">
+                  Droga wiedzy: od dokumentu do odpowiedzi czatu
+                </h2>
+                <span style="font-size: 13px; color: #5b607a; max-width: 420px"
+                  >Opublikowane strony są od razu dostępne w czacie. Dokumenty
+                  źródłowe nadal się przeszukuje.</span
+                >
+              </div>
+              <div
+                style="
+                  display: grid;
+                  grid-template-columns: repeat(4, minmax(0, 1fr));
+                  gap: 12px;
+                "
+              >
+                <a
+                  href="#"
+                  style="
+                    text-decoration: none;
+                    color: inherit;
+                    border: 1px solid #e3e5ef;
+                    border-radius: 10px;
+                    padding: 16px;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 6px;
+                  "
+                  ><span
+                    style="font-size: 13px; color: #3b4a9e; font-weight: 600"
+                    >1. Dokumenty</span
+                  ><span class="h" style="font-size: 44px; line-height: 1"
+                    >27</span
+                  ><span style="font-size: 13px; color: #5b607a"
+                    >3 bez wyodrębnionej wiedzy</span
+                  ></a
+                >
+                <a
+                  href="#"
+                  style="
+                    text-decoration: none;
+                    color: inherit;
+                    border: 1px solid #e3e5ef;
+                    border-radius: 10px;
+                    padding: 16px;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 6px;
+                  "
+                  ><span
+                    style="font-size: 13px; color: #3b4a9e; font-weight: 600"
+                    >2. Do sprawdzenia
+                    <span class="chg">było: Kandydaci</span></span
+                  ><span class="h" style="font-size: 44px; line-height: 1"
+                    >123</span
+                  ><span style="font-size: 13px; color: #5b607a"
+                    >wszystkie bez właściciela</span
+                  ></a
+                >
+                <a
+                  href="#"
+                  style="
+                    text-decoration: none;
+                    color: inherit;
+                    border: 1px solid #e3e5ef;
+                    border-radius: 10px;
+                    padding: 16px;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 6px;
+                  "
+                  ><span
+                    style="font-size: 13px; color: #3b4a9e; font-weight: 600"
+                    >3. Zatwierdzone</span
+                  ><span class="h" style="font-size: 44px; line-height: 1"
+                    >3</span
+                  ><span style="font-size: 13px; color: #5b607a"
+                    >3 z 126 stron <span class="chg">było: 2%</span></span
+                  ></a
+                >
+                <a
+                  href="#"
+                  style="
+                    text-decoration: none;
+                    color: inherit;
+                    border: 1px solid #2f8f4e;
+                    background: #eaf6ee;
+                    border-radius: 10px;
+                    padding: 16px;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 6px;
+                  "
+                  ><span
+                    style="font-size: 13px; color: #14532d; font-weight: 600"
+                    >4. Opublikowane
+                    <span class="chg">było: w czacie</span></span
+                  ><span class="h" style="font-size: 44px; line-height: 1"
+                    >1</span
+                  ><span
+                    style="font-size: 13px; color: #14532d; font-weight: 600"
+                    >2 zatwierdzone do opublikowania →</span
+                  ></a
+                >
+              </div>
+            </section>
+
+            <div
+              style="
+                display: flex;
+                gap: 20px;
+                flex-wrap: wrap;
+                align-items: flex-start;
+              "
+            >
+              <section
+                class="card"
+                style="
+                  flex: 1 1 340px;
+                  padding: 22px 24px;
+                  display: flex;
+                  flex-direction: column;
+                  gap: 12px;
+                "
+              >
+                <h2 class="h" style="font-size: 24px">Wymaga uwagi</h2>
+                <a
+                  href="#"
+                  style="
+                    display: flex;
+                    gap: 12px;
+                    background: #f6f7fb;
+                    border-radius: 8px;
+                    padding: 12px;
+                    text-decoration: none;
+                    color: inherit;
+                  "
+                  ><b style="min-width: 34px">123</b
+                  ><span style="font-size: 14px; line-height: 1.45"
+                    ><b>Strony bez właściciela</b><br />Przypisz właściciela,
+                    żeby móc je zatwierdzić.</span
+                  ></a
+                >
+                <a
+                  href="#"
+                  style="
+                    display: flex;
+                    gap: 12px;
+                    background: #f6f7fb;
+                    border-radius: 8px;
+                    padding: 12px;
+                    text-decoration: none;
+                    color: inherit;
+                  "
+                  ><b style="min-width: 34px">3</b
+                  ><span style="font-size: 14px; line-height: 1.45"
+                    ><b>Dokumenty bez wiedzy</b><br />Z tych plików Brain nic
+                    nie wyciągnął.</span
+                  ></a
+                >
+                <a
+                  href="#"
+                  style="
+                    display: flex;
+                    gap: 12px;
+                    background: #f6f7fb;
+                    border-radius: 8px;
+                    padding: 12px;
+                    text-decoration: none;
+                    color: inherit;
+                  "
+                  ><b style="min-width: 34px">2</b
+                  ><span style="font-size: 14px; line-height: 1.45"
+                    ><b>Strony bez powiązań</b><br />Sprawdź, z czym je
+                    połączyć.</span
+                  ></a
+                >
+              </section>
+
+              <section
+                class="card"
+                style="
+                  flex: 2 1 520px;
+                  padding: 22px 24px;
+                  display: flex;
+                  flex-direction: column;
+                  gap: 12px;
+                "
+              >
+                <div
+                  style="
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: baseline;
+                    flex-wrap: wrap;
+                    gap: 8px;
+                  "
+                >
+                  <h2 class="h" style="font-size: 24px">
+                    Gdzie leży najwięcej niesprawdzonej wiedzy
+                  </h2>
+                  <span style="font-size: 13px; color: #5b607a"
+                    ><span style="color: #2f8f4e">●</span> zatwierdzone
+                    <span style="color: #b4b9d6; margin-left: 8px">●</span> do
+                    sprawdzenia <span class="chg">legenda</span></span
+                  >
+                </div>
+                <div
+                  style="
+                    display: grid;
+                    grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr) auto;
+                    gap: 10px 16px;
+                    align-items: center;
+                    font-size: 14px;
+                  "
+                >
+                  <span>katalog-produktow-2026.pdf</span>
+                  <div
+                    style="
+                      height: 10px;
+                      border-radius: 5px;
+                      background: #c9cde6;
+                    "
+                  ></div>
+                  <span style="color: #5b607a; font-size: 13px">0 z 17</span>
+                  <span>product-catalogue-2026.pdf</span>
+                  <div
+                    style="
+                      height: 10px;
+                      border-radius: 5px;
+                      background: linear-gradient(
+                        90deg,
+                        #2f8f4e 6%,
+                        #c9cde6 6%
+                      );
+                    "
+                  ></div>
+                  <span style="color: #5b607a; font-size: 13px">1 z 17</span>
+                  <span>umowa-ramowa-dostawy.docx</span>
+                  <div
+                    style="
+                      height: 10px;
+                      border-radius: 5px;
+                      background: linear-gradient(
+                        90deg,
+                        #c9cde6 70%,
+                        #eceef7 70%
+                      );
+                    "
+                  ></div>
+                  <span style="color: #5b607a; font-size: 13px">0 z 12</span>
+                  <span>sales-faq.docx</span>
+                  <div
+                    style="
+                      height: 10px;
+                      border-radius: 5px;
+                      background: linear-gradient(
+                        90deg,
+                        #2f8f4e 8%,
+                        #c9cde6 8%,
+                        #c9cde6 70%,
+                        #eceef7 70%
+                      );
+                    "
+                  ></div>
+                  <span style="color: #5b607a; font-size: 13px">1 z 12</span>
+                  <span>employee-handbook-2026.pdf</span>
+                  <div
+                    style="
+                      height: 10px;
+                      border-radius: 5px;
+                      background: linear-gradient(
+                        90deg,
+                        #c9cde6 52%,
+                        #eceef7 52%
+                      );
+                    "
+                  ></div>
+                  <span style="color: #5b607a; font-size: 13px">0 z 9</span>
+                </div>
+                <a
+                  href="#"
+                  style="
+                    font-size: 14px;
+                    color: #3b4a9e;
+                    font-weight: 600;
+                    text-decoration: none;
+                  "
+                  >Wszystkie źródła →</a
+                >
+              </section>
+            </div>
+          </div>
+        </main>
+      </div>
+    </x-dc>
+    <script
+      type="text/x-dc"
+      data-dc-script
+      data-props='{"$preview":{"width":1440,"height":1180}}'
+    >
+      class Component extends DCLogic {
+      renderVals() {
+      return {};
+      }
+      }
+    </script>
+  </body>
+</html>

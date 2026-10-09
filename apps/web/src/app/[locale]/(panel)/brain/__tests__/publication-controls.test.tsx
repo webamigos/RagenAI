@@ -47,11 +47,9 @@ describe('PublicationControls', () => {
         blockers={['Set an owner first']}
       />,
     );
-    expect(screen.getByText('Not in the knowledge base')).toBeVisible();
+    expect(screen.getByText('Not published')).toBeVisible();
     expect(screen.getByText('Set an owner first')).toBeVisible();
-    expect(
-      screen.getByRole('button', { name: 'Publish to knowledge base' }),
-    ).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Publish' })).toBeDisabled();
   });
 
   it('publishes with the updatedAt it was rendered with', async () => {
@@ -60,9 +58,7 @@ describe('PublicationControls', () => {
       changed: true,
     });
     wrap(<PublicationControls {...props} state="none" />);
-    fireEvent.click(
-      screen.getByRole('button', { name: 'Publish to knowledge base' }),
-    );
+    fireEvent.click(screen.getByRole('button', { name: 'Publish' }));
     await waitFor(() =>
       expect(actions.publishKnowledgePageAction).toHaveBeenCalledWith({
         publicId: props.publicId,
@@ -78,9 +74,7 @@ describe('PublicationControls', () => {
     });
     wrap(<PublicationControls {...props} state="published" />);
     expect(screen.getByText(/answers can cite it/)).toBeVisible();
-    expect(
-      screen.queryByRole('button', { name: 'Publish to knowledge base' }),
-    ).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Publish' })).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Withdraw' }));
     expect(actions.unpublishKnowledgePageAction).not.toHaveBeenCalled();
     const dialog = await screen.findByRole('alertdialog');

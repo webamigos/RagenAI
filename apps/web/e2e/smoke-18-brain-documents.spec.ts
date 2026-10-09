@@ -44,32 +44,37 @@ test('shows distinct coverage, confirmed empty extraction, waiting and language 
       },
     });
     await page.goto('/pl/brain/documents');
+    // The tab names the screen; it has no heading of its own.
     await expect(
-      page.getByRole('heading', { name: 'Dokumenty źródłowe' }),
-    ).toBeVisible();
+      page.getByRole('link', { name: 'Źródła', exact: true }),
+    ).toHaveAttribute('aria-current', 'page');
     const rows = page.getByTestId('brain-document-row');
     const seeded = rows.filter({ hasText: TEST_FILE_NAME });
     await expect(seeded).toContainText(
-      /\d+ zatwierdzon(?:a|e|ych) · \d+ (?:kandydat|kandydaci|kandydatów)/,
+      /\d+ zatwierdzon(?:a|e|ych) · \d+ do sprawdzenia/,
     );
     const empty = rows.filter({ hasText: names[0] });
     await expect(empty).toContainText('Nic nie wyodrębniono');
     await expect(empty).toContainText('Sprawdź język');
+    // Row actions sit behind the row's "⋯" menu.
+    await empty.getByRole('button', { name: /^Działania: / }).click();
     await expect(
-      empty.getByRole('button', { name: 'Ponów ekstrakcję' }),
+      page.getByRole('menuitem', { name: 'Ponów ekstrakcję' }),
     ).toBeVisible();
+    await page.keyboard.press('Escape');
     const waiting = rows.filter({ hasText: names[1] });
     await expect(waiting).toContainText('Nie wyodrębniono jeszcze');
     await expect(waiting).toContainText('polski');
+    // Nothing to retry and nothing to take out of search: no menu at all.
     await expect(
-      waiting.getByRole('button', { name: 'Ponów ekstrakcję' }),
+      waiting.getByRole('button', { name: /^Działania: / }),
     ).toHaveCount(0);
     const maxPages = await rows.evaluateAll((elements) =>
       Math.max(
         1,
         ...elements.map((row) => {
           const text = row.textContent?.match(
-            /(\d+) zatwierdzon(?:a|e|ych) · (\d+) (?:kandydat|kandydaci|kandydatów)/,
+            /(\d+) zatwierdzon(?:a|e|ych) · (\d+) do sprawdzenia/,
           );
           return text ? Number(text[1]) + Number(text[2]) : 0;
         }),
@@ -79,9 +84,9 @@ test('shows distinct coverage, confirmed empty extraction, waiting and language 
       page.getByText(new RegExp(`Skala wspólna: ${maxPages} `)),
     ).toBeVisible();
     const rowCount = await rows.count();
-    await expect(
-      page.getByTestId('documents-summary-documents').locator('strong'),
-    ).toHaveText(String(rowCount));
+    await expect(page.getByTestId('brain-documents-count')).toContainText(
+      `(${rowCount})`,
+    );
     await page.goto('/pl/brain/documents?lang=none&coverage=empty');
     await expect(rows.filter({ hasText: names[0] })).toHaveCount(1);
     await expect(rows.filter({ hasText: names[1] })).toHaveCount(0);

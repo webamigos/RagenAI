@@ -112,7 +112,7 @@ test('knowledge list shows live coverage, honest quality and guarded optimizatio
       page.getByRole('columnheader', { name: 'Jakość dla czatu' }),
     ).toBeVisible();
     await expect(first.getByTestId('file-brain-coverage')).toHaveText(
-      '1 zatwierdzona · 1 kandydatura',
+      '1 zatwierdzona · 1 do sprawdzenia',
     );
     await expect(first.getByLabel('Język pliku: polski')).toHaveText('PL');
     const second = page.getByTestId(`file-row-${fileIds[1]}`);

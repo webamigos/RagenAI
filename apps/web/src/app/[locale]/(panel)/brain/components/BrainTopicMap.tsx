@@ -22,10 +22,35 @@ export function BrainTopicMap({
     <Card className="min-w-0" data-testid="brain-topic-map">
       <CardHeader className="flex flex-wrap items-start justify-between gap-2 sm:flex-row">
         <CardTitle className="text-base">{t('topics-title')}</CardTitle>
-        <p className="text-sm text-muted-foreground">{t('topics-scale')}</p>
+        {/*
+          The colours explained where the tiles start, not under them: below
+          a long map the legend was off screen when the colours were not.
+        */}
+        <div className="space-y-1 text-sm text-muted-foreground">
+          <p>{t('topics-scale')}</p>
+          <ul
+            className="flex flex-wrap gap-x-4 gap-y-1"
+            data-testid="brain-topic-legend"
+          >
+            <li className="flex items-center gap-2">
+              <span
+                className="size-3.5 rounded border border-ready bg-ready-tint"
+                aria-hidden="true"
+              />
+              {t('topic-approved')}
+            </li>
+            <li className="flex items-center gap-2">
+              <span
+                className="size-3.5 rounded border border-pending bg-pending-tint"
+                aria-hidden="true"
+              />
+              {t('topic-candidates')}
+            </li>
+          </ul>
+        </div>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="grid auto-rows-[110px] grid-cols-1 gap-3 sm:grid-cols-6">
+        <div className="grid auto-rows-[minmax(84px,auto)] grid-cols-1 gap-3 sm:grid-cols-6">
           {summary.topics.map((group) => (
             <Link
               key={group.anchor}
@@ -35,18 +60,15 @@ export function BrainTopicMap({
               )}
               aria-current={selected === group.anchor ? 'true' : undefined}
               data-testid="brain-topic"
-              className={`flex min-w-0 flex-col justify-between rounded-md border p-4 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring hover:border-primary ${group.approved ? 'border-ready bg-ready-tint' : 'border-pending bg-pending-tint'} ${group.pages.length >= largest / 2 ? 'sm:col-span-3 sm:row-span-2' : 'sm:col-span-2'} ${selected === group.anchor ? 'ring-2 ring-ring ring-offset-2' : ''}`}
+              className={`flex min-w-0 flex-col justify-between gap-1 rounded-md border px-4 py-3 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring hover:border-primary ${group.approved ? 'border-ready bg-ready-tint' : 'border-pending bg-pending-tint'} ${group.pages.length >= largest / 2 ? 'sm:col-span-3' : 'sm:col-span-2'} ${selected === group.anchor ? 'ring-2 ring-ring ring-offset-2' : ''}`}
             >
-              <span className="break-words font-semibold">{group.label}</span>
-              <span className="mt-3 space-y-1">
-                <span className="block tabular-nums">
-                  {t('topic-pages', { count: group.pages.length })}
-                </span>
-                <span className="block text-xs text-muted-foreground">
-                  {group.approved
-                    ? t('topic-approved-count', { count: group.approved })
-                    : t('topic-candidates')}
-                </span>
+              <span className="line-clamp-2 break-words font-semibold">
+                {group.label}
+              </span>
+              {/* Both counts in words: the tile's colour is never the only carrier. */}
+              <span className="block tabular-nums text-xs text-muted-foreground">
+                {t('topic-pages', { count: group.pages.length })} ·{' '}
+                {t('topic-approved-count', { count: group.approved })}
               </span>
             </Link>
           ))}
@@ -70,22 +92,6 @@ export function BrainTopicMap({
             </Link>
           </div>
         )}
-        <ul className="flex flex-wrap gap-4 text-sm text-muted-foreground">
-          <li className="flex items-center gap-2">
-            <span
-              className="size-4 rounded border border-ready bg-ready-tint"
-              aria-hidden="true"
-            />
-            {t('topic-approved')}
-          </li>
-          <li className="flex items-center gap-2">
-            <span
-              className="size-4 rounded border border-pending bg-pending-tint"
-              aria-hidden="true"
-            />
-            {t('topic-candidates')}
-          </li>
-        </ul>
       </CardContent>
     </Card>
   );

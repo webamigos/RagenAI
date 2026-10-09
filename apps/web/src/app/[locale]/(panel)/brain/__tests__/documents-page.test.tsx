@@ -4,6 +4,7 @@ const mocks = vi.hoisted(() => ({
   access: vi.fn(),
   documents: vi.fn(),
   extraction: vi.fn(),
+  extractable: vi.fn(),
   panel: vi.fn((_props: Record<string, unknown>) => null),
 }));
 vi.mock('@/features/brain/services/queries/get-brain-access-query', () => ({
@@ -16,6 +17,15 @@ vi.mock(
   '@/features/brain/services/queries/get-brain-document-extraction-query',
   () => ({ getBrainDocumentExtractionQuery: mocks.extraction }),
 );
+vi.mock(
+  '@/features/brain/services/queries/get-extractable-documents-query',
+  () => ({ getExtractableDocumentsQuery: mocks.extractable }),
+);
+vi.mock('../components/ExtractDialog', () => ({
+  ExtractDialog: ({ documents }: { documents: unknown[] }) => (
+    <button>extract {documents.length}</button>
+  ),
+}));
 vi.mock('next/navigation', () => ({
   notFound: () => {
     throw Error('not-found');
@@ -49,6 +59,7 @@ beforeEach(() => {
   mocks.access.mockResolvedValue({ orgId: 'session-org', canWrite: false });
   mocks.documents.mockResolvedValue([]);
   mocks.extraction.mockResolvedValue(new Map());
+  mocks.extractable.mockResolvedValue([{ fileId: 'a' }]);
 });
 it('rejects unauthorized access before reading document evidence', async () => {
   mocks.access.mockResolvedValue(null);
@@ -83,4 +94,15 @@ it('renders the language empty state instead of an empty table', async () => {
   );
   expect(screen.getByText('empty-in-language-title')).toBeVisible();
   expect(mocks.panel).not.toHaveBeenCalled();
+});
+it('offers a curator extraction from the documents already here', async () => {
+  mocks.access.mockResolvedValue({ orgId: 'session-org', canWrite: true });
+  render(await DocumentsPage({ searchParams: Promise.resolve({}) }));
+  expect(mocks.extractable).toHaveBeenCalledWith('session-org');
+  expect(screen.getByRole('button', { name: 'extract 1' })).toBeVisible();
+});
+it('neither offers nor reads extraction for a reader', async () => {
+  render(await DocumentsPage({ searchParams: Promise.resolve({}) }));
+  expect(mocks.extractable).not.toHaveBeenCalled();
+  expect(screen.queryByRole('button', { name: /extract/ })).toBeNull();
 });

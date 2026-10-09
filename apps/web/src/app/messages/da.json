@@ -2613,12 +2613,12 @@
     "brain-no-visible-sources": "ingen af dens kilder er synlige for dig"
   },
   "brain": {
-    "title": "Ragen Brain",
+    "title": "Brain",
     "tabs": {
       "pages": "Vidensider",
-      "findings": "Fund",
+      "findings": "Problemer",
       "graph": "Graf",
-      "documents": "Dokumenter",
+      "documents": "Kilder",
       "overview": "Overview"
     },
     "filters": {
@@ -2626,14 +2626,14 @@
       "all-but-rejected": "Alle undtagen afviste"
     },
     "page-status": {
-      "CANDIDATE": "Kandidat",
+      "CANDIDATE": "Til gennemgang",
       "APPROVED": "Godkendt",
       "REJECTED": "Afvist",
       "STALE": "Forældet"
     },
     "page-type": {
       "PROCESS": "Proces",
-      "ENTITY": "Enhed",
+      "ENTITY": "Objekt",
       "POLICY": "Regel",
       "PRODUCT": "Produkt",
       "ROLE": "Rolle"
@@ -2650,7 +2650,7 @@
         "status": "Status",
         "owner": "Ansvarlig",
         "documents": "Dokumenter",
-        "findings": "Åbne fund",
+        "findings": "Åbne problemer",
         "updated": "Ændret"
       },
       "empty-in-language-title": "Intet på dette sprog",
@@ -2662,7 +2662,7 @@
     },
     "findings": {
       "columns": {
-        "type": "Fund",
+        "type": "Problem",
         "subject": "Vedrører",
         "detail": "Detaljer",
         "severity": "Alvor",
@@ -2686,9 +2686,9 @@
         "MEDIUM": "Middel",
         "HIGH": "Høj"
       },
-      "empty-title": "Ingen fund med denne status",
+      "empty-title": "Ingen problemer med denne status",
       "empty-description": "Efter hvert udtræk viser Brain her modstrid, huller, forældede kilder og sider uden ansvarlig.",
-      "count": "Fund: {shown} af {total}",
+      "count": "Problemer: {shown} af {total}",
       "summary": {
         "unknown-file": "et ukendt dokument",
         "verification-due": "Kontrollen skulle være sket {date}",
@@ -2705,18 +2705,17 @@
       },
       "discuss": "Spørg assistenten om dette",
       "empty-in-language-title": "Intet på dette sprog",
-      "empty-in-language-description": "Ingen fund handler om et dokument på dette sprog eller en side, der citerer et. Vælg et andet sprog eller dem alle.",
-      "intro": "Check detected problems and choose a corrective action.",
-      "filter-types": "Finding types",
+      "empty-in-language-description": "Intet problem vedrører et dokument på dette sprog eller en side, der citerer et. Vælg et andet sprog eller dem alle.",
+      "filter-types": "Problemtyper",
       "all-types": "All types",
       "subject-gone": "The source was deleted",
       "retry-extraction": "Retry extraction",
       "open-review": "Open review",
       "view-relations": "Check relations",
       "dismiss-orphan": "This is fine, close",
-      "dismissed": "Finding dismissed",
+      "dismissed": "Problem lukket",
       "batch": "{count} × {type}",
-      "batch-scope": "Findings on this list page, detected at intervals of up to 5 minutes.",
+      "batch-scope": "Problemer på denne side af listen, fundet med intervaller på op til 5 minutter.",
       "why": {
         "ORPHAN": "Missing relations make the context of this page harder to check.",
         "EXTRACTION_FAILED": "The document supplied no knowledge for review.",
@@ -2728,14 +2727,14 @@
       "relation-suggestions": "Suggested relations",
       "relation-basis": "These pages cite the same document. Check whether they should be linked; a shared source does not establish a relation.",
       "select-relations": "Select relations to review",
-      "add-relations": "Add selected relations"
+      "add-relations": "Sammenkæd valgte ({count})",
+      "severity-label": "Alvorlighed: {level}",
+      "select-all": "Vælg alle",
+      "select-none": "Ryd markering"
     },
     "page": {
-      "back": "Vidensider",
       "owner": "Ansvarlig",
-      "verification": "Kontrol",
       "last-verified": "Senest kontrolleret {date}",
-      "never-verified": "Aldrig kontrolleret",
       "verify-every": "Kontrolinterval: {every}",
       "sources": {
         "title": "Kilder ({count})",
@@ -2747,9 +2746,9 @@
         }
       },
       "findings": {
-        "title": "Åbne fund",
+        "title": "Åbne problemer",
         "empty-title": "Intet åbent på denne side",
-        "empty-description": "Fund om denne side vises her, når Brain rapporterer dem."
+        "empty-description": "Ingen åbne problemer. De vises her, når Brain rejser et."
       },
       "access": {
         "title": "Tilgængelig for",
@@ -2771,12 +2770,13 @@
       "history": "Historik",
       "merge": "Fletning",
       "superseded-by": "Flettet med",
-      "publication": "Vidensbase",
       "publish-blocker": {
         "status": "Kun en godkendt side kan udgives",
         "owner": "Angiv først en ejer",
         "access": "Vælg først, hvem siden er åben for"
-      }
+      },
+      "state": "Status",
+      "status-by": "{status} af {name}, {date}"
     },
     "origin": {
       "EXTRACTED": "citeret",
@@ -2857,14 +2857,14 @@
     "extract": {
       "open": "Udtræk fra dokumenter",
       "title": "Udtræk viden fra dokumenter",
-      "description": "Brain læser de valgte dokumenter og skriver kandidatsider til gennemgang. Dokumenter, som ingen side citerer endnu, er valgt. Kørslen sker i baggrunden.",
+      "description": "Brain læser de valgte dokumenter og skriver sider, som du skal gennemgå. Dokumenter, som ingen side citerer endnu, er valgt. Kørslen sker i baggrunden.",
       "none": "Ingen dokumenter at udtrække fra — tilføj først dokumenter til vidensbasen.",
       "not-extracted": "Ikke udtrukket",
       "pages": "Sider: {count}",
       "too-many": "Dokumenter pr. kørsel, højst: {max}.",
       "cancel": "Annuller",
       "start": "Start udtrækning ({count})",
-      "started": "Udtrækning startet — dokumenter: {count}. Kandidater vises, efterhånden som hvert bliver færdigt.",
+      "started": "Udtræk startet — dokumenter: {count}. Sider til gennemgang vises, efterhånden som hvert dokument bliver færdigt.",
       "retry": "Prøv igen",
       "retry-queued": "Nyt forsøg i kø",
       "retry-started": "Udtrækning af dokumentet er i kø igen",
@@ -2883,7 +2883,7 @@
       "zoom-fit": "Vis hele grafen",
       "reset-layout": "Gendan det automatiske layout",
       "show-all-groups": "Vis alle grupper",
-      "title": "Vidensgraf — Ragen Brain",
+      "title": "Vidensgraf — Brain",
       "empty-title": "Ingen sider at tegne endnu",
       "empty-description": "Grafen vises, når Brain har udtrukket sider fra dine dokumenter.",
       "focus": "Omegnen af “{title}”",
@@ -2897,8 +2897,8 @@
       "inferred-shown": "Vist ({count})",
       "shown": "Sider: {nodes} af {totalNodes} · relationer: {edges} af {totalEdges}",
       "canvas-label": "Graf — sider: {nodes}, relationer: {edges}",
-      "failed": "Grafen kunne ikke tegnes i denne browser — de samme data findes under fanerne sider og fund.",
-      "open-findings": "Åbne fund: {count}",
+      "failed": "Grafen kunne ikke tegnes i denne browser — fanerne Vidensider og Problemer viser de samme data.",
+      "open-findings": "Åbne problemer: {count}",
       "open-page": "Åbn siden",
       "show-neighbourhood": "Vis omegn",
       "drawer-label": "Siden ved siden af grafen",
@@ -2909,7 +2909,7 @@
       "legend-extracted": "Angivet i en kilde (et citat understøtter den)",
       "legend-ambiguous": "Usikker: nævnt, men citatet bekræfter den ikke",
       "legend-inferred": "Udledt af modellen; skjult, medmindre den vises",
-      "legend-findings": "En side med et åbent fund",
+      "legend-findings": "En side med et åbent problem",
       "communities-title": "Grupper",
       "community": "{label} og relaterede ({size})",
       "origin": {
@@ -2919,9 +2919,6 @@
       },
       "empty-in-language-title": "Intet på dette sprog",
       "empty-in-language-description": "Intet dokument på dette sprog, eller ingen side, der citerer et. Vælg et andet sprog eller dem alle.",
-      "connections-title": "How knowledge connects",
-      "connections-description": "Topics first, then details. The full graph is available when you need it.",
-      "back-brain": "← Brain",
       "views-label": "Graph view",
       "views": {
         "topics": "Topics",
@@ -2929,11 +2926,11 @@
         "full": "Full graph"
       },
       "topics-title": "Topic map",
-      "topics-scale": "Size = page count · colour = review state",
+      "topics-scale": "Feltstørrelse = antal sider",
       "topic-pages": "{count, plural, one {# page} other {# pages}}",
-      "topic-approved": "Has approved pages",
-      "topic-approved-count": "{count, plural, one {# approved} other {# approved}}",
-      "topic-candidates": "Only candidates",
+      "topic-approved": "Har en godkendt side",
+      "topic-approved-count": "{count} godkendt",
+      "topic-candidates": "Kun sider til gennemgang",
       "isolated-count": "{count, plural, one {# page outside the main topics} other {# pages outside the main topics}}",
       "isolated-description": "Instead of a column of loose dots: a list of pages without relations. Open a page to propose links.",
       "review-isolated": "Review isolated pages",
@@ -2944,16 +2941,16 @@
       "search-results-count": "Showing {shown} of {count} matching pages",
       "status": {
         "APPROVED": "Approved",
-        "CANDIDATE": "Candidate",
+        "CANDIDATE": "Til gennemgang",
         "REJECTED": "Rejected",
         "STALE": "Forældet"
       },
       "review-group": "Review entire group ({count})",
-      "pair-merge": "{count, plural, one {# candidate page} other {# candidate pages}} may match a page drawn from the other language of a paired document.",
+      "pair-merge": "{count, plural, one {# side til gennemgang} other {# sider til gennemgang}} kan svare til en side fra den anden sprogversion af et parret dokument.",
       "pair-merge-review": "Review and merge"
     },
     "export": {
-      "ready": "Klar til eksport: {count}",
+      "ready": "Godkendt: {count}",
       "download": "Download pakke (.zip)",
       "none": "Godkend en side med ejer for at eksportere den",
       "skipped": {
@@ -2966,30 +2963,30 @@
     },
     "publication": {
       "state": {
-        "none": "Ikke i vidensbasen",
-        "publishing": "Skrives til vidensbasen…",
-        "published": "I vidensbasen — svar kan citere den",
-        "withdrawn": "Trukket tilbage fra vidensbasen",
-        "failed": "Skrivningen til vidensbasen mislykkedes – udgiv igen"
+        "none": "Ikke publiceret",
+        "publishing": "Publicerer…",
+        "published": "Publiceret — chatsvar kan citere den",
+        "withdrawn": "Trukket tilbage fra publicering",
+        "failed": "Publiceringen mislykkedes — publicer den igen"
       },
-      "outdated": "Siden er ændret, siden den blev udgivet — udgiv igen for at opdatere vidensbasen.",
-      "publish": "Udgiv i vidensbasen",
+      "outdated": "Siden er ændret, siden den blev publiceret — publicer igen, så chatten bruger den aktuelle tekst.",
+      "publish": "Publicer",
       "republish": "Udgiv igen",
       "withdraw": "Træk tilbage",
       "published": "Udgivelsen er startet",
       "withdrawn": "Siden er trukket tilbage",
-      "withdraw-title": "Træk denne side tilbage fra vidensbasen?",
+      "withdraw-title": "Trække denne side tilbage fra publicering?",
       "withdraw-description": "Svar holder op med at citere den, så snart den trækkes tilbage. Siden forbliver godkendt og kan udgives igen; tidligere svar beholder deres citater."
     },
     "documents": {
-      "title": "Dokumenter — Ragen Brain",
+      "title": "Kilder — Brain",
       "intro": "Når et dokuments viden findes i godkendte sider, kan du tage selve dokumentet ud af søgningen — svarene bygger så kun på de gennemgåede sider. Intet slettes, og det kan sættes tilbage når som helst.",
       "empty-title": "Ingen dokumenter endnu",
       "empty-description": "Dokumenter vises her, når de er i vidensbasen.",
       "columns": {
         "document": "Dokument",
         "approved": "Godkendte sider",
-        "candidates": "Kandidater",
+        "candidates": "Til gennemgang",
         "retrieval": "Søgning",
         "actions": "Handlinger",
         "language": "Sprog",
@@ -3019,7 +3016,7 @@
       },
       "send": "Send til vidensbasen",
       "sent": "Sendt til vidensbasen",
-      "upload": "Upload til Brain",
+      "upload": "Tilføj dokumenter",
       "uploaded": "Uploadet til Brain: {count} — gemt og fortolket, ikke søgbart",
       "upload-failed": "Uploaden mislykkedes — tjek filen, og prøv igen.",
       "staged-summary": "I Brain, uden for søgning: {count} · uden godkendt side: {uncurated}",
@@ -3030,16 +3027,9 @@
       "empty-in-language-description": "Intet dokument på dette sprog, eller ingen side, der citerer et. Vælg et andet sprog eller dem alle.",
       "empty-filter": "Documents without extracted knowledge",
       "clear-filter": "Show all documents",
-      "screen-title": "Source documents",
-      "screen-intro": "What Brain extracted from each file and how much has already been reviewed.",
-      "table-title": "Documents by language",
+      "table-title": "Dokumenter efter sprog ({count})",
       "shared-scale": "Shared scale: {count, plural, one {# page} other {# pages}} = full bar",
-      "coverage-counts": "{approved} approved · {candidates} candidates",
-      "summary": {
-        "documents": "Documents",
-        "empty": "Nothing extracted",
-        "withdrawn": "Excluded from search"
-      },
+      "coverage-counts": "{approved} godkendt · {candidates} til gennemgang",
       "state": {
         "empty": "Nothing extracted",
         "failed": "Extraction or processing failed",
@@ -3050,7 +3040,14 @@
       "check-language": "Check language",
       "retry-extraction": "Retry extraction",
       "pair-with": "Same document in {language}: {name}",
-      "pair-coverage": "Pair: {approved} approved · {candidates} candidates (each page counted once)"
+      "pair-coverage": "Par: {approved} godkendt · {candidates} til gennemgang (hver side tælles én gang)",
+      "warnings": {
+        "empty": "{count, plural, one {# dokument uden udtrukket viden} other {# dokumenter uden udtrukket viden}}",
+        "withdrawn": "{count, plural, one {# dokument fjernet fra søgningen} other {# dokumenter fjernet fra søgningen}}"
+      },
+      "manage-in-knowledge-base": "Administrer filer i vidensbasen",
+      "state-with-retrieval": "{state} · {retrieval}",
+      "row-actions": "Handlinger: {name}"
     },
     "publish-all": {
       "button": "Udgiv godkendte ({count})",
@@ -3062,7 +3059,7 @@
       "not-written": "{count, plural, one {# side blev registreret som publiceret men ikke skrevet til indekset – kør igen} other {# sider blev registreret som publiceret men ikke skrevet til indekset – kør igen}}"
     },
     "read-only": {
-      "notice": "Skrivebeskyttet forhåndsvisning — du kan gennemse Ragen Brain, men intet her kan ændres."
+      "notice": "Skrivebeskyttet visning — du kan gennemse Brain, men intet her kan ændres."
     },
     "assistant": {
       "toggle": "Assistent",
@@ -3080,7 +3077,7 @@
       "read": "{count, plural, one {Læste # element fra Brain} other {Læste # elementer fra Brain}}",
       "proposal-dropped": "Et forslag kunne ikke vises.",
       "empty-title": "Spørg om det, du kigger på",
-      "empty-description": "Assistenten læser denne skærm, siderne, deres citater og fundene, og svarer med de citater, svaret bygger på.",
+      "empty-description": "Assistenten læser denne skærm, siderne, deres citater og problemerne og svarer med de citater, svaret bygger på.",
       "history-empty": "Ingen tidligere samtaler endnu.",
       "untitled": "Samtale uden titel",
       "prompts": {
@@ -3090,7 +3087,7 @@
         "contradictions": "Forklar de åbne modsigelser",
         "failed": "Hvorfor gav nogle dokumenter ingenting?",
         "disagree": "Hvor præcis er disse sider uenige?",
-        "what-to-do": "Hvad skal jeg gøre ved dette fund?",
+        "what-to-do": "Hvad skal jeg gøre ved dette problem?",
         "why-failed": "Hvorfor gav dette dokument ingenting, og hvad skal jeg gøre?",
         "is-right": "Er denne side korrekt? Tjek hver påstand mod dens citat",
         "owner": "Hvem bør eje denne side?",
@@ -3149,11 +3146,11 @@
       }
     },
     "tab-hints": {
-      "pages": "Vidensider med kilder: hver side indeholder udsagn med ordrette citater fra kildedokumenterne. En kandidat venter på gennemgang; godkend og udgiv en side, så chatten kan svare ud fra den.",
-      "findings": "Det, der kræver din opmærksomhed: modstrid, huller, forældede eller ejerløse sider og dokumenter, Brain ikke kunne læse.",
+      "pages": "Hver side samler påstande med nøjagtige citater fra deres kilder. Gennemgå en side, godkend den, og publicer den, så chatten kan svare ud fra den.",
+      "findings": "Det, der kræver din opmærksomhed: modsigelser mellem sider, huller, forældede sider, sider uden ansvarlig og dokumenter, som Brain ikke kunne læse.",
       "graph": "Hvordan siderne hænger sammen — hvilken proces kræver hvilken politik, og hvilke sider henviser til hinanden.",
       "documents": "Kildedokumenterne, Brain læser: hvor mange sider hvert gav, og om chatten stadig søger i det.",
-      "overview": "See how much knowledge has been reviewed and what needs attention."
+      "overview": "Virksomhedens viden hentet fra dokumenter og kontrolleret af mennesker. Se, hvad der allerede virker i chatten, og hvad der venter på din beslutning."
     },
     "relation-kind": {
       "approves": "godkender",
@@ -3169,7 +3166,22 @@
       "is-part-of": "er en del af",
       "references": "henviser til",
       "depends-on": "afhænger af",
-      "related-to": "related to"
+      "related-to": "related to",
+      "manufactures": "fremstiller",
+      "designs": "designer",
+      "supplies": "leverer",
+      "provides": "stiller til rådighed",
+      "uses": "bruger",
+      "contains": "indeholder",
+      "defines": "definerer",
+      "constrains": "begrænser",
+      "performs": "udfører",
+      "contradicts": "modsiger",
+      "implements": "implementerer",
+      "sells": "sælger",
+      "manages": "styrer",
+      "reports-to": "rapporterer til",
+      "is-located-in": "ligger i"
     },
     "language": {
       "label": "Sprog",
@@ -3178,39 +3190,57 @@
       "option": "{name} ({count})"
     },
     "overview": {
-      "intro": "Company knowledge extracted from documents. See how much has been reviewed by people.",
-      "start-review": "Start review ({count})",
       "pipeline-title": "The knowledge journey: from documents to chat answers",
       "publication-description": "Published pages are available in chat. Source documents may still be searched.",
       "stages": {
         "documents": "Documents",
-        "candidates": "Candidates (waiting)",
+        "candidates": "Til gennemgang",
         "approved": "Approved",
-        "published": "Published in chat"
+        "published": "Publiceret"
       },
       "empty-documents-count": "{count} without extracted knowledge",
       "unowned-count": "{count} without an owner",
-      "approved-share": "{percent}% of candidate and approved pages",
+      "approved-share": "{approved} af {total, plural, one {# side} other {# sider}}",
       "awaiting-publication": "{count} approved pages awaiting publication",
       "attention-title": "Needs attention",
       "unowned-title": "Pages without an owner",
       "unowned-description": "They cannot be approved. Assign an owner before review.",
       "empty-documents-title": "Documents without knowledge",
       "empty-documents-description": "0 pages. Check the documents and extract knowledge.",
-      "finding-description": "Review the finding and address its cause.",
-      "attention-empty": "No findings or pages need an owner.",
+      "finding-description": "Gennemgå problemet, og afhjælp årsagen.",
+      "attention-empty": "Ingen problemer, og ingen sider mangler en ansvarlig.",
       "ranking-title": "Where the most unreviewed knowledge is",
-      "legend": "Approved / candidates · shared scale across documents",
-      "coverage-counts": "{approved} approved · {candidates} candidates",
-      "all-documents": "All documents ({count})",
-      "ranking-empty": "No candidates to review.",
+      "legend": "Fælles skala for alle dokumenter",
+      "coverage-counts": "{approved} godkendt · {candidates} til gennemgang",
+      "all-documents": "Alle kilder ({count})",
+      "ranking-empty": "Ingen sider til gennemgang.",
       "empty-title": "Knowledge starts with documents",
       "empty-description": "Upload documents to extract and review company knowledge.",
       "empty-language-description": "There are no documents in this language. Choose another language or upload documents.",
       "clear-filter": "Clear overview filter",
       "filtered-list": "List narrowed by an overview filter",
       "no-pages-title": "No pages match this filter",
-      "no-pages-description": "Change or clear the filter to see the remaining pages."
+      "no-pages-description": "Change or clear the filter to see the remaining pages.",
+      "next": {
+        "label": "Hvad nu?",
+        "assign-owners": {
+          "title": "{count, plural, one {Tildel en ansvarlig til # side} other {Tildel ansvarlige til # sider}}",
+          "description": "En side uden ansvarlig kan ikke godkendes. Den ansvarlige er den person, der står inde for sidens indhold.",
+          "action": "Tildel ansvarlige"
+        },
+        "review": {
+          "title": "{count, plural, one {Gennemgå # side} other {Gennemgå # sider}}",
+          "description": "Disse sider har en ansvarlig og venter på din beslutning: godkend eller afvis dem.",
+          "action": "Åbn gennemgangstilstand"
+        },
+        "publish": {
+          "title": "{count, plural, one {Publicer # godkendt side} other {Publicer # godkendte sider}}",
+          "description": "Når de er publiceret, kan chatten svare ud fra dem.",
+          "action": "Gå til publicering"
+        }
+      },
+      "legend-approved": "godkendt",
+      "legend-to-review": "til gennemgang"
     },
     "review-mode": {
       "title": "Review mode",
@@ -3219,41 +3249,43 @@
       "navigation-shortcuts": "Shortcuts: J next · K previous",
       "queue": "Queue ({count})",
       "grouping": "Queue grouping",
-      "by-document": "By source document",
-      "by-type": "By page type",
-      "queue-empty": "There are no candidates in this queue.",
+      "by-document": "Efter dokument",
+      "by-type": "Efter type",
+      "queue-empty": "Der er ingen sider til gennemgang i denne kø.",
       "claim": "Brain claim",
       "quote": "Verbatim quote",
       "assessment": "Assessment",
       "claim-progress": "{confirmed} of {total} confirmed",
-      "local-checks": "Claim assessments stay in this view and are not saved.",
+      "local-checks": "Kontrollér, at hver påstand stemmer med sit citat. Markeringerne ✓ og ✕ er kun vejledende og gemmes ikke; kun beslutningen i trin 3 gemmes.",
       "no-claims": "This page has no claims to compare.",
       "paraphrase": "Paraphrase: the claim omits {facts}. Check the meaning.",
       "no-marker": "No citation marker. Check the source before deciding.",
       "missing-source": "No source for marker [{marker}].",
-      "confirm-claim": "Confirm claim {n}",
-      "question-claim": "Question claim {n}",
+      "confirm-claim": "Korrekt: påstand {n}",
+      "question-claim": "Skal rettes: påstand {n}",
       "owner-step": "Step 1 · Owner (required)",
       "owner-question": "Who vouches for this page?",
-      "bulk-owner": "Set for all {count} candidates from this document",
-      "save-document-owner": "Assign owner to candidates",
+      "bulk-owner": "Angiv for alle {count} sider til gennemgang fra dette dokument",
+      "save-document-owner": "Tildel disse sider en ansvarlig",
       "decision-step": "Step 3 · Decision",
       "approve-publish": "Approve and publish",
       "approve-only": "Approve only",
       "reject": "Reject",
       "needs-owner": "Set an owner before approving this page.",
       "needs-access": "This page has no readers. You can approve it; set access in page details before publishing.",
-      "not-candidate": "Decisions in this mode apply to candidates. Open page details for the other actions.",
+      "not-candidate": "Beslutninger i denne tilstand gælder sider til gennemgang. Åbn sidens detaljer for de andre handlinger.",
       "relations": "Relations: {count}",
       "show-graph": "Show in graph",
       "open-page": "Open page details",
       "previous": "Previous",
       "next": "Next",
       "empty-title": "Queue reviewed",
-      "empty-description": "There are no candidates to review. Return to the Brain overview to see the remaining knowledge.",
+      "empty-description": "Der er ingen sider til gennemgang. Gå tilbage til Brain-oversigten for at se resten af viden.",
       "back": "Return to Brain overview",
       "claims-step": "Step 2 · Claims",
-      "publication-failed": "The page was approved, but publication did not finish: {reason} Open page details to retry publication."
+      "publication-failed": "The page was approved, but publication did not finish: {reason} Open page details to retry publication.",
+      "claim-correct": "Korrekt",
+      "claim-needs-fix": "Skal rettes"
     }
   },
   "project-context-manager": {
@@ -3392,7 +3424,7 @@
     "column-brain": "Knowledge in Brain",
     "column-quality": "Chat quality",
     "brain-unavailable": "Brain unavailable",
-    "coverage": "{approved} approved · {candidates} candidates",
+    "coverage": "{approved} godkendt · {candidates} til gennemgang",
     "no-knowledge": "No knowledge",
     "waiting-knowledge": "Awaiting extraction",
     "quality-ok": "OK",
@@ -3406,7 +3438,7 @@
     "headerless-description": "Chat answers are less reliable without column names. For spreadsheets and mostly tabular documents, add headers and reprocess the file.",
     "optimize-all": "Optimize eligible documents",
     "empty-count": "{count} ready files without knowledge",
-    "empty-description": "The files are searchable, but have no live candidate or approved Brain pages.",
+    "empty-description": "Filerne er søgbare, men har ingen Brain-sider til gennemgang eller godkendte sider.",
     "show-brain": "Show in Brain",
     "table-reprocess": "Reprocess table documents",
     "optimization-description": "Prepare RAG improvement suggestions through the existing optimization workflow. Review and apply them in each document; starting this job does not rewrite the source.",

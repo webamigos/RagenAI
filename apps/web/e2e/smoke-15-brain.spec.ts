@@ -43,13 +43,14 @@ test.describe('Ragen Brain panel (smoke)', () => {
     const candidates = (
       await candidateStage.locator('strong').innerText()
     ).trim();
-    await candidateStage.locator('a').click();
+    // The whole stage tile is the link.
+    await candidateStage.click();
     await expect(page).toHaveURL(/status=CANDIDATE/);
     await expect(
       page.getByText(new RegExp(`Strony:.*z ${candidates}$`)),
     ).toBeVisible();
     await page.goto('/pl/brain/overview');
-    await page.getByTestId('overview-published').locator('a').first().click();
+    await page.getByTestId('overview-published').click();
     await expect(page).toHaveURL(/published=true/);
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('/pl/brain/overview');
@@ -66,7 +67,7 @@ test.describe('Ragen Brain panel (smoke)', () => {
   }) => {
     await page.goto('/pl/brain');
     await expect(
-      page.getByRole('heading', { name: 'Ragen Brain' }),
+      page.getByRole('heading', { level: 1, name: 'Brain', exact: true }),
     ).toBeVisible({
       timeout: 15000,
     });
@@ -91,7 +92,7 @@ test.describe('Ragen Brain panel (smoke)', () => {
   test('offers the bundle and serves it as a zip', async ({ page }) => {
     await page.goto('/pl/brain');
     const bar = page.getByTestId('brain-export');
-    await expect(bar).toContainText(/Gotowe do eksportu: \d+/, {
+    await expect(bar).toContainText(/Zatwierdzone: \d+/, {
       timeout: 15000,
     });
     const res = await page.request.get('/api/brain/export');

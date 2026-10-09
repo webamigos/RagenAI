@@ -2613,12 +2613,12 @@
     "brain-no-visible-sources": "geen van de bronnen is voor jou zichtbaar"
   },
   "brain": {
-    "title": "Ragen Brain",
+    "title": "Brain",
     "tabs": {
       "pages": "Kennispagina's",
-      "findings": "Bevindingen",
+      "findings": "Problemen",
       "graph": "Graaf",
-      "documents": "Documenten",
+      "documents": "Bronnen",
       "overview": "Overview"
     },
     "filters": {
@@ -2626,14 +2626,14 @@
       "all-but-rejected": "Alles behalve afgewezen"
     },
     "page-status": {
-      "CANDIDATE": "Kandidaat",
+      "CANDIDATE": "Te beoordelen",
       "APPROVED": "Goedgekeurd",
       "REJECTED": "Afgewezen",
       "STALE": "Verouderd"
     },
     "page-type": {
       "PROCESS": "Proces",
-      "ENTITY": "Entiteit",
+      "ENTITY": "Object",
       "POLICY": "Beleid",
       "PRODUCT": "Product",
       "ROLE": "Rol"
@@ -2650,7 +2650,7 @@
         "status": "Status",
         "owner": "Eigenaar",
         "documents": "Documenten",
-        "findings": "Open bevindingen",
+        "findings": "Open problemen",
         "updated": "Bijgewerkt"
       },
       "empty-in-language-title": "Niets in deze taal",
@@ -2662,7 +2662,7 @@
     },
     "findings": {
       "columns": {
-        "type": "Bevinding",
+        "type": "Probleem",
         "subject": "Betreft",
         "detail": "Details",
         "severity": "Ernst",
@@ -2686,9 +2686,9 @@
         "MEDIUM": "Gemiddeld",
         "HIGH": "Hoog"
       },
-      "empty-title": "Geen bevindingen met deze status",
+      "empty-title": "Geen problemen met deze status",
       "empty-description": "Na elke extractie meldt Brain hier tegenstrijdigheden, hiaten, verouderde bronnen en pagina's zonder eigenaar.",
-      "count": "Bevindingen: {shown} van {total}",
+      "count": "Problemen: {shown} van {total}",
       "summary": {
         "unknown-file": "een onbekend document",
         "verification-due": "Verificatie was nodig op {date}",
@@ -2705,18 +2705,17 @@
       },
       "discuss": "Vraag de assistent hiernaar",
       "empty-in-language-title": "Niets in deze taal",
-      "empty-in-language-description": "Geen bevinding gaat over een document in deze taal of een pagina die ernaar verwijst. Kies een andere taal, of alle talen.",
-      "intro": "Check detected problems and choose a corrective action.",
-      "filter-types": "Finding types",
+      "empty-in-language-description": "Geen probleem gaat over een document in deze taal of een pagina die ernaar verwijst. Kies een andere taal, of alle talen.",
+      "filter-types": "Soorten problemen",
       "all-types": "All types",
       "subject-gone": "The source was deleted",
       "retry-extraction": "Retry extraction",
       "open-review": "Open review",
       "view-relations": "Check relations",
       "dismiss-orphan": "This is fine, close",
-      "dismissed": "Finding dismissed",
+      "dismissed": "Probleem gesloten",
       "batch": "{count} × {type}",
-      "batch-scope": "Findings on this list page, detected at intervals of up to 5 minutes.",
+      "batch-scope": "Problemen op deze lijstpagina, gedetecteerd met tussenpozen van maximaal 5 minuten.",
       "why": {
         "ORPHAN": "Missing relations make the context of this page harder to check.",
         "EXTRACTION_FAILED": "The document supplied no knowledge for review.",
@@ -2728,14 +2727,14 @@
       "relation-suggestions": "Suggested relations",
       "relation-basis": "These pages cite the same document. Check whether they should be linked; a shared source does not establish a relation.",
       "select-relations": "Select relations to review",
-      "add-relations": "Add selected relations"
+      "add-relations": "Geselecteerde koppelen ({count})",
+      "severity-label": "Ernst: {level}",
+      "select-all": "Alles selecteren",
+      "select-none": "Selectie wissen"
     },
     "page": {
-      "back": "Kennispagina's",
       "owner": "Eigenaar",
-      "verification": "Verificatie",
       "last-verified": "Laatst geverifieerd op {date}",
-      "never-verified": "Nooit geverifieerd",
       "verify-every": "Verificatie-interval: {every}",
       "sources": {
         "title": "Bronnen ({count})",
@@ -2747,9 +2746,9 @@
         }
       },
       "findings": {
-        "title": "Open bevindingen",
+        "title": "Open problemen",
         "empty-title": "Niets open op deze pagina",
-        "empty-description": "Bevindingen over deze pagina verschijnen hier zodra Brain ze meldt."
+        "empty-description": "Geen open problemen. Ze verschijnen hier zodra Brain er een meldt."
       },
       "access": {
         "title": "Toegankelijk voor",
@@ -2771,12 +2770,13 @@
       "history": "Geschiedenis",
       "merge": "Samenvoegen",
       "superseded-by": "Samengevoegd met",
-      "publication": "Kennisbank",
       "publish-blocker": {
         "status": "Alleen een goedgekeurde pagina kan worden gepubliceerd",
         "owner": "Stel eerst een eigenaar in",
         "access": "Kies eerst voor wie de pagina toegankelijk is"
-      }
+      },
+      "state": "Status",
+      "status-by": "{status} door {name}, {date}"
     },
     "origin": {
       "EXTRACTED": "geciteerd",
@@ -2857,14 +2857,14 @@
     "extract": {
       "open": "Uit documenten extraheren",
       "title": "Kennis uit documenten extraheren",
-      "description": "Brain leest de gekozen documenten en schrijft kandidaatpagina's ter beoordeling. Documenten waar nog geen pagina naar verwijst zijn geselecteerd. De run gebeurt op de achtergrond.",
+      "description": "Brain leest de gekozen documenten en schrijft pagina's die jij beoordeelt. Documenten waar nog geen pagina naar verwijst zijn geselecteerd. De run gebeurt op de achtergrond.",
       "none": "Geen documenten om uit te extraheren — voeg eerst documenten toe aan de kennisbank.",
       "not-extracted": "Niet geëxtraheerd",
       "pages": "Pagina's: {count}",
       "too-many": "Maximaal aantal documenten per run: {max}.",
       "cancel": "Annuleren",
       "start": "Extractie starten ({count})",
-      "started": "Extractie gestart — documenten: {count}. Kandidaten verschijnen zodra elk document klaar is.",
+      "started": "Extractie gestart — documenten: {count}. Pagina's om te beoordelen verschijnen zodra elk document klaar is.",
       "retry": "Opnieuw proberen",
       "retry-queued": "Nieuwe poging in wachtrij",
       "retry-started": "Extractie voor dit document opnieuw in de wachtrij gezet",
@@ -2883,7 +2883,7 @@
       "zoom-fit": "Hele graaf tonen",
       "reset-layout": "Automatische indeling herstellen",
       "show-all-groups": "Alle groepen tonen",
-      "title": "Kennisgraaf — Ragen Brain",
+      "title": "Kennisgraaf — Brain",
       "empty-title": "Nog geen pagina's om te tekenen",
       "empty-description": "De graaf verschijnt zodra Brain pagina's uit je documenten heeft geëxtraheerd.",
       "focus": "Omgeving van “{title}”",
@@ -2897,8 +2897,8 @@
       "inferred-shown": "Getoond ({count})",
       "shown": "Pagina's: {nodes} van {totalNodes} · relaties: {edges} van {totalEdges}",
       "canvas-label": "Graaf — pagina's: {nodes}, relaties: {edges}",
-      "failed": "De graaf kon in deze browser niet worden getekend — de tabbladen met pagina's en bevindingen tonen dezelfde gegevens.",
-      "open-findings": "Open bevindingen: {count}",
+      "failed": "De graaf kon in deze browser niet worden getekend — de tabbladen Kennispagina's en Problemen tonen dezelfde gegevens.",
+      "open-findings": "Open problemen: {count}",
       "open-page": "Pagina openen",
       "show-neighbourhood": "Omgeving tonen",
       "drawer-label": "De pagina naast de graaf",
@@ -2909,7 +2909,7 @@
       "legend-extracted": "Vermeld in een bron (ondersteund door een citaat)",
       "legend-ambiguous": "Onzeker: genoemd, maar het citaat bevestigt het niet",
       "legend-inferred": "Afgeleid door het model; verborgen tenzij getoond",
-      "legend-findings": "Een pagina met een open bevinding",
+      "legend-findings": "Een pagina met een open probleem",
       "communities-title": "Groepen",
       "community": "{label} en gerelateerd ({size})",
       "origin": {
@@ -2919,9 +2919,6 @@
       },
       "empty-in-language-title": "Niets in deze taal",
       "empty-in-language-description": "Geen document in deze taal, of geen pagina die ernaar verwijst. Kies een andere taal, of alle talen.",
-      "connections-title": "How knowledge connects",
-      "connections-description": "Topics first, then details. The full graph is available when you need it.",
-      "back-brain": "← Brain",
       "views-label": "Graph view",
       "views": {
         "topics": "Topics",
@@ -2929,11 +2926,11 @@
         "full": "Full graph"
       },
       "topics-title": "Topic map",
-      "topics-scale": "Size = page count · colour = review state",
+      "topics-scale": "Tegelgrootte = aantal pagina's",
       "topic-pages": "{count, plural, one {# page} other {# pages}}",
-      "topic-approved": "Has approved pages",
-      "topic-approved-count": "{count, plural, one {# approved} other {# approved}}",
-      "topic-candidates": "Only candidates",
+      "topic-approved": "Heeft een goedgekeurde pagina",
+      "topic-approved-count": "{count} goedgekeurd",
+      "topic-candidates": "Alleen te beoordelen",
       "isolated-count": "{count, plural, one {# page outside the main topics} other {# pages outside the main topics}}",
       "isolated-description": "Instead of a column of loose dots: a list of pages without relations. Open a page to propose links.",
       "review-isolated": "Review isolated pages",
@@ -2944,16 +2941,16 @@
       "search-results-count": "Showing {shown} of {count} matching pages",
       "status": {
         "APPROVED": "Approved",
-        "CANDIDATE": "Candidate",
+        "CANDIDATE": "Te beoordelen",
         "REJECTED": "Rejected",
         "STALE": "Verouderd"
       },
       "review-group": "Review entire group ({count})",
-      "pair-merge": "{count, plural, one {# candidate page} other {# candidate pages}} may match a page drawn from the other language of a paired document.",
+      "pair-merge": "{count, plural, one {# pagina om te beoordelen kan} other {# pagina's om te beoordelen kunnen}} overeenkomen met een pagina uit de andere taalversie van een gekoppeld document.",
       "pair-merge-review": "Review and merge"
     },
     "export": {
-      "ready": "Klaar om te exporteren: {count}",
+      "ready": "Goedgekeurd: {count}",
       "download": "Bundel downloaden (.zip)",
       "none": "Keur een pagina met een eigenaar goed om haar te exporteren",
       "skipped": {
@@ -2966,30 +2963,30 @@
     },
     "publication": {
       "state": {
-        "none": "Niet in de kennisbank",
-        "publishing": "Wordt naar de kennisbank geschreven…",
-        "published": "In de kennisbank — antwoorden kunnen ernaar verwijzen",
-        "withdrawn": "Ingetrokken uit de kennisbank",
-        "failed": "Schrijven naar de kennisbank mislukt — publiceer opnieuw"
+        "none": "Niet gepubliceerd",
+        "publishing": "Publiceren…",
+        "published": "Gepubliceerd — chatantwoorden kunnen ernaar verwijzen",
+        "withdrawn": "Publicatie ingetrokken",
+        "failed": "Publiceren mislukt — publiceer opnieuw"
       },
-      "outdated": "De pagina is gewijzigd sinds de publicatie — publiceer opnieuw om de kennisbank bij te werken.",
-      "publish": "Publiceren in kennisbank",
+      "outdated": "De pagina is gewijzigd sinds de publicatie — publiceer opnieuw zodat de chat de huidige tekst gebruikt.",
+      "publish": "Publiceren",
       "republish": "Opnieuw publiceren",
       "withdraw": "Intrekken",
       "published": "Publicatie gestart",
       "withdrawn": "Pagina ingetrokken",
-      "withdraw-title": "Deze pagina uit de kennisbank intrekken?",
+      "withdraw-title": "Publicatie van deze pagina intrekken?",
       "withdraw-description": "Antwoorden verwijzen er niet meer naar zodra ze is ingetrokken. De pagina blijft goedgekeurd en kan opnieuw worden gepubliceerd; eerdere antwoorden die ernaar verwezen behouden hun bronvermeldingen."
     },
     "documents": {
-      "title": "Documenten — Ragen Brain",
+      "title": "Bronnen — Brain",
       "intro": "Zodra de kennis uit een document in goedgekeurde pagina's staat, kun je het document zelf uit het ophalen halen, zodat antwoorden alleen uit de beoordeelde pagina's komen. Er wordt niets verwijderd, en je kunt het op elk moment terugzetten.",
       "empty-title": "Nog geen documenten",
       "empty-description": "Documenten verschijnen hier zodra ze in de kennisbank staan.",
       "columns": {
         "document": "Document",
         "approved": "Goedgekeurde pagina's",
-        "candidates": "Kandidaten",
+        "candidates": "Te beoordelen",
         "retrieval": "Ophalen",
         "actions": "Acties",
         "language": "Taal",
@@ -3019,7 +3016,7 @@
       },
       "send": "Naar kennisbank sturen",
       "sent": "Naar de kennisbank gestuurd",
-      "upload": "Uploaden naar Brain",
+      "upload": "Documenten toevoegen",
       "uploaded": "Geüpload naar Brain: {count} — opgeslagen en verwerkt, niet doorzoekbaar",
       "upload-failed": "Het uploaden is mislukt — controleer het bestand en probeer het opnieuw.",
       "staged-summary": "Klaargezet in Brain, niet doorzoekbaar: {count} · nog zonder goedgekeurde pagina: {uncurated}",
@@ -3030,16 +3027,9 @@
       "empty-in-language-description": "Geen document in deze taal, of geen pagina die ernaar verwijst. Kies een andere taal, of alle talen.",
       "empty-filter": "Documents without extracted knowledge",
       "clear-filter": "Show all documents",
-      "screen-title": "Source documents",
-      "screen-intro": "What Brain extracted from each file and how much has already been reviewed.",
-      "table-title": "Documents by language",
+      "table-title": "Documenten per taal ({count})",
       "shared-scale": "Shared scale: {count, plural, one {# page} other {# pages}} = full bar",
-      "coverage-counts": "{approved} approved · {candidates} candidates",
-      "summary": {
-        "documents": "Documents",
-        "empty": "Nothing extracted",
-        "withdrawn": "Excluded from search"
-      },
+      "coverage-counts": "{approved} goedgekeurd · {candidates} te beoordelen",
       "state": {
         "empty": "Nothing extracted",
         "failed": "Extraction or processing failed",
@@ -3050,7 +3040,14 @@
       "check-language": "Check language",
       "retry-extraction": "Retry extraction",
       "pair-with": "Same document in {language}: {name}",
-      "pair-coverage": "Pair: {approved} approved · {candidates} candidates (each page counted once)"
+      "pair-coverage": "Paar: {approved} goedgekeurd · {candidates} te beoordelen (elke pagina één keer geteld)",
+      "warnings": {
+        "empty": "{count, plural, one {# document zonder geëxtraheerde kennis} other {# documenten zonder geëxtraheerde kennis}}",
+        "withdrawn": "{count, plural, one {# document uit de zoekfunctie gehaald} other {# documenten uit de zoekfunctie gehaald}}"
+      },
+      "manage-in-knowledge-base": "Bestanden beheren in de kennisbank",
+      "state-with-retrieval": "{state} · {retrieval}",
+      "row-actions": "Acties: {name}"
     },
     "publish-all": {
       "button": "Goedgekeurde publiceren ({count})",
@@ -3062,7 +3059,7 @@
       "not-written": "{count, plural, one {# pagina is als gepubliceerd vastgelegd maar niet naar de index geschreven — voer het opnieuw uit} other {# pagina's zijn als gepubliceerd vastgelegd maar niet naar de index geschreven — voer het opnieuw uit}}"
     },
     "read-only": {
-      "notice": "Alleen-lezen voorbeeld — je kunt door Ragen Brain bladeren, maar hier kan niets worden gewijzigd."
+      "notice": "Alleen-lezen voorbeeld — je kunt door Brain bladeren, maar hier kan niets worden gewijzigd."
     },
     "assistant": {
       "toggle": "Assistent",
@@ -3080,7 +3077,7 @@
       "read": "{count, plural, one {# item uit Brain gelezen} other {# items uit Brain gelezen}}",
       "proposal-dropped": "Een suggestie kon niet worden getoond.",
       "empty-title": "Vraag naar wat je bekijkt",
-      "empty-description": "De assistent leest dit scherm, de pagina's, hun citaten en de bevindingen, en antwoordt met de citaten waarop het antwoord steunt.",
+      "empty-description": "De assistent leest dit scherm, de pagina's, hun citaten en de problemen, en antwoordt met de citaten waarop het antwoord steunt.",
       "history-empty": "Nog geen eerdere gesprekken.",
       "untitled": "Naamloos gesprek",
       "prompts": {
@@ -3090,7 +3087,7 @@
         "contradictions": "Leg de open tegenstrijdigheden uit",
         "failed": "Waarom leverden sommige documenten niets op?",
         "disagree": "Waar spreken deze pagina's elkaar precies tegen?",
-        "what-to-do": "Wat moet ik met deze bevinding doen?",
+        "what-to-do": "Wat moet ik met dit probleem doen?",
         "why-failed": "Waarom leverde dit document niets op, en wat moet ik doen?",
         "is-right": "Klopt deze pagina? Controleer elke bewering aan de hand van het citaat",
         "owner": "Wie zou eigenaar van deze pagina moeten zijn?",
@@ -3149,11 +3146,11 @@
       }
     },
     "tab-hints": {
-      "pages": "Kennispagina's met hun bronnen: elke pagina doet beweringen met de exacte citaten uit de documenten waar ze vandaan komen. Een kandidaat wacht op beoordeling; keur een pagina goed en publiceer haar om haar in de chat bruikbaar te maken voor antwoorden.",
-      "findings": "Wat je aandacht nodig heeft: tegenstrijdigheden tussen pagina's, hiaten, verouderde pagina's of pagina's zonder eigenaar, en documenten die Brain niet kon lezen.",
+      "pages": "Elke pagina verzamelt beweringen met letterlijke citaten uit hun bronnen. Beoordeel een pagina, keur haar goed en publiceer haar, zodat de chat eruit kan antwoorden.",
+      "findings": "Wat je aandacht nodig heeft: tegenstrijdigheden tussen pagina's, hiaten, verouderde pagina's, pagina's zonder eigenaar en documenten die Brain niet kon lezen.",
       "graph": "Hoe pagina's samenhangen — welk proces welk beleid vereist, en welke pagina's naar elkaar verwijzen.",
       "documents": "De brondocumenten die Brain leest, hoeveel pagina's elk document heeft opgeleverd, en of de chat er nog in zoekt.",
-      "overview": "See how much knowledge has been reviewed and what needs attention."
+      "overview": "Bedrijfskennis uit documenten, gecontroleerd door mensen. Zie wat al werkt in de chat en wat op jouw besluit wacht."
     },
     "relation-kind": {
       "approves": "keurt goed",
@@ -3169,7 +3166,22 @@
       "is-part-of": "maakt deel uit van",
       "references": "verwijst naar",
       "depends-on": "is afhankelijk van",
-      "related-to": "related to"
+      "related-to": "related to",
+      "manufactures": "produceert",
+      "designs": "ontwerpt",
+      "supplies": "levert aan",
+      "provides": "biedt",
+      "uses": "gebruikt",
+      "contains": "bevat",
+      "defines": "definieert",
+      "constrains": "beperkt",
+      "performs": "voert uit",
+      "contradicts": "spreekt tegen",
+      "implements": "implementeert",
+      "sells": "verkoopt",
+      "manages": "beheert",
+      "reports-to": "rapporteert aan",
+      "is-located-in": "bevindt zich in"
     },
     "language": {
       "label": "Taal",
@@ -3178,39 +3190,57 @@
       "option": "{name} ({count})"
     },
     "overview": {
-      "intro": "Company knowledge extracted from documents. See how much has been reviewed by people.",
-      "start-review": "Start review ({count})",
       "pipeline-title": "The knowledge journey: from documents to chat answers",
       "publication-description": "Published pages are available in chat. Source documents may still be searched.",
       "stages": {
         "documents": "Documents",
-        "candidates": "Candidates (waiting)",
+        "candidates": "Te beoordelen",
         "approved": "Approved",
-        "published": "Published in chat"
+        "published": "Gepubliceerd"
       },
       "empty-documents-count": "{count} without extracted knowledge",
       "unowned-count": "{count} without an owner",
-      "approved-share": "{percent}% of candidate and approved pages",
+      "approved-share": "{approved} van {total} pagina's",
       "awaiting-publication": "{count} approved pages awaiting publication",
       "attention-title": "Needs attention",
       "unowned-title": "Pages without an owner",
       "unowned-description": "They cannot be approved. Assign an owner before review.",
       "empty-documents-title": "Documents without knowledge",
       "empty-documents-description": "0 pages. Check the documents and extract knowledge.",
-      "finding-description": "Review the finding and address its cause.",
-      "attention-empty": "No findings or pages need an owner.",
+      "finding-description": "Bekijk het probleem en pak de oorzaak aan.",
+      "attention-empty": "Geen problemen, en geen pagina's die een eigenaar nodig hebben.",
       "ranking-title": "Where the most unreviewed knowledge is",
-      "legend": "Approved / candidates · shared scale across documents",
-      "coverage-counts": "{approved} approved · {candidates} candidates",
-      "all-documents": "All documents ({count})",
-      "ranking-empty": "No candidates to review.",
+      "legend": "Eén schaal voor alle documenten",
+      "coverage-counts": "{approved} goedgekeurd · {candidates} te beoordelen",
+      "all-documents": "Alle bronnen ({count})",
+      "ranking-empty": "Geen pagina's om te beoordelen.",
       "empty-title": "Knowledge starts with documents",
       "empty-description": "Upload documents to extract and review company knowledge.",
       "empty-language-description": "There are no documents in this language. Choose another language or upload documents.",
       "clear-filter": "Clear overview filter",
       "filtered-list": "List narrowed by an overview filter",
       "no-pages-title": "No pages match this filter",
-      "no-pages-description": "Change or clear the filter to see the remaining pages."
+      "no-pages-description": "Change or clear the filter to see the remaining pages.",
+      "next": {
+        "label": "Wat nu?",
+        "assign-owners": {
+          "title": "{count, plural, one {Wijs een eigenaar toe aan # pagina} other {Wijs eigenaren toe aan # pagina's}}",
+          "description": "Een pagina zonder eigenaar kan niet worden goedgekeurd. De eigenaar is degene die instaat voor wat er op de pagina staat.",
+          "action": "Eigenaren toewijzen"
+        },
+        "review": {
+          "title": "{count, plural, one {Beoordeel # pagina} other {Beoordeel # pagina's}}",
+          "description": "Deze pagina's hebben een eigenaar en wachten op jouw besluit: keur ze goed of wijs ze af.",
+          "action": "Beoordelingsmodus openen"
+        },
+        "publish": {
+          "title": "{count, plural, one {Publiceer # goedgekeurde pagina} other {Publiceer # goedgekeurde pagina's}}",
+          "description": "Na publicatie kan de chat eruit antwoorden.",
+          "action": "Naar publiceren"
+        }
+      },
+      "legend-approved": "goedgekeurd",
+      "legend-to-review": "te beoordelen"
     },
     "review-mode": {
       "title": "Review mode",
@@ -3219,41 +3249,43 @@
       "navigation-shortcuts": "Shortcuts: J next · K previous",
       "queue": "Queue ({count})",
       "grouping": "Queue grouping",
-      "by-document": "By source document",
-      "by-type": "By page type",
-      "queue-empty": "There are no candidates in this queue.",
+      "by-document": "Per document",
+      "by-type": "Per type",
+      "queue-empty": "Er zijn geen pagina's om te beoordelen in deze wachtrij.",
       "claim": "Brain claim",
       "quote": "Verbatim quote",
       "assessment": "Assessment",
       "claim-progress": "{confirmed} of {total} confirmed",
-      "local-checks": "Claim assessments stay in this view and are not saved.",
+      "local-checks": "Controleer of elke bewering overeenkomt met haar citaat. De markeringen ✓ en ✕ zijn alleen een hulpmiddel en worden niet opgeslagen; alleen het besluit in stap 3 wordt opgeslagen.",
       "no-claims": "This page has no claims to compare.",
       "paraphrase": "Paraphrase: the claim omits {facts}. Check the meaning.",
       "no-marker": "No citation marker. Check the source before deciding.",
       "missing-source": "No source for marker [{marker}].",
-      "confirm-claim": "Confirm claim {n}",
-      "question-claim": "Question claim {n}",
+      "confirm-claim": "Klopt: bewering {n}",
+      "question-claim": "Moet worden aangepast: bewering {n}",
       "owner-step": "Step 1 · Owner (required)",
       "owner-question": "Who vouches for this page?",
-      "bulk-owner": "Set for all {count} candidates from this document",
-      "save-document-owner": "Assign owner to candidates",
+      "bulk-owner": "Instellen voor alle {count} te beoordelen pagina's uit dit document",
+      "save-document-owner": "Eigenaar toewijzen aan deze pagina's",
       "decision-step": "Step 3 · Decision",
       "approve-publish": "Approve and publish",
       "approve-only": "Approve only",
       "reject": "Reject",
       "needs-owner": "Set an owner before approving this page.",
       "needs-access": "This page has no readers. You can approve it; set access in page details before publishing.",
-      "not-candidate": "Decisions in this mode apply to candidates. Open page details for the other actions.",
+      "not-candidate": "Beslissingen in deze modus gelden voor pagina's om te beoordelen. Open de paginadetails voor de andere acties.",
       "relations": "Relations: {count}",
       "show-graph": "Show in graph",
       "open-page": "Open page details",
       "previous": "Previous",
       "next": "Next",
       "empty-title": "Queue reviewed",
-      "empty-description": "There are no candidates to review. Return to the Brain overview to see the remaining knowledge.",
+      "empty-description": "Er zijn geen pagina's om te beoordelen. Ga terug naar het Brain-overzicht om de overige kennis te bekijken.",
       "back": "Return to Brain overview",
       "claims-step": "Step 2 · Claims",
-      "publication-failed": "The page was approved, but publication did not finish: {reason} Open page details to retry publication."
+      "publication-failed": "The page was approved, but publication did not finish: {reason} Open page details to retry publication.",
+      "claim-correct": "Klopt",
+      "claim-needs-fix": "Moet worden aangepast"
     }
   },
   "project-context-manager": {
@@ -3392,7 +3424,7 @@
     "column-brain": "Knowledge in Brain",
     "column-quality": "Chat quality",
     "brain-unavailable": "Brain unavailable",
-    "coverage": "{approved} approved · {candidates} candidates",
+    "coverage": "{approved} goedgekeurd · {candidates} te beoordelen",
     "no-knowledge": "No knowledge",
     "waiting-knowledge": "Awaiting extraction",
     "quality-ok": "OK",
@@ -3406,7 +3438,7 @@
     "headerless-description": "Chat answers are less reliable without column names. For spreadsheets and mostly tabular documents, add headers and reprocess the file.",
     "optimize-all": "Optimize eligible documents",
     "empty-count": "{count} ready files without knowledge",
-    "empty-description": "The files are searchable, but have no live candidate or approved Brain pages.",
+    "empty-description": "De bestanden zijn doorzoekbaar, maar hebben geen Brain-pagina's om te beoordelen of goedgekeurde pagina's.",
     "show-brain": "Show in Brain",
     "table-reprocess": "Reprocess table documents",
     "optimization-description": "Prepare RAG improvement suggestions through the existing optimization workflow. Review and apply them in each document; starting this job does not rewrite the source.",

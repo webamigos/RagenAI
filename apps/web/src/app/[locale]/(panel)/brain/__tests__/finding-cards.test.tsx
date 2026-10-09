@@ -134,3 +134,14 @@ it('folds consecutive resolved rows into a history group and reveals focused fin
   expect(screen.queryByRole('button')).toBeNull();
   expect(query).not.toHaveBeenCalled();
 });
+it('names the severity instead of printing it as a second label', async () => {
+  render(
+    await FindingCards({
+      ...props,
+      items: [make('ORPHAN')],
+    }),
+  );
+  expect(screen.getByTestId('finding-severity')).toHaveAccessibleName(
+    'Ważność: Niska',
+  );
+});

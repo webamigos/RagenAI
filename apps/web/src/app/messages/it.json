@@ -2613,12 +2613,12 @@
     "brain-no-visible-sources": "nessuna delle sue fonti è visibile per te"
   },
   "brain": {
-    "title": "Ragen Brain",
+    "title": "Brain",
     "tabs": {
       "pages": "Pagine di conoscenza",
-      "findings": "Rilevazioni",
+      "findings": "Problemi",
       "graph": "Grafo",
-      "documents": "Documenti",
+      "documents": "Fonti",
       "overview": "Overview"
     },
     "filters": {
@@ -2626,14 +2626,14 @@
       "all-but-rejected": "Tutte tranne le rifiutate"
     },
     "page-status": {
-      "CANDIDATE": "Candidata",
+      "CANDIDATE": "Da verificare",
       "APPROVED": "Approvata",
       "REJECTED": "Rifiutata",
       "STALE": "Obsoleta"
     },
     "page-type": {
       "PROCESS": "Processo",
-      "ENTITY": "Entità",
+      "ENTITY": "Oggetto",
       "POLICY": "Regola",
       "PRODUCT": "Prodotto",
       "ROLE": "Ruolo"
@@ -2650,7 +2650,7 @@
         "status": "Stato",
         "owner": "Responsabile",
         "documents": "Documenti",
-        "findings": "Rilevazioni aperte",
+        "findings": "Problemi aperti",
         "updated": "Modificata"
       },
       "empty-in-language-title": "Niente in questa lingua",
@@ -2662,7 +2662,7 @@
     },
     "findings": {
       "columns": {
-        "type": "Rilevazione",
+        "type": "Problema",
         "subject": "Riguarda",
         "detail": "Dettaglio",
         "severity": "Gravità",
@@ -2686,9 +2686,9 @@
         "MEDIUM": "Media",
         "HIGH": "Alta"
       },
-      "empty-title": "Nessuna rilevazione con questo stato",
+      "empty-title": "Nessun problema con questo stato",
       "empty-description": "Dopo ogni estrazione Brain mostra qui contraddizioni, lacune, fonti obsolete e pagine senza responsabile.",
-      "count": "Rilevazioni: {shown} di {total}",
+      "count": "Problemi: {shown} di {total}",
       "summary": {
         "unknown-file": "un documento sconosciuto",
         "verification-due": "La verifica era prevista il {date}",
@@ -2705,18 +2705,17 @@
       },
       "discuss": "Chiedi all'assistente",
       "empty-in-language-title": "Niente in questa lingua",
-      "empty-in-language-description": "Nessuna segnalazione riguarda un documento in questa lingua o una pagina che lo citi. Scegli un'altra lingua o tutte.",
-      "intro": "Check detected problems and choose a corrective action.",
-      "filter-types": "Finding types",
+      "empty-in-language-description": "Nessun problema riguarda un documento in questa lingua o una pagina che lo cita. Scegli un'altra lingua, o tutte.",
+      "filter-types": "Tipi di problema",
       "all-types": "All types",
       "subject-gone": "The source was deleted",
       "retry-extraction": "Retry extraction",
       "open-review": "Open review",
       "view-relations": "Check relations",
       "dismiss-orphan": "This is fine, close",
-      "dismissed": "Finding dismissed",
+      "dismissed": "Problema chiuso",
       "batch": "{count} × {type}",
-      "batch-scope": "Findings on this list page, detected at intervals of up to 5 minutes.",
+      "batch-scope": "Problemi in questa pagina dell'elenco, rilevati a intervalli fino a 5 minuti.",
       "why": {
         "ORPHAN": "Missing relations make the context of this page harder to check.",
         "EXTRACTION_FAILED": "The document supplied no knowledge for review.",
@@ -2728,14 +2727,14 @@
       "relation-suggestions": "Suggested relations",
       "relation-basis": "These pages cite the same document. Check whether they should be linked; a shared source does not establish a relation.",
       "select-relations": "Select relations to review",
-      "add-relations": "Add selected relations"
+      "add-relations": "Collega selezionati ({count})",
+      "severity-label": "Gravità: {level}",
+      "select-all": "Seleziona tutto",
+      "select-none": "Deseleziona tutto"
     },
     "page": {
-      "back": "Pagine di conoscenza",
       "owner": "Responsabile",
-      "verification": "Verifica",
       "last-verified": "Verificata il {date}",
-      "never-verified": "Mai verificata",
       "verify-every": "Intervallo di verifica: {every}",
       "sources": {
         "title": "Fonti ({count})",
@@ -2747,9 +2746,9 @@
         }
       },
       "findings": {
-        "title": "Rilevazioni aperte",
+        "title": "Problemi aperti",
         "empty-title": "Niente di aperto su questa pagina",
-        "empty-description": "Le rilevazioni su questa pagina compariranno qui quando Brain le segnalerà."
+        "empty-description": "Nessun problema aperto. Compaiono qui quando Brain ne segnala uno."
       },
       "access": {
         "title": "Accessibile a",
@@ -2771,12 +2770,13 @@
       "history": "Cronologia",
       "merge": "Unisci",
       "superseded-by": "Unita a",
-      "publication": "Base di conoscenza",
       "publish-blocker": {
         "status": "Si può pubblicare solo una pagina approvata",
         "owner": "Imposta prima un responsabile",
         "access": "Scegli prima a chi è aperta la pagina"
-      }
+      },
+      "state": "Stato",
+      "status-by": "{status} da {name}, {date}"
     },
     "origin": {
       "EXTRACTED": "citata",
@@ -2857,14 +2857,14 @@
     "extract": {
       "open": "Estrai dai documenti",
       "title": "Estrai conoscenza dai documenti",
-      "description": "Brain legge i documenti scelti e scrive pagine candidate da revisionare. Sono selezionati i documenti che nessuna pagina cita ancora. L’esecuzione avviene in background.",
+      "description": "Brain legge i documenti scelti e scrive pagine da verificare. Sono selezionati i documenti che nessuna pagina cita ancora. L'esecuzione avviene in background.",
       "none": "Nessun documento da estrarre: aggiungi prima documenti alla base di conoscenza.",
       "not-extracted": "Non estratto",
       "pages": "Pagine: {count}",
       "too-many": "Documenti per esecuzione, al massimo: {max}.",
       "cancel": "Annulla",
       "start": "Avvia estrazione ({count})",
-      "started": "Estrazione avviata — documenti: {count}. Le candidate compaiono man mano che ciascuno termina.",
+      "started": "Estrazione avviata — documenti: {count}. Le pagine da verificare compaiono man mano che ciascun documento viene elaborato.",
       "retry": "Riprova",
       "retry-queued": "Nuovo tentativo in coda",
       "retry-started": "Estrazione di questo documento di nuovo in coda",
@@ -2883,7 +2883,7 @@
       "zoom-fit": "Mostra tutto il grafo",
       "reset-layout": "Ripristina il layout automatico",
       "show-all-groups": "Mostra tutti i gruppi",
-      "title": "Grafo della conoscenza — Ragen Brain",
+      "title": "Grafo della conoscenza — Brain",
       "empty-title": "Ancora nessuna pagina da disegnare",
       "empty-description": "Il grafo compare quando Brain ha estratto pagine dai tuoi documenti.",
       "focus": "Vicinato di «{title}»",
@@ -2897,8 +2897,8 @@
       "inferred-shown": "Visibili ({count})",
       "shown": "Pagine: {nodes} di {totalNodes} · relazioni: {edges} di {totalEdges}",
       "canvas-label": "Grafo — pagine: {nodes}, relazioni: {edges}",
-      "failed": "Impossibile disegnare il grafo in questo browser: le schede pagine e segnalazioni mostrano gli stessi dati.",
-      "open-findings": "Segnalazioni aperte: {count}",
+      "failed": "Impossibile disegnare il grafo in questo browser — le schede Pagine di conoscenza e Problemi mostrano gli stessi dati.",
+      "open-findings": "Problemi aperti: {count}",
       "open-page": "Apri pagina",
       "show-neighbourhood": "Mostra vicinato",
       "drawer-label": "La pagina accanto al grafo",
@@ -2909,7 +2909,7 @@
       "legend-extracted": "Dichiarata in una fonte (una citazione la supporta)",
       "legend-ambiguous": "Incerta: nominata, ma la citazione non la conferma",
       "legend-inferred": "Dedotta dal modello; nascosta se non mostrata",
-      "legend-findings": "Una pagina con una segnalazione aperta",
+      "legend-findings": "Una pagina con un problema aperto",
       "communities-title": "Gruppi",
       "community": "{label} e collegate ({size})",
       "origin": {
@@ -2919,9 +2919,6 @@
       },
       "empty-in-language-title": "Niente in questa lingua",
       "empty-in-language-description": "Nessun documento in questa lingua, o nessuna pagina che ne citi uno. Scegli un'altra lingua o tutte.",
-      "connections-title": "How knowledge connects",
-      "connections-description": "Topics first, then details. The full graph is available when you need it.",
-      "back-brain": "← Brain",
       "views-label": "Graph view",
       "views": {
         "topics": "Topics",
@@ -2929,11 +2926,11 @@
         "full": "Full graph"
       },
       "topics-title": "Topic map",
-      "topics-scale": "Size = page count · colour = review state",
+      "topics-scale": "Dimensione del riquadro = numero di pagine",
       "topic-pages": "{count, plural, one {# page} other {# pages}}",
-      "topic-approved": "Has approved pages",
-      "topic-approved-count": "{count, plural, one {# approved} other {# approved}}",
-      "topic-candidates": "Only candidates",
+      "topic-approved": "Ha una pagina approvata",
+      "topic-approved-count": "{count, plural, one {# approvata} other {# approvate}}",
+      "topic-candidates": "Solo pagine da verificare",
       "isolated-count": "{count, plural, one {# page outside the main topics} other {# pages outside the main topics}}",
       "isolated-description": "Instead of a column of loose dots: a list of pages without relations. Open a page to propose links.",
       "review-isolated": "Review isolated pages",
@@ -2944,16 +2941,16 @@
       "search-results-count": "Showing {shown} of {count} matching pages",
       "status": {
         "APPROVED": "Approved",
-        "CANDIDATE": "Candidate",
+        "CANDIDATE": "Da verificare",
         "REJECTED": "Rejected",
         "STALE": "Obsoleta"
       },
       "review-group": "Review entire group ({count})",
-      "pair-merge": "{count, plural, one {# candidate page} other {# candidate pages}} may match a page drawn from the other language of a paired document.",
+      "pair-merge": "{count, plural, one {# pagina da verificare potrebbe corrispondere} other {# pagine da verificare potrebbero corrispondere}} a una pagina ricavata dall'altra lingua di un documento abbinato.",
       "pair-merge-review": "Review and merge"
     },
     "export": {
-      "ready": "Pronte per l’esportazione: {count}",
+      "ready": "Approvate: {count}",
       "download": "Scarica pacchetto (.zip)",
       "none": "Approva una pagina con un responsabile per esportarla",
       "skipped": {
@@ -2966,30 +2963,30 @@
     },
     "publication": {
       "state": {
-        "none": "Fuori dalla base di conoscenza",
-        "publishing": "Scrittura nella base di conoscenza…",
-        "published": "Nella base di conoscenza: le risposte possono citarla",
-        "withdrawn": "Ritirata dalla base di conoscenza",
-        "failed": "La scrittura nella base di conoscenza non è riuscita: pubblica di nuovo"
+        "none": "Non pubblicata",
+        "publishing": "Pubblicazione…",
+        "published": "Pubblicata — le risposte della chat possono citarla",
+        "withdrawn": "Ritirata dalla pubblicazione",
+        "failed": "Pubblicazione non riuscita — pubblicala di nuovo"
       },
-      "outdated": "La pagina è cambiata dalla pubblicazione: ripubblicala per aggiornare la base di conoscenza.",
-      "publish": "Pubblica nella base di conoscenza",
+      "outdated": "La pagina è cambiata dopo la pubblicazione — ripubblicala perché la chat usi il testo attuale.",
+      "publish": "Pubblica",
       "republish": "Ripubblica",
       "withdraw": "Ritira",
       "published": "Pubblicazione avviata",
       "withdrawn": "Pagina ritirata",
-      "withdraw-title": "Ritirare questa pagina dalla base di conoscenza?",
+      "withdraw-title": "Ritirare questa pagina dalla pubblicazione?",
       "withdraw-description": "Le risposte smettono di citarla appena viene ritirata. La pagina resta approvata e può essere ripubblicata; le risposte passate mantengono le loro citazioni."
     },
     "documents": {
-      "title": "Documenti — Ragen Brain",
+      "title": "Fonti — Brain",
       "intro": "Quando la conoscenza di un documento è già in pagine approvate, puoi togliere il documento stesso dalla ricerca: le risposte useranno solo le pagine revisionate. Nulla viene eliminato e può essere rimesso in qualsiasi momento.",
       "empty-title": "Ancora nessun documento",
       "empty-description": "I documenti compaiono qui quando sono nella base di conoscenza.",
       "columns": {
         "document": "Documento",
         "approved": "Pagine approvate",
-        "candidates": "Candidate",
+        "candidates": "Da verificare",
         "retrieval": "Ricerca",
         "actions": "Azioni",
         "language": "Lingua",
@@ -3019,7 +3016,7 @@
       },
       "send": "Invia alla base di conoscenza",
       "sent": "Inviato alla base di conoscenza",
-      "upload": "Carica in Brain",
+      "upload": "Aggiungi documenti",
       "uploaded": "Caricati in Brain: {count} — salvati ed elaborati, non ricercabili",
       "upload-failed": "Caricamento non riuscito: controlla il file e riprova.",
       "staged-summary": "In Brain, fuori dalla ricerca: {count} · senza pagina approvata: {uncurated}",
@@ -3030,16 +3027,9 @@
       "empty-in-language-description": "Nessun documento in questa lingua, o nessuna pagina che ne citi uno. Scegli un'altra lingua o tutte.",
       "empty-filter": "Documents without extracted knowledge",
       "clear-filter": "Show all documents",
-      "screen-title": "Source documents",
-      "screen-intro": "What Brain extracted from each file and how much has already been reviewed.",
-      "table-title": "Documents by language",
+      "table-title": "Documenti per lingua ({count})",
       "shared-scale": "Shared scale: {count, plural, one {# page} other {# pages}} = full bar",
-      "coverage-counts": "{approved} approved · {candidates} candidates",
-      "summary": {
-        "documents": "Documents",
-        "empty": "Nothing extracted",
-        "withdrawn": "Excluded from search"
-      },
+      "coverage-counts": "{approved} approvate · {candidates} da verificare",
       "state": {
         "empty": "Nothing extracted",
         "failed": "Extraction or processing failed",
@@ -3050,7 +3040,14 @@
       "check-language": "Check language",
       "retry-extraction": "Retry extraction",
       "pair-with": "Same document in {language}: {name}",
-      "pair-coverage": "Pair: {approved} approved · {candidates} candidates (each page counted once)"
+      "pair-coverage": "Coppia: {approved} approvate · {candidates} da verificare (ogni pagina contata una volta)",
+      "warnings": {
+        "empty": "{count, plural, one {# documento senza conoscenza estratta} other {# documenti senza conoscenza estratta}}",
+        "withdrawn": "{count, plural, one {# documento escluso dalla ricerca} other {# documenti esclusi dalla ricerca}}"
+      },
+      "manage-in-knowledge-base": "Gestisci i file nella base di conoscenza",
+      "state-with-retrieval": "{state} · {retrieval}",
+      "row-actions": "Azioni: {name}"
     },
     "publish-all": {
       "button": "Pubblica approvate ({count})",
@@ -3062,7 +3059,7 @@
       "not-written": "{count, plural, one {# pagina registrata come pubblicata ma non scritta nell’indice: esegui di nuovo} other {# pagine registrate come pubblicate ma non scritte nell’indice: esegui di nuovo}}"
     },
     "read-only": {
-      "notice": "Anteprima in sola lettura: puoi esplorare Ragen Brain, ma qui non è possibile modificare nulla."
+      "notice": "Anteprima in sola lettura — puoi esplorare Brain, ma qui non si può modificare nulla."
     },
     "assistant": {
       "toggle": "Assistente",
@@ -3080,7 +3077,7 @@
       "read": "{count, plural, one {Letto # elemento da Brain} other {Letti # elementi da Brain}}",
       "proposal-dropped": "Non è stato possibile mostrare un suggerimento.",
       "empty-title": "Chiedi di ciò che stai guardando",
-      "empty-description": "L'assistente legge questa schermata, le pagine, le loro citazioni e i rilievi, e risponde con le citazioni su cui si basa.",
+      "empty-description": "L'assistente legge questa schermata, le pagine, le loro citazioni e i problemi, e risponde con le citazioni su cui si basa.",
       "history-empty": "Ancora nessuna conversazione precedente.",
       "untitled": "Conversazione senza titolo",
       "prompts": {
@@ -3090,7 +3087,7 @@
         "contradictions": "Spiega le contraddizioni aperte",
         "failed": "Perché alcuni documenti non hanno prodotto nulla?",
         "disagree": "Dove esattamente queste pagine sono in disaccordo?",
-        "what-to-do": "Cosa dovrei fare con questo rilievo?",
+        "what-to-do": "Cosa devo fare con questo problema?",
         "why-failed": "Perché questo documento non ha prodotto nulla e cosa dovrei fare?",
         "is-right": "Questa pagina è corretta? Verifica ogni affermazione con la sua citazione",
         "owner": "Chi dovrebbe essere il responsabile di questa pagina?",
@@ -3149,11 +3146,11 @@
       }
     },
     "tab-hints": {
-      "pages": "Pagine di conoscenza con le loro fonti: ogni pagina riporta affermazioni con le citazioni esatte dei documenti di origine. Un candidato attende la revisione; approva e pubblica una pagina perché la chat possa usarla per rispondere.",
-      "findings": "Ciò che richiede la tua attenzione: contraddizioni, lacune, pagine obsolete o senza responsabile e documenti che Brain non è riuscito a leggere.",
+      "pages": "Ogni pagina raccoglie affermazioni con le citazioni esatte delle loro fonti. Verifica una pagina, approvala e pubblicala perché la chat possa usarla per rispondere.",
+      "findings": "Cosa richiede la tua attenzione: contraddizioni tra pagine, lacune, pagine obsolete, pagine senza proprietario e documenti che Brain non è riuscito a leggere.",
       "graph": "Come si collegano le pagine: quale processo richiede quale regola e quali pagine si citano a vicenda.",
       "documents": "I documenti di origine letti da Brain: quante pagine ha prodotto ciascuno e se la chat li cerca ancora.",
-      "overview": "See how much knowledge has been reviewed and what needs attention."
+      "overview": "Il sapere aziendale tratto dai documenti e verificato dalle persone. Guarda cosa funziona già nella chat e cosa attende la tua decisione."
     },
     "relation-kind": {
       "approves": "approva",
@@ -3169,7 +3166,22 @@
       "is-part-of": "fa parte di",
       "references": "fa riferimento a",
       "depends-on": "dipende da",
-      "related-to": "related to"
+      "related-to": "related to",
+      "manufactures": "produce",
+      "designs": "progetta",
+      "supplies": "fornisce",
+      "provides": "offre",
+      "uses": "usa",
+      "contains": "contiene",
+      "defines": "definisce",
+      "constrains": "vincola",
+      "performs": "esegue",
+      "contradicts": "contraddice",
+      "implements": "implementa",
+      "sells": "vende",
+      "manages": "gestisce",
+      "reports-to": "riporta a",
+      "is-located-in": "si trova in"
     },
     "language": {
       "label": "Lingua",
@@ -3178,39 +3190,57 @@
       "option": "{name} ({count})"
     },
     "overview": {
-      "intro": "Company knowledge extracted from documents. See how much has been reviewed by people.",
-      "start-review": "Start review ({count})",
       "pipeline-title": "The knowledge journey: from documents to chat answers",
       "publication-description": "Published pages are available in chat. Source documents may still be searched.",
       "stages": {
         "documents": "Documents",
-        "candidates": "Candidates (waiting)",
+        "candidates": "Da verificare",
         "approved": "Approved",
-        "published": "Published in chat"
+        "published": "Pubblicate"
       },
       "empty-documents-count": "{count} without extracted knowledge",
       "unowned-count": "{count} without an owner",
-      "approved-share": "{percent}% of candidate and approved pages",
+      "approved-share": "{approved} di {total, plural, one {# pagina} other {# pagine}}",
       "awaiting-publication": "{count} approved pages awaiting publication",
       "attention-title": "Needs attention",
       "unowned-title": "Pages without an owner",
       "unowned-description": "They cannot be approved. Assign an owner before review.",
       "empty-documents-title": "Documents without knowledge",
       "empty-documents-description": "0 pages. Check the documents and extract knowledge.",
-      "finding-description": "Review the finding and address its cause.",
-      "attention-empty": "No findings or pages need an owner.",
+      "finding-description": "Esamina il problema e risolvine la causa.",
+      "attention-empty": "Nessun problema e nessuna pagina senza proprietario.",
       "ranking-title": "Where the most unreviewed knowledge is",
-      "legend": "Approved / candidates · shared scale across documents",
-      "coverage-counts": "{approved} approved · {candidates} candidates",
-      "all-documents": "All documents ({count})",
-      "ranking-empty": "No candidates to review.",
+      "legend": "Una scala comune a tutti i documenti",
+      "coverage-counts": "{approved} approvate · {candidates} da verificare",
+      "all-documents": "Tutte le fonti ({count})",
+      "ranking-empty": "Nessuna pagina da verificare.",
       "empty-title": "Knowledge starts with documents",
       "empty-description": "Upload documents to extract and review company knowledge.",
       "empty-language-description": "There are no documents in this language. Choose another language or upload documents.",
       "clear-filter": "Clear overview filter",
       "filtered-list": "List narrowed by an overview filter",
       "no-pages-title": "No pages match this filter",
-      "no-pages-description": "Change or clear the filter to see the remaining pages."
+      "no-pages-description": "Change or clear the filter to see the remaining pages.",
+      "next": {
+        "label": "E adesso?",
+        "assign-owners": {
+          "title": "{count, plural, one {Assegna un responsabile a # pagina} other {Assegna i responsabili a # pagine}}",
+          "description": "Una pagina senza responsabile non può essere approvata. Il responsabile è la persona che garantisce il contenuto della pagina.",
+          "action": "Assegna i responsabili"
+        },
+        "review": {
+          "title": "{count, plural, one {Verifica # pagina} other {Verifica # pagine}}",
+          "description": "Queste pagine hanno un responsabile e attendono la tua decisione: approvale o rifiutale.",
+          "action": "Apri la modalità revisione"
+        },
+        "publish": {
+          "title": "{count, plural, one {Pubblica # pagina approvata} other {Pubblica # pagine approvate}}",
+          "description": "Una volta pubblicate, la chat può usarle per rispondere.",
+          "action": "Vai alla pubblicazione"
+        }
+      },
+      "legend-approved": "approvate",
+      "legend-to-review": "da verificare"
     },
     "review-mode": {
       "title": "Review mode",
@@ -3219,41 +3249,43 @@
       "navigation-shortcuts": "Shortcuts: J next · K previous",
       "queue": "Queue ({count})",
       "grouping": "Queue grouping",
-      "by-document": "By source document",
-      "by-type": "By page type",
-      "queue-empty": "There are no candidates in this queue.",
+      "by-document": "Per documento",
+      "by-type": "Per tipo",
+      "queue-empty": "In questa coda non ci sono pagine da verificare.",
       "claim": "Brain claim",
       "quote": "Verbatim quote",
       "assessment": "Assessment",
       "claim-progress": "{confirmed} of {total} confirmed",
-      "local-checks": "Claim assessments stay in this view and are not saved.",
+      "local-checks": "Controlla che ogni affermazione corrisponda alla sua citazione. I segni ✓ e ✕ servono solo come guida e non vengono salvati; viene salvata solo la decisione del passaggio 3.",
       "no-claims": "This page has no claims to compare.",
       "paraphrase": "Paraphrase: the claim omits {facts}. Check the meaning.",
       "no-marker": "No citation marker. Check the source before deciding.",
       "missing-source": "No source for marker [{marker}].",
-      "confirm-claim": "Confirm claim {n}",
-      "question-claim": "Question claim {n}",
+      "confirm-claim": "Corretta: affermazione {n}",
+      "question-claim": "Da correggere: affermazione {n}",
       "owner-step": "Step 1 · Owner (required)",
       "owner-question": "Who vouches for this page?",
-      "bulk-owner": "Set for all {count} candidates from this document",
-      "save-document-owner": "Assign owner to candidates",
+      "bulk-owner": "Imposta per tutte le {count} pagine da verificare di questo documento",
+      "save-document-owner": "Assegna un proprietario a queste pagine",
       "decision-step": "Step 3 · Decision",
       "approve-publish": "Approve and publish",
       "approve-only": "Approve only",
       "reject": "Reject",
       "needs-owner": "Set an owner before approving this page.",
       "needs-access": "This page has no readers. You can approve it; set access in page details before publishing.",
-      "not-candidate": "Decisions in this mode apply to candidates. Open page details for the other actions.",
+      "not-candidate": "In questa modalità le decisioni riguardano le pagine da verificare. Apri i dettagli della pagina per le altre azioni.",
       "relations": "Relations: {count}",
       "show-graph": "Show in graph",
       "open-page": "Open page details",
       "previous": "Previous",
       "next": "Next",
       "empty-title": "Queue reviewed",
-      "empty-description": "There are no candidates to review. Return to the Brain overview to see the remaining knowledge.",
+      "empty-description": "Non ci sono pagine da verificare. Torna alla panoramica di Brain per vedere il resto della conoscenza.",
       "back": "Return to Brain overview",
       "claims-step": "Step 2 · Claims",
-      "publication-failed": "The page was approved, but publication did not finish: {reason} Open page details to retry publication."
+      "publication-failed": "The page was approved, but publication did not finish: {reason} Open page details to retry publication.",
+      "claim-correct": "Corretta",
+      "claim-needs-fix": "Da correggere"
     }
   },
   "project-context-manager": {
@@ -3392,7 +3424,7 @@
     "column-brain": "Knowledge in Brain",
     "column-quality": "Chat quality",
     "brain-unavailable": "Brain unavailable",
-    "coverage": "{approved} approved · {candidates} candidates",
+    "coverage": "{approved} approvate · {candidates} da verificare",
     "no-knowledge": "No knowledge",
     "waiting-knowledge": "Awaiting extraction",
     "quality-ok": "OK",
@@ -3406,7 +3438,7 @@
     "headerless-description": "Chat answers are less reliable without column names. For spreadsheets and mostly tabular documents, add headers and reprocess the file.",
     "optimize-all": "Optimize eligible documents",
     "empty-count": "{count} ready files without knowledge",
-    "empty-description": "The files are searchable, but have no live candidate or approved Brain pages.",
+    "empty-description": "I file sono ricercabili, ma non hanno pagine Brain da verificare o approvate.",
     "show-brain": "Show in Brain",
     "table-reprocess": "Reprocess table documents",
     "optimization-description": "Prepare RAG improvement suggestions through the existing optimization workflow. Review and apply them in each document; starting this job does not rewrite the source.",

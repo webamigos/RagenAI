@@ -66,7 +66,7 @@ beforeEach(() => {
   });
   mocks.types.mockResolvedValue({
     ORPHAN: 1,
-    GAP: 0,
+    GAP: 2,
     CONTRADICTION: 0,
     STALE: 0,
     UNOWNED: 0,
@@ -112,4 +112,29 @@ it('retains status and language on all type filters, resets pagination, and skip
     '/brain/findings?status=RESOLVED&lang=pol&type=GAP',
   );
   expect(mocks.options).not.toHaveBeenCalled();
+});
+it('shows only the types that hold something, and the one filtered by', async () => {
+  mocks.types.mockResolvedValue({
+    ORPHAN: 0,
+    GAP: 2,
+    CONTRADICTION: 0,
+    STALE: 0,
+    UNOWNED: 0,
+    EXTRACTION_FAILED: 0,
+  });
+  render(
+    await FindingsPage({
+      searchParams: Promise.resolve({ type: 'STALE' }),
+    }),
+  );
+  expect(screen.getByRole('link', { name: /findings.type.GAP/ })).toBeVisible();
+  expect(
+    screen.getByRole('link', { name: /findings.type.STALE/ }),
+  ).toHaveAttribute('aria-current', 'page');
+  expect(
+    screen.queryByRole('link', { name: /findings.type.ORPHAN/ }),
+  ).toBeNull();
+  expect(
+    screen.queryByRole('link', { name: /findings.type.CONTRADICTION/ }),
+  ).toBeNull();
 });

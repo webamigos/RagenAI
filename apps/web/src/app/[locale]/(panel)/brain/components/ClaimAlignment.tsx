@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
+import { TouchTarget } from '@ragenai/common-ui/TouchTarget';
 import { useTranslations } from 'next-intl';
 import {
   alignClaimsToSources,
@@ -33,11 +34,21 @@ export function ClaimAlignment({
   }, [confirmed, rows.length, onProgress]);
   return (
     <div className="space-y-3" data-testid="review-claims">
-      <p className="text-sm text-muted-foreground" aria-live="polite">
-        {t('review-mode.claim-progress', { confirmed, total: rows.length })} ·{' '}
-        {t('review-mode.local-checks')}
-      </p>
-      <div className="hidden grid-cols-[minmax(0,1fr)_minmax(0,1fr)_76px] gap-3 rounded-md border border-border bg-muted p-3 text-sm font-semibold xl:grid">
+      {/*
+        Said before the claims, not after a count: the marks below look like
+        a decision being recorded, and only the decision in step 3 is. The
+        count itself lives once, in step 2.
+      */}
+      {canWrite && rows.length > 0 && (
+        <p
+          role="note"
+          data-testid="review-local-checks"
+          className="rounded-[6px] border border-border bg-muted px-3 py-2 text-sm text-foreground"
+        >
+          {t('review-mode.local-checks')}
+        </p>
+      )}
+      <div className="hidden grid-cols-[minmax(0,1fr)_minmax(0,1fr)_9rem] gap-3 rounded-md border border-border bg-muted p-3 text-sm font-semibold xl:grid">
         <span>{t('review-mode.claim')}</span>
         <span>{t('review-mode.quote')}</span>
         <span>{t('review-mode.assessment')}</span>
@@ -62,8 +73,8 @@ export function ClaimAlignment({
             key={index}
             className={
               missing.length
-                ? 'grid grid-cols-1 gap-3 rounded-md border border-pending bg-pending-tint p-3 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_76px]'
-                : 'grid grid-cols-1 gap-3 rounded-md border border-border p-3 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_76px]'
+                ? 'grid grid-cols-1 gap-3 rounded-md border border-pending bg-pending-tint p-3 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_9rem]'
+                : 'grid grid-cols-1 gap-3 rounded-md border border-border p-3 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_9rem]'
             }
           >
             <div className="min-w-0 space-y-2">
@@ -138,7 +149,7 @@ export function ClaimAlignment({
               })}
             </div>
             {canWrite && (
-              <div className="flex items-start gap-1">
+              <div className="flex flex-wrap items-start gap-1 xl:flex-col xl:items-stretch">
                 <Button
                   variant="outline"
                   size="sm"
@@ -152,11 +163,14 @@ export function ClaimAlignment({
                   }
                   className={
                     checks[index] === 'confirmed'
-                      ? 'border-ready bg-ready-tint'
-                      : ''
+                      ? 'relative justify-start border-ready bg-ready-tint'
+                      : 'relative justify-start'
                   }
                 >
-                  ✓
+                  <TouchTarget>
+                    <span aria-hidden="true">✓</span>
+                    {t('review-mode.claim-correct')}
+                  </TouchTarget>
                 </Button>
                 <Button
                   variant="outline"
@@ -171,11 +185,14 @@ export function ClaimAlignment({
                   }
                   className={
                     checks[index] === 'questioned'
-                      ? 'border-pending bg-pending-tint'
-                      : ''
+                      ? 'relative justify-start border-pending bg-pending-tint'
+                      : 'relative justify-start'
                   }
                 >
-                  ✕
+                  <TouchTarget>
+                    <span aria-hidden="true">✕</span>
+                    {t('review-mode.claim-needs-fix')}
+                  </TouchTarget>
                 </Button>
               </div>
             )}

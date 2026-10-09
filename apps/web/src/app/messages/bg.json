@@ -2613,12 +2613,12 @@
     "brain-no-visible-sources": "нито един от източниците ѝ не е видим за вас"
   },
   "brain": {
-    "title": "Ragen Brain",
+    "title": "Brain",
     "tabs": {
       "pages": "Страници със знания",
-      "findings": "Констатации",
+      "findings": "Проблеми",
       "graph": "Граф",
-      "documents": "Документи",
+      "documents": "Източници",
       "overview": "Overview"
     },
     "filters": {
@@ -2626,7 +2626,7 @@
       "all-but-rejected": "Всички без отхвърлените"
     },
     "page-status": {
-      "CANDIDATE": "Кандидат",
+      "CANDIDATE": "За преглед",
       "APPROVED": "Одобрена",
       "REJECTED": "Отхвърлена",
       "STALE": "Остаряла"
@@ -2650,7 +2650,7 @@
         "status": "Статус",
         "owner": "Отговорник",
         "documents": "Документи",
-        "findings": "Отворени констатации",
+        "findings": "Отворени проблеми",
         "updated": "Променена"
       },
       "empty-in-language-title": "Нищо на този език",
@@ -2662,7 +2662,7 @@
     },
     "findings": {
       "columns": {
-        "type": "Констатация",
+        "type": "Проблем",
         "subject": "Отнася се до",
         "detail": "Подробности",
         "severity": "Тежест",
@@ -2686,9 +2686,9 @@
         "MEDIUM": "Средна",
         "HIGH": "Висока"
       },
-      "empty-title": "Няма констатации с този статус",
+      "empty-title": "Няма проблеми с този статус",
       "empty-description": "След всяка обработка Brain показва тук противоречия, пропуски, остарели източници и страници без отговорник.",
-      "count": "Констатации: {shown} от {total}",
+      "count": "Проблеми: {shown} от {total}",
       "summary": {
         "unknown-file": "неизвестен документ",
         "verification-due": "Проверката трябваше да се извърши на {date}",
@@ -2705,18 +2705,17 @@
       },
       "discuss": "Попитай асистента за това",
       "empty-in-language-title": "Нищо на този език",
-      "empty-in-language-description": "Няма констатация за документ на този език или страница, която го цитира. Изберете друг език или всички.",
-      "intro": "Check detected problems and choose a corrective action.",
-      "filter-types": "Finding types",
+      "empty-in-language-description": "Нито един проблем не засяга документ на този език или страница, която го цитира. Изберете друг език или всички.",
+      "filter-types": "Видове проблеми",
       "all-types": "All types",
       "subject-gone": "The source was deleted",
       "retry-extraction": "Retry extraction",
       "open-review": "Open review",
       "view-relations": "Check relations",
       "dismiss-orphan": "This is fine, close",
-      "dismissed": "Finding dismissed",
+      "dismissed": "Проблемът е затворен",
       "batch": "{count} × {type}",
-      "batch-scope": "Findings on this list page, detected at intervals of up to 5 minutes.",
+      "batch-scope": "Проблеми от тази страница на списъка, открити на интервали до 5 минути.",
       "why": {
         "ORPHAN": "Missing relations make the context of this page harder to check.",
         "EXTRACTION_FAILED": "The document supplied no knowledge for review.",
@@ -2728,14 +2727,14 @@
       "relation-suggestions": "Suggested relations",
       "relation-basis": "These pages cite the same document. Check whether they should be linked; a shared source does not establish a relation.",
       "select-relations": "Select relations to review",
-      "add-relations": "Add selected relations"
+      "add-relations": "Свържи избраните ({count})",
+      "severity-label": "Сериозност: {level}",
+      "select-all": "Избери всички",
+      "select-none": "Изчисти избора"
     },
     "page": {
-      "back": "Страници със знания",
       "owner": "Отговорник",
-      "verification": "Проверка",
       "last-verified": "Последна проверка на {date}",
-      "never-verified": "Никога не е проверявана",
       "verify-every": "Интервал на проверка: {every}",
       "sources": {
         "title": "Източници ({count})",
@@ -2747,9 +2746,9 @@
         }
       },
       "findings": {
-        "title": "Отворени констатации",
+        "title": "Отворени проблеми",
         "empty-title": "Няма нищо отворено на тази страница",
-        "empty-description": "Констатациите за тази страница ще се появят тук, когато Brain ги отчете."
+        "empty-description": "Няма отворени проблеми. Те ще се появят тук, когато Brain открие някой."
       },
       "access": {
         "title": "Достъпна за",
@@ -2771,12 +2770,13 @@
       "history": "История",
       "merge": "Обединяване",
       "superseded-by": "Обединена със",
-      "publication": "База знания",
       "publish-blocker": {
         "status": "Може да се публикува само одобрена страница",
         "owner": "Първо посочете собственик",
         "access": "Първо изберете за кого е достъпна страницата"
-      }
+      },
+      "state": "Статус",
+      "status-by": "{status} от {name}, {date}"
     },
     "origin": {
       "EXTRACTED": "от цитат",
@@ -2857,14 +2857,14 @@
     "extract": {
       "open": "Извличане от документи",
       "title": "Извличане на знания от документи",
-      "description": "Brain чете избраните документи и записва страници-кандидати за преглед. Избрани са документите, които още не са цитирани от страница. Изпълнението е във фонов режим.",
+      "description": "Brain чете избраните документи и написва страници, които да прегледате. Избрани са документите, които все още не се цитират от нито една страница. Обработката се извършва във фонов режим.",
       "none": "Няма документи за извличане — първо добавете документи в базата знания.",
       "not-extracted": "Не е извлечен",
       "pages": "Страници: {count}",
       "too-many": "Документи в едно изпълнение, най-много: {max}.",
       "cancel": "Отказ",
       "start": "Започни извличане ({count})",
-      "started": "Извличането започна — документи: {count}. Кандидатите се появяват, щом всеки приключи.",
+      "started": "Извличането започна — документи: {count}. Страниците за преглед ще се появяват, когато всеки документ бъде обработен.",
       "retry": "Опитай отново",
       "retry-queued": "Повторният опит е в опашката",
       "retry-started": "Извличането на този документ отново е в опашката",
@@ -2883,7 +2883,7 @@
       "zoom-fit": "Покажи целия граф",
       "reset-layout": "Възстанови автоматичното подреждане",
       "show-all-groups": "Покажи всички групи",
-      "title": "Граф на знанията — Ragen Brain",
+      "title": "Граф на знанията — Brain",
       "empty-title": "Все още няма какво да се начертае",
       "empty-description": "Графът се появява, след като Brain извлече страници от вашите документи.",
       "focus": "Околност на „{title}“",
@@ -2897,8 +2897,8 @@
       "inferred-shown": "Показани ({count})",
       "shown": "Страници: {nodes} от {totalNodes} · връзки: {edges} от {totalEdges}",
       "canvas-label": "Граф — страници: {nodes}, връзки: {edges}",
-      "failed": "Графът не можа да бъде начертан в този браузър — същите данни са в разделите страници и констатации.",
-      "open-findings": "Отворени констатации: {count}",
+      "failed": "Графът не можа да бъде начертан в този браузър — разделите Страници със знания и Проблеми показват същите данни.",
+      "open-findings": "Отворени проблеми: {count}",
       "open-page": "Отвори страницата",
       "show-neighbourhood": "Покажи околността",
       "drawer-label": "Страницата до графа",
@@ -2909,7 +2909,7 @@
       "legend-extracted": "Посочено в източник (цитат го подкрепя)",
       "legend-ambiguous": "Несигурно: посочено, но цитатът не го потвърждава",
       "legend-inferred": "Изведено от модела; скрито, освен ако не го покажете",
-      "legend-findings": "Страница с отворена констатация",
+      "legend-findings": "Страница с отворен проблем",
       "communities-title": "Групи",
       "community": "{label} и свързани ({size})",
       "origin": {
@@ -2919,9 +2919,6 @@
       },
       "empty-in-language-title": "Нищо на този език",
       "empty-in-language-description": "Няма документ на този език или страница, която го цитира. Изберете друг език или всички.",
-      "connections-title": "How knowledge connects",
-      "connections-description": "Topics first, then details. The full graph is available when you need it.",
-      "back-brain": "← Brain",
       "views-label": "Graph view",
       "views": {
         "topics": "Topics",
@@ -2929,11 +2926,11 @@
         "full": "Full graph"
       },
       "topics-title": "Topic map",
-      "topics-scale": "Size = page count · colour = review state",
+      "topics-scale": "Размер на плочката = брой страници",
       "topic-pages": "{count, plural, one {# page} other {# pages}}",
-      "topic-approved": "Has approved pages",
-      "topic-approved-count": "{count, plural, one {# approved} other {# approved}}",
-      "topic-candidates": "Only candidates",
+      "topic-approved": "Има одобрена страница",
+      "topic-approved-count": "{count, plural, one {# одобрена} other {# одобрени}}",
+      "topic-candidates": "Само страници за преглед",
       "isolated-count": "{count, plural, one {# page outside the main topics} other {# pages outside the main topics}}",
       "isolated-description": "Instead of a column of loose dots: a list of pages without relations. Open a page to propose links.",
       "review-isolated": "Review isolated pages",
@@ -2944,16 +2941,16 @@
       "search-results-count": "Showing {shown} of {count} matching pages",
       "status": {
         "APPROVED": "Approved",
-        "CANDIDATE": "Candidate",
+        "CANDIDATE": "За преглед",
         "REJECTED": "Rejected",
         "STALE": "Остаряла"
       },
       "review-group": "Review entire group ({count})",
-      "pair-merge": "{count, plural, one {# candidate page} other {# candidate pages}} may match a page drawn from the other language of a paired document.",
+      "pair-merge": "{count, plural, one {# страница за преглед може да съответства} other {# страници за преглед може да съответстват}} на страница от другата езикова версия на сдвоен документ.",
       "pair-merge-review": "Review and merge"
     },
     "export": {
-      "ready": "Готови за експорт: {count}",
+      "ready": "Одобрени: {count}",
       "download": "Изтегли пакета (.zip)",
       "none": "Одобрете страница със собственик, за да я експортирате",
       "skipped": {
@@ -2966,30 +2963,30 @@
     },
     "publication": {
       "state": {
-        "none": "Извън базата знания",
-        "publishing": "Записва се в базата знания…",
-        "published": "В базата знания — отговорите могат да я цитират",
-        "withdrawn": "Оттеглена от базата знания",
-        "failed": "Записът в базата знания не бе успешен – публикувайте отново"
+        "none": "Непубликувана",
+        "publishing": "Публикуване…",
+        "published": "Публикувана — отговорите в чата могат да я цитират",
+        "withdrawn": "Оттеглена от публикуване",
+        "failed": "Публикуването не бе успешно — публикувайте отново"
       },
-      "outdated": "Страницата се промени след публикуването — публикувайте отново, за да обновите базата знания.",
-      "publish": "Публикувай в базата знания",
+      "outdated": "Страницата е променена след публикуването — публикувайте отново, за да използва чатът актуалния текст.",
+      "publish": "Публикувай",
       "republish": "Публикувай отново",
       "withdraw": "Оттегли",
       "published": "Публикуването започна",
       "withdrawn": "Страницата е оттеглена",
-      "withdraw-title": "Да се оттегли ли тази страница от базата знания?",
+      "withdraw-title": "Да се оттегли ли публикуването на тази страница?",
       "withdraw-description": "Отговорите спират да я цитират веднага щом бъде оттеглена. Страницата остава одобрена и може да се публикува отново; предишните отговори запазват цитатите си."
     },
     "documents": {
-      "title": "Документи — Ragen Brain",
+      "title": "Източници — Brain",
       "intro": "Щом знанието от документа е в одобрени страници, можете да извадите самия документ от търсенето — отговорите ще се основават само на прегледаните страници. Нищо не се изтрива и може да бъде върнат по всяко време.",
       "empty-title": "Все още няма документи",
       "empty-description": "Документите се появяват тук, щом влязат в базата знания.",
       "columns": {
         "document": "Документ",
         "approved": "Одобрени страници",
-        "candidates": "Кандидати",
+        "candidates": "За преглед",
         "retrieval": "Търсене",
         "actions": "Действия",
         "language": "Език",
@@ -3019,7 +3016,7 @@
       },
       "send": "Изпрати към базата знания",
       "sent": "Изпратено към базата знания",
-      "upload": "Качи в Brain",
+      "upload": "Добави документи",
       "uploaded": "Качени в Brain: {count} — съхранени и обработени, не се търсят",
       "upload-failed": "Качването не бе успешно — проверете файла и опитайте отново.",
       "staged-summary": "В Brain, извън търсенето: {count} · без одобрена страница: {uncurated}",
@@ -3030,16 +3027,9 @@
       "empty-in-language-description": "Няма документ на този език или страница, която го цитира. Изберете друг език или всички.",
       "empty-filter": "Documents without extracted knowledge",
       "clear-filter": "Show all documents",
-      "screen-title": "Source documents",
-      "screen-intro": "What Brain extracted from each file and how much has already been reviewed.",
-      "table-title": "Documents by language",
+      "table-title": "Документи по език ({count})",
       "shared-scale": "Shared scale: {count, plural, one {# page} other {# pages}} = full bar",
-      "coverage-counts": "{approved} approved · {candidates} candidates",
-      "summary": {
-        "documents": "Documents",
-        "empty": "Nothing extracted",
-        "withdrawn": "Excluded from search"
-      },
+      "coverage-counts": "{approved} одобрени · {candidates} за преглед",
       "state": {
         "empty": "Nothing extracted",
         "failed": "Extraction or processing failed",
@@ -3050,7 +3040,14 @@
       "check-language": "Check language",
       "retry-extraction": "Retry extraction",
       "pair-with": "Same document in {language}: {name}",
-      "pair-coverage": "Pair: {approved} approved · {candidates} candidates (each page counted once)"
+      "pair-coverage": "Двойка: {approved} одобрени · {candidates} за преглед (всяка страница се брои веднъж)",
+      "warnings": {
+        "empty": "{count, plural, one {# документ без извлечени знания} other {# документа без извлечени знания}}",
+        "withdrawn": "{count, plural, one {# документ, изключен от търсенето} other {# документа, изключени от търсенето}}"
+      },
+      "manage-in-knowledge-base": "Управлявай файловете в базата знания",
+      "state-with-retrieval": "{state} · {retrieval}",
+      "row-actions": "Действия: {name}"
     },
     "publish-all": {
       "button": "Публикувай одобрените ({count})",
@@ -3062,7 +3059,7 @@
       "not-written": "{count, plural, one {# страница е записана като публикувана, но не е записана в индекса – изпълнете отново} other {# страници са записани като публикувани, но не са записани в индекса – изпълнете отново}}"
     },
     "read-only": {
-      "notice": "Преглед само за четене — можете да разглеждате Ragen Brain, но тук нищо не може да се променя."
+      "notice": "Преглед само за четене — можете да разглеждате Brain, но тук нищо не може да се променя."
     },
     "assistant": {
       "toggle": "Асистент",
@@ -3080,7 +3077,7 @@
       "read": "{count, plural, one {Прочетен # елемент от Brain} other {Прочетени # елемента от Brain}}",
       "proposal-dropped": "Едно предложение не можа да бъде показано.",
       "empty-title": "Попитай за това, което гледаш",
-      "empty-description": "Асистентът чете този екран, страниците, техните цитати и констатациите и отговаря с цитатите, на които се основава.",
+      "empty-description": "Асистентът чете този екран, страниците, техните цитати и проблемите и отговаря с цитатите, на които се основава.",
       "history-empty": "Все още няма предишни разговори.",
       "untitled": "Разговор без заглавие",
       "prompts": {
@@ -3090,7 +3087,7 @@
         "contradictions": "Обясни отворените противоречия",
         "failed": "Защо някои документи не дадоха резултат?",
         "disagree": "Къде точно се разминават тези страници?",
-        "what-to-do": "Какво да направя с тази констатация?",
+        "what-to-do": "Какво да направя с този проблем?",
         "why-failed": "Защо този документ не даде резултат и какво да направя?",
         "is-right": "Вярна ли е тази страница? Провери всяко твърдение спрямо цитата му",
         "owner": "Кой трябва да отговаря за тази страница?",
@@ -3149,11 +3146,11 @@
       }
     },
     "tab-hints": {
-      "pages": "Страници със знание и източници: всяка страница съдържа твърдения с дословни цитати от изходните документи. Кандидатът чака преглед; одобрете и публикувайте страница, за да може чатът да отговаря от нея.",
-      "findings": "Какво изисква вниманието ви: противоречия, пропуски, остарели страници или страници без собственик и документи, които Brain не успя да прочете.",
+      "pages": "Всяка страница събира твърдения с точни цитати от източниците им. Прегледайте страницата, одобрете я и я публикувайте, за да може чатът да отговаря от нея.",
+      "findings": "Какво изисква вниманието ви: противоречия между страници, пропуски, остарели страници, страници без отговорник и документи, които Brain не можа да прочете.",
       "graph": "Как се свързват страниците — кой процес изисква кое правило и кои страници се позовават една на друга.",
       "documents": "Изходните документи, които Brain чете: колко страници е дал всеки и дали чатът все още търси в него.",
-      "overview": "See how much knowledge has been reviewed and what needs attention."
+      "overview": "Знанията на компанията, извлечени от документи и проверени от хора. Вижте какво вече работи в чата и какво чака вашето решение."
     },
     "relation-kind": {
       "approves": "одобрява",
@@ -3169,7 +3166,22 @@
       "is-part-of": "е част от",
       "references": "препраща към",
       "depends-on": "зависи от",
-      "related-to": "related to"
+      "related-to": "related to",
+      "manufactures": "произвежда",
+      "designs": "проектира",
+      "supplies": "доставя",
+      "provides": "осигурява",
+      "uses": "използва",
+      "contains": "съдържа",
+      "defines": "определя",
+      "constrains": "ограничава",
+      "performs": "изпълнява",
+      "contradicts": "противоречи на",
+      "implements": "реализира",
+      "sells": "продава",
+      "manages": "управлява",
+      "reports-to": "е подчинен на",
+      "is-located-in": "се намира в"
     },
     "language": {
       "label": "Език",
@@ -3178,39 +3190,57 @@
       "option": "{name} ({count})"
     },
     "overview": {
-      "intro": "Company knowledge extracted from documents. See how much has been reviewed by people.",
-      "start-review": "Start review ({count})",
       "pipeline-title": "The knowledge journey: from documents to chat answers",
       "publication-description": "Published pages are available in chat. Source documents may still be searched.",
       "stages": {
         "documents": "Documents",
-        "candidates": "Candidates (waiting)",
+        "candidates": "За преглед",
         "approved": "Approved",
-        "published": "Published in chat"
+        "published": "Публикувани"
       },
       "empty-documents-count": "{count} without extracted knowledge",
       "unowned-count": "{count} without an owner",
-      "approved-share": "{percent}% of candidate and approved pages",
+      "approved-share": "{approved} от {total, plural, one {# страница} other {# страници}}",
       "awaiting-publication": "{count} approved pages awaiting publication",
       "attention-title": "Needs attention",
       "unowned-title": "Pages without an owner",
       "unowned-description": "They cannot be approved. Assign an owner before review.",
       "empty-documents-title": "Documents without knowledge",
       "empty-documents-description": "0 pages. Check the documents and extract knowledge.",
-      "finding-description": "Review the finding and address its cause.",
-      "attention-empty": "No findings or pages need an owner.",
+      "finding-description": "Прегледайте проблема и отстранете причината за него.",
+      "attention-empty": "Няма проблеми и няма страници без отговорник.",
       "ranking-title": "Where the most unreviewed knowledge is",
-      "legend": "Approved / candidates · shared scale across documents",
-      "coverage-counts": "{approved} approved · {candidates} candidates",
-      "all-documents": "All documents ({count})",
-      "ranking-empty": "No candidates to review.",
+      "legend": "Обща скала за всички документи",
+      "coverage-counts": "{approved} одобрени · {candidates} за преглед",
+      "all-documents": "Всички източници ({count})",
+      "ranking-empty": "Няма страници за преглед.",
       "empty-title": "Knowledge starts with documents",
       "empty-description": "Upload documents to extract and review company knowledge.",
       "empty-language-description": "There are no documents in this language. Choose another language or upload documents.",
       "clear-filter": "Clear overview filter",
       "filtered-list": "List narrowed by an overview filter",
       "no-pages-title": "No pages match this filter",
-      "no-pages-description": "Change or clear the filter to see the remaining pages."
+      "no-pages-description": "Change or clear the filter to see the remaining pages.",
+      "next": {
+        "label": "Какво следва?",
+        "assign-owners": {
+          "title": "{count, plural, one {Задайте отговорник на # страница} other {Задайте отговорници на # страници}}",
+          "description": "Страница без отговорник не може да бъде одобрена. Отговорникът е човекът, който гарантира за съдържанието на страницата.",
+          "action": "Задай отговорници"
+        },
+        "review": {
+          "title": "{count, plural, one {Прегледайте # страница} other {Прегледайте # страници}}",
+          "description": "Тези страници имат отговорник и чакат вашето решение: одобрете ги или ги отхвърлете.",
+          "action": "Отвори режима на преглед"
+        },
+        "publish": {
+          "title": "{count, plural, one {Публикувайте # одобрена страница} other {Публикувайте # одобрени страници}}",
+          "description": "След публикуване чатът може да отговаря от тях.",
+          "action": "Към публикуването"
+        }
+      },
+      "legend-approved": "одобрени",
+      "legend-to-review": "за преглед"
     },
     "review-mode": {
       "title": "Review mode",
@@ -3219,41 +3249,43 @@
       "navigation-shortcuts": "Shortcuts: J next · K previous",
       "queue": "Queue ({count})",
       "grouping": "Queue grouping",
-      "by-document": "By source document",
-      "by-type": "By page type",
-      "queue-empty": "There are no candidates in this queue.",
+      "by-document": "По документ",
+      "by-type": "По тип",
+      "queue-empty": "В тази опашка няма страници за преглед.",
       "claim": "Brain claim",
       "quote": "Verbatim quote",
       "assessment": "Assessment",
       "claim-progress": "{confirmed} of {total} confirmed",
-      "local-checks": "Claim assessments stay in this view and are not saved.",
+      "local-checks": "Проверете дали всяко твърдение съответства на цитата си. Отметките ✓ и ✕ са само за ориентир и не се запазват; запазва се само решението в стъпка 3.",
       "no-claims": "This page has no claims to compare.",
       "paraphrase": "Paraphrase: the claim omits {facts}. Check the meaning.",
       "no-marker": "No citation marker. Check the source before deciding.",
       "missing-source": "No source for marker [{marker}].",
-      "confirm-claim": "Confirm claim {n}",
-      "question-claim": "Question claim {n}",
+      "confirm-claim": "Вярно: твърдение {n}",
+      "question-claim": "За поправка: твърдение {n}",
       "owner-step": "Step 1 · Owner (required)",
       "owner-question": "Who vouches for this page?",
-      "bulk-owner": "Set for all {count} candidates from this document",
-      "save-document-owner": "Assign owner to candidates",
+      "bulk-owner": "Задай за всички страници за преглед от този документ ({count})",
+      "save-document-owner": "Задай отговорник на тези страници",
       "decision-step": "Step 3 · Decision",
       "approve-publish": "Approve and publish",
       "approve-only": "Approve only",
       "reject": "Reject",
       "needs-owner": "Set an owner before approving this page.",
       "needs-access": "This page has no readers. You can approve it; set access in page details before publishing.",
-      "not-candidate": "Decisions in this mode apply to candidates. Open page details for the other actions.",
+      "not-candidate": "Решенията в този режим се отнасят за страници за преглед. Отворете детайлите на страницата за другите действия.",
       "relations": "Relations: {count}",
       "show-graph": "Show in graph",
       "open-page": "Open page details",
       "previous": "Previous",
       "next": "Next",
       "empty-title": "Queue reviewed",
-      "empty-description": "There are no candidates to review. Return to the Brain overview to see the remaining knowledge.",
+      "empty-description": "Няма страници за преглед. Върнете се към общия преглед на Brain, за да видите останалите знания.",
       "back": "Return to Brain overview",
       "claims-step": "Step 2 · Claims",
-      "publication-failed": "The page was approved, but publication did not finish: {reason} Open page details to retry publication."
+      "publication-failed": "The page was approved, but publication did not finish: {reason} Open page details to retry publication.",
+      "claim-correct": "Вярно",
+      "claim-needs-fix": "За поправка"
     }
   },
   "project-context-manager": {
@@ -3392,7 +3424,7 @@
     "column-brain": "Knowledge in Brain",
     "column-quality": "Chat quality",
     "brain-unavailable": "Brain unavailable",
-    "coverage": "{approved} approved · {candidates} candidates",
+    "coverage": "{approved} одобрени · {candidates} за преглед",
     "no-knowledge": "No knowledge",
     "waiting-knowledge": "Awaiting extraction",
     "quality-ok": "OK",
@@ -3406,7 +3438,7 @@
     "headerless-description": "Chat answers are less reliable without column names. For spreadsheets and mostly tabular documents, add headers and reprocess the file.",
     "optimize-all": "Optimize eligible documents",
     "empty-count": "{count} ready files without knowledge",
-    "empty-description": "The files are searchable, but have no live candidate or approved Brain pages.",
+    "empty-description": "Файловете са достъпни за търсене, но нямат страници в Brain за преглед или одобрени.",
     "show-brain": "Show in Brain",
     "table-reprocess": "Reprocess table documents",
     "optimization-description": "Prepare RAG improvement suggestions through the existing optimization workflow. Review and apply them in each document; starting this job does not rewrite the source.",

@@ -4,6 +4,8 @@ import { useTranslations } from 'next-intl';
 import { useRef, useTransition } from 'react';
 import { toast } from 'sonner';
 
+import { TouchTarget } from '@ragenai/common-ui/TouchTarget';
+
 import { Button } from '@/components/ui/button';
 import { useRouter } from '@/i18n/routing';
 
@@ -12,8 +14,15 @@ import { useRouter } from '@/i18n/routing';
  * the ordinary upload, named `intake=brain`: stored and parsed, never
  * indexed, listed here and in the knowledge base as out of retrieval until a
  * curated page is published or someone sends them on.
+ *
+ * The one way into Brain from its header ("Dodaj dokumenty"); an empty
+ * screen repeats it as its single action, quieter.
  */
-export function BrainUploadButton() {
+export function BrainUploadButton({
+  variant = 'default',
+}: {
+  variant?: 'default' | 'outline';
+}) {
   const t = useTranslations('brain.documents');
   const router = useRouter();
   const input = useRef<HTMLInputElement>(null);
@@ -76,11 +85,12 @@ export function BrainUploadButton() {
       />
       <Button
         size="sm"
-        variant="outline"
+        variant={variant}
+        className="relative"
         disabled={pending}
         onClick={() => input.current?.click()}
       >
-        {t('upload')}
+        <TouchTarget>{t('upload')}</TouchTarget>
       </Button>
     </>
   );

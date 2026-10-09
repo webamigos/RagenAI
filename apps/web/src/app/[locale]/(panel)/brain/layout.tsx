@@ -3,10 +3,9 @@ import { notFound } from 'next/navigation';
 
 import { getBrainLanguagesQuery } from '@/features/brain/services/queries/brain-language-scope';
 import { getBrainAccessQuery } from '@/features/brain/services/queries/get-brain-access-query';
-import { getExtractableDocumentsQuery } from '@/features/brain/services/queries/get-extractable-documents-query';
 
 import { BrainTabs } from './components/BrainTabs';
-import { ExtractDialog } from './components/ExtractDialog';
+import { BrainUploadButton } from './components/BrainUploadButton';
 import { LanguageFilter } from './components/LanguageFilter';
 import { BrainScreenProvider } from './components/assistant/BrainAssistantContext';
 import {
@@ -31,11 +30,8 @@ export default async function BrainLayout({
   if (!access) {
     notFound();
   }
-  const [t, documents, languages] = await Promise.all([
+  const [t, languages] = await Promise.all([
     getTranslations('brain'),
-    access.canWrite
-      ? getExtractableDocumentsQuery(access.orgId)
-      : Promise.resolve([]),
     getBrainLanguagesQuery(access.orgId),
   ]);
 
@@ -64,7 +60,11 @@ export default async function BrainLayout({
             <div className="flex flex-wrap items-center gap-2">
               <LanguageFilter languages={languages} />
               <BrainAssistantToggle />
-              {access.canWrite && <ExtractDialog documents={documents} />}
+              {/*
+                One primary action for all of Brain. Extraction from documents
+                already here lives with them, on the sources tab.
+              */}
+              {access.canWrite && <BrainUploadButton />}
             </div>
           </div>
           {/*

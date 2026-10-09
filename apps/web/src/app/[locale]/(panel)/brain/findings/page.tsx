@@ -83,7 +83,7 @@ export default async function BrainFindingsPage({ searchParams }: Props) {
 
   return (
     <section>
-      <title>{`${t('tabs.findings')} — ${t('title')}`}</title>
+      <title>{`${t('tabs.findings')} – ${t('title')}`}</title>
       <BrainScreen
         context={
           focused
@@ -91,9 +91,6 @@ export default async function BrainFindingsPage({ searchParams }: Props) {
             : { view: 'inbox', status, ...(type ? { type } : {}) }
         }
       />
-      <p className="mb-4 text-sm text-muted-foreground">
-        {t('findings.intro')}
-      </p>
       {type && (
         <div className="mb-3 text-sm">
           <span className="mr-3 text-muted-foreground">
@@ -127,108 +124,101 @@ export default async function BrainFindingsPage({ searchParams }: Props) {
           count: counts.findings[s],
         }))}
       />
-      <div className="mt-4 grid min-w-0 gap-4 lg:grid-cols-[200px_minmax(0,1fr)]">
-        <nav
-          aria-label={t('findings.filter-types')}
-          className="h-fit rounded-md border border-border bg-card p-2"
-        >
-          {[
-            {
-              key: 'all',
-              label: t('findings.all-types'),
-              count: Object.values(typeCounts).reduce((a, b) => a + b, 0),
-              active: !type,
-              href: withLanguage(
+      {/*
+        Types as chips, like the pages list's statuses, and only those with
+        something in them: a column of "Sprzeczność 0, Luka 0, …" was mostly
+        a list of what is not wrong.
+      */}
+      <FilterChips
+        label={t('findings.filter-types')}
+        options={[
+          {
+            key: 'all',
+            label: t('findings.all-types'),
+            count: Object.values(typeCounts).reduce((a, b) => a + b, 0),
+            active: !type,
+            href: withLanguage(
+              `/brain/findings?${new URLSearchParams({ ...(status === 'OPEN' ? {} : { status }) })}`,
+              language,
+            ),
+          },
+          ...FINDING_TYPE_FILTERS.filter(
+            (key) => typeCounts[key] > 0 || type === key,
+          ).map((key) => ({
+            key,
+            label: t(`findings.type.${key}`),
+            count: typeCounts[key],
+            active: type === key,
+            href: withFindingType(
+              withLanguage(
                 `/brain/findings?${new URLSearchParams({ ...(status === 'OPEN' ? {} : { status }) })}`,
                 language,
               ),
-            },
-            ...FINDING_TYPE_FILTERS.map((key) => ({
               key,
-              label: t(`findings.type.${key}`),
-              count: typeCounts[key],
-              active: type === key,
-              href: withFindingType(
-                withLanguage(
-                  `/brain/findings?${new URLSearchParams({ ...(status === 'OPEN' ? {} : { status }) })}`,
-                  language,
-                ),
-                key,
-              ),
-            })),
-          ].map((option) => (
-            <Link
-              key={option.key}
-              href={option.href}
-              aria-current={option.active ? 'page' : undefined}
-              className={`flex min-h-8 items-center justify-between gap-2 rounded-md px-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${option.active ? 'bg-accent font-medium text-accent-foreground' : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'}`}
-            >
-              <span>{option.label}</span>
-              <span className="tabular-nums">{option.count}</span>
-            </Link>
-          ))}
-        </nav>
-        <div className="min-w-0">
-          {items.length === 0 && listPage === 1 ? (
-            <BrainEmpty
-              title={t(
-                language
-                  ? 'findings.empty-in-language-title'
-                  : 'findings.empty-title',
-              )}
-              description={t(
-                language
-                  ? 'findings.empty-in-language-description'
-                  : 'findings.empty-description',
-              )}
+            ),
+          })),
+        ]}
+      />
+      <div className="mt-4 min-w-0">
+        {items.length === 0 && listPage === 1 ? (
+          <BrainEmpty
+            title={t(
+              language
+                ? 'findings.empty-in-language-title'
+                : 'findings.empty-title',
+            )}
+            description={t(
+              language
+                ? 'findings.empty-in-language-description'
+                : 'findings.empty-description',
+            )}
+          />
+        ) : (
+          <>
+            <p className="mb-2 text-xs text-muted-foreground">
+              {t('findings.count', {
+                shown: listRange(listPage, items.length),
+                total,
+              })}
+            </p>
+            <FindingCards
+              items={items}
+              orgId={access.orgId}
+              members={options.members}
+              language={language}
+              canWrite={access.canWrite}
+              focusedId={focused}
+              assistant={access.assistant}
+              discussHref={(publicId) =>
+                typed(
+                  withLanguage(
+                    `/brain/findings?${new URLSearchParams({
+                      ...(status === 'OPEN' ? {} : { status }),
+                      ...(listPage > 1 ? { page: String(listPage) } : {}),
+                      finding: publicId,
+                    })}#finding-${publicId}`,
+                    language,
+                  ),
+                )
+              }
             />
-          ) : (
-            <>
-              <p className="mb-2 text-xs text-muted-foreground">
-                {t('findings.count', {
-                  shown: listRange(listPage, items.length),
-                  total,
-                })}
-              </p>
-              <FindingCards
-                items={items}
-                orgId={access.orgId}
-                members={options.members}
-                language={language}
-                canWrite={access.canWrite}
-                focusedId={focused}
-                assistant={access.assistant}
-                discussHref={(publicId) =>
-                  typed(
-                    withLanguage(
-                      `/brain/findings?${new URLSearchParams({
-                        ...(status === 'OPEN' ? {} : { status }),
-                        ...(listPage > 1 ? { page: String(listPage) } : {}),
-                        finding: publicId,
-                      })}#finding-${publicId}`,
-                      language,
-                    ),
-                  )
-                }
-              />
-              <BrainPager
-                page={listPage}
-                total={total}
-                hrefFor={(n) =>
-                  typed(
-                    withLanguage(
-                      `/brain/findings?${new URLSearchParams({
-                        ...(status === 'OPEN' ? {} : { status }),
-                        page: String(n),
-                      })}`,
-                      language,
-                    ),
-                  )
-                }
-              />
-            </>
-          )}
-        </div>
+            <BrainPager
+              page={listPage}
+              total={total}
+              hrefFor={(n) =>
+                typed(
+                  withLanguage(
+                    `/brain/findings?${new URLSearchParams({
+                      ...(status === 'OPEN' ? {} : { status }),
+                      page: String(n),
+                    })}`,
+                    language,
+                  ),
+                )
+              }
+            />
+          </>
+        )}
       </div>
     </section>
   );

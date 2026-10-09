@@ -35,14 +35,10 @@ it('starts with no selected relations; applies only selected targets with both v
       <FindingRelationPicker proposal={proposal} />
     </NextIntlClientProvider>,
   );
-  expect(
-    screen.queryByRole('button', { name: 'Add selected relations' }),
-  ).toBeNull();
+  expect(screen.queryByRole('button', { name: /^Link selected/ })).toBeNull();
   expect(screen.getByLabelText('Target')).not.toBeChecked();
   fireEvent.click(screen.getByLabelText('Target'));
-  fireEvent.click(
-    screen.getByRole('button', { name: 'Add selected relations' }),
-  );
+  fireEvent.click(screen.getByRole('button', { name: 'Link selected (1)' }));
   await waitFor(() =>
     expect(mocks.add).toHaveBeenCalledWith({
       publicId: 'a',
@@ -61,10 +57,34 @@ it('reports a conflict and keeps the choice without claiming success', async () 
     </NextIntlClientProvider>,
   );
   fireEvent.click(screen.getByLabelText('Target'));
-  fireEvent.click(
-    screen.getByRole('button', { name: 'Add selected relations' }),
-  );
+  fireEvent.click(screen.getByRole('button', { name: 'Link selected (1)' }));
   expect(await screen.findByRole('alert')).toBeVisible();
   expect(screen.queryByTestId('brain-proposal-outcome')).toBeNull();
   expect(mocks.refresh).not.toHaveBeenCalled();
+});
+it('selects every suggestion at once, and says how many it will link', async () => {
+  mocks.add.mockResolvedValue({ success: true, changed: true });
+  render(
+    <NextIntlClientProvider locale="en" messages={messages}>
+      <FindingRelationPicker proposal={proposal} />
+    </NextIntlClientProvider>,
+  );
+  fireEvent.click(screen.getByRole('button', { name: 'Select all' }));
+  expect(screen.getByLabelText('Target')).toBeChecked();
+  expect(screen.getByLabelText('Unselected')).toBeChecked();
+  fireEvent.click(screen.getByRole('button', { name: 'Link selected (2)' }));
+  await waitFor(() =>
+    expect(mocks.add.mock.calls[0][0].targets).toHaveLength(2),
+  );
+});
+it('clears the selection from the same control', () => {
+  render(
+    <NextIntlClientProvider locale="en" messages={messages}>
+      <FindingRelationPicker proposal={proposal} />
+    </NextIntlClientProvider>,
+  );
+  fireEvent.click(screen.getByRole('button', { name: 'Select all' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Clear selection' }));
+  expect(screen.getByLabelText('Target')).not.toBeChecked();
+  expect(screen.queryByRole('button', { name: /^Link selected/ })).toBeNull();
 });

@@ -129,41 +129,27 @@ export default async function BrainGraphPage({
 
   return (
     <section>
-      <title>{t('connections-title')}</title>
-      <div className="mb-5 space-y-3">
-        <Link
-          href={withLanguage('/brain/overview', language)}
-          className="inline-flex min-h-8 items-center text-sm text-primary underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+      <title>{t('title')}</title>
+      <div className="mb-5 flex flex-wrap justify-end">
+        <nav
+          aria-label={t('views-label')}
+          className="flex max-w-full flex-wrap gap-1 rounded-md bg-muted p-1"
         >
-          {t('back-brain')}
-        </Link>
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <h2 className="text-3xl font-semibold">{t('connections-title')}</h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              {t('connections-description')}
-            </p>
-          </div>
-          <nav
-            aria-label={t('views-label')}
-            className="flex max-w-full flex-wrap gap-1 rounded-md bg-muted p-1"
-          >
-            {(['topics', 'neighbourhood', 'full'] as const).map((key) => (
-              <Link
-                key={key}
-                href={href({
-                  view: key,
-                  focus: key === 'neighbourhood' ? view.focus : null,
-                  hops: null,
-                })}
-                aria-current={mode === key ? 'page' : undefined}
-                className={`inline-flex min-h-8 items-center rounded px-3 py-1 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${mode === key ? 'bg-card font-medium text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
-              >
-                {t(`views.${key}`)}
-              </Link>
-            ))}
-          </nav>
-        </div>
+          {(['topics', 'neighbourhood', 'full'] as const).map((key) => (
+            <Link
+              key={key}
+              href={href({
+                view: key,
+                focus: key === 'neighbourhood' ? view.focus : null,
+                hops: null,
+              })}
+              aria-current={mode === key ? 'page' : undefined}
+              className={`inline-flex min-h-8 items-center rounded px-3 py-1 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${mode === key ? 'bg-card font-medium text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+            >
+              {t(`views.${key}`)}
+            </Link>
+          ))}
+        </nav>
       </div>
       {pairedCandidates.count > 0 && pairedCandidates.firstPublicId && (
         <div

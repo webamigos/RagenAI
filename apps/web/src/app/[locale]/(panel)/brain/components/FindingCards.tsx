@@ -10,6 +10,7 @@ import { FindingSummaryView } from './FindingSummaryView';
 import { RetryExtractionButton } from './RetryExtractionButton';
 import { OwnerPicker } from './OwnerPicker';
 import { DismissOrphanButton } from './DismissOrphanButton';
+import { SeverityDots } from './SeverityDots';
 
 export async function FindingCards({
   items,
@@ -67,9 +68,12 @@ export async function FindingCards({
           <div className="min-w-0 space-y-2">
             <div className="flex flex-wrap gap-2">
               <Badge variant="outline">{t(`type.${item.type}`)}</Badge>
-              <span className="text-xs text-muted-foreground">
-                {t(`severity.${item.severity}`)}
-              </span>
+              <SeverityDots
+                severity={item.severity}
+                name={t('severity-label', {
+                  level: t(`severity.${item.severity}`),
+                })}
+              />
             </div>
             <h2 className="break-words text-base font-medium">
               {item.pages.length
@@ -137,7 +141,13 @@ export async function FindingCards({
             {item.type === 'ORPHAN' && page && (
               <Link
                 href={`/brain/graph?${new URLSearchParams({ view: 'neighbourhood', focus: page.publicId, inferred: '1', ...(language ? { lang: language } : {}) })}`}
-                className="inline-flex min-h-8 items-center rounded-md bg-primary px-3 text-sm font-medium text-primary-foreground"
+                // Secondary when there are suggestions to link: then linking
+                // the chosen ones is the main action, above.
+                className={
+                  proposal
+                    ? 'inline-flex min-h-8 items-center rounded-md border border-border px-3 text-sm font-medium hover:bg-accent'
+                    : 'inline-flex min-h-8 items-center rounded-md bg-primary px-3 text-sm font-medium text-primary-foreground'
+                }
               >
                 {t('view-relations')}
               </Link>

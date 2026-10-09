@@ -9,14 +9,17 @@ const t = createTranslator({
 });
 
 it.each([
-  [0, '0 zatwierdzonych · 0 kandydatów'],
-  [1, '1 zatwierdzona · 1 kandydat'],
-  [2, '2 zatwierdzone · 2 kandydaci'],
-  [5, '5 zatwierdzonych · 5 kandydatów'],
-  [12, '12 zatwierdzonych · 12 kandydatów'],
-  [22, '22 zatwierdzone · 22 kandydaci'],
-])('inflects both document coverage counts for %i', (count, expected) => {
-  expect(t('coverage-counts', { approved: count, candidates: count })).toBe(
-    expected,
-  );
-});
+  [0, '0 zatwierdzonych · 0 do sprawdzenia'],
+  [1, '1 zatwierdzona · 1 do sprawdzenia'],
+  [2, '2 zatwierdzone · 2 do sprawdzenia'],
+  [5, '5 zatwierdzonych · 5 do sprawdzenia'],
+  [12, '12 zatwierdzonych · 12 do sprawdzenia'],
+  [22, '22 zatwierdzone · 22 do sprawdzenia'],
+])(
+  'inflects the approved count and states the count to review for %i',
+  (count, expected) => {
+    expect(t('coverage-counts', { approved: count, candidates: count })).toBe(
+      expected,
+    );
+  },
+);

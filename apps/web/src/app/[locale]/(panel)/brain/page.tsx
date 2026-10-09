@@ -16,7 +16,7 @@ import { getBrainAccessQuery } from '@/features/brain/services/queries/get-brain
 import { getBrainExportSummaryQuery } from '@/features/brain/services/queries/get-brain-export-summary-query';
 import { getKnowledgePagesQuery } from '@/features/brain/services/queries/get-knowledge-pages-query';
 import { getBrainStatusCountsQuery } from '@/features/brain/services/queries/get-brain-status-counts-query';
-import { getApprovedPageCountQuery } from '@/features/brain/services/queries/get-approved-page-count-query';
+import { getPublicationBacklogQuery } from '@/features/brain/services/queries/get-publication-backlog-query';
 import { listRange, parseListPage } from '@/features/brain/utils/list-page';
 import { Link } from '@/i18n/routing';
 
@@ -73,7 +73,7 @@ export default async function BrainPagesPage({ searchParams }: Props) {
   // Export and publishing stay organization-wide: the bundle is every
   // approved page, whatever language the view is filtered to.
   const scope = await getBrainLanguageScopeQuery(access.orgId, language);
-  const [t, format, { items, total }, exportSummary, approved, counts] =
+  const [t, format, { items, total }, exportSummary, backlog, counts] =
     await Promise.all([
       getTranslations('brain'),
       getFormatter(),
@@ -86,7 +86,7 @@ export default async function BrainPagesPage({ searchParams }: Props) {
         filters,
       ),
       getBrainExportSummaryQuery(access.orgId),
-      getApprovedPageCountQuery(access.orgId),
+      getPublicationBacklogQuery(access.orgId),
       getBrainStatusCountsQuery(access.orgId, scope),
     ]);
   const skippedReasons = Object.entries(exportSummary.skipped) as [
@@ -119,7 +119,7 @@ export default async function BrainPagesPage({ searchParams }: Props) {
 
   return (
     <section>
-      <title>{`${t('tabs.pages')} — ${t('title')}`}</title>
+      <title>{`${t('tabs.pages')} – ${t('title')}`}</title>
       <BrainScreen context={{ view: 'pages', status }} />
       <FilterChips
         label={t('filters.status')}
@@ -163,7 +163,7 @@ export default async function BrainPagesPage({ searchParams }: Props) {
             </span>
           ))}
           <span className="ml-auto" />
-          <PublishAllButton approved={approved} />
+          <PublishAllButton toPublish={backlog.pending} />
           {exportSummary.pages > 0 ? (
             <a
               href="/api/brain/export"

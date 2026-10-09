@@ -3,6 +3,7 @@ import 'server-only';
 import db from '@ragenai/prisma-client';
 
 import type { ReviewError } from '../../contracts/brain-review.types';
+import { bulkPublicationWhere } from '../../utils/plan-publication';
 import { publishKnowledgePageCommand } from './publish-knowledge-page-command';
 
 export type PublishAllResult = {
@@ -55,15 +56,7 @@ export async function publishAllApprovedCommand(input: {
   let after = 0;
   for (;;) {
     const pages = await db.knowledgePage.findMany({
-      where: {
-        organizationId: input.orgId,
-        status: 'APPROVED',
-        id: { gt: after },
-        // Serving, or never published. Not a withdrawn page: it keeps its
-        // file and has no `publishedAt`, and a withdrawal is a person's
-        // decision that only a person reverses — one bulk click must not.
-        OR: [{ publishedAt: { not: null } }, { publishedFileId: null }],
-      },
+      where: { ...bulkPublicationWhere(input.orgId), id: { gt: after } },
       select: { id: true, publicId: true, updatedAt: true },
       orderBy: { id: 'asc' },
       take: PUBLISH_ALL_BATCH,

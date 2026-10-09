@@ -2,6 +2,7 @@ import { getFormatter, getLocale, getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
 import { getBrainAccessQuery } from '@/features/brain/services/queries/get-brain-access-query';
+import { getExtractableDocumentsQuery } from '@/features/brain/services/queries/get-extractable-documents-query';
 import { parseBrainLanguage } from '@/features/brain/contracts/brain-language.types';
 import { getBrainDocumentsQuery } from '@/features/brain/services/queries/get-brain-documents-query';
 import { Link } from '@/i18n/routing';
@@ -9,7 +10,7 @@ import { withLanguage } from '@/features/brain/utils/with-language';
 import { getBrainDocumentExtractionQuery } from '@/features/brain/services/queries/get-brain-document-extraction-query';
 
 import { BrainEmpty } from '../components/BrainEmpty';
-import { BrainUploadButton } from '../components/BrainUploadButton';
+import { ExtractDialog } from '../components/ExtractDialog';
 import { BrainDocumentsPanel } from '../components/BrainDocumentsPanel';
 import { BrainScreen } from '../components/assistant/BrainAssistantContext';
 
@@ -36,11 +37,14 @@ export default async function BrainDocumentsPage({ searchParams }: Props) {
   const params = await searchParams;
   const language = parseBrainLanguage(params.lang);
   const emptyOnly = params.coverage === 'empty';
-  const [t, format, documents, locale] = await Promise.all([
+  const [t, format, documents, locale, extractable] = await Promise.all([
     getTranslations('brain.documents'),
     getFormatter(),
     getBrainDocumentsQuery(access.orgId, language, emptyOnly),
     getLocale(),
+    access.canWrite
+      ? getExtractableDocumentsQuery(access.orgId)
+      : Promise.resolve([]),
   ]);
   const extraction = await getBrainDocumentExtractionQuery(
     access.orgId,
@@ -61,17 +65,11 @@ export default async function BrainDocumentsPage({ searchParams }: Props) {
     <section className="space-y-4">
       <BrainScreen context={{ view: 'documents', selectedFileIds: [] }} />
       <title>{t('title')}</title>
-      <div className="mb-3 flex flex-wrap items-start justify-between gap-3">
-        <div className="space-y-1">
-          <h2 className="font-display text-2xl font-semibold">
-            {t('screen-title')}
-          </h2>
-          <p className="max-w-[720px] text-sm text-muted-foreground">
-            {t('screen-intro')}
-          </p>
+      {access.canWrite && (
+        <div className="flex justify-end">
+          <ExtractDialog documents={extractable} />
         </div>
-        {access.canWrite && <BrainUploadButton />}
-      </div>
+      )}
       {emptyOnly && (
         <div className="mb-3 flex flex-wrap items-center gap-2 text-sm">
           <span className="text-muted-foreground">{t('empty-filter')}</span>

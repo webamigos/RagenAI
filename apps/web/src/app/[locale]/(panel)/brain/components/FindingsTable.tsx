@@ -8,12 +8,12 @@ import {
 } from '@ragenai/common-ui/Table';
 import { getFormatter, getTranslations } from 'next-intl/server';
 
-import { Badge } from '@/components/ui/badge';
 import type { KnowledgeFindingListItem } from '@/features/brain/contracts/brain.types';
 import { Link } from '@/i18n/routing';
 
 import { FindingSummaryView } from './FindingSummaryView';
 import { RetryExtractionButton } from './RetryExtractionButton';
+import { SeverityDots } from './SeverityDots';
 
 /**
  * Findings as rows. The row is not a link: a contradiction names two pages,
@@ -120,9 +120,12 @@ export async function FindingsTable({
                   )}
               </TableCell>
               <TableCell className="align-top">
-                <Badge variant="outline">
-                  {t(`severity.${item.severity}`)}
-                </Badge>
+                <SeverityDots
+                  severity={item.severity}
+                  name={t('severity-label', {
+                    level: t(`severity.${item.severity}`),
+                  })}
+                />
               </TableCell>
               <TableCell className="text-right align-top tabular-nums text-muted-foreground">
                 {format.dateTime(new Date(item.detectedAt), {

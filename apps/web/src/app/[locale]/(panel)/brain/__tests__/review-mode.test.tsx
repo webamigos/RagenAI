@@ -95,18 +95,31 @@ it('keeps approval disabled until an owner is set and hides heuristic notes by d
   expect(
     screen.getByRole('button', { name: 'Approve and publish' }),
   ).toBeDisabled();
+  // The reason sits under the button it explains, and names it.
+  const reason = screen.getByTestId('review-publish-blocker');
+  expect(reason).toHaveTextContent('Set an owner before approving this page.');
   expect(
-    screen.getByText('Set an owner before approving this page.'),
-  ).toBeVisible();
+    screen.getByRole('button', { name: 'Approve and publish' }),
+  ).toHaveAccessibleDescription('Set an owner before approving this page.');
+  expect(
+    screen.getByRole('button', { name: 'Approve and publish' })
+      .nextElementSibling,
+  ).toBe(reason);
   expect(screen.getByText('26 days')).toBeVisible();
   expect(screen.queryByText(/Paraphrase:/)).not.toBeInTheDocument();
 });
 it('shows heuristic missing facts only on opt-in and keeps claim checks local', () => {
   show({ warningsEnabled: true });
   expect(screen.getByText(/Paraphrase:.*26/)).toBeVisible();
-  fireEvent.click(screen.getByRole('button', { name: 'Confirm claim 1' }));
+  // Said once, before the claims, that the marks are not saved.
+  expect(screen.getByTestId('review-local-checks')).toHaveTextContent(
+    'are not saved',
+  );
+  expect(screen.getAllByText('Correct')[0]).toBeVisible();
+  expect(screen.getAllByText('Needs a fix')[0]).toBeVisible();
+  fireEvent.click(screen.getByRole('button', { name: 'Correct: claim 1' }));
   expect(
-    screen.getByRole('button', { name: 'Confirm claim 1' }),
+    screen.getByRole('button', { name: 'Correct: claim 1' }),
   ).toHaveAttribute('aria-pressed', 'true');
   expect(actions.approveKnowledgePageAction).not.toHaveBeenCalled();
 });
@@ -114,7 +127,7 @@ it('sets the owner for all candidates from the selected document', async () => {
   show();
   fireEvent.click(
     screen.getByRole('checkbox', {
-      name: 'Set for all 2 candidates from this document',
+      name: 'Set for all 2 pages to review from this document',
     }),
   );
   fireEvent.click(screen.getByRole('button', { name: 'Save selected owner' }));

@@ -22,7 +22,7 @@ export default async function BrainOverviewPage({
   ]);
   return (
     <section className="max-w-[1120px]">
-      <title>{`${t('tabs.overview')} — ${t('title')}`}</title>
+      <title>{`${t('tabs.overview')} – ${t('title')}`}</title>
       <BrainScreen context={{ view: 'overview' }} />
       <BrainOverviewPanel
         data={data}

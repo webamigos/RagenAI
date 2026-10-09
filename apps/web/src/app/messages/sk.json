@@ -2613,12 +2613,12 @@
     "brain-no-visible-sources": "žiadny z jej zdrojov pre vás nie je viditeľný"
   },
   "brain": {
-    "title": "Ragen Brain",
+    "title": "Brain",
     "tabs": {
       "pages": "Znalostné stránky",
-      "findings": "Zistenia",
+      "findings": "Problémy",
       "graph": "Graf",
-      "documents": "Dokumenty",
+      "documents": "Zdroje",
       "overview": "Overview"
     },
     "filters": {
@@ -2626,14 +2626,14 @@
       "all-but-rejected": "Všetky okrem zamietnutých"
     },
     "page-status": {
-      "CANDIDATE": "Kandidát",
+      "CANDIDATE": "Na kontrolu",
       "APPROVED": "Schválená",
       "REJECTED": "Zamietnutá",
       "STALE": "Zastaraná"
     },
     "page-type": {
       "PROCESS": "Proces",
-      "ENTITY": "Entita",
+      "ENTITY": "Objekt",
       "POLICY": "Pravidlo",
       "PRODUCT": "Produkt",
       "ROLE": "Rola"
@@ -2650,7 +2650,7 @@
         "status": "Stav",
         "owner": "Vlastník",
         "documents": "Dokumenty",
-        "findings": "Otvorené zistenia",
+        "findings": "Otvorené problémy",
         "updated": "Zmenené"
       },
       "empty-in-language-title": "Nič v tomto jazyku",
@@ -2662,7 +2662,7 @@
     },
     "findings": {
       "columns": {
-        "type": "Zistenie",
+        "type": "Problém",
         "subject": "Týka sa",
         "detail": "Podrobnosti",
         "severity": "Závažnosť",
@@ -2686,9 +2686,9 @@
         "MEDIUM": "Stredná",
         "HIGH": "Vysoká"
       },
-      "empty-title": "Žiadne zistenia s týmto stavom",
+      "empty-title": "Žiadne problémy s týmto stavom",
       "empty-description": "Po každej extrakcii tu Brain ukazuje rozpory, medzery, zastarané zdroje a stránky bez vlastníka.",
-      "count": "Zistenia: {shown} z {total}",
+      "count": "Problémy: {shown} z {total}",
       "summary": {
         "unknown-file": "neznámy dokument",
         "verification-due": "Overenie malo prebehnúť {date}",
@@ -2705,18 +2705,17 @@
       },
       "discuss": "Opýtaj sa na to asistenta",
       "empty-in-language-title": "Nič v tomto jazyku",
-      "empty-in-language-description": "Žiadne zistenie sa netýka dokumentu v tomto jazyku ani stránky, ktorá ho cituje. Vyberte iný jazyk alebo všetky.",
-      "intro": "Check detected problems and choose a corrective action.",
-      "filter-types": "Finding types",
+      "empty-in-language-description": "Žiadny problém sa netýka dokumentu v tomto jazyku ani stránky, ktorá ho cituje. Vyberte iný jazyk alebo všetky.",
+      "filter-types": "Typy problémov",
       "all-types": "All types",
       "subject-gone": "The source was deleted",
       "retry-extraction": "Retry extraction",
       "open-review": "Open review",
       "view-relations": "Check relations",
       "dismiss-orphan": "This is fine, close",
-      "dismissed": "Finding dismissed",
+      "dismissed": "Problém uzavretý",
       "batch": "{count} × {type}",
-      "batch-scope": "Findings on this list page, detected at intervals of up to 5 minutes.",
+      "batch-scope": "Problémy na tejto strane zoznamu, zistené v intervaloch do 5 minút.",
       "why": {
         "ORPHAN": "Missing relations make the context of this page harder to check.",
         "EXTRACTION_FAILED": "The document supplied no knowledge for review.",
@@ -2728,14 +2727,14 @@
       "relation-suggestions": "Suggested relations",
       "relation-basis": "These pages cite the same document. Check whether they should be linked; a shared source does not establish a relation.",
       "select-relations": "Select relations to review",
-      "add-relations": "Add selected relations"
+      "add-relations": "Prepojiť vybrané ({count})",
+      "severity-label": "Závažnosť: {level}",
+      "select-all": "Vybrať všetko",
+      "select-none": "Zrušiť výber"
     },
     "page": {
-      "back": "Znalostné stránky",
       "owner": "Vlastník",
-      "verification": "Overenie",
       "last-verified": "Naposledy overené {date}",
-      "never-verified": "Nikdy neoverené",
       "verify-every": "Interval overenia: {every}",
       "sources": {
         "title": "Zdroje ({count})",
@@ -2747,9 +2746,9 @@
         }
       },
       "findings": {
-        "title": "Otvorené zistenia",
+        "title": "Otvorené problémy",
         "empty-title": "Na tejto stránke nie je nič otvorené",
-        "empty-description": "Zistenia o tejto stránke sa tu objavia, keď ich Brain nahlási."
+        "empty-description": "Žiadne otvorené problémy. Zobrazia sa tu, keď Brain nejaký nahlási."
       },
       "access": {
         "title": "Prístupná pre",
@@ -2771,12 +2770,13 @@
       "history": "História",
       "merge": "Zlúčenie",
       "superseded-by": "Zlúčené so stránkou",
-      "publication": "Znalostná báza",
       "publish-blocker": {
         "status": "Zverejniť sa dá len schválená stránka",
         "owner": "Najprv určte vlastníka",
         "access": "Najprv vyberte, komu je stránka prístupná"
-      }
+      },
+      "state": "Stav",
+      "status-by": "{status}: {name}, {date}"
     },
     "origin": {
       "EXTRACTED": "citované",
@@ -2857,14 +2857,14 @@
     "extract": {
       "open": "Extrahovať z dokumentov",
       "title": "Extrahovať znalosti z dokumentov",
-      "description": "Brain prečíta vybrané dokumenty a zapíše kandidátske stránky na posúdenie. Vybrané sú dokumenty, ktoré zatiaľ necituje žiadna stránka. Beh prebieha na pozadí.",
+      "description": "Brain prečíta vybrané dokumenty a zapíše stránky, ktoré skontrolujete. Vybrané sú dokumenty, ktoré zatiaľ necituje žiadna stránka. Beh prebieha na pozadí.",
       "none": "Žiadne dokumenty na extrakciu — najprv pridajte dokumenty do znalostnej bázy.",
       "not-extracted": "Neextrahované",
       "pages": "Stránky: {count}",
       "too-many": "Dokumentov v jednom behu najviac: {max}.",
       "cancel": "Zrušiť",
       "start": "Spustiť extrakciu ({count})",
-      "started": "Extrakcia spustená — dokumenty: {count}. Kandidáti sa objavia, keď každý dobehne.",
+      "started": "Extrakcia spustená — dokumenty: {count}. Stránky na kontrolu sa zobrazia po spracovaní každého dokumentu.",
       "retry": "Skúsiť znova",
       "retry-queued": "Opakovanie v rade",
       "retry-started": "Extrakcia tohto dokumentu znova v rade",
@@ -2883,7 +2883,7 @@
       "zoom-fit": "Zobraziť celý graf",
       "reset-layout": "Obnoviť automatické rozloženie",
       "show-all-groups": "Zobraziť všetky skupiny",
-      "title": "Graf znalostí — Ragen Brain",
+      "title": "Znalostný graf — Brain",
       "empty-title": "Zatiaľ nie je čo kresliť",
       "empty-description": "Graf sa objaví, keď Brain extrahuje stránky z vašich dokumentov.",
       "focus": "Okolie „{title}“",
@@ -2897,8 +2897,8 @@
       "inferred-shown": "Zobrazené ({count})",
       "shown": "Strany: {nodes} z {totalNodes} · väzby: {edges} z {totalEdges}",
       "canvas-label": "Graf — strany: {nodes}, väzby: {edges}",
-      "failed": "Graf sa v tomto prehliadači nepodarilo vykresliť — rovnaké údaje sú na kartách stránok a zistení.",
-      "open-findings": "Otvorené zistenia: {count}",
+      "failed": "Graf sa v tomto prehliadači nepodarilo vykresliť — rovnaké údaje sú na kartách Znalostné stránky a Problémy.",
+      "open-findings": "Otvorené problémy: {count}",
       "open-page": "Otvoriť stránku",
       "show-neighbourhood": "Zobraziť okolie",
       "drawer-label": "Stránka vedľa grafu",
@@ -2909,7 +2909,7 @@
       "legend-extracted": "Uvedené v zdroji (podporuje to citácia)",
       "legend-ambiguous": "Neisté: spomenuté, ale citácia to nepotvrdzuje",
       "legend-inferred": "Odvodené modelom; skryté, ak ich nezobrazíte",
-      "legend-findings": "Stránka s otvoreným zistením",
+      "legend-findings": "Stránka s otvoreným problémom",
       "communities-title": "Skupiny",
       "community": "{label} a súvisiace ({size})",
       "origin": {
@@ -2919,9 +2919,6 @@
       },
       "empty-in-language-title": "Nič v tomto jazyku",
       "empty-in-language-description": "Žiadny dokument v tomto jazyku ani stránka, ktorá ho cituje. Vyberte iný jazyk alebo všetky.",
-      "connections-title": "How knowledge connects",
-      "connections-description": "Topics first, then details. The full graph is available when you need it.",
-      "back-brain": "← Brain",
       "views-label": "Graph view",
       "views": {
         "topics": "Topics",
@@ -2929,11 +2926,11 @@
         "full": "Full graph"
       },
       "topics-title": "Topic map",
-      "topics-scale": "Size = page count · colour = review state",
+      "topics-scale": "Veľkosť dlaždice = počet stránok",
       "topic-pages": "{count, plural, one {# page} other {# pages}}",
-      "topic-approved": "Has approved pages",
-      "topic-approved-count": "{count, plural, one {# approved} other {# approved}}",
-      "topic-candidates": "Only candidates",
+      "topic-approved": "Má schválenú stránku",
+      "topic-approved-count": "{count, plural, one {# schválená} few {# schválené} many {# schválenej} other {# schválených}}",
+      "topic-candidates": "Iba na kontrolu",
       "isolated-count": "{count, plural, one {# page outside the main topics} other {# pages outside the main topics}}",
       "isolated-description": "Instead of a column of loose dots: a list of pages without relations. Open a page to propose links.",
       "review-isolated": "Review isolated pages",
@@ -2944,16 +2941,16 @@
       "search-results-count": "Showing {shown} of {count} matching pages",
       "status": {
         "APPROVED": "Approved",
-        "CANDIDATE": "Candidate",
+        "CANDIDATE": "Na kontrolu",
         "REJECTED": "Rejected",
         "STALE": "Zastaraná"
       },
       "review-group": "Review entire group ({count})",
-      "pair-merge": "{count, plural, one {# candidate page} other {# candidate pages}} may match a page drawn from the other language of a paired document.",
+      "pair-merge": "{count, plural, one {# stránka na kontrolu môže zodpovedať} few {# stránky na kontrolu môžu zodpovedať} many {# stránky na kontrolu môže zodpovedať} other {# stránok na kontrolu môže zodpovedať}} stránke z druhej jazykovej verzie spárovaného dokumentu.",
       "pair-merge-review": "Review and merge"
     },
     "export": {
-      "ready": "Pripravené na export: {count}",
+      "ready": "Schválené: {count}",
       "download": "Stiahnuť balík (.zip)",
       "none": "Schváľte stránku s vlastníkom, aby ste ju mohli exportovať",
       "skipped": {
@@ -2966,30 +2963,30 @@
     },
     "publication": {
       "state": {
-        "none": "Mimo znalostnej bázy",
-        "publishing": "Zapisuje sa do znalostnej bázy…",
-        "published": "Vo znalostnej báze — odpovede ju môžu citovať",
-        "withdrawn": "Stiahnutá zo znalostnej bázy",
-        "failed": "Zápis do znalostnej bázy zlyhal – publikujte znova"
+        "none": "Nezverejnená",
+        "publishing": "Zverejňuje sa…",
+        "published": "Zverejnená — odpovede chatu ju môžu citovať",
+        "withdrawn": "Stiahnutá zo zverejnenia",
+        "failed": "Zverejnenie zlyhalo — zverejnite ju znova"
       },
-      "outdated": "Stránka sa od zverejnenia zmenila — zverejnite ju znova, aby sa znalostná báza aktualizovala.",
-      "publish": "Zverejniť vo znalostnej báze",
+      "outdated": "Stránka sa od zverejnenia zmenila — zverejnite ju znova, aby chat používal aktuálny text.",
+      "publish": "Zverejniť",
       "republish": "Zverejniť znova",
       "withdraw": "Stiahnuť",
       "published": "Zverejňovanie začalo",
       "withdrawn": "Stránka stiahnutá",
-      "withdraw-title": "Stiahnuť túto stránku zo znalostnej bázy?",
+      "withdraw-title": "Stiahnuť túto stránku zo zverejnenia?",
       "withdraw-description": "Odpovede ju prestanú citovať hneď po stiahnutí. Stránka zostáva schválená a dá sa znova zverejniť; skoršie odpovede si citácie ponechajú."
     },
     "documents": {
-      "title": "Dokumenty — Ragen Brain",
+      "title": "Zdroje — Brain",
       "intro": "Keď sú znalosti z dokumentu v schválených stránkach, môžete samotný dokument vyradiť z vyhľadávania — odpovede potom budú čerpať len z posúdených stránok. Nič sa nemaže a kedykoľvek ho možno vrátiť.",
       "empty-title": "Zatiaľ žiadne dokumenty",
       "empty-description": "Dokumenty sa tu objavia, keď budú v znalostnej báze.",
       "columns": {
         "document": "Dokument",
         "approved": "Schválené stránky",
-        "candidates": "Kandidáti",
+        "candidates": "Na kontrolu",
         "retrieval": "Vyhľadávanie",
         "actions": "Akcie",
         "language": "Jazyk",
@@ -3019,7 +3016,7 @@
       },
       "send": "Odoslať do znalostnej bázy",
       "sent": "Odoslané do znalostnej bázy",
-      "upload": "Nahrať do Brainu",
+      "upload": "Pridať dokumenty",
       "uploaded": "Nahrané do Brainu: {count} — uložené a spracované, nevyhľadateľné",
       "upload-failed": "Nahrávanie zlyhalo — skontrolujte súbor a skúste to znova.",
       "staged-summary": "V Brain, mimo vyhľadávania: {count} · bez schválenej strany: {uncurated}",
@@ -3030,16 +3027,9 @@
       "empty-in-language-description": "Žiadny dokument v tomto jazyku ani stránka, ktorá ho cituje. Vyberte iný jazyk alebo všetky.",
       "empty-filter": "Documents without extracted knowledge",
       "clear-filter": "Show all documents",
-      "screen-title": "Source documents",
-      "screen-intro": "What Brain extracted from each file and how much has already been reviewed.",
-      "table-title": "Documents by language",
+      "table-title": "Dokumenty podľa jazyka ({count})",
       "shared-scale": "Shared scale: {count, plural, one {# page} other {# pages}} = full bar",
-      "coverage-counts": "{approved} approved · {candidates} candidates",
-      "summary": {
-        "documents": "Documents",
-        "empty": "Nothing extracted",
-        "withdrawn": "Excluded from search"
-      },
+      "coverage-counts": "{approved, plural, one {# schválená} few {# schválené} many {# schválenej} other {# schválených}} · {candidates} na kontrolu",
       "state": {
         "empty": "Nothing extracted",
         "failed": "Extraction or processing failed",
@@ -3050,7 +3040,14 @@
       "check-language": "Check language",
       "retry-extraction": "Retry extraction",
       "pair-with": "Same document in {language}: {name}",
-      "pair-coverage": "Pair: {approved} approved · {candidates} candidates (each page counted once)"
+      "pair-coverage": "Pár: {approved, plural, one {# schválená} few {# schválené} many {# schválenej} other {# schválených}} · {candidates} na kontrolu (každá stránka započítaná raz)",
+      "warnings": {
+        "empty": "{count, plural, one {# dokument bez extrahovaných znalostí} few {# dokumenty bez extrahovaných znalostí} many {# dokumentu bez extrahovaných znalostí} other {# dokumentov bez extrahovaných znalostí}}",
+        "withdrawn": "{count, plural, one {# dokument vyradený z vyhľadávania} few {# dokumenty vyradené z vyhľadávania} many {# dokumentu vyradeného z vyhľadávania} other {# dokumentov vyradených z vyhľadávania}}"
+      },
+      "manage-in-knowledge-base": "Spravovať súbory v znalostnej báze",
+      "state-with-retrieval": "{state} · {retrieval}",
+      "row-actions": "Akcie: {name}"
     },
     "publish-all": {
       "button": "Zverejniť schválené ({count})",
@@ -3062,7 +3059,7 @@
       "not-written": "{count, plural, one {# stránka bola zaznamenaná ako publikovaná, ale nezapísaná do indexu – spustite znova} few {# stránky boli zaznamenané ako publikované, ale nezapísané do indexu – spustite znova} many {# stránok bolo zaznamenaných ako publikované, ale nezapísaných do indexu – spustite znova} other {# stránok bolo zaznamenaných ako publikované, ale nezapísaných do indexu – spustite znova}}"
     },
     "read-only": {
-      "notice": "Náhľad len na čítanie — Ragen Brain môžete prezerať, ale nič tu nemožno zmeniť."
+      "notice": "Náhľad iba na čítanie — Brain môžete prehliadať, ale nič tu nemožno zmeniť."
     },
     "assistant": {
       "toggle": "Asistent",
@@ -3080,7 +3077,7 @@
       "read": "{count, plural, one {Prečítaná # položka z Brain} few {Prečítané # položky z Brain} many {Prečítanej # položky z Brain} other {Prečítaných # položiek z Brain}}",
       "proposal-dropped": "Jeden návrh sa nepodarilo zobraziť.",
       "empty-title": "Opýtaj sa na to, čo práve vidíš",
-      "empty-description": "Asistent číta túto obrazovku, stránky, ich citácie a zistenia a odpovedá citáciami, o ktoré sa opiera.",
+      "empty-description": "Asistent číta túto obrazovku, stránky, ich citácie a problémy a odpovedá citáciami, o ktoré sa opiera.",
       "history-empty": "Zatiaľ žiadne staršie konverzácie.",
       "untitled": "Konverzácia bez názvu",
       "prompts": {
@@ -3090,7 +3087,7 @@
         "contradictions": "Vysvetli otvorené rozpory",
         "failed": "Prečo niektoré dokumenty nič nepriniesli?",
         "disagree": "Kde presne sa tieto stránky rozchádzajú?",
-        "what-to-do": "Čo mám s týmto zistením urobiť?",
+        "what-to-do": "Čo mám s týmto problémom urobiť?",
         "why-failed": "Prečo tento dokument nič nepriniesol a čo mám urobiť?",
         "is-right": "Je táto stránka správna? Over každé tvrdenie podľa jeho citácie",
         "owner": "Kto by mal byť vlastníkom tejto stránky?",
@@ -3149,11 +3146,11 @@
       }
     },
     "tab-hints": {
-      "pages": "Znalostné stránky so zdrojmi: každá stránka obsahuje tvrdenia s doslovnými citátmi zo zdrojových dokumentov. Kandidát čaká na kontrolu; schváľte a zverejnite stránku, aby z nej mohol čerpať chat.",
-      "findings": "Čo si vyžaduje vašu pozornosť: rozpory, medzery, zastarané stránky alebo stránky bez vlastníka a dokumenty, ktoré Brain neprečítal.",
+      "pages": "Každá stránka zhromažďuje tvrdenia s doslovnými citátmi zo zdrojov. Skontrolujte stránku, schváľte ju a zverejnite, aby z nej mohol chat odpovedať.",
+      "findings": "Čo si vyžaduje vašu pozornosť: rozpory medzi stránkami, medzery, zastarané stránky, stránky bez vlastníka a dokumenty, ktoré Brain nedokázal prečítať.",
       "graph": "Ako spolu stránky súvisia — ktorý proces vyžaduje ktoré pravidlo a ktoré stránky na seba odkazujú.",
       "documents": "Zdrojové dokumenty, ktoré Brain číta: koľko stránok z každého vzniklo a či ich chat stále prehľadáva.",
-      "overview": "See how much knowledge has been reviewed and what needs attention."
+      "overview": "Firemné znalosti získané z dokumentov a overené ľuďmi. Pozrite sa, čo už funguje v chate a čo čaká na vaše rozhodnutie."
     },
     "relation-kind": {
       "approves": "schvaľuje",
@@ -3169,7 +3166,22 @@
       "is-part-of": "je súčasťou",
       "references": "odkazuje na",
       "depends-on": "závisí od",
-      "related-to": "related to"
+      "related-to": "related to",
+      "manufactures": "vyrába",
+      "designs": "navrhuje",
+      "supplies": "dodáva",
+      "provides": "poskytuje",
+      "uses": "používa",
+      "contains": "obsahuje",
+      "defines": "definuje",
+      "constrains": "obmedzuje",
+      "performs": "vykonáva",
+      "contradicts": "odporuje",
+      "implements": "realizuje",
+      "sells": "predáva",
+      "manages": "riadi",
+      "reports-to": "podlieha",
+      "is-located-in": "sa nachádza v"
     },
     "language": {
       "label": "Jazyk",
@@ -3178,39 +3190,57 @@
       "option": "{name} ({count})"
     },
     "overview": {
-      "intro": "Company knowledge extracted from documents. See how much has been reviewed by people.",
-      "start-review": "Start review ({count})",
       "pipeline-title": "The knowledge journey: from documents to chat answers",
       "publication-description": "Published pages are available in chat. Source documents may still be searched.",
       "stages": {
         "documents": "Documents",
-        "candidates": "Candidates (waiting)",
+        "candidates": "Na kontrolu",
         "approved": "Approved",
-        "published": "Published in chat"
+        "published": "Zverejnené"
       },
       "empty-documents-count": "{count} without extracted knowledge",
       "unowned-count": "{count} without an owner",
-      "approved-share": "{percent}% of candidate and approved pages",
+      "approved-share": "{approved} z {total, plural, one {# stránky} few {# stránok} many {# stránky} other {# stránok}}",
       "awaiting-publication": "{count} approved pages awaiting publication",
       "attention-title": "Needs attention",
       "unowned-title": "Pages without an owner",
       "unowned-description": "They cannot be approved. Assign an owner before review.",
       "empty-documents-title": "Documents without knowledge",
       "empty-documents-description": "0 pages. Check the documents and extract knowledge.",
-      "finding-description": "Review the finding and address its cause.",
-      "attention-empty": "No findings or pages need an owner.",
+      "finding-description": "Skontrolujte problém a odstráňte jeho príčinu.",
+      "attention-empty": "Žiadne problémy ani stránky, ktoré potrebujú vlastníka.",
       "ranking-title": "Where the most unreviewed knowledge is",
-      "legend": "Approved / candidates · shared scale across documents",
-      "coverage-counts": "{approved} approved · {candidates} candidates",
-      "all-documents": "All documents ({count})",
-      "ranking-empty": "No candidates to review.",
+      "legend": "Spoločná škála pre všetky dokumenty",
+      "coverage-counts": "{approved, plural, one {# schválená} few {# schválené} many {# schválenej} other {# schválených}} · {candidates} na kontrolu",
+      "all-documents": "Všetky zdroje ({count})",
+      "ranking-empty": "Žiadne stránky na kontrolu.",
       "empty-title": "Knowledge starts with documents",
       "empty-description": "Upload documents to extract and review company knowledge.",
       "empty-language-description": "There are no documents in this language. Choose another language or upload documents.",
       "clear-filter": "Clear overview filter",
       "filtered-list": "List narrowed by an overview filter",
       "no-pages-title": "No pages match this filter",
-      "no-pages-description": "Change or clear the filter to see the remaining pages."
+      "no-pages-description": "Change or clear the filter to see the remaining pages.",
+      "next": {
+        "label": "Čo teraz?",
+        "assign-owners": {
+          "title": "{count, plural, one {Priraďte vlastníka # stránke} few {Priraďte vlastníkov # stránkam} many {Priraďte vlastníkov # stránky} other {Priraďte vlastníkov # stránkam}}",
+          "description": "Stránku bez vlastníka nemožno schváliť. Vlastník je osoba, ktorá ručí za obsah stránky.",
+          "action": "Priradiť vlastníkov"
+        },
+        "review": {
+          "title": "{count, plural, one {Skontrolujte # stránku} few {Skontrolujte # stránky} many {Skontrolujte # stránky} other {Skontrolujte # stránok}}",
+          "description": "Tieto stránky majú vlastníka a čakajú na vaše rozhodnutie: schváľte ich alebo zamietnite.",
+          "action": "Otvoriť režim kontroly"
+        },
+        "publish": {
+          "title": "{count, plural, one {Zverejnite # schválenú stránku} few {Zverejnite # schválené stránky} many {Zverejnite # schválenej stránky} other {Zverejnite # schválených stránok}}",
+          "description": "Po zverejnení z nich môže chat odpovedať.",
+          "action": "Prejsť na zverejnenie"
+        }
+      },
+      "legend-approved": "schválené",
+      "legend-to-review": "na kontrolu"
     },
     "review-mode": {
       "title": "Review mode",
@@ -3219,41 +3249,43 @@
       "navigation-shortcuts": "Shortcuts: J next · K previous",
       "queue": "Queue ({count})",
       "grouping": "Queue grouping",
-      "by-document": "By source document",
-      "by-type": "By page type",
-      "queue-empty": "There are no candidates in this queue.",
+      "by-document": "Podľa dokumentu",
+      "by-type": "Podľa typu",
+      "queue-empty": "V tomto fronte nie sú žiadne stránky na kontrolu.",
       "claim": "Brain claim",
       "quote": "Verbatim quote",
       "assessment": "Assessment",
       "claim-progress": "{confirmed} of {total} confirmed",
-      "local-checks": "Claim assessments stay in this view and are not saved.",
+      "local-checks": "Skontrolujte, či každé tvrdenie zodpovedá svojmu citátu. Značky ✓ a ✕ slúžia len na orientáciu a neukladajú sa; uloží sa až rozhodnutie v kroku 3.",
       "no-claims": "This page has no claims to compare.",
       "paraphrase": "Paraphrase: the claim omits {facts}. Check the meaning.",
       "no-marker": "No citation marker. Check the source before deciding.",
       "missing-source": "No source for marker [{marker}].",
-      "confirm-claim": "Confirm claim {n}",
-      "question-claim": "Question claim {n}",
+      "confirm-claim": "Sedí: tvrdenie {n}",
+      "question-claim": "Treba opraviť: tvrdenie {n}",
       "owner-step": "Step 1 · Owner (required)",
       "owner-question": "Who vouches for this page?",
-      "bulk-owner": "Set for all {count} candidates from this document",
-      "save-document-owner": "Assign owner to candidates",
+      "bulk-owner": "Nastaviť pre {count, plural, one {# stránku} few {všetky # stránky} many {všetkých # stránky} other {všetkých # stránok}} na kontrolu z tohto dokumentu",
+      "save-document-owner": "Priradiť vlastníka týmto stránkam",
       "decision-step": "Step 3 · Decision",
       "approve-publish": "Approve and publish",
       "approve-only": "Approve only",
       "reject": "Reject",
       "needs-owner": "Set an owner before approving this page.",
       "needs-access": "This page has no readers. You can approve it; set access in page details before publishing.",
-      "not-candidate": "Decisions in this mode apply to candidates. Open page details for the other actions.",
+      "not-candidate": "Rozhodnutia v tomto režime sa týkajú stránok na kontrolu. Ďalšie akcie nájdete v detailoch stránky.",
       "relations": "Relations: {count}",
       "show-graph": "Show in graph",
       "open-page": "Open page details",
       "previous": "Previous",
       "next": "Next",
       "empty-title": "Queue reviewed",
-      "empty-description": "There are no candidates to review. Return to the Brain overview to see the remaining knowledge.",
+      "empty-description": "Nie sú žiadne stránky na kontrolu. Vráťte sa na prehľad Brain a pozrite si ostatné znalosti.",
       "back": "Return to Brain overview",
       "claims-step": "Step 2 · Claims",
-      "publication-failed": "The page was approved, but publication did not finish: {reason} Open page details to retry publication."
+      "publication-failed": "The page was approved, but publication did not finish: {reason} Open page details to retry publication.",
+      "claim-correct": "Sedí",
+      "claim-needs-fix": "Treba opraviť"
     }
   },
   "project-context-manager": {
@@ -3392,7 +3424,7 @@
     "column-brain": "Knowledge in Brain",
     "column-quality": "Chat quality",
     "brain-unavailable": "Brain unavailable",
-    "coverage": "{approved} approved · {candidates} candidates",
+    "coverage": "{approved, plural, one {# schválená} few {# schválené} many {# schválenej} other {# schválených}} · {candidates} na kontrolu",
     "no-knowledge": "No knowledge",
     "waiting-knowledge": "Awaiting extraction",
     "quality-ok": "OK",
@@ -3406,7 +3438,7 @@
     "headerless-description": "Chat answers are less reliable without column names. For spreadsheets and mostly tabular documents, add headers and reprocess the file.",
     "optimize-all": "Optimize eligible documents",
     "empty-count": "{count} ready files without knowledge",
-    "empty-description": "The files are searchable, but have no live candidate or approved Brain pages.",
+    "empty-description": "Súbory sú vyhľadávateľné, ale nemajú v Brain žiadne stránky na kontrolu ani schválené.",
     "show-brain": "Show in Brain",
     "table-reprocess": "Reprocess table documents",
     "optimization-description": "Prepare RAG improvement suggestions through the existing optimization workflow. Review and apply them in each document; starting this job does not rewrite the source.",
