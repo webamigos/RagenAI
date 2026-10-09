@@ -3014,7 +3014,7 @@
       },
       "send": "Send to knowledge base",
       "sent": "Sent to the knowledge base",
-      "upload": "Upload into Brain",
+      "upload": "Add documents",
       "uploaded": "Uploaded into Brain: {count} — stored and parsed, not searchable",
       "upload-failed": "The upload failed — check the file and try again.",
       "staged-summary": "Staged in Brain, not searchable: {count} · without an approved page yet: {uncurated}",

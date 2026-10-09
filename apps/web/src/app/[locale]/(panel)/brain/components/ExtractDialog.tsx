@@ -73,6 +73,7 @@ export function ExtractDialog({
     <>
       <Button
         size="sm"
+        variant="outline"
         onClick={() => {
           setSelected(unread());
           setOpen(true);

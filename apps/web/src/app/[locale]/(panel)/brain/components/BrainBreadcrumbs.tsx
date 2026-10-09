@@ -6,6 +6,7 @@ import {
   BreadcrumbLink,
   BreadcrumbSeparator,
 } from '@ragenai/common-ui/Breadcrumb';
+import { TouchTarget } from '@ragenai/common-ui/TouchTarget';
 import { useTranslations } from 'next-intl';
 import { useSearchParams } from 'next/navigation';
 import { Fragment } from 'react';
@@ -32,9 +33,9 @@ export function BrainBreadcrumbs({ current }: { current: string }) {
           <BreadcrumbItem className="shrink-0">
             <BreadcrumbLink
               href={crumb.href}
-              className="inline-flex min-h-11 items-center underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              className="relative rounded-sm underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
-              {crumb.label}
+              <TouchTarget>{crumb.label}</TouchTarget>
             </BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />

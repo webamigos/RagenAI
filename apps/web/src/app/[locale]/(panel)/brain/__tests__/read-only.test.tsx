@@ -49,6 +49,9 @@ vi.mock('../components/LanguageFilter', () => ({ LanguageFilter: () => null }));
 vi.mock('../components/ExtractDialog', () => ({
   ExtractDialog: () => <button type="button">Extract from documents</button>,
 }));
+vi.mock('../components/BrainUploadButton', () => ({
+  BrainUploadButton: () => <button type="button">Add documents</button>,
+}));
 vi.mock('../components/RetryExtractionButton', () => ({
   RetryExtractionButton: () => <button type="button">Retry</button>,
 }));
@@ -65,7 +68,7 @@ beforeEach(() => {
 });
 
 describe('BrainLayout', () => {
-  it('says it is read-only and offers no extraction to a reader', async () => {
+  it('says it is read-only and offers a reader no way to add documents', async () => {
     deps.getBrainAccessQuery.mockResolvedValue({
       orgId: 'org-1',
       access: 'read',
@@ -77,13 +80,11 @@ describe('BrainLayout', () => {
       en.brain['read-only'].notice,
     );
     expect(
-      screen.queryByRole('button', { name: 'Extract from documents' }),
+      screen.queryByRole('button', { name: 'Add documents' }),
     ).not.toBeInTheDocument();
-    // Nor asks for the documents a reader could never extract from.
-    expect(deps.getExtractableDocumentsQuery).not.toHaveBeenCalled();
   });
 
-  it('shows a curator the extraction and no notice', async () => {
+  it('gives a curator one primary action, adding documents, and no notice', async () => {
     deps.getBrainAccessQuery.mockResolvedValue({
       orgId: 'org-1',
       access: 'write',
@@ -92,8 +93,13 @@ describe('BrainLayout', () => {
     render(await BrainLayout({ children: <p>page</p> }));
 
     expect(
-      screen.getByRole('button', { name: 'Extract from documents' }),
+      screen.getByRole('button', { name: 'Add documents' }),
     ).toBeInTheDocument();
+    // Extraction from documents already here lives on the sources tab.
+    expect(
+      screen.queryByRole('button', { name: 'Extract from documents' }),
+    ).not.toBeInTheDocument();
+    expect(deps.getExtractableDocumentsQuery).not.toHaveBeenCalled();
     expect(screen.queryByTestId('brain-read-only')).not.toBeInTheDocument();
   });
 

@@ -33,7 +33,7 @@ export function BrainOverviewPanel({
               : 'overview.empty-description',
           )}
         />
-        {canWrite && <BrainUploadButton />}
+        {canWrite && <BrainUploadButton variant="outline" />}
       </div>
     );
   }
@@ -100,7 +100,6 @@ export function BrainOverviewPanel({
       <div className="flex flex-wrap items-start justify-end gap-3">
         {canWrite && (
           <div className="flex flex-wrap items-center gap-2">
-            <BrainUploadButton />
             {data.candidates > 0 ? (
               <Button asChild>
                 <Link href={href('/brain/review')}>

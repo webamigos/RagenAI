@@ -3014,7 +3014,7 @@
       },
       "send": "Wyślij do bazy wiedzy",
       "sent": "Wysłano do bazy wiedzy",
-      "upload": "Wgraj do Brain",
+      "upload": "Dodaj dokumenty",
       "uploaded": "Wgrano do Brain: {count}. Pliki są zapisane i przetworzone, ale poza wyszukiwaniem.",
       "upload-failed": "Wgrywanie się nie powiodło. Sprawdź plik i spróbuj ponownie.",
       "staged-summary": "W Brain, poza wyszukiwaniem: {count} · bez zatwierdzonej strony: {uncurated}",
