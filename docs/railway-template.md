@@ -13,10 +13,10 @@ rebuild it from here, and change it here first. That is the same arrangement as
 the rest of Railway configuration, which stays in the dashboard until
 `.railway/railway.ts` is adopted ([ADR-47](adrs/47-railway-configuration-lives-in-the-dashboard.md)).
 
-> **Status (2026-10-09): built and run as a project, not yet published as a
-> template.** The project `ragen-template-test` (workspace *Web Amigos*) was
-> assembled from this document and deployed. Section 6 says what that proved
-> and what is still open. The images it needs are **2.52.0 or later** — earlier
+> **Status (2026-10-09): built and run end to end on 2.52.0 as a project, not
+> yet published as a template.** The project `ragen-template-test` (workspace
+> *Web Amigos*) was assembled from this document and deployed. Section 6 says
+> what that proved and what is still open. The images it needs are **2.52.0 or later** — earlier
 > ones cannot chat without an OpenAI key (#1619) and cannot switch Brain on at
 > install (#1620).
 
@@ -298,6 +298,12 @@ egress is free, a service's own egress is not.
   OpenRouter embeds it and Qdrant stores it.
 - The model picker offers only what the gateway can serve with the configured
   key (Claude Sonnet 5.5 via OpenRouter).
+- On 2.52.0: `migrate` logged "RAGEN_DEFAULT_FEATURES: switched on brain." and
+  Brain was in the sidebar on first sign-in; a chat answer on Sonnet 5.5 cited
+  the PDF correctly, with the document summary (Haiku 5.5) beside the source;
+  a Brain extraction through OpenRouter's structured output wrote one
+  candidate page ("1 extracted, 0 failed", 2 535 tokens); the admin panel
+  signed in with the first account.
 
 **Found and fixed on the way** — all in 2.52.0 or the PRs named:
 
@@ -307,22 +313,18 @@ egress is free, a service's own egress is not.
   OpenAI key (#1619);
 - Brain could not be on at install (#1620);
 - a new chat preselected `gemini-3-flash-preview` instead of `DEFAULT_MODEL`
-  (#1622);
+  (#1622, after 2.52.0 — on 2.52.0 the picker still opens on Gemini);
 - `main`'s build failed intermittently on Google Fonts (#1617).
 
 **Still to do before publishing:**
 
-1. Bump the project to 2.52.0 (or later), set `RAGEN_DEFAULT_FEATURES=brain` on
-   `migrate`, and finish the run: a chat answer citing the PDF, a Brain
-   extraction (structured output through OpenRouter has not been exercised),
-   the admin panel signing in.
-2. *Generate Template from Project*, and check what the composer carries over —
+1. *Generate Template from Project*, and check what the composer carries over —
    the bucket, the pre-deploy command, restart policies, healthchecks, groups,
    icons — then replace every generated secret with a `secret()` function and
    `OPENROUTER_API_KEY` with a prompted variable.
-3. Pin Docling's repository source to a release tag (`…/tree/v2.52.0`) if the
+2. Pin Docling's repository source to a release tag (`…/tree/v2.52.0`) if the
    composer accepts one.
-4. Measure idle memory and cost; Docling dominates both.
+3. Measure idle memory and cost; Docling dominates both.
 
 **Rebuilding the project by hand, not from the template** — two traps the test
 hit, which a template avoids because it creates every service at once:
