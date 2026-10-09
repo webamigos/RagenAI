@@ -12,7 +12,7 @@ const completeEnv = {
   DEFAULT_MODEL: 'gemini-3-flash-preview',
   DEFAULT_MODEL_PROVIDER: 'litellm',
   QDRANT_URL: 'http://localhost:6333',
-  TEMPORAL_SERVER_ADDRESS: 'localhost:7233',
+  REDIS_URL: 'redis://localhost:56379',
   SMTP_HOST: 'smtp.example.com',
   NEXT_PUBLIC_APP_URL: 'https://ragen.example.com',
   TARGET_ENV: 'production',
@@ -36,8 +36,9 @@ describe('inspectEnvironment', () => {
     expect(report.hasBlockingIssues).toBe(true);
     expect(
       report.findings.filter((f) => f.severity === 'required'),
-    ).toHaveLength(5);
+    ).toHaveLength(6);
     expect(idsOf({})).toContain('database');
+    expect(idsOf({})).toContain('redis');
   });
 
   it('asks for model-provider credentials when no family has any', () => {
@@ -53,6 +54,7 @@ describe('inspectEnvironment', () => {
     // Five families need five different variables and a deployment needs one,
     // so this is "any", not "all".
     for (const name of [
+      'OPENROUTER_API_KEY',
       'ANTHROPIC_API_KEY',
       'AZURE_API_KEY',
       'AWS_BEDROCK_REGION',
@@ -134,16 +136,66 @@ describe('inspectEnvironment', () => {
     expect(idsOf(viaKms)).not.toContain('message-encryption');
   });
 
-  it('does not block on recommended settings alone', () => {
+  it('accepts OpenRouter alone — the Railway template configures nothing else', () => {
+    // The checklist kept its own list of provider families and it did not
+    // have OpenRouter, so this install was told it had no model provider.
     const report = inspectEnvironment({
       ...completeEnv,
-      TEMPORAL_SERVER_ADDRESS: undefined,
+      OPENAI_API_KEY: undefined,
+      OPENROUTER_API_KEY: 'sk-or-test',
     });
 
-    expect(
-      idsOf({ ...completeEnv, TEMPORAL_SERVER_ADDRESS: undefined }),
-    ).toContain('temporal');
+    expect(report.findings.map((f) => f.id)).not.toContain(
+      'model-provider-credentials',
+    );
+  });
+
+  it('does not block on recommended settings alone', () => {
+    const report = inspectEnvironment({ ...completeEnv, SMTP_HOST: undefined });
+
+    expect(report.findings.map((f) => f.id)).toEqual(['mail']);
     expect(report.hasBlockingIssues).toBe(false);
+  });
+
+  describe('job runtime', () => {
+    it('never asks for Temporal under BullMQ, the default', () => {
+      // It used to, on every install, for an engine ADR-44 made optional.
+      expect(idsOf(completeEnv)).not.toContain('temporal');
+      expect(idsOf({ ...completeEnv, WORKER_RUNTIME: 'bullmq' })).not.toContain(
+        'temporal',
+      );
+    });
+
+    it('requires REDIS_URL under BullMQ', () => {
+      const report = inspectEnvironment({
+        ...completeEnv,
+        REDIS_URL: undefined,
+      });
+      const finding = report.findings.find((f) => f.id === 'redis');
+
+      expect(finding?.severity).toBe('required');
+      expect(report.hasBlockingIssues).toBe(true);
+    });
+
+    it('recommends the Temporal address, and not Redis, under Temporal', () => {
+      const env = {
+        ...completeEnv,
+        REDIS_URL: undefined,
+        WORKER_RUNTIME: 'temporal',
+      };
+
+      expect(idsOf(env)).toEqual(['temporal']);
+      expect(inspectEnvironment(env).hasBlockingIssues).toBe(false);
+      expect(
+        idsOf({ ...env, TEMPORAL_SERVER_ADDRESS: 'localhost:7233' }),
+      ).toEqual([]);
+    });
+
+    it('leaves an unknown WORKER_RUNTIME to the worker, which names it', () => {
+      expect(() =>
+        inspectEnvironment({ ...completeEnv, WORKER_RUNTIME: 'sidekiq' }),
+      ).not.toThrow();
+    });
   });
 
   describe('embedding dimensions', () => {
