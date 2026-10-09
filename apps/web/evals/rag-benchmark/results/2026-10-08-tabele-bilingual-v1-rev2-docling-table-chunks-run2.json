@@ -1,0 +1,691 @@
+{
+  "corpus": "tabele-bilingual-v1",
+  "corpusVersion": 2,
+  "fingerprint": {
+    "date": "2026-10-08",
+    "gitSha": "8ea12ae5d",
+    "chatModel": "gemini-3-flash-preview",
+    "judgeModel": "gemini-2.5-flash",
+    "rephraseModel": "mistral-small-3.2",
+    "embeddingsModel": "bge-multilingual-gemma2",
+    "vectorSize": "3584",
+    "rerankProvider": "scaleway",
+    "rerankModel": "qwen3-embedding-8b",
+    "rerankingEnabled": "on for the organization; FEATURE_FLAG_RERANKING=1 in the runner's environment (the server's is not visible)",
+    "multiQueryVariants": "on, 1 variant per turn (code constant)",
+    "appUrl": "http://localhost:3000",
+    "llmGateway": "(unknown: healthcheck did not say)",
+    "shape": "docling-table-chunks"
+  },
+  "results": [
+    {
+      "questionId": "pl-cap-metallographic",
+      "arm": "rag",
+      "lang": "pl",
+      "docLang": "pl",
+      "expectedFiles": ["docs/pl-01-limity-sprzetowe.md"],
+      "type": "numeric",
+      "question": "Jaki jest limit zwrotu kosztów zakupu mikroskopu metalograficznego o kodzie CD-2208 w Zakładach Metalurgicznych „Czarny Dunajec\"?",
+      "answer": "Limit zwrotu kosztów zakupu mikroskopu metalograficznego o kodzie CD-2208 wynosi 24 177,31 zł [1].",
+      "assertionsPassed": true,
+      "assertionFailures": [],
+      "rubricPassed": true,
+      "rubricReason": "Odpowiedź podaje prawidłową kwotę 24 177,31 wraz z poprawną jednostką.",
+      "passed": true,
+      "citedFiles": ["838b2c83-61c7-403b-8e53-1a0524c09e53"],
+      "evidence": {
+        "needles": 1,
+        "found": 1
+      },
+      "retrievalTrace": {
+        "postRetrieval": "reranker:scaleway",
+        "expansion": "off",
+        "crossQueryFusionEnabled": false,
+        "queryCount": 2,
+        "chunkCount": 5,
+        "timings": {
+          "searchMs": 338,
+          "rerankMs": 585,
+          "selectMs": 0,
+          "expandMs": 7,
+          "rephraseMs": 1070
+        }
+      },
+      "answerMs": 5607,
+      "durationMs": 8969
+    },
+    {
+      "questionId": "pl-cap-extensometer",
+      "arm": "rag",
+      "lang": "pl",
+      "docLang": "pl",
+      "expectedFiles": ["docs/pl-01-limity-sprzetowe.md"],
+      "type": "numeric",
+      "question": "Ile wynosi limit zwrotu za ekstensometr laserowy CD-2369 w Czarnym Dunajcu?",
+      "answer": "Limit zwrotu za ekstensometr laserowy o kodzie CD-2369 wynosi 21 629,67 zł [1].",
+      "assertionsPassed": true,
+      "assertionFailures": [],
+      "rubricPassed": true,
+      "rubricReason": "Odpowiedź podaje kwotę 21 629,67, co jest zgodne z rubryką.",
+      "passed": true,
+      "citedFiles": ["838b2c83-61c7-403b-8e53-1a0524c09e53"],
+      "evidence": {
+        "needles": 1,
+        "found": 1
+      },
+      "retrievalTrace": {
+        "postRetrieval": "reranker:scaleway",
+        "expansion": "off",
+        "crossQueryFusionEnabled": false,
+        "queryCount": 2,
+        "chunkCount": 5,
+        "timings": {
+          "searchMs": 387,
+          "rerankMs": 350,
+          "selectMs": 0,
+          "expandMs": 6,
+          "rephraseMs": 885
+        }
+      },
+      "answerMs": 5046,
+      "durationMs": 6591
+    },
+    {
+      "questionId": "pl-rate-roughness",
+      "arm": "rag",
+      "lang": "pl",
+      "docLang": "pl",
+      "expectedFiles": ["docs/pl-02-stawki-serwisowe.md"],
+      "type": "numeric",
+      "question": "Jaka jest stawka podstawowa za pomiar chropowatości (kod SR-321) w cenniku usług serwisowych Czarnego Dunajca?",
+      "answer": "Aktualna stawka podstawowa za wykonanie pomiaru chropowatości (kod usługi SR-321) wynosi 399,63 zł za godzinę [1]. Stawka ta obowiązuje od 1 kwietnia 2026 roku i dotyczy prac wykonywanych w dni robocze w godzinach 6:00–18:00 [1].",
+      "assertionsPassed": true,
+      "assertionFailures": [],
+      "rubricPassed": true,
+      "rubricReason": "Odpowiedź podaje prawidłową stawkę podstawową 399,63 zł/h dla usługi SR-321.",
+      "passed": true,
+      "citedFiles": ["2c055f1a-88a9-4a14-bb78-48cd177f0739"],
+      "evidence": {
+        "needles": 1,
+        "found": 1
+      },
+      "retrievalTrace": {
+        "postRetrieval": "reranker:scaleway",
+        "expansion": "off",
+        "crossQueryFusionEnabled": false,
+        "queryCount": 2,
+        "chunkCount": 5,
+        "timings": {
+          "searchMs": 350,
+          "rerankMs": 417,
+          "selectMs": 0,
+          "expandMs": 7,
+          "rephraseMs": 943
+        }
+      },
+      "answerMs": 5924,
+      "durationMs": 7491
+    },
+    {
+      "questionId": "pl-rate-scale-verification-oob",
+      "arm": "rag",
+      "lang": "pl",
+      "docLang": "pl",
+      "expectedFiles": ["docs/pl-02-stawki-serwisowe.md"],
+      "type": "numeric",
+      "question": "Ile kosztuje godzina legalizacji wag (SR-336) wykonanej w niedzielę w Czarnym Dunajcu?",
+      "answer": "Godzina usługi legalizacji wag (kod SR-336) w niedzielę kosztuje 656,43 zł [1].\n\nNależy jednak uwzględnić dodatkowe warunki rozliczenia:\n*   **Minimalny czas rozliczenia** dla tej usługi wynosi 2 godziny [1].\n*   **Ryczałt dojazdowy** w wysokości 87,40 zł jest doliczany do każdej usługi wykonywanej poza standardowymi godzinami (w tym w niedziele), niezależnie od liczby przepracowanych godzin [1].",
+      "assertionsPassed": true,
+      "assertionFailures": [],
+      "rubricPassed": true,
+      "rubricReason": "Odpowiedź podaje prawidłową stawkę 656,43 zł/h dla niedzieli, zgodnie z rubryką.",
+      "passed": true,
+      "citedFiles": ["2c055f1a-88a9-4a14-bb78-48cd177f0739"],
+      "evidence": {
+        "needles": 1,
+        "found": 1
+      },
+      "retrievalTrace": {
+        "postRetrieval": "reranker:scaleway",
+        "expansion": "off",
+        "crossQueryFusionEnabled": false,
+        "queryCount": 2,
+        "chunkCount": 5,
+        "timings": {
+          "searchMs": 388,
+          "rerankMs": 300,
+          "selectMs": 0,
+          "expandMs": 7,
+          "rephraseMs": 780
+        }
+      },
+      "answerMs": 7073,
+      "durationMs": 8686
+    },
+    {
+      "questionId": "pl-roughness-and-callout",
+      "arm": "rag",
+      "lang": "pl",
+      "docLang": "pl",
+      "expectedFiles": ["docs/pl-02-stawki-serwisowe.md"],
+      "type": "multi-hop",
+      "question": "Ile zapłaci klient Czarnego Dunajca za godzinę pomiaru chropowatości w dzień roboczy i jaki ryczałt dojazdowy dolicza się do zleceń realizowanych poza godzinami?",
+      "answer": "Opłata za godzinę pomiaru chropowatości w dzień roboczy (stawka podstawowa) wynosi 399,63 zł [1]. Ryczałt dojazdowy za usługi wykonywane poza standardowymi godzinami pracy wynosi 87,40 zł, niezależnie od liczby przepracowanych godzin [1].",
+      "assertionsPassed": true,
+      "assertionFailures": [],
+      "rubricPassed": true,
+      "rubricReason": "Odpowiedź podaje obie wartości zgodnie z rubryką: stawkę podstawową 399,63 zł/h oraz ryczałt dojazdowy 87,40 zł.",
+      "passed": true,
+      "citedFiles": ["2c055f1a-88a9-4a14-bb78-48cd177f0739"],
+      "evidence": {
+        "needles": 2,
+        "found": 2
+      },
+      "retrievalTrace": {
+        "postRetrieval": "reranker:scaleway",
+        "expansion": "off",
+        "crossQueryFusionEnabled": false,
+        "queryCount": 2,
+        "chunkCount": 5,
+        "timings": {
+          "searchMs": 337,
+          "rerankMs": 428,
+          "selectMs": 0,
+          "expandMs": 6,
+          "rephraseMs": 1129
+        }
+      },
+      "answerMs": 6065,
+      "durationMs": 8163
+    },
+    {
+      "questionId": "pl-heat-cost",
+      "arm": "rag",
+      "lang": "pl",
+      "docLang": "pl",
+      "expectedFiles": ["docs/pl-03-rejestr-wytopow.xlsx"],
+      "type": "numeric",
+      "question": "Ile wynosi koszt jednostkowy wytopu o numerze partii WT-3140 w rejestrze wytopów Czarnego Dunajca?",
+      "answer": "Koszt jednostkowy wytopu o numerze partii WT-3140 wynosi 49,19 zł/kg [1].",
+      "assertionsPassed": true,
+      "assertionFailures": [],
+      "rubricPassed": true,
+      "rubricReason": "Odpowiedź podaje dokładnie 49,19 zł/kg jako koszt jednostkowy wytopu WT-3140.",
+      "passed": true,
+      "citedFiles": ["916438a0-1a3c-465b-83dc-675aa05d5280"],
+      "evidence": {
+        "needles": 1,
+        "found": 1
+      },
+      "retrievalTrace": {
+        "postRetrieval": "reranker:scaleway",
+        "expansion": "off",
+        "crossQueryFusionEnabled": false,
+        "queryCount": 2,
+        "chunkCount": 5,
+        "timings": {
+          "searchMs": 344,
+          "rerankMs": 395,
+          "selectMs": 0,
+          "expandMs": 1,
+          "rephraseMs": 762
+        }
+      },
+      "answerMs": 5346,
+      "durationMs": 6616
+    },
+    {
+      "questionId": "en-heat-charge-mass",
+      "arm": "rag",
+      "lang": "en",
+      "docLang": "pl",
+      "expectedFiles": ["docs/pl-03-rejestr-wytopow.xlsx"],
+      "type": "cross-lingual",
+      "question": "What was the charge mass of batch WT-3146 in the Czarny Dunajec melt register?",
+      "answer": "The charge mass for batch WT-3146, as recorded in the melt register, is 1279 kg [1].",
+      "assertionsPassed": true,
+      "assertionFailures": [],
+      "rubricPassed": true,
+      "rubricReason": "The answer correctly states 1279 kg as the charge mass for batch WT-3146.",
+      "passed": true,
+      "citedFiles": ["916438a0-1a3c-465b-83dc-675aa05d5280"],
+      "evidence": {
+        "needles": 1,
+        "found": 1
+      },
+      "retrievalTrace": {
+        "postRetrieval": "reranker:scaleway",
+        "expansion": "off",
+        "crossQueryFusionEnabled": false,
+        "queryCount": 2,
+        "chunkCount": 5,
+        "timings": {
+          "searchMs": 366,
+          "rerankMs": 867,
+          "selectMs": 0,
+          "expandMs": 7,
+          "rephraseMs": 643
+        }
+      },
+      "answerMs": 5723,
+      "durationMs": 6923
+    },
+    {
+      "questionId": "en-cap-metallographic",
+      "arm": "rag",
+      "lang": "en",
+      "docLang": "en",
+      "expectedFiles": ["docs/en-01-equipment-limits.md"],
+      "type": "numeric",
+      "question": "What is the reimbursement cap for the metallographic microscope, item TF-3208, at Thornbury Foundry Works?",
+      "answer": "The maximum reimbursement amount (reimbursement cap) for the metallographic microscope, item TF-3208, is 3,294.59 GBP [1].",
+      "assertionsPassed": true,
+      "assertionFailures": [],
+      "rubricPassed": true,
+      "rubricReason": "The answer correctly provides the reimbursement cap of 3,294.59 for TF-3208, including the correct currency.",
+      "passed": true,
+      "citedFiles": ["c1ead2e6-33f5-4c5b-a960-a411f9530b61"],
+      "evidence": {
+        "needles": 1,
+        "found": 1
+      },
+      "retrievalTrace": {
+        "postRetrieval": "reranker:scaleway",
+        "expansion": "off",
+        "crossQueryFusionEnabled": false,
+        "queryCount": 2,
+        "chunkCount": 5,
+        "timings": {
+          "searchMs": 352,
+          "rerankMs": 693,
+          "selectMs": 0,
+          "expandMs": 7,
+          "rephraseMs": 772
+        }
+      },
+      "answerMs": 4604,
+      "durationMs": 6380
+    },
+    {
+      "questionId": "en-cap-extensometer",
+      "arm": "rag",
+      "lang": "en",
+      "docLang": "en",
+      "expectedFiles": ["docs/en-01-equipment-limits.md"],
+      "type": "numeric",
+      "question": "How much will Thornbury Foundry Works reimburse for a laser extensometer, item TF-3369?",
+      "answer": "The reimbursement cap for a laser extensometer (item TF-3369) is £5,807.94 [1]. This cap represents the maximum amount the company refunds against an invoice, while the list price of £8,370.82 is provided for information only [1].",
+      "assertionsPassed": false,
+      "assertionFailures": ["must not contain: \"8,370.82\""],
+      "rubricPassed": true,
+      "rubricReason": "The answer correctly states the reimbursement cap as 5,807.94 for TF-3369.",
+      "passed": false,
+      "citedFiles": ["c1ead2e6-33f5-4c5b-a960-a411f9530b61"],
+      "evidence": {
+        "needles": 1,
+        "found": 1
+      },
+      "retrievalTrace": {
+        "postRetrieval": "reranker:scaleway",
+        "expansion": "off",
+        "crossQueryFusionEnabled": false,
+        "queryCount": 2,
+        "chunkCount": 5,
+        "timings": {
+          "searchMs": 355,
+          "rerankMs": 890,
+          "selectMs": 0,
+          "expandMs": 7,
+          "rephraseMs": 628
+        }
+      },
+      "answerMs": 6058,
+      "durationMs": 7877
+    },
+    {
+      "questionId": "en-rate-roughness",
+      "arm": "rag",
+      "lang": "en",
+      "docLang": "en",
+      "expectedFiles": ["docs/en-02-service-rates.md"],
+      "type": "numeric",
+      "question": "What is the standard hourly rate for roughness measurement, service SV-421, at Thornbury Foundry Works?",
+      "answer": "The standard hourly rate for roughness measurement (service code SV-421) at Thornbury Foundry Works is 58.39 GBP/h [1].",
+      "assertionsPassed": true,
+      "assertionFailures": [],
+      "rubricPassed": true,
+      "rubricReason": "The answer correctly states the standard hourly rate as GBP 58.39 per hour for SV-421.",
+      "passed": true,
+      "citedFiles": ["f6147b4c-38ea-4bc3-905b-a5a0e08244d0"],
+      "evidence": {
+        "needles": 1,
+        "found": 1
+      },
+      "retrievalTrace": {
+        "postRetrieval": "reranker:scaleway",
+        "expansion": "off",
+        "crossQueryFusionEnabled": false,
+        "queryCount": 2,
+        "chunkCount": 5,
+        "timings": {
+          "searchMs": 362,
+          "rerankMs": 314,
+          "selectMs": 0,
+          "expandMs": 5,
+          "rephraseMs": 844
+        }
+      },
+      "answerMs": 4897,
+      "durationMs": 6198
+    },
+    {
+      "questionId": "en-rate-scale-verification-oob",
+      "arm": "rag",
+      "lang": "en",
+      "docLang": "en",
+      "expectedFiles": ["docs/en-02-service-rates.md"],
+      "type": "numeric",
+      "question": "What hourly rate does Thornbury Foundry Works charge for scale verification carried out on a Saturday?",
+      "answer": "I do not know the hourly rate for \"scale verification services\" as this specific service is not listed in the provided documents.\n\nThe available price list for Thornbury Foundry Works Ltd includes a rate for a **Process audit** (service code SV-448), which is **GBP 110.54 per hour** for out-of-hours work, such as Saturdays [1]. Additionally, every out-of-hours job carries a fixed call-out charge of **GBP 20.40**, regardless of the hours worked [1]. However, \"scale verification\" is not mentioned in the provided service rates or equipment reimbursement schedules [1][2].",
+      "assertionsPassed": false,
+      "assertionFailures": ["missing: \"149.64\""],
+      "rubricPassed": false,
+      "rubricReason": "The answer does not provide GBP 149.64 per hour as the rate for a Saturday.",
+      "passed": false,
+      "citedFiles": [
+        "f6147b4c-38ea-4bc3-905b-a5a0e08244d0",
+        "c1ead2e6-33f5-4c5b-a960-a411f9530b61"
+      ],
+      "evidence": {
+        "needles": 1,
+        "found": 0
+      },
+      "retrievalTrace": {
+        "postRetrieval": "reranker:scaleway",
+        "expansion": "off",
+        "crossQueryFusionEnabled": false,
+        "queryCount": 2,
+        "chunkCount": 5,
+        "timings": {
+          "searchMs": 384,
+          "rerankMs": 569,
+          "selectMs": 0,
+          "expandMs": 7,
+          "rephraseMs": 577
+        }
+      },
+      "answerMs": 32526,
+      "durationMs": 34388
+    },
+    {
+      "questionId": "en-extensometer-cap-and-period",
+      "arm": "rag",
+      "lang": "en",
+      "docLang": "en",
+      "expectedFiles": ["docs/en-01-equipment-limits.md"],
+      "type": "multi-hop",
+      "question": "What does Thornbury Foundry Works reimburse for a laser extensometer, and how often is that entry reviewed?",
+      "answer": "Thornbury Foundry Works covers expenses for a laser extensometer (item code TF-3369) by providing a refund against an invoice up to a reimbursement cap of 5,807.94 GBP [1]. The list price of 8,370.82 GBP is for informational purposes only and is not used as the basis for settlement [1].\n\nThe reimbursement policy for the laser extensometer is reviewed every 36 months [1]. Any claim exceeding the specified cap requires written approval from the Board, and standard claims are assessed by the Procurement Office within 9 working days [1].",
+      "assertionsPassed": true,
+      "assertionFailures": [],
+      "rubricPassed": true,
+      "rubricReason": "The answer correctly states the reimbursement cap of GBP 5,807.94 for TF-3369 and the review period of 36 months.",
+      "passed": true,
+      "citedFiles": ["c1ead2e6-33f5-4c5b-a960-a411f9530b61"],
+      "evidence": {
+        "needles": 1,
+        "found": 1
+      },
+      "retrievalTrace": {
+        "postRetrieval": "reranker:scaleway",
+        "expansion": "off",
+        "crossQueryFusionEnabled": false,
+        "queryCount": 2,
+        "chunkCount": 5,
+        "timings": {
+          "searchMs": 395,
+          "rerankMs": 809,
+          "selectMs": 0,
+          "expandMs": 8,
+          "rephraseMs": 779
+        }
+      },
+      "answerMs": 7097,
+      "durationMs": 8394
+    },
+    {
+      "questionId": "en-ask-pl-cap",
+      "arm": "rag",
+      "lang": "en",
+      "docLang": "pl",
+      "expectedFiles": ["docs/pl-01-limity-sprzetowe.md"],
+      "type": "cross-lingual",
+      "question": "In zloty, what does Czarny Dunajec reimburse for the metallographic microscope, item CD-2208?",
+      "answer": "The reimbursement amount for the metallographic microscope (item CD-2208) is 24,177.31 PLN [1].",
+      "assertionsPassed": true,
+      "assertionFailures": [],
+      "rubricPassed": true,
+      "rubricReason": "The answer correctly states the reimbursement amount as 24,177.31 in PLN for item CD-2208.",
+      "passed": true,
+      "citedFiles": ["838b2c83-61c7-403b-8e53-1a0524c09e53"],
+      "evidence": {
+        "needles": 1,
+        "found": 1
+      },
+      "retrievalTrace": {
+        "postRetrieval": "reranker:scaleway",
+        "expansion": "off",
+        "crossQueryFusionEnabled": false,
+        "queryCount": 2,
+        "chunkCount": 5,
+        "timings": {
+          "searchMs": 353,
+          "rerankMs": 536,
+          "selectMs": 0,
+          "expandMs": 6,
+          "rephraseMs": 762
+        }
+      },
+      "answerMs": 4685,
+      "durationMs": 6467
+    },
+    {
+      "questionId": "pl-ask-en-roughness",
+      "arm": "rag",
+      "lang": "pl",
+      "docLang": "en",
+      "expectedFiles": ["docs/en-02-service-rates.md"],
+      "type": "cross-lingual",
+      "question": "Jaka jest podstawowa stawka godzinowa za pomiar chropowatości (SV-421) w Thornbury Foundry Works?",
+      "answer": "Podstawowa stawka godzinowa za usługę pomiaru chropowatości (SV-421) w Thornbury Foundry Works wynosi 58,39 GBP/h [1].",
+      "assertionsPassed": true,
+      "assertionFailures": [],
+      "rubricPassed": null,
+      "rubricReason": "judge returned unparseable JSON: {\"pass\": true, \"reason\": Odpowiedź podaje dokładnie 58,39 GBP za godzinę jako stawkę podstawową dla SV-421, zgodnie z ru",
+      "rubricError": "judge returned unparseable JSON",
+      "passed": true,
+      "citedFiles": ["f6147b4c-38ea-4bc3-905b-a5a0e08244d0"],
+      "evidence": {
+        "needles": 1,
+        "found": 1
+      },
+      "retrievalTrace": {
+        "postRetrieval": "reranker:scaleway",
+        "expansion": "off",
+        "crossQueryFusionEnabled": false,
+        "queryCount": 2,
+        "chunkCount": 5,
+        "timings": {
+          "searchMs": 409,
+          "rerankMs": 241,
+          "selectMs": 0,
+          "expandMs": 8,
+          "rephraseMs": 804
+        }
+      },
+      "answerMs": 4398,
+      "durationMs": 6027
+    },
+    {
+      "questionId": "pl-ask-en-microscope-cap",
+      "arm": "rag",
+      "lang": "pl",
+      "docLang": "en",
+      "expectedFiles": ["docs/en-01-equipment-limits.md"],
+      "type": "cross-lingual",
+      "question": "Ile wynosi limit zwrotu za mikroskop metalograficzny o kodzie TF-3208 w Thornbury Foundry Works?",
+      "answer": "Limit zwrotu kosztów za mikroskop metalograficzny o kodzie TF-3208 w Thornbury Foundry Works wynosi 3 294,59 GBP [2].",
+      "assertionsPassed": true,
+      "assertionFailures": [],
+      "rubricPassed": true,
+      "rubricReason": "The answer correctly states the refund limit as 3,294.59 GBP for item TF-3208, including the correct currency.",
+      "passed": true,
+      "citedFiles": ["c1ead2e6-33f5-4c5b-a960-a411f9530b61"],
+      "evidence": {
+        "needles": 1,
+        "found": 1
+      },
+      "retrievalTrace": {
+        "postRetrieval": "reranker:scaleway",
+        "expansion": "off",
+        "crossQueryFusionEnabled": false,
+        "queryCount": 2,
+        "chunkCount": 5,
+        "timings": {
+          "searchMs": 349,
+          "rerankMs": 813,
+          "selectMs": 0,
+          "expandMs": 10,
+          "rephraseMs": 858
+        }
+      },
+      "answerMs": 5906,
+      "durationMs": 8452
+    },
+    {
+      "questionId": "en-ask-pl-roughness-oob",
+      "arm": "rag",
+      "lang": "en",
+      "docLang": "pl",
+      "expectedFiles": ["docs/pl-02-stawki-serwisowe.md"],
+      "type": "cross-lingual",
+      "question": "What does Czarny Dunajec charge per hour for roughness measurement, service SR-321, outside normal working hours?",
+      "answer": "The out-of-hours hourly rate for service SR-321 (Roughness measurement) at Zakłady Metalurgiczne „Czarny Dunajec\" is 599.44 zł [1]. \n\nAdditionally, every service performed out of hours is subject to a fixed call-out charge of 87.40 zł, and the minimum billing time for this specific service is 8 hours [1].",
+      "assertionsPassed": true,
+      "assertionFailures": [],
+      "rubricPassed": true,
+      "rubricReason": "The answer correctly provides the out-of-hours rate of 599.44 zł per hour for SR-321.",
+      "passed": true,
+      "citedFiles": ["2c055f1a-88a9-4a14-bb78-48cd177f0739"],
+      "evidence": {
+        "needles": 1,
+        "found": 1
+      },
+      "retrievalTrace": {
+        "postRetrieval": "reranker:scaleway",
+        "expansion": "off",
+        "crossQueryFusionEnabled": false,
+        "queryCount": 2,
+        "chunkCount": 5,
+        "timings": {
+          "searchMs": 361,
+          "rerankMs": 459,
+          "selectMs": 0,
+          "expandMs": 7,
+          "rephraseMs": 867
+        }
+      },
+      "answerMs": 5932,
+      "durationMs": 8037
+    },
+    {
+      "questionId": "pl-guard-unknown-code",
+      "arm": "rag",
+      "lang": "pl",
+      "docLang": "pl",
+      "type": "guard-hallucination",
+      "question": "Jaki jest limit zwrotu za pozycję o kodzie CD-9999 w załączniku nr 3 Czarnego Dunajca?",
+      "answer": "Dostarczony dokument (Załącznik nr 3) nie zawiera pozycji o kodzie CD-9999, w związku z czym nie podano dla niej limitu zwrotu.",
+      "assertionsPassed": true,
+      "assertionFailures": [],
+      "rubricPassed": true,
+      "rubricReason": "Odpowiedź stwierdza, że pozycja nie istnieje w dokumencie i nie podaje dla niej żadnego limitu.",
+      "passed": true,
+      "citedFiles": [],
+      "retrievalTrace": {
+        "postRetrieval": "reranker:scaleway",
+        "expansion": "off",
+        "crossQueryFusionEnabled": false,
+        "queryCount": 2,
+        "chunkCount": 5,
+        "timings": {
+          "searchMs": 364,
+          "rerankMs": 740,
+          "selectMs": 0,
+          "expandMs": 9,
+          "rephraseMs": 979
+        }
+      },
+      "answerMs": 6405,
+      "durationMs": 8223
+    },
+    {
+      "questionId": "en-guard-false-premise",
+      "arm": "rag",
+      "lang": "en",
+      "docLang": "en",
+      "expectedFiles": ["docs/en-01-equipment-limits.md"],
+      "type": "guard-sycophancy",
+      "question": "Thornbury Foundry Works reimburses GBP 8,370.82 for a laser extensometer, doesn't it?",
+      "answer": "No, Thornbury Foundry Works Ltd does not reimburse GBP 8,370.82 for a laser extensometer. While that is the list price for the equipment (Item code TF-3369), the reimbursement cap is set at GBP 5,807.94 [1]. The list price is provided for information only and is never the basis of a settlement [1]. Any claim exceeding the reimbursement cap requires written Board approval [1].",
+      "assertionsPassed": true,
+      "assertionFailures": [],
+      "rubricPassed": true,
+      "rubricReason": "The answer correctly identifies the list price, states the correct reimbursement cap, and explicitly corrects the premise of the question.",
+      "passed": true,
+      "citedFiles": ["c1ead2e6-33f5-4c5b-a960-a411f9530b61"],
+      "evidence": {
+        "needles": 1,
+        "found": 1
+      },
+      "retrievalTrace": {
+        "postRetrieval": "reranker:scaleway",
+        "expansion": "off",
+        "crossQueryFusionEnabled": false,
+        "queryCount": 2,
+        "chunkCount": 5,
+        "timings": {
+          "searchMs": 360,
+          "rerankMs": 865,
+          "selectMs": 0,
+          "expandMs": 8,
+          "rephraseMs": 1399
+        }
+      },
+      "answerMs": 6317,
+      "durationMs": 8874
+    }
+  ],
+  "documentScores": [
+    {
+      "file": "docs/pl-01-limity-sprzetowe.md",
+      "state": "failed"
+    },
+    {
+      "file": "docs/pl-02-stawki-serwisowe.md",
+      "state": "failed"
+    },
+    {
+      "file": "docs/pl-03-rejestr-wytopow.xlsx",
+      "state": "failed"
+    },
+    {
+      "file": "docs/en-01-equipment-limits.md",
+      "state": "failed"
+    },
+    {
+      "file": "docs/en-02-service-rates.md",
+      "state": "failed"
+    }
+  ]
+}
