@@ -842,14 +842,24 @@ export async function getOrCreatePiiDek(orgId: string): Promise<Buffer> {
 // --- Get All Settings ---
 
 /**
+ * The organization's answer model.
+ *
  * When the model selector is hidden, env DEFAULT_MODEL is the source of truth
  * — bypass the per-org override stored in DB and the seed default.
+ *
+ * Otherwise the organization's own choice wins, then DEFAULT_MODEL, then the
+ * code default. DEFAULT_MODEL used to be skipped on this path, so an
+ * organization that had never picked a model got `gemini-3-flash-preview`
+ * whatever the deployment configured — on an install with no Vertex
+ * credentials, a model the picker did not even list, preselected.
  */
-function resolveOrgModel(dbValue: string | null | undefined): string {
+export function resolveOrgModel(dbValue: string | null | undefined): string {
   if (readPublicRuntimeConfig().hideModelSelector === '1') {
     return process.env.DEFAULT_MODEL ?? defaultOrganizationSettings.model;
   }
-  return dbValue || defaultOrganizationSettings.model;
+  return (
+    dbValue || process.env.DEFAULT_MODEL || defaultOrganizationSettings.model
+  );
 }
 
 export async function getAllSettings(

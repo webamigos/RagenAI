@@ -145,6 +145,39 @@ describe('OrganizationSettingsService', () => {
       expect(result.voiceId).toBe('JBFqnCBsd6RMkjVDRZzb');
     });
 
+    describe('model', () => {
+      const ORIGINAL = process.env.DEFAULT_MODEL;
+      afterEach(() => {
+        if (ORIGINAL === undefined) {
+          delete process.env.DEFAULT_MODEL;
+        } else {
+          process.env.DEFAULT_MODEL = ORIGINAL;
+        }
+      });
+
+      it('falls back to DEFAULT_MODEL, not the code default, when the organization picked none', async () => {
+        // Skipping DEFAULT_MODEL here preselected gemini-3-flash-preview on an
+        // install configured for something else entirely.
+        process.env.DEFAULT_MODEL = 'claude-sonnet-5-5-openrouter';
+        const { service } = makeService({ model: null });
+        expect((await service.getAllSettings('org-1')).model).toBe(
+          'claude-sonnet-5-5-openrouter',
+        );
+        const { service: noRow } = makeService(null);
+        expect((await noRow.getAllSettings('org-1')).model).toBe(
+          'claude-sonnet-5-5-openrouter',
+        );
+      });
+
+      it("keeps the organization's own choice over DEFAULT_MODEL", async () => {
+        process.env.DEFAULT_MODEL = 'claude-sonnet-5-5-openrouter';
+        const { service } = makeService({ model: 'mistral-small-3.2' });
+        expect((await service.getAllSettings('org-1')).model).toBe(
+          'mistral-small-3.2',
+        );
+      });
+    });
+
     it('returns null bedrockCredentials/azureOpenaiCredentials on malformed JSON', async () => {
       const { service } = makeService({
         bedrockCredentials: 'not-json-once-decrypted',

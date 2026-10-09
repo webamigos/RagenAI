@@ -96,7 +96,11 @@ export class OrganizationSettingsService {
     if (process.env.NEXT_PUBLIC_HIDE_MODEL_SELECTOR === '1') {
       return process.env.DEFAULT_MODEL ?? defaultOrganizationSettings.model;
     }
-    return dbValue || defaultOrganizationSettings.model;
+    // The organization's choice, then the deployment's DEFAULT_MODEL, then the
+    // code default — apps/web's `resolveOrgModel`, kept in step (ADR-21).
+    return (
+      dbValue || process.env.DEFAULT_MODEL || defaultOrganizationSettings.model
+    );
   }
 
   async getUsageLimits(orgId: string): Promise<UsageLimits> {
