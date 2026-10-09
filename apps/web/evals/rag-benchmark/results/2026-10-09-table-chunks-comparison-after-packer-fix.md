@@ -76,11 +76,20 @@ all three runs without the flag and passes in all three with it. The other
 three cases flicker in both directions, which is ordinary judge and reranker
 noise.
 
-`kolej`: two cases flicker, one each way. `xl-en2pl-baggage-liability`
-went `P.P` → `PPP`. `en-mono-baggage-weight` went `PPP` → `PP.`: once, the
-answer gave a 24 kg total allowance instead of 18 kg. That is one wrong
-answer in three, not a pattern. Per the harness README, a single-case delta
-like this is noise.
+`kolej`: two cases differ.
+
+- `xl-en2pl-baggage-liability` went `P.P` → `PPP`. This is not retrieval.
+  The flag-off run-2 answer was correct (`1,480 zł`). The judge failed it
+  only because the rubric writes the figure as `1 480 zł`, and run 3
+  accepted the same answer. The run files are left as the harness wrote
+  them. Corrected for that one grading error, `kolej` flag off is
+  24, 24, 24.
+- `en-mono-baggage-weight` went `PPP` → `PP.`. Once, the answer gave a
+  24 kg total allowance instead of 18 kg. That is a real wrong answer, but
+  one in three, not a pattern.
+
+So `kolej` is 24 → 23 of 24 on the median either way. Per the harness
+README, a one-case delta is noise.
 
 ## Reading it
 
@@ -94,8 +103,9 @@ like this is noise.
   difference is the rev2 rubric, which raised the baseline. It is not the
   packer fix lowering the flag-on result: that result went from 13/18 to
   16/18.
-- **No cost on ordinary documents**, within noise: 24 → 23 of 24 on `kolej`,
-  one flicker each way.
+- **No cost on ordinary documents**, within noise: 24 → 23 of 24 on
+  `kolej`. One flag-on answer was wrong once, and the only other difference
+  was a grading error on the flag-off side.
 - **The spec's threshold no longer applies.** "≥13/18 on `tabele`" was set
   against the rev1 baseline. Under rev2 the flag-off arm already clears it.
   Read the result as on versus off from the same night.

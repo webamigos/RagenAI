@@ -396,8 +396,8 @@ landable without it, because ADR-20 forbids it.
       it was at `d975ba4f8`, not as it is now.
       _Done 2026-10-09
       ([comparison](../../apps/web/evals/rag-benchmark/results/2026-10-09-table-chunks-comparison-after-packer-fix.md)):
-      `tabele` rev2 15 → **16/18**, `kolej` rev3 24 → 23/24 (one flicker each
-      way), controls 0. Excision applied to every table, no refusals. The
+      `tabele` rev2 15 → **16/18**, `kolej` rev3 24 → 23/24 (one wrong answer
+      in three flag-on runs; noise), controls 0. Excision applied to every table, no refusals. The
       corpora were revised since 2026-09-12 (#1459, #1525), so the off arm is
       not the 10/18 baseline: the gain is +1 on the median, with
       `pl-ask-en-roughness` moving `...` → `PPP`. The mechanism holds and costs
