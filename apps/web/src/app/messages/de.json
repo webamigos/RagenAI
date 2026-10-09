@@ -2727,10 +2727,10 @@
       "relation-suggestions": "Suggested relations",
       "relation-basis": "These pages cite the same document. Check whether they should be linked; a shared source does not establish a relation.",
       "select-relations": "Select relations to review",
-      "add-relations": "Add selected relations",
-      "severity-label": "Severity: {level}",
-      "select-all": "Select all",
-      "select-none": "Clear selection"
+      "add-relations": "Ausgewählte verknüpfen ({count})",
+      "severity-label": "Schweregrad: {level}",
+      "select-all": "Alle auswählen",
+      "select-none": "Auswahl aufheben"
     },
     "page": {
       "owner": "Verantwortlich",
@@ -2776,7 +2776,7 @@
         "access": "Wählen Sie zuerst, für wen die Seite zugänglich ist"
       },
       "state": "Status",
-      "status-by": "{status} by {name}, {date}"
+      "status-by": "{status} von {name}, {date}"
     },
     "origin": {
       "EXTRACTED": "zitiert",
@@ -2926,10 +2926,10 @@
         "full": "Full graph"
       },
       "topics-title": "Topic map",
-      "topics-scale": "Size = page count · colour = review state",
+      "topics-scale": "Kachelgröße = Anzahl der Seiten",
       "topic-pages": "{count, plural, one {# page} other {# pages}}",
-      "topic-approved": "Has approved pages",
-      "topic-approved-count": "{count, plural, one {# approved} other {# approved}}",
+      "topic-approved": "Hat eine freigegebene Seite",
+      "topic-approved-count": "{count} freigegeben",
       "topic-candidates": "Nur zu prüfende Seiten",
       "isolated-count": "{count, plural, one {# page outside the main topics} other {# pages outside the main topics}}",
       "isolated-description": "Instead of a column of loose dots: a list of pages without relations. Open a page to propose links.",
@@ -3016,7 +3016,7 @@
       },
       "send": "An die Wissensdatenbank senden",
       "sent": "An die Wissensdatenbank gesendet",
-      "upload": "In Brain hochladen",
+      "upload": "Dokumente hinzufügen",
       "uploaded": "In Brain hochgeladen: {count} — gespeichert und verarbeitet, nicht durchsuchbar",
       "upload-failed": "Das Hochladen ist fehlgeschlagen — prüfen Sie die Datei und versuchen Sie es erneut.",
       "staged-summary": "In Brain, nicht durchsuchbar: {count} · noch ohne freigegebene Seite: {uncurated}",
@@ -3027,7 +3027,7 @@
       "empty-in-language-description": "Kein Dokument in dieser Sprache oder keine Seite, die eines zitiert. Wählen Sie eine andere Sprache oder alle.",
       "empty-filter": "Documents without extracted knowledge",
       "clear-filter": "Show all documents",
-      "table-title": "Documents by language",
+      "table-title": "Dokumente nach Sprache ({count})",
       "shared-scale": "Shared scale: {count, plural, one {# page} other {# pages}} = full bar",
       "coverage-counts": "{approved} freigegeben · {candidates} zu prüfen",
       "state": {
@@ -3042,12 +3042,12 @@
       "pair-with": "Same document in {language}: {name}",
       "pair-coverage": "Paar: {approved} freigegeben · {candidates} zu prüfen (jede Seite einmal gezählt)",
       "warnings": {
-        "empty": "{count, plural, one {# document with no extracted knowledge} other {# documents with no extracted knowledge}}",
-        "withdrawn": "{count, plural, one {# document taken out of search} other {# documents taken out of search}}"
+        "empty": "{count, plural, one {# Dokument ohne extrahiertes Wissen} other {# Dokumente ohne extrahiertes Wissen}}",
+        "withdrawn": "{count, plural, one {# Dokument aus der Suche genommen} other {# Dokumente aus der Suche genommen}}"
       },
-      "manage-in-knowledge-base": "Manage files in the knowledge base",
+      "manage-in-knowledge-base": "Dateien in der Wissensdatenbank verwalten",
       "state-with-retrieval": "{state} · {retrieval}",
-      "row-actions": "Actions: {name}"
+      "row-actions": "Aktionen: {name}"
     },
     "publish-all": {
       "button": "Freigegebene veröffentlichen ({count})",
@@ -3146,11 +3146,11 @@
       }
     },
     "tab-hints": {
-      "pages": "Wissensseiten mit Quellenbelegen: Jede Seite enthält Aussagen mit wörtlichen Zitaten aus den Quelldokumenten. Eine zu prüfende Seite wartet auf Ihre Entscheidung; geben Sie sie frei und veröffentlichen Sie sie, damit der Chat daraus antworten kann.",
+      "pages": "Jede Seite sammelt Aussagen mit wörtlichen Zitaten aus ihren Quellen. Prüfen Sie eine Seite, geben Sie sie frei und veröffentlichen Sie sie, damit der Chat daraus antworten kann.",
       "findings": "Was Ihre Aufmerksamkeit braucht: Widersprüche zwischen Seiten, Lücken, veraltete Seiten, Seiten ohne Verantwortlichen und Dokumente, die Brain nicht lesen konnte.",
       "graph": "Wie Seiten zusammenhängen — welcher Prozess welche Richtlinie erfordert und welche Seiten aufeinander verweisen.",
       "documents": "Die Quelldokumente, die Brain liest: wie viele Seiten jedes ergeben hat und ob der Chat es noch durchsucht.",
-      "overview": "See how much knowledge has been reviewed and what needs attention."
+      "overview": "Unternehmenswissen aus Dokumenten, von Menschen geprüft. Sehen Sie, was im Chat bereits funktioniert und was auf Ihre Entscheidung wartet."
     },
     "relation-kind": {
       "approves": "genehmigt",
@@ -3200,7 +3200,7 @@
       },
       "empty-documents-count": "{count} without extracted knowledge",
       "unowned-count": "{count} without an owner",
-      "approved-share": "{percent}% der zu prüfenden und freigegebenen Seiten",
+      "approved-share": "{approved} von {total} Seiten",
       "awaiting-publication": "{count} approved pages awaiting publication",
       "attention-title": "Needs attention",
       "unowned-title": "Pages without an owner",
@@ -3210,7 +3210,7 @@
       "finding-description": "Prüfen Sie das Problem und beheben Sie seine Ursache.",
       "attention-empty": "Keine Probleme und keine Seiten ohne Verantwortlichen.",
       "ranking-title": "Where the most unreviewed knowledge is",
-      "legend": "Freigegeben / zu prüfen · gemeinsame Skala für alle Dokumente",
+      "legend": "Gemeinsame Skala für alle Dokumente",
       "coverage-counts": "{approved} freigegeben · {candidates} zu prüfen",
       "all-documents": "Alle Quellen ({count})",
       "ranking-empty": "Keine Seiten zu prüfen.",
@@ -3222,25 +3222,25 @@
       "no-pages-title": "No pages match this filter",
       "no-pages-description": "Change or clear the filter to see the remaining pages.",
       "next": {
-        "label": "What now?",
+        "label": "Was jetzt?",
         "assign-owners": {
-          "title": "{count, plural, one {Assign an owner to # page} other {Assign owners to # pages}}",
-          "description": "A page without an owner cannot be approved. The owner is the person who vouches for what the page says.",
-          "action": "Assign owners"
+          "title": "{count, plural, one {Verantwortliche für # Seite festlegen} other {Verantwortliche für # Seiten festlegen}}",
+          "description": "Eine Seite ohne Verantwortliche kann nicht freigegeben werden. Verantwortlich ist die Person, die für den Inhalt der Seite einsteht.",
+          "action": "Verantwortliche festlegen"
         },
         "review": {
-          "title": "{count, plural, one {Review # page} other {Review # pages}}",
-          "description": "These pages have an owner and are waiting for your decision: approve or reject them.",
-          "action": "Open review mode"
+          "title": "{count, plural, one {# Seite prüfen} other {# Seiten prüfen}}",
+          "description": "Diese Seiten haben Verantwortliche und warten auf Ihre Entscheidung: Geben Sie sie frei oder lehnen Sie sie ab.",
+          "action": "Prüfmodus öffnen"
         },
         "publish": {
-          "title": "{count, plural, one {Publish # approved page} other {Publish # approved pages}}",
-          "description": "Once published, chat can answer from them.",
-          "action": "Go to publishing"
+          "title": "{count, plural, one {# freigegebene Seite veröffentlichen} other {# freigegebene Seiten veröffentlichen}}",
+          "description": "Nach der Veröffentlichung kann der Chat daraus antworten.",
+          "action": "Zur Veröffentlichung"
         }
       },
-      "legend-approved": "approved",
-      "legend-to-review": "to review"
+      "legend-approved": "freigegeben",
+      "legend-to-review": "zu prüfen"
     },
     "review-mode": {
       "title": "Review mode",
@@ -3249,20 +3249,20 @@
       "navigation-shortcuts": "Shortcuts: J next · K previous",
       "queue": "Queue ({count})",
       "grouping": "Queue grouping",
-      "by-document": "By source document",
-      "by-type": "By page type",
+      "by-document": "Nach Dokument",
+      "by-type": "Nach Typ",
       "queue-empty": "In dieser Warteschlange gibt es keine Seiten zu prüfen.",
       "claim": "Brain claim",
       "quote": "Verbatim quote",
       "assessment": "Assessment",
       "claim-progress": "{confirmed} of {total} confirmed",
-      "local-checks": "Claim assessments stay in this view and are not saved.",
+      "local-checks": "Prüfen Sie, ob jede Aussage zu ihrem Zitat passt. Die Markierungen ✓ und ✕ dienen nur zur Orientierung und werden nicht gespeichert; gespeichert wird erst die Entscheidung in Schritt 3.",
       "no-claims": "This page has no claims to compare.",
       "paraphrase": "Paraphrase: the claim omits {facts}. Check the meaning.",
       "no-marker": "No citation marker. Check the source before deciding.",
       "missing-source": "No source for marker [{marker}].",
-      "confirm-claim": "Confirm claim {n}",
-      "question-claim": "Question claim {n}",
+      "confirm-claim": "Stimmt: Aussage {n}",
+      "question-claim": "Korrigieren: Aussage {n}",
       "owner-step": "Step 1 · Owner (required)",
       "owner-question": "Who vouches for this page?",
       "bulk-owner": "Für alle {count} zu prüfenden Seiten aus diesem Dokument festlegen",
@@ -3284,8 +3284,8 @@
       "back": "Return to Brain overview",
       "claims-step": "Step 2 · Claims",
       "publication-failed": "The page was approved, but publication did not finish: {reason} Open page details to retry publication.",
-      "claim-correct": "Correct",
-      "claim-needs-fix": "Needs a fix"
+      "claim-correct": "Stimmt",
+      "claim-needs-fix": "Korrigieren"
     }
   },
   "project-context-manager": {

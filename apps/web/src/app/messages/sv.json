@@ -2727,10 +2727,10 @@
       "relation-suggestions": "Suggested relations",
       "relation-basis": "These pages cite the same document. Check whether they should be linked; a shared source does not establish a relation.",
       "select-relations": "Select relations to review",
-      "add-relations": "Add selected relations",
-      "severity-label": "Severity: {level}",
-      "select-all": "Select all",
-      "select-none": "Clear selection"
+      "add-relations": "Länka markerade ({count})",
+      "severity-label": "Allvarlighetsgrad: {level}",
+      "select-all": "Markera alla",
+      "select-none": "Avmarkera alla"
     },
     "page": {
       "owner": "Ansvarig",
@@ -2776,7 +2776,7 @@
         "access": "Välj först vem sidan är öppen för"
       },
       "state": "Status",
-      "status-by": "{status} by {name}, {date}"
+      "status-by": "{status} av {name}, {date}"
     },
     "origin": {
       "EXTRACTED": "citerad",
@@ -2926,10 +2926,10 @@
         "full": "Full graph"
       },
       "topics-title": "Topic map",
-      "topics-scale": "Size = page count · colour = review state",
+      "topics-scale": "Rutans storlek = antal sidor",
       "topic-pages": "{count, plural, one {# page} other {# pages}}",
-      "topic-approved": "Has approved pages",
-      "topic-approved-count": "{count, plural, one {# approved} other {# approved}}",
+      "topic-approved": "Har en godkänd sida",
+      "topic-approved-count": "{count, plural, one {# godkänd} other {# godkända}}",
       "topic-candidates": "Bara att granska",
       "isolated-count": "{count, plural, one {# page outside the main topics} other {# pages outside the main topics}}",
       "isolated-description": "Instead of a column of loose dots: a list of pages without relations. Open a page to propose links.",
@@ -3016,7 +3016,7 @@
       },
       "send": "Skicka till kunskapsbasen",
       "sent": "Skickat till kunskapsbasen",
-      "upload": "Ladda upp till Brain",
+      "upload": "Lägg till dokument",
       "uploaded": "Uppladdat till Brain: {count} — lagrat och tolkat, inte sökbart",
       "upload-failed": "Uppladdningen misslyckades — kontrollera filen och försök igen.",
       "staged-summary": "I Brain, utanför sökningen: {count} · utan godkänd sida: {uncurated}",
@@ -3027,7 +3027,7 @@
       "empty-in-language-description": "Inget dokument på det här språket, eller ingen sida som citerar ett. Välj ett annat språk eller alla.",
       "empty-filter": "Documents without extracted knowledge",
       "clear-filter": "Show all documents",
-      "table-title": "Documents by language",
+      "table-title": "Dokument per språk ({count})",
       "shared-scale": "Shared scale: {count, plural, one {# page} other {# pages}} = full bar",
       "coverage-counts": "{approved} godkända · {candidates} att granska",
       "state": {
@@ -3042,12 +3042,12 @@
       "pair-with": "Same document in {language}: {name}",
       "pair-coverage": "Par: {approved} godkända · {candidates} att granska (varje sida räknas en gång)",
       "warnings": {
-        "empty": "{count, plural, one {# document with no extracted knowledge} other {# documents with no extracted knowledge}}",
-        "withdrawn": "{count, plural, one {# document taken out of search} other {# documents taken out of search}}"
+        "empty": "{count, plural, one {# dokument utan extraherad kunskap} other {# dokument utan extraherad kunskap}}",
+        "withdrawn": "{count, plural, one {# dokument borttaget ur sökningen} other {# dokument borttagna ur sökningen}}"
       },
-      "manage-in-knowledge-base": "Manage files in the knowledge base",
+      "manage-in-knowledge-base": "Hantera filer i kunskapsbasen",
       "state-with-retrieval": "{state} · {retrieval}",
-      "row-actions": "Actions: {name}"
+      "row-actions": "Åtgärder: {name}"
     },
     "publish-all": {
       "button": "Publicera godkända ({count})",
@@ -3146,11 +3146,11 @@
       }
     },
     "tab-hints": {
-      "pages": "Kunskapssidor med källor: varje sida innehåller påståenden med ordagranna citat ur källdokumenten. En sida att granska väntar på ditt beslut; godkänn och publicera den så att chatten kan svara utifrån den.",
+      "pages": "Varje sida samlar påståenden med ordagranna citat ur sina källor. Granska en sida, godkänn den och publicera den så att chatten kan svara utifrån den.",
       "findings": "Det som kräver din uppmärksamhet: motsägelser mellan sidor, luckor, inaktuella sidor, sidor utan ägare och dokument som Brain inte kunde läsa.",
       "graph": "Hur sidorna hänger ihop — vilken process som kräver vilken policy och vilka sidor som hänvisar till varandra.",
       "documents": "Källdokumenten som Brain läser: hur många sidor varje gav och om chatten fortfarande söker i dem.",
-      "overview": "See how much knowledge has been reviewed and what needs attention."
+      "overview": "Företagets kunskap hämtad ur dokument och kontrollerad av människor. Se vad som redan fungerar i chatten och vad som väntar på ditt beslut."
     },
     "relation-kind": {
       "approves": "godkänner",
@@ -3200,7 +3200,7 @@
       },
       "empty-documents-count": "{count} without extracted knowledge",
       "unowned-count": "{count} without an owner",
-      "approved-share": "{percent}% av sidorna att granska och godkända",
+      "approved-share": "{approved} av {total} sidor",
       "awaiting-publication": "{count} approved pages awaiting publication",
       "attention-title": "Needs attention",
       "unowned-title": "Pages without an owner",
@@ -3210,7 +3210,7 @@
       "finding-description": "Granska problemet och åtgärda orsaken.",
       "attention-empty": "Inga problem, och inga sidor behöver en ägare.",
       "ranking-title": "Where the most unreviewed knowledge is",
-      "legend": "Godkända / att granska · gemensam skala för alla dokument",
+      "legend": "En skala för alla dokument",
       "coverage-counts": "{approved} godkända · {candidates} att granska",
       "all-documents": "Alla källor ({count})",
       "ranking-empty": "Inga sidor att granska.",
@@ -3222,25 +3222,25 @@
       "no-pages-title": "No pages match this filter",
       "no-pages-description": "Change or clear the filter to see the remaining pages.",
       "next": {
-        "label": "What now?",
+        "label": "Vad nu?",
         "assign-owners": {
-          "title": "{count, plural, one {Assign an owner to # page} other {Assign owners to # pages}}",
-          "description": "A page without an owner cannot be approved. The owner is the person who vouches for what the page says.",
-          "action": "Assign owners"
+          "title": "{count, plural, one {Tilldela en ansvarig till # sida} other {Tilldela ansvariga till # sidor}}",
+          "description": "En sida utan ansvarig kan inte godkännas. Den ansvariga är den person som står för det sidan säger.",
+          "action": "Tilldela ansvariga"
         },
         "review": {
-          "title": "{count, plural, one {Review # page} other {Review # pages}}",
-          "description": "These pages have an owner and are waiting for your decision: approve or reject them.",
-          "action": "Open review mode"
+          "title": "{count, plural, one {Granska # sida} other {Granska # sidor}}",
+          "description": "De här sidorna har en ansvarig och väntar på ditt beslut: godkänn eller avvisa dem.",
+          "action": "Öppna granskningsläget"
         },
         "publish": {
-          "title": "{count, plural, one {Publish # approved page} other {Publish # approved pages}}",
-          "description": "Once published, chat can answer from them.",
-          "action": "Go to publishing"
+          "title": "{count, plural, one {Publicera # godkänd sida} other {Publicera # godkända sidor}}",
+          "description": "När de är publicerade kan chatten svara utifrån dem.",
+          "action": "Gå till publicering"
         }
       },
-      "legend-approved": "approved",
-      "legend-to-review": "to review"
+      "legend-approved": "godkända",
+      "legend-to-review": "att granska"
     },
     "review-mode": {
       "title": "Review mode",
@@ -3249,20 +3249,20 @@
       "navigation-shortcuts": "Shortcuts: J next · K previous",
       "queue": "Queue ({count})",
       "grouping": "Queue grouping",
-      "by-document": "By source document",
-      "by-type": "By page type",
+      "by-document": "Per dokument",
+      "by-type": "Per typ",
       "queue-empty": "Det finns inga sidor att granska i den här kön.",
       "claim": "Brain claim",
       "quote": "Verbatim quote",
       "assessment": "Assessment",
       "claim-progress": "{confirmed} of {total} confirmed",
-      "local-checks": "Claim assessments stay in this view and are not saved.",
+      "local-checks": "Kontrollera att varje påstående stämmer med sitt citat. Markeringarna ✓ och ✕ är bara en vägledning och sparas inte; bara beslutet i steg 3 sparas.",
       "no-claims": "This page has no claims to compare.",
       "paraphrase": "Paraphrase: the claim omits {facts}. Check the meaning.",
       "no-marker": "No citation marker. Check the source before deciding.",
       "missing-source": "No source for marker [{marker}].",
-      "confirm-claim": "Confirm claim {n}",
-      "question-claim": "Question claim {n}",
+      "confirm-claim": "Stämmer: påstående {n}",
+      "question-claim": "Behöver rättas: påstående {n}",
       "owner-step": "Step 1 · Owner (required)",
       "owner-question": "Who vouches for this page?",
       "bulk-owner": "Ange för alla {count} sidor att granska från det här dokumentet",
@@ -3284,8 +3284,8 @@
       "back": "Return to Brain overview",
       "claims-step": "Step 2 · Claims",
       "publication-failed": "The page was approved, but publication did not finish: {reason} Open page details to retry publication.",
-      "claim-correct": "Correct",
-      "claim-needs-fix": "Needs a fix"
+      "claim-correct": "Stämmer",
+      "claim-needs-fix": "Behöver rättas"
     }
   },
   "project-context-manager": {

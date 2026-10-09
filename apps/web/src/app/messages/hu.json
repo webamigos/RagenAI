@@ -2727,10 +2727,10 @@
       "relation-suggestions": "Suggested relations",
       "relation-basis": "These pages cite the same document. Check whether they should be linked; a shared source does not establish a relation.",
       "select-relations": "Select relations to review",
-      "add-relations": "Add selected relations",
-      "severity-label": "Severity: {level}",
-      "select-all": "Select all",
-      "select-none": "Clear selection"
+      "add-relations": "Kijelöltek összekapcsolása ({count})",
+      "severity-label": "Súlyosság: {level}",
+      "select-all": "Összes kijelölése",
+      "select-none": "Kijelölés törlése"
     },
     "page": {
       "owner": "Felelős",
@@ -2775,8 +2775,8 @@
         "owner": "Előbb jelöljön ki felelőst",
         "access": "Előbb válassza ki, kinek érhető el az oldal"
       },
-      "state": "Status",
-      "status-by": "{status} by {name}, {date}"
+      "state": "Állapot",
+      "status-by": "{status}: {name}, {date}"
     },
     "origin": {
       "EXTRACTED": "idézett",
@@ -2926,10 +2926,10 @@
         "full": "Full graph"
       },
       "topics-title": "Topic map",
-      "topics-scale": "Size = page count · colour = review state",
+      "topics-scale": "Csempe mérete = oldalak száma",
       "topic-pages": "{count, plural, one {# page} other {# pages}}",
-      "topic-approved": "Has approved pages",
-      "topic-approved-count": "{count, plural, one {# approved} other {# approved}}",
+      "topic-approved": "Van jóváhagyott oldala",
+      "topic-approved-count": "{count} jóváhagyott",
       "topic-candidates": "Csak ellenőrizendő oldalak",
       "isolated-count": "{count, plural, one {# page outside the main topics} other {# pages outside the main topics}}",
       "isolated-description": "Instead of a column of loose dots: a list of pages without relations. Open a page to propose links.",
@@ -3016,7 +3016,7 @@
       },
       "send": "Küldés a tudásbázisba",
       "sent": "Elküldve a tudásbázisba",
-      "upload": "Feltöltés a Brainbe",
+      "upload": "Dokumentumok hozzáadása",
       "uploaded": "Feltöltve a Brainbe: {count} — tárolva és feldolgozva, nem kereshető",
       "upload-failed": "A feltöltés nem sikerült — ellenőrizze a fájlt, és próbálja újra.",
       "staged-summary": "A Brainben, keresésen kívül: {count} · jóváhagyott oldal nélkül: {uncurated}",
@@ -3027,7 +3027,7 @@
       "empty-in-language-description": "Nincs dokumentum ezen a nyelven, vagy nincs oldal, amely idézné. Válasszon másik nyelvet vagy az összeset.",
       "empty-filter": "Documents without extracted knowledge",
       "clear-filter": "Show all documents",
-      "table-title": "Documents by language",
+      "table-title": "Dokumentumok nyelv szerint ({count})",
       "shared-scale": "Shared scale: {count, plural, one {# page} other {# pages}} = full bar",
       "coverage-counts": "{approved} jóváhagyott · {candidates} ellenőrizendő",
       "state": {
@@ -3042,12 +3042,12 @@
       "pair-with": "Same document in {language}: {name}",
       "pair-coverage": "Pár: {approved} jóváhagyott · {candidates} ellenőrizendő (minden oldal egyszer számítva)",
       "warnings": {
-        "empty": "{count, plural, one {# document with no extracted knowledge} other {# documents with no extracted knowledge}}",
-        "withdrawn": "{count, plural, one {# document taken out of search} other {# documents taken out of search}}"
+        "empty": "{count, plural, one {# dokumentum kinyert tudás nélkül} other {# dokumentum kinyert tudás nélkül}}",
+        "withdrawn": "{count, plural, one {# dokumentum kivéve a keresésből} other {# dokumentum kivéve a keresésből}}"
       },
-      "manage-in-knowledge-base": "Manage files in the knowledge base",
+      "manage-in-knowledge-base": "Fájlok kezelése a tudásbázisban",
       "state-with-retrieval": "{state} · {retrieval}",
-      "row-actions": "Actions: {name}"
+      "row-actions": "Műveletek: {name}"
     },
     "publish-all": {
       "button": "Jóváhagyottak közzététele ({count})",
@@ -3146,11 +3146,11 @@
       }
     },
     "tab-hints": {
-      "pages": "Tudásoldalak forrásokkal: minden oldal a forrásdokumentumok szó szerinti idézeteivel alátámasztott állításokat tartalmaz. Az ellenőrizendő oldal az Ön döntésére vár; hagyja jóvá és tegye közzé, hogy a csevegő válaszolhasson belőle.",
+      "pages": "Minden oldal állításokat gyűjt a forrásaik szó szerinti idézeteivel. Ellenőrizze az oldalt, hagyja jóvá, és tegye közzé, hogy a csevegő válaszolhasson belőle.",
       "findings": "Amire figyelnie kell: oldalak közötti ellentmondások, hiányosságok, elavult oldalak, tulajdonos nélküli oldalak és dokumentumok, amelyeket a Brain nem tudott elolvasni.",
       "graph": "Hogyan kapcsolódnak az oldalak — melyik folyamat melyik szabályt igényli, és mely oldalak hivatkoznak egymásra.",
       "documents": "A Brain által olvasott forrásdokumentumok: mindegyikből hány oldal lett, és keres-e még bennük a csevegő.",
-      "overview": "See how much knowledge has been reviewed and what needs attention."
+      "overview": "A dokumentumokból kinyert, emberek által ellenőrzött céges tudás. Nézze meg, mi működik már a csevegőben, és mi vár az Ön döntésére."
     },
     "relation-kind": {
       "approves": "jóváhagyja",
@@ -3200,7 +3200,7 @@
       },
       "empty-documents-count": "{count} without extracted knowledge",
       "unowned-count": "{count} without an owner",
-      "approved-share": "Az ellenőrizendő és jóváhagyott oldalak {percent}%-a",
+      "approved-share": "{approved} / {total} oldal",
       "awaiting-publication": "{count} approved pages awaiting publication",
       "attention-title": "Needs attention",
       "unowned-title": "Pages without an owner",
@@ -3210,7 +3210,7 @@
       "finding-description": "Vizsgálja meg a problémát, és szüntesse meg az okát.",
       "attention-empty": "Nincs probléma, és egyetlen oldalnak sem kell tulajdonos.",
       "ranking-title": "Where the most unreviewed knowledge is",
-      "legend": "Jóváhagyott / ellenőrizendő · közös skála a dokumentumokra",
+      "legend": "Közös skála minden dokumentumra",
       "coverage-counts": "{approved} jóváhagyott · {candidates} ellenőrizendő",
       "all-documents": "Összes forrás ({count})",
       "ranking-empty": "Nincs ellenőrizendő oldal.",
@@ -3222,25 +3222,25 @@
       "no-pages-title": "No pages match this filter",
       "no-pages-description": "Change or clear the filter to see the remaining pages.",
       "next": {
-        "label": "What now?",
+        "label": "Mi a teendő?",
         "assign-owners": {
-          "title": "{count, plural, one {Assign an owner to # page} other {Assign owners to # pages}}",
-          "description": "A page without an owner cannot be approved. The owner is the person who vouches for what the page says.",
-          "action": "Assign owners"
+          "title": "{count, plural, one {Rendeljen felelőst # oldalhoz} other {Rendeljen felelősöket # oldalhoz}}",
+          "description": "Felelős nélküli oldal nem hagyható jóvá. A felelős az a személy, aki kezeskedik az oldal tartalmáért.",
+          "action": "Felelősök kijelölése"
         },
         "review": {
-          "title": "{count, plural, one {Review # page} other {Review # pages}}",
-          "description": "These pages have an owner and are waiting for your decision: approve or reject them.",
-          "action": "Open review mode"
+          "title": "{count, plural, one {Ellenőrizzen # oldalt} other {Ellenőrizzen # oldalt}}",
+          "description": "Ezeknek az oldalaknak van felelősük, és az Ön döntésére várnak: hagyja jóvá vagy utasítsa el őket.",
+          "action": "Áttekintő mód megnyitása"
         },
         "publish": {
-          "title": "{count, plural, one {Publish # approved page} other {Publish # approved pages}}",
-          "description": "Once published, chat can answer from them.",
-          "action": "Go to publishing"
+          "title": "{count, plural, one {Tegyen közzé # jóváhagyott oldalt} other {Tegyen közzé # jóváhagyott oldalt}}",
+          "description": "Közzététel után a csevegő válaszolhat belőlük.",
+          "action": "Ugrás a közzétételhez"
         }
       },
-      "legend-approved": "approved",
-      "legend-to-review": "to review"
+      "legend-approved": "jóváhagyott",
+      "legend-to-review": "ellenőrizendő"
     },
     "review-mode": {
       "title": "Review mode",
@@ -3249,20 +3249,20 @@
       "navigation-shortcuts": "Shortcuts: J next · K previous",
       "queue": "Queue ({count})",
       "grouping": "Queue grouping",
-      "by-document": "By source document",
-      "by-type": "By page type",
+      "by-document": "Dokumentum szerint",
+      "by-type": "Típus szerint",
       "queue-empty": "Ebben a sorban nincs ellenőrizendő oldal.",
       "claim": "Brain claim",
       "quote": "Verbatim quote",
       "assessment": "Assessment",
       "claim-progress": "{confirmed} of {total} confirmed",
-      "local-checks": "Claim assessments stay in this view and are not saved.",
+      "local-checks": "Ellenőrizze, hogy minden állítás egyezik-e az idézetével. A ✓ és ✕ jelölések csak tájékoztató jellegűek, és nem mentődnek; csak a 3. lépésben hozott döntés kerül mentésre.",
       "no-claims": "This page has no claims to compare.",
       "paraphrase": "Paraphrase: the claim omits {facts}. Check the meaning.",
       "no-marker": "No citation marker. Check the source before deciding.",
       "missing-source": "No source for marker [{marker}].",
-      "confirm-claim": "Confirm claim {n}",
-      "question-claim": "Question claim {n}",
+      "confirm-claim": "Helyes: {n}. állítás",
+      "question-claim": "Javítandó: {n}. állítás",
       "owner-step": "Step 1 · Owner (required)",
       "owner-question": "Who vouches for this page?",
       "bulk-owner": "Beállítás a dokumentum összes ({count}) ellenőrizendő oldalára",
@@ -3284,8 +3284,8 @@
       "back": "Return to Brain overview",
       "claims-step": "Step 2 · Claims",
       "publication-failed": "The page was approved, but publication did not finish: {reason} Open page details to retry publication.",
-      "claim-correct": "Correct",
-      "claim-needs-fix": "Needs a fix"
+      "claim-correct": "Helyes",
+      "claim-needs-fix": "Javítandó"
     }
   },
   "project-context-manager": {

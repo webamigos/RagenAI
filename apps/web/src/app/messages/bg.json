@@ -2727,10 +2727,10 @@
       "relation-suggestions": "Suggested relations",
       "relation-basis": "These pages cite the same document. Check whether they should be linked; a shared source does not establish a relation.",
       "select-relations": "Select relations to review",
-      "add-relations": "Add selected relations",
-      "severity-label": "Severity: {level}",
-      "select-all": "Select all",
-      "select-none": "Clear selection"
+      "add-relations": "Свържи избраните ({count})",
+      "severity-label": "Сериозност: {level}",
+      "select-all": "Избери всички",
+      "select-none": "Изчисти избора"
     },
     "page": {
       "owner": "Отговорник",
@@ -2775,8 +2775,8 @@
         "owner": "Първо посочете собственик",
         "access": "Първо изберете за кого е достъпна страницата"
       },
-      "state": "Status",
-      "status-by": "{status} by {name}, {date}"
+      "state": "Статус",
+      "status-by": "{status} от {name}, {date}"
     },
     "origin": {
       "EXTRACTED": "от цитат",
@@ -2926,10 +2926,10 @@
         "full": "Full graph"
       },
       "topics-title": "Topic map",
-      "topics-scale": "Size = page count · colour = review state",
+      "topics-scale": "Размер на плочката = брой страници",
       "topic-pages": "{count, plural, one {# page} other {# pages}}",
-      "topic-approved": "Has approved pages",
-      "topic-approved-count": "{count, plural, one {# approved} other {# approved}}",
+      "topic-approved": "Има одобрена страница",
+      "topic-approved-count": "{count, plural, one {# одобрена} other {# одобрени}}",
       "topic-candidates": "Само страници за преглед",
       "isolated-count": "{count, plural, one {# page outside the main topics} other {# pages outside the main topics}}",
       "isolated-description": "Instead of a column of loose dots: a list of pages without relations. Open a page to propose links.",
@@ -3016,7 +3016,7 @@
       },
       "send": "Изпрати към базата знания",
       "sent": "Изпратено към базата знания",
-      "upload": "Качи в Brain",
+      "upload": "Добави документи",
       "uploaded": "Качени в Brain: {count} — съхранени и обработени, не се търсят",
       "upload-failed": "Качването не бе успешно — проверете файла и опитайте отново.",
       "staged-summary": "В Brain, извън търсенето: {count} · без одобрена страница: {uncurated}",
@@ -3027,7 +3027,7 @@
       "empty-in-language-description": "Няма документ на този език или страница, която го цитира. Изберете друг език или всички.",
       "empty-filter": "Documents without extracted knowledge",
       "clear-filter": "Show all documents",
-      "table-title": "Documents by language",
+      "table-title": "Документи по език ({count})",
       "shared-scale": "Shared scale: {count, plural, one {# page} other {# pages}} = full bar",
       "coverage-counts": "{approved} одобрени · {candidates} за преглед",
       "state": {
@@ -3042,12 +3042,12 @@
       "pair-with": "Same document in {language}: {name}",
       "pair-coverage": "Двойка: {approved} одобрени · {candidates} за преглед (всяка страница се брои веднъж)",
       "warnings": {
-        "empty": "{count, plural, one {# document with no extracted knowledge} other {# documents with no extracted knowledge}}",
-        "withdrawn": "{count, plural, one {# document taken out of search} other {# documents taken out of search}}"
+        "empty": "{count, plural, one {# документ без извлечени знания} other {# документа без извлечени знания}}",
+        "withdrawn": "{count, plural, one {# документ, изключен от търсенето} other {# документа, изключени от търсенето}}"
       },
-      "manage-in-knowledge-base": "Manage files in the knowledge base",
+      "manage-in-knowledge-base": "Управлявай файловете в базата знания",
       "state-with-retrieval": "{state} · {retrieval}",
-      "row-actions": "Actions: {name}"
+      "row-actions": "Действия: {name}"
     },
     "publish-all": {
       "button": "Публикувай одобрените ({count})",
@@ -3146,11 +3146,11 @@
       }
     },
     "tab-hints": {
-      "pages": "Страници със знания и техните източници: всяка страница съдържа твърдения с точни цитати от документите, от които произхождат. Страница за преглед чака вашето решение; одобрете я и я публикувайте, за да може чатът да отговаря с нея.",
+      "pages": "Всяка страница събира твърдения с точни цитати от източниците им. Прегледайте страницата, одобрете я и я публикувайте, за да може чатът да отговаря от нея.",
       "findings": "Какво изисква вниманието ви: противоречия между страници, пропуски, остарели страници, страници без отговорник и документи, които Brain не можа да прочете.",
       "graph": "Как се свързват страниците — кой процес изисква кое правило и кои страници се позовават една на друга.",
       "documents": "Изходните документи, които Brain чете: колко страници е дал всеки и дали чатът все още търси в него.",
-      "overview": "See how much knowledge has been reviewed and what needs attention."
+      "overview": "Знанията на компанията, извлечени от документи и проверени от хора. Вижте какво вече работи в чата и какво чака вашето решение."
     },
     "relation-kind": {
       "approves": "одобрява",
@@ -3200,7 +3200,7 @@
       },
       "empty-documents-count": "{count} without extracted knowledge",
       "unowned-count": "{count} without an owner",
-      "approved-share": "{percent}% от страниците за преглед и одобрените",
+      "approved-share": "{approved} от {total, plural, one {# страница} other {# страници}}",
       "awaiting-publication": "{count} approved pages awaiting publication",
       "attention-title": "Needs attention",
       "unowned-title": "Pages without an owner",
@@ -3210,7 +3210,7 @@
       "finding-description": "Прегледайте проблема и отстранете причината за него.",
       "attention-empty": "Няма проблеми и няма страници без отговорник.",
       "ranking-title": "Where the most unreviewed knowledge is",
-      "legend": "Одобрени / за преглед · обща скала за всички документи",
+      "legend": "Обща скала за всички документи",
       "coverage-counts": "{approved} одобрени · {candidates} за преглед",
       "all-documents": "Всички източници ({count})",
       "ranking-empty": "Няма страници за преглед.",
@@ -3222,25 +3222,25 @@
       "no-pages-title": "No pages match this filter",
       "no-pages-description": "Change or clear the filter to see the remaining pages.",
       "next": {
-        "label": "What now?",
+        "label": "Какво следва?",
         "assign-owners": {
-          "title": "{count, plural, one {Assign an owner to # page} other {Assign owners to # pages}}",
-          "description": "A page without an owner cannot be approved. The owner is the person who vouches for what the page says.",
-          "action": "Assign owners"
+          "title": "{count, plural, one {Задайте отговорник на # страница} other {Задайте отговорници на # страници}}",
+          "description": "Страница без отговорник не може да бъде одобрена. Отговорникът е човекът, който гарантира за съдържанието на страницата.",
+          "action": "Задай отговорници"
         },
         "review": {
-          "title": "{count, plural, one {Review # page} other {Review # pages}}",
-          "description": "These pages have an owner and are waiting for your decision: approve or reject them.",
-          "action": "Open review mode"
+          "title": "{count, plural, one {Прегледайте # страница} other {Прегледайте # страници}}",
+          "description": "Тези страници имат отговорник и чакат вашето решение: одобрете ги или ги отхвърлете.",
+          "action": "Отвори режима на преглед"
         },
         "publish": {
-          "title": "{count, plural, one {Publish # approved page} other {Publish # approved pages}}",
-          "description": "Once published, chat can answer from them.",
-          "action": "Go to publishing"
+          "title": "{count, plural, one {Публикувайте # одобрена страница} other {Публикувайте # одобрени страници}}",
+          "description": "След публикуване чатът може да отговаря от тях.",
+          "action": "Към публикуването"
         }
       },
-      "legend-approved": "approved",
-      "legend-to-review": "to review"
+      "legend-approved": "одобрени",
+      "legend-to-review": "за преглед"
     },
     "review-mode": {
       "title": "Review mode",
@@ -3249,20 +3249,20 @@
       "navigation-shortcuts": "Shortcuts: J next · K previous",
       "queue": "Queue ({count})",
       "grouping": "Queue grouping",
-      "by-document": "By source document",
-      "by-type": "By page type",
+      "by-document": "По документ",
+      "by-type": "По тип",
       "queue-empty": "В тази опашка няма страници за преглед.",
       "claim": "Brain claim",
       "quote": "Verbatim quote",
       "assessment": "Assessment",
       "claim-progress": "{confirmed} of {total} confirmed",
-      "local-checks": "Claim assessments stay in this view and are not saved.",
+      "local-checks": "Проверете дали всяко твърдение съответства на цитата си. Отметките ✓ и ✕ са само за ориентир и не се запазват; запазва се само решението в стъпка 3.",
       "no-claims": "This page has no claims to compare.",
       "paraphrase": "Paraphrase: the claim omits {facts}. Check the meaning.",
       "no-marker": "No citation marker. Check the source before deciding.",
       "missing-source": "No source for marker [{marker}].",
-      "confirm-claim": "Confirm claim {n}",
-      "question-claim": "Question claim {n}",
+      "confirm-claim": "Вярно: твърдение {n}",
+      "question-claim": "За поправка: твърдение {n}",
       "owner-step": "Step 1 · Owner (required)",
       "owner-question": "Who vouches for this page?",
       "bulk-owner": "Задай за всички страници за преглед от този документ ({count})",
@@ -3284,8 +3284,8 @@
       "back": "Return to Brain overview",
       "claims-step": "Step 2 · Claims",
       "publication-failed": "The page was approved, but publication did not finish: {reason} Open page details to retry publication.",
-      "claim-correct": "Correct",
-      "claim-needs-fix": "Needs a fix"
+      "claim-correct": "Вярно",
+      "claim-needs-fix": "За поправка"
     }
   },
   "project-context-manager": {

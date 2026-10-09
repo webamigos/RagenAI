@@ -2727,10 +2727,10 @@
       "relation-suggestions": "Suggested relations",
       "relation-basis": "These pages cite the same document. Check whether they should be linked; a shared source does not establish a relation.",
       "select-relations": "Select relations to review",
-      "add-relations": "Add selected relations",
-      "severity-label": "Severity: {level}",
-      "select-all": "Select all",
-      "select-none": "Clear selection"
+      "add-relations": "Yhdistä valitut ({count})",
+      "severity-label": "Vakavuus: {level}",
+      "select-all": "Valitse kaikki",
+      "select-none": "Tyhjennä valinta"
     },
     "page": {
       "owner": "Vastuuhenkilö",
@@ -2775,8 +2775,8 @@
         "owner": "Nimeä ensin omistaja",
         "access": "Valitse ensin, kenelle sivu on avoin"
       },
-      "state": "Status",
-      "status-by": "{status} by {name}, {date}"
+      "state": "Tila",
+      "status-by": "{status} ({name}, {date})"
     },
     "origin": {
       "EXTRACTED": "lainattu",
@@ -2926,10 +2926,10 @@
         "full": "Full graph"
       },
       "topics-title": "Topic map",
-      "topics-scale": "Size = page count · colour = review state",
+      "topics-scale": "Ruudun koko = sivujen määrä",
       "topic-pages": "{count, plural, one {# page} other {# pages}}",
-      "topic-approved": "Has approved pages",
-      "topic-approved-count": "{count, plural, one {# approved} other {# approved}}",
+      "topic-approved": "Sisältää hyväksytyn sivun",
+      "topic-approved-count": "{count, plural, one {# hyväksytty} other {# hyväksyttyä}}",
       "topic-candidates": "Vain tarkistettavat sivut",
       "isolated-count": "{count, plural, one {# page outside the main topics} other {# pages outside the main topics}}",
       "isolated-description": "Instead of a column of loose dots: a list of pages without relations. Open a page to propose links.",
@@ -3016,7 +3016,7 @@
       },
       "send": "Lähetä tietopankkiin",
       "sent": "Lähetetty tietopankkiin",
-      "upload": "Lataa Brainiin",
+      "upload": "Lisää asiakirjoja",
       "uploaded": "Ladattu Brainiin: {count} — tallennettu ja käsitelty, ei haettavissa",
       "upload-failed": "Lataus epäonnistui — tarkista tiedosto ja yritä uudelleen.",
       "staged-summary": "Brainissa, haun ulkopuolella: {count} · ilman hyväksyttyä sivua: {uncurated}",
@@ -3027,7 +3027,7 @@
       "empty-in-language-description": "Ei asiakirjaa tällä kielellä tai sivua, joka lainaa sitä. Valitse toinen kieli tai kaikki.",
       "empty-filter": "Documents without extracted knowledge",
       "clear-filter": "Show all documents",
-      "table-title": "Documents by language",
+      "table-title": "Asiakirjat kielen mukaan ({count})",
       "shared-scale": "Shared scale: {count, plural, one {# page} other {# pages}} = full bar",
       "coverage-counts": "{approved} hyväksytty · {candidates} tarkistettavana",
       "state": {
@@ -3042,12 +3042,12 @@
       "pair-with": "Same document in {language}: {name}",
       "pair-coverage": "Pari: {approved} hyväksytty · {candidates} tarkistettavana (kukin sivu lasketaan kerran)",
       "warnings": {
-        "empty": "{count, plural, one {# document with no extracted knowledge} other {# documents with no extracted knowledge}}",
-        "withdrawn": "{count, plural, one {# document taken out of search} other {# documents taken out of search}}"
+        "empty": "{count, plural, one {# asiakirja ilman poimittua tietoa} other {# asiakirjaa ilman poimittua tietoa}}",
+        "withdrawn": "{count, plural, one {# asiakirja poistettu hausta} other {# asiakirjaa poistettu hausta}}"
       },
-      "manage-in-knowledge-base": "Manage files in the knowledge base",
+      "manage-in-knowledge-base": "Hallitse tiedostoja tietopankissa",
       "state-with-retrieval": "{state} · {retrieval}",
-      "row-actions": "Actions: {name}"
+      "row-actions": "Toiminnot: {name}"
     },
     "publish-all": {
       "button": "Julkaise hyväksytyt ({count})",
@@ -3146,11 +3146,11 @@
       }
     },
     "tab-hints": {
-      "pages": "Tietosivut lähteineen: jokainen sivu esittää väitteet lähdeasiakirjojen sanatarkkoine lainauksineen. Tarkistettava sivu odottaa päätöstäsi; hyväksy ja julkaise se, jotta chat voi vastata sen pohjalta.",
+      "pages": "Jokainen sivu kokoaa väitteitä ja niiden sanatarkat lainaukset lähteistä. Tarkista sivu, hyväksy se ja julkaise se, jotta chat voi vastata sen pohjalta.",
       "findings": "Mikä vaatii huomiotasi: sivujen väliset ristiriidat, aukot, vanhentuneet sivut, sivut ilman omistajaa ja asiakirjat, joita Brain ei pystynyt lukemaan.",
       "graph": "Miten sivut liittyvät toisiinsa — mikä prosessi edellyttää mitäkin käytäntöä ja mitkä sivut viittaavat toisiinsa.",
       "documents": "Lähdedokumentit, joita Brain lukee: kuinka monta sivua kustakin syntyi ja haetaanko sitä yhä chatissa.",
-      "overview": "See how much knowledge has been reviewed and what needs attention."
+      "overview": "Yrityksen tietämys, joka on koottu asiakirjoista ja jonka ihmiset ovat tarkistaneet. Näe, mikä toimii jo chatissa ja mikä odottaa päätöstäsi."
     },
     "relation-kind": {
       "approves": "hyväksyy",
@@ -3200,7 +3200,7 @@
       },
       "empty-documents-count": "{count} without extracted knowledge",
       "unowned-count": "{count} without an owner",
-      "approved-share": "{percent} % tarkistettavista ja hyväksytyistä sivuista",
+      "approved-share": "{approved}/{total, plural, one {# sivu} other {# sivua}}",
       "awaiting-publication": "{count} approved pages awaiting publication",
       "attention-title": "Needs attention",
       "unowned-title": "Pages without an owner",
@@ -3210,7 +3210,7 @@
       "finding-description": "Tarkista ongelma ja korjaa sen syy.",
       "attention-empty": "Ei ongelmia, eikä yksikään sivu tarvitse omistajaa.",
       "ranking-title": "Where the most unreviewed knowledge is",
-      "legend": "Hyväksytyt / tarkistettavat · yhteinen asteikko kaikille asiakirjoille",
+      "legend": "Yhteinen asteikko kaikille asiakirjoille",
       "coverage-counts": "{approved} hyväksytty · {candidates} tarkistettavana",
       "all-documents": "Kaikki lähteet ({count})",
       "ranking-empty": "Ei tarkistettavia sivuja.",
@@ -3222,25 +3222,25 @@
       "no-pages-title": "No pages match this filter",
       "no-pages-description": "Change or clear the filter to see the remaining pages.",
       "next": {
-        "label": "What now?",
+        "label": "Mitä seuraavaksi?",
         "assign-owners": {
-          "title": "{count, plural, one {Assign an owner to # page} other {Assign owners to # pages}}",
-          "description": "A page without an owner cannot be approved. The owner is the person who vouches for what the page says.",
-          "action": "Assign owners"
+          "title": "{count, plural, one {Määritä vastuuhenkilö # sivulle} other {Määritä vastuuhenkilöt # sivulle}}",
+          "description": "Sivua ilman vastuuhenkilöä ei voi hyväksyä. Vastuuhenkilö on se, joka takaa sivun sisällön.",
+          "action": "Määritä vastuuhenkilöt"
         },
         "review": {
-          "title": "{count, plural, one {Review # page} other {Review # pages}}",
-          "description": "These pages have an owner and are waiting for your decision: approve or reject them.",
-          "action": "Open review mode"
+          "title": "{count, plural, one {Tarkista # sivu} other {Tarkista # sivua}}",
+          "description": "Näillä sivuilla on vastuuhenkilö, ja ne odottavat päätöstäsi: hyväksy tai hylkää ne.",
+          "action": "Avaa tarkistustila"
         },
         "publish": {
-          "title": "{count, plural, one {Publish # approved page} other {Publish # approved pages}}",
-          "description": "Once published, chat can answer from them.",
-          "action": "Go to publishing"
+          "title": "{count, plural, one {Julkaise # hyväksytty sivu} other {Julkaise # hyväksyttyä sivua}}",
+          "description": "Julkaisun jälkeen chat voi vastata niiden pohjalta.",
+          "action": "Siirry julkaisuun"
         }
       },
-      "legend-approved": "approved",
-      "legend-to-review": "to review"
+      "legend-approved": "hyväksytyt",
+      "legend-to-review": "tarkistettavat"
     },
     "review-mode": {
       "title": "Review mode",
@@ -3249,20 +3249,20 @@
       "navigation-shortcuts": "Shortcuts: J next · K previous",
       "queue": "Queue ({count})",
       "grouping": "Queue grouping",
-      "by-document": "By source document",
-      "by-type": "By page type",
+      "by-document": "Asiakirjan mukaan",
+      "by-type": "Tyypin mukaan",
       "queue-empty": "Tässä jonossa ei ole tarkistettavia sivuja.",
       "claim": "Brain claim",
       "quote": "Verbatim quote",
       "assessment": "Assessment",
       "claim-progress": "{confirmed} of {total} confirmed",
-      "local-checks": "Claim assessments stay in this view and are not saved.",
+      "local-checks": "Tarkista, että jokainen väite vastaa lainaustaan. Merkinnät ✓ ja ✕ ovat vain apuna, eikä niitä tallenneta; vain vaiheen 3 päätös tallennetaan.",
       "no-claims": "This page has no claims to compare.",
       "paraphrase": "Paraphrase: the claim omits {facts}. Check the meaning.",
       "no-marker": "No citation marker. Check the source before deciding.",
       "missing-source": "No source for marker [{marker}].",
-      "confirm-claim": "Confirm claim {n}",
-      "question-claim": "Question claim {n}",
+      "confirm-claim": "Oikein: väite {n}",
+      "question-claim": "Korjattava: väite {n}",
       "owner-step": "Step 1 · Owner (required)",
       "owner-question": "Who vouches for this page?",
       "bulk-owner": "Aseta kaikille tämän asiakirjan {count} tarkistettavalle sivulle",
@@ -3284,8 +3284,8 @@
       "back": "Return to Brain overview",
       "claims-step": "Step 2 · Claims",
       "publication-failed": "The page was approved, but publication did not finish: {reason} Open page details to retry publication.",
-      "claim-correct": "Correct",
-      "claim-needs-fix": "Needs a fix"
+      "claim-correct": "Oikein",
+      "claim-needs-fix": "Korjattava"
     }
   },
   "project-context-manager": {

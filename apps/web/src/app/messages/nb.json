@@ -2727,10 +2727,10 @@
       "relation-suggestions": "Suggested relations",
       "relation-basis": "These pages cite the same document. Check whether they should be linked; a shared source does not establish a relation.",
       "select-relations": "Select relations to review",
-      "add-relations": "Add selected relations",
-      "severity-label": "Severity: {level}",
-      "select-all": "Select all",
-      "select-none": "Clear selection"
+      "add-relations": "Koble valgte ({count})",
+      "severity-label": "Alvorlighetsgrad: {level}",
+      "select-all": "Velg alle",
+      "select-none": "Fjern valg"
     },
     "page": {
       "owner": "Eier",
@@ -2776,7 +2776,7 @@
         "access": "Velg først hvem siden skal være åpen for"
       },
       "state": "Status",
-      "status-by": "{status} by {name}, {date}"
+      "status-by": "{status} av {name}, {date}"
     },
     "origin": {
       "EXTRACTED": "sitert",
@@ -2926,10 +2926,10 @@
         "full": "Full graph"
       },
       "topics-title": "Topic map",
-      "topics-scale": "Size = page count · colour = review state",
+      "topics-scale": "Flisstørrelse = antall sider",
       "topic-pages": "{count, plural, one {# page} other {# pages}}",
-      "topic-approved": "Has approved pages",
-      "topic-approved-count": "{count, plural, one {# approved} other {# approved}}",
+      "topic-approved": "Har en godkjent side",
+      "topic-approved-count": "{count} godkjent",
       "topic-candidates": "Bare sider til gjennomgang",
       "isolated-count": "{count, plural, one {# page outside the main topics} other {# pages outside the main topics}}",
       "isolated-description": "Instead of a column of loose dots: a list of pages without relations. Open a page to propose links.",
@@ -3016,7 +3016,7 @@
       },
       "send": "Send til kunnskapsbasen",
       "sent": "Sendt til kunnskapsbasen",
-      "upload": "Last opp til Brain",
+      "upload": "Legg til dokumenter",
       "uploaded": "Lastet opp til Brain: {count} – lagret og analysert, ikke søkbart",
       "upload-failed": "Opplastingen mislyktes – sjekk filen og prøv igjen.",
       "staged-summary": "Klargjort i Brain, ikke søkbart: {count} · uten godkjent side ennå: {uncurated}",
@@ -3027,7 +3027,7 @@
       "empty-in-language-description": "Ingen dokumenter på dette språket, eller ingen sider som viser til dem. Velg et annet språk, eller alle.",
       "empty-filter": "Documents without extracted knowledge",
       "clear-filter": "Show all documents",
-      "table-title": "Documents by language",
+      "table-title": "Dokumenter etter språk ({count})",
       "shared-scale": "Shared scale: {count, plural, one {# page} other {# pages}} = full bar",
       "coverage-counts": "{approved} godkjent · {candidates} til gjennomgang",
       "state": {
@@ -3042,12 +3042,12 @@
       "pair-with": "Same document in {language}: {name}",
       "pair-coverage": "Par: {approved} godkjent · {candidates} til gjennomgang (hver side telles én gang)",
       "warnings": {
-        "empty": "{count, plural, one {# document with no extracted knowledge} other {# documents with no extracted knowledge}}",
-        "withdrawn": "{count, plural, one {# document taken out of search} other {# documents taken out of search}}"
+        "empty": "{count, plural, one {# dokument uten uttrukket kunnskap} other {# dokumenter uten uttrukket kunnskap}}",
+        "withdrawn": "{count, plural, one {# dokument tatt ut av søket} other {# dokumenter tatt ut av søket}}"
       },
-      "manage-in-knowledge-base": "Manage files in the knowledge base",
+      "manage-in-knowledge-base": "Administrer filer i kunnskapsbasen",
       "state-with-retrieval": "{state} · {retrieval}",
-      "row-actions": "Actions: {name}"
+      "row-actions": "Handlinger: {name}"
     },
     "publish-all": {
       "button": "Publiser godkjente ({count})",
@@ -3146,11 +3146,11 @@
       }
     },
     "tab-hints": {
-      "pages": "Kunnskapssider med kildene sine: hver side fremsetter påstander med de nøyaktige sitatene fra dokumentene de kommer fra. En side til gjennomgang venter på din avgjørelse; godkjenn den og publiser den for at chatten skal kunne svare ut fra den.",
+      "pages": "Hver side samler påstander med nøyaktige sitater fra kildene. Gå gjennom en side, godkjenn den og publiser den, så chatten kan svare ut fra den.",
       "findings": "Det som trenger din oppmerksomhet: motsigelser mellom sider, hull, utdaterte sider, sider uten eier og dokumenter Brain ikke kunne lese.",
       "graph": "Hvordan sidene henger sammen – hvilken prosess som krever hvilken retningslinje, og hvilke sider som viser til hverandre.",
       "documents": "Kildedokumentene Brain leser, hvor mange sider hvert av dem ga, og om hvert fortsatt søkes i av chatten.",
-      "overview": "See how much knowledge has been reviewed and what needs attention."
+      "overview": "Bedriftens kunnskap hentet fra dokumenter og kontrollert av mennesker. Se hva som allerede fungerer i chatten, og hva som venter på din avgjørelse."
     },
     "relation-kind": {
       "approves": "godkjenner",
@@ -3200,7 +3200,7 @@
       },
       "empty-documents-count": "{count} without extracted knowledge",
       "unowned-count": "{count} without an owner",
-      "approved-share": "{percent} % av sidene som er til gjennomgang eller godkjent",
+      "approved-share": "{approved} av {total, plural, one {# side} other {# sider}}",
       "awaiting-publication": "{count} approved pages awaiting publication",
       "attention-title": "Needs attention",
       "unowned-title": "Pages without an owner",
@@ -3210,7 +3210,7 @@
       "finding-description": "Gå gjennom problemet og rett opp årsaken.",
       "attention-empty": "Ingen problemer, og ingen sider trenger en eier.",
       "ranking-title": "Where the most unreviewed knowledge is",
-      "legend": "Godkjent / til gjennomgang · felles skala for alle dokumenter",
+      "legend": "Felles skala for alle dokumenter",
       "coverage-counts": "{approved} godkjent · {candidates} til gjennomgang",
       "all-documents": "Alle kilder ({count})",
       "ranking-empty": "Ingen sider til gjennomgang.",
@@ -3222,25 +3222,25 @@
       "no-pages-title": "No pages match this filter",
       "no-pages-description": "Change or clear the filter to see the remaining pages.",
       "next": {
-        "label": "What now?",
+        "label": "Hva nå?",
         "assign-owners": {
-          "title": "{count, plural, one {Assign an owner to # page} other {Assign owners to # pages}}",
-          "description": "A page without an owner cannot be approved. The owner is the person who vouches for what the page says.",
-          "action": "Assign owners"
+          "title": "{count, plural, one {Tildel en eier til # side} other {Tildel eiere til # sider}}",
+          "description": "En side uten eier kan ikke godkjennes. Eieren er personen som går god for innholdet på siden.",
+          "action": "Tildel eiere"
         },
         "review": {
-          "title": "{count, plural, one {Review # page} other {Review # pages}}",
-          "description": "These pages have an owner and are waiting for your decision: approve or reject them.",
-          "action": "Open review mode"
+          "title": "{count, plural, one {Gå gjennom # side} other {Gå gjennom # sider}}",
+          "description": "Disse sidene har en eier og venter på din avgjørelse: godkjenn eller avvis dem.",
+          "action": "Åpne gjennomgangsmodus"
         },
         "publish": {
-          "title": "{count, plural, one {Publish # approved page} other {Publish # approved pages}}",
-          "description": "Once published, chat can answer from them.",
-          "action": "Go to publishing"
+          "title": "{count, plural, one {Publiser # godkjent side} other {Publiser # godkjente sider}}",
+          "description": "Når de er publisert, kan chatten svare ut fra dem.",
+          "action": "Gå til publisering"
         }
       },
-      "legend-approved": "approved",
-      "legend-to-review": "to review"
+      "legend-approved": "godkjent",
+      "legend-to-review": "til gjennomgang"
     },
     "review-mode": {
       "title": "Review mode",
@@ -3249,20 +3249,20 @@
       "navigation-shortcuts": "Shortcuts: J next · K previous",
       "queue": "Queue ({count})",
       "grouping": "Queue grouping",
-      "by-document": "By source document",
-      "by-type": "By page type",
+      "by-document": "Etter dokument",
+      "by-type": "Etter type",
       "queue-empty": "Det er ingen sider til gjennomgang i denne køen.",
       "claim": "Brain claim",
       "quote": "Verbatim quote",
       "assessment": "Assessment",
       "claim-progress": "{confirmed} of {total} confirmed",
-      "local-checks": "Claim assessments stay in this view and are not saved.",
+      "local-checks": "Sjekk at hver påstand stemmer med sitatet. Merkene ✓ og ✕ er bare til hjelp og lagres ikke; bare avgjørelsen i trinn 3 lagres.",
       "no-claims": "This page has no claims to compare.",
       "paraphrase": "Paraphrase: the claim omits {facts}. Check the meaning.",
       "no-marker": "No citation marker. Check the source before deciding.",
       "missing-source": "No source for marker [{marker}].",
-      "confirm-claim": "Confirm claim {n}",
-      "question-claim": "Question claim {n}",
+      "confirm-claim": "Stemmer: påstand {n}",
+      "question-claim": "Må rettes: påstand {n}",
       "owner-step": "Step 1 · Owner (required)",
       "owner-question": "Who vouches for this page?",
       "bulk-owner": "Angi for alle {count} sider til gjennomgang fra dette dokumentet",
@@ -3284,8 +3284,8 @@
       "back": "Return to Brain overview",
       "claims-step": "Step 2 · Claims",
       "publication-failed": "The page was approved, but publication did not finish: {reason} Open page details to retry publication.",
-      "claim-correct": "Correct",
-      "claim-needs-fix": "Needs a fix"
+      "claim-correct": "Stemmer",
+      "claim-needs-fix": "Må rettes"
     }
   },
   "project-context-manager": {
