@@ -13,12 +13,14 @@ rebuild it from here, and change it here first. That is the same arrangement as
 the rest of Railway configuration, which stays in the dashboard until
 `.railway/railway.ts` is adopted ([ADR-47](adrs/47-railway-configuration-lives-in-the-dashboard.md)).
 
-> **Status (2026-10-09): built and run end to end on 2.52.0 as a project, not
-> yet published as a template.** The project `ragen-template-test` (workspace
-> *Web Amigos*) was assembled from this document and deployed. Section 6 says
-> what that proved and what is still open. The images it needs are **2.52.0 or later** — earlier
-> ones cannot chat without an OpenAI key (#1619) and cannot switch Brain on at
-> install (#1620).
+> **Status (2026-10-10): generated as the template `QufTr4` (workspace
+> *Web Amigos*, unpublished in the marketplace; the share link works) and
+> deployed from that link end to end on 2.52.1.** Section 6 says what that
+> proved. The images it needs are **2.52.1 or later**: earlier ones cannot chat
+> without an OpenAI key (#1619), cannot switch Brain on at install (#1620), and
+> on 2.52.0 a new chat opens on `gemini-3-flash-preview`, which has no route on
+> an OpenRouter-only install, so the first question gets no answer and no error
+> (#1622).
 
 ## 1. What a deployer gets
 
@@ -67,7 +69,7 @@ Notes that decide the layout:
   The upstream image alone with `UVICORN_HOST=::` would remove the build, but
   has never run on Railway's private network; try it in a test project first.
 - **Pin a release, not `latest`**, for the Ragen images, and bump it when the
-  template is re-published. `<version>` above is that release (2.52.0 or
+  template is re-published. `<version>` above is that release (2.52.1 or
   later). A tag exists only once `publish-images.yml` has finished for it — it
   runs well after the release itself, and a deploy against a tag that is not
   there yet fails with an empty `imageDigest` and no log at all.
@@ -316,15 +318,18 @@ egress is free, a service's own egress is not.
   (#1622, after 2.52.0 — on 2.52.0 the picker still opens on Gemini);
 - `main`'s build failed intermittently on Google Fonts (#1617).
 
-**Still to do before publishing:**
+**Deployed from the template link** (2026-10-10, on 2.52.1): every service
+came up without a manual step once Qdrant had `PORT` (below); a new chat opened
+on Sonnet 5.5 (`orgDefaultModel: claude-sonnet-5-5-openrouter` in the log) and
+answered from the PDF with a citation; a Brain extraction wrote four candidate
+pages. The default PII policy ("Dane wrażliwe") does not block an upload on an
+install without Presidio.
 
-1. *Generate Template from Project*, and check what the composer carries over —
-   the bucket, the pre-deploy command, restart policies, healthchecks, groups,
-   icons — then replace every generated secret with a `secret()` function and
-   `OPENROUTER_API_KEY` with a prompted variable.
-2. Pin Docling's repository source to a release tag (`…/tree/v2.52.0`) if the
+**Still to do before publishing in the marketplace:**
+
+1. Pin Docling's repository source to a release tag (`…/tree/v2.52.1`) if the
    composer accepts one.
-3. Measure idle memory and cost; Docling dominates both.
+2. Measure idle memory and cost; Docling dominates both.
 
 **What *Generate Template from Project* dropped** (template `QufTr4`,
 2026-10-09) — check each of these after regenerating:
