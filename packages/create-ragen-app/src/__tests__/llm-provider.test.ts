@@ -125,11 +125,32 @@ describe('resolveLlmProviderChoice — one key, a working install', () => {
     expect(result.routes.map((r) => r.provider)).toEqual([
       'openrouter',
       'openrouter',
+      'openrouter',
     ]);
     // The upstream is namespaced and the id is not: the id is what the
     // application and the catalogue use.
     expect(result.routes[0].model).toContain('/');
     expect(result.routes[0].modelName).not.toContain('/');
+  });
+
+  it('answers on Sonnet but rephrases, summarises and scores on Haiku', () => {
+    // Those three run on every question and every upload; billing them at the
+    // answer model's rate is the cost mistake the light model exists to avoid.
+    const { envUpdates, routes } = resolveLlmProviderChoice('openrouter', 'k');
+
+    expect(envUpdates.DEFAULT_MODEL).toBe('claude-sonnet-5-5-openrouter');
+    for (const key of [
+      'REPHRASE_MODEL',
+      'SUMMARY_MODEL',
+      'SCORING_MODEL',
+    ] as const) {
+      expect(envUpdates[key]).toBe('claude-haiku-5-5-openrouter');
+    }
+    expect(routes.map((r) => [r.modelName, r.model])).toEqual([
+      ['claude-sonnet-5-5-openrouter', 'anthropic/claude-sonnet-5.5'],
+      ['claude-haiku-5-5-openrouter', 'anthropic/claude-haiku-5.5'],
+      ['text-embedding-3-small-openrouter', 'openai/text-embedding-3-small'],
+    ]);
   });
 
   it('matches VECTOR_SIZE to the embedding model, which Qdrant fixes at creation', () => {

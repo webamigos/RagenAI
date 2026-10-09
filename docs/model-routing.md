@@ -26,9 +26,13 @@ OPENROUTER_API_KEY=sk-or-...
 ```yaml
 # infra/llm-gateway/routes.yaml
 routes:
-  claude-haiku-4-5-openrouter:
+  claude-sonnet-5-5-openrouter:
     provider: openrouter
-    model: anthropic/claude-haiku-4.5
+    model: anthropic/claude-sonnet-5.5
+  # The cheap tier, for rephrase and summary (REPHRASE_MODEL, SUMMARY_MODEL).
+  claude-haiku-5-5-openrouter:
+    provider: openrouter
+    model: anthropic/claude-haiku-5.5
   text-embedding-3-small-openrouter:
     provider: openrouter
     model: openai/text-embedding-3-small
