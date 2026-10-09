@@ -47,16 +47,18 @@ test.describe('Ragen Brain merge (p0)', () => {
       page.getByText(TEST_BRAIN_MERGE_SOURCE_CLAIM).first(),
     ).toBeVisible();
     // It says new things now, so it is back in review.
-    await expect(
-      page.getByText('Do sprawdzenia', { exact: true }),
-    ).toBeVisible();
+    await expect(page.getByTestId('brain-page-state')).toHaveText(
+      'Do sprawdzenia',
+    );
     await expect(page.getByTestId('brain-source')).toHaveCount(2);
     await expect(page.getByTestId('brain-decisions')).toContainText('Scalono');
 
     await page.goto(`/pl/brain/pages/${TEST_BRAIN_MERGE_SOURCE_PUBLIC_ID}`);
-    await expect(page.getByText('Odrzucona', { exact: true })).toBeVisible({
-      timeout: 15000,
-    });
+    // The state line names who merged it away, and when.
+    await expect(page.getByTestId('brain-page-state')).toContainText(
+      'Odrzucona przez',
+      { timeout: 15000 },
+    );
     await expect(page.getByText('Scalona ze stroną')).toBeVisible();
   });
 });

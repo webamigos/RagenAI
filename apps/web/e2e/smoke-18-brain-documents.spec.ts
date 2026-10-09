@@ -44,9 +44,10 @@ test('shows distinct coverage, confirmed empty extraction, waiting and language 
       },
     });
     await page.goto('/pl/brain/documents');
+    // The tab names the screen; it has no heading of its own.
     await expect(
-      page.getByRole('heading', { name: 'Źródła', exact: true }),
-    ).toBeVisible();
+      page.getByRole('link', { name: 'Źródła', exact: true }),
+    ).toHaveAttribute('aria-current', 'page');
     const rows = page.getByTestId('brain-document-row');
     const seeded = rows.filter({ hasText: TEST_FILE_NAME });
     await expect(seeded).toContainText(

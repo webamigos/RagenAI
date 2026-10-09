@@ -43,13 +43,14 @@ test.describe('Ragen Brain panel (smoke)', () => {
     const candidates = (
       await candidateStage.locator('strong').innerText()
     ).trim();
-    await candidateStage.locator('a').click();
+    // The whole stage tile is the link.
+    await candidateStage.click();
     await expect(page).toHaveURL(/status=CANDIDATE/);
     await expect(
       page.getByText(new RegExp(`Strony:.*z ${candidates}$`)),
     ).toBeVisible();
     await page.goto('/pl/brain/overview');
-    await page.getByTestId('overview-published').locator('a').first().click();
+    await page.getByTestId('overview-published').click();
     await expect(page).toHaveURL(/published=true/);
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('/pl/brain/overview');
