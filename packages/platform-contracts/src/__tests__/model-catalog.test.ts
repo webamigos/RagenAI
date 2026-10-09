@@ -198,12 +198,12 @@ describe('against infra/llm-gateway/routes.yaml', () => {
   // and slips under the monthly ceiling, so the pair is checked here.
   it('serves chat and embeddings from OpenRouter, priced, with the right kinds', () => {
     const openrouter = [
-      'claude-haiku-4-5-openrouter',
+      'claude-sonnet-5-5-openrouter',
       'text-embedding-3-small-openrouter',
     ];
 
     expect(routed).toEqual(expect.arrayContaining(openrouter));
-    expect(MODEL_REGISTRY['claude-haiku-4-5-openrouter']?.kind ?? 'chat').toBe(
+    expect(MODEL_REGISTRY['claude-sonnet-5-5-openrouter']?.kind ?? 'chat').toBe(
       'chat',
     );
     expect(MODEL_REGISTRY['text-embedding-3-small-openrouter']?.kind).toBe(
@@ -213,7 +213,7 @@ describe('against infra/llm-gateway/routes.yaml', () => {
       expect(AI_PRICING.litellm?.[id]).toBeDefined();
     }
     expect(table).toMatch(
-      /claude-haiku-4-5-openrouter:\n\s+provider: openrouter/,
+      /claude-sonnet-5-5-openrouter:\n\s+provider: openrouter/,
     );
     expect(table).toMatch(
       /text-embedding-3-small-openrouter:\n\s+provider: openrouter/,

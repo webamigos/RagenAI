@@ -109,9 +109,9 @@ routes:
   # entries above, which are the same models served from another account. A
   # table is a map, so a second entry under one key would silently replace
   # the first.
-  claude-haiku-4-5-openrouter:
+  claude-sonnet-5-5-openrouter:
     provider: openrouter
-    model: anthropic/claude-haiku-4.5
+    model: anthropic/claude-sonnet-5.5
   # 1536 dimensions — an install on this route sets VECTOR_SIZE=1536 and
   # EMBEDDINGS_MODEL to this id, on the web, api and worker alike.
   text-embedding-3-small-openrouter:

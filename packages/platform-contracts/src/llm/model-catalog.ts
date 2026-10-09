@@ -111,10 +111,11 @@ export const MODEL_REGISTRY: Record<string, ModelRegistryEntry> = {
   },
 
   // --- OpenRouter (one key; the Railway template's default) ---
-  'claude-haiku-4-5-openrouter': {
-    displayName: 'Claude Haiku 4.5 (OpenRouter)',
+  'claude-sonnet-5-5-openrouter': {
+    displayName: 'Claude Sonnet 5.5 (OpenRouter)',
     visible: true,
     origin: 'anthropic',
+    reasoning: true,
   },
 
   // --- Anthropic (Bedrock) ---
