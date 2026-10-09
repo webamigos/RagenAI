@@ -186,3 +186,25 @@ describe('the default route table path', () => {
     );
   });
 });
+
+/**
+ * The Railway template serves a whole install from one OPENROUTER_API_KEY and
+ * has no way to mount a table of its own, so the shipped table has to carry
+ * the three routes. Parsed with the gateway's own schema rather than matched as
+ * text, so a route that is present but invalid (a provider the gateway does not
+ * know, a missing model) fails here instead of at the first request.
+ */
+describe('the shipped route table, for an install on one OpenRouter key', () => {
+  const table = readRouteTableFile(join(repoRoot, DEFAULT_ROUTE_TABLE_PATH));
+
+  it.each([
+    ['claude-sonnet-5-5-openrouter', 'anthropic/claude-sonnet-5.5'],
+    ['claude-haiku-5-5-openrouter', 'anthropic/claude-haiku-5.5'],
+    ['text-embedding-3-small-openrouter', 'openai/text-embedding-3-small'],
+  ])('routes %s to OpenRouter as %s', (id, upstream) => {
+    expect(findRoute(table, id)).toMatchObject({
+      provider: 'openrouter',
+      model: upstream,
+    });
+  });
+});
