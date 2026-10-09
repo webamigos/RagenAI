@@ -104,7 +104,10 @@ export function BrainDocumentsPanel({
                 </TableHeader>
                 <TableHeader>{t('columns.state')}</TableHeader>
                 {canWrite && (
-                  <TableHeader className="w-12">
+                  // `relative`: an sr-only label is absolutely positioned,
+                  // and without a positioned cell it escaped the table's
+                  // scroll box and widened the page on a phone.
+                  <TableHeader className="relative w-12">
                     <span className="sr-only">{t('columns.actions')}</span>
                   </TableHeader>
                 )}
