@@ -2926,10 +2926,10 @@
         "full": "Pełny graf"
       },
       "topics-title": "Mapa tematów",
-      "topics-scale": "Wielkość = liczba stron · kolor = stan przeglądu",
+      "topics-scale": "Wielkość kafla = liczba stron",
       "topic-pages": "{count, plural, one {# strona} few {# strony} many {# stron} other {# strony}}",
-      "topic-approved": "Są zatwierdzone strony",
-      "topic-approved-count": "{count} zatw.",
+      "topic-approved": "Jest zatwierdzona strona",
+      "topic-approved-count": "{count, plural, one {# zatwierdzona} few {# zatwierdzone} many {# zatwierdzonych} other {# zatwierdzone}}",
       "topic-candidates": "Same do sprawdzenia",
       "isolated-count": "{count, plural, one {# strona poza głównymi tematami} few {# strony poza głównymi tematami} many {# stron poza głównymi tematami} other {# strony poza głównymi tematami}}",
       "isolated-description": "Zamiast kolumny luźnych kropek: lista stron bez powiązań. Otwórz stronę, aby zaproponować powiązania.",

@@ -61,8 +61,10 @@ it('renders complete counts, labelled review states and scoped group/isolated de
     'href',
     '/brain/graph?view=topics&topic=a&lang=pol',
   );
-  expect(screen.getByText('2 pages')).toBeInTheDocument();
-  expect(screen.getAllByText('Has approved pages').length).toBeGreaterThan(0);
+  expect(screen.getByRole('link', { name: /Handbook/ })).toHaveTextContent(
+    /2 pages · \d+ approved/,
+  );
+  expect(screen.getAllByText('Has an approved page').length).toBeGreaterThan(0);
   expect(
     screen.getByRole('link', { name: 'Review isolated pages' }),
   ).toHaveAttribute('href', '/brain/graph?view=topics&topic=isolated&lang=pol');
