@@ -80,6 +80,15 @@ const RECOMMENDED: Array<Omit<SetupFinding, 'severity'>> = [
     example: 'local / demo / staging / production',
   },
   {
+    // Either key gives the content-moderation guardrail a provider. Without
+    // one an install still chats — the guardrail logs "not configured" and
+    // lets the turn through — which is worth knowing before an organization
+    // switches that guardrail on and assumes it works.
+    id: 'moderation',
+    vars: ['OPENAI_MODERATION_KEY', 'OPENAI_API_KEY'],
+    example: 'OPENAI_MODERATION_KEY=sk-...',
+  },
+  {
     id: 'message-encryption',
     vars: ['SCW_KEY_MANAGER_KEY_ID', 'AWS_KMS_KEY_ID', 'ENCRYPTION_MASTER_KEY'],
     example:

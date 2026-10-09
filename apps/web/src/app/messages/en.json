@@ -2503,6 +2503,7 @@
       "mail": "No mail transport is configured, so verification links, magic links and invitations are only written to the log. Set up Resend or an SMTP server to deliver them.",
       "app-url": "Links in emails and in the embeddable chat widget need an absolute origin. Either variable works; BETTER_AUTH_URL is read at runtime, NEXT_PUBLIC_APP_URL is baked in at build time.",
       "target-env": "Names the deployment. Left unset, traces and metrics report no environment, and email links have no local fallback to fall back to.",
+      "moderation": "Content moderation has no provider, so the content-moderation guardrail logs \"not configured\" and lets every message through. Set an OpenAI key used only for moderation if you plan to enable it.",
       "message-encryption": "Thread messages are stored as plaintext. Fine locally; set one of these before real conversations go in.",
       "embeddings-dimension-mismatch": "EMBEDDINGS_MODEL={model} produces {expected}-dimensional vectors, but VECTOR_SIZE is {configured}. Qdrant rejects every upsert, so no document ever becomes searchable.",
       "object-storage-credentials": "STORAGE_PROVIDER=s3 is set, but some of its configuration is missing. Uploads and downloads fail until these are set — use the S3_ prefix (S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY, S3_REGION), not AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY / AWS_DEFAULT_REGION, which are reserved for AWS Bedrock and AWS KMS.",

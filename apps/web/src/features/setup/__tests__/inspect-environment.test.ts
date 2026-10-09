@@ -150,6 +150,22 @@ describe('inspectEnvironment', () => {
     );
   });
 
+  it('recommends a moderation key when no OpenAI key is set', () => {
+    // An OpenRouter-only install chats, but the content-moderation guardrail
+    // has no provider there; that is a recommendation, never a block.
+    const env = {
+      ...completeEnv,
+      OPENAI_API_KEY: undefined,
+      OPENROUTER_API_KEY: 'sk-or-test',
+    };
+
+    expect(idsOf(env)).toEqual(['moderation']);
+    expect(inspectEnvironment(env).hasBlockingIssues).toBe(false);
+    expect(idsOf({ ...env, OPENAI_MODERATION_KEY: 'sk-moderation' })).toEqual(
+      [],
+    );
+  });
+
   it('does not block on recommended settings alone', () => {
     const report = inspectEnvironment({ ...completeEnv, SMTP_HOST: undefined });
 

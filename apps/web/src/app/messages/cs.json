@@ -2503,6 +2503,7 @@
       "mail": "Není nakonfigurován žádný e-mailový přenos, takže ověřovací odkazy, magické odkazy a pozvánky se pouze zapisují do protokolu. Nakonfigurujte Resend nebo SMTP server pro jejich doručování.",
       "app-url": "Odkazy v e-mailech a ve vložitelném chatovacím widgetu potřebují absolutní origin. Obě proměnné fungují; BETTER_AUTH_URL se čte za běhu, NEXT_PUBLIC_APP_URL se vkládá při kompilaci.",
       "target-env": "Pojmenovává nasazení. Pokud není nastavena, trasování a metriky nehlásí žádné prostředí a e-mailové odkazy nemají žádnou místní výchozí hodnotu.",
+      "moderation": "Moderování obsahu nemá poskytovatele, takže guardrail moderování zapíše „nenakonfigurováno“ a propustí každou zprávu. Pokud ho chceš zapnout, nastav klíč OpenAI určený jen pro moderování.",
       "message-encryption": "Zprávy konverzací se ukládají jako prostý text. To je v pořádku lokálně; nastavte jednu z těchto hodnot, než se tam dostanou skutečné konverzace.",
       "embeddings-dimension-mismatch": "EMBEDDINGS_MODEL={model} produkuje vektory s {expected} dimenzemi, ale VECTOR_SIZE je {configured}. Qdrant odmítá každý upsert, takže žádný dokument nebude vyhledatelný.",
       "object-storage-credentials": "STORAGE_PROVIDER=s3 je nastaven, ale část jeho konfigurace chybí. Nahrávání a stahování selhávají, dokud nejsou tyto hodnoty nastaveny — použijte předponu S3_ (S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY, S3_REGION), nikoli AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY / AWS_DEFAULT_REGION, které jsou vyhrazeny pro AWS Bedrock a AWS KMS.",

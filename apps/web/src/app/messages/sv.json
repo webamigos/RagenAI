@@ -2503,6 +2503,7 @@
       "mail": "Ingen e-posttransport är konfigurerad, så bekräftelselänkar, magiska länkar och inbjudningar skrivs endast till loggen. Konfigurera Resend eller en SMTP-server för att leverera dem.",
       "app-url": "Länkar i e-post och i den inbäddningsbara chattwidgeten behöver ett absolut ursprung. Båda variablerna fungerar; BETTER_AUTH_URL läses vid körning, NEXT_PUBLIC_APP_URL bäddas in vid kompilering.",
       "target-env": "Namnger driftsättningen. Om den inte är angiven rapporterar spårningar och mätvärden ingen miljö, och e-postlänkar har inget lokalt standardvärde.",
+      "moderation": "Innehållsmoderering har ingen leverantör, så modererings-guardrailen loggar ”inte konfigurerad” och släpper igenom varje meddelande. Ange en OpenAI-nyckel endast för moderering om du tänker aktivera den.",
       "message-encryption": "Meddelanden i konversationer lagras som vanlig text. Det är okej lokalt; ange ett av dessa värden innan riktiga konversationer hamnar där.",
       "embeddings-dimension-mismatch": "EMBEDDINGS_MODEL={model} producerar vektorer med {expected} dimensioner, men VECTOR_SIZE är {configured}. Qdrant avvisar varje upsert, så inget dokument blir sökbart.",
       "object-storage-credentials": "STORAGE_PROVIDER=s3 är angiven, men en del av dess konfiguration saknas. Uppladdningar och nedladdningar misslyckas tills dessa värden är angivna — använd prefixet S3_ (S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY, S3_REGION), inte AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY / AWS_DEFAULT_REGION, som är reserverade för AWS Bedrock och AWS KMS.",
