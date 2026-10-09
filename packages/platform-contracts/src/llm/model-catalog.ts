@@ -110,6 +110,13 @@ export const MODEL_REGISTRY: Record<string, ModelRegistryEntry> = {
     origin: 'mistral',
   },
 
+  // --- OpenRouter (one key; the Railway template's default) ---
+  'claude-haiku-4-5-openrouter': {
+    displayName: 'Claude Haiku 4.5 (OpenRouter)',
+    visible: true,
+    origin: 'anthropic',
+  },
+
   // --- Anthropic (Bedrock) ---
   'claude-sonnet-4-6': {
     displayName: 'Claude Sonnet 4.6',
@@ -196,6 +203,12 @@ export const MODEL_REGISTRY: Record<string, ModelRegistryEntry> = {
   'qwen3-embedding-8b': {
     displayName: 'Qwen3 Embedding 8B',
     visible: false, // internal: used for embeddings/reranking (Scaleway)
+    origin: 'openai',
+    kind: 'embedding',
+  },
+  'text-embedding-3-small-openrouter': {
+    displayName: 'OpenAI Text Embedding 3 Small (OpenRouter)',
+    visible: false, // internal: used for embeddings (OpenRouter)
     origin: 'openai',
     kind: 'embedding',
   },

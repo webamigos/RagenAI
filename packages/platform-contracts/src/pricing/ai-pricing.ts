@@ -105,6 +105,9 @@ export const AI_PRICING: Readonly<
     'bge-multilingual-gemma2': { input: eurToUsd(0.1), output: 0 },
     // Scaleway rerank uses qwen3-embedding-8b (bi-encoder via /v1/rerank).
     'qwen3-embedding-8b': { input: eurToUsd(0.1), output: 0 },
+    // OpenRouter passes the upstream's list price through.
+    'claude-haiku-4-5-openrouter': { input: 1, output: 5 },
+    'text-embedding-3-small-openrouter': { input: 0.02, output: 0 },
   },
   // The Scaleway rerankers in apps/web and apps/api record their rows as
   // provider 'scaleway', not 'litellm', so the entry above never matched
