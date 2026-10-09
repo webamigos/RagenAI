@@ -21,7 +21,7 @@ export default async function BrainOverviewPage({
     getBrainOverviewQuery(access.orgId, language),
   ]);
   return (
-    <section className="max-w-[1120px]">
+    <section>
       <title>{`${t('tabs.overview')} – ${t('title')}`}</title>
       <BrainScreen context={{ view: 'overview' }} />
       <BrainOverviewPanel

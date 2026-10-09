@@ -23,7 +23,10 @@ Source: `apps/web/design_handoff_ragen_panel/UX_RULES.md`.
    you came from — a section does not get a second navigation column beside the
    sidebar.
 2. **Content is capped at 1120px and left-aligned inside the pane**, except
-   table-heavy pages, which run full width (`data-panel-fullwidth`).
+   table-heavy pages, which run full width (`data-panel-fullwidth`). A screen
+   with tabs has one width, set by its widest tab — Brain's overview runs full
+   width because its pages table and graph do, or the content jumps on every
+   tab switch.
 3. **Page header is one row**: title (display font) + primary action, right
    aligned. No breadcrumb unless the page is nested two levels deep.
 4. **Panels are line drawings.** White surface, 1px `--border`, 6px radius, no

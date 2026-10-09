@@ -83,6 +83,8 @@ archive is the blog.
 
 - [brief] Brain findings offer a fix beside each open problem: retry extraction, assign an owner, review stale or conflicting knowledge, or confirm suggested relations. Closed findings collapse into time groups. The graph neighbourhood places relations beside the graph on wide screens, and topic rows keep status badges beside page names.
 
+- [brief] Brain’s Overview tab uses the full panel width like the other Brain tabs, so the content no longer changes width when you switch tabs.
+
 - Brain’s Documents tab counts each knowledge page once per source file, even when it cites several quotes from that file. Publication status updates after indexing without a reload, empty extractions remain actionable, and ambiguous spreadsheet languages stay undetected.
 
 ### MCP sign-in
