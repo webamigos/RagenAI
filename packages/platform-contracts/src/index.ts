@@ -49,6 +49,11 @@ export type {
   PlatformFeatureDefaults,
   ResolvedFeature,
 } from './features/features';
+export {
+  DEFAULT_FEATURES_ENV,
+  applyDefaultFeatures,
+  parseDefaultFeatures,
+} from './features/default-features-from-env';
 
 export {
   DEMO_FEATURE_OVERRIDES,

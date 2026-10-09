@@ -8,6 +8,14 @@ import {
 } from '../apps/web/src/generated/prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { seedBuiltInCatalogue } from './catalog/seed-catalogue';
+// Relative to the source rather than `@ragenai/platform-contracts`: the
+// `migrate` image runs this with tsx and builds no package `dist/`.
+import {
+  applyDefaultFeatures,
+  DEFAULT_FEATURES_ENV,
+  parseDefaultFeatures,
+} from '../packages/platform-contracts/src/features/default-features-from-env';
+import { PLATFORM_FEATURE_DEFAULTS_KEY } from '../packages/platform-contracts/src/features/features';
 
 // Stripe sync is optional: most local/self-hosted setups don't have Stripe
 // credentials at all (cloud/subscriptions is deferred), and syncInternalPlans()
@@ -180,7 +188,61 @@ async function syncConnectorCatalogue() {
   console.log(`Catalogue in sync: ${count} built-in entries.`);
 }
 
+/**
+ * Switches on the feature keys in RAGEN_DEFAULT_FEATURES at the platform-default
+ * layer, where nothing has decided them yet — see
+ * `packages/platform-contracts/src/features/default-features-from-env.ts`.
+ */
+async function applyDefaultFeaturesFromEnv() {
+  const keys = parseDefaultFeatures(process.env[DEFAULT_FEATURES_ENV]);
+  if (keys.length === 0) {
+    return;
+  }
+
+  const row = await prisma.settings.findUnique({
+    where: { key: PLATFORM_FEATURE_DEFAULTS_KEY },
+  });
+
+  let stored: Record<string, boolean> = {};
+  if (row) {
+    try {
+      const parsed = JSON.parse(row.value) as Record<string, unknown>;
+      stored = Object.fromEntries(
+        Object.entries(parsed).filter(
+          (entry): entry is [string, boolean] => typeof entry[1] === 'boolean',
+        ),
+      );
+    } catch {
+      // Unreadable is not the same as empty: writing over it would erase
+      // whatever an administrator meant to save. Leave it for them.
+      console.warn(
+        `${DEFAULT_FEATURES_ENV}: the saved platform defaults are not valid JSON; left unchanged.`,
+      );
+      return;
+    }
+  }
+
+  const { next, added } = applyDefaultFeatures(stored, keys);
+  if (added.length === 0) {
+    console.log(
+      `${DEFAULT_FEATURES_ENV}: ${keys.join(', ')} already decided by the platform defaults.`,
+    );
+    return;
+  }
+
+  await prisma.settings.upsert({
+    where: { key: PLATFORM_FEATURE_DEFAULTS_KEY },
+    update: { value: JSON.stringify(next) },
+    create: { key: PLATFORM_FEATURE_DEFAULTS_KEY, value: JSON.stringify(next) },
+  });
+  console.log(`${DEFAULT_FEATURES_ENV}: switched on ${added.join(', ')}.`);
+}
+
 async function main() {
+  // Outside the try below on purpose: that block logs and carries on, and a
+  // misspelt key has to stop the deploy rather than vanish into the log.
+  await applyDefaultFeaturesFromEnv();
+
   try {
     console.log('Seeding process started...');
     await syncInternalPlans();
