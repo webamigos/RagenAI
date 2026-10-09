@@ -3,6 +3,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
+import { AI_PRICING } from '../pricing/ai-pricing';
 import {
   MODEL_REGISTRY,
   isChatModel,
@@ -189,5 +190,29 @@ describe('against infra/llm-gateway/routes.yaml', () => {
   it('knows every model the route table serves', () => {
     const unknown = routed.filter((name) => !MODEL_REGISTRY[name]);
     expect(unknown).toEqual([]);
+  });
+
+  // The Railway template serves a whole install from one OPENROUTER_API_KEY,
+  // and that only holds while the shipped table carries a chat route and an
+  // embeddings route for it. A route with no price records its usage at cost 0
+  // and slips under the monthly ceiling, so the pair is checked here.
+  it('describes and prices the three OpenRouter routes', () => {
+    const openrouter = [
+      'claude-sonnet-5-5-openrouter',
+      'claude-haiku-5-5-openrouter',
+      'text-embedding-3-small-openrouter',
+    ];
+
+    expect(routed).toEqual(expect.arrayContaining(openrouter));
+    expect(MODEL_REGISTRY['claude-sonnet-5-5-openrouter']?.kind ?? 'chat').toBe(
+      'chat',
+    );
+    expect(MODEL_REGISTRY['text-embedding-3-small-openrouter']?.kind).toBe(
+      'embedding',
+    );
+    for (const id of openrouter) {
+      expect(AI_PRICING.litellm?.[id]).toBeDefined();
+    }
+    expect(MODEL_REGISTRY['claude-haiku-5-5-openrouter']?.visible).toBe(false);
   });
 });

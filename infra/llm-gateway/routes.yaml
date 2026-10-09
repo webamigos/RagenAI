@@ -97,3 +97,29 @@ routes:
     provider: openai-compatible
     connection: scaleway
     model: qwen3-embedding-8b
+
+  # --- OpenRouter ---------------------------------------------------------
+  # One key (OPENROUTER_API_KEY) serves chat and embeddings, which is what lets
+  # an install with no cloud account — the Railway template, a laptop — work
+  # from this shipped table instead of writing its own. A route is not a
+  # credential: with no key set the gateway does not offer these, and the
+  # rest of the table is unaffected.
+  #
+  # The `-openrouter` suffix keeps the id clear of the Bedrock and Scaleway
+  # entries above, which are the same models served from another account. A
+  # table is a map, so a second entry under one key would silently replace
+  # the first.
+  claude-sonnet-5-5-openrouter:
+    provider: openrouter
+    model: anthropic/claude-sonnet-5.5
+  # The rephrase and summary model for an install on this route. Both run on
+  # every question and every upload, so they take the cheap tier rather than
+  # the answer model above. Do not upgrade it without approval.
+  claude-haiku-5-5-openrouter:
+    provider: openrouter
+    model: anthropic/claude-haiku-5.5
+  # 1536 dimensions — an install on this route sets VECTOR_SIZE=1536 and
+  # EMBEDDINGS_MODEL to this id, on the web, api and worker alike.
+  text-embedding-3-small-openrouter:
+    provider: openrouter
+    model: openai/text-embedding-3-small

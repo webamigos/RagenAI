@@ -56,6 +56,14 @@ export interface LlmProviderConfig {
   baseUrl?: { envVar: string; prompt: string };
   upstreamModel: string;
   /**
+   * A cheaper model for the work that runs on every question and every upload
+   * — rephrasing, document summaries, scoring. Undefined means the answer
+   * model does all of it, which is right where there is only one model worth
+   * naming and wrong where the answer model is the expensive tier: those three
+   * calls would be billed at its rate.
+   */
+  lightModel?: { modelName: string; upstreamModel: string };
+  /**
    * Undefined for a provider with no embeddings API of its own. Chat still
    * works; the knowledge base does not, because retrieval has nothing to
    * embed a query with. The wizard says so rather than leaving the shipped
@@ -72,9 +80,15 @@ export const LLM_PROVIDERS: Record<LlmProviderChoice, LlmProviderConfig> = {
     // Namespaced upstream, plain here: the model id is what the application
     // and the catalogue use, and `model` is the upstream's own name. Keeping
     // the slash out of the key also keeps it out of URLs and log lines.
-    modelName: 'claude-haiku-4-5-openrouter',
+    modelName: 'claude-sonnet-5-5-openrouter',
     gatewayProvider: 'openrouter',
-    upstreamModel: 'anthropic/claude-haiku-4.5',
+    upstreamModel: 'anthropic/claude-sonnet-5.5',
+    // The same pair the shipped route table carries for this provider, which
+    // is what the Railway template runs.
+    lightModel: {
+      modelName: 'claude-haiku-5-5-openrouter',
+      upstreamModel: 'anthropic/claude-haiku-5.5',
+    },
     embeddings: {
       modelName: 'text-embedding-3-small-openrouter',
       upstreamModel: 'openai/text-embedding-3-small',
@@ -157,6 +171,7 @@ export function resolveLlmProviderChoice(
   baseUrl?: string,
 ): LlmProviderChoiceResult {
   const config = LLM_PROVIDERS[choice];
+  const lightModelName = config.lightModel?.modelName ?? config.modelName;
 
   const envUpdates: Record<string, string> = {
     [config.apiKeyEnvVar]: apiKey,
@@ -170,15 +185,15 @@ export function resolveLlmProviderChoice(
     // credentials. Multi-query expansion is on by default (ADR-15), so
     // leaving it would fail the RAG chain on its *first* step — before the
     // model the user just configured is ever reached.
-    REPHRASE_MODEL: config.modelName,
+    REPHRASE_MODEL: lightModelName,
     // Same reason, one step later. The worker falls back to gemini-2.5-flash
     // for SUMMARY_MODEL, which runs on every ingest (ADR-16) and for the RAG
     // readiness score, and leads scoring to the value .env.example ships. Left
     // alone, the first upload logged "no route for model" and the document
     // was indexed without its summary — quietly, because a failed summary is
     // not a failed ingest.
-    SUMMARY_MODEL: config.modelName,
-    SCORING_MODEL: config.modelName,
+    SUMMARY_MODEL: lightModelName,
+    SCORING_MODEL: lightModelName,
   };
 
   // The route table is the whole configuration now. There is no second place
@@ -193,6 +208,15 @@ export function resolveLlmProviderChoice(
       ...(config.structuredOutputs ? { structuredOutputs: true } : {}),
     },
   ];
+
+  if (config.lightModel) {
+    routes.push({
+      modelName: config.lightModel.modelName,
+      provider: config.gatewayProvider,
+      model: config.lightModel.upstreamModel,
+      ...(config.connection ? { connection: config.connection } : {}),
+    });
+  }
 
   if (config.embeddings) {
     envUpdates.EMBEDDINGS_MODEL = config.embeddings.modelName;
