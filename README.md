@@ -146,16 +146,37 @@ is decided:
 
 ![Application settings](docs/img/web/settings-general.png)
 
-Ragen Brain turns the documents into knowledge pages people review and own,
-and draws how they relate. The graph is where a curator sees what the
-corpus actually says, what depends on what, and where the gaps are:
+Ragen Brain turns the documents into knowledge pages people review and own.
+The overview shows where each document stands on the way to a chat answer —
+extracted, to review, approved, published — and what needs attention next:
+
+![Ragen Brain overview](docs/img/brain/overview.webp)
+
+Every knowledge page is listed with its status, owner and open problems; only
+approved pages can be published to the knowledge base:
+
+![Ragen Brain knowledge pages](docs/img/brain/knowledge-pages.webp)
+
+A knowledge page: the claims, each with the quoted passage it came from,
+its owner, who may read it, its relations to other pages, and whether it is in
+the knowledge base yet:
+
+![Ragen Brain knowledge page](docs/img/brain/knowledge-page.webp)
+
+Problems are what needs a person's attention — contradictions between pages,
+gaps, stale pages, pages with no owner and documents Brain could not read:
+
+![Ragen Brain problems](docs/img/brain/problems.webp)
+
+The graph shows how pages connect, so a curator sees what the corpus actually
+says, what depends on what, and where the gaps are:
 
 ![Ragen Brain graph](docs/img/brain/graph.webp)
 
-A knowledge page: the claims, each with the quoted passage it came from,
-its owner, who may read it, and whether it is in the knowledge base yet:
+Sources lists the documents Brain reads, how many pages each one yielded and
+how many of them are approved:
 
-![Ragen Brain knowledge page](docs/img/brain/knowledge-page.webp)
+![Ragen Brain sources](docs/img/brain/sources.webp)
 
 The platform admin panel — one installation, every organization in it. This is
 the operator's surface and a separate app; the per-organization settings a
