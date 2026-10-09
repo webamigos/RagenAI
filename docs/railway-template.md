@@ -46,7 +46,7 @@ is one more thing to get wrong.
 | `vault-db` | `ghcr.io/railwayapp-templates/postgres-ssl:16` | 5432 | no | yes | — |
 | `redis` | Railway's own Redis | 6379 | no | yes | — |
 | `qdrant` | `qdrant/qdrant` | 6333 | no | yes, `/qdrant/storage` | `/readyz` |
-| `docling` | `ghcr.io/docling-project/docling-serve-cpu:v1.32.0` — the upstream image, pinned as `docker-compose.yml` pins it | 5001 | no | — | `/health` |
+| `docling` | GitHub repo `webamigos/RagenAI`, root `/`, Dockerfile path `/infra/docling/Dockerfile` — as on `demo` | 5001 | no | — | `/health` |
 | `storage` | Railway bucket, or `rustfs/rustfs` with a volume (see 6.1) | — | no | yes if RustFS | — |
 | `migrate` | `ghcr.io/webamigos/ragen-migrate:latest` | — | no | — | — |
 | `web` | `ghcr.io/webamigos/ragen-web:latest` | 3000 | **yes** | — | `/api/healthcheck` |
@@ -57,8 +57,12 @@ is one more thing to get wrong.
 
 Notes that decide the layout:
 
-- **No build on the deployer's side.** The Ragen images are public, two-architecture manifests published by `publish-images.yml`; the
-  vault's come from `ragen-token-vault`'s own workflow.
+- **One build on the deployer's side, Docling's.** The Ragen images are
+  public, two-architecture manifests published by `publish-images.yml`; the
+  vault's come from `ragen-token-vault`'s own workflow. Docling is built from
+  this repository exactly as the `demo` environment builds it: a thin layer
+  (entrypoint, port forwarder) over the pinned upstream
+  `docling-serve-cpu` image, so the build is mostly pulling that base.
 - **Pin a version, not `latest`, in the published template** — a template that
   tracks `latest` deploys whatever the next release is into someone's project.
   Use the release tag (`:1.2.3`), and bump it when the template is re-published.
@@ -186,18 +190,14 @@ It is off here because the first run should need no browser consent flow.
 
 | Variable | Value |
 |---|---|
-| `UVICORN_HOST` | `::` — dual-stack, so the private network reaches it (see 6.5) |
-| `UVICORN_PORT` | `5001` |
-| `UVICORN_WORKERS` | `1` |
-| `DOCLING_SERVE_MAX_SYNC_WAIT` | `300` |
-| `DOCLING_SERVE_LOAD_MODELS_AT_BOOT` | `true` |
-| `DOCLING_SERVE_ENABLE_UI` | `false` — it is not a public service |
-| `DOCLING_NUM_THREADS` | `4` |
+| `PORT` | `5001` — the forwarder listens here, Docling itself on `PORT + 1` |
+| `DOCLING_SERVE_ENABLE_UI` | `false` — the image defaults it to `true`, and this is not a public service |
 
-The same settings `docker-compose.yml` gives this image. `infra/docling/`'s own
-Dockerfile, entrypoint and port forwarder are not used: they exist to put a
-listener on `$PORT` for IPv4 and IPv6, which `UVICORN_HOST=::` does on the
-upstream image.
+Everything else comes from `infra/docling/Dockerfile` (`DOCLING_SERVE_MAX_SYNC_WAIT`,
+`DOCLING_SERVE_LOAD_MODELS_AT_BOOT`, `DOCLING_NUM_THREADS`). Its
+`entrypoint.sh` starts a small port forwarder on `$PORT` for IPv4 and IPv6 and
+binds uvicorn to localhost behind it; that is what makes the service reachable
+over Railway's private network, and it is the setup `demo` runs.
 
 ### `migrate`
 
@@ -274,13 +274,13 @@ setting or a service's existence, so none is optional.
    database and fail until `migrate` has run, then recover on their restart
    policy. Confirm they do, and that the first boot does not leave a failed
    state a deployer has to clear by hand.
-5. **Docling binds the private network.** The upstream image runs with
-   `UVICORN_HOST=::` and no custom entrypoint. `infra/docling/` forwards a
-   port because Railway's private network was IPv6-only and uvicorn bound
-   IPv4; confirm in a fresh project that `worker` reaches
-   `docling.railway.internal:5001` and that `/health` answers. If a dual-stack
-   bind is refused, that Dockerfile is the fallback, and it would have to be
-   published (it is not in `publish-images.yml`).
+5. **Docling's source and ref.** The service builds from this repository,
+   which is public. Check that the composer accepts a pinned ref (a release
+   tag, `…/tree/v1.2.3`) rather than `main`, for the same reason the images
+   are pinned. A later simplification — the upstream image alone with
+   `UVICORN_HOST=::`, no entrypoint — would remove the build, but has never
+   run on Railway's private network; try it in a test project, not in the
+   template.
 6. **A route table is a file.** The images carry the one in
    `infra/llm-gateway/routes.yaml`, which now includes the three OpenRouter
    routes. A second provider (OpenAI directly) cannot be added with a variable
