@@ -36,3 +36,11 @@ it('uses organization from access and a validated language, never from URL input
   await OverviewPage({ searchParams: Promise.resolve({ lang: 'pol' }) });
   expect(overview).toHaveBeenCalledWith('session-org', 'pol');
 });
+it('runs the full width of the panel, like the other Brain tabs', async () => {
+  access.mockResolvedValue({ orgId: 'session-org', canWrite: false });
+  overview.mockResolvedValue({});
+  const page = await OverviewPage({ searchParams: Promise.resolve({}) });
+  // A cap here makes the content jump width on every tab switch, because
+  // the pages table and the graph beside it run full width.
+  expect(String(page.props.className ?? '')).not.toMatch(/max-w-/);
+});
