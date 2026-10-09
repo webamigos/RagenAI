@@ -11,6 +11,7 @@ import { getKnowledgePageQuery } from '@/features/brain/services/queries/get-kno
 import { getMergeTargetsQuery } from '@/features/brain/services/queries/get-merge-targets-query';
 import {
   pageBodyForDisplay,
+  remarkSourceMarkers,
   statusDecision,
 } from '@/features/brain/utils/page-body';
 import { relationKindLabel } from '@/features/brain/utils/relation-kind';
@@ -124,11 +125,19 @@ export async function KnowledgePageView({
         <div className="min-w-0 space-y-6">
           <section className="rounded-[6px] border border-border bg-background p-4">
             <div className="chat-response text-sm">
-              <ReactMarkdown>
-                {pageBodyForDisplay(page.content, page.title, (n) => {
-                  const source = page.sources[n - 1];
-                  return source ? `source-${source.id}` : null;
-                })}
+              <ReactMarkdown
+                remarkPlugins={[
+                  remarkSourceMarkers((n) => {
+                    const source = page.sources[n - 1];
+                    return source ? `source-${source.id}` : null;
+                  }),
+                ]}
+              >
+                {pageBodyForDisplay(
+                  page.content,
+                  page.title,
+                  page.sources.map((source) => source.quote),
+                )}
               </ReactMarkdown>
             </div>
           </section>

@@ -18,36 +18,41 @@ const EXTRACTED = [
   '',
 ].join('\n');
 
-const anchors = (n: number) => (n <= 2 ? `source-s${n}` : null);
+const QUOTES = [
+  'Praca zdalna wymaga zgody przełożonego.',
+  'Sprzęt  zapewnia\nfirma.',
+];
 
 describe('pageBodyForDisplay', () => {
   it('drops the title and the numbered quotes the sources list already shows', () => {
-    const body = pageBodyForDisplay(EXTRACTED, 'Praca zdalna', anchors);
+    const body = pageBodyForDisplay(EXTRACTED, 'Praca zdalna', QUOTES);
     expect(body).not.toContain('# Praca zdalna');
     expect(body).not.toContain('---');
     expect(body).not.toContain('„');
     expect(body).toContain('Zasady pracy zdalnej.');
+    // Markers stay as written here; linking them is the remark plugin's job.
+    expect(body).toContain('przełożonego. [1]');
   });
 
-  it('links each marker to its source', () => {
-    const body = pageBodyForDisplay(EXTRACTED, 'Praca zdalna', anchors);
-    expect(body).toContain('przełożonego. [\\[1\\]](#source-s1)');
-    expect(body).toContain('firma. [\\[2\\]](#source-s2)');
+  it('keeps a numbered list after a rule when it is not this page’s quotes', () => {
+    const edited = 'Intro.\n\n---\n\n1. First step\n2. Second step';
+    expect(pageBodyForDisplay(edited, 'X', QUOTES)).toBe(edited);
   });
 
-  it('leaves a marker with no source as written', () => {
-    expect(pageBodyForDisplay('- Claim. [3]', 'X', anchors)).toBe(
-      '- Claim. [3]',
+  it('keeps the tail when even one line is not one of the sources', () => {
+    const mixed = `${EXTRACTED}3. (§2) „Something no source says.”\n`;
+    expect(pageBodyForDisplay(mixed, 'Praca zdalna', QUOTES)).toContain(
+      'Something no source says.',
     );
   });
 
   it('keeps a rule an editor wrote, when what follows is not the quotes', () => {
     const edited = 'Intro.\n\n---\n\nMore text after a rule.';
-    expect(pageBodyForDisplay(edited, 'X', anchors)).toBe(edited);
+    expect(pageBodyForDisplay(edited, 'X', QUOTES)).toBe(edited);
   });
 
   it('keeps a first heading that is not the title', () => {
-    expect(pageBodyForDisplay('# Other\n\nText', 'X', anchors)).toBe(
+    expect(pageBodyForDisplay('# Other\n\nText', 'X', QUOTES)).toBe(
       '# Other\n\nText',
     );
   });
