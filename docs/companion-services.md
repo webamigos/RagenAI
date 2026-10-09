@@ -201,6 +201,11 @@ forwards to `GET /v1/assistants` — both using the caller's own Ragen API key.
 
 **Requires**: apps/api (port 3001) running and reachable.
 
+### Railway template
+
+The stack as a one-click Railway deploy — services, variables, secrets and what
+is still to verify — is specified in [`railway-template.md`](railway-template.md).
+
 ### Compose project names, container names and optional observability
 
 **Container names are Compose's, not ours** — `ragen-app-postgres-1`, not
