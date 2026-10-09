@@ -23,6 +23,14 @@ describe('relationKindLabel', () => {
     );
   });
 
+  it('translates the kinds the model writes beside the seeded ones', () => {
+    expect(relationKindLabel('manufactures', translator(pl))).toBe('produkuje');
+    expect(relationKindLabel('Located in', translator(pl))).toBe(
+      'znajduje się w',
+    );
+    expect(relationKindLabel('constrains', translator(en))).toBe('constrains');
+  });
+
   it('reads the model’s phrase however it was cased or spaced', () => {
     expect(relationKindKey('  Applies   To ')).toBe('applies-to');
     expect(relationKindKey('Responsible for')).toBe('is-responsible-for');

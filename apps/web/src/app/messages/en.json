@@ -3169,7 +3169,22 @@
       "is-part-of": "is part of",
       "references": "references",
       "depends-on": "depends on",
-      "related-to": "related to"
+      "related-to": "related to",
+      "manufactures": "manufactures",
+      "designs": "designs",
+      "supplies": "supplies",
+      "provides": "provides",
+      "uses": "uses",
+      "contains": "contains",
+      "defines": "defines",
+      "constrains": "constrains",
+      "performs": "performs",
+      "contradicts": "contradicts",
+      "implements": "implements",
+      "sells": "sells",
+      "manages": "manages",
+      "reports-to": "reports to",
+      "is-located-in": "is located in"
     },
     "language": {
       "label": "Language",

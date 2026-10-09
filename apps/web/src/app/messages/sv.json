@@ -3169,7 +3169,22 @@
       "is-part-of": "är en del av",
       "references": "hänvisar till",
       "depends-on": "beror på",
-      "related-to": "related to"
+      "related-to": "related to",
+      "manufactures": "tillverkar",
+      "designs": "designar",
+      "supplies": "levererar",
+      "provides": "tillhandahåller",
+      "uses": "använder",
+      "contains": "innehåller",
+      "defines": "definierar",
+      "constrains": "begränsar",
+      "performs": "utför",
+      "contradicts": "motsäger",
+      "implements": "implementerar",
+      "sells": "säljer",
+      "manages": "ansvarar för",
+      "reports-to": "rapporterar till",
+      "is-located-in": "ligger i"
     },
     "language": {
       "label": "Språk",

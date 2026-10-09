@@ -3169,7 +3169,22 @@
       "is-part-of": "fait partie de",
       "references": "fait référence à",
       "depends-on": "dépend de",
-      "related-to": "related to"
+      "related-to": "related to",
+      "manufactures": "fabrique",
+      "designs": "conçoit",
+      "supplies": "fournit",
+      "provides": "offre",
+      "uses": "utilise",
+      "contains": "contient",
+      "defines": "définit",
+      "constrains": "contraint",
+      "performs": "exécute",
+      "contradicts": "contredit",
+      "implements": "met en œuvre",
+      "sells": "vend",
+      "manages": "gère",
+      "reports-to": "relève de",
+      "is-located-in": "se trouve dans"
     },
     "language": {
       "label": "Langue",

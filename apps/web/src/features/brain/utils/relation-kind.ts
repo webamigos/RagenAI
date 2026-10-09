@@ -28,6 +28,24 @@ const KNOWN_KINDS: Record<string, string> = {
   'part of': 'is-part-of',
   references: 'references',
   'depends on': 'depends-on',
+  // Kinds the model writes beside the seeded ones, read off a demo
+  // organization's graph: a catalogue manufactures, a rule constrains.
+  manufactures: 'manufactures',
+  designs: 'designs',
+  supplies: 'supplies',
+  provides: 'provides',
+  uses: 'uses',
+  contains: 'contains',
+  defines: 'defines',
+  constrains: 'constrains',
+  performs: 'performs',
+  contradicts: 'contradicts',
+  implements: 'implements',
+  sells: 'sells',
+  manages: 'manages',
+  'reports to': 'reports-to',
+  'is located in': 'is-located-in',
+  'located in': 'is-located-in',
 };
 
 export const RELATION_KIND_KEYS = [...new Set(Object.values(KNOWN_KINDS))];

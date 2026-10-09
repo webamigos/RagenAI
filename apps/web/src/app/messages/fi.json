@@ -3169,7 +3169,22 @@
       "is-part-of": "on osa",
       "references": "viittaa",
       "depends-on": "riippuu",
-      "related-to": "related to"
+      "related-to": "related to",
+      "manufactures": "valmistaa",
+      "designs": "suunnittelee",
+      "supplies": "toimittaa",
+      "provides": "tarjoaa",
+      "uses": "käyttää",
+      "contains": "sisältää",
+      "defines": "määrittelee",
+      "constrains": "rajoittaa",
+      "performs": "suorittaa",
+      "contradicts": "on ristiriidassa",
+      "implements": "toteuttaa",
+      "sells": "myy",
+      "manages": "hallinnoi",
+      "reports-to": "raportoi",
+      "is-located-in": "sijaitsee"
     },
     "language": {
       "label": "Kieli",

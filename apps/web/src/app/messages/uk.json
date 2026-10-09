@@ -3169,7 +3169,22 @@
       "is-part-of": "є частиною",
       "references": "посилається на",
       "depends-on": "залежить від",
-      "related-to": "related to"
+      "related-to": "related to",
+      "manufactures": "виробляє",
+      "designs": "проєктує",
+      "supplies": "постачає",
+      "provides": "надає",
+      "uses": "використовує",
+      "contains": "містить",
+      "defines": "визначає",
+      "constrains": "обмежує",
+      "performs": "виконує",
+      "contradicts": "суперечить",
+      "implements": "реалізує",
+      "sells": "продає",
+      "manages": "керує",
+      "reports-to": "підпорядковується",
+      "is-located-in": "розташований у"
     },
     "language": {
       "label": "Мова",

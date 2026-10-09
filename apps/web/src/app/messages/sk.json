@@ -3169,7 +3169,22 @@
       "is-part-of": "je súčasťou",
       "references": "odkazuje na",
       "depends-on": "závisí od",
-      "related-to": "related to"
+      "related-to": "related to",
+      "manufactures": "vyrába",
+      "designs": "navrhuje",
+      "supplies": "dodáva",
+      "provides": "poskytuje",
+      "uses": "používa",
+      "contains": "obsahuje",
+      "defines": "definuje",
+      "constrains": "obmedzuje",
+      "performs": "vykonáva",
+      "contradicts": "odporuje",
+      "implements": "realizuje",
+      "sells": "predáva",
+      "manages": "riadi",
+      "reports-to": "podlieha",
+      "is-located-in": "sa nachádza v"
     },
     "language": {
       "label": "Jazyk",

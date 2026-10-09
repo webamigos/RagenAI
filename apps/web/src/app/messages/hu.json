@@ -3169,7 +3169,22 @@
       "is-part-of": "része",
       "references": "hivatkozik rá",
       "depends-on": "függ tőle",
-      "related-to": "related to"
+      "related-to": "related to",
+      "manufactures": "gyártja",
+      "designs": "tervezi",
+      "supplies": "szállítja",
+      "provides": "biztosítja",
+      "uses": "használja",
+      "contains": "tartalmazza",
+      "defines": "meghatározza",
+      "constrains": "korlátozza",
+      "performs": "végrehajtja",
+      "contradicts": "ellentmond neki",
+      "implements": "megvalósítja",
+      "sells": "értékesíti",
+      "manages": "irányítja",
+      "reports-to": "alárendeltje",
+      "is-located-in": "helyszíne"
     },
     "language": {
       "label": "Nyelv",

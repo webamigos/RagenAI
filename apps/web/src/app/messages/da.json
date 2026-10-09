@@ -3169,7 +3169,22 @@
       "is-part-of": "er en del af",
       "references": "henviser til",
       "depends-on": "afhænger af",
-      "related-to": "related to"
+      "related-to": "related to",
+      "manufactures": "fremstiller",
+      "designs": "designer",
+      "supplies": "leverer",
+      "provides": "stiller til rådighed",
+      "uses": "bruger",
+      "contains": "indeholder",
+      "defines": "definerer",
+      "constrains": "begrænser",
+      "performs": "udfører",
+      "contradicts": "modsiger",
+      "implements": "implementerer",
+      "sells": "sælger",
+      "manages": "styrer",
+      "reports-to": "rapporterer til",
+      "is-located-in": "ligger i"
     },
     "language": {
       "label": "Sprog",

@@ -3169,7 +3169,22 @@
       "is-part-of": "maakt deel uit van",
       "references": "verwijst naar",
       "depends-on": "is afhankelijk van",
-      "related-to": "related to"
+      "related-to": "related to",
+      "manufactures": "produceert",
+      "designs": "ontwerpt",
+      "supplies": "levert aan",
+      "provides": "biedt",
+      "uses": "gebruikt",
+      "contains": "bevat",
+      "defines": "definieert",
+      "constrains": "beperkt",
+      "performs": "voert uit",
+      "contradicts": "spreekt tegen",
+      "implements": "implementeert",
+      "sells": "verkoopt",
+      "manages": "beheert",
+      "reports-to": "rapporteert aan",
+      "is-located-in": "bevindt zich in"
     },
     "language": {
       "label": "Taal",

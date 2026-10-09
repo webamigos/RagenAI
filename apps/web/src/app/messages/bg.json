@@ -3169,7 +3169,22 @@
       "is-part-of": "е част от",
       "references": "препраща към",
       "depends-on": "зависи от",
-      "related-to": "related to"
+      "related-to": "related to",
+      "manufactures": "произвежда",
+      "designs": "проектира",
+      "supplies": "доставя",
+      "provides": "осигурява",
+      "uses": "използва",
+      "contains": "съдържа",
+      "defines": "определя",
+      "constrains": "ограничава",
+      "performs": "изпълнява",
+      "contradicts": "противоречи на",
+      "implements": "реализира",
+      "sells": "продава",
+      "manages": "управлява",
+      "reports-to": "е подчинен на",
+      "is-located-in": "се намира в"
     },
     "language": {
       "label": "Език",
