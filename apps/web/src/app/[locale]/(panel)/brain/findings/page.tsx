@@ -83,7 +83,7 @@ export default async function BrainFindingsPage({ searchParams }: Props) {
 
   return (
     <section>
-      <title>{`${t('tabs.findings')} — ${t('title')}`}</title>
+      <title>{`${t('tabs.findings')} – ${t('title')}`}</title>
       <BrainScreen
         context={
           focused

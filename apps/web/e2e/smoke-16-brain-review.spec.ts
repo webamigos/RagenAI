@@ -74,7 +74,7 @@ test('reviews five candidates by keyboard after assigning the document owner onc
       'Review keyboard 1',
     );
     const checkbox = page.getByRole('checkbox', {
-      name: 'Ustaw dla wszystkich 5 kandydatów z tego dokumentu',
+      name: 'Ustaw dla wszystkich 5 stron do sprawdzenia z tego dokumentu',
     });
     await checkbox.focus();
     await page.keyboard.press('Space');
@@ -88,7 +88,7 @@ test('reviews five candidates by keyboard after assigning the document owner onc
     await page.keyboard.type(TEST_USER_NAME);
     await page.keyboard.press('Enter');
     const save = page.getByRole('button', {
-      name: 'Przypisz właściciela kandydatom',
+      name: 'Przypisz właściciela tym stronom',
     });
     await save.focus();
     await page.keyboard.press('Enter');

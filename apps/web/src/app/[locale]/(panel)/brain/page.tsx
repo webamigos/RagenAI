@@ -119,7 +119,7 @@ export default async function BrainPagesPage({ searchParams }: Props) {
 
   return (
     <section>
-      <title>{`${t('tabs.pages')} — ${t('title')}`}</title>
+      <title>{`${t('tabs.pages')} – ${t('title')}`}</title>
       <BrainScreen context={{ view: 'pages', status }} />
       <FilterChips
         label={t('filters.status')}

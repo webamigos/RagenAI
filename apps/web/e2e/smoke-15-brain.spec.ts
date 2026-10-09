@@ -66,7 +66,7 @@ test.describe('Ragen Brain panel (smoke)', () => {
   }) => {
     await page.goto('/pl/brain');
     await expect(
-      page.getByRole('heading', { name: 'Ragen Brain' }),
+      page.getByRole('heading', { level: 1, name: 'Brain', exact: true }),
     ).toBeVisible({
       timeout: 15000,
     });
@@ -91,7 +91,7 @@ test.describe('Ragen Brain panel (smoke)', () => {
   test('offers the bundle and serves it as a zip', async ({ page }) => {
     await page.goto('/pl/brain');
     const bar = page.getByTestId('brain-export');
-    await expect(bar).toContainText(/Gotowe do eksportu: \d+/, {
+    await expect(bar).toContainText(/Zatwierdzone: \d+/, {
       timeout: 15000,
     });
     const res = await page.request.get('/api/brain/export');

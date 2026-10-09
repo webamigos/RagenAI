@@ -2613,12 +2613,12 @@
     "brain-no-visible-sources": "egyik forrása sem látható az Ön számára"
   },
   "brain": {
-    "title": "Ragen Brain",
+    "title": "Brain",
     "tabs": {
       "pages": "Tudásoldalak",
-      "findings": "Észrevételek",
+      "findings": "Problémák",
       "graph": "Gráf",
-      "documents": "Dokumentumok",
+      "documents": "Források",
       "overview": "Overview"
     },
     "filters": {
@@ -2626,14 +2626,14 @@
       "all-but-rejected": "Mind, az elutasítottak kivételével"
     },
     "page-status": {
-      "CANDIDATE": "Jelölt",
+      "CANDIDATE": "Ellenőrizendő",
       "APPROVED": "Jóváhagyott",
       "REJECTED": "Elutasított",
       "STALE": "Elavult"
     },
     "page-type": {
       "PROCESS": "Folyamat",
-      "ENTITY": "Entitás",
+      "ENTITY": "Objektum",
       "POLICY": "Szabály",
       "PRODUCT": "Termék",
       "ROLE": "Szerepkör"
@@ -2650,7 +2650,7 @@
         "status": "Állapot",
         "owner": "Felelős",
         "documents": "Dokumentumok",
-        "findings": "Nyitott észrevételek",
+        "findings": "Nyitott problémák",
         "updated": "Módosítva"
       },
       "empty-in-language-title": "Semmi ezen a nyelven",
@@ -2662,7 +2662,7 @@
     },
     "findings": {
       "columns": {
-        "type": "Észrevétel",
+        "type": "Probléma",
         "subject": "Érinti",
         "detail": "Részletek",
         "severity": "Súlyosság",
@@ -2686,9 +2686,9 @@
         "MEDIUM": "Közepes",
         "HIGH": "Magas"
       },
-      "empty-title": "Nincs ilyen állapotú észrevétel",
+      "empty-title": "Nincs ilyen állapotú probléma",
       "empty-description": "Minden feldolgozás után a Brain itt mutatja az ellentmondásokat, hiányokat, elavult forrásokat és a felelős nélküli oldalakat.",
-      "count": "Észrevételek: {shown} / {total}",
+      "count": "Problémák: {shown} / {total}",
       "summary": {
         "unknown-file": "ismeretlen dokumentum",
         "verification-due": "Az ellenőrzés esedékes volt: {date}",
@@ -2705,18 +2705,18 @@
       },
       "discuss": "Kérdezd erről az asszisztenst",
       "empty-in-language-title": "Semmi ezen a nyelven",
-      "empty-in-language-description": "Egyik megállapítás sem érint ilyen nyelvű dokumentumot vagy azt idéző oldalt. Válasszon másik nyelvet vagy az összeset.",
+      "empty-in-language-description": "Egyik probléma sem érint ezen a nyelven írt dokumentumot vagy azt idéző oldalt. Válasszon másik nyelvet, vagy az összeset.",
       "intro": "Check detected problems and choose a corrective action.",
-      "filter-types": "Finding types",
+      "filter-types": "Problématípusok",
       "all-types": "All types",
       "subject-gone": "The source was deleted",
       "retry-extraction": "Retry extraction",
       "open-review": "Open review",
       "view-relations": "Check relations",
       "dismiss-orphan": "This is fine, close",
-      "dismissed": "Finding dismissed",
+      "dismissed": "Probléma lezárva",
       "batch": "{count} × {type}",
-      "batch-scope": "Findings on this list page, detected at intervals of up to 5 minutes.",
+      "batch-scope": "A listaoldal problémái, legfeljebb 5 perces időközönként észlelve.",
       "why": {
         "ORPHAN": "Missing relations make the context of this page harder to check.",
         "EXTRACTION_FAILED": "The document supplied no knowledge for review.",
@@ -2747,9 +2747,9 @@
         }
       },
       "findings": {
-        "title": "Nyitott észrevételek",
+        "title": "Nyitott problémák",
         "empty-title": "Ezen az oldalon nincs nyitott tétel",
-        "empty-description": "Az oldallal kapcsolatos észrevételek itt jelennek meg, amikor a Brain jelzi őket."
+        "empty-description": "Nincs nyitott probléma. Itt jelennek meg, amikor a Brain jelez egyet."
       },
       "access": {
         "title": "Hozzáférés",
@@ -2771,7 +2771,7 @@
       "history": "Előzmények",
       "merge": "Egyesítés",
       "superseded-by": "Egyesítve ezzel",
-      "publication": "Tudásbázis",
+      "publication": "Közzététel",
       "publish-blocker": {
         "status": "Csak jóváhagyott oldal tehető közzé",
         "owner": "Előbb jelöljön ki felelőst",
@@ -2857,14 +2857,14 @@
     "extract": {
       "open": "Kinyerés dokumentumokból",
       "title": "Tudás kinyerése dokumentumokból",
-      "description": "A Brain elolvassa a kiválasztott dokumentumokat, és bírálandó jelölt oldalakat ír. Azok a dokumentumok vannak kijelölve, amelyeket még egyik oldal sem idéz. A futás a háttérben zajlik.",
+      "description": "A Brain elolvassa a kiválasztott dokumentumokat, és ellenőrizendő oldalakat ír. Azok a dokumentumok vannak kiválasztva, amelyeket még egyetlen oldal sem idéz. A futtatás a háttérben történik.",
       "none": "Nincs kinyerhető dokumentum — először adjon dokumentumokat a tudásbázishoz.",
       "not-extracted": "Nincs kinyerve",
       "pages": "Oldalak: {count}",
       "too-many": "Dokumentumok egy futásban, legfeljebb: {max}.",
       "cancel": "Mégse",
       "start": "Kinyerés indítása ({count})",
-      "started": "Kinyerés elindítva — dokumentumok: {count}. A jelöltek akkor jelennek meg, amikor egy-egy dokumentum elkészül.",
+      "started": "A kinyerés elindult — dokumentumok: {count}. Az ellenőrizendő oldalak az egyes dokumentumok elkészültével jelennek meg.",
       "retry": "Újra",
       "retry-queued": "Újrapróbálás sorban",
       "retry-started": "A dokumentum kinyerése ismét sorban áll",
@@ -2883,7 +2883,7 @@
       "zoom-fit": "Teljes gráf",
       "reset-layout": "Automatikus elrendezés visszaállítása",
       "show-all-groups": "Minden csoport",
-      "title": "Tudásgráf — Ragen Brain",
+      "title": "Tudásgráf — Brain",
       "empty-title": "Még nincs mit rajzolni",
       "empty-description": "A gráf akkor jelenik meg, amikor a Brain oldalakat nyert ki a dokumentumaiból.",
       "focus": "„{title}” környezete",
@@ -2897,8 +2897,8 @@
       "inferred-shown": "Megjelenítve ({count})",
       "shown": "Oldalak: {nodes}/{totalNodes} · kapcsolatok: {edges}/{totalEdges}",
       "canvas-label": "Gráf — oldalak: {nodes}, kapcsolatok: {edges}",
-      "failed": "A gráfot nem sikerült megrajzolni ebben a böngészőben — ugyanezek az adatok az oldalak és megállapítások lapon vannak.",
-      "open-findings": "Nyitott megállapítások: {count}",
+      "failed": "A gráfot nem sikerült megrajzolni ebben a böngészőben — a Tudásoldalak és a Problémák lap ugyanazokat az adatokat mutatja.",
+      "open-findings": "Nyitott problémák: {count}",
       "open-page": "Oldal megnyitása",
       "show-neighbourhood": "Környezet megjelenítése",
       "drawer-label": "Az oldal a gráf mellett",
@@ -2909,7 +2909,7 @@
       "legend-extracted": "Forrásban szerepel (idézet támasztja alá)",
       "legend-ambiguous": "Bizonytalan: megnevezve, de az idézet nem erősíti meg",
       "legend-inferred": "A modell következtette ki; rejtett, hacsak meg nem jeleníti",
-      "legend-findings": "Nyitott megállapítással rendelkező oldal",
+      "legend-findings": "Nyitott problémával rendelkező oldal",
       "communities-title": "Csoportok",
       "community": "{label} és kapcsolódók ({size})",
       "origin": {
@@ -2933,7 +2933,7 @@
       "topic-pages": "{count, plural, one {# page} other {# pages}}",
       "topic-approved": "Has approved pages",
       "topic-approved-count": "{count, plural, one {# approved} other {# approved}}",
-      "topic-candidates": "Only candidates",
+      "topic-candidates": "Csak ellenőrizendő oldalak",
       "isolated-count": "{count, plural, one {# page outside the main topics} other {# pages outside the main topics}}",
       "isolated-description": "Instead of a column of loose dots: a list of pages without relations. Open a page to propose links.",
       "review-isolated": "Review isolated pages",
@@ -2944,16 +2944,16 @@
       "search-results-count": "Showing {shown} of {count} matching pages",
       "status": {
         "APPROVED": "Approved",
-        "CANDIDATE": "Candidate",
+        "CANDIDATE": "Ellenőrizendő",
         "REJECTED": "Rejected",
         "STALE": "Elavult"
       },
       "review-group": "Review entire group ({count})",
-      "pair-merge": "{count, plural, one {# candidate page} other {# candidate pages}} may match a page drawn from the other language of a paired document.",
+      "pair-merge": "{count, plural, one {# ellenőrizendő oldal} other {# ellenőrizendő oldal}} egyezhet egy párosított dokumentum másik nyelvi változatából készült oldallal.",
       "pair-merge-review": "Review and merge"
     },
     "export": {
-      "ready": "Exportálásra kész: {count}",
+      "ready": "Jóváhagyva: {count}",
       "download": "Csomag letöltése (.zip)",
       "none": "Hagyjon jóvá egy felelőssel rendelkező oldalt az exportáláshoz",
       "skipped": {
@@ -2966,30 +2966,30 @@
     },
     "publication": {
       "state": {
-        "none": "Nincs a tudásbázisban",
-        "publishing": "Írás a tudásbázisba…",
-        "published": "A tudásbázisban — a válaszok idézhetik",
-        "withdrawn": "Visszavonva a tudásbázisból",
-        "failed": "A tudásbázisba írás nem sikerült – tegye közzé újra"
+        "none": "Nincs közzétéve",
+        "publishing": "Közzététel…",
+        "published": "Közzétéve — a csevegő válaszai idézhetik",
+        "withdrawn": "Közzététel visszavonva",
+        "failed": "A közzététel nem sikerült — tegye közzé újra"
       },
-      "outdated": "Az oldal megváltozott a közzététel óta — tegye közzé újra a tudásbázis frissítéséhez.",
-      "publish": "Közzététel a tudásbázisban",
+      "outdated": "Az oldal a közzététel óta megváltozott — tegye közzé újra, hogy a csevegő az aktuális szöveget használja.",
+      "publish": "Közzététel",
       "republish": "Újbóli közzététel",
       "withdraw": "Visszavonás",
       "published": "A közzététel elindult",
       "withdrawn": "Oldal visszavonva",
-      "withdraw-title": "Visszavonja ezt az oldalt a tudásbázisból?",
+      "withdraw-title": "Visszavonja az oldal közzétételét?",
       "withdraw-description": "A válaszok a visszavonás után azonnal nem idézik. Az oldal jóváhagyott marad, és újra közzétehető; a korábbi válaszok megtartják az idézeteiket."
     },
     "documents": {
-      "title": "Dokumentumok — Ragen Brain",
+      "title": "Források — Brain",
       "intro": "Ha egy dokumentum tudása már jóváhagyott oldalakban él, magát a dokumentumot kiveheti a keresésből — a válaszok ekkor csak az ellenőrzött oldalakra támaszkodnak. Semmi sem törlődik, és bármikor visszatehető.",
       "empty-title": "Még nincsenek dokumentumok",
       "empty-description": "A dokumentumok itt jelennek meg, amint a tudásbázisba kerülnek.",
       "columns": {
         "document": "Dokumentum",
         "approved": "Jóváhagyott oldalak",
-        "candidates": "Jelöltek",
+        "candidates": "Ellenőrizendő",
         "retrieval": "Keresés",
         "actions": "Műveletek",
         "language": "Nyelv",
@@ -3030,11 +3030,11 @@
       "empty-in-language-description": "Nincs dokumentum ezen a nyelven, vagy nincs oldal, amely idézné. Válasszon másik nyelvet vagy az összeset.",
       "empty-filter": "Documents without extracted knowledge",
       "clear-filter": "Show all documents",
-      "screen-title": "Source documents",
+      "screen-title": "Források",
       "screen-intro": "What Brain extracted from each file and how much has already been reviewed.",
       "table-title": "Documents by language",
       "shared-scale": "Shared scale: {count, plural, one {# page} other {# pages}} = full bar",
-      "coverage-counts": "{approved} approved · {candidates} candidates",
+      "coverage-counts": "{approved} jóváhagyott · {candidates} ellenőrizendő",
       "summary": {
         "documents": "Documents",
         "empty": "Nothing extracted",
@@ -3050,7 +3050,7 @@
       "check-language": "Check language",
       "retry-extraction": "Retry extraction",
       "pair-with": "Same document in {language}: {name}",
-      "pair-coverage": "Pair: {approved} approved · {candidates} candidates (each page counted once)"
+      "pair-coverage": "Pár: {approved} jóváhagyott · {candidates} ellenőrizendő (minden oldal egyszer számítva)"
     },
     "publish-all": {
       "button": "Jóváhagyottak közzététele ({count})",
@@ -3062,7 +3062,7 @@
       "not-written": "{count} oldal közzétettként rögzült, de nem került az indexbe – futtassa újra"
     },
     "read-only": {
-      "notice": "Csak olvasható előnézet — böngészheti a Ragen Braint, de itt semmit sem lehet módosítani."
+      "notice": "Csak olvasható előnézet — böngészheti a Brain tartalmát, de itt semmi sem módosítható."
     },
     "assistant": {
       "toggle": "Asszisztens",
@@ -3080,7 +3080,7 @@
       "read": "{count, plural, one {# elem beolvasva a Brainből} other {# elem beolvasva a Brainből}}",
       "proposal-dropped": "Egy javaslatot nem sikerült megjeleníteni.",
       "empty-title": "Kérdezz arról, amit éppen nézel",
-      "empty-description": "Az asszisztens olvassa ezt a képernyőt, az oldalakat, azok idézeteit és a megállapításokat, és azokkal az idézetekkel válaszol, amelyekre támaszkodik.",
+      "empty-description": "Az asszisztens elolvassa ezt a képernyőt, az oldalakat, azok idézeteit és a problémákat, és azokkal az idézetekkel válaszol, amelyekre támaszkodik.",
       "history-empty": "Még nincsenek korábbi beszélgetések.",
       "untitled": "Névtelen beszélgetés",
       "prompts": {
@@ -3090,7 +3090,7 @@
         "contradictions": "Magyarázd el a nyitott ellentmondásokat",
         "failed": "Miért nem adtak eredményt egyes dokumentumok?",
         "disagree": "Pontosan hol térnek el ezek az oldalak?",
-        "what-to-do": "Mit kezdjek ezzel a megállapítással?",
+        "what-to-do": "Mit tegyek ezzel a problémával?",
         "why-failed": "Miért nem adott eredményt ez a dokumentum, és mit tegyek?",
         "is-right": "Helyes ez az oldal? Ellenőrizd minden állítását az idézete alapján",
         "owner": "Ki legyen ennek az oldalnak a gazdája?",
@@ -3149,8 +3149,8 @@
       }
     },
     "tab-hints": {
-      "pages": "Tudásoldalak forrásokkal: minden oldal a forrásdokumentumok szó szerinti idézeteivel alátámasztott állításokat tartalmaz. A jelölt ellenőrzésre vár; hagyja jóvá és tegye közzé az oldalt, hogy a csevegő válaszolhasson belőle.",
-      "findings": "Ami figyelmet igényel: ellentmondások, hiányok, elavult vagy gazda nélküli oldalak és dokumentumok, amelyeket a Brain nem tudott elolvasni.",
+      "pages": "Tudásoldalak forrásokkal: minden oldal a forrásdokumentumok szó szerinti idézeteivel alátámasztott állításokat tartalmaz. Az ellenőrizendő oldal az Ön döntésére vár; hagyja jóvá és tegye közzé, hogy a csevegő válaszolhasson belőle.",
+      "findings": "Amire figyelnie kell: oldalak közötti ellentmondások, hiányosságok, elavult oldalak, tulajdonos nélküli oldalak és dokumentumok, amelyeket a Brain nem tudott elolvasni.",
       "graph": "Hogyan kapcsolódnak az oldalak — melyik folyamat melyik szabályt igényli, és mely oldalak hivatkoznak egymásra.",
       "documents": "A Brain által olvasott forrásdokumentumok: mindegyikből hány oldal lett, és keres-e még bennük a csevegő.",
       "overview": "See how much knowledge has been reviewed and what needs attention."
@@ -3184,26 +3184,26 @@
       "publication-description": "Published pages are available in chat. Source documents may still be searched.",
       "stages": {
         "documents": "Documents",
-        "candidates": "Candidates (waiting)",
+        "candidates": "Ellenőrizendő",
         "approved": "Approved",
-        "published": "Published in chat"
+        "published": "Közzétéve"
       },
       "empty-documents-count": "{count} without extracted knowledge",
       "unowned-count": "{count} without an owner",
-      "approved-share": "{percent}% of candidate and approved pages",
+      "approved-share": "Az ellenőrizendő és jóváhagyott oldalak {percent}%-a",
       "awaiting-publication": "{count} approved pages awaiting publication",
       "attention-title": "Needs attention",
       "unowned-title": "Pages without an owner",
       "unowned-description": "They cannot be approved. Assign an owner before review.",
       "empty-documents-title": "Documents without knowledge",
       "empty-documents-description": "0 pages. Check the documents and extract knowledge.",
-      "finding-description": "Review the finding and address its cause.",
-      "attention-empty": "No findings or pages need an owner.",
+      "finding-description": "Vizsgálja meg a problémát, és szüntesse meg az okát.",
+      "attention-empty": "Nincs probléma, és egyetlen oldalnak sem kell tulajdonos.",
       "ranking-title": "Where the most unreviewed knowledge is",
-      "legend": "Approved / candidates · shared scale across documents",
-      "coverage-counts": "{approved} approved · {candidates} candidates",
-      "all-documents": "All documents ({count})",
-      "ranking-empty": "No candidates to review.",
+      "legend": "Jóváhagyott / ellenőrizendő · közös skála a dokumentumokra",
+      "coverage-counts": "{approved} jóváhagyott · {candidates} ellenőrizendő",
+      "all-documents": "Összes forrás ({count})",
+      "ranking-empty": "Nincs ellenőrizendő oldal.",
       "empty-title": "Knowledge starts with documents",
       "empty-description": "Upload documents to extract and review company knowledge.",
       "empty-language-description": "There are no documents in this language. Choose another language or upload documents.",
@@ -3221,7 +3221,7 @@
       "grouping": "Queue grouping",
       "by-document": "By source document",
       "by-type": "By page type",
-      "queue-empty": "There are no candidates in this queue.",
+      "queue-empty": "Ebben a sorban nincs ellenőrizendő oldal.",
       "claim": "Brain claim",
       "quote": "Verbatim quote",
       "assessment": "Assessment",
@@ -3235,22 +3235,22 @@
       "question-claim": "Question claim {n}",
       "owner-step": "Step 1 · Owner (required)",
       "owner-question": "Who vouches for this page?",
-      "bulk-owner": "Set for all {count} candidates from this document",
-      "save-document-owner": "Assign owner to candidates",
+      "bulk-owner": "Beállítás a dokumentum összes ({count}) ellenőrizendő oldalára",
+      "save-document-owner": "Tulajdonos hozzárendelése ezekhez az oldalakhoz",
       "decision-step": "Step 3 · Decision",
       "approve-publish": "Approve and publish",
       "approve-only": "Approve only",
       "reject": "Reject",
       "needs-owner": "Set an owner before approving this page.",
       "needs-access": "This page has no readers. You can approve it; set access in page details before publishing.",
-      "not-candidate": "Decisions in this mode apply to candidates. Open page details for the other actions.",
+      "not-candidate": "Ebben a módban a döntések az ellenőrizendő oldalakra vonatkoznak. A többi művelethez nyissa meg az oldal részleteit.",
       "relations": "Relations: {count}",
       "show-graph": "Show in graph",
       "open-page": "Open page details",
       "previous": "Previous",
       "next": "Next",
       "empty-title": "Queue reviewed",
-      "empty-description": "There are no candidates to review. Return to the Brain overview to see the remaining knowledge.",
+      "empty-description": "Nincs ellenőrizendő oldal. Térjen vissza a Brain áttekintéséhez a többi tudás megtekintéséhez.",
       "back": "Return to Brain overview",
       "claims-step": "Step 2 · Claims",
       "publication-failed": "The page was approved, but publication did not finish: {reason} Open page details to retry publication."
@@ -3392,7 +3392,7 @@
     "column-brain": "Knowledge in Brain",
     "column-quality": "Chat quality",
     "brain-unavailable": "Brain unavailable",
-    "coverage": "{approved} approved · {candidates} candidates",
+    "coverage": "{approved} jóváhagyott · {candidates} ellenőrizendő",
     "no-knowledge": "No knowledge",
     "waiting-knowledge": "Awaiting extraction",
     "quality-ok": "OK",
@@ -3406,7 +3406,7 @@
     "headerless-description": "Chat answers are less reliable without column names. For spreadsheets and mostly tabular documents, add headers and reprocess the file.",
     "optimize-all": "Optimize eligible documents",
     "empty-count": "{count} ready files without knowledge",
-    "empty-description": "The files are searchable, but have no live candidate or approved Brain pages.",
+    "empty-description": "A fájlok kereshetők, de nincsenek ellenőrizendő vagy jóváhagyott Brain-oldalaik.",
     "show-brain": "Show in Brain",
     "table-reprocess": "Reprocess table documents",
     "optimization-description": "Prepare RAG improvement suggestions through the existing optimization workflow. Review and apply them in each document; starting this job does not rewrite the source.",

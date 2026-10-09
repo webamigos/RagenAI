@@ -2613,12 +2613,12 @@
     "brain-no-visible-sources": "ingen av dess källor är synlig för dig"
   },
   "brain": {
-    "title": "Ragen Brain",
+    "title": "Brain",
     "tabs": {
       "pages": "Kunskapssidor",
-      "findings": "Fynd",
+      "findings": "Problem",
       "graph": "Graf",
-      "documents": "Dokument",
+      "documents": "Källor",
       "overview": "Overview"
     },
     "filters": {
@@ -2626,14 +2626,14 @@
       "all-but-rejected": "Alla utom avvisade"
     },
     "page-status": {
-      "CANDIDATE": "Kandidat",
+      "CANDIDATE": "Att granska",
       "APPROVED": "Godkänd",
       "REJECTED": "Avvisad",
       "STALE": "Inaktuell"
     },
     "page-type": {
       "PROCESS": "Process",
-      "ENTITY": "Entitet",
+      "ENTITY": "Objekt",
       "POLICY": "Regel",
       "PRODUCT": "Produkt",
       "ROLE": "Roll"
@@ -2650,7 +2650,7 @@
         "status": "Status",
         "owner": "Ansvarig",
         "documents": "Dokument",
-        "findings": "Öppna fynd",
+        "findings": "Öppna problem",
         "updated": "Ändrad"
       },
       "empty-in-language-title": "Inget på det här språket",
@@ -2662,7 +2662,7 @@
     },
     "findings": {
       "columns": {
-        "type": "Fynd",
+        "type": "Problem",
         "subject": "Gäller",
         "detail": "Detaljer",
         "severity": "Allvar",
@@ -2686,9 +2686,9 @@
         "MEDIUM": "Medel",
         "HIGH": "Hög"
       },
-      "empty-title": "Inga fynd med den här statusen",
+      "empty-title": "Inga problem med den här statusen",
       "empty-description": "Efter varje utvinning visar Brain här motsägelser, luckor, inaktuella källor och sidor utan ansvarig.",
-      "count": "Fynd: {shown} av {total}",
+      "count": "Problem: {shown} av {total}",
       "summary": {
         "unknown-file": "ett okänt dokument",
         "verification-due": "Kontrollen skulle ha gjorts {date}",
@@ -2705,18 +2705,18 @@
       },
       "discuss": "Fråga assistenten om detta",
       "empty-in-language-title": "Inget på det här språket",
-      "empty-in-language-description": "Inget fynd gäller ett dokument på det här språket eller en sida som citerar ett. Välj ett annat språk eller alla.",
+      "empty-in-language-description": "Inget problem gäller ett dokument på det här språket eller en sida som citerar ett. Välj ett annat språk eller alla.",
       "intro": "Check detected problems and choose a corrective action.",
-      "filter-types": "Finding types",
+      "filter-types": "Problemtyper",
       "all-types": "All types",
       "subject-gone": "The source was deleted",
       "retry-extraction": "Retry extraction",
       "open-review": "Open review",
       "view-relations": "Check relations",
       "dismiss-orphan": "This is fine, close",
-      "dismissed": "Finding dismissed",
+      "dismissed": "Problemet stängt",
       "batch": "{count} × {type}",
-      "batch-scope": "Findings on this list page, detected at intervals of up to 5 minutes.",
+      "batch-scope": "Problem på den här listsidan, upptäckta med intervall på upp till 5 minuter.",
       "why": {
         "ORPHAN": "Missing relations make the context of this page harder to check.",
         "EXTRACTION_FAILED": "The document supplied no knowledge for review.",
@@ -2747,9 +2747,9 @@
         }
       },
       "findings": {
-        "title": "Öppna fynd",
+        "title": "Öppna problem",
         "empty-title": "Inget öppet på den här sidan",
-        "empty-description": "Fynd om den här sidan visas här när Brain rapporterar dem."
+        "empty-description": "Inga öppna problem. De visas här när Brain flaggar ett."
       },
       "access": {
         "title": "Tillgänglig för",
@@ -2771,7 +2771,7 @@
       "history": "Historik",
       "merge": "Sammanslagning",
       "superseded-by": "Sammanslagen med",
-      "publication": "Kunskapsbas",
+      "publication": "Publicering",
       "publish-blocker": {
         "status": "Bara en godkänd sida kan publiceras",
         "owner": "Ange först en ägare",
@@ -2857,14 +2857,14 @@
     "extract": {
       "open": "Extrahera från dokument",
       "title": "Extrahera kunskap från dokument",
-      "description": "Brain läser de valda dokumenten och skriver kandidatsidor för granskning. Dokument som ingen sida citerar än är valda. Körningen sker i bakgrunden.",
+      "description": "Brain läser de valda dokumenten och skriver sidor som du granskar. Dokument som ingen sida citerar än är valda. Körningen sker i bakgrunden.",
       "none": "Inga dokument att extrahera från — lägg först till dokument i kunskapsbasen.",
       "not-extracted": "Inte extraherat",
       "pages": "Sidor: {count}",
       "too-many": "Dokument per körning, högst: {max}.",
       "cancel": "Avbryt",
       "start": "Starta extraktion ({count})",
-      "started": "Extraktion startad — dokument: {count}. Kandidater visas allt eftersom varje blir klart.",
+      "started": "Extrahering startad — dokument: {count}. Sidor att granska visas när varje dokument är klart.",
       "retry": "Försök igen",
       "retry-queued": "Nytt försök i kö",
       "retry-started": "Extraktionen av dokumentet ligger i kö igen",
@@ -2883,7 +2883,7 @@
       "zoom-fit": "Visa hela grafen",
       "reset-layout": "Återställ den automatiska layouten",
       "show-all-groups": "Visa alla grupper",
-      "title": "Kunskapsgraf — Ragen Brain",
+      "title": "Kunskapsgraf — Brain",
       "empty-title": "Inga sidor att rita än",
       "empty-description": "Grafen visas när Brain har extraherat sidor ur dina dokument.",
       "focus": "Omgivningen kring ”{title}”",
@@ -2897,8 +2897,8 @@
       "inferred-shown": "Visade ({count})",
       "shown": "Sidor: {nodes} av {totalNodes} · relationer: {edges} av {totalEdges}",
       "canvas-label": "Graf — sidor: {nodes}, relationer: {edges}",
-      "failed": "Grafen kunde inte ritas i den här webbläsaren — samma data finns under flikarna sidor och fynd.",
-      "open-findings": "Öppna fynd: {count}",
+      "failed": "Grafen kunde inte ritas i den här webbläsaren — flikarna Kunskapssidor och Problem visar samma data.",
+      "open-findings": "Öppna problem: {count}",
       "open-page": "Öppna sidan",
       "show-neighbourhood": "Visa omgivning",
       "drawer-label": "Sidan bredvid grafen",
@@ -2909,7 +2909,7 @@
       "legend-extracted": "Anges i en källa (ett citat stöder den)",
       "legend-ambiguous": "Osäker: nämnd, men citatet bekräftar den inte",
       "legend-inferred": "Härledd av modellen; dold om den inte visas",
-      "legend-findings": "En sida med ett öppet fynd",
+      "legend-findings": "En sida med ett öppet problem",
       "communities-title": "Grupper",
       "community": "{label} och relaterade ({size})",
       "origin": {
@@ -2933,7 +2933,7 @@
       "topic-pages": "{count, plural, one {# page} other {# pages}}",
       "topic-approved": "Has approved pages",
       "topic-approved-count": "{count, plural, one {# approved} other {# approved}}",
-      "topic-candidates": "Only candidates",
+      "topic-candidates": "Bara att granska",
       "isolated-count": "{count, plural, one {# page outside the main topics} other {# pages outside the main topics}}",
       "isolated-description": "Instead of a column of loose dots: a list of pages without relations. Open a page to propose links.",
       "review-isolated": "Review isolated pages",
@@ -2944,16 +2944,16 @@
       "search-results-count": "Showing {shown} of {count} matching pages",
       "status": {
         "APPROVED": "Approved",
-        "CANDIDATE": "Candidate",
+        "CANDIDATE": "Att granska",
         "REJECTED": "Rejected",
         "STALE": "Inaktuell"
       },
       "review-group": "Review entire group ({count})",
-      "pair-merge": "{count, plural, one {# candidate page} other {# candidate pages}} may match a page drawn from the other language of a paired document.",
+      "pair-merge": "{count, plural, one {# sida att granska kan} other {# sidor att granska kan}} motsvara en sida från den andra språkversionen av ett parat dokument.",
       "pair-merge-review": "Review and merge"
     },
     "export": {
-      "ready": "Redo att exportera: {count}",
+      "ready": "Godkända: {count}",
       "download": "Ladda ned paket (.zip)",
       "none": "Godkänn en sida med ägare för att exportera den",
       "skipped": {
@@ -2966,30 +2966,30 @@
     },
     "publication": {
       "state": {
-        "none": "Inte i kunskapsbasen",
-        "publishing": "Skrivs till kunskapsbasen…",
-        "published": "I kunskapsbasen — svar kan citera den",
-        "withdrawn": "Tillbakadragen från kunskapsbasen",
-        "failed": "Skrivningen till kunskapsbasen misslyckades – publicera igen"
+        "none": "Inte publicerad",
+        "publishing": "Publicerar…",
+        "published": "Publicerad — chattsvar kan citera den",
+        "withdrawn": "Tillbakadragen från publicering",
+        "failed": "Publiceringen misslyckades — publicera igen"
       },
-      "outdated": "Sidan har ändrats sedan den publicerades — publicera igen för att uppdatera kunskapsbasen.",
-      "publish": "Publicera i kunskapsbasen",
+      "outdated": "Sidan har ändrats sedan den publicerades — publicera igen så att chatten använder den aktuella texten.",
+      "publish": "Publicera",
       "republish": "Publicera igen",
       "withdraw": "Dra tillbaka",
       "published": "Publiceringen har startat",
       "withdrawn": "Sidan har dragits tillbaka",
-      "withdraw-title": "Dra tillbaka den här sidan från kunskapsbasen?",
+      "withdraw-title": "Dra tillbaka publiceringen av den här sidan?",
       "withdraw-description": "Svar slutar citera den så snart den dras tillbaka. Sidan förblir godkänd och kan publiceras igen; tidigare svar behåller sina citat."
     },
     "documents": {
-      "title": "Dokument — Ragen Brain",
+      "title": "Källor — Brain",
       "intro": "När ett dokuments kunskap finns i godkända sidor kan du ta ut själva dokumentet ur sökningen — svaren bygger då bara på de granskade sidorna. Inget raderas och det kan läggas tillbaka när som helst.",
       "empty-title": "Inga dokument än",
       "empty-description": "Dokument visas här när de finns i kunskapsbasen.",
       "columns": {
         "document": "Dokument",
         "approved": "Godkända sidor",
-        "candidates": "Kandidater",
+        "candidates": "Att granska",
         "retrieval": "Sökning",
         "actions": "Åtgärder",
         "language": "Språk",
@@ -3030,11 +3030,11 @@
       "empty-in-language-description": "Inget dokument på det här språket, eller ingen sida som citerar ett. Välj ett annat språk eller alla.",
       "empty-filter": "Documents without extracted knowledge",
       "clear-filter": "Show all documents",
-      "screen-title": "Source documents",
+      "screen-title": "Källor",
       "screen-intro": "What Brain extracted from each file and how much has already been reviewed.",
       "table-title": "Documents by language",
       "shared-scale": "Shared scale: {count, plural, one {# page} other {# pages}} = full bar",
-      "coverage-counts": "{approved} approved · {candidates} candidates",
+      "coverage-counts": "{approved} godkända · {candidates} att granska",
       "summary": {
         "documents": "Documents",
         "empty": "Nothing extracted",
@@ -3050,7 +3050,7 @@
       "check-language": "Check language",
       "retry-extraction": "Retry extraction",
       "pair-with": "Same document in {language}: {name}",
-      "pair-coverage": "Pair: {approved} approved · {candidates} candidates (each page counted once)"
+      "pair-coverage": "Par: {approved} godkända · {candidates} att granska (varje sida räknas en gång)"
     },
     "publish-all": {
       "button": "Publicera godkända ({count})",
@@ -3062,7 +3062,7 @@
       "not-written": "{count, plural, one {# sida registrerades som publicerad men skrevs inte till indexet – kör igen} other {# sidor registrerades som publicerade men skrevs inte till indexet – kör igen}}"
     },
     "read-only": {
-      "notice": "Skrivskyddad förhandsvisning – du kan bläddra i Ragen Brain, men inget här kan ändras."
+      "notice": "Skrivskyddad förhandsvisning — du kan bläddra i Brain, men inget här kan ändras."
     },
     "assistant": {
       "toggle": "Assistent",
@@ -3080,7 +3080,7 @@
       "read": "{count, plural, one {Läste # objekt från Brain} other {Läste # objekt från Brain}}",
       "proposal-dropped": "Ett förslag kunde inte visas.",
       "empty-title": "Fråga om det du tittar på",
-      "empty-description": "Assistenten läser den här skärmen, sidorna, deras citat och fynden, och svarar med de citat svaret bygger på.",
+      "empty-description": "Assistenten läser den här skärmen, sidorna, deras citat och problemen, och svarar med de citat svaret bygger på.",
       "history-empty": "Inga tidigare konversationer än.",
       "untitled": "Namnlös konversation",
       "prompts": {
@@ -3090,7 +3090,7 @@
         "contradictions": "Förklara de öppna motsägelserna",
         "failed": "Varför gav vissa dokument ingenting?",
         "disagree": "Var exakt går dessa sidor isär?",
-        "what-to-do": "Vad ska jag göra åt det här fyndet?",
+        "what-to-do": "Vad ska jag göra med det här problemet?",
         "why-failed": "Varför gav det här dokumentet ingenting, och vad ska jag göra?",
         "is-right": "Stämmer den här sidan? Kontrollera varje påstående mot sitt citat",
         "owner": "Vem bör äga den här sidan?",
@@ -3149,8 +3149,8 @@
       }
     },
     "tab-hints": {
-      "pages": "Kunskapssidor med källor: varje sida innehåller påståenden med ordagranna citat ur källdokumenten. En kandidat väntar på granskning; godkänn och publicera en sida så att chatten kan svara utifrån den.",
-      "findings": "Det som kräver din uppmärksamhet: motsägelser, luckor, inaktuella eller ägarlösa sidor och dokument som Brain inte kunde läsa.",
+      "pages": "Kunskapssidor med källor: varje sida innehåller påståenden med ordagranna citat ur källdokumenten. En sida att granska väntar på ditt beslut; godkänn och publicera den så att chatten kan svara utifrån den.",
+      "findings": "Det som kräver din uppmärksamhet: motsägelser mellan sidor, luckor, inaktuella sidor, sidor utan ägare och dokument som Brain inte kunde läsa.",
       "graph": "Hur sidorna hänger ihop — vilken process som kräver vilken policy och vilka sidor som hänvisar till varandra.",
       "documents": "Källdokumenten som Brain läser: hur många sidor varje gav och om chatten fortfarande söker i dem.",
       "overview": "See how much knowledge has been reviewed and what needs attention."
@@ -3184,26 +3184,26 @@
       "publication-description": "Published pages are available in chat. Source documents may still be searched.",
       "stages": {
         "documents": "Documents",
-        "candidates": "Candidates (waiting)",
+        "candidates": "Att granska",
         "approved": "Approved",
-        "published": "Published in chat"
+        "published": "Publicerade"
       },
       "empty-documents-count": "{count} without extracted knowledge",
       "unowned-count": "{count} without an owner",
-      "approved-share": "{percent}% of candidate and approved pages",
+      "approved-share": "{percent}% av sidorna att granska och godkända",
       "awaiting-publication": "{count} approved pages awaiting publication",
       "attention-title": "Needs attention",
       "unowned-title": "Pages without an owner",
       "unowned-description": "They cannot be approved. Assign an owner before review.",
       "empty-documents-title": "Documents without knowledge",
       "empty-documents-description": "0 pages. Check the documents and extract knowledge.",
-      "finding-description": "Review the finding and address its cause.",
-      "attention-empty": "No findings or pages need an owner.",
+      "finding-description": "Granska problemet och åtgärda orsaken.",
+      "attention-empty": "Inga problem, och inga sidor behöver en ägare.",
       "ranking-title": "Where the most unreviewed knowledge is",
-      "legend": "Approved / candidates · shared scale across documents",
-      "coverage-counts": "{approved} approved · {candidates} candidates",
-      "all-documents": "All documents ({count})",
-      "ranking-empty": "No candidates to review.",
+      "legend": "Godkända / att granska · gemensam skala för alla dokument",
+      "coverage-counts": "{approved} godkända · {candidates} att granska",
+      "all-documents": "Alla källor ({count})",
+      "ranking-empty": "Inga sidor att granska.",
       "empty-title": "Knowledge starts with documents",
       "empty-description": "Upload documents to extract and review company knowledge.",
       "empty-language-description": "There are no documents in this language. Choose another language or upload documents.",
@@ -3221,7 +3221,7 @@
       "grouping": "Queue grouping",
       "by-document": "By source document",
       "by-type": "By page type",
-      "queue-empty": "There are no candidates in this queue.",
+      "queue-empty": "Det finns inga sidor att granska i den här kön.",
       "claim": "Brain claim",
       "quote": "Verbatim quote",
       "assessment": "Assessment",
@@ -3235,22 +3235,22 @@
       "question-claim": "Question claim {n}",
       "owner-step": "Step 1 · Owner (required)",
       "owner-question": "Who vouches for this page?",
-      "bulk-owner": "Set for all {count} candidates from this document",
-      "save-document-owner": "Assign owner to candidates",
+      "bulk-owner": "Ange för alla {count} sidor att granska från det här dokumentet",
+      "save-document-owner": "Tilldela ägare till de här sidorna",
       "decision-step": "Step 3 · Decision",
       "approve-publish": "Approve and publish",
       "approve-only": "Approve only",
       "reject": "Reject",
       "needs-owner": "Set an owner before approving this page.",
       "needs-access": "This page has no readers. You can approve it; set access in page details before publishing.",
-      "not-candidate": "Decisions in this mode apply to candidates. Open page details for the other actions.",
+      "not-candidate": "Beslut i det här läget gäller sidor att granska. Öppna sidans detaljer för övriga åtgärder.",
       "relations": "Relations: {count}",
       "show-graph": "Show in graph",
       "open-page": "Open page details",
       "previous": "Previous",
       "next": "Next",
       "empty-title": "Queue reviewed",
-      "empty-description": "There are no candidates to review. Return to the Brain overview to see the remaining knowledge.",
+      "empty-description": "Det finns inga sidor att granska. Gå tillbaka till Brain-översikten för att se den övriga kunskapen.",
       "back": "Return to Brain overview",
       "claims-step": "Step 2 · Claims",
       "publication-failed": "The page was approved, but publication did not finish: {reason} Open page details to retry publication."
@@ -3392,7 +3392,7 @@
     "column-brain": "Knowledge in Brain",
     "column-quality": "Chat quality",
     "brain-unavailable": "Brain unavailable",
-    "coverage": "{approved} approved · {candidates} candidates",
+    "coverage": "{approved} godkända · {candidates} att granska",
     "no-knowledge": "No knowledge",
     "waiting-knowledge": "Awaiting extraction",
     "quality-ok": "OK",
@@ -3406,7 +3406,7 @@
     "headerless-description": "Chat answers are less reliable without column names. For spreadsheets and mostly tabular documents, add headers and reprocess the file.",
     "optimize-all": "Optimize eligible documents",
     "empty-count": "{count} ready files without knowledge",
-    "empty-description": "The files are searchable, but have no live candidate or approved Brain pages.",
+    "empty-description": "Filerna är sökbara, men har inga Brain-sidor att granska eller godkända.",
     "show-brain": "Show in Brain",
     "table-reprocess": "Reprocess table documents",
     "optimization-description": "Prepare RAG improvement suggestions through the existing optimization workflow. Review and apply them in each document; starting this job does not rewrite the source.",

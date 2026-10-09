@@ -45,7 +45,7 @@ test('shows distinct coverage, confirmed empty extraction, waiting and language 
     });
     await page.goto('/pl/brain/documents');
     await expect(
-      page.getByRole('heading', { name: 'Dokumenty źródłowe' }),
+      page.getByRole('heading', { name: 'Źródła', exact: true }),
     ).toBeVisible();
     const rows = page.getByTestId('brain-document-row');
     const seeded = rows.filter({ hasText: TEST_FILE_NAME });

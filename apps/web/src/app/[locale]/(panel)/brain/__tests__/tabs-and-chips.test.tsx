@@ -54,7 +54,7 @@ describe('BrainTabs', () => {
     try {
       wrap(<BrainTabs />);
       // The language is Brain-wide; a tab's own filters are not.
-      expect(screen.getByRole('link', { name: 'Findings' })).toHaveAttribute(
+      expect(screen.getByRole('link', { name: 'Problems' })).toHaveAttribute(
         'href',
         '/brain/findings?lang=pol',
       );

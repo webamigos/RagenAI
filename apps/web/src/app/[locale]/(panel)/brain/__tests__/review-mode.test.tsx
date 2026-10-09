@@ -114,7 +114,7 @@ it('sets the owner for all candidates from the selected document', async () => {
   show();
   fireEvent.click(
     screen.getByRole('checkbox', {
-      name: 'Set for all 2 candidates from this document',
+      name: 'Set for all 2 pages to review from this document',
     }),
   );
   fireEvent.click(screen.getByRole('button', { name: 'Save selected owner' }));

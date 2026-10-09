@@ -1492,7 +1492,7 @@
     "policy-partial": "Zmieniono politykę: {succeeded} z {total} plików",
     "policy-error": "Błąd podczas zmiany polityki",
     "staged-sent": "Wysłano do bazy wiedzy: {sent} z {total}",
-    "staged-send-error": "Nie udało się wysłać dokumentów z Brain — spróbuj ponownie."
+    "staged-send-error": "Nie udało się wysłać dokumentów z Brain. Spróbuj ponownie."
   },
   "bulk-action-bar": {
     "aria-label": "Masowe operacje na plikach",
@@ -2613,12 +2613,12 @@
     "brain-no-visible-sources": "żadne z jej źródeł nie są dla Ciebie widoczne"
   },
   "brain": {
-    "title": "Ragen Brain",
+    "title": "Brain",
     "tabs": {
       "pages": "Strony wiedzy",
-      "findings": "Wykrycia",
+      "findings": "Problemy",
       "graph": "Graf",
-      "documents": "Dokumenty",
+      "documents": "Źródła",
       "overview": "Przegląd"
     },
     "filters": {
@@ -2626,14 +2626,14 @@
       "all-but-rejected": "Wszystkie oprócz odrzuconych"
     },
     "page-status": {
-      "CANDIDATE": "Kandydat",
+      "CANDIDATE": "Do sprawdzenia",
       "APPROVED": "Zatwierdzona",
       "REJECTED": "Odrzucona",
       "STALE": "Nieaktualna"
     },
     "page-type": {
       "PROCESS": "Proces",
-      "ENTITY": "Byt",
+      "ENTITY": "Obiekt",
       "POLICY": "Zasada",
       "PRODUCT": "Produkt",
       "ROLE": "Rola"
@@ -2643,14 +2643,14 @@
       "empty-description": "Strony pojawiają się, gdy Brain przetworzy Twoje dokumenty; każda cytuje fragmenty, z których powstała.",
       "count": "Strony: {shown} z {total}",
       "published": "Opublikowana",
-      "no-owner": "Brak właściciela",
+      "no-owner": "Bez właściciela",
       "columns": {
         "title": "Tytuł",
         "type": "Typ",
         "status": "Status",
         "owner": "Właściciel",
         "documents": "Dokumenty",
-        "findings": "Otwarte wykrycia",
+        "findings": "Otwarte problemy",
         "updated": "Zmieniona"
       },
       "empty-in-language-title": "Nic w tym języku",
@@ -2662,7 +2662,7 @@
     },
     "findings": {
       "columns": {
-        "type": "Wykrycie",
+        "type": "Problem",
         "subject": "Dotyczy",
         "detail": "Szczegóły",
         "severity": "Waga",
@@ -2686,9 +2686,9 @@
         "MEDIUM": "Średnia",
         "HIGH": "Wysoka"
       },
-      "empty-title": "Brak wykryć o tym statusie",
+      "empty-title": "Brak problemów o tym statusie",
       "empty-description": "Po każdej ekstrakcji Brain pokazuje tu sprzeczności, luki, nieaktualne źródła i strony bez właściciela.",
-      "count": "Wykrycia: {shown} z {total}",
+      "count": "Problemy: {shown} z {total}",
       "summary": {
         "unknown-file": "nieznany dokument",
         "verification-due": "Termin weryfikacji minął {date}",
@@ -2705,18 +2705,18 @@
       },
       "discuss": "Zapytaj asystenta o to",
       "empty-in-language-title": "Nic w tym języku",
-      "empty-in-language-description": "Żadne wykrycie nie dotyczy dokumentu w tym języku ani strony, która go cytuje. Wybierz inny język albo wszystkie.",
+      "empty-in-language-description": "Żaden problem nie dotyczy dokumentu w tym języku ani strony, która go cytuje. Wybierz inny język albo wszystkie.",
       "intro": "Sprawdź wykryte problemy i wybierz akcję naprawczą.",
-      "filter-types": "Rodzaje wykryć",
+      "filter-types": "Rodzaje problemów",
       "all-types": "Wszystkie rodzaje",
       "subject-gone": "Źródło zostało usunięte",
       "retry-extraction": "Ponów ekstrakcję",
       "open-review": "Otwórz przegląd",
       "view-relations": "Sprawdź powiązania",
       "dismiss-orphan": "To w porządku, zamknij",
-      "dismissed": "Wykrycie zamknięte",
+      "dismissed": "Problem zamknięty",
       "batch": "{count} × {type}",
-      "batch-scope": "Wykrycia z tej strony listy, wykryte w odstępach do 5 minut.",
+      "batch-scope": "Problemy z tej strony listy, wykryte w odstępach do 5 minut.",
       "why": {
         "ORPHAN": "Brak powiązań utrudnia sprawdzenie kontekstu tej strony.",
         "EXTRACTION_FAILED": "Dokument nie dostarczył wiedzy do przeglądu.",
@@ -2747,13 +2747,13 @@
         }
       },
       "findings": {
-        "title": "Otwarte wykrycia",
+        "title": "Otwarte problemy",
         "empty-title": "Nic otwartego na tej stronie",
-        "empty-description": "Wykrycia dotyczące tej strony pojawią się tutaj, gdy Brain je zgłosi."
+        "empty-description": "Brak otwartych problemów. Pojawią się tu, gdy Brain coś zgłosi."
       },
       "access": {
         "title": "Dostępna dla",
-        "nobody": "Na razie nikogo — wymaga decyzji",
+        "nobody": "Na razie nikogo, wymaga decyzji",
         "organization": "Cała organizacja",
         "user": "{name}",
         "user-gone": "Osoba, która odeszła z organizacji",
@@ -2771,7 +2771,7 @@
       "history": "Historia",
       "merge": "Scalanie",
       "superseded-by": "Scalona ze stroną",
-      "publication": "Baza wiedzy",
+      "publication": "Publikacja",
       "publish-blocker": {
         "status": "Opublikować można tylko zatwierdzoną stronę",
         "owner": "Najpierw wskaż właściciela",
@@ -2792,7 +2792,7 @@
     "review": {
       "approve": "Zatwierdź stronę",
       "reject": "Odrzuć stronę",
-      "approve-needs-owner": "Przed zatwierdzeniem wskaż właściciela — to osoba, która ręczy za tę stronę.",
+      "approve-needs-owner": "Przed zatwierdzeniem wskaż właściciela: to osoba, która ręczy za tę stronę.",
       "reject-confirm-title": "Odrzucić tę stronę?",
       "reject-confirm-description": "Strona zostanie w Brain jako odrzucona, a kolejna ekstrakcja tego samego dokumentu nie zaproponuje jej ponownie. Nie da się jej stąd przywrócić.",
       "approved": "Strona zatwierdzona",
@@ -2808,25 +2808,25 @@
       "access-save": "Zapisz dostęp",
       "access-cancel": "Anuluj",
       "access-saved": "Dostęp zapisany",
-      "access-none-hint": "Nikogo nie wybrano — strona nie będzie dostępna dla nikogo, dopóki ktoś nie zostanie dodany.",
+      "access-none-hint": "Nikogo nie wybrano. Strona nie będzie dostępna dla nikogo, dopóki ktoś nie zostanie dodany.",
       "widen-title": "Poszerzyć dostęp do tej strony?",
-      "widen-description": "{names} — po opublikowaniu strony te osoby będą mogły ją czytać. Zmiana zostanie zapisana jako poszerzenie dostępu, pod Twoim nazwiskiem.",
+      "widen-description": "{names}: po opublikowaniu strony te osoby będą mogły ją czytać. Zmiana zostanie zapisana jako poszerzenie dostępu, pod Twoim nazwiskiem.",
       "widen-confirm": "Poszerz dostęp",
-      "unchanged": "Nic się nie zmieniło — strona już tak miała",
+      "unchanged": "Nic się nie zmieniło, strona już tak miała",
       "errors": {
-        "invalid-input": "Nie udało się odczytać żądania — odśwież stronę i spróbuj ponownie.",
+        "invalid-input": "Nie udało się odczytać żądania. Odśwież stronę i spróbuj ponownie.",
         "not-found": "Ta strona już nie istnieje albo nie możesz jej recenzować.",
-        "conflict": "Ktoś zmienił tę stronę po jej otwarciu — została odświeżona; sprawdź ją i spróbuj ponownie.",
+        "conflict": "Ktoś zmienił tę stronę po jej otwarciu. Strona została odświeżona, sprawdź ją i spróbuj ponownie.",
         "invalid-status": "Ta akcja nie dotyczy strony w obecnym statusie.",
         "owner-required": "Przed zatwierdzeniem wskaż właściciela strony.",
-        "owner-not-member": "Ta osoba nie należy do organizacji — wybierz kogoś innego.",
-        "invalid-access": "Jedna z wybranych osób lub zespołów nie należy już do organizacji — odśwież i wybierz ponownie.",
-        "published": "Ta strona jest opublikowana — zmiana jej dostępu nie jest jeszcze dostępna.",
+        "owner-not-member": "Ta osoba nie należy do organizacji. Wybierz kogoś innego.",
+        "invalid-access": "Jedna z wybranych osób lub jeden z zespołów nie należy już do organizacji. Odśwież i wybierz ponownie.",
+        "published": "Ta strona jest opublikowana, a zmiana dostępu opublikowanej strony nie jest jeszcze możliwa.",
         "confirm-widening": "Ta zmiana poszerza dostęp i wymaga potwierdzenia.",
-        "unmergeable": "Tekst strony nie ma kształtu, który da się scalić — scal ją ręcznie albo odrzuć.",
-        "no-access": "Ta strona nie jest dostępna dla nikogo — przed publikacją wybierz, kto może ją czytać.",
-        "failed-to-start": "Publikacja jest zapisana, ale zapis do bazy wiedzy nie ruszył — opublikuj ponownie, żeby go wznowić.",
-        "index-unavailable": "Nie udało się zmienić bazy wiedzy — nic nie zapisano; spróbuj ponownie."
+        "unmergeable": "Tekstu strony nie da się scalić automatycznie. Scal ją ręcznie albo odrzuć.",
+        "no-access": "Ta strona nie jest dostępna dla nikogo. Przed publikacją wybierz, kto może ją czytać.",
+        "failed-to-start": "Publikacja jest zapisana, ale zapis do bazy wiedzy nie ruszył. Opublikuj ponownie, żeby go wznowić.",
+        "index-unavailable": "Nie udało się zmienić bazy wiedzy, nic nie zapisano. Spróbuj ponownie."
       },
       "merge-label": "Scal ze stroną",
       "merge-placeholder": "Wybierz stronę do scalenia",
@@ -2857,22 +2857,22 @@
     "extract": {
       "open": "Wyodrębnij z dokumentów",
       "title": "Wyodrębnij wiedzę z dokumentów",
-      "description": "Brain przeczyta wybrane dokumenty i zapisze strony-kandydatów do recenzji. Zaznaczone są dokumenty, których nie cytuje jeszcze żadna strona. Przebieg działa w tle.",
-      "none": "Brak dokumentów do wyodrębnienia — najpierw dodaj dokumenty do bazy wiedzy.",
+      "description": "Brain przeczyta wybrane dokumenty i zapisze strony do sprawdzenia. Zaznaczone są dokumenty, których nie cytuje jeszcze żadna strona. Przebieg działa w tle.",
+      "none": "Brak dokumentów do wyodrębnienia. Najpierw dodaj dokumenty do bazy wiedzy.",
       "not-extracted": "Nie wyodrębniono",
       "pages": "Strony: {count}",
       "too-many": "Dokumentów w jednym przebiegu najwyżej: {max}.",
       "cancel": "Anuluj",
       "start": "Rozpocznij ({count})",
-      "started": "Wyodrębnianie rozpoczęte — dokumenty: {count}. Kandydaci pojawią się, gdy każdy się skończy.",
+      "started": "Wyodrębnianie rozpoczęte, dokumenty: {count}. Strony do sprawdzenia pojawią się, gdy każdy dokument zostanie przetworzony.",
       "retry": "Ponów",
       "retry-queued": "Ponowienie w kolejce",
       "retry-started": "Wyodrębnianie tego dokumentu ponownie w kolejce",
       "errors": {
-        "invalid-input": "Nie udało się odczytać żądania — odśwież stronę i spróbuj ponownie.",
+        "invalid-input": "Nie udało się odczytać żądania. Odśwież stronę i spróbuj ponownie.",
         "not-found": "To zgłoszenie jest zamknięte albo już nie istnieje.",
         "no-documents": "Żadnego z wybranych dokumentów nie da się tu wyodrębnić.",
-        "failed-to-start": "Nie udało się uruchomić wyodrębniania — spróbuj za chwilę."
+        "failed-to-start": "Nie udało się uruchomić wyodrębniania. Spróbuj za chwilę."
       }
     },
     "graph": {
@@ -2883,7 +2883,7 @@
       "zoom-fit": "Pokaż cały graf",
       "reset-layout": "Przywróć układ automatyczny",
       "show-all-groups": "Pokaż wszystkie grupy",
-      "title": "Graf wiedzy — Ragen Brain",
+      "title": "Graf wiedzy – Brain",
       "empty-title": "Na razie nie ma czego narysować",
       "empty-description": "Graf pojawi się, gdy Brain wyodrębni strony z Twoich dokumentów.",
       "focus": "Sąsiedztwo „{title}”",
@@ -2896,9 +2896,9 @@
       "inferred-hidden": "Ukryte",
       "inferred-shown": "Widoczne ({count})",
       "shown": "Strony: {nodes} z {totalNodes} · powiązania: {edges} z {totalEdges}",
-      "canvas-label": "Graf — strony: {nodes}, powiązania: {edges}",
-      "failed": "Nie udało się narysować grafu w tej przeglądarce — te same dane są w zakładkach stron i wykryć.",
-      "open-findings": "Otwarte wykrycia: {count}",
+      "canvas-label": "Graf: strony {nodes}, powiązania {edges}",
+      "failed": "Nie udało się narysować grafu w tej przeglądarce. Te same dane są w zakładkach Strony wiedzy i Problemy.",
+      "open-findings": "Otwarte problemy: {count}",
       "open-page": "Otwórz stronę",
       "show-neighbourhood": "Pokaż sąsiedztwo",
       "drawer-label": "Strona obok grafu",
@@ -2909,7 +2909,7 @@
       "legend-extracted": "Potwierdzone w źródle (cytat to wspiera)",
       "legend-ambiguous": "Niepewne: wskazane, ale cytat tego nie potwierdza",
       "legend-inferred": "Wywnioskowane przez model; ukryte, chyba że je pokażesz",
-      "legend-findings": "Strona z otwartym wykryciem",
+      "legend-findings": "Strona z otwartym problemem",
       "communities-title": "Grupy",
       "community": "{label} i powiązane ({size})",
       "origin": {
@@ -2933,7 +2933,7 @@
       "topic-pages": "{count, plural, one {# strona} few {# strony} many {# stron} other {# strony}}",
       "topic-approved": "Są zatwierdzone strony",
       "topic-approved-count": "{count} zatw.",
-      "topic-candidates": "Same kandydatury",
+      "topic-candidates": "Same do sprawdzenia",
       "isolated-count": "{count, plural, one {# strona poza głównymi tematami} few {# strony poza głównymi tematami} many {# stron poza głównymi tematami} other {# strony poza głównymi tematami}}",
       "isolated-description": "Zamiast kolumny luźnych kropek: lista stron bez powiązań. Otwórz stronę, aby zaproponować powiązania.",
       "review-isolated": "Przejrzyj strony bez powiązań",
@@ -2944,16 +2944,16 @@
       "search-results-count": "Wyświetlono {shown} z {count} pasujących stron",
       "status": {
         "APPROVED": "Zatwierdzona",
-        "CANDIDATE": "Kandydat",
+        "CANDIDATE": "Do sprawdzenia",
         "REJECTED": "Odrzucona",
         "STALE": "Nieaktualna"
       },
       "review-group": "Przejrzyj całą grupę ({count})",
-      "pair-merge": "{count, plural, one {# strona kandydująca może pasować} few {# strony kandydujące mogą pasować} many {# stron kandydujących może pasować} other {# strony kandydującej może pasować}} do strony z drugiej wersji językowej sparowanego dokumentu.",
+      "pair-merge": "{count, plural, one {# strona do sprawdzenia może pasować} few {# strony do sprawdzenia mogą pasować} many {# stron do sprawdzenia może pasować} other {# strony do sprawdzenia może pasować}} do strony z drugiej wersji językowej sparowanego dokumentu.",
       "pair-merge-review": "Przejrzyj i scal"
     },
     "export": {
-      "ready": "Gotowe do eksportu: {count}",
+      "ready": "Zatwierdzone: {count}",
       "download": "Pobierz paczkę (.zip)",
       "none": "Zatwierdź stronę z właścicielem, żeby ją wyeksportować",
       "skipped": {
@@ -2966,30 +2966,30 @@
     },
     "publication": {
       "state": {
-        "none": "Poza bazą wiedzy",
-        "publishing": "Zapisywanie do bazy wiedzy…",
-        "published": "W bazie wiedzy — odpowiedzi mogą ją cytować",
-        "withdrawn": "Wycofana z bazy wiedzy",
-        "failed": "Zapis do bazy wiedzy się nie powiódł — opublikuj ponownie"
+        "none": "Nieopublikowana",
+        "publishing": "Publikowanie…",
+        "published": "Opublikowana: odpowiedzi czatu mogą ją cytować",
+        "withdrawn": "Wycofana z publikacji",
+        "failed": "Publikacja się nie powiodła, opublikuj ponownie"
       },
-      "outdated": "Strona zmieniła się od publikacji — opublikuj ponownie, żeby zaktualizować bazę wiedzy.",
-      "publish": "Opublikuj w bazie wiedzy",
+      "outdated": "Strona zmieniła się od publikacji. Opublikuj ponownie, żeby czat korzystał z aktualnej treści.",
+      "publish": "Opublikuj",
       "republish": "Opublikuj ponownie",
       "withdraw": "Wycofaj",
       "published": "Publikacja rozpoczęta",
       "withdrawn": "Strona wycofana",
-      "withdraw-title": "Wycofać tę stronę z bazy wiedzy?",
+      "withdraw-title": "Wycofać publikację tej strony?",
       "withdraw-description": "Odpowiedzi przestaną ją cytować zaraz po wycofaniu. Strona pozostaje zatwierdzona i można ją opublikować ponownie; wcześniejsze odpowiedzi zachowują swoje cytaty."
     },
     "documents": {
-      "title": "Dokumenty — Ragen Brain",
-      "intro": "Gdy wiedza z dokumentu jest już w zatwierdzonych stronach, możesz wyłączyć sam dokument z wyszukiwania — odpowiedzi będą wtedy korzystać tylko ze zrecenzowanych stron. Nic nie jest usuwane i w każdej chwili można go przywrócić.",
+      "title": "Źródła – Brain",
+      "intro": "Gdy wiedza z dokumentu jest już w zatwierdzonych stronach, możesz wyłączyć sam dokument z wyszukiwania. Odpowiedzi będą wtedy korzystać tylko ze sprawdzonych stron. Nic nie jest usuwane i w każdej chwili można go przywrócić.",
       "empty-title": "Na razie brak dokumentów",
       "empty-description": "Dokumenty pojawią się tutaj, gdy trafią do bazy wiedzy.",
       "columns": {
         "document": "Dokument",
         "approved": "Zatwierdzone strony",
-        "candidates": "Kandydaci",
+        "candidates": "Do sprawdzenia",
         "retrieval": "Wyszukiwanie",
         "actions": "Akcje",
         "language": "Język",
@@ -3001,7 +3001,7 @@
         "withdrawn": "Wyłączony z wyszukiwania",
         "processing": "W przetwarzaniu",
         "failed": "Błąd",
-        "staged": "W Brain — poza wyszukiwaniem"
+        "staged": "W Brain, poza wyszukiwaniem"
       },
       "withdraw": "Wyłącz z wyszukiwania",
       "restore": "Przywróć",
@@ -3010,18 +3010,18 @@
       "withdraw-title": "Wyłączyć ten dokument z wyszukiwania?",
       "withdraw-description": "Odpowiedzi przestaną korzystać bezpośrednio z „{name}” i użyją zbudowanych z niego zatwierdzonych stron. Dokument, jego wersje i wszystkie cytaty zostają; w każdej chwili możesz go przywrócić.",
       "errors": {
-        "invalid-input": "Nie udało się odczytać żądania — odśwież stronę i spróbuj ponownie.",
+        "invalid-input": "Nie udało się odczytać żądania. Odśwież stronę i spróbuj ponownie.",
         "not-found": "Ten dokument już nie istnieje albo należy do Brain.",
-        "not-curated": "Żadna zatwierdzona strona nie cytuje jeszcze tego dokumentu — najpierw zatwierdź stronę.",
-        "invalid-status": "Dokument nie jest w stanie wymaganym przez tę akcję — odśwież stronę.",
-        "index-unavailable": "Nie udało się zmienić indeksu — nic się nie zmieniło; spróbuj ponownie.",
-        "failed-to-start": "Ponowne przetwarzanie nie ruszyło — spróbuj za chwilę."
+        "not-curated": "Żadna zatwierdzona strona nie cytuje jeszcze tego dokumentu. Najpierw zatwierdź stronę.",
+        "invalid-status": "Dokument nie jest w stanie wymaganym przez tę akcję. Odśwież stronę.",
+        "index-unavailable": "Nie udało się zmienić indeksu, nic się nie zmieniło. Spróbuj ponownie.",
+        "failed-to-start": "Ponowne przetwarzanie nie ruszyło. Spróbuj za chwilę."
       },
       "send": "Wyślij do bazy wiedzy",
       "sent": "Wysłano do bazy wiedzy",
       "upload": "Wgraj do Brain",
-      "uploaded": "Wgrano do Brain: {count} — zapisane i przetworzone, poza wyszukiwaniem",
-      "upload-failed": "Wgrywanie się nie powiodło — sprawdź plik i spróbuj ponownie.",
+      "uploaded": "Wgrano do Brain: {count}. Pliki są zapisane i przetworzone, ale poza wyszukiwaniem.",
+      "upload-failed": "Wgrywanie się nie powiodło. Sprawdź plik i spróbuj ponownie.",
       "staged-summary": "W Brain, poza wyszukiwaniem: {count} · bez zatwierdzonej strony: {uncurated}",
       "uploaded-partly": "Wgrano do Brain {uploaded} z {total}; pozostałe się nie powiodły",
       "staged-oldest": "najstarszy wgrany {when}",
@@ -3030,11 +3030,11 @@
       "empty-in-language-description": "Żaden dokument nie jest w tym języku albo żadna strona go nie cytuje. Wybierz inny język albo wszystkie.",
       "empty-filter": "Dokumenty bez wyodrębnionej wiedzy",
       "clear-filter": "Pokaż wszystkie dokumenty",
-      "screen-title": "Dokumenty źródłowe",
+      "screen-title": "Źródła",
       "screen-intro": "Co Brain wyciągnął z każdego pliku i ile z tego jest już sprawdzone.",
       "table-title": "Dokumenty według języka",
       "shared-scale": "Skala wspólna: {count, plural, one {# strona} few {# strony} many {# stron} other {# strony}} = pełny pasek",
-      "coverage-counts": "{approved, plural, one {# zatwierdzona} few {# zatwierdzone} many {# zatwierdzonych} other {# zatwierdzone}} · {candidates, plural, one {# kandydat} few {# kandydaci} many {# kandydatów} other {# kandydatów}}",
+      "coverage-counts": "{approved, plural, one {# zatwierdzona} few {# zatwierdzone} many {# zatwierdzonych} other {# zatwierdzone}} · {candidates} do sprawdzenia",
       "summary": {
         "documents": "Dokumenty",
         "empty": "Nic nie wyodrębniono",
@@ -3050,19 +3050,19 @@
       "check-language": "Sprawdź język",
       "retry-extraction": "Ponów ekstrakcję",
       "pair-with": "Ten sam dokument po: {language}: {name}",
-      "pair-coverage": "Para: {approved} zatwierdzonych · {candidates} kandydatów (każda strona raz)"
+      "pair-coverage": "Para: {approved} zatwierdzonych · {candidates} do sprawdzenia (każda strona raz)"
     },
     "publish-all": {
       "button": "Opublikuj zatwierdzone ({count})",
       "confirm-title": "Opublikować wszystkie zatwierdzone strony?",
-      "confirm-description": "Strony, które już serwują aktualną treść, zostają bez zmian; zmienione są publikowane ponownie, nowe — po raz pierwszy. Każda publikacja jest zapisywana pod Twoim nazwiskiem. Strony bez właściciela lub niedostępne dla nikogo są pomijane. Wycofane strony pozostają wycofane.",
+      "confirm-description": "Strony, które już serwują aktualną treść, zostają bez zmian. Zmienione są publikowane ponownie, nowe po raz pierwszy. Każda publikacja jest zapisywana pod Twoim nazwiskiem. Strony bez właściciela lub niedostępne dla nikogo są pomijane. Wycofane strony pozostają wycofane.",
       "confirm": "Opublikuj",
       "done": "W kolejce: {queued} · bez zmian: {unchanged} · pominięte: {refused}",
-      "failed": "Publikacja nie ruszyła — odśwież stronę i spróbuj ponownie.",
-      "not-written": "{count, plural, one {# strona została zapisana jako opublikowana, ale nie trafiła do indeksu — uruchom ponownie} few {# strony zostały zapisane jako opublikowane, ale nie trafiły do indeksu — uruchom ponownie} many {# stron zostało zapisanych jako opublikowane, ale nie trafiło do indeksu — uruchom ponownie} other {# strony zostały zapisane jako opublikowane, ale nie trafiły do indeksu — uruchom ponownie}}"
+      "failed": "Publikacja nie ruszyła. Odśwież stronę i spróbuj ponownie.",
+      "not-written": "{count, plural, one {# strona została zapisana jako opublikowana, ale nie trafiła do indeksu. Uruchom ponownie.} few {# strony zostały zapisane jako opublikowane, ale nie trafiły do indeksu. Uruchom ponownie.} many {# stron zostało zapisanych jako opublikowane, ale nie trafiło do indeksu. Uruchom ponownie.} other {# strony zostały zapisane jako opublikowane, ale nie trafiły do indeksu. Uruchom ponownie.}}"
     },
     "read-only": {
-      "notice": "Podgląd tylko do odczytu — możesz przeglądać Ragen Brain, ale niczego tu nie zmienisz."
+      "notice": "Podgląd tylko do odczytu: możesz przeglądać Brain, ale niczego tu nie zmienisz."
     },
     "assistant": {
       "toggle": "Asystent",
@@ -3080,7 +3080,7 @@
       "read": "{count, plural, one {Przeczytano # element z Brain} few {Przeczytano # elementy z Brain} many {Przeczytano # elementów z Brain} other {Przeczytano # elementu z Brain}}",
       "proposal-dropped": "Nie udało się pokazać jednej propozycji.",
       "empty-title": "Zapytaj o to, na co patrzysz",
-      "empty-description": "Asystent czyta ten ekran, strony, ich cytaty i ustalenia, a odpowiada cytatami, na których się opiera.",
+      "empty-description": "Asystent czyta ten ekran, strony, ich cytaty i problemy, a odpowiada cytatami, na których się opiera.",
       "history-empty": "Nie ma jeszcze wcześniejszych rozmów.",
       "untitled": "Rozmowa bez tytułu",
       "prompts": {
@@ -3090,7 +3090,7 @@
         "contradictions": "Wyjaśnij otwarte sprzeczności",
         "failed": "Dlaczego niektóre dokumenty nic nie dały?",
         "disagree": "W którym miejscu dokładnie te strony się różnią?",
-        "what-to-do": "Co zrobić z tym ustaleniem?",
+        "what-to-do": "Co zrobić z tym problemem?",
         "why-failed": "Dlaczego ten dokument nic nie dał i co z tym zrobić?",
         "is-right": "Czy ta strona jest poprawna? Sprawdź każde twierdzenie z jego cytatem",
         "owner": "Kto powinien być właścicielem tej strony?",
@@ -3103,7 +3103,7 @@
       },
       "errors": {
         "usage-limit": "Organizacja osiągnęła miesięczny limit użycia AI. Reszta Brain działa jak zwykle.",
-        "rate-limit": "Za dużo zapytań w tej minucie — spróbuj za chwilę.",
+        "rate-limit": "Za dużo zapytań w tej minucie. Spróbuj za chwilę.",
         "guardrail": "Ta odpowiedź została wstrzymana przez jedną z reguł organizacji.",
         "model-unavailable": "Model nie mógł teraz odpowiedzieć. Reszta Brain działa jak zwykle; spróbuj za chwilę.",
         "no-tools": "Model organizacji nie potrafi czytać danych Brain (nie obsługuje narzędzi). Wybierz inny model w ustawieniach organizacji.",
@@ -3133,13 +3133,13 @@
         "access-after": "Po zmianie",
         "widens": "To poszerza dostęp: ktoś, kto teraz nie może czytać strony, będzie mógł.",
         "unknown-document": "Dokument, który już nie istnieje",
-        "dismissed": "Odrzucono — nic się nie zmieniło.",
+        "dismissed": "Odrzucono, nic się nie zmieniło.",
         "applied": "Zastosowano. Zapisano w historii strony pod Twoim nazwiskiem.",
         "applied-partly": "Zastosowano dla {ok} z {total}. Pozostałe odmówiono:",
         "step-failed": "odmowa",
         "widen-description": "Ktoś, kto teraz nie może czytać tej strony, będzie mógł po jej publikacji. Zostanie to zapisane jako poszerzenie dostępu, pod Twoim nazwiskiem.",
         "errors": {
-          "invalid-input": "Nie zrozumiano propozycji — odśwież stronę i spróbuj ponownie.",
+          "invalid-input": "Nie zrozumiano propozycji. Odśwież stronę i spróbuj ponownie.",
           "not-found": "Ta propozycja nie jest już dostępna.",
           "already-decided": "Ta propozycja została już zastosowana lub odrzucona.",
           "read-only": "Możesz przeglądać Brain, ale nie zmieniać go, więc tej propozycji nie można zastosować."
@@ -3149,9 +3149,9 @@
       }
     },
     "tab-hints": {
-      "pages": "Strony wiedzy z cytatami ze źródeł: każda strona zawiera twierdzenia z dosłownymi cytatami z dokumentów źródłowych. Kandydat czeka na przegląd; zatwierdź stronę i opublikuj ją, żeby czat mógł z niej odpowiadać.",
-      "findings": "Co wymaga Twojej uwagi: sprzeczności między stronami, luki, nieaktualne lub bezpańskie strony i dokumenty, których Brain nie odczytał.",
-      "graph": "Jak strony się łączą — który proces wymaga której zasady i które strony odwołują się do siebie.",
+      "pages": "Strony wiedzy z cytatami ze źródeł: każda strona zawiera twierdzenia z dosłownymi cytatami z dokumentów źródłowych. Strona do sprawdzenia czeka na Twoją decyzję. Zatwierdź ją i opublikuj, żeby czat mógł z niej odpowiadać.",
+      "findings": "Co wymaga Twojej uwagi: sprzeczności między stronami, luki, nieaktualne strony, strony bez właściciela i dokumenty, których Brain nie odczytał.",
+      "graph": "Jak strony się łączą: który proces wymaga której zasady i które strony odwołują się do siebie.",
       "documents": "Dokumenty źródłowe, które czyta Brain: ile stron dał każdy z nich i czy czat nadal go przeszukuje.",
       "overview": "Tu widzisz, ile wiedzy jest już sprawdzone i co wymaga uwagi."
     },
@@ -3184,26 +3184,26 @@
       "publication-description": "Opublikowane strony są dostępne w czacie. Dokumenty źródłowe mogą nadal być przeszukiwane.",
       "stages": {
         "documents": "Dokumenty",
-        "candidates": "Kandydaci (czekają)",
+        "candidates": "Do sprawdzenia",
         "approved": "Zatwierdzone",
-        "published": "Opublikowane w czacie"
+        "published": "Opublikowane"
       },
       "empty-documents-count": "{count} bez wyodrębnionej wiedzy",
       "unowned-count": "{count} bez właściciela",
-      "approved-share": "{percent}% kandydatów i zatwierdzonych stron",
+      "approved-share": "{percent}% stron do sprawdzenia i zatwierdzonych",
       "awaiting-publication": "{count, plural, one {# zatwierdzona czeka na publikację} few {# zatwierdzone czekają na publikację} many {# zatwierdzonych czeka na publikację} other {# zatwierdzone czekają na publikację}}",
       "attention-title": "Wymaga uwagi",
       "unowned-title": "Strony bez właściciela",
       "unowned-description": "Nie da się ich zatwierdzić. Przypisz właściciela przed przeglądem.",
       "empty-documents-title": "Dokumenty bez wiedzy",
       "empty-documents-description": "0 stron. Sprawdź dokumenty i wyodrębnij wiedzę.",
-      "finding-description": "Sprawdź wykrycie i usuń jego przyczynę.",
-      "attention-empty": "Nie ma wykryć ani stron wymagających przypisania właściciela.",
+      "finding-description": "Sprawdź problem i usuń jego przyczynę.",
+      "attention-empty": "Nie ma problemów ani stron wymagających przypisania właściciela.",
       "ranking-title": "Gdzie leży najwięcej niesprawdzonej wiedzy",
-      "legend": "Zatwierdzone / kandydaci · wspólna skala dla dokumentów",
-      "coverage-counts": "{approved, plural, one {# zatwierdzona} few {# zatwierdzone} many {# zatwierdzonych} other {# zatwierdzone}} · {candidates, plural, one {# kandydat} few {# kandydaci} many {# kandydatów} other {# kandydatów}}",
-      "all-documents": "Wszystkie dokumenty ({count})",
-      "ranking-empty": "Nie ma kandydatów do przeglądu.",
+      "legend": "Zatwierdzone / do sprawdzenia · wspólna skala dla dokumentów",
+      "coverage-counts": "{approved, plural, one {# zatwierdzona} few {# zatwierdzone} many {# zatwierdzonych} other {# zatwierdzone}} · {candidates} do sprawdzenia",
+      "all-documents": "Wszystkie źródła ({count})",
+      "ranking-empty": "Nie ma stron do sprawdzenia.",
       "empty-title": "Wiedza zaczyna się od dokumentów",
       "empty-description": "Wgraj dokumenty, żeby wyodrębnić i sprawdzić wiedzę firmy.",
       "empty-language-description": "W tym języku nie ma dokumentów. Wybierz inny język lub wgraj dokumenty.",
@@ -3221,7 +3221,7 @@
       "grouping": "Grupowanie kolejki",
       "by-document": "Wg dokumentu źródłowego",
       "by-type": "Wg typu strony",
-      "queue-empty": "Nie ma kandydatów w tej kolejce.",
+      "queue-empty": "W tej kolejce nie ma stron do sprawdzenia.",
       "claim": "Twierdzenie Brain",
       "quote": "Dosłowny cytat",
       "assessment": "Ocena",
@@ -3235,22 +3235,22 @@
       "question-claim": "Zakwestionuj twierdzenie {n}",
       "owner-step": "Krok 1 · Właściciel (wymagany)",
       "owner-question": "Kto ręczy za tę stronę?",
-      "bulk-owner": "Ustaw dla wszystkich {count} kandydatów z tego dokumentu",
-      "save-document-owner": "Przypisz właściciela kandydatom",
+      "bulk-owner": "Ustaw dla {count, plural, one {# strony} few {wszystkich # stron} many {wszystkich # stron} other {wszystkich # stron}} do sprawdzenia z tego dokumentu",
+      "save-document-owner": "Przypisz właściciela tym stronom",
       "decision-step": "Krok 3 · Decyzja",
       "approve-publish": "Zatwierdź i opublikuj",
       "approve-only": "Tylko zatwierdź",
       "reject": "Odrzuć",
       "needs-owner": "Przypisz właściciela przed zatwierdzeniem tej strony.",
       "needs-access": "Strona nie ma odbiorców. Możesz ją zatwierdzić; przed publikacją ustaw dostęp w szczegółach strony.",
-      "not-candidate": "Decyzje w tym trybie dotyczą kandydatów. Otwórz szczegóły strony, aby zobaczyć pozostałe działania.",
+      "not-candidate": "Decyzje w tym trybie dotyczą stron do sprawdzenia. Otwórz szczegóły strony, aby zobaczyć pozostałe działania.",
       "relations": "Powiązania: {count}",
       "show-graph": "Pokaż w grafie",
       "open-page": "Otwórz szczegóły strony",
       "previous": "Poprzednia",
       "next": "Następna",
       "empty-title": "Kolejka sprawdzona",
-      "empty-description": "Nie ma kandydatów do przeglądu. Wróć do przeglądu Brain, aby zobaczyć pozostałą wiedzę.",
+      "empty-description": "Nie ma stron do sprawdzenia. Wróć do przeglądu Brain, aby zobaczyć pozostałą wiedzę.",
       "back": "Wróć do przeglądu Brain",
       "claims-step": "Krok 2 · Twierdzenia",
       "publication-failed": "Strona została zatwierdzona, ale publikacja nie została zakończona: {reason} Otwórz szczegóły strony, aby ponowić publikację."
@@ -3392,7 +3392,7 @@
     "column-brain": "Wiedza w Brain",
     "column-quality": "Jakość dla czatu",
     "brain-unavailable": "Brain niedostępny",
-    "coverage": "{approved, plural, one {# zatwierdzona} few {# zatwierdzone} many {# zatwierdzonych} other {# zatwierdzonych}} · {candidates, plural, one {# kandydatura} few {# kandydatury} many {# kandydatur} other {# kandydatur}}",
+    "coverage": "{approved, plural, one {# zatwierdzona} few {# zatwierdzone} many {# zatwierdzonych} other {# zatwierdzonych}} · {candidates} do sprawdzenia",
     "no-knowledge": "Brak wiedzy",
     "waiting-knowledge": "Oczekuje na wyodrębnienie",
     "quality-ok": "OK",
@@ -3406,7 +3406,7 @@
     "headerless-description": "Czat gorzej odpowiada bez nazw kolumn. W arkuszach i dokumentach złożonych głównie z tabel uzupełnij nagłówki i przetwórz plik ponownie.",
     "optimize-all": "Optymalizuj obsługiwane dokumenty",
     "empty-count": "{count, plural, one {# plik gotowy} few {# pliki gotowe} other {# plików gotowych}}, ale bez wiedzy",
-    "empty-description": "Pliki są dostępne dla czatu, ale nie mają aktywnych kandydatur ani zatwierdzonych stron w Brain.",
+    "empty-description": "Pliki są dostępne dla czatu, ale nie mają w Brain stron do sprawdzenia ani zatwierdzonych.",
     "show-brain": "Pokaż w Brain",
     "table-reprocess": "Przetwórz ponownie dokumenty tabelaryczne",
     "optimization-description": "Przygotuj sugestie poprawy dla RAG przez istniejący proces optymalizacji. Przejrzyj i zastosuj je w każdym dokumencie; uruchomienie zadania nie zmienia źródła.",

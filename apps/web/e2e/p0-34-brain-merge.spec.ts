@@ -47,7 +47,9 @@ test.describe('Ragen Brain merge (p0)', () => {
       page.getByText(TEST_BRAIN_MERGE_SOURCE_CLAIM).first(),
     ).toBeVisible();
     // It says new things now, so it is back in review.
-    await expect(page.getByText('Kandydat', { exact: true })).toBeVisible();
+    await expect(
+      page.getByText('Do sprawdzenia', { exact: true }),
+    ).toBeVisible();
     await expect(page.getByTestId('brain-source')).toHaveCount(2);
     await expect(page.getByTestId('brain-decisions')).toContainText('Scalono');
 

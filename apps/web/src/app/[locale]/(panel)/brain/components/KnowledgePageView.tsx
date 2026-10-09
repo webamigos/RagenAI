@@ -70,7 +70,7 @@ export async function KnowledgePageView({
       <BrainScreen context={{ view: 'page', pageId: page.publicId }} />
       {variant === 'page' && (
         <>
-          <title>{`${page.title} — ${t('title')}`}</title>
+          <title>{`${page.title} – ${t('title')}`}</title>
           <Link
             href="/brain"
             className="mb-3 inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"

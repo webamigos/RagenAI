@@ -68,7 +68,7 @@ it('labels counts, uses one scale, sorts language names and omits language pairi
   expect(rows[0]).toHaveTextContent('angielski');
   const large = rows.find((row) => row.textContent?.includes('large.pdf'))!;
   expect(large).toHaveTextContent('2 zatwierdzone');
-  expect(large).toHaveTextContent('6 kandydatów');
+  expect(large).toHaveTextContent('6 do sprawdzenia');
   expect(large.querySelector('[data-segment="approved"]')).toHaveAttribute(
     'width',
     '25',

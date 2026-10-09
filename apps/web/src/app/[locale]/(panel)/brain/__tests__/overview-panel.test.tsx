@@ -74,7 +74,7 @@ describe('BrainOverviewPanel', () => {
     ).toHaveTextContent('3 zatwierdzone');
     expect(
       screen.getByRole('link', { name: /Regulamin.pdf/ }),
-    ).toHaveTextContent('12 kandydatów');
+    ).toHaveTextContent('12 do sprawdzenia');
   });
   it('shows a compact empty state and upload action rather than a zero chart', () => {
     show({
