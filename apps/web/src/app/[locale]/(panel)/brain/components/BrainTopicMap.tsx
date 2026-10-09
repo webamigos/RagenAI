@@ -50,7 +50,7 @@ export function BrainTopicMap({
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="grid auto-rows-[84px] grid-cols-1 gap-3 sm:grid-cols-6">
+        <div className="grid auto-rows-[minmax(84px,auto)] grid-cols-1 gap-3 sm:grid-cols-6">
           {summary.topics.map((group) => (
             <Link
               key={group.anchor}
