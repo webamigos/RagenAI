@@ -1,12 +1,12 @@
 # Prompt do Claude Code
 
-Skopiuj całość poniżej do Claude Code uruchomionego w repozytorium Ragen. Wcześniej wrzuć do repo folder `ragen-brain-ux/` (SPEC.md i mockups/), np. do `docs/brain-ux/`.
+Skopiuj całość poniżej do Claude Code uruchomionego w repozytorium Ragen. Wcześniej wrzuć do repo folder `ragen-brain-ux/` (SPEC.md i mockups/), np. do `docs/ragen-brain-ux/` (tam leżą w repozytorium).
 
 ---
 
 Pracujesz nad modułem Brain w Ragen (RAG dla firm, UI po polsku, trasy `/pl/brain/*`). Chcę przeprowadzić ewolucję UX, nie rewolucję: ujednolicić język i uprościć poruszanie się, bez zmiany struktury zakładek, tras, API ani modelu danych.
 
-Materiały są w `docs/brain-ux/`:
+Materiały są w `docs/ragen-brain-ux/`:
 - `SPEC.md`: pełna lista zmian, słownik, kryteria akceptacji i sekcja "do decyzji",
 - `mockups/*.html`: makiety docelowych ekranów (Przegląd, Tryb przeglądu, Strona wiedzy). Nie renderują się samodzielnie, czytaj je jako źródło tekstów i układu. Żółte plakietki to adnotacje, nie UI.
 

@@ -47,7 +47,7 @@ Uwaga: nie zmieniaj wartości enumów w API ani w bazie (CANDIDATE, APPROVED itd
 - Dodać legendę koloru przy wykresie "Gdzie leży najwięcej niesprawdzonej wiedzy" i link "Wszystkie źródła".
 
 ### 2.3 Spójność liczb (do sprawdzenia w kodzie, nie zgadywać)
-Dziś Przegląd mówi "2 zatwierdzone czekają na publikację", a lista stron pokazuje "Gotowe do eksportu: 3" i przycisk "Opublikuj zatwierdzone (3)". Prawdopodobnie 3 zatwierdzone, w tym 1 już opublikowana. Ustal, co liczy każde z miejsc, i ujednolić: przycisk publikacji i licznik "czekają na publikację" powinny liczyć to samo (zatwierdzone i nieopublikowane). "Zatwierdzone" i "Opublikowane" to osobne liczby.
+Dziś Przegląd mówi "2 zatwierdzone czekają na publikację", a lista stron pokazuje "Gotowe do eksportu: 3" i przycisk "Opublikuj zatwierdzone (3)". Prawdopodobnie 3 zatwierdzone, w tym 1 już opublikowana. Ustal, co liczy każde z miejsc, i ujednolić: przycisk publikacji i licznik "czekają na publikację" powinny liczyć to samo: strony, które zbiorcza publikacja faktycznie opublikuje lub opublikuje ponownie (zatwierdzone i nigdy nieopublikowane, opublikowane ze zmienioną treścią oraz z niedokończonym zapisem do indeksu; bez wycofanych i bez tych, które publikacja odrzuci). "Zatwierdzone" i "Opublikowane" to osobne liczby.
 
 ### 2.4 Tryb przeglądu (`/pl/brain/review`) → `mockups/Tryb-przegladu.dc.html`
 - Przyciski ✓ i ✕ dostają podpisy: "Zgadza się" i "Do poprawy" (z `aria-label`, zachować skróty klawiaturowe).
