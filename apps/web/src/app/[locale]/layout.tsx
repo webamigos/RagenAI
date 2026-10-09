@@ -20,7 +20,7 @@ import { getEncryptionStartupStatus } from '@ragenai/crypto';
 import { Providers } from '../components/Providers';
 import { timezone } from '../config';
 import './global.css';
-import { Barlow_Condensed, Inter } from 'next/font/google';
+import { fontVariables } from '../fonts/fonts';
 import { SettingsProvider } from '@/context/AssistantSettingsContext';
 import { SearchThreadsProvider } from '@/context/SearchThreadsContext';
 import { GlobalSearchDialog } from '@/app/components/Sidebar/ThreadsHistory/GlobalSearchDialog';
@@ -35,26 +35,6 @@ type Props = {
     locale: string;
   }>;
 };
-
-const interFont = Inter({
-  // `latin-ext` carries ą ć ę ł ń ś ź ż. Without it the panel's Polish copy
-  // fell back to a system face mid-word, which reads as a rendering glitch
-  // rather than a missing subset.
-  subsets: ['latin', 'latin-ext'],
-  weight: ['200', '300', '400', '500', '600', '700', '800'],
-});
-
-/**
- * Page titles, section headers, eyebrows and table column headers — nothing
- * else. Exposed as a CSS variable rather than a class because `--font-display`
- * in `global.css` is what components reach for.
- */
-const displayFont = Barlow_Condensed({
-  subsets: ['latin', 'latin-ext'],
-  weight: ['500', '600', '700'],
-  variable: '--font-display-loaded',
-  display: 'swap',
-});
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
@@ -77,12 +57,8 @@ export default async function LocaleLayout({ children, params }: Props) {
   // the block itself must not depend on anything that could also be broken.
   if (getEncryptionStartupStatus() === 'blocked') {
     return (
-      <html
-        lang={locale}
-        className={displayFont.variable}
-        suppressHydrationWarning
-      >
-        <body className={interFont.className}>
+      <html lang={locale} className={fontVariables} suppressHydrationWarning>
+        <body>
           <EncryptionRequiredScreen />
         </body>
       </html>
@@ -99,10 +75,10 @@ export default async function LocaleLayout({ children, params }: Props) {
     >
       <html
         lang={locale}
-        className={`${displayFont.variable} h-full`}
+        className={`${fontVariables} h-full`}
         suppressHydrationWarning
       >
-        <body className={`${interFont.className} h-full`}>
+        <body className="h-full">
           {/*
             First in the body, because a client module may read the
             configuration as it initialises and the element has to exist by
