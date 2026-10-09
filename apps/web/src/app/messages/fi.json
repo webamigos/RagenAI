@@ -3030,11 +3030,6 @@
       "table-title": "Documents by language",
       "shared-scale": "Shared scale: {count, plural, one {# page} other {# pages}} = full bar",
       "coverage-counts": "{approved} hyväksytty · {candidates} tarkistettavana",
-      "summary": {
-        "documents": "Documents",
-        "empty": "Nothing extracted",
-        "withdrawn": "Excluded from search"
-      },
       "state": {
         "empty": "Nothing extracted",
         "failed": "Extraction or processing failed",
@@ -3045,7 +3040,14 @@
       "check-language": "Check language",
       "retry-extraction": "Retry extraction",
       "pair-with": "Same document in {language}: {name}",
-      "pair-coverage": "Pari: {approved} hyväksytty · {candidates} tarkistettavana (kukin sivu lasketaan kerran)"
+      "pair-coverage": "Pari: {approved} hyväksytty · {candidates} tarkistettavana (kukin sivu lasketaan kerran)",
+      "warnings": {
+        "empty": "{count, plural, one {# document with no extracted knowledge} other {# documents with no extracted knowledge}}",
+        "withdrawn": "{count, plural, one {# document taken out of search} other {# documents taken out of search}}"
+      },
+      "manage-in-knowledge-base": "Manage files in the knowledge base",
+      "state-with-retrieval": "{state} · {retrieval}",
+      "row-actions": "Actions: {name}"
     },
     "publish-all": {
       "button": "Julkaise hyväksytyt ({count})",

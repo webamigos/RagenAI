@@ -3027,14 +3027,9 @@
       "empty-in-language-description": "No document in this language, or no page citing one. Pick another language, or all of them.",
       "empty-filter": "Documents without extracted knowledge",
       "clear-filter": "Show all documents",
-      "table-title": "Documents by language",
+      "table-title": "Documents by language ({count})",
       "shared-scale": "Shared scale: {count, plural, one {# page} other {# pages}} = full bar",
       "coverage-counts": "{approved} approved · {candidates} to review",
-      "summary": {
-        "documents": "Documents",
-        "empty": "Nothing extracted",
-        "withdrawn": "Excluded from search"
-      },
       "state": {
         "empty": "Nothing extracted",
         "failed": "Extraction or processing failed",
@@ -3045,7 +3040,14 @@
       "check-language": "Check language",
       "retry-extraction": "Retry extraction",
       "pair-with": "Same document in {language}: {name}",
-      "pair-coverage": "Pair: {approved} approved · {candidates} to review (each page counted once)"
+      "pair-coverage": "Pair: {approved} approved · {candidates} to review (each page counted once)",
+      "warnings": {
+        "empty": "{count, plural, one {# document with no extracted knowledge} other {# documents with no extracted knowledge}}",
+        "withdrawn": "{count, plural, one {# document taken out of search} other {# documents taken out of search}}"
+      },
+      "manage-in-knowledge-base": "Manage files in the knowledge base",
+      "state-with-retrieval": "{state} · {retrieval}",
+      "row-actions": "Actions: {name}"
     },
     "publish-all": {
       "button": "Publish approved ({count})",

@@ -3027,14 +3027,9 @@
       "empty-in-language-description": "Żaden dokument nie jest w tym języku albo żadna strona go nie cytuje. Wybierz inny język albo wszystkie.",
       "empty-filter": "Dokumenty bez wyodrębnionej wiedzy",
       "clear-filter": "Pokaż wszystkie dokumenty",
-      "table-title": "Dokumenty według języka",
+      "table-title": "Dokumenty według języka ({count})",
       "shared-scale": "Skala wspólna: {count, plural, one {# strona} few {# strony} many {# stron} other {# strony}} = pełny pasek",
       "coverage-counts": "{approved, plural, one {# zatwierdzona} few {# zatwierdzone} many {# zatwierdzonych} other {# zatwierdzone}} · {candidates} do sprawdzenia",
-      "summary": {
-        "documents": "Dokumenty",
-        "empty": "Nic nie wyodrębniono",
-        "withdrawn": "Wyłączone z wyszukiwania"
-      },
       "state": {
         "empty": "Nic nie wyodrębniono",
         "failed": "Nieudana ekstrakcja lub przetwarzanie",
@@ -3045,7 +3040,14 @@
       "check-language": "Sprawdź język",
       "retry-extraction": "Ponów ekstrakcję",
       "pair-with": "Ten sam dokument po: {language}: {name}",
-      "pair-coverage": "Para: {approved} zatwierdzonych · {candidates} do sprawdzenia (każda strona raz)"
+      "pair-coverage": "Para: {approved} zatwierdzonych · {candidates} do sprawdzenia (każda strona raz)",
+      "warnings": {
+        "empty": "{count, plural, one {# dokument bez wyodrębnionej wiedzy} few {# dokumenty bez wyodrębnionej wiedzy} many {# dokumentów bez wyodrębnionej wiedzy} other {# dokumentu bez wyodrębnionej wiedzy}}",
+        "withdrawn": "{count, plural, one {# dokument wyłączony z wyszukiwania} few {# dokumenty wyłączone z wyszukiwania} many {# dokumentów wyłączonych z wyszukiwania} other {# dokumentu wyłączonego z wyszukiwania}}"
+      },
+      "manage-in-knowledge-base": "Zarządzaj plikami w Bazie wiedzy",
+      "state-with-retrieval": "{state} · {retrieval}",
+      "row-actions": "Działania: {name}"
     },
     "publish-all": {
       "button": "Opublikuj zatwierdzone ({count})",

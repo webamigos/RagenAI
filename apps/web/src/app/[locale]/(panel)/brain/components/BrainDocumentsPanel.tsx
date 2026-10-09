@@ -1,6 +1,7 @@
+import { TouchTarget } from '@ragenai/common-ui/TouchTarget';
 import { useTranslations } from 'next-intl';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Table,
   TableBody,
@@ -16,8 +17,8 @@ import {
   summarizeBrainDocuments,
 } from '@/features/brain/utils/document-summary';
 import { languageName } from '@/features/brain/utils/language-name';
-import { RetryExtractionButton } from './RetryExtractionButton';
-import { DocumentRetrievalActions } from './DocumentRetrievalActions';
+import { Link } from '@/i18n/routing';
+import { DocumentRowMenu } from './DocumentRowMenu';
 
 export function BrainDocumentsPanel({
   documents,
@@ -32,36 +33,49 @@ export function BrainDocumentsPanel({
 }) {
   const t = useTranslations('brain.documents');
   const summary = summarizeBrainDocuments(documents, extraction, locale);
-  const stats = [
-    { key: 'documents', count: documents.length },
+  // Only what needs attention, and only when there is some: two tiles
+  // reading "0" on most visits were a status nobody had to act on.
+  const warnings = [
     { key: 'empty', count: summary.empty },
     { key: 'withdrawn', count: summary.withdrawn },
-  ] as const;
+  ].filter((w) => w.count > 0);
   return (
     <div className="space-y-4" data-testid="brain-documents-panel">
-      <div className="grid grid-cols-3 gap-3">
-        {stats.map((stat) => (
-          <Card
-            className="py-0"
-            key={stat.key}
-            data-testid={`documents-summary-${stat.key}`}
-          >
-            <CardContent className="space-y-2 px-3 py-4 sm:px-6">
-              <p className="text-[13px] text-muted-foreground sm:text-sm">
-                {t(`summary.${stat.key}`)}
-              </p>
-              <strong className="block font-display text-3xl tabular-nums">
-                {stat.count}
-              </strong>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      {warnings.length > 0 && (
+        <ul
+          role="status"
+          data-testid="brain-documents-warnings"
+          className="flex flex-wrap gap-x-6 gap-y-1 rounded-[6px] border border-pending bg-pending-tint px-3 py-2 text-sm text-foreground"
+        >
+          {warnings.map((w) => (
+            <li key={w.key} data-testid={`documents-warning-${w.key}`}>
+              {t(`warnings.${w.key}`, { count: w.count })}
+            </li>
+          ))}
+        </ul>
+      )}
       <Card className="gap-0 overflow-hidden py-0">
         <CardHeader className="flex flex-wrap items-start justify-between gap-3 border-b py-4 sm:flex-row">
-          <CardTitle role="heading" aria-level={3} className="text-base">
-            {t('table-title')}
-          </CardTitle>
+          <div className="space-y-1">
+            <CardTitle
+              role="heading"
+              aria-level={3}
+              className="text-base"
+              data-testid="brain-documents-count"
+            >
+              {t('table-title', { count: documents.length })}
+            </CardTitle>
+            {/*
+              Brain's view of the files, not a second file manager: uploads,
+              folders and deletion live in the knowledge base.
+            */}
+            <Link
+              href="/knowledge/documents-list"
+              className="relative inline-block text-sm text-primary underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+            >
+              <TouchTarget>{t('manage-in-knowledge-base')}</TouchTarget>
+            </Link>
+          </div>
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
             <span className="inline-flex items-center gap-2">
               <span
@@ -84,18 +98,14 @@ export function BrainDocumentsPanel({
           <Table dense className="min-w-[760px] whitespace-normal">
             <TableHead>
               <TableRow className="bg-muted/40">
-                <TableHeader className="font-display text-[11px] uppercase">
-                  {t('columns.document')}
-                </TableHeader>
-                <TableHeader className="text-right font-display text-[11px] uppercase">
+                <TableHeader>{t('columns.document')}</TableHeader>
+                <TableHeader className="text-right">
                   {t('columns.coverage')}
                 </TableHeader>
-                <TableHeader className="font-display text-[11px] uppercase">
-                  {t('columns.state')}
-                </TableHeader>
+                <TableHeader>{t('columns.state')}</TableHeader>
                 {canWrite && (
-                  <TableHeader className="text-right font-display text-[11px] uppercase">
-                    {t('columns.actions')}
+                  <TableHeader className="w-12">
+                    <span className="sr-only">{t('columns.actions')}</span>
                   </TableHeader>
                 )}
               </TableRow>
@@ -183,10 +193,21 @@ export function BrainDocumentsPanel({
                       )}
                     </TableCell>
                     <TableCell className="whitespace-normal">
-                      <Badge variant={variant}>{t(`state.${state}`)}</Badge>
-                      <span className="mt-1 block text-xs text-muted-foreground">
-                        {t(`retrieval.${document.retrieval}`)}
-                      </span>
+                      {/*
+                        One badge: whether Brain read it and, only when the
+                        file is kept out of search (staged or withdrawn),
+                        that too. Processing and failure are already the
+                        state.
+                      */}
+                      <Badge variant={variant} className="whitespace-normal">
+                        {document.retrieval !== 'staged' &&
+                        document.retrieval !== 'withdrawn'
+                          ? t(`state.${state}`)
+                          : t('state-with-retrieval', {
+                              state: t(`state.${state}`),
+                              retrieval: t(`retrieval.${document.retrieval}`),
+                            })}
+                      </Badge>
                       {document.language === null && (
                         <span className="mt-1 block text-sm text-muted-foreground">
                           {t('check-language')}
@@ -194,21 +215,14 @@ export function BrainDocumentsPanel({
                       )}
                     </TableCell>
                     {canWrite && (
-                      <TableCell>
-                        <div className="flex flex-wrap items-center justify-end gap-2">
-                          {evidence?.failure && (
-                            <RetryExtractionButton
-                              findingPublicId={evidence.failure.publicId}
-                              label={t('retry-extraction')}
-                            />
-                          )}
-                          <DocumentRetrievalActions
-                            fileId={document.fileId}
-                            fileName={document.fileName}
-                            retrieval={document.retrieval}
-                            curated={document.approvedPages > 0}
-                          />
-                        </div>
+                      <TableCell className="text-right">
+                        <DocumentRowMenu
+                          fileId={document.fileId}
+                          fileName={document.fileName}
+                          retrieval={document.retrieval}
+                          curated={document.approvedPages > 0}
+                          failedExtraction={evidence?.failure?.publicId ?? null}
+                        />
                       </TableCell>
                     )}
                   </TableRow>
