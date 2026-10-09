@@ -192,7 +192,7 @@ it('names the same document in the other language and counts its pages once', ()
     'en-policy.pdf',
   );
   expect(
-    within(paired).getByText(/Para: 3 zatwierdzonych/),
+    within(paired).getByText(/Para: 3 zatwierdzone · 1 do sprawdzenia/),
   ).toBeInTheDocument();
   expect(within(lonely).queryByTestId('brain-document-pair')).toBeNull();
 });

@@ -3040,7 +3040,7 @@
       "check-language": "Sprawdź język",
       "retry-extraction": "Ponów ekstrakcję",
       "pair-with": "Ten sam dokument po: {language}: {name}",
-      "pair-coverage": "Para: {approved} zatwierdzonych · {candidates} do sprawdzenia (każda strona raz)",
+      "pair-coverage": "Para: {approved, plural, one {# zatwierdzona} few {# zatwierdzone} many {# zatwierdzonych} other {# zatwierdzone}} · {candidates} do sprawdzenia (każda strona raz)",
       "warnings": {
         "empty": "{count, plural, one {# dokument bez wyodrębnionej wiedzy} few {# dokumenty bez wyodrębnionej wiedzy} many {# dokumentów bez wyodrębnionej wiedzy} other {# dokumentu bez wyodrębnionej wiedzy}}",
         "withdrawn": "{count, plural, one {# dokument wyłączony z wyszukiwania} few {# dokumenty wyłączone z wyszukiwania} many {# dokumentów wyłączonych z wyszukiwania} other {# dokumentu wyłączonego z wyszukiwania}}"
