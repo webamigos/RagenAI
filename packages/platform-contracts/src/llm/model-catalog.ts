@@ -117,6 +117,11 @@ export const MODEL_REGISTRY: Record<string, ModelRegistryEntry> = {
     origin: 'anthropic',
     reasoning: true,
   },
+  'claude-haiku-5-5-openrouter': {
+    displayName: 'Claude Haiku 5.5 (OpenRouter)',
+    visible: false, // internal: rephrase and summary on the OpenRouter route
+    origin: 'anthropic',
+  },
 
   // --- Anthropic (Bedrock) ---
   'claude-sonnet-4-6': {

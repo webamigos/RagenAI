@@ -112,6 +112,12 @@ routes:
   claude-sonnet-5-5-openrouter:
     provider: openrouter
     model: anthropic/claude-sonnet-5.5
+  # The rephrase and summary model for an install on this route. Both run on
+  # every question and every upload, so they take the cheap tier rather than
+  # the answer model above. Do not upgrade it without approval.
+  claude-haiku-5-5-openrouter:
+    provider: openrouter
+    model: anthropic/claude-haiku-5.5
   # 1536 dimensions — an install on this route sets VECTOR_SIZE=1536 and
   # EMBEDDINGS_MODEL to this id, on the web, api and worker alike.
   text-embedding-3-small-openrouter:

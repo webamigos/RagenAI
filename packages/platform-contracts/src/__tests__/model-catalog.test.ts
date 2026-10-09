@@ -199,6 +199,7 @@ describe('against infra/llm-gateway/routes.yaml', () => {
   it('serves chat and embeddings from OpenRouter, priced, with the right kinds', () => {
     const openrouter = [
       'claude-sonnet-5-5-openrouter',
+      'claude-haiku-5-5-openrouter',
       'text-embedding-3-small-openrouter',
     ];
 
@@ -212,6 +213,7 @@ describe('against infra/llm-gateway/routes.yaml', () => {
     for (const id of openrouter) {
       expect(AI_PRICING.litellm?.[id]).toBeDefined();
     }
+    expect(MODEL_REGISTRY['claude-haiku-5-5-openrouter']?.visible).toBe(false);
     expect(table).toMatch(
       /claude-sonnet-5-5-openrouter:\n\s+provider: openrouter/,
     );
