@@ -158,9 +158,11 @@ export function inspectEnvironment(env: Env): SetupReport {
  * no way to satisfy it.
  *
  * The rule cannot be a list of variables that must all be present, because the
- * five provider families need different ones and a deployment needs exactly
- * one family. So it is "any credential at all": the first required entry of
- * each family in `@ragenai/llm-gateway`'s `credentials-from-env`, plus any
+ * provider families need different ones and a deployment needs exactly one
+ * family. So it is "any one complete family": every variable the gateway's
+ * `credentials-from-env` requires for it — Azure is a key *and* a base URL,
+ * Vertex a project *and* a location, and half of either fails at the first
+ * call exactly as none would — plus any
  * `LLM_<CONNECTION>_BASE_URL` for an OpenAI-compatible upstream, whose name is
  * chosen by the route and cannot be enumerated here.
  *
@@ -175,7 +177,7 @@ function findMissingModelCredentials(env: Env): SetupFinding | null {
   // `OPENROUTER_API_KEY` — the Railway template's one value — was told on the
   // sign-in screen that it had no model provider.
   const anyFamily = Object.values(PROVIDER_CREDENTIAL_VARS).some((vars) =>
-    isSet(env[vars[0]!]),
+    vars.every((name) => isSet(env[name])),
   );
 
   const anyCompatible = Object.entries(env).some(

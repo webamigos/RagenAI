@@ -50,18 +50,19 @@ describe('inspectEnvironment', () => {
     );
   });
 
-  it('accepts any one provider family, or an OpenAI-compatible connection', () => {
-    // Five families need five different variables and a deployment needs one,
-    // so this is "any", not "all".
-    for (const name of [
-      'OPENROUTER_API_KEY',
-      'ANTHROPIC_API_KEY',
-      'AZURE_API_KEY',
-      'AWS_BEDROCK_REGION',
-      'VERTEX_PROJECT',
+  it('accepts any one complete provider family, or an OpenAI-compatible connection', () => {
+    // The families need different variables and a deployment needs one, so
+    // this is "any family" — but all of that family's variables, as the
+    // gateway demands them.
+    for (const family of [
+      { OPENROUTER_API_KEY: 'set' },
+      { ANTHROPIC_API_KEY: 'set' },
+      { AZURE_API_KEY: 'set', AZURE_API_BASE: 'https://x.openai.azure.com' },
+      { AWS_BEDROCK_REGION: 'eu-central-1' },
+      { VERTEX_PROJECT: 'p', VERTEX_LOCATION: 'europe-central2' },
     ]) {
       expect(
-        idsOf({ ...completeEnv, OPENAI_API_KEY: undefined, [name]: 'set' }),
+        idsOf({ ...completeEnv, OPENAI_API_KEY: undefined, ...family }),
       ).not.toContain('model-provider-credentials');
     }
 
@@ -74,6 +75,14 @@ describe('inspectEnvironment', () => {
         LLM_OLLAMA_BASE_URL: 'http://localhost:11434/v1',
       }),
     ).not.toContain('model-provider-credentials');
+  });
+
+  it('does not accept half a family, which fails at the first call', () => {
+    for (const half of [{ AZURE_API_KEY: 'set' }, { VERTEX_PROJECT: 'p' }]) {
+      expect(
+        idsOf({ ...completeEnv, OPENAI_API_KEY: undefined, ...half }),
+      ).toContain('model-provider-credentials');
+    }
   });
 
   it('treats an empty or whitespace-only value as unset', () => {
