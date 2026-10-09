@@ -3186,7 +3186,6 @@
       "option": "{name} ({count})"
     },
     "overview": {
-      "start-review": "Rozpocznij przegląd ({count})",
       "pipeline-title": "Droga wiedzy: od dokumentu do odpowiedzi czatu",
       "publication-description": "Opublikowane strony są dostępne w czacie. Dokumenty źródłowe mogą nadal być przeszukiwane.",
       "stages": {
@@ -3197,7 +3196,7 @@
       },
       "empty-documents-count": "{count} bez wyodrębnionej wiedzy",
       "unowned-count": "{count} bez właściciela",
-      "approved-share": "{percent}% stron do sprawdzenia i zatwierdzonych",
+      "approved-share": "{approved} z {total, plural, one {# strony} few {# stron} many {# stron} other {# strony}}",
       "awaiting-publication": "{count, plural, one {# zatwierdzona do opublikowania} few {# zatwierdzone do opublikowania} many {# zatwierdzonych do opublikowania} other {# zatwierdzone do opublikowania}}",
       "attention-title": "Wymaga uwagi",
       "unowned-title": "Strony bez właściciela",
@@ -3207,7 +3206,7 @@
       "finding-description": "Sprawdź problem i usuń jego przyczynę.",
       "attention-empty": "Nie ma problemów ani stron wymagających przypisania właściciela.",
       "ranking-title": "Gdzie leży najwięcej niesprawdzonej wiedzy",
-      "legend": "Zatwierdzone / do sprawdzenia · wspólna skala dla dokumentów",
+      "legend": "Wspólna skala dla wszystkich dokumentów",
       "coverage-counts": "{approved, plural, one {# zatwierdzona} few {# zatwierdzone} many {# zatwierdzonych} other {# zatwierdzone}} · {candidates} do sprawdzenia",
       "all-documents": "Wszystkie źródła ({count})",
       "ranking-empty": "Nie ma stron do sprawdzenia.",
@@ -3217,7 +3216,27 @@
       "clear-filter": "Wyczyść filtr przeglądu",
       "filtered-list": "Lista ograniczona filtrem z przeglądu",
       "no-pages-title": "Brak stron dla wybranego filtra",
-      "no-pages-description": "Zmień lub wyczyść filtr, aby zobaczyć pozostałe strony."
+      "no-pages-description": "Zmień lub wyczyść filtr, aby zobaczyć pozostałe strony.",
+      "next": {
+        "label": "Co teraz?",
+        "assign-owners": {
+          "title": "{count, plural, one {Przypisz właściciela do # strony} few {Przypisz właścicieli do # stron} many {Przypisz właścicieli do # stron} other {Przypisz właścicieli do # strony}}",
+          "description": "Strony bez właściciela nie da się zatwierdzić. Właściciel to osoba, która ręczy za treść strony.",
+          "action": "Przypisz właścicieli"
+        },
+        "review": {
+          "title": "{count, plural, one {Sprawdź # stronę} few {Sprawdź # strony} many {Sprawdź # stron} other {Sprawdź # strony}}",
+          "description": "Te strony mają właściciela i czekają na Twoją decyzję: zatwierdź je albo odrzuć.",
+          "action": "Otwórz Tryb przeglądu"
+        },
+        "publish": {
+          "title": "{count, plural, one {Opublikuj # zatwierdzoną stronę} few {Opublikuj # zatwierdzone strony} many {Opublikuj # zatwierdzonych stron} other {Opublikuj # zatwierdzonej strony}}",
+          "description": "Po opublikowaniu czat może odpowiadać na ich podstawie.",
+          "action": "Przejdź do publikacji"
+        }
+      },
+      "legend-approved": "zatwierdzone",
+      "legend-to-review": "do sprawdzenia"
     },
     "review-mode": {
       "title": "Tryb przeglądu",

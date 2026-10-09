@@ -3186,7 +3186,6 @@
       "option": "{name} ({count})"
     },
     "overview": {
-      "start-review": "Start review ({count})",
       "pipeline-title": "The knowledge journey: from documents to chat answers",
       "publication-description": "Published pages are available in chat. Source documents may still be searched.",
       "stages": {
@@ -3217,7 +3216,27 @@
       "clear-filter": "Clear overview filter",
       "filtered-list": "List narrowed by an overview filter",
       "no-pages-title": "No pages match this filter",
-      "no-pages-description": "Change or clear the filter to see the remaining pages."
+      "no-pages-description": "Change or clear the filter to see the remaining pages.",
+      "next": {
+        "label": "What now?",
+        "assign-owners": {
+          "title": "{count, plural, one {Assign an owner to # page} other {Assign owners to # pages}}",
+          "description": "A page without an owner cannot be approved. The owner is the person who vouches for what the page says.",
+          "action": "Assign owners"
+        },
+        "review": {
+          "title": "{count, plural, one {Review # page} other {Review # pages}}",
+          "description": "These pages have an owner and are waiting for your decision: approve or reject them.",
+          "action": "Open review mode"
+        },
+        "publish": {
+          "title": "{count, plural, one {Publish # approved page} other {Publish # approved pages}}",
+          "description": "Once published, chat can answer from them.",
+          "action": "Go to publishing"
+        }
+      },
+      "legend-approved": "approved",
+      "legend-to-review": "to review"
     },
     "review-mode": {
       "title": "Review mode",
