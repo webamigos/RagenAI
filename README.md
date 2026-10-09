@@ -35,6 +35,10 @@ npm run worker:dev   # while the worker runs
 Needs Node.js `^24.15.0 || >=26.0.0` and Docker; [Quick start](#-quick-start)
 has the details.
 
+Or try it without installing anything — one click, one OpenRouter key:
+
+[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/QufTr4?referralCode=0sAYuo&utm_medium=integration&utm_source=template&utm_campaign=generic)
+
 Built and maintained by **[Web Amigos](https://webamigos.pl/en?utm_source=github&utm_medium=readme&utm_campaign=ragen&utm_content=header)**.
 
 ---
@@ -217,6 +221,24 @@ building it yourself is a legitimate answer. Ragen is the better trade when you
 want those decisions already made — and documented — rather than made by you.
 
 ## 🚀 Quick start
+
+### One click on Railway
+
+[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/QufTr4?referralCode=0sAYuo&utm_medium=integration&utm_source=template&utm_campaign=generic)
+
+The template deploys the whole stack — web app, API, ingest worker, Docling,
+Ragen Brain (switched on), the MCP server, the admin panel and the token
+vault, with Postgres, Redis, Qdrant and an S3 bucket — and asks for one value,
+an [OpenRouter](https://openrouter.ai/keys) key. Every secret is generated for
+you. Claude Sonnet 5.5 answers, Claude Haiku 5.5 rephrases and summarises,
+`text-embedding-3-small` embeds. The first account you create becomes the
+platform administrator. PII masking (Presidio) and content moderation are not
+part of it, and mail is not configured until you add `RESEND_API_KEY` or
+`SMTP_*`. Back up `ENCRYPTION_MASTER_KEY` on the `web` service: thread messages
+are encrypted under it and nothing can recover it. What is in the template and
+why: [`docs/railway-template.md`](docs/railway-template.md).
+
+### On your own machine
 
 Don't have the repo yet:
 
