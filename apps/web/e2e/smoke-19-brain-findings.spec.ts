@@ -94,14 +94,12 @@ test('findings offer scoped actions, selected inferred relations, history groups
     }
     await page.setViewportSize({ width: 1440, height: 900 });
     await expect(
-      first.getByRole('button', { name: 'Dodaj zaznaczone powiązania' }),
+      first.getByRole('button', { name: /^Powiąż zaznaczone/ }),
     ).toHaveCount(0);
     await first
       .getByRole('checkbox', { name: `${prefix} 1`, exact: true })
       .check();
-    await first
-      .getByRole('button', { name: 'Dodaj zaznaczone powiązania' })
-      .click();
+    await first.getByRole('button', { name: /^Powiąż zaznaczone/ }).click();
     await expect
       .poll(async () =>
         db.knowledgeEdge.count({

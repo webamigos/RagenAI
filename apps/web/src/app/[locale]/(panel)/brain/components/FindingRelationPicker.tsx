@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import { TouchTarget } from '@ragenai/common-ui/TouchTarget';
 import { useTranslations } from 'next-intl';
 import type {
   BrainProposal,
@@ -22,6 +23,7 @@ export function FindingRelationPicker({
     selected.includes(target.publicId),
   );
   const chosen = { ...proposal, targets, outcome: current.outcome };
+  const allSelected = targets.length === proposal.targets.length;
   async function apply(): Promise<
     ProposalDecisionResult | Extract<ReviewResult, { success: false }>
   > {
@@ -58,6 +60,21 @@ export function FindingRelationPicker({
       {!current.outcome && (
         <fieldset className="mt-2 min-w-0 space-y-1">
           <legend className="sr-only">{t('select-relations')}</legend>
+          {proposal.targets.length > 1 && (
+            <button
+              type="button"
+              className="relative min-h-8 text-sm text-primary underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+              onClick={() =>
+                setSelected(
+                  allSelected ? [] : proposal.targets.map((x) => x.publicId),
+                )
+              }
+            >
+              <TouchTarget>
+                {t(allSelected ? 'select-none' : 'select-all')}
+              </TouchTarget>
+            </button>
+          )}
           {proposal.targets.map((target) => (
             <label
               key={target.publicId}
@@ -87,7 +104,7 @@ export function FindingRelationPicker({
           messageId={null}
           onChange={setCurrent}
           applyAction={apply}
-          applyLabel={t('add-relations')}
+          applyLabel={t('add-relations', { count: targets.length })}
         />
       )}
     </div>

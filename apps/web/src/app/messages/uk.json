@@ -2727,7 +2727,10 @@
       "relation-suggestions": "Suggested relations",
       "relation-basis": "These pages cite the same document. Check whether they should be linked; a shared source does not establish a relation.",
       "select-relations": "Select relations to review",
-      "add-relations": "Add selected relations"
+      "add-relations": "Add selected relations",
+      "severity-label": "Severity: {level}",
+      "select-all": "Select all",
+      "select-none": "Clear selection"
     },
     "page": {
       "owner": "Власник",

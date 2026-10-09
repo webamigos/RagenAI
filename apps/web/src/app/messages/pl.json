@@ -2727,7 +2727,10 @@
       "relation-suggestions": "Propozycje powiązań",
       "relation-basis": "Strony cytują ten sam dokument. Sprawdź, czy warto je powiązać; wspólne źródło nie potwierdza relacji.",
       "select-relations": "Wybierz powiązania do sprawdzenia",
-      "add-relations": "Dodaj zaznaczone powiązania"
+      "add-relations": "Powiąż zaznaczone ({count})",
+      "severity-label": "Ważność: {level}",
+      "select-all": "Zaznacz wszystkie",
+      "select-none": "Odznacz wszystkie"
     },
     "page": {
       "owner": "Właściciel",
