@@ -231,7 +231,16 @@ export default async function PanelLayout({ children }: Props) {
                 <SidebarLabel className="font-normal">
                   {t('nav.brain')}
                 </SidebarLabel>
-                <Badge variant="secondary" className="ml-auto">
+                {/*
+                  A brand tint, not `secondary`: that is the sidebar's own
+                  paper tint, so the chip read as plain text. In dark mode
+                  `text-primary` on the tint measures 2.4:1, hence the
+                  stronger tint and light text there (13:1 or better).
+                */}
+                <Badge
+                  variant="outline"
+                  className="ml-auto border-transparent bg-primary/10 px-1.5 py-px text-[10px] uppercase tracking-wide text-primary dark:bg-primary/40 dark:text-foreground"
+                >
                   {t('nav.brainBeta')}
                 </Badge>
               </SidebarItem>
