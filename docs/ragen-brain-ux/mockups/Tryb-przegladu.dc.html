@@ -1,0 +1,519 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="utf-8" />
+    <title>Tryb przeglądu po zmianach</title>
+    <script src="./support.js"></script>
+  </head>
+  <body>
+    <x-dc>
+      <helmet>
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700&amp;family=Inter:wght@400;500;600&amp;display=swap"
+        />
+        <style>
+          body {
+            margin: 0;
+            font-family: 'Inter', system-ui, sans-serif;
+            color: #1c1f2e;
+            background: #f3f4f9;
+          }
+          .h {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 700;
+            margin: 0;
+          }
+          .btn {
+            font:
+              600 14px 'Inter',
+              sans-serif;
+            border-radius: 8px;
+            padding: 10px 16px;
+            border: 1px solid #d5d8e6;
+            background: #fff;
+            color: #1c1f2e;
+            min-height: 44px;
+            box-sizing: border-box;
+            cursor: pointer;
+          }
+          .btn.p {
+            background: #3b4a9e;
+            border-color: #3b4a9e;
+            color: #fff;
+          }
+          .card {
+            background: #fff;
+            border: 1px solid #e3e5ef;
+            border-radius: 12px;
+          }
+          .chg {
+            font-size: 11px;
+            font-weight: 600;
+            background: #fff0cf;
+            color: #7a4b00;
+            border-radius: 999px;
+            padding: 2px 8px;
+            white-space: nowrap;
+          }
+          .mono {
+            font-family: ui-monospace, Menlo, monospace;
+            font-size: 13px;
+            background: #f3f4f9;
+            border-radius: 8px;
+            padding: 10px 12px;
+            line-height: 1.5;
+          }
+        </style>
+      </helmet>
+      <div style="display: flex; flex-wrap: wrap; min-height: 980px">
+        <aside
+          style="
+            width: 208px;
+            background: #fff;
+            border-right: 1px solid #e3e5ef;
+            padding: 20px 14px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            font-size: 14px;
+          "
+        >
+          <div style="font-weight: 600; font-size: 18px; margin-bottom: 12px">
+            Ragen.ai
+          </div>
+          <div
+            style="
+              background: #3b4a9e;
+              color: #fff;
+              text-align: center;
+              border-radius: 8px;
+              padding: 10px;
+              font-weight: 600;
+            "
+          >
+            Nowy czat
+          </div>
+          <div style="padding: 10px 6px; color: #3c4160">Szukaj</div>
+          <div style="padding: 8px 6px">Wątki</div>
+          <div style="padding: 8px 6px">Asystenci</div>
+          <div
+            style="
+              padding: 8px 6px;
+              font-weight: 600;
+              background: #eef0fb;
+              border-radius: 8px;
+            "
+          >
+            Brain
+          </div>
+          <div style="padding: 8px 6px">Baza wiedzy</div>
+        </aside>
+
+        <main
+          style="
+            flex: 999 1 640px;
+            min-width: 0;
+            padding: 24px 32px;
+            box-sizing: border-box;
+          "
+        >
+          <div
+            style="
+              max-width: 1240px;
+              display: flex;
+              flex-direction: column;
+              gap: 18px;
+            "
+          >
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                flex-wrap: wrap;
+                gap: 12px;
+              "
+            >
+              <div
+                style="
+                  display: flex;
+                  align-items: center;
+                  gap: 14px;
+                  flex-wrap: wrap;
+                  font-size: 14px;
+                  color: #5b607a;
+                "
+              >
+                <a href="#" style="color: #3b4a9e; text-decoration: none"
+                  >Brain</a
+                >/<a href="#" style="color: #3b4a9e; text-decoration: none"
+                  >Strony wiedzy</a
+                >/<b style="color: #1c1f2e">Przegląd</b>
+                <span class="chg">okruszki zamiast ← Ragen Brain</span>
+              </div>
+              <div
+                style="
+                  display: flex;
+                  align-items: center;
+                  gap: 14px;
+                  font-size: 13px;
+                  color: #5b607a;
+                  flex-wrap: wrap;
+                "
+              >
+                3 z 126 sprawdzonych
+                <div
+                  style="
+                    width: 140px;
+                    height: 8px;
+                    border-radius: 4px;
+                    background: #dfe2f0;
+                  "
+                >
+                  <div
+                    style="
+                      width: 3%;
+                      min-width: 6px;
+                      height: 8px;
+                      border-radius: 4px;
+                      background: #2f8f4e;
+                    "
+                  ></div>
+                </div>
+                <span
+                  >Skróty: <b>A</b> zatwierdź · <b>R</b> odrzuć · <b>J</b>/<b
+                    >K</b
+                  >
+                  dalej/wstecz</span
+                >
+              </div>
+            </div>
+
+            <h1 class="h" style="font-size: 36px">
+              Tryb przeglądu
+              <span class="chg" style="vertical-align: middle"
+                >bez opisu zakładki nad tytułem</span
+              >
+            </h1>
+
+            <div
+              style="
+                display: flex;
+                gap: 20px;
+                flex-wrap: wrap;
+                align-items: flex-start;
+              "
+            >
+              <aside
+                class="card"
+                style="
+                  flex: 0 0 250px;
+                  padding: 16px;
+                  display: flex;
+                  flex-direction: column;
+                  gap: 12px;
+                  font-size: 14px;
+                "
+              >
+                <b>Kolejka (3)</b>
+                <span class="chg">tylko strony z właścicielem</span>
+                <div
+                  style="
+                    border: 1px solid #d5d8e6;
+                    border-radius: 8px;
+                    padding: 9px 12px;
+                    color: #3c4160;
+                  "
+                >
+                  Według dokumentu
+                </div>
+                <div style="font-size: 12px; color: #5b607a">
+                  Sample FAQ: support and availability.md · 3
+                </div>
+                <div
+                  style="
+                    background: #eef0fb;
+                    border-radius: 8px;
+                    padding: 9px 12px;
+                    font-weight: 600;
+                  "
+                >
+                  Support
+                </div>
+                <div style="padding: 9px 12px">Data Storage</div>
+                <div style="padding: 9px 12px">Conversation Deletion</div>
+              </aside>
+
+              <section
+                class="card"
+                style="
+                  flex: 999 1 520px;
+                  min-width: 0;
+                  padding: 22px 24px;
+                  display: flex;
+                  flex-direction: column;
+                  gap: 16px;
+                "
+              >
+                <div
+                  style="
+                    display: flex;
+                    gap: 10px;
+                    align-items: center;
+                    flex-wrap: wrap;
+                  "
+                >
+                  <h2 class="h" style="font-size: 34px">Support</h2>
+                  <span class="chg" style="background: #fdebd0; color: #7a4b00"
+                    >Do sprawdzenia</span
+                  ><span
+                    style="
+                      font-size: 12px;
+                      font-weight: 600;
+                      border: 1px solid #d5d8e6;
+                      border-radius: 999px;
+                      padding: 2px 10px;
+                    "
+                    >Proces</span
+                  >
+                </div>
+                <div
+                  style="
+                    background: #eef0fb;
+                    color: #2b3a8f;
+                    border-radius: 8px;
+                    padding: 10px 14px;
+                    font-size: 14px;
+                    line-height: 1.5;
+                  "
+                >
+                  Sprawdź, czy każde twierdzenie zgadza się z cytatem. Twoje
+                  oceny ✓ i ✕ na razie służą tylko do orientacji i nie są
+                  zapisywane. Zapisze się dopiero decyzja po prawej.
+                  <span class="chg">baner zamiast dopisku w tekście</span>
+                </div>
+
+                <div
+                  style="
+                    display: grid;
+                    grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr);
+                    gap: 20px;
+                    font-size: 14px;
+                    line-height: 1.55;
+                    border-top: 1px solid #e3e5ef;
+                    padding-top: 16px;
+                  "
+                >
+                  <div>
+                    <div
+                      style="
+                        font-size: 12px;
+                        color: #5b607a;
+                        font-weight: 600;
+                        text-transform: uppercase;
+                        letter-spacing: 0.4px;
+                        margin-bottom: 6px;
+                      "
+                    >
+                      Twierdzenie 1
+                    </div>
+                    Support is available on weekdays between 9:00 and 17:00
+                    Central European Time, excluding Polish public holidays.
+                  </div>
+                  <div>
+                    <div
+                      style="
+                        font-size: 12px;
+                        color: #5b607a;
+                        font-weight: 600;
+                        text-transform: uppercase;
+                        letter-spacing: 0.4px;
+                        margin-bottom: 6px;
+                      "
+                    >
+                      Cytat źródłowy · Sample FAQ · wersja 1
+                    </div>
+                    <div class="mono">
+                      Weekdays between 9:00 and 17:00 Central European Time,
+                      excluding Polish public holidays.
+                    </div>
+                    <div style="display: flex; gap: 10px; margin-top: 10px">
+                      <button
+                        class="btn"
+                        style="border-color: #2f8f4e; color: #14532d"
+                      >
+                        ✓ Zgadza się</button
+                      ><button class="btn" style="color: #8a2d2d">
+                        ✕ Do poprawy</button
+                      ><span class="chg" style="align-self: center"
+                        >podpisy przy ikonach</span
+                      >
+                    </div>
+                  </div>
+                </div>
+                <div
+                  style="
+                    display: grid;
+                    grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr);
+                    gap: 20px;
+                    font-size: 14px;
+                    line-height: 1.55;
+                    border-top: 1px solid #e3e5ef;
+                    padding-top: 16px;
+                  "
+                >
+                  <div>
+                    <div
+                      style="
+                        font-size: 12px;
+                        color: #5b607a;
+                        font-weight: 600;
+                        text-transform: uppercase;
+                        letter-spacing: 0.4px;
+                        margin-bottom: 6px;
+                      "
+                    >
+                      Twierdzenie 2
+                    </div>
+                    A first response to a support ticket arrives within one
+                    business day. A ticket marked as blocking production is
+                    answered within four business hours.
+                  </div>
+                  <div>
+                    <div
+                      style="
+                        font-size: 12px;
+                        color: #5b607a;
+                        font-weight: 600;
+                        text-transform: uppercase;
+                        letter-spacing: 0.4px;
+                        margin-bottom: 6px;
+                      "
+                    >
+                      Cytat źródłowy · Sample FAQ · wersja 1
+                    </div>
+                    <div class="mono">
+                      A first response arrives within one business day. A ticket
+                      marked as blocking production is answered within four
+                      business hours.
+                    </div>
+                    <div style="display: flex; gap: 10px; margin-top: 10px">
+                      <button
+                        class="btn"
+                        style="border-color: #2f8f4e; color: #14532d"
+                      >
+                        ✓ Zgadza się</button
+                      ><button class="btn" style="color: #8a2d2d">
+                        ✕ Do poprawy
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <aside
+                class="card"
+                style="
+                  flex: 0 0 270px;
+                  padding: 18px;
+                  display: flex;
+                  flex-direction: column;
+                  gap: 14px;
+                  font-size: 14px;
+                "
+              >
+                <div>
+                  <b>1. Właściciel</b>
+                  <span class="chg">krok 1 wykonany przed przeglądem</span>
+                  <div
+                    style="
+                      margin-top: 8px;
+                      border: 1px solid #d5d8e6;
+                      border-radius: 8px;
+                      padding: 9px 12px;
+                    "
+                  >
+                    Joe Doe
+                  </div>
+                </div>
+                <div>
+                  <b>2. Twierdzenia</b>
+                  <div
+                    style="
+                      margin-top: 8px;
+                      height: 8px;
+                      border-radius: 4px;
+                      background: #dfe2f0;
+                    "
+                  >
+                    <div
+                      style="
+                        width: 50%;
+                        height: 8px;
+                        border-radius: 4px;
+                        background: #2f8f4e;
+                      "
+                    ></div>
+                  </div>
+                  <div style="font-size: 13px; color: #5b607a; margin-top: 6px">
+                    1 z 2 potwierdzone
+                  </div>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 8px">
+                  <b>3. Decyzja</b>
+                  <button class="btn p" style="opacity: 0.55">
+                    Zatwierdź i opublikuj
+                  </button>
+                  <div
+                    style="font-size: 12px; color: #8a2d2d; margin-top: -4px"
+                  >
+                    Potwierdź jeszcze 1 twierdzenie.
+                    <span class="chg">powód przy przycisku</span>
+                  </div>
+                  <button class="btn">Tylko zatwierdź</button>
+                  <button
+                    class="btn"
+                    style="border-color: #e3a3a3; color: #8a2d2d"
+                  >
+                    Odrzuć
+                  </button>
+                </div>
+                <div
+                  style="
+                    border-top: 1px solid #e3e5ef;
+                    padding-top: 12px;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 6px;
+                  "
+                >
+                  <span
+                    >Powiązania: 2 ·
+                    <a href="#" style="color: #3b4a9e">Pokaż w grafie</a></span
+                  ><a href="#" style="color: #3b4a9e">Otwórz stronę</a>
+                </div>
+                <div style="display: flex; gap: 8px">
+                  <button class="btn" style="flex: 1">Poprzednia</button
+                  ><button class="btn" style="flex: 1">Następna</button>
+                </div>
+              </aside>
+            </div>
+          </div>
+        </main>
+      </div>
+    </x-dc>
+    <script
+      type="text/x-dc"
+      data-dc-script
+      data-props='{"$preview":{"width":1440,"height":980}}'
+    >
+      class Component extends DCLogic {
+      renderVals() {
+      return {};
+      }
+      }
+    </script>
+  </body>
+</html>
