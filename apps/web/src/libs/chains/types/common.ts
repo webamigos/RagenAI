@@ -12,7 +12,8 @@ export interface BaseChatChainInput {
 }
 
 export interface BaseChatChainModels {
-  contentModerator: ModerationInstance;
+  /** Absent where the deployment has no moderation key; see `createModerationInstance`. */
+  contentModerator: ModerationInstance | undefined;
   answerGenerator: LanguageModelV4;
 }
 

@@ -126,24 +126,38 @@ export interface ModerationResult {
   categories: Record<string, boolean>;
 }
 
-export const createModerationInstance = (orgApiKey?: string) => {
+export interface ModerationInstance {
+  invoke(args: { input: string }): Promise<{ results: ModerationResult[] }>;
+}
+
+/**
+ * The OpenAI moderation client, or `undefined` when this deployment has no key
+ * for it.
+ *
+ * It used to throw instead, and every chain initializer called it eagerly — so
+ * an installation whose model provider is not OpenAI (the Railway template
+ * runs on one `OPENROUTER_API_KEY`) could not hold a conversation at all,
+ * whether or not any organization had content moderation switched on.
+ * `evaluateModeration()` already treats a missing moderator as "enabled but
+ * not configured": it logs that and lets the turn through, which is the same
+ * answer apps/api gives through its lazy factory.
+ */
+export const createModerationInstance = (
+  orgApiKey?: string,
+): ModerationInstance | undefined => {
   const apiKey =
     orgApiKey ||
     process.env.OPENAI_MODERATION_KEY ||
     process.env.OPENAI_API_KEY;
 
   if (!apiKey) {
-    throw new Error(
-      'Cannot create moderation instance: set OPENAI_MODERATION_KEY or OPENAI_API_KEY',
-    );
+    return undefined;
   }
 
   const openaiClient = new OpenAI({ apiKey });
 
   return {
-    async invoke({ input }: { input: string }): Promise<{
-      results: ModerationResult[];
-    }> {
+    async invoke({ input }) {
       const response = await openaiClient.moderations.create({
         input,
       });
@@ -157,5 +171,3 @@ export const createModerationInstance = (orgApiKey?: string) => {
     },
   };
 };
-
-export type ModerationInstance = ReturnType<typeof createModerationInstance>;
