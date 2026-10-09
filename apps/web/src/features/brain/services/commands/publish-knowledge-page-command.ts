@@ -13,7 +13,7 @@ import type {
   ReviewError,
   ReviewResult,
 } from '../../contracts/brain-review.types';
-import { normalizeAccess, sameAccess } from '../../utils/normalize-access';
+import { planPublication, principalIds } from '../../utils/plan-publication';
 import { isOrgMember } from './decide-on-knowledge-page';
 import { startFindingsReconcile } from './start-findings-reconcile';
 
@@ -85,25 +85,9 @@ export async function publishKnowledgePageCommand(
       ) {
         return { error: 'conflict' };
       }
-      if (page.status !== 'APPROVED') {
-        return { error: 'invalid-status' };
-      }
-      if (page.ownerId === null) {
-        return { error: 'owner-required' };
-      }
-      if (!(await isOrgMember(tx, orgId, page.ownerId))) {
-        return { error: 'owner-not-member' };
-      }
-      if (page.accessibleBy.length === 0) {
-        return { error: 'no-access' };
-      }
-      const userIds = page.accessibleBy
-        .filter((p) => p.startsWith('user:'))
-        .map((p) => p.slice(5));
-      const teamIds = page.accessibleBy
-        .filter((p) => p.startsWith('team:'))
-        .map((p) => p.slice(5));
-      const [members, teams] = await Promise.all([
+      const { userIds, teamIds } = principalIds(page.accessibleBy);
+      const [ownerIsMember, members, teams] = await Promise.all([
+        page.ownerId === null ? false : isOrgMember(tx, orgId, page.ownerId),
         userIds.length
           ? tx.member.findMany({
               where: { organizationId: orgId, userId: { in: userIds } },
@@ -117,23 +101,23 @@ export async function publishKnowledgePageCommand(
             })
           : [],
       ]);
-      const valid = normalizeAccess(orgId, page.accessibleBy, {
+      const plan = planPublication(orgId, page, {
+        ownerIsMember,
         memberIds: new Set(members.map((m) => m.userId)),
         teamIds: new Set(teams.map((t) => t.id)),
       });
-      if (valid === null || !sameAccess(valid, page.accessibleBy)) {
-        return { error: 'invalid-access' };
+      if ('error' in plan) {
+        return plan;
       }
-
-      const published = publishedHash(page.publishedFile?.metadata);
-      if (page.publishedAt && published === page.contentHash) {
-        const complete = page.publishedFile?.embeddingStatus === 'COMPLETED';
+      if (!plan.changed) {
         return {
           generation: page.publicationGeneration,
           changed: false,
-          queue: !complete,
+          queue: plan.queue,
         };
       }
+      // planPublication refused a page with no owner, so it has one here.
+      const ownerId = page.ownerId!;
 
       const generation = page.publicationGeneration + 1;
       const metadata = {
@@ -154,7 +138,7 @@ export async function publishKnowledgePageCommand(
             isBinaryFile: false,
             isUploaded: true,
             uploadedAt: new Date(),
-            ownerId: page.ownerId,
+            ownerId,
             isOrgWide: page.accessibleBy.includes(`org:${orgId}`),
             embeddingStatus: 'STARTED',
             metadata,
@@ -171,7 +155,7 @@ export async function publishKnowledgePageCommand(
             // The file's sharing follows the page on every publication, not
             // only the first: a page withdrawn, narrowed and published again
             // otherwise kept an org-wide file, and a former owner kept it too.
-            ownerId: page.ownerId,
+            ownerId,
             isOrgWide: page.accessibleBy.includes(`org:${orgId}`),
             embeddingStatus: 'STARTED',
             metadata,
@@ -247,17 +231,4 @@ export function vehicleFileName(title: string): string {
       .trim()
       .slice(0, 200) || 'Brain'
   );
-}
-
-function publishedHash(metadata: unknown): string | null {
-  if (metadata && typeof metadata === 'object') {
-    const block = (metadata as Record<string, unknown>)[
-      PUBLISHED_FILE_METADATA_KEY
-    ];
-    if (block && typeof block === 'object' && 'contentHash' in block) {
-      const hash = (block as { contentHash: unknown }).contentHash;
-      return typeof hash === 'string' ? hash : null;
-    }
-  }
-  return null;
 }

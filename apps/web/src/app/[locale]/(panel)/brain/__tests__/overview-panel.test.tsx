@@ -24,7 +24,7 @@ const data: BrainOverview = {
   candidates: 123,
   approved: 3,
   published: 1,
-  approvedUnpublished: 2,
+  awaitingPublication: 2,
   unownedCandidates: 123,
   openFindings: { ORPHAN: 2 },
   topDocuments: [
@@ -56,6 +56,10 @@ describe('BrainOverviewPanel', () => {
     expect(
       screen.getByTestId('overview-published').querySelector('a'),
     ).toHaveAttribute('href', '/brain?published=true&lang=pol');
+    // The same number the pages list puts on "Opublikuj zatwierdzone".
+    expect(
+      screen.getByRole('link', { name: '2 zatwierdzone do opublikowania' }),
+    ).toHaveAttribute('href', '/brain?status=APPROVED&lang=pol');
     expect(
       screen.getByRole('link', { name: /Strony bez właściciela/ }),
     ).toHaveAttribute('href', '/brain?status=CANDIDATE&owner=none&lang=pol');
@@ -85,7 +89,7 @@ describe('BrainOverviewPanel', () => {
       approved: 0,
       published: 0,
       unownedCandidates: 0,
-      approvedUnpublished: 0,
+      awaitingPublication: 0,
       openFindings: {},
       topDocuments: [],
     });

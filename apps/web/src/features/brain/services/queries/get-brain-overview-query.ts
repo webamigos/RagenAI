@@ -8,6 +8,7 @@ import {
 } from './brain-language-scope';
 import { getBrainDocumentsQuery } from './get-brain-documents-query';
 import { getBrainStatusCountsQuery } from './get-brain-status-counts-query';
+import { getPublicationBacklogQuery } from './get-publication-backlog-query';
 
 /** Global pages and per-file coverage have different denominators: a page
  * citing two documents belongs once to the pipeline, once to each file. */
@@ -24,7 +25,7 @@ export async function getBrainOverviewQuery(
     documents,
     counts,
     published,
-    approvedUnpublished,
+    backlog,
     unownedCandidates,
     findings,
     cited,
@@ -34,9 +35,7 @@ export async function getBrainOverviewQuery(
     db.knowledgePage.count({
       where: { ...pageWhere, publishedAt: { not: null } },
     }),
-    db.knowledgePage.count({
-      where: { ...pageWhere, status: 'APPROVED', publishedAt: null },
-    }),
+    getPublicationBacklogQuery(orgId),
     db.knowledgePage.count({
       where: { ...pageWhere, status: 'CANDIDATE', ownerId: null },
     }),
@@ -67,7 +66,7 @@ export async function getBrainOverviewQuery(
     candidates: counts.pages.CANDIDATE,
     approved: counts.pages.APPROVED,
     published,
-    approvedUnpublished,
+    awaitingPublication: backlog.pending,
     unownedCandidates,
     openFindings,
     topDocuments: documents

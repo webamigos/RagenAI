@@ -3206,7 +3206,7 @@
       "empty-documents-count": "{count} without extracted knowledge",
       "unowned-count": "{count} without an owner",
       "approved-share": "{percent}% of pages to review and approved",
-      "awaiting-publication": "{count} approved pages awaiting publication",
+      "awaiting-publication": "{count, plural, one {# approved page to publish} other {# approved pages to publish}}",
       "attention-title": "Needs attention",
       "unowned-title": "Pages without an owner",
       "unowned-description": "They cannot be approved. Assign an owner before review.",

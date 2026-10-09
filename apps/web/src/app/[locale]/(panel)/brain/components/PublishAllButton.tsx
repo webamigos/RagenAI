@@ -16,13 +16,13 @@ import { publishAllApprovedAction } from '../actions';
  * did in three numbers, so "nothing happened" and "everything was refused"
  * never look the same.
  */
-export function PublishAllButton({ approved }: { approved: number }) {
+export function PublishAllButton({ toPublish }: { toPublish: number }) {
   const t = useTranslations('brain.publish-all');
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [confirming, setConfirming] = useState(false);
 
-  if (approved === 0) {
+  if (toPublish === 0) {
     return null;
   }
   const run = () =>
@@ -61,7 +61,7 @@ export function PublishAllButton({ approved }: { approved: number }) {
         disabled={pending}
         onClick={() => setConfirming(true)}
       >
-        {t('button', { count: approved })}
+        {t('button', { count: toPublish })}
       </Button>
       <ConfirmDialog
         open={confirming}

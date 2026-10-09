@@ -185,10 +185,10 @@ export function BrainOverviewPanel({
               {stage.key === 'published' && (
                 <Link
                   className="text-sm text-primary underline underline-offset-4"
-                  href={href('/brain?status=APPROVED&published=false')}
+                  href={href('/brain?status=APPROVED')}
                 >
                   {t('overview.awaiting-publication', {
-                    count: data.approvedUnpublished,
+                    count: data.awaitingPublication,
                   })}
                 </Link>
               )}

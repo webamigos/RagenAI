@@ -3206,7 +3206,7 @@
       "empty-documents-count": "{count} bez wyodrębnionej wiedzy",
       "unowned-count": "{count} bez właściciela",
       "approved-share": "{percent}% stron do sprawdzenia i zatwierdzonych",
-      "awaiting-publication": "{count, plural, one {# zatwierdzona czeka na publikację} few {# zatwierdzone czekają na publikację} many {# zatwierdzonych czeka na publikację} other {# zatwierdzone czekają na publikację}}",
+      "awaiting-publication": "{count, plural, one {# zatwierdzona do opublikowania} few {# zatwierdzone do opublikowania} many {# zatwierdzonych do opublikowania} other {# zatwierdzone do opublikowania}}",
       "attention-title": "Wymaga uwagi",
       "unowned-title": "Strony bez właściciela",
       "unowned-description": "Nie da się ich zatwierdzić. Przypisz właściciela przed przeglądem.",

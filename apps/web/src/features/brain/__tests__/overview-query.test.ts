@@ -11,6 +11,8 @@ vi.mock(
   '@/features/subscriptions/services/queries/get-effective-features-query',
   () => ({ isFeatureEnabledQuery: vi.fn().mockResolvedValue(false) }),
 );
+const backlog = vi.hoisted(() => ({ getPublicationBacklogQuery: vi.fn() }));
+vi.mock('../services/queries/get-publication-backlog-query', () => backlog);
 const { getBrainOverviewQuery } =
   await import('../services/queries/get-brain-overview-query');
 
@@ -22,6 +24,10 @@ beforeEach(() => {
   db.knowledgePage.groupBy.mockResolvedValue([]);
   db.knowledgeFinding.groupBy.mockResolvedValue([]);
   db.knowledgePage.count.mockResolvedValue(0);
+  backlog.getPublicationBacklogQuery.mockResolvedValue({
+    pending: 0,
+    refused: {},
+  });
 });
 
 describe('getBrainOverviewQuery', () => {
@@ -32,11 +38,21 @@ describe('getBrainOverviewQuery', () => {
       candidates: 0,
       approved: 0,
       published: 0,
-      approvedUnpublished: 0,
+      awaitingPublication: 0,
       unownedCandidates: 0,
       openFindings: {},
       topDocuments: [],
     });
+  });
+
+  it('counts what publishing all would write, organization-wide', async () => {
+    backlog.getPublicationBacklogQuery.mockResolvedValue({
+      pending: 2,
+      refused: { 'owner-required': 1 },
+    });
+    const overview = await getBrainOverviewQuery('org');
+    expect(overview.awaitingPublication).toBe(2);
+    expect(backlog.getPublicationBacklogQuery).toHaveBeenCalledWith('org');
   });
 
   it('keeps page totals separate from per-file citations, and ranks by candidates', async () => {
