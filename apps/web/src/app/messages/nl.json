@@ -1715,7 +1715,8 @@
     "unknown-error": "Er is een onverwachte fout opgetreden bij het verwerken van je verzoek - probeer het opnieuw",
     "llm-api-error": "Het verzoek aan de API van het taalmodel is mislukt",
     "usage-limit-exceeded": "Je organisatie heeft de maandelijkse gebruikslimiet bereikt - deze wordt aan het begin van volgende maand gereset. Vraag een beheerder van de organisatie om de limiet te verhogen.",
-    "rate-limit-exceeded": "Je team verstuurt sneller verzoeken dan de limiet per minuut toestaat - wacht even en probeer het opnieuw."
+    "rate-limit-exceeded": "Je team verstuurt sneller verzoeken dan de limiet per minuut toestaat - wacht even en probeer het opnieuw.",
+    "model-not-configured": "Het geselecteerde model is niet ingesteld op deze server, dus er is geen antwoord gegenereerd. Kies een ander model of vraag een beheerder de inloggegevens voor de provider toe te voegen"
   },
   "onboarding": {
     "first-step": "Laten we een korte rondleiding starten zodat je de applicatie effectief kunt gebruiken. Je maakt kennis met de belangrijkste functies die je werk makkelijker maken. Laten we beginnen!",

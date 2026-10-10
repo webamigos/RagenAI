@@ -14,4 +14,11 @@ export type ChainErrorCode =
   | 'unknown-error'
   | 'llm-api-error'
   | 'usage-limit-exceeded'
+  /**
+   * The turn's model is offered but this deployment cannot call it: its route
+   * names a provider whose credentials are not set, or there is no route.
+   * Raised before the stream starts, so the reader sees why instead of an
+   * empty answer under a full sources panel.
+   */
+  | 'model-not-configured'
   | 'rate-limit-exceeded';

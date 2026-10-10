@@ -1715,7 +1715,8 @@
     "unknown-error": "Pri spracovaní vašej požiadavky došlo k neočakávanej chybe - skúste to znova",
     "llm-api-error": "Požiadavka na API jazykového modelu zlyhala",
     "usage-limit-exceeded": "Vaša organizácia dosiahla mesačný limit využitia - resetuje sa na začiatku budúceho mesiaca. Požiadajte administrátora organizácie o jeho zvýšenie.",
-    "rate-limit-exceeded": "Váš tím odosiela požiadavky rýchlejšie, než povoľuje limit za minútu - chvíľu počkajte a skúste to znova."
+    "rate-limit-exceeded": "Váš tím odosiela požiadavky rýchlejšie, než povoľuje limit za minútu - chvíľu počkajte a skúste to znova.",
+    "model-not-configured": "Vybraný model nie je na tomto serveri nastavený, preto odpoveď nevznikla. Vyberte iný model alebo požiadajte správcu o doplnenie prístupových údajov k jeho poskytovateľovi"
   },
   "onboarding": {
     "first-step": "Začnime rýchlym sprievodcom, ktorý vám pomôže efektívne používať našu aplikáciu. Predstaví vám kľúčové funkcie, ktoré uľahčia vašu prácu. Poďme na to!",

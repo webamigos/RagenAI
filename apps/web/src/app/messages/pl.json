@@ -1715,7 +1715,8 @@
     "unknown-error": "Wystąpił nieoczekiwany błąd podczas przetwarzania Twojego zapytania - spróbuj ponownie",
     "llm-api-error": "Wystąpił błąd w zapytaniu do modelu językowego",
     "usage-limit-exceeded": "Twoja organizacja osiągnęła miesięczny limit użycia - zostanie zresetowany na początku następnego miesiąca. Poproś administratora organizacji o jego zwiększenie.",
-    "rate-limit-exceeded": "Twój zespół wysyła zapytania szybciej, niż pozwala limit na minutę - odczekaj chwilę i spróbuj ponownie."
+    "rate-limit-exceeded": "Twój zespół wysyła zapytania szybciej, niż pozwala limit na minutę - odczekaj chwilę i spróbuj ponownie.",
+    "model-not-configured": "Wybrany model nie jest skonfigurowany na tym serwerze, więc odpowiedź nie powstała. Wybierz inny model albo poproś administratora o dodanie danych dostępowych do jego dostawcy"
   },
   "onboarding": {
     "first-step": "Rozpocznijmy szybki przewodnik, który pomoże Ci efektywnie korzystać z naszej aplikacji. Dzięki niemu poznasz kluczowe funkcje ułatwiające pracę. Zaczynamy!",
