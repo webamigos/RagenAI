@@ -37,7 +37,7 @@ has the details.
 
 Or try it without installing anything — one click, one OpenRouter key:
 
-[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/QufTr4?referralCode=0sAYuo&utm_medium=integration&utm_source=template&utm_campaign=generic)
+[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/ragen?referralCode=0sAYuo&utm_medium=integration&utm_source=template&utm_campaign=generic)
 
 Built and maintained by **[Web Amigos](https://webamigos.pl/en?utm_source=github&utm_medium=readme&utm_campaign=ragen&utm_content=header)**.
 
@@ -224,7 +224,7 @@ want those decisions already made — and documented — rather than made by you
 
 ### One click on Railway
 
-[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/QufTr4?referralCode=0sAYuo&utm_medium=integration&utm_source=template&utm_campaign=generic)
+[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/ragen?referralCode=0sAYuo&utm_medium=integration&utm_source=template&utm_campaign=generic)
 
 The template deploys the whole stack — web app, API, ingest worker, Docling,
 Ragen Brain (switched on), the MCP server, the admin panel and the token
