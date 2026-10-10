@@ -1715,7 +1715,8 @@
     "unknown-error": "Une erreur inattendue s'est produite lors du traitement de ta demande - veuillez réessayer",
     "llm-api-error": "La requête à l'API du modèle de langage a échoué",
     "usage-limit-exceeded": "Ton organisation a atteint sa limite d'utilisation mensuelle - elle sera réinitialisée au début du mois prochain. Demande à un administrateur de l'organisation de l'augmenter.",
-    "rate-limit-exceeded": "Votre équipe envoie des requêtes plus vite que sa limite par minute ne l'autorise - patientez un instant et réessayez."
+    "rate-limit-exceeded": "Votre équipe envoie des requêtes plus vite que sa limite par minute ne l'autorise - patientez un instant et réessayez.",
+    "model-not-configured": "Le modèle sélectionné n'est pas configuré sur ce serveur, aucune réponse n'a donc été générée. Choisissez un autre modèle ou demandez à un administrateur d'ajouter les identifiants de son fournisseur"
   },
   "onboarding": {
     "first-step": "Commençons un guide rapide pour t'aider à utiliser efficacement notre application. Cela te présentera les fonctionnalités clés qui faciliteront ton travail. Allons-y !",

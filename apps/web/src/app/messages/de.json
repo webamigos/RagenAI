@@ -1715,7 +1715,8 @@
     "unknown-error": "Bei der Verarbeitung deiner Anfrage ist ein unerwarteter Fehler aufgetreten - bitte versuche es erneut",
     "llm-api-error": "Die Anfrage an die API des Sprachmodells ist fehlgeschlagen",
     "usage-limit-exceeded": "Deine Organisation hat ihr monatliches Nutzungslimit erreicht - es wird zu Beginn des nächsten Monats zurückgesetzt. Bitte einen Organisationsadministrator, es zu erhöhen.",
-    "rate-limit-exceeded": "Dein Team sendet Anfragen schneller, als das Limit pro Minute erlaubt - warte einen Moment und versuche es erneut."
+    "rate-limit-exceeded": "Dein Team sendet Anfragen schneller, als das Limit pro Minute erlaubt - warte einen Moment und versuche es erneut.",
+    "model-not-configured": "Das ausgewählte Modell ist auf diesem Server nicht eingerichtet, daher wurde keine Antwort erzeugt. Wähle ein anderes Modell oder bitte einen Administrator, die Zugangsdaten für dessen Anbieter hinzuzufügen"
   },
   "onboarding": {
     "first-step": "Lass uns mit einer kurzen Anleitung beginnen, die dir hilft, unsere Anwendung effektiv zu nutzen. Sie zeigt dir die wichtigsten Funktionen, die deine Arbeit erleichtern. Los geht's!",

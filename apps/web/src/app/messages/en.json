@@ -1715,7 +1715,8 @@
     "unknown-error": "An unexpected error occurred while processing your request - please try again",
     "llm-api-error": "The language model API request failed",
     "usage-limit-exceeded": "Your organization has reached its monthly usage limit - it resets at the start of next month. Ask an organization administrator to raise it.",
-    "rate-limit-exceeded": "Your team is sending requests faster than its per-minute limit allows - please wait a moment and try again."
+    "rate-limit-exceeded": "Your team is sending requests faster than its per-minute limit allows - please wait a moment and try again.",
+    "model-not-configured": "The selected model is not set up on this server, so no answer was generated. Choose another model, or ask an administrator to add the credentials for its provider"
   },
   "onboarding": {
     "first-step": "Let's start a quick guide to help you effectively use our application. This will introduce you to the key features that will make your work easier. Let's begin!",

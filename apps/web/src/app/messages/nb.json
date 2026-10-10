@@ -1715,7 +1715,8 @@
     "unknown-error": "Det oppstod en uventet feil under behandlingen av forespørselen – prøv igjen",
     "llm-api-error": "API-forespørselen til språkmodellen mislyktes",
     "usage-limit-exceeded": "Organisasjonen din har nådd den månedlige forbruksgrensen – den tilbakestilles ved starten av neste måned. Be en administrator i organisasjonen om å øke den.",
-    "rate-limit-exceeded": "Teamet ditt sender forespørsler raskere enn grensen per minutt tillater – vent litt og prøv igjen."
+    "rate-limit-exceeded": "Teamet ditt sender forespørsler raskere enn grensen per minutt tillater – vent litt og prøv igjen.",
+    "model-not-configured": "Den valgte modellen er ikke satt opp på denne serveren, så det ble ikke generert noe svar. Velg en annen modell, eller be en administrator legge til påloggingsinformasjonen for leverandøren"
   },
   "onboarding": {
     "first-step": "La oss starte en kort veiledning som hjelper deg å bruke applikasjonen effektivt. Den viser deg de viktigste funksjonene som gjør arbeidet ditt enklere. La oss begynne!",

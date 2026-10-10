@@ -68,6 +68,8 @@ import { applyPiiUnmaskToTools } from '@/libs/mcp/client';
 import { connectorIconUrl } from '@/features/connectors/utils/provider-icons';
 import { toRetrievalEvent } from '@/features/threads/utils/retrieval-event';
 import { readPublicRuntimeConfig } from '@/config/public-runtime-config';
+import { assertModelIsServed } from '@/libs/llm/model-preflight';
+import { ModelNotConfiguredError } from '@/libs/chains/errors';
 
 /**
  * Load thread documents from database for a specific thread
@@ -436,6 +438,25 @@ export async function streamEvents({
             maxDocumentsToRetrieve: rawSettings.maxDocumentsToRetrieve,
             voiceId: rawSettings.voiceId,
           };
+
+          // Before the user's message is stored and before retrieval, like
+          // the usage ceilings above. The chain resolves its model lazily,
+          // inside the stream, so a model without provider credentials used
+          // to fail after the sources were sent — an empty answer, an
+          // unhandled rejection, and nothing for the reader to act on.
+          //
+          // Images reach the model only from the request's inline documents
+          // (the database copy carries no `imageData`, and the public chain
+          // takes none), so those decide whether the vision fallback is the
+          // model to check.
+          await assertModelIsServed(effectiveModel, {
+            organizationId: orgId,
+            hasImages:
+              mode === AssistantMode.INTERNAL &&
+              (userMessage.threadDocuments ?? []).some((doc) =>
+                Boolean(doc.imageData),
+              ),
+          });
 
           // Build conversation history from thread record (no separate DB query needed)
           const conv_history =
@@ -1276,6 +1297,14 @@ export async function streamEvents({
               new UsageLimitError(['cost']),
               controller,
             );
+          } else if (error instanceof ModelNotConfiguredError) {
+            // A deployment fault, not a crash: a warning with the detail an
+            // operator needs, and the event the reader sees.
+            logger.warn(
+              { orgId, detail: error.originalErrorMessage },
+              'Chat turn refused — its model is not configured on this deployment',
+            );
+            new SseExceptionFilter().handleError(error, controller);
           } else {
             const exceptionFilter = new SseExceptionFilter();
             logger.error({ err: error }, 'Error processing SSE');

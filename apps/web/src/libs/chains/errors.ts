@@ -55,3 +55,25 @@ export class LLMApiError extends ChainError {
     super(message, 'llm-api-error', originalErrorMessage);
   }
 }
+
+/**
+ * The model chosen for a turn cannot be called on this deployment.
+ *
+ * `originalErrorMessage` carries the gateway's own sentence — the model, the
+ * provider and the *names* of the variables it needs, never their values — and
+ * the client appends it to the translated text, so whoever reads it can tell an
+ * administrator exactly what to set.
+ */
+export class ModelNotConfiguredError extends ChainError {
+  constructor(
+    public readonly modelId: string,
+    detail: string,
+  ) {
+    super(
+      `Model "${modelId}" is not configured on this deployment`,
+      'model-not-configured',
+      `${modelId}: ${detail}`,
+    );
+    this.name = 'ModelNotConfiguredError';
+  }
+}
