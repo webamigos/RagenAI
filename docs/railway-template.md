@@ -13,14 +13,16 @@ rebuild it from here, and change it here first. That is the same arrangement as
 the rest of Railway configuration, which stays in the dashboard until
 `.railway/railway.ts` is adopted ([ADR-47](adrs/47-railway-configuration-lives-in-the-dashboard.md)).
 
-> **Status (2026-10-10): generated as the template `QufTr4` (workspace
-> *Web Amigos*, unpublished in the marketplace; the share link works) and
-> deployed from that link end to end on 2.52.1.** Section 6 says what that
-> proved. The images it needs are **2.52.1 or later**: earlier ones cannot chat
-> without an OpenAI key (#1619), cannot switch Brain on at install (#1620), and
-> on 2.52.0 a new chat opens on `gemini-3-flash-preview`, which has no route on
-> an OpenRouter-only install, so the first question gets no answer and no error
-> (#1622).
+> **Status (2026-10-10): published in the Railway marketplace as
+> [`railway.com/deploy/ragen`](https://railway.com/deploy/ragen) (category
+> AI/ML, workspace *Web Amigos*), and deployed from it end to end on 2.52.1.**
+> Publishing changed the template's code from the generated `QufTr4` to
+> `ragen`, and the old link returns 404: link to the published code only.
+> Section 6 says what the test deploys proved. The images it needs are
+> **2.52.1 or later**: earlier ones cannot chat without an OpenAI key (#1619),
+> cannot switch Brain on at install (#1620), and on 2.52.0 a new chat opens on
+> `gemini-3-flash-preview`, which has no route on an OpenRouter-only install,
+> so the first question gets no answer and no error (#1622).
 
 ## 1. What a deployer gets
 
@@ -331,7 +333,7 @@ install without Presidio.
    composer accepts one.
 2. Measure idle memory and cost; Docling dominates both.
 
-**What *Generate Template from Project* dropped** (template `QufTr4`,
+**What *Generate Template from Project* dropped** (template `ragen`, generated as `QufTr4`,
 2026-10-09) — check each of these after regenerating:
 
 - **Group membership.** The groups came across empty, so a deploy from the
@@ -345,6 +347,16 @@ install without Presidio.
 The pre-deploy command, restart policies and healthchecks did come across.
 Redis and Qdrant pull from Docker Hub, so a Docker Hub incident fails a fresh
 deploy of the template even when every Ragen image (GHCR) pulls fine.
+
+**Publishing asks for a description on every variable** — 146 of them,
+Railway's own Postgres and Redis variables included — plus a category, an
+overview in Railway's fixed structure and an icon. The composer stages each
+edit as a change set (`templateChangeSetStage` on `graphql/internal`, a patch
+of `config.services.<id>.variables.<NAME>.description`) and *Apply* commits
+it, so all 144 missing descriptions went in as one patch from the browser
+session. The public API has no mutation for it. The overview and category are
+saved by the marketplace page itself, not through the public `template` query,
+which showed them empty until the template was published.
 
 **Qdrant needs `PORT=6333`.** Railway's healthcheck probes `PORT`, and without
 one it probes a port of its own choosing; Qdrant listens on 6333 regardless, so
