@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { MissingCredentialsError } from '@ragenai/llm-gateway';
 
 // A thread whose model routes to a provider with no credentials. Everything
@@ -201,12 +201,15 @@ async function eventsOf(
     });
 }
 
-function turn() {
+type UserMessage = Parameters<typeof streamEvents>[0]['userMessage'];
+
+function turn(userMessage: Partial<UserMessage> = {}) {
   return streamEvents({
     publicThreadId: 'thread-1',
-    userMessage: { prompt: 'What is in my documents?' } as Parameters<
-      typeof streamEvents
-    >[0]['userMessage'],
+    userMessage: {
+      prompt: 'What is in my documents?',
+      ...userMessage,
+    } as UserMessage,
     orgId: 'org-1',
     mode: AssistantMode.INTERNAL,
     filteredMode: ChatType.RAG,
@@ -279,5 +282,61 @@ describe('a turn whose model is configured', () => {
         (e) => e.event === 'error' && e.data?.code === 'model-not-configured',
       ),
     ).toBe(false);
+  });
+});
+
+describe('a turn with an image on a text-only model', () => {
+  beforeEach(() => {
+    vi.stubEnv('MULTIMODAL_TEXT_ONLY_MODELS', 'gemini-3-flash-preview');
+    vi.stubEnv('MULTIMODAL_FALLBACK_MODEL', 'gpt-4o');
+    resolveModel.mockImplementation(async (modelId: string) => {
+      if (modelId === 'gpt-4o') {
+        throw new MissingCredentialsError('openai', ['OPENAI_API_KEY']);
+      }
+      return { id: modelId };
+    });
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    resolveModel.mockReset();
+  });
+
+  it('checks the vision fallback the chain will call, not the thread model', async () => {
+    const events = await eventsOf(
+      await turn({
+        threadDocuments: [
+          {
+            name: 'chart.png',
+            content: '',
+            size: 10,
+            type: 'image/png',
+            imageData: 'data:image/png;base64,AAAA',
+          },
+        ],
+      }),
+    );
+
+    expect(resolveModel).toHaveBeenCalledWith('gpt-4o', expect.anything());
+    expect(events.find((e) => e.event === 'error')?.data).toMatchObject({
+      code: 'model-not-configured',
+      originalErrorMessage:
+        'gpt-4o: no credentials for openai: set OPENAI_API_KEY',
+    });
+    expect(createAndStoreMessageCommand).not.toHaveBeenCalled();
+  });
+
+  it('checks the thread model when the turn carries no image', async () => {
+    vi.mocked(createAndStoreMessageCommand).mockRejectedValue(
+      new Error('stop here'),
+    );
+
+    await eventsOf(await turn());
+
+    expect(resolveModel).toHaveBeenCalledWith(
+      'gemini-3-flash-preview',
+      expect.anything(),
+    );
+    expect(resolveModel).not.toHaveBeenCalledWith('gpt-4o', expect.anything());
   });
 });

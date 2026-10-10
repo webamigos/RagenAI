@@ -444,7 +444,19 @@ export async function streamEvents({
           // inside the stream, so a model without provider credentials used
           // to fail after the sources were sent — an empty answer, an
           // unhandled rejection, and nothing for the reader to act on.
-          await assertModelIsServed(effectiveModel, orgId);
+          //
+          // Images reach the model only from the request's inline documents
+          // (the database copy carries no `imageData`, and the public chain
+          // takes none), so those decide whether the vision fallback is the
+          // model to check.
+          await assertModelIsServed(effectiveModel, {
+            organizationId: orgId,
+            hasImages:
+              mode === AssistantMode.INTERNAL &&
+              (userMessage.threadDocuments ?? []).some((doc) =>
+                Boolean(doc.imageData),
+              ),
+          });
 
           // Build conversation history from thread record (no separate DB query needed)
           const conv_history =

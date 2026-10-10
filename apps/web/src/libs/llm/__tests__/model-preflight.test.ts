@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   MissingCredentialsError,
   UnknownModelError,
@@ -13,7 +13,11 @@ vi.mock('@ragenai/llm-gateway', async (importOriginal) => {
 });
 
 import { ModelNotConfiguredError } from '@/libs/chains/errors';
-import { asModelNotConfigured, assertModelIsServed } from '../model-preflight';
+import {
+  asModelNotConfigured,
+  assertModelIsServed,
+  modelForTurn,
+} from '../model-preflight';
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -22,7 +26,7 @@ beforeEach(() => {
 describe('assertModelIsServed', () => {
   it('passes a model the gateway can resolve', async () => {
     await expect(
-      assertModelIsServed('gpt-4o-mini', 'org-1'),
+      assertModelIsServed('gpt-4o-mini', { organizationId: 'org-1' }),
     ).resolves.toBeUndefined();
 
     expect(resolveModel).toHaveBeenCalledWith('gpt-4o-mini', {
@@ -116,5 +120,72 @@ describe('asModelNotConfigured', () => {
     const refusal = new ModelNotConfiguredError('x', 'detail');
 
     expect(asModelNotConfigured(refusal, 'y')).toBe(refusal);
+  });
+});
+
+/**
+ * A turn with images on a text-only model is answered by the vision fallback,
+ * inside the stream. The preflight has to check that model, not the one the
+ * thread asked for.
+ */
+describe('a turn with images', () => {
+  beforeEach(() => {
+    vi.stubEnv('MULTIMODAL_TEXT_ONLY_MODELS', 'text-only-model');
+    vi.stubEnv('MULTIMODAL_FALLBACK_MODEL', 'gemini-3-flash-preview');
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it('checks the vision fallback, and names it when its provider has no keys', async () => {
+    resolveModel.mockRejectedValueOnce(
+      new MissingCredentialsError('vertex', [
+        'VERTEX_PROJECT',
+        'VERTEX_LOCATION',
+      ]),
+    );
+
+    await expect(
+      assertModelIsServed('text-only-model', { hasImages: true }),
+    ).rejects.toMatchObject({
+      code: 'model-not-configured',
+      modelId: 'gemini-3-flash-preview',
+    });
+    expect(resolveModel).toHaveBeenCalledWith(
+      'gemini-3-flash-preview',
+      expect.anything(),
+    );
+  });
+
+  it('does not refuse a turn the fallback can answer', async () => {
+    await expect(
+      assertModelIsServed('text-only-model', { hasImages: true }),
+    ).resolves.toBeUndefined();
+
+    expect(resolveModel).toHaveBeenCalledTimes(1);
+    expect(resolveModel).not.toHaveBeenCalledWith(
+      'text-only-model',
+      expect.anything(),
+    );
+  });
+
+  it('checks the requested model when the turn has no images', async () => {
+    await assertModelIsServed('text-only-model', { hasImages: false });
+
+    expect(resolveModel).toHaveBeenCalledWith(
+      'text-only-model',
+      expect.anything(),
+    );
+  });
+
+  it('keeps a model that is not listed as text-only', () => {
+    expect(modelForTurn('vision-model', true)).toBe('vision-model');
+  });
+
+  it('swaps nothing when no fallback is configured', () => {
+    vi.stubEnv('MULTIMODAL_FALLBACK_MODEL', '');
+
+    expect(modelForTurn('text-only-model', true)).toBe('text-only-model');
   });
 });
