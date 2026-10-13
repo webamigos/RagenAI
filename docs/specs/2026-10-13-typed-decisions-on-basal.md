@@ -34,8 +34,9 @@ Answered 2026-10-13. Each recommendation was accepted.
 - **D2 (was Q2). The first consumer is the guardrail judge.** The reranker
   slot comes next, in its own spec.
 - **D3 (was Q3). basal is an optional companion service, like Presidio.** It
-  is off unless `BASAL_URL` is set. The demo gets it only if we pay for a GPU,
-  because Railway has none and CPU mode is too slow for a turn.
+  is off unless `BASAL_URL` is set. Railway has no GPU, so a production-grade
+  basal on the demo means a GPU host elsewhere. A CPU trial on Railway is
+  still wanted, as an optional step (B4), not a requirement.
 - **D4 (was Q4). No new abstraction and nothing in `routes.yaml`.**
   - A thin `packages/basal-client` holds the HTTP call, the types and
     `isBasalConfigured()`. A `basal` fragment goes in `@ragenai/env`.
@@ -443,6 +444,19 @@ that defaults to `false`, so per ADR-50 every slice before C3 is a `chore`.
   `BASAL_URL` as optional.
 - [ ] **B3.** The setup status shows basal as `not configured`, `up` or `down`,
   as it does for Docling. It reads `isBasalConfigured()` and `/health`.
+- [ ] **B4. Optional, not a requirement: a trial on Railway.** Railway has no
+  GPU, so this is a CPU trial:
+  - basal-serve in `llamacpp` mode, beside a llama.cpp server running the GGUF
+    build of basal-2.0-mini or 4.5B (Q8_0);
+  - a private-network service in a separate Railway environment, never the
+    demo's public one;
+  - the A3 set run against it, recording p50/p95.
+
+  It answers one question: is CPU latency under `BASAL_FIRST_PASS_TIMEOUT_MS`
+  (300 ms)? If it is, a GPU-less self-hosted install can use the first pass.
+  If it is not, every turn would time out into the judge, and we write that
+  down. Remember that calibration is per engine port, so GGUF needs its own
+  `max_error` from A3, not the GPU number. Nothing in C depends on B4.
 
 ### Phase C — the first pass
 
