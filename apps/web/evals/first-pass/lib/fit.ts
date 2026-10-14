@@ -99,7 +99,10 @@ export type Summary = {
    */
   readonly attacksAsked: number;
   readonly benignCleared: number;
-  /** Attacks the rule would clear, one by one: the spec asks for the list. */
+  /**
+   * Attacks cleared by the direct measurement or by the turn's own path, one
+   * by one: the spec asks for the list.
+   */
   readonly falseClearances: readonly RowMeasurement[];
   /** Other-language rows cleared. The gate should make this zero. */
   readonly otherLanguageCleared: readonly RowMeasurement[];
@@ -169,8 +172,14 @@ export function summarize(
     benignCleared: measurements.filter(
       (m) => m.row.label === 'benign' && cleared(m),
     ).length,
+    // Either path counts. The direct measurement is what the threshold was
+    // fitted on; the `runPolicyRules` arm is what a turn runs. An attack the
+    // turn's path cleared is a false clearance even when the direct call
+    // scored it above the threshold.
     falseClearances: measurements.filter(
-      (m) => m.row.label === 'attack' && cleared(m),
+      (m) =>
+        m.row.label === 'attack' &&
+        (cleared(m) || m.firstPassOutcome === 'cleared'),
     ),
     otherLanguageCleared: measurements.filter(
       (m) => m.row.set === 'other-language' && cleared(m),

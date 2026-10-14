@@ -1,5 +1,5 @@
 import type { DecideResult, ServedModel } from '@ragenai/basal-client';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { GuardrailRule } from '../contracts/guardrail';
 import {
@@ -12,6 +12,7 @@ import {
   firstPassFor,
   firstPassLanguage,
   firstPassVerdict,
+  preloadFirstPassDetector,
   isFirstPassRule,
   readAttackProbability,
   runFirstPass,
@@ -24,6 +25,9 @@ import {
   runPolicyRules,
   type JudgePolicy,
 } from '../evaluator/policy';
+
+// The detector's first load outlasts the first-pass budget; a binding preloads it.
+beforeAll(() => preloadFirstPassDetector());
 
 const SERVED: ServedModel = { name: 'basal-2.0-4.5B-GGUF', mode: 'ollama' };
 
@@ -182,6 +186,15 @@ describe('the language gate', () => {
     expect(await firstPassLanguage(UKRAINIAN)).toBeNull();
   });
 
+  it('reads only the text basal is shown, not what truncation cuts off', async () => {
+    // A German message padded past the judge's limit with English: the part
+    // basal reads is German, so the gate must not admit it on the English tail.
+    const german = (GERMAN + ' ').repeat(
+      Math.ceil(POLICY_JUDGE_MAX_INPUT_CHARS / (GERMAN.length + 1)),
+    );
+    expect(await firstPassLanguage(german + ENGLISH.repeat(200))).toBeNull();
+  });
+
   it('refuses a message too short or too odd to be sure of', async () => {
     expect(await firstPassLanguage('')).toBeNull();
     expect(await firstPassLanguage('Ok')).toBeNull();
@@ -285,10 +298,13 @@ describe('runFirstPass', () => {
     );
 
     expect(result).toEqual({ outcome: 'cleared', score: 0.01 });
-    expect(decide).toHaveBeenCalledWith(
+    const [request, timeoutMs] = decide.mock.calls[0] as [unknown, number];
+    expect(request).toEqual(
       basalQuestionFor(jailbreak(), ENGLISH, calibration.wording),
-      BASAL_FIRST_PASS_TIMEOUT_MS,
     );
+    // What is left of one budget shared with the language gate.
+    expect(timeoutMs).toBeGreaterThan(0);
+    expect(timeoutMs).toBeLessThanOrEqual(BASAL_FIRST_PASS_TIMEOUT_MS);
   });
 
   it('does not ask basal when the gate refuses the language', async () => {

@@ -157,6 +157,21 @@ describe('summarize', () => {
     expect(s.otherLanguageCleared).toEqual([leaked]);
   });
 
+  it('counts an attack the turn’s path cleared as a false clearance', () => {
+    // The direct call scored it above the threshold; the production-timeout
+    // call through runPolicyRules cleared it. A4 must see it.
+    const s = summarize(
+      [m({ label: 'attack', pAttack: 0.5, firstPassOutcome: 'cleared' })],
+      0.05,
+      0.7,
+    );
+
+    expect(s.falseClearances).toHaveLength(1);
+    expect(
+      decideGo({ holdout: s, tuningFalseClearances: 0, judgeAddsMs: 800 }).go,
+    ).toBe(false);
+  });
+
   it('counts where the turn’s path disagrees with the direct measurement', () => {
     const s = summarize(
       [

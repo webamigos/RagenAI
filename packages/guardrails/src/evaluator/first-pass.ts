@@ -286,6 +286,18 @@ function loadDetector(): Promise<Detector> {
 }
 
 /**
+ * Load the detector now rather than on the first turn.
+ *
+ * The first load takes longer than the first-pass budget (about 650 ms in a
+ * test run), so a turn that triggers it times out to the judge. A binding that
+ * supplies a first pass calls this once at start-up; nothing else needs to.
+ * Never rejects: a detector that cannot load fails the gate, turn by turn.
+ */
+export async function preloadFirstPassDetector(): Promise<void> {
+  await loadDetector().catch(() => undefined);
+}
+
+/**
  * `pl` or `en` when eld is confident the message is one, otherwise `null`.
  *
  * Unreliable or another language fails, which is the conservative choice: a
@@ -295,7 +307,9 @@ function loadDetector(): Promise<Detector> {
 export async function firstPassLanguage(
   text: string,
 ): Promise<FirstPassLanguage | null> {
-  const trimmed = text.trim();
+  // The same truncated text basal is shown, so the gate cannot pass a message
+  // on the strength of words basal never reads.
+  const trimmed = judgeInputText(text).trim();
   if (trimmed === '') {
     return null;
   }
@@ -353,27 +367,24 @@ export function firstPassVerdict(input: {
   return { outcome: 'cleared', score: pAttack };
 }
 
+const LATE = Symbol('late');
+
 /**
- * The served model, or `null` if it is not known within the turn's wait.
- *
- * The client caches it for five minutes, so this is a lookup on every turn but
- * the first. On that first one, a slow `GET /v1/models` must not hold the turn
- * past the first-pass timeout: the read carries on, fills the cache for the
- * next turn, and this turn goes to the judge.
+ * `promise`, or `LATE` if it has not settled within `timeoutMs`. A rejection
+ * reads as `fallback`. The promise carries on either way: a served-model read
+ * or a detector load that misses this turn fills its cache for the next one.
  */
-async function servedModelWithin(
-  firstPass: FirstPass,
+async function within<T, F>(
+  promise: Promise<T>,
   timeoutMs: number,
-): Promise<ServedModel | null> {
+  fallback: F,
+): Promise<T | F | typeof LATE> {
   let timer: ReturnType<typeof setTimeout> | undefined;
-  const late = new Promise<null>((resolve) => {
-    timer = setTimeout(() => resolve(null), timeoutMs);
+  const late = new Promise<typeof LATE>((resolve) => {
+    timer = setTimeout(() => resolve(LATE), Math.max(0, timeoutMs));
   });
   try {
-    return await Promise.race([
-      firstPass.servedModel().catch(() => null),
-      late,
-    ]);
+    return await Promise.race([promise.catch(() => fallback), late]);
   } finally {
     clearTimeout(timer);
   }
@@ -389,18 +400,38 @@ export async function runFirstPass(
   firstPass: FirstPass,
   calibration: FirstPassCalibration,
 ): Promise<FirstPassResult> {
-  if ((await firstPassLanguage(text)) === null) {
+  // One budget for the whole first pass, gate included. The detector's first
+  // load is a 2 MB import; a turn that arrives while it is still loading must
+  // not wait longer for it than it would wait for basal.
+  const startedAt = Date.now();
+  const remaining = () =>
+    BASAL_FIRST_PASS_TIMEOUT_MS - (Date.now() - startedAt);
+
+  const language = await within(
+    firstPassLanguage(text),
+    BASAL_FIRST_PASS_TIMEOUT_MS,
+    null,
+  );
+  if (language === LATE) {
+    return { outcome: 'timeout' };
+  }
+  if (language === null) {
     return { outcome: 'gated' };
   }
   const request = basalQuestionFor(rule, text, calibration.wording);
   if (request === null) {
     return { outcome: 'gated' };
   }
+  if (remaining() <= 0) {
+    return { outcome: 'timeout' };
+  }
   try {
-    const [result, served] = await Promise.all([
-      firstPass.decide(request, BASAL_FIRST_PASS_TIMEOUT_MS),
-      servedModelWithin(firstPass, BASAL_FIRST_PASS_TIMEOUT_MS),
+    const [result, servedOrLate] = await Promise.all([
+      firstPass.decide(request, remaining()),
+      within(firstPass.servedModel(), remaining(), null),
     ]);
+    // Not known in time reads as not known: the turn goes to the judge.
+    const served = servedOrLate === LATE ? null : servedOrLate;
     return firstPassVerdict({
       result,
       served,

@@ -32,6 +32,7 @@ import {
   firstPassFor,
   firstPassLanguage,
   policyThresholdFor,
+  preloadFirstPassDetector,
   readAttackProbability,
   runPolicyRules,
   type BasalJailbreakWording,
@@ -127,6 +128,19 @@ async function main(): Promise<void> {
         'a holdout run takes --tuning-false-clearances from the tuning report',
       );
     }
+    // NaN compares false with everything, so a typo here would read as zero
+    // tuning false clearances, or as a judge slow enough to matter: a `go`
+    // nobody earned.
+    const tuningFalse = Number(args['tuning-false-clearances']);
+    if (!Number.isInteger(tuningFalse) || tuningFalse < 0) {
+      fail('--tuning-false-clearances is a non-negative integer');
+    }
+    if (
+      args['judge-adds-ms'] !== undefined &&
+      !Number.isFinite(Number(args['judge-adds-ms']))
+    ) {
+      fail('--judge-adds-ms is a number of milliseconds');
+    }
     fixedClearMax = Number(args['clear-max']);
     if (!Number.isFinite(fixedClearMax)) {
       fail('--clear-max is a number');
@@ -164,6 +178,10 @@ async function main(): Promise<void> {
   if (probed.outcome !== 'answered' || readAttackProbability(probed) === null) {
     fail(`basal did not answer the probe: ${JSON.stringify(probed)}`);
   }
+
+  // As a binding does at start-up: the detector's first load outlasts the
+  // first-pass budget and would time out the first row of the turn's path.
+  await preloadFirstPassDetector();
 
   // 1. The judge, once per row, through the loop a turn runs.
   const judgements = new Map<

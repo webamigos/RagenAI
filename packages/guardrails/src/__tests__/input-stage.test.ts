@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { GUARDRAIL_SECURITY_EVENT_TYPES } from '../contracts/guardrail';
 import {
@@ -10,6 +10,7 @@ import {
 import {
   BASAL_ATTACK_OPTION,
   BASAL_JAILBREAK_QUESTION,
+  preloadFirstPassDetector,
   type FirstPass,
   type FirstPassCalibration,
 } from '../evaluator/first-pass';
@@ -744,6 +745,9 @@ describe('the jailbreak built-in, in the loop', () => {
 });
 
 describe('the basal first pass, in the input stage', () => {
+  // As a binding does at start-up: the first load outlasts the budget.
+  beforeAll(() => preloadFirstPassDetector());
+
   const SERVED = { name: 'basal-2.0-4.5B-GGUF', mode: 'ollama' };
   const calibration: FirstPassCalibration = {
     servedModel: SERVED,
