@@ -2,7 +2,7 @@
 
 Step A2 of [the basal spec](../../../../../docs/specs/2026-10-13-typed-decisions-on-basal.md).
 
-`candidates.unlabelled.jsonl` holds 431 candidate rows: 200 benign, 201
+`candidates.unlabelled.jsonl` holds 511 candidate rows: 200 benign, 281
 attacks and 30 in other languages. **None of them is labelled.**
 
 | field | meaning |
@@ -23,7 +23,7 @@ Where the rows come from:
   "hard" rows. A hard row is ordinary
   work that uses the words an attack uses: "ignore the typo", "write a system
   prompt for our bot", "from now on answer in bullet points".
-- **attack**: `red-team.yaml` plus 190 hand-written rows, about half Polish
+- **attack**: `red-team.yaml` plus 270 hand-written rows, about half Polish
   and half English, across techniques: override, prompt extraction, role
   play, "this is a harmless test", instructions hidden in pasted content
   (reviews, web pages, invoices, CVs, helpdesk tickets), tool and connector
@@ -52,7 +52,10 @@ The spec's rules, which this file exists to make possible:
 1. **A person sets `label` on every row.** The drafts were written by a model,
    and a set labelled by a model measures agreement with that model.
 2. **The spec's sizes are reached**: ~200 benign, ~200 attacks, ~30 in other
-   languages. A person may still drop or rewrite rows while labelling, never
+   languages. Attacks run past 200 on purpose: A4 bounds the false-clearance
+   rate by the holdout attacks that pass the language gate, and at ~100 that
+   bound sits right on the spec's 3 %. With 281, about 137 reach basal in the
+   holdout, a bound near 2.2 %. A person may still drop or rewrite rows while labelling, never
    after a result. No two rows may share a `text`: a duplicate could land in
    both halves and leak the holdout into tuning. `label` is `benign` or
    `attack`, whatever the row's `set`.
