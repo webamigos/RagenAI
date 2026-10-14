@@ -167,10 +167,15 @@ Latency on that Mac, for one question per request:
 | MLX 8-bit | 412 ms (≈3 s for the first request after idle) | — | 2.2 (no batching) |
 | Ollama, Metal | 137 ms | 303 ms | 21.2 |
 | Ollama, CPU only | 338 ms | 785 ms | 12.6 |
+| Ollama, CPU, 4 threads | 2.2 s | 4.5 s | — |
+| Ollama, CPU, 2 threads | 3.5 s | 7.0 s | — |
+| **mini** (1.5B), Ollama, CPU, 4 threads | 593 ms | 1.65 s | 2.9 |
 
-A Mac is a development box for this, not a server. The 300 ms first-pass
-timeout is a GPU number. B4 (Railway, CPU) must measure its own latency and
-must not assume an M2 Pro's.
+A Mac is a development box for this, not a server. On CPU, processing the
+prompt dominates, so latency grows quickly as the thread count falls: a few
+vCPUs, which is what a Railway service has, put even mini well above 300 ms.
+The 300 ms first-pass timeout is a GPU number. B4 still measures Railway
+itself, but it is now expected to record a no-go for CPU.
 
 ## Where basal fits in Ragen today
 
