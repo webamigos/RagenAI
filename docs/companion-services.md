@@ -150,6 +150,53 @@ open http://localhost:5001/ui
 
 **CPU-only mode**: The Docker image uses CPU-only inference. Digital PDFs work well; scanned/image-heavy PDFs are slower but functional. OCR is available but slower than GPU.
 
+### basal (guardrail first pass, optional)
+
+basal-serve is a small typed-decision model that may **clear** the
+`jailbreak-detection` rule before the judge model is asked, and never convict
+one ([spec](specs/2026-10-13-typed-decisions-on-basal.md)). It is off unless
+`BASAL_URL` is set, and an organization uses it only with the
+`guardrailFirstPass` feature key on. Down, slow or unsure all mean the judge
+is asked, exactly as without basal; the setup page reports a basal that does
+not answer.
+
+**Linux with an NVIDIA GPU**: the `basal` Compose profile, on port **5004**.
+The weights are downloaded at first start into the `basal_models` volume, at
+the commit you name, and the entrypoint refuses anything but a full commit
+hash:
+
+```bash
+BASAL_MODEL_REVISION=<40-character commit> docker compose --profile basal up -d
+# BASAL_URL=http://localhost:5004 in .env.local
+```
+
+`BASAL_MODEL` (default `Remek/basal-2.0-4.5B`), `BASAL_SERVE_MODE` (default
+`fast`, which compiles for several minutes on first start) and
+`BASAL_SERVE_ARGS` (default `--template-prefix off`, which upstream prescribes
+for the 4.5B model only) are read from the environment. The image is in
+`infra/basal/`.
+
+**macOS**: Docker has no GPU there, so run basal natively with MLX:
+
+```bash
+uv venv --python 3.12 ~/basal-mlx && source ~/basal-mlx/bin/activate
+uv pip install "basal[mlx] @ https://github.com/rkinas/basal/archive/refs/tags/v2.0.0.tar.gz"
+basal-serve --model Remek/basal-2.0-4.5B-MLX-8bit --mode mlx --host 127.0.0.1 --port 5004
+```
+
+**No authentication.** basal-serve has none, so it must stay on a private
+network or behind a proxy; `BASAL_API_KEY` is sent as a bearer token for that
+proxy. The text it is sent is already masked by Presidio, but it is still
+customer text.
+
+**A threshold belongs to one served model.** The first pass clears against a
+P(attack) threshold fitted on our own labelled data for one model on one
+engine: the same weights under MLX, Ollama and the CUDA engine have different
+calibrations. The client compares the served model's name and engine with the
+fitted one and stops clearing on a mismatch. A change it cannot see, such as
+weights replaced in place, is an upgrade: turn `guardrailFirstPass` off first,
+re-run the A3 measurement, then turn it back on.
+
 ### Ragen API (`apps/api`)
 
 Public API service built with NestJS. Since [ADR-21](adrs/21-monorepo-and-api-decoupling.md) it lives **in this repo** as the `@ragenai/api` workspace — not in a separate checkout. The standalone `ragen-api` repo is archived as the historical record.
@@ -229,7 +276,8 @@ instrumentation is a no-op. See
 # 1. Start infrastructure (from the repo root)
 npm run ragen:up:full            # Postgres, Qdrant, Redis, Docling
 #                                  (PII masking adds Presidio: --profile pii;
-#                                   self-hosted object storage adds RustFS: --profile s3)
+#                                   self-hosted object storage adds RustFS: --profile s3;
+#                                   the guardrail first pass adds basal: --profile basal, NVIDIA only)
 
 # 2. Start apps/web
 npm run dev                      # http://localhost:3000
@@ -281,6 +329,7 @@ producers before they are anything else.
 | Qdrant                        | 6333      | Always                                          |
 | RustFS (S3 API)               | **59000** | `--profile s3` (9000 inside the network)        |
 | RustFS console                | **59001** | `--profile s3` (9001 inside the network)        |
+| basal-serve                   | **5004**  | Guardrail first pass, `--profile basal`, NVIDIA (8000 inside the network) |
 
 Every published port is overridable — `POSTGRES_PORT`, `REDIS_PORT` and so on —
 and only the *published* mapping moved: inside the Compose network each service

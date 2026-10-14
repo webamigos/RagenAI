@@ -1,5 +1,6 @@
 import 'server-only';
 
+import { checkBasalHealth, isBasalConfigured } from '@ragenai/basal-client';
 import db from '@ragenai/prisma-client';
 import { logger } from '@/app/lib/utils/logger';
 
@@ -66,6 +67,28 @@ export async function getSetupStatusQuery(): Promise<SetupStatus> {
       values: { since: Date.parse(parser.since) },
       example: 'docker compose ps docling',
     });
+  }
+
+  // basal, when this installation has one (basal spec, B3). Not configured
+  // says nothing, as Presidio's absence says nothing: it is optional. Down is
+  // `recommended` for the same reason as Docling's: nothing breaks, the
+  // guardrail first pass falls through to the judge model and every turn
+  // waits for it as it would without basal.
+  if (isBasalConfigured()) {
+    const basal = await checkBasalHealth({
+      url: process.env.BASAL_URL!,
+      ...(process.env.BASAL_API_KEY
+        ? { apiKey: process.env.BASAL_API_KEY }
+        : {}),
+    });
+    if (basal === 'down') {
+      report.findings.push({
+        id: 'basal-unavailable',
+        severity: 'recommended',
+        vars: ['BASAL_URL'],
+        example: 'docker compose --profile basal ps basal',
+      });
+    }
   }
 
   return { report, database, adminExists, claimed };

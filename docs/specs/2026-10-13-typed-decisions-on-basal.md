@@ -535,18 +535,26 @@ that defaults to `false`, so per ADR-50 every slice before C3 is a `chore`.
 
 ### Phase B — run it locally
 
-- [ ] **B1.** `infra/basal/` (a Dockerfile pinned to the basal version from A4,
+- [x] **B1.** `infra/basal/` (a Dockerfile pinned to the basal version from A4,
   with weights downloaded at start into a volume, by a pinned revision and
   checked against its digest) and a `basal` profile in
   `docker-compose.yml` with an NVIDIA device reservation. Nothing has
   `depends_on` on it.
-- [ ] **B2.** `docs/companion-services.md` gains a basal section: the Compose
+- [x] **B2.** `docs/companion-services.md` gains a basal section: the Compose
   profile on Linux with NVIDIA; native `basal-serve --mode mlx` on macOS,
   where Docker has no GPU; the port; the private-network warning; and the
   pairing of a served model with its fitted threshold. The `create-ragen-app` README lists
   `BASAL_URL` as optional.
-- [ ] **B3.** The setup status shows basal as `not configured`, `up` or `down`,
+- [x] **B3.** The setup status shows basal as `not configured`, `up` or `down`,
   as it does for Docling. It reads `isBasalConfigured()` and `/health`.
+  *B1–B3 done 2026-10-14.* The image pins engine v2.0.0 and torch 2.11.0
+  (cu128); the weights' commit is `BASAL_MODEL_REVISION`, which the entrypoint
+  refuses unless it is a full hash, and which becomes part of the served
+  model's name, so other weights stop the first pass clearing on the first
+  answer. Until A4 picks the model, the engine pin is the launch version, not
+  A4's. The setup page has no up/down panel to extend, so B3 follows Docling:
+  a `basal-unavailable` finding when `BASAL_URL` is set and `/health` does not
+  answer, through `checkBasalHealth` in basal-client. Not run on a GPU here.
 - [ ] **B4. Optional, not a requirement: a trial on Railway.** Railway has no
   GPU, so this is a CPU trial:
   - basal-serve in `llamacpp` mode, beside a llama.cpp server running the GGUF
