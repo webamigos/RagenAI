@@ -8,6 +8,7 @@ maintain around them — and not `packages/`, because nothing imports them.
 |---|---|---|
 | `docling/` | IBM Docling parser used by the ingest worker (`DOCUMENT_PARSER=docling`, the default) | its own Railway service |
 | `presidio/analyzer/` | Presidio analyzer with Polish recognizers, for optional PII masking (ADR-24) | its own Railway service |
+| `basal/` | basal-serve, the optional typed-decision model for the guardrail first pass (`BASAL_URL`); NVIDIA only, behind the `basal` Compose profile | local Compose, or a GPU host of your own |
 | `llm-gateway/` | `routes.yaml`, the source of truth for which models exist (ADR-49) | mounted read-only into every app container (`docker-compose.fullapp.yml`) |
 | `otel/` | OpenTelemetry Collector config for the optional local observability stack | local only |
 | `temporal/` | Dynamic config for a Temporal server — **read by nothing here**; see its [README](temporal/README.md) | nothing, today |
