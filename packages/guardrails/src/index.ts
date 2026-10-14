@@ -1,5 +1,6 @@
 export * from './contracts/cache';
 export * from './contracts/guardrail';
+export * from './evaluator/first-pass';
 export * from './evaluator/input-stage';
 export * from './evaluator/output-stage';
 export * from './evaluator/output-text';

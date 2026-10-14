@@ -340,7 +340,7 @@ All four conditions must hold. They are checked in this order:
 1. `isBasalConfigured()`: `BASAL_URL` is set.
 2. The organization's `guardrailFirstPass` feature key is on. It defaults to
    `false`.
-3. The language gate passes. `franc` is restricted to the languages of the 15
+3. The language gate passes. `franc` is restricted to the languages of the 17
    UI locales and needs a minimum length. It must detect `pol` or `eng`.
    `und` (too short, or not confident) **fails** the gate. That is the
    conservative choice: a short message goes to the judge as it does today.
@@ -516,6 +516,12 @@ that defaults to `false`, so per ADR-50 every slice before C3 is a `chore`.
   - **attacks cleared (false clearances), listed one by one**;
   - p50 and p95 latency of the first pass against the judge;
   - the judge's own latency per turn, read from existing traces.
+  *Harness ready 2026-10-14*, ahead of C1 as the spec's order allows, because
+  it must call `basalQuestionFor` and `firstPassFor` from the package:
+  `apps/web/evals/first-pass/` (`npm run eval:first-pass`, and
+  `eval:first-pass:split` for the one split). It refuses an unlabelled row,
+  fits the threshold per wording, lists every false clearance, and reports
+  rows gated by language. Nothing has run on the set yet.
 - [ ] **A4.** The chosen configuration, and only that one, runs once on the
   **holdout half**. Go or no-go is recorded in this spec. **Go** needs all of:
   - **a false-clearance rate whose 95 % upper bound is at most 3 %** on the
@@ -563,7 +569,7 @@ that defaults to `false`, so per ADR-50 every slice before C3 is a `chore`.
 
 ### Phase C — the first pass
 
-- [ ] **C1.** In `packages/guardrails`:
+- [x] **C1.** In `packages/guardrails`:
   - `basalQuestionFor`, the clearing rule, the language gate and `firstPass`
     on `InputStageDeps`, handed on only by `evaluateInputStage`;
   - unit tests for every row of the rule table above;
@@ -571,6 +577,18 @@ that defaults to `false`, so per ADR-50 every slice before C3 is a `chore`.
   - a test that `deps.record` never sees a cleared rule.
 
   No binding supplies `firstPass` yet, so behaviour is unchanged.
+
+  *Done 2026-10-14*, with `BASAL_FIRST_PASS_CALIBRATION = null`: until A4
+  records a go there is no threshold, and the input stage does not ask basal
+  even when a binding supplies a client. The three wordings A3 compares are
+  `BASAL_JAILBREAK_WORDINGS` (four options in English, the same in Polish, and
+  the two-option control). Writing the gate showed something A3 has to
+  measure: **franc misreads short English.** "What does our travel policy say
+  about booking business class?" reads as French, "How do I reset my
+  password?" as Portuguese. The gate then sends the message to the judge,
+  which is safe but costs a clearance, so A3's "gated by language" count for
+  `en` says how much of the benign share it eats. If it is large, the gate
+  needs a better detector before A4, not a looser margin.
 - [ ] **C2.** The `guardrailFirstPass` feature key (default `false`). Both
   bindings (web and api) build the first pass from `@ragenai/basal-client` and
   supply it in `InputStageDeps` when the key is on. The `decidedBy` and

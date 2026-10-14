@@ -26,6 +26,10 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit --incremental --tsBuildInfoFile ./typecheck.tsbuildinfo"
   },
+  "dependencies": {
+    "@ragenai/basal-client": "*",
+    "franc": "^6.2.0"
+  },
   "devDependencies": {
     "@ragenai/eslint-config": "*",
     "@types/node": "^22.0.0",

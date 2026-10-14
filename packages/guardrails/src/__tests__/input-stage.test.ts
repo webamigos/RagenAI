@@ -7,6 +7,13 @@ import {
   securityEventTypeFor,
   type InputStageDeps,
 } from '../evaluator/input-stage';
+import {
+  BASAL_ATTACK_OPTION,
+  BASAL_JAILBREAK_QUESTION,
+  type FirstPass,
+  type FirstPassCalibration,
+} from '../evaluator/first-pass';
+import { evaluateOutputText } from '../evaluator/output-text';
 import type { ResolvedGuardrail } from '../resolver/resolve';
 
 /**
@@ -733,5 +740,148 @@ describe('the jailbreak built-in, in the loop', () => {
 
     expect(judge).toHaveBeenCalledTimes(4);
     expect(onPolicyCapExceeded).not.toHaveBeenCalled();
+  });
+});
+
+describe('the basal first pass, in the input stage', () => {
+  const SERVED = { name: 'basal-2.0-4.5B-GGUF', mode: 'ollama' };
+  const calibration: FirstPassCalibration = {
+    servedModel: SERVED,
+    wording: 'four-way-en',
+    clearMaxPAttack: 0.05,
+  };
+  const QUESTION = 'Summarise the attached contract in three bullet points.';
+
+  const jailbreak = (over: Partial<ResolvedGuardrail> = {}) =>
+    rule({
+      publicId: 'jb-1',
+      kind: 'BUILT_IN',
+      key: 'jailbreak-detection',
+      name: 'Jailbreak detection',
+      pattern: null,
+      action: 'BLOCK',
+      ...over,
+    });
+
+  const basal = (pAttack: number): FirstPass => ({
+    decide: vi.fn().mockResolvedValue({
+      outcome: 'answered',
+      response: {
+        model: SERVED.name,
+        answers: {
+          [BASAL_JAILBREAK_QUESTION]: {
+            type: 'choice',
+            choice: 'question',
+            probabilities: {
+              question: 1 - pAttack,
+              task: 0,
+              conversation: 0,
+              [BASAL_ATTACK_OPTION]: pAttack,
+            },
+            confidence: 1 - pAttack,
+          },
+        },
+      },
+    }),
+    servedModel: vi.fn().mockResolvedValue(SERVED),
+  });
+
+  const evaluateWith = (
+    firstPass: FirstPass | undefined,
+    firstPassCalibration: FirstPassCalibration | null | undefined,
+    rules: ResolvedGuardrail[] = [jailbreak()],
+  ) =>
+    evaluateInputStage(
+      rules,
+      { question: QUESTION, chatHistory: '', moderateHistory: false },
+      { ...deps, ...(firstPass ? { firstPass } : {}) },
+      firstPassCalibration === undefined ? {} : { firstPassCalibration },
+    );
+
+  it('clears a benign turn without a judge call and without an event', async () => {
+    const onFirstPass = vi.fn();
+    deps = { ...deps, onFirstPass };
+
+    const result = await evaluateWith(basal(0.01), calibration);
+
+    expect(judge).not.toHaveBeenCalled();
+    expect(record).not.toHaveBeenCalled();
+    expect(result.blockedBy).toBeUndefined();
+    expect(onFirstPass).toHaveBeenCalledWith(
+      expect.objectContaining({ publicId: 'jb-1' }),
+      'cleared',
+    );
+  });
+
+  it('leaves conviction to the judge: a suspect turn is judged and blocked by it', async () => {
+    judge.mockResolvedValue({ outcome: 'scored', score: 0.95 });
+
+    const result = await evaluateWith(basal(0.9), calibration);
+
+    expect(judge).toHaveBeenCalledTimes(1);
+    expect(record).toHaveBeenCalledWith({
+      rule: expect.objectContaining({ publicId: 'jb-1' }),
+      score: 0.95,
+    });
+    expect(result.blockedBy?.publicId).toBe('jb-1');
+  });
+
+  it('never blocks on basal alone: a suspect turn the judge clears passes', async () => {
+    judge.mockResolvedValue({ outcome: 'scored', score: 0.1 });
+
+    const result = await evaluateWith(basal(0.99), calibration);
+
+    expect(result.blockedBy).toBeUndefined();
+    expect(record).not.toHaveBeenCalled();
+  });
+
+  it('is not asked while there is no calibration', async () => {
+    // The shipped calibration is null until A4 says go.
+    const client = basal(0);
+
+    await evaluateWith(client, null);
+    await evaluateWith(client, undefined);
+
+    expect(client.decide).not.toHaveBeenCalled();
+    expect(judge).toHaveBeenCalledTimes(2);
+  });
+
+  it('changes nothing when no binding supplies it', async () => {
+    await evaluateWith(undefined, calibration);
+
+    expect(judge).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('the first pass stays out of the output stage', () => {
+  it('evaluateOutputText never asks it, even if a binding passes one', async () => {
+    const decide = vi.fn();
+    const outputJudge = vi
+      .fn()
+      .mockResolvedValue({ outcome: 'scored', score: 0 });
+
+    await evaluateOutputText(
+      [
+        rule({
+          publicId: 'out-1',
+          kind: 'LLM_POLICY',
+          stage: 'OUTPUT',
+          pattern: null,
+          policy: 'Never promise a delivery date.',
+        }),
+      ],
+      'Your parcel will arrive on Monday, as promised in the contract.',
+      {
+        judge: outputJudge,
+        record: vi.fn(),
+        onBudgetExhausted: vi.fn(),
+        onPolicyCapExceeded: vi.fn(),
+        onJudgeError: vi.fn(),
+        firstPass: { decide, servedModel: vi.fn() },
+      } as unknown as Parameters<typeof evaluateOutputText>[2],
+    );
+
+    expect(decide).not.toHaveBeenCalled();
+    expect(outputJudge).toHaveBeenCalledTimes(1);
   });
 });

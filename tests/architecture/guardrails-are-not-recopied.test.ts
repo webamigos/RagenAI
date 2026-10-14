@@ -82,6 +82,16 @@ const PACKAGE_ONLY_SYMBOLS = [
   'policyJudgePrompt',
   'jailbreakPrompt',
   'isJudgedRule',
+  // The basal first pass's primitives. Which question basal is asked, what
+  // clears a rule and which languages may be cleared are decisions, and a
+  // binding that imported these could make them for itself. A binding hands
+  // `evaluateInputStage` a client as `firstPass`; the package does the rest.
+  'basalQuestionFor',
+  'readAttackProbability',
+  'firstPassVerdict',
+  'firstPassLanguage',
+  'runFirstPass',
+  'firstPassFor',
 ];
 
 /**
@@ -293,6 +303,24 @@ describe('guardrails are not recopied', () => {
           'second `const` here is the drift this whole file exists to stop.',
       ).not.toMatch(new RegExp(`export const ${symbol}\\s*=`));
     }
+  });
+
+  it('only the input stage hands the policy loop a first pass', () => {
+    // basal's P(attack) is a score only on the input stage. The output stage
+    // and the panel's trial box run the same loop, and a trial that showed
+    // basal's number as the judge's would be a preview running a different
+    // path from the turn it previews — the failure in
+    // docs/lessons/a-test-box-that-runs-a-different-path-is-worse-than-none.md.
+    const packageFiles = sourceFiles(join(REPO_ROOT, PACKAGE_SRC));
+    const handing = packageFiles.filter((file) =>
+      /await\s+runPolicyRules\([\s\S]{0,400}?firstPass/.test(
+        stripComments(readSource(file)),
+      ),
+    );
+
+    expect(handing.map((f) => relative(REPO_ROOT, f))).toEqual([
+      'packages/guardrails/src/evaluator/input-stage.ts',
+    ]);
   });
 
   it('every judge binding reads its model, its prompt and its step', () => {
