@@ -219,7 +219,7 @@ async function main(): Promise<void> {
       const judged = judgements.get(row.text);
       measured.push({
         row,
-        gated: firstPassLanguage(row.text) === null,
+        gated: (await firstPassLanguage(row.text)) === null,
         pAttack: readAttackProbability(result),
         basalMs: result.outcome === 'answered' ? basalMs : null,
         judgeScore:

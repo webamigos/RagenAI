@@ -4,7 +4,6 @@ import type {
   DecideResult,
   ServedModel,
 } from '@ragenai/basal-client';
-import { francAll } from 'franc';
 
 import type { GuardrailRule } from '../contracts/guardrail';
 import {
@@ -219,79 +218,98 @@ export function readAttackProbability(result: DecideResult): number | null {
 }
 
 /**
- * The languages the gate admits, as franc's ISO 639-3 codes. basal-2.0 is
- * trained on Polish and English only.
+ * The languages the gate admits, as ISO 639-1 codes. basal-2.0 is trained on
+ * Polish and English only.
  */
-export const FIRST_PASS_LANGUAGES = ['pol', 'eng'] as const;
+export const FIRST_PASS_LANGUAGES = ['pl', 'en'] as const;
+export type FirstPassLanguage = (typeof FIRST_PASS_LANGUAGES)[number];
 
 /**
- * Every language the panel ships a UI locale for, which is the set franc is
- * restricted to. Restricting it is what makes a German or Ukrainian message
- * read as German or Ukrainian rather than as the nearest of two candidates;
- * `tests/architecture/` holds this against `apps/web/src/app/config.ts`.
+ * Every language the panel ships a UI locale for, in eld's codes (ISO 639-1,
+ * with Norwegian Bokmål as `no` where the panel says `nb`). The detector is
+ * restricted to these, so a German message reads as German rather than as
+ * whichever of Polish and English it is nearer to; `tests/architecture/`
+ * holds the list against `apps/web/src/app/config.ts`.
  */
 export const FIRST_PASS_DETECTABLE_LANGUAGES = [
-  'eng',
-  'pol',
-  'spa',
-  'deu',
-  'fra',
-  'por',
-  'ita',
-  'hun',
-  'bul',
-  'ukr',
-  'dan',
-  'swe',
-  'fin',
-  'ces',
-  'slk',
-  'nld',
-  'nob',
+  'en',
+  'pl',
+  'es',
+  'de',
+  'fr',
+  'pt',
+  'it',
+  'hu',
+  'bg',
+  'uk',
+  'da',
+  'sv',
+  'fi',
+  'cs',
+  'sk',
+  'nl',
+  'no',
 ] as const;
 
 /**
- * Shorter than this and the gate fails. franc's own floor is 10, and below
- * ~20 characters its guess between neighbouring languages is close to noise;
- * a short message goes to the judge, which is what it does today.
- */
-export const FIRST_PASS_MIN_LENGTH = 20;
-
-/**
- * How close the runner-up language may come before the detection counts as
- * unsure. franc scores the best language 1 and the rest relative to it; a
- * Polish message whose second guess is Slovak at 0.97 is not confidently
- * Polish.
- */
-export const FIRST_PASS_LANGUAGE_MARGIN = 0.95;
-
-/**
- * `pol` or `eng` when the message confidently is one, otherwise `null`.
+ * The detector, eld (Apache-2.0, n-gram based), and not franc.
  *
- * `und` — too short or unsure — fails, which is the conservative choice: a
- * message the gate refuses costs nothing, it is judged as it is today.
+ * franc was the spec's first choice and misread short English: on the 431
+ * first-pass candidates it admitted 72 % of benign English ("How do I reset
+ * my password?" read as Portuguese), and the attacks it refused shrank the
+ * holdout below what A4's bound needs. eld, restricted the same way, admitted
+ * every benign Polish and English row, 95–98 % of attacks — the rest are
+ * reversed, base64 or lorem-ipsum text, which belongs with the judge anyway —
+ * and no German or Ukrainian row.
+ *
+ * eld ships ESM only, with an `import`-only export map, so this CommonJS
+ * package cannot `require` it. A dynamic `import()` survives compilation
+ * here because the package compiles with `module: node16`; it also loads the
+ * 2 MB n-gram table only when a first pass is first asked for, not in every
+ * process that imports the guardrails.
  */
-export function firstPassLanguage(
-  text: string,
-): (typeof FIRST_PASS_LANGUAGES)[number] | null {
-  const trimmed = text.trim();
-  if (trimmed.length < FIRST_PASS_MIN_LENGTH) {
-    return null;
-  }
-  const ranked = francAll(trimmed, {
-    only: [...FIRST_PASS_DETECTABLE_LANGUAGES],
-    minLength: FIRST_PASS_MIN_LENGTH,
+type Detector = {
+  detect: (text: string) => { language: string; isReliable: () => boolean };
+};
+
+let detector: Promise<Detector> | null = null;
+
+function loadDetector(): Promise<Detector> {
+  detector ??= import('eld/medium').then(({ eld }) => {
+    // Its own instance, so the subset set here cannot change what any other
+    // caller of eld in this process detects.
+    const instance = eld.newInstance();
+    instance.setLanguageSubset([...FIRST_PASS_DETECTABLE_LANGUAGES]);
+    return instance;
   });
-  const [best, runnerUp] = ranked;
-  if (!best || best[0] === 'und') {
+  return detector;
+}
+
+/**
+ * `pl` or `en` when eld is confident the message is one, otherwise `null`.
+ *
+ * Unreliable or another language fails, which is the conservative choice: a
+ * message the gate refuses costs nothing, it is judged as it is today. A
+ * detector that cannot load fails the gate too, for the same reason.
+ */
+export async function firstPassLanguage(
+  text: string,
+): Promise<FirstPassLanguage | null> {
+  const trimmed = text.trim();
+  if (trimmed === '') {
     return null;
   }
-  if (runnerUp && runnerUp[1] >= FIRST_PASS_LANGUAGE_MARGIN) {
+  try {
+    const result = (await loadDetector()).detect(trimmed);
+    if (!result.isReliable()) {
+      return null;
+    }
+    return (FIRST_PASS_LANGUAGES as readonly string[]).includes(result.language)
+      ? (result.language as FirstPassLanguage)
+      : null;
+  } catch {
     return null;
   }
-  return (FIRST_PASS_LANGUAGES as readonly string[]).includes(best[0])
-    ? (best[0] as (typeof FIRST_PASS_LANGUAGES)[number])
-    : null;
 }
 
 function sameModel(a: ServedModel, b: ServedModel): boolean {
@@ -371,7 +389,7 @@ export async function runFirstPass(
   firstPass: FirstPass,
   calibration: FirstPassCalibration,
 ): Promise<FirstPassResult> {
-  if (firstPassLanguage(text) === null) {
+  if ((await firstPassLanguage(text)) === null) {
     return { outcome: 'gated' };
   }
   const request = basalQuestionFor(rule, text, calibration.wording);

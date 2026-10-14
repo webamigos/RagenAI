@@ -5,8 +5,12 @@
   "compilerOptions": {
     "target": "ES2022",
     "lib": ["ES2022"],
-    "module": "commonjs",
-    "moduleResolution": "node",
+    // node16 rather than commonjs: the output is still CommonJS (there is no
+    // "type": "module"), but a dynamic import() stays an import() instead of
+    // becoming require(). That is what lets the first pass load eld, which
+    // ships ESM only behind an import-only export map.
+    "module": "node16",
+    "moduleResolution": "node16",
     "types": ["node"],
     "declaration": true,
     "declarationMap": true,

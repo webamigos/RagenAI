@@ -28,7 +28,7 @@
   },
   "dependencies": {
     "@ragenai/basal-client": "*",
-    "franc": "^6.2.0"
+    "eld": "^2.1.0"
   },
   "devDependencies": {
     "@ragenai/eslint-config": "*",

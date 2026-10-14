@@ -340,10 +340,11 @@ All four conditions must hold. They are checked in this order:
 1. `isBasalConfigured()`: `BASAL_URL` is set.
 2. The organization's `guardrailFirstPass` feature key is on. It defaults to
    `false`.
-3. The language gate passes. `franc` is restricted to the languages of the 17
-   UI locales and needs a minimum length. It must detect `pol` or `eng`.
-   `und` (too short, or not confident) **fails** the gate. That is the
-   conservative choice: a short message goes to the judge as it does today.
+3. The language gate passes. eld is restricted to the languages of the 17 UI
+   locales and must reliably detect `pl` or `en`. An unreliable detection
+   (too short, or obfuscated text) **fails** the gate. That is the
+   conservative choice: such a message goes to the judge as it does today.
+   (franc was the first choice; see C1's note for why it was replaced.)
 4. The stage is `INPUT`. This is structural (see above), not a runtime check.
 
 When any condition fails, the turn goes through the judge model as today, with
@@ -356,7 +357,7 @@ no extra latency.
 | HTTP client, request and response types, the breaker, `isBasalConfigured()`, `servedModel()` (name and engine); the timeout is a parameter | new `packages/basal-client` | used by web and api; the reranker spec will reuse it from rag-core |
 | `BASAL_URL`, `BASAL_API_KEY` (optional, for a proxy in front) | `basal` fragment in `@ragenai/env`, using `httpUrl()` | ADR-37: a variable read by two apps is declared once |
 | `basalQuestionFor`, the clearing rule, `BASAL_CLEAR_MAX_P_ATTACK` and its served model, `BASAL_FIRST_PASS_TIMEOUT_MS` | `packages/guardrails` | the package owns the question, the decision and its numbers |
-| The language gate | `packages/guardrails` (takes `franc` as a dependency; it is ESM-only, which apps/api now is too) | same reason: both runtimes must gate the same way |
+| The language gate | `packages/guardrails` (takes `eld` as a dependency, loaded by a dynamic `import()`: it is ESM-only, and the package compiles with `module: node16` so the import survives) | same reason: both runtimes must gate the same way |
 | Wiring | both judge bindings put a `firstPass` on `InputStageDeps`; `evaluateInputStage` hands it to `runPolicyRules` | `runPolicyRules` stays package-only in `guardrails-are-not-recopied`; the test also asserts both bindings supply `firstPass` |
 | `guardrailFirstPass` | `packages/platform-contracts`: `FEATURE_KEYS`, `DEFAULT_FEATURES` (`false`, with a comment on why) and `FEATURE_LABELS` | per org, admin-managed |
 
@@ -582,13 +583,24 @@ that defaults to `false`, so per ADR-50 every slice before C3 is a `chore`.
   records a go there is no threshold, and the input stage does not ask basal
   even when a binding supplies a client. The three wordings A3 compares are
   `BASAL_JAILBREAK_WORDINGS` (four options in English, the same in Polish, and
-  the two-option control). Writing the gate showed something A3 has to
-  measure: **franc misreads short English.** "What does our travel policy say
-  about booking business class?" reads as French, "How do I reset my
-  password?" as Portuguese. The gate then sends the message to the judge,
-  which is safe but costs a clearance, so A3's "gated by language" count for
-  `en` says how much of the benign share it eats. If it is large, the gate
-  needs a better detector before A4, not a looser margin.
+  the two-option control).
+
+  The gate was first written with franc, as planned, and **franc misread
+  short English**: on the 431 A2 candidates it admitted 72 % of benign
+  English rows ("How do I reset my password?" read as Portuguese) and 82–88 %
+  of attacks. The attacks it refused would have left ~85 in the holdout, and
+  3/85 is above A4's 3 % bound before basal is asked anything. Four detectors
+  were compared on the same rows, each restricted to the UI locales:
+
+  | detector | benign en | benign pl | attack en | attack pl | de/uk admitted |
+  | --- | --- | --- | --- | --- | --- |
+  | franc 6.2 | 72 % | 88 % | 82 % | 88 % | 0 |
+  | **eld 2.1** | **100 %** | **100 %** | **98 %** | **95 %** | **0** |
+  | tinyld 1.3 | 93 % | 100 % | 96 % | 97 % | 1 |
+  | cld3-asm 4.0 | 89 % | 99 % | 97 % | 98 % | 0 |
+
+  The gate uses eld. The seven attacks it refuses are reversed, base64,
+  lorem-ipsum or markdown-image text, which belongs with the judge anyway.
 - [ ] **C2.** The `guardrailFirstPass` feature key (default `false`). Both
   bindings (web and api) build the first pass from `@ragenai/basal-client` and
   supply it in `InputStageDeps` when the key is on. The `decidedBy` and
