@@ -1,29 +1,23 @@
 import { describe, expect, it } from 'vitest';
 
+import type { LabelledRow, RowLang, RowSet } from '../lib/dataset';
 import { splitStratified } from '../lib/split';
 
-const rows = [
-  ...Array.from({ length: 21 }, (_, i) => ({
-    id: `a-pl-${i}`,
-    set: 'attack',
-    lang: 'pl',
-  })),
-  ...Array.from({ length: 20 }, (_, i) => ({
-    id: `a-en-${i}`,
-    set: 'attack',
-    lang: 'en',
-  })),
-  ...Array.from({ length: 30 }, (_, i) => ({
-    id: `b-en-${i}`,
-    set: 'benign',
-    lang: 'en',
-  })),
-  ...Array.from({ length: 3 }, (_, i) => ({
-    id: `o-de-${i}`,
-    set: 'other-language',
-    lang: 'de',
-  })),
-] as const;
+type Row = Pick<LabelledRow, 'set' | 'lang'> & { readonly id: string };
+
+const stratum = (count: number, set: RowSet, lang: RowLang): Row[] =>
+  Array.from({ length: count }, (_, i) => ({
+    id: `${set}-${lang}-${i}`,
+    set,
+    lang,
+  }));
+
+const rows: readonly Row[] = [
+  ...stratum(21, 'attack', 'pl'),
+  ...stratum(20, 'attack', 'en'),
+  ...stratum(30, 'benign', 'en'),
+  ...stratum(3, 'other-language', 'de'),
+];
 
 describe('splitStratified', () => {
   it('halves every set and language, the spare row going to the holdout', () => {
