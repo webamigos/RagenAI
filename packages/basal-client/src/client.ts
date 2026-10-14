@@ -11,6 +11,10 @@ import type {
  * `BREAKER_OPEN_MS`. Without it, a basal that is down costs every turn the
  * full timeout before the caller falls back — the spec's "at worst five slow
  * turns per replica" is this number.
+ *
+ * When the window ends, one call goes through as a probe and the rest are
+ * still skipped. A failed probe reopens the breaker at once, so a basal that
+ * stays down costs one slow turn per window, not another five.
  */
 export const BREAKER_FAILURE_THRESHOLD = 5;
 export const BREAKER_OPEN_MS = 60_000;
@@ -39,8 +43,12 @@ export const SERVED_MODEL_TIMEOUT_MS = 2_000;
  */
 export type ServedModel = {
   readonly name: string;
-  /** `mlx`, `ollama`, `fast`, … — `null` when the server does not say. */
-  readonly mode: string | null;
+  /**
+   * `mlx`, `ollama`, `fast`, … Required: a server that does not say which
+   * engine answers cannot be matched with a calibration, so it reads as no
+   * served model at all.
+   */
+  readonly mode: string;
 };
 
 /**
@@ -96,27 +104,64 @@ export function createBasalClient(options: BasalClientOptions): BasalClient {
   }
 
   let consecutiveFailures = 0;
+  // `open` until `openUntil`; then `half-open` lets one probe through, and its
+  // outcome alone decides whether the breaker closes or opens again.
+  let breaker: 'closed' | 'open' | 'half-open' = 'closed';
   let openUntil = 0;
+  let probing = false;
   let cachedModel: { model: ServedModel | null; readAt: number } | null = null;
 
-  const breakerOpen = (): boolean => now() < openUntil;
-
-  const succeeded = (): void => {
-    consecutiveFailures = 0;
+  /** Whether this call may reach basal. Claims the probe when it is due. */
+  const admit = (): boolean => {
+    if (breaker === 'open' && now() >= openUntil) {
+      breaker = 'half-open';
+    }
+    if (breaker === 'closed') {
+      return true;
+    }
+    if (breaker === 'half-open' && !probing) {
+      probing = true;
+      return true;
+    }
+    return false;
   };
 
-  const failed = (reason: UnavailableReason): void => {
-    consecutiveFailures += 1;
-    if (consecutiveFailures >= BREAKER_FAILURE_THRESHOLD && !breakerOpen()) {
-      openUntil = now() + BREAKER_OPEN_MS;
-      consecutiveFailures = 0;
-      // Once per trip, not once per failure: a basal that is down for an hour
-      // would otherwise log every turn.
+  const trip = (reason: UnavailableReason): void => {
+    const wasClosed = breaker === 'closed';
+    breaker = 'open';
+    openUntil = now() + BREAKER_OPEN_MS;
+    consecutiveFailures = 0;
+    // Once per outage, not once per failure or per failed probe: a basal that
+    // is down for an hour would otherwise log every turn, or every minute.
+    if (wasClosed) {
       logger.warn(
         { url: baseUrl, reason, openForMs: BREAKER_OPEN_MS },
         'basal unavailable; skipping it until the breaker closes',
       );
     }
+  };
+
+  const succeeded = (): void => {
+    consecutiveFailures = 0;
+    breaker = 'closed';
+    probing = false;
+  };
+
+  const failed = (reason: UnavailableReason): void => {
+    if (probing) {
+      probing = false;
+      trip(reason);
+      return;
+    }
+    consecutiveFailures += 1;
+    if (consecutiveFailures >= BREAKER_FAILURE_THRESHOLD && breaker === 'closed') {
+      trip(reason);
+    }
+  };
+
+  /** Forget the served model, so the next `servedModel()` reads it again. */
+  const forgetServedModel = (): void => {
+    cachedModel = null;
   };
 
   async function request(
@@ -148,7 +193,7 @@ export function createBasalClient(options: BasalClientOptions): BasalClient {
 
   return {
     async decide(decideRequest, timeoutMs) {
-      if (breakerOpen()) {
+      if (!admit()) {
         return { outcome: 'unavailable', reason: 'breaker-open' };
       }
       const result = await request(
@@ -166,6 +211,13 @@ export function createBasalClient(options: BasalClientOptions): BasalClient {
         return { outcome: 'unavailable', reason: 'malformed' };
       }
       succeeded();
+      // Every answer names its model. When that is not the cached one, the
+      // server was swapped since the last read: drop the cache so the caller's
+      // next served-model check reads the new one instead of trusting the old
+      // one for the rest of the TTL.
+      if (cachedModel?.model && cachedModel.model.name !== response.model) {
+        forgetServedModel();
+      }
       return { outcome: 'answered', response };
     },
 
@@ -173,7 +225,7 @@ export function createBasalClient(options: BasalClientOptions): BasalClient {
       if (cachedModel && now() - cachedModel.readAt < SERVED_MODEL_TTL_MS) {
         return cachedModel.model;
       }
-      if (breakerOpen()) {
+      if (!admit()) {
         return null;
       }
       const result = await request(
@@ -270,11 +322,14 @@ function readServedModel(body: unknown): ServedModel | null {
     return null;
   }
   const first: unknown = body.models[0];
-  if (!isRecord(first) || typeof first.name !== 'string' || first.name === '') {
+  if (
+    !isRecord(first) ||
+    typeof first.name !== 'string' ||
+    first.name === '' ||
+    typeof first.mode !== 'string' ||
+    first.mode === ''
+  ) {
     return null;
   }
-  return {
-    name: first.name,
-    mode: typeof first.mode === 'string' && first.mode !== '' ? first.mode : null,
-  };
+  return { name: first.name, mode: first.mode };
 }

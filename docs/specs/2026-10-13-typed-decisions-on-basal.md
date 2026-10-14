@@ -13,8 +13,10 @@ Every input turn waits for a judge model before the assistant starts
 answering: `gemini-2.5-flash`, with a 3 s timeout, once for
 `jailbreak-detection` and once for each of an organization's `LLM_POLICY`
 rules. basal is a local model that answers a closed question in 15–40 ms with a
-calibrated probability. Here it gets a first look at each judged rule, and the
-judge model is asked only when basal is unsure.
+calibrated probability. Here it gets a first look at `jailbreak-detection`,
+and the judge model is asked only when basal is unsure. `LLM_POLICY` rules
+keep going to the judge: a threshold fitted on three sample policies says
+nothing about the prose an operator writes (see [Next](#next-separate-specs)).
 
 The non-obvious part is that basal is much less accurate than the judge it
 sits in front of: 72–78 % against ~99 % on its author's benchmark. So it gets
@@ -250,8 +252,9 @@ data residency, and A3 records that.
 
 ### The rule: basal clears, the judge model convicts
 
-For each judged rule on an input turn, `evaluateInputStage` asks basal first,
-when the first pass is available (see below):
+For the `jailbreak-detection` rule on an input turn, `evaluateInputStage` asks
+basal first, when the first pass is available (see below). Every other judged
+rule, `LLM_POLICY` included, goes to the judge model as today:
 
 ```
 P(attack) ≤ BASAL_CLEAR_MAX_P_ATTACK,
@@ -259,7 +262,7 @@ and P(attack) < the rule's threshold   → scored, with score = P(attack). No ju
 anything else                          → the judge model, exactly as today.
 ```
 
-`P(attack)` is basal's probability for the one "attack" (or "violates")
+`P(attack)` is basal's probability for the one "attack"
 option of a `choice` question. `BASAL_CLEAR_MAX_P_ATTACK` is a package
 constant fitted in A3 on our own labelled data, for one served model (name
 and engine). It does not come from basal's shipped calibration, which
@@ -270,7 +273,9 @@ certifies nothing usable here (finding 2).
 - P(attack) is above the constant, whether basal chose "attack" or not;
 - basal times out (`BASAL_FIRST_PASS_TIMEOUT_MS`, 300 ms);
 - basal errors, is unreachable, or returns an answer that does not parse;
-- the served model is not the one the constant was fitted for;
+- the served model is not the one the constant was fitted for, or is not
+  known (no `mode`, or `GET /v1/models` failed);
+- the answer's own `model` is not the name the constant was fitted for;
 - P(attack) is at or above the rule's own threshold. For example, an operator
   set the threshold to 0.05; the first pass then never disagrees with the
   rule.
@@ -314,10 +319,11 @@ to phrase it would phrase it differently.
   is `JAILBREAK_SYSTEM_PROMPT`'s list of what counts as manipulation. The
   `state` is the masked message, truncated to `POLICY_JUDGE_MAX_INPUT_CHARS`.
   The exact wording is chosen in A3 (finding 3).
-- **`LLM_POLICY`**: a `choice` between `complies` and `violates`, where
-  `violates` carries the operator's policy prose, over the same state. The
-  judge's note that placeholders such as `<PERSON_1>` stand for real values
-  goes into the instructions verbatim.
+- **`LLM_POLICY`** is not asked. Its question would carry the operator's own
+  prose, and A3 can only fit a threshold on the policies in the labelled set.
+  The bound A4 measures would not cover a policy nobody calibrated, so an
+  `LLM_POLICY` rule always goes to the judge. Clearing them is a separate
+  spec (see [Next](#next-separate-specs)).
 - **`BASAL_CLEAR_MAX_P_ATTACK`**, and the served model it was fitted for, are
   package constants. Their values come from A3, not from basal's shipped
   calibration or its benchmark page.
@@ -338,12 +344,6 @@ All four conditions must hold. They are checked in this order:
    UI locales and needs a minimum length. It must detect `pol` or `eng`.
    `und` (too short, or not confident) **fails** the gate. That is the
    conservative choice: a short message goes to the judge as it does today.
-   For an `LLM_POLICY` rule the gate also reads the **policy prose**, because
-   it becomes basal's instructions, and an operator may write it in German.
-   A policy detected confidently as anything but `pol` or `eng` skips basal
-   for that rule. `und` passes here, because a short policy is usually
-   unambiguous and the message has already been gated. The detection is
-   computed once per rule text and cached, not on every turn.
 4. The stage is `INPUT`. This is structural (see above), not a runtime check.
 
 When any condition fails, the turn goes through the judge model as today, with
@@ -443,11 +443,25 @@ No schema change and no migration.
 - **The basal version or engine changes.** Calibration is per engine port, so
   the fitted threshold would mean something else. `BASAL_CLEAR_MAX_P_ATTACK`
   is valid for one served model, the name and the engine `mode` from
-  `GET /v1/models` (finding 4). The served model is
-  read off the turn path, on first use and then every 5 minutes, and is
-  cached. A model swapped while running is therefore noticed within 5
-  minutes. A failed read counts toward the breaker. On a mismatch the client
-  logs a warning and stops clearing until the constant is re-measured.
+  `GET /v1/models` (finding 4). Both are required: a server that does not
+  report `mode` has no served model as far as the client is concerned, and
+  nothing is cleared. Three checks, from the cheapest:
+  - **every answer names its model.** A clearing whose `model` is not the
+    fitted name falls through to the judge, on that turn, with no cache in
+    between. The client also drops its cached served model, so the next
+    check reads the new one;
+  - **the served model is read off the turn path**, on first use and then
+    every 5 minutes, and cached. It is what catches an engine changed under
+    the same name, which an answer cannot show. A failed read counts toward
+    the breaker;
+  - **the weights are pinned where they are installed.** B1's image downloads
+    one revision by digest. Neither the name nor `mode` changes when someone
+    replaces the weights in place with another quantization, and no runtime
+    check can see that, so a replacement is an upgrade and follows
+    [Rollout](#rollout-and-rollback).
+
+  On a mismatch the first pass logs a warning and stops clearing until the
+  constant is re-measured.
 - **The URL points somewhere public.** basal-serve has no authentication.
   `docs/companion-services.md` says it must sit on a private network or behind
   a proxy (hence `BASAL_API_KEY`). The text sent is already masked by
@@ -468,7 +482,9 @@ that defaults to `false`, so per ADR-50 every slice before C3 is a `chore`.
   `isBasalConfigured()` and `servedModel()`. Nothing calls it yet.
 
   *Done 2026-10-14.* `servedModel()` returns the engine as well as the name
-  (finding 4). The client was checked against a running basal-serve under
+  (finding 4), and returns `null` when the server does not report the engine.
+  The breaker is half-open after its window: one probe, and a failed probe
+  reopens it at once. The client was checked against a running basal-serve under
   Ollama: it answered, timed out, and tripped the breaker as the unit tests
   say.
 - [ ] **A2.** A labelled set at `apps/web/evals/datasets/guardrail-first-pass/`,
@@ -478,9 +494,6 @@ that defaults to `false`, so per ADR-50 every slice before C3 is a `chore`.
   - **attacks**: ~200 in Polish and English. That is `red-team.yaml`'s
     jailbreaks plus hand-written ones, including messages that claim to be
     benign;
-  - **policy**: three sample operator policies, each with ~60 violating and
-    ~30 compliant messages, plus one policy written in German, to check that
-    the gate skips it;
   - **other languages**: ~30 German and Ukrainian messages for the gate and
     the deferral check.
 
@@ -492,7 +505,7 @@ that defaults to `false`, so per ADR-50 every slice before C3 is a `chore`.
   today's judge and with the first pass, on basal-2.0 4.5B and max, with two
   or three question wordings (finding 3). For each it fits
   `BASAL_CLEAR_MAX_P_ATTACK` on the tuning half (`basal-calibrate`, or the
-  largest threshold that clears no attack and no violation there), and it
+  largest threshold that clears no attack there), and it
   picks one configuration. It writes up the results. It must call the package's
   own functions, not a copy of the prompt; see
   [a test box that runs a different path](../lessons/a-test-box-that-runs-a-different-path-is-worse-than-none.md).
@@ -500,14 +513,14 @@ that defaults to `false`, so per ADR-50 every slice before C3 is a `chore`.
   [a provider is not configured until something calls it](../lessons/a-provider-package-is-not-configured-until-something-calls-it.md).
   The write-up reports:
   - the share of benign messages cleared;
-  - **attacks and violations cleared (false clearances), listed one by one**;
+  - **attacks cleared (false clearances), listed one by one**;
   - p50 and p95 latency of the first pass against the judge;
   - the judge's own latency per turn, read from existing traces.
 - [ ] **A4.** The chosen configuration, and only that one, runs once on the
   **holdout half**. Go or no-go is recorded in this spec. **Go** needs all of:
   - **a false-clearance rate whose 95 % upper bound is at most 3 %** on the
-    holdout's attacks and violations combined. With ~190 such rows that
-    means zero misses (rule of three: 3/n). One miss is a no-go, even if
+    holdout's attacks. With ~100 such rows that means zero misses (rule of
+    three: 3/n). One miss is a no-go, even if
     the tuning half had none;
   - zero false clearances on the tuning half at the chosen threshold;
   - ≥ 40 % of benign holdout messages cleared;
@@ -523,7 +536,8 @@ that defaults to `false`, so per ADR-50 every slice before C3 is a `chore`.
 ### Phase B — run it locally
 
 - [ ] **B1.** `infra/basal/` (a Dockerfile pinned to the basal version from A4,
-  with weights downloaded at start into a volume) and a `basal` profile in
+  with weights downloaded at start into a volume, by a pinned revision and
+  checked against its digest) and a `basal` profile in
   `docker-compose.yml` with an NVIDIA device reservation. Nothing has
   `depends_on` on it.
 - [ ] **B2.** `docs/companion-services.md` gains a basal section: the Compose
@@ -580,7 +594,8 @@ that defaults to `false`, so per ADR-50 every slice before C3 is a `chore`.
   - the client: the breaker, timeout, a 422 and a malformed body.
 - **Unit** (`packages/basal-client`): it parses `choice` and `noul` answers,
   refuses a malformed one rather than reading it as a low score, and reads the
-  served model with its engine.
+  served model with its engine, or `null` without one; after the breaker's
+  window it sends one probe, and a failed probe reopens it.
 - **Unit** (bindings): each binding passes `firstPass` only when the key is on
   and basal is configured. Under the testing rules, a five-line binding still
   gets a test.
@@ -604,7 +619,11 @@ that defaults to `false`, so per ADR-50 every slice before C3 is a `chore`.
   for the installation. There is no migration, so reverting the PRs is also
   clean.
 - A basal upgrade re-runs A3 before `BASAL_CLEAR_MAX_P_ATTACK` changes. Until
-  then, the served-model check stops clearing.
+  then, the served-model checks stop clearing. A new model name stops it on
+  the first answer. A change the name does not show (a different engine for
+  the same folder, weights replaced in place) is invisible for up to the
+  5-minute cache, or for ever, so **turn `guardrailFirstPass` off before such
+  an upgrade**, not after.
 
 ## Next (separate specs)
 
@@ -616,4 +635,9 @@ that defaults to `false`, so per ADR-50 every slice before C3 is a `chore`.
    sources conflict. This is a new product behaviour.
 3. **Injection detection in retrieved chunks**, using the first-pass logic on
    a different state.
-4. **Raising `MAX_ACTIVE_LLM_POLICIES`**, decided on Phase C's numbers.
+4. **The first pass for `LLM_POLICY`.** It needs a calibration that
+   generalises to prose nobody here wrote: several independently written
+   policies, split into tuning and holdout **by policy**, not by message, so
+   A4's bound is measured on wording the threshold never saw. Until then
+   every `LLM_POLICY` rule goes to the judge.
+5. **Raising `MAX_ACTIVE_LLM_POLICIES`**, decided on the numbers from 4.

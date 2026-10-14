@@ -216,6 +216,72 @@ describe('the breaker', () => {
     expect((await client.decide(REQUEST, 300)).outcome).toBe('answered');
   });
 
+  it('lets one probe through after the window, and a failed probe reopens it at once', async () => {
+    let clock = 1_000;
+    const { client, fetchMock, warn } = clientWith(
+      async () => {
+        throw new TypeError('fetch failed');
+      },
+      { now: () => clock },
+    );
+
+    for (let i = 0; i < BREAKER_FAILURE_THRESHOLD; i++) {
+      await client.decide(REQUEST, 300);
+    }
+    clock += BREAKER_OPEN_MS;
+
+    expect((await client.decide(REQUEST, 300)).reason).toBe('network');
+    // Not another five failures before it trips again: one probe per window.
+    expect(await client.decide(REQUEST, 300)).toEqual({
+      outcome: 'unavailable',
+      reason: 'breaker-open',
+    });
+    expect(fetchMock).toHaveBeenCalledTimes(BREAKER_FAILURE_THRESHOLD + 1);
+    // One warning per outage, not one per failed probe.
+    expect(warn).toHaveBeenCalledTimes(1);
+
+    clock += BREAKER_OPEN_MS;
+    await client.decide(REQUEST, 300);
+    expect(fetchMock).toHaveBeenCalledTimes(BREAKER_FAILURE_THRESHOLD + 2);
+  });
+
+  it('skips every other call while the probe is in flight', async () => {
+    let clock = 1_000;
+    let up = false;
+    let release: (() => void) | undefined;
+    const { client, fetchMock } = clientWith(
+      async () => {
+        if (!up) {
+          throw new TypeError('fetch failed');
+        }
+        await new Promise<void>((resolve) => {
+          release = resolve;
+        });
+        return json(ANSWERED);
+      },
+      { now: () => clock },
+    );
+
+    for (let i = 0; i < BREAKER_FAILURE_THRESHOLD; i++) {
+      await client.decide(REQUEST, 300);
+    }
+    up = true;
+    clock += BREAKER_OPEN_MS;
+
+    const probe = client.decide(REQUEST, 300);
+    expect(await client.decide(REQUEST, 300)).toEqual({
+      outcome: 'unavailable',
+      reason: 'breaker-open',
+    });
+    release?.();
+    expect((await probe).outcome).toBe('answered');
+    expect(fetchMock).toHaveBeenCalledTimes(BREAKER_FAILURE_THRESHOLD + 1);
+
+    // The probe closed it: the next call goes through.
+    up = false;
+    expect((await client.decide(REQUEST, 300)).reason).toBe('network');
+  });
+
   it('a success resets the count, so scattered failures never trip it', async () => {
     let calls = 0;
     const { client, fetchMock } = clientWith(async () => {
@@ -253,7 +319,7 @@ describe('servedModel', () => {
   it('reads it again once the cache expires, so a swapped model is noticed', async () => {
     let clock = 0;
     let name = 'basal-2.0-4.5B-MLX-8bit';
-    const { client } = clientWith(async () => json({ models: [{ name }] }), {
+    const { client } = clientWith(async () => json({ models: [{ name, mode: 'mlx' }] }), {
       now: () => clock,
     });
 
@@ -263,8 +329,44 @@ describe('servedModel', () => {
 
     expect(await client.servedModel()).toEqual({
       name: 'basal-2.0-max-MLX-8bit',
-      mode: null,
+      mode: 'mlx',
     });
+  });
+
+  it('reads it again before the TTL when an answer names a different model', async () => {
+    let name = 'basal-2.0-4.5B-MLX-8bit';
+    const { client, fetchMock } = clientWith(async (url) =>
+      url.endsWith('/v1/models')
+        ? json({ models: [{ name, mode: 'mlx' }] })
+        : json({ ...ANSWERED, model: name }),
+    );
+
+    await client.servedModel();
+    name = 'basal-2.0-max-MLX-8bit';
+    await client.decide(REQUEST, 300);
+
+    expect(await client.servedModel()).toEqual({ name: 'basal-2.0-max-MLX-8bit', mode: 'mlx' });
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+  });
+
+  it('keeps the cache while answers name the cached model', async () => {
+    const { client, fetchMock } = clientWith(async (url) =>
+      url.endsWith('/v1/models') ? json(MODELS) : json(ANSWERED),
+    );
+
+    await client.servedModel();
+    await client.decide(REQUEST, 300);
+    await client.servedModel();
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it('returns null when the server does not say which engine answers', async () => {
+    const { client } = clientWith(async () =>
+      json({ models: [{ name: 'basal-2.0-4.5B-GGUF' }] }),
+    );
+
+    expect(await client.servedModel()).toBeNull();
   });
 
   it('names the engine too, because one GGUF folder has a calibration per engine', async () => {

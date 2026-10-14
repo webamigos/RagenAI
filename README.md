@@ -630,7 +630,7 @@ share one Prisma schema.
 | `platform-contracts`                                                     | values every app must resolve identically: model catalogue, feature flags, connector metadata, tenant-scope model map |
 | `storage`                                                                | file storage providers — local by default, S3-compatible opt-in                                                       |
 | `vault-client`, `observability`, `eslint-config`       | the remaining cross-app wiring                                                                                        |
-| `crypto`, `env`, `jobs`, `jobs-bullmq`, `guardrails`, `llm-gateway`, `connector-guard`, `brain-contracts`, `brain-core`, `create-ragen-app`, `ragen-cli` | envelope encryption, the typed env contract, the job runtime seam and its BullMQ adapter, guardrails, the model gateway, the connector URL policy, Ragen Brain, and the two CLIs |
+| `basal-client`, `crypto`, `env`, `jobs`, `jobs-bullmq`, `guardrails`, `llm-gateway`, `connector-guard`, `brain-contracts`, `brain-core`, `create-ragen-app`, `ragen-cli` | envelope encryption, the typed env contract, the job runtime seam and its BullMQ adapter, guardrails, the model gateway, the connector URL policy, Ragen Brain, the two CLIs, and the client for a self-hosted basal model |
 
 How the pieces fit at runtime:
 
