@@ -46,6 +46,8 @@ This is an npm-workspaces monorepo (`apps/*` + `packages/*`):
 │   │                             #   package for both stages
 │   ├── connector-guard/          # The URL policy for connectors: save,
 │   │                             #   connect and every tool call
+│   ├── basal-client/             # HTTP client for a self-hosted basal
+│   │                             #   decision server; nothing calls it yet
 │   ├── brain-contracts/          # Ragen Brain: shared types and constants
 │   ├── brain-core/               # Ragen Brain: the rules, free of I/O
 │   ├── create-ragen-app/         # `npx create-ragen-app`, the installer

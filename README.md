@@ -613,7 +613,7 @@ request in the abstract.
 
 ## 🏛️ Architecture at a glance
 
-An npm-workspaces monorepo on Turborepo. 5 applications and 17 packages
+An npm-workspaces monorepo on Turborepo. 5 applications and 18 packages
 share one Prisma schema.
 
 | Application                  | What it is                                                                            |

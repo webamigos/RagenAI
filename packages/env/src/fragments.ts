@@ -498,3 +498,21 @@ export const mcpService = z.object({
 export const authOrigin = z.object({
   BETTER_AUTH_URL: blankAsUndefined(httpUrl().optional()),
 });
+
+/**
+ * A self-hosted basal typed-decision server
+ * (docs/specs/2026-10-13-typed-decisions-on-basal.md).
+ *
+ * Optional, and unset means **off**: nothing asks basal without
+ * `BASAL_URL`. basal-serve has no authentication of its own, so the URL must
+ * be on a private network; `BASAL_API_KEY` is for a reverse proxy an operator
+ * puts in front of it, and is sent as a bearer token.
+ *
+ * No timeout here on purpose. How long a caller waits is a decision about its
+ * latency budget, and the guardrail first pass keeps it as a package constant
+ * so web and api cannot differ, as `docs/guardrails.md` requires of the judge.
+ */
+export const basal = z.object({
+  BASAL_URL: blankAsUndefined(httpUrl().optional()),
+  BASAL_API_KEY: blankAsUndefined(z.string().optional()),
+});

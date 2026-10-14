@@ -111,7 +111,7 @@ Before starting a nontrivial task, match it against this table and read the link
 
 ## Core Surfaces
 
-Four apps and a worker share one schema and 17 packages, so some files are
+Four apps and a worker share one schema and 18 packages, so some files are
 read by code you are not looking at. Before changing one of these, know who
 else depends on it — and run `npm run verify`, which is the only command that
 checks all of them at once.
@@ -182,7 +182,7 @@ volumes, and the observability profile:
 **What it is**: RAG AI chat app with an in-process model gateway, document knowledge bases, and a public API.
 
 **Monorepo layout**: npm workspaces, `apps/*` + `packages/*` — 5 apps
-(`web`, `api`, `admin`, `worker`, `mcp`) over 17 packages, with one
+(`web`, `api`, `admin`, `worker`, `mcp`) over 18 packages, with one
 `prisma/schema.prisma` serving all of them via per-app `generator` blocks, and
 the supporting services in `infra/`. The tree, what each package is for and why
 it exists: [`docs/architecture.md`](docs/architecture.md).

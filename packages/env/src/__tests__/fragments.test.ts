@@ -96,6 +96,17 @@ describe('shared fragments', () => {
     ).toBe(false);
   });
 
+  it('leaves basal off without a URL, and refuses a scheme-less one', () => {
+    expect(fragments.basal.parse({}).BASAL_URL).toBeUndefined();
+    expect(fragments.basal.parse({ BASAL_URL: '' }).BASAL_URL).toBeUndefined();
+    expect(
+      fragments.basal.safeParse({ BASAL_URL: 'localhost:8000' }).success,
+    ).toBe(false);
+    expect(
+      fragments.basal.safeParse({ BASAL_URL: 'http://basal:8000' }).success,
+    ).toBe(true);
+  });
+
   it('needs nothing: the shipped route table is the default (ADR-49)', () => {
     // The opposite of what this asserted while ADR-04 held, and the change is
     // the point: no app talks to a proxy any more, so an empty environment is

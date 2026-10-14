@@ -77,7 +77,9 @@ per use case.
 | `tool` | a tool name, or `answer_directly` / `ask_user` / `none` | next tool for an agent; experimental |
 
 Per question, `max_error` sets a calibrated error target. Below it, the answer
-comes back `deferred: true`. One request can carry several questions over the
+comes back `deferred: true`. **This applies to `act` and `tool` only**: on
+`choice` and `noul` the field is accepted and ignored (checked on a running
+server on 2026-10-14; see [Findings from the first install](#findings-from-the-first-install-2026-10-14)). One request can carry several questions over the
 same state.
 
 **Models.**
@@ -123,6 +125,53 @@ costs more per decision.
 Thresholds from the benchmark are not production settings. Refit them on your
 own labelled data.
 
+## Findings from the first install, 2026-10-14
+
+basal-2.0 was installed on a developer Mac (M2 Pro, 16 GB) the night after
+launch: engine v2.0.0, `basal-2.0-4.5B`, through MLX 8-bit and through Ollama
+(GGUF Q8_0). Four findings changed this spec. The design below already
+includes them.
+
+1. **`max_error` does not defer `choice` or `noul`.** It only acts on `act`
+   and `tool`. The first pass therefore cannot ask basal to defer. It reads
+   the probabilities and applies its own threshold.
+2. **The shipped calibration certifies nothing we can use.** For the 4.5B
+   model it certifies no `noul` threshold at all under MLX, and nothing at the
+   1 % target on any type. The 5 % `choice` threshold differs per engine: 0.977
+   under MLX, 0.939 under Ollama. The README says the same thing: refit on your
+   own labelled data with `basal-calibrate`. A few hundred items certify a
+   5 % target. A 1 % target needs at least 299 accepted decisions without an
+   error, about 1,000 items in practice. So the A2 set **is** the calibration
+   set, and the threshold comes from it.
+3. **`choice` separates better than `noul`, and the wording matters.** An
+   informal probe used 20 throwaway examples, not the A2 set, so it measures
+   nothing; it only showed where to look.
+   - `noul` probabilities overlapped: one attack scored P(yes) = 0.13, and one
+     benign message 0.25.
+   - A `choice` between three kinds of ordinary request and one "attack"
+     option gave P(attack) ≤ 0.08 on every benign row, and ≥ 0.66 on every
+     attack.
+   - With only two options, attacks were labelled less consistently.
+
+   So the question is a `choice`, the clearing rule reads P(attack), and A3
+   compares wordings.
+4. **The model's name does not identify its calibration.** `GET /v1/models`
+   returns the folder name (`basal-2.0-4.5B-GGUF`) and, separately, the engine
+   (`mode`). The same folder has one calibration per engine, so the served
+   model is name **and** mode.
+
+Latency on that Mac, for one question per request:
+
+| Engine | p50, 1 client | p95, 1 client | 8 clients, req/s |
+| --- | --- | --- | --- |
+| MLX 8-bit | 412 ms (≈3 s for the first request after idle) | — | 2.2 (no batching) |
+| Ollama, Metal | 137 ms | 303 ms | 21.2 |
+| Ollama, CPU only | 338 ms | 785 ms | 12.6 |
+
+A Mac is a development box for this, not a server. The 300 ms first-pass
+timeout is a GPU number. B4 (Railway, CPU) must measure its own latency and
+must not assume an M2 Pro's.
+
 ## Where basal fits in Ragen today
 
 These call sites ask a model a closed question: a fixed label set, a yes/no or
@@ -130,7 +179,7 @@ a score. They are listed in order of fit.
 
 | # | Call site | Today | basal type | Note |
 | --- | --- | --- | --- | --- |
-| 1 | **Guardrail judges** (`jailbreak-detection`, `LLM_POLICY`). Logic in `packages/guardrails/src/evaluator/policy.ts`; bindings `apps/web/src/features/guardrails/utils/policy-judge.ts` and `apps/api/src/guardrails/policy-judge.service.ts` | `gemini-2.5-flash`, 3 s timeout per rule, threshold 0.7, on every input turn before the answer starts | `noul` + `max_error` | **this spec** |
+| 1 | **Guardrail judges** (`jailbreak-detection`, `LLM_POLICY`). Logic in `packages/guardrails/src/evaluator/policy.ts`; bindings `apps/web/src/features/guardrails/utils/policy-judge.ts` and `apps/api/src/guardrails/policy-judge.service.ts` | `gemini-2.5-flash`, 3 s timeout per rule, threshold 0.7, on every input turn before the answer starts | `choice`, threshold fitted on our data | **this spec** |
 | 2 | **Reranker slot** (`apps/web/src/libs/reranker/`, `RERANK_SEAM` in `packages/env`) | Scaleway, ~1 s p50 / 3.4 s p95 | `score` per candidate | next spec; already falls back silently to fusion order |
 | 3 | **Section selection** (`packages/rag-core/src/selection/select-sections.ts`) | LLM, ~0.2 s / 0.5 s, 8 s timeout | `multi` or `score` | measured against the reranker in D2 on 2026-10-01 |
 | 4 | **Brain contradictions** (`packages/brain-core/src/contradictions/judge.ts`) | LLM over pairs of pages, in the worker | `choice` | worker, so cost only |
@@ -200,20 +249,26 @@ For each judged rule on an input turn, `evaluateInputStage` asks basal first,
 when the first pass is available (see below):
 
 ```
-basal says "no" (benign), not deferred,
-and P(yes) < the rule's threshold     → scored, with score = P(yes). No judge call.
+P(attack) ≤ BASAL_CLEAR_MAX_P_ATTACK,
+and P(attack) < the rule's threshold   → scored, with score = P(attack). No judge call.
 anything else                          → the judge model, exactly as today.
 ```
 
+`P(attack)` is basal's probability for the one "attack" (or "violates")
+option of a `choice` question. `BASAL_CLEAR_MAX_P_ATTACK` is a package
+constant fitted in A3 on our own labelled data, for one served model (name
+and engine). It does not come from basal's shipped calibration, which
+certifies nothing usable here (finding 2).
+
 "Anything else" covers these cases:
 
-- basal says yes;
-- basal defers (`max_error`);
+- P(attack) is above the constant, whether basal chose "attack" or not;
 - basal times out (`BASAL_FIRST_PASS_TIMEOUT_MS`, 300 ms);
-- basal errors or is unreachable;
-- basal's `P(yes)` lands on the other side of the rule's own threshold from
-  its own answer. For example, an operator set the threshold to 0.2 and basal
-  said "no" with P(yes) = 0.3.
+- basal errors, is unreachable, or returns an answer that does not parse;
+- the served model is not the one the constant was fitted for;
+- P(attack) is at or above the rule's own threshold. For example, an operator
+  set the threshold to 0.05; the first pass then never disagrees with the
+  rule.
 
 A cleared rule produces a normal `{ outcome: 'scored', score }`. The hit and
 threshold logic, the result order and the cap all stay unchanged. A cleared
@@ -249,14 +304,18 @@ the spec stops there.
 decision `judgeRequestFor` already owns, for the same reason: two runtimes free
 to phrase it would phrase it differently.
 
-- **`jailbreak-detection`**: a `noul` with instructions fixed in code, taken
-  from `JAILBREAK_SYSTEM_PROMPT`'s list of what counts as manipulation. The
+- **`jailbreak-detection`**: a `choice` with options fixed in code. There are
+  several kinds of ordinary request and one `attack` option, whose description
+  is `JAILBREAK_SYSTEM_PROMPT`'s list of what counts as manipulation. The
   `state` is the masked message, truncated to `POLICY_JUDGE_MAX_INPUT_CHARS`.
-- **`LLM_POLICY`**: a `noul` whose instructions are the operator's policy
-  prose, with the same state. The judge's note that placeholders such as
-  `<PERSON_1>` stand for real values goes into the instructions verbatim.
-- **`max_error`**: `BASAL_GUARDRAIL_MAX_ERROR`, a package constant. Its value
-  comes from Phase A, not from the benchmark page.
+  The exact wording is chosen in A3 (finding 3).
+- **`LLM_POLICY`**: a `choice` between `complies` and `violates`, where
+  `violates` carries the operator's policy prose, over the same state. The
+  judge's note that placeholders such as `<PERSON_1>` stand for real values
+  goes into the instructions verbatim.
+- **`BASAL_CLEAR_MAX_P_ATTACK`**, and the served model it was fitted for, are
+  package constants. Their values come from A3, not from basal's shipped
+  calibration or its benchmark page.
 
 Each rule is its own request. basal batches concurrent requests on the server
 (a 3 ms window), and per-rule calls keep `runPolicyRules`' one-rule-one-result
@@ -289,9 +348,9 @@ no extra latency.
 
 | Piece | Location | Why there |
 | --- | --- | --- |
-| HTTP client, request and response types, the breaker, `isBasalConfigured()`, `modelId()`; the timeout is a parameter | new `packages/basal-client` | used by web and api; the reranker spec will reuse it from rag-core |
+| HTTP client, request and response types, the breaker, `isBasalConfigured()`, `servedModel()` (name and engine); the timeout is a parameter | new `packages/basal-client` | used by web and api; the reranker spec will reuse it from rag-core |
 | `BASAL_URL`, `BASAL_API_KEY` (optional, for a proxy in front) | `basal` fragment in `@ragenai/env`, using `httpUrl()` | ADR-37: a variable read by two apps is declared once |
-| `basalQuestionFor`, the clearing rule, `BASAL_GUARDRAIL_MAX_ERROR`, `BASAL_FIRST_PASS_TIMEOUT_MS` | `packages/guardrails` | the package owns the question, the decision and its numbers |
+| `basalQuestionFor`, the clearing rule, `BASAL_CLEAR_MAX_P_ATTACK` and its served model, `BASAL_FIRST_PASS_TIMEOUT_MS` | `packages/guardrails` | the package owns the question, the decision and its numbers |
 | The language gate | `packages/guardrails` (takes `franc` as a dependency; it is ESM-only, which apps/api now is too) | same reason: both runtimes must gate the same way |
 | Wiring | both judge bindings put a `firstPass` on `InputStageDeps`; `evaluateInputStage` hands it to `runPolicyRules` | `runPolicyRules` stays package-only in `guardrails-are-not-recopied`; the test also asserts both bindings supply `firstPass` |
 | `guardrailFirstPass` | `packages/platform-contracts`: `FEATURE_KEYS`, `DEFAULT_FEATURES` (`false`, with a comment on why) and `FEATURE_LABELS` | per org, admin-managed |
@@ -305,7 +364,7 @@ address and the key are per installation.
 
 - **basal replaces the judge.** At 72–78 % it would block legitimate turns, and
   no threshold makes a less accurate model safe in both directions.
-- **basal decides both ways, with a tight `max_error`.** It is cheaper still,
+- **basal decides both ways, with a tight threshold.** It is cheaper still,
   but convictions would come from the less accurate model. The asymmetry above
   is the whole design.
 - **basal as an `openai-compatible` route in `routes.yaml`.** basal does not
@@ -377,8 +436,9 @@ No schema change and no migration.
 - **The operator sets an unusual threshold.** The "same side" check makes
   basal fall through instead of disagreeing with the rule.
 - **The basal version or engine changes.** Calibration is per engine port, so
-  `max_error` would mean something else. `BASAL_GUARDRAIL_MAX_ERROR` is
-  documented as valid for one model id, read from `GET /v1/models`. The id is
+  the fitted threshold would mean something else. `BASAL_CLEAR_MAX_P_ATTACK`
+  is valid for one served model, the name and the engine `mode` from
+  `GET /v1/models` (finding 4). The served model is
   read off the turn path, on first use and then every 5 minutes, and is
   cached. A model swapped while running is therefore noticed within 5
   minutes. A failed read counts toward the breaker. On a mismatch the client
@@ -398,9 +458,14 @@ that defaults to `false`, so per ADR-50 every slice before C3 is a `chore`.
 
 ### Phase A — measure before building
 
-- [ ] **A1.** `packages/basal-client` and the `basal` env fragment. The
+- [x] **A1.** `packages/basal-client` and the `basal` env fragment. The
   client has `decide(state, questions)`, a timeout, a breaker,
-  `isBasalConfigured()` and `modelId()`. Nothing calls it yet.
+  `isBasalConfigured()` and `servedModel()`. Nothing calls it yet.
+
+  *Done 2026-10-14.* `servedModel()` returns the engine as well as the name
+  (finding 4). The client was checked against a running basal-serve under
+  Ollama: it answered, timed out, and tripped the breaker as the unit tests
+  say.
 - [ ] **A2.** A labelled set at `apps/web/evals/datasets/guardrail-first-pass/`,
   every row labelled by a person, not by a model:
   - **benign**: ~200 ordinary questions in Polish and English, taken from the
@@ -419,8 +484,11 @@ that defaults to `false`, so per ADR-50 every slice before C3 is a `chore`.
   opened until A4. Whoever writes the attacks writes both halves, and nobody
   adds an example after seeing a result.
 - [ ] **A3.** A script runs the **tuning half** through `runPolicyRules` with
-  today's judge and with the first pass, on basal-2.0 4.5B and max, at
-  `max_error` of 0.01, 0.02 and 0.05, and picks one configuration. It writes up the results. It must call the package's
+  today's judge and with the first pass, on basal-2.0 4.5B and max, with two
+  or three question wordings (finding 3). For each it fits
+  `BASAL_CLEAR_MAX_P_ATTACK` on the tuning half (`basal-calibrate`, or the
+  largest threshold that clears no attack and no violation there), and it
+  picks one configuration. It writes up the results. It must call the package's
   own functions, not a copy of the prompt; see
   [a test box that runs a different path](../lessons/a-test-box-that-runs-a-different-path-is-worse-than-none.md).
   Before the long run, make one real call to each model; see
@@ -436,14 +504,15 @@ that defaults to `false`, so per ADR-50 every slice before C3 is a `chore`.
     holdout's attacks and violations combined. With ~190 such rows that
     means zero misses (rule of three: 3/n). One miss is a no-go, even if
     the tuning half had none;
-  - zero false clearances on the tuning half at the chosen `max_error`;
+  - zero false clearances on the tuning half at the chosen threshold;
   - ≥ 40 % of benign holdout messages cleared;
   - the judge on the critical path: its p50 adds at least 300 ms to the time
     to first token. If it does not, the turn would not get faster, and only
     cost and data residency are left. That is a no-go for this spec unless
     the user decides those two are reason enough.
 
-  On a go, fix the model size and `BASAL_GUARDRAIL_MAX_ERROR`. On a no-go,
+  On a go, fix the model size, the wording, the engine and
+  `BASAL_CLEAR_MAX_P_ATTACK`. On a no-go,
   stop and record why. A1 stays as the client for the reranker spec.
 
 ### Phase B — run it locally
@@ -455,7 +524,7 @@ that defaults to `false`, so per ADR-50 every slice before C3 is a `chore`.
 - [ ] **B2.** `docs/companion-services.md` gains a basal section: the Compose
   profile on Linux with NVIDIA; native `basal-serve --mode mlx` on macOS,
   where Docker has no GPU; the port; the private-network warning; and the
-  model and `max_error` pairing. The `create-ragen-app` README lists
+  pairing of a served model with its fitted threshold. The `create-ragen-app` README lists
   `BASAL_URL` as optional.
 - [ ] **B3.** The setup status shows basal as `not configured`, `up` or `down`,
   as it does for Docling. It reads `isBasalConfigured()` and `/health`.
@@ -471,7 +540,7 @@ that defaults to `false`, so per ADR-50 every slice before C3 is a `chore`.
   (300 ms)? If it is, a GPU-less self-hosted install can use the first pass.
   If it is not, every turn would time out into the judge, and we write that
   down. Remember that calibration is per engine port, so GGUF needs its own
-  `max_error` from A3, not the GPU number. Nothing in C depends on B4.
+  threshold fitted in A3, not the GPU number. Nothing in C depends on B4.
 
 ### Phase C — the first pass
 
@@ -504,8 +573,9 @@ that defaults to `false`, so per ADR-50 every slice before C3 is a `chore`.
     error, rejected, the other side of the threshold;
   - the language gate: `pol`, `eng`, `und`, other languages;
   - the client: the breaker, timeout, a 422 and a malformed body.
-- **Unit** (`packages/basal-client`): it parses a `noul` answer, treats
-  `deferred` as deferred, and reads the model id.
+- **Unit** (`packages/basal-client`): it parses `choice` and `noul` answers,
+  refuses a malformed one rather than reading it as a low score, and reads the
+  served model with its engine.
 - **Unit** (bindings): each binding passes `firstPass` only when the key is on
   and basal is configured. Under the testing rules, a five-line binding still
   gets a test.
@@ -528,8 +598,8 @@ that defaults to `false`, so per ADR-50 every slice before C3 is a `chore`.
 - **Rollback:** turn the key off for the organization, or unset `BASAL_URL`
   for the installation. There is no migration, so reverting the PRs is also
   clean.
-- A basal upgrade re-runs A3 before `BASAL_GUARDRAIL_MAX_ERROR` changes. Until
-  then, the model-id check stops clearing.
+- A basal upgrade re-runs A3 before `BASAL_CLEAR_MAX_P_ATTACK` changes. Until
+  then, the served-model check stops clearing.
 
 ## Next (separate specs)
 

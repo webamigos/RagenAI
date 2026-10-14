@@ -24,6 +24,7 @@ const workspaces = {
   'apps/api': '@ragenai/api',
   'apps/worker': '@ragenai/worker',
   'apps/mcp': '@ragenai/mcp',
+  'packages/basal-client': '@ragenai/basal-client',
   'packages/brain-contracts': '@ragenai/brain-contracts',
   'packages/brain-core': '@ragenai/brain-core',
   'packages/connector-guard': '@ragenai/connector-guard',
