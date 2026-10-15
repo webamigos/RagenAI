@@ -13,6 +13,7 @@ export type {
   ServedModel,
 } from './client';
 export { isBasalConfigured } from './config';
+export { BASAL_HEALTH_TIMEOUT_MS, checkBasalHealth } from './health';
 export type {
   BasalAnswer,
   BasalQuestion,

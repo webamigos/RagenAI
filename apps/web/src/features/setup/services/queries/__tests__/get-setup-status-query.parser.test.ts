@@ -16,6 +16,12 @@ vi.mock('@/features/parsing/services/queries/get-parser-status-query', () => ({
   getParserStatusQuery,
 }));
 
+const checkBasalHealth = vi.hoisted(() => vi.fn());
+vi.mock('@ragenai/basal-client', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@ragenai/basal-client')>()),
+  checkBasalHealth,
+}));
+
 import { getSetupStatusQuery } from '../get-setup-status-query';
 
 const ids = (status: Awaited<ReturnType<typeof getSetupStatusQuery>>) =>
@@ -46,5 +52,39 @@ describe('getSetupStatusQuery — Docling (spec C1, D5)', () => {
     expect(ids(await getSetupStatusQuery())).not.toContain(
       'docling-unavailable',
     );
+  });
+});
+
+describe('getSetupStatusQuery — basal (basal spec, B3)', () => {
+  beforeEach(() => {
+    getParserStatusQuery.mockResolvedValue({ state: 'up' });
+    checkBasalHealth.mockReset();
+    vi.unstubAllEnvs();
+  });
+
+  it('says nothing and asks nothing when BASAL_URL is not set', async () => {
+    vi.stubEnv('BASAL_URL', '');
+
+    expect(ids(await getSetupStatusQuery())).not.toContain('basal-unavailable');
+    expect(checkBasalHealth).not.toHaveBeenCalled();
+  });
+
+  it('reports a basal that does not answer as a recommended finding', async () => {
+    vi.stubEnv('BASAL_URL', 'http://basal:8000');
+    checkBasalHealth.mockResolvedValue('down');
+
+    const status = await getSetupStatusQuery();
+
+    expect(
+      status.report.findings.find((f) => f.id === 'basal-unavailable'),
+    ).toMatchObject({ severity: 'recommended', vars: ['BASAL_URL'] });
+    expect(checkBasalHealth).toHaveBeenCalledWith({ url: 'http://basal:8000' });
+  });
+
+  it('adds nothing when basal is up', async () => {
+    vi.stubEnv('BASAL_URL', 'http://basal:8000');
+    checkBasalHealth.mockResolvedValue('up');
+
+    expect(ids(await getSetupStatusQuery())).not.toContain('basal-unavailable');
   });
 });
