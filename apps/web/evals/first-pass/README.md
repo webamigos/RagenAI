@@ -51,6 +51,14 @@ per engine; a GGUF build needs its own threshold.
 The judge's latency on the turn's critical path comes from traces, not from
 here. Add it to the write-up by hand.
 
+**On Ollama, the 300 ms arm does not measure a cold turn.** It asks the very
+prompts the direct measurement just asked, and Ollama (0.40.4) answers a prompt
+it has recently evaluated from cache: on an M2 Pro, ~50 ms against ~550 ms for
+the same 4.5B Q8_0 request the first time, still cached 30 requests later. So
+the arm's `suspected`/`cleared` there is what a repeated message gets, and the
+direct measurement's p50 is the number that says whether a new message fits in
+300 ms. MLX's arm timed out in A3, so it showed no such cache.
+
 ## Holdout (A4) — once
 
 ```bash
