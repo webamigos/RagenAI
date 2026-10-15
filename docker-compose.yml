@@ -166,6 +166,54 @@ services:
       retries: 5
       start_period: 30s
 
+  # Behind a profile, and NVIDIA only: basal-serve, the typed-decision model
+  # the guardrail first pass asks before the judge model
+  # (docs/specs/2026-10-13-typed-decisions-on-basal.md). Docker on macOS has
+  # no GPU, so on a Mac run `basal-serve --mode mlx` natively instead; see
+  # docs/companion-services.md.
+  #
+  #   BASAL_MODEL_REVISION=<commit> docker compose --profile basal up -d
+  #
+  # Nothing depends_on it: the apps ask it over HTTP, and only when BASAL_URL
+  # is set and an organization's `guardrailFirstPass` key is on. It has no
+  # authentication of its own, so it stays on the private network and the
+  # loopback bind below.
+  basal:
+    profiles: ['basal']
+    build:
+      context: ./infra/basal
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      BASAL_MODEL: ${BASAL_MODEL:-Remek/basal-2.0-4.5B}
+      # Required, and refused by the entrypoint unless it is a full commit
+      # hash: a threshold is fitted on one revision of the weights.
+      BASAL_MODEL_REVISION: ${BASAL_MODEL_REVISION:-}
+      BASAL_SERVE_MODE: ${BASAL_SERVE_MODE:-fast}
+      # Upstream's flag for the 4.5B model; mini and max run without it.
+      BASAL_SERVE_ARGS: ${BASAL_SERVE_ARGS:---template-prefix off}
+    ports:
+      - "${RAGEN_BIND_ADDR:-127.0.0.1}:${BASAL_PORT:-5004}:8000"
+    volumes:
+      - basal_models:/models
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    networks:
+      - ragen-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      # `--mode fast` compiles the model on first start, which upstream puts at
+      # several minutes, after the weights have downloaded.
+      start_period: 900s
+
   # Required. It holds the job queues (ADR-44) as well as the worker's
   # organization-settings cache, so an install without it has no background
   # processing at all — not a degraded rate limiter.
@@ -317,6 +365,7 @@ volumes:
   redis_data:
   qdrant_data:
   rustfs_data:
+  basal_models:
 networks:
   # The key is the name services reference; Compose publishes it as
   # `<project>_ragen-network`. No `name:` here, deliberately — a fixed one is

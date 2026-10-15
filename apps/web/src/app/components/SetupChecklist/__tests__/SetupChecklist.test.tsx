@@ -145,4 +145,21 @@ describe('SetupChecklist', () => {
       screen.getByTestId('setup-finding-docling-unavailable'),
     ).toHaveTextContent(/not been reachable since \d{1,2}:\d{2}/);
   });
+
+  // basal spec B3: a basal that does not answer, with no address in the text.
+  it('renders a basal outage', () => {
+    renderChecklist(
+      report([
+        {
+          id: 'basal-unavailable',
+          severity: 'recommended',
+          vars: ['BASAL_URL'],
+          example: 'docker compose --profile basal ps basal',
+        },
+      ]),
+    );
+    const item = screen.getByTestId('setup-finding-basal-unavailable');
+    expect(item).toHaveTextContent(/guardrail model \(basal\)/);
+    expect(item).toHaveTextContent('docker compose --profile basal ps basal');
+  });
 });

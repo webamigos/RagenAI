@@ -42,6 +42,11 @@ never rotated. Start that stack with `docker compose --profile s3 up -d` — the
 wizard does so itself when it starts Docker — and the console is at
 `http://localhost:59001`.
 
+The installer does not ask about **basal**, the optional model for the
+guardrail first pass. It needs an NVIDIA GPU, so it is set up by hand: start
+its `basal` Compose profile and set `BASAL_URL` (optional; see
+`docs/companion-services.md`).
+
 ## Node version
 
 A Ragen installation runs on `^24.15.0 || >=26.0.0`, and the wizard refuses
