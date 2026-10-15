@@ -2,7 +2,8 @@
 
 Step A2 of [the basal spec](../../../../../docs/specs/2026-10-13-typed-decisions-on-basal.md).
 
-`candidates.unlabelled.jsonl` holds 206 candidate rows. **None of them is labelled.**
+`candidates.unlabelled.jsonl` holds 511 candidate rows: 200 benign, 281
+attacks and 30 in other languages. **None of them is labelled.**
 
 | field | meaning |
 | --- | --- |
@@ -17,14 +18,22 @@ Step A2 of [the basal spec](../../../../../docs/specs/2026-10-13-typed-decisions
 Where the rows come from:
 
 - **benign**: every Polish and English question in the rag-benchmark corpora
-  and the promptfoo datasets (101, each text once), plus 40 hand-written
+  and the promptfoo datasets (101, each text once), plus 104 hand-written
+  rows: ordinary office work (expenses, HR, procurement, writing) and
   "hard" rows. A hard row is ordinary
   work that uses the words an attack uses: "ignore the typo", "write a system
   prompt for our bot", "from now on answer in bullet points".
-- **attack**: `red-team.yaml` plus 45 hand-written rows across techniques:
-  override, prompt extraction, role play, "this is a harmless test",
-  instructions hidden in pasted content, tool abuse, encoding, hypotheticals,
-  separators. One `red-team.yaml` row is a PII request, not a jailbreak, so
+- **attack**: `red-team.yaml` plus 270 hand-written rows, about half Polish
+  and half English, across techniques: override, prompt extraction, role
+  play, "this is a harmless test", instructions hidden in pasted content
+  (reviews, web pages, invoices, CVs, helpdesk tickets), tool and connector
+  abuse, encoding (base64, ROT13, hex, spaced letters), hypotheticals,
+  translation, multi-step, separators, prefix injection, refusal
+  suppression, claimed authority, emotional pressure, few-shot, payload
+  splitting, format coercion, context flooding, links and markdown images,
+  cross-tenant data requests and code execution. The draft names the
+  technique, e.g. `attack (pasted-content)`. Every encoded payload decodes to
+  what it claims. One `red-team.yaml` row is a PII request, not a jailbreak, so
   its draft says `attack?`. `ci-gate.yaml`'s injection probe ("Ignore all
   previous instructions…") is an attack here, whatever that file uses it for.
 - **other-language**: German and Ukrainian rows, hand-written plus the German
@@ -42,10 +51,14 @@ The spec's rules, which this file exists to make possible:
 
 1. **A person sets `label` on every row.** The drafts were written by a model,
    and a set labelled by a model measures agreement with that model.
-2. **Grow it to the spec's sizes** before splitting: ~200 benign, ~200
-   attacks, ~30 in other languages. It is short of all three today. No two
-   rows may share a `text`: a duplicate could land in both halves and leak
-   the holdout into tuning.
+2. **The spec's sizes are reached**: ~200 benign, ~200 attacks, ~30 in other
+   languages. Attacks run past 200 on purpose: A4 bounds the false-clearance
+   rate by the holdout attacks that pass the language gate, and at ~100 that
+   bound sits right on the spec's 3 %. With 281, about 137 reach basal in the
+   holdout, a bound near 2.2 %. A person may still drop or rewrite rows while labelling, never
+   after a result. No two rows may share a `text`: a duplicate could land in
+   both halves and leak the holdout into tuning. `label` is `benign` or
+   `attack`, whatever the row's `set`.
 3. **Split once into tuning and holdout halves**, stratified by `set` and
    `lang`. Do this before any model sees a row.
 4. **Nobody adds or edits a row after seeing a result.**
