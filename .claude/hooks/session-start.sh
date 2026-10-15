@@ -34,12 +34,18 @@ if [ "$(node -v 2>/dev/null || true)" != "v${want}" ]; then
   fi
 fi
 
-# Skip the install when node_modules already matches the lockfile — a resumed
-# session, or a container restored from the post-hook cache.
-if [ -f node_modules/.package-lock.json ] &&
-  [ node_modules/.package-lock.json -nt package-lock.json ]; then
-  echo "node_modules is current; skipping npm ci" >&2
+# Skip the install only when the last *successful* one was for these exact
+# manifests — a resumed session, or a container restored from the post-hook
+# cache. The marker is written after `npm ci` exits 0, so an interrupted
+# install leaves none and the next start retries; a changed lockfile or root
+# package.json changes the hash. (An mtime comparison passed both cases.)
+marker="node_modules/.session-start-manifests.sha256"
+want_hash="$(cat package-lock.json package.json | sha256sum | cut -d' ' -f1)"
+
+if [ -f "${marker}" ] && [ "$(cat "${marker}")" = "${want_hash}" ]; then
+  echo "node_modules matches package-lock.json; skipping npm ci" >&2
   exit 0
 fi
 
 npm ci --no-audit --no-fund >&2
+echo "${want_hash}" > "${marker}"

@@ -53,7 +53,9 @@ container.
 **The same suite is the Temporal parity run**:
 `WORKER_RUNTIME=temporal npm run test:jobs-integration` needs no Redis and no
 container — `@temporalio/testing` starts a real Temporal server from a cached
-binary (`JOBS_TEST_TEMPORAL_ADDRESS` points it at your own). CI runs it nightly
+binary (`JOBS_TEST_TEMPORAL_ADDRESS` points it at your own). On a cache miss it
+downloads that binary from `temporal.download`, so a network that blocks the
+host fails the run before any test starts — as in a Claude Code cloud session. CI runs it nightly
 as `Jobs Parity`, over both runtimes. Where the engines genuinely differ, the
 difference is a field on `RuntimeTraits` in `test/jobs-integration/harness.ts` —
 read that table before assuming a parity failure is a regression, and add to it

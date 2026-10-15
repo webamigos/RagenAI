@@ -7,7 +7,7 @@ topics: ['markdown-it', 'linkify', 'rag', 'citations', 'rendering', 'security']
 
 # A file extension can be a TLD, so linkify turns a cited filename into an external link
 
-**In short**: `.md` is Moldova, and so are `.pl`, `.sh`, `.zip`, `.mov` and `.py` — a cited filename rendered as a link to a domain nobody here controls. Two renderers had `linkify: true`, configured independently.
+**In short**: `.md` is Moldova's TLD, and `.pl`, `.sh`, `.zip`, `.mov` and `.py` are TLDs too — so a cited filename rendered as a link to a domain nobody here controls. Two renderers had `linkify: true`, configured independently.
 
 **Context**: An answer in the demo read `According to 'Sample FAQ — support
 and availability.md', …` and `availability.md` rendered as a link. Clicking a

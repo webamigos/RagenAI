@@ -7,7 +7,7 @@ topics: ['env-vars', 'aws', 'scaleway', 'bedrock', 'litellm', 'reranker', 'stora
 
 # AWS_ACCESS_KEY_ID/AWS_SECRET_ACCESS_KEY in local .env.local are Scaleway S3 credentials, not AWS Bedrock ones
 
-**In short**: A flat 403 "security token invalid" (not a permissions error) means the credentials are for a different service, not expired.
+**In short**: A flat 403 "security token invalid" (not a permissions error) came, in this case, from credentials meant for a different service. The same error also covers expired or deactivated keys and missing STS session credentials, so check for a collision before assuming expiry.
 
 > **Resolved 2026-09-04** (PR #873): the storage side of this collision moved
 > off the `AWS_` prefix entirely — `packages/storage` now reads

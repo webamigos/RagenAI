@@ -7,7 +7,7 @@ content. Edit this file, never the pointer.
 
 > **Instruction budget:** Codex reads this file *plus* the `AGENTS.md` of the
 > directory it works in, and stops at **32,768 bytes combined** (its default
-> `project_doc_max_bytes`) — silently. This file is capped at 30,720 bytes and
+> `project_doc_max_bytes`) — silently. This file is capped at 28,672 bytes and
 > root + any app's file at 32,768, both enforced by
 > `tests/architecture/agent-instructions-fit-the-budget.test.ts`. When it fires,
 > move long-form detail into `docs/` and leave a pointer — do not trim the hard
