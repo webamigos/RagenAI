@@ -7,6 +7,8 @@ topics: ['playwright', 'e2e', 'tailwind', 'design-tokens', 'locators', 'refactor
 
 # An e2e locator keyed to a Tailwind colour class fails when the colour is tokenised, while the feature works perfectly
 
+**In short**: The element already carried `role="alert"`; the locator reached past it for `[class*="text-red"]`, so a token rename failed the test while the error rendered perfectly.
+
 **Context**: `apps/web` had no colour system — 3830 hard-coded Tailwind colour
 classes against 824 uses of the semantic tokens. Part of fixing that replaced
 `text-red-600 dark:text-red-400` with `text-destructive` on a form validation

@@ -7,6 +7,8 @@ topics: ['nextjs', 'typed-routes', 'typecheck', 'generated-code', 'verify']
 
 # Moving an App Router page fails typecheck against stale .next/types, and the error blames your code
 
+**In short**: `.next/types/validator.ts` lists the routes of the _previous_ build, and turbo runs typecheck before build, so a correct move fails with `does not satisfy the constraint 'AppRoutes'` naming the new route. Run `npm run web:build` once after moving a page, then verify. CI never hits it — no stale `.next/`.
+
 **Context**: Two pages moved from `app/[locale]/(panel)/settings/` to
 `app/[locale]/(panel)/organization/`. Every reference was updated, every test
 passed, and `npm run verify` then failed:

@@ -8,6 +8,8 @@ topics:
 
 # A generated docs page can be hand-edited in the repository it is published from, and the drift test that would catch it only runs where both checkouts exist
 
+**In short**: `configuration/environment-reference.mdx` is rendered from `packages/env` by `scripts/docs/generate-config-reference.mjs`, which writes into the sibling checkout; a docs PR added a link and a paragraph to it by hand. The next regeneration would have deleted both silently, and `npm run verify` went red on `main` in a repository whose tree had not changed — invisible on CI, where the sibling checkout does not exist and the test skips. Prose for a generated page belongs in the generator's source; prove the move with `CONFIG_REFERENCE_OUT=/tmp/x.mdx npm run docs:config-reference` and a diff against the committed page.
+
 **Context**: `configuration/environment-reference.mdx` in the `ragen-docs`
 repository is a build artifact. `scripts/docs/generate-config-reference.mjs`
 renders it from `PROVIDER_SEAMS` and `FIELD_GROUPS` in `packages/env`, writing

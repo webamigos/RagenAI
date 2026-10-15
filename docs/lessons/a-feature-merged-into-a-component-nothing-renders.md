@@ -5,6 +5,8 @@ areas: [architecture, testing]
 topics: [dead-code, react, component-tests, false-green, rag, citations]
 ---
 
+**In short**: `SourcesBlock` was wired into `MessageItem`, which nothing imports; the chat screens mount `ChatOutput`. Three PRs built on a surface that was never on screen, all green — typecheck, lint, coverage and the component's own test all look at nodes, and the missing thing was an edge. Grep for who imports a surface before building on it. Recurred in #1035 as the server-side spelling of the same bug: a query selected `documentRetrievals` and decrypted them on every thread load, and no component ever read the field — grep a new `select` for its _readers_.
+
 ## Context
 
 Gap 2 stage 1 added `SourcesBlock` — the panel under an assistant answer

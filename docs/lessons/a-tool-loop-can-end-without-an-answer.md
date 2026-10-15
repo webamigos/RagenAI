@@ -5,6 +5,8 @@ areas: [rag, testing]
 topics: [llm, ai-sdk, tool-calling, gemini, vertex, tool-choice, step-limit, brain, empty-answer, mocks, false-green]
 ---
 
+**In short**: The Brain assistant's first run on Gemini ended two turns in ten with an empty bubble after ten reads. `toolChoice: 'none'` on the last step was ignored, and a no-tools closing call handed the call history was answered with another function call. Close with the results as plain text; test against a mock that never stops calling tools.
+
 ## Context
 
 The Brain operator's assistant (spec 2026-09-25-brain-operator-assistant)

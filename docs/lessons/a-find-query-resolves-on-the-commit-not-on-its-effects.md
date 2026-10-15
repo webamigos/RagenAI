@@ -7,6 +7,8 @@ topics: ['vitest', 'react-testing-library', 'react', 'passive-effects', 'flaky-t
 
 # A findBy query resolves on the commit, not on the effects that follow it
 
+**In short**: `XlsxViewer` marks cited rows in the commit and scrolls in a `useEffect`; the test read the scroll spy right after `findByText`, so under a loaded `npm run verify` it sometimes ran between the commit and the effect. Isolation — even 60 repeats under CPU load — never reproduced it; a 30 ms delay in the effect did, every time. Wait for the side effect itself, as `PdfViewer.test.tsx` already did.
+
 **Context**: `passage-highlight.test.tsx > XlsxViewer > opens on the sheet the
 rows came from, marks them, and scrolls past the header` failed twice in
 `npm run verify` on 2026-09-25/26, on two branches that touched neither the

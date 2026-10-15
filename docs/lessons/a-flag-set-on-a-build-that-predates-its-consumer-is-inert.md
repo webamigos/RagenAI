@@ -6,6 +6,8 @@ topics:
   [llm-gateway, feature-flags, railway, healthcheck, measurement, fail-open, unpushed-commits]
 ---
 
+**In short**: `LLM_GATEWAY=native` was set on demo and B4's observation week recorded as started — but the seam that reads it sat on an unpushed branch, so demo kept serving through LiteLLM while labelled native. Railway showed the variable, the deploy succeeded, and nothing warns that a variable matches no reader. The healthcheck built to catch precisely this could not: it ships in the same commit as the seam, so `/api/healthcheck` returned bare `{"status":"ok"}` — a **missing** `llmGateway` key, which dates the build earlier than the flag and is more alarming than a wrong value. Require a positive `{"llmGateway":"native"}` before counting day one, and `git ls-remote` the branch before believing an environment could have built it.
+
 ## Context
 
 B4 of the LiteLLM retirement is an observation week: put the demo environment on

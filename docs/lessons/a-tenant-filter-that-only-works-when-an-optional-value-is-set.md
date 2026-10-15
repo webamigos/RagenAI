@@ -14,6 +14,8 @@ topics:
   ]
 ---
 
+**In short**: The `where` named `projectId: context.projectId` and nothing else, on a comment's assurance that the key's project was "the sole filter we need". No key has ever had a project — nothing writes `ApiKey.projectId` — so Prisma got `undefined`, dropped the clause, and the endpoint answered for the whole database. The unit tests passed a `projectId` production has never had. A dead column is not a harmless column: grep a column's _readers_ before calling it inert — and the same column, read by a fallback nothing ever reached, made an API-key scope look implemented when no code path had ever written it.
+
 ## Context
 
 `GET /v1/files` and `GET /v1/files/{id}` in `apps/api` were written on a stated

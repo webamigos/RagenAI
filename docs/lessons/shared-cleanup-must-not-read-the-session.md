@@ -7,6 +7,8 @@ topics: ['data-retention', 'better-auth', 'internal-api', 'vector-store', 'silen
 
 # A shared cleanup helper that reads the session fails silently for every secret-authenticated caller
 
+**In short**: `deleteFileFromVectorStore` re-derived the org from the Better Auth session, so the secret-authenticated `/api/v1/files/[fileId]` route deleted the row and left every chunk in Qdrant — eight files, HTTP 200 each, 34 points still answering questions. A recurrence: the same file had already been fixed for the same mistake one block earlier. Internal cleanup takes the validated `organizationId` as a required parameter.
+
 **Context**: `deleteFileCommand` is the one path every file delete goes
 through — the knowledge-base delete, the project-scoped delete, the bulk
 action, the folder cascade, and the internal `/api/v1/files/[fileId]` route

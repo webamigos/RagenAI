@@ -7,6 +7,8 @@ topics: ['docker-compose', 'devcontainer', 'bind-mounts', 'local-development']
 
 # A layered Compose file resolves its relative paths against the first -f file, not its own directory
 
+**In short**: The `.devcontainer` override mounts `.`, not `..`, and the repository's own compose file has to stay first in `dockerComposeFile` or every `./infra/...` bind in it silently resolves to a directory Compose then creates empty. `docker compose … config` prints the resolved `source:` — check it, don't trust the spelling.
+
 **Context**: adding `.devcontainer/docker-compose.devcontainer.yml`, a one-service
 override layered on the repository's own `docker-compose.yml`:
 

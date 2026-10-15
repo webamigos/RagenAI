@@ -17,6 +17,8 @@ topics:
 
 # Temporal accepts a six-field cron and never fires it — a parity suite that reuses the other engine’s dialect reports the wrong engine broken
 
+**In short**: The nightly parity job's first finding, and it was about the test: `*/2 * * * * *` is BullMQ's dialect, and Temporal accepts it, lists it, describes it and never fires it — zero actions in sixty seconds against thirty-three for `@every 2s`. It reads as "Temporal does not fire schedules at all", which is false. Anything an engine *parses* is a dialect and belongs to the harness, not to the assertion.
+
 **Context**: the job-runtime integration suite (the spec's D1) was written runtime-agnostic so §8.3's nightly parity job could point it at Temporal. Its schedules file registers a fast schedule rather than waiting for a nightly one, and that fast schedule was `'*/2 * * * * *'` — six fields, seconds first, which is BullMQ's pattern dialect and was written when BullMQ was the only harness.
 
 **Problem**: on Temporal that string is accepted and does nothing. `upsertSchedule` succeeds, `listSchedules` returns the schedule, `describe()` shows it exists — and **zero actions fire in sixty seconds**, measured, against thirty-three for the same interval written as `'@every 2s'`. Temporal's cron is five fields; the sixth is not rejected, it is parsed into something that never comes due. So two of the three schedule tests failed on the parity run with "expected at least 1 calls, saw 0", which reads exactly like *Temporal does not fire schedules at all* — a false and alarming first answer from a job whose entire purpose is to be believed. It also failed in isolation, which removed the obvious suspect (cleanup racing the next test) and cost the time it takes to rule one out.

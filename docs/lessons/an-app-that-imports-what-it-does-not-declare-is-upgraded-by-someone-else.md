@@ -5,6 +5,8 @@ areas: [architecture, dependencies]
 topics: [npm-workspaces, hoisting, phantom-dependencies, ai-sdk, monorepo, upgrades]
 ---
 
+**In short**: `npm ls ai` listed api and worker and not web, which imports it in 19 files including the chat stream. Three of the four packages came from a root declaration; `@ai-sdk/provider` came from `apps/api` alone, pinned there, while ten files in `apps/web` import it — so the app streaming every chat response took that version from the API's manifest. `npm ls <pkg>` answers who resolves a package, not who uses it; grep the imports separately when scoping an upgrade.
+
 ## Context
 
 Phase B of the LiteLLM retirement needed `@ai-sdk/azure`, `@ai-sdk/amazon-bedrock`

@@ -18,6 +18,8 @@ topics:
 
 # A guarded `await import()` still resolves at compile time, so extracting a package fails `tsc` in the one app that was written to survive it — and the two apps that were not turn out to be the real problem
 
+**In short**: G3 moved `@ragenai/jobs-temporal` to `ragen-enterprise` and the "deletion" failed three ways: TypeScript resolves a *literal* `import()` specifier whatever branch guards it, so even `apps/worker` — written for this from the first commit — broke; `apps/web` and `apps/api` imported it statically and every guard was green because the adapter is not `@temporalio/*`; and a Next standalone build cannot be layered, so the chore turned into a decision about who builds the producers. The specifier is a constant in `packages/jobs` now. Grep for the package's specifier, not the engine it wraps, and prove it with a build of a tree that does not contain it.
+
 **Context**: the worker-runtime spec's G3 — moving `@ragenai/jobs-temporal` out of this repository to `webamigos/ragen-enterprise`. The plan was a deletion: drop the workspace, drop it from the guards' allow-lists, done. `apps/worker` had been written for this from the first commit of the seam: it reaches the adapter through `await import('@ragenai/jobs-temporal')`, behind `if (resolveWorkerRuntime() === 'temporal')`, which is what lets its image omit the package.
 
 **Problem**: three things, in increasing order of how much they cost.

@@ -7,6 +7,8 @@ topics: ['tailwind', 'preflight', 'user-agent-stylesheet', 'buttons', 'design-to
 
 # A `<button>` resets text-transform and text-align, so `uppercase` on the parent and `text-left` you never wrote both lose
 
+**In short**: Tailwind's preflight sets `text-transform: none` on `button`, and the UA stylesheet centres its text; a declaration on the element beats an inherited one. Three sortable column headers stayed title-case beside two uppercase ones, and a folder name drifted into the middle of the rail the moment the tag beside it stopped taking the space. Check `getComputedStyle` on the child, not the source.
+
 **Context**: design system v2 phase 7 gives the knowledge base's table an
 11px uppercase header and a 216px folder rail. Both were built, both looked
 right in review, and both were wrong in the same way — twice in one afternoon,

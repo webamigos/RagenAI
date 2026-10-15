@@ -7,6 +7,8 @@ topics: ['monorepo', 'turborepo', 'workspace-packages', 'vitest', 'stale-build',
 
 # Running vitest directly instead of through turbo tests the app against the last built `dist` of a workspace package, not the source you just edited
 
+**In short**: A package's own tests import the source and go green; apps resolve `main` → `dist` and see the old code. `turbo.json` makes this impossible through turbo (`test`/`typecheck`/`lint` all `dependsOn: ["^build"]`) — it only bites when you bypass turbo to run one file, and the direction that costs you is the stale `dist` making an assertion pass.
+
 **Context**: ADR-39's follow-up added a third value to `OrgVisibilityScope` in
 `packages/platform-contracts`, so that a non-member resolves to `'none'`
 instead of sharing the member scope. The change was two lines in

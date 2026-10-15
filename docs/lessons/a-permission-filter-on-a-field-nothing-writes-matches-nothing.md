@@ -1,5 +1,7 @@
 # A permission filter on a payload field nothing writes matches nothing — and only the surface that resolves the caller's scope still answers
 
+**In short**: `/v1/search` returned the right document and `/v1/chat/completions` returned nothing, same key and same query: the chat surfaces never pass `scope`/`userTeamIds` so the filter defaults to `member` and demands `metadata.accessible_by`, which ingest never writes — the worker only creates a payload *index* on it. An index on a field is not evidence anything fills it, and a filter matching nothing is indistinguishable from one correctly excluding everything.
+
 **Area:** architecture, rag, testing · **Module:** api, worker, web ·
 **Topic:** qdrant, metadata-filter, access-control, accessible_by, retrieval,
 silent-failure, adr-21

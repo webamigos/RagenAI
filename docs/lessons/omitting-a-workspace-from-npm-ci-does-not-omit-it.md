@@ -16,6 +16,8 @@ topics:
 
 # Omitting a workspace from `npm ci --workspace=…` does not keep it out of the image — and the package you were trying to drop was not the big one
 
+**In short**: npm links every workspace and installs its dependencies whichever ones `--workspace=` names, so the package the plan dropped was still in the image — and it was 136 KB against the 182 MB of `@temporalio/worker`, a production dependency of apps/worker that no adapter edit touches. One `import` of `ApplicationFailure` in an activity both engines run held the rest. Build the image and `du -sh` inside it before believing a Dockerfile diff. Confirmed on the published `ragen-worker:2.0.0` in G2: the adapter is still in there, so the boot failure on `WORKER_RUNTIME=temporal` names `@temporalio/worker` and never mentions it — and the same link is why a layer must write to `apps/worker/node_modules`, not to `/app/node_modules/@ragenai/`, which is a symlink into `packages/`.
+
 **Context**: ADR-44 made BullMQ the worker runtime and left Temporal as an adapter. The plan for taking Temporal out of the published worker image was a one-line Dockerfile edit: drop `--workspace=@ragenai/jobs-temporal` from the `npm ci` that builds the production stage.
 
 **Problem**: two assumptions in that plan were wrong, and building the image is what showed it.

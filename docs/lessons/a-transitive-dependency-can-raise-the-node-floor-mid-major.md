@@ -7,6 +7,8 @@ topics: ['node-version', 'engines', 'engine-strict', 'ebadengine', 'installer', 
 
 # A transitive dependency can raise the Node floor mid-major
 
+**In short**: `jsdom@30.0.1` narrowed to `^24.15.0` with no version bump of ours, so every Node 24.0–24.14 failed `npm install` while twenty-one `engines.node` fields, `.nvmrc` and the installer's own check all said `>=24` and CI stayed green — `setup-node`'s `node-version: 24` always installs the newest 24.x. The installer compared majors, cleared 24.13, cloned, wrote `.env.local`, started compose, and *then* hit EBADENGINE. A minimum Node is a full version, stated once; pin a CI job below the floor or nothing can observe it.
+
 **Context**: a fresh `create-ragen-app` 0.6.1 install, run by hand on a machine
 with Node 24.13.0 — the version `nvm install 24` produced for several weeks.
 Every declared requirement in the repository said `>=24`, and CI was green.

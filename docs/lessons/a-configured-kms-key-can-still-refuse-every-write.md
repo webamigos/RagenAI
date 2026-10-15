@@ -16,6 +16,8 @@ topics:
 
 # A configured KMS key can still refuse every write, and the app only finds out one message at a time
 
+**In short**: `isEncryptionConfigured()` checks that the variables are *set*; both were, and the key answered 403 `permissions_denied` on every write — so the demo's chat was dead for days behind a generic "unexpected error" toast, with the blocking screen that exists to explain this never firing. One `SCW_API_KEY` serves storage, inference and Key Manager with different permission sets, and a wrong project or region returns the same 403 as a missing permission. `probeEncryptionProvider()` now wraps and unwraps one key at boot; `ALLOW_UNENCRYPTED=1` does not waive it.
+
 **Context**: `demo.ragen.ai` answered questions for days and then stopped. The
 toast said *"Wystąpił nieoczekiwany błąd podczas przetwarzania Twojego
 zapytania"* — `unknown-error`, the catch-all `SseExceptionFilter` produces for

@@ -7,6 +7,8 @@ topics: ['vitest', 'jsdom', 'better-auth', 'nanostores', 'teardown', 'flaky-test
 
 # A library timer armed in one test file crashes a different one after teardown — and the report blames the wrong file
 
+**In short**: All 1871 tests passed and the job was still red: nanostores schedules an atom's teardown a second after its last subscriber leaves, and Better Auth's cleanup then touches `window` that jsdom has already disposed. Read this before editing whatever file a `ReferenceError` names.
+
 **Context**: CI on [#897](https://github.com/webamigos/ragenai/pull/897), a PR touching only ESLint configuration and two `package.json` files, failed the `Test` job. The output was:
 
 ```

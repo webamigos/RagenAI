@@ -5,6 +5,8 @@ areas: [testing, rag]
 topics: [evals, benchmark, llm-judge, rubric, false-red, regrade, corpus-revision, adr-20]
 ---
 
+**In short**: `tabele` rev 1 said "the number alone is enough" to allow a bare figure, and the judge failed "21 629,67 zł" for carrying a unit, on some runs and not others, so it read as a difference between arms. Say both halves ("with or without the unit"), read by hand any case whose assertions pass and whose rubric fails, and bump the corpus revision when a rubric changes.
+
 ## Context
 
 `tabele-bilingual-v1` rev 1 graded `pl-cap-extensometer` with the rubric

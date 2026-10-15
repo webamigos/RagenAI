@@ -7,6 +7,8 @@ topics: ['monorepo', 'feature-flags', 'type-safety', 'architecture-tests']
 
 # A constant duplicated across workspaces drifts silently, and typecheck cannot see it because each copy derives its own type
 
+**In short**: The admin model allowlist drifted in _namespace_ (`openai/gpt-5.3-chat` vs `gpt-5.3-chat`) and so emptied an org's model picker instead of restricting it. Resolved by [ADR-33](../adrs/33-shared-platform-contracts-package.md) — read the "How it was resolved" section before adding a fifth copy of anything.
+
 **Context**: adding a feature flag (`voiceInput`) meant adding a key to `FEATURE_KEYS`. AGENTS.md and the `apps/api` port comment both described the list as living in three places — `apps/web/src/features/subscriptions/contracts/features.types.ts` (the contract), `apps/api/src/subscriptions/types.ts` (the port, per ADR-21), and `apps/admin/src/app/(dashboard)/features/feature-keys.ts` (the UI that writes per-org overrides). Each derives its own union with `type FeatureKey = (typeof FEATURE_KEYS)[number]`.
 
 **Problem**: two separate failures, and neither is the kind a reviewer catches by reading a diff.

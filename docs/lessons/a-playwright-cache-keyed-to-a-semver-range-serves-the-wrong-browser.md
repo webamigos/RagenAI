@@ -7,6 +7,8 @@ topics: ['github-actions', 'caching', 'playwright', 'e2e', 'cache-keys', 'fail-o
 
 # A Playwright browser cache keyed to a semver range serves the wrong chromium build, and skipping the install on a cache hit turns that into a red main
 
+**In short**: The key read `devDependencies['@playwright/test']` — the range `^1.63.0`, which never moves — so a stale browser cache hit forever, and `if: cache-hit != 'true'` meant nothing re-downloaded. It stayed invisible while the node_modules cache kept handing back the matching old core, then took both e2e suites down on a commit that only deleted dead code.
+
 **Context**: both e2e workflows (`e2e.yml`, `admin-e2e.yml`) cached `~/.cache/ms-playwright` and skipped `playwright install` when the cache hit. The key came from the lockfile:
 
 ```yaml

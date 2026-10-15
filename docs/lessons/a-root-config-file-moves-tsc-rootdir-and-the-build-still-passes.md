@@ -7,6 +7,8 @@ topics: ['typescript', 'rootdir', 'nestjs', 'build-outputs', 'turborepo', 'false
 
 # Adding a config file at an app root moves tsc's rootDir, so the build emits dist/src/main.js, exits 0, and the container cannot start
 
+**In short**: tsc derives `rootDir` from the common ancestor of its inputs; two new `vitest.config.ts` files at the app root pushed it up a level and the whole tree moved to `dist/src/`. `nest build` exited 0 and the CI Build check was green — only `test-e2e`, which starts the artifact, caught it, reporting a missing module rather than a misplaced one. `prisma.config.ts` was already excluded for the same reason, uncommented. Guarded by `build-output-stays-where-the-start-command-looks.test.ts`.
+
 **Context**: `apps/api` builds with `nest build`, which runs tsc over
 `tsconfig.build.json`. Every source file lives under `src/`, and `start:prod`
 and the Dockerfile `CMD` both name `dist/main.js`.

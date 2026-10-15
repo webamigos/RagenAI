@@ -7,6 +7,8 @@ topics: ['ingest', 'binary-detection', 'istextorbinary', 'file-type', 'docling',
 
 # `isBinary(path)` reads only the extension
 
+**In short**: Given a name and no buffer, `istextorbinary` consults its extension lists only; docx/xlsx/pptx/epub are on neither, so it answered `null` → "text", the file became `TEXT`, and on a Docling outage `readFile(…, 'utf-8')` indexed the ZIP — demo quoted U+FFFD as a source. `workflow.spec.ts` mocks `checkIsBinaryFile`, so it tested the dispatch given a right answer and never the answer. Also: `fileTypeFromBuffer` on a 4100-byte cut throws `EndOfStreamError` for a ZIP whose identifying entry is further in, and a `@ragenai/rag-core` barrel import in a handler fails every Temporal workflow with `process is not defined`. Pass a buffer and a `null` name; test every mocked step somewhere it is real; check loader output before indexing.
+
 **Context**: `runFileEmbeddings` starts by asking `checkIsBinaryFile` whether
 the upload is binary. Only a binary goes through `checkMimeType` (magic bytes
 via `file-type`); anything else is recorded as `text/plain`, and the mime

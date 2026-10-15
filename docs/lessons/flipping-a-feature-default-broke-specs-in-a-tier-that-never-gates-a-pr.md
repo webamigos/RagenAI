@@ -7,6 +7,8 @@ topics: ['feature-flags', 'e2e', 'playwright', 'test-tiers', 'seed-data', 'fail-
 
 # Flipping a feature default to opt-in broke six e2e specs, and the tier they live in never runs on a PR
 
+**In short**: `publicChatbot` and `publicThreadLinks` went opt-in without the e2e seed being updated; both specs are `p1`, so every PR stayed green and only the post-merge run went red.
+
 **Context**: two PRs made external sharing opt-in per organization — #854 for `publicChatbot` (the hosted public assistant page and the embed widget) and #853 for `publicThreadLinks` (public thread links). Both set the code default to `false` in `packages/platform-contracts/src/features/features.ts`, so an organization gets the feature only once a platform admin grants it. Both were correct changes, well-reasoned in their own comments.
 
 Neither touched `apps/web/e2e/seed/e2e-seed.ts`, which had been creating its `organizationSettings` rows with no `featureOverrides` since long before the flags existed.

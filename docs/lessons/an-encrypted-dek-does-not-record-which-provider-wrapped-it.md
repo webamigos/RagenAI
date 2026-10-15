@@ -7,6 +7,8 @@ topics: ['encryption', 'kms', 'scaleway', 'key-manager', 'envelope-encryption', 
 
 # An encrypted DEK does not record which provider wrapped it, so changing ENCRYPTION_PROVIDER silently orphans every existing thread
 
+**In short**: Auto-detection makes it worse: with `ENCRYPTION_PROVIDER` unset, merely adding `SCW_KEY_MANAGER_KEY_ID` switches provider as a side effect of setting a variable that looks additive.
+
 **Context**: Thread messages use envelope encryption. A per-thread data
 encryption key (DEK) is generated, wrapped by a key provider, and the wrapped
 result is stored on the thread. `getKeyProvider()`

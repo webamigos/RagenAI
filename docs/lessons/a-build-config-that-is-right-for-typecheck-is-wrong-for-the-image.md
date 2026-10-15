@@ -17,6 +17,8 @@ topics:
 
 # One `tsconfig.json` cannot be both the typecheck project and the build, and the cost of conflating them is not the size it looks like
 
+**In short**: `apps/worker` built from `tsconfig.json`, so every published image carried 252 compiled test files; `mcp` and `api` already had a `tsconfig.build.json`. The size argument is a trap — `dist` 4.7 MB → 3.2 MB and the image unchanged at 1.05 GB. What it cost was that the output *named* `@temporalio/testing` and `nyc-test-coverage`, devDependencies `--omit=dev` leaves out, so `ragen-enterprise`'s layer check had to special-case `__tests__`. `tsconfig.test.json` must extend the base and not the build config: `exclude` is inherited. Check by compiling (`ts.parseJsonConfigFileContent`), not by reading `exclude`.
+
 **Context**: `apps/worker` built with `tsc --build` straight from `tsconfig.json`, whose `include` is `src/**/*.ts` and whose `exclude` was `node_modules` alone. That is the right shape for type-checking — a suite nothing compiles is exactly the drift CI's typecheck job exists to catch — and the wrong one for an artifact.
 
 **Problem**: every published worker image carried 252 compiled test files: the specs, a fixture module, and their `.d.ts` and `.map` siblings. `apps/mcp` and `apps/api` each already had a `tsconfig.build.json` that excludes tests, so this was one app's oversight rather than a missing convention, and nothing reported it — the build's exit code is the same either way, and `du -sh dist` is not something anyone runs.

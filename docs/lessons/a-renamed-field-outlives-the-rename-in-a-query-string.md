@@ -17,6 +17,8 @@ topics:
 
 # A renamed field outlives the rename wherever it is a string
 
+**In short**: ADR-52's `provider` → `providerSlug` passed 31 workspaces of typecheck and eleven CI checks with a connect button that sent `providerSlug=` to a route reading `provider=` — 400 on every connect, swallowed. Three more of the same shape: apps/api's `external_mcp` branch kept a bare client after apps/web's moved onto the guarded transport (both compiled, both suites passed, no test either side); a `?? getProviderDefinition(...)` fallback turned the address policy off for exactly the typed URLs that need it; and a form validated a field it conditionally renders. Grep the old *and* new name as strings across query parameters, headers, JSON keys and vault paths — a reader and a writer that disagree compile perfectly.
+
 **Context**: ADR-52 turned the connector catalogue from a Postgres enum into rows, which meant renaming `McpConnector.provider` to `providerSlug` across three independently deployed apps. Five migrations, four expand/contract steps, `npm run verify` green across 31 workspaces, and eleven CI checks green on the PR. A review pass afterwards found eight defects, and every one of them was in a place the compiler does not reach.
 
 **Problem**: four shapes, each invisible to typecheck:

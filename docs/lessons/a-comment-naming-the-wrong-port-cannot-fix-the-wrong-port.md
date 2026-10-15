@@ -7,6 +7,8 @@ topics: ['postgres', 'redis', 'local-development', 'docker-compose', 'architectu
 
 # Five documents handed out the Postgres port the repo moved off, including the guide that warns about it
 
+**In short**: Compose publishes Postgres on 55432 and Redis on 56379 because a native server on the standard port answers instead and `prisma migrate` then succeeds against the wrong database. Five copy-pasteable places still said 5432 — including the E2E triage skill two sections above its own warning about the trap, and the self-hosting guide whose installer generates 55432. Two of them were named as wrong in a `create-ragen-app` comment that nobody acted on. A comment cannot fail a build; `tests/architecture/docs-name-the-published-service-ports.test.ts` can.
+
 **Context**: `docker-compose.yml` publishes Postgres on host port **55432** and
 Redis on **56379**, on purpose — a native Postgres on 5432 answers instead of
 the container, and `prisma migrate` then works against the wrong database while

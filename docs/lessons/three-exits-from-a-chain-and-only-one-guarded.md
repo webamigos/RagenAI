@@ -16,6 +16,8 @@ topics:
 
 # Three exits from a chain, and only one guarded
 
+**In short**: Phase D wired the output window into `mapFullStream` and the panel and widget were covered; `textStream` and the resolved `text` never met it, leaving five call sites across two apps — including the *streaming* branch of `/api/v1/chat/completions`, which streams `textStream` rather than the full one. The rule reads as enabled, some surfaces enforce it, and which ones depends on which accessor a route picked. Both apps now derive `textStream` from the mapped stream so the next exit is covered by construction, and a block reaches a text reader as a thrown error — an iterator that simply ends is the easiest thing in the world to treat as a finished answer.
+
 **Context**: guardrails Phase D wired the output window into `mapFullStream`,
 which is the place the spec named, and the panel and the embedded widget were
 covered. The slice looked done.

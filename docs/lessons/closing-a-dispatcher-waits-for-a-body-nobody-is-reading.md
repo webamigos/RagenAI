@@ -7,6 +7,8 @@ topics: ['undici', 'fetch', 'ssrf', 'connector-guard', 'backpressure', 'streamin
 
 # Closing a dispatcher waits for a body nobody is reading yet
 
+**In short**: `fetch` resolves at the headers, and undici's graceful `close()` waits for the request to *finish* — which it cannot while the body sits unread behind backpressure, and nobody can read it because the caller is still waiting on the `finally` that is closing. Measured on undici 7.29: a 1 MB body never resolves `close()`, a 16 KB one does, which is why two small-JSON callers never saw it. Read the body before closing, and pin the order with `bodyUsed` — a suite that mocks `createGuardedFetch` cannot see the real lifecycle.
+
 **Context**: `createGuardedFetch` (`packages/connector-guard`) hands out a
 `fetch` bound to its own undici `Agent`, plus a `close()` — the dispatcher owns
 sockets, so a call that does not close it leaks one. `fetchWithTimeout`, in

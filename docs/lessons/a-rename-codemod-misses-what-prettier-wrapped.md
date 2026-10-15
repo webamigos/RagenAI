@@ -7,6 +7,8 @@ topics: ['codemod', 'vitest', 'jest', 'prettier', 'regex', 'false-green']
 
 # A rename codemod matching `\bjest\.fn\b` misses every call prettier wrapped onto two lines, and the migration looks finished while the suite is red
 
+**In short**: Prettier writes `jest\n  .fn()`, which no line-based pattern matches; the survivors fail later as `ReferenceError: jest is not defined` in files that look migrated. The worker left 18, the api had 102, and `grep -rn 'jest\.'` reported four. Normalise the line breaks before renaming, and audit with `perl -0777`.
+
 **Context**: moving `apps/worker` and `apps/api` off jest (ADR-48) meant
 renaming jest's mocking API to vitest's across 106 files. The mechanical part
 was done by a codemod matching `\bjest\.<member>\b` per member name.

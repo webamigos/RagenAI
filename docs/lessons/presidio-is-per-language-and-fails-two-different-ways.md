@@ -7,6 +7,8 @@ topics: ['presidio', 'pii', 'ingest', 'language-detection', 'silent-corruption']
 
 # Presidio is per-language, and a wrong language corrupts text rather than erroring
 
+**In short**: `language: 'pl'` was hardcoded, so the Polish NER model scored English words as PERSON at 0.85 and the anonymizer replaced them — before embedding, so the damage is in the vector store. An unsupported _entity_ is silently ignored; an unsupported _language_ is HTTP 500. Two different failures, one of which needs a guarded fallback.
+
 **Context**: `maskPii` sends document text to the Presidio analyzer and
 replaces whatever it reports. `apps/worker/src/activities/documents/mask-pii.ts`
 hardcoded `language: 'pl'` on every call, with no language detection, even

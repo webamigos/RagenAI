@@ -7,6 +7,8 @@ topics: ['semantic-release', 'micromatch', 'globs', 'release-automation', 'fail-
 
 # A semantic-release rule value is a glob, so `[no release]` is a character class — the marker that was meant to skip one release switched off every release, silently
 
+**In short**: `commit-analyzer` matches rule values with `micromatch.isMatch`, so the brackets are a character class over `n o ' ' r e l a s` — every subject in this history matched and paired with `release: false`, and because a matched rule returns `false` rather than `undefined`, `index.js` skipped the fallback that would have released them. Nothing turns red; the symptom is a release that never arrives. The same change also claimed first-match-wins precedence: it is the *highest* release type that wins, so the `breaking` rule is a guarantee, not an ordering trick. Escape the brackets, and verify a config whose failure mode is silence by running the tool's own matcher from both sides.
+
 **Context**: ADR-50 slices a large feature into several pull requests that each
 merge into `main`. `release.yml` runs semantic-release on every push there, and
 `publish-images.yml` fires on the release and builds five container images,

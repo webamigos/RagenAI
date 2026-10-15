@@ -5,6 +5,8 @@ areas: [rag, testing]
 topics: [llm, prompt, structured-output, evals, adr-20, variance, tables, brain, personal-memory, prompt-injection]
 ---
 
+**In short**: Brain's "a table is one entity" rule was recorded as closed on 13 fixtures × 2; a 4-run probe found another document splitting its price list into 39 pages on 2 of 4 runs, and those runs silently dropped 15 of 54 rows. Enforce a checkable rule after the answer, in code; repeat the failing case, not the corpus; measure coverage of the source, not only what came back. **Recurred in personal memory**: E1's 3 repeats said `inj-forget-all` "wrote something"; 20 repeats with the operations printed showed a deleted memory (1/20) and an "administrator" claim (2/20) — both now enforced in `planMemoryApply` (#1510, #1513). An eval that reports only pass/fail cannot tell a harmless miss from a destructive one.
+
 ## Context
 
 Ragen Brain's extraction (spec B) turns a document into candidate knowledge

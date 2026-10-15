@@ -5,6 +5,8 @@ areas: [rag, architecture]
 topics: [chunking, tables, packrows, markdown, budget, silent-mis-sizing, adr-43, adr-20]
 ---
 
+**In short**: `packRows` measures a row by calling the caller's `render` with a one-row array — exact for CSV, wrong for markdown tables, where `renderPipes` adds an `| --- |` line under the first row it sees. Measured 106 against a rendered 63, so table chunks packed to half the budget; the caption prepended after packing was not charged at all. Every test stayed green because they assert `toBeGreaterThan` on chunk counts. Assert that measured size _equals_ the rendered length, in every header configuration.
+
 ## Context
 
 `packRows` is the shared "repeat the header, pack to the budget" loop behind

@@ -7,6 +7,8 @@ topics: ['turborepo', 'vitest', 'concurrency', 'timeouts', 'flaky-tests', 'false
 
 # A five-second test timeout is a CPU budget, not a correctness budget
 
+**In short**: `client-bundles-stay-browser-safe` timed out at 5000ms in `npm run verify`, twice, while the failing case measures 264ms on its own. A second `verify` run only re-runs the race, and a one-sample comparison against `main` answers a different question; re-run the same task graph at `--concurrency=1` instead. **Since 2026-09-29 the architecture guards are their own vitest project with a 30 s budget, sharing a worker and reading each file once (`readSource`)**; the diagnosis still applies to package tests.
+
 **Context**: Phase A4 of the worker-runtime spec moved nineteen producer call
 sites onto `@ragenai/jobs`. Every suite passed individually — the root project
 122/122, apps/web 311, apps/api, the worker, admin. Then `npm run verify`

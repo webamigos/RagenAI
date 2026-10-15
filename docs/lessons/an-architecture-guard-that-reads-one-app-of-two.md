@@ -7,6 +7,8 @@ topics: ['turbopack', 'client-components', 'node-builtins', 'workspace-packages'
 
 # An architecture guard that reads one app of two
 
+**In short**: `/guardrails` shipped with two `'use client'` components importing `@ragenai/guardrails`, whose barrel re-exports a module that imports `node:worker_threads` — the page server-rendered, hydrated, threw and replaced itself with the error boundary, in dev *and* in a production build, while `next build`, 525 admin unit tests and 106 package tests stayed green. `client-bundles-stay-browser-safe` exists for this and read `apps/web/src` only; its `length > 100` sanity check was satisfied by apps/web alone, so a second scan root contributing nothing looked identical to a healthy run. Assert per root, and give a package with Node-only code a browser-safe `exports` entry. **It then recurred on 2026-09-21 in the same app**: `/mcp-catalogue` reached `node:net` through `@ragenai/connector-guard`, because `SERVER_ONLY` is a denylist of specifier *names* and that package was created after the last name was added — while `resolveSpecifier` returned `null` for every bare specifier, so the walk never entered `packages/`. The guard now follows `@ragenai/*` into `packages/<name>/src` and fails on any reachable `node:` builtin, which is the invariant the four named entries were examples of. The previous regression pass had screenshotted that very error screen and filed the page as healthy, because its check was `status === 200` and a client-side error boundary is a 200.
+
 **Context**: guardrails Phase A shipped `/guardrails` in `apps/admin` — a
 platform-rule list, a create/edit form, a per-organization override view. Its
 two interactive pieces are `'use client'` components, and both imported the new

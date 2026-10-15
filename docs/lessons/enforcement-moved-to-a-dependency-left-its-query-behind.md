@@ -5,6 +5,8 @@ areas: [architecture, security]
 topics: [usage-limits, dead-code, litellm, budgets, refactoring, false-green, silent-failure, adr-34]
 ---
 
+**In short**: `checkUsageLimitsQuery` had no executable call site between 2026-03-22, when enforcement moved to LiteLLM's virtual-key budget, and 2026-09-14 — recognised by matching the substring `'Budget has been exceeded'`. The file stayed, and ADR-34 plus a comment in `apps/admin/src/lib/litellm.ts` later cited it as evidence the app enforces its own cost limits. The handover was also narrower than what it replaced: only `monthlyCostLimitCents` is synced, so the token and message ceilings the admin panel collects are enforced by nothing. Delete what a dependency replaced in the same commit, and grep for callers before citing a function as a guarantee. **Offered again in B5 (2026-09-15) and refused by a guard** — per-team rpm/tpm were enforced only by the proxy's virtual keys, so removing them removed the enforcement. `only-rate-limits-reach-the-proxy.test.ts` fired because it had been written to fail when the forwarding stopped with no replacement. Second half of the rule: **a guard that fails because its subject moved is right, and the change is incomplete** — rewrite it to hold the invariant in its new home, asserting something *calls* the replacement.
+
 ## Context
 
 `OrganizationSettings` carries four ceilings — `monthlyTokenLimit`,

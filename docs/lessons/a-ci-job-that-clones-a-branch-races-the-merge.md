@@ -7,6 +7,8 @@ topics: ['github-actions', 'installer', 'giget', 'false-red', 'immutable-refs', 
 
 # A CI job that clones a branch races the merge, and loses
 
+**In short**: The installer smoke job scaffolded from `github.head_ref`; #1081 merged with auto-delete on, and the job started twelve seconds later against a branch that no longer existed — `tarball/<branch>` 404s while the same endpoint serves the SHA. A red required check that says nothing about the change, and re-running does not clear it — the replayed event still names the deleted branch. Name the commit: `${{ github.event.pull_request.head.sha || github.sha }}`.
+
 **Context**: the `Installer` workflow's `Scaffold a fresh install` job is the
 only check that exercises the first-run path. It cannot read the working tree
 like every other job, because the thing under test _downloads_ this repository

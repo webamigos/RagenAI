@@ -7,6 +7,8 @@ topics: ['vitest', 'flaky-tests', 'false-red', 'qdrant', 'console', 'fire-and-fo
 
 # A client constructor that fires a request fails a green suite
 
+**In short**: `EnvironmentTeardownError: Closing rpc while "onUserConsoleLog" was pending` with every test green: `new QdrantClient()` defaults to `checkCompatibility: true`, an un-awaited version request that `console.warn`s when there is no server — none in CI, and the local Compose Qdrant answers it, so it never shows on a laptop. vitest's console forwarding is an RPC it rejects at teardown. Look for `stderr | unknown test` in the CI log.
+
 **Context**: CI on a docs-only commit went red in `@ragenai/api#test:coverage`
 with every test passing (109 files, 1229 tests):
 

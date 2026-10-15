@@ -5,6 +5,8 @@ areas: [integration, testing]
 topics: [ai-sdk, generate-object, vertex, gemini, zod, json-schema, structured-output, llm-gateway, false-green]
 ---
 
+**In short**: Brain's extraction schema carried `.max()` on every string and array; Vertex compiles a response schema into a decoding state machine and answered `400 … too many states for serving` on the first real call, while 91 tests passed against fixtures. Send the provider the shape alone and apply limits afterwards, per item. One real call before the second PR.
+
 ## Context
 
 Ragen Brain's extraction (spec B1–B3) asks the model for entities, claims

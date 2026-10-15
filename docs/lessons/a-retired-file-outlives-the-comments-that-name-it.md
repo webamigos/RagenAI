@@ -8,6 +8,8 @@ topics:
 
 # A retired file outlives the comments that name it, and the entry-point comment is the worst place for that
 
+**In short**: B6 deleted `infra/litellm/config.yaml` and left thirty-odd files naming it — including the `models` fragment in `packages/env`, which is the documented entry point for adding a model, so the reader started at exactly the wrong file. Nothing resolves a path inside a comment, the file still existed on machines as an untracked leftover, and a model with no route fails downstream and mute. `an-infra-path-that-is-cited-exists.test.ts` now enforces the mechanical half. A directory nothing reads either goes with the code that read it or carries a README saying why it stays — which is how `infra/litellm/` and `infra/temporal/` split.
+
 **Context**: B6 of the LiteLLM retirement ([ADR-49](../adrs/49-the-application-calls-model-providers-itself.md))
 deleted `infra/litellm/config.yaml` along with the proxy that read it. The route
 table `infra/llm-gateway/routes.yaml` took over as the source of truth for which

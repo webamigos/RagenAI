@@ -5,6 +5,8 @@ areas: [auth, testing]
 topics: [better-auth, oauth, dcr, retention, prisma]
 ---
 
+**In short**: Real anonymous registration creates resource bindings before consent. Test the provider endpoint with an empty cookie context and delete unused bindings with their client in one serializable transaction.
+
 ## Context
 
 OAuth maintenance removes anonymous clients older than 30 days when they have no consent or token records.

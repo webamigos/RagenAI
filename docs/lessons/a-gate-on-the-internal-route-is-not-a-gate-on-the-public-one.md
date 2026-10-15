@@ -7,6 +7,8 @@ topics: ['feature-flags', 'public-api', 'call-sites', 'pr-descriptions']
 
 # A gate on the internal route is not a gate on the public one
 
+**In short**: `deleteThreads` gated `ThreadsCoreService` (`internal/threads`); the public `DELETE /v1/threads/:id` goes through `ThreadsService.remove` and was never checked, while #1364's description said it was. apps/api has a separate controller and service per surface — follow the public controller's handler to the line that writes before claiming a gate covers it, and ask whether a smaller operation (deleting every message) reaches the same outcome.
+
 **Context**: #1364 added the `deleteThreads` feature key so that a showcase
 organization's example threads cannot be deleted. The gate went into
 `ThreadsCoreService.deleteThread`, and the PR description said that method was

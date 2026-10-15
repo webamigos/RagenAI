@@ -7,6 +7,8 @@ topics: ['react-pdf', 'pdfjs-dist', 'next-config', 'turbopack', 'npm-workspaces'
 
 # A dependency plus a config entry naming it is not evidence the feature works
 
+**In short**: Three signals said react-pdf was wired up; all three were inert for unrelated reasons — the alias resolves into `apps/web` while the package is hoisted to the root, `pdf.js` no longer exists in any pdfjs-dist 5.x build, and a `webpack:` block is dead config under Turbopack. The component's test file never imports it either.
+
 **Context**: scoping a citation-highlighting feature that needs to draw over a
 rendered PDF page. The document route's viewer is a plain `<iframe>` to the
 browser's PDF plugin, which cannot be drawn on, so the question was how much a

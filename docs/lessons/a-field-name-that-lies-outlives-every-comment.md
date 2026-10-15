@@ -7,6 +7,8 @@ topics: ['metadata', 'naming', 'vector-store', 'architecture-tests', 'billing']
 
 # A field whose name misdescribes its contents outlives every comment warning about it
 
+**In short**: `page_number` held `index + 1`, so a twelve-page PDF split into forty chunks reported "page 37". Renaming it to `chunk_index` is the fix, not a step toward one. Tracing the same area found `pageCount` — which feeds usage limits — computed as `ceil(chars / 3000)` for every Docling-parsed file, while the real count sat unread in the same response.
+
 **Context**: chunk metadata in Qdrant carried `page_number`, written by two
 places in two different apps as `index + 1` — the chunk's ordinal within its
 file. The design brief for the sources block asked for `{file} · page {n}`, and

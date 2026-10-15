@@ -7,6 +7,8 @@ topics: ['e2e', 'playwright', 'adr-21', 'adr-49', 'llm-gateway', 'env-vars', 'fa
 
 # `npm run web:e2e` locally differs from CI in two ways nothing announces: no apps/api, and no route table
 
+**In short**: A stale `apps/api` on 3001 pointed at the `ragen` database makes `smoke-11` and `smoke-12` fail as if the seeded project and thread were missing — they are in `ragen_e2e`, the API was reading elsewhere — and because `authenticated` depends on `smoke-auth`, those two reds meant 160 p0–p3 tests **did not run**, under a summary reading `2 failed`. Separately, `LLM_ROUTES_PATH` is CI-only, so locally the gateway falls back to the production route table and real credentials: one run made a billable call to `mistral-small-3.2-24b-instruct-2506` carrying the question text.
+
 **Context**: `e2e.yml` builds and starts `apps/api` before Playwright, and sets
 `LLM_ROUTES_PATH` to `apps/web/e2e/routes.e2e.yaml`. `npm run web:e2e` does
 neither: `playwright.config.ts` starts only the Next server, and reads its

@@ -5,6 +5,8 @@ areas: ['frontend', 'architecture', 'testing']
 topics: ['brain', 'review', 'publication', 'concurrency', 'optimistic-locking']
 ---
 
+**In short**: Pass the timestamp written under approval’s lock to publication; a fresh read can accept an intervening change. A publication error preserves approval and must say so.
+
 ## Context
 
 Review mode offers approval and publication as one user action, while the existing commands commit two separately audited acts.

@@ -7,6 +7,8 @@ topics: ['turborepo', 'caching', 'prisma', 'false-green', 'monorepo']
 
 # A cached typecheck hides a Prisma schema change, because the schema is outside every workspace
 
+**In short**: No root task declares `inputs`, and `prisma/schema.prisma` sits outside every workspace, so a schema edit changed 1 of 89 hashes. `verify` replayed typecheck from cache over a fixture CI then failed on (#1572). Each Prisma consumer's package `turbo.json` now adds the schema beside `$TURBO_DEFAULT$`, and an architecture guard requires it.
+
 **Context**: #1572 added five columns to `Subscription`. A test fixture in
 apps/web is typed as `SubscriptionDetails`, so it stopped compiling.
 

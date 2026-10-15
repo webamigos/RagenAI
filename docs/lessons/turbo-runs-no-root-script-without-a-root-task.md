@@ -7,6 +7,8 @@ topics: ['turborepo', 'architecture-tests', 'fail-open', 'monorepo-tasks', 'vite
 
 # turbo runs no root-package script unless turbo.json declares `//#task`, so the gate skipped every architecture guard and still reported success
 
+**In short**: `tests/architecture/**` lives in the root vitest project, and turbo will not run a root script without a `//#<task>` entry — so `npm run verify` skipped every repo-wide guard and reported success. With one guard broken: 45 tasks/exit 0 before, 46 tasks/exit 1 after. CI compensated with its own step, which made the gap look deliberate. A root task needs both halves: the script and the `//#task` entry.
+
 **Context**: `tests/architecture/**` holds the repo-wide guards — tenant scope,
 raw-SQL org filters, inlined role checks, recopied contracts, the AGENTS.md
 budget. They live in the root vitest project, because they read the whole

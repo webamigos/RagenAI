@@ -7,6 +7,8 @@ topics: ['better-auth', 'prisma', 'upgrades', 'lazy-initialization', 'proxy', 'e
 
 # A patch release that reads the database client at construction time defeats a lazy client proxy
 
+**In short**: `@better-auth/prisma-adapter` 1.7.3+ reads `client._runtimeDataModel` inside `betterAuth()`, so admin's lazy Prisma proxy built its client at import and threw `Missing DATABASE_URL` in tests and the build. Answer that one property with `undefined`, the adapter's stand-in value; don't feed the build a database URL. An unhandled rejection does not fail `await import()`, so check that the test goes red without the fix. The same check, in apps/web, refused every auth request over five `subscriptions` columns `@better-auth/stripe` had always declared. `verify` was green; only `test-e2e` saw it.
+
 **Context**: Better Auth 1.7.2 → 1.7.7, a patch-range bump. `apps/admin`
 exports its Prisma client as a `Proxy` that builds the real client on first
 property access. That way `next build`, which executes route modules, never

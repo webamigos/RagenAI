@@ -6,6 +6,8 @@ topics:
   [llm-gateway, litellm, vertex, credentials, configuration, measurement, evals]
 ---
 
+**In short**: `packages/llm-gateway` had 50 unit tests, five guards on its shipped file, seam tests in three apps and a green `verify` — then failed three ways on its first real call. It read the proxy's `VERTEX_PROJECT` but ignored `VERTEX_CREDENTIALS` (Google wants a *path* in `GOOGLE_APPLICATION_CREDENTIALS`), so Vertex never authenticated; a route could not say `location: global`, which the proxy pins per-model for preview models, and the guard compared **names** so it stayed green; and the default table path resolved against cwd, which no app in this monorepo shares with the root — surfacing as four documents marked FAILED. Adopting another system's variable names adopts its semantics: enumerate them. Before any long measurement, make one real call per model first.
+
 ## Context
 
 `packages/llm-gateway` shipped in B1 with 50 unit tests, five architecture

@@ -16,6 +16,8 @@ topics:
 
 # BullMQ matches Temporal at 20 concurrent ingests — but only once `WORKER_CONCURRENCY` matches; at the shipped default it is 2x slower
 
+**In short**: The spec's D2, 416 ingests over one afternoon against the live stack, zero failures. On the same twenty-document upload, `DEFAULT_CONCURRENCY` 10 gives a median of 24.9s against Temporal's 12.5s, and `WORKER_CONCURRENCY=20` gives 12.3s. The difference sits entirely before parsing begins — parse and embed medians are identical — and one setting removes it; Temporal's 50 counted *activities*, not files, so the two numbers were never the same unit. Parity is a configuration claim, not an engine claim — the default was raised to 20 the same day, so the title describes what was measured rather than what ships.
+
 > **Acted on.** `DEFAULT_CONCURRENCY` was raised from 10 to 20 the same day, so
 > "the shipped default" in the title describes what was measured, not what
 > ships now. The numbers below are unchanged and are what that change rests on.

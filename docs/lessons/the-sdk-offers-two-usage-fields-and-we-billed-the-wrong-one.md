@@ -7,6 +7,8 @@ topics: ['ai-sdk', 'token-usage', 'usage-limits', 'tool-calling', 'billing', 'si
 
 # The AI SDK offers two token-usage fields, both typecheck, and we aggregated the smaller one into the billing ceilings
 
+**In short**: `usage` is the **last step**; `totalUsage` is all of them. All three chat chains pass `stopWhen: stepCountIs(MAX_TOOL_STEPS)` and read `usage`, so every tool-calling turn billed one step out of up to ten — into the ceilings Phase A had just made enforceable. Both fields are `LanguageModelUsage` and both typecheck. AI SDK 7 redefines `usage` to span all steps, which would have corrected the numbers invisibly inside a version bump; fixed first on the old version so the jump is attributable.
+
 **Context**: found while scoping the AI SDK 6 → 7 upgrade (B0c of the LiteLLM
 retirement). The upgrade's migration guide mentions in passing that `usage`
 changes meaning in 7.0, which prompted the question of what it meant in 6.

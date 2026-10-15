@@ -7,6 +7,8 @@ topics: ['brain', 'counts', 'filters', 'languages', 'navigation']
 
 # Brain overview counts need the same scope as their destination lists
 
+**In short**: Global page counts differ from per-file coverage; a summary's filters must also narrow its destination list, total and pagination.
+
 ## Context
 
 The Brain overview links document coverage, review stages and open findings to existing lists.

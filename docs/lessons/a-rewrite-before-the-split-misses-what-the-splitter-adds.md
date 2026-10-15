@@ -5,6 +5,8 @@ areas: [security, rag]
 topics: [pii, presidio, masking, dual-content, chunking, docling, table-chunks, encryption]
 ---
 
+**In short**: `maskPii` ran on the parsed document, so Docling's table chunks, which the splitter builds from `metadata.doclingTables`, reached the index, the summary and the stored document unmasked. And `dual_content`'s encrypted original was copied onto every chunk, so each carried the whole file. Masking and dual content run on the chunks now.
+
 ## Context
 
 Ingest masked PII with `maskPii` on the parsed documents (`rawDocs`) and

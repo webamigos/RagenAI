@@ -7,6 +7,8 @@ topics: ['node-version', 'unit-tests', 'environment-coupling', 'false-red', 'cli
 
 # A unit test that reads the runner's own `process.version` passes in CI and fails on every developer below the required major
 
+**In short**: Now carries a second instance from the other direction: a spec that stubbed the Temporal adapter and leaned on it being the default failed two *different* ways when ADR-44 flipped it — an assertion error on a machine with Redis running, a 5s timeout in CI without one. A test that depends on a default is asserting the default. It also carries the reason local `verify` missed both: turbo stops scheduling on the first failed task, so an *expected* red guard silently skips 13 of 59 tasks — re-run with `--continue` before believing the rest is green. `run()` refuses to scaffold below Node 24, so on a Node 22 machine twelve `cli.test.ts` assertions failed with "expected vi.fn() to be called once" in tests that say nothing about Node. Green on CI, red locally — which reads as an environment quirk rather than a defect in the test. Pin `process.version`; a test must not read the environment its runner happens to be in.
+
 **Context**: #1063 made `create-ragen-app` refuse to scaffold on a Node below
 `REQUIRED_NODE_MAJOR` (24), before the clone, so the failure costs nothing.
 `run()` reads the real `process.version` and hands it to `checkNodeVersion`.

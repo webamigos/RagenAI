@@ -7,6 +7,8 @@ topics: ['knowledge', 'optimization', 'diagnostics', 'authorization', 'bulk-acti
 
 # Knowledge-list optimization must match the document route
 
+**In short**: A warning is not optimization eligibility. Preserve table exclusions, unknown diagnostics and authorized file coverage, and retry only failed requests.
+
 ## Context
 The Brain handoff requested an optimization action for headerless tables, including spreadsheets. The existing prose optimizer deliberately rejects spreadsheets and mostly tabular documents.
 

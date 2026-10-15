@@ -7,6 +7,8 @@ topics: ['brain', 'graph', 'sigma', 'zoom', 'labels']
 
 # Graph zoom labels need reprocessing, not only a redraw
 
+**In short**: Refresh node processing when camera zoom crosses the label threshold; camera rendering alone retains cached reducer output. Topic counts use the complete graph, independent of the canvas budget.
+
 ## Context
 
 Brain hides full-graph labels when zoomed out, except for highlighted pages and their neighbours.

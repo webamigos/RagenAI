@@ -7,6 +7,8 @@ topics: ['feature-flags', 'rag', 'organization-settings', 'docs-drift']
 
 # A documented env flag that grep cannot find is not proof the gate was lost — check whether it became a per-org setting
 
+**In short**: `FEATURE_FLAG_MULTI_QUERY` became `OrganizationSettings.multiQueryEnabled`; the docs listed the env var for months, and reranking was documented as on-by-default while being opt-in.
+
 **Context**: `docs/rag-pipeline.md`, `AGENTS.md`, `.env.example`, the LiteLLM doc,
 the self-hosting page and the bug-report template all listed
 `FEATURE_FLAG_MULTI_QUERY` as a runtime flag defaulting to on. Grepping

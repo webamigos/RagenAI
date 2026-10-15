@@ -7,6 +7,8 @@ topics: ['vitest', 'jest', 'esm', 'feature-flags', 'module-load', 'false-green',
 
 # Moving a suite to ESM makes a top-level `process.env` assignment run too late, and the test then asserts against the disabled code path while passing
 
+**In short**: ESM hoists every `import` above every plain statement, so a flag set before the import is set _after_ `consts.ts` already read it as `false`. Four of the five jest→vitest differences fail loudly; this one does not fail at all — it looked like a broken table excision in the parser. Set module-load values in `vi.hoisted()`. See [ADR-48](../adrs/48-worker-and-api-tests-run-on-vitest.md).
+
 **Context**: `apps/worker` moved from jest to vitest (ADR-48). Several tests
 set a feature flag before importing the module under test, in the obvious
 shape:

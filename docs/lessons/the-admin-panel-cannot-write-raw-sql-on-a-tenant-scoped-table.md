@@ -8,6 +8,8 @@ topics:
 
 # The admin panel cannot write raw SQL on a tenant-scoped table, because the guard that covers it has no way to say "platform-wide on purpose"
 
+**In short**: `security_events` is tenant-scoped, so `raw-sql-carries-its-org-filter` requires an `organization_id` predicate in every raw statement — and it scans `apps/admin`, whose pages are platform-wide by ADR-35. A grouped `$queryRaw` over a JSON key cannot satisfy it; a `metadata: { path, equals }` filter per rule can, and stays where the tenant-scope extension can see it. The same change shows a text-matching guard firing on an imported constant's *name* — rename the constant, do not narrow the pattern.
+
 **Context**: guardrails E1 adds a 7-day hit count per rule to `/guardrails` in
 `apps/admin`. The counts live in `security_events`, and the grouping key is
 inside a JSON column — `metadata->>'guardrail'` holds the rule's `publicId`.

@@ -1,5 +1,7 @@
 # A test that builds the model's answer by hand cannot see what the model actually writes
 
+**In short**: Memory extraction shipped with 46 green tests and stored nothing: the schema sent to the model was `unknown[]`, the prompt never named `op`, and the model wrote `"operation"` — every entry failed the parser's union, silently. The tests built `{ op: … }` by hand. Put the field in the schema the provider receives, prefer required-nullable over optional, keep one real answer as a fixture, and run the eval once before it merges.
+
 **Area:** testing, rag
 **Module:** worker, packages/platform-contracts
 **Topic:** personal-memory, structured-output, zod, evals, llm-contract, false-green
