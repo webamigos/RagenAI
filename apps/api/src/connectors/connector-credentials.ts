@@ -17,7 +17,7 @@ const logger = new Logger('ConnectorCredentials');
  * Ported from apps/web's
  * `src/features/connectors/services/queries/get-connector-credentials-query.ts`
  * and deliberately identical to it, because the two run the same connectors
- * against the same vault — see `apps/api/AGENTS.md` on the ported libs.
+ * against the same vault — see `apps/api/docs/ported-libs.md`.
  *
  * Two sources, one `if`:
  *

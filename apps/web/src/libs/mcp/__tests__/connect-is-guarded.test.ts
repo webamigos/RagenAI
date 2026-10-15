@@ -4,7 +4,7 @@
  *
  * The sibling of this file is `apps/api/src/mcp/connect-is-guarded.spec.ts`,
  * and the pair exists because the two clients are copies (see
- * `apps/api/AGENTS.md` on the ported libs): apps/api's `external_mcp` branch
+ * `apps/api/docs/ported-libs.md`): apps/api's `external_mcp` branch
  * kept a bare client after this one had been moved onto the guarded transport,
  * and nothing failed — both apps compiled, both suites passed.
  */
