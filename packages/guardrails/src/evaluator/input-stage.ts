@@ -4,6 +4,13 @@ import {
   type GuardrailSecurityEventType,
 } from '../contracts/guardrail';
 import type { ResolvedGuardrail } from '../resolver/resolve';
+import {
+  BASAL_FIRST_PASS_CALIBRATION,
+  firstPassFor,
+  type FirstPass,
+  type FirstPassCalibration,
+  type FirstPassOutcome,
+} from './first-pass';
 import { applyMask, runPatternRules, type PatternHit } from './pattern';
 import {
   MAX_ACTIVE_LLM_POLICIES,
@@ -94,6 +101,26 @@ export type InputStageDeps = {
    * guardrails page describe the provider rather than the rule set.
    */
   readonly onJudgeError: (rule: ResolvedGuardrail, reason: string) => void;
+  /**
+   * basal, when this turn may ask it: `BASAL_URL` is set and the
+   * organization's `guardrailFirstPass` key is on. Absent otherwise, and then
+   * nothing here changes.
+   *
+   * On the input stage's deps and nowhere else, on purpose. The output stage
+   * and the panel's trial box call the same policy loop, and a trial that
+   * showed basal's probability as "the judge's score" would be a preview
+   * running a different path from the turn it previews.
+   */
+  readonly firstPass?: FirstPass;
+  /**
+   * What the first pass said about a rule, for the `basalOutcome` attribute
+   * on that rule's log line. Called only when basal was asked; never with
+   * text.
+   */
+  readonly onFirstPass?: (
+    rule: ResolvedGuardrail,
+    outcome: FirstPassOutcome,
+  ) => void;
 };
 
 export type InputStageInput = {
@@ -180,6 +207,13 @@ export type InputStageOptions = {
    * having to author four rules to reach it.
    */
   readonly policyCap?: number;
+  /**
+   * The calibration the first pass clears against. Defaults to the shipped
+   * `BASAL_FIRST_PASS_CALIBRATION`, which is `null` until A4 records a go —
+   * and with `null` the first pass is not asked at all. Exposed so a test can
+   * state one.
+   */
+  readonly firstPassCalibration?: FirstPassCalibration | null;
 };
 
 export async function evaluateInputStage(
@@ -281,12 +315,27 @@ export async function evaluateInputStage(
   // unusable after one borderline message.
   const policyRules = rules.filter(isJudgedRule);
   if (policyRules.length > 0) {
+    const calibration =
+      options.firstPassCalibration === undefined
+        ? BASAL_FIRST_PASS_CALIBRATION
+        : options.firstPassCalibration;
     const policyRun = await runPolicyRules(
       policyRules,
       input.question,
       deps.judge,
-      { cap: options.policyCap ?? MAX_ACTIVE_LLM_POLICIES },
+      {
+        cap: options.policyCap ?? MAX_ACTIVE_LLM_POLICIES,
+        ...(deps.firstPass && calibration
+          ? { firstPass: firstPassFor(deps.firstPass, calibration) }
+          : {}),
+      },
     );
+
+    if (deps.onFirstPass) {
+      for (const { rule, outcome } of policyRun.firstPass) {
+        deps.onFirstPass(resolve(rule), outcome);
+      }
+    }
 
     if (policyRun.skipped.length > 0) {
       deps.onPolicyCapExceeded(
