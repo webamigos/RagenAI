@@ -14,6 +14,9 @@
  *    production timeout, the path a turn takes. The judge here answers from
  *    step 1's cache, so the arm costs no second bill.
  *
+ * Steps 2 and 3 each get a fresh basal client, so a breaker that one opened
+ * cannot leave the next with no answers (./lib/measure.ts).
+ *
  * See ./README.md for how to run it, and for the rules about which split may
  * be run when.
  */
@@ -29,28 +32,21 @@ import {
   JAILBREAK_GUARDRAIL_KEY,
   POLICY_JUDGE_MODEL,
   basalQuestionFor,
-  firstPassFor,
-  firstPassLanguage,
   policyThresholdFor,
   preloadFirstPassDetector,
   readAttackProbability,
   runPolicyRules,
   type BasalJailbreakWording,
   type GuardrailRule,
-  type JudgePolicy,
   type PolicyJudgement,
 } from '@ragenai/guardrails';
 
 import { createPolicyJudge } from '@/features/guardrails/utils/policy-judge';
 
 import { loadLabelledSet } from './lib/dataset';
-import {
-  decideGo,
-  fitClearMax,
-  summarize,
-  type RowMeasurement,
-} from './lib/fit';
-import { renderReport, type WordingResult } from './lib/report';
+import { decideGo } from './lib/fit';
+import { measureWordings, type JudgedRow } from './lib/measure';
+import { renderReport } from './lib/report';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -150,11 +146,16 @@ async function main(): Promise<void> {
   if (!isBasalConfigured()) {
     fail('BASAL_URL is not set');
   }
-  const client = createBasalClient({
-    url: process.env.BASAL_URL!,
-    ...(process.env.BASAL_API_KEY ? { apiKey: process.env.BASAL_API_KEY } : {}),
-    logger: { warn: (meta, message) => console.warn(message, meta) },
-  });
+  // A client per measurement, not one per run: see `measureWordings`.
+  const newClient = () =>
+    createBasalClient({
+      url: process.env.BASAL_URL!,
+      ...(process.env.BASAL_API_KEY
+        ? { apiKey: process.env.BASAL_API_KEY }
+        : {}),
+      logger: { warn: (meta, message) => console.warn(message, meta) },
+    });
+  const client = newClient();
 
   const rows = loadLabelledSet(setPath);
   const ruleThreshold = policyThresholdFor(JAILBREAK_RULE);
@@ -184,10 +185,7 @@ async function main(): Promise<void> {
   await preloadFirstPassDetector();
 
   // 1. The judge, once per row, through the loop a turn runs.
-  const judgements = new Map<
-    string,
-    { judgement: PolicyJudgement; ms: number }
-  >();
+  const judgements = new Map<string, JudgedRow>();
   if (!args['no-judge']) {
     const judge = createPolicyJudge({ tracking: undefined });
     const judgeOnce = async (text: string) => {
@@ -212,74 +210,25 @@ async function main(): Promise<void> {
     }
     process.stdout.write('\n');
   }
-  /** The arm's judge: step 1's answer, so the arm costs no second bill. */
-  const cachedJudgeFor =
-    (text: string): JudgePolicy =>
-    () =>
-      Promise.resolve(
-        judgements.get(text)?.judgement ?? {
-          outcome: 'error',
-          reason: 'judge not run (--no-judge)',
-        },
-      );
 
-  const results: WordingResult[] = [];
-  const raw: Record<string, RowMeasurement[]> = {};
-
-  for (const wording of wordings) {
-    // 2. basal directly, generous timeout.
-    const measured: RowMeasurement[] = [];
-    for (const [i, row] of rows.entries()) {
-      const request = basalQuestionFor(JAILBREAK_RULE, row.text, wording)!;
-      const started = performance.now();
-      const result = await client.decide(request, measureTimeoutMs);
-      const basalMs = performance.now() - started;
-      const judged = judgements.get(row.text);
-      measured.push({
-        row,
-        gated: (await firstPassLanguage(row.text)) === null,
-        pAttack: readAttackProbability(result),
-        basalMs: result.outcome === 'answered' ? basalMs : null,
-        judgeScore:
-          judged?.judgement.outcome === 'scored'
-            ? judged.judgement.score
-            : null,
-        judgeMs: judged ? judged.ms : null,
-      });
-      process.stdout.write(`\r${wording}: basal ${i + 1}/${rows.length}`);
-    }
-    process.stdout.write('\n');
-
-    const fit =
-      fixedClearMax === null
-        ? fitClearMax(measured)
-        : ({ clearMax: fixedClearMax, lowestAttack: Number.NaN } as const);
-
-    // 3. The turn's own path, at the production timeout.
-    if (fit.clearMax !== null) {
-      const firstPass = firstPassFor(client, {
-        servedModel,
-        wording,
-        clearMaxPAttack: fit.clearMax,
-      });
-      for (const [i, m] of measured.entries()) {
-        const run = await runPolicyRules(
-          [JAILBREAK_RULE],
-          m.row.text,
-          cachedJudgeFor(m.row.text),
-          { firstPass },
-        );
-        measured[i] = { ...m, firstPassOutcome: run.firstPass[0]?.outcome };
+  // 2 and 3, per wording.
+  const { results, raw } = await measureWordings({
+    rows,
+    wordings,
+    rule: JAILBREAK_RULE,
+    clientFor: newClient,
+    servedModel,
+    measureTimeoutMs,
+    judgements,
+    fixedClearMax,
+    ruleThreshold,
+    onProgress: (wording, done, of) => {
+      process.stdout.write(`\r${wording}: basal ${done}/${of}`);
+      if (done === of) {
+        process.stdout.write('\n');
       }
-    }
-
-    raw[wording] = measured;
-    results.push({
-      wording,
-      fit,
-      summary: summarize(measured, fit.clearMax, ruleThreshold),
-    });
-  }
+    },
+  });
 
   const decision =
     split === 'holdout'
