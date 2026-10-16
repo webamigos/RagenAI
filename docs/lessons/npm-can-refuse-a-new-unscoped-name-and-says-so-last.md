@@ -8,6 +8,8 @@ topics:
 
 # npm can refuse a new unscoped package name outright — and the three errors you hit first all blame something else
 
+**In short**: Publishing `ragen` gave 403 (read-only token), then 404 (`'ragen@0.1.0' is not in this registry` — an unauthenticated PUT to a name that does not exist answers 404, not 401), then the real reason: the name is too similar to `raven` and `hygen` and is refused for everyone. `npm view <name>` returning 404 means unclaimed, not obtainable. A blocked name also cannot be squatted, so it is never a reason to publish ahead of a merge.
+
 **Context**: publishing `packages/ragen-cli` to npm for the first time, to claim
 the unscoped name `ragen`. The tarball was built, installed globally from the
 packed artifact and exercised (`--version`, `--help`, a planned command exiting

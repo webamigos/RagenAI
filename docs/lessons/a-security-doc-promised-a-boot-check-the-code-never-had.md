@@ -7,6 +7,8 @@ topics: ['encryption', 'kms', 'target-env', 'environment-variables', 'security-e
 
 # A customer security document promised "the system will not start without a configured key provider" — the code has never done that
 
+**In short**: Report-only env validation and "will not start" are easy to conflate; a claim like that needs its own enforcement — a write-path guard plus a real boot-time refusal — not a config checklist item.
+
 **Context**: a security document sent to a customer (2026-08-31) stated that
 message encryption is enforced by refusing to boot: "without a configured key
 provider, the system will not start." `isEncryptionEnabled()`

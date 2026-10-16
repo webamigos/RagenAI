@@ -7,6 +7,8 @@ topics: ['error-handling', 'temporal', 'cancellation', 'silent-failure', 'doc-co
 
 # A fallback documented in three comments and implemented in none
 
+**In short**: "Two attempts, then answer *not cancelled*" was stated in two doc comments, a commit message and a handoff note; `checkCancelled` called the activity bare, so a failed read threw out of the checkpoint and the parsing catch recorded FAILED — a database blip would have destroyed a healthy ingest. Three copies of a sentence read like corroboration. Grep for the `catch` that implements a documented fallback, and write one test from the prose rather than from the code.
+
 **Context**: the ingest cancellation port replaced a Temporal signal with a
 database read. On Temporal that read has to be an activity — a workflow sandbox
 has no I/O — so `temporalContext` proxies `isIngestCancelled` with its own short

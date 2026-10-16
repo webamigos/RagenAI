@@ -7,6 +7,8 @@ topics: ['docker-compose', 'project-name', 'volumes', 'first-run', 'installer', 
 
 # Pinned compose names make two installs share one database
 
+**In short**: `container_name`, a volume `name:` and a fixed network name each opt a resource out of Compose's project scoping, and those names are global to the daemon: a second checkout collided on every container and then attached to the *first* one's postgres and qdrant volumes — same data, no error. `docker compose ps` / `logs <service>` replaces the readability; ports still collide, and unpinning a name silently retires any guard that was reading it.
+
 **Context**: `docker-compose.yml` set `container_name: ${RAGEN_STACK_NAME:-ragen}-postgres`
 on every service, a `name:` on every volume and a fixed network name. The stated
 reason was readability — `docker logs ragen-postgres` and the runbooks spelling

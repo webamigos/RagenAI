@@ -5,13 +5,13 @@ file — Claude Code, Codex, Cursor and Copilot all read `AGENTS.md`, and
 `CLAUDE.md` is a one-line import of it so both names resolve to the same
 content. Edit this file, never the pointer.
 
-> **Instruction budget:** this file must stay under **32,768 bytes** — Codex's
-> default `project_doc_max_bytes`. Content past that offset never reaches the
-> agent, and nothing warns you. It is enforced:
-> `tests/architecture/agent-instructions-fit-the-budget.test.ts` fails 1 KiB
-> early, so there is room to act. When it fires, move long-form detail into
-> `docs/` and leave a pointer — do not trim the hard rules. That is why most of
-> Architecture is pointers, and why `apps/api/AGENTS.md` was split.
+> **Instruction budget:** Codex reads this file *plus* the `AGENTS.md` of the
+> directory it works in, and stops at **32,768 bytes combined** (its default
+> `project_doc_max_bytes`) — silently. This file is capped at 28,672 bytes and
+> root + any app's file at 32,768, both enforced by
+> `tests/architecture/agent-instructions-fit-the-budget.test.ts`. When it fires,
+> move long-form detail into `docs/` and leave a pointer — do not trim the hard
+> rules.
 
 ## Commands
 
@@ -27,20 +27,15 @@ npm run packages:test    # Workspace package tests
 npm run ragen:up:full    # Backing services only (apps run on the host)
 npm run ragen:up:everything  # Everything in containers, apps included
 npm run generate:types   # Prisma client for every app (root owns the schema)
-npm run web:e2e          # Playwright E2E tests (requires ragen_e2e DB)
+npm run web:e2e          # Playwright E2E (needs ragen_e2e DB + web:build first)
 npm run db:seed          # Seed database (uses .env.local)
 npm run local:admin -- --list   # platform admins; --email <e> grants+sets a password
 npm run worker:dev       # Background-job worker (apps/worker) in watch mode
 npm run worker:test      # Worker Vitest suite
 npm run worker:test:jobs # Job-runtime integration suite (needs Redis) — the BullMQ gate
 npm run check:config-paths   # Fail if a CI-config path glob matches nothing
-npx turbo run build      # Build every workspace, in dependency order, cached
-npx turbo run build --filter=@ragenai/api   # ...just one, plus what it needs
+npx turbo run build --filter=@ragenai/api   # build one workspace + its deps
 ```
-
-**E2E** needs a separate `ragen_e2e` database and a successful
-`npm run web:build` first — one-time setup in
-[`docs/testing-conventions.md`](docs/testing-conventions.md).
 
 ## Task Router
 
@@ -85,8 +80,8 @@ Before starting a nontrivial task, match it against this table and read the link
 | Where a module, route or library lives | [`docs/architecture.md`](docs/architecture.md) |
 | Running the whole ecosystem locally, ports, companion services | [`docs/companion-services.md`](docs/companion-services.md) |
 | Documentation site, published docs, self-hosting guide | the **`ragen-docs`** repository (Mintlify) — not this one. `npm run docs:config-reference` writes the generated reference into a sibling checkout |
-| Anything touching `apps/api`, the NestJS port, or what's been cut over vs. stays local | [ADR-21](docs/adrs/21-monorepo-and-api-decoupling.md) (read the latest updates first), `apps/api/AGENTS.md` |
-| `apps/mcp`, the MCP server that exposes Ragen's chat to Claude Desktop, Cursor and other clients | [ADR-36](docs/adrs/36-mcp-server-exposes-chat-via-apps-api.md) — it calls `apps/api` with the caller's key and never touches the database; [`docs/companion-services.md`](docs/companion-services.md) for running it; the user-facing page is [docs.ragen.ai](https://docs.ragen.ai/api-reference/mcp-server) |
+| Anything touching `apps/api`, the NestJS port, or what's been cut over vs. stays local | [ADR-21](docs/adrs/21-monorepo-and-api-decoupling.md) (read the latest updates first), `apps/api/AGENTS.md` + its `docs/agent-guide.md` |
+| `apps/mcp`, the MCP server exposing Ragen's chat to external clients | [ADR-36](docs/adrs/36-mcp-server-exposes-chat-via-apps-api.md) — it calls `apps/api` with the caller's key and never touches the database; running it: [`docs/companion-services.md`](docs/companion-services.md) |
 | Document ingest, background jobs, anything in `apps/worker` | [ADR-44](docs/adrs/44-bullmq-is-the-worker-runtime.md) — BullMQ runs jobs, Temporal is an adapter — [ADR-26](docs/adrs/26-absorb-ragen-worker-into-monorepo.md), [ADR-40](docs/adrs/40-worker-uses-prisma-not-knex.md), `apps/worker/AGENTS.md` |
 | Writing or reviewing a spec before building | [`docs/specs/README.md`](docs/specs/README.md), [`docs/specs/TEMPLATE.md`](docs/specs/TEMPLATE.md) |
 | A feature too big for one PR, several people on it, or which commits cut a release | [ADR-50](docs/adrs/50-a-large-feature-ships-as-many-small-prs.md) — small PRs onto `main` behind a feature key defaulting to `false`, never a release branch; a slice behind a disabled key is a `chore` and releases nothing |
@@ -98,7 +93,7 @@ Before starting a nontrivial task, match it against this table and read the link
 | A side-effect on a lifecycle event (welcome email, signup) | [`docs/event-bus.md`](docs/event-bus.md) |
 | Unit/component tests | this file's "Testing Requirements" section |
 | E2E tests, regression sweep before a release | this file's "E2E Tests" section, [`docs/regression-checklist.md`](docs/regression-checklist.md) |
-| Guardrail rules — what a turn must pass, per org | [`docs/guardrails.md`](docs/guardrails.md) — one package, both stages. Input runs *downstream* of PII masking, so a pattern never sees a phone number; output runs in the stream funnel, and a chain's `textStream` is a view of it rather than the SDK's — adding a fourth way for text to leave a chain leaves it unguarded |
+| Guardrail rules — what a turn must pass, per org | [`docs/guardrails.md`](docs/guardrails.md) — one package, both stages. Input runs *downstream* of PII masking, so a pattern never sees a phone number; output runs in the stream funnel (a chain's `textStream` is a view of it) — a fourth way for text to leave a chain is unguarded |
 | Security incidents, PII alerting | [`docs/security-monitoring.md`](docs/security-monitoring.md) |
 | Docling version upgrades | [`docs/runbooks/docling-upgrade.md`](docs/runbooks/docling-upgrade.md) |
 | Presidio version upgrades, PII test scenarios | [`docs/runbooks/presidio-upgrade.md`](docs/runbooks/presidio-upgrade.md) |
@@ -111,10 +106,9 @@ Before starting a nontrivial task, match it against this table and read the link
 
 ## Core Surfaces
 
-Four apps and a worker share one schema and 18 packages, so some files are
-read by code you are not looking at. Before changing one of these, know who
-else depends on it — and run `npm run verify`, which is the only command that
-checks all of them at once.
+Five apps share one schema and 18 packages, so some files are read by code you
+are not looking at. Before changing one of these, know who depends on it, and
+run `npm run verify` — the only command that checks all of them.
 
 | Surface | Who depends on it | What catches a mistake |
 |---|---|---|
@@ -133,26 +127,22 @@ checks all of them at once.
 Three rules that come from things that actually broke here:
 
 - **A library that owns a table also owns how it is queried.** Writing its rows
-  directly with Prisma couples you to queries you cannot see, and an upgrade can
-  filter on a column that was previously write-only. Prefer the library's API;
-  `tests/architecture/` is the tripwire for the case that cost us a red `main`.
+  with Prisma couples you to queries you cannot see; an upgrade can filter on a
+  column that was write-only. Prefer the library's API.
 - **A red required check is red for a reason.** `test-e2e` is the only gate
   exercising sign-in end to end.
 - **A limit that is computed is not a limit — a limit is a call site.** The
-  monthly ceilings were enforced by nothing for five months, every static check
-  green. Grep a guard's callers before trusting it.
+  monthly ceilings were enforced by nothing for five months. Grep a guard's
+  callers before trusting it.
 
-Architecture guards live in `tests/architecture/` and run in `Packages / Test`.
-They read source as text, so one test can speak for the whole monorepo. Add one
-whenever a rule matters more than a comment can enforce.
+Architecture guards (`tests/architecture/`, run in `Packages / Test`) read
+source as text — add one whenever a rule matters more than a comment can.
 
 ## Local Development
 
-Node.js `^24.15.0 || >=26.0.0` — a range, not a floor: `engine-strict` plus
-jsdom's range fails 24.0–24.14 **and all of 25**. One `.env.local` at the
-repository root serves every app: real env vars beat an app's own `.env` files,
-which beat the root's — see `scripts/load-root-env.mjs`. Minimum root
-`.env.local`:
+Node.js `^24.15.0 || >=26.0.0` — `engine-strict` fails 24.0–24.14 **and all
+of 25**. One root `.env.local` serves every app (real env > app `.env` > root;
+`scripts/load-root-env.mjs`). Minimum:
 
 ```
 DATABASE_URL="postgresql://postgres:pass123@localhost:55432/ragen"
@@ -165,15 +155,16 @@ DEFAULT_MODEL=gpt-4o-mini        # plus OPENAI_API_KEY and a route for it
 **No bare `PORT` in the root `.env.local`** — three services read it, so one
 value moves all three. Use `RAGEN_API_PORT` / `RAGEN_MCP_PORT` (the MCP server defaults to 3300).
 
-**Postgres 55432 and Redis 56379 are on non-standard ports on purpose**, and a
-bare `prisma migrate` reads only `process.env.DATABASE_URL` — a stale value
-naming 5432 migrates a native Postgres instead of the container and reports
-success. Twice now. **Check which server answered before believing a schema
-problem**: [`docs/lessons.md`](docs/lessons.md).
+**Postgres 55432 and Redis 56379 are deliberately non-standard**: a stale
+`DATABASE_URL` naming 5432 makes `prisma migrate` migrate a native Postgres and
+report success — **check which server answered before believing a schema
+problem**. Every port and Compose name: [`docs/companion-services.md`](docs/companion-services.md).
 
-Every port, Compose's container names, why two checkouts named `ragen` share
-volumes, and the observability profile:
-[`docs/companion-services.md`](docs/companion-services.md).
+**Claude Code cloud sessions**: `.claude/hooks/session-start.sh` installs the
+`.nvmrc` Node, runs `npm ci` and generates the Prisma clients, so `npm run
+verify` works without setup. Known reds there, none yours: no Docker (e2e, DB
+suites), no IPv6 loopback (`connector-guard`'s redirect tests) and no
+`temporal.download` (the worker's `workflow.spec.ts`).
 
 ## Architecture
 
@@ -181,48 +172,38 @@ volumes, and the observability profile:
 
 **What it is**: RAG AI chat app with an in-process model gateway, document knowledge bases, and a public API.
 
-**Monorepo layout**: npm workspaces, `apps/*` + `packages/*` — 5 apps
-(`web`, `api`, `admin`, `worker`, `mcp`) over 18 packages, with one
-`prisma/schema.prisma` serving all of them via per-app `generator` blocks, and
-the supporting services in `infra/`. The tree, what each package is for and why
-it exists: [`docs/architecture.md`](docs/architecture.md).
+**Monorepo layout**: npm workspaces — 5 apps (`web`, `api`, `admin`, `worker`,
+`mcp`) over 18 packages, one `prisma/schema.prisma`, services in `infra/`. The
+tree and what each package is for: [`docs/architecture.md`](docs/architecture.md).
 
-**Path convention in this file**: a bare `src/…` means `apps/web/src/…`. Paths in
-any other workspace are always written in full (`apps/api/src/…`,
-`packages/rag-core/src/…`).
+**Path convention**: a bare `src/…` means `apps/web/src/…`; every other
+workspace's paths are written in full.
 
 ### Monorepo tasks (Turborepo)
 
-Full detail — the ESLint entry points, the caching numbers, why there is no
-remote cache: [`docs/monorepo-tasks.md`](docs/monorepo-tasks.md). The rules:
+Detail: [`docs/monorepo-tasks.md`](docs/monorepo-tasks.md). The rules:
 
-- **ESLint is one shared flat config**, `packages/eslint-config`, with three
-  entry points (`base`, `/next`, `/node`). Change a rule for everyone in the
-  package; change one app in its own file.
-- **Do not re-add manual `packages:build &&` prefixes to scripts.** `turbo.json`'s
-  `dependsOn: ["^build"]` already orders package builds, and the prefixes
-  defeated the cache.
-- **`outputs` must name the build product only.** It excludes `.next/cache/**`
-  *and* `.next/dev/**` — the second matters as much and is easy to lose; it once
-  filled the disk and took Docker and Postgres with it. Re-check after a Next
-  major:
-  [`docs/lessons/turbo-cached-the-turbopack-dev-cache.md`](docs/lessons/turbo-cached-the-turbopack-dev-cache.md).
+- **ESLint is one shared flat config**, `packages/eslint-config` (`base`,
+  `/next`, `/node`); change one app's rules in its own file.
+- **No manual `packages:build &&` prefixes** — `dependsOn: ["^build"]` orders
+  them, and the prefixes defeated the cache.
+- **`outputs` names the build product only** — it excludes `.next/cache/**`
+  *and* `.next/dev/**`; losing the second once filled the disk. Re-check after
+  a Next major.
 
 ### RAG Pipeline
 
-Four composed improvements (ADRs 11, 12, 14, 15, 16), gated differently: hybrid
-search always runs; multi-query is a per-org setting, default on — there is no
-`FEATURE_FLAG_MULTI_QUERY`; **reranking is opt-in**, needing
-`FEATURE_FLAG_RERANKING=1` plus provider credentials. Two queries per turn
-(`MULTI_QUERY_VARIANT_COUNT = 1`). Diagrams, the per-stage table and the flags:
-[`docs/rag-pipeline.md`](docs/rag-pipeline.md) — see the Task Router.
+Hybrid search always runs; multi-query is a per-org setting, default on (no
+`FEATURE_FLAG_MULTI_QUERY`); **reranking is opt-in** — `FEATURE_FLAG_RERANKING=1`
+plus credentials. Two queries per turn (`MULTI_QUERY_VARIANT_COUNT = 1`).
+Detail: [`docs/rag-pipeline.md`](docs/rag-pipeline.md).
 
 ### Routing & Layouts
 
 Locale-prefixed (`/en`, `/pl`) via `next-intl`; all UI under
-`src/app/[locale]/`, split into `(panel)/`, `(auth)/` and `public/`. Middleware
-(`src/middleware.ts`) does i18n and cookie checks only — **real auth
-verification happens in server components and layouts**, never in middleware.
+`src/app/[locale]/`, split into `(panel)/`, `(auth)/` and `public/`.
+`src/proxy.ts` (Next 16's `middleware.ts`) does i18n and cookie checks only —
+**real auth verification happens in server components and layouts**.
 See [`docs/architecture.md`](docs/architecture.md).
 
 ### Feature Modules (`src/features/`)
@@ -241,20 +222,19 @@ and the module list: [`docs/architecture.md`](docs/architecture.md).
 ### API
 
 The public API is **`apps/api`** (NestJS). `apps/web`'s `src/app/api/v1/` is
-internal and called by `apps/api` only — it is protected by the
-`INTERNAL_API_SECRET` shared secret, so never expose one of those routes
-directly. API keys are opaque (`sk-<keyId>.<secret>`) and carry no org context;
-they live in ragen-token-vault and the database holds only `maskedValue`
-([ADR-13](docs/adrs/13-opaque-api-keys.md)). Headers, the chat endpoint and
-API-only mode: [`docs/architecture.md`](docs/architecture.md).
+internal, called by `apps/api` only behind `INTERNAL_API_SECRET` — never expose
+one directly. API keys are opaque (`sk-<keyId>.<secret>`), live in
+ragen-token-vault, and the DB holds only `maskedValue` (ADR-13). Detail:
+[`docs/architecture.md`](docs/architecture.md).
 
-### Auth
+### Auth, state, libraries, logging
 
-Better Auth (`src/lib/auth.ts`) with the `admin` and `organization` plugins.
-One org record: Better Auth's `Organization`, plus Ragen's own columns.
-`Member` and all app data (projects, API keys, settings) reference its `id`;
-there is no `InternalOrganization` any more. A user-creation hook makes the
-org, the owner's membership and a default project. Detail: [`docs/architecture.md`](docs/architecture.md).
+Better Auth (`src/lib/auth.ts`) with `admin` + `organization` plugins; one org
+record (`Organization`, no `InternalOrganization`). Client UI state is Redux
+Toolkit via the typed hooks in `src/store/hooks.ts`. Logging is
+`@/app/lib/utils/logger`; OTel is a no-op unless `OTEL_EXPORTER_OTLP_ENDPOINT`
+is set. Detail on all four, plus what each `src/libs/` module is for:
+[`docs/architecture.md`](docs/architecture.md).
 
 ### RBAC — Two distinct role hierarchies (never confuse)
 
@@ -266,13 +246,6 @@ org, the owner's membership and a default project. Detail: [`docs/architecture.m
 - The vocabulary is `@ragenai/platform-contracts`: `ORG_ROLES`, the `ORG_*_ROLE` constants, `canManageOrg()` (may act), `orgVisibilityScope()` (may see → `DocumentActor.scope`), `canOwnOrg()`, `hasOrgRole()`, `isAppAdmin(user)`. No `isOrgAdmin` — it meant both (ADR-39). `src/lib/auth-access-control.ts` re-exports them, and adds the Better Auth `orgRoles`/`platformRoles` registries; **a new org role goes in both**, and `org-roles.test.ts` asserts they agree.
 - `src/lib/auth-guards.ts` — **server-only**: async guards (`requireAppAdmin()`, `requireOrgAdmin()`, `requireOrgOwner()`), cached session/member lookups (`getSession()`, `getActiveMember()`)
 - **Never inline a role comparison** — `tests/architecture/role-checks-are-not-inlined.test.ts` fails on `role === 'admin'` outside it. Do NOT duplicate `getActiveMember` in action files.
-
-### State Management
-
-Redux Toolkit (`src/store/`) for client UI state — use the typed hooks in
-`src/store/hooks.ts`, not bare `useDispatch`/`useSelector`. Four React
-Contexts alongside it, and server state comes from Prisma in server components
-and actions. See [`docs/architecture.md`](docs/architecture.md).
 
 ### Prisma (v7)
 
@@ -286,16 +259,9 @@ The tenant-scope guard **warns, it does not throw**. Everything else — the
 adapter, the paths, why the guard only warns:
 [`docs/prisma.md`](docs/prisma.md).
 
-### Libraries (`src/libs/`)
-
-Sixteen modules. What each is for, and the two that carry a warning:
-[`docs/architecture.md`](docs/architecture.md).
-
 ### Document Versions & RAG Optimization
 
-Moved to [`docs/document-versioning.md`](docs/document-versioning.md) — see the Task Router.
-
-Two rules that bite if you miss them: **never re-index a content change with
+Detail: [`docs/document-versioning.md`](docs/document-versioning.md). Two rules that bite if you miss them: **never re-index a content change with
 `runFileEmbeddings`** (it re-parses the stored file, which still holds the
 original upload) and **never overwrite the stored file to make it pick up new
 text** (that destroys a non-plaintext original). Use
@@ -323,7 +289,7 @@ the previous chunks first.
 
 ## Key Conventions
 
-- **Environment variables**: a variable read by more than one app belongs in a `@ragenai/env` fragment, not in each app's schema (ADR-37). Use `httpUrl()` for endpoints — `z.string().url()` accepts `localhost:4318`, because `new URL()` reads `localhost:` as a scheme. Services validate at boot and exit; `apps/web` must not, since it serves the setup page that explains the fix.
+- **Environment variables**: one read by several apps belongs in a `@ragenai/env` fragment (ADR-37). Use `httpUrl()` for endpoints — `z.string().url()` accepts `localhost:4318`. Services validate at boot and exit; `apps/web` must not — it serves the setup page.
 - **Panel colour and density** (design system v2): semantic tokens
   (`bg-primary`, `text-muted-foreground`), never a literal Tailwind colour —
   `panel-colours-are-tokens-not-literals.test.ts` fails on a ramp step or a hex.
@@ -339,8 +305,6 @@ the previous chunks first.
 - i18n: `next-intl` (locales: `apps/web/src/app/config.ts`). Use `@/i18n/routing`'s `Link`/`redirect`/`usePathname`/`useRouter`, not `next/link`.
 - Tailwind v4 with `@theme` directive in `src/app/[locale]/global.css`. Brand colors: Ragen red `#cb1d3d`, Ragen blue `#252d53`.
 - Error classes: `UnauthorizedException`, `NotFoundException`, `LimitExceededException`. Jobs: start them by name through `@ragenai/jobs`, never by importing a handler.
-- Logging: Pino w/ OpenTelemetry. Import `@/app/lib/utils/logger` — it picks server or client at **runtime**; nothing swaps them at build time. The server pick uses the *bundler's* `require`, so outside webpack/Turbopack (every `tsx` script) it falls back to the client logger instead of throwing, as it used to.
-- Observability: OTel traces/metrics/logs via `src/instrumentation.ts` + `instrumentation-client.ts`; auto-instrumentation covers HTTP, Postgres, Prisma and outgoing `fetch`. **A no-op in apps/web unless `OTEL_EXPORTER_OTLP_ENDPOINT` is set**; the worker also traces on `LANGFUSE_SECRET_KEY` alone. LLM tracing is app-level since the proxy went — see [ADR-22](docs/adrs/22-observability-opentelemetry.md).
 - Pre-commit: lint-staged runs `eslint --fix` + `prettier --write`, dispatching each file to its own workspace in `lint-staged.config.mjs` — add an entry there when you add a workspace. Conventional commits, enforced by commitlint.
 
 ## Model Defaults
@@ -357,19 +321,16 @@ looked up later:
 
 All new code must include tests. Vitest + React Testing Library (`jsdom`). Tests live next to code in `__tests__/` directories.
 
-| File type | Tests required |
-|---|---|
-| Utility functions | Unit tests |
-| Redux slices | Unit tests for all reducers |
-| Zod schemas | Unit tests valid + invalid inputs |
-| React components | Integration tests (render, interaction, state) |
-| New screens/pages | At minimum a Playwright smoke test |
-| Workspace packages (`packages/*`) | Unit tests beside the source. They run in the root `App / Test` job (vitest's `include` covers `packages/*/src`) and count toward coverage |
-| Thin bindings / adapters | A test for whatever they wire. A five-line file that injects a logger or picks a service name is still the only place that wiring exists, and it fails silently when it breaks |
+Utilities, Redux reducers and Zod schemas (valid + invalid) get unit tests;
+React components get integration tests (render, interaction, state); a new
+screen gets at least a Playwright smoke test. A PR adding code with no test is
+incomplete. The two most often missed:
 
-This is not aspirational — a PR adding code with no test is incomplete. The cases
-most often missed are the two rows above: shared package code, and the small
-per-app files that bind it.
+- **Workspace packages** (`packages/*`): unit tests beside the source — they run
+  in the root `App / Test` job and count toward coverage.
+- **Thin bindings / adapters**: a five-line file that injects a logger or picks
+  a service name is still the only place that wiring exists, and it fails
+  silently when it breaks — test what it wires.
 
 **Vitest and Playwright conventions**: [`docs/testing-conventions.md`](docs/testing-conventions.md).
 
@@ -386,7 +347,7 @@ the tiers and how to run each: [`docs/testing-conventions.md`](docs/testing-conv
 
 ### Manual Regression Checklist
 
-`docs/regression-checklist.md` — prioritized P0–P3 scenarios across auth, chat, KB, projects, connectors, settings, API. Use before releases.
+`docs/regression-checklist.md` — prioritized P0–P3 scenarios. Use before releases.
 
 ## Post-Task Workflow
 
@@ -394,7 +355,7 @@ After modifying or creating files:
 
 1. **Write tests first** — unit/integration tests for all new code (see Testing Requirements above).
 2. **Run the gate** — `npm run verify`. It is the one command that covers every workspace; `npx vitest run` alone misses typecheck and the other apps.
-3. **Run code review** — `/coderabbit:review` first. On a PR read the CodeRabbit check's *description*: it says `pass` with "Review rate limited" when no review ran.
+3. **Run code review** — `/coderabbit:review` where the plugin is installed, otherwise the `ragen-code-review` skill. On a PR read the CodeRabbit check's *description*: it says `pass` with "Review rate limited" when no review ran.
 4. **Changed what a fresh install needs?** A new/renamed env var, a service the app can no longer run without, a changed default model or vector size, a compose change — update `packages/create-ragen-app` in the same PR and **say so in the description**. Nothing else exercises the first-run path; what counts is listed in its [README](packages/create-ragen-app/README.md).
 5. **Log a lesson if you hit one** — if you made a nontrivial correction or found a non-obvious gotcha, add/update an entry in [`docs/lessons.md`](docs/lessons.md) (see that file's own instructions).
 6. **Would a user notice?** Add a line to [`docs/changelog-notes.md`](docs/changelog-notes.md) — the weekly blog post is written from it, and the effect is easy to name now and expensive to reconstruct on Friday.

@@ -7,6 +7,8 @@ topics: ['e2e', 'playwright', 'next-app-router', 'dead-code', 'refactoring']
 
 # Deleting a route is invisible to typecheck, because a route is addressed by string and not by symbol
 
+**In short**: Removing the support feature left `ROUTES.support = '/pl/support'` in a smoke spec; `apps/web/e2e` is compiled, but a path literal type-checks whether or not the page exists. The first sweep missed it by searching `e2e/` instead of `apps/web/e2e` — an empty grep from the wrong path looks exactly like a clean one.
+
 **Context**: removing the in-app support feature meant deleting the whole
 chain — the floating button, the modal, the wizard, `/support`, the client
 call, `/api/send`, the mailer function and two email templates. Each link was

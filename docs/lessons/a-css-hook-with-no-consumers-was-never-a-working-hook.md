@@ -7,6 +7,8 @@ topics: ['css', 'has-selector', 'dead-code', 'flexbox', 'min-height', 'layout', 
 
 # A CSS escape hatch that matched no element shipped and stayed dead, and the page it was written for never existed
 
+**In short**: `panel-content-wrapper:has([data-panel-fullwidth])` was the documented way to run a table page full width; nothing carried either half, and the "leads detail" page the comment cites does not exist. Every static check is green on a selector that matches nothing. Making it real then needed a second rule (the cap is on the child, the padding on the parent) and an unbroken `min-h-0` chain — one `display: block` provider in the middle clipped the rows instead of scrolling them.
+
 **Context**: `docs/panel-ux-rules.md` rule 2 says panel content is capped at 1120px "except table-heavy pages, which run full width (`data-panel-fullwidth`)". `apps/web/src/app/[locale]/global.css` carried the mechanism, with a comment naming its motivating case:
 
 ```css

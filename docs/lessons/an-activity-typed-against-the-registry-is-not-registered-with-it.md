@@ -1,5 +1,7 @@
 # An activity the handlers type-check against is not the same thing as one the runtime registers — and `turbo run test` does not run the suite that knows the difference
 
+**In short**: `ctx.steps<typeof activities>` resolves a name from the module's *shape*, while the registry is a separate object consulted only when a real handler runs — so a missing stub is invisible to typecheck, lint and every mocked suite, and `npm run worker:test:jobs` has its own config that `turbo run test` does not collect. The fixture warned about it in prose and it happened anyway; `a-handler-activity-has-a-stub` checks it now, and writing that check found four more stubs missing since whenever, dormant because the suite only ever ingests a TEXT file.
+
 **Area:** testing, architecture · **Module:** worker ·
 **Topic:** activities, ctx.steps, bullmq, jobs-integration, test-fixtures,
 false-green, adr-44

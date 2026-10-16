@@ -7,6 +7,8 @@ topics: ['github-actions', 'stacked-prs', 'branch-filters', 'fail-open', 'archit
 
 # A PR opened against another branch gets no CI at all, and retargeting it to main does not start a run — so its green state means nothing ran
 
+**In short**: `ci.yml` triggers on `pull_request: branches: [main]`, so a stacked PR starts no workflow, and changing its base later does not either — the head commit has not moved. `CLEAN` then means "no required check is failing" because none exists. It merged untested and left `main` red across two commits. Confirm a run exists before merging; the fix for a stack is a rebase, not a retarget. **CodeRabbit skips a stacked PR the same way and still reports `pass`** — the Brain stack's cumulative diff carried fifteen defects that green gates and live runs missed; review the stack's whole diff before the first merge.
+
 **Context**: ADR-40 was migrated in six PRs, several of them stacked — each
 step needed the client or the guard the previous one added, and `main` had not
 merged it yet. Step 3c (#944) was opened with its base set to step 3b's branch

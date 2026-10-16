@@ -7,6 +7,8 @@ topics: ['github-actions', 'docker', 'multi-arch', 'buildx', 'self-hosting', 'fa
 
 # A published image that omits an architecture is emulated, not refused — and no job anywhere goes red
 
+**In short**: `publish-images.yml` shipped `linux/amd64` alone for a reason that was true of deployment and false of development: an arm64 host does not refuse the amd64 image, it runs it under emulation, and the only notice is a badge in Docker Desktop — so a native addon segfaulting under emulation reads as an application bug. Both architectures build natively now (`ubuntu-24.04-arm` is free for a public repo) and `merge` joins the digests. Push by digest with **no tag** from the per-architecture job, or the two race and the loser leaves a single-architecture image under a tag that claims to be both.
+
 **Context**: `publish-images.yml` (the worker-runtime programme's G1) published five images to GHCR so a self-hoster would not have to compile them. It built `linux/amd64` only, and said why in a comment: arm64 would cross-build under QEMU, at several times the cost, for an architecture no deployment target used.
 
 **Problem**: the reasoning was right about deployment and wrong about everything else, and nothing in CI could tell the difference.

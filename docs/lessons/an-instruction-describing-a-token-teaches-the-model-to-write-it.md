@@ -7,6 +7,8 @@ topics: ['pii', 'presidio', 'prompt', 'placeholders', 'stream-unmasker', 'silent
 
 # An instruction describing a token format, sent unconditionally, teaches the model to produce that token
 
+**In short**: Every chat prompt carried a PII instruction listing example tokens, masked or not; on a turn with nothing masked the model read a real phone number in the context and wrote `<PL_PHONE_1>`, and `StreamUnmasker`'s empty-map shortcut passed it to the reader and into the thread's history. Build such an instruction from the tokens actually present, only when there are any, and make the restorer rewrite placeholders it cannot restore instead of trusting the model to emit only what it was given.
+
 **Context**: chat-time PII masking replaces personal data in the user's
 question with Presidio placeholders (`<PL_PHONE_1>`), and `StreamUnmasker`
 puts the real values back into the streamed answer from the alias map.

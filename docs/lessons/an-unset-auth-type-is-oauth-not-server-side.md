@@ -7,6 +7,8 @@ topics: ['mcp-connectors', 'catalogue', 'oauth', 'enum-migration', 'defaults', '
 
 # An unset `authType` is OAuth, not server-side
 
+**In short**: The MCP catalogue spec said an unset `authType` seeds to `SERVER_SIDE` because that is "what those paths already do in effect". It is not: `ConnectorCard` falls through its four branches to the popup at `authBaseUrl + authPath`, which is how the five Google connectors reach `/auth/google`, while `server_side` means the credential is already held and flips the connector straight to CONNECTED. Seeded that way, those five would have reported themselves connected without authorizing — no error, just an empty inbox. `OAUTH` is right because nothing branches on `'oauth'`, so every path behaves as it does for `undefined`.
+
 **Context**: the MCP catalogue spec moves the list of connectable services out
 of code and into `mcp_catalog_entries`. A row needs an `authType`, and
 `ProviderDefinition.authType` is optional — five of the eleven manifests (the

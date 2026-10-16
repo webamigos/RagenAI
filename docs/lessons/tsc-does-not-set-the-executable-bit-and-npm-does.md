@@ -7,6 +7,8 @@ topics: ['npm', 'bin', 'tsc', 'build-outputs', 'publishing', 'npx', 'architectur
 
 # tsc does not set the executable bit, and npm does
 
+**In short**: Inside the repo `npx <name>` resolves the *workspace* bin, a symlink to `dist/index.js` that `tsc` wrote mode 644; npm chmods `bin` entries only when it installs a tarball, so `npx create-ragen-app@latest` had always worked and the workspace copy never had, in both packages that ship a command. Every test and CI job passed — the broken artifact was the local one. A `bin` needs the bit *and* a shebang, and the third instance of one theme: the working tree is not what ships, in both directions.
+
 **Context**: verifying the `create-ragen-app` 0.6.2 release by typing the
 obvious command in the obvious directory — `npx create-ragen-app`, from the
 repository root.

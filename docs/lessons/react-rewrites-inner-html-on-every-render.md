@@ -7,6 +7,8 @@ topics: ['react', 'dangerously-set-inner-html', 'dom-mutation', 'citations', 'hi
 
 # React rewrites `dangerouslySetInnerHTML` on every re-render, so marks added to that DOM vanish the moment the component updates
 
+**In short**: React 19 compares the prop *object*, and `{ __html }` is new each render, so the citation highlight's own "found" state re-wrote the DOCX HTML and wiped its `<mark>`s; the effect did not re-run to restore them. Memoise the element so React skips the subtree.
+
 **Context**: Citation highlighting marks the cited passage inside the DOCX
 viewer by wrapping text nodes of mammoth's HTML in `<mark>` after it renders
 (`DocumentPreview/passage/highlight-in-element.ts`). The HTML itself is set with

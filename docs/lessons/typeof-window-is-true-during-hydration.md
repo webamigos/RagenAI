@@ -5,6 +5,8 @@ areas: [frontend]
 topics: [hydration, react-19, better-auth, useSyncExternalStore, ssr, race, error-418, testing]
 ---
 
+**In short**: `PanelLayoutWrapper` rendered a placeholder on the server and the full shell on the client once the session had loaded. Better Auth's store often resolved before the panel's streamed segment hydrated, so the slow pages (knowledge base, Brain, a thread) raised #418, but only sometimes. The fix is a value that is false *during hydration* (`useSyncExternalStore` with a `false` server snapshot), and the test hydrates real server HTML instead of only rendering.
+
 ## Context
 
 A screenshot pass over the Nordwind demo logged minified React error #418 on

@@ -15,6 +15,8 @@ topics:
 
 # `npm install` prunes a lockfile node that `npm ci` then demands back
 
+**In short**: Two causes stacked: the local npm was 11.19.1 where `package.json` pins 10.9.8 (a 174/788-line rewrite dropping `esbuild` and five `@smithy/signature-v4` copies), and the pinned npm then pruned `@modelcontextprotocol/sdk/node_modules/zod` during `npm install` while its own `npm ci` insisted on it. `npm run verify` cannot see either — it never runs `npm ci`. Regenerate from the merge base with the pinned npm, re-insert whatever `npm ci --dry-run` names, and treat any deletion in a lockfile diff you did not intend as the resolver editorializing. It fires on a **removal** just as readily (#1300 deleted three devDependencies and pruned the same node), and the first thing to notice is often `docker build`, not CI: no Dockerfile uses the pinned npm, so the image's npm 11 runs `npm ci` against a lockfile written by npm 10. Dependabot is a third writer on npm 11 (#1384), and npm 10 can accept a stale nested node that npm 11 rejects — dry-run under both.
+
 **Context**: the MCP-catalogue work added one workspace, `packages/connector-guard`, and declared `"@ragenai/connector-guard": "*"` in apps/web, apps/api and apps/admin. That is the most ordinary dependency change there is, and it is made with `npm install`. `npm run verify` was green across all 31 workspaces.
 
 **Problem**: every one of the eleven CI checks failed in 10–40 seconds, before a single job reached any code — `npm ci` refused the install with `Missing: @smithy/signature-v4@5.7.3 from lock file` and thirty more like it. The branch reads as catastrophically broken when nothing in it is wrong.

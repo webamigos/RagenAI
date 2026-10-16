@@ -6,6 +6,8 @@ topics:
   [ai-sdk, llm-gateway, litellm, multimodal, provider-abstraction, seams]
 ---
 
+**In short**: The multimodal swap lived in a `fetch` hook because that is the one point holding both the chosen model and the serialised messages. B1 correctly called it model *selection* — but the app's seam builds a model from options and never sees a message, so "before the model is resolved" named no place that exists. Defer the **choice** (resolve inside `doGenerate`/`doStream`), not the data through seven call sites; that also absorbs an async `resolveModel` behind a sync factory. Cache per resolved id and evict on failure. Same port found apps/web and apps/worker carrying **opposite** `encoding_format` workarounds — when removing an intermediary, grep every app for hooks patching the same field.
+
 ## Context
 
 Phase B of the LiteLLM retirement moves the proxy's data plane into

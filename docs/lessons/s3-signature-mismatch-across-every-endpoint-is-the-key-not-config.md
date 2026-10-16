@@ -7,6 +7,8 @@ topics: ['s3', 'scaleway', 'credentials', 'signature-does-not-match', 'local-dev
 
 # A SignatureDoesNotMatch that survives every endpoint/bucket/region combination is the credential pair, not a config typo
 
+**In short**: Vary endpoint/bucket/region independently in an isolated script before auditing app config — the same error across every combination means the key itself, not a typo.
+
 **Context**: setting up a real-storage load test for `apps/worker` (see
 [the concurrency load-test lesson](worker-concurrency-load-test-2026-09-05.md)),
 `packages/storage`'s `S3StorageProvider` failed uploading to the local dev

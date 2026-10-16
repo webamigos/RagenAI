@@ -7,6 +7,8 @@ topics: ['guardrails', 'promise-all', 'error-propagation', 'e2e', 'playwright', 
 
 # A guard racing a model call reports the wrong failure
 
+**In short**: `Promise.all([evaluateGuardrails(), rephraseAndExpand(...)])` sent a `BLOCK`-refused question to the rephraser anyway, and surfaced whichever promise rejected first. Three causes in sequence, each looking like the answer; the one that kept CI red was a **relative `LLM_ROUTES_PATH`** resolving against a cwd that differs between the two processes in the job, so the table was never read and chain init threw before any rule ran. A wrong guess (the missing Qdrant service) died in ninety seconds by reproducing it locally. The gateway had been warning `cannot read route table at apps/web/apps/web/…` all along, but **Playwright's `webServer` defaults to `stdout: 'ignore'`**, so every application log line was discarded while Next's stack traces came through. Read the SSE body before theorising, check your logs actually reach you before calling an app silent, put a presence assertion beside every absence one, and count a delta rather than a total.
+
 **Context**: Phase B of the guardrails programme. `p0-29` asserts that a
 question matching an enabled `BLOCK` rule is refused with a localized message
 and produces no answer. It passed locally and failed in CI on every retry, for

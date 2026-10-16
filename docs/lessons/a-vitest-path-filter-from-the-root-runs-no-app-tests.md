@@ -8,6 +8,8 @@ topics:
 
 # A vitest path filter from the repository root runs none of an app's tests, and reports success
 
+**In short**: The root project covers `packages/*/src` and `tests/architecture` only, and a path argument filters what it already collects rather than adding to it — so `npx vitest run apps/web/src/config` matched no file and reported 153 unrelated passes. CI caught what the check could not. Use `turbo run test --filter=./apps/web`, and confirm the file count matches what you meant to run.
+
 **Context**: a change to `packages/env` altered a rule that all four apps call,
 so each app's environment contract test had to be checked. The check run was
 `npx vitest run packages/env apps/web/src/config apps/admin/src/config` from the

@@ -7,6 +7,8 @@ topics: ['brain', 'counts', 'citations', 'publication', 'async-state']
 
 # Brain citations are not pages, and publication completion must reach the mounted screen
 
+**In short**: Count distinct file/page pairs rather than quote rows, and refresh a mounted pending publication after the worker completes.
+
 ## Context
 
 Brain stores one KnowledgePageSource row per quote. Publication writes the page's timestamp before the worker indexes its file, then the worker marks that file COMPLETED.

@@ -8,6 +8,8 @@ topics:
 
 # A transitive `import "server-only"` takes every promptfoo eval down, and nothing reports it because no eval runs in CI
 
+**In short**: `basic-rag/chain` → `operations` → `create-ai-usage-command` → `check-team-rate-limit-query` starts with `import 'server-only'`, which throws by design; every suite that loads the chain has been dead since #1175, and the first person to find out was the next one who tried to measure something. Shimmed in `evals/shims/`. Two siblings from the same hour: `eval:citations` loads no env file (use promptfoo's `--env-file`; `. .env.local` breaks on the unquoted `VERTEX_CREDENTIALS` JSON), and the suite's "nothing may be cited" case retrieves nothing at all, so it was standing in for a citation rule it could not test.
+
 **Context**: ADR-20 says measure before shipping a retrieval or prompt change.
 The instrument for a citation change is `npm run eval:citations`. Reaching for
 it on 2026-09-16 produced, before a single question was asked:

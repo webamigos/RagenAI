@@ -1,5 +1,7 @@
 # A "test this" box that runs a different path from the real one is worse than no box
 
+**In short**: The two obvious ways to build C3's "test this policy" box — a judge in the panel, and judging the pasted text raw — both return a plausible number from a path no turn takes, and the operator sets a threshold from it. A preview has no oracle: a wrong one is attributed to the model being non-deterministic, which is true and not the cause. Run the production path from the process that runs it, reproduce what happens *upstream* of the thing under test (here, Presidio masking — and fail closed rather than judging raw text), show the input the real path saw, and return the number with its boundary rather than a verdict. Phase D's output rules inherit all of it, plus the sliding window. **It then recurred outside guardrails entirely**: the MCP catalogue's *Test connection* passed `allowedProtocols: [parsed.protocol]` and the three runtime call sites passed none, so an `http://` entry was accepted by the form, confirmed working by the button — tool names and all — and refused by every tool load. The divergence was one *option*, not one path: same function, same package, faithful in every respect but the argument that decided the outcome. Diff what a Test box passes against what the real call site passes, not just the function both reach.
+
 **Area:** architecture, ux
 **Module:** admin, web, packages/guardrails
 **Topic:** guardrails, llm-policy, preview, pii-masking, judge, fidelity

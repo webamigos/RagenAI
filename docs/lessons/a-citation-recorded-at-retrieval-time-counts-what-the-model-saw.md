@@ -7,6 +7,8 @@ topics: ['rag', 'citations', 'knowledge-analytics', 'metrics', 'retrieval']
 
 # A citation recorded at retrieval time counts what the model saw, not what it used
 
+**In short**: `DocumentCitation` rows were written from the retrieval result, so on a three-file corpus every answer "cited" all three files and the top-cited table was a retrieval-frequency table. The citation is the file name in the answer; compute "cited" after the answer, as retrieved ∩ named, and keep `retrievedSources` and cited sources apart in the types.
+
 **Context**: The Knowledge Analytics screen has a "Top 10 Cited Documents"
 table fed by `DocumentCitation` rows. On the demo tenant — three seeded
 markdown files — one question, `how quickly ticket is answered?`, produced an

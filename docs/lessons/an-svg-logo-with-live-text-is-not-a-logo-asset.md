@@ -7,6 +7,8 @@ topics: ['svg', 'branding', 'webfonts', 'next-image', 'design-handoff']
 
 # An SVG logo that keeps its wordmark as live `<text>` renders in a different font for every viewer — and its viewBox is sized against the fallback
 
+**In short**: An `<img>`-referenced SVG cannot reach the page's webfonts, and the export's viewBox had been sized against the fallback face — 90 units of dead space on one side, 11 on the other. Caught before merge; grep incoming SVGs for `<text>` first.
+
 > Caught during a brand handoff and fixed before merge. That particular export was
 > later superseded by a path-based one, so no file in the tree shows the problem —
 > the rule is here because the next handoff can arrive the same way.

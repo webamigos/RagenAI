@@ -7,6 +7,8 @@ topics: ['css-custom-properties', 'specificity', 'docusaurus', 'infima', 'tailwi
 
 # A custom-property override on `:root` loses to the element that already owns the property, so the declaration renders nothing and nothing warns you
 
+**In short**: Three of `apps/docs`'s brand colours had never painted: `.footer--dark` owns the footer tokens on the element itself, and `html[data-theme="dark"]` outranks a bare `[data-theme="dark"]`. Typecheck, lint and the build are all green either way — verify a retokenisation against `getComputedStyle`, not the source.
+
 **Context**: aligning `apps/docs` with the brand palette that
 `ragen-website` defines in `src/config/brand.ts`. The existing
 `apps/docs/src/css/custom.css` looked like a normal theme override — a `:root`

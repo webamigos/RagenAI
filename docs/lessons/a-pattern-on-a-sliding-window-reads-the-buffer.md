@@ -17,6 +17,8 @@ topics:
 
 # A pattern on a sliding window reads the buffer, not the answer
 
+**In short**: `foo$` matches a mid-stream buffer that ends in `foo` and stops matching when the sentence carries on; `\bfoo` matches a buffer beginning `foo` whose released prefix ended in `z`. The anchors came from review, the word boundary turned up while checking that report and is worse because nothing about it looks like an anchor. Two different fixes: `^`/`$` refused at save time (nothing at runtime can see the failure), `\b` and lookbehind fixed by running the rules over `context + buffer` and dropping spans that start in the context. The refusal holds in the buffered mode too — a rule is authored once and may run in either.
+
 **Context**: guardrails Phase D evaluates `PATTERN` rules on the model's answer
 while it streams. Because a match can straddle two deltas, the funnel holds the
 last `OUTPUT_WINDOW_CHARS` characters back and runs the rules over a buffer —

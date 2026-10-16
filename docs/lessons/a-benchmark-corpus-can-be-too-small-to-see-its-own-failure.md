@@ -5,6 +5,8 @@ areas: [testing, rag]
 topics: [evals, benchmark, chunking, retrieval, corpus-design, false-green, adr-20]
 ---
 
+**In short**: A corpus of 22-row tables scored a plausible 12/18 and measured nothing: six chunks per document, retrieval fetches four, so the header chunk came along with the row and the failure never occurred. Sixty rows dropped the baseline to 10/18 and made the failure visible. Before trusting a baseline, count chunks per document against `maxDocuments` and read the failing answers — a model saying "the fragments end at row 12" is describing the failure under test; one that is merely wrong is describing something else.
+
 ## Context
 
 The tables spec needed a measurement before ADR-20 would let a chunking change

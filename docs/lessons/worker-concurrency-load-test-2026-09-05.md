@@ -7,6 +7,8 @@ topics: ['temporal', 'litellm', 'qdrant', 's3', 'load-test', 'concurrency', 'onb
 
 # Tail latency at 20 concurrent ingests varies run to run (1.25x-2x median) — measure more than once before trusting a single number
 
+**In short**: Measured, not assumed — `maxConcurrentActivityTaskExecutions: 50` is not proof the system handles 50 concurrent ingests cleanly, and one run is not a stable baseline either.
+
 **Context**: a code review of `apps/worker` flagged `maxConcurrentActivityTaskExecutions: 50`
 (`apps/worker/src/worker.ts`) with no rate limiting in front of the shared LiteLLM proxy or
 Qdrant, and recommended measuring before adding a limiter speculatively. This is that

@@ -7,6 +7,8 @@ topics: ['turborepo', 'caching', 'nextjs', 'generated-types', 'false-green', 'mo
 
 # `npm run verify` races apps/web's build against its own typecheck, so the gate only passes when turbo's cache is warm
 
+**In short**: `typecheck: dependsOn: ["^build"]` orders _dependencies'_ builds, not the workspace's own, so `next build` rewrites `.next/types` while tsc reads it — `Cannot find module './routes.js'` for a file that is right there. Needs a cold cache to fire, which is why an `npm install` triggers it. CI is unaffected (separate jobs). Re-run `npm run typecheck` alone to tell it from a real regression — and if it fails *again*, it is the other cause the same file now covers: a `.next` left by another branch, whose validator still imports a route this branch does not have — `rm -rf apps/web/.next apps/admin/.next` clears it. Note that `git stash` does not revert node_modules.
+
 **Context**: `npm run verify` is `generate:types && turbo run lint typecheck test build`
 — one turbo invocation covering four tasks across every workspace. AGENTS.md
 calls it "THE gate" and "the one command that checks all of them at once".

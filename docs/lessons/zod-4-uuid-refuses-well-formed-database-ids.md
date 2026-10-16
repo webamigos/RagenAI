@@ -5,6 +5,8 @@ areas: ['frontend', 'architecture']
 topics: ['zod', 'validation', 'uuid', 'server-actions', 'e2e', 'seeds', 'false-green']
 ---
 
+**In short**: Since Zod 4, `.uuid()` also demands an RFC version and variant. The e2e seed's ids (`e2e00000-0000-0000-…`) are valid Postgres uuids, so Brain's extraction dialog answered `invalid-input` for real documents, and the bundle contracts would have silently dropped such rows from an export. Every unit fixture was v4, so only a browser run found it. Check a database key's shape and let the database decide whether the row exists. Recurred in #1491/#1494 (fixed in #1496): use `z.guid()`.
+
 ## Context
 
 Ragen Brain's panel actions and bundle contracts validated ids with `z.string().uuid()` / `z.uuid()`. Every unit test used v4 ids and passed.

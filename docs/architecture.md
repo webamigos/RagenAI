@@ -179,7 +179,7 @@ features/{feature}/
 
 ### Routing
 
-Routes are locale-prefixed (`/en/...`, `/pl/...`) via `next-intl`. Middleware handles i18n routing and session cookie checks. Auth verification happens in server components/layouts.
+Routes are locale-prefixed (`/en/...`, `/pl/...`) via `next-intl`. `src/proxy.ts` (Next 16 renamed `middleware.ts` to `proxy.ts`) handles i18n routing, session cookie checks and the public-thread rate limit. Auth verification happens in server components/layouts, never in the proxy.
 
 ### API
 
@@ -240,3 +240,8 @@ Old import paths (`CONNECTOR_PROVIDERS`, `getProviderDefinition` from `src/featu
 - **Redux Toolkit** (`src/store/`): client UI state (sidebar, assistant config, threads list, voice). Typed hooks live in `src/store/hooks.ts` — use those, not the bare `useDispatch`/`useSelector`.
 - **React Context**: `AssistantSettingsContext`, `FilesContext`, `OnboardingContext`, `SearchThreadsContext`
 - **Server state**: Prisma queries in server components and server actions
+
+### Logging & observability
+
+- **Logging**: Pino with OpenTelemetry. Import `@/app/lib/utils/logger` — it picks the server or client logger at **runtime**; nothing swaps them at build time. The server pick uses the *bundler's* `require`, so outside webpack/Turbopack (every `tsx` script) it falls back to the client logger instead of throwing, as it used to.
+- **Tracing**: OTel traces/metrics/logs via `src/instrumentation.ts` + `instrumentation-client.ts`; auto-instrumentation covers HTTP, Postgres, Prisma and outgoing `fetch`. **A no-op in apps/web unless `OTEL_EXPORTER_OTLP_ENDPOINT` is set**; the worker also traces on `LANGFUSE_SECRET_KEY` alone. LLM tracing is app-level since the proxy went — see [ADR-22](adrs/22-observability-opentelemetry.md).

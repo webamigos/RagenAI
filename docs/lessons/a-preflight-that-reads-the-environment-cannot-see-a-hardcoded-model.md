@@ -7,6 +7,8 @@ topics: ['llm-gateway', 'model-routing', 'preflight', 'defaults', 'silent-failur
 
 # A preflight that reads the environment cannot see a hard-coded model
 
+**In short**: `claude-haiku-4-5`, `gpt-5.4-mini` and `gpt-5.4-nano` had no route after B6 removed the proxy, while `gateway:preflight --probe` reported a clean deployment — two of them are constants in worker source, so no variable named them and `MODEL_REGISTRY` does not either (they are internal tiers, not models a user picks). A route table is proved by what calls it, not by what it contains.
+
 **Context**: B6 removed the LiteLLM proxy, so every model id now resolves
 against `infra/llm-gateway/routes.yaml` and nothing else. `npm run
 gateway:preflight -- --probe` exists precisely to answer "can this deployment

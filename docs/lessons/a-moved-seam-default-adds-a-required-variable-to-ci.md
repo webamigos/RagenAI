@@ -8,6 +8,8 @@ topics:
 
 # Moving a seam’s default variant adds a required variable to every workflow that boots an app — and the honest fix is a service, not a dummy value
 
+**In short**: ADR-44 made BullMQ the default and the producers started validating it at boot, so `e2e.yml` — the only job that starts `apps/api` — went red on `REDIS_URL is required when WORKER_RUNTIME is "bullmq"` while every other check stayed green. The requirement moved to the *default*, which every environment inherits without naming it. Fixed with a `redis:7-alpine` service rather than a dummy URL: the suite drains no queue, so a made-up value would have booted the app and meant nothing.
+
 **Context**: ADR-44 made BullMQ the default worker runtime, and `WORKER_RUNTIME_SEAM` declares `REDIS_URL` required under BullMQ. A later change made the *producers* — apps/web and apps/api, which enqueue but never run jobs — validate that half of the seam at boot, so a deployment with no Redis fails at startup with the variable named rather than at the first upload with a Redis error three layers from the cause.
 
 **Problem**: `e2e.yml` boots `apps/api` for real, and its workflow-level `env:` block had no `REDIS_URL`. It never needed one: while Temporal was the default, the seam demanded `TEMPORAL_SERVER_ADDRESS`, and four dummy `TEMPORAL_*` variables covered it until ADR-44 removed them. So a PR that touched no workflow turned `Start apps/api` red — `REDIS_URL is required when WORKER_RUNTIME is "bullmq"` — while every other check stayed green, because no other job starts that process. The requirement did not move to the app; it moved to the *default*, which every environment inherits without naming it.

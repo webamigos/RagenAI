@@ -8,6 +8,8 @@ topics:
 
 # A status read taken in two round trips reports a run that finished between them — completed, with no result
 
+**In short**: `getRun` read the job hash and then its state, so a run finishing in between answered `completed` with a `null` result — a generated document with no file behind it, on the one route that reads a result. Invisible to the adapter's unit tests, which mock `Job.fromId` and hand both reads the same object; the D1 integration suite hit it on its first run because it polls as fast as it can. A suite that mocks the transport cannot find a race in the transport.
+
 **Context**: the BullMQ adapter's `getRun(runId)` answers the one route that
 reads a job's *result* — `/api/documents/status/[workflowId]`, which the
 document-generation UI polls until it sees a file. It was written as the

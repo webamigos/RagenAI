@@ -7,6 +7,8 @@ topics: ['metadata', 'migrations', 'vector-store', 'backfill', 'ui-contracts']
 
 # A field added later is safe only if its absence means something — never default it
 
+**In short**: A real page, a relevance score and a snippet were each added to data that mostly has none. Defaulting any of them lies in a different shape — `0` on a relevance bar reads as "scored zero" rather than "not measured". Absence as the discriminator removes the need for a backfill, and a truthiness check reintroduces the bug the field was added to avoid.
+
 **Context**: three fields were added to the retrieved-source contract in one
 sequence — a real page (`source_page`), a reranker relevance score, and a
 persisted snippet. In each case most existing data has no value and never will:

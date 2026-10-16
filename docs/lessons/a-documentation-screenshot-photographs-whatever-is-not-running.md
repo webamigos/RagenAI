@@ -7,6 +7,8 @@ topics: ['screenshots', 'capture', 'better-auth', 'apps-api', 'fail-open', 'seed
 
 # A documentation screenshot photographs whatever is not running — an unreachable service renders as an empty section, not an error
 
+**In short**: The knowledge base's folder rail comes from apps/api, which was down: the page caught the error and rendered a rail with no FOLDERS section, and the capture script's "refuse to photograph a failure" guard saw nothing to refuse. Also: `demo-data.sql` is an input to every image it feeds — raising a storage ceiling for one page stales another — and `apps/admin` cannot sign in on 3200 without its own `BETTER_AUTH_URL`.
+
 **Context**: `docs/img/web/knowledge-base.png` had been a hand-placed design
 target since #991. Phase 7 shipped, so the image went back to being generated:
 point `apps/web` at `ragen_e2e`, seed `apps/docs/screenshots/demo-data.sql`,

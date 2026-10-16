@@ -7,6 +7,8 @@ topics: ['brain', 'relations', 'proposals', 'concurrency', 'provenance']
 
 # Brain relation proposals need both endpoint versions
 
+**In short**: Shared sources provide suggestions, not evidence. Lock and validate both endpoints, retain INFERRED provenance and include inferred edges in the findings neighbourhood link.
+
 ## Context
 
 Findings offer relation suggestions through the same proposal card and actions as the Brain assistant. Pages citing a shared document provide a bounded suggestion set.

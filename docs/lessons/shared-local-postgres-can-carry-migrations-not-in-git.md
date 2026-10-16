@@ -7,6 +7,8 @@ topics: ['prisma', 'migrations', 'git-worktrees', 'local-development', 'postgres
 
 # A shared local Postgres can carry schema from another in-progress feature branch, absent from your branch's migration history
 
+**In short**: A git worktree isolates the working tree, not the shared Postgres container behind it — `prisma migrate reset` would have destroyed someone else's uncommitted schema.
+
 **Context**: implementing a Prisma migration (adding a `CANCELLED` enum value and a
 `workflowId` column to `UserFile`) in a git worktree checked out from `main`, while a
 second, unrelated session worked on i18n translations in the primary checkout. Both

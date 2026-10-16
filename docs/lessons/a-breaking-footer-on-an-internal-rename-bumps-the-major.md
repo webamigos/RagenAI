@@ -7,6 +7,8 @@ topics: ['semantic-release', 'release-automation', 'versioning', 'conventional-c
 
 # A `BREAKING CHANGE:` footer on an internal environment-variable rename is a major release — four of them in two days, and semantic-release cannot go back
 
+**In short**: The default ruleset bumps the major on *any* breaking footer, so three guardrails/worker slices that retired an env var took the line from `2.0.0` to `5.0.0` in thirty-six hours, for a product with no consumer any of them broke. There is no way back through configuration — the highest reachable tag is the last release, so returning to `2.x` meant deleting six releases *and* their tags, and the images those releases published stay in GHCR regardless. The fix is one custom rule (`breaking → minor`, ADR-51), which works because a matching custom rule stops `index.js` falling back to the defaults at all.
+
 **Context**: `release.yml` runs semantic-release on every push to `main`, and
 two programmes were landing slice by slice — guardrails and the worker runtime.
 Several of those slices retired an environment variable: `MODERATION_ENABLED`

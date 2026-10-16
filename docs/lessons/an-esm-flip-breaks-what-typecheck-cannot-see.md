@@ -7,6 +7,8 @@ topics: ['esm', 'commonjs', 'nodenext', 'opentelemetry', 'nestjs', 'ts-jest', 's
 
 # Declaring an app ESM breaks the three things tsc, eslint and jest cannot see — and two of them fail silently
 
+**In short**: `apps/api` already had `.js` on 821 of 824 relative imports, so adding `"type": "module"` was a one-line diff and four runtime defects — all green under tsc, eslint and 97 jest suites. `require()` typechecks and throws; OTel's auto-instrumentation needs `--import @opentelemetry/instrumentation/hook.mjs` or it reports success and traces nothing; `crypto-js` exposes no named exports to the ESM loader; and a stale jest cache made 94 of 97 suites pass that `--clearCache` failed. Boot the built artifact — a green build proves none of it. Same class in `apps/web`, which never flipped anything: the logger's `require()` works only because webpack and Turbopack supply one, so every `tsx` script in `src/scripts/` that reached it died on import — including the Phase A cleanup script written to be run by hand.
+
 **Context**: `apps/api` was CommonJS with `module: nodenext`, which already
 demands a `.js` extension on every relative import — 821 of its 824 had one.
 Adding `"type": "module"` therefore looked like a one-line change, and the diff

@@ -7,6 +7,8 @@ topics: ['temporal', 's3', 'streaming', 'atomicity', 'retries', 'silent-corrupti
 
 # A storage download streamed straight to destPath leaves a truncated file that a retry mistakes for a complete one
 
+**In short**: Fixed by writing to a temp path and renaming onto destPath only on success — `existsSync` is not proof a write finished.
+
 **Context**: A code review of `apps/worker` (prompted by evaluating BullMQ as a
 Temporal replacement, then deciding to stay on Temporal per
 [ADR-07](../adrs/07-temporal-document-processing.md)) looked at

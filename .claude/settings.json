@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/session-start.sh"
+          }
+        ]
+      }
+    ]
+  },
+  "permissions": {
+    "allow": [
+      "Bash(npm run verify)",
+      "Bash(npm run typecheck)",
+      "Bash(npm run lint)",
+      "Bash(npm run generate:types)",
+      "Bash(npm run check:config-paths)",
+      "Bash(npm run *:test)",
+      "Bash(npm run *:test *)",
+      "Bash(npm run *:lint)",
+      "Bash(npm run *:build)",
+      "Bash(npx vitest run *)",
+      "Bash(npx turbo run *)",
+      "Bash(npx tsc --noEmit *)",
+      "Bash(git status *)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Bash(git show *)"
+    ]
+  }
+}

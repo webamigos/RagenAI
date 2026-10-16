@@ -7,6 +7,8 @@ topics: ['evals', 'promptfoo', 'citations', 'prompt-contracts', 'false-red']
 
 # An eval asserting the old prompt contract reports a regression that is not there — check the metadata before believing the failure
 
+**In short**: The `citations` suite scored 1/4 because it looked for the file name in prose; the product cites by `[n]` marker now, and `metadata.citedFiles` in the same results row showed attribution was correct in all four. Assert on what the product persists, not on what the prompt asks the model to write.
+
 **Context**: the first run of all six promptfoo suites against the current stack
 (2026-09-12, the ADR-20 measurement that had never been done) came back with
 `citations` at **1/4**. Three of four cases failed. On a suite whose own

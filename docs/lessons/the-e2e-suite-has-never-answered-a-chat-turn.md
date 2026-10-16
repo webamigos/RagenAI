@@ -16,6 +16,8 @@ topics:
 
 # The e2e suite has never answered a chat turn
 
+**In short**: No Qdrant service, no embedding route, an answer model that races the organization's setting because the suite shows the model picker, and a rephraser that does not speak the mock's shape. None had ever failed a test, because `p0-23`/`p0-24` mock the threads endpoint and `p0-27`/`p0-29` assert refusals and absences — all of which pass on a turn that never answers. Adding the first assertion of a kind means paying for everything it is the first to touch. Also: a local run without `LLM_ROUTES_PATH` and the mock's credentials talks to real providers and is worthless as evidence; a DB assertion must be scoped to the turn's own thread, or a retry satisfies it from the previous attempt's row in 1.4 s.
+
 **Context**: guardrails Phase D4 added `p0-30`, a spec asserting that an
 `OUTPUT` rule withholds an answer. It needs an answer to withhold, so it was
 the first spec in the suite to require that a real chain complete a turn.

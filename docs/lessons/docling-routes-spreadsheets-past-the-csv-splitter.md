@@ -7,6 +7,8 @@ topics: ['docling', 'chunking', 'splitters', 'adr-drift', 'csv', 'xlsx', 'dispat
 
 # Docling routes spreadsheets past the CSV splitter, so ADR-17's fix stopped reaching them
 
+**In short**: `DOCLING_SUPPORTED_TYPES` grew to include `CSV`, `XLSX`, `MARKDOWN` and `TEXT`, and `split-documents.ts` opens with `if (parsedWithDocling)` before the switch that routes spreadsheets to the row-group splitter — so on the default parser a spreadsheet is cut by character budget and the header survives only in the first chunk. Read a dispatcher top to bottom; a capability-shaped early return supersedes every branch behind it.
+
 **Context**: scoping table chunking, which needed a plain answer to "what
 happens to a table today". ADR-17 reads as settled on this: it describes the
 failure in full — _"the header row appeared only in the first chunk; chunks 2,

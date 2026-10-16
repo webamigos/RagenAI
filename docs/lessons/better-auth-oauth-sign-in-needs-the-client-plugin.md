@@ -5,6 +5,8 @@ areas: [auth, testing]
 topics: [better-auth, oauth, sign-in, client-plugin, e2e]
 ---
 
+**In short**: Email sign-in succeeded but returned to onboarding until the official provider client plugin supplied the signed OAuth query. Preserve repeated parameters and prove the complete resume through a browser code exchange.
+
 ## Context
 
 Adding the MCP preset and a post-login workspace choice to Better Auth 1.7.7.

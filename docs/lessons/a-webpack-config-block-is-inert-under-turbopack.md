@@ -5,6 +5,8 @@ areas: [architecture, dependencies]
 topics: [nextjs, turbopack, webpack, bundler, dead-config, fail-open, pdfjs]
 ---
 
+**In short**: `apps/web` runs bare `next dev` / `next build` on Next 16, so the whole `webpack` function was never called — a `pdfjs-dist` alias pointing at a file that does not exist, a serverLogger swap and a Prisma redirect both documented in AGENTS.md as live, and an `externals` entry that would have broken 62 client components had it run. No warning, green build. Audited against real chunks and deleted; read the build banner before treating a `webpack` block as behaviour, prove a bundler claim from `.next/static`, and stop at `'use server'` when tracing what reaches a client bundle.
+
 ## Context
 
 Element-level provenance needed the react-pdf viewer in

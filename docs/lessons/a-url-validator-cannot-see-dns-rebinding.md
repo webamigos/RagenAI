@@ -7,6 +7,8 @@ topics: ['ssrf', 'dns-rebinding', 'undici', 'mcp', 'ai-sdk', 'connectors']
 
 # A URL validator cannot see DNS rebinding — the check has to run where the socket opens, and the library has to let you in
 
+**In short**: Rejecting literal private addresses in a user-supplied connector URL narrows nothing that matters — the attacker owns the DNS record. The guard has to run at connect time _and_ pin what it validated (`undici`'s `Agent({ connect: { lookup } })`), reject the whole answer if any address is private, and stay scoped to one dispatcher because apps/api legitimately fetches loopback. When the transport has no `fetch` hook, find one that does before forking 290 lines of it.
+
 **Context**: `apps/api/src/connectors/site-url.ts` normalizes the shop URL a customer types when registering a custom-header MCP connector (WooCommerce today). It enforces `https:`, strips trailing slashes and rejects embedded credentials. Two outbound paths then fetch that URL: `ConnectorsService.testCustomHeaderConnection` (the "test connection" button) and `createMcpToolsFromConnectors` in `apps/api/src/mcp/client.ts` (every chat turn that loads connector tools).
 
 **Problem**: a URL validator only sees the string. `https://shop.example.com/` is a perfectly ordinary public hostname at parse time and can resolve to `169.254.169.254` at connect time — the attacker owns the DNS record, so nothing in the URL betrays it. Rejecting literal private addresses at parse time narrows nothing that matters; the interesting attack never writes one down. Worse, even a correct pre-flight `dns.lookup()` followed by `fetch(url)` is exploitable: the second resolution can answer differently from the first (TOCTOU), and redirects resolve names the check never saw.

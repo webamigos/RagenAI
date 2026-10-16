@@ -16,6 +16,8 @@ topics:
 
 # npm links a workspace entry whether or not the package is there, so a deleted package installs as a broken symlink and nothing reports it
 
+**In short**: B6 deleted `packages/litellm-client`'s source and left its tracked `dist/`, three dependency lines and the lockfile entries. Measured both ways on a real clone: `npm ci` exits 0 and stays silent whether the directory is there or gone — it links from the lockfile without asking for a manifest — so the package is installed and unimportable, and the first report is a runtime resolve error far from the manifest that caused it. `npm install` will not clear the stale entry either; it marks it `extraneous` and keeps it. Deleting a package means the directory, the dependency lines, the lockfile entries and any tracked build output, in one change.
+
 **Context**: #1194 retired the LiteLLM path (ADR-49, B6) and deleted
 `packages/litellm-client/package.json` and its `src/`. Three things survived:
 twenty compiled files under `dist/`, tracked because the root `.gitignore`'s

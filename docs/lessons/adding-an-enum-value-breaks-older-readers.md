@@ -7,6 +7,8 @@ topics: ['prisma', 'migrations', 'enums', 'rolling-deploy', 'postgres']
 
 # Adding a Postgres enum value is not backwards-compatible — an older Prisma client throws when it reads a row containing it
 
+**In short**: Two migrations claim enum additions are non-breaking because "older versions never produce it" — the hazard is reading, not writing.
+
 **Context**: two migrations in this repository add a member to
 `SecurityEventType`, and both carry the same reassurance:
 

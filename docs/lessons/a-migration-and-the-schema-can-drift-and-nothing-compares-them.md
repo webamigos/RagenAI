@@ -7,6 +7,8 @@ topics: ['prisma', 'migrations', 'enums', 'indexes', 'better-auth', 'drift', 'fa
 
 # A migration and schema.prisma can drift apart, and until now nothing compared them
 
+**In short**: `migrate diff` on `main` proposed dropping Better Auth's `(issuer, account_id)` index, a `document_versions.id` default and three lead enums — three hand-edits, one per direction: a `DROP TYPE IF EXISTS` under the Prisma name instead of the `@@map` name (a silent no-op), an index only in SQL, a default only in SQL. `migrate deploy` never compares the result to the schema; `test-e2e` now does, with `migrate diff --exit-code`.
+
 **Context**: `prisma migrate diff --from-migrations prisma/migrations
 --to-schema prisma/schema.prisma` on `main` (October 2026) proposed five
 statements with no schema change at all: drop `accounts_issuer_account_id_idx`,

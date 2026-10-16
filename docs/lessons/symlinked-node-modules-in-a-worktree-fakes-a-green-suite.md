@@ -7,6 +7,8 @@ topics: ['git-worktrees', 'node-modules', 'turbopack', 'vitest', 'turborepo', 'v
 
 # Symlinking node_modules into a git worktree makes the test suite run against the primary checkout, and report green
 
+**In short**: `next build` at least fails loudly (`Symlink ... points out of the filesystem root`); vitest resolves through the symlink and runs the _other_ checkout's files, passing 462 tests that never saw your change. A worktree needs its own `npm ci` (~5 GB, check `df -h /` first) plus `npx prisma generate`.
+
 **Context**: deleting a dead module in `apps/web` from a git worktree created off
 `origin/main`, so the primary checkout — parked on another session's feature branch —
 stayed untouched. A worktree starts without `node_modules`, and a full `npm ci` on this

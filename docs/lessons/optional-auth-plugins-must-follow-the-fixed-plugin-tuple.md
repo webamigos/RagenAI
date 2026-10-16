@@ -7,6 +7,8 @@ topics: ['better-auth', 'typescript', 'oauth', 'session', 'inference']
 
 # Optional auth plugins must follow the fixed plugin tuple
 
+**In short**: A leading variadic plugin array lost `activeOrganizationId` from the inferred session while runtime sign-in still passed. Keep the fixed organization plugin first and return readonly tuples from optional helpers.
+
 **Context**: the MCP OAuth preset and JWT plugin are registered conditionally
 by `mcpOAuthPlugins()`, next to the existing organization plugin.
 

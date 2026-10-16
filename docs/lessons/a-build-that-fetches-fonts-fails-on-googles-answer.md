@@ -7,6 +7,8 @@ topics: ['nextjs', 'next-font', 'turbopack', 'google-fonts', 'flaky-builds', 'se
 
 # A build that fetches its fonts fails on whatever Google answers — and self-hosting two subsets puts a fallback between them
 
+**In short**: `next/font/google` downloads fonts during `next build`; Google sometimes returns extensionless `/l/font?kit=…&skey=…` URLs that Turbopack splits on `&` (vercel/next.js#99114), so two of three `main` builds failed on 2026-10-09 with no code change. Fonts are self-hosted now and an architecture test forbids the import. With two `next/font/local` subsets of one face, turn `adjustFontFallback` off on all but the last — Next's metric-matched Arial between them answers every Polish glyph and latin-ext never loads.
+
 **Context**: `apps/web` and `apps/admin` loaded Inter, Barlow Condensed and Geist with `next/font/google`, which downloads the CSS and the font files while `next build` runs. On 2026-10-09 the `Build` job failed on two of three pushes to `main` with `next/font/google queries have exactly one entry`, while a pull-request run of the same tree, minutes apart, passed.
 
 **Problem**: nothing in the repository had changed. Google sometimes serves the `css2` request with extensionless `fonts.gstatic.com/l/font?kit=…&skey=…&v=…` URLs instead of `/s/…/*.woff2`. Turbopack parses its font options as a query string, the `&` splits them, and the build fails; webpack fails on the missing extension ([vercel/next.js#99114](https://github.com/vercel/next.js/issues/99114), open). It reads as a flake because a re-run usually passes, and a diff of the two runs' environment, Next version and dependency cache shows nothing — the difference is in a response no log prints in full.

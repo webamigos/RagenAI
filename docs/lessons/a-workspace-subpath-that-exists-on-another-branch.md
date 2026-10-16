@@ -7,6 +7,8 @@ topics: ['typescript', 'monorepo', 'workspace-packages', 'exports', 'stacked-prs
 
 # A workspace subpath that exists on another branch
 
+**In short**: Declaring `"@ragenai/guardrails": "*"` links nothing — neither does `--package-lock-only`, and the package's own tests keep passing because they import relative paths. Separately, the `./contracts` subpath existed only in a sibling *unmerged* PR, so a branch stacked on an intermediate branch had no `exports` map to resolve against and TS silently fell back to the root `types` field. Both give the identical error on a correctly spelled specifier. `tsc --traceResolution` separates them in one read; the decisive line is an absence. Distinct from the `.next/types/validator.ts` TS2307 in [verify-races-web-build-against-web-typecheck](verify-races-web-build-against-web-typecheck.md).
+
 **Context**: guardrails B2 added a loader and two adapters in `apps/web`,
 importing types from the new workspace package. Declaring the dependency,
 writing the code and running the module's own tests all went fine — 34 passing.
