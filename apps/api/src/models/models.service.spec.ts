@@ -12,16 +12,16 @@ type CatalogueEntry = ModelRegistryEntry & { value: string };
 // catches a genuinely unsafe return cannot tell the difference.
 type Described = { id: string; displayName: string; capabilities: string[] };
 
-const { availableModels, describedModels, selectableModels } = vi.hoisted(
-  () => ({
+const { availableModels, describedModels, missingModels, selectableModels } =
+  vi.hoisted(() => ({
     availableModels: vi.fn<() => string[]>(),
     describedModels: vi.fn<() => Described[]>(),
+    missingModels: vi.fn<() => Promise<Set<string>>>(),
     selectableModels: vi.fn<() => CatalogueEntry[]>(),
-  }),
-);
+  }));
 
 vi.mock('@ragenai/llm-gateway', () => ({
-  gatewayFromEnv: () => ({ availableModels, describedModels }),
+  gatewayFromEnv: () => ({ availableModels, describedModels, missingModels }),
 }));
 
 vi.mock('../llm/model-registry.js', () => ({
@@ -65,6 +65,7 @@ describe('ModelsService', () => {
     vi.clearAllMocks();
     selectableModels.mockReturnValue(CATALOGUE);
     describedModels.mockReturnValue([]);
+    missingModels.mockResolvedValue(new Set());
     availableModels.mockReturnValue([
       'gpt-5.4',
       'gemini-3-flash-preview',
@@ -166,6 +167,15 @@ describe('ModelsService', () => {
     ]);
     const { service } = buildService();
     expect(await service.list(context)).toEqual([]);
+  });
+
+  it('does not list a model its server does not have', async () => {
+    missingModels.mockResolvedValue(new Set(['mistral-large']));
+    const { service } = buildService();
+    expect((await service.list(context)).map((m) => m.id)).toEqual([
+      'gpt-5.4',
+      'gemini-3-flash-preview',
+    ]);
   });
 
   describe('get', () => {

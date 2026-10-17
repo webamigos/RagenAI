@@ -40,10 +40,11 @@ export class ModelsService {
 
     // Empty means no restriction, not "nothing allowed" — see
     // `getAllowedModels`.
-    const models =
+    const served =
       allowed.length > 0
         ? this.servedModels().filter((model) => allowed.includes(model.value))
         : this.servedModels();
+    const models = await this.withoutMissing(served);
 
     return models.map(toOpenAIModel);
   }
@@ -57,6 +58,24 @@ export class ModelsService {
       throw new NotFoundException(`Model '${id}' not found`);
     }
     return model;
+  }
+
+  /**
+   * Drop models whose server answered and does not have them, as apps/web's
+   * picker does — see `LlmGateway.missingModels`. A server that is down
+   * removes nothing, and a gateway that cannot be built changes nothing.
+   */
+  private async withoutMissing(
+    models: CatalogueModel[],
+  ): Promise<CatalogueModel[]> {
+    try {
+      const missing = await gatewayFromEnv().missingModels(
+        models.map((model) => model.value),
+      );
+      return models.filter((model) => !missing.has(model.value));
+    } catch {
+      return models;
+    }
   }
 
   /**

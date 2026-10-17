@@ -102,6 +102,7 @@ export async function getAvailableModelsForOrganization(
   // deployment holds no keys for contributes nothing, rather than appearing in
   // the picker and failing on the first click.
   let models: AvailableModel[] = gatewayModels();
+  models = await withoutMissingModels(models);
 
   if (allowedModels.length > 0) {
     models = models.filter((model) => allowedModels.includes(model.value));
@@ -132,4 +133,26 @@ function toAvailableModel(
     reasoning: entry.reasoning,
     supportsReasoningEffort: entry.supportsReasoningEffort,
   };
+}
+
+/**
+ * Drop the models whose server answered and does not have them (an Ollama
+ * model nobody pulled), so the picker does not offer a choice whose first
+ * answer is certain to fail. See `LlmGateway.missingModels`: a server that is
+ * down removes nothing, and a gateway that cannot be built leaves the list as
+ * `gatewayModels` returned it.
+ */
+async function withoutMissingModels(
+  models: AvailableModel[],
+): Promise<AvailableModel[]> {
+  try {
+    const missing = await gatewayFromEnv().missingModels(
+      models.map((model) => model.value),
+    );
+    return missing.size === 0
+      ? models
+      : models.filter((model) => !missing.has(model.value));
+  } catch {
+    return models;
+  }
 }
