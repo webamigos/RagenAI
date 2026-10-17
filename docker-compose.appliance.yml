@@ -1,0 +1,110 @@
+# The on-premises appliance: Ragen with its models served by a local Ollama,
+# so no model call leaves the machine. Step A1 of
+# docs/specs/2026-10-17-ragen-as-an-on-premises-appliance.md.
+#
+# Always used on top of the other two files:
+#
+#   docker compose -f docker-compose.yml -f docker-compose.fullapp.yml \
+#     -f docker-compose.appliance.yml up -d
+#
+# and, on a machine with an NVIDIA GPU, a fourth:
+#
+#     -f docker-compose.appliance.gpu.yml
+#
+# Fill `.env.local` from infra/appliance/appliance.env.example first. This
+# file sets only what has to differ inside containers — service names instead
+# of localhost, the mounted route table — and `environment:` wins over
+# `env_file:`, so a host value cannot point a container back at itself.
+#
+# What it adds:
+#   - `ollama`, the model server, with its models on a named volume;
+#   - `ollama-models`, a one-shot job that pulls the models the route table
+#     names, and skips each one already on the volume. It needs the internet
+#     once; after that, or with a volume restored from an offline bundle (C2),
+#     it does nothing and exits 0.
+# The apps wait for the job, so their first model call finds the model there.
+
+x-appliance-models: &appliance-models
+  # The models routes.appliance.yaml uses. Change both together: a model id
+  # here that the table does not route is pulled for nothing, and one the
+  # table routes but this list omits fails on its first call.
+  APPLIANCE_MODELS: ${APPLIANCE_MODELS:-SpeakLeash/bielik-11b-v2.3-instruct:Q4_K_M qwen2.5:7b-instruct gemma3:12b bge-m3}
+
+x-appliance-app-env: &appliance-app-env
+  LLM_ROUTES_PATH: /app/infra/llm-gateway/routes.appliance.yaml
+  LLM_OLLAMA_BASE_URL: http://ollama:11434/v1
+  LLM_OLLAMA_API_KEY: ollama
+  DOCLING_STRICT: '1'
+
+services:
+  ollama:
+    # Pinned. Bump it on purpose and run the appliance check after: a new
+    # Ollama can change how a model's template or tool calls are served.
+    image: ollama/ollama:0.35.1
+    restart: unless-stopped
+    environment:
+      # Keep the chat model loaded between turns; reloading an 11B model costs
+      # seconds on every first question after a pause.
+      OLLAMA_KEEP_ALIVE: ${OLLAMA_KEEP_ALIVE:-24h}
+      OLLAMA_NUM_PARALLEL: ${OLLAMA_NUM_PARALLEL:-4}
+    volumes:
+      - ollama_models:/root/.ollama
+    ports:
+      # Loopback only, like the other backing services: the apps reach it by
+      # service name, and an operator checks it from the machine itself.
+      - '${RAGEN_BIND_ADDR:-127.0.0.1}:${OLLAMA_PORT:-11434}:11434'
+    networks:
+      - ragen-network
+    healthcheck:
+      test: ['CMD', 'ollama', 'list']
+      interval: 10s
+      timeout: 5s
+      retries: 6
+
+  ollama-models:
+    image: ollama/ollama:0.35.1
+    restart: 'no'
+    environment:
+      <<: *appliance-models
+      OLLAMA_HOST: http://ollama:11434
+    entrypoint: ['/bin/sh', '-c']
+    command:
+      - |
+        set -e
+        for model in $${APPLIANCE_MODELS}; do
+          if ollama show "$${model}" >/dev/null 2>&1; then
+            echo "present: $${model}"
+          else
+            echo "pulling: $${model}"
+            ollama pull "$${model}"
+          fi
+        done
+    depends_on:
+      ollama:
+        condition: service_healthy
+    networks:
+      - ragen-network
+
+  web:
+    environment:
+      <<: *appliance-app-env
+    depends_on:
+      ollama-models:
+        condition: service_completed_successfully
+
+  api:
+    environment:
+      <<: *appliance-app-env
+    depends_on:
+      ollama-models:
+        condition: service_completed_successfully
+
+  worker:
+    environment:
+      <<: *appliance-app-env
+    depends_on:
+      ollama-models:
+        condition: service_completed_successfully
+
+volumes:
+  ollama_models:

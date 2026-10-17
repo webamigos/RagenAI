@@ -379,12 +379,26 @@ repeatable demo, and records the gaps as tests.
 
 ### Phase A: a local install that is proven, not described
 
-- [ ] **A1.** Compose profiles `appliance-local` and `appliance-hybrid` (D3),
-  the first with Ollama (S/M) and a vLLM
-  variant (L/XL), plus local embeddings and reranker services and GPU
-  reservations. The reranker is reached through the existing
-  `RERANK_PROVIDER=cohere` + `RERANK_COHERE_BASE_URL` path. A test proves
-  that the request shape matches the local server.
+- [x] **A1.** `docker-compose.appliance.yml` on top of the two existing files,
+  and it contains:
+  - `ollama`, with its models on a named volume;
+  - `ollama-models`, a one-shot job that pulls the models the appliance
+    table routes and skips each one already present, so a restored volume
+    needs no network. The apps wait for it.
+  - the three apps pointed at the mounted appliance table, the compose
+    Ollama and `DOCLING_STRICT=1`.
+
+  `docker-compose.appliance.gpu.yml` adds the NVIDIA reservation, kept
+  separate because Compose refuses a GPU reservation the host cannot meet.
+  A guard checks that the pull list equals the table's models. How to run
+  it is in `infra/appliance/README.md`.
+- [ ] **A1b.** Still to do from the original A1:
+  - the vLLM variant for L/XL
+  - a local reranker service, reached through `RERANK_PROVIDER=cohere` +
+    `RERANK_COHERE_BASE_URL`, with a test that the request shape matches
+  - the `appliance-hybrid` profile (D3)
+
+  None of them can be verified without a CUDA host.
 - [x] **A2.** `origin: 'local'` and route-described models (`display`,
   `capabilities`) in the web picker and `GET /v1/models`. A described route
   replaces a catalogue entry of the same id, so the Phase 0 aliases keep
