@@ -98,7 +98,10 @@
     "email-not-verified": "Deine E-Mail-Adresse wurde noch nicht bestätigt. Bitte überprüfe deinen Posteingang auf den Bestätigungslink.",
     "demo-account": "Demo account",
     "demo-account-note": "A shared demonstration account. Everything in it is sample data and visible to everyone — do not upload anything of your own.",
-    "demo-fill": "Fill in"
+    "demo-fill": "Fill in",
+    "sso-sign-in": "Mit {name} anmelden",
+    "sso-or": "oder",
+    "sso-failed": "Die Firmenanmeldung ist fehlgeschlagen. Verwenden Sie ein Konto in der Domain Ihrer Organisation oder wenden Sie sich an einen Administrator."
   },
   "Forgot-password": {
     "Forgot-password": "Passwort vergessen?",
@@ -2511,7 +2514,8 @@
       "docling-unavailable": "Der Dokumentparser (Docling) ist seit {since, time, short} nicht erreichbar. Uploads warten auf ihn oder nutzen den Ersatzparser – prüfen Sie, ob sein Container läuft.",
       "basal-unavailable": "Das Guardrail-Modell (basal) unter BASAL_URL antwortet nicht. Guardrail-Prüfungen fallen auf das Bewertungsmodell zurück, es wird also nichts blockiert, aber Antworten dauern länger. Prüfen Sie, ob sein Container läuft.",
       "model-server-unreachable": "Der lokale Modellserver ({connections}) antwortet nicht, daher schlagen Chat und Dokumentverarbeitung fehl, die ihn nutzen. Prüfen Sie, ob sein Container läuft.",
-      "model-not-pulled": "Diese Modelle fehlen auf dem lokalen Modellserver: {models}. Aufrufe schlagen fehl, bis sie heruntergeladen sind."
+      "model-not-pulled": "Diese Modelle fehlen auf dem lokalen Modellserver: {models}. Aufrufe schlagen fehl, bis sie heruntergeladen sind.",
+      "oidc-misconfigured": "Die Firmenanmeldung (OIDC) ist fehlerhaft konfiguriert und daher aus: {problems}. Die Anmeldung mit Passwort funktioniert weiterhin."
     },
     "database-unreachable-see-logs": "Die Details stehen im Server-Log."
   },

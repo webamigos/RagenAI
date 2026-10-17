@@ -98,7 +98,10 @@
     "email-not-verified": "E-postadressen din er ikke bekreftet. Se etter bekreftelseslenken i innboksen din.",
     "demo-account": "Demokonto",
     "demo-account-note": "En delt demonstrasjonskonto. Alt i den er eksempeldata og synlig for alle – ikke last opp noe eget.",
-    "demo-fill": "Fyll inn"
+    "demo-fill": "Fyll inn",
+    "sso-sign-in": "Logg inn med {name}",
+    "sso-or": "eller",
+    "sso-failed": "Bedriftspåloggingen mislyktes. Bruk en konto i organisasjonens domene, eller spør en administrator."
   },
   "Forgot-password": {
     "Forgot-password": "Glemt passordet?",
@@ -2511,7 +2514,8 @@
       "docling-unavailable": "Dokumenttolkeren (Docling) har ikke vært tilgjengelig siden {since, time, short}. Opplastinger venter på den eller bruker reservetolkeren, så kontroller at containeren kjører.",
       "basal-unavailable": "Guardrail-modellen (basal) på BASAL_URL svarer ikke. Kontrollene faller tilbake på vurderingsmodellen, så ingenting blokkeres, men svarene tar lengre tid. Sjekk at containeren kjører.",
       "model-server-unreachable": "Den lokale modellserveren ({connections}) svarer ikke, så chat og dokumentbehandling som bruker den, feiler. Sjekk at containeren kjører.",
-      "model-not-pulled": "Disse modellene finnes ikke på den lokale modellserveren: {models}. Kall til dem feiler til de er lastet ned."
+      "model-not-pulled": "Disse modellene finnes ikke på den lokale modellserveren: {models}. Kall til dem feiler til de er lastet ned.",
+      "oidc-misconfigured": "Bedriftspålogging (OIDC) er feilkonfigurert og derfor slått av: {problems}. Pålogging med passord fungerer fortsatt."
     },
     "database-unreachable-see-logs": "Detaljene står i serverloggen."
   },

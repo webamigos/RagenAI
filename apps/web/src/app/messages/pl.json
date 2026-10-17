@@ -98,7 +98,10 @@
     "email-not-verified": "Twój adres email nie został zweryfikowany. Sprawdź swoją skrzynkę i kliknij link weryfikacyjny.",
     "demo-account": "Konto pokazowe",
     "demo-account-note": "Wspólne konto demonstracyjne. Dane w nim są przykładowe i widzi je każdy — nie wgrywaj tu niczego swojego.",
-    "demo-fill": "Wypełnij"
+    "demo-fill": "Wypełnij",
+    "sso-sign-in": "Zaloguj się przez {name}",
+    "sso-or": "lub",
+    "sso-failed": "Logowanie firmowe nie powiodło się. Użyj konta w domenie swojej organizacji albo poproś administratora o pomoc."
   },
   "Forgot-password": {
     "Forgot-password": "Zapomniałeś hasła?",
@@ -2511,7 +2514,8 @@
       "docling-unavailable": "Parser dokumentów (Docling) nie odpowiada od {since, time, short}. Wgrane pliki czekają na niego albo trafiają do parsera zapasowego, więc sprawdź, czy jego kontener działa.",
       "basal-unavailable": "Model guardraili (basal) pod BASAL_URL nie odpowiada. Sprawdzenia guardraili wracają do modelu oceniającego, więc nic nie jest blokowane, ale odpowiedzi czekają dłużej. Sprawdź, czy jego kontener działa.",
       "model-server-unreachable": "Lokalny serwer modeli ({connections}) nie odpowiada, więc czat i przetwarzanie dokumentów, które z niego korzystają, nie działają. Sprawdź, czy jego kontener działa.",
-      "model-not-pulled": "Tych modeli nie ma na lokalnym serwerze modeli: {models}. Wywołania do nich kończą się błędem, dopóki ich nie pobierzesz."
+      "model-not-pulled": "Tych modeli nie ma na lokalnym serwerze modeli: {models}. Wywołania do nich kończą się błędem, dopóki ich nie pobierzesz.",
+      "oidc-misconfigured": "Logowanie firmowe (OIDC) jest skonfigurowane błędnie, więc jest wyłączone: {problems}. Logowanie hasłem nadal działa."
     },
     "database-unreachable-see-logs": "Szczegóły znajdziesz w logu serwera."
   },

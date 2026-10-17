@@ -351,3 +351,34 @@ describe('inspectEnvironment', () => {
     });
   });
 });
+
+describe('inspectEnvironment — company sign-in (OIDC)', () => {
+  it('says nothing when OIDC is not configured, or configured completely', () => {
+    expect(idsOf(completeEnv)).not.toContain('oidc-misconfigured');
+    expect(
+      idsOf({
+        ...completeEnv,
+        OIDC_ISSUER: 'https://login.example.com',
+        OIDC_CLIENT_ID: 'id',
+        OIDC_CLIENT_SECRET: 'secret',
+        OIDC_ALLOWED_DOMAINS: 'example.com',
+      }),
+    ).not.toContain('oidc-misconfigured');
+  });
+
+  it('reports a half configuration, which turns sign-in off, as recommended', () => {
+    const finding = inspectEnvironment({
+      ...completeEnv,
+      OIDC_ISSUER: 'https://login.example.com',
+      OIDC_CLIENT_ID: 'id',
+    }).findings.find((f) => f.id === 'oidc-misconfigured');
+
+    expect(finding).toMatchObject({
+      severity: 'recommended',
+      values: {
+        problems:
+          'OIDC_CLIENT_SECRET is not set; OIDC_ALLOWED_DOMAINS is not set',
+      },
+    });
+  });
+});

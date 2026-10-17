@@ -98,7 +98,10 @@
     "email-not-verified": "Din e-post har inte verifierats. Kolla din inkorg för att hitta bekräftelselänken.",
     "demo-account": "Demo account",
     "demo-account-note": "A shared demonstration account. Everything in it is sample data and visible to everyone — do not upload anything of your own.",
-    "demo-fill": "Fill in"
+    "demo-fill": "Fill in",
+    "sso-sign-in": "Logga in med {name}",
+    "sso-or": "eller",
+    "sso-failed": "Företagsinloggningen misslyckades. Använd ett konto i din organisations domän eller fråga en administratör."
   },
   "Forgot-password": {
     "Forgot-password": "Glömt ditt lösenord?",
@@ -2511,7 +2514,8 @@
       "docling-unavailable": "Dokumentparsern (Docling) har inte gått att nå sedan {since, time, short}. Uppladdningar väntar på den eller använder reservparsern, så kontrollera att dess container körs.",
       "basal-unavailable": "Guardrail-modellen (basal) på BASAL_URL svarar inte. Kontrollerna faller tillbaka på bedömningsmodellen, så inget blockeras, men svaren tar längre tid. Kontrollera att dess container körs.",
       "model-server-unreachable": "Den lokala modellservern ({connections}) svarar inte, så chatt och dokumentbehandling som använder den misslyckas. Kontrollera att dess container körs.",
-      "model-not-pulled": "De här modellerna finns inte på den lokala modellservern: {models}. Anrop till dem misslyckas tills de har hämtats."
+      "model-not-pulled": "De här modellerna finns inte på den lokala modellservern: {models}. Anrop till dem misslyckas tills de har hämtats.",
+      "oidc-misconfigured": "Företagsinloggning (OIDC) är felkonfigurerad och därför avstängd: {problems}. Inloggning med lösenord fungerar fortfarande."
     },
     "database-unreachable-see-logs": "Detaljerna finns i serverns logg."
   },

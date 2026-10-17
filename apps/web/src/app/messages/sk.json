@@ -98,7 +98,10 @@
     "email-not-verified": "Váš e-mail nebol overený. Skontrolujte svoju schránku a nájdite overovací odkaz.",
     "demo-account": "Demo account",
     "demo-account-note": "A shared demonstration account. Everything in it is sample data and visible to everyone — do not upload anything of your own.",
-    "demo-fill": "Fill in"
+    "demo-fill": "Fill in",
+    "sso-sign-in": "Prihlásiť sa cez {name}",
+    "sso-or": "alebo",
+    "sso-failed": "Firemné prihlásenie zlyhalo. Použite účet v doméne vašej organizácie alebo požiadajte správcu."
   },
   "Forgot-password": {
     "Forgot-password": "Zabudli ste heslo?",
@@ -2511,7 +2514,8 @@
       "docling-unavailable": "Parser dokumentov (Docling) nie je dostupný od {since, time, short}. Nahrané súbory naň čakajú alebo použijú záložný parser, preto overte, že jeho kontajner beží.",
       "basal-unavailable": "Model guardrailov (basal) na BASAL_URL neodpovedá. Kontroly sa vracajú k hodnotiacemu modelu, takže nič nie je blokované, ale odpovede trvajú dlhšie. Skontrolujte, či jeho kontajner beží.",
       "model-server-unreachable": "Lokálny server modelov ({connections}) neodpovedá, takže chat a spracovanie dokumentov, ktoré ho používajú, zlyhávajú. Skontrolujte, či jeho kontajner beží.",
-      "model-not-pulled": "Tieto modely na lokálnom serveri modelov nie sú: {models}. Volania zlyhávajú, kým ich nestiahnete."
+      "model-not-pulled": "Tieto modely na lokálnom serveri modelov nie sú: {models}. Volania zlyhávajú, kým ich nestiahnete.",
+      "oidc-misconfigured": "Firemné prihlásenie (OIDC) je nesprávne nastavené, a preto vypnuté: {problems}. Prihlásenie heslom stále funguje."
     },
     "database-unreachable-see-logs": "Podrobnosti nájdete v protokole servera."
   },

@@ -98,7 +98,10 @@
     "email-not-verified": "La tua email non è stata verificata. Controlla la tua casella di posta per trovare il link di verifica.",
     "demo-account": "Demo account",
     "demo-account-note": "A shared demonstration account. Everything in it is sample data and visible to everyone — do not upload anything of your own.",
-    "demo-fill": "Fill in"
+    "demo-fill": "Fill in",
+    "sso-sign-in": "Accedi con {name}",
+    "sso-or": "oppure",
+    "sso-failed": "L'accesso aziendale non è riuscito. Usa un account del dominio della tua organizzazione o chiedi a un amministratore."
   },
   "Forgot-password": {
     "Forgot-password": "Password dimenticata?",
@@ -2511,7 +2514,8 @@
       "docling-unavailable": "Il parser dei documenti (Docling) non è raggiungibile dalle {since, time, short}. I caricamenti lo attendono o usano il parser di riserva: verifica che il suo container sia in esecuzione.",
       "basal-unavailable": "Il modello dei guardrail (basal) su BASAL_URL non risponde. I controlli tornano al modello giudice, quindi nulla viene bloccato, ma le risposte richiedono più tempo. Verifica che il suo container sia in esecuzione.",
       "model-server-unreachable": "Il server di modelli locale ({connections}) non risponde, quindi la chat e l'elaborazione dei documenti che lo usano non funzionano. Verifica che il suo container sia in esecuzione.",
-      "model-not-pulled": "Questi modelli non sono sul server di modelli locale: {models}. Le chiamate falliscono finché non vengono scaricati."
+      "model-not-pulled": "Questi modelli non sono sul server di modelli locale: {models}. Le chiamate falliscono finché non vengono scaricati.",
+      "oidc-misconfigured": "L'accesso aziendale (OIDC) è configurato male ed è quindi disattivato: {problems}. L'accesso con password funziona ancora."
     },
     "database-unreachable-see-logs": "I dettagli si trovano nel log del server."
   },

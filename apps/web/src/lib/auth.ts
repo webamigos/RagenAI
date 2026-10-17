@@ -7,6 +7,11 @@ import {
 // logger would pull Node-only pino dependencies into that bundle, so these
 // console calls stay here and every email field is masked before logging.
 import { mcpOAuthPlugins } from './mcp-oauth-config';
+import {
+  joinOidcOrganization,
+  oidcPlugins,
+  oidcSignUpAdmitted,
+} from './oidc-auth';
 import { oauthScalarListsExtension } from './oauth-prisma-extension';
 import { betterAuth } from 'better-auth';
 import { prismaAdapter } from 'better-auth/adapters/prisma';
@@ -230,10 +235,11 @@ export const auth = betterAuth({
     },
   ),
 
-  // No social providers. Sign-in with Google is an enterprise-edition feature;
-  // the open edition is email + password and magic link. apps/admin keeps its
-  // own Google provider — it is the internal operator panel, gated to a single
-  // email domain, and has no other way in.
+  // No social providers. Company sign-in is one generic OpenID Connect
+  // provider (Entra ID, Google Workspace, Keycloak…), configured by the
+  // `OIDC_*` variables and off without them — see `oidc-config.ts`. It is in
+  // the open edition. apps/admin keeps its own Google provider: it is the
+  // internal operator panel, gated to a single email domain.
 
   emailAndPassword: {
     enabled: true,
@@ -362,6 +368,7 @@ export const auth = betterAuth({
         ]
       : []),
     ...mcpOAuthPlugins(),
+    ...oidcPlugins(),
     nextCookies(),
   ],
 
@@ -480,8 +487,16 @@ export const auth = betterAuth({
          * surfaces as an opaque failure. An `APIError` reaches the client as
          * a 403 that says what happened.
          */
-        before: async (user) => {
+        before: async (user, context) => {
           if (await isRegistrationOpen()) {
+            return;
+          }
+
+          // A company sign-in into the organization the install names. The
+          // identity provider is the gate here: it vouched for an address in
+          // an allowed domain, and the user joins as a member rather than
+          // creating anything. See `oidcSignUpAdmitted`.
+          if (await oidcSignUpAdmitted(user, context)) {
             return;
           }
 
@@ -505,7 +520,7 @@ export const auth = betterAuth({
               'Registration is disabled on this installation. Ask an administrator for an invitation.',
           });
         },
-        after: async (user) => {
+        after: async (user, context) => {
           try {
             // Backfill `name` for users that arrived via magic-link sign-up
             // (Better Auth's flow doesn't ask for one). Use the email local
@@ -544,6 +559,13 @@ export const auth = betterAuth({
                   organizationId: pendingInvitation.organizationId,
                 },
               );
+              return;
+            }
+
+            // A company sign-in joins the configured organization instead of
+            // getting one of its own. False means "not that case", and the
+            // personal organization below is provisioned as usual.
+            if (await joinOidcOrganization(user, context)) {
               return;
             }
 

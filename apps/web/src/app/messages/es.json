@@ -98,7 +98,10 @@
     "email-not-verified": "Tu dirección de correo electrónico no ha sido verificada. Revisa tu bandeja de entrada para encontrar el enlace de verificación.",
     "demo-account": "Demo account",
     "demo-account-note": "A shared demonstration account. Everything in it is sample data and visible to everyone — do not upload anything of your own.",
-    "demo-fill": "Fill in"
+    "demo-fill": "Fill in",
+    "sso-sign-in": "Iniciar sesión con {name}",
+    "sso-or": "o",
+    "sso-failed": "El inicio de sesión corporativo ha fallado. Usa una cuenta del dominio de tu organización o pide ayuda a un administrador."
   },
   "Forgot-password": {
     "Forgot-password": "¿Olvidaste tu contraseña?",
@@ -2511,7 +2514,8 @@
       "docling-unavailable": "El analizador de documentos (Docling) no responde desde las {since, time, short}. Las subidas lo esperan o usan el analizador alternativo; comprueba que su contenedor esté en marcha.",
       "basal-unavailable": "El modelo de guardrails (basal) en BASAL_URL no responde. Las comprobaciones vuelven al modelo evaluador, así que no se bloquea nada, pero las respuestas tardan más. Comprueba que su contenedor está en ejecución.",
       "model-server-unreachable": "El servidor de modelos local ({connections}) no responde, así que el chat y el procesamiento de documentos que lo usan fallan. Comprueba que su contenedor está en marcha.",
-      "model-not-pulled": "Estos modelos no están en el servidor de modelos local: {models}. Las llamadas fallan hasta que se descarguen."
+      "model-not-pulled": "Estos modelos no están en el servidor de modelos local: {models}. Las llamadas fallan hasta que se descarguen.",
+      "oidc-misconfigured": "El inicio de sesión corporativo (OIDC) está mal configurado y desactivado: {problems}. El inicio de sesión con contraseña sigue funcionando."
     },
     "database-unreachable-see-logs": "Los detalles están en el registro del servidor."
   },

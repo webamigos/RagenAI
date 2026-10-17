@@ -98,7 +98,10 @@
     "email-not-verified": "Je e-mailadres is nog niet geverifieerd. Kijk in je inbox voor de verificatielink.",
     "demo-account": "Demoaccount",
     "demo-account-note": "Een gedeeld demonstratieaccount. Alles erin is voorbeeldgegevens en voor iedereen zichtbaar — upload niets van jezelf.",
-    "demo-fill": "Invullen"
+    "demo-fill": "Invullen",
+    "sso-sign-in": "Inloggen met {name}",
+    "sso-or": "of",
+    "sso-failed": "Bedrijfsaanmelding is mislukt. Gebruik een account in het domein van je organisatie of vraag een beheerder."
   },
   "Forgot-password": {
     "Forgot-password": "Wachtwoord vergeten?",
@@ -2511,7 +2514,8 @@
       "docling-unavailable": "De documentparser (Docling) is sinds {since, time, short} niet bereikbaar. Uploads wachten erop of gebruiken de reserveparser, dus controleer of de container draait.",
       "basal-unavailable": "Het guardrail-model (basal) op BASAL_URL reageert niet. Controles vallen terug op het beoordelingsmodel, dus er wordt niets geblokkeerd, maar antwoorden duren langer. Controleer of de container draait.",
       "model-server-unreachable": "De lokale modelserver ({connections}) reageert niet, dus chat en documentverwerking die hem gebruiken mislukken. Controleer of de container draait.",
-      "model-not-pulled": "Deze modellen staan niet op de lokale modelserver: {models}. Aanroepen mislukken tot ze zijn gedownload."
+      "model-not-pulled": "Deze modellen staan niet op de lokale modelserver: {models}. Aanroepen mislukken tot ze zijn gedownload.",
+      "oidc-misconfigured": "Bedrijfsaanmelding (OIDC) is onjuist geconfigureerd en daarom uit: {problems}. Inloggen met een wachtwoord werkt nog."
     },
     "database-unreachable-see-logs": "De details staan in het serverlog."
   },

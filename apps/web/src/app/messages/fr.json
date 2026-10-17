@@ -98,7 +98,10 @@
     "email-not-verified": "Ton adresse e-mail n'a pas été vérifiée. Vérifie ta boîte de réception pour trouver le lien de vérification.",
     "demo-account": "Demo account",
     "demo-account-note": "A shared demonstration account. Everything in it is sample data and visible to everyone — do not upload anything of your own.",
-    "demo-fill": "Fill in"
+    "demo-fill": "Fill in",
+    "sso-sign-in": "Se connecter avec {name}",
+    "sso-or": "ou",
+    "sso-failed": "La connexion d'entreprise a échoué. Utilisez un compte du domaine de votre organisation ou contactez un administrateur."
   },
   "Forgot-password": {
     "Forgot-password": "Mot de passe oublié ?",
@@ -2511,7 +2514,8 @@
       "docling-unavailable": "L'analyseur de documents (Docling) est injoignable depuis {since, time, short}. Les fichiers envoyés l'attendent ou passent par l'analyseur de secours : vérifiez que son conteneur tourne.",
       "basal-unavailable": "Le modèle de garde-fous (basal) à BASAL_URL ne répond pas. Les vérifications reviennent au modèle juge : rien n'est bloqué, mais les réponses prennent plus de temps. Vérifiez que son conteneur tourne.",
       "model-server-unreachable": "Le serveur de modèles local ({connections}) ne répond pas : le chat et le traitement des documents qui l'utilisent échouent. Vérifiez que son conteneur tourne.",
-      "model-not-pulled": "Ces modèles ne sont pas sur le serveur de modèles local : {models}. Les appels échouent tant qu'ils ne sont pas téléchargés."
+      "model-not-pulled": "Ces modèles ne sont pas sur le serveur de modèles local : {models}. Les appels échouent tant qu'ils ne sont pas téléchargés.",
+      "oidc-misconfigured": "La connexion d'entreprise (OIDC) est mal configurée et donc désactivée : {problems}. La connexion par mot de passe fonctionne toujours."
     },
     "database-unreachable-see-logs": "Les détails se trouvent dans le journal du serveur."
   },

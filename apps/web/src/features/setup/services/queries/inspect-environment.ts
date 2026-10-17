@@ -5,6 +5,8 @@ import {
   DEFAULT_VECTOR_SIZE,
 } from '@ragenai/rag-core';
 
+import { oidcConfigFromEnv } from '@/lib/oidc-config';
+
 import type { SetupFinding, SetupReport } from '../../contracts/types';
 
 /**
@@ -141,6 +143,26 @@ export function inspectEnvironment(env: Env): SetupReport {
   const missingJobRuntime = findMissingJobRuntime(env);
   if (missingJobRuntime) {
     findings.push(missingJobRuntime);
+  }
+
+  // Half-configured company sign-in turns itself off rather than failing the
+  // app, which is right for sign-in and wrong for the operator who set it up
+  // and sees no button. `recommended`: password sign-in still works.
+  const oidc = oidcConfigFromEnv(env);
+  if (oidc.status === 'invalid') {
+    findings.push({
+      id: 'oidc-misconfigured',
+      severity: 'recommended',
+      vars: [
+        'OIDC_ISSUER',
+        'OIDC_CLIENT_ID',
+        'OIDC_CLIENT_SECRET',
+        'OIDC_ALLOWED_DOMAINS',
+      ],
+      values: { problems: oidc.problems.join('; ') },
+      example:
+        'OIDC_ISSUER=https://login.microsoftonline.com/<tenant>/v2.0 OIDC_ALLOWED_DOMAINS=example.com',
+    });
   }
 
   return {
