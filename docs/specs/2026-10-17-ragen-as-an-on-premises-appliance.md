@@ -317,7 +317,8 @@ repeatable demo, and records the gaps as tests.
   - `gpt-5.4-nano` and `gpt-5.4-mini`
   - a local embedding route
 
-  The display names are still wrong here; A2 fixes them.
+  The display names were wrong here until A2; the table now names every
+  route (see A2).
 - [x] **0.2.** `infra/appliance/appliance.env.example` with every setting the install needs:
   - `DOCLING_STRICT=1`, `ENCRYPTION_PROVIDER=local` and SMTP
   - no moderation key and no PostHog, Langfuse or OTel endpoint
@@ -416,6 +417,13 @@ repeatable demo, and records the gaps as tests.
   their ids and get the right name. Zero token cost in usage reports, and
   the admin allowlist, are left for A2b: apps/admin does not read the route
   table today.
+
+  The appliance table now uses it. The `local-*` chat routes carry a name
+  and `chat` (`local-vision` also `vision`). `local-embed` and the aliases of
+  hardcoded cloud ids carry a name and no capabilities, so the picker lists
+  each local model once and the aliases only answer calls made by the cloud
+  id. `the-appliance-route-table-covers-every-default-model` fails if a local
+  chat route loses either field or an alias gains capabilities.
 - [x] **A2c.** The thread header names the model the way the picker does.
   `ThreadModelLabel` used the static catalogue, so a local model showed its
   route id (`local-chat`) and an aliased cloud id showed the cloud name. It
@@ -552,9 +560,10 @@ repeatable demo, and records the gaps as tests.
 ## Rollout and rollback
 
 - Phase 0 and A1/A3 are additive files, so rollback is deleting them.
-- A2 changes the picker only for a route that carries `display`, and no
-  shipped route does, so it needs no feature key: an install opts in by
-  writing the field. Rollback is removing it.
+- A2 changes the picker only for a route that carries `display`. Only the
+  appliance table does, and the shipped `routes.yaml` does not, so it needs
+  no feature key: an install opts in by writing the field. Rollback is
+  removing it.
 - B1 is inert without OIDC env vars. Rollback means removing the vars, and
   the local admin password still works.
 - B2 needs a migration that adds one table, and no existing table changes.
