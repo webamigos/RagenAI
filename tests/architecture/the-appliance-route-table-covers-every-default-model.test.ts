@@ -97,8 +97,19 @@ function envTemplate(): Map<string, string> {
 }
 
 const rawTable = parseYaml(read(TABLE_PATH)) as {
-  routes: Record<string, { provider: string; connection?: string }>;
+  routes: Record<
+    string,
+    {
+      provider: string;
+      connection?: string;
+      display?: string;
+      capabilities?: string[];
+    }
+  >;
 };
+
+/** The install's own chat routes — every `local-*` id but the embedder. */
+const LOCAL_CHAT_ROUTES = ['local-chat', 'local-small', 'local-vision'];
 
 describe('the appliance route table', () => {
   it('is a valid route table', () => {
@@ -122,6 +133,41 @@ describe('the appliance route table', () => {
     ({ id, file }) => {
       expect(read(file)).toContain(`'${id}'`);
       expect(Object.keys(rawTable.routes)).toContain(id);
+    },
+  );
+
+  // The picker offers a described route only with `chat` (Phase A2). The
+  // install's own chat models must be offered, under a name; an alias of a
+  // hardcoded cloud id must not be, or the picker lists one local model under
+  // several names.
+  it.each(LOCAL_CHAT_ROUTES)('names %s and offers it for chat', (id) => {
+    expect(Object.keys(rawTable.routes)).toContain(id);
+    expect(rawTable.routes[id]?.display).toBeTruthy();
+    expect(rawTable.routes[id]?.capabilities).toContain('chat');
+  });
+
+  // A new `local-*` route is a chat route unless it is the embedder, so it has
+  // to join the list above and be checked like the others.
+  it('has no local route that is neither a chat route nor the embedder', () => {
+    const unlisted = Object.keys(rawTable.routes).filter(
+      (id) =>
+        id.startsWith('local-') &&
+        id !== 'local-embed' &&
+        !LOCAL_CHAT_ROUTES.includes(id),
+    );
+    expect(unlisted).toEqual([]);
+  });
+
+  it('names the embedder without offering it', () => {
+    expect(rawTable.routes['local-embed']?.display).toBeTruthy();
+    expect(rawTable.routes['local-embed']?.capabilities ?? []).toEqual([]);
+  });
+
+  it.each([...new Set(HARDCODED_DEFAULTS.map(({ id }) => id))])(
+    'keeps the %s alias out of the picker',
+    (id) => {
+      expect(rawTable.routes[id]?.display).toBeTruthy();
+      expect(rawTable.routes[id]?.capabilities).toBeUndefined();
     },
   );
 });

@@ -15,9 +15,18 @@
 #   2. The cloud ids below them are names the application still hardcodes or
 #      defaults to. They point at the same local models so that nothing falls
 #      through to "no route" or, worse, to a cloud provider whose key happens
-#      to be set. Their display names in the model picker are wrong until
-#      Phase A2 of the spec lets a route describe itself; that is the known
-#      cost of Phase 0.
+#      to be set.
+#
+# Every route carries `display`, the name of the local model that answers
+# (Phase A2 of the spec). Only the `local-*` chat routes also carry
+# `capabilities`, and that is what decides the picker and `GET /v1/models`:
+# a described route without `chat` is never offered, and it removes the
+# catalogue entry of the same id. So the picker lists each local model once,
+# under its own id, instead of offering Bielik under three names, and the
+# cloud aliases answer only the calls the code makes by the cloud id. Their
+# `display` is not shown anywhere today; it is there so that anything which
+# does name them names the model that is really there. `local-embed` has no
+# capabilities because it is not a chat model.
 #
 # The architecture test `the-appliance-route-table-covers-every-default-model`
 # fails when the application starts asking for an id this file does not
@@ -37,6 +46,8 @@ routes:
     connection: ollama
     model: SpeakLeash/bielik-11b-v2.3-instruct:Q4_K_M
     structuredOutputs: true
+    display: Bielik 11B
+    capabilities: [chat]
   # Rephrase, summaries, Brain and memory extraction, scoring, the guardrail
   # judge. Runs on every question and every upload, so it is the small tier.
   local-small:
@@ -44,11 +55,15 @@ routes:
     connection: ollama
     model: qwen2.5:7b-instruct
     structuredOutputs: true
+    display: Qwen 2.5 7B
+    capabilities: [chat]
   # Image description and image/document chat attachments.
   local-vision:
     provider: openai-compatible
     connection: ollama
     model: gemma3:12b
+    display: Gemma 3 12B
+    capabilities: [chat, vision]
   # 1024 dimensions: set VECTOR_SIZE=1024 on web, api and worker alike.
   # DEFAULT_EMBEDDINGS_MODEL is deliberately not aliased here: its known size
   # is 3584, so an alias would make the setup page report a mismatch. The env
@@ -57,6 +72,7 @@ routes:
     provider: openai-compatible
     connection: ollama
     model: bge-m3
+    display: BGE-M3
 
   # --- Ids the application hardcodes or defaults to ----------------------------
   # Org default when DEFAULT_MODEL and the org setting are both unset, and the
@@ -66,6 +82,7 @@ routes:
     connection: ollama
     model: SpeakLeash/bielik-11b-v2.3-instruct:Q4_K_M
     structuredOutputs: true
+    display: Bielik 11B
   # POLICY_JUDGE_MODEL (packages/guardrails) and the optimize generator
   # (apps/web api/knowledge/optimize). Both are constants, not env.
   gemini-2.5-flash:
@@ -73,25 +90,30 @@ routes:
     connection: ollama
     model: qwen2.5:7b-instruct
     structuredOutputs: true
+    display: Qwen 2.5 7B
   # DEEP_THINKING_DEFAULT_MODEL (apps/web components/config.ts).
   gpt-oss-120b:
     provider: openai-compatible
     connection: ollama
     model: SpeakLeash/bielik-11b-v2.3-instruct:Q4_K_M
+    display: Bielik 11B
   # The worker's SRT segmenter, its key check and the PDF chain's `nano` tier.
   gpt-5.4-nano:
     provider: openai-compatible
     connection: ollama
     model: qwen2.5:7b-instruct
     structuredOutputs: true
+    display: Qwen 2.5 7B
   # The PDF chain's `mini` tier, which describes images.
   gpt-5.4-mini:
     provider: openai-compatible
     connection: ollama
     model: gemma3:12b
+    display: Gemma 3 12B
   # PDF_MODEL's default. DOCLING_STRICT=1 keeps ingest off this path, but a
   # route here means a misconfiguration still stays on the machine.
   claude-haiku-4-5:
     provider: openai-compatible
     connection: ollama
     model: gemma3:12b
+    display: Gemma 3 12B
