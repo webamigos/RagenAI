@@ -64,14 +64,19 @@ function gatewayModels(): AvailableModel[] {
   try {
     const gateway = gatewayFromEnv();
     const served = new Set(gateway.availableModels());
+    const described = gateway.describedModels();
     const offered = withDescribedRoutes(
       availableModels.map(toCatalogueEntry),
-      gateway.describedModels(),
+      described,
     )
       .filter((model) => served.has(model.value))
       .map(toAvailableModel);
 
-    if (offered.length === 0) {
+    // The fallback is for a table that says nothing the picker can use. A
+    // table with described routes said exactly what it serves, so an empty
+    // result there is the answer — restoring the catalogue would offer models
+    // a described non-chat route deliberately removed.
+    if (offered.length === 0 && described.length === 0) {
       logger.warn(
         { served: served.size },
         'Gateway serves no model the picker knows about — falling back to the full catalogue',

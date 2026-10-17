@@ -187,4 +187,16 @@ describe('a route that describes itself', () => {
 
     expect(models.map((m) => m.value)).toEqual([availableModels[0]!.value]);
   });
+
+  it('does not fall back to the catalogue when a described route removed the only model', async () => {
+    const aliased = availableModels[0]!.value;
+    availableModelsFromGateway.mockReturnValue([aliased]);
+    describedModelsFromGateway.mockReturnValue([
+      { id: aliased, displayName: 'Embedder', capabilities: [] },
+    ]);
+
+    const models = await getAvailableModelsForOrganization('org-1');
+
+    expect(models).toEqual([]);
+  });
 });

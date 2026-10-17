@@ -159,6 +159,15 @@ describe('ModelsService', () => {
     expect((await service.list(context)).map((m) => m.id)).toEqual(['gpt-5.4']);
   });
 
+  it('does not fall back to the catalogue when a described route removed the only model', async () => {
+    availableModels.mockReturnValue(['gpt-5.4']);
+    describedModels.mockReturnValue([
+      { id: 'gpt-5.4', displayName: 'Embedder', capabilities: [] },
+    ]);
+    const { service } = buildService();
+    expect(await service.list(context)).toEqual([]);
+  });
+
   describe('get', () => {
     it('returns one model', async () => {
       const { service } = buildService();

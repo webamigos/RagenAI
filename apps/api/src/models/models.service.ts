@@ -78,12 +78,14 @@ export class ModelsService {
     try {
       const gateway = gatewayFromEnv();
       const served = new Set(gateway.availableModels());
-      const offered = withDescribedRoutes(
-        catalogue,
-        gateway.describedModels(),
-      ).filter((model) => served.has(model.value));
+      const described = gateway.describedModels();
+      const offered = withDescribedRoutes(catalogue, described).filter(
+        (model) => served.has(model.value),
+      );
 
-      if (offered.length === 0) {
+      // As in apps/web: a table with described routes said what it serves,
+      // so an empty list is the answer rather than a reason to fall back.
+      if (offered.length === 0 && described.length === 0) {
         this.logger.warn(
           `Gateway serves no model the catalogue knows about (${served.size} routes) — falling back to the full catalogue`,
         );
