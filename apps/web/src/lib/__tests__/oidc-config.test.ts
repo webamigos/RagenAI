@@ -32,6 +32,7 @@ describe('oidcConfigFromEnv', () => {
         displayName: 'company account',
         joinOrganization: null,
         trustEmail: false,
+        requireHostedDomain: false,
       },
     });
   });
@@ -137,5 +138,44 @@ describe('isOidcCallback', () => {
     ).toBe(false);
     expect(isOidcCallback({ path: '/sign-up/email' })).toBe(false);
     expect(isOidcCallback(null)).toBe(false);
+  });
+
+  it('requires the hosted-domain claim for Google', () => {
+    // Google's email_verified proves the address, not Workspace membership: a
+    // personal Google account can be made on a company address. `hd` is set
+    // only for accounts the Workspace manages.
+    expect(
+      oidcConfigFromEnv({
+        ...valid,
+        OIDC_ISSUER: 'https://accounts.google.com',
+      }),
+    ).toMatchObject({ status: 'on', config: { requireHostedDomain: true } });
+
+    const google = { requireHostedDomain: true };
+    expect(
+      gateProfile(
+        { email: 'jan@acme.pl', emailVerified: true },
+        ['acme.pl'],
+        google,
+      ),
+    ).toEqual({ email: '', emailVerified: false });
+    expect(
+      gateProfile(
+        {
+          email: 'jan@acme.pl',
+          emailVerified: true,
+          hostedDomain: 'gmail.com',
+        },
+        ['acme.pl'],
+        google,
+      ),
+    ).toEqual({ email: '', emailVerified: false });
+    expect(
+      gateProfile(
+        { email: 'jan@acme.pl', emailVerified: true, hostedDomain: 'ACME.pl' },
+        ['acme.pl'],
+        google,
+      ),
+    ).toEqual({ email: 'jan@acme.pl', emailVerified: true });
   });
 });

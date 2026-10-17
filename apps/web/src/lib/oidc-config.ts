@@ -36,6 +36,17 @@ export type OidcConfig = {
    * so. Off by default: a missing claim is not a verified address.
    */
   trustEmail: boolean;
+  /**
+   * Require the ID token's `hd` (hosted domain) claim to be an allowed domain.
+   *
+   * On for Google's issuer, and not configurable off. Google's
+   * `email_verified` proves the address, not membership of a Workspace: anyone
+   * can make a personal Google account on `jan@yourcompany.com` and verify it
+   * through a link. `hd` is what Google sets only for an account the Workspace
+   * itself manages, so without it the domain gate would admit a stranger who
+   * can read one company mailbox.
+   */
+  requireHostedDomain: boolean;
 };
 
 export type OidcStatus =
@@ -111,8 +122,17 @@ export function oidcConfigFromEnv(env: Env): OidcStatus {
       displayName: set(env.OIDC_DISPLAY_NAME) ?? 'company account',
       joinOrganization: set(env.OIDC_JOIN_ORGANIZATION) ?? null,
       trustEmail: set(env.OIDC_TRUST_EMAIL) === 'true',
+      requireHostedDomain: isGoogleIssuer(base),
     },
   };
+}
+
+function isGoogleIssuer(issuer: string): boolean {
+  try {
+    return new URL(issuer).hostname === 'accounts.google.com';
+  } catch {
+    return false;
+  }
 }
 
 function isHttpUrl(value: string): boolean {
@@ -153,11 +173,21 @@ export function isAllowedEmail(
  * take over the local account behind it.
  */
 export function gateProfile(
-  profile: { email?: string | null; emailVerified?: boolean | null },
+  profile: {
+    email?: string | null;
+    emailVerified?: boolean | null;
+    hostedDomain?: string | null;
+  },
   allowedDomains: readonly string[],
-  options: { trustEmail?: boolean } = {},
+  options: { trustEmail?: boolean; requireHostedDomain?: boolean } = {},
 ): { email: string; emailVerified: boolean } {
   if (!isAllowedEmail(profile.email, allowedDomains)) {
+    return { email: '', emailVerified: false };
+  }
+  if (
+    options.requireHostedDomain &&
+    !allowedDomains.includes(profile.hostedDomain?.toLowerCase() ?? '')
+  ) {
     return { email: '', emailVerified: false };
   }
   // `trustEmail` only fills in a claim the issuer did not send. An issuer that

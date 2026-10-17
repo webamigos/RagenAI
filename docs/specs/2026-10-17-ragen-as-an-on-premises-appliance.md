@@ -473,7 +473,9 @@ repeatable demo, and records the gaps as tests.
     that organization as a member. If the organization does not exist, the
     sign-up is refused rather than given a personal one. Entra ID sends no
     `email_verified`, so `OIDC_TRUST_EMAIL=true` is the operator saying the
-    tenant owns the allowed domains. The pass applies only through the OIDC callback, never to a
+    tenant owns the allowed domains. Google's `email_verified` proves the
+    address but not Workspace membership, so for Google's issuer the `hd`
+    claim must also be an allowed domain. The pass applies only through the OIDC callback, never to a
     password sign-up at the same domain. Without it, SSO is one more door,
     with the registration rule and a personal organization like the others.
   - **Misconfiguration.** A partial configuration turns SSO off and appears
