@@ -7,6 +7,8 @@ topics: ['env-vars', 'monorepo', 'turborepo', 'local-development', 'false-red']
 
 # A repository-root marker that is only a filename gets re-created one directory down
 
+**In short**: `apps/api` found the root `.env.local` by walking up to the first `turbo.json`. #1574 gave every app a package-level `turbo.json`, so the walk stopped at `apps/api` and `npm run api:dev` failed on `TARGET_ENV: Invalid option` while the root file set it. This was the marker's second failure, after a stale lockfile. Check what the file says, not that it exists: the root is now the `package.json` that declares `workspaces`, and an architecture test keeps that declaration unique.
+
 **Context**: `apps/api` loads the root `.env.local` by walking up from its
 cwd to the repository root (`apps/api/src/config/load-local-env.ts`). It
 first used a lockfile as the marker, which failed because `apps/api` still

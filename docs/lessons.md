@@ -49,8 +49,7 @@ After a nontrivial correction or a non-obvious gotcha (see `AGENTS.md`'s "Post-T
 
 ### architecture
 
-- [A repository-root marker that is only a filename gets re-created one directory down](lessons/a-root-marker-that-is-a-filename-gets-recreated-one-level-down.md) — area:architecture; module:api; topic:env-vars,monorepo,turborepo,local-development,false-red. `apps/api` found the root `.env.local` by walking up to the first `turbo.json`. #1574 gave every app a package-level `turbo.json`, so the walk stopped at `apps/api` and `npm run api:dev` failed on `TARGET_ENV: Invalid option` while the root file set it. This was the marker's second failure, after a stale lockfile. Check what the file says, not that it exists: the root is now the `package.json` that declares `workspaces`, and an architecture test keeps that declaration unique.
-
+- [A repository-root marker that is only a filename gets re-created one directory down](lessons/a-root-marker-that-is-a-filename-gets-recreated-one-level-down.md)
 - [Codex reads every AGENTS.md on the path under one 32 KiB budget, so a nested brief behind a full root is mostly never read](lessons/codex-reads-nested-agents-files-under-one-budget.md)
 - [A migration and schema.prisma can drift apart, and until now nothing compared them](lessons/a-migration-and-the-schema-can-drift-and-nothing-compares-them.md)
 - [Zod 4's `z.uuid()` refuses a well-formed id for its version nibble, so a real row comes back as invalid input](lessons/zod-4-uuid-refuses-well-formed-database-ids.md)
