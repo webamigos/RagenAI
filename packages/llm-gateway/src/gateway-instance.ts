@@ -36,3 +36,16 @@ export function gatewayFromEnv(): LlmGateway {
 export function resetGatewayCache(): void {
   cached = null;
 }
+
+/**
+ * `describes` on this process's gateway, answering false when there is no
+ * readable route table — for the usage trackers, which must never fail a
+ * model call over pricing.
+ */
+export function routeDescribesItself(modelId: string): boolean {
+  try {
+    return gatewayFromEnv().describes(modelId);
+  } catch {
+    return false;
+  }
+}

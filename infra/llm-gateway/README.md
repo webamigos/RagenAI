@@ -57,6 +57,9 @@ on the install's own hardware. Such a route can describe itself:
   with `display` replaces a catalogue entry of the same id, so a hardcoded
   cloud id aliased to a local model is not shown under the cloud name. It is
   grouped as **Local**, and `GET /v1/models` reports `owned_by: local`.
+  Usage tracking prices it at **zero**, whatever the catalogue says about
+  the id — so never put `display` on a route to a cloud provider: its tokens
+  would go uncounted against the monthly cost ceiling.
 - `capabilities` — `chat` and/or `vision`. Only a route with `chat` is offered
   as a chat model; a described route without it is never offered, and removes
   a catalogue entry of the same id. No `capabilities` means none.

@@ -429,6 +429,12 @@ repeatable demo, and records the gaps as tests.
   route id (`local-chat`) and an aliased cloud id showed the cloud name. It
   now uses the served list (one request per organization, the catalogue as
   fallback). Found by the 0.3 run.
+- [x] **A2b (cost).** Usage tracking in web, api and worker prices a model
+  whose route describes itself (`display`) at zero, through
+  `routeDescribesItself` in `@ragenai/llm-gateway`: its cost is the
+  hardware, and the cloud price of an id it aliases would be a bill nobody
+  pays. Still open from A2b: local models on the admin allowlist, because
+  apps/admin does not read the route table.
 - [x] **A2d.** The picker and `GET /v1/models` hide a model whose server
   answered and does not have it (an Ollama model nobody pulled), using the
   B3 probe through `LlmGateway.missingModels`, cached for 30 seconds. A

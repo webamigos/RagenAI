@@ -95,6 +95,11 @@ export type Route = {
    * offered under this name instead, and a catalogue entry with the same id is
    * replaced by it — which is what lets an install alias a hardcoded cloud id
    * to a local model without the picker naming the wrong model.
+   *
+   * It is also what marks the route as local everywhere else: usage tracking
+   * prices a described route at zero (`ResolveModel.describes`). One marker,
+   * not a second `local` flag that could disagree with it — so `display` on a
+   * route to a cloud provider would leave its tokens unpriced.
    */
   readonly display?: string;
   /** What the model can do. Read only together with `display`. */

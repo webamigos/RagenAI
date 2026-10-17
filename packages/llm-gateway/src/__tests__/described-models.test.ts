@@ -132,3 +132,14 @@ describe('routes.schema.json', () => {
     expect(onDisk).toEqual(routeFileJsonSchema());
   });
 });
+
+describe('LlmGateway.describes', () => {
+  const gateway = new LlmGateway({ routes, credentials });
+
+  it('is true for a route with display, and false otherwise', () => {
+    expect(gateway.describes('local-chat')).toBe(true);
+    expect(gateway.describes('gemini-2.5-flash')).toBe(true);
+    expect(gateway.describes('gpt-oss-120b')).toBe(false);
+    expect(gateway.describes('no-such-route')).toBe(false);
+  });
+});

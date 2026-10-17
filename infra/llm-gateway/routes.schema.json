@@ -44,6 +44,7 @@
             "type": "boolean"
           },
           "display": {
+            "description": "Only for a model served on the install's own hardware. Shown as Local in the picker and priced at zero by usage tracking.",
             "type": "string",
             "minLength": 1
           },

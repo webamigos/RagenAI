@@ -4,6 +4,8 @@ const prisma = vi.hoisted(() => ({
   aiUsage: { create: vi.fn() },
 }));
 vi.mock('../prisma.js', () => ({ getPrisma: () => prisma }));
+const routeDescribesItself = vi.hoisted(() => vi.fn(() => false));
+vi.mock('@ragenai/llm-gateway', () => ({ routeDescribesItself }));
 
 import { EUR_TO_USD } from '@ragenai/platform-contracts';
 
@@ -11,6 +13,7 @@ import { db, estimateCost } from '../db.js';
 
 beforeEach(() => {
   vi.clearAllMocks();
+  routeDescribesItself.mockReturnValue(false);
   prisma.aiUsage.create.mockResolvedValue({});
 });
 
@@ -83,6 +86,20 @@ describe('estimateCost', () => {
         model: 'gemini-2.5-flash',
         inputTokens: -5,
         outputTokens: Number.NaN,
+      }),
+    ).toBe(0);
+  });
+});
+
+describe('estimateCost for a model the route table describes itself', () => {
+  it('is zero: a local model has no per-token bill', () => {
+    routeDescribesItself.mockReturnValue(true);
+    expect(
+      estimateCost({
+        provider: 'litellm',
+        model: 'gemini-2.5-flash',
+        inputTokens: 1_000_000,
+        outputTokens: 1_000_000,
       }),
     ).toBe(0);
   });

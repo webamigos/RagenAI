@@ -45,7 +45,14 @@ const routeSchema = z.object({
   connection: z.string().min(1).optional(),
   location: z.string().min(1).optional(),
   structuredOutputs: z.boolean().optional(),
-  display: z.string().trim().min(1).optional(),
+  display: z
+    .string()
+    .trim()
+    .min(1)
+    .describe(
+      "Only for a model served on the install's own hardware. Shown as Local in the picker and priced at zero by usage tracking.",
+    )
+    .optional(),
   capabilities: z.array(z.enum(ROUTE_CAPABILITIES)).optional(),
 });
 

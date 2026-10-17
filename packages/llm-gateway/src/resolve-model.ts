@@ -141,6 +141,17 @@ export class LlmGateway {
     return probeModels(this.routes, this.credentials, modelIds, options);
   }
 
+  /**
+   * Whether the route for this id describes its own model (`display`) — a
+   * model served on the install's own hardware, which the picker groups as
+   * `local`. Usage tracking prices such a model at zero: its cost is the
+   * hardware, not tokens, and the cloud price of an id it aliases would be a
+   * bill nobody pays.
+   */
+  describes(modelId: string): boolean {
+    return Boolean(findRoute(this.routes, modelId)?.display);
+  }
+
   private readonly probeCache = new Map<
     string,
     { at: number; state: ModelProbeState }
