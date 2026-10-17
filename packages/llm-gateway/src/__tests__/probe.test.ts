@@ -93,6 +93,12 @@ describe('probeModels', () => {
     ],
     ['an error status', async () => new Response('nope', { status: 502 })],
     ['a body that is not a model list', async () => new Response('{"x":1}')],
+    [
+      // Not "missing": the response never described the server's models.
+      'a list with an entry that has no id',
+      async () =>
+        new Response(JSON.stringify({ data: [{ id: 'bielik:11b' }, {}] })),
+    ],
   ])('reports the server unreachable on %s', async (_case, impl) => {
     const fetch = vi.fn(impl as typeof globalThis.fetch);
 

@@ -1,4 +1,8 @@
-import { connectionBaseUrlVar, type ModelProbe } from '@ragenai/llm-gateway';
+import {
+  connectionApiKeyVars,
+  connectionBaseUrlVar,
+  type ModelProbe,
+} from '@ragenai/llm-gateway';
 
 import type { SetupFinding } from '../../contracts/types';
 
@@ -63,7 +67,7 @@ export function findModelServerProblems(
       severity: 'recommended',
       vars,
       values: { connections: unreachable.join(', ') },
-      example: vars.map((name) => `curl "$${name}/models"`).join('; '),
+      example: unreachable.map(curlModels).join('; '),
     });
   }
 
@@ -81,9 +85,39 @@ export function findModelServerProblems(
         ),
       ],
       values: { models: upstream.join(', ') },
-      example: upstream.map((model) => `ollama pull ${model}`).join(' && '),
+      example: missingModelExample(missing),
     });
   }
 
   return findings;
+}
+
+/**
+ * The listing request the probe made, as a command an operator can paste.
+ *
+ * The key goes in only when it is set: a server that wants one answers 401 to
+ * a bare request, which would read as "down" for a server that is up.
+ */
+function curlModels(connection: string): string {
+  const base = connectionBaseUrlVar(connection);
+  const [first, fallback] = connectionApiKeyVars(connection);
+  const key = fallback ? `\${${first}:-$${fallback}}` : `$${first}`;
+  return `K=${key}; curl \${K:+-H "Authorization: Bearer $K"} "$${base}/models"`;
+}
+
+/**
+ * How to make a missing model present. Only Ollama has `ollama pull`: a vLLM or
+ * TGI server loads the model it was started with, so for any other connection
+ * the instruction is to load the model on that server.
+ */
+function missingModelExample(missing: readonly ModelProbe[]): string {
+  const steps = new Set<string>();
+  for (const probe of missing) {
+    steps.add(
+      probe.connection === 'ollama'
+        ? `ollama pull ${probe.upstreamModel}`
+        : `# load ${probe.upstreamModel} on the ${probe.connection} server`,
+    );
+  }
+  return [...steps].join(' && ');
 }

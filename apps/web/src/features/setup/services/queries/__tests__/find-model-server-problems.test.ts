@@ -58,8 +58,11 @@ describe('findModelServerProblems', () => {
       severity: 'recommended',
       vars: ['LLM_OLLAMA_BASE_URL', 'LLM_VLLM_BASE_URL'],
       values: { connections: 'ollama, vllm' },
+      // The key goes in only when it is set: a server that wants one answers
+      // 401 to a bare request, which would read as "down".
       example:
-        'curl "$LLM_OLLAMA_BASE_URL/models"; curl "$LLM_VLLM_BASE_URL/models"',
+        'K=$LLM_OLLAMA_API_KEY; curl ${K:+-H "Authorization: Bearer $K"} "$LLM_OLLAMA_BASE_URL/models"; ' +
+        'K=$LLM_VLLM_API_KEY; curl ${K:+-H "Authorization: Bearer $K"} "$LLM_VLLM_BASE_URL/models"',
     });
   });
 
@@ -103,5 +106,40 @@ describe('findModelServerProblems', () => {
       'model-server-unreachable',
       'model-not-pulled',
     ]);
+  });
+
+  it('gives `ollama pull` only for Ollama, and a load instruction elsewhere', () => {
+    const [finding] = findModelServerProblems(
+      [
+        {
+          modelId: 'local-small',
+          state: 'missing',
+          connection: 'ollama',
+          upstreamModel: 'qwen2.5:7b-instruct',
+        },
+        {
+          modelId: 'vllm-chat',
+          state: 'missing',
+          connection: 'vllm',
+          upstreamModel: 'meta-llama/Llama-3.3-70B',
+        },
+      ],
+      selectedBy,
+    );
+
+    expect(finding?.example).toBe(
+      'ollama pull qwen2.5:7b-instruct && # load meta-llama/Llama-3.3-70B on the vllm server',
+    );
+  });
+
+  it('keeps the proxy-era key fallback in the scaleway command', () => {
+    const [finding] = findModelServerProblems(
+      [{ modelId: 'x', state: 'unreachable', connection: 'scaleway' }],
+      selectedBy,
+    );
+
+    expect(finding?.example).toBe(
+      'K=${LLM_SCALEWAY_API_KEY:-$SCW_API_KEY}; curl ${K:+-H "Authorization: Bearer $K"} "$LLM_SCALEWAY_BASE_URL/models"',
+    );
   });
 });

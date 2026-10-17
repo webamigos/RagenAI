@@ -11,6 +11,7 @@ export {
   type RouteFile,
 } from './route-table';
 export {
+  connectionApiKeyVars,
   connectionBaseUrlVar,
   EnvCredentialSource,
   MissingCredentialsError,

@@ -123,16 +123,18 @@ async function listModels(
       return null;
     }
     const body = (await response.json()) as { data?: unknown };
-    if (!Array.isArray(body.data)) {
+    // Every entry must carry a string id. A list with one that does not is not
+    // a model list, and reading the rest would report a model "missing" from
+    // a response that never described the server's models at all.
+    if (
+      !Array.isArray(body.data) ||
+      body.data.some(
+        (entry) => !entry || typeof (entry as { id?: unknown }).id !== 'string',
+      )
+    ) {
       return null;
     }
-    return new Set(
-      body.data.flatMap((entry) =>
-        entry && typeof (entry as { id?: unknown }).id === 'string'
-          ? [(entry as { id: string }).id]
-          : [],
-      ),
-    );
+    return new Set(body.data.map((entry) => (entry as { id: string }).id));
   } catch {
     // Missing credentials, a refused connection, a timeout, a body that is
     // not JSON: all of them mean the same thing to the operator.

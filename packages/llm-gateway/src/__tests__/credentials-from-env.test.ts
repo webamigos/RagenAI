@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import {
+  connectionApiKeyVars,
   connectionBaseUrlVar,
   EnvCredentialSource,
   MissingCredentialsError,
@@ -341,5 +342,15 @@ describe('connectionBaseUrlVar', () => {
   it('names the variable the credential source reads', () => {
     expect(connectionBaseUrlVar('ollama')).toBe('LLM_OLLAMA_BASE_URL');
     expect(connectionBaseUrlVar('my-vllm')).toBe('LLM_MY_VLLM_BASE_URL');
+  });
+});
+
+describe('connectionApiKeyVars', () => {
+  it('names the key variables in the order they are read', () => {
+    expect(connectionApiKeyVars('ollama')).toEqual(['LLM_OLLAMA_API_KEY']);
+    expect(connectionApiKeyVars('scaleway')).toEqual([
+      'LLM_SCALEWAY_API_KEY',
+      'SCW_API_KEY',
+    ]);
   });
 });

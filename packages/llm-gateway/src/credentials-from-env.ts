@@ -156,6 +156,15 @@ export function connectionBaseUrlVar(connection: string): string {
 }
 
 /**
+ * The variables that may hold an OpenAI-compatible connection's API key, in
+ * the order the credential source reads them — `scaleway` has a proxy-era
+ * fallback. For the same message as `connectionBaseUrlVar`.
+ */
+export function connectionApiKeyVars(connection: string): string[] {
+  return [...connectionEnvNames(connection).apiKey];
+}
+
+/**
  * The service account in `VERTEX_CREDENTIALS`, if there is one.
  *
  * The proxy accepts either the JSON itself or a path to it, so both are handled
