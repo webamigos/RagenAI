@@ -1,6 +1,6 @@
 ---
 title: Ragen as an on-premises appliance
-status: draft
+status: in-progress
 areas: [llm-gateway, rag, auth, admin, install, worker, guardrails]
 adrs: [21, 27, 31, 35, 37, 38, 49, 50]
 ---
@@ -298,7 +298,7 @@ Each phase leaves the application working. Behind a feature key defaulting to
 There is no new product code in this phase. It turns what exists into a
 repeatable demo, and records the gaps as tests.
 
-- [ ] **0.1.** `infra/llm-gateway/routes.appliance.yaml` maps the catalogue
+- [x] **0.1.** `infra/llm-gateway/routes.appliance.yaml` maps the catalogue
   ids the application already asks for onto a local Ollama, so nothing
   hardcoded falls through to the cloud:
   - `DEFAULT_MODEL`, `REPHRASE_MODEL` and `SUMMARY_MODEL`
@@ -307,7 +307,7 @@ repeatable demo, and records the gaps as tests.
   - a local embedding route
 
   The display names are still wrong here; A2 fixes them.
-- [ ] **0.2.** `.env.appliance.example` with every setting the install needs:
+- [x] **0.2.** `infra/appliance/appliance.env.example` with every setting the install needs:
   - `DOCLING_STRICT=1`, `ENCRYPTION_PROVIDER=local` and SMTP
   - no moderation key and no PostHog, Langfuse or OTel endpoint
   - `VECTOR_SIZE` for the local embedding model
@@ -315,6 +315,67 @@ repeatable demo, and records the gaps as tests.
   ask questions, show citations and permissions, with the network cable
   unplugged. It ends with a list of every failure, and each failure becomes
   a step below.
+
+  Still open: the run below was on a developer laptop with the network
+  connected, so it proves neither the hardware class nor "unplugged". It
+  still produced the failure list, which is the step's real purpose.
+
+  **Partial run of 2026-10-17.** Hardware: a MacBook running Ollama on the host,
+  with Postgres, Redis, Qdrant and Docling in Docker. web, api and worker
+  ran from source with the appliance table and the env template. Every
+  cloud key in the developer `.env.local` was set to empty. The branches
+  for 0.1/0.2, A2, A4 and B3 were merged locally. Models:
+  - `SpeakLeash/bielik-11b-v2.3-instruct:Q4_K_M` (chat)
+  - `qwen2.5:7b-instruct` (small tier)
+  - `bge-m3` (embeddings)
+
+  What worked:
+  - Four Polish markdown documents went through Docling and were embedded
+    by `bge-m3`, with 1024-dimensional dense vectors in Qdrant.
+  - The picker offered "Bielik 11B" (A2).
+  - The setup checklist raised no model finding, because every probed model
+    was pulled (B3).
+  - A Polish question returned a correct answer with a citation.
+  - Usage was recorded at zero cost.
+  - Over about 25 minutes, `lsof`, sampled every second, saw no TCP
+    connection from the web, api or worker processes to anything other than
+    loopback.
+
+  That sampling does not cover DNS or UDP, or the containers, and it can
+  miss a connection shorter than a second. Closing that gap is A3, not this
+  step.
+
+  Failures, each one a step or an issue:
+  1. **A per-app env file overrides the root one without saying so.**
+     - `apps/worker/.env.local` set `REDIS_URL` to a different port, so the
+       worker consumed a different queue from the one web wrote to.
+     - The same file set `AWS_ENDPOINT_URL` to a cloud object store.
+     - An appliance must have exactly one environment. The installer (C1)
+       writes one, and the setup checklist should warn when per-app files
+       exist.
+  2. **An empty URL variable fails validation.** `LANGFUSE_HOST` and
+     `MEILISEARCH_URL` both failed when left empty. The template must leave
+     URL variables unset rather than empty. This needs a check against the
+     env schemas.
+  3. **The default locale loops for a signed-in user.** `/en` redirects to
+     `/`, which redirects back to `/en`. The cause is `localePrefix: as-needed`
+     against the root redirect in `proxy.ts`. It is not appliance-specific,
+     but it is the first thing an English-speaking buyer would hit. It needs
+     its own fix.
+  4. **The thread header shows the route id (`local-chat`), not the display
+     name.** `ThreadModelLabel` reads the static catalogue. This is the A2
+     gap to close next.
+  5. **The first answer took 3 minutes.** The laptop was running every
+     service at once. The retrieval-usage transaction also exceeded Prisma's
+     5-second timeout, which is non-blocking but recorded nothing. A5 has to
+     measure this on target hardware before any tier is offered.
+  6. **The picker offers a model that was never pulled** (`local-vision`).
+     "Served" means configured, not present. The B3 probe could narrow the
+     picker the same way it narrows the checklist.
+  7. **apps/api in `start:dev` did not read the root `.env.local`.** It
+     failed on `TARGET_ENV` and `SESSION_AUTH_SECRET` until given an
+     explicit environment. This affects development only; the compose stack
+     passes `env_file`.
 
 ### Phase A: a local install that is proven, not described
 
