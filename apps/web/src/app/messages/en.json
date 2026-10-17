@@ -2509,7 +2509,9 @@
       "embeddings-dimension-mismatch": "EMBEDDINGS_MODEL={model} produces {expected}-dimensional vectors, but VECTOR_SIZE is {configured}. Qdrant rejects every upsert, so no document ever becomes searchable.",
       "object-storage-credentials": "STORAGE_PROVIDER=s3 is set, but some of its configuration is missing. Uploads and downloads fail until these are set — use the S3_ prefix (S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY, S3_REGION), not AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY / AWS_DEFAULT_REGION, which are reserved for AWS Bedrock and AWS KMS.",
       "docling-unavailable": "The document parser (Docling) has not been reachable since {since, time, short}. Uploads wait for it or use the fallback parser, so check that its container is running.",
-      "basal-unavailable": "The guardrail model (basal) at BASAL_URL is not answering. Guardrail checks fall back to the judge model, so nothing is blocked, but turns wait longer. Check that its container is running."
+      "basal-unavailable": "The guardrail model (basal) at BASAL_URL is not answering. Guardrail checks fall back to the judge model, so nothing is blocked, but turns wait longer. Check that its container is running.",
+      "model-server-unreachable": "The local model server ({connections}) is not answering, so chat and document processing that use it fail. Check that its container is running.",
+      "model-not-pulled": "These models are not on the local model server: {models}. Calls to them fail until they are pulled."
     },
     "database-unreachable-see-logs": "The details are in the server log."
   },

@@ -2509,7 +2509,9 @@
       "embeddings-dimension-mismatch": "EMBEDDINGS_MODEL={model} produkuje vektory s {expected} dimenziami, ale VECTOR_SIZE je {configured}. Qdrant odmieta každý upsert, takže žiadny dokument nebude vyhľadateľný.",
       "object-storage-credentials": "STORAGE_PROVIDER=s3 je nastavený, ale časť jeho konfigurácie chýba. Nahrávanie a sťahovanie zlyhávajú, kým nie sú tieto hodnoty nastavené — použite predponu S3_ (S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY, S3_REGION), nie AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY / AWS_DEFAULT_REGION, ktoré sú vyhradené pre AWS Bedrock a AWS KMS.",
       "docling-unavailable": "Parser dokumentov (Docling) nie je dostupný od {since, time, short}. Nahrané súbory naň čakajú alebo použijú záložný parser, preto overte, že jeho kontajner beží.",
-      "basal-unavailable": "Model guardrailov (basal) na BASAL_URL neodpovedá. Kontroly sa vracajú k hodnotiacemu modelu, takže nič nie je blokované, ale odpovede trvajú dlhšie. Skontrolujte, či jeho kontajner beží."
+      "basal-unavailable": "Model guardrailov (basal) na BASAL_URL neodpovedá. Kontroly sa vracajú k hodnotiacemu modelu, takže nič nie je blokované, ale odpovede trvajú dlhšie. Skontrolujte, či jeho kontajner beží.",
+      "model-server-unreachable": "Lokálny server modelov ({connections}) neodpovedá, takže chat a spracovanie dokumentov, ktoré ho používajú, zlyhávajú. Skontrolujte, či jeho kontajner beží.",
+      "model-not-pulled": "Tieto modely na lokálnom serveri modelov nie sú: {models}. Volania zlyhávajú, kým ich nestiahnete."
     },
     "database-unreachable-see-logs": "Podrobnosti nájdete v protokole servera."
   },

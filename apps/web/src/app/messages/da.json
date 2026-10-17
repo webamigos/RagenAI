@@ -2509,7 +2509,9 @@
       "embeddings-dimension-mismatch": "EMBEDDINGS_MODEL={model} producerer vektorer med {expected} dimensioner, men VECTOR_SIZE er {configured}. Qdrant afviser hver upsert, så intet dokument bliver søgbart.",
       "object-storage-credentials": "STORAGE_PROVIDER=s3 er angivet, men en del af dens konfiguration mangler. Uploads og downloads mislykkes, indtil disse værdier er angivet — brug S3_-præfikset (S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY, S3_REGION), ikke AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY / AWS_DEFAULT_REGION, som er reserveret til AWS Bedrock og AWS KMS.",
       "docling-unavailable": "Dokumentparseren (Docling) har ikke kunnet nås siden {since, time, short}. Uploads venter på den eller bruger reserveparseren, så kontrollér, at dens container kører.",
-      "basal-unavailable": "Guardrail-modellen (basal) på BASAL_URL svarer ikke. Kontrollerne falder tilbage til bedømmelsesmodellen, så intet blokeres, men svarene tager længere tid. Tjek, at dens container kører."
+      "basal-unavailable": "Guardrail-modellen (basal) på BASAL_URL svarer ikke. Kontrollerne falder tilbage til bedømmelsesmodellen, så intet blokeres, men svarene tager længere tid. Tjek, at dens container kører.",
+      "model-server-unreachable": "Den lokale modelserver ({connections}) svarer ikke, så chat og dokumentbehandling, der bruger den, fejler. Tjek, at dens container kører.",
+      "model-not-pulled": "Disse modeller findes ikke på den lokale modelserver: {models}. Kald til dem fejler, indtil de er hentet."
     },
     "database-unreachable-see-logs": "Detaljerne findes i serverens log."
   },

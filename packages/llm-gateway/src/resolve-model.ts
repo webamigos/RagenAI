@@ -3,6 +3,7 @@ import type { EmbeddingModelV4, LanguageModelV4 } from '@ai-sdk/provider';
 import { providerIsConfigured } from './credentials-from-env';
 import { EMBEDDING_PROVIDER_FACTORIES } from './embedding-providers';
 import { PROVIDER_FACTORIES } from './providers';
+import { probeModels, type ModelProbe, type ProbeOptions } from './probe';
 import { findRoute } from './route-table';
 import type {
   CredentialScope,
@@ -121,6 +122,17 @@ export class LlmGateway {
    */
   routeFor(modelId: string): Route | undefined {
     return findRoute(this.routes, modelId);
+  }
+
+  /**
+   * Whether the upstreams behind these model ids answer and list them — a free
+   * `GET /models`, for `openai-compatible` routes only. See `probeModels`.
+   */
+  probe(
+    modelIds: readonly string[],
+    options?: ProbeOptions,
+  ): Promise<ModelProbe[]> {
+    return probeModels(this.routes, this.credentials, modelIds, options);
   }
 
   /** Every model this deployment can actually answer with. */

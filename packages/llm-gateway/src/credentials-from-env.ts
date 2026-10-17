@@ -146,6 +146,16 @@ function connectionEnvNames(connection: string): {
 }
 
 /**
+ * The variable that holds an OpenAI-compatible connection's base URL, for a
+ * message that has to name it — the setup checklist, telling an operator which
+ * setting points at a server that does not answer. Exported so that message
+ * cannot spell the name differently from the code that reads it.
+ */
+export function connectionBaseUrlVar(connection: string): string {
+  return connectionEnvNames(connection).baseUrl[0]!;
+}
+
+/**
  * The service account in `VERTEX_CREDENTIALS`, if there is one.
  *
  * The proxy accepts either the JSON itself or a path to it, so both are handled

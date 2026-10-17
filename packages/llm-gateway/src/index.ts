@@ -11,6 +11,7 @@ export {
   type RouteFile,
 } from './route-table';
 export {
+  connectionBaseUrlVar,
   EnvCredentialSource,
   MissingCredentialsError,
   PROVIDER_CREDENTIAL_VARS,
@@ -23,6 +24,12 @@ export {
   type GatewayOptions,
 } from './resolve-model';
 export { gatewayFromEnv, resetGatewayCache } from './gateway-instance';
+export {
+  probeModels,
+  type ModelProbe,
+  type ModelProbeState,
+  type ProbeOptions,
+} from './probe';
 export {
   hasMultimodalContent,
   multimodalPolicyFromEnv,
