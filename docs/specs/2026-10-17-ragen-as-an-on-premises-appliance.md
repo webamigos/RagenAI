@@ -358,10 +358,15 @@ repeatable demo, and records the gaps as tests.
   password is always kept. A `p0-*` e2e test uses a mock issuer.
 - [ ] **B2.** Instance branding (D5): name, logo and primary token, a runtime
   setting edited in `apps/admin`, behind feature key `instanceBranding`.
-- [ ] **B3.** Live model, embedding and reranker probes on the setup page and
-  in the admin health view. The probes run on the production path through
-  the gateway (see `docs/lessons.md`: a check that runs a different path is
-  worse than none).
+- [x] **B3.** Model probes on the setup page: one free `GET /models` per
+  `openai-compatible` server behind `DEFAULT_MODEL`, `REPHRASE_MODEL`,
+  `SUMMARY_MODEL` and `EMBEDDINGS_MODEL`, cached for 30 seconds. A server
+  that does not answer and a model that was never pulled are two separate
+  `recommended` findings, so sign-in never waits on them. Cloud routes are
+  not probed: they have no free call, and their failure mode is
+  credentials, which the env check already reads. The reranker probe and
+  the admin health view are left for later; there is no local reranker yet
+  (A1).
 - [ ] **B4.** Per-organization retention for threads and messages (default
   off), because the first data-protection question is "how long do you keep
   it".
