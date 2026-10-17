@@ -324,6 +324,11 @@ repeatable demo, and records the gaps as tests.
   that the request shape matches the local server.
 - [ ] **A2.** `origin: 'local'` and route-described models in the picker, with
   zero token-cost in usage reports. Remove the 0.1 id mapping.
+- [x] **A2b.** The thread header names the model the way the picker does.
+  `ThreadModelLabel` used the static catalogue, so a local model showed its
+  route id (`local-chat`) and an aliased cloud id showed the cloud name. It
+  now uses the served list (one request per organization, the catalogue as
+  fallback). Found by the 0.3 run.
 - [ ] **A3.** `scripts/appliance-egress-check --profile local|hybrid`: an
   internal-only network and a scripted ingest, chat, Brain and guardrail
   pass. It fails on any outbound attempt outside the profile's allowance and
