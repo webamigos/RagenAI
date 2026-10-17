@@ -331,10 +331,20 @@ repeatable demo, and records the gaps as tests.
   `llm-egress` has an external network, and that the proxy refuses any
   host but the configured one. Both modes run in CI on CPU with a small
   model, hybrid against a stub endpoint.
-- [ ] **A4.** Remove the known leaks: moderation in `apps/api` goes through the
-  gateway or is skipped when unconfigured; the hardcoded model ids become
-  env-overridable with route-table defaults. Each fix comes with the test
-  that would have caught it.
+- [x] **A4.** Remove the known leaks, and make the rule a guard. What was
+  found on a closer look:
+  - Moderation in `apps/api` throws without a key, but the factory is lazy
+    and a throwing factory is treated as "not configured" and lets the turn
+    through (`run-input-guardrails.service.ts`). With no key there is no
+    call, so it needed no change.
+  - The hardcoded model ids are covered by routing them (0.1) and naming
+    them (A2), with a guard that fails when one is added or renamed. Making
+    each one an env var would add settings without removing a path.
+  - `apps/web`'s `openAIInstance`, an axios client to `api.openai.com`, had
+    no callers. It was deleted.
+  - `tests/architecture/model-providers-are-reached-through-the-gateway.test.ts`
+    fails when a provider SDK is imported outside `packages/llm-gateway`. The
+    two moderation modules are the listed exceptions, each with its reason.
 - [ ] **A5.** Benchmark harness on the target hardware. For each tier:
   - tokens/s and time-to-first-token at 1, 5, 10 and 25 concurrent users
   - ingest throughput
