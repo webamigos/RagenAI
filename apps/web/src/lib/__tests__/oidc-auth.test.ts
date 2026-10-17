@@ -49,33 +49,61 @@ describe('oidcPlugins', () => {
   });
 });
 
+const verified = { email: 'jan@acme.pl', emailVerified: true };
+
 describe('oidcSignUpAdmitted', () => {
-  it('admits an allowed address arriving through the OIDC callback, into a configured organization', () => {
-    configure({ OIDC_JOIN_ORGANIZATION: 'acme' });
-    expect(oidcSignUpAdmitted('jan@acme.pl', callback)).toBe(true);
+  beforeEach(() => {
+    db.organization.findFirst.mockResolvedValue({ id: 'org-acme' });
   });
 
-  it('does not admit a password sign-up for the same domain', () => {
+  it('admits a verified allowed address arriving through the OIDC callback, into an existing organization', async () => {
+    configure({ OIDC_JOIN_ORGANIZATION: 'acme' });
+    await expect(oidcSignUpAdmitted(verified, callback)).resolves.toBe(true);
+  });
+
+  it('does not admit a password sign-up for the same domain', async () => {
     // The callback path is what makes it a company sign-in. Without this, an
     // unverified email-and-password sign-up at the company's domain would
     // walk past closed registration into the company's organization.
     configure({ OIDC_JOIN_ORGANIZATION: 'acme' });
-    expect(oidcSignUpAdmitted('jan@acme.pl', passwordSignUp)).toBe(false);
+    await expect(oidcSignUpAdmitted(verified, passwordSignUp)).resolves.toBe(
+      false,
+    );
   });
 
-  it('does not admit without an organization to join', () => {
-    configure();
-    expect(oidcSignUpAdmitted('jan@acme.pl', callback)).toBe(false);
-  });
-
-  it('does not admit an address outside the allowed domains', () => {
+  it('does not admit an address the issuer did not verify', async () => {
     configure({ OIDC_JOIN_ORGANIZATION: 'acme' });
-    expect(oidcSignUpAdmitted('eve@gmail.com', callback)).toBe(false);
+    await expect(
+      oidcSignUpAdmitted({ ...verified, emailVerified: false }, callback),
+    ).resolves.toBe(false);
+  });
+
+  it('does not admit without an organization to join', async () => {
+    configure();
+    await expect(oidcSignUpAdmitted(verified, callback)).resolves.toBe(false);
+  });
+
+  it('does not admit into an organization that does not exist', async () => {
+    // Falling back to a personal organization later would let an
+    // allowed-domain user past closed registration on a typo.
+    configure({ OIDC_JOIN_ORGANIZATION: 'missing' });
+    db.organization.findFirst.mockResolvedValue(null);
+    await expect(oidcSignUpAdmitted(verified, callback)).resolves.toBe(false);
+  });
+
+  it('does not admit an address outside the allowed domains', async () => {
+    configure({ OIDC_JOIN_ORGANIZATION: 'acme' });
+    await expect(
+      oidcSignUpAdmitted(
+        { email: 'eve@gmail.com', emailVerified: true },
+        callback,
+      ),
+    ).resolves.toBe(false);
   });
 });
 
 describe('joinOidcOrganization', () => {
-  const user = { id: 'user-1', email: 'jan@acme.pl' };
+  const user = { id: 'user-1', email: 'jan@acme.pl', emailVerified: true };
 
   it('adds the user to the configured organization as a member', async () => {
     configure({ OIDC_JOIN_ORGANIZATION: 'acme' });
@@ -100,11 +128,12 @@ describe('joinOidcOrganization', () => {
     );
   });
 
-  it('falls back to a personal organization when the named one does not exist', async () => {
-    configure({ OIDC_JOIN_ORGANIZATION: 'missing' });
-    db.organization.findFirst.mockResolvedValue(null);
+  it('does not add a user whose address the issuer did not verify', async () => {
+    configure({ OIDC_JOIN_ORGANIZATION: 'acme' });
 
-    await expect(joinOidcOrganization(user, callback)).resolves.toBe(false);
+    await expect(
+      joinOidcOrganization({ ...user, emailVerified: false }, callback),
+    ).resolves.toBe(false);
     expect(db.member.create).not.toHaveBeenCalled();
   });
 

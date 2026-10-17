@@ -66,6 +66,7 @@ export function oidcPlugins() {
                     : null,
               },
               config.allowedDomains,
+              { trustEmail: config.trustEmail },
             ),
         },
       ],
@@ -76,22 +77,37 @@ export function oidcPlugins() {
 /**
  * Whether a sign-up passes closed registration because it is a company sign-in.
  *
- * Only with an organization to join. Without one, an SSO sign-up would create
- * a personal organization like any other door, and the registration switch
- * means the same thing for it as for the rest: SSO is not a way around a
- * closed install, only a way into a configured one.
+ * All four must hold: it arrives through the OIDC callback, at an allowed
+ * domain, with an address the issuer verified (`OIDC_TRUST_EMAIL` aside — see
+ * `gateProfile`), and into an organization that exists. Without an
+ * organization to join, an SSO sign-up would create a personal one like any
+ * other door, and the registration switch means the same for it as for the
+ * rest: SSO is not a way around a closed install, only a way into a
+ * configured one. A configured organization that does not exist is refused
+ * here rather than falling back to a personal organization later, which would
+ * have been exactly that way around.
  */
-export function oidcSignUpAdmitted(
-  email: string,
+export async function oidcSignUpAdmitted(
+  user: { email: string; emailVerified?: boolean | null },
   context: HookContext,
-): boolean {
+): Promise<boolean> {
   const config = activeOidcConfig();
-  return (
-    config !== null &&
-    config.joinOrganization !== null &&
-    isOidcCallback(context) &&
-    isAllowedEmail(email, config.allowedDomains)
-  );
+  if (
+    !config?.joinOrganization ||
+    !isOidcCallback(context) ||
+    user.emailVerified !== true ||
+    !isAllowedEmail(user.email, config.allowedDomains)
+  ) {
+    return false;
+  }
+  return (await findJoinOrganization(config.joinOrganization)) !== null;
+}
+
+function findJoinOrganization(idOrSlug: string) {
+  return db.organization.findFirst({
+    where: { OR: [{ id: idOrSlug }, { slug: idOrSlug }] },
+    select: { id: true },
+  });
 }
 
 /**
@@ -103,24 +119,20 @@ export function oidcSignUpAdmitted(
  * the user gets an empty workspace of their own, not access to anyone's data.
  */
 export async function joinOidcOrganization(
-  user: { id: string; email: string },
+  user: { id: string; email: string; emailVerified?: boolean | null },
   context: HookContext,
 ): Promise<boolean> {
   const config = activeOidcConfig();
   if (
     !config?.joinOrganization ||
     !isOidcCallback(context) ||
+    user.emailVerified !== true ||
     !isAllowedEmail(user.email, config.allowedDomains)
   ) {
     return false;
   }
 
-  const organization = await db.organization.findFirst({
-    where: {
-      OR: [{ id: config.joinOrganization }, { slug: config.joinOrganization }],
-    },
-    select: { id: true },
-  });
+  const organization = await findJoinOrganization(config.joinOrganization);
   if (!organization) {
     console.error(
       '[AUTH] OIDC_JOIN_ORGANIZATION names no organization; giving the user a personal one',

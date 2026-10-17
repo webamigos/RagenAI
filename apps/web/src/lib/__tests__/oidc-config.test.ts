@@ -31,6 +31,7 @@ describe('oidcConfigFromEnv', () => {
         allowedDomains: ['acme.pl', 'acme.com'],
         displayName: 'company account',
         joinOrganization: null,
+        trustEmail: false,
       },
     });
   });
@@ -92,6 +93,26 @@ describe('the domain gate', () => {
   it('empties the email outside the allowed domains, which the callback refuses', () => {
     expect(
       gateProfile({ email: 'eve@gmail.com', emailVerified: true }, domains),
+    ).toEqual({ email: '', emailVerified: false });
+  });
+
+  it('fills in a missing claim only when the operator trusts the issuer', () => {
+    // Entra ID sends no email_verified. A tenant that owns the allowed domains
+    // is trusted with OIDC_TRUST_EMAIL; an explicit `false` is never overridden.
+    expect(
+      gateProfile({ email: 'jan@acme.pl', emailVerified: null }, domains, {
+        trustEmail: true,
+      }),
+    ).toEqual({ email: 'jan@acme.pl', emailVerified: true });
+    expect(
+      gateProfile({ email: 'jan@acme.pl', emailVerified: false }, domains, {
+        trustEmail: true,
+      }),
+    ).toEqual({ email: 'jan@acme.pl', emailVerified: false });
+    expect(
+      gateProfile({ email: 'eve@gmail.com', emailVerified: null }, domains, {
+        trustEmail: true,
+      }),
     ).toEqual({ email: '', emailVerified: false });
   });
 

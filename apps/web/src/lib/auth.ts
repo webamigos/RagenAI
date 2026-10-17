@@ -496,7 +496,7 @@ export const auth = betterAuth({
           // identity provider is the gate here: it vouched for an address in
           // an allowed domain, and the user joins as a member rather than
           // creating anything. See `oidcSignUpAdmitted`.
-          if (oidcSignUpAdmitted(user.email, context)) {
+          if (await oidcSignUpAdmitted(user, context)) {
             return;
           }
 

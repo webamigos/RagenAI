@@ -29,6 +29,13 @@ export type OidcConfig = {
    * and given an organization of its own.
    */
   joinOrganization: string | null;
+  /**
+   * Treat an allowed-domain address as verified even when the issuer sends no
+   * `email_verified` claim. Microsoft Entra ID does not send one; an operator
+   * whose tenant owns the allowed domains sets `OIDC_TRUST_EMAIL=true` to say
+   * so. Off by default: a missing claim is not a verified address.
+   */
+  trustEmail: boolean;
 };
 
 export type OidcStatus =
@@ -103,6 +110,7 @@ export function oidcConfigFromEnv(env: Env): OidcStatus {
       allowedDomains,
       displayName: set(env.OIDC_DISPLAY_NAME) ?? 'company account',
       joinOrganization: set(env.OIDC_JOIN_ORGANIZATION) ?? null,
+      trustEmail: set(env.OIDC_TRUST_EMAIL) === 'true',
     },
   };
 }
@@ -147,14 +155,17 @@ export function isAllowedEmail(
 export function gateProfile(
   profile: { email?: string | null; emailVerified?: boolean | null },
   allowedDomains: readonly string[],
+  options: { trustEmail?: boolean } = {},
 ): { email: string; emailVerified: boolean } {
   if (!isAllowedEmail(profile.email, allowedDomains)) {
     return { email: '', emailVerified: false };
   }
-  return {
-    email: profile.email!.toLowerCase(),
-    emailVerified: profile.emailVerified === true,
-  };
+  // `trustEmail` only fills in a claim the issuer did not send. An issuer that
+  // says outright the address is unverified is believed either way.
+  const verified =
+    profile.emailVerified === true ||
+    (options.trustEmail === true && profile.emailVerified == null);
+  return { email: profile.email!.toLowerCase(), emailVerified: verified };
 }
 
 /**
