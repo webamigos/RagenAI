@@ -1,5 +1,6 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { gatewayFromEnv } from '@ragenai/llm-gateway';
+import { withDescribedRoutes } from '@ragenai/platform-contracts';
 import { OrganizationSettingsService } from '../organizations/organization-settings.service.js';
 import {
   selectableModels,
@@ -66,13 +67,21 @@ export class ModelsService {
    * and yields the whole catalogue rather than an empty list. An empty picker
    * reads as "this product is broken", and the model call itself still fails
    * loudly per model, so the failure stays visible where it is actionable.
+   *
+   * A route that describes itself is listed under its own name and replaces a
+   * catalogue entry with the same id, as in apps/web — see
+   * `withDescribedRoutes`.
    */
   private servedModels(): CatalogueModel[] {
     const catalogue = selectableModels();
 
     try {
-      const served = new Set(gatewayFromEnv().availableModels());
-      const offered = catalogue.filter((model) => served.has(model.value));
+      const gateway = gatewayFromEnv();
+      const served = new Set(gateway.availableModels());
+      const offered = withDescribedRoutes(
+        catalogue,
+        gateway.describedModels(),
+      ).filter((model) => served.has(model.value));
 
       if (offered.length === 0) {
         this.logger.warn(

@@ -20,6 +20,7 @@ export {
   normalizeModelId,
   selectableModels,
   supportsReasoningEffort,
+  withDescribedRoutes,
 } from './llm/model-catalog';
 export type {
   AvailableModel,
@@ -27,6 +28,7 @@ export type {
   ModelOrigin,
   ModelProvider,
   ModelRegistryEntry,
+  RouteDescription,
 } from './llm/model-catalog';
 
 export {

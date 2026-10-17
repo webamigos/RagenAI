@@ -9,7 +9,12 @@ import {
 import { parse as parseYaml } from 'yaml';
 import { z } from 'zod';
 
-import { PROVIDER_IDS, type Route, type RouteTable } from './types';
+import {
+  PROVIDER_IDS,
+  ROUTE_CAPABILITIES,
+  type Route,
+  type RouteTable,
+} from './types';
 
 /**
  * The route table is **configuration, not a constant**, and that is a decision
@@ -40,6 +45,8 @@ const routeSchema = z.object({
   connection: z.string().min(1).optional(),
   location: z.string().min(1).optional(),
   structuredOutputs: z.boolean().optional(),
+  display: z.string().trim().min(1).optional(),
+  capabilities: z.array(z.enum(ROUTE_CAPABILITIES)).optional(),
 });
 
 /**

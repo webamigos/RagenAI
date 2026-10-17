@@ -15,8 +15,21 @@ const fetchLiteLLMModels = vi.hoisted(() => vi.fn());
 const availableModelsFromGateway = vi.hoisted(() =>
   vi.fn(() => [] as string[]),
 );
+const describedModelsFromGateway = vi.hoisted(() =>
+  vi.fn(
+    () =>
+      [] as {
+        id: string;
+        displayName: string;
+        capabilities: string[];
+      }[],
+  ),
+);
 const gatewayFromEnv = vi.hoisted(() =>
-  vi.fn(() => ({ availableModels: availableModelsFromGateway })),
+  vi.fn(() => ({
+    availableModels: availableModelsFromGateway,
+    describedModels: describedModelsFromGateway,
+  })),
 );
 
 vi.mock('@/features/organizations/services/organization-settings', () => ({
@@ -46,6 +59,13 @@ const saved = { ...process.env };
 beforeEach(() => {
   vi.clearAllMocks();
   getAllowedModels.mockResolvedValue([]);
+  describedModelsFromGateway.mockReturnValue([]);
+  // `clearAllMocks` keeps implementations, so the unreadable-table test's
+  // throwing gateway would otherwise leak into every test after it.
+  gatewayFromEnv.mockImplementation(() => ({
+    availableModels: availableModelsFromGateway,
+    describedModels: describedModelsFromGateway,
+  }));
 });
 
 afterEach(() => {
@@ -114,5 +134,57 @@ describe('LLM_GATEWAY=native', () => {
     const models = await getAvailableModelsForOrganization('org-1');
 
     expect(models.map((m) => m.value)).toEqual([second!.value]);
+  });
+});
+
+/**
+ * A model on the install's own hardware. The catalogue is compiled, so without
+ * a route describing it the picker either does not show it or shows the cloud
+ * name of an id it borrowed.
+ */
+describe('a route that describes itself', () => {
+  it('is offered under its own name, grouped as local', async () => {
+    availableModelsFromGateway.mockReturnValue(['local-chat']);
+    describedModelsFromGateway.mockReturnValue([
+      { id: 'local-chat', displayName: 'Bielik 11B', capabilities: ['chat'] },
+    ]);
+
+    const models = await getAvailableModelsForOrganization('org-1');
+
+    expect(models).toEqual([
+      expect.objectContaining({
+        value: 'local-chat',
+        label: 'Bielik 11B',
+        origin: 'local',
+      }),
+    ]);
+  });
+
+  it('renames a catalogue id it aliases', async () => {
+    const aliased = availableModels[0]!;
+    availableModelsFromGateway.mockReturnValue([aliased.value]);
+    describedModelsFromGateway.mockReturnValue([
+      { id: aliased.value, displayName: 'Bielik 11B', capabilities: ['chat'] },
+    ]);
+
+    const models = await getAvailableModelsForOrganization('org-1');
+
+    expect(models).toEqual([
+      expect.objectContaining({ value: aliased.value, label: 'Bielik 11B' }),
+    ]);
+  });
+
+  it('is not offered without the chat capability', async () => {
+    availableModelsFromGateway.mockReturnValue([
+      'local-embed',
+      availableModels[0]!.value,
+    ]);
+    describedModelsFromGateway.mockReturnValue([
+      { id: 'local-embed', displayName: 'BGE-M3', capabilities: [] },
+    ]);
+
+    const models = await getAvailableModelsForOrganization('org-1');
+
+    expect(models.map((m) => m.value)).toEqual([availableModels[0]!.value]);
   });
 });

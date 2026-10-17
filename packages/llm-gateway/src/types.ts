@@ -14,6 +14,26 @@ export const PROVIDER_IDS = [
 export type ProviderId = (typeof PROVIDER_IDS)[number];
 
 /**
+ * What a route says its model can do, for a route that describes itself with
+ * `display`. Only `chat` puts a model in the chat picker; `vision` says it
+ * accepts images and documents.
+ */
+export const ROUTE_CAPABILITIES = ['chat', 'vision'] as const;
+
+export type RouteCapability = (typeof ROUTE_CAPABILITIES)[number];
+
+/**
+ * A served route that describes itself — the input to the picker for a model
+ * the compiled catalogue in `@ragenai/platform-contracts` does not know, or
+ * knows under a cloud name it is not served as here.
+ */
+export type DescribedModel = {
+  readonly id: string;
+  readonly displayName: string;
+  readonly capabilities: readonly RouteCapability[];
+};
+
+/**
  * One entry of the route table: how a model id the application uses reaches a
  * real upstream.
  *
@@ -65,6 +85,20 @@ export type Route = {
    * route whose upstream supports structured outputs.
    */
   readonly structuredOutputs?: boolean;
+  /**
+   * The name to show for this model, when the route describes it rather than
+   * the catalogue.
+   *
+   * Exists for a model served on the install's own hardware. The catalogue is
+   * compiled, so a local model either never appears in the picker or has to
+   * borrow a cloud id and show its cloud name. A route with `display` is
+   * offered under this name instead, and a catalogue entry with the same id is
+   * replaced by it — which is what lets an install alias a hardcoded cloud id
+   * to a local model without the picker naming the wrong model.
+   */
+  readonly display?: string;
+  /** What the model can do. Read only together with `display`. */
+  readonly capabilities?: readonly RouteCapability[];
 };
 
 export type RouteTable = Readonly<Record<string, Route>>;

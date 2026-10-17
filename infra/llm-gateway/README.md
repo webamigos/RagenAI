@@ -45,10 +45,23 @@ schema that validates it, and the `# yaml-language-server:` line at the top of
 - `connection` — which set of credentials, for `openai-compatible` only. A
   deployment can run several upstreams at once and they need telling apart.
 
-A route carries no credentials and no display name. Credentials come from the
-environment (below); display names, visibility and capability flags are
-`MODEL_REGISTRY` in `@ragenai/platform-contracts`, which is presentation and
-answers a different question.
+A route carries no credentials. Credentials come from the environment
+(below); display names, visibility and capability flags are `MODEL_REGISTRY`
+in `@ragenai/platform-contracts`, which is presentation and answers a
+different question.
+
+The one exception is a model the catalogue cannot know about, because it runs
+on the install's own hardware. Such a route can describe itself:
+
+- `display` — the name the model picker and `GET /v1/models` show. A route
+  with `display` replaces a catalogue entry of the same id, so a hardcoded
+  cloud id aliased to a local model is not shown under the cloud name. It is
+  grouped as **Local**, and `GET /v1/models` reports `owned_by: local`.
+- `capabilities` — `chat` and/or `vision`. Only a route with `chat` is offered
+  as a chat model; a described route without it is never offered, and removes
+  a catalogue entry of the same id. No `capabilities` means none.
+
+A route with neither field behaves exactly as before.
 
 ## Running only OpenAI
 

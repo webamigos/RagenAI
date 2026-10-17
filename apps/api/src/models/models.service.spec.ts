@@ -10,13 +10,18 @@ type CatalogueEntry = ModelRegistryEntry & { value: string };
 // Typed, because the factories below return them straight into the mocked
 // modules: an untyped `vi.fn()` makes those returns `any` and the rule that
 // catches a genuinely unsafe return cannot tell the difference.
-const { availableModels, selectableModels } = vi.hoisted(() => ({
-  availableModels: vi.fn<() => string[]>(),
-  selectableModels: vi.fn<() => CatalogueEntry[]>(),
-}));
+type Described = { id: string; displayName: string; capabilities: string[] };
+
+const { availableModels, describedModels, selectableModels } = vi.hoisted(
+  () => ({
+    availableModels: vi.fn<() => string[]>(),
+    describedModels: vi.fn<() => Described[]>(),
+    selectableModels: vi.fn<() => CatalogueEntry[]>(),
+  }),
+);
 
 vi.mock('@ragenai/llm-gateway', () => ({
-  gatewayFromEnv: () => ({ availableModels }),
+  gatewayFromEnv: () => ({ availableModels, describedModels }),
 }));
 
 vi.mock('../llm/model-registry.js', () => ({
@@ -59,6 +64,7 @@ describe('ModelsService', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     selectableModels.mockReturnValue(CATALOGUE);
+    describedModels.mockReturnValue([]);
     availableModels.mockReturnValue([
       'gpt-5.4',
       'gemini-3-flash-preview',
@@ -128,6 +134,29 @@ describe('ModelsService', () => {
     availableModels.mockReturnValue(['gpt-5.4']);
     const { service } = buildService(['mistral-large']);
     expect(await service.list(context)).toEqual([]);
+  });
+
+  // A model on the install's own hardware, described by its route. Mirrors
+  // apps/web's picker, so the API and the panel list the same models.
+  it('lists a described local model owned by `local`', async () => {
+    availableModels.mockReturnValue(['gpt-5.4', 'local-chat']);
+    describedModels.mockReturnValue([
+      { id: 'local-chat', displayName: 'Bielik 11B', capabilities: ['chat'] },
+    ]);
+    const { service } = buildService();
+    expect(await service.list(context)).toEqual([
+      { id: 'gpt-5.4', object: 'model', created: 0, owned_by: 'openai' },
+      { id: 'local-chat', object: 'model', created: 0, owned_by: 'local' },
+    ]);
+  });
+
+  it('does not list a described route without the chat capability', async () => {
+    availableModels.mockReturnValue(['gpt-5.4', 'local-embed']);
+    describedModels.mockReturnValue([
+      { id: 'local-embed', displayName: 'BGE-M3', capabilities: [] },
+    ]);
+    const { service } = buildService();
+    expect((await service.list(context)).map((m) => m.id)).toEqual(['gpt-5.4']);
   });
 
   describe('get', () => {
