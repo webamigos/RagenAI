@@ -49,6 +49,7 @@ After a nontrivial correction or a non-obvious gotcha (see `AGENTS.md`'s "Post-T
 
 ### architecture
 
+- [A repository-root marker that is only a filename gets re-created one directory down](lessons/a-root-marker-that-is-a-filename-gets-recreated-one-level-down.md)
 - [Codex reads every AGENTS.md on the path under one 32 KiB budget, so a nested brief behind a full root is mostly never read](lessons/codex-reads-nested-agents-files-under-one-budget.md)
 - [A migration and schema.prisma can drift apart, and until now nothing compared them](lessons/a-migration-and-the-schema-can-drift-and-nothing-compares-them.md)
 - [Zod 4's `z.uuid()` refuses a well-formed id for its version nibble, so a real row comes back as invalid input](lessons/zod-4-uuid-refuses-well-formed-database-ids.md)

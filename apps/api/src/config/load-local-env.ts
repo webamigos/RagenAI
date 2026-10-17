@@ -1,4 +1,4 @@
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { config as loadDotenvFile } from 'dotenv';
 
@@ -27,33 +27,55 @@ import { config as loadDotenvFile } from 'dotenv';
  * Paths come from `cwd` rather than `import.meta.url`: `nest start` runs from
  * `apps/api`, the workspace script sets that cwd from the root too, and
  * `import.meta` is not available under the CommonJS transform the tests use.
- * The root is found by walking up to the first directory holding
- * `turbo.json`, so this does not hardcode how deep `apps/api` sits. Not a
- * lockfile: when this was written `apps/api` still carried one from its
- * standalone days, which made the app its own root and stopped the walk one
- * directory early. That file is gone and
- * `tests/architecture/only-the-repository-root-has-a-lockfile.test.ts` keeps
- * it gone, but `turbo.json` stays the marker — it is what actually defines
- * the workspace root, and it cannot be re-created by an `npm install` in the
- * wrong directory.
+ * The root is found by walking up to the first directory whose
+ * `package.json` declares `workspaces`, so this does not hardcode how deep
+ * `apps/api` sits. That is npm's own definition of the workspace root, and a
+ * package cannot carry one without breaking `npm install` — nested workspaces
+ * are not supported — so a stray copy cannot appear silently.
+ *
+ * Two earlier markers each matched a file that later appeared inside the
+ * app. A lockfile: `apps/api` carried one from its standalone days, which
+ * made the app its own root (now kept out by
+ * `tests/architecture/only-the-repository-root-has-a-lockfile.test.ts`).
+ * Then `turbo.json`: #1574 gave every app a package-level Turborepo config
+ * (`"extends": ["//"]`), and the walk stopped at `apps/api` again, so the
+ * root `.env.local` went unread and `npm run api:dev` failed on
+ * `TARGET_ENV: Invalid option`. Any marker that is a bare filename can be
+ * re-created one directory down; check what the file says, not that it
+ * exists.
  */
 export type LoadLocalEnvOptions = {
   /** Where the app runs from; defaults to `process.cwd()`. */
   cwd?: string;
-  /** File whose presence marks the repository root. */
-  rootMarker?: string;
+  /** Decides whether a directory is the repository root. */
+  isRoot?: (dir: string) => boolean;
 };
 
-const ROOT_MARKER = 'turbo.json';
 const FILES = ['.env.local', '.env'] as const;
+
+/** True for the directory whose `package.json` declares npm workspaces. */
+export function isWorkspaceRoot(dir: string): boolean {
+  const manifest = path.join(dir, 'package.json');
+  if (!existsSync(manifest)) {
+    return false;
+  }
+  try {
+    const { workspaces } = JSON.parse(readFileSync(manifest, 'utf8')) as {
+      workspaces?: unknown;
+    };
+    return workspaces !== undefined && workspaces !== null;
+  } catch {
+    return false;
+  }
+}
 
 export function findRepositoryRoot(
   start: string,
-  marker: string = ROOT_MARKER,
+  isRoot: (dir: string) => boolean = isWorkspaceRoot,
 ): string | null {
   let dir = path.resolve(start);
   for (;;) {
-    if (existsSync(path.join(dir, marker))) {
+    if (isRoot(dir)) {
       return dir;
     }
     const parent = path.dirname(dir);
@@ -69,7 +91,7 @@ export function localEnvCandidates(
 ): string[] {
   const cwd = path.resolve(options.cwd ?? process.cwd());
   const dirs = [cwd];
-  const root = findRepositoryRoot(cwd, options.rootMarker);
+  const root = findRepositoryRoot(cwd, options.isRoot);
   if (root && root !== cwd) {
     dirs.push(root);
   }
