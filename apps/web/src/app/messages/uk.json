@@ -98,7 +98,10 @@
     "email-not-verified": "Твою електронну пошту не підтверджено. Перевір свою поштову скриньку, щоб знайти посилання для підтвердження.",
     "demo-account": "Demo account",
     "demo-account-note": "A shared demonstration account. Everything in it is sample data and visible to everyone — do not upload anything of your own.",
-    "demo-fill": "Fill in"
+    "demo-fill": "Fill in",
+    "sso-sign-in": "Увійти через {name}",
+    "sso-or": "або",
+    "sso-failed": "Корпоративний вхід не вдався. Скористайтеся обліковим записом у домені вашої організації або зверніться до адміністратора."
   },
   "Forgot-password": {
     "Forgot-password": "Забув пароль?",
@@ -2509,7 +2512,8 @@
       "embeddings-dimension-mismatch": "EMBEDDINGS_MODEL={model} створює вектори з {expected} вимірами, але VECTOR_SIZE дорівнює {configured}. Qdrant відхиляє кожен upsert, тому жоден документ не стає доступним для пошуку.",
       "object-storage-credentials": "STORAGE_PROVIDER=s3 задано, але частина його конфігурації відсутня. Завантаження та вивантаження не вдаються, доки ці значення не задано — використовуй префікс S3_ (S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY, S3_REGION), а не AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY / AWS_DEFAULT_REGION, які зарезервовано для AWS Bedrock та AWS KMS.",
       "docling-unavailable": "Парсер документів (Docling) недоступний з {since, time, short}. Завантаження чекають на нього або використовують резервний парсер, тож перевірте, чи працює його контейнер.",
-      "basal-unavailable": "Модель guardrails (basal) за адресою BASAL_URL не відповідає. Перевірки guardrails повертаються до моделі-оцінювача, тож нічого не блокується, але відповіді чекають довше. Перевірте, чи працює її контейнер."
+      "basal-unavailable": "Модель guardrails (basal) за адресою BASAL_URL не відповідає. Перевірки guardrails повертаються до моделі-оцінювача, тож нічого не блокується, але відповіді чекають довше. Перевірте, чи працює її контейнер.",
+      "oidc-misconfigured": "Корпоративний вхід (OIDC) налаштовано неправильно, тому його вимкнено: {problems}. Вхід за паролем і далі працює."
     },
     "database-unreachable-see-logs": "Деталі можна знайти в журналі сервера."
   },

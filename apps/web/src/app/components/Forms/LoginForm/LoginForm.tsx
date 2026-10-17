@@ -19,9 +19,18 @@ import { DemoCredentialsNotice } from './DemoCredentialsNotice';
 
 type LoginFormProps = {
   prefillEmail?: string;
+  /**
+   * Company sign-in (OIDC), when this install has it configured. Passed from
+   * the server page rather than read here: the configuration is server-only,
+   * and the client needs nothing from it but the name on the button.
+   */
+  sso?: { displayName: string };
 };
 
-export const LoginForm = ({ prefillEmail }: LoginFormProps = {}) => {
+/** The Better Auth provider id; see `src/lib/oidc-config.ts`. */
+const SSO_PROVIDER_ID = 'oidc';
+
+export const LoginForm = ({ prefillEmail, sso }: LoginFormProps = {}) => {
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -32,6 +41,29 @@ export const LoginForm = ({ prefillEmail }: LoginFormProps = {}) => {
   const oauthQuery = searchParams.get('sig')
     ? searchParams.toString()
     : undefined;
+  // Better Auth sends a failed OAuth callback back here with `?error=<code>`,
+  // e.g. `email_not_found` for an address outside the allowed domains.
+  const ssoError = sso ? searchParams.get('error') : null;
+  const [isRedirecting, setIsRedirecting] = useState(false);
+
+  const signInWithSso = async () => {
+    setIsRedirecting(true);
+    setError(null);
+    try {
+      const result = await signIn.social({
+        provider: SSO_PROVIDER_ID as never,
+        callbackURL: `/${locale}/new`,
+        errorCallbackURL: `/${locale}/sign-in`,
+      });
+      if (result?.error) {
+        setError(result.error.message || t('sso-failed'));
+        setIsRedirecting(false);
+      }
+    } catch {
+      setError(t('sso-failed'));
+      setIsRedirecting(false);
+    }
+  };
 
   const {
     register,
@@ -99,6 +131,32 @@ export const LoginForm = ({ prefillEmail }: LoginFormProps = {}) => {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
+      {sso && (
+        <div className="mb-6">
+          <Button
+            type="button"
+            outline
+            className="flex w-full justify-center"
+            isLoading={isRedirecting}
+            onClick={signInWithSso}
+            data-testid="sign-in-sso"
+          >
+            {t('sso-sign-in', { name: sso.displayName })}
+          </Button>
+          {ssoError && (
+            <p
+              className="text-sm text-destructive mt-2"
+              role="alert"
+              data-testid="sign-in-sso-error"
+            >
+              {t('sso-failed')}
+            </p>
+          )}
+          <p className="mt-6 text-center text-xs uppercase tracking-wide text-muted-foreground">
+            {t('sso-or')}
+          </p>
+        </div>
+      )}
       <DemoCredentialsNotice
         onFill={({ email, password }) => {
           setValue('email', email, { shouldValidate: true });

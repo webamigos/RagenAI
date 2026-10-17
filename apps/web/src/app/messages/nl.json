@@ -98,7 +98,10 @@
     "email-not-verified": "Je e-mailadres is nog niet geverifieerd. Kijk in je inbox voor de verificatielink.",
     "demo-account": "Demoaccount",
     "demo-account-note": "Een gedeeld demonstratieaccount. Alles erin is voorbeeldgegevens en voor iedereen zichtbaar — upload niets van jezelf.",
-    "demo-fill": "Invullen"
+    "demo-fill": "Invullen",
+    "sso-sign-in": "Inloggen met {name}",
+    "sso-or": "of",
+    "sso-failed": "Bedrijfsaanmelding is mislukt. Gebruik een account in het domein van je organisatie of vraag een beheerder."
   },
   "Forgot-password": {
     "Forgot-password": "Wachtwoord vergeten?",
@@ -2509,7 +2512,8 @@
       "embeddings-dimension-mismatch": "EMBEDDINGS_MODEL={model} produceert vectoren met {expected} dimensies, maar VECTOR_SIZE is {configured}. Qdrant weigert elke upsert, dus geen enkel document wordt ooit doorzoekbaar.",
       "object-storage-credentials": "STORAGE_PROVIDER=s3 is ingesteld, maar een deel van de configuratie ontbreekt. Uploads en downloads mislukken totdat deze zijn ingesteld — gebruik het voorvoegsel S3_ (S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY, S3_REGION), niet AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY / AWS_DEFAULT_REGION, die gereserveerd zijn voor AWS Bedrock en AWS KMS.",
       "docling-unavailable": "De documentparser (Docling) is sinds {since, time, short} niet bereikbaar. Uploads wachten erop of gebruiken de reserveparser, dus controleer of de container draait.",
-      "basal-unavailable": "Het guardrail-model (basal) op BASAL_URL reageert niet. Controles vallen terug op het beoordelingsmodel, dus er wordt niets geblokkeerd, maar antwoorden duren langer. Controleer of de container draait."
+      "basal-unavailable": "Het guardrail-model (basal) op BASAL_URL reageert niet. Controles vallen terug op het beoordelingsmodel, dus er wordt niets geblokkeerd, maar antwoorden duren langer. Controleer of de container draait.",
+      "oidc-misconfigured": "Bedrijfsaanmelding (OIDC) is onjuist geconfigureerd en daarom uit: {problems}. Inloggen met een wachtwoord werkt nog."
     },
     "database-unreachable-see-logs": "De details staan in het serverlog."
   },

@@ -98,7 +98,10 @@
     "email-not-verified": "Váš e-mail nebol overený. Skontrolujte svoju schránku a nájdite overovací odkaz.",
     "demo-account": "Demo account",
     "demo-account-note": "A shared demonstration account. Everything in it is sample data and visible to everyone — do not upload anything of your own.",
-    "demo-fill": "Fill in"
+    "demo-fill": "Fill in",
+    "sso-sign-in": "Prihlásiť sa cez {name}",
+    "sso-or": "alebo",
+    "sso-failed": "Firemné prihlásenie zlyhalo. Použite účet v doméne vašej organizácie alebo požiadajte správcu."
   },
   "Forgot-password": {
     "Forgot-password": "Zabudli ste heslo?",
@@ -2509,7 +2512,8 @@
       "embeddings-dimension-mismatch": "EMBEDDINGS_MODEL={model} produkuje vektory s {expected} dimenziami, ale VECTOR_SIZE je {configured}. Qdrant odmieta každý upsert, takže žiadny dokument nebude vyhľadateľný.",
       "object-storage-credentials": "STORAGE_PROVIDER=s3 je nastavený, ale časť jeho konfigurácie chýba. Nahrávanie a sťahovanie zlyhávajú, kým nie sú tieto hodnoty nastavené — použite predponu S3_ (S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY, S3_REGION), nie AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY / AWS_DEFAULT_REGION, ktoré sú vyhradené pre AWS Bedrock a AWS KMS.",
       "docling-unavailable": "Parser dokumentov (Docling) nie je dostupný od {since, time, short}. Nahrané súbory naň čakajú alebo použijú záložný parser, preto overte, že jeho kontajner beží.",
-      "basal-unavailable": "Model guardrailov (basal) na BASAL_URL neodpovedá. Kontroly sa vracajú k hodnotiacemu modelu, takže nič nie je blokované, ale odpovede trvajú dlhšie. Skontrolujte, či jeho kontajner beží."
+      "basal-unavailable": "Model guardrailov (basal) na BASAL_URL neodpovedá. Kontroly sa vracajú k hodnotiacemu modelu, takže nič nie je blokované, ale odpovede trvajú dlhšie. Skontrolujte, či jeho kontajner beží.",
+      "oidc-misconfigured": "Firemné prihlásenie (OIDC) je nesprávne nastavené, a preto vypnuté: {problems}. Prihlásenie heslom stále funguje."
     },
     "database-unreachable-see-logs": "Podrobnosti nájdete v protokole servera."
   },

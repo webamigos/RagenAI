@@ -18,9 +18,10 @@ vi.mock(
 
 // Partial: next-intl's routing helpers pull `redirect` out of this module at
 // import time, so replacing the whole module breaks the render.
+const searchParams = vi.hoisted(() => ({ current: new URLSearchParams() }));
 vi.mock('next/navigation', async (importOriginal) => ({
   ...(await importOriginal<typeof import('next/navigation')>()),
-  useSearchParams: () => new URLSearchParams(),
+  useSearchParams: () => searchParams.current,
 }));
 
 /**
@@ -48,10 +49,16 @@ const messages = {
     'invalid-email': 'Email is invalid',
     'invalid-password': 'Password should have at least 8 characters',
     'email-not-verified': 'Your email address has not been verified.',
+    'sso-sign-in': 'Sign in with {name}',
+    'sso-or': 'or',
+    'sso-failed': 'Company sign-in failed.',
   },
 };
 
-const renderForm = (props?: { prefillEmail?: string }) =>
+const renderForm = (props?: {
+  prefillEmail?: string;
+  sso?: { displayName: string };
+}) =>
   render(
     <NextIntlClientProvider messages={messages} locale="en">
       <LoginForm {...props} />
@@ -61,6 +68,7 @@ const renderForm = (props?: { prefillEmail?: string }) =>
 describe('LoginForm', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    searchParams.current = new URLSearchParams();
     signInEmail.mockResolvedValue({ error: null });
     finalizeOnboarding.mockResolvedValue(undefined);
   });
@@ -95,11 +103,11 @@ describe('LoginForm', () => {
     expect(finalizeOnboarding).not.toHaveBeenCalled();
   });
 
-  // Social sign-in is an enterprise-edition feature. The open edition must not
-  // start an external OAuth handshake from this form — asserting on signIn.social
-  // rather than on the absence of a button, so re-adding one that calls it fails
-  // here even if its label changes.
-  it('offers no social sign-in path', async () => {
+  // Without company sign-in configured, this form must not start an external
+  // OAuth handshake — asserting on signIn.social rather than on the absence of
+  // a button, so one that calls it unconfigured fails here even if its label
+  // changes.
+  it('offers no social sign-in path when company sign-in is off', async () => {
     const user = userEvent.setup();
     renderForm();
 
@@ -109,5 +117,41 @@ describe('LoginForm', () => {
 
     expect(signInSocial).not.toHaveBeenCalled();
     expect(screen.queryByText(/google/i)).not.toBeInTheDocument();
+  });
+
+  describe('company sign-in (OIDC)', () => {
+    it('offers it under the configured name and starts the OIDC handshake', async () => {
+      signInSocial.mockResolvedValue({ data: { url: 'https://idp' } });
+      const user = userEvent.setup();
+      renderForm({ sso: { displayName: 'Microsoft' } });
+
+      await user.click(
+        screen.getByRole('button', { name: 'Sign in with Microsoft' }),
+      );
+
+      expect(signInSocial).toHaveBeenCalledWith({
+        provider: 'oidc',
+        callbackURL: '/en/new',
+        errorCallbackURL: '/en/sign-in',
+      });
+      expect(signInEmail).not.toHaveBeenCalled();
+    });
+
+    it('says so when the provider sent the user back with an error', () => {
+      // e.g. `email_not_found` for an address outside the allowed domains.
+      searchParams.current = new URLSearchParams('error=email_not_found');
+      renderForm({ sso: { displayName: 'Microsoft' } });
+
+      expect(screen.getByRole('alert')).toHaveTextContent(
+        'Company sign-in failed.',
+      );
+    });
+
+    it('ignores an error parameter when company sign-in is off', () => {
+      searchParams.current = new URLSearchParams('error=email_not_found');
+      renderForm();
+
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    });
   });
 });

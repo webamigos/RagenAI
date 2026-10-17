@@ -98,7 +98,10 @@
     "email-not-verified": "E-postadressen din er ikke bekreftet. Se etter bekreftelseslenken i innboksen din.",
     "demo-account": "Demokonto",
     "demo-account-note": "En delt demonstrasjonskonto. Alt i den er eksempeldata og synlig for alle – ikke last opp noe eget.",
-    "demo-fill": "Fyll inn"
+    "demo-fill": "Fyll inn",
+    "sso-sign-in": "Logg inn med {name}",
+    "sso-or": "eller",
+    "sso-failed": "Bedriftspåloggingen mislyktes. Bruk en konto i organisasjonens domene, eller spør en administrator."
   },
   "Forgot-password": {
     "Forgot-password": "Glemt passordet?",
@@ -2509,7 +2512,8 @@
       "embeddings-dimension-mismatch": "EMBEDDINGS_MODEL={model} produserer {expected}-dimensjonale vektorer, men VECTOR_SIZE er {configured}. Qdrant avviser hver upsert, så ingen dokumenter blir noen gang søkbare.",
       "object-storage-credentials": "STORAGE_PROVIDER=s3 er angitt, men noe av konfigurasjonen mangler. Opplastinger og nedlastinger mislykkes til disse er angitt – bruk prefikset S3_ (S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY, S3_REGION), ikke AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY / AWS_DEFAULT_REGION, som er reservert for AWS Bedrock og AWS KMS.",
       "docling-unavailable": "Dokumenttolkeren (Docling) har ikke vært tilgjengelig siden {since, time, short}. Opplastinger venter på den eller bruker reservetolkeren, så kontroller at containeren kjører.",
-      "basal-unavailable": "Guardrail-modellen (basal) på BASAL_URL svarer ikke. Kontrollene faller tilbake på vurderingsmodellen, så ingenting blokkeres, men svarene tar lengre tid. Sjekk at containeren kjører."
+      "basal-unavailable": "Guardrail-modellen (basal) på BASAL_URL svarer ikke. Kontrollene faller tilbake på vurderingsmodellen, så ingenting blokkeres, men svarene tar lengre tid. Sjekk at containeren kjører.",
+      "oidc-misconfigured": "Bedriftspålogging (OIDC) er feilkonfigurert og derfor slått av: {problems}. Pålogging med passord fungerer fortsatt."
     },
     "database-unreachable-see-logs": "Detaljene står i serverloggen."
   },

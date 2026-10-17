@@ -98,7 +98,10 @@
     "email-not-verified": "Sähköpostiasi ei ole vahvistettu. Tarkista saapuneet-kansiosi löytääksesi vahvistuslinkin.",
     "demo-account": "Demo account",
     "demo-account-note": "A shared demonstration account. Everything in it is sample data and visible to everyone — do not upload anything of your own.",
-    "demo-fill": "Fill in"
+    "demo-fill": "Fill in",
+    "sso-sign-in": "Kirjaudu palvelulla {name}",
+    "sso-or": "tai",
+    "sso-failed": "Yrityskirjautuminen epäonnistui. Käytä organisaatiosi verkkotunnuksen tiliä tai pyydä apua ylläpitäjältä."
   },
   "Forgot-password": {
     "Forgot-password": "Unohditko salasanasi?",
@@ -2509,7 +2512,8 @@
       "embeddings-dimension-mismatch": "EMBEDDINGS_MODEL={model} tuottaa vektoreita, joissa on {expected} ulottuvuutta, mutta VECTOR_SIZE on {configured}. Qdrant hylkää jokaisen upsertin, joten mikään asiakirja ei tule haettavaksi.",
       "object-storage-credentials": "STORAGE_PROVIDER=s3 on asetettu, mutta osa sen määrityksestä puuttuu. Lataukset ja tallennukset epäonnistuvat, kunnes nämä arvot on asetettu — käytä S3_-etuliitettä (S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY, S3_REGION), älä AWS_ACCESS_KEY_ID- / AWS_SECRET_ACCESS_KEY- / AWS_DEFAULT_REGION-muuttujia, jotka on varattu AWS Bedrockille ja AWS KMS:lle.",
       "docling-unavailable": "Asiakirjojen jäsennintä (Docling) ei ole tavoitettu klo {since, time, short} jälkeen. Lataukset odottavat sitä tai käyttävät varajäsennintä, joten tarkista, että sen kontti on käynnissä.",
-      "basal-unavailable": "Guardrail-malli (basal) osoitteessa BASAL_URL ei vastaa. Tarkistukset palaavat arviointimalliin, joten mitään ei estetä, mutta vastaukset kestävät pidempään. Tarkista, että sen kontti on käynnissä."
+      "basal-unavailable": "Guardrail-malli (basal) osoitteessa BASAL_URL ei vastaa. Tarkistukset palaavat arviointimalliin, joten mitään ei estetä, mutta vastaukset kestävät pidempään. Tarkista, että sen kontti on käynnissä.",
+      "oidc-misconfigured": "Yrityskirjautuminen (OIDC) on määritetty väärin, joten se on pois päältä: {problems}. Salasanalla kirjautuminen toimii edelleen."
     },
     "database-unreachable-see-logs": "Yksityiskohdat löytyvät palvelimen lokista."
   },

@@ -42,6 +42,11 @@ are written from them.
   session is in the audit log.
 - **D5. Branding is a runtime setting**, stored per install and edited in
   `apps/admin`. No per-install image.
+- **D6. A company sign-in joins one organization.** `OIDC_JOIN_ORGANIZATION`
+  names it, by id or slug. New SSO users become members (not admins), and
+  only they skip closed registration; the identity provider and the allowed
+  domains are the gate. Decided while building B1, and up for review in its
+  PR.
 
 ## Problem
 
@@ -276,6 +281,12 @@ holds no tenant data.
   come with message content redacted. Two tests prove it: a role-scope test,
   because the rule is "admins must not read customer messages", and a test
   that the supervisor rejects any action outside its list.
+- **OIDC issuer unreachable when the app first serves an auth request.**
+  Better Auth fetches the discovery document once, when the auth instance
+  initializes. If that fetch fails, the provider is skipped until the app
+  restarts, the button stays but the sign-in fails, and the error goes to the
+  log. Restarting the web container after the issuer is back fixes it. A
+  self-hosted issuer such as Keycloak must start before Ragen.
 - **OIDC issuer unreachable.** Password sign-in stays available for the
   local admin account, so a broken identity provider cannot lock the
   organization out of the install.
@@ -346,10 +357,25 @@ repeatable demo, and records the gaps as tests.
 
 ### Phase B: what an organization checks first
 
-- [ ] **B1.** Generic OIDC sign-in (Entra ID, Google Workspace) in the open
-  edition (D1), restricted to an allowed email domain, and the `auth.ts`
-  comment updated to match. It is off unless configured. A local admin with a
-  password is always kept. A `p0-*` e2e test uses a mock issuer.
+- [x] **B1.** Company sign-in over OIDC, in the open edition (D1):
+  - **Provider.** One generic provider (Better Auth `genericOAuth`, id
+    `oidc`), configured by `OIDC_ISSUER`, `OIDC_CLIENT_ID`,
+    `OIDC_CLIENT_SECRET` and the required `OIDC_ALLOWED_DOMAINS`. It uses
+    discovery, PKCE, and a required ID-token verification against the
+    issuer's JWKS.
+  - **Domain gate.** An address outside the allowed domains is mapped to an
+    empty email, so the callback refuses it before anything is created or
+    linked. The provider's `email_verified` is passed through only for an
+    allowed domain, so an issuer cannot take over a local account by
+    asserting its address.
+  - **Joining the organization (D6).** With `OIDC_JOIN_ORGANIZATION`, a new
+    SSO user passes closed registration and joins that organization as a
+    member. The pass applies only through the OIDC callback, never to a
+    password sign-up at the same domain. Without it, SSO is one more door,
+    with the registration rule and a personal organization like the others.
+  - **Misconfiguration.** A partial configuration turns SSO off and appears
+    on the setup checklist. Password sign-in is never affected.
+  - **Tests.** `p0-38` runs against a mock issuer.
 - [ ] **B2.** Instance branding (D5): name, logo and primary token, a runtime
   setting edited in `apps/admin`, behind feature key `instanceBranding`.
 - [ ] **B3.** Live model, embedding and reranker probes on the setup page and

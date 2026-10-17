@@ -57,6 +57,26 @@ for (const [name, value] of Object.entries(E2E_LLM_ENV)) {
   process.env[name] ??= value;
 }
 
+/**
+ * Company sign-in against the mock issuer the first `webServer` entry starts
+ * on 4300
+ * (p0-38). On for the whole suite, as it would be on an install that uses it:
+ * the extra button on the sign-in page is part of what the other specs run
+ * against. New SSO users join the seeded organization.
+ */
+const E2E_OIDC_ENV = {
+  OIDC_ISSUER: 'http://localhost:4300',
+  OIDC_CLIENT_ID: 'ragen-e2e',
+  OIDC_CLIENT_SECRET: 'ragen-e2e-secret',
+  OIDC_ALLOWED_DOMAINS: 'oidc-e2e.test',
+  OIDC_DISPLAY_NAME: 'Mock IdP',
+  OIDC_JOIN_ORGANIZATION: 'e2e-test-org-00000-0000-0001',
+} as const;
+
+for (const [name, value] of Object.entries(E2E_OIDC_ENV)) {
+  process.env[name] ??= value;
+}
+
 // Mark runtime as e2e test environment so optional secrets skip validation.
 process.env.TARGET_ENV = 'test';
 // Provide a deterministic secret for public link HMAC signing in e2e tests.
@@ -91,28 +111,41 @@ export default defineConfig({
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: [['list'], ['html'], ['playwright-ctrf-json-reporter', {}]],
 
-  webServer: {
-    // `output: 'standalone'` with outputFileTracingRoot at the monorepo root
-    // nests the server under its workspace path inside the bundle (ADR-29).
-    command: process.env.CI
-      ? 'node .next/standalone/apps/web/server.js'
-      : 'npm run start',
-    url: baseURL,
-    timeout: 120 * 1000,
-    reuseExistingServer: !process.env.CI,
-    // Playwright defaults `stdout` to 'ignore' and only pipes `stderr`, so
-    // every line the application logs was thrown away while Next's own
-    // stack traces came through — which reads exactly like an app that logs
-    // nothing. Pino writes to stdout.
-    //
-    // It cost two days on `p0-29`. The route table could not be read, the
-    // gateway said so on the first request (`cannot read route table at
-    // apps/web/apps/web/e2e/…`), and the diagnosis instead went through the
-    // rule cache, the model defaults and a disproved theory about the missing
-    // Qdrant service, because the one line that named the fault was
-    // discarded by the test runner.
-    stdout: 'pipe',
-  },
+  webServer: [
+    {
+      // The company sign-in issuer for p0-38. First, and its own entry rather
+      // than something global.setup starts: Playwright launches web servers
+      // before global setup, and the app fetches the issuer's discovery
+      // document as soon as it boots — a provider whose discovery failed is
+      // skipped until the next restart.
+      command: 'npx tsx e2e/mock-oidc-server.ts',
+      url: 'http://localhost:4300/health',
+      timeout: 30 * 1000,
+      reuseExistingServer: !process.env.CI,
+    },
+    {
+      // `output: 'standalone'` with outputFileTracingRoot at the monorepo root
+      // nests the server under its workspace path inside the bundle (ADR-29).
+      command: process.env.CI
+        ? 'node .next/standalone/apps/web/server.js'
+        : 'npm run start',
+      url: baseURL,
+      timeout: 120 * 1000,
+      reuseExistingServer: !process.env.CI,
+      // Playwright defaults `stdout` to 'ignore' and only pipes `stderr`, so
+      // every line the application logs was thrown away while Next's own
+      // stack traces came through — which reads exactly like an app that logs
+      // nothing. Pino writes to stdout.
+      //
+      // It cost two days on `p0-29`. The route table could not be read, the
+      // gateway said so on the first request (`cannot read route table at
+      // apps/web/apps/web/e2e/…`), and the diagnosis instead went through the
+      // rule cache, the model defaults and a disproved theory about the missing
+      // Qdrant service, because the one line that named the fault was
+      // discarded by the test runner.
+      stdout: 'pipe',
+    },
+  ],
 
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {

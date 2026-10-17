@@ -98,7 +98,10 @@
     "email-not-verified": "Имейлът ти не е потвърден. Провери пощенската си кутия за линка за потвърждение.",
     "demo-account": "Demo account",
     "demo-account-note": "A shared demonstration account. Everything in it is sample data and visible to everyone — do not upload anything of your own.",
-    "demo-fill": "Fill in"
+    "demo-fill": "Fill in",
+    "sso-sign-in": "Вход с {name}",
+    "sso-or": "или",
+    "sso-failed": "Фирменият вход не успя. Използвайте акаунт в домейна на вашата организация или се обърнете към администратор."
   },
   "Forgot-password": {
     "Forgot-password": "Забравена парола?",
@@ -2509,7 +2512,8 @@
       "embeddings-dimension-mismatch": "EMBEDDINGS_MODEL={model} произвежда вектори с {expected} измерения, но VECTOR_SIZE е {configured}. Qdrant отхвърля всеки upsert, така че нито един документ не става търсим.",
       "object-storage-credentials": "STORAGE_PROVIDER=s3 е зададен, но част от неговата конфигурация липсва. Качванията и изтеглянията са неуспешни, докато не зададеш тези стойности — използвай префикса S3_ (S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY, S3_REGION), а не AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY / AWS_DEFAULT_REGION, които са запазени за AWS Bedrock и AWS KMS.",
       "docling-unavailable": "Анализаторът на документи (Docling) е недостъпен от {since, time, short}. Каченото го изчаква или използва резервния анализатор, затова проверете дали контейнерът му работи.",
-      "basal-unavailable": "Моделът за guardrails (basal) на BASAL_URL не отговаря. Проверките се връщат към модела-оценител, така че нищо не се блокира, но отговорите отнемат повече време. Проверете дали контейнерът му работи."
+      "basal-unavailable": "Моделът за guardrails (basal) на BASAL_URL не отговаря. Проверките се връщат към модела-оценител, така че нищо не се блокира, но отговорите отнемат повече време. Проверете дали контейнерът му работи.",
+      "oidc-misconfigured": "Фирменият вход (OIDC) е конфигуриран неправилно и затова е изключен: {problems}. Входът с парола продължава да работи."
     },
     "database-unreachable-see-logs": "Детайлите се намират в лога на сървъра."
   },

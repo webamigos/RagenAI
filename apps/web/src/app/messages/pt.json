@@ -98,7 +98,10 @@
     "email-not-verified": "Seu e-mail não foi verificado. Verifique sua caixa de entrada para encontrar o link de verificação.",
     "demo-account": "Demo account",
     "demo-account-note": "A shared demonstration account. Everything in it is sample data and visible to everyone — do not upload anything of your own.",
-    "demo-fill": "Fill in"
+    "demo-fill": "Fill in",
+    "sso-sign-in": "Entrar com {name}",
+    "sso-or": "ou",
+    "sso-failed": "O início de sessão empresarial falhou. Use uma conta do domínio da sua organização ou peça ajuda a um administrador."
   },
   "Forgot-password": {
     "Forgot-password": "Esqueceu a senha?",
@@ -2509,7 +2512,8 @@
       "embeddings-dimension-mismatch": "EMBEDDINGS_MODEL={model} produz vetores com {expected} dimensões, mas VECTOR_SIZE é {configured}. O Qdrant rejeita cada upsert, então nenhum documento se torna pesquisável.",
       "object-storage-credentials": "STORAGE_PROVIDER=s3 está definido, mas parte da sua configuração está ausente. Os envios e downloads falham até que esses valores sejam definidos — use o prefixo S3_ (S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY, S3_REGION), não AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY / AWS_DEFAULT_REGION, que são reservados para AWS Bedrock e AWS KMS.",
       "docling-unavailable": "O analisador de documentos (Docling) está inacessível desde {since, time, short}. Os envios aguardam por ele ou usam o analisador alternativo; verifique se o contêiner dele está em execução.",
-      "basal-unavailable": "O modelo de guardrails (basal) em BASAL_URL não está a responder. As verificações voltam ao modelo avaliador, por isso nada é bloqueado, mas as respostas demoram mais. Verifique se o contentor está em execução."
+      "basal-unavailable": "O modelo de guardrails (basal) em BASAL_URL não está a responder. As verificações voltam ao modelo avaliador, por isso nada é bloqueado, mas as respostas demoram mais. Verifique se o contentor está em execução.",
+      "oidc-misconfigured": "O início de sessão empresarial (OIDC) está mal configurado e por isso desativado: {problems}. O início de sessão com palavra-passe continua a funcionar."
     },
     "database-unreachable-see-logs": "Os detalhes estão no log do servidor."
   },

@@ -98,7 +98,10 @@
     "email-not-verified": "Din e-mail er ikke blevet bekræftet. Tjek din indbakke for at finde bekræftelseslinket.",
     "demo-account": "Demo account",
     "demo-account-note": "A shared demonstration account. Everything in it is sample data and visible to everyone — do not upload anything of your own.",
-    "demo-fill": "Fill in"
+    "demo-fill": "Fill in",
+    "sso-sign-in": "Log ind med {name}",
+    "sso-or": "eller",
+    "sso-failed": "Virksomhedslogin mislykkedes. Brug en konto i din organisations domæne, eller spørg en administrator."
   },
   "Forgot-password": {
     "Forgot-password": "Glemt din adgangskode?",
@@ -2509,7 +2512,8 @@
       "embeddings-dimension-mismatch": "EMBEDDINGS_MODEL={model} producerer vektorer med {expected} dimensioner, men VECTOR_SIZE er {configured}. Qdrant afviser hver upsert, så intet dokument bliver søgbart.",
       "object-storage-credentials": "STORAGE_PROVIDER=s3 er angivet, men en del af dens konfiguration mangler. Uploads og downloads mislykkes, indtil disse værdier er angivet — brug S3_-præfikset (S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY, S3_REGION), ikke AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY / AWS_DEFAULT_REGION, som er reserveret til AWS Bedrock og AWS KMS.",
       "docling-unavailable": "Dokumentparseren (Docling) har ikke kunnet nås siden {since, time, short}. Uploads venter på den eller bruger reserveparseren, så kontrollér, at dens container kører.",
-      "basal-unavailable": "Guardrail-modellen (basal) på BASAL_URL svarer ikke. Kontrollerne falder tilbage til bedømmelsesmodellen, så intet blokeres, men svarene tager længere tid. Tjek, at dens container kører."
+      "basal-unavailable": "Guardrail-modellen (basal) på BASAL_URL svarer ikke. Kontrollerne falder tilbage til bedømmelsesmodellen, så intet blokeres, men svarene tager længere tid. Tjek, at dens container kører.",
+      "oidc-misconfigured": "Virksomhedslogin (OIDC) er konfigureret forkert og derfor slået fra: {problems}. Login med adgangskode virker stadig."
     },
     "database-unreachable-see-logs": "Detaljerne findes i serverens log."
   },

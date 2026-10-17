@@ -15,6 +15,7 @@ import { InvitationBanner } from '@/app/components/Forms/InvitationBanner';
 import { SetupChecklist, SetupScreen } from '@/app/components/SetupChecklist';
 import { getSetupStatusQuery } from '@/features/setup/services/queries/get-setup-status-query';
 import { mayRegister } from '@/lib/registration';
+import { oidcConfigFromEnv } from '@/lib/oidc-config';
 
 export async function generateMetadata({ params }: PropsWihLocale) {
   const { locale } = await params;
@@ -105,6 +106,10 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
   // invitation is resolved, since an invitation still admits someone while
   // registration is closed.
   const canRegister = await mayRegister(prefillEmail);
+  // Company sign-in, when configured. Only its button label reaches the
+  // client; the issuer, client id and secret stay on the server.
+  const oidcStatus = oidcConfigFromEnv(process.env);
+  const oidc = oidcStatus.status === 'on' ? oidcStatus.config : null;
 
   return (
     <div className="flex min-h-screen flex-1">
@@ -136,7 +141,10 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
           )}
 
           <div className="mt-6">
-            <LoginForm prefillEmail={prefillEmail} />
+            <LoginForm
+              prefillEmail={prefillEmail}
+              sso={oidc ? { displayName: oidc.displayName } : undefined}
+            />
 
             <div className="mt-6 flex flex-col items-center gap-2">
               {canRegister && (
