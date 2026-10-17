@@ -309,12 +309,16 @@ repeatable demo, and records the gaps as tests.
   - `DOCLING_STRICT=1`, `ENCRYPTION_PROVIDER=local` and SMTP
   - no moderation key and no PostHog, Langfuse or OTel endpoint
   - `VECTOR_SIZE` for the local embedding model
-- [x] **0.3.** A recorded run on one S-class machine: ingest a document set,
+- [ ] **0.3.** A recorded run on one S-class machine: ingest a document set,
   ask questions, show citations and permissions, with the network cable
   unplugged. It ends with a list of every failure, and each failure becomes
   a step below.
 
-  **Run of 2026-10-17.** Hardware: a MacBook running Ollama on the host,
+  Still open: the run below was on a developer laptop with the network
+  connected, so it proves neither the hardware class nor "unplugged". It
+  still produced the failure list, which is the step's real purpose.
+
+  **Partial run of 2026-10-17.** Hardware: a MacBook running Ollama on the host,
   with Postgres, Redis, Qdrant and Docling in Docker. web, api and worker
   ran from source with the appliance table and the env template. Every
   cloud key in the developer `.env.local` was set to empty. The branches
