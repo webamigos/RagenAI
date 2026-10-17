@@ -54,16 +54,22 @@ export function resetServedModelsCache(): void {
  */
 export const ThreadModelLabel = ({ model }: Props) => {
   const { organization } = useOrganization();
-  const [served, setServed] = useState<AvailableModel[] | null>(null);
+  // Kept with the organization it was fetched for, so a label rendered right
+  // after switching organizations does not show the previous one's names.
+  const [served, setServed] = useState<{
+    organizationId: string;
+    models: AvailableModel[];
+  } | null>(null);
 
   useEffect(() => {
     if (!organization?.id) {
       return;
     }
     let live = true;
-    void servedModels(organization.id).then((models) => {
+    const organizationId = organization.id;
+    void servedModels(organizationId).then((models) => {
       if (live) {
-        setServed(models);
+        setServed({ organizationId, models });
       }
     });
     return () => {
@@ -79,7 +85,10 @@ export const ThreadModelLabel = ({ model }: Props) => {
   }
 
   const normalized = normalizeModelId(model);
-  const servedConfig = served?.find((m) => m.value === normalized);
+  const servedConfig =
+    served && served.organizationId === organization?.id
+      ? served.models.find((m) => m.value === normalized)
+      : undefined;
   const catalogueConfig = availableModels.find((m) => m.value === normalized);
   const label = servedConfig?.label || catalogueConfig?.label || model;
   const reasoning = servedConfig
