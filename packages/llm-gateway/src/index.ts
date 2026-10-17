@@ -24,7 +24,11 @@ export {
   UnknownModelError,
   type GatewayOptions,
 } from './resolve-model';
-export { gatewayFromEnv, resetGatewayCache } from './gateway-instance';
+export {
+  gatewayFromEnv,
+  resetGatewayCache,
+  routeDescribesItself,
+} from './gateway-instance';
 export {
   probeModels,
   type ModelProbe,

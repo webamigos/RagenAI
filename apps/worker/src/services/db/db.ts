@@ -22,6 +22,7 @@ import {
 import { type UpdateFileSizeParams } from './types/UpdateFileSizeParams.js';
 import { decryptDocumentContent } from '@ragenai/crypto';
 import { calculateCost, priceFor } from '@ragenai/platform-contracts';
+import { routeDescribesItself } from '@ragenai/llm-gateway';
 
 /**
  * On Prisma (ADR-40 step 2).
@@ -636,6 +637,10 @@ export function estimateCost(input: {
   inputTokens: number;
   outputTokens: number;
 }): number {
+  // As in apps/web: a self-described (local) model has no per-token bill.
+  if (routeDescribesItself(input.model)) {
+    return 0;
+  }
   if (!priceFor(input.provider, input.model)) {
     logger.warn(
       { provider: input.provider, model: input.model },

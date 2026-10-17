@@ -3,6 +3,8 @@ import {
   priceFor,
 } from '@ragenai/platform-contracts';
 
+import { routeDescribesItself } from '@ragenai/llm-gateway';
+
 import { logger } from '@/app/lib/utils/logger';
 
 // The table lives once, in @ragenai/platform-contracts (ADR-33); apps/api and
@@ -15,6 +17,11 @@ export function calculateCost(
   inputTokens: number,
   outputTokens: number,
 ): number {
+  // A model the route table describes itself is served on the install's own
+  // hardware: no per-token bill, even when its id aliases a priced cloud one.
+  if (routeDescribesItself(model)) {
+    return 0;
+  }
   if (!priceFor(provider, model)) {
     logger.warn(
       `[ai-pricing] No pricing found for provider="${provider}" model="${model}". Cost will be 0.`,
