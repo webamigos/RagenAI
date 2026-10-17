@@ -42,6 +42,18 @@ export const config = {
   ],
 };
 
+/**
+ * Whether the request carries a session cookie — a lightweight check without a
+ * database query; real verification happens in the server components. Better
+ * Auth uses the `__Secure-` prefix when its base URL is HTTPS.
+ */
+function hasSessionCookie(request: NextRequest): boolean {
+  return Boolean(
+    request.cookies.get('better-auth.session_token') ||
+    request.cookies.get('__Secure-better-auth.session_token'),
+  );
+}
+
 export default async function proxy(request: NextRequest) {
   const url = request.nextUrl.pathname;
 
@@ -67,14 +79,21 @@ export default async function proxy(request: NextRequest) {
       acceptedLocales.find((lang) =>
         (locales as readonly string[]).includes(lang),
       ) ?? defaultLocale;
+
+    // With a session and the default locale, `/` *is* that locale's page:
+    // `localePrefix: 'as-needed'` serves the default locale unprefixed, and
+    // next-intl redirects `/en` back to `/`. Redirecting `/` to `/en` here
+    // made the two bounce a signed-in English-speaking user between them
+    // until the browser gave up (ERR_TOO_MANY_REDIRECTS). Let next-intl
+    // rewrite it instead. Signed out, the redirect stays: `/en` sends them
+    // on to sign-in.
+    if (locale === defaultLocale && hasSessionCookie(request)) {
+      return handleI18nRouting(request);
+    }
     return NextResponse.redirect(new URL(`/${locale}`, request.url));
   }
 
-  // Check if session cookie exists (lightweight check without DB query)
-  // Better Auth uses __Secure- prefix when baseURL is HTTPS
-  const sessionCookie =
-    request.cookies.get('better-auth.session_token') ||
-    request.cookies.get('__Secure-better-auth.session_token');
+  const sessionCookie = hasSessionCookie(request);
 
   const isPublicThread = /^\/[^/]+\/public\/thread\//.test(url);
   if (isPublicThread) {

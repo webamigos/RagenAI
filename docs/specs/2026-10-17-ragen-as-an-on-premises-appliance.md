@@ -435,6 +435,11 @@ repeatable demo, and records the gaps as tests.
   hardware, and the cloud price of an id it aliases would be a bill nobody
   pays. Still open from A2b: local models on the admin allowlist, because
   apps/admin does not read the route table.
+- [x] **A2d.** The picker and `GET /v1/models` hide a model whose server
+  answered and does not have it (an Ollama model nobody pulled), using the
+  B3 probe through `LlmGateway.missingModels`, cached for 30 seconds. A
+  server that is down hides nothing, so a blip cannot empty the picker; the
+  setup checklist reports it. Found by the 0.3 run (failure 6).
 - [ ] **A3.** `scripts/appliance-egress-check --profile local|hybrid`: an
   internal-only network and a scripted ingest, chat, Brain and guardrail
   pass. It fails on any outbound attempt outside the profile's allowance and

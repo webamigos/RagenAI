@@ -25,10 +25,14 @@ const describedModelsFromGateway = vi.hoisted(() =>
       }[],
   ),
 );
+const missingModelsFromGateway = vi.hoisted(() =>
+  vi.fn(async () => new Set<string>()),
+);
 const gatewayFromEnv = vi.hoisted(() =>
   vi.fn(() => ({
     availableModels: availableModelsFromGateway,
     describedModels: describedModelsFromGateway,
+    missingModels: missingModelsFromGateway,
   })),
 );
 
@@ -62,9 +66,11 @@ beforeEach(() => {
   describedModelsFromGateway.mockReturnValue([]);
   // `clearAllMocks` keeps implementations, so the unreadable-table test's
   // throwing gateway would otherwise leak into every test after it.
+  missingModelsFromGateway.mockResolvedValue(new Set());
   gatewayFromEnv.mockImplementation(() => ({
     availableModels: availableModelsFromGateway,
     describedModels: describedModelsFromGateway,
+    missingModels: missingModelsFromGateway,
   }));
 });
 
@@ -198,5 +204,24 @@ describe('a route that describes itself', () => {
     const models = await getAvailableModelsForOrganization('org-1');
 
     expect(models).toEqual([]);
+  });
+
+  it('hides a model its server does not have', async () => {
+    // An Ollama model nobody pulled: the first answer would fail, so it is
+    // not offered. The setup checklist says which to pull.
+    availableModelsFromGateway.mockReturnValue(['local-chat', 'local-vision']);
+    describedModelsFromGateway.mockReturnValue([
+      { id: 'local-chat', displayName: 'Bielik 11B', capabilities: ['chat'] },
+      {
+        id: 'local-vision',
+        displayName: 'Gemma 3 12B',
+        capabilities: ['chat'],
+      },
+    ]);
+    missingModelsFromGateway.mockResolvedValue(new Set(['local-vision']));
+
+    const models = await getAvailableModelsForOrganization('org-1');
+
+    expect(models.map((m) => m.value)).toEqual(['local-chat']);
   });
 });
