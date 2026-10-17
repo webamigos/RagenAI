@@ -1,11 +1,16 @@
 import 'server-only';
 
 import { checkBasalHealth, isBasalConfigured } from '@ragenai/basal-client';
+import { gatewayFromEnv } from '@ragenai/llm-gateway';
 import db from '@ragenai/prisma-client';
 import { logger } from '@/app/lib/utils/logger';
 
 import type { DatabaseProbe, SetupStatus } from '../../contracts/types';
 import { inspectEnvironment } from './inspect-environment';
+import {
+  findModelServerProblems,
+  probedModels,
+} from './find-model-server-problems';
 import { getParserStatusQuery } from '@/features/parsing/services/queries/get-parser-status-query';
 import { backfillClaimIfAdminExists, isInstallClaimed } from '../install-claim';
 
@@ -91,5 +96,45 @@ export async function getSetupStatusQuery(): Promise<SetupStatus> {
     }
   }
 
+  // A local model server (Ollama, vLLM) that is down, or a model it never
+  // pulled (appliance spec, B3). Free to ask — one `GET /models` per server —
+  // and only for `openai-compatible` routes; see `probeModels`.
+  report.findings.push(...(await modelServerFindings()));
+
   return { report, database, adminExists, claimed };
+}
+
+/**
+ * Cached briefly because this runs on every sign-in page load, and a model
+ * server's state does not change between two of them. Thirty seconds is short
+ * enough that an operator who just started Ollama sees the finding go on the
+ * next reload but one.
+ */
+const MODEL_PROBE_TTL_MS = 30_000;
+let modelProbeCache: {
+  at: number;
+  findings: Awaited<ReturnType<typeof findModelServerProblems>>;
+} | null = null;
+
+async function modelServerFindings() {
+  if (modelProbeCache && Date.now() - modelProbeCache.at < MODEL_PROBE_TTL_MS) {
+    return modelProbeCache.findings;
+  }
+  try {
+    const selectedBy = probedModels(process.env);
+    const probes = await gatewayFromEnv().probe([...selectedBy.keys()]);
+    const findings = findModelServerProblems(probes, selectedBy);
+    modelProbeCache = { at: Date.now(), findings };
+    return findings;
+  } catch (error) {
+    // An unreadable route table is reported where it is read; it is not this
+    // check's finding to make, and this page must not fail because of it.
+    logger.warn({ err: error }, 'Could not probe the model servers');
+    return [];
+  }
+}
+
+/** For tests: forget the cached probe. */
+export function resetModelProbeCache(): void {
+  modelProbeCache = null;
 }

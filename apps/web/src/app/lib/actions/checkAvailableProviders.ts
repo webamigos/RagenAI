@@ -7,6 +7,7 @@ import {
 } from '../../components/config';
 import { getAllowedModels } from '@/features/organizations/services/organization-settings';
 import { gatewayFromEnv } from '@ragenai/llm-gateway';
+import { withDescribedRoutes } from '@ragenai/platform-contracts';
 import { logger } from '@/app/lib/utils/logger';
 
 type ProviderStatus = {
@@ -53,14 +54,29 @@ export async function checkAvailableProviders(
  * Falls back to the full catalogue rather than an empty picker if the route
  * table cannot be read: an empty model list is indistinguishable from "this
  * product is broken", and the call itself still fails loudly per model.
+ *
+ * A route that describes itself (`display` in the route table) is offered
+ * under its own name, and replaces a catalogue entry with the same id — how a
+ * model on the install's own hardware reaches the picker. See
+ * `withDescribedRoutes`.
  */
 function gatewayModels(): AvailableModel[] {
   try {
     const gateway = gatewayFromEnv();
     const served = new Set(gateway.availableModels());
-    const offered = availableModels.filter((model) => served.has(model.value));
+    const described = gateway.describedModels();
+    const offered = withDescribedRoutes(
+      availableModels.map(toCatalogueEntry),
+      described,
+    )
+      .filter((model) => served.has(model.value))
+      .map(toAvailableModel);
 
-    if (offered.length === 0) {
+    // The fallback is for a table that says nothing the picker can use. A
+    // table with described routes said exactly what it serves, so an empty
+    // result there is the answer — restoring the catalogue would offer models
+    // a described non-chat route deliberately removed.
+    if (offered.length === 0 && described.length === 0) {
       logger.warn(
         { served: served.size },
         'Gateway serves no model the picker knows about — falling back to the full catalogue',
@@ -92,4 +108,28 @@ export async function getAvailableModelsForOrganization(
   }
 
   return models;
+}
+
+function toCatalogueEntry(model: AvailableModel) {
+  return {
+    value: model.value,
+    displayName: model.label,
+    visible: true,
+    origin: model.origin,
+    reasoning: model.reasoning,
+    supportsReasoningEffort: model.supportsReasoningEffort,
+  };
+}
+
+function toAvailableModel(
+  entry: ReturnType<typeof withDescribedRoutes>[number],
+): AvailableModel {
+  return {
+    value: entry.value,
+    label: entry.displayName,
+    provider: 'litellm',
+    origin: entry.origin,
+    reasoning: entry.reasoning,
+    supportsReasoningEffort: entry.supportsReasoningEffort,
+  };
 }

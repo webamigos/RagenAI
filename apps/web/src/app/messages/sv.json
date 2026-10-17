@@ -2513,6 +2513,8 @@
       "object-storage-credentials": "STORAGE_PROVIDER=s3 är angiven, men en del av dess konfiguration saknas. Uppladdningar och nedladdningar misslyckas tills dessa värden är angivna — använd prefixet S3_ (S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY, S3_REGION), inte AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY / AWS_DEFAULT_REGION, som är reserverade för AWS Bedrock och AWS KMS.",
       "docling-unavailable": "Dokumentparsern (Docling) har inte gått att nå sedan {since, time, short}. Uppladdningar väntar på den eller använder reservparsern, så kontrollera att dess container körs.",
       "basal-unavailable": "Guardrail-modellen (basal) på BASAL_URL svarar inte. Kontrollerna faller tillbaka på bedömningsmodellen, så inget blockeras, men svaren tar längre tid. Kontrollera att dess container körs.",
+      "model-server-unreachable": "Den lokala modellservern ({connections}) svarar inte, så chatt och dokumentbehandling som använder den misslyckas. Kontrollera att dess container körs.",
+      "model-not-pulled": "De här modellerna finns inte på den lokala modellservern: {models}. Anrop till dem misslyckas tills de har hämtats.",
       "oidc-misconfigured": "Företagsinloggning (OIDC) är felkonfigurerad och därför avstängd: {problems}. Inloggning med lösenord fungerar fortfarande."
     },
     "database-unreachable-see-logs": "Detaljerna finns i serverns logg."

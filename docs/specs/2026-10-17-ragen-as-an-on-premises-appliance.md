@@ -1,6 +1,6 @@
 ---
 title: Ragen as an on-premises appliance
-status: draft
+status: in-progress
 areas: [llm-gateway, rag, auth, admin, install, worker, guardrails]
 adrs: [21, 27, 31, 35, 37, 38, 49, 50]
 ---
@@ -153,14 +153,16 @@ provider.
 - *Editing `model-catalog.ts` per install* was rejected: it needs a build.
 
 The proposal: add `origin: 'local'` to `ModelOrigin`, and let a route in
-`routes.yaml` carry `display`, `contextWindow` and `capabilities` (chat,
-structured, vision). The chat picker then offers a served route that has
+`routes.yaml` carry `display` and `capabilities` (`chat`, `vision`). The
+chat picker then offers a served route that has
 `display` **and** the `chat` capability, even when the compiled catalogue does
 not know it. A route without `chat` (an embedding or reranker route) is never
 offered, whatever else it declares, and a route with no `capabilities` is
-treated as having none. The capabilities map onto the existing contract:
-`structured` sets `structuredOutputs`, and `vision` decides whether the route
-is excluded through `MULTIMODAL_TEXT_ONLY_MODELS`. Pricing for a
+treated as having none. A described route also replaces a catalogue entry
+with the same id, which is what gives the Phase 0 aliases their real names.
+`structuredOutputs` stays its own route field rather than a capability, since
+it already exists and means exactly that; `contextWindow` was dropped because
+nothing reads one yet. Pricing for a
 `local` origin is zero tokens-cost. Hardware cost is not a per-token number,
 and pretending it is would mislead the usage page.
 
@@ -307,7 +309,7 @@ Each phase leaves the application working. Behind a feature key defaulting to
 There is no new product code in this phase. It turns what exists into a
 repeatable demo, and records the gaps as tests.
 
-- [ ] **0.1.** `infra/llm-gateway/routes.appliance.yaml` maps the catalogue
+- [x] **0.1.** `infra/llm-gateway/routes.appliance.yaml` maps the catalogue
   ids the application already asks for onto a local Ollama, so nothing
   hardcoded falls through to the cloud:
   - `DEFAULT_MODEL`, `REPHRASE_MODEL` and `SUMMARY_MODEL`
@@ -316,7 +318,7 @@ repeatable demo, and records the gaps as tests.
   - a local embedding route
 
   The display names are still wrong here; A2 fixes them.
-- [ ] **0.2.** `.env.appliance.example` with every setting the install needs:
+- [x] **0.2.** `infra/appliance/appliance.env.example` with every setting the install needs:
   - `DOCLING_STRICT=1`, `ENCRYPTION_PROVIDER=local` and SMTP
   - no moderation key and no PostHog, Langfuse or OTel endpoint
   - `VECTOR_SIZE` for the local embedding model
@@ -324,6 +326,67 @@ repeatable demo, and records the gaps as tests.
   ask questions, show citations and permissions, with the network cable
   unplugged. It ends with a list of every failure, and each failure becomes
   a step below.
+
+  Still open: the run below was on a developer laptop with the network
+  connected, so it proves neither the hardware class nor "unplugged". It
+  still produced the failure list, which is the step's real purpose.
+
+  **Partial run of 2026-10-17.** Hardware: a MacBook running Ollama on the host,
+  with Postgres, Redis, Qdrant and Docling in Docker. web, api and worker
+  ran from source with the appliance table and the env template. Every
+  cloud key in the developer `.env.local` was set to empty. The branches
+  for 0.1/0.2, A2, A4 and B3 were merged locally. Models:
+  - `SpeakLeash/bielik-11b-v2.3-instruct:Q4_K_M` (chat)
+  - `qwen2.5:7b-instruct` (small tier)
+  - `bge-m3` (embeddings)
+
+  What worked:
+  - Four Polish markdown documents went through Docling and were embedded
+    by `bge-m3`, with 1024-dimensional dense vectors in Qdrant.
+  - The picker offered "Bielik 11B" (A2).
+  - The setup checklist raised no model finding, because every probed model
+    was pulled (B3).
+  - A Polish question returned a correct answer with a citation.
+  - Usage was recorded at zero cost.
+  - Over about 25 minutes, `lsof`, sampled every second, saw no TCP
+    connection from the web, api or worker processes to anything other than
+    loopback.
+
+  That sampling does not cover DNS or UDP, or the containers, and it can
+  miss a connection shorter than a second. Closing that gap is A3, not this
+  step.
+
+  Failures, each one a step or an issue:
+  1. **A per-app env file overrides the root one without saying so.**
+     - `apps/worker/.env.local` set `REDIS_URL` to a different port, so the
+       worker consumed a different queue from the one web wrote to.
+     - The same file set `AWS_ENDPOINT_URL` to a cloud object store.
+     - An appliance must have exactly one environment. The installer (C1)
+       writes one, and the setup checklist should warn when per-app files
+       exist.
+  2. **An empty URL variable fails validation.** `LANGFUSE_HOST` and
+     `MEILISEARCH_URL` both failed when left empty. The template must leave
+     URL variables unset rather than empty. This needs a check against the
+     env schemas.
+  3. **The default locale loops for a signed-in user.** `/en` redirects to
+     `/`, which redirects back to `/en`. The cause is `localePrefix: as-needed`
+     against the root redirect in `proxy.ts`. It is not appliance-specific,
+     but it is the first thing an English-speaking buyer would hit. It needs
+     its own fix.
+  4. **The thread header shows the route id (`local-chat`), not the display
+     name.** `ThreadModelLabel` reads the static catalogue. This is the A2
+     gap to close next.
+  5. **The first answer took 3 minutes.** The laptop was running every
+     service at once. The retrieval-usage transaction also exceeded Prisma's
+     5-second timeout, which is non-blocking but recorded nothing. A5 has to
+     measure this on target hardware before any tier is offered.
+  6. **The picker offers a model that was never pulled** (`local-vision`).
+     "Served" means configured, not present. The B3 probe could narrow the
+     picker the same way it narrows the checklist.
+  7. **apps/api in `start:dev` did not read the root `.env.local`.** It
+     failed on `TARGET_ENV` and `SESSION_AUTH_SECRET` until given an
+     explicit environment. This affects development only; the compose stack
+     passes `env_file`.
 
 ### Phase A: a local install that is proven, not described
 
@@ -333,8 +396,12 @@ repeatable demo, and records the gaps as tests.
   reservations. The reranker is reached through the existing
   `RERANK_PROVIDER=cohere` + `RERANK_COHERE_BASE_URL` path. A test proves
   that the request shape matches the local server.
-- [ ] **A2.** `origin: 'local'` and route-described models in the picker, with
-  zero token-cost in usage reports. Remove the 0.1 id mapping.
+- [x] **A2.** `origin: 'local'` and route-described models (`display`,
+  `capabilities`) in the web picker and `GET /v1/models`. A described route
+  replaces a catalogue entry of the same id, so the Phase 0 aliases keep
+  their ids and get the right name. Zero token cost in usage reports, and
+  the admin allowlist, are left for A2b: apps/admin does not read the route
+  table today.
 - [ ] **A3.** `scripts/appliance-egress-check --profile local|hybrid`: an
   internal-only network and a scripted ingest, chat, Brain and guardrail
   pass. It fails on any outbound attempt outside the profile's allowance and
@@ -381,10 +448,15 @@ repeatable demo, and records the gaps as tests.
   - **Tests.** `p0-38` runs against a mock issuer.
 - [ ] **B2.** Instance branding (D5): name, logo and primary token, a runtime
   setting edited in `apps/admin`, behind feature key `instanceBranding`.
-- [ ] **B3.** Live model, embedding and reranker probes on the setup page and
-  in the admin health view. The probes run on the production path through
-  the gateway (see `docs/lessons.md`: a check that runs a different path is
-  worse than none).
+- [x] **B3.** Model probes on the setup page: one free `GET /models` per
+  `openai-compatible` server behind `DEFAULT_MODEL`, `REPHRASE_MODEL`,
+  `SUMMARY_MODEL` and `EMBEDDINGS_MODEL`, cached for 30 seconds. A server
+  that does not answer and a model that was never pulled are two separate
+  `recommended` findings, so sign-in never waits on them. Cloud routes are
+  not probed: they have no free call, and their failure mode is
+  credentials, which the env check already reads. The reranker probe and
+  the admin health view are left for later; there is no local reranker yet
+  (A1).
 - [ ] **B4.** Per-organization retention for threads and messages (default
   off), because the first data-protection question is "how long do you keep
   it".
@@ -445,8 +517,9 @@ repeatable demo, and records the gaps as tests.
 ## Rollout and rollback
 
 - Phase 0 and A1/A3 are additive files, so rollback is deleting them.
-- A2 changes the picker. It ships behind `localModelsInPicker` (default
-  `false`) until A5 has a measured tier.
+- A2 changes the picker only for a route that carries `display`, and no
+  shipped route does, so it needs no feature key: an install opts in by
+  writing the field. Rollback is removing it.
 - B1 is inert without OIDC env vars. Rollback means removing the vars, and
   the local admin password still works.
 - B2 needs a migration that adds one table, and no existing table changes.

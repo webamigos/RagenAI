@@ -22,12 +22,26 @@ vi.mock('@ragenai/basal-client', async (importOriginal) => ({
   checkBasalHealth,
 }));
 
-import { getSetupStatusQuery } from '../get-setup-status-query';
+const probe = vi.hoisted(() => vi.fn(async () => [] as unknown[]));
+vi.mock('@ragenai/llm-gateway', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@ragenai/llm-gateway')>()),
+  gatewayFromEnv: () => ({ probe }),
+}));
+
+import {
+  getSetupStatusQuery,
+  resetModelProbeCache,
+} from '../get-setup-status-query';
 
 const ids = (status: Awaited<ReturnType<typeof getSetupStatusQuery>>) =>
   status.report.findings.map((f) => f.id);
 
-beforeEach(() => getParserStatusQuery.mockReset());
+beforeEach(() => {
+  getParserStatusQuery.mockReset();
+  probe.mockReset();
+  probe.mockResolvedValue([]);
+  resetModelProbeCache();
+});
 
 describe('getSetupStatusQuery — Docling (spec C1, D5)', () => {
   it('reports a parser outage as a recommended finding, with since when', async () => {
@@ -86,5 +100,63 @@ describe('getSetupStatusQuery — basal (basal spec, B3)', () => {
     checkBasalHealth.mockResolvedValue('up');
 
     expect(ids(await getSetupStatusQuery())).not.toContain('basal-unavailable');
+  });
+});
+
+describe('getSetupStatusQuery — local model servers (appliance spec, B3)', () => {
+  beforeEach(() => {
+    getParserStatusQuery.mockResolvedValue({ state: 'up' });
+    vi.unstubAllEnvs();
+    vi.stubEnv('BASAL_URL', '');
+  });
+
+  it('probes the models the install selects, once each', async () => {
+    vi.stubEnv('DEFAULT_MODEL', 'local-chat');
+    vi.stubEnv('REPHRASE_MODEL', 'local-small');
+    vi.stubEnv('SUMMARY_MODEL', 'local-small');
+    vi.stubEnv('EMBEDDINGS_MODEL', 'local-embed');
+
+    await getSetupStatusQuery();
+
+    expect(probe).toHaveBeenCalledWith([
+      'local-chat',
+      'local-small',
+      'local-embed',
+    ]);
+  });
+
+  it('reports a server that does not answer, naming its variable', async () => {
+    vi.stubEnv('DEFAULT_MODEL', 'local-chat');
+    probe.mockResolvedValue([
+      { modelId: 'local-chat', state: 'unreachable', connection: 'ollama' },
+    ]);
+
+    const status = await getSetupStatusQuery();
+
+    expect(
+      status.report.findings.find((f) => f.id === 'model-server-unreachable'),
+    ).toMatchObject({
+      severity: 'recommended',
+      vars: ['LLM_OLLAMA_BASE_URL'],
+      values: { connections: 'ollama' },
+    });
+  });
+
+  it('asks the servers at most once per cache window', async () => {
+    vi.stubEnv('DEFAULT_MODEL', 'local-chat');
+
+    await getSetupStatusQuery();
+    await getSetupStatusQuery();
+
+    expect(probe).toHaveBeenCalledTimes(1);
+  });
+
+  it('adds nothing, and does not fail the page, when the probe throws', async () => {
+    vi.stubEnv('DEFAULT_MODEL', 'local-chat');
+    probe.mockRejectedValue(new Error('no route table'));
+
+    const status = await getSetupStatusQuery();
+
+    expect(ids(status)).not.toContain('model-server-unreachable');
   });
 });

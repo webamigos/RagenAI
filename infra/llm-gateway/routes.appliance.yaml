@@ -1,0 +1,97 @@
+# yaml-language-server: $schema=./routes.schema.json
+#
+# Route table for an on-premises appliance: every model the application asks
+# for is served by a local Ollama, so no model call leaves the machine.
+# See docs/specs/2026-10-17-ragen-as-an-on-premises-appliance.md (Phase 0).
+#
+# Use it with the env template next to it:
+#   LLM_ROUTES_PATH=/absolute/path/to/infra/llm-gateway/routes.appliance.yaml
+#   LLM_OLLAMA_BASE_URL=http://localhost:11434/v1
+#
+# Two kinds of entry, and the difference matters:
+#
+#   1. `local-*` ids are the ones this install's env names (DEFAULT_MODEL,
+#      REPHRASE_MODEL, SUMMARY_MODEL, EMBEDDINGS_MODEL, …).
+#   2. The cloud ids below them are names the application still hardcodes or
+#      defaults to. They point at the same local models so that nothing falls
+#      through to "no route" or, worse, to a cloud provider whose key happens
+#      to be set. Their display names in the model picker are wrong until
+#      Phase A2 of the spec lets a route describe itself; that is the known
+#      cost of Phase 0.
+#
+# The architecture test `the-appliance-route-table-covers-every-default-model`
+# fails when the application starts asking for an id this file does not
+# route, or when a route here leaves the machine.
+#
+# Model tags are the S/M tier's defaults. Swap the `model:` values for the
+# tags you pulled — the ids on the left must stay as they are.
+version: 1
+
+routes:
+  # --- The install's own ids -------------------------------------------------
+  # The answer model. Bielik is trained on Polish, which the cloud defaults
+  # were chosen for; an 11B Q4 build fits a 24 GB GPU or a 64 GB unified-memory
+  # machine with room for the embedder.
+  local-chat:
+    provider: openai-compatible
+    connection: ollama
+    model: SpeakLeash/bielik-11b-v2.3-instruct:Q4_K_M
+    structuredOutputs: true
+  # Rephrase, summaries, Brain and memory extraction, scoring, the guardrail
+  # judge. Runs on every question and every upload, so it is the small tier.
+  local-small:
+    provider: openai-compatible
+    connection: ollama
+    model: qwen2.5:7b-instruct
+    structuredOutputs: true
+  # Image description and image/document chat attachments.
+  local-vision:
+    provider: openai-compatible
+    connection: ollama
+    model: gemma3:12b
+  # 1024 dimensions: set VECTOR_SIZE=1024 on web, api and worker alike.
+  # DEFAULT_EMBEDDINGS_MODEL is deliberately not aliased here: its known size
+  # is 3584, so an alias would make the setup page report a mismatch. The env
+  # template sets EMBEDDINGS_MODEL=local-embed instead.
+  local-embed:
+    provider: openai-compatible
+    connection: ollama
+    model: bge-m3
+
+  # --- Ids the application hardcodes or defaults to ----------------------------
+  # Org default when DEFAULT_MODEL and the org setting are both unset, and the
+  # public chat widget's default (PublicChatModelSelect.tsx).
+  gemini-3-flash-preview:
+    provider: openai-compatible
+    connection: ollama
+    model: SpeakLeash/bielik-11b-v2.3-instruct:Q4_K_M
+    structuredOutputs: true
+  # POLICY_JUDGE_MODEL (packages/guardrails) and the optimize generator
+  # (apps/web api/knowledge/optimize). Both are constants, not env.
+  gemini-2.5-flash:
+    provider: openai-compatible
+    connection: ollama
+    model: qwen2.5:7b-instruct
+    structuredOutputs: true
+  # DEEP_THINKING_DEFAULT_MODEL (apps/web components/config.ts).
+  gpt-oss-120b:
+    provider: openai-compatible
+    connection: ollama
+    model: SpeakLeash/bielik-11b-v2.3-instruct:Q4_K_M
+  # The worker's SRT segmenter, its key check and the PDF chain's `nano` tier.
+  gpt-5.4-nano:
+    provider: openai-compatible
+    connection: ollama
+    model: qwen2.5:7b-instruct
+    structuredOutputs: true
+  # The PDF chain's `mini` tier, which describes images.
+  gpt-5.4-mini:
+    provider: openai-compatible
+    connection: ollama
+    model: gemma3:12b
+  # PDF_MODEL's default. DOCLING_STRICT=1 keeps ingest off this path, but a
+  # route here means a misconfiguration still stays on the machine.
+  claude-haiku-4-5:
+    provider: openai-compatible
+    connection: ollama
+    model: gemma3:12b

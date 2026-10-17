@@ -2513,6 +2513,8 @@
       "object-storage-credentials": "STORAGE_PROVIDER=s3 está establecido, pero falta parte de su configuración. Las subidas y descargas fallan hasta que se establezcan estos valores — usa el prefijo S3_ (S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY, S3_REGION), no AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY / AWS_DEFAULT_REGION, que están reservados para AWS Bedrock y AWS KMS.",
       "docling-unavailable": "El analizador de documentos (Docling) no responde desde las {since, time, short}. Las subidas lo esperan o usan el analizador alternativo; comprueba que su contenedor esté en marcha.",
       "basal-unavailable": "El modelo de guardrails (basal) en BASAL_URL no responde. Las comprobaciones vuelven al modelo evaluador, así que no se bloquea nada, pero las respuestas tardan más. Comprueba que su contenedor está en ejecución.",
+      "model-server-unreachable": "El servidor de modelos local ({connections}) no responde, así que el chat y el procesamiento de documentos que lo usan fallan. Comprueba que su contenedor está en marcha.",
+      "model-not-pulled": "Estos modelos no están en el servidor de modelos local: {models}. Las llamadas fallan hasta que se descarguen.",
       "oidc-misconfigured": "El inicio de sesión corporativo (OIDC) está mal configurado y desactivado: {problems}. El inicio de sesión con contraseña sigue funcionando."
     },
     "database-unreachable-see-logs": "Los detalles están en el registro del servidor."

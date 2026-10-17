@@ -11,6 +11,8 @@ export {
   type RouteFile,
 } from './route-table';
 export {
+  connectionApiKeyVars,
+  connectionBaseUrlVar,
   EnvCredentialSource,
   MissingCredentialsError,
   PROVIDER_CREDENTIAL_VARS,
@@ -23,6 +25,12 @@ export {
   type GatewayOptions,
 } from './resolve-model';
 export { gatewayFromEnv, resetGatewayCache } from './gateway-instance';
+export {
+  probeModels,
+  type ModelProbe,
+  type ModelProbeState,
+  type ProbeOptions,
+} from './probe';
 export {
   hasMultimodalContent,
   multimodalPolicyFromEnv,
@@ -42,12 +50,15 @@ export { PROVIDER_FACTORIES } from './providers';
 export { EMBEDDING_PROVIDER_FACTORIES } from './embedding-providers';
 export {
   PROVIDER_IDS,
+  ROUTE_CAPABILITIES,
   type CredentialScope,
   type CredentialSource,
+  type DescribedModel,
   type EmbeddingProviderFactory,
   type ProviderCredentials,
   type ProviderFactory,
   type ProviderId,
   type Route,
+  type RouteCapability,
   type RouteTable,
 } from './types';

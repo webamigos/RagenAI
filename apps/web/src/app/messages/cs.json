@@ -2513,6 +2513,8 @@
       "object-storage-credentials": "STORAGE_PROVIDER=s3 je nastaven, ale část jeho konfigurace chybí. Nahrávání a stahování selhávají, dokud nejsou tyto hodnoty nastaveny — použijte předponu S3_ (S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY, S3_REGION), nikoli AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY / AWS_DEFAULT_REGION, které jsou vyhrazeny pro AWS Bedrock a AWS KMS.",
       "docling-unavailable": "Parser dokumentů (Docling) není dostupný od {since, time, short}. Nahrané soubory na něj čekají nebo použijí záložní parser, proto ověřte, že jeho kontejner běží.",
       "basal-unavailable": "Model guardrailů (basal) na BASAL_URL neodpovídá. Kontroly se vracejí k hodnoticímu modelu, takže nic není blokováno, ale odpovědi trvají déle. Zkontrolujte, zda jeho kontejner běží.",
+      "model-server-unreachable": "Místní server modelů ({connections}) neodpovídá, takže chat a zpracování dokumentů, které ho používají, selhávají. Zkontrolujte, že jeho kontejner běží.",
+      "model-not-pulled": "Tyto modely na místním serveru modelů nejsou: {models}. Volání selhávají, dokud je nestáhnete.",
       "oidc-misconfigured": "Firemní přihlášení (OIDC) je chybně nastavené, a proto vypnuté: {problems}. Přihlášení heslem dál funguje."
     },
     "database-unreachable-see-logs": "Podrobnosti naleznete v protokolu serveru."

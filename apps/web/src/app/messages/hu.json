@@ -2513,6 +2513,8 @@
       "object-storage-credentials": "A STORAGE_PROVIDER=s3 be van állítva, de a konfigurációjának egy része hiányzik. A feltöltések és letöltések addig sikertelenek, amíg ezeket az értékeket be nem állítod — használd az S3_ előtagot (S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY, S3_REGION), ne az AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY / AWS_DEFAULT_REGION-t, amelyek az AWS Bedrocknak és az AWS KMS-nek vannak fenntartva.",
       "docling-unavailable": "A dokumentumelemző (Docling) {since, time, short} óta nem érhető el. A feltöltések rá várnak vagy a tartalék elemzőt használják, ezért ellenőrizze, hogy fut-e a konténere.",
       "basal-unavailable": "A guardrail-modell (basal) a BASAL_URL címen nem válaszol. Az ellenőrzések a bíráló modellre esnek vissza, így semmi sem blokkolódik, de a válaszok tovább tartanak. Ellenőrizd, hogy fut-e a konténere.",
+      "model-server-unreachable": "A helyi modellszerver ({connections}) nem válaszol, ezért az azt használó csevegés és dokumentumfeldolgozás nem működik. Ellenőrizze, hogy fut-e a konténere.",
+      "model-not-pulled": "Ezek a modellek nincsenek a helyi modellszerveren: {models}. A hívások sikertelenek, amíg le nem tölti őket.",
       "oidc-misconfigured": "A céges bejelentkezés (OIDC) hibásan van beállítva, ezért ki van kapcsolva: {problems}. A jelszavas bejelentkezés továbbra is működik."
     },
     "database-unreachable-see-logs": "A részletek a szerver naplójában találhatók."

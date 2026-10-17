@@ -25,8 +25,14 @@ export type ModelProvider = 'litellm';
  */
 export type ModelKind = 'chat' | 'embedding' | 'rerank';
 
-/** Visual grouping for the model selector UI (maps to the original provider behind the model) */
-export type ModelOrigin = 'openai' | 'google' | 'anthropic' | 'mistral';
+/**
+ * Visual grouping for the model selector UI (maps to the original provider
+ * behind the model). `local` is a model served on the install's own hardware
+ * and described by its route rather than by this catalogue — see
+ * `withDescribedRoutes`.
+ */
+export type ModelOrigin =
+  'openai' | 'google' | 'anthropic' | 'mistral' | 'local';
 
 export type ModelRegistryEntry = {
   /** Display name shown in the UI */
@@ -264,4 +270,69 @@ export function selectableModels(): (ModelRegistryEntry & { value: string })[] {
   return Object.entries(MODEL_REGISTRY)
     .filter(([, entry]) => entry.visible)
     .map(([value, entry]) => ({ value, ...entry }));
+}
+
+/**
+ * A served route that names its own model, as the gateway reports it
+ * (`LlmGateway.describedModels()`). Structural, so this package does not
+ * depend on `@ragenai/llm-gateway`.
+ */
+export type RouteDescription = {
+  readonly id: string;
+  readonly displayName: string;
+  readonly capabilities: readonly string[];
+};
+
+/**
+ * The catalogue's selectable models, with what the route table says about
+ * itself applied on top.
+ *
+ * A route that describes itself wins over a catalogue entry with the same id.
+ * That is the point: an appliance aliases cloud ids the application hardcodes
+ * (`gemini-2.5-flash`, `gpt-oss-120b`) to local models, and without this the
+ * picker names a cloud model that is not what answers. The replacement is a
+ * plain `local` chat entry — the catalogue's reasoning flags describe the cloud
+ * model, not the one actually served, so they do not carry over.
+ *
+ * Only a route with the `chat` capability is offered. A described route without
+ * it removes a catalogue entry of the same id instead, because the catalogue
+ * would otherwise offer, as a chat model, an id this install serves as
+ * something else.
+ *
+ * Catalogue order first, then local models the catalogue does not know, by id.
+ */
+export function withDescribedRoutes<
+  T extends ModelRegistryEntry & { value: string },
+>(
+  catalogue: readonly T[],
+  described: readonly RouteDescription[],
+): (T | (ModelRegistryEntry & { value: string }))[] {
+  const byId = new Map(described.map((route) => [route.id, route]));
+  const asEntry = (route: RouteDescription) => ({
+    value: route.id,
+    displayName: route.displayName,
+    visible: true,
+    origin: 'local' as const,
+    kind: 'chat' as const,
+  });
+
+  const merged: (T | (ModelRegistryEntry & { value: string }))[] = [];
+  for (const entry of catalogue) {
+    const route = byId.get(entry.value);
+    if (!route) {
+      merged.push(entry);
+    } else if (route.capabilities.includes('chat')) {
+      merged.push(asEntry(route));
+    }
+  }
+
+  const known = new Set(catalogue.map((entry) => entry.value));
+  const added = described
+    .filter(
+      (route) => !known.has(route.id) && route.capabilities.includes('chat'),
+    )
+    .sort((a, b) => a.id.localeCompare(b.id))
+    .map(asEntry);
+
+  return [...merged, ...added];
 }
